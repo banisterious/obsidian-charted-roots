@@ -9,7 +9,7 @@ The core idea is a hybrid approach: the plugin will use the power of D3.js for a
 
 ## ✨ Planned Features
 
-- **Automated Layout:** The plugin will generate precise, non-overlapping pedigree (ancestor) and descendant charts using specialized D3 algorithms (similar to `family-chart` logic).
+- **Automated Layout:** The plugin will generate precise, non-overlapping pedigree (ancestor) and descendant charts using specialized D3 algorithms (similar to [family-chart](https://donatso.github.io/family-chart-doc/examples/v2/1-basic-tree) logic).
 
 - **Native Canvas Nodes:** The tree will be built from Obsidian file nodes, making every person immediately linkable to external research, images, and documents on the Canvas.
 
