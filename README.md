@@ -7,57 +7,64 @@ This planned Obsidian plugin concept is designed for genealogists, historians, a
 The core idea is a hybrid approach: the plugin will use the power of D3.js for advanced layout calculation, but will generate the output using native Obsidian Canvas nodes and edges. This is intended to create a beautiful, structured chart that is fully editable and linkable within the Canvas environment.
 
 
-## ✨ Planned Features
+## ✨ Key Features
 
-- **Automated Layout:** The plugin will generate precise, non-overlapping pedigree (ancestor) and descendant charts using specialized D3 algorithms (similar to [family-chart](https://donatso.github.io/family-chart-doc/examples/v2/1-basic-tree) logic).
+- **Automated Layout:** Generate precise, non-overlapping pedigree (ancestor) and descendant charts using D3.js hierarchy algorithms inspired by [family-chart](https://github.com/donatso/family-chart) logic.
 
-- **Native Canvas Nodes:** The tree will be built from Obsidian file nodes, making every person immediately linkable to external research, images, and documents on the Canvas.
+- **Native Canvas Nodes:** Trees are built from Obsidian file nodes, making every person immediately linkable to research notes, images, and documents on the Canvas.
 
-- **Bi-Directional Linking:** The plugin will automatically enforce two-way relationships (e.g., setting a father automatically sets the child, and vice-versa) in your note properties.
+- **Obsidian Bases Integration:** Seamlessly works with [Obsidian Bases](https://help.obsidian.md/bases) for efficient bulk data entry and management. Edit multiple family members in table view while Canvas Roots handles visualization.
 
-- **Relayout Command:** It will feature a command to recalculate and restore the D3-optimized layout with a single click if the Canvas nodes become manually rearranged.
+- **Bi-Directional Linking (Optional):** Configure automatic two-way relationship synchronization (e.g., setting a father automatically sets the child) with flexible settings for manual or automatic sync.
 
-- **Standardized Data:** Will use native YAML and inline fields for maximum compatibility with tools like Dataview.
+- **Relayout Command:** Recalculate and restore the D3-optimized layout with a single command if Canvas nodes are manually rearranged.
+
+- **YAML-First Data:** Uses native YAML frontmatter for maximum compatibility with Dataview, Bases, and other Obsidian tools.
 
 
-## 🛠️ Conceptual Workflow
+## 🛠️ Workflow
 
-### 1. Structure Your Notes
+### 1. Enter Your Data
 
-Ensure each person's note contains the following YAML frontmatter or inline fields. The `cr_id` field is essential for persistence and mapping.
+**Option A: Individual Notes**
 
+Create individual Markdown notes with YAML frontmatter. The `cr_id` field is essential for persistence and mapping.
+
+```yaml
+---
+cr_id: abc-123-def-456
+name: John Robert Smith
+father: "[[John Smith Sr]]"
+mother: "[[Jane Doe]]"
+spouse: ["[[Mary Jones]]"]
+child: ["[[Bob Smith]]", "[[Alice Smith]]"]
+born: 1888-05-15
+died: 1952-08-20
+---
+
+# Research Notes
+
+[Your biographical research, sources, and notes here...]
 ```
-    ---
-    cr_id: 12345-uuid-67890
-    born: 1888-05-15
-    died: 1952-08-20
-    ---
-    ## [[Person Name]]
 
-    Father:: [[John Smith]]
-    Mother:: [[Jane Doe]]
-    Spouse:: [[Eliza Brown]]
-    Child:: [[Robert Smith]]
-```
+**Option B: Obsidian Bases (Recommended for Bulk Entry)**
 
-### 2. Generate the Tree (Planned Command)
+Use [Obsidian Bases](https://help.obsidian.md/bases) to manage multiple family members in a table view. Edit relationships, dates, and properties in a spreadsheet-like interface. See the [Bases Integration Guide](docs/bases-integration.md) for details and templates.
 
-1. Open or create a new Obsidian Canvas file (`.canvas`).
+### 2. Generate the Tree
 
-2. Navigate to the note of the person you want to be the root (center) of the tree.
+1. Open or create a new Obsidian Canvas file (`.canvas`)
+2. Navigate to the note of the person you want as the root (center) of the tree
+3. Open the Command Palette (`Ctrl/Cmd + P`)
+4. Run: `Canvas Roots: Generate Tree for Current Note`
 
-3. Open the Command Palette (`Ctrl/Cmd + P`).
+The plugin populates the Canvas with the D3-calculated family tree layout.
 
-4. The planned command will be: `Canvas Roots: Generate Tree for Current Note`.
+### 3. Maintain the Layout
 
-The plugin is designed to instantly populate the Canvas with the structured, D3-calculated family tree.
+If you manually rearrange nodes or add new family members, restore the optimized layout:
 
-
-### 3. Maintain the Layout (Planned Command)
-
-- If you drag the notes or add new family members, the tree may lose its structure.
-
-- The command to restore the D3 layout will be: `Canvas Roots: Re-Layout Current Canvas`.
+- Run: `Canvas Roots: Re-Layout Current Canvas`
 
 
 ## 💾 Data Interchange & Deep Sync (Planned)
