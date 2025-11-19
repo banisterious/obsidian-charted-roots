@@ -61,24 +61,151 @@ To change this, edit the `VAULT_PATH` variable in:
 
 ```
 canvas-roots/
-├── main.ts                 # Plugin entry point
+├── main.ts                    # Plugin entry point
+├── main.css                   # Base CSS (compiled from styles/)
+├── styles.css                 # Final compiled CSS for Obsidian
 ├── src/
-│   ├── settings.ts         # Plugin settings
-│   ├── models/             # Data models
-│   │   ├── person.ts       # Person/family data structures
-│   │   └── canvas.ts       # Canvas node/edge types
-│   ├── canvas/             # Canvas manipulation (to be implemented)
-│   ├── layout/             # D3 layout algorithms (to be implemented)
-│   ├── utils/              # Utility functions (to be implemented)
-│   └── gedcom/             # GEDCOM import/export (to be implemented)
-├── docs/                   # Documentation
-├── manifest.json           # Obsidian plugin metadata
-├── package.json            # NPM configuration
-├── tsconfig.json           # TypeScript configuration
-├── esbuild.config.mjs      # Build configuration
-├── .eslintrc.json          # ESLint configuration
-└── styles.css              # Optional plugin styles
+│   ├── settings.ts            # Plugin settings interface
+│   ├── core/                  # Core business logic
+│   │   ├── canvas-generator.ts   # Canvas file generation (partial)
+│   │   ├── family-graph.ts       # Relationship graph builder (partial)
+│   │   ├── logging.ts            # Structured logging system ✓
+│   │   ├── person-note-writer.ts # Person note creation ✓
+│   │   ├── uuid.ts               # UUID generation ✓
+│   │   └── vault-stats.ts        # Vault statistics ✓
+│   ├── models/                # TypeScript interfaces
+│   │   ├── person.ts             # Person data structures (partial)
+│   │   └── canvas.ts             # Canvas JSON types (partial)
+│   └── ui/                    # User interface components
+│       ├── control-center.ts     # Control Center modal ✓ (skeleton)
+│       ├── lucide-icons.ts       # Icon helpers ✓
+│       └── person-picker.ts      # Person search modal ✓
+├── styles/                    # CSS source files
+│   ├── control-center.css     # Control Center styling ✓
+│   └── modals.css             # Modal styling
+├── docs/                      # Documentation
+│   ├── specification.md       # Complete technical spec ✓
+│   ├── development.md         # This file
+│   ├── css-system.md          # CSS build pipeline
+│   └── ...
+├── manifest.json              # Obsidian plugin metadata
+├── package.json               # NPM configuration
+├── tsconfig.json              # TypeScript configuration
+├── esbuild.config.mjs         # Build configuration with CSS compilation
+└── .eslintrc.json             # ESLint configuration
 ```
+
+**Legend:**
+- ✓ = Implemented
+- (partial) = Started but incomplete
+- (to be implemented) = Planned but not started
+
+## Component Map
+
+### Core Services (src/core/)
+
+| Component | Status | Purpose |
+|-----------|--------|---------|
+| `canvas-generator.ts` | 🟡 Partial | Writes family trees to `.canvas` files with metadata |
+| `family-graph.ts` | 🟡 Partial | Builds relationship graphs from person notes |
+| `logging.ts` | ✅ Complete | Structured logging with export capability |
+| `person-note-writer.ts` | ✅ Complete | Creates person notes with YAML frontmatter |
+| `uuid.ts` | ✅ Complete | UUID v4 generation for `cr_id` fields |
+| `vault-stats.ts` | ✅ Complete | Calculates vault-wide statistics |
+| **To Be Implemented** | | |
+| `collection-manager.ts` | 🔴 Needed | Auto-discovers collections, manages trees |
+| `layout-engine.ts` | 🔴 Needed | D3 layout calculations (currently in canvas-generator) |
+| `bidirectional-linker.ts` | 🔴 Needed | Automatic relationship synchronization |
+
+### UI Components (src/ui/)
+
+| Component | Status | Purpose |
+|-----------|--------|---------|
+| `control-center.ts` | 🟡 Partial | Main Control Center modal (skeleton complete) |
+| `person-picker.ts` | ✅ Complete | Person search modal with fuzzy matching |
+| `lucide-icons.ts` | ✅ Complete | Lucide icon integration helpers |
+| **To Be Implemented** | | |
+| `tree-view.ts` | 🔴 Needed | D3 interactive preview view |
+| `material-components.ts` | 🔴 Needed | Reusable Material Design components |
+| `d3-renderer.ts` | 🔴 Needed | D3 SVG tree rendering |
+
+### Data Models (src/models/)
+
+| Component | Status | Purpose |
+|-----------|--------|---------|
+| `person.ts` | 🟡 Partial | Person note schema and interfaces |
+| `canvas.ts` | 🟡 Partial | Canvas JSON type definitions |
+| **To Be Implemented** | | |
+| `collection.ts` | 🔴 Needed | Collection and Tree interfaces |
+| `layout.ts` | 🔴 Needed | Layout options and results |
+| `settings.ts` | 🔴 Needed | Plugin settings types (currently in src/settings.ts) |
+
+### Commands (main.ts)
+
+| Command | Status | Purpose |
+|---------|--------|---------|
+| Open Control Center | ✅ Complete | Opens main Control Center modal |
+| Export Logs | ✅ Complete | Exports structured logs to JSON |
+| **To Be Implemented** | | |
+| Generate Tree to Canvas | 🔴 Needed | Generates family tree to Canvas file |
+| Re-Layout Canvas | 🔴 Needed | Recalculates layout for existing Canvas |
+| Open Tree View | 🔴 Needed | Opens D3 preview for collection/tree |
+| Create Person Note | 🔴 Needed | Quick person note creation |
+
+### Planned Features (See specification.md)
+
+**MVP (Phase 1):**
+- Collection management foundation (auto-discovery, basic codes)
+- Layout engine with D3 calculations
+- Canvas generation with metadata
+- Control Center: Status, Collections, Quick Actions, Data Entry tabs
+- Bidirectional link automation
+
+**Phase 2:**
+- Tree View with D3 interactive preview
+- Reference numbering with collection codes
+- Enhanced collection management
+
+**Phase 3:**
+- Enhanced Canvas view with dataset browser
+- Query-based collections
+- GEDCOM import/export with collection codes
+
+See [specification.md](specification.md) for complete feature roadmap.
+
+## Implementation Priority
+
+When contributing or implementing features, follow this order:
+
+1. **Define TypeScript interfaces** (src/models/)
+   - Complete collection.ts, layout.ts interfaces
+   - Finalize person.ts and canvas.ts types
+
+2. **Collection Management** (src/core/collection-manager.ts)
+   - Auto-discovery from folder structure
+   - Collection code generation
+   - Tree detection (disconnected graphs)
+
+3. **Layout Engine** (src/core/layout-engine.ts)
+   - Extract D3 logic from canvas-generator
+   - Implement tree layout algorithms
+   - Support multiple layout options
+
+4. **Canvas Generation** (complete src/core/canvas-generator.ts)
+   - Write Canvas JSON with metadata
+   - Support collection/tree context
+   - Re-layout existing Canvas files
+
+5. **Control Center Tabs**
+   - Collections tab (list collections, trees)
+   - Status tab (vault statistics)
+   - Quick Actions tab (generate, re-layout)
+   - Data Entry tab (create person notes)
+
+6. **Tree View** (src/ui/tree-view.ts)
+   - D3 SVG rendering
+   - Interactive preview
+   - Export to Canvas
 
 ## Testing in Obsidian
 

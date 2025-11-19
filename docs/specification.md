@@ -1,6 +1,6 @@
 # Canvas Roots Plugin - Technical Specification
 
-**Version:** 1.5
+**Version:** 1.6
 **Last Updated:** 2025-11-19
 **Status:** Draft
 
@@ -679,11 +679,726 @@ If note is edited externally while panel is open:
 - Identify missing or incorrect information
 - Fix broken relationships
 
-### 3.4 Control Center Modal
+### 3.4 Collections and Dataset Management
+
+**Requirement:** Enable users to organize, browse, and work with multiple family trees and research projects within a single vault.
+
+#### 3.4.1 Overview
+
+**Purpose:**
+- Organize person notes into logical collections (families, research projects)
+- Manage multiple disconnected family trees
+- Switch between different datasets seamlessly
+- Track collection-level statistics and metadata
+- Support collaborative research with external collections
+
+**Primary Use Case:** Genealogy research where users maintain multiple family lines, import data from collaborators, or organize research by historical period or geographic region.
+
+#### 3.4.2 Collection Data Model
+
+**Collection Definition:**
+
+```typescript
+export interface Collection {
+  // Machine identity (UUID v4)
+  id: string;  // "abc-123-def-456"
+
+  // Human-readable code (optional, 3-6 characters)
+  code?: string;  // "SMI", "SMITH", "JON"
+
+  // Display name
+  name: string;  // "Smith Family Research"
+
+  // Storage location
+  path: string;  // "People/Smith-Family" or query-based
+
+  // Discovery method
+  discoveryMethod: 'auto' | 'manual' | 'query';
+
+  // Trees within this collection
+  trees: Tree[];
+
+  // Metadata
+  metadata: {
+    totalPeople: number;
+    totalFamilies: number;
+    dateRange: [Date | null, Date | null];
+    tags?: string[];
+    created: Date;
+    modified: Date;
+  };
+}
+
+export interface Tree {
+  // Machine identity (UUID v4)
+  id: string;  // "tree-uuid-123"
+
+  // Human-readable code (optional, relative to collection)
+  code?: string;  // "1", "MAIN", "EXT"
+
+  // Display name
+  label: string;  // "Main Line", "Extended Family"
+
+  // Graph data
+  rootPersonId: string;  // cr_id of root person
+  personIds: string[];   // All cr_ids in this tree
+
+  // Associated canvas files
+  canvasFiles: string[];  // Multiple canvas views of same tree
+
+  // Metadata
+  metadata: {
+    generationDepth: number;
+    earliestDate?: Date;
+    latestDate?: Date;
+  };
+}
+```
+
+#### 3.6.3 Collection Discovery
+
+**Auto-Discovery (Default):**
+
+The plugin automatically scans the vault to discover collections based on folder structure:
+
+```typescript
+// Discovery algorithm
+1. Scan vault for folders containing person notes (files with cr_id field)
+2. Group by parent folder (configurable depth)
+3. Apply minimum threshold (default: 5+ person notes = collection)
+4. Auto-generate collection code from folder name
+5. Detect disconnected trees within each collection using graph analysis
+```
+
+**Example vault structure:**
+
+```
+Vault/
+├── People/
+│   ├── Smith-Family/        → Collection: "Smith Family" (code: "SMI")
+│   │   └── (120 person notes, 2 disconnected trees)
+│   ├── Jones-Family/        → Collection: "Jones Family" (code: "JON")
+│   │   └── (45 person notes, 1 tree)
+│   └── Colonial-Mass/       → Collection: "Colonial Mass" (code: "COL")
+│       └── (89 person notes, 3 trees)
+```
+
+**Manual Collections:**
+
+Users can define custom collections using queries or folder combinations:
+
+```yaml
+# .canvas-roots/collections.json
+{
+  "auto_discover": true,
+  "custom_collections": [
+    {
+      "name": "Colonial Massachusetts",
+      "code": "COL",
+      "query": "path:People/ AND tag:#colonial",
+      "description": "17th-18th century New England ancestors"
+    },
+    {
+      "name": "Combined Research",
+      "code": "COMB",
+      "folders": ["People/Smith-Family", "People/Jones-Family"],
+      "description": "Merged view of both families"
+    }
+  ],
+  "excluded_paths": ["People/Templates", "People/Archive"]
+}
+```
+
+#### 3.6.4 Collection and Tree ID/Code System
+
+**Purpose:** Provide human-readable, short identifiers for collections and trees that can be used in reference numbering, file naming, GEDCOM export, and UI display.
+
+**ID Types:**
+
+| ID Type | Format | Required | Purpose | Example |
+|---------|--------|----------|---------|---------|
+| Collection UUID | UUID v4 | Yes | Machine identity for persistence | `abc-123-def-456` |
+| Collection Code | 3-6 chars | No | Human-readable identifier | `SMI`, `SMITH` |
+| Collection Name | String | Yes | Display name | `Smith Family Research` |
+| Tree UUID | UUID v4 | Yes | Machine identity for persistence | `tree-uuid-123` |
+| Tree Code | 1-4 chars | No | Human-readable identifier | `1`, `MAIN` |
+| Tree Label | String | Yes | Display name | `Main Line` |
+
+**Code Auto-Generation:**
+
+```typescript
+// Collection code generation strategies
+export type CollectionCodeStrategy =
+  | 'folder_abbreviation'  // "Smith Family" → "SMI"
+  | 'folder_acronym'       // "Smith Family Research" → "SFR"
+  | 'manual';              // User-assigned
+
+// Tree code generation strategies
+export type TreeCodeStrategy =
+  | 'sequential'    // "1", "2", "3"
+  | 'descriptive'   // "MAIN", "EXT", "COUS"
+  | 'manual';       // User-assigned
+```
+
+**Settings Configuration:**
+
+```yaml
+collections:
+  auto_discover: true
+
+  id_generation:
+    collection_code_format: "auto"  # "auto", "manual", "none"
+    tree_code_format: "numeric"     # "numeric", "alpha", "manual", "none"
+
+    auto_collection_code:
+      strategy: "folder_abbreviation"
+      max_length: 6
+      uppercase: true
+
+    auto_tree_code:
+      strategy: "sequential"
+```
+
+**Integration with Reference Numbering:**
+
+Collection and tree codes can be incorporated into reference numbers (§2.1.3):
+
+```yaml
+# Without collection codes
+cr_ref_num: "12.3"
+
+# With collection and tree codes
+cr_ref_num: "SMI/1/12.3"  # Smith collection, tree 1, position 12.3
+cr_ref_num: "JON/2/8.0"   # Jones collection, tree 2, position 8.0
+```
+
+**Settings for reference numbering integration:**
+
+```yaml
+reference_numbering:
+  use_collection_codes: true
+  use_tree_codes: true
+  separator: "/"
+  format: "{collection_code}/{tree_code}/{ref_num}"
+```
+
+#### 3.6.5 Collection Statistics and Analysis
+
+**Vault-Wide Statistics:**
+
+```typescript
+export interface VaultStats {
+  totalCollections: number;
+  totalTrees: number;
+  totalPeople: number;
+  totalFamilies: number;
+  dateRange: [Date | null, Date | null];
+  averageGenerations: number;
+}
+```
+
+**Per-Collection Statistics:**
+
+```typescript
+export interface CollectionStats {
+  collectionId: string;
+  collectionName: string;
+  collectionCode?: string;
+  totalPeople: number;
+  totalFamilies: number;
+  treeCount: number;
+  disconnectedTrees: Tree[];
+  dateRange: [Date | null, Date | null];
+  dataQuality: {
+    completeness: number;        // 0-100%
+    missingCrIds: number;
+    brokenLinks: number;
+    circularRelations: number;
+  };
+}
+```
+
+#### 3.6.6 Collection UI Integration
+
+**Collections Tab in Control Center:**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ Canvas Roots Control Center                             │
+│ [Status] [Collections] [Quick Actions] [Data Entry]     │
+├─────────────────────────────────────────────────────────┤
+│ Your Collections                                        │
+│                                                         │
+│ ┌───────────────────────────────────────────────────┐  │
+│ │ 📁 Smith Family Research (SMI)                    │  │
+│ │ 247 people · 89 families · 3 disconnected trees   │  │
+│ │ Last updated: 2 hours ago                         │  │
+│ │                                                   │  │
+│ │ Trees:                                            │  │
+│ │ • Main Line (1) - 180 people [View] [Generate]   │  │
+│ │ • Jones Branch (2) - 45 people [View] [Generate] │  │
+│ │ • Cousins (3) - 22 people [View] [Generate]      │  │
+│ │                                                   │  │
+│ │ [Edit Collection] [Export All] [Settings]        │  │
+│ └───────────────────────────────────────────────────┘  │
+│                                                         │
+│ ┌───────────────────────────────────────────────────┐  │
+│ │ 📁 Victorian England Nobility (VEN)               │  │
+│ │ 89 people · 12 families · 1 tree                  │  │
+│ │ [View] [Generate] [Archive]                       │  │
+│ └───────────────────────────────────────────────────┘  │
+│                                                         │
+│ [+ New Collection] [Import GEDCOM] [Merge Collections] │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Collection Settings Panel:**
+
+```
+Collection Settings: Smith Family Research
+┌─────────────────────────────────────────┐
+│ Identification                          │
+├─────────────────────────────────────────┤
+│ Name: [Smith Family Research         ]  │
+│ Code: [SMI    ] (3-6 chars)            │
+│       Auto-generated from folder name   │
+│       Used in: reference numbers,       │
+│       file naming, GEDCOM export        │
+│                                         │
+│ Path: People/Smith-Family               │
+│ UUID: abc-123-def-456                   │
+│                                         │
+├─────────────────────────────────────────┤
+│ Trees in This Collection                │
+├─────────────────────────────────────────┤
+│ Code  Label         Root         People │
+│ 1     Main Line     John Smith   180    │
+│ 2     Extended      Mary Jones   45     │
+│ 3     Cousins       Bob Smith    22     │
+│                                         │
+│ [Edit Tree Codes] [Detect Trees]       │
+│                                         │
+├─────────────────────────────────────────┤
+│ Settings                                │
+├─────────────────────────────────────────┤
+│ ☑ Include in auto-discovery             │
+│ ☑ Use collection code in ref numbers    │
+│ ☐ Archive (hide from main list)         │
+│                                         │
+│ [Save] [Cancel] [Delete Collection]     │
+└─────────────────────────────────────────┘
+```
+
+#### 3.6.7 Use Cases
+
+**Use Case 1: Multiple Family Lines**
+
+A genealogist researching both paternal and maternal lines:
+- Collection 1: "Smith Paternal Line" (code: SMI)
+- Collection 2: "Jones Maternal Line" (code: JON)
+- Collections tab shows both with separate statistics
+- Reference numbers: SMI/1/12.3 vs JON/1/8.0
+- Can generate separate canvas views for each
+
+**Use Case 2: Historical Research Project**
+
+A researcher organizing by time period:
+- Collection 1: "Colonial Massachusetts" (code: COL)
+- Collection 2: "Revolutionary Era" (code: REV)
+- Collection 3: "Victorian Era" (code: VIC)
+- Uses query-based collections with tag filters
+- Cross-collection views possible for families spanning periods
+
+**Use Case 3: Collaborative Research**
+
+Multiple researchers working on shared ancestry:
+- Import GEDCOM from collaborator
+- Plugin detects collection code in GEDCOM IDs (@SMI001@)
+- Offers to merge with existing "Smith Family" collection
+- UUID-based matching prevents duplicates
+- Collection statistics update after merge
+
+**Use Case 4: World-Building (Secondary Use Case)**
+
+A fiction writer organizing noble houses:
+- Collection 1: "House Stark" (code: STK)
+- Collection 2: "House Lannister" (code: LAN)
+- Collection 3: "House Targaryen" (code: TAR)
+- Each collection tracks family succession
+- Can generate political alliance trees across collections
+
+### 3.5 Tree Visualization Modes
+
+**Requirement:** Provide dual-mode visualization supporting both interactive D3 preview and native Obsidian Canvas rendering with full editing capabilities.
+
+#### 3.5.1 Overview
+
+**Purpose:**
+- Enable rapid iteration and exploration using D3 interactive preview
+- Generate final trees to native Obsidian Canvas for full editability
+- Provide seamless transition between preview and Canvas modes
+- Maintain WYSIWYG consistency (preview matches Canvas output)
+
+**Design Philosophy:**
+- D3 mode = fast, interactive, read-only preview for layout refinement
+- Canvas mode = native Obsidian Canvas with full editing capabilities
+- Shared layout engine ensures consistency between modes
+
+#### 3.5.2 Visualization Modes
+
+**Mode 1: D3 Interactive Preview (Tree View)**
+
+A custom Obsidian view type for interactive tree exploration:
+
+```typescript
+// View registration
+this.registerView(
+  TREE_VIEW_TYPE,
+  (leaf) => new TreeView(leaf, this)
+);
+
+// View state
+interface TreeViewState {
+  collection: string;  // Collection ID
+  tree: string;        // Tree ID
+  rootPerson: string;  // cr_id of root
+  layoutOptions: LayoutOptions;
+}
+```
+
+**Features:**
+- Full-screen D3 SVG rendering
+- Interactive zoom/pan
+- Click to select nodes
+- Hover for quick info
+- Real-time layout adjustment with settings panel
+- "Export to Canvas" button
+- **Read-only** (does not modify source notes or Canvas files)
+
+**UI Structure:**
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ Tree View: Smith Family - Main Line                 [⚙️] │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│         [Interactive D3 SVG Tree Visualization]         │
+│         - Zoom/pan enabled                              │
+│         - Click nodes to select                         │
+│         - Hover for tooltips                            │
+│                                                         │
+│ Collection: Smith Family (SMI)                          │
+│ Tree: Main Line (1) - 180 people, 4 generations         │
+│                                                         │
+│ [⚙️ Layout Settings] [Generate to Canvas] [Export PNG] │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Layout Settings Panel (Sidebar):**
+
+```
+┌─────────────────────────────┐
+│ Layout Settings             │
+├─────────────────────────────┤
+│ Algorithm: [D3 Tree  ▼]     │
+│                             │
+│ Node Dimensions:            │
+│ Width:  [====░░] 300px      │
+│ Height: [====░░] 150px      │
+│                             │
+│ Spacing:                    │
+│ Horizontal: [====░░] 200px  │
+│ Vertical:   [====░░] 150px  │
+│                             │
+│ Orientation:                │
+│ ○ Vertical (ancestors up)   │
+│ ● Horizontal (left-to-right)│
+│                             │
+│ Generations:                │
+│ Ancestors:   [===░░] 3      │
+│ Descendants: [===░░] 2      │
+│                             │
+│ [Reset to Defaults]         │
+│ [Preview Changes]           │
+└─────────────────────────────┘
+```
+
+**Commands:**
+- `Canvas Roots: Open Tree View` - Opens Tree View for active person note
+- `Canvas Roots: Open Tree View for Collection` - Shows collection picker first
+
+**Mode 2: Native Canvas View**
+
+Standard Obsidian Canvas with optional Canvas Roots enhancements:
+
+**Option A: Pure Canvas (Minimal Enhancement)**
+
+User works with standard `.canvas` files:
+- Open any `.canvas` file normally in Obsidian
+- All native Canvas features available
+- Canvas Roots adds commands to generate/re-layout trees
+- No custom UI wrapper needed
+
+**Commands:**
+- `Canvas Roots: Generate Tree to Canvas` - Writes tree to active Canvas
+- `Canvas Roots: Re-Layout Canvas` - Recalculates positions for existing nodes
+
+**Option B: Enhanced Canvas View (Future)**
+
+Custom leaf view that wraps native Canvas with dataset browser:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│ Canvas Roots: Smith-Main-Tree.canvas                [⚙️] │
+├──────────────┬──────────────────────────────────────────┤
+│ Dataset      │  [Native Obsidian Canvas View]           │
+│ Browser      │  - Full Canvas editing capabilities      │
+│              │  - Drag nodes to reposition              │
+│ Collections  │  - Resize nodes                          │
+│ ○ Smith (SMI)│  - Add/remove nodes manually             │
+│ ○ Jones (JON)│  - Create edges                          │
+│              │  - All Canvas context menus              │
+│ Trees        │  - Native Canvas keyboard shortcuts      │
+│ ● Main (1)   │                                          │
+│ ○ Ext (2)    │  Viewing: Smith Family > Main Line       │
+│              │  Generated: 2025-11-19 10:30             │
+│ Quick Access │                                          │
+│ Recent       │  [Re-Layout] [Export] [Settings]         │
+│ · John Smith │                                          │
+└──────────────┴──────────────────────────────────────────┘
+```
+
+**Important:** The Canvas area is **native Obsidian Canvas**, not a custom renderer. All standard Canvas features work exactly as expected:
+- Full editing capabilities
+- All native Canvas interactions
+- Standard Canvas file format
+- Compatible with other Canvas plugins
+- Canvas Roots only adds optional UI wrapper and commands
+
+#### 3.5.3 Shared Layout Engine
+
+Both visualization modes use the **same layout calculation engine** to ensure WYSIWYG consistency:
+
+```typescript
+// src/core/layout-engine.ts
+
+export class LayoutEngine {
+  /**
+   * Calculate node positions using D3 algorithms
+   * Used by both D3 preview and Canvas generation
+   */
+  calculateLayout(
+    graph: FamilyGraph,
+    options: LayoutOptions
+  ): LayoutResult {
+    // D3 tree/hierarchy calculations
+    // Returns coordinates for all nodes
+    // Same algorithm used for preview and Canvas output
+  }
+}
+
+// Usage in D3 preview
+const layout = layoutEngine.calculateLayout(graph, options);
+d3Renderer.renderToSVG(layout);  // Draw to SVG
+
+// Usage in Canvas generation
+const layout = layoutEngine.calculateLayout(graph, options);
+canvasGenerator.writeToCanvas(layout);  // Write to .canvas JSON
+```
+
+**Benefit:** What user sees in D3 preview is **exactly** what will be generated to Canvas.
+
+#### 3.5.4 Canvas File Metadata
+
+Canvas files generated by Canvas Roots include metadata for context tracking:
+
+```json
+{
+  "nodes": [
+    {
+      "id": "node-abc",
+      "type": "file",
+      "file": "People/Smith-Family/John Smith.md",
+      "x": 100,
+      "y": 200,
+      "width": 300,
+      "height": 150
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-123",
+      "fromNode": "node-abc",
+      "toNode": "node-def"
+    }
+  ],
+  "canvas-roots": {
+    "version": "1.0.0",
+    "collection": {
+      "id": "abc-123-def-456",
+      "code": "SMI",
+      "name": "Smith Family Research"
+    },
+    "tree": {
+      "id": "tree-uuid-123",
+      "code": "1",
+      "label": "Main Line"
+    },
+    "rootPerson": {
+      "crId": "person-uuid-789",
+      "name": "John Smith Sr",
+      "file": "People/Smith-Family/John Smith Sr.md"
+    },
+    "generated": "2025-11-19T10:30:00Z",
+    "layoutAlgorithm": "d3-tree",
+    "layoutOptions": {
+      "nodeWidth": 300,
+      "nodeHeight": 150,
+      "horizontalSpacing": 200,
+      "verticalSpacing": 150,
+      "orientation": "horizontal",
+      "ancestorGenerations": 3,
+      "descendantGenerations": 2
+    },
+    "statistics": {
+      "totalNodes": 47,
+      "totalEdges": 52,
+      "generationDepth": 5
+    }
+  }
+}
+```
+
+**Benefits:**
+- Re-layout command knows original settings
+- Dataset browser can display context
+- Export/import preserves tree structure
+- Statistics available without recalculation
+
+#### 3.5.5 Mode Switching Workflow
+
+**Primary Workflow: Preview → Canvas**
+
+```
+1. User opens Control Center
+2. Selects collection and tree
+3. Clicks "Preview Tree" → Opens D3 Tree View
+4. Adjusts layout settings with real-time preview
+5. Satisfied with layout
+6. Clicks "Generate to Canvas"
+7. Plugin writes to .canvas file
+8. Opens Canvas in native Obsidian Canvas view
+9. User manually edits as needed
+```
+
+**Secondary Workflow: Direct to Canvas**
+
+```
+1. User opens person note
+2. Runs command: "Generate Tree to Canvas"
+3. Plugin uses default settings
+4. Writes directly to .canvas file
+5. No preview step needed
+```
+
+**Re-Layout Workflow:**
+
+```
+1. User has existing .canvas file with tree
+2. Made manual adjustments to node positions
+3. Wants to restore calculated layout
+4. Runs command: "Re-Layout Canvas"
+5. Plugin reads canvas-roots metadata
+6. Recalculates layout with original settings
+7. Updates node positions
+8. User can manually adjust again
+```
+
+#### 3.5.6 Implementation Components
+
+**Core Classes:**
+
+```typescript
+// D3 rendering for preview
+export class D3TreeRenderer {
+  renderToSVG(container: HTMLElement, layout: LayoutResult): void;
+  updateLayout(layout: LayoutResult): void;  // Live updates
+  destroy(): void;
+}
+
+// Canvas file generation
+export class CanvasGenerator {
+  writeToCanvas(
+    canvasPath: string,
+    layout: LayoutResult,
+    metadata: CanvasRootsMetadata
+  ): Promise<void>;
+
+  updateNodePositions(
+    canvasPath: string,
+    layout: LayoutResult
+  ): Promise<void>;
+}
+
+// Shared layout calculation
+export class LayoutEngine {
+  calculateLayout(
+    graph: FamilyGraph,
+    options: LayoutOptions
+  ): LayoutResult;
+}
+
+// Tree view component
+export class TreeView extends ItemView {
+  getViewType(): string { return TREE_VIEW_TYPE; }
+  getDisplayText(): string { return 'Family Tree'; }
+
+  async onOpen(): Promise<void> {
+    // Render D3 tree
+    // Add settings panel
+    // Add export button
+  }
+}
+```
+
+**Commands:**
+
+| Command | Description | Context |
+|---------|-------------|---------|
+| `Open Tree View` | Open D3 preview for current person | Person note active |
+| `Open Tree View for Collection` | Choose collection/tree to preview | Any context |
+| `Generate Tree to Canvas` | Write tree directly to Canvas | Person note or Tree View |
+| `Re-Layout Canvas` | Recalculate existing Canvas layout | Canvas file active |
+
+#### 3.5.7 Phase Implementation
+
+**MVP (Phase 1):**
+- ✅ Layout engine with D3 calculations
+- ✅ Canvas generation (direct output)
+- ✅ Basic commands (Generate, Re-Layout)
+- ✅ Canvas metadata support
+
+**Phase 2:**
+- ✅ Tree View with D3 preview
+- ✅ Settings panel with live preview
+- ✅ Export to Canvas from Tree View
+- ✅ Collection/tree context in Tree View
+
+**Phase 3:**
+- ✅ Enhanced Canvas View with dataset browser
+- ✅ Mode switching UI
+- ✅ Canvas view shows collection context
+
+**Phase 4+:**
+- ✅ Advanced preview features (filters, highlights)
+- ✅ Multiple layout algorithms
+- ✅ Animation between layouts
+
+### 3.6 Control Center Modal
 
 **Requirement:** Provide a centralized, Material Design-based modal interface for accessing all Canvas Roots features, settings, and operations.
 
-#### 3.4.1 Overview
+#### 3.6.1 Overview
 
 **Purpose:**
 - Unified interface for all plugin operations
@@ -698,7 +1413,7 @@ If note is edited externally while panel is open:
 
 **Implementation File:** `src/ui/control-center.ts`
 
-#### 3.4.2 Architecture
+#### 3.6.2 Architecture
 
 **Design Pattern:** Modal with navigation drawer and tabbed content area
 
@@ -733,7 +1448,7 @@ class ControlCenterModal extends Modal {
    Drawer       Content
 ```
 
-#### 3.4.3 Tab Configurations
+#### 3.6.3 Tab Configurations
 
 **Tab Structure:**
 
@@ -767,7 +1482,7 @@ const TAB_CONFIGS = [
 ];
 ```
 
-#### 3.4.4 Tab Content Specifications
+#### 3.6.4 Tab Content Specifications
 
 ##### Status Tab
 
@@ -1178,7 +1893,7 @@ this.addCommand({
    - Succession rules engine
    - Dual relationship trees
 
-#### 3.4.5 Material Design Components
+#### 3.6.5 Material Design Components
 
 **Reusable UI Components:**
 
@@ -1239,7 +1954,7 @@ const widthSlider = new MaterialSlider({
 settingsCard.addContent(widthSlider.getElement());
 ```
 
-#### 3.4.6 Styling System
+#### 3.6.6 Styling System
 
 **CSS Architecture:**
 
@@ -1289,7 +2004,7 @@ Based on Material Design 3 principles, using Obsidian's native color system:
   - `.crc-drawer__item--active`
   - `.crc-card__header`
 
-#### 3.4.7 State Management
+#### 3.6.7 State Management
 
 **Modal State:**
 
@@ -1311,7 +2026,7 @@ interface ControlCenterState {
 - Quick settings cached per session
 - Form values preserved during modal lifecycle
 
-#### 3.4.8 Integration Points
+#### 3.6.8 Integration Points
 
 **Plugin Integration:**
 
@@ -1356,7 +2071,7 @@ this.registerEvent(
 );
 ```
 
-#### 3.4.9 Implementation Priority
+#### 3.6.9 Implementation Priority
 
 **MVP (Phase 1):**
 - Modal structure with navigation drawer
@@ -1382,7 +2097,7 @@ this.registerEvent(
 - Advanced features as they're implemented
 - Progressive enhancement of existing tabs
 
-#### 3.4.10 Accessibility
+#### 3.6.10 Accessibility
 
 **Keyboard Navigation:**
 - Tab key navigation through all interactive elements
@@ -3300,11 +4015,18 @@ succession_plan:
 - Core data model (§2.1.1)
 - Bidirectional link automation (§2.2)
 - Tree generation command (§3.1)
-- Basic D3 layout
+- Basic D3 layout engine (§3.5.3)
 - Canvas JSON read/write (§4.3)
-- **Control Center Modal - MVP** (§3.4.9)
+- Canvas metadata support (§3.5.4)
+- **Collection Management - Foundation** (§3.4)
+  - Auto-discovery of collections from folders
+  - Collection and tree data model with UUIDs
+  - Basic collection codes (auto-generated)
+  - Disconnected tree detection
+- **Control Center Modal - MVP** (§3.6.9)
   - Modal structure with navigation drawer
   - Status tab (basic stats)
+  - Collections tab (list collections, basic info)
   - Quick Actions tab (Generate Tree, Re-Layout)
   - Data Entry tab (Create new persons with "Add Another" workflow)
   - Material components library (Card, Button, Slider)
@@ -3312,24 +4034,45 @@ succession_plan:
 
 ### Phase 2
 - Re-layout command (§3.2)
-- Reference numbering systems (§2.1.3)
+- **Tree Visualization - D3 Preview** (§3.5)
+  - Tree View component (custom Obsidian view)
+  - D3 interactive SVG rendering
+  - Layout settings panel with live preview
+  - Generate to Canvas from preview
+- **Collection Management - Enhanced** (§3.4)
+  - Collection settings panel
+  - Tree code customization
+  - Manual collection creation
+  - Collection statistics
+- **Reference Numbering with Collection Codes** (§2.1.3, §3.4.4)
+  - Reference numbering systems (Dollarhide-Cole, Ahnentafel)
+  - Integration with collection/tree codes
+  - Format: {collection_code}/{tree_code}/{ref_num}
 - GEDCOM import Mode 1 (§5.2)
 - Flexible date precision (§6.4)
 - Basic card customization (§6.6)
-- **Control Center - Phase 2** (§3.4.9)
+- **Control Center - Phase 2** (§3.6.9)
   - Tree Generation tab with all settings
-  - Layout preview functionality
+  - Enhanced Collections tab with tree management
   - Filter controls
 
 ### Phase 3
+- **Enhanced Canvas View** (§3.5.2)
+  - Optional Canvas wrapper with dataset browser
+  - Collection/tree context display
+  - Quick switching between collections
+- **Query-Based Collections** (§3.4.3)
+  - Custom collections using Dataview-style queries
+  - Tag-based filtering
+  - Cross-folder collections
 - GEDCOM import Mode 2 (§5.2)
-- GEDCOM export with UUID preservation (§5.3, §5.5.4)
-- Multi-vault merging (§5.5)
+- GEDCOM export with UUID preservation, collection codes (§5.3, §5.5.4, §3.4.4)
+- Multi-vault merging with collection matching (§5.5, §3.4)
 - Basic obfuscation (export only) (§5.6)
 - Multiple spouse support (§6.1)
 - Alternative parent relationships (§6.2)
 - Unknown parent handling (§6.3)
-- **Control Center - Phase 3** (§3.4.9)
+- **Control Center - Phase 3** (§3.6.9)
   - GEDCOM tab (import/export)
   - Merge collections interface
 
