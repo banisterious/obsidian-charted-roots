@@ -61,3 +61,7 @@ docs/developer/family-chart/
 
 # Claude Code working files
 CLAUDE.md
+
+# Personal deployment scripts
+deploy.sh
+dev-deploy.sh
