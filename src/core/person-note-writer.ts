@@ -20,9 +20,12 @@ export interface PersonData {
 	father?: string;        // Legacy: name-based relationship (deprecated)
 	mother?: string;        // Legacy: name-based relationship (deprecated)
 	spouse?: string[];      // Legacy: name-based relationship (deprecated)
-	fatherCrId?: string;    // Preferred: cr_id-based relationship
-	motherCrId?: string;    // Preferred: cr_id-based relationship
-	spouseCrId?: string[];  // Preferred: cr_id-based relationship
+	fatherCrId?: string;    // Father's cr_id for reliable resolution
+	fatherName?: string;    // Father's name for wikilink display
+	motherCrId?: string;    // Mother's cr_id for reliable resolution
+	motherName?: string;    // Mother's name for wikilink display
+	spouseCrId?: string[];  // Spouse(s) cr_id for reliable resolution
+	spouseName?: string[];  // Spouse(s) name for wikilink display
 }
 
 /**
@@ -83,36 +86,62 @@ export async function createPersonNote(
 		frontmatter.died = person.deathDate;
 	}
 
-	// Handle relationships - prefer cr_id-based over name-based
+	// Handle relationships using dual storage: wikilinks for Obsidian + _id fields for reliability
 	logger.debug('relationships', `Processing - fatherCrId: ${person.fatherCrId}, motherCrId: ${person.motherCrId}, spouseCrId: ${person.spouseCrId}`);
 
-	if (person.fatherCrId) {
-		frontmatter.father = person.fatherCrId;
-		logger.debug('father', `Added: ${person.fatherCrId}`);
+	// Father relationship (dual storage)
+	if (person.fatherCrId && person.fatherName) {
+		frontmatter.father = `"[[${person.fatherName}]]"`;
+		frontmatter.father_id = person.fatherCrId;
+		logger.debug('father', `Added (dual): wikilink=${person.fatherName}, id=${person.fatherCrId}`);
+	} else if (person.fatherCrId) {
+		// ID only (fallback for legacy data)
+		frontmatter.father_id = person.fatherCrId;
+		logger.debug('father', `Added (id only): ${person.fatherCrId}`);
 	} else if (person.father) {
-		// Legacy: name-based relationship
+		// Legacy: name-based relationship only
 		frontmatter.father = `"[[${person.father}]]"`;
 		logger.debug('father', `Added (legacy): ${person.father}`);
 	}
 
-	if (person.motherCrId) {
-		frontmatter.mother = person.motherCrId;
-		logger.debug('mother', `Added: ${person.motherCrId}`);
+	// Mother relationship (dual storage)
+	if (person.motherCrId && person.motherName) {
+		frontmatter.mother = `"[[${person.motherName}]]"`;
+		frontmatter.mother_id = person.motherCrId;
+		logger.debug('mother', `Added (dual): wikilink=${person.motherName}, id=${person.motherCrId}`);
+	} else if (person.motherCrId) {
+		// ID only (fallback for legacy data)
+		frontmatter.mother_id = person.motherCrId;
+		logger.debug('mother', `Added (id only): ${person.motherCrId}`);
 	} else if (person.mother) {
-		// Legacy: name-based relationship
+		// Legacy: name-based relationship only
 		frontmatter.mother = `"[[${person.mother}]]"`;
 		logger.debug('mother', `Added (legacy): ${person.mother}`);
 	}
 
+	// Spouse relationship(s) (dual storage)
 	if (person.spouseCrId && person.spouseCrId.length > 0) {
-		if (person.spouseCrId.length === 1) {
-			frontmatter.spouse = person.spouseCrId[0];
+		if (person.spouseName && person.spouseName.length === person.spouseCrId.length) {
+			// Dual storage with both names and IDs
+			if (person.spouseName.length === 1) {
+				frontmatter.spouse = `"[[${person.spouseName[0]}]]"`;
+				frontmatter.spouse_id = person.spouseCrId[0];
+			} else {
+				frontmatter.spouse = person.spouseName.map(s => `"[[${s}]]"`);
+				frontmatter.spouse_id = person.spouseCrId;
+			}
+			logger.debug('spouse', `Added (dual): wikilinks=${JSON.stringify(person.spouseName)}, ids=${JSON.stringify(person.spouseCrId)}`);
 		} else {
-			frontmatter.spouse = person.spouseCrId;
+			// ID only (fallback for legacy data or missing names)
+			if (person.spouseCrId.length === 1) {
+				frontmatter.spouse_id = person.spouseCrId[0];
+			} else {
+				frontmatter.spouse_id = person.spouseCrId;
+			}
+			logger.debug('spouse', `Added (id only): ${JSON.stringify(person.spouseCrId)}`);
 		}
-		logger.debug('spouse', `Added: ${JSON.stringify(person.spouseCrId)}`);
 	} else if (person.spouse && person.spouse.length > 0) {
-		// Legacy: name-based relationship
+		// Legacy: name-based relationship only
 		if (person.spouse.length === 1) {
 			frontmatter.spouse = `"[[${person.spouse[0]}]]"`;
 		} else {

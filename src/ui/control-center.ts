@@ -710,15 +710,18 @@ export class ControlCenterModal extends Modal {
 			}
 		}
 
-		// Build person data
+		// Build person data with dual storage (names + cr_ids)
 		const personData: PersonData = {
 			name: name.trim(),
 			crId: autoGenUuid ? undefined : manualUuid || undefined,
 			birthDate: birthDate || undefined,
 			deathDate: deathDate || undefined,
 			fatherCrId: fatherCrId || undefined,
+			fatherName: this.fatherField.name || undefined,
 			motherCrId: motherCrId || undefined,
-			spouseCrId: spouseCrId ? [spouseCrId] : undefined
+			motherName: this.motherField.name || undefined,
+			spouseCrId: spouseCrId ? [spouseCrId] : undefined,
+			spouseName: this.spouseField.name ? [this.spouseField.name] : undefined
 		};
 
 		// Debug logging
