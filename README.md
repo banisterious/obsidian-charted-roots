@@ -102,6 +102,7 @@ The plugin will offer flexibility when importing family data:
 
 - **[Contributing Guide](CONTRIBUTING.md)** - How to contribute to Canvas Roots, including development setup, coding standards, and pull request process
 - **[Development Guide](docs/development.md)** - Complete development workflow, build commands, and testing procedures
+- **[Coding Standards](docs/developer/coding-standards.md)** - TypeScript and CSS coding standards, naming conventions, and linting requirements
 - **[CSS System](docs/css-system.md)** - CSS component architecture, build pipeline, and styling conventions
 - **[ESLint Setup](docs/eslint-setup.md)** - ESLint configuration details and compatibility notes
 

@@ -11,8 +11,18 @@ npm install
 
 - `npm run dev` - Start development mode with watch (builds to local main.js)
 - `npm run build` - Production build with type checking
-- `npm run lint` - Check code for linting errors
-- `npm run lint:fix` - Auto-fix linting errors
+- `npm run lint` - Check TypeScript code for linting errors
+- `npm run lint:fix` - Auto-fix TypeScript linting errors
+- `npm run lint:css` - Check CSS for linting errors
+- `npm run lint:css:fix` - Auto-fix CSS linting errors
+- `npm run format:css` - Format CSS with Prettier
+
+**Before committing code**, always run linting to ensure compliance with coding standards:
+```bash
+npm run lint && npm run lint:css
+```
+
+See [Coding Standards](docs/developer/coding-standards.md) for detailed style guidelines.
 
 ## Deployment to Obsidian Vault
 

@@ -34,6 +34,17 @@ export class ControlCenterModal extends Modal {
 	private motherField: RelationshipField = { name: '' };
 	private spouseField: RelationshipField = { name: '' };
 
+	// Relationship field UI elements (for Data Entry tab)
+	private fatherInput?: HTMLInputElement;
+	private fatherBtn?: HTMLButtonElement;
+	private fatherHelp?: HTMLElement;
+	private motherInput?: HTMLInputElement;
+	private motherBtn?: HTMLButtonElement;
+	private motherHelp?: HTMLElement;
+	private spouseInput?: HTMLInputElement;
+	private spouseBtn?: HTMLButtonElement;
+	private spouseHelp?: HTMLElement;
+
 	constructor(app: App, plugin: CanvasRootsPlugin) {
 		super(app);
 		this.plugin = plugin;
@@ -453,9 +464,20 @@ export class ControlCenterModal extends Modal {
 		});
 
 		// Relationship fields with person picker
-		this.createRelationshipField(content, 'Father', 'Click "Link" to select father', this.fatherField);
-		this.createRelationshipField(content, 'Mother', 'Click "Link" to select mother', this.motherField);
-		this.createRelationshipField(content, 'Spouse', 'Click "Link" to select spouse', this.spouseField);
+		const fatherResult = this.createRelationshipField(content, 'Father', 'Click "Link" to select father', this.fatherField);
+		this.fatherInput = fatherResult.input;
+		this.fatherBtn = fatherResult.linkBtn;
+		this.fatherHelp = fatherResult.helpEl;
+
+		const motherResult = this.createRelationshipField(content, 'Mother', 'Click "Link" to select mother', this.motherField);
+		this.motherInput = motherResult.input;
+		this.motherBtn = motherResult.linkBtn;
+		this.motherHelp = motherResult.helpEl;
+
+		const spouseResult = this.createRelationshipField(content, 'Spouse', 'Click "Link" to select spouse', this.spouseField);
+		this.spouseInput = spouseResult.input;
+		this.spouseBtn = spouseResult.linkBtn;
+		this.spouseHelp = spouseResult.helpEl;
 
 		// Action buttons
 		const actions = card.createDiv({ cls: 'crc-card__actions' });
@@ -553,6 +575,9 @@ export class ControlCenterModal extends Modal {
 			motherCrId: motherCrId || undefined,
 			spouseCrId: spouseCrId ? [spouseCrId] : undefined
 		};
+
+		// Debug logging
+		logger.info('create-person', `Creating person note - name: ${personData.name}, crId: ${personData.crId}, birthDate: ${personData.birthDate}, deathDate: ${personData.deathDate}, fatherCrId: ${personData.fatherCrId}, motherCrId: ${personData.motherCrId}, spouseCrId: ${JSON.stringify(personData.spouseCrId)}`);
 
 		try {
 			// Create the note
@@ -1240,7 +1265,7 @@ export class ControlCenterModal extends Modal {
 		label: string,
 		placeholder: string,
 		fieldData: RelationshipField
-	): { input: HTMLInputElement; linkBtn: HTMLButtonElement } {
+	): { input: HTMLInputElement; linkBtn: HTMLButtonElement; helpEl: HTMLElement } {
 		const group = container.createDiv({ cls: 'crc-form-group' });
 		group.createDiv({ cls: 'crc-form-label', text: label });
 
@@ -1286,7 +1311,7 @@ export class ControlCenterModal extends Modal {
 			picker.open();
 		});
 
-		return { input, linkBtn };
+		return { input, linkBtn, helpEl: helpText };
 	}
 
 	/**
@@ -1331,11 +1356,55 @@ export class ControlCenterModal extends Modal {
 	}
 
 	/**
-	 * Clear all relationship fields
+	 * Clear all relationship fields (data and UI)
 	 */
 	private clearRelationshipFields(): void {
+		// Clear data
 		this.fatherField = { name: '' };
 		this.motherField = { name: '' };
 		this.spouseField = { name: '' };
+
+		// Clear UI elements if they exist
+		if (this.fatherInput) {
+			this.fatherInput.value = '';
+			this.fatherInput.removeClass('crc-input--linked');
+		}
+		if (this.fatherBtn) {
+			this.fatherBtn.textContent = '';
+			const linkIcon = createLucideIcon('link', 16);
+			this.fatherBtn.appendChild(linkIcon);
+			this.fatherBtn.appendText('Link');
+		}
+		if (this.fatherHelp) {
+			this.updateHelpText(this.fatherHelp, this.fatherField);
+		}
+
+		if (this.motherInput) {
+			this.motherInput.value = '';
+			this.motherInput.removeClass('crc-input--linked');
+		}
+		if (this.motherBtn) {
+			this.motherBtn.textContent = '';
+			const linkIcon = createLucideIcon('link', 16);
+			this.motherBtn.appendChild(linkIcon);
+			this.motherBtn.appendText('Link');
+		}
+		if (this.motherHelp) {
+			this.updateHelpText(this.motherHelp, this.motherField);
+		}
+
+		if (this.spouseInput) {
+			this.spouseInput.value = '';
+			this.spouseInput.removeClass('crc-input--linked');
+		}
+		if (this.spouseBtn) {
+			this.spouseBtn.textContent = '';
+			const linkIcon = createLucideIcon('link', 16);
+			this.spouseBtn.appendChild(linkIcon);
+			this.spouseBtn.appendText('Link');
+		}
+		if (this.spouseHelp) {
+			this.updateHelpText(this.spouseHelp, this.spouseField);
+		}
 	}
 }

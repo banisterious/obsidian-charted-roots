@@ -1780,6 +1780,191 @@ this.addCommand({
    └─────────────────────────────────────┘
    ```
 
+##### Properties Tab (Phase 2)
+
+**Purpose:** Configure custom property names for person note YAML frontmatter
+
+**Rationale:**
+- **Migration:** Adapt to existing vaults with different property naming conventions
+- **Localization:** Support non-English genealogy workflows
+- **Flexibility:** Allow users to choose their own naming preferences
+- **Compatibility:** Enable custom namespacing or integration with other systems
+
+**Default Property Names (GEDCOM-Compatible):**
+
+The plugin ships with GEDCOM-compatible property names:
+
+```yaml
+# Standard genealogy properties (no prefix)
+name: "John Robert Smith"
+father: "cr-id-123"      # or "[[Father Name]]" for legacy
+mother: "cr-id-456"      # or "[[Mother Name]]" for legacy
+spouse: "cr-id-789"      # or ["cr-id-789", "cr-id-012"] for multiple
+children: ["cr-id-345", "cr-id-678"]
+born: "1888-05-15"
+died: "1952-08-20"
+
+# Canvas Roots-specific properties (cr_ prefix)
+cr_id: "abc-123-def-456"
+cr_living: true
+cr_root: true
+cr_ref_num: "12.3"
+```
+
+**Content Sections:**
+
+1. **Standard Properties:**
+   ```
+   ┌─────────────────────────────────────┐
+   │ Standard Genealogy Properties       │
+   ├─────────────────────────────────────┤
+   │ Name:     [name              ]      │
+   │ Father:   [father            ]      │
+   │ Mother:   [mother            ]      │
+   │ Spouse:   [spouse            ]      │
+   │ Children: [children          ]      │
+   │ Born:     [born              ]      │
+   │ Died:     [died              ]      │
+   │                                     │
+   │ [Reset to GEDCOM Defaults]          │
+   └─────────────────────────────────────┘
+   ```
+
+2. **Canvas Roots Properties:**
+   ```
+   ┌─────────────────────────────────────┐
+   │ Canvas Roots-Specific Properties    │
+   ├─────────────────────────────────────┤
+   │ Unique ID:       [cr_id       ]     │
+   │ Living Status:   [cr_living   ]     │
+   │ Root Marker:     [cr_root     ]     │
+   │ Reference Num:   [cr_ref_num  ]     │
+   │                                     │
+   │ [Reset to Plugin Defaults]          │
+   └─────────────────────────────────────┘
+   ```
+
+3. **Migration Tools:**
+   ```
+   ┌─────────────────────────────────────┐
+   │ Migrate Existing Notes              │
+   ├─────────────────────────────────────┤
+   │ From: [father_cr_id  ] To: [father] │
+   │                                     │
+   │ ☑ Backup notes before migration     │
+   │ ☑ Dry run (preview changes)         │
+   │                                     │
+   │ Scope:                              │
+   │   ● Entire vault                    │
+   │   ○ Current folder and subfolders   │
+   │   ○ Selected notes only             │
+   │                                     │
+   │ [Preview Changes]  [Start Migration]│
+   └─────────────────────────────────────┘
+   ```
+
+4. **Validation and Warnings:**
+   ```
+   ┌─────────────────────────────────────┐
+   │ Property Name Validation            │
+   ├─────────────────────────────────────┤
+   │ ⚠ Warning: Changing property names  │
+   │   will not update existing notes.   │
+   │   Use Migration Tools below.        │
+   │                                     │
+   │ ✓ Valid YAML property names         │
+   │ ✗ No duplicates detected            │
+   │ ✓ No conflicts with Dataview        │
+   └─────────────────────────────────────┘
+   ```
+
+**Features:**
+
+- **Live Validation:**
+  - Check for valid YAML property names (no spaces, special chars)
+  - Detect duplicate property names
+  - Warn about conflicts with common Dataview properties
+  - Preview impact on existing notes
+
+- **Migration Support:**
+  - Bulk rename properties across existing notes
+  - Dry-run mode to preview changes
+  - Automatic backup creation before migration
+  - Scope control (vault-wide, folder, selection)
+  - Bidirectional migration (old ↔ new names)
+
+- **Preset Configurations:**
+  - GEDCOM Standard (default)
+  - Gramps Style (`birth_date`, `death_date`)
+  - Legacy Canvas Roots (`cr_father`, `cr_mother`)
+  - Custom user presets
+
+**Implementation Notes:**
+
+```typescript
+export interface PropertyNameConfig {
+  // Standard properties
+  name: string;          // default: "name"
+  father: string;        // default: "father"
+  mother: string;        // default: "mother"
+  spouse: string;        // default: "spouse"
+  children: string;      // default: "children"
+  born: string;          // default: "born"
+  died: string;          // default: "died"
+
+  // Canvas Roots properties
+  crId: string;          // default: "cr_id"
+  crLiving: string;      // default: "cr_living"
+  crRoot: string;        // default: "cr_root"
+  crRefNum: string;      // default: "cr_ref_num"
+}
+
+// Plugin settings
+export interface CanvasRootsSettings {
+  propertyNames: PropertyNameConfig;
+  // ... other settings
+}
+```
+
+**Use Cases:**
+
+1. **Existing Vault Migration:**
+   - User has existing notes with `birth_date` instead of `born`
+   - Configure Properties tab to match existing convention
+   - Or use migration tool to standardize to GEDCOM names
+
+2. **Localization:**
+   - German user prefers `geboren` (born), `gestorben` (died)
+   - Configure property names to match language preference
+   - Maintain GEDCOM compatibility via export mapping
+
+3. **Multi-System Integration:**
+   - User imports from Gramps (uses `birth_date`, `death_date`)
+   - Configure Canvas Roots to read Gramps property names
+   - Export to GEDCOM using standard mapping
+
+4. **Custom Namespacing:**
+   - User has multiple genealogy systems in same vault
+   - Add custom prefix: `canvasroots_father`, `canvasroots_mother`
+   - Avoid conflicts with other property sets
+
+**MVP Implementation:**
+- Property name configuration UI
+- Live validation
+- Reset to defaults buttons
+- Settings persistence
+
+**Phase 2 Enhancements:**
+- Migration tools (dry run, backup, bulk rename)
+- Preset configurations
+- Import/export property mappings
+
+**Phase 3+ Enhancements:**
+- GEDCOM property mapping editor
+- Multi-language property presets
+- Advanced validation (Dataview compatibility checks)
+- Property aliasing (read from multiple names)
+
 ##### GEDCOM Tab
 
 **Purpose:** Import, export, and merge genealogical data
@@ -2084,6 +2269,7 @@ this.registerEvent(
 - Tree Generation tab with all settings
 - Layout preview functionality
 - Filter controls
+- Properties tab (configurable property names)
 
 **Phase 3:**
 - GEDCOM tab (import/export)
@@ -4055,6 +4241,7 @@ succession_plan:
   - Tree Generation tab with all settings
   - Enhanced Collections tab with tree management
   - Filter controls
+  - Properties tab for configurable property names
 
 ### Phase 3
 - **Enhanced Canvas View** (§3.5.2)
