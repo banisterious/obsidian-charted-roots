@@ -162,6 +162,13 @@ canvas-roots/
 | Open Tree View | 🔴 Needed | Opens D3 preview for collection/tree |
 | Create Person Note | 🔴 Needed | Quick person note creation |
 
+### Context Menus
+
+| Menu Item | Status | Trigger | Purpose |
+|-----------|--------|---------|---------|
+| **To Be Implemented** | | | |
+| "Generate Family Tree" | 🔴 Needed | Right-click on person note | Opens Control Center with person pre-selected as tree root |
+
 ### Planned Features (See specification.md)
 
 **MVP (Phase 1):**
@@ -241,6 +248,61 @@ For instant plugin reloading without restarting Obsidian:
 2. It will automatically detect changes to `main.js` in your vault's plugin directory
 3. Use `npm run dev:deploy` to build and deploy on file changes
 4. Hot Reload will automatically reload the plugin
+
+## Context Menu Implementation
+
+### File Menu Integration
+
+To add a context menu item that appears when right-clicking on person notes:
+
+**Implementation in main.ts:**
+
+```typescript
+this.registerEvent(
+  this.app.workspace.on('file-menu', (menu, file) => {
+    // Only show for person notes (files with cr_id in frontmatter)
+    if (file instanceof TFile && file.extension === 'md') {
+      // Check if file has cr_id property
+      const cache = this.app.metadataCache.getFileCache(file);
+      if (cache?.frontmatter?.cr_id) {
+        menu.addItem((item) => {
+          item
+            .setTitle('Generate Family Tree')
+            .setIcon('git-fork')
+            .onClick(async () => {
+              // Open Control Center with this person pre-selected
+              const modal = new ControlCenterModal(this.app, this);
+              modal.openWithPerson(file);
+            });
+        });
+      }
+    }
+  })
+);
+```
+
+**Required ControlCenterModal changes:**
+
+Add `openWithPerson()` method to pre-select person and navigate to Tree Generation tab:
+
+```typescript
+public openWithPerson(file: TFile): void {
+  this.open();
+
+  // Switch to Tree Generation tab
+  this.switchToTab('tree-generation');
+
+  // Pre-populate the root person field
+  const cache = this.app.metadataCache.getFileCache(file);
+  if (cache?.frontmatter) {
+    const crId = cache.frontmatter.cr_id;
+    const name = cache.frontmatter.name || file.basename;
+
+    // Set the person picker value
+    this.setRootPerson({ crId, name, file });
+  }
+}
+```
 
 ## Canvas Generation Implementation
 

@@ -428,6 +428,13 @@ Reference numbering systems are planned for **Phase 2** (enhancement features), 
 
 **Trigger Context:** User views a person note (the "root person")
 
+**Activation Methods:**
+1. **Command Palette:** Run command while viewing person note
+2. **File Context Menu:** Right-click on person note → "Generate Family Tree"
+   - Opens Control Center modal
+   - Pre-selects person as root in Tree Generation tab
+   - User can adjust settings before generating
+
 **Actions:**
 1. Recursively fetch all connected person notes (ancestors and descendants)
 2. Extract relationship data from note properties
