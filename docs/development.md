@@ -166,8 +166,7 @@ canvas-roots/
 
 | Menu Item | Status | Trigger | Purpose |
 |-----------|--------|---------|---------|
-| **To Be Implemented** | | | |
-| "Generate Family Tree" | 🔴 Needed | Right-click on person note | Opens Control Center with person pre-selected as tree root |
+| "Generate Family Tree" | ✅ Complete | Right-click on person note | Opens Control Center with person pre-selected as tree root |
 
 ### Planned Features (See specification.md)
 
