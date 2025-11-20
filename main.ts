@@ -45,6 +45,15 @@ export default class CanvasRootsPlugin extends Plugin {
 			}
 		});
 
+		// Add command: Create Person Note
+		this.addCommand({
+			id: 'create-person-note',
+			name: 'Create Person Note',
+			callback: () => {
+				this.createPersonNote();
+			}
+		});
+
 		// Add context menu item for person notes
 		this.registerEvent(
 			this.app.workspace.on('file-menu', (menu, file) => {
@@ -88,14 +97,16 @@ export default class CanvasRootsPlugin extends Plugin {
 			return;
 		}
 
-		new Notice(`Generating tree for: ${activeFile.basename}`);
+		// Check if the active file is a person note (has cr_id)
+		const cache = this.app.metadataCache.getFileCache(activeFile);
+		if (!cache?.frontmatter?.cr_id) {
+			new Notice('Current note is not a person note (missing cr_id field)');
+			return;
+		}
 
-		// TODO: Implement tree generation logic
-		// 1. Extract person data from current note
-		// 2. Traverse relationships to build family graph
-		// 3. Calculate D3 layout
-		// 4. Generate Canvas nodes and edges
-		// 5. Write to Canvas file
+		// Open Control Center with this person pre-selected
+		const modal = new ControlCenterModal(this.app, this);
+		await modal.openWithPerson(activeFile);
 	}
 
 	private async relayoutCurrentCanvas() {
@@ -114,5 +125,11 @@ export default class CanvasRootsPlugin extends Plugin {
 		// 3. Recalculate D3 layout
 		// 4. Update node positions in Canvas JSON
 		// 5. Write back to Canvas file
+	}
+
+	private createPersonNote() {
+		// Open Control Center to the Data Entry tab
+		const modal = new ControlCenterModal(this.app, this);
+		modal.openToTab('data-entry');
 	}
 }
