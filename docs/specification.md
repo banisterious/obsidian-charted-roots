@@ -1983,9 +1983,8 @@ export interface CanvasRootsSettings {
    ┌─────────────────────────────────────┐
    │ Import GEDCOM File                  │
    ├─────────────────────────────────────┤
-   │ Mode:                               │
-   │   ○ Canvas-only (quick preview)     │
-   │   ● Vault-sync (full integration)   │
+   │ Creates person notes for all        │
+   │ individuals in the GEDCOM file      │
    │                                     │
    │ UUID Handling:                      │
    │   ☑ Preserve _UUID tags             │

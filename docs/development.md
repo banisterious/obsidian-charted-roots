@@ -375,6 +375,25 @@ Example:
 **Solution:** Update regex patterns to target correct _id fields with dual storage
 **Fixed in:** gedcom-importer.ts lines 208-246 (2025-11-20)
 
+## Design Decisions
+
+### Canvas-Only Mode Removal (2025-11-20)
+
+**Decision:** Removed the canvas-only import mode entirely. GEDCOM imports now always create person notes in the vault.
+
+**Rationale:**
+- Canvas-only mode provided limited value - users couldn't leverage Obsidian features (backlinks, graph view, manual editing)
+- Data was locked in Canvas JSON format, not user-friendly for editing or external tools
+- Two code paths created maintenance burden and complexity
+- Users who started with canvas-only would need migration tooling later
+- Person notes enable richer workflows: adding photos, stories, documents, linking to daily notes
+
+**Impact:**
+- Simplified codebase (removed 67 lines)
+- Clearer value proposition: plugin manages family relationships using person notes
+- Better user experience with full Obsidian integration from the start
+- Removed confusing setting from UI
+
 ## Dual Storage System
 
 The plugin implements a **dual storage pattern** for relationships to balance Obsidian features with reliable resolution:
