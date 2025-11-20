@@ -95,8 +95,8 @@ export class BidirectionalLinker {
 	}
 
 	/**
-	 * Sync parent-child relationship
-	 * Ensures parent has this person in their children array
+	 * Sync parent-child relationship (dual storage)
+	 * Ensures parent has this person in their children array + children_id array
 	 */
 	private async syncParentChild(
 		parentLink: string,
@@ -113,7 +113,7 @@ export class BidirectionalLinker {
 			return;
 		}
 
-		// Read parent's frontmatter
+		// Read parent's and child's frontmatter
 		const parentCache = this.app.metadataCache.getFileCache(parentFile);
 		if (!parentCache?.frontmatter) {
 			logger.warn('bidirectional-linking', 'Parent has no frontmatter', {
@@ -122,38 +122,58 @@ export class BidirectionalLinker {
 			return;
 		}
 
-		// Check if child is already in parent's children array
-		const children = parentCache.frontmatter.children || [];
-		const childrenArray = Array.isArray(children) ? children : [children];
+		const childCache = this.app.metadataCache.getFileCache(childFile);
+		const childCrId = childCache?.frontmatter?.cr_id;
 
-		// Extract link text from wikilinks
-		const childLinkText = `[[${childName}]]`;
-		const hasChild = childrenArray.some(child => {
-			const linkText = typeof child === 'string' ? child : String(child);
-			return linkText.includes(childName) || linkText.includes(childFile.basename);
-		});
-
-		if (hasChild) {
-			logger.debug('bidirectional-linking', 'Child already in parent children', {
-				parentFile: parentFile.path,
+		if (!childCrId) {
+			logger.warn('bidirectional-linking', 'Child has no cr_id', {
 				childFile: childFile.path
 			});
 			return;
 		}
 
-		// Add child to parent's children array
-		await this.addToArrayField(parentFile, 'children', childLinkText);
+		// Check if child is already in parent's children arrays (check both fields)
+		const childrenLinks = parentCache.frontmatter.children || [];
+		const childrenIds = parentCache.frontmatter.children_id || [];
+		const childrenLinksArray = Array.isArray(childrenLinks) ? childrenLinks : [childrenLinks];
+		const childrenIdsArray = Array.isArray(childrenIds) ? childrenIds : [childrenIds];
 
-		logger.info('bidirectional-linking', 'Added child to parent', {
+		// Check by cr_id first (more reliable)
+		const hasChildById = childrenIdsArray.includes(childCrId);
+
+		// Also check wikilinks for backward compatibility
+		const childLinkText = `[[${childName}]]`;
+		const hasChildByLink = childrenLinksArray.some(child => {
+			const linkText = typeof child === 'string' ? child : String(child);
+			return linkText.includes(childName) || linkText.includes(childFile.basename);
+		});
+
+		if (hasChildById || hasChildByLink) {
+			logger.debug('bidirectional-linking', 'Child already in parent children', {
+				parentFile: parentFile.path,
+				childFile: childFile.path,
+				hasById: hasChildById,
+				hasByLink: hasChildByLink
+			});
+			return;
+		}
+
+		// Add child to parent's children arrays (dual storage)
+		await this.addToArrayField(parentFile, 'children', childLinkText);
+		await this.addToArrayField(parentFile, 'children_id', childCrId);
+
+		logger.info('bidirectional-linking', 'Added child to parent (dual storage)', {
 			parentFile: parentFile.path,
 			childFile: childFile.path,
-			relationshipType
+			relationshipType,
+			wikilink: childLinkText,
+			crId: childCrId
 		});
 	}
 
 	/**
-	 * Sync spouse relationship (bidirectional)
-	 * Ensures both spouses list each other
+	 * Sync spouse relationship (bidirectional, dual storage)
+	 * Ensures both spouses list each other in both spouse and spouse_id fields
 	 */
 	private async syncSpouse(
 		spouseLink: string,
@@ -169,7 +189,7 @@ export class BidirectionalLinker {
 			return;
 		}
 
-		// Read spouse's frontmatter
+		// Read spouse's and person's frontmatter
 		const spouseCache = this.app.metadataCache.getFileCache(spouseFile);
 		if (!spouseCache?.frontmatter) {
 			logger.warn('bidirectional-linking', 'Spouse has no frontmatter', {
@@ -178,44 +198,72 @@ export class BidirectionalLinker {
 			return;
 		}
 
-		// Check if person is already in spouse's spouse field
-		const spouseSpouses = spouseCache.frontmatter.spouse;
-		const spouseArray = spouseSpouses
-			? Array.isArray(spouseSpouses)
-				? spouseSpouses
-				: [spouseSpouses]
-			: [];
+		const personCache = this.app.metadataCache.getFileCache(personFile);
+		const personCrId = personCache?.frontmatter?.cr_id;
 
-		const personLinkText = `[[${personName}]]`;
-		const hasSpouse = spouseArray.some(spouse => {
-			const linkText = typeof spouse === 'string' ? spouse : String(spouse);
-			return linkText.includes(personName) || linkText.includes(personFile.basename);
-		});
-
-		if (hasSpouse) {
-			logger.debug('bidirectional-linking', 'Spouse already linked', {
-				spouseFile: spouseFile.path,
+		if (!personCrId) {
+			logger.warn('bidirectional-linking', 'Person has no cr_id', {
 				personFile: personFile.path
 			});
 			return;
 		}
 
-		// Add person to spouse's spouse field
-		// If spouse field is empty, set it as a single value
-		// If spouse field has one value, convert to array
-		// If spouse field is already an array, add to it
-		if (spouseArray.length === 0) {
-			await this.setField(spouseFile, 'spouse', personLinkText);
-		} else if (spouseArray.length === 1) {
-			// Convert to array
-			await this.setField(spouseFile, 'spouse', [spouseArray[0], personLinkText]);
-		} else {
-			await this.addToArrayField(spouseFile, 'spouse', personLinkText);
+		// Check if person is already in spouse's spouse fields (check both)
+		const spouseLinks = spouseCache.frontmatter.spouse;
+		const spouseIds = spouseCache.frontmatter.spouse_id;
+		const spouseLinksArray = spouseLinks
+			? Array.isArray(spouseLinks) ? spouseLinks : [spouseLinks]
+			: [];
+		const spouseIdsArray = spouseIds
+			? Array.isArray(spouseIds) ? spouseIds : [spouseIds]
+			: [];
+
+		// Check by cr_id first (more reliable)
+		const hasSpouseById = spouseIdsArray.includes(personCrId);
+
+		// Also check wikilinks for backward compatibility
+		const personLinkText = `[[${personName}]]`;
+		const hasSpouseByLink = spouseLinksArray.some(spouse => {
+			const linkText = typeof spouse === 'string' ? spouse : String(spouse);
+			return linkText.includes(personName) || linkText.includes(personFile.basename);
+		});
+
+		if (hasSpouseById || hasSpouseByLink) {
+			logger.debug('bidirectional-linking', 'Spouse already linked', {
+				spouseFile: spouseFile.path,
+				personFile: personFile.path,
+				hasById: hasSpouseById,
+				hasByLink: hasSpouseByLink
+			});
+			return;
 		}
 
-		logger.info('bidirectional-linking', 'Added spouse bidirectional link', {
+		// Add person to spouse's spouse fields (dual storage)
+		// Handle both wikilink and _id fields in parallel
+		if (spouseLinksArray.length === 0) {
+			// First spouse - set as single value
+			await this.setField(spouseFile, 'spouse', personLinkText);
+			await this.setField(spouseFile, 'spouse_id', personCrId);
+		} else if (spouseLinksArray.length === 1) {
+			// Second spouse - convert to array
+			await this.setField(spouseFile, 'spouse', [spouseLinksArray[0], personLinkText]);
+			// Handle spouse_id similarly
+			if (spouseIdsArray.length === 1) {
+				await this.setField(spouseFile, 'spouse_id', [spouseIdsArray[0], personCrId]);
+			} else {
+				await this.setField(spouseFile, 'spouse_id', personCrId);
+			}
+		} else {
+			// Multiple spouses - add to array
+			await this.addToArrayField(spouseFile, 'spouse', personLinkText);
+			await this.addToArrayField(spouseFile, 'spouse_id', personCrId);
+		}
+
+		logger.info('bidirectional-linking', 'Added spouse bidirectional link (dual storage)', {
 			spouseFile: spouseFile.path,
-			personFile: personFile.path
+			personFile: personFile.path,
+			wikilink: personLinkText,
+			crId: personCrId
 		});
 	}
 

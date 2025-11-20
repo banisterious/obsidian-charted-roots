@@ -116,16 +116,16 @@ canvas-roots/
 
 | Component | Status | Purpose |
 |-----------|--------|---------|
+| `bidirectional-linker.ts` | ✅ Complete | Automatic relationship synchronization with dual storage |
 | `canvas-generator.ts` | ✅ Complete | Writes family trees to `.canvas` files with metadata |
-| `family-graph.ts` | 🟡 Partial | Builds relationship graphs from person notes |
-| `logging.ts` | ✅ Complete | Structured logging with export capability |
+| `family-graph.ts` | ✅ Complete | Builds relationship graphs from person notes with dual storage support |
+| `logging.ts` | ✅ Complete | Structured logging with export capability and persistent log level settings |
 | `person-note-writer.ts` | ✅ Complete | Creates person notes with YAML frontmatter |
 | `uuid.ts` | ✅ Complete | UUID v4 generation for `cr_id` fields |
 | `vault-stats.ts` | ✅ Complete | Calculates vault-wide statistics |
 | **To Be Implemented** | | |
 | `collection-manager.ts` | 🔴 Needed | Auto-discovers collections, manages trees |
 | `layout-engine.ts` | 🔴 Needed | D3 layout calculations (currently in canvas-generator) |
-| `bidirectional-linker.ts` | 🔴 Needed | Automatic relationship synchronization |
 
 ### UI Components (src/ui/)
 
@@ -370,7 +370,72 @@ Example:
 **Solution:** Add 100ms delay before opening canvas file
 **Fixed in:** control-center.ts lines 1052-1055
 
+#### Issue: GEDCOM import only shows root person in tree
+**Cause:** GEDCOM importer's second pass replaced IDs in wrong fields (father/mother/spouse instead of father_id/mother_id/spouse_id)
+**Solution:** Update regex patterns to target correct _id fields with dual storage
+**Fixed in:** gedcom-importer.ts lines 208-246 (2025-11-20)
+
+## Dual Storage System
+
+The plugin implements a **dual storage pattern** for relationships to balance Obsidian features with reliable resolution:
+
+### Frontmatter Structure
+
+```yaml
+---
+cr_id: abc-123-def-456
+name: John Smith
+father: "[[Dad Smith]]"      # Wikilink (enables Obsidian features)
+father_id: xyz-789-uvw-012   # cr_id (enables reliable resolution)
+mother: "[[Mom Smith]]"
+mother_id: pqr-345-stu-678
+spouse:
+  - "[[Jane Doe]]"
+spouse_id:
+  - mno-901-jkl-234
+children:
+  - "[[Child 1]]"
+  - "[[Child 2]]"
+children_id:
+  - def-456-ghi-789
+  - abc-123-xyz-456
+---
+```
+
+### Benefits
+
+1. **Wikilinks** (father/mother/spouse/children): Enable Obsidian's link graph, backlinks, and hover previews
+2. **ID fields** (_id suffix): Provide reliable resolution that survives file renames
+
+### Implementation
+
+- **bidirectional-linker.ts**: Creates/updates both wikilink and _id fields when syncing relationships
+- **family-graph.ts**: Reads from _id fields first, falls back to wikilink resolution for legacy support
+- **gedcom-importer.ts**: Two-pass import: creates wikilinks in first pass, replaces with cr_ids in _id fields in second pass
+
 ## Debugging
+
+### Logging System
+
+The plugin includes a structured logging system with persistent configuration:
+
+**Log Levels:**
+- `debug`: Most verbose, shows all operations
+- `info`: Important events and state changes
+- `warn`: Warnings and non-critical issues
+- `error`: Errors and failures
+- `off`: Disable logging
+
+**Configuration:**
+1. Open Settings → Canvas Roots
+2. Navigate to "Logging" section
+3. Select desired log level from dropdown
+4. Changes apply immediately and persist across Obsidian restarts
+
+**Default Setting:** Debug mode is enabled by default for development visibility.
+
+**Exporting Logs:**
+The logging system captures structured log entries that can be exported via the Control Center's Status tab for debugging complex issues.
 
 ### Console Logs
 Open the Developer Console in Obsidian:
@@ -379,7 +444,8 @@ Open the Developer Console in Obsidian:
 
 Look for:
 - "Loading Canvas Roots plugin" when the plugin loads
-- Any error messages or console logs
+- Structured log entries with component names and operation contexts
+- Any error messages or stack traces
 
 ### TypeScript Errors
 The build command includes type checking:

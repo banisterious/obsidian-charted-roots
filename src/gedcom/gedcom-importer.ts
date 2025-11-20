@@ -205,41 +205,41 @@ export class GedcomImporter {
 		// Update frontmatter with real cr_ids
 		let updatedContent = content;
 
-		// Replace father reference
+		// Replace father_id reference
 		if (individual.fatherRef) {
 			const fatherCrId = gedcomToCrId.get(individual.fatherRef);
 			if (fatherCrId) {
 				updatedContent = updatedContent.replace(
-					new RegExp(`father: ${individual.fatherRef}`, 'g'),
-					`father: ${fatherCrId}`
+					new RegExp(`father_id: ${individual.fatherRef}`, 'g'),
+					`father_id: ${fatherCrId}`
 				);
 			}
 		}
 
-		// Replace mother reference
+		// Replace mother_id reference
 		if (individual.motherRef) {
 			const motherCrId = gedcomToCrId.get(individual.motherRef);
 			if (motherCrId) {
 				updatedContent = updatedContent.replace(
-					new RegExp(`mother: ${individual.motherRef}`, 'g'),
-					`mother: ${motherCrId}`
+					new RegExp(`mother_id: ${individual.motherRef}`, 'g'),
+					`mother_id: ${motherCrId}`
 				);
 			}
 		}
 
-		// Replace spouse references
+		// Replace spouse_id references
 		if (individual.spouseRefs.length > 0) {
 			const spouseCrIds = individual.spouseRefs
 				.map(ref => gedcomToCrId.get(ref))
 				.filter(id => id !== undefined);
 
 			if (spouseCrIds.length > 0) {
-				// Find the spouse line in frontmatter and replace it
-				// Match spouse field and all its array items, stopping before the next field or closing ---
-				const spousePattern = /spouse:.*?(?=\n[a-z_]+:|\n---|\n\n|$)/s;
+				// Find the spouse_id line in frontmatter and replace it
+				// Match spouse_id field and all its array items, stopping before the next field or closing ---
+				const spousePattern = /spouse_id:.*?(?=\n[a-z_]+:|\n---|\n\n|$)/s;
 				const spouseReplacement = spouseCrIds.length === 1
-					? `spouse: ${spouseCrIds[0]}`
-					: `spouse:\n${spouseCrIds.map(id => `  - ${id}`).join('\n')}`;
+					? `spouse_id: ${spouseCrIds[0]}`
+					: `spouse_id:\n${spouseCrIds.map(id => `  - ${id}`).join('\n')}`;
 
 				updatedContent = updatedContent.replace(spousePattern, spouseReplacement);
 			}

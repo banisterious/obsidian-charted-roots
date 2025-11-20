@@ -301,35 +301,54 @@ export class FamilyGraphService {
 		// Extract name (from frontmatter or filename)
 		const name = fm.name || file.basename;
 
-		// Parse spouse array (could be single value or array)
+		// Parse father relationship (prefer _id field, fallback to father field for legacy)
+		const fatherCrId = fm.father_id || this.extractCrIdFromWikilink(fm.father);
+
+		// Parse mother relationship (prefer _id field, fallback to mother field for legacy)
+		const motherCrId = fm.mother_id || this.extractCrIdFromWikilink(fm.mother);
+
+		// Parse spouse array (prefer _id field, fallback to spouse field for legacy)
 		let spouseCrIds: string[] = [];
-		if (fm.spouse) {
-			if (Array.isArray(fm.spouse)) {
-				spouseCrIds = fm.spouse;
-			} else {
-				spouseCrIds = [fm.spouse];
-			}
+		const spouseIdField = fm.spouse_id;
+		const spouseField = fm.spouse;
+
+		if (spouseIdField) {
+			// Use _id field (dual storage)
+			spouseCrIds = Array.isArray(spouseIdField) ? spouseIdField : [spouseIdField];
+		} else if (spouseField) {
+			// Fallback to legacy field (could be wikilinks or cr_ids)
+			const spouseValues = Array.isArray(spouseField) ? spouseField : [spouseField];
+			spouseCrIds = spouseValues
+				.map(v => this.extractCrIdFromWikilink(v) || v)
+				.filter(v => v);
 		}
 
-		// Parse children arrays (son, daughter, children fields)
+		// Parse children arrays (prefer _id field, fallback to son/daughter/children fields for legacy)
 		let childrenCrIds: string[] = [];
 
-		// Check for 'son' field
-		if (fm.son) {
-			const sons = Array.isArray(fm.son) ? fm.son : [fm.son];
-			childrenCrIds.push(...sons);
-		}
+		const childrenIdField = fm.children_id;
+		if (childrenIdField) {
+			// Use _id field (dual storage)
+			childrenCrIds = Array.isArray(childrenIdField) ? childrenIdField : [childrenIdField];
+		} else {
+			// Fallback to legacy fields
+			// Check for 'son' field
+			if (fm.son) {
+				const sons = Array.isArray(fm.son) ? fm.son : [fm.son];
+				childrenCrIds.push(...sons.map(v => this.extractCrIdFromWikilink(v) || v));
+			}
 
-		// Check for 'daughter' field
-		if (fm.daughter) {
-			const daughters = Array.isArray(fm.daughter) ? fm.daughter : [fm.daughter];
-			childrenCrIds.push(...daughters);
-		}
+			// Check for 'daughter' field
+			if (fm.daughter) {
+				const daughters = Array.isArray(fm.daughter) ? fm.daughter : [fm.daughter];
+				childrenCrIds.push(...daughters.map(v => this.extractCrIdFromWikilink(v) || v));
+			}
 
-		// Check for generic 'children' field
-		if (fm.children) {
-			const children = Array.isArray(fm.children) ? fm.children : [fm.children];
-			childrenCrIds.push(...children);
+			// Check for generic 'children' field
+			if (fm.children) {
+				const children = Array.isArray(fm.children) ? fm.children : [fm.children];
+				childrenCrIds.push(...children.map(v => this.extractCrIdFromWikilink(v) || v));
+			}
 		}
 
 		return {
@@ -338,11 +357,32 @@ export class FamilyGraphService {
 			birthDate: fm.born || fm.birth_date,
 			deathDate: fm.died || fm.death_date,
 			file,
-			fatherCrId: fm.father,
-			motherCrId: fm.mother,
+			fatherCrId,
+			motherCrId,
 			spouseCrIds,
 			childrenCrIds // Now populated from frontmatter
 		};
+	}
+
+	/**
+	 * Extracts cr_id from a wikilink string
+	 * Returns null if the value is not a wikilink or already a cr_id
+	 */
+	private extractCrIdFromWikilink(value: any): string | null {
+		if (!value || typeof value !== 'string') {
+			return null;
+		}
+
+		// Check if it's a wikilink format: [[Name]] or "[[Name]]"
+		const wikilinkMatch = value.match(/\[\[([^\]]+)\]\]/);
+		if (!wikilinkMatch) {
+			// Not a wikilink, might be a direct cr_id
+			return value;
+		}
+
+		// It's a wikilink - we can't extract cr_id from it, return null
+		// The _id field should be used instead for reliable resolution
+		return null;
 	}
 
 	/**

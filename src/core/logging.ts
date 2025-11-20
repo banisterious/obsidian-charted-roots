@@ -171,7 +171,7 @@ class ContextualLoggerImpl extends Logger implements ContextualLogger {
  */
 class LoggerFactoryClass {
 	private loggers = new Map<string, ILogger>();
-	private static logLevel: LogLevel = 'warn';
+	private static logLevel: LogLevel = 'debug';
 	private static logs: LogEntry[] = [];
 	private static maxLogs: number = 10000; // Prevent memory overflow
 

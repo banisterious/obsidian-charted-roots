@@ -1,5 +1,6 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import CanvasRootsPlugin from '../main';
+import type { LogLevel } from './core/logging';
 
 export interface CanvasRootsSettings {
 	defaultNodeWidth: number;
@@ -10,6 +11,7 @@ export interface CanvasRootsSettings {
 	autoGenerateCrId: boolean;
 	peopleFolder: string;
 	logExportPath: string;
+	logLevel: LogLevel;
 }
 
 export const DEFAULT_SETTINGS: CanvasRootsSettings = {
@@ -20,7 +22,8 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	gedcomImportMode: 'canvas-only',
 	autoGenerateCrId: true,
 	peopleFolder: '',
-	logExportPath: ''
+	logExportPath: '',
+	logLevel: 'debug'
 };
 
 export class CanvasRootsSettingTab extends PluginSettingTab {
@@ -138,6 +141,29 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.onChange(async (value: 'canvas-only' | 'vault-sync') => {
 					this.plugin.settings.gedcomImportMode = value;
 					await this.plugin.saveSettings();
+				}));
+
+		// Logging
+		new Setting(containerEl)
+			.setName('Logging')
+			.setHeading();
+
+		new Setting(containerEl)
+			.setName('Log level')
+			.setDesc('Set the verbosity of console logging. Debug shows all messages, Info shows important events, Warn shows warnings only, Error shows errors only, Off disables logging.')
+			.addDropdown(dropdown => dropdown
+				.addOption('debug', 'Debug (Most Verbose)')
+				.addOption('info', 'Info')
+				.addOption('warn', 'Warn')
+				.addOption('error', 'Error')
+				.addOption('off', 'Off')
+				.setValue(this.plugin.settings.logLevel)
+				.onChange(async (value: LogLevel) => {
+					this.plugin.settings.logLevel = value;
+					await this.plugin.saveSettings();
+					// Update logger immediately
+					const { LoggerFactory } = await import('./core/logging');
+					LoggerFactory.setLogLevel(value);
 				}));
 	}
 }

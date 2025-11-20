@@ -1,0 +1,1016 @@
+[
+  {
+    "timestamp": "2025-11-20T17:36:57.713Z",
+    "level": "info",
+    "component": "ControlCenter",
+    "category": "tree-generation",
+    "message": "Starting tree generation",
+    "data": {
+      "rootCrId": "yoi-772-ljq-699",
+      "treeType": "full",
+      "maxGenerations": 5
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:36:57.716Z",
+    "level": "info",
+    "component": "FamilyGraph",
+    "category": "generate-tree",
+    "message": "Person cache loaded",
+    "data": {
+      "totalPeople": 11,
+      "cacheIds": [
+        "jwj-508-wmz-786",
+        "fvw-365-bvm-043",
+        "fmn-975-pwc-570",
+        "ljy-110-ljd-036",
+        "jyz-390-jgy-137",
+        "aqa-979-lvy-721",
+        "wvj-547-cus-204",
+        "yoi-772-ljq-699",
+        "whq-064-vvh-303",
+        "lsz-844-tef-069",
+        "hcw-468-esy-011"
+      ]
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:36:57.716Z",
+    "level": "info",
+    "component": "FamilyGraph",
+    "category": "generate-tree",
+    "message": "Root person found",
+    "data": {
+      "name": "James Johnson",
+      "crId": "yoi-772-ljq-699",
+      "hasFather": false,
+      "hasMother": false,
+      "fatherCrId": null,
+      "motherCrId": null
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:36:57.716Z",
+    "level": "info",
+    "component": "FamilyGraph",
+    "category": "build-tree",
+    "message": "Building full tree"
+  },
+  {
+    "timestamp": "2025-11-20T17:36:57.716Z",
+    "level": "info",
+    "component": "FamilyGraph",
+    "category": "build-tree",
+    "message": "Tree construction complete",
+    "data": {
+      "nodeCount": 1,
+      "edgeCount": 0,
+      "nodes": [
+        "James Johnson"
+      ]
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:36:57.717Z",
+    "level": "info",
+    "component": "ControlCenter",
+    "category": "tree-generation",
+    "message": "Family tree generated",
+    "data": {
+      "rootPerson": "James Johnson",
+      "rootCrId": "yoi-772-ljq-699",
+      "totalNodes": 1,
+      "totalEdges": 0,
+      "nodeList": [
+        {
+          "name": "James Johnson",
+          "crId": "yoi-772-ljq-699",
+          "hasFather": false,
+          "hasMother": false,
+          "childrenCount": 0
+        }
+      ],
+      "edgeList": []
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:36:57.718Z",
+    "level": "info",
+    "component": "ControlCenter",
+    "category": "canvas-generation",
+    "message": "Canvas data generated",
+    "data": {
+      "nodeCount": 1,
+      "edgeCount": 0,
+      "canvasNodes": [
+        {
+          "id": "pc2ggs6ewnaihytlcj3xt",
+          "file": "Canvas Roots Testing/James Johnson.md"
+        }
+      ]
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:36:57.718Z",
+    "level": "info",
+    "component": "ControlCenter",
+    "category": "canvas-generation",
+    "message": "Canvas JSON content to write",
+    "data": {
+      "contentLength": 235,
+      "contentPreview": "{\n\t\"nodes\":[\n\t\t{\"id\":\"pc2ggs6ewnaihytlcj3xt\",\"type\":\"file\",\"file\":\"Canvas Roots Testing/James Johnson.md\",\"x\":0,\"y\":0,\"width\":250,\"height\":120,\"color\":\"2\"}\n\t],\n\t\"edges\":[\n\t],\n\t\"metadata\":{\n\t\t\"version\":\"1.0-1.0\",\n\t\t\"frontmatter\":{}\n\t}\n}",
+      "hasNodes": true,
+      "hasEdges": true
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.751Z",
+    "level": "info",
+    "component": "ControlCenter",
+    "category": "gedcom",
+    "message": "Starting GEDCOM import: gedcom-sample.ged, mode: vault-sync"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.769Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: I8, motherCrId: I9, spouseCrId: I2"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.769Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "father",
+    "message": "Added (id only): I8"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.769Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "mother",
+    "message": "Added (id only): I9"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.769Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "spouse",
+    "message": "Added (id only): [\"I2\"]"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.769Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"iik-526-ckr-503\",\"name\":\"John Smith\",\"born\":\"1950-03-15\",\"died\":\"2020-07-22\",\"father_id\":\"I8\",\"mother_id\":\"I9\",\"spouse_id\":\"I2\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.777Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: I10, motherCrId: I11, spouseCrId: I1"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.777Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "father",
+    "message": "Added (id only): I10"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.777Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "mother",
+    "message": "Added (id only): I11"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.777Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "spouse",
+    "message": "Added (id only): [\"I1\"]"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.777Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"rnb-224-uux-378\",\"name\":\"Mary Johnson\",\"born\":\"1952-06-08\",\"father_id\":\"I10\",\"mother_id\":\"I11\",\"spouse_id\":\"I1\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.808Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: I1, motherCrId: I2, spouseCrId: I5"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.808Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "father",
+    "message": "Added (id only): I1"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.808Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "mother",
+    "message": "Added (id only): I2"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.808Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "spouse",
+    "message": "Added (id only): [\"I5\"]"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.808Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"nyw-469-bqu-617\",\"name\":\"Robert Smith\",\"born\":\"1975-04-12\",\"father_id\":\"I1\",\"mother_id\":\"I2\",\"spouse_id\":\"I5\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.826Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: I1, motherCrId: I2, spouseCrId: undefined"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.826Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "father",
+    "message": "Added (id only): I1"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.826Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "mother",
+    "message": "Added (id only): I2"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.826Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"jrm-579-yjt-215\",\"name\":\"Jennifer Smith\",\"born\":\"1978-09-03\",\"father_id\":\"I1\",\"mother_id\":\"I2\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.848Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: undefined, motherCrId: undefined, spouseCrId: I3"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.848Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "spouse",
+    "message": "Added (id only): [\"I3\"]"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.848Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"vza-365-dsh-036\",\"name\":\"Sarah Williams\",\"born\":\"1977-11-22\",\"spouse_id\":\"I3\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.865Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: I3, motherCrId: I5, spouseCrId: undefined"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.865Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "father",
+    "message": "Added (id only): I3"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.865Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "mother",
+    "message": "Added (id only): I5"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.865Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"yki-408-nin-395\",\"name\":\"Emily Smith\",\"born\":\"2005-01-05\",\"father_id\":\"I3\",\"mother_id\":\"I5\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.884Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: I3, motherCrId: I5, spouseCrId: undefined"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.884Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "father",
+    "message": "Added (id only): I3"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.884Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "mother",
+    "message": "Added (id only): I5"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.884Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"lxw-578-oyl-692\",\"name\":\"Michael Smith\",\"born\":\"2008-08-18\",\"father_id\":\"I3\",\"mother_id\":\"I5\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.899Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: undefined, motherCrId: undefined, spouseCrId: I9"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.899Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "spouse",
+    "message": "Added (id only): [\"I9\"]"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.899Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"rrq-502-nyw-117\",\"name\":\"Thomas Smith\",\"born\":\"1920-02-05\",\"died\":\"1995-11-14\",\"spouse_id\":\"I9\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.922Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: undefined, motherCrId: undefined, spouseCrId: I8"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.922Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "spouse",
+    "message": "Added (id only): [\"I8\"]"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.922Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"dpb-184-pjp-187\",\"name\":\"Elizabeth Brown\",\"born\":\"1925-05-12\",\"died\":\"2010-03-08\",\"spouse_id\":\"I8\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.935Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: undefined, motherCrId: undefined, spouseCrId: I11"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.935Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "spouse",
+    "message": "Added (id only): [\"I11\"]"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.935Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"mup-701-flw-334\",\"name\":\"James Johnson\",\"born\":\"1922-09-28\",\"died\":\"1998-01-03\",\"spouse_id\":\"I11\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.956Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: undefined, motherCrId: undefined, spouseCrId: I10"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.956Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "spouse",
+    "message": "Added (id only): [\"I10\"]"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.956Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"zbu-006-pwb-478\",\"name\":\"Margaret Davis\",\"born\":\"1928-12-14\",\"spouse_id\":\"I10\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:45.989Z",
+    "level": "info",
+    "component": "ControlCenter",
+    "category": "gedcom",
+    "message": "Import complete: 11 individuals processed"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:57.291Z",
+    "level": "info",
+    "component": "ControlCenter",
+    "category": "tree-generation",
+    "message": "Starting tree generation",
+    "data": {
+      "rootCrId": "mup-701-flw-334",
+      "treeType": "full",
+      "maxGenerations": 5
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:37:57.292Z",
+    "level": "info",
+    "component": "FamilyGraph",
+    "category": "generate-tree",
+    "message": "Person cache loaded",
+    "data": {
+      "totalPeople": 11,
+      "cacheIds": [
+        "zbu-006-pwb-478",
+        "mup-701-flw-334",
+        "dpb-184-pjp-187",
+        "rrq-502-nyw-117",
+        "lxw-578-oyl-692",
+        "yki-408-nin-395",
+        "vza-365-dsh-036",
+        "jrm-579-yjt-215",
+        "nyw-469-bqu-617",
+        "rnb-224-uux-378",
+        "iik-526-ckr-503"
+      ]
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:37:57.292Z",
+    "level": "info",
+    "component": "FamilyGraph",
+    "category": "generate-tree",
+    "message": "Root person found",
+    "data": {
+      "name": "James Johnson",
+      "crId": "mup-701-flw-334",
+      "hasFather": false,
+      "hasMother": false,
+      "fatherCrId": null,
+      "motherCrId": null
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:37:57.292Z",
+    "level": "info",
+    "component": "FamilyGraph",
+    "category": "build-tree",
+    "message": "Building full tree"
+  },
+  {
+    "timestamp": "2025-11-20T17:37:57.292Z",
+    "level": "info",
+    "component": "FamilyGraph",
+    "category": "build-tree",
+    "message": "Tree construction complete",
+    "data": {
+      "nodeCount": 1,
+      "edgeCount": 0,
+      "nodes": [
+        "James Johnson"
+      ]
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:37:57.292Z",
+    "level": "info",
+    "component": "ControlCenter",
+    "category": "tree-generation",
+    "message": "Family tree generated",
+    "data": {
+      "rootPerson": "James Johnson",
+      "rootCrId": "mup-701-flw-334",
+      "totalNodes": 1,
+      "totalEdges": 0,
+      "nodeList": [
+        {
+          "name": "James Johnson",
+          "crId": "mup-701-flw-334",
+          "hasFather": false,
+          "hasMother": false,
+          "childrenCount": 0
+        }
+      ],
+      "edgeList": []
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:37:57.292Z",
+    "level": "info",
+    "component": "ControlCenter",
+    "category": "canvas-generation",
+    "message": "Canvas data generated",
+    "data": {
+      "nodeCount": 1,
+      "edgeCount": 0,
+      "canvasNodes": [
+        {
+          "id": "cflurx29yad30e9o01th4",
+          "file": "Canvas Roots Testing/James Johnson.md"
+        }
+      ]
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:37:57.292Z",
+    "level": "info",
+    "component": "ControlCenter",
+    "category": "canvas-generation",
+    "message": "Canvas JSON content to write",
+    "data": {
+      "contentLength": 235,
+      "contentPreview": "{\n\t\"nodes\":[\n\t\t{\"id\":\"cflurx29yad30e9o01th4\",\"type\":\"file\",\"file\":\"Canvas Roots Testing/James Johnson.md\",\"x\":0,\"y\":0,\"width\":250,\"height\":120,\"color\":\"2\"}\n\t],\n\t\"edges\":[\n\t],\n\t\"metadata\":{\n\t\t\"version\":\"1.0-1.0\",\n\t\t\"frontmatter\":{}\n\t}\n}",
+      "hasNodes": true,
+      "hasEdges": true
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:38:07.798Z",
+    "level": "info",
+    "component": "ControlCenter",
+    "category": "export",
+    "message": "Exporting logs from Control Center"
+  },
+  {
+    "timestamp": "2025-11-20T17:38:07.809Z",
+    "level": "info",
+    "component": "ControlCenter",
+    "category": "export",
+    "message": "Logs exported successfully",
+    "data": {
+      "filename": "canvas-roots-logs-20251120-093807.json",
+      "path": "\\\\wsl.localhost\\Ubuntu-22.04\\home\\fitz\\projects\\obsidian-plugins\\canvas-roots\\canvas-roots-logs-20251120-093807.json",
+      "logCount": 61
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.428Z",
+    "level": "info",
+    "component": "ControlCenter",
+    "category": "gedcom",
+    "message": "Starting GEDCOM import: gedcom-sample.ged, mode: vault-sync"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.444Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: I8, motherCrId: I9, spouseCrId: I2"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.445Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "father",
+    "message": "Added (id only): I8"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.445Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "mother",
+    "message": "Added (id only): I9"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.445Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "spouse",
+    "message": "Added (id only): [\"I2\"]"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.445Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"ghj-990-ihq-506\",\"name\":\"John Smith\",\"born\":\"1950-03-15\",\"died\":\"2020-07-22\",\"father_id\":\"I8\",\"mother_id\":\"I9\",\"spouse_id\":\"I2\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.452Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: I10, motherCrId: I11, spouseCrId: I1"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.452Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "father",
+    "message": "Added (id only): I10"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.452Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "mother",
+    "message": "Added (id only): I11"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.452Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "spouse",
+    "message": "Added (id only): [\"I1\"]"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.452Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"yvv-515-ddu-613\",\"name\":\"Mary Johnson\",\"born\":\"1952-06-08\",\"father_id\":\"I10\",\"mother_id\":\"I11\",\"spouse_id\":\"I1\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.481Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: I1, motherCrId: I2, spouseCrId: I5"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.481Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "father",
+    "message": "Added (id only): I1"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.482Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "mother",
+    "message": "Added (id only): I2"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.482Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "spouse",
+    "message": "Added (id only): [\"I5\"]"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.482Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"dbc-415-zhn-112\",\"name\":\"Robert Smith\",\"born\":\"1975-04-12\",\"father_id\":\"I1\",\"mother_id\":\"I2\",\"spouse_id\":\"I5\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.489Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: I1, motherCrId: I2, spouseCrId: undefined"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.489Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "father",
+    "message": "Added (id only): I1"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.489Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "mother",
+    "message": "Added (id only): I2"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.489Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"grj-604-phl-378\",\"name\":\"Jennifer Smith\",\"born\":\"1978-09-03\",\"father_id\":\"I1\",\"mother_id\":\"I2\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.503Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: undefined, motherCrId: undefined, spouseCrId: I3"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.503Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "spouse",
+    "message": "Added (id only): [\"I3\"]"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.503Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"kon-226-cbl-644\",\"name\":\"Sarah Williams\",\"born\":\"1977-11-22\",\"spouse_id\":\"I3\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.520Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: I3, motherCrId: I5, spouseCrId: undefined"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.520Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "father",
+    "message": "Added (id only): I3"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.520Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "mother",
+    "message": "Added (id only): I5"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.520Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"drb-889-xtd-568\",\"name\":\"Emily Smith\",\"born\":\"2005-01-05\",\"father_id\":\"I3\",\"mother_id\":\"I5\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.534Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: I3, motherCrId: I5, spouseCrId: undefined"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.534Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "father",
+    "message": "Added (id only): I3"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.534Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "mother",
+    "message": "Added (id only): I5"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.534Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"pmz-438-cxv-848\",\"name\":\"Michael Smith\",\"born\":\"2008-08-18\",\"father_id\":\"I3\",\"mother_id\":\"I5\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.553Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: undefined, motherCrId: undefined, spouseCrId: I9"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.553Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "spouse",
+    "message": "Added (id only): [\"I9\"]"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.553Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"cxs-731-hog-617\",\"name\":\"Thomas Smith\",\"born\":\"1920-02-05\",\"died\":\"1995-11-14\",\"spouse_id\":\"I9\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.571Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: undefined, motherCrId: undefined, spouseCrId: I8"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.571Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "spouse",
+    "message": "Added (id only): [\"I8\"]"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.571Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"qfs-155-adc-895\",\"name\":\"Elizabeth Brown\",\"born\":\"1925-05-12\",\"died\":\"2010-03-08\",\"spouse_id\":\"I8\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.589Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: undefined, motherCrId: undefined, spouseCrId: I11"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.589Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "spouse",
+    "message": "Added (id only): [\"I11\"]"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.589Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"yyu-752-jta-160\",\"name\":\"James Johnson\",\"born\":\"1922-09-28\",\"died\":\"1998-01-03\",\"spouse_id\":\"I11\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.605Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "relationships",
+    "message": "Processing - fatherCrId: undefined, motherCrId: undefined, spouseCrId: I10"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.605Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "spouse",
+    "message": "Added (id only): [\"I10\"]"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.605Z",
+    "level": "debug",
+    "component": "PersonNoteWriter",
+    "category": "frontmatter",
+    "message": "Final: {\"cr_id\":\"dxf-197-lqv-538\",\"name\":\"Margaret Davis\",\"born\":\"1928-12-14\",\"spouse_id\":\"I10\"}"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:36.636Z",
+    "level": "info",
+    "component": "ControlCenter",
+    "category": "gedcom",
+    "message": "Import complete: 11 individuals processed"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:49.258Z",
+    "level": "info",
+    "component": "ControlCenter",
+    "category": "tree-generation",
+    "message": "Starting tree generation",
+    "data": {
+      "rootCrId": "yyu-752-jta-160",
+      "treeType": "full",
+      "maxGenerations": 5
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:39:49.259Z",
+    "level": "info",
+    "component": "FamilyGraph",
+    "category": "generate-tree",
+    "message": "Person cache loaded",
+    "data": {
+      "totalPeople": 11,
+      "cacheIds": [
+        "dxf-197-lqv-538",
+        "yyu-752-jta-160",
+        "qfs-155-adc-895",
+        "cxs-731-hog-617",
+        "pmz-438-cxv-848",
+        "drb-889-xtd-568",
+        "kon-226-cbl-644",
+        "grj-604-phl-378",
+        "dbc-415-zhn-112",
+        "yvv-515-ddu-613",
+        "ghj-990-ihq-506"
+      ]
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:39:49.259Z",
+    "level": "info",
+    "component": "FamilyGraph",
+    "category": "generate-tree",
+    "message": "Root person found",
+    "data": {
+      "name": "James Johnson",
+      "crId": "yyu-752-jta-160",
+      "hasFather": false,
+      "hasMother": false,
+      "fatherCrId": null,
+      "motherCrId": null
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:39:49.259Z",
+    "level": "info",
+    "component": "FamilyGraph",
+    "category": "build-tree",
+    "message": "Building full tree"
+  },
+  {
+    "timestamp": "2025-11-20T17:39:49.259Z",
+    "level": "info",
+    "component": "FamilyGraph",
+    "category": "build-tree",
+    "message": "Tree construction complete",
+    "data": {
+      "nodeCount": 1,
+      "edgeCount": 0,
+      "nodes": [
+        "James Johnson"
+      ]
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:39:49.259Z",
+    "level": "info",
+    "component": "ControlCenter",
+    "category": "tree-generation",
+    "message": "Family tree generated",
+    "data": {
+      "rootPerson": "James Johnson",
+      "rootCrId": "yyu-752-jta-160",
+      "totalNodes": 1,
+      "totalEdges": 0,
+      "nodeList": [
+        {
+          "name": "James Johnson",
+          "crId": "yyu-752-jta-160",
+          "hasFather": false,
+          "hasMother": false,
+          "childrenCount": 0
+        }
+      ],
+      "edgeList": []
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:39:49.260Z",
+    "level": "info",
+    "component": "ControlCenter",
+    "category": "canvas-generation",
+    "message": "Canvas data generated",
+    "data": {
+      "nodeCount": 1,
+      "edgeCount": 0,
+      "canvasNodes": [
+        {
+          "id": "epz2v0vu7pj3km5j1tsngf",
+          "file": "Canvas Roots Testing/James Johnson.md"
+        }
+      ]
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:39:49.260Z",
+    "level": "info",
+    "component": "ControlCenter",
+    "category": "canvas-generation",
+    "message": "Canvas JSON content to write",
+    "data": {
+      "contentLength": 236,
+      "contentPreview": "{\n\t\"nodes\":[\n\t\t{\"id\":\"epz2v0vu7pj3km5j1tsngf\",\"type\":\"file\",\"file\":\"Canvas Roots Testing/James Johnson.md\",\"x\":0,\"y\":0,\"width\":250,\"height\":120,\"color\":\"2\"}\n\t],\n\t\"edges\":[\n\t],\n\t\"metadata\":{\n\t\t\"version\":\"1.0-1.0\",\n\t\t\"frontmatter\":{}\n\t}\n}",
+      "hasNodes": true,
+      "hasEdges": true
+    }
+  },
+  {
+    "timestamp": "2025-11-20T17:39:54.980Z",
+    "level": "info",
+    "component": "ControlCenter",
+    "category": "export",
+    "message": "Exporting logs from Control Center"
+  }
+]

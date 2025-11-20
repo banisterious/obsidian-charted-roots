@@ -1,6 +1,7 @@
 import { Plugin, Notice, TFile } from 'obsidian';
 import { CanvasRootsSettings, DEFAULT_SETTINGS, CanvasRootsSettingTab } from './src/settings';
 import { ControlCenterModal } from './src/ui/control-center';
+import { LoggerFactory } from './src/core/logging';
 
 export default class CanvasRootsPlugin extends Plugin {
 	settings: CanvasRootsSettings;
@@ -9,6 +10,9 @@ export default class CanvasRootsPlugin extends Plugin {
 		console.log('Loading Canvas Roots plugin');
 
 		await this.loadSettings();
+
+		// Initialize logger with saved log level
+		LoggerFactory.setLogLevel(this.settings.logLevel);
 
 		// Add settings tab
 		this.addSettingTab(new CanvasRootsSettingTab(this.app, this));
