@@ -141,9 +141,10 @@ export class LayoutEngine {
 		const parentsMap = new Map<string, string[]>();
 
 		for (const edge of edges) {
-			if (edge.type === 'parent' || edge.type === 'child') {
-				const parentId = edge.type === 'parent' ? edge.from : edge.to;
-				const childId = edge.type === 'parent' ? edge.to : edge.from;
+			if (edge.type === 'child') {
+				// 'child' edges go from parent to child
+				const parentId = edge.from;
+				const childId = edge.to;
 
 				// Parent -> Children map
 				if (!childrenMap.has(parentId)) {
