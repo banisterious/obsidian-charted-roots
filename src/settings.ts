@@ -2,6 +2,15 @@ import { App, PluginSettingTab, Setting } from 'obsidian';
 import CanvasRootsPlugin from '../main';
 import type { LogLevel } from './core/logging';
 
+export interface RecentTreeInfo {
+	canvasPath: string;
+	canvasName: string;
+	peopleCount: number;
+	edgeCount: number;
+	rootPerson: string;
+	timestamp: number;
+}
+
 export interface CanvasRootsSettings {
 	defaultNodeWidth: number;
 	defaultNodeHeight: number;
@@ -11,6 +20,7 @@ export interface CanvasRootsSettings {
 	peopleFolder: string;
 	logExportPath: string;
 	logLevel: LogLevel;
+	recentTrees: RecentTreeInfo[];
 }
 
 export const DEFAULT_SETTINGS: CanvasRootsSettings = {
@@ -23,7 +33,8 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	autoGenerateCrId: true,
 	peopleFolder: '',
 	logExportPath: '',
-	logLevel: 'debug'
+	logLevel: 'debug',
+	recentTrees: []
 };
 
 export class CanvasRootsSettingTab extends PluginSettingTab {

@@ -1,7 +1,7 @@
 # Canvas Roots Plugin - Technical Specification
 
-**Version:** 1.6
-**Last Updated:** 2025-11-19
+**Version:** 1.7
+**Last Updated:** 2025-11-20
 **Status:** Draft
 
 ---
@@ -1524,10 +1524,28 @@ const TAB_CONFIGS = [
    └─────────────────────────────────────┘
    ```
 
-3. **Recent Operations Log:**
-   - Last 5 tree generations
-   - Last GEDCOM import/export
-   - Recent validation runs
+3. **Recently Generated Trees Card:** *(Implemented 2025-11-20)*
+   ```
+   ┌─────────────────────────────────────┐
+   │ Recently Generated Trees            │
+   ├─────────────────────────────────────┤
+   │ Family Tree - Smith Family          │
+   │ Root: James Smith                   │
+   │ 👥 163 people  🔗 287 edges  🕐 2h ago│
+   │                                     │
+   │ Family Tree - Jones Ancestors       │
+   │ Root: Mary Jones                    │
+   │ 👥 27 people  🔗 48 edges  🕐 1 day ago│
+   │                                     │
+   │ [... up to 10 most recent trees]    │
+   └─────────────────────────────────────┘
+   ```
+   - Clickable tree names open the canvas file
+   - Shows root person used for generation
+   - Displays people count and edge count
+   - Relative timestamps (e.g., "2 hours ago", "just now")
+   - Automatically removes entries for deleted canvas files
+   - Persists across sessions in plugin settings
 
 ##### Quick Actions Tab
 

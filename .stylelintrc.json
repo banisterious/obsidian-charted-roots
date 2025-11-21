@@ -4,7 +4,7 @@
     "stylelint-config-prettier"
   ],
   "rules": {
-    "custom-property-pattern": "^(md|cr)-[a-z0-9-]+$",
+    "custom-property-pattern": "^cr-[a-z0-9-]+$",
     "selector-class-pattern": "^(cr|canvas-roots)-[a-z0-9-]+(__[a-z0-9-]+)?(--[a-z0-9-]+)?$",
     "declaration-empty-line-before": [
       "always",
@@ -67,6 +67,16 @@
       "files": ["styles/theme.css"],
       "rules": {
         "selector-class-pattern": null
+      }
+    },
+    {
+      "files": ["styles/modals.css"],
+      "rules": {
+        "custom-property-pattern": null,
+        "selector-class-pattern": null,
+        "color-function-notation": null,
+        "alpha-value-notation": null,
+        "shorthand-property-no-redundant-values": null
       }
     }
   ],

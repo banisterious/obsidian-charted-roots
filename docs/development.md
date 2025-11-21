@@ -432,6 +432,85 @@ Example:
 - Better user experience with full Obsidian integration from the start
 - Removed confusing setting from UI
 
+## Recent Features
+
+### Person Picker Enhancements (2025-11-20)
+
+**Added:** Sorting and filtering capabilities for person selection modal.
+
+**Implemented Features:**
+- **5 Sort Options:**
+  - Name (A-Z / Z-A)
+  - Birth year (oldest first / youngest first)
+  - Recently modified
+- **3 Filter Categories:**
+  - Living status (all / living / deceased)
+  - Birth date presence (all / has date / missing date)
+  - Sex (all / M / F)
+
+**Smart Date Parsing:**
+- Extracts year from various date formats for chronological sorting
+- Handles people without birth dates gracefully (sorted to end)
+
+**Files Modified:**
+- `src/ui/person-picker.ts` - Added sort/filter logic
+- `styles/modals.css` - Filter controls styling
+
+### Recent Trees History (2025-11-20)
+
+**Added:** "Recently generated trees" card in Control Center Status tab.
+
+**Implemented Features:**
+- **Automatic Tree Tracking:**
+  - Saves metadata for each generated tree
+  - Tracks: canvas name, path, people count, edge count, root person, timestamp
+  - Stores last 10 trees in plugin settings
+- **Status Tab Display:**
+  - Clickable tree names that open the canvas
+  - Shows root person and generation stats
+  - Relative timestamps ("2 hours ago", "just now")
+- **Automatic Cleanup:**
+  - Filters out deleted canvas files when rendering
+  - Updates settings to remove dead entries
+  - Keeps settings tidy automatically
+
+**Files Modified:**
+- `src/settings.ts` - Added `RecentTreeInfo` interface and `recentTrees` array
+- `src/ui/control-center.ts` - Save tree info on generation, display in Status tab
+- `styles/modals.css` - Recent trees card styling
+
+### Person Count Notification (2025-11-20)
+
+**Added:** Display people count in tree generation success notification.
+
+**Implementation:**
+- Success message now shows: "Family tree generated successfully! (163 people)"
+- Provides immediate feedback about tree size
+- Modified: `src/ui/control-center.ts` line 1141
+
+### CSS Linting Configuration (2025-11-20)
+
+**Fixed:** Pre-existing CSS linting errors by properly handling Obsidian built-in variables.
+
+**Changes:**
+- Added override for `modals.css` to allow Obsidian CSS variables (--text-normal, --background-primary, etc.)
+- Removed unused "md-" prefix from custom property pattern
+- Modified: `.stylelintrc.json`
+
+### GEDCOM Test Datasets (2025-11-20)
+
+**Created:** Progressive test files for scale testing the layout engine.
+
+**Test Files:**
+- **gedcom-sample-small.ged:** 27 people, 4 generations (baseline scale test)
+- **gedcom-sample-medium.ged:** 60 people, 5 generations (medium complexity)
+- **gedcom-sample-large.ged:** 163 people, 6 generations (realistic genealogy)
+- **gedcom-sample-xlarge.ged:** 599 people, 7 generations (extreme stress test)
+
+**Documentation:**
+- `gedcom_testing/README.md` - Comprehensive testing guide with success criteria
+- Includes methodology, metrics to track, and expected challenges
+
 ## Dual Storage System
 
 The plugin implements a **dual storage pattern** for relationships to balance Obsidian features with reliable resolution:

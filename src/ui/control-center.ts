@@ -1,4 +1,4 @@
-import { App, Modal, Notice, TFile } from 'obsidian';
+import { App, Modal, Notice, TFile, setIcon } from 'obsidian';
 import CanvasRootsPlugin from '../../main';
 import { TAB_CONFIGS, createLucideIcon, setLucideIcon, LucideIconName } from './lucide-icons';
 import { createPersonNote, PersonData } from '../core/person-note-writer';
@@ -9,6 +9,7 @@ import { CanvasGenerator, CanvasData, CanvasGenerationOptions } from '../core/ca
 import { getLogger, LoggerFactory, type LogLevel } from '../core/logging';
 import { GedcomImporter } from '../gedcom/gedcom-importer';
 import { BidirectionalLinker } from '../core/bidirectional-linker';
+import type { RecentTreeInfo } from '../settings';
 
 const logger = getLogger('ControlCenter');
 
@@ -341,6 +342,101 @@ export class ControlCenterModal extends Modal {
 		});
 
 		container.appendChild(healthCard);
+
+		// Recent Trees Card
+		// First, clean up deleted files from the history
+		const existingTrees = this.plugin.settings.recentTrees.filter(tree => {
+			const file = this.app.vault.getAbstractFileByPath(tree.canvasPath);
+			return file instanceof TFile;
+		});
+
+		// Update settings if any were removed
+		if (existingTrees.length !== this.plugin.settings.recentTrees.length) {
+			this.plugin.settings.recentTrees = existingTrees;
+			await this.plugin.saveSettings();
+		}
+
+		if (existingTrees.length > 0) {
+			const recentTreesCard = this.createCard({
+				title: 'Recently generated trees',
+				icon: 'git-branch'
+			});
+			const recentTreesContent = recentTreesCard.querySelector('.crc-card__content') as HTMLElement;
+
+			existingTrees.forEach((tree) => {
+				const treeRow = recentTreesContent.createDiv({ cls: 'crc-recent-tree' });
+
+				// Tree name (clickable link)
+				const treeHeader = treeRow.createDiv({ cls: 'crc-recent-tree__header' });
+				const treeLink = treeHeader.createEl('a', {
+					cls: 'crc-recent-tree__name',
+					text: tree.canvasName
+				});
+				treeLink.addEventListener('click', async (e) => {
+					e.preventDefault();
+					const file = this.app.vault.getAbstractFileByPath(tree.canvasPath);
+					if (file instanceof TFile) {
+						const leaf = this.app.workspace.getLeaf(false);
+						await leaf.openFile(file);
+						this.close();
+					} else {
+						new Notice(`Canvas file not found: ${tree.canvasPath}`);
+					}
+				});
+
+				// Root person
+				const rootInfo = treeHeader.createDiv({ cls: 'crc-recent-tree__root' });
+				rootInfo.createEl('small', { text: `Root: ${tree.rootPerson}`, cls: 'crc-text-muted' });
+
+				// Stats row
+				const statsRow = treeRow.createDiv({ cls: 'crc-recent-tree__stats' });
+
+				// People count
+				const peopleCount = statsRow.createDiv({ cls: 'crc-recent-tree__stat' });
+				const peopleIcon = createLucideIcon('users', 14);
+				peopleCount.appendChild(peopleIcon);
+				peopleCount.appendText(` ${tree.peopleCount} people`);
+
+				// Edge count
+				const edgeCount = statsRow.createDiv({ cls: 'crc-recent-tree__stat' });
+				const edgeIcon = createLucideIcon('link', 14);
+				edgeCount.appendChild(edgeIcon);
+				edgeCount.appendText(` ${tree.edgeCount} edges`);
+
+				// Timestamp
+				const timestamp = statsRow.createDiv({ cls: 'crc-recent-tree__stat' });
+				const timeIcon = document.createElement('span');
+				timeIcon.classList.add('crc-icon');
+				setIcon(timeIcon, 'clock');
+				timestamp.appendChild(timeIcon);
+				const timeAgo = this.formatTimeAgo(tree.timestamp);
+				timestamp.appendText(` ${timeAgo}`);
+			});
+
+			container.appendChild(recentTreesCard);
+		}
+	}
+
+	/**
+	 * Format timestamp as relative time
+	 */
+	private formatTimeAgo(timestamp: number): string {
+		const now = Date.now();
+		const diff = now - timestamp;
+		const seconds = Math.floor(diff / 1000);
+		const minutes = Math.floor(seconds / 60);
+		const hours = Math.floor(minutes / 60);
+		const days = Math.floor(hours / 24);
+
+		if (days > 0) {
+			return days === 1 ? '1 day ago' : `${days} days ago`;
+		} else if (hours > 0) {
+			return hours === 1 ? '1 hour ago' : `${hours} hours ago`;
+		} else if (minutes > 0) {
+			return minutes === 1 ? '1 minute ago' : `${minutes} minutes ago`;
+		} else {
+			return 'just now';
+		}
 	}
 
 	/**
@@ -1119,11 +1215,25 @@ export class ControlCenterModal extends Modal {
 			// the canvas before the write is fully complete
 			await new Promise(resolve => setTimeout(resolve, 100));
 
+			// Save to recent trees history
+			const treeInfo: RecentTreeInfo = {
+				canvasPath: file.path,
+				canvasName: fileName,
+				peopleCount: canvasData.nodes.length,
+				edgeCount: canvasData.edges.length,
+				rootPerson: rootPersonField.name,
+				timestamp: Date.now()
+			};
+
+			// Add to beginning of array and keep only last 10
+			this.plugin.settings.recentTrees = [treeInfo, ...this.plugin.settings.recentTrees].slice(0, 10);
+			await this.plugin.saveSettings();
+
 			// Open the canvas file
 			const leaf = this.app.workspace.getLeaf(false);
 			await leaf.openFile(file);
 
-			new Notice('Family tree generated successfully!');
+			new Notice(`Family tree generated successfully! (${canvasData.nodes.length} people)`);
 			this.close();
 		} catch (error) {
 			console.error('Error generating tree:', error);
