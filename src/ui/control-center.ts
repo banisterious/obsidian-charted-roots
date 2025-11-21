@@ -375,7 +375,7 @@ export class ControlCenterModal extends Modal {
 
 		// Show loading state
 		const loadingCard = this.createCard({
-			title: 'Vault Statistics',
+			title: 'Vault statistics',
 			icon: 'activity'
 		});
 		const loadingContent = loadingCard.querySelector('.crc-card__content') as HTMLElement;
@@ -424,7 +424,7 @@ export class ControlCenterModal extends Modal {
 
 		// Vault Health Card
 		const healthCard = this.createCard({
-			title: 'Vault Health',
+			title: 'Vault health',
 			icon: 'heart'
 		});
 		const healthContent = healthCard.querySelector('.crc-card__content') as HTMLElement;
@@ -767,7 +767,7 @@ export class ControlCenterModal extends Modal {
 
 		// Create card for person entry form
 		const card = this.createCard({
-			title: 'Create New Person',
+			title: 'Create new person',
 			icon: 'user-plus'
 		});
 
