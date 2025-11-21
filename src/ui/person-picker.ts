@@ -47,6 +47,8 @@ export class PersonPickerModal extends Modal {
 	};
 	private familyComponents: Array<{ representative: PersonNode; size: number; people: PersonNode[] }> = [];
 	private componentMap: Map<string, number> = new Map(); // Maps cr_id to component index
+	private activeComponentIndex: number | null = null; // null = show all, number = show specific component
+	private tabsContainer?: HTMLElement;
 
 	constructor(app: App, onSelect: (person: PersonInfo) => void) {
 		super(app);
@@ -318,9 +320,79 @@ export class PersonPickerModal extends Modal {
 			this.filterPeople();
 		});
 
+		// Family group tabs (only show if multiple components exist)
+		if (this.familyComponents.length > 1) {
+			this.createFamilyTabs(contentEl);
+		}
+
 		// Results section
 		this.resultsContainer = contentEl.createDiv({ cls: 'crc-picker-results' });
 		this.renderResults();
+	}
+
+	/**
+	 * Create family group tabs
+	 */
+	private createFamilyTabs(container: HTMLElement): void {
+		this.tabsContainer = container.createDiv({ cls: 'crc-picker-tabs' });
+
+		// "All" tab
+		const allTab = this.tabsContainer.createDiv({ cls: 'crc-picker-tab' });
+		if (this.activeComponentIndex === null) {
+			allTab.addClass('crc-picker-tab--active');
+		}
+		allTab.setText('All');
+		allTab.addEventListener('click', () => {
+			this.activeComponentIndex = null;
+			this.updateActiveTab();
+			this.filterPeople();
+		});
+
+		// Individual family group tabs
+		this.familyComponents.forEach((component, index) => {
+			const tab = this.tabsContainer!.createDiv({ cls: 'crc-picker-tab' });
+			if (this.activeComponentIndex === index) {
+				tab.addClass('crc-picker-tab--active');
+			}
+
+			const tabLabel = tab.createSpan({ cls: 'crc-picker-tab__label' });
+			tabLabel.setText(`Family ${index + 1}`);
+
+			const tabBadge = tab.createSpan({ cls: 'crc-picker-tab__badge' });
+			tabBadge.setText(component.size.toString());
+
+			tab.addEventListener('click', () => {
+				this.activeComponentIndex = index;
+				this.updateActiveTab();
+				this.filterPeople();
+			});
+		});
+	}
+
+	/**
+	 * Update active tab styling
+	 */
+	private updateActiveTab(): void {
+		if (!this.tabsContainer) return;
+
+		const tabs = this.tabsContainer.querySelectorAll('.crc-picker-tab');
+		tabs.forEach((tab, index) => {
+			if (index === 0) {
+				// "All" tab
+				if (this.activeComponentIndex === null) {
+					tab.addClass('crc-picker-tab--active');
+				} else {
+					tab.removeClass('crc-picker-tab--active');
+				}
+			} else {
+				// Family group tab (index - 1 because "All" is index 0)
+				if (this.activeComponentIndex === index - 1) {
+					tab.addClass('crc-picker-tab--active');
+				} else {
+					tab.removeClass('crc-picker-tab--active');
+				}
+			}
+		});
 	}
 
 	/**
@@ -328,6 +400,12 @@ export class PersonPickerModal extends Modal {
 	 */
 	private filterPeople(): void {
 		this.filteredPeople = this.allPeople.filter(person => {
+			// Family component filter (based on active tab)
+			if (this.activeComponentIndex !== null) {
+				const personComponentIndex = this.componentMap.get(person.crId);
+				if (personComponentIndex !== this.activeComponentIndex) return false;
+			}
+
 			// Search query filter
 			if (this.searchQuery) {
 				const matchesSearch = person.name.toLowerCase().includes(this.searchQuery) ||
@@ -380,59 +458,7 @@ export class PersonPickerModal extends Modal {
 			return;
 		}
 
-		// Group by family component if multiple components exist
-		if (this.familyComponents.length > 1) {
-			this.renderGroupedResults();
-		} else {
-			this.renderFlatResults();
-		}
-	}
-
-	/**
-	 * Render results grouped by family component
-	 */
-	private renderGroupedResults(): void {
-		// Group filtered people by component
-		const peopleByComponent = new Map<number, PersonInfo[]>();
-
-		this.filteredPeople.forEach(person => {
-			const componentIndex = this.componentMap.get(person.crId);
-			if (componentIndex !== undefined) {
-				if (!peopleByComponent.has(componentIndex)) {
-					peopleByComponent.set(componentIndex, []);
-				}
-				peopleByComponent.get(componentIndex)!.push(person);
-			}
-		});
-
-		// Render each component group
-		const sortedComponents = Array.from(peopleByComponent.entries()).sort((a, b) => a[0] - b[0]);
-
-		sortedComponents.forEach(([componentIndex, people]) => {
-			const component = this.familyComponents[componentIndex];
-
-			// Family group header
-			const groupHeader = this.resultsContainer.createDiv({ cls: 'crc-picker-group-header' });
-			const headerIcon = createLucideIcon('users', 16);
-			groupHeader.appendChild(headerIcon);
-
-			const headerText = groupHeader.createSpan({ cls: 'crc-picker-group-header__text' });
-			headerText.setText(`Family group ${componentIndex + 1}`);
-
-			const headerBadge = groupHeader.createSpan({ cls: 'crc-picker-group-header__badge' });
-			headerBadge.setText(`${component.size} ${component.size === 1 ? 'person' : 'people'}`);
-
-			// Render people in this group
-			people.forEach(person => {
-				this.renderPersonCard(person);
-			});
-		});
-	}
-
-	/**
-	 * Render results without grouping (single component or no components detected)
-	 */
-	private renderFlatResults(): void {
+		// With tabs, we just render the filtered people directly
 		this.filteredPeople.forEach(person => {
 			this.renderPersonCard(person);
 		});
