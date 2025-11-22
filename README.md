@@ -26,6 +26,14 @@ The core approach is hybrid: the plugin uses specialized family tree layout algo
 - **YAML-First Data:** Uses native YAML frontmatter for maximum compatibility with Dataview, Bases, and other Obsidian tools.
 
 
+## 📸 Screenshots
+
+| Tree Generation Interface | Generated Family Tree |
+|:-------------------------:|:---------------------:|
+| ![Tree generation interface showing inline person browser with birth years, family group detection, and configuration options](docs/images/tree-generation-ui.png) | ![Multi-generational family tree canvas with automated genealogical layout](docs/images/family-tree-canvas.png) |
+| **Streamlined tree generation** with inline person browser, birth/death year display, and family group detection | **Automated genealogical layout** showing 4 generations with spouse relationships and parent-child connections |
+
+
 ## 🛠️ Workflow
 
 ### 1. Enter Your Data

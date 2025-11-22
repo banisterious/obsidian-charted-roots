@@ -3111,8 +3111,9 @@ export class ControlCenterModal extends Modal {
 		return {
 			name: file.basename,
 			crId: crId,
-			birthDate: cache.frontmatter.birth_date,
-			deathDate: cache.frontmatter.death_date,
+			// Support both field name conventions: born/died (spec) and birth_date/death_date (Gramps)
+			birthDate: cache.frontmatter.born || cache.frontmatter.birth_date,
+			deathDate: cache.frontmatter.died || cache.frontmatter.death_date,
 			sex: cache.frontmatter.sex,
 			file: file
 		};
