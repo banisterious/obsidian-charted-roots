@@ -2921,17 +2921,27 @@ export class ControlCenterModal extends Modal {
 
 				const metaInfo = item.createDiv({ cls: 'crc-picker-item__meta' });
 
+				// Show birth year if available
 				if (person.birthDate) {
-					const birthBadge = metaInfo.createDiv({ cls: 'crc-picker-badge' });
-					const birthIcon = createLucideIcon('calendar', 12);
-					birthBadge.appendChild(birthIcon);
-					birthBadge.appendText(person.birthDate);
+					const birthYear = extractYear(person.birthDate);
+					if (birthYear !== null) {
+						const birthBadge = metaInfo.createDiv({ cls: 'crc-picker-badge' });
+						const birthIcon = createLucideIcon('calendar', 12);
+						birthBadge.appendChild(birthIcon);
+						birthBadge.appendText(`b. ${birthYear}`);
+					}
 				}
 
-				const idBadge = metaInfo.createDiv({ cls: 'crc-picker-badge crc-picker-badge--id' });
-				const idIcon = createLucideIcon('hash', 12);
-				idBadge.appendChild(idIcon);
-				idBadge.appendText(person.crId);
+				// Show death year if available
+				if (person.deathDate) {
+					const deathYear = extractYear(person.deathDate);
+					if (deathYear !== null) {
+						const deathBadge = metaInfo.createDiv({ cls: 'crc-picker-badge' });
+						const deathIcon = createLucideIcon('calendar', 12);
+						deathBadge.appendChild(deathIcon);
+						deathBadge.appendText(`d. ${deathYear}`);
+					}
+				}
 
 				item.addEventListener('click', () => {
 					rootPersonField.name = person.name;
