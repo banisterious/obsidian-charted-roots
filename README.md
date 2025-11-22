@@ -27,7 +27,7 @@ The core approach is hybrid: the plugin uses specialized family tree layout algo
 
 - **Canvas Styling:** Comprehensive styling options within the JSON Canvas spec: node coloring (gender-based, generation-based, or monochrome), arrow styles (directed, bidirectional, undirected), and edge colors. Configure parent-child and spouse relationships independently for clean, professional genealogical visualizations.
 
-- **Obsidian Bases Compatible:** Designed to work seamlessly with [Obsidian Bases](https://help.obsidian.md/bases) for efficient bulk data entry and management. Edit multiple family members in table view while Canvas Roots handles visualization. Includes ready-to-use Base template.
+- **Obsidian Bases Compatible:** Designed to work seamlessly with [Obsidian Bases](https://help.obsidian.md/bases) for efficient bulk data entry and management. Edit multiple family members while Canvas Roots handles visualization. Includes ready-to-use Base template.
 
 - **Dual Storage System:** Combines human-friendly wikilinks with persistent `cr_id` references for robust relationship tracking that survives file renames and moves.
 
