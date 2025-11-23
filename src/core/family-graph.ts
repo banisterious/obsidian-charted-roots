@@ -74,6 +74,16 @@ export interface FamilyEdge {
 }
 
 /**
+ * Represents a connection between two user collections
+ */
+export interface CollectionConnection {
+	fromCollection: string;
+	toCollection: string;
+	bridgePeople: PersonNode[];
+	relationshipCount: number;
+}
+
+/**
  * Service for building and traversing family graphs
  */
 export class FamilyGraphService {
@@ -301,6 +311,65 @@ export class FamilyGraphService {
 		});
 
 		return collections;
+	}
+
+	/**
+	 * Detects connections between user collections
+	 * Finds "bridge people" who have relationships across collection boundaries
+	 */
+	async detectCollectionConnections(): Promise<CollectionConnection[]> {
+		// Ensure cache is loaded
+		if (this.personCache.size === 0) {
+			await this.loadPersonCache();
+		}
+
+		const connections = new Map<string, CollectionConnection>();
+
+		// For each person with a collection
+		for (const person of this.personCache.values()) {
+			if (!person.collection) continue;
+
+			// Check all their relationships
+			const relatedCrIds = [
+				person.fatherCrId,
+				person.motherCrId,
+				...person.spouseCrIds,
+				...person.childrenCrIds
+			].filter(id => id !== undefined) as string[];
+
+			for (const relatedCrId of relatedCrIds) {
+				const relatedPerson = this.personCache.get(relatedCrId);
+
+				// If related person has a different collection, it's a bridge
+				if (relatedPerson?.collection && relatedPerson.collection !== person.collection) {
+					// Create a unique key for this connection (alphabetically sorted)
+					const [from, to] = [person.collection, relatedPerson.collection].sort();
+					const key = `${from}|${to}`;
+
+					if (!connections.has(key)) {
+						connections.set(key, {
+							fromCollection: from,
+							toCollection: to,
+							bridgePeople: [],
+							relationshipCount: 0
+						});
+					}
+
+					const connection = connections.get(key)!;
+
+					// Add person as bridge if not already added
+					if (!connection.bridgePeople.find(p => p.crId === person.crId)) {
+						connection.bridgePeople.push(person);
+					}
+
+					connection.relationshipCount++;
+				}
+			}
+		}
+
+		// Convert to array and sort by relationship count
+		return Array.from(connections.values())
+			.sort((a, b) => b.relationshipCount - a.relationshipCount);
 	}
 
 	/**

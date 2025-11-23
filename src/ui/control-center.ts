@@ -2795,6 +2795,42 @@ export class ControlCenterModal extends Modal {
 			}
 
 			container.appendChild(listCard);
+
+			// Show cross-collection connections if there are multiple collections
+			if (collections.length >= 2) {
+				const connections = await graphService.detectCollectionConnections();
+
+				if (connections.length > 0) {
+					const connectionsCard = this.createCard({
+						title: `Collection connections (${connections.length})`,
+						icon: 'link',
+						subtitle: 'People who bridge multiple collections'
+					});
+					connectionsCard.addClass('crc-collections-list');
+
+					const connectionsContent = connectionsCard.createDiv({ cls: 'crc-card__content' });
+
+					connections.forEach(connection => {
+						const connectionItem = connectionsContent.createDiv({ cls: 'crc-collection-item' });
+
+						const connectionHeader = connectionItem.createDiv({ cls: 'crc-collection-header' });
+						connectionHeader.createEl('strong', {
+							text: `${connection.fromCollection} ↔ ${connection.toCollection}`
+						});
+						connectionHeader.createEl('span', {
+							cls: 'crc-badge',
+							text: `${connection.relationshipCount} ${connection.relationshipCount === 1 ? 'link' : 'links'}`
+						});
+
+						const bridgeInfo = connectionItem.createDiv({ cls: 'crc-text--muted' });
+						const bridgeNames = connection.bridgePeople.map(p => p.name).slice(0, 3).join(', ');
+						const remainingCount = connection.bridgePeople.length - 3;
+						bridgeInfo.textContent = `Bridge people: ${bridgeNames}${remainingCount > 0 ? ` +${remainingCount} more` : ''}`;
+					});
+
+					container.appendChild(connectionsCard);
+				}
+			}
 		}
 	}
 
