@@ -1,0 +1,154 @@
+/* Folder Scan Modal */
+.cr-folder-scan-modal {
+  max-width: 700px;
+}
+
+.cr-scan-loading {
+  padding: 2em;
+  text-align: center;
+}
+
+.cr-scan-summary {
+  padding: 1.5em;
+  margin-bottom: 1.5em;
+  border-radius: 8px;
+  background: var(--background-secondary);
+}
+
+.cr-scan-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5em;
+}
+
+.cr-scan-stat {
+  text-align: center;
+}
+
+.cr-scan-stat__value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-normal);
+  margin-bottom: 0.25em;
+}
+
+.cr-scan-stat__value--success {
+  color: var(--color-green);
+}
+
+.cr-scan-stat__value--warning {
+  color: var(--color-orange);
+}
+
+.cr-scan-stat__value--error {
+  color: var(--color-red);
+}
+
+.cr-scan-stat__label {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.cr-scan-results-header {
+  margin: 1.5em 0 1em 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.cr-scan-results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.cr-scan-result {
+  padding: 1em;
+  border-radius: 6px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+  transition: all 0.2s ease;
+}
+
+.cr-scan-result--clickable {
+  cursor: pointer;
+}
+
+.cr-scan-result--clickable:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--interactive-accent);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cr-scan-result__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 0.75em;
+}
+
+.cr-scan-result__name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.cr-scan-result__badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--color-orange);
+  color: white;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.cr-scan-result__issues {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.cr-scan-issue {
+  font-size: 12px;
+  padding-left: 1.5em;
+}
+
+.cr-scan-issue__field {
+  font-family: var(--font-monospace);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.cr-scan-issue__message {
+  color: var(--text-normal);
+}
+
+.cr-scan-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3em 2em;
+  text-align: center;
+}
+
+.cr-scan-empty__title {
+  margin: 1em 0 0.5em 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.cr-scan-empty__description {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}

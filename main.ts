@@ -8,6 +8,7 @@ import { RelationshipManager } from './src/core/relationship-manager';
 import { RelationshipValidator } from './src/core/relationship-validator';
 import { ValidationResultsModal } from './src/ui/validation-results-modal';
 import { FindOnCanvasModal } from './src/ui/find-on-canvas-modal';
+import { FolderScanModal } from './src/ui/folder-scan-modal';
 import { LoggerFactory } from './src/core/logging';
 import { FamilyGraphService } from './src/core/family-graph';
 import { CanvasGenerator } from './src/core/canvas-generator';
@@ -390,6 +391,15 @@ export default class CanvasRootsPlugin extends Plugin {
 										modal.openToTab('gedcom');
 									});
 							});
+
+							submenu.addItem((subItem) => {
+								subItem
+									.setTitle('Scan for relationship issues')
+									.setIcon('shield-alert')
+									.onClick(async () => {
+										new FolderScanModal(this.app, file).open();
+									});
+							});
 						});
 					} else {
 						// Mobile: flat menu with prefix
@@ -416,6 +426,15 @@ export default class CanvasRootsPlugin extends Plugin {
 									// Open Control Center to GEDCOM tab
 									const modal = new ControlCenterModal(this.app, this);
 									modal.openToTab('gedcom');
+								});
+						});
+
+						menu.addItem((item) => {
+							item
+								.setTitle('Canvas Roots: Scan for relationship issues')
+								.setIcon('shield-alert')
+								.onClick(async () => {
+									new FolderScanModal(this.app, file).open();
 								});
 						});
 					}
