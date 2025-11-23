@@ -96,12 +96,19 @@ See [architecture/collections.md](architecture/collections.md) for complete ADR.
 - Collection overview canvas with links to all family trees
 - Automatic index canvas creation when generating multiple trees
 
-### GEDCOM Export
+### Export & Interoperability
 
+**GEDCOM Export:**
 - Round-trip GEDCOM export back to `.ged` format
 - UUID preservation in GEDCOM export
 - Collection codes in GEDCOM output
 - Sharing with other genealogy software
+
+**Excalidraw Integration:**
+- Export family trees to Excalidraw format
+- Preserve node styling and layout
+- Enable manual annotation and customization
+- Support for Excalidraw's drawing tools and features
 
 ### Reference Numbering Systems
 
