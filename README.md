@@ -43,7 +43,7 @@ See [Roadmap](docs/roadmap.md) for detailed feature descriptions and development
 - **GEDCOM Export:** Round-trip export back to .ged format
 - **Reference Numbering:** Ahnentafel and Dollarhide-Cole genealogical numbering systems
 - **Person Detail Panel:** Rich inline person information with relationship visualization
-- **D3 Tree Preview:** Interactive tree preview with real-time layout configuration
+- **Tree Preview:** Interactive preview with real-time layout configuration before canvas generation
 - **Privacy & Obfuscation:** Optional data obfuscation for exports and canvas display
 - **World-Building Features:** Track fantasy dynasties, corporate succession, and historical kingdoms
 

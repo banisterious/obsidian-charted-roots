@@ -123,8 +123,9 @@ See [architecture/collections.md](architecture/collections.md) for complete ADR.
 - Person Detail Panel with relationship visualization
 - Rich inline person information display
 - Quick editing capabilities
-- D3 tree preview with real-time layout configuration
-- Interactive tree preview before canvas export
+- Interactive tree preview with real-time layout configuration
+- Multiple preview modes (family-chart, D3 layouts)
+- Preview before canvas generation
 - Canvas export as image/PDF
 
 ### Privacy & Obfuscation
