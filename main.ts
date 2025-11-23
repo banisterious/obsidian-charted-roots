@@ -1,4 +1,4 @@
-import { Plugin, Notice, TFile } from 'obsidian';
+import { Plugin, Notice, TFile, TFolder } from 'obsidian';
 import { CanvasRootsSettings, DEFAULT_SETTINGS, CanvasRootsSettingTab } from './src/settings';
 import { ControlCenterModal } from './src/ui/control-center';
 import { RelayoutOptionsModal } from './src/ui/relayout-options-modal';
@@ -135,6 +135,25 @@ export default class CanvasRootsPlugin extends Plugin {
 								});
 						});
 					}
+				}
+
+				// Add menu item for folders
+				if (file instanceof TFolder) {
+					menu.addSeparator();
+
+					menu.addItem((item) => {
+						item
+							.setTitle('Set as people folder')
+							.setIcon('users')
+							.onClick(async () => {
+								// Update settings
+								this.settings.peopleFolder = file.path;
+								await this.saveSettings();
+
+								// Show confirmation
+								new Notice(`People folder set to: ${file.path}`);
+							});
+					});
 				}
 			})
 		);
