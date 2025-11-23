@@ -81,10 +81,10 @@ export const TAB_CONFIGS: TabConfig[] = [
 		description: 'Frequently used commands'
 	},
 	{
-		id: 'quick-settings',
-		name: 'Canvas Settings',
-		icon: 'settings',
-		description: 'Canvas layout and arrow styling settings'
+		id: 'gedcom',
+		name: 'GEDCOM',
+		icon: 'file-text',
+		description: 'Import and export genealogical data'
 	},
 	{
 		id: 'data-entry',
@@ -93,16 +93,16 @@ export const TAB_CONFIGS: TabConfig[] = [
 		description: 'Create new person notes'
 	},
 	{
+		id: 'quick-settings',
+		name: 'Canvas Settings',
+		icon: 'settings',
+		description: 'Canvas layout and arrow styling settings'
+	},
+	{
 		id: 'tree-generation',
 		name: 'Tree Generation',
 		icon: 'git-branch',
 		description: 'Configure tree layout and styling'
-	},
-	{
-		id: 'gedcom',
-		name: 'GEDCOM',
-		icon: 'file-text',
-		description: 'Import and export genealogical data'
 	},
 	{
 		id: 'person-detail',
