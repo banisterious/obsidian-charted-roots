@@ -93,16 +93,16 @@ export const TAB_CONFIGS: TabConfig[] = [
 		description: 'Create new person notes'
 	},
 	{
-		id: 'quick-settings',
-		name: 'Canvas Settings',
-		icon: 'settings',
-		description: 'Canvas layout and arrow styling settings'
-	},
-	{
 		id: 'tree-generation',
 		name: 'Tree Generation',
 		icon: 'git-branch',
 		description: 'Configure tree layout and styling'
+	},
+	{
+		id: 'quick-settings',
+		name: 'Canvas Settings',
+		icon: 'settings',
+		description: 'Canvas layout and arrow styling settings'
 	},
 	{
 		id: 'person-detail',
