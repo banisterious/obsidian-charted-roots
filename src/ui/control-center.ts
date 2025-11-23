@@ -1185,6 +1185,70 @@ export class ControlCenterModal extends Modal {
 
 		container.appendChild(advancedCollectionsCard);
 
+		// Per-Canvas Style Settings Card
+		const styleSettingsCard = this.createCard({
+			title: 'Per-canvas style customization',
+			icon: 'layout'
+		});
+		const styleSettingsContent = styleSettingsCard.querySelector('.crc-card__content') as HTMLElement;
+
+		styleSettingsContent.createEl('p', {
+			text: 'Customize the appearance of individual canvases with style overrides that take precedence over global settings.',
+			cls: 'crc-mb-3'
+		});
+
+		// During Tree Generation
+		const duringGenSection = styleSettingsContent.createDiv({ cls: 'crc-mb-4' });
+		duringGenSection.createEl('h4', { text: 'Setting styles during tree generation', cls: 'crc-mb-2' });
+		duringGenSection.createEl('p', {
+			text: 'When generating a new tree, you can optionally customize its styles in the Tree Generation tab.',
+			cls: 'crc-text-muted crc-mb-2'
+		});
+
+		const duringGenDetails = duringGenSection.createEl('ul', { cls: 'crc-mb-2' });
+		duringGenDetails.createEl('li', { text: 'Look for the "Style customization (optional)" card' });
+		duringGenDetails.createEl('li', { text: 'Toggle individual style options to enable overrides' });
+		duringGenDetails.createEl('li', { text: 'Disabled options will use global plugin settings' });
+		duringGenDetails.createEl('li', { text: 'Style overrides are saved in canvas metadata' });
+
+		// After Creation
+		const afterCreationSection = styleSettingsContent.createDiv({ cls: 'crc-mb-4' });
+		afterCreationSection.createEl('h4', { text: 'Editing styles after creation', cls: 'crc-mb-2' });
+		afterCreationSection.createEl('p', {
+			text: 'You can customize the styles of any existing canvas using the context menu.',
+			cls: 'crc-text-muted crc-mb-2'
+		});
+
+		const afterCreationDetails = afterCreationSection.createEl('ul', { cls: 'crc-mb-2' });
+		afterCreationDetails.createEl('li', { text: 'Right-click any canvas file in the file explorer' });
+		afterCreationDetails.createEl('li', { text: 'Select "Canvas Roots" → "Customize canvas styles"' });
+		afterCreationDetails.createEl('li', { text: 'Choose "(Use global setting)" to clear an override' });
+		afterCreationDetails.createEl('li', { text: 'Click "Save styles" to apply changes' });
+		afterCreationDetails.createEl('li', { text: 'Regenerate the canvas to see the updated styles' });
+
+		// Available Style Options
+		const optionsSection = styleSettingsContent.createDiv({ cls: 'crc-mb-4' });
+		optionsSection.createEl('h4', { text: 'Customizable style options', cls: 'crc-mb-2' });
+
+		const optionsList = optionsSection.createEl('ul');
+		optionsList.createEl('li', { text: 'Node coloring: Gender, generation, collection, or monochrome' });
+		optionsList.createEl('li', { text: 'Parent-child arrows: Directed, bidirectional, or undirected' });
+		optionsList.createEl('li', { text: 'Spouse arrows: Directed, bidirectional, or undirected' });
+		optionsList.createEl('li', { text: 'Parent-child edge color: 6 colors or theme default' });
+		optionsList.createEl('li', { text: 'Spouse edge color: 6 colors or theme default' });
+		optionsList.createEl('li', { text: 'Show spouse edges: Enable or disable marriage relationship edges' });
+		optionsList.createEl('li', { text: 'Spouse edge labels: None, date-only, date-location, or full' });
+
+		// Use Case Example
+		const useCaseSection = styleSettingsContent.createDiv({ cls: 'crc-info-box' });
+		useCaseSection.createEl('strong', { text: 'Example use case:' });
+		useCaseSection.createEl('p', {
+			text: 'Use collection-based coloring for your main family tree to see lineages at a glance, but use generation-based coloring for ancestor charts to emphasize historical depth. Each canvas maintains its own style while sharing the same global settings as defaults.',
+			cls: 'crc-mt-2'
+		});
+
+		container.appendChild(styleSettingsCard);
+
 		// Common Tasks Card
 		const tasksCard = this.createCard({
 			title: 'Common tasks',
@@ -1256,6 +1320,7 @@ export class ControlCenterModal extends Modal {
 			'After changing layout or styling settings, use "Regenerate canvas" to apply changes to existing trees',
 			'The cr_id field ensures stable identity mapping between notes and canvas nodes',
 			'Generation-based coloring creates visual layers that make tree structure clearer',
+			'Use per-canvas style settings to customize individual canvases while keeping global defaults',
 			'Canvas Roots stays JSON Canvas 1.0 compliant for maximum portability'
 		];
 
