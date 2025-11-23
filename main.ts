@@ -320,6 +320,21 @@ export default class CanvasRootsPlugin extends Plugin {
 										new Notice(`People folder set to: ${file.path}`);
 									});
 							});
+
+							submenu.addItem((subItem) => {
+								subItem
+									.setTitle('Import GEDCOM to this folder')
+									.setIcon('upload')
+									.onClick(async () => {
+										// Set this folder as the people folder
+										this.settings.peopleFolder = file.path;
+										await this.saveSettings();
+
+										// Open Control Center to GEDCOM tab
+										const modal = new ControlCenterModal(this.app, this);
+										modal.openToTab('gedcom');
+									});
+							});
 						});
 					} else {
 						// Mobile: flat menu with prefix
@@ -331,6 +346,21 @@ export default class CanvasRootsPlugin extends Plugin {
 									this.settings.peopleFolder = file.path;
 									await this.saveSettings();
 									new Notice(`People folder set to: ${file.path}`);
+								});
+						});
+
+						menu.addItem((item) => {
+							item
+								.setTitle('Canvas Roots: Import GEDCOM to this folder')
+								.setIcon('upload')
+								.onClick(async () => {
+									// Set this folder as the people folder
+									this.settings.peopleFolder = file.path;
+									await this.saveSettings();
+
+									// Open Control Center to GEDCOM tab
+									const modal = new ControlCenterModal(this.app, this);
+									modal.openToTab('gedcom');
 								});
 						});
 					}

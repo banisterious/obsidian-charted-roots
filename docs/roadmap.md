@@ -90,7 +90,7 @@ See [architecture/collections.md](architecture/collections.md) for complete ADR.
 
 **Folders (Right-click):**
 - "Set as people folder" - One-click configuration of settings.peopleFolder (✅ Implemented)
-- "Import GEDCOM to this folder" - Pre-select folder for GEDCOM import
+- "Import GEDCOM to this folder" - Pre-select folder for GEDCOM import (✅ Implemented)
 - "Scan for relationship issues" - Batch validation of all person notes in folder
 
 **Canvas Files (Right-click on tab/file):**
