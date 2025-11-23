@@ -937,7 +937,7 @@ User collection members might be split across multiple family components
 
 The `collection` property appears as an editable text field in Bases table view:
 
-| name | cr_id | collection | birth_date |
+| name | cr_id | collection | born |
 |------|-------|------------|------------|
 | John Smith | abc-123 | Paternal Line | 1950-05-10 |
 | Mary Jones | def-456 | Maternal Line | 1952-08-15 |
@@ -2261,9 +2261,9 @@ export interface CanvasRootsSettings {
 **Use Cases:**
 
 1. **Existing Vault Migration:**
-   - User has existing notes with `birth_date` instead of `born`
+   - User has existing notes with custom property names
    - Configure Properties tab to match existing convention
-   - Or use migration tool to standardize to GEDCOM names
+   - Or use migration tool to standardize to Canvas Roots defaults (`born`, `died`)
 
 2. **Localization:**
    - German user prefers `geboren` (born), `gestorben` (died)

@@ -57,8 +57,8 @@ Create individual notes for each person with YAML frontmatter containing relatio
 - `children_id`: Array of children's `cr_id` values
 
 **Optional Date Fields:**
-- `born` or `birth_date`: Birth date (YYYY-MM-DD format recommended)
-- `died` or `death_date`: Death date (YYYY-MM-DD format recommended)
+- `born`: Birth date (YYYY-MM-DD format recommended)
+- `died`: Death date (YYYY-MM-DD format recommended)
 
 **Example Person Note:**
 

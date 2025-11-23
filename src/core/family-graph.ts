@@ -736,11 +736,29 @@ export class FamilyGraphService {
 			}
 		}
 
+		// Note: Frontmatter uses 'born'/'died' properties, mapped to birthDate/deathDate internally
+		// Convert Date objects to ISO strings if necessary (Obsidian parses YAML dates as Date objects)
+		const birthDate = fm.born instanceof Date ? fm.born.toISOString().split('T')[0] : fm.born;
+		const deathDate = fm.died instanceof Date ? fm.died.toISOString().split('T')[0] : fm.died;
+
+		// Debug logging
+		if (name === 'William Anderson') {
+			console.log('[Canvas Roots DEBUG - FamilyGraph] William Anderson:', {
+				'fm.born': fm.born,
+				'fm.born type': typeof fm.born,
+				'fm.born instanceof Date': fm.born instanceof Date,
+				'birthDate (converted)': birthDate,
+				'fm.died': fm.died,
+				'deathDate (converted)': deathDate,
+				'allKeys': Object.keys(fm)
+			});
+		}
+
 		return {
 			crId: fm.cr_id,
 			name,
-			birthDate: fm.born || fm.birth_date,
-			deathDate: fm.died || fm.death_date,
+			birthDate,
+			deathDate,
 			sex: fm.sex || fm.gender,
 			file,
 			fatherCrId,

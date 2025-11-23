@@ -19,6 +19,8 @@ const logger = getLogger('ControlCenter');
 interface RelationshipField {
 	name: string;
 	crId?: string;
+	birthDate?: string;
+	deathDate?: string;
 }
 
 /**
@@ -258,10 +260,18 @@ export class ControlCenterModal extends Modal {
 			return;
 		}
 
+		const fm = cache.frontmatter;
+
+		// Convert Date objects to ISO strings if necessary (Obsidian parses YAML dates as Date objects)
+		const birthDate = fm.born instanceof Date ? fm.born.toISOString().split('T')[0] : fm.born;
+		const deathDate = fm.died instanceof Date ? fm.died.toISOString().split('T')[0] : fm.died;
+
 		// Store the person info to be used when the tab renders
 		this.pendingRootPerson = {
 			name,
 			crId,
+			birthDate,
+			deathDate,
 			file
 		};
 
@@ -2003,6 +2013,8 @@ export class ControlCenterModal extends Modal {
 		if (this.pendingRootPerson) {
 			rootPersonField.name = this.pendingRootPerson.name;
 			rootPersonField.crId = this.pendingRootPerson.crId;
+			rootPersonField.birthDate = this.pendingRootPerson.birthDate;
+			rootPersonField.deathDate = this.pendingRootPerson.deathDate;
 			// Clear pending after using it
 			this.pendingRootPerson = undefined;
 		}
@@ -4034,26 +4046,36 @@ export class ControlCenterModal extends Modal {
 
 				const metaInfo = item.createDiv({ cls: 'crc-picker-item__meta' });
 
-				// Show birth year if available
-				if (person.birthDate) {
-					const birthYear = extractYear(person.birthDate);
-					if (birthYear !== null) {
-						const birthBadge = metaInfo.createDiv({ cls: 'crc-picker-badge' });
-						const birthIcon = createLucideIcon('calendar', 12);
-						birthBadge.appendChild(birthIcon);
-						birthBadge.appendText(`b. ${birthYear}`);
-					}
-				}
+				const hasDates = person.birthDate || person.deathDate;
 
-				// Show death year if available
-				if (person.deathDate) {
-					const deathYear = extractYear(person.deathDate);
-					if (deathYear !== null) {
-						const deathBadge = metaInfo.createDiv({ cls: 'crc-picker-badge' });
-						const deathIcon = createLucideIcon('calendar', 12);
-						deathBadge.appendChild(deathIcon);
-						deathBadge.appendText(`d. ${deathYear}`);
+				if (hasDates) {
+					// Show birth year if available
+					if (person.birthDate) {
+						const birthYear = extractYear(person.birthDate);
+						if (birthYear !== null) {
+							const birthBadge = metaInfo.createDiv({ cls: 'crc-picker-badge' });
+							const birthIcon = createLucideIcon('calendar', 12);
+							birthBadge.appendChild(birthIcon);
+							birthBadge.appendText(`b. ${birthYear}`);
+						}
 					}
+
+					// Show death year if available
+					if (person.deathDate) {
+						const deathYear = extractYear(person.deathDate);
+						if (deathYear !== null) {
+							const deathBadge = metaInfo.createDiv({ cls: 'crc-picker-badge' });
+							const deathIcon = createLucideIcon('calendar', 12);
+							deathBadge.appendChild(deathIcon);
+							deathBadge.appendText(`d. ${deathYear}`);
+						}
+					}
+				} else {
+					// Fallback: show cr_id only when no dates available
+					const idBadge = metaInfo.createDiv({ cls: 'crc-picker-badge crc-picker-badge--id' });
+					const idIcon = createLucideIcon('hash', 12);
+					idBadge.appendChild(idIcon);
+					idBadge.appendText(person.crId);
 				}
 
 				// Check if this person is currently selected
@@ -4075,6 +4097,8 @@ export class ControlCenterModal extends Modal {
 					// Update the root person field
 					rootPersonField.name = person.name;
 					rootPersonField.crId = person.crId;
+					rootPersonField.birthDate = person.birthDate;
+					rootPersonField.deathDate = person.deathDate;
 					this.updateRootPersonDisplay(personDisplay, rootPersonField);
 				});
 			});
@@ -4216,10 +4240,28 @@ export class ControlCenterModal extends Modal {
 				cls: 'crc-root-person-selected__name',
 				text: rootPersonField.name
 			});
-			selectedPerson.createDiv({
-				cls: 'crc-root-person-selected__id',
-				text: rootPersonField.crId
-			});
+
+			// Show birth/death dates if available, otherwise cr_id
+			const hasDates = rootPersonField.birthDate || rootPersonField.deathDate;
+			if (hasDates) {
+				// Format dates
+				const dateText: string[] = [];
+				if (rootPersonField.birthDate) {
+					dateText.push(`b. ${rootPersonField.birthDate}`);
+				}
+				if (rootPersonField.deathDate) {
+					dateText.push(`d. ${rootPersonField.deathDate}`);
+				}
+				selectedPerson.createDiv({
+					cls: 'crc-root-person-selected__dates',
+					text: dateText.join(' • ')
+				});
+			} else {
+				selectedPerson.createDiv({
+					cls: 'crc-root-person-selected__id',
+					text: rootPersonField.crId
+				});
+			}
 		}
 	}
 
@@ -4233,12 +4275,30 @@ export class ControlCenterModal extends Modal {
 		const crId = cache.frontmatter.cr_id;
 		if (!crId) return null;
 
+		const fm = cache.frontmatter;
+
+		// Note: Frontmatter uses 'born'/'died' properties, mapped to birthDate/deathDate internally
+		// Convert Date objects to ISO strings if necessary (Obsidian parses YAML dates as Date objects)
+		const birthDate = fm.born instanceof Date ? fm.born.toISOString().split('T')[0] : fm.born;
+		const deathDate = fm.died instanceof Date ? fm.died.toISOString().split('T')[0] : fm.died;
+
+		// Debug logging for William Anderson
+		if (file.basename === 'William Anderson') {
+			console.log('[Canvas Roots DEBUG - ControlCenter.extractPersonInfoFromFile] William Anderson:', {
+				'fm.born': fm.born,
+				'fm.born type': typeof fm.born,
+				'fm.born instanceof Date': fm.born instanceof Date,
+				'birthDate (converted)': birthDate,
+				'fm.died': fm.died,
+				'deathDate (converted)': deathDate
+			});
+		}
+
 		return {
 			name: file.basename,
 			crId: crId,
-			// Support both field name conventions: born/died (spec) and birth_date/death_date (Gramps)
-			birthDate: cache.frontmatter.born || cache.frontmatter.birth_date,
-			deathDate: cache.frontmatter.died || cache.frontmatter.death_date,
+			birthDate,
+			deathDate,
 			sex: cache.frontmatter.sex,
 			file: file
 		};

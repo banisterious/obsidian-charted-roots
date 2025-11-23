@@ -195,11 +195,29 @@ export class PersonPickerModal extends Modal {
 			// Extract name (from frontmatter or filename)
 			const name = fm.name || file.basename;
 
+			// Note: Frontmatter uses 'born'/'died' properties, mapped to birthDate/deathDate internally
+			// Convert Date objects to ISO strings if necessary (Obsidian parses YAML dates as Date objects)
+			const birthDate = fm.born instanceof Date ? fm.born.toISOString().split('T')[0] : fm.born;
+			const deathDate = fm.died instanceof Date ? fm.died.toISOString().split('T')[0] : fm.died;
+
+			// Debug logging to diagnose date reading issue
+			if (name === 'William Anderson') {
+				console.log('[Canvas Roots DEBUG - PersonPicker] William Anderson frontmatter:', {
+					'fm.born': fm.born,
+					'fm.born type': typeof fm.born,
+					'fm.born instanceof Date': fm.born instanceof Date,
+					'birthDate (converted)': birthDate,
+					'fm.died': fm.died,
+					'deathDate (converted)': deathDate,
+					allKeys: Object.keys(fm)
+				});
+			}
+
 			return {
 				name,
 				crId: fm.cr_id,
-				birthDate: fm.born || fm.birth_date,
-				deathDate: fm.died || fm.death_date,
+				birthDate,
+				deathDate,
 				sex: fm.sex || fm.gender,
 				file
 			};
@@ -495,20 +513,32 @@ export class PersonPickerModal extends Modal {
 		const mainInfo = card.createDiv({ cls: 'crc-picker-item__main' });
 		mainInfo.createDiv({ cls: 'crc-picker-item__name', text: person.name });
 
-		// Meta info (birth date and cr_id)
+		// Meta info (dates if available, otherwise cr_id)
 		const metaInfo = card.createDiv({ cls: 'crc-picker-item__meta' });
 
-		if (person.birthDate) {
-			const birthBadge = metaInfo.createDiv({ cls: 'crc-picker-badge' });
-			const birthIcon = createLucideIcon('calendar', 12);
-			birthBadge.appendChild(birthIcon);
-			birthBadge.appendText(person.birthDate);
-		}
+		const hasDates = person.birthDate || person.deathDate;
 
-		const idBadge = metaInfo.createDiv({ cls: 'crc-picker-badge crc-picker-badge--id' });
-		const idIcon = createLucideIcon('hash', 12);
-		idBadge.appendChild(idIcon);
-		idBadge.appendText(person.crId);
+		if (hasDates) {
+			// Show birth-death date range
+			const dateBadge = metaInfo.createDiv({ cls: 'crc-picker-badge' });
+			const dateIcon = createLucideIcon('calendar', 12);
+			dateBadge.appendChild(dateIcon);
+
+			// Format: "1888-1952" or "b. 1888" or "d. 1952"
+			if (person.birthDate && person.deathDate) {
+				dateBadge.appendText(`${person.birthDate} – ${person.deathDate}`);
+			} else if (person.birthDate) {
+				dateBadge.appendText(`b. ${person.birthDate}`);
+			} else if (person.deathDate) {
+				dateBadge.appendText(`d. ${person.deathDate}`);
+			}
+		} else {
+			// Fallback: show cr_id only when no dates available
+			const idBadge = metaInfo.createDiv({ cls: 'crc-picker-badge crc-picker-badge--id' });
+			const idIcon = createLucideIcon('hash', 12);
+			idBadge.appendChild(idIcon);
+			idBadge.appendText(person.crId);
+		}
 
 		// Click handler
 		card.addEventListener('click', () => {
