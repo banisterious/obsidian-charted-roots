@@ -37,7 +37,7 @@ This plugin is designed for genealogists, historians, and world-builders. It tra
 
 ### Planned Features
 
-See [Roadmap](docs/roadmap.md) for complete development timeline.
+See [Roadmap](docs/roadmap.md) for detailed feature descriptions and development priorities.
 
 - **Collections Management:** Folder-based auto-discovery and organization of multiple family trees
 - **GEDCOM Export:** Round-trip export back to .ged format
