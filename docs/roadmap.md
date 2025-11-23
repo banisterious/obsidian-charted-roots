@@ -1,13 +1,13 @@
 # Canvas Roots: Development Roadmap
 
 > **Last Updated:** 2025-11-22
-> **Current Version:** v0.1.1-alpha
+> **Current Version:** v0.1.2-alpha
 
 Canvas Roots is in active alpha development with core functionality in place and advanced features planned.
 
 ---
 
-## 🎯 Current Status (v0.1.1)
+## 🎯 Current Status (v0.1.2)
 
 ### ✅ Implemented Features
 
