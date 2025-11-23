@@ -1,15 +1,23 @@
 # Canvas Roots: Development Roadmap
 
 > **Last Updated:** 2025-11-23
-> **Current Version:** v0.1.4-alpha
+> **Current Version:** v0.2.0-beta
 
-Canvas Roots is in active alpha development with core functionality in place and advanced features planned.
+Canvas Roots is in beta with core functionality complete and stable. Advanced features and enhancements are planned for future releases.
 
 ---
 
 ## 🎯 Released Versions
 
-### v0.1.4-alpha (Current)
+### v0.2.0-beta (Current)
+
+**Beta Release:**
+- Transitioned from alpha to beta status
+- Core features confirmed stable and production-ready
+- All essential genealogical workflows fully functional
+- Foundation established for advanced feature development
+
+### v0.1.4-alpha
 
 **GEDCOM Export:**
 - GEDCOM 5.5.1 format generation with complete header and trailer

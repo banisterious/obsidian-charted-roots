@@ -1,9 +1,9 @@
-# Known Limitations - Alpha Release
+# Known Limitations - Beta Release
 
 **Last Updated:** 2025-11-23
-**Current Version:** v0.1.4-alpha
+**Current Version:** v0.2.0-beta
 
-This document outlines features that are planned but not yet implemented in the alpha release of Canvas Roots. The plugin's core functionality (GEDCOM import/export, tree generation, canvas styling, and collections) is stable and well-tested.
+This document outlines features that are planned but not yet implemented in the beta release of Canvas Roots. The plugin's core functionality (GEDCOM import/export, tree generation, canvas styling, and collections) is stable and production-ready.
 
 ---
 
@@ -334,23 +334,22 @@ Include:
 
 ## Planned Release Timeline
 
-**Current:** v0.1.4-alpha (core features complete and stable)
+**Current:** v0.2.0-beta (core features complete and stable)
 
 **Future Releases:**
-- **v0.2.0-beta:** Reference numbering systems, stability improvements
-- **v0.3.0-beta:** Person detail panel, interactive tree preview
-- **v1.0.0:** Privacy/obfuscation features, full feature set from specification
-- **v1.x.x:** Advanced relationship features, world-building support
+- Bug fixes and stability improvements based on user feedback
+- Reference numbering systems (Ahnentafel, etc.)
+- Person detail panel and interactive tree preview
+- Privacy/obfuscation features for living people
+- Advanced relationship features and world-building support
 
 Timeline is subject to change based on user feedback and development priorities.
-
-**Beta Transition:** Moving to beta status after user testing confirms stability of v0.1.4 features.
 
 ---
 
 ## Summary
 
-Canvas Roots v0.1.4-alpha provides a **feature-complete core** for genealogical research in Obsidian:
+Canvas Roots v0.2.0-beta is **production-ready** for core genealogical workflows in Obsidian:
 
 **Strengths:**
 - ✅ Exceptional GEDCOM import/export with round-trip compatibility
@@ -360,6 +359,7 @@ Canvas Roots v0.1.4-alpha provides a **feature-complete core** for genealogical 
 - ✅ Multi-family detection and handling
 - ✅ Collections management with auto-detection and custom organization
 - ✅ Context menu integration for all common operations
+- ✅ Production-grade error handling and validation
 
 **Limitations:**
 - ❌ No reference numbering systems (Ahnentafel, etc.)
@@ -367,4 +367,4 @@ Canvas Roots v0.1.4-alpha provides a **feature-complete core** for genealogical 
 - ❌ No advanced relationship features (medical genograms, etc.)
 - ❌ No privacy/obfuscation features for living people
 
-**Recommendation:** Canvas Roots v0.1.4-alpha is feature-complete for core genealogical workflows. Ideal for users who want automated family tree visualization in Obsidian Canvas with full data portability via GEDCOM. Remaining features are enhancements rather than critical functionality.
+**Recommendation:** Canvas Roots v0.2.0-beta is stable and ready for everyday use. Core features are production-ready with robust error handling. Perfect for users who want automated family tree visualization in Obsidian Canvas with full data portability via GEDCOM. Remaining features are enhancements, not essential functionality.
