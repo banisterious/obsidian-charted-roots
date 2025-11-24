@@ -17,9 +17,72 @@ export class TreePreviewRenderer {
 	private container: HTMLElement;
 	private svgElement: SVGElement | null = null;
 	private currentLayout: LayoutResult | null = null;
+	private showLabels: boolean = true;
+	private currentScale: number = 1;
+	private currentTranslateX: number = 0;
+	private currentTranslateY: number = 0;
+	private isDragging: boolean = false;
+	private dragStartX: number = 0;
+	private dragStartY: number = 0;
 
 	constructor(container: HTMLElement) {
 		this.container = container;
+		this.setupPanZoom();
+	}
+
+	/**
+	 * Setup pan and zoom interactions
+	 */
+	private setupPanZoom(): void {
+		// Mouse wheel zoom
+		this.container.addEventListener('wheel', (e: WheelEvent) => {
+			if (!this.svgElement) return;
+			e.preventDefault();
+
+			const delta = e.deltaY > 0 ? 0.9 : 1.1;
+			this.currentScale = Math.max(0.1, Math.min(5, this.currentScale * delta));
+			this.updateTransform();
+		});
+
+		// Pan with mouse drag
+		this.container.addEventListener('mousedown', (e: MouseEvent) => {
+			this.isDragging = true;
+			this.dragStartX = e.clientX - this.currentTranslateX;
+			this.dragStartY = e.clientY - this.currentTranslateY;
+			this.container.style.cursor = 'grabbing';
+		});
+
+		this.container.addEventListener('mousemove', (e: MouseEvent) => {
+			if (!this.isDragging) return;
+			this.currentTranslateX = e.clientX - this.dragStartX;
+			this.currentTranslateY = e.clientY - this.dragStartY;
+			this.updateTransform();
+		});
+
+		this.container.addEventListener('mouseup', () => {
+			this.isDragging = false;
+			this.container.style.cursor = 'grab';
+		});
+
+		this.container.addEventListener('mouseleave', () => {
+			this.isDragging = false;
+			this.container.style.cursor = 'grab';
+		});
+
+		this.container.style.cursor = 'grab';
+	}
+
+	/**
+	 * Update SVG transform for pan/zoom
+	 */
+	private updateTransform(): void {
+		if (!this.svgElement) return;
+		const g = this.svgElement.querySelector('.crc-tree-preview-content');
+		if (!g) return;
+
+		g.setAttribute('transform',
+			`translate(${this.currentTranslateX}, ${this.currentTranslateY}) scale(${this.currentScale})`
+		);
 	}
 
 	/**
@@ -138,6 +201,11 @@ export class TreePreviewRenderer {
 			text.setAttribute('dominant-baseline', 'middle');
 			text.textContent = this.truncateName(pos.person.name);
 
+			// Hide labels if toggle is off
+			if (!this.showLabels) {
+				text.setAttribute('display', 'none');
+			}
+
 			nodeGroup.appendChild(rect);
 			nodeGroup.appendChild(text);
 			g.appendChild(nodeGroup);
@@ -237,6 +305,52 @@ export class TreePreviewRenderer {
 		this.container.empty();
 		this.svgElement = null;
 		this.currentLayout = null;
+		this.resetView();
+	}
+
+	/**
+	 * Toggle label visibility
+	 */
+	toggleLabels(show: boolean): void {
+		this.showLabels = show;
+
+		if (!this.svgElement) return;
+
+		// Update all text elements
+		const texts = this.svgElement.querySelectorAll('.crc-preview-node-text');
+		texts.forEach((text) => {
+			if (show) {
+				text.removeAttribute('display');
+			} else {
+				text.setAttribute('display', 'none');
+			}
+		});
+	}
+
+	/**
+	 * Reset view to initial zoom and position
+	 */
+	resetView(): void {
+		this.currentScale = 1;
+		this.currentTranslateX = 0;
+		this.currentTranslateY = 0;
+		this.updateTransform();
+	}
+
+	/**
+	 * Zoom in
+	 */
+	zoomIn(): void {
+		this.currentScale = Math.min(5, this.currentScale * 1.2);
+		this.updateTransform();
+	}
+
+	/**
+	 * Zoom out
+	 */
+	zoomOut(): void {
+		this.currentScale = Math.max(0.1, this.currentScale / 1.2);
+		this.updateTransform();
 	}
 
 	/**

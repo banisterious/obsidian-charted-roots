@@ -1436,3 +1436,62 @@
   stroke-width: 1px;
   fill: none;
 }
+
+/**
+ * Preview controls row
+ */
+.crc-preview-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/**
+ * Zoom control buttons
+ */
+.crc-preview-zoom-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.crc-preview-zoom-btn {
+  padding: 4px 12px;
+  font-size: 14px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--interactive-normal);
+  color: var(--text-normal);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.crc-preview-zoom-btn:hover {
+  background: var(--interactive-hover);
+  border-color: var(--interactive-accent);
+}
+
+.crc-preview-zoom-btn:active {
+  background: var(--interactive-active);
+}
+
+/**
+ * Label toggle
+ */
+.crc-preview-label-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.crc-preview-label-toggle label {
+  font-size: 13px;
+  color: var(--text-normal);
+  cursor: pointer;
+  user-select: none;
+}
+
+.crc-preview-checkbox {
+  cursor: pointer;
+}

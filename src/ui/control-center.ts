@@ -2359,11 +2359,44 @@ export class ControlCenterModal extends Modal {
 			cls: 'crc-text-muted crc-mb-3'
 		});
 
+		// Preview controls row
+		const previewControlsRow = previewContent.createDiv({ cls: 'crc-preview-controls crc-mb-3' });
+
 		// Generate preview button
-		const previewButtonContainer = previewContent.createDiv({ cls: 'crc-mb-3' });
-		const generatePreviewBtn = previewButtonContainer.createEl('button', {
+		const generatePreviewBtn = previewControlsRow.createEl('button', {
 			text: 'Generate preview',
 			cls: 'mod-cta'
+		});
+
+		// Zoom controls
+		const zoomControls = previewControlsRow.createDiv({ cls: 'crc-preview-zoom-controls' });
+		const zoomOutBtn = zoomControls.createEl('button', {
+			text: '−',
+			cls: 'crc-preview-zoom-btn',
+			attr: { 'aria-label': 'Zoom out' }
+		});
+		const resetViewBtn = zoomControls.createEl('button', {
+			text: 'Reset',
+			cls: 'crc-preview-zoom-btn',
+			attr: { 'aria-label': 'Reset view' }
+		});
+		const zoomInBtn = zoomControls.createEl('button', {
+			text: '+',
+			cls: 'crc-preview-zoom-btn',
+			attr: { 'aria-label': 'Zoom in' }
+		});
+
+		// Label toggle
+		const labelToggle = previewControlsRow.createDiv({ cls: 'crc-preview-label-toggle' });
+		const labelCheckbox = labelToggle.createEl('input', {
+			type: 'checkbox',
+			cls: 'crc-preview-checkbox',
+			attr: { id: 'preview-labels-toggle' }
+		});
+		labelCheckbox.checked = true;
+		const labelLabel = labelToggle.createEl('label', {
+			text: 'Show labels',
+			attr: { for: 'preview-labels-toggle' }
 		});
 
 		// Preview container
@@ -2373,6 +2406,24 @@ export class ControlCenterModal extends Modal {
 
 		// Initialize preview renderer
 		this.treePreviewRenderer = new TreePreviewRenderer(this.treePreviewContainer);
+
+		// Wire up zoom controls
+		zoomInBtn.addEventListener('click', () => {
+			this.treePreviewRenderer?.zoomIn();
+		});
+
+		zoomOutBtn.addEventListener('click', () => {
+			this.treePreviewRenderer?.zoomOut();
+		});
+
+		resetViewBtn.addEventListener('click', () => {
+			this.treePreviewRenderer?.resetView();
+		});
+
+		// Wire up label toggle
+		labelCheckbox.addEventListener('change', () => {
+			this.treePreviewRenderer?.toggleLabels(labelCheckbox.checked);
+		});
 
 		// Wire up preview button
 		generatePreviewBtn.addEventListener('click', async () => {
