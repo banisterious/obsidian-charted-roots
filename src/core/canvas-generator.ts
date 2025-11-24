@@ -185,13 +185,18 @@ export class CanvasGenerator {
 
 		const effectiveStyles = mergeStyleSettings(globalStyleSettings, styleOverrides);
 
+		// Get layout type and apply spacing multiplier for compact layouts
+		const layoutType = options.layoutType ?? 'standard';
+		const spacingMultiplier = layoutType === 'compact' ? 0.5 : 1.0;
+
 		const opts = {
-			nodeSpacingX: options.nodeSpacingX ?? 300,
-			nodeSpacingY: options.nodeSpacingY ?? 200,
+			nodeSpacingX: (options.nodeSpacingX ?? 300) * spacingMultiplier,
+			nodeSpacingY: (options.nodeSpacingY ?? 200) * spacingMultiplier,
 			nodeWidth: options.nodeWidth ?? 250,
 			nodeHeight: options.nodeHeight ?? 120,
 			direction: options.direction ?? 'vertical' as const,
 			treeType: options.treeType ?? 'descendant' as const,
+			layoutType: layoutType,
 			showLabels: options.showLabels ?? true,
 			useFamilyChartLayout: options.useFamilyChartLayout ?? true,
 			// Use effective styles (global settings merged with per-canvas overrides)
