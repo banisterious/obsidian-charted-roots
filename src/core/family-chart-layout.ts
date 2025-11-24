@@ -21,7 +21,8 @@ const DEFAULT_LAYOUT: Required<LayoutOptions> = {
 	nodeWidth: 250,
 	nodeHeight: 120,
 	direction: 'vertical',
-	treeType: 'descendant'
+	treeType: 'descendant',
+	layoutType: 'standard'
 };
 
 /**

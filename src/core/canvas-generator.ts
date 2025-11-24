@@ -8,6 +8,8 @@
 import { FamilyTree, PersonNode } from './family-graph';
 import { LayoutEngine, LayoutOptions } from './layout-engine';
 import { FamilyChartLayoutEngine } from './family-chart-layout';
+import { TimelineLayoutEngine } from './timeline-layout';
+import { HourglassLayoutEngine } from './hourglass-layout';
 import { getLogger } from './logging';
 import type { ArrowStyle, SpouseEdgeLabelFormat } from '../settings';
 import type { SpouseRelationship } from '../models/person';
@@ -83,6 +85,7 @@ export interface CanvasRootsMetadata {
 		nodeHeight: number;
 		nodeSpacingX: number;
 		nodeSpacingY: number;
+		layoutType?: import('../settings').LayoutType;
 	};
 
 	/**
@@ -149,10 +152,14 @@ export interface CanvasGenerationOptions extends LayoutOptions {
 export class CanvasGenerator {
 	private layoutEngine: LayoutEngine;
 	private familyChartLayoutEngine: FamilyChartLayoutEngine;
+	private timelineLayoutEngine: TimelineLayoutEngine;
+	private hourglassLayoutEngine: HourglassLayoutEngine;
 
 	constructor() {
 		this.layoutEngine = new LayoutEngine();
 		this.familyChartLayoutEngine = new FamilyChartLayoutEngine();
+		this.timelineLayoutEngine = new TimelineLayoutEngine();
+		this.hourglassLayoutEngine = new HourglassLayoutEngine();
 	}
 
 	/**
@@ -185,13 +192,18 @@ export class CanvasGenerator {
 
 		const effectiveStyles = mergeStyleSettings(globalStyleSettings, styleOverrides);
 
+		// Get layout type and apply spacing multiplier for compact layouts
+		const layoutType = options.layoutType ?? 'standard';
+		const spacingMultiplier = layoutType === 'compact' ? 0.5 : 1.0;
+
 		const opts = {
-			nodeSpacingX: options.nodeSpacingX ?? 300,
-			nodeSpacingY: options.nodeSpacingY ?? 200,
+			nodeSpacingX: (options.nodeSpacingX ?? 300) * spacingMultiplier,
+			nodeSpacingY: (options.nodeSpacingY ?? 200) * spacingMultiplier,
 			nodeWidth: options.nodeWidth ?? 250,
 			nodeHeight: options.nodeHeight ?? 120,
 			direction: options.direction ?? 'vertical' as const,
 			treeType: options.treeType ?? 'descendant' as const,
+			layoutType: layoutType,
 			showLabels: options.showLabels ?? true,
 			useFamilyChartLayout: options.useFamilyChartLayout ?? true,
 			// Use effective styles (global settings merged with per-canvas overrides)
@@ -212,10 +224,21 @@ export class CanvasGenerator {
 			effectiveNodeColorScheme: effectiveStyles.nodeColorScheme
 		});
 
-		// Choose layout engine based on option
-		const layoutResult = opts.useFamilyChartLayout
-			? this.familyChartLayoutEngine.calculateLayout(familyTree, opts)
-			: this.layoutEngine.calculateLayout(familyTree, opts);
+		// Choose layout engine based on layout type
+		let layoutResult;
+		if (layoutType === 'timeline') {
+			// Timeline layout: position by birth year
+			layoutResult = this.timelineLayoutEngine.calculateLayout(familyTree, opts);
+		} else if (layoutType === 'hourglass') {
+			// Hourglass layout: ancestors above, descendants below
+			layoutResult = this.hourglassLayoutEngine.calculateLayout(familyTree, opts);
+		} else if (opts.useFamilyChartLayout) {
+			// Standard/compact: use family-chart for proper spouse handling
+			layoutResult = this.familyChartLayoutEngine.calculateLayout(familyTree, opts);
+		} else {
+			// Fallback: use D3 hierarchical layout
+			layoutResult = this.layoutEngine.calculateLayout(familyTree, opts);
+		}
 
 		// Generate canvas nodes
 		const canvasNodes: CanvasNode[] = [];

@@ -7,6 +7,7 @@
 
 import { hierarchy, tree } from 'd3-hierarchy';
 import { FamilyTree, PersonNode } from './family-graph';
+import type { LayoutType } from '../settings';
 
 /**
  * Layout options for tree generation
@@ -29,6 +30,9 @@ export interface LayoutOptions {
 
 	/** Tree type */
 	treeType?: 'ancestor' | 'descendant' | 'full';
+
+	/** Layout algorithm type */
+	layoutType?: LayoutType;
 }
 
 /**
@@ -40,7 +44,8 @@ const DEFAULT_LAYOUT: Required<LayoutOptions> = {
 	nodeWidth: 250,
 	nodeHeight: 120,
 	direction: 'vertical',
-	treeType: 'descendant'
+	treeType: 'descendant',
+	layoutType: 'standard'
 };
 
 /**

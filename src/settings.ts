@@ -56,6 +56,15 @@ export type CanvasColor = '1' | '2' | '3' | '4' | '5' | '6' | 'none';
  */
 export type SpouseEdgeLabelFormat = 'none' | 'date-only' | 'date-location' | 'full';
 
+/**
+ * Layout algorithm options for tree generation
+ * - 'standard': Default family-chart layout with standard spacing
+ * - 'compact': Tighter spacing for large trees (50% of standard spacing)
+ * - 'timeline': Horizontal timeline layout by birth year
+ * - 'hourglass': Ancestors above, descendants below a focus person
+ */
+export type LayoutType = 'standard' | 'compact' | 'timeline' | 'hourglass';
+
 export interface CanvasRootsSettings {
 	defaultNodeWidth: number;
 	defaultNodeHeight: number;
@@ -82,6 +91,8 @@ export interface CanvasRootsSettings {
 	// Bidirectional relationship sync
 	enableBidirectionalSync: boolean;
 	syncOnFileModify: boolean;
+	// Layout algorithm
+	defaultLayoutType: LayoutType;
 }
 
 export const DEFAULT_SETTINGS: CanvasRootsSettings = {
@@ -111,7 +122,9 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	spouseEdgeLabelFormat: 'date-only', // When enabled, show just marriage date
 	// Bidirectional relationship sync defaults
 	enableBidirectionalSync: true,      // Default: ON - automatically sync relationships
-	syncOnFileModify: true              // Default: ON - sync when files are modified
+	syncOnFileModify: true,             // Default: ON - sync when files are modified
+	// Layout algorithm default
+	defaultLayoutType: 'standard'       // Default: standard family-chart layout
 };
 
 export class CanvasRootsSettingTab extends PluginSettingTab {
