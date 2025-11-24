@@ -51,7 +51,7 @@ export class ControlCenterModal extends Modal {
 	private spouseBtn?: HTMLButtonElement;
 	private spouseHelp?: HTMLElement;
 
-	// Tree Generation tab state
+	// Tree Output tab state
 	private treeCanvasNameInput?: HTMLInputElement;
 	private treeGenerateBtn?: HTMLButtonElement;
 	private pendingRootPerson?: PersonInfo;
@@ -241,7 +241,7 @@ export class ControlCenterModal extends Modal {
 
 	/**
 	 * Open Control Center with a person pre-selected as the tree root
-	 * Opens to the Tree Generation tab with the specified person already populated
+	 * Opens to the Tree Output tab with the specified person already populated
 	 *
 	 * @param file - The TFile of the person note
 	 */
@@ -276,7 +276,7 @@ export class ControlCenterModal extends Modal {
 			file
 		};
 
-		// Open to Tree Generation tab
+		// Open to Tree Output tab
 		this.openToTab('tree-generation');
 	}
 
@@ -624,7 +624,7 @@ export class ControlCenterModal extends Modal {
 		// Back button
 		const backBtn = this.contentContainer.createEl('button', {
 			cls: 'crc-btn crc-btn--secondary crc-btn--block crc-mt-3',
-			text: 'Back to Tree Generation'
+			text: 'Back to Tree Output'
 		});
 		const backIcon = createLucideIcon('chevron-right', 16);
 		backBtn.prepend(backIcon);
@@ -990,7 +990,7 @@ export class ControlCenterModal extends Modal {
 				number: '2',
 				title: 'Generate the tree',
 				description: 'Select a root person and configure tree options (ancestors, descendants, or full family tree).',
-				action: 'Go to Tree Generation tab →'
+				action: 'Go to Tree Output tab →'
 			},
 			{
 				number: '3',
@@ -1252,7 +1252,7 @@ export class ControlCenterModal extends Modal {
 		const selectSection = layoutContent.createDiv({ cls: 'crc-info-box' });
 		selectSection.createEl('strong', { text: 'How to select a layout:' });
 		selectSection.createEl('p', {
-			text: 'In the Tree Generation tab, use the "Layout algorithm" dropdown to choose your preferred layout. Canvas filenames will automatically include the layout type (e.g., "Family Tree - John Smith (timeline).canvas").',
+			text: 'In the Tree Output tab, use the "Layout algorithm" dropdown to choose your preferred layout. Canvas filenames will automatically include the layout type (e.g., "Family Tree - John Smith (timeline).canvas").',
 			cls: 'crc-mt-2'
 		});
 
@@ -1307,7 +1307,7 @@ export class ControlCenterModal extends Modal {
 		});
 
 		const filterDetails = filterSection.createEl('ul');
-		filterDetails.createEl('li', { text: 'Available in Tree Generation tab' });
+		filterDetails.createEl('li', { text: 'Available in Tree Output tab' });
 		filterDetails.createEl('li', { text: 'Works with all tree types (ancestors, descendants, full)' });
 		filterDetails.createEl('li', { text: 'Filter by detected family groups or user collections' });
 		filterDetails.createEl('li', { text: 'Perfect for focusing on specific lineages or story arcs' });
@@ -1330,7 +1330,7 @@ export class ControlCenterModal extends Modal {
 		const duringGenSection = styleSettingsContent.createDiv({ cls: 'crc-mb-4' });
 		duringGenSection.createEl('h4', { text: 'Setting styles during tree generation', cls: 'crc-mb-2' });
 		duringGenSection.createEl('p', {
-			text: 'When generating a new tree, you can optionally customize its styles in the Tree Generation tab.',
+			text: 'When generating a new tree, you can optionally customize its styles in the Tree Output tab.',
 			cls: 'crc-text-muted crc-mb-2'
 		});
 
@@ -2171,21 +2171,21 @@ export class ControlCenterModal extends Modal {
 	}
 
 	/**
-	 * Show Tree Generation tab
+	 * Show Tree Output tab
 	 */
 	/**
-	 * Show Tree Generation tab
+	 * Show Tree Output tab
 	 */
 	private async showTreeGenerationTab(): Promise<void> {
 		const container = this.contentContainer;
 
 		// Title
-		const title = container.createEl('h2', { text: 'Generate family tree' });
+		const title = container.createEl('h2', { text: 'Tree output' });
 		title.style.marginTop = '0';
 
 		// Intro text
 		container.createEl('p', {
-			text: 'Generate a visual family tree on an Obsidian Canvas. Select a root person and configure the tree options below.',
+			text: 'Generate visual family trees and export to various formats. Start by selecting a root person and configuring tree options.',
 			cls: 'crc-text-muted'
 		});
 
@@ -2512,6 +2512,43 @@ export class ControlCenterModal extends Modal {
 					.setValue(this.plugin.settings.spouseEdgeLabelFormat);
 				customSpouseLabelsSelect.disabled = true;
 			});
+
+		// Export Tree Card
+		const exportCard = container.createDiv({ cls: 'crc-card' });
+		const exportHeader = exportCard.createDiv({ cls: 'crc-card__header' });
+		const exportTitle = exportHeader.createEl('h3', {
+			cls: 'crc-card__title',
+			text: 'Export tree'
+		});
+		const exportIcon = createLucideIcon('download', 20);
+		exportTitle.prepend(exportIcon);
+
+		const exportContent = exportCard.createDiv({ cls: 'crc-card__content' });
+
+		// Intro text
+		exportContent.createEl('p', {
+			text: 'Export an existing canvas to other formats.',
+			cls: 'crc-text-muted crc-mb-3'
+		});
+
+		// Excalidraw export section
+		exportContent.createEl('h4', {
+			text: 'Excalidraw export',
+			cls: 'crc-section-heading'
+		});
+
+		exportContent.createEl('p', {
+			text: 'To export a canvas to Excalidraw format, right-click on any Canvas Roots canvas file and select "Export to Excalidraw". The export creates an editable Excalidraw file that preserves your tree structure.',
+			cls: 'crc-text-muted crc-mb-3'
+		});
+
+		// Note about context menu
+		const contextMenuNote = exportContent.createDiv({ cls: 'crc-info-box' });
+		contextMenuNote.createEl('strong', { text: 'Quick access:' });
+		contextMenuNote.createEl('p', {
+			text: 'The fastest way to export is via the canvas file context menu. Just right-click any Canvas Roots canvas in your file explorer.',
+			cls: 'crc-mt-1'
+		});
 
 		// Wire up the Generate button (in Root person card)
 		this.treeGenerateBtn?.addEventListener('click', async () => {

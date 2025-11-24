@@ -15,6 +15,7 @@ import { CanvasGenerator } from './src/core/canvas-generator';
 import { BASE_TEMPLATE } from './src/constants/base-template';
 import { ExcalidrawExporter } from './src/excalidraw/excalidraw-exporter';
 import { BidirectionalLinker } from './src/core/bidirectional-linker';
+import { generateCrId } from './src/core/uuid';
 
 const logger = getLogger('CanvasRootsPlugin');
 
@@ -165,6 +166,18 @@ export default class CanvasRootsPlugin extends Plugin {
 										await this.exportCanvasToExcalidraw(file);
 									});
 							});
+
+							submenu.addSeparator();
+
+							submenu.addItem((subItem) => {
+								subItem
+									.setTitle('More options...')
+									.setIcon('settings')
+									.onClick(() => {
+										const modal = new ControlCenterModal(this.app, this);
+										modal.openToTab('tree-generation');
+									});
+							});
 						});
 					} else {
 						// Mobile: flat menu with prefix
@@ -223,15 +236,46 @@ export default class CanvasRootsPlugin extends Plugin {
 									.setIcon('git-fork')
 									.setSubmenu();
 
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Generate family tree')
+								// Generate tree submenu
+								const generateTreeSubmenu = submenu.addItem((subItem) => {
+									return subItem
+										.setTitle('Generate tree')
 										.setIcon('git-fork')
+										.setSubmenu();
+								});
+
+								generateTreeSubmenu.addItem((genItem) => {
+									genItem
+										.setTitle('Generate Canvas tree')
+										.setIcon('layout')
 										.onClick(async () => {
 											const modal = new ControlCenterModal(this.app, this);
 											await modal.openWithPerson(file);
 										});
 								});
+
+								generateTreeSubmenu.addItem((genItem) => {
+									genItem
+										.setTitle('Generate Excalidraw tree')
+										.setIcon('pencil')
+										.onClick(async () => {
+											await this.generateExcalidrawTreeForPerson(file);
+										});
+								});
+
+								submenu.addSeparator();
+
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('More options...')
+										.setIcon('settings')
+										.onClick(async () => {
+											const modal = new ControlCenterModal(this.app, this);
+											await modal.openWithPerson(file);
+										});
+								});
+
+								submenu.addSeparator();
 
 								// Add relationship submenu
 								const relationshipSubmenu = submenu.addItem((subItem) => {
@@ -461,6 +505,50 @@ export default class CanvasRootsPlugin extends Plugin {
 							});
 						}
 					}
+
+					// Add essential properties option for ALL markdown files
+					// (appears outside the cr_id check so it works on blank notes too)
+					const fileCache = this.app.metadataCache.getFileCache(file);
+					const frontmatter = fileCache?.frontmatter || {};
+
+					// Check if all essential properties exist
+					// Note: Relationships can be stored as wikilinks OR _id properties (dual storage)
+					const hasAllProperties =
+						frontmatter.cr_id &&
+						frontmatter.name &&
+						('born' in frontmatter) &&
+						('died' in frontmatter) &&
+						(('father' in frontmatter) || ('father_id' in frontmatter)) &&
+						(('mother' in frontmatter) || ('mother_id' in frontmatter)) &&
+						(('spouses' in frontmatter) || ('spouse' in frontmatter) || ('spouse_id' in frontmatter)) &&
+						(('children' in frontmatter) || ('children_id' in frontmatter)) &&
+						('group_name' in frontmatter);
+
+					// Only show if missing some properties
+					if (!hasAllProperties) {
+						menu.addSeparator();
+
+						if (useSubmenu) {
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Add essential properties')
+									.setIcon('file-plus')
+									.onClick(async () => {
+										await this.addEssentialProperties([file]);
+									});
+							});
+						} else {
+							// Mobile
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Add essential properties')
+									.setIcon('file-plus')
+									.onClick(async () => {
+										await this.addEssentialProperties([file]);
+									});
+							});
+						}
+					}
 				}
 
 				// Folders: Set as people folder
@@ -600,6 +688,53 @@ export default class CanvasRootsPlugin extends Plugin {
 								});
 						});
 					}
+				}
+			})
+		);
+
+		// Add context menu for multi-file selections
+		this.registerEvent(
+			this.app.workspace.on('files-menu', (menu, files) => {
+				// Only show for multiple markdown files
+				const markdownFiles = files.filter(f => f instanceof TFile && f.extension === 'md') as TFile[];
+
+				if (markdownFiles.length === 0) return;
+
+				// Check if any files are missing essential properties
+				let hasMissingProperties = false;
+				for (const file of markdownFiles) {
+					const fileCache = this.app.metadataCache.getFileCache(file);
+					const frontmatter = fileCache?.frontmatter || {};
+
+					// Check if all essential properties exist (accounting for dual storage)
+					const hasAllProperties =
+						frontmatter.cr_id &&
+						frontmatter.name &&
+						('born' in frontmatter) &&
+						('died' in frontmatter) &&
+						(('father' in frontmatter) || ('father_id' in frontmatter)) &&
+						(('mother' in frontmatter) || ('mother_id' in frontmatter)) &&
+						(('spouses' in frontmatter) || ('spouse' in frontmatter) || ('spouse_id' in frontmatter)) &&
+						(('children' in frontmatter) || ('children_id' in frontmatter)) &&
+						('group_name' in frontmatter);
+
+					if (!hasAllProperties) {
+						hasMissingProperties = true;
+						break;
+					}
+				}
+
+				// Only show menu item if at least one file is missing properties
+				if (hasMissingProperties) {
+					menu.addSeparator();
+					menu.addItem((item) => {
+						item
+							.setTitle(`Canvas Roots: Add essential properties (${markdownFiles.length} files)`)
+							.setIcon('file-plus')
+							.onClick(async () => {
+								await this.addEssentialProperties(markdownFiles);
+							});
+					});
 				}
 			})
 		);
@@ -1228,6 +1363,248 @@ export default class CanvasRootsPlugin extends Plugin {
 		} catch (error) {
 			console.error('Error exporting to Excalidraw:', error);
 			new Notice(`Failed to export to Excalidraw: ${error.message}`);
+		}
+	}
+
+	/**
+	 * Add essential properties to person note(s)
+	 * Supports batch operations on multiple files
+	 */
+	private async addEssentialProperties(files: TFile[]) {
+		try {
+			let processedCount = 0;
+			let skippedCount = 0;
+			let errorCount = 0;
+
+			for (const file of files) {
+				try {
+					// Read current file content
+					const content = await this.app.vault.read(file);
+					const cache = this.app.metadataCache.getFileCache(file);
+
+					// Check if file already has frontmatter
+					const hasFrontmatter = content.startsWith('---');
+					const existingFrontmatter = cache?.frontmatter || {};
+
+					// Define essential properties
+					const essentialProperties: Record<string, any> = {};
+
+					// cr_id: Generate if missing
+					if (!existingFrontmatter.cr_id) {
+						essentialProperties.cr_id = generateCrId();
+					}
+
+					// name: Use filename if missing
+					if (!existingFrontmatter.name) {
+						essentialProperties.name = file.basename;
+					}
+
+					// born: Add as empty if missing
+					if (!existingFrontmatter.born) {
+						essentialProperties.born = '';
+					}
+
+					// died: Add as empty if missing
+					if (!existingFrontmatter.died) {
+						essentialProperties.died = '';
+					}
+
+					// father: Add as empty if missing
+					if (!existingFrontmatter.father) {
+						essentialProperties.father = '';
+					}
+
+					// mother: Add as empty if missing
+					if (!existingFrontmatter.mother) {
+						essentialProperties.mother = '';
+					}
+
+					// spouses: Add as empty array if missing
+					if (!existingFrontmatter.spouses) {
+						essentialProperties.spouses = [];
+					}
+
+					// children: Add as empty array if missing
+					if (!existingFrontmatter.children) {
+						essentialProperties.children = [];
+					}
+
+					// group_name: Add as empty if missing
+					if (!existingFrontmatter.group_name) {
+						essentialProperties.group_name = '';
+					}
+
+					// Skip if no properties to add
+					if (Object.keys(essentialProperties).length === 0) {
+						skippedCount++;
+						continue;
+					}
+
+					// Build new frontmatter
+					const newFrontmatter = { ...existingFrontmatter, ...essentialProperties };
+
+					// Convert frontmatter to YAML string
+					const yamlLines = ['---'];
+					for (const [key, value] of Object.entries(newFrontmatter)) {
+						if (Array.isArray(value)) {
+							if (value.length === 0) {
+								yamlLines.push(`${key}: []`);
+							} else {
+								yamlLines.push(`${key}:`);
+								value.forEach(item => yamlLines.push(`  - ${item}`));
+							}
+						} else if (value === '') {
+							yamlLines.push(`${key}: ""`);
+						} else {
+							yamlLines.push(`${key}: ${value}`);
+						}
+					}
+					yamlLines.push('---');
+
+					// Get body content (everything after frontmatter)
+					let bodyContent = '';
+					if (hasFrontmatter) {
+						const endOfFrontmatter = content.indexOf('---', 3);
+						if (endOfFrontmatter !== -1) {
+							bodyContent = content.substring(endOfFrontmatter + 3).trim();
+						}
+					} else {
+						bodyContent = content.trim();
+					}
+
+					// Construct new file content
+					const newContent = yamlLines.join('\n') + '\n\n' + bodyContent;
+
+					// Write back to file
+					await this.app.vault.modify(file, newContent);
+					processedCount++;
+
+				} catch (error) {
+					console.error(`Error processing ${file.path}:`, error);
+					errorCount++;
+				}
+			}
+
+			// Show summary
+			if (files.length === 1) {
+				if (processedCount === 1) {
+					new Notice('Added essential properties');
+				} else if (skippedCount === 1) {
+					new Notice('File already has all essential properties');
+				} else {
+					new Notice('Failed to add essential properties');
+				}
+			} else {
+				const parts = [];
+				if (processedCount > 0) parts.push(`${processedCount} updated`);
+				if (skippedCount > 0) parts.push(`${skippedCount} already complete`);
+				if (errorCount > 0) parts.push(`${errorCount} errors`);
+				new Notice(`Essential properties: ${parts.join(', ')}`);
+			}
+
+		} catch (error) {
+			console.error('Error adding essential properties:', error);
+			new Notice('Failed to add essential properties');
+		}
+	}
+
+	/**
+	 * Generate an Excalidraw tree directly from a person note
+	 * Uses default settings for quick generation
+	 */
+	private async generateExcalidrawTreeForPerson(personFile: TFile) {
+		try {
+			new Notice('Generating Excalidraw tree...');
+
+			// Get person info from file metadata
+			const cache = this.app.metadataCache.getFileCache(personFile);
+			if (!cache?.frontmatter?.cr_id) {
+				new Notice('Invalid person note: missing cr_id');
+				return;
+			}
+
+			const rootCrId = cache.frontmatter.cr_id;
+			const rootName = cache.frontmatter.name || personFile.basename;
+
+			// Generate tree with default settings
+			const graphService = new FamilyGraphService(this.app);
+			const familyTree = await graphService.generateTree({
+				rootCrId,
+				treeType: 'full',
+				maxGenerations: 5,
+				includeSpouses: true
+			});
+
+			if (!familyTree) {
+				new Notice('Failed to generate tree: root person not found');
+				return;
+			}
+
+			// Generate canvas with default options
+			const canvasGenerator = new CanvasGenerator();
+			const canvasData = canvasGenerator.generateCanvas(familyTree, {
+				direction: 'vertical',
+				nodeSpacingX: 300,
+				nodeSpacingY: 200,
+				layoutType: this.settings.defaultLayoutType,
+				nodeColorScheme: this.settings.nodeColorScheme,
+				showLabels: true,
+				useFamilyChartLayout: true,
+				parentChildArrowStyle: this.settings.parentChildArrowStyle,
+				spouseArrowStyle: this.settings.spouseArrowStyle,
+				parentChildEdgeColor: this.settings.parentChildEdgeColor,
+				spouseEdgeColor: this.settings.spouseEdgeColor,
+				showSpouseEdges: this.settings.showSpouseEdges,
+				spouseEdgeLabelFormat: this.settings.spouseEdgeLabelFormat
+			});
+
+			// Create temporary canvas file
+			const tempCanvasName = `temp-${Date.now()}.canvas`;
+			const tempCanvasPath = `${personFile.parent?.path || ''}/${tempCanvasName}`;
+			const tempCanvasFile = await this.app.vault.create(tempCanvasPath, JSON.stringify(canvasData, null, '\t'));
+
+			// Export to Excalidraw
+			const exporter = new ExcalidrawExporter(this.app);
+			const result = await exporter.exportToExcalidraw({
+				canvasFile: tempCanvasFile,
+				preserveColors: true,
+				fontSize: 16,
+				strokeWidth: 2
+			});
+
+			// Delete temporary canvas file
+			await this.app.vault.delete(tempCanvasFile);
+
+			if (!result.success) {
+				new Notice(`Export failed: ${result.errors.join(', ')}`);
+				return;
+			}
+
+			// Save Excalidraw file
+			const outputFileName = `Family Tree - ${rootName}.excalidraw.md`;
+			const outputPath = `${personFile.parent?.path || ''}/${outputFileName}`;
+
+			// Check if file exists and create unique name if needed
+			let finalPath = outputPath;
+			let counter = 1;
+			while (this.app.vault.getAbstractFileByPath(finalPath)) {
+				finalPath = `${personFile.parent?.path || ''}/Family Tree - ${rootName} (${counter}).excalidraw.md`;
+				counter++;
+			}
+
+			await this.app.vault.create(finalPath, result.excalidrawContent!);
+
+			new Notice(`Generated Excalidraw tree with ${result.elementsExported} elements`);
+
+			// Open the newly created file
+			const excalidrawFile = this.app.vault.getAbstractFileByPath(finalPath);
+			if (excalidrawFile instanceof TFile) {
+				const leaf = this.app.workspace.getLeaf(false);
+				await leaf.openFile(excalidrawFile);
+			}
+		} catch (error) {
+			console.error('Error generating Excalidraw tree:', error);
+			new Notice(`Failed to generate Excalidraw tree: ${error.message}`);
 		}
 	}
 

@@ -101,9 +101,9 @@ export const TAB_CONFIGS: TabConfig[] = [
 	},
 	{
 		id: 'tree-generation',
-		name: 'Tree Generation',
+		name: 'Tree Output',
 		icon: 'git-branch',
-		description: 'Configure tree layout and styling'
+		description: 'Generate trees and export to various formats'
 	},
 	{
 		id: 'quick-settings',
