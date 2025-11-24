@@ -1,6 +1,6 @@
 # Canvas Roots: Genealogical Family Tree Plugin for Obsidian
 
-> **Beta Status (v0.2.2):** Canvas Roots is feature-complete for core genealogical workflows. All essential features are stable and production-ready (GEDCOM import/export, bidirectional sync, tree generation, canvas styling, collections). Advanced features are planned for future releases. See [Roadmap](docs/roadmap.md) for details.
+> **Beta Status (v0.2.3):** Canvas Roots is feature-complete for core genealogical workflows. All essential features are stable and production-ready (GEDCOM import/export, bidirectional sync, alternative layout algorithms, tree generation, canvas styling, collections). Advanced features are planned for future releases. See [Roadmap](docs/roadmap.md) for details.
 
 **Canvas Roots** is an Obsidian plugin that automatically generates complex family trees directly onto the Canvas using specialized genealogical layout algorithms for non-overlapping, relationship-aware positioning.
 
@@ -9,9 +9,15 @@ This plugin is designed for genealogists, historians, and world-builders. It tra
 
 ## ✨ Key Features
 
-### Available in Beta (v0.2.2)
+### Available in Beta (v0.2.3)
 
 - **GEDCOM Import/Export:** Full round-trip support for GEDCOM 5.5.1 format with pre-import validation and comprehensive import results modal. Import family trees from popular genealogy software (Gramps, Ancestry, FamilySearch) with birth/death places, occupation, and gender data. Export back to .ged format with UUID preservation, collection codes, and marriage metadata.
+
+- **Alternative Layout Algorithms:** Choose from four layout algorithms to visualize your family tree in different ways:
+  - **Standard:** Traditional family-chart layout with proper spouse handling
+  - **Compact:** 50% tighter spacing for large trees (50+ people)
+  - **Timeline:** Chronological positioning by birth year (shows who lived when)
+  - **Hourglass:** Focus on one person's lineage (ancestors above, descendants below)
 
 - **Automated Layout:** Generate precise, non-overlapping pedigree (ancestor) and descendant charts using specialized genealogical layout algorithms designed for complex family relationships.
 

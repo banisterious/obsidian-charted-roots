@@ -286,10 +286,10 @@ Compute and track multi-generational lineages from marked root persons to enable
 
 ### Alternative Layout Algorithms
 
-- Compact layout option for space-constrained trees
-- Fan chart (circular ancestor view)
-- Hourglass chart (ancestors + descendants of focus person)
-- Timeline-based layout (horizontal by birth year)
+- ✅ **Compact layout** - 50% tighter spacing for large trees (v0.2.3-beta)
+- ✅ **Timeline layout** - Chronological positioning by birth year (v0.2.3-beta)
+- ✅ **Hourglass layout** - Ancestors above, descendants below root person (v0.2.3-beta)
+- Fan chart (circular ancestor view) - Deferred due to Canvas rectangular node constraints
 - Bow-tie layout for showing connections between families
 
 ### Dynasty Management

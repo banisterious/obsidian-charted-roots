@@ -7,6 +7,79 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.3-beta] - 2025-11-24
+
+### Added
+
+- **Alternative Layout Algorithms**: Choose from four layout algorithms to visualize family trees in different ways
+  - **Standard**: Traditional family-chart layout with proper spouse handling (default)
+  - **Compact**: 50% tighter spacing for large trees (ideal for 50+ people)
+  - **Timeline**: Chronological positioning by birth year
+    - X-axis: Birth year (shows who lived when)
+    - Y-axis: Generation number
+    - Intelligently estimates positions for missing birth dates from relatives
+    - Auto-fallback to generation-based layout when no dates available
+  - **Hourglass**: Focus on one person's complete lineage
+    - Root person centered at Y=0
+    - Ancestors positioned above (negative Y)
+    - Descendants positioned below (positive Y)
+    - Each generation horizontally centered
+
+- **Enhanced Canvas Naming**: Auto-generated canvas filenames now include layout type
+  - Standard: `Family Tree - Name.canvas` (no suffix)
+  - Compact: `Family Tree - Name (compact).canvas`
+  - Timeline: `Family Tree - Name (timeline).canvas`
+  - Hourglass: `Family Tree - Name (hourglass).canvas`
+
+- **Documentation**: Added comprehensive layout documentation
+  - New "Layout algorithms" section in Control Center Guide tab
+  - Updated user guide with layout descriptions and use cases
+  - Layout type stored in canvas metadata for regeneration
+
+---
+
+## [0.2.2-beta] - 2025-11-23
+
+### Added
+
+- **Bidirectional Relationship Sync**: Automatically maintains reciprocal relationships across your family tree
+  - Setting someone as a parent automatically adds child relationship in parent's note
+  - Deleting a relationship automatically removes reciprocal link
+  - Works seamlessly with Bases table edits, direct frontmatter modifications, and external editors
+  - Relationship snapshots loaded on plugin initialization for immediate sync
+
+- **Enhanced GEDCOM Support**:
+  - Pre-import validation with detailed error reporting
+  - Comprehensive import results modal showing success/warning/error counts
+  - Improved relationship validation and duplicate detection
+  - Better handling of edge cases and malformed data
+
+- **Obsidian Bases Integration**: Six new pre-configured relationship query views
+  - Single Parents: People with children but no spouse
+  - Childless Couples: Married couples without children
+  - Multiple Marriages: People married more than once
+  - Sibling Groups: Sets of siblings grouped by parents
+  - Root Generation: Ancestor endpoints with children but no parents
+  - Marked Root Persons: People marked with `root_person: true`
+
+- **Root Person Marking**: Mark specific people as "root persons" for lineage tracking
+  - Crown-icon context menu action: "Mark as root person" / "Unmark as root person"
+  - Property: `root_person: true` in YAML frontmatter
+  - Documented in Control Center Guide tab with use cases
+  - Integrated with Bases "Marked Root Persons" view
+
+- **Property Migration**: Renamed `collection_name` to `group_name` with automatic migration
+  - Backward-compatible migration on plugin load
+  - Updates both settings and person note properties
+
+### Changed
+
+- Enhanced Control Center Guide tab with root person documentation
+- Improved relationship sync reliability and performance
+- Updated GEDCOM import workflow with better error handling
+
+---
+
 ## [0.2.1-beta] - 2025-11-23
 
 ### Fixed
