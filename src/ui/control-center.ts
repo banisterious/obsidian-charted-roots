@@ -1,4 +1,4 @@
-import { App, Modal, Notice, Setting, TFile, setIcon, ToggleComponent } from 'obsidian';
+import { App, Modal, Notice, Setting, TFile, TFolder, setIcon, ToggleComponent } from 'obsidian';
 import CanvasRootsPlugin from '../../main';
 import { TAB_CONFIGS, createLucideIcon, setLucideIcon, LucideIconName } from './lucide-icons';
 import { createPersonNote, PersonData } from '../core/person-note-writer';
@@ -2948,6 +2948,11 @@ export class ControlCenterModal extends Modal {
 				await this.plugin.saveSettings();
 			}
 
+			// Sync bidirectional relationships after import if enabled
+			if (this.plugin.settings.enableBidirectionalSync && result.success && result.notesCreated > 0) {
+				await this.syncImportedRelationships();
+			}
+
 			// Show summary
 			new Notice(
 				`GEDCOM imported: ${result.notesCreated} notes created, ${result.errors.length} errors`
@@ -4356,6 +4361,84 @@ export class ControlCenterModal extends Modal {
 		}
 		if (this.spouseHelp) {
 			this.updateHelpText(this.spouseHelp, this.spouseField);
+		}
+	}
+
+	/**
+	 * Sync bidirectional relationships for all person notes after GEDCOM import
+	 */
+	private async syncImportedRelationships(): Promise<void> {
+		const peopleFolder = this.plugin.settings.peopleFolder || '';
+		const folder = this.app.vault.getAbstractFileByPath(peopleFolder);
+
+		if (!(folder instanceof TFolder)) {
+			logger.warn('gedcom-sync', 'People folder not found, skipping relationship sync');
+			return;
+		}
+
+		// Get all person notes in the folder
+		const personFiles: TFile[] = [];
+		const getAllMarkdownFiles = (folder: TFolder) => {
+			for (const child of folder.children) {
+				if (child instanceof TFile && child.extension === 'md') {
+					const cache = this.app.metadataCache.getFileCache(child);
+					if (cache?.frontmatter?.cr_id) {
+						personFiles.push(child);
+					}
+				} else if (child instanceof TFolder) {
+					getAllMarkdownFiles(child);
+				}
+			}
+		};
+		getAllMarkdownFiles(folder);
+
+		if (personFiles.length === 0) {
+			logger.info('gedcom-sync', 'No person notes found to sync');
+			return;
+		}
+
+		logger.info('gedcom-sync', `Syncing relationships for ${personFiles.length} person notes`);
+
+		// Show progress notice
+		const progressNotice = new Notice(
+			`Syncing relationships for ${personFiles.length} people...`,
+			0 // Don't auto-dismiss
+		);
+
+		try {
+			const bidirectionalLinker = new BidirectionalLinker(this.app);
+			let syncedCount = 0;
+
+			// Sync all person notes
+			for (const file of personFiles) {
+				try {
+					await bidirectionalLinker.syncRelationships(file);
+					syncedCount++;
+
+					// Update progress every 10 files
+					if (syncedCount % 10 === 0) {
+						progressNotice.setMessage(
+							`Syncing relationships: ${syncedCount}/${personFiles.length} people processed`
+						);
+					}
+				} catch (error) {
+					logger.error('gedcom-sync', `Failed to sync relationships for ${file.path}`, {
+						error: error.message
+					});
+				}
+			}
+
+			// Hide progress notice and show completion
+			progressNotice.hide();
+			new Notice(`✓ Relationships synced for ${syncedCount} people`);
+
+			logger.info('gedcom-sync', `Relationship sync complete: ${syncedCount}/${personFiles.length} files processed`);
+		} catch (error) {
+			progressNotice.hide();
+			logger.error('gedcom-sync', 'Failed to sync imported relationships', {
+				error: error.message
+			});
+			new Notice(`Relationship sync failed: ${error.message}`);
 		}
 	}
 }
