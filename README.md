@@ -162,6 +162,14 @@ After editing relationships or changing settings:
 
 For complete workflow details, see the [User Guide](docs/user-guide.md).
 
+---
+
+## Support My Work
+
+If you find this plugin useful, please consider supporting its development!
+
+<a href="[https://www.buymeacoffee.com/banisterious](https://www.buymeacoffee.com/banisterious)" target="_blank"><img src="[https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
 
 ## 📚 Documentation
 
