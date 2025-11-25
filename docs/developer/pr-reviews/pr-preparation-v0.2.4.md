@@ -16,7 +16,7 @@ This document tracks issues identified through analysis of Obsidian plugin PR re
 
 | Priority | Category | Count | Status |
 |----------|----------|-------|--------|
-| HIGH | require() imports | 4 | Pending |
+| HIGH | require() imports | 4 | ✅ Complete |
 | MEDIUM | Inline styles | 57 | Pending |
 | MEDIUM | Explicit `any` types | 16 | Pending |
 | LOW | Untyped catch errors | 36 | Pending |
@@ -26,12 +26,14 @@ This document tracks issues identified through analysis of Obsidian plugin PR re
 
 ---
 
-## Category 1: require() Imports
+## Category 1: require() Imports ✅ COMPLETE
 
 **Priority:** HIGH
-**Issue:** Obsidian reviewers flag `require()` style imports. Should use ES module imports instead.
+**Status:** ✅ Fixed in commit (Phase 1)
 
-### Occurrences
+### Original Issue
+
+Obsidian reviewers flag `require()` style imports. The following were found:
 
 | # | File | Line | Code |
 |---|------|------|------|
@@ -40,12 +42,31 @@ This document tracks issues identified through analysis of Obsidian plugin PR re
 | 3 | src/ui/control-center.ts | 4046 | `require('path').join(...)` |
 | 4 | src/ui/control-center.ts | 4049 | `const fs = require('fs');` |
 
-### Fix Strategy
+### Resolution
 
-These are used for log export functionality (selecting directory, writing files). Options:
-1. Use Obsidian's built-in file APIs (`app.vault.adapter`)
-2. Use dynamic imports if electron access is truly needed
-3. Refactor to use Obsidian's `FileSystemAdapter` methods
+Refactored log export functionality to use Obsidian's vault API instead of Node.js/Electron:
+
+1. **Changed log export location** from external file system to vault-relative folder
+   - Default folder: `.canvas-roots/logs`
+   - Configurable via settings text input
+
+2. **Replaced Electron directory picker** with simple text input for vault path
+   - Removed `require('electron').remote.dialog.showOpenDialog()`
+   - UI now shows editable text field for folder path
+
+3. **Replaced Node.js file system calls** with Obsidian vault adapter
+   - `require('fs').writeFileSync()` → `app.vault.adapter.write()`
+   - `require('path').join()` → template string concatenation
+   - Added automatic folder creation via `app.vault.createFolder()`
+
+4. **Updated default settings**
+   - `logExportPath: ''` → `logExportPath: '.canvas-roots/logs'`
+
+**Benefits:**
+- Works on mobile (no Node.js/Electron dependency)
+- Logs stored within vault (portable, backed up)
+- Simpler UI (no native dialog)
+- Follows Obsidian plugin best practices
 
 ---
 

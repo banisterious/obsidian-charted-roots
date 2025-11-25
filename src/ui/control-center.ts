@@ -3890,43 +3890,21 @@ export class ControlCenterModal extends Modal {
 					});
 			});
 
-		// Export Path Display
-		let pathInput: HTMLInputElement;
+		// Export Path Setting (vault-relative folder)
 		new Setting(loggingContent)
-			.setName('Export directory')
-			.setDesc('Directory for exported log files')
+			.setName('Export folder')
+			.setDesc('Vault folder for exported log files (e.g., ".canvas-roots/logs")')
 			.addText(text => {
-				pathInput = text.inputEl;
-				text.inputEl.readOnly = true;
-				text.setPlaceholder('No directory selected (will prompt on export)');
-				if (this.plugin.settings.logExportPath) {
-					text.setValue(this.plugin.settings.logExportPath);
-				}
-			})
-			.addButton(button => button
-				.setButtonText('Change')
-				.onClick(async () => {
-					try {
-						// Access Electron dialog (Obsidian provides this via require)
-						const { remote } = require('electron');
-						const result = await remote.dialog.showOpenDialog({
-							properties: ['openDirectory', 'createDirectory'],
-							title: 'Select Log Export Directory',
-							buttonLabel: 'Select Directory'
-						});
-
-						if (!result.canceled && result.filePaths && result.filePaths.length > 0) {
-							this.plugin.settings.logExportPath = result.filePaths[0];
-							await this.plugin.saveSettings();
-							pathInput.value = result.filePaths[0];
-							logger.info('settings', 'Log export path changed', { path: result.filePaths[0] });
-							new Notice('Export directory updated');
-						}
-					} catch (error) {
-						console.error('Error selecting directory:', error);
-						new Notice('Could not open directory picker');
-					}
-				}));
+				text.setPlaceholder('.canvas-roots/logs');
+				text.setValue(this.plugin.settings.logExportPath);
+				text.onChange(async (value) => {
+					// Normalize the path (remove leading/trailing slashes)
+					const normalized = value.replace(/^\/+|\/+$/g, '');
+					this.plugin.settings.logExportPath = normalized;
+					await this.plugin.saveSettings();
+					logger.info('settings', 'Log export folder changed', { folder: normalized });
+				});
+			});
 
 		// Obfuscation Toggle
 		new Setting(loggingContent)
@@ -3992,7 +3970,7 @@ export class ControlCenterModal extends Modal {
 	}
 
 	/**
-	 * Export logs to a file
+	 * Export logs to a file in the vault
 	 */
 	private async handleExportLogs(): Promise<void> {
 		try {
@@ -4017,37 +3995,19 @@ export class ControlCenterModal extends Modal {
 
 			const logData = JSON.stringify(logs, null, 2);
 
-			// Prompt for directory if not set
-			let exportDir = this.plugin.settings.logExportPath;
+			// Get export folder (vault-relative path)
+			const exportFolder = this.plugin.settings.logExportPath || '.canvas-roots/logs';
+			const exportPath = `${exportFolder}/${filename}`;
 
-			if (!exportDir) {
-				// Use Electron's dialog to select directory
-				const { remote } = require('electron');
-				const result = await remote.dialog.showOpenDialog({
-					properties: ['openDirectory', 'createDirectory'],
-					title: 'Select Log Export Directory',
-					buttonLabel: 'Select Directory'
-				});
-
-				if (result.canceled || !result.filePaths || result.filePaths.length === 0) {
-					new Notice('Log export cancelled');
-					return;
-				}
-
-				exportDir = result.filePaths[0];
-
-				// Save the selected path for future use
-				this.plugin.settings.logExportPath = exportDir;
-				await this.plugin.saveSettings();
-
-				logger.info('settings', 'Log export path saved', { path: exportDir });
+			// Ensure the export folder exists
+			const folderExists = await this.app.vault.adapter.exists(exportFolder);
+			if (!folderExists) {
+				await this.app.vault.createFolder(exportFolder);
+				logger.info('export', 'Created log export folder', { folder: exportFolder });
 			}
 
-			const exportPath = require('path').join(exportDir, filename);
-
-			// Use Node.js fs to write to the selected path
-			const fs = require('fs');
-			fs.writeFileSync(exportPath, logData, 'utf-8');
+			// Write the log file using Obsidian's vault adapter
+			await this.app.vault.adapter.write(exportPath, logData);
 
 			logger.info('export', 'Logs exported successfully', {
 				filename,
@@ -4055,11 +4015,11 @@ export class ControlCenterModal extends Modal {
 				logCount: logs.length
 			});
 
-			new Notice(`Logs exported to ${filename}`);
-		} catch (error) {
-			console.error('Error exporting logs:', error);
+			new Notice(`Logs exported to ${exportPath}`);
+		} catch (error: unknown) {
+			const message = error instanceof Error ? error.message : String(error);
 			logger.error('export', 'Failed to export logs', error);
-			new Notice(`Error exporting logs: ${error.message}`);
+			new Notice(`Error exporting logs: ${message}`);
 		}
 	}
 

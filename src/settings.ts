@@ -104,7 +104,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	verticalSpacing: 250,    // Vertical spacing between generations (used directly)
 	autoGenerateCrId: true,
 	peopleFolder: 'Canvas Roots',
-	logExportPath: '',
+	logExportPath: '.canvas-roots/logs',
 	logLevel: 'debug',
 	obfuscateLogExports: true,  // Secure by default - protect PII in log exports
 	recentTrees: [],
