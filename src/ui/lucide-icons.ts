@@ -9,45 +9,51 @@ import { setIcon } from 'obsidian';
  * Lucide icon names used in Control Center
  */
 export type LucideIconName =
-	| 'activity'      // Status tab
-	| 'zap'           // Quick Actions tab
-	| 'user-plus'     // Data Entry tab
-	| 'git-branch'    // Tree Generation tab
-	| 'file-text'     // GEDCOM tab
-	| 'user'          // Person Details tab
-	| 'settings'      // Advanced tab
-	| 'book-open'     // Guide tab
-	| 'users'         // Multiple people icon
-	| 'calendar'      // Date picker
-	| 'search'        // Search icon
-	| 'folder'        // Folder browser
-	| 'x'             // Close button
-	| 'check'         // Success/complete
-	| 'alert-circle'  // Warning
+	| 'activity'       // Status tab
+	| 'zap'            // Quick Actions tab
+	| 'user-plus'      // Data Entry tab
+	| 'git-branch'     // Tree Generation tab
+	| 'git-compare'    // Relationship calculator
+	| 'file-text'      // GEDCOM tab
+	| 'user'           // Person Details tab
+	| 'settings'       // Advanced tab
+	| 'book-open'      // Guide tab
+	| 'users'          // Multiple people icon
+	| 'calendar'       // Date picker
+	| 'search'         // Search icon
+	| 'folder'         // Folder browser
+	| 'x'              // Close button
+	| 'check'          // Success/complete
+	| 'alert-circle'   // Warning
 	| 'alert-triangle' // Error
-	| 'info'          // Information
-	| 'chevron-right' // Navigation
-	| 'chevron-down'  // Dropdown
-	| 'plus'          // Add/create
-	| 'minus'         // Remove
-	| 'edit'          // Edit
-	| 'trash'         // Delete
-	| 'refresh-cw'    // Refresh/recalculate
-	| 'download'      // Download/export
-	| 'upload'        // Upload/import
-	| 'link'          // Link relationship
-	| 'unlink'        // Unlink relationship
-	| 'external-link' // Open external
-	| 'eye'           // View
-	| 'eye-off'       // Hide
-	| 'file-plus'     // Create file
-	| 'hash'          // ID/identifier
-	| 'heart'         // Health/status
-	| 'layout'        // Layout options
-	| 'file'          // File/canvas
-	| 'play'          // Generate/run action
-	| 'clock'         // Time/recent items
-	| 'crown';        // Root person marker
+	| 'info'           // Information
+	| 'chevron-right'  // Navigation
+	| 'chevron-down'   // Dropdown
+	| 'plus'           // Add/create
+	| 'minus'          // Remove
+	| 'edit'           // Edit
+	| 'trash'          // Delete
+	| 'refresh-cw'     // Refresh/recalculate
+	| 'download'       // Download/export
+	| 'upload'         // Upload/import
+	| 'link'           // Link relationship
+	| 'unlink'         // Unlink relationship
+	| 'external-link'  // Open external
+	| 'eye'            // View
+	| 'eye-off'        // Hide
+	| 'file-plus'      // Create file
+	| 'hash'           // ID/identifier
+	| 'heart'          // Health/status
+	| 'layout'         // Layout options
+	| 'file'           // File/canvas
+	| 'play'           // Generate/run action
+	| 'clock'          // Time/recent items
+	| 'crown'          // Root person marker
+	| 'arrow-up'       // Direction up
+	| 'arrow-down'     // Direction down
+	| 'arrow-right'    // Direction right/lateral
+	| 'copy'           // Copy to clipboard
+	| 'circle';        // Neutral/dot indicator
 
 /**
  * Tab configuration for Control Center navigation

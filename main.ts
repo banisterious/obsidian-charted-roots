@@ -9,6 +9,7 @@ import { RelationshipValidator } from './src/core/relationship-validator';
 import { ValidationResultsModal } from './src/ui/validation-results-modal';
 import { FindOnCanvasModal } from './src/ui/find-on-canvas-modal';
 import { FolderScanModal } from './src/ui/folder-scan-modal';
+import { RelationshipCalculatorModal } from './src/ui/relationship-calculator-modal';
 import { LoggerFactory, getLogger } from './src/core/logging';
 import { getErrorMessage } from './src/core/error-utils';
 import { FamilyGraphService } from './src/core/family-graph';
@@ -103,6 +104,15 @@ export default class CanvasRootsPlugin extends Plugin {
 			name: 'Create Base template',
 			callback: () => {
 				this.createBaseTemplate();
+			}
+		});
+
+		// Add command: Calculate Relationship
+		this.addCommand({
+			id: 'calculate-relationship',
+			name: 'Calculate relationship between people',
+			callback: () => {
+				new RelationshipCalculatorModal(this.app).open();
 			}
 		});
 
@@ -361,6 +371,29 @@ export default class CanvasRootsPlugin extends Plugin {
 										});
 								});
 
+								// Calculate relationship
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Calculate relationship...')
+										.setIcon('git-compare')
+										.onClick(async () => {
+											const cache = this.app.metadataCache.getFileCache(file);
+											const crId = cache?.frontmatter?.cr_id;
+											const personName = cache?.frontmatter?.name || file.basename;
+											if (crId) {
+												const modal = new RelationshipCalculatorModal(this.app);
+												modal.openWithPersonA({
+													name: personName,
+													crId: crId,
+													birthDate: cache?.frontmatter?.born,
+													deathDate: cache?.frontmatter?.died,
+													sex: cache?.frontmatter?.sex || cache?.frontmatter?.gender,
+													file: file
+												});
+											}
+										});
+								});
+
 								// Set group name
 								submenu.addItem((subItem) => {
 									subItem
@@ -472,6 +505,28 @@ export default class CanvasRootsPlugin extends Plugin {
 										const personName = cache?.frontmatter?.name || file.basename;
 										if (crId) {
 											new FindOnCanvasModal(this.app, personName, crId).open();
+										}
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Calculate relationship...')
+									.setIcon('git-compare')
+									.onClick(async () => {
+										const cache = this.app.metadataCache.getFileCache(file);
+										const crId = cache?.frontmatter?.cr_id;
+										const personName = cache?.frontmatter?.name || file.basename;
+										if (crId) {
+											const modal = new RelationshipCalculatorModal(this.app);
+											modal.openWithPersonA({
+												name: personName,
+												crId: crId,
+												birthDate: cache?.frontmatter?.born,
+												deathDate: cache?.frontmatter?.died,
+												sex: cache?.frontmatter?.sex || cache?.frontmatter?.gender,
+												file: file
+											});
 										}
 									});
 							});

@@ -38,6 +38,7 @@ const CONFIG = {
     'validation.css',    // Validation results modal
     'find-on-canvas.css', // Find on canvas modal
     'folder-scan.css',   // Folder scan modal
+    'relationship-calculator.css', // Relationship calculator modal
     'animations.css',    // Keyframes and transitions
     'responsive.css',    // Responsive breakpoints
     'theme.css'          // Theme compatibility (last)

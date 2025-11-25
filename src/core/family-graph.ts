@@ -215,6 +215,23 @@ export class FamilyGraphService {
 	}
 
 	/**
+	 * Gets a person by their cr_id
+	 * Note: Call ensureCacheLoaded() or generateTree() first to ensure cache is loaded
+	 */
+	getPersonByCrId(crId: string): PersonNode | undefined {
+		return this.personCache.get(crId);
+	}
+
+	/**
+	 * Ensures the person cache is loaded
+	 */
+	async ensureCacheLoaded(): Promise<void> {
+		if (this.personCache.size === 0) {
+			await this.loadPersonCache();
+		}
+	}
+
+	/**
 	 * Determines the collection name for a group of people
 	 * Uses conflict resolution: most common group_name wins, ties broken alphabetically
 	 * Returns undefined if no one in the group has a group_name
