@@ -13,7 +13,7 @@ import { getLogger } from './logging';
 
 const logger = getLogger('reference-numbering');
 
-export type NumberingSystem = 'ahnentafel' | 'daboville' | 'henry';
+export type NumberingSystem = 'ahnentafel' | 'daboville' | 'henry' | 'generation';
 
 export interface NumberingResult {
 	crId: string;
@@ -236,6 +236,121 @@ export class ReferenceNumberingService {
 	}
 
 	/**
+	 * Assign generation numbers relative to a reference person
+	 *
+	 * Generation numbering shows distance from a reference person:
+	 * - Self = 0
+	 * - Parents = -1, Grandparents = -2, etc.
+	 * - Children = 1, Grandchildren = 2, etc.
+	 *
+	 * This traverses both ancestors and descendants from the root.
+	 */
+	async assignGeneration(rootCrId: string): Promise<NumberingStats> {
+		await this.graphService.ensureCacheLoaded();
+
+		const rootPerson = this.graphService.getPersonByCrId(rootCrId);
+		if (!rootPerson) {
+			throw new Error(`Person with cr_id ${rootCrId} not found`);
+		}
+
+		const results: NumberingResult[] = [];
+		const visited = new Set<string>();
+
+		// Assign root person generation 0
+		results.push({
+			crId: rootPerson.crId,
+			file: rootPerson.file,
+			name: rootPerson.name,
+			number: 0
+		});
+		visited.add(rootPerson.crId);
+
+		// Traverse ancestors (negative generations)
+		const ancestorQueue: Array<{ person: PersonNode; generation: number }> = [];
+		if (rootPerson.fatherCrId) {
+			const father = this.graphService.getPersonByCrId(rootPerson.fatherCrId);
+			if (father) ancestorQueue.push({ person: father, generation: -1 });
+		}
+		if (rootPerson.motherCrId) {
+			const mother = this.graphService.getPersonByCrId(rootPerson.motherCrId);
+			if (mother) ancestorQueue.push({ person: mother, generation: -1 });
+		}
+
+		while (ancestorQueue.length > 0) {
+			const { person, generation } = ancestorQueue.shift()!;
+
+			if (visited.has(person.crId)) continue;
+			visited.add(person.crId);
+
+			results.push({
+				crId: person.crId,
+				file: person.file,
+				name: person.name,
+				number: generation
+			});
+
+			// Queue parents (one generation further back)
+			if (person.fatherCrId) {
+				const father = this.graphService.getPersonByCrId(person.fatherCrId);
+				if (father && !visited.has(father.crId)) {
+					ancestorQueue.push({ person: father, generation: generation - 1 });
+				}
+			}
+			if (person.motherCrId) {
+				const mother = this.graphService.getPersonByCrId(person.motherCrId);
+				if (mother && !visited.has(mother.crId)) {
+					ancestorQueue.push({ person: mother, generation: generation - 1 });
+				}
+			}
+		}
+
+		// Traverse descendants (positive generations)
+		const descendantQueue: Array<{ person: PersonNode; generation: number }> = [];
+		for (const childCrId of rootPerson.childrenCrIds) {
+			const child = this.graphService.getPersonByCrId(childCrId);
+			if (child && !visited.has(child.crId)) {
+				descendantQueue.push({ person: child, generation: 1 });
+			}
+		}
+
+		while (descendantQueue.length > 0) {
+			const { person, generation } = descendantQueue.shift()!;
+
+			if (visited.has(person.crId)) continue;
+			visited.add(person.crId);
+
+			results.push({
+				crId: person.crId,
+				file: person.file,
+				name: person.name,
+				number: generation
+			});
+
+			// Queue children (one generation forward)
+			for (const childCrId of person.childrenCrIds) {
+				const child = this.graphService.getPersonByCrId(childCrId);
+				if (child && !visited.has(child.crId)) {
+					descendantQueue.push({ person: child, generation: generation + 1 });
+				}
+			}
+		}
+
+		// Write numbers to frontmatter
+		for (const result of results) {
+			await this.writeNumberToFrontmatter(result.file, 'generation', result.number);
+		}
+
+		logger.info('generation', `Assigned generation numbers to ${results.length} relatives of ${rootPerson.name}`);
+
+		return {
+			system: 'generation',
+			rootPerson: rootPerson.name,
+			totalAssigned: results.length,
+			results
+		};
+	}
+
+	/**
 	 * Clear reference numbers of a specific type from all notes
 	 */
 	async clearNumbers(system: NumberingSystem): Promise<number> {
@@ -323,6 +438,8 @@ export function formatNumberingResult(result: NumberingResult, system: Numbering
 			return `${result.name}: ${result.number}`;
 		case 'henry':
 			return `${result.name}: ${result.number}`;
+		case 'generation':
+			return `${result.name}: Gen ${result.number}`;
 	}
 }
 
@@ -337,5 +454,7 @@ export function getSystemDescription(system: NumberingSystem): string {
 			return "d'Aboville (descendant numbering: 1, 1.1, 1.2, 1.1.1, etc.)";
 		case 'henry':
 			return 'Henry (compact descendant: 1, 11, 12, 111, etc.)';
+		case 'generation':
+			return 'Generation (relative: 0=self, -1=parents, +1=children)';
 	}
 }

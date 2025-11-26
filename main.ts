@@ -144,6 +144,24 @@ export default class CanvasRootsPlugin extends Plugin {
 			}
 		});
 
+		// Add command: Assign Generation Numbers
+		this.addCommand({
+			id: 'assign-generation',
+			name: 'Assign generation numbers (all relatives)',
+			callback: () => {
+				this.promptAssignReferenceNumbers('generation');
+			}
+		});
+
+		// Add command: Clear Reference Numbers
+		this.addCommand({
+			id: 'clear-reference-numbers',
+			name: 'Clear reference numbers',
+			callback: () => {
+				this.promptClearReferenceNumbers();
+			}
+		});
+
 		// Add context menu items for person notes, canvas files, and folders
 		this.registerEvent(
 			this.app.workspace.on('file-menu', (menu, file) => {
@@ -493,6 +511,15 @@ export default class CanvasRootsPlugin extends Plugin {
 												await this.assignReferenceNumbersFromPerson(file, 'henry');
 											});
 									});
+
+									refNumberSubmenu.addItem((numItem) => {
+										numItem
+											.setTitle('Generation (all relatives)')
+											.setIcon('users')
+											.onClick(async () => {
+												await this.assignReferenceNumbersFromPerson(file, 'generation');
+											});
+									});
 								});
 							});
 						} else {
@@ -660,6 +687,15 @@ export default class CanvasRootsPlugin extends Plugin {
 									.setIcon('hash')
 									.onClick(async () => {
 										await this.assignReferenceNumbersFromPerson(file, 'henry');
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Assign generation numbers')
+									.setIcon('hash')
+									.onClick(async () => {
+										await this.assignReferenceNumbersFromPerson(file, 'generation');
 									});
 							});
 						}
@@ -1248,6 +1284,9 @@ export default class CanvasRootsPlugin extends Plugin {
 						case 'henry':
 							stats = await service.assignHenry(selectedPerson.crId);
 							break;
+						case 'generation':
+							stats = await service.assignGeneration(selectedPerson.crId);
+							break;
 					}
 
 					new Notice(`Assigned ${stats.totalAssigned} ${system} numbers from ${stats.rootPerson}`);
@@ -1289,6 +1328,9 @@ export default class CanvasRootsPlugin extends Plugin {
 				case 'henry':
 					stats = await service.assignHenry(crId);
 					break;
+				case 'generation':
+					stats = await service.assignGeneration(crId);
+					break;
 			}
 
 			new Notice(`Assigned ${stats.totalAssigned} ${system} numbers from ${stats.rootPerson}`);
@@ -1296,6 +1338,39 @@ export default class CanvasRootsPlugin extends Plugin {
 			logger.error('reference-numbering', `Failed to assign ${system} numbers`, error);
 			new Notice(`Failed to assign numbers: ${getErrorMessage(error)}`);
 		}
+	}
+
+	/**
+	 * Prompt user to select a numbering system and clear those numbers
+	 */
+	private promptClearReferenceNumbers(): void {
+		const systemChoices: { system: NumberingSystem; label: string }[] = [
+			{ system: 'ahnentafel', label: 'Ahnentafel numbers' },
+			{ system: 'daboville', label: "d'Aboville numbers" },
+			{ system: 'henry', label: 'Henry numbers' },
+			{ system: 'generation', label: 'Generation numbers' }
+		];
+
+		const menu = new Menu();
+		for (const choice of systemChoices) {
+			menu.addItem((item) => {
+				item
+					.setTitle(`Clear ${choice.label}`)
+					.setIcon('trash-2')
+					.onClick(async () => {
+						try {
+							const service = new ReferenceNumberingService(this.app);
+							new Notice(`Clearing ${choice.label}...`);
+							const count = await service.clearNumbers(choice.system);
+							new Notice(`Cleared ${count} ${choice.label}`);
+						} catch (error) {
+							logger.error('clear-numbers', `Failed to clear ${choice.label}`, error);
+							new Notice(`Failed to clear numbers: ${getErrorMessage(error)}`);
+						}
+					});
+			});
+		}
+		menu.showAtMouseEvent(new MouseEvent('click'));
 	}
 
 	private generateTreeForCurrentNote(): void {
