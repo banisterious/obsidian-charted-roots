@@ -544,10 +544,9 @@ export class ExcalidrawExporter {
 		// Each text element needs a block reference ID that matches its element ID
 		for (const element of excalidrawData.elements) {
 			if (element.type === 'text') {
-				const textEl = element as ExcalidrawText;
 				// Format: "Text content ^elementID"
 				// The elementID is used by Excalidraw to link the text list to the drawing
-				lines.push(`${textEl.text} ^${textEl.id}`);
+				lines.push(`${element.text} ^${element.id}`);
 				lines.push('');
 			}
 		}

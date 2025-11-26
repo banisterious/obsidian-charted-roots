@@ -22,15 +22,15 @@ export class RelationshipManager {
 		const parentSex = await this.extractSex(parentFile);
 
 		if (!childCrId || !parentCrId) {
-			new Notice('Error: Could not find cr_id in one or both notes');
+			new Notice('Error: could not find cr_id in one or both notes');
 			return;
 		}
 
 		// Validate parent type matches sex
 		if (parentType === 'father' && parentSex === 'F') {
-			new Notice('Warning: Selected person has sex: F but being added as father');
+			new Notice('Warning: selected person has sex: F but being added as father');
 		} else if (parentType === 'mother' && parentSex === 'M') {
-			new Notice('Warning: Selected person has sex: M but being added as mother');
+			new Notice('Warning: selected person has sex: M but being added as mother');
 		}
 
 		// Update child's frontmatter
@@ -53,7 +53,7 @@ export class RelationshipManager {
 		const person2CrId = await this.extractCrId(person2File);
 
 		if (!person1CrId || !person2CrId) {
-			new Notice('Error: Could not find cr_id in one or both notes');
+			new Notice('Error: could not find cr_id in one or both notes');
 			return;
 		}
 
@@ -77,7 +77,7 @@ export class RelationshipManager {
 		const parentSex = await this.extractSex(parentFile);
 
 		if (!childCrId || !parentCrId) {
-			new Notice('Error: Could not find cr_id in one or both notes');
+			new Notice('Error: could not find cr_id in one or both notes');
 			return;
 		}
 

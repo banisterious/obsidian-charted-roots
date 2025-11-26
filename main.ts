@@ -40,8 +40,8 @@ export default class CanvasRootsPlugin extends Plugin {
 		// Add settings tab
 		this.addSettingTab(new CanvasRootsSettingTab(this.app, this));
 
-		// Add ribbon icon for Control Center
-		this.addRibbonIcon('users', 'Open Canvas Roots Control Center', () => {
+		// Add ribbon icon for control center
+		this.addRibbonIcon('users', 'Open Canvas Roots control center', () => {
 			new ControlCenterModal(this.app, this).open();
 		});
 
@@ -259,9 +259,9 @@ export default class CanvasRootsPlugin extends Plugin {
 									genItem
 										.setTitle('Generate Canvas tree')
 										.setIcon('layout')
-										.onClick(async () => {
+										.onClick(() => {
 											const modal = new ControlCenterModal(this.app, this);
-											await modal.openWithPerson(file);
+											modal.openWithPerson(file);
 										});
 								});
 
@@ -280,9 +280,9 @@ export default class CanvasRootsPlugin extends Plugin {
 									subItem
 										.setTitle('More options...')
 										.setIcon('settings')
-										.onClick(async () => {
+										.onClick(() => {
 											const modal = new ControlCenterModal(this.app, this);
-											await modal.openWithPerson(file);
+											modal.openWithPerson(file);
 										});
 								});
 
@@ -438,9 +438,9 @@ export default class CanvasRootsPlugin extends Plugin {
 								item
 									.setTitle('Canvas Roots: Generate family tree')
 									.setIcon('git-fork')
-									.onClick(async () => {
+									.onClick(() => {
 										const modal = new ControlCenterModal(this.app, this);
-										await modal.openWithPerson(file);
+										modal.openWithPerson(file);
 									});
 							});
 
@@ -449,16 +449,18 @@ export default class CanvasRootsPlugin extends Plugin {
 									.setTitle('Canvas Roots: Add parent')
 									.setIcon('user')
 									.onClick(() => {
-										const picker = new PersonPickerModal(this.app, async (selectedPerson) => {
-											const relationshipMgr = new RelationshipManager(this.app);
-											const parentType = await this.promptParentType();
-											if (parentType) {
-												await relationshipMgr.addParentRelationship(
-													file,
-													selectedPerson.file,
-													parentType
-												);
-											}
+										const picker = new PersonPickerModal(this.app, (selectedPerson) => {
+											void (async () => {
+												const relationshipMgr = new RelationshipManager(this.app);
+												const parentType = await this.promptParentType();
+												if (parentType) {
+													await relationshipMgr.addParentRelationship(
+														file,
+														selectedPerson.file,
+														parentType
+													);
+												}
+											})();
 										});
 										picker.open();
 									});
@@ -469,9 +471,11 @@ export default class CanvasRootsPlugin extends Plugin {
 									.setTitle('Canvas Roots: Add spouse')
 									.setIcon('heart')
 									.onClick(() => {
-										const picker = new PersonPickerModal(this.app, async (selectedPerson) => {
-											const relationshipMgr = new RelationshipManager(this.app);
-											await relationshipMgr.addSpouseRelationship(file, selectedPerson.file);
+										const picker = new PersonPickerModal(this.app, (selectedPerson) => {
+											void (async () => {
+												const relationshipMgr = new RelationshipManager(this.app);
+												await relationshipMgr.addSpouseRelationship(file, selectedPerson.file);
+											})();
 										});
 										picker.open();
 									});
@@ -482,9 +486,11 @@ export default class CanvasRootsPlugin extends Plugin {
 									.setTitle('Canvas Roots: Add child')
 									.setIcon('baby')
 									.onClick(() => {
-										const picker = new PersonPickerModal(this.app, async (selectedPerson) => {
-											const relationshipMgr = new RelationshipManager(this.app);
-											await relationshipMgr.addChildRelationship(file, selectedPerson.file);
+										const picker = new PersonPickerModal(this.app, (selectedPerson) => {
+											void (async () => {
+												const relationshipMgr = new RelationshipManager(this.app);
+												await relationshipMgr.addChildRelationship(file, selectedPerson.file);
+											})();
 										});
 										picker.open();
 									});
@@ -505,7 +511,7 @@ export default class CanvasRootsPlugin extends Plugin {
 								item
 									.setTitle('Canvas Roots: Find on canvas')
 									.setIcon('search')
-									.onClick(async () => {
+									.onClick(() => {
 										const cache = this.app.metadataCache.getFileCache(file);
 										const crId = cache?.frontmatter?.cr_id;
 										const personName = cache?.frontmatter?.name || file.basename;
@@ -519,7 +525,7 @@ export default class CanvasRootsPlugin extends Plugin {
 								item
 									.setTitle('Canvas Roots: Calculate relationship...')
 									.setIcon('git-compare')
-									.onClick(async () => {
+									.onClick(() => {
 										const cache = this.app.metadataCache.getFileCache(file);
 										const crId = cache?.frontmatter?.cr_id;
 										const personName = cache?.frontmatter?.name || file.basename;
@@ -654,7 +660,7 @@ export default class CanvasRootsPlugin extends Plugin {
 								subItem
 									.setTitle('Export GEDCOM from this folder')
 									.setIcon('download')
-									.onClick(async () => {
+									.onClick(() => {
 										// Set this folder as the people folder temporarily for export
 										const originalFolder = this.settings.peopleFolder;
 										this.settings.peopleFolder = file.path;
@@ -672,7 +678,7 @@ export default class CanvasRootsPlugin extends Plugin {
 								subItem
 									.setTitle('Scan for relationship issues')
 									.setIcon('shield-alert')
-									.onClick(async () => {
+									.onClick(() => {
 										new FolderScanModal(this.app, file).open();
 									});
 							});
@@ -718,7 +724,7 @@ export default class CanvasRootsPlugin extends Plugin {
 							item
 								.setTitle('Canvas Roots: Export GEDCOM from this folder')
 								.setIcon('download')
-								.onClick(async () => {
+								.onClick(() => {
 									// Set this folder as the people folder temporarily for export
 									const originalFolder = this.settings.peopleFolder;
 									this.settings.peopleFolder = file.path;
@@ -736,7 +742,7 @@ export default class CanvasRootsPlugin extends Plugin {
 							item
 								.setTitle('Canvas Roots: Scan for relationship issues')
 								.setIcon('shield-alert')
-								.onClick(async () => {
+								.onClick(() => {
 									new FolderScanModal(this.app, file).open();
 								});
 						});
@@ -822,9 +828,9 @@ export default class CanvasRootsPlugin extends Plugin {
 		}
 
 		// Run after a 1-second delay to not impact plugin load performance
-		setTimeout(async () => {
+		setTimeout(() => {
 			try {
-				await this.bidirectionalLinker!.initializeSnapshots();
+				this.bidirectionalLinker!.initializeSnapshots();
 			} catch (error: unknown) {
 				logger.error('snapshot-init', 'Failed to initialize relationship snapshots', {
 					error: getErrorMessage(error)
@@ -883,8 +889,8 @@ export default class CanvasRootsPlugin extends Plugin {
 		}
 	}
 
-	async onunload() {
-		console.log('Unloading Canvas Roots plugin');
+	onunload() {
+		console.debug('Unloading Canvas Roots plugin');
 
 		// Clean up event handlers
 		if (this.fileModifyEventRef) {
@@ -913,11 +919,7 @@ export default class CanvasRootsPlugin extends Plugin {
 				text: 'Is this person the father or mother?'
 			});
 
-			const buttonContainer = modal.contentEl.createDiv({ cls: 'modal-button-container' });
-			buttonContainer.style.display = 'flex';
-			buttonContainer.style.gap = '8px';
-			buttonContainer.style.justifyContent = 'flex-end';
-			buttonContainer.style.marginTop = '16px';
+			const buttonContainer = modal.contentEl.createDiv({ cls: 'cr-prompt-buttons' });
 
 			const fatherBtn = buttonContainer.createEl('button', {
 				text: 'Father',
@@ -966,48 +968,42 @@ export default class CanvasRootsPlugin extends Plugin {
 			const input = inputContainer.createEl('input', {
 				type: 'text',
 				placeholder: 'e.g., "Smith Family", "House Stark", "The Council"',
-				value: currentCollectionName
+				value: currentCollectionName,
+				cls: 'cr-prompt-input'
 			});
-			input.style.width = '100%';
-			input.style.marginTop = '8px';
 
-			const helpText = modal.contentEl.createEl('p', {
+			modal.contentEl.createEl('p', {
 				text: 'Leave empty to remove the group name.',
-				cls: 'setting-item-description'
+				cls: 'cr-help-text'
 			});
-			helpText.style.marginTop = '8px';
-			helpText.style.fontSize = '0.9em';
-			helpText.style.color = 'var(--text-muted)';
 
-			const buttonContainer = modal.contentEl.createDiv({ cls: 'modal-button-container' });
-			buttonContainer.style.display = 'flex';
-			buttonContainer.style.gap = '8px';
-			buttonContainer.style.justifyContent = 'flex-end';
-			buttonContainer.style.marginTop = '16px';
+			const buttonContainer = modal.contentEl.createDiv({ cls: 'cr-prompt-buttons' });
 
 			const saveBtn = buttonContainer.createEl('button', {
 				text: 'Save',
 				cls: 'mod-cta'
 			});
-			saveBtn.addEventListener('click', async () => {
-				const collectionName = input.value.trim();
+			saveBtn.addEventListener('click', () => {
+				void (async () => {
+					const collectionName = input.value.trim();
 
-				// Update or remove group_name in frontmatter
-				await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
-					if (collectionName) {
-						frontmatter.group_name = collectionName;
-					} else {
-						delete frontmatter.group_name;
-					}
-				});
+					// Update or remove group_name in frontmatter
+					await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
+						if (collectionName) {
+							frontmatter.group_name = collectionName;
+						} else {
+							delete frontmatter.group_name;
+						}
+					});
 
-				new Notice(collectionName
-					? `Group name set to "${collectionName}"`
-					: 'Group name removed'
-				);
+					new Notice(collectionName
+						? `Group name set to "${collectionName}"`
+						: 'Group name removed'
+					);
 
-				modal.close();
-				resolve();
+					modal.close();
+					resolve();
+				})();
 			});
 
 			const cancelBtn = buttonContainer.createEl('button', {
@@ -1054,48 +1050,42 @@ export default class CanvasRootsPlugin extends Plugin {
 			const input = inputContainer.createEl('input', {
 				type: 'text',
 				placeholder: 'e.g., "Paternal Line", "Maternal Branch"',
-				value: currentCollection
+				value: currentCollection,
+				cls: 'cr-prompt-input'
 			});
-			input.style.width = '100%';
-			input.style.marginTop = '8px';
 
-			const helpText = modal.contentEl.createEl('p', {
+			modal.contentEl.createEl('p', {
 				text: 'Collections let you organize people across family groups. Leave empty to remove.',
-				cls: 'setting-item-description'
+				cls: 'cr-help-text'
 			});
-			helpText.style.marginTop = '8px';
-			helpText.style.fontSize = '0.9em';
-			helpText.style.color = 'var(--text-muted)';
 
-			const buttonContainer = modal.contentEl.createDiv({ cls: 'modal-button-container' });
-			buttonContainer.style.display = 'flex';
-			buttonContainer.style.gap = '8px';
-			buttonContainer.style.justifyContent = 'flex-end';
-			buttonContainer.style.marginTop = '16px';
+			const buttonContainer = modal.contentEl.createDiv({ cls: 'cr-prompt-buttons' });
 
 			const saveBtn = buttonContainer.createEl('button', {
 				text: 'Save',
 				cls: 'mod-cta'
 			});
-			saveBtn.addEventListener('click', async () => {
-				const collection = input.value.trim();
+			saveBtn.addEventListener('click', () => {
+				void (async () => {
+					const collection = input.value.trim();
 
-				// Update or remove collection in frontmatter
-				await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
-					if (collection) {
-						frontmatter.collection = collection;
-					} else {
-						delete frontmatter.collection;
-					}
-				});
+					// Update or remove collection in frontmatter
+					await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
+						if (collection) {
+							frontmatter.collection = collection;
+						} else {
+							delete frontmatter.collection;
+						}
+					});
 
-				new Notice(collection
-					? `Collection set to "${collection}"`
-					: 'Collection removed'
-				);
+					new Notice(collection
+						? `Collection set to "${collection}"`
+						: 'Collection removed'
+					);
 
-				modal.close();
-				resolve();
+					modal.close();
+					resolve();
+				})();
 			});
 
 			const cancelBtn = buttonContainer.createEl('button', {
@@ -1162,7 +1152,7 @@ export default class CanvasRootsPlugin extends Plugin {
 
 		// Open Control Center with this person pre-selected
 		const modal = new ControlCenterModal(this.app, this);
-		await modal.openWithPerson(activeFile);
+		modal.openWithPerson(activeFile);
 	}
 
 	async regenerateCanvas(canvasFile: TFile, direction?: 'vertical' | 'horizontal') {

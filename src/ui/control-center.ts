@@ -1105,7 +1105,7 @@ export class ControlCenterModal extends Modal {
 		const groupDetails = groupSection.createEl('ul', { cls: 'crc-mb-2' });
 		groupDetails.createEl('li', { text: 'Set via: Right-click person note → "Set group name"' });
 		groupDetails.createEl('li', { text: 'Property: group_name in YAML frontmatter' });
-		groupDetails.createEl('li', { text: 'Auto-detected: Based on relationship connections' });
+		groupDetails.createEl('li', { text: 'Auto-detected: based on relationship connections' });
 		groupDetails.createEl('li', { text: 'Examples: "Smith Family", "House Stark", "The Council"' });
 
 		groupSection.createEl('p', {
@@ -1374,13 +1374,13 @@ export class ControlCenterModal extends Modal {
 		optionsSection.createEl('h4', { text: 'Customizable style options', cls: 'crc-mb-2' });
 
 		const optionsList = optionsSection.createEl('ul');
-		optionsList.createEl('li', { text: 'Node coloring: Gender, generation, collection, or monochrome' });
-		optionsList.createEl('li', { text: 'Parent-child arrows: Directed, bidirectional, or undirected' });
-		optionsList.createEl('li', { text: 'Spouse arrows: Directed, bidirectional, or undirected' });
+		optionsList.createEl('li', { text: 'Node coloring: gender, generation, collection, or monochrome' });
+		optionsList.createEl('li', { text: 'Parent-child arrows: directed, bidirectional, or undirected' });
+		optionsList.createEl('li', { text: 'Spouse arrows: directed, bidirectional, or undirected' });
 		optionsList.createEl('li', { text: 'Parent-child edge color: 6 colors or theme default' });
 		optionsList.createEl('li', { text: 'Spouse edge color: 6 colors or theme default' });
-		optionsList.createEl('li', { text: 'Show spouse edges: Enable or disable marriage relationship edges' });
-		optionsList.createEl('li', { text: 'Spouse edge labels: None, date-only, date-location, or full' });
+		optionsList.createEl('li', { text: 'Show spouse edges: enable or disable marriage relationship edges' });
+		optionsList.createEl('li', { text: 'Spouse edge labels: none, date-only, date-location, or full' });
 
 		// Use Case Example
 		const useCaseSection = styleSettingsContent.createDiv({ cls: 'crc-info-box' });
@@ -1466,10 +1466,10 @@ export class ControlCenterModal extends Modal {
 		whatSyncedSection.createEl('h4', { text: 'What gets synced', cls: 'crc-mb-2' });
 
 		const whatSyncedList = whatSyncedSection.createEl('ul');
-		whatSyncedList.createEl('li', { text: 'Parent → Child: Setting father/mother adds person to parent\'s children array' });
-		whatSyncedList.createEl('li', { text: 'Spouse ↔ Spouse: Adding spouse creates reciprocal link in both notes' });
-		whatSyncedList.createEl('li', { text: 'Indexed spouses: Full support for spouse1, spouse2, etc.' });
-		whatSyncedList.createEl('li', { text: 'Deletions: Removing a relationship removes the reciprocal link' });
+		whatSyncedList.createEl('li', { text: 'Parent → Child: setting father/mother adds person to parent\'s children array' });
+		whatSyncedList.createEl('li', { text: 'Spouse ↔ Spouse: adding spouse creates reciprocal link in both notes' });
+		whatSyncedList.createEl('li', { text: 'Indexed spouses: full support for spouse1, spouse2, etc.' });
+		whatSyncedList.createEl('li', { text: 'Deletions: removing a relationship removes the reciprocal link' });
 
 		// Settings
 		const settingsSection = bidirectionalSyncContent.createDiv({ cls: 'crc-mb-4' });
@@ -1480,8 +1480,8 @@ export class ControlCenterModal extends Modal {
 		});
 
 		const settingsList = settingsSection.createEl('ul');
-		settingsList.createEl('li', { text: 'Enable bidirectional relationship sync: Master toggle (default: ON)' });
-		settingsList.createEl('li', { text: 'Sync on file modify: Auto-sync when editing notes (default: ON)' });
+		settingsList.createEl('li', { text: 'Enable bidirectional relationship sync: master toggle (default: ON)' });
+		settingsList.createEl('li', { text: 'Sync on file modify: auto-sync when editing notes (default: ON)' });
 
 		// Known Limitations
 		const limitationsSection = bidirectionalSyncContent.createDiv({ cls: 'crc-info-box' });
@@ -1852,9 +1852,9 @@ export class ControlCenterModal extends Modal {
 			.setName('Parent → child arrows')
 			.setDesc('Arrow style for parent-child relationships')
 			.addDropdown(dropdown => dropdown
-				.addOption('directed', 'Directed (→) - Single arrow pointing to child')
-				.addOption('bidirectional', 'Bidirectional (↔) - Arrows on both ends')
-				.addOption('undirected', 'Undirected (—) - No arrows')
+				.addOption('directed', 'Directed (→) - single arrow pointing to child')
+				.addOption('bidirectional', 'Bidirectional (↔) - arrows on both ends')
+				.addOption('undirected', 'Undirected (—) - no arrows')
 				.setValue(this.plugin.settings.parentChildArrowStyle)
 				.onChange(async (value) => {
 					this.plugin.settings.parentChildArrowStyle = value as ArrowStyle;
@@ -1867,9 +1867,9 @@ export class ControlCenterModal extends Modal {
 			.setName('Spouse arrows')
 			.setDesc('Arrow style for spouse relationships')
 			.addDropdown(dropdown => dropdown
-				.addOption('directed', 'Directed (→) - Single arrow')
-				.addOption('bidirectional', 'Bidirectional (↔) - Arrows on both ends')
-				.addOption('undirected', 'Undirected (—) - No arrows')
+				.addOption('directed', 'Directed (→) - single arrow')
+				.addOption('bidirectional', 'Bidirectional (↔) - arrows on both ends')
+				.addOption('undirected', 'Undirected (—) - no arrows')
 				.setValue(this.plugin.settings.spouseArrowStyle)
 				.onChange(async (value) => {
 					this.plugin.settings.spouseArrowStyle = value as ArrowStyle;
@@ -1892,10 +1892,10 @@ export class ControlCenterModal extends Modal {
 			.setName('Color scheme')
 			.setDesc('How to color person nodes in family trees')
 			.addDropdown(dropdown => dropdown
-				.addOption('gender', 'Gender - Green for males, purple for females')
-				.addOption('generation', 'Generation - Color by generation level')
-				.addOption('collection', 'Collection - Different color per collection')
-				.addOption('monochrome', 'Monochrome - No coloring')
+				.addOption('gender', 'Gender - green for males, purple for females')
+				.addOption('generation', 'Generation - color by generation level')
+				.addOption('collection', 'Collection - different color per collection')
+				.addOption('monochrome', 'Monochrome - no coloring')
 				.setValue(this.plugin.settings.nodeColorScheme)
 				.onChange(async (value) => {
 					this.plugin.settings.nodeColorScheme = value as ColorScheme;
@@ -1930,7 +1930,7 @@ export class ControlCenterModal extends Modal {
 			.setName('Spouse edge label format')
 			.setDesc('How to display marriage information on spouse edges (only applies when "Show spouse edges" is enabled)')
 			.addDropdown(dropdown => dropdown
-				.addOption('none', 'None - No labels')
+				.addOption('none', 'None - no labels')
 				.addOption('date-only', 'Date only - e.g., "m. 1985"')
 				.addOption('date-location', 'Date and location - e.g., "m. 1985 | Boston, MA"')
 				.addOption('full', 'Full details - e.g., "m. 1985 | Boston, MA | div. 1992"')
@@ -2067,7 +2067,7 @@ export class ControlCenterModal extends Modal {
 		// Create & Open button
 		const createOpenBtn = actions.createEl('button', {
 			cls: 'crc-btn crc-btn--primary',
-			text: 'Create & Open Note'
+			text: 'Create & open note'
 		});
 		createOpenBtn.addEventListener('click', () => {
 			void this.createPersonNote(
@@ -2086,7 +2086,7 @@ export class ControlCenterModal extends Modal {
 		// Create & Add Another button
 		const createAnotherBtn = actions.createEl('button', {
 			cls: 'crc-btn crc-btn--secondary',
-			text: 'Create & Add Another'
+			text: 'Create & add another'
 		});
 		createAnotherBtn.addEventListener('click', () => {
 			void this.createPersonNote(
@@ -2571,7 +2571,7 @@ export class ControlCenterModal extends Modal {
 					};
 
 					// Render preview
-					await this.treePreviewRenderer?.renderPreview(familyTree, layoutOptions);
+					this.treePreviewRenderer?.renderPreview(familyTree, layoutOptions);
 
 					new Notice('Preview generated successfully');
 				} catch (error: unknown) {
@@ -3540,9 +3540,9 @@ export class ControlCenterModal extends Modal {
 			.setName('View')
 			.setDesc('Choose how to organize and view people')
 			.addDropdown(dropdown => dropdown
-				.addOption('all', 'All people - Show everyone in the vault')
-				.addOption('families', 'Detected families - Auto-detected family groups')
-				.addOption('collections', 'My collections - User-defined collections')
+				.addOption('all', 'All people - show everyone in the vault')
+				.addOption('families', 'Detected families - auto-detected family groups')
+				.addOption('collections', 'My collections - user-defined collections')
 				.setValue(selectedMode)
 				.onChange(async (value) => {
 					selectedMode = value;

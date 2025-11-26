@@ -239,7 +239,7 @@ export class BidirectionalLinker {
 
 		// Capture indexed spouse properties
 		for (let i = 1; i <= 10; i++) {
-			const key = `spouse${i}` as `spouse${number}`;
+			const key = `spouse${i}` as keyof RelationshipSnapshot;
 			const value = frontmatter[key];
 			if (value && typeof value === 'string') {
 				snapshot[key] = value;

@@ -96,7 +96,7 @@ export class FamilyChartLayoutEngine {
 
 				// Strategy 1: If they have a spouse who IS positioned, place next to spouse
 				if (person.spouseCrIds && person.spouseCrIds.length > 0) {
-					const spousePos = positions.find(p => person.spouseCrIds!.includes(p.crId));
+					const spousePos = positions.find(p => person.spouseCrIds.includes(p.crId));
 					if (spousePos) {
 						// Place to the right of spouse at same Y level (same generation)
 						positions.push({
@@ -112,7 +112,7 @@ export class FamilyChartLayoutEngine {
 
 				// Strategy 2: If they have children who ARE positioned, place above them
 				if (person.childrenCrIds && person.childrenCrIds.length > 0) {
-					const childPos = positions.find(p => person.childrenCrIds!.includes(p.crId));
+					const childPos = positions.find(p => person.childrenCrIds.includes(p.crId));
 					if (childPos) {
 						// Place above child (one generation earlier)
 						positions.push({
@@ -431,10 +431,10 @@ export class FamilyChartLayoutEngine {
 
 			// Add parent relationships (only if parent exists in tree)
 			if (person.fatherCrId && familyTree.nodes.has(person.fatherCrId)) {
-				datum.rels.parents!.push(person.fatherCrId);
+				datum.rels.parents.push(person.fatherCrId);
 			}
 			if (person.motherCrId && familyTree.nodes.has(person.motherCrId)) {
-				datum.rels.parents!.push(person.motherCrId);
+				datum.rels.parents.push(person.motherCrId);
 			}
 
 			// Add spouse relationships (only if spouse exists in tree)

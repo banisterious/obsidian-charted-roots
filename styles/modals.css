@@ -41,6 +41,27 @@
   margin-top: 24px;
 }
 
+/* Compact modal buttons for simple prompts */
+.cr-prompt-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+/* Full-width input for prompts */
+.cr-prompt-input {
+  width: 100%;
+  margin-top: 8px;
+}
+
+/* Help text styling */
+.cr-help-text {
+  margin-top: 8px;
+  font-size: 0.9em;
+  color: var(--text-muted);
+}
+
 .crc-control-center-modal .modal-content {
   padding: 0;
   overflow: hidden;
