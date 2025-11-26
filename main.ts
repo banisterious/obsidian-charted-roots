@@ -21,6 +21,8 @@ import { BidirectionalLinker } from './src/core/bidirectional-linker';
 import { generateCrId } from './src/core/uuid';
 import { ReferenceNumberingService, NumberingSystem } from './src/core/reference-numbering';
 import { LineageTrackingService, LineageType } from './src/core/lineage-tracking';
+import { RelationshipHistoryService, RelationshipHistoryData, formatChangeDescription } from './src/core/relationship-history';
+import { RelationshipHistoryModal } from './src/ui/relationship-history-modal';
 
 const logger = getLogger('CanvasRootsPlugin');
 
@@ -28,6 +30,7 @@ export default class CanvasRootsPlugin extends Plugin {
 	settings: CanvasRootsSettings;
 	private fileModifyEventRef: EventRef | null = null;
 	private bidirectionalLinker: BidirectionalLinker | null = null;
+	private relationshipHistory: RelationshipHistoryService | null = null;
 
 	async onload() {
 		console.debug('Loading Canvas Roots plugin');
@@ -179,6 +182,24 @@ export default class CanvasRootsPlugin extends Plugin {
 			name: 'Remove lineage tags',
 			callback: () => {
 				this.promptRemoveLineage();
+			}
+		});
+
+		// Add command: View relationship history
+		this.addCommand({
+			id: 'view-relationship-history',
+			name: 'View relationship history',
+			callback: () => {
+				this.showRelationshipHistory();
+			}
+		});
+
+		// Add command: Undo last relationship change
+		this.addCommand({
+			id: 'undo-relationship-change',
+			name: 'Undo last relationship change',
+			callback: () => {
+				this.undoLastRelationshipChange();
 			}
 		});
 
@@ -369,7 +390,7 @@ export default class CanvasRootsPlugin extends Plugin {
 										.onClick(() => {
 											const picker = new PersonPickerModal(this.app, (selectedPerson) => {
 												void (async () => {
-													const relationshipMgr = new RelationshipManager(this.app);
+													const relationshipMgr = new RelationshipManager(this.app, this.relationshipHistory);
 
 													// Ask which parent type
 													const parentType = await this.promptParentType();
@@ -393,7 +414,7 @@ export default class CanvasRootsPlugin extends Plugin {
 										.onClick(() => {
 											const picker = new PersonPickerModal(this.app, (selectedPerson) => {
 												void (async () => {
-													const relationshipMgr = new RelationshipManager(this.app);
+													const relationshipMgr = new RelationshipManager(this.app, this.relationshipHistory);
 													await relationshipMgr.addSpouseRelationship(file, selectedPerson.file);
 												})();
 											});
@@ -408,7 +429,7 @@ export default class CanvasRootsPlugin extends Plugin {
 										.onClick(() => {
 											const picker = new PersonPickerModal(this.app, (selectedPerson) => {
 												void (async () => {
-													const relationshipMgr = new RelationshipManager(this.app);
+													const relationshipMgr = new RelationshipManager(this.app, this.relationshipHistory);
 													await relationshipMgr.addChildRelationship(file, selectedPerson.file);
 												})();
 											});
@@ -596,7 +617,7 @@ export default class CanvasRootsPlugin extends Plugin {
 									.onClick(() => {
 										const picker = new PersonPickerModal(this.app, (selectedPerson) => {
 											void (async () => {
-												const relationshipMgr = new RelationshipManager(this.app);
+												const relationshipMgr = new RelationshipManager(this.app, this.relationshipHistory);
 												const parentType = await this.promptParentType();
 												if (parentType) {
 													await relationshipMgr.addParentRelationship(
@@ -618,7 +639,7 @@ export default class CanvasRootsPlugin extends Plugin {
 									.onClick(() => {
 										const picker = new PersonPickerModal(this.app, (selectedPerson) => {
 											void (async () => {
-												const relationshipMgr = new RelationshipManager(this.app);
+												const relationshipMgr = new RelationshipManager(this.app, this.relationshipHistory);
 												await relationshipMgr.addSpouseRelationship(file, selectedPerson.file);
 											})();
 										});
@@ -633,7 +654,7 @@ export default class CanvasRootsPlugin extends Plugin {
 									.onClick(() => {
 										const picker = new PersonPickerModal(this.app, (selectedPerson) => {
 											void (async () => {
-												const relationshipMgr = new RelationshipManager(this.app);
+												const relationshipMgr = new RelationshipManager(this.app, this.relationshipHistory);
 												await relationshipMgr.addChildRelationship(file, selectedPerson.file);
 											})();
 										});
@@ -1087,6 +1108,9 @@ export default class CanvasRootsPlugin extends Plugin {
 		if (this.settings.enableBidirectionalSync) {
 			this.initializeBidirectionalSnapshots();
 		}
+
+		// Initialize relationship history service
+		await this.initializeRelationshipHistory();
 	}
 
 	/**
@@ -1109,6 +1133,74 @@ export default class CanvasRootsPlugin extends Plugin {
 				});
 			}
 		}, 1000);
+	}
+
+	/**
+	 * Initialize the relationship history service
+	 */
+	private async initializeRelationshipHistory() {
+		if (!this.settings.enableRelationshipHistory) {
+			return;
+		}
+
+		// Load existing history data
+		const dataKey = RelationshipHistoryService.getDataKey();
+		const savedData = await this.loadData();
+		const historyData: RelationshipHistoryData | null = savedData?.[dataKey] || null;
+
+		// Create save callback
+		const saveCallback = async (data: RelationshipHistoryData) => {
+			const allData = await this.loadData() || {};
+			allData[dataKey] = data;
+			await this.saveData(allData);
+		};
+
+		this.relationshipHistory = new RelationshipHistoryService(
+			this.app,
+			historyData,
+			saveCallback
+		);
+
+		// Cleanup old entries on startup
+		if (this.settings.historyRetentionDays > 0) {
+			await this.relationshipHistory.cleanupOldEntries(this.settings.historyRetentionDays);
+		}
+
+		logger.info('history-init', 'Relationship history service initialized');
+	}
+
+	/**
+	 * Show the relationship history modal
+	 */
+	private showRelationshipHistory(personFile?: TFile) {
+		if (!this.relationshipHistory) {
+			new Notice('Relationship history is disabled. Enable it in settings.');
+			return;
+		}
+
+		new RelationshipHistoryModal(this.app, this.relationshipHistory, personFile).open();
+	}
+
+	/**
+	 * Undo the most recent relationship change
+	 */
+	private async undoLastRelationshipChange() {
+		if (!this.relationshipHistory) {
+			new Notice('Relationship history is disabled. Enable it in settings.');
+			return;
+		}
+
+		const change = await this.relationshipHistory.undoLastChange();
+		if (change) {
+			new Notice(`Undone: ${formatChangeDescription(change)}`);
+		}
+	}
+
+	/**
+	 * Get the relationship history service (for external use)
+	 */
+	getRelationshipHistory(): RelationshipHistoryService | null {
+		return this.relationshipHistory;
 	}
 
 	/**

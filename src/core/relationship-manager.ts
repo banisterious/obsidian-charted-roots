@@ -1,11 +1,47 @@
 import { App, TFile, Notice } from 'obsidian';
+import { RelationshipHistoryService, RelationshipChangeType } from './relationship-history';
+
+/**
+ * Callback for recording relationship changes to history
+ */
+export type HistoryRecorder = (
+	type: RelationshipChangeType,
+	sourceFile: TFile,
+	sourceName: string,
+	sourceCrId: string,
+	targetFile: TFile,
+	targetName: string,
+	targetCrId: string,
+	newValue?: string
+) => Promise<void>;
 
 /**
  * Service for managing relationships between person notes
  * Handles bidirectional relationship updates in note frontmatter
  */
 export class RelationshipManager {
-	constructor(private app: App) {}
+	private historyRecorder?: HistoryRecorder;
+
+	constructor(private app: App, historyService?: RelationshipHistoryService | null) {
+		if (historyService) {
+			this.historyRecorder = async (
+				type, sourceFile, sourceName, sourceCrId,
+				targetFile, targetName, targetCrId, newValue
+			) => {
+				await historyService.recordChange({
+					type,
+					sourceFile,
+					sourceName,
+					sourceCrId,
+					targetFile,
+					targetName,
+					targetCrId,
+					newValue,
+					isBidirectionalSync: false
+				});
+			};
+		}
+	}
 
 	/**
 	 * Add a parent-child relationship
@@ -20,6 +56,8 @@ export class RelationshipManager {
 		const childCrId = await this.extractCrId(childFile);
 		const parentCrId = await this.extractCrId(parentFile);
 		const parentSex = await this.extractSex(parentFile);
+		const childName = await this.extractName(childFile);
+		const parentName = await this.extractName(parentFile);
 
 		if (!childCrId || !parentCrId) {
 			new Notice('Error: could not find cr_id in one or both notes');
@@ -39,6 +77,17 @@ export class RelationshipManager {
 		// Update parent's children_id array
 		await this.addToChildrenArray(parentFile, childCrId);
 
+		// Record to history
+		if (this.historyRecorder) {
+			const changeType: RelationshipChangeType = parentType === 'father' ? 'add_father' : 'add_mother';
+			await this.historyRecorder(
+				changeType,
+				childFile, childName, childCrId,
+				parentFile, parentName, parentCrId,
+				`[[${parentName}]]`
+			);
+		}
+
 		new Notice(
 			`Added ${parentFile.basename} as ${parentType} of ${childFile.basename}`
 		);
@@ -51,6 +100,8 @@ export class RelationshipManager {
 	async addSpouseRelationship(person1File: TFile, person2File: TFile): Promise<void> {
 		const person1CrId = await this.extractCrId(person1File);
 		const person2CrId = await this.extractCrId(person2File);
+		const person1Name = await this.extractName(person1File);
+		const person2Name = await this.extractName(person2File);
 
 		if (!person1CrId || !person2CrId) {
 			new Notice('Error: could not find cr_id in one or both notes');
@@ -60,6 +111,16 @@ export class RelationshipManager {
 		// Add each person to the other's spouse_id array
 		await this.addToSpouseArray(person1File, person2CrId);
 		await this.addToSpouseArray(person2File, person1CrId);
+
+		// Record to history (record as person1 adding spouse person2)
+		if (this.historyRecorder) {
+			await this.historyRecorder(
+				'add_spouse',
+				person1File, person1Name, person1CrId,
+				person2File, person2Name, person2CrId,
+				`[[${person2Name}]]`
+			);
+		}
 
 		new Notice(`Added spouse relationship between ${person1File.basename} and ${person2File.basename}`);
 	}
@@ -75,6 +136,8 @@ export class RelationshipManager {
 		const parentCrId = await this.extractCrId(parentFile);
 		const childCrId = await this.extractCrId(childFile);
 		const parentSex = await this.extractSex(parentFile);
+		const parentName = await this.extractName(parentFile);
+		const childName = await this.extractName(childFile);
 
 		if (!childCrId || !parentCrId) {
 			new Notice('Error: could not find cr_id in one or both notes');
@@ -89,6 +152,16 @@ export class RelationshipManager {
 
 		// Update parent's children_id array
 		await this.addToChildrenArray(parentFile, childCrId);
+
+		// Record to history
+		if (this.historyRecorder) {
+			await this.historyRecorder(
+				'add_child',
+				parentFile, parentName, parentCrId,
+				childFile, childName, childCrId,
+				`[[${childName}]]`
+			);
+		}
 
 		new Notice(`Added ${childFile.basename} as child of ${parentFile.basename}`);
 	}
@@ -109,6 +182,15 @@ export class RelationshipManager {
 		const content = await this.app.vault.read(file);
 		const match = content.match(/^sex:\s*(.+)$/m);
 		return match ? match[1].trim() : null;
+	}
+
+	/**
+	 * Extract name from note frontmatter, falling back to filename
+	 */
+	private async extractName(file: TFile): Promise<string> {
+		const content = await this.app.vault.read(file);
+		const match = content.match(/^name:\s*(.+)$/m);
+		return match ? match[1].trim() : file.basename;
 	}
 
 	/**

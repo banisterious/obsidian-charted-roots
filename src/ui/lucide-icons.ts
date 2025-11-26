@@ -59,7 +59,10 @@ export type LucideIconName =
 	| 'bar-chart'      // Statistics
 	| 'bar-chart-2'    // Folder statistics
 	| 'maximize-2'     // Largest
-	| 'minimize-2';    // Smallest
+	| 'minimize-2'     // Smallest
+	| 'undo-2'         // Undo action
+	| 'history'        // History view
+	| 'user-minus';    // Remove person
 
 /**
  * Tab configuration for Control Center navigation
