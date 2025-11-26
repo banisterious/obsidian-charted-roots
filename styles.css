@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-11-26 14:56:32 UTC
+ * - Generated: 2025-11-26 15:09:07 UTC
  * - Components: 16 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -187,7 +187,7 @@
    COMPONENT: MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 1850 lines, 33.48 KB */
+/* Component Size: 2007 lines, 36.3 KB */
 
 /* ==========================================================================
    Canvas Roots Control Center - Styling
@@ -2039,6 +2039,163 @@
   color: var(--color-red);
 }
 
+/* =====================================================
+   Relationship History Modal
+   ===================================================== */
+
+.cr-relationship-history-modal {
+  max-width: 650px;
+}
+
+.cr-history-stats {
+  margin-bottom: 1em;
+  padding-bottom: 0.75em;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-stats-grid--compact {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5em;
+}
+
+.cr-mini-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5em;
+  background: var(--background-secondary);
+  border-radius: 4px;
+}
+
+.cr-mini-stat-value {
+  font-size: 1.25em;
+  font-weight: 600;
+  color: var(--interactive-accent);
+}
+
+.cr-mini-stat-label {
+  font-size: 0.75em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.cr-history-filters {
+  margin-bottom: 1em;
+}
+
+.cr-history-filters .setting-item {
+  border: none;
+  padding: 0;
+}
+
+.cr-history-list {
+  max-height: 350px;
+  overflow-y: auto;
+  margin-bottom: 1em;
+}
+
+.cr-history-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 2em 1em;
+}
+
+.cr-history-truncated {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85em;
+  margin-top: 0.5em;
+}
+
+.cr-history-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75em;
+  padding: 0.75em;
+  margin-bottom: 0.5em;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  transition: background 0.15s ease;
+}
+
+.cr-history-item:hover {
+  background: var(--background-modifier-hover);
+}
+
+.cr-history-item--undone {
+  opacity: 0.6;
+  background: var(--background-secondary-alt);
+}
+
+.cr-history-item-icon {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.cr-history-item-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.cr-history-item-description {
+  font-size: 0.95em;
+  margin-bottom: 0.25em;
+  word-break: break-word;
+}
+
+.cr-history-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  font-size: 0.8em;
+  color: var(--text-muted);
+}
+
+.cr-history-item-time {
+  /* Timestamp styling */
+}
+
+.cr-history-item-tag {
+  padding: 0.1em 0.4em;
+  background: var(--background-modifier-border);
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.cr-history-item-tag--undone {
+  background: var(--color-orange);
+  color: var(--text-on-accent);
+}
+
+.cr-history-item-undo {
+  flex-shrink: 0;
+  padding: 0.4em;
+  background: transparent;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+
+.cr-history-item-undo:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--interactive-accent);
+  color: var(--interactive-accent);
+}
+
+/* Danger button variant */
+.crc-btn--danger {
+  background-color: var(--color-red);
+  color: var(--text-on-accent);
+}
+
+.crc-btn--danger:hover {
+  background-color: #d32f2f;
+}
+
 
 /* End of modals.css */
 
@@ -2851,11 +3008,11 @@
    ========================================================================== */
 
 /*
- * Build completed: 2025-11-26 14:56:32 UTC
+ * Build completed: 2025-11-26 15:09:07 UTC
  * Components processed: 16
- * Total lines: 2684
- * Total size: 47.63 KB
- * Build duration: 0.01 seconds
+ * Total lines: 2841
+ * Total size: 50.45 KB
+ * Build duration: 0.02 seconds
  *
  * Component breakdown:
  * - variables.css: 31 lines, 0.72 KB
@@ -2865,7 +3022,7 @@
  * - nodes.css: 12 lines, 0.3 KB
  * - edges.css: 4 lines, 0.07 KB
  * - settings.css: 4 lines, 0.07 KB
- * - modals.css: 1850 lines, 33.48 KB
+ * - modals.css: 2007 lines, 36.3 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
  * - validation.css: 84 lines, 1.47 KB
  * - find-on-canvas.css: 114 lines, 1.97 KB
