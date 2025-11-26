@@ -398,11 +398,11 @@ export class GedcomExporter {
 							id: `F${families.length + 1}`,
 							childIds: [],
 							husbandId: personSex === 'M' ? crIdToGedcomId.get(person.crId) :
-									  spouseSex === 'M' ? crIdToGedcomId.get(spouseCrId) :
-									  crIdToGedcomId.get(person.crId),
+								spouseSex === 'M' ? crIdToGedcomId.get(spouseCrId) :
+								crIdToGedcomId.get(person.crId),
 							wifeId: personSex === 'F' ? crIdToGedcomId.get(person.crId) :
-									spouseSex === 'F' ? crIdToGedcomId.get(spouseCrId) :
-									crIdToGedcomId.get(spouseCrId)
+								spouseSex === 'F' ? crIdToGedcomId.get(spouseCrId) :
+								crIdToGedcomId.get(spouseCrId)
 						};
 
 						// Extract marriage metadata if available
@@ -549,7 +549,7 @@ export class GedcomExporter {
 	 */
 	private getMonthAbbreviation(monthIndex: number): string {
 		const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
-		                'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+			'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 		return months[monthIndex] || 'JAN';
 	}
 }

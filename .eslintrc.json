@@ -14,7 +14,8 @@
 	],
 	"parserOptions": {
 		"sourceType": "module",
-		"ecmaVersion": 2022
+		"ecmaVersion": 2022,
+		"project": "./tsconfig.json"
 	},
 	"rules": {
 		"no-unused-vars": "off",
@@ -29,7 +30,9 @@
 		"@typescript-eslint/ban-ts-comment": "off",
 		"no-prototype-builtins": "off",
 		"@typescript-eslint/no-empty-function": "off",
-		"@typescript-eslint/no-explicit-any": "warn",
+		"@typescript-eslint/no-explicit-any": "error",
+		"@typescript-eslint/require-await": "error",
+		"@typescript-eslint/no-unnecessary-type-assertion": "error",
 		"no-console": "off",
 		"prefer-const": "error",
 		"no-var": "error"
@@ -37,6 +40,9 @@
 	"ignorePatterns": [
 		"main.js",
 		"*.config.mjs",
-		"node_modules/**"
+		"node_modules/**",
+		"docs/**",
+		"build-css.js",
+		"gedcom-testing/**"
 	]
 }

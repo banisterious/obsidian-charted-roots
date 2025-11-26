@@ -138,7 +138,7 @@ export class FamilyChartLayoutEngine {
 						return (
 							sibling.crId !== person.crId &&
 							((person.fatherCrId && sibling.fatherCrId === person.fatherCrId) ||
-							 (person.motherCrId && sibling.motherCrId === person.motherCrId))
+								(person.motherCrId && sibling.motherCrId === person.motherCrId))
 						);
 					});
 
