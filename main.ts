@@ -335,33 +335,31 @@ export default class CanvasRootsPlugin extends Plugin {
 									.setSubmenu();
 
 								// Generate tree submenu
-								const generateTreeSubmenu = submenu.addItem((subItem) => {
-									return subItem
+								submenu.addItem((subItem) => {
+									const generateTreeSubmenu: Menu = subItem
 										.setTitle('Generate tree')
 										.setIcon('git-fork')
 										.setSubmenu();
-								});
 
-								generateTreeSubmenu.addItem((genItem) => {
-									genItem
-										.setTitle('Generate Canvas tree')
-										.setIcon('layout')
-										.onClick(() => {
-											const modal = new ControlCenterModal(this.app, this);
-											modal.openWithPerson(file);
-										});
-								});
+									generateTreeSubmenu.addItem((genItem) => {
+										genItem
+											.setTitle('Generate Canvas tree')
+											.setIcon('layout')
+											.onClick(() => {
+												const modal = new ControlCenterModal(this.app, this);
+												modal.openWithPerson(file);
+											});
+									});
 
-								generateTreeSubmenu.addItem((genItem) => {
-									genItem
-										.setTitle('Generate Excalidraw tree')
-										.setIcon('pencil')
-										.onClick(async () => {
-											await this.generateExcalidrawTreeForPerson(file);
-										});
+									generateTreeSubmenu.addItem((genItem) => {
+										genItem
+											.setTitle('Generate Excalidraw tree')
+											.setIcon('pencil')
+											.onClick(async () => {
+												await this.generateExcalidrawTreeForPerson(file);
+											});
+									});
 								});
-
-								submenu.addSeparator();
 
 								submenu.addItem((subItem) => {
 									subItem
@@ -376,65 +374,65 @@ export default class CanvasRootsPlugin extends Plugin {
 								submenu.addSeparator();
 
 								// Add relationship submenu
-								const relationshipSubmenu = submenu.addItem((subItem) => {
-									return subItem
+								submenu.addItem((subItem) => {
+									const relationshipSubmenu: Menu = subItem
 										.setTitle('Add relationship...')
 										.setIcon('user-plus')
 										.setSubmenu();
-								});
 
-								relationshipSubmenu.addItem((relItem) => {
-									relItem
-										.setTitle('Add parent')
-										.setIcon('user')
-										.onClick(() => {
-											const picker = new PersonPickerModal(this.app, (selectedPerson) => {
-												void (async () => {
-													const relationshipMgr = new RelationshipManager(this.app, this.relationshipHistory);
+									relationshipSubmenu.addItem((relItem) => {
+										relItem
+											.setTitle('Add parent')
+											.setIcon('user')
+											.onClick(() => {
+												const picker = new PersonPickerModal(this.app, (selectedPerson) => {
+													void (async () => {
+														const relationshipMgr = new RelationshipManager(this.app, this.relationshipHistory);
 
-													// Ask which parent type
-													const parentType = await this.promptParentType();
-													if (parentType) {
-														await relationshipMgr.addParentRelationship(
-															file,
-															selectedPerson.file,
-															parentType
-														);
-													}
-												})();
+														// Ask which parent type
+														const parentType = await this.promptParentType();
+														if (parentType) {
+															await relationshipMgr.addParentRelationship(
+																file,
+																selectedPerson.file,
+																parentType
+															);
+														}
+													})();
+												});
+												picker.open();
 											});
-											picker.open();
-										});
-								});
+									});
 
-								relationshipSubmenu.addItem((relItem) => {
-									relItem
-										.setTitle('Add spouse')
-										.setIcon('heart')
-										.onClick(() => {
-											const picker = new PersonPickerModal(this.app, (selectedPerson) => {
-												void (async () => {
-													const relationshipMgr = new RelationshipManager(this.app, this.relationshipHistory);
-													await relationshipMgr.addSpouseRelationship(file, selectedPerson.file);
-												})();
+									relationshipSubmenu.addItem((relItem) => {
+										relItem
+											.setTitle('Add spouse')
+											.setIcon('heart')
+											.onClick(() => {
+												const picker = new PersonPickerModal(this.app, (selectedPerson) => {
+													void (async () => {
+														const relationshipMgr = new RelationshipManager(this.app, this.relationshipHistory);
+														await relationshipMgr.addSpouseRelationship(file, selectedPerson.file);
+													})();
+												});
+												picker.open();
 											});
-											picker.open();
-										});
-								});
+									});
 
-								relationshipSubmenu.addItem((relItem) => {
-									relItem
-										.setTitle('Add child')
-										.setIcon('baby')
-										.onClick(() => {
-											const picker = new PersonPickerModal(this.app, (selectedPerson) => {
-												void (async () => {
-													const relationshipMgr = new RelationshipManager(this.app, this.relationshipHistory);
-													await relationshipMgr.addChildRelationship(file, selectedPerson.file);
-												})();
+									relationshipSubmenu.addItem((relItem) => {
+										relItem
+											.setTitle('Add child')
+											.setIcon('baby')
+											.onClick(() => {
+												const picker = new PersonPickerModal(this.app, (selectedPerson) => {
+													void (async () => {
+														const relationshipMgr = new RelationshipManager(this.app, this.relationshipHistory);
+														await relationshipMgr.addChildRelationship(file, selectedPerson.file);
+													})();
+												});
+												picker.open();
 											});
-											picker.open();
-										});
+									});
 								});
 
 								// Validate relationships

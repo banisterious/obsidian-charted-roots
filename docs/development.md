@@ -94,30 +94,45 @@ canvas-roots/
 | Component | Status | Purpose |
 |-----------|--------|---------|
 | `bidirectional-linker.ts` | ✅ Complete | Automatic relationship synchronization with dual storage |
+| `canvas-finder.ts` | ✅ Complete | Finds canvases containing specific person notes |
 | `canvas-generator.ts` | ✅ Complete | Converts positioned nodes to Canvas JSON format with styling |
-| `compact-layout.ts` | ✅ Complete | 50% tighter spacing layout for large trees (50+ people) |
+| `canvas-style-overrides.ts` | ✅ Complete | Canvas node styling customization |
+| `error-utils.ts` | ✅ Complete | Centralized error handling utilities |
 | `family-chart-layout.ts` | ✅ Complete | Family tree layout using family-chart library with support for complex relationships |
 | `family-graph.ts` | ✅ Complete | Builds relationship graphs from person notes with dual storage support |
 | `hourglass-layout.ts` | ✅ Complete | Ancestors above, descendants below root person layout |
 | `layout-engine.ts` | 🟡 Deprecated | Original D3.js hierarchy layout (superseded by family-chart-layout.ts) |
+| `lineage-tracking.ts` | ✅ Complete | Multi-generational lineage assignment (patrilineal, matrilineal, all descendants) |
 | `logging.ts` | ✅ Complete | Structured logging with export capability and persistent log level settings |
 | `person-note-writer.ts` | ✅ Complete | Creates person notes with YAML frontmatter, includes all essential properties by default |
+| `privacy-service.ts` | ✅ Complete | Privacy protection for GEDCOM exports (living person detection, anonymization) |
+| `reference-numbering.ts` | ✅ Complete | Genealogical reference systems (Ahnentafel, d'Aboville, Henry, Generation) |
+| `relationship-calculator.ts` | ✅ Complete | BFS pathfinding to calculate genealogical relationships between people |
+| `relationship-history.ts` | ✅ Complete | Tracks relationship changes with timestamps for undo functionality |
+| `relationship-manager.ts` | ✅ Complete | Centralized relationship CRUD operations with history integration |
+| `relationship-validator.ts` | ✅ Complete | Validates relationship data integrity and detects orphaned links |
 | `timeline-layout.ts` | ✅ Complete | Chronological positioning by birth year layout |
 | `uuid.ts` | ✅ Complete | UUID v4 generation for `cr_id` fields |
 | `vault-stats.ts` | ✅ Complete | Calculates vault-wide statistics |
-| **To Be Implemented** | | |
-| `collection-manager.ts` | 🔴 Needed | Component naming and user collection management (Phase 1/2) |
 
 ### UI Components (src/ui/)
 
 | Component | Status | Purpose |
 |-----------|--------|---------|
+| `canvas-style-modal.ts` | ✅ Complete | Modal for canvas styling options |
 | `control-center.ts` | ✅ Complete | Main Control Center modal with Status, Tree Output, Quick Actions, and Data Entry tabs |
-| `person-picker.ts` | ✅ Complete | Person search modal with fuzzy matching |
+| `find-on-canvas-modal.ts` | ✅ Complete | Find person across all canvases |
+| `folder-scan-modal.ts` | ✅ Complete | Scan folder for relationship issues |
+| `folder-statistics-modal.ts` | ✅ Complete | Comprehensive folder analytics and data completeness metrics |
+| `gedcom-import-results-modal.ts` | ✅ Complete | Detailed GEDCOM import results with success/warning/error counts |
 | `lucide-icons.ts` | ✅ Complete | Lucide icon integration helpers |
+| `person-picker.ts` | ✅ Complete | Person search modal with fuzzy matching |
+| `regenerate-options-modal.ts` | ✅ Complete | Options modal for canvas regeneration |
+| `relationship-calculator-modal.ts` | ✅ Complete | UI for calculating relationship between two people |
+| `relationship-history-modal.ts` | ✅ Complete | View and undo relationship changes with timestamps |
 | `tree-preview.ts` | ✅ Complete | Interactive SVG tree preview with pan/zoom, color schemes, tooltips, and PNG/SVG export |
-| **To Be Implemented** | | |
-| `material-components.ts` | 🔴 Needed | Reusable Material Design components |
+| `tree-statistics-modal.ts` | ✅ Complete | Tree generation statistics display |
+| `validation-results-modal.ts` | ✅ Complete | Display validation results for relationship data |
 
 ### Data Models (src/models/)
 
@@ -137,18 +152,43 @@ canvas-roots/
 | Open Control Center | ✅ Complete | Opens main Control Center modal |
 | Generate Tree for Current Note | ✅ Complete | Opens Control Center with current person pre-selected in Tree Output tab |
 | Create Person Note | ✅ Complete | Opens Control Center to Data Entry tab for creating new person notes |
-| Re-Layout Current Canvas | ✅ Complete | Recalculates layout for active canvas using current settings and relationship data |
+| Regenerate Canvas | ✅ Complete | Recalculates layout for active canvas using current settings and relationship data |
 | Generate All Trees | ✅ Complete | Generates separate canvases for each disconnected family component in vault |
-| **To Be Implemented** | | |
-| Open Tree View | 🔴 Needed | Opens D3 preview for collection/tree |
+| Calculate Relationship | ✅ Complete | Calculate genealogical relationship between any two people |
+| Assign Ahnentafel Numbers | ✅ Complete | Assign Ahnentafel ancestor numbering from selected person |
+| Assign d'Aboville Numbers | ✅ Complete | Assign d'Aboville descendant numbering from selected person |
+| Assign Henry Numbers | ✅ Complete | Assign Henry system descendant numbering from selected person |
+| Assign Generation Numbers | ✅ Complete | Assign relative generation depth from selected person |
+| Clear Reference Numbers | ✅ Complete | Remove specific numbering type from all person notes |
+| Assign Lineage | ✅ Complete | Assign lineage tags from root person (patrilineal, matrilineal, or all) |
+| Remove Lineage Tags | ✅ Complete | Remove lineage tags from person notes |
+| View Relationship History | ✅ Complete | View and undo recent relationship changes |
+| Undo Last Relationship | ✅ Complete | Undo the most recent relationship change |
 
 ### Context Menus
 
 | Menu Item | Status | Trigger | Purpose |
 |-----------|--------|---------|---------|
-| "Generate tree" submenu | ✅ Complete | Right-click on person note | Quick access to Canvas (full options) or Excalidraw (instant) tree generation |
-| "Add essential properties" | ✅ Complete | Right-click on markdown file(s) | Bulk-add all 9 essential properties to person notes |
-| "Re-layout Family Tree" | ✅ Complete | Right-click on canvas file (file explorer, tab, or three-dot menu) | Recalculates canvas layout using current settings |
+| **Person Note Context Menu** | | | |
+| "Generate tree" submenu | ✅ Complete | Right-click on person note | Canvas (full options) or Excalidraw (instant) tree generation |
+| "Add relationship" submenu | ✅ Complete | Right-click on person note | Add parent, spouse, or child relationships |
+| "Reference numbers" submenu | ✅ Complete | Right-click on person note | Assign Ahnentafel, d'Aboville, Henry, or Generation numbers |
+| "Assign lineage" submenu | ✅ Complete | Right-click on person note | Assign patrilineal, matrilineal, or all descendants lineage |
+| "Calculate relationship" | ✅ Complete | Right-click on person note | Calculate relationship to another person |
+| "Validate relationships" | ✅ Complete | Right-click on person note | Check for relationship data integrity issues |
+| "Find on canvas" | ✅ Complete | Right-click on person note | Find this person across all canvases |
+| "Mark/Unmark as root person" | ✅ Complete | Right-click on person note | Toggle root person status for lineage tracking |
+| "Set group name" | ✅ Complete | Right-click on person note | Set custom name for family group |
+| "Add essential properties" | ✅ Complete | Right-click on markdown file(s) | Bulk-add all 9 essential properties |
+| **Folder Context Menu** | | | |
+| "View folder statistics" | ✅ Complete | Right-click on folder | Comprehensive folder analytics |
+| "Scan for relationship issues" | ✅ Complete | Right-click on folder | Check all notes in folder for issues |
+| "Import GEDCOM to folder" | ✅ Complete | Right-click on folder | Import GEDCOM file to selected folder |
+| "Export folder to GEDCOM" | ✅ Complete | Right-click on folder | Export folder contents to GEDCOM |
+| **Canvas Context Menu** | | | |
+| "Regenerate canvas" | ✅ Complete | Right-click on canvas file | Recalculates canvas layout |
+| "View tree statistics" | ✅ Complete | Right-click on canvas file | View statistics for the tree |
+| "Export to Excalidraw" | ✅ Complete | Right-click on canvas file | Convert canvas to Excalidraw format |
 
 ### Control Center Tabs
 
@@ -156,44 +196,44 @@ canvas-roots/
 |-----|--------|---------|
 | Status | ✅ Complete | Displays vault statistics (people, relationships, health metrics) |
 | Tree Output | ✅ Complete | Tree generation and export UI with layout algorithm options, Excalidraw export instructions |
+| Collections | ✅ Complete | Browse family components and user collections with cross-collection connection detection |
 | Quick Actions | ✅ Complete | Shortcuts to common operations (generate tree, re-layout, create person) |
 | Data Entry | ✅ Complete | Person note creation with relationship fields |
-| **To Be Implemented** | | |
-| Collections | 🔴 Needed | Collections tab for browsing family components and user collections (Phase 2) |
+| Guide | ✅ Complete | In-app documentation and help content |
 
 ### Collections Feature Roadmap
 
 > **Architecture:** See [docs/architecture/collections.md](../architecture/collections.md) for complete ADR
 
-**Current Status (v0.1.1):**
+**Current Status (v0.2.9):**
 - ✅ Detected family components (backend working via `FamilyGraphService.findAllFamilyComponents()`)
 - ✅ Multi-family UI in Tree Generation tab (sidebar shows "Family 1", "Family 2", etc.)
-- ❌ No component naming support (`group_name` property not implemented)
-- ❌ No user collections support (`collection` property not implemented)
-- ❌ No Collections tab in Control Center
+- ✅ Component naming support (`group_name` property)
+- ✅ User collections support (`collection` property)
+- ✅ Collections tab in Control Center
+- ✅ Cross-collection connection detection
+- ✅ Bases template includes `collection` column
 
-**Phase 1: Component Naming (v0.2.0-beta) - Planned:**
-- Add `group_name` property support to person notes
-- Update UI to show custom names instead of "Family 1", "Family 2"
-- Implement naming conflict resolution (most common name wins)
-- Update family group sidebar to display custom names
-- Documentation for users
+**Phase 1: Component Naming (v0.2.0-beta) - ✅ Complete:**
+- ✅ `group_name` property support in person notes
+- ✅ UI shows custom names instead of "Family 1", "Family 2"
+- ✅ Naming conflict resolution (most common name wins)
+- ✅ Family group sidebar displays custom names
+- ✅ Documentation in user guide
 
-**Phase 2: User Collections (v0.3.0-beta) - Planned:**
-- Add `collection` property support to person notes
-- Create Collections tab in Control Center
-- UI to filter/browse by user collection
-- Collection statistics in Status tab
-- Obsidian Bases integration testing
-- Cross-collection connection detection
-- Update Bases template to include `collection` column
+**Phase 2: User Collections (v0.2.0-beta) - ✅ Complete:**
+- ✅ `collection` property support in person notes
+- ✅ Collections tab in Control Center
+- ✅ UI to filter/browse by user collection
+- ✅ Cross-collection connection detection
+- ✅ Obsidian Bases integration
+- ✅ Bases template includes `collection` column
 
 **Phase 3: Advanced Features (v1.x.x) - Future:**
 - Cross-collection tree generation
 - Collection-level GEDCOM export
 - Collection merge/split tools
 - Collection-specific node styling
-- Reference numbering with collection codes
 
 **Technical Implementation:**
 - Detected components = computed from relationship graph (BFS traversal)
