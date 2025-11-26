@@ -1,6 +1,6 @@
 # Canvas Roots: Genealogical Family Tree Plugin for Obsidian
 
-> **Status (v0.2.6):** Canvas Roots is feature-complete for core genealogical workflows and submitted for Obsidian community plugin review. All essential features are stable and production-ready (GEDCOM import/export, bidirectional sync, alternative layout algorithms, tree generation, canvas styling, collections, relationship calculator). Advanced features are planned for future releases. See [Roadmap](docs/roadmap.md) for details.
+> **Status (v0.2.9):** Canvas Roots is feature-complete for core genealogical workflows and submitted for Obsidian community plugin review. All essential features are stable and production-ready (GEDCOM import/export, bidirectional sync, alternative layout algorithms, tree generation, canvas styling, collections, relationship calculator, reference numbering, lineage tracking, relationship history). Advanced features are planned for future releases. See [Roadmap](docs/roadmap.md) for details.
 
 **Canvas Roots** is an Obsidian plugin that automatically generates complex family trees directly onto the Canvas using specialized genealogical layout algorithms for non-overlapping, relationship-aware positioning.
 
@@ -16,9 +16,9 @@ This plugin is designed for genealogists, historians, and world-builders. It tra
 
 ## ✨ Key Features
 
-### Available Now (v0.2.6)
+### Available Now (v0.2.9)
 
-- **GEDCOM Import/Export:** Full round-trip support for GEDCOM 5.5.1 format with pre-import validation and comprehensive import results modal. Import family trees from popular genealogy software (Gramps, Ancestry, FamilySearch) with birth/death places, occupation, and gender data. Export back to .ged format with UUID preservation, collection codes, and marriage metadata.
+- **GEDCOM Import/Export:** Full round-trip support for GEDCOM 5.5.1 format with pre-import validation and comprehensive import results modal. Import family trees from popular genealogy software (Gramps, Ancestry, FamilySearch) with birth/death places, occupation, and gender data. Export back to .ged format with UUID preservation, collection codes, marriage metadata, and optional privacy protection for living persons.
 
 - **Interactive Tree Preview:** Real-time visual preview of family trees before canvas generation. Pan, zoom, and explore layouts with interactive controls. Switch between color schemes (Gender, Generation, Monochrome) to visualize different data aspects. Hover over nodes to view person details (name, birth/death dates, generation). Export previews as high-resolution PNG or vector SVG for external use. Particularly useful for large trees (50+ people) to verify layout before generating the final canvas.
 
@@ -42,7 +42,7 @@ This plugin is designed for genealogists, historians, and world-builders. It tra
 
 - **Multiple Spouse Support:** Track complex marital histories with flat indexed YAML properties (`spouse1`, `spouse2`, etc.) including marriage dates, locations, and status. Optionally display spouse edges with marriage metadata labels on the canvas (toggle in Canvas Settings).
 
-- **Obsidian Bases Compatible:** Designed to work seamlessly with [Obsidian Bases](https://help.obsidian.md/bases) for efficient bulk data entry and management. Includes ready-to-use Base template with six pre-configured relationship query views (Single Parents, Childless Couples, Multiple Marriages, Sibling Groups, Root Generation, Marked Root Persons).
+- **Obsidian Bases Compatible:** Designed to work seamlessly with [Obsidian Bases](https://help.obsidian.md/bases) for efficient bulk data entry and management. Includes ready-to-use Base template with 22 pre-configured views including relationship queries, lineage tracking, and reference numbering views.
 
 - **Bidirectional Relationship Sync:** Automatically maintains reciprocal relationships across your family tree. When you set someone as a parent in one note, Canvas Roots automatically adds the child relationship in the parent's note. When you delete a relationship, the reciprocal link is automatically removed. Works seamlessly with Bases table edits, direct frontmatter modifications, and external editors.
 
@@ -60,12 +60,21 @@ This plugin is designed for genealogists, historians, and world-builders. It tra
 
 - **Relationship Calculator:** Calculate the relationship between any two people in your family tree. Uses BFS pathfinding to find the shortest connection path and provides proper genealogical terms (cousin, uncle, 2nd cousin once removed, etc.). Supports in-law relationships, displays common ancestors, and shows the full relationship path. Access via command palette or right-click context menu on person notes.
 
+- **Reference Numbering Systems:** Assign standard genealogical reference numbers to your family members. Supports four numbering systems: Ahnentafel (ancestor numbering where father=2N, mother=2N+1), d'Aboville (descendant numbering with dot notation like 1.2.3), Henry System (compact descendant numbering without dots), and Generation numbering (relative generation depth from a reference person). Numbers are stored in frontmatter and automatically available in Bases views.
+
+- **Lineage Tracking:** Compute and track multi-generational lineages from root persons. Mark people as belonging to specific ancestral lines (e.g., "Smith Line", "Tudor Dynasty") with support for patrilineal (father's line), matrilineal (mother's line), or all descendants tracking. Enables filtering and analysis of descendant lines in Bases views.
+
+- **Relationship History & Undo:** Track all relationship changes made through Canvas Roots with timestamps. View recent changes in the Relationship History modal, see statistics on changes by type, and undo any change with a single click. Configurable retention period for automatic cleanup of old history entries.
+
+- **Folder Statistics:** View comprehensive statistics about person notes in any folder. See data completeness metrics, relationship health reports, and family structure analysis including gender distribution, relationship types, and generation depth.
+
+- **Privacy Protection:** Optional privacy controls for living persons in GEDCOM exports. Configure birth year threshold to automatically exclude or anonymize personal details for people who may still be living.
+
 ### Planned Features
 
 See [Roadmap](docs/roadmap.md) for detailed feature descriptions and development priorities.
-- **Reference Numbering:** Ahnentafel and Dollarhide-Cole genealogical numbering systems
 - **Person Detail Panel:** Rich inline person information with relationship visualization
-- **Privacy & Obfuscation:** Optional data obfuscation for exports and canvas display
+- **Interactive Family Chart View:** Full family-chart library in an Obsidian leaf view with bidirectional note sync
 - **World-Building Features:** Track fantasy dynasties, corporate succession, and historical kingdoms
 
 

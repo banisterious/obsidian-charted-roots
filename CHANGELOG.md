@@ -7,6 +7,116 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.2.9] - 2025-11-26
+
+### Added
+
+- **Privacy Protection for GEDCOM Export**: Optional privacy controls for living persons
+  - Configurable birth year threshold (default: 100 years ago)
+  - Exclude living persons entirely or anonymize their data
+  - Privacy-protected exports maintain family structure while hiding PII
+  - Settings: `enableGedcomPrivacy`, `livingPersonThreshold`
+
+- **Lineage Tracking**: Compute and track multi-generational lineages from root persons
+  - Support for patrilineal (father's line), matrilineal (mother's line), and all descendants
+  - `lineage` array property in frontmatter for multiple lineage membership
+  - Commands: "Assign lineage from root person", "Remove lineage tags"
+  - Context menu integration on person notes with lineage type submenu
+  - Suggested lineage names based on surname (e.g., "Smith Line")
+
+- **Folder Statistics Modal**: Comprehensive folder-level analytics
+  - Data completeness metrics (required fields, dates, relationships)
+  - Relationship health reports (orphans, incomplete relationships)
+  - Family structure analysis (gender distribution, generation depth)
+  - Access via right-click folder context menu
+
+- **Relationship History & Undo**: Track and reverse relationship changes
+  - History modal showing all relationship changes with timestamps
+  - Statistics by change type (add parent, add spouse, add child, etc.)
+  - One-click undo for any change
+  - Configurable retention period with automatic cleanup
+  - Settings: `enableRelationshipHistory`, `historyRetentionDays`
+  - Commands: "View relationship history", "Undo last relationship change"
+
+- **Enhanced Bases Template**: Expanded from 16 to 22 pre-configured views
+  - New views: By lineage, By generation number, Ahnentafel ordered, d'Aboville ordered, Henry ordered, Without lineage
+  - Added visible properties: lineage, generation, ahnentafel, daboville, henry
+
+- **Multi-Vault Deploy Script**: Deploy to multiple Obsidian vaults simultaneously
+
+### Changed
+
+- RelationshipManager now optionally records changes to history service
+- Improved error handling for Base template creation with Bases plugin detection
+
+---
+
+## [0.2.8] - 2025-11-26
+
+### Added
+
+- **Reference Numbering Systems**: Assign standard genealogical reference numbers
+  - **Ahnentafel**: Ancestor numbering (self=1, father=2, mother=3, paternal grandfather=4, etc.)
+  - **d'Aboville**: Descendant numbering with dot notation (1, 1.1, 1.2, 1.1.1, etc.)
+  - **Henry System**: Compact descendant numbering without dots (1, 11, 12, 111, etc.)
+  - **Generation**: Relative generation depth (0=self, -1=parents, +1=children)
+  - Commands for each system via command palette
+  - Context menu on person notes with numbering submenu
+  - "Clear reference numbers" command to remove specific numbering types
+  - Numbers stored in frontmatter: `ahnentafel`, `daboville`, `henry`, `generation`
+
+---
+
+## [0.2.7] - 2025-11-25
+
+### Added
+
+- **Bases Integration Improvements**
+  - Enhanced error handling for Base operations
+  - Bases plugin detection with confirmation modal
+  - Improved Base template with additional visible properties
+
+---
+
+## [0.2.6] - 2025-11-25
+
+### Changed
+
+- Documentation updates for community plugin submission
+- Minor UI text improvements for Obsidian style guide compliance
+
+---
+
+## [0.2.5] - 2025-11-25
+
+### Added
+
+- **Relationship Calculator**: Calculate the relationship between any two people
+  - BFS pathfinding algorithm finds shortest path through family connections
+  - Proper genealogical terms (cousin, uncle, 2nd cousin once removed, etc.)
+  - Support for cousins with removal (1st cousin twice removed, etc.)
+  - In-law relationship detection (parent-in-law, sibling-in-law)
+  - Common ancestor identification for collateral relationships
+  - Visual path display showing the chain of relationships
+  - Copy result to clipboard functionality
+  - Command: "Calculate relationship between people"
+  - Context menu entry on person notes
+
+---
+
+## [0.2.4] - 2025-11-24
+
+### Changed
+
+- **Community Plugin Submission**: Prepared plugin for Obsidian community plugin directory
+  - Fixed manifest validation issues (removed "Obsidian" from description)
+  - Corrected authorUrl format
+  - Standardized version numbering (removed -beta suffix)
+  - Added GitHub issue templates with privacy guidance
+  - Updated security documentation
+
+---
+
 ## [0.2.3-beta] - 2025-11-24
 
 ### Added

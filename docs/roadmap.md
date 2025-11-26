@@ -1,7 +1,7 @@
 # Canvas Roots: Development Roadmap
 
-> **Last Updated:** 2025-11-25
-> **Current Version:** v0.2.5
+> **Last Updated:** 2025-11-26
+> **Current Version:** v0.2.9
 
 Canvas Roots is in beta with core functionality complete and stable. Advanced features and enhancements are planned for future releases.
 
@@ -9,7 +9,40 @@ Canvas Roots is in beta with core functionality complete and stable. Advanced fe
 
 ## 🎯 Released Versions
 
-### v0.2.5 (Current)
+### v0.2.9 (Current)
+
+**Privacy Protection, Lineage Tracking, Relationship History, Folder Statistics:**
+- ✅ Privacy protection for living persons in GEDCOM exports (configurable birth year threshold)
+- ✅ Lineage tracking with patrilineal, matrilineal, and all-descendants modes
+- ✅ Folder statistics modal with data completeness metrics
+- ✅ Relationship history with undo support (configurable retention period)
+- ✅ Enhanced Bases template with 22 pre-configured views (added 6 new views)
+- ✅ Multi-vault deploy script support
+
+### v0.2.8
+
+**Reference Numbering Systems:**
+- ✅ Ahnentafel (ancestor numbering)
+- ✅ d'Aboville (descendant numbering with dots)
+- ✅ Henry System (compact descendant numbering)
+- ✅ Generation numbering (relative depth)
+- Commands for all systems via command palette and context menu
+- Numbers stored in frontmatter, automatically visible in Bases
+
+### v0.2.7
+
+**Bases Integration Improvements:**
+- Enhanced error handling for Base operations
+- Bases plugin detection with confirmation modal
+- Improved Base template with additional visible properties
+
+### v0.2.6
+
+**Documentation & Polish:**
+- Documentation updates for community plugin submission
+- Minor UI text improvements for Obsidian style guide compliance
+
+### v0.2.5
 
 **Relationship Calculator:**
 - Calculate relationship between any two people in the family graph
@@ -199,10 +232,13 @@ No features currently in active development. See Planned Features below for road
 
 ### Bases Integration Improvements
 
+**Status**: ✅ Completed in v0.2.9
+
 - ✅ Children property in visible properties (Completed in v0.2.0-beta)
 - ✅ Additional pre-configured Base views for common genealogy queries (Completed: Single Parents, Childless Couples, Multiple Marriages, Sibling Groups, Root Generation, Marked Root Persons)
-- Enhanced error handling and validation for Base operations
-- Collection management UI improvements in Bases views
+- ✅ Enhanced error handling and validation for Base operations (Completed in v0.2.7)
+- ✅ 22 pre-configured views including lineage, generation, and reference numbering views (Completed in v0.2.9)
+- Collection management UI improvements in Bases views (future enhancement)
 
 ### Ancestor/Descendant Lineage Tracking
 
@@ -223,11 +259,15 @@ Compute and track multi-generational lineages from marked root persons to enable
 
 ### Relationship History & Undo
 
-- Command history modal tracking relationship changes made through Canvas Roots UI
-- Manual undo commands to reverse recent relationship edits
-- Relationship History panel showing recent changes with rollback options
-- Change tracking for all relationship modifications (parent, spouse, child edits)
-- Configurable history retention period
+**Status**: ✅ Completed in v0.2.9
+
+- ✅ Command history modal tracking relationship changes made through Canvas Roots UI
+- ✅ Manual undo commands to reverse recent relationship edits
+- ✅ Relationship History panel showing recent changes with rollback options
+- ✅ Change tracking for all relationship modifications (parent, spouse, child edits)
+- ✅ Configurable history retention period
+- ✅ Settings: `enableRelationshipHistory`, `historyRetentionDays`
+- ✅ Commands: "View relationship history", "Undo last relationship change"
 
 ### Reference Numbering Systems
 
@@ -319,7 +359,7 @@ A dedicated Obsidian leaf view that renders the full family-chart library intera
 - Built-in history tracking with back/forward navigation
 - History controls UI with back/forward buttons
 - State snapshots on each change
-- Could integrate with Canvas Roots' planned Relationship History feature
+- Could integrate with Canvas Roots' Relationship History feature (completed in v0.2.9)
 
 **Search & Filtering:**
 - Person search with autocomplete dropdown
@@ -349,10 +389,17 @@ A dedicated Obsidian leaf view that renders the full family-chart library intera
 
 ### Privacy & Obfuscation
 
-- Optional data obfuscation for exports
-- PII protection for canvas display
-- Living person privacy controls
-- Configurable obfuscation rules
+**Status**: ✅ Partially Completed in v0.2.9
+
+**Implemented:**
+- ✅ Living person privacy controls for GEDCOM exports
+- ✅ Configurable birth year threshold (default: 100 years)
+- ✅ Settings: `enableGedcomPrivacy`, `livingPersonThreshold`
+
+**Planned:**
+- Optional data obfuscation for canvas display
+- PII protection for notes/canvas (beyond GEDCOM export)
+- Configurable obfuscation rules for different export types
 
 ### Batch Operations
 
@@ -452,7 +499,7 @@ A dedicated Obsidian leaf view that renders the full family-chart library intera
 - Gramps XML import
 - CSV bulk import/export
 - Selective export (specific branches only)
-- Privacy filters (exclude living people)
+- ✅ Privacy filters for living people (Completed in v0.2.9 for GEDCOM export)
 - Redacted exports for sharing
 
 ---
@@ -496,11 +543,12 @@ A dedicated Obsidian leaf view that renders the full family-chart library intera
 See [known-limitations.md](known-limitations.md) for a complete list of current limitations and workarounds.
 
 **Key Limitations:**
-- No reference numbering systems
-- Living person privacy not yet implemented
+- ~~No reference numbering systems~~ ✅ Completed in v0.2.8
+- ~~Living person privacy not yet implemented~~ ✅ Completed in v0.2.9 (GEDCOM export)
 - Single vault only (no multi-vault merging)
 - No undo/redo for Bases edits (Bases platform limitation)
 - No bulk operations from Bases multi-select (Bases platform limitation)
+- Privacy obfuscation for canvas display not yet implemented
 
 ---
 
