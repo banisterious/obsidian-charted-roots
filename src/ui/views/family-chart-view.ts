@@ -1,0 +1,1321 @@
+/**
+ * Interactive Family Chart View
+ *
+ * An Obsidian ItemView that renders the family-chart library for interactive
+ * exploration and editing of family trees.
+ */
+
+import { ItemView, WorkspaceLeaf, Menu, TFile, Notice } from 'obsidian';
+import f3 from 'family-chart';
+import type CanvasRootsPlugin from '../../../main';
+import { FamilyGraphService, PersonNode } from '../../core/family-graph';
+import type { ColorScheme } from '../../settings';
+import { getLogger } from '../../core/logging';
+
+const logger = getLogger('FamilyChartView');
+
+export const VIEW_TYPE_FAMILY_CHART = 'canvas-roots-family-chart';
+
+/**
+ * family-chart person data format
+ * Matches the Datum interface from family-chart
+ */
+interface FamilyChartPerson {
+	id: string;
+	data: {
+		'first name': string;
+		'last name': string;
+		gender: 'M' | 'F';
+		birthday?: string;
+		deathday?: string;
+		avatar?: string;
+		[key: string]: unknown;
+	};
+	rels: {
+		parents: string[];
+		spouses: string[];
+		children: string[];
+	};
+	[key: string]: unknown;
+}
+
+/**
+ * View state that gets persisted
+ */
+interface FamilyChartViewState {
+	rootPersonId: string | null;
+	colorScheme: ColorScheme;
+	editMode: boolean;
+	nodeSpacing?: number;
+	levelSpacing?: number;
+	showBirthDates?: boolean;
+	showDeathDates?: boolean;
+	[key: string]: unknown;  // Index signature for Record<string, unknown> compatibility
+}
+
+/**
+ * Interactive Family Chart View
+ */
+export class FamilyChartView extends ItemView {
+	plugin: CanvasRootsPlugin;
+
+	// View state
+	private rootPersonId: string | null = null;
+	private colorScheme: ColorScheme = 'gender';
+	private editMode: boolean = false;
+	private nodeSpacing: number = 250; // X spacing between nodes
+	private levelSpacing: number = 150; // Y spacing between generations
+	private showBirthDates: boolean = true;
+	private showDeathDates: boolean = false;
+
+	// family-chart instances
+	private f3Chart: ReturnType<typeof f3.createChart> | null = null;
+	private f3Card: ReturnType<ReturnType<typeof f3.createChart>['setCardSvg']> | null = null;
+	private f3EditTree: ReturnType<ReturnType<typeof f3.createChart>['editTree']> | null = null;
+
+	// UI elements
+	private toolbarEl: HTMLElement | null = null;
+	private chartContainerEl: HTMLElement | null = null;
+	private zoomLevelEl: HTMLElement | null = null;
+	private editModeBtn: HTMLElement | null = null;
+	private historyBackBtn: HTMLElement | null = null;
+	private historyForwardBtn: HTMLElement | null = null;
+
+	// Sync state (prevent infinite loops during sync)
+	private isSyncing: boolean = false;
+
+	// Services
+	private familyGraphService: FamilyGraphService;
+
+	// Data cache
+	private chartData: FamilyChartPerson[] = [];
+
+	constructor(leaf: WorkspaceLeaf, plugin: CanvasRootsPlugin) {
+		super(leaf);
+		this.plugin = plugin;
+		this.familyGraphService = new FamilyGraphService(plugin.app);
+	}
+
+	getViewType(): string {
+		return VIEW_TYPE_FAMILY_CHART;
+	}
+
+	getDisplayText(): string {
+		return 'Family chart';
+	}
+
+	getIcon(): string {
+		return 'git-fork';
+	}
+
+	async onOpen(): Promise<void> {
+		logger.debug('view-open', 'Opening FamilyChartView');
+
+		// Build UI structure
+		this.buildUI();
+
+		// Initialize chart if we have state
+		if (this.rootPersonId) {
+			await this.initializeChart();
+		} else {
+			this.showEmptyState();
+		}
+
+		// Register event handlers
+		this.registerEventHandlers();
+	}
+
+	async onClose(): Promise<void> {
+		logger.debug('view-close', 'Closing FamilyChartView');
+		this.destroyChart();
+	}
+
+	/**
+	 * Build the UI structure: toolbar and chart container
+	 */
+	private buildUI(): void {
+		const container = this.contentEl;
+		container.empty();
+		container.addClass('cr-family-chart-view');
+
+		// Create toolbar
+		this.toolbarEl = container.createDiv({ cls: 'cr-fcv-toolbar' });
+		this.buildToolbar();
+
+		// Create chart container
+		this.chartContainerEl = container.createDiv({ cls: 'cr-fcv-chart-container f3' });
+	}
+
+	/**
+	 * Build the toolbar controls
+	 */
+	private buildToolbar(): void {
+		if (!this.toolbarEl) return;
+
+		const toolbar = this.toolbarEl;
+		toolbar.empty();
+
+		// Left side controls
+		const leftControls = toolbar.createDiv({ cls: 'cr-fcv-toolbar-left' });
+
+		// Color scheme dropdown
+		const colorGroup = leftControls.createDiv({ cls: 'cr-fcv-control-group' });
+		colorGroup.createSpan({ text: 'Color:', cls: 'cr-fcv-label' });
+		const colorSelect = colorGroup.createEl('select', { cls: 'cr-fcv-select dropdown' });
+
+		const colorOptions: { value: ColorScheme; label: string }[] = [
+			{ value: 'gender', label: 'Gender' },
+			{ value: 'generation', label: 'Generation' },
+			{ value: 'collection', label: 'Collection' },
+			{ value: 'monochrome', label: 'Monochrome' }
+		];
+
+		for (const opt of colorOptions) {
+			const option = colorSelect.createEl('option', { value: opt.value, text: opt.label });
+			if (opt.value === this.colorScheme) {
+				option.selected = true;
+			}
+		}
+
+		colorSelect.addEventListener('change', () => {
+			this.colorScheme = colorSelect.value as ColorScheme;
+			this.refreshChart();
+		});
+
+		// Zoom controls group
+		const zoomGroup = leftControls.createDiv({ cls: 'cr-fcv-control-group cr-fcv-zoom-group' });
+
+		// Zoom out button
+		const zoomOutBtn = zoomGroup.createEl('button', {
+			cls: 'cr-fcv-btn cr-fcv-zoom-btn clickable-icon',
+			attr: { 'aria-label': 'Zoom out' }
+		});
+		zoomOutBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>';
+		zoomOutBtn.addEventListener('click', () => this.zoomOut());
+
+		// Zoom level indicator
+		this.zoomLevelEl = zoomGroup.createSpan({ cls: 'cr-fcv-zoom-level', text: '100%' });
+
+		// Zoom in button
+		const zoomInBtn = zoomGroup.createEl('button', {
+			cls: 'cr-fcv-btn cr-fcv-zoom-btn clickable-icon',
+			attr: { 'aria-label': 'Zoom in' }
+		});
+		zoomInBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>';
+		zoomInBtn.addEventListener('click', () => this.zoomIn());
+
+		// Right side controls
+		const rightControls = toolbar.createDiv({ cls: 'cr-fcv-toolbar-right' });
+
+		// Search button
+		const searchBtn = rightControls.createEl('button', {
+			cls: 'cr-fcv-btn clickable-icon',
+			attr: { 'aria-label': 'Search for person' }
+		});
+		// Search icon
+		searchBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+		searchBtn.addEventListener('click', () => this.openPersonSearch());
+
+		// Edit mode toggle button
+		this.editModeBtn = rightControls.createEl('button', {
+			cls: `cr-fcv-btn clickable-icon ${this.editMode ? 'is-active' : ''}`,
+			attr: { 'aria-label': 'Toggle edit mode' }
+		});
+		// Pencil/edit icon
+		this.editModeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+		this.editModeBtn.addEventListener('click', () => this.toggleEditMode());
+
+		// History buttons (undo/redo for edit mode)
+		this.historyBackBtn = rightControls.createEl('button', {
+			cls: 'cr-fcv-btn clickable-icon',
+			attr: { 'aria-label': 'Undo', disabled: 'true' }
+		});
+		// Undo/back icon
+		this.historyBackBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>';
+		this.historyBackBtn.addEventListener('click', () => this.historyBack());
+
+		this.historyForwardBtn = rightControls.createEl('button', {
+			cls: 'cr-fcv-btn clickable-icon',
+			attr: { 'aria-label': 'Redo', disabled: 'true' }
+		});
+		// Redo/forward icon
+		this.historyForwardBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/></svg>';
+		this.historyForwardBtn.addEventListener('click', () => this.historyForward());
+
+		// Fit to view button
+		const fitBtn = rightControls.createEl('button', {
+			cls: 'cr-fcv-btn clickable-icon',
+			attr: { 'aria-label': 'Fit to view' }
+		});
+		fitBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
+		fitBtn.addEventListener('click', () => this.fitToView());
+
+		// Pop out to main workspace button (only show if in sidebar)
+		if (this.isInSidebar()) {
+			const popOutBtn = rightControls.createEl('button', {
+				cls: 'cr-fcv-btn clickable-icon',
+				attr: { 'aria-label': 'Open in main workspace' }
+			});
+			// External link / pop-out icon
+			popOutBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
+			popOutBtn.addEventListener('click', () => this.popOutToMainWorkspace());
+		}
+
+		// Layout settings button
+		const layoutBtn = rightControls.createEl('button', {
+			cls: 'cr-fcv-btn clickable-icon',
+			attr: { 'aria-label': 'Layout settings' }
+		});
+		// Sliders/settings icon
+		layoutBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>';
+		layoutBtn.addEventListener('click', (e) => this.showLayoutMenu(e));
+
+		// Export button
+		const exportBtn = rightControls.createEl('button', {
+			cls: 'cr-fcv-btn clickable-icon',
+			attr: { 'aria-label': 'Export chart' }
+		});
+		// Download icon
+		exportBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+		exportBtn.addEventListener('click', (e) => this.showExportMenu(e));
+
+		// Refresh button
+		const refreshBtn = rightControls.createEl('button', {
+			cls: 'cr-fcv-btn clickable-icon',
+			attr: { 'aria-label': 'Refresh chart' }
+		});
+		refreshBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>';
+		refreshBtn.addEventListener('click', () => this.refreshChart());
+	}
+
+	/**
+	 * Show empty state when no root person is selected
+	 */
+	private showEmptyState(): void {
+		if (!this.chartContainerEl) return;
+
+		this.chartContainerEl.empty();
+		const emptyState = this.chartContainerEl.createDiv({ cls: 'cr-fcv-empty-state' });
+
+		emptyState.createEl('h3', { text: 'No family selected' });
+		emptyState.createEl('p', { text: 'Open a person note and use the command "Open in family chart" to view their family tree.' });
+
+		const selectBtn = emptyState.createEl('button', {
+			text: 'Select a person',
+			cls: 'mod-cta'
+		});
+		selectBtn.addEventListener('click', () => this.promptSelectPerson());
+	}
+
+	/**
+	 * Open person picker to select root person
+	 */
+	private async promptSelectPerson(): Promise<void> {
+		const { PersonPickerModal } = await import('../person-picker');
+
+		new PersonPickerModal(this.app, async (selectedPerson) => {
+			this.rootPersonId = selectedPerson.crId;
+			await this.initializeChart();
+		}).open();
+	}
+
+	/**
+	 * Initialize the family-chart instance
+	 */
+	private async initializeChart(): Promise<void> {
+		if (!this.chartContainerEl) return;
+
+		logger.debug('chart-init', 'Initializing chart', { rootPersonId: this.rootPersonId });
+
+		// Clear container
+		this.chartContainerEl.empty();
+
+		// Load family data
+		await this.loadChartData();
+
+		if (this.chartData.length === 0) {
+			this.showEmptyState();
+			return;
+		}
+
+		// Apply theme-appropriate styling
+		const isDarkMode = document.body.classList.contains('theme-dark');
+
+		// Set CSS variables and colors directly on the container
+		// family-chart relies on these CSS variables for card colors
+		this.chartContainerEl.style.setProperty('--female-color', 'rgb(196, 138, 146)');
+		this.chartContainerEl.style.setProperty('--male-color', 'rgb(120, 159, 172)');
+		this.chartContainerEl.style.setProperty('--genderless-color', 'lightgray');
+		this.chartContainerEl.style.setProperty('--background-color', isDarkMode ? 'rgb(33, 33, 33)' : 'rgb(250, 250, 250)');
+		this.chartContainerEl.style.setProperty('--text-color', isDarkMode ? '#fff' : '#333');
+		this.chartContainerEl.style.backgroundColor = isDarkMode ? 'rgb(33, 33, 33)' : 'rgb(250, 250, 250)';
+		this.chartContainerEl.style.color = isDarkMode ? '#fff' : '#333';
+
+		// Create the chart
+		this.f3Chart = f3.createChart(this.chartContainerEl, this.chartData)
+			.setTransitionTime(800)
+			.setCardXSpacing(this.nodeSpacing)
+			.setCardYSpacing(this.levelSpacing);
+
+		// Configure SVG cards with current display options
+		const displayFields: string[][] = [['first name', 'last name']];
+		if (this.showBirthDates && this.showDeathDates) {
+			displayFields.push(['birthday', 'deathday']);
+		} else if (this.showBirthDates) {
+			displayFields.push(['birthday']);
+		} else if (this.showDeathDates) {
+			displayFields.push(['deathday']);
+		}
+
+		this.f3Card = this.f3Chart.setCardSvg()
+			.setCardDisplay(displayFields)
+			.setCardDim({ w: 200, h: 70, text_x: 75, text_y: 15, img_w: 60, img_h: 60, img_x: 5, img_y: 5 })
+			.setOnCardClick((e, d) => this.handleCardClick(e, d));
+
+		// Initialize EditTree for editing capabilities
+		this.initializeEditTree();
+
+		// Set main/root person if specified
+		if (this.rootPersonId) {
+			this.f3Chart.updateMainId(this.rootPersonId);
+		}
+
+		// Initial render
+		this.f3Chart.updateTree({ initial: true });
+
+		logger.info('chart-init', 'Chart initialized', {
+			personCount: this.chartData.length,
+			rootPersonId: this.rootPersonId
+		});
+	}
+
+	/**
+	 * Load and transform data from person notes to family-chart format
+	 */
+	private async loadChartData(): Promise<void> {
+		// Ensure cache is loaded first
+		await this.familyGraphService.ensureCacheLoaded();
+
+		// Get all people from the vault
+		const people = this.familyGraphService.getAllPeople();
+
+		// Transform to family-chart format
+		this.chartData = people.map(person => this.transformPersonNode(person));
+
+		logger.debug('data-load', 'Loaded chart data', { count: this.chartData.length });
+	}
+
+	/**
+	 * Transform PersonNode to family-chart format
+	 */
+	private transformPersonNode(person: PersonNode): FamilyChartPerson {
+		// Parse name into first and last
+		const nameParts = (person.name || '').trim().split(' ');
+		const firstName = nameParts[0] || '';
+		const lastName = nameParts.slice(1).join(' ');
+
+		// Map gender - family-chart requires 'M' or 'F', default to 'M' if unknown
+		let gender: 'M' | 'F' = 'M';
+		const sex = person.sex?.toLowerCase();
+		if (sex === 'f' || sex === 'female') {
+			gender = 'F';
+		}
+
+		// Build parents array from father and mother
+		const parents: string[] = [];
+		if (person.fatherCrId) {
+			parents.push(person.fatherCrId);
+		}
+		if (person.motherCrId) {
+			parents.push(person.motherCrId);
+		}
+
+		return {
+			id: person.crId,
+			data: {
+				'first name': firstName,
+				'last name': lastName,
+				gender,
+				birthday: person.birthDate,
+				deathday: person.deathDate,
+			},
+			rels: {
+				parents,
+				spouses: person.spouseCrIds || [],
+				children: person.childrenCrIds || [],
+			}
+		};
+	}
+
+	/**
+	 * Handle click on a person card
+	 * The d parameter is a TreeDatum from family-chart
+	 */
+	private handleCardClick(e: MouseEvent, d: { data: { id: string; [key: string]: unknown } }): void {
+		const personId = d.data.id;
+
+		logger.debug('card-click', 'Card clicked', { personId, editMode: this.editMode });
+
+		// In edit mode, EditTree handles the click via setCardClickOpen
+		// In view mode, open the person's note in addition to navigation
+		if (!this.editMode) {
+			this.openPersonNote(personId);
+		}
+
+		// Call default card click behavior for navigation (centers on the person)
+		if (this.f3Card) {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			this.f3Card.onCardClickDefault(e, d as any);
+		}
+	}
+
+	/**
+	 * Open the note for a person by their cr_id
+	 */
+	private async openPersonNote(crId: string): Promise<void> {
+		// Find the file for this person
+		const files = this.app.vault.getMarkdownFiles();
+
+		for (const file of files) {
+			const cache = this.app.metadataCache.getFileCache(file);
+			if (cache?.frontmatter?.cr_id === crId) {
+				// Open in a new leaf beside this one
+				const leaf = this.app.workspace.getLeaf('tab');
+				await leaf.openFile(file);
+				return;
+			}
+		}
+
+		logger.warn('open-note', 'Could not find note for person', { crId });
+	}
+
+	/**
+	 * Refresh the chart with current data
+	 */
+	async refreshChart(): Promise<void> {
+		// Force reload the cache to get fresh data
+		this.familyGraphService.reloadCache();
+
+		if (this.rootPersonId) {
+			await this.initializeChart();
+		}
+	}
+
+	/**
+	 * Fit chart to view (zoom to show all nodes)
+	 */
+	private fitToView(): void {
+		if (this.f3Chart) {
+			this.f3Chart.updateTree({ tree_position: 'fit' });
+			this.updateZoomLevelDisplay();
+		}
+	}
+
+	/**
+	 * Zoom in by a fixed amount
+	 */
+	private zoomIn(): void {
+		if (!this.f3Chart) return;
+
+		const svg = this.f3Chart.svg;
+		if (svg) {
+			f3.handlers.manualZoom({ amount: 0.2, svg, transition_time: 200 });
+			this.updateZoomLevelDisplay();
+		}
+	}
+
+	/**
+	 * Zoom out by a fixed amount
+	 */
+	private zoomOut(): void {
+		if (!this.f3Chart) return;
+
+		const svg = this.f3Chart.svg;
+		if (svg) {
+			f3.handlers.manualZoom({ amount: -0.2, svg, transition_time: 200 });
+			this.updateZoomLevelDisplay();
+		}
+	}
+
+	/**
+	 * Update the zoom level display in the toolbar
+	 */
+	private updateZoomLevelDisplay(): void {
+		if (!this.f3Chart || !this.zoomLevelEl) return;
+
+		const svg = this.f3Chart.svg;
+		if (svg) {
+			// Delay slightly to allow zoom transition to complete
+			setTimeout(() => {
+				const transform = f3.handlers.getCurrentZoom(svg);
+				const percentage = Math.round(transform.k * 100);
+				if (this.zoomLevelEl) {
+					this.zoomLevelEl.textContent = `${percentage}%`;
+				}
+			}, 250);
+		}
+	}
+
+	// ============ Search ============
+
+	/**
+	 * Open person search modal to find and center on a person
+	 */
+	private async openPersonSearch(): Promise<void> {
+		const { PersonPickerModal } = await import('../person-picker');
+
+		new PersonPickerModal(this.app, (selectedPerson) => {
+			this.centerOnPerson(selectedPerson.crId);
+		}).open();
+	}
+
+	/**
+	 * Center the chart on a specific person
+	 */
+	private centerOnPerson(crId: string): void {
+		if (!this.f3Chart) return;
+
+		// Find the datum for this person
+		const datum = this.chartData.find(p => p.id === crId);
+		if (!datum) {
+			logger.warn('center-person', 'Person not found in chart data', { crId });
+			return;
+		}
+
+		// Update main ID to make this person the focus
+		this.f3Chart.updateMainId(crId);
+		this.f3Chart.updateTree({ tree_position: 'main_to_middle' });
+
+		logger.debug('center-person', 'Centered on person', { crId, name: `${datum.data['first name']} ${datum.data['last name']}` });
+	}
+
+	// ============ History (Undo/Redo) ============
+
+	/**
+	 * Go back in edit history (undo)
+	 */
+	private historyBack(): void {
+		if (!this.f3EditTree) return;
+
+		const history = this.f3EditTree.history;
+		if (history && history.canBack()) {
+			history.back();
+			this.updateHistoryButtons();
+			logger.debug('history', 'Undo performed');
+		}
+	}
+
+	/**
+	 * Go forward in edit history (redo)
+	 */
+	private historyForward(): void {
+		if (!this.f3EditTree) return;
+
+		const history = this.f3EditTree.history;
+		if (history && history.canForward()) {
+			history.forward();
+			this.updateHistoryButtons();
+			logger.debug('history', 'Redo performed');
+		}
+	}
+
+	/**
+	 * Update the enabled/disabled state of history buttons
+	 */
+	private updateHistoryButtons(): void {
+		if (!this.f3EditTree || !this.historyBackBtn || !this.historyForwardBtn) return;
+
+		const history = this.f3EditTree.history;
+		if (!history) {
+			this.historyBackBtn.setAttribute('disabled', 'true');
+			this.historyForwardBtn.setAttribute('disabled', 'true');
+			return;
+		}
+
+		// Update back button
+		if (history.canBack()) {
+			this.historyBackBtn.removeAttribute('disabled');
+		} else {
+			this.historyBackBtn.setAttribute('disabled', 'true');
+		}
+
+		// Update forward button
+		if (history.canForward()) {
+			this.historyForwardBtn.removeAttribute('disabled');
+		} else {
+			this.historyForwardBtn.setAttribute('disabled', 'true');
+		}
+	}
+
+	// ============ Export ============
+
+	/**
+	 * Show export menu with PNG and SVG options
+	 */
+	private showExportMenu(e: MouseEvent): void {
+		const menu = new Menu();
+
+		menu.addItem((item) => {
+			item.setTitle('Export as PNG')
+				.setIcon('image')
+				.onClick(() => this.exportAsPng());
+		});
+
+		menu.addItem((item) => {
+			item.setTitle('Export as SVG')
+				.setIcon('file-code')
+				.onClick(() => this.exportAsSvg());
+		});
+
+		menu.showAtMouseEvent(e);
+	}
+
+	/**
+	 * Export the chart as PNG
+	 */
+	private async exportAsPng(): Promise<void> {
+		if (!this.f3Chart) return;
+
+		const svg = this.f3Chart.svg;
+		if (!svg) {
+			new Notice('No chart to export');
+			return;
+		}
+
+		try {
+			// Get SVG dimensions
+			const svgRect = svg.getBoundingClientRect();
+			const width = svgRect.width || 800;
+			const height = svgRect.height || 600;
+
+			// Clone SVG and prepare for export
+			const svgClone = svg.cloneNode(true) as SVGSVGElement;
+			svgClone.setAttribute('width', String(width));
+			svgClone.setAttribute('height', String(height));
+
+			// Add background color
+			const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+			bgRect.setAttribute('width', '100%');
+			bgRect.setAttribute('height', '100%');
+			bgRect.setAttribute('fill', document.body.classList.contains('theme-dark') ? 'rgb(33, 33, 33)' : 'rgb(250, 250, 250)');
+			svgClone.insertBefore(bgRect, svgClone.firstChild);
+
+			// Serialize SVG
+			const serializer = new XMLSerializer();
+			const svgString = serializer.serializeToString(svgClone);
+			const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+			const svgUrl = URL.createObjectURL(svgBlob);
+
+			// Create canvas and draw SVG
+			const canvas = document.createElement('canvas');
+			canvas.width = width * 2; // 2x for better quality
+			canvas.height = height * 2;
+			const ctx = canvas.getContext('2d');
+			if (!ctx) {
+				new Notice('Failed to create canvas context');
+				return;
+			}
+
+			const img = new Image();
+			img.onload = () => {
+				ctx.scale(2, 2);
+				ctx.drawImage(img, 0, 0);
+				URL.revokeObjectURL(svgUrl);
+
+				// Download PNG
+				canvas.toBlob((blob) => {
+					if (blob) {
+						const url = URL.createObjectURL(blob);
+						const link = document.createElement('a');
+						link.href = url;
+						link.download = `family-chart-${Date.now()}.png`;
+						link.click();
+						URL.revokeObjectURL(url);
+						new Notice('PNG exported successfully');
+					}
+				}, 'image/png');
+			};
+			img.onerror = () => {
+				URL.revokeObjectURL(svgUrl);
+				new Notice('Failed to render chart as PNG');
+			};
+			img.src = svgUrl;
+
+		} catch (error) {
+			logger.error('export-png', 'Failed to export PNG', { error });
+			new Notice('Failed to export PNG');
+		}
+	}
+
+	// ============ Layout Configuration ============
+
+	/**
+	 * Show layout settings menu
+	 */
+	private showLayoutMenu(e: MouseEvent): void {
+		const menu = new Menu();
+
+		// Node spacing (horizontal)
+		menu.addItem((item) => {
+			item.setTitle(`Node spacing: ${this.nodeSpacing}px`)
+				.setIcon('arrow-left-right')
+				.setDisabled(true);
+		});
+
+		menu.addItem((item) => {
+			item.setTitle('Compact (200px)')
+				.onClick(() => this.setNodeSpacing(200));
+		});
+		menu.addItem((item) => {
+			item.setTitle('Normal (250px)')
+				.onClick(() => this.setNodeSpacing(250));
+		});
+		menu.addItem((item) => {
+			item.setTitle('Spacious (350px)')
+				.onClick(() => this.setNodeSpacing(350));
+		});
+
+		menu.addSeparator();
+
+		// Level spacing (vertical)
+		menu.addItem((item) => {
+			item.setTitle(`Level spacing: ${this.levelSpacing}px`)
+				.setIcon('arrow-up-down')
+				.setDisabled(true);
+		});
+
+		menu.addItem((item) => {
+			item.setTitle('Compact (100px)')
+				.onClick(() => this.setLevelSpacing(100));
+		});
+		menu.addItem((item) => {
+			item.setTitle('Normal (150px)')
+				.onClick(() => this.setLevelSpacing(150));
+		});
+		menu.addItem((item) => {
+			item.setTitle('Spacious (200px)')
+				.onClick(() => this.setLevelSpacing(200));
+		});
+
+		menu.addSeparator();
+
+		// Card display options
+		menu.addItem((item) => {
+			item.setTitle('Card display')
+				.setIcon('credit-card')
+				.setDisabled(true);
+		});
+
+		menu.addItem((item) => {
+			item.setTitle(`${this.showBirthDates ? '✓ ' : ''}Show birth dates`)
+				.onClick(() => this.toggleBirthDates());
+		});
+
+		menu.addItem((item) => {
+			item.setTitle(`${this.showDeathDates ? '✓ ' : ''}Show death dates`)
+				.onClick(() => this.toggleDeathDates());
+		});
+
+		menu.showAtMouseEvent(e);
+	}
+
+	/**
+	 * Toggle birth dates display
+	 */
+	private toggleBirthDates(): void {
+		this.showBirthDates = !this.showBirthDates;
+		this.updateCardDisplay();
+		new Notice(`Birth dates ${this.showBirthDates ? 'shown' : 'hidden'}`);
+	}
+
+	/**
+	 * Toggle death dates display
+	 */
+	private toggleDeathDates(): void {
+		this.showDeathDates = !this.showDeathDates;
+		this.updateCardDisplay();
+		new Notice(`Death dates ${this.showDeathDates ? 'shown' : 'hidden'}`);
+	}
+
+	/**
+	 * Update card display based on current options
+	 */
+	private updateCardDisplay(): void {
+		if (!this.f3Chart || !this.f3Card) return;
+
+		// Build card display array based on options
+		const displayFields: string[][] = [['first name', 'last name']];
+
+		if (this.showBirthDates && this.showDeathDates) {
+			displayFields.push(['birthday', 'deathday']);
+		} else if (this.showBirthDates) {
+			displayFields.push(['birthday']);
+		} else if (this.showDeathDates) {
+			displayFields.push(['deathday']);
+		}
+
+		this.f3Card.setCardDisplay(displayFields);
+		this.f3Chart.updateTree({});
+	}
+
+	/**
+	 * Set node (horizontal) spacing and refresh
+	 */
+	private setNodeSpacing(spacing: number): void {
+		this.nodeSpacing = spacing;
+		if (this.f3Chart) {
+			this.f3Chart.setCardXSpacing(spacing);
+			this.f3Chart.updateTree({});
+			new Notice(`Node spacing set to ${spacing}px`);
+		}
+	}
+
+	/**
+	 * Set level (vertical) spacing and refresh
+	 */
+	private setLevelSpacing(spacing: number): void {
+		this.levelSpacing = spacing;
+		if (this.f3Chart) {
+			this.f3Chart.setCardYSpacing(spacing);
+			this.f3Chart.updateTree({});
+			new Notice(`Level spacing set to ${spacing}px`);
+		}
+	}
+
+	/**
+	 * Export the chart as SVG
+	 */
+	private exportAsSvg(): void {
+		if (!this.f3Chart) return;
+
+		const svg = this.f3Chart.svg;
+		if (!svg) {
+			new Notice('No chart to export');
+			return;
+		}
+
+		try {
+			// Clone SVG
+			const svgClone = svg.cloneNode(true) as SVGSVGElement;
+			const svgRect = svg.getBoundingClientRect();
+			svgClone.setAttribute('width', String(svgRect.width || 800));
+			svgClone.setAttribute('height', String(svgRect.height || 600));
+
+			// Serialize
+			const serializer = new XMLSerializer();
+			const svgString = serializer.serializeToString(svgClone);
+
+			// Download
+			const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+			const url = URL.createObjectURL(blob);
+			const link = document.createElement('a');
+			link.href = url;
+			link.download = `family-chart-${Date.now()}.svg`;
+			link.click();
+			URL.revokeObjectURL(url);
+
+			new Notice('SVG exported successfully');
+
+		} catch (error) {
+			logger.error('export-svg', 'Failed to export SVG', { error });
+			new Notice('Failed to export SVG');
+		}
+	}
+
+	// ============ Edit Mode ============
+
+	/**
+	 * Toggle edit mode on/off
+	 */
+	private toggleEditMode(): void {
+		this.editMode = !this.editMode;
+
+		// Update button state
+		if (this.editModeBtn) {
+			this.editModeBtn.classList.toggle('is-active', this.editMode);
+		}
+
+		// Update container class for styling
+		if (this.chartContainerEl) {
+			this.chartContainerEl.classList.toggle('is-edit-mode', this.editMode);
+		}
+
+		logger.info('edit-mode', `Edit mode ${this.editMode ? 'enabled' : 'disabled'}`);
+
+		// If edit mode is enabled, make sure EditTree is configured
+		if (this.editMode && this.f3EditTree) {
+			this.f3EditTree.setEdit();
+		} else if (!this.editMode && this.f3EditTree) {
+			this.f3EditTree.setNoEdit();
+			this.f3EditTree.closeForm();
+		}
+	}
+
+	/**
+	 * Initialize EditTree for editing capabilities
+	 */
+	private initializeEditTree(): void {
+		if (!this.f3Chart || !this.f3Card) return;
+
+		logger.debug('edit-tree-init', 'Initializing EditTree');
+
+		// Create EditTree instance
+		this.f3EditTree = this.f3Chart.editTree()
+			// Configure editable fields
+			.setFields([
+				{ type: 'text', label: 'First name', id: 'first name' },
+				{ type: 'text', label: 'Last name', id: 'last name' },
+				{ type: 'text', label: 'Birth date', id: 'birthday' },
+				{ type: 'text', label: 'Death date', id: 'deathday' }
+			])
+			// Set up card click to open edit form when in edit mode
+			.setCardClickOpen(this.f3Card)
+			// Handle data changes for bidirectional sync
+			.setOnChange(() => this.handleChartDataChange())
+			// Custom submit handler for sync to markdown
+			.setOnSubmit((e, datum, applyChanges, postSubmit) => {
+				// Apply changes in family-chart first
+				applyChanges();
+				// Then sync to markdown
+				void this.syncDatumToMarkdown(datum);
+				// Complete the submission
+				postSubmit();
+			})
+			// Custom delete handler
+			.setOnDelete((datum, deletePerson, postSubmit) => {
+				// Confirm deletion
+				if (confirm(`Delete ${datum.data['first name']} ${datum.data['last name']}?`)) {
+					// Delete in family-chart
+					deletePerson();
+					// Note: actual file deletion would be a separate concern
+					// For now, just remove from chart (file remains but relationships are cleaned)
+					logger.info('edit-delete', 'Person deleted from chart', { id: datum.id });
+					postSubmit({});
+				}
+			})
+			// Start in no-edit mode (toggle button enables it)
+			.setNoEdit();
+
+		// If edit mode is already enabled, activate it
+		if (this.editMode) {
+			this.f3EditTree.setEdit();
+		}
+
+		logger.debug('edit-tree-init', 'EditTree initialized');
+	}
+
+	/**
+	 * Handle data changes from the chart (bidirectional sync)
+	 */
+	private handleChartDataChange(): void {
+		if (!this.f3EditTree || this.isSyncing) return;
+
+		logger.debug('chart-change', 'Chart data changed, syncing to markdown');
+
+		// Export the updated data
+		const updatedData = this.f3EditTree.exportData();
+
+		// The onChange fires on any edit, we'll handle the actual sync
+		// in the onSubmit handler for individual changes
+		logger.debug('chart-change', 'Data exported', { count: Array.isArray(updatedData) ? updatedData.length : 0 });
+
+		// Update history buttons state
+		this.updateHistoryButtons();
+	}
+
+	/**
+	 * Sync a single datum (person) to their markdown file
+	 */
+	private async syncDatumToMarkdown(datum: { id: string; data: Record<string, unknown>; rels?: { parents?: string[]; spouses?: string[]; children?: string[] } }): Promise<void> {
+		if (this.isSyncing) return;
+
+		this.isSyncing = true;
+
+		try {
+			const crId = datum.id;
+			logger.debug('sync-to-md', 'Syncing datum to markdown', { crId, data: datum.data });
+
+			// Find the file for this person
+			const files = this.app.vault.getMarkdownFiles();
+			let targetFile: TFile | null = null;
+
+			for (const file of files) {
+				const cache = this.app.metadataCache.getFileCache(file);
+				if (cache?.frontmatter?.cr_id === crId) {
+					targetFile = file;
+					break;
+				}
+			}
+
+			if (!targetFile) {
+				logger.warn('sync-to-md', 'Could not find file for person', { crId });
+				return;
+			}
+
+			// Read current content
+			const content = await this.app.vault.read(targetFile);
+
+			// Parse frontmatter
+			const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+			if (!frontmatterMatch) {
+				logger.warn('sync-to-md', 'No frontmatter found in file', { path: targetFile.path });
+				return;
+			}
+
+			const frontmatterContent = frontmatterMatch[1];
+			const bodyContent = content.slice(frontmatterMatch[0].length);
+
+			// Build updated frontmatter
+			const updatedFrontmatter = this.buildUpdatedFrontmatter(frontmatterContent, datum);
+
+			// Write back to file
+			const newContent = `---\n${updatedFrontmatter}\n---${bodyContent}`;
+			await this.app.vault.modify(targetFile, newContent);
+
+			logger.info('sync-to-md', 'Successfully synced to markdown', { path: targetFile.path });
+
+		} catch (error) {
+			logger.error('sync-to-md', 'Failed to sync datum to markdown', { error });
+		} finally {
+			this.isSyncing = false;
+		}
+	}
+
+	/**
+	 * Build updated frontmatter content from datum data
+	 */
+	private buildUpdatedFrontmatter(currentFrontmatter: string, datum: { data: Record<string, unknown>; rels?: { parents?: string[]; spouses?: string[]; children?: string[] } }): string {
+		const lines = currentFrontmatter.split('\n');
+		const updatedLines: string[] = [];
+		const processedKeys = new Set<string>();
+
+		// Combine first and last name
+		const firstName = (datum.data['first name'] as string) || '';
+		const lastName = (datum.data['last name'] as string) || '';
+		const fullName = `${firstName} ${lastName}`.trim();
+
+		// Process existing lines
+		for (const line of lines) {
+			const keyMatch = line.match(/^(\w+):/);
+			if (keyMatch) {
+				const key = keyMatch[1];
+				processedKeys.add(key);
+
+				// Update name
+				if (key === 'name') {
+					updatedLines.push(`name: "${fullName}"`);
+					continue;
+				}
+
+				// Update birth_date
+				if (key === 'birth_date') {
+					const birthDate = datum.data['birthday'] as string;
+					if (birthDate) {
+						updatedLines.push(`birth_date: "${birthDate}"`);
+					} else {
+						updatedLines.push(line); // Keep original if no value
+					}
+					continue;
+				}
+
+				// Update death_date
+				if (key === 'death_date') {
+					const deathDate = datum.data['deathday'] as string;
+					if (deathDate) {
+						updatedLines.push(`death_date: "${deathDate}"`);
+					} else {
+						updatedLines.push(line);
+					}
+					continue;
+				}
+
+				// Update gender
+				if (key === 'gender') {
+					const gender = datum.data['gender'] as string;
+					if (gender) {
+						const genderValue = gender === 'F' ? 'female' : 'male';
+						updatedLines.push(`gender: ${genderValue}`);
+					} else {
+						updatedLines.push(line);
+					}
+					continue;
+				}
+			}
+
+			// Keep other lines unchanged
+			updatedLines.push(line);
+		}
+
+		// Add new properties if they don't exist
+		if (!processedKeys.has('name') && fullName) {
+			updatedLines.push(`name: "${fullName}"`);
+		}
+
+		const birthDate = datum.data['birthday'] as string;
+		if (!processedKeys.has('birth_date') && birthDate) {
+			updatedLines.push(`birth_date: "${birthDate}"`);
+		}
+
+		const deathDate = datum.data['deathday'] as string;
+		if (!processedKeys.has('death_date') && deathDate) {
+			updatedLines.push(`death_date: "${deathDate}"`);
+		}
+
+		return updatedLines.join('\n');
+	}
+
+	/**
+	 * Check if the view is currently in a sidebar
+	 */
+	private isInSidebar(): boolean {
+		const root = this.leaf.getRoot();
+		// Check if we're in left or right sidebar by checking the root type
+		// Sidebar roots have different types than the main workspace root
+		return root !== this.app.workspace.rootSplit;
+	}
+
+	/**
+	 * Move this view from sidebar to main workspace
+	 */
+	private popOutToMainWorkspace(): void {
+		void this.plugin.moveFamilyChartToMainWorkspace(this.leaf);
+	}
+
+	/**
+	 * Destroy the chart instance and clean up
+	 */
+	private destroyChart(): void {
+		// Clean up EditTree
+		if (this.f3EditTree) {
+			this.f3EditTree.destroy();
+			this.f3EditTree = null;
+		}
+
+		// family-chart doesn't have an explicit destroy method
+		// Clean up by clearing the container
+		if (this.chartContainerEl) {
+			this.chartContainerEl.empty();
+		}
+		this.f3Chart = null;
+		this.f3Card = null;
+		this.chartData = [];
+	}
+
+	/**
+	 * Register event handlers for vault changes
+	 */
+	private registerEventHandlers(): void {
+		// Listen for note modifications to refresh the chart
+		this.registerEvent(
+			this.app.vault.on('modify', async (file: TFile) => {
+				if (file.extension !== 'md') return;
+
+				// Check if this is a person note
+				const cache = this.app.metadataCache.getFileCache(file);
+				if (!cache?.frontmatter?.cr_id) return;
+
+				// Debounce rapid changes
+				this.scheduleRefresh();
+			})
+		);
+
+		// Listen for file deletions
+		this.registerEvent(
+			this.app.vault.on('delete', (file) => {
+				if (file instanceof TFile && file.extension === 'md') {
+					this.scheduleRefresh();
+				}
+			})
+		);
+	}
+
+	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+
+	/**
+	 * Schedule a debounced refresh
+	 */
+	private scheduleRefresh(): void {
+		if (this.refreshTimeout) {
+			clearTimeout(this.refreshTimeout);
+		}
+		this.refreshTimeout = setTimeout(() => {
+			this.refreshTimeout = null;
+			void this.refreshChart();
+		}, 500);
+	}
+
+	// ============ State Persistence ============
+
+	getState(): FamilyChartViewState {
+		return {
+			rootPersonId: this.rootPersonId,
+			colorScheme: this.colorScheme,
+			editMode: this.editMode,
+			nodeSpacing: this.nodeSpacing,
+			levelSpacing: this.levelSpacing,
+			showBirthDates: this.showBirthDates,
+			showDeathDates: this.showDeathDates,
+		};
+	}
+
+	async setState(state: Partial<FamilyChartViewState>): Promise<void> {
+		logger.debug('set-state', 'Restoring view state', state);
+
+		if (state.rootPersonId !== undefined) {
+			this.rootPersonId = state.rootPersonId;
+		}
+		if (state.colorScheme !== undefined) {
+			this.colorScheme = state.colorScheme;
+		}
+		if (state.editMode !== undefined) {
+			this.editMode = state.editMode;
+		}
+		if (state.nodeSpacing !== undefined) {
+			this.nodeSpacing = state.nodeSpacing;
+		}
+		if (state.levelSpacing !== undefined) {
+			this.levelSpacing = state.levelSpacing;
+		}
+		if (state.showBirthDates !== undefined) {
+			this.showBirthDates = state.showBirthDates;
+		}
+		if (state.showDeathDates !== undefined) {
+			this.showDeathDates = state.showDeathDates;
+		}
+
+		// Re-initialize if we have a root person
+		if (this.rootPersonId && this.chartContainerEl) {
+			await this.initializeChart();
+		}
+	}
+
+	// ============ Pane Menu ============
+
+	onPaneMenu(menu: Menu, source: string): void {
+		menu.addItem((item) => {
+			item.setTitle('Refresh chart')
+				.setIcon('refresh-cw')
+				.onClick(() => void this.refreshChart());
+		});
+
+		menu.addItem((item) => {
+			item.setTitle('Select person')
+				.setIcon('user')
+				.onClick(() => void this.promptSelectPerson());
+		});
+
+		menu.addSeparator();
+
+		super.onPaneMenu(menu, source);
+	}
+
+	// ============ Public API ============
+
+	/**
+	 * Set the root person and refresh the chart
+	 */
+	async setRootPerson(crId: string): Promise<void> {
+		this.rootPersonId = crId;
+		await this.initializeChart();
+	}
+}

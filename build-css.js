@@ -39,6 +39,7 @@ const CONFIG = {
     'find-on-canvas.css', // Find on canvas modal
     'folder-scan.css',   // Folder scan modal
     'relationship-calculator.css', // Relationship calculator modal
+    'family-chart-view.css', // Interactive family chart view
     'animations.css',    // Keyframes and transitions
     'responsive.css',    // Responsive breakpoints
     'theme.css'          // Theme compatibility (last)

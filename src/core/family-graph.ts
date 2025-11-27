@@ -141,6 +141,14 @@ export class FamilyGraphService {
 	}
 
 	/**
+	 * Force reload the person cache
+	 * Use when you know data has changed and need fresh data
+	 */
+	reloadCache(): void {
+		this.loadPersonCache();
+	}
+
+	/**
 	 * Generates a family tree starting from a root person
 	 */
 	async generateTree(options: TreeOptions): Promise<FamilyTree | null> {

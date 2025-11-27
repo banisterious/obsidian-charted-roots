@@ -1,4 +1,4 @@
-import { Plugin, Notice, TFile, TFolder, Menu, Platform, Modal, EventRef } from 'obsidian';
+import { Plugin, Notice, TFile, TFolder, Menu, Platform, Modal, EventRef, WorkspaceLeaf } from 'obsidian';
 import { CanvasRootsSettings, DEFAULT_SETTINGS, CanvasRootsSettingTab } from './src/settings';
 import { ControlCenterModal } from './src/ui/control-center';
 import { RegenerateOptionsModal } from './src/ui/regenerate-options-modal';
@@ -23,6 +23,7 @@ import { ReferenceNumberingService, NumberingSystem } from './src/core/reference
 import { LineageTrackingService, LineageType } from './src/core/lineage-tracking';
 import { RelationshipHistoryService, RelationshipHistoryData, formatChangeDescription } from './src/core/relationship-history';
 import { RelationshipHistoryModal } from './src/ui/relationship-history-modal';
+import { FamilyChartView, VIEW_TYPE_FAMILY_CHART } from './src/ui/views/family-chart-view';
 
 const logger = getLogger('CanvasRootsPlugin');
 
@@ -45,6 +46,12 @@ export default class CanvasRootsPlugin extends Plugin {
 
 		// Add settings tab
 		this.addSettingTab(new CanvasRootsSettingTab(this.app, this));
+
+		// Register family chart view
+		this.registerView(
+			VIEW_TYPE_FAMILY_CHART,
+			(leaf) => new FamilyChartView(leaf, this)
+		);
 
 		// Add ribbon icon for control center
 		this.addRibbonIcon('users', 'Open Canvas Roots control center', () => {
@@ -119,6 +126,35 @@ export default class CanvasRootsPlugin extends Plugin {
 			name: 'Calculate relationship between people',
 			callback: () => {
 				new RelationshipCalculatorModal(this.app).open();
+			}
+		});
+
+		// Add command: Open Family Chart
+		this.addCommand({
+			id: 'open-family-chart',
+			name: 'Open family chart',
+			callback: () => {
+				void this.activateFamilyChartView();
+			}
+		});
+
+		// Add command: Open Family Chart for Current Note
+		this.addCommand({
+			id: 'open-family-chart-for-note',
+			name: 'Open current note in family chart',
+			checkCallback: (checking) => {
+				const activeFile = this.app.workspace.getActiveFile();
+				if (!activeFile || activeFile.extension !== 'md') {
+					return false;
+				}
+				const cache = this.app.metadataCache.getFileCache(activeFile);
+				if (!cache?.frontmatter?.cr_id) {
+					return false;
+				}
+				if (!checking) {
+					void this.activateFamilyChartView(cache.frontmatter.cr_id);
+				}
+				return true;
 			}
 		});
 
@@ -258,6 +294,15 @@ export default class CanvasRootsPlugin extends Plugin {
 
 							submenu.addItem((subItem) => {
 								subItem
+									.setTitle('Open in family chart')
+									.setIcon('git-fork')
+									.onClick(async () => {
+										await this.openCanvasInFamilyChart(file);
+									});
+							});
+
+							submenu.addItem((subItem) => {
+								subItem
 									.setTitle('Export to Excalidraw')
 									.setIcon('pencil')
 									.onClick(async () => {
@@ -307,6 +352,15 @@ export default class CanvasRootsPlugin extends Plugin {
 								.onClick(async () => {
 									const { CanvasStyleModal } = await import('./src/ui/canvas-style-modal');
 									new CanvasStyleModal(this.app, this, file).open();
+								});
+						});
+
+						menu.addItem((item) => {
+							item
+								.setTitle('Canvas Roots: Open in family chart')
+								.setIcon('git-fork')
+								.onClick(async () => {
+									await this.openCanvasInFamilyChart(file);
 								});
 						});
 
@@ -2499,5 +2553,98 @@ export default class CanvasRootsPlugin extends Plugin {
 	 */
 	private async showFolderStatistics(folder: TFolder): Promise<void> {
 		new FolderStatisticsModal(this.app, folder).open();
+	}
+
+	/**
+	 * Open a canvas file's tree in the Family Chart view
+	 * Extracts the root person from canvas metadata
+	 */
+	async openCanvasInFamilyChart(file: TFile): Promise<void> {
+		try {
+			const canvasContent = await this.app.vault.read(file);
+			const canvasData = JSON.parse(canvasContent);
+			const metadata = canvasData.metadata?.frontmatter;
+
+			if (metadata?.plugin !== 'canvas-roots' || !metadata.generation?.rootCrId) {
+				new Notice('This canvas does not contain Canvas Roots tree data');
+				return;
+			}
+
+			const rootCrId = metadata.generation.rootCrId;
+			// Open in main workspace when triggered from canvas context menu
+			await this.activateFamilyChartView(rootCrId, true);
+		} catch (error) {
+			logger.error('open-canvas-chart', 'Failed to open canvas in family chart', error);
+			new Notice('Failed to read canvas file');
+		}
+	}
+
+	/**
+	 * Activate the Family Chart view
+	 * Opens an existing view or creates a new one
+	 * @param rootPersonId - Optional cr_id to set as root person
+	 * @param useMainWorkspace - If true, opens in main workspace instead of sidebar
+	 */
+	async activateFamilyChartView(rootPersonId?: string, useMainWorkspace: boolean = false): Promise<void> {
+		const { workspace } = this.app;
+
+		let leaf: WorkspaceLeaf | null = null;
+		const leaves = workspace.getLeavesOfType(VIEW_TYPE_FAMILY_CHART);
+
+		if (leaves.length > 0) {
+			// A leaf with our view already exists, use that
+			leaf = leaves[0];
+		} else {
+			// Create a new leaf based on placement preference
+			if (useMainWorkspace) {
+				// Open in main workspace as a new tab
+				leaf = workspace.getLeaf('tab');
+			} else {
+				// Open in right sidebar
+				leaf = workspace.getRightLeaf(false);
+			}
+			if (leaf) {
+				await leaf.setViewState({ type: VIEW_TYPE_FAMILY_CHART, active: true });
+			}
+		}
+
+		// Reveal the leaf in case it is in a collapsed sidebar
+		if (leaf) {
+			workspace.revealLeaf(leaf);
+
+			// If we have a root person, set it in the view
+			if (rootPersonId && leaf.view instanceof FamilyChartView) {
+				await leaf.view.setRootPerson(rootPersonId);
+			}
+		}
+	}
+
+	/**
+	 * Move a Family Chart view from sidebar to main workspace
+	 * Called from the view's toolbar
+	 */
+	async moveFamilyChartToMainWorkspace(currentLeaf: WorkspaceLeaf): Promise<void> {
+		const { workspace } = this.app;
+
+		// Get the current state before moving
+		const currentView = currentLeaf.view;
+		let rootPersonId: string | null = null;
+		if (currentView instanceof FamilyChartView) {
+			const state = currentView.getState();
+			rootPersonId = state.rootPersonId;
+		}
+
+		// Close the current leaf
+		currentLeaf.detach();
+
+		// Open in main workspace
+		const newLeaf = workspace.getLeaf('tab');
+		await newLeaf.setViewState({ type: VIEW_TYPE_FAMILY_CHART, active: true });
+		workspace.revealLeaf(newLeaf);
+
+		// Restore the root person
+		if (rootPersonId && newLeaf.view instanceof FamilyChartView) {
+			await newLeaf.view.setRootPerson(rootPersonId);
+		}
 	}
 }
