@@ -671,6 +671,89 @@ export class FamilyChartView extends ItemView {
 	}
 
 	/**
+	 * Inline computed styles into SVG elements for export
+	 * This is necessary because CSS styles are not included when serializing SVG
+	 */
+	private inlineStyles(source: Element, target: Element): void {
+		const computedStyle = window.getComputedStyle(source);
+
+		// Copy relevant style properties
+		const relevantProperties = [
+			'fill', 'stroke', 'stroke-width', 'font-family', 'font-size',
+			'font-weight', 'text-anchor', 'dominant-baseline', 'opacity',
+			'fill-opacity', 'stroke-opacity', 'visibility', 'display'
+		];
+
+		let styleString = '';
+		for (const prop of relevantProperties) {
+			const value = computedStyle.getPropertyValue(prop);
+			if (value) {
+				styleString += `${prop}:${value};`;
+			}
+		}
+
+		// For text elements, ensure fill is set (SVG text uses fill, not color)
+		const isTextElement = source.tagName === 'text' || source.tagName === 'tspan';
+		if (isTextElement) {
+			const fill = computedStyle.getPropertyValue('fill');
+			const color = computedStyle.getPropertyValue('color');
+			// If fill is not set or is default black, try using color property
+			if ((!fill || fill === 'none' || fill === 'rgb(0, 0, 0)') && color && color !== 'rgb(0, 0, 0)') {
+				styleString += `fill:${color};`;
+			}
+			// Fallback: ensure text is visible based on theme
+			if (!styleString.includes('fill:') || styleString.includes('fill:rgb(0, 0, 0)')) {
+				const isDark = document.body.classList.contains('theme-dark');
+				styleString += `fill:${isDark ? '#ffffff' : '#333333'};`;
+			}
+		}
+
+		if (styleString && target instanceof SVGElement) {
+			const existingStyle = target.getAttribute('style') || '';
+			target.setAttribute('style', existingStyle + styleString);
+		}
+
+		// Recursively inline styles for children
+		const sourceChildren = Array.from(source.children);
+		const targetChildren = Array.from(target.children);
+		for (let i = 0; i < sourceChildren.length && i < targetChildren.length; i++) {
+			this.inlineStyles(sourceChildren[i], targetChildren[i]);
+		}
+	}
+
+	/**
+	 * Generate export filename from pattern
+	 * Replaces {name} with root person's name and {date} with current date
+	 */
+	private generateExportFilename(extension: string): string {
+		const pattern = this.plugin.settings.exportFilenamePattern || '{name}-family-chart-{date}';
+
+		// Get root person's name
+		let personName = 'unknown';
+		if (this.rootPersonId && this.chartData.length > 0) {
+			const rootPerson = this.chartData.find(p => p.id === this.rootPersonId);
+			if (rootPerson) {
+				const firstName = rootPerson.data['first name'] || '';
+				const lastName = rootPerson.data['last name'] || '';
+				personName = `${firstName} ${lastName}`.trim() || 'unknown';
+			}
+		}
+
+		// Sanitize name for filename (remove characters invalid in filenames)
+		const sanitizedName = personName.replace(/[<>:"/\\|?*]/g, '').replace(/\s+/g, '-');
+
+		// Format date as YYYY-MM-DD
+		const date = new Date().toISOString().split('T')[0];
+
+		// Replace placeholders
+		const filename = pattern
+			.replace(/{name}/g, sanitizedName)
+			.replace(/{date}/g, date);
+
+		return `${filename}.${extension}`;
+	}
+
+	/**
 	 * Export the chart as PNG
 	 */
 	private async exportAsPng(): Promise<void> {
@@ -683,22 +766,8 @@ export class FamilyChartView extends ItemView {
 		}
 
 		try {
-			// Get SVG dimensions
-			const svgRect = svg.getBoundingClientRect();
-			const width = svgRect.width || 800;
-			const height = svgRect.height || 600;
-
-			// Clone SVG and prepare for export
-			const svgClone = svg.cloneNode(true) as SVGSVGElement;
-			svgClone.setAttribute('width', String(width));
-			svgClone.setAttribute('height', String(height));
-
-			// Add background color
-			const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-			bgRect.setAttribute('width', '100%');
-			bgRect.setAttribute('height', '100%');
-			bgRect.setAttribute('fill', document.body.classList.contains('theme-dark') ? 'rgb(33, 33, 33)' : 'rgb(250, 250, 250)');
-			svgClone.insertBefore(bgRect, svgClone.firstChild);
+			// Prepare SVG for export using shared helper
+			const { svgClone, width, height } = this.prepareSvgForExport(svg as SVGSVGElement);
 
 			// Serialize SVG
 			const serializer = new XMLSerializer();
@@ -716,6 +785,9 @@ export class FamilyChartView extends ItemView {
 				return;
 			}
 
+			// Generate filename before the async callback
+			const filename = this.generateExportFilename('png');
+
 			const img = new Image();
 			img.onload = () => {
 				ctx.scale(2, 2);
@@ -728,7 +800,7 @@ export class FamilyChartView extends ItemView {
 						const url = URL.createObjectURL(blob);
 						const link = document.createElement('a');
 						link.href = url;
-						link.download = `family-chart-${Date.now()}.png`;
+						link.download = filename;
 						link.click();
 						URL.revokeObjectURL(url);
 						new Notice('PNG exported successfully');
@@ -745,6 +817,138 @@ export class FamilyChartView extends ItemView {
 			logger.error('export-png', 'Failed to export PNG', { error });
 			new Notice('Failed to export PNG');
 		}
+	}
+
+	/**
+	 * Prepare SVG for export by handling transforms and styling
+	 * Family-chart uses CSS transforms on .view group for pan/zoom, which must be
+	 * converted to a proper viewBox for standalone SVG export
+	 */
+	private prepareSvgForExport(svg: SVGSVGElement): { svgClone: SVGSVGElement; width: number; height: number } {
+		// Get bounds from the view group which contains all content
+		// Use getBBox on the cards_view and links_view to get untransformed bounds
+		const cardsView = svg.querySelector('.cards_view') as SVGGElement;
+		const linksView = svg.querySelector('.links_view') as SVGGElement;
+
+		let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+		// Get the bounding box of cards view (in its local coordinate system)
+		if (cardsView) {
+			try {
+				const cardsBBox = cardsView.getBBox();
+				minX = Math.min(minX, cardsBBox.x);
+				minY = Math.min(minY, cardsBBox.y);
+				maxX = Math.max(maxX, cardsBBox.x + cardsBBox.width);
+				maxY = Math.max(maxY, cardsBBox.y + cardsBBox.height);
+			} catch {
+				// getBBox can throw if element is not rendered
+			}
+		}
+
+		// Get the bounding box of links view
+		if (linksView) {
+			try {
+				const linksBBox = linksView.getBBox();
+				minX = Math.min(minX, linksBBox.x);
+				minY = Math.min(minY, linksBBox.y);
+				maxX = Math.max(maxX, linksBBox.x + linksBBox.width);
+				maxY = Math.max(maxY, linksBBox.y + linksBBox.height);
+			} catch {
+				// getBBox can throw if element is not rendered
+			}
+		}
+
+		// Fallback if bounds couldn't be calculated
+		if (!isFinite(minX) || !isFinite(minY) || !isFinite(maxX) || !isFinite(maxY)) {
+			const rect = svg.getBoundingClientRect();
+			minX = 0;
+			minY = 0;
+			maxX = rect.width || 800;
+			maxY = rect.height || 600;
+		}
+
+		// Add padding
+		const padding = 50;
+		minX -= padding;
+		minY -= padding;
+		maxX += padding;
+		maxY += padding;
+
+		// Calculate dimensions
+		const width = maxX - minX;
+		const height = maxY - minY;
+
+		// Clone SVG
+		const svgClone = svg.cloneNode(true) as SVGSVGElement;
+		svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+		svgClone.setAttribute('width', String(width));
+		svgClone.setAttribute('height', String(height));
+		svgClone.setAttribute('viewBox', `${minX} ${minY} ${width} ${height}`);
+
+		// Reset the transform on the view group since we're using viewBox
+		const viewGroup = svgClone.querySelector('.view') as SVGGElement;
+		if (viewGroup) {
+			viewGroup.removeAttribute('style');
+			viewGroup.setAttribute('transform', '');
+		}
+
+		// Theme colors
+		const isDark = document.body.classList.contains('theme-dark');
+		const textColor = isDark ? '#ffffff' : '#333333';
+		const bgColor = isDark ? 'rgb(33, 33, 33)' : 'rgb(250, 250, 250)';
+		const femaleColor = 'rgba(154, 89, 113, 1)';
+		const maleColor = 'rgba(69, 123, 141, 1)';
+		const genderlessColor = 'rgb(59, 85, 96)';
+
+		// Embed CSS styles directly in the SVG for standalone rendering
+		const styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+		styleEl.textContent = `
+			text, tspan {
+				fill: ${textColor};
+				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+				font-size: 14px;
+			}
+			.card-body-rect { fill: ${bgColor}; }
+			.card-female .card-body-rect { fill: ${femaleColor}; }
+			.card-male .card-body-rect { fill: ${maleColor}; }
+			.card-genderless .card-body-rect { fill: ${genderlessColor}; }
+			.link { stroke: ${textColor}; stroke-width: 2px; fill: none; }
+			.card-main-outline { stroke: ${textColor}; stroke-width: 3px; }
+		`;
+		svgClone.insertBefore(styleEl, svgClone.firstChild);
+
+		// Set fill on all text elements for maximum compatibility
+		svgClone.querySelectorAll('text, tspan').forEach((el) => {
+			el.setAttribute('fill', textColor);
+		});
+
+		// Remove clip-path and mask references
+		svgClone.querySelectorAll('[clip-path]').forEach((el) => {
+			el.removeAttribute('clip-path');
+		});
+		svgClone.querySelectorAll('[mask]').forEach((el) => {
+			el.removeAttribute('mask');
+		});
+		svgClone.querySelectorAll('[style*="clip-path"], [style*="mask"]').forEach((el) => {
+			const style = el.getAttribute('style') || '';
+			el.setAttribute('style', style.replace(/clip-path:[^;]+;?/g, '').replace(/mask:[^;]+;?/g, ''));
+		});
+
+		// CRITICAL: Remove text-overflow-mask elements - they cover the text when mask is removed!
+		svgClone.querySelectorAll('.text-overflow-mask').forEach((el) => {
+			el.remove();
+		});
+
+		// Add background rect
+		const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+		bgRect.setAttribute('x', String(minX));
+		bgRect.setAttribute('y', String(minY));
+		bgRect.setAttribute('width', String(width));
+		bgRect.setAttribute('height', String(height));
+		bgRect.setAttribute('fill', bgColor);
+		svgClone.insertBefore(bgRect, svgClone.firstChild);
+
+		return { svgClone, width, height };
 	}
 
 	// ============ Layout Configuration ============
@@ -895,11 +1099,8 @@ export class FamilyChartView extends ItemView {
 		}
 
 		try {
-			// Clone SVG
-			const svgClone = svg.cloneNode(true) as SVGSVGElement;
-			const svgRect = svg.getBoundingClientRect();
-			svgClone.setAttribute('width', String(svgRect.width || 800));
-			svgClone.setAttribute('height', String(svgRect.height || 600));
+			// Prepare SVG for export using shared helper
+			const { svgClone } = this.prepareSvgForExport(svg as SVGSVGElement);
 
 			// Serialize
 			const serializer = new XMLSerializer();
@@ -910,7 +1111,7 @@ export class FamilyChartView extends ItemView {
 			const url = URL.createObjectURL(blob);
 			const link = document.createElement('a');
 			link.href = url;
-			link.download = `family-chart-${Date.now()}.svg`;
+			link.download = this.generateExportFilename('svg');
 			link.click();
 			URL.revokeObjectURL(url);
 

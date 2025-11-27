@@ -521,9 +521,41 @@ export class TreePreviewRenderer {
 		const width = bbox.width;
 		const height = bbox.height;
 
-		// Set explicit dimensions on clone
+		// Set explicit dimensions and namespace on clone
 		svgClone.setAttribute('width', width.toString());
 		svgClone.setAttribute('height', height.toString());
+		svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+		// Inline styles so they survive serialization (required for PNG export)
+		this.inlineStylesFromSource(this.svgElement, svgClone);
+
+		// Remove clip-path and mask references that don't resolve in standalone SVG
+		// The url(#id) references fail when SVG is serialized (base URL context changes)
+		svgClone.querySelectorAll('[clip-path]').forEach((el) => {
+			el.removeAttribute('clip-path');
+		});
+		svgClone.querySelectorAll('[mask]').forEach((el) => {
+			el.removeAttribute('mask');
+		});
+		// Also remove from inline styles
+		svgClone.querySelectorAll('[style*="clip-path"], [style*="mask"]').forEach((el) => {
+			const style = el.getAttribute('style') || '';
+			el.setAttribute('style', style.replace(/clip-path:[^;]+;?/g, '').replace(/mask:[^;]+;?/g, ''));
+		});
+
+		// Explicitly set fill color on all text elements (CSS won't survive serialization)
+		const isDark = document.body.classList.contains('theme-dark');
+		const textColor = isDark ? '#ffffff' : '#333333';
+		svgClone.querySelectorAll('text, tspan').forEach((el) => {
+			el.setAttribute('fill', textColor);
+		});
+
+		// Add background rect for proper rendering
+		const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+		bgRect.setAttribute('width', '100%');
+		bgRect.setAttribute('height', '100%');
+		bgRect.setAttribute('fill', isDark ? '#1e1e1e' : '#ffffff');
+		svgClone.insertBefore(bgRect, svgClone.firstChild);
 
 		// Serialize SVG to string
 		const svgString = new XMLSerializer().serializeToString(svgClone);
@@ -599,7 +631,7 @@ export class TreePreviewRenderer {
 	}
 
 	/**
-	 * Inline computed styles into SVG elements for export
+	 * Inline computed styles into SVG elements for export (single element version for SVG export)
 	 */
 	private inlineStyles(element: Element): void {
 		const computedStyle = window.getComputedStyle(element);
@@ -613,6 +645,50 @@ export class TreePreviewRenderer {
 
 		// Recursively inline styles for children
 		Array.from(element.children).forEach(child => this.inlineStyles(child));
+	}
+
+	/**
+	 * Inline computed styles from source element into target element for export
+	 * This version works with cloned elements that are not in the DOM
+	 */
+	private inlineStylesFromSource(source: Element, target: Element): void {
+		const computedStyle = window.getComputedStyle(source);
+
+		// Copy relevant style properties for SVG
+		const relevantProperties = [
+			'fill', 'stroke', 'stroke-width', 'font-family', 'font-size',
+			'font-weight', 'text-anchor', 'dominant-baseline', 'opacity',
+			'fill-opacity', 'stroke-opacity', 'visibility', 'display', 'color'
+		];
+
+		let styleString = '';
+		for (const prop of relevantProperties) {
+			const value = computedStyle.getPropertyValue(prop);
+			if (value) {
+				styleString += `${prop}:${value};`;
+			}
+		}
+
+		if (styleString && target instanceof SVGElement) {
+			const existingStyle = target.getAttribute('style') || '';
+			target.setAttribute('style', existingStyle + styleString);
+		}
+
+		// For text elements, ensure fill is set
+		const isTextElement = source.tagName === 'text' || source.tagName === 'TEXT';
+		if (isTextElement) {
+			const fill = computedStyle.getPropertyValue('fill');
+			if (!fill || fill === 'none' || fill === 'rgb(0, 0, 0)') {
+				target.setAttribute('fill', '#333333');
+			}
+		}
+
+		// Recursively inline styles for children
+		const sourceChildren = Array.from(source.children);
+		const targetChildren = Array.from(target.children);
+		for (let i = 0; i < sourceChildren.length && i < targetChildren.length; i++) {
+			this.inlineStylesFromSource(sourceChildren[i], targetChildren[i]);
+		}
 	}
 
 	/**

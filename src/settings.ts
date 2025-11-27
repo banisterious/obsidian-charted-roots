@@ -101,6 +101,8 @@ export interface CanvasRootsSettings {
 	// Relationship history settings
 	enableRelationshipHistory: boolean;
 	historyRetentionDays: number;
+	// Export settings
+	exportFilenamePattern: string;
 }
 
 export const DEFAULT_SETTINGS: CanvasRootsSettings = {
@@ -140,7 +142,9 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	hideDetailsForLiving: true,         // Hide birth dates and places for living persons
 	// Relationship history defaults
 	enableRelationshipHistory: true,    // Default: ON - track relationship changes
-	historyRetentionDays: 30            // Keep history for 30 days by default
+	historyRetentionDays: 30,           // Keep history for 30 days by default
+	// Export defaults
+	exportFilenamePattern: '{name}-family-chart-{date}'  // Pattern with {name} and {date} placeholders
 };
 
 export class CanvasRootsSettingTab extends PluginSettingTab {
@@ -435,6 +439,22 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.hideDetailsForLiving)
 				.onChange(async (value) => {
 					this.plugin.settings.hideDetailsForLiving = value;
+					await this.plugin.saveSettings();
+				}));
+
+		// Export
+		new Setting(containerEl)
+			.setName('Export')
+			.setHeading();
+
+		new Setting(containerEl)
+			.setName('Export filename pattern')
+			.setDesc('Pattern for exported filenames. Use {name} for root person name, {date} for current date.')
+			.addText(text => text
+				.setPlaceholder('{name}-family-chart-{date}')
+				.setValue(this.plugin.settings.exportFilenamePattern)
+				.onChange(async (value) => {
+					this.plugin.settings.exportFilenamePattern = value || '{name}-family-chart-{date}';
 					await this.plugin.saveSettings();
 				}));
 	}

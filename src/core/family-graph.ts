@@ -153,7 +153,7 @@ export class FamilyGraphService {
 	 */
 	async generateTree(options: TreeOptions): Promise<FamilyTree | null> {
 		// Load all person nodes into cache
-		await this.loadPersonCache();
+		this.loadPersonCache();
 
 		logger.info('generate-tree', 'Person cache loaded', {
 			totalPeople: this.personCache.size,
@@ -217,7 +217,7 @@ export class FamilyGraphService {
 	async getTotalPeopleCount(): Promise<number> {
 		// If cache is empty, load it
 		if (this.personCache.size === 0) {
-			await this.loadPersonCache();
+			this.loadPersonCache();
 		}
 		return this.personCache.size;
 	}
@@ -235,7 +235,7 @@ export class FamilyGraphService {
 	 */
 	async ensureCacheLoaded(): Promise<void> {
 		if (this.personCache.size === 0) {
-			await this.loadPersonCache();
+			this.loadPersonCache();
 		}
 	}
 
@@ -281,7 +281,7 @@ export class FamilyGraphService {
 	async findAllFamilyComponents(): Promise<Array<{ representative: PersonNode; size: number; people: PersonNode[]; collectionName?: string }>> {
 		// Ensure cache is loaded
 		if (this.personCache.size === 0) {
-			await this.loadPersonCache();
+			this.loadPersonCache();
 		}
 
 		const visited = new Set<string>();
@@ -352,7 +352,7 @@ export class FamilyGraphService {
 	async getUserCollections(): Promise<Array<{ name: string; people: PersonNode[]; size: number }>> {
 		// Ensure cache is loaded
 		if (this.personCache.size === 0) {
-			await this.loadPersonCache();
+			this.loadPersonCache();
 		}
 
 		const peopleByCollection = new Map<string, PersonNode[]>();
@@ -390,7 +390,7 @@ export class FamilyGraphService {
 	async detectCollectionConnections(): Promise<CollectionConnection[]> {
 		// Ensure cache is loaded
 		if (this.personCache.size === 0) {
-			await this.loadPersonCache();
+			this.loadPersonCache();
 		}
 
 		const connections = new Map<string, CollectionConnection>();
@@ -893,7 +893,7 @@ export class FamilyGraphService {
 	async calculateCollectionAnalytics(): Promise<CollectionAnalytics> {
 		// Ensure cache is loaded
 		if (this.personCache.size === 0) {
-			await this.loadPersonCache();
+			this.loadPersonCache();
 		}
 
 		const allPeople = Array.from(this.personCache.values());

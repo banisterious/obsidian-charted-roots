@@ -235,7 +235,7 @@ export default class CanvasRootsPlugin extends Plugin {
 			id: 'undo-relationship-change',
 			name: 'Undo last relationship change',
 			callback: () => {
-				this.undoLastRelationshipChange();
+				void this.undoLastRelationshipChange();
 			}
 		});
 
@@ -1002,8 +1002,8 @@ export default class CanvasRootsPlugin extends Plugin {
 								subItem
 									.setTitle('Show folder statistics')
 									.setIcon('bar-chart-2')
-									.onClick(async () => {
-										await this.showFolderStatistics(file);
+									.onClick(() => {
+										this.showFolderStatistics(file);
 									});
 							});
 						});
@@ -1096,8 +1096,8 @@ export default class CanvasRootsPlugin extends Plugin {
 							item
 								.setTitle('Canvas Roots: Show folder statistics')
 								.setIcon('bar-chart-2')
-								.onClick(async () => {
-									await this.showFolderStatistics(file);
+								.onClick(() => {
+									this.showFolderStatistics(file);
 								});
 						});
 					}
@@ -2551,7 +2551,7 @@ export default class CanvasRootsPlugin extends Plugin {
 	/**
 	 * Show folder statistics modal
 	 */
-	private async showFolderStatistics(folder: TFolder): Promise<void> {
+	private showFolderStatistics(folder: TFolder): void {
 		new FolderStatisticsModal(this.app, folder).open();
 	}
 

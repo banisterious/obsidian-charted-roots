@@ -110,7 +110,7 @@ export class LineageTrackingService {
 			}
 
 			// Get current lineages for this person
-			const currentLineages = await this.getPersonLineages(person.file);
+			const currentLineages = this.getPersonLineages(person.file);
 			const newLineages = currentLineages.includes(definition.name)
 				? currentLineages
 				: [...currentLineages, definition.name];
@@ -182,7 +182,7 @@ export class LineageTrackingService {
 		let removedCount = 0;
 
 		for (const person of allPeople) {
-			const currentLineages = await this.getPersonLineages(person.file);
+			const currentLineages = this.getPersonLineages(person.file);
 			if (currentLineages.includes(lineageName)) {
 				const newLineages = currentLineages.filter(l => l !== lineageName);
 				await this.writeLineagesToFrontmatter(person.file, newLineages);
@@ -204,7 +204,7 @@ export class LineageTrackingService {
 		const lineages = new Set<string>();
 
 		for (const person of allPeople) {
-			const personLineages = await this.getPersonLineages(person.file);
+			const personLineages = this.getPersonLineages(person.file);
 			for (const lineage of personLineages) {
 				lineages.add(lineage);
 			}
@@ -223,7 +223,7 @@ export class LineageTrackingService {
 		const results: PersonNode[] = [];
 
 		for (const person of allPeople) {
-			const personLineages = await this.getPersonLineages(person.file);
+			const personLineages = this.getPersonLineages(person.file);
 			if (personLineages.includes(lineageName)) {
 				results.push(person);
 			}
@@ -245,8 +245,8 @@ export class LineageTrackingService {
 			return [];
 		}
 
-		const lineages1 = await this.getPersonLineages(person1.file);
-		const lineages2 = await this.getPersonLineages(person2.file);
+		const lineages1 = this.getPersonLineages(person1.file);
+		const lineages2 = this.getPersonLineages(person2.file);
 
 		return lineages1.filter(l => lineages2.includes(l));
 	}
@@ -266,7 +266,7 @@ export class LineageTrackingService {
 	/**
 	 * Get lineages for a specific person from their frontmatter
 	 */
-	private async getPersonLineages(file: TFile): Promise<string[]> {
+	private getPersonLineages(file: TFile): string[] {
 		const cache = this.app.metadataCache.getFileCache(file);
 		if (!cache?.frontmatter) {
 			return [];

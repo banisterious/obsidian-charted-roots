@@ -101,7 +101,7 @@ export class GedcomExporter {
 			new Notice('Reading person notes...');
 
 			// Load all people using the family graph service
-			await this.graphService['loadPersonCache']();
+			this.graphService['loadPersonCache']();
 			const allPeople = Array.from(this.graphService['personCache'].values());
 
 			if (allPeople.length === 0) {

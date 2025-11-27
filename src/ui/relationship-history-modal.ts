@@ -9,8 +9,7 @@ import {
 	RelationshipHistoryService,
 	RelationshipChange,
 	formatChangeDescription,
-	formatChangeTimestamp,
-	HistoryStats
+	formatChangeTimestamp
 } from '../core/relationship-history';
 import { createLucideIcon } from './lucide-icons';
 
@@ -198,12 +197,14 @@ export class RelationshipHistoryModal extends Modal {
 			const undoIcon = createLucideIcon('undo-2', 14);
 			undoBtn.appendChild(undoIcon);
 
-			undoBtn.addEventListener('click', async () => {
-				const success = await this.historyService.undoChange(change.id);
-				if (success) {
-					new Notice('Change undone successfully');
-					this.render();
-				}
+			undoBtn.addEventListener('click', () => {
+				void (async () => {
+					const success = await this.historyService.undoChange(change.id);
+					if (success) {
+						new Notice('Change undone successfully');
+						this.render();
+					}
+				})();
 			});
 		}
 	}
@@ -231,12 +232,14 @@ export class RelationshipHistoryModal extends Modal {
 				cls: 'crc-btn',
 				text: 'Undo last change'
 			});
-			undoLastBtn.addEventListener('click', async () => {
-				const change = await this.historyService.undoLastChange();
-				if (change) {
-					new Notice(`Undone: ${formatChangeDescription(change)}`);
-					this.render();
-				}
+			undoLastBtn.addEventListener('click', () => {
+				void (async () => {
+					const change = await this.historyService.undoLastChange();
+					if (change) {
+						new Notice(`Undone: ${formatChangeDescription(change)}`);
+						this.render();
+					}
+				})();
 			});
 		}
 
@@ -294,11 +297,13 @@ export class ClearHistoryConfirmModal extends Modal {
 			cls: 'crc-btn crc-btn--danger',
 			text: 'Clear history'
 		});
-		confirmBtn.addEventListener('click', async () => {
-			await this.historyService.clearHistory();
-			this.onConfirm();
-			this.close();
-			new Notice('Relationship history cleared');
+		confirmBtn.addEventListener('click', () => {
+			void (async () => {
+				await this.historyService.clearHistory();
+				this.onConfirm();
+				this.close();
+				new Notice('Relationship history cleared');
+			})();
 		});
 	}
 

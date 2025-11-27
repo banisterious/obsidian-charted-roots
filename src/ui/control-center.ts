@@ -671,7 +671,7 @@ export class ControlCenterModal extends Modal {
 
 		// Collect statistics
 		const statsService = new VaultStatsService(this.app);
-		const stats = await statsService.collectStats();
+		const stats = statsService.collectStats();
 
 		// Clear loading state
 		container.empty();
