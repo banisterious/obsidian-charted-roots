@@ -130,6 +130,16 @@ export default class CanvasRootsPlugin extends Plugin {
 			}
 		});
 
+		// Add command: Find Duplicates
+		this.addCommand({
+			id: 'find-duplicates',
+			name: 'Find duplicate people',
+			callback: async () => {
+				const { DuplicateDetectionModal } = await import('./src/ui/duplicate-detection-modal');
+				new DuplicateDetectionModal(this.app).open();
+			}
+		});
+
 		// Add command: Open Family Chart
 		this.addCommand({
 			id: 'open-family-chart',
