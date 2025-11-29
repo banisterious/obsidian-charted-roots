@@ -25,6 +25,7 @@ import { RelationshipHistoryService, RelationshipHistoryData, formatChangeDescri
 import { RelationshipHistoryModal } from './src/ui/relationship-history-modal';
 import { FamilyChartView, VIEW_TYPE_FAMILY_CHART } from './src/ui/views/family-chart-view';
 import { TreePreviewRenderer } from './src/ui/tree-preview';
+import { FolderFilterService } from './src/core/folder-filter';
 
 const logger = getLogger('CanvasRootsPlugin');
 
@@ -33,6 +34,25 @@ export default class CanvasRootsPlugin extends Plugin {
 	private fileModifyEventRef: EventRef | null = null;
 	private bidirectionalLinker: BidirectionalLinker | null = null;
 	private relationshipHistory: RelationshipHistoryService | null = null;
+	private folderFilter: FolderFilterService | null = null;
+
+	/**
+	 * Get the folder filter service for filtering person notes by folder
+	 */
+	getFolderFilter(): FolderFilterService | null {
+		return this.folderFilter;
+	}
+
+	/**
+	 * Create a FamilyGraphService configured with the folder filter
+	 */
+	createFamilyGraphService(): FamilyGraphService {
+		const graphService = new FamilyGraphService(this.app);
+		if (this.folderFilter) {
+			graphService.setFolderFilter(this.folderFilter);
+		}
+		return graphService;
+	}
 
 	async onload() {
 		console.debug('Loading Canvas Roots plugin');
@@ -41,6 +61,9 @@ export default class CanvasRootsPlugin extends Plugin {
 
 		// Initialize logger with saved log level
 		LoggerFactory.setLogLevel(this.settings.logLevel);
+
+		// Initialize folder filter service
+		this.folderFilter = new FolderFilterService(this.settings);
 
 		// Run migration for property rename (collection_name -> group_name)
 		await this.migrateCollectionNameToGroupName();
@@ -578,6 +601,9 @@ export default class CanvasRootsPlugin extends Plugin {
 										.setIcon('shield-check')
 										.onClick(async () => {
 											const validator = new RelationshipValidator(this.app);
+											if (this.folderFilter) {
+												validator.setFolderFilter(this.folderFilter);
+											}
 											const result = await validator.validatePersonNote(file);
 											new ValidationResultsModal(this.app, result).open();
 										});
@@ -802,6 +828,9 @@ export default class CanvasRootsPlugin extends Plugin {
 									.setIcon('shield-check')
 									.onClick(async () => {
 										const validator = new RelationshipValidator(this.app);
+										if (this.folderFilter) {
+											validator.setFolderFilter(this.folderFilter);
+										}
 										const result = await validator.validatePersonNote(file);
 										new ValidationResultsModal(this.app, result).open();
 									});
@@ -1255,6 +1284,9 @@ export default class CanvasRootsPlugin extends Plugin {
 		// Create the shared bidirectional linker instance
 		if (!this.bidirectionalLinker) {
 			this.bidirectionalLinker = new BidirectionalLinker(this.app);
+			if (this.folderFilter) {
+				this.bidirectionalLinker.setFolderFilter(this.folderFilter);
+			}
 		}
 
 		// Run after a 1-second delay to not impact plugin load performance
@@ -1373,6 +1405,9 @@ export default class CanvasRootsPlugin extends Plugin {
 					// Create shared instance if not exists
 					if (!this.bidirectionalLinker) {
 						this.bidirectionalLinker = new BidirectionalLinker(this.app);
+						if (this.folderFilter) {
+							this.bidirectionalLinker.setFolderFilter(this.folderFilter);
+						}
 					}
 					await this.bidirectionalLinker.syncRelationships(file);
 				} catch (error: unknown) {
@@ -2065,7 +2100,7 @@ export default class CanvasRootsPlugin extends Plugin {
 			}
 
 			// 5. Build family tree using original parameters
-			const graphService = new FamilyGraphService(this.app);
+			const graphService = this.createFamilyGraphService();
 			const familyTree = await graphService.generateTree({
 				rootCrId,
 				treeType,
@@ -2278,7 +2313,7 @@ export default class CanvasRootsPlugin extends Plugin {
 			const includeSpouses = metadata.generation.includeSpouses ?? true;
 
 			// Build family tree
-			const graphService = new FamilyGraphService(this.app);
+			const graphService = this.createFamilyGraphService();
 
 			const familyTree = await graphService.generateTree({
 				rootCrId,
@@ -2495,7 +2530,7 @@ export default class CanvasRootsPlugin extends Plugin {
 			const rootName = cache.frontmatter.name || personFile.basename;
 
 			// Generate tree with default settings
-			const graphService = new FamilyGraphService(this.app);
+			const graphService = this.createFamilyGraphService();
 			const familyTree = await graphService.generateTree({
 				rootCrId,
 				treeType: 'full',

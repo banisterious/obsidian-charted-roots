@@ -7,6 +7,7 @@
 
 import { App } from 'obsidian';
 import { FamilyGraphService, PersonNode } from './family-graph';
+import { FolderFilterService } from './folder-filter';
 import { getLogger } from './logging';
 
 const logger = getLogger('RelationshipCalculator');
@@ -42,9 +43,12 @@ export class RelationshipCalculator {
 	private app: App;
 	private familyGraph: FamilyGraphService;
 
-	constructor(app: App) {
+	constructor(app: App, folderFilter?: FolderFilterService) {
 		this.app = app;
 		this.familyGraph = new FamilyGraphService(app);
+		if (folderFilter) {
+			this.familyGraph.setFolderFilter(folderFilter);
+		}
 	}
 
 	/**

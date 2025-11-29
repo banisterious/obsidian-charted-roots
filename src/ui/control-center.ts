@@ -14,6 +14,7 @@ import { BidirectionalLinker } from '../core/bidirectional-linker';
 import { TreePreviewRenderer } from './tree-preview';
 import { ReferenceNumberingService, NumberingSystem } from '../core/reference-numbering';
 import type { RecentTreeInfo, RecentImportInfo, ArrowStyle, ColorScheme, SpouseEdgeLabelFormat } from '../settings';
+import { FolderFilterService } from '../core/folder-filter';
 
 const logger = getLogger('ControlCenter');
 
@@ -307,7 +308,7 @@ export class ControlCenterModal extends Modal {
 
 		try {
 			// Initialize services
-			const graphService = new FamilyGraphService(this.app);
+			const graphService = this.plugin.createFamilyGraphService();
 
 			// Find all family components
 			logger.info('generate-all-trees', 'Finding all family components in vault');
@@ -674,6 +675,10 @@ export class ControlCenterModal extends Modal {
 
 		// Collect statistics
 		const statsService = new VaultStatsService(this.app);
+		const folderFilter = this.plugin.getFolderFilter();
+		if (folderFilter) {
+			statsService.setFolderFilter(folderFilter);
+		}
 		const stats = statsService.collectStats();
 
 		// Clear loading state
@@ -2277,7 +2282,7 @@ export class ControlCenterModal extends Modal {
 
 		// Collection filter dropdown
 		let collectionSelect: HTMLSelectElement;
-		const graphService = new FamilyGraphService(this.app);
+		const graphService = this.plugin.createFamilyGraphService();
 		const userCollections = await graphService.getUserCollections();
 
 		new Setting(configContent)
@@ -2560,7 +2565,7 @@ export class ControlCenterModal extends Modal {
 					generatePreviewBtn.setText('Generating preview...');
 
 					// Build family tree
-					const graphService = new FamilyGraphService(this.app);
+					const graphService = this.plugin.createFamilyGraphService();
 					const treeOptions: TreeOptions = {
 						rootCrId: rootPersonField.crId,
 						treeType: typeSelect.value as 'ancestors' | 'descendants' | 'full',
@@ -2940,7 +2945,7 @@ export class ControlCenterModal extends Modal {
 				maxGenerations: treeOptions.maxGenerations
 			});
 
-			const graphService = new FamilyGraphService(this.app);
+			const graphService = this.plugin.createFamilyGraphService();
 			const familyTree = await graphService.generateTree(treeOptions);
 
 			if (!familyTree) {
@@ -3101,7 +3106,7 @@ export class ControlCenterModal extends Modal {
 		try {
 			new Notice('Generating collection overview...');
 
-			const graphService = new FamilyGraphService(this.app);
+			const graphService = this.plugin.createFamilyGraphService();
 
 			// Get both detected families and user collections
 			const families = await graphService.findAllFamilyComponents();
@@ -3178,7 +3183,7 @@ export class ControlCenterModal extends Modal {
 	 */
 	private async loadAnalyticsData(container: HTMLElement): Promise<void> {
 		try {
-			const graphService = new FamilyGraphService(this.app);
+			const graphService = this.plugin.createFamilyGraphService();
 			const analytics = await graphService.calculateCollectionAnalytics();
 
 			// Clear loading message
@@ -3722,7 +3727,7 @@ export class ControlCenterModal extends Modal {
 			existingList.remove();
 		}
 
-		const graphService = new FamilyGraphService(this.app);
+		const graphService = this.plugin.createFamilyGraphService();
 
 		if (mode === 'all') {
 			// Show all people
@@ -4840,7 +4845,7 @@ export class ControlCenterModal extends Modal {
 		}
 
 		// Load family components
-		const graphService = new FamilyGraphService(this.app);
+		const graphService = this.plugin.createFamilyGraphService();
 		const familyComponents = await graphService.findAllFamilyComponents();
 
 		// Build component map
@@ -5238,7 +5243,7 @@ export class ControlCenterModal extends Modal {
 		// Check for multiple components and update badge
 		void (async () => {
 			try {
-				const graphService = new FamilyGraphService(this.app);
+				const graphService = this.plugin.createFamilyGraphService();
 				const components = await graphService.findAllFamilyComponents();
 
 				if (components.length > 1) {

@@ -1,6 +1,7 @@
 import { App, Modal, TFile } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 import { FamilyGraphService, PersonNode } from '../core/family-graph';
+import { FolderFilterService } from '../core/folder-filter';
 
 /**
  * Person data extracted from note frontmatter
@@ -49,10 +50,12 @@ export class PersonPickerModal extends Modal {
 	private componentMap: Map<string, number> = new Map(); // Maps cr_id to component index
 	private activeComponentIndex: number | null = null; // null = show all, number = show specific component
 	private tabsContainer?: HTMLElement;
+	private folderFilter?: FolderFilterService;
 
-	constructor(app: App, onSelect: (person: PersonInfo) => void) {
+	constructor(app: App, onSelect: (person: PersonInfo) => void, folderFilter?: FolderFilterService) {
 		super(app);
 		this.onSelect = onSelect;
+		this.folderFilter = folderFilter;
 	}
 
 	async onOpen() {
@@ -82,6 +85,11 @@ export class PersonPickerModal extends Modal {
 		const files = this.app.vault.getMarkdownFiles();
 
 		for (const file of files) {
+			// Apply folder filter if configured
+			if (this.folderFilter && !this.folderFilter.shouldIncludeFile(file)) {
+				continue;
+			}
+
 			const personInfo = this.extractPersonInfo(file);
 			if (personInfo) {
 				this.allPeople.push(personInfo);
@@ -102,6 +110,9 @@ export class PersonPickerModal extends Modal {
 	private async loadFamilyComponents(): Promise<void> {
 		try {
 			const graphService = new FamilyGraphService(this.app);
+			if (this.folderFilter) {
+				graphService.setFolderFilter(this.folderFilter);
+			}
 			this.familyComponents = await graphService.findAllFamilyComponents();
 
 			// Build component map (cr_id -> component index)

@@ -1,5 +1,6 @@
 import { App, TFile } from 'obsidian';
 import { SpouseValue } from '../types/frontmatter';
+import { FolderFilterService } from './folder-filter';
 
 /**
  * Vault statistics for person notes
@@ -39,9 +40,17 @@ export interface FullVaultStats {
  */
 export class VaultStatsService {
 	private app: App;
+	private folderFilter: FolderFilterService | null = null;
 
 	constructor(app: App) {
 		this.app = app;
+	}
+
+	/**
+	 * Set the folder filter service for filtering person notes by folder
+	 */
+	setFolderFilter(folderFilter: FolderFilterService): void {
+		this.folderFilter = folderFilter;
 	}
 
 	/**
@@ -64,6 +73,11 @@ export class VaultStatsService {
 		let totalSpouseLinks = 0;
 
 		for (const file of files) {
+			// Apply folder filter if configured
+			if (this.folderFilter && !this.folderFilter.shouldIncludeFile(file)) {
+				continue;
+			}
+
 			const personData = this.extractPersonData(file);
 			if (!personData) continue;
 

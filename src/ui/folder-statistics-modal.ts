@@ -7,6 +7,7 @@
 
 import { App, Modal, TFolder } from 'obsidian';
 import { FamilyGraphService, CollectionAnalytics } from '../core/family-graph';
+import { FolderFilterService } from '../core/folder-filter';
 import { createLucideIcon, LucideIconName } from './lucide-icons';
 
 /**
@@ -16,10 +17,12 @@ export class FolderStatisticsModal extends Modal {
 	private folder: TFolder;
 	private analytics: CollectionAnalytics | null = null;
 	private loading = true;
+	private folderFilter?: FolderFilterService;
 
-	constructor(app: App, folder: TFolder) {
+	constructor(app: App, folder: TFolder, folderFilter?: FolderFilterService) {
 		super(app);
 		this.folder = folder;
+		this.folderFilter = folderFilter;
 	}
 
 	async onOpen() {
@@ -41,6 +44,9 @@ export class FolderStatisticsModal extends Modal {
 		// Load analytics
 		try {
 			const graphService = new FamilyGraphService(this.app);
+			if (this.folderFilter) {
+				graphService.setFolderFilter(this.folderFilter);
+			}
 			this.analytics = await graphService.calculateCollectionAnalytics();
 			this.loading = false;
 

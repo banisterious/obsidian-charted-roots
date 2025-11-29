@@ -12,6 +12,7 @@ import type CanvasRootsPlugin from '../../../main';
 import { FamilyGraphService, PersonNode } from '../../core/family-graph';
 import type { ColorScheme } from '../../settings';
 import { getLogger } from '../../core/logging';
+import { PersonPickerModal } from '../person-picker';
 
 const logger = getLogger('FamilyChartView');
 
@@ -97,6 +98,10 @@ export class FamilyChartView extends ItemView {
 		super(leaf);
 		this.plugin = plugin;
 		this.familyGraphService = new FamilyGraphService(plugin.app);
+		const folderFilter = plugin.getFolderFilter();
+		if (folderFilter) {
+			this.familyGraphService.setFolderFilter(folderFilter);
+		}
 	}
 
 	getViewType(): string {
@@ -315,12 +320,12 @@ export class FamilyChartView extends ItemView {
 	 * Open person picker to select root person
 	 */
 	private async promptSelectPerson(): Promise<void> {
-		const { PersonPickerModal } = await import('../person-picker');
+		const folderFilter = this.plugin.getFolderFilter() ?? undefined;
 
 		new PersonPickerModal(this.app, (selectedPerson) => {
 			this.rootPersonId = selectedPerson.crId;
 			void this.initializeChart();
-		}).open();
+		}, folderFilter).open();
 	}
 
 	/**
@@ -571,11 +576,11 @@ export class FamilyChartView extends ItemView {
 	 * Open person search modal to find and center on a person
 	 */
 	private async openPersonSearch(): Promise<void> {
-		const { PersonPickerModal } = await import('../person-picker');
+		const folderFilter = this.plugin.getFolderFilter() ?? undefined;
 
 		new PersonPickerModal(this.app, (selectedPerson) => {
 			this.centerOnPerson(selectedPerson.crId);
-		}).open();
+		}, folderFilter).open();
 	}
 
 	/**

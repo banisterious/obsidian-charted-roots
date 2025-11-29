@@ -13,6 +13,7 @@
 
 import { App, TFile } from 'obsidian';
 import { FamilyGraphService, PersonNode } from './family-graph';
+import { FolderFilterService } from './folder-filter';
 import { getLogger } from './logging';
 
 const logger = getLogger('lineage-tracking');
@@ -55,9 +56,12 @@ export class LineageTrackingService {
 	private app: App;
 	private graphService: FamilyGraphService;
 
-	constructor(app: App) {
+	constructor(app: App, folderFilter?: FolderFilterService) {
 		this.app = app;
 		this.graphService = new FamilyGraphService(app);
+		if (folderFilter) {
+			this.graphService.setFolderFilter(folderFilter);
+		}
 	}
 
 	/**

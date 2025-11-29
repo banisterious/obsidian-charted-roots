@@ -6,6 +6,7 @@
 
 import { App, Notice } from 'obsidian';
 import { FamilyGraphService, type PersonNode } from '../core/family-graph';
+import { FolderFilterService } from '../core/folder-filter';
 import { getLogger } from '../core/logging';
 import { getErrorMessage } from '../core/error-utils';
 import { PrivacyService, type PrivacySettings } from '../core/privacy-service';
@@ -133,9 +134,12 @@ export class CsvExporter {
 	private app: App;
 	private graphService: FamilyGraphService;
 
-	constructor(app: App) {
+	constructor(app: App, folderFilter?: FolderFilterService) {
 		this.app = app;
 		this.graphService = new FamilyGraphService(app);
+		if (folderFilter) {
+			this.graphService.setFolderFilter(folderFilter);
+		}
 	}
 
 	/**

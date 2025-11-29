@@ -2,6 +2,7 @@ import { App, TFile, Notice } from 'obsidian';
 import { getLogger } from './logging';
 import { getErrorMessage } from './error-utils';
 import { PersonFrontmatter } from '../types/frontmatter';
+import { FolderFilterService } from './folder-filter';
 
 const logger = getLogger('BidirectionalLinker');
 
@@ -35,8 +36,16 @@ export class BidirectionalLinker {
 	// Track previous relationship snapshots for deletion detection
 	// Map of file path → relationship snapshot
 	private relationshipSnapshots: Map<string, RelationshipSnapshot> = new Map();
+	private folderFilter: FolderFilterService | null = null;
 
 	constructor(private app: App) {}
+
+	/**
+	 * Set the folder filter service for filtering person notes by folder
+	 */
+	setFolderFilter(folderFilter: FolderFilterService): void {
+		this.folderFilter = folderFilter;
+	}
 
 	/**
 	 * Initialize relationship snapshots for all person notes in the vault
@@ -53,6 +62,11 @@ export class BidirectionalLinker {
 		for (const file of files) {
 			const cache = this.app.metadataCache.getFileCache(file);
 			if (!cache?.frontmatter?.cr_id) {
+				continue;
+			}
+
+			// Apply folder filter if configured
+			if (this.folderFilter && !this.folderFilter.shouldIncludeFile(file)) {
 				continue;
 			}
 

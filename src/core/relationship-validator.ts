@@ -1,4 +1,5 @@
 import { App, TFile } from 'obsidian';
+import { FolderFilterService } from './folder-filter';
 
 /**
  * Validation issue types
@@ -37,7 +38,16 @@ export interface ValidationResult {
  * Service for validating relationships in person notes
  */
 export class RelationshipValidator {
+	private folderFilter: FolderFilterService | null = null;
+
 	constructor(private app: App) {}
+
+	/**
+	 * Set the folder filter service for filtering person notes by folder
+	 */
+	setFolderFilter(folderFilter: FolderFilterService): void {
+		this.folderFilter = folderFilter;
+	}
 
 	/**
 	 * Validate a single person note
@@ -194,6 +204,11 @@ export class RelationshipValidator {
 		const files = this.app.vault.getMarkdownFiles();
 
 		for (const file of files) {
+			// Apply folder filter if configured
+			if (this.folderFilter && !this.folderFilter.shouldIncludeFile(file)) {
+				continue;
+			}
+
 			const cache = this.app.metadataCache.getFileCache(file);
 			const crId = cache?.frontmatter?.cr_id;
 			if (crId) {

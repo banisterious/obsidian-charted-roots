@@ -9,6 +9,7 @@ import { App, TFile } from 'obsidian';
 import { getLogger } from './logging';
 import { SpouseRelationship } from '../models/person';
 import { PersonFrontmatter } from '../types/frontmatter';
+import { FolderFilterService } from './folder-filter';
 
 const logger = getLogger('FamilyGraph');
 
@@ -134,10 +135,18 @@ export interface CollectionAnalytics {
 export class FamilyGraphService {
 	private app: App;
 	private personCache: Map<string, PersonNode>;
+	private folderFilter: FolderFilterService | null = null;
 
 	constructor(app: App) {
 		this.app = app;
 		this.personCache = new Map();
+	}
+
+	/**
+	 * Set the folder filter service for filtering person notes by folder
+	 */
+	setFolderFilter(folderFilter: FolderFilterService): void {
+		this.folderFilter = folderFilter;
 	}
 
 	/**
@@ -656,6 +665,11 @@ export class FamilyGraphService {
 		const files = this.app.vault.getMarkdownFiles();
 
 		for (const file of files) {
+			// Apply folder filter if configured
+			if (this.folderFilter && !this.folderFilter.shouldIncludeFile(file)) {
+				continue;
+			}
+
 			const personNode = this.extractPersonNode(file);
 			if (personNode) {
 				this.personCache.set(personNode.crId, personNode);

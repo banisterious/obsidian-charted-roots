@@ -65,6 +65,14 @@ export type SpouseEdgeLabelFormat = 'none' | 'date-only' | 'date-location' | 'fu
  */
 export type LayoutType = 'standard' | 'compact' | 'timeline' | 'hourglass';
 
+/**
+ * Folder filter mode options
+ * - 'disabled': Scan all folders (default - current behavior)
+ * - 'exclude': Scan all folders except those in the exclusion list
+ * - 'include': Only scan folders in the inclusion list
+ */
+export type FolderFilterMode = 'disabled' | 'exclude' | 'include';
+
 export interface CanvasRootsSettings {
 	defaultNodeWidth: number;
 	defaultNodeHeight: number;
@@ -103,6 +111,10 @@ export interface CanvasRootsSettings {
 	historyRetentionDays: number;
 	// Export settings
 	exportFilenamePattern: string;
+	// Folder filtering
+	folderFilterMode: FolderFilterMode;
+	excludedFolders: string[];
+	includedFolders: string[];
 }
 
 export const DEFAULT_SETTINGS: CanvasRootsSettings = {
@@ -144,7 +156,11 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	enableRelationshipHistory: true,    // Default: ON - track relationship changes
 	historyRetentionDays: 30,           // Keep history for 30 days by default
 	// Export defaults
-	exportFilenamePattern: '{name}-family-chart-{date}'  // Pattern with {name} and {date} placeholders
+	exportFilenamePattern: '{name}-family-chart-{date}',  // Pattern with {name} and {date} placeholders
+	// Folder filtering defaults
+	folderFilterMode: 'disabled',  // Default: scan all folders (preserves existing behavior)
+	excludedFolders: [],           // No folders excluded by default
+	includedFolders: []            // No inclusion filter by default
 };
 
 export class CanvasRootsSettingTab extends PluginSettingTab {
@@ -243,6 +259,52 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					this.plugin.settings.peopleFolder = value;
 					await this.plugin.saveSettings();
 				}));
+
+		// Folder filtering section
+		new Setting(containerEl)
+			.setName('Folder filtering')
+			.setDesc('Control which folders are scanned for person notes')
+			.addDropdown(dropdown => dropdown
+				.addOption('disabled', 'Disabled (scan all folders)')
+				.addOption('exclude', 'Exclude folders (scan all except listed)')
+				.addOption('include', 'Include folders only (scan only listed)')
+				.setValue(this.plugin.settings.folderFilterMode)
+				.onChange(async (value: FolderFilterMode) => {
+					this.plugin.settings.folderFilterMode = value;
+					await this.plugin.saveSettings();
+					// Refresh display to show/hide folder list
+					this.display();
+				}));
+
+		// Show folder list based on mode
+		if (this.plugin.settings.folderFilterMode !== 'disabled') {
+			const isExcludeMode = this.plugin.settings.folderFilterMode === 'exclude';
+			const folders = isExcludeMode
+				? this.plugin.settings.excludedFolders
+				: this.plugin.settings.includedFolders;
+
+			new Setting(containerEl)
+				.setName(isExcludeMode ? 'Excluded folders' : 'Included folders')
+				.setDesc('One folder path per line. Subfolders are included automatically.')
+				.addTextArea(textArea => textArea
+					.setPlaceholder(isExcludeMode
+						? 'templates\narchive\n.obsidian'
+						: 'People\nFamily')
+					.setValue(folders.join('\n'))
+					.onChange(async (value) => {
+						const folderList = value
+							.split('\n')
+							.map(f => f.trim())
+							.filter(f => f.length > 0);
+
+						if (isExcludeMode) {
+							this.plugin.settings.excludedFolders = folderList;
+						} else {
+							this.plugin.settings.includedFolders = folderList;
+						}
+						await this.plugin.saveSettings();
+					}));
+		}
 
 		new Setting(containerEl)
 			.setName('Auto-generate cr_id')
