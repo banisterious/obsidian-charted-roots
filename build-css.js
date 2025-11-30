@@ -41,6 +41,7 @@ const CONFIG = {
     'folder-scan.css',   // Folder scan modal
     'relationship-calculator.css', // Relationship calculator modal
     'family-chart-view.css', // Interactive family chart view
+    'data-quality.css',  // Data quality analysis tab
     'animations.css',    // Keyframes and transitions
     'responsive.css',    // Responsive breakpoints
     'theme.css'          // Theme compatibility (last)

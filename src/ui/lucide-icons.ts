@@ -64,7 +64,8 @@ export type LucideIconName =
 	| 'history'        // History view
 	| 'user-minus'     // Remove person
 	| 'table-2'        // CSV/spreadsheet
-	| 'package';       // Staging/import packages
+	| 'package'        // Staging/import packages
+	| 'shield-check';  // Data quality
 
 /**
  * Tab configuration for Control Center navigation
@@ -109,6 +110,12 @@ export const TAB_CONFIGS: TabConfig[] = [
 		name: 'Staging',
 		icon: 'package',
 		description: 'Review and promote imported data'
+	},
+	{
+		id: 'data-quality',
+		name: 'Data quality',
+		icon: 'shield-check',
+		description: 'Analyze data quality and find issues'
 	},
 	{
 		id: 'data-entry',

@@ -18,6 +18,7 @@ import { FolderFilterService } from '../core/folder-filter';
 import { StagingService, StagingSubfolderInfo } from '../core/staging-service';
 import { CrossImportDetectionService, CrossImportMatch } from '../core/cross-import-detection';
 import { MergeWizardModal } from './merge-wizard-modal';
+import { DataQualityService, DataQualityReport, DataQualityIssue, IssueSeverity, IssueCategory, NormalizationPreview, BatchOperationResult } from '../core/data-quality';
 
 const logger = getLogger('ControlCenter');
 
@@ -231,6 +232,9 @@ export class ControlCenterModal extends Modal {
 				break;
 			case 'staging':
 				this.showStagingTab();
+				break;
+			case 'data-quality':
+				this.showDataQualityTab();
 				break;
 			case 'person-detail':
 				this.showPersonDetailTab();
@@ -6263,6 +6267,604 @@ export class ControlCenterModal extends Modal {
 			});
 			new Notice(`Relationship sync failed: ${errorMsg}`);
 		}
+	}
+
+	// =========================================================================
+	// DATA QUALITY TAB
+	// =========================================================================
+
+	/**
+	 * Show Data Quality tab - analyze data quality and find issues
+	 */
+	private showDataQualityTab(): void {
+		const container = this.contentContainer;
+		container.empty();
+
+		// Header
+		container.createEl('h2', { text: 'Data quality' });
+		container.createEl('p', {
+			text: 'Analyze your genealogy data for inconsistencies, missing information, and potential errors.',
+			cls: 'crc-text-muted'
+		});
+
+		// Analysis scope selector
+		const scopeSection = container.createDiv({ cls: 'crc-section' });
+		scopeSection.createEl('h3', { text: 'Analysis scope' });
+
+		let selectedScope: 'all' | 'staging' | 'folder' = 'all';
+		let selectedFolder = '';
+
+		new Setting(scopeSection)
+			.setName('Scope')
+			.setDesc('Choose which records to analyze')
+			.addDropdown(dropdown => dropdown
+				.addOption('all', 'All records (main tree)')
+				.addOption('staging', 'Staging folder only')
+				.setValue(selectedScope)
+				.onChange(value => {
+					selectedScope = value as 'all' | 'staging' | 'folder';
+				})
+			);
+
+		// Run Analysis button
+		const actionSection = container.createDiv({ cls: 'crc-section' });
+
+		const runButton = actionSection.createEl('button', {
+			text: 'Run analysis',
+			cls: 'mod-cta'
+		});
+		setIcon(runButton.createSpan({ cls: 'crc-button-icon' }), 'play');
+
+		// Results container (initially empty)
+		const resultsContainer = container.createDiv({ cls: 'crc-data-quality-results' });
+
+		runButton.addEventListener('click', () => {
+			this.runDataQualityAnalysis(resultsContainer, selectedScope, selectedFolder);
+		});
+
+		// Batch Operations section
+		const batchSection = container.createDiv({ cls: 'crc-section' });
+		batchSection.createEl('h3', { text: 'Batch operations' });
+		batchSection.createEl('p', {
+			text: 'Fix common data issues across all records. Preview changes before applying.',
+			cls: 'crc-text-muted'
+		});
+
+		// Normalize dates
+		new Setting(batchSection)
+			.setName('Normalize date formats')
+			.setDesc('Convert dates to standard YYYY-MM-DD format')
+			.addButton(btn => btn
+				.setButtonText('Preview')
+				.onClick(() => {
+					this.previewBatchOperation('dates', selectedScope, selectedFolder);
+				})
+			)
+			.addButton(btn => btn
+				.setButtonText('Apply')
+				.setCta()
+				.onClick(() => {
+					this.runBatchOperation('dates', selectedScope, selectedFolder);
+				})
+			);
+
+		// Normalize gender
+		new Setting(batchSection)
+			.setName('Normalize gender values')
+			.setDesc('Standardize to M/F format')
+			.addButton(btn => btn
+				.setButtonText('Preview')
+				.onClick(() => {
+					this.previewBatchOperation('gender', selectedScope, selectedFolder);
+				})
+			)
+			.addButton(btn => btn
+				.setButtonText('Apply')
+				.setCta()
+				.onClick(() => {
+					this.runBatchOperation('gender', selectedScope, selectedFolder);
+				})
+			);
+
+		// Clear orphan references
+		new Setting(batchSection)
+			.setName('Clear orphan references')
+			.setDesc('Remove parent references that point to non-existent records')
+			.addButton(btn => btn
+				.setButtonText('Preview')
+				.onClick(() => {
+					this.previewBatchOperation('orphans', selectedScope, selectedFolder);
+				})
+			)
+			.addButton(btn => btn
+				.setButtonText('Apply')
+				.setWarning()
+				.onClick(() => {
+					this.runBatchOperation('orphans', selectedScope, selectedFolder);
+				})
+			);
+	}
+
+	/**
+	 * Run data quality analysis and display results
+	 */
+	private runDataQualityAnalysis(
+		container: HTMLElement,
+		scope: 'all' | 'staging' | 'folder',
+		folderPath?: string
+	): void {
+		container.empty();
+
+		// Show loading
+		const loadingEl = container.createDiv({ cls: 'crc-loading' });
+		loadingEl.createSpan({ text: 'Analyzing data quality...' });
+
+		// Create service and run analysis
+		const familyGraph = new FamilyGraphService(this.app);
+		const folderFilter = new FolderFilterService(this.plugin.settings);
+		familyGraph.setFolderFilter(folderFilter);
+
+		const dataQualityService = new DataQualityService(
+			this.app,
+			this.plugin.settings,
+			familyGraph,
+			folderFilter
+		);
+
+		// Run analysis (synchronous)
+		const report = dataQualityService.analyze({
+			scope,
+			folderPath,
+		});
+
+		// Clear loading and show results
+		container.empty();
+		this.renderDataQualityReport(container, report);
+	}
+
+	/**
+	 * Render data quality report
+	 */
+	private renderDataQualityReport(
+		container: HTMLElement,
+		report: DataQualityReport
+	): void {
+		const { summary, issues } = report;
+
+		// Summary section
+		const summarySection = container.createDiv({ cls: 'crc-dq-summary' });
+
+		// Quality score
+		const scoreEl = summarySection.createDiv({ cls: 'crc-dq-score' });
+		const scoreValue = scoreEl.createDiv({ cls: 'crc-dq-score-value' });
+		scoreValue.setText(String(summary.qualityScore));
+
+		// Color based on score
+		if (summary.qualityScore >= 80) {
+			scoreValue.addClass('crc-dq-score--good');
+		} else if (summary.qualityScore >= 50) {
+			scoreValue.addClass('crc-dq-score--warning');
+		} else {
+			scoreValue.addClass('crc-dq-score--poor');
+		}
+
+		scoreEl.createDiv({ cls: 'crc-dq-score-label', text: 'Quality score' });
+
+		// Stats grid
+		const statsGrid = summarySection.createDiv({ cls: 'crc-dq-stats-grid' });
+
+		this.renderDqStatCard(statsGrid, 'People analyzed', String(summary.totalPeople), 'users');
+		this.renderDqStatCard(statsGrid, 'Total issues', String(summary.totalIssues), 'alert-circle');
+		this.renderDqStatCard(statsGrid, 'Errors', String(summary.bySeverity.error), 'alert-triangle');
+		this.renderDqStatCard(statsGrid, 'Warnings', String(summary.bySeverity.warning), 'alert-circle');
+
+		// Completeness metrics
+		const completenessSection = container.createDiv({ cls: 'crc-section' });
+		completenessSection.createEl('h3', { text: 'Data completeness' });
+
+		const completenessGrid = completenessSection.createDiv({ cls: 'crc-dq-completeness-grid' });
+
+		const total = summary.totalPeople || 1; // Avoid division by zero
+		this.renderCompletenessBar(completenessGrid, 'Birth date', summary.completeness.withBirthDate, total);
+		this.renderCompletenessBar(completenessGrid, 'Death date', summary.completeness.withDeathDate, total);
+		this.renderCompletenessBar(completenessGrid, 'Gender', summary.completeness.withGender, total);
+		this.renderCompletenessBar(completenessGrid, 'Both parents', summary.completeness.withBothParents, total);
+		this.renderCompletenessBar(completenessGrid, 'At least one parent', summary.completeness.withAtLeastOneParent, total);
+		this.renderCompletenessBar(completenessGrid, 'Has spouse', summary.completeness.withSpouse, total);
+		this.renderCompletenessBar(completenessGrid, 'Has children', summary.completeness.withChildren, total);
+
+		// Issues by category
+		if (issues.length > 0) {
+			const issuesSection = container.createDiv({ cls: 'crc-section' });
+			issuesSection.createEl('h3', { text: 'Issues found' });
+
+			// Category filter
+			const filterRow = issuesSection.createDiv({ cls: 'crc-dq-filter-row' });
+			let selectedCategory: IssueCategory | 'all' = 'all';
+			let selectedSeverity: IssueSeverity | 'all' = 'all';
+
+			new Setting(filterRow)
+				.setName('Category')
+				.addDropdown(dropdown => dropdown
+					.addOption('all', 'All categories')
+					.addOption('date_inconsistency', 'Date issues')
+					.addOption('relationship_inconsistency', 'Relationship issues')
+					.addOption('missing_data', 'Missing data')
+					.addOption('data_format', 'Format issues')
+					.addOption('orphan_reference', 'Orphan references')
+					.setValue(selectedCategory)
+					.onChange(value => {
+						selectedCategory = value as IssueCategory | 'all';
+						this.renderIssuesList(issuesList, issues, selectedCategory, selectedSeverity);
+					})
+				);
+
+			new Setting(filterRow)
+				.setName('Severity')
+				.addDropdown(dropdown => dropdown
+					.addOption('all', 'All severities')
+					.addOption('error', 'Errors only')
+					.addOption('warning', 'Warnings only')
+					.addOption('info', 'Info only')
+					.setValue(selectedSeverity)
+					.onChange(value => {
+						selectedSeverity = value as IssueSeverity | 'all';
+						this.renderIssuesList(issuesList, issues, selectedCategory, selectedSeverity);
+					})
+				);
+
+			const issuesList = issuesSection.createDiv({ cls: 'crc-dq-issues-list' });
+			this.renderIssuesList(issuesList, issues, selectedCategory, selectedSeverity);
+		} else {
+			const noIssuesEl = container.createDiv({ cls: 'crc-dq-no-issues' });
+			setIcon(noIssuesEl.createSpan({ cls: 'crc-dq-no-issues-icon' }), 'check');
+			noIssuesEl.createSpan({ text: 'No issues found! Your data looks great.' });
+		}
+	}
+
+	/**
+	 * Render a data quality stat card
+	 */
+	private renderDqStatCard(
+		container: HTMLElement,
+		label: string,
+		value: string,
+		icon: LucideIconName
+	): void {
+		const card = container.createDiv({ cls: 'crc-dq-stat-card' });
+		const iconEl = card.createDiv({ cls: 'crc-dq-stat-icon' });
+		setIcon(iconEl, icon);
+		card.createDiv({ cls: 'crc-dq-stat-value', text: value });
+		card.createDiv({ cls: 'crc-dq-stat-label', text: label });
+	}
+
+	/**
+	 * Render a completeness bar
+	 */
+	private renderCompletenessBar(
+		container: HTMLElement,
+		label: string,
+		count: number,
+		total: number
+	): void {
+		const percent = Math.round((count / total) * 100);
+		const row = container.createDiv({ cls: 'crc-dq-completeness-row' });
+
+		row.createDiv({ cls: 'crc-dq-completeness-label', text: label });
+
+		const barContainer = row.createDiv({ cls: 'crc-dq-completeness-bar-container' });
+		const bar = barContainer.createDiv({ cls: 'crc-dq-completeness-bar' });
+		bar.style.width = `${percent}%`;
+
+		// Color based on percentage
+		if (percent >= 80) {
+			bar.addClass('crc-dq-completeness-bar--good');
+		} else if (percent >= 50) {
+			bar.addClass('crc-dq-completeness-bar--warning');
+		} else {
+			bar.addClass('crc-dq-completeness-bar--poor');
+		}
+
+		row.createDiv({ cls: 'crc-dq-completeness-value', text: `${count}/${total} (${percent}%)` });
+	}
+
+	/**
+	 * Render filtered issues list
+	 */
+	private renderIssuesList(
+		container: HTMLElement,
+		issues: DataQualityIssue[],
+		category: IssueCategory | 'all',
+		severity: IssueSeverity | 'all'
+	): void {
+		container.empty();
+
+		const filtered = issues.filter(issue => {
+			if (category !== 'all' && issue.category !== category) return false;
+			if (severity !== 'all' && issue.severity !== severity) return false;
+			return true;
+		});
+
+		if (filtered.length === 0) {
+			container.createDiv({
+				cls: 'crc-dq-no-matches',
+				text: 'No issues match the selected filters.'
+			});
+			return;
+		}
+
+		// Show count
+		container.createDiv({
+			cls: 'crc-dq-issues-count',
+			text: `Showing ${filtered.length} issue${filtered.length === 1 ? '' : 's'}`
+		});
+
+		// Render issues (limit to first 100 for performance)
+		const displayIssues = filtered.slice(0, 100);
+		for (const issue of displayIssues) {
+			this.renderIssueItem(container, issue);
+		}
+
+		if (filtered.length > 100) {
+			container.createDiv({
+				cls: 'crc-dq-more-issues',
+				text: `... and ${filtered.length - 100} more issues`
+			});
+		}
+	}
+
+	/**
+	 * Render a single issue item
+	 */
+	private renderIssueItem(container: HTMLElement, issue: DataQualityIssue): void {
+		const item = container.createDiv({ cls: `crc-dq-issue crc-dq-issue--${issue.severity}` });
+
+		// Severity icon
+		const iconEl = item.createDiv({ cls: 'crc-dq-issue-icon' });
+		const iconName = issue.severity === 'error' ? 'alert-triangle' :
+			issue.severity === 'warning' ? 'alert-circle' : 'info';
+		setIcon(iconEl, iconName);
+
+		// Content
+		const content = item.createDiv({ cls: 'crc-dq-issue-content' });
+
+		// Person name as clickable link
+		const personLink = content.createEl('a', {
+			cls: 'crc-dq-issue-person',
+			text: issue.person.name
+		});
+		personLink.addEventListener('click', (e) => {
+			e.preventDefault();
+			// Open the person's file
+			const file = issue.person.file;
+			if (file) {
+				this.app.workspace.openLinkText(file.path, '', false);
+				this.close();
+			}
+		});
+
+		// Issue message
+		content.createDiv({ cls: 'crc-dq-issue-message', text: issue.message });
+
+		// Category badge
+		const badge = item.createDiv({ cls: 'crc-dq-issue-badge' });
+		badge.setText(this.formatCategoryName(issue.category));
+	}
+
+	/**
+	 * Format category name for display
+	 */
+	private formatCategoryName(category: IssueCategory): string {
+		const names: Record<IssueCategory, string> = {
+			date_inconsistency: 'Date',
+			relationship_inconsistency: 'Relationship',
+			missing_data: 'Missing data',
+			data_format: 'Format',
+			orphan_reference: 'Orphan ref',
+		};
+		return names[category] || category;
+	}
+
+	/**
+	 * Preview a batch operation
+	 */
+	private previewBatchOperation(
+		operation: 'dates' | 'gender' | 'orphans',
+		scope: 'all' | 'staging' | 'folder',
+		folderPath?: string
+	): void {
+		// Create service
+		const familyGraph = new FamilyGraphService(this.app);
+		const folderFilter = new FolderFilterService(this.plugin.settings);
+		familyGraph.setFolderFilter(folderFilter);
+
+		const dataQualityService = new DataQualityService(
+			this.app,
+			this.plugin.settings,
+			familyGraph,
+			folderFilter
+		);
+
+		// Get preview
+		const preview = dataQualityService.previewNormalization({ scope, folderPath });
+
+		// Show preview modal
+		const modal = new BatchPreviewModal(
+			this.app,
+			operation,
+			preview,
+			() => this.runBatchOperation(operation, scope, folderPath)
+		);
+		modal.open();
+	}
+
+	/**
+	 * Run a batch operation
+	 */
+	private async runBatchOperation(
+		operation: 'dates' | 'gender' | 'orphans',
+		scope: 'all' | 'staging' | 'folder',
+		folderPath?: string
+	): Promise<void> {
+		// Create service
+		const familyGraph = new FamilyGraphService(this.app);
+		const folderFilter = new FolderFilterService(this.plugin.settings);
+		familyGraph.setFolderFilter(folderFilter);
+
+		const dataQualityService = new DataQualityService(
+			this.app,
+			this.plugin.settings,
+			familyGraph,
+			folderFilter
+		);
+
+		let result: BatchOperationResult;
+		let operationName: string;
+
+		try {
+			switch (operation) {
+				case 'dates':
+					operationName = 'Date normalization';
+					result = await dataQualityService.normalizeDateFormats({ scope, folderPath });
+					break;
+				case 'gender':
+					operationName = 'Gender normalization';
+					result = await dataQualityService.normalizeGenderValues({ scope, folderPath });
+					break;
+				case 'orphans':
+					operationName = 'Orphan reference clearing';
+					result = await dataQualityService.clearOrphanReferences({ scope, folderPath });
+					break;
+			}
+
+			// Show result
+			if (result.modified > 0) {
+				new Notice(`${operationName}: Modified ${result.modified} of ${result.processed} files`);
+			} else {
+				new Notice(`${operationName}: No changes needed`);
+			}
+
+			if (result.errors.length > 0) {
+				new Notice(`${result.errors.length} errors occurred. Check console for details.`);
+				console.error('Batch operation errors:', result.errors);
+			}
+
+			// Refresh the family graph cache
+			familyGraph.reloadCache();
+
+		} catch (error) {
+			new Notice(`${operation} failed: ${getErrorMessage(error)}`);
+		}
+	}
+}
+
+/**
+ * Modal for previewing batch operation changes
+ */
+class BatchPreviewModal extends Modal {
+	private operation: 'dates' | 'gender' | 'orphans';
+	private preview: NormalizationPreview;
+	private onApply: () => void;
+
+	constructor(
+		app: App,
+		operation: 'dates' | 'gender' | 'orphans',
+		preview: NormalizationPreview,
+		onApply: () => void
+	) {
+		super(app);
+		this.operation = operation;
+		this.preview = preview;
+		this.onApply = onApply;
+	}
+
+	onOpen(): void {
+		const { contentEl, titleEl } = this;
+
+		// Set title based on operation
+		const titles: Record<string, string> = {
+			dates: 'Preview: Date normalization',
+			gender: 'Preview: Gender normalization',
+			orphans: 'Preview: Clear orphan references',
+		};
+		titleEl.setText(titles[this.operation]);
+
+		// Get changes for this operation
+		let changes: Array<{ person: { name: string }; field: string; oldValue: string; newValue: string }>;
+		switch (this.operation) {
+			case 'dates':
+				changes = this.preview.dateNormalization;
+				break;
+			case 'gender':
+				changes = this.preview.genderNormalization;
+				break;
+			case 'orphans':
+				changes = this.preview.orphanClearing;
+				break;
+		}
+
+		if (changes.length === 0) {
+			contentEl.createEl('p', {
+				text: 'No changes needed. All values are already in the correct format.',
+				cls: 'crc-text-muted'
+			});
+		} else {
+			contentEl.createEl('p', {
+				text: `${changes.length} change${changes.length === 1 ? '' : 's'} will be made:`,
+			});
+
+			// Changes table
+			const table = contentEl.createEl('table', { cls: 'crc-batch-preview-table' });
+			const thead = table.createEl('thead');
+			const headerRow = thead.createEl('tr');
+			headerRow.createEl('th', { text: 'Person' });
+			headerRow.createEl('th', { text: 'Field' });
+			headerRow.createEl('th', { text: 'Current' });
+			headerRow.createEl('th', { text: 'New' });
+
+			const tbody = table.createEl('tbody');
+			const displayChanges = changes.slice(0, 50); // Limit display for performance
+			for (const change of displayChanges) {
+				const row = tbody.createEl('tr');
+				row.createEl('td', { text: change.person.name });
+				row.createEl('td', { text: change.field });
+				row.createEl('td', { text: change.oldValue, cls: 'crc-batch-old-value' });
+				row.createEl('td', { text: change.newValue, cls: 'crc-batch-new-value' });
+			}
+
+			if (changes.length > 50) {
+				contentEl.createEl('p', {
+					text: `... and ${changes.length - 50} more changes`,
+					cls: 'crc-text-muted'
+				});
+			}
+		}
+
+		// Buttons
+		const buttonContainer = contentEl.createDiv({ cls: 'crc-confirmation-buttons' });
+
+		const cancelBtn = buttonContainer.createEl('button', {
+			text: 'Cancel',
+			cls: 'crc-btn-secondary'
+		});
+		cancelBtn.addEventListener('click', () => {
+			this.close();
+		});
+
+		if (changes.length > 0) {
+			const applyBtn = buttonContainer.createEl('button', {
+				text: `Apply ${changes.length} change${changes.length === 1 ? '' : 's'}`,
+				cls: 'mod-cta'
+			});
+			applyBtn.addEventListener('click', () => {
+				this.close();
+				this.onApply();
+			});
+		}
+	}
+
+	onClose(): void {
+		this.contentEl.empty();
 	}
 }
 

@@ -30,6 +30,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Automatic relationship reconciliation updates all references
   - Available from both duplicate detection and cross-import review
 
+- **Data Quality Tools**: Comprehensive data quality analysis and batch operations
+  - Quality score (0-100) based on completeness and consistency
+  - Issue detection across 5 categories: date inconsistencies, relationship problems, missing data, format issues, orphan references
+  - 15+ specific issue types detected (birth after death, circular references, etc.)
+  - Filter issues by category and severity (error/warning/info)
+  - Batch normalization: standardize date formats to YYYY-MM-DD
+  - Batch normalization: standardize gender values to M/F
+  - Batch normalization: clear orphan parent references
+  - Preview changes before applying any batch operation
+  - Data Quality tab in Control Center with visual stats and issue list
+
 - **Staging Tab in Control Center**: Dedicated UI for import management
   - View staging subfolders with person counts and modification dates
   - Promote subfolders or all staging to main tree

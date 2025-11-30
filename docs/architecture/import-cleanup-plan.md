@@ -1,6 +1,6 @@
 # Import Cleanup Implementation Plan
 
-**Status:** Phases 1-3 Complete
+**Status:** Phases 1-4 Complete
 **Date:** 2025-11-30
 **Affects:** v0.4.0+ (Import Cleanup feature)
 **Prerequisites:** Folder Filtering (✅ Complete)
@@ -15,9 +15,7 @@ Tools for consolidating multiple GEDCOM files, cleaning up messy imports, and im
 - ✅ Phase 1: Staging workflow with folder settings and isolation
 - ✅ Phase 2: Cross-import duplicate detection between staging and main tree
 - ✅ Phase 3: Merge wizard with field-level conflict resolution
-
-**Future Phases:**
-- Phase 4: Data quality tools (planned)
+- ✅ Phase 4: Data quality tools (quality report, issue detection, batch normalization)
 
 ---
 
@@ -589,12 +587,124 @@ export class MergeService {
 
 ---
 
-## Future Phases
+## Phase 4: Data Quality Tools
 
-### Phase 4: Data Quality Tools
-- Data quality report
-- Batch operations (normalize names, dates)
-- Inconsistency detection
+**Status:** Complete
+**Goal:** Provide comprehensive data quality analysis and batch normalization operations
+
+### Overview
+
+Data quality tools help users identify and fix issues in their genealogy data, whether in the main tree or staging areas. This is a general-purpose feature that applies to all person records.
+
+### Components
+
+#### 4.1 DataQualityService (`src/core/data-quality.ts`)
+
+Core service for data quality analysis:
+
+```typescript
+export interface DataQualityIssue {
+    code: string;
+    message: string;
+    severity: IssueSeverity;  // 'error' | 'warning' | 'info'
+    category: IssueCategory;   // 'date_inconsistency' | 'relationship_inconsistency' | 'missing_data' | 'data_format' | 'orphan_reference'
+    person: PersonNode;
+    relatedPerson?: PersonNode;
+    details?: Record<string, string | number | boolean>;
+}
+
+export interface QualityReport {
+    score: number;  // 0-100
+    issues: DataQualityIssue[];
+    stats: {
+        totalPeople: number;
+        withBirthDate: number;
+        withDeathDate: number;
+        withParents: number;
+        withSpouse: number;
+        withChildren: number;
+    };
+}
+```
+
+**Issue Detection Categories:**
+
+1. **Date Inconsistencies**
+   - Birth after death
+   - Death before birth of children
+   - Birth before parents
+   - Unrealistic ages (>120 years)
+   - Child born when parent too young (<12) or too old (>80 for men, >60 for women)
+   - Marriage before birth
+   - Death before marriage
+
+2. **Relationship Inconsistencies**
+   - Person listed as own parent/spouse/child
+   - Circular parent references
+   - Mismatched parent-child links
+   - Multiple father/mother entries
+
+3. **Missing Data**
+   - Missing birth date
+   - Missing gender
+   - No parents defined
+   - No relationships at all
+
+4. **Data Format Issues**
+   - Non-standard date formats
+   - Non-standard gender values
+
+5. **Orphan References**
+   - References to non-existent person files
+
+#### 4.2 Batch Normalization Operations
+
+Methods for bulk data cleanup:
+
+```typescript
+// Normalize dates to YYYY-MM-DD format
+async normalizeDateFormats(options?: DataQualityOptions): Promise<BatchOperationResult>;
+
+// Standardize gender to M/F
+async normalizeGenderValues(options?: DataQualityOptions): Promise<BatchOperationResult>;
+
+// Remove invalid parent references
+async clearOrphanReferences(options?: DataQualityOptions): Promise<BatchOperationResult>;
+
+// Preview changes before applying
+previewNormalization(options?: DataQualityOptions): NormalizationPreview;
+```
+
+#### 4.3 Data Quality Tab in Control Center
+
+New tab in Control Center with:
+
+1. **Quality Score** - Overall data quality percentage (0-100)
+2. **Stats Grid** - Completeness statistics for key fields
+3. **Issue Filters** - Filter by category (dates, relationships, missing data, format, orphans) and severity
+4. **Issue List** - Scrollable list of detected issues with:
+   - Clickable person names to navigate to their notes
+   - Issue descriptions and severity indicators
+   - Related person info where applicable
+5. **Batch Operations** - Buttons to preview and run normalization operations
+
+### Implementation Order
+
+1. [x] Create `DataQualityService` with issue detection
+2. [x] Implement date inconsistency detection
+3. [x] Implement relationship inconsistency detection
+4. [x] Implement missing data detection
+5. [x] Create Data Quality tab in Control Center
+6. [x] Add batch normalization operations with preview
+7. [x] Add CSS styles for data quality components
+
+### Files Created/Modified
+
+- `src/core/data-quality.ts` (new) - DataQualityService with all detection and normalization logic
+- `src/ui/control-center.ts` - Added Data Quality tab, BatchPreviewModal
+- `src/ui/lucide-icons.ts` - Added 'shield-check' icon and tab config
+- `styles/data-quality.css` (new) - Styles for all data quality components
+- `build-css.js` - Added data-quality.css to build order
 
 ---
 
