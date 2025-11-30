@@ -21,6 +21,11 @@ export class FolderFilterService {
 	 * Useful when you have a path string but not a TFile object.
 	 */
 	shouldIncludePath(filePath: string): boolean {
+		// First check staging folder exclusion (takes precedence)
+		if (this.shouldExcludeAsStaging(filePath)) {
+			return false;
+		}
+
 		if (this.settings.folderFilterMode === 'disabled') {
 			return true;
 		}
@@ -46,6 +51,36 @@ export class FolderFilterService {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Check if a file should be excluded because it's in the staging folder
+	 */
+	private shouldExcludeAsStaging(filePath: string): boolean {
+		// Skip if staging isolation is disabled
+		if (!this.settings.enableStagingIsolation) {
+			return false;
+		}
+
+		// Skip if no staging folder is configured
+		const stagingFolder = this.settings.stagingFolder;
+		if (!stagingFolder) {
+			return false;
+		}
+
+		// Check if file is in staging folder
+		return this.isInFolder(filePath, stagingFolder);
+	}
+
+	/**
+	 * Check if a file is in the staging folder
+	 */
+	isInStagingFolder(filePath: string): boolean {
+		const stagingFolder = this.settings.stagingFolder;
+		if (!stagingFolder) {
+			return false;
+		}
+		return this.isInFolder(filePath, stagingFolder);
 	}
 
 	/**
@@ -77,21 +112,39 @@ export class FolderFilterService {
 	/**
 	 * Get list of active filters for UI display or debugging
 	 */
-	getActiveFilters(): { mode: FolderFilterMode; folders: string[] } {
+	getActiveFilters(): { mode: FolderFilterMode; folders: string[]; stagingFolder: string | null } {
 		return {
 			mode: this.settings.folderFilterMode,
 			folders: this.settings.folderFilterMode === 'exclude'
 				? this.settings.excludedFolders
 				: this.settings.folderFilterMode === 'include'
 					? this.settings.includedFolders
-					: []
+					: [],
+			stagingFolder: this.settings.enableStagingIsolation && this.settings.stagingFolder
+				? this.settings.stagingFolder
+				: null
 		};
 	}
 
 	/**
-	 * Check if filtering is currently enabled
+	 * Check if filtering is currently enabled (either folder filter or staging isolation)
 	 */
 	isEnabled(): boolean {
-		return this.settings.folderFilterMode !== 'disabled';
+		return this.settings.folderFilterMode !== 'disabled' ||
+			(this.settings.enableStagingIsolation && !!this.settings.stagingFolder);
+	}
+
+	/**
+	 * Check if staging isolation is active
+	 */
+	isStagingIsolationActive(): boolean {
+		return this.settings.enableStagingIsolation && !!this.settings.stagingFolder;
+	}
+
+	/**
+	 * Get the configured staging folder path
+	 */
+	getStagingFolder(): string {
+		return this.settings.stagingFolder;
 	}
 }

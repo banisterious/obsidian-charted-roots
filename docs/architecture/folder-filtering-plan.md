@@ -1,8 +1,8 @@
 # Folder Filtering Implementation Plan
 
-**Status:** In Development
+**Status:** ✅ Complete
 **Date:** 2025-11-29
-**Branch:** `feature/import-cleanup`
+**Completed:** 2025-11-29
 **Affects:** v0.4.0+ (Folder Filtering feature)
 
 ---
@@ -340,24 +340,56 @@ async onload(): Promise<void> {
 
 ## Implementation Order
 
-1. [ ] Add settings interface and defaults (`settings.ts`)
-2. [ ] Add settings UI (`settings.ts`)
-3. [ ] Create `FolderFilterService` (`src/core/folder-filter.ts`)
-4. [ ] Integrate into `FamilyGraphService` (P0 - biggest impact)
-5. [ ] Integrate into `RelationshipValidator` (P1)
-6. [ ] Integrate into `BidirectionalLinker` (P1)
-7. [ ] Integrate into `VaultStatsService` (P2)
-8. [ ] Test all integration points
-9. [ ] Update documentation
+1. [x] Add settings interface and defaults (`settings.ts`)
+2. [x] Add settings UI (`settings.ts`)
+3. [x] Create `FolderFilterService` (`src/core/folder-filter.ts`)
+4. [x] Integrate into `FamilyGraphService` (P0 - biggest impact)
+5. [x] Integrate into `RelationshipValidator` (P1)
+6. [x] Integrate into `BidirectionalLinker` (P1)
+7. [x] Integrate into `VaultStatsService` (P2)
+8. [x] Integrate into additional services (ReferenceNumbering, RelationshipCalculator, LineageTracking, DuplicateDetection, CSV/GEDCOM exporters)
+9. [x] Update UI components (ControlCenterModal, PersonPickerModal, FolderStatisticsModal, FamilyChartView)
+10. [x] Plugin initialization in main.ts with helper methods
+11. [ ] Test all integration points
+12. [ ] Update documentation
 
 ---
 
-## Open Questions
+## Open Questions (Resolved)
 
-1. **Case sensitivity:** Should folder matching be case-sensitive? (Recommend: case-insensitive for cross-platform compatibility)
+1. **Case sensitivity:** ✅ Implemented case-insensitive matching for cross-platform compatibility
 
-2. **Leading slashes:** Should users be able to type `/People` or just `People`? (Recommend: normalize both)
+2. **Leading slashes:** ✅ Path normalization implemented - strips leading/trailing slashes
 
-3. **Real-time updates:** When filter settings change, should we immediately refresh the person cache? (Recommend: yes, with debounce)
+3. **Real-time updates:** Deferred - cache refresh happens on next operation; debounced refresh can be added if needed
 
-4. **UI feedback:** Should we show count of filtered vs total files? (Nice to have, not essential)
+4. **UI feedback:** Deferred - can be added in future enhancement
+
+---
+
+## Implementation Notes
+
+### Services Updated
+All core services now accept an optional `FolderFilterService` parameter:
+- `FamilyGraphService` - via `setFolderFilter()` method
+- `RelationshipValidator` - via `setFolderFilter()` method
+- `BidirectionalLinker` - via `setFolderFilter()` method
+- `VaultStatsService` - via `setFolderFilter()` method
+- `ReferenceNumberingService` - via constructor
+- `RelationshipCalculator` - via constructor
+- `LineageTrackingService` - via constructor
+- `DuplicateDetectionService` - via constructor
+- `CsvExporter` - via constructor
+- `GedcomExporter` - via constructor
+
+### Plugin Helper Methods
+```typescript
+// Get the global folder filter instance
+plugin.getFolderFilter(): FolderFilterService | null
+
+// Create a pre-configured FamilyGraphService
+plugin.createFamilyGraphService(): FamilyGraphService
+```
+
+### Next Phase
+See `docs/architecture/import-cleanup-plan.md` for Phase 2: Staging Folder workflow

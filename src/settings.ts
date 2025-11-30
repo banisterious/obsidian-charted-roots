@@ -115,6 +115,9 @@ export interface CanvasRootsSettings {
 	folderFilterMode: FolderFilterMode;
 	excludedFolders: string[];
 	includedFolders: string[];
+	// Staging folder
+	stagingFolder: string;
+	enableStagingIsolation: boolean;
 }
 
 export const DEFAULT_SETTINGS: CanvasRootsSettings = {
@@ -160,7 +163,10 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	// Folder filtering defaults
 	folderFilterMode: 'disabled',  // Default: scan all folders (preserves existing behavior)
 	excludedFolders: [],           // No folders excluded by default
-	includedFolders: []            // No inclusion filter by default
+	includedFolders: [],           // No inclusion filter by default
+	// Staging folder defaults
+	stagingFolder: '',             // Empty = no staging configured (must be set by user)
+	enableStagingIsolation: true   // When staging folder is set, auto-exclude from normal operations
 };
 
 export class CanvasRootsSettingTab extends PluginSettingTab {
@@ -259,6 +265,33 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					this.plugin.settings.peopleFolder = value;
 					await this.plugin.saveSettings();
 				}));
+
+		// Staging folder section
+		new Setting(containerEl)
+			.setName('Staging folder')
+			.setDesc('Folder for GEDCOM/CSV imports before merging into main tree. When set, this folder is automatically excluded from normal operations.')
+			.addText(text => text
+				.setPlaceholder('People-Staging')
+				.setValue(this.plugin.settings.stagingFolder)
+				.onChange(async (value) => {
+					this.plugin.settings.stagingFolder = value;
+					await this.plugin.saveSettings();
+					// Refresh to show/hide the isolation toggle
+					this.display();
+				}));
+
+		// Only show isolation toggle if staging folder is configured
+		if (this.plugin.settings.stagingFolder) {
+			new Setting(containerEl)
+				.setName('Enable staging isolation')
+				.setDesc('When enabled, staging folder is automatically excluded from tree generation, duplicate detection, and other normal operations.')
+				.addToggle(toggle => toggle
+					.setValue(this.plugin.settings.enableStagingIsolation)
+					.onChange(async (value) => {
+						this.plugin.settings.enableStagingIsolation = value;
+						await this.plugin.saveSettings();
+					}));
+		}
 
 		// Folder filtering section
 		new Setting(containerEl)

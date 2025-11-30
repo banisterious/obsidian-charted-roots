@@ -3327,7 +3327,8 @@ export class ControlCenterModal extends Modal {
 	private async showGedcomAnalysis(
 		file: File,
 		analysisContainer: HTMLElement,
-		fileBtn: HTMLButtonElement
+		fileBtn: HTMLButtonElement,
+		targetFolder?: string
 	): Promise<void> {
 		try {
 			// Show loading state
@@ -3335,8 +3336,16 @@ export class ControlCenterModal extends Modal {
 			analysisContainer.removeClass('cr-hidden');
 			fileBtn.addClass('cr-hidden');
 
+			// Determine destination folder
+			const destFolder = targetFolder || this.plugin.settings.peopleFolder;
+
 			analysisContainer.createEl('p', {
 				text: `File: ${file.name}`,
+				cls: 'crc-text-muted'
+			});
+
+			analysisContainer.createEl('p', {
+				text: `Destination: ${destFolder || 'vault root'}`,
 				cls: 'crc-text-muted'
 			});
 
@@ -3383,13 +3392,15 @@ export class ControlCenterModal extends Modal {
 
 			const importBtn = actions.createEl('button', {
 				cls: 'crc-btn crc-btn--primary',
-				text: 'Import to Vault'
+				text: destFolder.includes('Staging') || destFolder.includes('staging')
+					? 'Import to Staging'
+					: 'Import to Vault'
 			});
 			importBtn.addEventListener('click', () => {
 				void (async () => {
 					analysisContainer.addClass('cr-hidden');
 					fileBtn.removeClass('cr-hidden');
-					await this.handleGedcomImport(file);
+					await this.handleGedcomImport(file, destFolder);
 				})();
 			});
 
@@ -3425,9 +3436,11 @@ export class ControlCenterModal extends Modal {
 	/**
 	 * Handle GEDCOM file import
 	 */
-	private async handleGedcomImport(file: File): Promise<void> {
+	private async handleGedcomImport(file: File, targetFolder?: string): Promise<void> {
 		try {
-			logger.info('gedcom', `Starting GEDCOM import: ${file.name}`);
+			// Use target folder if provided, otherwise use settings
+			const destFolder = targetFolder || this.plugin.settings.peopleFolder;
+			logger.info('gedcom', `Starting GEDCOM import: ${file.name} to ${destFolder}`);
 
 			// Read file content
 			const content = await file.text();
@@ -3437,7 +3450,7 @@ export class ControlCenterModal extends Modal {
 
 			// Import GEDCOM file
 			const result = await importer.importFile(content, {
-				peopleFolder: this.plugin.settings.peopleFolder,
+				peopleFolder: destFolder,
 				overwriteExisting: false,
 				fileName: file.name
 			});
@@ -3878,6 +3891,42 @@ export class ControlCenterModal extends Modal {
 			cls: 'crc-text-muted crc-mb-4'
 		});
 
+		// Import destination options (only show if staging folder is configured)
+		let importDestination: 'main' | 'staging' = 'main';
+		let stagingSubfolder = `import-${new Date().toISOString().slice(0, 7)}`;
+
+		const stagingFolder = this.plugin.settings.stagingFolder;
+		if (stagingFolder) {
+			new Setting(importContent)
+				.setName('Import destination')
+				.setDesc('Where to create person notes')
+				.addDropdown(dropdown => dropdown
+					.addOption('main', `Main tree (${this.plugin.settings.peopleFolder || 'vault root'})`)
+					.addOption('staging', `Staging (${stagingFolder})`)
+					.setValue(importDestination)
+					.onChange(value => {
+						importDestination = value as 'main' | 'staging';
+						// Show/hide subfolder input
+						if (subfolderSetting) {
+							subfolderSetting.settingEl.style.display = value === 'staging' ? '' : 'none';
+						}
+					})
+				);
+
+			// Subfolder input (hidden by default, shown when staging is selected)
+			const subfolderSetting = new Setting(importContent)
+				.setName('Subfolder name')
+				.setDesc('Create imports in a subfolder for organization')
+				.addText(text => text
+					.setPlaceholder(stagingSubfolder)
+					.setValue(stagingSubfolder)
+					.onChange(value => {
+						stagingSubfolder = value || `import-${new Date().toISOString().slice(0, 7)}`;
+					})
+				);
+			subfolderSetting.settingEl.style.display = 'none';
+		}
+
 		// File selection button
 		const fileBtn = importContent.createEl('button', {
 			cls: 'crc-btn crc-btn--primary crc-mt-4',
@@ -3905,7 +3954,16 @@ export class ControlCenterModal extends Modal {
 				const target = event.target as HTMLInputElement;
 				const file = target.files?.[0];
 				if (file) {
-					await this.showGedcomAnalysis(file, analysisContainer, fileBtn);
+					// Determine target folder based on import destination
+					let targetFolder: string;
+					if (importDestination === 'staging' && stagingFolder) {
+						targetFolder = stagingSubfolder
+							? `${stagingFolder}/${stagingSubfolder}`
+							: stagingFolder;
+					} else {
+						targetFolder = this.plugin.settings.peopleFolder;
+					}
+					await this.showGedcomAnalysis(file, analysisContainer, fileBtn, targetFolder);
 				}
 			})();
 		});
@@ -4064,6 +4122,42 @@ export class ControlCenterModal extends Modal {
 			cls: 'crc-text-muted crc-mb-4'
 		});
 
+		// Import destination options (only show if staging folder is configured)
+		let csvImportDestination: 'main' | 'staging' = 'main';
+		let csvStagingSubfolder = `import-${new Date().toISOString().slice(0, 7)}`;
+
+		const csvStagingFolder = this.plugin.settings.stagingFolder;
+		if (csvStagingFolder) {
+			new Setting(importContent)
+				.setName('Import destination')
+				.setDesc('Where to create person notes')
+				.addDropdown(dropdown => dropdown
+					.addOption('main', `Main tree (${this.plugin.settings.peopleFolder || 'vault root'})`)
+					.addOption('staging', `Staging (${csvStagingFolder})`)
+					.setValue(csvImportDestination)
+					.onChange(value => {
+						csvImportDestination = value as 'main' | 'staging';
+						// Show/hide subfolder input
+						if (csvSubfolderSetting) {
+							csvSubfolderSetting.settingEl.style.display = value === 'staging' ? '' : 'none';
+						}
+					})
+				);
+
+			// Subfolder input (hidden by default, shown when staging is selected)
+			const csvSubfolderSetting = new Setting(importContent)
+				.setName('Subfolder name')
+				.setDesc('Create imports in a subfolder for organization')
+				.addText(text => text
+					.setPlaceholder(csvStagingSubfolder)
+					.setValue(csvStagingSubfolder)
+					.onChange(value => {
+						csvStagingSubfolder = value || `import-${new Date().toISOString().slice(0, 7)}`;
+					})
+				);
+			csvSubfolderSetting.settingEl.style.display = 'none';
+		}
+
 		// File selection button
 		const fileBtn = importContent.createEl('button', {
 			cls: 'crc-btn crc-btn--primary crc-mt-4',
@@ -4091,7 +4185,16 @@ export class ControlCenterModal extends Modal {
 				const target = event.target as HTMLInputElement;
 				const file = target.files?.[0];
 				if (file) {
-					await this.showCsvAnalysis(file, analysisContainer, fileBtn);
+					// Determine target folder based on import destination
+					let csvTargetFolder: string;
+					if (csvImportDestination === 'staging' && csvStagingFolder) {
+						csvTargetFolder = csvStagingSubfolder
+							? `${csvStagingFolder}/${csvStagingSubfolder}`
+							: csvStagingFolder;
+					} else {
+						csvTargetFolder = this.plugin.settings.peopleFolder;
+					}
+					await this.showCsvAnalysis(file, analysisContainer, fileBtn, csvTargetFolder);
 				}
 			})();
 		});
@@ -4224,7 +4327,8 @@ export class ControlCenterModal extends Modal {
 	private async showCsvAnalysis(
 		file: File,
 		analysisContainer: HTMLElement,
-		fileBtn: HTMLButtonElement
+		fileBtn: HTMLButtonElement,
+		targetFolder?: string
 	): Promise<void> {
 		try {
 			// Show loading state
@@ -4232,8 +4336,16 @@ export class ControlCenterModal extends Modal {
 			analysisContainer.removeClass('cr-hidden');
 			fileBtn.addClass('cr-hidden');
 
+			// Determine destination folder
+			const destFolder = targetFolder || this.plugin.settings.peopleFolder;
+
 			analysisContainer.createEl('p', {
 				text: `File: ${file.name}`,
+				cls: 'crc-text-muted'
+			});
+
+			analysisContainer.createEl('p', {
+				text: `Destination: ${destFolder || 'vault root'}`,
 				cls: 'crc-text-muted'
 			});
 
@@ -4289,13 +4401,15 @@ export class ControlCenterModal extends Modal {
 
 			const importBtn = actions.createEl('button', {
 				cls: 'crc-btn crc-btn--primary',
-				text: 'Import to Vault'
+				text: destFolder.includes('Staging') || destFolder.includes('staging')
+					? 'Import to Staging'
+					: 'Import to Vault'
 			});
 			importBtn.addEventListener('click', () => {
 				void (async () => {
 					analysisContainer.addClass('cr-hidden');
 					fileBtn.removeClass('cr-hidden');
-					await this.handleCsvImport(file, parseOptions);
+					await this.handleCsvImport(file, parseOptions, destFolder);
 				})();
 			});
 
@@ -4331,9 +4445,11 @@ export class ControlCenterModal extends Modal {
 	/**
 	 * Handle CSV file import
 	 */
-	private async handleCsvImport(file: File, parseOptions?: { delimiter: string }): Promise<void> {
+	private async handleCsvImport(file: File, parseOptions?: { delimiter: string }, targetFolder?: string): Promise<void> {
 		try {
-			logger.info('csv', `Starting CSV import: ${file.name}`);
+			// Use target folder if provided, otherwise use settings
+			const destFolder = targetFolder || this.plugin.settings.peopleFolder;
+			logger.info('csv', `Starting CSV import: ${file.name} to ${destFolder}`);
 
 			// Read file content
 			const content = await file.text();
@@ -4344,7 +4460,7 @@ export class ControlCenterModal extends Modal {
 
 			// Import CSV file
 			const result = await importer.importFile(content, {
-				peopleFolder: this.plugin.settings.peopleFolder,
+				peopleFolder: destFolder,
 				overwriteExisting: false,
 				fileName: file.name,
 				parseOptions

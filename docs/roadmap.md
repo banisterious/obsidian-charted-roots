@@ -266,7 +266,16 @@ Canvas Roots is in beta with core functionality complete and stable. Advanced fe
 
 ## 🚧 In Active Development
 
-No features currently in active development. See Planned Features below for roadmap.
+### Import Cleanup - Phase 1: Staging Workflow
+
+**Status**: 🔨 In Progress
+
+See [import-cleanup-plan.md](architecture/import-cleanup-plan.md) for detailed implementation plan.
+
+**Current Phase Goals:**
+- Dedicated staging folder setting (auto-excluded from normal operations)
+- Import destination toggle (main vs staging) in Control Center
+- Staging folder isolation from tree generation, duplicate detection, etc.
 
 ---
 
@@ -274,34 +283,32 @@ No features currently in active development. See Planned Features below for road
 
 ### Folder Filtering
 
-**Status**: 🆕 Planned
+**Status**: ✅ Complete (v0.4.0)
 
 Control which folders Canvas Roots scans for person notes. Useful for mixed-use vaults or complex organizational structures.
 
-**Planned Features:**
+**Implemented Features:**
 - **Exclusion list**: Ignore specific folders (e.g., templates, archive, non-genealogy notes)
 - **Inclusion list**: Alternative mode - only scan specified folders
-- Settings UI for managing folder lists with folder picker
-- Glob pattern support for flexible matching
+- Settings UI with dropdown for filter mode and textarea for folder list
+- Case-insensitive path matching for cross-platform compatibility
 
 **Applies to:**
-- Person note detection
+- Person note detection (FamilyGraphService)
 - Duplicate detection scope
 - Tree generation scans
 - Validation commands
 - Relationship sync scope
+- Vault statistics
+- All import/export operations
 
-**Use Cases:**
-- Mixed-use vaults with non-genealogy content
-- Archived/legacy data that shouldn't be included in active trees
-- Separate staging areas for import cleanup
-- Multiple family projects in one vault with isolation
+See [folder-filtering-plan.md](architecture/folder-filtering-plan.md) for implementation details.
 
 ---
 
 ### Import Cleanup & Consolidation
 
-**Status**: 🆕 Planned (Exploratory)
+**Status**: 🔨 Phase 1 In Progress
 
 Tools for consolidating multiple GEDCOM files, cleaning up messy imports, and improving data quality. Addresses the common scenario of having multiple old, overlapping GEDCOM files from various sources.
 
