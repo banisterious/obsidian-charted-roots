@@ -1,7 +1,7 @@
 # Canvas Roots: Development Roadmap
 
 > **Last Updated:** 2025-12-01
-> **Current Version:** v0.5.0
+> **Current Version:** v0.5.1
 
 Canvas Roots is in beta with core functionality complete and stable. Advanced features and enhancements are planned for future releases.
 
@@ -9,7 +9,19 @@ Canvas Roots is in beta with core functionality complete and stable. Advanced fe
 
 ## 🎯 Released Versions
 
-### v0.5.0 (Current)
+### v0.5.1 (Current)
+
+**Canvas Navigation Enhancements:**
+- ✅ Navigation portal nodes linking split canvases together
+- ✅ Master overview canvas generation for split wizard
+- ✅ Grid layout overview with links to all split canvases
+
+**Import Format Expansion:**
+- ✅ **GEDCOM X (JSON) import** - FamilySearch GEDCOM X format support
+- ✅ **Gramps XML import** - Native Gramps genealogy software format
+- ✅ Both formats available in Import/Export tab with staging workflow support
+
+### v0.5.0
 
 **Canvas Navigation & Organization:**
 - ✅ Split Canvas Wizard with 6 split methods
@@ -477,7 +489,7 @@ A dedicated Obsidian leaf view that renders the full family-chart library intera
 
 ### Canvas Navigation & Organization
 
-**Status:** ✅ Complete (v0.5.0)
+**Status:** ✅ Complete (v0.5.1)
 
 Tools for splitting large trees into manageable segments and linking them together.
 
@@ -496,10 +508,8 @@ Tools for splitting large trees into manageable segments and linking them togeth
 - ✅ Preview functionality showing expected canvas count and people
 - ✅ Canvas file generation from wizard configuration
 - ✅ Completion step with generation results summary
-
-**Planned Enhancements:**
-- Navigation nodes linking between related canvases
-- Master overview canvases with links to detailed views
+- ✅ **Navigation portal nodes** linking between related canvases (v0.5.1)
+- ✅ **Master overview canvases** with grid layout and links to detailed views (v0.5.1)
 
 See [canvas-navigation-plan.md](architecture/canvas-navigation-plan.md) for implementation details.
 
@@ -598,16 +608,18 @@ Most interactive canvas features are not feasible with Obsidian's current Canvas
 
 ### Import/Export Enhancements
 
-**Status**: ✅ Partially Completed in v0.3.3
+**Status**: ✅ Complete in v0.5.1
 
 **Implemented:**
 - ✅ CSV bulk import/export (v0.3.3)
 - ✅ Selective export - specific branches only (v0.3.3)
 - ✅ Privacy filters for living people (v0.2.9 for GEDCOM export)
+- ✅ **FamilySearch GEDCOM X (JSON) format import** (v0.5.1)
+- ✅ **Gramps XML import** (v0.5.1)
 
 **Planned:**
-- FamilySearch GEDCOM X format support
-- Gramps XML import
+- GEDCOM X export support
+- Gramps XML export support
 - Redacted exports for sharing
 
 ---

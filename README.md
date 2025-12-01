@@ -1,6 +1,6 @@
 # Canvas Roots: Genealogical Family Tree Plugin for Obsidian
 
-> **Status (v0.5.0):** Canvas Roots is feature-complete for core genealogical workflows and submitted for Obsidian community plugin review. All essential features are stable and production-ready (GEDCOM import/export, CSV import/export, bidirectional sync, alternative layout algorithms, tree generation, canvas styling, collections, relationship calculator, reference numbering, lineage tracking, relationship history, interactive family chart view with PDF export, selective branch export, smart duplicate detection, staging workflow, merge tools, data quality analysis, and Split Canvas Wizard). Advanced features are planned for future releases. See [Roadmap](docs/roadmap.md) for details.
+> **Status (v0.5.1):** Canvas Roots is feature-complete for core genealogical workflows and submitted for Obsidian community plugin review. All essential features are stable and production-ready (GEDCOM import/export, GEDCOM X import, Gramps XML import, CSV import/export, bidirectional sync, alternative layout algorithms, tree generation, canvas styling, collections, relationship calculator, reference numbering, lineage tracking, relationship history, interactive family chart view with PDF export, selective branch export, smart duplicate detection, staging workflow, merge tools, data quality analysis, Split Canvas Wizard with navigation nodes and master overview canvases). Advanced features are planned for future releases. See [Roadmap](docs/roadmap.md) for details.
 
 **Canvas Roots** is an Obsidian plugin that automatically generates complex family trees directly onto the Canvas using specialized genealogical layout algorithms for non-overlapping, relationship-aware positioning.
 
@@ -16,11 +16,15 @@ This plugin is designed for genealogists, historians, and world-builders. It tra
 
 ## ✨ Key Features
 
-### Available Now (v0.5.0)
+### Available Now (v0.5.1)
 
 - **Interactive Family Chart View:** A persistent, interactive visualization panel for exploring and editing family trees in real-time. Pan, zoom, and navigate large trees with smooth animations. Click any person to center the view or open their note. Edit relationships directly in the chart with full undo/redo support. Full bidirectional sync: chart edits update frontmatter and rename files, file renames update frontmatter and refresh the chart. Choose from multiple color schemes (Gender, Generation, Collection, Monochrome) and adjustable spacing. Export as high-quality PNG, SVG, or PDF. Customizable export filenames with `{name}` and `{date}` placeholders. Toggle kinship labels on relationship links. Open multiple chart views simultaneously. Access via "Open family chart" command or "Open current note in family chart" for the active person note.
 
 - **GEDCOM Import/Export:** Full round-trip support for GEDCOM 5.5.1 format with pre-import validation and comprehensive import results modal. Import family trees from popular genealogy software (Gramps, Ancestry, FamilySearch) with birth/death places, occupation, and gender data. Export back to .ged format with UUID preservation, collection codes, marriage metadata, and optional privacy protection for living persons. Selective branch export: export only ancestors or descendants of a specific person.
+
+- **GEDCOM X Import:** Import family tree data from FamilySearch GEDCOM X JSON format. Parses persons, relationships, names, dates, and places. Supports the staging folder workflow for safe import processing.
+
+- **Gramps XML Import:** Import family tree data directly from Gramps genealogy software's native XML format. Preserves all relationship data, events, dates, and places. Full support for staging workflow.
 
 - **CSV Import/Export:** Import and export family data in CSV/TSV format for spreadsheet workflows. Auto-detected column mapping supports common field names. Export with configurable columns and privacy protection. Selective branch export available for both formats.
 
@@ -72,7 +76,7 @@ This plugin is designed for genealogists, historians, and world-builders. It tra
 
 - **Data Quality Tools:** Comprehensive data quality analysis and batch normalization. Quality score (0-100) measures data completeness and consistency. Detects 15+ issue types across five categories: date inconsistencies (birth after death, impossible ages), relationship problems (circular references, mismatched links), missing data (no birth date, no parents), format issues (non-standard dates/gender), and orphan references. Filter issues by category and severity. Batch operations normalize dates to YYYY-MM-DD, standardize gender to M/F, and clear invalid references—all with preview before applying. Data Quality tab in Control Center provides visual stats, completeness bars, and scrollable issue list.
 
-- **Split Canvas Wizard:** Multi-step wizard for splitting large family trees into manageable canvas files. Six split methods: by generation (configurable generations per canvas), by branch (paternal/maternal lines), single lineage extraction (direct line between two people), by collection (one canvas per user-defined collection), ancestor + descendant pairs, and by surname (extract people sharing a surname even without established connections). Surname extraction includes scrollable surname list sorted by frequency, multi-surname selection, and options to include spouses and match maiden names. Preview step shows expected canvas count and people before generating. Generates actual canvas files with full layout and styling. Access via canvas context menu → Canvas Roots → Split canvas wizard.
+- **Split Canvas Wizard:** Multi-step wizard for splitting large family trees into manageable canvas files. Six split methods: by generation (configurable generations per canvas), by branch (paternal/maternal lines), single lineage extraction (direct line between two people), by collection (one canvas per user-defined collection), ancestor + descendant pairs, and by surname (extract people sharing a surname even without established connections). Surname extraction includes scrollable surname list sorted by frequency, multi-surname selection, and options to include spouses and match maiden names. Preview step shows expected canvas count and people before generating. Generates actual canvas files with full layout and styling. Optional navigation portal nodes link between related canvases. Master overview canvas provides grid layout with links to all split canvases. Access via canvas context menu → Canvas Roots → Split canvas wizard.
 
 - **Reference Numbering Systems:** Assign standard genealogical reference numbers to your family members. Supports four numbering systems: Ahnentafel (ancestor numbering where father=2N, mother=2N+1), d'Aboville (descendant numbering with dot notation like 1.2.3), Henry System (compact descendant numbering without dots), and Generation numbering (relative generation depth from a reference person). Numbers are stored in frontmatter and automatically available in Bases views.
 
@@ -87,7 +91,7 @@ This plugin is designed for genealogists, historians, and world-builders. It tra
 ### Planned Features
 
 See [Roadmap](docs/roadmap.md) for detailed feature descriptions and development priorities.
-- **Import/Export Enhancements:** GEDCOM X and Gramps XML format support
+- **Export Enhancements:** GEDCOM X and Gramps XML export support
 - **World-Building Features:** Track fantasy dynasties, corporate succession, and historical kingdoms
 
 
