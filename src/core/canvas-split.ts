@@ -3316,6 +3316,7 @@ export class CanvasSplitService {
 	): Promise<CanvasWriteResult[]> {
 		const results: CanvasWriteResult[] = [];
 		const opts = { ...DEFAULT_GENERATION_SPLIT_OPTIONS, ...options };
+		const includeNavNodes = opts.includeNavigationNodes ?? true;
 
 		// Calculate generations
 		const assignment = this.assignGenerations(tree, opts.generationDirection);
@@ -3330,10 +3331,24 @@ export class CanvasSplitService {
 		// Assign people to ranges
 		this.assignPeopleToRanges(assignment, ranges);
 
-		// Generate canvas for each range
-		for (const range of ranges) {
+		// Filter to ranges that have people
+		const activeRanges = ranges.filter(range => {
 			const people = assignment.byRange.get(range.label) || [];
-			if (people.length === 0) continue;
+			return people.length > 0;
+		});
+
+		// Pre-compute canvas paths for all ranges (needed for navigation nodes)
+		const rangePaths = new Map<string, string>();
+		for (const range of activeRanges) {
+			const path = this.generateCanvasPath(opts, range.label);
+			rangePaths.set(range.label, path);
+		}
+
+		// Generate canvas for each range
+		for (let i = 0; i < activeRanges.length; i++) {
+			const range = activeRanges[i];
+			const people = assignment.byRange.get(range.label) || [];
+			const canvasPath = rangePaths.get(range.label)!;
 
 			const includedCrIds = new Set(people.map(p => p.crId));
 			const canvasData = this.generateCanvasDataForSubset(tree, includedCrIds, canvasOptions);
@@ -3341,15 +3356,29 @@ export class CanvasSplitService {
 			if (!canvasData) {
 				results.push({
 					success: false,
-					path: this.generateCanvasPath(opts, range.label),
+					path: canvasPath,
 					error: 'Failed to generate canvas data'
 				});
 				continue;
 			}
 
+			// Add navigation nodes if enabled
+			if (includeNavNodes && activeRanges.length > 1) {
+				this.addGenerationNavigationNodes(
+					canvasData,
+					tree,
+					assignment,
+					range,
+					activeRanges,
+					rangePaths,
+					i,
+					opts.generationDirection
+				);
+			}
+
 			const result = await writeCanvasFile(
 				app,
-				this.generateCanvasPath(opts, range.label),
+				canvasPath,
 				canvasData,
 				true // overwrite
 			);
@@ -3357,6 +3386,119 @@ export class CanvasSplitService {
 		}
 
 		return results;
+	}
+
+	/**
+	 * Add navigation nodes to a generation-split canvas
+	 *
+	 * @param canvasData - Canvas data to modify
+	 * @param tree - Source family tree
+	 * @param assignment - Generation assignment data
+	 * @param currentRange - Current generation range
+	 * @param allRanges - All active generation ranges
+	 * @param rangePaths - Map of range labels to canvas paths
+	 * @param currentIndex - Index of current range in allRanges
+	 * @param direction - Generation direction (up/down)
+	 */
+	private addGenerationNavigationNodes(
+		canvasData: CanvasData,
+		tree: FamilyTree,
+		assignment: GenerationAssignment,
+		currentRange: GenerationRange,
+		allRanges: GenerationRange[],
+		rangePaths: Map<string, string>,
+		currentIndex: number,
+		direction: 'up' | 'down'
+	): void {
+		// Find adjacent ranges
+		const prevRange = currentIndex > 0 ? allRanges[currentIndex - 1] : null;
+		const nextRange = currentIndex < allRanges.length - 1 ? allRanges[currentIndex + 1] : null;
+
+		// Calculate canvas bounds to position navigation nodes
+		const bounds = this.calculateCanvasBounds(canvasData.nodes);
+
+		// Add navigation to previous range (ancestors in 'up' direction, descendants in 'down')
+		if (prevRange) {
+			const prevPath = rangePaths.get(prevRange.label)!;
+			const prevPeople = assignment.byRange.get(prevRange.label) || [];
+			const navDirection: NavigationDirection = direction === 'up' ? 'down' : 'up';
+			const label = direction === 'up'
+				? `↓ ${prevRange.label}`
+				: `↑ ${prevRange.label}`;
+
+			const navNode = this.navigationGenerator.createPortalNode(
+				prevPath,
+				label,
+				{
+					x: bounds.centerX - 100, // Center horizontally
+					y: direction === 'up' ? bounds.maxY + 50 : bounds.minY - 150
+				},
+				navDirection,
+				`${prevPeople.length} people`
+			);
+
+			canvasData.nodes.push(navNode as unknown as CanvasData['nodes'][0]);
+		}
+
+		// Add navigation to next range
+		if (nextRange) {
+			const nextPath = rangePaths.get(nextRange.label)!;
+			const nextPeople = assignment.byRange.get(nextRange.label) || [];
+			const navDirection: NavigationDirection = direction === 'up' ? 'up' : 'down';
+			const label = direction === 'up'
+				? `↑ ${nextRange.label}`
+				: `↓ ${nextRange.label}`;
+
+			const navNode = this.navigationGenerator.createPortalNode(
+				nextPath,
+				label,
+				{
+					x: bounds.centerX - 100, // Center horizontally
+					y: direction === 'up' ? bounds.minY - 150 : bounds.maxY + 50
+				},
+				navDirection,
+				`${nextPeople.length} people`
+			);
+
+			canvasData.nodes.push(navNode as unknown as CanvasData['nodes'][0]);
+		}
+	}
+
+	/**
+	 * Calculate bounding box of canvas nodes
+	 */
+	private calculateCanvasBounds(nodes: CanvasData['nodes']): {
+		minX: number;
+		minY: number;
+		maxX: number;
+		maxY: number;
+		centerX: number;
+		centerY: number;
+	} {
+		if (nodes.length === 0) {
+			return { minX: 0, minY: 0, maxX: 0, maxY: 0, centerX: 0, centerY: 0 };
+		}
+
+		let minX = Infinity;
+		let minY = Infinity;
+		let maxX = -Infinity;
+		let maxY = -Infinity;
+
+		for (const node of nodes) {
+			minX = Math.min(minX, node.x);
+			minY = Math.min(minY, node.y);
+			maxX = Math.max(maxX, node.x + node.width);
+			maxY = Math.max(maxY, node.y + node.height);
+		}
+
+		return {
+			minX,
+			minY,
+			maxX,
+			maxY,
+			centerX: (minX + maxX) / 2,
+			centerY: (minY + maxY) / 2
+		};
 	}
 
 	/**
@@ -3376,30 +3518,131 @@ export class CanvasSplitService {
 	): Promise<CanvasWriteResult[]> {
 		const results: CanvasWriteResult[] = [];
 		const opts = { ...DEFAULT_BRANCH_SPLIT_OPTIONS, ...options };
+		const includeNavNodes = opts.includeNavigationNodes ?? true;
 
-		// Extract each branch
+		// Pre-compute all branch extractions and paths for navigation
+		const branchData: Array<{
+			def: BranchDefinition;
+			extraction: BranchExtractionResult;
+			path: string;
+			canvasData: CanvasData | null;
+		}> = [];
+
 		for (const branchDef of opts.branches) {
 			const extraction = this.extractBranch(tree, branchDef, opts);
 			if (extraction.people.length === 0) continue;
 
+			const path = `${opts.outputFolder || ''}/${toSafeFilename(branchDef.label)}`;
 			const canvasData = this.generateCanvasDataForSubset(tree, extraction.crIds, canvasOptions);
 
+			branchData.push({ def: branchDef, extraction, path, canvasData });
+		}
+
+		// Generate canvas files with navigation nodes
+		for (let i = 0; i < branchData.length; i++) {
+			const { def, extraction, path, canvasData } = branchData[i];
+
 			if (!canvasData) {
-				const path = `${opts.outputFolder || ''}/${toSafeFilename(branchDef.label)}.canvas`;
 				results.push({
 					success: false,
-					path,
+					path: `${path}.canvas`,
 					error: 'Failed to generate canvas data'
 				});
 				continue;
 			}
 
-			const path = `${opts.outputFolder || ''}/${toSafeFilename(branchDef.label)}`;
+			// Add navigation nodes to other branches if enabled
+			if (includeNavNodes && branchData.length > 1) {
+				this.addBranchNavigationNodes(
+					canvasData,
+					def,
+					extraction,
+					branchData,
+					i,
+					tree
+				);
+			}
+
 			const result = await writeCanvasFile(app, path, canvasData, true);
 			results.push(result);
 		}
 
 		return results;
+	}
+
+	/**
+	 * Add navigation nodes to a branch-split canvas
+	 *
+	 * @param canvasData - Canvas data to modify
+	 * @param currentBranch - Current branch definition
+	 * @param currentExtraction - Current branch extraction result
+	 * @param allBranches - All branch data
+	 * @param currentIndex - Index of current branch
+	 * @param tree - Source family tree
+	 */
+	private addBranchNavigationNodes(
+		canvasData: CanvasData,
+		currentBranch: BranchDefinition,
+		currentExtraction: BranchExtractionResult,
+		allBranches: Array<{
+			def: BranchDefinition;
+			extraction: BranchExtractionResult;
+			path: string;
+			canvasData: CanvasData | null;
+		}>,
+		currentIndex: number,
+		tree: FamilyTree
+	): void {
+		const bounds = this.calculateCanvasBounds(canvasData.nodes);
+
+		// For branch splits, we add navigation nodes on the sides for sibling branches
+		// and indicate the common ancestor/junction point
+		const otherBranches = allBranches.filter((_, idx) => idx !== currentIndex);
+
+		// Position other branch links along the sides
+		let leftY = bounds.minY;
+		let rightY = bounds.minY;
+		const spacing = 120;
+
+		for (const other of otherBranches) {
+			// Find common people between branches (typically the anchor person)
+			const commonPeople = [...currentExtraction.crIds].filter(id =>
+				other.extraction.crIds.has(id)
+			);
+
+			// Determine which side to place the navigation node
+			// Paternal branches go left, maternal go right, descendants go down
+			let navDirection: NavigationDirection;
+			let position: { x: number; y: number };
+
+			if (other.def.type === 'paternal') {
+				navDirection = 'left';
+				position = { x: bounds.minX - 250, y: leftY };
+				leftY += spacing;
+			} else if (other.def.type === 'maternal') {
+				navDirection = 'right';
+				position = { x: bounds.maxX + 50, y: rightY };
+				rightY += spacing;
+			} else {
+				// Descendant or custom branches - place below
+				navDirection = 'down';
+				position = { x: bounds.centerX - 100, y: bounds.maxY + 50 };
+			}
+
+			const info = commonPeople.length > 0
+				? `${other.extraction.people.length} people`
+				: `${other.extraction.people.length} people`;
+
+			const navNode = this.navigationGenerator.createPortalNode(
+				other.path.endsWith('.canvas') ? other.path : `${other.path}.canvas`,
+				other.def.label,
+				position,
+				navDirection,
+				info
+			);
+
+			canvasData.nodes.push(navNode as unknown as CanvasData['nodes'][0]);
+		}
 	}
 
 	/**
@@ -3466,47 +3709,104 @@ export class CanvasSplitService {
 	): Promise<CanvasWriteResult[]> {
 		const results: CanvasWriteResult[] = [];
 		const opts = { ...DEFAULT_COLLECTION_SPLIT_OPTIONS, ...options };
+		const includeNavNodes = opts.includeNavigationNodes ?? true;
 
 		// Extract collections
 		const extraction = this.extractCollections(tree, opts);
 
-		// Generate canvas for each collection
+		// Pre-compute all collection data for navigation
+		const collectionData: Array<{
+			name: string;
+			crIds: Set<string>;
+			path: string;
+			canvasData: CanvasData | null;
+		}> = [];
+
 		for (const [collectionName, info] of extraction.collections) {
 			// Skip if we have a filter and this collection isn't in it
 			if (opts.collections && opts.collections.length > 0) {
 				if (!opts.collections.includes(collectionName)) continue;
 			}
 
+			const path = `${opts.outputFolder || ''}/${toSafeFilename(collectionName)}`;
 			const canvasData = this.generateCanvasDataForSubset(tree, info.crIds, canvasOptions);
+			collectionData.push({ name: collectionName, crIds: info.crIds, path, canvasData });
+		}
+
+		// Add uncollected as a collection if needed
+		if (opts.includeUncollected && extraction.uncollected.length > 0) {
+			const uncollectedCrIds = new Set<string>(extraction.uncollected.map((p: PersonNode) => p.crId));
+			const path = `${opts.outputFolder || ''}/${toSafeFilename(opts.uncollectedLabel)}`;
+			const canvasData = this.generateCanvasDataForSubset(tree, uncollectedCrIds, canvasOptions);
+			collectionData.push({ name: opts.uncollectedLabel, crIds: uncollectedCrIds, path, canvasData });
+		}
+
+		// Generate canvas files with navigation nodes
+		for (let i = 0; i < collectionData.length; i++) {
+			const { name, crIds, path, canvasData } = collectionData[i];
 
 			if (!canvasData) {
-				const path = `${opts.outputFolder || ''}/${toSafeFilename(collectionName)}.canvas`;
 				results.push({
 					success: false,
-					path,
+					path: `${path}.canvas`,
 					error: 'Failed to generate canvas data'
 				});
 				continue;
 			}
 
-			const path = `${opts.outputFolder || ''}/${toSafeFilename(collectionName)}`;
+			// Add navigation nodes if enabled
+			if (includeNavNodes && collectionData.length > 1) {
+				this.addCollectionNavigationNodes(canvasData, name, crIds, collectionData, i);
+			}
+
 			const result = await writeCanvasFile(app, path, canvasData, true);
 			results.push(result);
 		}
 
-		// Handle uncollected people
-		if (opts.includeUncollected && extraction.uncollected.length > 0) {
-			const uncollectedCrIds = new Set<string>(extraction.uncollected.map((p: PersonNode) => p.crId));
-			const canvasData = this.generateCanvasDataForSubset(tree, uncollectedCrIds, canvasOptions);
-
-			if (canvasData) {
-				const path = `${opts.outputFolder || ''}/${toSafeFilename(opts.uncollectedLabel)}`;
-				const result = await writeCanvasFile(app, path, canvasData, true);
-				results.push(result);
-			}
-		}
-
 		return results;
+	}
+
+	/**
+	 * Add navigation nodes to a collection-split canvas
+	 */
+	private addCollectionNavigationNodes(
+		canvasData: CanvasData,
+		currentCollection: string,
+		currentCrIds: Set<string>,
+		allCollections: Array<{
+			name: string;
+			crIds: Set<string>;
+			path: string;
+			canvasData: CanvasData | null;
+		}>,
+		currentIndex: number
+	): void {
+		const bounds = this.calculateCanvasBounds(canvasData.nodes);
+		const otherCollections = allCollections.filter((_, idx) => idx !== currentIndex);
+
+		// Position navigation nodes along the right side
+		let yOffset = bounds.minY;
+		const spacing = 120;
+
+		for (const other of otherCollections) {
+			// Find shared people between collections (bridge people)
+			const sharedCount = [...currentCrIds].filter(id => other.crIds.has(id)).length;
+
+			const info = sharedCount > 0
+				? `${other.crIds.size} people (${sharedCount} shared)`
+				: `${other.crIds.size} people`;
+
+			const navNode = this.navigationGenerator.createPortalNode(
+				other.path.endsWith('.canvas') ? other.path : `${other.path}.canvas`,
+				other.name,
+				{ x: bounds.maxX + 50, y: yOffset },
+				'right',
+				info
+			);
+
+			canvasData.nodes.push(navNode as unknown as CanvasData['nodes'][0]);
+			yOffset += spacing;
+		}
 	}
 
 	/**
@@ -3526,6 +3826,7 @@ export class CanvasSplitService {
 	): Promise<CanvasWriteResult[]> {
 		const results: CanvasWriteResult[] = [];
 		const opts = { ...DEFAULT_ANCESTOR_DESCENDANT_OPTIONS, ...options };
+		const includeNavNodes = opts.includeNavigationNodes ?? true;
 
 		const rootPerson = tree.nodes.get(opts.rootCrId);
 		if (!rootPerson) {
@@ -3538,6 +3839,10 @@ export class CanvasSplitService {
 
 		const labelPrefix = opts.labelPrefix || rootPerson.name || 'Person';
 
+		// Pre-compute paths for navigation
+		const ancestorPath = `${opts.outputFolder || ''}/${toSafeFilename(labelPrefix)}-ancestors`;
+		const descendantPath = `${opts.outputFolder || ''}/${toSafeFilename(labelPrefix)}-descendants`;
+
 		// Extract ancestors
 		const ancestorExtraction = this.extractAncestors(
 			tree,
@@ -3546,18 +3851,13 @@ export class CanvasSplitService {
 			opts.includeSpouses
 		);
 
+		let ancestorCanvasData: CanvasData | null = null;
 		if (ancestorExtraction.people.length > 0) {
-			const canvasData = this.generateCanvasDataForSubset(
+			ancestorCanvasData = this.generateCanvasDataForSubset(
 				tree,
 				ancestorExtraction.crIds,
 				{ ...canvasOptions, treeType: 'ancestor' }
 			);
-
-			if (canvasData) {
-				const path = `${opts.outputFolder || ''}/${toSafeFilename(labelPrefix)}-ancestors`;
-				const result = await writeCanvasFile(app, path, canvasData, true);
-				results.push(result);
-			}
 		}
 
 		// Extract descendants
@@ -3568,18 +3868,53 @@ export class CanvasSplitService {
 			opts.includeSpouses
 		);
 
+		let descendantCanvasData: CanvasData | null = null;
 		if (descendantExtraction.people.length > 0) {
-			const canvasData = this.generateCanvasDataForSubset(
+			descendantCanvasData = this.generateCanvasDataForSubset(
 				tree,
 				descendantExtraction.crIds,
 				{ ...canvasOptions, treeType: 'descendant' }
 			);
+		}
 
-			if (canvasData) {
-				const path = `${opts.outputFolder || ''}/${toSafeFilename(labelPrefix)}-descendants`;
-				const result = await writeCanvasFile(app, path, canvasData, true);
-				results.push(result);
-			}
+		// Add navigation nodes linking ancestor and descendant canvases
+		const hasAncestors = ancestorCanvasData !== null;
+		const hasDescendants = descendantCanvasData !== null;
+
+		if (includeNavNodes && hasAncestors && hasDescendants) {
+			// Add link to descendants in ancestor canvas
+			const ancestorBounds = this.calculateCanvasBounds(ancestorCanvasData!.nodes);
+			const descendantNavNode = this.navigationGenerator.createPortalNode(
+				`${descendantPath}.canvas`,
+				`↓ Descendants of ${rootPerson.name}`,
+				{ x: ancestorBounds.centerX - 100, y: ancestorBounds.maxY + 50 },
+				'down',
+				`${descendantExtraction.people.length} people`
+			);
+			ancestorCanvasData!.nodes.push(descendantNavNode as unknown as CanvasData['nodes'][0]);
+
+			// Add link to ancestors in descendant canvas
+			const descendantBounds = this.calculateCanvasBounds(descendantCanvasData!.nodes);
+			const ancestorNavNode = this.navigationGenerator.createPortalNode(
+				`${ancestorPath}.canvas`,
+				`↑ Ancestors of ${rootPerson.name}`,
+				{ x: descendantBounds.centerX - 100, y: descendantBounds.minY - 150 },
+				'up',
+				`${ancestorExtraction.people.length} people`
+			);
+			descendantCanvasData!.nodes.push(ancestorNavNode as unknown as CanvasData['nodes'][0]);
+		}
+
+		// Write ancestor canvas
+		if (ancestorCanvasData) {
+			const result = await writeCanvasFile(app, ancestorPath, ancestorCanvasData, true);
+			results.push(result);
+		}
+
+		// Write descendant canvas
+		if (descendantCanvasData) {
+			const result = await writeCanvasFile(app, descendantPath, descendantCanvasData, true);
+			results.push(result);
 		}
 
 		return results;

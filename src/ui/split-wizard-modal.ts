@@ -1753,7 +1753,8 @@ export class SplitWizardModal extends Modal {
 			generationsPerCanvas: this.generationsPerCanvas,
 			generationDirection: this.generationDirection,
 			outputFolder: this.outputFolder,
-			filenamePattern: this.filenamePrefix ? `${this.filenamePrefix}-gen-{name}` : 'gen-{name}'
+			filenamePattern: this.filenamePrefix ? `${this.filenamePrefix}-gen-{name}` : 'gen-{name}',
+			includeNavigationNodes: this.includeNavigationNodes
 		};
 
 		return await this.splitService.generateGenerationSplitCanvases(
@@ -1780,7 +1781,8 @@ export class SplitWizardModal extends Modal {
 			...DEFAULT_BRANCH_SPLIT_OPTIONS,
 			branches: this.buildBranchDefinitions(),
 			maxGenerations: this.branchMaxGenerations,
-			outputFolder: this.outputFolder
+			outputFolder: this.outputFolder,
+			includeNavigationNodes: this.includeNavigationNodes
 		};
 
 		return await this.splitService.generateBranchSplitCanvases(
@@ -1810,7 +1812,8 @@ export class SplitWizardModal extends Modal {
 			includeSpouses: this.lineageIncludeSpouses,
 			includeSiblings: this.lineageIncludeSiblings,
 			outputFolder: this.outputFolder,
-			label: this.filenamePrefix || 'lineage'
+			label: this.filenamePrefix || 'lineage',
+			includeNavigationNodes: this.includeNavigationNodes
 		};
 
 		const result = await this.splitService.generateLineageCanvas(
@@ -1834,7 +1837,8 @@ export class SplitWizardModal extends Modal {
 			...DEFAULT_COLLECTION_SPLIT_OPTIONS,
 			collections: this.selectedCollections,
 			bridgePeopleHandling: this.collectionIncludeBridgePeople ? 'duplicate' : 'primary-only',
-			outputFolder: this.outputFolder
+			outputFolder: this.outputFolder,
+			includeNavigationNodes: this.includeNavigationNodes
 		};
 
 		return await this.splitService.generateCollectionSplitCanvases(
@@ -1864,7 +1868,8 @@ export class SplitWizardModal extends Modal {
 			maxAncestorGenerations: this.ancestorDescendantMaxAncestors,
 			maxDescendantGenerations: this.ancestorDescendantMaxDescendants,
 			outputFolder: this.outputFolder,
-			labelPrefix: this.filenamePrefix || this.ancestorDescendantRoot.name
+			labelPrefix: this.filenamePrefix || this.ancestorDescendantRoot.name,
+			includeNavigationNodes: this.includeNavigationNodes
 		};
 
 		return await this.splitService.generateAncestorDescendantCanvases(
