@@ -167,6 +167,44 @@ When extracting or pruning, users may have attached media to person nodes on the
 - Edges between person and media are preserved in the extracted canvas
 - Groups are recreated if all members are extracted
 
+#### 2.4 Collection/Group Tagging
+
+Optionally tag extracted people with a collection or group name for organizational purposes.
+
+**Options in UI:**
+```
+┌─ Tagging ────────────────────────────────────────────┐
+│ ☐ Add to collection                                  │
+│   [McCasland Patrilineal Line              ]         │
+│   ○ Create new  ○ Add to existing                    │
+│                                                      │
+│ ☐ Set group name                                     │
+│   [McCasland                               ]         │
+│   (Suggested: McCasland)                             │
+└──────────────────────────────────────────────────────┘
+```
+
+**Collection vs Group:**
+
+| Feature | Collection | Group |
+|---------|------------|-------|
+| Property | `collection` | `group_name` |
+| Purpose | User-defined research projects, cross-family topics | Family cluster organization |
+| Use case | DAR application, surname study, sharing subset | Keeping branches organized |
+| Visibility | Bases filtering, collection overview | Auto-detected families, canvas coloring |
+
+**Behavior:**
+- Both are optional and independent (can use neither, either, or both)
+- Name suggestion based on start person's surname
+- For existing collections/groups, dropdown shows available options
+- Updates person note frontmatter for all extracted people
+
+**Use cases:**
+- Tag a pruned lineage as a collection for ongoing research
+- Set group name to keep extracted branch identifiable
+- Create a collection for a specific documentation project (heritage application)
+- Regenerate canvas later from collection filter
+
 ### Feature 3: Navigation Nodes
 
 Special nodes that link canvases together.
@@ -383,6 +421,11 @@ interface SplitOptions {
     includeNearbyMedia: boolean;      // Include nodes within proximity threshold
     includeGroupedMedia: boolean;     // Include nodes in same canvas group as extracted people
     proximityThreshold?: number;      // Pixels for nearby detection (default: 200)
+
+    // Tagging options
+    addToCollection?: string;         // Collection name to add extracted people to
+    createNewCollection?: boolean;    // If true, create collection if it doesn't exist
+    setGroupName?: string;            // Group name to set on extracted people
 }
 
 interface MediaAssociation {
@@ -493,6 +536,13 @@ Multi-step modal for configuring canvas splitting:
 │ │ ● Copy (keep original canvas unchanged)            │   │
 │ │ ○ Prune (remove from source, add navigation node)  │   │
 │ │   Source canvas: [Smith-full-tree.canvas     ▼]    │   │
+│ └────────────────────────────────────────────────────┘   │
+│                                                          │
+│ ┌─ Tagging (optional) ───────────────────────────────┐   │
+│ │ ☑ Add to collection: [McCasland Line         ]     │   │
+│ │   ● Create new  ○ Add to existing                  │   │
+│ │ ☐ Set group name: [McCasland                 ]     │   │
+│ │   (Suggested: McCasland)                           │   │
 │ └────────────────────────────────────────────────────┘   │
 │                                                          │
 │ Output folder:      [Family Trees            ] [📁]      │
