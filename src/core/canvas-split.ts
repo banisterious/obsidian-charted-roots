@@ -65,6 +65,70 @@ export const DEFAULT_GENERATION_SPLIT_OPTIONS: GenerationSplitOptions = {
 };
 
 /**
+ * Branch type for splitting
+ */
+export type BranchType = 'paternal' | 'maternal' | 'descendant' | 'custom';
+
+/**
+ * Branch definition for splitting
+ */
+export interface BranchDefinition {
+	/** Type of branch */
+	type: BranchType;
+	/** Anchor person (the person this branch extends from) */
+	anchorCrId: string;
+	/** Label for this branch */
+	label: string;
+	/** For descendant branches, the child's crId */
+	childCrId?: string;
+	/** For custom branches, specific ancestor crId */
+	ancestorCrId?: string;
+	/** Maximum generations to include (undefined = all) */
+	maxGenerations?: number;
+}
+
+/**
+ * Result of branch extraction
+ */
+export interface BranchExtractionResult {
+	/** People included in this branch */
+	people: PersonNode[];
+	/** CrIds of people in the branch */
+	crIds: Set<string>;
+	/** Root of this branch (paternal/maternal grandparent, or child for descendant) */
+	branchRoot: PersonNode | undefined;
+	/** Boundary people who connect to other branches */
+	boundaryPeople: Map<string, { person: PersonNode; connectedBranches: string[] }>;
+	/** Generation depth achieved */
+	generationDepth: number;
+}
+
+/**
+ * Options for branch-based splitting
+ */
+export interface BranchSplitOptions extends Partial<SplitOptions> {
+	/** Branches to extract */
+	branches: BranchDefinition[];
+	/** Include spouses of branch members */
+	includeSpouses: boolean;
+	/** Maximum recursion depth for recursive splitting (0 = no recursion) */
+	recursionDepth: number;
+	/** Whether to create sub-branches for each grandparent line */
+	splitGrandparentLines: boolean;
+}
+
+/**
+ * Default branch split options
+ */
+export const DEFAULT_BRANCH_SPLIT_OPTIONS: BranchSplitOptions = {
+	...DEFAULT_SPLIT_OPTIONS,
+	branches: [],
+	includeSpouses: true,
+	recursionDepth: 0,
+	splitGrandparentLines: false
+};
+
+/**
  * Canvas data structure for manipulation
  */
 interface CanvasData {
@@ -641,5 +705,620 @@ export class CanvasSplitService {
 	private generateId(): string {
 		return Math.random().toString(36).substring(2, 15) +
 			Math.random().toString(36).substring(2, 15);
+	}
+
+	// =========================================================================
+	// Phase 5: Branch-Based Splitting
+	// =========================================================================
+
+	/**
+	 * Split a family tree by branches (paternal/maternal lines, descendants)
+	 *
+	 * @param tree - The family tree to split
+	 * @param options - Branch split options
+	 * @returns Split result with generated canvas information
+	 */
+	splitByBranch(
+		tree: FamilyTree,
+		options: BranchSplitOptions
+	): SplitResult {
+		const opts = { ...DEFAULT_BRANCH_SPLIT_OPTIONS, ...options };
+		const canvases: GeneratedCanvas[] = [];
+		let totalPeople = 0;
+
+		for (const branch of opts.branches) {
+			const extraction = this.extractBranch(tree, branch, opts);
+
+			if (extraction.people.length === 0) continue;
+
+			const canvasPath = this.generateBranchCanvasPath(opts, branch);
+
+			const canvas: GeneratedCanvas = {
+				path: canvasPath,
+				label: branch.label,
+				personCount: extraction.people.length,
+				branchType: branch.type,
+				anchorPerson: branch.anchorCrId
+			};
+			canvases.push(canvas);
+			totalPeople += extraction.people.length;
+
+			// Handle recursive splitting if enabled
+			if (opts.splitGrandparentLines && opts.recursionDepth > 0) {
+				const subBranches = this.generateGrandparentBranches(
+					tree,
+					extraction,
+					branch,
+					opts.recursionDepth - 1
+				);
+
+				for (const subBranch of subBranches) {
+					const subExtraction = this.extractBranch(tree, subBranch, opts);
+					if (subExtraction.people.length === 0) continue;
+
+					const subCanvasPath = this.generateBranchCanvasPath(opts, subBranch);
+
+					canvases.push({
+						path: subCanvasPath,
+						label: subBranch.label,
+						personCount: subExtraction.people.length,
+						branchType: subBranch.type,
+						anchorPerson: subBranch.anchorCrId,
+						parentBranch: branch.label
+					});
+					totalPeople += subExtraction.people.length;
+				}
+			}
+		}
+
+		return {
+			canvases,
+			totalPeople
+		};
+	}
+
+	/**
+	 * Extract all people belonging to a specific branch
+	 *
+	 * @param tree - The family tree
+	 * @param branch - Branch definition
+	 * @param options - Split options
+	 * @returns Branch extraction result
+	 */
+	extractBranch(
+		tree: FamilyTree,
+		branch: BranchDefinition,
+		options: BranchSplitOptions
+	): BranchExtractionResult {
+		const people: PersonNode[] = [];
+		let extractionResult: { crIds: Set<string>; branchRoot: PersonNode | undefined; generationDepth: number } = {
+			crIds: new Set<string>(),
+			branchRoot: undefined,
+			generationDepth: 0
+		};
+
+		const anchor = tree.nodes.get(branch.anchorCrId);
+		if (!anchor) {
+			return {
+				people: [],
+				crIds: new Set(),
+				branchRoot: undefined,
+				boundaryPeople: new Map(),
+				generationDepth: 0
+			};
+		}
+
+		switch (branch.type) {
+			case 'paternal':
+				extractionResult = this.extractPaternalLine(
+					tree,
+					anchor,
+					branch.maxGenerations
+				);
+				break;
+
+			case 'maternal':
+				extractionResult = this.extractMaternalLine(
+					tree,
+					anchor,
+					branch.maxGenerations
+				);
+				break;
+
+			case 'descendant':
+				if (branch.childCrId) {
+					const child = tree.nodes.get(branch.childCrId);
+					if (child) {
+						extractionResult = this.extractDescendantLine(
+							tree,
+							child,
+							branch.maxGenerations
+						);
+					}
+				}
+				break;
+
+			case 'custom':
+				if (branch.ancestorCrId) {
+					const ancestor = tree.nodes.get(branch.ancestorCrId);
+					if (ancestor) {
+						extractionResult = this.extractAncestorLine(
+							tree,
+							anchor,
+							ancestor,
+							branch.maxGenerations
+						);
+					}
+				}
+				break;
+		}
+
+		const { crIds, branchRoot, generationDepth } = extractionResult;
+
+		// Optionally include spouses
+		if (options.includeSpouses) {
+			this.addSpouses(tree, crIds);
+		}
+
+		// Convert crIds to PersonNodes
+		for (const crId of crIds) {
+			const person = tree.nodes.get(crId);
+			if (person) {
+				people.push(person);
+			}
+		}
+
+		// Find boundary people (those with connections outside this branch)
+		const boundaryPeople = this.findBranchBoundaryPeople(tree, crIds, branch.label);
+
+		return {
+			people,
+			crIds,
+			branchRoot,
+			boundaryPeople,
+			generationDepth
+		};
+	}
+
+	/**
+	 * Extract paternal line (father's ancestors)
+	 */
+	private extractPaternalLine(
+		tree: FamilyTree,
+		anchor: PersonNode,
+		maxGenerations?: number
+	): { crIds: Set<string>; branchRoot: PersonNode | undefined; generationDepth: number } {
+		const crIds = new Set<string>();
+		let branchRoot: PersonNode | undefined;
+		let generationDepth = 0;
+
+		// Start with father
+		if (!anchor.fatherCrId) {
+			return { crIds, branchRoot: undefined, generationDepth: 0 };
+		}
+
+		const father = tree.nodes.get(anchor.fatherCrId);
+		if (!father) {
+			return { crIds, branchRoot: undefined, generationDepth: 0 };
+		}
+
+		// BFS to collect all paternal ancestors
+		const queue: Array<{ person: PersonNode; depth: number }> = [{ person: father, depth: 1 }];
+		const visited = new Set<string>();
+
+		while (queue.length > 0) {
+			const { person, depth } = queue.shift()!;
+
+			if (visited.has(person.crId)) continue;
+			if (maxGenerations !== undefined && depth > maxGenerations) continue;
+
+			visited.add(person.crId);
+			crIds.add(person.crId);
+			branchRoot = person; // Will end up being the most distant ancestor
+			generationDepth = Math.max(generationDepth, depth);
+
+			// Add both parents of this person (we're tracing the full paternal lineage)
+			if (person.fatherCrId) {
+				const grandfather = tree.nodes.get(person.fatherCrId);
+				if (grandfather) {
+					queue.push({ person: grandfather, depth: depth + 1 });
+				}
+			}
+			if (person.motherCrId) {
+				const grandmother = tree.nodes.get(person.motherCrId);
+				if (grandmother) {
+					queue.push({ person: grandmother, depth: depth + 1 });
+				}
+			}
+		}
+
+		return { crIds, branchRoot, generationDepth };
+	}
+
+	/**
+	 * Extract maternal line (mother's ancestors)
+	 */
+	private extractMaternalLine(
+		tree: FamilyTree,
+		anchor: PersonNode,
+		maxGenerations?: number
+	): { crIds: Set<string>; branchRoot: PersonNode | undefined; generationDepth: number } {
+		const crIds = new Set<string>();
+		let branchRoot: PersonNode | undefined;
+		let generationDepth = 0;
+
+		// Start with mother
+		if (!anchor.motherCrId) {
+			return { crIds, branchRoot: undefined, generationDepth: 0 };
+		}
+
+		const mother = tree.nodes.get(anchor.motherCrId);
+		if (!mother) {
+			return { crIds, branchRoot: undefined, generationDepth: 0 };
+		}
+
+		// BFS to collect all maternal ancestors
+		const queue: Array<{ person: PersonNode; depth: number }> = [{ person: mother, depth: 1 }];
+		const visited = new Set<string>();
+
+		while (queue.length > 0) {
+			const { person, depth } = queue.shift()!;
+
+			if (visited.has(person.crId)) continue;
+			if (maxGenerations !== undefined && depth > maxGenerations) continue;
+
+			visited.add(person.crId);
+			crIds.add(person.crId);
+			branchRoot = person;
+			generationDepth = Math.max(generationDepth, depth);
+
+			// Add both parents of this person
+			if (person.fatherCrId) {
+				const grandfather = tree.nodes.get(person.fatherCrId);
+				if (grandfather) {
+					queue.push({ person: grandfather, depth: depth + 1 });
+				}
+			}
+			if (person.motherCrId) {
+				const grandmother = tree.nodes.get(person.motherCrId);
+				if (grandmother) {
+					queue.push({ person: grandmother, depth: depth + 1 });
+				}
+			}
+		}
+
+		return { crIds, branchRoot, generationDepth };
+	}
+
+	/**
+	 * Extract descendant line (a child and all their descendants)
+	 */
+	private extractDescendantLine(
+		tree: FamilyTree,
+		child: PersonNode,
+		maxGenerations?: number
+	): { crIds: Set<string>; branchRoot: PersonNode | undefined; generationDepth: number } {
+		const crIds = new Set<string>();
+		let generationDepth = 0;
+
+		// BFS to collect all descendants
+		const queue: Array<{ person: PersonNode; depth: number }> = [{ person: child, depth: 0 }];
+		const visited = new Set<string>();
+
+		while (queue.length > 0) {
+			const { person, depth } = queue.shift()!;
+
+			if (visited.has(person.crId)) continue;
+			if (maxGenerations !== undefined && depth > maxGenerations) continue;
+
+			visited.add(person.crId);
+			crIds.add(person.crId);
+			generationDepth = Math.max(generationDepth, depth);
+
+			// Add all children
+			for (const childCrId of person.childrenCrIds) {
+				const descendant = tree.nodes.get(childCrId);
+				if (descendant) {
+					queue.push({ person: descendant, depth: depth + 1 });
+				}
+			}
+		}
+
+		return { crIds, branchRoot: child, generationDepth };
+	}
+
+	/**
+	 * Extract ancestor line to a specific ancestor
+	 */
+	private extractAncestorLine(
+		tree: FamilyTree,
+		anchor: PersonNode,
+		targetAncestor: PersonNode,
+		maxGenerations?: number
+	): { crIds: Set<string>; branchRoot: PersonNode | undefined; generationDepth: number } {
+		const crIds = new Set<string>();
+		let generationDepth = 0;
+
+		// BFS from target ancestor down to find path
+		const queue: Array<{ person: PersonNode; depth: number }> = [{ person: targetAncestor, depth: 0 }];
+		const visited = new Set<string>();
+
+		while (queue.length > 0) {
+			const { person, depth } = queue.shift()!;
+
+			if (visited.has(person.crId)) continue;
+			if (maxGenerations !== undefined && depth > maxGenerations) continue;
+
+			visited.add(person.crId);
+			crIds.add(person.crId);
+			generationDepth = Math.max(generationDepth, depth);
+
+			// Add both parents (going up from the ancestor)
+			if (person.fatherCrId) {
+				const father = tree.nodes.get(person.fatherCrId);
+				if (father) {
+					queue.push({ person: father, depth: depth + 1 });
+				}
+			}
+			if (person.motherCrId) {
+				const mother = tree.nodes.get(person.motherCrId);
+				if (mother) {
+					queue.push({ person: mother, depth: depth + 1 });
+				}
+			}
+		}
+
+		return { crIds, branchRoot: targetAncestor, generationDepth };
+	}
+
+	/**
+	 * Add spouses of all people in a set
+	 */
+	private addSpouses(tree: FamilyTree, crIds: Set<string>): void {
+		const spousesToAdd = new Set<string>();
+
+		for (const crId of crIds) {
+			const person = tree.nodes.get(crId);
+			if (person) {
+				for (const spouseId of person.spouseCrIds) {
+					if (!crIds.has(spouseId)) {
+						spousesToAdd.add(spouseId);
+					}
+				}
+			}
+		}
+
+		for (const spouseId of spousesToAdd) {
+			crIds.add(spouseId);
+		}
+	}
+
+	/**
+	 * Find boundary people in a branch (those with connections outside)
+	 */
+	private findBranchBoundaryPeople(
+		tree: FamilyTree,
+		branchCrIds: Set<string>,
+		branchLabel: string
+	): Map<string, { person: PersonNode; connectedBranches: string[] }> {
+		const boundary = new Map<string, { person: PersonNode; connectedBranches: string[] }>();
+
+		for (const crId of branchCrIds) {
+			const person = tree.nodes.get(crId);
+			if (!person) continue;
+
+			const connectedBranches: string[] = [];
+
+			// Check if any parents are outside this branch
+			if (person.fatherCrId && !branchCrIds.has(person.fatherCrId)) {
+				connectedBranches.push('paternal');
+			}
+			if (person.motherCrId && !branchCrIds.has(person.motherCrId)) {
+				connectedBranches.push('maternal');
+			}
+
+			// Check if any children are outside this branch
+			for (const childId of person.childrenCrIds) {
+				if (!branchCrIds.has(childId)) {
+					connectedBranches.push('descendants');
+					break; // Only need to mark once
+				}
+			}
+
+			// Check if any spouses are outside this branch
+			for (const spouseId of person.spouseCrIds) {
+				if (!branchCrIds.has(spouseId)) {
+					connectedBranches.push('spouse-family');
+					break;
+				}
+			}
+
+			if (connectedBranches.length > 0) {
+				boundary.set(crId, { person, connectedBranches });
+			}
+		}
+
+		return boundary;
+	}
+
+	/**
+	 * Generate sub-branches for grandparent lines
+	 */
+	private generateGrandparentBranches(
+		tree: FamilyTree,
+		extraction: BranchExtractionResult,
+		parentBranch: BranchDefinition,
+		remainingDepth: number
+	): BranchDefinition[] {
+		const subBranches: BranchDefinition[] = [];
+
+		if (remainingDepth < 0 || !extraction.branchRoot) {
+			return subBranches;
+		}
+
+		const branchRoot = extraction.branchRoot;
+
+		// Create paternal grandparent branch
+		if (branchRoot.fatherCrId) {
+			const grandfather = tree.nodes.get(branchRoot.fatherCrId);
+			if (grandfather) {
+				subBranches.push({
+					type: 'paternal',
+					anchorCrId: branchRoot.crId,
+					label: `${parentBranch.label} - Paternal`,
+					maxGenerations: parentBranch.maxGenerations
+				});
+			}
+		}
+
+		// Create maternal grandparent branch
+		if (branchRoot.motherCrId) {
+			const grandmother = tree.nodes.get(branchRoot.motherCrId);
+			if (grandmother) {
+				subBranches.push({
+					type: 'maternal',
+					anchorCrId: branchRoot.crId,
+					label: `${parentBranch.label} - Maternal`,
+					maxGenerations: parentBranch.maxGenerations
+				});
+			}
+		}
+
+		return subBranches;
+	}
+
+	/**
+	 * Generate canvas path for a branch
+	 */
+	private generateBranchCanvasPath(options: BranchSplitOptions, branch: BranchDefinition): string {
+		const folder = options.outputFolder || '';
+		const pattern = options.filenamePattern || '{name}';
+
+		const filename = pattern
+			.replace('{name}', this.sanitizeFilename(branch.label))
+			.replace('{type}', branch.type)
+			.replace('{date}', new Date().toISOString().split('T')[0]);
+
+		const extension = filename.endsWith('.canvas') ? '' : '.canvas';
+
+		if (folder) {
+			return `${folder}/${filename}${extension}`;
+		}
+		return `${filename}${extension}`;
+	}
+
+	/**
+	 * Create standard paternal/maternal branch definitions for a person
+	 */
+	createStandardBranches(
+		tree: FamilyTree,
+		anchorCrId: string,
+		options?: { maxGenerations?: number; includeDescendants?: boolean }
+	): BranchDefinition[] {
+		const branches: BranchDefinition[] = [];
+		const anchor = tree.nodes.get(anchorCrId);
+
+		if (!anchor) return branches;
+
+		// Paternal line
+		if (anchor.fatherCrId) {
+			const father = tree.nodes.get(anchor.fatherCrId);
+			if (father) {
+				branches.push({
+					type: 'paternal',
+					anchorCrId,
+					label: `Paternal Line (${father.name || 'Father'})`,
+					maxGenerations: options?.maxGenerations
+				});
+			}
+		}
+
+		// Maternal line
+		if (anchor.motherCrId) {
+			const mother = tree.nodes.get(anchor.motherCrId);
+			if (mother) {
+				branches.push({
+					type: 'maternal',
+					anchorCrId,
+					label: `Maternal Line (${mother.name || 'Mother'})`,
+					maxGenerations: options?.maxGenerations
+				});
+			}
+		}
+
+		// Descendant lines (one per child)
+		if (options?.includeDescendants) {
+			for (const childId of anchor.childrenCrIds) {
+				const child = tree.nodes.get(childId);
+				if (child) {
+					branches.push({
+						type: 'descendant',
+						anchorCrId,
+						childCrId: childId,
+						label: `Descendants of ${child.name || 'Child'}`,
+						maxGenerations: options?.maxGenerations
+					});
+				}
+			}
+		}
+
+		return branches;
+	}
+
+	/**
+	 * Preview a branch split without creating files
+	 */
+	previewBranchSplit(
+		tree: FamilyTree,
+		options: BranchSplitOptions
+	): {
+		branches: Array<{
+			definition: BranchDefinition;
+			peopleCount: number;
+			boundaryCount: number;
+			generationDepth: number;
+		}>;
+		totalPeople: number;
+		overlap: number;
+	} {
+		const opts = { ...DEFAULT_BRANCH_SPLIT_OPTIONS, ...options };
+		const branches: Array<{
+			definition: BranchDefinition;
+			peopleCount: number;
+			boundaryCount: number;
+			generationDepth: number;
+		}> = [];
+
+		const allPeopleSeen = new Set<string>();
+		let totalPeople = 0;
+		let overlap = 0;
+
+		for (const branch of opts.branches) {
+			const extraction = this.extractBranch(tree, branch, opts);
+
+			// Calculate overlap
+			for (const crId of extraction.crIds) {
+				if (allPeopleSeen.has(crId)) {
+					overlap++;
+				} else {
+					allPeopleSeen.add(crId);
+				}
+			}
+
+			branches.push({
+				definition: branch,
+				peopleCount: extraction.people.length,
+				boundaryCount: extraction.boundaryPeople.size,
+				generationDepth: extraction.generationDepth
+			});
+
+			totalPeople += extraction.people.length;
+		}
+
+		return {
+			branches,
+			totalPeople,
+			overlap
+		};
 	}
 }

@@ -242,6 +242,15 @@ export interface GeneratedCanvas {
 
 	/** Collection name (for collection splits) */
 	collection?: string;
+
+	/** Branch type (for branch splits) */
+	branchType?: 'paternal' | 'maternal' | 'descendant' | 'custom';
+
+	/** Anchor person for the branch */
+	anchorPerson?: string;
+
+	/** Parent branch label (for recursive splits) */
+	parentBranch?: string;
 }
 
 /**
