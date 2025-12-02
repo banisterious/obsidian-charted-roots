@@ -102,6 +102,9 @@ See [Roadmap](docs/roadmap.md) for detailed feature descriptions and development
 - **Fictional Date Systems:** Custom calendars and eras for world-building (e.g., "Third Age 2941", "Year of the Dragon 1247") with timeline integration
 - **Schema Validation & Consistency Checks:** User-defined JSON schemas to enforce property rules (required fields, enum values, cross-property constraints) and catch plot holes or data inconsistencies
 - **Organization Notes & Hierarchy Views:** Track houses, guilds, corporations, and factions with hierarchical structure, temporal membership, and D3-based organizational chart visualization
+- **Source Media Gallery:** Centralized evidence management linking source documents (census records, vital records, photos, correspondence) to person notes with thumbnail grid view, one-click viewing, and citation generation
+- **Canvas Media Nodes:** Media files as first-class canvas entities with semantic relationships, intelligent placement (avatars adjacent to people, sources in clusters), type-based filtering, and visual audit trails
+- **Transcript Nodes & Quotable Facts:** Time-stamped citations from audio/video interviews with deep links to exact moments, specialized quote nodes on canvas, and verifiable primary source evidence for oral history
 
 
 ## 📸 Screenshots

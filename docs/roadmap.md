@@ -342,6 +342,21 @@ Canvas Roots is in beta with core functionality complete and stable. Advanced fe
 
 ## 📋 Planned Features
 
+### Development Priority Order
+
+The following priority order guides future development:
+
+1. **Remaining Geographic Features** - Complete Leaflet.js map integration (Phase 4)
+2. **Custom Relationship Types** - Non-familial relationships with colored canvas edges
+3. **Schema Validation & Consistency Checks** - JSON schemas for data quality and plot hole detection
+4. **Fictional Date Systems** - Custom calendars and eras for world-building
+5. **Organization Notes & Hierarchy Views** - Houses, guilds, factions with D3 org charts
+6. **Source Media Gallery & Document Viewer** - Evidence management and document linking
+7. **Canvas Media Nodes** - Media files as first-class canvas entities with semantic relationships
+8. **Transcript Nodes & Quotable Facts** - Time-stamped citations from audio/video sources
+
+---
+
 ### Import Cleanup & Consolidation
 
 **Status**: ✅ Phases 1-3 Complete (v0.4.0)
@@ -741,6 +756,158 @@ died: "TA 2941"
 - Leaflet.timeline slider animates through fictional history
 - Timeline layout algorithm positions people chronologically
 - "Who was alive in [year]?" queries work with custom calendars
+
+### Source Media Gallery & Document Viewer
+
+Centralized evidence management for genealogical research, linking source documents directly to person notes:
+
+**Structured Source Properties:**
+```yaml
+---
+# In person note frontmatter
+sources:
+  - media: "[[Census 1900.pdf]]"
+    type: census
+    date: 1900-06-01
+    repository: "Ancestry.com"
+  - media: "[[Birth Certificate - John Smith.jpg]]"
+    type: vital_record
+    date: 1888-05-15
+source_media:  # Simple format for quick linking
+  - "[[Census 1900.pdf]]"
+  - "[[Marriage License 1910.png]]"
+  - "[[Obituary - Daily News 1952.pdf]]"
+---
+```
+
+**Media Gallery View:**
+- Dynamically generated section within person notes
+- Thumbnail grid for images and PDF previews
+- One-click viewing in Obsidian's native viewer
+- Optional inline embedding for quick reference
+- Sort by date, type, or filename
+- Filter by source type (census, vital records, photos, correspondence)
+
+**Source Types:**
+- `census` - Census records
+- `vital_record` - Birth, death, marriage certificates
+- `photo` - Photographs
+- `correspondence` - Letters, postcards
+- `newspaper` - Obituaries, announcements
+- `military` - Service records, draft cards
+- `immigration` - Passenger lists, naturalization
+- `custom` - User-defined types
+
+**Integration:**
+- Bases views for source inventory across all people
+- "Missing sources" report (people without linked evidence)
+- Bulk source linking from folder of scanned documents
+- OCR text extraction display (if available in file)
+- Citation generator for common formats (Chicago, Evidence Explained)
+
+### Canvas Media Nodes
+
+Promote media files from inline embeddings to first-class canvas entities with semantic relationships and intelligent placement:
+
+**Media Node Types:**
+- `avatar` - Primary photo/portrait for a person (positioned adjacent to person node)
+- `source` - Documentary evidence (clustered near related person or in source zone)
+- `document` - Full document scans (birth certificate, will, etc.)
+- `artifact` - Physical objects (heirlooms, gravestones, etc.)
+- `custom` - User-defined media types
+
+**Canvas Integration:**
+```json
+// Canvas JSON structure
+{
+  "type": "file",
+  "file": "media/census-1900-smith.pdf",
+  "cr_media_type": "source",
+  "cr_linked_person": "person-uuid-123",
+  "cr_source_date": "1900-06-01"
+}
+```
+
+**Intelligent Placement:**
+- Avatar nodes positioned immediately adjacent to person nodes
+- Source nodes clustered in configurable zones (per-person, grouped by type, or edge of canvas)
+- Layout engine respects media node placement during tree regeneration
+- Toggle visibility by media type (show/hide all sources, show/hide avatars)
+
+**Filtering & Analysis:**
+- Filter canvas to show only media nodes matching criteria
+- "Show sources for people born before 1900"
+- "Show all military records"
+- "Highlight people missing avatar photos"
+- Media coverage report (people with/without linked sources)
+
+**Edge Semantics:**
+- Media → Person edges with relationship labels
+- Edge styling distinct from family relationship edges
+- Optional: media → media edges (e.g., "same document" linking multiple crops)
+
+**Integration with Source Media Gallery:**
+- Canvas media nodes sync with `sources` frontmatter property
+- Gallery view shows which sources have been placed on canvas
+- "Add to canvas" action from gallery view
+- Bidirectional: adding media node to canvas updates frontmatter
+
+### Transcript Nodes & Quotable Facts
+
+Extract time-stamped, verifiable facts from audio/video sources with direct linking to the relevant moment:
+
+**Structured Fact Properties:**
+```yaml
+---
+# In person note frontmatter
+oral_facts:
+  - media: "[[Interview with Grandma.mp3]]"
+    timestamp: "1m30s"
+    fact_type: birth_date
+    quote: "I was born on May 15th, 1922, in the old farmhouse"
+    fact_id: "birth-001"
+  - media: "[[Family Reunion 2019.mp4]]"
+    timestamp: "45m12s"
+    fact_type: residence
+    quote: "We lived on Maple Street until I was twelve"
+    fact_id: "residence-001"
+---
+```
+
+**Timestamp Linking:**
+- Deep links to specific moments: `[[Interview.mp3]]#t=1m30s`
+- One-click playback from the exact timestamp
+- Support for audio (mp3, wav, m4a) and video (mp4, webm) files
+- Range support for longer quotes: `#t=1m30s-2m15s`
+
+**Canvas Integration:**
+- Transcript Nodes: specialized text nodes containing the quote
+- Positioned adjacent to the relevant person node
+- Edge label: "Quote Source" or custom fact type
+- Distinct styling from other node types (e.g., speech bubble appearance)
+- Click node to jump to timestamp in media player
+
+**Fact Types:**
+- `birth_date`, `birth_place` - Vital record claims
+- `residence` - Where someone lived
+- `occupation` - Work history
+- `relationship` - Family connection claims
+- `anecdote` - Stories and memories
+- `lore` - World-building/fictional narrative quotes
+- `custom` - User-defined types
+
+**World-Building Applications:**
+- Extract character dialogue from recorded readings
+- Capture legendary/mythological lore quotes
+- Ensure consistent in-world narrative voice
+- Build a quotable "lore bible" from source recordings
+
+**Integration:**
+- Oral facts sync with Source Media Gallery
+- Canvas Media Nodes can reference specific timestamps
+- Bases views for fact inventory by type
+- "Unverified facts" report (claims without source timestamps)
+- Transcript generation assistance (if external transcription exists)
 
 ### World-Building Features
 
