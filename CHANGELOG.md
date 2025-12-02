@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5.2] - 2025-12-01
+
+### Added
+
+- **Geographic Features - Place Notes System**: Comprehensive place-based features for genealogical and world-building research
+  - Place note schema with hierarchical relationships (city → state → country)
+  - Six place categories: real, historical, disputed, legendary, mythological, fictional
+  - Universe support for organizing fictional/mythological places
+  - Coordinates support for real-world lat/long and custom map systems
+  - Historical names tracking for places that changed names over time
+  - Person note integration with birth_place, death_place, burial_place fields
+
+- **Place Statistics & Management**: Control Center panel for place analytics
+  - Overview metrics: total places, coordinate coverage, orphan detection, max hierarchy depth
+  - Category breakdown with associated person counts
+  - Most common birth/death places ranking
+  - Migration pattern detection (birth → death location flows)
+  - Place hierarchy issue detection and warnings
+  - Actions: create missing place notes, build hierarchy wizard, standardize place names, view place index
+
+- **Place Visualizations (D3-based)**: Interactive place network and migration diagrams
+  - Network/Schematic View: places as nodes sized by associated person count
+  - Tree and radial layout options with color coding by category, type, or depth
+  - Interactive tooltips with place details
+  - Migration Flow Diagram: arc diagram showing movement patterns between places
+  - Time period filtering with year range inputs and century presets
+  - Collection (family branch) filtering
+  - Hierarchy level aggregation for regional analysis
+
+- **Place UX Improvements**: Streamlined place creation and management workflow
+  - Searchable parent place picker grouped by place type
+  - Manual coordinate entry with validation (lat: -90 to 90, long: -180 to 180)
+  - Quick-create places from person notes via context menu
+  - Auto-create parent place workflow with type suggestions
+  - Custom place types beyond built-in options (e.g., "galaxy", "dimension")
+  - Geocoding lookup via Nominatim API with "Look up coordinates" button
+  - Places Base template with 14 pre-configured views
+  - Default place category rules (folder-based and collection-based)
+  - Auto-populate parent place from folder structure
+
+- **Control Center Updates**: Tab restructuring for geographic features
+  - Renamed "Data entry" tab to "People" for clarity
+  - New Create Person modal with relationship pickers (father, mother, spouse)
+  - People tab combines quick actions, statistics, and searchable person list
+  - Unlinked place badges with create buttons in person list
+  - Dedicated places folder setting
+  - Place-based tree filtering (birth, death, marriage, burial locations)
+
+---
+
 ## [0.5.0] - 2025-12-01
 
 ### Added
@@ -481,7 +531,8 @@ Initial alpha release with core genealogical features.
 
 ### Version Status
 
-- **Stable (v0.4.x)**: Feature-complete for core genealogical workflows with import cleanup and merge tools. All essential features are stable and production-ready.
+- **Stable (v0.5.x)**: Geographic features with place notes, statistics, and visualizations. Import cleanup and merge tools. All essential features are stable and production-ready.
+- **Stable (v0.4.x)**: Feature-complete for core genealogical workflows with import cleanup and merge tools.
 - **Stable (v0.3.x)**: Interactive family chart view, CSV import/export, duplicate detection.
 - **Beta (v0.2.x)**: Core genealogical workflows with canvas generation, GEDCOM support, and relationship management.
 - **Alpha (v0.1.x)**: Initial testing releases with core functionality.

@@ -4,6 +4,46 @@ import { FamilyGraphService, PersonNode } from '../core/family-graph';
 import { FolderFilterService } from '../core/folder-filter';
 
 /**
+ * Place reference info for person detail view
+ */
+export interface PlaceInfo {
+	/** Raw value from frontmatter */
+	rawValue: string;
+	/** Extracted place name (without wikilink brackets) */
+	placeName: string;
+	/** Whether this is a wikilink to a place note */
+	isLinked: boolean;
+}
+
+/**
+ * Extract place info from a frontmatter place field value
+ * @param value - Raw value from frontmatter (can be string, wikilink, or undefined)
+ * @returns PlaceInfo if value exists, undefined otherwise
+ */
+export function extractPlaceInfo(value: unknown): PlaceInfo | undefined {
+	if (!value || typeof value !== 'string') {
+		return undefined;
+	}
+
+	const rawValue = String(value);
+	const wikilinkMatch = rawValue.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/);
+
+	if (wikilinkMatch) {
+		return {
+			rawValue,
+			placeName: wikilinkMatch[1],
+			isLinked: true
+		};
+	}
+
+	return {
+		rawValue,
+		placeName: rawValue,
+		isLinked: false
+	};
+}
+
+/**
  * Person data extracted from note frontmatter
  */
 export interface PersonInfo {
@@ -12,6 +52,9 @@ export interface PersonInfo {
 	birthDate?: string;
 	deathDate?: string;
 	sex?: string;
+	birthPlace?: PlaceInfo;
+	deathPlace?: PlaceInfo;
+	burialPlace?: PlaceInfo;
 	file: TFile;
 }
 
@@ -217,6 +260,9 @@ export class PersonPickerModal extends Modal {
 				birthDate,
 				deathDate,
 				sex: fm.sex || fm.gender,
+				birthPlace: extractPlaceInfo(fm.birth_place),
+				deathPlace: extractPlaceInfo(fm.death_place),
+				burialPlace: extractPlaceInfo(fm.burial_place),
 				file
 			};
 		} catch (error: unknown) {

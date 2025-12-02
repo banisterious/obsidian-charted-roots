@@ -1,7 +1,7 @@
 # Canvas Roots: Development Roadmap
 
 > **Last Updated:** 2025-12-01
-> **Current Version:** v0.5.1
+> **Current Version:** v0.5.2
 
 Canvas Roots is in beta with core functionality complete and stable. Advanced features and enhancements are planned for future releases.
 
@@ -9,7 +9,49 @@ Canvas Roots is in beta with core functionality complete and stable. Advanced fe
 
 ## 🎯 Released Versions
 
-### v0.5.1 (Current)
+### v0.5.2 (Current)
+
+**Geographic Features - Place Notes & Visualization:**
+- ✅ **Place note system** with hierarchical relationships (city → state → country)
+- ✅ **Six place categories**: real, historical, disputed, legendary, mythological, fictional
+- ✅ **Universe support** for organizing fictional/mythological places
+- ✅ **Coordinates** support for real-world lat/long and custom map systems
+- ✅ **Historical names** tracking for places that changed names over time
+
+**Place Statistics & Management:**
+- ✅ Place Statistics panel in Control Center with overview metrics
+- ✅ Category breakdown with associated person counts
+- ✅ Most common birth/death places ranking
+- ✅ Migration pattern detection (birth → death location flows)
+- ✅ Place hierarchy issue detection
+- ✅ Actions: create missing places, build hierarchy, standardize names, view place index
+
+**Place Visualizations (D3-based):**
+- ✅ **Network/Schematic View**: Places as nodes sized by population
+- ✅ Tree and radial layout options with interactive tooltips
+- ✅ **Migration Flow Diagram**: Arc diagram showing movement patterns
+- ✅ Time period filtering with century presets
+- ✅ Collection (family branch) filtering
+- ✅ Hierarchy level aggregation
+
+**UX Improvements:**
+- ✅ Searchable parent place picker grouped by place type
+- ✅ Manual coordinate entry with validation
+- ✅ Quick-create places from person notes via context menu
+- ✅ Auto-create parent place workflow
+- ✅ Custom place types beyond built-in options
+- ✅ Geocoding lookup via Nominatim API
+- ✅ Places Base template with 14 pre-configured views
+- ✅ Default place category rules (folder and collection-based)
+- ✅ Auto-populate parent place from folder structure
+
+**Control Center Updates:**
+- ✅ Renamed "Data entry" tab to "People"
+- ✅ Unlinked place badges with create buttons in person list
+- ✅ Dedicated places folder setting
+- ✅ Place-based tree filtering (birth, death, marriage, burial locations)
+
+### v0.5.1
 
 **Canvas Navigation Enhancements:**
 - ✅ Navigation portal nodes linking split canvases together
@@ -548,12 +590,54 @@ See [canvas-navigation-plan.md](architecture/canvas-navigation-plan.md) for impl
 
 ### Geographic Features
 
-- Place name standardization and geocoding
-- Map view showing birth/death locations
-- Migration pattern visualization
-- Place hierarchy (City → County → State → Country)
-- Location-based filtering and analysis
-- Historical place name support
+**Status:** ✅ Phases 1-3 Complete (v0.5.2), Phase 4 Planned
+
+Comprehensive place-based features for genealogical and world-building research.
+
+**Phase 1 - Place Notes Foundation:** ✅ Complete
+- Place note schema with hierarchical relationships
+- Six place categories (real, historical, disputed, legendary, mythological, fictional)
+- Universe support for fictional/mythological places
+- Coordinates support (real-world lat/long and custom map systems)
+- Historical names tracking
+- Person note integration (birth_place, death_place, etc.)
+
+**Phase 2 - Place Statistics:** ✅ Complete
+- Place Statistics panel in Control Center
+- Category breakdown with person counts
+- Most common birth/death places
+- Migration pattern detection
+- Place hierarchy issue detection
+- Actions: create missing places, build hierarchy, standardize names
+
+**Phase 2.5 - UX Improvements:** ✅ Complete
+- Searchable parent place picker
+- Manual coordinate entry with validation
+- Quick-create places from person notes
+- Auto-create parent place workflow
+- Custom place types
+- Geocoding lookup via Nominatim API
+- Places Base template (14 views)
+- Default place category rules
+- Auto-populate parent place from folder structure
+
+**Phase 3 - Simple Visualization:** ✅ Complete
+- Network/Schematic View (D3-based)
+- Tree and radial layout options
+- Migration Flow Diagram
+- Time period filtering
+- Collection filtering
+- Hierarchy level aggregation
+
+**Phase 4 - Full Map Support:** Planned
+- Leaflet.js integration for real-world maps
+- OpenStreetMap tiles
+- Pin markers for birth/death locations
+- Migration path lines
+- Custom image maps for fictional worlds
+- Time slider for generation animation
+
+See [geographic-features-plan.md](architecture/geographic-features-plan.md) for implementation details.
 
 ### Research Tracking
 
@@ -634,8 +718,9 @@ Most interactive canvas features are not feasible with Obsidian's current Canvas
 - Multi-generational gap handling
 - Relationship quality visualization (close, distant, estranged)
 - Medical genogram support
-- Location and migration tracking
-- Place note system
+- ~~Location and migration tracking~~ ✅ Completed in v0.5.2
+- ~~Place note system~~ ✅ Completed in v0.5.2
+- Full map support with Leaflet.js (Phase 4 planned)
 
 **Integration:**
 - DataView template library

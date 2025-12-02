@@ -4,11 +4,12 @@
  */
 
 import { App, Modal, Setting, TFile, Notice, normalizePath } from 'obsidian';
-import { createPlaceNote, PlaceData } from '../core/place-note-writer';
-import { PlaceCategory, PlaceType, PlaceNode } from '../models/place';
+import { createPlaceNote, updatePlaceNote, PlaceData } from '../core/place-note-writer';
+import { PlaceCategory, PlaceType, PlaceNode, KNOWN_PLACE_TYPES } from '../models/place';
 import { createLucideIcon } from './lucide-icons';
 import { FamilyGraphService } from '../core/family-graph';
 import { PlaceGraphService } from '../core/place-graph';
+import { getDefaultPlaceCategory, CanvasRootsSettings } from '../settings';
 
 /**
  * Parent place option for dropdown
@@ -24,6 +25,7 @@ interface ParentPlaceOption {
  * Hierarchy ordering for place types (smaller number = higher in hierarchy)
  */
 const PLACE_TYPE_HIERARCHY: Record<string, number> = {
+	planet: 0,
 	continent: 1,
 	country: 2,
 	state: 3,
@@ -43,12 +45,41 @@ const PLACE_TYPE_HIERARCHY: Record<string, number> = {
 };
 
 /**
- * Modal for creating new place notes
+ * Suggest a parent place type based on the child's type
+ * Returns the most likely parent type in the hierarchy
+ */
+function suggestParentType(childType?: string): PlaceType | undefined {
+	if (!childType) return 'country';
+
+	const suggestions: Record<string, PlaceType> = {
+		city: 'state',
+		town: 'county',
+		village: 'county',
+		parish: 'county',
+		county: 'state',
+		district: 'city',
+		state: 'country',
+		province: 'country',
+		region: 'country',
+		country: 'continent',
+		continent: 'planet',
+		castle: 'county',
+		estate: 'county',
+		church: 'city',
+		cemetery: 'city'
+	};
+
+	return suggestions[childType] || 'country';
+}
+
+/**
+ * Modal for creating or editing place notes
  */
 export class CreatePlaceModal extends Modal {
 	private placeData: PlaceData;
 	private directory: string;
 	private onCreated?: (file: TFile) => void;
+	private onUpdated?: (file: TFile) => void;
 	private familyGraph?: FamilyGraphService;
 	private placeGraph?: PlaceGraphService;
 	private existingCollections: string[] = [];
@@ -59,30 +90,109 @@ export class CreatePlaceModal extends Modal {
 	private parentDropdownEl?: HTMLSelectElement;
 	private latInputEl?: HTMLInputElement;
 	private longInputEl?: HTMLInputElement;
+	private customTypeInputEl?: HTMLInputElement;
+	private typeDropdownEl?: HTMLSelectElement;
+
+	// Edit mode properties
+	private editMode: boolean = false;
+	private editingFile?: TFile;
+	private editingPlaceId?: string;
+
+	// Track custom parent place for auto-creation
+	private pendingParentPlace?: string;
+
+	// Pre-set values for new modals (e.g., when creating parent from child)
+	private initialPlaceType?: PlaceType;
+
+	// Settings for default category
+	private settings?: CanvasRootsSettings;
 
 	constructor(
 		app: App,
 		options?: {
 			directory?: string;
 			initialName?: string;
+			initialPlaceType?: PlaceType;
+			initialCollection?: string;
 			onCreated?: (file: TFile) => void;
+			onUpdated?: (file: TFile) => void;
 			familyGraph?: FamilyGraphService;
 			placeGraph?: PlaceGraphService;
+			settings?: CanvasRootsSettings;
+			// Edit mode options
+			editPlace?: PlaceNode;
+			editFile?: TFile;
 		}
 	) {
 		super(app);
 		this.directory = options?.directory || '';
 		this.onCreated = options?.onCreated;
+		this.onUpdated = options?.onUpdated;
 		this.familyGraph = options?.familyGraph;
 		this.placeGraph = options?.placeGraph;
-		this.placeData = {
-			name: options?.initialName || ''
-		};
+		this.initialPlaceType = options?.initialPlaceType;
+		this.settings = options?.settings;
+
+		// Check for edit mode
+		if (options?.editPlace && options?.editFile) {
+			this.editMode = true;
+			this.editingFile = options.editFile;
+			this.editingPlaceId = options.editPlace.id;
+			// Populate placeData from the existing place
+			this.placeData = this.placeNodeToPlaceData(options.editPlace);
+			// Get directory from file path
+			const pathParts = options.editFile.path.split('/');
+			pathParts.pop(); // Remove filename
+			this.directory = pathParts.join('/');
+		} else {
+			// Determine default category based on settings, folder, and collection
+			const defaultCategory = this.settings
+				? getDefaultPlaceCategory(this.settings, {
+					folder: this.directory,
+					collection: options?.initialCollection
+				})
+				: 'real';
+
+			this.placeData = {
+				name: options?.initialName || '',
+				placeType: options?.initialPlaceType,
+				placeCategory: defaultCategory,
+				collection: options?.initialCollection
+			};
+		}
 
 		// Gather existing collections from both person notes and place notes
 		this.loadExistingCollections();
 		// Build parent place options for dropdown
 		this.loadParentPlaceOptions();
+	}
+
+	/**
+	 * Convert a PlaceNode to PlaceData for editing
+	 */
+	private placeNodeToPlaceData(place: PlaceNode): PlaceData {
+		return {
+			name: place.name,
+			crId: place.id,
+			aliases: place.aliases.length > 0 ? [...place.aliases] : undefined,
+			placeCategory: place.category,
+			placeType: place.placeType,
+			universe: place.universe,
+			parentPlaceId: place.parentId,
+			parentPlace: place.parentId ? this.getParentPlaceName(place.parentId) : undefined,
+			coordinates: place.coordinates ? { ...place.coordinates } : undefined,
+			customCoordinates: place.customCoordinates ? { ...place.customCoordinates } : undefined,
+			collection: place.collection
+		};
+	}
+
+	/**
+	 * Get parent place name from ID
+	 */
+	private getParentPlaceName(parentId: string): string | undefined {
+		if (!this.placeGraph) return undefined;
+		const parent = this.placeGraph.getPlaceByCrId(parentId);
+		return parent?.name;
 	}
 
 	/**
@@ -154,6 +264,61 @@ export class CreatePlaceModal extends Modal {
 
 		// Sort flat list alphabetically
 		this.allParentOptions.sort((a, b) => a.name.localeCompare(b.name));
+
+		// Auto-populate parent place based on folder structure (for new places)
+		if (!this.editMode && !this.placeData.parentPlaceId) {
+			const suggestedParent = this.suggestParentFromFolder();
+			if (suggestedParent) {
+				this.placeData.parentPlaceId = suggestedParent.id;
+				this.placeData.parentPlace = suggestedParent.name;
+			}
+		}
+	}
+
+	/**
+	 * Suggest a parent place based on the folder structure.
+	 * Looks at the directory path and tries to match folder names to existing places.
+	 *
+	 * For example, if creating a place in "Places/USA/California/",
+	 * it will try to match "California" or "USA" to existing place notes.
+	 *
+	 * Returns the most specific (deepest) match in the folder hierarchy.
+	 */
+	private suggestParentFromFolder(): ParentPlaceOption | undefined {
+		if (!this.directory || this.allParentOptions.length === 0) {
+			return undefined;
+		}
+
+		// Split directory path into parts
+		const folderParts = this.directory.split('/').filter(p => p.trim() !== '');
+
+		// Try each folder from most specific (deepest) to least specific
+		// Skip the last part if it matches the place name being created
+		for (let i = folderParts.length - 1; i >= 0; i--) {
+			const folderName = folderParts[i].toLowerCase().trim();
+
+			// Skip generic folder names
+			if (['places', 'locations', 'geography', 'canvas-roots', 'canvas roots'].includes(folderName)) {
+				continue;
+			}
+
+			// Skip if this folder name matches the place being created
+			if (this.placeData.name &&
+				folderName === this.placeData.name.toLowerCase().trim()) {
+				continue;
+			}
+
+			// Find a matching place by name (case-insensitive)
+			const match = this.allParentOptions.find(opt =>
+				opt.name.toLowerCase() === folderName
+			);
+
+			if (match) {
+				return match;
+			}
+		}
+
+		return undefined;
 	}
 
 	/**
@@ -175,6 +340,7 @@ export class CreatePlaceModal extends Modal {
 	 */
 	private formatPlaceType(type: string): string {
 		const names: Record<string, string> = {
+			planet: 'Planets',
 			continent: 'Continents',
 			country: 'Countries',
 			state: 'States',
@@ -218,7 +384,7 @@ export class CreatePlaceModal extends Modal {
 		const titleContainer = header.createDiv({ cls: 'crc-modal-title' });
 		const icon = createLucideIcon('map-pin', 24);
 		titleContainer.appendChild(icon);
-		titleContainer.appendText('Create place note');
+		titleContainer.appendText(this.editMode ? 'Edit place note' : 'Create place note');
 
 		// Form container
 		const form = contentEl.createDiv({ cls: 'crc-form' });
@@ -255,11 +421,15 @@ export class CreatePlaceModal extends Modal {
 				}));
 
 		// Place type
-		new Setting(form)
+		const typeSetting = new Setting(form)
 			.setName('Type')
-			.setDesc('Type of place in the hierarchy')
-			.addDropdown(dropdown => dropdown
+			.setDesc('Type of place in the hierarchy');
+
+		typeSetting.addDropdown(dropdown => {
+			this.typeDropdownEl = dropdown.selectEl;
+			dropdown
 				.addOption('', '(Select type)')
+				.addOption('planet', 'Planet')
 				.addOption('continent', 'Continent')
 				.addOption('country', 'Country')
 				.addOption('state', 'State')
@@ -275,13 +445,66 @@ export class CreatePlaceModal extends Modal {
 				.addOption('estate', 'Estate')
 				.addOption('cemetery', 'Cemetery')
 				.addOption('church', 'Church')
-				.addOption('other', 'Other')
-				.setValue(this.placeData.placeType || '')
-				.onChange(value => {
+				.addOption('__custom__', 'Other...');
+
+			// Check if initial value is a known type or custom
+			const initialType = this.placeData.placeType;
+			const isCustomType = initialType && !KNOWN_PLACE_TYPES.includes(initialType as typeof KNOWN_PLACE_TYPES[number]);
+
+			if (isCustomType) {
+				dropdown.setValue('__custom__');
+			} else {
+				dropdown.setValue(initialType || '');
+			}
+
+			dropdown.onChange(value => {
+				if (value === '__custom__') {
+					// Show custom type input
+					if (this.customTypeInputEl) {
+						this.customTypeInputEl.style.display = 'block';
+						this.customTypeInputEl.focus();
+					}
+					// Keep the previous custom value or clear
+					if (!isCustomType) {
+						this.placeData.placeType = undefined;
+					}
+				} else {
+					// Hide custom input and use selected value
+					if (this.customTypeInputEl) {
+						this.customTypeInputEl.style.display = 'none';
+						this.customTypeInputEl.value = '';
+					}
 					this.placeData.placeType = value as PlaceType || undefined;
-					// Update parent place dropdown to filter by hierarchy
+				}
+				// Update parent place dropdown to filter by hierarchy
+				this.updateParentPlaceDropdown();
+			});
+		});
+
+		// Add text input for custom type (hidden by default unless editing a custom type)
+		typeSetting.addText(text => {
+			this.customTypeInputEl = text.inputEl;
+			text.setPlaceholder('Enter custom type (e.g., galaxy, star-system)')
+				.onChange(value => {
+					// Store custom type as-is, lowercase for consistency
+					const customType = value.trim().toLowerCase().replace(/\s+/g, '-');
+					this.placeData.placeType = customType || undefined;
+					// Update parent place dropdown
 					this.updateParentPlaceDropdown();
-				}));
+				});
+
+			// Show input if editing a custom type
+			const initialType = this.placeData.placeType;
+			const isCustomType = initialType && !KNOWN_PLACE_TYPES.includes(initialType as typeof KNOWN_PLACE_TYPES[number]);
+
+			if (isCustomType) {
+				text.setValue(initialType);
+				text.inputEl.style.display = 'block';
+			} else {
+				text.inputEl.style.display = 'none';
+			}
+			text.inputEl.style.marginLeft = '8px';
+		});
 
 		// Universe (for fictional/mythological/legendary places)
 		const universeSetting = new Setting(form)
@@ -306,7 +529,12 @@ export class CreatePlaceModal extends Modal {
 
 			parentPlaceSetting.addDropdown(dropdown => {
 				this.parentDropdownEl = dropdown.selectEl;
-				this.populateParentDropdown(dropdown.selectEl);
+				this.populateParentDropdown(dropdown.selectEl, this.placeData.placeType);
+
+				// Set initial value if editing and has parent
+				if (this.placeData.parentPlaceId) {
+					dropdown.setValue(this.placeData.parentPlaceId);
+				}
 
 				dropdown.onChange(value => {
 					if (value.startsWith('__group_')) {
@@ -350,6 +578,8 @@ export class CreatePlaceModal extends Modal {
 					.onChange(value => {
 						this.placeData.parentPlace = value || undefined;
 						this.placeData.parentPlaceId = undefined; // Clear ID when using manual entry
+						// Track for potential auto-creation
+						this.pendingParentPlace = value?.trim() || undefined;
 					});
 				text.inputEl.style.display = 'none';
 				text.inputEl.style.marginLeft = '8px';
@@ -361,6 +591,8 @@ export class CreatePlaceModal extends Modal {
 				.setValue(this.placeData.parentPlace || '')
 				.onChange(value => {
 					this.placeData.parentPlace = value || undefined;
+					// Track for potential auto-creation
+					this.pendingParentPlace = value?.trim() || undefined;
 				}));
 		}
 
@@ -370,6 +602,7 @@ export class CreatePlaceModal extends Modal {
 			.setDesc('Alternative names, comma-separated')
 			.addText(text => text
 				.setPlaceholder('e.g., City of London, Londinium')
+				.setValue(this.placeData.aliases?.join(', ') || '')
 				.onChange(value => {
 					if (value) {
 						this.placeData.aliases = value.split(',').map(a => a.trim()).filter(a => a);
@@ -465,6 +698,10 @@ export class CreatePlaceModal extends Modal {
 					.onChange(value => {
 						this.updateCoordinates('lat', value);
 					});
+				// Set initial value if editing
+				if (this.placeData.coordinates?.lat !== undefined) {
+					text.setValue(this.placeData.coordinates.lat.toString());
+				}
 			});
 		latSetting.settingEl.addClass('crc-coord-input');
 
@@ -477,22 +714,28 @@ export class CreatePlaceModal extends Modal {
 					.onChange(value => {
 						this.updateCoordinates('long', value);
 					});
+				// Set initial value if editing
+				if (this.placeData.coordinates?.long !== undefined) {
+					text.setValue(this.placeData.coordinates.long.toString());
+				}
 			});
 		longSetting.settingEl.addClass('crc-coord-input');
 
 		// Show/hide coordinates based on category
 		this.updateCoordinatesVisibility();
 
-		// Directory setting
-		new Setting(form)
-			.setName('Directory')
-			.setDesc('Where to create the place note')
-			.addText(text => text
-				.setPlaceholder('e.g., Places')
-				.setValue(this.directory)
-				.onChange(value => {
-					this.directory = value;
-				}));
+		// Directory setting (only show in create mode)
+		if (!this.editMode) {
+			new Setting(form)
+				.setName('Directory')
+				.setDesc('Where to create the place note')
+				.addText(text => text
+					.setPlaceholder('e.g., Places')
+					.setValue(this.directory)
+					.onChange(value => {
+						this.directory = value;
+					}));
+		}
 
 		// Update universe visibility based on initial category
 		this.updateUniverseVisibility(form);
@@ -508,12 +751,16 @@ export class CreatePlaceModal extends Modal {
 			this.close();
 		});
 
-		const createBtn = buttonContainer.createEl('button', {
-			text: 'Create place',
+		const submitBtn = buttonContainer.createEl('button', {
+			text: this.editMode ? 'Save changes' : 'Create place',
 			cls: 'crc-btn crc-btn--primary'
 		});
-		createBtn.addEventListener('click', async () => {
-			await this.createPlace();
+		submitBtn.addEventListener('click', async () => {
+			if (this.editMode) {
+				await this.updatePlace();
+			} else {
+				await this.createPlace();
+			}
 		});
 	}
 
@@ -805,10 +1052,111 @@ export class CreatePlaceModal extends Modal {
 				this.onCreated(file);
 			}
 
+			// Check if we need to create a parent place
+			const missingParent = this.checkForMissingParent();
+
 			this.close();
+
+			// Open modal for parent creation if needed
+			if (missingParent) {
+				this.openParentCreationModal(missingParent);
+			}
 		} catch (error) {
 			console.error('Failed to create place note:', error);
 			new Notice(`Failed to create place note: ${error instanceof Error ? error.message : 'Unknown error'}`);
+		}
+	}
+
+	/**
+	 * Check if the user specified a parent place that doesn't exist
+	 * Returns the parent place name if it needs to be created, undefined otherwise
+	 */
+	private checkForMissingParent(): string | undefined {
+		// If user selected an existing parent from dropdown, no need to create
+		if (this.placeData.parentPlaceId) {
+			return undefined;
+		}
+
+		// If no parent was specified, nothing to create
+		if (!this.pendingParentPlace) {
+			return undefined;
+		}
+
+		// Clean up the parent name (remove wikilinks if present)
+		const parentName = this.pendingParentPlace
+			.replace(/\[\[/g, '')
+			.replace(/\]\]/g, '')
+			.trim();
+
+		if (!parentName) {
+			return undefined;
+		}
+
+		// Check if this place already exists
+		if (this.placeGraph) {
+			const existingPlace = this.placeGraph.getPlaceByName(parentName);
+			if (existingPlace) {
+				return undefined; // Parent already exists
+			}
+		}
+
+		return parentName;
+	}
+
+	/**
+	 * Open a new CreatePlaceModal for the parent place
+	 */
+	private openParentCreationModal(parentName: string): void {
+		// Show notice about the missing parent
+		new Notice(`Parent place "${parentName}" doesn't exist. Opening dialog to create it...`);
+
+		// Suggest a type for the parent based on the child's type
+		const suggestedType = suggestParentType(this.placeData.placeType);
+
+		// Small delay to let the current modal fully close
+		setTimeout(() => {
+			new CreatePlaceModal(this.app, {
+				directory: this.directory,
+				initialName: parentName,
+				initialPlaceType: suggestedType,
+				familyGraph: this.familyGraph,
+				placeGraph: this.placeGraph,
+				settings: this.settings,
+				onCreated: (file) => {
+					new Notice(`Created parent place: ${file.basename}`);
+				}
+			}).open();
+		}, 100);
+	}
+
+	/**
+	 * Update the existing place note
+	 */
+	private async updatePlace(): Promise<void> {
+		// Validate required fields
+		if (!this.placeData.name.trim()) {
+			new Notice('Please enter a name for the place');
+			return;
+		}
+
+		if (!this.editingFile) {
+			new Notice('No file to update');
+			return;
+		}
+
+		try {
+			await updatePlaceNote(this.app, this.editingFile, this.placeData);
+
+			new Notice(`Updated place note: ${this.editingFile.basename}`);
+
+			if (this.onUpdated) {
+				this.onUpdated(this.editingFile);
+			}
+
+			this.close();
+		} catch (error) {
+			console.error('Failed to update place note:', error);
+			new Notice(`Failed to update place note: ${error instanceof Error ? error.message : 'Unknown error'}`);
 		}
 	}
 }

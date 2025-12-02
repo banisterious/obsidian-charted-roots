@@ -15,9 +15,11 @@
 export type PlaceCategory = 'real' | 'historical' | 'disputed' | 'legendary' | 'mythological' | 'fictional';
 
 /**
- * Common place types for hierarchical organization
+ * Known place types for hierarchical organization
+ * Custom types are also supported via the "Other..." option
  */
-export type PlaceType =
+export type KnownPlaceType =
+	| 'planet'
 	| 'continent'
 	| 'country'
 	| 'state'
@@ -32,8 +34,13 @@ export type PlaceType =
 	| 'castle'
 	| 'estate'
 	| 'cemetery'
-	| 'church'
-	| 'other';
+	| 'church';
+
+/**
+ * Place type: can be a known type or any custom string
+ * Custom types are treated as leaf-level in hierarchy (level 99)
+ */
+export type PlaceType = KnownPlaceType | string;
 
 /**
  * Real-world geographic coordinates
@@ -178,8 +185,8 @@ export interface PlaceStatistics {
 	/** Counts by category */
 	byCategory: Record<PlaceCategory, number>;
 
-	/** Count of places by type */
-	byType: Record<PlaceType, number>;
+	/** Count of places by type (known types + any custom types found) */
+	byType: Record<string, number>;
 
 	/** Places grouped by universe (for fictional places) */
 	byUniverse: Record<string, number>;
@@ -245,4 +252,33 @@ export function supportsUniverse(category: PlaceCategory): boolean {
  */
 export function supportsRealCoordinates(category: PlaceCategory): boolean {
 	return REAL_COORD_CATEGORIES.includes(category);
+}
+
+/**
+ * List of known place types (for dropdown/validation)
+ */
+export const KNOWN_PLACE_TYPES: KnownPlaceType[] = [
+	'planet',
+	'continent',
+	'country',
+	'state',
+	'province',
+	'region',
+	'county',
+	'city',
+	'town',
+	'village',
+	'district',
+	'parish',
+	'castle',
+	'estate',
+	'cemetery',
+	'church'
+];
+
+/**
+ * Check if a place type is a known type (vs custom)
+ */
+export function isKnownPlaceType(type: string): type is KnownPlaceType {
+	return KNOWN_PLACE_TYPES.includes(type as KnownPlaceType);
 }

@@ -264,6 +264,13 @@ export async function updatePlaceNote(
 	if (updates.historicalNames !== undefined) {
 		newFrontmatter.historical_names = updates.historicalNames;
 	}
+	if (updates.collection !== undefined) {
+		if (updates.collection) {
+			newFrontmatter.collection = updates.collection;
+		} else {
+			delete newFrontmatter.collection;
+		}
+	}
 
 	// Remove Obsidian metadata properties that shouldn't be in YAML output
 	delete newFrontmatter.position;

@@ -26,6 +26,12 @@ interface NetworkEdge {
 	target: NetworkNode;
 }
 
+interface MigrationFlow {
+	from: string;
+	to: string;
+	count: number;
+}
+
 type ViewMode = 'hierarchy' | 'radial' | 'force';
 type ColorMode = 'category' | 'type' | 'depth';
 
@@ -36,8 +42,10 @@ export class PlaceNetworkModal extends Modal {
 	private placeService: PlaceGraphService;
 	private nodes: NetworkNode[] = [];
 	private edges: NetworkEdge[] = [];
+	private migrationFlows: MigrationFlow[] = [];
 	private viewMode: ViewMode = 'hierarchy';
 	private colorMode: ColorMode = 'category';
+	private showMigrations: boolean = false;
 	private svgContainer?: HTMLElement;
 	private personCounts: Map<string, number> = new Map();
 
@@ -46,6 +54,7 @@ export class PlaceNetworkModal extends Modal {
 		this.placeService = new PlaceGraphService(app);
 		this.placeService.reloadCache();
 		this.buildNetwork();
+		this.buildMigrationFlows();
 	}
 
 	/**
@@ -95,6 +104,37 @@ export class PlaceNetworkModal extends Modal {
 
 		for (const rootPlace of rootPlaces) {
 			buildSubtree(rootPlace, 0);
+		}
+	}
+
+	/**
+	 * Build migration flow data
+	 */
+	private buildMigrationFlows(): void {
+		const detailedMigrations = this.placeService.getDetailedMigrations();
+		this.migrationFlows = [];
+
+		// Aggregate migrations by from/to pairs
+		const flowMap = new Map<string, number>();
+		for (const migration of detailedMigrations) {
+			const key = `${migration.from}|${migration.to}`;
+			flowMap.set(key, (flowMap.get(key) || 0) + 1);
+		}
+
+		// Convert to flows between nodes
+		for (const [key, count] of flowMap) {
+			const [fromName, toName] = key.split('|');
+			// Find nodes by name
+			const fromNode = this.nodes.find(n => n.name === fromName);
+			const toNode = this.nodes.find(n => n.name === toName);
+
+			if (fromNode && toNode) {
+				this.migrationFlows.push({
+					from: fromNode.id,
+					to: toNode.id,
+					count
+				});
+			}
 		}
 	}
 
@@ -154,6 +194,18 @@ export class PlaceNetworkModal extends Modal {
 					this.renderNetwork();
 				}));
 
+		// Show migrations toggle (only if there are migration flows)
+		if (this.migrationFlows.length > 0) {
+			new Setting(controlsRow)
+				.setName('Show migrations')
+				.addToggle(toggle => toggle
+					.setValue(this.showMigrations)
+					.onChange((value: boolean) => {
+						this.showMigrations = value;
+						this.renderNetwork();
+					}));
+		}
+
 		// Network container
 		this.svgContainer = contentEl.createDiv({ cls: 'crc-place-network' });
 
@@ -194,9 +246,35 @@ export class PlaceNetworkModal extends Modal {
 		svg.setAttribute('class', 'crc-network-svg');
 		svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
 
+		// Add arrowhead marker definition for migration flows
+		if (this.showMigrations && this.migrationFlows.length > 0) {
+			const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+			const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+			marker.setAttribute('id', 'migration-arrow');
+			marker.setAttribute('viewBox', '0 0 10 10');
+			marker.setAttribute('refX', '9');
+			marker.setAttribute('refY', '5');
+			marker.setAttribute('markerWidth', '6');
+			marker.setAttribute('markerHeight', '6');
+			marker.setAttribute('orient', 'auto-start-reverse');
+			const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+			path.setAttribute('d', 'M 0 0 L 10 5 L 0 10 z');
+			path.setAttribute('fill', 'var(--color-orange)');
+			marker.appendChild(path);
+			defs.appendChild(marker);
+			svg.appendChild(defs);
+		}
+
 		// Draw edges first (so they're behind nodes)
 		for (const edge of this.edges) {
 			this.drawEdge(svg, edge);
+		}
+
+		// Draw migration flows (if enabled)
+		if (this.showMigrations) {
+			for (const flow of this.migrationFlows) {
+				this.drawMigrationFlow(svg, flow);
+			}
 		}
 
 		// Draw nodes
@@ -323,6 +401,66 @@ export class PlaceNetworkModal extends Modal {
 		path.setAttribute('stroke-opacity', '0.4');
 		path.setAttribute('stroke-width', '1.5');
 		path.setAttribute('class', 'crc-network-edge');
+
+		svg.appendChild(path);
+	}
+
+	/**
+	 * Draw a migration flow arrow between two places
+	 */
+	private drawMigrationFlow(svg: SVGElement, flow: MigrationFlow): void {
+		const fromNode = this.nodes.find(n => n.id === flow.from);
+		const toNode = this.nodes.find(n => n.id === flow.to);
+
+		if (!fromNode || !toNode) return;
+
+		// Calculate stroke width based on flow count (min 2, max 6)
+		const maxCount = Math.max(...this.migrationFlows.map(f => f.count));
+		const strokeWidth = 2 + (flow.count / maxCount) * 4;
+
+		// Calculate the direction and shorten the line to not overlap nodes
+		const dx = toNode.x - fromNode.x;
+		const dy = toNode.y - fromNode.y;
+		const dist = Math.sqrt(dx * dx + dy * dy);
+
+		if (dist === 0) return;
+
+		// Calculate node radii
+		const baseRadius = 8;
+		const maxRadius = 24;
+		const fromRadius = Math.min(baseRadius + Math.sqrt(fromNode.personCount) * 3, maxRadius);
+		const toRadius = Math.min(baseRadius + Math.sqrt(toNode.personCount) * 3, maxRadius);
+
+		// Shorten line by node radii + small padding
+		const padding = 5;
+		const startOffset = fromRadius + padding;
+		const endOffset = toRadius + padding + 8; // Extra for arrowhead
+
+		const startX = fromNode.x + (dx / dist) * startOffset;
+		const startY = fromNode.y + (dy / dist) * startOffset;
+		const endX = toNode.x - (dx / dist) * endOffset;
+		const endY = toNode.y - (dy / dist) * endOffset;
+
+		// Create curved path for better visibility
+		const midX = (startX + endX) / 2;
+		const midY = (startY + endY) / 2;
+
+		// Offset the middle point perpendicular to the line
+		const perpX = -dy / dist * 20;
+		const perpY = dx / dist * 20;
+
+		const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+		const d = `M ${startX} ${startY} Q ${midX + perpX} ${midY + perpY}, ${endX} ${endY}`;
+		path.setAttribute('d', d);
+		path.setAttribute('fill', 'none');
+		path.setAttribute('stroke', 'var(--color-orange)');
+		path.setAttribute('stroke-opacity', '0.7');
+		path.setAttribute('stroke-width', String(strokeWidth));
+		path.setAttribute('marker-end', 'url(#migration-arrow)');
+		path.setAttribute('class', 'crc-migration-flow');
+
+		// Add tooltip data
+		path.setAttribute('data-tooltip', `${fromNode.name} → ${toNode.name}: ${flow.count} ${flow.count === 1 ? 'person' : 'people'}`);
 
 		svg.appendChild(path);
 	}
@@ -487,12 +625,13 @@ export class PlaceNetworkModal extends Modal {
 	}
 
 	/**
-	 * Add tooltip handler for nodes
+	 * Add tooltip handler for nodes and migration flows
 	 */
 	private addTooltipHandler(container: HTMLElement): void {
 		const tooltip = container.createDiv({ cls: 'crc-network-tooltip' });
 		tooltip.style.display = 'none';
 
+		// Handler for nodes
 		const nodes = container.querySelectorAll('.crc-network-node');
 		nodes.forEach((node) => {
 			node.addEventListener('mouseenter', (e: Event) => {
@@ -512,6 +651,30 @@ export class PlaceNetworkModal extends Modal {
 			});
 
 			node.addEventListener('mouseleave', () => {
+				tooltip.style.display = 'none';
+			});
+		});
+
+		// Handler for migration flows
+		const flows = container.querySelectorAll('.crc-migration-flow');
+		flows.forEach((flow) => {
+			flow.addEventListener('mouseenter', (e: Event) => {
+				const target = e.currentTarget as SVGPathElement;
+				const text = target.getAttribute('data-tooltip');
+				if (text) {
+					tooltip.textContent = text;
+					tooltip.style.display = 'block';
+				}
+			});
+
+			flow.addEventListener('mousemove', (e: Event) => {
+				const event = e as MouseEvent;
+				const rect = container.getBoundingClientRect();
+				tooltip.style.left = `${event.clientX - rect.left + 15}px`;
+				tooltip.style.top = `${event.clientY - rect.top - 10}px`;
+			});
+
+			flow.addEventListener('mouseleave', () => {
 				tooltip.style.display = 'none';
 			});
 		});

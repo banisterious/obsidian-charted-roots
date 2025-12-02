@@ -2,7 +2,7 @@ import { App, Modal, Notice, Setting, TFile, TFolder, setIcon, ToggleComponent }
 import CanvasRootsPlugin from '../../main';
 import { TAB_CONFIGS, createLucideIcon, setLucideIcon, LucideIconName } from './lucide-icons';
 import { createPersonNote, PersonData } from '../core/person-note-writer';
-import { PersonPickerModal, PersonInfo } from './person-picker';
+import { PersonPickerModal, PersonInfo, PlaceInfo, extractPlaceInfo } from './person-picker';
 import { VaultStatsService, FullVaultStats } from '../core/vault-stats';
 import { FamilyGraphService, TreeOptions } from '../core/family-graph';
 import { CanvasGenerator, CanvasData, CanvasGenerationOptions } from '../core/canvas-generator';
@@ -2324,9 +2324,18 @@ export class ControlCenterModal extends Modal {
 	}
 
 	/**
-	 * Person list item for display
+	 * Person list item for display (includes place info for action buttons)
 	 */
-	private personListItems: { crId: string; name: string; birthDate?: string; deathDate?: string; file: TFile }[] = [];
+	private personListItems: {
+		crId: string;
+		name: string;
+		birthDate?: string;
+		deathDate?: string;
+		birthPlace?: PlaceInfo;
+		deathPlace?: PlaceInfo;
+		burialPlace?: PlaceInfo;
+		file: TFile;
+	}[] = [];
 
 	/**
 	 * Load person list into container
@@ -2345,14 +2354,23 @@ export class ControlCenterModal extends Modal {
 			return;
 		}
 
-		// Map to display format
-		this.personListItems = people.map(p => ({
-			crId: p.crId,
-			name: p.name,
-			birthDate: p.birthDate,
-			deathDate: p.deathDate,
-			file: p.file
-		}));
+		// Map to display format with place info
+		this.personListItems = people.map(p => {
+			// Get place info from frontmatter (need raw values for isLinked detection)
+			const cache = this.app.metadataCache.getFileCache(p.file);
+			const fm = cache?.frontmatter || {};
+
+			return {
+				crId: p.crId,
+				name: p.name,
+				birthDate: p.birthDate,
+				deathDate: p.deathDate,
+				birthPlace: extractPlaceInfo(fm.birth_place),
+				deathPlace: extractPlaceInfo(fm.death_place),
+				burialPlace: extractPlaceInfo(fm.burial_place),
+				file: p.file
+			};
+		});
 
 		// Sort by name
 		this.personListItems.sort((a, b) => a.name.localeCompare(b.name));
@@ -2386,9 +2404,21 @@ export class ControlCenterModal extends Modal {
 	}
 
 	/**
-	 * Render person list items
+	 * Render person list items with expandable place details
 	 */
-	private renderPersonListItems(container: HTMLElement, people: { crId: string; name: string; birthDate?: string; deathDate?: string; file: TFile }[]): void {
+	private renderPersonListItems(
+		container: HTMLElement,
+		people: {
+			crId: string;
+			name: string;
+			birthDate?: string;
+			deathDate?: string;
+			birthPlace?: PlaceInfo;
+			deathPlace?: PlaceInfo;
+			burialPlace?: PlaceInfo;
+			file: TFile;
+		}[]
+	): void {
 		container.empty();
 
 		if (people.length === 0) {
@@ -2419,8 +2449,23 @@ export class ControlCenterModal extends Modal {
 			for (const person of byLetter.get(letter)!) {
 				const item = letterList.createDiv({ cls: 'crc-person-list-item' });
 
+				// Main row (name + dates + expand toggle if has unlinked places)
+				const mainRow = item.createDiv({ cls: 'crc-person-list-item__main' });
+
+				// Check for unlinked places
+				const unlinkedPlaces: { type: string; info: PlaceInfo }[] = [];
+				if (person.birthPlace && !person.birthPlace.isLinked) {
+					unlinkedPlaces.push({ type: 'Birth', info: person.birthPlace });
+				}
+				if (person.deathPlace && !person.deathPlace.isLinked) {
+					unlinkedPlaces.push({ type: 'Death', info: person.deathPlace });
+				}
+				if (person.burialPlace && !person.burialPlace.isLinked) {
+					unlinkedPlaces.push({ type: 'Burial', info: person.burialPlace });
+				}
+
 				// Name (clickable)
-				const nameEl = item.createEl('span', {
+				const nameEl = mainRow.createEl('span', {
 					text: person.name,
 					cls: 'crc-person-list-name'
 				});
@@ -2434,10 +2479,61 @@ export class ControlCenterModal extends Modal {
 				if (person.birthDate) dates.push(`b. ${person.birthDate}`);
 				if (person.deathDate) dates.push(`d. ${person.deathDate}`);
 				if (dates.length > 0) {
-					item.createEl('span', {
+					mainRow.createEl('span', {
 						text: dates.join(' – '),
 						cls: 'crc-person-list-dates crc-text--muted'
 					});
+				}
+
+				// Unlinked place indicator badge
+				if (unlinkedPlaces.length > 0) {
+					const badge = mainRow.createEl('span', {
+						cls: 'crc-person-list-badge crc-person-list-badge--unlinked',
+						attr: {
+							title: `${unlinkedPlaces.length} unlinked place${unlinkedPlaces.length !== 1 ? 's' : ''}`
+						}
+					});
+					const mapIcon = createLucideIcon('map-pin', 12);
+					badge.appendChild(mapIcon);
+					badge.appendText(unlinkedPlaces.length.toString());
+
+					// Create expandable details section
+					const detailsSection = item.createDiv({ cls: 'crc-person-list-details crc-person-list-details--hidden' });
+
+					// Toggle on badge click
+					badge.addEventListener('click', (e) => {
+						e.stopPropagation();
+						detailsSection.toggleClass('crc-person-list-details--hidden', !detailsSection.hasClass('crc-person-list-details--hidden'));
+						badge.toggleClass('crc-person-list-badge--active', !badge.hasClass('crc-person-list-badge--active'));
+					});
+
+					// Render place details with action buttons
+					for (const { type, info } of unlinkedPlaces) {
+						const placeRow = detailsSection.createDiv({ cls: 'crc-person-list-place' });
+
+						placeRow.createEl('span', {
+							text: `${type}: `,
+							cls: 'crc-person-list-place__label'
+						});
+						placeRow.createEl('span', {
+							text: info.placeName,
+							cls: 'crc-person-list-place__name'
+						});
+
+						// Action button to create place note
+						const createBtn = placeRow.createEl('button', {
+							cls: 'crc-btn crc-btn--small crc-btn--ghost crc-person-list-place__action',
+							attr: { title: 'Create place note' }
+						});
+						const plusIcon = createLucideIcon('plus', 12);
+						createBtn.appendChild(plusIcon);
+						createBtn.appendText('Create');
+
+						createBtn.addEventListener('click', async (e) => {
+							e.stopPropagation();
+							await this.showQuickCreatePlaceModal(info.placeName);
+						});
+					}
 				}
 			}
 		}
@@ -4279,9 +4375,10 @@ export class ControlCenterModal extends Modal {
 				.setCta()
 				.onClick(() => {
 					new CreatePlaceModal(this.app, {
-						directory: this.plugin.settings.peopleFolder || '',
+						directory: this.plugin.settings.placesFolder || '',
 						familyGraph: this.plugin.createFamilyGraphService(),
 						placeGraph: new PlaceGraphService(this.app),
+						settings: this.plugin.settings,
 						onCreated: () => {
 							// Refresh the Places tab
 							this.showTab('places');
@@ -4606,6 +4703,31 @@ export class ControlCenterModal extends Modal {
 					if (file instanceof TFile) {
 						await this.app.workspace.getLeaf(false).openFile(file);
 						this.close();
+					}
+				});
+
+				// Edit button
+				const editBtn = item.createEl('button', {
+					cls: 'crc-place-edit-btn clickable-icon',
+					attr: { 'aria-label': 'Edit place' }
+				});
+				const editIcon = createLucideIcon('edit', 14);
+				editBtn.appendChild(editIcon);
+				editBtn.addEventListener('click', async (e) => {
+					e.preventDefault();
+					e.stopPropagation();
+					const file = this.app.vault.getAbstractFileByPath(place.filePath);
+					if (file instanceof TFile) {
+						new CreatePlaceModal(this.app, {
+							editPlace: place,
+							editFile: file,
+							placeGraph: placeService,
+							settings: this.plugin.settings,
+							onUpdated: () => {
+								// Refresh the place list after edit
+								void this.loadPlaceList(container);
+							}
+						}).open();
 					}
 				});
 
@@ -4948,7 +5070,7 @@ export class ControlCenterModal extends Modal {
 
 		// Create a selection modal
 		const modal = new CreateMissingPlacesModal(this.app, unlinked, {
-			directory: this.plugin.settings.peopleFolder || '',
+			directory: this.plugin.settings.placesFolder || '',
 			placeGraph: placeService,
 			onComplete: (created: number) => {
 				if (created > 0) {
@@ -4965,10 +5087,11 @@ export class ControlCenterModal extends Modal {
 	 */
 	private showQuickCreatePlaceModal(placeName: string): void {
 		const modal = new CreatePlaceModal(this.app, {
-			directory: this.plugin.settings.peopleFolder || '',
+			directory: this.plugin.settings.placesFolder || '',
 			initialName: placeName,
 			familyGraph: this.plugin.createFamilyGraphService(),
 			placeGraph: new PlaceGraphService(this.app),
+			settings: this.plugin.settings,
 			onCreated: () => {
 				new Notice(`Created place note: ${placeName}`);
 				// Refresh the Places tab
@@ -7849,6 +7972,9 @@ export class ControlCenterModal extends Modal {
 			birthDate,
 			deathDate,
 			sex: cache.frontmatter.sex,
+			birthPlace: extractPlaceInfo(fm.birth_place),
+			deathPlace: extractPlaceInfo(fm.death_place),
+			burialPlace: extractPlaceInfo(fm.burial_place),
 			file: file
 		};
 	}

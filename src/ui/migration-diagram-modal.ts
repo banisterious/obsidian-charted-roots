@@ -13,6 +13,7 @@ interface DetailedMigration {
 	to: string;
 	birthYear?: number;
 	deathYear?: number;
+	collection?: string;
 }
 
 interface MigrationFlow {
@@ -36,10 +37,12 @@ export class MigrationDiagramModal extends Modal {
 	private allMigrations: DetailedMigration[];
 	private yearRange: { min: number; max: number } | null;
 	private maxHierarchyDepth: number;
+	private collections: Array<{ name: string; count: number }>;
 	private minFlowCount: number = 1;
 	private startYear: number | null = null;
 	private endYear: number | null = null;
 	private aggregationLevel: number = -1; // -1 = no aggregation (show all places as-is)
+	private collectionFilter: string | null = null; // null = all collections
 	private diagramContainer: HTMLElement | null = null;
 
 	constructor(app: App) {
@@ -51,6 +54,7 @@ export class MigrationDiagramModal extends Modal {
 		this.allMigrations = this.placeService.getDetailedMigrations();
 		this.yearRange = this.placeService.getMigrationYearRange();
 		this.maxHierarchyDepth = this.placeService.getMaxHierarchyDepth();
+		this.collections = this.placeService.getMigrationCollections();
 
 		// Set initial year range if available
 		if (this.yearRange) {
@@ -236,6 +240,42 @@ export class MigrationDiagramModal extends Modal {
 			});
 		}
 
+		// Row 4: Collection filter (only if we have collections)
+		if (this.collections.length > 0) {
+			const controlsRow4 = controlsContainer.createDiv({ cls: 'crc-migration-controls crc-migration-collection-controls' });
+			controlsRow4.createEl('span', { text: 'Collection: ', cls: 'crc-text--muted' });
+
+			const collectionSelect = controlsRow4.createEl('select', {
+				cls: 'crc-migration-collection-select dropdown'
+			});
+
+			// "All collections" option
+			collectionSelect.createEl('option', {
+				text: 'All collections',
+				value: ''
+			});
+
+			// Add collection options
+			for (const collection of this.collections) {
+				collectionSelect.createEl('option', {
+					text: `${collection.name} (${collection.count})`,
+					value: collection.name
+				});
+			}
+
+			collectionSelect.value = '';
+			collectionSelect.addEventListener('change', () => {
+				this.collectionFilter = collectionSelect.value || null;
+				this.renderDiagram();
+			});
+
+			// Add help text
+			controlsRow4.createEl('span', {
+				text: '(filter by family branch)',
+				cls: 'crc-text--muted crc-migration-collection-help'
+			});
+		}
+
 		// Diagram container
 		this.diagramContainer = contentEl.createDiv({ cls: 'crc-migration-diagram' });
 
@@ -290,6 +330,17 @@ export class MigrationDiagramModal extends Modal {
 	}
 
 	/**
+	 * Filter migrations by collection (family branch)
+	 */
+	private filterByCollection(migrations: DetailedMigration[]): DetailedMigration[] {
+		if (this.collectionFilter === null) {
+			return migrations;
+		}
+
+		return migrations.filter(m => m.collection === this.collectionFilter);
+	}
+
+	/**
 	 * Apply aggregation level to a place name
 	 * Resolves the place to its ancestor at the specified level
 	 */
@@ -335,8 +386,10 @@ export class MigrationDiagramModal extends Modal {
 		const container = this.diagramContainer;
 		container.empty();
 
-		// Filter by time period first
-		const filteredMigrations = this.filterByTimePeriod(this.allMigrations);
+		// Apply all filters
+		let filteredMigrations = this.allMigrations;
+		filteredMigrations = this.filterByTimePeriod(filteredMigrations);
+		filteredMigrations = this.filterByCollection(filteredMigrations);
 
 		// Aggregate into flows
 		const allFlows = this.aggregateMigrations(filteredMigrations);
@@ -346,23 +399,33 @@ export class MigrationDiagramModal extends Modal {
 
 		if (flows.length === 0) {
 			container.createEl('p', {
-				text: 'No migration patterns match the current filter.',
+				text: 'No migration patterns match the current filters.',
 				cls: 'crc-text--muted crc-text--center'
 			});
 			return;
 		}
 
-		// Show filtered count
-		const totalMigrations = filteredMigrations.length;
+		// Show filtered count with all active filters
 		const shownMigrations = flows.reduce((sum, f) => sum + f.count, 0);
+		const filterParts: string[] = [];
 
+		// Add time period info if filtered
 		if (this.startYear !== null && this.endYear !== null && this.yearRange) {
 			if (this.startYear !== this.yearRange.min || this.endYear !== this.yearRange.max) {
-				container.createEl('p', {
-					text: `Showing ${shownMigrations} of ${totalMigrations} migrations in ${this.startYear}–${this.endYear}`,
-					cls: 'crc-text--muted crc-text--center crc-mb-2'
-				});
+				filterParts.push(`${this.startYear}–${this.endYear}`);
 			}
+		}
+
+		// Add collection info if filtered
+		if (this.collectionFilter !== null) {
+			filterParts.push(`collection: ${this.collectionFilter}`);
+		}
+
+		if (filterParts.length > 0) {
+			container.createEl('p', {
+				text: `Showing ${shownMigrations} migrations (${filterParts.join(', ')})`,
+				cls: 'crc-text--muted crc-text--center crc-mb-2'
+			});
 		}
 
 		// Collect unique places and calculate their stats

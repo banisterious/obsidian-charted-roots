@@ -80,6 +80,7 @@ export interface CanvasRootsSettings {
 	verticalSpacing: number;
 	autoGenerateCrId: boolean;
 	peopleFolder: string;
+	placesFolder: string;
 	logExportPath: string;
 	logLevel: LogLevel;
 	obfuscateLogExports: boolean;
@@ -118,6 +119,58 @@ export interface CanvasRootsSettings {
 	// Staging folder
 	stagingFolder: string;
 	enableStagingIsolation: boolean;
+	// Place category defaults
+	defaultPlaceCategory: PlaceCategory;
+	placeCategoryRules: PlaceCategoryRule[];
+}
+
+/**
+ * Rule for setting default place category based on folder or collection
+ */
+export interface PlaceCategoryRule {
+	type: 'folder' | 'collection';
+	pattern: string;  // Folder path or collection name
+	category: PlaceCategory;
+}
+
+/**
+ * Place categories (duplicated from models/place.ts to avoid circular imports)
+ */
+export type PlaceCategory = 'real' | 'historical' | 'disputed' | 'legendary' | 'mythological' | 'fictional';
+
+/**
+ * Get the default place category based on folder path and/or collection name.
+ * Rules are checked in order:
+ * 1. Collection-based rules (if collection is provided)
+ * 2. Folder-based rules (if folder is provided)
+ * 3. Global default
+ */
+export function getDefaultPlaceCategory(
+	settings: CanvasRootsSettings,
+	options?: { folder?: string; collection?: string }
+): PlaceCategory {
+	const { folder, collection } = options || {};
+
+	// Check rules in order
+	for (const rule of settings.placeCategoryRules) {
+		if (rule.type === 'collection' && collection) {
+			// Exact match for collection
+			if (rule.pattern.toLowerCase() === collection.toLowerCase()) {
+				return rule.category;
+			}
+		} else if (rule.type === 'folder' && folder) {
+			// Path prefix match for folders
+			const normalizedFolder = folder.toLowerCase().replace(/\\/g, '/');
+			const normalizedPattern = rule.pattern.toLowerCase().replace(/\\/g, '/');
+			if (normalizedFolder.startsWith(normalizedPattern) ||
+				normalizedFolder === normalizedPattern) {
+				return rule.category;
+			}
+		}
+	}
+
+	// Fall back to global default
+	return settings.defaultPlaceCategory;
 }
 
 export const DEFAULT_SETTINGS: CanvasRootsSettings = {
@@ -128,7 +181,8 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	horizontalSpacing: 400,  // Base horizontal spacing (multiplied by 1.5x in layout engine)
 	verticalSpacing: 250,    // Vertical spacing between generations (used directly)
 	autoGenerateCrId: true,
-	peopleFolder: 'Canvas Roots',
+	peopleFolder: 'Canvas Roots/People',
+	placesFolder: 'Canvas Roots/Places',
 	logExportPath: '.canvas-roots/logs',
 	logLevel: 'debug',
 	obfuscateLogExports: true,  // Secure by default - protect PII in log exports
@@ -166,7 +220,10 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	includedFolders: [],           // No inclusion filter by default
 	// Staging folder defaults
 	stagingFolder: '',             // Empty = no staging configured (must be set by user)
-	enableStagingIsolation: true   // When staging folder is set, auto-exclude from normal operations
+	enableStagingIsolation: true,  // When staging folder is set, auto-exclude from normal operations
+	// Place category defaults
+	defaultPlaceCategory: 'real',  // Default place category when creating new places
+	placeCategoryRules: []         // Folder/collection-based category rules
 };
 
 export class CanvasRootsSettingTab extends PluginSettingTab {
@@ -263,6 +320,17 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.peopleFolder)
 				.onChange(async (value) => {
 					this.plugin.settings.peopleFolder = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Places folder')
+			.setDesc('Default folder for place notes (leave empty for vault root)')
+			.addText(text => text
+				.setPlaceholder('Places')
+				.setValue(this.plugin.settings.placesFolder)
+				.onChange(async (value) => {
+					this.plugin.settings.placesFolder = value;
 					await this.plugin.saveSettings();
 				}));
 

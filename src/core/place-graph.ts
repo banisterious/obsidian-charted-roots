@@ -371,8 +371,9 @@ export class PlaceGraphService {
 			fictional: 0
 		};
 
-		// Count by type
-		const byType: Record<PlaceType, number> = {
+		// Count by type (starts with known types, will add custom types dynamically)
+		const byType: Record<string, number> = {
+			planet: 0,
 			continent: 0,
 			country: 0,
 			state: 0,
@@ -387,8 +388,7 @@ export class PlaceGraphService {
 			castle: 0,
 			estate: 0,
 			cemetery: 0,
-			church: 0,
-			other: 0
+			church: 0
 		};
 
 		// Count by universe
@@ -404,8 +404,11 @@ export class PlaceGraphService {
 			// Category counting
 			byCategory[place.category]++;
 
-			// Type counting
+			// Type counting (handle both known and custom types)
 			if (place.placeType) {
+				if (byType[place.placeType] === undefined) {
+					byType[place.placeType] = 0;
+				}
 				byType[place.placeType]++;
 			}
 
@@ -596,6 +599,7 @@ export class PlaceGraphService {
 		to: string;
 		birthYear?: number;
 		deathYear?: number;
+		collection?: string;
 	}> {
 		this.ensureCacheLoaded();
 
@@ -605,6 +609,7 @@ export class PlaceGraphService {
 			to: string;
 			birthYear?: number;
 			deathYear?: number;
+			collection?: string;
 		}> = [];
 
 		// Build a map of person data from frontmatter
@@ -614,6 +619,7 @@ export class PlaceGraphService {
 			deathPlace?: string;
 			birthYear?: number;
 			deathYear?: number;
+			collection?: string;
 		}>();
 
 		for (const file of files) {
@@ -632,6 +638,7 @@ export class PlaceGraphService {
 				deathPlace?: string;
 				birthYear?: number;
 				deathYear?: number;
+				collection?: string;
 			} = {};
 
 			// Extract birth place
@@ -658,6 +665,11 @@ export class PlaceGraphService {
 				if (year) data.deathYear = year;
 			}
 
+			// Extract collection
+			if (fm.collection) {
+				data.collection = fm.collection;
+			}
+
 			if (data.birthPlace || data.deathPlace) {
 				personData.set(fm.cr_id, data);
 			}
@@ -671,7 +683,8 @@ export class PlaceGraphService {
 					from: data.birthPlace,
 					to: data.deathPlace,
 					birthYear: data.birthYear,
-					deathYear: data.deathYear
+					deathYear: data.deathYear,
+					collection: data.collection
 				});
 			}
 		}
@@ -726,6 +739,24 @@ export class PlaceGraphService {
 			min: Math.min(...years),
 			max: Math.max(...years)
 		};
+	}
+
+	/**
+	 * Get unique collections from migration data with counts
+	 */
+	getMigrationCollections(): Array<{ name: string; count: number }> {
+		const migrations = this.getDetailedMigrations();
+		const collectionCounts = new Map<string, number>();
+
+		for (const m of migrations) {
+			if (m.collection) {
+				collectionCounts.set(m.collection, (collectionCounts.get(m.collection) || 0) + 1);
+			}
+		}
+
+		return Array.from(collectionCounts.entries())
+			.map(([name, count]) => ({ name, count }))
+			.sort((a, b) => b.count - a.count);
 	}
 
 	/**

@@ -1,6 +1,6 @@
 # Canvas Roots: Genealogical Family Tree Plugin for Obsidian
 
-> **Status (v0.5.1):** Canvas Roots is feature-complete for core genealogical workflows and submitted for Obsidian community plugin review. All essential features are stable and production-ready (GEDCOM import/export, GEDCOM X import, Gramps XML import, CSV import/export, bidirectional sync, alternative layout algorithms, tree generation, canvas styling, collections, relationship calculator, reference numbering, lineage tracking, relationship history, interactive family chart view with PDF export, selective branch export, smart duplicate detection, staging workflow, merge tools, data quality analysis, Split Canvas Wizard with navigation nodes and master overview canvases). Advanced features are planned for future releases. See [Roadmap](docs/roadmap.md) for details.
+> **Status (v0.5.2):** Canvas Roots is feature-complete for core genealogical workflows and submitted for Obsidian community plugin review. All essential features are stable and production-ready (GEDCOM import/export, GEDCOM X import, Gramps XML import, CSV import/export, bidirectional sync, alternative layout algorithms, tree generation, canvas styling, collections, relationship calculator, reference numbering, lineage tracking, relationship history, interactive family chart view with PDF export, selective branch export, smart duplicate detection, staging workflow, merge tools, data quality analysis, Split Canvas Wizard with navigation nodes and master overview canvases, **geographic features with place notes, place statistics, and migration visualizations**). Advanced features are planned for future releases. See [Roadmap](docs/roadmap.md) for details.
 
 **Canvas Roots** is an Obsidian plugin that automatically generates complex family trees directly onto the Canvas using specialized genealogical layout algorithms for non-overlapping, relationship-aware positioning.
 
@@ -16,7 +16,7 @@ This plugin is designed for genealogists, historians, and world-builders. It tra
 
 ## ✨ Key Features
 
-### Available Now (v0.5.1)
+### Available Now (v0.5.2)
 
 - **Interactive Family Chart View:** A persistent, interactive visualization panel for exploring and editing family trees in real-time. Pan, zoom, and navigate large trees with smooth animations. Click any person to center the view or open their note. Edit relationships directly in the chart with full undo/redo support. Full bidirectional sync: chart edits update frontmatter and rename files, file renames update frontmatter and refresh the chart. Choose from multiple color schemes (Gender, Generation, Collection, Monochrome) and adjustable spacing. Export as high-quality PNG, SVG, or PDF. Customizable export filenames with `{name}` and `{date}` placeholders. Toggle kinship labels on relationship links. Open multiple chart views simultaneously. Access via "Open family chart" command or "Open current note in family chart" for the active person note.
 
@@ -78,6 +78,10 @@ This plugin is designed for genealogists, historians, and world-builders. It tra
 
 - **Split Canvas Wizard:** Multi-step wizard for splitting large family trees into manageable canvas files. Six split methods: by generation (configurable generations per canvas), by branch (paternal/maternal lines), single lineage extraction (direct line between two people), by collection (one canvas per user-defined collection), ancestor + descendant pairs, and by surname (extract people sharing a surname even without established connections). Surname extraction includes scrollable surname list sorted by frequency, multi-surname selection, and options to include spouses and match maiden names. Preview step shows expected canvas count and people before generating. Generates actual canvas files with full layout and styling. Optional navigation portal nodes link between related canvases. Master overview canvas provides grid layout with links to all split canvases. Access via canvas context menu → Canvas Roots → Split canvas wizard.
 
+- **Geographic Features - Place Notes:** Create and manage place notes with hierarchical relationships (city → state → country). Six place categories support both real-world genealogy (real, historical, disputed) and world-building (legendary, mythological, fictional). Track coordinates for real-world places or custom map systems for fictional worlds. Historical names support for places that changed names over time. Person notes can link to place notes for birth, death, marriage, and burial locations.
+
+- **Place Statistics & Visualizations:** Control Center panel shows place analytics including category breakdown, most common locations, and migration patterns. D3-based visualizations include network/schematic view (places as nodes sized by population) and migration flow diagrams (arc diagrams showing movement patterns). Filter by time period, collection, or hierarchy level. Actions to create missing places, build hierarchies, and standardize names.
+
 - **Reference Numbering Systems:** Assign standard genealogical reference numbers to your family members. Supports four numbering systems: Ahnentafel (ancestor numbering where father=2N, mother=2N+1), d'Aboville (descendant numbering with dot notation like 1.2.3), Henry System (compact descendant numbering without dots), and Generation numbering (relative generation depth from a reference person). Numbers are stored in frontmatter and automatically available in Bases views.
 
 - **Lineage Tracking:** Compute and track multi-generational lineages from root persons. Mark people as belonging to specific ancestral lines (e.g., "Smith Line", "Tudor Dynasty") with support for patrilineal (father's line), matrilineal (mother's line), or all descendants tracking. Enables filtering and analysis of descendant lines in Bases views.
@@ -91,6 +95,7 @@ This plugin is designed for genealogists, historians, and world-builders. It tra
 ### Planned Features
 
 See [Roadmap](docs/roadmap.md) for detailed feature descriptions and development priorities.
+- **Full Map Support:** Leaflet.js integration with OpenStreetMap tiles for interactive maps showing birth/death locations, migration paths, and animated timelines. Custom image maps for fictional worlds.
 - **Export Enhancements:** GEDCOM X and Gramps XML export support
 - **World-Building Features:** Track fantasy dynasties, corporate succession, and historical kingdoms
 

@@ -16,6 +16,7 @@ import { getErrorMessage } from './src/core/error-utils';
 import { FamilyGraphService } from './src/core/family-graph';
 import { CanvasGenerator } from './src/core/canvas-generator';
 import { BASE_TEMPLATE } from './src/constants/base-template';
+import { PLACES_BASE_TEMPLATE } from './src/constants/places-base-template';
 import { ExcalidrawExporter } from './src/excalidraw/excalidraw-exporter';
 import { BidirectionalLinker } from './src/core/bidirectional-linker';
 import { generateCrId } from './src/core/uuid';
@@ -300,9 +301,10 @@ export default class CanvasRootsPlugin extends Plugin {
 			name: 'Create place note',
 			callback: () => {
 				new CreatePlaceModal(this.app, {
-					directory: this.settings.peopleFolder || '',
+					directory: this.settings.placesFolder || '',
 					familyGraph: this.createFamilyGraphService(),
-					placeGraph: new PlaceGraphService(this.app)
+					placeGraph: new PlaceGraphService(this.app),
+					settings: this.settings
 				}).open();
 			}
 		});
@@ -1151,13 +1153,46 @@ export default class CanvasRootsPlugin extends Plugin {
 									});
 							});
 
+							submenu.addSeparator();
+
+							// Places folder actions
 							submenu.addItem((subItem) => {
 								subItem
-									.setTitle('New base from template')
-									.setIcon('table')
+									.setTitle('Set as places folder')
+									.setIcon('map-pin')
 									.onClick(async () => {
-										await this.createBaseTemplate(file);
+										this.settings.placesFolder = file.path;
+										await this.saveSettings();
+										new Notice(`Places folder set to: ${file.path}`);
 									});
+							});
+
+							submenu.addSeparator();
+
+							// Bases submenu
+							submenu.addItem((subItem) => {
+								const basesSubmenu: Menu = subItem
+									.setTitle('Bases')
+									.setIcon('table')
+									.setSubmenu();
+
+								basesSubmenu.addItem((baseItem) => {
+									baseItem
+										.setTitle('New people base from template')
+										.setIcon('users')
+										.onClick(async () => {
+											await this.createBaseTemplate(file);
+										});
+								});
+
+								basesSubmenu.addItem((baseItem) => {
+									baseItem
+										.setTitle('New places base from template')
+										.setIcon('map-pin')
+										.onClick(async () => {
+											await this.createPlacesBaseTemplate(file);
+										});
+								});
 							});
 
 							submenu.addSeparator();
@@ -1247,12 +1282,34 @@ export default class CanvasRootsPlugin extends Plugin {
 								});
 						});
 
+						// Places folder actions (mobile)
 						menu.addItem((item) => {
 							item
-								.setTitle('Canvas Roots: New base from template')
-								.setIcon('table')
+								.setTitle('Canvas Roots: Set as places folder')
+								.setIcon('map-pin')
+								.onClick(async () => {
+									this.settings.placesFolder = file.path;
+									await this.saveSettings();
+									new Notice(`Places folder set to: ${file.path}`);
+								});
+						});
+
+						// Bases templates (mobile)
+						menu.addItem((item) => {
+							item
+								.setTitle('Canvas Roots: New people base from template')
+								.setIcon('users')
 								.onClick(async () => {
 									await this.createBaseTemplate(file);
+								});
+						});
+
+						menu.addItem((item) => {
+							item
+								.setTitle('Canvas Roots: New places base from template')
+								.setIcon('map-pin')
+								.onClick(async () => {
+									await this.createPlacesBaseTemplate(file);
 								});
 						});
 
@@ -2770,13 +2827,15 @@ export default class CanvasRootsPlugin extends Plugin {
 
 	private async createBaseTemplate(folder?: TFolder) {
 		try {
-			// Validate: Check if Bases plugin might be available (look for .base files)
+			// Validate: Check if Bases feature is available
+			// Bases is a core Obsidian feature (1.9.0+), not a community plugin
 			const baseFiles = this.app.vault.getFiles().filter(f => f.extension === 'base');
-			const isBasesLikelyInstalled = baseFiles.length > 0 ||
-				// @ts-expect-error - accessing internal plugins
-				this.app.plugins?.plugins?.['obsidian-bases'] !== undefined;
+			// @ts-expect-error - accessing internal plugins
+			const basesInternalPlugin = this.app.internalPlugins?.plugins?.['bases'];
+			const isBasesAvailable = baseFiles.length > 0 ||
+				(basesInternalPlugin?.enabled === true);
 
-			if (!isBasesLikelyInstalled) {
+			if (!isBasesAvailable) {
 				const proceed = await this.confirmBaseCreation();
 				if (!proceed) return;
 			}
@@ -2825,6 +2884,72 @@ export default class CanvasRootsPlugin extends Plugin {
 				new Notice('Disk full. Free up space and try again.');
 			} else {
 				new Notice(`Failed to create Base template: ${errorMsg}`);
+			}
+		}
+	}
+
+	/**
+	 * Create a places base template file in the specified folder
+	 */
+	private async createPlacesBaseTemplate(folder?: TFolder) {
+		try {
+			// Validate: Check if Bases feature is available
+			// Bases is a core Obsidian feature (1.9.0+), not a community plugin
+			const baseFiles = this.app.vault.getFiles().filter(f => f.extension === 'base');
+			// @ts-expect-error - accessing internal plugins
+			const basesInternalPlugin = this.app.internalPlugins?.plugins?.['bases'];
+			const isBasesAvailable = baseFiles.length > 0 ||
+				(basesInternalPlugin?.enabled === true);
+
+			if (!isBasesAvailable) {
+				const proceed = await this.confirmBaseCreation();
+				if (!proceed) return;
+			}
+
+			// Determine the target path
+			const folderPath = folder ? folder.path + '/' : '';
+			const defaultPath = folderPath + 'places.base';
+
+			// Check if file already exists
+			const existingFile = this.app.vault.getAbstractFileByPath(defaultPath);
+			if (existingFile) {
+				new Notice(`Places base template already exists at ${defaultPath}`);
+				// Open the existing file
+				if (existingFile instanceof TFile) {
+					const leaf = this.app.workspace.getLeaf(false);
+					await leaf.openFile(existingFile);
+				}
+				return;
+			}
+
+			// Validate folder exists if specified
+			if (folder && !this.app.vault.getAbstractFileByPath(folder.path)) {
+				new Notice(`Folder not found: ${folder.path}`);
+				return;
+			}
+
+			// Create the file with template content
+			const file = await this.app.vault.create(defaultPath, PLACES_BASE_TEMPLATE);
+
+			new Notice('Places base template created with 14 pre-configured views!');
+			logger.info('places-base-template', `Created places base template at ${defaultPath}`);
+
+			// Open the newly created file
+			const leaf = this.app.workspace.getLeaf(false);
+			await leaf.openFile(file);
+		} catch (error: unknown) {
+			const errorMsg = getErrorMessage(error);
+			logger.error('places-base-template', 'Failed to create places base template', error);
+
+			// Provide specific error messages
+			if (errorMsg.includes('already exists')) {
+				new Notice('A file with this name already exists.');
+			} else if (errorMsg.includes('permission') || errorMsg.includes('EACCES')) {
+				new Notice('Permission denied. Check file system permissions.');
+			} else if (errorMsg.includes('ENOSPC')) {
+				new Notice('Disk full. Free up space and try again.');
+			} else {
+				new Notice(`Failed to create Places base template: ${errorMsg}`);
 			}
 		}
 	}

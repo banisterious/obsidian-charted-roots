@@ -1,7 +1,7 @@
 # Geographic Features Plan
 
-> **Status:** Phase 1 Complete, Phase 2 Complete, Phase 2.5 Complete, Phase 3 Mostly Complete
-> **Version:** 0.5.1+
+> **Status:** Phase 1 ✓, Phase 2 ✓, Phase 2.5 ✓, Phase 3 ✓ (Phase 4: Planned)
+> **Version:** 0.5.2
 
 This document outlines the design for geographic/place-based features in Canvas Roots.
 
@@ -152,7 +152,7 @@ Place Hierarchy Issues
 
 ---
 
-## Phase 3: Simple Visualization (Mostly Complete)
+## Phase 3: Simple Visualization ✓
 
 D3-based visualizations without external map dependencies.
 
@@ -163,7 +163,7 @@ D3-based visualizations without external map dependencies.
 - ✓ Color by category, place type, or hierarchy depth
 - ✓ Tree and radial layout options
 - ✓ Interactive tooltips with place details
-- Planned: Show migration flows as directed edges overlay
+- ✓ Show migration flows as directed edges overlay (toggle-able)
 
 ### Migration Flow Diagram ✓
 
@@ -171,8 +171,9 @@ D3-based visualizations without external map dependencies.
 - ✓ Filter by minimum flow count
 - ✓ Color-coded nodes (green=birth origin, red=death destination)
 - ✓ Interactive tooltips with flow details
-- Planned: Filter by time period, generation, or branch
-- Planned: Aggregate by region
+- ✓ Filter by time period (year range inputs with century presets)
+- ✓ Aggregate by region (hierarchy level grouping)
+- ✓ Filter by collection (family branch)
 
 ---
 
@@ -237,7 +238,7 @@ D3-based visualizations without external map dependencies.
 
 ---
 
-## Phase 2.5: UX Improvements (Partial)
+## Phase 2.5: UX Improvements ✓
 
 Enhancements to place creation and management workflow.
 
@@ -264,7 +265,7 @@ When viewing a person note with unlinked place references:
 - ✓ Filter out already-linked places and existing place notes
 - ✓ Open CreateMissingPlacesModal for batch creation
 - ✓ Auto-link option: converts plain text place names to wikilinks after creation
-- Planned: Add action button/link next to unlinked fields in person detail view
+- ✓ Action button in person list (Control Center People tab) shows unlinked places with create actions
 
 ### Place Note Template Configuration (Partial)
 
@@ -273,10 +274,71 @@ Allow users to customize place note templates:
 - ✓ Person and place note templates with Templater variables
 - ✓ Variable reference documentation
 - ✓ Link to frontmatter schema reference
-- Planned: Default place category per folder/collection
-- Planned: Auto-populate parent place based on folder structure
-- Planned: Custom frontmatter fields
-- Planned: Template selection in Create Place modal
+- ✓ Default place category per folder/collection (via settings rules)
+- ✓ Auto-populate parent place based on folder structure
+- Future: Custom frontmatter fields (define additional fields via settings, display in modal)
+- Future: Template selection in Create Place modal (choose from user-defined templates)
+
+#### Default Place Category Rules
+
+The plugin now supports configuring default place categories via settings:
+
+1. **Global Default**: `defaultPlaceCategory` setting (defaults to 'real')
+2. **Folder Rules**: Match places by destination folder path prefix
+3. **Collection Rules**: Match places by collection name (exact match)
+
+Rules are evaluated in order:
+1. Collection rules checked first (if collection is provided)
+2. Folder rules checked next (if folder is provided)
+3. Global default used as fallback
+
+**Settings Interface** (`CanvasRootsSettings`):
+```typescript
+defaultPlaceCategory: PlaceCategory;  // Global default
+placeCategoryRules: PlaceCategoryRule[];  // Ordered list of rules
+
+interface PlaceCategoryRule {
+  type: 'folder' | 'collection';
+  pattern: string;  // Folder path or collection name
+  category: PlaceCategory;
+}
+```
+
+**Example Configuration**:
+```json
+{
+  "defaultPlaceCategory": "real",
+  "placeCategoryRules": [
+    { "type": "collection", "pattern": "Middle-earth", "category": "fictional" },
+    { "type": "folder", "pattern": "Places/Historical", "category": "historical" },
+    { "type": "folder", "pattern": "Places/Mythology", "category": "mythological" }
+  ]
+}
+```
+
+*Note: Settings UI for configuring these rules is planned for a future update. Currently requires manual JSON editing.*
+
+#### Auto-Populate Parent Place from Folder Structure
+
+When creating a new place note, the plugin automatically suggests a parent place based on the folder hierarchy:
+
+1. **Folder Matching**: Scans the destination folder path for names matching existing place notes
+2. **Deepest Match First**: Prefers more specific (deeper) folder matches over generic ones
+3. **Case Insensitive**: Folder name "california" matches place note "California"
+4. **Skip Generic Names**: Ignores common folder names like "Places", "Locations", "Canvas Roots"
+
+**Example**:
+- Creating a place in `Places/USA/California/` with existing place notes for "USA" and "California"
+- Will auto-select "California" as parent (deepest match)
+- User can still change the selection in the dropdown
+
+### Auto-Create Parent Place ✓
+
+Streamlined workflow for creating place hierarchies:
+- ✓ Detect when user enters a custom parent place that doesn't exist
+- ✓ After creating child place, automatically open modal to create parent
+- ✓ Pre-fill parent name and suggest appropriate place type based on child
+- ✓ Type suggestions: city→state, town→county, county→state, state→country, etc.
 
 ### Geocoding Integration Prep ✓
 
@@ -285,6 +347,55 @@ Prepare infrastructure for optional geocoding:
 - ✓ Nominatim API integration for free geocoding
 - ✓ Parent place included in search query for better accuracy
 - Planned: Preview on mini-map (Phase 4 integration point)
+
+### Custom Place Types ✓
+
+Flexible place type system beyond the built-in types:
+- ✓ "Other..." option in place type dropdown reveals text input
+- ✓ Users can enter any custom type (e.g., "galaxy", "star-system", "dimension")
+- ✓ Custom types normalized to lowercase with hyphens
+- ✓ Custom types stored as-is in frontmatter `place_type` field
+- ✓ Custom types treated as hierarchy level 99 (leaf-level) for parent filtering
+- ✓ Statistics track custom types alongside known types
+- ✓ Edit mode preserves and displays custom types correctly
+
+### Places Base Support ✓
+
+Folder context menu integration for Obsidian Bases plugin:
+- ✓ "Set as places folder" menu option to configure default places location
+- ✓ "New places base from template" creates pre-configured `.base` file
+- ✓ 14 pre-configured views in the template:
+  - All Places, By Type, By Category
+  - Countries, States/Provinces, Cities/Towns
+  - Real Places, Historical Places, Fictional Places
+  - By Universe (for fictional places)
+  - With Coordinates, Missing Coordinates
+  - Orphan Places (no parent)
+  - By Collection
+- ✓ Desktop submenu and mobile flat menu support
+- ✓ Graceful handling when Bases plugin not installed
+
+---
+
+## Control Center Changes ✓
+
+Updates to Control Center tabs and organization for geographic features.
+
+### Tab Restructuring ✓
+
+- ✓ Renamed "Data entry" tab to "People" for clarity
+- ✓ Removed "Person details" tab (functionality merged into People tab)
+- ✓ People tab now shows person list with:
+  - Expandable unlinked place badges
+  - "Create" buttons for each unlinked place field
+  - Integration with CreateMissingPlacesModal
+
+### Places Folder Setting ✓
+
+Added dedicated places folder setting in plugin settings:
+- ✓ Separate from `peopleFolder` setting
+- ✓ Used as default destination for new place notes
+- ✓ Configurable via Settings > Canvas Roots > Places folder
 
 ---
 

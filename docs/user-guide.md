@@ -1,6 +1,6 @@
 # Canvas Roots: User Guide
 
-> **Version:** v0.5.0
+> **Version:** v0.5.2
 > **Last Updated:** 2025-12-01
 
 This guide covers the complete workflow for using Canvas Roots to create and maintain family trees in Obsidian.
@@ -28,10 +28,11 @@ This guide covers the complete workflow for using Canvas Roots to create and mai
 17. [Lineage Tracking](#lineage-tracking)
 18. [Relationship History & Undo](#relationship-history--undo)
 19. [Folder Statistics](#folder-statistics)
-20. [Advanced Styling](#advanced-styling)
-21. [Excalidraw Export](#excalidraw-export)
-22. [Split Canvas Wizard](#split-canvas-wizard)
-23. [Tips & Best Practices](#tips--best-practices)
+20. [Geographic Features](#geographic-features)
+21. [Advanced Styling](#advanced-styling)
+22. [Excalidraw Export](#excalidraw-export)
+23. [Split Canvas Wizard](#split-canvas-wizard)
+24. [Tips & Best Practices](#tips--best-practices)
 
 ---
 
@@ -1470,6 +1471,211 @@ View comprehensive analytics about person notes in any folder.
 - **Research planning**: Find areas needing more research (orphaned persons)
 - **Progress tracking**: Monitor completeness as you build your tree
 - **Quality assurance**: Verify relationship consistency before exporting
+
+---
+
+## Geographic Features
+
+Canvas Roots provides comprehensive place-based features for tracking where people were born, died, married, and lived. These features support both real-world genealogy and world-building with fictional places.
+
+### Place Notes
+
+Place notes are structured markdown files with YAML frontmatter that describe locations. They support hierarchical relationships (city → state → country) and can be linked from person notes.
+
+**Example Place Note:**
+
+```yaml
+---
+type: place
+cr_id: place_abc123
+name: "London"
+aliases:
+  - "City of London"
+  - "Londinium"
+
+# Classification
+place_category: real  # real | historical | disputed | legendary | mythological | fictional
+universe: null        # for fictional/mythological places
+
+# Hierarchy
+parent_place: "[[England]]"
+place_type: city
+
+# Coordinates (for real/historical places)
+coordinates:
+  lat: 51.5074
+  long: -0.1278
+
+# Historical names
+historical_names:
+  - name: "Londinium"
+    period: "Roman"
+---
+
+# London
+
+Notes about this place...
+```
+
+### Place Categories
+
+| Category | Description | Examples |
+|----------|-------------|----------|
+| `real` | Verified real-world location | London, New York, Tokyo |
+| `historical` | Real place that no longer exists | Babylon, Constantinople |
+| `disputed` | Location debated by historians | Troy, King Solomon's Mines |
+| `legendary` | May have historical basis but fictionalized | Camelot, El Dorado |
+| `mythological` | Place from mythology/religion | Asgard, Mount Olympus |
+| `fictional` | Invented for a story/world | Winterfell, Mordor |
+
+### Creating Place Notes
+
+**Option 1: Control Center**
+1. Open Control Center → **Places** tab
+2. Click **Create place note**
+3. Fill in the place details:
+   - Name and aliases
+   - Category (real, historical, fictional, etc.)
+   - Place type (city, state, country, etc.)
+   - Parent place (searchable dropdown)
+   - Coordinates (for real places)
+4. Click **Create**
+
+**Option 2: Quick-Create from Person Note**
+1. Right-click on a person note
+2. Select **Create place notes...**
+3. Review unlinked place references (from birth_place, death_place, etc.)
+4. Click **Create** for each place you want to add
+5. Optionally enable auto-linking to convert text to wikilinks
+
+**Option 3: Bulk Create Missing Places**
+1. Open Control Center → **Places** tab → **Statistics**
+2. Click **Create missing place notes**
+3. Review places referenced in person notes but not yet created
+4. Create them individually or in batch
+
+### Linking Places to People
+
+Reference places in person notes using wikilinks or plain text:
+
+```yaml
+---
+# Wikilink format (recommended - creates graph connections)
+birth_place: "[[London]]"
+death_place: "[[New York City]]"
+burial_place: "[[Westminster Abbey]]"
+
+# Plain text format (backwards compatible)
+birth_place: "London, England"
+---
+```
+
+### Place Statistics
+
+The Places tab in Control Center shows aggregate statistics:
+
+**Overview Metrics:**
+- Total places in vault
+- Percentage with coordinates
+- Orphan places (no parent defined)
+- Maximum hierarchy depth
+
+**Category Breakdown:**
+- Count of places per category
+- Number of associated people per category
+
+**Most Common Locations:**
+- Top birth places
+- Top death places
+- Migration patterns (birth → death flows)
+
+**Actions:**
+- Create missing place notes
+- Build hierarchy (assign parents to orphan places)
+- Standardize place names (find and unify variations)
+- View place index (alphabetical with person counts)
+
+### Place Visualizations
+
+Canvas Roots provides D3-based visualizations for place data:
+
+**Network/Schematic View:**
+- Places shown as nodes sized by associated person count
+- Color coding by category, place type, or hierarchy depth
+- Tree and radial layout options
+- Interactive tooltips with place details
+- Toggle migration flows as directed edges
+
+**Migration Flow Diagram:**
+- Arc diagram showing movement patterns between places
+- Filter by minimum flow count
+- Color-coded nodes (green=birth origin, red=death destination)
+- Filter by time period (year range with century presets)
+- Filter by collection (family branch)
+- Aggregate by hierarchy level (e.g., group by country)
+
+### Place-Based Tree Filtering
+
+Filter tree generation by geographic data:
+
+1. Open Control Center → **Tree Output** tab
+2. Configure your tree settings
+3. In the **Place filter** section:
+   - Enable filtering by birth place, death place, marriage location, or burial place
+   - Enter a place name to match
+4. Generate tree with only people matching the place criteria
+
+### Geocoding Lookup
+
+For real, historical, or disputed places, look up coordinates automatically:
+
+1. Create or edit a place note
+2. Click **Look up coordinates** button
+3. Canvas Roots queries Nominatim (OpenStreetMap geocoding)
+4. Review and accept the suggested coordinates
+5. Parent place is included in the query for better accuracy
+
+**Note:** Geocoding is rate-limited. For bulk lookups, space requests appropriately.
+
+### Custom Place Types
+
+Beyond the built-in types (city, state, country, etc.), you can use custom types:
+
+1. In the place type dropdown, select **Other...**
+2. Enter your custom type (e.g., "galaxy", "star-system", "dimension")
+3. Custom types are normalized to lowercase with hyphens
+4. They appear in statistics alongside standard types
+
+### Places Base Template
+
+Create a pre-configured Obsidian Base for managing places:
+
+1. Right-click on a folder
+2. Select **New places base from template**
+3. A `.base` file is created with 14 pre-configured views:
+   - All Places, By Type, By Category
+   - Countries, States/Provinces, Cities/Towns
+   - Real Places, Historical Places, Fictional Places
+   - By Universe (for fictional places)
+   - With Coordinates, Missing Coordinates
+   - Orphan Places (no parent)
+   - By Collection
+
+### Settings
+
+Configure place features in Settings → Canvas Roots:
+
+**Places Folder:**
+- Default destination for new place notes
+- Configurable via settings or folder context menu
+
+**Default Place Category:**
+- Global default category for new places
+- Can be overridden by folder or collection rules
+
+**Place Category Rules:**
+- Define automatic category assignment based on folder path or collection
+- Example: Places in "Places/Historical" default to `historical` category
 
 ---
 

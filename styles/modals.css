@@ -2435,6 +2435,25 @@
   font-size: var(--font-ui-smaller);
 }
 
+.crc-migration-collection-controls {
+  margin-top: 4px;
+}
+
+.crc-migration-collection-select {
+  padding: 4px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  min-width: 180px;
+}
+
+.crc-migration-collection-help {
+  margin-left: 8px;
+  font-size: var(--font-ui-smaller);
+}
+
 .crc-migration-diagram {
   position: relative;
   overflow-x: auto;
@@ -2629,6 +2648,15 @@
   background: linear-gradient(to right, hsl(240, 70%, 50%), hsl(0, 70%, 50%));
   border-radius: 2px;
   display: inline-block;
+}
+
+.crc-migration-flow {
+  cursor: pointer;
+  transition: stroke-opacity 150ms ease;
+}
+
+.crc-migration-flow:hover {
+  stroke-opacity: 1 !important;
 }
 
 /* ==========================================================================
@@ -2886,4 +2914,24 @@
 .crc-person-list-dates {
   font-size: 12px;
   white-space: nowrap;
+}
+
+/* ==========================================================================
+   PLACE LIST EDIT BUTTON
+   ========================================================================== */
+
+.crc-place-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.crc-place-edit-btn.clickable-icon {
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+
+.crc-place-edit-btn.clickable-icon:hover {
+  color: var(--text-normal);
 }

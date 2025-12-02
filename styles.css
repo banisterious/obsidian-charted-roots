@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-02 03:40:30 UTC
+ * - Generated: 2025-12-02 05:13:50 UTC
  * - Components: 20 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -187,7 +187,7 @@
    COMPONENT: MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 2890 lines, 52.96 KB */
+/* Component Size: 2938 lines, 53.94 KB */
 
 /* ==========================================================================
    Canvas Roots Control Center - Styling
@@ -2626,6 +2626,25 @@
   font-size: var(--font-ui-smaller);
 }
 
+.crc-migration-collection-controls {
+  margin-top: 4px;
+}
+
+.crc-migration-collection-select {
+  padding: 4px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  min-width: 180px;
+}
+
+.crc-migration-collection-help {
+  margin-left: 8px;
+  font-size: var(--font-ui-smaller);
+}
+
 .crc-migration-diagram {
   position: relative;
   overflow-x: auto;
@@ -2820,6 +2839,15 @@
   background: linear-gradient(to right, hsl(240, 70%, 50%), hsl(0, 70%, 50%));
   border-radius: 2px;
   display: inline-block;
+}
+
+.crc-migration-flow {
+  cursor: pointer;
+  transition: stroke-opacity 150ms ease;
+}
+
+.crc-migration-flow:hover {
+  stroke-opacity: 1 !important;
 }
 
 /* ==========================================================================
@@ -3077,6 +3105,26 @@
 .crc-person-list-dates {
   font-size: 12px;
   white-space: nowrap;
+}
+
+/* ==========================================================================
+   PLACE LIST EDIT BUTTON
+   ========================================================================== */
+
+.crc-place-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.crc-place-edit-btn.clickable-icon {
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+
+.crc-place-edit-btn.clickable-icon:hover {
+  color: var(--text-normal);
 }
 
 
@@ -5787,11 +5835,11 @@
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-02 03:40:31 UTC
+ * Build completed: 2025-12-02 05:13:50 UTC
  * Components processed: 20
- * Total lines: 5584
- * Total size: 106.17 KB
- * Build duration: 0.02 seconds
+ * Total lines: 5632
+ * Total size: 107.16 KB
+ * Build duration: 0.01 seconds
  *
  * Component breakdown:
  * - variables.css: 31 lines, 0.72 KB
@@ -5801,7 +5849,7 @@
  * - nodes.css: 12 lines, 0.3 KB
  * - edges.css: 4 lines, 0.07 KB
  * - settings.css: 4 lines, 0.07 KB
- * - modals.css: 2890 lines, 52.96 KB
+ * - modals.css: 2938 lines, 53.94 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
  * - validation.css: 84 lines, 1.47 KB
