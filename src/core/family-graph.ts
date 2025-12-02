@@ -23,6 +23,7 @@ export interface PersonNode {
 	deathDate?: string;
 	birthPlace?: string;
 	deathPlace?: string;
+	burialPlace?: string;
 	occupation?: string;
 	sex?: string;
 	file: TFile;
@@ -61,6 +62,12 @@ export interface TreeOptions {
 
 	/** Filter tree to only include people in this collection */
 	collectionFilter?: string;
+
+	/** Filter tree to only include people associated with this place */
+	placeFilter?: {
+		placeName: string;
+		types: ('birth' | 'death' | 'marriage' | 'burial')[];
+	};
 }
 
 /**
@@ -452,13 +459,57 @@ export class FamilyGraphService {
 	}
 
 	/**
-	 * Checks if a person should be included based on collection filter
+	 * Checks if a person should be included based on collection and place filters
 	 */
-	private shouldIncludePerson(person: PersonNode, collectionFilter?: string): boolean {
-		if (!collectionFilter) {
-			return true; // No filter, include everyone
+	private shouldIncludePerson(person: PersonNode, options: TreeOptions): boolean {
+		// Check collection filter
+		if (options.collectionFilter && person.collection !== options.collectionFilter) {
+			return false;
 		}
-		return person.collection === collectionFilter;
+
+		// Check place filter
+		if (options.placeFilter) {
+			const { placeName, types } = options.placeFilter;
+			const lowerPlaceName = placeName.toLowerCase();
+
+			let matchesPlace = false;
+
+			// Check each specified type
+			for (const type of types) {
+				switch (type) {
+					case 'birth':
+						if (person.birthPlace?.toLowerCase().includes(lowerPlaceName)) {
+							matchesPlace = true;
+						}
+						break;
+					case 'death':
+						if (person.deathPlace?.toLowerCase().includes(lowerPlaceName)) {
+							matchesPlace = true;
+						}
+						break;
+					case 'marriage':
+						// Check marriage locations in spouse relationships
+						if (person.spouses?.some(s =>
+							s.marriageLocation?.toLowerCase().includes(lowerPlaceName)
+						)) {
+							matchesPlace = true;
+						}
+						break;
+					case 'burial':
+						if (person.burialPlace?.toLowerCase().includes(lowerPlaceName)) {
+							matchesPlace = true;
+						}
+						break;
+				}
+				if (matchesPlace) break;
+			}
+
+			if (!matchesPlace) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
@@ -471,8 +522,8 @@ export class FamilyGraphService {
 		options: TreeOptions,
 		currentGeneration: number
 	): void {
-		// Add current node if it passes collection filter
-		if (!this.shouldIncludePerson(node, options.collectionFilter)) {
+		// Add current node if it passes filters
+		if (!this.shouldIncludePerson(node, options)) {
 			return;
 		}
 
@@ -486,7 +537,7 @@ export class FamilyGraphService {
 		// Add father
 		if (node.fatherCrId) {
 			const father = this.personCache.get(node.fatherCrId);
-			if (father && this.shouldIncludePerson(father, options.collectionFilter)) {
+			if (father && this.shouldIncludePerson(father, options)) {
 				edges.push({ from: father.crId, to: node.crId, type: 'parent' });
 				this.buildAncestorTree(father, nodes, edges, options, currentGeneration + 1);
 			}
@@ -495,7 +546,7 @@ export class FamilyGraphService {
 		// Add mother
 		if (node.motherCrId) {
 			const mother = this.personCache.get(node.motherCrId);
-			if (mother && this.shouldIncludePerson(mother, options.collectionFilter)) {
+			if (mother && this.shouldIncludePerson(mother, options)) {
 				edges.push({ from: mother.crId, to: node.crId, type: 'parent' });
 				this.buildAncestorTree(mother, nodes, edges, options, currentGeneration + 1);
 			}
@@ -527,8 +578,8 @@ export class FamilyGraphService {
 		options: TreeOptions,
 		currentGeneration: number
 	): void {
-		// Add current node if it passes collection filter
-		if (!this.shouldIncludePerson(node, options.collectionFilter)) {
+		// Add current node if it passes filters
+		if (!this.shouldIncludePerson(node, options)) {
 			return;
 		}
 
@@ -543,7 +594,7 @@ export class FamilyGraphService {
 		if (options.includeSpouses) {
 			for (const spouseCrId of node.spouseCrIds) {
 				const spouse = this.personCache.get(spouseCrId);
-				if (spouse && this.shouldIncludePerson(spouse, options.collectionFilter)) {
+				if (spouse && this.shouldIncludePerson(spouse, options)) {
 					nodes.set(spouse.crId, spouse);
 					edges.push({ from: node.crId, to: spouse.crId, type: 'spouse' });
 				}
@@ -553,7 +604,7 @@ export class FamilyGraphService {
 		// Add children
 		for (const childCrId of node.childrenCrIds) {
 			const child = this.personCache.get(childCrId);
-			if (child && this.shouldIncludePerson(child, options.collectionFilter)) {
+			if (child && this.shouldIncludePerson(child, options)) {
 				edges.push({ from: node.crId, to: child.crId, type: 'child' });
 				this.buildDescendantTree(child, nodes, edges, options, currentGeneration + 1);
 			}
@@ -587,8 +638,8 @@ export class FamilyGraphService {
 				continue;
 			}
 
-			// Skip person if they don't pass collection filter
-			if (!this.shouldIncludePerson(currentPerson, options.collectionFilter)) {
+			// Skip person if they don't pass filters
+			if (!this.shouldIncludePerson(currentPerson, options)) {
 				continue;
 			}
 
@@ -791,6 +842,7 @@ export class FamilyGraphService {
 			deathDate,
 			birthPlace: fm.birth_place,
 			deathPlace: fm.death_place,
+			burialPlace: fm.burial_place,
 			occupation: fm.occupation,
 			sex: fm.sex || fm.gender,
 			file,

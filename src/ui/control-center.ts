@@ -28,6 +28,8 @@ import { PlaceCategory, PlaceStatistics, PlaceIssue } from '../models/place';
 import { CreatePlaceModal } from './create-place-modal';
 import { CreateMissingPlacesModal } from './create-missing-places-modal';
 import { BuildPlaceHierarchyModal } from './build-place-hierarchy-modal';
+import { StandardizePlacesModal, findPlaceNameVariations } from './standardize-places-modal';
+import { MigrationDiagramModal } from './migration-diagram-modal';
 
 const logger = getLogger('ControlCenter');
 
@@ -2438,6 +2440,46 @@ export class ControlCenterModal extends Modal {
 				});
 			});
 
+		// Place filter input and type selection
+		let placeFilterInput: HTMLInputElement;
+		let placeFilterTypes: Set<'birth' | 'death' | 'marriage' | 'burial'> = new Set(['birth', 'death']);
+
+		new Setting(configContent)
+			.setName('Filter by place')
+			.setDesc('Limit tree to people associated with a specific place (optional)')
+			.addText(text => {
+				placeFilterInput = text.inputEl;
+				text.setPlaceholder('e.g., London, England');
+			});
+
+		// Place filter type checkboxes
+		const placeTypesSetting = new Setting(configContent)
+			.setName('Place filter types')
+			.setDesc('Which place fields to check when filtering');
+
+		const placeTypesContainer = placeTypesSetting.controlEl.createDiv({ cls: 'crc-place-filter-types' });
+
+		const placeTypes: Array<{ value: 'birth' | 'death' | 'marriage' | 'burial'; label: string }> = [
+			{ value: 'birth', label: 'Birth' },
+			{ value: 'death', label: 'Death' },
+			{ value: 'marriage', label: 'Marriage' },
+			{ value: 'burial', label: 'Burial' }
+		];
+
+		for (const type of placeTypes) {
+			const label = placeTypesContainer.createEl('label', { cls: 'crc-place-filter-type' });
+			const checkbox = label.createEl('input', { type: 'checkbox' });
+			checkbox.checked = placeFilterTypes.has(type.value);
+			checkbox.addEventListener('change', () => {
+				if (checkbox.checked) {
+					placeFilterTypes.add(type.value);
+				} else {
+					placeFilterTypes.delete(type.value);
+				}
+			});
+			label.appendText(type.label);
+		}
+
 		// Layout Options Card
 		const layoutCard = container.createDiv({ cls: 'crc-card' });
 		const layoutHeader = layoutCard.createDiv({ cls: 'crc-card__header' });
@@ -2713,7 +2755,11 @@ export class ControlCenterModal extends Modal {
 						treeType: typeSelect.value as 'ancestors' | 'descendants' | 'full',
 						maxGenerations: parseInt(genSlider.value) || 0,
 						includeSpouses: spouseToggle.getValue(),
-						collectionFilter: collectionSelect.value || undefined
+						collectionFilter: collectionSelect.value || undefined,
+						placeFilter: placeFilterInput.value.trim() ? {
+							placeName: placeFilterInput.value.trim(),
+							types: Array.from(placeFilterTypes)
+						} : undefined
 					};
 
 					const familyTree = await graphService.generateTree(treeOptions);
@@ -3002,6 +3048,10 @@ export class ControlCenterModal extends Modal {
 					layoutTypeSelect.value as import('../settings').LayoutType,
 					this.treeCanvasNameInput?.value || '',
 					collectionSelect.value || undefined,
+					placeFilterInput.value.trim() ? {
+						placeName: placeFilterInput.value.trim(),
+						types: Array.from(placeFilterTypes)
+					} : undefined,
 					Object.keys(styleOverrides).length > 0 ? styleOverrides : undefined
 				);
 			})();
@@ -3022,6 +3072,7 @@ export class ControlCenterModal extends Modal {
 		layoutType: import('../settings').LayoutType,
 		canvasFileName: string,
 		collectionFilter?: string,
+		placeFilter?: { placeName: string; types: ('birth' | 'death' | 'marriage' | 'burial')[] },
 		styleOverrides?: import('../core/canvas-style-overrides').StyleOverrides
 	): Promise<void> {
 		// Validate root person
@@ -3039,7 +3090,8 @@ export class ControlCenterModal extends Modal {
 				treeType,
 				maxGenerations: maxGenerations || undefined,
 				includeSpouses,
-				collectionFilter
+				collectionFilter,
+				placeFilter
 			};
 
 			// Create canvas generation options with embedded metadata
@@ -4079,6 +4131,24 @@ export class ControlCenterModal extends Modal {
 					void this.showBuildHierarchyModal();
 				}));
 
+		new Setting(actionsContent)
+			.setName('Standardize place names')
+			.setDesc('Find and unify variations of place names')
+			.addButton(button => button
+				.setButtonText('Find variations')
+				.onClick(() => {
+					void this.showStandardizePlacesModal();
+				}));
+
+		new Setting(actionsContent)
+			.setName('Migration diagram')
+			.setDesc('Visualize migration patterns from birth to death locations')
+			.addButton(button => button
+				.setButtonText('View diagram')
+				.onClick(() => {
+					new MigrationDiagramModal(this.app).open();
+				}));
+
 		container.appendChild(actionsCard);
 
 		// Overview Card
@@ -4431,11 +4501,21 @@ export class ControlCenterModal extends Modal {
 				cls: 'crc-text--muted crc-text--small'
 			});
 
-			const unlinkedList = unlinkedSection.createEl('ul', { cls: 'crc-list' });
+			const unlinkedList = unlinkedSection.createEl('ul', { cls: 'crc-list crc-unlinked-places-list' });
 			for (const place of unlinked.slice(0, 15)) {
-				const item = unlinkedList.createEl('li');
-				item.createEl('span', { text: place.name });
-				item.createEl('span', { text: ` (${place.count} references)`, cls: 'crc-text--muted' });
+				const item = unlinkedList.createEl('li', { cls: 'crc-unlinked-place-item' });
+				const content = item.createDiv({ cls: 'crc-unlinked-place-content' });
+				content.createEl('span', { text: place.name });
+				content.createEl('span', { text: ` (${place.count} references)`, cls: 'crc-text--muted' });
+
+				// Quick-create button
+				const createBtn = item.createEl('button', {
+					cls: 'crc-btn crc-btn--small crc-btn--ghost',
+					text: 'Create'
+				});
+				createBtn.addEventListener('click', () => {
+					this.showQuickCreatePlaceModal(place.name);
+				});
 			}
 
 			if (unlinked.length > 15) {
@@ -4591,6 +4671,24 @@ export class ControlCenterModal extends Modal {
 	}
 
 	/**
+	 * Quick-create a single place note from an unlinked place name
+	 */
+	private showQuickCreatePlaceModal(placeName: string): void {
+		const modal = new CreatePlaceModal(this.app, {
+			directory: this.plugin.settings.peopleFolder || '',
+			initialName: placeName,
+			familyGraph: this.plugin.createFamilyGraphService(),
+			placeGraph: new PlaceGraphService(this.app),
+			onCreated: () => {
+				new Notice(`Created place note: ${placeName}`);
+				// Refresh the Places tab
+				this.showTab('places');
+			}
+		});
+		modal.open();
+	}
+
+	/**
 	 * Show modal to build place hierarchy (assign parents to orphan places)
 	 */
 	private async showBuildHierarchyModal(): Promise<void> {
@@ -4622,6 +4720,29 @@ export class ControlCenterModal extends Modal {
 				new Notice(`Updated ${updated} place${updated !== 1 ? 's' : ''} with parent assignments`);
 				// Refresh the Places tab
 				this.showTab('places');
+			}
+		});
+		modal.open();
+	}
+
+	/**
+	 * Show modal to standardize place name variations
+	 */
+	private async showStandardizePlacesModal(): Promise<void> {
+		// Find place name variations
+		const variationGroups = findPlaceNameVariations(this.app);
+
+		if (variationGroups.length === 0) {
+			new Notice('No place name variations found. Your place names are already consistent!');
+			return;
+		}
+
+		const modal = new StandardizePlacesModal(this.app, variationGroups, {
+			onComplete: (updated: number) => {
+				if (updated > 0) {
+					// Refresh the Places tab
+					this.showTab('places');
+				}
 			}
 		});
 		modal.open();
