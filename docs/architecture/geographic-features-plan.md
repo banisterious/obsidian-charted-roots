@@ -1,0 +1,261 @@
+# Geographic Features Plan
+
+> **Status:** Planning
+> **Target Version:** TBD (post v0.5.1)
+
+This document outlines the design for geographic/place-based features in Canvas Roots.
+
+---
+
+## Overview
+
+Geographic features will enable users to:
+- Create and manage place notes with hierarchical relationships
+- Track where people were born, died, married, and lived
+- Visualize migration patterns and geographic distributions
+- Support both real-world and fictional geography
+
+---
+
+## Phase 1: Place Notes Foundation
+
+### Place Note Schema
+
+```yaml
+---
+type: place
+cr_id: place_abc123
+name: "London"
+aliases:
+  - "City of London"
+  - "Londinium"
+
+# Classification
+place_category: real  # real | historical | disputed | legendary | mythological | fictional
+universe: null        # optional, for fictional/mythological/legendary places
+
+# Hierarchy
+parent_place: "[[England]]"  # or parent_place_id: place_xyz789
+place_type: city             # city, village, region, country, castle, etc.
+
+# Real-world coordinates (for real, historical, disputed places)
+coordinates:
+  lat: 51.5074
+  long: -0.1278
+
+# Custom coordinates (for fictional places or custom maps)
+custom_coordinates:
+  x: null
+  y: null
+  map: null  # path to custom map image
+
+# Historical names (place changed names over time)
+historical_names:
+  - name: "Londinium"
+    period: "Roman"
+  - name: "Lundenwic"
+    period: "Anglo-Saxon"
+---
+
+# London
+
+Notes about this place...
+```
+
+### Place Categories
+
+| Category | Description | Examples |
+|----------|-------------|----------|
+| `real` | Verified real-world location | London, New York, Tokyo |
+| `historical` | Real place that no longer exists or changed significantly | Babylon, Constantinople, Tenochtitlan |
+| `disputed` | Location debated by historians/archaeologists | Troy, King Solomon's Mines |
+| `legendary` | May have historical basis but heavily fictionalized | Camelot, El Dorado, Shangri-La |
+| `mythological` | Place from mythology/religion, not claimed to be real | Asgard, Mount Olympus, Valhalla |
+| `fictional` | Invented for a story/world | Winterfell, Mordor, Gotham City |
+
+### Default Behavior
+
+- If `place_category` is omitted, defaults to `real`
+- `universe` field only relevant for `fictional`, `mythological`, `legendary` categories
+- Data quality warnings if `fictional` place has lat/long coordinates
+
+### Person Note Integration
+
+Person notes can reference places in two ways:
+
+```yaml
+# String-based (current, backwards compatible)
+birth_place: "London, England"
+
+# Link-based (enhanced)
+birth_place: "[[London]]"
+birth_place_id: place_abc123
+```
+
+---
+
+## Phase 2: Place Statistics
+
+A new section in the Control Center showing aggregate place data.
+
+### Statistics Display
+
+```
+📍 Place Statistics
+
+Overview
+────────
+Total places: 47
+With coordinates: 38 (81%)
+Orphan places (no parent): 3
+Max hierarchy depth: 5
+
+By Category
+───────────
+Real:          34 places │ 156 people
+Historical:     8 places │  23 people
+Fictional:     13 places │  45 people
+Mythological:   4 places │  12 people
+Disputed:       2 places │   6 people
+Unclassified:   5 places │  18 people
+
+Most Common Birth Places
+────────────────────────
+1. London, England         23
+2. New York, USA           18
+3. Dublin, Ireland         12
+4. Unknown                  8
+5. Paris, France            7
+
+Migration Patterns (Birth → Death)
+──────────────────────────────────
+Ireland → USA              14
+England → Australia         8
+Germany → USA               6
+
+Place Hierarchy Issues
+──────────────────────
+⚠ "Springfield" appears in 3 different hierarchies
+⚠ "London" has no parent place defined
+⚠ 5 people reference non-existent place notes
+```
+
+### Actions from Statistics Panel
+
+| Action | Description |
+|--------|-------------|
+| Create missing place notes | Generate notes for places referenced but not created |
+| Standardize place names | Find variations and unify them |
+| Build hierarchy | Wizard to assign parent places to orphans |
+| View place index | Alphabetical list with person counts |
+| Migration diagram | Visual showing flows between places |
+
+---
+
+## Phase 3: Simple Visualization
+
+D3-based visualizations without external map dependencies.
+
+### Schematic/Network View
+
+- Places as nodes, connections as edges
+- Size nodes by number of associated people
+- Color by category or hierarchy level
+- Show migration flows as directed edges
+
+### Migration Flow Diagram
+
+- Sankey or chord diagram showing movement between places
+- Filter by time period, generation, or branch
+- Aggregate by region or show individual places
+
+---
+
+## Phase 4: Full Map Support
+
+### Real-World Maps
+
+**Recommended Stack:**
+- Leaflet.js (~40KB) for map rendering
+- OpenStreetMap tiles (free, attribution required)
+- Nominatim for geocoding (optional, rate-limited)
+
+**Features:**
+- Pin markers for birth/death locations
+- Lines showing migration paths
+- Cluster markers for dense areas
+- Time slider to animate across generations
+
+### Fictional/Custom Maps
+
+**Custom Image Maps:**
+- User provides map image (PNG/SVG)
+- Define coordinate bounds for the image
+- Place pins using pixel or custom coordinate system
+
+**Features:**
+- Same pin/path visualization as real maps
+- Support multiple custom maps per universe
+- Link between custom and real maps for hybrid worlds
+
+### Feature Availability by Category
+
+| Feature | real | historical | disputed | legendary | mythological | fictional |
+|---------|------|------------|----------|-----------|--------------|-----------|
+| Geocoding lookup | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ |
+| OpenStreetMap link | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ |
+| Custom map support | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Universe grouping | ✗ | ✗ | ✗ | ✓ | ✓ | ✓ |
+| Historical names | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ |
+
+---
+
+## Data Quality Integration
+
+### New Validation Rules
+
+- Person references place that doesn't exist as a note
+- Place has no parent (orphan at non-root level)
+- Circular hierarchy detected
+- Duplicate place names without disambiguation
+- Fictional place has real-world coordinates (likely mistake)
+- Real place missing coordinates
+- Person born in child place, died in ancestor place (geographically odd)
+
+---
+
+## Implementation Questions (TBD)
+
+1. **Place note creation**: Automatic from imports, or manual only?
+2. **Hierarchy enforcement**: Strict (must link to parent) or flexible (string fallback)?
+3. **Existing data migration**: How to convert `birth_place: "London, England"` strings to place note links?
+4. **Settings**: Places folder location, default category, coordinate system preference
+
+---
+
+## Third-Party Dependencies
+
+| Library | Purpose | Size | Required Phase |
+|---------|---------|------|----------------|
+| Leaflet.js | Map rendering | ~40KB | Phase 4 |
+| D3-geo | SVG map projections | Already included | Phase 3 |
+
+**External Services (Optional):**
+- OpenStreetMap tiles (free, attribution required)
+- Nominatim geocoding API (free, rate-limited)
+
+---
+
+## Related Roadmap Items
+
+From `docs/roadmap.md`:
+- Place name standardization and geocoding
+- Map view showing birth/death locations
+- Migration pattern visualization
+- Place hierarchy (City → County → State → Country)
+- Location-based filtering and analysis
+- Historical place name support
+- Geographic grouping and timeline support
+- Geographic distribution analysis and maps
+- Location and migration tracking
+- Place note system
