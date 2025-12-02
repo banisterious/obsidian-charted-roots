@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-02 03:30:32 UTC
+ * - Generated: 2025-12-02 03:40:30 UTC
  * - Components: 20 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -187,7 +187,7 @@
    COMPONENT: MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 2824 lines, 51.7 KB */
+/* Component Size: 2890 lines, 52.96 KB */
 
 /* ==========================================================================
    Canvas Roots Control Center - Styling
@@ -2543,11 +2543,16 @@
   max-width: 95vw;
 }
 
+.crc-migration-controls-container {
+  margin: 16px 0;
+}
+
 .crc-migration-controls {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
-  margin: 16px 0;
+  margin-bottom: 8px;
 }
 
 .crc-migration-slider {
@@ -2558,6 +2563,67 @@
 .crc-migration-count-label {
   min-width: 30px;
   font-weight: var(--font-medium);
+}
+
+.crc-migration-time-controls {
+  margin-top: 4px;
+}
+
+.crc-migration-year-input {
+  width: 70px;
+  padding: 4px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+}
+
+.crc-migration-year-input:focus {
+  border-color: var(--interactive-accent);
+  outline: none;
+}
+
+.crc-migration-year-info {
+  margin-left: 8px;
+  font-size: var(--font-ui-smaller);
+}
+
+.crc-migration-presets {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.crc-migration-preset-buttons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.crc-migration-preset-buttons .crc-btn {
+  padding: 2px 8px;
+  font-size: var(--font-ui-smaller);
+}
+
+.crc-migration-aggregation-controls {
+  margin-top: 8px;
+}
+
+.crc-migration-aggregation-select {
+  padding: 4px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  min-width: 180px;
+}
+
+.crc-migration-aggregation-help {
+  margin-left: 8px;
+  font-size: var(--font-ui-smaller);
 }
 
 .crc-migration-diagram {
@@ -5721,11 +5787,11 @@
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-02 03:30:32 UTC
+ * Build completed: 2025-12-02 03:40:31 UTC
  * Components processed: 20
- * Total lines: 5518
- * Total size: 104.91 KB
- * Build duration: 0.03 seconds
+ * Total lines: 5584
+ * Total size: 106.17 KB
+ * Build duration: 0.02 seconds
  *
  * Component breakdown:
  * - variables.css: 31 lines, 0.72 KB
@@ -5735,7 +5801,7 @@
  * - nodes.css: 12 lines, 0.3 KB
  * - edges.css: 4 lines, 0.07 KB
  * - settings.css: 4 lines, 0.07 KB
- * - modals.css: 2824 lines, 51.7 KB
+ * - modals.css: 2890 lines, 52.96 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
  * - validation.css: 84 lines, 1.47 KB

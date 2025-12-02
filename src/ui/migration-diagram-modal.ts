@@ -35,9 +35,11 @@ export class MigrationDiagramModal extends Modal {
 	private placeService: PlaceGraphService;
 	private allMigrations: DetailedMigration[];
 	private yearRange: { min: number; max: number } | null;
+	private maxHierarchyDepth: number;
 	private minFlowCount: number = 1;
 	private startYear: number | null = null;
 	private endYear: number | null = null;
+	private aggregationLevel: number = -1; // -1 = no aggregation (show all places as-is)
 	private diagramContainer: HTMLElement | null = null;
 
 	constructor(app: App) {
@@ -48,6 +50,7 @@ export class MigrationDiagramModal extends Modal {
 		// Get detailed migration data with years
 		this.allMigrations = this.placeService.getDetailedMigrations();
 		this.yearRange = this.placeService.getMigrationYearRange();
+		this.maxHierarchyDepth = this.placeService.getMaxHierarchyDepth();
 
 		// Set initial year range if available
 		if (this.yearRange) {
@@ -196,6 +199,43 @@ export class MigrationDiagramModal extends Modal {
 			});
 		}
 
+		// Row 3: Aggregation level (only if we have place hierarchy)
+		if (this.maxHierarchyDepth > 1) {
+			const controlsRow3 = controlsContainer.createDiv({ cls: 'crc-migration-controls crc-migration-aggregation-controls' });
+			controlsRow3.createEl('span', { text: 'Group by: ', cls: 'crc-text--muted' });
+
+			const aggregationSelect = controlsRow3.createEl('select', {
+				cls: 'crc-migration-aggregation-select dropdown'
+			});
+
+			// "No grouping" option
+			const noGroupOption = aggregationSelect.createEl('option', {
+				text: 'No grouping (show all places)',
+				value: '-1'
+			});
+
+			// Add level options based on hierarchy depth
+			const levelLabels = ['Country/Root', 'State/Region', 'County', 'City/Town', 'District', 'Locality'];
+			for (let level = 0; level < Math.min(this.maxHierarchyDepth, levelLabels.length); level++) {
+				aggregationSelect.createEl('option', {
+					text: levelLabels[level],
+					value: String(level)
+				});
+			}
+
+			aggregationSelect.value = '-1';
+			aggregationSelect.addEventListener('change', () => {
+				this.aggregationLevel = parseInt(aggregationSelect.value);
+				this.renderDiagram();
+			});
+
+			// Add help text
+			controlsRow3.createEl('span', {
+				text: '(aggregates places by hierarchy level)',
+				cls: 'crc-text--muted crc-migration-aggregation-help'
+			});
+		}
+
 		// Diagram container
 		this.diagramContainer = contentEl.createDiv({ cls: 'crc-migration-diagram' });
 
@@ -250,13 +290,31 @@ export class MigrationDiagramModal extends Modal {
 	}
 
 	/**
+	 * Apply aggregation level to a place name
+	 * Resolves the place to its ancestor at the specified level
+	 */
+	private applyAggregation(placeName: string): string {
+		if (this.aggregationLevel < 0) {
+			return placeName;
+		}
+		return this.placeService.resolveToAncestorLevel(placeName, this.aggregationLevel);
+	}
+
+	/**
 	 * Aggregate individual migrations into flow counts
 	 */
 	private aggregateMigrations(migrations: DetailedMigration[]): MigrationFlow[] {
 		const counts = new Map<string, number>();
 
 		for (const m of migrations) {
-			const key = `${m.from}|${m.to}`;
+			// Apply aggregation level to both from and to places
+			const from = this.applyAggregation(m.from);
+			const to = this.applyAggregation(m.to);
+
+			// Skip if aggregation results in same place (no actual migration)
+			if (from === to) continue;
+
+			const key = `${from}|${to}`;
 			counts.set(key, (counts.get(key) || 0) + 1);
 		}
 

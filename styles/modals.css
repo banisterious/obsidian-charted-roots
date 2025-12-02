@@ -2416,6 +2416,25 @@
   font-size: var(--font-ui-smaller);
 }
 
+.crc-migration-aggregation-controls {
+  margin-top: 8px;
+}
+
+.crc-migration-aggregation-select {
+  padding: 4px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  min-width: 180px;
+}
+
+.crc-migration-aggregation-help {
+  margin-left: 8px;
+  font-size: var(--font-ui-smaller);
+}
+
 .crc-migration-diagram {
   position: relative;
   overflow-x: auto;

@@ -255,6 +255,41 @@ export class PlaceGraphService {
 	}
 
 	/**
+	 * Gets the ancestor of a place at a specific hierarchy level
+	 * Level 0 = root (country), Level 1 = state/region, Level 2 = county, etc.
+	 * If the place is at or above the requested level, returns the place itself
+	 */
+	getAncestorAtLevel(placeId: string, level: number): PlaceNode | undefined {
+		const place = this.placeCache.get(placeId);
+		if (!place) return undefined;
+
+		const path = this.getHierarchyPath(placeId);
+		if (path.length === 0) return undefined;
+
+		// If requested level is beyond the path, return the place itself
+		if (level >= path.length) {
+			return place;
+		}
+
+		return path[level];
+	}
+
+	/**
+	 * Resolve a place name to its ancestor at a specific level
+	 * Tries to find the place by name, then gets its ancestor
+	 */
+	resolveToAncestorLevel(placeName: string, level: number): string {
+		const place = this.getPlaceByName(placeName);
+		if (!place) {
+			// If place not found, return original name
+			return placeName;
+		}
+
+		const ancestor = this.getAncestorAtLevel(place.id, level);
+		return ancestor ? ancestor.name : placeName;
+	}
+
+	/**
 	 * Gets places that have no parent (root-level or orphans)
 	 */
 	getRootPlaces(): PlaceNode[] {
