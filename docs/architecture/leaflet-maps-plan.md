@@ -612,16 +612,45 @@ Export markers and migration paths as a standalone SVG file for embedding in not
 ## Future Considerations (v2+)
 
 ### Offline Tile Caching
+- Cache OpenStreetMap tiles locally for offline use
 - Leaflet-offline or localForage-based solutions
 - Storage management UI (clear cache, view size)
 - Tile expiration/refresh logic
-- Per-region download capability
+- Per-region download capability (e.g., "Download tiles for Europe")
+- Use cases:
+  - Users without reliable internet
+  - Faster map loading for frequently-viewed regions
+  - Privacy-conscious users who want to minimize external requests
 
-### Time Slider Animation
-- Leaflet.TimeDimension plugin (~45KB + dependencies)
-- "Who was alive in year X?" queries
-- Generation-by-generation animation
-- Integration with Fictional Date Systems feature
+### Additional Marker Types
+- Expand beyond birth/death/marriage/burial markers
+- New event types:
+  - **Residence** - Places where a person lived (with date ranges)
+  - **Occupation** - Workplaces, businesses owned
+  - **Education** - Schools, universities attended
+  - **Military** - Service locations, battles
+  - **Religious** - Baptism, confirmation, ordination locations
+  - **Custom events** - User-defined event types
+- Implementation:
+  - Extend person note schema with `events` array
+  - Each event has type, place, date_from, date_to
+  - Layer toggles for each event type
+  - Distinct marker colors/icons per type
+
+### Route/Journey Visualization
+- Show a person's movements through life, not just birth→death
+- Connect all known locations in chronological order
+- Use cases:
+  - Track immigration journeys (multiple stops)
+  - Visualize military campaigns or tours of duty
+  - Show career moves across cities
+  - Map pilgrimage or travel routes
+- Implementation:
+  - Parse events with dates and locations
+  - Draw polyline connecting locations in date order
+  - Optional animation showing movement over time
+  - "Playback" mode stepping through life events
+- Complements Time Slider: see where someone was at each point in time
 
 ### Image Export
 Options explored (deferred due to CORS complexity):
