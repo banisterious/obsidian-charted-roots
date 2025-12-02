@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-02 03:00:12 UTC
+ * - Generated: 2025-12-02 03:30:32 UTC
  * - Components: 20 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -187,7 +187,7 @@
    COMPONENT: MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 2602 lines, 47.61 KB */
+/* Component Size: 2824 lines, 51.7 KB */
 
 /* ==========================================================================
    Canvas Roots Control Center - Styling
@@ -2252,6 +2252,14 @@
   flex: 1;
 }
 
+.crc-coord-header .setting-item-control {
+  flex-shrink: 0;
+}
+
+.crc-coord-lookup-btn {
+  font-size: var(--font-ui-small);
+}
+
 .crc-coord-inputs {
   display: flex;
   gap: 16px;
@@ -2277,7 +2285,7 @@
 }
 
 /* ==========================================================================
-   UNLINKED PLACES LIST
+   UNLINKED PLACES LIST (legacy)
    ========================================================================== */
 
 .crc-unlinked-places-list {
@@ -2314,6 +2322,116 @@
 }
 
 .crc-unlinked-place-item:hover .crc-btn--ghost {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   REFERENCED PLACES LIST (with filtering/sorting)
+   ========================================================================== */
+
+.crc-referenced-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.crc-referenced-controls .crc-filter-container {
+  flex: 1;
+  min-width: 150px;
+}
+
+.crc-sort-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.crc-sort-select {
+  padding: 4px 8px;
+  font-size: var(--font-ui-small);
+}
+
+.crc-filter-toggles {
+  display: flex;
+  gap: 12px;
+}
+
+.crc-filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: var(--font-ui-small);
+}
+
+.crc-filter-toggle input[type="checkbox"] {
+  margin: 0;
+}
+
+.crc-referenced-list {
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.crc-referenced-places-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.crc-referenced-place-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: var(--radius-s);
+  transition: background-color 0.1s ease;
+}
+
+.crc-referenced-place-item:hover {
+  background: var(--background-modifier-hover);
+}
+
+.crc-referenced-place-item--unlinked {
+  background: rgba(var(--color-yellow-rgb), 0.05);
+}
+
+.crc-referenced-place-item--unlinked:hover {
+  background: rgba(var(--color-yellow-rgb), 0.1);
+}
+
+.crc-referenced-place-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.crc-referenced-place-status {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.crc-referenced-place-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crc-referenced-place-item .crc-btn--ghost {
+  flex-shrink: 0;
+  margin-left: 8px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.crc-referenced-place-item:hover .crc-btn--ghost {
   opacity: 1;
 }
 
@@ -2454,7 +2572,7 @@
 
 .crc-migration-svg {
   display: block;
-  margin: 0 auto;
+  /* Don't center - allow natural scroll from left edge */
 }
 
 .crc-migration-arc {
@@ -2532,6 +2650,110 @@
 
 .crc-text--center {
   text-align: center;
+}
+
+/* ==========================================================================
+   PLACE NETWORK MODAL
+   ========================================================================== */
+
+.crc-place-network-modal {
+  width: 950px;
+  max-width: 95vw;
+}
+
+.crc-network-controls {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.crc-network-controls .setting-item {
+  border: none;
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+.crc-network-controls .setting-item-info {
+  padding-right: 8px;
+}
+
+.crc-place-network {
+  position: relative;
+  overflow: auto;
+  background: var(--background-secondary);
+  border-radius: var(--radius-m);
+  min-height: 400px;
+}
+
+.crc-network-svg {
+  display: block;
+}
+
+.crc-network-edge {
+  transition: stroke-opacity 150ms ease;
+}
+
+.crc-network-node {
+  cursor: pointer;
+  transition: opacity 150ms ease;
+}
+
+.crc-network-node:hover circle {
+  stroke: var(--text-accent);
+  stroke-width: 3;
+}
+
+.crc-network-label {
+  font-size: 10px;
+  fill: var(--text-normal);
+  pointer-events: none;
+}
+
+.crc-network-tooltip {
+  position: absolute;
+  padding: 8px 12px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 100;
+  box-shadow: var(--shadow-s);
+  white-space: nowrap;
+  line-height: 1.5;
+}
+
+.crc-network-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.crc-network-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.crc-network-legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.crc-network-legend-gradient {
+  width: 60px;
+  height: 12px;
+  background: linear-gradient(to right, hsl(240, 70%, 50%), hsl(0, 70%, 50%));
+  border-radius: 2px;
+  display: inline-block;
 }
 
 /* ==========================================================================
@@ -5499,11 +5721,11 @@
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-02 03:00:13 UTC
+ * Build completed: 2025-12-02 03:30:32 UTC
  * Components processed: 20
- * Total lines: 5296
- * Total size: 100.82 KB
- * Build duration: 0.02 seconds
+ * Total lines: 5518
+ * Total size: 104.91 KB
+ * Build duration: 0.03 seconds
  *
  * Component breakdown:
  * - variables.css: 31 lines, 0.72 KB
@@ -5513,7 +5735,7 @@
  * - nodes.css: 12 lines, 0.3 KB
  * - edges.css: 4 lines, 0.07 KB
  * - settings.css: 4 lines, 0.07 KB
- * - modals.css: 2602 lines, 47.61 KB
+ * - modals.css: 2824 lines, 51.7 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
  * - validation.css: 84 lines, 1.47 KB

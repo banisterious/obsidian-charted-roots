@@ -2381,7 +2381,7 @@
 
 .crc-migration-svg {
   display: block;
-  margin: 0 auto;
+  /* Don't center - allow natural scroll from left edge */
 }
 
 .crc-migration-arc {

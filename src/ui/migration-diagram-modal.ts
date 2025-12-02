@@ -145,16 +145,24 @@ export class MigrationDiagramModal extends Modal {
 		const sortedPlaces = Array.from(places.values())
 			.sort((a, b) => (b.birthCount + b.deathCount) - (a.birthCount + a.deathCount));
 
-		// Calculate layout
-		const width = 800;
-		const height = Math.max(400, sortedPlaces.length * 40 + 100);
-		const padding = 150;
+		// Calculate layout - ensure minimum spacing per node for readability
+		const minNodeSpacing = 80; // Minimum pixels between nodes
+		const padding = 60;
 		const nodeRadius = 8;
+		const labelHeight = 100; // Space for rotated labels below nodes
 
-		// Assign x positions
-		const nodeSpacing = (width - padding * 2) / Math.max(sortedPlaces.length - 1, 1);
+		// Calculate width based on number of nodes (scrollable if many)
+		const minWidth = 600;
+		const calculatedWidth = padding * 2 + (sortedPlaces.length - 1) * minNodeSpacing;
+		const width = Math.max(minWidth, calculatedWidth);
+
+		// Height for arcs above + nodes + labels below
+		const arcSpace = 200;
+		const height = arcSpace + nodeRadius * 2 + labelHeight;
+
+		// Assign x positions with fixed spacing
 		sortedPlaces.forEach((place, i) => {
-			place.x = padding + i * nodeSpacing;
+			place.x = padding + i * minNodeSpacing;
 		});
 
 		// Create SVG
@@ -173,7 +181,8 @@ export class MigrationDiagramModal extends Modal {
 		const maxFlow = Math.max(...flows.map(f => f.count));
 
 		// Draw arcs for each migration flow
-		const centerY = height / 2 - 20;
+		// Position nodes in upper portion to leave room for labels below
+		const centerY = arcSpace / 2 + 20;
 
 		for (const flow of flows) {
 			const fromPlace = placeIndex.get(flow.from);
@@ -186,11 +195,11 @@ export class MigrationDiagramModal extends Modal {
 			const x2 = toPlace.x;
 			const midX = (x1 + x2) / 2;
 			const distance = Math.abs(x2 - x1);
-			const curveHeight = Math.min(distance / 2, height / 3);
+			// Scale curve height based on distance, but cap it
+			const curveHeight = Math.min(distance / 2.5, arcSpace / 2 - 20);
 
-			// Determine if arc goes above or below
-			const arcAbove = x1 < x2;
-			const arcY = arcAbove ? centerY - curveHeight : centerY + curveHeight;
+			// All arcs go above the nodes (cleaner look)
+			const arcY = centerY - curveHeight;
 
 			// Create path
 			const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -259,20 +268,24 @@ export class MigrationDiagramModal extends Modal {
 			}
 			g.appendChild(circle);
 
-			// Label
+			// Rotated label (45 degrees) - positioned below node
+			const labelY = centerY + nodeRadius + 12;
 			const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
 			text.setAttribute('x', String(place.x));
-			text.setAttribute('y', String(centerY + nodeRadius + 15));
-			text.setAttribute('text-anchor', 'middle');
+			text.setAttribute('y', String(labelY));
+			text.setAttribute('text-anchor', 'start');
+			text.setAttribute('transform', `rotate(45, ${place.x}, ${labelY})`);
 			text.setAttribute('class', 'crc-migration-label');
-			text.textContent = this.truncatePlaceName(place.name, 15);
+			text.textContent = this.truncatePlaceName(place.name, 20);
 			g.appendChild(text);
 
-			// Stats below label
+			// Stats on second line (also rotated)
+			const statsY = labelY + 12;
 			const stats = document.createElementNS('http://www.w3.org/2000/svg', 'text');
 			stats.setAttribute('x', String(place.x));
-			stats.setAttribute('y', String(centerY + nodeRadius + 30));
-			stats.setAttribute('text-anchor', 'middle');
+			stats.setAttribute('y', String(statsY));
+			stats.setAttribute('text-anchor', 'start');
+			stats.setAttribute('transform', `rotate(45, ${place.x}, ${statsY})`);
 			stats.setAttribute('class', 'crc-migration-stats');
 			stats.textContent = `↑${place.birthCount} ↓${place.deathCount}`;
 			g.appendChild(stats);
