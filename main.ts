@@ -810,6 +810,18 @@ export default class CanvasRootsPlugin extends Plugin {
 											});
 									});
 								});
+
+								submenu.addSeparator();
+
+								// Create place notes from references
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Create place notes...')
+										.setIcon('map-pin')
+										.onClick(async () => {
+											await this.showCreatePlaceNotesForPerson(file);
+										});
+								});
 							});
 						} else {
 							// Mobile: flat menu with prefix
@@ -1016,6 +1028,15 @@ export default class CanvasRootsPlugin extends Plugin {
 									.setIcon('git-branch')
 									.onClick(async () => {
 										await this.assignLineageFromPerson(file, 'matrilineal');
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Create place notes...')
+									.setIcon('map-pin')
+									.onClick(async () => {
+										await this.showCreatePlaceNotesForPerson(file);
 									});
 							});
 						}
@@ -1938,6 +1959,87 @@ export default class CanvasRootsPlugin extends Plugin {
 			logger.error('lineage-tracking', 'Failed to assign lineage', error);
 			new Notice(`Failed to assign lineage: ${getErrorMessage(error)}`);
 		}
+	}
+
+	/**
+	 * Show create place notes dialog for a person note
+	 * Extracts place references from the person note and offers to create missing place notes
+	 */
+	private async showCreatePlaceNotesForPerson(file: TFile): Promise<void> {
+		const cache = this.app.metadataCache.getFileCache(file);
+		const fm = cache?.frontmatter;
+
+		if (!fm) {
+			new Notice('No frontmatter found in this note');
+			return;
+		}
+
+		// Collect all place references from this person
+		const placeFields: string[] = [];
+
+		// Birth/death/burial places
+		if (fm.birth_place && typeof fm.birth_place === 'string') {
+			placeFields.push(fm.birth_place);
+		}
+		if (fm.death_place && typeof fm.death_place === 'string') {
+			placeFields.push(fm.death_place);
+		}
+		if (fm.burial_place && typeof fm.burial_place === 'string') {
+			placeFields.push(fm.burial_place);
+		}
+
+		// Spouse marriage locations
+		let spouseIndex = 1;
+		while (fm[`spouse${spouseIndex}`] || fm[`spouse${spouseIndex}_id`]) {
+			const marriageLocation = fm[`spouse${spouseIndex}_marriage_location`];
+			if (marriageLocation && typeof marriageLocation === 'string') {
+				placeFields.push(marriageLocation);
+			}
+			spouseIndex++;
+		}
+
+		// Deduplicate and filter out wikilinks (already linked to place notes)
+		const uniquePlaces = [...new Set(placeFields)]
+			.map(p => p.trim())
+			.filter(p => p && !p.startsWith('[['));
+
+		if (uniquePlaces.length === 0) {
+			new Notice('No unlinked place references found in this person note');
+			return;
+		}
+
+		// Check which places already have notes
+		const placeGraph = new PlaceGraphService(this.app);
+		placeGraph.reloadCache();
+
+		const missingPlaces: string[] = [];
+		for (const placeName of uniquePlaces) {
+			const existingPlace = placeGraph.getPlaceByName(placeName);
+			if (!existingPlace) {
+				missingPlaces.push(placeName);
+			}
+		}
+
+		if (missingPlaces.length === 0) {
+			new Notice('All place references already have corresponding place notes');
+			return;
+		}
+
+		// Show modal to select which places to create
+		const { CreateMissingPlacesModal } = await import('./src/ui/create-missing-places-modal');
+		const modal = new CreateMissingPlacesModal(
+			this.app,
+			missingPlaces.map(name => ({ name, count: 1 })),
+			{
+				directory: this.settings.peopleFolder || '',
+				onComplete: (created: number) => {
+					if (created > 0) {
+						new Notice(`Created ${created} place note${created !== 1 ? 's' : ''}`);
+					}
+				}
+			}
+		);
+		modal.open();
 	}
 
 	/**
