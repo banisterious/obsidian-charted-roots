@@ -1,9 +1,54 @@
 # Canvas Roots Frontmatter Schema Reference
 
-> **Version:** 0.5.1
+> **Version:** 0.5.2
 > **Last Updated:** 2025-12-01
 
-This document defines all frontmatter properties recognized by Canvas Roots for person notes and (future) place notes.
+This document defines all frontmatter properties recognized by Canvas Roots for person notes and place notes.
+
+---
+
+## Data Model Overview
+
+The following diagram shows how the main entity types relate to each other:
+
+```mermaid
+erDiagram
+    PERSON ||--o| PERSON : "father"
+    PERSON ||--o| PERSON : "mother"
+    PERSON }o--o{ PERSON : "spouse"
+    PERSON ||--o{ PERSON : "child"
+    PERSON }o--o| PLACE : "birth_place"
+    PERSON }o--o| PLACE : "death_place"
+    PERSON }o--o| PLACE : "burial_place"
+    PLACE ||--o| PLACE : "parent_place"
+
+    PERSON {
+        string cr_id PK
+        string name
+        string born
+        string died
+        string gender
+        string father_id FK
+        string mother_id FK
+        string collection
+    }
+
+    PLACE {
+        string cr_id PK
+        string name
+        string place_type
+        string place_category
+        string parent_place_id FK
+        float lat
+        float long
+    }
+```
+
+**Key relationships:**
+- **Person → Person**: Family relationships (father, mother, spouse, child) with dual wikilink + `_id` storage
+- **Person → Place**: Geographic links for life events (birth, death, burial, marriage locations)
+- **Place → Place**: Hierarchical structure (city → state → country)
+- **Collection**: Shared grouping property across both entity types
 
 ---
 
