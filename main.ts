@@ -25,10 +25,12 @@ import { LineageTrackingService, LineageType } from './src/core/lineage-tracking
 import { RelationshipHistoryService, RelationshipHistoryData, formatChangeDescription } from './src/core/relationship-history';
 import { RelationshipHistoryModal } from './src/ui/relationship-history-modal';
 import { FamilyChartView, VIEW_TYPE_FAMILY_CHART } from './src/ui/views/family-chart-view';
+import { MapView, VIEW_TYPE_MAP } from './src/maps/map-view';
 import { TreePreviewRenderer } from './src/ui/tree-preview';
 import { FolderFilterService } from './src/core/folder-filter';
 import { SplitWizardModal } from './src/ui/split-wizard-modal';
 import { CreatePlaceModal } from './src/ui/create-place-modal';
+import { CreatePersonModal } from './src/ui/create-person-modal';
 import { PlaceGraphService } from './src/core/place-graph';
 
 const logger = getLogger('CanvasRootsPlugin');
@@ -79,6 +81,12 @@ export default class CanvasRootsPlugin extends Plugin {
 		this.registerView(
 			VIEW_TYPE_FAMILY_CHART,
 			(leaf) => new FamilyChartView(leaf, this)
+		);
+
+		// Register map view
+		this.registerView(
+			VIEW_TYPE_MAP,
+			(leaf) => new MapView(leaf, this)
 		);
 
 		// Add ribbon icon for control center
@@ -173,6 +181,24 @@ export default class CanvasRootsPlugin extends Plugin {
 			name: 'Open family chart',
 			callback: () => {
 				void this.activateFamilyChartView();
+			}
+		});
+
+		// Add command: Open Map View
+		this.addCommand({
+			id: 'open-map-view',
+			name: 'Open map view',
+			callback: () => {
+				void this.activateMapView();
+			}
+		});
+
+		// Add command: Open New Map View (for side-by-side comparison)
+		this.addCommand({
+			id: 'open-new-map-view',
+			name: 'Open new map view (for comparison)',
+			callback: () => {
+				void this.activateMapView(undefined, true);
 			}
 		});
 
@@ -537,14 +563,70 @@ export default class CanvasRootsPlugin extends Plugin {
 					}
 				}
 
-				// Markdown files: Person notes, Place notes, or plain notes
+				// Markdown files: Person notes, Place notes, Map notes, or plain notes
 				if (file instanceof TFile && file.extension === 'md') {
 					const cache = this.app.metadataCache.getFileCache(file);
 					const hasCrId = !!cache?.frontmatter?.cr_id;
 					const isPlaceNote = cache?.frontmatter?.type === 'place';
+					const isMapNote = cache?.frontmatter?.type === 'map';
 
+					// Map notes get map-specific options (open map view with this map selected)
+					if (isMapNote) {
+						menu.addSeparator();
+
+						const mapId = cache?.frontmatter?.map_id;
+						const mapName = cache?.frontmatter?.name || file.basename;
+
+						if (useSubmenu) {
+							menu.addItem((item) => {
+								const submenu: Menu = item
+									.setTitle('Canvas Roots')
+									.setIcon('map')
+									.setSubmenu();
+
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle(`Open "${mapName}" in map view`)
+										.setIcon('map')
+										.onClick(async () => {
+											await this.activateMapView(mapId);
+										});
+								});
+
+								submenu.addSeparator();
+
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Add essential map properties')
+										.setIcon('globe')
+										.onClick(async () => {
+											await this.addEssentialMapProperties([file]);
+										});
+								});
+							});
+						} else {
+							// Mobile: flat menu for map notes
+							menu.addItem((item) => {
+								item
+									.setTitle(`Canvas Roots: Open "${mapName}" in map view`)
+									.setIcon('map')
+									.onClick(async () => {
+										await this.activateMapView(mapId);
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Add essential map properties')
+									.setIcon('globe')
+									.onClick(async () => {
+										await this.addEssentialMapProperties([file]);
+									});
+							});
+						}
+					}
 					// Place notes with cr_id get place-specific options
-					if (hasCrId && isPlaceNote) {
+					else if (hasCrId && isPlaceNote) {
 						menu.addSeparator();
 
 						if (useSubmenu) {
@@ -561,6 +643,26 @@ export default class CanvasRootsPlugin extends Plugin {
 										.setIcon('folder')
 										.onClick(async () => {
 											await this.promptSetCollection(file);
+										});
+								});
+
+								// Open in map view
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Open in map view')
+										.setIcon('map')
+										.onClick(async () => {
+											await this.activateMapView();
+										});
+								});
+
+								// Edit place
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Edit place')
+										.setIcon('edit')
+										.onClick(async () => {
+											await this.openEditPlaceModal(file);
 										});
 								});
 
@@ -600,6 +702,24 @@ export default class CanvasRootsPlugin extends Plugin {
 									.setIcon('folder')
 									.onClick(async () => {
 										await this.promptSetCollection(file);
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Open in map view')
+									.setIcon('map')
+									.onClick(async () => {
+										await this.activateMapView();
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Edit place')
+									.setIcon('edit')
+									.onClick(async () => {
+										await this.openEditPlaceModal(file);
 									});
 							});
 
@@ -667,6 +787,16 @@ export default class CanvasRootsPlugin extends Plugin {
 										.onClick(() => {
 											const modal = new ControlCenterModal(this.app, this);
 											modal.openWithPerson(file);
+										});
+								});
+
+								// Edit person
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Edit person')
+										.setIcon('edit')
+										.onClick(async () => {
+											await this.openEditPersonModal(file);
 										});
 								});
 
@@ -761,6 +891,16 @@ export default class CanvasRootsPlugin extends Plugin {
 											if (crId) {
 												new FindOnCanvasModal(this.app, personName, crId).open();
 											}
+										});
+								});
+
+								// Open in map view
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Open in map view')
+										.setIcon('map')
+										.onClick(async () => {
+											await this.activateMapView();
 										});
 								});
 
@@ -950,6 +1090,15 @@ export default class CanvasRootsPlugin extends Plugin {
 
 							menu.addItem((item) => {
 								item
+									.setTitle('Canvas Roots: Edit person')
+									.setIcon('edit')
+									.onClick(async () => {
+										await this.openEditPersonModal(file);
+									});
+							});
+
+							menu.addItem((item) => {
+								item
 									.setTitle('Canvas Roots: Add parent')
 									.setIcon('user')
 									.onClick(() => {
@@ -1025,6 +1174,15 @@ export default class CanvasRootsPlugin extends Plugin {
 										if (crId) {
 											new FindOnCanvasModal(this.app, personName, crId).open();
 										}
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Open in map view')
+									.setIcon('map')
+									.onClick(async () => {
+										await this.activateMapView();
 									});
 							});
 
@@ -1978,6 +2136,109 @@ export default class CanvasRootsPlugin extends Plugin {
 				input.select();
 			}, 50);
 		});
+	}
+
+	/**
+	 * Open the place edit modal for a place note
+	 */
+	private async openEditPlaceModal(file: TFile): Promise<void> {
+		// Get the place cr_id from frontmatter
+		const cache = this.app.metadataCache.getFileCache(file);
+		const crId = cache?.frontmatter?.cr_id;
+
+		if (!crId) {
+			new Notice('Place note does not have a cr_id');
+			return;
+		}
+
+		// Load the place from the place graph
+		const placeGraph = new PlaceGraphService(this.app);
+		placeGraph.reloadCache();
+		const place = placeGraph.getPlaceByCrId(crId);
+
+		if (!place) {
+			new Notice('Could not find place in graph');
+			return;
+		}
+
+		// Get family graph for collection options
+		const familyGraph = new FamilyGraphService(this.app);
+		familyGraph.reloadCache();
+
+		// Open the modal in edit mode
+		new CreatePlaceModal(this.app, {
+			editPlace: place,
+			editFile: file,
+			familyGraph,
+			placeGraph,
+			settings: this.settings
+		}).open();
+	}
+
+	/**
+	 * Open the person edit modal for a person note
+	 */
+	private async openEditPersonModal(file: TFile): Promise<void> {
+		// Get frontmatter data
+		const cache = this.app.metadataCache.getFileCache(file);
+		const fm = cache?.frontmatter;
+
+		if (!fm?.cr_id) {
+			new Notice('Person note does not have a cr_id');
+			return;
+		}
+
+		// Extract relationship names from wikilinks
+		const extractName = (value: string | undefined): string | undefined => {
+			if (!value) return undefined;
+			// Handle wikilink format: [[Name]] or "[[Name]]"
+			const match = value.match(/\[\[([^\]]+)\]\]/);
+			return match ? match[1] : value;
+		};
+
+		// Extract spouse names/IDs
+		const spouseNames: string[] = [];
+		const spouseIds: string[] = [];
+		if (fm.spouse) {
+			const spouses = Array.isArray(fm.spouse) ? fm.spouse : [fm.spouse];
+			for (const s of spouses) {
+				const name = extractName(String(s));
+				if (name) spouseNames.push(name);
+			}
+		}
+		if (fm.spouse_id) {
+			const ids = Array.isArray(fm.spouse_id) ? fm.spouse_id : [fm.spouse_id];
+			for (const id of ids) {
+				spouseIds.push(String(id));
+			}
+		}
+
+		// Get family graph for collection options
+		const familyGraph = new FamilyGraphService(this.app);
+		familyGraph.reloadCache();
+
+		// Open the modal in edit mode
+		new CreatePersonModal(this.app, {
+			editFile: file,
+			editPersonData: {
+				crId: String(fm.cr_id),
+				name: String(fm.name || ''),
+				gender: fm.gender || fm.sex,
+				born: fm.born,
+				died: fm.died,
+				birthPlace: fm.birth_place,
+				deathPlace: fm.death_place,
+				occupation: fm.occupation,
+				fatherId: fm.father_id,
+				fatherName: extractName(fm.father),
+				motherId: fm.mother_id,
+				motherName: extractName(fm.mother),
+				spouseIds: spouseIds.length > 0 ? spouseIds : undefined,
+				spouseNames: spouseNames.length > 0 ? spouseNames : undefined,
+				collection: fm.collection
+			},
+			familyGraph
+		}).open();
 	}
 
 	private async toggleRootPerson(file: TFile): Promise<void> {
@@ -3084,6 +3345,177 @@ export default class CanvasRootsPlugin extends Plugin {
 		}
 	}
 
+	private async addEssentialMapProperties(files: TFile[]) {
+		try {
+			let processedCount = 0;
+			let skippedCount = 0;
+			let errorCount = 0;
+
+			for (const file of files) {
+				try {
+					// Read current file content
+					const content = await this.app.vault.read(file);
+					const cache = this.app.metadataCache.getFileCache(file);
+
+					// Check if file already has frontmatter
+					const hasFrontmatter = content.startsWith('---');
+					const existingFrontmatter = cache?.frontmatter || {};
+
+					// Define essential map properties
+					const essentialProperties: Record<string, unknown> = {};
+
+					// type: Must be "map"
+					if (existingFrontmatter.type !== 'map') {
+						essentialProperties.type = 'map';
+					}
+
+					// map_id: Generate from filename if missing
+					if (!existingFrontmatter.map_id) {
+						essentialProperties.map_id = file.basename.toLowerCase().replace(/\s+/g, '-');
+					}
+
+					// name: Use filename if missing
+					if (!existingFrontmatter.name) {
+						essentialProperties.name = file.basename;
+					}
+
+					// universe: Add empty if missing
+					if (!existingFrontmatter.universe) {
+						essentialProperties.universe = '';
+					}
+
+					// image: Add empty if missing
+					if (!existingFrontmatter.image) {
+						essentialProperties.image = '';
+					}
+
+					// bounds: Add default structure if missing
+					if (!existingFrontmatter.bounds) {
+						essentialProperties.bounds = {
+							north: 100,
+							south: -100,
+							east: 100,
+							west: -100
+						};
+					}
+
+					// Skip if no properties to add
+					if (Object.keys(essentialProperties).length === 0) {
+						skippedCount++;
+						continue;
+					}
+
+					// Build new frontmatter (map type first for clarity)
+					const orderedFrontmatter: Record<string, unknown> = {};
+
+					// Map type identifier first
+					if (essentialProperties.type || existingFrontmatter.type) {
+						orderedFrontmatter.type = essentialProperties.type || existingFrontmatter.type;
+					}
+
+					// Then map_id
+					if (essentialProperties.map_id || existingFrontmatter.map_id) {
+						orderedFrontmatter.map_id = essentialProperties.map_id || existingFrontmatter.map_id;
+					}
+
+					// Then name
+					if (essentialProperties.name || existingFrontmatter.name) {
+						orderedFrontmatter.name = essentialProperties.name || existingFrontmatter.name;
+					}
+
+					// Then universe
+					if (essentialProperties.universe !== undefined || existingFrontmatter.universe !== undefined) {
+						orderedFrontmatter.universe = essentialProperties.universe ?? existingFrontmatter.universe;
+					}
+
+					// Then image
+					if (essentialProperties.image !== undefined || existingFrontmatter.image !== undefined) {
+						orderedFrontmatter.image = essentialProperties.image ?? existingFrontmatter.image;
+					}
+
+					// Then bounds
+					if (essentialProperties.bounds || existingFrontmatter.bounds) {
+						orderedFrontmatter.bounds = essentialProperties.bounds || existingFrontmatter.bounds;
+					}
+
+					// Then remaining existing properties
+					for (const [key, value] of Object.entries(existingFrontmatter)) {
+						if (!(key in orderedFrontmatter)) {
+							orderedFrontmatter[key] = value;
+						}
+					}
+
+					// Convert frontmatter to YAML string
+					const yamlLines = ['---'];
+					for (const [key, value] of Object.entries(orderedFrontmatter)) {
+						if (Array.isArray(value)) {
+							if (value.length === 0) {
+								yamlLines.push(`${key}: []`);
+							} else {
+								yamlLines.push(`${key}:`);
+								value.forEach(item => yamlLines.push(`  - ${item}`));
+							}
+						} else if (typeof value === 'object' && value !== null) {
+							// Handle nested objects like bounds
+							yamlLines.push(`${key}:`);
+							for (const [subKey, subValue] of Object.entries(value)) {
+								yamlLines.push(`  ${subKey}: ${subValue}`);
+							}
+						} else if (value === '') {
+							yamlLines.push(`${key}: ""`);
+						} else {
+							yamlLines.push(`${key}: ${value}`);
+						}
+					}
+					yamlLines.push('---');
+
+					// Get body content (everything after frontmatter)
+					let bodyContent = '';
+					if (hasFrontmatter) {
+						const endOfFrontmatter = content.indexOf('---', 3);
+						if (endOfFrontmatter !== -1) {
+							bodyContent = content.substring(endOfFrontmatter + 3).trim();
+						}
+					} else {
+						bodyContent = content.trim();
+					}
+
+					// Construct new file content
+					const newContent = yamlLines.join('\n') + '\n\n' + bodyContent;
+
+					// Write back to file
+					await this.app.vault.modify(file, newContent);
+					processedCount++;
+
+				} catch (error: unknown) {
+					console.error(`Error processing ${file.path}:`, error);
+					errorCount++;
+				}
+			}
+
+			// Show summary
+			if (files.length === 1) {
+				if (processedCount === 1) {
+					new Notice('Added essential map properties');
+				} else if (skippedCount === 1) {
+					new Notice('File already has all essential map properties');
+				} else {
+					new Notice('Failed to add essential map properties');
+				}
+			} else {
+				const parts = [];
+				if (processedCount > 0) parts.push(`${processedCount} updated`);
+				if (skippedCount > 0) parts.push(`${skippedCount} already complete`);
+				if (errorCount > 0) parts.push(`${errorCount} errors`);
+				new Notice(`Essential map properties: ${parts.join(', ')}`);
+			}
+
+		} catch (error: unknown) {
+			console.error('Error adding essential map properties:', error);
+			new Notice('Failed to add essential map properties');
+		}
+	}
+
 	/**
 	 * Generate an Excalidraw tree directly from a person note
 	 * Uses default settings for quick generation
@@ -3453,6 +3885,54 @@ export default class CanvasRootsPlugin extends Plugin {
 			// If we have a root person, set it in the view
 			if (rootPersonId && leaf.view instanceof FamilyChartView) {
 				await leaf.view.setRootPerson(rootPersonId);
+			}
+		}
+	}
+
+	/**
+	 * Activate the Map view
+	 * Opens an existing view or creates a new one
+	 * @param mapId Optional map ID to switch to after opening
+	 * @param forceNew If true, always create a new map view (for side-by-side comparison)
+	 * @param splitDirection If provided, split the existing map view in this direction
+	 */
+	async activateMapView(mapId?: string, forceNew = false, splitDirection?: 'horizontal' | 'vertical'): Promise<void> {
+		const { workspace } = this.app;
+
+		let leaf: WorkspaceLeaf | null = null;
+		const leaves = workspace.getLeavesOfType(VIEW_TYPE_MAP);
+
+		if (!forceNew && leaves.length > 0) {
+			// A leaf with our view already exists, use that
+			leaf = leaves[0];
+		} else if (forceNew && leaves.length > 0 && splitDirection) {
+			// Split an existing map view
+			const existingLeaf = leaves[0];
+			leaf = workspace.createLeafBySplit(existingLeaf, splitDirection);
+			if (leaf) {
+				await leaf.setViewState({ type: VIEW_TYPE_MAP, active: true });
+			}
+		} else {
+			// Open in main workspace as a new tab
+			leaf = workspace.getLeaf('tab');
+			if (leaf) {
+				await leaf.setViewState({ type: VIEW_TYPE_MAP, active: true });
+			}
+		}
+
+		// Reveal the leaf
+		if (leaf) {
+			void workspace.revealLeaf(leaf);
+
+			// If a specific map was requested, switch to it after the view is ready
+			if (mapId && leaf.view) {
+				// Use a short delay to ensure the map controller is initialized
+				setTimeout(() => {
+					const mapView = leaf?.view as { mapController?: { setActiveMap: (id: string) => Promise<void> } };
+					if (mapView?.mapController?.setActiveMap) {
+						void mapView.mapController.setActiveMap(mapId);
+					}
+				}, 100);
 			}
 		}
 	}

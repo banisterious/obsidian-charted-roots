@@ -43,6 +43,7 @@ const CONFIG = {
     'family-chart-view.css', // Interactive family chart view
     'data-quality.css',  // Data quality analysis tab
     'canvas-navigation.css', // Canvas navigation and split wizard
+    'map-view.css',      // Leaflet map view (includes bundled Leaflet CSS)
     'animations.css',    // Keyframes and transitions
     'responsive.css',    // Responsive breakpoints
     'theme.css'          // Theme compatibility (last)

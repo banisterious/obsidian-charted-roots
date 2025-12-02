@@ -7,6 +7,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.0] - Unreleased
+
+### Added
+
+- **Interactive Map View**: Full Leaflet.js-powered geographic visualization
+  - Dedicated Map View (Open via ribbon icon or command palette)
+  - OpenStreetMap tiles for real-world locations
+  - Color-coded markers: birth (green), death (red), marriage (purple), burial (gray)
+  - Marker clustering for dense areas with click-to-zoom
+  - Migration paths connecting birth → death locations with directional arrows
+  - Path text labels showing person names along migration routes (Leaflet.TextPath)
+  - Heat map layer showing geographic concentration
+  - Fullscreen mode and mini-map overview
+  - Place search with autocomplete and zoom-to-result
+
+- **Custom Image Maps**: Support for fictional world mapping
+  - Load custom map images from vault (PNG, JPG, WebP)
+  - Universe-based filtering (auto-switch to Westeros map when viewing House Stark)
+  - YAML frontmatter configuration for bounds, center, zoom
+  - Coordinate system mapping for placing markers on fictional maps
+
+- **Map Filtering & Controls**
+  - Filter by collection (family branch)
+  - Year range filtering with min/max inputs
+  - Layer toggles: births, deaths, marriages, paths, heat map
+  - Map selector dropdown for switching between real-world and custom maps
+
+- **Time Slider Animation**: "Who was alive when?" visualization
+  - Scrub through years to see who was alive at any point
+  - Play/pause animation with adjustable speed
+  - Snapshot mode (only alive at year) vs. cumulative mode
+  - Person count display during animation
+
+- **Map Comparison**: Side-by-side and multi-instance support
+  - Split view horizontally or vertically
+  - Open additional map tabs
+  - Independent filtering per instance
+
+- **Export Options**
+  - Export as GeoJSON Overlay for GIS tools
+  - Export as SVG Overlay for embedding in notes
+  - Exports include markers, paths, and metadata
+
+- **Edit Person Modal**: Update existing person notes
+  - Edit mode for CreatePersonModal
+  - Update name, dates, places, relationships
+  - Clear relationships by unlinking
+
+- **Context Menu Actions**: Quick editing from any view
+  - "Edit person" action opens edit modal for person notes
+  - "Edit place" action opens edit modal for place notes
+
+- **Folder Settings**: Configurable default folders in plugin settings
+  - People folder setting
+  - Places folder setting
+  - Maps folder setting (for custom map images)
+  - Canvases folder setting
+
+### Changed
+
+- Control Center restructured with folder settings section
+
+---
+
 ## [0.5.2] - 2025-12-01
 
 ### Added

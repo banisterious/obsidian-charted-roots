@@ -29,7 +29,7 @@ The following priority order guides future development:
 | Priority | Feature | Status |
 |:--------:|---------|--------|
 | 1 | [Import/Export Enhancements](#importexport-enhancements) | ✅ Complete (v0.6.0) |
-| 2 | [Geographic Features (Phase 4)](#geographic-features-phase-4) | 🚧 In Progress (v0.6.0) |
+| 2 | [Geographic Features (Phase 4)](#geographic-features-phase-4) | ✅ Complete (v0.6.0) |
 | 3 | [Custom Relationship Types](#custom-relationship-types) | Planned |
 | 4 | [Schema Validation](#schema-validation--consistency-checks) | Planned |
 | 5 | [Fictional Date Systems](#fictional-date-systems) | Planned |
@@ -42,25 +42,25 @@ The following priority order guides future development:
 
 ## Planned Features
 
-### Geographic Features (Phase 4)
+### Geographic Features (Phase 4) ✅
 
-> Phases 1-3 complete in v0.5.2. See [geographic-features-plan.md](architecture/geographic-features-plan.md).
+> **Complete in v0.6.0.** See [leaflet-maps-plan.md](architecture/leaflet-maps-plan.md) for implementation details.
 
-**Summary:** Full interactive map support with Leaflet.js integration.
+**Implemented Features:**
+- Interactive Map View with Leaflet.js and OpenStreetMap tiles
+- Color-coded markers (birth, death, marriage, burial) with clustering
+- Migration paths with directional arrows and person name labels (TextPath)
+- Custom image maps for fictional worlds with universe-based switching
+- Time slider animation ("who was alive in year X?")
+- Heat map layer for geographic concentration
+- Fullscreen mode, mini-map, place search
+- Side-by-side map comparison (split view)
+- GeoJSON and SVG overlay export
 
-**Key Capabilities:**
-- Leaflet.js integration with OpenStreetMap tiles
-- Pin markers for birth/death locations with clustering
-- Migration path lines connecting birth → death locations
-- Custom image maps for fictional worlds (Westeros, Middle-earth, etc.)
-- Time slider for generation animation ("who was alive in year X?")
-- Heat maps showing geographic concentration
-
-**Integration Points:**
-- Place notes provide coordinates
-- Person notes linked via birth_place, death_place fields
-- Fictional Date Systems for timeline animation
-- Collection filtering for family branch isolation
+**Future Enhancements (v2+):** See [leaflet-maps-plan.md § Future Considerations](architecture/leaflet-maps-plan.md#future-considerations-v2)
+- Interactive image overlay manipulation (Leaflet.DistortableImage)
+- Pixel-based coordinates (L.CRS.Simple) for worldbuilders
+- Tiled image maps (Zoomify/DeepZoom) for massive images
 
 ---
 

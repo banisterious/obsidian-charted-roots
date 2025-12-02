@@ -81,6 +81,8 @@ export interface CanvasRootsSettings {
 	autoGenerateCrId: boolean;
 	peopleFolder: string;
 	placesFolder: string;
+	mapsFolder: string;
+	canvasesFolder: string;
 	logExportPath: string;
 	logLevel: LogLevel;
 	obfuscateLogExports: boolean;
@@ -183,6 +185,8 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	autoGenerateCrId: true,
 	peopleFolder: 'Canvas Roots/People',
 	placesFolder: 'Canvas Roots/Places',
+	mapsFolder: 'Canvas Roots/Places/Maps',
+	canvasesFolder: 'Canvas Roots/Canvases',
 	logExportPath: '.canvas-roots/logs',
 	logLevel: 'debug',
 	obfuscateLogExports: true,  // Secure by default - protect PII in log exports
@@ -331,6 +335,28 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.placesFolder)
 				.onChange(async (value) => {
 					this.plugin.settings.placesFolder = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Maps folder')
+			.setDesc('Folder for custom map configuration notes (for fictional/historical maps)')
+			.addText(text => text
+				.setPlaceholder('Canvas Roots/Places/Maps')
+				.setValue(this.plugin.settings.mapsFolder)
+				.onChange(async (value) => {
+					this.plugin.settings.mapsFolder = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Canvases folder')
+			.setDesc('Folder for generated family tree canvases (reserved for future use)')
+			.addText(text => text
+				.setPlaceholder('Canvas Roots/Canvases')
+				.setValue(this.plugin.settings.canvasesFolder)
+				.onChange(async (value) => {
+					this.plugin.settings.canvasesFolder = value;
 					await this.plugin.saveSettings();
 				}));
 

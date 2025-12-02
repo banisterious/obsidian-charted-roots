@@ -1,10 +1,10 @@
 /**
  * Create Person Modal
- * Modal for creating new person notes with relationship linking
+ * Modal for creating or editing person notes with relationship linking
  */
 
 import { App, Modal, Setting, TFile, Notice, normalizePath } from 'obsidian';
-import { createPersonNote, PersonData } from '../core/person-note-writer';
+import { createPersonNote, updatePersonNote, PersonData } from '../core/person-note-writer';
 import { createLucideIcon } from './lucide-icons';
 import { FamilyGraphService } from '../core/family-graph';
 import { PersonPickerModal, PersonInfo } from './person-picker';
@@ -18,12 +18,13 @@ interface RelationshipField {
 }
 
 /**
- * Modal for creating new person notes
+ * Modal for creating or editing person notes
  */
 export class CreatePersonModal extends Modal {
 	private personData: PersonData;
 	private directory: string;
 	private onCreated?: (file: TFile) => void;
+	private onUpdated?: (file: TFile) => void;
 	private familyGraph?: FamilyGraphService;
 	private existingCollections: string[] = [];
 
@@ -32,22 +33,83 @@ export class CreatePersonModal extends Modal {
 	private motherField: RelationshipField = {};
 	private spouseField: RelationshipField = {};
 
+	// Edit mode properties
+	private editMode: boolean = false;
+	private editingFile?: TFile;
+
 	constructor(
 		app: App,
 		options?: {
 			directory?: string;
 			initialName?: string;
 			onCreated?: (file: TFile) => void;
+			onUpdated?: (file: TFile) => void;
 			familyGraph?: FamilyGraphService;
+			// Edit mode options
+			editFile?: TFile;
+			editPersonData?: {
+				crId: string;
+				name: string;
+				gender?: string;
+				born?: string;
+				died?: string;
+				birthPlace?: string;
+				deathPlace?: string;
+				occupation?: string;
+				fatherId?: string;
+				fatherName?: string;
+				motherId?: string;
+				motherName?: string;
+				spouseIds?: string[];
+				spouseNames?: string[];
+				collection?: string;
+			};
 		}
 	) {
 		super(app);
 		this.directory = options?.directory || '';
 		this.onCreated = options?.onCreated;
+		this.onUpdated = options?.onUpdated;
 		this.familyGraph = options?.familyGraph;
-		this.personData = {
-			name: options?.initialName || ''
-		};
+
+		// Check for edit mode
+		if (options?.editFile && options?.editPersonData) {
+			this.editMode = true;
+			this.editingFile = options.editFile;
+			const ep = options.editPersonData;
+			this.personData = {
+				name: ep.name,
+				crId: ep.crId,
+				gender: ep.gender,
+				birthDate: ep.born,
+				deathDate: ep.died,
+				birthPlace: ep.birthPlace,
+				deathPlace: ep.deathPlace,
+				occupation: ep.occupation
+			};
+			// Set up relationship fields
+			if (ep.fatherId || ep.fatherName) {
+				this.fatherField = { crId: ep.fatherId, name: ep.fatherName };
+			}
+			if (ep.motherId || ep.motherName) {
+				this.motherField = { crId: ep.motherId, name: ep.motherName };
+			}
+			if ((ep.spouseIds && ep.spouseIds.length > 0) || (ep.spouseNames && ep.spouseNames.length > 0)) {
+				// For now, only handle first spouse in the modal
+				this.spouseField = {
+					crId: ep.spouseIds?.[0],
+					name: ep.spouseNames?.[0]
+				};
+			}
+			// Get directory from file path
+			const pathParts = options.editFile.path.split('/');
+			pathParts.pop(); // Remove filename
+			this.directory = pathParts.join('/');
+		} else {
+			this.personData = {
+				name: options?.initialName || ''
+			};
+		}
 
 		// Gather existing collections from person notes
 		this.loadExistingCollections();
@@ -82,9 +144,9 @@ export class CreatePersonModal extends Modal {
 		// Header
 		const header = contentEl.createDiv({ cls: 'crc-modal-header' });
 		const titleContainer = header.createDiv({ cls: 'crc-modal-title' });
-		const icon = createLucideIcon('user-plus', 24);
+		const icon = createLucideIcon(this.editMode ? 'edit' : 'user-plus', 24);
 		titleContainer.appendChild(icon);
-		titleContainer.appendText('Create person note');
+		titleContainer.appendText(this.editMode ? 'Edit person note' : 'Create person note');
 
 		// Form container
 		const form = contentEl.createDiv({ cls: 'crc-form' });
@@ -229,16 +291,18 @@ export class CreatePersonModal extends Modal {
 			this.getCollectionValue = () => collectionValue;
 		}
 
-		// Directory setting
-		new Setting(form)
-			.setName('Directory')
-			.setDesc('Where to create the person note')
-			.addText(text => text
-				.setPlaceholder('e.g., People')
-				.setValue(this.directory)
-				.onChange(value => {
-					this.directory = value;
-				}));
+		// Directory setting (only show in create mode)
+		if (!this.editMode) {
+			new Setting(form)
+				.setName('Directory')
+				.setDesc('Where to create the person note')
+				.addText(text => text
+					.setPlaceholder('e.g., People')
+					.setValue(this.directory)
+					.onChange(value => {
+						this.directory = value;
+					}));
+		}
 
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
@@ -251,12 +315,16 @@ export class CreatePersonModal extends Modal {
 			this.close();
 		});
 
-		const createBtn = buttonContainer.createEl('button', {
-			text: 'Create person',
+		const submitBtn = buttonContainer.createEl('button', {
+			text: this.editMode ? 'Save changes' : 'Create person',
 			cls: 'crc-btn crc-btn--primary'
 		});
-		createBtn.addEventListener('click', async () => {
-			await this.createPerson();
+		submitBtn.addEventListener('click', async () => {
+			if (this.editMode) {
+				await this.updatePerson();
+			} else {
+				await this.createPerson();
+			}
 		});
 	}
 
@@ -400,6 +468,78 @@ export class CreatePersonModal extends Modal {
 		} catch (error) {
 			console.error('Failed to create person note:', error);
 			new Notice(`Failed to create person note: ${error instanceof Error ? error.message : 'Unknown error'}`);
+		}
+	}
+
+	/**
+	 * Update the existing person note
+	 */
+	private async updatePerson(): Promise<void> {
+		// Validate required fields
+		if (!this.personData.name.trim()) {
+			new Notice('Please enter a name for the person');
+			return;
+		}
+
+		if (!this.editingFile) {
+			new Notice('No file to update');
+			return;
+		}
+
+		try {
+			// Build person data with relationships
+			const data: Partial<PersonData> = {
+				name: this.personData.name,
+				birthDate: this.personData.birthDate,
+				deathDate: this.personData.deathDate,
+				gender: this.personData.gender,
+				birthPlace: this.personData.birthPlace,
+				deathPlace: this.personData.deathPlace,
+				occupation: this.personData.occupation
+			};
+
+			// Add father relationship
+			if (this.fatherField.crId || this.fatherField.name) {
+				data.fatherCrId = this.fatherField.crId;
+				data.fatherName = this.fatherField.name;
+			} else {
+				// Explicitly clear father if unlinked
+				data.fatherCrId = undefined;
+				data.fatherName = undefined;
+			}
+
+			// Add mother relationship
+			if (this.motherField.crId || this.motherField.name) {
+				data.motherCrId = this.motherField.crId;
+				data.motherName = this.motherField.name;
+			} else {
+				// Explicitly clear mother if unlinked
+				data.motherCrId = undefined;
+				data.motherName = undefined;
+			}
+
+			// Add spouse relationship
+			if (this.spouseField.crId || this.spouseField.name) {
+				data.spouseCrId = this.spouseField.crId ? [this.spouseField.crId] : undefined;
+				data.spouseName = this.spouseField.name ? [this.spouseField.name] : undefined;
+			} else {
+				// Explicitly clear spouse if unlinked
+				data.spouseCrId = [];
+				data.spouseName = [];
+			}
+
+			await updatePersonNote(this.app, this.editingFile, data);
+
+			new Notice(`Updated person note: ${this.editingFile.basename}`);
+
+			if (this.onUpdated) {
+				this.onUpdated(this.editingFile);
+			}
+
+			this.close();
+		} catch (error) {
+			console.error('Failed to update person note:', error);
+			new Notice(`Failed to update person note: ${error instanceof Error ? error.message : 'Unknown error'}`);
 		}
 	}
 }

@@ -1143,6 +1143,130 @@ export class ControlCenterModal extends Modal {
 
 		container.appendChild(placePropsCard);
 
+		// Essential Map Note Properties Card
+		const mapPropsCard = this.createCard({
+			title: 'Essential map note properties',
+			icon: 'globe'
+		});
+		const mapPropsContent = mapPropsCard.querySelector('.crc-card__content') as HTMLElement;
+
+		mapPropsContent.createEl('p', {
+			text: 'Add these properties to map configuration notes (YAML frontmatter):',
+			cls: 'crc-mb-3'
+		});
+
+		const mapPropsList = mapPropsContent.createEl('ul', { cls: 'crc-field-list' });
+
+		const mapProps = [
+			{ name: 'type', description: 'Must be "map" to identify as a map configuration', required: true },
+			{ name: 'map_id', description: 'Unique identifier for this map (e.g., "middle-earth")', required: true },
+			{ name: 'name', description: 'Display name for the map', required: true },
+			{ name: 'universe', description: 'Universe this map belongs to (for filtering places)', required: true },
+			{ name: 'image', description: 'Path to the map image in your vault', required: true },
+			{ name: 'bounds', description: 'Coordinate bounds: north, south, east, west values', required: true },
+			{ name: 'center', description: 'Default center point: lat, lng', required: false },
+			{ name: 'default_zoom', description: 'Initial zoom level (default: 2)', required: false },
+			{ name: 'min_zoom', description: 'Minimum allowed zoom level', required: false },
+			{ name: 'max_zoom', description: 'Maximum allowed zoom level', required: false }
+		];
+
+		mapProps.forEach(prop => {
+			const li = mapPropsList.createEl('li');
+			const propName = li.createEl('code', { text: prop.name });
+			if (prop.required) {
+				propName.addClass('crc-field--required');
+			}
+			li.appendText(` - ${prop.description}`);
+		});
+
+		container.appendChild(mapPropsCard);
+
+		// Custom Maps for Fictional Worlds Card
+		const customMapsCard = this.createCard({
+			title: 'Custom maps for fictional worlds',
+			icon: 'globe'
+		});
+		const customMapsContent = customMapsCard.querySelector('.crc-card__content') as HTMLElement;
+
+		customMapsContent.createEl('p', {
+			text: 'Display fictional or historical places on custom map images using the Map View.',
+			cls: 'crc-mb-3'
+		});
+
+		// Step 1: Create map configuration
+		const mapStep1 = customMapsContent.createDiv({ cls: 'crc-guide-step' });
+		const mapBadge1 = mapStep1.createDiv({ cls: 'crc-guide-step__badge' });
+		mapBadge1.textContent = '1';
+		const mapContent1 = mapStep1.createDiv({ cls: 'crc-guide-step__content' });
+		mapContent1.createEl('h4', { text: 'Create a map configuration note', cls: 'crc-mb-1' });
+		mapContent1.createEl('p', {
+			text: 'Create a markdown note with type: map in the frontmatter. Include map_id, name, universe, image path, and coordinate bounds.',
+			cls: 'crc-text-muted crc-mb-2'
+		});
+
+		// Step 2: Add place notes
+		const mapStep2 = customMapsContent.createDiv({ cls: 'crc-guide-step' });
+		const mapBadge2 = mapStep2.createDiv({ cls: 'crc-guide-step__badge' });
+		mapBadge2.textContent = '2';
+		const mapContent2 = mapStep2.createDiv({ cls: 'crc-guide-step__content' });
+		mapContent2.createEl('h4', { text: 'Create place notes with coordinates', cls: 'crc-mb-1' });
+		mapContent2.createEl('p', {
+			text: 'Add place notes with universe (matching the map) and coordinates that fit within the map bounds.',
+			cls: 'crc-text-muted crc-mb-2'
+		});
+
+		// Step 3: Link people
+		const mapStep3 = customMapsContent.createDiv({ cls: 'crc-guide-step' });
+		const mapBadge3 = mapStep3.createDiv({ cls: 'crc-guide-step__badge' });
+		mapBadge3.textContent = '3';
+		const mapContent3 = mapStep3.createDiv({ cls: 'crc-guide-step__content' });
+		mapContent3.createEl('h4', { text: 'Link people to places', cls: 'crc-mb-1' });
+		mapContent3.createEl('p', {
+			text: 'Use birth_place, death_place, and burial_place to connect person notes to place notes via wikilinks.',
+			cls: 'crc-text-muted crc-mb-2'
+		});
+
+		// Step 4: View on map
+		const mapStep4 = customMapsContent.createDiv({ cls: 'crc-guide-step' });
+		const mapBadge4 = mapStep4.createDiv({ cls: 'crc-guide-step__badge' });
+		mapBadge4.textContent = '4';
+		const mapContent4 = mapStep4.createDiv({ cls: 'crc-guide-step__content' });
+		mapContent4.createEl('h4', { text: 'View on the map', cls: 'crc-mb-1' });
+		mapContent4.createEl('p', {
+			text: 'Open the Map View from the ribbon icon or right-click a map note. Select your custom map from the dropdown.',
+			cls: 'crc-text-muted crc-mb-2'
+		});
+
+		// Example map configuration
+		const mapExampleSection = customMapsContent.createDiv({ cls: 'crc-info-box crc-mt-3' });
+		mapExampleSection.createEl('strong', { text: 'Example map configuration:' });
+		const mapExample = mapExampleSection.createEl('pre', { cls: 'crc-mt-2' });
+		mapExample.style.fontSize = '0.85em';
+		mapExample.style.whiteSpace = 'pre-wrap';
+		mapExample.textContent = `---
+type: map
+map_id: middle-earth
+name: Middle-earth
+universe: tolkien
+image: assets/maps/middle-earth.jpg
+bounds:
+  north: 50
+  south: -50
+  west: -100
+  east: 100
+---`;
+
+		const mapViewLink = customMapsContent.createEl('a', {
+			text: 'Open Map View →',
+			cls: 'crc-link crc-mt-3 cr-inline-block'
+		});
+		mapViewLink.addEventListener('click', async (e) => {
+			e.preventDefault();
+			await (this.plugin as { activateMapView: () => Promise<void> }).activateMapView();
+		});
+
+		container.appendChild(customMapsCard);
+
 		// Link to full schema reference
 		const schemaLinkCard = this.createCard({
 			title: 'Schema reference',

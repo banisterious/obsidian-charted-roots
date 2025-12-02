@@ -380,6 +380,111 @@ async function addBidirectionalSpouseLink(
 }
 
 /**
+ * Update an existing person note's frontmatter
+ *
+ * @param app - Obsidian app instance
+ * @param file - The file to update
+ * @param person - Person data to update
+ */
+export async function updatePersonNote(
+	app: App,
+	file: TFile,
+	person: Partial<PersonData>
+): Promise<void> {
+	await app.fileManager.processFrontMatter(file, (frontmatter) => {
+		// Update basic fields if provided
+		if (person.name !== undefined) frontmatter.name = person.name;
+		if (person.birthDate !== undefined) frontmatter.born = person.birthDate || '';
+		if (person.deathDate !== undefined) frontmatter.died = person.deathDate || '';
+		if (person.gender !== undefined) {
+			if (person.gender) {
+				frontmatter.gender = person.gender;
+			} else {
+				delete frontmatter.gender;
+			}
+		}
+		if (person.occupation !== undefined) {
+			if (person.occupation) {
+				frontmatter.occupation = person.occupation;
+			} else {
+				delete frontmatter.occupation;
+			}
+		}
+		if (person.birthPlace !== undefined) {
+			if (person.birthPlace) {
+				frontmatter.birth_place = person.birthPlace;
+			} else {
+				delete frontmatter.birth_place;
+			}
+		}
+		if (person.deathPlace !== undefined) {
+			if (person.deathPlace) {
+				frontmatter.death_place = person.deathPlace;
+			} else {
+				delete frontmatter.death_place;
+			}
+		}
+
+		// Handle father relationship
+		if (person.fatherCrId !== undefined || person.fatherName !== undefined) {
+			if (person.fatherCrId && person.fatherName) {
+				frontmatter.father = `[[${person.fatherName}]]`;
+				frontmatter.father_id = person.fatherCrId;
+			} else if (person.fatherCrId) {
+				frontmatter.father_id = person.fatherCrId;
+			} else if (person.fatherName) {
+				frontmatter.father = `[[${person.fatherName}]]`;
+			} else {
+				// Clear father
+				delete frontmatter.father;
+				delete frontmatter.father_id;
+			}
+		}
+
+		// Handle mother relationship
+		if (person.motherCrId !== undefined || person.motherName !== undefined) {
+			if (person.motherCrId && person.motherName) {
+				frontmatter.mother = `[[${person.motherName}]]`;
+				frontmatter.mother_id = person.motherCrId;
+			} else if (person.motherCrId) {
+				frontmatter.mother_id = person.motherCrId;
+			} else if (person.motherName) {
+				frontmatter.mother = `[[${person.motherName}]]`;
+			} else {
+				// Clear mother
+				delete frontmatter.mother;
+				delete frontmatter.mother_id;
+			}
+		}
+
+		// Handle spouse relationships
+		if (person.spouseCrId !== undefined || person.spouseName !== undefined) {
+			if (person.spouseCrId && person.spouseCrId.length > 0) {
+				if (person.spouseName && person.spouseName.length === person.spouseCrId.length) {
+					frontmatter.spouse = person.spouseName.length === 1
+						? `[[${person.spouseName[0]}]]`
+						: person.spouseName.map(s => `[[${s}]]`);
+					frontmatter.spouse_id = person.spouseCrId.length === 1
+						? person.spouseCrId[0]
+						: person.spouseCrId;
+				} else {
+					frontmatter.spouse_id = person.spouseCrId.length === 1
+						? person.spouseCrId[0]
+						: person.spouseCrId;
+				}
+			} else {
+				// Clear spouse
+				delete frontmatter.spouse;
+				delete frontmatter.spouse_id;
+				delete frontmatter.spouses;
+			}
+		}
+
+		logger.debug('update-person', `Updated frontmatter for ${file.path}`);
+	});
+}
+
+/**
  * Sanitize a filename by removing invalid characters
  *
  * @param filename - The filename to sanitize
