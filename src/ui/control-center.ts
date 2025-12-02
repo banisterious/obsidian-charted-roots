@@ -4676,9 +4676,11 @@ export class ControlCenterModal extends Modal {
 			}
 		}
 
-		// Sort by count (descending)
-		linked.sort((a, b) => b.count - a.count);
-		unlinked.sort((a, b) => b.count - a.count);
+		// State for filtering and sorting
+		let filterText = '';
+		let sortBy: 'count' | 'name' = 'count';
+		let showLinked = true;
+		let showUnlinked = true;
 
 		// Summary
 		const summary = container.createDiv({ cls: 'crc-stats-summary crc-mb-3' });
@@ -4686,59 +4688,151 @@ export class ControlCenterModal extends Modal {
 		summary.createEl('span', { text: ' • ', cls: 'crc-text--muted' });
 		summary.createEl('span', { text: `${unlinked.length} unlinked`, cls: unlinked.length > 0 ? 'crc-text--warning' : 'crc-text--muted' });
 
-		// Unlinked places (potential issues)
-		if (unlinked.length > 0) {
-			const unlinkedSection = container.createDiv({ cls: 'crc-mt-3' });
-			unlinkedSection.createEl('h4', { text: 'Unlinked places', cls: 'crc-section-title' });
-			unlinkedSection.createEl('p', {
-				text: 'These place names appear in person notes but have no corresponding place notes.',
-				cls: 'crc-text--muted crc-text--small'
+		// Controls row
+		const controlsRow = container.createDiv({ cls: 'crc-referenced-controls crc-mb-3' });
+
+		// Filter input
+		const filterContainer = controlsRow.createDiv({ cls: 'crc-filter-container' });
+		const filterInput = filterContainer.createEl('input', {
+			type: 'text',
+			placeholder: 'Filter places...',
+			cls: 'crc-filter-input'
+		});
+
+		// Sort dropdown
+		const sortContainer = controlsRow.createDiv({ cls: 'crc-sort-container' });
+		sortContainer.createEl('span', { text: 'Sort: ', cls: 'crc-text--muted crc-text--small' });
+		const sortSelect = sortContainer.createEl('select', { cls: 'crc-sort-select dropdown' });
+		sortSelect.createEl('option', { value: 'count', text: 'By count' });
+		sortSelect.createEl('option', { value: 'name', text: 'By name' });
+
+		// Filter checkboxes
+		const filterToggles = controlsRow.createDiv({ cls: 'crc-filter-toggles' });
+
+		const linkedToggle = filterToggles.createEl('label', { cls: 'crc-filter-toggle' });
+		const linkedCheckbox = linkedToggle.createEl('input', { type: 'checkbox' });
+		linkedCheckbox.checked = true;
+		linkedToggle.createEl('span', { text: 'Linked', cls: 'crc-text--small' });
+
+		const unlinkedToggle = filterToggles.createEl('label', { cls: 'crc-filter-toggle' });
+		const unlinkedCheckbox = unlinkedToggle.createEl('input', { type: 'checkbox' });
+		unlinkedCheckbox.checked = true;
+		unlinkedToggle.createEl('span', { text: 'Unlinked', cls: 'crc-text--small' });
+
+		// List container
+		const listContainer = container.createDiv({ cls: 'crc-referenced-list' });
+
+		// Render function
+		const renderList = () => {
+			listContainer.empty();
+
+			// Apply sorting
+			const sortFn = sortBy === 'count'
+				? (a: { name: string; count: number }, b: { name: string; count: number }) => b.count - a.count
+				: (a: { name: string; count: number }, b: { name: string; count: number }) => a.name.localeCompare(b.name);
+
+			// Filter and combine lists
+			const allPlaces: Array<{ name: string; count: number; linked: boolean }> = [];
+
+			if (showUnlinked) {
+				for (const p of unlinked) {
+					if (!filterText || p.name.toLowerCase().includes(filterText.toLowerCase())) {
+						allPlaces.push({ ...p, linked: false });
+					}
+				}
+			}
+
+			if (showLinked) {
+				for (const p of linked) {
+					if (!filterText || p.name.toLowerCase().includes(filterText.toLowerCase())) {
+						allPlaces.push({ ...p, linked: true });
+					}
+				}
+			}
+
+			// Sort
+			allPlaces.sort((a, b) => {
+				// Unlinked first when sorting by count
+				if (sortBy === 'count' && a.linked !== b.linked) {
+					return a.linked ? 1 : -1;
+				}
+				return sortFn(a, b);
 			});
 
-			const unlinkedList = unlinkedSection.createEl('ul', { cls: 'crc-list crc-unlinked-places-list' });
-			for (const place of unlinked.slice(0, 15)) {
-				const item = unlinkedList.createEl('li', { cls: 'crc-unlinked-place-item' });
-				const content = item.createDiv({ cls: 'crc-unlinked-place-content' });
-				content.createEl('span', { text: place.name });
-				content.createEl('span', { text: ` (${place.count} references)`, cls: 'crc-text--muted' });
-
-				// Quick-create button
-				const createBtn = item.createEl('button', {
-					cls: 'crc-btn crc-btn--small crc-btn--ghost',
-					text: 'Create'
+			if (allPlaces.length === 0) {
+				listContainer.createEl('p', {
+					text: filterText ? 'No places match the filter.' : 'No places to show.',
+					cls: 'crc-text--muted'
 				});
-				createBtn.addEventListener('click', () => {
-					this.showQuickCreatePlaceModal(place.name);
-				});
+				return;
 			}
 
-			if (unlinked.length > 15) {
-				unlinkedSection.createEl('p', {
-					text: `+${unlinked.length - 15} more...`,
-					cls: 'crc-text--muted crc-text--small'
+			// Render list
+			const list = listContainer.createEl('ul', { cls: 'crc-list crc-referenced-places-list' });
+
+			for (const place of allPlaces) {
+				const item = list.createEl('li', {
+					cls: `crc-referenced-place-item ${place.linked ? 'crc-referenced-place-item--linked' : 'crc-referenced-place-item--unlinked'}`
 				});
-			}
-		}
 
-		// Linked places
-		if (linked.length > 0) {
-			const linkedSection = container.createDiv({ cls: 'crc-mt-3' });
-			linkedSection.createEl('h4', { text: 'Linked places', cls: 'crc-section-title' });
+				const content = item.createDiv({ cls: 'crc-referenced-place-content' });
 
-			const linkedList = linkedSection.createEl('ul', { cls: 'crc-list' });
-			for (const place of linked.slice(0, 10)) {
-				const item = linkedList.createEl('li');
-				item.createEl('span', { text: place.name });
-				item.createEl('span', { text: ` (${place.count} references)`, cls: 'crc-text--muted' });
+				// Status indicator
+				const statusIcon = content.createSpan({ cls: 'crc-referenced-place-status' });
+				if (place.linked) {
+					setLucideIcon(statusIcon, 'check', 14);
+					statusIcon.addClass('crc-text--success');
+				} else {
+					setLucideIcon(statusIcon, 'alert-circle', 14);
+					statusIcon.addClass('crc-text--warning');
+				}
+
+				// Name and count
+				content.createEl('span', { text: place.name, cls: 'crc-referenced-place-name' });
+				content.createEl('span', { text: ` (${place.count})`, cls: 'crc-text--muted' });
+
+				// Quick-create button for unlinked
+				if (!place.linked) {
+					const createBtn = item.createEl('button', {
+						cls: 'crc-btn crc-btn--small crc-btn--ghost',
+						text: 'Create'
+					});
+					createBtn.addEventListener('click', () => {
+						this.showQuickCreatePlaceModal(place.name);
+					});
+				}
 			}
 
-			if (linked.length > 10) {
-				linkedSection.createEl('p', {
-					text: `+${linked.length - 10} more...`,
-					cls: 'crc-text--muted crc-text--small'
-				});
-			}
-		}
+			// Show count
+			const countText = listContainer.createEl('p', {
+				cls: 'crc-text--muted crc-text--small crc-mt-2'
+			});
+			countText.textContent = `Showing ${allPlaces.length} of ${linked.length + unlinked.length} places`;
+		};
+
+		// Event handlers
+		filterInput.addEventListener('input', () => {
+			filterText = filterInput.value;
+			renderList();
+		});
+
+		sortSelect.addEventListener('change', () => {
+			sortBy = sortSelect.value as 'count' | 'name';
+			renderList();
+		});
+
+		linkedCheckbox.addEventListener('change', () => {
+			showLinked = linkedCheckbox.checked;
+			renderList();
+		});
+
+		unlinkedCheckbox.addEventListener('change', () => {
+			showUnlinked = unlinkedCheckbox.checked;
+			renderList();
+		});
+
+		// Initial render
+		renderList();
 	}
 
 	/**
