@@ -74,7 +74,9 @@ export type LucideIconName =
 	| 'lightbulb'      // Ideas/concepts
 	| 'list-checks'    // Task lists
 	| 'map'            // Map view
-	| 'more-vertical'; // Overflow menu
+	| 'more-vertical' // Overflow menu
+	| 'clipboard-check' // Schema validation
+	| 'file-check'; // Schema note
 
 /**
  * Tab configuration for Control Center navigation
@@ -131,6 +133,12 @@ export const TAB_CONFIGS: TabConfig[] = [
 		name: 'Maps',
 		icon: 'map',
 		description: 'Map visualizations and custom maps'
+	},
+	{
+		id: 'schemas',
+		name: 'Schemas',
+		icon: 'clipboard-check',
+		description: 'Validation schemas for data consistency'
 	},
 	{
 		id: 'collections',

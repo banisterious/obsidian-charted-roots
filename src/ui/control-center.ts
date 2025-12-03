@@ -34,6 +34,8 @@ import { PlaceNetworkModal } from './place-network-modal';
 import { TemplateSnippetsModal } from './template-snippets-modal';
 import { CreatePersonModal } from './create-person-modal';
 import { CreateMapModal } from './create-map-modal';
+import { SchemaService, ValidationService } from '../schemas';
+import type { SchemaNote, ValidationResult, ValidationSummary } from '../schemas';
 
 const logger = getLogger('ControlCenter');
 
@@ -256,6 +258,9 @@ export class ControlCenterModal extends Modal {
 				break;
 			case 'maps':
 				void this.showMapsTab();
+				break;
+			case 'schemas':
+				void this.showSchemasTab();
 				break;
 			default:
 				this.showPlaceholderTab(tabId);
@@ -5406,6 +5411,575 @@ export class ControlCenterModal extends Modal {
 		const content = item.createDiv({ cls: 'crc-stat-content' });
 		content.createEl('div', { text: value, cls: 'crc-stat-value' });
 		content.createEl('div', { text: label, cls: 'crc-stat-label' });
+	}
+
+	// ============================================
+	// SCHEMAS TAB
+	// ============================================
+
+	/**
+	 * State for Schemas tab
+	 */
+	private lastValidationResults: ValidationResult[] = [];
+	private lastValidationSummary: ValidationSummary | null = null;
+
+	/**
+	 * Show Schemas tab with validation controls and schema gallery
+	 */
+	private async showSchemasTab(): Promise<void> {
+		const container = this.contentContainer;
+
+		// Initialize services
+		const schemaService = new SchemaService(this.plugin);
+		const validationService = new ValidationService(this.plugin, schemaService);
+
+		// Card 1: Validation
+		const validationCard = this.createCard({
+			title: 'Validation',
+			icon: 'clipboard-check',
+			subtitle: 'Run schema validation on person notes'
+		});
+
+		const validationContent = validationCard.querySelector('.crc-card__content') as HTMLElement;
+
+		// Show last validation summary if available
+		if (this.lastValidationSummary) {
+			const summaryDiv = validationContent.createDiv({ cls: 'crc-validation-summary crc-mb-3' });
+			const summary = this.lastValidationSummary;
+
+			const statsRow = summaryDiv.createDiv({ cls: 'crc-stats-row' });
+			statsRow.createEl('span', {
+				text: `Last validated: ${summary.validatedAt.toLocaleString()}`,
+				cls: 'crc-text--muted crc-text--small'
+			});
+
+			const statsGrid = summaryDiv.createDiv({ cls: 'crc-stats-grid crc-mt-2' });
+			this.createStatItem(statsGrid, 'People', summary.totalPeopleValidated.toString(), 'users');
+			this.createStatItem(statsGrid, 'Schemas', summary.totalSchemas.toString(), 'clipboard-check');
+			this.createStatItem(statsGrid, 'Errors', summary.totalErrors.toString(), summary.totalErrors > 0 ? 'alert-circle' : 'check');
+			this.createStatItem(statsGrid, 'Warnings', summary.totalWarnings.toString(), 'alert-triangle');
+		}
+
+		// Validate vault button
+		const validateButtonContainer = validationContent.createDiv({ cls: 'crc-button-row' });
+		const validateBtn = validateButtonContainer.createEl('button', {
+			cls: 'crc-btn crc-btn--primary',
+			text: 'Validate vault'
+		});
+		setIcon(validateBtn, 'play');
+		validateBtn.prepend(createLucideIcon('play', 16));
+
+		const validateStatus = validationContent.createDiv({ cls: 'crc-validation-status crc-mt-2' });
+
+		validateBtn.addEventListener('click', async () => {
+			validateBtn.disabled = true;
+			validateBtn.textContent = 'Validating...';
+			validateStatus.empty();
+			validateStatus.createEl('span', { text: 'Running validation...', cls: 'crc-text--muted' });
+
+			try {
+				this.lastValidationResults = await validationService.validateVault();
+				this.lastValidationSummary = validationService.getSummary(this.lastValidationResults);
+
+				// Refresh the tab to show updated results
+				void this.showSchemasTab();
+
+				const errorCount = this.lastValidationSummary.totalErrors;
+				if (errorCount === 0) {
+					new Notice('✓ Validation passed! No schema violations found.');
+				} else {
+					new Notice(`Found ${errorCount} validation error${errorCount === 1 ? '' : 's'}`);
+				}
+			} catch (error) {
+				validateStatus.empty();
+				validateStatus.createEl('span', {
+					text: `Error: ${getErrorMessage(error)}`,
+					cls: 'crc-text--error'
+				});
+				new Notice('Validation failed: ' + getErrorMessage(error));
+			} finally {
+				validateBtn.disabled = false;
+				validateBtn.textContent = 'Validate vault';
+				validateBtn.prepend(createLucideIcon('play', 16));
+			}
+		});
+
+		container.appendChild(validationCard);
+
+		// Card 2: Schemas Gallery
+		const schemasCard = this.createCard({
+			title: 'Schemas',
+			icon: 'file-check',
+			subtitle: 'Define validation rules for person notes'
+		});
+
+		const schemasContent = schemasCard.querySelector('.crc-card__content') as HTMLElement;
+
+		// Create schema buttons
+		new Setting(schemasContent)
+			.setName('Create schema')
+			.setDesc('Define a new validation schema for person notes')
+			.addButton(button => button
+				.setButtonText('Create schema')
+				.onClick(() => {
+					// TODO: Open CreateSchemaModal
+					new Notice('Create schema modal coming soon');
+				}))
+			.addButton(button => button
+				.setButtonText('Import JSON')
+				.onClick(() => {
+					void this.importSchemaFromJson(schemaService, schemasGridContainer);
+				}));
+
+		// Gallery section
+		const gallerySection = schemasContent.createDiv({ cls: 'cr-schema-gallery-section' });
+		gallerySection.createEl('h4', { text: 'Gallery', cls: 'cr-schema-gallery-heading' });
+
+		const schemasGridContainer = gallerySection.createDiv();
+		schemasGridContainer.createEl('p', {
+			text: 'Loading schemas...',
+			cls: 'crc-text--muted'
+		});
+
+		container.appendChild(schemasCard);
+
+		// Load schemas asynchronously
+		void this.loadSchemasGallery(schemaService, schemasGridContainer);
+
+		// Card 3: Recent Violations
+		if (this.lastValidationResults.length > 0) {
+			const violationsCard = this.createCard({
+				title: 'Recent violations',
+				icon: 'alert-circle',
+				subtitle: 'Issues found in last validation'
+			});
+
+			const violationsContent = violationsCard.querySelector('.crc-card__content') as HTMLElement;
+			this.renderRecentViolations(violationsContent);
+
+			container.appendChild(violationsCard);
+		}
+
+		// Card 4: Schema Statistics
+		const statsCard = this.createCard({
+			title: 'Statistics',
+			icon: 'bar-chart',
+			subtitle: 'Schema overview'
+		});
+
+		const statsContent = statsCard.querySelector('.crc-card__content') as HTMLElement;
+		await this.renderSchemaStatistics(statsContent, schemaService);
+
+		container.appendChild(statsCard);
+	}
+
+	/**
+	 * Load schemas into the gallery
+	 */
+	private async loadSchemasGallery(schemaService: SchemaService, container: HTMLElement): Promise<void> {
+		container.empty();
+
+		const schemas = await schemaService.getAllSchemas();
+
+		if (schemas.length === 0) {
+			const emptyState = container.createDiv({ cls: 'crc-empty-state' });
+			emptyState.createEl('p', {
+				text: 'No schemas found.',
+				cls: 'crc-text--muted'
+			});
+			emptyState.createEl('p', {
+				text: 'Create a schema to define validation rules for person notes.',
+				cls: 'crc-text--muted crc-text--small'
+			});
+			return;
+		}
+
+		// Create list of schemas
+		const list = container.createEl('ul', { cls: 'crc-schema-list' });
+
+		for (const schema of schemas) {
+			const item = list.createEl('li', { cls: 'crc-schema-list-item' });
+
+			// Schema info
+			const info = item.createDiv({ cls: 'crc-schema-info' });
+			const nameRow = info.createDiv({ cls: 'crc-schema-name-row' });
+
+			nameRow.createEl('span', { text: schema.name, cls: 'crc-schema-name' });
+
+			// Scope badge
+			nameRow.createEl('span', {
+				text: this.formatSchemaScope(schema),
+				cls: 'crc-badge crc-badge--muted'
+			});
+
+			if (schema.description) {
+				info.createEl('div', { text: schema.description, cls: 'crc-schema-desc crc-text--muted crc-text--small' });
+			}
+
+			// Properties count
+			const propCount = Object.keys(schema.definition.properties).length;
+			const reqCount = schema.definition.requiredProperties.length;
+			const constraintCount = schema.definition.constraints.length;
+			info.createEl('div', {
+				text: `${propCount} properties, ${reqCount} required, ${constraintCount} constraints`,
+				cls: 'crc-text--muted crc-text--small'
+			});
+
+			// Action buttons
+			const actions = item.createDiv({ cls: 'crc-schema-actions' });
+
+			// Edit button
+			const editBtn = actions.createEl('button', {
+				cls: 'crc-btn crc-btn--icon',
+				attr: { 'aria-label': 'Edit schema' }
+			});
+			setLucideIcon(editBtn, 'edit', 14);
+			editBtn.addEventListener('click', () => {
+				// TODO: Open EditSchemaModal
+				new Notice('Edit schema modal coming soon');
+			});
+
+			// More options button
+			const moreBtn = actions.createEl('button', {
+				cls: 'crc-btn crc-btn--icon',
+				attr: { 'aria-label': 'More options' }
+			});
+			setLucideIcon(moreBtn, 'more-vertical', 14);
+			moreBtn.addEventListener('click', (e) => {
+				this.showSchemaContextMenu(schema, schemaService, container, e);
+			});
+
+			// Click to open note
+			item.addEventListener('click', async (e) => {
+				if ((e.target as HTMLElement).closest('.crc-schema-actions')) return;
+				const file = this.app.vault.getAbstractFileByPath(schema.filePath);
+				if (file instanceof TFile) {
+					await this.app.workspace.getLeaf(false).openFile(file);
+					this.close();
+				}
+			});
+		}
+	}
+
+	/**
+	 * Format schema scope for display
+	 */
+	private formatSchemaScope(schema: SchemaNote): string {
+		switch (schema.appliesToType) {
+			case 'all':
+				return 'All people';
+			case 'collection':
+				return `Collection: ${schema.appliesToValue}`;
+			case 'folder':
+				return `Folder: ${schema.appliesToValue}`;
+			case 'universe':
+				return `Universe: ${schema.appliesToValue}`;
+			default:
+				return schema.appliesToType;
+		}
+	}
+
+	/**
+	 * Show context menu for a schema
+	 */
+	private showSchemaContextMenu(
+		schema: SchemaNote,
+		schemaService: SchemaService,
+		galleryContainer: HTMLElement,
+		event: MouseEvent
+	): void {
+		const menu = new Menu();
+
+		menu.addItem((item: MenuItem) => {
+			item
+				.setTitle('Edit schema')
+				.setIcon('edit')
+				.onClick(() => {
+					// TODO: Open EditSchemaModal
+					new Notice('Edit schema modal coming soon');
+				});
+		});
+
+		menu.addItem((item: MenuItem) => {
+			item
+				.setTitle('Validate matching notes')
+				.setIcon('play')
+				.onClick(async () => {
+					new Notice(`Validating notes matching schema: ${schema.name}...`);
+					// TODO: Implement targeted validation
+				});
+		});
+
+		menu.addItem((item: MenuItem) => {
+			item
+				.setTitle('Duplicate schema')
+				.setIcon('copy')
+				.onClick(async () => {
+					try {
+						await schemaService.duplicateSchema(schema.cr_id);
+						new Notice(`Schema duplicated: ${schema.name} (Copy)`);
+						void this.loadSchemasGallery(schemaService, galleryContainer);
+					} catch (error) {
+						new Notice('Failed to duplicate schema: ' + getErrorMessage(error));
+					}
+				});
+		});
+
+		menu.addItem((item: MenuItem) => {
+			item
+				.setTitle('Export to JSON')
+				.setIcon('download')
+				.onClick(async () => {
+					try {
+						const json = await schemaService.exportSchemaAsJson(schema.cr_id);
+						await navigator.clipboard.writeText(json);
+						new Notice('Schema JSON copied to clipboard');
+					} catch (error) {
+						new Notice('Failed to export schema: ' + getErrorMessage(error));
+					}
+				});
+		});
+
+		menu.addSeparator();
+
+		menu.addItem((item: MenuItem) => {
+			item
+				.setTitle('Open note')
+				.setIcon('file-text')
+				.onClick(async () => {
+					const file = this.app.vault.getAbstractFileByPath(schema.filePath);
+					if (file instanceof TFile) {
+						await this.app.workspace.getLeaf(false).openFile(file);
+						this.close();
+					}
+				});
+		});
+
+		menu.addItem((item: MenuItem) => {
+			item
+				.setTitle('Delete schema')
+				.setIcon('trash')
+				.onClick(async () => {
+					const confirmed = await this.confirmSchemaDelete(schema.name);
+					if (confirmed) {
+						try {
+							await schemaService.deleteSchema(schema.cr_id);
+							new Notice(`Schema deleted: ${schema.name}`);
+							void this.loadSchemasGallery(schemaService, galleryContainer);
+						} catch (error) {
+							new Notice('Failed to delete schema: ' + getErrorMessage(error));
+						}
+					}
+				});
+		});
+
+		menu.showAtMouseEvent(event);
+	}
+
+	/**
+	 * Confirm schema deletion
+	 */
+	private async confirmSchemaDelete(schemaName: string): Promise<boolean> {
+		return new Promise((resolve) => {
+			const modal = new Modal(this.app);
+			modal.titleEl.setText('Delete schema?');
+
+			modal.contentEl.createEl('p', {
+				text: `Are you sure you want to delete the schema "${schemaName}"?`
+			});
+			modal.contentEl.createEl('p', {
+				text: 'This will delete the schema note file. This action cannot be undone.',
+				cls: 'crc-text--muted'
+			});
+
+			const buttonContainer = modal.contentEl.createDiv({ cls: 'crc-button-row crc-mt-3' });
+
+			const cancelBtn = buttonContainer.createEl('button', {
+				text: 'Cancel',
+				cls: 'crc-btn'
+			});
+			cancelBtn.addEventListener('click', () => {
+				modal.close();
+				resolve(false);
+			});
+
+			const deleteBtn = buttonContainer.createEl('button', {
+				text: 'Delete',
+				cls: 'mod-warning'
+			});
+			deleteBtn.addEventListener('click', () => {
+				modal.close();
+				resolve(true);
+			});
+
+			modal.open();
+		});
+	}
+
+	/**
+	 * Import a schema from JSON
+	 */
+	private async importSchemaFromJson(schemaService: SchemaService, galleryContainer: HTMLElement): Promise<void> {
+		const modal = new Modal(this.app);
+		modal.titleEl.setText('Import schema from JSON');
+
+		const textarea = modal.contentEl.createEl('textarea', {
+			cls: 'crc-form-textarea',
+			attr: {
+				placeholder: 'Paste schema JSON here...',
+				rows: '10'
+			}
+		});
+		textarea.style.width = '100%';
+		textarea.style.fontFamily = 'monospace';
+
+		const buttonContainer = modal.contentEl.createDiv({ cls: 'crc-button-row crc-mt-3' });
+
+		const cancelBtn = buttonContainer.createEl('button', {
+			text: 'Cancel',
+			cls: 'crc-btn'
+		});
+		cancelBtn.addEventListener('click', () => modal.close());
+
+		const importBtn = buttonContainer.createEl('button', {
+			text: 'Import',
+			cls: 'crc-btn crc-btn--primary'
+		});
+		importBtn.addEventListener('click', async () => {
+			const json = textarea.value.trim();
+			if (!json) {
+				new Notice('Please paste schema JSON');
+				return;
+			}
+
+			try {
+				await schemaService.importSchemaFromJson(json);
+				new Notice('Schema imported successfully');
+				modal.close();
+				void this.loadSchemasGallery(schemaService, galleryContainer);
+			} catch (error) {
+				new Notice('Failed to import schema: ' + getErrorMessage(error));
+			}
+		});
+
+		modal.open();
+	}
+
+	/**
+	 * Render recent validation violations
+	 */
+	private renderRecentViolations(container: HTMLElement): void {
+		const invalidResults = this.lastValidationResults.filter(r => !r.isValid);
+
+		if (invalidResults.length === 0) {
+			container.createEl('p', {
+				text: 'No violations found in last validation.',
+				cls: 'crc-text--muted'
+			});
+			return;
+		}
+
+		// Show top 10 violations
+		const topViolations = invalidResults.slice(0, 10);
+		const list = container.createEl('ul', { cls: 'crc-violations-list' });
+
+		for (const result of topViolations) {
+			const item = list.createEl('li', { cls: 'crc-violation-item' });
+
+			const header = item.createDiv({ cls: 'crc-violation-header' });
+			header.createEl('span', { text: result.personName, cls: 'crc-violation-person' });
+			header.createEl('span', {
+				text: `(${result.schemaName})`,
+				cls: 'crc-text--muted crc-text--small'
+			});
+
+			const errorList = item.createEl('ul', { cls: 'crc-error-list' });
+			for (const error of result.errors.slice(0, 3)) {
+				errorList.createEl('li', {
+					text: error.message,
+					cls: 'crc-text--error crc-text--small'
+				});
+			}
+
+			if (result.errors.length > 3) {
+				errorList.createEl('li', {
+					text: `... and ${result.errors.length - 3} more`,
+					cls: 'crc-text--muted crc-text--small'
+				});
+			}
+
+			// Click to open person note
+			item.addEventListener('click', async () => {
+				const file = this.app.vault.getAbstractFileByPath(result.filePath);
+				if (file instanceof TFile) {
+					await this.app.workspace.getLeaf(false).openFile(file);
+					this.close();
+				}
+			});
+			item.style.cursor = 'pointer';
+		}
+
+		if (invalidResults.length > 10) {
+			container.createEl('p', {
+				text: `... and ${invalidResults.length - 10} more violations`,
+				cls: 'crc-text--muted crc-mt-2'
+			});
+		}
+
+		// Link to Data Quality tab
+		const linkDiv = container.createDiv({ cls: 'crc-mt-2' });
+		const viewAllLink = linkDiv.createEl('a', {
+			text: 'View all in Data Quality →',
+			cls: 'crc-link'
+		});
+		viewAllLink.addEventListener('click', () => {
+			this.switchTab('data-quality');
+		});
+	}
+
+	/**
+	 * Render schema statistics
+	 */
+	private async renderSchemaStatistics(container: HTMLElement, schemaService: SchemaService): Promise<void> {
+		const stats = await schemaService.getStats();
+
+		const statsGrid = container.createDiv({ cls: 'crc-stats-grid' });
+
+		this.createStatItem(statsGrid, 'Total schemas', stats.totalSchemas.toString(), 'clipboard-check');
+		this.createStatItem(statsGrid, 'Global (all)', stats.byScope.all.toString(), 'globe');
+		this.createStatItem(statsGrid, 'By collection', stats.byScope.collection.toString(), 'folder');
+		this.createStatItem(statsGrid, 'By folder', stats.byScope.folder.toString(), 'folder');
+		this.createStatItem(statsGrid, 'By universe', stats.byScope.universe.toString(), 'globe');
+
+		// Error breakdown from last validation
+		if (this.lastValidationSummary && this.lastValidationSummary.totalErrors > 0) {
+			container.createEl('h4', { text: 'Error types from last validation', cls: 'crc-section-title crc-mt-3' });
+
+			const errorGrid = container.createDiv({ cls: 'crc-stats-grid' });
+			const errorsByType = this.lastValidationSummary.errorsByType;
+
+			if (errorsByType.missing_required > 0) {
+				this.createStatItem(errorGrid, 'Missing required', errorsByType.missing_required.toString(), 'alert-circle');
+			}
+			if (errorsByType.invalid_type > 0) {
+				this.createStatItem(errorGrid, 'Invalid type', errorsByType.invalid_type.toString(), 'alert-circle');
+			}
+			if (errorsByType.invalid_enum > 0) {
+				this.createStatItem(errorGrid, 'Invalid enum', errorsByType.invalid_enum.toString(), 'alert-circle');
+			}
+			if (errorsByType.out_of_range > 0) {
+				this.createStatItem(errorGrid, 'Out of range', errorsByType.out_of_range.toString(), 'alert-circle');
+			}
+			if (errorsByType.constraint_failed > 0) {
+				this.createStatItem(errorGrid, 'Constraint failed', errorsByType.constraint_failed.toString(), 'alert-circle');
+			}
+			if (errorsByType.conditional_required > 0) {
+				this.createStatItem(errorGrid, 'Conditional required', errorsByType.conditional_required.toString(), 'alert-circle');
+			}
+			if (errorsByType.invalid_wikilink_target > 0) {
+				this.createStatItem(errorGrid, 'Invalid wikilink', errorsByType.invalid_wikilink_target.toString(), 'alert-circle');
+			}
+		}
 	}
 
 	/**

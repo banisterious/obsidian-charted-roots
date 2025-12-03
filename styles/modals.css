@@ -3414,3 +3414,135 @@
   text-align: center;
   color: var(--text-muted);
 }
+
+/* ==========================================================================
+   SCHEMAS TAB
+   ========================================================================== */
+
+/* Schema Gallery */
+.cr-schema-gallery-section {
+  margin-top: 16px;
+}
+
+.cr-schema-gallery-heading {
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-semibold);
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  margin-top: 0;
+}
+
+/* Schema List */
+.crc-schema-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.crc-schema-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 12px;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.crc-schema-list-item:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.crc-schema-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.crc-schema-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.crc-schema-name {
+  font-weight: var(--font-medium);
+}
+
+.crc-schema-desc {
+  margin-top: 4px;
+}
+
+.crc-schema-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.crc-schema-list-item:hover .crc-schema-actions {
+  opacity: 1;
+}
+
+/* Badges */
+.crc-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-medium);
+}
+
+.crc-badge--muted {
+  background-color: var(--background-modifier-border);
+  color: var(--text-muted);
+}
+
+/* Violations List */
+.crc-violations-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.crc-violation-item {
+  padding: 10px 12px;
+  border-radius: var(--radius-s);
+  border-left: 3px solid var(--text-error);
+  background-color: var(--background-secondary);
+  margin-bottom: 8px;
+}
+
+.crc-violation-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.crc-violation-person {
+  font-weight: var(--font-medium);
+}
+
+.crc-error-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  padding-left: 8px;
+}
+
+.crc-error-list li {
+  padding: 2px 0;
+}
+
+/* Validation Summary */
+.crc-validation-summary {
+  padding: 12px;
+  background-color: var(--background-secondary);
+  border-radius: var(--radius-m);
+}
+
+.crc-validation-status {
+  min-height: 20px;
+}
