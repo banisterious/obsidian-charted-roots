@@ -93,14 +93,14 @@ The staging workflow provides a safe way to process imported data before incorpo
 
 ### Setting Up Staging
 
-**Option 1: From Control Center (Recommended)**
+**From Control Center (Recommended):**
 1. Open Control Center → **Import/Export** tab
 2. Expand the **Configure folders** section at the top
 3. Set your **People folder** (where main tree notes live)
 4. Set a **Staging folder** path (e.g., `People-Staging`)
 5. Enable **Staging isolation** to exclude staging from normal operations
 
-**Option 2: From Plugin Settings**
+**From Plugin Settings:**
 1. Go to **Settings → Canvas Roots → Data**
 2. Set a **Staging folder** path
 3. Enable **Staging isolation**
@@ -116,9 +116,9 @@ When staging is configured, imported data is kept separate from your main tree u
 5. Import your GEDCOM or CSV file
 6. Data is created in the staging folder, isolated from your main tree
 
-### Using the Staging Tab
+### Managing Staged Imports
 
-The **Staging** tab in Control Center provides tools for managing staged imports:
+The **Import/Export** tab in Control Center includes a staging area section when staging is configured:
 
 **Subfolder Management:**
 - View all import batches with person counts and dates
@@ -150,7 +150,7 @@ This ensures your production data stays clean while you work on imports.
 
 1. Import `smith-family.ged` to staging subfolder `smith-2024`
 2. Import `jones-tree.ged` to staging subfolder `jones-2024`
-3. Open Staging tab, click "Review matches with main tree"
+3. In Import/Export tab, click "Review matches with main tree"
 4. For each match, decide: Same person → Merge, or Different people → will be promoted
 5. Click "Promote subfolder" for each batch
 6. New unique people are moved to main; duplicates were merged earlier
@@ -166,7 +166,7 @@ When you find duplicate person records—either through duplicate detection or c
 2. For each potential duplicate, click **Merge**
 
 **From Cross-Import Review:**
-1. Open Staging tab → "Review matches with main tree"
+1. Open Import/Export tab → click "Review matches with main tree"
 2. Click "Same person" for a match
 3. Click the **Merge** button that appears
 
