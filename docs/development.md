@@ -69,6 +69,22 @@ canvas-roots/
 │   │   ├── gramps-importer.ts    # Import from Gramps XML ✓
 │   │   ├── gramps-exporter.ts    # Export to Gramps XML ✓
 │   │   └── gramps-types.ts       # Type definitions ✓
+│   ├── sources/               # Evidence & Source Management
+│   │   ├── services/             # Source-related services
+│   │   │   ├── source-service.ts     # Source note parsing ✓
+│   │   │   ├── evidence-service.ts   # Fact-level source tracking ✓
+│   │   │   ├── citation-service.ts   # Citation generation ✓
+│   │   │   └── proof-summary-service.ts # Proof summary management ✓
+│   │   ├── types/                # Type definitions
+│   │   │   ├── source-types.ts       # Source/fact types ✓
+│   │   │   ├── proof-types.ts        # Proof summary types ✓
+│   │   │   └── source-templates.ts   # Source note templates ✓
+│   │   └── ui/                   # Source UI components
+│   │       ├── sources-tab.ts        # Sources tab in Control Center ✓
+│   │       ├── create-source-modal.ts # Source creation modal ✓
+│   │       ├── create-proof-modal.ts  # Proof summary creation modal ✓
+│   │       ├── media-gallery.ts      # Source media gallery ✓
+│   │       └── citation-generator.ts # Citation generator UI ✓
 │   ├── models/                # TypeScript interfaces
 │   │   ├── person.ts             # Person data structures
 │   │   └── canvas.ts             # Canvas JSON types
@@ -123,6 +139,27 @@ canvas-roots/
 | `timeline-layout.ts` | ✅ Complete | Chronological positioning by birth year layout |
 | `uuid.ts` | ✅ Complete | UUID v4 generation for `cr_id` fields |
 | `vault-stats.ts` | ✅ Complete | Calculates vault-wide statistics |
+
+### Sources Module (src/sources/)
+
+| Component | Status | Purpose |
+|-----------|--------|---------|
+| **Services** | | |
+| `source-service.ts` | ✅ Complete | Parses source notes, extracts metadata, calculates source statistics |
+| `evidence-service.ts` | ✅ Complete | Fact-level source tracking, research coverage calculation, research gaps detection |
+| `citation-service.ts` | ✅ Complete | Citation generation in Chicago, Evidence Explained, MLA, Turabian formats |
+| `proof-summary-service.ts` | ✅ Complete | Proof summary note CRUD, conflict detection, evidence linking |
+| **Types** | | |
+| `source-types.ts` | ✅ Complete | Source quality, fact keys, sourced facts interfaces |
+| `proof-types.ts` | ✅ Complete | Proof status, confidence levels, evidence support types |
+| `source-templates.ts` | ✅ Complete | Source note templates by type (vital records, census, etc.) |
+| **UI Components** | | |
+| `sources-tab.ts` | ✅ Complete | Sources tab in Control Center with source list and statistics |
+| `create-source-modal.ts` | ✅ Complete | Modal for creating new source notes with templates |
+| `create-proof-modal.ts` | ✅ Complete | Modal for creating/editing proof summary notes |
+| `source-picker-modal.ts` | ✅ Complete | Modal for selecting sources to link |
+| `media-gallery.ts` | ✅ Complete | Thumbnail grid of source media with lightbox viewer |
+| `citation-generator.ts` | ✅ Complete | Citation format selection and preview UI |
 
 ### UI Components (src/ui/)
 
@@ -1010,6 +1047,66 @@ collection: "Paternal Line"  # or "House Stark", etc.
 - Better visual differentiation using full color palette
 - Maintains compatibility with existing vaults (graceful degradation)
 - Prepares foundation for future customizable color schemes
+
+### Evidence Visualization (2025-12-05)
+
+**Added:** GPS-aligned fact tracking, proof summaries, and canvas conflict markers for v0.9.0.
+
+**Implemented Features:**
+
+1. **Fact-Level Source Tracking:**
+   - New `sourced_facts` property on person notes
+   - Per-fact source arrays: `birth_date`, `birth_place`, `death_date`, `death_place`, `marriage_date`, `occupation`
+   - Research coverage percentage calculated from sourced vs total facts
+   - Configurable fact coverage threshold in settings
+
+2. **Source Quality Classification:**
+   - Three quality levels: Primary, Secondary, Derivative (per Evidence Explained methodology)
+   - `source_quality` property on source notes
+   - Color-coded quality badges throughout the UI
+
+3. **Research Gaps Report:**
+   - Data Quality tab shows unsourced facts across the tree
+   - Filter by fact type or person
+   - Priority ranking by number of missing sources
+
+4. **Proof Summary Notes:**
+   - New note type `type: proof_summary` with structured frontmatter
+   - Track subject person, fact type, conclusion, status, and confidence
+   - Evidence array linking sources with support levels (strongly/moderately/weakly/conflicts)
+   - Status workflow: draft → complete → needs_review → conflicted
+   - Confidence levels: proven, probable, possible, disproven
+   - Full CRUD operations via Create Proof modal
+
+5. **Source Conflict Detection:**
+   - Detects proof summaries with `status: conflicted` or conflicting evidence items
+   - Source Conflicts section in Data Quality tab
+   - Shows conflict count per person
+
+6. **Canvas Conflict Markers:**
+   - `⚠️ N` indicator at top-left of person nodes with unresolved conflicts
+   - Red color (canvas color '1') draws attention to research issues
+   - Only visible when `trackFactSourcing` is enabled
+   - Complements existing source indicator (`📎 N · %`) at top-right
+
+**Files Created:**
+- `src/sources/` - Complete sources module with services, types, and UI components
+- `src/sources/services/proof-summary-service.ts` - Proof summary CRUD and conflict detection
+- `src/sources/services/evidence-service.ts` - Fact-level tracking and research gaps
+- `src/sources/types/proof-types.ts` - Proof summary type definitions
+- `src/sources/ui/create-proof-modal.ts` - Proof summary creation/editing modal
+
+**Files Modified:**
+- `src/core/family-graph.ts` - Added `conflictCount` property to PersonNode
+- `src/core/canvas-generator.ts` - Added `addConflictIndicatorNodes()` method
+- `main.ts` - Added `populateConflictCounts()` method
+
+**Settings Added:**
+- `trackFactSourcing`: Enable fact-level source tracking (default: false)
+- `factCoverageThreshold`: Number of facts for 100% coverage (default: 6)
+- `showResearchGapsInStatus`: Show research gaps in Status tab (default: true)
+
+---
 
 ### Privacy and Gender Identity Protection (2025-11-20)
 
