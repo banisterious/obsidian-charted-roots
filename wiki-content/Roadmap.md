@@ -43,9 +43,9 @@ The following priority order guides future development:
 | 7 | [Organization Notes](#organization-notes--hierarchy-views) | ✅ Complete (v0.7.0) |
 | 8 | [Source Media Gallery](#source-media-gallery--document-viewer) | ✅ Complete (v0.8.0) |
 | 9 | [Evidence Visualization](#evidence-visualization) | ✅ Complete (v0.9.0) |
-| 10 | [Transcript Nodes & Oral History](#transcript-nodes--quotable-facts) | Planned |
+| 10 | [Style Settings Integration](#style-settings-integration) | Planned |
 | 11 | [Print & PDF Export](#print--pdf-export) | Planned |
-| 12 | [Style Settings Integration](#style-settings-integration) | Planned |
+| 12 | [Transcript Nodes & Oral History](#transcript-nodes--quotable-facts) | Planned |
 
 ---
 
