@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-05 19:12:21 UTC
+ * - Generated: 2025-12-05 19:15:55 UTC
  * - Components: 27 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -22,7 +22,7 @@
    COMPONENT: VARIABLES.CSS
    ========================================================================== */
 
-/* Component Size: 40 lines, 1.07 KB */
+/* Component Size: 48 lines, 1.33 KB */
 
 /* Canvas Roots CSS Variables */
 
@@ -62,6 +62,14 @@
   --cr-fcv-background-dark: rgb(33, 33, 33);
   --cr-fcv-text-light: #333;
   --cr-fcv-text-dark: #fff;
+
+  /* Evidence Visualization - customizable via Style Settings plugin */
+  --cr-source-primary: #22c55e;
+  --cr-source-secondary: #f59e0b;
+  --cr-source-derivative: #ef4444;
+  --cr-coverage-high: #22c55e;
+  --cr-coverage-medium: #f59e0b;
+  --cr-coverage-low: #ef4444;
 }
 
 
@@ -71,7 +79,7 @@
    COMPONENT: STYLE-SETTINGS.CSS
    ========================================================================== */
 
-/* Component Size: 63 lines, 1.33 KB */
+/* Component Size: 112 lines, 2.6 KB */
 
 /**
  * Style Settings Integration
@@ -133,6 +141,55 @@ settings:
     type: variable-color
     format: hex
     default: "#ffffff"
+  -
+    id: evidence-heading
+    title: Evidence visualization
+    description: Colors for source quality indicators and research coverage
+    type: heading
+    level: 1
+    collapsed: true
+  -
+    id: cr-source-primary
+    title: Primary source color
+    description: Original records created at the time of the event
+    type: variable-color
+    format: hex
+    default: "#22c55e"
+  -
+    id: cr-source-secondary
+    title: Secondary source color
+    description: Compiled records based on primary sources
+    type: variable-color
+    format: hex
+    default: "#f59e0b"
+  -
+    id: cr-source-derivative
+    title: Derivative source color
+    description: Copies or transcriptions of other sources
+    type: variable-color
+    format: hex
+    default: "#ef4444"
+  -
+    id: cr-coverage-high
+    title: Well-researched coverage color
+    description: Research coverage at or above 75%
+    type: variable-color
+    format: hex
+    default: "#22c55e"
+  -
+    id: cr-coverage-medium
+    title: Moderate coverage color
+    description: Research coverage between 50-74%
+    type: variable-color
+    format: hex
+    default: "#f59e0b"
+  -
+    id: cr-coverage-low
+    title: Needs research color
+    description: Research coverage below 50%
+    type: variable-color
+    format: hex
+    default: "#ef4444"
 
 */
 
@@ -10131,7 +10188,7 @@ input[type="text"]::-webkit-input-placeholder {
    COMPONENT: SOURCES.CSS
    ========================================================================== */
 
-/* Component Size: 1581 lines, 30.37 KB */
+/* Component Size: 1581 lines, 30.77 KB */
 
 /**
  * Sources Styles
@@ -10216,18 +10273,18 @@ input[type="text"]::-webkit-input-placeholder {
 }
 
 .cr-confidence-high {
-  background-color: rgba(34, 197, 94, 0.15);
-  color: #22c55e;
+  background-color: color-mix(in srgb, var(--cr-coverage-high) 15%, transparent);
+  color: var(--cr-coverage-high);
 }
 
 .cr-confidence-medium {
-  background-color: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
+  background-color: color-mix(in srgb, var(--cr-coverage-medium) 15%, transparent);
+  color: var(--cr-coverage-medium);
 }
 
 .cr-confidence-low {
-  background-color: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  background-color: color-mix(in srgb, var(--cr-coverage-low) 15%, transparent);
+  color: var(--cr-coverage-low);
 }
 
 .cr-confidence-unknown {
@@ -11186,15 +11243,15 @@ input[type="text"]::-webkit-input-placeholder {
 }
 
 .crc-coverage-status--well-sourced {
-  color: var(--color-green);
+  color: var(--cr-coverage-high);
 }
 
 .crc-coverage-status--sourced {
-  color: var(--color-green);
+  color: var(--cr-coverage-high);
 }
 
 .crc-coverage-status--weakly-sourced {
-  color: var(--color-orange);
+  color: var(--cr-coverage-medium);
 }
 
 .crc-coverage-status--unsourced {
@@ -11254,23 +11311,23 @@ input[type="text"]::-webkit-input-placeholder {
 
 /* Primary quality - green (best evidence) */
 .crc-quality-badge--primary {
-  background-color: rgba(var(--color-green-rgb), 0.15);
-  color: var(--color-green);
-  border: 1px solid rgba(var(--color-green-rgb), 0.3);
+  background-color: color-mix(in srgb, var(--cr-source-primary) 15%, transparent);
+  color: var(--cr-source-primary);
+  border: 1px solid color-mix(in srgb, var(--cr-source-primary) 30%, transparent);
 }
 
 /* Secondary quality - yellow/amber (acceptable but not ideal) */
 .crc-quality-badge--secondary {
-  background-color: rgba(var(--color-orange-rgb), 0.15);
-  color: var(--color-orange);
-  border: 1px solid rgba(var(--color-orange-rgb), 0.3);
+  background-color: color-mix(in srgb, var(--cr-source-secondary) 15%, transparent);
+  color: var(--cr-source-secondary);
+  border: 1px solid color-mix(in srgb, var(--cr-source-secondary) 30%, transparent);
 }
 
 /* Derivative quality - red/coral (needs better sources) */
 .crc-quality-badge--derivative {
-  background-color: rgba(var(--color-red-rgb), 0.15);
-  color: var(--color-red);
-  border: 1px solid rgba(var(--color-red-rgb), 0.3);
+  background-color: color-mix(in srgb, var(--cr-source-derivative) 15%, transparent);
+  color: var(--cr-source-derivative);
+  border: 1px solid color-mix(in srgb, var(--cr-source-derivative) 30%, transparent);
 }
 
 /* Quality summary section */
@@ -11304,15 +11361,15 @@ input[type="text"]::-webkit-input-placeholder {
 }
 
 .crc-quality-dot--primary {
-  background-color: var(--color-green);
+  background-color: var(--cr-source-primary);
 }
 
 .crc-quality-dot--secondary {
-  background-color: var(--color-orange);
+  background-color: var(--cr-source-secondary);
 }
 
 .crc-quality-dot--derivative {
-  background-color: var(--color-red);
+  background-color: var(--cr-source-derivative);
 }
 
 /* ==========================================================================
@@ -11785,15 +11842,15 @@ input[type="text"]::-webkit-input-placeholder {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-05 19:12:21 UTC
+ * Build completed: 2025-12-05 19:15:56 UTC
  * Components processed: 27
- * Total lines: 11519
- * Total size: 221.58 KB
- * Build duration: 0.02 seconds
+ * Total lines: 11576
+ * Total size: 223.51 KB
+ * Build duration: 0.03 seconds
  *
  * Component breakdown:
- * - variables.css: 40 lines, 1.07 KB
- * - style-settings.css: 63 lines, 1.33 KB
+ * - variables.css: 48 lines, 1.33 KB
+ * - style-settings.css: 112 lines, 2.6 KB
  * - base.css: 25 lines, 0.37 KB
  * - layout.css: 22 lines, 0.24 KB
  * - canvas.css: 4 lines, 0.07 KB
@@ -11815,7 +11872,7 @@ input[type="text"]::-webkit-input-placeholder {
  * - leaflet-distortable.css: 368 lines, 7.73 KB
  * - date-systems.css: 287 lines, 5.31 KB
  * - organizations.css: 208 lines, 3.59 KB
- * - sources.css: 1581 lines, 30.37 KB
+ * - sources.css: 1581 lines, 30.77 KB
  * - animations.css: 16 lines, 0.18 KB
  * - responsive.css: 9 lines, 0.13 KB
  * - theme.css: 11 lines, 0.19 KB

@@ -58,5 +58,54 @@ settings:
     type: variable-color
     format: hex
     default: "#ffffff"
+  -
+    id: evidence-heading
+    title: Evidence visualization
+    description: Colors for source quality indicators and research coverage
+    type: heading
+    level: 1
+    collapsed: true
+  -
+    id: cr-source-primary
+    title: Primary source color
+    description: Original records created at the time of the event
+    type: variable-color
+    format: hex
+    default: "#22c55e"
+  -
+    id: cr-source-secondary
+    title: Secondary source color
+    description: Compiled records based on primary sources
+    type: variable-color
+    format: hex
+    default: "#f59e0b"
+  -
+    id: cr-source-derivative
+    title: Derivative source color
+    description: Copies or transcriptions of other sources
+    type: variable-color
+    format: hex
+    default: "#ef4444"
+  -
+    id: cr-coverage-high
+    title: Well-researched coverage color
+    description: Research coverage at or above 75%
+    type: variable-color
+    format: hex
+    default: "#22c55e"
+  -
+    id: cr-coverage-medium
+    title: Moderate coverage color
+    description: Research coverage between 50-74%
+    type: variable-color
+    format: hex
+    default: "#f59e0b"
+  -
+    id: cr-coverage-low
+    title: Needs research color
+    description: Research coverage below 50%
+    type: variable-color
+    format: hex
+    default: "#ef4444"
 
 */

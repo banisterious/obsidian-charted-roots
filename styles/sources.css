@@ -81,18 +81,18 @@
 }
 
 .cr-confidence-high {
-  background-color: rgba(34, 197, 94, 0.15);
-  color: #22c55e;
+  background-color: color-mix(in srgb, var(--cr-coverage-high) 15%, transparent);
+  color: var(--cr-coverage-high);
 }
 
 .cr-confidence-medium {
-  background-color: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
+  background-color: color-mix(in srgb, var(--cr-coverage-medium) 15%, transparent);
+  color: var(--cr-coverage-medium);
 }
 
 .cr-confidence-low {
-  background-color: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  background-color: color-mix(in srgb, var(--cr-coverage-low) 15%, transparent);
+  color: var(--cr-coverage-low);
 }
 
 .cr-confidence-unknown {
@@ -1051,15 +1051,15 @@
 }
 
 .crc-coverage-status--well-sourced {
-  color: var(--color-green);
+  color: var(--cr-coverage-high);
 }
 
 .crc-coverage-status--sourced {
-  color: var(--color-green);
+  color: var(--cr-coverage-high);
 }
 
 .crc-coverage-status--weakly-sourced {
-  color: var(--color-orange);
+  color: var(--cr-coverage-medium);
 }
 
 .crc-coverage-status--unsourced {
@@ -1119,23 +1119,23 @@
 
 /* Primary quality - green (best evidence) */
 .crc-quality-badge--primary {
-  background-color: rgba(var(--color-green-rgb), 0.15);
-  color: var(--color-green);
-  border: 1px solid rgba(var(--color-green-rgb), 0.3);
+  background-color: color-mix(in srgb, var(--cr-source-primary) 15%, transparent);
+  color: var(--cr-source-primary);
+  border: 1px solid color-mix(in srgb, var(--cr-source-primary) 30%, transparent);
 }
 
 /* Secondary quality - yellow/amber (acceptable but not ideal) */
 .crc-quality-badge--secondary {
-  background-color: rgba(var(--color-orange-rgb), 0.15);
-  color: var(--color-orange);
-  border: 1px solid rgba(var(--color-orange-rgb), 0.3);
+  background-color: color-mix(in srgb, var(--cr-source-secondary) 15%, transparent);
+  color: var(--cr-source-secondary);
+  border: 1px solid color-mix(in srgb, var(--cr-source-secondary) 30%, transparent);
 }
 
 /* Derivative quality - red/coral (needs better sources) */
 .crc-quality-badge--derivative {
-  background-color: rgba(var(--color-red-rgb), 0.15);
-  color: var(--color-red);
-  border: 1px solid rgba(var(--color-red-rgb), 0.3);
+  background-color: color-mix(in srgb, var(--cr-source-derivative) 15%, transparent);
+  color: var(--cr-source-derivative);
+  border: 1px solid color-mix(in srgb, var(--cr-source-derivative) 30%, transparent);
 }
 
 /* Quality summary section */
@@ -1169,15 +1169,15 @@
 }
 
 .crc-quality-dot--primary {
-  background-color: var(--color-green);
+  background-color: var(--cr-source-primary);
 }
 
 .crc-quality-dot--secondary {
-  background-color: var(--color-orange);
+  background-color: var(--cr-source-secondary);
 }
 
 .crc-quality-dot--derivative {
-  background-color: var(--color-red);
+  background-color: var(--cr-source-derivative);
 }
 
 /* ==========================================================================

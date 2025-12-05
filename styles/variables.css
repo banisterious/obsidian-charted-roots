@@ -36,4 +36,12 @@
   --cr-fcv-background-dark: rgb(33, 33, 33);
   --cr-fcv-text-light: #333;
   --cr-fcv-text-dark: #fff;
+
+  /* Evidence Visualization - customizable via Style Settings plugin */
+  --cr-source-primary: #22c55e;
+  --cr-source-secondary: #f59e0b;
+  --cr-source-derivative: #ef4444;
+  --cr-coverage-high: #22c55e;
+  --cr-coverage-medium: #f59e0b;
+  --cr-coverage-low: #ef4444;
 }
