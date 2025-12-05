@@ -21,6 +21,7 @@ This document outlines planned features for Canvas Roots. For release history an
   - [Print & PDF Export](#print--pdf-export)
 - [Future Considerations](#future-considerations)
   - [Events Tab (Control Center)](#events-tab-control-center)
+  - [Property Aliases](#property-aliases)
   - [Person Note Templates](#person-note-templates)
   - [Accessibility](#accessibility)
   - [Obsidian Publish Support](#obsidian-publish-support)
@@ -49,6 +50,8 @@ The following priority order guides future development:
 | 11 | [Chronological Story Mapping](#chronological-story-mapping) | Planned |
 | 12 | [Print & PDF Export](#print--pdf-export) | Planned |
 | 13 | [Transcript Nodes & Oral History](#transcript-nodes--quotable-facts) | Planned |
+| 14 | [Events Tab (Control Center)](#events-tab-control-center) | Planned |
+| 15 | [Property Aliases](#property-aliases) | Planned |
 
 ---
 
@@ -593,6 +596,30 @@ is_canonical: true
 - **Event notes card** *(future)*: For Chronological Story Mapping Phase 1
 
 **Implementation Scope:** Small - primarily UI reorganization
+
+---
+
+### Property Aliases
+
+> See [property-aliases.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/property-aliases.md) for detailed implementation plan.
+
+**Summary:** Map custom frontmatter property names to Canvas Roots fields, enabling compatibility with existing vaults and other plugins without requiring property renaming.
+
+**Use Case:**
+> "My vault uses 'birthdate' instead of 'born' - can Canvas Roots read that?"
+
+**How It Works:**
+- Configure aliases in Preferences: `birthdate → born`
+- Canvas Roots reads your property, treats it as the mapped field
+- Your frontmatter stays unchanged
+
+**Supported Properties:**
+- Date fields: `born`, `died`
+- Relationship fields: `father`, `mother`, `spouse`
+- Location fields: `birth_place`, `death_place`
+- Identity fields: `cr_id`, `gender`, `name`, `nickname`
+
+**Implementation Scope:** Medium - requires updates across all property-reading code paths
 
 ---
 
