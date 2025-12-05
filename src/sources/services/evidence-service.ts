@@ -233,6 +233,8 @@ export class EvidenceService {
 			};
 		}
 
+		// TypeScript doesn't narrow index signatures, so we use non-null assertion
+		// since we already checked !sourcedFacts[factKey] above
 		const entry = sourcedFacts[factKey]!;
 		const sources = entry.sources || [];
 

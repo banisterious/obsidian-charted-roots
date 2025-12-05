@@ -379,7 +379,7 @@ export class MembershipService {
 			return '\n' + value.map(item => `${spaces}- ${this.toYaml(item, indent + 1)}`).join('\n');
 		}
 
-		if (typeof value === 'object') {
+		if (typeof value === 'object' && value !== null) {
 			const entries = Object.entries(value);
 			if (entries.length === 0) {
 				return '{}';
@@ -389,8 +389,8 @@ export class MembershipService {
 				.join('\n');
 		}
 
-		// At this point, value must be a string since all other types are handled above
-		return typeof value === 'string' ? value : String(value);
+		// At this point, value is a primitive (string, symbol, bigint, etc.)
+		return String(value);
 	}
 }
 

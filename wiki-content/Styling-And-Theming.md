@@ -73,34 +73,54 @@ For styling beyond the JSON Canvas spec, use the [Advanced Canvas](https://githu
 
 **Note:** Advanced Canvas features may not be portable to other Canvas viewers.
 
-## Style Settings Plugin (Planned)
+## Style Settings Plugin
 
-> **Status:** Planned for v0.8.0. See [Roadmap](Roadmap#style-settings-integration) for details.
+Canvas Roots integrates with the [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) plugin to provide a user-friendly way to customize visual options without editing CSS.
 
-Canvas Roots will integrate with the [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) plugin to provide a user-friendly way to customize visual options without editing CSS.
-
-### Planned Options
-
-**Family Chart View:**
-- Female card color
-- Male card color
-- Unknown gender card color
-- Chart background color
-- Card text color
-
-**Canvas Nodes (future):**
-- Node width and height
-- Border radius
-- Connection line styling
-
-### How It Will Work
+### Setup
 
 1. Install the Style Settings plugin from Community Plugins
 2. Open Settings → Style Settings
 3. Find the "Canvas Roots" section
-4. Adjust colors and dimensions with visual pickers and sliders
+4. Adjust colors with visual color pickers
 
 This is an optional enhancement - Canvas Roots works without Style Settings installed.
+
+### Family Chart View
+
+Customize colors for the interactive family chart:
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| Female card color | Background color for female person cards | Pink (`rgb(196, 138, 146)`) |
+| Male card color | Background color for male person cards | Blue (`rgb(120, 159, 172)`) |
+| Unknown gender card color | Background color for unknown gender cards | Gray (`rgb(211, 211, 211)`) |
+| Chart background (light theme) | Background color in light mode | Near white (`rgb(250, 250, 250)`) |
+| Chart background (dark theme) | Background color in dark mode | Dark gray (`rgb(33, 33, 33)`) |
+| Card text color (light theme) | Text color in light mode | Dark gray (`#333333`) |
+| Card text color (dark theme) | Text color in dark mode | White (`#ffffff`) |
+
+### Evidence Visualization
+
+Customize colors for source quality indicators and research coverage:
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| Primary source color | Original records created at the time of the event | Green (`#22c55e`) |
+| Secondary source color | Compiled records based on primary sources | Amber (`#f59e0b`) |
+| Derivative source color | Copies or transcriptions of other sources | Red (`#ef4444`) |
+| Well-researched coverage color | Research coverage at or above 75% | Green (`#22c55e`) |
+| Moderate coverage color | Research coverage between 50-74% | Amber (`#f59e0b`) |
+| Needs research color | Research coverage below 50% | Red (`#ef4444`) |
+
+### Canvas Node Dimensions
+
+Node width, height, and spacing for generated canvas trees are not CSS-controlled. These settings are configured in:
+
+- **Plugin settings:** Settings → Canvas Roots → Canvas Output
+- **Control Center:** Canvas Settings tab
+
+The Style Settings panel includes an informational note pointing to these locations.
 
 ## CSS Customization
 

@@ -695,7 +695,13 @@ export class PlaceGraphService {
 		if (!dateValue) return undefined;
 
 		// If dateValue is an object, try to extract a string representation
-		const str = typeof dateValue === 'object' ? JSON.stringify(dateValue) : String(dateValue);
+		let str: string;
+		if (typeof dateValue === 'object' && dateValue !== null) {
+			str = JSON.stringify(dateValue);
+		} else {
+			// At this point, dateValue is a primitive
+			str = String(dateValue);
+		}
 
 		// Try ISO format (YYYY-MM-DD or YYYY)
 		const isoMatch = str.match(/^(\d{4})/);

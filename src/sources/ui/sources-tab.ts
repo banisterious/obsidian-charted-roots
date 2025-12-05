@@ -433,7 +433,7 @@ class DeleteSourceTypeModal extends Modal {
 			cls: 'mod-warning'
 		});
 		confirmBtn.addEventListener('click', () => {
-			this.onConfirm();
+			void this.onConfirm();
 			this.close();
 		});
 	}

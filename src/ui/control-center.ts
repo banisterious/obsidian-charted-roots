@@ -59,7 +59,6 @@ import type {
 	PersonResearchCoverage,
 	FactCoverageStatus,
 	SourcedFacts,
-	SourceQuality,
 	ProofSummaryNote
 } from '../sources';
 
@@ -70,7 +69,8 @@ const logger = getLogger('ControlCenter');
  */
 function toSafeString(value: unknown): string {
 	if (value === undefined || value === null) return '';
-	if (typeof value === 'object') return JSON.stringify(value);
+	if (typeof value === 'object' && value !== null) return JSON.stringify(value);
+	// At this point, value is a primitive
 	return String(value);
 }
 
@@ -2311,7 +2311,7 @@ export class ControlCenterModal extends Modal {
 	/**
 	 * Delete a proof summary with confirmation
 	 */
-	private async deleteProofSummary(proof: ProofSummaryNote, onRefresh?: () => void): Promise<void> {
+	private deleteProofSummary(proof: ProofSummaryNote, onRefresh?: () => void): void {
 		const file = this.app.vault.getAbstractFileByPath(proof.filePath);
 		if (!(file instanceof TFile)) {
 			new Notice('Proof summary file not found.');
@@ -2343,16 +2343,18 @@ export class ControlCenterModal extends Modal {
 			text: 'Delete',
 			cls: 'crc-btn crc-btn--danger'
 		});
-		deleteBtn.addEventListener('click', async () => {
-			try {
-				await this.app.fileManager.trashFile(file);
-				new Notice(`Deleted proof summary: ${proof.title}`);
-				confirmModal.close();
-				if (onRefresh) onRefresh();
-			} catch (error) {
-				console.error('Failed to delete proof summary:', error);
-				new Notice('Failed to delete proof summary.');
-			}
+		deleteBtn.addEventListener('click', () => {
+			void (async () => {
+				try {
+					await this.app.fileManager.trashFile(file);
+					new Notice(`Deleted proof summary: ${proof.title}`);
+					confirmModal.close();
+					if (onRefresh) onRefresh();
+				} catch (error) {
+					console.error('Failed to delete proof summary:', error);
+					new Notice('Failed to delete proof summary.');
+				}
+			})();
 		});
 
 		confirmModal.open();
@@ -2438,6 +2440,7 @@ export class ControlCenterModal extends Modal {
 				}
 
 				// Add the source if not already present
+				// TypeScript doesn't narrow index signatures, so we use non-null assertion
 				const sources = sourcedFacts[factKey]!.sources;
 				if (!sources.includes(wikilink)) {
 					sources.push(wikilink);
@@ -2527,10 +2530,7 @@ export class ControlCenterModal extends Modal {
 	/**
 	 * Show Tree Output tab
 	 */
-	/**
-	 * Show Tree Output tab
-	 */
-	private async showTreeGenerationTab(): Promise<void> {
+	private showTreeGenerationTab(): void {
 		const container = this.contentContainer;
 
 		// Title
@@ -6475,7 +6475,7 @@ export class ControlCenterModal extends Modal {
 		// Link to Data Quality tab
 		const linkDiv = container.createDiv({ cls: 'crc-mt-2' });
 		const viewAllLink = linkDiv.createEl('a', {
-			text: 'View all in Data Quality →',
+			text: 'View all in data quality →',
 			cls: 'crc-link'
 		});
 		viewAllLink.addEventListener('click', () => {
@@ -6881,7 +6881,7 @@ export class ControlCenterModal extends Modal {
 		});
 
 		// Fact type badge
-		const factBadge = header.createSpan({
+		header.createSpan({
 			cls: 'crc-proof-badge',
 			text: FACT_KEY_LABELS[proof.factType]
 		});
@@ -7199,7 +7199,7 @@ export class ControlCenterModal extends Modal {
 	/**
 	 * Show Relationships tab with type management and relationship overview
 	 */
-	private async showRelationshipsTab(): Promise<void> {
+	private showRelationshipsTab(): void {
 		const container = this.contentContainer;
 		const relationshipService = new RelationshipService(this.plugin);
 

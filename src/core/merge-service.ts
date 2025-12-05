@@ -158,11 +158,12 @@ export class MergeService {
 			return undefined;
 		}
 		if (Array.isArray(value)) {
-			return value.map(v => typeof v === 'object' ? JSON.stringify(v) : String(v)).filter(v => v !== '');
+			return value.map(v => typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v)).filter(v => v !== '');
 		}
-		if (typeof value === 'object') {
+		if (typeof value === 'object' && value !== null) {
 			return JSON.stringify(value);
 		}
+		// At this point, value is a primitive (string, number, boolean, bigint, symbol)
 		return String(value);
 	}
 
@@ -348,11 +349,12 @@ export class MergeService {
 			return [];
 		}
 		if (Array.isArray(value)) {
-			return value.map(v => typeof v === 'object' ? JSON.stringify(v) : String(v)).filter(v => v !== '');
+			return value.map(v => typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v)).filter(v => v !== '');
 		}
-		if (typeof value === 'object') {
+		if (typeof value === 'object' && value !== null) {
 			return [JSON.stringify(value)];
 		}
+		// At this point, value is a primitive
 		return [String(value)];
 	}
 

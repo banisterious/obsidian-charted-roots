@@ -149,7 +149,7 @@ export class SourcePickerModal extends Modal {
 						const sourceService = new SourceService(this.app, this.plugin.settings);
 						const source = sourceService.getSourceByPath(file.path);
 						if (source) {
-							this.onSelect(source);
+							void this.onSelect(source);
 						}
 					}
 				}
@@ -355,7 +355,7 @@ export class SourcePickerModal extends Modal {
 
 		// Click handler
 		card.addEventListener('click', () => {
-			this.onSelect(source);
+			void this.onSelect(source);
 			this.close();
 		});
 

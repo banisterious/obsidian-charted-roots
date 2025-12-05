@@ -11,7 +11,8 @@ import { createLucideIcon } from './lucide-icons';
  */
 function fmToString(value: unknown, fallback = ''): string {
 	if (value === undefined || value === null) return fallback;
-	if (typeof value === 'object') return JSON.stringify(value);
+	if (typeof value === 'object' && value !== null) return JSON.stringify(value);
+	// At this point, value is a primitive
 	return String(value);
 }
 

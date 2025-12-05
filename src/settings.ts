@@ -740,7 +740,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Enable fact-level source tracking')
-			.setDesc('Track which specific facts (birth, death, marriage, etc.) have source citations. Enables the Research Gaps Report in Data Quality tab.')
+			.setDesc('Track which specific facts (birth, death, marriage, etc.) have source citations. Enables the research gaps report in data quality tab.')
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.trackFactSourcing)
 				.onChange(async (value) => {
@@ -767,8 +767,8 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					}));
 
 			new Setting(containerEl)
-				.setName('Show research gaps in Status tab')
-				.setDesc('Display a summary of unsourced facts in the Control Center Status tab.')
+				.setName('Show research gaps in status tab')
+				.setDesc('Display a summary of unsourced facts in the control center status tab.')
 				.addToggle(toggle => toggle
 					.setValue(this.plugin.settings.showResearchGapsInStatus)
 					.onChange(async (value) => {

@@ -23,7 +23,8 @@ import { generateCrId } from '../../core/uuid';
  */
 function fmToString(value: unknown): string {
 	if (value === undefined || value === null) return '';
-	if (typeof value === 'object') return JSON.stringify(value);
+	if (typeof value === 'object' && value !== null) return JSON.stringify(value);
+	// At this point, value is a primitive
 	return String(value);
 }
 

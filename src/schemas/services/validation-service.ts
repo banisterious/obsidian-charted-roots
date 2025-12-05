@@ -282,11 +282,21 @@ export class ValidationService {
 				: `"${condition.property}" is not set`;
 		}
 		if (condition.equals !== undefined) {
-			const eqStr = typeof condition.equals === 'object' ? JSON.stringify(condition.equals) : String(condition.equals);
+			let eqStr: string;
+			if (typeof condition.equals === 'object' && condition.equals !== null) {
+				eqStr = JSON.stringify(condition.equals);
+			} else {
+				eqStr = String(condition.equals);
+			}
 			return `"${condition.property}" equals "${eqStr}"`;
 		}
 		if (condition.notEquals !== undefined) {
-			const neqStr = typeof condition.notEquals === 'object' ? JSON.stringify(condition.notEquals) : String(condition.notEquals);
+			let neqStr: string;
+			if (typeof condition.notEquals === 'object' && condition.notEquals !== null) {
+				neqStr = JSON.stringify(condition.notEquals);
+			} else {
+				neqStr = String(condition.notEquals);
+			}
 			return `"${condition.property}" is not "${neqStr}"`;
 		}
 		return 'condition is met';
@@ -380,13 +390,14 @@ export class ValidationService {
 				}
 				break;
 
-			case 'sourced_facts':
+			case 'sourced_facts': {
 				// Validate sourced_facts structure
 				const sourcedFactsError = this.validateSourcedFacts(propName, value);
 				if (sourcedFactsError) {
 					return sourcedFactsError;
 				}
 				break;
+			}
 		}
 
 		return null;

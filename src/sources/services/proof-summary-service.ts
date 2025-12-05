@@ -11,7 +11,6 @@ import { App, TFile, TFolder, normalizePath } from 'obsidian';
 import type { CanvasRootsSettings } from '../../settings';
 import type {
 	ProofSummaryNote,
-	ProofSummaryFrontmatter,
 	ProofEvidence,
 	ProofStatus,
 	ProofConfidence,
