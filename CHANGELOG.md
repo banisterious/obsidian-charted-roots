@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.8.0] - 2025-12-04
 
-Evidence & Source Management release: Source indicators on generated trees.
+Evidence & Source Management release: Complete source management with media gallery, citation generator, and tree indicators.
 
 ### Added
 
@@ -22,6 +22,22 @@ Evidence & Source Management release: Source indicators on generated trees.
   - Uses Obsidian's `resolvedLinks` to detect wikilinks from source notes to person notes
   - Helps identify which ancestors need more research at a glance
 
+- **Source Media Gallery**: Thumbnail grid for browsing source media
+  - Filter by media type (images, documents)
+  - Filter by source type
+  - Search by filename or source title
+  - Lightbox viewer with keyboard navigation (arrow keys, Escape)
+  - Support for images and document placeholders
+  - Statistics footer showing media counts
+
+- **Citation Generator**: Generate formatted citations in multiple academic styles
+  - Chicago Manual of Style
+  - Evidence Explained (Elizabeth Shown Mills) - genealogical standard
+  - MLA (Modern Language Association)
+  - Turabian
+  - Copy single format or all formats to clipboard
+  - Missing field warnings for incomplete citations
+
 - **Evidence & Sources Wiki Page**: Comprehensive documentation for source management
   - Source note schema with 13 source types (census, vital_record, photograph, etc.)
   - Source property reference (source_date, source_repository, confidence, etc.)
@@ -33,7 +49,7 @@ Evidence & Source Management release: Source indicators on generated trees.
 
 - Updated Frontmatter-Reference.md with correct source property names (source_date, source_repository, etc.)
 - Updated Tree-Generation wiki page with source indicators documentation
-- Updated Roadmap to reflect partial implementation of Evidence & Source Management
+- Updated Roadmap to reflect completion of Evidence & Source Management
 
 ---
 
