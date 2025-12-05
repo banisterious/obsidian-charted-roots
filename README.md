@@ -1,6 +1,6 @@
 # Canvas Roots: Genealogical Family Tree Plugin for Obsidian
 
-[![Version](https://img.shields.io/badge/version-0.7.0-blue.svg)](https://github.com/banisterious/obsidian-canvas-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md)
+[![Version](https://img.shields.io/badge/version-0.8.0-blue.svg)](https://github.com/banisterious/obsidian-canvas-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md)
 
 **Canvas Roots** transforms structured genealogical data in your Markdown notes into beautifully laid-out family trees on the Obsidian Canvas. Designed for genealogists, historians, and world-builders.
 
@@ -91,6 +91,7 @@
 |---------|-------------|
 | **Native Canvas Nodes** | Every person is a linkable Obsidian file node |
 | **Canvas Styling** | Node coloring, arrow styles, edge colors for parent-child and spouse relationships |
+| **Source Indicators** | Visual badges showing research quality (📎 3 = 3 linked sources) with color coding |
 | **Multiple Spouse Support** | Indexed properties with marriage dates, locations, and status |
 | **Split Canvas Wizard** | Split large trees by generation, branch, collection, surname, or lineage |
 | **Navigation Portals** | Link between related canvases with optional master overview |
@@ -115,7 +116,7 @@ See [Roadmap](https://github.com/banisterious/obsidian-canvas-roots/wiki/Roadmap
 | Feature | Description |
 |---------|-------------|
 | **Organization Chart Visualization** | D3-based interactive org chart visualization for organizations |
-| **Source Media Gallery** | Centralized evidence management with thumbnails and citation generation |
+| **Source Media Gallery** | Centralized evidence management with thumbnails and citation generation (source indicators available now) |
 | **Canvas Media Nodes** | Media files as first-class canvas entities with intelligent placement |
 | **Oral History Tools** | Timestamped transcript citations, interview subject graphs, chronological story mapping |
 
@@ -225,6 +226,7 @@ If you find this plugin useful, please consider supporting its development!
 - [Tree Generation](https://github.com/banisterious/obsidian-canvas-roots/wiki/Tree-Generation) - Generating family trees
 - [Import & Export](https://github.com/banisterious/obsidian-canvas-roots/wiki/Import-Export) - GEDCOM and CSV support
 - [Geographic Features](https://github.com/banisterious/obsidian-canvas-roots/wiki/Geographic-Features) - Maps and places
+- [Evidence & Sources](https://github.com/banisterious/obsidian-canvas-roots/wiki/Evidence-And-Sources) - Source management and indicators
 - [FAQ](https://github.com/banisterious/obsidian-canvas-roots/wiki/FAQ) - Common questions
 - [Troubleshooting](https://github.com/banisterious/obsidian-canvas-roots/wiki/Troubleshooting) - Problem solving
 
