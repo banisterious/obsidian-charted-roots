@@ -85,15 +85,21 @@
 | **Fictional Date Systems** | Custom calendars and eras for world-building (Middle-earth, Westeros, Star Wars, or custom) |
 | **Organization Notes** | Track non-genealogical hierarchies: noble houses, guilds, corporations, military units, religious orders |
 
+### Evidence & Sources
+
+| Feature | Description |
+|---------|-------------|
+| **Source Notes** | Dedicated notes for genealogical sources with structured metadata |
+| **Source Media Gallery** | Thumbnail grid of source media with search, filtering, and lightbox viewer |
+| **Citation Generator** | Generate citations in Chicago, Evidence Explained, MLA, and Turabian formats |
+| **Source Indicators** | Visual badges on canvas nodes showing research quality (📎 3 = 3 linked sources) |
+
 ### Canvas Features
 
 | Feature | Description |
 |---------|-------------|
 | **Native Canvas Nodes** | Every person is a linkable Obsidian file node |
 | **Canvas Styling** | Node coloring, arrow styles, edge colors for parent-child and spouse relationships |
-| **Source Indicators** | Visual badges showing research quality (📎 3 = 3 linked sources) with color coding |
-| **Source Media Gallery** | Thumbnail grid of source media with search, filtering, and lightbox viewer |
-| **Citation Generator** | Generate citations in Chicago, Evidence Explained, MLA, and Turabian formats |
 | **Multiple Spouse Support** | Indexed properties with marriage dates, locations, and status |
 | **Split Canvas Wizard** | Split large trees by generation, branch, collection, surname, or lineage |
 | **Navigation Portals** | Link between related canvases with optional master overview |
