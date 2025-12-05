@@ -291,6 +291,8 @@ confidence: high
 
 #### Evidence Visualization
 
+> See [evidence-visualization-plan.md](../docs/planning/evidence-visualization-plan.md) for detailed implementation plan.
+
 **Summary:** Visual research methodology tools aligned with the Genealogical Proof Standard (GPS) and professional genealogical practices. Transforms Canvas Roots from a tree builder into a serious research platform.
 
 **Genealogical Standards Support:**
@@ -303,64 +305,45 @@ confidence: high
 | Conflict documentation | Visual markers for contradictory evidence |
 | Written conclusions | Proof summary nodes documenting reasoning |
 
-**Fact-Level Source Coverage:**
+**Phase 1 (v0.9.0) - Fact-Level Source Coverage:**
 
-Enhanced source indicators showing which specific facts have evidence:
+New `sourced_facts` property on person notes:
 
+```yaml
+sourced_facts:
+  birth_date:
+    sources: ["[[1850 Census]]", "[[Family Bible]]"]
+  birth_place:
+    sources: ["[[1850 Census]]"]
+  death_date:
+    sources: []  # Explicitly unsourced
 ```
-┌─────────────────────────────┐
-│ John Smith (1850-1920)      │
-├─────────────────────────────┤
-│ ✅ Birth: 2 sources         │
-│ ⚠️ Marriage: 1 (secondary)  │
-│ ❌ Death: no sources        │
-│ ✅ Parents: 3 sources       │
-└─────────────────────────────┘
+
+New `source_quality` field on source notes:
+
+```yaml
+source_quality: primary  # primary | secondary | derivative
 ```
+
+**Phase 1 Features:**
+- Research Gaps Report in Data Quality tab
+- Person fact coverage display (which facts have sources)
+- Enhanced source indicator tooltips on canvas
+- Schema validation for `sourced_facts`
 
 **Source Quality Classification:**
 
-| Classification | Visual | Meaning |
-|----------------|--------|---------|
-| Primary | Green border | Created at/near event by participant/witness |
-| Secondary | Yellow border | Created later from memory or other sources |
-| Derivative | Orange border | Copies, transcriptions, abstracts |
-| Conflicting | Red indicator | Sources disagree on this fact |
+| Classification | Meaning | Examples |
+|----------------|---------|----------|
+| Primary | Created at/near event by participant/witness | Original vital records, census, contemporary letters |
+| Secondary | Created later from memory or hearsay | Family bibles (later entries), obituaries, oral histories |
+| Derivative | Copies, transcriptions, or abstracts | Database transcriptions, published abstracts |
 
-**Evidence Types (per Elizabeth Shown Mills):**
-- **Direct**: Answers research question explicitly
-- **Indirect**: Requires reasoning with other sources
-- **Negative**: Absence of expected information (documented)
-
-**Proof Summary Nodes:**
-
-Special canvas nodes documenting the reasoning chain for conclusions:
-
-```yaml
-type: proof_summary
-conclusion: "John Smith's parents were William and Mary Smith"
-sources:
-  - "[[1850 Census]]"
-  - "[[Marriage Record 1848]]"
-  - "[[Family Bible]]"
-reasoning: |
-  The 1850 census lists John (age 5) in William Smith's household...
-  The marriage record confirms William married Mary Jones in 1848...
-confidence: high
-```
-
-**Canvas Visualization:**
-- Evidence clusters grouped by research question
-- Color-coded source quality on media nodes
-- Conflict markers with linked analysis notes
-- Research progress overlay (% of facts sourced)
-
-**Implementation Phases:**
+**Future Phases:**
 
 | Phase | Scope |
 |-------|-------|
-| 1 | Fact-level source coverage in enhanced indicators |
-| 2 | Source quality classification (primary/secondary/derivative) |
+| 2 | Source quality visualization with color coding |
 | 3 | Proof summary nodes and conflict documentation |
 | 4 | Full canvas evidence visualization with clusters |
 
