@@ -330,6 +330,8 @@ The `collection` property allows places to be grouped with related person notes.
 
 ## Source Note Properties
 
+> **Status:** Complete. See [Evidence & Sources](Evidence-And-Sources) for full documentation.
+
 Source notes document evidence and citations for genealogical research. Each source can be linked to person notes to provide documentary evidence for facts in the family tree.
 
 ### Identity
