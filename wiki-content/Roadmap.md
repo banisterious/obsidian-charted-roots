@@ -14,8 +14,8 @@ This document outlines planned features for Canvas Roots. For release history an
   - [Schema Validation](#schema-validation--consistency-checks) ✅
   - [Custom Relationship Types](#custom-relationship-types) ✅
   - [Fictional Date Systems](#fictional-date-systems) ✅
-  - [Evidence & Source Management](#evidence--source-management)
-  - [World-Building Suite](#world-building-suite)
+  - [Evidence & Source Management](#evidence--source-management) ✅
+  - [World-Building Suite](#world-building-suite) ✅
   - [Research & Analysis Tools](#research--analysis-tools)
 - [Future Considerations](#future-considerations)
   - [Person Note Templates](#person-note-templates)
@@ -40,8 +40,8 @@ The following priority order guides future development:
 | 4 | [Schema Validation](#schema-validation--consistency-checks) | ✅ Complete (v0.6.3) |
 | 5 | [Custom Relationship Types](#custom-relationship-types) | ✅ Complete (v0.7.0) |
 | 6 | [Fictional Date Systems](#fictional-date-systems) | ✅ Complete (v0.7.0) |
-| 7 | [Organization Notes](#organization-notes--hierarchy-views) | 🚧 In Progress (v0.7.0) |
-| 8 | [Source Media Gallery](#source-media-gallery--document-viewer) | Planned |
+| 7 | [Organization Notes](#organization-notes--hierarchy-views) | ✅ Complete (v0.7.0) |
+| 8 | [Source Media Gallery](#source-media-gallery--document-viewer) | ✅ Complete (v0.8.0) |
 | 9 | [Canvas Media Nodes](#canvas-media-nodes) | Planned |
 | 10 | [Transcript Nodes & Oral History](#transcript-nodes--quotable-facts) | Planned |
 | 11 | [Style Settings Integration](#style-settings-integration) | Planned |
@@ -239,39 +239,40 @@ memberships:
 
 Features for genealogists managing documentary evidence and oral history.
 
-#### Source Media Gallery & Document Viewer
+#### Source Media Gallery & Document Viewer ✅
+
+> **Complete in v0.8.0.** See [Evidence & Sources](Evidence-And-Sources) wiki page for full documentation.
 
 **Summary:** Centralized evidence management linking source documents to person notes.
 
-**Partially Implemented (v0.7.x):**
+**Implemented Features:**
 - Source note type (`type: source`) with frontmatter schema
-- Source counting during cache loading (counts links from source notes to person notes)
+- 13 built-in source types (census, vital_record, photo, correspondence, newspaper, military, immigration, etc.)
+- Source counting using Obsidian's `resolvedLinks` metadata cache
 - **Source indicators on generated trees**: Small badges (e.g., "📎 3") on person nodes showing linked source count
   - Color-coded: green for 3+ sources (well-documented), yellow for 1-2 sources
   - Toggle in Settings → Canvas Roots → Canvas styling → "Show source indicators"
-- Sources Bases template for managing source notes
+- **Media Gallery in Sources Tab**: Thumbnail grid with search and filtering
+  - Filter by media type (images, documents)
+  - Filter by source type
+  - Search by filename or source title
+  - Lightbox viewer with keyboard navigation (arrow keys, Escape)
+  - Support for images and document placeholders
+- Sources Bases template with 17 pre-configured views
 
-**Schema:**
+**Source Note Schema:**
 ```yaml
-sources:
-  - media: "[[Census 1900.pdf]]"
-    type: census
-    date: 1900-06-01
-    repository: "Ancestry.com"
-  - media: "[[Birth Certificate.jpg]]"
-    type: vital_record
-    date: 1888-05-15
-source_media:  # Simple format
-  - "[[Census 1900.pdf]]"
-  - "[[Marriage License 1910.png]]"
+type: source
+cr_id: source-1900-census-smith
+title: "1900 US Federal Census - Smith Family"
+source_type: census
+source_date: "1900-06-01"
+source_repository: "Ancestry.com"
+media: "[[Census 1900.pdf]]"
+confidence: high
 ```
 
-**Source Types:** census, vital_record, photo, correspondence, newspaper, military, immigration, custom
-
-**Remaining Features:**
-- Thumbnail grid with PDF previews
-- Sort by date, type, or filename
-- Filter by source type
+**Future Enhancements:**
 - Citation generator (Chicago, Evidence Explained)
 - "Missing sources" report
 
