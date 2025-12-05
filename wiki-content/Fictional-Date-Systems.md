@@ -13,6 +13,7 @@ Fictional Date Systems allow you to define custom calendars and eras for world-b
 - [Creating Custom Systems](#creating-custom-systems)
 - [Test Date Parsing](#test-date-parsing)
 - [Technical Details](#technical-details)
+- [Future Enhancements](#future-enhancements)
 
 ---
 
@@ -249,11 +250,28 @@ Date systems are stored in plugin settings:
 
 ---
 
+## Future Enhancements
+
+### Calendarium Integration (Planned)
+
+Canvas Roots plans to support integration with the popular [Calendarium](https://github.com/javalent/calendarium) community plugin. This will enable:
+
+- **Calendar sharing**: Use Calendarium's calendar definitions in Canvas Roots
+- **Event synchronization**: Display Canvas Roots events in Calendarium's calendar views
+- **Bidirectional sync**: Optionally keep events in sync between both systems
+- **Cross-calendar translation**: Convert dates between different calendar systems
+
+If you use Calendarium for fantasy calendar management, this integration will allow you to leverage your existing calendar definitions while using Canvas Roots' genealogy and worldbuilding features.
+
+See the [Chronological Story Mapping plan](../docs/plans/chronological-story-mapping.md) for full details on this planned integration.
+
+---
+
 ## Related Documentation
 
 - [Frontmatter Reference](Frontmatter-Reference) - Full schema for person notes
 - [Custom Relationships](Custom-Relationships) - Extended relationship types
-- [Roadmap](Roadmap) - Planned enhancements including Bases integration
+- [Roadmap](Roadmap) - Planned enhancements including Chronological Story Mapping
 
 ---
 
