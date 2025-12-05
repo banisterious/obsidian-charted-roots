@@ -427,7 +427,7 @@ mentions:
 
 ---
 
-#### Chronological Story Mapping
+### Chronological Story Mapping
 
 > See [chronological-story-mapping.md](../docs/plans/chronological-story-mapping.md) for detailed implementation plan.
 
