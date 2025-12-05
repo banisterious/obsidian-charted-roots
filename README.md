@@ -92,6 +92,7 @@
 | **Native Canvas Nodes** | Every person is a linkable Obsidian file node |
 | **Canvas Styling** | Node coloring, arrow styles, edge colors for parent-child and spouse relationships |
 | **Source Indicators** | Visual badges showing research quality (📎 3 = 3 linked sources) with color coding |
+| **Source Media Gallery** | Thumbnail grid of source media with search, filtering, and lightbox viewer |
 | **Multiple Spouse Support** | Indexed properties with marriage dates, locations, and status |
 | **Split Canvas Wizard** | Split large trees by generation, branch, collection, surname, or lineage |
 | **Navigation Portals** | Link between related canvases with optional master overview |
@@ -116,7 +117,7 @@ See [Roadmap](https://github.com/banisterious/obsidian-canvas-roots/wiki/Roadmap
 | Feature | Description |
 |---------|-------------|
 | **Organization Chart Visualization** | D3-based interactive org chart visualization for organizations |
-| **Source Media Gallery** | Thumbnails, citation generation, and document viewer for source notes |
+| **Citation Generation** | Formatted citations from source notes for research documentation |
 | **Canvas Media Nodes** | Media files as first-class canvas entities with intelligent placement |
 | **Oral History Tools** | Timestamped transcript citations, interview subject graphs, chronological story mapping |
 
