@@ -130,9 +130,10 @@ See [Roadmap](https://github.com/banisterious/obsidian-canvas-roots/wiki/Roadmap
 
 | Feature | Description |
 |---------|-------------|
-| **Organization Chart Visualization** | D3-based interactive org chart visualization for organizations |
-| **Canvas Media Nodes** | Media files as first-class canvas entities with intelligent placement |
-| **Oral History Tools** | Timestamped transcript citations, interview subject graphs, chronological story mapping |
+| **Value Aliases** | Map custom property values (event types, gender, place categories) to Canvas Roots fields |
+| **Chronological Story Mapping** | Event-based timeline visualization with fictional date system integration |
+| **Print & PDF Export** | Generate print-ready pedigree charts, descendant charts, and family group sheets |
+| **Transcript Nodes & Oral History** | Timestamped transcript citations and interview subject graphs |
 
 ---
 
