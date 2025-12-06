@@ -46,7 +46,7 @@ Value Aliases release: Use custom property values without editing your notes.
 ### Fixed
 
 - Fixed `addClass()` calls in create place modal (was passing incorrect arguments)
-- Place notes now write flat coordinate properties (`coordinates_lat`, `coordinates_long`) instead of nested objects
+- Place note creation and editing now write flat coordinate properties (`coordinates_lat`, `coordinates_long`, `custom_coordinates_x`, etc.) instead of nested objects
 - Place graph reads both flat and nested coordinate formats for backwards compatibility
 
 ### Documentation
