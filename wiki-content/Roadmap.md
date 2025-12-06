@@ -787,8 +787,9 @@ GEDCOM File
 4. Property alias (if user configured a custom property name)
 
 **Tag-Based Detection:**
-- Option to detect note types from tags instead of properties
-- Configurable tag patterns: `#person`, `#cr/person`, or custom prefix
+- Support simple tags by default: `#person`, `#place`, `#event`, `#source`
+- Recognize nested tags where the base matches: `#place/settlement` → place, `#event/story` → event
+- Optional `cr/` prefix for users who have tag conflicts (not required by default)
 - Works alongside property-based detection
 
 **Settings UI:**
@@ -797,7 +798,7 @@ Note Type Detection
 ├── Type property name: [cr_type ▼]
 ├── ☑ Also check legacy 'type' property
 ├── ☐ Detect from tags
-│   └── Tag prefix: [cr/ ▼]
+│   └── Tag prefix: [(none) ▼]  # Options: (none), cr/, custom
 └── Property aliases: [Configure...]
 ```
 
@@ -808,7 +809,18 @@ Note Type Detection
 | New users | Notes created with `cr_type` |
 | Existing CR users | `type` still works, can optionally migrate |
 | Users with conflicts | Switch to `cr_type` or tags |
-| Tag-based workflows | Enable tag detection |
+| Tag-based workflows | Enable tag detection, use existing tags |
+
+**Tag Examples:**
+
+| User Tag | Detected As |
+|----------|-------------|
+| `#person` | person |
+| `#place` | place |
+| `#place/settlement` | place |
+| `#event/story` | event |
+| `#era/reign` | *(not detected - no matching base)* |
+| `#cr/person` | person *(if prefix configured)* |
 
 **Integration Points:**
 - GEDCOM/CSV import uses configured property name
