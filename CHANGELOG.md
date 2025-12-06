@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.2] - 2025-12-05
+
+Events Tab release: Improved discoverability for Fictional Date Systems.
+
+### Added
+
+- **Events Tab**: New dedicated tab in Control Center for temporal data management
+  - **Date systems card**: Moved from Canvas Settings with all existing functionality intact
+  - **Statistics card**: Shows date coverage metrics for person notes
+    - Birth/death date coverage percentages
+    - Fictional date usage count and systems breakdown
+- Improves discoverability of Fictional Date Systems feature
+- Lays groundwork for future Chronological Story Mapping features
+
+### Changed
+
+- Canvas Settings tab simplified by moving date systems to Events tab
+- Control Center tab order updated: Events tab now appears after People tab
+
+---
+
 ## [0.9.1] - 2025-12-05
 
 Style Settings integration and code quality improvements.

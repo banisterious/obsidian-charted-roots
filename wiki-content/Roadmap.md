@@ -20,7 +20,7 @@ This document outlines planned features for Canvas Roots. For release history an
   - [Research & Analysis Tools](#research--analysis-tools)
   - [Print & PDF Export](#print--pdf-export)
 - [Future Considerations](#future-considerations)
-  - [Events Tab (Control Center)](#events-tab-control-center)
+  - [Events Tab (Control Center)](#events-tab-control-center) ✅
   - [Property Aliases](#property-aliases)
   - [Person Note Templates](#person-note-templates)
   - [Accessibility](#accessibility)
@@ -47,10 +47,10 @@ The following priority order guides future development:
 | 8 | [Source Media Gallery](#source-media-gallery--document-viewer) | ✅ Complete (v0.8.0) |
 | 9 | [Evidence Visualization](#evidence-visualization) | ✅ Complete (v0.9.0) |
 | 10 | [Style Settings Integration](#style-settings-integration) | ✅ Complete (v0.9.1) |
-| 11 | [Chronological Story Mapping](#chronological-story-mapping) | Planned |
-| 12 | [Print & PDF Export](#print--pdf-export) | Planned |
-| 13 | [Transcript Nodes & Oral History](#transcript-nodes--quotable-facts) | Planned |
-| 14 | [Events Tab (Control Center)](#events-tab-control-center) | Planned |
+| 11 | [Events Tab (Control Center)](#events-tab-control-center) | ✅ Complete (v0.9.2) |
+| 12 | [Chronological Story Mapping](#chronological-story-mapping) | Planned |
+| 13 | [Print & PDF Export](#print--pdf-export) | Planned |
+| 14 | [Transcript Nodes & Oral History](#transcript-nodes--quotable-facts) | Planned |
 | 15 | [Property Aliases](#property-aliases) | Planned |
 
 ---
@@ -579,23 +579,16 @@ is_canonical: true
 
 ## Future Considerations
 
-### Events Tab (Control Center)
+### Events Tab (Control Center) ✅
 
-> See [events-tab.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/events-tab.md) for detailed implementation plan.
+> **Complete in v0.9.2.** See [events-tab.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/events-tab.md) for implementation details.
 
-**Summary:** Improve discoverability of Fictional Date Systems and lay groundwork for Chronological Story Mapping by adding a dedicated Events tab to the Control Center.
+**Summary:** Dedicated Events tab in the Control Center improves discoverability of Fictional Date Systems and provides foundation for future Chronological Story Mapping features.
 
-**Motivation:**
-- Fictional Date Systems currently nested in Canvas Settings, hard to discover
-- Creates logical home for future event-based features
-- Simplifies Canvas Settings tab
-
-**Proposed Structure:**
-- **Date systems card**: Move from Canvas Settings (all existing functionality)
-- **Statistics card**: Date coverage metrics, fictional date usage
-- **Event notes card** *(future)*: For Chronological Story Mapping Phase 1
-
-**Implementation Scope:** Small - primarily UI reorganization
+**What's Included:**
+- **Date systems card**: Moved from Canvas Settings with all existing functionality
+- **Statistics card**: Date coverage metrics (birth/death dates), fictional date usage breakdown
+- **Event notes card** *(future)*: Placeholder for Chronological Story Mapping Phase 1
 
 ---
 

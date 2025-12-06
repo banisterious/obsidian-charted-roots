@@ -39,7 +39,7 @@ import { SchemaService, ValidationService } from '../schemas';
 import type { SchemaNote, ValidationResult, ValidationSummary } from '../schemas';
 import { RelationshipService, RELATIONSHIP_CATEGORY_NAMES } from '../relationships';
 import type { RelationshipCategory } from '../relationships';
-import { createDateSystemsCard } from '../dates';
+import { renderEventsTab } from '../dates';
 import { renderOrganizationsTab } from '../organizations';
 import {
 	renderSourcesTab,
@@ -293,6 +293,9 @@ export class ControlCenterModal extends Modal {
 				break;
 			case 'relationships':
 				void this.showRelationshipsTab();
+				break;
+			case 'events':
+				this.showEventsTab();
 				break;
 			case 'organizations':
 				void this.showOrganizationsTab();
@@ -1610,14 +1613,6 @@ export class ControlCenterModal extends Modal {
 				}));
 
 		container.appendChild(spouseEdgeCard);
-
-		// Fictional Date Systems Card
-		const dateSystemsCard = createDateSystemsCard(
-			container,
-			this.plugin,
-			(options) => this.createCard(options)
-		);
-		container.appendChild(dateSystemsCard);
 
 		// Link to full settings
 		const fullSettingsBtn = container.createEl('button', {
@@ -7238,6 +7233,19 @@ export class ControlCenterModal extends Modal {
 
 		// Statistics card
 		this.renderRelationshipStatsCard(container, relationshipService);
+	}
+
+	/**
+	 * Show Events tab with date systems and temporal statistics
+	 */
+	private showEventsTab(): void {
+		const container = this.contentContainer;
+		renderEventsTab(
+			container,
+			this.plugin,
+			(options) => this.createCard(options),
+			(tabId) => this.showTab(tabId)
+		);
 	}
 
 	/**

@@ -136,6 +136,12 @@ export const TAB_CONFIGS: TabConfig[] = [
 		description: 'Person notes, statistics, and data entry'
 	},
 	{
+		id: 'events',
+		name: 'Events',
+		icon: 'calendar',
+		description: 'Date systems and temporal data'
+	},
+	{
 		id: 'places',
 		name: 'Places',
 		icon: 'map-pin',
