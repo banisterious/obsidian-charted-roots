@@ -23,6 +23,7 @@ This document outlines planned features for Canvas Roots. For release history an
   - [Events Tab (Control Center)](#events-tab-control-center) ✅ v0.9.2
   - [Property Aliases](#property-aliases-) ✅ v0.9.3
   - [Value Aliases](#value-aliases) ✅ v0.9.4
+  - [Flatten Nested Properties](#flatten-nested-properties)
   - [Person Note Templates](#person-note-templates)
   - [Accessibility](#accessibility)
   - [Obsidian Publish Support](#obsidian-publish-support)
@@ -641,6 +642,37 @@ is_canonical: true
 **Use Case:** Worldbuilders with elaborate taxonomies who don't want to retrofit existing notes to match Canvas Roots' expected values.
 
 **Status:** ✅ Complete in v0.9.4.
+
+---
+
+### Flatten Nested Properties
+
+> See [flatten-nested-properties.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/flatten-nested-properties.md) for detailed implementation plan.
+
+**Summary:** Add a "Flatten" action to nested property warnings in the Data Quality tab, allowing users to convert non-flat frontmatter structures to flat properties with a before/after preview.
+
+**Planned Features:**
+- Per-record "Flatten" button in Data Quality results
+- Modal with before/after YAML preview
+- Underscore-join flattening strategy (`parent_child`)
+- Collision detection with warnings
+- Support for simple nested objects and arrays of objects
+
+**Example:**
+```yaml
+# Before (nested)
+coordinates:
+  lat: 32.753177
+  long: -97.3327459
+
+# After (flattened)
+coordinates_lat: 32.753177
+coordinates_long: -97.3327459
+```
+
+**Use Case:** Users who imported data with nested YAML structures, or who have place notes with `coordinates: { lat, long }` format, can easily flatten them for better Obsidian compatibility.
+
+**Status:** Planned.
 
 ---
 
