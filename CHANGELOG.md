@@ -7,6 +7,58 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.10.1] - 2025-12-06
+
+GEDCOM Import v2: Full-featured import with event notes, source notes, hierarchical place notes, progress indicator, and filename format options.
+
+### Added
+
+- **GEDCOM Import v2**: Enhanced import creating multiple note types
+  - Create event notes from GEDCOM events (births, deaths, marriages, and 30+ other event types)
+  - Create source notes from GEDCOM `SOUR` records with `TITL`, `AUTH`, `PUBL`, `REPO` fields
+  - Create hierarchical place notes parsing `City, County, State, Country` structure
+  - Per-note-type toggle: choose which note types to create (people, events, sources, places)
+  - Disable people notes if you already have them in your vault
+
+- **Filename Format Options**: Control how imported note filenames are formatted
+  - Three formats: Original (John Smith.md), Kebab-case (john-smith.md), Snake_case (john_smith.md)
+  - "Customize per note type" toggle for fine-grained control
+  - Set different formats for people, events, sources, and places
+
+- **Import Progress Modal**: Visual feedback during large imports
+  - Phase indicator (validating, parsing, places, sources, people, relationships, events)
+  - Progress bar with current/total counts
+  - Running statistics showing places, sources, people, events created
+  - Auto-closes after completion
+
+- **Place Duplicate Detection**: Smart matching for existing place notes
+  - Case-insensitive matching on `full_name` property
+  - Fallback matching on title + parent combination
+  - Updates existing places (adds missing parent links) instead of creating duplicates
+
+- **Import Options UI Improvements**
+  - Descriptive text explaining what each toggle does
+  - Counts shown in toggle labels (e.g., "Create event notes (6,010 found)")
+  - Reorganized options with explanatory paragraph
+
+### Changed
+
+- **Numbering System Modal**: No longer appears automatically after GEDCOM import
+  - Added "Skip" button for when accessed from other UI paths
+  - Users can assign reference numbers later via Tools menu
+
+### Fixed
+
+- **People Tab Performance**: Fixed crash when viewing People tab with large imports (2k+ people)
+  - Added pagination (100 people at a time with "Load more" button)
+  - Removed expensive per-person badge calculations that were causing freezes
+
+- **GEDCOM Analysis Performance**: Fixed freeze when selecting large GEDCOM files
+  - Optimized connected components algorithm from O(n×m) to O(n+m)
+  - Pre-built family lookup index for fast relationship traversal
+
+---
+
 ## [0.10.0] - 2025-12-06
 
 Chronological Story Mapping release: Event notes, person timelines, family timelines, source event extraction, and global timeline view.

@@ -9,11 +9,14 @@ import { CanvasGenerator, CanvasData, CanvasGenerationOptions } from '../core/ca
 import { getLogger } from '../core/logging';
 import { getErrorMessage } from '../core/error-utils';
 import { GedcomImporter } from '../gedcom/gedcom-importer';
+import { GedcomImporterV2 } from '../gedcom/gedcom-importer-v2';
+import type { GedcomImportOptionsV2, GedcomImportResultV2, FilenameFormat, FilenameFormatOptions } from '../gedcom/gedcom-types';
 import { GedcomXImporter, GedcomXImportResult } from '../gedcomx/gedcomx-importer';
 import { GedcomXParser } from '../gedcomx/gedcomx-parser';
 import { GrampsImporter, GrampsImportResult } from '../gramps/gramps-importer';
 import { GrampsParser } from '../gramps/gramps-parser';
 import { GedcomImportResultsModal } from './gedcom-import-results-modal';
+import { GedcomImportProgressModal } from './gedcom-import-progress-modal';
 import { BidirectionalLinker } from '../core/bidirectional-linker';
 import { TreePreviewRenderer } from './tree-preview';
 import { ReferenceNumberingService, NumberingSystem } from '../core/reference-numbering';
@@ -1759,8 +1762,12 @@ export class ControlCenterModal extends Modal {
 		});
 	}
 
+	/** Maximum people to render initially (for performance) */
+	private static readonly PERSON_LIST_PAGE_SIZE = 100;
+
 	/**
 	 * Render person list items with expandable place details
+	 * Uses pagination to avoid rendering thousands of DOM elements at once
 	 */
 	private renderPersonListItems(
 		container: HTMLElement,
@@ -1795,121 +1802,194 @@ export class ControlCenterModal extends Modal {
 			byLetter.get(letter)!.push(person);
 		}
 
-		// Render by letter
+		// For large lists, show count and paginate
+		const totalCount = people.length;
+		const needsPagination = totalCount > ControlCenterModal.PERSON_LIST_PAGE_SIZE;
+		let renderedCount = 0;
+
+		// Render by letter with pagination
 		const sortedLetters = Array.from(byLetter.keys()).sort();
-		for (const letter of sortedLetters) {
-			const letterSection = container.createDiv({ cls: 'crc-person-letter-section' });
-			letterSection.createEl('h5', { text: letter, cls: 'crc-person-letter-header' });
+		const listWrapper = container.createDiv({ cls: 'crc-person-list-wrapper' });
 
-			const letterList = letterSection.createDiv({ cls: 'crc-person-letter-list' });
-			for (const person of byLetter.get(letter)!) {
-				const item = letterList.createDiv({ cls: 'crc-person-list-item' });
+		const renderBatch = (startFrom: number, limit: number) => {
+			let currentIndex = 0;
+			let rendered = 0;
 
-				// Main row (name + dates + expand toggle if has unlinked places)
-				const mainRow = item.createDiv({ cls: 'crc-person-list-item__main' });
+			for (const letter of sortedLetters) {
+				const letterPeople = byLetter.get(letter)!;
 
-				// Check for unlinked places
-				const unlinkedPlaces: { type: string; info: PlaceInfo }[] = [];
-				if (person.birthPlace && !person.birthPlace.isLinked) {
-					unlinkedPlaces.push({ type: 'Birth', info: person.birthPlace });
-				}
-				if (person.deathPlace && !person.deathPlace.isLinked) {
-					unlinkedPlaces.push({ type: 'Death', info: person.deathPlace });
-				}
-				if (person.burialPlace && !person.burialPlace.isLinked) {
-					unlinkedPlaces.push({ type: 'Burial', info: person.burialPlace });
+				// Skip letters we've already fully rendered
+				if (currentIndex + letterPeople.length <= startFrom) {
+					currentIndex += letterPeople.length;
+					continue;
 				}
 
-				// Name (clickable)
-				const nameEl = mainRow.createEl('span', {
-					text: person.name,
-					cls: 'crc-person-list-name'
-				});
-				nameEl.addEventListener('click', () => {
-					// Open the person's file
-					void this.app.workspace.getLeaf(false).openFile(person.file);
-				});
-
-				// Dates
-				const dates = [];
-				if (person.birthDate) dates.push(`b. ${person.birthDate}`);
-				if (person.deathDate) dates.push(`d. ${person.deathDate}`);
-				if (dates.length > 0) {
-					mainRow.createEl('span', {
-						text: dates.join(' – '),
-						cls: 'crc-person-list-dates crc-text--muted'
-					});
+				// Find or create letter section
+				let letterSection = listWrapper.querySelector(`[data-letter="${letter}"]`) as HTMLElement;
+				let letterList: HTMLElement;
+				if (!letterSection) {
+					letterSection = listWrapper.createDiv({ cls: 'crc-person-letter-section' });
+					letterSection.setAttribute('data-letter', letter);
+					letterSection.createEl('h5', { text: letter, cls: 'crc-person-letter-header' });
+					letterList = letterSection.createDiv({ cls: 'crc-person-letter-list' });
+				} else {
+					letterList = letterSection.querySelector('.crc-person-letter-list') as HTMLElement;
 				}
 
-				// Unlinked place indicator badge
-				if (unlinkedPlaces.length > 0) {
-					const badge = mainRow.createEl('span', {
-						cls: 'crc-person-list-badge crc-person-list-badge--unlinked',
-						attr: {
-							title: `${unlinkedPlaces.length} unlinked place${unlinkedPlaces.length !== 1 ? 's' : ''}`
-						}
-					});
-					const mapIcon = createLucideIcon('map-pin', 12);
-					badge.appendChild(mapIcon);
-					badge.appendText(unlinkedPlaces.length.toString());
-
-					// Create expandable details section
-					const detailsSection = item.createDiv({ cls: 'crc-person-list-details crc-person-list-details--hidden' });
-
-					// Toggle on badge click
-					badge.addEventListener('click', (e) => {
-						e.stopPropagation();
-						detailsSection.toggleClass('crc-person-list-details--hidden', !detailsSection.hasClass('crc-person-list-details--hidden'));
-						badge.toggleClass('crc-person-list-badge--active', !badge.hasClass('crc-person-list-badge--active'));
-					});
-
-					// Render place details with action buttons
-					for (const { type, info } of unlinkedPlaces) {
-						const placeRow = detailsSection.createDiv({ cls: 'crc-person-list-place' });
-
-						placeRow.createEl('span', {
-							text: `${type}: `,
-							cls: 'crc-person-list-place__label'
-						});
-						placeRow.createEl('span', {
-							text: info.placeName,
-							cls: 'crc-person-list-place__name'
-						});
-
-						// Action button to create place note
-						const createBtn = placeRow.createEl('button', {
-							cls: 'crc-btn crc-btn--small crc-btn--ghost crc-person-list-place__action',
-							attr: { title: 'Create place note' }
-						});
-						const plusIcon = createLucideIcon('plus', 12);
-						createBtn.appendChild(plusIcon);
-						createBtn.appendText('Create');
-
-						createBtn.addEventListener('click', (e) => {
-							e.stopPropagation();
-							void this.showQuickCreatePlaceModal(info.placeName);
-						});
+				// Render people in this letter
+				for (let i = 0; i < letterPeople.length; i++) {
+					if (currentIndex < startFrom) {
+						currentIndex++;
+						continue;
 					}
+					if (rendered >= limit) {
+						return rendered;
+					}
+
+					const person = letterPeople[i];
+					this.renderPersonListItem(letterList, person);
+					currentIndex++;
+					rendered++;
 				}
+			}
+			return rendered;
+		};
 
-				// Research coverage badge (only when fact tracking is enabled)
-				if (this.plugin.settings.trackFactSourcing) {
-					this.renderPersonResearchCoverageBadge(item, mainRow, person.file);
+		// Initial render
+		const initialRendered = renderBatch(0, ControlCenterModal.PERSON_LIST_PAGE_SIZE);
+		renderedCount = initialRendered;
+
+		// Show "Load more" button if needed
+		if (needsPagination && renderedCount < totalCount) {
+			const loadMoreContainer = container.createDiv({ cls: 'crc-load-more-container' });
+			const loadMoreBtn = loadMoreContainer.createEl('button', {
+				cls: 'crc-btn crc-btn--secondary',
+				text: `Load more (${renderedCount} of ${totalCount} shown)`
+			});
+
+			loadMoreBtn.addEventListener('click', () => {
+				const newRendered = renderBatch(renderedCount, ControlCenterModal.PERSON_LIST_PAGE_SIZE);
+				renderedCount += newRendered;
+
+				if (renderedCount >= totalCount) {
+					loadMoreContainer.remove();
+				} else {
+					loadMoreBtn.setText(`Load more (${renderedCount} of ${totalCount} shown)`);
 				}
+			});
+		}
+	}
 
-				// Timeline badge (shows event count if any events exist)
-				this.renderPersonTimelineBadge(item, mainRow, person.file, person.name);
+	/**
+	 * Render a single person list item
+	 */
+	private renderPersonListItem(
+		letterList: HTMLElement,
+		person: {
+			crId: string;
+			name: string;
+			birthDate?: string;
+			deathDate?: string;
+			birthPlace?: PlaceInfo;
+			deathPlace?: PlaceInfo;
+			burialPlace?: PlaceInfo;
+			file: TFile;
+		}
+	): void {
+		const item = letterList.createDiv({ cls: 'crc-person-list-item' });
 
-				// Family timeline badge (shows family event count if person has spouse/children with events)
-				this.renderFamilyTimelineBadge(item, mainRow, person.file);
+		// Main row (name + dates + expand toggle if has unlinked places)
+		const mainRow = item.createDiv({ cls: 'crc-person-list-item__main' });
 
-				// Context menu for person list items
-				item.addEventListener('contextmenu', (e) => {
-					e.preventDefault();
-					this.showPersonContextMenu(person, e);
+		// Check for unlinked places
+		const unlinkedPlaces: { type: string; info: PlaceInfo }[] = [];
+		if (person.birthPlace && !person.birthPlace.isLinked) {
+			unlinkedPlaces.push({ type: 'Birth', info: person.birthPlace });
+		}
+		if (person.deathPlace && !person.deathPlace.isLinked) {
+			unlinkedPlaces.push({ type: 'Death', info: person.deathPlace });
+		}
+		if (person.burialPlace && !person.burialPlace.isLinked) {
+			unlinkedPlaces.push({ type: 'Burial', info: person.burialPlace });
+		}
+
+		// Name (clickable)
+		const nameEl = mainRow.createEl('span', {
+			text: person.name,
+			cls: 'crc-person-list-name'
+		});
+		nameEl.addEventListener('click', () => {
+			// Open the person's file
+			void this.app.workspace.getLeaf(false).openFile(person.file);
+		});
+
+		// Dates
+		const dates = [];
+		if (person.birthDate) dates.push(`b. ${person.birthDate}`);
+		if (person.deathDate) dates.push(`d. ${person.deathDate}`);
+		if (dates.length > 0) {
+			mainRow.createEl('span', {
+				text: dates.join(' – '),
+				cls: 'crc-person-list-dates crc-text--muted'
+			});
+		}
+
+		// Unlinked place indicator badge
+		if (unlinkedPlaces.length > 0) {
+			const badge = mainRow.createEl('span', {
+				cls: 'crc-person-list-badge crc-person-list-badge--unlinked',
+				attr: {
+					title: `${unlinkedPlaces.length} unlinked place${unlinkedPlaces.length !== 1 ? 's' : ''}`
+				}
+			});
+			const mapIcon = createLucideIcon('map-pin', 12);
+			badge.appendChild(mapIcon);
+			badge.appendText(unlinkedPlaces.length.toString());
+
+			// Create expandable details section
+			const detailsSection = item.createDiv({ cls: 'crc-person-list-details crc-person-list-details--hidden' });
+
+			// Toggle on badge click
+			badge.addEventListener('click', (e) => {
+				e.stopPropagation();
+				detailsSection.toggleClass('crc-person-list-details--hidden', !detailsSection.hasClass('crc-person-list-details--hidden'));
+				badge.toggleClass('crc-person-list-badge--active', !badge.hasClass('crc-person-list-badge--active'));
+			});
+
+			// Render place details with action buttons
+			for (const { type, info } of unlinkedPlaces) {
+				const placeRow = detailsSection.createDiv({ cls: 'crc-person-list-place' });
+
+				placeRow.createEl('span', {
+					text: `${type}: `,
+					cls: 'crc-person-list-place__label'
+				});
+				placeRow.createEl('span', {
+					text: info.placeName,
+					cls: 'crc-person-list-place__name'
+				});
+
+				// Action button to create place note
+				const createBtn = placeRow.createEl('button', {
+					cls: 'crc-btn crc-btn--small crc-btn--ghost crc-person-list-place__action',
+					attr: { title: 'Create place note' }
+				});
+				const plusIcon = createLucideIcon('plus', 12);
+				createBtn.appendChild(plusIcon);
+				createBtn.appendText('Create');
+
+				createBtn.addEventListener('click', (e) => {
+					e.stopPropagation();
+					void this.showQuickCreatePlaceModal(info.placeName);
 				});
 			}
 		}
+
+		// Context menu for person list items
+		item.addEventListener('contextmenu', (e) => {
+			e.preventDefault();
+			this.showPersonContextMenu(person, e);
+		});
 	}
 
 	/**
@@ -4035,13 +4115,13 @@ export class ControlCenterModal extends Modal {
 	}
 
 	/**
-	 * Show GEDCOM analysis before import
+	 * Show GEDCOM analysis before import (v2)
 	 */
 	private async showGedcomAnalysis(
 		file: File,
 		analysisContainer: HTMLElement,
 		fileBtn: HTMLButtonElement,
-		targetFolder?: string
+		stagingBaseFolder?: string
 	): Promise<void> {
 		try {
 			// Show loading state
@@ -4049,28 +4129,42 @@ export class ControlCenterModal extends Modal {
 			analysisContainer.removeClass('cr-hidden');
 			fileBtn.addClass('cr-hidden');
 
-			// Determine destination folder
-			const destFolder = targetFolder || this.plugin.settings.peopleFolder;
+			// Determine if using staging or configured folders
+			const useStaging = !!stagingBaseFolder;
 
 			analysisContainer.createEl('p', {
 				text: `File: ${file.name}`,
 				cls: 'crc-text-muted'
 			});
 
-			analysisContainer.createEl('p', {
-				text: `Destination: ${destFolder || 'vault root'}`,
-				cls: 'crc-text-muted'
-			});
+			// Show destination info
+			if (useStaging) {
+				analysisContainer.createEl('p', {
+					text: `Destination: ${stagingBaseFolder}/ (People/, Events/, Sources/, Places/)`,
+					cls: 'crc-text-muted'
+				});
+			} else {
+				const destFolders = [
+					`People → ${this.plugin.settings.peopleFolder || 'vault root'}`,
+					`Events → ${this.plugin.settings.eventsFolder || 'Events'}`,
+					`Sources → ${this.plugin.settings.sourcesFolder || 'Sources'}`,
+					`Places → ${this.plugin.settings.placesFolder || 'Places'}`
+				];
+				analysisContainer.createEl('p', {
+					text: `Destination: ${destFolders[0]}`,
+					cls: 'crc-text-muted'
+				});
+			}
 
 			const loadingMsg = analysisContainer.createEl('p', {
 				text: 'Analyzing file...',
 				cls: 'crc-text-muted'
 			});
 
-			// Read and analyze file
+			// Read and analyze file using v2 importer
 			const content = await file.text();
-			const importer = new GedcomImporter(this.app);
-			const analysis = importer.analyzeFile(content);
+			const importerV2 = new GedcomImporterV2(this.app);
+			const analysis = importerV2.analyzeFile(content);
 
 			// Update UI with analysis results
 			loadingMsg.remove();
@@ -4084,6 +4178,18 @@ export class ControlCenterModal extends Modal {
 			results.createEl('p', {
 				text: `✓ ${analysis.familyCount} families found`
 			});
+
+			// Extended stats from v2 (events, sources)
+			if (analysis.eventCount > 0) {
+				results.createEl('p', {
+					text: `✓ ${analysis.eventCount} events found`
+				});
+			}
+			if (analysis.sourceCount > 0) {
+				results.createEl('p', {
+					text: `✓ ${analysis.sourceCount} sources found`
+				});
+			}
 
 			// Component analysis
 			if (analysis.componentCount > 1) {
@@ -4100,20 +4206,168 @@ export class ControlCenterModal extends Modal {
 				helpText.appendText(' command to create canvases for all family groups.');
 			}
 
+			// Import options (checkboxes for event/source/place notes)
+			let createPeopleNotes = true;
+			let createEventNotes = analysis.eventCount > 0;
+			let createSourceNotes = analysis.sourceCount > 0;
+			let createPlaceNotes = analysis.uniquePlaces > 0;
+
+			// Import options section - always show since people toggle is always available
+			const optionsSection = analysisContainer.createDiv({ cls: 'crc-import-options crc-mt-4' });
+			optionsSection.createEl('p', {
+				text: 'Import options',
+				cls: 'crc-text-muted crc-font-medium'
+			});
+			optionsSection.createEl('p', {
+				text: 'Choose which note types to create. Disable people notes if you already have them in your vault.',
+				cls: 'crc-text-muted crc-text--small crc-mb-2'
+			});
+
+			// People notes toggle (always shown)
+			const peopleFolder = this.plugin.settings.peopleFolder || 'People';
+			new Setting(optionsSection)
+				.setName(`Create people notes (${analysis.individualCount.toLocaleString()} found)`)
+				.setDesc(`Person notes with relationships and life events → ${peopleFolder}/`)
+				.addToggle(toggle => toggle
+					.setValue(createPeopleNotes)
+					.onChange(value => {
+						createPeopleNotes = value;
+					})
+				);
+
+			if (analysis.eventCount > 0) {
+				const eventsFolder = this.plugin.settings.eventsFolder || 'Events';
+				new Setting(optionsSection)
+					.setName(`Create event notes (${analysis.eventCount.toLocaleString()} found)`)
+					.setDesc(`Births, deaths, marriages, and other life events → ${eventsFolder}/`)
+					.addToggle(toggle => toggle
+						.setValue(createEventNotes)
+						.onChange(value => {
+							createEventNotes = value;
+						})
+					);
+			}
+
+			if (analysis.sourceCount > 0) {
+				const sourcesFolder = this.plugin.settings.sourcesFolder || 'Sources';
+				new Setting(optionsSection)
+					.setName(`Create source notes (${analysis.sourceCount.toLocaleString()} found)`)
+					.setDesc(`Citations and references for genealogical records → ${sourcesFolder}/`)
+					.addToggle(toggle => toggle
+						.setValue(createSourceNotes)
+						.onChange(value => {
+							createSourceNotes = value;
+						})
+					);
+			}
+
+			if (analysis.uniquePlaces > 0) {
+				const placesFolder = this.plugin.settings.placesFolder || 'Places';
+				new Setting(optionsSection)
+					.setName(`Create place notes (${analysis.uniquePlaces.toLocaleString()} found)`)
+					.setDesc(`Locations with parent/child hierarchy (city → county → state) → ${placesFolder}/`)
+					.addToggle(toggle => toggle
+						.setValue(createPlaceNotes)
+						.onChange(value => {
+							createPlaceNotes = value;
+						})
+					);
+			}
+
+			// Filename format options
+			let filenameFormat: FilenameFormat = 'original';
+			let useAdvancedFormats = false;
+			const filenameFormats: FilenameFormatOptions = {
+				people: 'original',
+				events: 'original',
+				sources: 'original',
+				places: 'original'
+			};
+
+			const formatSection = analysisContainer.createDiv({ cls: 'crc-import-options crc-mt-4' });
+
+			// Main format dropdown (applies to all when not using advanced)
+			const mainFormatSetting = new Setting(formatSection)
+				.setName('Filename format')
+				.setDesc('How to format filenames for all created notes')
+				.addDropdown(dropdown => dropdown
+					.addOption('original', 'Original (John Smith.md)')
+					.addOption('kebab-case', 'Kebab-case (john-smith.md)')
+					.addOption('snake_case', 'Snake_case (john_smith.md)')
+					.setValue(filenameFormat)
+					.onChange(value => {
+						filenameFormat = value as FilenameFormat;
+						// Sync to all per-type formats when changing main
+						filenameFormats.people = filenameFormat;
+						filenameFormats.events = filenameFormat;
+						filenameFormats.sources = filenameFormat;
+						filenameFormats.places = filenameFormat;
+					})
+				);
+
+			// Advanced toggle
+			const advancedContainer = formatSection.createDiv({ cls: 'crc-advanced-formats' });
+			const advancedToggle = new Setting(advancedContainer)
+				.setName('Customize per note type')
+				.setDesc('Set different filename formats for each note type')
+				.addToggle(toggle => toggle
+					.setValue(useAdvancedFormats)
+					.onChange(value => {
+						useAdvancedFormats = value;
+						advancedSection.toggleClass('cr-hidden', !value);
+						mainFormatSetting.settingEl.toggleClass('cr-hidden', value);
+					})
+				);
+			advancedToggle.settingEl.addClass('crc-setting--compact');
+
+			// Per-type format dropdowns (hidden by default)
+			const advancedSection = advancedContainer.createDiv({ cls: 'crc-advanced-formats__options cr-hidden' });
+
+			const createFormatDropdown = (
+				container: HTMLElement,
+				label: string,
+				type: keyof FilenameFormatOptions
+			) => {
+				new Setting(container)
+					.setName(label)
+					.addDropdown(dropdown => dropdown
+						.addOption('original', 'Original')
+						.addOption('kebab-case', 'Kebab-case')
+						.addOption('snake_case', 'Snake_case')
+						.setValue(filenameFormats[type])
+						.onChange(value => {
+							filenameFormats[type] = value as FilenameFormat;
+						})
+					)
+					.settingEl.addClass('crc-setting--compact');
+			};
+
+			createFormatDropdown(advancedSection, 'People', 'people');
+			createFormatDropdown(advancedSection, 'Events', 'events');
+			createFormatDropdown(advancedSection, 'Sources', 'sources');
+			createFormatDropdown(advancedSection, 'Places', 'places');
+
 			// Action buttons
 			const actions = analysisContainer.createDiv({ cls: 'crc-gedcom-actions crc-mt-4' });
 
 			const importBtn = actions.createEl('button', {
 				cls: 'crc-btn crc-btn--primary',
-				text: destFolder.includes('Staging') || destFolder.includes('staging')
-					? 'Import to Staging'
-					: 'Import to Vault'
+				text: useStaging ? 'Import to staging' : 'Import to vault'
 			});
 			importBtn.addEventListener('click', () => {
 				void (async () => {
 					analysisContainer.addClass('cr-hidden');
 					fileBtn.removeClass('cr-hidden');
-					await this.handleGedcomImport(file, destFolder);
+					await this.handleGedcomImportV2(
+						file,
+						stagingBaseFolder,
+						createPeopleNotes,
+						createEventNotes,
+						createSourceNotes,
+						createPlaceNotes,
+						useAdvancedFormats ? undefined : filenameFormat,
+						useAdvancedFormats ? filenameFormats : undefined
+					);
 				})();
 			});
 
@@ -4218,6 +4472,138 @@ export class ControlCenterModal extends Modal {
 	}
 
 	/**
+	 * Handle GEDCOM file import using v2 importer
+	 */
+	private async handleGedcomImportV2(
+		file: File,
+		stagingBaseFolder: string | undefined,
+		createPeopleNotes: boolean,
+		createEventNotes: boolean,
+		createSourceNotes: boolean,
+		createPlaceNotes: boolean,
+		filenameFormat?: FilenameFormat,
+		filenameFormats?: FilenameFormatOptions
+	): Promise<void> {
+		// Show progress modal
+		const progressModal = new GedcomImportProgressModal(this.app);
+		progressModal.open();
+
+		try {
+			const useStaging = !!stagingBaseFolder;
+			logger.info('gedcom', `Starting GEDCOM v2 import: ${file.name} to ${useStaging ? stagingBaseFolder : 'configured folders'}`);
+
+			// Read file content
+			const content = await file.text();
+
+			// Create v2 importer
+			const importer = new GedcomImporterV2(this.app);
+
+			// Build import options - use staging subfolders or configured folders
+			const options: GedcomImportOptionsV2 = {
+				peopleFolder: useStaging
+					? `${stagingBaseFolder}/People`
+					: (this.plugin.settings.peopleFolder || 'People'),
+				eventsFolder: useStaging
+					? `${stagingBaseFolder}/Events`
+					: (this.plugin.settings.eventsFolder || 'Events'),
+				sourcesFolder: useStaging
+					? `${stagingBaseFolder}/Sources`
+					: (this.plugin.settings.sourcesFolder || 'Sources'),
+				placesFolder: useStaging
+					? `${stagingBaseFolder}/Places`
+					: (this.plugin.settings.placesFolder || 'Places'),
+				overwriteExisting: false,
+				fileName: file.name,
+				createPeopleNotes,
+				createEventNotes,
+				createSourceNotes,
+				createPlaceNotes,
+				filenameFormat: filenameFormat || 'original',
+				filenameFormats,
+				propertyAliases: this.plugin.settings.propertyAliases,
+				onProgress: (progress) => {
+					progressModal.updateProgress({
+						phase: progress.phase,
+						current: progress.current,
+						total: progress.total,
+						message: progress.message
+					});
+					// Update running stats based on phase
+					if (progress.phase === 'places' && progress.current > 0) {
+						progressModal.updateStats({ places: progress.current });
+					} else if (progress.phase === 'sources' && progress.current > 0) {
+						progressModal.updateStats({ sources: progress.current });
+					} else if (progress.phase === 'people' && progress.current > 0) {
+						progressModal.updateStats({ people: progress.current });
+					} else if (progress.phase === 'events' && progress.current > 0) {
+						progressModal.updateStats({ events: progress.current });
+					}
+				}
+			};
+
+			// Import GEDCOM file
+			const result = await importer.importFile(content, options);
+
+			// Mark progress as complete and close modal after a brief delay
+			progressModal.markComplete();
+			setTimeout(() => progressModal.close(), 1500);
+
+			// Log results
+			logger.info('gedcom', `Import complete: ${result.individualsImported} people, ${result.eventsCreated} events, ${result.sourcesCreated} sources, ${result.placesCreated} places`);
+
+			if (result.errors.length > 0) {
+				logger.warn('gedcom', `Import had ${result.errors.length} errors`);
+				result.errors.forEach(error => logger.error('gedcom', error));
+			}
+
+			// Track import in recent imports history
+			const totalNotesCreated = result.individualsImported + result.eventsCreated + result.sourcesCreated + result.placesCreated;
+			if (result.success && totalNotesCreated > 0) {
+				const importInfo: RecentImportInfo = {
+					fileName: file.name,
+					recordsImported: result.individualsImported,
+					notesCreated: totalNotesCreated,
+					timestamp: Date.now()
+				};
+
+				this.plugin.settings.recentImports.unshift(importInfo);
+				if (this.plugin.settings.recentImports.length > 10) {
+					this.plugin.settings.recentImports = this.plugin.settings.recentImports.slice(0, 10);
+				}
+				await this.plugin.saveSettings();
+			}
+
+			// Sync bidirectional relationships after import if enabled
+			if (this.plugin.settings.enableBidirectionalSync && result.success && result.individualsImported > 0) {
+				await this.syncImportedRelationships();
+			}
+
+			// Show results notice
+			let noticeMsg = `Import complete: ${result.individualsImported} people`;
+			if (result.eventsCreated > 0) {
+				noticeMsg += `, ${result.eventsCreated} events`;
+			}
+			if (result.sourcesCreated > 0) {
+				noticeMsg += `, ${result.sourcesCreated} sources`;
+			}
+			if (result.errors.length > 0) {
+				noticeMsg += `. ${result.errors.length} errors occurred`;
+			}
+			new Notice(noticeMsg, 8000);
+
+			// Refresh status tab
+			if (totalNotesCreated > 0) {
+				this.showTab('status');
+			}
+		} catch (error: unknown) {
+			progressModal.close();
+			const errorMsg = getErrorMessage(error);
+			logger.error('gedcom', `GEDCOM v2 import failed: ${errorMsg}`);
+			new Notice(`Failed to import GEDCOM: ${errorMsg}`);
+		}
+	}
+
+	/**
 	 * Prompt user to assign reference numbers after GEDCOM import
 	 */
 	private promptAssignReferenceNumbersAfterImport(): void {
@@ -4231,11 +4617,11 @@ export class ControlCenterModal extends Modal {
 
 		// Create a simple selection modal
 		const modal = new Modal(this.app);
-		modal.titleEl.setText('Select numbering system');
+		modal.titleEl.setText('Assign reference numbers');
 
 		const content = modal.contentEl;
 		content.createEl('p', {
-			text: 'Choose a numbering system, then select the root person.',
+			text: 'Reference numbers help identify people in charts and reports. Choose a numbering system, then select the root person.',
 			cls: 'crc-text-muted'
 		});
 
@@ -4255,6 +4641,16 @@ export class ControlCenterModal extends Modal {
 				this.selectRootPersonForNumbering(choice.system);
 			});
 		}
+
+		// Add skip button
+		const footerContainer = content.createDiv({ cls: 'cr-modal-footer' });
+		const skipBtn = footerContainer.createEl('button', {
+			cls: 'crc-btn',
+			text: 'Skip'
+		});
+		skipBtn.addEventListener('click', () => {
+			modal.close();
+		});
 
 		modal.open();
 	}
@@ -8340,25 +8736,25 @@ export class ControlCenterModal extends Modal {
 		const content = card.querySelector('.crc-card__content') as HTMLElement;
 
 		content.createEl('p', {
-			text: 'Import creates person notes for all individuals in your GEDCOM file',
+			text: 'Import family tree data from a GEDCOM file. After selecting a file, you\'ll see a summary of what was found and can choose which note types to create (people, events, sources, places).',
 			cls: 'crc-text-muted crc-mb-4'
 		});
 
 		// Import destination options (only show if staging folder is configured)
-		let importDestination: 'main' | 'staging' = 'main';
+		let importDestination: 'configured' | 'staging' = 'configured';
 		let stagingSubfolder = `import-${new Date().toISOString().slice(0, 7)}`;
 
 		const stagingFolder = this.plugin.settings.stagingFolder;
 		if (stagingFolder) {
 			new Setting(content)
 				.setName('Import destination')
-				.setDesc('Where to create person notes')
+				.setDesc('Where to create notes')
 				.addDropdown(dropdown => dropdown
-					.addOption('main', `Main tree (${this.plugin.settings.peopleFolder || 'vault root'})`)
-					.addOption('staging', `Staging (${stagingFolder})`)
+					.addOption('configured', 'Configured folders')
+					.addOption('staging', 'Staging folder')
 					.setValue(importDestination)
 					.onChange(value => {
-						importDestination = value as 'main' | 'staging';
+						importDestination = value as 'configured' | 'staging';
 						// Show/hide subfolder input
 						// eslint-disable-next-line @typescript-eslint/no-misused-promises -- subfolderSetting is hoisted Setting, not a Promise
 						if (subfolderSetting) {
@@ -8370,7 +8766,7 @@ export class ControlCenterModal extends Modal {
 			// Subfolder input (hidden by default, shown when staging is selected)
 			const subfolderSetting = new Setting(content)
 				.setName('Subfolder name')
-				.setDesc('Create imports in a subfolder for organization')
+				.setDesc('Organize imports in a dated subfolder')
 				.addText(text => text
 					.setPlaceholder(stagingSubfolder)
 					.setValue(stagingSubfolder)
@@ -8408,16 +8804,14 @@ export class ControlCenterModal extends Modal {
 				const target = event.target as HTMLInputElement;
 				const file = target.files?.[0];
 				if (file) {
-					// Determine target folder based on import destination
-					let targetFolder: string;
+					// Determine staging base folder if staging is selected
+					let stagingBaseFolder: string | undefined;
 					if (importDestination === 'staging' && stagingFolder) {
-						targetFolder = stagingSubfolder
+						stagingBaseFolder = stagingSubfolder
 							? `${stagingFolder}/${stagingSubfolder}`
 							: stagingFolder;
-					} else {
-						targetFolder = this.plugin.settings.peopleFolder;
 					}
-					await this.showGedcomAnalysis(file, analysisContainer, fileBtn, targetFolder);
+					await this.showGedcomAnalysis(file, analysisContainer, fileBtn, stagingBaseFolder);
 				}
 			})();
 		});

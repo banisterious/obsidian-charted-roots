@@ -14,28 +14,70 @@ Canvas Roots provides full round-trip support for GEDCOM 5.5.1 format, allowing 
 3. If folders aren't configured, expand **Configure folders** to set your people folder
 4. Click **Import GEDCOM**
 5. Select your `.ged` file
-6. Configure import options:
-   - Target folder for person notes
-   - UUID handling (preserve or generate new)
-7. Click **Import**
+6. Review the file analysis (people, families, events, sources, places found)
+7. Configure import options:
+   - **Create people notes** - Person notes with relationships and life events (default: on)
+   - **Create event notes** - Births, deaths, marriages, and other life events (default: on if events found)
+   - **Create source notes** - Citations and references for genealogical records (default: on if sources found)
+   - **Create place notes** - Locations with parent/child hierarchy (default: on if places found)
+   - **Filename format** - Original (John Smith.md), Kebab-case (john-smith.md), or Snake_case (john_smith.md)
+   - **Customize per note type** - Set different filename formats for each note type
+8. Click **Import to vault** (or **Import to staging** if using staging folder)
 
-**What Happens:**
-- Creates one Markdown note per individual
-- Generates structured YAML frontmatter with relationships
-- Preserves `_UUID` tags as `cr_id` when present
-- Creates bidirectional relationship links
-- Automatically syncs all relationships after import (if bidirectional sync is enabled)
-- Handles duplicate detection across multiple imports
+**Progress Indicator:**
+During import, a modal shows:
+- Current phase (validating, parsing, places, sources, people, relationships, events)
+- Progress bar with current/total count
+- Running statistics (places, sources, people, events created)
+
+**What Gets Created:**
+
+| Note Type | What's Created |
+|-----------|----------------|
+| **People** | One note per individual with relationships, dates, places |
+| **Events** | One note per life event (birth, death, marriage, etc.) linked to person |
+| **Sources** | One note per GEDCOM source record with citation metadata |
+| **Places** | Hierarchical place notes (city → county → state → country) |
 
 **Supported GEDCOM Tags:**
-- `INDI` - Individuals
+
+*Individuals:*
+- `INDI` - Individuals → person notes
 - `NAME` - Person names
-- `BIRT`/`DEAT` - Birth and death events
-- `DATE` - Event dates
-- `PLAC` - Event locations
+- `BIRT`/`DEAT` - Birth and death → event notes
+- `DATE` - Event dates (with precision: `ABT`, `BEF`, `AFT`, `BET`)
+- `PLAC` - Event locations → place wikilinks
 - `FAMC`/`FAMS` - Family relationships
 - `SEX` - Gender
 - `_UUID` - Preserved as `cr_id`
+
+*Events (create event notes):*
+- **Core:** `BIRT`, `DEAT`, `MARR`, `DIV`
+- **Life Events:** `BURI`, `CREM`, `ADOP`, `GRAD`, `RETI`, `CENS`
+- **Career/Residence:** `RESI`, `OCCU`, `EDUC`
+- **Legal/Estate:** `PROB`, `WILL`, `NATU`, `MILI`
+- **Migration:** `IMMI`, `EMIG`
+- **Religious:** `BAPM`, `CHR`, `CHRA`, `CONF`, `FCOM`, `ORDN`, `BARM`, `BASM`, `BLES`
+- **Family:** `ENGA`, `MARB`, `MARC`, `MARL`, `MARS`, `ANUL`, `DIVF`
+
+*Person Attributes (stored as properties):*
+- `DSCR` → `physicalDescription`
+- `IDNO` → `identityNumber`
+- `NATI` → `nationality`
+- `RELI` → `religion`
+- `TITL` → `title`
+- `PROP` → `property`
+- `CAST` → `caste`
+- `NCHI` → `childrenCount`
+- `NMR` → `marriageCount`
+- `SSN` → `ssn` (automatically redacted from exports)
+
+*Sources:*
+- `SOUR` - Source records → source notes
+- `TITL` - Source title
+- `AUTH` - Author
+- `PUBL` - Publication info
+- `REPO` - Repository
 
 **Marriage Metadata (Enhanced Spouse Support):**
 - `MARR` - Marriage events → `spouse1_marriage_date`
@@ -45,17 +87,24 @@ Canvas Roots provides full round-trip support for GEDCOM 5.5.1 format, allowing 
 ### After Import
 
 1. **Wait for sync completion** - If bidirectional sync is enabled, Canvas Roots automatically processes all imported relationships. Progress notifications show sync status.
-2. **Review imported notes** in your configured person folder
+2. **Review imported notes** in your configured folders (People, Events, Sources, Places)
 3. **Add research notes** below the frontmatter in each file
 4. **Generate tree** using Control Center → Tree Generation
 
 ### Duplicate Handling
 
+**Person Notes:**
 If you import the same GEDCOM multiple times:
 - Existing `cr_id` values are preserved
 - Relationships are updated (not duplicated)
 - New individuals are added
 - Warnings appear for conflicts
+
+**Place Notes:**
+Place duplicate detection uses multiple strategies:
+- **Primary:** Case-insensitive match on `full_name` property
+- **Fallback:** Match by title + parent combination (for places with same name in different regions)
+- Existing places are updated (missing parent links added) rather than duplicated
 
 ### Exporting to GEDCOM
 

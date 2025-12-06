@@ -11,7 +11,7 @@ This document outlines planned features for Canvas Roots. For release history an
   - [Geographic Features (Phase 4)](#geographic-features-phase-4-) ✅
   - [Maps Tab (Control Center)](#maps-tab-control-center-) ✅
   - [Import/Export Enhancements](#importexport-enhancements) ✅
-  - [GEDCOM Import v2](#gedcom-import-v2)
+  - [GEDCOM Import v2](#gedcom-import-v2) ✅
   - [Data Enhancement Pass](#data-enhancement-pass)
   - [Schema Validation](#schema-validation--consistency-checks-) ✅
   - [Custom Relationship Types](#custom-relationship-types) ✅
@@ -58,7 +58,7 @@ The following priority order guides future development:
 | 12 | [Property Aliases](#property-aliases-) | ✅ Complete (v0.9.3) |
 | 13 | [Value Aliases](#value-aliases) | ✅ Complete (v0.9.4) |
 | 14 | [Chronological Story Mapping](#chronological-story-mapping) | ✅ Complete (v0.10.0) |
-| 15 | [GEDCOM Import v2](#gedcom-import-v2) | Planned |
+| 15 | [GEDCOM Import v2](#gedcom-import-v2) | ✅ Complete (v0.10.1) |
 | 16 | [Data Enhancement Pass](#data-enhancement-pass) | Planned |
 | 17 | [Flexible Note Type Detection](#flexible-note-type-detection) | Planned |
 | 18 | [Print & PDF Export](#print--pdf-export) | Planned |
@@ -563,26 +563,23 @@ person: "[[Person A]]"
 
 ---
 
-### GEDCOM Import v2
+### GEDCOM Import v2 ✅
 
-**Summary:** Enhanced GEDCOM import that creates source notes, event notes, and place notes in addition to person notes. Captures the full richness of GEDCOM data.
+> **Complete in v0.10.1.** Enhanced GEDCOM import that creates source notes, event notes, and place notes in addition to person notes.
 
-**Current Limitations (v0.6.0):**
-- Only creates person notes
-- Birth/death dates stored as flat properties (`birthDate`, `deathDate`)
-- Places stored as strings, not wikilinks to place notes
-- `SOUR` records ignored entirely
-- Extended events (`RESI`, `BURI`, `EDUC`, `IMMI`, `MILI`) ignored
-- Marriage events not created (only date/place captured on family records)
+**Implemented Features:**
 
-**Planned Features:**
+**Import Options UI:**
+- Toggle for each note type: people, events, sources, places
+- Filename format selection: Original (John Smith.md), Kebab-case (john-smith.md), Snake_case (john_smith.md)
+- Per-type filename formats via "Customize per note type" toggle
+- Progress modal showing import phases with running statistics
+- File analysis with counts before confirming import
 
 **Source Import:**
 - Parse `SOUR` records and `@S1@`-style source references
 - Create source notes (`type: source`) with available metadata
-- Link source citations to person notes via `sources` array
 - Support for `TITL`, `AUTH`, `PUBL`, `REPO` fields
-- Handle inline source citations on individual facts
 
 **Event Import:**
 - Create event notes (`type: event`) for all supported GEDCOM tags:
@@ -593,11 +590,9 @@ person: "[[Person A]]"
   - **Migration (2):** `IMMI`, `EMIG`
   - **Religious (8):** `BAPM`, `CHR`, `CHRA`, `CONF`, `FCOM`, `ORDN`, `BARM`, `BASM`, `BLES`
   - **Family (7):** `ENGA`, `MARB`, `MARC`, `MARL`, `MARS`, `ANUL`, `DIVF`
-- Link events to person notes via `person` field
-- Link events to sources via `sources` array
 - Preserve date precision from GEDCOM (`ABT`, `BEF`, `AFT`, `BET`)
 
-**Person Attributes (stored as properties, not events):**
+**Person Attributes (stored as properties):**
 - `DSCR` → `physicalDescription`
 - `IDNO` → `identityNumber` ⚠️
 - `NATI` → `nationality`
@@ -609,34 +604,22 @@ person: "[[Person A]]"
 - `NMR` → `marriageCount`
 - `SSN` → `ssn` ⚠️
 
-⚠️ **Privacy Note:** Fields marked with ⚠️ contain sensitive personal information. These are imported for genealogical completeness but are automatically redacted from exports. See [Sensitive Field Redaction](#sensitive-field-redaction) below.
+⚠️ **Privacy Note:** Fields marked with ⚠️ contain sensitive personal information. These are imported for genealogical completeness but are automatically redacted from exports.
 
 **Place Import:**
-- Extract unique places from all events
-- Create place notes (`type: place`) with hierarchical structure
-- Parse GEDCOM place hierarchy (`City, County, State, Country`)
-- Update person/event notes to use wikilinks instead of strings
-- Optional: attempt geocoding for coordinates
+- Hierarchical place structure parsing (`City, County, State, Country`)
+- Create place notes (`type: place`) with parent/child relationships
+- Duplicate detection: case-insensitive matching on `full_name` property
+- Fallback matching: title + parent combination for same-named places
+- Update existing places (add missing parent links) instead of creating duplicates
 
-**Import Options:**
-- Checkbox: "Create source notes" (default: on)
-- Checkbox: "Create event notes" (default: on)
-- Checkbox: "Create place notes" (default: on)
-- Dropdown: "Place hierarchy style" (flat, nested folders)
-- Checkbox: "Attempt geocoding" (default: off)
-
-**Schema:**
-```
-GEDCOM File
-├── @I1@ INDI → Person note + Event notes (birth, death, etc.)
-├── @F1@ FAM → Marriage event notes
-├── @S1@ SOUR → Source note
-└── Places → Place notes (deduplicated)
-```
+**Performance:**
+- Optimized connected components analysis (O(n+m) instead of O(n×m))
+- Paginated People tab (100 at a time) for large imports
+- Progress callback throughout all import phases
 
 **Integration Points:**
 - Staging folder support (import to staging, review, then merge)
-- Duplicate detection for places (avoid creating "Dublin, Ireland" twice)
 - Property aliases (use configured property names)
 - Value aliases (map GEDCOM event types to Canvas Roots types)
 

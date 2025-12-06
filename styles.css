@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-06 21:14:19 UTC
+ * - Generated: 2025-12-06 23:42:10 UTC
  * - Components: 29 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -338,7 +338,7 @@ settings:
    COMPONENT: MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 4016 lines, 73.4 KB */
+/* Component Size: 4215 lines, 76.74 KB */
 
 /* ==========================================================================
    Canvas Roots Control Center - Styling
@@ -4354,6 +4354,205 @@ settings:
   padding: 16px;
   text-align: center;
   color: var(--text-muted);
+}
+
+/* ==========================================================================
+   GEDCOM IMPORT PROGRESS MODAL
+   ========================================================================== */
+
+.cr-import-progress-modal {
+  max-width: 450px;
+  width: 450px;
+}
+
+.cr-import-progress-modal .modal-content {
+  padding: 24px;
+}
+
+/* Phase indicator */
+.cr-import-phase {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.cr-import-phase__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--background-modifier-hover);
+}
+
+.cr-import-phase__icon svg {
+  color: var(--text-accent);
+}
+
+.cr-import-phase__label {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+/* Progress bar */
+.cr-import-progress {
+  margin-bottom: 12px;
+}
+
+.cr-import-progress__track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--background-modifier-border);
+  overflow: hidden;
+}
+
+.cr-import-progress__bar {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--interactive-accent);
+  transition: width 0.2s ease-out;
+}
+
+.cr-import-progress__text {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+/* Running stats */
+.cr-import-running-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--background-modifier-border);
+  min-height: 32px;
+}
+
+.cr-import-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.cr-import-stat svg {
+  color: var(--text-faint);
+}
+
+/* Import results modal styles */
+.cr-import-results-modal {
+  max-width: 550px;
+  width: 550px;
+}
+
+.cr-import-results-modal .modal-content {
+  padding: 24px;
+}
+
+.cr-import-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  background: var(--background-modifier-hover);
+}
+
+.cr-import-stats__text {
+  flex: 1;
+}
+
+.cr-import-stats__status {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-normal);
+  margin-bottom: 4px;
+}
+
+.cr-import-stats__details {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.cr-import-validation-info {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.cr-import-section {
+  margin-bottom: 16px;
+}
+
+.cr-import-section__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.cr-import-section__title {
+  color: var(--text-normal);
+}
+
+.cr-import-issues-list {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 8px;
+  border-radius: 6px;
+  background: var(--background-secondary);
+}
+
+.cr-import-issue {
+  padding: 6px 0;
+  font-size: 13px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-import-issue:last-child {
+  border-bottom: none;
+}
+
+.cr-import-issue--error {
+  color: var(--text-error);
+}
+
+.cr-import-issue__line {
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.cr-import-success-message {
+  padding: 12px;
+  border-radius: 6px;
+  background: var(--background-modifier-success);
+  color: var(--text-normal);
+}
+
+.cr-import-success-message p {
+  margin: 0;
+}
+
+/* Icon color utilities */
+.cr-icon--success {
+  color: var(--color-green);
+}
+
+.cr-icon--warning {
+  color: var(--color-orange);
+}
+
+.cr-icon--error {
+  color: var(--color-red);
 }
 
 
@@ -13119,11 +13318,11 @@ input[type="text"]::-webkit-input-placeholder {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-06 21:14:19 UTC
+ * Build completed: 2025-12-06 23:42:10 UTC
  * Components processed: 29
- * Total lines: 12835
- * Total size: 249.2 KB
- * Build duration: 0.02 seconds
+ * Total lines: 13034
+ * Total size: 252.54 KB
+ * Build duration: 0.03 seconds
  *
  * Component breakdown:
  * - variables.css: 48 lines, 1.33 KB
@@ -13134,7 +13333,7 @@ input[type="text"]::-webkit-input-placeholder {
  * - nodes.css: 12 lines, 0.3 KB
  * - edges.css: 4 lines, 0.07 KB
  * - settings.css: 4 lines, 0.07 KB
- * - modals.css: 4016 lines, 73.4 KB
+ * - modals.css: 4215 lines, 76.74 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
  * - validation.css: 84 lines, 1.47 KB

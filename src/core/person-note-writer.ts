@@ -48,6 +48,11 @@ export interface PersonData {
 }
 
 /**
+ * Filename format options
+ */
+export type FilenameFormat = 'original' | 'kebab-case' | 'snake_case';
+
+/**
  * Options for person note creation
  */
 export interface CreatePersonNoteOptions {
@@ -59,6 +64,8 @@ export interface CreatePersonNoteOptions {
 	addBidirectionalLinks?: boolean;
 	/** Property aliases for writing custom property names (user property → canonical) */
 	propertyAliases?: Record<string, string>;
+	/** Filename format (default: 'original') */
+	filenameFormat?: FilenameFormat;
 }
 
 /**
@@ -84,7 +91,7 @@ export async function createPersonNote(
 	person: PersonData,
 	options: CreatePersonNoteOptions = {}
 ): Promise<TFile> {
-	const { directory = '', openAfterCreate = false, addBidirectionalLinks = true, propertyAliases = {} } = options;
+	const { directory = '', openAfterCreate = false, addBidirectionalLinks = true, propertyAliases = {}, filenameFormat = 'original' } = options;
 
 	// Helper to get aliased property name
 	const prop = (canonical: string) => getWriteProperty(canonical, propertyAliases);
@@ -260,23 +267,23 @@ export async function createPersonNote(
 		''
 	].join('\n');
 
-	// Sanitize filename (remove invalid characters)
-	const filename = sanitizeFilename(person.name || 'Untitled Person');
+	// Format filename based on selected format
+	const filename = formatFilename(person.name || 'Untitled Person', filenameFormat);
 
 	// Build full path
 	const fullPath = directory
-		? normalizePath(`${directory}/${filename}.md`)
-		: normalizePath(`${filename}.md`);
+		? normalizePath(`${directory}/${filename}`)
+		: normalizePath(filename);
 
 	// Check if file already exists
 	let finalPath = fullPath;
 	let counter = 1;
 	while (app.vault.getAbstractFileByPath(finalPath)) {
-		const baseName = filename;
-		const newFilename = `${baseName} ${counter}`;
+		const baseName = person.name || 'Untitled Person';
+		const newFilename = formatFilename(`${baseName} ${counter}`, filenameFormat);
 		finalPath = directory
-			? normalizePath(`${directory}/${newFilename}.md`)
-			: normalizePath(`${newFilename}.md`);
+			? normalizePath(`${directory}/${newFilename}`)
+			: normalizePath(newFilename);
 		counter++;
 	}
 
@@ -515,16 +522,36 @@ export async function updatePersonNote(
 }
 
 /**
- * Sanitize a filename by removing invalid characters
+ * Format a filename based on the selected format option
  *
- * @param filename - The filename to sanitize
- * @returns Sanitized filename
+ * @param name - The name to format
+ * @param format - The filename format to use
+ * @returns Formatted filename with .md extension
  */
-function sanitizeFilename(filename: string): string {
-	// Remove or replace invalid characters for file systems
-	// Replace: \ / : * ? " < > |
-	return filename
-		.replace(/[\\/:*?"<>|]/g, '-')
-		.replace(/\s+/g, ' ')
+function formatFilename(name: string, format: FilenameFormat): string {
+	// First sanitize illegal filesystem characters
+	const sanitized = name
+		.replace(/[\\/:*?"<>|]/g, '')
 		.trim();
+
+	switch (format) {
+		case 'kebab-case':
+			return sanitized
+				.toLowerCase()
+				.replace(/[^a-z0-9]+/g, '-')
+				.replace(/^-+|-+$/g, '')
+				.substring(0, 100) + '.md';
+
+		case 'snake_case':
+			return sanitized
+				.toLowerCase()
+				.replace(/[^a-z0-9]+/g, '_')
+				.replace(/^_+|_+$/g, '')
+				.substring(0, 100) + '.md';
+
+		case 'original':
+		default:
+			// Keep original casing and spaces, just sanitize
+			return sanitized.replace(/\s+/g, ' ').substring(0, 100) + '.md';
+	}
 }

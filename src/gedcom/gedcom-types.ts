@@ -295,6 +295,36 @@ export interface GedcomDataV2 {
 // ============================================================================
 
 /**
+ * Progress callback for GEDCOM import
+ */
+export type GedcomProgressCallback = (progress: GedcomImportProgress) => void;
+
+/**
+ * Progress state for GEDCOM import
+ */
+export interface GedcomImportProgress {
+	phase: 'validating' | 'parsing' | 'places' | 'sources' | 'people' | 'relationships' | 'events' | 'complete';
+	current: number;
+	total: number;
+	message?: string;
+}
+
+/**
+ * Filename format options for imported notes
+ */
+export type FilenameFormat = 'original' | 'kebab-case' | 'snake_case';
+
+/**
+ * Per-type filename format options
+ */
+export interface FilenameFormatOptions {
+	people: FilenameFormat;
+	events: FilenameFormat;
+	sources: FilenameFormat;
+	places: FilenameFormat;
+}
+
+/**
  * GEDCOM import options (v2)
  */
 export interface GedcomImportOptionsV2 {
@@ -305,6 +335,8 @@ export interface GedcomImportOptionsV2 {
 	overwriteExisting: boolean;
 	fileName?: string;
 
+	/** Create person notes from GEDCOM individuals */
+	createPeopleNotes: boolean;
 	/** Create event notes from GEDCOM events */
 	createEventNotes: boolean;
 	/** Create source notes from GEDCOM sources */
@@ -312,8 +344,16 @@ export interface GedcomImportOptionsV2 {
 	/** Create place notes from unique places */
 	createPlaceNotes: boolean;
 
+	/** Filename format for created notes (legacy single format) */
+	filenameFormat?: FilenameFormat;
+	/** Per-type filename formats (takes precedence over filenameFormat) */
+	filenameFormats?: FilenameFormatOptions;
+
 	/** Property aliases for writing custom property names */
 	propertyAliases?: Record<string, string>;
+
+	/** Progress callback for UI updates */
+	onProgress?: GedcomProgressCallback;
 }
 
 /**
@@ -325,6 +365,7 @@ export interface GedcomImportResultV2 {
 	eventsCreated: number;
 	sourcesCreated: number;
 	placesCreated: number;
+	placesUpdated: number;
 	errors: string[];
 	warnings: string[];
 }
