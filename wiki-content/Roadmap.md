@@ -13,7 +13,7 @@ This document outlines planned features for Canvas Roots. For release history an
   - [Import/Export Enhancements](#importexport-enhancements) ✅
   - [Schema Validation](#schema-validation--consistency-checks) ✅
   - [Custom Relationship Types](#custom-relationship-types) ✅
-  - [Fictional Date Systems](#fictional-date-systems) ✅
+  - [Fictional Date Systems](#fictional-date-systems-) ✅
   - [Evidence & Source Management](#evidence--source-management) ✅
   - [World-Building Suite](#world-building-suite) ✅
   - [Chronological Story Mapping](#chronological-story-mapping)
@@ -43,7 +43,7 @@ The following priority order guides future development:
 | 3 | [Maps Tab (Control Center)](#maps-tab-control-center) | ✅ Complete (v0.6.2) |
 | 4 | [Schema Validation](#schema-validation--consistency-checks) | ✅ Complete (v0.6.3) |
 | 5 | [Custom Relationship Types](#custom-relationship-types) | ✅ Complete (v0.7.0) |
-| 6 | [Fictional Date Systems](#fictional-date-systems) | ✅ Complete (v0.7.0) |
+| 6 | [Fictional Date Systems](#fictional-date-systems-) | ✅ Complete (v0.7.0) |
 | 7 | [Organization Notes](#organization-notes--hierarchy-views) | ✅ Complete (v0.7.0) |
 | 8 | [Source Media Gallery](#source-media-gallery--document-viewer) | ✅ Complete (v0.8.0) |
 | 9 | [Evidence Visualization](#evidence-visualization) | ✅ Complete (v0.9.0) |
