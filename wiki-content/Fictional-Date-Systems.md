@@ -123,8 +123,8 @@ The abbreviation matching is case-insensitive (`TA`, `ta`, `Ta` all work).
 ### Accessing Settings
 
 1. Open the Control Center (command palette: "Open Control Center")
-2. Navigate to the **Canvas settings** tab
-3. Scroll to the **Fictional date systems** card
+2. Navigate to the **Events** tab
+3. Find the **Fictional date systems** card
 
 ### Enable/Disable Fictional Dates
 

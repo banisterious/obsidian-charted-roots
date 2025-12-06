@@ -182,7 +182,7 @@ relationships:
 - Date parsing for `{abbrev} {year}` format (e.g., "TA 2941", "AC 283")
 - Built-in presets: Middle-earth, Westeros, Star Wars, Generic Fantasy calendars
 - Universe-scoped calendar systems
-- Date Systems card in Canvas Settings tab
+- Date Systems card in Events tab (moved from Canvas Settings in v0.9.2)
 - Test date parsing input for validation
 - Custom date system creation with era table editor
 - Canonical year conversion for sorting/comparison
