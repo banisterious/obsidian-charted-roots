@@ -162,14 +162,15 @@ export class CreatePersonModal extends Modal {
 					this.personData.name = value;
 				}));
 
-		// Sex/Gender
+		// Gender
 		new Setting(form)
-			.setName('Sex')
-			.setDesc('Biological sex (used for relationship terminology)')
+			.setName('Gender')
+			.setDesc('Gender identity (used for relationship terminology and display)')
 			.addDropdown(dropdown => dropdown
 				.addOption('', '(Unknown)')
-				.addOption('M', 'Male')
-				.addOption('F', 'Female')
+				.addOption('male', 'Male')
+				.addOption('female', 'Female')
+				.addOption('nonbinary', 'Non-binary')
 				.setValue(this.personData.gender || '')
 				.onChange(value => {
 					this.personData.gender = value || undefined;

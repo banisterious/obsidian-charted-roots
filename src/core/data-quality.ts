@@ -607,10 +607,11 @@ export class DataQualityService {
 		}
 
 		// Invalid gender value
-		if (person.sex && !['M', 'F', 'Male', 'Female', 'male', 'female'].includes(person.sex)) {
+		const validGenders = ['M', 'F', 'Male', 'Female', 'male', 'female', 'nonbinary', 'Nonbinary', 'unknown', 'Unknown'];
+		if (person.sex && !validGenders.includes(person.sex)) {
 			issues.push({
 				code: 'INVALID_GENDER',
-				message: `Gender value "${person.sex}" is not standard (expected M/F)`,
+				message: `Gender value "${person.sex}" is not standard (expected male/female/nonbinary/unknown)`,
 				severity: 'warning',
 				category: 'data_format',
 				person,

@@ -114,6 +114,8 @@ export class TreePreviewRenderer {
 					return '#4ade80'; // Green (Obsidian color 4)
 				} else if (sex === 'f' || sex === 'female') {
 					return '#c084fc'; // Purple (Obsidian color 6)
+				} else if (sex === 'nonbinary') {
+					return '#fbbf24'; // Yellow (Obsidian color 3)
 				}
 				return '#94a3b8'; // Neutral gray
 			}
