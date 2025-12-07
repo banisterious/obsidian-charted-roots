@@ -267,7 +267,7 @@ export class GedcomXImporter {
 			birthPlace: person.birthPlace,
 			deathPlace: person.deathPlace,
 			occupation: person.occupation,
-			gender: person.gender === 'M' ? 'Male' : person.gender === 'F' ? 'Female' : undefined
+			sex: person.gender === 'M' ? 'male' : person.gender === 'F' ? 'female' : undefined
 		};
 
 		// Add relationship references with GEDCOM X IDs (temporary) and names

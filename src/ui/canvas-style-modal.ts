@@ -72,7 +72,7 @@ export class CanvasStyleModal extends Modal {
 			.addDropdown(dropdown => {
 				dropdown
 					.addOption('', '(Use global setting)')
-					.addOption('gender', 'Gender (green/purple)')
+					.addOption('sex', 'Sex (green/purple)')
 					.addOption('generation', 'Generation (gradient)')
 					.addOption('collection', 'Collection (multi-color)')
 					.addOption('monochrome', 'Monochrome (neutral)')

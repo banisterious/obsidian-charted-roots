@@ -31,7 +31,7 @@ export function generatePeopleBaseTemplate(aliases: PropertyAliases = {}): strin
 	// Get aliased property names
 	const name = getPropertyName('name', aliases);
 	const cr_id = getPropertyName('cr_id', aliases);
-	const gender = getPropertyName('gender', aliases);
+	const sex = getPropertyName('sex', aliases);
 	const born = getPropertyName('born', aliases);
 	const died = getPropertyName('died', aliases);
 	const father = getPropertyName('father', aliases);
@@ -47,7 +47,7 @@ export function generatePeopleBaseTemplate(aliases: PropertyAliases = {}): strin
   - note.${child}
   - formula.birth_display
   - formula.death_display
-  - note.${gender}
+  - note.${sex}
   - note.collection
   - note.group_name
   - note.root_person
@@ -88,8 +88,8 @@ properties:
     displayName: Lifespan
   formula.age_now:
     displayName: Age
-  note.${gender}:
-    displayName: Gender
+  note.${sex}:
+    displayName: Sex
   note.collection:
     displayName: Collection
   note.group_name:
@@ -330,7 +330,7 @@ export const BASE_TEMPLATE = `visibleProperties:
   - note.child
   - formula.birth_display
   - formula.death_display
-  - note.gender
+  - note.sex
   - note.collection
   - note.group_name
   - note.root_person
@@ -371,8 +371,8 @@ properties:
     displayName: Lifespan
   formula.age_now:
     displayName: Age
-  note.gender:
-    displayName: Gender
+  note.sex:
+    displayName: Sex
   note.collection:
     displayName: Collection
   note.group_name:

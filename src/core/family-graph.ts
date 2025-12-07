@@ -160,7 +160,7 @@ export class FamilyGraphService {
 	private personCache: Map<string, PersonNode>;
 	private folderFilter: FolderFilterService | null = null;
 	private propertyAliases: Record<string, string> = {};
-	private valueAliases: ValueAliasSettings = { eventType: {}, gender: {}, placeCategory: {} };
+	private valueAliases: ValueAliasSettings = { eventType: {}, sex: {}, placeCategory: {} };
 
 	constructor(app: App) {
 		this.app = app;
@@ -227,7 +227,7 @@ export class FamilyGraphService {
 		}
 
 		// Check value aliases
-		const aliasedValue = this.valueAliases.gender[normalized];
+		const aliasedValue = this.valueAliases.sex[normalized];
 		if (aliasedValue) {
 			return aliasedValue;
 		}
@@ -995,7 +995,8 @@ export class FamilyGraphService {
 		const deathPlace = this.resolveProperty<string>(fm, 'death_place');
 		const burialPlace = this.resolveProperty<string>(fm, 'burial_place');
 		const occupation = this.resolveProperty<string>(fm, 'occupation');
-		const rawSex = this.resolveProperty<string>(fm, 'gender') || this.resolveProperty<string>(fm, 'sex');
+		// Check 'sex' first (GEDCOM standard), then 'gender' for backwards compatibility
+		const rawSex = this.resolveProperty<string>(fm, 'sex') || this.resolveProperty<string>(fm, 'gender');
 		const sex = this.resolveGender(rawSex);
 		const collectionName = this.resolveProperty<string>(fm, 'group_name');
 		const collection = this.resolveProperty<string>(fm, 'collection');

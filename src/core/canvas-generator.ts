@@ -123,7 +123,7 @@ export interface CanvasGenerationOptions extends LayoutOptions {
 	/** Color coding by gender (deprecated - use nodeColorScheme instead) */
 	colorByGender?: boolean;
 
-	/** Node color scheme: 'gender', 'generation', or 'monochrome' */
+	/** Node color scheme: 'sex', 'generation', or 'monochrome' */
 	nodeColorScheme?: import('../settings').ColorScheme;
 
 	/** Show relationship labels on edges */
@@ -186,7 +186,7 @@ export class CanvasGenerator {
 		// Merge options with defaults, ensuring all required fields are present
 		// Support legacy colorByGender option for backward compatibility
 		const nodeColorScheme = options.nodeColorScheme ??
-			(options.colorByGender === false ? 'monochrome' : 'gender');
+			(options.colorByGender === false ? 'monochrome' : 'sex');
 
 		// Extract metadata and style overrides
 		const metadata = options.canvasRootsMetadata;
@@ -822,7 +822,7 @@ export class CanvasGenerator {
 		colorScheme: import('../settings').ColorScheme
 	): string | undefined {
 		switch (colorScheme) {
-			case 'gender':
+			case 'sex':
 				return this.getPersonColor(person);
 			case 'generation':
 				return this.getGenerationColor(generation);
@@ -831,7 +831,7 @@ export class CanvasGenerator {
 			case 'monochrome':
 				return undefined;  // No color
 			default:
-				return this.getPersonColor(person);  // Fallback to gender
+				return this.getPersonColor(person);  // Fallback to sex
 		}
 	}
 

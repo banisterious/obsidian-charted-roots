@@ -37,8 +37,8 @@ export interface CsvColumnMapping {
 	/** Column for death place */
 	deathPlace?: string;
 
-	/** Column for gender */
-	gender?: string;
+	/** Column for sex (GEDCOM aligned - accepts both 'sex' and 'gender' columns) */
+	sex?: string;
 
 	/** Column for occupation */
 	occupation?: string;
@@ -75,7 +75,7 @@ export const DEFAULT_COLUMN_ALIASES: Record<keyof CsvColumnMapping, string[]> = 
 	deathDate: ['death_date', 'died', 'deathdate', 'dod', 'date_of_death'],
 	birthPlace: ['birth_place', 'birthplace', 'place_of_birth', 'born_place'],
 	deathPlace: ['death_place', 'deathplace', 'place_of_death', 'died_place'],
-	gender: ['gender', 'sex'],
+	sex: ['sex', 'gender'],  // 'sex' first (GEDCOM standard), 'gender' for compatibility
 	occupation: ['occupation', 'job', 'profession'],
 	fatherId: ['father_id', 'father_cr_id'],
 	fatherName: ['father_name', 'father'],
@@ -377,7 +377,7 @@ export class CsvImporter {
 			birthPlace: this.getColumnValue(row, mapping.birthPlace),
 			deathPlace: this.getColumnValue(row, mapping.deathPlace),
 			occupation: this.getColumnValue(row, mapping.occupation),
-			gender: this.normalizeGender(this.getColumnValue(row, mapping.gender))
+			sex: this.normalizeGender(this.getColumnValue(row, mapping.sex))
 		};
 
 		// Add relationship hints (will be resolved in pass 2)

@@ -412,7 +412,7 @@ export class GedcomImporterV2 {
 			birthPlace: individual.birthPlace,
 			deathPlace: individual.deathPlace,
 			occupation: individual.occupation,
-			gender: individual.sex === 'M' ? 'Male' : individual.sex === 'F' ? 'Female' : undefined
+			sex: individual.sex === 'M' ? 'male' : individual.sex === 'F' ? 'female' : undefined
 		};
 
 		// Add extended attributes

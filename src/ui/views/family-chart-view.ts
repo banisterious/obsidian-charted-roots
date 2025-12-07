@@ -64,7 +64,7 @@ export class FamilyChartView extends ItemView {
 
 	// View state
 	private rootPersonId: string | null = null;
-	private colorScheme: ColorScheme = 'gender';
+	private colorScheme: ColorScheme = 'sex';
 	private editMode: boolean = false;
 	private nodeSpacing: number = 250; // X spacing between nodes
 	private levelSpacing: number = 150; // Y spacing between generations
@@ -176,7 +176,7 @@ export class FamilyChartView extends ItemView {
 		const colorSelect = colorGroup.createEl('select', { cls: 'cr-fcv-select dropdown' });
 
 		const colorOptions: { value: ColorScheme; label: string }[] = [
-			{ value: 'gender', label: 'Gender' },
+			{ value: 'sex', label: 'Sex' },
 			{ value: 'generation', label: 'Generation' },
 			{ value: 'collection', label: 'Collection' },
 			{ value: 'monochrome', label: 'Monochrome' }
@@ -1561,12 +1561,12 @@ export class FamilyChartView extends ItemView {
 					continue;
 				}
 
-				// Update gender
-				if (key === 'gender') {
-					const gender = datum.data['gender'] as string;
-					if (gender) {
-						const genderValue = gender === 'F' ? 'female' : 'male';
-						updatedLines.push(`gender: ${genderValue}`);
+				// Update sex
+				if (key === 'sex') {
+					const sex = datum.data['gender'] as string; // family-chart uses 'gender' internally
+					if (sex) {
+						const sexValue = sex === 'F' ? 'female' : 'male';
+						updatedLines.push(`sex: ${sexValue}`);
 					} else {
 						updatedLines.push(line);
 					}

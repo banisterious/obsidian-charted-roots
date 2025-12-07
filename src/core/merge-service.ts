@@ -90,7 +90,7 @@ const MERGEABLE_FIELDS: { field: string; label: string; isArray: boolean }[] = [
 	{ field: 'birth_place', label: 'Birth place', isArray: false },
 	{ field: 'death_place', label: 'Death place', isArray: false },
 	{ field: 'occupation', label: 'Occupation', isArray: false },
-	{ field: 'gender', label: 'Gender', isArray: false },
+	{ field: 'sex', label: 'Sex', isArray: false },
 	{ field: 'father', label: 'Father', isArray: false },
 	{ field: 'mother', label: 'Mother', isArray: false },
 	{ field: 'spouse', label: 'Spouse(s)', isArray: true },
@@ -388,7 +388,7 @@ export class MergeService {
 		// Order fields for readability
 		const orderedFields = [
 			'cr_id', 'name', 'born', 'died', 'birth_place', 'death_place',
-			'occupation', 'gender', 'father', 'father_id', 'mother', 'mother_id',
+			'occupation', 'sex', 'father', 'father_id', 'mother', 'mother_id',
 			'spouse', 'spouse_id', 'child', 'children_id', 'collection'
 		];
 

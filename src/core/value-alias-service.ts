@@ -11,7 +11,7 @@ import type CanvasRootsPlugin from '../../main';
 /**
  * Field types that support value aliasing
  */
-export type ValueAliasField = 'eventType' | 'gender' | 'placeCategory';
+export type ValueAliasField = 'eventType' | 'sex' | 'placeCategory';
 
 /**
  * Canonical event types
@@ -35,16 +35,21 @@ export const CANONICAL_EVENT_TYPES = [
 export type CanonicalEventType = typeof CANONICAL_EVENT_TYPES[number];
 
 /**
- * Canonical gender values
+ * Canonical sex values (used for both sex and gender properties)
+ * Using GEDCOM-aligned terminology for genealogical accuracy
  */
-export const CANONICAL_GENDERS = [
+export const CANONICAL_SEX_VALUES = [
 	'male',
 	'female',
 	'nonbinary',
 	'unknown'
 ] as const;
 
-export type CanonicalGender = typeof CANONICAL_GENDERS[number];
+export type CanonicalSex = typeof CANONICAL_SEX_VALUES[number];
+
+// Backwards compatibility alias
+export const CANONICAL_GENDERS = CANONICAL_SEX_VALUES;
+export type CanonicalGender = CanonicalSex;
 
 /**
  * Canonical place categories
@@ -65,7 +70,7 @@ export type CanonicalPlaceCategory = typeof CANONICAL_PLACE_CATEGORIES[number];
  */
 export const VALUE_ALIAS_FIELD_LABELS: Record<ValueAliasField, string> = {
 	eventType: 'Event type',
-	gender: 'Gender',
+	sex: 'Sex',
 	placeCategory: 'Place category'
 };
 
@@ -89,14 +94,17 @@ export const EVENT_TYPE_LABELS: Record<CanonicalEventType, string> = {
 };
 
 /**
- * Human-readable labels for canonical genders
+ * Human-readable labels for canonical sex values
  */
-export const GENDER_LABELS: Record<CanonicalGender, string> = {
+export const SEX_LABELS: Record<CanonicalSex, string> = {
 	male: 'Male',
 	female: 'Female',
 	nonbinary: 'Non-binary',
 	unknown: 'Unknown'
 };
+
+// Backwards compatibility alias
+export const GENDER_LABELS = SEX_LABELS;
 
 /**
  * Human-readable labels for canonical place categories
@@ -134,8 +142,8 @@ export class ValueAliasService {
 		switch (field) {
 			case 'eventType':
 				return CANONICAL_EVENT_TYPES;
-			case 'gender':
-				return CANONICAL_GENDERS;
+			case 'sex':
+				return CANONICAL_SEX_VALUES;
 			case 'placeCategory':
 				return CANONICAL_PLACE_CATEGORIES;
 		}
@@ -148,8 +156,8 @@ export class ValueAliasService {
 		switch (field) {
 			case 'eventType':
 				return EVENT_TYPE_LABELS[value as CanonicalEventType] || value;
-			case 'gender':
-				return GENDER_LABELS[value as CanonicalGender] || value;
+			case 'sex':
+				return SEX_LABELS[value as CanonicalSex] || value;
 			case 'placeCategory':
 				return PLACE_CATEGORY_LABELS[value as CanonicalPlaceCategory] || value;
 		}
@@ -326,7 +334,7 @@ export class ValueAliasService {
 	getAllAliasesAllFields(): Array<{ field: ValueAliasField; userValue: string; canonicalValue: string }> {
 		const result: Array<{ field: ValueAliasField; userValue: string; canonicalValue: string }> = [];
 
-		for (const field of ['eventType', 'gender', 'placeCategory'] as ValueAliasField[]) {
+		for (const field of ['eventType', 'sex', 'placeCategory'] as ValueAliasField[]) {
 			const aliases = this.getAllAliases(field);
 			for (const alias of aliases) {
 				result.push({ field, ...alias });

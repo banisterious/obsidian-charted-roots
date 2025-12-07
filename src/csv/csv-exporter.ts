@@ -23,7 +23,7 @@ export type CsvColumn =
 	| 'death_date'
 	| 'birth_place'
 	| 'death_place'
-	| 'gender'
+	| 'sex'
 	| 'occupation'
 	| 'father_id'
 	| 'father_name'
@@ -44,7 +44,7 @@ export const DEFAULT_CSV_COLUMNS: CsvColumn[] = [
 	'death_date',
 	'birth_place',
 	'death_place',
-	'gender',
+	'sex',
 	'occupation',
 	'father_id',
 	'father_name',
@@ -65,7 +65,7 @@ export const CSV_COLUMN_HEADERS: Record<CsvColumn, string> = {
 	death_date: 'Death Date',
 	birth_place: 'Birth Place',
 	death_place: 'Death Place',
-	gender: 'Gender',
+	sex: 'Sex',
 	occupation: 'Occupation',
 	father_id: 'Father ID',
 	father_name: 'Father Name',
@@ -356,7 +356,7 @@ export class CsvExporter {
 					value = person.deathPlace || '';
 					break;
 
-				case 'gender':
+				case 'sex':
 					value = person.sex || '';
 					break;
 

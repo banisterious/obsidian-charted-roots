@@ -50,7 +50,8 @@ export class CreatePersonModal extends Modal {
 			editPersonData?: {
 				crId: string;
 				name: string;
-				gender?: string;
+				sex?: string;
+				gender?: string; // Kept for backwards compatibility
 				born?: string;
 				died?: string;
 				birthPlace?: string;
@@ -80,7 +81,7 @@ export class CreatePersonModal extends Modal {
 			this.personData = {
 				name: ep.name,
 				crId: ep.crId,
-				gender: ep.gender,
+				sex: ep.sex || ep.gender, // sex preferred, gender for backwards compatibility
 				birthDate: ep.born,
 				deathDate: ep.died,
 				birthPlace: ep.birthPlace,
@@ -162,18 +163,18 @@ export class CreatePersonModal extends Modal {
 					this.personData.name = value;
 				}));
 
-		// Gender
+		// Sex
 		new Setting(form)
-			.setName('Gender')
-			.setDesc('Gender identity (used for relationship terminology and display)')
+			.setName('Sex')
+			.setDesc('Sex (used for relationship terminology and display)')
 			.addDropdown(dropdown => dropdown
 				.addOption('', '(Unknown)')
 				.addOption('male', 'Male')
 				.addOption('female', 'Female')
 				.addOption('nonbinary', 'Non-binary')
-				.setValue(this.personData.gender || '')
+				.setValue(this.personData.sex || '')
 				.onChange(value => {
-					this.personData.gender = value || undefined;
+					this.personData.sex = value || undefined;
 				}));
 
 		// Birth date
@@ -490,7 +491,7 @@ export class CreatePersonModal extends Modal {
 				name: this.personData.name,
 				birthDate: this.personData.birthDate,
 				deathDate: this.personData.deathDate,
-				gender: this.personData.gender,
+				sex: this.personData.sex,
 				birthPlace: this.personData.birthPlace,
 				deathPlace: this.personData.deathPlace,
 				occupation: this.personData.occupation

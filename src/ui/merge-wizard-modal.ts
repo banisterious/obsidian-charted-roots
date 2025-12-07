@@ -275,7 +275,7 @@ class MergePreviewModal extends Modal {
 			{ key: 'died', label: 'Death date' },
 			{ key: 'birth_place', label: 'Birth place' },
 			{ key: 'death_place', label: 'Death place' },
-			{ key: 'gender', label: 'Gender' },
+			{ key: 'sex', label: 'Sex' },
 			{ key: 'father', label: 'Father' },
 			{ key: 'mother', label: 'Mother' },
 			{ key: 'spouse', label: 'Spouse(s)' },

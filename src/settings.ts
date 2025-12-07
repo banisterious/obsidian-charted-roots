@@ -33,12 +33,12 @@ export type ArrowStyle = 'directed' | 'bidirectional' | 'undirected';
 
 /**
  * Node color scheme options
- * - 'gender': Color by gender (green for male, purple for female)
+ * - 'sex': Color by sex (green for male, purple for female) - GEDCOM aligned
  * - 'generation': Color by generation level (creates visual layers)
  * - 'collection': Color by collection (different color per collection)
  * - 'monochrome': No coloring (neutral for all nodes)
  */
-export type ColorScheme = 'gender' | 'generation' | 'collection' | 'monochrome';
+export type ColorScheme = 'sex' | 'generation' | 'collection' | 'monochrome';
 
 /**
  * Canvas color values (Obsidian's 6 preset colors)
@@ -173,7 +173,7 @@ export interface CanvasRootsSettings {
  */
 export interface ValueAliasSettings {
 	eventType: Record<string, string>;      // userValue → canonicalEventType
-	gender: Record<string, string>;         // userValue → canonicalGender
+	sex: Record<string, string>;            // userValue → canonicalSex (GEDCOM aligned)
 	placeCategory: Record<string, string>;  // userValue → canonicalPlaceCategory
 }
 
@@ -248,7 +248,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	parentChildArrowStyle: 'directed',  // Parent → Child with single arrow
 	spouseArrowStyle: 'undirected',     // Spouse — Spouse with no arrows (cleaner look)
 	// Node coloring default
-	nodeColorScheme: 'gender',          // Gender-based coloring for backward compatibility
+	nodeColorScheme: 'sex',             // Sex-based coloring (GEDCOM aligned)
 	// Edge coloring defaults (neutral/subtle)
 	parentChildEdgeColor: 'none',       // No color - use theme default (clean, subtle)
 	spouseEdgeColor: 'none',            // No color - use theme default (clean, subtle)
@@ -311,7 +311,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	// Value aliases for custom property values
 	valueAliases: {
 		eventType: {},             // Maps user event type → canonical event type
-		gender: {},                // Maps user gender value → canonical gender
+		sex: {},                   // Maps user sex value → canonical sex (GEDCOM aligned)
 		placeCategory: {}          // Maps user place category → canonical place category
 	},
 	// Event management settings
@@ -599,7 +599,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 			.setName('Node color scheme')
 			.setDesc('How to color person nodes in the family tree')
 			.addDropdown(dropdown => dropdown
-				.addOption('gender', 'Gender (green for male, purple for female)')
+				.addOption('sex', 'Sex (green for male, purple for female)')
 				.addOption('generation', 'Generation (color by generation level)')
 				.addOption('monochrome', 'Monochrome (no coloring)')
 				.setValue(this.plugin.settings.nodeColorScheme)

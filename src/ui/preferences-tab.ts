@@ -20,14 +20,14 @@ import {
 	ValueAliasService,
 	VALUE_ALIAS_FIELD_LABELS,
 	EVENT_TYPE_LABELS,
-	GENDER_LABELS,
+	SEX_LABELS,
 	PLACE_CATEGORY_LABELS,
 	CANONICAL_EVENT_TYPES,
-	CANONICAL_GENDERS,
+	CANONICAL_SEX_VALUES,
 	CANONICAL_PLACE_CATEGORIES,
 	type ValueAliasField,
 	type CanonicalEventType,
-	type CanonicalGender,
+	type CanonicalSex,
 	type CanonicalPlaceCategory
 } from '../core/value-alias-service';
 
@@ -320,8 +320,8 @@ function getCanonicalValueLabel(field: ValueAliasField, value: string): string {
 	switch (field) {
 		case 'eventType':
 			return EVENT_TYPE_LABELS[value as CanonicalEventType] || value;
-		case 'gender':
-			return GENDER_LABELS[value as CanonicalGender] || value;
+		case 'sex':
+			return SEX_LABELS[value as CanonicalSex] || value;
 		case 'placeCategory':
 			return PLACE_CATEGORY_LABELS[value as CanonicalPlaceCategory] || value;
 	}
@@ -581,7 +581,7 @@ function renderCanvasStylingCard(
 		.setName('Color scheme')
 		.setDesc('How to color person nodes in family trees')
 		.addDropdown(dropdown => dropdown
-			.addOption('gender', 'Gender - green for males, purple for females')
+			.addOption('sex', 'Sex - green for males, purple for females')
 			.addOption('generation', 'Generation - color by generation level')
 			.addOption('collection', 'Collection - different color per collection')
 			.addOption('monochrome', 'Monochrome - no coloring')
@@ -724,7 +724,7 @@ class PropertyAliasModal extends Modal {
 
 				// Group properties by category
 				const categories: Record<string, CanonicalPersonProperty[]> = {
-					'Identity': ['name', 'cr_id', 'gender', 'nickname', 'maiden_name'],
+					'Identity': ['name', 'cr_id', 'type', 'sex', 'gender', 'nickname', 'maiden_name'],
 					'Dates': ['born', 'died'],
 					'Places': ['birth_place', 'death_place'],
 					'Relationships': ['father', 'father_id', 'mother', 'mother_id', 'spouse', 'spouse_id', 'child', 'children_id'],
@@ -866,7 +866,7 @@ class ValueAliasModal extends Modal {
 			.setDesc('The type of field this value belongs to')
 			.addDropdown(dropdown => {
 				dropdown.addOption('eventType', 'Event type');
-				dropdown.addOption('gender', 'Gender');
+				dropdown.addOption('sex', 'Sex');
 				dropdown.addOption('placeCategory', 'Place category');
 
 				dropdown.setValue(this.field);
@@ -930,7 +930,7 @@ class ValueAliasModal extends Modal {
 		switch (this.field) {
 			case 'eventType':
 				return 'nameday';
-			case 'gender':
+			case 'sex':
 				return 'masc';
 			case 'placeCategory':
 				return 'canon';
@@ -941,8 +941,8 @@ class ValueAliasModal extends Modal {
 		switch (this.field) {
 			case 'eventType':
 				return CANONICAL_EVENT_TYPES;
-			case 'gender':
-				return CANONICAL_GENDERS;
+			case 'sex':
+				return CANONICAL_SEX_VALUES;
 			case 'placeCategory':
 				return CANONICAL_PLACE_CATEGORIES;
 		}
@@ -952,8 +952,8 @@ class ValueAliasModal extends Modal {
 		switch (this.field) {
 			case 'eventType':
 				return EVENT_TYPE_LABELS[value as CanonicalEventType] || value;
-			case 'gender':
-				return GENDER_LABELS[value as CanonicalGender] || value;
+			case 'sex':
+				return SEX_LABELS[value as CanonicalSex] || value;
 			case 'placeCategory':
 				return PLACE_CATEGORY_LABELS[value as CanonicalPlaceCategory] || value;
 		}

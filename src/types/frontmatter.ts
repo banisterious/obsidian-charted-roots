@@ -21,7 +21,8 @@ export interface PersonFrontmatter {
 	spouse?: string | string[];
 	spouse_id?: string;
 	children?: string | string[];
-	gender?: string;
+	sex?: string;
+	gender?: string; // Kept for backwards compatibility - users can use either
 	birth_date?: string;
 	death_date?: string;
 	birth_place?: string;

@@ -33,7 +33,7 @@ export interface PersonData {
 	birthPlace?: string;
 	deathPlace?: string;
 	occupation?: string;
-	gender?: string;
+	sex?: string;
 	father?: string;        // Legacy: name-based relationship (deprecated)
 	mother?: string;        // Legacy: name-based relationship (deprecated)
 	spouse?: string[];      // Legacy: name-based relationship (deprecated)
@@ -121,8 +121,8 @@ export async function createPersonNote(
 		frontmatter[prop('occupation')] = person.occupation;
 	}
 
-	if (person.gender) {
-		frontmatter[prop('gender')] = person.gender;
+	if (person.sex) {
+		frontmatter[prop('sex')] = person.sex;
 	}
 
 	// Handle relationships using dual storage: wikilinks for Obsidian + _id fields for reliability
@@ -433,11 +433,11 @@ export async function updatePersonNote(
 		if (person.name !== undefined) frontmatter.name = person.name;
 		if (person.birthDate !== undefined) frontmatter.born = person.birthDate || '';
 		if (person.deathDate !== undefined) frontmatter.died = person.deathDate || '';
-		if (person.gender !== undefined) {
-			if (person.gender) {
-				frontmatter.gender = person.gender;
+		if (person.sex !== undefined) {
+			if (person.sex) {
+				frontmatter.sex = person.sex;
 			} else {
-				delete frontmatter.gender;
+				delete frontmatter.sex;
 			}
 		}
 		if (person.occupation !== undefined) {

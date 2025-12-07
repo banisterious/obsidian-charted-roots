@@ -15,7 +15,9 @@ export const CANONICAL_PERSON_PROPERTIES = [
 	// Core identity
 	'name',
 	'cr_id',
-	'gender',
+	'type',
+	'sex',
+	'gender', // Kept for users who prefer gender over sex
 	'nickname',
 	'maiden_name',
 	// Dates
@@ -49,6 +51,8 @@ export type CanonicalPersonProperty = typeof CANONICAL_PERSON_PROPERTIES[number]
 export const CANONICAL_PROPERTY_LABELS: Record<CanonicalPersonProperty, string> = {
 	name: 'Name',
 	cr_id: 'CR ID',
+	type: 'Type',
+	sex: 'Sex',
 	gender: 'Gender',
 	nickname: 'Nickname',
 	maiden_name: 'Maiden name',

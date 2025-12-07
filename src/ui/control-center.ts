@@ -3151,7 +3151,7 @@ export class ControlCenterModal extends Modal {
 
 		// Add color scheme options
 		const colorSchemes = [
-			{ value: 'gender', label: 'Gender' },
+			{ value: 'sex', label: 'Sex' },
 			{ value: 'generation', label: 'Generation' },
 			{ value: 'monochrome', label: 'Monochrome' }
 		];
@@ -3380,7 +3380,7 @@ export class ControlCenterModal extends Modal {
 			.addDropdown(dropdown => {
 				customNodeColorSelect = dropdown.selectEl;
 				dropdown
-					.addOption('gender', 'Gender (green/purple)')
+					.addOption('sex', 'Sex (green/purple)')
 					.addOption('generation', 'Generation (gradient)')
 					.addOption('collection', 'Collection (multi-color)')
 					.addOption('monochrome', 'Monochrome (neutral)')
@@ -11941,18 +11941,18 @@ export class ControlCenterModal extends Modal {
 				.onClick(() => void this.runBatchOperation('dates', selectedScope, selectedFolder))
 			);
 
-		// Normalize gender
+		// Normalize sex
 		new Setting(batchSection)
-			.setName('Normalize gender values')
+			.setName('Normalize sex values')
 			.setDesc('Standardize to M/F format')
 			.addButton(btn => btn
 				.setButtonText('Preview')
-				.onClick(() => void this.previewBatchOperation('gender', selectedScope, selectedFolder))
+				.onClick(() => void this.previewBatchOperation('sex', selectedScope, selectedFolder))
 			)
 			.addButton(btn => btn
 				.setButtonText('Apply')
 				.setCta()
-				.onClick(() => void this.runBatchOperation('gender', selectedScope, selectedFolder))
+				.onClick(() => void this.runBatchOperation('sex', selectedScope, selectedFolder))
 			);
 
 		// Clear orphan references
@@ -12274,7 +12274,7 @@ export class ControlCenterModal extends Modal {
 	 * Preview a batch operation
 	 */
 	private previewBatchOperation(
-		operation: 'dates' | 'gender' | 'orphans',
+		operation: 'dates' | 'sex' | 'orphans',
 		scope: 'all' | 'staging' | 'folder',
 		folderPath?: string
 	): void {
@@ -12309,7 +12309,7 @@ export class ControlCenterModal extends Modal {
 	 * Run a batch operation
 	 */
 	private async runBatchOperation(
-		operation: 'dates' | 'gender' | 'orphans',
+		operation: 'dates' | 'sex' | 'orphans',
 		scope: 'all' | 'staging' | 'folder',
 		folderPath?: string
 	): Promise<void> {
@@ -12336,8 +12336,8 @@ export class ControlCenterModal extends Modal {
 					operationName = 'Date normalization';
 					result = await dataQualityService.normalizeDateFormats({ scope, folderPath });
 					break;
-				case 'gender':
-					operationName = 'Gender normalization';
+				case 'sex':
+					operationName = 'Sex normalization';
 					result = await dataQualityService.normalizeGenderValues({ scope, folderPath });
 					break;
 				case 'orphans':
@@ -12371,13 +12371,13 @@ export class ControlCenterModal extends Modal {
  * Modal for previewing batch operation changes
  */
 class BatchPreviewModal extends Modal {
-	private operation: 'dates' | 'gender' | 'orphans';
+	private operation: 'dates' | 'sex' | 'orphans';
 	private preview: NormalizationPreview;
 	private onApply: () => void;
 
 	constructor(
 		app: App,
-		operation: 'dates' | 'gender' | 'orphans',
+		operation: 'dates' | 'sex' | 'orphans',
 		preview: NormalizationPreview,
 		onApply: () => void
 	) {
@@ -12393,7 +12393,7 @@ class BatchPreviewModal extends Modal {
 		// Set title based on operation
 		const titles: Record<string, string> = {
 			dates: 'Preview: Date normalization',
-			gender: 'Preview: Gender normalization',
+			sex: 'Preview: Sex normalization',
 			orphans: 'Preview: Clear orphan references',
 		};
 		titleEl.setText(titles[this.operation]);
@@ -12404,7 +12404,7 @@ class BatchPreviewModal extends Modal {
 			case 'dates':
 				changes = this.preview.dateNormalization;
 				break;
-			case 'gender':
+			case 'sex':
 				changes = this.preview.genderNormalization;
 				break;
 			case 'orphans':

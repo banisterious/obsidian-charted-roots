@@ -26,7 +26,7 @@ export class TreePreviewRenderer {
 	private isDragging: boolean = false;
 	private dragStartX: number = 0;
 	private dragStartY: number = 0;
-	private colorScheme: ColorScheme = 'gender';
+	private colorScheme: ColorScheme = 'sex';
 	private tooltipElement: HTMLElement | null = null;
 
 	constructor(container: HTMLElement) {
@@ -108,7 +108,7 @@ export class TreePreviewRenderer {
 	 */
 	private getNodeColor(pos: NodePosition): string {
 		switch (this.colorScheme) {
-			case 'gender': {
+			case 'sex': {
 				const sex = pos.person.sex?.toLowerCase();
 				if (sex === 'm' || sex === 'male') {
 					return '#4ade80'; // Green (Obsidian color 4)

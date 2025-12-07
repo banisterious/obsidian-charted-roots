@@ -1084,13 +1084,13 @@ export class DataQualityService {
 				}
 			}
 
-			// Check gender
+			// Check sex
 			if (person.sex) {
 				const normalized = this.normalizeGender(person.sex);
 				if (normalized && normalized !== person.sex) {
 					preview.genderNormalization.push({
 						person,
-						field: 'gender',
+						field: 'sex',
 						oldValue: person.sex,
 						newValue: normalized,
 					});
