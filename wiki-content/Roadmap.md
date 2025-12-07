@@ -1,631 +1,50 @@
 # Roadmap
 
-This document outlines planned features for Canvas Roots. For release history and completed features, see the [Releases page](https://github.com/banisterious/obsidian-canvas-roots/releases).
+This document outlines planned features for Canvas Roots. For completed features, see [Release History](Release-History). For version-specific changes, see the [GitHub Releases](https://github.com/banisterious/obsidian-canvas-roots/releases).
 
 ---
 
 ## Table of Contents
 
-- [Development Priorities](#development-priorities)
+- [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
-  - [Geographic Features (Phase 4)](#geographic-features-phase-4-) ✅
-  - [Maps Tab (Control Center)](#maps-tab-control-center-) ✅
-  - [Import/Export Enhancements](#importexport-enhancements) ✅
-  - [GEDCOM Import v2](#gedcom-import-v2) ✅
   - [Data Enhancement Pass](#data-enhancement-pass)
-  - [Schema Validation](#schema-validation--consistency-checks-) ✅
-  - [Custom Relationship Types](#custom-relationship-types) ✅
-  - [Fictional Date Systems](#fictional-date-systems-) ✅
-  - [Evidence & Source Management](#evidence--source-management) ✅
-  - [World-Building Suite](#world-building-suite) ✅
-  - [Chronological Story Mapping](#chronological-story-mapping) ✅
-  - [Research & Analysis Tools](#research--analysis-tools)
-  - [Print & PDF Export](#print--pdf-export)
-- [Future Considerations](#future-considerations)
-  - [Events Tab (Control Center)](#events-tab-control-center) ✅ v0.9.2
-  - [Property Aliases](#property-aliases-) ✅ v0.9.3
-  - [Value Aliases](#value-aliases) ✅ v0.9.4
   - [Flexible Note Type Detection](#flexible-note-type-detection)
   - [Type Customization](#type-customization)
-  - [Sensitive Field Redaction](#sensitive-field-redaction)
-  - [Flatten Nested Properties](#flatten-nested-properties)
-  - [Note Creation from Images](#note-creation-from-images)
-  - [Person Note Templates](#person-note-templates)
-  - [Accessibility](#accessibility)
-  - [Obsidian Publish Support](#obsidian-publish-support)
-  - [Style Settings Integration](#style-settings-integration-) ✅
+  - [Print & PDF Export](#print--pdf-export)
+  - [Research & Analysis Tools](#research--analysis-tools)
+  - [Transcript Nodes & Oral History](#transcript-nodes--oral-history)
+- [Future Considerations](#future-considerations)
 - [Known Limitations](#known-limitations)
 - [Contributing](#contributing)
 
 ---
 
-## Development Priorities
+## Completed Features
 
-The following priority order guides future development:
+For detailed implementation documentation of completed features, see [Release History](Release-History).
 
-| Priority | Feature | Status |
-|:--------:|---------|--------|
-| 1 | [Import/Export Enhancements](#importexport-enhancements) | ✅ Complete (v0.6.0) |
-| 2 | [Geographic Features (Phase 4)](#geographic-features-phase-4-) | ✅ Complete (v0.6.0) |
-| 3 | [Maps Tab (Control Center)](#maps-tab-control-center-) | ✅ Complete (v0.6.2) |
-| 4 | [Schema Validation](#schema-validation--consistency-checks-) | ✅ Complete (v0.6.3) |
-| 5 | [Custom Relationship Types](#custom-relationship-types) | ✅ Complete (v0.7.0) |
-| 6 | [Fictional Date Systems](#fictional-date-systems-) | ✅ Complete (v0.7.0) |
-| 7 | [Organization Notes](#organization-notes--hierarchy-views) | ✅ Complete (v0.7.0) |
-| 8 | [Source Media Gallery](#source-media-gallery--document-viewer-) | ✅ Complete (v0.8.0) |
-| 9 | [Evidence Visualization](#evidence-visualization-) | ✅ Complete (v0.9.0) |
-| 10 | [Style Settings Integration](#style-settings-integration-) | ✅ Complete (v0.9.1) |
-| 11 | [Events Tab (Control Center)](#events-tab-control-center) | ✅ Complete (v0.9.2) |
-| 12 | [Property Aliases](#property-aliases-) | ✅ Complete (v0.9.3) |
-| 13 | [Value Aliases](#value-aliases) | ✅ Complete (v0.9.4) |
-| 14 | [Chronological Story Mapping](#chronological-story-mapping) | ✅ Complete (v0.10.0) |
-| 15 | [GEDCOM Import v2](#gedcom-import-v2) | ✅ Complete (v0.10.1) |
-| 16 | [Data Enhancement Pass](#data-enhancement-pass) | Planned |
-| 17 | [Flexible Note Type Detection](#flexible-note-type-detection) | Planned |
-| 18 | [Print & PDF Export](#print--pdf-export) | Planned |
-| 19 | [Type Customization](#type-customization) | Planned |
-| 20 | [Transcript Nodes & Oral History](#transcript-nodes--quotable-facts) | Planned |
+| Version | Feature | Summary |
+|:-------:|---------|---------|
+| v0.10.1 | [GEDCOM Import v2](Release-History#gedcom-import-v2-v0101) | Enhanced import with sources, events, and places |
+| v0.10.0 | [Chronological Story Mapping](Release-History#chronological-story-mapping-v0100) | Event notes, timelines, narrative support |
+| v0.9.4 | [Value Aliases](Release-History#value-aliases-v094) | Custom terminology for property values |
+| v0.9.3 | [Property Aliases](Release-History#property-aliases-v093) | Map custom property names to canonical fields |
+| v0.9.2 | [Events Tab](Release-History#events-tab-v092) | Control Center tab for event management |
+| v0.9.1 | [Style Settings Integration](Release-History#style-settings-integration-v091) | Customize colors via Style Settings plugin |
+| v0.9.0 | [Evidence Visualization](Release-History#evidence-visualization-v090) | GPS-aligned research methodology tools |
+| v0.8.0 | [Source Media Gallery](Release-History#source-media-gallery--document-viewer-v080) | Evidence management and citation generator |
+| v0.7.0 | [Organization Notes](Release-History#organization-notes-v070) | Non-genealogical hierarchies |
+| v0.7.0 | [Fictional Date Systems](Release-History#fictional-date-systems-v070) | Custom calendars and eras |
+| v0.7.0 | [Custom Relationship Types](Release-History#custom-relationship-types-v070) | Non-familial relationships |
+| v0.6.3 | [Schema Validation](Release-History#schema-validation-v063) | User-defined data quality rules |
+| v0.6.2 | [Maps Tab](Release-History#maps-tab-v062) | Control Center tab for map management |
+| v0.6.0 | [Geographic Features](Release-History#geographic-features-v060) | Interactive Leaflet.js map view |
+| v0.6.0 | [Import/Export Enhancements](Release-History#importexport-enhancements-v060) | GEDCOM, GEDCOM X, Gramps, CSV support |
 
 ---
 
 ## Planned Features
-
-### Geographic Features (Phase 4) ✅
-
-> **Complete in v0.6.0.** See [leaflet-maps-plan.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/leaflet-maps-plan.md) for implementation details.
-
-**Implemented Features:**
-- Interactive Map View with Leaflet.js and OpenStreetMap tiles
-- Color-coded markers (birth, death, marriage, burial) with clustering
-- Additional marker types (residence, occupation, education, military, immigration, religious, custom)
-- Events array support for multiple life events per person
-- Migration paths with directional arrows and person name labels (TextPath)
-- Custom image maps for fictional worlds with universe-based switching
-- Time slider animation ("who was alive in year X?")
-- Heat map layer for geographic concentration
-- Fullscreen mode, mini-map, place search
-- Side-by-side map comparison (split view)
-- GeoJSON and SVG overlay export
-- Interactive image alignment (Leaflet.DistortableImage) - drag corners to align maps
-- Pixel-based coordinates (L.CRS.Simple) for worldbuilders
-- Route/journey visualization (connect all life events chronologically)
-
-**Future Enhancements (v2+):** See [leaflet-maps-plan.md § Design Decisions](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/leaflet-maps-plan.md#design-decisions) for detailed rationale.
-- Offline tile caching for OSM (deferred: complexity, storage constraints, OSM ToS considerations)
-- Tiled image maps (Zoomify/DeepZoom) for massive images (deferred: niche use case, requires external tooling)
-
----
-
-### Maps Tab (Control Center) ✅
-
-> **Complete in v0.6.2.** See [maps-tab.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/maps-tab.md) for implementation details.
-
-**Implemented Features:**
-- Dedicated Maps tab in Control Center with 4 cards
-- **Open Map View card**: Quick access with coordinate coverage stats
-- **Custom Maps gallery**: Thumbnail grid with image previews (~150×100px)
-  - Map name overlay and universe badge
-  - Hover actions: Edit button and context menu button
-  - Click thumbnail to open map in Map View
-- **Visualizations card**: Migration diagrams and place network tools
-- **Map Statistics card**: Coordinate coverage, custom map count, universe list
-
-**Custom Map Management:**
-- Create Map Modal for new map notes with image picker, bounds, and universe
-- Edit Map Modal to update existing map properties
-- Duplicate map with auto-generated unique ID
-- Export map configuration to JSON
-- Import map from JSON with duplicate ID detection
-- Delete map with confirmation dialog
-
----
-
-### World-Building Suite
-
-A collection of features designed for fiction writers, game masters, and alternate history researchers. These features work together to support complex fictional universes.
-
-#### Custom Relationship Types ✅
-
-> **Complete in v0.7.0.** See [Custom Relationships](Custom-Relationships) wiki page for full documentation.
-
-**Summary:** Define non-familial relationships beyond parent/child/spouse.
-
-**Implemented Features:**
-- 12 built-in relationship types across 4 categories (Legal, Religious, Professional, Social)
-- Relationships Tab in Control Center for management
-- Add Relationship Modal with category-grouped dropdown
-- Frontmatter storage in `relationships` array
-- Canvas edge support with colored edges
-- Statistics card with relationship counts
-
-**Schema:**
-```yaml
-# In person note frontmatter
-relationships:
-  - type: godparent
-    target: "[[Jane Doe]]"
-    target_id: person-jane-doe
-    notes: "Became godparent at baptism in 1920"
-```
-
-**Future Enhancements (v0.8.0+):**
-- Create custom relationship types with user-defined colors
-- Automatic inverse relationship creation
-- Bulk relationship management
-
----
-
-#### Schema Validation & Consistency Checks ✅
-
-> **Complete in v0.6.3.** See [Schema Validation](Schema-Validation) wiki page for full documentation.
-
-**Summary:** User-defined validation schemas to catch data inconsistencies and enforce data quality rules.
-
-**Implemented Features:**
-- **Schema Notes**: New note type (`type: schema`) with JSON code block for schema definition
-- **Schemas Tab**: Dedicated Control Center tab for schema management
-  - Create Schema modal with full UI (no manual JSON editing required)
-  - Edit existing schemas
-  - Schema gallery with scope badges
-  - Vault-wide validation with results display
-  - Recent violations list
-- **Schema Scopes**: Apply schemas by collection, folder, universe, or all people
-- **Property Validation**:
-  - Required properties
-  - Type validation (string, number, date, boolean, enum, wikilink, array)
-  - Enum validation with allowed values
-  - Number range validation (min/max)
-  - Wikilink target type validation (verify linked note type)
-- **Conditional Requirements**: `requiredIf` conditions based on other properties
-- **Custom Constraints**: JavaScript expressions for cross-property validation
-- **Data Quality Integration**: Schema violations section in Data Quality tab
-- **Commands**: "Open schemas tab", "Validate vault against schemas"
-- **Context Menu**: "Validate against schemas" for person notes, schema-specific actions for schema notes
-
----
-
-#### Fictional Date Systems ✅
-
-> **Complete in v0.7.0.** See [Fictional Date Systems](Fictional-Date-Systems) wiki page for full documentation.
-
-**Summary:** Custom calendars and eras for world-building and historical research.
-
-**Implemented Features:**
-- Era definitions with name, abbreviation, epoch offset, and direction (forward/backward)
-- Date parsing for `{abbrev} {year}` format (e.g., "TA 2941", "AC 283")
-- Built-in presets: Middle-earth, Westeros, Star Wars, Generic Fantasy calendars
-- Universe-scoped calendar systems
-- Date Systems card in Events tab (moved from Canvas Settings in v0.9.2)
-- Test date parsing input for validation
-- Custom date system creation with era table editor
-- Canonical year conversion for sorting/comparison
-- Age calculation within calendar systems
-
-**Usage in Person Notes:**
-```yaml
-born: "TA 2890"
-died: "FoA 61"
-```
-
-**Future Enhancements (v0.8.0+):**
-- Leaflet.js timeline slider with fictional dates
-- Bases integration for sorting/filtering by era and year
-- "Who was alive in [year]?" queries
-
----
-
-#### Organization Notes & Hierarchy Views
-
-**Summary:** Define and visualize non-genealogical hierarchies (houses, guilds, corporations).
-
-**Organization Note Schema:**
-```yaml
-type: organization
-name: "House Stark"
-parent_org: "[[The North]]"
-org_type: noble_house
-founded: "Age of Heroes"
-motto: "Winter is Coming"
-seat: "[[Winterfell]]"
-```
-
-**Person Membership:**
-```yaml
-house: "[[House Stark]]"
-role: "Lord of Winterfell"
-house_from: "TA 280"
-memberships:
-  - org: "[[Night's Watch]]"
-    role: "Lord Commander"
-    from: "TA 300"
-    to: "TA 305"
-```
-
-**Visualization:**
-- D3-based org chart (tree, radial, dendrogram layouts)
-- View by organization or by person
-- Color coding by role, tenure, or organization type
-- Temporal filtering
-- Export as PNG, SVG, PDF
-
-**Integration Points:**
-- Custom Relationship Types (liege/vassal edges)
-- Fictional Date Systems (temporal membership)
-- Place notes (organization seats)
-
----
-
-### Evidence & Source Management
-
-Features for genealogists managing documentary evidence and oral history.
-
-#### Source Media Gallery & Document Viewer ✅
-
-> **Complete in v0.8.0.** See [Evidence & Sources](Evidence-And-Sources) wiki page for full documentation.
-
-**Summary:** Centralized evidence management linking source documents to person notes.
-
-**Implemented Features:**
-- Source note type (`type: source`) with frontmatter schema
-- 13 built-in source types (census, vital_record, photo, correspondence, newspaper, military, immigration, etc.)
-- Source counting using Obsidian's `resolvedLinks` metadata cache
-- **Source indicators on generated trees**: Small badges (e.g., "📎 3") on person nodes showing linked source count
-  - Color-coded: green for 3+ sources (well-documented), yellow for 1-2 sources
-  - Toggle in Settings → Canvas Roots → Canvas styling → "Show source indicators"
-- **Media Gallery in Sources Tab**: Thumbnail grid with search and filtering
-  - Filter by media type (images, documents)
-  - Filter by source type
-  - Search by filename or source title
-  - Lightbox viewer with keyboard navigation (arrow keys, Escape)
-  - Support for images and document placeholders
-- Sources Bases template with 17 pre-configured views
-- **Citation Generator**: Generate formatted citations in multiple styles
-  - Chicago Manual of Style
-  - Evidence Explained (Elizabeth Shown Mills) - genealogical standard
-  - MLA (Modern Language Association)
-  - Turabian
-  - Copy to clipboard functionality
-  - Missing field warnings
-
-**Source Note Schema:**
-```yaml
-type: source
-cr_id: source-1900-census-smith
-title: "1900 US Federal Census - Smith Family"
-source_type: census
-source_date: "1900-06-01"
-source_repository: "Ancestry.com"
-media: "[[Census 1900.pdf]]"
-confidence: high
-```
-
-**Future Enhancements:**
-- "Missing sources" report
-
-**Integration Points:**
-- Bases views for source inventory
-- Evidence Visualization integration
-
----
-
-#### Evidence Visualization ✅
-
-> **Complete in v0.9.0.** See [evidence-visualization-plan.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/evidence-visualization-plan.md) for implementation details.
-
-**Summary:** Visual research methodology tools aligned with the Genealogical Proof Standard (GPS) and professional genealogical practices. Transforms Canvas Roots from a tree builder into a serious research platform.
-
-**Genealogical Standards Support:**
-
-| Standard | Feature |
-|----------|---------|
-| GPS completeness | Fact coverage map showing sourced vs. unsourced claims |
-| Source classification | Primary/secondary/derivative visual indicators |
-| Evidence correlation | Proof clusters grouping sources supporting conclusions |
-| Conflict documentation | Visual markers for contradictory evidence |
-| Written conclusions | Proof summary nodes documenting reasoning |
-
-**Phase 1 (v0.9.0) - Fact-Level Source Coverage:**
-
-New `sourced_facts` property on person notes:
-
-```yaml
-sourced_facts:
-  birth_date:
-    sources: ["[[1850 Census]]", "[[Family Bible]]"]
-  birth_place:
-    sources: ["[[1850 Census]]"]
-  death_date:
-    sources: []  # Explicitly unsourced
-```
-
-New `source_quality` field on source notes:
-
-```yaml
-source_quality: primary  # primary | secondary | derivative
-```
-
-**Phase 1 Features:**
-- Research Gaps Report in Data Quality tab
-- Person fact coverage display (which facts have sources)
-- Enhanced source indicator tooltips on canvas
-- Schema validation for `sourced_facts`
-
-**Source Quality Classification:**
-
-| Classification | Meaning | Examples |
-|----------------|---------|----------|
-| Primary | Created at/near event by participant/witness | Original vital records, census, contemporary letters |
-| Secondary | Created later from memory or hearsay | Family bibles (later entries), obituaries, oral histories |
-| Derivative | Copies, transcriptions, or abstracts | Database transcriptions, published abstracts |
-
-**Phases:**
-
-| Phase | Scope | Status |
-|-------|-------|--------|
-| 1 | Fact-level source coverage, Research Gaps Report | ✅ Complete |
-| 2 | Source quality visualization with color coding | ✅ Complete |
-| 3 | Proof summary notes and conflict documentation | ✅ Complete |
-| 4 | Canvas conflict markers | ✅ Complete |
-
-**Deferred to Future Releases:**
-- Source quality borders on media nodes → Style Settings Integration (see below)
-
-**On Hold (Pending User Feedback):**
-- Evidence clusters / Research View - Original spec was ambiguous (Obsidian Canvas vs Family Chart View). Three options under consideration:
-  1. Add evidence visualization to Family Chart View (D3-based, full control)
-  2. Keep current approach (evidence in Control Center detail views)
-  3. Create a new "Research View" - evidence-centric visualization separate from family trees
-
-**Integration Points:**
-- Extends existing source indicators (v0.8.0)
-- Source Media Gallery for evidence browsing
-- Data Quality tab for research gap reports
-- Export proof summaries for publication
-
----
-
-#### Transcript Nodes & Quotable Facts
-
-**Summary:** Time-stamped citations from audio/video with direct linking.
-
-**Schema:**
-```yaml
-oral_facts:
-  - media: "[[Interview with Grandma.mp3]]"
-    timestamp: "1m30s"
-    fact_type: birth_date
-    quote: "I was born on May 15th, 1922"
-    fact_id: "birth-001"
-```
-
-**Timestamp Linking:**
-- Deep links: `[[Interview.mp3]]#t=1m30s`
-- Range support: `#t=1m30s-2m15s`
-- One-click playback from timestamp
-
-**Fact Types:** birth_date, birth_place, residence, occupation, relationship, anecdote, lore, custom
-
-**Canvas Integration:**
-- Transcript nodes with speech bubble styling
-- Click to jump to timestamp
-- Edge labels showing fact type
-
----
-
-#### Interview Subject Graph
-
-**Summary:** Map the relationship structure of interviews themselves.
-
-**Schema:**
-```yaml
-type: interview
-title: "Andrew Wilson Interview 2019"
-media: "[[Andrew Wilson Interview 2019.mp4]]"
-date: 2019-08-15
-interviewer: "[[Me]]"
-interviewee: "[[Andrew Wilson]]"
-mentions:
-  - person: "[[Sue Wilson Robinson]]"
-    context: "sister"
-    timestamps: ["3m20s", "15m45s"]
-```
-
-**Canvas Visualization:**
-- Interview as central hub node
-- Interviewee with primary edge (thick, "subject" label)
-- Mentioned people radiate outward
-- Edge thickness indicates mention frequency
-- Click edges to see timestamps
-
-**Integration Points:**
-- Bases view: interviews with participant counts
-- "People by interview coverage" report
-- Cross-reference: which interviews mention a person
-
----
-
-### Chronological Story Mapping ✅
-
-> **Complete in v0.10.0.** See [Events And Timelines](Events-And-Timelines) wiki page for full documentation.
-
-**Summary:** Event-based timeline visualization supporting genealogists (source-derived events), worldbuilders (canonical events), and writers/plotters (narrative timelines). Integrates with existing fictional date systems for cross-era sorting.
-
-**Implemented Features:**
-- Event notes (`type: event`) as first-class entities with 22 built-in event types
-- Create Event Modal for manual event creation
-- Source event extraction ("Extract events" action with smart suggestions)
-- Person Timeline view (calendar badge on person list items)
-- Family Timeline view (aggregate events for person + spouses + children)
-- Place Timeline view (events at a location over time)
-- Global Timeline in Events tab with filtering and gap analysis
-- Relative ordering with `before`/`after` constraints
-- Compute sort order (topological sort from DAG relationships)
-- Groups/factions property for filtering by nation, faction, organization
-- Timeline Canvas/Excalidraw export with multiple layouts (horizontal, vertical, Gantt)
-- Color-coding by event type, category, confidence, or monochrome
-- Events Base template with 20 pre-configured views
-- Fictional date system integration (`date_system` field, era-based dates)
-- Per-canvas style overrides preserved during regeneration
-
-**Event Schema:**
-```yaml
-type: event
-cr_id: "20251205123456"
-title: "Birth of John Smith"
-event_type: birth
-date: 1850-03-15
-date_precision: exact
-person: "[[John Smith]]"
-place: "[[Dublin, Ireland]]"
-sources:
-  - "[[1850 Birth Certificate]]"
-confidence: high
-groups:
-  - "Smith Family"
-```
-
-**Relative Ordering (no exact date):**
-```yaml
-type: event
-title: "Person A moved to the Americas"
-event_type: immigration
-date_precision: unknown
-after:
-  - "[[Marriage of Person A]]"
-before:
-  - "[[Birth of First Child]]"
-person: "[[Person A]]"
-```
-
-**Event Types:**
-- Core (4): birth, death, marriage, divorce
-- Extended (9): burial, residence, occupation, education, military, immigration, baptism, confirmation, ordination
-- Narrative (8): anecdote, lore_event, plot_point, flashback, foreshadowing, backstory, climax, resolution
-
-**Future Enhancements:**
-- Leaflet Time Animation (animated markers on map)
-- [Calendarium](https://github.com/javalent/calendarium) plugin integration (read calendars, sync events)
-
----
-
-### Research & Analysis Tools
-
-#### Family Statistics Dashboard
-
-**Summary:** Advanced analytics for family history research.
-
-**Features:**
-- Longevity analysis (lifespan by generation/period)
-- Geographic distribution maps
-- Most common names, occupations, places
-- Generation gap analysis (parent age at birth)
-- Marriage patterns (age differences, remarriage)
-- Historical event correlation
-
----
-
-#### Research Tracking
-
-**Summary:** Track research progress and confidence levels.
-
-**Features:**
-- "Needs research" tags with specific to-dos
-- Confidence levels: verified, probable, possible
-- Source documentation per fact
-- Research progress in Bases views
-- DNA match tracking
-- "DNA confirmed" relationship tags
-
----
-
-#### Dynasty Management
-
-**Summary:** Royal/noble house tracking and succession.
-
-**Features:**
-- Line of succession calculator
-- Title/position inheritance
-- Coat of arms support
-- Regnal numbering (Henry VIII, etc.)
-- Crown succession rules (primogeniture, etc.)
-
----
-
-### Import/Export Enhancements
-
-**Status:** ✅ Complete in v0.6.0
-
-**Completed Features:**
-- GEDCOM import/export
-- GEDCOM X import/export (JSON format)
-- Gramps XML import/export
-- CSV import/export
-- Privacy-aware exports with redaction options
-- Separate Import and Export cards in Control Center UI
-
----
-
-### GEDCOM Import v2 ✅
-
-> **Complete in v0.10.1.** Enhanced GEDCOM import that creates source notes, event notes, and place notes in addition to person notes.
-
-**Implemented Features:**
-
-**Import Options UI:**
-- Toggle for each note type: people, events, sources, places
-- Filename format selection: Original (John Smith.md), Kebab-case (john-smith.md), Snake_case (john_smith.md)
-- Per-type filename formats via "Customize per note type" toggle
-- Progress modal showing import phases with running statistics
-- File analysis with counts before confirming import
-
-**Source Import:**
-- Parse `SOUR` records and `@S1@`-style source references
-- Create source notes (`type: source`) with available metadata
-- Support for `TITL`, `AUTH`, `PUBL`, `REPO` fields
-
-**Event Import:**
-- Create event notes (`type: event`) for all supported GEDCOM tags:
-  - **Core (4):** `BIRT`, `DEAT`, `MARR`, `DIV`
-  - **Life Events (6):** `BURI`, `CREM`, `ADOP`, `GRAD`, `RETI`, `CENS`
-  - **Career/Residence (3):** `RESI`, `OCCU`, `EDUC`
-  - **Legal/Estate (4):** `PROB`, `WILL`, `NATU`, `MILI`
-  - **Migration (2):** `IMMI`, `EMIG`
-  - **Religious (8):** `BAPM`, `CHR`, `CHRA`, `CONF`, `FCOM`, `ORDN`, `BARM`, `BASM`, `BLES`
-  - **Family (7):** `ENGA`, `MARB`, `MARC`, `MARL`, `MARS`, `ANUL`, `DIVF`
-- Preserve date precision from GEDCOM (`ABT`, `BEF`, `AFT`, `BET`)
-
-**Person Attributes (stored as properties):**
-- `DSCR` → `physicalDescription`
-- `IDNO` → `identityNumber` ⚠️
-- `NATI` → `nationality`
-- `RELI` → `religion`
-- `TITL` → `title`
-- `PROP` → `property`
-- `CAST` → `caste`
-- `NCHI` → `childrenCount`
-- `NMR` → `marriageCount`
-- `SSN` → `ssn` ⚠️
-
-⚠️ **Privacy Note:** Fields marked with ⚠️ contain sensitive personal information. These are imported for genealogical completeness but are automatically redacted from exports.
-
-**Place Import:**
-- Hierarchical place structure parsing (`City, County, State, Country`)
-- Create place notes (`type: place`) with parent/child relationships
-- Duplicate detection: case-insensitive matching on `full_name` property
-- Fallback matching: title + parent combination for same-named places
-- Update existing places (add missing parent links) instead of creating duplicates
-
-**Performance:**
-- Optimized connected components analysis (O(n+m) instead of O(n×m))
-- Paginated People tab (100 at a time) for large imports
-- Progress callback throughout all import phases
-
-**Integration Points:**
-- Staging folder support (import to staging, review, then merge)
-- Property aliases (use configured property names)
-- Value aliases (map GEDCOM event types to Canvas Roots types)
-
----
 
 ### Data Enhancement Pass
 
@@ -638,44 +57,47 @@ person: "[[Person A]]"
 4. Want to retroactively create event notes from existing date fields
 
 **Planned Features:**
-
-**Generate Events from Dates:**
-- Scan person notes for `birthDate`/`deathDate` properties
-- Create corresponding event notes (`type: event`)
-- Link events to person notes
-- Handle existing events (skip duplicates)
-- Preview mode: show what would be created before committing
-
-**Generate Place Notes:**
-- Extract unique place strings from `birthPlace`, `deathPlace`, and event `place` fields
-- Create place notes with parsed hierarchy
-- Update person/event notes to use wikilinks
-- Merge with existing place notes (fuzzy matching)
-
-**Re-parse GEDCOM for Sources:**
-- Option to re-import original GEDCOM file
-- Match individuals to existing person notes by name/dates/cr_id
-- Extract `SOUR` records and create source notes
-- Link sources to matched person notes
-- Report unmatched individuals
-
-**UI:**
+- Generate Events from Dates: Scan person notes, create event notes, link to persons
+- Generate Place Notes: Extract unique place strings, create hierarchy, update wikilinks
+- Re-parse GEDCOM for Sources: Match individuals to existing notes, extract `SOUR` records
+- Preview mode before committing changes
 - New card in Import/Export tab: "Enhance existing data"
-- Checkboxes for each enhancement type
-- Dry-run preview showing counts and samples
-- Progress indicator during enhancement
-- Summary report with created/skipped/error counts
 
-**Commands:**
-- "Generate event notes from person dates"
-- "Generate place notes from place strings"
-- "Re-parse GEDCOM for sources"
+---
 
-**Safety Features:**
-- Backup reminder before running
-- Dry-run mode (preview only)
-- Skip existing entities (no duplicates)
-- Undo support via file history
+### Flexible Note Type Detection
+
+**Summary:** Support multiple methods for identifying Canvas Roots note types, avoiding conflicts with other plugins that use the `type` property.
+
+**Problem:**
+- Canvas Roots uses `type: person` to identify note types
+- Other plugins use `type` for different purposes
+- Some users prefer tags (`#person`) over frontmatter properties
+
+**Planned Features:**
+- New default property: `cr_type` (namespaced to avoid conflicts)
+- Detection priority: `cr_type` → `type` → Tags → Property alias
+- Tag-based detection: `#person`, `#place`, `#event`, `#source` (and nested tags)
+- Backwards compatibility for existing vaults
+
+---
+
+### Type Customization
+
+**Summary:** Allow users to customize the appearance of built-in types (relationship types, source types, event types, etc.) including icons, display names, and colors.
+
+**Problem:**
+- Built-in types have hardcoded icons, colors, and display names
+- Users may want terminology that matches their domain
+- Value aliases map terminology but don't allow visual customization
+
+**Planned Features:**
+- Per-type customization of display name, icon, and color
+- Support for: relationship types, event types, source types, organization types, place categories
+- Integration with tree generation, timeline, and Control Center
+
+**Future Enhancement:**
+- Full type editor to add/edit/delete types entirely
 
 ---
 
@@ -684,468 +106,97 @@ person: "[[Person A]]"
 **Summary:** Generate print-ready and PDF outputs of family trees and reports.
 
 **Export Types:**
-- **Pedigree Chart**: Ancestor-focused tree (4-5 generations per page)
-- **Descendant Chart**: Descendants of a selected person
-- **Family Group Sheet**: Single family unit with sources
-- **Full Tree Poster**: Large format for wall display
+- Pedigree Chart (ancestor-focused, 4-5 generations per page)
+- Descendant Chart
+- Family Group Sheet (single family with sources)
+- Full Tree Poster (large format)
 
 **Features:**
-- Page size presets (Letter, A4, custom, poster sizes)
+- Page size presets (Letter, A4, custom, poster)
 - Multi-page output with page breaks
-- Print preview with zoom
-- Header/footer customization (title, date, researcher name)
 - Privacy filter (exclude/anonymize living persons)
-- SVG and high-resolution PNG export for printing
+- SVG and high-resolution PNG export
 
-**Technical Approach:**
-- Leverage browser print APIs
-- SVG-based rendering for scalability
-- Optional integration with PDF libraries (jsPDF or similar)
+---
+
+### Research & Analysis Tools
+
+**Family Statistics Dashboard:**
+- Longevity analysis by generation/period
+- Geographic distribution maps
+- Most common names, occupations, places
+- Generation gap analysis
+- Marriage patterns
+
+**Research Tracking:**
+- "Needs research" tags with to-dos
+- Confidence levels: verified, probable, possible
+- Source documentation per fact
+- DNA match tracking
+
+**Dynasty Management:**
+- Line of succession calculator
+- Title/position inheritance
+- Regnal numbering
+
+---
+
+### Transcript Nodes & Oral History
+
+**Summary:** Time-stamped citations from audio/video with direct linking.
+
+**Schema:**
+```yaml
+oral_facts:
+  - media: "[[Interview with Grandma.mp3]]"
+    timestamp: "1m30s"
+    fact_type: birth_date
+    quote: "I was born on May 15th, 1922"
+```
+
+**Features:**
+- Deep links with timestamp: `[[Interview.mp3]]#t=1m30s`
+- Range support: `#t=1m30s-2m15s`
+- One-click playback from timestamp
+- Transcript nodes with speech bubble styling on canvas
+
+**Interview Subject Graph:**
+- Map relationship structure of interviews
+- Interview as central hub node
+- Edge thickness indicates mention frequency
 
 ---
 
 ## Future Considerations
 
-### Events Tab (Control Center)
-
-> **✅ Complete in v0.9.2.** See [events-tab.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/events-tab.md) for implementation details.
-
-**Summary:** Dedicated Events tab in the Control Center improves discoverability of Fictional Date Systems and provides foundation for future Chronological Story Mapping features.
-
-**What's Included:**
-- **Date systems card**: Moved from Canvas Settings with all existing functionality
-- **Statistics card**: Date coverage metrics (birth/death dates), fictional date usage breakdown
-- **Event notes card** *(future)*: Placeholder for Chronological Story Mapping Phase 1
-
----
-
-### Property Aliases ✅
-
-> **Complete in v0.9.3.** See [Settings & Configuration](Settings-And-Configuration) wiki page for configuration documentation.
-
-**Summary:** Map custom frontmatter property names to Canvas Roots fields, enabling compatibility with existing vaults and other plugins without requiring property renaming.
-
-**Implemented Features:**
-- Configure aliases in Control Center → Preferences → Property Aliases
-- Read resolution: canonical property first, then falls back to aliases
-- Write integration: imports create notes with aliased property names
-- Essential Properties UI displays aliased property names when configured
-- Bases templates generated with aliased property names
-- Full support for all person note properties (identity, dates, places, relationships)
-
-**How It Works:**
-- Configure aliases in Preferences: `birthdate → born`
-- Canvas Roots reads your property, treats it as the mapped field
-- Your frontmatter stays unchanged
-- When importing GEDCOM/CSV, new notes use your aliased property names
-
-**Supported Properties:**
-- Identity fields: `name`, `cr_id`, `gender`, `nickname`, `maiden_name`
-- Date fields: `born`, `died`
-- Location fields: `birth_place`, `death_place`
-- Relationship fields: `father`, `father_id`, `mother`, `mother_id`, `spouse`, `spouse_id`, `child`, `children_id`
-- Other fields: `occupation`, `universe`, `image`, `sourced_facts`, `relationships`
-
----
-
-### Value Aliases
-
-> See [value-aliases.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/value-aliases.md) for detailed implementation plan.
-
-**Summary:** Extend the Property Aliases feature to support custom property *values*, not just property names. This allows users with existing vaults to use custom terminology (e.g., `nameday` instead of `birth` for event types) without editing existing notes.
-
-**Planned Features:**
-- Map custom values to Canvas Roots canonical values
-- Initial support for three field types:
-  - **Event type**: `birth`, `death`, `marriage`, `burial`, `residence`, `occupation`, `education`, `military`, `immigration`, `baptism`, `confirmation`, `ordination`, `custom`
-  - **Gender**: `male`, `female` (+ case variants)
-  - **Place category**: `real`, `historical`, `disputed`, `legendary`, `mythological`, `fictional`
-- Graceful fallback: unknown event types treated as `custom`
-- Unified "Aliases" card in Preferences with property names and property values sections
-
-**Use Case:** Worldbuilders with elaborate taxonomies who don't want to retrofit existing notes to match Canvas Roots' expected values.
-
-**Status:** ✅ Complete in v0.9.4.
-
----
-
-### Flexible Note Type Detection
-
-**Summary:** Support multiple methods for identifying Canvas Roots note types (person, place, event, source, etc.), avoiding conflicts with other plugins that use the `type` property and enabling tag-based workflows.
-
-**Problem:**
-- Canvas Roots uses `type: person` to identify note types
-- Other plugins (e.g., timeline plugins) use `type` for different purposes (e.g., rendering format)
-- Some users prefer tags (`#person`) over frontmatter properties for filtering
-
-**Planned Features:**
-
-**New Default Property:**
-- Change default from `type` to `cr_type` (namespaced to avoid conflicts)
-- Existing vaults using `type` continue to work (backwards compatibility)
-
-**Detection Priority:**
-1. `cr_type` property (new canonical)
-2. `type` property (legacy, for backwards compatibility)
-3. Tags (optional, user-configured)
-4. Property alias (if user configured a custom property name)
-
-**Tag-Based Detection:**
-- Support simple tags by default: `#person`, `#place`, `#event`, `#source`
-- Recognize nested tags where the base matches: `#place/settlement` → place, `#event/story` → event
-- Optional `cr/` prefix for users who have tag conflicts (not required by default)
-- Works alongside property-based detection
-
-**Settings UI:**
-```
-Note Type Detection
-├── Type property name: [cr_type ▼]
-├── ☑ Also check legacy 'type' property
-├── ☐ Detect from tags
-│   └── Tag prefix: [(none) ▼]  # Options: (none), cr/, custom
-└── Property aliases: [Configure...]
-```
-
-**Migration Path:**
-
-| User Scenario | Behavior |
-|---------------|----------|
-| New users | Notes created with `cr_type` |
-| Existing CR users | `type` still works, can optionally migrate |
-| Users with conflicts | Switch to `cr_type` or tags |
-| Tag-based workflows | Enable tag detection, use existing tags |
-
-**Tag Examples:**
-
-| User Tag | Detected As |
-|----------|-------------|
-| `#person` | person |
-| `#place` | place |
-| `#place/settlement` | place |
-| `#event/story` | event |
-| `#era/reign` | *(not detected - no matching base)* |
-| `#cr/person` | person *(if prefix configured)* |
-
-**Integration Points:**
-- GEDCOM/CSV import uses configured property name
-- Note creation modals use configured property name
-- Bases templates reference configured property name
-- Schema validation supports all detection methods
-
-**Status:** Planned.
-
----
-
-### Type Customization
-
-**Summary:** Allow users to customize the appearance and behavior of built-in types (relationship types, source types, event types, organization types, etc.) including icons, display names, and colors.
-
-**Problem:**
-- Built-in types have hardcoded icons, colors, and display names
-- Users may want terminology that matches their domain (e.g., "handfasting" instead of "marriage")
-- Visual customization (icons, colors) would help distinguish types in the UI
-- Currently, value aliases only map terminology but don't allow visual customization
-
-**Planned Features:**
-
-**Type Override Settings:**
-- Keep all built-in types available
-- Allow per-type customization of:
-  - **Display name**: Custom label shown in UI (e.g., "Wedding" instead of "Marriage")
-  - **Icon**: Choose from available Lucide icons
-  - **Color**: Custom color for tree nodes, timeline markers, etc.
-
-**Supported Type Categories:**
-- Relationship types (parent, spouse, sibling, custom relationships)
-- Event types (birth, death, marriage, burial, etc.)
-- Source types (vital record, census, newspaper, etc.)
-- Organization types (military, religious, educational, etc.)
-- Place categories (real, historical, fictional, etc.)
-
-**Settings UI:**
-```
-Type Customization
-├── Event Types
-│   ├── birth: [Birth ▼] [🎂] [#4CAF50]
-│   ├── death: [Death ▼] [💀] [#9E9E9E]
-│   ├── marriage: [Wedding ▼] [💒] [#E91E63]
-│   └── ...
-├── Relationship Types
-│   └── ...
-└── [Reset to Defaults]
-```
-
-**Integration Points:**
-- Tree generation uses custom colors
-- Timeline uses custom icons and colors
-- Control Center displays custom names
-- Bases templates reference custom display names
-
-**Future Enhancement:**
-- Full type editor to add/edit/delete types entirely (more complex)
-- Custom type definitions with user-defined fields
-
-**Status:** Planned.
-
----
+These features are under consideration but not yet prioritized.
 
 ### Sensitive Field Redaction
 
-**Summary:** Automatically redact sensitive personal information (SSN, identity numbers) from exports, regardless of whether the person is living or deceased. Complements the existing Living Person Privacy feature.
-
-**Context:**
-- GEDCOM Import v2 adds support for sensitive fields: `ssn`, `identityNumber`
-- These fields are valuable for genealogical research (verifying identity, distinguishing people with same name)
-- However, they should never appear in shared exports (GEDCOM, CSV, Gramps)
-- Different from "living person" privacy: SSNs should be redacted even for deceased persons
-
-**Default Sensitive Fields:**
-- `ssn` (Social Security Number)
-- `identityNumber` (National ID, passport numbers, etc.)
-
-**Planned Features:**
-
-**Export Redaction:**
-- Sensitive fields excluded from all exports by default
-- Applies to: GEDCOM export, CSV export, Gramps XML export
-- No UI toggle needed - always redacted (secure by default)
-
-**Optional: Display Masking:**
-- Option to mask sensitive fields in Control Center views
-- Format: `***-**-1234` (show last 4 digits) or fully hidden
-- Setting: "Mask sensitive fields in views"
-
-**Settings UI:**
-```
-Privacy Settings
-├── Living Person Protection
-│   ├── Enable privacy protection: [✓]
-│   ├── Age threshold: [100] years
-│   └── Display format: [Living ▼]
-└── Sensitive Field Protection
-    ├── Redact from exports: [✓] (locked on)
-    └── ☐ Mask in Control Center views
-```
-
-**Technical Approach:**
-- Add `sensitiveFields` array to export services
-- Check field names against list during export serialization
-- Default list: `['ssn', 'identityNumber']`
-- Future: allow user-defined sensitive fields
-
-**Integration Points:**
-- GEDCOM exporter: skip sensitive fields
-- CSV exporter: exclude sensitive columns
-- Gramps exporter: skip sensitive attributes
-- Property aliases: respect aliases (e.g., if `ssn` aliased to `social_security`)
-
-**Status:** Planned (alongside GEDCOM Import v2).
-
----
+Automatically redact sensitive personal information (SSN, identity numbers) from exports, regardless of living/deceased status. Currently, sensitive fields imported via GEDCOM v2 are stored but should never appear in exports.
 
 ### Flatten Nested Properties
 
-> See [flatten-nested-properties.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/flatten-nested-properties.md) for detailed implementation plan.
-
-**Summary:** Add a "Flatten" action to nested property warnings in the Data Quality tab, allowing users to convert non-flat frontmatter structures to flat properties with a before/after preview.
-
-**Planned Features:**
-- Per-record "Flatten" button in Data Quality results
-- Modal with before/after YAML preview
-- Underscore-join flattening strategy (`parent_child`)
-- Collision detection with warnings
-- Support for simple nested objects and arrays of objects
-
-**Example:**
-```yaml
-# Before (nested)
-coordinates:
-  lat: 32.753177
-  long: -97.3327459
-
-# After (flattened)
-coordinates_lat: 32.753177
-coordinates_long: -97.3327459
-```
-
-**Use Case:** Users who imported data with nested YAML structures, or who have place notes with `coordinates: { lat, long }` format, can easily flatten them for better Obsidian compatibility.
-
-**Status:** Planned.
-
----
+Add a "Flatten" action to nested property warnings in Data Quality tab. Converts `coordinates: { lat, long }` to `coordinates_lat`, `coordinates_long`.
 
 ### Note Creation from Images
 
-**Summary:** Context menu actions to quickly create map or source notes from image files, pre-populating the note with a link to the image.
-
-**Context Menu Actions:**
-- **Add map note from map image** - Right-click an image file → Creates a new map note with the image embedded as the map background
-- **Add source note from source image** - Right-click an image file → Creates a new source note with the image linked as the source media
-
-**Workflow:**
-1. User right-clicks an image file (e.g., `old-map-1850.jpg` or `birth-certificate.png`)
-2. Selects the appropriate action from context menu
-3. Modal opens with name pre-filled from filename
-4. User completes remaining fields
-5. Note is created with proper frontmatter and image link
-
-**Use Case:** Researchers who have scanned documents or historical maps can quickly create properly structured notes without manually copying image paths.
-
-**Future Enhancement:** Smart filename parsing to extract metadata (year, location, document type) from structured filenames like `1930-US-Census-VT-Newport-Britch.jpg`.
-
-**Status:** Planned.
-
----
+Context menu actions to create map or source notes from image files, pre-populating with image link.
 
 ### Person Note Templates
 
-**Summary:** Pre-configured note templates for different use cases and user types.
-
-**Template Types:**
-- **Researcher Template**: Full fields including sources, confidence, research notes, citation placeholders
-- **Casual User Template**: Minimal fields (name, dates, parents, spouse, children)
-- **World-Builder Template**: Includes universe, fictional dates, organization memberships
-- **Quick Add Template**: Bare minimum for fast data entry
-
-**Features:**
-- Template picker when creating new person notes
-- Default template setting in preferences
-- Custom template creation and editing
-- Templater plugin compatibility
-
-**Integration Points:**
-- Context menu "Create person note" actions
-- Control Center quick-add buttons
-- GEDCOM/CSV import (choose template for imported notes)
-
----
+Pre-configured templates for different use cases: Researcher (full fields with sources), Casual User (minimal), World-Builder (with universe/fictional dates), Quick Add (bare minimum).
 
 ### Accessibility
 
-**Summary:** Ensure Canvas Roots is usable by people with disabilities.
-
-**Screen Reader Support:**
-- ARIA labels for all interactive elements
-- Semantic HTML structure in Control Center
-- Announce tree navigation changes
-- Describe relationship connections
-
-**Visual Accessibility:**
-- High contrast mode toggle
-- Respect system "reduce motion" preference
-- Sufficient color contrast ratios (WCAG AA)
-- Don't rely on color alone (use patterns/icons)
-
-**Keyboard Navigation:**
-- Full keyboard access to all features
-- Visible focus indicators
-- Logical tab order
-- Escape key to close modals
-
-**Testing:**
-- Screen reader testing (VoiceOver, NVDA)
-- Keyboard-only testing
-- Color blindness simulation testing
-
----
+- Screen reader support with ARIA labels
+- High contrast mode
+- Keyboard navigation
+- WCAG AA compliance
 
 ### Obsidian Publish Support
 
-**Summary:** Enable sharing family trees via Obsidian Publish for read-only web viewing.
-
-**Features:**
-- Static HTML/SVG tree generation for Publish sites
-- Privacy-aware export (automatic living person protection)
-- Clickable person nodes linking to published notes
-- Responsive design for mobile viewers
-- Optional password protection recommendation
-
-**Considerations:**
-- Canvas files aren't natively supported by Publish
-- Would require generating static image/SVG alternatives
-- Family Chart View is JavaScript-dependent (won't work on Publish)
-- Focus on static pedigree/descendant chart images
-
-**Integration:**
-- "Export for Publish" command
-- Automatic image regeneration on tree changes
-- Embed code for published pages
-
----
-
-### Style Settings Integration ✅
-
-> **Complete in v0.9.1.** See [Styling & Theming](Styling-And-Theming) wiki page for full documentation.
-
-**Summary:** Canvas Roots styling options exposed via the [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) plugin, allowing users to customize colors without editing CSS.
-
-**Implemented Features:**
-
-**Family Chart View Colors:**
-- Female card color (default: `rgb(196, 138, 146)`)
-- Male card color (default: `rgb(120, 159, 172)`)
-- Unknown gender card color (default: `rgb(211, 211, 211)`)
-- Chart background (light theme): `rgb(250, 250, 250)`
-- Chart background (dark theme): `rgb(33, 33, 33)`
-- Card text color (light theme): `#333333`
-- Card text color (dark theme): `#ffffff`
-
-**Evidence Visualization Colors:**
-- Primary source color (default: `#22c55e` green)
-- Secondary source color (default: `#f59e0b` amber)
-- Derivative source color (default: `#ef4444` red)
-- Well-researched coverage color (≥75%, default: green)
-- Moderate coverage color (50-74%, default: amber)
-- Needs research color (<50%, default: red)
-
-**Canvas Node Dimensions:**
-- Info panel directing users to plugin settings (Settings → Canvas Roots → Canvas Output)
-- Node dimensions are not CSS-controlled; they're written directly to canvas JSON
-
-**Not Implemented:**
-- Spacing variables (internal layout; could break UI)
-- Transition timing (edge case)
-- Map view styling (Leaflet has its own theming)
-
----
-
-### Events System Foundation
-
-> **Implemented in v0.6.0** as part of Geographic Features. This general-purpose life events system provides infrastructure for future timeline and research features.
-
-**Current Implementation:**
-- `events` array in person frontmatter with `event_type`, `place`, `date_from`, `date_to`, `description`
-- TypeScript types: `LifeEvent`, `EventType`, `JourneyWaypoint`, `JourneyPath` in [map-types.ts](../src/maps/types/map-types.ts)
-- Event parsing in `MapDataService.buildMarkers()` and `buildJourneyPaths()`
-- Import/export support: GEDCOM (RESI, OCCU, EDUC, MILI), GEDCOM X (facts), Gramps XML, CSV
-
-**Future Extensions Enabled:**
-- Timeline views (non-geographic chronological display)
-- Event-based Bases queries ("all military service events")
-- Event notes as first-class entities (like place notes)
-- Chronological Story Mapping (see [Evidence & Source Management](#chronological-story-mapping))
-- Person Timeline view (all events for one person)
-- Family Timeline view (interleaved family events)
-
----
-
-**Advanced Features:**
-- Alternative parent relationships (adoption, foster, step-parents)
-- Unknown parent handling with placeholder nodes
-- Flexible date formats (circa, ranges)
-- Child ordering within families
-- Relationship quality visualization (close, distant, estranged)
-- Medical genogram support
-
-**Integration:**
-- DataView template library
-- Advanced Canvas plugin integration
-- Multi-vault merging
-
-**Performance:**
-- Large tree optimization (1000+ people)
-- Incremental layout updates
-- Lazy loading for large views
+Static HTML/SVG tree generation for Publish sites with privacy-aware export.
 
 ---
 
@@ -1162,21 +213,7 @@ See [known-limitations.md](known-limitations.md) for complete details.
 
 ### Context Menu Submenu Behavior
 
-**Issue:** On desktop, after hovering over a submenu to reveal its contents, hovering over a different submenu doesn't dismiss the first one. The first submenu remains "sticky" until clicked elsewhere.
-
-**Cause:** This is a limitation of Obsidian's native `Menu` API. The `setSubmenu()` method creates native Obsidian submenus, and plugins have no control over their hover/dismiss behavior.
-
-**Potential Solutions (to be evaluated):**
-
-1. **Flatten menu structure** - Remove submenus for items with only 2 options (e.g., "Generate Canvas tree" and "Generate Excalidraw tree" as separate items instead of a "Generate tree" submenu). Keeps submenus only for longer lists (4+ items).
-
-2. **Replace with modal dialogs** - Convert submenu actions to open modal pickers on click, similar to "More options...". More clicks but predictable behavior.
-
-3. **Custom menu component** - Build a fully custom menu system with proper hover behavior. Significant development effort and wouldn't integrate with native right-click.
-
-4. **Upstream feature request** - Request improved submenu behavior from Obsidian team.
-
-**Status:** Deferred - will select approach based on user feedback and Obsidian API evolution.
+On desktop, submenus don't dismiss when hovering over a different submenu. This is a limitation of Obsidian's native `Menu` API. Potential solutions (flattening menus, modal dialogs, custom menu component) are under consideration based on user feedback.
 
 ---
 
