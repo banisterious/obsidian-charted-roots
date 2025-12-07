@@ -546,10 +546,10 @@ For users with existing exports:
 ## Related Documentation
 
 - [GEDCOM Import v2](gedcom-import-v2.md) - Import side implementation
-- [Events & Timelines](../../wiki-content/Events-And-Timelines.md)
-- [Evidence & Sources](../../wiki-content/Evidence-And-Sources.md)
-- [Geographic Features](../../wiki-content/Geographic-Features.md)
-- [Privacy & Security](../../wiki-content/Privacy-And-Security.md)
+- [Events & Timelines](https://github.com/banisterious/obsidian-canvas-roots/wiki/Events-And-Timelines)
+- [Evidence & Sources](https://github.com/banisterious/obsidian-canvas-roots/wiki/Evidence-And-Sources)
+- [Geographic Features](https://github.com/banisterious/obsidian-canvas-roots/wiki/Geographic-Features)
+- [Privacy & Security](https://github.com/banisterious/obsidian-canvas-roots/wiki/Privacy-And-Security)
 
 ## References
 

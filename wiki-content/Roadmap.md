@@ -8,6 +8,7 @@ This document outlines planned features for Canvas Roots. For completed features
 
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
+  - [Export v2: Full Entity Export](#export-v2-full-entity-export)
   - [Data Enhancement Pass](#data-enhancement-pass)
   - [Type Customization](#type-customization)
   - [Print & PDF Export](#print--pdf-export)
@@ -46,6 +47,32 @@ For detailed implementation documentation of completed features, see [Release Hi
 ---
 
 ## Planned Features
+
+### Export v2: Full Entity Export
+
+**Summary:** Enhanced export functionality that includes events, sources, and places in addition to person notes. Ensures round-trip fidelity with GEDCOM Import v2.
+
+**Current Limitation:** All four exporters (GEDCOM 5.5.1, GEDCOM X, Gramps XML, CSV) only export person notes. Event notes, source notes, and place notes created by Import v2 are lost on export.
+
+**Planned Features:**
+- **Event Export:** Export all event notes linked to persons (30+ event types)
+- **Source Export:** Export source notes with citations linked to events
+- **Place Export:** Export place hierarchy with coordinates
+- **Format-specific mappings:** GEDCOM tags, GEDCOM X facts, Gramps XML events
+- **Sensitive field redaction:** SSN and identity numbers automatically removed
+- **UI enhancements:** Checkboxes to include/exclude entity types
+
+**Supported Formats:**
+| Format | Events | Sources | Places |
+|--------|--------|---------|--------|
+| GEDCOM 5.5.1 | ✅ inline tags | ✅ SOUR records | ✅ PLAC hierarchy |
+| GEDCOM X | ✅ person facts | ✅ sourceDescriptions | ✅ placeDescriptions |
+| Gramps XML | ✅ event records | ✅ source records | ✅ placeobj records |
+| CSV | ✅ event rows | ✅ source rows | ✅ place rows |
+
+See [Export v2 Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/export-v2.md) for implementation details.
+
+---
 
 ### Data Enhancement Pass
 
