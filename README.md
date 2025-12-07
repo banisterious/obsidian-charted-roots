@@ -129,12 +129,13 @@
 
 See [Roadmap](https://github.com/banisterious/obsidian-canvas-roots/wiki/Roadmap) for detailed descriptions and development priorities.
 
-### Coming Soon
-
-| Feature | Description |
-|---------|-------------|
-| [**Print & PDF Export**](https://github.com/banisterious/obsidian-canvas-roots/wiki/Roadmap#print--pdf-export) | Generate print-ready pedigree charts, descendant charts, and family group sheets |
-| [**Transcript Nodes & Oral History**](https://github.com/banisterious/obsidian-canvas-roots/wiki/Roadmap#transcript-nodes--quotable-facts) | Timestamped transcript citations and interview subject graphs |
+| Priority | Feature | Description |
+|:--------:|---------|-------------|
+| ⚡ High | [**Export v2: Full Entity Export**](https://github.com/banisterious/obsidian-canvas-roots/wiki/Roadmap#export-v2-full-entity-export) | Export events, sources, places, and media; GEDCOM 7.0 support; bundled ZIP with media |
+| ⚡ High | [**Data Enhancement Pass**](https://github.com/banisterious/obsidian-canvas-roots/wiki/Roadmap#data-enhancement-pass) | Upgrade existing vaults by generating missing event, source, and place notes |
+| 📋 Medium | [**Print & PDF Export**](https://github.com/banisterious/obsidian-canvas-roots/wiki/Roadmap#print--pdf-export) | Generate print-ready pedigree charts, descendant charts, and family group sheets |
+| 📋 Medium | [**Research & Analysis Tools**](https://github.com/banisterious/obsidian-canvas-roots/wiki/Roadmap#research--analysis-tools) | Family statistics dashboard, research tracking, dynasty management |
+| 💡 Low | [**Transcript Nodes & Oral History**](https://github.com/banisterious/obsidian-canvas-roots/wiki/Roadmap#transcript-nodes--oral-history) | Timestamped transcript citations and interview subject graphs |
 
 ---
 
