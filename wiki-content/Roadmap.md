@@ -74,6 +74,7 @@ Features are prioritized to complete the data lifecycle: **import â†’ enhance â†
 - **Format-specific mappings:** GEDCOM tags, GEDCOM X facts, Gramps XML events
 - **Sensitive field redaction:** SSN and identity numbers automatically removed
 - **UI enhancements:** Checkboxes to include/exclude entity types and media options
+- **Enhanced export experience:** Progress modal with real-time feedback, export preview with entity counts, and export history tracking
 
 **Supported Formats:**
 | Format | Events | Sources | Places | Media |
