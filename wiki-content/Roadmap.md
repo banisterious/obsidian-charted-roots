@@ -8,12 +8,11 @@ This document outlines planned features for Canvas Roots. For completed features
 
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
-  - [Export v2: Full Entity Export](#export-v2-full-entity-export)
-  - [Data Enhancement Pass](#data-enhancement-pass)
-  - [Type Customization](#type-customization)
-  - [Print & PDF Export](#print--pdf-export)
-  - [Research & Analysis Tools](#research--analysis-tools)
-  - [Transcript Nodes & Oral History](#transcript-nodes--oral-history)
+  - [Export v2: Full Entity Export](#export-v2-full-entity-export) ⚡ High
+  - [Data Enhancement Pass](#data-enhancement-pass) ⚡ High
+  - [Print & PDF Export](#print--pdf-export) 📋 Medium
+  - [Research & Analysis Tools](#research--analysis-tools) 📋 Medium
+  - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
 - [Future Considerations](#future-considerations)
 - [Known Limitations](#known-limitations)
 - [Contributing](#contributing)
@@ -48,7 +47,19 @@ For detailed implementation documentation of completed features, see [Release Hi
 
 ## Planned Features
 
+Features are prioritized to complete the data lifecycle: **import → enhance → export/share**.
+
+| Priority | Label | Description |
+|----------|-------|-------------|
+| ⚡ High | Core workflow | Completes essential data portability |
+| 📋 Medium | User value | Highly requested sharing/output features |
+| 💡 Low | Specialized | Advanced use cases, niche workflows |
+
+---
+
 ### Export v2: Full Entity Export
+
+**Priority:** ⚡ High — Completes import/export round-trip with GEDCOM Import v2
 
 **Summary:** Enhanced export functionality that includes events, sources, places, and media in addition to person notes. Ensures round-trip fidelity with GEDCOM Import v2 and enables complete data portability.
 
@@ -79,6 +90,8 @@ See [Export v2 Planning Document](https://github.com/banisterious/obsidian-canva
 
 ### Data Enhancement Pass
 
+**Priority:** ⚡ High — Enables existing users to benefit from new entity types
+
 **Summary:** Upgrade existing vaults by creating missing linked entities from person note data. For users who imported GEDCOM before sources, events, and places were supported.
 
 **Use Cases:**
@@ -98,6 +111,8 @@ See [Export v2 Planning Document](https://github.com/banisterious/obsidian-canva
 
 ### Print & PDF Export
 
+**Priority:** 📋 Medium — Tangible output for sharing with family members
+
 **Summary:** Generate print-ready and PDF outputs of family trees and reports.
 
 **Export Types:**
@@ -115,6 +130,8 @@ See [Export v2 Planning Document](https://github.com/banisterious/obsidian-canva
 ---
 
 ### Research & Analysis Tools
+
+**Priority:** 📋 Medium — Analytics and tracking for serious researchers
 
 **Family Statistics Dashboard:**
 - Longevity analysis by generation/period
@@ -137,6 +154,8 @@ See [Export v2 Planning Document](https://github.com/banisterious/obsidian-canva
 ---
 
 ### Transcript Nodes & Oral History
+
+**Priority:** 💡 Low — Specialized for oral history researchers
 
 **Summary:** Time-stamped citations from audio/video with direct linking.
 
