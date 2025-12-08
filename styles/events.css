@@ -403,6 +403,36 @@
   white-space: nowrap;
 }
 
+.crc-timeline-th--actions {
+  width: 50px;
+}
+
+.crc-timeline-cell-actions {
+  text-align: right;
+  white-space: nowrap;
+  width: 50px;
+}
+
+.crc-timeline-open-btn {
+  padding: 4px;
+  border-radius: var(--radius-s);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    color 150ms ease,
+    background 150ms ease;
+}
+
+.crc-timeline-open-btn:hover {
+  color: var(--text-accent);
+  background: var(--background-modifier-hover);
+}
+
 /* Event type badge */
 .crc-event-type-badge {
   display: inline-flex;

@@ -3,6 +3,33 @@
  * Organization notes UI in Control Center
  */
 
+/* ==========================================================================
+   Organization Controls (Filter/Sort)
+   ========================================================================== */
+
+.crc-org-controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.crc-org-controls .crc-filter-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0;
+}
+
+.crc-org-table-container {
+  margin-top: 8px;
+}
+
+/* ==========================================================================
+   Organizations Table
+   ========================================================================== */
+
 /* Organizations table */
 .cr-org-table {
   width: 100%;
@@ -51,6 +78,16 @@
 .cr-org-cell-members {
   text-align: center;
   color: var(--text-muted);
+}
+
+.cr-org-th-actions {
+  width: 50px;
+}
+
+.cr-org-cell-actions {
+  text-align: right;
+  white-space: nowrap;
+  width: 50px;
 }
 
 /* Type badge */

@@ -16,6 +16,7 @@ import { getEventType, getAllEventTypes } from '../../events/types/event-types';
 import { TimelineCanvasExporter, TimelineColorScheme, TimelineLayoutStyle } from '../../events/services/timeline-canvas-exporter';
 import { computeSortOrder } from '../../events/services/sort-order-service';
 import { renderEventTypeManagerCard } from '../../events/ui/event-type-manager-card';
+import { isEventNote, isPersonNote } from '../../utils/note-type-detection';
 
 /**
  * Render the Events tab content
@@ -359,6 +360,15 @@ function renderEventTable(
 		return;
 	}
 
+	// Hint text above table
+	const hint = container.createEl('p', { cls: 'crc-text-muted crc-text-small crc-mb-2' });
+	hint.appendText('Click a row to edit. ');
+	const fileIconHint = createLucideIcon('file-text', 12);
+	fileIconHint.style.display = 'inline';
+	fileIconHint.style.verticalAlign = 'middle';
+	hint.appendChild(fileIconHint);
+	hint.appendText(' opens the note.');
+
 	const table = container.createEl('table', { cls: 'crc-timeline-table' });
 
 	// Header
@@ -369,16 +379,34 @@ function renderEventTable(
 	headerRow.createEl('th', { text: 'Type' });
 	headerRow.createEl('th', { text: 'Person' });
 	headerRow.createEl('th', { text: 'Place' });
+	headerRow.createEl('th', { text: '', cls: 'crc-timeline-th--actions' });
 
 	// Body
 	const tbody = table.createEl('tbody');
 
+	const eventService = plugin.getEventService();
+
 	for (const event of events) {
 		const row = tbody.createEl('tr', { cls: 'crc-timeline-row' });
 
-		// Make row clickable
+		// Click row to open edit modal
 		row.addEventListener('click', () => {
-			void plugin.app.workspace.getLeaf(false).openFile(event.file);
+			if (eventService) {
+				const modal = new CreateEventModal(
+					plugin.app,
+					eventService,
+					plugin.settings,
+					{
+						editEvent: event,
+						editFile: event.file,
+						onUpdated: () => {
+							// Refresh the table
+							renderEventTable(container, events, plugin);
+						}
+					}
+				);
+				modal.open();
+			}
 		});
 
 		// Context menu
@@ -471,6 +499,19 @@ function renderEventTable(
 		} else {
 			placeCell.createEl('span', { text: '—', cls: 'crc-text-muted' });
 		}
+
+		// Actions cell with open note button
+		const actionsCell = row.createEl('td', { cls: 'crc-timeline-cell-actions' });
+		const openBtn = actionsCell.createEl('button', {
+			cls: 'crc-timeline-open-btn clickable-icon',
+			attr: { 'aria-label': 'Open note' }
+		});
+		const fileIcon = createLucideIcon('file-text', 14);
+		openBtn.appendChild(fileIcon);
+		openBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			void plugin.app.workspace.getLeaf(false).openFile(event.file);
+		});
 	}
 
 	// Show count
@@ -939,8 +980,8 @@ function calculateEventStatistics(plugin: CanvasRootsPlugin): EventStatistics {
 
 		if (!frontmatter) continue;
 
-		// Check if this is an event note
-		if (frontmatter.type !== 'event') continue;
+		// Check if this is an event note (supports cr_type, type, and tags)
+		if (!isEventNote(frontmatter, cache, plugin.settings.noteTypeDetection)) continue;
 
 		stats.totalEvents++;
 
@@ -1073,8 +1114,8 @@ function calculateDateStatistics(plugin: CanvasRootsPlugin): DateStatistics {
 
 		if (!frontmatter) continue;
 
-		// Check if this is a person note
-		if (frontmatter.type !== 'person') continue;
+		// Check if this is a person note (supports cr_type, type, tags, and cr_id fallback)
+		if (!isPersonNote(frontmatter, cache, plugin.settings.noteTypeDetection)) continue;
 
 		stats.totalPersons++;
 

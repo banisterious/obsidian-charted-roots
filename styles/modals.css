@@ -773,6 +773,10 @@
   color: var(--color-red);
 }
 
+.crc-text-small {
+  font-size: 12px;
+}
+
 .crc-mt-2 {
   margin-top: 8px;
 }
@@ -3245,6 +3249,134 @@
 }
 
 /* ==========================================================================
+   PERSON CONTROLS (Control Center People tab)
+   ========================================================================== */
+
+.crc-person-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.crc-person-controls .crc-filter-input {
+  flex: 1;
+  min-width: 150px;
+}
+
+.crc-person-select {
+  padding: 6px 8px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.crc-person-select:hover {
+  border-color: var(--background-modifier-border-hover);
+}
+
+.crc-person-select:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+}
+
+/* ==========================================================================
+   PERSON TABLE (Control Center People tab)
+   ========================================================================== */
+
+.crc-person-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.crc-person-table__th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  white-space: nowrap;
+}
+
+.crc-person-table__th--icon {
+  width: 40px;
+  text-align: center;
+}
+
+.crc-person-table__row {
+  transition: background 150ms ease;
+  cursor: pointer;
+}
+
+.crc-person-table__row:hover {
+  background: var(--background-modifier-hover);
+}
+
+.crc-person-table__td {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--background-modifier-border-focus);
+  vertical-align: middle;
+}
+
+.crc-person-table__td--name {
+  font-weight: 500;
+}
+
+.crc-person-table__name-link {
+  cursor: pointer;
+  color: var(--text-normal);
+}
+
+.crc-person-table__name-link:hover {
+  color: var(--text-accent);
+  text-decoration: underline;
+}
+
+.crc-person-table__td--date {
+  color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.crc-person-table__td--badge {
+  text-align: center;
+  width: 40px;
+}
+
+.crc-person-table__td--actions {
+  text-align: right;
+  white-space: nowrap;
+  width: 80px;
+}
+
+.crc-person-table__open-btn {
+  padding: 4px;
+  border-radius: var(--radius-s);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    color 150ms ease,
+    background 150ms ease;
+}
+
+.crc-person-table__open-btn:hover {
+  color: var(--text-accent);
+  background: var(--background-modifier-hover);
+}
+
+/* ==========================================================================
    PLACE LIST EDIT BUTTON
    ========================================================================== */
 
@@ -3262,6 +3394,141 @@
 
 .crc-place-edit-btn.clickable-icon:hover {
   color: var(--text-normal);
+}
+
+/* ==========================================================================
+   PLACES TAB - Place Notes Table
+   ========================================================================== */
+
+.crc-place-controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.crc-place-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-ui-small);
+}
+
+.crc-place-table th {
+  text-align: left;
+  font-weight: var(--font-semibold);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.crc-place-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--background-modifier-border-hover);
+  vertical-align: middle;
+}
+
+.crc-place-row {
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.crc-place-row:hover {
+  background: var(--background-modifier-hover);
+}
+
+.crc-place-th--actions {
+  width: 50px;
+}
+
+.crc-place-cell-name {
+  font-weight: var(--font-medium);
+}
+
+.crc-place-cell-category {
+  white-space: nowrap;
+}
+
+.crc-place-cell-type {
+  color: var(--text-muted);
+}
+
+.crc-place-cell-people {
+  text-align: center;
+  width: 60px;
+}
+
+.crc-place-cell-actions {
+  text-align: right;
+  white-space: nowrap;
+  width: 50px;
+}
+
+.crc-place-open-btn {
+  padding: 4px;
+  border-radius: var(--radius-s);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    color 150ms ease,
+    background 150ms ease;
+}
+
+.crc-place-open-btn:hover {
+  color: var(--text-accent);
+  background: var(--background-modifier-hover);
+}
+
+/* Category badges */
+.crc-category-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-medium);
+}
+
+.crc-category-badge--real {
+  background: var(--color-green-bg);
+  color: var(--color-green);
+}
+
+.crc-category-badge--historical {
+  background: var(--color-orange-bg);
+  color: var(--color-orange);
+}
+
+.crc-category-badge--disputed {
+  background: var(--color-yellow-bg);
+  color: var(--color-yellow);
+}
+
+.crc-category-badge--legendary {
+  background: var(--color-purple-bg);
+  color: var(--color-purple);
+}
+
+.crc-category-badge--mythological {
+  background: var(--color-blue-bg);
+  color: var(--color-blue);
+}
+
+.crc-category-badge--fictional {
+  background: var(--color-pink-bg);
+  color: var(--color-pink);
+}
+
+.crc-place-table-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* ==========================================================================

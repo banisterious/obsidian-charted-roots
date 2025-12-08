@@ -3,6 +3,33 @@
  * Source notes UI in Control Center
  */
 
+/* ==========================================================================
+   Source Controls (Filter/Sort)
+   ========================================================================== */
+
+.crc-source-controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.crc-source-controls .crc-filter-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0;
+}
+
+.crc-source-table-container {
+  margin-top: 8px;
+}
+
+/* ==========================================================================
+   Sources Table
+   ========================================================================== */
+
 /* Sources table */
 .cr-source-table {
   width: 100%;
@@ -987,6 +1014,11 @@
 .crc-person-list-badge--coverage-low {
   background-color: var(--background-modifier-error);
   color: var(--text-error);
+}
+
+.crc-person-list-badge--unlinked {
+  background-color: rgba(var(--color-pink-rgb), 0.15);
+  color: var(--color-pink);
 }
 
 .crc-person-list-badge:hover {

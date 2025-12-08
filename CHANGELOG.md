@@ -7,6 +7,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.10.9] - 2025-12-07
+
+Control Center improvements for large vaults.
+
+### Added
+
+- **Status Tab: Events and Sources Cards**: New cards showing event and source note statistics
+  - Events card displays total count and breakdown by event type
+  - Sources card displays total count and breakdown by source type
+
+- **Custom Maps Card Description**: Clarifies that the built-in interactive map handles most real-world genealogy, with custom maps for historical maps, cemetery plots, land surveys, or fictional worlds
+
+- **Person Notes Table**: Replaced alphabetical letter-grouped list with a compact table format
+  - Columns: Name, Born, Died, and actions
+  - Click any row to open the person edit modal
+  - File icon button opens the note directly; badge icon creates missing place notes
+  - Explanatory hint above table describes interactions
+  - Filter dropdown: All people, Has dates, Missing dates, Unlinked places, Living
+  - Sort dropdown: Name (A–Z/Z–A), Birth (oldest/newest), Death (oldest/newest)
+  - Pagination with "Load more" button for large lists
+
+- **Events Tab: Timeline Table Editing**: Click-to-edit events directly from the Timeline card
+  - Click any row to open the event edit modal
+  - File icon button opens the note directly
+  - Explanatory hint above table describes interactions
+  - Context menu still available for additional options (open in new tab, delete)
+
+- **Places Tab: Place Notes Table**: Replaced category-grouped list with a compact table format
+  - Columns: Name, Category, Type, People, and actions
+  - Click any row to open the place edit modal
+  - File icon button opens the note directly
+  - Explanatory hint above table describes interactions
+  - Filter dropdown: All places, by category (Real, Historical, etc.), Has/No coordinates
+  - Sort dropdown: Name (A–Z/Z–A), People count (most/least), Category, Type
+  - Pagination with "Load more" button for large lists
+  - Color-coded category badges for quick visual identification
+
+- **Sources Tab: Filter, Sort, and Open Note Button**: Enhanced sources table with filtering and sorting
+  - Filter dropdown: All sources, by type (grouped), by confidence (High/Medium/Low), Has/No media
+  - Sort dropdown: Title (A–Z/Z–A), Date (newest/oldest), Type, Confidence
+  - Open note button added to actions column next to existing Extract events button
+  - Pagination with "Load more" button for large lists
+
+- **Organizations Tab: Filter, Sort, and Click-to-Edit**: Enhanced organizations table with filtering, sorting, and edit modal
+  - Filter dropdown: All organizations, by type (grouped), Has/No members
+  - Sort dropdown: Name (A–Z/Z–A), Type, Members (most/least), Universe
+  - Click any row to open the organization edit modal
+  - Open note button in actions column (file icon)
+  - Explanatory hint above table describes interactions
+  - Pagination with "Load more" button for large lists
+
+- **Maps Tab: World Map Preview**: Interactive Leaflet world map preview in Control Center
+  - Shows real world geography using OpenStreetMap tiles
+  - Displays place markers at their geographic coordinates
+  - Shows count of places with coordinates
+  - Click anywhere on the map to open the full interactive map view
+
+### Fixed
+
+- **Person Notes Listing Sources/Events**: Fixed issue where source and event notes appeared in the People tab's person list
+  - Root cause: Notes with `cr_id` were included regardless of `cr_type`
+  - Now properly filters out notes with `cr_type: source` or `cr_type: event`
+  - Also fixed in vault statistics to ensure accurate person count
+
+- **Events Tab Statistics Not Detecting cr_type Notes**: Fixed "Event notes" and "Statistics" cards showing zero counts when notes use `cr_type: event` or `cr_type: person` instead of `type`
+  - Root cause: `calculateEventStatistics()` and `calculateDateStatistics()` used hardcoded `type` property check
+  - Now uses flexible note type detection (`isEventNote`, `isPersonNote`) supporting `cr_type`, `type`, and tags
+
+---
+
 ## [0.10.8] - 2025-12-07
 
 Completes the `cr_type` migration started in v0.10.2.

@@ -1,21 +1,36 @@
 /**
  * Create Organization Modal
  *
- * Modal for creating new organization notes with proper frontmatter.
+ * Modal for creating or editing organization notes with proper frontmatter.
  */
 
-import { App, Modal, Setting, Notice } from 'obsidian';
+import { App, Modal, Setting, Notice, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
-import type { OrganizationType } from '../types/organization-types';
+import type { OrganizationType, OrganizationInfo } from '../types/organization-types';
 import { DEFAULT_ORGANIZATION_TYPES } from '../constants/organization-types';
 import { OrganizationService } from '../services/organization-service';
 
 /**
- * Modal for creating a new organization note
+ * Options for the CreateOrganizationModal
+ */
+export interface CreateOrganizationModalOptions {
+	onSuccess: () => void;
+	/** For edit mode: the organization to edit */
+	editOrg?: OrganizationInfo;
+	/** For edit mode: the file to update */
+	editFile?: TFile;
+}
+
+/**
+ * Modal for creating or editing organization notes
  */
 export class CreateOrganizationModal extends Modal {
 	private plugin: CanvasRootsPlugin;
 	private onSuccess: () => void;
+
+	// Edit mode properties
+	private editMode: boolean = false;
+	private editingFile?: TFile;
 
 	// Form fields
 	private name: string = '';
@@ -27,10 +42,31 @@ export class CreateOrganizationModal extends Modal {
 	private seat: string = '';
 	private folder: string;
 
-	constructor(app: App, plugin: CanvasRootsPlugin, onSuccess: () => void) {
+	constructor(app: App, plugin: CanvasRootsPlugin, options: CreateOrganizationModalOptions | (() => void)) {
 		super(app);
 		this.plugin = plugin;
-		this.onSuccess = onSuccess;
+
+		// Support both old signature (callback) and new signature (options object)
+		if (typeof options === 'function') {
+			this.onSuccess = options;
+		} else {
+			this.onSuccess = options.onSuccess;
+
+			// Check for edit mode
+			if (options.editOrg && options.editFile) {
+				this.editMode = true;
+				this.editingFile = options.editFile;
+				// Populate form fields from existing organization
+				this.name = options.editOrg.name;
+				this.orgType = options.editOrg.orgType;
+				this.parentOrg = options.editOrg.parentOrgLink || '';
+				this.universe = options.editOrg.universe || '';
+				this.founded = options.editOrg.founded || '';
+				this.motto = options.editOrg.motto || '';
+				this.seat = options.editOrg.seat || '';
+			}
+		}
+
 		this.folder = plugin.settings.organizationsFolder;
 	}
 
@@ -39,7 +75,7 @@ export class CreateOrganizationModal extends Modal {
 		contentEl.empty();
 		contentEl.addClass('cr-create-org-modal');
 
-		contentEl.createEl('h2', { text: 'Create organization' });
+		contentEl.createEl('h2', { text: this.editMode ? 'Edit organization' : 'Create organization' });
 
 		// Name
 		new Setting(contentEl)
@@ -111,14 +147,16 @@ export class CreateOrganizationModal extends Modal {
 				.setValue(this.seat)
 				.onChange(value => this.seat = value));
 
-		// Folder
-		new Setting(detailsEl)
-			.setName('Folder')
-			.setDesc('Folder to create the note in')
-			.addText(text => text
-				.setPlaceholder('Canvas Roots/Organizations')
-				.setValue(this.folder)
-				.onChange(value => this.folder = value));
+		// Folder (only in create mode)
+		if (!this.editMode) {
+			new Setting(detailsEl)
+				.setName('Folder')
+				.setDesc('Folder to create the note in')
+				.addText(text => text
+					.setPlaceholder('Canvas Roots/Organizations')
+					.setValue(this.folder)
+					.onChange(value => this.folder = value));
+		}
 
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'cr-modal-buttons' });
@@ -126,8 +164,17 @@ export class CreateOrganizationModal extends Modal {
 		const cancelBtn = buttonContainer.createEl('button', { text: 'Cancel' });
 		cancelBtn.addEventListener('click', () => this.close());
 
-		const createBtn = buttonContainer.createEl('button', { text: 'Create', cls: 'mod-cta' });
-		createBtn.addEventListener('click', () => void this.createOrganization());
+		const submitBtn = buttonContainer.createEl('button', {
+			text: this.editMode ? 'Save' : 'Create',
+			cls: 'mod-cta'
+		});
+		submitBtn.addEventListener('click', () => {
+			if (this.editMode) {
+				void this.updateOrganization();
+			} else {
+				void this.createOrganization();
+			}
+		});
 	}
 
 	onClose() {
@@ -156,6 +203,36 @@ export class CreateOrganizationModal extends Modal {
 			this.onSuccess();
 		} catch (error) {
 			new Notice(`Failed to create organization: ${error}`);
+		}
+	}
+
+	private async updateOrganization(): Promise<void> {
+		if (!this.name.trim()) {
+			new Notice('Please enter an organization name');
+			return;
+		}
+
+		if (!this.editingFile) {
+			new Notice('No file to update');
+			return;
+		}
+
+		try {
+			const orgService = new OrganizationService(this.plugin);
+			await orgService.updateOrganization(this.editingFile, {
+				name: this.name.trim(),
+				orgType: this.orgType,
+				parentOrg: this.parentOrg.trim() || undefined,
+				universe: this.universe.trim() || undefined,
+				founded: this.founded.trim() || undefined,
+				motto: this.motto.trim() || undefined,
+				seat: this.seat.trim() || undefined
+			});
+
+			this.close();
+			this.onSuccess();
+		} catch (error) {
+			new Notice(`Failed to update organization: ${error}`);
 		}
 	}
 }

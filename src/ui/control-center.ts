@@ -37,6 +37,7 @@ import { PlaceNetworkModal } from './place-network-modal';
 import { TemplateSnippetsModal } from './template-snippets-modal';
 import { CreatePersonModal } from './create-person-modal';
 import { CreateMapModal } from './create-map-modal';
+import { renderWorldMapPreview } from '../maps/ui/world-map-preview';
 import { CreateSchemaModal } from './create-schema-modal';
 import { SchemaService, ValidationService } from '../schemas';
 import type { SchemaNote, ValidationResult, ValidationSummary } from '../schemas';
@@ -855,6 +856,11 @@ export class ControlCenterModal extends Modal {
 		});
 		const mapsContent = mapsCard.querySelector('.crc-card__content') as HTMLElement;
 
+		mapsContent.createEl('p', {
+			text: 'The built-in interactive map handles most real-world genealogy. Custom maps are for historical maps, cemetery plots, land surveys, or fictional worlds.',
+			cls: 'crc-text-muted crc-mb-2'
+		});
+
 		this.createStatRow(mapsContent, 'Total custom maps', stats.maps.totalMaps);
 
 		if (stats.maps.universes.length > 0) {
@@ -867,6 +873,60 @@ export class ControlCenterModal extends Modal {
 		}
 
 		container.appendChild(mapsCard);
+
+		// Events Card
+		const eventsCard = this.createCard({
+			title: 'Events',
+			icon: 'calendar'
+		});
+		const eventsContent = eventsCard.querySelector('.crc-card__content') as HTMLElement;
+
+		this.createStatRow(eventsContent, 'Total events', stats.events.totalEvents);
+
+		// Show event type breakdown if there are events
+		if (stats.events.totalEvents > 0) {
+			const eventTypes = Object.entries(stats.events.byType)
+				.sort(([, a], [, b]) => b - a)
+				.slice(0, 5); // Top 5 types
+
+			if (eventTypes.length > 0) {
+				const typeLabel = eventsContent.createDiv({ cls: 'crc-stat-row crc-mt-2' });
+				typeLabel.createDiv({ cls: 'crc-stat-label crc-text-muted', text: 'By type:' });
+
+				for (const [eventType, count] of eventTypes) {
+					this.createStatRow(eventsContent, `  ${eventType}`, count, 'crc-text-muted');
+				}
+			}
+		}
+
+		container.appendChild(eventsCard);
+
+		// Sources Card
+		const sourcesCard = this.createCard({
+			title: 'Sources',
+			icon: 'book-open'
+		});
+		const sourcesContent = sourcesCard.querySelector('.crc-card__content') as HTMLElement;
+
+		this.createStatRow(sourcesContent, 'Total sources', stats.sources.totalSources);
+
+		// Show source type breakdown if there are sources
+		if (stats.sources.totalSources > 0) {
+			const sourceTypes = Object.entries(stats.sources.byType)
+				.sort(([, a], [, b]) => b - a)
+				.slice(0, 5); // Top 5 types
+
+			if (sourceTypes.length > 0) {
+				const typeLabel = sourcesContent.createDiv({ cls: 'crc-stat-row crc-mt-2' });
+				typeLabel.createDiv({ cls: 'crc-stat-label crc-text-muted', text: 'By type:' });
+
+				for (const [sourceType, count] of sourceTypes) {
+					this.createStatRow(sourcesContent, `  ${sourceType}`, count, 'crc-text-muted');
+				}
+			}
+		}
+
+		container.appendChild(sourcesCard);
 
 		// Canvases Card
 		const canvasesCard = this.createCard({
@@ -1731,6 +1791,12 @@ export class ControlCenterModal extends Modal {
 	/**
 	 * Load person list into container
 	 */
+	/** Current person list filter */
+	private personListFilter: 'all' | 'has-dates' | 'missing-dates' | 'unlinked-places' | 'living' = 'all';
+
+	/** Current person list sort */
+	private personListSort: 'name-asc' | 'name-desc' | 'birth-asc' | 'birth-desc' | 'death-asc' | 'death-desc' = 'name-asc';
+
 	private loadPersonList(container: HTMLElement): void {
 		container.empty();
 
@@ -1764,12 +1830,11 @@ export class ControlCenterModal extends Modal {
 			};
 		});
 
-		// Sort by name
-		this.personListItems.sort((a, b) => a.name.localeCompare(b.name));
+		// Create controls row (search + filter + sort)
+		const controlsRow = container.createDiv({ cls: 'crc-person-controls' });
 
-		// Create search/filter input
-		const filterContainer = container.createDiv({ cls: 'crc-filter-container crc-mb-3' });
-		const filterInput = filterContainer.createEl('input', {
+		// Search input
+		const searchInput = controlsRow.createEl('input', {
 			cls: 'crc-filter-input',
 			attr: {
 				type: 'text',
@@ -1777,30 +1842,145 @@ export class ControlCenterModal extends Modal {
 			}
 		});
 
+		// Filter dropdown
+		const filterSelect = controlsRow.createEl('select', {
+			cls: 'crc-person-select dropdown'
+		});
+		const filterOptions = [
+			{ value: 'all', label: 'All people' },
+			{ value: 'has-dates', label: 'Has dates' },
+			{ value: 'missing-dates', label: 'Missing dates' },
+			{ value: 'unlinked-places', label: 'Unlinked places' },
+			{ value: 'living', label: 'Living (no death)' }
+		];
+		filterOptions.forEach(opt => {
+			const option = filterSelect.createEl('option', { text: opt.label, value: opt.value });
+			if (opt.value === this.personListFilter) option.selected = true;
+		});
+
+		// Sort dropdown
+		const sortSelect = controlsRow.createEl('select', {
+			cls: 'crc-person-select dropdown'
+		});
+		const sortOptions = [
+			{ value: 'name-asc', label: 'Name (A–Z)' },
+			{ value: 'name-desc', label: 'Name (Z–A)' },
+			{ value: 'birth-asc', label: 'Birth (oldest)' },
+			{ value: 'birth-desc', label: 'Birth (newest)' },
+			{ value: 'death-asc', label: 'Death (oldest)' },
+			{ value: 'death-desc', label: 'Death (newest)' }
+		];
+		sortOptions.forEach(opt => {
+			const option = sortSelect.createEl('option', { text: opt.label, value: opt.value });
+			if (opt.value === this.personListSort) option.selected = true;
+		});
+
+		// Usage hint
+		const hint = container.createEl('p', {
+			cls: 'crc-text-muted crc-text-small crc-mb-2'
+		});
+		hint.appendText('Click a row to edit. ');
+		// File icon for "open note"
+		const fileIconHint = createLucideIcon('file-text', 12);
+		fileIconHint.style.display = 'inline';
+		fileIconHint.style.verticalAlign = 'middle';
+		hint.appendChild(fileIconHint);
+		hint.appendText(' opens the note. ');
+		// Unlinked places badge
+		const exampleBadge = hint.createEl('span', {
+			cls: 'crc-person-list-badge crc-person-list-badge--unlinked'
+		});
+		exampleBadge.style.display = 'inline-flex';
+		exampleBadge.style.verticalAlign = 'middle';
+		exampleBadge.style.padding = '1px 4px';
+		exampleBadge.style.fontSize = '10px';
+		const badgeIcon = createLucideIcon('map-pin', 10);
+		exampleBadge.appendChild(badgeIcon);
+		exampleBadge.appendText('1');
+		hint.appendText(' creates place notes.');
+
 		// List container
 		const listContainer = container.createDiv({ cls: 'crc-person-list' });
 
-		// Render initial list
-		this.renderPersonListItems(listContainer, this.personListItems);
+		// Helper to check if person has unlinked places
+		const hasUnlinkedPlaces = (p: typeof this.personListItems[0]): boolean => {
+			return (p.birthPlace && !p.birthPlace.isLinked) ||
+				(p.deathPlace && !p.deathPlace.isLinked) ||
+				(p.burialPlace && !p.burialPlace.isLinked) || false;
+		};
 
-		// Filter handler
-		filterInput.addEventListener('input', () => {
-			const query = filterInput.value.toLowerCase();
-			const filtered = this.personListItems.filter(p =>
+		// Apply filter, sort, and render
+		const applyFiltersAndRender = () => {
+			const query = searchInput.value.toLowerCase();
+
+			// Filter by search query
+			let filtered = this.personListItems.filter(p =>
 				p.name.toLowerCase().includes(query) ||
 				(p.birthDate && p.birthDate.includes(query)) ||
 				(p.deathDate && p.deathDate.includes(query))
 			);
+
+			// Apply category filter
+			switch (this.personListFilter) {
+				case 'has-dates':
+					filtered = filtered.filter(p => p.birthDate || p.deathDate);
+					break;
+				case 'missing-dates':
+					filtered = filtered.filter(p => !p.birthDate && !p.deathDate);
+					break;
+				case 'unlinked-places':
+					filtered = filtered.filter(hasUnlinkedPlaces);
+					break;
+				case 'living':
+					filtered = filtered.filter(p => p.birthDate && !p.deathDate);
+					break;
+			}
+
+			// Apply sort
+			filtered.sort((a, b) => {
+				switch (this.personListSort) {
+					case 'name-asc':
+						return a.name.localeCompare(b.name);
+					case 'name-desc':
+						return b.name.localeCompare(a.name);
+					case 'birth-asc':
+						return (a.birthDate || '9999').localeCompare(b.birthDate || '9999');
+					case 'birth-desc':
+						return (b.birthDate || '0000').localeCompare(a.birthDate || '0000');
+					case 'death-asc':
+						return (a.deathDate || '9999').localeCompare(b.deathDate || '9999');
+					case 'death-desc':
+						return (b.deathDate || '0000').localeCompare(a.deathDate || '0000');
+					default:
+						return 0;
+				}
+			});
+
 			this.renderPersonListItems(listContainer, filtered);
+		};
+
+		// Event handlers
+		searchInput.addEventListener('input', applyFiltersAndRender);
+
+		filterSelect.addEventListener('change', () => {
+			this.personListFilter = filterSelect.value as typeof this.personListFilter;
+			applyFiltersAndRender();
 		});
+
+		sortSelect.addEventListener('change', () => {
+			this.personListSort = sortSelect.value as typeof this.personListSort;
+			applyFiltersAndRender();
+		});
+
+		// Initial render
+		applyFiltersAndRender();
 	}
 
 	/** Maximum people to render initially (for performance) */
 	private static readonly PERSON_LIST_PAGE_SIZE = 100;
 
 	/**
-	 * Render person list items with expandable place details
-	 * Uses pagination to avoid rendering thousands of DOM elements at once
+	 * Render person list items as a table with pagination
 	 */
 	private renderPersonListItems(
 		container: HTMLElement,
@@ -1825,72 +2005,33 @@ export class ControlCenterModal extends Modal {
 			return;
 		}
 
-		// Create alphabetical index
-		const byLetter = new Map<string, typeof people>();
-		for (const person of people) {
-			const letter = person.name.charAt(0).toUpperCase();
-			if (!byLetter.has(letter)) {
-				byLetter.set(letter, []);
-			}
-			byLetter.get(letter)!.push(person);
-		}
-
 		// For large lists, show count and paginate
 		const totalCount = people.length;
 		const needsPagination = totalCount > ControlCenterModal.PERSON_LIST_PAGE_SIZE;
 		let renderedCount = 0;
 
-		// Render by letter with pagination
-		const sortedLetters = Array.from(byLetter.keys()).sort();
-		const listWrapper = container.createDiv({ cls: 'crc-person-list-wrapper' });
+		// Create table structure
+		const table = container.createEl('table', { cls: 'crc-person-table' });
+		const thead = table.createEl('thead');
+		const headerRow = thead.createEl('tr');
+		headerRow.createEl('th', { text: 'Name', cls: 'crc-person-table__th' });
+		headerRow.createEl('th', { text: 'Born', cls: 'crc-person-table__th' });
+		headerRow.createEl('th', { text: 'Died', cls: 'crc-person-table__th' });
+		headerRow.createEl('th', { text: '', cls: 'crc-person-table__th crc-person-table__th--icon' }); // For badges
 
-		const renderBatch = (startFrom: number, limit: number) => {
-			let currentIndex = 0;
+		const tbody = table.createEl('tbody');
+
+		const renderBatch = (startFrom: number, limit: number): number => {
 			let rendered = 0;
-
-			for (const letter of sortedLetters) {
-				const letterPeople = byLetter.get(letter)!;
-
-				// Skip letters we've already fully rendered
-				if (currentIndex + letterPeople.length <= startFrom) {
-					currentIndex += letterPeople.length;
-					continue;
-				}
-
-				// Find or create letter section
-				let letterSection = listWrapper.querySelector(`[data-letter="${letter}"]`) as HTMLElement;
-				let letterList: HTMLElement;
-				if (!letterSection) {
-					letterSection = listWrapper.createDiv({ cls: 'crc-person-letter-section' });
-					letterSection.setAttribute('data-letter', letter);
-					letterSection.createEl('h5', { text: letter, cls: 'crc-person-letter-header' });
-					letterList = letterSection.createDiv({ cls: 'crc-person-letter-list' });
-				} else {
-					letterList = letterSection.querySelector('.crc-person-letter-list') as HTMLElement;
-				}
-
-				// Render people in this letter
-				for (let i = 0; i < letterPeople.length; i++) {
-					if (currentIndex < startFrom) {
-						currentIndex++;
-						continue;
-					}
-					if (rendered >= limit) {
-						return rendered;
-					}
-
-					const person = letterPeople[i];
-					this.renderPersonListItem(letterList, person);
-					currentIndex++;
-					rendered++;
-				}
+			for (let i = startFrom; i < people.length && rendered < limit; i++) {
+				this.renderPersonTableRow(tbody, people[i]);
+				rendered++;
 			}
 			return rendered;
 		};
 
 		// Initial render
-		const initialRendered = renderBatch(0, ControlCenterModal.PERSON_LIST_PAGE_SIZE);
-		renderedCount = initialRendered;
+		renderedCount = renderBatch(0, ControlCenterModal.PERSON_LIST_PAGE_SIZE);
 
 		// Show "Load more" button if needed
 		if (needsPagination && renderedCount < totalCount) {
@@ -1914,10 +2055,10 @@ export class ControlCenterModal extends Modal {
 	}
 
 	/**
-	 * Render a single person list item
+	 * Render a single person as a table row
 	 */
-	private renderPersonListItem(
-		letterList: HTMLElement,
+	private renderPersonTableRow(
+		tbody: HTMLElement,
 		person: {
 			crId: string;
 			name: string;
@@ -1929,10 +2070,28 @@ export class ControlCenterModal extends Modal {
 			file: TFile;
 		}
 	): void {
-		const item = letterList.createDiv({ cls: 'crc-person-list-item' });
+		const row = tbody.createEl('tr', { cls: 'crc-person-table__row' });
 
-		// Main row (name + dates + expand toggle if has unlinked places)
-		const mainRow = item.createDiv({ cls: 'crc-person-list-item__main' });
+		// Name cell
+		row.createEl('td', {
+			text: person.name,
+			cls: 'crc-person-table__td crc-person-table__td--name'
+		});
+
+		// Birth date cell
+		row.createEl('td', {
+			text: person.birthDate || '—',
+			cls: 'crc-person-table__td crc-person-table__td--date'
+		});
+
+		// Death date cell
+		row.createEl('td', {
+			text: person.deathDate || '—',
+			cls: 'crc-person-table__td crc-person-table__td--date'
+		});
+
+		// Actions cell (unlinked places badge + open note button)
+		const actionsCell = row.createEl('td', { cls: 'crc-person-table__td crc-person-table__td--actions' });
 
 		// Check for unlinked places
 		const unlinkedPlaces: { type: string; info: PlaceInfo }[] = [];
@@ -1946,83 +2105,101 @@ export class ControlCenterModal extends Modal {
 			unlinkedPlaces.push({ type: 'Burial', info: person.burialPlace });
 		}
 
-		// Name (clickable)
-		const nameEl = mainRow.createEl('span', {
-			text: person.name,
-			cls: 'crc-person-list-name'
-		});
-		nameEl.addEventListener('click', () => {
-			// Open the person's file
-			void this.app.workspace.getLeaf(false).openFile(person.file);
-		});
-
-		// Dates
-		const dates = [];
-		if (person.birthDate) dates.push(`b. ${person.birthDate}`);
-		if (person.deathDate) dates.push(`d. ${person.deathDate}`);
-		if (dates.length > 0) {
-			mainRow.createEl('span', {
-				text: dates.join(' – '),
-				cls: 'crc-person-list-dates crc-text--muted'
-			});
-		}
-
-		// Unlinked place indicator badge
 		if (unlinkedPlaces.length > 0) {
-			const badge = mainRow.createEl('span', {
+			const badge = actionsCell.createEl('span', {
 				cls: 'crc-person-list-badge crc-person-list-badge--unlinked',
 				attr: {
-					title: `${unlinkedPlaces.length} unlinked place${unlinkedPlaces.length !== 1 ? 's' : ''}`
+					title: `${unlinkedPlaces.length} unlinked place${unlinkedPlaces.length !== 1 ? 's' : ''}: ${unlinkedPlaces.map(p => p.info.placeName).join(', ')}`
 				}
 			});
 			const mapIcon = createLucideIcon('map-pin', 12);
 			badge.appendChild(mapIcon);
 			badge.appendText(unlinkedPlaces.length.toString());
 
-			// Create expandable details section
-			const detailsSection = item.createDiv({ cls: 'crc-person-list-details crc-person-list-details--hidden' });
-
-			// Toggle on badge click
+			// Click to show place creation options
 			badge.addEventListener('click', (e) => {
 				e.stopPropagation();
-				detailsSection.toggleClass('crc-person-list-details--hidden', !detailsSection.hasClass('crc-person-list-details--hidden'));
-				badge.toggleClass('crc-person-list-badge--active', !badge.hasClass('crc-person-list-badge--active'));
+				this.showUnlinkedPlacesMenu(unlinkedPlaces, e);
 			});
-
-			// Render place details with action buttons
-			for (const { type, info } of unlinkedPlaces) {
-				const placeRow = detailsSection.createDiv({ cls: 'crc-person-list-place' });
-
-				placeRow.createEl('span', {
-					text: `${type}: `,
-					cls: 'crc-person-list-place__label'
-				});
-				placeRow.createEl('span', {
-					text: info.placeName,
-					cls: 'crc-person-list-place__name'
-				});
-
-				// Action button to create place note
-				const createBtn = placeRow.createEl('button', {
-					cls: 'crc-btn crc-btn--small crc-btn--ghost crc-person-list-place__action',
-					attr: { title: 'Create place note' }
-				});
-				const plusIcon = createLucideIcon('plus', 12);
-				createBtn.appendChild(plusIcon);
-				createBtn.appendText('Create');
-
-				createBtn.addEventListener('click', (e) => {
-					e.stopPropagation();
-					void this.showQuickCreatePlaceModal(info.placeName);
-				});
-			}
 		}
 
-		// Context menu for person list items
-		item.addEventListener('contextmenu', (e) => {
+		// Open note button
+		const openBtn = actionsCell.createEl('button', {
+			cls: 'crc-person-table__open-btn clickable-icon',
+			attr: { 'aria-label': 'Open note' }
+		});
+		const fileIcon = createLucideIcon('file-text', 14);
+		openBtn.appendChild(fileIcon);
+		openBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			void this.app.workspace.getLeaf(false).openFile(person.file);
+		});
+
+		// Click row to open edit modal
+		row.addEventListener('click', () => {
+			// Get full person data from frontmatter for edit modal
+			const cache = this.app.metadataCache.getFileCache(person.file);
+			const fm = cache?.frontmatter || {};
+
+			// Extract relationship data
+			const fatherId = fm.father_id || fm.father;
+			const motherId = fm.mother_id || fm.mother;
+			const spouseIds = fm.spouse_id || fm.spouse;
+
+			const modal = new CreatePersonModal(this.app, {
+				editFile: person.file,
+				editPersonData: {
+					crId: person.crId,
+					name: person.name,
+					sex: fm.sex,
+					gender: fm.gender,
+					born: person.birthDate,
+					died: person.deathDate,
+					birthPlace: person.birthPlace?.placeName,
+					deathPlace: person.deathPlace?.placeName,
+					occupation: fm.occupation,
+					fatherId: typeof fatherId === 'string' ? fatherId : undefined,
+					motherId: typeof motherId === 'string' ? motherId : undefined,
+					spouseIds: Array.isArray(spouseIds) ? spouseIds : (spouseIds ? [spouseIds] : undefined),
+					collection: fm.collection
+				},
+				familyGraph: this.plugin.createFamilyGraphService(),
+				onUpdated: () => {
+					// Refresh the People tab
+					this.showTab('people');
+				}
+			});
+			modal.open();
+		});
+
+		// Context menu for row
+		row.addEventListener('contextmenu', (e) => {
 			e.preventDefault();
 			this.showPersonContextMenu(person, e);
 		});
+	}
+
+	/**
+	 * Show menu for creating unlinked place notes
+	 */
+	private showUnlinkedPlacesMenu(
+		unlinkedPlaces: { type: string; info: PlaceInfo }[],
+		event: MouseEvent
+	): void {
+		const menu = new Menu();
+
+		for (const { type, info } of unlinkedPlaces) {
+			menu.addItem((item) => {
+				item
+					.setTitle(`Create "${info.placeName}" (${type.toLowerCase()})`)
+					.setIcon('map-pin')
+					.onClick(() => {
+						void this.showQuickCreatePlaceModal(info.placeName);
+					});
+			});
+		}
+
+		menu.showAtMouseEvent(event);
 	}
 
 	/**
@@ -5040,38 +5217,32 @@ export class ControlCenterModal extends Modal {
 	private showMapsTab(): void {
 		const container = this.contentContainer;
 
-		// Card 1: Open map view
+		// Card 1: World map preview
 		const mapViewCard = this.createCard({
-			title: 'Open map view',
+			title: 'World map',
 			icon: 'map',
 			subtitle: 'Interactive geographic visualization'
 		});
 
 		const mapViewContent = mapViewCard.querySelector('.crc-card__content') as HTMLElement;
 
-		// Quick stats
+		// Get place data for the map preview and statistics
 		const placeService = new PlaceGraphService(this.app);
 		placeService.setValueAliases(this.plugin.settings.valueAliases);
 		placeService.reloadCache();
+		const places = placeService.getAllPlaces();
 		const stats = placeService.calculateStatistics();
 
-		const statsDiv = mapViewContent.createDiv({ cls: 'crc-stats-row crc-mb-3' });
-		statsDiv.createEl('span', {
-			text: `${stats.withCoordinates} places with coordinates`,
-			cls: 'crc-text--muted'
+		// Render the clickable world map preview
+		renderWorldMapPreview(mapViewContent, this.app, {
+			places,
+			onClick: () => {
+				this.app.commands.executeCommandById('canvas-roots:open-map-view');
+				this.close();
+			}
 		});
 
-		new Setting(mapViewContent)
-			.setName('Open map view')
-			.setDesc('View all geographic data on an interactive map')
-			.addButton(button => button
-				.setButtonText('Open map')
-				.setCta()
-				.onClick(() => {
-					this.app.commands.executeCommandById('canvas-roots:open-map-view');
-					this.close();
-				}));
-
+		// Open new map button (for side-by-side comparison)
 		new Setting(mapViewContent)
 			.setName('Open new map view')
 			.setDesc('Open a second map view for side-by-side comparison')

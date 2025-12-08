@@ -13,7 +13,7 @@ import { FolderFilterService } from './folder-filter';
 import { PropertyAliasService, CANONICAL_PERSON_PROPERTIES, CanonicalPersonProperty } from './property-alias-service';
 import type { CanvasRootsSettings, ValueAliasSettings } from '../settings';
 import { CANONICAL_GENDERS, type CanonicalGender } from './value-alias-service';
-import { isSourceNote } from '../utils/note-type-detection';
+import { isSourceNote, isEventNote } from '../utils/note-type-detection';
 
 const logger = getLogger('FamilyGraph');
 
@@ -922,6 +922,15 @@ export class FamilyGraphService {
 		// Must have cr_id (with alias support)
 		const crId = this.resolveProperty<string>(fm, 'cr_id');
 		if (!crId) {
+			return null;
+		}
+
+		// Skip non-person notes that also have cr_id (sources, events, etc.)
+		const noteTypeSettings = this.settings?.noteTypeDetection;
+		if (isSourceNote(fm, cache, noteTypeSettings)) {
+			return null;
+		}
+		if (isEventNote(fm, cache, noteTypeSettings)) {
 			return null;
 		}
 

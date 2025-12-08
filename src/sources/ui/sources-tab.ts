@@ -14,9 +14,19 @@ import { CreateSourceModal } from './create-source-modal';
 import { renderMediaGallery } from './media-gallery';
 import { renderSourceTypeManagerCard } from './source-type-manager-card';
 import type { SourceNote } from '../types/source-types';
-import { getSourceType } from '../types/source-types';
+import { getSourceType, getAllSourceTypes } from '../types/source-types';
 import { TemplateSnippetsModal } from '../../ui/template-snippets-modal';
 import { ExtractEventsModal } from '../../events/ui/extract-events-modal';
+
+/**
+ * Filter options for sources list
+ */
+type SourceFilter = 'all' | 'has_media' | 'no_media' | 'confidence_high' | 'confidence_medium' | 'confidence_low' | string;
+
+/**
+ * Sort options for sources list
+ */
+type SourceSort = 'title_asc' | 'title_desc' | 'date_asc' | 'date_desc' | 'type' | 'confidence';
 
 /**
  * Render the Sources tab content
@@ -166,9 +176,9 @@ function renderSourcesListCard(
 		new TemplateSnippetsModal(plugin.app, 'source').open();
 	});
 
-	const sources = sourceService.getAllSources();
+	const allSources = sourceService.getAllSources();
 
-	if (sources.length === 0) {
+	if (allSources.length === 0) {
 		const emptyState = content.createDiv({ cls: 'crc-empty-state' });
 		setIcon(emptyState.createSpan({ cls: 'crc-empty-icon' }), 'archive');
 		emptyState.createEl('p', { text: 'No sources found.' });
@@ -177,26 +187,178 @@ function renderSourcesListCard(
 			text: 'Create source notes with cr_type: source in frontmatter to document your evidence.'
 		});
 	} else {
-		// Render as table
-		const table = content.createEl('table', { cls: 'cr-source-table' });
+		// State for filters, sorting, and pagination
+		let currentFilter: SourceFilter = 'all';
+		let currentSort: SourceSort = 'title_asc';
+		let displayLimit = 25;
 
-		// Header
-		const thead = table.createEl('thead');
-		const headerRow = thead.createEl('tr');
-		headerRow.createEl('th', { text: 'Title' });
-		headerRow.createEl('th', { text: 'Type' });
-		headerRow.createEl('th', { text: 'Date' });
-		headerRow.createEl('th', { text: 'Repository' });
-		headerRow.createEl('th', { text: 'Confidence' });
-		headerRow.createEl('th', { text: '', cls: 'cr-source-th-actions' }); // Actions column
+		// Filter and sort controls
+		const controls = content.createDiv({ cls: 'crc-source-controls' });
 
-		// Body
-		const tbody = table.createEl('tbody');
-		const sortedSources = sources.sort((a, b) => a.title.localeCompare(b.title));
+		// Filter dropdown
+		const filterContainer = controls.createDiv({ cls: 'crc-filter-container' });
+		filterContainer.createEl('label', { text: 'Filter: ', cls: 'crc-text-small crc-text-muted' });
+		const filterSelect = filterContainer.createEl('select', { cls: 'dropdown crc-filter-select' });
 
-		for (const source of sortedSources) {
-			renderSourceRow(tbody, source, plugin, showTab);
+		// Build filter options
+		filterSelect.createEl('option', { value: 'all', text: 'All sources' });
+
+		// Add type-based filters dynamically
+		const sourceTypes = getAllSourceTypes(
+			plugin.settings.customSourceTypes,
+			plugin.settings.showBuiltInSourceTypes
+		);
+		if (sourceTypes.length > 0) {
+			const typeGroup = filterSelect.createEl('optgroup', { attr: { label: 'By type' } });
+			for (const st of sourceTypes) {
+				typeGroup.createEl('option', { value: `type_${st.id}`, text: st.name });
+			}
 		}
+
+		// Confidence filters
+		const confGroup = filterSelect.createEl('optgroup', { attr: { label: 'By confidence' } });
+		confGroup.createEl('option', { value: 'confidence_high', text: 'High confidence' });
+		confGroup.createEl('option', { value: 'confidence_medium', text: 'Medium confidence' });
+		confGroup.createEl('option', { value: 'confidence_low', text: 'Low confidence' });
+
+		// Media filters
+		const mediaGroup = filterSelect.createEl('optgroup', { attr: { label: 'By media' } });
+		mediaGroup.createEl('option', { value: 'has_media', text: 'Has media' });
+		mediaGroup.createEl('option', { value: 'no_media', text: 'No media' });
+
+		// Sort dropdown
+		const sortContainer = controls.createDiv({ cls: 'crc-filter-container' });
+		sortContainer.createEl('label', { text: 'Sort: ', cls: 'crc-text-small crc-text-muted' });
+		const sortSelect = sortContainer.createEl('select', { cls: 'dropdown crc-filter-select' });
+		sortSelect.createEl('option', { value: 'title_asc', text: 'Title A-Z' });
+		sortSelect.createEl('option', { value: 'title_desc', text: 'Title Z-A' });
+		sortSelect.createEl('option', { value: 'date_desc', text: 'Date (newest)' });
+		sortSelect.createEl('option', { value: 'date_asc', text: 'Date (oldest)' });
+		sortSelect.createEl('option', { value: 'type', text: 'Type' });
+		sortSelect.createEl('option', { value: 'confidence', text: 'Confidence' });
+
+		// Table container (for refreshing)
+		const tableContainer = content.createDiv({ cls: 'crc-source-table-container' });
+
+		// Filter function
+		const filterSources = (sources: SourceNote[]): SourceNote[] => {
+			return sources.filter(source => {
+				switch (currentFilter) {
+					case 'all':
+						return true;
+					case 'has_media':
+						return source.media && source.media.length > 0;
+					case 'no_media':
+						return !source.media || source.media.length === 0;
+					case 'confidence_high':
+						return source.confidence === 'high';
+					case 'confidence_medium':
+						return source.confidence === 'medium';
+					case 'confidence_low':
+						return source.confidence === 'low';
+					default:
+						// Type-based filter (type_xxx)
+						if (currentFilter.startsWith('type_')) {
+							const typeId = currentFilter.replace('type_', '');
+							return source.sourceType === typeId;
+						}
+						return true;
+				}
+			});
+		};
+
+		// Sort function
+		const sortSources = (sources: SourceNote[]): SourceNote[] => {
+			return [...sources].sort((a, b) => {
+				switch (currentSort) {
+					case 'title_asc':
+						return a.title.localeCompare(b.title);
+					case 'title_desc':
+						return b.title.localeCompare(a.title);
+					case 'date_asc':
+						return (a.date || '').localeCompare(b.date || '');
+					case 'date_desc':
+						return (b.date || '').localeCompare(a.date || '');
+					case 'type':
+						return (a.sourceType || '').localeCompare(b.sourceType || '');
+					case 'confidence': {
+						const order = { high: 0, medium: 1, low: 2, unknown: 3 };
+						return (order[a.confidence] ?? 3) - (order[b.confidence] ?? 3);
+					}
+					default:
+						return 0;
+				}
+			});
+		};
+
+		// Render table function
+		const renderTable = () => {
+			tableContainer.empty();
+
+			const filtered = filterSources(allSources);
+			const sorted = sortSources(filtered);
+			const displayed = sorted.slice(0, displayLimit);
+
+			if (filtered.length === 0) {
+				const noResults = tableContainer.createDiv({ cls: 'crc-empty-state' });
+				noResults.createEl('p', { text: 'No sources match the current filter.' });
+				return;
+			}
+
+			const table = tableContainer.createEl('table', { cls: 'cr-source-table' });
+
+			// Header
+			const thead = table.createEl('thead');
+			const headerRow = thead.createEl('tr');
+			headerRow.createEl('th', { text: 'Title' });
+			headerRow.createEl('th', { text: 'Type' });
+			headerRow.createEl('th', { text: 'Date' });
+			headerRow.createEl('th', { text: 'Repository' });
+			headerRow.createEl('th', { text: 'Confidence' });
+			headerRow.createEl('th', { text: '', cls: 'cr-source-th-actions' });
+
+			// Body
+			const tbody = table.createEl('tbody');
+			for (const source of displayed) {
+				renderSourceRow(tbody, source, plugin, showTab);
+			}
+
+			// Show count and load more button
+			if (filtered.length > displayLimit) {
+				const loadMoreContainer = tableContainer.createDiv({ cls: 'crc-load-more-container' });
+				loadMoreContainer.createSpan({
+					text: `Showing ${displayed.length} of ${filtered.length} sources`,
+					cls: 'crc-text-muted'
+				});
+				const loadMoreBtn = loadMoreContainer.createEl('button', { cls: 'mod-cta' });
+				loadMoreBtn.textContent = 'Load more';
+				loadMoreBtn.addEventListener('click', () => {
+					displayLimit += 25;
+					renderTable();
+				});
+			} else if (filtered.length > 0) {
+				const countInfo = tableContainer.createDiv({ cls: 'crc-count-info' });
+				countInfo.createSpan({
+					text: `Showing all ${filtered.length} source${filtered.length !== 1 ? 's' : ''}`,
+					cls: 'crc-text-muted'
+				});
+			}
+		};
+
+		// Event listeners
+		filterSelect.addEventListener('change', () => {
+			currentFilter = filterSelect.value as SourceFilter;
+			displayLimit = 25; // Reset pagination on filter change
+			renderTable();
+		});
+
+		sortSelect.addEventListener('change', () => {
+			currentSort = sortSelect.value as SourceSort;
+			renderTable();
+		});
+
+		// Initial render
+		renderTable();
 	}
 
 	container.appendChild(card);
@@ -316,8 +478,10 @@ function renderSourceRow(
 	const confBadge = confCell.createSpan({ cls: `cr-confidence-badge cr-confidence-${source.confidence}` });
 	confBadge.textContent = source.confidence;
 
-	// Actions cell with Extract Events button
+	// Actions cell with Extract Events and Open Note buttons
 	const actionsCell = row.createEl('td', { cls: 'cr-source-cell-actions' });
+
+	// Extract events button
 	const extractBtn = actionsCell.createEl('button', {
 		cls: 'crc-btn crc-btn--small crc-btn--ghost',
 		attr: { title: 'Extract events from this source' }
@@ -340,6 +504,22 @@ function renderSourceRow(
 					onComplete: () => showTab('events')
 				}
 			).open();
+		}
+	});
+
+	// Open note button
+	const openBtn = actionsCell.createEl('button', {
+		cls: 'crc-btn crc-btn--small crc-btn--ghost',
+		attr: { title: 'Open source note' }
+	});
+	const fileIcon = createLucideIcon('file-text', 14);
+	openBtn.appendChild(fileIcon);
+
+	openBtn.addEventListener('click', (e) => {
+		e.stopPropagation(); // Don't trigger row click
+		const file = plugin.app.vault.getAbstractFileByPath(source.filePath);
+		if (file instanceof TFile) {
+			void plugin.app.workspace.getLeaf(false).openFile(file);
 		}
 	});
 }

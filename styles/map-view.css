@@ -1784,3 +1784,120 @@ input[type="text"]::-webkit-input-placeholder {
 .cr-journey-waypoint-place {
   color: var(--text-muted);
 }
+
+/* ==========================================================================
+   World Map Preview (Control Center)
+   ========================================================================== */
+
+.cr-world-map-preview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  min-height: 150px;
+  max-height: 250px;
+  margin: 12px 0;
+  border-radius: var(--radius-m);
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.cr-world-map-preview:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.cr-world-map-preview:focus {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+.cr-world-map-preview:active {
+  transform: translateY(0);
+}
+
+/* Leaflet map container */
+.cr-world-map-leaflet {
+  width: 100%;
+  height: 100%;
+}
+
+/* Ensure Leaflet map fills container */
+.cr-world-map-leaflet .leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: var(--background-secondary-alt);
+}
+
+/* Click overlay - captures all clicks for navigation */
+.cr-world-map-click-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  cursor: pointer;
+}
+
+/* Circle markers styling */
+.cr-world-map-leaflet .leaflet-interactive {
+  pointer-events: none;
+}
+
+/* Stats badge */
+.cr-world-map-stats {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  padding: 4px 10px;
+  border-radius: var(--radius-s);
+  font-size: var(--font-smaller);
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--background-modifier-border);
+}
+
+/* Hint text */
+.cr-world-map-hint {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--background-primary);
+  color: var(--text-muted);
+  padding: 4px 12px;
+  border-radius: var(--radius-s);
+  font-size: var(--font-smaller);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.cr-world-map-preview:hover .cr-world-map-hint {
+  opacity: 1;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+  .cr-world-map-preview {
+    min-height: 120px;
+    max-height: 180px;
+  }
+
+  .cr-world-map-stats {
+    font-size: var(--font-smallest);
+    padding: 3px 8px;
+  }
+
+  .cr-world-map-hint {
+    display: none;
+  }
+}

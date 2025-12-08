@@ -2,7 +2,7 @@ import { App, TFile } from 'obsidian';
 import { SpouseValue } from '../types/frontmatter';
 import { FolderFilterService } from './folder-filter';
 import type { CanvasRootsSettings } from '../settings';
-import { isPlaceNote, isMapNote, isPersonNote } from '../utils/note-type-detection';
+import { isPlaceNote, isMapNote, isPersonNote, isSourceNote, isEventNote } from '../utils/note-type-detection';
 
 /**
  * Vault statistics for person notes
@@ -46,6 +46,22 @@ export interface MapStats {
 }
 
 /**
+ * Event statistics
+ */
+export interface EventStats {
+	totalEvents: number;
+	byType: Record<string, number>;
+}
+
+/**
+ * Source statistics
+ */
+export interface SourceStats {
+	totalSources: number;
+	byType: Record<string, number>;
+}
+
+/**
  * Canvas statistics
  */
 export interface CanvasStats {
@@ -63,6 +79,8 @@ export interface FullVaultStats {
 	relationships: RelationshipStats;
 	places: PlaceStats;
 	maps: MapStats;
+	events: EventStats;
+	sources: SourceStats;
 	canvases: CanvasStats;
 	lastUpdated: Date;
 }
@@ -122,6 +140,14 @@ export class VaultStatsService {
 		let totalMaps = 0;
 		const universesSet = new Set<string>();
 
+		// Event stats
+		let totalEvents = 0;
+		const eventsByType: Record<string, number> = {};
+
+		// Source stats
+		let totalSources = 0;
+		const sourcesByType: Record<string, number> = {};
+
 		for (const file of files) {
 			const cache = this.app.metadataCache.getFileCache(file);
 			if (!cache || !cache.frontmatter) continue;
@@ -145,6 +171,22 @@ export class VaultStatsService {
 				if (fm.universe) {
 					universesSet.add(fm.universe);
 				}
+				continue;
+			}
+
+			// Check for event notes (uses flexible detection)
+			if (isEventNote(fm, cache, this.settings?.noteTypeDetection)) {
+				totalEvents++;
+				const eventType = fm.event_type || 'uncategorized';
+				eventsByType[eventType] = (eventsByType[eventType] || 0) + 1;
+				continue;
+			}
+
+			// Check for source notes (uses flexible detection)
+			if (isSourceNote(fm, cache, this.settings?.noteTypeDetection)) {
+				totalSources++;
+				const sourceType = fm.source_type || 'uncategorized';
+				sourcesByType[sourceType] = (sourcesByType[sourceType] || 0) + 1;
 				continue;
 			}
 
@@ -221,6 +263,14 @@ export class VaultStatsService {
 			maps: {
 				totalMaps,
 				universes: Array.from(universesSet).sort()
+			},
+			events: {
+				totalEvents,
+				byType: eventsByType
+			},
+			sources: {
+				totalSources,
+				byType: sourcesByType
 			},
 			canvases: canvasStats,
 			lastUpdated: new Date()

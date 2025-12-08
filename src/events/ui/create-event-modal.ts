@@ -13,6 +13,7 @@ import {
 	DatePrecision,
 	EventConfidence,
 	EventTypeDefinition,
+	EventNote,
 	DATE_PRECISION_LABELS,
 	CONFIDENCE_LABELS,
 	getCategoryName,
@@ -26,6 +27,11 @@ export class CreateEventModal extends Modal {
 	private eventService: EventService;
 	private settings: CanvasRootsSettings;
 	private onCreated?: (file: TFile) => void;
+	private onUpdated?: (file: TFile) => void;
+
+	// Edit mode properties
+	private editMode = false;
+	private editingFile?: TFile;
 
 	// Form data
 	private title = '';
@@ -50,21 +56,49 @@ export class CreateEventModal extends Modal {
 		settings: CanvasRootsSettings,
 		options?: {
 			onCreated?: (file: TFile) => void;
+			onUpdated?: (file: TFile) => void;
 			initialPerson?: { name: string; crId: string };
 			initialEventType?: string;
+			// Edit mode options
+			editEvent?: EventNote;
+			editFile?: TFile;
 		}
 	) {
 		super(app);
 		this.eventService = eventService;
 		this.settings = settings;
 		this.onCreated = options?.onCreated;
+		this.onUpdated = options?.onUpdated;
 
-		if (options?.initialPerson) {
-			this.person = options.initialPerson.name;
-			this.personCrId = options.initialPerson.crId;
-		}
-		if (options?.initialEventType) {
-			this.eventType = options.initialEventType;
+		// Check for edit mode
+		if (options?.editEvent && options?.editFile) {
+			this.editMode = true;
+			this.editingFile = options.editFile;
+			const event = options.editEvent;
+
+			// Populate form data from event
+			this.title = event.title;
+			this.eventType = event.eventType;
+			this.date = event.date || '';
+			this.dateEnd = event.dateEnd || '';
+			this.datePrecision = event.datePrecision;
+			this.person = event.person?.replace(/^\[\[/, '').replace(/\]\]$/, '') || '';
+			this.place = event.place?.replace(/^\[\[/, '').replace(/\]\]$/, '') || '';
+			this.confidence = event.confidence;
+			this.description = event.description || '';
+			this.isCanonical = event.isCanonical || false;
+			this.universe = event.universe || '';
+			this.dateSystem = event.dateSystem || '';
+			this.timeline = event.timeline?.replace(/^\[\[/, '').replace(/\]\]$/, '') || '';
+		} else {
+			// Create mode
+			if (options?.initialPerson) {
+				this.person = options.initialPerson.name;
+				this.personCrId = options.initialPerson.crId;
+			}
+			if (options?.initialEventType) {
+				this.eventType = options.initialEventType;
+			}
 		}
 	}
 
@@ -80,7 +114,7 @@ export class CreateEventModal extends Modal {
 		const titleContainer = header.createDiv({ cls: 'crc-modal-title' });
 		const icon = createLucideIcon('calendar', 24);
 		titleContainer.appendChild(icon);
-		titleContainer.appendText('Create event note');
+		titleContainer.appendText(this.editMode ? 'Edit event note' : 'Create event note');
 
 		// Form container
 		const form = contentEl.createDiv({ cls: 'crc-form' });
@@ -268,11 +302,15 @@ export class CreateEventModal extends Modal {
 		});
 
 		const submitBtn = buttonContainer.createEl('button', {
-			text: 'Create event',
+			text: this.editMode ? 'Save changes' : 'Create event',
 			cls: 'crc-btn crc-btn--primary'
 		});
 		submitBtn.addEventListener('click', () => {
-			void this.createEvent();
+			if (this.editMode) {
+				void this.updateEvent();
+			} else {
+				void this.createEvent();
+			}
 		});
 	}
 
@@ -448,6 +486,125 @@ export class CreateEventModal extends Modal {
 		} catch (error) {
 			console.error('Failed to create event note:', error);
 			new Notice(`Failed to create event note: ${error instanceof Error ? error.message : 'Unknown error'}`);
+		}
+	}
+
+	/**
+	 * Update an existing event note
+	 */
+	private async updateEvent(): Promise<void> {
+		if (!this.editingFile) {
+			new Notice('No file to update');
+			return;
+		}
+
+		// Validate required fields
+		if (!this.title.trim()) {
+			new Notice('Please enter a title for the event');
+			return;
+		}
+
+		try {
+			// Read current file content
+			const content = await this.app.vault.read(this.editingFile);
+
+			// Parse existing frontmatter
+			const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+			if (!frontmatterMatch) {
+				new Notice('Could not parse frontmatter');
+				return;
+			}
+
+			const bodyContent = content.slice(frontmatterMatch[0].length).trim();
+
+			// Build updated frontmatter
+			const frontmatterLines: string[] = [];
+			frontmatterLines.push(`cr_type: event`);
+			frontmatterLines.push(`title: "${this.title.trim().replace(/"/g, '\\"')}"`);
+			frontmatterLines.push(`event_type: ${this.eventType}`);
+
+			if (this.date.trim()) {
+				frontmatterLines.push(`date: "${this.date.trim()}"`);
+			}
+			if (this.dateEnd.trim()) {
+				frontmatterLines.push(`date_end: "${this.dateEnd.trim()}"`);
+			}
+			frontmatterLines.push(`date_precision: ${this.datePrecision}`);
+
+			if (this.person.trim()) {
+				frontmatterLines.push(`person: "[[${this.person.trim()}]]"`);
+			}
+			if (this.place.trim()) {
+				// Check if already has wikilink brackets
+				const placeValue = this.place.trim().startsWith('[[') ? this.place.trim() : `[[${this.place.trim()}]]`;
+				frontmatterLines.push(`place: "${placeValue}"`);
+			}
+			frontmatterLines.push(`confidence: ${this.confidence}`);
+
+			if (this.description.trim()) {
+				frontmatterLines.push(`description: "${this.description.trim().replace(/"/g, '\\"')}"`);
+			}
+			if (this.timeline.trim()) {
+				const timelineValue = this.timeline.trim().startsWith('[[') ? this.timeline.trim() : `[[${this.timeline.trim()}]]`;
+				frontmatterLines.push(`timeline: "${timelineValue}"`);
+			}
+			if (this.isCanonical) {
+				frontmatterLines.push(`is_canonical: true`);
+			}
+			if (this.universe.trim()) {
+				frontmatterLines.push(`universe: "${this.universe.trim()}"`);
+			}
+			if (this.dateSystem) {
+				frontmatterLines.push(`date_system: ${this.dateSystem}`);
+			}
+
+			// Preserve cr_id from original frontmatter
+			const crIdMatch = frontmatterMatch[1].match(/cr_id:\s*(.+)/);
+			if (crIdMatch) {
+				frontmatterLines.push(`cr_id: ${crIdMatch[1].trim()}`);
+			}
+
+			// Preserve before/after relationships if they exist
+			const beforeMatch = frontmatterMatch[1].match(/before:\s*([\s\S]*?)(?=\n[a-z_]+:|$)/);
+			if (beforeMatch) {
+				frontmatterLines.push(`before:${beforeMatch[1]}`);
+			}
+			const afterMatch = frontmatterMatch[1].match(/after:\s*([\s\S]*?)(?=\n[a-z_]+:|$)/);
+			if (afterMatch) {
+				frontmatterLines.push(`after:${afterMatch[1]}`);
+			}
+
+			// Preserve sources if they exist
+			const sourcesMatch = frontmatterMatch[1].match(/sources:\s*([\s\S]*?)(?=\n[a-z_]+:|$)/);
+			if (sourcesMatch) {
+				frontmatterLines.push(`sources:${sourcesMatch[1]}`);
+			}
+
+			// Preserve sort_order if it exists
+			const sortOrderMatch = frontmatterMatch[1].match(/sort_order:\s*(\d+)/);
+			if (sortOrderMatch) {
+				frontmatterLines.push(`sort_order: ${sortOrderMatch[1]}`);
+			}
+
+			// Build new content
+			const newContent = `---\n${frontmatterLines.join('\n')}\n---\n\n${bodyContent}`;
+
+			// Write updated content
+			await this.app.vault.modify(this.editingFile, newContent);
+
+			new Notice(`Updated event note: ${this.editingFile.basename}`);
+
+			// Invalidate cache
+			this.eventService.invalidateCache();
+
+			if (this.onUpdated) {
+				this.onUpdated(this.editingFile);
+			}
+
+			this.close();
+		} catch (error) {
+			console.error('Failed to update event note:', error);
+			new Notice(`Failed to update event note: ${error instanceof Error ? error.message : 'Unknown error'}`);
 		}
 	}
 }

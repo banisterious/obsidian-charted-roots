@@ -5,16 +5,27 @@
  * organizations list, statistics, and hierarchy.
  */
 
-import { setIcon, Setting } from 'obsidian';
+import { setIcon, Setting, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { LucideIconName } from '../../ui/lucide-icons';
+import { createLucideIcon } from '../../ui/lucide-icons';
 import { OrganizationService } from '../services/organization-service';
 import { MembershipService } from '../services/membership-service';
 import type { OrganizationInfo } from '../types/organization-types';
-import { getOrganizationType, DEFAULT_ORGANIZATION_TYPES } from '../constants/organization-types';
+import { getOrganizationType, DEFAULT_ORGANIZATION_TYPES, getAllOrganizationTypes } from '../constants/organization-types';
 import { CreateOrganizationModal } from './create-organization-modal';
 import { TemplateSnippetsModal } from '../../ui/template-snippets-modal';
 import { renderOrganizationTypeManagerCard } from './organization-type-manager-card';
+
+/**
+ * Filter options for organizations list
+ */
+type OrgFilter = 'all' | 'has_members' | 'no_members' | string;
+
+/**
+ * Sort options for organizations list
+ */
+type OrgSort = 'name_asc' | 'name_desc' | 'type' | 'members_desc' | 'members_asc' | 'universe';
 
 /**
  * Render the Organizations tab content
@@ -79,10 +90,10 @@ function renderOrganizationsListCard(
 		new TemplateSnippetsModal(plugin.app, 'organization').open();
 	});
 
-	// Get organizations grouped by type
-	const orgs = orgService.getAllOrganizations();
+	// Get all organizations
+	const allOrgs = orgService.getAllOrganizations();
 
-	if (orgs.length === 0) {
+	if (allOrgs.length === 0) {
 		const emptyState = content.createDiv({ cls: 'crc-empty-state' });
 		setIcon(emptyState.createSpan({ cls: 'crc-empty-icon' }), 'building');
 		emptyState.createEl('p', { text: 'No organizations found.' });
@@ -91,31 +102,184 @@ function renderOrganizationsListCard(
 			text: 'Create organization notes with cr_type: organization in frontmatter, or use the button above.'
 		});
 	} else {
+		// Pre-compute member counts for all orgs
+		const memberCounts = new Map<string, number>();
+		for (const org of allOrgs) {
+			memberCounts.set(org.crId, membershipService.getOrganizationMembers(org.crId).length);
+		}
+
 		// Check if any org has members
-		const anyHasMembers = orgs.some(org =>
-			membershipService.getOrganizationMembers(org.crId).length > 0
-		);
+		const anyHasMembers = Array.from(memberCounts.values()).some(count => count > 0);
 
-		// Render as table
-		const table = content.createEl('table', { cls: 'cr-org-table' });
+		// State for filters, sorting, and pagination
+		let currentFilter: OrgFilter = 'all';
+		let currentSort: OrgSort = 'name_asc';
+		let displayLimit = 25;
 
-		// Header
-		const thead = table.createEl('thead');
-		const headerRow = thead.createEl('tr');
-		headerRow.createEl('th', { text: 'Name' });
-		headerRow.createEl('th', { text: 'Type' });
-		headerRow.createEl('th', { text: 'Universe' });
+		// Filter and sort controls
+		const controls = content.createDiv({ cls: 'crc-org-controls' });
+
+		// Filter dropdown
+		const filterContainer = controls.createDiv({ cls: 'crc-filter-container' });
+		filterContainer.createEl('label', { text: 'Filter: ', cls: 'crc-text-small crc-text-muted' });
+		const filterSelect = filterContainer.createEl('select', { cls: 'dropdown crc-filter-select' });
+
+		// Build filter options
+		filterSelect.createEl('option', { value: 'all', text: 'All organizations' });
+
+		// Add type-based filters dynamically
+		const orgTypes = getAllOrganizationTypes(plugin.settings.customOrganizationTypes || []);
+		if (orgTypes.length > 0) {
+			const typeGroup = filterSelect.createEl('optgroup', { attr: { label: 'By type' } });
+			for (const ot of orgTypes) {
+				typeGroup.createEl('option', { value: `type_${ot.id}`, text: ot.name });
+			}
+		}
+
+		// Membership filters
 		if (anyHasMembers) {
-			headerRow.createEl('th', { text: 'Members' });
+			const memberGroup = filterSelect.createEl('optgroup', { attr: { label: 'By membership' } });
+			memberGroup.createEl('option', { value: 'has_members', text: 'Has members' });
+			memberGroup.createEl('option', { value: 'no_members', text: 'No members' });
 		}
 
-		// Body
-		const tbody = table.createEl('tbody');
-		const sortedOrgs = orgs.sort((a, b) => a.name.localeCompare(b.name));
-
-		for (const org of sortedOrgs) {
-			renderOrganizationRow(tbody, org, membershipService, plugin, anyHasMembers);
+		// Sort dropdown
+		const sortContainer = controls.createDiv({ cls: 'crc-filter-container' });
+		sortContainer.createEl('label', { text: 'Sort: ', cls: 'crc-text-small crc-text-muted' });
+		const sortSelect = sortContainer.createEl('select', { cls: 'dropdown crc-filter-select' });
+		sortSelect.createEl('option', { value: 'name_asc', text: 'Name A-Z' });
+		sortSelect.createEl('option', { value: 'name_desc', text: 'Name Z-A' });
+		sortSelect.createEl('option', { value: 'type', text: 'Type' });
+		if (anyHasMembers) {
+			sortSelect.createEl('option', { value: 'members_desc', text: 'Members (most)' });
+			sortSelect.createEl('option', { value: 'members_asc', text: 'Members (least)' });
 		}
+		sortSelect.createEl('option', { value: 'universe', text: 'Universe' });
+
+		// Table container (for refreshing)
+		const tableContainer = content.createDiv({ cls: 'crc-org-table-container' });
+
+		// Filter function
+		const filterOrgs = (orgs: OrganizationInfo[]): OrganizationInfo[] => {
+			return orgs.filter(org => {
+				switch (currentFilter) {
+					case 'all':
+						return true;
+					case 'has_members':
+						return (memberCounts.get(org.crId) ?? 0) > 0;
+					case 'no_members':
+						return (memberCounts.get(org.crId) ?? 0) === 0;
+					default:
+						// Type-based filter (type_xxx)
+						if (currentFilter.startsWith('type_')) {
+							const typeId = currentFilter.replace('type_', '');
+							return org.orgType === typeId;
+						}
+						return true;
+				}
+			});
+		};
+
+		// Sort function
+		const sortOrgs = (orgs: OrganizationInfo[]): OrganizationInfo[] => {
+			return [...orgs].sort((a, b) => {
+				switch (currentSort) {
+					case 'name_asc':
+						return a.name.localeCompare(b.name);
+					case 'name_desc':
+						return b.name.localeCompare(a.name);
+					case 'type':
+						return (a.orgType || '').localeCompare(b.orgType || '');
+					case 'members_desc':
+						return (memberCounts.get(b.crId) ?? 0) - (memberCounts.get(a.crId) ?? 0);
+					case 'members_asc':
+						return (memberCounts.get(a.crId) ?? 0) - (memberCounts.get(b.crId) ?? 0);
+					case 'universe':
+						return (a.universe || '').localeCompare(b.universe || '');
+					default:
+						return 0;
+				}
+			});
+		};
+
+		// Render table function
+		const renderTable = () => {
+			tableContainer.empty();
+
+			const filtered = filterOrgs(allOrgs);
+			const sorted = sortOrgs(filtered);
+			const displayed = sorted.slice(0, displayLimit);
+
+			if (filtered.length === 0) {
+				const noResults = tableContainer.createDiv({ cls: 'crc-empty-state' });
+				noResults.createEl('p', { text: 'No organizations match the current filter.' });
+				return;
+			}
+
+			// Hint text above table
+			const hint = tableContainer.createEl('p', { cls: 'crc-text-muted crc-text-small crc-mb-2' });
+			hint.appendText('Click a row to edit. ');
+			const fileIconHint = createLucideIcon('file-text', 12);
+			fileIconHint.style.display = 'inline';
+			fileIconHint.style.verticalAlign = 'middle';
+			hint.appendChild(fileIconHint);
+			hint.appendText(' opens the note.');
+
+			const table = tableContainer.createEl('table', { cls: 'cr-org-table' });
+
+			// Header
+			const thead = table.createEl('thead');
+			const headerRow = thead.createEl('tr');
+			headerRow.createEl('th', { text: 'Name' });
+			headerRow.createEl('th', { text: 'Type' });
+			headerRow.createEl('th', { text: 'Universe' });
+			if (anyHasMembers) {
+				headerRow.createEl('th', { text: 'Members' });
+			}
+			headerRow.createEl('th', { text: '', cls: 'cr-org-th-actions' });
+
+			// Body
+			const tbody = table.createEl('tbody');
+			for (const org of displayed) {
+				renderOrganizationRow(tbody, org, memberCounts.get(org.crId) ?? 0, plugin, anyHasMembers, showTab, renderTable);
+			}
+
+			// Show count and load more button
+			if (filtered.length > displayLimit) {
+				const loadMoreContainer = tableContainer.createDiv({ cls: 'crc-load-more-container' });
+				loadMoreContainer.createSpan({
+					text: `Showing ${displayed.length} of ${filtered.length} organizations`,
+					cls: 'crc-text-muted'
+				});
+				const loadMoreBtn = loadMoreContainer.createEl('button', { cls: 'mod-cta' });
+				loadMoreBtn.textContent = 'Load more';
+				loadMoreBtn.addEventListener('click', () => {
+					displayLimit += 25;
+					renderTable();
+				});
+			} else if (filtered.length > 0) {
+				const countInfo = tableContainer.createDiv({ cls: 'crc-count-info' });
+				countInfo.createSpan({
+					text: `Showing all ${filtered.length} organization${filtered.length !== 1 ? 's' : ''}`,
+					cls: 'crc-text-muted'
+				});
+			}
+		};
+
+		// Event listeners
+		filterSelect.addEventListener('change', () => {
+			currentFilter = filterSelect.value as OrgFilter;
+			displayLimit = 25; // Reset pagination on filter change
+			renderTable();
+		});
+
+		sortSelect.addEventListener('change', () => {
+			currentSort = sortSelect.value as OrgSort;
+			renderTable();
+		});
+
+		// Initial render
+		renderTable();
 	}
 
 	container.appendChild(card);
@@ -127,16 +291,27 @@ function renderOrganizationsListCard(
 function renderOrganizationRow(
 	tbody: HTMLTableSectionElement,
 	org: OrganizationInfo,
-	membershipService: MembershipService,
+	memberCount: number,
 	plugin: CanvasRootsPlugin,
-	showMembers: boolean
+	showMembers: boolean,
+	showTab: (tabId: string) => void,
+	onRefresh: () => void
 ): void {
 	const typeDef = getOrganizationType(org.orgType);
-	const members = membershipService.getOrganizationMembers(org.crId);
 
 	const row = tbody.createEl('tr', { cls: 'cr-org-row' });
+
+	// Click row to open edit modal
 	row.addEventListener('click', () => {
-		void plugin.app.workspace.openLinkText(org.file.path, '');
+		if (org.file instanceof TFile) {
+			new CreateOrganizationModal(plugin.app, plugin, {
+				onSuccess: () => {
+					showTab('organizations');
+				},
+				editOrg: org,
+				editFile: org.file
+			}).open();
+		}
 	});
 
 	// Name cell
@@ -157,8 +332,24 @@ function renderOrganizationRow(
 	// Members cell (only if any org has members)
 	if (showMembers) {
 		const membersCell = row.createEl('td', { cls: 'cr-org-cell-members' });
-		membersCell.textContent = members.length > 0 ? String(members.length) : '—';
+		membersCell.textContent = memberCount > 0 ? String(memberCount) : '—';
 	}
+
+	// Actions cell with open note button
+	const actionsCell = row.createEl('td', { cls: 'cr-org-cell-actions' });
+	const openBtn = actionsCell.createEl('button', {
+		cls: 'crc-btn crc-btn--small crc-btn--ghost',
+		attr: { title: 'Open organization note' }
+	});
+	const fileIcon = createLucideIcon('file-text', 14);
+	openBtn.appendChild(fileIcon);
+
+	openBtn.addEventListener('click', (e) => {
+		e.stopPropagation(); // Don't trigger row click
+		if (org.file instanceof TFile) {
+			void plugin.app.workspace.getLeaf(false).openFile(org.file);
+		}
+	});
 }
 
 /**
