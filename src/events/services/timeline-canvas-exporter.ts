@@ -276,7 +276,7 @@ export class TimelineCanvasExporter {
 	async exportToCanvas(
 		events: EventNote[],
 		options: TimelineCanvasOptions = {}
-	): Promise<{ success: boolean; path?: string; error?: string }> {
+	): Promise<{ success: boolean; path?: string; error?: string; warnings?: string[] }> {
 		const {
 			title = 'Event Timeline',
 			colorScheme = 'event_type',
@@ -323,6 +323,21 @@ export class TimelineCanvasExporter {
 			// Sort events
 			const sortedEvents = sortEventsChronologically(filteredEvents);
 
+			// Track warnings for user feedback
+			const warnings: string[] = [];
+
+			// Check for Gantt layout issues before positioning
+			if (layoutStyle === 'gantt') {
+				const datedEvents = sortedEvents.filter(e => e.date && /^\d{4}/.test(e.date));
+				const eventsWithPerson = sortedEvents.filter(e => e.person);
+
+				if (datedEvents.length === 0) {
+					warnings.push('Gantt layout requires dated events. No events have parseable dates (YYYY format). Falling back to horizontal layout.');
+				} else if (eventsWithPerson.length === 0) {
+					warnings.push('Gantt layout works best with events linked to people. All events will appear in a single row.');
+				}
+			}
+
 			// Position events based on layout style
 			const positions = this.positionEvents(sortedEvents, {
 				layoutStyle,
@@ -339,11 +354,28 @@ export class TimelineCanvasExporter {
 				colorScheme
 			));
 
-			// Generate edges for before/after constraints
-			const edges: CanvasEdge[] = [];
-			if (includeOrderingEdges) {
-				const positionMap = new Map(positions.map(p => [p.event.crId, p]));
+			// Add year marker nodes for horizontal/vertical layouts
+			const yearMarkers = this.createYearMarkers(positions, {
+				layoutStyle,
+				nodeWidth,
+				nodeHeight,
+				spacingX,
+				spacingY
+			});
+			nodes.push(...yearMarkers);
 
+			// Generate edges
+			const edges: CanvasEdge[] = [];
+
+			// Add sequential edges between chronologically adjacent events (for horizontal/vertical)
+			if (layoutStyle === 'horizontal' || layoutStyle === 'vertical') {
+				for (let i = 0; i < positions.length - 1; i++) {
+					edges.push(this.createSequentialEdge(positions[i], positions[i + 1], layoutStyle));
+				}
+			}
+
+			// Add edges for before/after constraints
+			if (includeOrderingEdges) {
 				for (const pos of positions) {
 					// Add edges for 'before' relationships (this event → events that come after)
 					if (pos.event.before) {
@@ -411,7 +443,7 @@ export class TimelineCanvasExporter {
 
 			if (result.success) {
 				logger.info('exportToCanvas', `Exported ${filteredEvents.length} events to ${result.path}`);
-				return { success: true, path: result.path };
+				return { success: true, path: result.path, warnings: warnings.length > 0 ? warnings : undefined };
 			} else {
 				return { success: false, error: result.error };
 			}
@@ -735,6 +767,103 @@ export class TimelineCanvasExporter {
 			color: '5', // Blue for ordering edges
 			label: 'before'
 		};
+	}
+
+	/**
+	 * Create a sequential edge between chronologically adjacent events
+	 */
+	private createSequentialEdge(
+		from: PositionedEvent,
+		to: PositionedEvent,
+		layoutStyle: TimelineLayoutStyle
+	): CanvasEdge {
+		const isHorizontal = layoutStyle === 'horizontal';
+
+		return {
+			id: generateCanvasId(),
+			fromNode: from.canvasId,
+			fromSide: isHorizontal ? 'right' : 'bottom',
+			fromEnd: 'none',
+			toNode: to.canvasId,
+			toSide: isHorizontal ? 'left' : 'top',
+			toEnd: 'arrow'
+			// No color = default gray, no label for cleaner look
+		};
+	}
+
+	/**
+	 * Create year marker nodes along the timeline
+	 */
+	private createYearMarkers(
+		positions: PositionedEvent[],
+		options: {
+			layoutStyle: TimelineLayoutStyle;
+			nodeWidth: number;
+			nodeHeight: number;
+			spacingX: number;
+			spacingY: number;
+		}
+	): CanvasNode[] {
+		const { layoutStyle, nodeWidth, nodeHeight, spacingX, spacingY } = options;
+
+		// Only add markers for horizontal/vertical layouts
+		if (layoutStyle === 'gantt') return [];
+
+		// Collect unique years from events
+		const yearsWithPositions: Map<number, { minX: number; minY: number; maxX: number; maxY: number }> = new Map();
+
+		for (const pos of positions) {
+			if (!pos.event.date) continue;
+			const year = extractYear(pos.event.date);
+			if (year === null) continue;
+
+			const existing = yearsWithPositions.get(year);
+			if (existing) {
+				existing.minX = Math.min(existing.minX, pos.x);
+				existing.minY = Math.min(existing.minY, pos.y);
+				existing.maxX = Math.max(existing.maxX, pos.x);
+				existing.maxY = Math.max(existing.maxY, pos.y);
+			} else {
+				yearsWithPositions.set(year, {
+					minX: pos.x,
+					minY: pos.y,
+					maxX: pos.x,
+					maxY: pos.y
+				});
+			}
+		}
+
+		// Create year marker nodes
+		const markers: CanvasNode[] = [];
+		const markerWidth = 80;
+		const markerHeight = 30;
+		const isHorizontal = layoutStyle === 'horizontal';
+
+		// Sort years and create markers
+		const sortedYears = [...yearsWithPositions.entries()].sort((a, b) => a[0] - b[0]);
+
+		for (const [year, bounds] of sortedYears) {
+			// Position marker above/left of first event in that year
+			const x = isHorizontal
+				? bounds.minX + (nodeWidth - markerWidth) / 2  // Center above node
+				: bounds.minX - markerWidth - spacingX;        // Left of nodes
+			const y = isHorizontal
+				? bounds.minY - markerHeight - spacingY / 2    // Above nodes
+				: bounds.minY + (nodeHeight - markerHeight) / 2; // Center beside node
+
+			markers.push({
+				id: generateCanvasId(),
+				type: 'text',
+				text: `**${year}**`,
+				x,
+				y,
+				width: markerWidth,
+				height: markerHeight
+				// No color = subtle default appearance
+			});
+		}
+
+		return markers;
 	}
 
 	/**

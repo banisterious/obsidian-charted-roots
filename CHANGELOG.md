@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.10.13] - 2025-12-08
+
+Timeline export improvements with Excalidraw styling options and unified export UI.
+
+### Added
+
+- **Unified Export Timeline Card**: Consolidated Canvas, Excalidraw, and Markdown export into a single card
+  - Format selector dropdown to switch between export types
+  - Dynamic options that show/hide based on selected format
+  - Shared filter controls (person, event type, group) across all formats
+
+- **Excalidraw Export Styling Options**: Full control over hand-drawn diagram appearance
+  - Drawing style: Architect (clean), Artist (natural), Cartoonist (rough)
+  - Font selection: 7 fonts including Virgil, Excalifont, Comic Shanns, Helvetica, Nunito, Lilita One, Cascadia
+  - Font size slider (10-32px)
+  - Stroke width slider (1-6px)
+  - Fill style: Solid, Hachure (diagonal lines), Cross-hatch
+  - Stroke style: Solid, Dashed, Dotted
+
+### Fixed
+
+- **Markdown Table Export**: Escaped pipe characters in wikilink aliases
+  - Links like `[[path/to/file|Display Name]]` now render correctly in table cells
+  - Prevents table column misalignment from unescaped pipe delimiters
+
+---
+
 ## [0.10.12] - 2025-12-07
 
 Duplicate place detection and improved merge modal UX.

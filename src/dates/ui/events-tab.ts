@@ -14,6 +14,7 @@ import { CreateEventModal } from '../../events/ui/create-event-modal';
 import type { EventNote } from '../../events/types/event-types';
 import { getEventType, getAllEventTypes } from '../../events/types/event-types';
 import { TimelineCanvasExporter, TimelineColorScheme, TimelineLayoutStyle } from '../../events/services/timeline-canvas-exporter';
+import { TimelineMarkdownExporter, TimelineExportFormat } from '../../events/services/timeline-markdown-exporter';
 import { computeSortOrder } from '../../events/services/sort-order-service';
 import { renderEventTypeManagerCard } from '../../events/ui/event-type-manager-card';
 import { isEventNote, isPersonNote } from '../../utils/note-type-detection';
@@ -632,8 +633,11 @@ function extractYear(dateStr: string): number | null {
 	return null;
 }
 
+/** Export format types */
+type ExportFormat = 'canvas' | 'excalidraw' | 'markdown';
+
 /**
- * Render the Export card for exporting timeline to Canvas/Excalidraw
+ * Render the unified Export timeline card with format selector
  */
 function renderExportCard(
 	container: HTMLElement,
@@ -645,10 +649,13 @@ function renderExportCard(
 
 	const allEvents = eventService.getAllEvents();
 
+	// Check if Excalidraw is available
+	const excalidrawAvailable = (plugin.app as unknown as { plugins: { enabledPlugins: Set<string> } }).plugins?.enabledPlugins?.has('obsidian-excalidraw-plugin') ?? false;
+
 	const card = createCard({
 		title: 'Export timeline',
 		icon: 'download',
-		subtitle: 'Export events to Canvas or Excalidraw'
+		subtitle: 'Export events to Canvas, Excalidraw, or Markdown'
 	});
 	const content = card.querySelector('.crc-card__content') as HTMLElement;
 
@@ -658,269 +665,627 @@ function renderExportCard(
 			text: 'No events to export.',
 			cls: 'crc-text-muted'
 		});
-		emptyState.createEl('p', {
-			text: 'Create event notes first to export them to a visual timeline.',
-			cls: 'crc-text-muted'
-		});
 		container.appendChild(card);
 		return;
 	}
 
-	// Export options form
-	const form = content.createDiv({ cls: 'crc-export-form' });
+	// State variables
+	let exportFormat: ExportFormat = 'canvas';
+	let titleValue = 'Event Timeline';
+	let layoutValue: TimelineLayoutStyle = 'horizontal';
+	let colorValue: TimelineColorScheme = 'event_type';
+	let personValue = '';
+	let typeValue = '';
+	let groupValue = '';
+	let includeEdges = true;
+	let groupByPerson = false;
+	let markdownFormat: TimelineExportFormat = 'callout';
 
-	// Title input
-	const titleRow = form.createDiv({ cls: 'crc-form-row' });
-	titleRow.createEl('label', { text: 'Canvas title', cls: 'crc-form-label' });
-	const titleInput = titleRow.createEl('input', {
-		cls: 'crc-form-input',
-		attr: { type: 'text', value: 'Event Timeline', placeholder: 'Event Timeline' }
-	});
+	// Excalidraw-specific options
+	let excalidrawRoughness = 1; // 0=architect, 1=artist, 2=cartoonist
+	let excalidrawFontFamily: 1 | 2 | 3 | 4 | 5 | 6 | 7 = 1; // 1=Virgil, 2=Helvetica, 3=Cascadia, 4=Comic Shanns, 5=Excalifont, 6=Nunito, 7=Lilita One
+	let excalidrawFillStyle: 'solid' | 'hachure' | 'cross-hatch' = 'solid';
+	let excalidrawStrokeStyle: 'solid' | 'dashed' | 'dotted' = 'solid';
+	let excalidrawStrokeWidth = 2;
+	let excalidrawFontSize = 16;
 
-	// Layout style dropdown
-	const layoutRow = form.createDiv({ cls: 'crc-form-row' });
-	layoutRow.createEl('label', { text: 'Layout style', cls: 'crc-form-label' });
-	const layoutSelect = layoutRow.createEl('select', { cls: 'crc-form-select' });
-	layoutSelect.createEl('option', { value: 'horizontal', text: 'Horizontal (left to right)' });
-	layoutSelect.createEl('option', { value: 'vertical', text: 'Vertical (top to bottom)' });
-	layoutSelect.createEl('option', { value: 'gantt', text: 'Gantt (by date and person)' });
-
-	// Color scheme dropdown
-	const colorRow = form.createDiv({ cls: 'crc-form-row' });
-	colorRow.createEl('label', { text: 'Color by', cls: 'crc-form-label' });
-	const colorSelect = colorRow.createEl('select', { cls: 'crc-form-select' });
-	colorSelect.createEl('option', { value: 'event_type', text: 'Event type' });
-	colorSelect.createEl('option', { value: 'category', text: 'Category (core/extended/narrative)' });
-	colorSelect.createEl('option', { value: 'confidence', text: 'Confidence level' });
-	colorSelect.createEl('option', { value: 'monochrome', text: 'No color' });
-
-	// Filter by person dropdown
-	const personRow = form.createDiv({ cls: 'crc-form-row' });
-	personRow.createEl('label', { text: 'Filter by person', cls: 'crc-form-label' });
-	const personSelect = personRow.createEl('select', { cls: 'crc-form-select' });
-	personSelect.createEl('option', { value: '', text: 'All people' });
-
-	const uniquePeople = eventService.getUniquePeople();
-	for (const person of uniquePeople) {
-		const displayName = person.replace(/^\[\[/, '').replace(/\]\]$/, '');
-		personSelect.createEl('option', { value: person, text: displayName });
-	}
-
-	// Filter by event type dropdown
-	const typeRow = form.createDiv({ cls: 'crc-form-row' });
-	typeRow.createEl('label', { text: 'Filter by type', cls: 'crc-form-label' });
-	const typeSelect = typeRow.createEl('select', { cls: 'crc-form-select' });
-	typeSelect.createEl('option', { value: '', text: 'All types' });
-
-	const exportEventTypes = getAllEventTypes(
-		plugin.settings.customEventTypes || [],
-		plugin.settings.showBuiltInEventTypes !== false,
-		plugin.settings.eventTypeCustomizations,
-		plugin.settings.hiddenEventTypes
-	);
-	for (const type of exportEventTypes) {
-		typeSelect.createEl('option', { value: type.id, text: type.name });
-	}
-
-	// Filter by group dropdown
-	const groupFilterRow = form.createDiv({ cls: 'crc-form-row' });
-	groupFilterRow.createEl('label', { text: 'Filter by group', cls: 'crc-form-label' });
-	const groupSelect = groupFilterRow.createEl('select', { cls: 'crc-form-select' });
-	groupSelect.createEl('option', { value: '', text: 'All groups' });
-
-	const uniqueGroups = eventService.getUniqueGroups();
-	for (const group of uniqueGroups) {
-		groupSelect.createEl('option', { value: group, text: group });
-	}
-
-	// Include ordering edges checkbox
-	const edgesRow = form.createDiv({ cls: 'crc-form-row crc-form-row--checkbox' });
-	const edgesCheckbox = edgesRow.createEl('input', {
-		cls: 'crc-form-checkbox',
-		attr: { type: 'checkbox', id: 'include-edges', checked: 'checked' }
-	});
-	edgesRow.createEl('label', {
-		text: 'Include before/after relationship edges',
-		attr: { for: 'include-edges' }
-	});
-
-	// Group by person checkbox
-	const groupByPersonRow = form.createDiv({ cls: 'crc-form-row crc-form-row--checkbox' });
-	const groupCheckbox = groupByPersonRow.createEl('input', {
-		cls: 'crc-form-checkbox',
-		attr: { type: 'checkbox', id: 'group-by-person' }
-	});
-	groupByPersonRow.createEl('label', {
-		text: 'Group events by person',
-		attr: { for: 'group-by-person' }
-	});
-
-	// Preview section
-	const previewSection = content.createDiv({ cls: 'crc-export-preview crc-mt-3' });
-	previewSection.createEl('h4', { text: 'Export preview', cls: 'cr-subsection-heading' });
-
-	const previewContent = previewSection.createDiv({ cls: 'crc-export-preview-content' });
-
-	// Update preview function
-	const updatePreview = () => {
-		const exporter = new TimelineCanvasExporter(plugin.app, plugin.settings);
-		const summary = exporter.getExportSummary(allEvents, {
-			filterPerson: personSelect.value || undefined,
-			filterEventType: typeSelect.value || undefined,
-			filterGroup: groupSelect.value || undefined
-		});
-
-		previewContent.empty();
-
-		const statsList = previewContent.createEl('ul', { cls: 'crc-export-stats' });
-		statsList.createEl('li', { text: `${summary.totalEvents} events to export` });
-		statsList.createEl('li', { text: `${summary.datedEvents} with dates, ${summary.undatedEvents} undated` });
-		if (summary.withOrderingConstraints > 0) {
-			statsList.createEl('li', { text: `${summary.withOrderingConstraints} with before/after constraints` });
-		}
-		statsList.createEl('li', { text: `${summary.uniquePeople} unique people` });
-		statsList.createEl('li', { text: `${summary.uniquePlaces} unique places` });
+	// Format selector (always visible at top)
+	const formatDescriptions: Record<ExportFormat, string> = {
+		canvas: 'Native Obsidian canvas with linked nodes',
+		excalidraw: excalidrawAvailable
+			? 'Hand-drawn style diagrams (Excalidraw)'
+			: 'Requires Excalidraw plugin',
+		markdown: 'Text-based formats (callout, table, list, dataview)'
 	};
 
-	// Initial preview
-	updatePreview();
+	const formatSetting = new Setting(content)
+		.setName('Export format')
+		.setDesc(formatDescriptions[exportFormat])
+		.addDropdown(dropdown => {
+			dropdown
+				.addOption('canvas', 'Canvas')
+				.addOption('excalidraw', 'Excalidraw')
+				.addOption('markdown', 'Markdown')
+				.setValue(exportFormat)
+				.onChange(value => {
+					exportFormat = value as ExportFormat;
+					formatSetting.setDesc(formatDescriptions[exportFormat]);
+					updateVisibleOptions();
+					updateExportButton();
+				});
+		});
 
-	// Update preview on filter changes
-	personSelect.addEventListener('change', updatePreview);
-	typeSelect.addEventListener('change', updatePreview);
-	groupSelect.addEventListener('change', updatePreview);
+	// Title (always visible)
+	new Setting(content)
+		.setName('Title')
+		.setDesc('Name for the exported file')
+		.addText(text => text
+			.setPlaceholder('Event Timeline')
+			.setValue(titleValue)
+			.onChange(value => { titleValue = value; }));
 
-	// Export buttons
+	// Container for format-specific options
+	const formatOptionsContainer = content.createDiv({ cls: 'crc-export-format-options' });
+
+	// --- Canvas/Excalidraw options section ---
+	const canvasOptionsSection = formatOptionsContainer.createDiv({ cls: 'crc-export-section crc-export-section--canvas' });
+
+	// Layout style
+	new Setting(canvasOptionsSection)
+		.setName('Layout')
+		.setDesc('How events are arranged')
+		.addDropdown(dropdown => dropdown
+			.addOption('horizontal', 'Horizontal (left to right)')
+			.addOption('vertical', 'Vertical (top to bottom)')
+			.addOption('gantt', 'Gantt (by date and person)')
+			.setValue(layoutValue)
+			.onChange(value => { layoutValue = value as TimelineLayoutStyle; }));
+
+	// Color scheme
+	new Setting(canvasOptionsSection)
+		.setName('Color by')
+		.setDesc('How to color event nodes')
+		.addDropdown(dropdown => dropdown
+			.addOption('event_type', 'Event type')
+			.addOption('category', 'Category (core/extended/narrative)')
+			.addOption('confidence', 'Confidence level')
+			.addOption('monochrome', 'No color')
+			.setValue(colorValue)
+			.onChange(value => { colorValue = value as TimelineColorScheme; }));
+
+	// Include ordering edges
+	new Setting(canvasOptionsSection)
+		.setName('Include ordering edges')
+		.setDesc('Draw edges for before/after relationships')
+		.addToggle(toggle => toggle
+			.setValue(includeEdges)
+			.onChange(value => { includeEdges = value; }));
+
+	// Group by person (Canvas only)
+	const groupByPersonSetting = new Setting(canvasOptionsSection)
+		.setName('Group by person')
+		.setDesc('Visually group events by their associated person')
+		.addToggle(toggle => toggle
+			.setValue(groupByPerson)
+			.onChange(value => { groupByPerson = value; }));
+
+	// --- Excalidraw-specific options section ---
+	const excalidrawOptionsSection = formatOptionsContainer.createDiv({ cls: 'crc-export-section crc-export-section--excalidraw' });
+
+	// Drawing style (roughness)
+	const roughnessDescriptions: Record<number, string> = {
+		0: 'Clean, precise lines like architectural drawings',
+		1: 'Slightly rough, natural hand-drawn appearance',
+		2: 'Very rough, expressive cartoon-like style'
+	};
+	const roughnessSetting = new Setting(excalidrawOptionsSection)
+		.setName('Drawing style')
+		.setDesc(roughnessDescriptions[excalidrawRoughness])
+		.addDropdown(dropdown => dropdown
+			.addOption('0', 'Architect (clean)')
+			.addOption('1', 'Artist (natural)')
+			.addOption('2', 'Cartoonist (rough)')
+			.setValue(String(excalidrawRoughness))
+			.onChange(value => {
+				excalidrawRoughness = parseInt(value);
+				roughnessSetting.setDesc(roughnessDescriptions[excalidrawRoughness]);
+			}));
+
+	// Font family
+	new Setting(excalidrawOptionsSection)
+		.setName('Font')
+		.setDesc('Font style for event labels')
+		.addDropdown(dropdown => dropdown
+			.addOption('1', 'Virgil (hand-drawn)')
+			.addOption('5', 'Excalifont (hand-drawn)')
+			.addOption('4', 'Comic Shanns (comic)')
+			.addOption('2', 'Helvetica (clean)')
+			.addOption('6', 'Nunito (rounded)')
+			.addOption('7', 'Lilita One (display)')
+			.addOption('3', 'Cascadia (monospace)')
+			.setValue(String(excalidrawFontFamily))
+			.onChange(value => { excalidrawFontFamily = parseInt(value) as 1 | 2 | 3 | 4 | 5 | 6 | 7; }));
+
+	// Font size
+	new Setting(excalidrawOptionsSection)
+		.setName('Font size')
+		.setDesc('Size of text labels (default: 16)')
+		.addSlider(slider => slider
+			.setLimits(10, 32, 2)
+			.setValue(excalidrawFontSize)
+			.setDynamicTooltip()
+			.onChange(value => { excalidrawFontSize = value; }));
+
+	// Stroke width
+	new Setting(excalidrawOptionsSection)
+		.setName('Stroke width')
+		.setDesc('Thickness of lines and borders (default: 2)')
+		.addSlider(slider => slider
+			.setLimits(1, 6, 1)
+			.setValue(excalidrawStrokeWidth)
+			.setDynamicTooltip()
+			.onChange(value => { excalidrawStrokeWidth = value; }));
+
+	// Fill style
+	new Setting(excalidrawOptionsSection)
+		.setName('Fill style')
+		.setDesc('How shapes are filled')
+		.addDropdown(dropdown => dropdown
+			.addOption('solid', 'Solid')
+			.addOption('hachure', 'Hachure (diagonal lines)')
+			.addOption('cross-hatch', 'Cross-hatch')
+			.setValue(excalidrawFillStyle)
+			.onChange(value => { excalidrawFillStyle = value as 'solid' | 'hachure' | 'cross-hatch'; }));
+
+	// Stroke style
+	new Setting(excalidrawOptionsSection)
+		.setName('Stroke style')
+		.setDesc('Style of lines and borders')
+		.addDropdown(dropdown => dropdown
+			.addOption('solid', 'Solid')
+			.addOption('dashed', 'Dashed')
+			.addOption('dotted', 'Dotted')
+			.setValue(excalidrawStrokeStyle)
+			.onChange(value => { excalidrawStrokeStyle = value as 'solid' | 'dashed' | 'dotted'; }));
+
+	// --- Markdown options section ---
+	const markdownOptionsSection = formatOptionsContainer.createDiv({ cls: 'crc-export-section crc-export-section--markdown' });
+
+	// Markdown format dropdown
+	const mdFormatDescriptions: Record<string, string> = {
+		callout: 'Visual timeline with year columns, colored dots, and event cards. Requires the included CSS.',
+		table: 'Compact markdown table with columns for date, event, people, place, and sources.',
+		list: 'Simple bullet list grouped by year. Maximum compatibility, no CSS required.',
+		dataview: 'Generates a Dataview query that dynamically displays events. Requires Dataview plugin.'
+	};
+
+	const mdFormatSetting = new Setting(markdownOptionsSection)
+		.setName('Markdown format')
+		.setDesc(mdFormatDescriptions[markdownFormat])
+		.addDropdown(dropdown => dropdown
+			.addOption('callout', 'Vertical timeline (styled callouts)')
+			.addOption('table', 'Condensed table')
+			.addOption('list', 'Simple list')
+			.addOption('dataview', 'Dataview query (dynamic)')
+			.setValue(markdownFormat)
+			.onChange(value => {
+				markdownFormat = value as TimelineExportFormat;
+				mdFormatSetting.setDesc(mdFormatDescriptions[value]);
+			}));
+
+	// --- Common filter options (always visible) ---
+	const filtersSection = content.createDiv({ cls: 'crc-export-filters crc-mt-2' });
+	filtersSection.createEl('div', { text: 'Filters', cls: 'setting-item-heading' });
+
+	// Filter by person
+	new Setting(filtersSection)
+		.setName('Filter by person')
+		.setDesc('Show only events for a specific person')
+		.addDropdown(dropdown => {
+			dropdown.addOption('', 'All people');
+			const uniquePeople = eventService.getUniquePeople();
+			for (const person of uniquePeople) {
+				const displayName = person.replace(/^\[\[/, '').replace(/\]\]$/, '');
+				dropdown.addOption(person, displayName);
+			}
+			dropdown.setValue(personValue);
+			dropdown.onChange(value => { personValue = value; updateQuickStats(); });
+		});
+
+	// Filter by event type
+	new Setting(filtersSection)
+		.setName('Filter by type')
+		.setDesc('Show only events of a specific type')
+		.addDropdown(dropdown => {
+			dropdown.addOption('', 'All types');
+			const exportEventTypes = getAllEventTypes(
+				plugin.settings.customEventTypes || [],
+				plugin.settings.showBuiltInEventTypes !== false,
+				plugin.settings.eventTypeCustomizations,
+				plugin.settings.hiddenEventTypes
+			);
+			for (const type of exportEventTypes) {
+				dropdown.addOption(type.id, type.name);
+			}
+			dropdown.setValue(typeValue);
+			dropdown.onChange(value => { typeValue = value; updateQuickStats(); });
+		});
+
+	// Filter by group
+	new Setting(filtersSection)
+		.setName('Filter by group')
+		.setDesc('Show only events in a specific group')
+		.addDropdown(dropdown => {
+			dropdown.addOption('', 'All groups');
+			const uniqueGroups = eventService.getUniqueGroups();
+			for (const group of uniqueGroups) {
+				dropdown.addOption(group, group);
+			}
+			dropdown.setValue(groupValue);
+			dropdown.onChange(value => { groupValue = value; updateQuickStats(); });
+		});
+
+	// Quick stats row
+	const markdownExporter = new TimelineMarkdownExporter(plugin.app, plugin.settings);
+	const quickStatsRow = content.createDiv({ cls: 'crc-quick-stats crc-mt-2' });
+
+	const updateQuickStats = () => {
+		const summary = markdownExporter.getExportSummary(allEvents, {
+			filterPerson: personValue || undefined,
+			filterEventType: typeValue || undefined,
+			filterGroup: groupValue || undefined
+		});
+		const filteredEvents = allEvents.filter(e => {
+			if (personValue && e.person !== personValue) return false;
+			if (typeValue && e.eventType !== typeValue) return false;
+			if (groupValue && (!e.groups || !e.groups.includes(groupValue))) return false;
+			return true;
+		});
+		const dateRange = markdownExporter.getDateRange(filteredEvents);
+
+		quickStatsRow.empty();
+		const statsText = quickStatsRow.createEl('span', { cls: 'crc-quick-stats-text' });
+
+		let mainLine = `${summary.totalEvents} events`;
+		if (dateRange.earliest && dateRange.latest) {
+			const span = dateRange.latest - dateRange.earliest;
+			mainLine += ` spanning ${dateRange.earliest}–${dateRange.latest} (${span} years)`;
+		}
+		statsText.createEl('span', { text: mainLine });
+
+		if (summary.uniquePeople > 0 || summary.uniquePlaces > 0) {
+			const secondaryStats: string[] = [];
+			if (summary.uniquePeople > 0) secondaryStats.push(`${summary.uniquePeople} people`);
+			if (summary.uniquePlaces > 0) secondaryStats.push(`${summary.uniquePlaces} places`);
+			if (summary.datedEvents < summary.totalEvents) {
+				secondaryStats.push(`${summary.datedEvents} dated`);
+			}
+			statsText.createEl('span', {
+				text: ` • ${secondaryStats.join(' • ')}`,
+				cls: 'crc-text-muted'
+			});
+		}
+	};
+
+	// Initial stats
+	updateQuickStats();
+
+	// Export button
 	const buttonRow = content.createDiv({ cls: 'crc-button-row crc-mt-3' });
+	const exportBtn = buttonRow.createEl('button', { cls: 'crc-btn crc-btn--primary' });
 
-	// Export to Canvas button
-	const canvasBtn = buttonRow.createEl('button', { cls: 'crc-btn crc-btn--primary' });
-	const canvasIcon = createLucideIcon('layout', 16);
-	canvasBtn.appendChild(canvasIcon);
-	canvasBtn.appendText(' Export to Canvas');
+	const updateExportButton = () => {
+		exportBtn.empty();
+		let iconName: LucideIconName = 'download';
+		let buttonText = 'Export';
 
-	canvasBtn.addEventListener('click', async () => {
+		switch (exportFormat) {
+			case 'canvas':
+				iconName = 'layout';
+				buttonText = 'Export to Canvas';
+				break;
+			case 'excalidraw':
+				iconName = 'edit';
+				buttonText = 'Export to Excalidraw';
+				break;
+			case 'markdown':
+				iconName = 'file-text';
+				buttonText = 'Export to Markdown';
+				break;
+		}
+
+		const icon = createLucideIcon(iconName, 16);
+		exportBtn.appendChild(icon);
+		exportBtn.appendText(` ${buttonText}`);
+
+		// Disable Excalidraw button if plugin not available
+		exportBtn.disabled = exportFormat === 'excalidraw' && !excalidrawAvailable;
+	};
+
+	const updateVisibleOptions = () => {
+		// Show/hide canvas options (shared between Canvas and Excalidraw)
+		const showCanvas = exportFormat === 'canvas' || exportFormat === 'excalidraw';
+		canvasOptionsSection.style.display = showCanvas ? 'block' : 'none';
+
+		// Show/hide group by person (Canvas only, not Excalidraw)
+		groupByPersonSetting.settingEl.style.display = exportFormat === 'canvas' ? '' : 'none';
+
+		// Show/hide Excalidraw-specific options
+		excalidrawOptionsSection.style.display = exportFormat === 'excalidraw' ? 'block' : 'none';
+
+		// Show/hide markdown options
+		markdownOptionsSection.style.display = exportFormat === 'markdown' ? 'block' : 'none';
+	};
+
+	// Initial visibility
+	updateVisibleOptions();
+	updateExportButton();
+
+	// Export handler
+	exportBtn.addEventListener('click', async () => {
+		const title = titleValue || 'Event Timeline';
+
+		if (exportFormat === 'canvas') {
+			await handleCanvasExport(plugin, allEvents, title, layoutValue, colorValue, personValue, typeValue, groupValue, includeEdges, groupByPerson, exportBtn);
+		} else if (exportFormat === 'excalidraw') {
+			await handleExcalidrawExport(plugin, allEvents, title, layoutValue, colorValue, personValue, typeValue, groupValue, includeEdges, exportBtn, {
+				roughness: excalidrawRoughness,
+				fontFamily: excalidrawFontFamily,
+				fillStyle: excalidrawFillStyle,
+				strokeStyle: excalidrawStrokeStyle,
+				strokeWidth: excalidrawStrokeWidth,
+				fontSize: excalidrawFontSize
+			});
+		} else if (exportFormat === 'markdown') {
+			await handleMarkdownExport(plugin, allEvents, title, markdownFormat, personValue, typeValue, groupValue, exportBtn);
+		}
+	});
+
+	container.appendChild(card);
+}
+
+/**
+ * Handle Canvas export
+ */
+async function handleCanvasExport(
+	plugin: CanvasRootsPlugin,
+	allEvents: EventNote[],
+	title: string,
+	layoutValue: TimelineLayoutStyle,
+	colorValue: TimelineColorScheme,
+	personValue: string,
+	typeValue: string,
+	groupValue: string,
+	includeEdges: boolean,
+	groupByPerson: boolean,
+	exportBtn: HTMLButtonElement
+): Promise<void> {
+	const folder = plugin.settings.canvasesFolder || 'Canvas Roots';
+	const safeTitle = title.replace(/[<>:"/\\|?*]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').toLowerCase();
+	const expectedPath = `${folder}/${safeTitle}.canvas`;
+	const existingFile = plugin.app.vault.getAbstractFileByPath(expectedPath);
+
+	if (existingFile) {
+		const confirmed = await confirmOverwriteCanvas(plugin.app, expectedPath);
+		if (!confirmed) return;
+	}
+
+	exportBtn.disabled = true;
+	exportBtn.textContent = 'Exporting...';
+
+	try {
+		const exporter = new TimelineCanvasExporter(plugin.app, plugin.settings);
+		const result = await exporter.exportToCanvas(allEvents, {
+			title,
+			layoutStyle: layoutValue,
+			colorScheme: colorValue,
+			filterPerson: personValue || undefined,
+			filterEventType: typeValue || undefined,
+			filterGroup: groupValue || undefined,
+			includeOrderingEdges: includeEdges,
+			groupByPerson
+		});
+
+		if (result.success && result.path) {
+			if (result.warnings?.length) {
+				for (const warning of result.warnings) {
+					new Notice(warning, 8000);
+				}
+			}
+			new Notice(`Timeline exported to ${result.path}`);
+			const file = plugin.app.vault.getAbstractFileByPath(result.path);
+			if (file) {
+				void plugin.app.workspace.getLeaf(false).openFile(file as TFile);
+			}
+		} else {
+			new Notice(`Export failed: ${result.error || 'Unknown error'}`);
+		}
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		new Notice(`Export failed: ${message}`);
+	} finally {
+		exportBtn.disabled = false;
+		exportBtn.empty();
+		const icon = createLucideIcon('layout', 16);
+		exportBtn.appendChild(icon);
+		exportBtn.appendText(' Export to Canvas');
+	}
+}
+
+/**
+ * Handle Excalidraw export
+ */
+async function handleExcalidrawExport(
+	plugin: CanvasRootsPlugin,
+	allEvents: EventNote[],
+	title: string,
+	layoutValue: TimelineLayoutStyle,
+	colorValue: TimelineColorScheme,
+	personValue: string,
+	typeValue: string,
+	groupValue: string,
+	includeEdges: boolean,
+	exportBtn: HTMLButtonElement,
+	excalidrawOptions: {
+		roughness: number;
+		fontFamily: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+		fillStyle: 'solid' | 'hachure' | 'cross-hatch';
+		strokeStyle: 'solid' | 'dashed' | 'dotted';
+		strokeWidth: number;
+		fontSize: number;
+	}
+): Promise<void> {
+	const folder = plugin.settings.canvasesFolder || 'Canvas Roots';
+	const safeTitle = title.replace(/[<>:"/\\|?*]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').toLowerCase();
+	const expectedExcalidrawPath = `${folder}/${safeTitle}.excalidraw.md`;
+	const existingExcalidraw = plugin.app.vault.getAbstractFileByPath(expectedExcalidrawPath);
+
+	if (existingExcalidraw) {
+		const confirmed = await confirmOverwriteCanvas(plugin.app, expectedExcalidrawPath);
+		if (!confirmed) return;
+	}
+
+	exportBtn.disabled = true;
+	exportBtn.textContent = 'Exporting...';
+
+	try {
 		const exporter = new TimelineCanvasExporter(plugin.app, plugin.settings);
 
-		canvasBtn.disabled = true;
-		canvasBtn.textContent = 'Exporting...';
+		// Export to canvas first (as intermediate format)
+		const result = await exporter.exportToCanvas(allEvents, {
+			title,
+			layoutStyle: layoutValue,
+			colorScheme: colorValue,
+			filterPerson: personValue || undefined,
+			filterEventType: typeValue || undefined,
+			filterGroup: groupValue || undefined,
+			includeOrderingEdges: includeEdges,
+			groupByPerson: false
+		});
 
-		try {
-			const result = await exporter.exportToCanvas(allEvents, {
-				title: titleInput.value || 'Event Timeline',
-				layoutStyle: layoutSelect.value as TimelineLayoutStyle,
-				colorScheme: colorSelect.value as TimelineColorScheme,
-				filterPerson: personSelect.value || undefined,
-				filterEventType: typeSelect.value || undefined,
-				filterGroup: groupSelect.value || undefined,
-				includeOrderingEdges: edgesCheckbox.checked,
-				groupByPerson: groupCheckbox.checked
+		if (result.success && result.path) {
+			if (result.warnings?.length) {
+				for (const warning of result.warnings) {
+					new Notice(warning, 8000);
+				}
+			}
+
+			// Convert to Excalidraw
+			const { ExcalidrawExporter } = await import('../../excalidraw/excalidraw-exporter');
+			const excalidrawExporter = new ExcalidrawExporter(plugin.app);
+
+			const canvasFile = plugin.app.vault.getAbstractFileByPath(result.path);
+			if (!(canvasFile instanceof TFile)) {
+				throw new Error('Canvas file not found after export');
+			}
+
+			const excalidrawResult = await excalidrawExporter.exportToExcalidraw({
+				canvasFile,
+				fileName: result.path.replace('.canvas', '').split('/').pop(),
+				preserveColors: true,
+				roughness: excalidrawOptions.roughness,
+				fontFamily: excalidrawOptions.fontFamily,
+				fillStyle: excalidrawOptions.fillStyle,
+				strokeStyle: excalidrawOptions.strokeStyle,
+				strokeWidth: excalidrawOptions.strokeWidth,
+				fontSize: excalidrawOptions.fontSize
 			});
 
-			if (result.success && result.path) {
-				new Notice(`Timeline exported to ${result.path}`);
-				// Open the canvas
-				const file = plugin.app.vault.getAbstractFileByPath(result.path);
+			if (excalidrawResult.success && excalidrawResult.excalidrawContent) {
+				const excalidrawPath = result.path.replace('.canvas', '.excalidraw.md');
+				const existingFile = plugin.app.vault.getAbstractFileByPath(excalidrawPath);
+				if (existingFile instanceof TFile) {
+					await plugin.app.vault.modify(existingFile, excalidrawResult.excalidrawContent);
+				} else {
+					await plugin.app.vault.create(excalidrawPath, excalidrawResult.excalidrawContent);
+				}
+				new Notice(`Timeline exported to ${excalidrawPath}`);
+				const file = plugin.app.vault.getAbstractFileByPath(excalidrawPath);
 				if (file) {
 					void plugin.app.workspace.getLeaf(false).openFile(file as TFile);
 				}
 			} else {
-				new Notice(`Export failed: ${result.error || 'Unknown error'}`);
+				new Notice(`Excalidraw export failed: ${excalidrawResult.errors.join(', ') || 'Unknown error'}`);
 			}
-		} catch (error) {
-			const message = error instanceof Error ? error.message : String(error);
-			new Notice(`Export failed: ${message}`);
-		} finally {
-			canvasBtn.disabled = false;
-			canvasBtn.empty();
-			const icon = createLucideIcon('layout', 16);
-			canvasBtn.appendChild(icon);
-			canvasBtn.appendText(' Export to Canvas');
+		} else {
+			new Notice(`Export failed: ${result.error || 'Unknown error'}`);
 		}
-	});
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		new Notice(`Export failed: ${message}`);
+	} finally {
+		exportBtn.disabled = false;
+		exportBtn.empty();
+		const icon = createLucideIcon('edit', 16);
+		exportBtn.appendChild(icon);
+		exportBtn.appendText(' Export to Excalidraw');
+	}
+}
 
-	// Export to Excalidraw button (if plugin is available)
-	// Use type assertion to access internal plugins API
-	const excalidrawAvailable = (plugin.app as unknown as { plugins: { enabledPlugins: Set<string> } }).plugins?.enabledPlugins?.has('obsidian-excalidraw-plugin') ?? false;
+/**
+ * Handle Markdown export
+ */
+async function handleMarkdownExport(
+	plugin: CanvasRootsPlugin,
+	allEvents: EventNote[],
+	title: string,
+	formatValue: TimelineExportFormat,
+	personValue: string,
+	typeValue: string,
+	groupValue: string,
+	exportBtn: HTMLButtonElement
+): Promise<void> {
+	const folder = plugin.settings.timelinesFolder || plugin.settings.eventsFolder || 'Canvas Roots/Timelines';
+	const safeTitle = title.replace(/[<>:"/\\|?*]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').toLowerCase();
+	const expectedPath = `${folder}/${safeTitle}.md`;
+	const existingFile = plugin.app.vault.getAbstractFileByPath(expectedPath);
 
-	const excalidrawBtn = buttonRow.createEl('button', {
-		cls: `crc-btn ${excalidrawAvailable ? '' : 'crc-btn--disabled'}`,
-		attr: excalidrawAvailable ? {} : { disabled: 'disabled' }
-	});
-	const excalidrawIcon = createLucideIcon('edit', 16);
-	excalidrawBtn.appendChild(excalidrawIcon);
-	excalidrawBtn.appendText(' Export to Excalidraw');
-
-	if (!excalidrawAvailable) {
-		excalidrawBtn.setAttribute('title', 'Excalidraw plugin not installed');
-	} else {
-		excalidrawBtn.addEventListener('click', async () => {
-			// First export to canvas, then convert to Excalidraw
-			const exporter = new TimelineCanvasExporter(plugin.app, plugin.settings);
-
-			excalidrawBtn.disabled = true;
-			excalidrawBtn.textContent = 'Exporting...';
-
-			try {
-				// Export to canvas first
-				const result = await exporter.exportToCanvas(allEvents, {
-					title: titleInput.value || 'Event Timeline',
-					layoutStyle: layoutSelect.value as TimelineLayoutStyle,
-					colorScheme: colorSelect.value as TimelineColorScheme,
-					filterPerson: personSelect.value || undefined,
-					filterEventType: typeSelect.value || undefined,
-					filterGroup: groupSelect.value || undefined,
-					includeOrderingEdges: edgesCheckbox.checked,
-					groupByPerson: groupCheckbox.checked
-				});
-
-				if (result.success && result.path) {
-					// Use existing Excalidraw exporter
-					const { ExcalidrawExporter } = await import('../../excalidraw/excalidraw-exporter');
-					const excalidrawExporter = new ExcalidrawExporter(plugin.app);
-
-					// Get the canvas file that was just created
-					const canvasFile = plugin.app.vault.getAbstractFileByPath(result.path);
-					if (!(canvasFile instanceof TFile)) {
-						throw new Error('Canvas file not found after export');
-					}
-
-					const excalidrawResult = await excalidrawExporter.exportToExcalidraw({
-						canvasFile,
-						fileName: result.path.replace('.canvas', '').split('/').pop(),
-						preserveColors: true
-					});
-
-					if (excalidrawResult.success && excalidrawResult.excalidrawContent) {
-						// Write the Excalidraw file
-						const excalidrawPath = result.path.replace('.canvas', '.excalidraw.md');
-						await plugin.app.vault.create(excalidrawPath, excalidrawResult.excalidrawContent);
-						new Notice(`Timeline exported to ${excalidrawPath}`);
-						// Open the Excalidraw file
-						const file = plugin.app.vault.getAbstractFileByPath(excalidrawPath);
-						if (file) {
-							void plugin.app.workspace.getLeaf(false).openFile(file as TFile);
-						}
-					} else {
-						new Notice(`Excalidraw export failed: ${excalidrawResult.errors.join(', ') || 'Unknown error'}`);
-					}
-				} else {
-					new Notice(`Canvas export failed: ${result.error || 'Unknown error'}`);
-				}
-			} catch (error) {
-				const message = error instanceof Error ? error.message : String(error);
-				new Notice(`Export failed: ${message}`);
-			} finally {
-				excalidrawBtn.disabled = false;
-				excalidrawBtn.empty();
-				const icon = createLucideIcon('edit', 16);
-				excalidrawBtn.appendChild(icon);
-				excalidrawBtn.appendText(' Export to Excalidraw');
-			}
-		});
+	if (existingFile) {
+		const confirmed = await confirmOverwriteCanvas(plugin.app, expectedPath);
+		if (!confirmed) return;
 	}
 
-	container.appendChild(card);
+	exportBtn.disabled = true;
+	exportBtn.textContent = 'Exporting...';
+
+	try {
+		const exporter = new TimelineMarkdownExporter(plugin.app, plugin.settings);
+		const result = await exporter.export(allEvents, {
+			title,
+			format: formatValue,
+			filterPerson: personValue || undefined,
+			filterEventType: typeValue || undefined,
+			filterGroup: groupValue || undefined,
+			groupByYear: true,
+			includePlaces: true,
+			includeSources: true,
+			multiColumn: formatValue === 'callout'
+		});
+
+		if (result.success && result.path) {
+			if (result.warnings?.length) {
+				for (const warning of result.warnings) {
+					new Notice(warning, 8000);
+				}
+			}
+			new Notice(`Timeline exported to ${result.path}`);
+			const file = plugin.app.vault.getAbstractFileByPath(result.path);
+			if (file) {
+				void plugin.app.workspace.getLeaf(false).openFile(file as TFile);
+			}
+		} else {
+			new Notice(`Export failed: ${result.error || 'Unknown error'}`);
+		}
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		new Notice(`Export failed: ${message}`);
+	} finally {
+		exportBtn.disabled = false;
+		exportBtn.empty();
+		const icon = createLucideIcon('file-text', 16);
+		exportBtn.appendChild(icon);
+		exportBtn.appendText(' Export to Markdown');
+	}
 }
 
 /**
@@ -1219,6 +1584,41 @@ async function confirmDeleteEvent(app: App, eventTitle: string): Promise<boolean
 			cls: 'mod-warning'
 		});
 		deleteBtn.addEventListener('click', () => {
+			modal.close();
+			resolve(true);
+		});
+
+		modal.open();
+	});
+}
+
+/**
+ * Confirm overwriting an existing canvas file
+ */
+async function confirmOverwriteCanvas(app: App, canvasPath: string): Promise<boolean> {
+	return new Promise((resolve) => {
+		const modal = new Modal(app);
+		modal.titleEl.setText('Overwrite canvas?');
+		modal.contentEl.createEl('p', {
+			text: `A canvas file already exists at "${canvasPath}".`
+		});
+		modal.contentEl.createEl('p', {
+			text: 'Do you want to replace it with a new timeline export?'
+		});
+
+		const buttonContainer = modal.contentEl.createDiv({ cls: 'modal-button-container' });
+
+		const cancelBtn = buttonContainer.createEl('button', { text: 'Cancel' });
+		cancelBtn.addEventListener('click', () => {
+			modal.close();
+			resolve(false);
+		});
+
+		const overwriteBtn = buttonContainer.createEl('button', {
+			text: 'Overwrite',
+			cls: 'mod-warning'
+		});
+		overwriteBtn.addEventListener('click', () => {
 			modal.close();
 			resolve(true);
 		});

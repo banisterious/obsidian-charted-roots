@@ -1243,6 +1243,33 @@
 }
 
 /* ==========================================================================
+   Export Section (Markdown Export)
+   ========================================================================== */
+
+.crc-export-section {
+  padding-top: var(--size-4-3);
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.crc-quick-stats {
+  padding: var(--size-4-2);
+  background-color: var(--background-secondary);
+  border-radius: var(--radius-s);
+}
+
+.crc-quick-stats-text {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-2-1);
+  font-size: var(--font-ui-small);
+}
+
+.crc-form-description {
+  margin-top: var(--size-2-1);
+  padding-left: var(--size-2-1);
+}
+
+/* ==========================================================================
    Responsive Adjustments
    ========================================================================== */
 

@@ -120,5 +120,112 @@ settings:
     description: "Node width, height, and spacing are configured in the Canvas Roots plugin settings (Settings → Canvas Roots → Canvas Output) or in the Control Center's Canvas Settings tab. These values are written directly into canvas files when generating trees."
     type: info-text
     markdown: true
+  -
+    id: timeline-callout-heading
+    title: Timeline callouts
+    description: Styling for exported markdown timelines using [!timeline] callouts
+    type: heading
+    level: 1
+    collapsed: true
+  -
+    id: wide-timeline
+    title: Enable wide timeline mode
+    description: Expands readable line width for all notes (requires RLL to be enabled)
+    type: class-toggle
+    default: false
+  -
+    id: cr-timeline-width
+    title: Wide timeline width
+    description: Width when wide mode is enabled (use px, em, or %)
+    type: variable-text
+    default: "1200px"
+  -
+    id: cr-timeline-title-color
+    title: Year/title text color
+    type: variable-color
+    format: hex
+    default: "#e5e5e5"
+  -
+    id: cr-timeline-title-size
+    title: Year/title font size
+    type: variable-text
+    default: "1.5em"
+  -
+    id: cr-timeline-title-width
+    title: Year column width
+    type: variable-number-slider
+    default: 150
+    min: 80
+    max: 300
+    step: 10
+    format: px
+  -
+    id: cr-timeline-line-color
+    title: Vertical line color
+    type: variable-color
+    format: hex
+    default: "#525252"
+  -
+    id: cr-timeline-line-width
+    title: Vertical line width
+    type: variable-number-slider
+    default: 4
+    min: 1
+    max: 8
+    step: 1
+    format: px
+  -
+    id: cr-timeline-dot-size
+    title: Event dot size
+    type: variable-number-slider
+    default: 32
+    min: 16
+    max: 48
+    step: 4
+    format: px
+  -
+    id: cr-timeline-dot-border-size
+    title: Event dot border width
+    type: variable-number-slider
+    default: 6
+    min: 2
+    max: 10
+    step: 1
+    format: px
+  -
+    id: cr-timeline-card-background
+    title: Event card background
+    type: variable-color
+    format: hex
+    default: "#404040"
+  -
+    id: cr-timeline-card-radius
+    title: Event card border radius
+    type: variable-text
+    default: "1rem"
+  -
+    id: cr-timeline-dot-birth
+    title: Birth event dot color
+    type: variable-color
+    format: hex
+    default: "#4ade80"
+  -
+    id: cr-timeline-dot-death
+    title: Death event dot color
+    type: variable-color
+    format: hex
+    default: "#6b7280"
+  -
+    id: cr-timeline-dot-marriage
+    title: Marriage event dot color
+    type: variable-color
+    format: hex
+    default: "#f472b6"
+  -
+    id: cr-timeline-dot-default
+    title: Default event dot color
+    type: variable-color
+    format: hex
+    default: "#60a5fa"
 
 */

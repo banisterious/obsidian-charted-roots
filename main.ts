@@ -165,7 +165,10 @@ export default class CanvasRootsPlugin extends Plugin {
 		this.addSettingTab(new CanvasRootsSettingTab(this.app, this));
 
 		// Trigger Style Settings plugin to parse our CSS settings block
-		this.app.workspace.trigger('parse-style-settings');
+		// Delay to ensure Style Settings plugin is loaded first
+		this.app.workspace.onLayoutReady(() => {
+			this.app.workspace.trigger('parse-style-settings');
+		});
 
 		// Register family chart view
 		this.registerView(

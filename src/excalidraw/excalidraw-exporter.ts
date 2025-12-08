@@ -13,6 +13,23 @@ import type { CanvasNode } from '../models/canvas';
 const logger = getLogger('ExcalidrawExporter');
 
 /**
+ * Excalidraw font family options
+ * 1=Virgil (hand-drawn), 2=Helvetica, 3=Cascadia (code), 4=Comic Shanns, 5=Excalifont,
+ * 6=Nunito, 7=Lilita One
+ */
+export type ExcalidrawFontFamily = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+/**
+ * Excalidraw fill style options
+ */
+export type ExcalidrawFillStyle = 'solid' | 'hachure' | 'cross-hatch';
+
+/**
+ * Excalidraw stroke style options
+ */
+export type ExcalidrawStrokeStyle = 'solid' | 'dashed' | 'dotted';
+
+/**
  * Excalidraw export options
  */
 export interface ExcalidrawExportOptions {
@@ -25,11 +42,32 @@ export interface ExcalidrawExportOptions {
 	/** Preserve colors from canvas */
 	preserveColors?: boolean;
 
-	/** Font size for person names */
+	/** Font size for labels (default: 16) */
 	fontSize?: number;
 
-	/** Stroke width for edges */
+	/** Stroke width for edges (default: 2) */
 	strokeWidth?: number;
+
+	/** Roughness level: 0=architect (clean), 1=artist (slightly rough), 2=cartoonist (very rough) */
+	roughness?: number;
+
+	/** Font family: 1=Virgil (hand-drawn), 2=Helvetica, 3=Cascadia (code) */
+	fontFamily?: ExcalidrawFontFamily;
+
+	/** Fill style for shapes */
+	fillStyle?: ExcalidrawFillStyle;
+
+	/** Stroke style for lines */
+	strokeStyle?: ExcalidrawStrokeStyle;
+
+	/** Background color for shapes (hex color or 'transparent') */
+	shapeBackgroundColor?: string;
+
+	/** Canvas background color (hex color) */
+	viewBackgroundColor?: string;
+
+	/** Element opacity (0-100) */
+	opacity?: number;
 }
 
 /**
@@ -98,7 +136,7 @@ interface ExcalidrawText extends ExcalidrawElement {
 	text: string;
 	rawText: string;
 	fontSize: number;
-	fontFamily: 1 | 2 | 3 | 4 | 5; // 1=Virgil, 2=Helvetica, 3=Cascadia, 4=Virgil, 5=Excalifont
+	fontFamily: ExcalidrawFontFamily; // 1=Virgil, 2=Helvetica, 3=Cascadia, 4=Comic Shanns, 5=Excalifont, 6=Nunito, 7=Lilita One
 	textAlign: 'left' | 'center' | 'right';
 	verticalAlign: 'top' | 'middle';
 	baseline: number;
@@ -230,9 +268,17 @@ export class ExcalidrawExporter {
 		const elements: (ExcalidrawRectangle | ExcalidrawText | ExcalidrawArrow)[] = [];
 		const nodeIdMap = new Map<string, string>(); // Canvas ID -> Excalidraw ID
 
-		const fontSize = options.fontSize || 16;
-		const strokeWidth = options.strokeWidth || 2;
+		// Extract options with defaults
+		const fontSize = options.fontSize ?? 16;
+		const strokeWidth = options.strokeWidth ?? 2;
 		const preserveColors = options.preserveColors ?? true;
+		const roughness = options.roughness ?? 1;
+		const fontFamily = options.fontFamily ?? 1;
+		const fillStyle = options.fillStyle ?? 'solid';
+		const strokeStyle = options.strokeStyle ?? 'solid';
+		const shapeBackgroundColor = options.shapeBackgroundColor ?? 'transparent';
+		const viewBackgroundColor = options.viewBackgroundColor ?? '#ffffff';
+		const opacity = options.opacity ?? 100;
 
 		// Calculate bounds to normalize coordinates
 		let minX = Infinity;
@@ -265,7 +311,15 @@ export class ExcalidrawExporter {
 				node.y + offsetY,
 				node.width,
 				node.height,
-				rectColor
+				rectColor,
+				{
+					roughness,
+					fillStyle,
+					strokeStyle,
+					strokeWidth,
+					backgroundColor: shapeBackgroundColor,
+					opacity
+				}
 			);
 			elements.push(rectangle);
 
@@ -279,7 +333,11 @@ export class ExcalidrawExporter {
 					node.y + offsetY + node.height / 2,
 					labelText,
 					fontSize,
-					excalidrawId // container ID
+					excalidrawId, // container ID
+					{
+						fontFamily,
+						opacity
+					}
 				);
 				elements.push(textElement);
 			}
@@ -315,7 +373,12 @@ export class ExcalidrawExporter {
 				strokeWidth,
 				offsetX,
 				offsetY,
-				edge.label
+				edge.label,
+				{
+					roughness,
+					strokeStyle,
+					opacity
+				}
 			);
 			elements.push(arrow);
 		}
@@ -327,7 +390,7 @@ export class ExcalidrawExporter {
 			elements,
 			appState: {
 				gridSize: null,
-				viewBackgroundColor: '#ffffff'
+				viewBackgroundColor
 			},
 			files: {}
 		};
@@ -342,7 +405,15 @@ export class ExcalidrawExporter {
 		y: number,
 		width: number,
 		height: number,
-		color: string
+		color: string,
+		styleOptions?: {
+			roughness?: number;
+			fillStyle?: ExcalidrawFillStyle;
+			strokeStyle?: ExcalidrawStrokeStyle;
+			strokeWidth?: number;
+			backgroundColor?: string;
+			opacity?: number;
+		}
 	): ExcalidrawRectangle {
 		return {
 			id,
@@ -353,12 +424,12 @@ export class ExcalidrawExporter {
 			height,
 			angle: 0,
 			strokeColor: color,
-			backgroundColor: 'transparent',
-			fillStyle: 'solid',
-			strokeWidth: 2,
-			strokeStyle: 'solid',
-			roughness: 1,
-			opacity: 100,
+			backgroundColor: styleOptions?.backgroundColor ?? 'transparent',
+			fillStyle: styleOptions?.fillStyle ?? 'solid',
+			strokeWidth: styleOptions?.strokeWidth ?? 2,
+			strokeStyle: styleOptions?.strokeStyle ?? 'solid',
+			roughness: styleOptions?.roughness ?? 1,
+			opacity: styleOptions?.opacity ?? 100,
 			groupIds: [],
 			frameId: null,
 			roundness: { type: 3 },
@@ -382,7 +453,11 @@ export class ExcalidrawExporter {
 		y: number,
 		text: string,
 		fontSize: number,
-		containerId: string | null = null
+		containerId: string | null = null,
+		styleOptions?: {
+			fontFamily?: ExcalidrawFontFamily;
+			opacity?: number;
+		}
 	): ExcalidrawText {
 		// Center text within container
 		const textWidth = text.length * fontSize * 0.6; // Approximate width
@@ -401,8 +476,8 @@ export class ExcalidrawExporter {
 			fillStyle: 'solid',
 			strokeWidth: 2,
 			strokeStyle: 'solid',
-			roughness: 0,
-			opacity: 100,
+			roughness: 0, // Text should always be clean
+			opacity: styleOptions?.opacity ?? 100,
 			groupIds: [],
 			frameId: null,
 			roundness: null,
@@ -417,7 +492,7 @@ export class ExcalidrawExporter {
 			text,
 			rawText: text,
 			fontSize,
-			fontFamily: 1, // Virgil (hand-drawn style)
+			fontFamily: styleOptions?.fontFamily ?? 1, // Default to Virgil (hand-drawn style)
 			textAlign: 'center',
 			verticalAlign: 'middle',
 			baseline: fontSize,
@@ -441,7 +516,12 @@ export class ExcalidrawExporter {
 		strokeWidth: number,
 		offsetX: number,
 		offsetY: number,
-		label?: string
+		label?: string,
+		styleOptions?: {
+			roughness?: number;
+			strokeStyle?: ExcalidrawStrokeStyle;
+			opacity?: number;
+		}
 	): ExcalidrawArrow {
 		// Calculate arrow start and end points (with coordinate offset applied)
 		const startX = fromNode.x + offsetX + fromNode.width / 2;
@@ -467,9 +547,9 @@ export class ExcalidrawExporter {
 			backgroundColor: 'transparent',
 			fillStyle: 'solid',
 			strokeWidth,
-			strokeStyle: 'solid',
-			roughness: 1,
-			opacity: 100,
+			strokeStyle: styleOptions?.strokeStyle ?? 'solid',
+			roughness: styleOptions?.roughness ?? 1,
+			opacity: styleOptions?.opacity ?? 100,
 			groupIds: [],
 			frameId: null,
 			roundness: { type: 2 },
