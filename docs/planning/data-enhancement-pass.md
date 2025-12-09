@@ -443,3 +443,37 @@ Enhancement operations modify multiple files. We recommend:
 - [Roadmap: GEDCOM Import v2](../../wiki-content/Roadmap.md#gedcom-import-v2)
 - [GEDCOM Import v2 Planning](gedcom-import-v2.md)
 - [Events & Timelines](../../wiki-content/Events-And-Timelines.md)
+
+## Implementation Status
+
+### Generate Place Notes - ✅ Complete
+
+**Implemented in feature/data-enhancement-pass branch**
+
+Files created:
+- `src/enhancement/services/place-generator.ts` - PlaceGeneratorService with hierarchy parsing
+- `src/enhancement/ui/place-generator-modal.ts` - Modal UI with preview/generate workflow
+- `src/enhancement/index.ts` - Module exports
+
+Files modified:
+- `main.ts` - Added `generate-place-notes` command
+- `src/ui/control-center.ts` - Added Data Enhancement card to Data Quality tab
+- `src/ui/lucide-icons.ts` - Added `sparkles` and `plus-circle` icons
+- `styles/data-quality.css` - Added place generator modal styles
+
+Features:
+- Scans person notes for `birth_place`, `death_place` properties
+- Scans event notes for `place` properties
+- Detects string values (not wikilinks) that need conversion
+- Creates place notes with proper hierarchy (parents created first)
+- Updates references to use wikilinks
+- Preview mode shows what will be created/modified
+- Matches existing place notes to avoid duplicates
+
+### Generate Events from Dates - 📋 Planned
+
+Not yet implemented.
+
+### Re-parse GEDCOM for Sources - 📋 Planned
+
+Not yet implemented.

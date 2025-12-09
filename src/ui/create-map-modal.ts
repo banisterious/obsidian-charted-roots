@@ -591,12 +591,11 @@ export class CreateMapModal extends Modal {
 		];
 
 		if (this.mapData.coordinateSystem === 'geographic') {
-			// Add bounds using nested format for readability
-			lines.push('bounds:');
-			lines.push(`  north: ${this.mapData.boundsNorth}`);
-			lines.push(`  south: ${this.mapData.boundsSouth}`);
-			lines.push(`  east: ${this.mapData.boundsEast}`);
-			lines.push(`  west: ${this.mapData.boundsWest}`);
+			// Add bounds using flat properties
+			lines.push(`bounds_north: ${this.mapData.boundsNorth}`);
+			lines.push(`bounds_south: ${this.mapData.boundsSouth}`);
+			lines.push(`bounds_east: ${this.mapData.boundsEast}`);
+			lines.push(`bounds_west: ${this.mapData.boundsWest}`);
 		} else {
 			// Add image dimensions if specified
 			if (this.mapData.imageWidth !== undefined) {

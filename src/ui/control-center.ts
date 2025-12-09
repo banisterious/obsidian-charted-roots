@@ -5388,6 +5388,7 @@ export class ControlCenterModal extends Modal {
 				.setButtonText('Create map')
 				.onClick(() => {
 					new CreateMapModal(this.app, {
+						directory: this.plugin.settings.mapsFolder,
 						onCreated: () => {
 							// Refresh the maps grid after creation
 							void this.loadCustomMapsGrid(mapsGridContainer);
@@ -11140,6 +11141,37 @@ export class ControlCenterModal extends Modal {
 			);
 
 		container.appendChild(batchCard);
+
+		// Data Enhancement card
+		const enhancementCard = this.createCard({
+			title: 'Data enhancement',
+			icon: 'sparkles',
+			subtitle: 'Create missing notes from existing data'
+		});
+		const enhancementContent = enhancementCard.querySelector('.crc-card__content') as HTMLElement;
+
+		// Explanation
+		const enhancementExplanation = enhancementContent.createDiv({ cls: 'crc-info-callout crc-mb-3' });
+		enhancementExplanation.createEl('p', {
+			text: 'Enhance your notes by generating place notes from place strings in person and event notes. ' +
+				'Useful for data imported from CSV, manually entered records, or vaults created before place notes were supported.',
+			cls: 'crc-text--small'
+		});
+
+		// Generate place notes
+		new Setting(enhancementContent)
+			.setName('Generate place notes')
+			.setDesc('Create place notes from place strings and update references to use wikilinks')
+			.addButton(btn => btn
+				.setButtonText('Open')
+				.setCta()
+				.onClick(() => {
+					const { PlaceGeneratorModal } = require('../enhancement/ui/place-generator-modal');
+					new PlaceGeneratorModal(this.app, this.plugin.settings).open();
+				})
+			);
+
+		container.appendChild(enhancementCard);
 
 		// Data Tools card
 		const toolsCard = this.createCard({

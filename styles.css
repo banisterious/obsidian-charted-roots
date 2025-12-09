@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-09 17:44:38 UTC
+ * - Generated: 2025-12-09 20:17:15 UTC
  * - Components: 30 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -449,7 +449,7 @@ settings:
    COMPONENT: MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 4960 lines, 90.64 KB */
+/* Component Size: 5094 lines, 92.89 KB */
 
 /* ==========================================================================
    Canvas Roots Control Center - Styling
@@ -5411,6 +5411,140 @@ settings:
   padding-top: 0;
 }
 
+/* =============================================================================
+   Flatten Nested Properties Modal
+   ============================================================================= */
+
+.cr-flatten-nested-modal {
+  width: 550px;
+  max-width: 90vw;
+}
+
+.cr-flatten-nested-modal .modal-content {
+  padding: 20px;
+}
+
+.cr-flatten-content {
+  margin: 16px 0;
+}
+
+.cr-flatten-properties-section {
+  margin-bottom: 16px;
+}
+
+.cr-flatten-properties-section h3 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.cr-flatten-scan-container {
+  margin: 16px 0;
+}
+
+.cr-flatten-progress {
+  margin: 16px 0;
+  padding: 12px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+}
+
+.cr-flatten-progress-bar {
+  height: 8px;
+  background: var(--background-modifier-border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.cr-flatten-progress-fill {
+  height: 100%;
+  background: var(--interactive-accent);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.cr-flatten-results {
+  margin: 16px 0;
+}
+
+.cr-flatten-summary-header {
+  margin-bottom: 12px;
+}
+
+.cr-flatten-results-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.cr-flatten-result-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+}
+
+.cr-flatten-result-row svg {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.cr-flatten-count {
+  font-weight: 600;
+  color: var(--text-accent);
+}
+
+.cr-flatten-preview-btn {
+  margin-left: auto;
+  font-size: 12px;
+}
+
+.cr-flatten-total {
+  padding: 12px;
+  background: var(--background-primary-alt);
+  border-radius: 6px;
+  text-align: center;
+}
+
+.cr-flatten-preview {
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.cr-flatten-preview h4 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cr-flatten-file-list {
+  margin: 0;
+  padding-left: 20px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.cr-flatten-file-list li {
+  padding: 2px 0;
+  font-size: 12px;
+}
+
+.cr-flatten-file-link {
+  color: var(--text-accent);
+  cursor: pointer;
+}
+
+.cr-flatten-file-link:hover {
+  text-decoration: underline;
+}
+
 
 /* End of modals.css */
 
@@ -6969,7 +7103,7 @@ settings:
    COMPONENT: DATA-QUALITY.CSS
    ========================================================================== */
 
-/* Component Size: 719 lines, 13.53 KB */
+/* Component Size: 986 lines, 18.9 KB */
 
 /**
  * Data Quality Tab Styles
@@ -7326,6 +7460,103 @@ settings:
 .crc-batch-new-value {
   color: var(--color-green);
   font-weight: 500;
+}
+
+/* Batch Preview Modal */
+.crc-batch-preview-modal {
+  width: 650px;
+  max-width: 90vw;
+}
+
+.crc-batch-preview-modal .modal-content {
+  display: flex;
+  flex-direction: column;
+  max-height: 70vh;
+}
+
+.crc-batch-count {
+  margin-bottom: var(--size-4-2);
+  font-weight: 500;
+}
+
+.crc-batch-controls {
+  display: flex;
+  gap: var(--size-4-3);
+  align-items: center;
+  margin-bottom: var(--size-4-3);
+  flex-wrap: wrap;
+}
+
+.crc-batch-search {
+  flex: 1;
+  min-width: 150px;
+}
+
+.crc-batch-search-input {
+  width: 100%;
+  padding: var(--size-4-1) var(--size-4-2);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+}
+
+.crc-batch-search-input:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+}
+
+.crc-batch-filter-select {
+  padding: var(--size-4-1) var(--size-4-2);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+}
+
+.crc-batch-sort-btn {
+  padding: var(--size-4-1) var(--size-4-2);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  cursor: pointer;
+  min-width: 50px;
+}
+
+.crc-batch-sort-btn:hover {
+  background: var(--background-modifier-hover);
+}
+
+.crc-batch-table-container {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 350px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  margin-bottom: var(--size-4-3);
+}
+
+.crc-batch-table-container .crc-batch-preview-table {
+  margin-bottom: 0;
+}
+
+.crc-batch-table-container .crc-batch-preview-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.crc-batch-unrecognized-row {
+  opacity: 0.7;
+}
+
+.crc-batch-unrecognized-value {
+  color: var(--text-warning);
+  font-style: italic;
 }
 
 .crc-batch-arrow {
@@ -7688,6 +7919,176 @@ settings:
   margin: 0;
   font-size: var(--font-ui-smaller);
   color: var(--text-muted);
+}
+
+/* ========================================================================
+ * Place Generator Modal Styles
+ * ======================================================================== */
+
+.cr-place-generator-modal {
+  width: 600px;
+  max-width: 90vw;
+}
+
+.cr-place-generator-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-4);
+}
+
+.cr-place-generator-options {
+  background: var(--background-secondary);
+  border-radius: var(--radius-m);
+  padding: var(--size-4-3);
+}
+
+.cr-place-generator-options h3 {
+  margin: 0 0 var(--size-4-2);
+  font-size: var(--font-ui-medium);
+  font-weight: 600;
+}
+
+.cr-place-generator-progress {
+  text-align: center;
+  padding: var(--size-4-4);
+  background: var(--background-secondary);
+  border-radius: var(--radius-m);
+}
+
+.cr-place-generator-results {
+  min-height: 100px;
+}
+
+.cr-place-generator-summary {
+  background: var(--background-secondary);
+  border-radius: var(--radius-m);
+  padding: var(--size-4-3);
+  margin-bottom: var(--size-4-3);
+}
+
+.cr-place-generator-summary h4 {
+  margin: 0 0 var(--size-4-2);
+  font-size: var(--font-ui-medium);
+  font-weight: 600;
+}
+
+.cr-place-generator-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--size-4-2);
+}
+
+.cr-place-generator-stat-item {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  padding: var(--size-4-2);
+  background: var(--background-primary);
+  border-radius: var(--radius-s);
+}
+
+.cr-place-generator-stat-item svg {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.cr-place-generator-stat-value {
+  font-weight: 600;
+  color: var(--text-accent);
+}
+
+.cr-place-generator-places {
+  margin-top: var(--size-4-3);
+}
+
+.cr-place-generator-places h4 {
+  margin: 0 0 var(--size-4-2);
+  font-size: var(--font-ui-medium);
+  font-weight: 600;
+}
+
+.cr-place-generator-place-list {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-left: var(--size-4-4);
+  margin: 0;
+}
+
+.cr-place-generator-place-list li {
+  padding: var(--size-4-1) 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-place-generator-place-list li:last-child {
+  border-bottom: none;
+}
+
+.cr-place-generator-complete-header {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  margin-bottom: var(--size-4-3);
+}
+
+.cr-place-generator-complete-header svg {
+  color: var(--color-green);
+}
+
+.cr-place-generator-complete-header h4 {
+  margin: 0;
+  font-size: var(--font-ui-large);
+  font-weight: 600;
+}
+
+.cr-place-generator-errors {
+  background: var(--background-modifier-error);
+  border-radius: var(--radius-m);
+  padding: var(--size-4-3);
+  margin-top: var(--size-4-3);
+}
+
+.cr-place-generator-errors h4 {
+  margin: 0 0 var(--size-4-2);
+  font-size: var(--font-ui-medium);
+  font-weight: 600;
+  color: var(--text-error);
+}
+
+.cr-place-generator-error-list {
+  margin: 0;
+  padding-left: var(--size-4-4);
+  font-size: var(--font-ui-smaller);
+}
+
+.cr-place-generator-created-notes {
+  margin-top: var(--size-4-3);
+}
+
+.cr-place-generator-created-notes h4 {
+  margin: 0 0 var(--size-4-2);
+  font-size: var(--font-ui-medium);
+  font-weight: 600;
+}
+
+.cr-place-generator-note-list {
+  max-height: 200px;
+  overflow-y: auto;
+  padding-left: var(--size-4-4);
+  margin: 0;
+}
+
+.cr-place-generator-note-list li {
+  padding: var(--size-4-1) 0;
+}
+
+.cr-place-generator-note-link {
+  color: var(--text-accent);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.cr-place-generator-note-link:hover {
+  text-decoration: underline;
 }
 
 
@@ -15232,10 +15633,10 @@ body.wide-timeline .view-content {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-09 17:44:38 UTC
+ * Build completed: 2025-12-09 20:17:15 UTC
  * Components processed: 30
- * Total lines: 14939
- * Total size: 293.19 KB
+ * Total lines: 15340
+ * Total size: 300.81 KB
  * Build duration: 0.02 seconds
  *
  * Component breakdown:
@@ -15247,7 +15648,7 @@ body.wide-timeline .view-content {
  * - nodes.css: 12 lines, 0.3 KB
  * - edges.css: 4 lines, 0.07 KB
  * - settings.css: 4 lines, 0.07 KB
- * - modals.css: 4960 lines, 90.64 KB
+ * - modals.css: 5094 lines, 92.89 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
  * - validation.css: 84 lines, 1.47 KB
@@ -15255,7 +15656,7 @@ body.wide-timeline .view-content {
  * - folder-scan.css: 155 lines, 2.56 KB
  * - relationship-calculator.css: 302 lines, 5.21 KB
  * - family-chart-view.css: 629 lines, 14.76 KB
- * - data-quality.css: 719 lines, 13.53 KB
+ * - data-quality.css: 986 lines, 18.9 KB
  * - relationships.css: 517 lines, 9.76 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB
  * - map-view.css: 1904 lines, 38.98 KB

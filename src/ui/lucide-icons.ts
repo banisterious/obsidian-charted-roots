@@ -107,7 +107,10 @@ export type LucideIconName =
 	| 'flag' // Flag marker
 	| 'check-circle' // Success indicator
 	| 'circle-off' // Disabled/off state
-	| 'help-circle'; // Help/unknown
+	| 'help-circle' // Help/unknown
+	// Data enhancement
+	| 'sparkles' // Enhancement/magic
+	| 'plus-circle'; // Add/create new
 
 /**
  * Tab configuration for Control Center navigation

@@ -617,6 +617,16 @@ export default class CanvasRootsPlugin extends Plugin {
 			}
 		});
 
+		// Add command: Generate Place Notes
+		this.addCommand({
+			id: 'generate-place-notes',
+			name: 'Generate place notes from place strings',
+			callback: async () => {
+				const { PlaceGeneratorModal } = await import('./src/enhancement/ui/place-generator-modal');
+				new PlaceGeneratorModal(this.app, this.settings).open();
+			}
+		});
+
 		// Add context menu items for person notes, canvas files, and folders
 		this.registerEvent(
 			this.app.workspace.on('file-menu', (menu, file) => {
@@ -887,6 +897,10 @@ export default class CanvasRootsPlugin extends Plugin {
 					const isSchema = isSchemaNote(fm, cache, detectionSettings);
 					const isEvent = isEventNote(fm, cache, detectionSettings);
 
+					// Also check if file is in maps folder (for notes not yet typed as map)
+					const mapsFolder = this.settings.mapsFolder;
+					const isInMapsFolder = mapsFolder && file.path.startsWith(mapsFolder + '/');
+
 					// Schema notes get schema-specific options
 					if (isSchema) {
 						menu.addSeparator();
@@ -963,7 +977,8 @@ export default class CanvasRootsPlugin extends Plugin {
 						}
 					}
 					// Map notes get map-specific options (open map view with this map selected)
-					else if (isMap) {
+					// Also show for files in maps folder that aren't yet typed as map
+					else if (isMap || isInMapsFolder) {
 						menu.addSeparator();
 
 						const mapId = fm?.map_id;
@@ -2510,6 +2525,17 @@ export default class CanvasRootsPlugin extends Plugin {
 											await this.addEssentialSourceProperties(files);
 										});
 								});
+
+								propsSubmenu.addItem((propItem) => {
+									propItem
+										.setTitle('Add essential map properties')
+										.setIcon('globe')
+										.onClick(async () => {
+											const files = this.app.vault.getMarkdownFiles()
+												.filter(f => f.path.startsWith(file.path + '/'));
+											await this.addEssentialMapProperties(files);
+										});
+								});
 							});
 
 							// Add cr_id only
@@ -2709,6 +2735,17 @@ export default class CanvasRootsPlugin extends Plugin {
 									const files = this.app.vault.getMarkdownFiles()
 										.filter(f => f.path.startsWith(file.path + '/'));
 									await this.addEssentialSourceProperties(files);
+								});
+						});
+
+						menu.addItem((item) => {
+							item
+								.setTitle('Canvas Roots: Add essential map properties')
+								.setIcon('globe')
+								.onClick(async () => {
+									const files = this.app.vault.getMarkdownFiles()
+										.filter(f => f.path.startsWith(file.path + '/'));
+									await this.addEssentialMapProperties(files);
 								});
 						});
 
