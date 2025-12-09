@@ -16,6 +16,14 @@ interface MissingPlace {
 	count: number;
 }
 
+/**
+ * Parent place information resolved from hierarchy
+ */
+interface ParentPlaceInfo {
+	name: string;
+	crId: string;
+}
+
 interface CreateMissingPlacesOptions {
 	directory?: string;
 	onComplete?: (created: number) => void;
@@ -287,9 +295,15 @@ export class CreateMissingPlacesModal extends Modal {
 						? [originalName]
 						: undefined;
 
+					// Try to find a parent place from the hierarchy
+					// Use the name we're creating (normalized if enabled) for parent lookup
+					const parentInfo = this.findParentPlace(nameToCreate);
+
 					await createPlaceNote(this.app, {
 						name: nameToCreate,
-						aliases
+						aliases,
+						parentPlace: parentInfo?.name,
+						parentPlaceId: parentInfo?.crId
 					}, {
 						directory: this.directory,
 						openAfterCreate: false
@@ -388,6 +402,44 @@ export class CreateMissingPlacesModal extends Modal {
 
 			if (fm?.type === 'person' && fm?.cr_id === crId) {
 				return file;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Find the parent place for a hierarchical place name
+	 *
+	 * For "Union Valley, Hunt County, Texas, USA":
+	 * - Tries to find "Hunt County, Texas, USA" first
+	 * - Then "Hunt County, Texas"
+	 * - Then "Hunt County"
+	 * - Returns the first match found
+	 */
+	private findParentPlace(placeName: string): ParentPlaceInfo | null {
+		if (!this.placeGraph) return null;
+
+		// Split the place name into components
+		const parts = placeName.split(',').map(p => p.trim()).filter(p => p !== '');
+
+		// Need at least 2 parts to have a parent (place + parent)
+		if (parts.length < 2) return null;
+
+		// Try progressively shorter parent names
+		// For "Union Valley, Hunt County, Texas, USA":
+		// - Try "Hunt County, Texas, USA"
+		// - Try "Hunt County, Texas"
+		// - Try "Hunt County"
+		for (let i = 1; i < parts.length; i++) {
+			const parentName = parts.slice(i).join(', ');
+			const place = this.placeGraph.getPlaceByName(parentName);
+
+			if (place) {
+				return {
+					name: place.name,
+					crId: place.id
+				};
 			}
 		}
 
