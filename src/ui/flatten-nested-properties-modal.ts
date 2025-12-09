@@ -92,7 +92,7 @@ export class FlattenNestedPropertiesModal extends Modal {
 	onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
-		contentEl.addClass('cr-flatten-nested-modal');
+		this.modalEl.addClass('cr-flatten-nested-modal');
 
 		// Header
 		const header = contentEl.createDiv({ cls: 'crc-modal-header' });
