@@ -108,6 +108,14 @@ export class BulkGeocodeModal extends Modal {
 		// Results list (scrollable)
 		this.resultsList = this.progressContainer.createDiv({ cls: 'cr-geocode-results-list' });
 
+		// Backup warning
+		const warning = contentEl.createDiv({ cls: 'crc-warning-callout' });
+		const warningIcon = createLucideIcon('alert-triangle', 16);
+		warning.appendChild(warningIcon);
+		warning.createSpan({
+			text: ' Backup your vault before proceeding. This operation will modify existing notes.'
+		});
+
 		// Buttons
 		const buttonsContainer = contentEl.createDiv({ cls: 'cr-bulk-geocode-buttons' });
 
