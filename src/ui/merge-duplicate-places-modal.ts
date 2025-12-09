@@ -19,7 +19,7 @@ interface DuplicatePlaceGroup {
 	/** Suggested canonical place (most complete data) */
 	suggestedCanonical: PlaceNode;
 	/** Reason these were grouped as duplicates */
-	matchReason: 'exact_name' | 'similar_name' | 'same_parent_and_name' | 'similar_full_name';
+	matchReason: 'exact_name' | 'similar_name' | 'same_parent_and_name' | 'similar_full_name' | 'same_parent_shared_base';
 }
 
 interface MergeDuplicatePlacesOptions {
@@ -47,6 +47,7 @@ export class MergeDuplicatePlacesModal extends Modal {
 	private statusEl: HTMLElement | null = null;
 	private currentSort: SortOption = 'duplicates-desc';
 	private currentFilter: FilterOption = 'all';
+	private searchQuery = '';
 	private onComplete?: (merged: number, deleted: number) => void;
 	private totalMerged = 0;
 	private totalDeleted = 0;
@@ -202,6 +203,36 @@ export class MergeDuplicatePlacesModal extends Modal {
 	private renderControls(container: HTMLElement): void {
 		const controlsRow = container.createDiv({ cls: 'crc-duplicate-controls' });
 
+		// Search input
+		const searchGroup = controlsRow.createDiv({ cls: 'crc-control-group crc-control-group--search' });
+		const searchInput = searchGroup.createEl('input', {
+			type: 'text',
+			cls: 'crc-input crc-input--small crc-search-input',
+			placeholder: 'Search places...'
+		});
+		searchInput.value = this.searchQuery;
+
+		// Debounce search to avoid excessive re-renders
+		let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+		searchInput.addEventListener('input', () => {
+			if (searchTimeout) clearTimeout(searchTimeout);
+			searchTimeout = setTimeout(() => {
+				this.searchQuery = searchInput.value;
+				this.applyFilterAndSort();
+				if (this.groupsContainer) this.renderGroups(this.groupsContainer);
+			}, 200);
+		});
+
+		// Clear search on Escape
+		searchInput.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape' && this.searchQuery) {
+				searchInput.value = '';
+				this.searchQuery = '';
+				this.applyFilterAndSort();
+				if (this.groupsContainer) this.renderGroups(this.groupsContainer);
+			}
+		});
+
 		// Sort dropdown
 		const sortGroup = controlsRow.createDiv({ cls: 'crc-control-group' });
 		sortGroup.createEl('label', { text: 'Sort:', cls: 'crc-control-label' });
@@ -291,7 +322,18 @@ export class MergeDuplicatePlacesModal extends Modal {
 		// Start with all groups
 		let groups = [...this.duplicateGroups];
 
-		// Apply filter
+		// Apply search filter first
+		if (this.searchQuery.trim()) {
+			const query = this.searchQuery.toLowerCase().trim();
+			groups = groups.filter(g =>
+				g.places.some(p =>
+					p.name.toLowerCase().includes(query) ||
+					p.filePath.toLowerCase().includes(query)
+				)
+			);
+		}
+
+		// Apply dropdown filter
 		switch (this.currentFilter) {
 			case 'pending':
 				groups = groups.filter(g => !this.appliedGroups.has(g));
@@ -641,7 +683,7 @@ export class MergeDuplicatePlacesModal extends Modal {
 	/**
 	 * Get human-readable match reason text
 	 */
-	private getMatchReasonText(reason: 'exact_name' | 'similar_name' | 'same_parent_and_name' | 'similar_full_name'): string {
+	private getMatchReasonText(reason: 'exact_name' | 'similar_name' | 'same_parent_and_name' | 'similar_full_name' | 'same_parent_shared_base'): string {
 		switch (reason) {
 			case 'exact_name':
 				return 'exact name match';
@@ -651,6 +693,8 @@ export class MergeDuplicatePlacesModal extends Modal {
 				return 'same name and parent';
 			case 'similar_full_name':
 				return 'similar full name';
+			case 'same_parent_shared_base':
+				return 'same parent, shared base name';
 			default:
 				return 'potential duplicate';
 		}
@@ -1424,10 +1468,147 @@ export function findDuplicatePlaceNotes(app: App, options: FindDuplicatesOptions
 		}
 	}
 
+	// === Pass 4: Group by same parent + shared base name ===
+	// This catches fragmented GEDCOM imports where the same location creates multiple notes
+	// e.g., "Abbeville", "Abbeville SC" with the same parent
+	//
+	// IMPORTANT: We separate administrative divisions (County, Parish, etc.) from settlements
+	// to avoid grouping "Abbeville County" with "Abbeville" (the city) - they're different entities
+	const parentIdGroupingMap = new Map<string, PlaceNode[]>();
+
+	for (const place of allPlaces) {
+		// Skip places already grouped in earlier passes
+		if (groupedPlaceIds.has(place.id)) continue;
+		// Only consider places with a parent
+		if (!place.parentId) continue;
+
+		if (!parentIdGroupingMap.has(place.parentId)) {
+			parentIdGroupingMap.set(place.parentId, []);
+		}
+		parentIdGroupingMap.get(place.parentId)!.push(place);
+	}
+
+	// For each parent, check if any children share a base name
+	for (const [, siblings] of parentIdGroupingMap) {
+		if (siblings.length < 2) continue;
+
+		// First, separate siblings into administrative divisions vs settlements
+		const adminPlaces: PlaceNode[] = [];
+		const settlementPlaces: PlaceNode[] = [];
+
+		for (const place of siblings) {
+			if (isAdministrativeDivision(place.name)) {
+				adminPlaces.push(place);
+			} else {
+				settlementPlaces.push(place);
+			}
+		}
+
+		// Group administrative divisions by base name (e.g., multiple "Abbeville County" variants)
+		const adminBaseNameGroups = new Map<string, PlaceNode[]>();
+		for (const place of adminPlaces) {
+			const baseName = extractBaseName(place.name);
+			if (!baseName) continue;
+
+			if (!adminBaseNameGroups.has(baseName)) {
+				adminBaseNameGroups.set(baseName, []);
+			}
+			adminBaseNameGroups.get(baseName)!.push(place);
+		}
+
+		// Group settlements by base name (e.g., "Abbeville", "Abbeville SC")
+		const settlementBaseNameGroups = new Map<string, PlaceNode[]>();
+		for (const place of settlementPlaces) {
+			const baseName = extractBaseName(place.name);
+			if (!baseName) continue;
+
+			if (!settlementBaseNameGroups.has(baseName)) {
+				settlementBaseNameGroups.set(baseName, []);
+			}
+			settlementBaseNameGroups.get(baseName)!.push(place);
+		}
+
+		// Create duplicate groups for administrative divisions sharing the same base name
+		for (const [, placesWithSameBase] of adminBaseNameGroups) {
+			if (placesWithSameBase.length > 1) {
+				const suggestedCanonical = selectBestCanonical(placesWithSameBase, placeService);
+
+				groups.push({
+					places: placesWithSameBase,
+					suggestedCanonical,
+					matchReason: 'same_parent_shared_base'
+				});
+
+				for (const place of placesWithSameBase) {
+					groupedPlaceIds.add(place.id);
+				}
+			}
+		}
+
+		// Create duplicate groups for settlements sharing the same base name
+		for (const [, placesWithSameBase] of settlementBaseNameGroups) {
+			if (placesWithSameBase.length > 1) {
+				const suggestedCanonical = selectBestCanonical(placesWithSameBase, placeService);
+
+				groups.push({
+					places: placesWithSameBase,
+					suggestedCanonical,
+					matchReason: 'same_parent_shared_base'
+				});
+
+				for (const place of placesWithSameBase) {
+					groupedPlaceIds.add(place.id);
+				}
+			}
+		}
+	}
+
 	// Sort groups by number of duplicates (most first)
 	groups.sort((a, b) => b.places.length - a.places.length);
 
 	return groups;
+}
+
+/**
+ * Administrative division keywords that indicate a place is a county-level
+ * or higher administrative unit, not a settlement
+ */
+const ADMINISTRATIVE_KEYWORDS = [
+	'county', 'co.', 'parish', 'borough', 'township', 'twp', 'twp.',
+	'district', 'province', 'region', 'department', 'canton', 'prefecture',
+	'municipality', 'shire', 'hundred'
+];
+
+/**
+ * Check if a place name indicates an administrative division (county-level or higher)
+ * rather than a settlement (city, town, village)
+ */
+function isAdministrativeDivision(name: string): boolean {
+	const nameLower = name.toLowerCase();
+	return ADMINISTRATIVE_KEYWORDS.some(keyword =>
+		nameLower.includes(keyword)
+	);
+}
+
+/**
+ * Extract the base name from a place name for grouping
+ * Returns the first significant word, lowercased
+ * e.g., "Abbeville County" -> "abbeville", "Abbeville SC" -> "abbeville"
+ */
+function extractBaseName(name: string): string {
+	// Normalize and get first word
+	const normalized = name.toLowerCase().trim();
+
+	// Split on spaces and common separators
+	const parts = normalized.split(/[\s,]+/);
+
+	// Return the first part if it's at least 3 characters
+	// (avoids matching on short common words)
+	if (parts.length > 0 && parts[0].length >= 3) {
+		return parts[0];
+	}
+
+	return normalized;
 }
 
 /**

@@ -1012,6 +1012,9 @@ export class GedcomImporterV2 {
 		// Build a cache of existing place notes by full_name for fast lookup
 		const existingPlaces = await this.buildExistingPlaceCache();
 
+		// Build a set of all place strings for context-aware type inference
+		const allPlaceStrings = new Set(places.keys());
+
 		// Sort places by hierarchy depth (fewest parts first = most general)
 		// This ensures parent places are created before children
 		const sortedPlaces = Array.from(places.entries())
@@ -1028,7 +1031,8 @@ export class GedcomImporterV2 {
 					parts,
 					placeToNoteInfo,
 					existingPlaces,
-					options
+					options,
+					allPlaceStrings
 				);
 				placeToNoteInfo.set(placeString, { path: result.path, crId: result.crId });
 				if (result.wasUpdated) {
@@ -1140,7 +1144,8 @@ export class GedcomImporterV2 {
 		parts: string[],
 		placeToNoteInfo: Map<string, PlaceNoteInfo>,
 		existingPlaces: { byFullName: Map<string, TFile>; byTitleAndParent: Map<string, TFile> },
-		options: GedcomImportOptionsV2
+		options: GedcomImportOptionsV2,
+		allPlaceStrings?: Set<string>
 	): Promise<{ path: string; crId: string; wasUpdated: boolean }> {
 		// Check if place already exists using multiple strategies
 		const existingFile = this.findExistingPlace(placeString, parts, placeToNoteInfo, existingPlaces);
@@ -1170,7 +1175,7 @@ export class GedcomImporterV2 {
 		}
 
 		// Create new place note
-		const result = await this.createPlaceNote(placeString, parts, placeToNoteInfo, options);
+		const result = await this.createPlaceNote(placeString, parts, placeToNoteInfo, options, allPlaceStrings);
 		return { path: result.path, crId: result.crId, wasUpdated: false };
 	}
 
@@ -1253,15 +1258,16 @@ export class GedcomImporterV2 {
 		placeString: string,
 		parts: string[],
 		placeToNoteInfo: Map<string, PlaceNoteInfo>,
-		options: GedcomImportOptionsV2
+		options: GedcomImportOptionsV2,
+		allPlaceStrings?: Set<string>
 	): Promise<{ path: string; crId: string }> {
 		const crId = generateCrId();
 
 		// The "name" is the most specific part (first in the array)
 		const name = parts[0];
 
-		// Determine place type using heuristics
-		const placeType = this.inferPlaceType(name, parts);
+		// Determine place type using heuristics (with context for smarter inference)
+		const placeType = this.inferPlaceType(name, parts, allPlaceStrings);
 
 		// Get parent place info for references (if any)
 		let parentWikilink: string | undefined;
@@ -1343,8 +1349,12 @@ export class GedcomImporterV2 {
 	/**
 	 * Infer place type using multiple heuristics.
 	 * Checks name patterns, suffixes, and hierarchy position.
+	 *
+	 * @param name - The place name (first component of the hierarchy)
+	 * @param parts - Full hierarchy parts array
+	 * @param allPlaceStrings - Optional set of all place strings being imported (for context)
 	 */
-	private inferPlaceType(name: string, parts: string[]): string {
+	private inferPlaceType(name: string, parts: string[], allPlaceStrings?: Set<string>): string {
 		const nameLower = name.toLowerCase().trim();
 
 		// Check for explicit type indicators in the name
@@ -1403,11 +1413,9 @@ export class GedcomImporterV2 {
 			return 'canton';
 		}
 
-		// Fall back to hierarchy-based inference
-		// But with smarter defaults
+		// Fall back to hierarchy-based inference with context awareness
 		if (parts.length === 1) {
 			// Single part - could be country or a well-known place
-			// Check if it looks like a country name
 			const countries = ['usa', 'uk', 'england', 'scotland', 'wales', 'ireland',
 				'france', 'germany', 'italy', 'spain', 'canada', 'australia', 'mexico',
 				'netherlands', 'belgium', 'switzerland', 'austria', 'poland', 'sweden',
@@ -1415,18 +1423,54 @@ export class GedcomImporterV2 {
 			if (countries.includes(nameLower)) {
 				return 'country';
 			}
-			// If single part but not a known country, it might be a region
 			return 'region';
 		} else if (parts.length === 2) {
 			// Two parts - likely state/province level
 			return 'state';
 		} else if (parts.length === 3) {
-			// Three parts - could be county or city depending on context
-			// For now, default to county, but this could be refined
+			// Three parts - could be county OR city depending on context
+			// Check if there's an explicit "County" sibling that would indicate
+			// this place is actually a locality within that county
+			if (allPlaceStrings && this.hasExplicitCountySibling(name, parts, allPlaceStrings)) {
+				return 'locality';
+			}
+			// Default to county for 3-part places without context
 			return 'county';
 		} else {
 			// Four or more parts - locality (city, town, village, etc.)
 			return 'locality';
 		}
+	}
+
+	/**
+	 * Check if there's an explicit county with the same base name in the data.
+	 * e.g., if we're processing "Abbeville, South Carolina, USA" and
+	 * "Abbeville County, South Carolina, USA" also exists, then "Abbeville"
+	 * is likely a city within that county, not the county itself.
+	 */
+	private hasExplicitCountySibling(name: string, parts: string[], allPlaceStrings: Set<string>): boolean {
+		const nameLower = name.toLowerCase().trim();
+
+		// Build the parent portion (everything after the first part)
+		const parentPortion = parts.slice(1).join(', ');
+
+		// Check for common county patterns
+		const countyPatterns = [
+			`${nameLower} county, ${parentPortion}`,
+			`${nameLower} co., ${parentPortion}`,
+			`${nameLower} parish, ${parentPortion}`,  // Louisiana
+			`${nameLower} borough, ${parentPortion}`   // Alaska
+		];
+
+		for (const pattern of countyPatterns) {
+			// Check all place strings (case-insensitive)
+			for (const placeString of allPlaceStrings) {
+				if (placeString.toLowerCase() === pattern.toLowerCase()) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 }
