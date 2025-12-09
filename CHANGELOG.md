@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.10.16] - 2025-12-09
+
+Place management improvements and Calendarium integration planning.
+
+### Added
+
+- **Place name normalization**: Create Missing Places modal now normalizes abbreviated place names
+  - Expands US state abbreviations (e.g., "TX" → "Texas")
+  - Converts "Co" to "County" (e.g., "Hunt Co" → "Hunt County")
+  - Toggle to enable/disable normalization
+  - Shows preview of normalized names before creation
+  - Original abbreviated name saved as alias for linking
+
+- **Parent hierarchy auto-linking**: New place notes automatically link to existing parent places
+  - Parses hierarchical place names (e.g., "Union Valley, Hunt County, Texas, USA")
+  - Finds existing parent places by progressively shorter suffixes
+  - Sets both `parent_place` wikilink and `parent_place_id` for reliable resolution
+
+### Fixed
+
+- **Bulk geocode modal**: Fixed false "cancelled" message when clicking Done after completion
+  - Same fix pattern as Enrich Place Hierarchy modal (v0.10.14)
+  - Added `hasCompleted` flag to prevent false cancellation on close
+
+- **Place reference matching**: Fixed GEDCOM-imported places not matching existing place notes
+  - Plain text references now matched against existing place names
+  - Coordinate lookup now uses multi-strategy approach for hierarchical names
+
+- **Merge Duplicates - Pass 4 false positives**: Fixed places with same parent but different names being grouped as duplicates
+  - Previously extracted only first word of name (e.g., "San Mateo" and "San Francisco" both became "san")
+  - Now extracts full base name minus state suffixes (e.g., "san mateo" vs "san francisco")
+  - Correctly groups "Abbeville" with "Abbeville SC" without matching unrelated places
+
+### Documentation
+
+- **Calendarium integration planning**: Added user feedback section to planning document
+  - Documented primary use case (calendar definitions over events)
+  - Added date range support (`fc-end`) as Phase 2 priority
+  - Noted pain points: era handling, per-calendar frontmatter fields
+  - Updated roadmap with integration timeline and user feedback
+
+---
+
 ## [0.10.15] - 2025-12-08
 
 Improved duplicate place detection and GEDCOM import normalization for US state abbreviations.

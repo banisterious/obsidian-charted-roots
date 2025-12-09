@@ -1713,23 +1713,53 @@ function isAdministrativeDivision(name: string): boolean {
 
 /**
  * Extract the base name from a place name for grouping
- * Returns the first significant word, lowercased
- * e.g., "Abbeville County" -> "abbeville", "Abbeville SC" -> "abbeville"
+ * Returns the place name with trailing state/administrative suffixes removed, lowercased
+ * e.g., "Abbeville County" -> "abbeville county", "Abbeville SC" -> "abbeville"
+ *
+ * This is used for Pass 4 duplicate detection to group places like:
+ * - "Abbeville" and "Abbeville SC" (same base after removing state abbrev)
+ * - "Abbeville County" variants
+ *
+ * IMPORTANT: This must return the FULL base name to avoid false matches.
+ * "San Mateo" and "San Francisco" should NOT match (different base names).
  */
 function extractBaseName(name: string): string {
-	// Normalize and get first word
+	// Normalize: lowercase, trim
 	const normalized = name.toLowerCase().trim();
 
-	// Split on spaces and common separators
-	const parts = normalized.split(/[\s,]+/);
+	// Split on comma first - content after comma is usually location context
+	// e.g., "Abbeville, SC" -> keep "abbeville"
+	const commaParts = normalized.split(',');
+	let basePart = commaParts[0].trim();
 
-	// Return the first part if it's at least 3 characters
-	// (avoids matching on short common words)
-	if (parts.length > 0 && parts[0].length >= 3) {
-		return parts[0];
+	// If no comma, split on spaces and check for trailing state abbreviations
+	if (commaParts.length === 1) {
+		const spaceParts = normalized.split(/\s+/);
+
+		if (spaceParts.length >= 2) {
+			const lastPart = spaceParts[spaceParts.length - 1];
+
+			// Check if last part is a US state abbreviation (2 letters)
+			if (lastPart.length === 2 && US_STATE_ABBREVIATIONS[lastPart]) {
+				// Remove the state abbreviation to get base name
+				basePart = spaceParts.slice(0, -1).join(' ');
+			}
+			// Check if last two parts form a full state name (e.g., "South Carolina")
+			else if (spaceParts.length >= 3) {
+				const lastTwoParts = `${spaceParts[spaceParts.length - 2]} ${spaceParts[spaceParts.length - 1]}`;
+				if (US_STATE_FULL_NAMES.has(lastTwoParts)) {
+					basePart = spaceParts.slice(0, -2).join(' ');
+				}
+			}
+			// Check if last part is a single-word state name
+			else if (US_STATE_FULL_NAMES.has(lastPart)) {
+				basePart = spaceParts.slice(0, -1).join(' ');
+			}
+		}
 	}
 
-	return normalized;
+	// Return the full base part (not just the first word!)
+	return basePart;
 }
 
 /**
