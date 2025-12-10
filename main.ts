@@ -365,7 +365,8 @@ export default class CanvasRootsPlugin extends Plugin {
 					return false;
 				}
 				if (!checking) {
-					void this.activateFamilyChartView(cache.frontmatter.cr_id);
+					const crId = cache.frontmatter.cr_id as string;
+					void this.activateFamilyChartView(crId);
 				}
 				return true;
 			}
@@ -1621,6 +1622,28 @@ export default class CanvasRootsPlugin extends Plugin {
 										});
 								});
 
+								// Open in family chart
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Open in family chart')
+										.setIcon('git-fork')
+										.onClick(async () => {
+											// Try cache first, fall back to reading file directly
+											let crId = this.app.metadataCache.getFileCache(file)?.frontmatter?.cr_id;
+											if (!crId) {
+												// Fallback: read frontmatter directly from file
+												const content = await this.app.vault.read(file);
+												const match = content.match(/^cr_id:\s*["']?([^"'\n]+)["']?\s*$/m);
+												crId = match?.[1];
+											}
+											if (crId) {
+												await this.activateFamilyChartView(crId);
+											} else {
+												new Notice('Could not find cr_id for this person note');
+											}
+										});
+								});
+
 								// Calculate relationship
 								submenu.addItem((subItem) => {
 									subItem
@@ -1983,6 +2006,21 @@ export default class CanvasRootsPlugin extends Plugin {
 
 							menu.addItem((item) => {
 								item
+									.setTitle('Canvas Roots: Open in family chart')
+									.setIcon('git-fork')
+									.onClick(async () => {
+										const cache = this.app.metadataCache.getFileCache(file);
+										const crId = cache?.frontmatter?.cr_id;
+										if (crId) {
+											await this.activateFamilyChartView(crId);
+										} else {
+											new Notice('Could not find cr_id for this person note');
+										}
+									});
+							});
+
+							menu.addItem((item) => {
+								item
 									.setTitle('Canvas Roots: Calculate relationship...')
 									.setIcon('git-compare')
 									.onClick(() => {
@@ -2225,6 +2263,16 @@ export default class CanvasRootsPlugin extends Plugin {
 										});
 								});
 
+								// Edit event
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Edit event')
+										.setIcon('edit')
+										.onClick(() => {
+											this.openEditEventModal(file);
+										});
+								});
+
 								submenu.addSeparator();
 
 								// Add essential event properties
@@ -2281,6 +2329,15 @@ export default class CanvasRootsPlugin extends Plugin {
 									.setIcon('file-plus')
 									.onClick(() => {
 										void this.app.workspace.getLeaf('tab').openFile(file);
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Edit event')
+									.setIcon('edit')
+									.onClick(() => {
+										this.openEditEventModal(file);
 									});
 							});
 
@@ -3647,6 +3704,37 @@ export default class CanvasRootsPlugin extends Plugin {
 
 		// Open the citation generator modal
 		new CitationGeneratorModal(this.app, this, source).open();
+	}
+
+	/**
+	 * Open the event edit modal for an event note
+	 */
+	private openEditEventModal(file: TFile): void {
+		const cache = this.app.metadataCache.getFileCache(file);
+		const fm = cache?.frontmatter;
+
+		if (!fm?.cr_id) {
+			new Notice('Event note does not have a cr_id');
+			return;
+		}
+
+		// Get event from service
+		const eventService = new EventService(this.app, this.settings);
+		const event = eventService.getEventByFile(file);
+
+		if (!event) {
+			new Notice('Could not find event data');
+			return;
+		}
+
+		// Open the edit modal
+		new CreateEventModal(this.app, eventService, this.settings, {
+			editEvent: event,
+			editFile: file,
+			onUpdated: () => {
+				new Notice('Event updated');
+			}
+		}).open();
 	}
 
 	/**
@@ -5749,6 +5837,7 @@ export default class CanvasRootsPlugin extends Plugin {
 
 		let leaf: WorkspaceLeaf | null = null;
 		const leaves = workspace.getLeavesOfType(VIEW_TYPE_FAMILY_CHART);
+		let isNewLeaf = false;
 
 		if (leaves.length > 0 && !forceNew) {
 			// A leaf with our view already exists, use that
@@ -5763,7 +5852,14 @@ export default class CanvasRootsPlugin extends Plugin {
 				leaf = workspace.getRightLeaf(false);
 			}
 			if (leaf) {
-				await leaf.setViewState({ type: VIEW_TYPE_FAMILY_CHART, active: true });
+				// Pass rootPersonId in the initial state to avoid timing issues
+				// The view's setState() will be called with this state before onOpen()
+				await leaf.setViewState({
+					type: VIEW_TYPE_FAMILY_CHART,
+					active: true,
+					state: rootPersonId ? { rootPersonId } : undefined
+				});
+				isNewLeaf = true;
 			}
 		}
 
@@ -5771,8 +5867,9 @@ export default class CanvasRootsPlugin extends Plugin {
 		if (leaf) {
 			void workspace.revealLeaf(leaf);
 
-			// If we have a root person, set it in the view
-			if (rootPersonId && leaf.view instanceof FamilyChartView) {
+			// If reusing an existing leaf, set the root person directly
+			// (for new leaves, the state was already passed via setViewState)
+			if (!isNewLeaf && rootPersonId && leaf.view instanceof FamilyChartView) {
 				leaf.view.setRootPerson(rootPersonId);
 			}
 		}
