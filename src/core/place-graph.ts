@@ -94,6 +94,40 @@ export class PlaceGraphService {
 	}
 
 	/**
+	 * Safely extract a string value from various frontmatter data types.
+	 * Handles: strings, arrays, link objects, wikilink strings, and other types.
+	 * This provides resilience against malformed frontmatter data.
+	 */
+	private extractStringValue(value: unknown): string {
+		if (typeof value === 'string') {
+			// Strip wikilink brackets if present: [[Name]] -> Name
+			const wikilinkMatch = value.match(/^\[\[([^\]|#]+)/);
+			if (wikilinkMatch) {
+				return wikilinkMatch[1].trim();
+			}
+			return value;
+		}
+
+		if (Array.isArray(value)) {
+			// Take first element and recursively extract
+			return value.length > 0 ? this.extractStringValue(value[0]) : '';
+		}
+
+		if (value && typeof value === 'object') {
+			// Obsidian link object: { path: "...", display?: "..." }
+			const linkObj = value as { path?: string; display?: string; link?: string };
+			if (linkObj.display) return linkObj.display;
+			if (linkObj.path) return linkObj.path.split('/').pop() || linkObj.path;
+			if (linkObj.link) return linkObj.link;
+			// Fallback: stringify
+			return String(value);
+		}
+
+		// Numbers, booleans, etc.
+		return value != null ? String(value) : '';
+	}
+
+	/**
 	 * Force reload the place cache
 	 */
 	reloadCache(): void {
@@ -1042,7 +1076,9 @@ export class PlaceGraphService {
 
 		// Extract name (from frontmatter or filename)
 		// Check both 'name' and 'title' properties (GEDCOM import uses 'title')
-		const name = fm.name || fm.title || file.basename;
+		// Handle various malformed data: arrays, link objects, wikilink strings
+		const rawName = fm.name || fm.title || file.basename;
+		const name = this.extractStringValue(rawName);
 
 		// Extract aliases
 		const aliases: string[] = Array.isArray(fm.aliases)
