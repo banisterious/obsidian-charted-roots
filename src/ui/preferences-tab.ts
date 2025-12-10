@@ -367,7 +367,7 @@ function renderAliasesCard(
 	// Description
 	content.createEl('p', {
 		cls: 'crc-text-muted',
-		text: 'Map your custom property names and values to Canvas Roots fields. Your frontmatter stays unchanged.'
+		text: 'Use your own property names and values - Canvas Roots will recognize them without rewriting your files.'
 	});
 
 	// ===== SEARCH BOX =====

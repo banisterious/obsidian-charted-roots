@@ -169,6 +169,11 @@
   padding: 0;
 }
 
+/* Add extra left padding to setting items in property sections */
+.cr-property-section-content .setting-item {
+  padding-left: calc(var(--size-4-6) + var(--cr-spacing-md));
+}
+
 /* Remove top border from first setting in section */
 .cr-property-section-content .setting-item:first-child {
   border-top: none;
