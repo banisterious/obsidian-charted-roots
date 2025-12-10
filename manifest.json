@@ -1,10 +1,10 @@
 {
 	"id": "canvas-roots",
 	"name": "Canvas Roots",
-	"version": "0.10.17",
 	"minAppVersion": "1.7.2",
 	"description": "Family tree visualization for genealogists and worldbuilders. Interactive charts, geographic maps, evidence tracking, GEDCOM support, and fictional calendars.",
 	"author": "banisterious",
 	"authorUrl": "https://github.com/banisterious",
-	"isDesktopOnly": false
+	"isDesktopOnly": false,
+	"version": "0.10.18"
 }

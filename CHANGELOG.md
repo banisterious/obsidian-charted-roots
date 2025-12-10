@@ -7,6 +7,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.10.18] - 2025-12-09
+
+Property alias support across all note creation and comprehensive bug fixes.
+
+### Added
+
+- **Property alias support for all note creation modals**: All create/edit modals now respect user-configured property aliases
+  - Create Person, Create Place, Create Event, Create Source, Create Organization modals
+  - Template-based place notes from Generate Place Notes
+  - Event note properties (date, event_type, participants, related_places)
+  - Parent place linking in place notes
+
+- **Edit Event context menu action**: Right-click event notes in file explorer to edit via modal
+
+- **Fuzzy name matching for duplicate detection**: Merge Duplicates now catches more variations
+  - Handles minor spelling differences and character variations
+
+- **Person picker performance improvements**: Faster loading for large vaults
+
+- **FAQ sections**: Added help documentation for common questions
+
+### Fixed
+
+- **Event statistics not recognizing aliased date properties**: Fixed Control Center showing "0% events have dates" for users with property aliases
+  - `calculateEventStatistics` now uses `resolveProperty` helper to check both canonical and aliased property names
+  - Applies to both `date` and `event_type` property lookups
+
+- **Fictional dates not recognized by Control Panel statistics**: Fixed date detection for non-standard date formats
+
+- **Event type dropdown category headers selectable**: Fixed headers being selectable as values in event type dropdown
+
+- **Family Chart initialization and viewport positioning**: Fixed chart not centering correctly on initial load
+
+- **Crash when place name frontmatter contains wikilinks**: Fixed error when place name property contained `[[wikilink]]` syntax
+
+- **Bulk geocode writing nested coordinates**: Fixed geocoding service writing legacy nested `coordinates:` format
+  - Now writes flat `coordinates_lat` / `coordinates_long` properties
+
+- **Referenced places card showing cr_id instead of place names**: Fixed display to show human-readable place names
+
+- **Place statistics showing cr_id instead of place names**: Fixed "Most common birth/death places" to show names
+
+- **Merge duplicates false positives**: Fixed places with common prefixes being incorrectly grouped
+
+### Documentation
+
+- **Unified Property Configuration roadmap entry**: Added medium-priority feature to Future Considerations
+  - Single card in Preferences tab showing all property and value aliases
+  - Collapsible sections by note type (Person, Place, Event, Source, Organization, Map)
+
+- **Ghost Nodes roadmap entry**: Added medium-priority feature for visualizing unresolved wikilinks
+
+- **Statistics Dashboard roadmap entry**: Added future feature for data visualization
+
+- **Reports & Print Export roadmap**: Expanded from Print & PDF Export to include reports
+
+---
+
 ## [0.10.17] - 2025-12-09
 
 Data Enhancement Pass: Improved place generation workflow.

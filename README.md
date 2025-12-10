@@ -126,20 +126,6 @@
 
 ---
 
-## Planned Features
-
-See [Roadmap](https://github.com/banisterious/obsidian-canvas-roots/wiki/Roadmap) for detailed descriptions and development priorities.
-
-| Priority | Feature | Description |
-|:--------:|---------|-------------|
-| ⚡ High | [**Export v2: Full Entity Export**](https://github.com/banisterious/obsidian-canvas-roots/wiki/Roadmap#export-v2-full-entity-export) | Export events, sources, places, and media; GEDCOM 7.0 support; bundled ZIP with media |
-| ⚡ High | [**Sex/Gender Identity Expansion**](https://github.com/banisterious/obsidian-canvas-roots/wiki/Roadmap#sexgender-identity-expansion) | Support for intersex, trans identities, and pronouns with birth/current sex tracking |
-| 📋 Medium | [**Reports & Print Export**](https://github.com/banisterious/obsidian-canvas-roots/wiki/Roadmap#reports--print-export) | Family Group Sheets, Ahnentafel reports, character sheets, evidence matrices |
-| 📋 Medium | [**Statistics Dashboard**](https://github.com/banisterious/obsidian-canvas-roots/wiki/Roadmap#statistics-dashboard) | Entity counts, completeness scores, demographic analysis, user-defined property statistics |
-| 💡 Low | [**Transcript Nodes & Oral History**](https://github.com/banisterious/obsidian-canvas-roots/wiki/Roadmap#transcript-nodes--oral-history) | Timestamped transcript citations and interview subject graphs |
-
----
-
 ## Screenshots
 
 ### Interactive Map View

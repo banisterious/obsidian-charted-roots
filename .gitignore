@@ -102,3 +102,6 @@ gedcom-testing/gedcom-sample-medium.ged
 
 # Release packages
 canvas-roots-v*.zip
+
+# UI mockups (internal design reference)
+mockups/

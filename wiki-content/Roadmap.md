@@ -431,6 +431,69 @@ oral_facts:
 
 These features are under consideration but not yet prioritized.
 
+### Unified Property Configuration
+
+**Priority:** 📋 Medium — Single source of truth for all property and value mappings
+
+**Summary:** A dedicated card in the Control Center Preferences tab providing a unified view of all property aliases and value aliases across all note types. Each property the plugin uses has its own row showing the default (canonical) name on the left and an alias field on the right, styled like standard Obsidian settings.
+
+**User Pain Points Addressed:**
+- Property aliases scattered across different configuration locations
+- No visibility into which properties support aliasing
+- Value aliases not transparently showing what maps to what
+- Inconsistent behavior when aliases aren't respected in some parts of the plugin
+
+**Scope:** All entity types (Person, Place, Event, Source, Organization, Map notes).
+
+**Design:**
+- Collapsible sections by note type to manage the ~50+ properties
+- Each row shows: canonical property name (left) → alias text field (right)
+- Empty alias fields indicate "using default"
+- Value aliases section below property aliases (event types, sex values, place categories, note types)
+- Styled to match Obsidian's native settings appearance
+- "Show all" toggle vs showing only configured aliases
+
+**Features:**
+- Inline validation showing conflicts or invalid mappings
+- Visual indicator for configured vs unconfigured properties
+- Bulk operations: "Reset all aliases" for a note type
+- Search/filter to find specific properties quickly
+
+**Technical Notes:**
+- Consolidates existing property alias and value alias functionality into one location
+- Existing Preferences tab alias cards would be replaced or redirect to this unified view
+- Settings data structure remains compatible (no migration needed)
+
+**Inspiration:** Tasks plugin's unified property configuration approach.
+
+---
+
+### Ghost Nodes for Unresolved Links
+
+**Priority:** 📋 Medium — Visualize incomplete data structures
+
+**Summary:** Display "ghost" or "stub" nodes on canvases for wikilinks in relationship fields that don't resolve to existing notes or notes lacking a `cr_id`. This allows users to visualize the complete intended structure of their family tree or world even when some notes are incomplete or missing.
+
+**Use Cases:**
+- **Work-in-progress trees:** See the full intended structure while still creating notes
+- **GEDCOM import preview:** Visualize what the tree would look like before all notes are created
+- **Research planning:** Show known relationships to people you haven't researched yet
+- **Worldbuilding:** Visualize mentioned-but-not-yet-documented characters, places, or organizations
+
+**Scope:** All entity types (people, places, organizations, events).
+
+**Features:**
+- Parse wikilinks in relationship fields (father, mother, spouse, parent_place, etc.) that don't resolve to files
+- Display stub nodes with distinct styling (dashed borders, muted colors, or "?" indicator)
+- Show inferred context on ghost nodes (e.g., if referenced as "father", display "Father of [X]")
+- Click-to-create action: clicking a ghost node offers to create the note with pre-filled relationships
+
+**Technical Approach:**
+1. During canvas generation, collect all wikilinks from relationship fields
+2. Check each link against resolved files and `cr_id` mappings
+3. For unresolved links, create placeholder nodes with ghost styling
+4. Populate ghost nodes with relationship context inferred from the referencing property
+
 ### Research Tracking
 
 Advanced research workflow tools for serious genealogists:
