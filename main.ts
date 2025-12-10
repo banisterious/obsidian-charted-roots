@@ -16,10 +16,10 @@ import { getErrorMessage } from './src/core/error-utils';
 import { FamilyGraphService } from './src/core/family-graph';
 import { CanvasGenerator } from './src/core/canvas-generator';
 import { BASE_TEMPLATE, generatePeopleBaseTemplate } from './src/constants/base-template';
-import { PLACES_BASE_TEMPLATE } from './src/constants/places-base-template';
+import { PLACES_BASE_TEMPLATE, generatePlacesBaseTemplate } from './src/constants/places-base-template';
 import { ORGANIZATIONS_BASE_TEMPLATE } from './src/constants/organizations-base-template';
 import { SOURCES_BASE_TEMPLATE } from './src/constants/sources-base-template';
-import { EVENTS_BASE_TEMPLATE } from './src/constants/events-base-template';
+import { EVENTS_BASE_TEMPLATE, generateEventsBaseTemplate } from './src/constants/events-base-template';
 import { ExcalidrawExporter } from './src/excalidraw/excalidraw-exporter';
 import { BidirectionalLinker } from './src/core/bidirectional-linker';
 import { generateCrId } from './src/core/uuid';
@@ -5498,8 +5498,9 @@ export default class CanvasRootsPlugin extends Plugin {
 				return;
 			}
 
-			// Create the file with template content
-			const file = await this.app.vault.create(defaultPath, PLACES_BASE_TEMPLATE);
+			// Create the file with template content (using aliased property names)
+			const templateContent = generatePlacesBaseTemplate(this.settings.propertyAliases);
+			const file = await this.app.vault.create(defaultPath, templateContent);
 
 			new Notice('Places base template created with 14 pre-configured views!');
 			logger.info('places-base-template', `Created places base template at ${defaultPath}`);
@@ -5696,8 +5697,9 @@ export default class CanvasRootsPlugin extends Plugin {
 				return;
 			}
 
-			// Create the file with template content
-			const file = await this.app.vault.create(defaultPath, EVENTS_BASE_TEMPLATE);
+			// Create the file with template content (using aliased property names)
+			const templateContent = generateEventsBaseTemplate(this.settings.propertyAliases);
+			const file = await this.app.vault.create(defaultPath, templateContent);
 
 			new Notice('Events base template created with 20 pre-configured views!');
 			logger.info('events-base-template', `Created events base template at ${defaultPath}`);

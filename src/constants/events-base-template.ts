@@ -1,63 +1,111 @@
 /**
  * Obsidian Bases template for managing Canvas Roots event notes
  */
-export const EVENTS_BASE_TEMPLATE = `visibleProperties:
-  - note.title
-  - note.event_type
-  - note.date
-  - note.person
-  - note.place
-  - note.confidence
-  - note.date_precision
+
+/**
+ * Property aliases mapping type
+ * Maps user's custom property name → Canvas Roots canonical name
+ */
+export type PropertyAliases = Record<string, string>;
+
+/**
+ * Get the display property name for a canonical property
+ * If an alias exists, returns the user's aliased name; otherwise returns the canonical name
+ */
+function getPropertyName(canonical: string, aliases: PropertyAliases): string {
+	// Find if user has an alias for this canonical property
+	for (const [userProp, canonicalProp] of Object.entries(aliases)) {
+		if (canonicalProp === canonical) {
+			return userProp;
+		}
+	}
+	return canonical;
+}
+
+/**
+ * Generate the Events base template with property aliases applied
+ * @param aliases Property aliases from plugin settings
+ * @returns The base template string with aliased property names
+ */
+export function generateEventsBaseTemplate(aliases: PropertyAliases = {}): string {
+	// Get aliased property names for event properties
+	const title = getPropertyName('title', aliases);
+	const event_type = getPropertyName('event_type', aliases);
+	const date = getPropertyName('date', aliases);
+	const date_end = getPropertyName('date_end', aliases);
+	const date_precision = getPropertyName('date_precision', aliases);
+	const person = getPropertyName('person', aliases);
+	const persons = getPropertyName('persons', aliases);
+	const place = getPropertyName('place', aliases);
+	const sources = getPropertyName('sources', aliases);
+	const confidence = getPropertyName('confidence', aliases);
+	const description = getPropertyName('description', aliases);
+	const before = getPropertyName('before', aliases);
+	const after = getPropertyName('after', aliases);
+	const timeline = getPropertyName('timeline', aliases);
+	const sort_order = getPropertyName('sort_order', aliases);
+	const groups = getPropertyName('groups', aliases);
+	const is_canonical = getPropertyName('is_canonical', aliases);
+	const universe = getPropertyName('universe', aliases);
+	const cr_id = getPropertyName('cr_id', aliases);
+
+	return `visibleProperties:
+  - note.${title}
+  - note.${event_type}
+  - note.${date}
+  - note.${person}
+  - note.${place}
+  - note.${confidence}
+  - note.${date_precision}
 summaries:
   total_events: values.length
 filters:
   or:
     - note.type == "event"
-    - file.hasProperty("event_type")
+    - file.hasProperty("${event_type}")
 formulas:
-  display_name: title || file.name
-  year_only: if(date, date.year, "")
-  has_sources: if(sources, "Yes", "No")
-  is_dated: if(date, "Dated", "Relative only")
+  display_name: ${title} || file.name
+  year_only: if(${date}, ${date}.year, "")
+  has_sources: if(${sources}, "Yes", "No")
+  is_dated: if(${date}, "Dated", "Relative only")
 properties:
-  cr_id:
+  ${cr_id}:
     displayName: ID
-  note.title:
+  note.${title}:
     displayName: Title
-  note.event_type:
+  note.${event_type}:
     displayName: Type
-  note.date:
+  note.${date}:
     displayName: Date
-  note.date_end:
+  note.${date_end}:
     displayName: End Date
-  note.date_precision:
+  note.${date_precision}:
     displayName: Precision
-  note.person:
+  note.${person}:
     displayName: Person
-  note.persons:
+  note.${persons}:
     displayName: People
-  note.place:
+  note.${place}:
     displayName: Place
-  note.sources:
+  note.${sources}:
     displayName: Sources
-  note.confidence:
+  note.${confidence}:
     displayName: Confidence
-  note.description:
+  note.${description}:
     displayName: Description
-  note.before:
+  note.${before}:
     displayName: Before
-  note.after:
+  note.${after}:
     displayName: After
-  note.timeline:
+  note.${timeline}:
     displayName: Timeline
-  note.sort_order:
+  note.${sort_order}:
     displayName: Sort Order
-  note.groups:
+  note.${groups}:
     displayName: Groups
-  note.is_canonical:
+  note.${is_canonical}:
     displayName: Canonical
-  note.universe:
+  note.${universe}:
     displayName: Universe
   formula.display_name:
     displayName: Display Name
@@ -72,183 +120,191 @@ views:
     type: table
     filter: {}
     sort:
-      - property: note.date
+      - property: note.${date}
         direction: asc
-      - property: note.sort_order
+      - property: note.${sort_order}
         direction: asc
   - name: By Type
     type: table
     filter: {}
     group:
-      - property: note.event_type
+      - property: note.${event_type}
     sort:
-      - property: note.date
+      - property: note.${date}
         direction: asc
   - name: By Person
     type: table
     filter:
-      note.person:
+      note.${person}:
         ne: null
     group:
-      - property: note.person
+      - property: note.${person}
     sort:
-      - property: note.date
+      - property: note.${date}
         direction: asc
   - name: By Place
     type: table
     filter:
-      note.place:
+      note.${place}:
         ne: null
     group:
-      - property: note.place
+      - property: note.${place}
     sort:
-      - property: note.date
+      - property: note.${date}
         direction: asc
   - name: By Confidence
     type: table
     filter: {}
     group:
-      - property: note.confidence
+      - property: note.${confidence}
     sort:
-      - property: note.date
+      - property: note.${date}
         direction: asc
   - name: Vital Events
     type: table
     filter:
       or:
-        - note.event_type: birth
-        - note.event_type: death
-        - note.event_type: marriage
-        - note.event_type: divorce
+        - note.${event_type}: birth
+        - note.${event_type}: death
+        - note.${event_type}: marriage
+        - note.${event_type}: divorce
     sort:
-      - property: note.date
+      - property: note.${date}
         direction: asc
   - name: Life Events
     type: table
     filter:
       or:
-        - note.event_type: residence
-        - note.event_type: occupation
-        - note.event_type: military
-        - note.event_type: immigration
-        - note.event_type: education
-        - note.event_type: burial
-        - note.event_type: baptism
-        - note.event_type: confirmation
-        - note.event_type: ordination
+        - note.${event_type}: residence
+        - note.${event_type}: occupation
+        - note.${event_type}: military
+        - note.${event_type}: immigration
+        - note.${event_type}: education
+        - note.${event_type}: burial
+        - note.${event_type}: baptism
+        - note.${event_type}: confirmation
+        - note.${event_type}: ordination
     sort:
-      - property: note.date
+      - property: note.${date}
         direction: asc
   - name: Narrative Events
     type: table
     filter:
       or:
-        - note.event_type: anecdote
-        - note.event_type: lore_event
-        - note.event_type: plot_point
-        - note.event_type: flashback
-        - note.event_type: foreshadowing
-        - note.event_type: backstory
-        - note.event_type: climax
-        - note.event_type: resolution
+        - note.${event_type}: anecdote
+        - note.${event_type}: lore_event
+        - note.${event_type}: plot_point
+        - note.${event_type}: flashback
+        - note.${event_type}: foreshadowing
+        - note.${event_type}: backstory
+        - note.${event_type}: climax
+        - note.${event_type}: resolution
     sort:
-      - property: note.date
+      - property: note.${date}
         direction: asc
   - name: High Confidence
     type: table
     filter:
-      note.confidence: high
+      note.${confidence}: high
     sort:
-      - property: note.date
+      - property: note.${date}
         direction: asc
   - name: Low Confidence
     type: table
     filter:
       or:
-        - note.confidence: low
-        - note.confidence: unknown
+        - note.${confidence}: low
+        - note.${confidence}: unknown
     sort:
-      - property: note.date
+      - property: note.${date}
         direction: asc
   - name: With Sources
     type: table
     filter:
-      note.sources:
+      note.${sources}:
         ne: null
     sort:
-      - property: note.date
+      - property: note.${date}
         direction: asc
   - name: Missing Sources
     type: table
     filter:
-      note.sources:
+      note.${sources}:
         eq: null
     sort:
-      - property: note.date
+      - property: note.${date}
         direction: asc
   - name: Dated Events
     type: table
     filter:
-      note.date:
+      note.${date}:
         ne: null
     sort:
-      - property: note.date
+      - property: note.${date}
         direction: asc
   - name: Relative Ordering Only
     type: table
     filter:
       and:
-        - note.date:
+        - note.${date}:
             eq: null
         - or:
-            - note.before:
+            - note.${before}:
                 ne: null
-            - note.after:
+            - note.${after}:
                 ne: null
     sort:
-      - property: note.sort_order
+      - property: note.${sort_order}
         direction: asc
   - name: Canonical Events
     type: table
     filter:
-      note.is_canonical: true
+      note.${is_canonical}: true
     sort:
-      - property: note.date
+      - property: note.${date}
         direction: asc
   - name: By Timeline
     type: table
     filter:
-      note.timeline:
+      note.${timeline}:
         ne: null
     group:
-      - property: note.timeline
+      - property: note.${timeline}
     sort:
-      - property: note.date
+      - property: note.${date}
         direction: asc
   - name: By Universe
     type: table
     filter:
-      note.universe:
+      note.${universe}:
         ne: null
     group:
-      - property: note.universe
+      - property: note.${universe}
     sort:
-      - property: note.date
+      - property: note.${date}
         direction: asc
   - name: By Group
     type: table
     filter:
-      note.groups:
+      note.${groups}:
         ne: null
     group:
-      - property: note.groups
+      - property: note.${groups}
     sort:
-      - property: note.date
+      - property: note.${date}
         direction: asc
   - name: By Sort Order
     type: table
     filter: {}
     sort:
-      - property: note.sort_order
+      - property: note.${sort_order}
         direction: asc
 `;
+}
+
+/**
+ * Static base template for backward compatibility
+ * Uses canonical property names (no aliases)
+ * @deprecated Use generateEventsBaseTemplate() instead
+ */
+export const EVENTS_BASE_TEMPLATE = generateEventsBaseTemplate();

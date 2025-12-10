@@ -1,43 +1,81 @@
 /**
  * Obsidian Bases template for managing Canvas Roots place notes
  */
-export const PLACES_BASE_TEMPLATE = `visibleProperties:
-  - note.name
-  - note.place_type
-  - note.place_category
-  - note.parent_place
-  - note.coordinates
-  - note.universe
-  - note.collection
-  - note.aliases
+
+/**
+ * Property aliases mapping type
+ * Maps user's custom property name → Canvas Roots canonical name
+ */
+export type PropertyAliases = Record<string, string>;
+
+/**
+ * Get the display property name for a canonical property
+ * If an alias exists, returns the user's aliased name; otherwise returns the canonical name
+ */
+function getPropertyName(canonical: string, aliases: PropertyAliases): string {
+	// Find if user has an alias for this canonical property
+	for (const [userProp, canonicalProp] of Object.entries(aliases)) {
+		if (canonicalProp === canonical) {
+			return userProp;
+		}
+	}
+	return canonical;
+}
+
+/**
+ * Generate the Places base template with property aliases applied
+ * @param aliases Property aliases from plugin settings
+ * @returns The base template string with aliased property names
+ */
+export function generatePlacesBaseTemplate(aliases: PropertyAliases = {}): string {
+	// Get aliased property names for place properties
+	const name = getPropertyName('name', aliases);
+	const place_type = getPropertyName('place_type', aliases);
+	const place_category = getPropertyName('place_category', aliases);
+	const parent_place = getPropertyName('parent_place', aliases);
+	const coordinates = getPropertyName('coordinates', aliases);
+	const universe = getPropertyName('universe', aliases);
+	const collection = getPropertyName('collection', aliases);
+	const aliases_prop = getPropertyName('aliases', aliases);
+	const cr_id = getPropertyName('cr_id', aliases);
+
+	return `visibleProperties:
+  - note.${name}
+  - note.${place_type}
+  - note.${place_category}
+  - note.${parent_place}
+  - note.${coordinates}
+  - note.${universe}
+  - note.${collection}
+  - note.${aliases_prop}
 summaries:
   total_places: values.length
 filters:
   or:
-    - file.hasProperty("place_type")
+    - file.hasProperty("${place_type}")
     - note.type == "place"
 formulas:
-  display_name: name || file.name
-  has_coords: if(coordinates, "Yes", "No")
-  hierarchy_path: if(parent_place, parent_place + " → " + name, name)
+  display_name: ${name} || file.name
+  has_coords: if(${coordinates}, "Yes", "No")
+  hierarchy_path: if(${parent_place}, ${parent_place} + " → " + ${name}, ${name})
 properties:
-  cr_id:
+  ${cr_id}:
     displayName: ID
-  note.name:
+  note.${name}:
     displayName: Name
-  note.place_type:
+  note.${place_type}:
     displayName: Type
-  note.place_category:
+  note.${place_category}:
     displayName: Category
-  note.parent_place:
+  note.${parent_place}:
     displayName: Parent
-  note.coordinates:
+  note.${coordinates}:
     displayName: Coordinates
-  note.universe:
+  note.${universe}:
     displayName: Universe
-  note.collection:
+  note.${collection}:
     displayName: Collection
-  note.aliases:
+  note.${aliases_prop}:
     displayName: Aliases
   formula.display_name:
     displayName: Display Name
@@ -50,117 +88,125 @@ views:
     type: table
     filter: {}
     sort:
-      - property: note.name
+      - property: note.${name}
         direction: asc
   - name: By Type
     type: table
     filter: {}
     group:
-      - property: note.place_type
+      - property: note.${place_type}
     sort:
-      - property: note.name
+      - property: note.${name}
         direction: asc
   - name: By Category
     type: table
     filter: {}
     group:
-      - property: note.place_category
+      - property: note.${place_category}
     sort:
-      - property: note.name
+      - property: note.${name}
         direction: asc
   - name: Countries
     type: table
     filter:
-      note.place_type: country
+      note.${place_type}: country
     sort:
-      - property: note.name
+      - property: note.${name}
         direction: asc
   - name: States/Provinces
     type: table
     filter:
       or:
-        - note.place_type: state
-        - note.place_type: province
+        - note.${place_type}: state
+        - note.${place_type}: province
     sort:
-      - property: note.name
+      - property: note.${name}
         direction: asc
   - name: Cities/Towns
     type: table
     filter:
       or:
-        - note.place_type: city
-        - note.place_type: town
-        - note.place_type: village
+        - note.${place_type}: city
+        - note.${place_type}: town
+        - note.${place_type}: village
     sort:
-      - property: note.name
+      - property: note.${name}
         direction: asc
   - name: Real Places
     type: table
     filter:
-      note.place_category: real
+      note.${place_category}: real
     sort:
-      - property: note.name
+      - property: note.${name}
         direction: asc
   - name: Historical Places
     type: table
     filter:
-      note.place_category: historical
+      note.${place_category}: historical
     sort:
-      - property: note.name
+      - property: note.${name}
         direction: asc
   - name: Fictional Places
     type: table
     filter:
-      note.place_category: fictional
+      note.${place_category}: fictional
     sort:
-      - property: note.name
+      - property: note.${name}
         direction: asc
   - name: By Universe
     type: table
     filter:
-      note.universe:
+      note.${universe}:
         ne: null
     group:
-      - property: note.universe
+      - property: note.${universe}
     sort:
-      - property: note.name
+      - property: note.${name}
         direction: asc
   - name: With Coordinates
     type: table
     filter:
-      note.coordinates:
+      note.${coordinates}:
         ne: null
     sort:
-      - property: note.name
+      - property: note.${name}
         direction: asc
   - name: Missing Coordinates
     type: table
     filter:
       and:
-        - note.coordinates:
+        - note.${coordinates}:
             eq: null
         - or:
-            - note.place_category: real
-            - note.place_category: historical
+            - note.${place_category}: real
+            - note.${place_category}: historical
     sort:
-      - property: note.name
+      - property: note.${name}
         direction: asc
   - name: Orphan Places
     type: table
     filter:
-      note.parent_place:
+      note.${parent_place}:
         eq: null
     sort:
-      - property: note.name
+      - property: note.${name}
         direction: asc
   - name: By Collection
     type: table
     filter:
-      note.collection:
+      note.${collection}:
         ne: null
     group:
-      - property: note.collection
+      - property: note.${collection}
     sort:
-      - property: note.name
+      - property: note.${name}
         direction: asc
 `;
+}
+
+/**
+ * Static base template for backward compatibility
+ * Uses canonical property names (no aliases)
+ * @deprecated Use generatePlacesBaseTemplate() instead
+ */
+export const PLACES_BASE_TEMPLATE = generatePlacesBaseTemplate();
