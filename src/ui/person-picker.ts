@@ -94,6 +94,9 @@ export class PersonPickerModal extends Modal {
 	private activeComponentIndex: number | null = null; // null = show all, number = show specific component
 	private tabsContainer?: HTMLElement;
 	private folderFilter?: FolderFilterService;
+	private loadingEl?: HTMLElement;
+	private mainContainer?: HTMLElement;
+	private familyComponentsLoaded = false;
 
 	constructor(app: App, onSelect: (person: PersonInfo) => void, folderFilter?: FolderFilterService) {
 		super(app);
@@ -108,16 +111,44 @@ export class PersonPickerModal extends Modal {
 		// Add modal class for styling
 		this.modalEl.addClass('crc-person-picker-modal');
 
-		// Load all people from vault
-		this.loadPeople();
+		// Show loading state and load data asynchronously
+		this.showLoadingState();
 
-		// Create modal structure
-		this.createModalContent();
+		// Use setTimeout to allow UI to render before heavy computation
+		setTimeout(() => {
+			this.loadPeople();
+			this.hideLoadingState();
+			this.createModalContent();
+
+			// Load family components in the background (for sidebar tabs)
+			this.loadFamilyComponentsAsync();
+		}, 10);
 	}
 
 	onClose() {
 		const { contentEl } = this;
 		contentEl.empty();
+	}
+
+	/**
+	 * Show loading indicator
+	 */
+	private showLoadingState(): void {
+		const { contentEl } = this;
+		this.loadingEl = contentEl.createDiv({ cls: 'crc-picker-loading' });
+		const spinner = this.loadingEl.createDiv({ cls: 'crc-picker-loading__spinner' });
+		spinner.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="31.4" stroke-dashoffset="10"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/></circle></svg>';
+		this.loadingEl.createDiv({ cls: 'crc-picker-loading__text', text: 'Loading people...' });
+	}
+
+	/**
+	 * Hide loading indicator
+	 */
+	private hideLoadingState(): void {
+		if (this.loadingEl) {
+			this.loadingEl.remove();
+			this.loadingEl = undefined;
+		}
 	}
 
 	/**
@@ -139,12 +170,30 @@ export class PersonPickerModal extends Modal {
 			}
 		}
 
-		// Load family components
-		this.loadFamilyComponents();
-
 		// Initial sort by name
 		this.sortPeople();
 		this.filteredPeople = [...this.allPeople];
+	}
+
+	/**
+	 * Load family components asynchronously (for sidebar tabs)
+	 * This is deferred to avoid blocking the initial render
+	 */
+	private loadFamilyComponentsAsync(): void {
+		// Only load if we have more than a few people (worth showing tabs)
+		if (this.allPeople.length < 10) {
+			return;
+		}
+
+		setTimeout(() => {
+			this.loadFamilyComponents();
+			this.familyComponentsLoaded = true;
+
+			// If multiple components exist, add the sidebar
+			if (this.familyComponents.length > 1 && this.mainContainer) {
+				this.addFamilySidebar();
+			}
+		}, 50);
 	}
 
 	/**
@@ -179,10 +228,10 @@ export class PersonPickerModal extends Modal {
 	private sortPeople(): void {
 		switch (this.sortOption) {
 			case 'name-asc':
-				this.allPeople.sort((a, b) => a.name.localeCompare(b.name));
+				this.allPeople.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 				break;
 			case 'name-desc':
-				this.allPeople.sort((a, b) => b.name.localeCompare(a.name));
+				this.allPeople.sort((a, b) => (b.name || '').localeCompare(a.name || ''));
 				break;
 			case 'birth-asc':
 				this.allPeople.sort((a, b) => this.compareBirthDates(a.birthDate, b.birthDate, true));
@@ -247,7 +296,9 @@ export class PersonPickerModal extends Modal {
 			}
 
 			// Extract name (from frontmatter or filename)
-			const name = fm.name || file.basename;
+			// Ensure name is a string - fm.name could be an array or other type
+			const rawName = fm.name;
+			const name = typeof rawName === 'string' ? rawName : (Array.isArray(rawName) ? rawName.join(' ') : file.basename);
 
 			// Note: Frontmatter uses 'born'/'died' properties, mapped to birthDate/deathDate internally
 			// Convert Date objects to ISO strings if necessary (Obsidian parses YAML dates as Date objects)
@@ -382,21 +433,26 @@ export class PersonPickerModal extends Modal {
 			this.filterPeople();
 		});
 
-		// Create main container with sidebar layout if multiple components exist
-		if (this.familyComponents.length > 1) {
-			const mainContainer = contentEl.createDiv({ cls: 'crc-picker-main' });
-
-			// Family group sidebar
-			this.createFamilySidebar(mainContainer);
-
-			// Results section
-			this.resultsContainer = mainContainer.createDiv({ cls: 'crc-picker-results' });
-		} else {
-			// Results section (no sidebar for single component)
-			this.resultsContainer = contentEl.createDiv({ cls: 'crc-picker-results' });
-		}
+		// Create main container (sidebar will be added later if needed)
+		this.mainContainer = contentEl.createDiv({ cls: 'crc-picker-main' });
+		this.resultsContainer = this.mainContainer.createDiv({ cls: 'crc-picker-results' });
 
 		this.renderResults();
+	}
+
+	/**
+	 * Add family sidebar dynamically after components are loaded
+	 */
+	private addFamilySidebar(): void {
+		if (!this.mainContainer || this.tabsContainer) return;
+
+		// Insert sidebar before results container
+		this.createFamilySidebar(this.mainContainer);
+
+		// Move sidebar to be first child
+		if (this.tabsContainer && this.resultsContainer) {
+			this.mainContainer.insertBefore(this.tabsContainer, this.resultsContainer);
+		}
 	}
 
 	/**

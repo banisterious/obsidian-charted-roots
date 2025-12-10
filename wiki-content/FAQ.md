@@ -159,6 +159,88 @@ Large trees with complex relationships take longer. Try:
 - Check for encoding issues (should be UTF-8)
 - Try importing a smaller subset first
 
+## Events
+
+### How do I associate events with families or organizations?
+
+Use the `groups` property on event notes to tag them with families, factions, lineages, or organizations:
+
+```yaml
+cr_type: event
+title: "Smith Family moves to Boston"
+event_type: residence
+date: 1892
+place: "[[Boston, Massachusetts]]"
+groups:
+  - "Smith Family"
+  - "Irish Immigrants"
+```
+
+This enables:
+- **Filtering** timeline exports by group/faction
+- **Organizing** events by family branch or lineage
+- **Tracking** organizational history (guilds, houses, companies)
+
+For worldbuilding, you can tag events with nations, factions, or power structures:
+
+```yaml
+groups:
+  - "House Stark"
+  - "The North"
+```
+
+See [Events & Timelines: Groups and Factions](Events-And-Timelines#groups-and-factions) for more details.
+
+### What's the difference between `groups` and organization notes?
+
+- **`groups`**: Free-text tags for filtering and organizing events. Quick and flexible.
+- **Organization notes**: Full entity notes with `cr_type: organization`, hierarchies, membership tracking, and structured data.
+
+Use `groups` for lightweight tagging. Use organization notes when you need to track members, roles, parent organizations, or other structured relationships.
+
+## Property Aliases
+
+### Can I use the same property name for different entity types?
+
+**Question:** Instead of `place_type`, `org_type`, `event_type`, etc., can I map them all to a single property like `category`?
+
+**Answer:** This is possible with property aliases, but we don't recommend collapsing distinct type properties into one. Here's why:
+
+**The ambiguity problem:**
+
+```yaml
+# Note A
+cr_type: place
+category: church
+
+# Note B
+cr_type: organization
+category: church
+```
+
+Is "church" a place type (St. Patrick's Cathedral as a location) or an org type (the Catholic Church as an institution)? The plugin would need `cr_type` to disambiguate, which it already does—but queries become more complex, Dataview/Bases views need compound filters, and the value space becomes a messy union of all possible types.
+
+**The better approach:**
+
+Use property aliases to achieve consistent naming without ambiguity:
+
+```yaml
+# In settings, map:
+place_type → category
+org_type → category
+event_type → category
+```
+
+Now you use `category` everywhere in your notes, but the plugin knows from `cr_type` which domain the value belongs to. Each entity type maintains its own valid value set.
+
+### Can I map parent properties to a generic name like `hierarchy`?
+
+Yes. If you want `parent_org` and `parent_place` to both be called `parent` or `hierarchy` in your frontmatter, property aliases support this. The plugin will read from your aliased property name and understand from the note's `cr_type` which parent relationship it represents.
+
+### Which properties support aliases?
+
+See [Settings & Configuration](Settings-And-Configuration#property-aliases) for the full list. Note that some properties don't yet have alias support—this is being expanded over time.
+
 ## Getting Help
 
 - **Bug reports**: [GitHub Issues](https://github.com/banisterious/obsidian-canvas-roots/issues)

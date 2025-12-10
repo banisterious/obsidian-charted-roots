@@ -1154,6 +1154,32 @@
   color: var(--text-normal);
 }
 
+.crc-picker-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  color: var(--text-muted);
+  text-align: center;
+  min-height: 200px;
+}
+
+.crc-picker-loading__spinner {
+  color: var(--interactive-accent);
+  margin-bottom: 12px;
+}
+
+.crc-picker-loading__spinner svg {
+  width: 32px;
+  height: 32px;
+}
+
+.crc-picker-loading__text {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
 /* ==========================================================================
    STATISTICS DISPLAY
    ========================================================================== */
