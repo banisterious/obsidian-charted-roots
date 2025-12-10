@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-10 05:32:28 UTC
+ * - Generated: 2025-12-10 14:02:22 UTC
  * - Components: 30 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -15766,7 +15766,7 @@ body.wide-timeline .view-content {
    COMPONENT: PREFERENCES.CSS
    ========================================================================== */
 
-/* Component Size: 94 lines, 1.84 KB */
+/* Component Size: 184 lines, 3.85 KB */
 
 /* ==========================================================================
    Preferences Tab Styles
@@ -15862,6 +15862,96 @@ body.wide-timeline .view-content {
   font-size: 0.85em;
 }
 
+/* ==========================================================================
+   Unified Property Configuration
+   ========================================================================== */
+
+/* Search box */
+.cr-property-search {
+  margin-bottom: var(--cr-spacing-lg);
+  padding-bottom: var(--cr-spacing-md);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-property-search .setting-item {
+  border-top: none;
+  padding-top: 0;
+}
+
+/* Property sections container */
+.cr-property-sections {
+  margin-bottom: var(--cr-spacing-lg);
+}
+
+/* Collapsible property section */
+.cr-property-section {
+  margin-bottom: var(--cr-spacing-md);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  overflow: hidden;
+}
+
+.cr-property-section-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--cr-spacing-sm);
+  padding: var(--cr-spacing-sm) var(--cr-spacing-md);
+  cursor: pointer;
+  font-weight: 600;
+  user-select: none;
+  background-color: var(--background-secondary);
+  transition: background-color 0.2s ease;
+}
+
+.cr-property-section-summary:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.cr-property-section-summary::marker,
+.cr-property-section-summary::-webkit-details-marker {
+  display: none;
+}
+
+.cr-property-section-summary::before {
+  content: "▶";
+  display: inline-block;
+  width: 1em;
+  transition: transform 0.2s ease;
+  color: var(--text-muted);
+}
+
+.cr-property-section[open] > .cr-property-section-summary::before {
+  transform: rotate(90deg);
+}
+
+.cr-property-section-title {
+  flex: 1;
+}
+
+.cr-property-section-count {
+  color: var(--text-muted);
+  font-size: 0.9em;
+  font-weight: normal;
+}
+
+/* Property section content */
+.cr-property-section-content {
+  padding: 0;
+}
+
+/* Remove top border from first setting in section */
+.cr-property-section-content .setting-item:first-child {
+  border-top: none;
+}
+
+/* Section divider */
+.cr-property-divider {
+  height: 1px;
+  background: var(--background-modifier-border);
+  border: none;
+  margin: var(--cr-spacing-xl) 0;
+}
+
 
 /* End of preferences.css */
 
@@ -15933,11 +16023,11 @@ body.wide-timeline .view-content {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-10 05:32:28 UTC
+ * Build completed: 2025-12-10 14:02:22 UTC
  * Components processed: 30
- * Total lines: 15640
- * Total size: 307.25 KB
- * Build duration: 0.04 seconds
+ * Total lines: 15730
+ * Total size: 309.26 KB
+ * Build duration: 0.03 seconds
  *
  * Component breakdown:
  * - variables.css: 48 lines, 1.33 KB
@@ -15966,7 +16056,7 @@ body.wide-timeline .view-content {
  * - timeline-callouts.css: 307 lines, 9.73 KB
  * - organizations.css: 245 lines, 4.36 KB
  * - sources.css: 1613 lines, 31.53 KB
- * - preferences.css: 94 lines, 1.84 KB
+ * - preferences.css: 184 lines, 3.85 KB
  * - animations.css: 16 lines, 0.18 KB
  * - responsive.css: 9 lines, 0.13 KB
  * - theme.css: 11 lines, 0.19 KB
