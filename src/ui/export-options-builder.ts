@@ -30,6 +30,8 @@ export interface ExportOptions {
 	gedcomVersion?: '5.5.1' | '7.0';
 	/** Include collection codes (for GEDCOM exports) */
 	includeCollectionCodes?: boolean;
+	/** Include custom relationships as ASSO records (for GEDCOM exports) */
+	includeCustomRelationships?: boolean;
 	/** Entity inclusion options */
 	includeEntities: {
 		people: boolean;
@@ -425,6 +427,26 @@ export class ExportOptionsBuilder {
 				.setValue(true)
 				.onChange(value => {
 					this.options.includeCollectionCodes = value;
+					this.notifyChange();
+				})
+			);
+
+		return setting;
+	}
+
+	/**
+	 * Build include custom relationships toggle (GEDCOM exports only)
+	 */
+	public buildIncludeCustomRelationships(container: HTMLElement): Setting {
+		this.options.includeCustomRelationships = true;
+
+		const setting = new Setting(container)
+			.setName('Include custom relationships')
+			.setDesc('Export custom relationships (godparent, witness, guardian, etc.) as ASSO records')
+			.addToggle(toggle => toggle
+				.setValue(true)
+				.onChange(value => {
+					this.options.includeCustomRelationships = value;
 					this.notifyChange();
 				})
 			);

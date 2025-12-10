@@ -4957,6 +4957,7 @@ export class ControlCenterModal extends Modal {
 		fileName: string;
 		collectionFilter?: string;
 		includeCollectionCodes: boolean;
+		includeCustomRelationships?: boolean;
 		branchRootCrId?: string;
 		branchDirection?: 'ancestors' | 'descendants';
 		branchIncludeSpouses?: boolean;
@@ -5016,6 +5017,13 @@ export class ControlCenterModal extends Modal {
 			exporter.setPropertyAliasService(propertyAliasService);
 			exporter.setValueAliasService(valueAliasService);
 
+			// Set relationship service if custom relationships are enabled
+			if (options.includeCustomRelationships) {
+				const { RelationshipService } = await import('../relationships/services/relationship-service');
+				const relationshipService = new RelationshipService(this.plugin);
+				exporter.setRelationshipService(relationshipService);
+			}
+
 			// Update progress: generating export
 			progressModal.updateProgress({ phase: 'generating', current: 1, total: 2 });
 
@@ -5027,6 +5035,7 @@ export class ControlCenterModal extends Modal {
 				branchDirection: options.branchDirection,
 				branchIncludeSpouses: options.branchIncludeSpouses,
 				includeCollectionCodes: options.includeCollectionCodes,
+				includeCustomRelationships: options.includeCustomRelationships,
 				fileName: options.fileName,
 				sourceApp: 'Canvas Roots',
 				sourceVersion: this.plugin.manifest.version,
@@ -8100,6 +8109,7 @@ export class ControlCenterModal extends Modal {
 		optionsBuilder.buildCollectionFilter(content);
 		optionsBuilder.buildBranchFilter(content);
 		optionsBuilder.buildIncludeCollectionCodes(content);
+		optionsBuilder.buildIncludeCustomRelationships(content);
 		optionsBuilder.buildPrivacyOverride(content);
 		optionsBuilder.buildEntityInclusion(content);
 		optionsBuilder.buildOutputLocation(content);
@@ -8123,6 +8133,7 @@ export class ControlCenterModal extends Modal {
 					fileName: options.exportFileName,
 					collectionFilter: options.collectionFilter,
 					includeCollectionCodes: options.includeCollectionCodes ?? true,
+					includeCustomRelationships: options.includeCustomRelationships ?? true,
 					branchRootCrId: options.branchRootCrId,
 					branchDirection: options.branchDirection,
 					branchIncludeSpouses: options.branchIncludeSpouses,
@@ -8403,6 +8414,7 @@ export class ControlCenterModal extends Modal {
 		// Build shared export options using the builder
 		optionsBuilder.buildCollectionFilter(content);
 		optionsBuilder.buildBranchFilter(content);
+		optionsBuilder.buildIncludeCustomRelationships(content);
 		optionsBuilder.buildPrivacyOverride(content);
 		optionsBuilder.buildEntityInclusion(content);
 		optionsBuilder.buildOutputLocation(content);

@@ -19,6 +19,8 @@ import type { SourceNote } from '../sources/types/source-types';
 import { PlaceGraphService } from '../core/place-graph';
 import type { PlaceNode } from '../models/place';
 import type { CanvasRootsSettings } from '../settings';
+import { RelationshipService } from '../relationships/services/relationship-service';
+import type { ParsedRelationship } from '../relationships/types/relationship-types';
 
 const logger = getLogger('GedcomExporter');
 
@@ -43,6 +45,9 @@ export interface GedcomExportOptions {
 
 	/** Include collection codes in GEDCOM output */
 	includeCollectionCodes?: boolean;
+
+	/** Include custom relationships as ASSO records */
+	includeCustomRelationships?: boolean;
 
 	/** Export filename (without .ged extension) */
 	fileName?: string;
@@ -96,6 +101,7 @@ export class GedcomExporter {
 	private placeGraphService: PlaceGraphService | null = null;
 	private propertyAliasService: PropertyAliasService | null = null;
 	private valueAliasService: ValueAliasService | null = null;
+	private relationshipService: RelationshipService | null = null;
 
 	constructor(app: App, folderFilter?: FolderFilterService) {
 		this.app = app;
@@ -142,6 +148,13 @@ export class GedcomExporter {
 	 */
 	setValueAliasService(service: ValueAliasService): void {
 		this.valueAliasService = service;
+	}
+
+	/**
+	 * Set relationship service for loading custom relationships
+	 */
+	setRelationshipService(service: RelationshipService): void {
+		this.relationshipService = service;
 	}
 
 	/**
@@ -592,6 +605,12 @@ export class GedcomExporter {
 			lines.push(...eventLines);
 		}
 
+		// Add custom relationships as ASSO records
+		if (options.includeCustomRelationships && this.relationshipService) {
+			const assoLines = this.buildAssoRecords(person, _crIdToGedcomId);
+			lines.push(...assoLines);
+		}
+
 		// UUID preservation using _UID custom tag
 		lines.push(`1 _UID ${person.crId}`);
 
@@ -602,6 +621,67 @@ export class GedcomExporter {
 			}
 			if (person.collectionName) {
 				lines.push(`1 _COLLN ${person.collectionName}`);
+			}
+		}
+
+		return lines;
+	}
+
+	/**
+	 * Build ASSO (association) records for custom relationships
+	 */
+	private buildAssoRecords(person: PersonNode, crIdToGedcomId: Map<string, string>): string[] {
+		const lines: string[] = [];
+
+		if (!this.relationshipService) {
+			return lines;
+		}
+
+		// Get all relationships for this person (only defined ones, not inferred)
+		const relationships = this.relationshipService.getRelationshipsForPerson(person.crId);
+		const definedRelationships = relationships.filter(r => !r.isInferred);
+
+		for (const rel of definedRelationships) {
+			// Skip if target person is not in the export
+			if (!rel.targetCrId || !crIdToGedcomId.has(rel.targetCrId)) {
+				continue;
+			}
+
+			const targetGedcomId = crIdToGedcomId.get(rel.targetCrId)!;
+
+			// Build ASSO record
+			lines.push(`1 ASSO @${targetGedcomId}@`);
+
+			// RELA (relationship descriptor)
+			// Use the relationship type name as the RELA value
+			lines.push(`2 RELA ${rel.type.name}`);
+
+			// Add notes with additional information
+			const noteLines: string[] = [];
+
+			// Add date range if present
+			if (rel.from || rel.to) {
+				let dateNote = 'Relationship';
+				if (rel.from && rel.to) {
+					dateNote += ` from ${rel.from} to ${rel.to}`;
+				} else if (rel.from) {
+					dateNote += ` from ${rel.from}`;
+				} else if (rel.to) {
+					dateNote += ` until ${rel.to}`;
+				}
+				noteLines.push(dateNote);
+			}
+
+			// Add custom notes if present
+			if (rel.notes) {
+				noteLines.push(rel.notes);
+			}
+
+			// Write NOTE records
+			if (noteLines.length > 0) {
+				for (const note of noteLines) {
+					lines.push(`2 NOTE ${note}`);
+				}
 			}
 		}
 
