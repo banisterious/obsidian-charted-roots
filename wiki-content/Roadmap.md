@@ -70,21 +70,21 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 
 **Phased Approach:**
 
-| Phase | Feature | Complexity | Description |
-|-------|---------|------------|-------------|
-| 1 | Separate `gender_identity` field | Low | Optional field for gender identity, distinct from biological sex |
-| 2 | Schema-based sex/gender definitions | Done | Use existing Schema system to define allowed values per universe/collection |
-| 3 | Value Aliases for sex field | Low-Medium | Expand existing Value Aliases to support custom sex field mappings |
-| 4 | Configurable normalization | Medium | Option to skip sex normalization or use custom rules |
+| Phase | Feature | Complexity | Status |
+|-------|---------|------------|--------|
+| 1 | Separate `gender_identity` field | Low | Planned |
+| 2 | Schema-based sex/gender definitions | Done | ✅ Complete (v0.6.3) |
+| 3 | Value Aliases for sex field | Low-Medium | ✅ Complete (v0.9.4, enhanced v0.10.19) |
+| 4 | Configurable normalization | Medium | Planned |
 
 **User personas:**
 - **Genealogist:** Uses `sex` field with GEDCOM M/F values; optionally `gender_identity` for living relatives or LGBTQ+ research
 - **Fiction writer / Worldbuilder:** Custom sex values via Schema, `gender_identity` field, flexible normalization
 
 **Implementation notes:**
-- Phase 2 already works—the [Schema system](Release-History#schema-validation-v063) supports `enum` types with custom `values` arrays, scoped by collection/universe
-- Value Aliases ([v0.9.4](Release-History#value-aliases-v094)) would need extension to cover the `sex` field
-- Export formats would need mapping for non-standard values
+- Phase 2 complete—the [Schema system](Release-History#schema-validation-v063) supports `enum` types with custom `values` arrays, scoped by collection/universe
+- Phase 3 complete—[Value Aliases](Release-History#value-aliases-v094) already support the `sex` field with 4 canonical values (male, female, nonbinary, unknown) and built-in synonyms. The [Unified Property Configuration](Release-History#unified-property-configuration-v01019) UI makes sex value aliases easy to discover and configure.
+- Export formats would need mapping for non-standard values (applies to Phase 4)
 
 See [Sex/Gender Identity Expansion Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/sex-gender-expansion.md) for implementation details.
 
