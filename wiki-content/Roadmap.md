@@ -466,6 +466,8 @@ These features are under consideration but not yet prioritized.
 
 **Inspiration:** Tasks plugin's unified property configuration approach.
 
+See [Unified Property Configuration Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/unified-property-config.md) for implementation details.
+
 ---
 
 ### Ghost Nodes for Unresolved Links
