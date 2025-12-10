@@ -23,6 +23,7 @@ export interface PersonFrontmatter {
 	children?: string | string[];
 	sex?: string;
 	gender?: string; // Kept for backwards compatibility - users can use either
+	gender_identity?: string; // Distinct from biological sex - for identity tracking
 	birth_date?: string;
 	death_date?: string;
 	birth_place?: string;

@@ -96,29 +96,31 @@ Validation rules for alien species with non-binary biological sex.
 
 ### Phase 3: Value Aliases for Sex Field
 
+**Status:** ✅ Complete (v0.9.4, enhanced v0.10.19)
+
 **Complexity:** Low-Medium (~100-150 lines)
 
-Extend existing Value Aliases to support the `sex` field.
+Value Aliases already support the `sex` field with 4 canonical values.
 
-**Current Value Alias fields:**
-- Event type
-- Gender (different from `sex`)
-- Place category
+**Implemented Value Alias fields:**
+- Event type (13 canonical values)
+- Sex (4 canonical values: male, female, nonbinary, unknown)
+- Place category (6 canonical values)
+- Note type (8 canonical values)
 
-**Changes:**
-- Add `sex` to `ValueAliasField` type
-- Add `CANONICAL_SEX_VALUES = ['male', 'female', 'unknown'] as const`
-- Update Value Aliases UI to include Sex field type
-- Integrate sex alias resolution in `family-graph.ts`
+**Implementation:**
+- `sex` is included in `ValueAliasField` type
+- `CANONICAL_SEX_VALUES = ['male', 'female', 'nonbinary', 'unknown'] as const`
+- Unified Property Configuration UI (v0.10.19) provides sex value alias configuration
+- Built-in synonyms: m→male, f→female, man→male, woman→female, nb→nonbinary, enby→nonbinary
 
 **Example aliases:**
 | User Value | Maps To |
 |------------|---------|
-| `m` | `male` |
-| `f` | `female` |
-| `masc` | `male` |
-| `fem` | `female` |
-| `hermaphrodite` | (pass through - custom) |
+| `m` | `male` (built-in) |
+| `f` | `female` (built-in) |
+| `nb` / `enby` | `nonbinary` (built-in) |
+| Custom values | (user-configurable aliases) |
 
 ### Phase 4: Configurable Normalization
 
@@ -211,14 +213,17 @@ Rationale: Phase 2 is free (already works), Phase 1 is standalone, Phases 3-4 bu
 ## Success Criteria
 
 - [ ] `gender_identity` field supported in person notes
-- [ ] Schema documentation includes sex/gender customization example
-- [ ] Value Aliases extended to support sex field
+- [x] Schema documentation includes sex/gender customization example (Phase 2)
+- [x] Value Aliases extended to support sex field (Phase 3 - v0.9.4, enhanced v0.10.19)
 - [ ] Batch normalization respects schema-defined values
-- [ ] GEDCOM M/F compatibility preserved for genealogists
-- [ ] No breaking changes to existing functionality
+- [x] GEDCOM M/F compatibility preserved for genealogists
+- [x] No breaking changes to existing functionality
 
 ## Status
 
-**📋 Planned**
+**🔄 In Progress**
 
-Phase 2 already works via existing Schema system. Phases 1, 3, 4 pending implementation.
+- Phase 2: ✅ Complete (existing Schema system supports custom sex enums)
+- Phase 3: ✅ Complete (v0.9.4, enhanced v0.10.19)
+- Phase 1: 📋 In progress (adding gender_identity field)
+- Phase 4: 📋 Planned (configurable normalization)

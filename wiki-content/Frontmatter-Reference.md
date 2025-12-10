@@ -138,7 +138,9 @@ erDiagram
 | `died` | `string` | Death date (YYYY, YYYY-MM, or YYYY-MM-DD) | `"1952-08-20"` |
 | `birth_place` | `string` | Location of birth | `"London, England"` |
 | `death_place` | `string` | Location of death | `"New York, USA"` |
-| `gender` | `string` | Gender of the person | `"Male"`, `"Female"` |
+| `sex` | `string` | Biological sex (for GEDCOM, historical records) | `"male"`, `"female"`, `"nonbinary"`, `"unknown"` |
+| `gender` | `string` | Gender (backwards compatibility - prefer `sex` or `gender_identity`) | `"Male"`, `"Female"` |
+| `gender_identity` | `string` | Gender identity (distinct from biological sex) | `"male"`, `"female"`, `"nonbinary"`, `"genderfluid"` |
 | `occupation` | `string` | Primary occupation | `"Farmer"` |
 
 ### Parent Relationships
@@ -819,7 +821,7 @@ All person note properties can be aliased:
 
 | Category | Properties |
 |----------|------------|
-| Identity | `name`, `cr_id`, `gender`, `nickname`, `maiden_name` |
+| Identity | `name`, `cr_id`, `sex`, `gender`, `gender_identity`, `nickname`, `maiden_name` |
 | Dates | `born`, `died` |
 | Places | `birth_place`, `death_place` |
 | Relationships | `father`, `father_id`, `mother`, `mother_id`, `spouse`, `spouse_id`, `child`, `children_id` |
@@ -835,7 +837,7 @@ All person note properties can be aliased:
 
 ## Value Aliases
 
-In addition to property name aliases, you can create **value aliases** to map custom property **values** to Canvas Roots' canonical values. This is useful when your vault uses different terminology for enumerated fields like event types, gender, or place categories.
+In addition to property name aliases, you can create **value aliases** to map custom property **values** to Canvas Roots' canonical values. This is useful when your vault uses different terminology for enumerated fields like event types, sex values, place categories, or note types.
 
 ### Configuring Value Aliases
 
@@ -848,7 +850,7 @@ Go to **Control Center → Preferences → Aliases** to add, edit, or remove val
 | Field | Canonical Values |
 |-------|------------------|
 | **Event type** | `birth`, `death`, `marriage`, `burial`, `residence`, `occupation`, `education`, `military`, `immigration`, `baptism`, `confirmation`, `ordination`, `custom` |
-| **Gender** | `male`, `female`, `nonbinary`, `unknown` |
+| **Sex** | `male`, `female`, `nonbinary`, `unknown` |
 | **Place category** | `real`, `historical`, `disputed`, `legendary`, `mythological`, `fictional` |
 
 ### How Value Aliases Work
@@ -857,7 +859,7 @@ Go to **Control Center → Preferences → Aliases** to add, edit, or remove val
 |----------|----------|
 | **Reading notes** | Canvas Roots checks for canonical values first, then resolves aliases |
 | **Unknown event types** | Resolve to `custom` (graceful degradation) |
-| **Unknown gender/place category** | Pass through unchanged (may trigger validation warning) |
+| **Unknown sex/place category/note type** | Pass through unchanged (may trigger validation warning) |
 | **Creating/importing notes** | Uses your aliased values when writing |
 
 ### Example
@@ -874,7 +876,7 @@ If your worldbuilding vault uses `nameday` instead of `birth` for event types:
 | Use Case | Example Aliases |
 |----------|-----------------|
 | **Worldbuilding** | `nameday` → `birth`, `coronation` → `custom` |
-| **Gender abbreviations** | `m` → `male`, `f` → `female`, `nb` → `nonbinary` |
+| **Sex abbreviations** | `m` → `male`, `f` → `female`, `nb` → `nonbinary` |
 | **Fantasy settings** | `canon` → `fictional`, `apocryphal` → `disputed` |
 
 ---
@@ -903,7 +905,7 @@ born: "1888-05-15"
 died: "1952-08-20"
 birth_place: "London, England"
 death_place: "New York, USA"
-gender: "Male"
+sex: "male"
 occupation: "Merchant"
 father: "[[John Smith Sr]]"
 father_id: "f1234567-..."

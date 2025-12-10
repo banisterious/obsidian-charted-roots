@@ -216,9 +216,16 @@ export const PERSON_PROPERTY_METADATA: PropertyMetadata[] = [
 	{
 		canonical: 'gender',
 		label: 'Gender',
-		description: 'Gender identity (alternative to sex field)',
+		description: 'Gender (backwards compatibility - use gender_identity or sex)',
 		category: 'person',
-		commonAliases: ['gender_identity']
+		commonAliases: []
+	},
+	{
+		canonical: 'gender_identity',
+		label: 'Gender identity',
+		description: 'Gender identity (distinct from biological sex)',
+		category: 'person',
+		commonAliases: []
 	},
 	{
 		canonical: 'nickname',
