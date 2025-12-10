@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.10.19] - 2025-12-10
+
+Unified property and value alias configuration UI with improved discoverability and usability.
+
 ### Added
 
 - **Unified Property Configuration UI**: Complete redesign of property and value alias configuration in Preferences tab
