@@ -8943,8 +8943,16 @@ export class ControlCenterModal extends Modal {
 		outputDestination?: 'download' | 'vault';
 		outputFolder?: string;
 	}): Promise<void> {
+		// Create and open progress modal
+		const { ExportProgressModal } = await import('./export-progress-modal');
+		const progressModal = new ExportProgressModal(this.app, 'Gramps XML');
+		progressModal.open();
+
 		try {
 			logger.info('gramps-export', `Starting Gramps export: ${options.fileName}`);
+
+			// Update progress: loading data
+			progressModal.updateProgress({ phase: 'loading', current: 0, total: 1 });
 
 			// Create exporter
 			const { GrampsExporter } = await import('../gramps/gramps-exporter');
@@ -8978,6 +8986,9 @@ export class ControlCenterModal extends Modal {
 			exporter.setPropertyAliasService(propertyAliasService);
 			exporter.setValueAliasService(valueAliasService);
 
+			// Update progress: generating export
+			progressModal.updateProgress({ phase: 'generating', current: 1, total: 2 });
+
 			// Export to Gramps
 			const result = exporter.exportToGramps({
 				peopleFolder: this.plugin.settings.peopleFolder,
@@ -9004,8 +9015,18 @@ export class ControlCenterModal extends Modal {
 				result.errors.forEach(error => logger.error('gramps-export', error));
 			}
 
+			// Update stats
+			progressModal.updateStats({
+				people: result.personsExported,
+				relationships: result.familiesExported,
+				events: result.eventsExported
+			});
+
 			if (result.success && result.xmlContent) {
 				const outputDestination = options.outputDestination ?? 'download';
+
+				// Update progress: writing file
+				progressModal.updateProgress({ phase: 'writing', current: 2, total: 2 });
 
 				if (outputDestination === 'vault') {
 					// Save to vault
@@ -9061,6 +9082,14 @@ export class ControlCenterModal extends Modal {
 					}
 					new Notice(noticeMsg);
 				}
+
+				// Mark export as complete
+				progressModal.markComplete();
+
+				// Close the modal after a short delay
+				setTimeout(() => {
+					progressModal.close();
+				}, 1500);
 			} else {
 				throw new Error('Export failed to generate content');
 			}
@@ -9068,6 +9097,7 @@ export class ControlCenterModal extends Modal {
 			const errorMsg = getErrorMessage(error);
 			logger.error('gramps-export', `Gramps export failed: ${errorMsg}`);
 			new Notice(`Failed to export Gramps: ${errorMsg}`);
+			progressModal.close();
 		}
 	}
 
@@ -9455,8 +9485,16 @@ export class ControlCenterModal extends Modal {
 		outputDestination?: 'download' | 'vault';
 		outputFolder?: string;
 	}): Promise<void> {
+		// Create and open progress modal
+		const { ExportProgressModal } = await import('./export-progress-modal');
+		const progressModal = new ExportProgressModal(this.app, 'CSV');
+		progressModal.open();
+
 		try {
 			logger.info('csv-export', `Starting CSV export: ${options.fileName}`);
+
+			// Update progress: loading data
+			progressModal.updateProgress({ phase: 'loading', current: 0, total: 1 });
 
 			// Create exporter
 			const { CsvExporter } = await import('../csv/csv-exporter');
@@ -9490,6 +9528,9 @@ export class ControlCenterModal extends Modal {
 			exporter.setPropertyAliasService(propertyAliasService);
 			exporter.setValueAliasService(valueAliasService);
 
+			// Update progress: generating export
+			progressModal.updateProgress({ phase: 'generating', current: 1, total: 2 });
+
 			// Export to CSV
 			const result = exporter.exportToCsv({
 				peopleFolder: this.plugin.settings.peopleFolder,
@@ -9514,8 +9555,16 @@ export class ControlCenterModal extends Modal {
 				result.errors.forEach(error => logger.error('csv-export', error));
 			}
 
+			// Update stats
+			progressModal.updateStats({
+				people: result.recordsExported
+			});
+
 			if (result.success && result.csvContent) {
 				const outputDestination = options.outputDestination ?? 'download';
+
+				// Update progress: writing file
+				progressModal.updateProgress({ phase: 'writing', current: 2, total: 2 });
 
 				if (outputDestination === 'vault') {
 					// Save to vault
@@ -9571,6 +9620,14 @@ export class ControlCenterModal extends Modal {
 					}
 					new Notice(noticeMsg);
 				}
+
+				// Mark export as complete
+				progressModal.markComplete();
+
+				// Close the modal after a short delay
+				setTimeout(() => {
+					progressModal.close();
+				}, 1500);
 			} else {
 				throw new Error('Export failed to generate content');
 			}
@@ -9578,6 +9635,7 @@ export class ControlCenterModal extends Modal {
 			const errorMsg = getErrorMessage(error);
 			logger.error('csv-export', `CSV export failed: ${errorMsg}`);
 			new Notice(`Failed to export CSV: ${errorMsg}`);
+			progressModal.close();
 		}
 	}
 
