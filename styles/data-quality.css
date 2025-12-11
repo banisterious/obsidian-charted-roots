@@ -367,6 +367,33 @@
   max-height: 70vh;
 }
 
+.crc-batch-description {
+  margin-bottom: var(--size-4-3);
+  padding: var(--size-4-2);
+  background: var(--background-secondary);
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-small);
+}
+
+.crc-batch-description p {
+  margin: 0 0 var(--size-4-2);
+  color: var(--text-normal);
+}
+
+.crc-batch-description ul {
+  margin: 0;
+  padding-left: var(--size-4-5);
+  color: var(--text-muted);
+}
+
+.crc-batch-description li {
+  margin-bottom: var(--size-4-1);
+}
+
+.crc-batch-description li:last-child {
+  margin-bottom: 0;
+}
+
 .crc-batch-count {
   margin-bottom: var(--size-4-2);
   font-weight: 500;
