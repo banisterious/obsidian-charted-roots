@@ -11989,25 +11989,41 @@ export class ControlCenterModal extends Modal {
 				// Handle empty words
 				if (!word) return word;
 
-				// Common surname prefixes that should stay lowercase (unless at start)
-				const lowercasePrefixes = ['van', 'von', 'de', 'del', 'della', 'di', 'da', 'le', 'la', 'den', 'der', 'ten', 'ter', 'du'];
 				const lowerWord = word.toLowerCase();
 
-				// Handle prefixes like Mac, Mc, O'
-				if (lowerWord.startsWith('mac') && word.length > 3) {
-					return 'Mac' + word.charAt(3).toUpperCase() + word.slice(4).toLowerCase();
+				// Preserve initials (single letter followed by period, like "A.", "B.", etc.)
+				if (/^[a-z]\.$/i.test(word)) {
+					return word.toUpperCase();
 				}
-				if (lowerWord.startsWith('mc') && word.length > 2) {
-					return 'Mc' + word.charAt(2).toUpperCase() + word.slice(3).toLowerCase();
+
+				// Preserve Roman numerals (I, II, III, IV, V, VI, VII, VIII, IX, X, etc.)
+				if (/^[ivx]+$/i.test(word)) {
+					return word.toUpperCase();
 				}
-				if (lowerWord.startsWith("o'") && word.length > 2) {
-					return "O'" + word.charAt(2).toUpperCase() + word.slice(3).toLowerCase();
-				}
+
+				// Common surname prefixes that should stay lowercase (unless at start)
+				const lowercasePrefixes = ['van', 'von', 'de', 'del', 'della', 'di', 'da', 'le', 'la', 'den', 'der', 'ten', 'ter', 'du'];
 
 				// Check if it's a lowercase prefix (and not the first word)
 				const wordIndex = words.indexOf(word);
 				if (wordIndex > 0 && lowercasePrefixes.includes(lowerWord)) {
 					return lowerWord;
+				}
+
+				// Handle Mac prefix (but not "Mack" as a standalone name)
+				// Only apply if there are at least 2 more letters after "Mac"
+				if (lowerWord.startsWith('mac') && word.length > 5) {
+					return 'Mac' + word.charAt(3).toUpperCase() + word.slice(4).toLowerCase();
+				}
+
+				// Handle Mc prefix
+				if (lowerWord.startsWith('mc') && word.length > 2) {
+					return 'Mc' + word.charAt(2).toUpperCase() + word.slice(3).toLowerCase();
+				}
+
+				// Handle O' prefix
+				if (lowerWord.startsWith("o'") && word.length > 2) {
+					return "O'" + word.charAt(2).toUpperCase() + word.slice(3).toLowerCase();
 				}
 
 				// Standard title case
@@ -12083,25 +12099,41 @@ export class ControlCenterModal extends Modal {
 				// Handle empty words
 				if (!word) return word;
 
-				// Common surname prefixes that should stay lowercase (unless at start)
-				const lowercasePrefixes = ['van', 'von', 'de', 'del', 'della', 'di', 'da', 'le', 'la', 'den', 'der', 'ten', 'ter', 'du'];
 				const lowerWord = word.toLowerCase();
 
-				// Handle prefixes like Mac, Mc, O'
-				if (lowerWord.startsWith('mac') && word.length > 3) {
-					return 'Mac' + word.charAt(3).toUpperCase() + word.slice(4).toLowerCase();
+				// Preserve initials (single letter followed by period, like "A.", "B.", etc.)
+				if (/^[a-z]\.$/i.test(word)) {
+					return word.toUpperCase();
 				}
-				if (lowerWord.startsWith('mc') && word.length > 2) {
-					return 'Mc' + word.charAt(2).toUpperCase() + word.slice(3).toLowerCase();
+
+				// Preserve Roman numerals (I, II, III, IV, V, VI, VII, VIII, IX, X, etc.)
+				if (/^[ivx]+$/i.test(word)) {
+					return word.toUpperCase();
 				}
-				if (lowerWord.startsWith("o'") && word.length > 2) {
-					return "O'" + word.charAt(2).toUpperCase() + word.slice(3).toLowerCase();
-				}
+
+				// Common surname prefixes that should stay lowercase (unless at start)
+				const lowercasePrefixes = ['van', 'von', 'de', 'del', 'della', 'di', 'da', 'le', 'la', 'den', 'der', 'ten', 'ter', 'du'];
 
 				// Check if it's a lowercase prefix (and not the first word)
 				const wordIndex = words.indexOf(word);
 				if (wordIndex > 0 && lowercasePrefixes.includes(lowerWord)) {
 					return lowerWord;
+				}
+
+				// Handle Mac prefix (but not "Mack" as a standalone name)
+				// Only apply if there are at least 2 more letters after "Mac"
+				if (lowerWord.startsWith('mac') && word.length > 5) {
+					return 'Mac' + word.charAt(3).toUpperCase() + word.slice(4).toLowerCase();
+				}
+
+				// Handle Mc prefix
+				if (lowerWord.startsWith('mc') && word.length > 2) {
+					return 'Mc' + word.charAt(2).toUpperCase() + word.slice(3).toLowerCase();
+				}
+
+				// Handle O' prefix
+				if (lowerWord.startsWith("o'") && word.length > 2) {
+					return "O'" + word.charAt(2).toUpperCase() + word.slice(3).toLowerCase();
 				}
 
 				// Standard title case
