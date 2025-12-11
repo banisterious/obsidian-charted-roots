@@ -35,6 +35,8 @@ Data Quality: Parent conflict resolution, settings UX overhaul, and bidirectiona
 
 - **GEDCOM import now adds `cr_type: person`** to imported person notes for consistent note type detection
 
+- **`cr_type` now an essential property** - Added to Guide tab documentation, "Insert essential properties" context menu action, and base template filter for consistent note detection
+
 ### Fixed
 
 - **Bidirectional relationship validation** - Fixed false positives and persistence issues
