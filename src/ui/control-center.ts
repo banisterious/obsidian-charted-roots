@@ -1710,6 +1710,32 @@ export class ControlCenterModal extends Modal {
 
 		container.appendChild(actionsCard);
 
+		// Batch Operations Card
+		const batchCard = this.createCard({
+			title: 'Batch operations',
+			icon: 'zap',
+			subtitle: 'Fix common data issues across person notes'
+		});
+
+		const batchContent = batchCard.querySelector('.crc-card__content') as HTMLElement;
+
+		new Setting(batchContent)
+			.setName('Remove duplicate relationships')
+			.setDesc('Clean up duplicate entries in spouse and children arrays')
+			.addButton(button => button
+				.setButtonText('Preview')
+				.onClick(() => {
+					void this.previewRemoveDuplicateRelationships();
+				}))
+			.addButton(button => button
+				.setButtonText('Apply')
+				.setCta()
+				.onClick(() => {
+					void this.removeDuplicateRelationships();
+				}));
+
+		container.appendChild(batchCard);
+
 		// Statistics Card
 		const statsCard = this.createCard({
 			title: 'Person statistics',
@@ -11419,6 +11445,388 @@ export class ControlCenterModal extends Modal {
 		} catch (error) {
 			new Notice(`${operation} failed: ${getErrorMessage(error)}`);
 		}
+	}
+
+	/**
+	 * Preview removing duplicate relationships
+	 */
+	private async previewRemoveDuplicateRelationships(): Promise<void> {
+		const familyGraph = this.plugin.createFamilyGraphService();
+		familyGraph.ensureCacheLoaded();
+		const people = familyGraph.getAllPeople();
+
+		const changes: Array<{ person: { name: string }; field: string; oldValue: string; newValue: string }> = [];
+
+		for (const person of people) {
+			const cache = this.app.metadataCache.getFileCache(person.file);
+			if (!cache?.frontmatter) continue;
+
+			const fm = cache.frontmatter as Record<string, unknown>;
+
+			// Check spouse array for duplicates
+			if (Array.isArray(fm.spouse) && fm.spouse.length > 1) {
+				const unique = [...new Set(fm.spouse)];
+				if (unique.length < fm.spouse.length) {
+					changes.push({
+						person: { name: person.name || 'Unknown' },
+						field: 'spouse',
+						oldValue: `${fm.spouse.length} entries (${fm.spouse.length - unique.length} duplicates)`,
+						newValue: `${unique.length} entries (deduplicated)`
+					});
+				}
+			}
+
+			// Check spouse_id array for duplicates
+			if (Array.isArray(fm.spouse_id) && fm.spouse_id.length > 1) {
+				const unique = [...new Set(fm.spouse_id)];
+				if (unique.length < fm.spouse_id.length) {
+					changes.push({
+						person: { name: person.name || 'Unknown' },
+						field: 'spouse_id',
+						oldValue: `${fm.spouse_id.length} entries (${fm.spouse_id.length - unique.length} duplicates)`,
+						newValue: `${unique.length} entries (deduplicated)`
+					});
+				}
+			}
+
+			// Check children/child arrays for duplicates
+			const childrenArray = fm.children || fm.child;
+			if (Array.isArray(childrenArray) && childrenArray.length > 1) {
+				const unique = [...new Set(childrenArray)];
+				if (unique.length < childrenArray.length) {
+					const fieldName = fm.children ? 'children' : 'child';
+					changes.push({
+						person: { name: person.name || 'Unknown' },
+						field: fieldName,
+						oldValue: `${childrenArray.length} entries (${childrenArray.length - unique.length} duplicates)`,
+						newValue: `${unique.length} entries (deduplicated)`
+					});
+				}
+			}
+
+			// Check children_id array for duplicates
+			if (Array.isArray(fm.children_id) && fm.children_id.length > 1) {
+				const unique = [...new Set(fm.children_id)];
+				if (unique.length < fm.children_id.length) {
+					changes.push({
+						person: { name: person.name || 'Unknown' },
+						field: 'children_id',
+						oldValue: `${fm.children_id.length} entries (${fm.children_id.length - unique.length} duplicates)`,
+						newValue: `${unique.length} entries (deduplicated)`
+					});
+				}
+			}
+		}
+
+		if (changes.length === 0) {
+			new Notice('No duplicate relationships found');
+			return;
+		}
+
+		// Show preview modal
+		const modal = new DuplicateRelationshipsPreviewModal(
+			this.app,
+			changes,
+			() => void this.removeDuplicateRelationships()
+		);
+		modal.open();
+	}
+
+	/**
+	 * Remove duplicate relationships
+	 */
+	private async removeDuplicateRelationships(): Promise<void> {
+		new Notice('Removing duplicate relationships...');
+
+		const familyGraph = this.plugin.createFamilyGraphService();
+		familyGraph.ensureCacheLoaded();
+		const people = familyGraph.getAllPeople();
+
+		let modified = 0;
+		let processed = 0;
+		const errors: string[] = [];
+
+		for (const person of people) {
+			processed++;
+
+			try {
+				const cache = this.app.metadataCache.getFileCache(person.file);
+				if (!cache?.frontmatter) continue;
+
+				const fm = cache.frontmatter as Record<string, unknown>;
+				let hasChanges = false;
+
+				await this.app.fileManager.processFrontMatter(person.file, (frontmatter) => {
+					// Deduplicate spouse array
+					if (Array.isArray(fm.spouse) && fm.spouse.length > 1) {
+						const unique = [...new Set(fm.spouse)];
+						if (unique.length < fm.spouse.length) {
+							frontmatter.spouse = unique;
+							hasChanges = true;
+						}
+					}
+
+					// Deduplicate spouse_id array
+					if (Array.isArray(fm.spouse_id) && fm.spouse_id.length > 1) {
+						const unique = [...new Set(fm.spouse_id)];
+						if (unique.length < fm.spouse_id.length) {
+							frontmatter.spouse_id = unique;
+							hasChanges = true;
+						}
+					}
+
+					// Deduplicate children/child arrays
+					const childrenArray = fm.children || fm.child;
+					if (Array.isArray(childrenArray) && childrenArray.length > 1) {
+						const unique = [...new Set(childrenArray)];
+						if (unique.length < childrenArray.length) {
+							if (fm.children) {
+								frontmatter.children = unique;
+							} else {
+								frontmatter.child = unique;
+							}
+							hasChanges = true;
+						}
+					}
+
+					// Deduplicate children_id array
+					if (Array.isArray(fm.children_id) && fm.children_id.length > 1) {
+						const unique = [...new Set(fm.children_id)];
+						if (unique.length < fm.children_id.length) {
+							frontmatter.children_id = unique;
+							hasChanges = true;
+						}
+					}
+				});
+
+				if (hasChanges) {
+					modified++;
+				}
+			} catch (error) {
+				errors.push(`${person.file.path}: ${getErrorMessage(error)}`);
+			}
+		}
+
+		// Show result
+		if (modified > 0) {
+			new Notice(`✓ Removed duplicates from ${modified} ${modified === 1 ? 'file' : 'files'}`);
+		} else {
+			new Notice('No duplicate relationships found');
+		}
+
+		if (errors.length > 0) {
+			new Notice(`⚠ ${errors.length} errors occurred. Check console for details.`);
+			console.error('Remove duplicates errors:', errors);
+		}
+
+		// Refresh the family graph cache
+		familyGraph.reloadCache();
+
+		// Refresh the People tab
+		this.showTab('people');
+	}
+}
+
+/**
+ * Modal for previewing duplicate relationship removal
+ */
+class DuplicateRelationshipsPreviewModal extends Modal {
+	// All changes for this operation
+	private allChanges: Array<{ person: { name: string }; field: string; oldValue: string; newValue: string }>;
+	// Filtered/sorted changes for display
+	private filteredChanges: Array<{ person: { name: string }; field: string; oldValue: string; newValue: string }> = [];
+	private onApply: () => void;
+
+	// Filter state
+	private searchQuery = '';
+	private selectedField = 'all';
+	private sortAscending = true;
+
+	// UI elements
+	private tbody: HTMLTableSectionElement | null = null;
+	private countEl: HTMLElement | null = null;
+
+	constructor(
+		app: App,
+		changes: Array<{ person: { name: string }; field: string; oldValue: string; newValue: string }>,
+		onApply: () => void
+	) {
+		super(app);
+		this.allChanges = changes;
+		this.onApply = onApply;
+	}
+
+	onOpen(): void {
+		const { contentEl, titleEl } = this;
+
+		// Add modal class for sizing
+		this.modalEl.addClass('crc-batch-preview-modal');
+
+		titleEl.setText('Preview: Remove duplicate relationships');
+
+		// Count display
+		this.countEl = contentEl.createEl('p', { cls: 'crc-batch-count' });
+
+		// Controls row: search + filter + sort
+		const controlsRow = contentEl.createDiv({ cls: 'crc-batch-controls' });
+
+		// Search input
+		const searchContainer = controlsRow.createDiv({ cls: 'crc-batch-search' });
+		const searchInput = searchContainer.createEl('input', {
+			type: 'text',
+			placeholder: 'Search by name...',
+			cls: 'crc-batch-search-input'
+		});
+		searchInput.addEventListener('input', () => {
+			this.searchQuery = searchInput.value.toLowerCase();
+			this.applyFiltersAndSort();
+		});
+
+		// Field filter dropdown (only show if multiple fields)
+		const uniqueFields = [...new Set(this.allChanges.map(c => c.field))];
+		if (uniqueFields.length > 1) {
+			const filterContainer = controlsRow.createDiv({ cls: 'crc-batch-filter' });
+			const filterSelect = filterContainer.createEl('select', { cls: 'crc-batch-filter-select' });
+			filterSelect.createEl('option', { text: 'All fields', value: 'all' });
+			for (const field of uniqueFields.sort()) {
+				filterSelect.createEl('option', { text: field, value: field });
+			}
+			filterSelect.addEventListener('change', () => {
+				this.selectedField = filterSelect.value;
+				this.applyFiltersAndSort();
+			});
+		}
+
+		// Sort toggle
+		const sortContainer = controlsRow.createDiv({ cls: 'crc-batch-sort' });
+		const sortBtn = sortContainer.createEl('button', {
+			text: 'A→Z',
+			cls: 'crc-batch-sort-btn'
+		});
+		sortBtn.addEventListener('click', () => {
+			this.sortAscending = !this.sortAscending;
+			sortBtn.textContent = this.sortAscending ? 'A→Z' : 'Z→A';
+			this.applyFiltersAndSort();
+		});
+
+		// Scrollable table container
+		const tableContainer = contentEl.createDiv({ cls: 'crc-batch-table-container' });
+		const table = tableContainer.createEl('table', { cls: 'crc-batch-preview-table' });
+
+		// Header
+		const thead = table.createEl('thead');
+		const headerRow = thead.createEl('tr');
+		headerRow.createEl('th', { text: 'Person' });
+		headerRow.createEl('th', { text: 'Field' });
+		headerRow.createEl('th', { text: 'Current' });
+		headerRow.createEl('th', { text: 'After' });
+
+		this.tbody = table.createEl('tbody');
+
+		// Initial render
+		this.applyFiltersAndSort();
+
+		// Backup warning
+		const warning = contentEl.createDiv({ cls: 'crc-warning-callout' });
+		const warningIcon = createLucideIcon('alert-triangle', 16);
+		warning.appendChild(warningIcon);
+		warning.createSpan({
+			text: ' Backup your vault before proceeding. This operation will modify existing notes.'
+		});
+
+		// Buttons
+		const buttonContainer = contentEl.createDiv({ cls: 'crc-confirmation-buttons' });
+
+		const cancelButton = buttonContainer.createEl('button', {
+			text: 'Cancel',
+			cls: 'crc-btn-secondary'
+		});
+		cancelButton.addEventListener('click', () => this.close());
+
+		const applyButton = buttonContainer.createEl('button', {
+			text: `Apply ${this.allChanges.length} change${this.allChanges.length === 1 ? '' : 's'}`,
+			cls: 'mod-cta'
+		});
+		applyButton.addEventListener('click', async () => {
+			// Disable buttons during operation
+			applyButton.disabled = true;
+			cancelButton.disabled = true;
+			applyButton.textContent = 'Applying changes...';
+
+			// Run the operation
+			await this.onApply();
+
+			// Close modal after completion
+			this.close();
+		});
+	}
+
+	/**
+	 * Apply filters and sorting, then re-render the table
+	 */
+	private applyFiltersAndSort(): void {
+		// Filter
+		this.filteredChanges = this.allChanges.filter(change => {
+			// Search filter
+			if (this.searchQuery && !change.person.name.toLowerCase().includes(this.searchQuery)) {
+				return false;
+			}
+			// Field filter
+			if (this.selectedField !== 'all' && change.field !== this.selectedField) {
+				return false;
+			}
+			return true;
+		});
+
+		// Sort by person name
+		this.filteredChanges.sort((a, b) => {
+			const cmp = a.person.name.localeCompare(b.person.name);
+			return this.sortAscending ? cmp : -cmp;
+		});
+
+		// Update count
+		if (this.countEl) {
+			const peopleCount = new Set(this.allChanges.map(c => c.person.name)).size;
+			if (this.filteredChanges.length === this.allChanges.length) {
+				this.countEl.textContent = `Found ${this.allChanges.length} duplicate relationship ${this.allChanges.length === 1 ? 'entry' : 'entries'} across ${peopleCount} ${peopleCount === 1 ? 'person' : 'people'}:`;
+			} else {
+				this.countEl.textContent = `Showing ${this.filteredChanges.length} of ${this.allChanges.length} duplicate entries:`;
+			}
+		}
+
+		// Re-render table
+		this.renderTable();
+	}
+
+	/**
+	 * Render the filtered/sorted changes to the table body
+	 */
+	private renderTable(): void {
+		if (!this.tbody) return;
+
+		this.tbody.empty();
+
+		for (const change of this.filteredChanges) {
+			const row = this.tbody.createEl('tr');
+			row.createEl('td', { text: change.person.name });
+			row.createEl('td', { text: change.field });
+			row.createEl('td', { text: change.oldValue, cls: 'crc-batch-old-value' });
+			row.createEl('td', { text: change.newValue, cls: 'crc-batch-new-value' });
+		}
+
+		if (this.filteredChanges.length === 0 && this.allChanges.length > 0) {
+			const row = this.tbody.createEl('tr');
+			const cell = row.createEl('td', {
+				text: 'No matches found',
+				cls: 'crc-text-muted'
+			});
+			cell.setAttribute('colspan', '4');
+		}
+	}
+
+	onClose(): void {
+		const { contentEl } = this;
+		contentEl.empty();
 	}
 }
 
