@@ -1186,14 +1186,19 @@ export class DataQualityService {
 						const childMotherId = childCache?.frontmatter?.mother_id;
 
 						if (childFatherId !== person.crId && childMotherId !== person.crId) {
-							// Determine which parent field to add based on person's sex
+							// Determine which parent field to update based on person's sex
 							const targetField = person.sex === 'M' ? 'father_id' : person.sex === 'F' ? 'mother_id' : 'father_id or mother_id';
+							const currentValue = person.sex === 'M' ? childFatherId : person.sex === 'F' ? childMotherId : (childFatherId || childMotherId);
+							const description = currentValue
+								? `Will update ${child.name || child.file.basename}'s ${targetField} from ${currentValue} to ${person.crId} (${person.name || person.file.basename} lists them as child)`
+								: `Will set ${child.name || child.file.basename}'s ${targetField} to ${person.crId} (${person.name || person.file.basename} lists them as child)`;
+
 							inconsistencies.push({
 								type: 'missing-parent-in-child',
 								person,
 								relatedPerson: child,
 								field: 'children_id',
-								description: `Will add ${person.name || person.file.basename} to ${child.name || child.file.basename}'s ${targetField} (${person.name || person.file.basename} lists them as child)`
+								description
 							});
 						}
 					}
@@ -1268,24 +1273,17 @@ export class DataQualityService {
 					const parentField = sex === 'F' ? 'mother_id' : 'father_id';
 					const parentWikilinkField = sex === 'F' ? 'mother' : 'father';
 
-					// Check if the parent field is already occupied
+					// Check if the parent field has a different value (needs correction)
 					const childCache = this.app.metadataCache.getFileCache(issue.relatedPerson.file);
 					const existingParent = childCache?.frontmatter?.[parentField];
 
-					if (!existingParent) {
-						// Add parent to child
+					if (!existingParent || existingParent !== issue.person.crId) {
+						// Add or update parent in child
 						await this.updatePersonFrontmatter(issue.relatedPerson.file, {
 							[parentField]: issue.person.crId,
 							[parentWikilinkField]: `[[${issue.person.name || issue.person.file.basename}]]`
 						});
 						results.modified++;
-					} else {
-						// Parent field already occupied, log warning
-						logger.warn('fix-bidirectional', `Cannot add parent - ${parentField} already set in ${issue.relatedPerson.file.basename}`);
-						results.errors.push({
-							file: issue.relatedPerson.file.path,
-							error: `${parentField} already set to ${existingParent}`
-						});
 					}
 				} else if (issue.type === 'missing-spouse-in-spouse') {
 					// Add person to spouse's spouse_id array
