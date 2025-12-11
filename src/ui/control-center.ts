@@ -48,6 +48,7 @@ import type { RelationshipCategory } from '../relationships';
 import { renderEventsTab } from '../dates';
 import { renderOrganizationsTab } from '../organizations';
 import { renderPersonTimeline, createTimelineSummary } from '../events/ui/person-timeline';
+import { AddPersonTypePreviewModal } from './add-person-type-modal';
 import { renderFamilyTimeline, getFamilyTimelineSummary } from '../events/ui/family-timeline';
 import { renderPlaceTimelineCard } from '../events/ui/place-timeline';
 import { EventService } from '../events/services/event-service';
@@ -1766,6 +1767,21 @@ export class ControlCenterModal extends Modal {
 				.setCta()
 				.onClick(() => {
 					void this.removePlaceholders();
+				}));
+
+		new Setting(batchContent)
+			.setName('Add cr_type property to person notes')
+			.setDesc('Add cr_type: person to all person notes that don\'t have it (recommended for better compatibility)')
+			.addButton(button => button
+				.setButtonText('Preview')
+				.onClick(() => {
+					void this.previewAddPersonType();
+				}))
+			.addButton(button => button
+				.setButtonText('Apply')
+				.setCta()
+				.onClick(() => {
+					void this.addPersonType();
 				}));
 
 		// Third operation: Normalize name formatting
@@ -11786,6 +11802,7 @@ export class ControlCenterModal extends Modal {
 		// Common placeholder patterns
 		const placeholderPatterns = [
 			'(unknown)',
+			'(Unknown)',
 			'unknown',
 			'Unknown',
 			'UNKNOWN',
@@ -11865,7 +11882,7 @@ export class ControlCenterModal extends Modal {
 							file: person.file
 						});
 					}
-				} else if (isPlaceholder(value)) {
+				} else if (field in fm && isPlaceholder(value)) {
 					changes.push({
 						person: { name: person.name || 'Unknown' },
 						field,
@@ -11900,7 +11917,7 @@ export class ControlCenterModal extends Modal {
 							file: person.file
 						});
 					}
-				} else if (isPlaceholder(value)) {
+				} else if (field in fm && isPlaceholder(value)) {
 					changes.push({
 						person: { name: person.name || 'Unknown' },
 						field,
@@ -11914,8 +11931,7 @@ export class ControlCenterModal extends Modal {
 			// Check empty parent/spouse fields
 			const emptyFields = ['father', 'mother'];
 			for (const field of emptyFields) {
-				const value = fm[field];
-				if (value === '' || value === null) {
+				if (field in fm && (fm[field] === '' || fm[field] === null)) {
 					changes.push({
 						person: { name: person.name || 'Unknown' },
 						field,
@@ -11958,6 +11974,7 @@ export class ControlCenterModal extends Modal {
 		// Common placeholder patterns
 		const placeholderPatterns = [
 			'(unknown)',
+			'(Unknown)',
 			'unknown',
 			'Unknown',
 			'UNKNOWN',
@@ -12002,12 +12019,11 @@ export class ControlCenterModal extends Modal {
 				const cache = this.app.metadataCache.getFileCache(person.file);
 				if (!cache?.frontmatter) continue;
 
-				const fm = cache.frontmatter as Record<string, unknown>;
 				let hasChanges = false;
 
 				await this.app.fileManager.processFrontMatter(person.file, (frontmatter) => {
 					// Remove placeholder name
-					if (fm.name && isPlaceholder(fm.name)) {
+					if (frontmatter.name && isPlaceholder(frontmatter.name)) {
 						delete frontmatter.name;
 						hasChanges = true;
 					}
@@ -12015,7 +12031,7 @@ export class ControlCenterModal extends Modal {
 					// Clean or remove place fields
 					const placeFields = ['birth_place', 'death_place', 'burial_place', 'residence'];
 					for (const field of placeFields) {
-						const value = fm[field];
+						const value = frontmatter[field];
 						if (typeof value === 'string' && value.trim()) {
 							const cleaned = cleanPlaceValue(value);
 							if (cleaned === null) {
@@ -12025,7 +12041,7 @@ export class ControlCenterModal extends Modal {
 								frontmatter[field] = cleaned;
 								hasChanges = true;
 							}
-						} else if (isPlaceholder(value)) {
+						} else if (field in frontmatter && isPlaceholder(value)) {
 							delete frontmatter[field];
 							hasChanges = true;
 						}
@@ -12034,7 +12050,7 @@ export class ControlCenterModal extends Modal {
 					// Clean relationship arrays or remove if all placeholders
 					const relationshipFields = ['spouse', 'child', 'children'];
 					for (const field of relationshipFields) {
-						const value = fm[field];
+						const value = frontmatter[field];
 						if (Array.isArray(value)) {
 							const nonPlaceholders = value.filter(v => !isPlaceholder(v));
 							if (nonPlaceholders.length === 0) {
@@ -12044,7 +12060,7 @@ export class ControlCenterModal extends Modal {
 								frontmatter[field] = nonPlaceholders;
 								hasChanges = true;
 							}
-						} else if (isPlaceholder(value)) {
+						} else if (field in frontmatter && isPlaceholder(value)) {
 							delete frontmatter[field];
 							hasChanges = true;
 						}
@@ -12053,7 +12069,7 @@ export class ControlCenterModal extends Modal {
 					// Remove placeholder parent fields
 					const parentFields = ['father', 'mother'];
 					for (const field of parentFields) {
-						if (isPlaceholder(fm[field])) {
+						if (field in frontmatter && isPlaceholder(frontmatter[field])) {
 							delete frontmatter[field];
 							hasChanges = true;
 						}
@@ -12078,6 +12094,107 @@ export class ControlCenterModal extends Modal {
 		if (errors.length > 0) {
 			new Notice(`⚠ ${errors.length} errors occurred. Check console for details.`);
 			console.error('Remove placeholders errors:', errors);
+		}
+
+		// Wait for file system to sync before reloading
+		// Brief delay to ensure all file writes are complete
+		if (modified > 0) {
+			await new Promise(resolve => setTimeout(resolve, 500));
+		}
+
+		// Refresh the family graph cache
+		familyGraph.reloadCache();
+
+		// Refresh the People tab
+		this.showTab('people');
+	}
+
+	/**
+	 * Preview adding cr_type: person to person notes
+	 */
+	private async previewAddPersonType(): Promise<void> {
+		const familyGraph = this.plugin.createFamilyGraphService();
+		familyGraph.ensureCacheLoaded();
+		const people = familyGraph.getAllPeople();
+
+		console.log(`[DEBUG] previewAddPersonType: Found ${people.length} people from getAllPeople()`);
+
+		const changes: Array<{ person: { name: string }; file: TFile }> = [];
+
+		for (const person of people) {
+			const cache = this.app.metadataCache.getFileCache(person.file);
+			if (!cache?.frontmatter) continue;
+
+			const fm = cache.frontmatter as Record<string, unknown>;
+
+			// Check if cr_type already exists
+			if (!fm.cr_type) {
+				changes.push({
+					person: { name: person.name || 'Unknown' },
+					file: person.file
+				});
+			}
+		}
+
+		console.log(`[DEBUG] previewAddPersonType: Found ${changes.length} people needing cr_type`);
+
+		// Show preview modal
+		new AddPersonTypePreviewModal(
+			this.app,
+			changes,
+			async () => await this.addPersonType()
+		).open();
+	}
+
+	/**
+	 * Add cr_type: person to all person notes
+	 */
+	private async addPersonType(): Promise<void> {
+		new Notice('Adding cr_type property...');
+
+		const familyGraph = this.plugin.createFamilyGraphService();
+		familyGraph.ensureCacheLoaded();
+		const people = familyGraph.getAllPeople();
+
+		let modified = 0;
+		let processed = 0;
+		const errors: string[] = [];
+
+		for (const person of people) {
+			processed++;
+
+			try {
+				const cache = this.app.metadataCache.getFileCache(person.file);
+				if (!cache?.frontmatter) continue;
+
+				let hasChanges = false;
+
+				await this.app.fileManager.processFrontMatter(person.file, (frontmatter) => {
+					// Add cr_type if it doesn't exist
+					if (!frontmatter.cr_type) {
+						frontmatter.cr_type = 'person';
+						hasChanges = true;
+					}
+				});
+
+				if (hasChanges) {
+					modified++;
+				}
+			} catch (error) {
+				errors.push(`${person.file.path}: ${getErrorMessage(error)}`);
+			}
+		}
+
+		// Show result
+		if (modified > 0) {
+			new Notice(`✓ Added cr_type property to ${modified} ${modified === 1 ? 'file' : 'files'}`);
+		} else {
+			new Notice('All person notes already have cr_type property');
+		}
+
+		if (errors.length > 0) {
+			new Notice(`⚠ ${errors.length} errors occurred. Check console for details.`);
+			console.error('Add person type errors:', errors);
 		}
 
 		// Refresh the family graph cache
@@ -13088,16 +13205,9 @@ class DuplicateRelationshipsPreviewModal extends Modal {
 			// Run the operation
 			await this.onApply();
 
-			// Show completion and enable close
-			applyButton.textContent = '✓ Changes applied';
-			applyButton.addClass('crc-btn-success');
-			cancelButton.textContent = 'Close';
-			cancelButton.disabled = false;
-
-			// Update count to show completion
-			if (this.countEl) {
-				this.countEl.textContent = `✓ Successfully applied ${this.allChanges.length} change${this.allChanges.length === 1 ? '' : 's'}`;
-			}
+			// Close the modal after completion (like BuildPlaceHierarchyModal)
+			// This avoids stale cache issues when user reopens the preview
+			this.close();
 		});
 	}
 
@@ -13311,16 +13421,9 @@ class PlaceholderRemovalPreviewModal extends Modal {
 			// Run the operation
 			await this.onApply();
 
-			// Show completion and enable close
-			applyButton.textContent = '✓ Changes applied';
-			applyButton.addClass('crc-btn-success');
-			cancelButton.textContent = 'Close';
-			cancelButton.disabled = false;
-
-			// Update count to show completion
-			if (this.countEl) {
-				this.countEl.textContent = `✓ Successfully applied ${this.allChanges.length} change${this.allChanges.length === 1 ? '' : 's'}`;
-			}
+			// Close the modal after completion (like BuildPlaceHierarchyModal)
+			// This avoids stale cache issues when user reopens the preview
+			this.close();
 		});
 	}
 
@@ -13544,16 +13647,9 @@ class NameNormalizationPreviewModal extends Modal {
 			// Run the operation
 			await this.onApply();
 
-			// Show completion and enable close
-			applyButton.textContent = '✓ Changes applied';
-			applyButton.addClass('crc-btn-success');
-			cancelButton.textContent = 'Close';
-			cancelButton.disabled = false;
-
-			// Update count to show completion
-			if (this.countEl) {
-				this.countEl.textContent = `✓ Successfully applied ${this.allChanges.length} change${this.allChanges.length === 1 ? '' : 's'}`;
-			}
+			// Close the modal after completion (like BuildPlaceHierarchyModal)
+			// This avoids stale cache issues when user reopens the preview
+			this.close();
 		});
 	}
 
@@ -13788,16 +13884,9 @@ class OrphanedRefsPreviewModal extends Modal {
 			// Run the operation
 			await this.onApply();
 
-			// Show completion and enable close
-			applyButton.textContent = '✓ Changes applied';
-			applyButton.addClass('crc-btn-success');
-			cancelButton.textContent = 'Close';
-			cancelButton.disabled = false;
-
-			// Update count to show completion
-			if (this.countEl) {
-				this.countEl.textContent = `✓ Successfully applied ${this.allChanges.length} change${this.allChanges.length === 1 ? '' : 's'}`;
-			}
+			// Close the modal after completion (like BuildPlaceHierarchyModal)
+			// This avoids stale cache issues when user reopens the preview
+			this.close();
 		});
 	}
 
