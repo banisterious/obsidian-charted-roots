@@ -106,6 +106,46 @@ export function renderPlacesTab(
 	renderPlaceTypeManagerCard(container, plugin, createCard, () => {
 		showTab('places');
 	});
+
+	// Batch Operations Card
+	const batchCard = createCard({
+		title: 'Batch operations',
+		icon: 'zap',
+		subtitle: 'Bulk actions on place names'
+	});
+
+	const batchContent = batchCard.querySelector('.crc-card__content') as HTMLElement;
+
+	batchContent.createEl('p', {
+		text: 'Apply bulk operations to all place notes in your vault.',
+		cls: 'crc-text--muted'
+	});
+
+	// Normalize place name formatting
+	const normalizeContainer = batchContent.createDiv({ cls: 'crc-setting-item' });
+	const normalizeInfo = normalizeContainer.createDiv({ cls: 'crc-setting-item-info' });
+	normalizeInfo.createDiv({ text: 'Normalize place name formatting', cls: 'crc-setting-item-name' });
+	normalizeInfo.createDiv({
+		text: 'Standardize capitalization: "NEW YORK" → "New York", handle prefixes like van, de',
+		cls: 'crc-setting-item-description'
+	});
+	const normalizeControls = normalizeContainer.createDiv({ cls: 'crc-setting-item-control' });
+	const previewBtn = normalizeControls.createEl('button', {
+		text: 'Preview',
+		cls: 'crc-btn-secondary'
+	});
+	previewBtn.addEventListener('click', () => {
+		showNormalizePlaceNamesPreview(plugin, showTab);
+	});
+	const applyBtn = normalizeControls.createEl('button', {
+		text: 'Apply',
+		cls: 'mod-cta'
+	});
+	applyBtn.addEventListener('click', () => {
+		showNormalizePlaceNamesApply(plugin, showTab);
+	});
+
+	container.appendChild(batchCard);
 }
 
 /**
@@ -1398,4 +1438,243 @@ function showMergeDuplicatePlacesModal(plugin: CanvasRootsPlugin, showTab: (tabI
 		}
 	});
 	modal.open();
+}
+
+/**
+ * Preview normalize place names operation
+ */
+function showNormalizePlaceNamesPreview(plugin: CanvasRootsPlugin, showTab: (tabId: string) => void): void {
+	const { Notice, Modal } = require('obsidian');
+
+	const files = plugin.app.vault.getMarkdownFiles();
+	const changes: Array<{ place: string; oldName: string; newName: string; file: TFile }> = [];
+
+	// Normalization function (same logic as person names but for places)
+	const normalizePlaceName = (name: string): string | null => {
+		if (!name || typeof name !== 'string') return null;
+
+		const cleaned = name.trim().replace(/\s+/g, ' ');
+		if (!cleaned) return null;
+
+		const words = cleaned.split(' ');
+		const normalized = words.map(word => {
+			if (!word) return word;
+
+			const lowerWord = word.toLowerCase();
+
+			// Preserve initials (single letter followed by period, like "A.", "B.", etc.)
+			if (/^[a-z]\.$/i.test(word)) {
+				return word.toUpperCase();
+			}
+
+			// Preserve Roman numerals (I, II, III, IV, V, VI, VII, VIII, IX, X, etc.)
+			if (/^[ivx]+$/i.test(word)) {
+				return word.toUpperCase();
+			}
+
+			// Common place name prefixes that should stay lowercase (unless at start)
+			const lowercasePrefixes = ['van', 'von', 'de', 'del', 'della', 'di', 'da', 'le', 'la', 'den', 'der', 'ten', 'ter', 'du'];
+
+			const wordIndex = words.indexOf(word);
+			if (wordIndex > 0 && lowercasePrefixes.includes(lowerWord)) {
+				return lowerWord;
+			}
+
+			// Standard title case
+			return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+		});
+
+		const result = normalized.join(' ');
+		return result !== cleaned ? result : null;
+	};
+
+	// Check each place note
+	for (const file of files) {
+		const cache = plugin.app.metadataCache.getFileCache(file);
+		if (!cache?.frontmatter) continue;
+
+		const fm = cache.frontmatter as Record<string, unknown>;
+
+		// Check if it has place_type (indicates it's a place note)
+		if (!fm.place_type && !fm.category) continue;
+
+		if (fm.name && typeof fm.name === 'string') {
+			const normalized = normalizePlaceName(fm.name);
+			if (normalized) {
+				changes.push({
+					place: fm.name,
+					oldName: fm.name,
+					newName: normalized,
+					file
+				});
+			}
+		}
+	}
+
+	if (changes.length === 0) {
+		new Notice('No place names need normalization');
+		return;
+	}
+
+	// Show preview modal
+	const modal = new Modal(plugin.app);
+	modal.modalEl.addClass('crc-batch-preview-modal');
+	modal.titleEl.setText('Preview: Normalize place name formatting');
+
+	const { contentEl } = modal;
+
+	// Description
+	const description = contentEl.createDiv({ cls: 'crc-batch-description' });
+	description.createEl('p', {
+		text: `Found ${changes.length} place name${changes.length === 1 ? '' : 's'} that will be normalized.`
+	});
+
+	// Table
+	const tableContainer = contentEl.createDiv({ cls: 'crc-table-container' });
+	const table = tableContainer.createEl('table', { cls: 'crc-batch-table' });
+
+	const thead = table.createEl('thead');
+	const headerRow = thead.createEl('tr');
+	headerRow.createEl('th', { text: 'Old Name' });
+	headerRow.createEl('th', { text: 'New Name' });
+
+	const tbody = table.createEl('tbody');
+	for (const change of changes.slice(0, 100)) { // Limit display to 100 rows
+		const row = tbody.createEl('tr');
+		row.createEl('td', { text: change.oldName });
+		row.createEl('td', { text: change.newName, cls: 'crc-text--success' });
+	}
+
+	if (changes.length > 100) {
+		const row = tbody.createEl('tr');
+		const cell = row.createEl('td', {
+			text: `... and ${changes.length - 100} more`,
+			cls: 'crc-text--muted'
+		});
+		cell.colSpan = 2;
+	}
+
+	// Backup warning
+	const warning = contentEl.createDiv({ cls: 'crc-warning-callout' });
+	const warningIcon = createLucideIcon('alert-triangle', 16);
+	warning.appendChild(warningIcon);
+	warning.createSpan({
+		text: ' Backup your vault before proceeding. This operation will modify existing notes.'
+	});
+
+	// Buttons
+	const buttonContainer = contentEl.createDiv({ cls: 'crc-confirmation-buttons' });
+
+	const cancelButton = buttonContainer.createEl('button', {
+		text: 'Cancel',
+		cls: 'crc-btn-secondary'
+	});
+	cancelButton.addEventListener('click', () => modal.close());
+
+	const applyButton = buttonContainer.createEl('button', {
+		text: `Apply ${changes.length} change${changes.length === 1 ? '' : 's'}`,
+		cls: 'mod-cta'
+	});
+	applyButton.addEventListener('click', () => {
+		modal.close();
+		showNormalizePlaceNamesApply(plugin, showTab);
+	});
+
+	modal.open();
+}
+
+/**
+ * Apply normalize place names operation
+ */
+function showNormalizePlaceNamesApply(plugin: CanvasRootsPlugin, showTab: (tabId: string) => void): void {
+	const { Notice } = require('obsidian');
+
+	const files = plugin.app.vault.getMarkdownFiles();
+	let modified = 0;
+	const errors: Array<{ file: string; error: string }> = [];
+
+	new Notice('Normalizing place names...');
+
+	// Normalization function (same as preview)
+	const normalizePlaceName = (name: string): string | null => {
+		if (!name || typeof name !== 'string') return null;
+
+		const cleaned = name.trim().replace(/\s+/g, ' ');
+		if (!cleaned) return null;
+
+		const words = cleaned.split(' ');
+		const normalized = words.map(word => {
+			if (!word) return word;
+
+			const lowerWord = word.toLowerCase();
+
+			// Preserve initials (single letter followed by period, like "A.", "B.", etc.)
+			if (/^[a-z]\.$/i.test(word)) {
+				return word.toUpperCase();
+			}
+
+			// Preserve Roman numerals (I, II, III, IV, V, VI, VII, VIII, IX, X, etc.)
+			if (/^[ivx]+$/i.test(word)) {
+				return word.toUpperCase();
+			}
+
+			// Common place name prefixes that should stay lowercase (unless at start)
+			const lowercasePrefixes = ['van', 'von', 'de', 'del', 'della', 'di', 'da', 'le', 'la', 'den', 'der', 'ten', 'ter', 'du'];
+
+			const wordIndex = words.indexOf(word);
+			if (wordIndex > 0 && lowercasePrefixes.includes(lowerWord)) {
+				return lowerWord;
+			}
+
+			// Standard title case
+			return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+		});
+
+		const result = normalized.join(' ');
+		return result !== cleaned ? result : null;
+	};
+
+	// Process each file asynchronously
+	(async () => {
+		for (const file of files) {
+			try {
+				const cache = plugin.app.metadataCache.getFileCache(file);
+				if (!cache?.frontmatter) continue;
+
+				const fm = cache.frontmatter as Record<string, unknown>;
+
+				// Check if it has place_type (indicates it's a place note)
+				if (!fm.place_type && !fm.category) continue;
+
+				if (fm.name && typeof fm.name === 'string') {
+					const normalized = normalizePlaceName(fm.name);
+					if (normalized) {
+						await plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+							frontmatter.name = normalized;
+						});
+						modified++;
+					}
+				}
+			} catch (error) {
+				errors.push({
+					file: file.path,
+					error: error instanceof Error ? error.message : String(error)
+				});
+			}
+		}
+
+		if (modified > 0) {
+			new Notice(`✓ Normalized ${modified} place name${modified === 1 ? '' : 's'}`);
+		} else {
+			new Notice('No place names needed normalization');
+		}
+
+		if (errors.length > 0) {
+			new Notice(`⚠ ${errors.length} errors occurred. Check console for details.`);
+			console.error('Normalize place names errors:', errors);
+		}
+
+		// Refresh the Places tab
+		showTab('places');
+	})();
 }
