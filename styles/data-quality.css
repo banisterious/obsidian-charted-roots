@@ -335,6 +335,7 @@
   padding: var(--size-4-2) var(--size-4-3);
   border-bottom: 1px solid var(--background-modifier-border);
   vertical-align: top;
+  word-break: break-word;
 }
 
 .crc-batch-preview-table tr:last-child td {
@@ -478,7 +479,7 @@
 
 .crc-batch-table-container {
   flex: 1;
-  overflow-y: auto;
+  overflow: auto;
   max-height: 350px;
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--radius-s);

@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-12 13:53:04 UTC
+ * - Generated: 2025-12-12 14:01:57 UTC
  * - Components: 30 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -7664,7 +7664,7 @@ settings:
    COMPONENT: DATA-QUALITY.CSS
    ========================================================================== */
 
-/* Component Size: 1286 lines, 25.4 KB */
+/* Component Size: 1312 lines, 25.92 KB */
 
 /**
  * Data Quality Tab Styles
@@ -8003,6 +8003,7 @@ settings:
   padding: var(--size-4-2) var(--size-4-3);
   border-bottom: 1px solid var(--background-modifier-border);
   vertical-align: top;
+  word-break: break-word;
 }
 
 .crc-batch-preview-table tr:last-child td {
@@ -8021,6 +8022,31 @@ settings:
 .crc-batch-new-value {
   color: var(--color-green);
   font-weight: 500;
+}
+
+/* Batch Action Buttons */
+.crc-batch-actions--inline {
+  display: flex;
+  flex-direction: row;
+  gap: var(--size-4-1);
+  white-space: nowrap;
+}
+
+.crc-batch-action-btn {
+  padding: var(--size-4-1);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crc-batch-action-btn:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
 }
 
 /* Batch Preview Modal */
@@ -8121,7 +8147,7 @@ settings:
 
 .crc-batch-table-container {
   flex: 1;
-  overflow-y: auto;
+  overflow: auto;
   max-height: 350px;
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--radius-s);
@@ -16642,11 +16668,11 @@ body.wide-timeline .view-content {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-12 13:53:04 UTC
+ * Build completed: 2025-12-12 14:01:57 UTC
  * Components processed: 30
- * Total lines: 16349
- * Total size: 322.07 KB
- * Build duration: 0.04 seconds
+ * Total lines: 16375
+ * Total size: 322.59 KB
+ * Build duration: 0.03 seconds
  *
  * Component breakdown:
  * - variables.css: 48 lines, 1.33 KB
@@ -16665,7 +16691,7 @@ body.wide-timeline .view-content {
  * - folder-scan.css: 155 lines, 2.56 KB
  * - relationship-calculator.css: 302 lines, 5.21 KB
  * - family-chart-view.css: 694 lines, 16.14 KB
- * - data-quality.css: 1286 lines, 25.4 KB
+ * - data-quality.css: 1312 lines, 25.92 KB
  * - relationships.css: 517 lines, 9.76 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB
  * - map-view.css: 1904 lines, 38.98 KB
