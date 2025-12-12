@@ -16,11 +16,10 @@ import {
 	GedcomImportOptionsV2,
 	GedcomImportResultV2
 } from './gedcom-types';
-import { GedcomValidationResult } from './gedcom-parser';
 import { createPersonNote, PersonData } from '../core/person-note-writer';
 import { generateCrId } from '../core/uuid';
 import { getErrorMessage } from '../core/error-utils';
-import type { CreateEventData, DatePrecision, EventConfidence } from '../events/types/event-types';
+import type { CreateEventData, EventConfidence } from '../events/types/event-types';
 
 /**
  * US State abbreviation to full name mapping for normalizing place names

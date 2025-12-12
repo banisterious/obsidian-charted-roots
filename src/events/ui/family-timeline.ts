@@ -12,7 +12,7 @@
 
 import { App, TFile } from 'obsidian';
 import type { CanvasRootsSettings } from '../../settings';
-import { createLucideIcon, LucideIconName } from '../../ui/lucide-icons';
+import { createLucideIcon } from '../../ui/lucide-icons';
 import { EventService } from '../services/event-service';
 import { EventNote, getEventType, DATE_PRECISION_LABELS } from '../types/event-types';
 import { FamilyGraphService, PersonNode } from '../../core/family-graph';
@@ -293,7 +293,7 @@ function renderFamilyLegend(container: HTMLElement, members: FamilyMember[]): vo
 
 		// Color dot
 		const dot = item.createEl('span', { cls: 'crc-family-timeline__legend-dot' });
-		dot.style.backgroundColor = member.color;
+		dot.style.setProperty('background-color', member.color);
 
 		// Name with relationship
 		const label = getRelationshipLabel(member.relationship, member.person.name);
@@ -388,7 +388,7 @@ function renderFamilyTimelineEvent(
 	// Person indicator (with color)
 	const personIndicator = content.createDiv({ cls: 'crc-family-timeline-event__person' });
 	const personDot = personIndicator.createEl('span', { cls: 'crc-family-timeline-event__person-dot' });
-	personDot.style.backgroundColor = member.color;
+	personDot.style.setProperty('background-color', member.color);
 	personIndicator.createEl('span', {
 		text: getRelationshipLabel(member.relationship, member.person.name),
 		cls: 'crc-family-timeline-event__person-name'

@@ -5,7 +5,7 @@
  * Handles single and bulk geocoding with rate limiting.
  */
 
-import { requestUrl, Notice, TFile, App } from 'obsidian';
+import { requestUrl, TFile, App } from 'obsidian';
 import { getLogger } from '../../core/logging';
 import type { GeoCoordinates } from '../../models/place';
 

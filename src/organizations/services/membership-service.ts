@@ -56,7 +56,7 @@ export class MembershipService {
 		const memberships: PersonMembership[] = [];
 
 		const personCrId = fm.cr_id || '';
-		const personName = fm.name || personFile.basename;
+		const personName = typeof fm.name === 'string' ? fm.name : personFile.basename;
 
 		// Check for simple house/role membership
 		if (fm.house || fm.organization) {

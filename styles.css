@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-12 17:56:00 UTC
+ * - Generated: 2025-12-12 22:33:17 UTC
  * - Components: 30 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -14499,7 +14499,7 @@ input[type="text"]::-webkit-input-placeholder {
    COMPONENT: TIMELINE-CALLOUTS.CSS
    ========================================================================== */
 
-/* Component Size: 307 lines, 9.73 KB */
+/* Component Size: 319 lines, 10.27 KB */
 
 /**
  * Timeline Callout Styles
@@ -14575,7 +14575,19 @@ body {
 .callout[data-callout="timeline-outer"] > .callout-content::before {
   content: "";
   position: absolute;
-  left: calc(var(--cr-timeline-title-width) + var(--cr-timeline-line-margin));
+  /* Align line center with dot center:
+     The icon element is positioned at: title-width - line-margin - (icon-width / 2)
+     Based on measurements: icon is ~130px from content, which equals
+     title-width (150) - line-margin (16) - line-width/2 (2) = 132px (close enough)
+
+     Dot left edge = icon-position + dot-offset-x
+     Dot center = dot-left + dot-size/2
+     Line left = dot-center - line-width/2 */
+  left: calc(
+    var(--cr-timeline-title-width) - var(--cr-timeline-line-margin) +
+      var(--cr-timeline-dot-offset-x) + (var(--cr-timeline-dot-size) / 2) -
+      (var(--cr-timeline-line-width) / 2) - 4px
+  );
   top: 0;
   bottom: var(--cr-timeline-card-margin);
   width: var(--cr-timeline-line-width);
@@ -17013,10 +17025,10 @@ body.wide-timeline .view-content {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-12 17:56:00 UTC
+ * Build completed: 2025-12-12 22:33:17 UTC
  * Components processed: 30
- * Total lines: 16720
- * Total size: 329.17 KB
+ * Total lines: 16732
+ * Total size: 329.71 KB
  * Build duration: 0.03 seconds
  *
  * Component breakdown:
@@ -17043,7 +17055,7 @@ body.wide-timeline .view-content {
  * - leaflet-distortable.css: 368 lines, 7.73 KB
  * - date-systems.css: 287 lines, 5.31 KB
  * - events.css: 1363 lines, 27.26 KB
- * - timeline-callouts.css: 307 lines, 9.73 KB
+ * - timeline-callouts.css: 319 lines, 10.27 KB
  * - organizations.css: 245 lines, 4.36 KB
  * - sources.css: 1620 lines, 31.67 KB
  * - preferences.css: 242 lines, 5.29 KB

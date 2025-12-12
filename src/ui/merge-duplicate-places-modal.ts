@@ -592,7 +592,7 @@ export class MergeDuplicatePlacesModal extends Modal {
 			cls: 'crc-text--muted'
 		});
 
-		const filenameDisplay = container.createEl('span', {
+		container.createEl('span', {
 			text: displayFilename + '.md',
 			cls: newFilename ? 'crc-filename-edited' : 'crc-filename-original'
 		});
@@ -645,7 +645,7 @@ export class MergeDuplicatePlacesModal extends Modal {
 		});
 		input.placeholder = currentFilename;
 
-		const suffix = editorRow.createEl('span', {
+		editorRow.createEl('span', {
 			text: '.md',
 			cls: 'crc-text--muted'
 		});

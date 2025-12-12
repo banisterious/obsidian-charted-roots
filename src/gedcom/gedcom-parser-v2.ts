@@ -5,7 +5,6 @@
  * in addition to basic person and family data.
  */
 
-import { getErrorMessage } from '../core/error-utils';
 import {
 	GedcomDataV2,
 	GedcomIndividualV2,
@@ -434,12 +433,13 @@ export class GedcomParserV2 {
 				case 'PAGE':
 					currentCitation.page = value;
 					break;
-				case 'QUAY':
+				case 'QUAY': {
 					const quay = parseInt(value, 10);
 					if (!isNaN(quay)) {
 						currentCitation.quay = quay;
 					}
 					break;
+				}
 			}
 		}
 
@@ -557,12 +557,13 @@ export class GedcomParserV2 {
 				case 'PAGE':
 					currentCitation.page = value;
 					break;
-				case 'QUAY':
+				case 'QUAY': {
 					const quay = parseInt(value, 10);
 					if (!isNaN(quay)) {
 						currentCitation.quay = quay;
 					}
 					break;
+				}
 			}
 		}
 

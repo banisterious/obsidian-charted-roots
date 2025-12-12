@@ -63,9 +63,6 @@ import type { LucideIconName } from './lucide-icons';
 import type { ArrowStyle, ColorScheme, SpouseEdgeLabelFormat } from '../settings';
 import {
 	PropertyAliasService,
-	CANONICAL_PERSON_PROPERTIES,
-	CANONICAL_EVENT_PROPERTIES,
-	CANONICAL_PLACE_PROPERTIES,
 	CANONICAL_PROPERTY_LABELS,
 	type CanonicalPersonProperty,
 	type CanonicalEventProperty,
@@ -212,39 +209,41 @@ function renderPropertySection(
 						.setValue(currentAlias);
 
 					// Validate and save only on blur (when user finishes typing)
-					text.inputEl.addEventListener('blur', async () => {
-						const value = text.inputEl.value;
-						const trimmed = value.trim();
+					text.inputEl.addEventListener('blur', () => {
+						void (async () => {
+							const value = text.inputEl.value;
+							const trimmed = value.trim();
 
-						if (trimmed === '') {
-							// Empty = remove alias
-							if (currentAlias) {
-								await propertyAliasService.removeAlias(currentAlias);
+							if (trimmed === '') {
+								// Empty = remove alias
+								if (currentAlias) {
+									await propertyAliasService.removeAlias(currentAlias);
+									showTab('preferences'); // Refresh
+								}
+								return;
+							}
+
+							// Check if aliasing to itself (warning)
+							if (trimmed === meta.canonical) {
+								new Notice(`"${trimmed}" is already the canonical name`);
+								text.inputEl.value = currentAlias; // Restore previous value
+								return;
+							}
+
+							// Check for duplicate
+							const existingMapping = propertyAliasService.aliases[trimmed];
+							if (existingMapping && existingMapping !== meta.canonical) {
+								new Notice(`"${trimmed}" is already mapped to "${existingMapping}"`);
+								text.inputEl.value = currentAlias; // Restore previous value
+								return;
+							}
+
+							// Valid - save
+							if (trimmed !== currentAlias) {
+								await propertyAliasService.setAlias(trimmed, meta.canonical);
 								showTab('preferences'); // Refresh
 							}
-							return;
-						}
-
-						// Check if aliasing to itself (warning)
-						if (trimmed === meta.canonical) {
-							new Notice(`"${trimmed}" is already the canonical name`);
-							text.inputEl.value = currentAlias; // Restore previous value
-							return;
-						}
-
-						// Check for duplicate
-						const existingMapping = propertyAliasService.aliases[trimmed];
-						if (existingMapping && existingMapping !== meta.canonical) {
-							new Notice(`"${trimmed}" is already mapped to "${existingMapping}"`);
-							text.inputEl.value = currentAlias; // Restore previous value
-							return;
-						}
-
-						// Valid - save
-						if (trimmed !== currentAlias) {
-							await propertyAliasService.setAlias(trimmed, meta.canonical);
-							showTab('preferences'); // Refresh
-						}
+						})();
 					});
 				})
 				.addExtraButton(button => {
@@ -354,43 +353,45 @@ function renderValueSection(
 						.setValue(userValue);
 
 					// Validate and save only on blur
-					text.inputEl.addEventListener('blur', async () => {
-						const value = text.inputEl.value;
-						const trimmed = value.trim();
+					text.inputEl.addEventListener('blur', () => {
+						void (async () => {
+							const value = text.inputEl.value;
+							const trimmed = value.trim();
 
-						if (trimmed === '') {
-							// Empty = remove alias if it exists
-							if (userValue) {
-								await valueAliasService.removeAlias(field, userValue);
+							if (trimmed === '') {
+								// Empty = remove alias if it exists
+								if (userValue) {
+									await valueAliasService.removeAlias(field, userValue);
+									showTab('preferences'); // Refresh
+								}
+								return;
+							}
+
+							// Check if aliasing to itself (warning)
+							if (trimmed.toLowerCase() === canonicalValue.toLowerCase()) {
+								new Notice(`"${trimmed}" is already the canonical value`);
+								text.inputEl.value = userValue; // Restore previous value
+								return;
+							}
+
+							// Check for duplicate (mapping to different canonical value)
+							const existingMapping = aliases[trimmed.toLowerCase()];
+							if (existingMapping && existingMapping !== canonicalValue) {
+								new Notice(`"${trimmed}" is already mapped to "${existingMapping}"`);
+								text.inputEl.value = userValue; // Restore previous value
+								return;
+							}
+
+							// Valid - save
+							if (trimmed !== userValue) {
+								// Remove old alias if it exists
+								if (userValue) {
+									await valueAliasService.removeAlias(field, userValue);
+								}
+								await valueAliasService.setAlias(field, trimmed, canonicalValue);
 								showTab('preferences'); // Refresh
 							}
-							return;
-						}
-
-						// Check if aliasing to itself (warning)
-						if (trimmed.toLowerCase() === canonicalValue.toLowerCase()) {
-							new Notice(`"${trimmed}" is already the canonical value`);
-							text.inputEl.value = userValue; // Restore previous value
-							return;
-						}
-
-						// Check for duplicate (mapping to different canonical value)
-						const existingMapping = aliases[trimmed.toLowerCase()];
-						if (existingMapping && existingMapping !== canonicalValue) {
-							new Notice(`"${trimmed}" is already mapped to "${existingMapping}"`);
-							text.inputEl.value = userValue; // Restore previous value
-							return;
-						}
-
-						// Valid - save
-						if (trimmed !== userValue) {
-							// Remove old alias if it exists
-							if (userValue) {
-								await valueAliasService.removeAlias(field, userValue);
-							}
-							await valueAliasService.setAlias(field, trimmed, canonicalValue);
-							showTab('preferences'); // Refresh
-						}
+						})();
 					});
 				})
 				.addExtraButton(button => {
@@ -637,7 +638,7 @@ function renderAliasesCard(
 /**
  * Get human-readable label for a canonical value
  */
-function getCanonicalValueLabel(field: ValueAliasField, value: string): string {
+function _getCanonicalValueLabel(field: ValueAliasField, value: string): string {
 	switch (field) {
 		case 'eventType':
 			return EVENT_TYPE_LABELS[value as CanonicalEventType] || value;
@@ -695,9 +696,11 @@ function renderFolderLocationsCard(
 					});
 
 				// Attach folder autocomplete
-				new FolderSuggest(plugin.app, text, async (value) => {
-					setValue(value);
-					await plugin.saveSettings();
+				new FolderSuggest(plugin.app, text, (value) => {
+					void (async () => {
+						setValue(value);
+						await plugin.saveSettings();
+					})();
 				});
 			});
 	};
@@ -1110,7 +1113,7 @@ function renderDateValidationCard(
 /**
  * Modal for adding/editing a property alias
  */
-class PropertyAliasModal extends Modal {
+class _PropertyAliasModal extends Modal {
 	private plugin: CanvasRootsPlugin;
 	private userProperty: string;
 	private canonicalProperty: string;
@@ -1226,8 +1229,8 @@ class PropertyAliasModal extends Modal {
 				for (const option of Array.from(selectEl.options)) {
 					if (option.value.startsWith('__category_')) {
 						option.disabled = true;
-						option.style.fontWeight = 'bold';
-						option.style.color = 'var(--text-muted)';
+						option.style.setProperty('font-weight', 'bold');
+						option.style.setProperty('color', 'var(--text-muted)');
 					}
 				}
 
@@ -1252,10 +1255,12 @@ class PropertyAliasModal extends Modal {
 			cls: 'mod-cta',
 			text: this.isEdit ? 'Save' : 'Add alias'
 		});
-		saveBtn.addEventListener('click', async () => {
-			if (this.validate()) {
-				await this.save();
-			}
+		saveBtn.addEventListener('click', () => {
+			void (async () => {
+				if (this.validate()) {
+					await this.save();
+				}
+			})();
 		});
 	}
 
@@ -1318,7 +1323,7 @@ class PropertyAliasModal extends Modal {
 /**
  * Modal for adding/editing a value alias
  */
-class ValueAliasModal extends Modal {
+class _ValueAliasModal extends Modal {
 	private plugin: CanvasRootsPlugin;
 	private field: ValueAliasField;
 	private userValue: string;
@@ -1418,10 +1423,12 @@ class ValueAliasModal extends Modal {
 			cls: 'mod-cta',
 			text: this.isEdit ? 'Save' : 'Add alias'
 		});
-		saveBtn.addEventListener('click', async () => {
-			if (this.validate()) {
-				await this.save();
-			}
+		saveBtn.addEventListener('click', () => {
+			void (async () => {
+				if (this.validate()) {
+					await this.save();
+				}
+			})();
 		});
 	}
 

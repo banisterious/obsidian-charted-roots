@@ -353,7 +353,7 @@ function renderMediaThumbnail(
 	const sourceInfo = overlay.createDiv({ cls: 'cr-media-thumbnail-source' });
 	if (typeDef) {
 		const badge = sourceInfo.createSpan({ cls: 'cr-media-thumbnail-badge' });
-		badge.style.backgroundColor = typeDef.color;
+		badge.style.setProperty('background-color', typeDef.color);
 		badge.textContent = typeDef.name;
 	}
 

@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.11.4] - 2025-12-12
+
+Obsidian plugin review fixes (Round 11) and bug fixes.
+
+### Changed
+
+- **PR review compliance** - Addressed all required and optional items from Obsidian plugin review:
+  - Replaced direct `style.x =` assignments with `style.setProperty()` for CSP compliance
+  - Wrapped async event handlers with `void (async () => {...})()` pattern to handle floating promises
+  - Removed unused imports across the codebase
+
+### Fixed
+
+- **Person picker showing non-person notes** - Fixed the "Select person" modal (used when linking Father/Mother/Spouse in Create Person) incorrectly listing place, event, and source notes alongside person notes
+
+- **Timeline callout vertical line alignment** - Fixed the vertical line in markdown timeline exports not aligning with the dot markers
+
+---
+
 ## [0.11.3] - 2025-12-12
 
 GEDCOM Import: Pre-import data quality preview with place name standardization, plus Control Center UI consistency improvements.

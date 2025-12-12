@@ -5,10 +5,10 @@
  * place statistics, lists, references, and data quality issues.
  */
 
-import { Setting, TFile } from 'obsidian';
+import { Modal, Notice, Setting, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import type { LucideIconName } from './lucide-icons';
-import { createLucideIcon, setLucideIcon } from './lucide-icons';
+import { createLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
 import type { PlaceCategory } from '../models/place';
 import { CreatePlaceModal } from './create-place-modal';
@@ -1152,7 +1152,7 @@ function loadPlaceList(
 /**
  * Create a stat item for the statistics grid
  */
-function createStatItem(container: HTMLElement, label: string, value: string, icon?: LucideIconName): void {
+function _createStatItem(container: HTMLElement, label: string, value: string, icon?: LucideIconName): void {
 	const item = container.createDiv({ cls: 'crc-stat-item' });
 
 	if (icon) {
@@ -1204,8 +1204,6 @@ function showCreateMissingPlacesModal(plugin: CanvasRootsPlugin, showTab: (tabId
 	unlinked.sort((a, b) => b.count - a.count);
 
 	if (unlinked.length === 0) {
-		// Use Obsidian Notice
-		const { Notice } = require('obsidian');
 		new Notice('All referenced places already have notes!');
 		return;
 	}
@@ -1232,7 +1230,6 @@ function showQuickCreatePlaceModal(
 	placeName: string,
 	showTab: (tabId: string) => void
 ): void {
-	const { Notice } = require('obsidian');
 	const modal = new CreatePlaceModal(plugin.app, {
 		directory: plugin.settings.placesFolder || '',
 		initialName: placeName,
@@ -1251,8 +1248,7 @@ function showQuickCreatePlaceModal(
 /**
  * Show modal to build place hierarchy (assign parents to orphan places)
  */
-function showBuildHierarchyModal(plugin: CanvasRootsPlugin, showTab: (tabId: string) => void): void {
-	const { Notice } = require('obsidian');
+function _showBuildHierarchyModal(plugin: CanvasRootsPlugin, showTab: (tabId: string) => void): void {
 	const placeService = new PlaceGraphService(plugin.app);
 	placeService.setSettings(plugin.settings);
 	placeService.setValueAliases(plugin.settings.valueAliases);
@@ -1293,7 +1289,6 @@ function showBuildHierarchyModal(plugin: CanvasRootsPlugin, showTab: (tabId: str
  * Show modal to standardize place name variations
  */
 function showStandardizePlacesModal(plugin: CanvasRootsPlugin, showTab: (tabId: string) => void): void {
-	const { Notice } = require('obsidian');
 	// Find place name variations
 	const variationGroups = findPlaceNameVariations(plugin.app);
 
@@ -1317,7 +1312,6 @@ function showStandardizePlacesModal(plugin: CanvasRootsPlugin, showTab: (tabId: 
  * Show modal to standardize common place name variants (USA vs United States, state abbreviations, etc.)
  */
 function showStandardizePlaceVariantsModal(plugin: CanvasRootsPlugin, showTab: (tabId: string) => void): void {
-	const { Notice } = require('obsidian');
 	// Find place name variants
 	const variants = findPlaceNameVariants(plugin.app);
 
@@ -1341,7 +1335,6 @@ function showStandardizePlaceVariantsModal(plugin: CanvasRootsPlugin, showTab: (
  * Show modal to merge duplicate place notes
  */
 function showMergeDuplicatePlacesModal(plugin: CanvasRootsPlugin, showTab: (tabId: string) => void): void {
-	const { Notice } = require('obsidian');
 	// Find duplicate place notes
 	const duplicateGroups = findDuplicatePlaceNotes(plugin.app, {
 		settings: plugin.settings,
@@ -1368,8 +1361,6 @@ function showMergeDuplicatePlacesModal(plugin: CanvasRootsPlugin, showTab: (tabI
  * Preview normalize place names operation
  */
 function showNormalizePlaceNamesPreview(plugin: CanvasRootsPlugin, showTab: (tabId: string) => void): void {
-	const { Notice, Modal } = require('obsidian');
-
 	const files = plugin.app.vault.getMarkdownFiles();
 	const changes: Array<{ place: string; oldName: string; newName: string; file: TFile }> = [];
 
@@ -1537,8 +1528,6 @@ function showNormalizePlaceNamesPreview(plugin: CanvasRootsPlugin, showTab: (tab
  * Apply normalize place names operation
  */
 function showNormalizePlaceNamesApply(plugin: CanvasRootsPlugin, showTab: (tabId: string) => void): void {
-	const { Notice } = require('obsidian');
-
 	const files = plugin.app.vault.getMarkdownFiles();
 	let modified = 0;
 	const errors: Array<{ file: string; error: string }> = [];

@@ -20,6 +20,7 @@ import { renderEventTypeManagerCard } from '../../events/ui/event-type-manager-c
 import { isEventNote, isPersonNote } from '../../utils/note-type-detection';
 import { PropertyAliasService } from '../../core/property-alias-service';
 import { TemplateSnippetsModal } from '../../ui/template-snippets-modal';
+import { DEFAULT_DATE_SYSTEMS } from '../constants/default-date-systems';
 
 /**
  * Render the Events tab content
@@ -478,8 +479,8 @@ function renderEventTable(
 		);
 		if (typeDef) {
 			const badge = typeCell.createEl('span', { cls: 'crc-event-type-badge' });
-			badge.style.backgroundColor = typeDef.color;
-			badge.style.color = getContrastColor(typeDef.color);
+			badge.style.setProperty('background-color', typeDef.color);
+			badge.style.setProperty('color', getContrastColor(typeDef.color));
 			const icon = createLucideIcon(typeDef.icon, 12);
 			badge.appendChild(icon);
 			badge.appendText(` ${typeDef.name}`);
@@ -1024,23 +1025,25 @@ function renderExportCard(
 	updateExportButton();
 
 	// Export handler
-	exportBtn.addEventListener('click', async () => {
-		const title = titleValue || 'Event Timeline';
+	exportBtn.addEventListener('click', () => {
+		void (async () => {
+			const title = titleValue || 'Event Timeline';
 
-		if (exportFormat === 'canvas') {
-			await handleCanvasExport(plugin, allEvents, title, layoutValue, colorValue, personValue, typeValue, groupValue, includeEdges, groupByPerson, exportBtn);
-		} else if (exportFormat === 'excalidraw') {
-			await handleExcalidrawExport(plugin, allEvents, title, layoutValue, colorValue, personValue, typeValue, groupValue, includeEdges, exportBtn, {
-				roughness: excalidrawRoughness,
-				fontFamily: excalidrawFontFamily,
-				fillStyle: excalidrawFillStyle,
-				strokeStyle: excalidrawStrokeStyle,
-				strokeWidth: excalidrawStrokeWidth,
-				fontSize: excalidrawFontSize
-			});
-		} else if (exportFormat === 'markdown') {
-			await handleMarkdownExport(plugin, allEvents, title, markdownFormat, personValue, typeValue, groupValue, exportBtn);
-		}
+			if (exportFormat === 'canvas') {
+				await handleCanvasExport(plugin, allEvents, title, layoutValue, colorValue, personValue, typeValue, groupValue, includeEdges, groupByPerson, exportBtn);
+			} else if (exportFormat === 'excalidraw') {
+				await handleExcalidrawExport(plugin, allEvents, title, layoutValue, colorValue, personValue, typeValue, groupValue, includeEdges, exportBtn, {
+					roughness: excalidrawRoughness,
+					fontFamily: excalidrawFontFamily,
+					fillStyle: excalidrawFillStyle,
+					strokeStyle: excalidrawStrokeStyle,
+					strokeWidth: excalidrawStrokeWidth,
+					fontSize: excalidrawFontSize
+				});
+			} else if (exportFormat === 'markdown') {
+				await handleMarkdownExport(plugin, allEvents, title, markdownFormat, personValue, typeValue, groupValue, exportBtn);
+			}
+		})();
 	});
 
 	container.appendChild(card);
@@ -1096,8 +1099,8 @@ async function handleCanvasExport(
 			}
 			new Notice(`Timeline exported to ${result.path}`);
 			const file = plugin.app.vault.getAbstractFileByPath(result.path);
-			if (file) {
-				void plugin.app.workspace.getLeaf(false).openFile(file as TFile);
+			if (file instanceof TFile) {
+				void plugin.app.workspace.getLeaf(false).openFile(file);
 			}
 		} else {
 			new Notice(`Export failed: ${result.error || 'Unknown error'}`);
@@ -1203,8 +1206,8 @@ async function handleExcalidrawExport(
 				}
 				new Notice(`Timeline exported to ${excalidrawPath}`);
 				const file = plugin.app.vault.getAbstractFileByPath(excalidrawPath);
-				if (file) {
-					void plugin.app.workspace.getLeaf(false).openFile(file as TFile);
+				if (file instanceof TFile) {
+					void plugin.app.workspace.getLeaf(false).openFile(file);
 				}
 			} else {
 				new Notice(`Excalidraw export failed: ${excalidrawResult.errors.join(', ') || 'Unknown error'}`);
@@ -1272,8 +1275,8 @@ async function handleMarkdownExport(
 			}
 			new Notice(`Timeline exported to ${result.path}`);
 			const file = plugin.app.vault.getAbstractFileByPath(result.path);
-			if (file) {
-				void plugin.app.workspace.getLeaf(false).openFile(file as TFile);
+			if (file instanceof TFile) {
+				void plugin.app.workspace.getLeaf(false).openFile(file);
 			}
 		} else {
 			new Notice(`Export failed: ${result.error || 'Unknown error'}`);
@@ -1586,8 +1589,6 @@ function detectDateSystem(dateStr: string, plugin: CanvasRootsPlugin): string | 
 	const systems = [];
 
 	if (plugin.settings.showBuiltInDateSystems) {
-		// Import DEFAULT_DATE_SYSTEMS lazily to avoid circular deps
-		const { DEFAULT_DATE_SYSTEMS } = require('../constants/default-date-systems');
 		systems.push(...DEFAULT_DATE_SYSTEMS);
 	}
 

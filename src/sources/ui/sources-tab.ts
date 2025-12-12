@@ -21,7 +21,7 @@ import { ExtractEventsModal } from '../../events/ui/extract-events-modal';
 /**
  * Filter options for sources list
  */
-type SourceFilter = 'all' | 'has_media' | 'no_media' | 'confidence_high' | 'confidence_medium' | 'confidence_low' | string;
+type SourceFilter = 'all' | 'has_media' | 'no_media' | 'confidence_high' | 'confidence_medium' | 'confidence_low' | `type_${string}`;
 
 /**
  * Sort options for sources list
@@ -106,7 +106,7 @@ function renderSourcesOverviewCard(
 
 			const row = confidenceList.createDiv({ cls: 'cr-type-breakdown-row' });
 			const swatch = row.createDiv({ cls: 'cr-type-swatch' });
-			swatch.style.backgroundColor = confidenceColors[level] || '#6b7280';
+			swatch.style.setProperty('background-color', confidenceColors[level] || '#6b7280');
 			row.createSpan({ text: level.charAt(0).toUpperCase() + level.slice(1) });
 			row.createSpan({ text: String(count), cls: 'crc-text-muted' });
 		}
@@ -126,7 +126,7 @@ function renderSourcesOverviewCard(
 
 				const row = typeList.createDiv({ cls: 'cr-type-breakdown-row' });
 				const swatch = row.createDiv({ cls: 'cr-type-swatch' });
-				swatch.style.backgroundColor = typeDef.color;
+				swatch.style.setProperty('background-color', typeDef.color);
 				row.createSpan({ text: typeDef.name });
 				row.createSpan({ text: String(count), cls: 'crc-text-muted' });
 			}
@@ -465,8 +465,8 @@ function renderSourceRow(
 	const typeCell = row.createEl('td', { cls: 'cr-source-cell-type' });
 	if (typeDef) {
 		const typeBadge = typeCell.createSpan({ cls: 'cr-source-type-badge' });
-		typeBadge.style.backgroundColor = typeDef.color;
-		typeBadge.style.color = getContrastColor(typeDef.color);
+		typeBadge.style.setProperty('background-color', typeDef.color);
+		typeBadge.style.setProperty('color', getContrastColor(typeDef.color));
 		typeBadge.textContent = typeDef.name;
 	} else {
 		typeCell.textContent = source.sourceType;

@@ -20,7 +20,7 @@ import { renderOrganizationTypeManagerCard } from './organization-type-manager-c
 /**
  * Filter options for organizations list
  */
-type OrgFilter = 'all' | 'has_members' | 'no_members' | string;
+type OrgFilter = 'all' | 'has_members' | 'no_members' | `type_${string}`;
 
 /**
  * Sort options for organizations list
@@ -324,8 +324,8 @@ function renderOrganizationRow(
 	// Type cell with badge
 	const typeCell = row.createEl('td', { cls: 'cr-org-cell-type' });
 	const typeBadge = typeCell.createSpan({ cls: 'cr-org-type-badge' });
-	typeBadge.style.backgroundColor = typeDef.color;
-	typeBadge.style.color = getContrastColor(typeDef.color);
+	typeBadge.style.setProperty('background-color', typeDef.color);
+	typeBadge.style.setProperty('color', getContrastColor(typeDef.color));
 	typeBadge.textContent = typeDef.name;
 
 	// Universe cell
@@ -412,7 +412,7 @@ function renderOrganizationStatsCard(
 
 			const row = typeList.createDiv({ cls: 'cr-type-breakdown-row' });
 			const swatch = row.createDiv({ cls: 'cr-type-swatch' });
-			swatch.style.backgroundColor = typeDef.color;
+			swatch.style.setProperty('background-color', typeDef.color);
 			row.createSpan({ text: typeDef.name });
 			row.createSpan({ text: String(count), cls: 'crc-text-muted' });
 		}

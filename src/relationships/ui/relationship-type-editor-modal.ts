@@ -7,7 +7,7 @@
 
 import { App, Modal, Setting, Notice } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
-import type { RelationshipTypeDefinition, RelationshipLineStyle } from '../types/relationship-types';
+import type { RelationshipTypeDefinition, RelationshipLineStyle, RelationshipCategory } from '../types/relationship-types';
 import {
 	DEFAULT_RELATIONSHIP_TYPES,
 	getAllRelationshipCategories,
@@ -62,7 +62,7 @@ export class RelationshipTypeEditorModal extends Modal {
 	private description: string = '';
 	private color: string = '#95a5a6';
 	private lineStyle: RelationshipLineStyle = 'solid';
-	private category: string = 'social';
+	private category: RelationshipCategory = 'social';
 	private inverse: string = '';
 	private symmetric: boolean = false;
 
@@ -183,7 +183,7 @@ export class RelationshipTypeEditorModal extends Modal {
 					});
 					dropdown.setValue(this.category);
 					dropdown.onChange(value => {
-						this.category = value;
+						this.category = value as RelationshipCategory;
 					});
 				});
 		}
@@ -268,7 +268,7 @@ export class RelationshipTypeEditorModal extends Modal {
 		const presetsContainer = colorContainer.createDiv({ cls: 'cr-color-presets' });
 		COLOR_PRESETS.forEach(preset => {
 			const presetBtn = presetsContainer.createEl('button', { cls: 'cr-color-preset' });
-			presetBtn.style.backgroundColor = preset;
+			presetBtn.style.setProperty('background-color', preset);
 			presetBtn.addEventListener('click', (e) => {
 				e.preventDefault();
 				this.color = preset;
@@ -280,8 +280,8 @@ export class RelationshipTypeEditorModal extends Modal {
 		// Color preview
 		const colorPreview = colorContainer.createDiv({ cls: 'cr-color-preview' });
 		const updateColorPreview = () => {
-			colorPreview.style.backgroundColor = this.color;
-			colorPreview.style.color = this.getContrastColor(this.color);
+			colorPreview.style.setProperty('background-color', this.color);
+			colorPreview.style.setProperty('color', this.getContrastColor(this.color));
 			colorPreview.textContent = this.name || 'Preview';
 		};
 		updateColorPreview();

@@ -177,7 +177,7 @@ export class CustomSourceTypeModal extends Modal {
 		const presetsContainer = colorContainer.createDiv({ cls: 'cr-color-presets' });
 		COLOR_PRESETS.forEach(preset => {
 			const presetBtn = presetsContainer.createEl('button', { cls: 'cr-color-preset' });
-			presetBtn.style.backgroundColor = preset;
+			presetBtn.style.setProperty('background-color', preset);
 			presetBtn.addEventListener('click', (e) => {
 				e.preventDefault();
 				this.color = preset;
@@ -189,8 +189,8 @@ export class CustomSourceTypeModal extends Modal {
 		// Color preview
 		const colorPreview = colorContainer.createDiv({ cls: 'cr-color-preview' });
 		const updateColorPreview = () => {
-			colorPreview.style.backgroundColor = this.color;
-			colorPreview.style.color = this.getContrastColor(this.color);
+			colorPreview.style.setProperty('background-color', this.color);
+			colorPreview.style.setProperty('color', this.getContrastColor(this.color));
 			colorPreview.textContent = this.name || 'Preview';
 		};
 		updateColorPreview();

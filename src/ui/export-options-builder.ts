@@ -314,7 +314,7 @@ export class ExportOptionsBuilder {
 	private renderStats(container: HTMLElement, stats: ExportStatistics): void {
 		container.empty();
 
-		const previewTitle = container.createEl('div', {
+		container.createEl('div', {
 			cls: 'crc-export-stats-preview__title',
 			text: 'Export preview'
 		});
@@ -552,7 +552,7 @@ export class ExportOptionsBuilder {
 
 		// Folder path input (hidden initially)
 		const folderPathContainer = locationSection.createDiv({ cls: 'crc-output-location__folder-path cr-hidden' });
-		const folderSetting = new Setting(folderPathContainer)
+		new Setting(folderPathContainer)
 			.setName('Vault folder')
 			.setDesc('Path to folder in vault (leave empty for vault root)')
 			.addText(text => text

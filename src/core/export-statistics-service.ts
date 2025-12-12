@@ -136,8 +136,8 @@ export class ExportStatisticsService {
 		// For now, we'll estimate sources and places
 		// A full implementation would need to track which sources/places are referenced
 		// by the exported people and events
-		const totalSources = await this.estimateSourceCount(people);
-		const totalPlaces = await this.estimatePlaceCount(people);
+		const totalSources = this.estimateSourceCount(people);
+		const totalPlaces = this.estimatePlaceCount(people);
 
 		// Estimate export size
 		// Rough estimate: ~500 bytes per person, ~200 per relationship, ~300 per event
@@ -163,7 +163,7 @@ export class ExportStatisticsService {
 	/**
 	 * Estimate number of unique sources referenced by exported people
 	 */
-	private async estimateSourceCount(people: PersonForStats[]): Promise<number> {
+	private estimateSourceCount(people: PersonForStats[]): number {
 		// Placeholder: assume 20% of people have at least one source
 		return Math.round(people.length * 0.2);
 	}
@@ -171,7 +171,7 @@ export class ExportStatisticsService {
 	/**
 	 * Estimate number of unique places referenced by exported people
 	 */
-	private async estimatePlaceCount(people: PersonForStats[]): Promise<number> {
+	private estimatePlaceCount(people: PersonForStats[]): number {
 		// Placeholder: assume 30% of people have at least one place reference
 		return Math.round(people.length * 0.3);
 	}

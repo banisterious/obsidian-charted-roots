@@ -196,6 +196,45 @@ export function isNoteType(
 }
 
 /**
+ * Check if a note has properties that indicate it's a place note
+ * (used to exclude from legacy person detection)
+ */
+function hasPlaceProperties(frontmatter: Record<string, unknown>): boolean {
+	return (
+		'place_category' in frontmatter ||
+		'coordinates' in frontmatter ||
+		'coordinates_lat' in frontmatter ||
+		'custom_coordinates' in frontmatter ||
+		'custom_coordinates_x' in frontmatter ||
+		'contained_by' in frontmatter
+	);
+}
+
+/**
+ * Check if a note has properties that indicate it's an event note
+ * (used to exclude from legacy person detection)
+ */
+function hasEventProperties(frontmatter: Record<string, unknown>): boolean {
+	return (
+		'event_type' in frontmatter ||
+		'date_end' in frontmatter ||
+		'participants' in frontmatter
+	);
+}
+
+/**
+ * Check if a note has properties that indicate it's a source note
+ * (used to exclude from legacy person detection)
+ */
+function hasSourceProperties(frontmatter: Record<string, unknown>): boolean {
+	return (
+		'source_type' in frontmatter ||
+		'repository' in frontmatter ||
+		'citation_template' in frontmatter
+	);
+}
+
+/**
  * Check if a note is a person note
  */
 export function isPersonNote(
@@ -206,7 +245,16 @@ export function isPersonNote(
 	// Special case: person notes can also be detected by cr_id without explicit type
 	// This maintains backwards compatibility with existing vaults
 	if (frontmatter?.cr_id && !detectNoteType(frontmatter, cache, settings)) {
-		// Has cr_id but no explicit type - treat as person (legacy behavior)
+		// Has cr_id but no explicit type - check it's not another entity type
+		// by looking for distinguishing properties
+		if (
+			hasPlaceProperties(frontmatter) ||
+			hasEventProperties(frontmatter) ||
+			hasSourceProperties(frontmatter)
+		) {
+			return false;
+		}
+		// Has cr_id, no explicit type, and no other-entity properties - treat as person
 		return true;
 	}
 	return isNoteType(frontmatter, 'person', cache, settings);

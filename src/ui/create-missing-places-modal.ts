@@ -210,7 +210,7 @@ export class CreateMissingPlacesModal extends Modal {
 
 			if (willBeNormalized) {
 				// Show original with strikethrough and normalized name
-				const originalSpan = label.createEl('span', {
+				label.createEl('span', {
 					text: place.name,
 					cls: 'crc-text--strikethrough crc-text--muted'
 				});

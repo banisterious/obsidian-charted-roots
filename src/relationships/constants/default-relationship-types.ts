@@ -5,7 +5,7 @@
  * as well as world-building scenarios for fiction writers.
  */
 
-import type { RelationshipTypeDefinition, RelationshipCategoryDefinition, RelationshipCategory } from '../types/relationship-types';
+import type { RelationshipTypeDefinition, RelationshipCategoryDefinition } from '../types/relationship-types';
 
 /**
  * Built-in relationship categories

@@ -214,7 +214,7 @@ export class FolderStatisticsModal extends Modal {
 
 		const barContainer = row.createDiv({ cls: 'cr-progress-bar-container' });
 		const bar = barContainer.createDiv({ cls: 'cr-progress-bar' });
-		bar.style.width = `${percent}%`;
+		bar.style.setProperty('width', `${percent}%`);
 
 		// Color based on percent
 		if (percent >= 80) {

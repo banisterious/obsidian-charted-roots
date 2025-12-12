@@ -7,9 +7,9 @@
 
 import { App, TFile } from 'obsidian';
 import type { CanvasRootsSettings } from '../../settings';
-import { createLucideIcon, LucideIconName } from '../../ui/lucide-icons';
+import { createLucideIcon } from '../../ui/lucide-icons';
 import { EventService } from '../services/event-service';
-import { EventNote, getEventType, EventTypeDefinition, DATE_PRECISION_LABELS } from '../types/event-types';
+import { EventNote, getEventType, DATE_PRECISION_LABELS } from '../types/event-types';
 
 /**
  * Sort events chronologically

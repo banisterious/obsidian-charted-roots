@@ -20,7 +20,6 @@ import { PlaceGraphService } from '../core/place-graph';
 import type { PlaceNode } from '../models/place';
 import type { CanvasRootsSettings } from '../settings';
 import { RelationshipService } from '../relationships/services/relationship-service';
-import type { ParsedRelationship } from '../relationships/types/relationship-types';
 
 const logger = getLogger('GedcomExporter');
 

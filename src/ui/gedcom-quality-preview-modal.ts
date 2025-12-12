@@ -5,15 +5,14 @@
  * allowing users to review and configure how issues should be handled.
  */
 
-import { App, Modal, Setting } from 'obsidian';
+import { App, Modal } from 'obsidian';
 import { createLucideIcon, setLucideIcon, LucideIconName } from './lucide-icons';
 import type {
 	GedcomQualityAnalysis,
 	GedcomQualityIssue,
 	QualityFixChoices,
 	QualityIssueCategory,
-	QualityIssueSeverity,
-	PlaceVariantInfo
+	QualityIssueSeverity
 } from '../gedcom/gedcom-quality-analyzer';
 
 /**

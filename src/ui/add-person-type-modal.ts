@@ -107,18 +107,20 @@ export class AddPersonTypePreviewModal extends Modal {
 			text: `Apply to ${this.allChanges.length} note${this.allChanges.length === 1 ? '' : 's'}`,
 			cls: 'mod-cta'
 		});
-		applyButton.addEventListener('click', async () => {
-			// Disable buttons during operation
-			applyButton.disabled = true;
-			cancelButton.disabled = true;
-			applyButton.textContent = 'Applying changes...';
+		applyButton.addEventListener('click', () => {
+			void (async () => {
+				// Disable buttons during operation
+				applyButton.disabled = true;
+				cancelButton.disabled = true;
+				applyButton.textContent = 'Applying changes...';
 
-			// Run the operation
-			await this.onApply();
+				// Run the operation
+				await this.onApply();
 
-			// Close the modal after completion (like BuildPlaceHierarchyModal)
-			// This avoids stale cache issues when user reopens the preview
-			this.close();
+				// Close the modal after completion (like BuildPlaceHierarchyModal)
+				// This avoids stale cache issues when user reopens the preview
+				this.close();
+			})();
 		});
 	}
 

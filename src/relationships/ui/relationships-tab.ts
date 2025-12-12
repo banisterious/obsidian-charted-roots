@@ -121,8 +121,8 @@ function renderRelationshipsOverviewCard(
 				// Type
 				const typeCell = row.createEl('td');
 				const typeBadge = typeCell.createSpan({ cls: 'crc-relationship-badge' });
-				typeBadge.style.backgroundColor = rel.type.color;
-				typeBadge.style.color = getContrastColor(rel.type.color);
+				typeBadge.style.setProperty('background-color', rel.type.color);
+				typeBadge.style.setProperty('color', getContrastColor(rel.type.color));
 				typeBadge.textContent = rel.type.name;
 				if (rel.isInferred) {
 					typeCell.createSpan({ text: ' (inferred)', cls: 'crc-text-muted' });
@@ -206,7 +206,7 @@ function renderRelationshipStatsCard(
 				const item = typeList.createDiv({ cls: 'crc-stats-item' });
 
 				const swatch = item.createSpan({ cls: 'crc-stats-swatch' });
-				swatch.style.backgroundColor = typeDef?.color || '#666';
+				swatch.style.setProperty('background-color', typeDef?.color || '#666');
 
 				item.createSpan({ text: typeDef?.name || typeId, cls: 'crc-stats-label' });
 				item.createSpan({ text: count.toString(), cls: 'crc-stats-value' });

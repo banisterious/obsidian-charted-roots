@@ -9,7 +9,7 @@ import { App, TFile } from 'obsidian';
 import { getLogger } from '../../core/logging';
 import { generateCrId } from '../../core/uuid';
 import { createPlaceNote, PlaceData, findAllPlaceNotes } from '../../core/place-note-writer';
-import { isPersonNote, isEventNote, isPlaceNote } from '../../utils/note-type-detection';
+import { isPersonNote, isEventNote } from '../../utils/note-type-detection';
 import { isWikilink } from '../../relationships/types/relationship-types';
 import type { CanvasRootsSettings } from '../../settings';
 
@@ -185,13 +185,13 @@ export class PlaceGeneratorService {
 
 		try {
 			// Step 1: Scan for place strings
-			const placeMap = await this.scanForPlaces(fullOptions);
+			const placeMap = this.scanForPlaces(fullOptions);
 			result.placesFound = placeMap.size;
 			result.foundPlaces = Array.from(placeMap.values());
 
 			if (fullOptions.dryRun) {
 				// For preview, also check which places would be new vs existing
-				const existingPlaces = await this.buildExistingPlaceCache();
+				const existingPlaces = this.buildExistingPlaceCache();
 				for (const place of result.foundPlaces) {
 					const existingFile = this.findExistingPlace(place.normalizedString, existingPlaces);
 					if (existingFile) {
@@ -208,7 +208,7 @@ export class PlaceGeneratorService {
 			}
 
 			// Step 2: Build existing place cache
-			const existingPlaces = await this.buildExistingPlaceCache();
+			const existingPlaces = this.buildExistingPlaceCache();
 
 			// Step 3: Create place notes (hierarchy order - most general first)
 			const placeToNoteInfo = new Map<string, PlaceNoteInfo>();
@@ -321,7 +321,7 @@ export class PlaceGeneratorService {
 
 		try {
 			// Build existing place cache
-			const existingPlaces = await this.buildExistingPlaceCache();
+			const existingPlaces = this.buildExistingPlaceCache();
 
 			// Check if place already exists
 			const existingFile = this.findExistingPlace(place.normalizedString, existingPlaces);
@@ -425,7 +425,7 @@ export class PlaceGeneratorService {
 	/**
 	 * Scan for place strings in person and event notes
 	 */
-	private async scanForPlaces(options: PlaceGeneratorOptions): Promise<Map<string, FoundPlace>> {
+	private scanForPlaces(options: PlaceGeneratorOptions): Map<string, FoundPlace> {
 		const placeMap = new Map<string, FoundPlace>();
 		const files = this.app.vault.getMarkdownFiles();
 
@@ -574,7 +574,7 @@ export class PlaceGeneratorService {
 	/**
 	 * Build a cache of existing place notes for fast lookup
 	 */
-	private async buildExistingPlaceCache(): Promise<Map<string, TFile>> {
+	private buildExistingPlaceCache(): Map<string, TFile> {
 		const cache = new Map<string, TFile>();
 		const placeNotes = findAllPlaceNotes(this.app);
 

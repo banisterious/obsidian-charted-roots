@@ -8,7 +8,7 @@
 import { Notice, Modal, Setting } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { LucideIconName } from '../../ui/lucide-icons';
-import { createLucideIcon, setLucideIcon } from '../../ui/lucide-icons';
+import { setLucideIcon } from '../../ui/lucide-icons';
 import {
 	BUILT_IN_ORGANIZATION_TYPES,
 	BUILT_IN_ORGANIZATION_CATEGORIES,
@@ -200,11 +200,13 @@ export function renderOrganizationTypeManagerCard(
 				text: 'Show all',
 				cls: 'crc-btn-link'
 			});
-			showAllCatsBtn.addEventListener('click', async () => {
-				plugin.settings.hiddenOrganizationCategories = [];
-				await plugin.saveSettings();
-				renderTypeList();
-				onRefresh();
+			showAllCatsBtn.addEventListener('click', () => {
+				void (async () => {
+					plugin.settings.hiddenOrganizationCategories = [];
+					await plugin.saveSettings();
+					renderTypeList();
+					onRefresh();
+				})();
 			});
 		}
 
@@ -220,11 +222,13 @@ export function renderOrganizationTypeManagerCard(
 				text: 'Show all',
 				cls: 'crc-btn-link'
 			});
-			showAllBtn.addEventListener('click', async () => {
-				plugin.settings.hiddenOrganizationTypes = [];
-				await plugin.saveSettings();
-				renderTypeList();
-				onRefresh();
+			showAllBtn.addEventListener('click', () => {
+				void (async () => {
+					plugin.settings.hiddenOrganizationTypes = [];
+					await plugin.saveSettings();
+					renderTypeList();
+					onRefresh();
+				})();
 			});
 		}
 	};
@@ -251,8 +255,8 @@ function renderTypeRow(
 	// Icon/color cell
 	const iconCell = row.createEl('td', { cls: 'crc-type-cell-icon' });
 	const iconContainer = iconCell.createDiv({ cls: 'crc-type-icon-swatch' });
-	iconContainer.style.backgroundColor = type.color;
-	iconContainer.style.color = getContrastColor(type.color);
+	iconContainer.style.setProperty('background-color', type.color);
+	iconContainer.style.setProperty('color', getContrastColor(type.color));
 	setLucideIcon(iconContainer, type.icon, 14);
 
 	// Name cell
@@ -302,17 +306,19 @@ function renderTypeRow(
 		text: isHidden ? 'Show' : 'Hide',
 		cls: 'crc-btn crc-btn--small crc-btn--danger'
 	});
-	hideBtn.addEventListener('click', async (e) => {
+	hideBtn.addEventListener('click', (e) => {
 		e.stopPropagation();
-		const hidden = plugin.settings.hiddenOrganizationTypes || [];
-		if (isHidden) {
-			plugin.settings.hiddenOrganizationTypes = hidden.filter(id => id !== type.id);
-		} else {
-			hidden.push(type.id);
-			plugin.settings.hiddenOrganizationTypes = hidden;
-		}
-		await plugin.saveSettings();
-		onUpdate();
+		void (async () => {
+			const hidden = plugin.settings.hiddenOrganizationTypes || [];
+			if (isHidden) {
+				plugin.settings.hiddenOrganizationTypes = hidden.filter(id => id !== type.id);
+			} else {
+				hidden.push(type.id);
+				plugin.settings.hiddenOrganizationTypes = hidden;
+			}
+			await plugin.saveSettings();
+			onUpdate();
+		})();
 	});
 
 	// Reset button for customized built-in types
@@ -321,13 +327,15 @@ function renderTypeRow(
 			text: 'Reset',
 			cls: 'crc-btn crc-btn--small'
 		});
-		resetBtn.addEventListener('click', async (e) => {
+		resetBtn.addEventListener('click', (e) => {
 			e.stopPropagation();
-			if (plugin.settings.organizationTypeCustomizations) {
-				delete plugin.settings.organizationTypeCustomizations[type.id];
-			}
-			await plugin.saveSettings();
-			onUpdate();
+			void (async () => {
+				if (plugin.settings.organizationTypeCustomizations) {
+					delete plugin.settings.organizationTypeCustomizations[type.id];
+				}
+				await plugin.saveSettings();
+				onUpdate();
+			})();
 		});
 	}
 
@@ -367,18 +375,20 @@ function confirmDeleteType(
 		text: 'Delete',
 		cls: 'mod-warning'
 	});
-	deleteBtn.addEventListener('click', async () => {
-		plugin.settings.customOrganizationTypes = plugin.settings.customOrganizationTypes.filter(
-			t => t.id !== type.id
-		);
-		// Also remove from hidden if it was hidden
-		plugin.settings.hiddenOrganizationTypes = (plugin.settings.hiddenOrganizationTypes || []).filter(
-			id => id !== type.id
-		);
-		await plugin.saveSettings();
-		modal.close();
-		new Notice(`Deleted "${type.name}"`);
-		onUpdate();
+	deleteBtn.addEventListener('click', () => {
+		void (async () => {
+			plugin.settings.customOrganizationTypes = plugin.settings.customOrganizationTypes.filter(
+				t => t.id !== type.id
+			);
+			// Also remove from hidden if it was hidden
+			plugin.settings.hiddenOrganizationTypes = (plugin.settings.hiddenOrganizationTypes || []).filter(
+				id => id !== type.id
+			);
+			await plugin.saveSettings();
+			modal.close();
+			new Notice(`Deleted "${type.name}"`);
+			onUpdate();
+		})();
 	});
 
 	modal.open();
@@ -458,14 +468,16 @@ function openCategoryEditor(
 		const hasCustomization = plugin.settings.organizationCategoryCustomizations?.[category.id];
 		if (hasCustomization) {
 			const resetBtn = buttonContainer.createEl('button', { text: 'Reset to default' });
-			resetBtn.addEventListener('click', async () => {
-				if (plugin.settings.organizationCategoryCustomizations) {
-					delete plugin.settings.organizationCategoryCustomizations[category.id];
-				}
-				await plugin.saveSettings();
-				modal.close();
-				new Notice('Reset to default');
-				onSave();
+			resetBtn.addEventListener('click', () => {
+				void (async () => {
+					if (plugin.settings.organizationCategoryCustomizations) {
+						delete plugin.settings.organizationCategoryCustomizations[category.id];
+					}
+					await plugin.saveSettings();
+					modal.close();
+					new Notice('Reset to default');
+					onSave();
+				})();
 			});
 		}
 	}
@@ -477,68 +489,70 @@ function openCategoryEditor(
 		text: isBuiltIn ? 'Save customization' : isEditing ? 'Save' : 'Create',
 		cls: 'mod-cta'
 	});
-	saveBtn.addEventListener('click', async () => {
-		const name = nameInput.value.trim();
-		if (!name) {
-			new Notice('Category name is required');
-			return;
-		}
-
-		const sortOrder = parseInt(orderInput.value) || 0;
-
-		if (isBuiltIn && category) {
-			// Save as customization of built-in category
-			if (!plugin.settings.organizationCategoryCustomizations) {
-				plugin.settings.organizationCategoryCustomizations = {};
-			}
-
-			// Get the original built-in definition
-			const builtInDef = BUILT_IN_ORGANIZATION_CATEGORIES.find(c => c.id === category.id);
-			const customization: Partial<OrganizationCategoryDefinition> = {};
-
-			// Only store properties that differ from built-in defaults
-			if (builtInDef && name !== builtInDef.name) customization.name = name;
-			if (builtInDef && sortOrder !== builtInDef.sortOrder) customization.sortOrder = sortOrder;
-
-			if (Object.keys(customization).length > 0) {
-				plugin.settings.organizationCategoryCustomizations[category.id] = customization;
-			} else {
-				// No customizations - remove any existing
-				delete plugin.settings.organizationCategoryCustomizations[category.id];
-			}
-
-			await plugin.saveSettings();
-			modal.close();
-			new Notice('Category customized');
-			onSave();
-		} else if (isEditing && category) {
-			// Update existing custom category
-			const existing = plugin.settings.customOrganizationCategories || [];
-			plugin.settings.customOrganizationCategories = existing.map(c =>
-				c.id === category.id ? { id: c.id, name, sortOrder } : c
-			);
-			await plugin.saveSettings();
-			modal.close();
-			new Notice(`Updated "${name}"`);
-			onSave();
-		} else {
-			// Create new custom category
-			const id = name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-
-			// Check for duplicate ID
-			const existing = plugin.settings.customOrganizationCategories || [];
-			const builtInConflict = BUILT_IN_ORGANIZATION_CATEGORIES.some(c => c.id === id);
-			if (builtInConflict || existing.some(c => c.id === id)) {
-				new Notice('A category with this ID already exists');
+	saveBtn.addEventListener('click', () => {
+		void (async () => {
+			const name = nameInput.value.trim();
+			if (!name) {
+				new Notice('Category name is required');
 				return;
 			}
 
-			plugin.settings.customOrganizationCategories = [...existing, { id, name, sortOrder }];
-			await plugin.saveSettings();
-			modal.close();
-			new Notice(`Created "${name}"`);
-			onSave();
-		}
+			const sortOrder = parseInt(orderInput.value) || 0;
+
+			if (isBuiltIn && category) {
+				// Save as customization of built-in category
+				if (!plugin.settings.organizationCategoryCustomizations) {
+					plugin.settings.organizationCategoryCustomizations = {};
+				}
+
+				// Get the original built-in definition
+				const builtInDef = BUILT_IN_ORGANIZATION_CATEGORIES.find(c => c.id === category.id);
+				const customization: Partial<OrganizationCategoryDefinition> = {};
+
+				// Only store properties that differ from built-in defaults
+				if (builtInDef && name !== builtInDef.name) customization.name = name;
+				if (builtInDef && sortOrder !== builtInDef.sortOrder) customization.sortOrder = sortOrder;
+
+				if (Object.keys(customization).length > 0) {
+					plugin.settings.organizationCategoryCustomizations[category.id] = customization;
+				} else {
+					// No customizations - remove any existing
+					delete plugin.settings.organizationCategoryCustomizations[category.id];
+				}
+
+				await plugin.saveSettings();
+				modal.close();
+				new Notice('Category customized');
+				onSave();
+			} else if (isEditing && category) {
+				// Update existing custom category
+				const existing = plugin.settings.customOrganizationCategories || [];
+				plugin.settings.customOrganizationCategories = existing.map(c =>
+					c.id === category.id ? { id: c.id, name, sortOrder } : c
+				);
+				await plugin.saveSettings();
+				modal.close();
+				new Notice(`Updated "${name}"`);
+				onSave();
+			} else {
+				// Create new custom category
+				const id = name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+
+				// Check for duplicate ID
+				const existing = plugin.settings.customOrganizationCategories || [];
+				const builtInConflict = BUILT_IN_ORGANIZATION_CATEGORIES.some(c => c.id === id);
+				if (builtInConflict || existing.some(c => c.id === id)) {
+					new Notice('A category with this ID already exists');
+					return;
+				}
+
+				plugin.settings.customOrganizationCategories = [...existing, { id, name, sortOrder }];
+				await plugin.saveSettings();
+				modal.close();
+				new Notice(`Created "${name}"`);
+				onSave();
+			}
+		})();
 	});
 
 	modal.open();
@@ -586,24 +600,26 @@ function confirmDeleteCategory(
 			text: isBuiltIn ? 'Hide' : 'Delete',
 			cls: 'mod-warning'
 		});
-		deleteBtn.addEventListener('click', async () => {
-			if (isBuiltIn) {
-				// Hide built-in category by adding to hiddenOrganizationCategories
-				if (!plugin.settings.hiddenOrganizationCategories) {
-					plugin.settings.hiddenOrganizationCategories = [];
+		deleteBtn.addEventListener('click', () => {
+			void (async () => {
+				if (isBuiltIn) {
+					// Hide built-in category by adding to hiddenOrganizationCategories
+					if (!plugin.settings.hiddenOrganizationCategories) {
+						plugin.settings.hiddenOrganizationCategories = [];
+					}
+					if (!plugin.settings.hiddenOrganizationCategories.includes(category.id)) {
+						plugin.settings.hiddenOrganizationCategories.push(category.id);
+					}
+				} else {
+					// Delete custom category
+					plugin.settings.customOrganizationCategories = (plugin.settings.customOrganizationCategories || [])
+						.filter(c => c.id !== category.id);
 				}
-				if (!plugin.settings.hiddenOrganizationCategories.includes(category.id)) {
-					plugin.settings.hiddenOrganizationCategories.push(category.id);
-				}
-			} else {
-				// Delete custom category
-				plugin.settings.customOrganizationCategories = (plugin.settings.customOrganizationCategories || [])
-					.filter(c => c.id !== category.id);
-			}
-			await plugin.saveSettings();
-			modal.close();
-			new Notice(isBuiltIn ? `Hidden "${category.name}"` : `Deleted "${category.name}"`);
-			onDelete();
+				await plugin.saveSettings();
+				modal.close();
+				new Notice(isBuiltIn ? `Hidden "${category.name}"` : `Deleted "${category.name}"`);
+				onDelete();
+			})();
 		});
 	}
 

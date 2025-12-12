@@ -411,8 +411,8 @@ export class TreePreviewRenderer {
 		if (!this.tooltipElement) return;
 
 		const offset = 15;
-		this.tooltipElement.style.left = `${event.clientX + offset}px`;
-		this.tooltipElement.style.top = `${event.clientY + offset}px`;
+		this.tooltipElement.style.setProperty('left', `${event.clientX + offset}px`);
+		this.tooltipElement.style.setProperty('top', `${event.clientY + offset}px`);
 	}
 
 	/**

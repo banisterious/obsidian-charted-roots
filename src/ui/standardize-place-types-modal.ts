@@ -131,7 +131,9 @@ export class StandardizePlaceTypesModal extends Modal {
 			text: 'Apply all',
 			cls: 'crc-btn crc-btn--primary'
 		});
-		applyAllBtn.addEventListener('click', () => this.applyAll());
+		applyAllBtn.addEventListener('click', () => {
+			void this.applyAll();
+		});
 
 		const closeBtn = buttonContainer.createEl('button', {
 			text: 'Close',
@@ -211,7 +213,7 @@ export class StandardizePlaceTypesModal extends Modal {
 		nameContainer.createSpan({ text: place.name });
 
 		// Current type badge
-		const typeBadge = nameContainer.createSpan({
+		nameContainer.createSpan({
 			text: place.placeType || 'unknown',
 			cls: 'crc-type-badge crc-type-badge--current'
 		});
@@ -264,7 +266,9 @@ export class StandardizePlaceTypesModal extends Modal {
 		});
 		const checkIcon = createLucideIcon('check', 14);
 		applyBtn.appendChild(checkIcon);
-		applyBtn.addEventListener('click', () => this.applyToPlace(place));
+		applyBtn.addEventListener('click', () => {
+			void this.applyToPlace(place);
+		});
 	}
 
 	/**

@@ -2,7 +2,7 @@ import { App, TFile } from 'obsidian';
 import { SpouseValue } from '../types/frontmatter';
 import { FolderFilterService } from './folder-filter';
 import type { CanvasRootsSettings } from '../settings';
-import { isPlaceNote, isMapNote, isPersonNote, isSourceNote, isEventNote } from '../utils/note-type-detection';
+import { isPlaceNote, isMapNote, isSourceNote, isEventNote } from '../utils/note-type-detection';
 
 /**
  * Vault statistics for person notes

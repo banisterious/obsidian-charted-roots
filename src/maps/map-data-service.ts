@@ -7,7 +7,7 @@
 import { TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { getLogger } from '../core/logging';
-import { ValueAliasService, CANONICAL_EVENT_TYPES } from '../core/value-alias-service';
+import { ValueAliasService } from '../core/value-alias-service';
 import type {
 	MapData,
 	MapMarker,
@@ -276,7 +276,7 @@ export class MapDataService {
 
 			const personData: PersonData = {
 				crId: fm.cr_id,
-				name: fm.name || file.basename,
+				name: fmToString(fm.name, file.basename),
 				born: fm.born,
 				died: fm.died,
 				birthPlace: this.extractPlaceString(fm.birth_place),

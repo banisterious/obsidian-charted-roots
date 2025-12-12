@@ -633,8 +633,8 @@ export class MigrationDiagramModal extends Modal {
 			arc.addEventListener('mousemove', (e: Event) => {
 				const event = e as MouseEvent;
 				const rect = container.getBoundingClientRect();
-				tooltip.style.left = `${event.clientX - rect.left + 10}px`;
-				tooltip.style.top = `${event.clientY - rect.top - 20}px`;
+				tooltip.style.setProperty('left', `${event.clientX - rect.left + 10}px`);
+				tooltip.style.setProperty('top', `${event.clientY - rect.top - 20}px`);
 			});
 
 			arc.addEventListener('mouseleave', () => {

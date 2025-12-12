@@ -91,7 +91,7 @@ export class ExportProgressModal extends Modal {
 		const progressContainer = contentEl.createDiv({ cls: 'cr-export-progress' });
 		const progressTrack = progressContainer.createDiv({ cls: 'cr-export-progress__track' });
 		this.progressBar = progressTrack.createDiv({ cls: 'cr-export-progress__bar' });
-		this.progressBar.style.width = '0%';
+		this.progressBar.style.setProperty('width', '0%');
 
 		// Progress text
 		this.progressText = contentEl.createDiv({
@@ -130,7 +130,7 @@ export class ExportProgressModal extends Modal {
 		const percentage = progress.total > 0
 			? Math.round((progress.current / progress.total) * 100)
 			: 0;
-		this.progressBar.style.width = `${percentage}%`;
+		this.progressBar.style.setProperty('width', `${percentage}%`);
 
 		// Update progress text
 		if (progress.message) {
@@ -159,7 +159,7 @@ export class ExportProgressModal extends Modal {
 		this.currentPhase = 'complete';
 		this.phaseLabel.textContent = 'Export complete';
 		this.updatePhaseIcon('complete');
-		this.progressBar.style.width = '100%';
+		this.progressBar.style.setProperty('width', '100%');
 		this.progressText.textContent = 'Done!';
 	}
 

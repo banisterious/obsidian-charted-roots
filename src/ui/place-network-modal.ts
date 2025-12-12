@@ -603,7 +603,7 @@ export class PlaceNetworkModal extends Modal {
 			for (const cat of categories) {
 				const item = legend.createDiv({ cls: 'crc-network-legend-item' });
 				const dot = item.createSpan({ cls: 'crc-network-legend-dot' });
-				dot.style.backgroundColor = this.getCategoryColor(cat);
+				dot.style.setProperty('background-color', this.getCategoryColor(cat));
 				item.createSpan({ text: cat.charAt(0).toUpperCase() + cat.slice(1) });
 			}
 		} else if (this.colorMode === 'type') {
@@ -611,7 +611,7 @@ export class PlaceNetworkModal extends Modal {
 			for (const type of types) {
 				const item = legend.createDiv({ cls: 'crc-network-legend-item' });
 				const dot = item.createSpan({ cls: 'crc-network-legend-dot' });
-				dot.style.backgroundColor = this.getTypeColor(type);
+				dot.style.setProperty('background-color', this.getTypeColor(type));
 				item.createSpan({ text: type.charAt(0).toUpperCase() + type.slice(1) });
 			}
 		} else {
@@ -650,8 +650,8 @@ export class PlaceNetworkModal extends Modal {
 			node.addEventListener('mousemove', (e: Event) => {
 				const event = e as MouseEvent;
 				const rect = container.getBoundingClientRect();
-				tooltip.style.left = `${event.clientX - rect.left + 15}px`;
-				tooltip.style.top = `${event.clientY - rect.top - 10}px`;
+				tooltip.style.setProperty('left', `${event.clientX - rect.left + 15}px`);
+				tooltip.style.setProperty('top', `${event.clientY - rect.top - 10}px`);
 			});
 
 			node.addEventListener('mouseleave', () => {
@@ -674,8 +674,8 @@ export class PlaceNetworkModal extends Modal {
 			flow.addEventListener('mousemove', (e: Event) => {
 				const event = e as MouseEvent;
 				const rect = container.getBoundingClientRect();
-				tooltip.style.left = `${event.clientX - rect.left + 15}px`;
-				tooltip.style.top = `${event.clientY - rect.top - 10}px`;
+				tooltip.style.setProperty('left', `${event.clientX - rect.left + 15}px`);
+				tooltip.style.setProperty('top', `${event.clientY - rect.top - 10}px`);
 			});
 
 			flow.addEventListener('mouseleave', () => {

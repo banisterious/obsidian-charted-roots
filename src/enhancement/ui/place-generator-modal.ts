@@ -488,7 +488,7 @@ export class PlaceGeneratorModal extends Modal {
 				cls: 'crc-text--muted'
 			});
 			cell.setAttribute('colspan', this.options.parseHierarchy ? '4' : '3');
-			cell.style.textAlign = 'center';
+			cell.style.setProperty('text-align', 'center');
 		}
 	}
 
@@ -622,7 +622,15 @@ export class PlaceGeneratorModal extends Modal {
 			const updateMessage = this.options.updateReferences
 				? ` and update ${this.previewResult.referencesUpdated} reference(s)`
 				: '';
-			const proceed = confirm(`${confirmMessage}${updateMessage}. Continue?`);
+			const proceed = await new Promise<boolean>(resolve => {
+				const modal = new ConfirmationModal(
+					this.app,
+					'Confirm generation',
+					`${confirmMessage}${updateMessage}. Continue?`,
+					resolve
+				);
+				modal.open();
+			});
 			if (!proceed) return;
 		}
 
@@ -704,7 +712,7 @@ export class PlaceGeneratorModal extends Modal {
 		// Progress bar
 		const barContainer = this.progressContainer.createDiv({ cls: 'cr-place-generator-progress-bar' });
 		this.progressBarEl = barContainer.createDiv({ cls: 'cr-place-generator-progress-bar__fill' });
-		this.progressBarEl.style.width = '0%';
+		this.progressBarEl.style.setProperty('width', '0%');
 
 		// Progress text
 		this.progressTextEl = this.progressContainer.createDiv({ cls: 'cr-place-generator-progress-text' });
@@ -718,7 +726,7 @@ export class PlaceGeneratorModal extends Modal {
 		const percent = Math.round((current / total) * 100);
 
 		if (this.progressBarEl) {
-			this.progressBarEl.style.width = `${percent}%`;
+			this.progressBarEl.style.setProperty('width', `${percent}%`);
 		}
 
 		if (this.progressTextEl) {
@@ -954,7 +962,7 @@ export class PlaceGeneratorModal extends Modal {
 				cls: 'crc-text--muted'
 			});
 			cell.setAttribute('colspan', '3');
-			cell.style.textAlign = 'center';
+			cell.style.setProperty('text-align', 'center');
 		}
 	}
 
@@ -1079,5 +1087,52 @@ export class PlaceGeneratorModal extends Modal {
 			this.cancelButton.disabled = this.isCancelled;
 			this.cancelButton.textContent = this.isCancelled ? 'Cancelling...' : 'Cancel';
 		}
+	}
+}
+
+/**
+ * Simple confirmation modal for destructive actions
+ */
+class ConfirmationModal extends Modal {
+	private titleText: string;
+	private message: string;
+	private onResult: (confirmed: boolean) => void;
+
+	constructor(app: App, title: string, message: string, onResult: (confirmed: boolean) => void) {
+		super(app);
+		this.titleText = title;
+		this.message = message;
+		this.onResult = onResult;
+	}
+
+	onOpen(): void {
+		const { contentEl, titleEl } = this;
+		titleEl.setText(this.titleText);
+
+		contentEl.createEl('p', { text: this.message });
+
+		const buttonContainer = contentEl.createDiv({ cls: 'crc-confirmation-buttons' });
+
+		const cancelBtn = buttonContainer.createEl('button', {
+			text: 'Cancel',
+			cls: 'crc-btn-secondary'
+		});
+		cancelBtn.addEventListener('click', () => {
+			this.onResult(false);
+			this.close();
+		});
+
+		const confirmBtn = buttonContainer.createEl('button', {
+			text: 'Continue',
+			cls: 'mod-warning'
+		});
+		confirmBtn.addEventListener('click', () => {
+			this.onResult(true);
+			this.close();
+		});
+	}
+
+	onClose(): void {
+		this.contentEl.empty();
 	}
 }

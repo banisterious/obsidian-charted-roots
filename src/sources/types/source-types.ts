@@ -478,7 +478,7 @@ export const SOURCE_QUALITY_LABELS: Record<SourceQuality, { label: string; descr
 /**
  * Source type category identifier
  */
-export type SourceTypeCategory = 'vital' | 'census' | 'church' | 'legal' | 'military' | 'media' | 'other' | string;
+export type SourceTypeCategory = 'vital' | 'census' | 'church' | 'legal' | 'military' | 'media' | 'other';
 
 /**
  * Definition of a source type category (built-in or custom)

@@ -135,7 +135,7 @@ export function analyzeGedcomQuality(data: GedcomDataV2): GedcomQualityAnalysis 
 	const allPlaces = new Set<string>();
 
 	// Analyze individuals
-	for (const [id, individual] of data.individuals) {
+	for (const [_id, individual] of data.individuals) {
 		// Date issues
 		analyzeIndividualDates(individual, issues);
 
@@ -147,7 +147,7 @@ export function analyzeGedcomQuality(data: GedcomDataV2): GedcomQualityAnalysis 
 	}
 
 	// Analyze families
-	for (const [id, family] of data.families) {
+	for (const [_id, family] of data.families) {
 		// Relationship issues
 		analyzeFamilyRelationships(family, data, issues);
 
@@ -499,7 +499,7 @@ function analyzeFamilyReferences(
  * Analyze orphan references (individuals referencing non-existent families)
  */
 function analyzeOrphanReferences(data: GedcomDataV2, issues: GedcomQualityIssue[]): void {
-	for (const [id, individual] of data.individuals) {
+	for (const [_id, individual] of data.individuals) {
 		// Check FAMC reference
 		if (individual.familyAsChildRef && !data.families.has(individual.familyAsChildRef)) {
 			issues.push({
@@ -682,7 +682,7 @@ function buildSummary(
 
 	// Convert variant map to array
 	const placeVariants: PlaceVariantInfo[] = [];
-	for (const [key, info] of variantMap) {
+	for (const [_key, info] of variantMap) {
 		placeVariants.push(info);
 	}
 	placeVariants.sort((a, b) => b.count - a.count);
@@ -705,7 +705,7 @@ function buildDefaultChoices(variantMap: Map<string, PlaceVariantInfo>): Quality
 	const placeVariantChoices = new Map<string, string>();
 
 	// Default to canonical form for all variants
-	for (const [key, info] of variantMap) {
+	for (const [_key, info] of variantMap) {
 		placeVariantChoices.set(info.variant, info.canonical);
 	}
 
@@ -750,7 +750,7 @@ export function applyQualityFixes(
 ): void {
 	// Apply place variant fixes
 	if (choices.placeVariantChoices.size > 0) {
-		for (const [id, individual] of data.individuals) {
+		for (const [_id, individual] of data.individuals) {
 			individual.birthPlace = normalizePlace(individual.birthPlace, choices.placeVariantChoices);
 			individual.deathPlace = normalizePlace(individual.deathPlace, choices.placeVariantChoices);
 
@@ -759,7 +759,7 @@ export function applyQualityFixes(
 			}
 		}
 
-		for (const [id, family] of data.families) {
+		for (const [_id, family] of data.families) {
 			family.marriagePlace = normalizePlace(family.marriagePlace, choices.placeVariantChoices);
 
 			for (const event of family.events) {

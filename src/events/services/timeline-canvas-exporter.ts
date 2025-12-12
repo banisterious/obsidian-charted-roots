@@ -10,14 +10,12 @@ import { App, TFile } from 'obsidian';
 import type { CanvasRootsSettings } from '../../settings';
 import { getLogger } from '../../core/logging';
 import {
-	formatCanvasJson,
 	writeCanvasFile,
 	generateCanvasId,
-	toSafeFilename,
-	ensureFolderExists
+	toSafeFilename
 } from '../../core/canvas-utils';
 import type { CanvasData } from '../../core/canvas-utils';
-import { EventNote, getEventType, EventTypeDefinition } from '../types/event-types';
+import { EventNote, getEventType } from '../types/event-types';
 
 const logger = getLogger('TimelineCanvasExporter');
 
@@ -510,7 +508,7 @@ export class TimelineCanvasExporter {
 		events: EventNote[],
 		options: { nodeWidth: number; nodeHeight: number; spacingX: number; spacingY: number }
 	): PositionedEvent[] {
-		const { nodeWidth, nodeHeight, spacingY } = options;
+		const { nodeHeight, spacingY } = options;
 		const positions: PositionedEvent[] = [];
 
 		// Find date range
@@ -531,8 +529,6 @@ export class TimelineCanvasExporter {
 			// No dated events, fall back to linear layout
 			return this.positionEvents(events, { ...options, layoutStyle: 'horizontal', groupByPerson: false });
 		}
-
-		const yearSpan = Math.max(maxYear - minYear, 1);
 		const pixelsPerYear = 150; // Configurable scale
 
 		// Group events by person
@@ -722,17 +718,6 @@ export class TimelineCanvasExporter {
 				color = undefined;
 				break;
 		}
-
-		// Create text node with event info
-		const dateStr = event.date || 'No date';
-		const personStr = event.person
-			? event.person.replace(/^\[\[/, '').replace(/\]\]$/, '')
-			: '';
-		const lines = [
-			`**${event.title}**`,
-			dateStr,
-			personStr
-		].filter(Boolean);
 
 		return {
 			id: canvasId,

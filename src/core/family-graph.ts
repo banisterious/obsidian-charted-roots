@@ -10,9 +10,8 @@ import { getLogger } from './logging';
 import { SpouseRelationship } from '../models/person';
 import { PersonFrontmatter } from '../types/frontmatter';
 import { FolderFilterService } from './folder-filter';
-import { PropertyAliasService, CANONICAL_PERSON_PROPERTIES, CanonicalPersonProperty } from './property-alias-service';
 import type { CanvasRootsSettings, ValueAliasSettings } from '../settings';
-import { CANONICAL_GENDERS, type CanonicalGender } from './value-alias-service';
+import { CANONICAL_GENDERS } from './value-alias-service';
 import { isSourceNote, isEventNote, isPlaceNote } from '../utils/note-type-detection';
 
 const logger = getLogger('FamilyGraph');
@@ -818,7 +817,7 @@ export class FamilyGraphService {
 		let detectedAsEvent = 0;
 		let detectedAsPlace = 0;
 
-		console.log(`[DEBUG] loadPersonCache: Starting with ${files.length} total markdown files`);
+		console.debug(`[DEBUG] loadPersonCache: Starting with ${files.length} total markdown files`);
 
 		for (const file of files) {
 			// Apply folder filter if configured
@@ -851,14 +850,14 @@ export class FamilyGraphService {
 			}
 		}
 
-		console.log(`[DEBUG] loadPersonCache: Found ${this.personCache.size} person notes`);
-		console.log(`[DEBUG] loadPersonCache: Excluded by folder filter: ${folderFilterExcluded}`);
-		console.log(`[DEBUG] loadPersonCache: No cache/frontmatter: ${noCacheOrFrontmatter}`);
-		console.log(`[DEBUG] loadPersonCache: No cr_id: ${noCrId}`);
-		console.log(`[DEBUG] loadPersonCache: Other note type (event/place/source): ${isOtherType}`);
-		console.log(`[DEBUG] loadPersonCache:   - Detected as source: ${detectedAsSource}`);
-		console.log(`[DEBUG] loadPersonCache:   - Detected as event: ${detectedAsEvent}`);
-		console.log(`[DEBUG] loadPersonCache:   - Detected as place: ${detectedAsPlace}`);
+		console.debug(`[DEBUG] loadPersonCache: Found ${this.personCache.size} person notes`);
+		console.debug(`[DEBUG] loadPersonCache: Excluded by folder filter: ${folderFilterExcluded}`);
+		console.debug(`[DEBUG] loadPersonCache: No cache/frontmatter: ${noCacheOrFrontmatter}`);
+		console.debug(`[DEBUG] loadPersonCache: No cr_id: ${noCrId}`);
+		console.debug(`[DEBUG] loadPersonCache: Other note type (event/place/source): ${isOtherType}`);
+		console.debug(`[DEBUG] loadPersonCache:   - Detected as source: ${detectedAsSource}`);
+		console.debug(`[DEBUG] loadPersonCache:   - Detected as event: ${detectedAsEvent}`);
+		console.debug(`[DEBUG] loadPersonCache:   - Detected as place: ${detectedAsPlace}`);
 
 		// Second pass: build child relationships (merge explicit and inferred)
 		for (const [crId, person] of this.personCache.entries()) {
@@ -974,24 +973,24 @@ export class FamilyGraphService {
 		if (isSourceNote(fm, cache, noteTypeSettings)) {
 			// Sample one to see why it's detected as source
 			if (Math.random() < 0.01) {
-				console.log(`[DEBUG] Sample file detected as source:`, file.path);
-				console.log(`  - cr_type:`, fm.cr_type, `type:`, fm.type, `tags:`, cache.tags?.map(t => t.tag));
+				console.debug(`[DEBUG] Sample file detected as source:`, file.path);
+				console.debug(`  - cr_type:`, fm.cr_type, `type:`, fm.type, `tags:`, cache.tags?.map(t => t.tag));
 			}
 			return { isSource: true };
 		}
 		if (isEventNote(fm, cache, noteTypeSettings)) {
 			// Sample one to see why it's detected as event
 			if (Math.random() < 0.01) {
-				console.log(`[DEBUG] Sample file detected as event:`, file.path);
-				console.log(`  - cr_type:`, fm.cr_type, `type:`, fm.type, `tags:`, cache.tags?.map(t => t.tag));
+				console.debug(`[DEBUG] Sample file detected as event:`, file.path);
+				console.debug(`  - cr_type:`, fm.cr_type, `type:`, fm.type, `tags:`, cache.tags?.map(t => t.tag));
 			}
 			return { isEvent: true };
 		}
 		if (isPlaceNote(fm, cache, noteTypeSettings)) {
 			// Sample one to see why it's detected as place
 			if (Math.random() < 0.01) {
-				console.log(`[DEBUG] Sample file detected as place:`, file.path);
-				console.log(`  - cr_type:`, fm.cr_type, `type:`, fm.type, `tags:`, cache.tags?.map(t => t.tag));
+				console.debug(`[DEBUG] Sample file detected as place:`, file.path);
+				console.debug(`  - cr_type:`, fm.cr_type, `type:`, fm.type, `tags:`, cache.tags?.map(t => t.tag));
 			}
 			return { isPlace: true };
 		}

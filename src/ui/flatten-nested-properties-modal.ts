@@ -116,7 +116,7 @@ export class FlattenNestedPropertiesModal extends Modal {
 		propertiesSection.createEl('h3', { text: 'Properties to check' });
 
 		for (const def of NESTED_PROPERTY_DEFINITIONS) {
-			const propSetting = new Setting(propertiesSection)
+			new Setting(propertiesSection)
 				.setName(def.displayName)
 				.setDesc(def.description)
 				.addToggle(toggle => toggle
@@ -196,7 +196,7 @@ export class FlattenNestedPropertiesModal extends Modal {
 		}
 
 		try {
-			const summary = await this.scanForNestedProperties();
+			const summary = this.scanForNestedProperties();
 			this.scanSummary = summary;
 			this.updateResultsDisplay();
 		} catch (error) {
@@ -214,7 +214,7 @@ export class FlattenNestedPropertiesModal extends Modal {
 	/**
 	 * Scan notes and return summary
 	 */
-	private async scanForNestedProperties(): Promise<ScanSummary> {
+	private scanForNestedProperties(): ScanSummary {
 		const byProperty = new Map<string, FileWithNestedProperties[]>();
 		let totalScanned = 0;
 

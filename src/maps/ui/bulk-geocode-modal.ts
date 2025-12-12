@@ -103,7 +103,7 @@ export class BulkGeocodeModal extends Modal {
 
 		const progressBarContainer = this.progressContainer.createDiv({ cls: 'cr-progress-bar-container' });
 		this.progressBar = progressBarContainer.createDiv({ cls: 'cr-progress-bar' });
-		this.progressBar.style.width = '0%';
+		this.progressBar.style.setProperty('width', '0%');
 
 		// Results list (scrollable)
 		this.resultsList = this.progressContainer.createDiv({ cls: 'cr-geocode-results-list' });
@@ -194,21 +194,12 @@ export class BulkGeocodeModal extends Modal {
 			node: place
 		}));
 
-		let successCount = 0;
-		let failCount = 0;
-
 		// Run geocoding
 		const result = await this.geocodingService.geocodeBulk(
 			placesForGeocoding,
 			{
 				onProgress: (current, total, geocodeResult) => {
 					this.updateProgress(current, total, geocodeResult);
-
-					if (geocodeResult.success && geocodeResult.coordinates) {
-						successCount++;
-					} else if (!geocodeResult.error?.includes('Already has')) {
-						failCount++;
-					}
 				},
 				isCancelled: () => this.isCancelled
 			}
@@ -251,7 +242,7 @@ export class BulkGeocodeModal extends Modal {
 		const percent = Math.round((current / total) * 100);
 
 		if (this.progressBar) {
-			this.progressBar.style.width = `${percent}%`;
+			this.progressBar.style.setProperty('width', `${percent}%`);
 		}
 
 		if (this.progressText) {

@@ -434,7 +434,7 @@ export class OrganizationService {
 		return {
 			file,
 			crId: fm.cr_id,
-			name: fm.name || file.basename,
+			name: typeof fm.name === 'string' ? fm.name : file.basename,
 			orgType: isValidOrganizationType(orgType) ? orgType : 'custom',
 			parentOrg,
 			parentOrgLink: fm.parent_org,

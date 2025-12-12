@@ -10,7 +10,7 @@ import { getLogger } from '../core/logging';
 import { getErrorMessage } from '../core/error-utils';
 import { GedcomImporter } from '../gedcom/gedcom-importer';
 import { GedcomImporterV2 } from '../gedcom/gedcom-importer-v2';
-import type { GedcomImportOptionsV2, GedcomImportResultV2, FilenameFormat, FilenameFormatOptions, GedcomDataV2 } from '../gedcom/gedcom-types';
+import type { GedcomImportOptionsV2, FilenameFormat, FilenameFormatOptions, GedcomDataV2 } from '../gedcom/gedcom-types';
 import { analyzeGedcomQuality, applyQualityFixes } from '../gedcom/gedcom-quality-analyzer';
 import { GedcomQualityPreviewModal } from './gedcom-quality-preview-modal';
 import { GedcomXImporter, GedcomXImportResult } from '../gedcomx/gedcomx-importer';
@@ -23,18 +23,14 @@ import { SchemaValidationProgressModal } from './schema-validation-progress-moda
 import { BidirectionalLinker } from '../core/bidirectional-linker';
 import { TreePreviewRenderer } from './tree-preview';
 import { ReferenceNumberingService, NumberingSystem } from '../core/reference-numbering';
-import type { RecentTreeInfo, RecentImportInfo, ArrowStyle, ColorScheme, SpouseEdgeLabelFormat } from '../settings';
+import type { RecentTreeInfo, RecentImportInfo, ColorScheme } from '../settings';
 import { FolderFilterService } from '../core/folder-filter';
 import { StagingService, StagingSubfolderInfo } from '../core/staging-service';
 import { CrossImportDetectionService, CrossImportMatch } from '../core/cross-import-detection';
 import { MergeWizardModal } from './merge-wizard-modal';
 import { DataQualityService, DataQualityReport, DataQualityIssue, IssueSeverity, IssueCategory, NormalizationPreview, BatchOperationResult, BidirectionalInconsistency, ImpossibleDateIssue } from '../core/data-quality';
 import { PlaceGraphService } from '../core/place-graph';
-import { PlaceCategory, PlaceIssue } from '../models/place';
 import { CreatePlaceModal } from './create-place-modal';
-import { CreateMissingPlacesModal } from './create-missing-places-modal';
-import { BuildPlaceHierarchyModal } from './build-place-hierarchy-modal';
-import { StandardizePlacesModal, findPlaceNameVariations } from './standardize-places-modal';
 import { MigrationDiagramModal } from './migration-diagram-modal';
 import { PlaceNetworkModal } from './place-network-modal';
 import { TemplateSnippetsModal } from './template-snippets-modal';
@@ -45,18 +41,20 @@ import { BulkGeocodeModal } from '../maps/ui/bulk-geocode-modal';
 import { CreateSchemaModal } from './create-schema-modal';
 import { SchemaService, ValidationService } from '../schemas';
 import type { SchemaNote, ValidationResult, ValidationSummary } from '../schemas';
-import { RelationshipService, RELATIONSHIP_CATEGORY_NAMES, renderRelationshipsTab } from '../relationships';
-import type { RelationshipCategory } from '../relationships';
+import { renderRelationshipsTab } from '../relationships';
 import { renderEventsTab } from '../dates';
 import { renderOrganizationsTab } from '../organizations';
 import { renderPersonTimeline, createTimelineSummary } from '../events/ui/person-timeline';
 import { AddPersonTypePreviewModal } from './add-person-type-modal';
 import { renderFamilyTimeline, getFamilyTimelineSummary } from '../events/ui/family-timeline';
 import { renderPlaceTimelineCard } from '../events/ui/place-timeline';
-import { EventService } from '../events/services/event-service';
 import { renderPreferencesTab } from './preferences-tab';
 import { renderPlacesTab } from './places-tab';
 import { PropertyAliasService } from '../core/property-alias-service';
+import { CreateEventModal } from '../events/ui/create-event-modal';
+import { ExportOptionsBuilder } from './export-options-builder';
+import { FlattenNestedPropertiesModal } from './flatten-nested-properties-modal';
+import { PlaceGeneratorModal } from '../enhancement/ui/place-generator-modal';
 import {
 	renderSourcesTab,
 	EvidenceService,
@@ -1191,7 +1189,7 @@ export class ControlCenterModal extends Modal {
 		const barContainer = container.createDiv({ cls: 'crc-health-bar-container' });
 		const bar = barContainer.createDiv({ cls: 'crc-health-bar' });
 		const fill = bar.createDiv({ cls: 'crc-health-bar-fill' });
-		fill.style.width = `${percentage}%`;
+		fill.style.setProperty('width', `${percentage}%`);
 
 		// Color based on percentage
 		if (percentage >= 80) {
@@ -2002,7 +2000,7 @@ export class ControlCenterModal extends Modal {
 		);
 
 		// Detect conflicts
-		const inconsistencies = await dataQuality.detectBidirectionalInconsistencies();
+		const inconsistencies = dataQuality.detectBidirectionalInconsistencies();
 		const conflicts = inconsistencies.filter(i => i.type === 'conflicting-parent-claim');
 
 		if (conflicts.length === 0) {
@@ -2101,10 +2099,12 @@ export class ControlCenterModal extends Modal {
 				cls: 'crc-btn-small',
 				attr: { title: `Keep ${claimant1.name || claimant1.file.basename} as ${conflict.conflictType}` }
 			});
-			keepBtn1.addEventListener('click', async () => {
-				await this.resolveParentConflict(child, claimant1, claimant2, conflict.conflictType!, 'keep1');
-				row.remove();
-				this.updateConflictCardCount(container, tbody);
+			keepBtn1.addEventListener('click', () => {
+				void (async () => {
+					await this.resolveParentConflict(child, claimant1, claimant2, conflict.conflictType!, 'keep1');
+					row.remove();
+					this.updateConflictCardCount(container, tbody);
+				})();
 			});
 
 			// Keep Claimant 2 button
@@ -2113,10 +2113,12 @@ export class ControlCenterModal extends Modal {
 				cls: 'crc-btn-small',
 				attr: { title: `Keep ${claimant2.name || claimant2.file.basename} as ${conflict.conflictType}` }
 			});
-			keepBtn2.addEventListener('click', async () => {
-				await this.resolveParentConflict(child, claimant1, claimant2, conflict.conflictType!, 'keep2');
-				row.remove();
-				this.updateConflictCardCount(container, tbody);
+			keepBtn2.addEventListener('click', () => {
+				void (async () => {
+					await this.resolveParentConflict(child, claimant1, claimant2, conflict.conflictType!, 'keep2');
+					row.remove();
+					this.updateConflictCardCount(container, tbody);
+				})();
 			});
 		}
 
@@ -2687,7 +2689,6 @@ export class ControlCenterModal extends Modal {
 						.onClick(() => {
 							const eventService = this.plugin.getEventService();
 							if (eventService) {
-								const { CreateEventModal } = require('../events/ui/create-event-modal');
 								new CreateEventModal(
 									this.app,
 									eventService,
@@ -2727,7 +2728,6 @@ export class ControlCenterModal extends Modal {
 					.onClick(() => {
 						const eventService = this.plugin.getEventService();
 						if (eventService) {
-							const { CreateEventModal } = require('../events/ui/create-event-modal');
 							new CreateEventModal(
 								this.app,
 								eventService,
@@ -2830,8 +2830,8 @@ export class ControlCenterModal extends Modal {
 						await this.app.vault.create(excalidrawPath, excalidrawResult.excalidrawContent);
 						new Notice(`Timeline exported to ${excalidrawPath}`);
 						const file = this.app.vault.getAbstractFileByPath(excalidrawPath);
-						if (file) {
-							void this.app.workspace.getLeaf(false).openFile(file as TFile);
+						if (file instanceof TFile) {
+							void this.app.workspace.getLeaf(false).openFile(file);
 						}
 					} else {
 						new Notice(`Excalidraw export failed: ${excalidrawResult.errors?.join(', ') || 'Unknown error'}`);
@@ -2839,8 +2839,8 @@ export class ControlCenterModal extends Modal {
 				} else {
 					new Notice(`Timeline exported to ${result.path}`);
 					const file = this.app.vault.getAbstractFileByPath(result.path);
-					if (file) {
-						void this.app.workspace.getLeaf(false).openFile(file as TFile);
+					if (file instanceof TFile) {
+						void this.app.workspace.getLeaf(false).openFile(file);
 					}
 				}
 			} else {
@@ -3048,7 +3048,7 @@ export class ControlCenterModal extends Modal {
 		// Progress bar
 		const progressContainer = header.createDiv({ cls: 'crc-progress-bar crc-progress-bar--inline' });
 		const progressFill = progressContainer.createDiv({ cls: 'crc-progress-bar__fill' });
-		progressFill.style.width = `${coverage.coveragePercent}%`;
+		progressFill.style.setProperty('width', `${coverage.coveragePercent}%`);
 		if (coverage.coveragePercent < 50) {
 			progressFill.addClass('crc-progress-bar__fill--danger');
 		} else if (coverage.coveragePercent < 75) {
@@ -4640,7 +4640,7 @@ export class ControlCenterModal extends Modal {
 
 				const barBg = item.createDiv({ cls: 'crc-progress-bar-bg' });
 				const barFill = barBg.createDiv({ cls: 'crc-progress-bar-fill' });
-				barFill.style.width = `${percent}%`;
+				barFill.style.setProperty('width', `${percent}%`);
 
 				return item;
 			};
@@ -7844,7 +7844,7 @@ export class ControlCenterModal extends Modal {
 			// Progress bar
 			const progressBar = item.createDiv({ cls: 'crc-progress-bar crc-progress-bar--small' });
 			const progressFill = progressBar.createDiv({ cls: 'crc-progress-bar__fill' });
-			progressFill.style.width = `${person.coveragePercent}%`;
+			progressFill.style.setProperty('width', `${person.coveragePercent}%`);
 
 			// Adjust color based on coverage
 			if (person.coveragePercent < 25) {
@@ -8564,7 +8564,6 @@ export class ControlCenterModal extends Modal {
 		});
 
 		// Use the new ExportOptionsBuilder
-		const { ExportOptionsBuilder } = require('./export-options-builder');
 		const optionsBuilder = new ExportOptionsBuilder(this.app, this.plugin);
 
 		// Last export info
@@ -8873,7 +8872,6 @@ export class ControlCenterModal extends Modal {
 		});
 
 		// Use the ExportOptionsBuilder
-		const { ExportOptionsBuilder } = require('./export-options-builder');
 		const optionsBuilder = new ExportOptionsBuilder(this.app, this.plugin);
 
 		// Last export info
@@ -9353,7 +9351,6 @@ export class ControlCenterModal extends Modal {
 		});
 
 		// Use the new ExportOptionsBuilder
-		const { ExportOptionsBuilder } = require('./export-options-builder');
 		const optionsBuilder = new ExportOptionsBuilder(this.app, this.plugin);
 
 		// Last export info
@@ -9703,7 +9700,6 @@ export class ControlCenterModal extends Modal {
 		});
 
 		// Use the new ExportOptionsBuilder
-		const { ExportOptionsBuilder } = require('./export-options-builder');
 		const optionsBuilder = new ExportOptionsBuilder(this.app, this.plugin);
 
 		// Last export info
@@ -11484,7 +11480,6 @@ export class ControlCenterModal extends Modal {
 				.setButtonText('Open')
 				.setCta()
 				.onClick(() => {
-					const { FlattenNestedPropertiesModal } = require('./flatten-nested-properties-modal');
 					new FlattenNestedPropertiesModal(this.app).open();
 				})
 			);
@@ -11516,8 +11511,6 @@ export class ControlCenterModal extends Modal {
 				.setButtonText('Open')
 				.setCta()
 				.onClick(() => {
-					const { PlaceGeneratorModal } = require('../enhancement/ui/place-generator-modal');
-					const { PlaceGraphService } = require('../core/place-graph');
 					const placeGraph = new PlaceGraphService(this.app);
 					new PlaceGeneratorModal(this.app, this.plugin.settings, {}, placeGraph).open();
 				})
@@ -11744,7 +11737,7 @@ export class ControlCenterModal extends Modal {
 
 		const barContainer = row.createDiv({ cls: 'crc-dq-completeness-bar-container' });
 		const bar = barContainer.createDiv({ cls: 'crc-dq-completeness-bar' });
-		bar.style.width = `${percent}%`;
+		bar.style.setProperty('width', `${percent}%`);
 
 		// Color based on percentage
 		if (percent >= 80) {
@@ -11960,7 +11953,7 @@ export class ControlCenterModal extends Modal {
 	/**
 	 * Preview removing duplicate relationships
 	 */
-	private async previewRemoveDuplicateRelationships(): Promise<void> {
+	private previewRemoveDuplicateRelationships(): void {
 		const familyGraph = this.plugin.createFamilyGraphService();
 		familyGraph.ensureCacheLoaded();
 		const people = familyGraph.getAllPeople();
@@ -12061,11 +12054,9 @@ export class ControlCenterModal extends Modal {
 		const people = familyGraph.getAllPeople();
 
 		let modified = 0;
-		let processed = 0;
 		const errors: string[] = [];
 
 		for (const person of people) {
-			processed++;
 
 			try {
 				const cache = this.app.metadataCache.getFileCache(person.file);
@@ -12147,7 +12138,7 @@ export class ControlCenterModal extends Modal {
 	/**
 	 * Preview removing empty/placeholder values
 	 */
-	private async previewRemovePlaceholders(): Promise<void> {
+	private previewRemovePlaceholders(): void {
 		const familyGraph = this.plugin.createFamilyGraphService();
 		familyGraph.ensureCacheLoaded();
 		const people = familyGraph.getAllPeople();
@@ -12314,7 +12305,6 @@ export class ControlCenterModal extends Modal {
 		const people = familyGraph.getAllPeople();
 
 		let modified = 0;
-		let processed = 0;
 		const errors: string[] = [];
 
 		// Common placeholder patterns (actual placeholder text, not empty values)
@@ -12361,7 +12351,6 @@ export class ControlCenterModal extends Modal {
 		};
 
 		for (const person of people) {
-			processed++;
 
 			try {
 				const cache = this.app.metadataCache.getFileCache(person.file);
@@ -12460,12 +12449,12 @@ export class ControlCenterModal extends Modal {
 	/**
 	 * Preview adding cr_type: person to person notes
 	 */
-	private async previewAddPersonType(): Promise<void> {
+	private previewAddPersonType(): void {
 		const familyGraph = this.plugin.createFamilyGraphService();
 		familyGraph.ensureCacheLoaded();
 		const people = familyGraph.getAllPeople();
 
-		console.log(`[DEBUG] previewAddPersonType: Found ${people.length} people from getAllPeople()`);
+		console.debug(`[DEBUG] previewAddPersonType: Found ${people.length} people from getAllPeople()`);
 
 		const changes: Array<{ person: { name: string }; file: TFile }> = [];
 
@@ -12484,7 +12473,7 @@ export class ControlCenterModal extends Modal {
 			}
 		}
 
-		console.log(`[DEBUG] previewAddPersonType: Found ${changes.length} people needing cr_type`);
+		console.debug(`[DEBUG] previewAddPersonType: Found ${changes.length} people needing cr_type`);
 
 		// Show preview modal
 		new AddPersonTypePreviewModal(
@@ -12505,11 +12494,9 @@ export class ControlCenterModal extends Modal {
 		const people = familyGraph.getAllPeople();
 
 		let modified = 0;
-		let processed = 0;
 		const errors: string[] = [];
 
 		for (const person of people) {
-			processed++;
 
 			try {
 				const cache = this.app.metadataCache.getFileCache(person.file);
@@ -12555,7 +12542,7 @@ export class ControlCenterModal extends Modal {
 	/**
 	 * Preview name formatting normalization
 	 */
-	private async previewNormalizeNames(): Promise<void> {
+	private previewNormalizeNames(): void {
 		const familyGraph = this.plugin.createFamilyGraphService();
 		familyGraph.ensureCacheLoaded();
 		const people = familyGraph.getAllPeople();
@@ -12697,7 +12684,6 @@ export class ControlCenterModal extends Modal {
 		const people = familyGraph.getAllPeople();
 
 		let modified = 0;
-		let processed = 0;
 		const errors: string[] = [];
 
 		/**
@@ -12791,7 +12777,6 @@ export class ControlCenterModal extends Modal {
 		};
 
 		for (const person of people) {
-			processed++;
 
 			try {
 				const cache = this.app.metadataCache.getFileCache(person.file);
@@ -12841,7 +12826,7 @@ export class ControlCenterModal extends Modal {
 	/**
 	 * Preview orphaned cr_id reference removal
 	 */
-	private async previewRemoveOrphanedRefs(): Promise<void> {
+	private previewRemoveOrphanedRefs(): void {
 		const changes: Array<{ person: { name: string; file: TFile }; field: string; orphanedId: string }> = [];
 
 		// Build a map of all valid cr_ids
@@ -12950,7 +12935,6 @@ export class ControlCenterModal extends Modal {
 		const familyGraph = this.plugin.createFamilyGraphService();
 		familyGraph.ensureCacheLoaded();
 
-		let processed = 0;
 		let modified = 0;
 		const errors: Array<{ file: string; error: string }> = [];
 
@@ -12970,13 +12954,11 @@ export class ControlCenterModal extends Modal {
 
 		// Process each file
 		for (const file of files) {
-			processed++;
 
 			try {
 				const cache = this.app.metadataCache.getFileCache(file);
 				if (!cache?.frontmatter?.cr_id) continue;
 
-				const fm = cache.frontmatter as Record<string, unknown>;
 				let hasChanges = false;
 
 				await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
@@ -13111,7 +13093,7 @@ export class ControlCenterModal extends Modal {
 
 		new Notice('Detecting bidirectional relationship inconsistencies...');
 
-		const inconsistencies = await dataQuality1.detectBidirectionalInconsistencies();
+		const inconsistencies = dataQuality1.detectBidirectionalInconsistencies();
 
 		if (inconsistencies.length === 0) {
 			new Notice('No bidirectional relationship inconsistencies found');
@@ -13178,7 +13160,7 @@ export class ControlCenterModal extends Modal {
 
 		new Notice('Detecting inconsistencies...');
 
-		const inconsistencies = await dataQuality2.detectBidirectionalInconsistencies();
+		const inconsistencies = dataQuality2.detectBidirectionalInconsistencies();
 
 		if (inconsistencies.length === 0) {
 			new Notice('No bidirectional relationship inconsistencies found');
@@ -13220,7 +13202,7 @@ export class ControlCenterModal extends Modal {
 	/**
 	 * Preview impossible dates detection
 	 */
-	private async previewDetectImpossibleDates(): Promise<void> {
+	private previewDetectImpossibleDates(): void {
 		const folderFilter3 = new FolderFilterService(this.plugin.settings);
 		const familyGraph3 = this.plugin.createFamilyGraphService();
 		familyGraph3.ensureCacheLoaded();
@@ -13235,7 +13217,7 @@ export class ControlCenterModal extends Modal {
 			folderFilter3
 		);
 
-		const issues = await dataQuality3.detectImpossibleDates();
+		const issues = dataQuality3.detectImpossibleDates();
 
 		// Transform to modal format
 		const previewItems = issues.map((issue: ImpossibleDateIssue) => ({
@@ -13261,7 +13243,7 @@ export class ControlCenterModal extends Modal {
 	/**
 	 * Preview date format validation
 	 */
-	private async previewValidateDates(): Promise<void> {
+	private previewValidateDates(): void {
 		const familyGraph = this.plugin.createFamilyGraphService();
 		familyGraph.ensureCacheLoaded();
 
@@ -13446,9 +13428,9 @@ export class ControlCenterModal extends Modal {
 	 * Apply date format validation (currently just shows preview)
 	 * Note: We don't auto-correct dates as this could introduce errors
 	 */
-	private async validateDates(): Promise<void> {
+	private validateDates(): void {
 		new Notice('Date validation is preview-only. Review issues and manually correct dates in your notes.');
-		await this.previewValidateDates();
+		this.previewValidateDates();
 	}
 }
 
@@ -13573,18 +13555,20 @@ class DuplicateRelationshipsPreviewModal extends Modal {
 			text: `Apply ${this.allChanges.length} change${this.allChanges.length === 1 ? '' : 's'}`,
 			cls: 'mod-cta'
 		});
-		applyButton.addEventListener('click', async () => {
-			// Disable buttons during operation
-			applyButton.disabled = true;
-			cancelButton.disabled = true;
-			applyButton.textContent = 'Applying changes...';
+		applyButton.addEventListener('click', () => {
+			void (async () => {
+				// Disable buttons during operation
+				applyButton.disabled = true;
+				cancelButton.disabled = true;
+				applyButton.textContent = 'Applying changes...';
 
-			// Run the operation
-			await this.onApply();
+				// Run the operation
+				await this.onApply();
 
-			// Close the modal after completion (like BuildPlaceHierarchyModal)
-			// This avoids stale cache issues when user reopens the preview
-			this.close();
+				// Close the modal after completion (like BuildPlaceHierarchyModal)
+				// This avoids stale cache issues when user reopens the preview
+				this.close();
+			})();
 		});
 	}
 
@@ -13816,18 +13800,20 @@ class PlaceholderRemovalPreviewModal extends Modal {
 			text: `Apply ${this.allChanges.length} change${this.allChanges.length === 1 ? '' : 's'}`,
 			cls: 'mod-cta'
 		});
-		applyButton.addEventListener('click', async () => {
-			// Disable buttons during operation
-			applyButton.disabled = true;
-			cancelButton.disabled = true;
-			applyButton.textContent = 'Applying changes...';
+		applyButton.addEventListener('click', () => {
+			void (async () => {
+				// Disable buttons during operation
+				applyButton.disabled = true;
+				cancelButton.disabled = true;
+				applyButton.textContent = 'Applying changes...';
 
-			// Run the operation
-			await this.onApply();
+				// Run the operation
+				await this.onApply();
 
-			// Close the modal after completion (like BuildPlaceHierarchyModal)
-			// This avoids stale cache issues when user reopens the preview
-			this.close();
+				// Close the modal after completion (like BuildPlaceHierarchyModal)
+				// This avoids stale cache issues when user reopens the preview
+				this.close();
+			})();
 		});
 	}
 
@@ -14042,18 +14028,20 @@ class NameNormalizationPreviewModal extends Modal {
 			text: `Apply ${this.allChanges.length} change${this.allChanges.length === 1 ? '' : 's'}`,
 			cls: 'mod-cta'
 		});
-		applyButton.addEventListener('click', async () => {
-			// Disable buttons during operation
-			applyButton.disabled = true;
-			cancelButton.disabled = true;
-			applyButton.textContent = 'Applying changes...';
+		applyButton.addEventListener('click', () => {
+			void (async () => {
+				// Disable buttons during operation
+				applyButton.disabled = true;
+				cancelButton.disabled = true;
+				applyButton.textContent = 'Applying changes...';
 
-			// Run the operation
-			await this.onApply();
+				// Run the operation
+				await this.onApply();
 
-			// Close the modal after completion (like BuildPlaceHierarchyModal)
-			// This avoids stale cache issues when user reopens the preview
-			this.close();
+				// Close the modal after completion (like BuildPlaceHierarchyModal)
+				// This avoids stale cache issues when user reopens the preview
+				this.close();
+			})();
 		});
 	}
 
@@ -14279,18 +14267,20 @@ class OrphanedRefsPreviewModal extends Modal {
 			text: `Apply ${this.allChanges.length} change${this.allChanges.length === 1 ? '' : 's'}`,
 			cls: 'mod-cta'
 		});
-		applyButton.addEventListener('click', async () => {
-			// Disable buttons during operation
-			applyButton.disabled = true;
-			cancelButton.disabled = true;
-			applyButton.textContent = 'Applying changes...';
+		applyButton.addEventListener('click', () => {
+			void (async () => {
+				// Disable buttons during operation
+				applyButton.disabled = true;
+				cancelButton.disabled = true;
+				applyButton.textContent = 'Applying changes...';
 
-			// Run the operation
-			await this.onApply();
+				// Run the operation
+				await this.onApply();
 
-			// Close the modal after completion (like BuildPlaceHierarchyModal)
-			// This avoids stale cache issues when user reopens the preview
-			this.close();
+				// Close the modal after completion (like BuildPlaceHierarchyModal)
+				// This avoids stale cache issues when user reopens the preview
+				this.close();
+			})();
 		});
 	}
 
@@ -14531,17 +14521,19 @@ class BidirectionalInconsistencyPreviewModal extends Modal {
 			text: `Fix ${this.allChanges.length} inconsistenc${this.allChanges.length === 1 ? 'y' : 'ies'}`,
 			cls: 'mod-cta'
 		});
-		applyButton.addEventListener('click', async () => {
-			// Disable buttons during operation
-			applyButton.disabled = true;
-			cancelButton.disabled = true;
-			applyButton.textContent = 'Fixing inconsistencies...';
+		applyButton.addEventListener('click', () => {
+			void (async () => {
+				// Disable buttons during operation
+				applyButton.disabled = true;
+				cancelButton.disabled = true;
+				applyButton.textContent = 'Fixing inconsistencies...';
 
-			// Run the operation
-			await this.onApply();
+				// Run the operation
+				await this.onApply();
 
-			// Close modal after completion
-			this.close();
+				// Close modal after completion
+				this.close();
+			})();
 		});
 	}
 
@@ -15103,25 +15095,27 @@ class BatchPreviewModal extends Modal {
 				text: `Apply ${actualChanges.length} change${actualChanges.length === 1 ? '' : 's'}`,
 				cls: 'mod-cta'
 			});
-			applyBtn.addEventListener('click', async () => {
-				// Disable buttons during operation
-				applyBtn.disabled = true;
-				cancelBtn.disabled = true;
-				applyBtn.textContent = 'Applying changes...';
+			applyBtn.addEventListener('click', () => {
+				void (async () => {
+					// Disable buttons during operation
+					applyBtn.disabled = true;
+					cancelBtn.disabled = true;
+					applyBtn.textContent = 'Applying changes...';
 
-				// Run the operation
-				await this.onApply();
+					// Run the operation
+					await this.onApply();
 
-				// Show completion and enable close
-				applyBtn.textContent = '✓ Changes applied';
-				applyBtn.addClass('crc-btn-success');
-				cancelBtn.textContent = 'Close';
-				cancelBtn.disabled = false;
+					// Show completion and enable close
+					applyBtn.textContent = '✓ Changes applied';
+					applyBtn.addClass('crc-btn-success');
+					cancelBtn.textContent = 'Close';
+					cancelBtn.disabled = false;
 
-				// Update count to show completion
-				if (this.countEl) {
-					this.countEl.textContent = `✓ Successfully applied ${actualChanges.length} change${actualChanges.length === 1 ? '' : 's'}`;
-				}
+					// Update count to show completion
+					if (this.countEl) {
+						this.countEl.textContent = `✓ Successfully applied ${actualChanges.length} change${actualChanges.length === 1 ? '' : 's'}`;
+					}
+				})();
 			});
 		} else if (this.allChanges.length > 0) {
 			// Only unrecognized values, no actual changes to apply
@@ -15201,7 +15195,7 @@ class BatchPreviewModal extends Modal {
 				cls: 'crc-text-muted'
 			});
 			cell.setAttribute('colspan', '4');
-			cell.style.textAlign = 'center';
+			cell.style.setProperty('text-align', 'center');
 		}
 	}
 
@@ -15597,7 +15591,7 @@ class DateValidationPreviewModal extends Modal {
 		];
 
 		for (const opt of fieldOptions) {
-			const option = fieldSelect.createEl('option', {
+			fieldSelect.createEl('option', {
 				value: opt.value,
 				text: opt.label
 			});

@@ -5,7 +5,7 @@
  * Supports comprehensive event, source, and person attribute import.
  */
 
-import type { DatePrecision, EventConfidence } from '../events/types/event-types';
+import type { DatePrecision } from '../events/types/event-types';
 
 // ============================================================================
 // Event Types and Mappings

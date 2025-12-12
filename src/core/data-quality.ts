@@ -1129,7 +1129,7 @@ export class DataQualityService {
 	 * Detect bidirectional relationship inconsistencies
 	 * Returns array of detected inconsistencies across all person notes
 	 */
-	async detectBidirectionalInconsistencies(options: DataQualityOptions = {}): Promise<BidirectionalInconsistency[]> {
+	detectBidirectionalInconsistencies(options: DataQualityOptions = {}): BidirectionalInconsistency[] {
 		const people = this.getPeopleForScope(options);
 		const inconsistencies: BidirectionalInconsistency[] = [];
 
@@ -1401,7 +1401,7 @@ export class DataQualityService {
 	 * Detect impossible dates (preview only)
 	 * Finds logical date errors like birth after death, unrealistic lifespans, etc.
 	 */
-	async detectImpossibleDates(options: DataQualityOptions = {}): Promise<ImpossibleDateIssue[]> {
+	detectImpossibleDates(options: DataQualityOptions = {}): ImpossibleDateIssue[] {
 		const people = this.getPeopleForScope(options);
 		const issues: ImpossibleDateIssue[] = [];
 

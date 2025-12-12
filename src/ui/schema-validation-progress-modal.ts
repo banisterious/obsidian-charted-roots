@@ -53,7 +53,7 @@ export class SchemaValidationProgressModal extends Modal {
 		const progressContainer = contentEl.createDiv({ cls: 'cr-import-progress' });
 		const progressTrack = progressContainer.createDiv({ cls: 'cr-import-progress__track' });
 		this.progressBar = progressTrack.createDiv({ cls: 'cr-import-progress__bar' });
-		this.progressBar.style.width = '0%';
+		this.progressBar.style.setProperty('width', '0%');
 
 		// Progress text
 		this.progressText = contentEl.createDiv({
@@ -96,7 +96,7 @@ export class SchemaValidationProgressModal extends Modal {
 		const percentage = progress.total > 0
 			? Math.round((progress.current / progress.total) * 100)
 			: 0;
-		this.progressBar.style.width = `${percentage}%`;
+		this.progressBar.style.setProperty('width', `${percentage}%`);
 
 		// Update progress text
 		if (progress.total > 0) {
@@ -122,7 +122,7 @@ export class SchemaValidationProgressModal extends Modal {
 		this.currentPhase = 'complete';
 		this.phaseLabel.textContent = 'Validation complete';
 		this.updatePhaseIcon('complete');
-		this.progressBar.style.width = '100%';
+		this.progressBar.style.setProperty('width', '100%');
 		this.progressText.textContent = 'Done!';
 
 		// Clear current file

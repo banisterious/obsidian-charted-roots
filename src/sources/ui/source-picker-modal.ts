@@ -332,8 +332,8 @@ export class SourcePickerModal extends Modal {
 		// Type badge
 		if (typeDef) {
 			const typeBadge = metaInfo.createDiv({ cls: 'crc-picker-badge' });
-			typeBadge.style.backgroundColor = typeDef.color;
-			typeBadge.style.color = this.getContrastColor(typeDef.color);
+			typeBadge.style.setProperty('background-color', typeDef.color);
+			typeBadge.style.setProperty('color', this.getContrastColor(typeDef.color));
 			typeBadge.textContent = typeDef.name;
 		}
 

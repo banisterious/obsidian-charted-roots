@@ -355,7 +355,7 @@ export class CrossImportDetectionService {
 
 		return {
 			crId: fm.cr_id,
-			name: fm.name || file.basename,
+			name: typeof fm.name === 'string' ? fm.name : file.basename,
 			file,
 			sex: fm.gender,
 			birthDate: fm.born,

@@ -2,6 +2,7 @@ import { App, Modal, TFile } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 import { FamilyGraphService, PersonNode } from '../core/family-graph';
 import { FolderFilterService } from '../core/folder-filter';
+import { isPersonNote } from '../utils/note-type-detection';
 
 /**
  * Place reference info for person detail view
@@ -289,8 +290,9 @@ export class PersonPickerModal extends Modal {
 
 			const fm = cache.frontmatter;
 
-			// Must have cr_id to be a valid person note
-			if (!fm.cr_id) {
+			// Use proper note type detection to filter out non-person notes
+			// (places, events, sources also have cr_id but shouldn't appear here)
+			if (!isPersonNote(fm, cache)) {
 				return null;
 			}
 

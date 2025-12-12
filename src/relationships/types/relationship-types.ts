@@ -44,7 +44,7 @@ export interface RelationshipTypeDefinition {
 	/** Brief description of this relationship type */
 	description?: string;
 	/** Category for grouping in UI */
-	category: RelationshipCategory | string;
+	category: RelationshipCategory;
 	/** Edge color (hex format) */
 	color: string;
 	/** Line style for canvas edges */

@@ -72,7 +72,19 @@ body {
 .callout[data-callout="timeline-outer"] > .callout-content::before {
   content: "";
   position: absolute;
-  left: calc(var(--cr-timeline-title-width) + var(--cr-timeline-line-margin));
+  /* Align line center with dot center:
+     The icon element is positioned at: title-width - line-margin - (icon-width / 2)
+     Based on measurements: icon is ~130px from content, which equals
+     title-width (150) - line-margin (16) - line-width/2 (2) = 132px (close enough)
+
+     Dot left edge = icon-position + dot-offset-x
+     Dot center = dot-left + dot-size/2
+     Line left = dot-center - line-width/2 */
+  left: calc(
+    var(--cr-timeline-title-width) - var(--cr-timeline-line-margin) +
+      var(--cr-timeline-dot-offset-x) + (var(--cr-timeline-dot-size) / 2) -
+      (var(--cr-timeline-line-width) / 2) - 4px
+  );
   top: 0;
   bottom: var(--cr-timeline-card-margin);
   width: var(--cr-timeline-line-width);

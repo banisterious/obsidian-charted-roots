@@ -374,8 +374,8 @@ function renderFamilyPresenceAnalysis(
 		const endPercent = ((data.lastYear || data.firstYear) - minYear) / yearSpan * 100;
 		const widthPercent = Math.max(endPercent - startPercent, 2); // Minimum width for visibility
 
-		bar.style.left = `${startPercent}%`;
-		bar.style.width = `${widthPercent}%`;
+		bar.style.setProperty('left', `${startPercent}%`);
+		bar.style.setProperty('width', `${widthPercent}%`);
 
 		// Year labels
 		row.createEl('span', {
