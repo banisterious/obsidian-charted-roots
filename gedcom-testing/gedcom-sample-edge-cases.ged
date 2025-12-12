@@ -1,0 +1,709 @@
+0 HEAD
+1 SOUR Canvas Roots Test
+2 VERS 1.0
+2 NAME Canvas Roots Edge Cases Test
+1 DEST ANY
+1 DATE 12 DEC 2025
+1 SUBM @SUBM1@
+1 FILE gedcom-sample-edge-cases.ged
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+0 @SUBM1@ SUBM
+1 NAME Canvas Roots User
+1 NOTE This file contains intentional data quality issues for testing purposes.
+
+0 NOTE ============================================================
+0 NOTE SOURCES - Including edge cases
+0 NOTE ============================================================
+
+0 @S1@ SOUR
+1 TITL Smith Family Bible
+1 AUTH John Smith Sr.
+1 PUBL Family records, Boston MA
+
+0 @S2@ SOUR
+1 TITL Massachusetts Vital Records
+1 AUTH Massachusetts Department of Health
+
+0 @S3@ SOUR
+1 TITL Smith Family Bible
+1 AUTH John Smith Sr.
+1 PUBL Family records, Boston MA
+1 NOTE ISSUE: Duplicate of @S1@ - same title and author
+
+0 @S4@ SOUR
+1 NOTE ISSUE: Source with no title
+
+0 @S5@ SOUR
+1 TITL
+
+0 NOTE ============================================================
+0 NOTE PERSONS - Duplicate names without distinguishing data
+0 NOTE ============================================================
+
+0 @I1@ INDI
+1 NAME John /Smith/
+2 GIVN John
+2 SURN Smith
+1 SEX M
+1 NOTE ISSUE: Duplicate name - no dates to distinguish from @I2@
+1 FAMC @F1@
+
+0 @I2@ INDI
+1 NAME John /Smith/
+2 GIVN John
+2 SURN Smith
+1 SEX M
+1 NOTE ISSUE: Duplicate name - no dates to distinguish from @I1@
+1 FAMC @F2@
+
+0 @I3@ INDI
+1 NAME John /Smith/
+2 GIVN John
+2 SURN Smith
+1 SEX M
+1 BIRT
+2 DATE 15 MAR 1950
+2 PLAC Boston, Massachusetts, USA
+1 NOTE Third John Smith but this one has dates
+1 FAMS @F1@
+
+0 NOTE ============================================================
+0 NOTE PERSONS - Multiple parents claiming same child
+0 NOTE ============================================================
+
+0 @I10@ INDI
+1 NAME Disputed /Child/
+2 GIVN Disputed
+2 SURN Child
+1 SEX M
+1 BIRT
+2 DATE 1 JAN 1990
+2 PLAC Chicago, Illinois, USA
+1 NOTE ISSUE: This child appears in two different families (@F10@ and @F11@)
+1 FAMC @F10@
+1 FAMC @F11@
+
+0 @I11@ INDI
+1 NAME Father /One/
+2 GIVN Father
+2 SURN One
+1 SEX M
+1 BIRT
+2 DATE 10 MAY 1960
+1 FAMS @F10@
+
+0 @I12@ INDI
+1 NAME Mother /One/
+2 GIVN Mother
+2 SURN One
+1 SEX F
+1 BIRT
+2 DATE 15 JUN 1962
+1 FAMS @F10@
+
+0 @I13@ INDI
+1 NAME Father /Two/
+2 GIVN Father
+2 SURN Two
+1 SEX M
+1 BIRT
+2 DATE 20 JUL 1958
+1 FAMS @F11@
+
+0 @I14@ INDI
+1 NAME Mother /Two/
+2 GIVN Mother
+2 SURN Two
+1 SEX F
+1 BIRT
+2 DATE 25 AUG 1960
+1 FAMS @F11@
+
+0 NOTE ============================================================
+0 NOTE PERSONS - Impossible/problematic dates
+0 NOTE ============================================================
+
+0 @I20@ INDI
+1 NAME Death /BeforeBirth/
+2 GIVN Death
+2 SURN BeforeBirth
+1 SEX M
+1 BIRT
+2 DATE 15 MAR 2000
+2 PLAC New York, USA
+1 DEAT
+2 DATE 10 JAN 1990
+2 PLAC New York, USA
+1 NOTE ISSUE: Death date (1990) is before birth date (2000)
+
+0 @I21@ INDI
+1 NAME Young /Parent/
+2 GIVN Young
+2 SURN Parent
+1 SEX M
+1 BIRT
+2 DATE 1 JAN 1990
+1 FAMS @F20@
+1 NOTE ISSUE: This parent is younger than their child (@I22@)
+
+0 @I22@ INDI
+1 NAME Older /Child/
+2 GIVN Older
+2 SURN Child
+1 SEX F
+1 BIRT
+2 DATE 1 JAN 1980
+1 FAMC @F20@
+1 NOTE ISSUE: This child (b. 1980) is older than parent @I21@ (b. 1990)
+
+0 @I23@ INDI
+1 NAME Very /Old/
+2 GIVN Very
+2 SURN Old
+1 SEX M
+1 BIRT
+2 DATE 5 MAY 1750
+2 PLAC Philadelphia, Pennsylvania, USA
+1 NOTE ISSUE: Born 275 years ago with no death date
+
+0 @I24@ INDI
+1 NAME Future /Person/
+2 GIVN Future
+2 SURN Person
+1 SEX F
+1 BIRT
+2 DATE 15 JUN 2030
+2 PLAC Mars Colony
+1 NOTE ISSUE: Birth date is in the future
+
+0 @I25@ INDI
+1 NAME Married /BeforeBirth/
+2 GIVN Married
+2 SURN BeforeBirth
+1 SEX M
+1 BIRT
+2 DATE 1 JAN 2000
+1 FAMS @F21@
+1 NOTE ISSUE: Marriage in @F21@ is before this person's birth
+
+0 @I26@ INDI
+1 NAME Also /MarriedEarly/
+2 GIVN Also
+2 SURN MarriedEarly
+1 SEX F
+1 BIRT
+2 DATE 1 JAN 1998
+1 FAMS @F21@
+
+0 NOTE ============================================================
+0 NOTE PERSONS - Sex/gender conflicts
+0 NOTE ============================================================
+
+0 @I30@ INDI
+1 NAME Listed /AsHusband/
+2 GIVN Listed
+2 SURN AsHusband
+1 SEX F
+1 BIRT
+2 DATE 10 OCT 1970
+1 NOTE ISSUE: SEX is F but listed as HUSB in @F30@
+1 FAMS @F30@
+
+0 @I31@ INDI
+1 NAME Listed /AsWife/
+2 GIVN Listed
+2 SURN AsWife
+1 SEX M
+1 BIRT
+2 DATE 12 DEC 1972
+1 NOTE ISSUE: SEX is M but listed as WIFE in @F30@
+1 FAMS @F30@
+
+0 NOTE ============================================================
+0 NOTE PERSONS - Circular relationships
+0 NOTE ============================================================
+
+0 @I40@ INDI
+1 NAME Circular /Ancestor/
+2 GIVN Circular
+2 SURN Ancestor
+1 SEX M
+1 BIRT
+2 DATE 1 JAN 1900
+1 FAMS @F40@
+1 FAMC @F41@
+1 NOTE ISSUE: Is own grandparent via circular family references
+
+0 @I41@ INDI
+1 NAME Middle /Generation/
+2 GIVN Middle
+2 SURN Generation
+1 SEX F
+1 BIRT
+2 DATE 1 JAN 1925
+1 FAMS @F41@
+1 FAMC @F40@
+
+0 NOTE ============================================================
+0 NOTE PERSONS - Orphan references
+0 NOTE ============================================================
+
+0 @I50@ INDI
+1 NAME Orphan /Reference/
+2 GIVN Orphan
+2 SURN Reference
+1 SEX M
+1 BIRT
+2 DATE 5 MAY 1985
+1 FAMC @F999@
+1 NOTE ISSUE: References non-existent family @F999@
+
+0 @I51@ INDI
+1 NAME Source /Missing/
+2 GIVN Source
+2 SURN Missing
+1 SEX F
+1 BIRT
+2 DATE 10 OCT 1990
+2 SOUR @S999@
+1 NOTE ISSUE: References non-existent source @S999@
+
+0 NOTE ============================================================
+0 NOTE PERSONS - Special characters and long names
+0 NOTE ============================================================
+
+0 @I60@ INDI
+1 NAME Seán /O'Brien-McDonald/
+2 GIVN Seán
+2 SURN O'Brien-McDonald
+1 SEX M
+1 BIRT
+2 DATE 17 MAR 1980
+2 PLAC Dublin, Ireland
+1 NOTE Tests Irish names with fada and apostrophe
+
+0 @I61@ INDI
+1 NAME José María /García de la Cruz y Fernández/
+2 GIVN José María
+2 SURN García de la Cruz y Fernández
+1 SEX M
+1 BIRT
+2 DATE 5 MAY 1975
+2 PLAC México City, México
+1 NOTE Tests Spanish compound surnames with accents
+
+0 @I62@ INDI
+1 NAME 王明 /Wang/
+2 GIVN 明
+2 SURN 王
+1 SEX M
+1 BIRT
+2 DATE 8 AUG 1988
+2 PLAC Beijing, China
+1 NOTE Tests Chinese characters
+
+0 @I63@ INDI
+1 NAME VeryLongFirstNameThatExceedsNormalLimitsAndMightCauseDisplayIssues /EquallyLongSurnameWithMultipleHyphensAndApostrophes-O'Brien-Smith-Jones-Williams-Brown/
+2 GIVN VeryLongFirstNameThatExceedsNormalLimitsAndMightCauseDisplayIssues
+2 SURN EquallyLongSurnameWithMultipleHyphensAndApostrophes-O'Brien-Smith-Jones-Williams-Brown
+1 SEX F
+1 NOTE ISSUE: Extremely long name
+
+0 @I64@ INDI
+1 NAME //
+1 SEX M
+1 NOTE ISSUE: Empty name
+
+0 @I65@ INDI
+1 SEX F
+1 BIRT
+2 DATE 1 JAN 1970
+1 NOTE ISSUE: No NAME tag at all
+
+0 NOTE ============================================================
+0 NOTE PERSONS - Date format variations
+0 NOTE ============================================================
+
+0 @I70@ INDI
+1 NAME Approximate /Dates/
+2 GIVN Approximate
+2 SURN Dates
+1 SEX M
+1 BIRT
+2 DATE ABT 1850
+2 PLAC Somewhere, USA
+1 DEAT
+2 DATE ABT 1920
+1 NOTE Tests ABT (about) date modifier
+
+0 @I71@ INDI
+1 NAME Before /After/
+2 GIVN Before
+2 SURN After
+1 SEX F
+1 BIRT
+2 DATE BEF 1860
+1 DEAT
+2 DATE AFT 1930
+1 NOTE Tests BEF (before) and AFT (after) date modifiers
+
+0 @I72@ INDI
+1 NAME Range /Dates/
+2 GIVN Range
+2 SURN Dates
+1 SEX M
+1 BIRT
+2 DATE FROM 1870 TO 1875
+1 DEAT
+2 DATE BET 1940 AND 1945
+1 NOTE Tests FROM/TO and BET/AND date ranges
+
+0 @I73@ INDI
+1 NAME Questionable /Dates/
+2 GIVN Questionable
+2 SURN Dates
+1 SEX F
+1 BIRT
+2 DATE 1850?
+2 PLAC Unknown
+1 DEAT
+2 DATE 1920?
+1 NOTE Tests question mark date notation
+
+0 @I74@ INDI
+1 NAME Calculated /Date/
+2 GIVN Calculated
+2 SURN Date
+1 SEX M
+1 BIRT
+2 DATE CAL 1855
+1 NOTE Tests CAL (calculated) date modifier
+
+0 @I75@ INDI
+1 NAME Estimated /Date/
+2 GIVN Estimated
+2 SURN Date
+1 SEX F
+1 BIRT
+2 DATE EST 1860
+1 NOTE Tests EST (estimated) date modifier
+
+0 @I76@ INDI
+1 NAME Invalid /DateFormat/
+2 GIVN Invalid
+2 SURN DateFormat
+1 SEX M
+1 BIRT
+2 DATE not-a-valid-date
+1 NOTE ISSUE: Invalid date format
+
+0 @I77@ INDI
+1 NAME Another /InvalidDate/
+2 GIVN Another
+2 SURN InvalidDate
+1 SEX F
+1 BIRT
+2 DATE 99/99/9999
+1 NOTE ISSUE: Numeric but invalid date
+
+0 @I78@ INDI
+1 NAME Partial /YearOnly/
+2 GIVN Partial
+2 SURN YearOnly
+1 SEX M
+1 BIRT
+2 DATE 1900
+1 NOTE Tests year-only date
+
+0 @I79@ INDI
+1 NAME Partial /MonthYear/
+2 GIVN Partial
+2 SURN MonthYear
+1 SEX F
+1 BIRT
+2 DATE MAR 1905
+1 NOTE Tests month-year date (no day)
+
+0 NOTE ============================================================
+0 NOTE PERSONS - Remarriage scenarios
+0 NOTE ============================================================
+
+0 @I80@ INDI
+1 NAME Serial /Marrier/
+2 GIVN Serial
+2 SURN Marrier
+1 SEX M
+1 BIRT
+2 DATE 1 JAN 1950
+1 FAMS @F80@
+1 FAMS @F81@
+1 FAMS @F82@
+1 NOTE Married three times - tests multiple FAMS
+
+0 @I81@ INDI
+1 NAME First /Wife/
+2 GIVN First
+2 SURN Wife
+1 SEX F
+1 BIRT
+2 DATE 5 MAY 1952
+1 DEAT
+2 DATE 10 OCT 1980
+1 FAMS @F80@
+
+0 @I82@ INDI
+1 NAME Second /Wife/
+2 GIVN Second
+2 SURN Wife
+1 SEX F
+1 BIRT
+2 DATE 15 JUN 1955
+1 DEAT
+2 DATE 20 DEC 1995
+1 FAMS @F81@
+
+0 @I83@ INDI
+1 NAME Third /Wife/
+2 GIVN Third
+2 SURN Wife
+1 SEX F
+1 BIRT
+2 DATE 25 JUL 1960
+1 FAMS @F82@
+
+0 @I84@ INDI
+1 NAME Same /DayMarriages/
+2 GIVN Same
+2 SURN DayMarriages
+1 SEX M
+1 BIRT
+2 DATE 1 JAN 1940
+1 FAMS @F83@
+1 FAMS @F84@
+1 NOTE ISSUE: Married twice on same day
+
+0 @I85@ INDI
+1 NAME Morning /Bride/
+2 GIVN Morning
+2 SURN Bride
+1 SEX F
+1 BIRT
+2 DATE 1 JAN 1942
+1 FAMS @F83@
+
+0 @I86@ INDI
+1 NAME Evening /Bride/
+2 GIVN Evening
+2 SURN Bride
+1 SEX F
+1 BIRT
+2 DATE 1 JAN 1944
+1 FAMS @F84@
+
+0 NOTE ============================================================
+0 NOTE PLACE NAME VARIATIONS AND ISSUES
+0 NOTE ============================================================
+
+0 @I90@ INDI
+1 NAME Place /Variations/
+2 GIVN Place
+2 SURN Variations
+1 SEX M
+1 BIRT
+2 DATE 1 JAN 1970
+2 PLAC New York, NY, USA
+1 DEAT
+2 DATE 1 JAN 2020
+2 PLAC New York, New York, United States of America
+1 NOTE Tests inconsistent place formatting for same location
+
+0 @I91@ INDI
+1 NAME Typo /Places/
+2 GIVN Typo
+2 SURN Places
+1 SEX F
+1 BIRT
+2 DATE 15 MAR 1975
+2 PLAC Chicgo, Illinois, USA
+1 DEAT
+2 DATE 20 APR 2015
+2 PLAC Chciago, IL
+1 NOTE ISSUE: Place name typos (Chicgo, Chciago)
+
+0 @I92@ INDI
+1 NAME Long /PlaceName/
+2 GIVN Long
+2 SURN PlaceName
+1 SEX M
+1 BIRT
+2 DATE 1 JAN 1960
+2 PLAC A Very Long Place Name That Probably Does Not Exist But Tests Display Limits, In Some County That Also Has A Very Long Name, In A State Or Province With An Equally Verbose Official Name, United States of America
+1 NOTE Tests very long place name
+
+0 @I93@ INDI
+1 NAME Special /PlaceChars/
+2 GIVN Special
+2 SURN PlaceChars
+1 SEX F
+1 BIRT
+2 DATE 5 MAY 1965
+2 PLAC St. Louis, Missouri, USA
+1 DEAT
+2 DATE 10 OCT 2010
+2 PLAC Côte d'Ivoire
+1 NOTE Tests place names with special characters
+
+0 @I94@ INDI
+1 NAME Unknown /Location/
+2 GIVN Unknown
+2 SURN Location
+1 SEX M
+1 BIRT
+2 DATE 1 JAN 1980
+2 PLAC Unknown
+1 NOTE Tests placeholder place name
+
+0 @I95@ INDI
+1 NAME No /Place/
+2 GIVN No
+2 SURN Place
+1 SEX F
+1 BIRT
+2 DATE 15 JUN 1985
+1 NOTE ISSUE: Birth event has no PLAC tag
+
+0 @I96@ INDI
+1 NAME Historical /Place/
+2 GIVN Historical
+2 SURN Place
+1 SEX M
+1 BIRT
+2 DATE 1 JAN 1920
+2 PLAC Königsberg, East Prussia, Germany
+1 DEAT
+2 DATE 1 JAN 1990
+2 PLAC Kaliningrad, Russia
+1 NOTE Same physical location, different historical names
+
+0 NOTE ============================================================
+0 NOTE FAMILIES
+0 NOTE ============================================================
+
+0 @F1@ FAM
+1 HUSB @I3@
+1 CHIL @I1@
+1 MARR
+2 DATE 1 JUN 1975
+
+0 @F2@ FAM
+1 CHIL @I2@
+1 NOTE ISSUE: Family with child but no parents defined
+
+0 @F10@ FAM
+1 HUSB @I11@
+1 WIFE @I12@
+1 CHIL @I10@
+1 MARR
+2 DATE 15 MAY 1985
+1 NOTE First family claiming @I10@
+
+0 @F11@ FAM
+1 HUSB @I13@
+1 WIFE @I14@
+1 CHIL @I10@
+1 MARR
+2 DATE 20 JUN 1982
+1 NOTE Second family also claiming @I10@ - CONFLICT
+
+0 @F20@ FAM
+1 HUSB @I21@
+1 CHIL @I22@
+1 NOTE ISSUE: Parent younger than child
+
+0 @F21@ FAM
+1 HUSB @I25@
+1 WIFE @I26@
+1 MARR
+2 DATE 15 JUN 1990
+2 PLAC Las Vegas, Nevada, USA
+1 NOTE ISSUE: Marriage before @I25@ was born (b. 2000)
+
+0 @F30@ FAM
+1 HUSB @I30@
+1 WIFE @I31@
+1 MARR
+2 DATE 1 JAN 1995
+1 NOTE ISSUE: HUSB is female, WIFE is male (SEX field mismatch)
+
+0 @F40@ FAM
+1 HUSB @I40@
+1 CHIL @I41@
+1 NOTE Part of circular ancestry loop
+
+0 @F41@ FAM
+1 WIFE @I41@
+1 CHIL @I40@
+1 NOTE ISSUE: Creates circular ancestry - @I40@ is both parent and child
+
+0 @F50@ FAM
+1 NOTE ISSUE: Empty family - no HUSB, WIFE, or CHIL
+
+0 @F51@ FAM
+1 HUSB @I998@
+1 WIFE @I999@
+1 NOTE ISSUE: References non-existent persons
+
+0 @F52@ FAM
+1 HUSB @I3@
+1 HUSB @I11@
+1 WIFE @I12@
+1 NOTE ISSUE: Two HUSB records in same family
+
+0 @F53@ FAM
+1 HUSB @I13@
+1 WIFE @I12@
+1 WIFE @I14@
+1 NOTE ISSUE: Two WIFE records in same family
+
+0 @F80@ FAM
+1 HUSB @I80@
+1 WIFE @I81@
+1 MARR
+2 DATE 1 JAN 1975
+1 DIV
+2 DATE 1 JAN 1979
+
+0 @F81@ FAM
+1 HUSB @I80@
+1 WIFE @I82@
+1 MARR
+2 DATE 1 JAN 1982
+1 DIV
+2 DATE 1 JAN 1994
+
+0 @F82@ FAM
+1 HUSB @I80@
+1 WIFE @I83@
+1 MARR
+2 DATE 1 JAN 2000
+
+0 @F83@ FAM
+1 HUSB @I84@
+1 WIFE @I85@
+1 MARR
+2 DATE 15 JUN 1965
+2 PLAC Las Vegas, Nevada, USA
+1 NOTE ISSUE: Same date as @F84@ marriage
+
+0 @F84@ FAM
+1 HUSB @I84@
+1 WIFE @I86@
+1 MARR
+2 DATE 15 JUN 1965
+2 PLAC Reno, Nevada, USA
+1 NOTE ISSUE: Same date as @F83@ marriage - bigamy?
+
+0 TRLR

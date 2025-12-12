@@ -11,6 +11,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Comprehensive GEDCOM edge case test file** - New test file `gedcom-testing/gedcom-sample-edge-cases.ged` with 50+ intentional data quality issues for stress testing:
+  - Duplicate names without distinguishing data
+  - Multiple parents claiming the same child
+  - Impossible dates (death before birth, future dates, parent younger than child)
+  - Sex/gender conflicts with family roles
+  - Circular ancestry relationships
+  - Orphan references to non-existent records
+  - Special characters in names (Irish, Spanish, Chinese)
+  - Date format variations (ABT, BEF, AFT, ranges, question marks like "1850?")
+  - Place name variations, typos, and special characters
+  - Source issues (duplicates, missing titles)
+  - Family issues (empty families, multiple spouses)
+
 - **Standardize place types modal** (Places tab) - New data quality tool to convert generic place types like "locality" to standard types (city, town, village)
   - Detects places with non-standard types from GEDCOM imports
   - Bulk actions to set all places to the same type
