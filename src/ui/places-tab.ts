@@ -949,12 +949,7 @@ function loadPlaceList(
 
 		// Hint text
 		const hint = tableContainer.createEl('p', { cls: 'crc-text-muted crc-text-small crc-mb-2' });
-		hint.appendText('Click a row to edit. ');
-		const fileIconHint = createLucideIcon('file-text', 12);
-		fileIconHint.style.display = 'inline';
-		fileIconHint.style.verticalAlign = 'middle';
-		hint.appendChild(fileIconHint);
-		hint.appendText(' opens the note.');
+		hint.appendText('Click a row to edit. Use icons to open in new tab or window.');
 
 		// Table
 		const table = tableContainer.createEl('table', { cls: 'crc-place-table' });
@@ -1028,17 +1023,34 @@ function loadPlaceList(
 
 			// Actions cell
 			const actionsCell = row.createEl('td', { cls: 'crc-place-cell-actions' });
-			const openBtn = actionsCell.createEl('button', {
+
+			// Open in new tab button
+			const openTabBtn = actionsCell.createEl('button', {
 				cls: 'crc-place-open-btn clickable-icon',
-				attr: { 'aria-label': 'Open note' }
+				attr: { 'aria-label': 'Open note in new tab' }
 			});
-			const fileIcon = createLucideIcon('file-text', 14);
-			openBtn.appendChild(fileIcon);
-			openBtn.addEventListener('click', (e) => {
+			const tabIcon = createLucideIcon('file-text', 14);
+			openTabBtn.appendChild(tabIcon);
+			openTabBtn.addEventListener('click', (e) => {
 				e.stopPropagation();
 				const file = plugin.app.vault.getAbstractFileByPath(place.filePath);
 				if (file instanceof TFile) {
-					void plugin.app.workspace.getLeaf(false).openFile(file);
+					void plugin.app.workspace.getLeaf('tab').openFile(file);
+				}
+			});
+
+			// Open in new window button
+			const openWindowBtn = actionsCell.createEl('button', {
+				cls: 'crc-place-open-btn clickable-icon',
+				attr: { 'aria-label': 'Open note in new window' }
+			});
+			const windowIcon = createLucideIcon('external-link', 14);
+			openWindowBtn.appendChild(windowIcon);
+			openWindowBtn.addEventListener('click', (e) => {
+				e.stopPropagation();
+				const file = plugin.app.vault.getAbstractFileByPath(place.filePath);
+				if (file instanceof TFile) {
+					void plugin.app.workspace.getLeaf('window').openFile(file);
 				}
 			});
 		}
