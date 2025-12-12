@@ -24,7 +24,29 @@ Canvas Roots provides full round-trip support for GEDCOM 5.5.1 format, allowing 
    - **Customize per note type** - Set different filename formats for each note type
 8. Click **Import to vault** (or **Import to staging** if using staging folder)
 
+**Data Quality Preview:**
+
+Before any files are created, Canvas Roots analyzes the GEDCOM data and shows a quality preview modal if issues or place name variants are detected. This allows you to:
+
+- **Review detected issues** organized by category:
+  - **Dates**: Death before birth, future dates, events before birth/after death
+  - **Relationships**: Gender/role mismatches, parent younger than child
+  - **References**: Orphan references to non-existent records
+  - **Data**: Missing names, unknown sex, no dates recorded
+
+- **Standardize place name variants** before import:
+  - Choose canonical forms for country names (e.g., "USA" vs "United States of America")
+  - Standardize state abbreviations (e.g., "CA" vs "California")
+  - Your choices affect both file names and frontmatter property values
+
+- **Decide how to proceed**:
+  - Click "Proceed with import" to apply your choices and continue
+  - Click "Cancel" to abort without creating any files
+
+This preview step ensures consistent data from the start, avoiding cleanup work after import.
+
 **Progress Indicator:**
+
 During import, a modal shows:
 - Current phase (validating, parsing, places, sources, people, relationships, events)
 - Progress bar with current/total count

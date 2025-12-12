@@ -17,6 +17,7 @@ import { BuildPlaceHierarchyModal } from './build-place-hierarchy-modal';
 import { StandardizePlacesModal, findPlaceNameVariations } from './standardize-places-modal';
 import { MergeDuplicatePlacesModal, findDuplicatePlaceNotes } from './merge-duplicate-places-modal';
 import { StandardizePlaceTypesModal, findNonStandardTypePlaces } from './standardize-place-types-modal';
+import { StandardizePlaceVariantsModal, findPlaceNameVariants } from './standardize-place-variants-modal';
 import { TemplateSnippetsModal } from './template-snippets-modal';
 import { renderPlaceTypeManagerCard } from '../places/ui/place-type-manager-card';
 import { BulkGeocodeModal } from '../maps/ui/bulk-geocode-modal';
@@ -31,7 +32,52 @@ export function renderPlacesTab(
 	createCard: (options: { title: string; icon?: LucideIconName; subtitle?: string }) => HTMLElement,
 	showTab: (tabId: string) => void
 ): void {
-	// 1. Data Quality Card (unified issues + actions) - actionable, first
+	// 1. Actions Card - create and manage places
+	const actionsCard = createCard({
+		title: 'Actions',
+		icon: 'plus',
+		subtitle: 'Create and manage place notes'
+	});
+
+	const actionsContent = actionsCard.querySelector('.crc-card__content') as HTMLElement;
+
+	new Setting(actionsContent)
+		.setName('Create place note')
+		.setDesc('Create a new place note with geographic information')
+		.addButton(button => button
+			.setButtonText('Create')
+			.setCta()
+			.onClick(() => {
+				new CreatePlaceModal(plugin.app, {
+					directory: plugin.settings.placesFolder || '',
+					familyGraph: plugin.createFamilyGraphService(),
+					placeGraph: new PlaceGraphService(plugin.app),
+					settings: plugin.settings,
+					onCreated: () => showTab('places')
+				}).open();
+			}));
+
+	new Setting(actionsContent)
+		.setName('Templater templates')
+		.setDesc('Copy ready-to-use templates for Templater integration')
+		.addButton(button => button
+			.setButtonText('View templates')
+			.onClick(() => {
+				new TemplateSnippetsModal(plugin.app, 'place', plugin.settings.propertyAliases).open();
+			}));
+
+	new Setting(actionsContent)
+		.setName('Create Places base')
+		.setDesc('Create an Obsidian base for managing your Place notes in a table view')
+		.addButton(button => button
+			.setButtonText('Create')
+			.onClick(() => {
+				plugin.app.commands.executeCommandById('canvas-roots:create-places-base-template');
+			}));
+
+	container.appendChild(actionsCard);
+
+	// 2. Data Quality Card (unified issues + actions)
 	const dataQualityCard = createCard({
 		title: 'Data quality',
 		icon: 'alert-triangle',
@@ -49,7 +95,7 @@ export function renderPlacesTab(
 	// Load data quality content asynchronously
 	loadDataQualityCard(dataQualityContent, plugin, showTab);
 
-	// 2. Place List Card - browse/edit, second
+	// 3. Place List Card - browse/edit
 	const listCard = createCard({
 		title: 'Place notes',
 		icon: 'globe',
@@ -67,44 +113,12 @@ export function renderPlacesTab(
 	// Load place list asynchronously
 	loadPlaceList(listContent, plugin, showTab);
 
-	// 3. Place Type Manager card
+	// 4. Place Type Manager card
 	renderPlaceTypeManagerCard(container, plugin, createCard, () => {
 		showTab('places');
 	});
 
-	// 4. Batch Operations Card
-	const batchCard = createCard({
-		title: 'Batch operations',
-		icon: 'zap',
-		subtitle: 'Bulk actions on place names'
-	});
-
-	const batchContent = batchCard.querySelector('.crc-card__content') as HTMLElement;
-
-	batchContent.createEl('p', {
-		text: 'Apply bulk operations to all place notes in your vault.',
-		cls: 'crc-text--muted'
-	});
-
-	// Normalize place name formatting
-	new Setting(batchContent)
-		.setName('Normalize place name formatting')
-		.setDesc('Standardize capitalization: "NEW YORK" → "New York", handle prefixes like van, de')
-		.addButton(button => button
-			.setButtonText('Preview')
-			.onClick(() => {
-				showNormalizePlaceNamesPreview(plugin, showTab);
-			}))
-		.addButton(button => button
-			.setButtonText('Apply')
-			.setCta()
-			.onClick(() => {
-				showNormalizePlaceNamesApply(plugin, showTab);
-			}));
-
-	container.appendChild(batchCard);
-
-	// 5. Place Statistics Card - collapsible reference info, last
+	// 5. Place Statistics Card - reference info, last
 	const statsCard = createCard({
 		title: 'Place statistics',
 		icon: 'bar-chart',
@@ -366,6 +380,21 @@ function loadDataQualityCard(
 		});
 	}
 
+	// 5b. Standardize common place name variants (USA vs United States, state abbreviations, etc.)
+	const placeVariants = findPlaceNameVariants(plugin.app);
+	if (placeVariants.length > 0) {
+		const totalVariantRefs = placeVariants.reduce((sum, v) => sum + v.count, 0);
+		renderSimplifiedIssueRow(sectionsContainer, {
+			icon: 'globe',
+			title: `${placeVariants.length} place variant${placeVariants.length !== 1 ? 's' : ''} (${totalVariantRefs} ref${totalVariantRefs !== 1 ? 's' : ''})`,
+			description: 'Standardize abbreviations: USA vs United States, CA vs California',
+			action: {
+				label: 'Standardize variants',
+				onClick: () => showStandardizePlaceVariantsModal(plugin, showTab)
+			}
+		});
+	}
+
 	// 6. Non-standard place types (locality, etc.) - using already computed variable
 	if (nonStandardTypePlaces.length > 0) {
 		renderSimplifiedIssueRow(sectionsContainer, {
@@ -597,36 +626,25 @@ function renderOtherTools(
 	// Tools list
 	const toolsList = container.createDiv({ cls: 'crc-dq-tools' });
 
-	// Create new place note
-	const createTool = toolsList.createDiv({ cls: 'crc-dq-tool' });
-	const createInfo = createTool.createDiv({ cls: 'crc-dq-tool__info' });
-	createInfo.createEl('h4', { text: 'Create new place note' });
-	createInfo.createEl('p', { text: 'Manually create a place note with geographic information' });
-	const createBtn = createTool.createEl('button', {
-		text: 'Create place',
+	// Normalize place name formatting
+	const normalizeTool = toolsList.createDiv({ cls: 'crc-dq-tool' });
+	const normalizeInfo = normalizeTool.createDiv({ cls: 'crc-dq-tool__info' });
+	normalizeInfo.createEl('h4', { text: 'Normalize place name formatting' });
+	normalizeInfo.createEl('p', { text: 'Standardize capitalization: "NEW YORK" → "New York", handle prefixes like van, de' });
+	const normalizeActions = normalizeTool.createDiv({ cls: 'crc-dq-tool__actions' });
+	const previewBtn = normalizeActions.createEl('button', {
+		text: 'Preview',
 		cls: 'crc-btn crc-btn--ghost'
 	});
-	createBtn.addEventListener('click', () => {
-		new CreatePlaceModal(plugin.app, {
-			directory: plugin.settings.placesFolder || '',
-			familyGraph: plugin.createFamilyGraphService(),
-			placeGraph: new PlaceGraphService(plugin.app),
-			settings: plugin.settings,
-			onCreated: () => showTab('places')
-		}).open();
+	previewBtn.addEventListener('click', () => {
+		showNormalizePlaceNamesPreview(plugin, showTab);
 	});
-
-	// Templater templates
-	const templateTool = toolsList.createDiv({ cls: 'crc-dq-tool' });
-	const templateInfo = templateTool.createDiv({ cls: 'crc-dq-tool__info' });
-	templateInfo.createEl('h4', { text: 'Templater templates' });
-	templateInfo.createEl('p', { text: 'Copy ready-to-use templates for Templater integration' });
-	const templateBtn = templateTool.createEl('button', {
-		text: 'View templates',
-		cls: 'crc-btn crc-btn--ghost'
+	const applyBtn = normalizeActions.createEl('button', {
+		text: 'Apply',
+		cls: 'crc-btn crc-btn--primary'
 	});
-	templateBtn.addEventListener('click', () => {
-		new TemplateSnippetsModal(plugin.app, 'place', plugin.settings.propertyAliases).open();
+	applyBtn.addEventListener('click', () => {
+		showNormalizePlaceNamesApply(plugin, showTab);
 	});
 }
 
@@ -1285,6 +1303,30 @@ function showStandardizePlacesModal(plugin: CanvasRootsPlugin, showTab: (tabId: 
 	}
 
 	const modal = new StandardizePlacesModal(plugin.app, variationGroups, {
+		onComplete: (updated: number) => {
+			if (updated > 0) {
+				// Refresh the Places tab
+				showTab('places');
+			}
+		}
+	});
+	modal.open();
+}
+
+/**
+ * Show modal to standardize common place name variants (USA vs United States, state abbreviations, etc.)
+ */
+function showStandardizePlaceVariantsModal(plugin: CanvasRootsPlugin, showTab: (tabId: string) => void): void {
+	const { Notice } = require('obsidian');
+	// Find place name variants
+	const variants = findPlaceNameVariants(plugin.app);
+
+	if (variants.length === 0) {
+		new Notice('No place name variants found. Your place names are already standardized!');
+		return;
+	}
+
+	const modal = new StandardizePlaceVariantsModal(plugin.app, variants, {
 		onComplete: (updated: number) => {
 			if (updated > 0) {
 				// Refresh the Places tab

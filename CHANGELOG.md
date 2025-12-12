@@ -7,9 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [0.11.3] - 2025-12-12
+
+GEDCOM Import: Pre-import data quality preview with place name standardization, plus Control Center UI consistency improvements.
 
 ### Added
+
+- **GEDCOM import data quality preview** - New pre-import analysis step that catches issues before any files are created:
+  - Detects date issues (death before birth, future dates, events before/after death)
+  - Identifies relationship issues (gender/role mismatches, parent younger than child)
+  - Flags orphan references to non-existent records
+  - Shows data completeness issues (missing names, unknown sex, no dates)
+  - **Place name variant standardization** during import - choose canonical forms for country names (USA vs United States) and state abbreviations (CA vs California) before files are created
+  - Choices affect both file names and frontmatter property values
+  - Preview modal with tabbed interface organized by issue category
+
+- **Standardize place name variants** (Places tab) - New data quality tool for post-import standardization of common place name abbreviations and alternate forms
+  - Country variants: "United States of America", "United States", "US" → "USA"
+  - US state abbreviations: "California" → "CA", "New York" → "NY"
+  - Bulk selection of canonical forms with one-click apply
+
+- **Actions cards consistency** - Reorganized control center tabs for consistent Actions-first layout:
+  - **Events tab**: Renamed "Event notes" card to "Actions", added "Create Events base" and "Templater templates" actions
+  - **People tab**: Added "Create People base" action to existing Actions card
+  - **Places tab**: New "Actions" card at top with "Create place note", "Templater templates", and "Create Places base" actions
+  - Moved "Normalize place name formatting" from Batch operations to Data quality > Other tools
+
+- **Data Quality wiki page** - New comprehensive documentation covering all data quality tools, batch operations, and best practices
 
 - **Comprehensive GEDCOM edge case test file** - New test file `gedcom-testing/gedcom-sample-medium-edge-cases.ged` with 50+ intentional data quality issues for stress testing:
   - Duplicate names without distinguishing data

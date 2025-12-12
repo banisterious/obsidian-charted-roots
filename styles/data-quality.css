@@ -867,6 +867,12 @@
   color: var(--text-muted);
 }
 
+.crc-dq-tool__actions {
+  display: flex;
+  gap: var(--size-4-2);
+  flex-shrink: 0;
+}
+
 /* ========================================================================
  * Place Generator Modal Styles
  * ======================================================================== */

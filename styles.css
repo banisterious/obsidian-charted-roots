@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-12 14:03:41 UTC
+ * - Generated: 2025-12-12 15:20:54 UTC
  * - Components: 30 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -574,7 +574,7 @@ settings:
    COMPONENT: MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 5465 lines, 99.55 KB */
+/* Component Size: 5765 lines, 105.41 KB */
 
 /* ==========================================================================
    Canvas Roots Control Center - Styling
@@ -5344,6 +5344,306 @@ settings:
 }
 
 /* ==========================================================================
+   GEDCOM QUALITY PREVIEW MODAL
+   ========================================================================== */
+
+.crc-quality-preview-modal {
+  max-width: 700px;
+  width: 700px;
+}
+
+.crc-quality-preview-modal .modal-content {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+}
+
+/* Summary bar */
+.crc-quality-summary-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--size-4-3) var(--size-4-4);
+  background: var(--background-secondary);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.crc-quality-summary-item {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-1);
+}
+
+.crc-quality-summary-count {
+  font-weight: 500;
+}
+
+.crc-quality-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2-1);
+  padding: var(--size-2-1) var(--size-2-2);
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-smaller);
+  font-weight: 500;
+  margin-left: var(--size-4-1);
+}
+
+.crc-quality-badge svg {
+  width: 14px;
+  height: 14px;
+}
+
+.crc-quality-badge--error {
+  background: rgba(var(--color-red-rgb), 0.15);
+  color: var(--text-error);
+}
+
+.crc-quality-badge--warning {
+  background: rgba(var(--color-orange-rgb), 0.15);
+  color: var(--text-warning);
+}
+
+.crc-quality-badge--info {
+  background: rgba(var(--color-blue-rgb), 0.15);
+  color: var(--text-accent);
+}
+
+/* Tabs */
+.crc-quality-tabs {
+  display: flex;
+  gap: var(--size-2-1);
+  padding: var(--size-4-2) var(--size-4-4);
+  border-bottom: 1px solid var(--background-modifier-border);
+  overflow-x: auto;
+}
+
+.crc-quality-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2-2);
+  padding: var(--size-4-1) var(--size-4-2);
+  border-radius: var(--radius-s);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  white-space: nowrap;
+  transition:
+    background 0.1s ease,
+    color 0.1s ease;
+}
+
+.crc-quality-tab:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.crc-quality-tab--active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.crc-quality-tab--active:hover {
+  background: var(--interactive-accent-hover);
+  color: var(--text-on-accent);
+}
+
+.crc-quality-tab-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.crc-quality-tab-badge {
+  background: var(--background-modifier-border);
+  padding: 0 var(--size-2-2);
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-smaller);
+}
+
+.crc-quality-tab--active .crc-quality-tab-badge {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Tab content */
+.crc-quality-tab-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--size-4-4);
+  min-height: 300px;
+  max-height: 400px;
+}
+
+/* Sections */
+.crc-quality-section {
+  margin-bottom: var(--size-4-4);
+}
+
+.crc-quality-section h4 {
+  margin: 0 0 var(--size-4-2) 0;
+  font-size: var(--font-ui-medium);
+  font-weight: 600;
+}
+
+/* Overview grid */
+.crc-quality-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--size-4-2);
+  margin-bottom: var(--size-4-3);
+}
+
+.crc-stat-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--size-4-3);
+  background: var(--background-secondary);
+  border-radius: var(--radius-m);
+  text-align: center;
+}
+
+.crc-stat-card svg {
+  color: var(--text-muted);
+  margin-bottom: var(--size-2-2);
+}
+
+.crc-stat-card-value {
+  font-size: var(--font-ui-large);
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.crc-stat-card-label {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+.crc-stat-card--success svg {
+  color: var(--text-success);
+}
+
+.crc-stat-card--error svg {
+  color: var(--text-error);
+}
+
+/* Category grid */
+.crc-quality-category-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-4-2);
+}
+
+.crc-quality-category-item {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2-2);
+  padding: var(--size-2-2) var(--size-4-2);
+  background: var(--background-secondary);
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-small);
+}
+
+.crc-quality-category-item svg {
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+}
+
+/* Success state */
+.crc-quality-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--size-4-6);
+  text-align: center;
+}
+
+.crc-quality-success h4 {
+  margin: var(--size-4-2) 0 var(--size-2-2) 0;
+}
+
+/* Empty state */
+.crc-quality-empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--size-4-6);
+}
+
+/* Quick actions */
+.crc-quality-quick-actions {
+  display: flex;
+  gap: var(--size-4-2);
+  margin-bottom: var(--size-4-3);
+}
+
+/* Issue groups */
+.crc-quality-issue-group {
+  margin-bottom: var(--size-4-4);
+}
+
+.crc-quality-issue-group-header {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2-2);
+  margin-bottom: var(--size-4-2);
+  font-weight: 500;
+}
+
+.crc-quality-issue-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-1);
+}
+
+.crc-quality-issue {
+  padding: var(--size-4-2);
+  border-radius: var(--radius-s);
+  border-left: 3px solid transparent;
+}
+
+.crc-quality-issue.crc-severity--error {
+  background: rgba(var(--color-red-rgb), 0.08);
+  border-left-color: var(--text-error);
+}
+
+.crc-quality-issue.crc-severity--warning {
+  background: rgba(var(--color-orange-rgb), 0.08);
+  border-left-color: var(--text-warning);
+}
+
+.crc-quality-issue.crc-severity--info {
+  background: rgba(var(--color-blue-rgb), 0.08);
+  border-left-color: var(--text-accent);
+}
+
+.crc-quality-issue-header {
+  margin-bottom: var(--size-2-1);
+}
+
+.crc-quality-issue-message {
+  margin: 0;
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+}
+
+/* Severity icon colors */
+.crc-severity--error {
+  color: var(--text-error);
+}
+
+.crc-severity--warning {
+  color: var(--text-warning);
+}
+
+.crc-severity--info {
+  color: var(--text-accent);
+}
+
+/* ==========================================================================
    EXPORT PROGRESS MODAL
    ========================================================================== */
 
@@ -7664,7 +7964,7 @@ settings:
    COMPONENT: DATA-QUALITY.CSS
    ========================================================================== */
 
-/* Component Size: 1312 lines, 25.92 KB */
+/* Component Size: 1318 lines, 26 KB */
 
 /**
  * Data Quality Tab Styles
@@ -8533,6 +8833,12 @@ settings:
   margin: 0;
   font-size: var(--font-ui-smaller);
   color: var(--text-muted);
+}
+
+.crc-dq-tool__actions {
+  display: flex;
+  gap: var(--size-4-2);
+  flex-shrink: 0;
 }
 
 /* ========================================================================
@@ -16668,11 +16974,11 @@ body.wide-timeline .view-content {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-12 14:03:41 UTC
+ * Build completed: 2025-12-12 15:20:54 UTC
  * Components processed: 30
- * Total lines: 16375
- * Total size: 322.59 KB
- * Build duration: 0.02 seconds
+ * Total lines: 16681
+ * Total size: 328.54 KB
+ * Build duration: 0.03 seconds
  *
  * Component breakdown:
  * - variables.css: 48 lines, 1.33 KB
@@ -16683,7 +16989,7 @@ body.wide-timeline .view-content {
  * - nodes.css: 12 lines, 0.3 KB
  * - edges.css: 4 lines, 0.07 KB
  * - settings.css: 129 lines, 3.33 KB
- * - modals.css: 5465 lines, 99.55 KB
+ * - modals.css: 5765 lines, 105.41 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
  * - validation.css: 84 lines, 1.47 KB
@@ -16691,7 +16997,7 @@ body.wide-timeline .view-content {
  * - folder-scan.css: 155 lines, 2.56 KB
  * - relationship-calculator.css: 302 lines, 5.21 KB
  * - family-chart-view.css: 694 lines, 16.14 KB
- * - data-quality.css: 1312 lines, 25.92 KB
+ * - data-quality.css: 1318 lines, 26 KB
  * - relationships.css: 517 lines, 9.76 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB
  * - map-view.css: 1904 lines, 38.98 KB

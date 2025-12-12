@@ -16,6 +16,7 @@
 ### Data Management
 - [Managing Data](Data-Management)
 - [Import & Export](Import-Export)
+- [Data Quality](Data-Quality)
 - [Staging & Cleanup](Staging-And-Cleanup)
 
 ### Tools & Features

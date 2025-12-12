@@ -19,6 +19,7 @@ import { computeSortOrder } from '../../events/services/sort-order-service';
 import { renderEventTypeManagerCard } from '../../events/ui/event-type-manager-card';
 import { isEventNote, isPersonNote } from '../../utils/note-type-detection';
 import { PropertyAliasService } from '../../core/property-alias-service';
+import { TemplateSnippetsModal } from '../../ui/template-snippets-modal';
 
 /**
  * Render the Events tab content
@@ -58,7 +59,7 @@ export function renderEventsTab(
 }
 
 /**
- * Render the Event Notes card with create button and event statistics
+ * Render the Actions card with create button and event statistics
  */
 function renderEventNotesCard(
 	container: HTMLElement,
@@ -66,8 +67,8 @@ function renderEventNotesCard(
 	createCard: (options: { title: string; icon?: LucideIconName; subtitle?: string }) => HTMLElement
 ): void {
 	const card = createCard({
-		title: 'Event notes',
-		icon: 'calendar',
+		title: 'Actions',
+		icon: 'plus',
 		subtitle: 'Create and manage life events for your people'
 	});
 	const content = card.querySelector('.crc-card__content') as HTMLElement;
@@ -89,6 +90,26 @@ function renderEventNotesCard(
 					);
 					modal.open();
 				}
+			}));
+
+	// Create Events base button
+	new Setting(content)
+		.setName('Create Events base')
+		.setDesc('Create an Obsidian base for managing your Event notes in a table view')
+		.addButton(button => button
+			.setButtonText('Create')
+			.onClick(() => {
+				plugin.app.commands.executeCommandById('canvas-roots:create-events-base-template');
+			}));
+
+	// Templater templates button
+	new Setting(content)
+		.setName('Templater templates')
+		.setDesc('Copy ready-to-use templates for Templater integration')
+		.addButton(button => button
+			.setButtonText('View templates')
+			.onClick(() => {
+				new TemplateSnippetsModal(plugin.app, 'event', plugin.settings.propertyAliases).open();
 			}));
 
 	// Compute sort order button

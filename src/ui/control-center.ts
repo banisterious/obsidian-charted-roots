@@ -10,7 +10,9 @@ import { getLogger } from '../core/logging';
 import { getErrorMessage } from '../core/error-utils';
 import { GedcomImporter } from '../gedcom/gedcom-importer';
 import { GedcomImporterV2 } from '../gedcom/gedcom-importer-v2';
-import type { GedcomImportOptionsV2, GedcomImportResultV2, FilenameFormat, FilenameFormatOptions } from '../gedcom/gedcom-types';
+import type { GedcomImportOptionsV2, GedcomImportResultV2, FilenameFormat, FilenameFormatOptions, GedcomDataV2 } from '../gedcom/gedcom-types';
+import { analyzeGedcomQuality, applyQualityFixes } from '../gedcom/gedcom-quality-analyzer';
+import { GedcomQualityPreviewModal } from './gedcom-quality-preview-modal';
 import { GedcomXImporter, GedcomXImportResult } from '../gedcomx/gedcomx-importer';
 import { GedcomXParser } from '../gedcomx/gedcomx-parser';
 import { GrampsImporter, GrampsImportResult } from '../gramps/gramps-importer';
@@ -1715,6 +1717,15 @@ export class ControlCenterModal extends Modal {
 				.setButtonText('View templates')
 				.onClick(() => {
 					new TemplateSnippetsModal(this.app, undefined, this.plugin.settings.propertyAliases).open();
+				}));
+
+		new Setting(actionsContent)
+			.setName('Create People base')
+			.setDesc('Create an Obsidian base for managing your People notes in a table view')
+			.addButton(button => button
+				.setButtonText('Create')
+				.onClick(() => {
+					this.app.commands.executeCommandById('canvas-roots:create-base-template');
 				}));
 
 		container.appendChild(actionsCard);
@@ -5123,10 +5134,6 @@ export class ControlCenterModal extends Modal {
 		filenameFormat?: FilenameFormat,
 		filenameFormats?: FilenameFormatOptions
 	): Promise<void> {
-		// Show progress modal
-		const progressModal = new GedcomImportProgressModal(this.app);
-		progressModal.open();
-
 		try {
 			const useStaging = !!stagingBaseFolder;
 			logger.info('gedcom', `Starting GEDCOM v2 import: ${file.name} to ${useStaging ? stagingBaseFolder : 'configured folders'}`);
@@ -5137,6 +5144,101 @@ export class ControlCenterModal extends Modal {
 			// Create v2 importer
 			const importer = new GedcomImporterV2(this.app);
 
+			// Parse and validate GEDCOM first (for quality preview)
+			const parseResult = importer.parseContent(content);
+			if (!parseResult.valid || !parseResult.data) {
+				new Notice(`Invalid GEDCOM file: ${parseResult.errors.join(', ')}`);
+				return;
+			}
+
+			// Analyze data quality
+			const qualityAnalysis = analyzeGedcomQuality(parseResult.data);
+
+			// Show quality preview modal if there are issues or place variants
+			const hasIssues = qualityAnalysis.summary.totalIssues > 0;
+			const hasVariants = qualityAnalysis.summary.placeVariants.length > 0;
+
+			if (hasIssues || hasVariants) {
+				// Show quality preview and wait for user decision
+				const previewResult = await new Promise<{ proceed: boolean; data: GedcomDataV2 }>((resolve) => {
+					const previewModal = new GedcomQualityPreviewModal(this.app, qualityAnalysis, {
+						onComplete: (result) => {
+							if (result.proceed) {
+								// Apply user's fix choices to the data
+								applyQualityFixes(parseResult.data!, result.choices);
+							}
+							resolve({ proceed: result.proceed, data: parseResult.data! });
+						}
+					});
+					previewModal.open();
+				});
+
+				if (!previewResult.proceed) {
+					logger.info('gedcom', 'Import cancelled by user after quality preview');
+					return;
+				}
+
+				// Continue with the (potentially modified) data
+				await this.executeGedcomImport(
+					content,
+					previewResult.data,
+					importer,
+					useStaging,
+					stagingBaseFolder,
+					createPeopleNotes,
+					createEventNotes,
+					createSourceNotes,
+					createPlaceNotes,
+					filenameFormat,
+					filenameFormats,
+					file.name
+				);
+			} else {
+				// No issues - proceed directly
+				await this.executeGedcomImport(
+					content,
+					parseResult.data,
+					importer,
+					useStaging,
+					stagingBaseFolder,
+					createPeopleNotes,
+					createEventNotes,
+					createSourceNotes,
+					createPlaceNotes,
+					filenameFormat,
+					filenameFormats,
+					file.name
+				);
+			}
+		} catch (error: unknown) {
+			const errorMsg = getErrorMessage(error);
+			logger.error('gedcom', `GEDCOM v2 import failed: ${errorMsg}`);
+			new Notice(`Failed to import GEDCOM: ${errorMsg}`);
+		}
+	}
+
+	/**
+	 * Execute the actual GEDCOM import with pre-parsed data
+	 */
+	private async executeGedcomImport(
+		content: string,
+		gedcomData: GedcomDataV2,
+		importer: GedcomImporterV2,
+		useStaging: boolean,
+		stagingBaseFolder: string | undefined,
+		createPeopleNotes: boolean,
+		createEventNotes: boolean,
+		createSourceNotes: boolean,
+		createPlaceNotes: boolean,
+		filenameFormat?: FilenameFormat,
+		filenameFormats?: FilenameFormatOptions,
+		fileName?: string
+	): Promise<void> {
+		// Show progress modal
+		const progressModal = new GedcomImportProgressModal(this.app);
+		progressModal.open();
+
+		try {
 			// Build import options - use staging subfolders or configured folders
 			const options: GedcomImportOptionsV2 = {
 				peopleFolder: useStaging
@@ -5152,7 +5254,7 @@ export class ControlCenterModal extends Modal {
 					? `${stagingBaseFolder}/Places`
 					: (this.plugin.settings.placesFolder || 'Places'),
 				overwriteExisting: false,
-				fileName: file.name,
+				fileName: fileName,
 				createPeopleNotes,
 				createEventNotes,
 				createSourceNotes,
@@ -5180,8 +5282,8 @@ export class ControlCenterModal extends Modal {
 				}
 			};
 
-			// Import GEDCOM file
-			const result = await importer.importFile(content, options);
+			// Import GEDCOM file with pre-parsed data
+			const result = await importer.importFile(content, options, gedcomData);
 
 			// Mark progress as complete and close modal after a brief delay
 			progressModal.markComplete();
@@ -5197,9 +5299,9 @@ export class ControlCenterModal extends Modal {
 
 			// Track import in recent imports history
 			const totalNotesCreated = result.individualsImported + result.eventsCreated + result.sourcesCreated + result.placesCreated;
-			if (result.success && totalNotesCreated > 0) {
+			if (result.success && totalNotesCreated > 0 && fileName) {
 				const importInfo: RecentImportInfo = {
-					fileName: file.name,
+					fileName: fileName,
 					recordsImported: result.individualsImported,
 					notesCreated: totalNotesCreated,
 					timestamp: Date.now()

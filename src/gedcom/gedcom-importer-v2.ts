@@ -183,11 +183,45 @@ export class GedcomImporterV2 {
 	}
 
 	/**
+	 * Parse and validate GEDCOM content without importing
+	 * Used for quality analysis before import
+	 */
+	parseContent(content: string): {
+		valid: boolean;
+		data?: GedcomDataV2;
+		errors: string[];
+		warnings: string[];
+	} {
+		// Validate first
+		const validation = GedcomParserV2.validate(content);
+
+		if (!validation.valid) {
+			return {
+				valid: false,
+				errors: validation.errors.map(e => e.message),
+				warnings: validation.warnings.map(w => w.message)
+			};
+		}
+
+		// Parse
+		const data = GedcomParserV2.parse(content);
+
+		return {
+			valid: true,
+			data,
+			errors: [],
+			warnings: validation.warnings.map(w => w.message)
+		};
+	}
+
+	/**
 	 * Import GEDCOM file (v2)
+	 * Optionally accepts pre-parsed data (if quality preview was shown)
 	 */
 	async importFile(
 		content: string,
-		options: GedcomImportOptionsV2
+		options: GedcomImportOptionsV2,
+		preParsedData?: GedcomDataV2
 	): Promise<GedcomImportResultV2> {
 		const result: GedcomImportResultV2 = {
 			success: false,
@@ -204,24 +238,33 @@ export class GedcomImporterV2 {
 		const reportProgress = options.onProgress || (() => {});
 
 		try {
-			// Validate GEDCOM first
-			reportProgress({ phase: 'validating', current: 0, total: 1, message: 'Validating GEDCOM file…' });
-			const validation = GedcomParserV2.validate(content);
+			let gedcomData: GedcomDataV2;
 
-			if (!validation.valid) {
-				result.errors.push(...validation.errors.map(e => e.message));
-				return result;
+			// Use pre-parsed data if provided (from quality preview), otherwise parse now
+			if (preParsedData) {
+				gedcomData = preParsedData;
+				reportProgress({ phase: 'validating', current: 1, total: 1, message: 'Using pre-validated data' });
+				reportProgress({ phase: 'parsing', current: 1, total: 1, message: `Found ${gedcomData.individuals.size} individuals` });
+			} else {
+				// Validate GEDCOM first
+				reportProgress({ phase: 'validating', current: 0, total: 1, message: 'Validating GEDCOM file…' });
+				const validation = GedcomParserV2.validate(content);
+
+				if (!validation.valid) {
+					result.errors.push(...validation.errors.map(e => e.message));
+					return result;
+				}
+
+				if (validation.warnings.length > 0) {
+					result.warnings.push(...validation.warnings.map(w => w.message));
+				}
+
+				// Parse GEDCOM with v2 parser
+				reportProgress({ phase: 'parsing', current: 0, total: 1, message: 'Parsing GEDCOM file…' });
+				gedcomData = GedcomParserV2.parse(content);
+
+				reportProgress({ phase: 'parsing', current: 1, total: 1, message: `Found ${gedcomData.individuals.size} individuals` });
 			}
-
-			if (validation.warnings.length > 0) {
-				result.warnings.push(...validation.warnings.map(w => w.message));
-			}
-
-			// Parse GEDCOM with v2 parser
-			reportProgress({ phase: 'parsing', current: 0, total: 1, message: 'Parsing GEDCOM file…' });
-			const gedcomData = GedcomParserV2.parse(content);
-
-			reportProgress({ phase: 'parsing', current: 1, total: 1, message: `Found ${gedcomData.individuals.size} individuals` });
 
 			// Count events for progress
 			let totalEvents = 0;
