@@ -13542,15 +13542,15 @@ class DuplicateRelationshipsPreviewModal extends Modal {
 			// Action buttons
 			const actionCell = row.createEl('td', { cls: 'crc-batch-actions' });
 
-			// Open in tab button
+			// Open in new tab button
 			const openTabBtn = actionCell.createEl('button', {
 				cls: 'crc-batch-action-btn clickable-icon',
-				attr: { 'aria-label': 'Open note in tab' }
+				attr: { 'aria-label': 'Open note in new tab' }
 			});
 			const fileIcon = createLucideIcon('file-text', 14);
 			openTabBtn.appendChild(fileIcon);
 			openTabBtn.addEventListener('click', () => {
-				this.app.workspace.getLeaf().openFile(change.file);
+				this.app.workspace.getLeaf('tab').openFile(change.file);
 			});
 
 			// Open in new window button
@@ -13783,15 +13783,15 @@ class PlaceholderRemovalPreviewModal extends Modal {
 			// Action buttons
 			const actionCell = row.createEl('td', { cls: 'crc-batch-actions' });
 
-			// Open in tab button
+			// Open in new tab button
 			const openTabBtn = actionCell.createEl('button', {
 				cls: 'crc-batch-action-btn clickable-icon',
-				attr: { 'aria-label': 'Open note in tab' }
+				attr: { 'aria-label': 'Open note in new tab' }
 			});
 			const fileIcon = createLucideIcon('file-text', 14);
 			openTabBtn.appendChild(fileIcon);
 			openTabBtn.addEventListener('click', () => {
-				this.app.workspace.getLeaf().openFile(change.file);
+				this.app.workspace.getLeaf('tab').openFile(change.file);
 			});
 
 			// Open in new window button
@@ -14004,15 +14004,15 @@ class NameNormalizationPreviewModal extends Modal {
 			// Action buttons
 			const actionCell = row.createEl('td', { cls: 'crc-batch-actions' });
 
-			// Open in tab button
+			// Open in new tab button
 			const openTabBtn = actionCell.createEl('button', {
 				cls: 'crc-batch-action-btn clickable-icon',
-				attr: { 'aria-label': 'Open note in tab' }
+				attr: { 'aria-label': 'Open note in new tab' }
 			});
 			const fileIcon = createLucideIcon('file-text', 14);
 			openTabBtn.appendChild(fileIcon);
 			openTabBtn.addEventListener('click', () => {
-				this.app.workspace.getLeaf().openFile(change.file);
+				this.app.workspace.getLeaf('tab').openFile(change.file);
 			});
 
 			// Open in new window button
