@@ -1760,8 +1760,8 @@ export class ControlCenterModal extends Modal {
 				}));
 
 		new Setting(batchContent)
-			.setName('Remove empty/placeholder values')
-			.setDesc('Clean up placeholder text like (unknown), empty fields, and malformed wikilinks')
+			.setName('Remove placeholder values')
+			.setDesc('Clean up placeholder text like "Unknown", "N/A", "???", and malformed wikilinks')
 			.addButton(button => button
 				.setButtonText('Preview')
 				.onClick(() => {
@@ -12049,7 +12049,7 @@ export class ControlCenterModal extends Modal {
 
 		const changes: Array<{ person: { name: string }; field: string; oldValue: string; newValue: string; file: TFile }> = [];
 
-		// Common placeholder patterns
+		// Common placeholder patterns (actual placeholder text, not empty values)
 		const placeholderPatterns = [
 			'(unknown)',
 			'(Unknown)',
@@ -12066,14 +12066,16 @@ export class ControlCenterModal extends Modal {
 			'None',
 			'none',
 			'NONE',
-			'',
 		];
 
 		const isPlaceholder = (value: unknown): boolean => {
-			if (value === null || value === undefined) return true;
+			// Note: null, undefined, and empty strings are NOT placeholders - they're
+			// intentionally empty fields, which is valid for optional properties.
+			// We only flag actual placeholder text like "Unknown", "N/A", etc.
+			if (value === null || value === undefined) return false;
 			if (typeof value === 'string') {
 				const trimmed = value.trim();
-				if (trimmed === '') return true;
+				if (trimmed === '') return false;
 				if (placeholderPatterns.includes(trimmed)) return true;
 				// Check for malformed wikilinks like "[[unknown) ]]"
 				if (/^\[\[.*?\)\s*\]\]$/.test(trimmed)) return true;
@@ -12221,7 +12223,7 @@ export class ControlCenterModal extends Modal {
 		let processed = 0;
 		const errors: string[] = [];
 
-		// Common placeholder patterns
+		// Common placeholder patterns (actual placeholder text, not empty values)
 		const placeholderPatterns = [
 			'(unknown)',
 			'(Unknown)',
@@ -12238,14 +12240,16 @@ export class ControlCenterModal extends Modal {
 			'None',
 			'none',
 			'NONE',
-			'',
 		];
 
 		const isPlaceholder = (value: unknown): boolean => {
-			if (value === null || value === undefined) return true;
+			// Note: null, undefined, and empty strings are NOT placeholders - they're
+			// intentionally empty fields, which is valid for optional properties.
+			// We only flag actual placeholder text like "Unknown", "N/A", etc.
+			if (value === null || value === undefined) return false;
 			if (typeof value === 'string') {
 				const trimmed = value.trim();
-				if (trimmed === '') return true;
+				if (trimmed === '') return false;
 				if (placeholderPatterns.includes(trimmed)) return true;
 				// Check for malformed wikilinks like "[[unknown) ]]"
 				if (/^\[\[.*?\)\s*\]\]$/.test(trimmed)) return true;
