@@ -368,8 +368,7 @@ function renderEventTable(
 	const hint = container.createEl('p', { cls: 'crc-text-muted crc-text-small crc-mb-2' });
 	hint.appendText('Click a row to edit. ');
 	const fileIconHint = createLucideIcon('file-text', 12);
-	fileIconHint.style.display = 'inline';
-	fileIconHint.style.verticalAlign = 'middle';
+	fileIconHint.addClass('crc-icon-inline');
 	hint.appendChild(fileIconHint);
 	hint.appendText(' opens the note.');
 
@@ -1008,16 +1007,16 @@ function renderExportCard(
 	const updateVisibleOptions = () => {
 		// Show/hide canvas options (shared between Canvas and Excalidraw)
 		const showCanvas = exportFormat === 'canvas' || exportFormat === 'excalidraw';
-		canvasOptionsSection.style.display = showCanvas ? 'block' : 'none';
+		canvasOptionsSection.toggleClass('crc-hidden', !showCanvas);
 
 		// Show/hide group by person (Canvas only, not Excalidraw)
-		groupByPersonSetting.settingEl.style.display = exportFormat === 'canvas' ? '' : 'none';
+		groupByPersonSetting.settingEl.toggleClass('crc-hidden', exportFormat !== 'canvas');
 
 		// Show/hide Excalidraw-specific options
-		excalidrawOptionsSection.style.display = exportFormat === 'excalidraw' ? 'block' : 'none';
+		excalidrawOptionsSection.toggleClass('crc-hidden', exportFormat !== 'excalidraw');
 
 		// Show/hide markdown options
-		markdownOptionsSection.style.display = exportFormat === 'markdown' ? 'block' : 'none';
+		markdownOptionsSection.toggleClass('crc-hidden', exportFormat !== 'markdown');
 	};
 
 	// Initial visibility

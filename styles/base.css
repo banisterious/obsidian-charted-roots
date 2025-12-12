@@ -8,6 +8,32 @@
 }
 
 /* Utility classes */
+
+/* Display utilities */
+.crc-inline {
+  display: inline;
+}
+
+.crc-inline-block {
+  display: inline-block;
+}
+
+.crc-inline-flex {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.crc-block {
+  display: block;
+}
+
+/* Icon inline with text */
+.crc-icon-inline {
+  display: inline;
+  vertical-align: middle;
+}
+
 .crc-text--center {
   text-align: center;
 }

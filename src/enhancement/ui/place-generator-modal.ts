@@ -126,8 +126,7 @@ export class PlaceGeneratorModal extends Modal {
 		this.renderOptionsSection();
 
 		// Progress container (hidden initially)
-		this.progressContainer = this.contentContainer.createDiv({ cls: 'cr-place-generator-progress' });
-		this.progressContainer.style.display = 'none';
+		this.progressContainer = this.contentContainer.createDiv({ cls: 'cr-place-generator-progress crc-hidden' });
 
 		// Results container
 		this.resultsContainer = this.contentContainer.createDiv({ cls: 'cr-place-generator-results' });
@@ -151,9 +150,8 @@ export class PlaceGeneratorModal extends Modal {
 
 		this.cancelButton = footer.createEl('button', {
 			text: 'Cancel',
-			cls: 'cr-place-generator-cancel-btn'
+			cls: 'cr-place-generator-cancel-btn crc-hidden'
 		});
-		this.cancelButton.style.display = 'none';
 		this.cancelButton.addEventListener('click', () => this.cancelGeneration());
 
 		footer.createEl('button', { text: 'Close' })
@@ -262,7 +260,7 @@ export class PlaceGeneratorModal extends Modal {
 
 		// Show progress
 		if (this.progressContainer) {
-			this.progressContainer.style.display = 'block';
+			this.progressContainer.removeClass('crc-hidden');
 			this.progressContainer.empty();
 			this.progressContainer.createEl('p', { text: 'Scanning notes for place strings...' });
 		}
@@ -277,7 +275,7 @@ export class PlaceGeneratorModal extends Modal {
 			this.isScanning = false;
 			this.updateButtonStates();
 			if (this.progressContainer) {
-				this.progressContainer.style.display = 'none';
+				this.progressContainer.addClass('crc-hidden');
 			}
 		}
 	}
@@ -654,7 +652,7 @@ export class PlaceGeneratorModal extends Modal {
 
 			// Hide progress, show results
 			if (this.progressContainer) {
-				this.progressContainer.style.display = 'none';
+				this.progressContainer.addClass('crc-hidden');
 			}
 
 			this.renderGenerationResults(result);
@@ -677,7 +675,7 @@ export class PlaceGeneratorModal extends Modal {
 			console.error('Error generating place notes:', error);
 			new Notice('Error generating place notes. Check console for details.');
 			if (this.progressContainer) {
-				this.progressContainer.style.display = 'none';
+				this.progressContainer.addClass('crc-hidden');
 			}
 		} finally {
 			this.isGenerating = false;
@@ -692,7 +690,7 @@ export class PlaceGeneratorModal extends Modal {
 	private renderProgressUI(): void {
 		if (!this.progressContainer) return;
 
-		this.progressContainer.style.display = 'block';
+		this.progressContainer.removeClass('crc-hidden');
 		this.progressContainer.empty();
 		this.progressContainer.addClass('cr-place-generator-progress-content');
 
@@ -1072,12 +1070,12 @@ export class PlaceGeneratorModal extends Modal {
 			this.generateButton.disabled = !canGenerate;
 			this.generateButton.textContent = this.isGenerating ? 'Generating...' : 'Generate';
 			// Hide generate button when generating (cancel button will show)
-			this.generateButton.style.display = this.isGenerating ? 'none' : '';
+			this.generateButton.toggleClass('crc-hidden', this.isGenerating);
 		}
 
 		if (this.cancelButton) {
 			// Show cancel button only while generating
-			this.cancelButton.style.display = this.isGenerating ? '' : 'none';
+			this.cancelButton.toggleClass('crc-hidden', !this.isGenerating);
 			this.cancelButton.disabled = this.isCancelled;
 			this.cancelButton.textContent = this.isCancelled ? 'Cancelling...' : 'Cancel';
 		}

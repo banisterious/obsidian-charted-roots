@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-12 17:40:12 UTC
+ * - Generated: 2025-12-12 17:56:00 UTC
  * - Components: 30 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -320,7 +320,7 @@ settings:
    COMPONENT: BASE.CSS
    ========================================================================== */
 
-/* Component Size: 29 lines, 0.43 KB */
+/* Component Size: 55 lines, 0.76 KB */
 
 /* Base Canvas Roots styles */
 
@@ -332,6 +332,32 @@ settings:
 }
 
 /* Utility classes */
+
+/* Display utilities */
+.crc-inline {
+  display: inline;
+}
+
+.crc-inline-block {
+  display: inline-block;
+}
+
+.crc-inline-flex {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.crc-block {
+  display: block;
+}
+
+/* Icon inline with text */
+.crc-icon-inline {
+  display: inline;
+  vertical-align: middle;
+}
+
 .crc-text--center {
   text-align: center;
 }
@@ -574,7 +600,7 @@ settings:
    COMPONENT: MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 5765 lines, 105.41 KB */
+/* Component Size: 5771 lines, 105.59 KB */
 
 /* ==========================================================================
    Canvas Roots Control Center - Styling
@@ -1744,13 +1770,19 @@ settings:
 }
 
 .crc-picker-loading__spinner {
-  color: var(--interactive-accent);
-  margin-bottom: 12px;
-}
-
-.crc-picker-loading__spinner svg {
   width: 32px;
   height: 32px;
+  margin: 0 auto 12px;
+  border: 3px solid var(--background-modifier-border);
+  border-top-color: var(--interactive-accent);
+  border-radius: 50%;
+  animation: crc-spinner-rotate 1s linear infinite;
+}
+
+@keyframes crc-spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .crc-picker-loading__text {
@@ -15037,7 +15069,7 @@ body.wide-timeline .view-content {
    COMPONENT: SOURCES.CSS
    ========================================================================== */
 
-/* Component Size: 1613 lines, 31.53 KB */
+/* Component Size: 1620 lines, 31.67 KB */
 
 /**
  * Sources Styles
@@ -16062,6 +16094,13 @@ body.wide-timeline .view-content {
   color: var(--color-pink);
 }
 
+/* Small inline badge for hint text */
+.crc-person-list-badge--hint {
+  vertical-align: middle;
+  padding: 1px 4px;
+  font-size: 10px;
+}
+
 .crc-person-list-badge:hover {
   filter: brightness(0.95);
 }
@@ -16974,22 +17013,22 @@ body.wide-timeline .view-content {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-12 17:40:12 UTC
+ * Build completed: 2025-12-12 17:56:00 UTC
  * Components processed: 30
- * Total lines: 16681
- * Total size: 328.54 KB
+ * Total lines: 16720
+ * Total size: 329.17 KB
  * Build duration: 0.03 seconds
  *
  * Component breakdown:
  * - variables.css: 48 lines, 1.33 KB
  * - style-settings.css: 232 lines, 5.48 KB
- * - base.css: 29 lines, 0.43 KB
+ * - base.css: 55 lines, 0.76 KB
  * - layout.css: 22 lines, 0.24 KB
  * - canvas.css: 4 lines, 0.07 KB
  * - nodes.css: 12 lines, 0.3 KB
  * - edges.css: 4 lines, 0.07 KB
  * - settings.css: 129 lines, 3.33 KB
- * - modals.css: 5765 lines, 105.41 KB
+ * - modals.css: 5771 lines, 105.59 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
  * - validation.css: 84 lines, 1.47 KB
@@ -17006,7 +17045,7 @@ body.wide-timeline .view-content {
  * - events.css: 1363 lines, 27.26 KB
  * - timeline-callouts.css: 307 lines, 9.73 KB
  * - organizations.css: 245 lines, 4.36 KB
- * - sources.css: 1613 lines, 31.53 KB
+ * - sources.css: 1620 lines, 31.67 KB
  * - preferences.css: 242 lines, 5.29 KB
  * - animations.css: 16 lines, 0.18 KB
  * - responsive.css: 9 lines, 0.13 KB

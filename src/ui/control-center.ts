@@ -2316,18 +2316,13 @@ export class ControlCenterModal extends Modal {
 		hint.appendText('Click a row to edit. ');
 		// File icon for "open note"
 		const fileIconHint = createLucideIcon('file-text', 12);
-		fileIconHint.style.display = 'inline';
-		fileIconHint.style.verticalAlign = 'middle';
+		fileIconHint.addClass('crc-icon-inline');
 		hint.appendChild(fileIconHint);
 		hint.appendText(' opens the note. ');
 		// Unlinked places badge
 		const exampleBadge = hint.createEl('span', {
-			cls: 'crc-person-list-badge crc-person-list-badge--unlinked'
+			cls: 'crc-person-list-badge crc-person-list-badge--unlinked crc-person-list-badge--hint'
 		});
-		exampleBadge.style.display = 'inline-flex';
-		exampleBadge.style.verticalAlign = 'middle';
-		exampleBadge.style.padding = '1px 4px';
-		exampleBadge.style.fontSize = '10px';
 		const badgeIcon = createLucideIcon('map-pin', 10);
 		exampleBadge.appendChild(badgeIcon);
 		exampleBadge.appendText('1');

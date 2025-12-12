@@ -224,8 +224,7 @@ function renderOrganizationsListCard(
 			const hint = tableContainer.createEl('p', { cls: 'crc-text-muted crc-text-small crc-mb-2' });
 			hint.appendText('Click a row to edit. ');
 			const fileIconHint = createLucideIcon('file-text', 12);
-			fileIconHint.style.display = 'inline';
-			fileIconHint.style.verticalAlign = 'middle';
+			fileIconHint.addClass('crc-icon-inline');
 			hint.appendChild(fileIconHint);
 			hint.appendText(' opens the note.');
 

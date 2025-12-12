@@ -146,8 +146,7 @@ export class FlattenNestedPropertiesModal extends Modal {
 		this.scanButton.addEventListener('click', () => void this.runScan());
 
 		// Progress container (hidden initially)
-		this.progressContainer = this.contentContainer.createDiv({ cls: 'cr-flatten-progress' });
-		this.progressContainer.style.display = 'none';
+		this.progressContainer = this.contentContainer.createDiv({ cls: 'cr-flatten-progress crc-hidden' });
 
 		// Results container
 		this.resultsContainer = this.contentContainer.createDiv({ cls: 'cr-flatten-results' });
@@ -191,7 +190,7 @@ export class FlattenNestedPropertiesModal extends Modal {
 
 		// Show progress
 		if (this.progressContainer) {
-			this.progressContainer.style.display = 'block';
+			this.progressContainer.removeClass('crc-hidden');
 			this.progressContainer.empty();
 			this.progressContainer.createEl('p', { text: 'Scanning notes...' });
 		}
@@ -207,7 +206,7 @@ export class FlattenNestedPropertiesModal extends Modal {
 			this.isScanning = false;
 			this.updateButtonStates();
 			if (this.progressContainer) {
-				this.progressContainer.style.display = 'none';
+				this.progressContainer.addClass('crc-hidden');
 			}
 		}
 	}
@@ -427,7 +426,7 @@ export class FlattenNestedPropertiesModal extends Modal {
 
 		// Show progress
 		if (this.progressContainer) {
-			this.progressContainer.style.display = 'block';
+			this.progressContainer.removeClass('crc-hidden');
 			this.progressContainer.empty();
 		}
 
@@ -445,7 +444,7 @@ export class FlattenNestedPropertiesModal extends Modal {
 					});
 					const progressBar = this.progressContainer.createDiv({ cls: 'cr-flatten-progress-bar' });
 					const fill = progressBar.createDiv({ cls: 'cr-flatten-progress-fill' });
-					fill.style.width = `${((flattened + 1) / total) * 100}%`;
+					fill.setCssStyles({ width: `${((flattened + 1) / total) * 100}%` });
 				}
 
 				try {
@@ -477,7 +476,7 @@ export class FlattenNestedPropertiesModal extends Modal {
 			this.isApplying = false;
 			this.updateButtonStates();
 			if (this.progressContainer) {
-				this.progressContainer.style.display = 'none';
+				this.progressContainer.addClass('crc-hidden');
 			}
 		}
 	}

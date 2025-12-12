@@ -753,7 +753,7 @@ export class EnrichPlaceHierarchyModal extends Modal {
 		}
 
 		if (this.cancelButton) {
-			this.cancelButton.style.display = 'none';
+			this.cancelButton.addClass('crc-hidden');
 		}
 
 		// Show summary notice

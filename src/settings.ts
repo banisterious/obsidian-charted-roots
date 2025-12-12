@@ -862,16 +862,16 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					name.includes(normalizedQuery) ||
 					desc.includes(normalizedQuery);
 
-				settingItem.style.display = matches ? '' : 'none';
+				settingItem.toggleClass('crc-hidden', !matches);
 				if (matches) visibleCount++;
 			});
 
 			// Show/hide section based on whether it has visible items
 			const sectionEl = section as HTMLElement;
 			if (normalizedQuery && visibleCount === 0) {
-				sectionEl.style.display = 'none';
+				sectionEl.addClass('crc-hidden');
 			} else {
-				sectionEl.style.display = '';
+				sectionEl.removeClass('crc-hidden');
 				// Auto-expand sections with matches when searching
 				if (normalizedQuery && visibleCount > 0) {
 					(section as HTMLDetailsElement).open = true;

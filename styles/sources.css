@@ -1021,6 +1021,13 @@
   color: var(--color-pink);
 }
 
+/* Small inline badge for hint text */
+.crc-person-list-badge--hint {
+  vertical-align: middle;
+  padding: 1px 4px;
+  font-size: 10px;
+}
+
 .crc-person-list-badge:hover {
   filter: brightness(0.95);
 }

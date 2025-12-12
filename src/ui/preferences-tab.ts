@@ -516,7 +516,7 @@ function renderAliasesCard(
 			sections.forEach(section => {
 				const settingItems = section.querySelectorAll('.setting-item');
 				settingItems.forEach(item => {
-					(item as HTMLElement).style.display = '';
+					(item as HTMLElement).removeClass('crc-hidden');
 				});
 				updateSectionCount(section as HTMLElement, settingItems.length, settingItems.length);
 			});
@@ -538,7 +538,7 @@ function renderAliasesCard(
 					label.toLowerCase().includes(normalized) ||
 					description.toLowerCase().includes(normalized);
 
-				settingItem.style.display = matches ? '' : 'none';
+				settingItem.toggleClass('crc-hidden', !matches);
 				if (matches) visibleCount++;
 			});
 
