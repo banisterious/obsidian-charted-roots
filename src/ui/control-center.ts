@@ -11879,12 +11879,13 @@ export class ControlCenterModal extends Modal {
 			// Check spouse array for duplicates
 			if (Array.isArray(fm.spouse) && fm.spouse.length > 1) {
 				const unique = [...new Set(fm.spouse)];
-				if (unique.length < fm.spouse.length) {
+				const dupCount = fm.spouse.length - unique.length;
+				if (dupCount > 0) {
 					changes.push({
 						person: { name: person.name || 'Unknown' },
 						field: 'spouse',
-						oldValue: `${fm.spouse.length} entries (${fm.spouse.length - unique.length} duplicates)`,
-						newValue: `${unique.length} entries (deduplicated)`,
+						oldValue: `${fm.spouse.length} ${fm.spouse.length === 1 ? 'entry' : 'entries'} (${dupCount} ${dupCount === 1 ? 'duplicate' : 'duplicates'})`,
+						newValue: `${unique.length} ${unique.length === 1 ? 'entry' : 'entries'} (deduplicated)`,
 						file: person.file
 					});
 				}
@@ -11893,12 +11894,13 @@ export class ControlCenterModal extends Modal {
 			// Check spouse_id array for duplicates
 			if (Array.isArray(fm.spouse_id) && fm.spouse_id.length > 1) {
 				const unique = [...new Set(fm.spouse_id)];
-				if (unique.length < fm.spouse_id.length) {
+				const dupCount = fm.spouse_id.length - unique.length;
+				if (dupCount > 0) {
 					changes.push({
 						person: { name: person.name || 'Unknown' },
 						field: 'spouse_id',
-						oldValue: `${fm.spouse_id.length} entries (${fm.spouse_id.length - unique.length} duplicates)`,
-						newValue: `${unique.length} entries (deduplicated)`,
+						oldValue: `${fm.spouse_id.length} ${fm.spouse_id.length === 1 ? 'entry' : 'entries'} (${dupCount} ${dupCount === 1 ? 'duplicate' : 'duplicates'})`,
+						newValue: `${unique.length} ${unique.length === 1 ? 'entry' : 'entries'} (deduplicated)`,
 						file: person.file
 					});
 				}
@@ -11908,13 +11910,14 @@ export class ControlCenterModal extends Modal {
 			const childrenArray = fm.children || fm.child;
 			if (Array.isArray(childrenArray) && childrenArray.length > 1) {
 				const unique = [...new Set(childrenArray)];
-				if (unique.length < childrenArray.length) {
+				const dupCount = childrenArray.length - unique.length;
+				if (dupCount > 0) {
 					const fieldName = fm.children ? 'children' : 'child';
 					changes.push({
 						person: { name: person.name || 'Unknown' },
 						field: fieldName,
-						oldValue: `${childrenArray.length} entries (${childrenArray.length - unique.length} duplicates)`,
-						newValue: `${unique.length} entries (deduplicated)`,
+						oldValue: `${childrenArray.length} ${childrenArray.length === 1 ? 'entry' : 'entries'} (${dupCount} ${dupCount === 1 ? 'duplicate' : 'duplicates'})`,
+						newValue: `${unique.length} ${unique.length === 1 ? 'entry' : 'entries'} (deduplicated)`,
 						file: person.file
 					});
 				}
@@ -11923,12 +11926,13 @@ export class ControlCenterModal extends Modal {
 			// Check children_id array for duplicates
 			if (Array.isArray(fm.children_id) && fm.children_id.length > 1) {
 				const unique = [...new Set(fm.children_id)];
-				if (unique.length < fm.children_id.length) {
+				const dupCount = fm.children_id.length - unique.length;
+				if (dupCount > 0) {
 					changes.push({
 						person: { name: person.name || 'Unknown' },
 						field: 'children_id',
-						oldValue: `${fm.children_id.length} entries (${fm.children_id.length - unique.length} duplicates)`,
-						newValue: `${unique.length} entries (deduplicated)`,
+						oldValue: `${fm.children_id.length} ${fm.children_id.length === 1 ? 'entry' : 'entries'} (${dupCount} ${dupCount === 1 ? 'duplicate' : 'duplicates'})`,
+						newValue: `${unique.length} ${unique.length === 1 ? 'entry' : 'entries'} (deduplicated)`,
 						file: person.file
 					});
 				}
@@ -13536,11 +13540,13 @@ class DuplicateRelationshipsPreviewModal extends Modal {
 			const row = this.tbody.createEl('tr');
 			row.createEl('td', { text: change.person.name });
 			row.createEl('td', { text: change.field });
-			row.createEl('td', { text: change.oldValue, cls: 'crc-batch-old-value' });
+			// Old value with strikethrough
+			const oldCell = row.createEl('td', { cls: 'crc-batch-old-value' });
+			oldCell.createEl('s', { text: change.oldValue, cls: 'crc-text--muted' });
 			row.createEl('td', { text: change.newValue, cls: 'crc-batch-new-value' });
 
-			// Action buttons
-			const actionCell = row.createEl('td', { cls: 'crc-batch-actions' });
+			// Action buttons (inline)
+			const actionCell = row.createEl('td', { cls: 'crc-batch-actions crc-batch-actions--inline' });
 
 			// Open in new tab button
 			const openTabBtn = actionCell.createEl('button', {
