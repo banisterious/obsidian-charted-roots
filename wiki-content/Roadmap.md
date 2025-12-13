@@ -9,6 +9,7 @@ This document outlines planned features for Canvas Roots. For completed features
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
   - [Post-Import Cleanup Wizard](#post-import-cleanup-wizard) ⚡ High
+  - [Bulk Source-Image Linking](#bulk-source-image-linking) 📋 Medium
   - [Configurable Normalization](#configurable-normalization) 📋 Medium
   - [Calendarium Integration](#calendarium-integration) 📋 Medium
   - [Reports & Print Export](#reports--print-export) 📋 Medium
@@ -145,6 +146,54 @@ After a GEDCOM import (especially from a file with data quality issues), users f
 
 **Documentation:**
 - See [Data Quality: Post-Import Cleanup Workflow](Data-Quality#post-import-cleanup-workflow) for manual workflow
+
+---
+
+### Bulk Source-Image Linking
+
+**Priority:** 📋 Medium — Streamline bulk import of source images with metadata extraction
+
+**Summary:** Import external source images (census records, vital records, photos, etc.) into the vault, parse filenames to extract metadata, and create source notes with media attached. Addresses the common genealogist workflow of having hundreds of inconsistently-named source images that need to be organized and linked.
+
+**Problem Statement:**
+
+Users have existing image files with inconsistent naming conventions that need to be matched to source notes. Manual matching is tedious for large collections (~100-500 images). Common pain points:
+- **Inconsistent naming:** Files from different eras, scanning sessions, or sources follow different patterns
+- **Scattered storage:** Source images often live outside the vault in archive folders
+- **Manual linking:** Creating source notes and attaching media one-by-one is time-consuming
+- **Multi-part documents:** Census pages, multi-page vital records need grouping into single sources
+
+**Phased Implementation:**
+
+| Phase | Goal | Features |
+|-------|------|----------|
+| 1 | Core Import Wizard | Filename parser, import wizard UI, source note creation |
+| 2 | Person Matching | Match images to existing person notes by surname/birth year |
+| 3 | Fact-Level Linking | Link sources to specific facts via `sourced_facts` |
+| 4 | Advanced Features | Duplicate detection, OCR integration, batch rename |
+
+**Phase 1 Features:**
+
+1. **Filename Parser Service** — Extract surnames, years, record types, locations, multi-part indicators from filenames
+2. **Import Wizard UI** — Multi-step modal: select files → review parsed data → configure → execute
+3. **Multi-part Grouping** — Detect and group `_a`/`_b`, `_p1`/`_p2`, `_page1`/`_page2` suffixes
+4. **Source Type Mapping** — Map filename tokens to source types (census, military, vital_record, etc.)
+
+**Wizard Steps:**
+
+| Step | Description |
+|------|-------------|
+| Select Source | Choose folder or files, filter thumbnails, show preview |
+| Review Parsed Data | Editable table with confidence indicators, grouping preview |
+| Configure Import | Destination folder, copy vs move, source note folder |
+| Execute | Progress bar, summary of created sources |
+
+**Integration:**
+- Builds on [Source Media Gallery](Release-History#source-media-gallery--document-viewer-v080) media attachment system
+- Uses existing `SourceService` for note creation
+- Respects existing source note schema (`media`, `media_2`, etc.)
+
+See [Bulk Source-Image Linking Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/bulk-source-image-linking.md) for implementation details.
 
 ---
 
