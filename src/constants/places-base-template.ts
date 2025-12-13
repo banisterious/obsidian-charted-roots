@@ -87,6 +87,12 @@ views:
   - name: All Places
     type: table
     filter: {}
+    order:
+      - note.${name}
+      - note.${place_type}
+      - note.${place_category}
+      - note.${parent_place}
+      - note.${coordinates}
     sort:
       - property: note.${name}
         direction: asc

@@ -52,6 +52,12 @@ views:
   - name: All Organizations
     type: table
     filter: {}
+    order:
+      - note.name
+      - note.org_type
+      - note.parent_org
+      - note.founded
+      - note.dissolved
     sort:
       - property: note.name
         direction: asc

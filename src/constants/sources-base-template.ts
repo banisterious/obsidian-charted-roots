@@ -52,6 +52,12 @@ views:
   - name: All Sources
     type: table
     filter: {}
+    order:
+      - note.title
+      - note.source_type
+      - note.source_repository
+      - note.source_date
+      - note.confidence
     sort:
       - property: note.title
         direction: asc

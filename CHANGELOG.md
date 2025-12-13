@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Base templates: columns not visible by default** - Fixed an issue where Obsidian Bases templates for Events, Sources, Organizations, and Places did not display columns by default. The templates had `sort` (which controls sorting direction) but were missing `order` (which controls visible columns). Added `order` arrays to the first view in each template specifying which columns to display.
+
+---
+
 ## [0.11.7] - 2025-12-12
 
 ### Added

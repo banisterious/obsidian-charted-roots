@@ -50,37 +50,35 @@ export function generateEventsBaseTemplate(aliases: PropertyAliases = {}): strin
 	const cr_id = getPropertyName('cr_id', aliases);
 
 	return `visibleProperties:
-  - formula.display_title
+  - note.${title}
   - note.${event_type}
-  - formula.date_display
+  - note.${date}
   - note.${person}
   - note.${place}
   - note.${confidence}
-  - formula.sourced
-formulas:
-  display_title: ${title} || file.name
-  date_display: if(${date}, ${date}.format("YYYY-MM-DD"), "")
-  end_date_display: if(${date_end}, ${date_end}.format("YYYY-MM-DD"), "")
-  duration: if(${date} && ${date_end}, ${date_end}.year() - ${date}.year() + " years", "")
-  sourced: if(${sources}, "Yes", "No")
+  - note.${date_precision}
+summaries:
+  total_events: values.length
 filters:
-  and:
+  or:
+    - note.type == "event"
     - file.hasProperty("${event_type}")
+formulas:
+  display_name: ${title} || file.name
+  year_only: if(${date}, ${date}.year, "")
+  has_sources: if(${sources}, "Yes", "No")
+  is_dated: if(${date}, "Dated", "Relative only")
 properties:
-  note.${cr_id}:
+  ${cr_id}:
     displayName: ID
-  formula.display_title:
+  note.${title}:
     displayName: Title
   note.${event_type}:
     displayName: Type
-  formula.date_display:
+  note.${date}:
     displayName: Date
   note.${date_end}:
     displayName: End Date
-  formula.end_date_display:
-    displayName: End Date
-  formula.duration:
-    displayName: Duration
   note.${date_precision}:
     displayName: Precision
   note.${person}:
@@ -91,8 +89,6 @@ properties:
     displayName: Place
   note.${sources}:
     displayName: Sources
-  formula.sourced:
-    displayName: Sourced
   note.${confidence}:
     displayName: Confidence
   note.${description}:
@@ -111,229 +107,204 @@ properties:
     displayName: Canonical
   note.${universe}:
     displayName: Universe
-  file.path:
-    displayName: Location
+  formula.display_name:
+    displayName: Display Name
+  formula.year_only:
+    displayName: Year
+  formula.has_sources:
+    displayName: Has Sources
+  formula.is_dated:
+    displayName: Date Status
 views:
-  - type: table
-    name: All Events
-    filters:
-      and:
-        - file.hasProperty("${event_type}")
+  - name: All Events
+    type: table
+    filter: {}
     order:
-      - ${date}
-      - ${sort_order}
-      - file.name
-  - type: table
-    name: By type
-    filters:
-      and:
-        - file.hasProperty("${event_type}")
-    order:
-      - ${event_type}
-      - ${date}
-    summaries:
-      ${event_type}: Count
-  - type: table
-    name: By person
-    filters:
-      and:
-        - file.hasProperty("${event_type}")
-        - note.${person}
-    order:
-      - ${person}
-      - ${date}
-    summaries:
-      ${person}: Count
-  - type: table
-    name: By place
-    filters:
-      and:
-        - file.hasProperty("${event_type}")
-        - note.${place}
-    order:
-      - ${place}
-      - ${date}
-    summaries:
-      ${place}: Count
-  - type: table
-    name: Vital events
-    filters:
+      - note.${title}
+      - note.${event_type}
+      - note.${date}
+      - note.${person}
+      - note.${place}
+    sort:
+      - property: note.${date}
+        direction: asc
+      - property: note.${sort_order}
+        direction: asc
+  - name: By Type
+    type: table
+    filter: {}
+    group:
+      - property: note.${event_type}
+    sort:
+      - property: note.${date}
+        direction: asc
+  - name: By Person
+    type: table
+    filter:
+      note.${person}:
+        ne: null
+    group:
+      - property: note.${person}
+    sort:
+      - property: note.${date}
+        direction: asc
+  - name: By Place
+    type: table
+    filter:
+      note.${place}:
+        ne: null
+    group:
+      - property: note.${place}
+    sort:
+      - property: note.${date}
+        direction: asc
+  - name: By Confidence
+    type: table
+    filter: {}
+    group:
+      - property: note.${confidence}
+    sort:
+      - property: note.${date}
+        direction: asc
+  - name: Vital Events
+    type: table
+    filter:
       or:
-        - note.${event_type} = "birth"
-        - note.${event_type} = "death"
-        - note.${event_type} = "marriage"
-        - note.${event_type} = "divorce"
-    order:
-      - ${event_type}
-      - ${date}
-    summaries:
-      ${event_type}: Count
-  - type: table
-    name: Life events
-    filters:
+        - note.${event_type}: birth
+        - note.${event_type}: death
+        - note.${event_type}: marriage
+        - note.${event_type}: divorce
+    sort:
+      - property: note.${date}
+        direction: asc
+  - name: Life Events
+    type: table
+    filter:
       or:
-        - note.${event_type} = "residence"
-        - note.${event_type} = "occupation"
-        - note.${event_type} = "military"
-        - note.${event_type} = "immigration"
-        - note.${event_type} = "education"
-        - note.${event_type} = "burial"
-        - note.${event_type} = "baptism"
-        - note.${event_type} = "confirmation"
-        - note.${event_type} = "ordination"
-    order:
-      - ${event_type}
-      - ${date}
-    summaries:
-      ${event_type}: Count
-  - type: table
-    name: Narrative events
-    filters:
+        - note.${event_type}: residence
+        - note.${event_type}: occupation
+        - note.${event_type}: military
+        - note.${event_type}: immigration
+        - note.${event_type}: education
+        - note.${event_type}: burial
+        - note.${event_type}: baptism
+        - note.${event_type}: confirmation
+        - note.${event_type}: ordination
+    sort:
+      - property: note.${date}
+        direction: asc
+  - name: Narrative Events
+    type: table
+    filter:
       or:
-        - note.${event_type} = "anecdote"
-        - note.${event_type} = "lore_event"
-        - note.${event_type} = "plot_point"
-        - note.${event_type} = "flashback"
-        - note.${event_type} = "foreshadowing"
-        - note.${event_type} = "backstory"
-        - note.${event_type} = "climax"
-        - note.${event_type} = "resolution"
-    order:
-      - ${event_type}
-      - ${date}
-    summaries:
-      ${event_type}: Count
-  - type: table
-    name: By confidence
-    filters:
+        - note.${event_type}: anecdote
+        - note.${event_type}: lore_event
+        - note.${event_type}: plot_point
+        - note.${event_type}: flashback
+        - note.${event_type}: foreshadowing
+        - note.${event_type}: backstory
+        - note.${event_type}: climax
+        - note.${event_type}: resolution
+    sort:
+      - property: note.${date}
+        direction: asc
+  - name: High Confidence
+    type: table
+    filter:
+      note.${confidence}: high
+    sort:
+      - property: note.${date}
+        direction: asc
+  - name: Low Confidence
+    type: table
+    filter:
+      or:
+        - note.${confidence}: low
+        - note.${confidence}: unknown
+    sort:
+      - property: note.${date}
+        direction: asc
+  - name: With Sources
+    type: table
+    filter:
+      note.${sources}:
+        ne: null
+    sort:
+      - property: note.${date}
+        direction: asc
+  - name: Missing Sources
+    type: table
+    filter:
+      note.${sources}:
+        eq: null
+    sort:
+      - property: note.${date}
+        direction: asc
+  - name: Dated Events
+    type: table
+    filter:
+      note.${date}:
+        ne: null
+    sort:
+      - property: note.${date}
+        direction: asc
+  - name: Relative Ordering Only
+    type: table
+    filter:
       and:
-        - file.hasProperty("${event_type}")
-        - note.${confidence}
-    order:
-      - ${confidence}
-      - ${date}
-    summaries:
-      ${confidence}: Count
-  - type: table
-    name: High confidence
-    filters:
-      and:
-        - file.hasProperty("${event_type}")
-        - note.${confidence} = "high"
-    order:
-      - ${date}
-  - type: table
-    name: Low confidence
-    filters:
-      and:
-        - file.hasProperty("${event_type}")
-        - note.${confidence} = "low"
-    order:
-      - ${date}
-  - type: table
-    name: Unknown confidence
-    filters:
-      and:
-        - file.hasProperty("${event_type}")
-        - note.${confidence} = "unknown"
-    order:
-      - ${date}
-  - type: table
-    name: With sources
-    filters:
-      and:
-        - file.hasProperty("${event_type}")
-        - note.${sources}
-    order:
-      - ${date}
-    summaries:
-      formula.sourced: Count
-  - type: table
-    name: Missing sources
-    filters:
-      and:
-        - file.hasProperty("${event_type}")
-        - "!note.${sources}"
-    order:
-      - ${date}
-  - type: table
-    name: Dated events
-    filters:
-      and:
-        - file.hasProperty("${event_type}")
-        - note.${date}
-    order:
-      - ${date}
-    summaries:
-      ${date}: Earliest
-  - type: table
-    name: Undated events
-    filters:
-      and:
-        - file.hasProperty("${event_type}")
-        - "!note.${date}"
-    order:
-      - file.name
-  - type: table
-    name: Relative ordering only
-    filters:
-      and:
-        - file.hasProperty("${event_type}")
-        - "!note.${date}"
-        - "note.${before} || note.${after}"
-    order:
-      - ${sort_order}
-      - file.name
-  - type: table
-    name: Canonical events
-    filters:
-      and:
-        - file.hasProperty("${event_type}")
-        - note.${is_canonical} = true
-    order:
-      - ${date}
-  - type: table
-    name: By timeline
-    filters:
-      and:
-        - file.hasProperty("${event_type}")
-        - note.${timeline}
-    order:
-      - ${timeline}
-      - ${date}
-    summaries:
-      ${timeline}: Count
-  - type: table
-    name: By universe
-    filters:
-      and:
-        - file.hasProperty("${event_type}")
-        - note.${universe}
-    order:
-      - ${universe}
-      - ${date}
-    summaries:
-      ${universe}: Count
-  - type: table
-    name: By group
-    filters:
-      and:
-        - file.hasProperty("${event_type}")
-        - note.${groups}
-    order:
-      - ${groups}
-      - ${date}
-    summaries:
-      ${groups}: Count
-  - type: table
-    name: Recently added
-    filters:
-      and:
-        - file.hasProperty("${event_type}")
-        - file.ctime > now() - '30 days'
-    order:
-      - file.ctime
-    limit: 20
+        - note.${date}:
+            eq: null
+        - or:
+            - note.${before}:
+                ne: null
+            - note.${after}:
+                ne: null
+    sort:
+      - property: note.${sort_order}
+        direction: asc
+  - name: Canonical Events
+    type: table
+    filter:
+      note.${is_canonical}: true
+    sort:
+      - property: note.${date}
+        direction: asc
+  - name: By Timeline
+    type: table
+    filter:
+      note.${timeline}:
+        ne: null
+    group:
+      - property: note.${timeline}
+    sort:
+      - property: note.${date}
+        direction: asc
+  - name: By Universe
+    type: table
+    filter:
+      note.${universe}:
+        ne: null
+    group:
+      - property: note.${universe}
+    sort:
+      - property: note.${date}
+        direction: asc
+  - name: By Group
+    type: table
+    filter:
+      note.${groups}:
+        ne: null
+    group:
+      - property: note.${groups}
+    sort:
+      - property: note.${date}
+        direction: asc
+  - name: By Sort Order
+    type: table
+    filter: {}
+    sort:
+      - property: note.${sort_order}
+        direction: asc
 `;
 }
 
