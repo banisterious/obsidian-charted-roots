@@ -8,6 +8,7 @@ This document outlines planned features for Canvas Roots. For completed features
 
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
+  - [Post-Import Cleanup Wizard](#post-import-cleanup-wizard) ⚡ High
   - [Configurable Normalization](#configurable-normalization) 📋 Medium
   - [Calendarium Integration](#calendarium-integration) 📋 Medium
   - [Reports & Print Export](#reports--print-export) 📋 Medium
@@ -58,6 +59,92 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 | ⚡ High | Core workflow | Completes essential data portability |
 | 📋 Medium | User value | Highly requested sharing/output features |
 | 💡 Low | Specialized | Advanced use cases, niche workflows |
+
+---
+
+### Post-Import Cleanup Wizard
+
+**Priority:** ⚡ High — Guided workflow for data quality after GEDCOM import
+
+**Summary:** A step-by-step wizard that guides users through the recommended post-import cleanup sequence. After importing a messy GEDCOM file, users currently must navigate multiple Control Center tabs and run operations in the correct order. The wizard consolidates this into a single guided experience.
+
+**Problem Statement:**
+
+After a GEDCOM import (especially from a file with data quality issues), users face:
+- **Scattered tools:** Cleanup operations are spread across Data Quality, Places, and other tabs
+- **Unknown order:** No guidance on which operations to run first
+- **Manual coordination:** Users must remember to run each step and track what's done
+
+**Wizard Steps:**
+
+| Step | Operation | Current Location | Why This Order |
+|------|-----------|------------------|----------------|
+| 1 | Quality Report | Data Quality tab | Understand scope of issues before fixing |
+| 2 | Fix Bidirectional Relationships | Data Quality tab | Graph integrity required for other operations |
+| 3 | Normalize Date Formats | Data Quality tab | Standardized dates enable age calculations |
+| 4 | Normalize Gender Values | Data Quality tab | Required for parent role validation |
+| 5 | Clear Orphan References | Data Quality tab | Remove dangling links |
+| 6 | Standardize Place Variants | Places tab | Consistent names before geocoding |
+| 7 | Bulk Geocode | Places tab | Coordinates for map features |
+| 8 | Enrich Place Hierarchy | Places tab | Build containment chains |
+| 9 | Flatten Nested Properties | Data Quality tab | Optional: fix frontmatter structure |
+
+**UI Design:**
+
+**Wizard Modal:**
+- Multi-step modal with progress indicator (step X of Y)
+- Each step shows: description, preview of changes, "Run" button
+- Steps can be skipped if not applicable (e.g., no date issues detected)
+- Progress persists if wizard is closed and reopened
+- Final summary shows what was fixed
+
+**Step States:**
+- ⏳ Pending — Not yet analyzed
+- ✅ Complete — Operation finished
+- ⏭️ Skipped — User chose to skip or no issues found
+- ⚠️ Needs Attention — Issues found, awaiting user action
+
+**Entry Points:**
+- Button in Import Results modal: "Run Cleanup Wizard"
+- Data Quality tab: "Post-Import Cleanup Wizard" button
+- Command palette: "Canvas Roots: Post-Import Cleanup Wizard"
+
+**Smart Defaults:**
+- Pre-analyze vault to show issue counts per step before running
+- Auto-skip steps with zero detected issues (with override option)
+- Remember last wizard state per vault (resume interrupted cleanup)
+
+**Preview Mode:**
+- Each step shows what will change before applying
+- Match existing preview patterns (bidirectional fix preview, date normalization preview)
+- Allow selective application within each step
+
+**Phased Implementation:**
+
+**Phase 1 — Core Wizard:**
+- Modal with step-by-step navigation
+- Run existing batch operations in sequence
+- Basic progress tracking
+
+**Phase 2 — Smart Analysis:**
+- Pre-scan vault to show issue counts
+- Auto-skip steps with no issues
+- Persist state across sessions
+
+**Phase 3 — Customization:**
+- User-configurable step order
+- Save/load cleanup profiles
+- Integration with schema validation
+
+**Technical Notes:**
+- Reuses existing `DataQualityService` methods
+- Reuses existing `GeocodingService` for bulk geocode
+- Reuses existing `PlaceGraphService` for hierarchy enrichment
+- New `CleanupWizardModal` class orchestrates the flow
+- State persisted in `plugin.settings.cleanupWizardState`
+
+**Documentation:**
+- See [Data Quality: Post-Import Cleanup Workflow](Data-Quality#post-import-cleanup-workflow) for manual workflow
 
 ---
 

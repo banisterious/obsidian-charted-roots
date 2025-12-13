@@ -30,6 +30,17 @@ Obsidian plugin review fixes (Round 11) and bug fixes.
 
 - **Improved "Create base" button descriptions** - Updated descriptions for People, Events, Places, and Sources base buttons to explain that users need to click "Properties" after creating to enable additional columns
 
+### Docs
+
+- **Guide tab cleanup guidance** - Added post-import cleanup content to the Guide tab:
+  - New "After importing" card with quick 4-step workflow overview
+  - Added "Post-import cleanup" to Key Concepts section
+  - Added "Clean up data" to Common Tasks grid
+
+- **Data Quality wiki** - Added "Post-Import Cleanup Workflow" section with recommended 8-step sequence and tool locations
+
+- **Roadmap** - Added "Post-Import Cleanup Wizard" as high-priority planned feature
+
 ---
 
 ## [0.11.3] - 2025-12-12

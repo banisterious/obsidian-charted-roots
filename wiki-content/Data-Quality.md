@@ -9,6 +9,62 @@ Data quality tools are available in two contexts:
 1. **During GEDCOM import** - Preview issues before any files are created
 2. **Post-import** - Analyze and fix issues in existing person notes
 
+## Post-Import Cleanup Workflow
+
+After importing a GEDCOM file (especially a "messy" one with data quality issues), follow this recommended sequence:
+
+### Step 1: Review the Quality Report
+**Location:** Control Center → Data Quality tab → "Generate quality report"
+
+Start here to understand the scope of issues. The report shows:
+- Overall quality score (0-100)
+- Issues grouped by severity (errors, warnings, info)
+- Completeness metrics
+
+This gives you the big picture before diving into fixes.
+
+### Step 2: Fix Bidirectional Relationships
+**Location:** Control Center → Data Quality tab → "Fix bidirectional relationships"
+
+Run this early — it ensures the family graph is internally consistent. If a child lists a parent, the parent should list the child. This step is essential for tree generation and navigation to work correctly.
+
+### Step 3: Normalize Date Formats
+**Location:** Control Center → Data Quality tab → "Normalize date formats"
+
+Converts varied date formats (`15 Mar 1920`, `Mar 15, 1920`, etc.) to the standard `YYYY-MM-DD` format. Standardized dates enable proper sorting, filtering, and age calculations.
+
+### Step 4: Normalize Gender Values
+**Location:** Control Center → Data Quality tab → "Normalize gender values"
+
+Converts `M`, `Male`, `F`, `Female` to canonical `male`/`female` values. Consistent gender values are required for parent role validation (father vs. mother).
+
+### Step 5: Clear Orphan References
+**Location:** Control Center → Data Quality tab → "Clear orphan references"
+
+Removes `father_id` and `mother_id` values that point to non-existent people. This cleans up dangling references that can cause errors in tree generation.
+
+### Step 6: Standardize Place Names
+**Location:** Control Center → Places tab → "Standardize place variants"
+
+Unifies spelling variations ("USA" vs "United States of America", state abbreviations). Consistent place names enable proper grouping and hierarchy building.
+
+### Step 7: Geocode Places
+**Location:** Control Center → Places tab → "Bulk geocode"
+
+Looks up coordinates for place notes that don't have them. Required for map visualizations. Note: Rate-limited to 1 request/second.
+
+### Step 8: Enrich Place Hierarchy
+**Location:** Control Center → Places tab → "Enrich place hierarchy"
+
+Uses geocoding API to fill in `contained_by` relationships (city → county → state → country). Creates proper place containment chains.
+
+### Optional: Flatten Nested Properties
+**Location:** Control Center → Data Quality tab → "Flatten nested properties"
+
+If your GEDCOM import created nested frontmatter (e.g., `coordinates: { lat: ..., long: ... }`), this converts them to flat properties (`coordinates_lat`, `coordinates_long`). Flat properties work better with Obsidian's property editor.
+
+---
+
 ## Control Center Data Quality Tab
 
 Access the Data Quality tab from Control Center to analyze and fix issues in your existing data.

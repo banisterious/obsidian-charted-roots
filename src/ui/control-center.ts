@@ -1256,7 +1256,50 @@ export class ControlCenterModal extends Modal {
 		container.appendChild(welcomeCard);
 
 		// =========================================================================
-		// Card 2: Essential Properties (Collapsible)
+		// Card 2: After Importing
+		// =========================================================================
+		const afterImportCard = this.createCard({
+			title: 'After importing',
+			icon: 'sparkles',
+			subtitle: 'Clean up and enhance your imported data'
+		});
+		const afterImportContent = afterImportCard.querySelector('.crc-card__content') as HTMLElement;
+
+		afterImportContent.createEl('p', {
+			text: 'Imported data often needs cleanup. GEDCOM files may have inconsistent dates, missing reciprocal relationships, or varied place name spellings.',
+			cls: 'crc-mb-3'
+		});
+
+		const cleanupSteps = afterImportContent.createEl('ol', { cls: 'crc-cleanup-steps crc-mb-3' });
+		[
+			'Run the Quality Report to see what needs attention',
+			'Fix bidirectional relationships for graph integrity',
+			'Normalize dates and gender values',
+			'Standardize and geocode places'
+		].forEach(step => {
+			cleanupSteps.createEl('li', { text: step });
+		});
+
+		const afterImportBtnRow = afterImportContent.createDiv({ cls: 'crc-btn-row' });
+		const cleanupBtn = afterImportBtnRow.createEl('button', {
+			text: 'Open Data Quality',
+			cls: 'crc-btn crc-btn--primary'
+		});
+		cleanupBtn.addEventListener('click', () => {
+			this.switchTab('data-quality');
+		});
+
+		const workflowLink = afterImportBtnRow.createEl('a', {
+			text: 'Full workflow guide →',
+			href: `${WIKI_BASE}/Data-Quality#post-import-cleanup-workflow`,
+			cls: 'crc-link'
+		});
+		workflowLink.setAttr('target', '_blank');
+
+		container.appendChild(afterImportCard);
+
+		// =========================================================================
+		// Card 3: Essential Properties (Collapsible)
 		// =========================================================================
 		const propsCard = this.createCard({
 			title: 'Essential properties',
@@ -1428,7 +1471,7 @@ export class ControlCenterModal extends Modal {
 		container.appendChild(propsCard);
 
 		// =========================================================================
-		// Card 3: Key Concepts
+		// Card 4: Key Concepts
 		// =========================================================================
 		const conceptsCard = this.createCard({
 			title: 'Key concepts',
@@ -1447,6 +1490,11 @@ export class ControlCenterModal extends Modal {
 				title: 'Bidirectional sync',
 				desc: 'When you set someone as a parent, the reciprocal child link is automatically created. Works for all relationships.',
 				wiki: 'Data-Management#bidirectional-sync'
+			},
+			{
+				title: 'Post-import cleanup',
+				desc: 'After importing GEDCOM files, run cleanup operations to fix relationships, normalize dates, and standardize places.',
+				wiki: 'Data-Quality#post-import-cleanup-workflow'
 			},
 			{
 				title: 'Schema validation',
@@ -1471,7 +1519,7 @@ export class ControlCenterModal extends Modal {
 		container.appendChild(conceptsCard);
 
 		// =========================================================================
-		// Card 4: Common Tasks (Navigation Grid)
+		// Card 5: Common Tasks (Navigation Grid)
 		// =========================================================================
 		const tasksCard = this.createCard({
 			title: 'Common tasks',
@@ -1483,6 +1531,7 @@ export class ControlCenterModal extends Modal {
 		const tasks = [
 			{ icon: 'upload', title: 'Import data', desc: 'GEDCOM, CSV, Gramps', tab: 'import-export' },
 			{ icon: 'download', title: 'Export data', desc: 'GEDCOM, CSV formats', tab: 'import-export' },
+			{ icon: 'shield-check', title: 'Clean up data', desc: 'Post-import workflow', tab: 'data-quality' },
 			{ icon: 'git-branch', title: 'Generate tree', desc: 'Create visual canvas', tab: 'tree-generation' },
 			{ icon: 'map', title: 'Open map view', desc: 'Geographic visualization', tab: null, command: 'canvas-roots:open-map-view' },
 			{ icon: 'users', title: 'Manage people', desc: 'Browse and edit', tab: 'people' },
@@ -1510,7 +1559,7 @@ export class ControlCenterModal extends Modal {
 		container.appendChild(tasksCard);
 
 		// =========================================================================
-		// Card 5: Base Templates (Obsidian Bases)
+		// Card 6: Base Templates (Obsidian Bases)
 		// =========================================================================
 		const templatesCard = this.createCard({
 			title: 'Base templates',
@@ -1550,7 +1599,7 @@ export class ControlCenterModal extends Modal {
 		container.appendChild(templatesCard);
 
 		// =========================================================================
-		// Card 6: Learn More
+		// Card 7: Learn More
 		// =========================================================================
 		const learnCard = this.createCard({
 			title: 'Learn more',
