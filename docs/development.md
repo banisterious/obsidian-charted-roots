@@ -47,19 +47,32 @@ To deploy the plugin to your Obsidian vault for testing:
 ```
 canvas-roots/
 ├── main.ts                    # Plugin entry point
-├── main.css                   # Base CSS (compiled from styles/)
 ├── styles.css                 # Final compiled CSS for Obsidian
 ├── src/
 │   ├── settings.ts            # Plugin settings interface
 │   ├── core/                  # Core business logic
-│   │   ├── canvas-generator.ts      # Canvas JSON generation ✓
-│   │   ├── family-chart-layout.ts   # Family tree layout ✓
-│   │   ├── family-graph.ts          # Relationship graph builder ✓
-│   │   ├── privacy-service.ts       # Living person detection ✓
-│   │   ├── logging.ts               # Structured logging ✓
+│   │   ├── bidirectional-linker.ts   # Automatic relationship sync ✓
+│   │   ├── canvas-generator.ts       # Canvas JSON generation ✓
+│   │   ├── data-quality.ts           # Data quality service ✓
+│   │   ├── family-chart-layout.ts    # Family tree layout ✓
+│   │   ├── family-graph.ts           # Relationship graph builder ✓
+│   │   ├── place-graph.ts            # Place hierarchy graph ✓
+│   │   ├── privacy-service.ts        # Living person detection ✓
+│   │   ├── logging.ts                # Structured logging ✓
 │   │   └── ...
+│   ├── dates/                 # Custom date system support
+│   │   ├── services/             # Date parsing and formatting
+│   │   ├── types/                # Date type definitions
+│   │   ├── parser/               # Fictional date parser
+│   │   ├── constants/            # Default date systems
+│   │   └── ui/                   # Date systems card
+│   ├── events/                # Event management
+│   │   ├── services/             # Event service, timeline export
+│   │   ├── types/                # Event type definitions
+│   │   └── ui/                   # Event modals and timeline views
 │   ├── gedcom/                # GEDCOM 5.5.1 support
 │   │   ├── gedcom-importer.ts    # Import from GEDCOM ✓
+│   │   ├── gedcom-importer-v2.ts # V2 importer with quality preview ✓
 │   │   └── gedcom-exporter.ts    # Export to GEDCOM ✓
 │   ├── gedcomx/               # GEDCOM X (FamilySearch) support
 │   │   ├── gedcomx-importer.ts   # Import from GEDCOM X JSON ✓
@@ -69,6 +82,34 @@ canvas-roots/
 │   │   ├── gramps-importer.ts    # Import from Gramps XML ✓
 │   │   ├── gramps-exporter.ts    # Export to Gramps XML ✓
 │   │   └── gramps-types.ts       # Type definitions ✓
+│   ├── csv/                   # CSV import support
+│   │   ├── csv-parser.ts         # CSV parsing ✓
+│   │   └── csv-importer.ts       # CSV import to person notes ✓
+│   ├── maps/                  # Map visualizations
+│   │   ├── services/             # Geocoding service
+│   │   ├── types/                # Map type definitions
+│   │   ├── ui/                   # Map UI components
+│   │   ├── map-view.ts           # Leaflet map view ✓
+│   │   ├── map-controller.ts     # Map interactions ✓
+│   │   └── image-map-manager.ts  # Custom image maps ✓
+│   ├── organizations/         # Organization management
+│   │   ├── services/             # Organization/membership services
+│   │   ├── types/                # Organization type definitions
+│   │   ├── constants/            # Default organization types
+│   │   └── ui/                   # Organization modals and tab
+│   ├── places/                # Place management
+│   │   ├── types/                # Place type definitions
+│   │   ├── constants/            # Default place types
+│   │   └── ui/                   # Place type editor
+│   ├── relationships/         # Custom relationship types
+│   │   ├── services/             # Relationship type service
+│   │   ├── types/                # Relationship type definitions
+│   │   ├── constants/            # Default relationship types
+│   │   └── ui/                   # Relationship type editor and tab
+│   ├── schemas/               # Note validation schemas
+│   │   ├── services/             # Schema and validation services
+│   │   ├── types/                # Schema type definitions
+│   │   └── index.ts              # Module exports
 │   ├── sources/               # Evidence & Source Management
 │   │   ├── services/             # Source-related services
 │   │   │   ├── source-service.ts     # Source note parsing ✓
@@ -85,25 +126,41 @@ canvas-roots/
 │   │       ├── create-proof-modal.ts  # Proof summary creation modal ✓
 │   │       ├── media-gallery.ts      # Source media gallery ✓
 │   │       └── citation-generator.ts # Citation generator UI ✓
+│   ├── excalidraw/            # Excalidraw export
+│   │   └── excalidraw-exporter.ts # Export to Excalidraw format ✓
 │   ├── models/                # TypeScript interfaces
 │   │   ├── person.ts             # Person data structures
+│   │   ├── place.ts              # Place data structures
 │   │   └── canvas.ts             # Canvas JSON types
+│   ├── utils/                 # Utility functions
+│   │   └── place-name-normalizer.ts # Place name standardization
 │   └── ui/                    # User interface components
 │       ├── control-center.ts     # Control Center modal ✓
 │       ├── tree-preview.ts       # Interactive SVG preview ✓
+│       ├── settings-tab.ts       # Plugin settings tab ✓
 │       └── ...
-├── styles/                    # CSS source files
-│   ├── control-center.css     # Control Center styling ✓
-│   └── modals.css             # Modal styling ✓
+├── styles/                    # CSS source files (30 components)
+│   ├── variables.css          # CSS custom properties
+│   ├── modals.css             # Modal styling
+│   ├── control-center.css     # Control Center component styles
+│   ├── data-quality.css       # Data quality tab styling
+│   ├── map-view.css           # Leaflet map styling
+│   ├── timeline-callouts.css  # Timeline markdown export styling
+│   └── ...                    # Additional component styles
 ├── docs/                      # Documentation
 │   ├── development.md         # This file
-│   ├── user-guide.md          # User documentation ✓
-│   ├── roadmap.md             # Planned features ✓
-│   └── architecture/          # Design documents
+│   ├── architecture/          # Design documents
+│   └── planning/              # Feature planning documents
+├── wiki-content/              # GitHub wiki source
+│   ├── Home.md                # Wiki home page
+│   ├── Roadmap.md             # Feature roadmap
+│   ├── Data-Quality.md        # Data quality documentation
+│   └── ...                    # Additional wiki pages
 ├── manifest.json              # Obsidian plugin metadata
 ├── package.json               # NPM configuration
 ├── tsconfig.json              # TypeScript configuration
 ├── esbuild.config.mjs         # Build configuration
+├── build-css.js               # CSS build system
 └── .eslintrc.json             # ESLint configuration
 ```
 
@@ -161,55 +218,179 @@ canvas-roots/
 | `media-gallery.ts` | ✅ Complete | Thumbnail grid of source media with lightbox viewer |
 | `citation-generator.ts` | ✅ Complete | Citation format selection and preview UI |
 
+### Events Module (src/events/)
+
+| Component | Status | Purpose |
+|-----------|--------|---------|
+| **Services** | | |
+| `event-service.ts` | ✅ Complete | Event note parsing, CRUD operations, event statistics |
+| `timeline-markdown-exporter.ts` | ✅ Complete | Export timelines to styled markdown callouts |
+| `timeline-canvas-exporter.ts` | ✅ Complete | Export timelines to Obsidian Canvas |
+| `sort-order-service.ts` | ✅ Complete | Event sort order management |
+| `timeline-style-overrides.ts` | ✅ Complete | Timeline visual styling configuration |
+| **Types** | | |
+| `event-types.ts` | ✅ Complete | Event type definitions and interfaces |
+| **UI Components** | | |
+| `create-event-modal.ts` | ✅ Complete | Modal for creating new event notes |
+| `event-type-editor-modal.ts` | ✅ Complete | Modal for editing custom event types |
+| `event-type-manager-card.ts` | ✅ Complete | Event type management card in Events tab |
+| `extract-events-modal.ts` | ✅ Complete | Extract events from person notes |
+| `family-timeline.ts` | ✅ Complete | Family timeline view component |
+| `person-timeline.ts` | ✅ Complete | Individual person timeline view |
+| `place-timeline.ts` | ✅ Complete | Place-based timeline view |
+| `timeline-style-modal.ts` | ✅ Complete | Timeline styling options modal |
+
+### Maps Module (src/maps/)
+
+| Component | Status | Purpose |
+|-----------|--------|---------|
+| **Services** | | |
+| `geocoding-service.ts` | ✅ Complete | Address geocoding via OpenStreetMap Nominatim |
+| `map-data-service.ts` | ✅ Complete | Map data aggregation and statistics |
+| **Core** | | |
+| `map-view.ts` | ✅ Complete | Leaflet map view with markers and popups |
+| `map-controller.ts` | ✅ Complete | Map interaction handling (pan, zoom, click) |
+| `image-map-manager.ts` | ✅ Complete | Custom image map support for fictional worlds |
+| **UI Components** | | |
+| `world-map-preview.ts` | ✅ Complete | Embedded map preview in Control Center |
+| `enrich-place-hierarchy-modal.ts` | ✅ Complete | Modal for enriching place hierarchies |
+| `bulk-geocode-modal.ts` | ✅ Complete | Bulk geocoding operations modal |
+
+### Places Module (src/places/)
+
+| Component | Status | Purpose |
+|-----------|--------|---------|
+| **Types** | | |
+| `place-types.ts` | ✅ Complete | Place type definitions and interfaces |
+| **Constants** | | |
+| `default-place-types.ts` | ✅ Complete | Built-in place type definitions |
+| **UI Components** | | |
+| `place-type-editor-modal.ts` | ✅ Complete | Modal for editing custom place types |
+| `place-type-manager-card.ts` | ✅ Complete | Place type management card in Places tab |
+
+### Organizations Module (src/organizations/)
+
+| Component | Status | Purpose |
+|-----------|--------|---------|
+| **Services** | | |
+| `organization-service.ts` | ✅ Complete | Organization note parsing and CRUD |
+| `membership-service.ts` | ✅ Complete | Membership tracking and history |
+| **Types** | | |
+| `organization-types.ts` | ✅ Complete | Organization type definitions |
+| **Constants** | | |
+| `organization-types.ts` | ✅ Complete | Built-in organization type definitions |
+| **UI Components** | | |
+| `organizations-tab.ts` | ✅ Complete | Organizations tab content |
+| `create-organization-modal.ts` | ✅ Complete | Modal for creating organization notes |
+| `add-membership-modal.ts` | ✅ Complete | Modal for adding memberships to people |
+| `organization-type-editor-modal.ts` | ✅ Complete | Modal for editing organization types |
+| `organization-type-manager-card.ts` | ✅ Complete | Organization type management card |
+
+### Relationships Module (src/relationships/)
+
+| Component | Status | Purpose |
+|-----------|--------|---------|
+| **Services** | | |
+| `relationship-service.ts` | ✅ Complete | Custom relationship type management |
+| **Types** | | |
+| `relationship-types.ts` | ✅ Complete | Relationship type definitions |
+| **Constants** | | |
+| `default-relationship-types.ts` | ✅ Complete | Built-in relationship type definitions |
+| **UI Components** | | |
+| `relationships-tab.ts` | ✅ Complete | Relationships tab content |
+| `relationship-type-editor-modal.ts` | ✅ Complete | Modal for editing relationship types |
+| `relationship-type-manager-card.ts` | ✅ Complete | Relationship type management card |
+
+### Dates Module (src/dates/)
+
+| Component | Status | Purpose |
+|-----------|--------|---------|
+| **Services** | | |
+| `date-service.ts` | ✅ Complete | Date parsing and formatting with custom calendars |
+| **Parser** | | |
+| `fictional-date-parser.ts` | ✅ Complete | Parser for fictional/custom date formats |
+| **Types** | | |
+| `date-types.ts` | ✅ Complete | Date system type definitions |
+| **Constants** | | |
+| `default-date-systems.ts` | ✅ Complete | Built-in date system definitions |
+| **UI Components** | | |
+| `date-systems-card.ts` | ✅ Complete | Date systems configuration card |
+| `events-tab.ts` | ✅ Complete | Events tab with date system support |
+
+### Schemas Module (src/schemas/)
+
+| Component | Status | Purpose |
+|-----------|--------|---------|
+| **Services** | | |
+| `schema-service.ts` | ✅ Complete | Schema definition and management |
+| `validation-service.ts` | ✅ Complete | Note validation against schemas |
+| **Types** | | |
+| `schema-types.ts` | ✅ Complete | Schema type definitions |
+
 ### UI Components (src/ui/)
 
 | Component | Status | Purpose |
 |-----------|--------|---------|
+| `control-center.ts` | ✅ Complete | Main Control Center modal with 15 tabs for all plugin functionality |
+| `settings-tab.ts` | ✅ Complete | Plugin settings tab in Obsidian settings |
 | `canvas-style-modal.ts` | ✅ Complete | Modal for canvas styling options |
-| `control-center.ts` | ✅ Complete | Main Control Center modal with Status, Tree Output, Quick Actions, and Data Entry tabs |
 | `find-on-canvas-modal.ts` | ✅ Complete | Find person across all canvases |
 | `folder-scan-modal.ts` | ✅ Complete | Scan folder for relationship issues |
 | `folder-statistics-modal.ts` | ✅ Complete | Comprehensive folder analytics and data completeness metrics |
 | `gedcom-import-results-modal.ts` | ✅ Complete | Detailed GEDCOM import results with success/warning/error counts |
-| `lucide-icons.ts` | ✅ Complete | Lucide icon integration helpers |
-| `person-picker.ts` | ✅ Complete | Person search modal with fuzzy matching |
+| `lucide-icons.ts` | ✅ Complete | Lucide icon integration helpers and tab configurations |
+| `person-picker.ts` | ✅ Complete | Person search modal with fuzzy matching, sorting, filtering |
 | `regenerate-options-modal.ts` | ✅ Complete | Options modal for canvas regeneration |
 | `relationship-calculator-modal.ts` | ✅ Complete | UI for calculating relationship between two people |
 | `relationship-history-modal.ts` | ✅ Complete | View and undo relationship changes with timestamps |
-| `tree-preview.ts` | ✅ Complete | Interactive SVG tree preview with pan/zoom, color schemes, tooltips, and PNG/SVG export |
+| `tree-preview.ts` | ✅ Complete | Interactive SVG tree preview with pan/zoom, color schemes, tooltips, PNG/SVG export |
 | `tree-statistics-modal.ts` | ✅ Complete | Tree generation statistics display |
 | `validation-results-modal.ts` | ✅ Complete | Display validation results for relationship data |
+| `add-relationship-modal.ts` | ✅ Complete | Modal for adding parent/spouse/child relationships |
+| `create-person-modal.ts` | ✅ Complete | Modal for creating new person notes |
+| `duplicate-detection-modal.ts` | ✅ Complete | Duplicate person detection and merge wizard |
+| `merge-wizard-modal.ts` | ✅ Complete | Guided merge workflow for duplicate records |
+| `split-wizard-modal.ts` | ✅ Complete | Split incorrectly merged person records |
+| `standardize-places-modal.ts` | ✅ Complete | Bulk place name standardization |
+| `build-place-hierarchy-modal.ts` | ✅ Complete | Build place hierarchies from flat data |
+| `create-schema-modal.ts` | ✅ Complete | Create validation schemas for note types |
+| `template-snippets-modal.ts` | ✅ Complete | Templater snippet management |
 
 ### Data Models (src/models/)
 
 | Component | Status | Purpose |
 |-----------|--------|---------|
-| `person.ts` | 🟡 Partial | Person note schema and interfaces |
-| `canvas.ts` | 🟡 Partial | Canvas JSON type definitions |
-| **To Be Implemented** | | |
-| `collection.ts` | 🔴 Needed | FamilyComponent, UserCollection, CollectionConnection interfaces (Phase 1/2) |
-| `layout.ts` | 🔴 Needed | Layout options and results |
-| `settings.ts` | 🔴 Needed | Plugin settings types (currently in src/settings.ts) |
+| `person.ts` | ✅ Complete | Person note schema and interfaces |
+| `place.ts` | ✅ Complete | Place note schema and interfaces |
+| `canvas.ts` | ✅ Complete | Canvas JSON type definitions |
 
 ### Commands (main.ts)
 
 | Command | Status | Purpose |
 |---------|--------|---------|
+| **Control Center** | | |
 | Open Control Center | ✅ Complete | Opens main Control Center modal |
 | Generate Tree for Current Note | ✅ Complete | Opens Control Center with current person pre-selected in Tree Output tab |
-| Create Person Note | ✅ Complete | Opens Control Center to Data Entry tab for creating new person notes |
-| Regenerate Canvas | ✅ Complete | Recalculates layout for active canvas using current settings and relationship data |
-| Generate All Trees | ✅ Complete | Generates separate canvases for each disconnected family component in vault |
+| Create Person Note | ✅ Complete | Opens Control Center to People tab for creating new person notes |
+| **Canvas Operations** | | |
+| Regenerate Canvas | ✅ Complete | Recalculates layout for active canvas using current settings |
+| Generate All Trees | ✅ Complete | Generates separate canvases for each disconnected family component |
+| **Relationship Calculations** | | |
 | Calculate Relationship | ✅ Complete | Calculate genealogical relationship between any two people |
+| View Relationship History | ✅ Complete | View and undo recent relationship changes |
+| Undo Last Relationship | ✅ Complete | Undo the most recent relationship change |
+| **Reference Numbering** | | |
 | Assign Ahnentafel Numbers | ✅ Complete | Assign Ahnentafel ancestor numbering from selected person |
 | Assign d'Aboville Numbers | ✅ Complete | Assign d'Aboville descendant numbering from selected person |
 | Assign Henry Numbers | ✅ Complete | Assign Henry system descendant numbering from selected person |
 | Assign Generation Numbers | ✅ Complete | Assign relative generation depth from selected person |
 | Clear Reference Numbers | ✅ Complete | Remove specific numbering type from all person notes |
-| Assign Lineage | ✅ Complete | Assign lineage tags from root person (patrilineal, matrilineal, or all) |
+| **Lineage Tracking** | | |
+| Assign Lineage | ✅ Complete | Assign lineage tags from root person (patrilineal, matrilineal, all) |
 | Remove Lineage Tags | ✅ Complete | Remove lineage tags from person notes |
-| View Relationship History | ✅ Complete | View and undo recent relationship changes |
-| Undo Last Relationship | ✅ Complete | Undo the most recent relationship change |
+| **Data Quality** | | |
+| Fix Bidirectional Relationships | ✅ Complete | Sync all bidirectional relationship links in vault |
+| Detect Duplicate People | ✅ Complete | Find potential duplicate person records |
 
 ### Context Menus
 
@@ -225,7 +406,16 @@ canvas-roots/
 | "Find on canvas" | ✅ Complete | Right-click on person note | Find this person across all canvases |
 | "Mark/Unmark as root person" | ✅ Complete | Right-click on person note | Toggle root person status for lineage tracking |
 | "Set group name" | ✅ Complete | Right-click on person note | Set custom name for family group |
-| "Add essential properties" | ✅ Complete | Right-click on markdown file(s) | Bulk-add all 9 essential properties |
+| **Place Note Context Menu** | | | |
+| "Canvas Roots" submenu | ✅ Complete | Right-click on place note | Geocode place, view on map, enrich hierarchy |
+| **Event Note Context Menu** | | | |
+| "Canvas Roots" submenu | ✅ Complete | Right-click on event note | Edit event, view timeline |
+| **Source Note Context Menu** | | | |
+| "Canvas Roots" submenu | ✅ Complete | Right-click on source note | Generate citation, view media |
+| **Organization Note Context Menu** | | | |
+| "Canvas Roots" submenu | ✅ Complete | Right-click on organization note | View members, edit organization |
+| **Generic Markdown Context Menu** | | | |
+| "Add essential properties" | ✅ Complete | Right-click on markdown file(s) | Bulk-add all essential properties for note type |
 | **Folder Context Menu** | | | |
 | "View folder statistics" | ✅ Complete | Right-click on folder | Comprehensive folder analytics |
 | "Scan for relationship issues" | ✅ Complete | Right-click on folder | Check all notes in folder for issues |
@@ -234,18 +424,27 @@ canvas-roots/
 | **Canvas Context Menu** | | | |
 | "Regenerate canvas" | ✅ Complete | Right-click on canvas file | Recalculates canvas layout |
 | "View tree statistics" | ✅ Complete | Right-click on canvas file | View statistics for the tree |
-| "Export to Excalidraw" | ✅ Complete | Right-click on canvas file | Convert canvas to Excalidraw format |
+| "Export" submenu | ✅ Complete | Right-click on canvas file | Export to Excalidraw, PNG, or SVG |
 
 ### Control Center Tabs
 
 | Tab | Status | Purpose |
 |-----|--------|---------|
-| Status | ✅ Complete | Displays vault statistics (people, relationships, health metrics) |
-| Tree Output | ✅ Complete | Tree generation and export UI with layout algorithm options, Excalidraw export instructions |
-| Collections | ✅ Complete | Browse family components and user collections with cross-collection connection detection |
-| Quick Actions | ✅ Complete | Shortcuts to common operations (generate tree, re-layout, create person) |
-| Data Entry | ✅ Complete | Person note creation with relationship fields |
-| Guide | ✅ Complete | In-app documentation and help content |
+| Status | ✅ Complete | Vault statistics, recent trees, health metrics |
+| Guide | ✅ Complete | In-app documentation and getting started guide |
+| Import/Export | ✅ Complete | Import/export GEDCOM, GEDCOM X, Gramps XML, CSV with pre-import quality preview |
+| People | ✅ Complete | Person notes table, parent claim conflicts, batch operations, data entry |
+| Events | ✅ Complete | Event notes table, timeline export (markdown/canvas), event type management |
+| Places | ✅ Complete | Place notes table, place hierarchy, geocoding, place type management |
+| Maps | ✅ Complete | Leaflet map view with markers, custom image maps, bulk geocoding |
+| Sources | ✅ Complete | Source notes, media gallery, citation generator, proof summaries |
+| Schemas | ✅ Complete | Validation schemas for note type consistency |
+| Relationships | ✅ Complete | Custom relationship type definitions and management |
+| Organizations | ✅ Complete | Organization notes, membership tracking, organization types |
+| Collections | ✅ Complete | Family components and user collections with cross-collection detection |
+| Data Quality | ✅ Complete | Comprehensive data quality analysis: orphan refs, duplicates, date issues, bidirectional sync |
+| Tree Output | ✅ Complete | Tree generation with layout options, color schemes, interactive preview, export to Canvas/Excalidraw/PNG/SVG |
+| Preferences | ✅ Complete | Property aliases, folder locations, canvas styling, logging settings |
 
 ### Collections Feature Roadmap
 
@@ -729,6 +928,36 @@ collection: "Paternal Line"  # or "House Stark", etc.
 - Removed confusing setting from UI
 
 ## Recent Features
+
+### Version 0.10.x - 0.11.x Summary (2025-12)
+
+The v0.10.x and v0.11.x releases focused on data quality, GEDCOM import reliability, and UI polish for Obsidian community plugin review submission.
+
+**Major Features:**
+- **Data Quality Tab** - Comprehensive data quality analysis with bidirectional relationship sync, duplicate detection, parent claim conflicts, orphan reference detection, and batch operations
+- **GEDCOM Import V2** - Pre-import data quality preview with place name standardization, issue detection before file creation
+- **Maps Module** - Leaflet map view, custom image maps for fictional worlds, bulk geocoding via OpenStreetMap
+- **Events Module** - Event notes, timeline export to markdown callouts and Canvas, event type management
+- **Organizations Module** - Organization notes with membership tracking
+- **Places Module** - Place hierarchy management, geocoding, place type customization
+- **Relationships Module** - Custom relationship type definitions
+- **Schemas Module** - Note validation schemas for data consistency
+
+**GEDCOM Import Fixes (v0.11.5-0.11.9):**
+- Fixed race condition with BidirectionalLinker during import
+- Fixed ID replacement for duplicate names (numeric suffix handling)
+- Fixed regex substring matching causing corrupt cr_id formats
+- Fixed children_id replacement in Phase 2
+- Added corrupt cr_id format detection in data quality checks
+
+**UI/UX Improvements:**
+- 15 Control Center tabs (up from 6)
+- Parent claim conflict resolution card
+- Improved person picker with sorting/filtering
+- Pre-import quality preview modal
+- Place name variant standardization
+
+---
 
 ### Re-Layout Canvas Command (2025-11-21)
 
