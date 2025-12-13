@@ -14,7 +14,7 @@ Data quality tools are available in two contexts:
 After importing a GEDCOM file (especially a "messy" one with data quality issues), follow this recommended sequence:
 
 ### Step 1: Review the Quality Report
-**Location:** Control Center → Data Quality tab → "Generate quality report"
+**Location:** Control Center → Data Quality tab → "Run analysis"
 
 Start here to understand the scope of issues. The report shows:
 - Overall quality score (0-100)
