@@ -153,6 +153,19 @@ Large trees with complex relationships take longer. Try:
 - Check that "Sync on file modify" is also enabled
 - Ensure person notes have valid `cr_id` fields
 
+### When should I run "Fix bidirectional relationship inconsistencies"?
+
+**Good times to run it:**
+- After manual edits where you added a relationship to one person but forgot the reciprocal link
+- As a periodic sanity check during active data entry (every 10-20 manual edits)
+- Before major exports or canvas generation
+
+**When it's unnecessary:**
+- After GEDCOM imports — the importer already creates complete bidirectional relationships
+- After using the plugin's built-in relationship editing UI
+
+**Important:** If you have unresolved parent claim conflicts (e.g., step-parents), resolve those first before running the bidirectional fix.
+
 ### GEDCOM import shows errors
 
 - Verify the file is valid GEDCOM 5.5.1 format

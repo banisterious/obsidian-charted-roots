@@ -28,6 +28,16 @@ This gives you the big picture before diving into fixes.
 
 Run this early — it ensures the family graph is internally consistent. If a child lists a parent, the parent should list the child. This step is essential for tree generation and navigation to work correctly.
 
+**When to run this operation:**
+- After manual edits where you added a parent/spouse/child to one person but forgot the reciprocal link
+- After bulk operations that might have created one-sided relationships
+- As a periodic sanity check during active data entry sessions (every 10-20 edits)
+- Before major exports or canvas generation
+
+**When it's unnecessary:**
+- After GEDCOM imports — the importer creates bidirectional relationships automatically
+- After using the plugin's built-in relationship editing UI — those create both sides automatically
+
 ### Step 3: Normalize Date Formats
 **Location:** Control Center → Data Quality tab → "Normalize date formats"
 
@@ -254,6 +264,10 @@ This ensures consistency from the start, avoiding post-import cleanup.
 1. Review the quality preview before importing
 2. Standardize place variants during import
 3. Run the Places tab tools to complete place hierarchy
+4. Resolve any parent claim conflicts before running other batch operations
+5. **Skip** "Fix bidirectional relationships" — GEDCOM data already contains complete bidirectional relationships
+
+**Important:** The GEDCOM importer preserves complete relationship data from the source file. Running the bidirectional fix immediately after import is unnecessary and could cause issues if there are unresolved parent claim conflicts (e.g., step-parents flagged as conflicting with biological parents).
 
 ### Data Entry Guidelines
 
