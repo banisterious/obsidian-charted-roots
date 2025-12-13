@@ -68,7 +68,7 @@ export function renderPlacesTab(
 
 	new Setting(actionsContent)
 		.setName('Create Places base')
-		.setDesc('Create an Obsidian base for managing your Place notes in a table view')
+		.setDesc('Create an Obsidian base for managing Place notes. After creating, click "Properties" to enable columns like Name, Category, Coordinates, and Contained by.')
 		.addButton(button => button
 			.setButtonText('Create')
 			.onClick(() => {

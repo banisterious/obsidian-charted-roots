@@ -49,7 +49,15 @@ export function generateEventsBaseTemplate(aliases: PropertyAliases = {}): strin
 	const universe = getPropertyName('universe', aliases);
 	const cr_id = getPropertyName('cr_id', aliases);
 
-	return `formulas:
+	return `visibleProperties:
+  - formula.display_title
+  - note.${event_type}
+  - formula.date_display
+  - note.${person}
+  - note.${place}
+  - note.${confidence}
+  - formula.sourced
+formulas:
   display_title: ${title} || file.name
   date_display: if(${date}, ${date}.format("YYYY-MM-DD"), "")
   end_date_display: if(${date_end}, ${date_end}.format("YYYY-MM-DD"), "")

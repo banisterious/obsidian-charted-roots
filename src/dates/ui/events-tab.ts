@@ -96,7 +96,7 @@ function renderEventNotesCard(
 	// Create Events base button
 	new Setting(content)
 		.setName('Create Events base')
-		.setDesc('Create an Obsidian base for managing your Event notes in a table view')
+		.setDesc('Create an Obsidian base for managing Event notes. After creating, click "Properties" to enable columns like Title, Type, Date, Person, Place, and Confidence.')
 		.addButton(button => button
 			.setButtonText('Create')
 			.onClick(() => {

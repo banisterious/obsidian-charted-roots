@@ -1719,7 +1719,7 @@ export class ControlCenterModal extends Modal {
 
 		new Setting(actionsContent)
 			.setName('Create People base')
-			.setDesc('Create an Obsidian base for managing your People notes in a table view')
+			.setDesc('Create an Obsidian base for managing People notes. After creating, click "Properties" to enable columns like Name, Parents, Spouse, Children, Birth, and Death.')
 			.addButton(button => button
 				.setButtonText('Create')
 				.onClick(() => {

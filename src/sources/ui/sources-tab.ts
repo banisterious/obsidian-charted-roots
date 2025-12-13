@@ -165,8 +165,8 @@ function renderSourcesListCard(
 
 	// Create base button
 	new Setting(content)
-		.setName('Create base')
-		.setDesc('Create an Obsidian Base to view sources in a table')
+		.setName('Create Sources base')
+		.setDesc('Create an Obsidian base for managing Source notes. After creating, click "Properties" to enable columns like Title, Type, Repository, Author, and Date.')
 		.addButton(button => button
 			.setButtonText('Create')
 			.onClick(() => {

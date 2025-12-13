@@ -28,7 +28,7 @@ Obsidian plugin review fixes (Round 11) and bug fixes.
 
 - **Events base template not working** - Rewrote the Events base template to use correct Obsidian Bases syntax (matching the working People base template structure). Added formulas for date formatting and duration calculations
 
-- **Removed invalid visibleProperties from base templates** - Removed non-standard `visibleProperties` key from People and Events base templates (not part of official Bases schema)
+- **Improved "Create base" button descriptions** - Updated descriptions for People, Events, Places, and Sources base buttons to explain that users need to click "Properties" after creating to enable additional columns
 
 ---
 
