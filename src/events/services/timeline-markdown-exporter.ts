@@ -2,12 +2,12 @@
  * Timeline Markdown Exporter
  *
  * Exports event timelines to styled markdown using nested callouts.
- * Compatible with the timeline callout CSS snippets for visual rendering.
+ * Compatible with the Canvas Roots timeline callout CSS.
  *
  * Output format:
- * > [!timeline-outer] Timeline Title
+ * > [!cr-timeline-outer] Timeline Title
  * >
- * >> [!timeline|green] [[1850]]
+ * >> [!cr-timeline|green] [[1850]]
  * >> - [[Birth of John Smith]]
  * >> 	- (March 15, 1850)
  * >> 	- Dublin, Ireland
@@ -384,7 +384,7 @@ export class TimelineMarkdownExporter {
 			const lines: string[] = [];
 
 			// Outer timeline callout
-			lines.push(`> [!timeline-outer] ${title}`);
+			lines.push(`> [!cr-timeline-outer] ${title}`);
 			lines.push('>');
 
 			// Sort years
@@ -406,9 +406,9 @@ export class TimelineMarkdownExporter {
 
 				// Year callout
 				if (groupByYear && yearLabel) {
-					lines.push(`>> [!timeline|${color}] [[${yearLabel}]]`);
+					lines.push(`>> [!cr-timeline|${color}] [[${yearLabel}]]`);
 				} else {
-					lines.push(`>> [!timeline|${color}]`);
+					lines.push(`>> [!cr-timeline|${color}]`);
 				}
 
 				// Events within the year
@@ -584,7 +584,7 @@ export class TimelineMarkdownExporter {
 
 		try {
 			// Filter events
-			let filteredEvents = this.filterEvents(events, { filterPerson, filterEventType, filterGroup });
+			const filteredEvents = this.filterEvents(events, { filterPerson, filterEventType, filterGroup });
 
 			if (filteredEvents.length === 0) {
 				return { success: false, error: 'No events to export after filtering' };
@@ -697,7 +697,7 @@ export class TimelineMarkdownExporter {
 
 		try {
 			// Filter events
-			let filteredEvents = this.filterEvents(events, { filterPerson, filterEventType, filterGroup });
+			const filteredEvents = this.filterEvents(events, { filterPerson, filterEventType, filterGroup });
 
 			if (filteredEvents.length === 0) {
 				return { success: false, error: 'No events to export after filtering' };

@@ -47,7 +47,7 @@ body {
    Timeline Outer Container
    ============================================================================ */
 
-.callout[data-callout="timeline-outer"] {
+.callout[data-callout="cr-timeline-outer"] {
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
   background-color: var(--background-secondary);
@@ -55,21 +55,21 @@ body {
   width: var(--cr-timeline-width);
 }
 
-.callout[data-callout="timeline-outer"] > .callout-title {
+.callout[data-callout="cr-timeline-outer"] > .callout-title {
   font-size: var(--h2-size);
   margin-bottom: var(--cr-spacing-md);
 }
 
-.callout[data-callout="timeline-outer"] > .callout-title > .callout-icon {
+.callout[data-callout="cr-timeline-outer"] > .callout-title > .callout-icon {
   --icon-size: 1.1em;
 }
 
 /* Continuous vertical line drawn on the outer container's content area */
-.callout[data-callout="timeline-outer"] > .callout-content {
+.callout[data-callout="cr-timeline-outer"] > .callout-content {
   position: relative;
 }
 
-.callout[data-callout="timeline-outer"] > .callout-content::before {
+.callout[data-callout="cr-timeline-outer"] > .callout-content::before {
   content: "";
   position: absolute;
   /* Align line center with dot center:
@@ -95,7 +95,7 @@ body {
    Timeline Entry (Year Row)
    ============================================================================ */
 
-.callout[data-callout="timeline"] {
+.callout[data-callout="cr-timeline"] {
   order: 1;
   padding: 0;
   margin: 0;
@@ -107,7 +107,7 @@ body {
 }
 
 /* Year/title column */
-.callout[data-callout="timeline"] .callout-title-inner {
+.callout[data-callout="cr-timeline"] .callout-title-inner {
   width: 100%;
   text-align: right;
   color: var(--cr-timeline-title-color);
@@ -116,7 +116,7 @@ body {
 }
 
 /* Vertical line area with dot (line now drawn on outer container) */
-.callout[data-callout="timeline"] .callout-icon {
+.callout[data-callout="cr-timeline"] .callout-icon {
   order: 2;
   margin-inline: var(--cr-timeline-line-margin);
   width: var(--cr-timeline-line-width);
@@ -125,7 +125,7 @@ body {
 }
 
 /* The dot */
-.callout[data-callout="timeline"] .callout-icon::after {
+.callout[data-callout="cr-timeline"] .callout-icon::after {
   content: "";
   box-sizing: border-box;
   background-color: var(--cr-timeline-dot-color);
@@ -139,12 +139,12 @@ body {
 }
 
 /* Hide the default SVG icon */
-.callout[data-callout="timeline"] .svg-icon {
+.callout[data-callout="cr-timeline"] .svg-icon {
   display: none;
 }
 
 /* Event content card */
-.callout[data-callout="timeline"] .callout-content {
+.callout[data-callout="cr-timeline"] .callout-content {
   order: 3;
   --p-spacing: 0.5rem;
   background-color: var(--cr-timeline-card-background);
@@ -153,16 +153,16 @@ body {
   padding: var(--cr-timeline-card-padding-x) var(--cr-timeline-card-padding-y);
 }
 
-.callout[data-callout="timeline"] .callout-content > h2:first-child {
+.callout[data-callout="cr-timeline"] .callout-content > h2:first-child {
   margin-top: 0;
 }
 
 /* Spacing between stacked timelines */
-div:not(:has(> [data-callout="timeline"])) + div > [data-callout="timeline"] {
+div:not(:has(> [data-callout="cr-timeline"])) + div > [data-callout="cr-timeline"] {
   margin-top: var(--p-spacing);
 }
 
-div:has(> [data-callout="timeline"]) + div:not(:has(> [data-callout="timeline"])) {
+div:has(> [data-callout="cr-timeline"]) + div:not(:has(> [data-callout="cr-timeline"])) {
   margin-bottom: 1rem;
 }
 
@@ -171,50 +171,50 @@ div:has(> [data-callout="timeline"]) + div:not(:has(> [data-callout="timeline"])
    ============================================================================ */
 
 /* Standard Obsidian colors */
-[data-callout="timeline"][data-callout-metadata="red"] {
+[data-callout="cr-timeline"][data-callout-metadata="red"] {
   --cr-timeline-dot-color: var(--color-red);
 }
-[data-callout="timeline"][data-callout-metadata="orange"] {
+[data-callout="cr-timeline"][data-callout-metadata="orange"] {
   --cr-timeline-dot-color: var(--color-orange);
 }
-[data-callout="timeline"][data-callout-metadata="yellow"] {
+[data-callout="cr-timeline"][data-callout-metadata="yellow"] {
   --cr-timeline-dot-color: var(--color-yellow);
 }
-[data-callout="timeline"][data-callout-metadata="green"] {
+[data-callout="cr-timeline"][data-callout-metadata="green"] {
   --cr-timeline-dot-color: var(--color-green);
 }
-[data-callout="timeline"][data-callout-metadata="cyan"] {
+[data-callout="cr-timeline"][data-callout-metadata="cyan"] {
   --cr-timeline-dot-color: var(--color-cyan);
 }
-[data-callout="timeline"][data-callout-metadata="blue"] {
+[data-callout="cr-timeline"][data-callout-metadata="blue"] {
   --cr-timeline-dot-color: var(--color-blue);
 }
-[data-callout="timeline"][data-callout-metadata="purple"] {
+[data-callout="cr-timeline"][data-callout-metadata="purple"] {
   --cr-timeline-dot-color: var(--color-purple);
 }
-[data-callout="timeline"][data-callout-metadata="pink"] {
+[data-callout="cr-timeline"][data-callout-metadata="pink"] {
   --cr-timeline-dot-color: var(--color-pink);
 }
 
 /* Semantic event type colors */
-[data-callout="timeline"][data-callout-metadata="birth"] {
+[data-callout="cr-timeline"][data-callout-metadata="birth"] {
   --cr-timeline-dot-color: var(--cr-timeline-dot-birth);
 }
-[data-callout="timeline"][data-callout-metadata="death"] {
+[data-callout="cr-timeline"][data-callout-metadata="death"] {
   --cr-timeline-dot-color: var(--cr-timeline-dot-death);
 }
-[data-callout="timeline"][data-callout-metadata="marriage"] {
+[data-callout="cr-timeline"][data-callout-metadata="marriage"] {
   --cr-timeline-dot-color: var(--cr-timeline-dot-marriage);
 }
-[data-callout="timeline"][data-callout-metadata="divorce"] {
+[data-callout="cr-timeline"][data-callout-metadata="divorce"] {
   --cr-timeline-dot-color: var(--cr-timeline-dot-divorce);
 }
 
 /* Extended grayscale colors */
-[data-callout="timeline"][data-callout-metadata="bright-gray"] {
+[data-callout="cr-timeline"][data-callout-metadata="bright-gray"] {
   --cr-timeline-dot-color: #7e859f;
 }
-[data-callout="timeline"][data-callout-metadata="gray"] {
+[data-callout="cr-timeline"][data-callout-metadata="gray"] {
   --cr-timeline-dot-color: var(--color-base-50);
 }
 
@@ -222,40 +222,40 @@ div:has(> [data-callout="timeline"]) + div:not(:has(> [data-callout="timeline"])
    List Styling within Timeline
    ============================================================================ */
 
-.callout[data-callout="timeline"] .callout-content ul {
+.callout[data-callout="cr-timeline"] .callout-content ul {
   margin: 0;
   padding-left: 0;
   list-style: none;
 }
 
 /* Hide bullets on top-level event items */
-.callout[data-callout="timeline"] .callout-content > ul > li > .list-bullet,
-.callout[data-callout="timeline"] .callout-content > div > ul > li > .list-bullet {
+.callout[data-callout="cr-timeline"] .callout-content > ul > li > .list-bullet,
+.callout[data-callout="cr-timeline"] .callout-content > div > ul > li > .list-bullet {
   display: none;
 }
 
-.callout[data-callout="timeline"] .callout-content ul li {
+.callout[data-callout="cr-timeline"] .callout-content ul li {
   margin-bottom: 0.5em;
 }
 
-.callout[data-callout="timeline"] .callout-content ul li ul {
+.callout[data-callout="cr-timeline"] .callout-content ul li ul {
   margin-top: 0.25em;
   padding-left: 1em;
 }
 
-.callout[data-callout="timeline"] .callout-content ul li ul li {
+.callout[data-callout="cr-timeline"] .callout-content ul li ul li {
   font-size: 0.9em;
   color: var(--text-muted);
   margin-bottom: 0.25em;
 }
 
 /* Links within timeline */
-.callout[data-callout="timeline"] a.internal-link {
+.callout[data-callout="cr-timeline"] a.internal-link {
   color: var(--text-normal);
   text-decoration: none;
 }
 
-.callout[data-callout="timeline"] a.internal-link:hover {
+.callout[data-callout="cr-timeline"] a.internal-link:hover {
   color: var(--text-accent);
   text-decoration: underline;
 }
@@ -276,21 +276,21 @@ body {
 
 /* Multi-column layout for timeline event lists */
 /* Applied to top-level lists within timeline callouts */
-.callout[data-callout="timeline"] .callout-content > ul,
-.callout[data-callout="timeline"] .callout-content > div > ul {
+.callout[data-callout="cr-timeline"] .callout-content > ul,
+.callout[data-callout="cr-timeline"] .callout-content > div > ul {
   column-width: var(--cr-list-min-width);
   column-gap: var(--cr-list-column-gap);
   column-rule: var(--cr-list-column-rule-width) solid var(--cr-list-column-rule-color);
 }
 
 /* Hide the #mcl/list-column tag if present */
-.callout[data-callout="timeline"] a.tag[href*="mcl/list-column"],
-.callout[data-callout="timeline"] a[href*="#mcl/list-column"] {
+.callout[data-callout="cr-timeline"] a.tag[href*="mcl/list-column"],
+.callout[data-callout="cr-timeline"] a[href*="#mcl/list-column"] {
   display: none;
 }
 
 /* Prevent column breaks within list items */
-.callout[data-callout="timeline"] .callout-content ul li {
+.callout[data-callout="cr-timeline"] .callout-content ul li {
   break-inside: avoid;
 }
 
@@ -298,11 +298,11 @@ body {
    Theme Adjustments
    ============================================================================ */
 
-.theme-light .callout[data-callout="timeline-outer"] {
+.theme-light .callout[data-callout="cr-timeline-outer"] {
   background-color: var(--background-primary-alt);
 }
 
-.theme-light .callout[data-callout="timeline"] .callout-content {
+.theme-light .callout[data-callout="cr-timeline"] .callout-content {
   background-color: var(--background-secondary);
 }
 
