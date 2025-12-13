@@ -2105,6 +2105,10 @@ export class ControlCenterModal extends Modal {
 				e.preventDefault();
 				void this.app.workspace.openLinkText(child.file.path, '', false);
 			});
+			childLink.addEventListener('contextmenu', (e) => {
+				e.preventDefault();
+				this.showPersonLinkContextMenu(child.file, e);
+			});
 
 			// Conflict type
 			row.createEl('td', { text: conflict.conflictType === 'father' ? 'Father' : 'Mother' });
@@ -2118,6 +2122,10 @@ export class ControlCenterModal extends Modal {
 			claimant1Link.addEventListener('click', (e) => {
 				e.preventDefault();
 				void this.app.workspace.openLinkText(claimant1.file.path, '', false);
+			});
+			claimant1Link.addEventListener('contextmenu', (e) => {
+				e.preventDefault();
+				this.showPersonLinkContextMenu(claimant1.file, e);
 			});
 			claimant1Cell.createEl('span', {
 				text: ` (${claimant1.crId})`,
@@ -2133,6 +2141,10 @@ export class ControlCenterModal extends Modal {
 			claimant2Link.addEventListener('click', (e) => {
 				e.preventDefault();
 				void this.app.workspace.openLinkText(claimant2.file.path, '', false);
+			});
+			claimant2Link.addEventListener('contextmenu', (e) => {
+				e.preventDefault();
+				this.showPersonLinkContextMenu(claimant2.file, e);
 			});
 			claimant2Cell.createEl('span', {
 				text: ` (${claimant2.crId})`,
@@ -2807,6 +2819,42 @@ export class ControlCenterModal extends Modal {
 					});
 			});
 		}
+
+		menu.showAtMouseEvent(event);
+	}
+
+	/**
+	 * Show a simple context menu for person links with open options
+	 */
+	private showPersonLinkContextMenu(file: TFile, event: MouseEvent): void {
+		const menu = new Menu();
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Open')
+				.setIcon('file')
+				.onClick(() => {
+					void this.app.workspace.getLeaf(false).openFile(file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Open in new tab')
+				.setIcon('file-plus')
+				.onClick(() => {
+					void this.app.workspace.getLeaf('tab').openFile(file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Open in new window')
+				.setIcon('external-link')
+				.onClick(() => {
+					void this.app.workspace.getLeaf('window').openFile(file);
+				});
+		});
 
 		menu.showAtMouseEvent(event);
 	}

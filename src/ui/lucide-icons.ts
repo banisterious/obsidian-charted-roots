@@ -246,8 +246,10 @@ export function createLucideIcon(iconName: LucideIconName, size: number = 20): H
 export function setLucideIcon(element: HTMLElement, iconName: LucideIconName, size: number = 20): void {
 	element.empty();
 	element.addClass('crc-icon', 'cr-lucide-icon');
-	element.style.setProperty('width', `${size}px`);
-	element.style.setProperty('height', `${size}px`);
+	element.setCssStyles({
+		width: `${size}px`,
+		height: `${size}px`
+	});
 
 	setIcon(element, iconName);
 }

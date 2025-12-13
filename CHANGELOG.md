@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.11.7] - 2025-12-12
+
+### Added
+
+- **Context menu for person links in Parent claim conflicts** - Right-click on person names in the Parent claim conflicts table to open in new tab or new window.
+
+---
+
 ## [0.11.6] - 2025-12-12
 
 ### Fixed

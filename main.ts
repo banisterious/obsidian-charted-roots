@@ -4720,8 +4720,8 @@ export default class CanvasRootsPlugin extends Plugin {
 						await this.app.vault.create(excalidrawPath, excalidrawResult.excalidrawContent);
 						new Notice(`Timeline exported to ${excalidrawPath}`);
 						const file = this.app.vault.getAbstractFileByPath(excalidrawPath);
-						if (file) {
-							void this.app.workspace.getLeaf(false).openFile(file as TFile);
+						if (file instanceof TFile) {
+							void this.app.workspace.getLeaf(false).openFile(file);
 						}
 					} else {
 						new Notice(`Excalidraw export failed: ${excalidrawResult.errors?.join(', ') || 'Unknown error'}`);
@@ -4729,8 +4729,8 @@ export default class CanvasRootsPlugin extends Plugin {
 				} else {
 					new Notice(`Timeline exported to ${result.path}`);
 					const file = this.app.vault.getAbstractFileByPath(result.path);
-					if (file) {
-						void this.app.workspace.getLeaf(false).openFile(file as TFile);
+					if (file instanceof TFile) {
+						void this.app.workspace.getLeaf(false).openFile(file);
 					}
 				}
 			} else {
