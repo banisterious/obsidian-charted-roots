@@ -13,7 +13,6 @@ import { PlaceGraphService } from '../core/place-graph';
 import type { PlaceCategory } from '../models/place';
 import { CreatePlaceModal } from './create-place-modal';
 import { CreateMissingPlacesModal } from './create-missing-places-modal';
-import { BuildPlaceHierarchyModal } from './build-place-hierarchy-modal';
 import { StandardizePlacesModal, findPlaceNameVariations } from './standardize-places-modal';
 import { MergeDuplicatePlacesModal, findDuplicatePlaceNotes } from './merge-duplicate-places-modal';
 import { StandardizePlaceTypesModal, findNonStandardTypePlaces } from './standardize-place-types-modal';
@@ -941,7 +940,7 @@ function loadPlaceList(
 		tableContainer.empty();
 
 		// Filter places
-		let filtered = allPlaces.filter(place => {
+		const filtered = allPlaces.filter(place => {
 			// Apply search filter first
 			if (searchQuery) {
 				const query = searchQuery.toLowerCase();

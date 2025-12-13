@@ -5,7 +5,7 @@
  * property aliases, folder locations, and other user preferences.
  */
 
-import { Modal, Setting, Notice, App, SliderComponent, AbstractInputSuggest, TextComponent, TFolder } from 'obsidian';
+import { Setting, Notice, App, SliderComponent, AbstractInputSuggest, TextComponent, TFolder } from 'obsidian';
 import { setIcon } from 'obsidian';
 
 /**
@@ -63,10 +63,6 @@ import type { LucideIconName } from './lucide-icons';
 import type { ArrowStyle, ColorScheme, SpouseEdgeLabelFormat } from '../settings';
 import {
 	PropertyAliasService,
-	CANONICAL_PROPERTY_LABELS,
-	type CanonicalPersonProperty,
-	type CanonicalEventProperty,
-	type CanonicalPlaceProperty,
 	type PropertyMetadata,
 	PERSON_PROPERTY_METADATA,
 	EVENT_PROPERTY_METADATA,
@@ -74,23 +70,15 @@ import {
 } from '../core/property-alias-service';
 import {
 	ValueAliasService,
-	VALUE_ALIAS_FIELD_LABELS,
 	EVENT_TYPE_LABELS,
 	SEX_LABELS,
-	GENDER_IDENTITY_LABELS,
 	PLACE_CATEGORY_LABELS,
 	NOTE_TYPE_LABELS,
 	CANONICAL_EVENT_TYPES,
 	CANONICAL_SEX_VALUES,
-	CANONICAL_GENDER_IDENTITY_VALUES,
 	CANONICAL_PLACE_CATEGORIES,
 	CANONICAL_NOTE_TYPES,
-	type ValueAliasField,
-	type CanonicalEventType,
-	type CanonicalSex,
-	type CanonicalGenderIdentity,
-	type CanonicalPlaceCategory,
-	type CanonicalNoteType
+	type ValueAliasField
 } from '../core/value-alias-service';
 
 /**
@@ -119,8 +107,10 @@ export function renderPreferencesTab(
 		e.preventDefault();
 		// Close Control Center first, then open Obsidian settings to Canvas Roots plugin
 		closeModal?.();
-		(plugin.app as any).setting?.open();
-		(plugin.app as any).setting?.openTabById('canvas-roots');
+		// Access Obsidian's internal settings API (not exported in types)
+		const appWithSettings = plugin.app as App & { setting?: { open: () => void; openTabById: (id: string) => void } };
+		appWithSettings.setting?.open();
+		appWithSettings.setting?.openTabById('canvas-roots');
 	});
 	settingsCallout.appendText('.');
 

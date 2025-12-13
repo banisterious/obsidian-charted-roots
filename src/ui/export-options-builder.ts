@@ -274,7 +274,7 @@ export class ExportOptionsBuilder {
 						livingPersonAgeThreshold: this.settings.livingPersonAgeThreshold,
 						privacyDisplayFormat: effectiveFormat,
 						hideDetailsForLiving: this.settings.hideDetailsForLiving
-				  })
+					})
 				: null;
 
 			// Build filter options for statistics calculation
@@ -287,13 +287,13 @@ export class ExportOptionsBuilder {
 					? {
 							enablePrivacyProtection: effectiveProtection,
 							privacyDisplayFormat: effectiveFormat
-					  }
+						}
 					: undefined
 			};
 
 			// Calculate statistics
 			const statsService = new ExportStatisticsService(this.app);
-			const stats = await statsService.calculateStatistics(graphService, privacyService, filterOptions);
+			const stats = statsService.calculateStatistics(graphService, privacyService, filterOptions);
 
 			// Render statistics
 			this.renderStats(statsPreviewEl, stats);

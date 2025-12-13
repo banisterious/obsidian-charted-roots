@@ -470,7 +470,7 @@ export class FlattenNestedPropertiesModal extends Modal {
 
 			// Re-scan to update display
 			this.scanSummary = null;
-			await this.runScan();
+			this.runScan();
 
 		} finally {
 			this.isApplying = false;

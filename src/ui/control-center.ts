@@ -6465,16 +6465,12 @@ export class ControlCenterModal extends Modal {
 		let suffix = 1;
 		const parentPath = file.parent?.path || '';
 
-		while (true) {
-			const testPath = parentPath
-				? `${parentPath}/${finalName}.md`
-				: `${finalName}.md`;
-			const existingFile = this.app.vault.getAbstractFileByPath(testPath);
-			if (!existingFile) break;
-
+		let testPath = parentPath ? `${parentPath}/${finalName}.md` : `${finalName}.md`;
+		while (this.app.vault.getAbstractFileByPath(testPath)) {
 			suffix++;
 			finalName = `${originalName} (copy ${suffix})`;
 			finalId = originalId ? `${originalId}-copy-${suffix}` : this.generateMapId(finalName);
+			testPath = parentPath ? `${parentPath}/${finalName}.md` : `${finalName}.md`;
 		}
 
 		// Update frontmatter in content

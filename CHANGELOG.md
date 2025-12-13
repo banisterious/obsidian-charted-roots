@@ -9,6 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Stricter ESLint rules** - Added `await-thenable`, `no-base-to-string`, `no-console`, `no-case-declarations`, and `no-constant-condition` rules. Fixed all violations across the codebase.
+
+---
+
+## [0.11.9] - 2025-12-13
+
+### Fixed
+
+- **GEDCOM import race condition with BidirectionalLinker** - Fixed race condition where the BidirectionalLinker would modify files during Phase 1 of import before Phase 2 could replace GEDCOM IDs with cr_ids. The linker is now suspended during import and resumed after completion.
+
+- **GEDCOM import regex substring matching** - Fixed ID replacement where shorter IDs (e.g., `I2`) would match within longer IDs (e.g., `I27`), causing corrupt cr_id formats like `jvc-874-coq-7457`. Replacements are now sorted by length (descending) with lookahead assertions to prevent partial matches.
+
+- **GEDCOM import children_id not replaced in Phase 2** - Fixed missing children_id replacement during relationship update phase. Child references from family records are now collected and replaced alongside parent/spouse IDs.
+
+- **GEDCOM import duplicate name corruption** - Fixed post-import relationship sync corrupting data when importing files with duplicate names (e.g., two "John Smith" people). The sync matched by filename rather than cr_id, causing relationship data to merge incorrectly. GEDCOM data already contains complete bidirectional relationships, so the sync is now skipped.
+
+- **Data quality: corrupt cr_id detection** - Added validation for cr_id format (xxx-123-xxx-123) in orphan reference checks. Invalid formats are now flagged as errors to catch import corruption.
+
 ---
 
 ## [0.11.8] - 2025-12-13

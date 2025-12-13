@@ -100,7 +100,7 @@ export class ExportStatisticsService {
 							filterOptions.branchRootCrId,
 							true,
 							filterOptions.branchIncludeSpouses
-					  );
+						);
 
 			const branchCrIds = new Set(branchPeople.map((p) => p.crId));
 			people = people.filter((person: PersonForStats) => branchCrIds.has(person.crId));

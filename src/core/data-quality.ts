@@ -873,7 +873,7 @@ export class DataQualityService {
 		}
 
 		if (typeof value === 'object' && value !== null) {
-			return Object.keys(value as object);
+			return Object.keys(value);
 		}
 
 		return [];
@@ -1088,14 +1088,14 @@ export class DataQualityService {
 
 		// Import canonical values
 		const { CANONICAL_SEX_VALUES } = await import('./value-alias-service');
-		const canonicalValues = new Set(CANONICAL_SEX_VALUES);
+		const canonicalValues = new Set<string>(CANONICAL_SEX_VALUES);
 
 		for (const person of people) {
 			if (person.sex) {
 				const currentValue = person.sex.trim();
 
 				// Check if already canonical
-				if (canonicalValues.has(currentValue as any)) {
+				if (canonicalValues.has(currentValue)) {
 					results.processed++;
 					continue;
 				}

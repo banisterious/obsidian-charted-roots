@@ -358,7 +358,7 @@ export class GedcomParserV2 {
 			// Under an event
 			if (currentEvent) {
 				switch (tag) {
-					case 'DATE':
+					case 'DATE': {
 						currentEvent.dateRaw = value;
 						const { datePrecision, cleanedDate } = parseDatePrecision(value);
 						currentEvent.datePrecision = datePrecision;
@@ -381,6 +381,7 @@ export class GedcomParserV2 {
 							individual.deathDate = value;
 						}
 						break;
+					}
 
 					case 'PLAC':
 						currentEvent.place = value;
@@ -392,7 +393,7 @@ export class GedcomParserV2 {
 						}
 						break;
 
-					case 'SOUR':
+					case 'SOUR': {
 						// Start a source citation
 						const sourceRef = value.replace(/@/g, '');
 						currentCitation = {
@@ -401,6 +402,7 @@ export class GedcomParserV2 {
 						currentEvent.sourceRefs.push(sourceRef);
 						currentEvent.sourceCitations.push(currentCitation);
 						break;
+					}
 
 					case 'NOTE':
 						if (!currentEvent.description) {
@@ -499,7 +501,7 @@ export class GedcomParserV2 {
 			currentCitation = null;
 
 			switch (tag) {
-				case 'DATE':
+				case 'DATE': {
 					currentEvent.dateRaw = value;
 					const { datePrecision, cleanedDate } = parseDatePrecision(value);
 					currentEvent.datePrecision = datePrecision;
@@ -520,6 +522,7 @@ export class GedcomParserV2 {
 						family.marriageDate = value;
 					}
 					break;
+				}
 
 				case 'PLAC':
 					currentEvent.place = value;
@@ -529,7 +532,7 @@ export class GedcomParserV2 {
 					}
 					break;
 
-				case 'SOUR':
+				case 'SOUR': {
 					// Start a source citation
 					const sourceRef = value.replace(/@/g, '');
 					currentCitation = {
@@ -538,6 +541,7 @@ export class GedcomParserV2 {
 					currentEvent.sourceRefs.push(sourceRef);
 					currentEvent.sourceCitations.push(currentCitation);
 					break;
+				}
 
 				case 'NOTE':
 					if (!currentEvent.description) {

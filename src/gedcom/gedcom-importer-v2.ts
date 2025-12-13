@@ -630,7 +630,7 @@ export class GedcomImporterV2 {
 
 		// DEBUG: Log replacements for debugging spouse_id issues
 		if (replacements.length > 0) {
-			console.log(`[GEDCOM Import] Updating relationships for ${individual.name} (${individual.id}):`,
+			console.debug(`[GEDCOM Import] Updating relationships for ${individual.name} (${individual.id}):`,
 				replacements.map(r => `${r.from} -> ${r.to}`).join(', '));
 		}
 
@@ -1148,7 +1148,7 @@ export class GedcomImporterV2 {
 		let updated = 0;
 
 		// Build a cache of existing place notes by full_name for fast lookup
-		const existingPlaces = await this.buildExistingPlaceCache();
+		const existingPlaces = this.buildExistingPlaceCache();
 
 		// Build a set of all place strings for context-aware type inference
 		const allPlaceStrings = new Set(places.keys());

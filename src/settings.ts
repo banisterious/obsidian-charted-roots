@@ -506,7 +506,9 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		preferencesLink.addEventListener('click', (e) => {
 			e.preventDefault();
 			// Close the plugin settings modal first, then open Control Center
-			(this.app as any).setting?.close();
+			// Access Obsidian's internal settings API (not exported in types)
+			const appWithSettings = this.app as App & { setting?: { close: () => void } };
+			appWithSettings.setting?.close();
 			this.app.workspace.trigger('canvas-roots:open-control-center', 'preferences');
 		});
 		preferencesCallout.appendText(' for easier access alongside other configuration options.');
