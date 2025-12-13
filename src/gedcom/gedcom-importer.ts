@@ -400,6 +400,23 @@ export class GedcomImporter {
 			}
 		}
 
+		// Replace children_id references with real cr_ids
+		for (const [gedcomId, crId] of gedcomToCrId) {
+			if (content.includes(gedcomId)) {
+				const escapedRef = gedcomId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+				// Replace in children_id field (single value)
+				updatedContent = updatedContent.replace(
+					new RegExp(`children_id: ${escapedRef}`, 'g'),
+					`children_id: ${crId}`
+				);
+				// Also replace in array format
+				updatedContent = updatedContent.replace(
+					new RegExp(` {2}- ${escapedRef}`, 'g'),
+					`  - ${crId}`
+				);
+			}
+		}
+
 		// Write updated content if changed
 		if (updatedContent !== content) {
 			await this.app.vault.modify(file, updatedContent);

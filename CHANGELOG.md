@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.11.6] - 2025-12-12
+
+### Fixed
+
+- **GEDCOM import: children_id not replaced with cr_id values** - Fixed missing `children_id` replacement logic in `gedcom-importer.ts` and incorrect field name (`child_id` instead of `children_id`) in `gedcomx-importer.ts`. Now all relationship ID fields are properly replaced during import.
+
+---
+
 ## [0.11.5] - 2025-12-12
 
 Obsidian plugin review fixes (Round 12) and GEDCOM import bug fix.

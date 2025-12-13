@@ -398,20 +398,19 @@ export class GedcomXImporter {
 			}
 		}
 
-		// Replace child_id references with real cr_ids
-		for (const [childId] of gedcomXToCrId) {
-			const childCrId = gedcomXToCrId.get(childId);
-			if (childCrId && content.includes(childId)) {
-				const escapedRef = this.escapeRegex(childId);
-				// Replace in child_id field
+		// Replace children_id references with real cr_ids
+		for (const [gedcomXId, crId] of gedcomXToCrId) {
+			if (content.includes(gedcomXId)) {
+				const escapedRef = this.escapeRegex(gedcomXId);
+				// Replace in children_id field (single value)
 				updatedContent = updatedContent.replace(
-					new RegExp(`child_id: ${escapedRef}`, 'g'),
-					`child_id: ${childCrId}`
+					new RegExp(`children_id: ${escapedRef}`, 'g'),
+					`children_id: ${crId}`
 				);
 				// Also replace in array format
 				updatedContent = updatedContent.replace(
 					new RegExp(` {2}- ${escapedRef}`, 'g'),
-					`  - ${childCrId}`
+					`  - ${crId}`
 				);
 			}
 		}
