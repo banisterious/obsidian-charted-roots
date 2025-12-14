@@ -57,7 +57,7 @@ export function generatePeopleBaseTemplate(aliases: PropertyAliases = {}): strin
   - note.ahnentafel
   - note.daboville
 summaries:
-  generation_span: if(values.length > 0, values.max().year() - values.min().year(), 0)
+  generation_span: if(values.length > 0, (values.max() - values.min()).years.floor(), 0)
 filters:
   and:
     - file.hasProperty("${cr_id}")
@@ -68,8 +68,8 @@ filters:
     - note.${cr_type} != "map"
 formulas:
   display_name: ${name} || file.name
-  full_lifespan: if(${born} && ${died}, ${died}.year() - ${born}.year() + " years", "")
-  age_now: if(${born} && !${died}, now().year() - ${born}.year(), "")
+  full_lifespan: if(${born} && ${died}, (${died} - ${born}).years.floor() + " years", "")
+  age_now: if(${born} && !${died}, (now() - ${born}).years.floor(), "")
   birth_display: if(${born}, ${born}.format("YYYY-MM-DD"), "")
   death_display: if(${died}, ${died}.format("YYYY-MM-DD"), "")
 properties:
@@ -344,7 +344,7 @@ export const BASE_TEMPLATE = `visibleProperties:
   - note.ahnentafel
   - note.daboville
 summaries:
-  generation_span: if(values.length > 0, values.max().year() - values.min().year(), 0)
+  generation_span: if(values.length > 0, (values.max() - values.min()).years.floor(), 0)
 filters:
   and:
     - file.hasProperty("cr_id")
@@ -355,8 +355,8 @@ filters:
     - note.cr_type != "map"
 formulas:
   display_name: name || file.name
-  full_lifespan: if(born && died, died.year() - born.year() + " years", "")
-  age_now: if(born && !died, now().year() - born.year(), "")
+  full_lifespan: if(born && died, (died - born).years.floor() + " years", "")
+  age_now: if(born && !died, (now() - born).years.floor(), "")
   birth_display: if(born, born.format("YYYY-MM-DD"), "")
   death_display: if(died, died.format("YYYY-MM-DD"), "")
 properties:
