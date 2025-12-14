@@ -4881,7 +4881,7 @@ export default class CanvasRootsPlugin extends Plugin {
 
 						// cr_id: Generate if missing
 						if (!frontmatter.cr_id) {
-							frontmatter.cr_id = `place_${generateCrId()}`;
+							frontmatter.cr_id = generateCrId();
 							propertiesAdded = true;
 						}
 
@@ -5143,7 +5143,7 @@ export default class CanvasRootsPlugin extends Plugin {
 
 						// cr_id: Generate if missing
 						if (!frontmatter.cr_id) {
-							frontmatter.cr_id = `event_${generateCrId()}`;
+							frontmatter.cr_id = generateCrId();
 							propertiesAdded = true;
 						}
 
@@ -5246,31 +5246,8 @@ export default class CanvasRootsPlugin extends Plugin {
 							return;
 						}
 
-						// Detect note type and generate appropriate ID
-						const noteType = frontmatter.type || frontmatter.cr_type;
-						let newId: string;
-
-						switch (noteType) {
-							case 'place':
-								newId = `place_${generateCrId()}`;
-								break;
-							case 'event':
-								newId = `event_${generateCrId()}`;
-								break;
-							case 'source':
-							case 'map':
-							case 'schema':
-							case 'organization':
-								// These types use plain cr_id format
-								newId = generateCrId();
-								break;
-							default:
-								// Person notes and unknown types use plain format
-								newId = generateCrId();
-								break;
-						}
-
-						frontmatter.cr_id = newId;
+						// All note types use plain cr_id format (cr_type identifies the note type)
+						frontmatter.cr_id = generateCrId();
 						idAdded = true;
 					});
 
