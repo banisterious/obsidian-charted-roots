@@ -18,6 +18,7 @@ import { GedcomXImporter, GedcomXImportResult } from '../gedcomx/gedcomx-importe
 import { GedcomXParser } from '../gedcomx/gedcomx-parser';
 import { GrampsImporter, GrampsImportResult } from '../gramps/gramps-importer';
 import { GrampsParser } from '../gramps/gramps-parser';
+import { readFileWithDecompression } from '../core/compression-utils';
 import { GedcomImportResultsModal } from './gedcom-import-results-modal';
 import { GedcomImportProgressModal } from './gedcom-import-progress-modal';
 import { SchemaValidationProgressModal } from './schema-validation-progress-modal';
@@ -9351,13 +9352,14 @@ export class ControlCenterModal extends Modal {
 		});
 
 		try {
-			const content = await file.text();
+			// Read file with automatic gzip decompression for .gramps files
+			const content = await readFileWithDecompression(file);
 
 			// Validate it's a Gramps XML file
 			if (!GrampsParser.isGrampsXml(content)) {
 				analysisContainer.empty();
 				analysisContainer.createEl('p', {
-					text: 'This file does not appear to be a valid Gramps XML file.',
+					text: 'This file does not appear to be a valid Gramps XML file. If this is a .gpkg package file, please extract the .gramps file from it first.',
 					cls: 'crc-text-error'
 				});
 				return;
@@ -9411,7 +9413,8 @@ export class ControlCenterModal extends Modal {
 	 */
 	private async handleGrampsImport(file: File, destFolder: string): Promise<void> {
 		try {
-			const content = await file.text();
+			// Read file with automatic gzip decompression for .gramps files
+			const content = await readFileWithDecompression(file);
 
 			logger.info('gramps', `Starting Gramps import: ${file.name} to ${destFolder}`);
 
