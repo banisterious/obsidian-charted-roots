@@ -1,6 +1,7 @@
-import { App, Menu, MenuItem, Modal, Notice, Platform, Setting, TFile, TFolder, setIcon, ToggleComponent } from 'obsidian';
+import { App, Menu, MenuItem, Modal, Notice, Platform, Setting, TFile, TFolder, setIcon, ToggleComponent, normalizePath } from 'obsidian';
 import CanvasRootsPlugin from '../../main';
 import { TAB_CONFIGS, createLucideIcon, setLucideIcon, LucideIconName } from './lucide-icons';
+import { ensureFolderExists } from '../core/canvas-utils';
 import { createPersonNote, PersonData } from '../core/person-note-writer';
 import { PersonPickerModal, PersonInfo, PlaceInfo, extractPlaceInfo } from './person-picker';
 import { VaultStatsService, FullVaultStats } from '../core/vault-stats';
@@ -501,13 +502,18 @@ export class ControlCenterModal extends Modal {
 						: `Family tree ${i + 1} - ${rep.name}.canvas`;
 					const canvasContent = this.formatCanvasJson(canvasData);
 
+					// Use canvasesFolder setting
+					const folder = this.plugin.settings.canvasesFolder || 'Canvas Roots/Canvases';
+					await ensureFolderExists(this.app, folder);
+					const filePath = normalizePath(`${folder}/${fileName}`);
+
 					let file: TFile;
-					const existingFile = this.app.vault.getAbstractFileByPath(fileName);
+					const existingFile = this.app.vault.getAbstractFileByPath(filePath);
 					if (existingFile instanceof TFile) {
 						await this.app.vault.modify(existingFile, canvasContent);
 						file = existingFile;
 					} else {
-						file = await this.app.vault.create(fileName, canvasContent);
+						file = await this.app.vault.create(filePath, canvasContent);
 					}
 
 					results.push({
@@ -4558,7 +4564,11 @@ export class ControlCenterModal extends Modal {
 			// Note: Obsidian uses a specific JSON format: tabs for indentation,
 			// but objects within arrays are compact (single line, no spaces)
 			const canvasContent = this.formatCanvasJson(canvasData);
-			const filePath = `${fileName}`;
+
+			// Use canvasesFolder setting
+			const folder = this.plugin.settings.canvasesFolder || 'Canvas Roots/Canvases';
+			await ensureFolderExists(this.app, folder);
+			const filePath = normalizePath(`${folder}/${fileName}`);
 
 			// Log the actual canvas content being written
 			logger.info('canvas-generation', 'Canvas JSON content to write', {
@@ -4679,7 +4689,11 @@ export class ControlCenterModal extends Modal {
 			// Create canvas file
 			const fileName = 'Collection Overview.canvas';
 			const canvasContent = this.formatCanvasJson(canvasData);
-			const filePath = fileName;
+
+			// Use canvasesFolder setting
+			const folder = this.plugin.settings.canvasesFolder || 'Canvas Roots/Canvases';
+			await ensureFolderExists(this.app, folder);
+			const filePath = normalizePath(`${folder}/${fileName}`);
 
 			let file: TFile;
 			const existingFile = this.app.vault.getAbstractFileByPath(filePath);

@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Canvas generation freeze on large trees** - Trees with more than 200 people now automatically use the D3 hierarchical layout instead of family-chart to prevent UI freeze. Spouse positioning may be less accurate for very large trees, but the canvas will generate successfully.
 
+- **Canvas files not using configured folder** - Generated canvas files now correctly use the "Canvases folder" setting from Preferences. Previously, canvases were created in the vault root instead of the configured folder.
+
 ---
 
 ## [0.12.0] - 2025-12-14
