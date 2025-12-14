@@ -97,6 +97,13 @@ export type LayoutType = 'standard' | 'compact' | 'timeline' | 'hourglass';
  */
 export type FolderFilterMode = 'disabled' | 'exclude' | 'include';
 
+/**
+ * Calendarium integration mode
+ * - 'off': No integration with Calendarium
+ * - 'read': Import calendar definitions from Calendarium (read-only)
+ */
+export type CalendariumIntegrationMode = 'off' | 'read';
+
 export interface CanvasRootsSettings {
 	defaultNodeWidth: number;
 	defaultNodeHeight: number;
@@ -250,6 +257,8 @@ export interface CanvasRootsSettings {
 	allowCircaDates: boolean;
 	allowDateRanges: boolean;
 	requireLeadingZeros: boolean;
+	// Calendarium integration
+	calendariumIntegration: CalendariumIntegrationMode;
 }
 
 /**
@@ -466,7 +475,9 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	allowPartialDates: true,                   // Allow YYYY-MM or YYYY
 	allowCircaDates: true,                     // Allow circa dates (c. 1850, ca. 1920)
 	allowDateRanges: true,                     // Allow date ranges (1850-1920)
-	requireLeadingZeros: false                 // Don't require YYYY-MM-DD format (allow YYYY-M-D)
+	requireLeadingZeros: false,                // Don't require YYYY-MM-DD format (allow YYYY-M-D)
+	// Calendarium integration
+	calendariumIntegration: 'off'              // Default: no integration (invisible to users without Calendarium)
 };
 
 export class CanvasRootsSettingTab extends PluginSettingTab {

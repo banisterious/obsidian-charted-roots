@@ -18,6 +18,8 @@ import {
 	getCategoryName,
 	getEventTypesByCategory
 } from '../types/event-types';
+import { DEFAULT_DATE_SYSTEMS } from '../../dates/constants/default-date-systems';
+import { getCalendariumBridge } from '../../integrations/calendarium-bridge';
 
 /**
  * Modal for creating or editing event notes
@@ -174,17 +176,31 @@ export class CreateEventModal extends Modal {
 
 		// Fictional date system (if enabled)
 		if (this.settings.enableFictionalDates) {
-			const availableSystems = [
-				{ id: '', name: '(Real world dates)' },
-				...this.settings.fictionalDateSystems.map(s => ({ id: s.id, name: s.name }))
+			const availableSystems: { id: string; name: string }[] = [
+				{ id: '', name: '(Real world dates)' }
 			];
 
+			// Add built-in date systems
 			if (this.settings.showBuiltInDateSystems) {
-				// Add built-in date systems
-				availableSystems.push(
-					{ id: 'middle_earth', name: 'Middle-earth' },
-					{ id: 'westeros', name: 'Westeros' }
-				);
+				for (const sys of DEFAULT_DATE_SYSTEMS) {
+					availableSystems.push({ id: sys.id, name: sys.name });
+				}
+			}
+
+			// Add Calendarium calendars if integration is enabled
+			if (this.settings.calendariumIntegration === 'read') {
+				const bridge = getCalendariumBridge(this.app);
+				if (bridge.isAvailable()) {
+					const calendariumSystems = bridge.importCalendars();
+					for (const sys of calendariumSystems) {
+						availableSystems.push({ id: sys.id, name: sys.name });
+					}
+				}
+			}
+
+			// Add custom date systems
+			for (const sys of this.settings.fictionalDateSystems) {
+				availableSystems.push({ id: sys.id, name: sys.name });
 			}
 
 			new Setting(dateSection)

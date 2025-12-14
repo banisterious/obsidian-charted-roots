@@ -80,6 +80,7 @@ import {
 	CANONICAL_NOTE_TYPES,
 	type ValueAliasField
 } from '../core/value-alias-service';
+import { createIntegrationsCard } from '../integrations/integrations-settings';
 
 /**
  * Render the Preferences tab content
@@ -128,6 +129,9 @@ export function renderPreferencesTab(
 
 	// Date Validation card
 	renderDateValidationCard(container, plugin, createCard, showTab);
+
+	// Integrations card (only shows if Calendarium or other integrations are available)
+	createIntegrationsCard(container, plugin, createCard);
 }
 
 /**

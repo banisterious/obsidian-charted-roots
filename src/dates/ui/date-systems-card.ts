@@ -13,6 +13,7 @@ import { FictionalDateParser } from '../parser/fictional-date-parser';
 import { DEFAULT_DATE_SYSTEMS } from '../constants/default-date-systems';
 import { setIcon } from 'obsidian';
 import type { LucideIconName } from '../../ui/lucide-icons';
+import { getCalendariumBridge } from '../../integrations/calendarium-bridge';
 
 /**
  * Create the date systems card for Control Center
@@ -54,7 +55,7 @@ export function createDateSystemsCard(
 
 		// Date systems list container
 		const listContainer = conditionalContainer.createDiv({ cls: 'cr-date-systems-list' });
-		renderDateSystemsList(listContainer, plugin, createCard);
+		void renderDateSystemsList(listContainer, plugin, createCard);
 
 		// Add button
 		new Setting(conditionalContainer)
@@ -138,13 +139,49 @@ export function createDateSystemsCard(
 }
 
 /**
- * Get all active date systems (built-in + custom)
+ * Get all active date systems (built-in + Calendarium + custom)
+ * Async version that properly initializes the Calendarium bridge
+ */
+async function getActiveDateSystemsAsync(plugin: CanvasRootsPlugin): Promise<FictionalDateSystem[]> {
+	const systems: FictionalDateSystem[] = [];
+
+	if (plugin.settings.showBuiltInDateSystems) {
+		systems.push(...DEFAULT_DATE_SYSTEMS);
+	}
+
+	// Add Calendarium calendars if integration is enabled
+	if (plugin.settings.calendariumIntegration === 'read') {
+		const bridge = getCalendariumBridge(plugin.app);
+		if (bridge.isAvailable()) {
+			await bridge.initialize();
+			const calendariumSystems = bridge.importCalendars();
+			systems.push(...calendariumSystems);
+		}
+	}
+
+	systems.push(...plugin.settings.fictionalDateSystems);
+
+	return systems;
+}
+
+/**
+ * Get all active date systems (built-in + Calendarium + custom)
+ * Synchronous version - Calendarium systems may not be included if bridge not yet initialized
  */
 function getActiveDateSystems(plugin: CanvasRootsPlugin): FictionalDateSystem[] {
 	const systems: FictionalDateSystem[] = [];
 
 	if (plugin.settings.showBuiltInDateSystems) {
 		systems.push(...DEFAULT_DATE_SYSTEMS);
+	}
+
+	// Add Calendarium calendars if integration is enabled
+	if (plugin.settings.calendariumIntegration === 'read') {
+		const bridge = getCalendariumBridge(plugin.app);
+		if (bridge.isAvailable()) {
+			const calendariumSystems = bridge.importCalendars();
+			systems.push(...calendariumSystems);
+		}
 	}
 
 	systems.push(...plugin.settings.fictionalDateSystems);
@@ -155,14 +192,14 @@ function getActiveDateSystems(plugin: CanvasRootsPlugin): FictionalDateSystem[] 
 /**
  * Render the list of date systems
  */
-function renderDateSystemsList(
+async function renderDateSystemsList(
 	container: HTMLElement,
 	plugin: CanvasRootsPlugin,
 	createCard: (options: { title: string; icon?: LucideIconName }) => HTMLElement
-): void {
+): Promise<void> {
 	container.empty();
 
-	const systems = getActiveDateSystems(plugin);
+	const systems = await getActiveDateSystemsAsync(plugin);
 
 	if (systems.length === 0) {
 		container.createEl('p', {
@@ -172,43 +209,25 @@ function renderDateSystemsList(
 		return;
 	}
 
-	// Group by built-in vs custom
+	// Group by source: built-in, calendarium, custom
 	const builtIn = systems.filter(s => s.builtIn);
-	const custom = systems.filter(s => !s.builtIn);
+	const calendarium = systems.filter(s => s.source === 'calendarium');
+	const custom = systems.filter(s => !s.builtIn && s.source !== 'calendarium');
 
 	// Built-in systems as table
 	if (builtIn.length > 0) {
 		const builtInSection = container.createDiv({ cls: 'cr-date-systems-section' });
 		builtInSection.createEl('h4', { text: 'Built-in systems', cls: 'cr-subsection-heading' });
 
-		const table = builtInSection.createEl('table', { cls: 'cr-date-systems-table' });
-		const thead = table.createEl('thead');
-		const headerRow = thead.createEl('tr');
-		headerRow.createEl('th', { text: 'Name' });
-		headerRow.createEl('th', { text: 'Eras' });
-		headerRow.createEl('th', { text: 'Universe' });
-		headerRow.createEl('th', { text: '', cls: 'cr-date-systems-table__actions' });
+		renderDateSystemsTable(builtInSection, builtIn, plugin);
+	}
 
-		const tbody = table.createEl('tbody');
-		for (const system of builtIn) {
-			const row = tbody.createEl('tr');
-			row.createEl('td', { text: system.name });
-			row.createEl('td', { text: system.eras.map(e => e.abbrev).join(', ') });
-			row.createEl('td', { text: system.universe || '—' });
+	// Calendarium systems as table (view-only)
+	if (calendarium.length > 0) {
+		const calendariumSection = container.createDiv({ cls: 'cr-date-systems-section' });
+		calendariumSection.createEl('h4', { text: 'From Calendarium', cls: 'cr-subsection-heading' });
 
-			// View button
-			const actionsCell = row.createEl('td', { cls: 'cr-date-systems-table__actions' });
-			const viewBtn = actionsCell.createEl('button', {
-				cls: 'cr-btn-icon',
-				attr: { 'aria-label': 'View details' }
-			});
-			setIcon(viewBtn, 'eye');
-			viewBtn.addEventListener('click', () => {
-				new DateSystemModal(plugin.app, plugin, system, async () => {
-					// No-op for view-only
-				}, true).open();
-			});
-		}
+		renderDateSystemsTable(calendariumSection, calendarium, plugin);
 	}
 
 	// Custom systems (keep card style for edit/delete actions)
@@ -219,6 +238,44 @@ function renderDateSystemsList(
 		for (const system of custom) {
 			createSystemItem(customSection, system, plugin, false, container, createCard);
 		}
+	}
+}
+
+/**
+ * Render a table of date systems (used for built-in and Calendarium systems)
+ */
+function renderDateSystemsTable(
+	container: HTMLElement,
+	systems: FictionalDateSystem[],
+	plugin: CanvasRootsPlugin
+): void {
+	const table = container.createEl('table', { cls: 'cr-date-systems-table' });
+	const thead = table.createEl('thead');
+	const headerRow = thead.createEl('tr');
+	headerRow.createEl('th', { text: 'Name' });
+	headerRow.createEl('th', { text: 'Eras' });
+	headerRow.createEl('th', { text: 'Universe' });
+	headerRow.createEl('th', { text: '', cls: 'cr-date-systems-table__actions' });
+
+	const tbody = table.createEl('tbody');
+	for (const system of systems) {
+		const row = tbody.createEl('tr');
+		row.createEl('td', { text: system.name });
+		row.createEl('td', { text: system.eras.map(e => e.abbrev).join(', ') });
+		row.createEl('td', { text: system.universe || '—' });
+
+		// View button
+		const actionsCell = row.createEl('td', { cls: 'cr-date-systems-table__actions' });
+		const viewBtn = actionsCell.createEl('button', {
+			cls: 'cr-btn-icon',
+			attr: { 'aria-label': 'View details' }
+		});
+		setIcon(viewBtn, 'eye');
+		viewBtn.addEventListener('click', () => {
+			new DateSystemModal(plugin.app, plugin, system, async () => {
+				// No-op for view-only
+			}, true).open();
+		});
 	}
 }
 

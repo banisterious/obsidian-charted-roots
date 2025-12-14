@@ -48,6 +48,14 @@ export interface FictionalDateSystem {
 	defaultEra?: string;
 	/** Whether this is a built-in system (read-only) */
 	builtIn?: boolean;
+	/**
+	 * Source of this date system definition
+	 * - undefined or 'custom': User-defined in Canvas Roots settings
+	 * - 'calendarium': Imported from Calendarium plugin
+	 */
+	source?: 'custom' | 'calendarium';
+	/** Original calendar name in Calendarium (when source is 'calendarium') */
+	calendariumName?: string;
 }
 
 /**
