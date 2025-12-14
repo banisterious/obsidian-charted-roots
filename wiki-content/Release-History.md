@@ -95,7 +95,7 @@ See [Fictional Date Systems - Calendarium Integration](Fictional-Date-Systems#ca
 
 Complete overhaul of export functionality with full entity support and round-trip fidelity with GEDCOM Import v2.
 
-See [export-v2.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/export-v2.md) for implementation plan.
+See [export-v2.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/export-v2.md) for implementation plan.
 
 **Problem Solved:**
 - Previous exports only included people (person notes)
@@ -204,7 +204,7 @@ Export GEDCOM → 500 people, 350 events, 200 sources, 150 places (full fidelity
 
 Separate `gender_identity` field for inclusive handling of sex and gender, with full export support across all formats.
 
-See [sex-gender-expansion.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/sex-gender-expansion.md) for implementation plan (Phases 1-3).
+See [sex-gender-expansion.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/sex-gender-expansion.md) for implementation plan (Phases 1-3).
 
 **Problem Solved:**
 - The `sex` field follows GEDCOM standards (M/F) for historical record compatibility, but doesn't capture gender identity
@@ -252,7 +252,7 @@ When documenting trans individuals:
 
 Consolidated property and value alias management in a single interface with comprehensive coverage of all canonical properties.
 
-See [unified-property-config.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/unified-property-config.md) for implementation plan.
+See [unified-property-config.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/unified-property-config.md) for implementation plan.
 
 **Problem Solved:**
 - Property aliases were managed through modal-based workflows with limited discoverability
@@ -306,7 +306,7 @@ See [unified-property-config.md](https://github.com/banisterious/obsidian-canvas
 
 Commands and UI tools to upgrade existing vaults by creating missing linked entities from existing person note data. Designed for users who imported GEDCOM before Canvas Roots supported event, place, or source note types.
 
-See [data-enhancement-pass.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/data-enhancement-pass.md) for implementation plan.
+See [data-enhancement-pass.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/data-enhancement-pass.md) for implementation plan.
 
 **Use Cases:**
 - Imported GEDCOM before v0.10.0: No event notes were created; birth/death dates are flat properties
@@ -545,7 +545,7 @@ groups:
 
 Extend Property Aliases to support custom property *values*. Allows users with existing vaults to use custom terminology (e.g., `nameday` instead of `birth` for event types) without editing existing notes.
 
-See [value-aliases.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/value-aliases.md) for implementation plan.
+See [value-aliases.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/value-aliases.md) for implementation plan.
 
 **Features:**
 - Map custom values to Canvas Roots canonical values
@@ -585,7 +585,7 @@ See [Settings & Configuration](Settings-And-Configuration) wiki page for configu
 
 Dedicated Events tab in the Control Center improves discoverability of Fictional Date Systems and provides foundation for Chronological Story Mapping features.
 
-See [events-tab.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/events-tab.md) for implementation details.
+See [events-tab.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/events-tab.md) for implementation details.
 
 **Features:**
 - **Date systems card**: Moved from Canvas Settings with all existing functionality
@@ -619,7 +619,7 @@ See [Styling & Theming](Styling-And-Theming) wiki page for full documentation.
 
 Visual research methodology tools aligned with the Genealogical Proof Standard (GPS).
 
-See [evidence-visualization-plan.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/evidence-visualization-plan.md) for implementation details.
+See [evidence-visualization-plan.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/evidence-visualization-plan.md) for implementation details.
 
 **Genealogical Standards Support:**
 
@@ -824,7 +824,7 @@ See [Schema Validation](Schema-Validation) wiki page for full documentation.
 
 Dedicated Maps tab in Control Center for geographic features management.
 
-See [maps-tab.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/maps-tab.md) for implementation details.
+See [maps-tab.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/maps-tab.md) for implementation details.
 
 **Features:**
 - Dedicated Maps tab in Control Center with 4 cards
@@ -850,7 +850,7 @@ See [maps-tab.md](https://github.com/banisterious/obsidian-canvas-roots/blob/mai
 
 Interactive Map View with Leaflet.js for visualizing family history geographically.
 
-See [leaflet-maps-plan.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/leaflet-maps-plan.md) for implementation details.
+See [leaflet-maps-plan.md](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/leaflet-maps-plan.md) for implementation details.
 
 **Features:**
 - Interactive Map View with Leaflet.js and OpenStreetMap tiles

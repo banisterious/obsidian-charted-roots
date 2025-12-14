@@ -219,7 +219,7 @@ See [Bulk Source-Image Linking Planning Document](https://github.com/banisteriou
 - Respects universe-scoped schemas for available values
 - Uses existing Data Quality tab infrastructure
 
-See [Sex/Gender Identity Expansion Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/sex-gender-expansion.md) for full context (Phase 4).
+See [Sex/Gender Identity Expansion Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/sex-gender-expansion.md) for full context (Phase 4).
 
 ---
 
@@ -277,7 +277,7 @@ See [Fictional Date Systems - Calendarium Integration](Fictional-Date-Systems#ca
 
 **Future Consideration:** Per-calendar frontmatter fields (e.g., `mycalendar-date` instead of `fc-calendar` + `fc-date`) to allow one note to have dates across multiple calendars.
 
-See [Calendarium Integration Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/calendarium-integration.md) for implementation details.
+See [Calendarium Integration Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/calendarium-integration.md) for implementation details.
 
 ---
 
