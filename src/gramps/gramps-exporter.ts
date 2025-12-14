@@ -80,7 +80,20 @@ interface GrampsExportContext {
 	eventHandles: Map<string, string>;  // event key -> handle
 	familyHandles: Map<string, string>; // family key -> handle
 	placeHandles: Map<string, string>;  // place name -> handle
+	/** Additional places created from event references (not in PlaceGraphService) */
+	additionalPlaces: Map<string, string>; // place name -> handle
 	handleCounter: number;
+}
+
+/**
+ * Family data extracted for building person back-references
+ */
+interface FamilyData {
+	handle: string;
+	key: string;
+	father?: string;  // person handle
+	mother?: string;  // person handle
+	children: string[]; // person handles
 }
 
 /**
@@ -305,6 +318,7 @@ export class GrampsExporter {
 			eventHandles: new Map(),
 			familyHandles: new Map(),
 			placeHandles: new Map(),
+			additionalPlaces: new Map(),
 			handleCounter: 1
 		};
 
@@ -321,12 +335,25 @@ export class GrampsExporter {
 			context.personHandles.set(person.crId, handle);
 		});
 
+		// Pre-populate placeHandles from PlaceGraphService places
+		// This allows events to reference existing places by name
+		const placeHandleMap = new Map<string, string>();
+		for (const place of places) {
+			const handle = `_p${this.generateHandle(context)}`;
+			placeHandleMap.set(place.id, handle);
+			// Also map by name for event lookups
+			context.placeHandles.set(place.name, handle);
+		}
+
+		// Build families FIRST to populate familyHandles (needed for person back-references)
+		const familyData = this.extractFamilyData(people, context);
+
 		// Build XML sections
 		const sourcesXml = this.buildSources(sources, sourceHandles, context);
 		const eventsXml = this.buildEvents(people, events, context, sourceHandles, privacyService);
-		const placesXml = this.buildPlaces(places, context);
-		const persons = this.buildPersons(people, events, context, privacyService);
-		const families = this.buildFamilies(people, context);
+		const placesXml = this.buildPlaces(places, context, placeHandleMap);
+		const persons = this.buildPersons(people, events, context, privacyService, familyData);
+		const families = this.buildFamiliesXml(familyData, context);
 
 		// Get current date
 		const now = new Date();
@@ -557,20 +584,9 @@ ${families.xml}
 	 */
 	private buildPlaces(
 		places: PlaceNode[],
-		context: GrampsExportContext
+		context: GrampsExportContext,
+		placeHandleMap: Map<string, string>
 	): { xml: string; count: number } {
-		// Build map of place handles (cr_id -> handle)
-		const placeHandleMap = new Map<string, string>();
-		for (const place of places) {
-			const handle = `_p${this.generateHandle(context)}`;
-			placeHandleMap.set(place.id, handle);
-		}
-
-		// If no places, return empty section
-		if (places.length === 0) {
-			return { xml: '  <places/>', count: 0 };
-		}
-
 		const placeLines: string[] = [];
 		let placeCounter = 1;
 
@@ -578,8 +594,11 @@ ${families.xml}
 			const handle = placeHandleMap.get(place.id);
 			if (!handle) continue;
 
-			// Get place type for Gramps (map to Gramps types)
-			const placeType = this.mapPlaceTypeToGramps(place.placeType);
+			// Get place type for Gramps (map to Gramps types, or infer if not set)
+			let placeType = this.mapPlaceTypeToGramps(place.placeType);
+			if (!placeType) {
+				placeType = this.inferPlaceType(place, places);
+			}
 
 			placeLines.push(`    <placeobj handle="${handle}" id="P${placeCounter++}"${placeType ? ` type="${this.escapeXml(placeType)}"` : ''}>`);
 
@@ -606,9 +625,28 @@ ${families.xml}
 			placeLines.push('    </placeobj>');
 		}
 
+		// Also output additional places created from event references
+		// These are places referenced in events but not in PlaceGraphService
+		for (const [placeName, handle] of context.additionalPlaces) {
+			// Infer type from name
+			const placeType = this.inferPlaceTypeFromName(placeName) || 'Locality';
+			const grampsType = placeType.charAt(0).toUpperCase() + placeType.slice(1);
+
+			placeLines.push(`    <placeobj handle="${handle}" id="P${placeCounter++}" type="${this.escapeXml(grampsType)}">`);
+			placeLines.push(`      <ptitle>${this.escapeXml(placeName)}</ptitle>`);
+			placeLines.push(`      <pname value="${this.escapeXml(placeName)}"/>`);
+			placeLines.push('    </placeobj>');
+		}
+
+		const totalCount = places.length + context.additionalPlaces.size;
+
+		if (placeLines.length === 0) {
+			return { xml: '  <places/>', count: 0 };
+		}
+
 		return {
 			xml: '  <places>\n' + placeLines.join('\n') + '\n  </places>',
-			count: places.length
+			count: totalCount
 		};
 	}
 
@@ -668,13 +706,177 @@ ${families.xml}
 	}
 
 	/**
+	 * Infer place type from name patterns and hierarchy when not explicitly set
+	 */
+	private inferPlaceType(place: PlaceNode, allPlaces: PlaceNode[]): string {
+		const name = place.name.toLowerCase();
+
+		// Check for administrative division suffixes in the name
+		if (name.includes(' county') || name.endsWith(' co') || name.endsWith(' co.')) {
+			return 'County';
+		}
+		if (name.includes(' parish')) {
+			return 'Parish';
+		}
+		if (name.includes(' township') || name.includes(' twp')) {
+			return 'Township';
+		}
+		if (name.includes(' district')) {
+			return 'District';
+		}
+		if (name.includes(' borough')) {
+			return 'Borough';
+		}
+		if (name.includes(' province')) {
+			return 'Province';
+		}
+		if (name.includes(' region')) {
+			return 'Region';
+		}
+
+		// Check for specific place types in name
+		if (name.includes(' cemetery') || name.includes(' graveyard')) {
+			return 'Cemetery';
+		}
+		if (name.includes(' church') || name.includes(' cathedral') || name.includes(' chapel')) {
+			return 'Church';
+		}
+		if (name.includes(' hospital')) {
+			return 'Building';
+		}
+		if (name.includes(' farm') || name.includes(' plantation') || name.includes(' ranch')) {
+			return 'Farm';
+		}
+
+		// Check for country names (common ones)
+		const countryNames = [
+			'united states', 'usa', 'us', 'united kingdom', 'uk', 'great britain',
+			'canada', 'australia', 'germany', 'france', 'ireland', 'scotland',
+			'england', 'wales', 'italy', 'spain', 'mexico', 'brazil', 'india',
+			'china', 'japan', 'russia', 'poland', 'netherlands', 'belgium',
+			'sweden', 'norway', 'denmark', 'finland', 'switzerland', 'austria'
+		];
+		if (countryNames.includes(name) || countryNames.some(c => name === c)) {
+			return 'Country';
+		}
+
+		// Check for US state names (without needing parent info)
+		const usStates = [
+			'alabama', 'alaska', 'arizona', 'arkansas', 'california', 'colorado',
+			'connecticut', 'delaware', 'florida', 'georgia', 'hawaii', 'idaho',
+			'illinois', 'indiana', 'iowa', 'kansas', 'kentucky', 'louisiana',
+			'maine', 'maryland', 'massachusetts', 'michigan', 'minnesota',
+			'mississippi', 'missouri', 'montana', 'nebraska', 'nevada',
+			'new hampshire', 'new jersey', 'new mexico', 'new york', 'north carolina',
+			'north dakota', 'ohio', 'oklahoma', 'oregon', 'pennsylvania',
+			'rhode island', 'south carolina', 'south dakota', 'tennessee', 'texas',
+			'utah', 'vermont', 'virginia', 'washington', 'west virginia',
+			'wisconsin', 'wyoming', 'district of columbia'
+		];
+		if (usStates.includes(name)) {
+			return 'State';
+		}
+
+		// Check parent type to infer child type
+		if (place.parentId) {
+			const parent = allPlaces.find(p => p.id === place.parentId);
+			if (parent) {
+				// Get parent type - either explicit or inferred
+				const parentType = parent.placeType?.toLowerCase() ||
+					this.inferPlaceTypeFromName(parent.name);
+
+				// If parent is a country, child is likely a state/province
+				if (parentType === 'country') {
+					return 'State';
+				}
+				// If parent is a state, child is likely a county
+				if (parentType === 'state' || parentType === 'province') {
+					return 'County';
+				}
+				// If parent is a county, child is likely a city/town
+				if (parentType === 'county' || parentType === 'parish') {
+					return 'City';
+				}
+				// If parent is a city, child is likely a neighborhood or address
+				if (parentType === 'city' || parentType === 'town' || parentType === 'locality') {
+					return 'Neighborhood';
+				}
+			}
+		}
+
+		// Check if this place has children (use childIds if available, or search)
+		const hasChildren = (place.childIds && place.childIds.length > 0) ||
+			allPlaces.some(p => p.parentId === place.id);
+		if (hasChildren) {
+			// Count hierarchy depth to guess type
+			let depth = 0;
+			let currentId = place.parentId;
+			while (currentId) {
+				depth++;
+				const parent = allPlaces.find(p => p.id === currentId);
+				currentId = parent?.parentId;
+			}
+
+			// Root level with children = likely Country
+			if (depth === 0) return 'Country';
+			// One level deep with children = likely State
+			if (depth === 1) return 'State';
+			// Two levels deep with children = likely County
+			if (depth === 2) return 'County';
+			// Three levels deep with children = likely City
+			if (depth === 3) return 'City';
+		}
+
+		// Default to Locality for places without clear type indicators
+		// This is better than "Unknown" - it's a valid Gramps type for general places
+		return 'Locality';
+	}
+
+	/**
+	 * Quick name-based type inference (used when checking parent types recursively)
+	 */
+	private inferPlaceTypeFromName(name: string): string | undefined {
+		const lowerName = name.toLowerCase();
+
+		// Countries
+		const countryNames = [
+			'united states', 'usa', 'us', 'united kingdom', 'uk', 'great britain',
+			'canada', 'australia', 'germany', 'france', 'ireland', 'scotland',
+			'england', 'wales', 'italy', 'spain', 'mexico'
+		];
+		if (countryNames.includes(lowerName)) return 'country';
+
+		// US States
+		const usStates = [
+			'alabama', 'alaska', 'arizona', 'arkansas', 'california', 'colorado',
+			'connecticut', 'delaware', 'florida', 'georgia', 'hawaii', 'idaho',
+			'illinois', 'indiana', 'iowa', 'kansas', 'kentucky', 'louisiana',
+			'maine', 'maryland', 'massachusetts', 'michigan', 'minnesota',
+			'mississippi', 'missouri', 'montana', 'nebraska', 'nevada',
+			'new hampshire', 'new jersey', 'new mexico', 'new york', 'north carolina',
+			'north dakota', 'ohio', 'oklahoma', 'oregon', 'pennsylvania',
+			'rhode island', 'south carolina', 'south dakota', 'tennessee', 'texas',
+			'utah', 'vermont', 'virginia', 'washington', 'west virginia',
+			'wisconsin', 'wyoming'
+		];
+		if (usStates.includes(lowerName)) return 'state';
+
+		// Administrative suffixes
+		if (lowerName.includes(' county') || lowerName.endsWith(' co')) return 'county';
+		if (lowerName.includes(' parish')) return 'parish';
+
+		return undefined;
+	}
+
+	/**
 	 * Build persons section
 	 */
 	private buildPersons(
 		people: PersonNode[],
 		events: EventNote[],
 		context: GrampsExportContext,
-		privacyService: PrivacyService | null
+		privacyService: PrivacyService | null,
+		familyData: FamilyData[]
 	): { xml: string } {
 		const personLines: string[] = [];
 		let personCounter = 1;
@@ -778,8 +980,20 @@ ${families.xml}
 				personLines.push('      <attribute type="Gender Identity" value="' + this.escapeXml(genderIdentity) + '"/>');
 			}
 
-			// Family references (childof and parentin) - added after families are built
-			// For now, just close the person tag
+			// Add family back-references (childof and parentin)
+			// childof: families where this person is a child
+			// parentin: families where this person is a parent (father or mother)
+			for (const family of familyData) {
+				// Check if this person is a child in this family
+				if (family.children.includes(handle)) {
+					personLines.push(`      <childof hlink="${family.handle}"/>`);
+				}
+				// Check if this person is a parent in this family
+				if (family.father === handle || family.mother === handle) {
+					personLines.push(`      <parentin hlink="${family.handle}"/>`);
+				}
+			}
+
 			personLines.push('    </person>');
 		}
 
@@ -910,6 +1124,146 @@ ${families.xml}
 	}
 
 	/**
+	 * Extract family data for building person back-references
+	 * This must be called BEFORE buildPersons() so we know which families each person belongs to
+	 */
+	private extractFamilyData(
+		people: PersonNode[],
+		context: GrampsExportContext
+	): FamilyData[] {
+		const familiesMap = new Map<string, {
+			father?: string;
+			mother?: string;
+			children: string[];
+		}>();
+
+		// Build families from parent-child relationships
+		for (const person of people) {
+			const fatherHandle = person.fatherCrId ? context.personHandles.get(person.fatherCrId) : undefined;
+			const motherHandle = person.motherCrId ? context.personHandles.get(person.motherCrId) : undefined;
+			const childHandle = context.personHandles.get(person.crId);
+
+			if (!childHandle) continue;
+			if (!fatherHandle && !motherHandle) continue;
+
+			// Create family key from parents
+			const familyKey = `${fatherHandle || 'none'}:${motherHandle || 'none'}`;
+
+			if (!familiesMap.has(familyKey)) {
+				familiesMap.set(familyKey, {
+					father: fatherHandle,
+					mother: motherHandle,
+					children: []
+				});
+			}
+
+			familiesMap.get(familyKey)!.children.push(childHandle);
+		}
+
+		// Also create couple-only families for spouses without children
+		for (const person of people) {
+			const personHandle = context.personHandles.get(person.crId);
+			if (!personHandle) continue;
+
+			if (person.spouseCrIds && person.spouseCrIds.length > 0) {
+				for (const spouseId of person.spouseCrIds) {
+					const spouseHandle = context.personHandles.get(spouseId);
+					if (!spouseHandle) continue;
+
+					// Sort handles to create consistent key
+					const [h1, h2] = [personHandle, spouseHandle].sort();
+					const familyKey = `${h1}:${h2}`;
+
+					if (!familiesMap.has(familyKey)) {
+						// Determine who is father/mother based on sex
+						const personData = people.find(p => p.crId === person.crId);
+						const spouseData = people.find(p => p.crId === spouseId);
+
+						let father: string | undefined;
+						let mother: string | undefined;
+
+						if (personData?.sex === 'M') {
+							father = personHandle;
+							mother = spouseHandle;
+						} else if (personData?.sex === 'F') {
+							father = spouseHandle;
+							mother = personHandle;
+						} else if (spouseData?.sex === 'M') {
+							father = spouseHandle;
+							mother = personHandle;
+						} else if (spouseData?.sex === 'F') {
+							father = personHandle;
+							mother = spouseHandle;
+						} else {
+							// Unknown sex, just assign arbitrarily
+							father = h1;
+							mother = h2;
+						}
+
+						familiesMap.set(familyKey, {
+							father,
+							mother,
+							children: []
+						});
+					}
+				}
+			}
+		}
+
+		// Convert to FamilyData array and assign handles
+		const familyDataList: FamilyData[] = [];
+		familiesMap.forEach((family, key) => {
+			const familyHandle = `_f${this.generateHandle(context)}`;
+			context.familyHandles.set(key, familyHandle);
+
+			familyDataList.push({
+				handle: familyHandle,
+				key,
+				father: family.father,
+				mother: family.mother,
+				children: family.children
+			});
+		});
+
+		return familyDataList;
+	}
+
+	/**
+	 * Build families XML from pre-extracted family data
+	 */
+	private buildFamiliesXml(
+		familyData: FamilyData[],
+		context: GrampsExportContext
+	): { xml: string; count: number } {
+		if (familyData.length === 0) {
+			return { xml: '  <families/>', count: 0 };
+		}
+
+		const familyLines: string[] = [];
+		let familyCounter = 1;
+
+		for (const family of familyData) {
+			familyLines.push(`    <family handle="${family.handle}" id="F${familyCounter++}">`);
+			familyLines.push('      <rel type="Married"/>');
+			if (family.father) {
+				familyLines.push(`      <father hlink="${family.father}"/>`);
+			}
+			if (family.mother) {
+				familyLines.push(`      <mother hlink="${family.mother}"/>`);
+			}
+			for (const childHandle of family.children) {
+				familyLines.push(`      <childref hlink="${childHandle}"/>`);
+			}
+			familyLines.push('    </family>');
+		}
+
+		return {
+			xml: '  <families>\n' + familyLines.join('\n') + '\n  </families>',
+			count: familyCounter - 1
+		};
+	}
+
+	/**
 	 * Generate a unique handle
 	 */
 	private generateHandle(context: GrampsExportContext): string {
@@ -919,14 +1273,21 @@ ${families.xml}
 
 	/**
 	 * Get or create a place handle
+	 * If the place doesn't exist in placeHandles (from PlaceGraphService),
+	 * creates a new handle and tracks it in additionalPlaces for XML output
 	 */
 	private getOrCreatePlace(placeName: string, context: GrampsExportContext): string {
 		if (context.placeHandles.has(placeName)) {
 			return context.placeHandles.get(placeName)!;
 		}
 
+		// Check if we already created this additional place
+		if (context.additionalPlaces.has(placeName)) {
+			return context.additionalPlaces.get(placeName)!;
+		}
+
 		const handle = `_p${this.generateHandle(context)}`;
-		context.placeHandles.set(placeName, handle);
+		context.additionalPlaces.set(placeName, handle);
 		return handle;
 	}
 

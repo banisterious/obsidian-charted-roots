@@ -335,7 +335,7 @@ export class GedcomExporter {
 			sourceCounter++;
 		}
 
-		// Build individual records
+		// Build individual ID map first
 		const crIdToGedcomId = new Map<string, string>();
 		let individualCounter = 1;
 
@@ -345,6 +345,43 @@ export class GedcomExporter {
 			individualCounter++;
 		}
 
+		// Extract families BEFORE building individual records (needed for FAMS/FAMC references)
+		const families = this.extractFamilies(people, crIdToGedcomId);
+
+		// Assign family IDs and build lookup maps
+		const familyIdMap = new Map<GedcomFamilyRecord, string>();
+		let familyCounter = 1;
+		for (const family of families) {
+			const familyId = `F${familyCounter}`;
+			familyIdMap.set(family, familyId);
+			familyCounter++;
+		}
+
+		// Build FAMS lookup (person GEDCOM ID -> family IDs where they are a spouse)
+		const famsLookup = new Map<string, string[]>();
+		// Build FAMC lookup (person GEDCOM ID -> family ID where they are a child)
+		const famcLookup = new Map<string, string>();
+
+		for (const [family, familyId] of familyIdMap) {
+			// FAMS: families where person is husband or wife
+			if (family.husbandId) {
+				const existing = famsLookup.get(family.husbandId) || [];
+				existing.push(familyId);
+				famsLookup.set(family.husbandId, existing);
+			}
+			if (family.wifeId) {
+				const existing = famsLookup.get(family.wifeId) || [];
+				existing.push(familyId);
+				famsLookup.set(family.wifeId, existing);
+			}
+
+			// FAMC: family where person is a child
+			for (const childId of family.childIds) {
+				famcLookup.set(childId, familyId);
+			}
+		}
+
+		// Build individual records with FAMS/FAMC references
 		for (const person of people) {
 			const gedcomId = crIdToGedcomId.get(person.crId);
 			if (!gedcomId) continue;
@@ -356,18 +393,15 @@ export class GedcomExporter {
 				events,
 				sourceIdMap,
 				options,
-				privacyService
+				privacyService,
+				famsLookup.get(gedcomId),
+				famcLookup.get(gedcomId)
 			));
 		}
 
 		// Build family records
-		const families = this.extractFamilies(people, crIdToGedcomId);
-
-		let familyCounter = 1;
-		for (const family of families) {
-			const familyId = `F${familyCounter}`;
+		for (const [family, familyId] of familyIdMap) {
 			lines.push(...this.buildFamilyRecord(family, familyId));
-			familyCounter++;
 		}
 
 		// Build trailer
@@ -520,7 +554,9 @@ export class GedcomExporter {
 		events: EventNote[],
 		sourceIdMap: Map<string, string>,
 		options: GedcomExportOptions,
-		privacyService: PrivacyService | null
+		privacyService: PrivacyService | null,
+		famsIds?: string[],
+		famcId?: string
 	): string[] {
 		const lines: string[] = [];
 
@@ -608,6 +644,18 @@ export class GedcomExporter {
 		if (options.includeCustomRelationships && this.relationshipService) {
 			const assoLines = this.buildAssoRecords(person, _crIdToGedcomId);
 			lines.push(...assoLines);
+		}
+
+		// FAMS - families where this person is a spouse
+		if (famsIds && famsIds.length > 0) {
+			for (const famsId of famsIds) {
+				lines.push(`1 FAMS @${famsId}@`);
+			}
+		}
+
+		// FAMC - family where this person is a child
+		if (famcId) {
+			lines.push(`1 FAMC @${famcId}@`);
 		}
 
 		// UUID preservation using _UID custom tag
