@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.12.x](#v012x)
+  - [Dynamic Note Content](#dynamic-note-content-v0128)
   - [Gramps Source Import](#gramps-source-import-v0126)
   - [Bulk Source-Image Linking](#bulk-source-image-linking-v0125)
   - [Calendarium Integration Phase 1](#calendarium-integration-phase-1-v0120)
@@ -43,6 +44,77 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.12.x
+
+### Dynamic Note Content (v0.12.8)
+
+Live computed content blocks within person notes using custom code block processors. Content updates dynamically from vault data with option to freeze to static markdown.
+
+**Problem Solved:**
+- Person notes contained only frontmatter and user-written content
+- Computed data (timelines, relationships) required navigating to Control Center
+- No way to see a person's full story in one place
+
+**Features:**
+
+| Feature | Description |
+|---------|-------------|
+| **Timeline block** | `canvas-roots-timeline` renders chronological events for a person |
+| **Relationships block** | `canvas-roots-relationships` shows family members with wikilinks |
+| **Freeze to markdown** | Convert live blocks to static markdown via toolbar button |
+| **Create Person toggle** | Option to include blocks when creating new person notes |
+| **Import wizard toggle** | Option to include blocks during GEDCOM/Gramps/CSV import |
+| **Insert commands** | Context menu and command palette actions for existing notes |
+| **Bulk insert** | Add blocks to all person notes in a folder |
+
+**Code Block Types:**
+
+~~~markdown
+```canvas-roots-timeline
+sort: chronological
+```
+
+```canvas-roots-relationships
+type: immediate
+```
+~~~
+
+**Timeline Block:**
+- Shows birth, death, and all linked events chronologically
+- Displays year, event title, and place with wikilinks
+- Configuration options: `sort` (chronological/reverse), `include`/`exclude` event types, `limit`
+
+**Relationships Block:**
+- Shows parents, spouse(s), children, and optionally siblings
+- Each person rendered as clickable wikilink with birth-death dates
+- Configuration options: `type` (immediate/extended/all), `include`/`exclude` relationship types
+
+**Freeze to Markdown:**
+- Toolbar button converts live block to static markdown
+- Preserves wikilinks and formatting
+- Useful for export compatibility or manual editing
+
+**Inserting Blocks:**
+
+| Method | Description |
+|--------|-------------|
+| **Create Person modal** | "Include dynamic blocks" toggle |
+| **Import wizards** | "Include dynamic blocks" toggle in GEDCOM/Gramps/CSV import |
+| **Context menu** | Right-click person note → "Insert dynamic blocks" |
+| **Command palette** | "Canvas Roots: Insert dynamic blocks" |
+| **Bulk insert** | Right-click folder → "Insert dynamic blocks in folder" |
+
+**Technical Details:**
+- Uses Obsidian's `registerMarkdownCodeBlockProcessor` API
+- `DynamicContentService` provides shared utilities for config parsing and data resolution
+- `TimelineProcessor` and `RelationshipsProcessor` handle block rendering
+- Content computed on note open; manual refresh via code block edit
+
+**Bug Fixes (v0.12.8):**
+- Fixed Family Chart zoom buttons showing "NaN%" and causing chart to vanish (incorrect scale multiplier)
+- Fixed "Open family chart" showing wrong person instead of current note
+- Fixed Family Chart opening in sidebar instead of main workspace
+
+---
 
 ### Gramps Source Import (v0.12.6)
 
