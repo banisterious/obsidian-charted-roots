@@ -450,8 +450,11 @@ export class FamilyChartView extends ItemView {
 		// Build set of valid IDs first (needed to filter out broken relationship references)
 		const validIds = new Set(people.map(p => p.crId));
 
+		// Build a map for O(1) lookups during child validation
+		const peopleMap = new Map(people.map(p => [p.crId, p]));
+
 		// Transform to family-chart format, filtering relationship IDs to only valid ones
-		this.chartData = people.map(person => this.transformPersonNode(person, validIds));
+		this.chartData = people.map(person => this.transformPersonNode(person, validIds, peopleMap));
 
 		logger.debug('data-load', 'Loaded chart data', { count: this.chartData.length });
 	}
@@ -460,8 +463,9 @@ export class FamilyChartView extends ItemView {
 	 * Transform PersonNode to family-chart format
 	 * @param person The person node to transform
 	 * @param validIds Set of valid person IDs (for filtering broken relationship references)
+	 * @param peopleMap Map of crId to PersonNode for O(1) lookups
 	 */
-	private transformPersonNode(person: PersonNode, validIds: Set<string>): FamilyChartPerson {
+	private transformPersonNode(person: PersonNode, validIds: Set<string>, peopleMap: Map<string, PersonNode>): FamilyChartPerson {
 		// Parse name into first and last
 		const nameParts = (person.name || '').trim().split(' ');
 		const firstName = nameParts[0] || '';
@@ -487,10 +491,17 @@ export class FamilyChartView extends ItemView {
 		// Filter spouses to only valid IDs
 		const spouses = (person.spouseCrIds || []).filter(id => validIds.has(id));
 
-		// Filter children to only valid IDs
-		// family-chart requires bidirectional relationships: parents must list children
-		// and children must list parents for the tree to render correctly
-		const children = (person.childrenCrIds || []).filter(id => validIds.has(id));
+		// Filter children to only valid IDs AND only those who reference this person as a parent
+		// family-chart requires strict bidirectional relationships: if parent lists child,
+		// the child MUST list the parent back, otherwise family-chart throws
+		// "child has more than 1 parent" error during tree construction
+		const children = (person.childrenCrIds || []).filter(childId => {
+			if (!validIds.has(childId)) return false;
+			// Use the pre-built map for O(1) lookup instead of service call
+			const childPerson = peopleMap.get(childId);
+			if (!childPerson) return false;
+			return childPerson.fatherCrId === person.crId || childPerson.motherCrId === person.crId;
+		});
 
 		return {
 			id: person.crId,
