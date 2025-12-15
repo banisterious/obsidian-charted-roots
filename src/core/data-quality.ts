@@ -1374,9 +1374,9 @@ export class DataQualityService {
 				if (issue.type === 'missing-child-in-parent') {
 					// Add person to parent's children_id array
 					await this.addToArrayField(issue.relatedPerson.file, 'children_id', issue.person.crId);
-					// Also add wikilink to children array
+					// Also add wikilink to child array (canonical property name)
 					const childName = issue.person.name || issue.person.file.basename;
-					await this.addToArrayField(issue.relatedPerson.file, 'children', `[[${childName}]]`);
+					await this.addToArrayField(issue.relatedPerson.file, 'child', `[[${childName}]]`);
 					results.modified++;
 				} else if (issue.type === 'missing-parent-in-child') {
 					// Determine if this person should be father or mother based on sex

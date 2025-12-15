@@ -603,15 +603,15 @@ export class GrampsImporter {
 			}
 		}
 
-		// Replace child_id references with real cr_ids
+		// Replace children_id references with real cr_ids
 		for (const [childHandle] of grampsToCrId) {
 			const childCrId = grampsToCrId.get(childHandle);
 			if (childCrId && content.includes(childHandle)) {
 				const escapedRef = this.escapeRegex(childHandle);
-				// Replace in child_id field
+				// Replace in children_id field (canonical property name)
 				updatedContent = updatedContent.replace(
-					new RegExp(`child_id: ${escapedRef}`, 'g'),
-					`child_id: ${childCrId}`
+					new RegExp(`children_id: ${escapedRef}`, 'g'),
+					`children_id: ${childCrId}`
 				);
 				// Also replace in array format
 				updatedContent = updatedContent.replace(

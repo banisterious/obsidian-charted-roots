@@ -256,7 +256,7 @@ export class RelationshipHistoryService {
 
 				case 'add_child':
 					// Remove the added child from array
-					this.removeFromArrayProperty(frontmatter, 'children', change.newValue);
+					this.removeFromArrayProperty(frontmatter, 'child', change.newValue);
 					this.removeFromArrayProperty(frontmatter, 'children_id', change.targetCrId);
 					break;
 
@@ -280,7 +280,7 @@ export class RelationshipHistoryService {
 
 				case 'remove_child':
 					// Restore the removed child
-					this.addToArrayProperty(frontmatter, 'children', change.previousValue);
+					this.addToArrayProperty(frontmatter, 'child', change.previousValue);
 					this.addToArrayProperty(frontmatter, 'children_id', change.targetCrId);
 					break;
 

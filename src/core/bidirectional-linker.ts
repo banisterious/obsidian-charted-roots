@@ -369,8 +369,8 @@ export class BidirectionalLinker {
 			return;
 		}
 
-		// Add child to parent's children arrays (dual storage)
-		await this.addToArrayField(parentFile, 'children', childLinkText);
+		// Add child to parent's child arrays (dual storage)
+		await this.addToArrayField(parentFile, 'child', childLinkText);
 		await this.addToArrayField(parentFile, 'children_id', childCrId);
 
 		logger.info('bidirectional-linking', 'Added child to parent (dual storage)', {
@@ -533,9 +533,9 @@ export class BidirectionalLinker {
 			return;
 		}
 
-		// Remove from both children and children_id arrays
-		await this.removeFromArrayField(parentFile, 'children', `[[${childName}]]`);
-		await this.removeFromArrayField(parentFile, 'children', `[[${childFile.basename}]]`); // Handle basename variant
+		// Remove from both child and children_id arrays
+		await this.removeFromArrayField(parentFile, 'child', `[[${childName}]]`);
+		await this.removeFromArrayField(parentFile, 'child', `[[${childFile.basename}]]`); // Handle basename variant
 		await this.removeFromArrayField(parentFile, 'children_id', childCrId);
 
 		logger.info('bidirectional-linking', 'Removed child from parent (deletion sync)', {
