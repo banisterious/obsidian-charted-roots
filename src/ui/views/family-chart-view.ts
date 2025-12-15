@@ -328,7 +328,6 @@ export class FamilyChartView extends ItemView {
 	private initializeChart(): void {
 		if (!this.chartContainerEl) return;
 
-		const initStartTime = performance.now();
 		logger.debug('chart-init', 'Initializing chart', { rootPersonId: this.rootPersonId });
 
 		// Clear container
@@ -336,7 +335,6 @@ export class FamilyChartView extends ItemView {
 
 		// Load family data
 		this.loadChartData();
-		const dataLoadTime = performance.now();
 
 		if (this.chartData.length === 0) {
 			this.showEmptyState();
@@ -372,7 +370,6 @@ export class FamilyChartView extends ItemView {
 				.setTransitionTime(800)
 				.setCardXSpacing(this.nodeSpacing)
 				.setCardYSpacing(this.levelSpacing);
-			const chartCreateTime = performance.now();
 
 			// Configure SVG cards with current display options
 			const displayFields: string[][] = [['first name', 'last name']];
@@ -388,11 +385,9 @@ export class FamilyChartView extends ItemView {
 				.setCardDisplay(displayFields)
 				.setCardDim({ w: 200, h: 70, text_x: 75, text_y: 15, img_w: 60, img_h: 60, img_x: 5, img_y: 5 })
 				.setOnCardClick((e, d) => this.handleCardClick(e, d));
-			const cardConfigTime = performance.now();
 
 			// Initialize EditTree for editing capabilities
 			this.initializeEditTree();
-			const editTreeTime = performance.now();
 
 			// Set main/root person if specified
 			if (this.rootPersonId) {
@@ -401,25 +396,12 @@ export class FamilyChartView extends ItemView {
 
 			// Initial render without fit (just get the tree in the DOM)
 			this.f3Chart.updateTree({ initial: true });
-			const initialRenderTime = performance.now();
-
-			// Log performance timing
-			console.log('[Canvas Roots] Chart init timing:', {
-				dataLoad: `${(dataLoadTime - initStartTime).toFixed(1)}ms`,
-				chartCreate: `${(chartCreateTime - dataLoadTime).toFixed(1)}ms`,
-				cardConfig: `${(cardConfigTime - chartCreateTime).toFixed(1)}ms`,
-				editTree: `${(editTreeTime - cardConfigTime).toFixed(1)}ms`,
-				initialRender: `${(initialRenderTime - editTreeTime).toFixed(1)}ms`,
-				totalBeforeFit: `${(initialRenderTime - initStartTime).toFixed(1)}ms`
-			});
 
 			// Defer fit operation until container dimensions are stable
 			setTimeout(() => {
 				if (this.f3Chart && this.chartContainerEl) {
-					const fitStartTime = performance.now();
 					// Trigger fit when container has proper dimensions
 					this.f3Chart.updateTree({ tree_position: 'fit' });
-					console.log('[Canvas Roots] Fit operation:', `${(performance.now() - fitStartTime).toFixed(1)}ms`);
 					// Show container after animation completes
 					setTimeout(() => {
 						if (this.chartContainerEl) {
