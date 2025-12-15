@@ -511,26 +511,25 @@ Person notes currently contain only frontmatter and user-written content. Users 
 
 | Block | Description |
 |-------|-------------|
-| `cr-timeline` | Chronological list of events linked to this person |
-| `cr-relationships` | Family relationships (parents, spouse, children) with links |
-| `cr-sources` | Sources citing this person with quality indicators |
-| `cr-statistics` | Research coverage, source count, completeness % |
-| `cr-places` | Places associated with this person's events |
+| `canvas-roots-timeline` | Chronological list of events linked to this person |
+| `canvas-roots-relationships` | Family relationships (parents, spouse, children) with links |
+| `canvas-roots-sources` | Sources citing this person with quality indicators |
+| `canvas-roots-places` | Places associated with this person's events |
 
 **Example Usage:**
 
 ~~~markdown
 ## Timeline
-```cr-timeline
+```canvas-roots-timeline
 ```
 
 ## Family
-```cr-relationships
+```canvas-roots-relationships
 type: immediate
 ```
 
 ## Sources
-```cr-sources
+```canvas-roots-sources
 sort: quality
 ```
 ~~~
@@ -543,6 +542,14 @@ Code blocks render as styled containers with:
 - **Header bar** with block type and toolbar
 - **Live content** computed from vault data
 - **Toolbar actions**: Copy to clipboard, Convert to markdown, Refresh
+
+**Edit vs Reading Mode:**
+- **Edit mode**: Shows raw code block (like Dataview)
+- **Reading mode**: Shows rendered content with toolbar
+
+**Empty States:**
+- Blocks with no data show a friendly message (e.g., "No events found for this person")
+- Empty state includes hint for adding data (e.g., "Link events to this person to see them here")
 
 **Timeline Example:**
 ```
@@ -573,7 +580,7 @@ Users can convert live code blocks to static markdown for:
 
 ```markdown
 ## Timeline
-<!-- cr-timeline: frozen 2025-12-14 -->
+<!-- canvas-roots-timeline: frozen 2025-12-14 -->
 - **1845** — Born in [[Dublin, Ireland]]
 - **1867** — Married [[Jane Smith]]
 - **1912** — Died in [[Boston, MA]]
@@ -591,7 +598,7 @@ Users can convert live code blocks to static markdown for:
 Code blocks accept optional parameters:
 
 ~~~markdown
-```cr-timeline
+```canvas-roots-timeline
 sort: chronological | reverse
 include: birth, death, marriage, residence
 exclude: occupation
@@ -600,7 +607,7 @@ limit: 10
 ~~~
 
 ~~~markdown
-```cr-relationships
+```canvas-roots-relationships
 type: immediate | extended | all
 include: parents, spouse, children, siblings
 ```
@@ -608,11 +615,83 @@ include: parents, spouse, children, siblings
 
 ---
 
+#### Inserting Code Blocks
+
+Multiple methods for adding dynamic content blocks to notes:
+
+| Method | Description |
+|--------|-------------|
+| **Person note template** | Include blocks in default note body (settings toggle) |
+| **Command palette** | "Canvas Roots: Insert Timeline", "Insert Relationships", etc. |
+| **Slash commands** | `/canvas-roots-timeline`, `/canvas-roots-relationships`, `/canvas-roots-sources` |
+| **Manual typing** | Type code block syntax directly |
+
+**Template Integration:**
+
+Settings option to include default dynamic blocks in new person notes:
+
+```
+Preferences → Note templates → Include dynamic content blocks
+  ☑ Timeline
+  ☑ Relationships
+  ☐ Sources
+```
+
+When enabled, new person notes are created with the selected blocks in the body. Users can delete unwanted blocks or add more via command palette.
+
+**Bulk Addition:**
+
+Command palette action "Add dynamic content to existing notes" opens a modal to:
+1. Select which block types to add
+2. Choose target notes (all people, specific collection, selection)
+3. Preview changes before applying
+
+---
+
+#### Rendering Behavior
+
+**When Content Renders:**
+
+| Trigger | Behavior |
+|---------|----------|
+| **Note open** | Blocks render when note is opened in reading view |
+| **Manual refresh** | Toolbar refresh button re-computes content |
+| **Auto-refresh** | Optional setting to watch for vault changes (debounced) |
+
+**Default Behavior:**
+- Render on note open (always)
+- Manual refresh via toolbar (always available)
+- Auto-refresh disabled by default (performance)
+
+**Auto-Refresh Setting:**
+
+```
+Preferences → Dynamic content → Auto-refresh on vault changes
+  ☐ Enabled (may impact performance in large vaults)
+  Debounce delay: [500] ms
+```
+
+When enabled, blocks re-render when:
+- Linked notes are modified (e.g., spouse's death date added)
+- New events/sources are linked to this person
+- Related entity properties change
+
+**Performance Considerations:**
+- Content computation is cached per note session
+- Cache invalidated on manual refresh or vault change (if auto-refresh enabled)
+- Large vaults (1000+ people) should use manual refresh to avoid lag
+
+---
+
 #### v1 Priorities
 
-1. **cr-timeline** — Most requested, high value for viewing person history
-2. **cr-relationships** — Core genealogy use case
+1. **canvas-roots-timeline** — Most requested, high value for viewing person history
+2. **canvas-roots-relationships** — Core genealogy use case
 3. **Freeze to markdown** — Essential for export and editing workflows
+
+**Deferred to v2:**
+- `canvas-roots-sources` — Sources block
+- `canvas-roots-places` — Places block
 
 ---
 
