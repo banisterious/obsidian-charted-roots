@@ -12,6 +12,7 @@ import { createLucideIcon } from '../../ui/lucide-icons';
 import { SourceService } from '../services/source-service';
 import { CreateSourceModal } from './create-source-modal';
 import { SourceImageWizardModal } from './source-image-wizard';
+import { SourceMediaLinkerModal } from './source-media-linker';
 import { renderMediaGallery } from './media-gallery';
 import { renderSourceTypeManagerCard } from './source-type-manager-card';
 import type { SourceNote } from '../types/source-types';
@@ -182,6 +183,16 @@ function renderSourcesListCard(
 			.setButtonText('Import')
 			.onClick(() => {
 				new SourceImageWizardModal(plugin.app, plugin).open();
+			}));
+
+	// Link media to existing sources button
+	new Setting(content)
+		.setName('Link media to sources')
+		.setDesc('Attach existing images to source notes that don\'t have media')
+		.addButton(button => button
+			.setButtonText('Link')
+			.onClick(() => {
+				new SourceMediaLinkerModal(plugin.app, plugin).open();
 			}));
 
 	// View templates button

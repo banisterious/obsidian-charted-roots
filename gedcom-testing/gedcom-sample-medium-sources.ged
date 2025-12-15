@@ -1053,4 +1053,87 @@
 1 TITL Edited Record
 1 FILE garcia_census_enhanced_contrast.jpg
 1 TEXT Test source image for bulk import testing
+0 @S70@ SOUR
+1 TITL 1880 Census - Anderson Family
+1 DATE 1880
+1 PLAC Cook County, Illinois, USA
+1 TEXT Transcribed from FamilySearch microfilm. Shows James Anderson (head), age 42, farmer.
+1 NOTE No image obtained yet - need to order from archive
+0 @S71@ SOUR
+1 TITL 1900 Census - Henderson Household
+1 DATE 1 JUN 1900
+1 PLAC Harris County, Texas, USA
+1 TEXT Census enumeration shows Robert Henderson as head of household with wife Sarah and 3 children.
+0 @S72@ SOUR
+1 TITL Marriage Record - Anderson & Murphy
+1 DATE 15 APR 1875
+1 PLAC St. Patrick's Church, Boston, Massachusetts
+1 TEXT Church record indicates marriage of Patrick Anderson to Bridget Murphy. Witnesses: John Murphy, Mary Anderson.
+0 @S73@ SOUR
+1 TITL Birth Record - Dorothy Schmidt
+1 DATE 18 MAR 1912
+1 PLAC Milwaukee, Wisconsin, USA
+1 TEXT Wisconsin vital records index entry. Certificate number 1912-03-4521.
+1 NOTE Image pending - submitted request to Wisconsin Historical Society
+0 @S74@ SOUR
+1 TITL Family Bible - Martinez Family
+1 DATE ABT 1920
+1 TEXT Family bible entries recording births, marriages, and deaths 1850-1920. Currently held by descendant Maria Martinez in Houston.
+1 NOTE Need to photograph pages during next family visit
+0 @S75@ SOUR
+1 TITL Obituary - Sarah Henderson
+1 DATE 12 NOV 1945
+1 PLAC Houston Chronicle, Houston, Texas
+1 TEXT "Mrs. Sarah Henderson, 72, died Tuesday at her home on Oak Street. She is survived by her husband Robert..."
+1 NOTE Transcribed from newspaper microfilm at Houston Public Library
+0 @S76@ SOUR
+1 TITL Immigration Record - O'Brien Family
+1 DATE 5 SEP 1905
+1 PLAC Ellis Island, New York
+1 TEXT Ship manifest SS Celtic, Liverpool to New York. Patrick O'Brien, wife Catherine, children Margaret (age 3), Thomas (age 1).
+0 @S77@ SOUR
+1 TITL Land Deed - Anderson Property
+1 DATE 22 AUG 1910
+1 PLAC Miami-Dade County, Florida
+1 TEXT Deed book 45, page 312. William Anderson purchases 40 acres from Florida Land Company for $800.
+1 NOTE County recorder's office has digital copies available
+0 @S78@ SOUR
+1 TITL WWI Draft Registration - George Martinez
+1 DATE 5 JUN 1917
+1 PLAC Houston, Texas
+1 TEXT Draft card shows George Martinez, age 25, occupation: carpenter, employer: Houston Construction Co.
+0 @S79@ SOUR
+1 TITL Baptism Record - Charles Henderson
+1 DATE 28 FEB 1910
+1 PLAC First Methodist Church, Chicago, Illinois
+1 TEXT Church register entry. Parents: Robert Henderson and Sarah Wilson. Sponsors: James Wilson, Martha Henderson.
+0 @S80@ SOUR
+1 TITL Probate Record - Patrick Anderson Estate
+1 DATE 1920
+1 PLAC Suffolk County, Massachusetts
+1 TEXT Will filed 15 March 1920. Estate valued at $2,500. Bequests to wife Bridget, sons William and James.
+1 NOTE Probate file #1920-0342 at Suffolk County Courthouse
+0 @S81@ SOUR
+1 TITL Cemetery Record - Woodlawn Cemetery
+1 PLAC Miami, Florida
+1 TEXT Plot records for Anderson family section. William Anderson (1905-1982), Margaret Anderson nee O'Brien (1908-1995).
+0 @S82@ SOUR
+1 TITL 1930 Census - Schmidt Family
+1 DATE 1 APR 1930
+1 PLAC Milwaukee County, Wisconsin
+1 TEXT Shows Frederick Schmidt (head), wife Anna, daughter Dorothy (18), son Walter (15). Frederick occupation: machinist.
+0 @S83@ SOUR
+1 TITL Marriage License - Henderson & Schmidt
+1 DATE 8 JUN 1931
+1 PLAC Milwaukee, Wisconsin
+1 TEXT License #1931-2847. Charles Henderson (21) of Chicago, IL to Dorothy Schmidt (19) of Milwaukee, WI.
+0 @S84@ SOUR
+1 TITL Social Security Death Index - William Anderson
+1 DATE SEP 1982
+1 TEXT SSDI entry: William Anderson, b. 12 Mar 1905, d. Sep 1982, last residence Miami, FL. SSN issued in Massachusetts.
+0 @S85@ SOUR
+1 TITL Oral History Interview - Maria Martinez
+1 DATE 15 MAR 2020
+1 TEXT Recording of interview with Maria Martinez (age 85) discussing her grandfather George Martinez and family history in Texas.
+1 NOTE Audio file stored separately - need to transcribe
 0 TRLR
