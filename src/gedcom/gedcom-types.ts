@@ -325,6 +325,11 @@ export interface FilenameFormatOptions {
 }
 
 /**
+ * Dynamic block type for person notes
+ */
+export type DynamicBlockType = 'timeline' | 'relationships';
+
+/**
  * GEDCOM import options (v2)
  */
 export interface GedcomImportOptionsV2 {
@@ -351,6 +356,11 @@ export interface GedcomImportOptionsV2 {
 
 	/** Property aliases for writing custom property names */
 	propertyAliases?: Record<string, string>;
+
+	/** Include dynamic content blocks in person notes */
+	includeDynamicBlocks?: boolean;
+	/** Which dynamic block types to include */
+	dynamicBlockTypes?: DynamicBlockType[];
 
 	/** Progress callback for UI updates */
 	onProgress?: GedcomProgressCallback;

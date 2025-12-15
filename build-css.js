@@ -53,6 +53,7 @@ const CONFIG = {
     'organizations.css', // Organizations tab
     'sources.css',       // Sources tab
     'preferences.css',   // Preferences tab
+    'dynamic-content.css', // Dynamic content blocks (timeline, relationships)
     'animations.css',    // Keyframes and transitions
     'responsive.css',    // Responsive breakpoints
     'theme.css'          // Theme compatibility (last)

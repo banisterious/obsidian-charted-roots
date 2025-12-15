@@ -1757,6 +1757,8 @@ export class ControlCenterModal extends Modal {
 						directory: this.plugin.settings.peopleFolder || '',
 						familyGraph: this.plugin.createFamilyGraphService(),
 						propertyAliases: this.plugin.settings.propertyAliases,
+						includeDynamicBlocks: false,
+						dynamicBlockTypes: ['timeline', 'relationships'],
 						onCreated: () => {
 							// Refresh the People tab
 							this.showTab('people');
@@ -5046,6 +5048,18 @@ export class ControlCenterModal extends Modal {
 					);
 			}
 
+			// Dynamic content blocks toggle
+			let includeDynamicBlocks = false;
+			new Setting(optionsSection)
+				.setName('Include dynamic content blocks')
+				.setDesc('Add timeline and family relationship blocks to person notes (can be frozen to static markdown later)')
+				.addToggle(toggle => toggle
+					.setValue(includeDynamicBlocks)
+					.onChange(value => {
+						includeDynamicBlocks = value;
+					})
+				);
+
 			// Filename format options
 			let filenameFormat: FilenameFormat = 'original';
 			let useAdvancedFormats = false;
@@ -5138,7 +5152,8 @@ export class ControlCenterModal extends Modal {
 						createSourceNotes,
 						createPlaceNotes,
 						useAdvancedFormats ? undefined : filenameFormat,
-						useAdvancedFormats ? filenameFormats : undefined
+						useAdvancedFormats ? filenameFormats : undefined,
+						includeDynamicBlocks
 					);
 				})();
 			});
@@ -5254,7 +5269,8 @@ export class ControlCenterModal extends Modal {
 		createSourceNotes: boolean,
 		createPlaceNotes: boolean,
 		filenameFormat?: FilenameFormat,
-		filenameFormats?: FilenameFormatOptions
+		filenameFormats?: FilenameFormatOptions,
+		includeDynamicBlocks?: boolean
 	): Promise<void> {
 		try {
 			const useStaging = !!stagingBaseFolder;
@@ -5313,7 +5329,8 @@ export class ControlCenterModal extends Modal {
 					createPlaceNotes,
 					filenameFormat,
 					filenameFormats,
-					file.name
+					file.name,
+					includeDynamicBlocks
 				);
 			} else {
 				// No issues - proceed directly
@@ -5329,7 +5346,8 @@ export class ControlCenterModal extends Modal {
 					createPlaceNotes,
 					filenameFormat,
 					filenameFormats,
-					file.name
+					file.name,
+					includeDynamicBlocks
 				);
 			}
 		} catch (error: unknown) {
@@ -5354,7 +5372,8 @@ export class ControlCenterModal extends Modal {
 		createPlaceNotes: boolean,
 		filenameFormat?: FilenameFormat,
 		filenameFormats?: FilenameFormatOptions,
-		fileName?: string
+		fileName?: string,
+		includeDynamicBlocks?: boolean
 	): Promise<void> {
 		// Suspend bidirectional linker during import to prevent race conditions
 		// The linker would otherwise try to sync relationships before Phase 2 replaces GEDCOM IDs with cr_ids
@@ -5388,6 +5407,8 @@ export class ControlCenterModal extends Modal {
 				filenameFormat: filenameFormat || 'original',
 				filenameFormats,
 				propertyAliases: this.plugin.settings.propertyAliases,
+				includeDynamicBlocks,
+				dynamicBlockTypes: ['timeline', 'relationships'],
 				onProgress: (progress) => {
 					progressModal.updateProgress({
 						phase: progress.phase,

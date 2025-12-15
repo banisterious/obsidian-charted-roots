@@ -87,6 +87,11 @@ export const DEFAULT_COLUMN_ALIASES: Record<keyof CsvColumnMapping, string[]> = 
 };
 
 /**
+ * Dynamic block type for person notes
+ */
+export type DynamicBlockType = 'timeline' | 'relationships';
+
+/**
  * CSV import options
  */
 export interface CsvImportOptions {
@@ -107,6 +112,12 @@ export interface CsvImportOptions {
 
 	/** Property aliases for writing custom property names (user property → canonical) */
 	propertyAliases?: Record<string, string>;
+
+	/** Include dynamic content blocks in person notes */
+	includeDynamicBlocks?: boolean;
+
+	/** Which dynamic block types to include */
+	dynamicBlockTypes?: DynamicBlockType[];
 }
 
 /**
@@ -407,7 +418,9 @@ export class CsvImporter {
 		await createPersonNote(this.app, personData, {
 			directory: options.peopleFolder,
 			addBidirectionalLinks: false,
-			propertyAliases: options.propertyAliases
+			propertyAliases: options.propertyAliases,
+			includeDynamicBlocks: options.includeDynamicBlocks,
+			dynamicBlockTypes: options.dynamicBlockTypes
 		});
 
 		return {

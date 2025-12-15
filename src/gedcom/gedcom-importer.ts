@@ -11,6 +11,11 @@ import { generateCrId } from '../core/uuid';
 import { getErrorMessage } from '../core/error-utils';
 
 /**
+ * Dynamic block type for person notes
+ */
+export type DynamicBlockType = 'timeline' | 'relationships';
+
+/**
  * GEDCOM import options
  */
 export interface GedcomImportOptions {
@@ -19,6 +24,10 @@ export interface GedcomImportOptions {
 	fileName?: string;
 	/** Property aliases for writing custom property names (user property → canonical) */
 	propertyAliases?: Record<string, string>;
+	/** Include dynamic content blocks in person notes */
+	includeDynamicBlocks?: boolean;
+	/** Which dynamic block types to include */
+	dynamicBlockTypes?: DynamicBlockType[];
 }
 
 /**
@@ -320,7 +329,9 @@ export class GedcomImporter {
 		const file = await createPersonNote(this.app, personData, {
 			directory: options.peopleFolder,
 			addBidirectionalLinks: false,
-			propertyAliases: options.propertyAliases
+			propertyAliases: options.propertyAliases,
+			includeDynamicBlocks: options.includeDynamicBlocks,
+			dynamicBlockTypes: options.dynamicBlockTypes
 		});
 
 		return { crId, filePath: file.path };

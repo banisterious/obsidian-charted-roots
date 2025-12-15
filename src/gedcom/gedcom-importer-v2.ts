@@ -560,7 +560,9 @@ export class GedcomImporterV2 {
 			directory: options.peopleFolder,
 			addBidirectionalLinks: false,
 			propertyAliases: options.propertyAliases,
-			filenameFormat: this.getFormatForType('people', options)
+			filenameFormat: this.getFormatForType('people', options),
+			includeDynamicBlocks: options.includeDynamicBlocks,
+			dynamicBlockTypes: options.dynamicBlockTypes
 		});
 
 		return { crId, notePath: file.path };

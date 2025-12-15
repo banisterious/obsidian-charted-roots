@@ -38,6 +38,11 @@ export interface GrampsImportProgress {
 }
 
 /**
+ * Dynamic block type for person notes
+ */
+export type DynamicBlockType = 'timeline' | 'relationships';
+
+/**
  * Gramps import options
  */
 export interface GrampsImportOptions {
@@ -58,6 +63,10 @@ export interface GrampsImportOptions {
 	createSourceNotes?: boolean;
 	/** Folder for source notes */
 	sourcesFolder?: string;
+	/** Include dynamic content blocks in person notes */
+	includeDynamicBlocks?: boolean;
+	/** Which dynamic block types to include */
+	dynamicBlockTypes?: DynamicBlockType[];
 	/** Progress callback */
 	onProgress?: (progress: GrampsImportProgress) => void;
 }
@@ -522,7 +531,9 @@ export class GrampsImporter {
 		await createPersonNote(this.app, personData, {
 			directory: options.peopleFolder,
 			addBidirectionalLinks: false,
-			propertyAliases: options.propertyAliases
+			propertyAliases: options.propertyAliases,
+			includeDynamicBlocks: options.includeDynamicBlocks,
+			dynamicBlockTypes: options.dynamicBlockTypes
 		});
 
 		return crId;

@@ -4,7 +4,7 @@
  */
 
 import { App, Modal, Setting, TFile, Notice, normalizePath } from 'obsidian';
-import { createPersonNote, updatePersonNote, PersonData } from '../core/person-note-writer';
+import { createPersonNote, updatePersonNote, PersonData, DynamicBlockType } from '../core/person-note-writer';
 import { createLucideIcon } from './lucide-icons';
 import { FamilyGraphService } from '../core/family-graph';
 import { PersonPickerModal, PersonInfo } from './person-picker';
@@ -37,6 +37,8 @@ export class CreatePersonModal extends Modal {
 	private editMode: boolean = false;
 	private editingFile?: TFile;
 	private propertyAliases: Record<string, string> = {};
+	private includeDynamicBlocks: boolean = false;
+	private dynamicBlockTypes: DynamicBlockType[] = ['timeline', 'relationships'];
 
 	constructor(
 		app: App,
@@ -47,6 +49,8 @@ export class CreatePersonModal extends Modal {
 			onUpdated?: (file: TFile) => void;
 			familyGraph?: FamilyGraphService;
 			propertyAliases?: Record<string, string>;
+			includeDynamicBlocks?: boolean;
+			dynamicBlockTypes?: DynamicBlockType[];
 			// Edit mode options
 			editFile?: TFile;
 			editPersonData?: {
@@ -75,6 +79,8 @@ export class CreatePersonModal extends Modal {
 		this.onUpdated = options?.onUpdated;
 		this.familyGraph = options?.familyGraph;
 		this.propertyAliases = options?.propertyAliases || {};
+		this.includeDynamicBlocks = options?.includeDynamicBlocks || false;
+		this.dynamicBlockTypes = options?.dynamicBlockTypes || ['timeline', 'relationships'];
 
 		// Check for edit mode
 		if (options?.editFile && options?.editPersonData) {
@@ -307,6 +313,16 @@ export class CreatePersonModal extends Modal {
 					.onChange(value => {
 						this.directory = value;
 					}));
+
+			// Dynamic blocks toggle (only in create mode)
+			new Setting(form)
+				.setName('Include dynamic blocks')
+				.setDesc('Add timeline and relationships blocks that update automatically')
+				.addToggle(toggle => toggle
+					.setValue(this.includeDynamicBlocks)
+					.onChange(value => {
+						this.includeDynamicBlocks = value;
+					}));
 		}
 
 		// Buttons
@@ -458,7 +474,9 @@ export class CreatePersonModal extends Modal {
 			const file = await createPersonNote(this.app, data, {
 				directory: this.directory,
 				openAfterCreate: true,
-				propertyAliases: this.propertyAliases
+				propertyAliases: this.propertyAliases,
+				includeDynamicBlocks: this.includeDynamicBlocks,
+				dynamicBlockTypes: this.dynamicBlockTypes
 			});
 
 			new Notice(`Created person note: ${file.basename}`);

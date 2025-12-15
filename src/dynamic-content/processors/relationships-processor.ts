@@ -1,0 +1,79 @@
+/**
+ * Relationships Processor
+ *
+ * Handles the `canvas-roots-relationships` code block.
+ * Renders family relationships for the current person note with wikilinks.
+ *
+ * Usage in a note:
+ * ```canvas-roots-relationships
+ * type: immediate
+ * include: parents, spouse, children
+ * ```
+ */
+
+import { MarkdownPostProcessorContext, MarkdownRenderChild } from 'obsidian';
+import type CanvasRootsPlugin from '../../../main';
+import { DynamicContentService } from '../services/dynamic-content-service';
+import { RelationshipsRenderer } from '../renderers/relationships-renderer';
+
+/**
+ * Processor for canvas-roots-relationships code blocks
+ */
+export class RelationshipsProcessor {
+	private plugin: CanvasRootsPlugin;
+	private service: DynamicContentService;
+	private renderer: RelationshipsRenderer;
+
+	constructor(plugin: CanvasRootsPlugin) {
+		this.plugin = plugin;
+		this.service = new DynamicContentService(plugin);
+		this.renderer = new RelationshipsRenderer(this.service);
+	}
+
+	/**
+	 * Process a canvas-roots-relationships code block
+	 */
+	async process(
+		source: string,
+		el: HTMLElement,
+		ctx: MarkdownPostProcessorContext
+	): Promise<void> {
+		try {
+			// Parse config from code block source
+			const config = this.service.parseConfig(source);
+
+			// Build context (resolves file, cr_id, person)
+			const context = this.service.buildContext(ctx);
+
+			// Check if this is a person note
+			if (!context.crId) {
+				this.renderError(el, 'This note does not have a cr_id. Relationships can only be rendered in person notes.');
+				return;
+			}
+
+			if (!context.person) {
+				this.renderError(el, 'Could not find person data for this note.');
+				return;
+			}
+
+			// Create a MarkdownRenderChild for proper cleanup of rendered markdown
+			const component = new MarkdownRenderChild(el);
+			ctx.addChild(component);
+
+			// Render the relationships
+			await this.renderer.render(el, context, config, component);
+
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			this.renderError(el, `Error rendering relationships: ${message}`);
+		}
+	}
+
+	/**
+	 * Render an error message
+	 */
+	private renderError(el: HTMLElement, message: string): void {
+		const container = el.createDiv({ cls: 'cr-dynamic-block cr-dynamic-block--error' });
+		container.createDiv({ cls: 'cr-dynamic-block__error-message', text: message });
+	}
+}

@@ -53,6 +53,11 @@ export interface PersonData {
 export type FilenameFormat = 'original' | 'kebab-case' | 'snake_case';
 
 /**
+ * Dynamic block types that can be included in person notes
+ */
+export type DynamicBlockType = 'timeline' | 'relationships';
+
+/**
  * Options for person note creation
  */
 export interface CreatePersonNoteOptions {
@@ -66,6 +71,10 @@ export interface CreatePersonNoteOptions {
 	propertyAliases?: Record<string, string>;
 	/** Filename format (default: 'original') */
 	filenameFormat?: FilenameFormat;
+	/** Include dynamic content blocks in the note body */
+	includeDynamicBlocks?: boolean;
+	/** Which dynamic block types to include (default: ['timeline', 'relationships']) */
+	dynamicBlockTypes?: DynamicBlockType[];
 }
 
 /**
@@ -91,7 +100,15 @@ export async function createPersonNote(
 	person: PersonData,
 	options: CreatePersonNoteOptions = {}
 ): Promise<TFile> {
-	const { directory = '', openAfterCreate = false, addBidirectionalLinks = true, propertyAliases = {}, filenameFormat = 'original' } = options;
+	const {
+		directory = '',
+		openAfterCreate = false,
+		addBidirectionalLinks = true,
+		propertyAliases = {},
+		filenameFormat = 'original',
+		includeDynamicBlocks = false,
+		dynamicBlockTypes = ['timeline', 'relationships']
+	} = options;
 
 	// Helper to get aliased property name
 	const prop = (canonical: string) => getWriteProperty(canonical, propertyAliases);
@@ -272,13 +289,30 @@ export async function createPersonNote(
 	yamlLines.push('---');
 
 	// Build note content
+	const bodyLines: string[] = ['', '# Research Notes', '', '', ''];
+
+	// Add dynamic content blocks if requested
+	if (includeDynamicBlocks && dynamicBlockTypes.length > 0) {
+		// Add relationships block first (usually comes before timeline in a person note)
+		if (dynamicBlockTypes.includes('relationships')) {
+			bodyLines.push('```canvas-roots-relationships');
+			bodyLines.push('type: immediate');
+			bodyLines.push('```');
+			bodyLines.push('');
+		}
+
+		// Add timeline block
+		if (dynamicBlockTypes.includes('timeline')) {
+			bodyLines.push('```canvas-roots-timeline');
+			bodyLines.push('sort: chronological');
+			bodyLines.push('```');
+			bodyLines.push('');
+		}
+	}
+
 	const noteContent = [
 		...yamlLines,
-		'',
-		'# Research Notes',
-		'',
-		'',
-		''
+		...bodyLines
 	].join('\n');
 
 	// Format filename based on selected format

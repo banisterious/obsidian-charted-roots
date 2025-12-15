@@ -1,0 +1,188 @@
+/**
+ * Dynamic Content Styles
+ *
+ * Styles for dynamic code block content:
+ * - canvas-roots-timeline
+ * - canvas-roots-relationships
+ */
+
+/* ==========================================================================
+   Dynamic Block Base
+   ========================================================================== */
+
+.cr-dynamic-block {
+  padding: var(--cr-spacing-md);
+  margin: var(--cr-spacing-sm) 0;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--cr-radius-md);
+  background: var(--background-primary);
+}
+
+.cr-dynamic-block--error {
+  border-color: var(--color-red);
+  background: var(--background-modifier-error);
+}
+
+.cr-dynamic-block__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--cr-spacing-sm);
+  padding-bottom: var(--cr-spacing-sm);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-dynamic-block__title {
+  font-weight: var(--font-semibold);
+  font-size: var(--font-ui-medium);
+  color: var(--text-normal);
+}
+
+.cr-dynamic-block__toolbar {
+  display: flex;
+  gap: var(--cr-spacing-xs);
+}
+
+.cr-dynamic-block__btn {
+  padding: var(--cr-spacing-xs);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: var(--cr-radius-sm);
+  font-size: var(--font-ui-small);
+  opacity: 0.6;
+  transition: opacity 0.15s ease;
+}
+
+.cr-dynamic-block__btn:hover {
+  opacity: 1;
+  background: var(--background-modifier-hover);
+}
+
+.cr-dynamic-block__content {
+  font-size: var(--font-ui-small);
+}
+
+.cr-dynamic-block__empty {
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  padding: var(--cr-spacing-md);
+}
+
+.cr-dynamic-block__error-message {
+  color: var(--color-red);
+  padding: var(--cr-spacing-sm);
+}
+
+/* ==========================================================================
+   Timeline Block
+   ========================================================================== */
+
+.cr-timeline__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cr-timeline__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  padding: var(--cr-spacing-xs) 0;
+  border-bottom: 1px solid var(--background-modifier-border-hover);
+}
+
+.cr-timeline__item:last-child {
+  border-bottom: none;
+}
+
+.cr-timeline__year {
+  font-weight: var(--font-semibold);
+  color: var(--text-accent);
+  min-width: 50px;
+}
+
+.cr-timeline__separator {
+  color: var(--text-muted);
+  margin: 0 var(--cr-spacing-xs);
+}
+
+.cr-timeline__title {
+  color: var(--text-normal);
+}
+
+.cr-timeline__title a {
+  color: var(--text-accent);
+  text-decoration: none;
+}
+
+.cr-timeline__title a:hover {
+  text-decoration: underline;
+}
+
+.cr-timeline__place {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+/* ==========================================================================
+   Relationships Block
+   ========================================================================== */
+
+.cr-relationships__section {
+  margin-bottom: var(--cr-spacing-md);
+}
+
+.cr-relationships__section:last-child {
+  margin-bottom: 0;
+}
+
+.cr-relationships__heading {
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-semibold);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 var(--cr-spacing-xs) 0;
+  padding: 0;
+}
+
+.cr-relationships__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cr-relationships__item {
+  display: flex;
+  align-items: baseline;
+  padding: var(--cr-spacing-xs) 0;
+}
+
+.cr-relationships__link a {
+  color: var(--text-accent);
+  text-decoration: none;
+}
+
+.cr-relationships__link a:hover {
+  text-decoration: underline;
+}
+
+.cr-relationships__name {
+  color: var(--text-normal);
+}
+
+.cr-relationships__dates {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  margin-left: var(--cr-spacing-xs);
+}
+
+/* ==========================================================================
+   Theme Compatibility
+   ========================================================================== */
+
+.theme-dark .cr-dynamic-block {
+  background: var(--background-secondary);
+}
