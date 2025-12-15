@@ -499,11 +499,13 @@ sources:
 
 ---
 
-## Open Questions
+## Design Decisions
 
-1. **Duplicate handling:** If a source with the same title already exists, should we merge or create with suffix?
-2. **Citation page details:** Should page/volume info go in source note body or separate property?
-3. **Multiple citations per event:** Store as array (`sources: [...]`) or multiple properties (`source`, `source_2`)?
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| **Duplicate sources** | Create with suffix (e.g., "State Vital Records (2)") | Consistent with Obsidian's duplicate handling; avoids data loss |
+| **Citation page details** | Store in source note body for Phase 1 | Page details are rare in sample data, primarily for human reference; queryable `citations` field can be added in Phase 2 if needed |
+| **Multiple citations** | Array format (`sources: [...]`) | Easier Dataview queries, no arbitrary limit, consistent with `persons` on events |
 
 ---
 
