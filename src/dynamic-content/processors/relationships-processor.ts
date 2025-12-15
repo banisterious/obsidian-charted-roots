@@ -27,7 +27,7 @@ export class RelationshipsProcessor {
 	constructor(plugin: CanvasRootsPlugin) {
 		this.plugin = plugin;
 		this.service = new DynamicContentService(plugin);
-		this.renderer = new RelationshipsRenderer();
+		this.renderer = new RelationshipsRenderer(this.service);
 	}
 
 	/**

@@ -7,11 +7,14 @@
  * - Provide access to FamilyGraphService and EventService
  */
 
-import { MarkdownPostProcessorContext, TFile } from 'obsidian';
+import { MarkdownPostProcessorContext, TFile, Notice } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { FamilyGraphService, PersonNode } from '../../core/family-graph';
 import type { EventService } from '../../events/services/event-service';
 import type { EventNote } from '../../events/types/event-types';
+
+/** Block type for freeze operations */
+export type DynamicBlockType = 'canvas-roots-timeline' | 'canvas-roots-relationships';
 
 /**
  * Parsed configuration from a code block
@@ -298,5 +301,48 @@ export class DynamicContentService {
 	stripWikilink(value: string | undefined): string {
 		if (!value) return '';
 		return value.replace(/^\[\[/, '').replace(/\]\]$/, '').trim();
+	}
+
+	/**
+	 * Freeze a dynamic block to static markdown
+	 * Replaces the code block in the file with the generated markdown
+	 */
+	async freezeToMarkdown(
+		file: TFile,
+		blockType: DynamicBlockType,
+		markdown: string
+	): Promise<boolean> {
+		try {
+			const content = await this.plugin.app.vault.read(file);
+
+			// Find the code block pattern
+			// Match ```canvas-roots-timeline or ```canvas-roots-relationships with any config
+			const blockPattern = new RegExp(
+				'```' + blockType + '\\s*\\n[\\s\\S]*?```',
+				'g'
+			);
+
+			const matches = content.match(blockPattern);
+			if (!matches || matches.length === 0) {
+				new Notice(`Could not find ${blockType} block in file`);
+				return false;
+			}
+
+			// Replace the first match (in case there are multiple)
+			const newContent = content.replace(blockPattern, markdown);
+
+			if (newContent === content) {
+				new Notice('No changes made');
+				return false;
+			}
+
+			await this.plugin.app.vault.modify(file, newContent);
+			new Notice('Block frozen to markdown');
+			return true;
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			new Notice(`Failed to freeze block: ${message}`);
+			return false;
+		}
 	}
 }

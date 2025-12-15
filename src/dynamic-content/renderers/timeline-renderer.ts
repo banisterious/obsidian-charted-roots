@@ -28,6 +28,9 @@ export interface TimelineEntry {
  */
 export class TimelineRenderer {
 	private service: DynamicContentService;
+	/** Store entries for freeze functionality */
+	private currentEntries: TimelineEntry[] = [];
+	private currentContext: DynamicBlockContext | null = null;
 
 	constructor(service: DynamicContentService) {
 		this.service = service;
@@ -44,11 +47,15 @@ export class TimelineRenderer {
 	): Promise<void> {
 		const container = el.createDiv({ cls: 'cr-dynamic-block cr-timeline' });
 
-		// Render header
-		this.renderHeader(container, config);
-
 		// Build timeline entries
 		const entries = this.buildTimelineEntries(context, config);
+
+		// Store for freeze functionality
+		this.currentEntries = entries;
+		this.currentContext = context;
+
+		// Render header (needs entries for freeze)
+		this.renderHeader(container, config);
 
 		// Render content
 		const contentEl = container.createDiv({ cls: 'cr-dynamic-block__content' });
@@ -75,6 +82,16 @@ export class TimelineRenderer {
 		header.createSpan({ cls: 'cr-dynamic-block__title', text: title });
 
 		const toolbar = header.createDiv({ cls: 'cr-dynamic-block__toolbar' });
+
+		// Freeze button
+		const freezeBtn = toolbar.createEl('button', {
+			cls: 'cr-dynamic-block__btn clickable-icon',
+			attr: { 'aria-label': 'Freeze to markdown' }
+		});
+		freezeBtn.innerHTML = '❄️';
+		freezeBtn.addEventListener('click', () => {
+			void this.freezeToMarkdown();
+		});
 
 		// Copy button
 		const copyBtn = toolbar.createEl('button', {
@@ -224,5 +241,48 @@ export class TimelineRenderer {
 
 		const text = lines.join('\n');
 		void navigator.clipboard.writeText(text);
+	}
+
+	/**
+	 * Generate markdown from current entries and replace the code block
+	 */
+	private async freezeToMarkdown(): Promise<void> {
+		if (!this.currentContext || this.currentEntries.length === 0) {
+			return;
+		}
+
+		const markdown = this.generateMarkdown();
+		await this.service.freezeToMarkdown(
+			this.currentContext.file,
+			'canvas-roots-timeline',
+			markdown
+		);
+	}
+
+	/**
+	 * Generate markdown representation of the timeline
+	 */
+	private generateMarkdown(): string {
+		const lines: string[] = ['## Timeline', ''];
+
+		for (const entry of this.currentEntries) {
+			let line = `- **${entry.year || entry.date || '?'}** — `;
+
+			// Add title with wikilink if it's an event
+			if (entry.eventFile) {
+				line += `[[${entry.eventFile}|${entry.title}]]`;
+			} else {
+				line += entry.title;
+			}
+
+			// Add place
+			if (entry.place) {
+				line += ` in ${entry.place}`;
+			}
+
+			lines.push(line);
+		}
+
+		return lines.join('\n');
 	}
 }

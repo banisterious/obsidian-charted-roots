@@ -6,7 +6,7 @@
  */
 
 export { DynamicContentService } from './services/dynamic-content-service';
-export type { DynamicBlockConfig, DynamicBlockContext } from './services/dynamic-content-service';
+export type { DynamicBlockConfig, DynamicBlockContext, DynamicBlockType } from './services/dynamic-content-service';
 
 export { TimelineProcessor } from './processors/timeline-processor';
 export { TimelineRenderer } from './renderers/timeline-renderer';

@@ -6,7 +6,7 @@
  */
 
 import { MarkdownRenderer, MarkdownRenderChild } from 'obsidian';
-import type { DynamicBlockContext, DynamicBlockConfig } from '../services/dynamic-content-service';
+import type { DynamicBlockContext, DynamicBlockConfig, DynamicContentService } from '../services/dynamic-content-service';
 import type { PersonNode, FamilyGraphService } from '../../core/family-graph';
 
 /**
@@ -32,6 +32,16 @@ interface RelationshipGroups {
  * Renders relationships content into an HTML element
  */
 export class RelationshipsRenderer {
+	private service: DynamicContentService;
+	/** Store groups for freeze functionality */
+	private currentGroups: RelationshipGroups | null = null;
+	private currentContext: DynamicBlockContext | null = null;
+	private currentConfig: DynamicBlockConfig | null = null;
+
+	constructor(service: DynamicContentService) {
+		this.service = service;
+	}
+
 	/**
 	 * Render the relationships block
 	 */
@@ -43,11 +53,16 @@ export class RelationshipsRenderer {
 	): Promise<void> {
 		const container = el.createDiv({ cls: 'cr-dynamic-block cr-relationships' });
 
-		// Render header
-		this.renderHeader(container, config);
-
 		// Build relationship groups
 		const groups = this.buildRelationshipGroups(context, config);
+
+		// Store for freeze functionality
+		this.currentGroups = groups;
+		this.currentContext = context;
+		this.currentConfig = config;
+
+		// Render header (needs groups for freeze)
+		this.renderHeader(container, config);
 
 		// Render content
 		const contentEl = container.createDiv({ cls: 'cr-dynamic-block__content' });
@@ -70,13 +85,25 @@ export class RelationshipsRenderer {
 	}
 
 	/**
-	 * Render the header with title
+	 * Render the header with title and toolbar
 	 */
 	private renderHeader(container: HTMLElement, config: DynamicBlockConfig): void {
 		const header = container.createDiv({ cls: 'cr-dynamic-block__header' });
 
 		const title = config.title as string || 'Family';
 		header.createSpan({ cls: 'cr-dynamic-block__title', text: title });
+
+		const toolbar = header.createDiv({ cls: 'cr-dynamic-block__toolbar' });
+
+		// Freeze button
+		const freezeBtn = toolbar.createEl('button', {
+			cls: 'cr-dynamic-block__btn clickable-icon',
+			attr: { 'aria-label': 'Freeze to markdown' }
+		});
+		freezeBtn.innerHTML = '❄️';
+		freezeBtn.addEventListener('click', () => {
+			void this.freezeToMarkdown();
+		});
 	}
 
 	/**
@@ -296,5 +323,79 @@ export class RelationshipsRenderer {
 				li.createSpan({ cls: 'cr-relationships__dates', text: ` ${entry.dates}` });
 			}
 		}
+	}
+
+	/**
+	 * Generate markdown from current groups and replace the code block
+	 */
+	private async freezeToMarkdown(): Promise<void> {
+		if (!this.currentContext || !this.currentGroups) {
+			return;
+		}
+
+		const markdown = this.generateMarkdown();
+		await this.service.freezeToMarkdown(
+			this.currentContext.file,
+			'canvas-roots-relationships',
+			markdown
+		);
+	}
+
+	/**
+	 * Generate markdown representation of the relationships
+	 */
+	private generateMarkdown(): string {
+		if (!this.currentGroups || !this.currentConfig) {
+			return '';
+		}
+
+		const lines: string[] = ['## Family', ''];
+
+		// Define section order and labels
+		const sections: { key: keyof RelationshipGroups; label: string }[] = [
+			{ key: 'parents', label: 'Parents' },
+			{ key: 'spouse', label: 'Spouse' },
+			{ key: 'children', label: 'Children' },
+			{ key: 'siblings', label: 'Siblings' }
+		];
+
+		// Check config for display type
+		const displayType = this.currentConfig.type as string || 'immediate';
+
+		for (const section of sections) {
+			const entries = this.currentGroups[section.key];
+			if (entries.length === 0) continue;
+
+			// Skip siblings in 'immediate' type
+			if (displayType === 'immediate' && section.key === 'siblings') {
+				continue;
+			}
+
+			lines.push(`### ${section.label}`);
+			lines.push('');
+
+			for (const entry of entries) {
+				let line = '- ';
+
+				// Add wikilink if we have a file path
+				if (entry.filePath) {
+					const basename = entry.filePath.replace(/\.md$/, '').split('/').pop() || entry.name;
+					line += `[[${basename}]]`;
+				} else {
+					line += entry.name;
+				}
+
+				// Add dates
+				if (entry.dates) {
+					line += ` ${entry.dates}`;
+				}
+
+				lines.push(line);
+			}
+
+			lines.push('');
+		}
+
+		return lines.join('\n').trim();
 	}
 }
