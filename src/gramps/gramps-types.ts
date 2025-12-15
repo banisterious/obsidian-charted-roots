@@ -64,6 +64,7 @@ export interface GrampsEvent {
 	date?: GrampsDate;
 	place?: string;  // Handle link to place
 	description?: string;
+	citationRefs: string[];  // Handle links to citations
 }
 
 /**
@@ -112,6 +113,56 @@ export interface GrampsFamily {
 }
 
 /**
+ * Source record
+ */
+export interface GrampsSource {
+	handle: string;
+	id?: string;
+	title?: string;      // <stitle>
+	author?: string;     // <sauthor>
+	pubinfo?: string;    // <spubinfo>
+	abbrev?: string;     // <sabbrev>
+	noteRefs: string[];  // Handle links to notes
+	repoRef?: string;    // Handle link to repository
+}
+
+/**
+ * Citation record - links sources to facts with confidence
+ */
+export interface GrampsCitation {
+	handle: string;
+	id?: string;
+	confidence?: number; // 0-4 scale (0=very low, 4=very high)
+	sourceRef?: string;  // Handle link to source
+	page?: string;       // Page/volume details
+}
+
+/**
+ * Note record
+ */
+export interface GrampsNote {
+	handle: string;
+	id?: string;
+	type?: string;       // e.g., "Source text"
+	text?: string;
+}
+
+/**
+ * Citation confidence levels in Gramps (0-4 scale)
+ */
+export type GrampsConfidence = 0 | 1 | 2 | 3 | 4;
+
+/**
+ * Map Gramps confidence (0-4) to Canvas Roots confidence (high/medium/low)
+ */
+export function mapGrampsConfidence(confidence?: number): 'high' | 'medium' | 'low' {
+	if (confidence === undefined || confidence === null) return 'medium';
+	if (confidence >= 3) return 'high';   // 3=High, 4=Very High
+	if (confidence === 2) return 'medium'; // 2=Normal
+	return 'low';                          // 0=Very Low, 1=Low
+}
+
+/**
  * Complete Gramps database structure
  */
 export interface GrampsDatabase {
@@ -119,6 +170,9 @@ export interface GrampsDatabase {
 	families: Map<string, GrampsFamily>;
 	events: Map<string, GrampsEvent>;
 	places: Map<string, GrampsPlace>;
+	sources: Map<string, GrampsSource>;
+	citations: Map<string, GrampsCitation>;
+	notes: Map<string, GrampsNote>;
 	header?: {
 		createdBy?: string;
 		createdDate?: string;
@@ -138,6 +192,9 @@ export interface GrampsValidationResult {
 		familyCount: number;
 		eventCount: number;
 		placeCount: number;
+		sourceCount: number;
+		citationCount: number;
+		noteCount: number;
 	};
 }
 

@@ -5,7 +5,7 @@
  */
 
 import { App, Notice, TFile, normalizePath } from 'obsidian';
-import { GrampsParser, ParsedGrampsData, ParsedGrampsPerson, ParsedGrampsPlace, ParsedGrampsEvent } from './gramps-parser';
+import { GrampsParser, ParsedGrampsData, ParsedGrampsPerson, ParsedGrampsPlace, ParsedGrampsEvent, ParsedGrampsSource, ParsedGrampsCitation } from './gramps-parser';
 import { GrampsValidationResult } from './gramps-types';
 import { createPersonNote, PersonData } from '../core/person-note-writer';
 import { createPlaceNote, PlaceData } from '../core/place-note-writer';
@@ -32,6 +32,10 @@ export interface GrampsImportOptions {
 	createEventNotes?: boolean;
 	/** Folder for event notes */
 	eventsFolder?: string;
+	/** Whether to create source notes (default: true) */
+	createSourceNotes?: boolean;
+	/** Folder for source notes */
+	sourcesFolder?: string;
 }
 
 /**
@@ -51,6 +55,8 @@ export interface GrampsImportResult {
 	placeNotesCreated?: number;
 	eventsImported?: number;
 	eventNotesCreated?: number;
+	sourcesImported?: number;
+	sourceNotesCreated?: number;
 }
 
 /**
@@ -165,7 +171,9 @@ export class GrampsImporter {
 			placesImported: 0,
 			placeNotesCreated: 0,
 			eventsImported: 0,
-			eventNotesCreated: 0
+			eventNotesCreated: 0,
+			sourcesImported: 0,
+			sourceNotesCreated: 0
 		};
 
 		try {
@@ -221,6 +229,47 @@ export class GrampsImporter {
 						result.errors.push(
 							`Failed to import place ${place.name || handle}: ${getErrorMessage(error)}`
 						);
+					}
+				}
+			}
+
+			// Create mapping of source handles to cr_ids and wikilinks
+			const sourceHandleToCrId = new Map<string, string>();
+			const sourceHandleToWikilink = new Map<string, string>();
+
+			// Create source notes if requested (default: true)
+			const shouldCreateSources = options.createSourceNotes !== false;
+			if (shouldCreateSources && grampsData.sources.size > 0) {
+				new Notice(`Creating ${grampsData.sources.size} source notes...`);
+				const sourcesFolder = options.sourcesFolder || 'Canvas Roots/Sources';
+				await this.ensureFolderExists(sourcesFolder);
+
+				for (const [handle, source] of grampsData.sources) {
+					try {
+						const { crId, wikilink } = await this.importSource(
+							source,
+							sourcesFolder,
+							options
+						);
+						sourceHandleToCrId.set(handle, crId);
+						sourceHandleToWikilink.set(handle, wikilink);
+						result.sourcesImported = (result.sourcesImported || 0) + 1;
+						result.sourceNotesCreated = (result.sourceNotesCreated || 0) + 1;
+					} catch (error: unknown) {
+						result.errors.push(
+							`Failed to import source ${source.title || handle}: ${getErrorMessage(error)}`
+						);
+					}
+				}
+			}
+
+			// Build citation handle to source wikilink mapping
+			const citationToSourceWikilink = new Map<string, string>();
+			for (const [citationHandle, citation] of grampsData.citations) {
+				if (citation.sourceHandle) {
+					const sourceWikilink = sourceHandleToWikilink.get(citation.sourceHandle);
+					if (sourceWikilink) {
+						citationToSourceWikilink.set(citationHandle, sourceWikilink);
 					}
 				}
 			}
@@ -287,6 +336,7 @@ export class GrampsImporter {
 							grampsData,
 							grampsToCrId,
 							placeNameToWikilink,
+							citationToSourceWikilink,
 							eventsFolder,
 							options
 						);
@@ -302,6 +352,10 @@ export class GrampsImporter {
 
 			// Enhanced import complete notice
 			let importMessage = `Import complete: ${result.notesCreated} people imported`;
+
+			if (result.sourceNotesCreated && result.sourceNotesCreated > 0) {
+				importMessage += `, ${result.sourceNotesCreated} sources`;
+			}
 
 			if (result.placeNotesCreated && result.placeNotesCreated > 0) {
 				importMessage += `, ${result.placeNotesCreated} places`;
@@ -612,6 +666,114 @@ export class GrampsImporter {
 	}
 
 	/**
+	 * Import a single source
+	 */
+	private async importSource(
+		source: ParsedGrampsSource,
+		sourcesFolder: string,
+		options: GrampsImportOptions
+	): Promise<{ crId: string; wikilink: string }> {
+		const crId = generateCrId();
+
+		// Generate source title
+		const title = source.title || `Unknown Source (${source.id || source.handle})`;
+
+		// Infer source type from title
+		const sourceType = this.inferSourceType(title, source.author);
+
+		// Build frontmatter
+		const aliases = options.propertyAliases || {};
+		const prop = (canonical: string) => this.getWriteProperty(canonical, aliases);
+
+		const frontmatterLines: string[] = [
+			'---',
+			`${prop('cr_type')}: source`,
+			`${prop('cr_id')}: ${crId}`,
+			`${prop('title')}: "${title.replace(/"/g, '\\"')}"`,
+			`${prop('source_type')}: ${sourceType}`
+		];
+
+		if (source.author) {
+			frontmatterLines.push(`${prop('author')}: "${source.author.replace(/"/g, '\\"')}"`);
+		}
+
+		if (source.pubinfo) {
+			frontmatterLines.push(`${prop('repository')}: "${source.pubinfo.replace(/"/g, '\\"')}"`);
+		}
+
+		// Default confidence to medium
+		frontmatterLines.push(`${prop('confidence')}: medium`);
+
+		frontmatterLines.push('---');
+
+		// Build note body with source notes if available
+		let body = `\n# ${title}\n`;
+		if (source.noteText) {
+			body += `\n${source.noteText}\n`;
+		}
+
+		const content = frontmatterLines.join('\n') + body;
+
+		// Generate file name
+		const fileName = this.slugify(title) + '.md';
+		const filePath = normalizePath(`${sourcesFolder}/${fileName}`);
+
+		// Handle duplicate file names with suffix
+		let finalPath = filePath;
+		let counter = 2;
+		while (this.app.vault.getAbstractFileByPath(finalPath)) {
+			const baseName = this.slugify(title);
+			finalPath = normalizePath(`${sourcesFolder}/${baseName} (${counter}).md`);
+			counter++;
+		}
+
+		await this.app.vault.create(finalPath, content);
+
+		// Return both crId and wikilink for mapping
+		const finalFileName = finalPath.split('/').pop()?.replace('.md', '') || title;
+		return {
+			crId,
+			wikilink: `[[${finalFileName}]]`
+		};
+	}
+
+	/**
+	 * Infer source type from title and author
+	 */
+	private inferSourceType(title: string, author?: string): string {
+		const lowerTitle = title.toLowerCase();
+		const lowerAuthor = (author || '').toLowerCase();
+
+		// Check for common patterns
+		if (lowerTitle.includes('census')) return 'census';
+		if (lowerTitle.includes('vital record') || lowerTitle.includes('birth') ||
+			lowerTitle.includes('death') || lowerTitle.includes('marriage certificate')) {
+			return 'vital_record';
+		}
+		if (lowerTitle.includes('church') || lowerTitle.includes('parish') ||
+			lowerTitle.includes('baptism') || lowerTitle.includes('burial')) {
+			return 'church_record';
+		}
+		if (lowerTitle.includes('military') || lowerTitle.includes('draft') ||
+			lowerTitle.includes('service record')) {
+			return 'military';
+		}
+		if (lowerTitle.includes('immigration') || lowerTitle.includes('passenger') ||
+			lowerTitle.includes('naturalization')) {
+			return 'immigration';
+		}
+		if (lowerTitle.includes('newspaper')) return 'newspaper';
+		if (lowerTitle.includes('bible')) return 'custom';
+		if (lowerTitle.includes('social security')) return 'vital_record';
+		if (lowerTitle.includes('obituary')) return 'obituary';
+		if (lowerTitle.includes('court') || lowerTitle.includes('probate')) return 'court_record';
+		if (lowerTitle.includes('land') || lowerTitle.includes('deed')) return 'land_deed';
+		if (lowerTitle.includes('photo')) return 'photo';
+
+		return 'custom';
+	}
+
+	/**
 	 * Import a single event
 	 */
 	private async importEvent(
@@ -619,6 +781,7 @@ export class GrampsImporter {
 		grampsData: ParsedGrampsData,
 		grampsToCrId: Map<string, string>,
 		placeNameToWikilink: Map<string, string>,
+		citationToSourceWikilink: Map<string, string>,
 		eventsFolder: string,
 		options: GrampsImportOptions
 	): Promise<string> {
@@ -635,6 +798,15 @@ export class GrampsImporter {
 			if (person) {
 				personNames.push(person.name || 'Unknown');
 				personWikilinks.push(`[[${person.name || 'Unknown'}]]`);
+			}
+		}
+
+		// Resolve source wikilinks from citations
+		const sourceWikilinks: string[] = [];
+		for (const citationHandle of event.citationHandles) {
+			const sourceWikilink = citationToSourceWikilink.get(citationHandle);
+			if (sourceWikilink && !sourceWikilinks.includes(sourceWikilink)) {
+				sourceWikilinks.push(sourceWikilink);
 			}
 		}
 
@@ -680,6 +852,14 @@ export class GrampsImporter {
 			// Check if it's already a wikilink
 			const placeLink = placeValue.startsWith('[[') ? placeValue : `[[${placeValue}]]`;
 			frontmatterLines.push(`${prop('place')}: "${placeLink}"`);
+		}
+
+		// Add source references (array format)
+		if (sourceWikilinks.length > 0) {
+			frontmatterLines.push(`${prop('sources')}:`);
+			for (const s of sourceWikilinks) {
+				frontmatterLines.push(`  - "${s}"`);
+			}
 		}
 
 		if (event.description) {

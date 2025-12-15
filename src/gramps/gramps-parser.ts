@@ -10,6 +10,9 @@ import {
 	GrampsFamily,
 	GrampsEvent,
 	GrampsPlace,
+	GrampsSource,
+	GrampsCitation,
+	GrampsNote,
 	GrampsName,
 	GrampsDate,
 	GrampsValidationResult,
@@ -17,7 +20,8 @@ import {
 	GrampsFamilyRelType,
 	GrampsRelType,
 	convertGrampsGender,
-	formatGrampsDate
+	formatGrampsDate,
+	mapGrampsConfidence
 } from './gramps-types';
 import { getLogger } from '../core/logging';
 
@@ -70,6 +74,36 @@ export interface ParsedGrampsEvent {
 	description?: string;
 	/** Person handles associated with this event */
 	personHandles: string[];
+	/** Citation handles for this event */
+	citationHandles: string[];
+}
+
+/**
+ * Parsed source from Gramps format
+ */
+export interface ParsedGrampsSource {
+	handle: string;
+	id?: string;
+	title?: string;
+	author?: string;
+	pubinfo?: string;
+	abbrev?: string;
+	/** Note text content (resolved from noteRefs) */
+	noteText?: string;
+}
+
+/**
+ * Parsed citation from Gramps format
+ */
+export interface ParsedGrampsCitation {
+	handle: string;
+	id?: string;
+	/** Canvas Roots confidence level (high/medium/low) */
+	confidence: 'high' | 'medium' | 'low';
+	/** Source handle this citation references */
+	sourceHandle?: string;
+	/** Page/volume details */
+	page?: string;
 }
 
 /**
@@ -79,6 +113,8 @@ export interface ParsedGrampsData {
 	persons: Map<string, ParsedGrampsPerson>;
 	places: Map<string, ParsedGrampsPlace>;
 	events: Map<string, ParsedGrampsEvent>;
+	sources: Map<string, ParsedGrampsSource>;
+	citations: Map<string, ParsedGrampsCitation>;
 	header: {
 		source?: string;
 		version?: string;
@@ -114,7 +150,10 @@ export class GrampsParser {
 				personCount: 0,
 				familyCount: 0,
 				eventCount: 0,
-				placeCount: 0
+				placeCount: 0,
+				sourceCount: 0,
+				citationCount: 0,
+				noteCount: 0
 			}
 		};
 
@@ -147,11 +186,17 @@ export class GrampsParser {
 			const families = doc.querySelectorAll('families > family');
 			const events = doc.querySelectorAll('events > event');
 			const places = doc.querySelectorAll('places > placeobj');
+			const sources = doc.querySelectorAll('sources > source');
+			const citations = doc.querySelectorAll('citations > citation');
+			const notes = doc.querySelectorAll('notes > note');
 
 			result.stats.personCount = people.length;
 			result.stats.familyCount = families.length;
 			result.stats.eventCount = events.length;
 			result.stats.placeCount = places.length;
+			result.stats.sourceCount = sources.length;
+			result.stats.citationCount = citations.length;
+			result.stats.noteCount = notes.length;
 
 			// Validate each person has required elements
 			people.forEach((person, index) => {
@@ -273,16 +318,60 @@ export class GrampsParser {
 				date: formatGrampsDate(grampsEvent.date),
 				placeName,
 				description: grampsEvent.description,
-				personHandles
+				personHandles,
+				citationHandles: grampsEvent.citationRefs || []
 			});
 		}
 
-		logger.info('parse', `Parsed ${persons.size} persons, ${places.size} places, and ${events.size} events from Gramps XML`);
+		// Convert sources to parsed format with resolved notes
+		const sources = new Map<string, ParsedGrampsSource>();
+		for (const [handle, grampsSource] of database.sources) {
+			// Resolve note text from noteRefs
+			let noteText: string | undefined;
+			if (grampsSource.noteRefs.length > 0) {
+				const noteTexts: string[] = [];
+				for (const noteRef of grampsSource.noteRefs) {
+					const note = database.notes.get(noteRef);
+					if (note?.text) {
+						noteTexts.push(note.text);
+					}
+				}
+				if (noteTexts.length > 0) {
+					noteText = noteTexts.join('\n\n');
+				}
+			}
+
+			sources.set(handle, {
+				handle: grampsSource.handle,
+				id: grampsSource.id,
+				title: grampsSource.title,
+				author: grampsSource.author,
+				pubinfo: grampsSource.pubinfo,
+				abbrev: grampsSource.abbrev,
+				noteText
+			});
+		}
+
+		// Convert citations to parsed format with mapped confidence
+		const citations = new Map<string, ParsedGrampsCitation>();
+		for (const [handle, grampsCitation] of database.citations) {
+			citations.set(handle, {
+				handle: grampsCitation.handle,
+				id: grampsCitation.id,
+				confidence: mapGrampsConfidence(grampsCitation.confidence),
+				sourceHandle: grampsCitation.sourceRef,
+				page: grampsCitation.page
+			});
+		}
+
+		logger.info('parse', `Parsed ${persons.size} persons, ${places.size} places, ${events.size} events, ${sources.size} sources, and ${citations.size} citations from Gramps XML`);
 
 		return {
 			persons,
 			places,
 			events,
+			sources,
+			citations,
 			header: {
 				source: database.header?.createdBy,
 				version: database.header?.version
@@ -298,7 +387,10 @@ export class GrampsParser {
 			persons: new Map(),
 			families: new Map(),
 			events: new Map(),
-			places: new Map()
+			places: new Map(),
+			sources: new Map(),
+			citations: new Map(),
+			notes: new Map()
 		};
 
 		// Parse header
@@ -326,6 +418,33 @@ export class GrampsParser {
 			const place = this.parsePlace(placeEl);
 			if (place) {
 				database.places.set(place.handle, place);
+			}
+		});
+
+		// Parse notes (needed for sources)
+		const notes = doc.querySelectorAll('notes > note');
+		notes.forEach(noteEl => {
+			const note = this.parseNote(noteEl);
+			if (note) {
+				database.notes.set(note.handle, note);
+			}
+		});
+
+		// Parse sources (needed for citations)
+		const sources = doc.querySelectorAll('sources > source');
+		sources.forEach(sourceEl => {
+			const source = this.parseSource(sourceEl);
+			if (source) {
+				database.sources.set(source.handle, source);
+			}
+		});
+
+		// Parse citations (needed for events)
+		const citations = doc.querySelectorAll('citations > citation');
+		citations.forEach(citationEl => {
+			const citation = this.parseCitation(citationEl);
+			if (citation) {
+				database.citations.set(citation.handle, citation);
 			}
 		});
 
@@ -440,13 +559,23 @@ export class GrampsParser {
 		const handle = el.getAttribute('handle');
 		if (!handle) return null;
 
+		// Parse citation references
+		const citationRefs: string[] = [];
+		el.querySelectorAll('citationref').forEach(refEl => {
+			const hlink = refEl.getAttribute('hlink');
+			if (hlink) {
+				citationRefs.push(hlink);
+			}
+		});
+
 		const event: GrampsEvent = {
 			handle,
 			id: el.getAttribute('id') || undefined,
 			type: el.querySelector('type')?.textContent || undefined,
 			date: this.parseDate(el),
 			place: el.querySelector('place')?.getAttribute('hlink') || undefined,
-			description: el.querySelector('description')?.textContent || undefined
+			description: el.querySelector('description')?.textContent || undefined,
+			citationRefs
 		};
 
 		return event;
@@ -582,6 +711,75 @@ export class GrampsParser {
 			return t as GrampsFamilyRelType;
 		}
 		return undefined;
+	}
+
+	/**
+	 * Parse a note element
+	 */
+	private static parseNote(el: Element): GrampsNote | null {
+		const handle = el.getAttribute('handle');
+		if (!handle) return null;
+
+		const note: GrampsNote = {
+			handle,
+			id: el.getAttribute('id') || undefined,
+			type: el.getAttribute('type') || undefined,
+			text: el.querySelector('text')?.textContent || undefined
+		};
+
+		return note;
+	}
+
+	/**
+	 * Parse a source element
+	 */
+	private static parseSource(el: Element): GrampsSource | null {
+		const handle = el.getAttribute('handle');
+		if (!handle) return null;
+
+		// Parse note references
+		const noteRefs: string[] = [];
+		el.querySelectorAll('noteref').forEach(refEl => {
+			const hlink = refEl.getAttribute('hlink');
+			if (hlink) {
+				noteRefs.push(hlink);
+			}
+		});
+
+		const source: GrampsSource = {
+			handle,
+			id: el.getAttribute('id') || undefined,
+			title: el.querySelector('stitle')?.textContent || undefined,
+			author: el.querySelector('sauthor')?.textContent || undefined,
+			pubinfo: el.querySelector('spubinfo')?.textContent || undefined,
+			abbrev: el.querySelector('sabbrev')?.textContent || undefined,
+			noteRefs,
+			repoRef: el.querySelector('reporef')?.getAttribute('hlink') || undefined
+		};
+
+		return source;
+	}
+
+	/**
+	 * Parse a citation element
+	 */
+	private static parseCitation(el: Element): GrampsCitation | null {
+		const handle = el.getAttribute('handle');
+		if (!handle) return null;
+
+		// Parse confidence - Gramps uses integer 0-4
+		const confidenceText = el.querySelector('confidence')?.textContent;
+		const confidenceNum = confidenceText ? parseInt(confidenceText, 10) : undefined;
+
+		const citation: GrampsCitation = {
+			handle,
+			id: el.getAttribute('id') || undefined,
+			confidence: isNaN(confidenceNum as number) ? undefined : confidenceNum,
+			sourceRef: el.querySelector('sourceref')?.getAttribute('hlink') || undefined,
+			page: el.querySelector('page')?.textContent || undefined
+		};
+
+		return citation;
 	}
 
 	/**
