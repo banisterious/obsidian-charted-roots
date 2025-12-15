@@ -109,19 +109,19 @@ interface ParsedImageFilename {
    - File filter options (exclude `thumb_*`, `.doc`, etc.)
    - Show file count and preview
 
-2. **Review Parsed Data** — Table with editable fields
-   - Thumbnail | Filename | Surnames | Year | Type | Location | Group
-   - Editable cells for corrections
-   - Confidence indicator (color-coded)
-   - Multi-part grouping visual indicator
-
-3. **Rename Files** (optional) — Standardize filenames
+2. **Rename Files** (optional) — Standardize filenames
    - Toggle: "Rename files to standard format"
    - Preview table: Current Name → Proposed Name
    - Editable proposed names for manual adjustments
    - Format based on parsed metadata: `surname_given_byyyy_type_yyyy_place.ext`
    - Checkbox per row to include/exclude from renaming
    - Warning for potential conflicts (duplicate names)
+
+3. **Review Parsed Data** — Table with editable fields
+   - Thumbnail | Filename (final) | Surnames | Year | Type | Location | Group
+   - Editable cells for corrections
+   - Confidence indicator (color-coded)
+   - Multi-part grouping visual indicator
 
 4. **Configure Import** — Settings for this import
    - Destination folder (default from settings) — only shown for external imports

@@ -11,6 +11,7 @@ import type { LucideIconName } from '../../ui/lucide-icons';
 import { createLucideIcon } from '../../ui/lucide-icons';
 import { SourceService } from '../services/source-service';
 import { CreateSourceModal } from './create-source-modal';
+import { SourceImageWizardModal } from './source-image-wizard';
 import { renderMediaGallery } from './media-gallery';
 import { renderSourceTypeManagerCard } from './source-type-manager-card';
 import type { SourceNote } from '../types/source-types';
@@ -171,6 +172,16 @@ function renderSourcesListCard(
 			.setButtonText('Create')
 			.onClick(() => {
 				plugin.app.commands.executeCommandById('canvas-roots:create-sources-base-template');
+			}));
+
+	// Import source images button
+	new Setting(content)
+		.setName('Import source images')
+		.setDesc('Bulk import images, parse filenames to extract metadata, and create source notes')
+		.addButton(button => button
+			.setButtonText('Import')
+			.onClick(() => {
+				new SourceImageWizardModal(plugin.app, plugin).open();
 			}));
 
 	// View templates button

@@ -54,6 +54,10 @@ This census confirms John's occupation as "carpenter" and lists 4 children.
 2. Select "New sources base from template"
 3. Use the table interface to create and edit sources
 
+**Using the Import Wizard:**
+
+See [Bulk Source Image Import](#bulk-source-image-import) below for importing multiple images at once.
+
 ### Source Note Properties
 
 | Property | Type | Required | Description |
@@ -201,6 +205,140 @@ For source media files (images, PDFs):
 - Store in a dedicated attachments folder
 - Use descriptive filenames: `1900-census-smith-brooklyn-p1.jpg`
 - Link via the `media` property in frontmatter
+
+## Bulk Source Image Import
+
+The **Import Source Images** wizard helps you bulk-import a folder of scanned documents or photos, automatically parsing filenames to extract metadata and creating source notes.
+
+### Opening the Wizard
+
+1. Open **Control Center** (ribbon icon or command palette)
+2. Go to the **Sources** tab
+3. Click **Import** next to "Import source images"
+
+### Wizard Steps
+
+#### Step 1: Select Folder
+
+Choose the vault folder containing your source images.
+
+**Filter options:**
+- **Exclude thumbnails** - Skips files starting with `thumb_` or `thumbnail_`
+- **Exclude non-images** - Skips `.txt`, `.doc`, `.pdf`, and other non-image files
+
+The wizard shows a count of how many files will be processed.
+
+#### Step 2: Rename Files (Optional)
+
+Toggle **Standardize filenames** to rename files to a consistent format based on parsed metadata:
+
+```
+surname_given_byyyy_type_yyyy_location.ext
+```
+
+Example: `smith_john_b1865_census_1900_usa_ny.jpg`
+
+The table shows:
+- **Current name** - Original filename
+- **Proposed name** - Suggested standardized name (editable)
+
+Conflicts are highlighted if two files would have the same name. You can edit proposed names to resolve conflicts.
+
+#### Step 3: Review Parsed Data
+
+Review and edit the metadata extracted from filenames:
+
+| Column | Description |
+|--------|-------------|
+| Filename | Final filename (after optional renaming) |
+| Surnames | Extracted family names |
+| Year | Record year (census year, document date) |
+| Type | Source type (census, vital_record, etc.) |
+| Location | Extracted place information |
+| Multi-part | Groups multi-page documents together |
+| Confidence | Parser confidence (green/yellow/red dot) |
+
+**Editable fields:** Click any cell in Surnames, Year, Type, or Location to correct the parsed value.
+
+**Multi-part documents:** Files with part indicators (`_p1`, `_p2`, `_a`, `_b`, `_page1`, etc.) are automatically grouped. All pages in a group will be linked to the same source note.
+
+**Confidence indicators:**
+- 🟢 **High** - Extracted surname + type + year
+- 🟡 **Medium** - Extracted surname + (type OR year)
+- 🔴 **Low** - Minimal information extracted
+
+#### Step 4: Configure
+
+Set where source notes will be created:
+
+- **Source notes folder** - Destination folder for new source notes (default: your Sources folder from settings)
+
+**Import summary** shows:
+- Total source notes to create
+- Total images to link
+- Multi-part groups detected
+
+#### Step 5: Execute
+
+Click **Start import** to begin. The wizard:
+
+1. Renames files (if enabled)
+2. Creates source notes with parsed metadata
+3. Links images via `media` properties
+4. Shows progress and results
+
+Results display:
+- Number of sources created
+- Number of images linked
+- Log of each created source note
+
+### Filename Parsing
+
+The parser recognizes common genealogy naming patterns:
+
+| Pattern | Example | Extracted |
+|---------|---------|-----------|
+| `surname_year_type` | `smith_1900_census.jpg` | Smith, 1900, census |
+| `surname_given_byear_type` | `smith_john_b1865_birth.jpg` | Smith, John, b.1865, vital_record |
+| `surname_year_place_type` | `smith_1920_usa_ny_census.jpg` | Smith, 1920, USA/NY, census |
+| `surname_given_type_year` | `smith-john-census-1900.jpg` | Smith, John, 1900, census |
+| Descriptive | `Birth Certificate - John Smith 1865.jpg` | Smith, John, 1865, vital_record |
+
+**Recognized type keywords:**
+- Census: `census`, `cens`
+- Vital records: `birth`, `death`, `marriage`, `divorce`
+- Military: `draft`, `wwi`, `wwii`, `military`, `civil_war`
+- Immigration: `passenger`, `immigration`, `naturalization`, `pas_list`
+- Other: `obit`, `obituary`, `will`, `probate`, `cemetery`, `gravestone`
+
+**Multi-part indicators:**
+- `_p1`, `_p2`, `_p3` (page numbers)
+- `_a`, `_b`, `_c` (letters)
+- `_01`, `_02` (numbered)
+- `_page1`, `_page2`
+- `_part1`, `_partA`
+
+### Tips for Best Results
+
+**Before importing:**
+
+1. **Organize images** in a dedicated folder
+2. **Rename consistently** if possible - the parser works best with `surname_year_type` patterns
+3. **Remove duplicates** - the wizard doesn't detect duplicate images
+
+**Filename best practices:**
+
+```
+thornwood_george_b1843_census_1870_usa_tn.jpg
+calloway_1920_usa_ok_census_p1.jpg
+smith_john_birth_1865.jpg
+```
+
+**After importing:**
+
+1. Review created source notes
+2. Add transcriptions and research notes
+3. Link sources to person notes by adding wikilinks
 
 ### Confidence Levels
 
