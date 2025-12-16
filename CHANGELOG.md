@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Family Chart "Open note" button** - Person cards in the Family Chart view now have a small button in the top-right corner that opens the person's note in a new tab. Works in both view and edit modes, providing quick access to notes without changing the card click behavior.
+
 - **Statistics Dashboard** - New workspace view with comprehensive vault metrics including entity counts, data completeness percentages, gender distribution, and date range spanning all entities. Access via Control Center Statistics tab or command palette.
 
 - **Data quality analysis** - Quality section with severity-coded alerts (error/warning/info) for date inconsistencies, missing birth/death dates, orphaned people, incomplete parents, unsourced events, and places without coordinates. All issues are expandable with drill-down to see affected records.

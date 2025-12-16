@@ -21,10 +21,7 @@ import type {
 	GenderDistribution,
 	TopListItem,
 	PersonRef,
-	EventTypeDistribution,
-	SourceTypeDistribution,
 	SourceConfidenceDistribution,
-	PlaceCategoryDistribution,
 	// Phase 3 types
 	ExtendedStatistics,
 	LongevityAnalysis,
@@ -1269,7 +1266,6 @@ export class StatisticsService {
 	 * Get timeline density analysis
 	 */
 	getTimelineDensityAnalysis(): TimelineDensityAnalysis {
-		const vaultStats = this.getVaultStatsService().collectStats();
 		const decadeCount = new Map<number, number>();
 		let totalEvents = 0;
 

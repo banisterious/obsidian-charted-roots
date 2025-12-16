@@ -7,6 +7,7 @@
 
 import { ItemView, WorkspaceLeaf, Menu, TFile, Notice, setIcon, Modal, App } from 'obsidian';
 import f3 from 'family-chart';
+import * as d3 from 'd3';
 import { jsPDF } from 'jspdf';
 import type CanvasRootsPlugin from '../../../main';
 import { FamilyGraphService, PersonNode } from '../../core/family-graph';
@@ -397,7 +398,8 @@ export class FamilyChartView extends ItemView {
 			this.f3Card = this.f3Chart.setCardSvg()
 				.setCardDisplay(displayFields)
 				.setCardDim({ w: 200, h: 70, text_x: 75, text_y: 15, img_w: 60, img_h: 60, img_x: 5, img_y: 5 })
-				.setOnCardClick((e, d) => this.handleCardClick(e, d));
+				.setOnCardClick((e, d) => this.handleCardClick(e, d))
+				.setOnCardUpdate(this.createOpenNoteButtonCallback());
 
 			// Initialize EditTree for editing capabilities
 			this.initializeEditTree();
@@ -568,6 +570,76 @@ export class FamilyChartView extends ItemView {
 			// Cast to unknown first, then to expected type - the f3 library expects its internal TreeDatum type
 			this.f3Card.onCardClickDefault(e, d as unknown as Parameters<typeof this.f3Card.onCardClickDefault>[1]);
 		}
+	}
+
+	/**
+	 * Create the onCardUpdate callback for adding "Open note" buttons to cards
+	 *
+	 * family-chart's onCardUpdate callback is called with `this` bound to the card's
+	 * SVG group element (<g class="card">). We need to return a regular function
+	 * (not arrow) to preserve that binding, while capturing a reference to the view
+	 * instance for the click handler.
+	 */
+	private createOpenNoteButtonCallback(): (d: { data: { id: string } }) => void {
+		const view = this;
+
+		// Return a regular function so `this` is bound to the card element by family-chart
+		return function(this: SVGGElement, d: { data: { id: string } }) {
+			const cardEl = this;
+			const personId = d.data.id;
+
+			// Check if button already exists (prevents duplicates on re-render)
+			if (d3.select(cardEl).select('.cr-open-note-btn').size() > 0) return;
+
+			// Create button group positioned in top-right corner
+			// Card dimensions: w=200, h=70
+			// Position at (185, 12) to keep button visible within card bounds
+			const btnGroup = d3.select(cardEl)
+				.select('.card-inner')
+				.append('g')
+				.attr('class', 'cr-open-note-btn')
+				.attr('transform', 'translate(185, 12)')
+				.style('cursor', 'pointer');
+
+			// Add circle background
+			btnGroup.append('circle')
+				.attr('r', 9)
+				.attr('fill', 'var(--background-primary)')
+				.attr('stroke', 'var(--text-muted)')
+				.attr('stroke-width', 1);
+
+			// Add file-text icon (simplified SVG path for a document)
+			btnGroup.append('path')
+				.attr('d', 'M-4,-5 L2,-5 L5,-2 L5,5 L-4,5 Z M2,-5 L2,-2 L5,-2')
+				.attr('fill', 'none')
+				.attr('stroke', 'var(--text-muted)')
+				.attr('stroke-width', 1.2)
+				.attr('stroke-linecap', 'round')
+				.attr('stroke-linejoin', 'round');
+
+			// Add click handler
+			btnGroup.on('click', function(event: MouseEvent) {
+				event.stopPropagation(); // Prevent card click from triggering
+				void view.openPersonNote(personId);
+			});
+
+			// Add hover effect
+			btnGroup.on('mouseenter', function() {
+				d3.select(this).select('circle')
+					.attr('fill', 'var(--interactive-accent)')
+					.attr('stroke', 'var(--interactive-accent)');
+				d3.select(this).select('path')
+					.attr('stroke', 'var(--text-on-accent)');
+			});
+
+			btnGroup.on('mouseleave', function() {
+				d3.select(this).select('circle')
+					.attr('fill', 'var(--background-primary)')
+					.attr('stroke', 'var(--text-muted)');
+				d3.select(this).select('path')
+					.attr('stroke', 'var(--text-muted)');
+			});
+		};
 	}
 
 	/**

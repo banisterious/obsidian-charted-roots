@@ -8,7 +8,6 @@
 import { setIcon, Setting } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { LucideIconName } from '../../ui/lucide-icons';
-import { createLucideIcon } from '../../ui/lucide-icons';
 import { StatisticsService } from '../services/statistics-service';
 import type { StatisticsData, TopListItem } from '../types/statistics-types';
 import { VIEW_TYPE_STATISTICS } from '../constants/statistics-constants';
