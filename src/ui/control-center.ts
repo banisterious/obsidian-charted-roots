@@ -823,6 +823,14 @@ export class ControlCenterModal extends Modal {
 		this.createStatRow(peopleContent, 'Orphaned (no relationships)', stats.people.orphanedPeople,
 			stats.people.orphanedPeople > 0 ? 'crc-text-warning' : undefined);
 
+		// View full statistics link
+		const statsLink = peopleContent.createDiv({ cls: 'cr-stats-link' });
+		const link = statsLink.createEl('a', { text: 'View full statistics →', cls: 'crc-text-muted' });
+		link.addEventListener('click', (e) => {
+			e.preventDefault();
+			void this.plugin.activateStatisticsView();
+		});
+
 		container.appendChild(peopleCard);
 
 		// Family Links Card (standard genealogical relationships)
@@ -892,6 +900,14 @@ export class ControlCenterModal extends Modal {
 				text: stats.maps.universes.join(', ')
 			});
 		}
+
+		// View full statistics link
+		const mapsStatsLink = mapsContent.createDiv({ cls: 'cr-stats-link' });
+		const mapsLink = mapsStatsLink.createEl('a', { text: 'View full statistics →', cls: 'crc-text-muted' });
+		mapsLink.addEventListener('click', (e) => {
+			e.preventDefault();
+			void this.plugin.activateStatisticsView();
+		});
 
 		container.appendChild(mapsCard);
 
@@ -2041,6 +2057,14 @@ export class ControlCenterModal extends Modal {
 
 		// Total relationships
 		this.createStatItem(relGrid, 'Total relationships', stats.relationships.totalRelationships.toString());
+
+		// View full statistics link
+		const statsLink = container.createDiv({ cls: 'cr-stats-link' });
+		const link = statsLink.createEl('a', { text: 'View full statistics →', cls: 'crc-text-muted' });
+		link.addEventListener('click', (e) => {
+			e.preventDefault();
+			void this.plugin.activateStatisticsView();
+		});
 	}
 
 	/**
@@ -6922,6 +6946,14 @@ export class ControlCenterModal extends Modal {
 				item.createEl('span', { text: ` (${count} places)`, cls: 'crc-text--muted' });
 			}
 		}
+
+		// View full statistics link
+		const statsLink = container.createDiv({ cls: 'cr-stats-link' });
+		const link = statsLink.createEl('a', { text: 'View full statistics →', cls: 'crc-text-muted' });
+		link.addEventListener('click', (e) => {
+			e.preventDefault();
+			void this.plugin.activateStatisticsView();
+		});
 	}
 
 	/**

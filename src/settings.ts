@@ -259,6 +259,8 @@ export interface CanvasRootsSettings {
 	requireLeadingZeros: boolean;
 	// Calendarium integration
 	calendariumIntegration: CalendariumIntegrationMode;
+	// Reports settings
+	reportsFolder: string;
 }
 
 /**
@@ -477,7 +479,9 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	allowDateRanges: true,                     // Allow date ranges (1850-1920)
 	requireLeadingZeros: false,                // Don't require YYYY-MM-DD format (allow YYYY-M-D)
 	// Calendarium integration
-	calendariumIntegration: 'off'              // Default: no integration (invisible to users without Calendarium)
+	calendariumIntegration: 'off',             // Default: no integration (invisible to users without Calendarium)
+	// Reports settings
+	reportsFolder: 'Canvas Roots/Reports'      // Default folder for generated reports
 };
 
 export class CanvasRootsSettingTab extends PluginSettingTab {

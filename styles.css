@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-16 15:25:02 UTC
+ * - Generated: 2025-12-16 16:01:11 UTC
  * - Components: 32 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -600,7 +600,7 @@ settings:
    COMPONENT: MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 5855 lines, 107.19 KB */
+/* Component Size: 5874 lines, 107.57 KB */
 
 /* ==========================================================================
    Canvas Roots Control Center - Styling
@@ -2966,6 +2966,25 @@ settings:
 .cr-stats-grid--compact {
   grid-template-columns: repeat(4, 1fr);
   gap: 0.5em;
+}
+
+/* Statistics link in tab cards */
+.cr-stats-link {
+  margin-top: var(--size-4-3);
+  padding-top: var(--size-4-2);
+  border-top: 1px solid var(--background-modifier-border);
+  text-align: right;
+}
+
+.cr-stats-link a {
+  font-size: var(--font-ui-small);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.cr-stats-link a:hover {
+  color: var(--text-accent);
+  text-decoration: underline;
 }
 
 .cr-mini-stat {
@@ -17865,7 +17884,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: STATISTICS.CSS
    ========================================================================== */
 
-/* Component Size: 770 lines, 14.67 KB */
+/* Component Size: 846 lines, 16.2 KB */
 
 /**
  * Statistics Tab & View Styles
@@ -18460,6 +18479,82 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 .cr-sv-gender-bar-segment.cr-sv-gender-unknown {
+  background-color: var(--text-muted);
+  border-left: none;
+}
+
+/* Source confidence content */
+.cr-sv-confidence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: var(--size-4-3);
+  margin-bottom: var(--size-4-3);
+}
+
+.cr-sv-confidence-item {
+  display: flex;
+  flex-direction: column;
+  padding: var(--size-4-2);
+  background-color: var(--background-secondary);
+  border-radius: var(--radius-s);
+}
+
+.cr-sv-confidence-count {
+  font-size: var(--font-ui-large);
+  font-weight: var(--font-semibold);
+}
+
+.cr-sv-confidence-label {
+  font-size: var(--font-ui-small);
+}
+
+.cr-sv-confidence-percent {
+  font-size: var(--font-ui-smaller);
+}
+
+.cr-sv-confidence-high {
+  border-left: 3px solid var(--color-green);
+}
+
+.cr-sv-confidence-medium {
+  border-left: 3px solid var(--color-yellow);
+}
+
+.cr-sv-confidence-low {
+  border-left: 3px solid var(--color-red);
+}
+
+.cr-sv-confidence-unknown {
+  border-left: 3px solid var(--text-muted);
+}
+
+.cr-sv-confidence-bar {
+  display: flex;
+  height: 24px;
+  border-radius: var(--radius-s);
+  overflow: hidden;
+}
+
+.cr-sv-confidence-bar-segment {
+  transition: width 0.3s ease;
+}
+
+.cr-sv-confidence-bar-segment.cr-sv-confidence-high {
+  background-color: var(--color-green);
+  border-left: none;
+}
+
+.cr-sv-confidence-bar-segment.cr-sv-confidence-medium {
+  background-color: var(--color-yellow);
+  border-left: none;
+}
+
+.cr-sv-confidence-bar-segment.cr-sv-confidence-low {
+  background-color: var(--color-red);
+  border-left: none;
+}
+
+.cr-sv-confidence-bar-segment.cr-sv-confidence-unknown {
   background-color: var(--text-muted);
   border-left: none;
 }
@@ -19157,11 +19252,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-16 15:25:02 UTC
+ * Build completed: 2025-12-16 16:01:11 UTC
  * Components processed: 32
- * Total lines: 18846
- * Total size: 373.09 KB
- * Build duration: 0.03 seconds
+ * Total lines: 18941
+ * Total size: 374.99 KB
+ * Build duration: 0.04 seconds
  *
  * Component breakdown:
  * - variables.css: 48 lines, 1.33 KB
@@ -19172,7 +19267,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - nodes.css: 12 lines, 0.3 KB
  * - edges.css: 4 lines, 0.07 KB
  * - settings.css: 129 lines, 3.33 KB
- * - modals.css: 5855 lines, 107.19 KB
+ * - modals.css: 5874 lines, 107.57 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
  * - validation.css: 84 lines, 1.47 KB
@@ -19190,7 +19285,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - timeline-callouts.css: 319 lines, 10.4 KB
  * - organizations.css: 245 lines, 4.36 KB
  * - sources.css: 2664 lines, 54.11 KB
- * - statistics.css: 770 lines, 14.67 KB
+ * - statistics.css: 846 lines, 16.2 KB
  * - preferences.css: 242 lines, 5.29 KB
  * - dynamic-content.css: 189 lines, 3.98 KB
  * - animations.css: 16 lines, 0.18 KB

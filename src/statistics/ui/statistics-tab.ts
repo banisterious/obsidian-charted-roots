@@ -25,6 +25,9 @@ export function renderStatisticsTab(
 	const service = new StatisticsService(plugin.app, plugin.settings);
 	const stats = service.getAllStatistics();
 
+	// Actions card (at top for discoverability)
+	renderActionsCard(container, plugin, createCard);
+
 	// Overview card with entity counts
 	renderOverviewCard(container, stats, createCard);
 
@@ -36,9 +39,6 @@ export function renderStatisticsTab(
 
 	// Top lists card
 	renderTopListsCard(container, stats, createCard);
-
-	// Actions card
-	renderActionsCard(container, plugin, createCard);
 }
 
 /**

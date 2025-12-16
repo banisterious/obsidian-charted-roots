@@ -31,6 +31,9 @@ export const SECTION_IDS = {
 	TOP_OCCUPATIONS: 'top-occupations',
 	TOP_SOURCES: 'top-sources',
 	EVENTS_BY_TYPE: 'events-by-type',
+	SOURCES_BY_TYPE: 'sources-by-type',
+	SOURCES_BY_CONFIDENCE: 'sources-by-confidence',
+	PLACES_BY_CATEGORY: 'places-by-category',
 	GENDER_DISTRIBUTION: 'gender-distribution',
 	REPORTS: 'reports'
 } as const;

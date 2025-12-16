@@ -98,6 +98,16 @@ export interface SourceTypeDistribution {
 }
 
 /**
+ * Source confidence distribution
+ */
+export interface SourceConfidenceDistribution {
+	high: number;
+	medium: number;
+	low: number;
+	unknown: number;
+}
+
+/**
  * Place category distribution
  */
 export interface PlaceCategoryDistribution {
@@ -119,6 +129,7 @@ export interface StatisticsData {
 	topSources: TopListItem[];
 	eventsByType: EventTypeDistribution;
 	sourcesByType: SourceTypeDistribution;
+	sourcesByConfidence: SourceConfidenceDistribution;
 	placesByCategory: PlaceCategoryDistribution;
 	lastUpdated: Date;
 }

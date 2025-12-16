@@ -782,6 +782,15 @@ function renderFolderLocationsCard(
 		(v) => { plugin.settings.canvasesFolder = v; }
 	);
 
+	// Reports folder
+	createFolderSetting(
+		'Reports folder',
+		'Default folder for generated reports (Individual Summary, Family Group Sheet, etc.)',
+		'Canvas Roots/Reports',
+		() => plugin.settings.reportsFolder,
+		(v) => { plugin.settings.reportsFolder = v; }
+	);
+
 	// Staging folder
 	createFolderSetting(
 		'Staging folder',

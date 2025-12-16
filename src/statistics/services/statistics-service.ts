@@ -22,6 +22,7 @@ import type {
 	TopListItem,
 	EventTypeDistribution,
 	SourceTypeDistribution,
+	SourceConfidenceDistribution,
 	PlaceCategoryDistribution
 } from '../types/statistics-types';
 import { DEFAULT_TOP_LIST_LIMIT, CACHE_DEBOUNCE_MS } from '../constants/statistics-constants';
@@ -176,6 +177,7 @@ export class StatisticsService {
 		// Type distributions
 		const eventsByType = vaultStats.events.byType;
 		const sourcesByType = vaultStats.sources.byType;
+		const sourcesByConfidence = this.computeSourceConfidence();
 		const placesByCategory = vaultStats.places.byCategory;
 
 		return {
@@ -190,6 +192,7 @@ export class StatisticsService {
 			topSources,
 			eventsByType,
 			sourcesByType,
+			sourcesByConfidence,
 			placesByCategory,
 			lastUpdated: new Date()
 		};
@@ -418,6 +421,41 @@ export class StatisticsService {
 			.map(([name, count]) => ({ name, count }))
 			.sort((a, b) => b.count - a.count)
 			.slice(0, limit);
+	}
+
+	/**
+	 * Compute source confidence distribution
+	 */
+	private computeSourceConfidence(): SourceConfidenceDistribution {
+		const distribution: SourceConfidenceDistribution = {
+			high: 0,
+			medium: 0,
+			low: 0,
+			unknown: 0
+		};
+
+		const files = this.app.vault.getMarkdownFiles();
+		for (const file of files) {
+			const cache = this.app.metadataCache.getFileCache(file);
+			if (!cache?.frontmatter) continue;
+
+			const fm = cache.frontmatter;
+			// Check if it's a source note
+			if (fm.cr_type === 'source' || cache.tags?.some(t => t.tag === '#source')) {
+				const confidence = (fm.confidence as string)?.toLowerCase() || 'unknown';
+				if (confidence === 'high') {
+					distribution.high++;
+				} else if (confidence === 'medium') {
+					distribution.medium++;
+				} else if (confidence === 'low') {
+					distribution.low++;
+				} else {
+					distribution.unknown++;
+				}
+			}
+		}
+
+		return distribution;
 	}
 
 	/**

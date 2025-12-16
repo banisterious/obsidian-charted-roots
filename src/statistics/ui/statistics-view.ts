@@ -190,6 +190,11 @@ export class StatisticsView extends ItemView {
 
 		const sectionsContainer = container.createDiv({ cls: 'cr-sv-sections' });
 
+		// Reports section (actions at top for discoverability)
+		this.buildSection(sectionsContainer, SECTION_IDS.REPORTS, 'Generate reports', 'file-text', () => {
+			return this.buildReportsContent();
+		});
+
 		// Entity Overview section
 		this.buildSection(sectionsContainer, SECTION_IDS.OVERVIEW, 'Entity overview', 'layers', () => {
 			return this.buildEntityOverviewContent();
@@ -225,6 +230,11 @@ export class StatisticsView extends ItemView {
 			return this.buildTopListContent(this.stats!.topOccupations);
 		});
 
+		// Top Sources section
+		this.buildSection(sectionsContainer, SECTION_IDS.TOP_SOURCES, 'Top sources', 'archive', () => {
+			return this.buildTopListContent(this.stats!.topSources);
+		});
+
 		// Events by Type section
 		this.buildSection(sectionsContainer, SECTION_IDS.EVENTS_BY_TYPE, 'Events by type', 'calendar', () => {
 			const items = Object.entries(this.stats!.eventsByType)
@@ -233,9 +243,25 @@ export class StatisticsView extends ItemView {
 			return this.buildTopListContent(items);
 		});
 
-		// Reports section
-		this.buildSection(sectionsContainer, SECTION_IDS.REPORTS, 'Generate reports', 'file-text', () => {
-			return this.buildReportsContent();
+		// Sources by Type section
+		this.buildSection(sectionsContainer, SECTION_IDS.SOURCES_BY_TYPE, 'Sources by type', 'file-type', () => {
+			const items = Object.entries(this.stats!.sourcesByType)
+				.map(([name, count]) => ({ name, count }))
+				.sort((a, b) => b.count - a.count);
+			return this.buildTopListContent(items);
+		});
+
+		// Sources by Confidence section
+		this.buildSection(sectionsContainer, SECTION_IDS.SOURCES_BY_CONFIDENCE, 'Sources by confidence', 'shield', () => {
+			return this.buildConfidenceContent();
+		});
+
+		// Places by Category section
+		this.buildSection(sectionsContainer, SECTION_IDS.PLACES_BY_CATEGORY, 'Places by category', 'map-pin', () => {
+			const items = Object.entries(this.stats!.placesByCategory)
+				.map(([name, count]) => ({ name, count }))
+				.sort((a, b) => b.count - a.count);
+			return this.buildTopListContent(items);
 		});
 	}
 
@@ -466,6 +492,60 @@ export class StatisticsView extends ItemView {
 		}
 		if (unknown > 0) {
 			const unknownBar = bar.createDiv({ cls: 'cr-sv-gender-bar-segment cr-sv-gender-unknown' });
+			unknownBar.style.width = `${(unknown / total) * 100}%`;
+		}
+
+		return content;
+	}
+
+	/**
+	 * Build source confidence distribution content
+	 */
+	private buildConfidenceContent(): HTMLElement {
+		const content = document.createElement('div');
+		content.addClass('cr-sv-confidence');
+
+		if (!this.stats) return content;
+
+		const { high, medium, low, unknown } = this.stats.sourcesByConfidence;
+		const total = high + medium + low + unknown;
+
+		if (total === 0) {
+			content.createSpan({ cls: 'crc-text-muted', text: 'No sources available' });
+			return content;
+		}
+
+		const grid = content.createDiv({ cls: 'cr-sv-confidence-grid' });
+
+		const createConfidenceItem = (label: string, count: number, colorClass: string) => {
+			const percent = Math.round((count / total) * 100);
+			const item = grid.createDiv({ cls: `cr-sv-confidence-item ${colorClass}` });
+			item.createDiv({ cls: 'cr-sv-confidence-count', text: formatNumber(count) });
+			item.createDiv({ cls: 'cr-sv-confidence-label', text: label });
+			item.createDiv({ cls: 'cr-sv-confidence-percent crc-text-muted', text: `${percent}%` });
+		};
+
+		createConfidenceItem('High', high, 'cr-sv-confidence-high');
+		createConfidenceItem('Medium', medium, 'cr-sv-confidence-medium');
+		createConfidenceItem('Low', low, 'cr-sv-confidence-low');
+		if (unknown > 0) createConfidenceItem('Unknown', unknown, 'cr-sv-confidence-unknown');
+
+		// Visual bar
+		const bar = content.createDiv({ cls: 'cr-sv-confidence-bar' });
+		if (high > 0) {
+			const highBar = bar.createDiv({ cls: 'cr-sv-confidence-bar-segment cr-sv-confidence-high' });
+			highBar.style.width = `${(high / total) * 100}%`;
+		}
+		if (medium > 0) {
+			const mediumBar = bar.createDiv({ cls: 'cr-sv-confidence-bar-segment cr-sv-confidence-medium' });
+			mediumBar.style.width = `${(medium / total) * 100}%`;
+		}
+		if (low > 0) {
+			const lowBar = bar.createDiv({ cls: 'cr-sv-confidence-bar-segment cr-sv-confidence-low' });
+			lowBar.style.width = `${(low / total) * 100}%`;
+		}
+		if (unknown > 0) {
+			const unknownBar = bar.createDiv({ cls: 'cr-sv-confidence-bar-segment cr-sv-confidence-unknown' });
 			unknownBar.style.width = `${(unknown / total) * 100}%`;
 		}
 

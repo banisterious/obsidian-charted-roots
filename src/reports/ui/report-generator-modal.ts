@@ -44,7 +44,7 @@ export class ReportGeneratorModal extends Modal {
 	private selectedPersonCrId: string = '';
 	private selectedPersonName: string = '';
 	private outputMethod: 'vault' | 'download' = 'vault';
-	private outputFolder: string = '';
+	private outputFolder: string;
 
 	// Report-specific options
 	private familyGroupOptions = {
@@ -89,6 +89,9 @@ export class ReportGeneratorModal extends Modal {
 		this.plugin = plugin;
 		this.options = options;
 		this.reportService = new ReportGenerationService(app, plugin.settings);
+
+		// Initialize output folder from settings
+		this.outputFolder = plugin.settings.reportsFolder || '';
 
 		// Apply pre-selected options
 		if (options.reportType) {
@@ -149,9 +152,9 @@ export class ReportGeneratorModal extends Modal {
 
 		new Setting(outputSection)
 			.setName('Output folder')
-			.setDesc('Folder to save report (leave empty for vault root)')
+			.setDesc('Folder to save report (configured in Preferences → Folder locations)')
 			.addText(text => {
-				text.setPlaceholder('Reports')
+				text.setPlaceholder('Canvas Roots/Reports')
 					.setValue(this.outputFolder)
 					.onChange(value => {
 						this.outputFolder = value;
