@@ -5,7 +5,7 @@
  * Provides expandable sections, auto-refresh, and drill-down capabilities.
  */
 
-import { ItemView, WorkspaceLeaf, setIcon, TFile } from 'obsidian';
+import { ItemView, WorkspaceLeaf, setIcon, TFile, Menu } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import { StatisticsService } from '../services/statistics-service';
 import type {
@@ -664,11 +664,26 @@ export class StatisticsView extends ItemView {
 			// Make clickable if we have a file reference (direct link) or can drill down
 			if (item.file) {
 				// Direct file link (e.g., for sources)
-				const link = nameCell.createEl('a', { text: item.name, cls: 'cr-sv-top-list-link' });
+				const link = nameCell.createEl('a', {
+					text: item.name,
+					cls: 'cr-sv-top-list-link internal-link',
+					attr: { 'data-href': item.file.path }
+				});
 				link.addEventListener('click', (e) => {
 					e.preventDefault();
 					if (item.file) {
 						void this.app.workspace.getLeaf('tab').openFile(item.file);
+					}
+				});
+				link.addEventListener('contextmenu', (e) => {
+					e.preventDefault();
+					if (item.file) {
+						this.showPersonContextMenu(e, item.file);
+					}
+				});
+				link.addEventListener('mouseover', (e) => {
+					if (item.file) {
+						this.triggerHoverPreview(e, item.file, link);
 					}
 				});
 			} else if (canDrillDown) {
@@ -784,11 +799,19 @@ export class StatisticsView extends ItemView {
 		for (const person of people) {
 			const personLink = peopleList.createEl('a', {
 				text: person.name,
-				cls: 'cr-sv-drilldown-person'
+				cls: 'cr-sv-drilldown-person internal-link',
+				attr: { 'data-href': person.file.path }
 			});
 			personLink.addEventListener('click', (e) => {
 				e.preventDefault();
 				void this.app.workspace.getLeaf('tab').openFile(person.file);
+			});
+			personLink.addEventListener('contextmenu', (e) => {
+				e.preventDefault();
+				this.showPersonContextMenu(e, person.file);
+			});
+			personLink.addEventListener('mouseover', (e) => {
+				this.triggerHoverPreview(e, person.file, personLink);
 			});
 		}
 
@@ -1242,6 +1265,55 @@ export class StatisticsView extends ItemView {
 		const cell = container.createDiv({ cls: 'cr-sv-stat-cell' });
 		cell.createDiv({ cls: 'cr-sv-stat-label', text: label });
 		cell.createDiv({ cls: 'cr-sv-stat-value', text: value });
+	}
+
+	/**
+	 * Show context menu for a person link
+	 */
+	private showPersonContextMenu(event: MouseEvent, file: TFile): void {
+		const menu = new Menu();
+
+		menu.addItem((item) => {
+			item.setTitle('Open in new tab')
+				.setIcon('file-plus')
+				.onClick(() => {
+					void this.app.workspace.getLeaf('tab').openFile(file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item.setTitle('Open to the right')
+				.setIcon('separator-vertical')
+				.onClick(() => {
+					void this.app.workspace.getLeaf('split').openFile(file);
+				});
+		});
+
+		menu.addSeparator();
+
+		menu.addItem((item) => {
+			item.setTitle('Open in new window')
+				.setIcon('picture-in-picture-2')
+				.onClick(() => {
+					void this.app.workspace.getLeaf('window').openFile(file);
+				});
+		});
+
+		menu.showAtMouseEvent(event);
+	}
+
+	/**
+	 * Trigger hover preview for a file link (Ctrl+hover)
+	 */
+	private triggerHoverPreview(event: MouseEvent, file: TFile, targetEl: HTMLElement): void {
+		this.app.workspace.trigger('hover-link', {
+			event,
+			source: VIEW_TYPE_STATISTICS,
+			hoverParent: this,
+			targetEl,
+			linktext: file.path,
+			sourcePath: file.path
+		});
 	}
 
 	/**
