@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.12.9] - 2025-12-16
+
+### Added
+
+- **Statistics Dashboard** - New workspace view with comprehensive vault metrics including entity counts, data completeness percentages, gender distribution, and date range spanning all entities. Access via Control Center Statistics tab or command palette.
+
+- **Data quality analysis** - Quality section with severity-coded alerts (error/warning/info) for date inconsistencies, missing birth/death dates, orphaned people, incomplete parents, unsourced events, and places without coordinates. All issues are expandable with drill-down to see affected records.
+
+- **Top lists with drill-down** - Interactive lists for top surnames, locations, occupations, and sources. Click any item to expand and see all matching people as clickable chips with right-click context menu and hover preview.
+
+- **Extended statistics** - Demographic analysis including longevity (average lifespan by birth decade and location), family size patterns, marriage patterns (age at marriage by sex, remarriage rates), migration flows (birth-to-death location changes with top routes), source coverage by generation, and timeline density with gap detection.
+
+- **Genealogical reports** - Generate formatted reports from the Statistics Dashboard:
+  - **Family Group Sheet** - Single family unit with parents, marriage, and children
+  - **Individual Summary** - Complete record of one person with all events and sources
+  - **Ahnentafel Report** - Numbered ancestor list (1=subject, 2=father, 3=mother, etc.)
+  - **Gaps Report** - Analysis of missing data by category
+  - **Register Report** - Descendants with NGSQ-style numbering
+  - **Pedigree Chart** - Ancestor tree in markdown format
+  - **Descendant Chart** - Descendant tree in markdown format
+
+### Fixed
+
+- **Orphaned people calculation** - Fixed bug where orphaned people count showed negative values due to incorrect subtraction of overlapping sets. Now correctly filters for people with no relationships at all.
+
+---
+
 ## [0.12.8] - 2025-12-15
 
 ### Added
