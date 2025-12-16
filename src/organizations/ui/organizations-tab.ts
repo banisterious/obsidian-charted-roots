@@ -43,7 +43,7 @@ export function renderOrganizationsTab(
 	renderOrganizationsListCard(container, plugin, orgService, membershipService, createCard, showTab);
 
 	// Statistics card
-	renderOrganizationStatsCard(container, orgService, membershipService, createCard);
+	renderOrganizationStatsCard(container, plugin, orgService, membershipService, createCard);
 
 	// Organization Type Manager card (replaces simple types card)
 	renderOrganizationTypeManagerCard(container, plugin, createCard, () => {
@@ -374,6 +374,7 @@ function getContrastColor(hexColor: string): string {
  */
 function renderOrganizationStatsCard(
 	container: HTMLElement,
+	plugin: CanvasRootsPlugin,
 	orgService: OrganizationService,
 	membershipService: MembershipService,
 	createCard: (options: { title: string; icon?: LucideIconName }) => HTMLElement
@@ -417,6 +418,14 @@ function renderOrganizationStatsCard(
 			row.createSpan({ text: String(count), cls: 'crc-text-muted' });
 		}
 	}
+
+	// View full statistics link
+	const statsLink = content.createDiv({ cls: 'cr-stats-link' });
+	const link = statsLink.createEl('a', { text: 'View full statistics →', cls: 'crc-text-muted' });
+	link.addEventListener('click', (e) => {
+		e.preventDefault();
+		void plugin.activateStatisticsView();
+	});
 
 	container.appendChild(card);
 }

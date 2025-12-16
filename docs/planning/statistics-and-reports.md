@@ -176,18 +176,22 @@ Full statistics dashboard with drill-down capabilities:
 
 The dashboard and reports share filtering and link directly:
 
-| Dashboard Metric | Linked Report |
-|------------------|---------------|
-| Missing vitals count | Gaps Report (filtered list) |
-| Completeness % | Individual Summary (for specific person) |
-| Top surnames | Surname Report (all people with that name) |
-| Unsourced facts | Evidence Matrix (show gaps) |
-| Top locations | Place Report (events at location) |
+| Dashboard Metric | Current Behavior | Future Report |
+|------------------|------------------|---------------|
+| Top surnames | Expands inline → shows people → click opens note | Surname Report |
+| Top locations | Expands inline → shows people → click opens note | Place Report |
+| Top occupations | Expands inline → shows people → click opens note | — |
+| Top sources | Click → opens source note directly | Source Bibliography |
+| Reports section | Click report type → opens generator modal | — |
 
-**Example Flow:**
-1. Dashboard shows "Missing Vitals: 45 people"
-2. Click → Opens Gaps Report pre-filtered to those 45 people
-3. Click person → Opens Individual Summary for that person
+**Current Flow (Implemented):**
+1. Dashboard shows "Top Surnames: Smith (45)"
+2. Click → Expands inline to show all 45 people as clickable chips
+3. Click person → Opens their note in new tab
+
+**Future Enhancement:**
+- Quality alerts could link to filtered Gaps Report
+- Extended statistics could link to demographic reports
 
 ---
 
@@ -498,85 +502,128 @@ Control Center tab for generating formatted output:
 
 ## Implementation Phases
 
-### Phase 1: Statistics Dashboard
+### Phase 1: Statistics Dashboard ✅
+
+**Status:** Complete
 
 **Focus:** Core statistics infrastructure and dashboard.
 
-1. **StatisticsService**
+1. **StatisticsService** ✅
    - Entity counts with caching
    - Completeness scores
    - Quality metrics (missing vitals, unsourced facts)
    - Top lists (surnames, locations, occupations, sources)
    - Debounced cache invalidation on vault changes
 
-2. **Control Center Summary Card**
+2. **Control Center Summary Card** ✅
    - Entity count display
    - Completeness progress bars
    - Warning indicators
    - "Open Statistics Dashboard" button
 
-3. **Statistics Workspace View**
+3. **Statistics Workspace View** ✅
    - Full dashboard with expandable sections
    - Charts for distributions
    - Auto-refresh on vault changes
    - Split view support
 
-4. **Basic Drill-Down**
-   - Click metric → open entity list
-   - Links to relevant reports (Phase 2)
+4. **Drill-Down** ✅
+   - Top lists (surnames, locations, occupations) expand inline to show matching people
+   - Click person chip → opens their note in new tab
+   - Top sources link directly to source notes
 
-### Phase 2: Reports Generator
+### Phase 2: Reports Generator ✅
+
+**Status:** Complete
 
 **Focus:** Core genealogy reports that are most requested.
 
-1. **Family Group Sheet**
+1. **Family Group Sheet** ✅
    - Select a couple or individual
    - Show spouse(s), children with basic vitals
    - Include source citations
 
-2. **Individual Summary**
+2. **Individual Summary** ✅
    - All known facts for one person
    - Events in chronological order
    - Source citations per fact
 
-3. **Ahnentafel Report**
+3. **Ahnentafel Report** ✅
    - Numbered ancestor list
    - Configurable generation depth
    - Standard genealogical format
 
-4. **Gaps Report**
+4. **Gaps Report** ✅
    - Missing vital records by generation
    - Linked from dashboard "Missing Vitals" metric
 
-**Infrastructure:**
+**Infrastructure:** ✅
 - Report generation service
 - Markdown templating system
-- Reports tab in Control Center
-- Preview modal
+- Reports section in Statistics Dashboard
+- Report generator modal with preview
 
-### Phase 3: Extended Statistics
+### Phase 3: Extended Statistics ✅
+
+**Status:** Complete
 
 **Focus:** Demographics, source coverage, worldbuilding metrics.
 
-- Longevity analysis (average lifespan by generation, time period, location)
-- Family size patterns (average children per family by generation)
-- Marriage patterns (age at marriage, remarriage rates)
-- Migration flows (birth-to-death location changes)
-- Source coverage by generation
-- Source type distribution (primary vs secondary vs derivative)
-- Characters by universe/faction
-- Timeline density (events per year/era)
+- ✅ Longevity analysis (average lifespan by birth decade and location)
+- ✅ Family size patterns (average children per family by decade)
+- ✅ Marriage patterns (age at marriage by sex, remarriage rates)
+- ✅ Migration flows (birth-to-death location changes, top routes)
+- ✅ Source coverage by generation
+- ✅ Timeline density (events per decade with gap detection)
 
-### Phase 4: Additional Reports
+### Phase 4: Additional Reports ✅
+
+**Status:** Complete
 
 **Focus:** Expand to all report types.
 
+**Completed:**
+- ✅ Register Report (NGSQ-style descendant numbering)
+- ✅ Pedigree Chart (markdown ancestor tree)
+- ✅ Descendant Chart (markdown descendant tree)
+
+**Future:**
 - Character Sheet, Cast List, Organization Roster
 - Character Arc, Scene Outline, POV Coverage
 - Source Bibliography, Evidence Matrix
 - Faction Timeline, Age Audit, Lifespan Overlap
-- Register Report, Pedigree/Descendant Charts
 - Dataview query generation
+
+### Phase 5: Quality Drill-Down ✅
+
+**Status:** Complete
+
+**Focus:** Enhanced data quality section with drill-down and additional metrics.
+
+**Bug Fix:**
+- ✅ Fixed orphaned people calculation (was returning negative values due to incorrect subtraction of overlapping sets)
+
+**New Quality Metrics:**
+- ✅ Missing death dates (people with birth but no death, excluding living)
+- ✅ Incomplete parents (people with only one parent linked)
+- ✅ Date inconsistencies (birth after death, age > 120)
+
+**Drill-Down Support:**
+- ✅ All quality issues are now clickable and expandable
+- ✅ Click to expand → shows affected people/items as clickable chips
+- ✅ Right-click context menu (open to right, new window)
+- ✅ Ctrl+hover for preview
+- ✅ Severity levels: error (red), warning (orange), info (blue)
+- ✅ Scrollable drill-down list (max 50 items with "...and X more" indicator)
+
+### Future: Enhanced Drill-Down
+
+**Focus:** Advanced drill-down capabilities beyond viewing.
+
+- **Edit via modal**: Click person in drill-down → open edit modal instead of just navigating to note
+- **Batch operations**: Select multiple people from drill-down → apply bulk edits (e.g., fix common spelling)
+- **Context menu**: Right-click person chip → options: Open, Edit, Add to collection, etc.
+- **Extended drill-down targets**: Events by type, sources by type, places by category
 
 ---
 

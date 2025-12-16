@@ -2364,6 +2364,25 @@
   gap: 0.5em;
 }
 
+/* Statistics link in tab cards */
+.cr-stats-link {
+  margin-top: var(--size-4-3);
+  padding-top: var(--size-4-2);
+  border-top: 1px solid var(--background-modifier-border);
+  text-align: right;
+}
+
+.cr-stats-link a {
+  font-size: var(--font-ui-small);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.cr-stats-link a:hover {
+  color: var(--text-accent);
+  text-decoration: underline;
+}
+
 .cr-mini-stat {
   display: flex;
   flex-direction: column;

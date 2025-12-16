@@ -46,6 +46,7 @@ import type { SchemaNote, ValidationResult, ValidationSummary } from '../schemas
 import { renderRelationshipsTab } from '../relationships';
 import { renderEventsTab } from '../dates';
 import { renderOrganizationsTab } from '../organizations';
+import { renderStatisticsTab } from '../statistics';
 import { renderPersonTimeline, createTimelineSummary } from '../events/ui/person-timeline';
 import { AddPersonTypePreviewModal } from './add-person-type-modal';
 import { renderFamilyTimeline, getFamilyTimelineSummary } from '../events/ui/family-timeline';
@@ -301,6 +302,9 @@ export class ControlCenterModal extends Modal {
 				break;
 			case 'data-quality':
 				this.showDataQualityTab();
+				break;
+			case 'statistics':
+				this.showStatisticsTab();
 				break;
 			case 'places':
 				void this.showPlacesTab();
@@ -819,6 +823,14 @@ export class ControlCenterModal extends Modal {
 		this.createStatRow(peopleContent, 'Orphaned (no relationships)', stats.people.orphanedPeople,
 			stats.people.orphanedPeople > 0 ? 'crc-text-warning' : undefined);
 
+		// View full statistics link
+		const statsLink = peopleContent.createDiv({ cls: 'cr-stats-link' });
+		const link = statsLink.createEl('a', { text: 'View full statistics →', cls: 'crc-text-muted' });
+		link.addEventListener('click', (e) => {
+			e.preventDefault();
+			void this.plugin.activateStatisticsView();
+		});
+
 		container.appendChild(peopleCard);
 
 		// Family Links Card (standard genealogical relationships)
@@ -888,6 +900,14 @@ export class ControlCenterModal extends Modal {
 				text: stats.maps.universes.join(', ')
 			});
 		}
+
+		// View full statistics link
+		const mapsStatsLink = mapsContent.createDiv({ cls: 'cr-stats-link' });
+		const mapsLink = mapsStatsLink.createEl('a', { text: 'View full statistics →', cls: 'crc-text-muted' });
+		mapsLink.addEventListener('click', (e) => {
+			e.preventDefault();
+			void this.plugin.activateStatisticsView();
+		});
 
 		container.appendChild(mapsCard);
 
@@ -2037,6 +2057,14 @@ export class ControlCenterModal extends Modal {
 
 		// Total relationships
 		this.createStatItem(relGrid, 'Total relationships', stats.relationships.totalRelationships.toString());
+
+		// View full statistics link
+		const statsLink = container.createDiv({ cls: 'cr-stats-link' });
+		const link = statsLink.createEl('a', { text: 'View full statistics →', cls: 'crc-text-muted' });
+		link.addEventListener('click', (e) => {
+			e.preventDefault();
+			void this.plugin.activateStatisticsView();
+		});
 	}
 
 	/**
@@ -6918,6 +6946,14 @@ export class ControlCenterModal extends Modal {
 				item.createEl('span', { text: ` (${count} places)`, cls: 'crc-text--muted' });
 			}
 		}
+
+		// View full statistics link
+		const statsLink = container.createDiv({ cls: 'cr-stats-link' });
+		const link = statsLink.createEl('a', { text: 'View full statistics →', cls: 'crc-text-muted' });
+		link.addEventListener('click', (e) => {
+			e.preventDefault();
+			void this.plugin.activateStatisticsView();
+		});
 	}
 
 	/**
@@ -8109,6 +8145,19 @@ export class ControlCenterModal extends Modal {
 	private showOrganizationsTab(): void {
 		const container = this.contentContainer;
 		renderOrganizationsTab(
+			container,
+			this.plugin,
+			(options) => this.createCard(options),
+			(tabId) => this.switchTab(tabId)
+		);
+	}
+
+	/**
+	 * Show Statistics tab with vault statistics and data quality metrics
+	 */
+	private showStatisticsTab(): void {
+		const container = this.contentContainer;
+		renderStatisticsTab(
 			container,
 			this.plugin,
 			(options) => this.createCard(options),

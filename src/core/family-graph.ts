@@ -1338,6 +1338,12 @@ export class FamilyGraphService {
 		const peopleWithParents = allPeople.filter(p => p.fatherCrId || p.motherCrId).length;
 		const peopleWithSpouses = allPeople.filter(p => p.spouseCrIds.length > 0).length;
 		const peopleWithChildren = allPeople.filter(p => p.childrenCrIds.length > 0).length;
+		// Orphaned = no parents AND no spouse AND no children
+		const orphanedPeople = allPeople.filter(p =>
+			!p.fatherCrId && !p.motherCrId &&
+			p.spouseCrIds.length === 0 &&
+			p.childrenCrIds.length === 0
+		).length;
 
 		// Find bridge people (people in multiple collections or connecting families)
 		const bridgePeople = new Set<string>();
@@ -1395,7 +1401,7 @@ export class FamilyGraphService {
 				peopleWithParents,
 				peopleWithSpouses,
 				peopleWithChildren,
-				orphanedPeople: allPeople.length - peopleWithParents - peopleWithChildren - peopleWithSpouses
+				orphanedPeople
 			},
 			crossCollectionMetrics: {
 				totalConnections: connections.length,

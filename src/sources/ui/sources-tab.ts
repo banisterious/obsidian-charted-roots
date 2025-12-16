@@ -135,6 +135,14 @@ function renderSourcesOverviewCard(
 		}
 	}
 
+	// View full statistics link
+	const statsLink = content.createDiv({ cls: 'cr-stats-link' });
+	const link = statsLink.createEl('a', { text: 'View full statistics →', cls: 'crc-text-muted' });
+	link.addEventListener('click', (e) => {
+		e.preventDefault();
+		void plugin.activateStatisticsView();
+	});
+
 	container.appendChild(card);
 }
 

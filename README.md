@@ -1,6 +1,6 @@
 # Canvas Roots: Genealogical Family Tree Plugin for Obsidian
 
-[![Version](https://img.shields.io/badge/version-0.12.8-blue.svg)](https://github.com/banisterious/obsidian-canvas-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md)
+[![Version](https://img.shields.io/badge/version-0.12.9-blue.svg)](https://github.com/banisterious/obsidian-canvas-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md)
 
 **Canvas Roots** transforms structured genealogical data in your Markdown notes into beautifully laid-out family trees on the Obsidian Canvas. Designed for genealogists, historians, writers, and world-builders.
 
@@ -88,6 +88,16 @@
 | **Fictional Date Systems** | Custom calendars and eras for world-building (Middle-earth, Westeros, Star Wars, or custom) |
 | **Organization Notes** | Track non-genealogical hierarchies: noble houses, guilds, corporations, military units, religious orders |
 | **Events & Timelines** | Document life events with person/family/place timelines, visual exports, groups/factions filtering, and sort order computation |
+
+### Statistics & Reports
+
+| Feature | Description |
+|---------|-------------|
+| **Statistics Dashboard** | Workspace view with entity counts, completeness metrics, gender distribution, and date range |
+| **Data Quality Analysis** | Severity-coded alerts for date issues, missing data, orphaned people; expandable drill-down lists |
+| **Top Lists** | Interactive lists for surnames, locations, occupations, sources with drill-down to matching people |
+| **Extended Statistics** | Longevity analysis, family size patterns, marriage patterns, migration flows, timeline density |
+| **Genealogical Reports** | Family Group Sheet, Individual Summary, Ahnentafel, Gaps Report, Register Report, Pedigree/Descendant Charts |
 
 ### Evidence & Sources
 
