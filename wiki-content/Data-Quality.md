@@ -62,7 +62,7 @@ Converts varied date formats (`15 Mar 1920`, `Mar 15, 1920`, etc.) to the standa
 ### Step 4: Normalize Sex Values
 **Location:** Control Center → Data Quality tab → "Normalize sex values"
 
-Converts `M`, `Male`, `F`, `Female` to canonical `male`/`female` values. Consistent sex values are required for parent role validation (father vs. mother).
+Converts `male`, `female`, `man`, `woman`, etc. to GEDCOM-standard canonical values (`M`, `F`, `X`, `U`). Consistent sex values are required for parent role validation (father vs. mother) and GEDCOM export compatibility.
 
 ### Step 5: Clear Orphan References
 **Location:** Control Center → Data Quality tab → "Clear orphan references"
@@ -178,15 +178,19 @@ Converts various date formats to the standard YYYY-MM-DD format.
 - `15/03/1920` → `1920-03-15`
 - `about 1920` → `1920`
 
-### Normalize Gender Values
+### Normalize Sex Values
 
-Converts gender values to canonical forms using the value alias system.
+Converts sex values to GEDCOM-standard canonical forms using built-in synonyms and user-configured aliases.
 
-**Default mappings:**
-- `M`, `Male` → `male`
-- `F`, `Female` → `female`
+**Canonical values:** `M`, `F`, `X`, `U` (GEDCOM standard)
 
-**Customization:** Configure additional mappings in Settings → Value Aliases
+**Built-in mappings:**
+- `male`, `man`, `boy` → `M`
+- `female`, `woman`, `girl` → `F`
+- `nonbinary`, `non-binary`, `nb`, `intersex` → `X`
+- `unknown`, `?` → `U`
+
+**Customization:** Configure additional mappings in Preferences → Value Aliases
 
 ### Clear Orphan References
 

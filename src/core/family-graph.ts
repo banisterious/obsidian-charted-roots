@@ -11,7 +11,7 @@ import { SpouseRelationship } from '../models/person';
 import { PersonFrontmatter } from '../types/frontmatter';
 import { FolderFilterService } from './folder-filter';
 import type { CanvasRootsSettings, ValueAliasSettings } from '../settings';
-import { CANONICAL_GENDERS } from './value-alias-service';
+import { CANONICAL_GENDERS, BUILTIN_SYNONYMS } from './value-alias-service';
 import { isSourceNote, isEventNote, isPlaceNote } from '../utils/note-type-detection';
 
 const logger = getLogger('FamilyGraph');
@@ -233,30 +233,37 @@ export class FamilyGraphService {
 	}
 
 	/**
-	 * Resolve a gender value to canonical form using value aliases.
+	 * Resolve a gender value to canonical form using value aliases and built-in synonyms.
 	 * Resolution order:
-	 * 1. If value is already canonical, return it
-	 * 2. If value has an alias configured, return the canonical value
-	 * 3. Otherwise pass through unchanged
+	 * 1. If value is already canonical (M, F, X, U), return it
+	 * 2. If value has a user-defined alias configured, return the canonical value
+	 * 3. If value matches a built-in synonym, return the canonical value
+	 * 4. Otherwise pass through unchanged
 	 */
 	private resolveGender(userValue: string | undefined): string | undefined {
 		if (!userValue) return undefined;
 
 		const normalized = userValue.toLowerCase().trim();
 
-		// Check if already canonical (case-insensitive)
+		// Check if already canonical (case-insensitive match against M, F, X, U)
 		const canonicalMatch = CANONICAL_GENDERS.find(v => v.toLowerCase() === normalized);
 		if (canonicalMatch) {
 			return canonicalMatch;
 		}
 
-		// Check value aliases
-		const aliasedValue = this.valueAliases.sex[normalized];
-		if (aliasedValue) {
-			return aliasedValue;
+		// Check user-defined value aliases first
+		const userAliasedValue = this.valueAliases?.sex?.[normalized];
+		if (userAliasedValue) {
+			return userAliasedValue;
 		}
 
-		// Pass through unchanged (may be a legacy value like 'M' or 'F')
+		// Check built-in synonyms (male→M, female→F, etc.)
+		const builtinValue = BUILTIN_SYNONYMS.sex[normalized];
+		if (builtinValue) {
+			return builtinValue;
+		}
+
+		// Pass through unchanged
 		return userValue;
 	}
 

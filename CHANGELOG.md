@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **GEDCOM-standard sex values** - Canonical sex values changed from `male`/`female`/`nonbinary`/`unknown` to GEDCOM-standard `M`/`F`/`X`/`U`. Built-in synonyms automatically map common values (`male`→`M`, `female`→`F`, etc.) without requiring manual configuration.
+
+### Fixed
+
+- **Sex value normalization** - "Normalize sex values" now works out of the box with built-in mappings. Previously required manual value alias configuration to detect any changes.
+
 ---
 
 ## [0.12.11] - 2025-12-17

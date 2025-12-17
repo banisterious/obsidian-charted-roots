@@ -35,14 +35,15 @@ export const CANONICAL_EVENT_TYPES = [
 export type CanonicalEventType = typeof CANONICAL_EVENT_TYPES[number];
 
 /**
- * Canonical sex values (used for both sex and gender properties)
- * Using GEDCOM-aligned terminology for genealogical accuracy
+ * Canonical sex values (GEDCOM standard)
+ * M = Male, F = Female, X = Intersex/Non-binary, U = Unknown
+ * Using GEDCOM-aligned codes for genealogical accuracy and interoperability
  */
 export const CANONICAL_SEX_VALUES = [
-	'male',
-	'female',
-	'nonbinary',
-	'unknown'
+	'M',
+	'F',
+	'X',
+	'U'
 ] as const;
 
 export type CanonicalSex = typeof CANONICAL_SEX_VALUES[number];
@@ -131,10 +132,10 @@ export const EVENT_TYPE_LABELS: Record<CanonicalEventType, string> = {
  * Human-readable labels for canonical sex values
  */
 export const SEX_LABELS: Record<CanonicalSex, string> = {
-	male: 'Male',
-	female: 'Female',
-	nonbinary: 'Non-binary',
-	unknown: 'Unknown'
+	M: 'Male',
+	F: 'Female',
+	X: 'Non-binary/Intersex',
+	U: 'Unknown'
 };
 
 // Backwards compatibility alias
@@ -201,13 +202,24 @@ export const BUILTIN_SYNONYMS: Record<ValueAliasField, Record<string, string>> =
 		'married': 'marriage'
 	},
 	sex: {
-		// Common alternatives
-		'm': 'male',
-		'f': 'female',
-		'man': 'male',
-		'woman': 'female',
-		'nb': 'nonbinary',
-		'enby': 'nonbinary'
+		// Common full-word alternatives → GEDCOM codes
+		'male': 'M',
+		'female': 'F',
+		'man': 'M',
+		'woman': 'F',
+		'boy': 'M',
+		'girl': 'F',
+		// Non-binary/intersex alternatives
+		'nonbinary': 'X',
+		'non-binary': 'X',
+		'nb': 'X',
+		'enby': 'X',
+		'intersex': 'X',
+		'other': 'X',
+		// Unknown alternatives
+		'unknown': 'U',
+		'?': 'U',
+		'unk': 'U'
 	},
 	gender_identity: {
 		// Common alternatives

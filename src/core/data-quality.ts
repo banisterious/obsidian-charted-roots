@@ -14,6 +14,7 @@ import { FamilyGraphService, PersonNode } from './family-graph';
 import { FolderFilterService } from './folder-filter';
 import { CanvasRootsSettings } from '../settings';
 import { ALL_NOTE_TYPES, NoteType } from '../utils/note-type-detection';
+import { CANONICAL_SEX_VALUES, CanonicalSex, BUILTIN_SYNONYMS } from './value-alias-service';
 
 const logger = getLogger('DataQuality');
 
@@ -1075,7 +1076,8 @@ export class DataQualityService {
 
 	/**
 	 * Normalize sex values using value alias system
-	 * Converts user values to canonical values (male, female, nonbinary, unknown)
+	 * Converts user values to canonical GEDCOM values (M, F, X, U)
+	 * Uses built-in synonyms (male→M, female→F, etc.) and user-defined aliases
 	 * Returns the number of files modified
 	 */
 	async normalizeGenderValues(options: DataQualityOptions = {}): Promise<BatchOperationResult> {
@@ -1086,23 +1088,27 @@ export class DataQualityService {
 			errors: [],
 		};
 
-		// Import canonical values
-		const { CANONICAL_SEX_VALUES } = await import('./value-alias-service');
 		const canonicalValues = new Set<string>(CANONICAL_SEX_VALUES);
 
 		for (const person of people) {
-			if (person.sex) {
-				const currentValue = person.sex.trim();
+			// Read raw frontmatter value (not the resolved value from person.sex)
+			const cache = this.app.metadataCache.getFileCache(person.file);
+			const fm = cache?.frontmatter as Record<string, unknown> | undefined;
+			const rawSexValue = (fm?.['sex'] ?? fm?.['gender']) as string | undefined;
 
-				// Check if already canonical
+			if (rawSexValue && typeof rawSexValue === 'string') {
+				const currentValue = rawSexValue.trim();
+				const normalizedKey = currentValue.toLowerCase();
+
+				// Check if already canonical (M, F, X, U)
 				if (canonicalValues.has(currentValue)) {
 					results.processed++;
 					continue;
 				}
 
-				// Try to find a value alias mapping
-				const valueAliases = this.settings.valueAliases?.sex || {};
-				const normalizedValue = valueAliases[currentValue];
+				// Check user-defined aliases first, then built-in synonyms
+				const userAliases = this.settings.valueAliases?.sex || {};
+				const normalizedValue = userAliases[normalizedKey] || BUILTIN_SYNONYMS.sex[normalizedKey];
 
 				// If we have a mapping and it's different, apply it
 				if (normalizedValue && normalizedValue !== currentValue) {
@@ -1745,20 +1751,32 @@ export class DataQualityService {
 				}
 			}
 
-			// Check sex - use value alias system
-			if (person.sex) {
-				const currentValue = person.sex.trim();
-				const valueAliases = this.settings.valueAliases?.sex || {};
-				const normalizedValue = valueAliases[currentValue];
+			// Check sex - use value alias system with built-in synonyms
+			// Read raw frontmatter value (not the resolved value from person.sex)
+			const sexCache = this.app.metadataCache.getFileCache(person.file);
+			const sexFm = sexCache?.frontmatter as Record<string, unknown> | undefined;
+			const rawSexValue = (sexFm?.['sex'] ?? sexFm?.['gender']) as string | undefined;
 
-				// Check if we have a mapping that's different from current
-				if (normalizedValue && normalizedValue !== currentValue) {
-					preview.genderNormalization.push({
-						person,
-						field: 'sex',
-						oldValue: person.sex,
-						newValue: normalizedValue,
-					});
+			if (rawSexValue && typeof rawSexValue === 'string') {
+				const currentValue = rawSexValue.trim();
+				const normalizedKey = currentValue.toLowerCase();
+
+				// Check if already canonical (M, F, X, U)
+				const isCanonical = CANONICAL_SEX_VALUES.includes(currentValue as CanonicalSex);
+				if (!isCanonical) {
+					// Check user-defined aliases first, then built-in synonyms
+					const userAliases = this.settings.valueAliases?.sex || {};
+					const normalizedValue = userAliases[normalizedKey] || BUILTIN_SYNONYMS.sex[normalizedKey];
+
+					// Check if we have a mapping that's different from current
+					if (normalizedValue && normalizedValue !== currentValue) {
+						preview.genderNormalization.push({
+							person,
+							field: 'sex',
+							oldValue: currentValue,
+							newValue: normalizedValue,
+						});
+					}
 				}
 			}
 
