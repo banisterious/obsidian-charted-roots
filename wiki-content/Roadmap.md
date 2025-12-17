@@ -10,7 +10,6 @@ This document outlines planned features for Canvas Roots. For completed features
 - [Planned Features](#planned-features)
   - [Calendarium Integration](#calendarium-integration) ⚡ High
   - [Post-Import Cleanup Wizard](#post-import-cleanup-wizard) 📋 Medium
-  - [Configurable Normalization](#configurable-normalization) 📋 Medium
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
 - [Future Considerations](#future-considerations)
 - [Known Limitations](#known-limitations)
@@ -24,6 +23,7 @@ For detailed implementation documentation of completed features, see [Release Hi
 
 | Version | Feature | Summary |
 |:-------:|---------|---------|
+| v0.12.12 | [Configurable Normalization](Release-History#configurable-normalization-v01212) | Schema-aware sex normalization modes for worldbuilders |
 | v0.12.10 | [Step & Adoptive Parent Support](Release-History#step--adoptive-parent-support-v01210) | GEDCOM PEDI tags, Gramps mrel/frel, GEDCOM X lineage types, dedicated fields, canvas visualization |
 | v0.12.9 | [Statistics & Reports](Statistics-And-Reports) | Dashboard with metrics, drill-down, and genealogical report generation |
 | v0.12.8 | [Dynamic Note Content](Release-History#dynamic-note-content-v0128) | Live computed timeline and relationships blocks in person notes |
@@ -206,31 +206,6 @@ After a GEDCOM import (especially from a file with data quality issues), users f
 
 **Documentation:**
 - See [Data Quality: Post-Import Cleanup Workflow](Data-Quality#post-import-cleanup-workflow) for manual workflow
-
----
-
-### Configurable Normalization
-
-**Priority:** 📋 Medium — Flexible data standardization for worldbuilders
-
-**Summary:** User-configurable normalization rules for sex/gender values and other enum fields. Allows worldbuilders to define custom normalization targets while genealogists maintain GEDCOM M/F compatibility.
-
-**Current Limitation:** The "Normalize sex values" batch operation standardizes all variations to GEDCOM M/F values. Users with custom sex values (e.g., worldbuilders using "hermaphrodite", "neuter") cannot normalize to their own custom values.
-
-**Planned Features:**
-
-- **Per-universe normalization targets**: Configure which canonical value to normalize to (e.g., universe A normalizes to M/F, universe B normalizes to custom values)
-- **Normalization preview**: Show what will change before applying
-- **Custom normalization rules**: Define synonym mappings (e.g., "H" → "hermaphrodite")
-- **Selective normalization**: Choose which properties to normalize (sex, event types, place categories)
-- **Export format mapping**: Map non-standard values to GEDCOM-compatible values during export only
-
-**Integration:**
-- Builds on [Value Aliases](Release-History#value-aliases-v094) and [Schema Validation](Release-History#schema-validation-v063)
-- Respects universe-scoped schemas for available values
-- Uses existing Data Quality tab infrastructure
-
-See [Sex/Gender Identity Expansion Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/sex-gender-expansion.md) for full context (Phase 4).
 
 ---
 

@@ -192,6 +192,20 @@ Converts sex values to GEDCOM-standard canonical forms using built-in synonyms a
 
 **Customization:** Configure additional mappings in Preferences → Value Aliases
 
+#### Normalization Modes
+
+Control how normalization behaves via Preferences → Data Quality → Sex value normalization:
+
+| Mode | Behavior |
+|------|----------|
+| **Standard** | Normalize all sex values to GEDCOM M/F (default) |
+| **Schema-aware** | Skip notes covered by schemas that define custom sex enum values |
+| **Disabled** | Never normalize (preview shows what would change) |
+
+**Schema-aware mode** is designed for worldbuilders who define custom sex values (e.g., "hermaphrodite", "neuter") in a [schema](Schema-Validation). When enabled, the normalization operation checks if each person note has an applicable schema with a custom `sex` enum definition. Notes with such schemas are skipped, preserving custom values.
+
+**Example:** A person note in a "Sci-Fi Universe" with a schema defining `sex: ["male", "female", "neuter", "hermaphrodite"]` will be skipped, while genealogy notes in the main tree continue to normalize to GEDCOM M/F
+
 ### Clear Orphan References
 
 Removes `father_id` and `mother_id` values that point to non-existent `cr_id` values.

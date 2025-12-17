@@ -215,15 +215,15 @@ Rationale: Phase 2 is free (already works), Phase 1 is standalone, Phases 3-4 bu
 - [x] `gender_identity` field supported in person notes (Phase 1 - v0.10.20)
 - [x] Schema documentation includes sex/gender customization example (Phase 2)
 - [x] Value Aliases extended to support sex field (Phase 3 - v0.9.4, enhanced v0.10.19)
-- [ ] Batch normalization respects schema-defined values
+- [x] Batch normalization respects schema-defined values (v0.12.12)
 - [x] GEDCOM M/F compatibility preserved for genealogists
 - [x] No breaking changes to existing functionality
 
 ## Status
 
-**🔄 In Progress**
+**✅ Complete**
 
 - Phase 1: ✅ Complete (v0.10.20 - added gender_identity field)
 - Phase 2: ✅ Complete (existing Schema system supports custom sex enums)
 - Phase 3: ✅ Complete (v0.9.4, enhanced v0.10.19)
-- Phase 4: 📋 Planned (configurable normalization)
+- Phase 4: ✅ Complete (v0.12.12 - configurable normalization with three modes)

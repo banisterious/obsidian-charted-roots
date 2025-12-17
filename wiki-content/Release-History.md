@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.12.x](#v012x)
+  - [Configurable Normalization](#configurable-normalization-v01212)
   - [Step & Adoptive Parent Support](#step--adoptive-parent-support-v01210)
   - [Statistics & Reports](#statistics--reports-v0129)
   - [Dynamic Note Content](#dynamic-note-content-v0128)
@@ -46,6 +47,66 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.12.x
+
+### Configurable Normalization (v0.12.12)
+
+User-configurable sex value normalization modes that allow worldbuilders to protect custom sex values from GEDCOM-standard normalization.
+
+**Problem Solved:**
+- Worldbuilders using custom sex values (e.g., "hermaphrodite", "neuter" for alien species) had those values normalized to GEDCOM M/F when running "Normalize sex values"
+- No way to skip normalization for notes covered by schemas with custom sex enum definitions
+- All-or-nothing approach: either normalize everything or nothing
+
+**Features:**
+
+| Feature | Description |
+|---------|-------------|
+| **Three normalization modes** | Standard (GEDCOM M/F), Schema-aware (skip protected notes), Disabled (never normalize) |
+| **Schema-aware detection** | Checks if person has applicable schema with custom `sex` enum values |
+| **Preview enhancement** | Shows which notes will be skipped due to schema override |
+| **Preferences setting** | New dropdown in Preferences → Data Quality |
+
+**Normalization Modes:**
+
+| Mode | Behavior |
+|------|----------|
+| **Standard** | Normalize all sex values to GEDCOM M/F (default, existing behavior) |
+| **Schema-aware** | Skip notes covered by schemas that define custom sex enum values |
+| **Disabled** | Never normalize sex values (preview shows what would change) |
+
+**Schema-Aware Example:**
+
+A worldbuilder creates a schema for their sci-fi universe:
+
+```yaml
+---
+cr_type: schema
+cr_id: schema-alien-species
+applies_to_type: universe
+applies_to_value: "Sci-Fi Universe"
+---
+
+```json schema
+{
+  "properties": {
+    "sex": {
+      "type": "enum",
+      "values": ["male", "female", "neuter", "hermaphrodite"]
+    }
+  }
+}
+```
+
+With **Schema-aware** mode enabled, person notes in the "Sci-Fi Universe" with sex values like "hermaphrodite" will be skipped during normalization, while notes in other universes (or without a universe) will still be normalized to GEDCOM M/F.
+
+**Integration:**
+- Builds on [Value Aliases](Release-History#value-aliases-v094) for synonym mapping
+- Builds on [Schema Validation](Release-History#schema-validation-v063) for custom enum detection
+- Uses existing Data Quality tab batch operation infrastructure
+
+See [Sex/Gender Identity Expansion Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/sex-gender-expansion.md) for Phase 4 implementation details.
+
+---
 
 ### Step & Adoptive Parent Support (v0.12.10)
 

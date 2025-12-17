@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Configurable sex normalization** - New setting in Preferences to control how "Normalize sex values" behaves: Standard (GEDCOM M/F), Schema-aware (respects custom sex enum values defined in schemas), or Disabled (never normalize). Schema-aware mode allows worldbuilders to protect custom sex values like "hermaphrodite" or "neuter" from normalization.
+
+- **Universe field in Edit Person modal** - The universe dropdown now appears when editing a person via the file explorer context menu, matching the behavior when editing from the Control Center People tab.
+
 ### Changed
 
 - **GEDCOM-standard sex values** - Canonical sex values changed from `male`/`female`/`nonbinary`/`unknown` to GEDCOM-standard `M`/`F`/`X`/`U`. Built-in synonyms automatically map common values (`male`→`M`, `female`→`F`, etc.) without requiring manual configuration.
@@ -16,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Sex value normalization** - "Normalize sex values" now works out of the box with built-in mappings. Previously required manual value alias configuration to detect any changes.
+
+- **Edit Person modal universe field** - Fixed universe dropdown not appearing when opening Edit Person modal from file explorer context menu. The modal now correctly loads existing universes from both place and person notes.
 
 ---
 
