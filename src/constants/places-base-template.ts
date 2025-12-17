@@ -98,6 +98,7 @@ views:
       property: note.${place_type}
       direction: ASC
     order:
+      - file.name
       - note.${name}
   - name: By Category
     type: table
