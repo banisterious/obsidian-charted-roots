@@ -87,6 +87,16 @@ interface GedcomFamilyRecord {
 	childIds: string[];
 	marriageDate?: string;
 	marriagePlace?: string;
+	/** Pedigree type for child relationships: 'birth' (default), 'step', 'adop' */
+	pediType?: 'birth' | 'step' | 'adop';
+}
+
+/**
+ * FAMC reference with optional pedigree type
+ */
+interface FamcReference {
+	familyId: string;
+	pediType?: 'birth' | 'step' | 'adop';
 }
 
 /**
@@ -359,8 +369,8 @@ export class GedcomExporter {
 
 		// Build FAMS lookup (person GEDCOM ID -> family IDs where they are a spouse)
 		const famsLookup = new Map<string, string[]>();
-		// Build FAMC lookup (person GEDCOM ID -> family ID where they are a child)
-		const famcLookup = new Map<string, string>();
+		// Build FAMC lookup (person GEDCOM ID -> family references where they are a child)
+		const famcLookup = new Map<string, FamcReference[]>();
 
 		for (const [family, familyId] of familyIdMap) {
 			// FAMS: families where person is husband or wife
@@ -375,9 +385,14 @@ export class GedcomExporter {
 				famsLookup.set(family.wifeId, existing);
 			}
 
-			// FAMC: family where person is a child
+			// FAMC: family where person is a child (with pedigree type)
 			for (const childId of family.childIds) {
-				famcLookup.set(childId, familyId);
+				const existing = famcLookup.get(childId) || [];
+				existing.push({
+					familyId,
+					pediType: family.pediType
+				});
+				famcLookup.set(childId, existing);
 			}
 		}
 
@@ -556,7 +571,7 @@ export class GedcomExporter {
 		options: GedcomExportOptions,
 		privacyService: PrivacyService | null,
 		famsIds?: string[],
-		famcId?: string
+		famcRefs?: FamcReference[]
 	): string[] {
 		const lines: string[] = [];
 
@@ -653,9 +668,15 @@ export class GedcomExporter {
 			}
 		}
 
-		// FAMC - family where this person is a child
-		if (famcId) {
-			lines.push(`1 FAMC @${famcId}@`);
+		// FAMC - families where this person is a child (with pedigree type)
+		if (famcRefs && famcRefs.length > 0) {
+			for (const famcRef of famcRefs) {
+				lines.push(`1 FAMC @${famcRef.familyId}@`);
+				// Add PEDI tag for non-biological relationships
+				if (famcRef.pediType && famcRef.pediType !== 'birth') {
+					lines.push(`2 PEDI ${famcRef.pediType}`);
+				}
+			}
 		}
 
 		// UUID preservation using _UID custom tag
@@ -811,6 +832,104 @@ export class GedcomExporter {
 
 					families.push(family);
 					processedFamilies.add(familyKey);
+				}
+			}
+		}
+
+		// Build families from step-parent relationships
+		const processedStepFamilies = new Set<string>();
+		for (const person of people) {
+			// Step-fathers
+			if (person.stepfatherCrIds && person.stepfatherCrIds.length > 0) {
+				for (const stepfatherCrId of person.stepfatherCrIds) {
+					const familyKey = `step_${stepfatherCrId}_NONE`;
+					if (!processedStepFamilies.has(familyKey)) {
+						const family: GedcomFamilyRecord = {
+							id: `F${families.length + 1}`,
+							childIds: [],
+							husbandId: crIdToGedcomId.get(stepfatherCrId),
+							pediType: 'step'
+						};
+
+						// Find all children with this stepfather
+						for (const child of people) {
+							if (child.stepfatherCrIds?.includes(stepfatherCrId)) {
+								const childGedcomId = crIdToGedcomId.get(child.crId);
+								if (childGedcomId) {
+									family.childIds.push(childGedcomId);
+								}
+							}
+						}
+
+						if (family.childIds.length > 0) {
+							families.push(family);
+							processedStepFamilies.add(familyKey);
+						}
+					}
+				}
+			}
+
+			// Step-mothers
+			if (person.stepmotherCrIds && person.stepmotherCrIds.length > 0) {
+				for (const stepmotherCrId of person.stepmotherCrIds) {
+					const familyKey = `step_NONE_${stepmotherCrId}`;
+					if (!processedStepFamilies.has(familyKey)) {
+						const family: GedcomFamilyRecord = {
+							id: `F${families.length + 1}`,
+							childIds: [],
+							wifeId: crIdToGedcomId.get(stepmotherCrId),
+							pediType: 'step'
+						};
+
+						// Find all children with this stepmother
+						for (const child of people) {
+							if (child.stepmotherCrIds?.includes(stepmotherCrId)) {
+								const childGedcomId = crIdToGedcomId.get(child.crId);
+								if (childGedcomId) {
+									family.childIds.push(childGedcomId);
+								}
+							}
+						}
+
+						if (family.childIds.length > 0) {
+							families.push(family);
+							processedStepFamilies.add(familyKey);
+						}
+					}
+				}
+			}
+		}
+
+		// Build families from adoptive parent relationships
+		const processedAdoptiveFamilies = new Set<string>();
+		for (const person of people) {
+			if (person.adoptiveFatherCrId || person.adoptiveMotherCrId) {
+				const familyKey = `adop_${person.adoptiveFatherCrId || 'NONE'}_${person.adoptiveMotherCrId || 'NONE'}`;
+
+				if (!processedAdoptiveFamilies.has(familyKey)) {
+					const family: GedcomFamilyRecord = {
+						id: `F${families.length + 1}`,
+						childIds: [],
+						husbandId: person.adoptiveFatherCrId ? crIdToGedcomId.get(person.adoptiveFatherCrId) : undefined,
+						wifeId: person.adoptiveMotherCrId ? crIdToGedcomId.get(person.adoptiveMotherCrId) : undefined,
+						pediType: 'adop'
+					};
+
+					// Find all children with the same adoptive parents
+					for (const child of people) {
+						if (child.adoptiveFatherCrId === person.adoptiveFatherCrId &&
+							child.adoptiveMotherCrId === person.adoptiveMotherCrId) {
+							const childGedcomId = crIdToGedcomId.get(child.crId);
+							if (childGedcomId) {
+								family.childIds.push(childGedcomId);
+							}
+						}
+					}
+
+					if (family.childIds.length > 0) {
+						families.push(family);
+						processedAdoptiveFamilies.add(familyKey);
+					}
 				}
 			}
 		}

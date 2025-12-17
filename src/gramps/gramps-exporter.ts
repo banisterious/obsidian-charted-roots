@@ -88,12 +88,24 @@ interface GrampsExportContext {
 /**
  * Family data extracted for building person back-references
  */
+/**
+ * Child reference with optional relationship type
+ */
+interface ChildRef {
+	handle: string;
+	/** Mother relationship: 'Birth' (default), 'Stepchild', 'Adopted' */
+	mrel?: 'Birth' | 'Stepchild' | 'Adopted';
+	/** Father relationship: 'Birth' (default), 'Stepchild', 'Adopted' */
+	frel?: 'Birth' | 'Stepchild' | 'Adopted';
+}
+
 interface FamilyData {
 	handle: string;
 	key: string;
 	father?: string;  // person handle
 	mother?: string;  // person handle
-	children: string[]; // person handles
+	children: string[]; // person handles (for backward compatibility)
+	childRefs?: ChildRef[]; // child references with relationship types
 }
 
 /**
@@ -1210,8 +1222,99 @@ ${families.xml}
 			}
 		}
 
+		// Build families from step-parent relationships
+		const stepFamiliesMap = new Map<string, {
+			father?: string;
+			mother?: string;
+			childRefs: ChildRef[];
+		}>();
+
+		for (const person of people) {
+			const childHandle = context.personHandles.get(person.crId);
+			if (!childHandle) continue;
+
+			// Step-fathers
+			if (person.stepfatherCrIds && person.stepfatherCrIds.length > 0) {
+				for (const stepfatherId of person.stepfatherCrIds) {
+					const stepfatherHandle = context.personHandles.get(stepfatherId);
+					if (!stepfatherHandle) continue;
+
+					const familyKey = `step_${stepfatherHandle}_none`;
+					if (!stepFamiliesMap.has(familyKey)) {
+						stepFamiliesMap.set(familyKey, {
+							father: stepfatherHandle,
+							childRefs: []
+						});
+					}
+					stepFamiliesMap.get(familyKey)!.childRefs.push({
+						handle: childHandle,
+						frel: 'Stepchild'
+					});
+				}
+			}
+
+			// Step-mothers
+			if (person.stepmotherCrIds && person.stepmotherCrIds.length > 0) {
+				for (const stepmotherId of person.stepmotherCrIds) {
+					const stepmotherHandle = context.personHandles.get(stepmotherId);
+					if (!stepmotherHandle) continue;
+
+					const familyKey = `step_none_${stepmotherHandle}`;
+					if (!stepFamiliesMap.has(familyKey)) {
+						stepFamiliesMap.set(familyKey, {
+							mother: stepmotherHandle,
+							childRefs: []
+						});
+					}
+					stepFamiliesMap.get(familyKey)!.childRefs.push({
+						handle: childHandle,
+						mrel: 'Stepchild'
+					});
+				}
+			}
+		}
+
+		// Build families from adoptive parent relationships
+		const adoptiveFamiliesMap = new Map<string, {
+			father?: string;
+			mother?: string;
+			childRefs: ChildRef[];
+		}>();
+
+		for (const person of people) {
+			const childHandle = context.personHandles.get(person.crId);
+			if (!childHandle) continue;
+
+			if (person.adoptiveFatherCrId || person.adoptiveMotherCrId) {
+				const adoptiveFatherHandle = person.adoptiveFatherCrId
+					? context.personHandles.get(person.adoptiveFatherCrId)
+					: undefined;
+				const adoptiveMotherHandle = person.adoptiveMotherCrId
+					? context.personHandles.get(person.adoptiveMotherCrId)
+					: undefined;
+
+				if (!adoptiveFatherHandle && !adoptiveMotherHandle) continue;
+
+				const familyKey = `adop_${adoptiveFatherHandle || 'none'}_${adoptiveMotherHandle || 'none'}`;
+				if (!adoptiveFamiliesMap.has(familyKey)) {
+					adoptiveFamiliesMap.set(familyKey, {
+						father: adoptiveFatherHandle,
+						mother: adoptiveMotherHandle,
+						childRefs: []
+					});
+				}
+
+				const childRef: ChildRef = { handle: childHandle };
+				if (adoptiveFatherHandle) childRef.frel = 'Adopted';
+				if (adoptiveMotherHandle) childRef.mrel = 'Adopted';
+				adoptiveFamiliesMap.get(familyKey)!.childRefs.push(childRef);
+			}
+		}
+
 		// Convert to FamilyData array and assign handles
 		const familyDataList: FamilyData[] = [];
+
+		// Add biological families
 		familiesMap.forEach((family, key) => {
 			const familyHandle = `_f${this.generateHandle(context)}`;
 			context.familyHandles.set(key, familyHandle);
@@ -1222,6 +1325,36 @@ ${families.xml}
 				father: family.father,
 				mother: family.mother,
 				children: family.children
+			});
+		});
+
+		// Add step-parent families
+		stepFamiliesMap.forEach((family, key) => {
+			const familyHandle = `_f${this.generateHandle(context)}`;
+			context.familyHandles.set(key, familyHandle);
+
+			familyDataList.push({
+				handle: familyHandle,
+				key,
+				father: family.father,
+				mother: family.mother,
+				children: [], // Use childRefs instead
+				childRefs: family.childRefs
+			});
+		});
+
+		// Add adoptive parent families
+		adoptiveFamiliesMap.forEach((family, key) => {
+			const familyHandle = `_f${this.generateHandle(context)}`;
+			context.familyHandles.set(key, familyHandle);
+
+			familyDataList.push({
+				handle: familyHandle,
+				key,
+				father: family.father,
+				mother: family.mother,
+				children: [], // Use childRefs instead
+				childRefs: family.childRefs
 			});
 		});
 
@@ -1251,8 +1384,22 @@ ${families.xml}
 			if (family.mother) {
 				familyLines.push(`      <mother hlink="${family.mother}"/>`);
 			}
-			for (const childHandle of family.children) {
-				familyLines.push(`      <childref hlink="${childHandle}"/>`);
+			// Use childRefs if available (with mrel/frel), otherwise use children array
+			if (family.childRefs && family.childRefs.length > 0) {
+				for (const childRef of family.childRefs) {
+					let attrs = `hlink="${childRef.handle}"`;
+					if (childRef.mrel && childRef.mrel !== 'Birth') {
+						attrs += ` mrel="${childRef.mrel}"`;
+					}
+					if (childRef.frel && childRef.frel !== 'Birth') {
+						attrs += ` frel="${childRef.frel}"`;
+					}
+					familyLines.push(`      <childref ${attrs}/>`);
+				}
+			} else {
+				for (const childHandle of family.children) {
+					familyLines.push(`      <childref hlink="${childHandle}"/>`);
+				}
 			}
 			familyLines.push('    </family>');
 		}

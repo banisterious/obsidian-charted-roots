@@ -639,6 +639,80 @@ export class GedcomXExporter {
 				}
 			}
 
+			// Step-parent relationships (with StepParent lineage type fact)
+			if (person.stepfatherCrIds && person.stepfatherCrIds.length > 0) {
+				for (const stepfatherId of person.stepfatherCrIds) {
+					const stepfatherGedcomXId = crIdToGedcomXId.get(stepfatherId);
+					if (stepfatherGedcomXId) {
+						const key = `PC:${stepfatherGedcomXId}:${personId}:step`;
+						if (!addedRelationships.has(key)) {
+							relationships.push({
+								id: `R${relationshipCounter++}`,
+								type: GEDCOMX_TYPES.PARENT_CHILD,
+								person1: { resource: `#${stepfatherGedcomXId}` },
+								person2: { resource: `#${personId}` },
+								facts: [{ type: GEDCOMX_TYPES.STEP_PARENT }]
+							});
+							addedRelationships.add(key);
+						}
+					}
+				}
+			}
+
+			if (person.stepmotherCrIds && person.stepmotherCrIds.length > 0) {
+				for (const stepmotherId of person.stepmotherCrIds) {
+					const stepmotherGedcomXId = crIdToGedcomXId.get(stepmotherId);
+					if (stepmotherGedcomXId) {
+						const key = `PC:${stepmotherGedcomXId}:${personId}:step`;
+						if (!addedRelationships.has(key)) {
+							relationships.push({
+								id: `R${relationshipCounter++}`,
+								type: GEDCOMX_TYPES.PARENT_CHILD,
+								person1: { resource: `#${stepmotherGedcomXId}` },
+								person2: { resource: `#${personId}` },
+								facts: [{ type: GEDCOMX_TYPES.STEP_PARENT }]
+							});
+							addedRelationships.add(key);
+						}
+					}
+				}
+			}
+
+			// Adoptive parent relationships (with AdoptiveParent lineage type fact)
+			if (person.adoptiveFatherCrId) {
+				const adoptiveFatherId = crIdToGedcomXId.get(person.adoptiveFatherCrId);
+				if (adoptiveFatherId) {
+					const key = `PC:${adoptiveFatherId}:${personId}:adop`;
+					if (!addedRelationships.has(key)) {
+						relationships.push({
+							id: `R${relationshipCounter++}`,
+							type: GEDCOMX_TYPES.PARENT_CHILD,
+							person1: { resource: `#${adoptiveFatherId}` },
+							person2: { resource: `#${personId}` },
+							facts: [{ type: GEDCOMX_TYPES.ADOPTIVE_PARENT }]
+						});
+						addedRelationships.add(key);
+					}
+				}
+			}
+
+			if (person.adoptiveMotherCrId) {
+				const adoptiveMotherId = crIdToGedcomXId.get(person.adoptiveMotherCrId);
+				if (adoptiveMotherId) {
+					const key = `PC:${adoptiveMotherId}:${personId}:adop`;
+					if (!addedRelationships.has(key)) {
+						relationships.push({
+							id: `R${relationshipCounter++}`,
+							type: GEDCOMX_TYPES.PARENT_CHILD,
+							person1: { resource: `#${adoptiveMotherId}` },
+							person2: { resource: `#${personId}` },
+							facts: [{ type: GEDCOMX_TYPES.ADOPTIVE_PARENT }]
+						});
+						addedRelationships.add(key);
+					}
+				}
+			}
+
 			// Couple relationships
 			if (person.spouseCrIds && person.spouseCrIds.length > 0) {
 				for (const spouseId of person.spouseCrIds) {

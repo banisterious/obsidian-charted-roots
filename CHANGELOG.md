@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **GEDCOM X lineage type parsing** - Parse lineage type facts (`AdoptiveParent`, `StepParent`, `BiologicalParent`, etc.) from GEDCOM X parent-child relationships. Uses the same dedicated frontmatter fields as GEDCOM and Gramps import.
 
+- **Step/adoptive parent export** - Export step-parent and adoptive parent relationships to all three formats. GEDCOM 5.5.1 exports PEDI tags (`step`, `adop`) under FAMC references. Gramps XML exports `mrel`/`frel` attributes (`Stepchild`, `Adopted`) on childref elements. GEDCOM X exports ParentChild relationships with lineage type facts.
+
 - **Canvas tree visualization** - Step-parent relationships shown with dashed lines; adoptive parent relationships shown with dotted lines. New toggles in tree generation: "Include step-parents" and "Include adoptive parents". Relationship labels displayed on non-biological parent edges.
 
 - **Create/Edit Person modal** - New "Step & adoptive parents" section for manual entry of stepfather, stepmother, adoptive father, and adoptive mother.

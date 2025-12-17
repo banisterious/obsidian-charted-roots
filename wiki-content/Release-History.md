@@ -63,6 +63,7 @@ Comprehensive support for non-biological parent relationships, improving GEDCOM 
 | **GEDCOM PEDI parsing** | Parse `PEDI` tags (`birth`, `step`, `adop`, `foster`) from GEDCOM 5.5.1 files |
 | **Gramps mrel/frel parsing** | Parse `mrel`/`frel` attributes (`Birth`, `Stepchild`, `Adopted`) from Gramps XML |
 | **GEDCOM X lineage types** | Parse lineage type facts (`StepParent`, `AdoptiveParent`, etc.) from GEDCOM X JSON |
+| **Round-trip export** | Export step/adoptive parents with PEDI tags (GEDCOM), mrel/frel (Gramps), lineage facts (GEDCOM X) |
 | **Dedicated frontmatter fields** | `stepfather_id`, `stepmother_id`, `adoptive_father_id`, `adoptive_mother_id` |
 | **Conflict detection** | Step/adoptive parents excluded from biological parent conflicts |
 | **Canvas visualization** | Step-parents shown with dashed lines, adoptive parents with dotted lines |
