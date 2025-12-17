@@ -87,6 +87,7 @@ views:
   - name: All Places
     type: table
     order:
+      - file.name
       - note.${name}
       - note.${place_type}
       - note.${place_category}
@@ -113,6 +114,7 @@ views:
       and:
         - '${place_type} == "country"'
     order:
+      - file.name
       - note.${name}
   - name: States/Provinces
     type: table
@@ -174,8 +176,8 @@ views:
     filters:
       and:
         - '${coordinates}.isEmpty()'
-        - '${place_category} == "real" || ${place_category} == "historical"'
     order:
+      - file.name
       - note.${name}
   - name: Orphan Places
     type: table

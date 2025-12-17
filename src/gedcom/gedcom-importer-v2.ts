@@ -1687,10 +1687,43 @@ export class GedcomImporterV2 {
 		// Fall back to hierarchy-based inference with context awareness
 		if (parts.length === 1) {
 			// Single part - could be country or a well-known place
-			const countries = ['usa', 'uk', 'england', 'scotland', 'wales', 'ireland',
-				'france', 'germany', 'italy', 'spain', 'canada', 'australia', 'mexico',
-				'netherlands', 'belgium', 'switzerland', 'austria', 'poland', 'sweden',
-				'norway', 'denmark', 'finland'];
+			const countries = [
+				// North America
+				'usa', 'canada', 'mexico',
+				// UK and constituent countries
+				'uk', 'england', 'scotland', 'wales', 'ireland', 'northern ireland',
+				// Western Europe
+				'france', 'germany', 'italy', 'spain', 'portugal', 'netherlands', 'belgium',
+				'luxembourg', 'switzerland', 'austria', 'liechtenstein', 'monaco', 'andorra',
+				// Northern Europe
+				'sweden', 'norway', 'denmark', 'finland', 'iceland',
+				// Eastern Europe
+				'poland', 'czech republic', 'czechia', 'slovakia', 'hungary', 'romania',
+				'bulgaria', 'ukraine', 'russia', 'belarus', 'moldova', 'lithuania', 'latvia',
+				'estonia', 'slovenia', 'croatia', 'serbia', 'bosnia', 'montenegro', 'albania',
+				'north macedonia', 'macedonia', 'kosovo', 'greece', 'cyprus',
+				// Asia
+				'china', 'japan', 'korea', 'south korea', 'north korea', 'taiwan', 'vietnam',
+				'thailand', 'philippines', 'indonesia', 'malaysia', 'singapore', 'india',
+				'pakistan', 'bangladesh', 'sri lanka', 'nepal', 'myanmar', 'cambodia', 'laos',
+				'mongolia', 'kazakhstan', 'uzbekistan', 'turkmenistan', 'tajikistan', 'kyrgyzstan',
+				'afghanistan', 'iran', 'iraq', 'syria', 'lebanon', 'jordan', 'israel', 'palestine',
+				'saudi arabia', 'yemen', 'oman', 'uae', 'qatar', 'bahrain', 'kuwait', 'turkey',
+				'armenia', 'azerbaijan', 'georgia',
+				// Africa
+				'egypt', 'morocco', 'algeria', 'tunisia', 'libya', 'sudan', 'ethiopia', 'kenya',
+				'tanzania', 'uganda', 'nigeria', 'ghana', 'south africa', 'zimbabwe', 'zambia',
+				'mozambique', 'angola', 'namibia', 'botswana', 'senegal', 'mali', 'niger',
+				'cameroon', 'ivory coast', 'madagascar',
+				// Oceania
+				'australia', 'new zealand', 'fiji', 'papua new guinea',
+				// South America
+				'brazil', 'argentina', 'chile', 'peru', 'colombia', 'venezuela', 'ecuador',
+				'bolivia', 'paraguay', 'uruguay', 'guyana', 'suriname',
+				// Central America and Caribbean
+				'guatemala', 'honduras', 'el salvador', 'nicaragua', 'costa rica', 'panama',
+				'cuba', 'jamaica', 'haiti', 'dominican republic', 'puerto rico', 'trinidad'
+			];
 			if (countries.includes(nameLower)) {
 				return 'country';
 			}
