@@ -117,11 +117,13 @@
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
+/* stylelint-disable-next-line selector-class-pattern -- Targets Obsidian's .setting-item class */
 .cr-settings-search .setting-item {
   border-top: none;
   padding-top: 0;
 }
 
+/* stylelint-disable-next-line selector-class-pattern -- Targets Obsidian's .setting-item-name class */
 .cr-settings-search .setting-item-name {
   font-weight: normal;
   color: var(--text-muted);

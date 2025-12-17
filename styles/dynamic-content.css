@@ -183,6 +183,7 @@
    Theme Compatibility
    ========================================================================== */
 
+/* stylelint-disable-next-line selector-class-pattern -- Targets Obsidian's .theme-dark class */
 .theme-dark .cr-dynamic-block {
   background: var(--background-secondary);
 }

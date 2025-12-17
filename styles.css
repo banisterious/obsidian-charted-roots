@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-17 01:28:54 UTC
+ * - Generated: 2025-12-17 02:10:31 UTC
  * - Components: 32 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -462,7 +462,7 @@ settings:
    COMPONENT: SETTINGS.CSS
    ========================================================================== */
 
-/* Component Size: 129 lines, 3.33 KB */
+/* Component Size: 131 lines, 3.53 KB */
 
 /* Settings interface styling */
 
@@ -583,11 +583,13 @@ settings:
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
+/* stylelint-disable-next-line selector-class-pattern -- Targets Obsidian's .setting-item class */
 .cr-settings-search .setting-item {
   border-top: none;
   padding-top: 0;
 }
 
+/* stylelint-disable-next-line selector-class-pattern -- Targets Obsidian's .setting-item-name class */
 .cr-settings-search .setting-item-name {
   font-weight: normal;
   color: var(--text-muted);
@@ -14639,7 +14641,7 @@ input[type="text"]::-webkit-input-placeholder {
    COMPONENT: TIMELINE-CALLOUTS.CSS
    ========================================================================== */
 
-/* Component Size: 319 lines, 10.4 KB */
+/* Component Size: 321 lines, 10.66 KB */
 
 /**
  * Timeline Callout Styles
@@ -14650,6 +14652,8 @@ input[type="text"]::-webkit-input-placeholder {
  * Based on FireIsGood's timeline callout snippet:
  * https://discord.com/channels/686053708261228577/702656734631821413/1156868388249935883
  */
+
+/* stylelint-disable selector-class-pattern, custom-property-empty-line-before, comment-empty-line-before, declaration-empty-line-before, rule-empty-line-before, no-duplicate-selectors -- Adapted from external snippet, targets Obsidian's native .callout classes */
 
 /* Timeline CSS Variables - defaults that can be overridden via Style Settings */
 body {
@@ -19514,7 +19518,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: DYNAMIC-CONTENT.CSS
    ========================================================================== */
 
-/* Component Size: 189 lines, 3.98 KB */
+/* Component Size: 190 lines, 4.08 KB */
 
 /**
  * Dynamic Content Styles
@@ -19701,6 +19705,7 @@ body:has(.cr-media-linker) .suggestion-container {
    Theme Compatibility
    ========================================================================== */
 
+/* stylelint-disable-next-line selector-class-pattern -- Targets Obsidian's .theme-dark class */
 .theme-dark .cr-dynamic-block {
   background: var(--background-secondary);
 }
@@ -19776,11 +19781,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-17 01:28:54 UTC
+ * Build completed: 2025-12-17 02:10:31 UTC
  * Components processed: 32
- * Total lines: 19465
- * Total size: 385.82 KB
- * Build duration: 0.03 seconds
+ * Total lines: 19470
+ * Total size: 386.37 KB
+ * Build duration: 0.02 seconds
  *
  * Component breakdown:
  * - variables.css: 48 lines, 1.33 KB
@@ -19790,7 +19795,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - canvas.css: 4 lines, 0.07 KB
  * - nodes.css: 12 lines, 0.3 KB
  * - edges.css: 4 lines, 0.07 KB
- * - settings.css: 129 lines, 3.33 KB
+ * - settings.css: 131 lines, 3.53 KB
  * - modals.css: 5884 lines, 107.84 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
@@ -19806,12 +19811,12 @@ body:has(.cr-media-linker) .suggestion-container {
  * - leaflet-distortable.css: 368 lines, 7.73 KB
  * - date-systems.css: 287 lines, 5.31 KB
  * - events.css: 1363 lines, 27.26 KB
- * - timeline-callouts.css: 319 lines, 10.4 KB
+ * - timeline-callouts.css: 321 lines, 10.66 KB
  * - organizations.css: 245 lines, 4.36 KB
  * - sources.css: 2664 lines, 54.11 KB
  * - statistics.css: 1360 lines, 26.75 KB
  * - preferences.css: 242 lines, 5.29 KB
- * - dynamic-content.css: 189 lines, 3.98 KB
+ * - dynamic-content.css: 190 lines, 4.08 KB
  * - animations.css: 16 lines, 0.18 KB
  * - responsive.css: 9 lines, 0.13 KB
  * - theme.css: 11 lines, 0.19 KB

@@ -8,6 +8,8 @@
  * https://discord.com/channels/686053708261228577/702656734631821413/1156868388249935883
  */
 
+/* stylelint-disable selector-class-pattern, custom-property-empty-line-before, comment-empty-line-before, declaration-empty-line-before, rule-empty-line-before, no-duplicate-selectors -- Adapted from external snippet, targets Obsidian's native .callout classes */
+
 /* Timeline CSS Variables - defaults that can be overridden via Style Settings */
 body {
   --cr-timeline-width: 100%;
