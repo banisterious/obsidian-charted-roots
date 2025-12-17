@@ -60,7 +60,9 @@ Comprehensive support for non-biological parent relationships, improving GEDCOM 
 
 | Feature | Description |
 |---------|-------------|
-| **GEDCOM PEDI parsing** | Parse `PEDI` tags (`birth`, `step`, `adop`, `foster`) from GEDCOM files |
+| **GEDCOM PEDI parsing** | Parse `PEDI` tags (`birth`, `step`, `adop`, `foster`) from GEDCOM 5.5.1 files |
+| **Gramps mrel/frel parsing** | Parse `mrel`/`frel` attributes (`Birth`, `Stepchild`, `Adopted`) from Gramps XML |
+| **GEDCOM X lineage types** | Parse lineage type facts (`StepParent`, `AdoptiveParent`, etc.) from GEDCOM X JSON |
 | **Dedicated frontmatter fields** | `stepfather_id`, `stepmother_id`, `adoptive_father_id`, `adoptive_mother_id` |
 | **Conflict detection** | Step/adoptive parents excluded from biological parent conflicts |
 | **Canvas visualization** | Step-parents shown with dashed lines, adoptive parents with dotted lines |
@@ -86,7 +88,7 @@ adoptive_father_id: yza-567-bcd-890
 adoptive_mother_id: efg-123-hij-456
 ```
 
-**GEDCOM Pedigree Types:**
+**GEDCOM 5.5.1 Pedigree Types:**
 
 | PEDI Value | Meaning | Canvas Roots Field |
 |------------|---------|-------------------|
@@ -94,6 +96,28 @@ adoptive_mother_id: efg-123-hij-456
 | `adop` | Adopted | `adoptive_father_id`, `adoptive_mother_id` |
 | `step` | Step-child | `stepfather_id`, `stepmother_id` |
 | `foster` | Foster child | (stored but not specially handled) |
+| (absent) | Assumed biological | `father_id`, `mother_id` |
+
+**Gramps XML Pedigree Types:**
+
+| mrel/frel Value | Meaning | Canvas Roots Field |
+|-----------------|---------|-------------------|
+| `Birth` | Biological | `father_id`, `mother_id` |
+| `Adopted` | Adopted | `adoptive_father_id`, `adoptive_mother_id` |
+| `Stepchild` | Step-child | `stepfather_id`, `stepmother_id` |
+| `Foster` | Foster child | (stored but not specially handled) |
+| (absent) | Assumed biological | `father_id`, `mother_id` |
+
+**GEDCOM X Lineage Types:**
+
+| Lineage Type | Meaning | Canvas Roots Field |
+|--------------|---------|-------------------|
+| `BiologicalParent` | Biological | `father_id`, `mother_id` |
+| `AdoptiveParent` | Adopted | `adoptive_father_id`, `adoptive_mother_id` |
+| `StepParent` | Step-parent | `stepfather_id`, `stepmother_id` |
+| `FosterParent` | Foster parent | (stored but not specially handled) |
+| `GuardianParent` | Guardian | (stored but not specially handled) |
+| `SociologicalParent` | Sociological | (stored but not specially handled) |
 | (absent) | Assumed biological | `father_id`, `mother_id` |
 
 **New Relationship Types:**
