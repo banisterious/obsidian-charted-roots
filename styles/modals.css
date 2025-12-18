@@ -4395,6 +4395,21 @@
   color: var(--text-muted);
 }
 
+.crc-badge--active {
+  background-color: var(--color-green);
+  color: var(--text-on-accent);
+}
+
+.crc-badge--draft {
+  background-color: var(--color-yellow);
+  color: var(--background-primary);
+}
+
+.crc-badge--archived {
+  background-color: var(--background-modifier-border);
+  color: var(--text-muted);
+}
+
 /* Violations List */
 .crc-violations-list {
   list-style: none;

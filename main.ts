@@ -391,6 +391,15 @@ export default class CanvasRootsPlugin extends Plugin {
 			}
 		});
 
+		// Add command: Create Universes Base Template
+		this.addCommand({
+			id: 'create-universes-base-template',
+			name: 'Create universes base template',
+			callback: () => {
+				void this.createUniversesBaseTemplate();
+			}
+		});
+
 		// Add command: Create All Base Templates
 		this.addCommand({
 			id: 'create-all-bases',
@@ -2733,6 +2742,21 @@ export default class CanvasRootsPlugin extends Plugin {
 										});
 								});
 
+								// Delete universe
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Delete universe')
+										.setIcon('trash')
+										.onClick(async () => {
+											const universeName = cache?.frontmatter?.name || file.basename;
+											const confirmed = await this.confirmDeleteUniverse(universeName);
+											if (confirmed) {
+												await this.app.fileManager.trashFile(file);
+												new Notice(`Deleted universe: ${universeName}`);
+											}
+										});
+								});
+
 								submenu.addSeparator();
 
 								// Add essential properties submenu
@@ -2798,6 +2822,20 @@ export default class CanvasRootsPlugin extends Plugin {
 									.setIcon('edit')
 									.onClick(() => {
 										this.openEditUniverseModal(file);
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Delete universe')
+									.setIcon('trash')
+									.onClick(async () => {
+										const universeName = cache?.frontmatter?.name || file.basename;
+										const confirmed = await this.confirmDeleteUniverse(universeName);
+										if (confirmed) {
+											await this.app.fileManager.trashFile(file);
+											new Notice(`Deleted universe: ${universeName}`);
+										}
 									});
 							});
 
@@ -3975,6 +4013,42 @@ export default class CanvasRootsPlugin extends Plugin {
 			modal.titleEl.setText('Delete event');
 			modal.contentEl.createEl('p', {
 				text: `Are you sure you want to delete "${eventTitle}"? This action cannot be undone.`
+			});
+
+			const buttonContainer = modal.contentEl.createDiv({ cls: 'modal-button-container' });
+
+			const cancelBtn = buttonContainer.createEl('button', { text: 'Cancel' });
+			cancelBtn.addEventListener('click', () => {
+				modal.close();
+				resolve(false);
+			});
+
+			const deleteBtn = buttonContainer.createEl('button', {
+				text: 'Delete',
+				cls: 'mod-warning'
+			});
+			deleteBtn.addEventListener('click', () => {
+				modal.close();
+				resolve(true);
+			});
+
+			modal.open();
+		});
+	}
+
+	/**
+	 * Confirm deletion of a universe note
+	 */
+	public async confirmDeleteUniverse(universeName: string): Promise<boolean> {
+		return new Promise((resolve) => {
+			const modal = new Modal(this.app);
+			modal.titleEl.setText('Delete universe');
+			modal.contentEl.createEl('p', {
+				text: `Are you sure you want to delete "${universeName}"? This action cannot be undone.`
+			});
+			modal.contentEl.createEl('p', {
+				text: 'Note: This will not delete entities associated with this universe.',
+				cls: 'mod-warning'
 			});
 
 			const buttonContainer = modal.contentEl.createDiv({ cls: 'modal-button-container' });

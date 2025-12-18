@@ -345,61 +345,45 @@ function renderUniversesCard(
 	const content = card.querySelector('.crc-card__content') as HTMLElement;
 
 	if (universes.length > 0) {
-		// Universe list
-		const list = content.createDiv({ cls: 'cr-universes-list' });
-
+		// Universe list with Setting-style rows
 		universes.forEach(universe => {
 			const counts = universeService.getEntityCountsForUniverse(universe.crId);
-			const row = list.createDiv({ cls: 'cr-universe-row' });
 
-			// Left side: name and counts
-			const left = row.createDiv({ cls: 'cr-universe-left' });
-			const nameLink = left.createEl('a', {
-				text: universe.name,
-				cls: 'crc-link'
-			});
-			nameLink.addEventListener('click', async (e) => {
-				e.preventDefault();
-				const leaf = plugin.app.workspace.getLeaf(false);
-				await leaf.openFile(universe.file);
-			});
-
-			// Counts inline
-			const countsEl = left.createSpan({ cls: 'cr-universe-counts crc-text-muted' });
+			// Build entity count description
 			const countParts: string[] = [];
 			if (counts.people > 0) countParts.push(`${counts.people} people`);
 			if (counts.places > 0) countParts.push(`${counts.places} places`);
 			if (counts.events > 0) countParts.push(`${counts.events} events`);
-			if (countParts.length > 0) {
-				countsEl.textContent = ` (${countParts.join(', ')})`;
-			}
+			if (counts.organizations > 0) countParts.push(`${counts.organizations} organizations`);
+			const countText = countParts.length > 0 ? countParts.join(', ') : 'No entities yet';
 
-			// Right side: view button
-			const viewBtn = row.createEl('button', {
-				text: '→',
-				cls: 'crc-btn crc-btn--small crc-btn--ghost',
-				attr: { 'aria-label': 'View universe' }
-			});
-			viewBtn.addEventListener('click', async () => {
-				const leaf = plugin.app.workspace.getLeaf(false);
-				await leaf.openFile(universe.file);
-			});
+			new Setting(content)
+				.setName(universe.name)
+				.setDesc(countText)
+				.addButton(btn => btn
+					.setButtonText('Open')
+					.onClick(async () => {
+						const leaf = plugin.app.workspace.getLeaf(false);
+						await leaf.openFile(universe.file);
+					}));
 		});
 
-		// Create universe button
-		const btnRow = content.createDiv({ cls: 'cr-universes-actions' });
-		const createBtn = btnRow.createEl('button', {
-			text: 'Create universe',
-			cls: 'crc-btn crc-btn--secondary'
-		});
-		createBtn.addEventListener('click', () => {
-			new UniverseWizardModal(plugin, {
-				onComplete: () => showTab('universes')
-			}).open();
-		});
+		// Create universe action (Setting-style layout)
+		new Setting(content)
+			.setName('Create universe')
+			.setDesc('Launch the universe setup wizard')
+			.addButton(btn => btn
+				.setButtonText('Create')
+				.setCta()
+				.onClick(() => {
+					new UniverseWizardModal(plugin, {
+						onComplete: () => showTab('universes')
+					}).open();
+				}));
 
 		// Manage link
-		const manageLink = btnRow.createEl('a', {
+		const manageRow = content.createDiv({ cls: 'cr-universes-manage crc-mt-2' });
+		const manageLink = manageRow.createEl('a', {
 			text: 'Manage universes →',
 			cls: 'crc-link'
 		});
@@ -408,21 +392,18 @@ function renderUniversesCard(
 			showTab('universes');
 		});
 	} else {
-		// Empty state
-		content.createEl('p', {
-			text: 'Universes help you organize fictional worlds with custom calendars, maps, and validation rules.',
-			cls: 'crc-mb-3'
-		});
-
-		const createBtn = content.createEl('button', {
-			text: 'Create your first universe',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		createBtn.addEventListener('click', () => {
-			new UniverseWizardModal(plugin, {
-				onComplete: () => showTab('universes')
-			}).open();
-		});
+		// Empty state with Setting-style layout
+		new Setting(content)
+			.setName('Create universe')
+			.setDesc('Universes help you organize fictional worlds with custom calendars, maps, and validation rules')
+			.addButton(btn => btn
+				.setButtonText('Create')
+				.setCta()
+				.onClick(() => {
+					new UniverseWizardModal(plugin, {
+						onComplete: () => showTab('universes')
+					}).open();
+				}));
 	}
 
 	// Orphan warning

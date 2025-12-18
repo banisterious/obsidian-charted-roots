@@ -69,6 +69,8 @@ export interface CreateUniverseData {
 	genre?: string;
 	/** Initial status (defaults to 'active') */
 	status?: UniverseStatus;
+	/** Explicit cr_id (used when creating from orphan references) */
+	crId?: string;
 }
 
 /**

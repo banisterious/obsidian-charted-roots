@@ -73,6 +73,8 @@ import {
 import { isPersonNote } from '../utils/note-type-detection';
 import { UniverseService } from '../universes/services/universe-service';
 import { UniverseWizardModal } from '../universes/ui/universe-wizard';
+import { EditUniverseModal } from '../universes/ui/edit-universe-modal';
+import type { UniverseInfo, UniverseEntityCounts } from '../universes/types';
 import type {
 	FactKey,
 	ResearchGapsSummary,
@@ -1777,7 +1779,8 @@ export class ControlCenterModal extends Modal {
 			{ icon: 'map-pin', title: 'Places', desc: 'Geographic locations', command: 'canvas-roots:create-places-base-template' },
 			{ icon: 'calendar', title: 'Events', desc: 'Life events and milestones', command: 'canvas-roots:create-events-base-template' },
 			{ icon: 'building', title: 'Organizations', desc: 'Businesses, churches, schools', command: 'canvas-roots:create-organizations-base-template' },
-			{ icon: 'book', title: 'Sources', desc: 'Citations and references', command: 'canvas-roots:create-sources-base-template' }
+			{ icon: 'book', title: 'Sources', desc: 'Citations and references', command: 'canvas-roots:create-sources-base-template' },
+			{ icon: 'globe', title: 'Universes', desc: 'Fictional worlds and settings', command: 'canvas-roots:create-universes-base-template' }
 		];
 
 		const templateGrid = templatesContent.createDiv({ cls: 'crc-template-grid' });
@@ -2580,6 +2583,12 @@ export class ControlCenterModal extends Modal {
 
 	/** Current person list sort */
 	private personListSort: 'name-asc' | 'name-desc' | 'birth-asc' | 'birth-desc' | 'death-asc' | 'death-desc' = 'name-asc';
+
+	/** Current universe list filter */
+	private universeListFilter: 'all' | 'active' | 'draft' | 'archived' | 'has-entities' | 'empty' = 'all';
+
+	/** Current universe list sort */
+	private universeListSort: 'name-asc' | 'name-desc' | 'created-asc' | 'created-desc' | 'entities-asc' | 'entities-desc' = 'name-asc';
 
 	private loadPersonList(container: HTMLElement): void {
 		container.empty();
@@ -8461,110 +8470,165 @@ export class ControlCenterModal extends Modal {
 		const universes = universeService.getAllUniverses();
 		const orphans = universeService.findOrphanUniverses();
 
-		// Actions card (at top for discoverability)
-		const actionsCard = this.createCard({
-			title: 'Actions',
-			icon: 'zap'
+		// Build universe list with entity counts for filtering/sorting
+		const universeItems = universes.map(u => {
+			const counts = universeService.getEntityCountsForUniverse(u.crId);
+			const totalEntities = counts.people + counts.places + counts.events +
+				counts.organizations + counts.maps + counts.calendars;
+			return { ...u, counts, totalEntities };
 		});
-		const actionsContent = actionsCard.querySelector('.crc-card__content') as HTMLElement;
 
-		// Create universe action
-		new Setting(actionsContent)
-			.setName('Create universe')
-			.setDesc('Open the universe setup wizard to create a new fictional world')
-			.addButton(button => button
-				.setButtonText('Create')
-				.setCta()
-				.onClick(() => {
-					new UniverseWizardModal(this.plugin, {
-						onComplete: () => this.showUniversesTab()
-					}).open();
-				}));
+		// Universe List Card (main card, similar to Person notes)
+		const listCard = this.createCard({
+			title: 'Universe notes',
+			icon: 'globe',
+			subtitle: 'All universe notes in your vault'
+		});
+		const listContent = listCard.querySelector('.crc-card__content') as HTMLElement;
 
-		// Create universes base action
-		new Setting(actionsContent)
-			.setName('Create universes base')
-			.setDesc('Create an Obsidian base file for browsing and filtering universes')
-			.addButton(button => button
-				.setButtonText('Create base')
-				.onClick(() => {
-					void this.plugin.createUniversesBaseTemplate();
-				}));
-
-		container.appendChild(actionsCard);
-
-		// Universe list
-		if (universes.length > 0) {
-			const listCard = this.createCard({
-				title: 'Your universes',
-				icon: 'globe',
-				subtitle: `${universes.length} universe${universes.length === 1 ? '' : 's'}`
+		if (universeItems.length === 0) {
+			// Empty state
+			const emptyState = listContent.createDiv({ cls: 'crc-empty-state' });
+			emptyState.createEl('p', {
+				text: 'No universe notes found in your vault.',
+				cls: 'crc-text--muted'
 			});
-			const listContent = listCard.querySelector('.crc-card__content') as HTMLElement;
+			emptyState.createEl('p', {
+				text: 'Create your first universe to start organizing fictional worlds with custom calendars, maps, and validation rules.',
+				cls: 'crc-text--muted crc-text--small crc-mb-3'
+			});
+			const startBtn = emptyState.createEl('button', {
+				text: 'Create universe',
+				cls: 'crc-btn crc-btn--primary'
+			});
+			startBtn.addEventListener('click', () => {
+				new UniverseWizardModal(this.plugin, {
+					onComplete: () => this.showUniversesTab()
+				}).open();
+			});
+		} else {
+			// Controls row (filter + sort + search)
+			const controlsRow = listContent.createDiv({ cls: 'crc-person-controls' });
 
-			universes.forEach(universe => {
-				const counts = universeService.getEntityCountsForUniverse(universe.crId);
-				const row = listContent.createDiv({ cls: 'crc-universe-row crc-mb-3' });
+			// Filter dropdown
+			const filterSelect = controlsRow.createEl('select', { cls: 'dropdown' });
+			const filterOptions = [
+				{ value: 'all', label: 'All universes' },
+				{ value: 'active', label: 'Active' },
+				{ value: 'draft', label: 'Draft' },
+				{ value: 'archived', label: 'Archived' },
+				{ value: 'has-entities', label: 'Has entities' },
+				{ value: 'empty', label: 'Empty' }
+			];
+			filterOptions.forEach(opt => {
+				const option = filterSelect.createEl('option', { text: opt.label, value: opt.value });
+				if (opt.value === this.universeListFilter) option.selected = true;
+			});
 
-				// Universe header
-				const rowHeader = row.createDiv({ cls: 'crc-flex crc-justify-between crc-items-center' });
-				const nameLink = rowHeader.createEl('a', {
-					text: universe.name,
-					cls: 'crc-link crc-text-lg'
-				});
-				nameLink.addEventListener('click', async (e) => {
-					e.preventDefault();
-					this.close();
-					const leaf = this.app.workspace.getLeaf(false);
-					await leaf.openFile(universe.file);
-				});
+			// Sort dropdown
+			const sortSelect = controlsRow.createEl('select', { cls: 'dropdown' });
+			const sortOptions = [
+				{ value: 'name-asc', label: 'Name (A–Z)' },
+				{ value: 'name-desc', label: 'Name (Z–A)' },
+				{ value: 'created-asc', label: 'Created (oldest)' },
+				{ value: 'created-desc', label: 'Created (newest)' },
+				{ value: 'entities-asc', label: 'Entities (fewest)' },
+				{ value: 'entities-desc', label: 'Entities (most)' }
+			];
+			sortOptions.forEach(opt => {
+				const option = sortSelect.createEl('option', { text: opt.label, value: opt.value });
+				if (opt.value === this.universeListSort) option.selected = true;
+			});
 
-				const editBtn = rowHeader.createEl('button', {
-					text: 'Edit',
-					cls: 'crc-btn crc-btn--small crc-btn--secondary'
-				});
-				editBtn.addEventListener('click', async () => {
-					this.close();
-					const leaf = this.app.workspace.getLeaf(false);
-					await leaf.openFile(universe.file);
-				});
+			// Search input
+			const searchInput = controlsRow.createEl('input', {
+				cls: 'crc-filter-input',
+				attr: {
+					type: 'text',
+					placeholder: `Search ${universeItems.length} universes...`
+				}
+			});
 
-				// Description
-				if (universe.description) {
-					row.createEl('p', {
-						text: universe.description,
-						cls: 'crc-text-muted crc-mb-2'
-					});
+			// Usage hint
+			const hint = listContent.createEl('p', {
+				cls: 'crc-text-muted crc-text-small crc-mb-2'
+			});
+			hint.appendText('Click a row to edit. ');
+			const fileIconHint = createLucideIcon('file-text', 12);
+			fileIconHint.addClass('crc-icon-inline');
+			hint.appendChild(fileIconHint);
+			hint.appendText(' opens the note.');
+
+			// List container
+			const listContainer = listContent.createDiv({ cls: 'crc-person-list' });
+
+			// Apply filter, sort, and render
+			const applyFiltersAndRender = () => {
+				const query = searchInput.value.toLowerCase();
+
+				// Filter by search query
+				let filtered = universeItems.filter(u =>
+					u.name.toLowerCase().includes(query) ||
+					(u.description && u.description.toLowerCase().includes(query)) ||
+					(u.author && u.author.toLowerCase().includes(query)) ||
+					(u.genre && u.genre.toLowerCase().includes(query))
+				);
+
+				// Apply category filter
+				switch (this.universeListFilter) {
+					case 'active':
+						filtered = filtered.filter(u => u.status === 'active');
+						break;
+					case 'draft':
+						filtered = filtered.filter(u => u.status === 'draft');
+						break;
+					case 'archived':
+						filtered = filtered.filter(u => u.status === 'archived');
+						break;
+					case 'has-entities':
+						filtered = filtered.filter(u => u.totalEntities > 0);
+						break;
+					case 'empty':
+						filtered = filtered.filter(u => u.totalEntities === 0);
+						break;
 				}
 
-				// Entity counts
-				const countsRow = row.createDiv({ cls: 'crc-universe-counts' });
-				const countItems = [
-					{ label: 'People', count: counts.people, icon: 'users' },
-					{ label: 'Places', count: counts.places, icon: 'map-pin' },
-					{ label: 'Events', count: counts.events, icon: 'calendar' },
-					{ label: 'Organizations', count: counts.organizations, icon: 'building' },
-					{ label: 'Maps', count: counts.maps, icon: 'map' },
-					{ label: 'Calendars', count: counts.calendars, icon: 'clock' }
-				];
-
-				countItems.forEach(item => {
-					if (item.count > 0) {
-						const countEl = countsRow.createSpan({ cls: 'crc-universe-count' });
-						const iconEl = countEl.createSpan({ cls: 'crc-universe-count__icon' });
-						setLucideIcon(iconEl, item.icon as LucideIconName, 14);
-						countEl.createSpan({ text: `${item.count}` });
+				// Apply sort
+				filtered.sort((a, b) => {
+					switch (this.universeListSort) {
+						case 'name-asc':
+							return a.name.localeCompare(b.name);
+						case 'name-desc':
+							return b.name.localeCompare(a.name);
+						case 'created-asc':
+							return (a.created || '0000').localeCompare(b.created || '0000');
+						case 'created-desc':
+							return (b.created || '9999').localeCompare(a.created || '9999');
+						case 'entities-asc':
+							return a.totalEntities - b.totalEntities;
+						case 'entities-desc':
+							return b.totalEntities - a.totalEntities;
+						default:
+							return 0;
 					}
 				});
 
-				// Status badge
-				if (universe.status && universe.status !== 'active') {
-					row.createSpan({
-						text: universe.status,
-						cls: `crc-badge crc-badge--${universe.status}`
-					});
-				}
+				this.renderUniverseListItems(listContainer, filtered, universeService);
+			};
+
+			// Event handlers
+			searchInput.addEventListener('input', applyFiltersAndRender);
+			filterSelect.addEventListener('change', () => {
+				this.universeListFilter = filterSelect.value as typeof this.universeListFilter;
+				applyFiltersAndRender();
 			});
+			sortSelect.addEventListener('change', () => {
+				this.universeListSort = sortSelect.value as typeof this.universeListSort;
+				applyFiltersAndRender();
+			});
+
+			// Initial render
+			applyFiltersAndRender();
 
 			// View full statistics link
 			const statsLink = listContent.createDiv({ cls: 'cr-stats-link' });
@@ -8574,9 +8638,9 @@ export class ControlCenterModal extends Modal {
 				this.close();
 				void this.plugin.activateStatisticsView();
 			});
-
-			container.appendChild(listCard);
 		}
+
+		container.appendChild(listCard);
 
 		// Orphan universes section
 		if (orphans.length > 0) {
@@ -8602,9 +8666,11 @@ export class ControlCenterModal extends Modal {
 				});
 				createNoteBtn.addEventListener('click', async () => {
 					try {
-						// Create universe from orphan value
-						const file = await universeService.createUniverse({
-							name: orphan.value.charAt(0).toUpperCase() + orphan.value.slice(1).replace(/-/g, ' ')
+						// Create universe from orphan value, using the orphan value as cr_id
+						// so existing entity references will match
+						await universeService.createUniverse({
+							name: orphan.value.charAt(0).toUpperCase() + orphan.value.slice(1).replace(/-/g, ' '),
+							crId: orphan.value
 						});
 						new Notice(`Created universe: ${orphan.value}`);
 						// Refresh the tab
@@ -8625,7 +8691,8 @@ export class ControlCenterModal extends Modal {
 					for (const orphan of orphans) {
 						try {
 							await universeService.createUniverse({
-								name: orphan.value.charAt(0).toUpperCase() + orphan.value.slice(1).replace(/-/g, ' ')
+								name: orphan.value.charAt(0).toUpperCase() + orphan.value.slice(1).replace(/-/g, ' '),
+								crId: orphan.value
 							});
 						} catch (err) {
 							logger.error('createOrphanUniverse', `Failed: ${orphan.value}`, err);
@@ -8638,29 +8705,158 @@ export class ControlCenterModal extends Modal {
 
 			container.appendChild(orphanCard);
 		}
+	}
 
-		// Empty state
-		if (universes.length === 0 && orphans.length === 0) {
-			const emptyCard = this.createCard({
-				title: 'No universes yet',
-				icon: 'globe'
+	/**
+	 * Render universe list items as a table
+	 */
+	private renderUniverseListItems(
+		container: HTMLElement,
+		universes: (UniverseInfo & { counts: UniverseEntityCounts; totalEntities: number })[],
+		universeService: UniverseService
+	): void {
+		container.empty();
+
+		if (universes.length === 0) {
+			container.createEl('p', {
+				text: 'No matching universes found.',
+				cls: 'crc-text--muted'
 			});
-			const emptyContent = emptyCard.querySelector('.crc-card__content') as HTMLElement;
-			emptyContent.createEl('p', {
-				text: 'Create your first universe to start organizing fictional worlds with custom calendars, maps, and validation rules.',
-				cls: 'crc-mb-3'
-			});
-			const startBtn = emptyContent.createEl('button', {
-				text: 'Create universe',
-				cls: 'crc-btn crc-btn--primary'
-			});
-			startBtn.addEventListener('click', () => {
-				new UniverseWizardModal(this.plugin, {
-					onComplete: () => this.showUniversesTab()
-				}).open();
-			});
-			container.appendChild(emptyCard);
+			return;
 		}
+
+		// Create table structure
+		const table = container.createEl('table', { cls: 'crc-person-table' });
+		const thead = table.createEl('thead');
+		const headerRow = thead.createEl('tr');
+		headerRow.createEl('th', { text: 'Name', cls: 'crc-person-table__th' });
+		headerRow.createEl('th', { text: 'Status', cls: 'crc-person-table__th' });
+		headerRow.createEl('th', { text: 'Entities', cls: 'crc-person-table__th' });
+		headerRow.createEl('th', { text: '', cls: 'crc-person-table__th crc-person-table__th--icon' });
+
+		const tbody = table.createEl('tbody');
+
+		for (const universe of universes) {
+			this.renderUniverseTableRow(tbody, universe, universeService);
+		}
+	}
+
+	/**
+	 * Render a single universe as a table row
+	 */
+	private renderUniverseTableRow(
+		tbody: HTMLElement,
+		universe: UniverseInfo & { counts: UniverseEntityCounts; totalEntities: number },
+		universeService: UniverseService
+	): void {
+		const row = tbody.createEl('tr', { cls: 'crc-person-table__row' });
+
+		// Name cell
+		const nameCell = row.createEl('td', { cls: 'crc-person-table__td crc-person-table__td--name' });
+		nameCell.createSpan({ text: universe.name });
+		if (universe.description) {
+			nameCell.createEl('br');
+			nameCell.createSpan({
+				text: universe.description,
+				cls: 'crc-text--muted crc-text--small'
+			});
+		}
+
+		// Status cell
+		const statusCell = row.createEl('td', { cls: 'crc-person-table__td' });
+		const statusBadge = statusCell.createSpan({
+			text: universe.status || 'active',
+			cls: `crc-badge crc-badge--${universe.status || 'active'}`
+		});
+
+		// Entities cell - show count breakdown
+		const entitiesCell = row.createEl('td', { cls: 'crc-person-table__td crc-person-table__td--date' });
+		if (universe.totalEntities > 0) {
+			const countParts: string[] = [];
+			if (universe.counts.people > 0) countParts.push(`${universe.counts.people} people`);
+			if (universe.counts.places > 0) countParts.push(`${universe.counts.places} places`);
+			if (universe.counts.events > 0) countParts.push(`${universe.counts.events} events`);
+			if (universe.counts.organizations > 0) countParts.push(`${universe.counts.organizations} orgs`);
+			if (universe.counts.maps > 0) countParts.push(`${universe.counts.maps} maps`);
+			if (universe.counts.calendars > 0) countParts.push(`${universe.counts.calendars} calendars`);
+			entitiesCell.setText(countParts.join(', '));
+		} else {
+			entitiesCell.setText('—');
+		}
+
+		// Actions cell
+		const actionsCell = row.createEl('td', { cls: 'crc-person-table__td crc-person-table__td--actions' });
+
+		// Open note button
+		const openBtn = actionsCell.createEl('button', {
+			cls: 'crc-person-table__open-btn clickable-icon',
+			attr: { 'aria-label': 'Open note' }
+		});
+		const fileIcon = createLucideIcon('file-text', 14);
+		openBtn.appendChild(fileIcon);
+		openBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			void this.app.workspace.getLeaf(false).openFile(universe.file);
+		});
+
+		// Click row to open edit modal
+		row.addEventListener('click', () => {
+			new EditUniverseModal(this.app, this.plugin, {
+				universe,
+				file: universe.file,
+				onUpdated: () => this.showUniversesTab()
+			}).open();
+		});
+
+		// Context menu for row
+		row.addEventListener('contextmenu', (e) => {
+			e.preventDefault();
+			this.showUniverseContextMenu(universe, e);
+		});
+	}
+
+	/**
+	 * Show context menu for a universe row
+	 */
+	private showUniverseContextMenu(
+		universe: UniverseInfo,
+		event: MouseEvent
+	): void {
+		const menu = new Menu();
+
+		menu.addItem(item => item
+			.setTitle('Open note')
+			.setIcon('file-text')
+			.onClick(() => {
+				void this.app.workspace.getLeaf(false).openFile(universe.file);
+			}));
+
+		menu.addItem(item => item
+			.setTitle('Edit universe')
+			.setIcon('pencil')
+			.onClick(() => {
+				new EditUniverseModal(this.app, this.plugin, {
+					universe,
+					file: universe.file,
+					onUpdated: () => this.showUniversesTab()
+				}).open();
+			}));
+
+		menu.addSeparator();
+
+		menu.addItem(item => item
+			.setTitle('Delete universe')
+			.setIcon('trash-2')
+			.onClick(async () => {
+				const confirmed = await this.plugin.confirmDeleteUniverse(universe.name);
+				if (confirmed) {
+					await this.app.vault.delete(universe.file);
+					new Notice(`Deleted universe: ${universe.name}`);
+					this.showUniversesTab();
+				}
+			}));
+
+		menu.showAtMouseEvent(event);
 	}
 
 	/**
@@ -12709,7 +12905,8 @@ export class ControlCenterModal extends Modal {
 			{ value: 'places', label: 'Places', command: 'canvas-roots:create-places-base-template' },
 			{ value: 'events', label: 'Events', command: 'canvas-roots:create-events-base-template' },
 			{ value: 'organizations', label: 'Organizations', command: 'canvas-roots:create-organizations-base-template' },
-			{ value: 'sources', label: 'Sources', command: 'canvas-roots:create-sources-base-template' }
+			{ value: 'sources', label: 'Sources', command: 'canvas-roots:create-sources-base-template' },
+			{ value: 'universes', label: 'Universes', command: 'canvas-roots:create-universes-base-template' }
 		];
 
 		let selectedBaseType = baseTypes[0];

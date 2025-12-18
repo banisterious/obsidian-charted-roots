@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-18 21:33:54 UTC
+ * - Generated: 2025-12-18 22:04:03 UTC
  * - Components: 34 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -620,7 +620,7 @@ settings:
    COMPONENT: MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 5957 lines, 109.32 KB */
+/* Component Size: 5972 lines, 109.62 KB */
 
 /* ==========================================================================
    Canvas Roots Control Center - Styling
@@ -5015,6 +5015,21 @@ settings:
 }
 
 .crc-badge--muted {
+  background-color: var(--background-modifier-border);
+  color: var(--text-muted);
+}
+
+.crc-badge--active {
+  background-color: var(--color-green);
+  color: var(--text-on-accent);
+}
+
+.crc-badge--draft {
+  background-color: var(--color-yellow);
+  color: var(--background-primary);
+}
+
+.crc-badge--archived {
   background-color: var(--background-modifier-border);
   color: var(--text-muted);
 }
@@ -21425,11 +21440,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-18 21:33:54 UTC
+ * Build completed: 2025-12-18 22:04:03 UTC
  * Components processed: 34
- * Total lines: 21096
- * Total size: 418.78 KB
- * Build duration: 0.06 seconds
+ * Total lines: 21111
+ * Total size: 419.08 KB
+ * Build duration: 0.03 seconds
  *
  * Component breakdown:
  * - variables.css: 48 lines, 1.33 KB
@@ -21440,7 +21455,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - nodes.css: 12 lines, 0.3 KB
  * - edges.css: 4 lines, 0.07 KB
  * - settings.css: 131 lines, 3.53 KB
- * - modals.css: 5957 lines, 109.32 KB
+ * - modals.css: 5972 lines, 109.62 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
  * - validation.css: 84 lines, 1.47 KB

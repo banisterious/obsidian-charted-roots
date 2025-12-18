@@ -199,8 +199,8 @@ export class UniverseService {
 		const aliases = this.plugin.settings.propertyAliases || {};
 		const prop = (canonical: string) => getWriteProperty(canonical, aliases);
 
-		// Generate cr_id
-		const crId = `universe-${data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString(36)}`;
+		// Use provided cr_id or generate one
+		const crId = data.crId || `universe-${data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${Date.now().toString(36)}`;
 
 		// Build frontmatter
 		const frontmatterLines = [
