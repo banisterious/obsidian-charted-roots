@@ -202,7 +202,7 @@ adoptive_mother_id: efg-123-hij-456
 - Full trees: Step/adoptive parents included by default, follow their connections
 - Both respect the include toggles in tree generation UI
 
-See [Step & Adoptive Parent Support Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/step-adoptive-parent-support.md) for implementation details.
+See [Step & Adoptive Parent Support Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/step-adoptive-parent-support.md) for implementation details.
 
 ---
 
@@ -431,7 +431,7 @@ Each toggle shows the count of records found in the file.
 - Builds citation-to-source mapping for linking to person/event notes
 - Source type inferred from title keywords (census, vital_record, church_record, etc.)
 
-See [Gramps Source Import Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/gramps-source-import.md) for full implementation details.
+See [Gramps Source Import Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/gramps-source-import.md) for full implementation details.
 
 ---
 
