@@ -19,6 +19,7 @@ import { generatePeopleBaseTemplate } from './src/constants/base-template';
 import { generatePlacesBaseTemplate } from './src/constants/places-base-template';
 import { ORGANIZATIONS_BASE_TEMPLATE } from './src/constants/organizations-base-template';
 import { SOURCES_BASE_TEMPLATE } from './src/constants/sources-base-template';
+import { UNIVERSES_BASE_TEMPLATE } from './src/constants/universes-base-template';
 import { generateEventsBaseTemplate } from './src/constants/events-base-template';
 import { ExcalidrawExporter } from './src/excalidraw/excalidraw-exporter';
 import { BidirectionalLinker } from './src/core/bidirectional-linker';
@@ -42,7 +43,7 @@ import { AddRelationshipModal } from './src/ui/add-relationship-modal';
 import { SourcePickerModal, SourceService, CreateSourceModal, CitationGeneratorModal, EvidenceService, ProofSummaryService } from './src/sources';
 import { EventService } from './src/events/services/event-service';
 import { CreateEventModal } from './src/events/ui/create-event-modal';
-import { isPlaceNote, isSourceNote, isEventNote, isMapNote, isSchemaNote } from './src/utils/note-type-detection';
+import { isPlaceNote, isSourceNote, isEventNote, isMapNote, isSchemaNote, isUniverseNote } from './src/utils/note-type-detection';
 import { GeocodingService } from './src/maps/services/geocoding-service';
 import { TimelineProcessor, RelationshipsProcessor } from './src/dynamic-content';
 
@@ -1030,6 +1031,7 @@ export default class CanvasRootsPlugin extends Plugin {
 					const isMap = isMapNote(fm, cache, detectionSettings);
 					const isSchema = isSchemaNote(fm, cache, detectionSettings);
 					const isEvent = isEventNote(fm, cache, detectionSettings);
+					const isUniverse = isUniverseNote(fm, cache, detectionSettings);
 
 					// Also check if file is in maps folder (for notes not yet typed as map)
 					const mapsFolder = this.settings.mapsFolder;
@@ -2630,6 +2632,134 @@ export default class CanvasRootsPlugin extends Plugin {
 									.setIcon('calendar')
 									.onClick(async () => {
 										await this.addEssentialEventProperties([file]);
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Add cr_id')
+									.setIcon('key')
+									.onClick(async () => {
+										await this.addCrId([file]);
+									});
+							});
+						}
+					}
+					// Universe notes with cr_id get universe-specific options
+					else if (hasCrId && isUniverse) {
+						menu.addSeparator();
+
+						if (useSubmenu) {
+							menu.addItem((item) => {
+								const submenu: Menu = item
+									.setTitle('Canvas Roots')
+									.setIcon('globe')
+									.setSubmenu();
+
+								// Open universe note
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Open universe')
+										.setIcon('file')
+										.onClick(() => {
+											void this.app.workspace.getLeaf(false).openFile(file);
+										});
+								});
+
+								// Open universes tab
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Open universes tab')
+										.setIcon('external-link')
+										.onClick(() => {
+											const modal = new ControlCenterModal(this.app, this);
+											modal.openToTab('universes');
+										});
+								});
+
+								submenu.addSeparator();
+
+								// Add essential properties submenu
+								submenu.addItem((subItem) => {
+									const propsSubmenu: Menu = subItem
+										.setTitle('Add essential properties')
+										.setIcon('file-plus')
+										.setSubmenu();
+
+									propsSubmenu.addItem((propItem) => {
+										propItem
+											.setTitle('Add essential universe properties')
+											.setIcon('globe')
+											.onClick(async () => {
+												await this.addEssentialUniverseProperties([file]);
+											});
+									});
+
+									propsSubmenu.addItem((propItem) => {
+										propItem
+											.setTitle('Add essential person properties')
+											.setIcon('user')
+											.onClick(async () => {
+												await this.addEssentialPersonProperties([file]);
+											});
+									});
+
+									propsSubmenu.addItem((propItem) => {
+										propItem
+											.setTitle('Add essential place properties')
+											.setIcon('map-pin')
+											.onClick(async () => {
+												await this.addEssentialPlaceProperties([file]);
+											});
+									});
+								});
+
+								// Add cr_id only
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Add cr_id')
+										.setIcon('key')
+										.onClick(async () => {
+											await this.addCrId([file]);
+										});
+								});
+							});
+						} else {
+							// Mobile: flat menu for universe notes
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Open universes tab')
+									.setIcon('globe')
+									.onClick(() => {
+										const modal = new ControlCenterModal(this.app, this);
+										modal.openToTab('universes');
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Add essential universe properties')
+									.setIcon('globe')
+									.onClick(async () => {
+										await this.addEssentialUniverseProperties([file]);
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Add essential person properties')
+									.setIcon('user')
+									.onClick(async () => {
+										await this.addEssentialPersonProperties([file]);
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Add essential place properties')
+									.setIcon('map-pin')
+									.onClick(async () => {
+										await this.addEssentialPlaceProperties([file]);
 									});
 							});
 
@@ -5213,6 +5343,99 @@ export default class CanvasRootsPlugin extends Plugin {
 	}
 
 	/**
+	 * Add essential properties to universe note(s)
+	 * Supports batch operations on multiple files
+	 */
+	private async addEssentialUniverseProperties(files: TFile[]) {
+		try {
+			let processedCount = 0;
+			let skippedCount = 0;
+			let errorCount = 0;
+
+			for (const file of files) {
+				try {
+					let propertiesAdded = false;
+
+					await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
+						// cr_type: Must be "universe"
+						if (frontmatter.cr_type !== 'universe') {
+							frontmatter.cr_type = 'universe';
+							propertiesAdded = true;
+						}
+
+						// cr_id: Generate if missing
+						if (!frontmatter.cr_id) {
+							frontmatter.cr_id = generateCrId();
+							propertiesAdded = true;
+						}
+
+						// name: Use filename if missing
+						if (!frontmatter.name) {
+							frontmatter.name = file.basename;
+							propertiesAdded = true;
+						}
+
+						// description: Add empty if missing
+						if (!frontmatter.description) {
+							frontmatter.description = '';
+							propertiesAdded = true;
+						}
+
+						// status: Default to 'active' if missing
+						if (!frontmatter.status) {
+							frontmatter.status = 'active';
+							propertiesAdded = true;
+						}
+
+						// author: Add empty if missing
+						if (!frontmatter.author) {
+							frontmatter.author = '';
+							propertiesAdded = true;
+						}
+
+						// genre: Add empty if missing
+						if (!frontmatter.genre) {
+							frontmatter.genre = '';
+							propertiesAdded = true;
+						}
+					});
+
+					if (propertiesAdded) {
+						processedCount++;
+					} else {
+						skippedCount++;
+					}
+
+				} catch (error: unknown) {
+					console.error(`Error processing ${file.path}:`, error);
+					errorCount++;
+				}
+			}
+
+			// Show summary
+			if (files.length === 1) {
+				if (processedCount === 1) {
+					new Notice('Added essential universe properties');
+				} else if (skippedCount === 1) {
+					new Notice('File already has all essential universe properties');
+				} else {
+					new Notice('Failed to add essential universe properties');
+				}
+			} else {
+				const parts = [];
+				if (processedCount > 0) parts.push(`${processedCount} updated`);
+				if (skippedCount > 0) parts.push(`${skippedCount} already complete`);
+				if (errorCount > 0) parts.push(`${errorCount} errors`);
+				new Notice(`Essential universe properties: ${parts.join(', ')}`);
+			}
+
+		} catch (error: unknown) {
+			console.error('Error adding essential universe properties:', error);
+			new Notice('Failed to add essential universe properties');
+		}
+	}
+
+	/**
 	 * Add essential properties to source note(s)
 	 * Supports batch operations on multiple files
 	 */
@@ -5965,6 +6188,72 @@ export default class CanvasRootsPlugin extends Plugin {
 				new Notice('Disk full. Free up space and try again.');
 			} else {
 				new Notice(`Failed to create Sources base template: ${errorMsg}`);
+			}
+		}
+	}
+
+	/**
+	 * Create a universes base template file in the specified folder
+	 */
+	public async createUniversesBaseTemplate(folder?: TFolder) {
+		try {
+			// Validate: Check if Bases feature is available
+			// Bases is a core Obsidian feature (1.9.0+), not a community plugin
+			const baseFiles = this.app.vault.getFiles().filter(f => f.extension === 'base');
+			// @ts-expect-error - accessing internal plugins
+			const basesInternalPlugin = this.app.internalPlugins?.plugins?.['bases'];
+			const isBasesAvailable = baseFiles.length > 0 ||
+				(basesInternalPlugin?.enabled === true);
+
+			if (!isBasesAvailable) {
+				const proceed = await this.confirmBaseCreation();
+				if (!proceed) return;
+			}
+
+			// Determine the target path - use basesFolder if configured, otherwise use context folder
+			const targetFolder = this.settings.basesFolder || (folder ? folder.path : '');
+			const folderPath = targetFolder ? targetFolder + '/' : '';
+			const defaultPath = folderPath + 'universes.base';
+
+			// Create the bases folder if it doesn't exist
+			if (this.settings.basesFolder && !this.app.vault.getAbstractFileByPath(this.settings.basesFolder)) {
+				await this.app.vault.createFolder(this.settings.basesFolder);
+			}
+
+			// Check if file already exists
+			const existingFile = this.app.vault.getAbstractFileByPath(defaultPath);
+			if (existingFile) {
+				new Notice(`Universes base template already exists at ${defaultPath}`);
+				// Open the existing file
+				if (existingFile instanceof TFile) {
+					const leaf = this.app.workspace.getLeaf(false);
+					await leaf.openFile(existingFile);
+				}
+				return;
+			}
+
+			// Create the file with template content
+			const file = await this.app.vault.create(defaultPath, UNIVERSES_BASE_TEMPLATE);
+
+			new Notice('Universes base template created with 12 pre-configured views!');
+			logger.info('universes-base-template', `Created universes base template at ${defaultPath}`);
+
+			// Open the newly created file
+			const leaf = this.app.workspace.getLeaf(false);
+			await leaf.openFile(file);
+		} catch (error: unknown) {
+			const errorMsg = getErrorMessage(error);
+			logger.error('universes-base-template', 'Failed to create universes base template', error);
+
+			// Provide specific error messages
+			if (errorMsg.includes('already exists')) {
+				new Notice('A file with this name already exists.');
+			} else if (errorMsg.includes('permission') || errorMsg.includes('EACCES')) {
+				new Notice('Permission denied. Check file system permissions.');
+			} else if (errorMsg.includes('ENOSPC')) {
+				new Notice('Disk full. Free up space and try again.');
+			} else {
+				new Notice(`Failed to create Universes base template: ${errorMsg}`);
 			}
 		}
 	}

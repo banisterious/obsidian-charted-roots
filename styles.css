@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-18 19:58:12 UTC
+ * - Generated: 2025-12-18 20:25:19 UTC
  * - Components: 34 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -620,7 +620,7 @@ settings:
    COMPONENT: MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 5888 lines, 107.98 KB */
+/* Component Size: 5957 lines, 109.32 KB */
 
 /* ==========================================================================
    Canvas Roots Control Center - Styling
@@ -6508,6 +6508,75 @@ settings:
   background: var(--background-secondary);
   border-radius: var(--radius-s);
   color: var(--text-normal);
+}
+
+/* ==========================================================================
+   Universes Tab Styles
+   ========================================================================== */
+
+.crc-universe-row {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.crc-universe-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.crc-universe-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.crc-universe-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+.crc-universe-count .crc-icon {
+  opacity: 0.7;
+}
+
+/* Actions grid for Universes tab */
+.crc-actions-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.crc-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.crc-action-btn:hover {
+  background: var(--background-modifier-hover);
+}
+
+.crc-action-btn__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+}
+
+.crc-action-btn__label {
+  white-space: nowrap;
 }
 
 
@@ -21356,10 +21425,10 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-18 19:58:12 UTC
+ * Build completed: 2025-12-18 20:25:19 UTC
  * Components processed: 34
- * Total lines: 21027
- * Total size: 417.44 KB
+ * Total lines: 21096
+ * Total size: 418.78 KB
  * Build duration: 0.03 seconds
  *
  * Component breakdown:
@@ -21371,7 +21440,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - nodes.css: 12 lines, 0.3 KB
  * - edges.css: 4 lines, 0.07 KB
  * - settings.css: 131 lines, 3.53 KB
- * - modals.css: 5888 lines, 107.98 KB
+ * - modals.css: 5957 lines, 109.32 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
  * - validation.css: 84 lines, 1.47 KB

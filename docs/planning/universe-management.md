@@ -581,3 +581,26 @@ Creating a note from an orphan:
 **✅ Phase 2 Complete** — Universes tab, Statistics section, Guide card
 **✅ Phase 3 Complete** — Universe Setup Wizard with calendar/map/schema steps
 **📋 Phase 4 Pending** — Enhanced features (dashboard, filtering, batch operations)
+
+---
+
+## Additional Features Implemented
+
+### Guide Tab: Universe Notes Section
+- Added "Universe notes" collapsible to Essential Properties card
+- Lists all essential universe frontmatter properties (cr_type, cr_id, name, description, author, genre, status, default_calendar, default_map)
+
+### Context Menu: Add Essential Universe Properties
+- Right-click on universe notes shows Canvas Roots submenu
+- "Add essential universe properties" action adds all essential fields
+- Follows same pattern as person/place/source/event notes
+
+### Universes Tab: Actions Card
+- Actions card at top with standard Obsidian Setting pattern
+- "Create universe" (CTA) - opens wizard
+- "Create universes base" - creates Obsidian base file for browsing universes
+
+### Universes Base Template
+- Created `src/constants/universes-base-template.ts`
+- 12 pre-configured views: All, By Status (active/draft/archived), By Genre, By Author, With/Without Calendars, With/Without Maps, Recently Created
+- Public `createUniversesBaseTemplate()` method in main.ts

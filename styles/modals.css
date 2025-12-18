@@ -5885,3 +5885,72 @@
   border-radius: var(--radius-s);
   color: var(--text-normal);
 }
+
+/* ==========================================================================
+   Universes Tab Styles
+   ========================================================================== */
+
+.crc-universe-row {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.crc-universe-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.crc-universe-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.crc-universe-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+.crc-universe-count .crc-icon {
+  opacity: 0.7;
+}
+
+/* Actions grid for Universes tab */
+.crc-actions-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.crc-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.crc-action-btn:hover {
+  background: var(--background-modifier-hover);
+}
+
+.crc-action-btn__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+}
+
+.crc-action-btn__label {
+  white-space: nowrap;
+}

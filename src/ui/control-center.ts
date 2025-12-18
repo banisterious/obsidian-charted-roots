@@ -1357,7 +1357,7 @@ export class ControlCenterModal extends Modal {
 		const propsCard = this.createCard({
 			title: 'Essential properties',
 			icon: 'file-text',
-			subtitle: 'YAML frontmatter fields for person, place, source, event, and map notes'
+			subtitle: 'YAML frontmatter fields for person, place, source, event, map, and universe notes'
 		});
 		const propsContent = propsCard.querySelector('.crc-card__content') as HTMLElement;
 
@@ -1506,6 +1506,27 @@ export class ControlCenterModal extends Modal {
 				{ name: 'person', desc: 'Primary person wikilink', req: false },
 				{ name: 'place', desc: 'Location wikilink', req: false },
 				{ name: 'confidence', desc: 'high, medium, low, or unknown', req: false }
+			].forEach(p => {
+				const li = list.createEl('li');
+				const code = li.createEl('code', { text: p.name });
+				if (p.req) code.addClass('crc-field--required');
+				li.appendText(` - ${p.desc}`);
+			});
+		});
+
+		// Universe properties collapsible
+		this.createCollapsible(propsContent, 'Universe notes', 'globe', (body) => {
+			const list = body.createEl('ul', { cls: 'crc-field-list' });
+			[
+				{ name: 'cr_type', desc: 'Must be "universe"', req: true },
+				{ name: 'cr_id', desc: 'Unique identifier', req: true },
+				{ name: 'name', desc: 'Universe name', req: true },
+				{ name: 'description', desc: 'Brief description of the world', req: false },
+				{ name: 'author', desc: 'Creator of the fictional world', req: false },
+				{ name: 'genre', desc: 'Fantasy, sci-fi, historical, etc.', req: false },
+				{ name: 'status', desc: 'active, draft, or archived', req: false },
+				{ name: 'default_calendar', desc: 'Default calendar cr_id', req: false },
+				{ name: 'default_map', desc: 'Default map cr_id', req: false }
 			].forEach(p => {
 				const li = list.createEl('li');
 				const code = li.createEl('code', { text: p.name });
@@ -8426,36 +8447,44 @@ export class ControlCenterModal extends Modal {
 		const universes = universeService.getAllUniverses();
 		const orphans = universeService.findOrphanUniverses();
 
-		// Header with create button
-		const headerCard = this.createCard({
-			title: 'Universes',
-			icon: 'globe',
-			subtitle: 'Manage fictional universes and worlds'
+		// Actions card (at top for discoverability)
+		const actionsCard = this.createCard({
+			title: 'Actions',
+			icon: 'zap'
 		});
-		const headerContent = headerCard.querySelector('.crc-card__content') as HTMLElement;
+		const actionsContent = actionsCard.querySelector('.crc-card__content') as HTMLElement;
 
-		const headerRow = headerContent.createDiv({ cls: 'crc-flex crc-justify-between crc-items-center crc-mb-3' });
-		headerRow.createEl('p', {
-			text: `${universes.length} universe${universes.length === 1 ? '' : 's'}`,
-			cls: 'crc-text-muted'
-		});
-		const createBtn = headerRow.createEl('button', {
-			text: 'Create universe',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		createBtn.addEventListener('click', () => {
-			new UniverseWizardModal(this.plugin, {
-				onComplete: () => this.showUniversesTab()
-			}).open();
-		});
+		// Create universe action
+		new Setting(actionsContent)
+			.setName('Create universe')
+			.setDesc('Open the universe setup wizard to create a new fictional world')
+			.addButton(button => button
+				.setButtonText('Create')
+				.setCta()
+				.onClick(() => {
+					new UniverseWizardModal(this.plugin, {
+						onComplete: () => this.showUniversesTab()
+					}).open();
+				}));
 
-		container.appendChild(headerCard);
+		// Create universes base action
+		new Setting(actionsContent)
+			.setName('Create universes base')
+			.setDesc('Create an Obsidian base file for browsing and filtering universes')
+			.addButton(button => button
+				.setButtonText('Create base')
+				.onClick(() => {
+					void this.plugin.createUniversesBaseTemplate();
+				}));
+
+		container.appendChild(actionsCard);
 
 		// Universe list
 		if (universes.length > 0) {
 			const listCard = this.createCard({
 				title: 'Your universes',
-				icon: 'layers'
+				icon: 'globe',
+				subtitle: `${universes.length} universe${universes.length === 1 ? '' : 's'}`
 			});
 			const listContent = listCard.querySelector('.crc-card__content') as HTMLElement;
 
@@ -8508,8 +8537,9 @@ export class ControlCenterModal extends Modal {
 				countItems.forEach(item => {
 					if (item.count > 0) {
 						const countEl = countsRow.createSpan({ cls: 'crc-universe-count' });
-						setLucideIcon(countEl, item.icon as LucideIconName, 14);
-						countEl.createSpan({ text: ` ${item.count}` });
+						const iconEl = countEl.createSpan({ cls: 'crc-universe-count__icon' });
+						setLucideIcon(iconEl, item.icon as LucideIconName, 14);
+						countEl.createSpan({ text: `${item.count}` });
 					}
 				});
 
