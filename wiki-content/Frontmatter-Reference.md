@@ -1423,6 +1423,49 @@ The principal house of the North...
 
 Universe notes define fictional worlds as first-class entities. See [Universe Notes](Universe-Notes) for complete documentation.
 
+```mermaid
+erDiagram
+    UNIVERSE ||--o| CALENDAR : "default_calendar"
+    UNIVERSE ||--o| MAP : "default_map"
+    UNIVERSE ||--o{ PERSON : "universe"
+    UNIVERSE ||--o{ PLACE : "universe"
+    UNIVERSE ||--o{ EVENT : "universe"
+    UNIVERSE ||--o{ ORGANIZATION : "universe"
+    UNIVERSE ||--o{ SCHEMA : "scoped to"
+
+    UNIVERSE {
+        string cr_id PK
+        string cr_type
+        string name
+        string description
+        string author
+        string genre
+        string status
+        string default_calendar FK
+        string default_map FK
+        date created
+    }
+
+    CALENDAR {
+        string cr_id PK
+        string name
+        array eras
+    }
+
+    MAP {
+        string cr_id PK
+        string name
+        string image_path
+        object bounds
+    }
+```
+
+**Key relationships:**
+- **Universe → Calendar**: Default date system for events in this universe
+- **Universe → Map**: Default custom map for geographic visualization
+- **Universe → Entities**: People, places, events, and organizations can be scoped to a universe via the `universe` property
+- **Universe → Schema**: Validation schemas can be scoped to enforce universe-specific rules
+
 ### Identity
 
 | Property | Type | Description | Example |
