@@ -199,6 +199,8 @@ export interface CanvasRootsSettings {
 	enableFictionalDates: boolean;
 	fictionalDateSystems: FictionalDateSystem[];
 	showBuiltInDateSystems: boolean;
+	// Universe settings
+	universesFolder: string;
 	// Organization settings
 	organizationsFolder: string;
 	customOrganizationTypes: OrganizationTypeDefinition[];
@@ -428,6 +430,8 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	enableFictionalDates: true,    // Enable fictional date parsing and display
 	fictionalDateSystems: [],      // User-defined date systems (built-ins are always available)
 	showBuiltInDateSystems: true,  // Whether to show built-in date systems (Middle-earth, Westeros, etc.)
+	// Universe settings
+	universesFolder: 'Canvas Roots/Universes',  // Default folder for universe notes
 	// Organization settings
 	organizationsFolder: 'Canvas Roots/Organizations',  // Default folder for organization notes
 	customOrganizationTypes: [],   // User-defined organization types (built-ins are always available)

@@ -136,13 +136,32 @@ export const CANONICAL_SOURCE_PROPERTIES = [
 export type CanonicalSourceProperty = typeof CANONICAL_SOURCE_PROPERTIES[number];
 
 /**
+ * Canonical universe note properties that can be aliased
+ */
+export const CANONICAL_UNIVERSE_PROPERTIES = [
+	'cr_id',
+	'cr_type',
+	'name',
+	'description',
+	'author',
+	'genre',
+	'status',
+	'default_calendar',
+	'default_map',
+	'created'
+] as const;
+
+export type CanonicalUniverseProperty = typeof CANONICAL_UNIVERSE_PROPERTIES[number];
+
+/**
  * All canonical properties across all note types
  */
 export const ALL_CANONICAL_PROPERTIES = [
 	...CANONICAL_PERSON_PROPERTIES,
 	...CANONICAL_EVENT_PROPERTIES,
 	...CANONICAL_PLACE_PROPERTIES,
-	...CANONICAL_SOURCE_PROPERTIES
+	...CANONICAL_SOURCE_PROPERTIES,
+	...CANONICAL_UNIVERSE_PROPERTIES
 ] as const;
 
 /**
@@ -221,7 +240,13 @@ export const CANONICAL_PROPERTY_LABELS: Record<string, string> = {
 	citation_detail: 'Citation detail',
 	gramps_handle: 'Gramps handle',
 	gramps_id: 'Gramps ID',
-	gramps_media_refs: 'Gramps media refs'
+	gramps_media_refs: 'Gramps media refs',
+	// Universe properties
+	genre: 'Genre',
+	status: 'Status',
+	default_calendar: 'Default calendar',
+	default_map: 'Default map',
+	created: 'Created'
 };
 
 /**
@@ -231,7 +256,7 @@ export interface PropertyMetadata {
 	canonical: string;
 	label: string;
 	description: string;
-	category: 'person' | 'event' | 'place' | 'source' | 'organization';
+	category: 'person' | 'event' | 'place' | 'source' | 'organization' | 'universe';
 	commonAliases?: string[];  // For search/suggestions
 }
 
@@ -835,13 +860,90 @@ export const SOURCE_PROPERTY_METADATA: PropertyMetadata[] = [
 ];
 
 /**
+ * Universe property metadata
+ */
+export const UNIVERSE_PROPERTY_METADATA: PropertyMetadata[] = [
+	{
+		canonical: 'cr_id',
+		label: 'CR ID',
+		description: 'Unique identifier for the universe',
+		category: 'universe',
+		commonAliases: ['id', 'universe_id', 'uuid']
+	},
+	{
+		canonical: 'cr_type',
+		label: 'CR type',
+		description: 'Note type identifier (usually "universe")',
+		category: 'universe',
+		commonAliases: ['type', 'note_type']
+	},
+	{
+		canonical: 'name',
+		label: 'Name',
+		description: 'Name of the universe or fictional world',
+		category: 'universe',
+		commonAliases: ['universe_name', 'world_name', 'title']
+	},
+	{
+		canonical: 'description',
+		label: 'Description',
+		description: 'Brief description of the universe',
+		category: 'universe',
+		commonAliases: ['summary', 'about', 'overview']
+	},
+	{
+		canonical: 'author',
+		label: 'Author',
+		description: 'Creator or author of the universe',
+		category: 'universe',
+		commonAliases: ['creator', 'writer', 'created_by']
+	},
+	{
+		canonical: 'genre',
+		label: 'Genre',
+		description: 'Genre or category of the universe',
+		category: 'universe',
+		commonAliases: ['category', 'type', 'setting_type']
+	},
+	{
+		canonical: 'status',
+		label: 'Status',
+		description: 'Universe status (active, draft, archived)',
+		category: 'universe',
+		commonAliases: ['state', 'universe_status']
+	},
+	{
+		canonical: 'default_calendar',
+		label: 'Default calendar',
+		description: 'Default calendar system for dates in this universe',
+		category: 'universe',
+		commonAliases: ['calendar', 'date_system']
+	},
+	{
+		canonical: 'default_map',
+		label: 'Default map',
+		description: 'Default map for locations in this universe',
+		category: 'universe',
+		commonAliases: ['map', 'world_map']
+	},
+	{
+		canonical: 'created',
+		label: 'Created',
+		description: 'Date the universe note was created',
+		category: 'universe',
+		commonAliases: ['created_at', 'creation_date']
+	}
+];
+
+/**
  * All property metadata combined
  */
 export const ALL_PROPERTY_METADATA: PropertyMetadata[] = [
 	...PERSON_PROPERTY_METADATA,
 	...EVENT_PROPERTY_METADATA,
 	...PLACE_PROPERTY_METADATA,
-	...SOURCE_PROPERTY_METADATA
+	...SOURCE_PROPERTY_METADATA,
+	...UNIVERSE_PROPERTY_METADATA
 ];
 
 /**

@@ -27,6 +27,7 @@ export type NoteType =
 	| 'map'
 	| 'organization'
 	| 'schema'
+	| 'universe'
 	| 'proof_summary'
 	| 'timeline-export';
 
@@ -41,6 +42,7 @@ export const ALL_NOTE_TYPES: readonly NoteType[] = [
 	'map',
 	'organization',
 	'schema',
+	'universe',
 	'proof_summary',
 	'timeline-export'
 ] as const;
@@ -70,6 +72,7 @@ const TAG_TO_TYPE_MAP: Record<string, NoteType> = {
 	'map': 'map',
 	'organization': 'organization',
 	'schema': 'schema',
+	'universe': 'universe',
 	'proof-summary': 'proof_summary',
 	'proof_summary': 'proof_summary',
 	'timeline': 'timeline-export'
@@ -324,6 +327,17 @@ export function isSchemaNote(
 	settings?: NoteTypeDetectionSettings | null
 ): boolean {
 	return isNoteType(frontmatter, 'schema', cache, settings);
+}
+
+/**
+ * Check if a note is a universe note
+ */
+export function isUniverseNote(
+	frontmatter: Record<string, unknown> | undefined | null,
+	cache?: CachedMetadata | null,
+	settings?: NoteTypeDetectionSettings | null
+): boolean {
+	return isNoteType(frontmatter, 'universe', cache, settings);
 }
 
 /**
