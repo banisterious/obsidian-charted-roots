@@ -1328,11 +1328,20 @@ export class FamilyGraphService {
 
 		// Note: Frontmatter uses 'born'/'died' properties, mapped to birthDate/deathDate internally
 		// Convert Date objects to ISO strings if necessary (Obsidian parses YAML dates as Date objects)
+		// Also handle bare numbers (e.g., born: 1845) which YAML parses as numbers
 		// All date properties support aliases
-		const bornValue = this.resolveProperty<string | Date>(fm, 'born');
-		const diedValue = this.resolveProperty<string | Date>(fm, 'died');
-		const birthDate = bornValue instanceof Date ? bornValue.toISOString().split('T')[0] : bornValue;
-		const deathDate = diedValue instanceof Date ? diedValue.toISOString().split('T')[0] : diedValue;
+		const bornValue = this.resolveProperty<string | Date | number>(fm, 'born');
+		const diedValue = this.resolveProperty<string | Date | number>(fm, 'died');
+		const birthDate = bornValue instanceof Date
+			? bornValue.toISOString().split('T')[0]
+			: typeof bornValue === 'number'
+				? String(bornValue)
+				: bornValue;
+		const deathDate = diedValue instanceof Date
+			? diedValue.toISOString().split('T')[0]
+			: typeof diedValue === 'number'
+				? String(diedValue)
+				: diedValue;
 
 		// Resolve other properties with alias support
 		const birthPlace = this.resolveProperty<string>(fm, 'birth_place');
