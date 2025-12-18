@@ -1,6 +1,6 @@
 # Canvas Roots: Genealogical Family Tree Plugin for Obsidian
 
-[![Version](https://img.shields.io/badge/version-0.12.14-blue.svg)](https://github.com/banisterious/obsidian-canvas-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md)
+[![Version](https://img.shields.io/badge/version-0.13.0-blue.svg)](https://github.com/banisterious/obsidian-canvas-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md)
 
 **Canvas Roots** transforms structured genealogical data in your Markdown notes into beautifully laid-out family trees on the Obsidian Canvas. Designed for genealogists, historians, writers, and world-builders.
 
@@ -88,6 +88,7 @@
 | **Step & Adoptive Parents** | Dedicated fields for step-parents and adoptive parents with distinct line styles on canvas trees |
 | **Fictional Date Systems** | Custom calendars and eras for world-building (Middle-earth, Westeros, Star Wars, or custom) |
 | **Organization Notes** | Track non-genealogical hierarchies: noble houses, guilds, corporations, military units, religious orders |
+| **[Universe Notes](https://github.com/banisterious/obsidian-canvas-roots/wiki/Universe-Notes)** | First-class entities for organizing fictional worlds with metadata, linked calendars, maps, and validation schemas |
 | **Events & Timelines** | Document life events with person/family/place timelines, visual exports, groups/factions filtering, and sort order computation |
 
 ### Statistics & Reports
@@ -132,7 +133,7 @@
 | **Type Customization** | Full type managers for events, sources, organizations, relationships, and places; create, edit, hide, and customize types and categories |
 | **Property Aliases** | Map custom property names to Canvas Roots fields without renaming frontmatter |
 | **Value Aliases** | Map custom property values (event types, gender, place categories) to Canvas Roots canonical values |
-| **Obsidian Bases** | Ready-to-use Base templates: People (22 views), Places (14 views), Organizations (17 views); respects property aliases |
+| **Obsidian Bases** | Ready-to-use Base templates: People, Places, Events, Organizations, Sources, Universes; respects property aliases |
 | **Style Settings** | Customize colors via [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) plugin |
 | **Context Menu Actions** | Right-click person notes, folders, and canvases for quick actions |
 | **YAML-First Data** | Compatible with Dataview, Bases, and other Obsidian tools |

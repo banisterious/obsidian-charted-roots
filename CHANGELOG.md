@@ -9,9 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.13.0] - 2025-12-18
+
 ### Added
 
-- **Create all bases button** - New "Create all bases" button in Control Center > Guide > Base templates card creates all five base files (people, places, events, organizations, sources) at once.
+- **Universe management** - First-class universe notes for organizing fictional worlds. Create universes via the Universe Wizard with optional custom calendars, maps, and validation schemas. Universe notes track metadata (name, author, genre, status) and link related entities.
+
+- **Universe notes card** - New table-based UI in Control Center > Universes tab matching the Person notes pattern. Features filter dropdown (all/active/draft/archived/has-entities/empty), sort dropdown (name/created/entities), search input, and row interactions (click to edit, file icon to open, right-click context menu).
+
+- **Orphan universe detection** - Automatic detection of universe values referenced by entities but lacking corresponding universe notes. Create notes directly from the orphan list with matching cr_id to preserve entity references.
+
+- **Universes base template** - New Universes base template available in Control Center > Guide and Control Center > Bases for spreadsheet-like universe management.
+
+- **Universe folder context menu** - Right-click the configured Universes folder for quick access to create universe, set folder as universes folder, and add essential universe properties to notes.
+
+- **Folder-type specific context menus** - Context menu actions now adapt to folder type. People folder shows GEDCOM import and relationship scan; Places folder shows geocoding actions; Universes folder shows universe-specific actions; etc.
+
+- **Create all bases button** - New "Create all bases" button in Control Center > Guide > Base templates card creates all six base files (people, places, events, organizations, sources, universes) at once.
 
 - **Auto-create bases on import** - Bases are automatically created after GEDCOM, GEDCOM X, and Gramps imports, making imported data immediately viewable in Obsidian's Bases feature.
 
@@ -19,7 +35,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **ESLint upgrade to v9 flat config** - Migrated from ESLint v8 legacy config to v9 flat config with `eslint-plugin-obsidianmd` for Obsidian-specific linting rules.
 
+- **Statistics tab universes card** - Redesigned with Setting-style layout showing universe names with entity counts on left, Open buttons on right.
+
 ### Fixed
+
+- **Edit universe button** - Control Center > Universes tab Edit button now opens EditUniverseModal instead of just opening the file.
+
+- **Delete universe action** - Added delete universe option to file context menus with confirmation dialog.
+
+- **Data quality analysis TypeError** - Fixed crash when analyzing data with non-string date values (e.g., from Gramps XML imports). parseYear and isStandardDateFormat now handle number and unknown types.
 
 - **Code quality improvements** - Fixed 71 ESLint errors/warnings including inline style assignments (now using CSS classes), type safety issues, unused directives, and deprecated API usage.
 
