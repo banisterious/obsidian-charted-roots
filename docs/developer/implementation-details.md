@@ -411,6 +411,40 @@ public openWithPerson(file: TFile): void {
 - Schema notes
 - Folders (import/export, statistics)
 
+### Mobile Adaptations
+
+On mobile devices, the plugin adapts its UI patterns for touch interaction:
+
+**Context Menus:**
+- Desktop: Nested submenus under a "Canvas Roots" parent item
+- Mobile: Flat menu with prefixed items (e.g., "Canvas Roots: Generate family tree")
+
+**Control Center Modal:**
+- Desktop: Fixed sidebar with navigation drawer always visible
+- Mobile: Full-screen modal with slide-in drawer navigation
+
+```typescript
+// Mobile detection in control-center.ts
+private isMobileMode(): boolean {
+  return Platform.isMobile || document.body.classList.contains('is-mobile');
+}
+
+// Apply mobile classes for CSS targeting
+if (this.isMobileMode()) {
+  this.drawer.addClass('crc-drawer--mobile');
+  this.modalEl.addClass('crc-mobile-mode');
+}
+```
+
+**Mobile-specific behaviors:**
+- Navigation drawer slides in from left, with backdrop overlay
+- Drawer auto-closes after tab selection
+- Mobile menu toggle button in header
+- Touch-friendly tap targets (44px minimum)
+- Form inputs use 16px font to prevent iOS zoom
+
+See [Mobile Styling](styling.md#mobile-styling) for CSS implementation details.
+
 ---
 
 ## Canvas Generation Implementation
