@@ -65,16 +65,18 @@ For example, with a 100-year threshold:
 - Born 1900, no death date → **Not protected** (over threshold)
 - Born 1980, died 2020 → **Not protected** (has death date)
 
-### Manual Override
+### Manual Override (Planned)
 
-You can explicitly mark someone as living or deceased using frontmatter:
+> **Note:** This feature is planned but not yet implemented. Currently, living status is determined automatically based on dates only.
+
+In a future release, you will be able to explicitly mark someone as living or deceased using frontmatter:
 
 ```yaml
 cr_living: true   # Always treat as living (protected)
 cr_living: false  # Always treat as deceased (not protected)
 ```
 
-This overrides the automatic detection based on dates.
+This will override the automatic detection based on dates.
 
 ### Display Formats
 
@@ -208,7 +210,7 @@ If your family tree includes EU residents:
 |------|--------|
 | Enable privacy protection | Settings → Canvas Roots → Privacy section |
 | Set age threshold | Settings → Configure threshold (default 100) |
-| Mark someone as living | Add `cr_living: true` to their frontmatter |
+| Mark someone as living | (Planned) Add `cr_living: true` to their frontmatter |
 | Export with privacy | Control Center → Export → Enable privacy options |
 | Exclude living from export | Choose "Exclude living persons" in export dialog |
 

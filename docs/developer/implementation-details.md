@@ -269,20 +269,35 @@ The `PrivacyService` (`src/core/privacy-service.ts`) protects living individuals
 | `initials` | "J.S." | Show initials only |
 | `hidden` | (excluded) | Remove from output entirely |
 
+**What gets protected in exports:**
+- **Name**: Replaced with chosen display format
+- **Birth/death dates**: Hidden when `hideDetailsForLiving` is enabled
+- **Relationships**: Preserved (allows tree structure to remain intact)
+- **Original notes**: Unchanged (protection applies to outputs only)
+
 **Applied in exports:**
 - GEDCOM export (`src/gedcom/gedcom-exporter.ts`)
 - GEDCOM X export (`src/gedcomx/gedcomx-exporter.ts`)
 - Gramps XML export (`src/gramps/gramps-exporter.ts`)
 - CSV export (`src/csv/csv-exporter.ts`)
 
+**Not yet applied to:**
+- Canvas display (shows full data)
+- Interactive family chart view
+- Reports (markdown output)
+
+For user-facing documentation, see [Privacy & Security](../../wiki-content/Privacy-And-Security.md).
+
 ### Planned Features (Not Yet Implemented)
 
 The following are documented for future implementation:
 
+- **`cr_living` manual override** - Frontmatter property to explicitly mark someone as living (`cr_living: true`) or deceased (`cr_living: false`), overriding automatic detection
 - **Pronouns field** - `pronouns: she/her` for respectful communication
 - **Underscore-prefix privacy convention** - Fields like `_previous_names` excluded from search/display
 - **Deadname protection** - Automatic suppression of historical names
 - **Export warnings** - Confirmation when exporting private fields
+- **Canvas privacy obfuscation** - Apply privacy protection to canvas display, not just exports
 
 ### Design Rationale
 
