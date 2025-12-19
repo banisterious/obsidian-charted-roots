@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Family Chart horizontal orientation** - New option in Layout menu to switch between vertical (top-to-bottom) and horizontal (left-to-right) tree layouts.
+
+- **Family Chart depth limits** - Control how many generations are displayed with new Depth menu. Set ancestry depth (1-5 generations or unlimited) and descendant depth independently.
+
+- **Family Chart display options** - New Display menu with visibility controls:
+  - Show/hide siblings of root person
+  - Show unknown parent placeholder cards
+  - Sort children by birth date
+  - Hide living persons (privacy mode for people without death dates)
+
+- **Family Chart toolbar reorganization** - Split the Layout menu into three focused menus: Layout (orientation, spacing), Display (card options, visibility), and Depth (generation limits).
+
+### Fixed
+
+- **Family Chart info panel not resetting** - Fixed bug where the info panel continued showing the previous person's details when switching root person via context menu.
+
 ---
 
 ## [0.13.0] - 2025-12-18
