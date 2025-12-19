@@ -14,6 +14,7 @@
   - [3.2. Custom Properties](#32-custom-properties)
   - [3.3. Code Style](#33-code-style)
   - [3.4. Color Notation](#34-color-notation)
+  - [3.5. Obsidian Native CSS Classes](#35-obsidian-native-css-classes)
 - [4. Obsidian-Specific Guidelines](#4-obsidian-specific-guidelines)
 - [5. Obsidian UI Guidelines](#5-obsidian-ui-guidelines)
   - [5.1. Sentence Case Requirement](#sentence-case-requirement)
@@ -428,6 +429,61 @@ box-shadow: 0 1px 3px rgba(0, 0, 0, 0.24);  /* Stylelint error */
 **Stylelint Rules:**
 - `color-function-notation: "modern"`
 - `alpha-value-notation: "percentage"`
+
+### 3.5. Obsidian Native CSS Classes
+
+#### Prefer Native Classes Over Custom Styling
+
+When Obsidian provides a native CSS class for standard UI elements, prefer using it alone rather than layering custom classes on top:
+
+```typescript
+// ✅ CORRECT - Use Obsidian's native dropdown class only
+select.className = 'dropdown';
+
+// ❌ AVOID - Custom class layered with native class
+select.className = 'cr-source-select dropdown';
+```
+
+**Rationale:**
+- Ensures consistency with Obsidian's look and feel across themes
+- Respects user themes and CSS snippets that target native classes
+- Avoids CSS specificity conflicts between custom and native styling
+- Reduces maintenance burden when Obsidian updates its styling
+- Works correctly across different platforms (Windows, macOS, Linux/GTK)
+
+**When to Use Custom Classes:**
+- Container elements that need custom layout (flexbox, grid)
+- Elements that don't have an Obsidian equivalent
+- Additional styling that doesn't conflict with native behavior
+
+**Common Obsidian Native Classes:**
+
+| Element | Class | Notes |
+|---------|-------|-------|
+| Select dropdown | `dropdown` | Use alone, don't override `appearance` |
+| Text input | `text-input` | Standard text fields |
+| Button | `mod-cta` | Call-to-action button modifier |
+| Setting row | `setting-item` | Settings panel rows |
+| Clickable icon | `clickable-icon` | Icon buttons |
+
+**Example - Dropdown in a Custom Container:**
+
+```typescript
+// ✅ CORRECT - Custom class on container, native class on element
+const container = containerEl.createDiv({ cls: 'cr-source-picker' });
+const select = container.createEl('select', { cls: 'dropdown' });
+```
+
+```css
+/* Custom layout on container only */
+.cr-source-picker {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Don't style the dropdown itself - let Obsidian handle it */
+```
 
 ---
 
