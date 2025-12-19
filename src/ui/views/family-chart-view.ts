@@ -749,6 +749,9 @@ export class FamilyChartView extends ItemView {
 
 		logger.debug('chart-init', 'Initializing chart', { rootPersonId: this.rootPersonId });
 
+		// Close info panel when switching to a new chart
+		this.closeInfoPanel();
+
 		// Clear container
 		this.chartContainerEl.empty();
 
