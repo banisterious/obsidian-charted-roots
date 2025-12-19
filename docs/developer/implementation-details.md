@@ -16,6 +16,10 @@ This document covers technical implementation specifics for Canvas Roots feature
   - [Data Flow](#data-flow)
   - [Custom Image Maps](#custom-image-maps)
   - [Geocoding](#geocoding)
+- [Obsidian Bases Integration](#obsidian-bases-integration)
+  - [Base Templates](#base-templates)
+  - [Property Aliases](#property-aliases)
+  - [Base Creation Flow](#base-creation-flow)
 - [Privacy and Gender Identity Protection](#privacy-and-gender-identity-protection)
   - [Sex vs Gender Data Model](#sex-vs-gender-data-model)
   - [Living Person Privacy](#living-person-privacy)
@@ -572,6 +576,119 @@ The map view includes a time slider for temporal filtering:
 - Filters for display without changing source
 - Animation loops through years with configurable speed
 - Live count updates during filtering
+
+---
+
+## Obsidian Bases Integration
+
+Canvas Roots generates `.base` files for Obsidian's database-like Bases feature (Obsidian 1.9.0+), providing pre-configured table views for genealogical data.
+
+### Base Templates
+
+Six base templates are available in `src/constants/`:
+
+| Base | Template File | Key Properties | Views |
+|------|--------------|----------------|-------|
+| People | `base-template.ts` | name, cr_id, born, died, father, mother, spouse | 22 views |
+| Places | `places-base-template.ts` | name, place_type, coordinates, parent_place | 11 views |
+| Events | `events-base-template.ts` | title, event_type, date, person, place | 18 views |
+| Sources | `sources-base-template.ts` | name, source_type, confidence, media | 15 views |
+| Organizations | `organizations-base-template.ts` | name, org_type, parent_org, founded | 12 views |
+| Universes | `universes-base-template.ts` | name, status, author, genre | 10 views |
+
+**Template structure:**
+```yaml
+visibleProperties: [...]
+summaries: {...}
+filters: {...}
+formulas: {...}
+properties: {...}
+views: [...]
+```
+
+**Data type identification:** Bases filter by `cr_type` property:
+- People base: `cr_type == "person"`
+- Places base: `cr_type == "place"`
+- etc.
+
+### Computed Formulas
+
+Templates include computed properties using Obsidian's formula syntax:
+
+**People base examples:**
+```typescript
+// Age calculation (respects livingPersonAgeThreshold)
+age: 'if(${born}.isEmpty(), "Unknown",
+      if(${died}.isEmpty() && (now() - ${born}).years.floor() < ${maxLivingAge},
+         (now() - ${born}).years.floor() + " years",
+         if(${born} && !${died}.isEmpty(),
+            (${died} - ${born}).years.floor() + " years", "Unknown")))'
+
+// Display name fallback
+display_name: '${name} || file.name'
+```
+
+**Places base examples:**
+```typescript
+// Combine coordinates
+coordinates: 'if(${coordinates_lat}, ${coordinates_lat} + ", " + ${coordinates_long}, "")'
+
+// Map link generation
+map_link: 'if(${coordinates_lat}, "[[Map View]]", "")'
+```
+
+### Property Aliases
+
+Base templates respect user-defined property aliases, so custom property names work automatically.
+
+**Implementation pattern:**
+```typescript
+function generatePeopleBaseTemplate(options?: {
+    aliases?: Record<string, string>;
+    maxLivingAge?: number;
+}): string {
+    const getPropertyName = (canonical: string) =>
+        options?.aliases?.[canonical] || canonical;
+
+    const name = getPropertyName('name');
+    const born = getPropertyName('born');
+    // Use in formulas: age: `if(\${${born}}.isEmpty(), ...)`
+}
+```
+
+**Settings:** `settings.propertyAliases` maps custom names to canonical names.
+
+**Current support:**
+- People, Places, Events bases: Full alias support
+- Organizations, Sources, Universes: Static templates (no alias support yet)
+
+### Base Creation Flow
+
+**Commands registered in `main.ts`:**
+- `canvas-roots:create-base-template` - People base
+- `canvas-roots:create-places-base-template` - Places base
+- `canvas-roots:create-events-base-template` - Events base
+- `canvas-roots:create-sources-base-template` - Sources base
+- `canvas-roots:create-organizations-base-template` - Organizations base
+- `canvas-roots:create-universes-base-template` - Universes base
+- `canvas-roots:create-all-bases` - All bases at once
+
+**Creation logic:**
+1. **Check availability** (`isBasesAvailable()`): Looks for existing `.base` files or enabled Bases plugin
+2. **User confirmation**: If Bases not detected, prompts user (file will work once enabled)
+3. **Folder creation**: Creates `basesFolder` (default: `Canvas Roots/Bases`)
+4. **File creation**: Creates `.base` file with generated template, opens in editor
+5. **Template generation**: Applies property aliases and settings
+
+**Auto-creation during import:**
+When importing GEDCOM/CSV, bases are auto-created for imported note types (silently skips if already exist).
+
+### Control Center Integration
+
+The Preferences tab includes a "Base templates" card with:
+- Individual buttons for each base type
+- "Create all bases" button
+- Icons and descriptions for each base
 
 ---
 
