@@ -48,6 +48,13 @@ This document covers technical implementation specifics for Canvas Roots feature
   - [Template Snippets Modal](#template-snippets-modal)
   - [Property Alias Support](#property-alias-support)
   - [Template Types](#template-types)
+- [Data Quality and Batch Operations](#data-quality-and-batch-operations)
+  - [DataQualityService Architecture](#dataqualityservice-architecture)
+  - [Issue Types and Categories](#issue-types-and-categories)
+  - [Batch Operation Pattern](#batch-operation-pattern)
+  - [Bidirectional Relationship Sync](#bidirectional-relationship-sync)
+  - [Schema-Aware Normalization](#schema-aware-normalization)
+  - [Place Batch Operations](#place-batch-operations)
 - [Privacy and Gender Identity Protection](#privacy-and-gender-identity-protection)
   - [Sex vs Gender Data Model](#sex-vs-gender-data-model)
   - [Living Person Privacy](#living-person-privacy)
@@ -1688,6 +1695,377 @@ If the user has configured `birthdate` as an alias for `born`, the template will
 | `<% tp.file.cursor() %>` | Cursor placement after insertion |
 | `<% tp.system.prompt("?") %>` | User input prompt |
 | `<% tp.system.suggester([labels], [values]) %>` | Selection dialog |
+
+---
+
+## Data Quality and Batch Operations
+
+The data quality system detects issues in genealogical data and provides batch operations to fix them. This complements the wiki documentation with implementation details for developers.
+
+### DataQualityService Architecture
+
+`DataQualityService` (`src/core/data-quality.ts`) is the central service for analyzing and fixing data quality issues.
+
+```
+src/core/
+├── data-quality.ts           # Main service (2,100+ lines)
+├── bidirectional-linker.ts   # Relationship sync service
+├── value-alias-service.ts    # Sex/gender normalization support
+└── family-graph.ts           # Person data for analysis
+
+src/ui/
+├── data-quality-tab.ts       # Control Center tab
+├── bulk-geocode-modal.ts     # Place geocoding modal
+├── standardize-places-modal.ts
+├── standardize-place-variants-modal.ts
+├── standardize-place-types-modal.ts
+├── merge-duplicate-places-modal.ts
+└── create-missing-places-modal.ts
+```
+
+**Service initialization:**
+
+```typescript
+constructor(
+  private app: App,
+  private settings: CanvasRootsSettings,
+  private familyGraph: FamilyGraphService,
+  private folderFilter: FolderFilterService,
+  private plugin?: CanvasRootsPlugin
+) {
+  // Schema service for schema-aware normalization
+  if (plugin) {
+    this.schemaService = new SchemaService(plugin);
+  }
+}
+```
+
+**Analysis flow:**
+
+```mermaid
+flowchart TD
+    A[analyze] --> B[getPeopleForScope]
+    B --> C{Scope?}
+    C -->|all| D[All people from FamilyGraph]
+    C -->|staging| E[Filter by staging folder]
+    C -->|folder| F[Filter by specific folder]
+    D --> G[Run enabled checks]
+    E --> G
+    F --> G
+    G --> H[checkDateInconsistencies]
+    G --> I[checkRelationshipInconsistencies]
+    G --> J[checkMissingData]
+    G --> K[checkDataFormat]
+    G --> L[checkOrphanReferences]
+    G --> M[checkNestedProperties]
+    G --> N[checkLegacyTypeProperty]
+    H --> O[Collect issues]
+    I --> O
+    J --> O
+    K --> O
+    L --> O
+    M --> O
+    N --> O
+    O --> P[filterBySeverity]
+    P --> Q[calculateSummary]
+    Q --> R[DataQualityReport]
+```
+
+**Key data structures:**
+
+```typescript
+interface DataQualityReport {
+  generatedAt: Date;
+  scope: 'all' | 'staging' | 'folder';
+  folderPath?: string;
+  summary: DataQualitySummary;
+  issues: DataQualityIssue[];
+}
+
+interface DataQualitySummary {
+  totalPeople: number;
+  totalIssues: number;
+  bySeverity: { error: number; warning: number; info: number };
+  byCategory: Record<IssueCategory, number>;
+  completeness: { /* birth/death/parent coverage */ };
+  qualityScore: number;  // 0-100
+}
+
+interface DataQualityIssue {
+  code: string;           // e.g., 'DEATH_BEFORE_BIRTH'
+  message: string;
+  severity: 'error' | 'warning' | 'info';
+  category: IssueCategory;
+  person: PersonNode;
+  relatedPerson?: PersonNode;
+  details?: Record<string, string | number | boolean>;
+}
+```
+
+### Issue Types and Categories
+
+**Issue categories** (`IssueCategory` type):
+
+| Category | Description | Severity Range |
+|----------|-------------|----------------|
+| `date_inconsistency` | Impossible dates, chronological errors | Error–Warning |
+| `relationship_inconsistency` | Circular refs, gender mismatches | Error–Warning |
+| `missing_data` | No parents, no birth date, no gender | Info |
+| `data_format` | Non-standard dates, invalid values | Info–Warning |
+| `orphan_reference` | Links to non-existent cr_ids | Warning–Error |
+| `nested_property` | Non-flat frontmatter | Warning |
+| `legacy_type_property` | Uses `type` instead of `cr_type` | Info |
+
+**Quality score calculation:**
+
+```typescript
+// Penalty-based scoring (lines 1023-1032)
+const errorPenalty = bySeverity.error * 10;
+const warningPenalty = bySeverity.warning * 3;
+const infoPenalty = bySeverity.info * 1;
+const totalPenalty = errorPenalty + warningPenalty + infoPenalty;
+
+// Scale penalty relative to population size
+const scaledPenalty = totalPeople > 0 ? (totalPenalty / totalPeople) * 10 : 0;
+const qualityScore = Math.max(0, Math.min(100, Math.round(100 - scaledPenalty)));
+```
+
+**Date validation checks:**
+
+| Check | Severity | Thresholds |
+|-------|----------|------------|
+| Death before birth | Error | — |
+| Future birth/death | Error | Current year |
+| Unreasonable age | Warning | > 120 years |
+| Born before parent | Error | — |
+| Parent too young | Warning | < 12 years at birth |
+| Parent too old | Warning | Father > 80, Mother > 55 |
+| Born after mother's death | Error | — |
+
+### Batch Operation Pattern
+
+All batch operations follow a consistent preview-then-execute pattern:
+
+```mermaid
+flowchart LR
+    A[User triggers operation] --> B[previewNormalization]
+    B --> C[Display preview in modal]
+    C --> D{User confirms?}
+    D -->|Yes| E[Execute operation]
+    D -->|No| F[Cancel]
+    E --> G[Return BatchOperationResult]
+    G --> H[Display summary]
+```
+
+**BatchOperationResult structure:**
+
+```typescript
+interface BatchOperationResult {
+  processed: number;   // Total items examined
+  modified: number;    // Items actually changed
+  errors: Array<{ file: string; error: string }>;
+}
+```
+
+**NormalizationPreview structure:**
+
+```typescript
+interface NormalizationPreview {
+  dateNormalization: NormalizationChange[];
+  genderNormalization: NormalizationChange[];
+  genderSkipped: SkippedGenderNote[];  // Schema-protected notes
+  orphanClearing: NormalizationChange[];
+  legacyTypeMigration: NormalizationChange[];
+}
+
+interface NormalizationChange {
+  person: PersonNode;
+  field: string;
+  oldValue: string;
+  newValue: string;
+}
+```
+
+**Available batch operations:**
+
+| Method | Purpose | Updates |
+|--------|---------|---------|
+| `normalizeDateFormats()` | Standardize to YYYY-MM-DD | `birth_date`, `death_date` |
+| `normalizeGenderValues()` | Standardize to M/F/X/U | `sex` |
+| `clearOrphanReferences()` | Remove invalid parent refs | `father_id`, `mother_id` |
+| `migrateLegacyTypeProperty()` | `type` → `cr_type` | `cr_type`, removes `type` |
+| `fixBidirectionalInconsistencies()` | Add missing reciprocal links | Parent/child/spouse fields |
+
+**Date normalization formats recognized:**
+
+```typescript
+// normalizeDateString() handles:
+"15 Mar 1920"      → "1920-03-15"  // DD MMM YYYY
+"Mar 15, 1920"     → "1920-03-15"  // MMM DD, YYYY
+"15/03/1920"       → "1920-03-15"  // DD/MM/YYYY
+"about 1920"       → "1920"        // Year extraction
+```
+
+### Bidirectional Relationship Sync
+
+`BidirectionalLinker` (`src/core/bidirectional-linker.ts`) maintains reciprocal relationships across person notes.
+
+**Sync triggers:**
+- File modification events (when `settings.syncOnFileModify` enabled)
+- GEDCOM/Gramps/CSV imports (post-import pass)
+- Manual "Fix bidirectional relationships" command
+
+**Inconsistency types detected:**
+
+```typescript
+type BidirectionalInconsistencyType =
+  | 'missing-child-in-parent'    // Child lists parent, parent missing child
+  | 'missing-parent-in-child'    // Parent lists child, child missing parent
+  | 'missing-spouse-in-spouse'   // Spouse not reciprocated
+  | 'conflicting-parent-claim';  // Two people claim same child
+```
+
+**Conflict handling:**
+
+When two people both claim the same child as their own (e.g., biological parent vs step-parent confusion), the system flags this for manual resolution rather than automatically overwriting:
+
+```typescript
+if (currentFatherClaimsChild && currentFather.crId !== person.crId) {
+  // Both claim this child - record as conflict
+  inconsistencies.push({
+    type: 'conflicting-parent-claim',
+    person: currentFather,
+    relatedPerson: child,
+    conflictingPerson: person,
+    conflictType: 'father',
+    description: `${child.name} has conflicting father claims...`
+  });
+}
+```
+
+**Step/adoptive parent awareness:**
+
+The system checks for non-biological parent relationships before flagging conflicts:
+
+```typescript
+const isStepOrAdoptiveFather =
+  child.stepfatherCrIds.includes(person.crId) ||
+  child.adoptiveFatherCrId === person.crId;
+
+if (!isStepOrAdoptiveFather) {
+  // Proceed with conflict check
+}
+```
+
+### Schema-Aware Normalization
+
+Sex value normalization can skip notes protected by schemas with custom sex enum definitions.
+
+**Normalization modes** (`settings.sexNormalizationMode`):
+
+| Mode | Behavior |
+|------|----------|
+| `standard` | Normalize all values to GEDCOM M/F/X/U |
+| `schema-aware` | Skip notes with schemas defining custom sex values |
+| `disabled` | No normalization (preview still shows what would change) |
+
+**Schema detection:**
+
+```typescript
+private hasCustomSexSchema(schemas: SchemaNote[]): boolean {
+  for (const schema of schemas) {
+    const sexProp = schema.definition?.properties?.['sex'];
+    if (sexProp?.type === 'enum' && sexProp.values?.length > 0) {
+      return true;  // Schema defines custom sex values
+    }
+  }
+  return false;
+}
+```
+
+**Use case:** World-builders may define custom sex values like "hermaphrodite" or "neuter" in a schema. Schema-aware mode preserves these values while still normalizing genealogy notes.
+
+**Value alias integration:**
+
+```typescript
+// Built-in synonyms from value-alias-service.ts
+const BUILTIN_SYNONYMS = {
+  sex: {
+    'male': 'M', 'm': 'M', 'boy': 'M', 'man': 'M',
+    'female': 'F', 'f': 'F', 'girl': 'F', 'woman': 'F',
+    'nonbinary': 'X', 'non-binary': 'X', 'nb': 'X', 'x': 'X',
+    'unknown': 'U', 'u': 'U', '?': 'U'
+  }
+};
+
+// Resolution order:
+// 1. User-defined aliases (highest priority)
+// 2. Built-in synonyms
+// 3. Original value (if no match)
+const normalizedValue = userAliases[normalizedKey] || BUILTIN_SYNONYMS.sex[normalizedKey];
+```
+
+### Place Batch Operations
+
+Place data quality spans multiple modals in `src/ui/`:
+
+**Bulk Geocode** (`bulk-geocode-modal.ts`):
+- Uses `GeocodingService` with OpenStreetMap Nominatim API
+- Rate-limited to 1 request/second (Nominatim policy)
+- Skips places that already have coordinates
+- Updates `coordinates_lat`, `coordinates_long` in flat format
+
+**Standardize Place Variants** (`standardize-place-variants-modal.ts`):
+- Normalizes common abbreviations (USA, UK, state abbreviations)
+- Groups variants by canonical form
+- User selects preferred form for each group
+
+**Standardize Place Types** (`standardize-place-types-modal.ts`):
+- Converts generic types ("locality") to specific types ("city", "town", "village")
+- Uses geocoding API metadata when available
+
+**Merge Duplicate Places** (`merge-duplicate-places-modal.ts`):
+- Detection methods: case-insensitive name matching, title + parent combination
+- Merges coordinates, properties, and updates all references
+
+**Create Missing Places** (`create-missing-places-modal.ts`):
+- Scans person notes for unresolved place references
+- Creates place notes with proper hierarchy
+- Supports batch creation with progress tracking
+
+**Enrich Place Hierarchy** (in `places-tab.ts`):
+- Uses geocoding API to fill `contained_by` relationships
+- Builds chains: City → County → State → Country
+
+**Common modal pattern:**
+
+```typescript
+// All place modals follow this structure:
+class PlaceBatchModal extends Modal {
+  private places: PlaceNote[];
+  private preview: PreviewData[];
+
+  async onOpen() {
+    await this.loadPlaces();
+    this.renderPreview();
+  }
+
+  private async execute() {
+    const result: BatchOperationResult = { processed: 0, modified: 0, errors: [] };
+    for (const item of this.preview) {
+      try {
+        await this.processItem(item);
+        result.modified++;
+      } catch (e) {
+        result.errors.push({ file: item.file.path, error: e.message });
+      }
+      result.processed++;
+      this.updateProgress(result.processed / this.preview.length);
+    }
+    this.showResults(result);
+  }
+}
+```
 
 ---
 
