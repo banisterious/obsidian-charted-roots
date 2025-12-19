@@ -20,6 +20,11 @@ This document covers technical implementation specifics for Canvas Roots feature
   - [Base Templates](#base-templates)
   - [Property Aliases](#property-aliases)
   - [Base Creation Flow](#base-creation-flow)
+- [Property and Value Alias System](#property-and-value-alias-system)
+  - [Property Aliases](#property-aliases-1)
+  - [Value Aliases](#value-aliases)
+  - [Built-in Synonyms](#built-in-synonyms)
+  - [Integration Points](#integration-points)
 - [Privacy and Gender Identity Protection](#privacy-and-gender-identity-protection)
   - [Sex vs Gender Data Model](#sex-vs-gender-data-model)
   - [Living Person Privacy](#living-person-privacy)
@@ -689,6 +694,142 @@ The Preferences tab includes a "Base templates" card with:
 - Individual buttons for each base type
 - "Create all bases" button
 - Icons and descriptions for each base
+
+---
+
+## Property and Value Alias System
+
+The alias system normalizes data from various sources (GEDCOM imports, user input, existing notes) to canonical forms while respecting user preferences for property naming.
+
+### Property Aliases
+
+`PropertyAliasService` (`src/core/property-alias-service.ts`) maps custom frontmatter property names to canonical names used internally.
+
+**Purpose:** Users may prefer `birthdate` instead of `born`, or `maiden_name` instead of `birth_surname`. The alias system allows custom naming while maintaining internal consistency.
+
+**Configuration:** `settings.propertyAliases: Record<string, string>`
+
+```typescript
+// Example user configuration
+{
+  "birthdate": "born",      // User writes "birthdate:", plugin reads as "born"
+  "deathdate": "died",
+  "maiden_name": "birth_surname"
+}
+```
+
+**Key methods:**
+
+```typescript
+// Resolve custom property name to canonical name
+resolve(propertyName: string): string
+
+// Get the property name to use when writing (user's preferred name)
+getWriteProperty(canonicalName: string): string
+
+// Get the property name to display in UI
+getDisplayProperty(canonicalName: string): string
+```
+
+**Canonical properties by note type:**
+
+| Note Type | Canonical Properties |
+|-----------|---------------------|
+| Person | `name`, `born`, `died`, `birth_surname`, `father`, `mother`, `spouse`, `children`, `sex`, `gender_identity`, `cr_id`, `cr_type` |
+| Place | `name`, `place_type`, `coordinates_lat`, `coordinates_long`, `parent_place`, `cr_id`, `cr_type` |
+| Event | `title`, `event_type`, `date`, `end_date`, `person`, `place`, `description`, `cr_id`, `cr_type` |
+| Source | `name`, `source_type`, `author`, `publication_date`, `repository`, `cr_id`, `cr_type` |
+| Organization | `name`, `org_type`, `founded`, `dissolved`, `parent_org`, `cr_id`, `cr_type` |
+
+### Value Aliases
+
+`ValueAliasService` (`src/core/value-alias-service.ts`) normalizes property values to canonical forms.
+
+**Purpose:** Handle variations in how the same concept is expressed:
+- "male" → "M" (GEDCOM standard)
+- "Birth" → "birth" (case normalization)
+- Custom value mappings for domain-specific needs
+
+**Configuration:** `settings.valueAliases: ValueAliasSettings`
+
+```typescript
+interface ValueAliasSettings {
+  eventType: Record<string, string>;      // "nameday" → "birth"
+  sex: Record<string, string>;            // "male" → "M"
+  gender_identity: Record<string, string>;
+  placeCategory: Record<string, string>;
+  noteType: Record<string, string>;
+}
+```
+
+**Key methods:**
+
+```typescript
+// Resolve value to canonical form (checks user aliases, then built-in synonyms)
+resolve(field: string, value: string): string
+
+// Get the value to use when writing (user's preferred form)
+getWriteValue(field: string, canonicalValue: string): string
+
+// Check if a value is valid for a field
+isValidValue(field: string, value: string): boolean
+```
+
+### Built-in Synonyms
+
+The value alias service includes built-in synonyms for common variations, eliminating the need for explicit user configuration in most cases.
+
+**Sex field synonyms:**
+
+| Input | Canonical |
+|-------|-----------|
+| `male`, `m`, `boy`, `man` | `M` |
+| `female`, `f`, `girl`, `woman` | `F` |
+| `other`, `nonbinary`, `non-binary`, `nb`, `x` | `X` |
+| `unknown`, `u`, `?` | `U` |
+
+**Event type synonyms:**
+
+| Input | Canonical |
+|-------|-----------|
+| `nameday`, `baptism`, `christening` | `birth` |
+| `burial`, `cremation`, `interment` | `death` |
+| `wedding`, `union`, `civil_union` | `marriage` |
+| `separation`, `annulment` | `divorce` |
+| `move`, `relocation`, `emigration`, `immigration` | `residence` |
+| `job`, `career`, `employment`, `profession` | `occupation` |
+| `schooling`, `degree`, `graduation` | `education` |
+| `service`, `enlistment`, `discharge` | `military` |
+| `bar_mitzvah`, `bat_mitzvah`, `confirmation`, `first_communion` | `religious` |
+
+**Resolution order:**
+1. User-defined aliases (highest priority)
+2. Built-in synonyms
+3. Original value (if no match)
+
+### Integration Points
+
+The alias system is used throughout the plugin:
+
+**GEDCOM Import/Export** (`src/gedcom/`):
+- Import: Maps GEDCOM property names to canonical, applies value normalization
+- Export: Uses `getWriteProperty()` and `getWriteValue()` for output
+
+**Data Quality** (`src/core/data-quality.ts`):
+- Sex normalization uses value aliases
+- Property standardization respects property aliases
+
+**Obsidian Bases** (`src/constants/*-base-template.ts`):
+- Base templates apply property aliases to formula references
+- Ensures bases work with custom property names
+
+**Family Graph** (`src/core/family-graph.ts`):
+- Reads frontmatter using resolved property names
+- Handles both canonical and aliased forms
+
+**Settings UI** (`src/settings.ts`):
+- Property alias editor with add/remove functionality
+- Value alias configuration per field type
 
 ---
 
