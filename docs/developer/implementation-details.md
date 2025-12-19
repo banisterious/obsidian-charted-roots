@@ -8,6 +8,9 @@ This document covers technical implementation specifics for Canvas Roots feature
 - [Canvas Generation Implementation](#canvas-generation-implementation)
 - [Dual Storage System](#dual-storage-system)
 - [Privacy and Gender Identity Protection](#privacy-and-gender-identity-protection)
+  - [Sex vs Gender Data Model](#sex-vs-gender-data-model)
+  - [Living Person Privacy](#living-person-privacy)
+  - [Planned Features](#planned-features-not-yet-implemented)
 
 ---
 
@@ -211,31 +214,79 @@ children_id:
 
 ## Privacy and Gender Identity Protection
 
-**Enhanced:** Data model to support inclusive gender identity and privacy protection.
+The plugin supports inclusive gender identity modeling and privacy protection for sensitive data.
 
-### Implemented Features
+### Sex vs Gender Data Model
 
-- **Gender vs Sex Separation:**
-  - `sex`: GEDCOM-compatible biological sex field (M/F/U) for data interchange
-  - `gender`: Free-form gender identity field (e.g., "Woman", "Non-binary", "Transgender man")
-  - `pronouns`: Optional preferred pronouns (e.g., "she/her", "they/them", "he/him")
-- **Deadname Protection:**
-  - `name` field always represents current, chosen name
-  - `_previous_names` array for historical names (underscore = private/sensitive)
-  - Plugin will never display underscore-prefixed fields in UI or search
-  - Export warnings when private fields are included
-- **Privacy Field Convention:**
-  - Any field with underscore prefix (`_`) is private/sensitive
-  - Excluded from person picker, search results, canvas labels
-  - Requires explicit confirmation for exports
-  - Examples: `_previous_names`, `_medical_notes`, `_adoption_details`
-- **Inclusive Language:**
-  - All documentation and UI uses respectful, inclusive language
-  - Designed to serve all users regardless of gender identity or family structure
+The frontmatter supports three distinct fields (defined in `src/types/frontmatter.ts`):
 
-### Rationale
+```yaml
+sex: M                          # GEDCOM-compatible biological sex (M/F/X/U)
+gender: male                    # Legacy field, falls back to sex when reading
+gender_identity: Non-binary     # Free-form gender identity field
+```
 
-- Respects transgender and non-binary individuals' dignity
+**Field usage:**
+
+| Field | Purpose | Used By |
+|-------|---------|---------|
+| `sex` | Biological sex for GEDCOM compatibility | Import/export, Data Quality normalization, Canvas coloring |
+| `gender` | Backwards compatibility | Falls back to `sex` when reading |
+| `gender_identity` | Personal identity (free-form) | Display only (not used in data interchange) |
+
+**Canvas node coloring** (`src/core/canvas-generator.ts` - `getPersonColor()`):
+- Reads `sex` field from frontmatter
+- M/MALE → Green (color 4)
+- F/FEMALE → Purple (color 6)
+- NONBINARY → Yellow (color 3)
+- Unknown → Orange (color 2)
+- Falls back to name prefix detection (Mr., Mrs., etc.) for legacy support
+
+**Data Quality sex normalization** (`src/core/data-quality.ts` - `normalizeGenderValues()`):
+- Standardizes values to GEDCOM M/F/X/U format
+- Uses built-in synonyms (male→M, female→F, etc.)
+- Supports user-defined value aliases via settings
+- Three modes controlled by `settings.sexNormalizationMode`:
+  - `standard` - Normalize all values to GEDCOM M/F/X/U
+  - `schema-aware` - Skip notes with schemas defining custom sex values
+  - `disabled` - No normalization
+
+### Living Person Privacy
+
+The `PrivacyService` (`src/core/privacy-service.ts`) protects living individuals in exports:
+
+**Detection logic:**
+- Person is "likely living" if: no death date AND birth year within age threshold
+- Default threshold: 100 years (configurable via `settings.livingPersonAgeThreshold`)
+- Supports approximate dates: "about 1920", "between 1920-1930", "before 1920"
+
+**Protection display options** (`settings.privacyDisplayFormat`):
+
+| Option | Display | Behavior |
+|--------|---------|----------|
+| `living` | "Living" | Show placeholder name |
+| `private` | "Private" | Show placeholder name |
+| `initials` | "J.S." | Show initials only |
+| `hidden` | (excluded) | Remove from output entirely |
+
+**Applied in exports:**
+- GEDCOM export (`src/gedcom/gedcom-exporter.ts`)
+- GEDCOM X export (`src/gedcomx/gedcomx-exporter.ts`)
+- Gramps XML export (`src/gramps/gramps-exporter.ts`)
+- CSV export (`src/csv/csv-exporter.ts`)
+
+### Planned Features (Not Yet Implemented)
+
+The following are documented for future implementation:
+
+- **Pronouns field** - `pronouns: she/her` for respectful communication
+- **Underscore-prefix privacy convention** - Fields like `_previous_names` excluded from search/display
+- **Deadname protection** - Automatic suppression of historical names
+- **Export warnings** - Confirmation when exporting private fields
+
+### Design Rationale
+
 - Separates GEDCOM biological data from personal identity
-- Protects sensitive historical information
-- Aligns with LGBTQIA+ ally values and inclusive design principles
+- Supports inclusive gender identity while maintaining data interchange compatibility
+- Protects living persons from inadvertent disclosure in exports
+- Respects user-defined schemas that may have custom sex/gender values
