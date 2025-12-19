@@ -39,6 +39,11 @@ This document covers technical implementation specifics for Canvas Roots feature
   - [Two-Pass Import Architecture](#two-pass-import-architecture)
   - [Export Pipeline](#export-pipeline)
   - [Data Transformations](#data-transformations)
+- [Dynamic Note Content](#dynamic-note-content)
+  - [Code Block Processors](#code-block-processors)
+  - [Block Types](#block-types)
+  - [Freeze to Markdown](#freeze-to-markdown)
+  - [Insertion Methods](#insertion-methods)
 - [Privacy and Gender Identity Protection](#privacy-and-gender-identity-protection)
   - [Sex vs Gender Data Model](#sex-vs-gender-data-model)
   - [Living Person Privacy](#living-person-privacy)
@@ -1440,6 +1445,142 @@ ABT 15 MAR 1950       → 1950-03-15 (precision: estimated)
 2. Review imported data
 3. Cross-import duplicate detection
 4. Promote to main tree or delete
+
+---
+
+## Dynamic Note Content
+
+Canvas Roots renders live, computed content within person notes using custom code block processors. These blocks display data from the vault and update when the note is viewed.
+
+### Code Block Processors
+
+The dynamic content system uses Obsidian's `registerMarkdownCodeBlockProcessor` API to render live content:
+
+```
+src/dynamic-content/
+├── services/
+│   └── dynamic-content-service.ts    # Config parsing, data resolution, registration
+├── processors/
+│   ├── timeline-processor.ts         # Timeline block rendering
+│   └── relationships-processor.ts    # Relationships block rendering
+└── renderers/
+    ├── timeline-renderer.ts          # Timeline HTML generation
+    └── relationships-renderer.ts     # Relationships HTML generation
+```
+
+**DynamicContentService** handles:
+- Registration of code block processors during plugin load
+- Shared config parsing (YAML-like key: value pairs)
+- Person resolution from current note's `cr_id`
+- Toolbar rendering (freeze button, copy button)
+
+**Processing flow:**
+1. Obsidian detects `canvas-roots-timeline` or `canvas-roots-relationships` code block
+2. Processor parses configuration from block content
+3. Service resolves person from note's frontmatter `cr_id`
+4. Renderer generates HTML with live data from vault
+5. Content displayed in reading view with toolbar buttons
+
+### Block Types
+
+**Timeline Block** (`canvas-roots-timeline`):
+
+```markdown
+```canvas-roots-timeline
+sort: chronological
+exclude: residence, occupation
+limit: 10
+title: Key Life Events
+```​
+```
+
+| Option | Values | Description |
+|--------|--------|-------------|
+| `sort` | `chronological`, `reverse` | Event order (default: chronological) |
+| `include` | comma-separated types | Only show these event types |
+| `exclude` | comma-separated types | Hide these event types |
+| `limit` | number | Maximum events to display |
+| `title` | string | Custom header text (default: "Timeline") |
+
+**Data sources:**
+- Birth/death dates from person's frontmatter
+- Event notes linked via `person` or `persons` fields
+- Places resolved from event `place` field
+
+**Relationships Block** (`canvas-roots-relationships`):
+
+```markdown
+```canvas-roots-relationships
+type: extended
+title: Family Tree
+```​
+```
+
+| Option | Values | Description |
+|--------|--------|-------------|
+| `type` | `immediate`, `extended`, `all` | Relationship scope (default: immediate) |
+| `include` | comma-separated types | Only show these relationship types |
+| `exclude` | comma-separated types | Hide these relationship types |
+| `title` | string | Custom header text (default: "Family") |
+
+**Relationship scopes:**
+- `immediate`: Parents, spouse(s), children
+- `extended`: Adds siblings
+- `all`: All relationships including extended family
+
+**Data sources:**
+- Parent fields: `father`, `mother`, stepparents, adoptive parents
+- `spouse` field (single or array)
+- `children` field
+- Siblings computed from shared parents
+
+### Freeze to Markdown
+
+The freeze feature converts live blocks to static markdown for editing or export:
+
+```typescript
+// Toolbar button handler in timeline-renderer.ts
+freezeButton.addEventListener('click', () => {
+  const markdown = this.generateMarkdown(events, config);
+  this.replaceBlockWithMarkdown(markdown);
+});
+```
+
+**Before freeze:**
+~~~markdown
+```canvas-roots-timeline
+sort: chronological
+```
+~~~
+
+**After freeze:**
+```markdown
+## Timeline
+
+- **1845** — Born in [[Dublin, Ireland]]
+- **1867** — [[Marriage of John and Jane|Married]] in [[Boston, MA]]
+- **1912** — Died in [[Boston, MA]]
+```
+
+**Use cases:**
+- Manual editing and reordering
+- Export compatibility (static markdown works everywhere)
+- Performance in large vaults (avoid computation on note open)
+
+### Insertion Methods
+
+| Method | Location | Description |
+|--------|----------|-------------|
+| **Create Person modal** | Toggle in modal | "Include dynamic blocks" adds both blocks to new notes |
+| **Import wizards** | Toggle in GEDCOM/Gramps/CSV import | Adds blocks during batch import |
+| **Context menu** | Right-click person note | "Insert dynamic blocks" command |
+| **Command palette** | `Ctrl/Cmd + P` | "Canvas Roots: Insert dynamic blocks" |
+| **Bulk insert** | Right-click folder | "Insert dynamic blocks in folder" for all person notes |
+
+**Implementation notes:**
+- Blocks inserted after frontmatter delimiter (`---`)
+- Existing blocks detected to avoid duplicates
+- Bulk insert shows progress modal with count
 
 ---
 
