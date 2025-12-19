@@ -207,7 +207,8 @@ Copy `main.js`, `styles.css`, and `manifest.json` to your vault's plugins folder
 
 ### 1. Enter Your Data
 
-**Import GEDCOM:** Control Center → Import/Export tab → Import section
+**Import existing data:** Control Center → Import/Export tab
+- Supports GEDCOM 5.5.1, GEDCOM X, Gramps XML, and CSV
 
 **Or create notes manually:**
 
@@ -223,18 +224,23 @@ died: 1952-08-20
 ---
 ```
 
-**Or use Obsidian Bases:** Control Center → Advanced tab → "Create Bases template"
+**Or use Obsidian Bases:** Control Center → Guide → "Create all bases"
 
-### 2. Generate Tree
+### 2. Visualize Your Tree
 
-1. Open Control Center → Tree output tab
-2. Select root person
-3. Configure tree type and layout
-4. Click "Generate family tree"
+**Interactive Family Chart:** Right-click a person note → "Open family chart"
+- Pan, zoom, and click to explore
+- Edit relationships directly in the chart
 
-### 3. Maintain Tree
+**Or generate a canvas:** Control Center → Tree output tab
+- Creates a static, shareable family tree document
+- Right-click canvas → "Regenerate canvas" to update
 
-Right-click canvas → "Regenerate canvas" after editing relationships.
+### 3. Explore Further
+
+- **Map View:** Visualize birth/death locations geographically
+- **Statistics:** Control Center → Status tab for vault health and metrics
+- **Reports:** Generate Ahnentafel, family group sheets, and more
 
 See the [Wiki](https://github.com/banisterious/obsidian-canvas-roots/wiki) for complete documentation.
 
