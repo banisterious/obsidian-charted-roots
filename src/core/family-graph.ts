@@ -1509,6 +1509,30 @@ export class FamilyGraphService {
 	}
 
 	/**
+	 * Find the person marked as root_person: true in the vault.
+	 * Returns the PersonNode if exactly one person is marked, otherwise null.
+	 * Also returns all marked root persons for callers that need to handle multiple.
+	 */
+	getMarkedRootPerson(): { rootPerson: PersonNode | null; allMarked: PersonNode[] } {
+		// Ensure cache is loaded before iterating
+		this.ensureCacheLoaded();
+
+		const markedRoots: PersonNode[] = [];
+
+		for (const person of this.personCache.values()) {
+			const cache = this.app.metadataCache.getFileCache(person.file);
+			if (cache?.frontmatter?.root_person === true) {
+				markedRoots.push(person);
+			}
+		}
+
+		return {
+			rootPerson: markedRoots.length === 1 ? markedRoots[0] : null,
+			allMarked: markedRoots
+		};
+	}
+
+	/**
 	 * Get all ancestors of a person (parents, grandparents, etc.)
 	 * Uses BFS traversal to collect all people in the ancestor tree
 	 */

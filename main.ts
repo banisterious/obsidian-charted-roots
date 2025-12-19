@@ -4626,19 +4626,36 @@ export default class CanvasRootsPlugin extends Plugin {
 		const cache = this.app.metadataCache.getFileCache(file);
 		const isRootPerson = cache?.frontmatter?.root_person === true;
 
-		// Toggle the root_person property
-		await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
-			if (isRootPerson) {
+		if (isRootPerson) {
+			// Unmarking this person
+			await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
 				delete frontmatter.root_person;
-			} else {
-				frontmatter.root_person = true;
-			}
-		});
+			});
+			new Notice('Unmarked as root person');
+		} else {
+			// Marking this person - first unmark any existing root person
+			const familyGraph = this.createFamilyGraphService();
+			const { allMarked } = familyGraph.getMarkedRootPerson();
 
-		new Notice(isRootPerson
-			? 'Unmarked as root person'
-			: 'Marked as root person'
-		);
+			for (const existingRoot of allMarked) {
+				if (existingRoot.file.path !== file.path) {
+					await this.app.fileManager.processFrontMatter(existingRoot.file, (frontmatter) => {
+						delete frontmatter.root_person;
+					});
+				}
+			}
+
+			// Now mark the new root person
+			await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
+				frontmatter.root_person = true;
+			});
+
+			if (allMarked.length > 0 && allMarked.some(p => p.file.path !== file.path)) {
+				new Notice('Marked as root person (previous root unmarked)');
+			} else {
+				new Notice('Marked as root person');
+			}
+		}
 	}
 
 	/**

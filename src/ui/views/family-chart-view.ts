@@ -154,7 +154,15 @@ export class FamilyChartView extends ItemView {
 		if (this.rootPersonId) {
 			this.initializeChart();
 		} else {
-			this.showEmptyState();
+			// Check for a marked root person before showing empty state
+			const familyGraph = this.plugin.createFamilyGraphService();
+			const { rootPerson } = familyGraph.getMarkedRootPerson();
+			if (rootPerson) {
+				this.rootPersonId = rootPerson.crId;
+				this.initializeChart();
+			} else {
+				this.showEmptyState();
+			}
 		}
 
 		// Register event handlers
@@ -1181,9 +1189,20 @@ export class FamilyChartView extends ItemView {
 			await new Promise(resolve => setTimeout(resolve, 2000));
 		}
 
-		// ensureCacheLoaded will reload since cache was cleared
-		if (this.rootPersonId) {
+		// Check if root_person marking has changed
+		const familyGraph = this.plugin.createFamilyGraphService();
+		const { rootPerson } = familyGraph.getMarkedRootPerson();
+
+		if (rootPerson) {
+			// A root person is marked - use them
+			this.rootPersonId = rootPerson.crId;
 			this.initializeChart();
+		} else if (this.rootPersonId) {
+			// No marked root, but we have a current selection - keep it
+			this.initializeChart();
+		} else {
+			// No marked root and no current selection
+			this.showEmptyState();
 		}
 	}
 
@@ -2719,9 +2738,9 @@ export class FamilyChartView extends ItemView {
 	 * Register event handlers for vault changes
 	 */
 	private registerEventHandlers(): void {
-		// Listen for note modifications to refresh the chart
+		// Listen for metadata changes (fires after frontmatter is parsed)
 		this.registerEvent(
-			this.app.vault.on('modify', (file: TFile) => {
+			this.app.metadataCache.on('changed', (file: TFile) => {
 				if (file.extension !== 'md') return;
 
 				// Check if this is a person note
