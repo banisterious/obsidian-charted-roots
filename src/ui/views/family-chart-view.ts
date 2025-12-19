@@ -399,28 +399,35 @@ export class FamilyChartView extends ItemView {
 		// Relationships section
 		this.renderRelationshipsSection(personData);
 
-		// Actions - View mode
+		// Actions - View mode (settings-style: description left, buttons right)
 		this.infoPanelActionsEl.addClass('view-mode');
 		this.infoPanelActionsEl.removeClass('edit-mode');
 
-		// Open note link (left side)
-		const openNoteLink = this.infoPanelActionsEl.createEl('a', {
-			cls: 'cr-fcv-open-note-link',
-			href: '#'
+		// Description (left side)
+		this.infoPanelActionsEl.createDiv({
+			cls: 'cr-fcv-info-panel-actions-description',
+			text: 'View or edit this person'
 		});
-		setIcon(openNoteLink.createSpan(), 'file-text');
-		openNoteLink.createSpan({ text: 'Open note' });
-		openNoteLink.addEventListener('click', (e) => {
-			e.preventDefault();
+
+		// Buttons container (right side)
+		const buttonsContainer = this.infoPanelActionsEl.createDiv({
+			cls: 'cr-fcv-info-panel-actions-buttons'
+		});
+
+		// Open note button
+		const openNoteBtn = buttonsContainer.createEl('button', {
+			text: 'Open'
+		});
+		openNoteBtn.addEventListener('click', () => {
 			if (this.selectedPersonId) {
 				void this.openPersonNote(this.selectedPersonId);
 			}
 		});
 
-		// Edit button (right side)
-		const editBtn = this.infoPanelActionsEl.createEl('button', {
+		// Edit button (primary action)
+		const editBtn = buttonsContainer.createEl('button', {
 			text: 'Edit',
-			cls: 'cr-fcv-btn-primary'
+			cls: 'mod-cta'
 		});
 		editBtn.addEventListener('click', () => this.enterInfoPanelEditMode(personData));
 	}
@@ -467,21 +474,25 @@ export class FamilyChartView extends ItemView {
 		// Relationships section (read-only in edit mode for now)
 		this.renderRelationshipsSection(personData);
 
-		// Actions - Edit mode
+		// Actions - Edit mode (buttons right-aligned)
 		this.infoPanelActionsEl.removeClass('view-mode');
 		this.infoPanelActionsEl.addClass('edit-mode');
 
-		// Cancel button
-		const cancelBtn = this.infoPanelActionsEl.createEl('button', {
-			text: 'Cancel',
-			cls: 'cr-fcv-btn-secondary'
+		// Buttons container
+		const buttonsContainer = this.infoPanelActionsEl.createDiv({
+			cls: 'cr-fcv-info-panel-actions-buttons'
+		});
+
+		// Cancel button (secondary)
+		const cancelBtn = buttonsContainer.createEl('button', {
+			text: 'Cancel'
 		});
 		cancelBtn.addEventListener('click', () => this.cancelInfoPanelEdit());
 
-		// Save button
-		const saveBtn = this.infoPanelActionsEl.createEl('button', {
+		// Save button (primary)
+		const saveBtn = buttonsContainer.createEl('button', {
 			text: 'Save',
-			cls: 'cr-fcv-btn-primary'
+			cls: 'mod-cta'
 		});
 		saveBtn.addEventListener('click', () => void this.saveInfoPanelChanges());
 	}

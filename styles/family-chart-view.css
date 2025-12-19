@@ -798,10 +798,31 @@
 
 .cr-fcv-info-panel-actions {
   display: flex;
+  align-items: center;
   gap: var(--size-4-2);
   padding: var(--size-4-3);
   border-top: 1px solid var(--background-modifier-border);
   background-color: var(--background-secondary-alt);
+}
+
+.cr-fcv-info-panel-actions.view-mode {
+  justify-content: space-between;
+}
+
+.cr-fcv-info-panel-actions.edit-mode {
+  justify-content: flex-end;
+}
+
+.cr-fcv-info-panel-actions-description {
+  flex: 1;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+.cr-fcv-info-panel-actions-buttons {
+  display: flex;
+  gap: var(--size-4-2);
+  flex-shrink: 0;
 }
 
 /* ============================================================
@@ -809,27 +830,29 @@
  * ============================================================ */
 
 .cr-fcv-info-field {
+  display: flex;
+  align-items: baseline;
+  gap: var(--size-4-3);
   margin-bottom: var(--size-4-3);
+  line-height: 1.5;
 }
 
 .cr-fcv-info-field-label {
-  display: block;
-  font-size: var(--font-ui-smaller);
+  flex-shrink: 0;
+  min-width: 70px;
+  font-size: var(--font-ui-small);
   color: var(--text-muted);
-  margin-bottom: var(--size-4-1);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .cr-fcv-info-field-value {
-  font-size: var(--font-ui-medium);
+  flex: 1;
+  font-size: var(--font-ui-small);
   color: var(--text-normal);
-  line-height: 1.4;
 }
 
-.cr-fcv-info-field-value:empty::before {
-  content: "—";
+.cr-fcv-info-field-value.empty {
   color: var(--text-faint);
+  font-style: italic;
 }
 
 /* ============================================================
@@ -837,13 +860,13 @@
  * ============================================================ */
 
 .cr-fcv-info-field-input {
-  width: 100%;
+  flex: 1;
   padding: var(--size-4-1) var(--size-4-2);
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--radius-s);
   background-color: var(--background-primary);
   color: var(--text-normal);
-  font-size: var(--font-ui-medium);
+  font-size: var(--font-ui-small);
 }
 
 .cr-fcv-info-field-input:focus {
@@ -869,10 +892,8 @@
 .cr-fcv-info-panel-relationships h4 {
   font-size: var(--font-ui-small);
   font-weight: var(--font-semibold);
-  color: var(--text-muted);
+  color: var(--text-normal);
   margin: 0 0 var(--size-4-2) 0;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .cr-fcv-relationship-group {
@@ -908,66 +929,14 @@
 
 /* ============================================================
  * Info Panel Buttons
+ * Use Obsidian's native button styles via the button element
+ * Primary: add .mod-cta class
+ * Secondary: plain button element
  * ============================================================ */
 
-.cr-fcv-btn-primary {
-  flex: 1;
-  padding: var(--size-4-2) var(--size-4-3);
-  border: none;
-  border-radius: var(--radius-s);
-  background-color: var(--interactive-accent);
-  color: var(--text-on-accent);
-  font-size: var(--font-ui-small);
-  font-weight: var(--font-medium);
-  cursor: pointer;
-  transition: background-color 0.1s ease;
-}
-
-.cr-fcv-btn-primary:hover {
-  background-color: var(--interactive-accent-hover);
-}
-
-.cr-fcv-btn-secondary {
-  flex: 1;
-  padding: var(--size-4-2) var(--size-4-3);
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-s);
-  background-color: var(--background-primary);
-  color: var(--text-normal);
-  font-size: var(--font-ui-small);
-  font-weight: var(--font-medium);
-  cursor: pointer;
-  transition: all 0.1s ease;
-}
-
-.cr-fcv-btn-secondary:hover {
-  background-color: var(--background-modifier-hover);
-  border-color: var(--background-modifier-border-hover);
-}
-
-/* ============================================================
- * Open Note Link
- * ============================================================ */
-
-.cr-fcv-open-note-link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--size-4-1);
-  margin-top: var(--size-4-2);
-  padding: var(--size-4-1) 0;
-  color: var(--text-accent);
-  font-size: var(--font-ui-small);
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.cr-fcv-open-note-link:hover {
-  text-decoration: underline;
-}
-
-.cr-fcv-open-note-link svg {
-  width: 14px;
-  height: 14px;
+.cr-fcv-info-panel-actions button {
+  /* Override flex behavior for action buttons */
+  flex-shrink: 0;
 }
 
 /* ============================================================
