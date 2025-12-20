@@ -562,6 +562,51 @@ Each report uses the shared components above with report-specific arrangements.
 
 ---
 
+## Open Questions
+
+Issues to resolve during implementation:
+
+### Technical
+
+1. **pdfmake build for standard fonts**
+   - Standard PDF fonts require a custom pdfmake build (`npm run build:browser-standard-fonts`)
+   - Options: vendor pre-built file, build during plugin build, or use npm package if available
+   - Need to verify standard fonts work consistently across platforms
+
+2. **File download in Obsidian**
+   - Demo uses `pdfMake.createPdf().download()` which works in browsers
+   - Obsidian plugins typically use `app.vault` or `FileSystemAdapter` APIs
+   - Need to verify this works or implement alternative (blob → save dialog)
+
+3. **Error handling**
+   - What if dynamic import fails? (network issues, CSP restrictions)
+   - How to handle PDF generation errors gracefully?
+   - Should we show a progress indicator for large reports?
+
+### Content Edge Cases
+
+4. **Missing data display**
+   - How to render empty fields? (blank, "Unknown", em-dash?)
+   - What if Family Group Sheet has no children? (hide section, show "None recorded"?)
+   - Empty Sources section handling
+
+5. **Long content overflow**
+   - Very long names: truncate with ellipsis or wrap?
+   - Place names exceeding column width
+   - Multi-page Notes sections
+
+### Platform Support
+
+6. **Mobile Obsidian**
+   - Does pdfmake work on iOS/Android Obsidian?
+   - If not, should we disable PDF export on mobile or show a warning?
+
+7. **Testing approach**
+   - How to test PDF output? (visual inspection, snapshot testing?)
+   - Cross-platform verification (Windows/Mac/Linux)
+
+---
+
 ## Success Criteria
 
 ### Phase 1
