@@ -11,6 +11,7 @@ This document outlines planned features for Canvas Roots. For completed features
   - [Universal Media Linking](#universal-media-linking) ⚡ High
   - [Calendarium Integration](#calendarium-integration) ⚡ High
   - [Post-Import Cleanup Wizard](#post-import-cleanup-wizard) 📋 Medium
+  - [Report Wizard Enhancements](#report-wizard-enhancements) 📋 Medium
   - [Universe Management Enhancements](#universe-management-enhancements) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
 - [Future Considerations](#future-considerations)
@@ -294,6 +295,85 @@ After a GEDCOM import (especially from a file with data quality issues), users f
 
 **Documentation:**
 - See [Data Quality: Post-Import Cleanup Workflow](Data-Quality#post-import-cleanup-workflow) for manual workflow
+
+---
+
+### Report Wizard Enhancements
+
+**Priority:** 📋 Medium — Improved UX for report generation with presets
+
+**Summary:** Refactor the Report Generator modal into a multi-step wizard with additional customization options, a preset system for saved configurations, and recent report tracking. The current modal has grown complex with 13 report types, 5 categories, and extensive PDF options.
+
+**Problem Statement:**
+
+The Report Generator modal now handles:
+- 13 report types across 5 categories
+- Person/place/universe/collection pickers
+- Generation limits and inclusion toggles
+- Output method selection (vault, MD, PDF)
+- PDF options (page size, cover page, logo, title customization, date format)
+
+This creates cognitive overload for new users and makes adding more options difficult.
+
+**Proposed Solution: Hybrid Wizard + Quick Generate**
+
+| Component | Description |
+|-----------|-------------|
+| **Quick Generate** | Home screen showing recent reports and saved presets |
+| **4-Step Wizard** | Focused steps for full customization |
+| **Preset System** | Save and reuse report configurations |
+
+**Wizard Steps:**
+
+| Step | Purpose |
+|------|---------|
+| 1. Report Type | Category filter + report selection |
+| 2. Subject | Person/place/universe/collection picker |
+| 3. Content Options | Report-specific toggles (spouses, sources, generations) |
+| 4. Output & Styling | Format selection + customization options |
+
+**New Customization Options:**
+
+**PDF Options:**
+- Header/footer visibility toggle
+- Header alignment (left, center, right)
+- Accent color for headers and dividers
+- Watermark text with opacity
+- Font size (9-12pt)
+
+**Markdown Options:**
+- Date format (MDY, DMY, YMD)
+- Custom title and subtitle
+- Introductory notes (equivalent to PDF cover notes)
+- Optional YAML metadata block
+
+**Preset System:**
+
+| Feature | Description |
+|---------|-------------|
+| **Save Preset** | Capture current configuration with custom name |
+| **Preset Cards** | Quick access from home screen |
+| **Built-in Presets** | Optional starter presets (Family Archive, Quick Share, Research Draft) |
+| **Preset Management** | Edit, duplicate, delete, export presets |
+
+**Phased Implementation:**
+
+| Phase | Scope |
+|-------|-------|
+| 1 | Wizard container, step navigation, report type + subject steps |
+| 2 | Content options step, output step, recent reports tracking |
+| 3 | Preset system with save/load/manage |
+| 4 | Enhanced PDF options (header/footer, accent color, watermark) |
+| 5 | Enhanced Markdown options (date format, title, intro notes) |
+| 6 | Advanced features (filename templates, preset export/import) |
+
+**Technical Notes:**
+- Refactor `ReportGeneratorModal` into wizard container with step components
+- New `ReportWizardState` interface for cross-step state management
+- Presets stored in `plugin.settings.reportPresets`
+- Recent reports stored in `plugin.settings.recentReports`
+
+See [Report Wizard Enhancements Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/report-wizard-enhancements.md) for full implementation details.
 
 ---
 
