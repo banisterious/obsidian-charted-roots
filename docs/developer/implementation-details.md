@@ -66,6 +66,10 @@ This document covers technical implementation specifics for Canvas Roots feature
   - [Type Definitions](#type-definitions)
   - [Settings Tab vs Preferences Tab](#settings-tab-vs-preferences-tab)
   - [Default Values](#default-values)
+- [Source Image Management](#source-image-management)
+  - [Image Filename Parser](#image-filename-parser)
+  - [Source Image Import Wizard](#source-image-import-wizard)
+  - [Source Media Linker Wizard](#source-media-linker-wizard)
 - [Privacy and Gender Identity Protection](#privacy-and-gender-identity-protection)
   - [Sex vs Gender Data Model](#sex-vs-gender-data-model)
   - [Living Person Privacy](#living-person-privacy)
@@ -2582,6 +2586,234 @@ async saveSettings() {
   await this.saveData(this.settings);
 }
 ```
+
+---
+
+## Source Image Management
+
+Two wizard tools for managing source images: importing new images as source notes, and linking existing images to existing source notes. These tools help genealogists process large collections of source images with intelligent metadata extraction.
+
+### Image Filename Parser
+
+`ImageFilenameParser` (`src/sources/services/image-filename-parser.ts`) extracts genealogy metadata from image filenames.
+
+**Parsed metadata structure:**
+
+```typescript
+interface ParsedImageFilename {
+  originalFilename: string;
+  extension: string;
+  surnames: string[];
+  givenNames: string[];
+  birthYear?: number;
+  recordYear?: number;
+  recordType?: string;
+  location?: {
+    country?: string;
+    state?: string;
+  };
+  partIndicator?: string;
+  isMultiPart: boolean;
+  uncertaintyMarker?: string;
+  confidence: 'high' | 'medium' | 'low';
+}
+```
+
+**Record type mappings:**
+
+The parser recognizes common genealogy record types from filename tokens:
+
+| Token | Mapped Type | Token | Mapped Type |
+|-------|-------------|-------|-------------|
+| `census`, `cens` | `census` | `obit`, `obituary` | `obituary` |
+| `birth`, `birth_cert` | `vital_record` | `military`, `draft` | `military` |
+| `death`, `death_cert` | `vital_record` | `passenger`, `ellis_island` | `immigration` |
+| `marriage`, `wedding` | `vital_record` | `cemetery`, `gravestone` | `cemetery` |
+| `divorce` | `court_record` | `photo`, `portrait` | `photo` |
+
+**Parsing flow:**
+
+```mermaid
+flowchart TD
+    A[parseFilename] --> B[Extract extension]
+    B --> C[Normalize: replace separators, lowercase]
+    C --> D[Tokenize on underscores]
+    D --> E{Is auto-named?}
+    E -->|Yes| F[Return low confidence result]
+    E -->|No| G[Process each token]
+    G --> H[Birth year: b1905]
+    G --> I[Death year: d1993]
+    G --> J[Record year: 1920]
+    G --> K[US state: NY, CA]
+    G --> L[Part indicator: p1, page2]
+    G --> M[Record type: census, birth]
+    G --> N[Unclassified → names]
+    H --> O[classifyNames]
+    I --> O
+    J --> O
+    K --> O
+    L --> O
+    M --> O
+    N --> O
+    O --> P[calculateConfidence]
+    P --> Q[Return ParsedImageFilename]
+```
+
+**Confidence scoring:**
+
+```typescript
+function calculateConfidence(result: ParsedImageFilename): 'high' | 'medium' | 'low' {
+  let score = 0;
+  if (result.surnames.length > 0) score += 2;    // Surname most important
+  if (result.recordType) score += 2;              // Record type helps
+  if (result.recordYear || result.birthYear) score += 1;
+  if (result.location?.state) score += 1;
+  if (result.givenNames.length > 0) score += 1;
+
+  if (score >= 4) return 'high';   // 🟢
+  if (score >= 2) return 'medium'; // 🟡
+  return 'low';                    // 🟠/⚪
+}
+```
+
+**Example parsing:**
+
+| Filename | Extracted Data |
+|----------|----------------|
+| `smith_census_1900.jpg` | Surname: Smith, Type: census, Year: 1900 |
+| `henderson_john_b1845_death_1920_NY.png` | Surname: Henderson, Given: John, Birth: 1845, Type: vital_record, Year: 1920, State: NY |
+| `obrien_passenger_1892.jpeg` | Surname: O'Brien, Type: immigration, Year: 1892 |
+| `scan001.jpg` | Low confidence (auto-named file) |
+
+**Multi-part detection:**
+
+The parser detects multi-page documents and groups them:
+
+```typescript
+function detectMultiPartGroups(filenames: string[]): Map<string, string[]> {
+  // Groups files like:
+  // "smith_census_1900_p1.jpg" and "smith_census_1900_p2.jpg"
+  // Returns: Map { "smith_census_1900" => ["..._p1.jpg", "..._p2.jpg"] }
+}
+```
+
+Part indicator patterns recognized: `p1`, `page1`, `partA`, `a`, `01`, `1`
+
+### Source Image Import Wizard
+
+`SourceImageWizardModal` (`src/sources/ui/source-image-wizard.ts`) imports images and creates source notes.
+
+**Wizard steps:**
+
+| Step | Name | Purpose |
+|------|------|---------|
+| 1 | Select | Choose folder, filter options |
+| 2 | Rename | Optional: review/edit standardized names |
+| 3 | Review | Edit parsed metadata before import |
+| 4 | Configure | Set destination folder |
+| 5 | Execute | Create source notes with progress |
+
+**Per-file state:**
+
+```typescript
+interface ImageFileInfo {
+  file: TFile;
+  parsed: ParsedImageFilename;
+  proposedName: string;
+  includeInRename: boolean;
+  isFiltered: boolean;
+  groupId?: string;
+  // User edits
+  editedSurnames?: string;
+  editedYear?: string;
+  editedType?: string;
+  editedLocation?: string;
+}
+```
+
+**Import process:**
+
+1. **Scan folder** for image files (jpg, png, gif, webp, tiff, etc.)
+2. **Filter** thumbnails, hidden files, non-images
+3. **Parse filenames** using `ImageFilenameParser`
+4. **Detect multi-part groups** for census pages, etc.
+5. **User review** with editable fields and confidence indicators
+6. **Create source notes** with media wikilinks in frontmatter
+
+**Created source note structure:**
+
+```yaml
+---
+cr_type: source
+cr_id: abc-123-def-456
+title: Census 1900 - Smith
+source_type: census
+media: "[[Attachments/smith_census_1900.jpg]]"
+media_2: "[[Attachments/smith_census_1900_p2.jpg]]"  # if multi-part
+---
+
+## Notes
+
+Source imported from image file.
+```
+
+### Source Media Linker Wizard
+
+`SourceMediaLinkerModal` (`src/sources/ui/source-media-linker.ts`) attaches media to existing source notes.
+
+**Problem solved:** Source notes created from GEDCOM/Gramps imports don't have media attached. Users need to link images to the corresponding sources.
+
+**Wizard steps:**
+
+| Step | Name | Purpose |
+|------|------|---------|
+| 1 | Select | Choose media folder |
+| 2 | Link | Match images to sources with suggestions |
+| 3 | Review | Confirm selections |
+| 4 | Execute | Update source notes with media links |
+
+**Smart suggestion scoring:**
+
+```typescript
+interface ScoredSource {
+  source: SourceNote;
+  score: number;
+  matchReasons: string[];
+}
+```
+
+The linker scores potential matches based on:
+
+| Factor | Weight | Example |
+|--------|--------|---------|
+| Surname match | +30 | "smith" in filename matches source title |
+| Year match | +25 | "1900" matches source date |
+| Record type match | +20 | "census" in filename, source_type: census |
+| Location match | +15 | "NY" matches source repository location |
+| Partial matches | +5-10 | Substring matches, fuzzy matches |
+
+**Visual indicators:**
+
+| Score Range | Confidence | Display |
+|-------------|------------|---------|
+| ≥50 | High | 🟢 Green dot, auto-selected |
+| 30-49 | Medium | 🟡 Yellow dot |
+| 1-29 | Low | 🟠 Orange dot |
+| 0 | None | ⚪ Gray dot, yellow row highlight |
+
+**"+N more" badge:** When multiple sources score above threshold, shows alternatives.
+
+**Media storage:**
+
+Media links stored in source frontmatter as wikilinks:
+
+```yaml
+media: "[[Attachments/smith_census_1900.jpg]]"
+media_2: "[[Attachments/smith_census_1900_p2.jpg]]"
+media_3: "[[Attachments/smith_census_1900_p3.jpg]]"
+```
+
+The linker only shows sources without existing media (`getSourcesWithoutMedia()`).
 
 ---
 
