@@ -47,6 +47,7 @@ import { isPlaceNote, isSourceNote, isEventNote, isMapNote, isSchemaNote, isUniv
 import { GeocodingService } from './src/maps/services/geocoding-service';
 import { TimelineProcessor, RelationshipsProcessor } from './src/dynamic-content';
 import { UniverseService, EditUniverseModal } from './src/universes';
+import { RecentFilesService, RecentEntityType } from './src/core/recent-files-service';
 
 const logger = getLogger('CanvasRootsPlugin');
 
@@ -57,6 +58,7 @@ export default class CanvasRootsPlugin extends Plugin {
 	private relationshipHistory: RelationshipHistoryService | null = null;
 	private folderFilter: FolderFilterService | null = null;
 	private eventService: EventService | null = null;
+	private recentFilesService: RecentFilesService | null = null;
 
 	/**
 	 * Flag to temporarily disable bidirectional sync during bulk operations (e.g., import)
@@ -125,6 +127,22 @@ export default class CanvasRootsPlugin extends Plugin {
 	 */
 	getEventService(): EventService | null {
 		return this.eventService;
+	}
+
+	/**
+	 * Get the recent files service for Dashboard tracking
+	 */
+	getRecentFilesService(): RecentFilesService | null {
+		return this.recentFilesService;
+	}
+
+	/**
+	 * Track a file access for the Dashboard recent files list
+	 */
+	async trackRecentFile(file: TFile, type: RecentEntityType): Promise<void> {
+		if (this.recentFilesService) {
+			await this.recentFilesService.trackFile(file, type);
+		}
 	}
 
 	/**
@@ -216,6 +234,9 @@ export default class CanvasRootsPlugin extends Plugin {
 
 		// Initialize event service
 		this.eventService = new EventService(this.app, this.settings);
+
+		// Initialize recent files service
+		this.recentFilesService = new RecentFilesService(this);
 
 		// Run migration for property rename (collection_name -> group_name)
 		await this.migrateCollectionNameToGroupName();

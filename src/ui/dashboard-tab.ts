@@ -4,7 +4,7 @@
  * Provides quick-action tiles for common operations and vault overview.
  */
 
-import { App } from 'obsidian';
+import { App, TFile } from 'obsidian';
 import CanvasRootsPlugin from '../../main';
 import { LucideIconName, setLucideIcon } from './lucide-icons';
 import { VaultStatsService, FullVaultStats } from '../core/vault-stats';
@@ -16,6 +16,7 @@ import { CreateSourceModal } from '../sources/ui/create-source-modal';
 import { ReportGeneratorModal } from '../reports/ui/report-generator-modal';
 import { FamilyGraphService } from '../core/family-graph';
 import { EventService } from '../events/services/event-service';
+import type { RecentFileEntry } from '../settings';
 
 /**
  * Dashboard tile configuration
@@ -48,6 +49,9 @@ export function renderDashboardTab(options: DashboardTabOptions): void {
 
 	// Quick Actions section
 	renderQuickActionsSection(container, plugin, app, switchTab, closeModal);
+
+	// Recent section (if there are recent files)
+	renderRecentSection(container, plugin, app, closeModal);
 
 	// Vault Health section (collapsible)
 	void renderVaultHealthSection(container, plugin, app, createCard, closeModal);
@@ -222,6 +226,82 @@ function renderTile(container: HTMLElement, tile: DashboardTile): void {
 			tile.action();
 		}
 	});
+}
+
+/**
+ * Get icon for entity type
+ */
+function getEntityIcon(type: RecentFileEntry['type']): LucideIconName {
+	switch (type) {
+		case 'person': return 'user';
+		case 'event': return 'calendar';
+		case 'source': return 'file-text';
+		case 'place': return 'map-pin';
+		case 'canvas': return 'git-branch';
+		case 'map': return 'map';
+		case 'organization': return 'building';
+		default: return 'file';
+	}
+}
+
+/**
+ * Render the Recent section (only if there are recent files)
+ */
+function renderRecentSection(
+	container: HTMLElement,
+	plugin: CanvasRootsPlugin,
+	app: App,
+	closeModal: () => void
+): void {
+	const recentService = plugin.getRecentFilesService();
+	if (!recentService) return;
+
+	const recentFiles = recentService.getValidRecentFiles();
+	if (recentFiles.length === 0) return;
+
+	// Section header
+	const header = container.createDiv({ cls: 'crc-dashboard-section-header crc-dashboard-recent-header' });
+	header.createSpan({ text: 'Recent', cls: 'crc-dashboard-section-title' });
+
+	// Recent list
+	const list = container.createDiv({ cls: 'crc-dashboard-recent-list' });
+
+	for (const entry of recentFiles) {
+		const item = list.createDiv({ cls: 'crc-dashboard-recent-item' });
+
+		// Icon
+		const iconEl = item.createSpan({ cls: 'crc-dashboard-recent-icon' });
+		setLucideIcon(iconEl, getEntityIcon(entry.type), 16);
+
+		// Name
+		item.createSpan({ cls: 'crc-dashboard-recent-name', text: entry.name });
+
+		// Type badge
+		item.createSpan({ cls: 'crc-dashboard-recent-type', text: entry.type });
+
+		// Click to open file
+		item.addEventListener('click', () => {
+			const file = app.vault.getAbstractFileByPath(entry.path);
+			if (file instanceof TFile) {
+				closeModal();
+				void app.workspace.getLeaf().openFile(file);
+			}
+		});
+
+		// Keyboard accessibility
+		item.setAttribute('tabindex', '0');
+		item.setAttribute('role', 'button');
+		item.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				const file = app.vault.getAbstractFileByPath(entry.path);
+				if (file instanceof TFile) {
+					closeModal();
+					void app.workspace.getLeaf().openFile(file);
+				}
+			}
+		});
+	}
 }
 
 /**

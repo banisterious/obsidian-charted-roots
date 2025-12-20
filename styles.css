@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-20 22:50:20 UTC
+ * - Generated: 2025-12-20 22:58:55 UTC
  * - Components: 35 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -20241,7 +20241,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: DASHBOARD.CSS
    ========================================================================== */
 
-/* Component Size: 253 lines, 4.9 KB */
+/* Component Size: 313 lines, 6.07 KB */
 
 /* ==========================================================================
    Dashboard Tab Styles
@@ -20472,6 +20472,66 @@ body:has(.cr-media-linker) .suggestion-container {
 
 .crc-dashboard-view-details-link:hover {
   text-decoration: underline;
+}
+
+/* Recent Section */
+.crc-dashboard-recent-header {
+  margin-top: 16px;
+}
+
+.crc-dashboard-recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.crc-dashboard-recent-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.crc-dashboard-recent-item:hover {
+  border-color: var(--interactive-accent);
+  background: rgba(var(--interactive-accent-rgb), 0.1);
+}
+
+.crc-dashboard-recent-item:focus {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+.crc-dashboard-recent-icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.crc-dashboard-recent-name {
+  flex: 1;
+  font-size: 0.9em;
+  color: var(--text-normal);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crc-dashboard-recent-type {
+  font-size: 0.75em;
+  color: var(--text-muted);
+  background: var(--background-primary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: capitalize;
+  flex-shrink: 0;
 }
 
 /* Responsive: Mobile */
@@ -22081,10 +22141,10 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-20 22:50:21 UTC
+ * Build completed: 2025-12-20 22:58:55 UTC
  * Components processed: 35
- * Total lines: 21743
- * Total size: 431.44 KB
+ * Total lines: 21803
+ * Total size: 432.61 KB
  * Build duration: 0.03 seconds
  *
  * Component breakdown:
@@ -22115,7 +22175,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - organizations.css: 245 lines, 4.36 KB
  * - sources.css: 2654 lines, 53.83 KB
  * - statistics.css: 1503 lines, 29.78 KB
- * - dashboard.css: 253 lines, 4.9 KB
+ * - dashboard.css: 313 lines, 6.07 KB
  * - universe-wizard.css: 621 lines, 11.05 KB
  * - preferences.css: 242 lines, 5.29 KB
  * - tree-output.css: 425 lines, 8.68 KB
