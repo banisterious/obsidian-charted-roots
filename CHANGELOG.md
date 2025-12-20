@@ -11,6 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.13.4] - 2025-12-20
+
+### Added
+
+- **PDF report export** - Export all 7 report types (Ahnentafel, Family Group Sheet, Individual Summary, Gaps Report, Register Report, Pedigree Chart, Descendant Chart) as professionally styled PDF documents. PDFs are generated locally with no internet connection required.
+
+- **PDF page size option** - Choose between A4 and Letter page sizes when exporting to PDF.
+
+- **PDF cover page** - Optional title page with report name, subject name, generation date, and plugin branding. Enable via "Include cover page" toggle in PDF options.
+
+- **PDF logo/crest support** - Add a custom logo or family crest to PDF cover pages. Images are automatically resized to reduce file size while maintaining quality.
+
+---
+
 ## [0.13.3] - 2025-12-19
 
 ### Added

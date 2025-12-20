@@ -1,6 +1,6 @@
 # Canvas Roots: Genealogical Family Tree Plugin for Obsidian
 
-[![Version](https://img.shields.io/badge/version-0.13.3-blue.svg)](https://github.com/banisterious/obsidian-canvas-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md)
+[![Version](https://img.shields.io/badge/version-0.13.4-blue.svg)](https://github.com/banisterious/obsidian-canvas-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md)
 
 **Canvas Roots** transforms structured genealogical data in your Markdown notes into beautifully laid-out family trees on the Obsidian Canvas. Designed for genealogists, historians, writers, and world-builders.
 
@@ -99,7 +99,7 @@
 | **Data Quality Analysis** | Severity-coded alerts for date issues, missing data, orphaned people; expandable drill-down lists |
 | **Top Lists** | Interactive lists for surnames, locations, occupations, sources with drill-down to matching people |
 | **Extended Statistics** | Longevity analysis, family size patterns, marriage patterns, migration flows, timeline density |
-| **Genealogical Reports** | Family Group Sheet, Individual Summary, Ahnentafel, Gaps Report, Register Report, Pedigree/Descendant Charts |
+| **Genealogical Reports** | Family Group Sheet, Individual Summary, Ahnentafel, Gaps Report, Register Report, Pedigree/Descendant Charts with PDF export |
 
 ### [Evidence & Sources](https://github.com/banisterious/obsidian-canvas-roots/wiki/Evidence-And-Sources)
 
