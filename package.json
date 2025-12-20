@@ -1,7 +1,7 @@
 {
 	"name": "obsidian-canvas-roots",
 	"version": "0.13.5",
-	"description": "Obsidian plugin for creating family trees in Canvas using specialized genealogical layout algorithms",
+	"description": "Family tree visualization for genealogists and worldbuilders. Interactive charts, geographic maps, evidence tracking, GEDCOM support, and fictional calendars.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
