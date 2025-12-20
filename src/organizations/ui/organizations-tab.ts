@@ -347,9 +347,10 @@ function renderOrganizationRow(
 	const fileIcon = createLucideIcon('file-text', 14);
 	openBtn.appendChild(fileIcon);
 
-	openBtn.addEventListener('click', (e) => {
+	openBtn.addEventListener('click', async (e) => {
 		e.stopPropagation(); // Don't trigger row click
 		if (org.file instanceof TFile) {
+			await plugin.trackRecentFile(org.file, 'organization');
 			void plugin.app.workspace.getLeaf(false).openFile(org.file);
 		}
 	});

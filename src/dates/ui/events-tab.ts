@@ -422,7 +422,8 @@ function renderEventTable(
 				item
 					.setTitle('Open note')
 					.setIcon('file')
-					.onClick(() => {
+					.onClick(async () => {
+						await plugin.trackRecentFile(event.file, 'event');
 						void plugin.app.workspace.getLeaf(false).openFile(event.file);
 					});
 			});
@@ -431,7 +432,8 @@ function renderEventTable(
 				item
 					.setTitle('Open in new tab')
 					.setIcon('file-plus')
-					.onClick(() => {
+					.onClick(async () => {
+						await plugin.trackRecentFile(event.file, 'event');
 						void plugin.app.workspace.getLeaf('tab').openFile(event.file);
 					});
 			});
@@ -512,8 +514,9 @@ function renderEventTable(
 		});
 		const fileIcon = createLucideIcon('file-text', 14);
 		openBtn.appendChild(fileIcon);
-		openBtn.addEventListener('click', (e) => {
+		openBtn.addEventListener('click', async (e) => {
 			e.stopPropagation();
+			await plugin.trackRecentFile(event.file, 'event');
 			void plugin.app.workspace.getLeaf(false).openFile(event.file);
 		});
 	}

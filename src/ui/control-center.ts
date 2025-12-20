@@ -3123,7 +3123,8 @@ export class ControlCenterModal extends Modal {
 			item
 				.setTitle('Open note')
 				.setIcon('file')
-				.onClick(() => {
+				.onClick(async () => {
+					await this.plugin.trackRecentFile(person.file, 'person');
 					void this.app.workspace.getLeaf(false).openFile(person.file);
 				});
 		});
@@ -3132,7 +3133,8 @@ export class ControlCenterModal extends Modal {
 			item
 				.setTitle('Open in new tab')
 				.setIcon('file-plus')
-				.onClick(() => {
+				.onClick(async () => {
+					await this.plugin.trackRecentFile(person.file, 'person');
 					void this.app.workspace.getLeaf('tab').openFile(person.file);
 				});
 		});
@@ -3237,7 +3239,8 @@ export class ControlCenterModal extends Modal {
 			item
 				.setTitle('Open')
 				.setIcon('file')
-				.onClick(() => {
+				.onClick(async () => {
+					await this.plugin.trackRecentFile(file, 'person');
 					void this.app.workspace.getLeaf(false).openFile(file);
 				});
 		});
@@ -3246,7 +3249,8 @@ export class ControlCenterModal extends Modal {
 			item
 				.setTitle('Open in new tab')
 				.setIcon('file-plus')
-				.onClick(() => {
+				.onClick(async () => {
+					await this.plugin.trackRecentFile(file, 'person');
 					void this.app.workspace.getLeaf('tab').openFile(file);
 				});
 		});
@@ -3255,7 +3259,8 @@ export class ControlCenterModal extends Modal {
 			item
 				.setTitle('Open in new window')
 				.setIcon('external-link')
-				.onClick(() => {
+				.onClick(async () => {
+					await this.plugin.trackRecentFile(file, 'person');
 					void this.app.workspace.getLeaf('window').openFile(file);
 				});
 		});

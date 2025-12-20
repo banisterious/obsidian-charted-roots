@@ -476,9 +476,10 @@ function renderSourceRow(
 			item
 				.setTitle('Open note')
 				.setIcon('file')
-				.onClick(() => {
+				.onClick(async () => {
 					const file = plugin.app.vault.getAbstractFileByPath(source.filePath);
 					if (file instanceof TFile) {
+						await plugin.trackRecentFile(file, 'source');
 						void plugin.app.workspace.getLeaf(false).openFile(file);
 					}
 				});
@@ -552,10 +553,11 @@ function renderSourceRow(
 	const fileIcon = createLucideIcon('file-text', 14);
 	openBtn.appendChild(fileIcon);
 
-	openBtn.addEventListener('click', (e) => {
+	openBtn.addEventListener('click', async (e) => {
 		e.stopPropagation(); // Don't trigger row click
 		const file = plugin.app.vault.getAbstractFileByPath(source.filePath);
 		if (file instanceof TFile) {
+			await plugin.trackRecentFile(file, 'source');
 			void plugin.app.workspace.getLeaf(false).openFile(file);
 		}
 	});
