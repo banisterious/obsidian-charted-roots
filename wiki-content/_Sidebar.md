@@ -20,6 +20,7 @@
 - [Staging & Cleanup](Staging-And-Cleanup)
 
 ### Tools & Features
+- [Control Center](Control-Center)
 - [Context Menus](Context-Menus)
 - [Dynamic Note Content](Dynamic-Note-Content)
 - [Statistics & Reports](Statistics-And-Reports)
