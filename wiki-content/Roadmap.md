@@ -149,6 +149,8 @@ Canvas thumbnails are particularly useful for writers — seeing character faces
 | **Phase 3** | Family Chart thumbnail display |
 | **Phase 4** | Gramps Package (`.gpkg`) import with media extraction |
 
+See [Universal Media Linking Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/universal-media-linking.md) for implementation details.
+
 ---
 
 ### Calendarium Integration
@@ -341,6 +343,8 @@ After a GEDCOM import (especially from a file with data quality issues), users f
 - Reuse `PlaceGraphService` for place hierarchy and associations
 - Add new generator methods to `ReportGenerator`
 - Add new render methods to `PdfReportRenderer`
+
+See [Extended Report Types Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/extended-report-types.md) for implementation details.
 
 ---
 
