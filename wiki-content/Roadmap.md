@@ -10,6 +10,7 @@ This document outlines planned features for Canvas Roots. For completed features
 - [Planned Features](#planned-features)
   - [Calendarium Integration](#calendarium-integration) ⚡ High
   - [Post-Import Cleanup Wizard](#post-import-cleanup-wizard) 📋 Medium
+  - [Extended Report Types](#extended-report-types) 📋 Medium
   - [Universe Management Enhancements](#universe-management-enhancements) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
 - [Future Considerations](#future-considerations)
@@ -218,6 +219,55 @@ After a GEDCOM import (especially from a file with data quality issues), users f
 
 **Documentation:**
 - See [Data Quality: Post-Import Cleanup Workflow](Data-Quality#post-import-cleanup-workflow) for manual workflow
+
+---
+
+### Extended Report Types
+
+**Priority:** 📋 Medium — Additional report types for sources, events, and places
+
+**Summary:** Expand the report generator with new report types: a person-focused source documentation report, a vault-wide timeline report, and a place-based summary report. These complement the existing genealogical reports and leverage data from the Sources, Events, and Places tabs.
+
+**Proposed Reports:**
+
+| Report | Category | Description |
+|--------|----------|-------------|
+| **Source Summary** | Person | All sources cited for a person, grouped by fact type, with quality classification and gaps |
+| **Timeline Report** | Event | Chronological list of events with dates, participants, places, and sources |
+| **Place Summary** | Place | All events at a location, people associated with the place (born, died, resided) |
+
+**Source Summary Options:**
+- Root person picker
+- Group by fact type (birth, death, marriage, etc.)
+- Show source quality classification (primary/secondary/derivative)
+- Include citation details and repository info
+- Show confidence levels per fact
+- Highlight unsourced facts (gaps analysis)
+
+**Timeline Report Options:**
+- Date range filter (from/to)
+- Event type filter (birth, death, marriage, military, etc.)
+- Person/family filter (events involving specific people)
+- Grouping: by year, decade, or person
+- Include sources toggle
+
+**Place Summary Options:**
+- Root place picker
+- Include child places toggle
+- Date range filter
+- Event type filter
+- Include coordinates and map reference
+
+**UI Integration:**
+- Add report category selector to Report Generator modal (Genealogical / Timeline / Place)
+- Reuse existing PDF export infrastructure
+- Same output options: Save to vault, Download as MD, Download as PDF
+
+**Technical Approach:**
+- Reuse `EventService` for timeline data
+- Reuse `PlaceGraphService` for place hierarchy and associations
+- Add new generator methods to `ReportGenerator`
+- Add new render methods to `PdfReportRenderer`
 
 ---
 
