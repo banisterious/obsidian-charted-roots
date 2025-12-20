@@ -9,9 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.13.3] - 2025-12-19
+
+### Added
+
+- **Context-specific person picker titles** - The person picker modal now shows context-aware titles and subtitles based on the action being performed. When assigning reference numbers, users see clear explanations like "This person will be #1; ancestors are numbered upward" for Ahnentafel or "This person will be generation 0" for generation numbering.
+
 ### Fixed
 
 - **Source media linker dropdown styling** - Fixed dropdown styling conflict in the "Link media to existing sources" wizard. The dropdown now uses Obsidian's native styling, avoiding conflicts with themes, snippets, and GTK styling on Linux.
+
+### Changed
+
+- **Guide tab card footer links** - Restyled documentation links at the bottom of Guide tab cards to use consistent separator styling matching the "View full statistics" pattern elsewhere.
+
+### Removed
+
+- **Dead GEDCOM v1 importer code** - Removed ~600 lines of dead code from the legacy GEDCOM importer that was superseded by the v2 streaming implementation.
 
 ---
 
