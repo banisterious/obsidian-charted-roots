@@ -775,6 +775,93 @@ this.registerDynamicContentBlock('cr:media-gallery', (el, options, file) => {
 
 ## Technical Considerations
 
+### Media File Organization
+
+Media files can live anywhere in the vault. Canvas Roots links to files but doesn't manage their location—users organize files according to their own preferences.
+
+**Linking Scenarios:**
+
+| Scenario | File Location | Who Decides |
+|----------|---------------|-------------|
+| Manual linking | Existing file in vault | User (file already exists) |
+| Bulk import from folder | Existing files in vault | User (files already exist) |
+| Gramps Package import | Configurable destination | User (setting) |
+| Future: drag-and-drop | Configurable destination | User (setting) |
+
+**Gramps Package Import Setting:**
+
+When importing `.gpkg` files, extracted media needs a destination folder:
+
+```typescript
+interface MediaImportSettings {
+  /** Folder for extracted media from imports (relative to vault root) */
+  mediaImportFolder: string;  // Default: "media/imports"
+
+  /** How to handle filename collisions */
+  collisionHandling: 'rename' | 'skip' | 'overwrite';
+
+  /** Whether to prefix filenames with entity cr_id */
+  prefixWithCrId: boolean;  // Default: false
+}
+```
+
+**Settings UI:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Media import folder                                        │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ media/imports                                        │   │
+│  └─────────────────────────────────────────────────────┘   │
+│  Folder for media files extracted from Gramps packages.    │
+│                                                             │
+│  ☐ Prefix filenames with entity ID                         │
+│    e.g., john-smith_portrait.jpg                           │
+│                                                             │
+│  On filename collision:  [Rename with suffix  ▼]           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Recommended Folder Structures:**
+
+Users can organize however they prefer. Common patterns:
+
+```
+# By entity type
+media/
+├── people/
+│   ├── john-smith-portrait.jpg
+│   └── jane-doe-photo.png
+├── places/
+│   └── dublin-1920s.jpg
+└── events/
+    └── wedding-1902.jpg
+
+# By family/project
+media/
+├── smith-family/
+│   ├── john-portrait.jpg
+│   └── wedding.jpg
+└── imports/
+    └── gramps-2024-01/
+        ├── photo1.jpg
+        └── photo2.jpg
+
+# Flat (simple)
+attachments/
+├── john-smith.jpg
+├── dublin.jpg
+└── wedding.jpg
+```
+
+**Non-Goals:**
+
+- Canvas Roots does not move or copy files on linking (links to existing files)
+- Canvas Roots does not enforce folder structure
+- Canvas Roots does not rename files on linking (except during import with prefix option)
+
+---
+
 ### Indexed Property Convention
 
 All entity types use the same indexed property pattern:
