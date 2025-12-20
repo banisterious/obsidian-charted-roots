@@ -35,7 +35,8 @@ import type {
 	UniverseOverviewResult,
 	CollectionOverviewResult
 } from '../types/report-types';
-import { REPORT_METADATA } from '../types/report-types';
+import { REPORT_METADATA, REPORT_CATEGORY_METADATA, getReportsByCategory } from '../types/report-types';
+import type { ReportCategory } from '../types/report-types';
 import { ReportGenerationService } from '../services/report-generation-service';
 import { PdfReportRenderer } from '../services/pdf-report-renderer';
 import { PersonPickerModal, PersonInfo } from '../../ui/person-picker';
@@ -64,11 +65,15 @@ export class ReportGeneratorModal extends Modal {
 	private pdfRenderer: PdfReportRenderer;
 
 	// Form state
+	private selectedCategory: ReportCategory | 'all' = 'all';
 	private selectedReportType: ReportType = 'family-group-sheet';
 	private selectedPersonCrId: string = '';
 	private selectedPersonName: string = '';
 	private outputMethod: 'vault' | 'download' | 'pdf' = 'vault';
 	private outputFolder: string;
+
+	// UI element references for dynamic updates
+	private reportTypeDropdown: HTMLSelectElement | null = null;
 
 	// Report-specific options
 	private familyGroupOptions = {
@@ -243,14 +248,29 @@ export class ReportGeneratorModal extends Modal {
 		header.appendChild(icon);
 		header.createEl('h2', { text: 'Generate report' });
 
+		// Category filter
+		new Setting(contentEl)
+			.setName('Category')
+			.setDesc('Filter reports by category')
+			.addDropdown(dropdown => {
+				dropdown.addOption('all', 'All categories');
+				for (const [category, metadata] of Object.entries(REPORT_CATEGORY_METADATA)) {
+					dropdown.addOption(category, metadata.name);
+				}
+				dropdown.setValue(this.selectedCategory);
+				dropdown.onChange(value => {
+					this.selectedCategory = value as ReportCategory | 'all';
+					this.updateReportTypeOptions();
+				});
+			});
+
 		// Report type selector
 		new Setting(contentEl)
 			.setName('Report type')
 			.setDesc('Select the type of report to generate')
 			.addDropdown(dropdown => {
-				for (const [type, metadata] of Object.entries(REPORT_METADATA)) {
-					dropdown.addOption(type, metadata.name);
-				}
+				this.reportTypeDropdown = dropdown.selectEl;
+				this.populateReportTypes(dropdown.selectEl);
 				dropdown.setValue(this.selectedReportType);
 				dropdown.onChange(value => {
 					this.selectedReportType = value as ReportType;
@@ -323,6 +343,43 @@ export class ReportGeneratorModal extends Modal {
 	onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
+	}
+
+	/**
+	 * Populate the report type dropdown based on selected category
+	 */
+	private populateReportTypes(selectEl: HTMLSelectElement): void {
+		selectEl.empty();
+
+		const reports = this.selectedCategory === 'all'
+			? Object.entries(REPORT_METADATA)
+			: getReportsByCategory(this.selectedCategory).map(r => [r.type, r] as const);
+
+		for (const [type, metadata] of reports) {
+			const option = selectEl.createEl('option', {
+				value: type,
+				text: metadata.name
+			});
+			selectEl.appendChild(option);
+		}
+	}
+
+	/**
+	 * Update report type options when category changes
+	 */
+	private updateReportTypeOptions(): void {
+		if (!this.reportTypeDropdown) return;
+
+		this.populateReportTypes(this.reportTypeDropdown);
+
+		// Select first report in the filtered list
+		const firstOption = this.reportTypeDropdown.options[0];
+		if (firstOption) {
+			this.selectedReportType = firstOption.value as ReportType;
+			this.reportTypeDropdown.value = this.selectedReportType;
+		}
+
+		this.renderReportOptions();
 	}
 
 	/**
