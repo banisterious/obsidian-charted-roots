@@ -154,9 +154,19 @@ Advanced demographic analysis for deeper research insights:
 
 ## Reports
 
-Generate formatted genealogical reports from your data.
+Generate formatted reports from your data. Reports are organized into categories for easy discovery.
 
-### Report Types
+### Report Categories
+
+| Category | Reports |
+|----------|---------|
+| **Genealogical** | Ahnentafel, Pedigree Chart, Descendant Chart, Register Report, Family Group Sheet, Individual Summary |
+| **Research** | Source Summary, Gaps Report, Media Inventory |
+| **Timeline** | Timeline Report |
+| **Geographic** | Place Summary |
+| **Summary** | Universe Overview, Collection Overview |
+
+### Genealogical Reports
 
 | Report | Description |
 |--------|-------------|
@@ -167,6 +177,32 @@ Generate formatted genealogical reports from your data.
 | **Register Report** | Descendants with NGSQ-style numbering |
 | **Pedigree Chart** | Ancestor tree in ASCII art format |
 | **Descendant Chart** | Descendant tree in ASCII art format |
+
+### Research Reports
+
+| Report | Description |
+|--------|-------------|
+| **Source Summary** | All sources cited for a person, grouped by fact type with quality ratings and gap analysis |
+| **Media Inventory** | Media files with linked entities, orphaned file detection, coverage gaps |
+
+### Timeline Reports
+
+| Report | Description |
+|--------|-------------|
+| **Timeline Report** | Chronological list of events with filtering by date range, event type, and participants |
+
+### Geographic Reports
+
+| Report | Description |
+|--------|-------------|
+| **Place Summary** | All events and people at a location (born, died, resided, married) with hierarchy display |
+
+### Summary Reports
+
+| Report | Description |
+|--------|-------------|
+| **Universe Overview** | Entity statistics for a fictional world with date ranges and breakdowns |
+| **Collection Overview** | Summary of a user collection or family component with member list and statistics |
 
 ### Generating Reports
 
@@ -207,6 +243,11 @@ When "Download as PDF" is selected, additional options appear:
 | **Page size** | A4 or Letter |
 | **Include cover page** | Add a title page with report name, subject, and generation date |
 | **Logo or crest** | Optional image to display on the cover page (shown when cover page is enabled) |
+| **Custom title** | Override the default report title |
+| **Custom title scope** | Apply custom title to cover only, headers only, or both |
+| **Custom subtitle** | Additional text below title on cover page |
+| **Cover notes** | Extended notes section on cover page |
+| **Date format** | MDY (12/20/2025), DMY (20/12/2025), or YMD (2025-12-20) |
 
 #### Cover Page
 

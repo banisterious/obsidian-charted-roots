@@ -11,6 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.13.5] - 2025-12-20
+
+### Added
+
+- **Extended report types** - Six new report types expanding beyond traditional genealogical reports: Source Summary (per-person source documentation), Timeline Report (chronological events), Place Summary (location-focused), Media Inventory (media with entity links), Universe Overview (fictional world stats), and Collection Overview (user collection summary).
+
+- **Report category selector** - Reports are now organized into categories (Genealogical, Research, Timeline, Geographic, Summary) for easier discovery in the Generate Report modal.
+
+- **PDF custom title options** - Override default report titles with custom text. Control title scope: cover page only, headers only, or both.
+
+- **PDF custom subtitle** - Add subtitle text below the main title on cover pages.
+
+- **PDF cover notes** - Add extended notes section to cover pages for additional context or instructions.
+
+- **PDF date format option** - Choose between MDY (12/20/2025), DMY (20/12/2025), or YMD (2025-12-20) for dates in generated PDFs. Dropdown shows example dates using today's date for clarity.
+
+---
+
 ## [0.13.4] - 2025-12-20
 
 ### Added

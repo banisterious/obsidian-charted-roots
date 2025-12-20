@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.13.x](#v013x)
+  - [Extended Report Types](#extended-report-types-v0135)
   - [PDF Report Export](#pdf-report-export-v0134)
   - [Universe Management](#universe-management-v0130)
 - [v0.12.x](#v012x)
@@ -50,6 +51,127 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.13.x
+
+### Extended Report Types (v0.13.5)
+
+Six new report types expanding the report generator beyond traditional genealogical reports, plus enhanced PDF customization options.
+
+**Problem Solved:**
+- Reports were limited to 7 genealogical report types
+- No way to document sources for a person in aggregate
+- No timeline report showing all events chronologically
+- No place-focused summaries
+- No reports for worldbuilders (universe/collection overviews)
+- Limited PDF customization options
+
+**New Report Types:**
+
+| Report | Category | Description |
+|--------|----------|-------------|
+| **Source Summary** | Research | All sources cited for a person, grouped by fact type, with quality ratings and gap analysis |
+| **Timeline Report** | Timeline | Chronological list of events with filtering by date range, event type, and participants |
+| **Place Summary** | Geographic | All events and people associated with a location (born, died, resided, married) |
+| **Media Inventory** | Research | Media files with linked entities, orphaned file detection, coverage gap analysis |
+| **Universe Overview** | Summary | Entity statistics for a fictional world with date ranges and entity type breakdown |
+| **Collection Overview** | Summary | Summary of a user collection or family component with member list and statistics |
+
+**Report Category Selector:**
+
+The Report Generator modal now includes a category selector that groups all 13 report types:
+
+| Category | Reports |
+|----------|---------|
+| Genealogical | Ahnentafel, Pedigree Chart, Descendant Chart, Register Report, Family Group Sheet, Individual Summary |
+| Research | Source Summary, Gaps Report, Media Inventory |
+| Timeline | Timeline Report |
+| Geographic | Place Summary |
+| Summary | Universe Overview, Collection Overview |
+
+**Source Summary Report:**
+
+| Feature | Description |
+|---------|-------------|
+| **Root person picker** | Select subject for the report |
+| **Grouping options** | By fact type, source type, or quality |
+| **Quality indicators** | Primary, secondary, derivative classification |
+| **Citation details** | Full citations with repository info |
+| **Gap analysis** | Highlights unsourced facts needing documentation |
+
+**Timeline Report:**
+
+| Feature | Description |
+|---------|-------------|
+| **Date range filter** | Optional start and end dates |
+| **Event type filter** | Filter to specific event types |
+| **Participant filter** | Events involving specific people |
+| **Grouping** | None, by year, by decade, by person, by place |
+| **Source inclusion** | Toggle source references |
+
+**Place Summary Report:**
+
+| Feature | Description |
+|---------|-------------|
+| **Root place picker** | Select subject location |
+| **Child places** | Option to include events at child locations |
+| **Date range filter** | Filter events by date |
+| **Place hierarchy** | Shows containment chain |
+| **Coordinate display** | Includes lat/long when available |
+
+**Media Inventory Report:**
+
+| Feature | Description |
+|---------|-------------|
+| **Scope selection** | All media, sources only, or by folder |
+| **Orphan detection** | Lists media files not linked to any entity |
+| **Coverage gaps** | Shows entities that could have media but don't |
+| **File type breakdown** | Images, PDFs, audio counts |
+| **Grouping** | By entity type, folder, or file type |
+
+**Universe Overview Report:**
+
+| Feature | Description |
+|---------|-------------|
+| **Universe picker** | Select subject universe |
+| **Entity breakdown** | Counts per type (people, places, events, organizations, sources) |
+| **Date range** | Earliest to latest dates using fictional dates if applicable |
+| **Geographic summary** | Places with coordinates and coverage percentage |
+| **Date systems** | Lists calendar systems used in the universe |
+| **Recent activity** | Optionally lists recently modified entities |
+
+**Collection Overview Report:**
+
+| Feature | Description |
+|---------|-------------|
+| **Collection picker** | User collections or auto-detected family components |
+| **Member list** | People with key dates (birth, death) |
+| **Generation analysis** | Ancestor/descendant counts by generation |
+| **Geographic distribution** | Places and counts |
+| **Surname distribution** | For family components |
+| **Sort options** | By birth date, name, or death date |
+
+**Enhanced PDF Options:**
+
+| Option | Description |
+|--------|-------------|
+| **Custom title** | Override default report title |
+| **Custom title scope** | Apply to cover only, headers only, or both |
+| **Custom subtitle** | Additional text below title on cover page |
+| **Cover notes** | Extended notes section on cover page |
+| **Date format** | MDY (12/20/2025), DMY (20/12/2025), or YMD (2025-12-20) |
+
+**Access Points:**
+- Statistics Dashboard → Reports section → Generate
+- Command palette: "Canvas Roots: Generate Report"
+
+**Technical Details:**
+- Each report type has a dedicated generator class in `src/reports/services/`
+- All reports use shared PDF infrastructure via `PdfReportRenderer`
+- Report options stored in modal state and passed to generators
+- Same output options: Save to vault, Download as MD, Download as PDF
+
+See [Extended Report Types Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/extended-report-types.md) for implementation details.
+
+---
 
 ### PDF Report Export (v0.13.4)
 

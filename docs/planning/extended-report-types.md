@@ -2,11 +2,12 @@
 
 Planning document for adding new report types beyond the genealogical reports.
 
-- **Status:** Planning
+- **Status:** ✅ Complete
 - **Priority:** Medium
 - **GitHub Issue:** #TBD
 - **Created:** 2025-12-20
-- **Updated:** 2025-12-20 (added Media Inventory, Universe Overview, Collection Overview)
+- **Completed:** 2025-12-20
+- **Version:** 0.13.5
 
 ---
 
@@ -16,9 +17,30 @@ Expand the report generator with new report types that leverage data from Source
 
 ---
 
-## Current State
+## Implementation Summary
 
-The report generation system supports 7 genealogical report types:
+All 6 new report types have been implemented:
+
+| Report | Status | Description |
+|--------|--------|-------------|
+| Source Summary | ✅ Complete | Per-person source documentation grouped by fact type |
+| Timeline Report | ✅ Complete | Chronological event list with filtering |
+| Place Summary | ✅ Complete | Events and people at a location |
+| Media Inventory | ✅ Complete | Media files with linked entities and gap analysis |
+| Universe Overview | ✅ Complete | Entity statistics for fictional worlds |
+| Collection Overview | ✅ Complete | Summary of user collections or family components |
+
+**Additional features implemented:**
+- Report category selector in modal (Genealogical, Research, Timeline, Geographic, Summary)
+- PDF export for all new report types with professional styling
+- Custom cover page options (title, subtitle, cover notes, title scope)
+- Date format options for PDF (MDY, DMY, YMD)
+
+---
+
+## Previous State
+
+The report generation system previously supported 7 genealogical report types:
 
 | Report | Category | Description |
 |--------|----------|-------------|
