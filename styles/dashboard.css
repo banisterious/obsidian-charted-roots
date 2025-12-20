@@ -309,4 +309,57 @@
   }
 }
 
+/* First-Run Notice */
+.crc-dashboard-first-run-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: rgba(var(--interactive-accent-rgb), 0.1);
+  border: 1px solid var(--interactive-accent);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.crc-dashboard-first-run-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.crc-dashboard-first-run-icon {
+  display: flex;
+  align-items: center;
+  color: var(--interactive-accent);
+  flex-shrink: 0;
+}
+
+.crc-dashboard-first-run-text {
+  font-size: 0.9em;
+  color: var(--text-normal);
+  line-height: 1.4;
+}
+
+.crc-dashboard-first-run-dismiss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.crc-dashboard-first-run-dismiss:hover {
+  background: rgba(var(--background-modifier-hover-rgb), 0.5);
+  color: var(--text-normal);
+}
+
 /* End of dashboard.css */

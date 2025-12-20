@@ -47,6 +47,11 @@ interface DashboardTabOptions {
 export function renderDashboardTab(options: DashboardTabOptions): void {
 	const { container, plugin, app, createCard, switchTab, closeModal } = options;
 
+	// Show first-run notice if this is the first visit to the new Dashboard
+	if (!plugin.settings.dashboardFirstVisitDone) {
+		renderFirstRunNotice(container, plugin);
+	}
+
 	// Quick Actions section
 	renderQuickActionsSection(container, plugin, app, switchTab, closeModal);
 
@@ -55,6 +60,35 @@ export function renderDashboardTab(options: DashboardTabOptions): void {
 
 	// Vault Health section (collapsible)
 	void renderVaultHealthSection(container, plugin, app, createCard, closeModal);
+}
+
+/**
+ * Render a first-run welcome notice for the new Dashboard
+ */
+function renderFirstRunNotice(container: HTMLElement, plugin: CanvasRootsPlugin): void {
+	const notice = container.createDiv({ cls: 'crc-dashboard-first-run-notice' });
+
+	const content = notice.createDiv({ cls: 'crc-dashboard-first-run-content' });
+	const iconEl = content.createSpan({ cls: 'crc-dashboard-first-run-icon' });
+	setLucideIcon(iconEl, 'sparkles', 18);
+
+	const textEl = content.createDiv({ cls: 'crc-dashboard-first-run-text' });
+	textEl.createEl('strong', { text: 'Welcome to the new Dashboard!' });
+	textEl.createSpan({
+		text: ' Quick actions, recent files, and vault health at a glance.'
+	});
+
+	const dismissBtn = notice.createEl('button', {
+		cls: 'crc-dashboard-first-run-dismiss',
+		attr: { 'aria-label': 'Dismiss notice' }
+	});
+	setLucideIcon(dismissBtn, 'x', 14);
+
+	dismissBtn.addEventListener('click', () => {
+		plugin.settings.dashboardFirstVisitDone = true;
+		void plugin.saveSettings();
+		notice.remove();
+	});
 }
 
 /**

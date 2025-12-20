@@ -292,6 +292,8 @@ export interface CanvasRootsSettings {
 	dashboardVaultHealthCollapsed: boolean;
 	/** Recent files accessed via CR features (max 5) */
 	dashboardRecentFiles: RecentFileEntry[];
+	/** Whether the user has seen the Dashboard first-run notice */
+	dashboardFirstVisitDone: boolean;
 }
 
 /**
@@ -519,7 +521,8 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	sexNormalizationMode: 'standard',          // Default: normalize to GEDCOM M/F
 	// Dashboard settings
 	dashboardVaultHealthCollapsed: false,      // Default: expanded on first visit
-	dashboardRecentFiles: []                   // Empty by default
+	dashboardRecentFiles: [],                  // Empty by default
+	dashboardFirstVisitDone: false             // Show welcome notice on first visit
 };
 
 export class CanvasRootsSettingTab extends PluginSettingTab {
