@@ -35,13 +35,16 @@
 - [Advanced Features](Advanced-Features)
 - [Styling & Theming](Styling-And-Theming)
 
+### Project
+- [Roadmap](Roadmap)
+- [Release History](Release-History)
+
 ### Reference
 - [Frontmatter Reference](Frontmatter-Reference)
 - [Settings & Configuration](Settings-And-Configuration)
 - [Privacy & Security](Privacy-And-Security)
 - [FAQ](FAQ)
 - [Troubleshooting](Troubleshooting)
-- [Roadmap](Roadmap)
 
 ### For Developers
 - [Developer Guide](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/development.md)
