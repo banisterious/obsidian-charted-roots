@@ -191,8 +191,44 @@ Common options available for most reports:
 | **Include details** | Show birth/death dates and places |
 | **Include spouses** | Show spouse information |
 | **Include sources** | Include source citations |
-| **Output method** | Create as note or copy to clipboard |
-| **Output folder** | Where to save the generated note |
+| **Output method** | Save to vault, Download as MD, or Download as PDF |
+| **Output folder** | Where to save the generated note (vault only) |
+
+### PDF Export
+
+All report types can be exported as professionally styled PDF documents. PDFs are generated entirely locally—no internet connection required.
+
+#### PDF Options
+
+When "Download as PDF" is selected, additional options appear:
+
+| Option | Description |
+|--------|-------------|
+| **Page size** | A4 or Letter |
+| **Include cover page** | Add a title page with report name, subject, and generation date |
+| **Logo or crest** | Optional image to display on the cover page (shown when cover page is enabled) |
+
+#### Cover Page
+
+The optional cover page includes:
+- Report title (e.g., "Ahnentafel Report")
+- Subject name (e.g., "Ancestors of John Smith")
+- Decorative separator line
+- Generation date
+- "Canvas Roots for Obsidian" branding
+
+If a logo is provided, it appears centered at the top of the cover page. Images are automatically resized to reduce PDF file size.
+
+#### Privacy & Security
+
+Genealogical data is highly personal. When you select "Download as PDF" or "Download as MD", a privacy message confirms:
+
+- **100% local generation** — PDFs are created entirely on your device using the pdfmake library bundled with the plugin
+- **No internet connection required** — No data is sent to any server or cloud service
+- **No external dependencies** — Fonts are embedded; no network requests are made during generation
+- **Downloads to your system** — Files save to your operating system's Downloads folder, outside your vault
+
+This ensures your family data never leaves your computer during report generation.
 
 ---
 

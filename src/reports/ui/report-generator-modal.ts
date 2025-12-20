@@ -14,10 +14,18 @@ import type {
 	GapsReportOptions,
 	RegisterReportOptions,
 	PedigreeChartOptions,
-	DescendantChartOptions
+	DescendantChartOptions,
+	FamilyGroupSheetResult,
+	IndividualSummaryResult,
+	AhnentafelResult,
+	GapsReportResult,
+	RegisterReportResult,
+	PedigreeChartResult,
+	DescendantChartResult
 } from '../types/report-types';
 import { REPORT_METADATA } from '../types/report-types';
 import { ReportGenerationService } from '../services/report-generation-service';
+import { PdfReportRenderer } from '../services/pdf-report-renderer';
 import { PersonPickerModal, PersonInfo } from '../../ui/person-picker';
 import { FolderFilterService } from '../../core/folder-filter';
 import { createLucideIcon } from '../../ui/lucide-icons';
@@ -41,12 +49,13 @@ export class ReportGeneratorModal extends Modal {
 	private plugin: CanvasRootsPlugin;
 	private options: ReportGeneratorModalOptions;
 	private reportService: ReportGenerationService;
+	private pdfRenderer: PdfReportRenderer;
 
 	// Form state
 	private selectedReportType: ReportType = 'family-group-sheet';
 	private selectedPersonCrId: string = '';
 	private selectedPersonName: string = '';
-	private outputMethod: 'vault' | 'download' = 'vault';
+	private outputMethod: 'vault' | 'download' | 'pdf' = 'vault';
 	private outputFolder: string;
 
 	// Report-specific options
@@ -103,15 +112,26 @@ export class ReportGeneratorModal extends Modal {
 		includeSources: true
 	};
 
+	// PDF-specific options
+	private pdfOptions = {
+		pageSize: 'A4' as 'A4' | 'LETTER',
+		includeCoverPage: false,
+		logoDataUrl: undefined as string | undefined
+	};
+
 	// UI elements
 	private optionsContainer: HTMLElement | null = null;
 	private personPickerSetting: Setting | null = null;
+	private outputFolderSetting: Setting | null = null;
+	private privacyMessageEl: HTMLElement | null = null;
+	private pdfOptionsContainer: HTMLElement | null = null;
 
 	constructor(app: App, plugin: CanvasRootsPlugin, options: ReportGeneratorModalOptions = {}) {
 		super(app);
 		this.plugin = plugin;
 		this.options = options;
 		this.reportService = new ReportGenerationService(app, plugin.settings);
+		this.pdfRenderer = new PdfReportRenderer();
 
 		// Initialize output folder from settings
 		this.outputFolder = plugin.settings.reportsFolder || '';
@@ -166,14 +186,30 @@ export class ReportGeneratorModal extends Modal {
 			.setName('Output method')
 			.addDropdown(dropdown => {
 				dropdown.addOption('vault', 'Save to vault');
-				dropdown.addOption('download', 'Download file');
+				dropdown.addOption('pdf', 'Download as PDF');
+				dropdown.addOption('download', 'Download as MD');
 				dropdown.setValue(this.outputMethod);
 				dropdown.onChange(value => {
-					this.outputMethod = value as 'vault' | 'download';
+					this.outputMethod = value as 'vault' | 'download' | 'pdf';
+					this.updateOutputVisibility();
 				});
 			});
 
-		new Setting(outputSection)
+		// Privacy message for download options
+		this.privacyMessageEl = outputSection.createDiv({ cls: 'cr-report-modal__privacy-message' });
+		this.privacyMessageEl.createSpan({ text: 'ⓘ ' });
+		const messageText = this.privacyMessageEl.createSpan();
+		messageText.setText(
+			this.outputMethod === 'pdf'
+				? 'PDF is generated locally on your device. No internet connection required. Downloads to your system\'s Downloads folder.'
+				: 'File is generated locally on your device. No internet connection required. Downloads to your system\'s Downloads folder.'
+		);
+
+		// PDF-specific options (shown only when PDF output is selected)
+		this.pdfOptionsContainer = outputSection.createDiv({ cls: 'cr-report-modal__pdf-options' });
+		this.renderPdfOptions();
+
+		this.outputFolderSetting = new Setting(outputSection)
 			.setName('Output folder')
 			.setDesc('Folder to save report (configured in Preferences → Folder locations)')
 			.addText(text => {
@@ -183,6 +219,9 @@ export class ReportGeneratorModal extends Modal {
 						this.outputFolder = value;
 					});
 			});
+
+		// Set initial visibility
+		this.updateOutputVisibility();
 
 		// Actions
 		const actionsContainer = contentEl.createDiv({ cls: 'cr-report-modal__actions' });
@@ -200,6 +239,192 @@ export class ReportGeneratorModal extends Modal {
 	onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
+	}
+
+	/**
+	 * Update visibility of output-related UI elements based on output method
+	 */
+	private updateOutputVisibility(): void {
+		const isDownload = this.outputMethod === 'download' || this.outputMethod === 'pdf';
+		const isPdf = this.outputMethod === 'pdf';
+
+		// Show/hide privacy message
+		if (this.privacyMessageEl) {
+			this.privacyMessageEl.style.display = isDownload ? 'block' : 'none';
+
+			// Update message text based on PDF vs MD
+			const messageSpan = this.privacyMessageEl.querySelector('span:last-child');
+			if (messageSpan) {
+				messageSpan.textContent = isPdf
+					? 'PDF is generated locally on your device. No internet connection required. Downloads to your system\'s Downloads folder.'
+					: 'File is generated locally on your device. No internet connection required. Downloads to your system\'s Downloads folder.';
+			}
+		}
+
+		// Show/hide PDF options (only for PDF output)
+		if (this.pdfOptionsContainer) {
+			this.pdfOptionsContainer.style.display = isPdf ? 'block' : 'none';
+		}
+
+		// Show/hide output folder setting
+		if (this.outputFolderSetting) {
+			this.outputFolderSetting.settingEl.style.display = isDownload ? 'none' : '';
+		}
+	}
+
+	/**
+	 * Render PDF-specific options
+	 */
+	private renderPdfOptions(): void {
+		if (!this.pdfOptionsContainer) return;
+		this.pdfOptionsContainer.empty();
+
+		// Page size
+		new Setting(this.pdfOptionsContainer)
+			.setName('Page size')
+			.addDropdown(dropdown => {
+				dropdown.addOption('A4', 'A4');
+				dropdown.addOption('LETTER', 'Letter');
+				dropdown.setValue(this.pdfOptions.pageSize);
+				dropdown.onChange(value => {
+					this.pdfOptions.pageSize = value as 'A4' | 'LETTER';
+				});
+			});
+
+		// Cover page
+		new Setting(this.pdfOptionsContainer)
+			.setName('Include cover page')
+			.setDesc('Add a title page with report name and generation date')
+			.addToggle(toggle => {
+				toggle.setValue(this.pdfOptions.includeCoverPage);
+				toggle.onChange(value => {
+					this.pdfOptions.includeCoverPage = value;
+					this.updateLogoVisibility();
+				});
+			});
+
+		// Logo/crest (only shown when cover page is enabled)
+		this.renderLogoSetting();
+	}
+
+	/**
+	 * Render logo picker setting (shown only when cover page is enabled)
+	 */
+	private renderLogoSetting(): void {
+		if (!this.pdfOptionsContainer) return;
+
+		// Create container for logo setting
+		const logoContainer = this.pdfOptionsContainer.createDiv({ cls: 'cr-report-modal__logo-setting' });
+
+		const logoSetting = new Setting(logoContainer)
+			.setName('Logo or crest')
+			.setDesc(this.pdfOptions.logoDataUrl ? 'Image selected' : 'Optional image to display on cover page');
+
+		// Add file input button
+		logoSetting.addButton(button => {
+			button
+				.setButtonText(this.pdfOptions.logoDataUrl ? 'Change...' : 'Select image...')
+				.onClick(() => {
+					const input = document.createElement('input');
+					input.type = 'file';
+					input.accept = 'image/png,image/jpeg,image/gif,image/webp';
+					input.onchange = async () => {
+						const file = input.files?.[0];
+						if (file) {
+							try {
+								const dataUrl = await this.fileToDataUrl(file);
+								this.pdfOptions.logoDataUrl = dataUrl;
+								button.setButtonText('Change...');
+								logoSetting.setDesc('Image selected');
+								// Add remove button if not already present
+								this.renderPdfOptions();
+							} catch (error) {
+								new Notice('Failed to load image');
+								console.error('Logo load error:', error);
+							}
+						}
+					};
+					input.click();
+				});
+		});
+
+		// Add remove button if logo is selected
+		if (this.pdfOptions.logoDataUrl) {
+			logoSetting.addButton(button => {
+				button
+					.setButtonText('Remove')
+					.onClick(() => {
+						this.pdfOptions.logoDataUrl = undefined;
+						this.renderPdfOptions();
+					});
+			});
+		}
+
+		// Set initial visibility
+		logoContainer.style.display = this.pdfOptions.includeCoverPage ? '' : 'none';
+	}
+
+	/**
+	 * Update logo setting visibility based on cover page toggle
+	 */
+	private updateLogoVisibility(): void {
+		const logoContainer = this.pdfOptionsContainer?.querySelector('.cr-report-modal__logo-setting') as HTMLElement | null;
+		if (logoContainer) {
+			logoContainer.style.display = this.pdfOptions.includeCoverPage ? '' : 'none';
+		}
+	}
+
+	/**
+	 * Convert a File to a resized data URL
+	 * Resizes image to max 200px width to reduce PDF file size
+	 */
+	private fileToDataUrl(file: File): Promise<string> {
+		return new Promise((resolve, reject) => {
+			const img = new Image();
+			const reader = new FileReader();
+
+			reader.onload = () => {
+				if (typeof reader.result !== 'string') {
+					reject(new Error('Failed to read file'));
+					return;
+				}
+				img.src = reader.result;
+			};
+
+			img.onload = () => {
+				// Max width for logo in PDF (renders at 100pt, use 200px for retina quality)
+				const maxWidth = 200;
+				const maxHeight = 200;
+
+				let { width, height } = img;
+
+				// Only resize if larger than max dimensions
+				if (width > maxWidth || height > maxHeight) {
+					const ratio = Math.min(maxWidth / width, maxHeight / height);
+					width = Math.round(width * ratio);
+					height = Math.round(height * ratio);
+				}
+
+				// Draw to canvas at new size
+				const canvas = document.createElement('canvas');
+				canvas.width = width;
+				canvas.height = height;
+				const ctx = canvas.getContext('2d');
+				if (!ctx) {
+					reject(new Error('Failed to get canvas context'));
+					return;
+				}
+				ctx.drawImage(img, 0, 0, width, height);
+
+				// Convert to data URL (use PNG for transparency support)
+				const dataUrl = canvas.toDataURL('image/png');
+				resolve(dataUrl);
+			};
+
+			img.onerror = () => reject(new Error('Failed to load image'));
+			reader.onerror = () => reject(reader.error);
+			reader.readAsDataURL(file);
+		});
 	}
 
 	/**
@@ -678,8 +903,11 @@ export class ReportGeneratorModal extends Modal {
 				return;
 			}
 
-			// Handle output
-			if (this.outputMethod === 'download') {
+			// Handle output based on method
+			if (this.outputMethod === 'pdf') {
+				// Generate PDF using the structured result data
+				await this.generatePdfFromResult(result);
+			} else if (this.outputMethod === 'download') {
 				this.reportService.downloadReport(result.content, result.suggestedFilename);
 				new Notice('Report downloaded');
 			} else {
@@ -691,11 +919,51 @@ export class ReportGeneratorModal extends Modal {
 				new Notice(`Warnings: ${result.warnings.join(', ')}`);
 			}
 
-			this.close();
+			// Only close modal when saving to vault; keep open for downloads
+			// so user can generate multiple reports with same person selection
+			if (this.outputMethod === 'vault') {
+				this.close();
+			}
 
 		} catch (error) {
 			console.error('Report generation error:', error);
 			new Notice('Report generation failed. Check console for details.');
+		}
+	}
+
+	/**
+	 * Generate PDF from the report result
+	 */
+	private async generatePdfFromResult(result: any): Promise<void> {
+		const pdfOptions = {
+			pageSize: this.pdfOptions.pageSize,
+			fontStyle: 'serif' as const,
+			includeCoverPage: this.pdfOptions.includeCoverPage,
+			logoDataUrl: this.pdfOptions.logoDataUrl
+		};
+
+		switch (this.selectedReportType) {
+			case 'family-group-sheet':
+				await this.pdfRenderer.renderFamilyGroupSheet(result as FamilyGroupSheetResult, pdfOptions);
+				break;
+			case 'individual-summary':
+				await this.pdfRenderer.renderIndividualSummary(result as IndividualSummaryResult, pdfOptions);
+				break;
+			case 'ahnentafel':
+				await this.pdfRenderer.renderAhnentafel(result as AhnentafelResult, pdfOptions);
+				break;
+			case 'gaps-report':
+				await this.pdfRenderer.renderGapsReport(result as GapsReportResult, pdfOptions);
+				break;
+			case 'register-report':
+				await this.pdfRenderer.renderRegisterReport(result as RegisterReportResult, pdfOptions);
+				break;
+			case 'pedigree-chart':
+				await this.pdfRenderer.renderPedigreeChart(result as PedigreeChartResult, pdfOptions);
+				break;
+			case 'descendant-chart':
+				await this.pdfRenderer.renderDescendantChart(result as DescendantChartResult, pdfOptions);
+				break;
 		}
 	}
 }

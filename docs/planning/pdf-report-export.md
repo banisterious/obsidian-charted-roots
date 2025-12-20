@@ -304,12 +304,17 @@ interface PdfOptions {
 
 Future enhancements based on user feedback.
 
+### Implemented Features
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Logo/crest | Add family crest or logo to cover page | ✅ Complete |
+
 ### Potential Features
 
 | Feature | Description | Complexity |
 |---------|-------------|------------|
 | Custom fonts | Embed user-specified fonts (increases size) | High |
-| Logo/watermark | Add family crest or watermark | Medium |
 | Table of contents | For long reports | Medium |
 | Hyperlinks | Internal document links between generations | Low |
 | Charts/graphs | Visual statistics (age distribution, etc.) | High |
