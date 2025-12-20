@@ -206,7 +206,10 @@ export class ReportGeneratorModal extends Modal {
 	private pdfOptions = {
 		pageSize: 'A4' as 'A4' | 'LETTER',
 		includeCoverPage: false,
-		logoDataUrl: undefined as string | undefined
+		logoDataUrl: undefined as string | undefined,
+		customTitle: '',
+		customSubtitle: '',
+		coverNotes: ''
 	};
 
 	// UI elements
@@ -452,6 +455,9 @@ export class ReportGeneratorModal extends Modal {
 
 		// Logo/crest (only shown when cover page is enabled)
 		this.renderLogoSetting();
+
+		// Cover page customization fields (only shown when cover page is enabled)
+		this.renderCoverPageFields();
 	}
 
 	/**
@@ -512,12 +518,72 @@ export class ReportGeneratorModal extends Modal {
 	}
 
 	/**
-	 * Update logo setting visibility based on cover page toggle
+	 * Render cover page customization fields (shown only when cover page is enabled)
+	 */
+	private renderCoverPageFields(): void {
+		if (!this.pdfOptionsContainer) return;
+
+		// Create container for cover page customization
+		const coverFieldsContainer = this.pdfOptionsContainer.createDiv({ cls: 'cr-report-modal__cover-fields' });
+
+		// Custom title
+		new Setting(coverFieldsContainer)
+			.setName('Custom title')
+			.setDesc('Override the default report title (also used in page headers)')
+			.addText(text => {
+				text.setPlaceholder('Leave blank for default')
+					.setValue(this.pdfOptions.customTitle)
+					.onChange(value => {
+						this.pdfOptions.customTitle = value;
+					});
+			});
+
+		// Custom subtitle
+		new Setting(coverFieldsContainer)
+			.setName('Custom subtitle')
+			.setDesc('Override the auto-generated subject line')
+			.addText(text => {
+				text.setPlaceholder('Leave blank for default')
+					.setValue(this.pdfOptions.customSubtitle)
+					.onChange(value => {
+						this.pdfOptions.customSubtitle = value;
+					});
+			});
+
+		// Cover notes (textarea)
+		const notesSetting = new Setting(coverFieldsContainer)
+			.setName('Cover notes')
+			.setDesc('Additional preface or dedication text (supports multiple paragraphs)');
+
+		// Create textarea manually since Setting doesn't have addTextArea
+		const notesTextarea = notesSetting.controlEl.createEl('textarea', {
+			cls: 'cr-report-modal__cover-notes-textarea',
+			attr: {
+				placeholder: 'Optional dedication, preface, or notes...',
+				rows: '3'
+			}
+		});
+		notesTextarea.value = this.pdfOptions.coverNotes;
+		notesTextarea.addEventListener('input', () => {
+			this.pdfOptions.coverNotes = notesTextarea.value;
+		});
+
+		// Set initial visibility
+		coverFieldsContainer.style.display = this.pdfOptions.includeCoverPage ? '' : 'none';
+	}
+
+	/**
+	 * Update cover page options visibility based on cover page toggle
 	 */
 	private updateLogoVisibility(): void {
 		const logoContainer = this.pdfOptionsContainer?.querySelector('.cr-report-modal__logo-setting') as HTMLElement | null;
 		if (logoContainer) {
 			logoContainer.style.display = this.pdfOptions.includeCoverPage ? '' : 'none';
+		}
+
+		const coverFieldsContainer = this.pdfOptionsContainer?.querySelector('.cr-report-modal__cover-fields') as HTMLElement | null;
+		if (coverFieldsContainer) {
+			coverFieldsContainer.style.display = this.pdfOptions.includeCoverPage ? '' : 'none';
 		}
 	}
 
@@ -1607,7 +1673,10 @@ export class ReportGeneratorModal extends Modal {
 			pageSize: this.pdfOptions.pageSize,
 			fontStyle: 'serif' as const,
 			includeCoverPage: this.pdfOptions.includeCoverPage,
-			logoDataUrl: this.pdfOptions.logoDataUrl
+			logoDataUrl: this.pdfOptions.logoDataUrl,
+			customTitle: this.pdfOptions.customTitle || undefined,
+			customSubtitle: this.pdfOptions.customSubtitle || undefined,
+			coverNotes: this.pdfOptions.coverNotes || undefined
 		};
 
 		switch (this.selectedReportType) {

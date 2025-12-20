@@ -39,6 +39,12 @@ export interface PdfOptions {
 	includeCoverPage: boolean;
 	/** Logo/crest image as base64 data URL (displayed on cover page) */
 	logoDataUrl?: string;
+	/** Custom title to override the default report type name (used on cover page and headers) */
+	customTitle?: string;
+	/** Custom subtitle to override the auto-generated subject line (cover page only) */
+	customSubtitle?: string;
+	/** Additional notes/preface text for cover page (supports multiple paragraphs) */
+	coverNotes?: string;
 }
 
 /**
@@ -368,7 +374,12 @@ export class PdfReportRenderer {
 	/**
 	 * Build a cover page for the report
 	 */
-	private buildCoverPage(reportTitle: string, subtitle?: string, logoDataUrl?: string): Content[] {
+	private buildCoverPage(
+		reportTitle: string,
+		subtitle?: string,
+		logoDataUrl?: string,
+		coverNotes?: string
+	): Content[] {
 		const generatedDate = new Date().toLocaleDateString();
 		const content: Content[] = [];
 
@@ -426,6 +437,24 @@ export class PdfReportRenderer {
 			margin: [0, 0, 0, 30]
 		});
 
+		// Cover notes/preface (if provided)
+		if (coverNotes && coverNotes.trim()) {
+			// Split by double newlines for paragraphs, or single newlines
+			const paragraphs = coverNotes.split(/\n\n+/).map(p => p.trim()).filter(p => p);
+			for (const paragraph of paragraphs) {
+				content.push({
+					text: paragraph,
+					fontSize: 11,
+					italics: true,
+					alignment: 'center',
+					color: COLORS.secondaryText,
+					margin: [40, 0, 40, 12]
+				});
+			}
+			// Add spacing after notes
+			content.push({ text: '', margin: [0, 10, 0, 0] });
+		}
+
 		// Generation info
 		content.push({
 			text: `Generated on ${generatedDate}`,
@@ -459,17 +488,21 @@ export class PdfReportRenderer {
 		await this.ensurePdfMake();
 
 		const defaultFont = this.getDefaultFont(options.fontStyle);
-		const reportTitle = 'Family Group Sheet';
+		const defaultTitle = 'Family Group Sheet';
 		const husbandName = result.primaryPerson.sex === 'male' ? result.primaryPerson.name : result.spouses[0]?.name || '';
 		const wifeName = result.primaryPerson.sex === 'female' ? result.primaryPerson.name : result.spouses[0]?.name || '';
-		const subtitle = `${husbandName} & ${wifeName}`;
+		const defaultSubtitle = `${husbandName} & ${wifeName}`;
+
+		// Use custom title/subtitle if provided
+		const reportTitle = options.customTitle || defaultTitle;
+		const subtitle = options.customSubtitle || defaultSubtitle;
 
 		// Build content
 		const content: Content[] = [];
 
 		// Cover page (if enabled)
 		if (options.includeCoverPage) {
-			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl));
+			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl, options.coverNotes));
 		}
 
 		// Title
@@ -554,14 +587,17 @@ export class PdfReportRenderer {
 		await this.ensurePdfMake();
 
 		const defaultFont = this.getDefaultFont(options.fontStyle);
-		const reportTitle = 'Ahnentafel Report';
-		const subtitle = `Ancestors of ${result.rootPerson.name}`;
+		const defaultTitle = 'Ahnentafel Report';
+		const defaultSubtitle = `Ancestors of ${result.rootPerson.name}`;
+
+		const reportTitle = options.customTitle || defaultTitle;
+		const subtitle = options.customSubtitle || defaultSubtitle;
 
 		const content: Content[] = [];
 
 		// Cover page (if enabled)
 		if (options.includeCoverPage) {
-			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl));
+			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl, options.coverNotes));
 		}
 
 		// Title
@@ -634,14 +670,17 @@ export class PdfReportRenderer {
 		await this.ensurePdfMake();
 
 		const defaultFont = this.getDefaultFont(options.fontStyle);
-		const reportTitle = 'Individual Summary';
-		const subtitle = result.person.name;
+		const defaultTitle = 'Individual Summary';
+		const defaultSubtitle = result.person.name;
+
+		const reportTitle = options.customTitle || defaultTitle;
+		const subtitle = options.customSubtitle || defaultSubtitle;
 
 		const content: Content[] = [];
 
 		// Cover page (if enabled)
 		if (options.includeCoverPage) {
-			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl));
+			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl, options.coverNotes));
 		}
 
 		// Title
@@ -704,14 +743,17 @@ export class PdfReportRenderer {
 		await this.ensurePdfMake();
 
 		const defaultFont = this.getDefaultFont(options.fontStyle);
-		const reportTitle = 'Data Quality Report';
-		const subtitle = 'Research Opportunities & Missing Data';
+		const defaultTitle = 'Data Quality Report';
+		const defaultSubtitle = 'Research Opportunities & Missing Data';
+
+		const reportTitle = options.customTitle || defaultTitle;
+		const subtitle = options.customSubtitle || defaultSubtitle;
 
 		const content: Content[] = [];
 
 		// Cover page (if enabled)
 		if (options.includeCoverPage) {
-			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl));
+			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl, options.coverNotes));
 		}
 
 		// Title
@@ -801,14 +843,17 @@ export class PdfReportRenderer {
 		await this.ensurePdfMake();
 
 		const defaultFont = this.getDefaultFont(options.fontStyle);
-		const reportTitle = 'Register Report';
-		const subtitle = `Descendants of ${result.rootPerson.name}`;
+		const defaultTitle = 'Register Report';
+		const defaultSubtitle = `Descendants of ${result.rootPerson.name}`;
+
+		const reportTitle = options.customTitle || defaultTitle;
+		const subtitle = options.customSubtitle || defaultSubtitle;
 
 		const content: Content[] = [];
 
 		// Cover page (if enabled)
 		if (options.includeCoverPage) {
-			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl));
+			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl, options.coverNotes));
 		}
 
 		// Title
@@ -900,14 +945,17 @@ export class PdfReportRenderer {
 	): Promise<void> {
 		await this.ensurePdfMake();
 
-		const reportTitle = 'Pedigree Chart';
-		const subtitle = `Ancestors of ${result.rootPerson.name}`;
+		const defaultTitle = 'Pedigree Chart';
+		const defaultSubtitle = `Ancestors of ${result.rootPerson.name}`;
+
+		const reportTitle = options.customTitle || defaultTitle;
+		const subtitle = options.customSubtitle || defaultSubtitle;
 
 		const content: Content[] = [];
 
 		// Cover page (if enabled)
 		if (options.includeCoverPage) {
-			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl));
+			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl, options.coverNotes));
 		}
 
 		// Title
@@ -952,14 +1000,17 @@ export class PdfReportRenderer {
 		await this.ensurePdfMake();
 
 		const defaultFont = this.getDefaultFont(options.fontStyle);
-		const reportTitle = 'Descendant Chart';
-		const subtitle = `Descendants of ${result.rootPerson.name}`;
+		const defaultTitle = 'Descendant Chart';
+		const defaultSubtitle = `Descendants of ${result.rootPerson.name}`;
+
+		const reportTitle = options.customTitle || defaultTitle;
+		const subtitle = options.customSubtitle || defaultSubtitle;
 
 		const content: Content[] = [];
 
 		// Cover page (if enabled)
 		if (options.includeCoverPage) {
-			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl));
+			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl, options.coverNotes));
 		}
 
 		// Title
@@ -1040,14 +1091,17 @@ export class PdfReportRenderer {
 		await this.ensurePdfMake();
 
 		const defaultFont = this.getDefaultFont(options.fontStyle);
-		const reportTitle = 'Source Summary';
-		const subtitle = result.person.name;
+		const defaultTitle = 'Source Summary';
+		const defaultSubtitle = result.person.name;
+
+		const reportTitle = options.customTitle || defaultTitle;
+		const subtitle = options.customSubtitle || defaultSubtitle;
 
 		const content: Content[] = [];
 
 		// Cover page (if enabled)
 		if (options.includeCoverPage) {
-			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl));
+			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl, options.coverNotes));
 		}
 
 		// Title
@@ -1138,16 +1192,19 @@ export class PdfReportRenderer {
 		await this.ensurePdfMake();
 
 		const defaultFont = this.getDefaultFont(options.fontStyle);
-		const reportTitle = 'Timeline Report';
-		const subtitle = result.dateRange.from && result.dateRange.to
+		const defaultTitle = 'Timeline Report';
+		const defaultSubtitle = result.dateRange.from && result.dateRange.to
 			? `${result.dateRange.from} to ${result.dateRange.to}`
 			: 'All events';
+
+		const reportTitle = options.customTitle || defaultTitle;
+		const subtitle = options.customSubtitle || defaultSubtitle;
 
 		const content: Content[] = [];
 
 		// Cover page (if enabled)
 		if (options.includeCoverPage) {
-			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl));
+			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl, options.coverNotes));
 		}
 
 		// Title
@@ -1222,14 +1279,17 @@ export class PdfReportRenderer {
 		await this.ensurePdfMake();
 
 		const defaultFont = this.getDefaultFont(options.fontStyle);
-		const reportTitle = 'Place Summary';
-		const subtitle = result.place.name;
+		const defaultTitle = 'Place Summary';
+		const defaultSubtitle = result.place.name;
+
+		const reportTitle = options.customTitle || defaultTitle;
+		const subtitle = options.customSubtitle || defaultSubtitle;
 
 		const content: Content[] = [];
 
 		// Cover page (if enabled)
 		if (options.includeCoverPage) {
-			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl));
+			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl, options.coverNotes));
 		}
 
 		// Title
@@ -1346,14 +1406,17 @@ export class PdfReportRenderer {
 		await this.ensurePdfMake();
 
 		const defaultFont = this.getDefaultFont(options.fontStyle);
-		const reportTitle = 'Media Inventory';
-		const subtitle = `${result.summary.totalFiles} files`;
+		const defaultTitle = 'Media Inventory';
+		const defaultSubtitle = `${result.summary.totalFiles} files`;
+
+		const reportTitle = options.customTitle || defaultTitle;
+		const subtitle = options.customSubtitle || defaultSubtitle;
 
 		const content: Content[] = [];
 
 		// Cover page (if enabled)
 		if (options.includeCoverPage) {
-			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl));
+			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl, options.coverNotes));
 		}
 
 		// Title
@@ -1465,14 +1528,17 @@ export class PdfReportRenderer {
 		await this.ensurePdfMake();
 
 		const defaultFont = this.getDefaultFont(options.fontStyle);
-		const reportTitle = 'Universe Overview';
-		const subtitle = result.universe.name;
+		const defaultTitle = 'Universe Overview';
+		const defaultSubtitle = result.universe.name;
+
+		const reportTitle = options.customTitle || defaultTitle;
+		const subtitle = options.customSubtitle || defaultSubtitle;
 
 		const content: Content[] = [];
 
 		// Cover page (if enabled)
 		if (options.includeCoverPage) {
-			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl));
+			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl, options.coverNotes));
 		}
 
 		// Title
@@ -1585,14 +1651,17 @@ export class PdfReportRenderer {
 		await this.ensurePdfMake();
 
 		const defaultFont = this.getDefaultFont(options.fontStyle);
-		const reportTitle = 'Collection Overview';
-		const subtitle = result.collection.name;
+		const defaultTitle = 'Collection Overview';
+		const defaultSubtitle = result.collection.name;
+
+		const reportTitle = options.customTitle || defaultTitle;
+		const subtitle = options.customSubtitle || defaultSubtitle;
 
 		const content: Content[] = [];
 
 		// Cover page (if enabled)
 		if (options.includeCoverPage) {
-			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl));
+			content.push(...this.buildCoverPage(reportTitle, subtitle, options.logoDataUrl, options.coverNotes));
 		}
 
 		// Title
