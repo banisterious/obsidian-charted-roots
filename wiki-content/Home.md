@@ -20,6 +20,7 @@ Canvas Roots transforms structured genealogical data in your Markdown notes into
 1. **[Get Started](Getting-Started)** - Installation and basic setup
 2. **[Data Entry](Data-Entry)** - Creating person notes with family relationships
 3. **[Tree Generation](Tree-Generation)** - Generate your first family tree
+4. **[Control Center](Control-Center)** - Your central hub for all plugin operations
 
 ## Key Features
 
@@ -155,5 +156,5 @@ Use Obsidian's table-based interface for efficient bulk data entry and editing.
 
 ---
 
-**Version**: 0.11.2
-**Last Updated**: 2025-12-11
+**Version**: 0.13.6
+**Last Updated**: 2025-12-20
