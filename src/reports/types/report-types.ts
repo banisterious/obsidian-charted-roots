@@ -14,7 +14,23 @@ export type ReportType =
 	| 'gaps-report'
 	| 'register-report'
 	| 'pedigree-chart'
-	| 'descendant-chart';
+	| 'descendant-chart'
+	| 'source-summary'
+	| 'timeline-report'
+	| 'place-summary'
+	| 'media-inventory'
+	| 'universe-overview'
+	| 'collection-overview';
+
+/**
+ * Report categories for UI organization
+ */
+export type ReportCategory =
+	| 'genealogical'
+	| 'research'
+	| 'timeline'
+	| 'geographic'
+	| 'summary';
 
 /**
  * Base options for all reports
@@ -127,6 +143,130 @@ export interface DescendantChartOptions extends ReportOptions {
 	includeDetails: boolean;
 	/** Include spouse information */
 	includeSpouses: boolean;
+}
+
+/**
+ * Options for Source Summary report
+ */
+export interface SourceSummaryOptions extends ReportOptions {
+	/** CR ID of the person */
+	personCrId: string;
+	/** Include children's sources */
+	includeChildrenSources: boolean;
+	/** Grouping method */
+	groupBy: 'fact_type' | 'source_type' | 'quality' | 'chronological';
+	/** Show quality ratings */
+	showQualityRatings: boolean;
+	/** Include citation details */
+	includeCitationDetails: boolean;
+	/** Show repository info */
+	showRepositoryInfo: boolean;
+	/** Highlight unsourced facts */
+	highlightGaps: boolean;
+}
+
+/**
+ * Options for Timeline Report
+ */
+export interface TimelineReportOptions extends ReportOptions {
+	/** Start date filter (optional) */
+	dateFrom?: string;
+	/** End date filter (optional) */
+	dateTo?: string;
+	/** Event types to include (empty = all) */
+	eventTypes: string[];
+	/** Person filter (CR IDs, empty = all) */
+	personFilter: string[];
+	/** Place filter (CR IDs, empty = all) */
+	placeFilter: string[];
+	/** Include child places in filter */
+	includeChildPlaces: boolean;
+	/** Grouping method */
+	grouping: 'none' | 'by_year' | 'by_decade' | 'by_person' | 'by_place';
+	/** Include event descriptions */
+	includeDescriptions: boolean;
+	/** Universe filter (optional) */
+	universeCrId?: string;
+}
+
+/**
+ * Options for Place Summary report
+ */
+export interface PlaceSummaryOptions extends ReportOptions {
+	/** CR ID of the place */
+	placeCrId: string;
+	/** Include child places */
+	includeChildPlaces: boolean;
+	/** Start date filter (optional) */
+	dateFrom?: string;
+	/** End date filter (optional) */
+	dateTo?: string;
+	/** Event types to include (empty = all) */
+	eventTypes: string[];
+	/** Show coordinates */
+	showCoordinates: boolean;
+	/** Show place hierarchy */
+	showHierarchy: boolean;
+	/** Include map reference (future) */
+	includeMapReference: boolean;
+}
+
+/**
+ * Options for Media Inventory report
+ */
+export interface MediaInventoryOptions extends ReportOptions {
+	/** Scope of the report */
+	scope: 'all' | 'sources_only' | 'by_folder';
+	/** Folder path (if scope is 'by_folder') */
+	folderPath?: string;
+	/** Show orphaned files */
+	showOrphanedFiles: boolean;
+	/** Show coverage gaps (entities without media) */
+	showCoverageGaps: boolean;
+	/** Grouping method */
+	groupBy: 'entity_type' | 'folder' | 'file_type';
+	/** Include file sizes */
+	includeFileSizes: boolean;
+}
+
+/**
+ * Options for Universe Overview report
+ */
+export interface UniverseOverviewOptions extends ReportOptions {
+	/** CR ID of the universe */
+	universeCrId: string;
+	/** Include entity list */
+	includeEntityList: boolean;
+	/** Show geographic summary */
+	showGeographicSummary: boolean;
+	/** Show date systems */
+	showDateSystems: boolean;
+	/** Show recent activity */
+	showRecentActivity: boolean;
+	/** Max entities per type in list */
+	maxEntitiesPerType: number;
+}
+
+/**
+ * Options for Collection Overview report
+ */
+export interface CollectionOverviewOptions extends ReportOptions {
+	/** Collection identifier (path for user collections, component ID for auto-detected) */
+	collectionId: string;
+	/** Collection type */
+	collectionType: 'user' | 'component';
+	/** Include member list */
+	includeMemberList: boolean;
+	/** Show generation analysis */
+	showGenerationAnalysis: boolean;
+	/** Show geographic distribution */
+	showGeographicDistribution: boolean;
+	/** Show surname distribution */
+	showSurnameDistribution: boolean;
+	/** Member sort order */
+	sortMembersBy: 'birth_date' | 'name' | 'death_date';
+	/** Max members in list */
+	maxMembers: number;
 }
 
 /**
