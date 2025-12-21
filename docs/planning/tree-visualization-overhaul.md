@@ -5,11 +5,54 @@ Comprehensive planning document for modernizing tree visualization in Canvas Roo
 1. **Canvas Trees Tab Redesign** - Transform into a tree manager dashboard with wizard-based generation
 2. **Visual Tree Reports** - Add printable tree diagrams (Pedigree, Descendant, Hourglass, Fan) to Statistics and Reports
 
-- **Status:** Planning
+- **Status:** In Progress (Phase 1 Complete)
 - **Priority:** Medium
 - **GitHub Issue:** TBD
 - **Created:** 2025-12-21
 - **Updated:** 2025-12-21
+
+---
+
+## Implementation Progress
+
+### Completed
+
+#### Phase 1: Canvas Trees Tab Redesign (2025-12-21)
+
+**Tree Generation Wizard Modal** - `src/trees/ui/tree-generation-wizard.ts`
+- 5-step wizard flow: Person → Layout → Options → Preview → Output
+- Step 1: Person search with keyboard navigation, family group filtering
+- Step 2: Tree type selection (Ancestors/Descendants/Combined), layout algorithm, generation limits
+- Step 3: Scope options (step-parents, adoptive parents, collection/place/universe filters) and style options (coloring, arrows, edge colors, spouse edges)
+- Step 4: Interactive preview with tree statistics
+- Step 5: Canvas name, save folder selection, open after generate option
+- Refactored from inline UI to modal wizard pattern
+
+**Canvas Trees Tab Dashboard** - `src/ui/control-center.ts`
+- Card-based layout replacing sparse accordion design
+- Overview Card: Title with icon, action buttons (New Tree, Open Latest, Generate All), 4-column stats grid
+- Recent Trees Card: Tree list with metadata (people count, root person, time ago), action buttons (open, context menu)
+- Tips Card: Condensed guidance for tree generation
+- Empty state with icon and call-to-action
+
+**CSS Updates** - `styles/tree-output.css`
+- New card component styles (`.crc-tree-card`, `.crc-tree-card__header`, etc.)
+- Stats grid with visual separators
+- Recent tree item styling with borders
+- Empty state and tips list styling
+- Wizard options step with collapsible `<details>` sections
+
+### Remaining
+
+#### Phase 2: Visual Tree Reports (Not Started)
+- Add Visual Trees category to Statistics and Reports
+- Pedigree, Descendant, Hourglass, Fan chart types
+- pdfmake-based PDF generation
+- Custom SVG icons for report tiles
+
+#### Phase 3: Library Consolidation (Not Started)
+- Migrate Family Chart PDF export from jsPDF to pdfmake
+- Remove jsPDF dependency
 
 ---
 
