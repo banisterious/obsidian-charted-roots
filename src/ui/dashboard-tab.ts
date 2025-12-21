@@ -117,7 +117,14 @@ function renderQuickActionsSection(
 		new CreatePersonModal(app, {
 			directory: plugin.settings.peopleFolder || '',
 			familyGraph,
-			propertyAliases: plugin.settings.propertyAliases
+			propertyAliases: plugin.settings.propertyAliases,
+			onCreated: (file) => {
+				// Track the newly created person in recent files
+				const recentService = plugin.getRecentFilesService();
+				if (recentService) {
+					void recentService.trackFile(file, 'person');
+				}
+			}
 		}).open();
 	};
 
@@ -125,13 +132,31 @@ function renderQuickActionsSection(
 	const openCreateEvent = () => {
 		closeModal();
 		const eventService = new EventService(app, plugin.settings);
-		new CreateEventModal(app, eventService, plugin.settings).open();
+		new CreateEventModal(app, eventService, plugin.settings, {
+			onCreated: (file) => {
+				// Track the newly created event in recent files
+				const recentService = plugin.getRecentFilesService();
+				if (recentService) {
+					void recentService.trackFile(file, 'event');
+				}
+			}
+		}).open();
 	};
 
 	// Helper to open create source modal
 	const openCreateSource = () => {
 		closeModal();
-		new CreateSourceModal(app, plugin).open();
+		new CreateSourceModal(app, plugin, {
+			onSuccess: (file) => {
+				// Track the newly created source in recent files
+				if (file) {
+					const recentService = plugin.getRecentFilesService();
+					if (recentService) {
+						void recentService.trackFile(file, 'source');
+					}
+				}
+			}
+		}).open();
 	};
 
 	// Helper to open create place modal
@@ -139,7 +164,14 @@ function renderQuickActionsSection(
 		closeModal();
 		new CreatePlaceModal(app, {
 			directory: plugin.settings.placesFolder || 'Canvas Roots/Places',
-			settings: plugin.settings
+			settings: plugin.settings,
+			onCreated: (file) => {
+				// Track the newly created place in recent files
+				const recentService = plugin.getRecentFilesService();
+				if (recentService) {
+					void recentService.trackFile(file, 'place');
+				}
+			}
 		}).open();
 	};
 
