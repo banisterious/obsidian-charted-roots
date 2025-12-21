@@ -14,7 +14,7 @@
 
 ## Features
 
-### [Tree Generation](https://github.com/banisterious/obsidian-canvas-roots/wiki/Tree-Generation)
+### [Canvas Trees](https://github.com/banisterious/obsidian-canvas-roots/wiki/Canvas-Trees)
 
 | Feature | Description |
 |---------|-------------|
@@ -145,10 +145,10 @@
 
 ## Screenshots
 
-### Tree Generation
-| Tree Output Interface | Generated Family Tree |
+### Canvas Trees
+| Canvas Trees Interface | Generated Family Tree |
 |:---------------------:|:---------------------:|
-| ![Tree Output interface](docs/images/canvas-roots-control-center-tree-output-tab.png) | ![Family tree canvas](docs/images/family-tree-canvas.png) |
+| ![Canvas Trees interface](docs/images/canvas-roots-control-center-tree-output-tab.png) | ![Family tree canvas](docs/images/family-tree-canvas.png) |
 | Person browser, layout selection, interactive preview | Automated genealogical layout with spouse and parent-child connections |
 
 ### Interactive Family Chart View
@@ -234,7 +234,7 @@ died: 1952-08-20
 - Pan, zoom, and click to explore
 - Edit relationships directly in the chart
 
-**Or generate a canvas:** Control Center → Tree output tab
+**Or generate a canvas:** Control Center → Canvas Trees tab
 - Creates a static, shareable family tree document
 - Right-click canvas → "Regenerate canvas" to update
 
@@ -263,7 +263,7 @@ If you find this plugin useful, please consider supporting its development!
 ### Quick Links
 - [Getting Started](https://github.com/banisterious/obsidian-canvas-roots/wiki/Getting-Started) - Installation and first steps
 - [Data Entry](https://github.com/banisterious/obsidian-canvas-roots/wiki/Data-Entry) - Creating person notes
-- [Tree Generation](https://github.com/banisterious/obsidian-canvas-roots/wiki/Tree-Generation) - Generating family trees
+- [Canvas Trees](https://github.com/banisterious/obsidian-canvas-roots/wiki/Canvas-Trees) - Generating family trees
 - [Import & Export](https://github.com/banisterious/obsidian-canvas-roots/wiki/Import-Export) - GEDCOM 5.5.1, GEDCOM X (JSON), Gramps XML, and CSV
 - [Geographic Features](https://github.com/banisterious/obsidian-canvas-roots/wiki/Geographic-Features) - Maps and places
 - [Evidence & Sources](https://github.com/banisterious/obsidian-canvas-roots/wiki/Evidence-And-Sources) - Source management and indicators
