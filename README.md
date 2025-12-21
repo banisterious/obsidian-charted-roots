@@ -145,36 +145,36 @@
 
 ## Screenshots
 
-### Interactive Map View
-<img src="docs/images/canvas-roots-interactive-map-view.png" alt="Interactive Map View" width="700">
-
-*Leaflet-powered geographic visualization with color-coded markers (green=birth, red=death), marker clustering, migration paths with person labels, and mini-map overview.*
+### Tree Generation
+| Tree Output Interface | Generated Family Tree |
+|:---------------------:|:---------------------:|
+| ![Tree Output interface](docs/images/canvas-roots-control-center-tree-output-tab.png) | ![Family tree canvas](docs/images/family-tree-canvas.png) |
+| Person browser, layout selection, interactive preview | Automated genealogical layout with spouse and parent-child connections |
 
 ### Interactive Family Chart View
 <img src="docs/images/canvas-roots-family-chart-view.png" alt="Interactive Family Chart View" width="700">
 
 *Real-time family tree visualization with pan/zoom, person details panel, and direct editing with bidirectional sync.*
 
+### Interactive Map View
+<img src="docs/images/canvas-roots-interactive-map-view.png" alt="Interactive Map View" width="700">
+
+*Leaflet-powered geographic visualization with color-coded markers (green=birth, red=death), marker clustering, migration paths with person labels, and mini-map overview.*
+
 ### Control Center
 <img src="docs/images/canvas-roots-control-center-dashboard-tab.png" alt="Control Center Dashboard Tab" width="700">
 
 *Central hub for all Canvas Roots operations: vault statistics, import/export, tree generation, data quality tools, and quick actions.*
-
-### Maps Tab & Custom Maps Gallery
-<img src="docs/images/canvas-roots-control-center-maps-tab.png" alt="Maps Tab" width="700">
-
-*Dedicated Maps tab with custom map thumbnail gallery, visualization tools, and geographic statistics.*
 
 ### Statistics View
 <img src="docs/images/canvas-roots-statistics-view.png" alt="Statistics View" width="700">
 
 *Dashboard with entity counts, completeness metrics, gender distribution, date ranges, and data quality analysis.*
 
-### Tree Generation
-| Tree Output Interface | Generated Family Tree |
-|:---------------------:|:---------------------:|
-| ![Tree Output interface](docs/images/canvas-roots-control-center-tree-output-tab.png) | ![Family tree canvas](docs/images/family-tree-canvas.png) |
-| Person browser, layout selection, interactive preview | Automated genealogical layout with spouse and parent-child connections |
+### Maps Tab & Custom Maps Gallery
+<img src="docs/images/canvas-roots-control-center-maps-tab.png" alt="Maps Tab" width="700">
+
+*Dedicated Maps tab with custom map thumbnail gallery, visualization tools, and geographic statistics.*
 
 ---
 
