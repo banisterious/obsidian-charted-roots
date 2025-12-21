@@ -480,6 +480,7 @@ export class UnifiedTreeWizardModal extends Modal {
 			this.searchQuery = (e.target as HTMLInputElement).value;
 			this.applyFiltersAndSort();
 			this.renderPersonList(listContainer);
+			this.updateResultsCount(container);
 		});
 
 		// Sort dropdown
@@ -525,8 +526,14 @@ export class UnifiedTreeWizardModal extends Modal {
 			});
 			chip.addEventListener('click', () => {
 				this.filterOptions.sex = opt.value;
+				// Update active state on all chips
+				sexFilter.querySelectorAll('.crc-wizard-filter-chip').forEach(c => {
+					c.removeClass('crc-wizard-filter-chip--active');
+				});
+				chip.addClass('crc-wizard-filter-chip--active');
 				this.applyFiltersAndSort();
-				this.renderCurrentStep();
+				this.renderPersonList(listContainer);
+				this.updateResultsCount(container);
 			});
 		}
 
@@ -541,13 +548,25 @@ export class UnifiedTreeWizardModal extends Modal {
 			this.filterOptions.hasConnections = connectionsCheckbox.checked;
 			this.applyFiltersAndSort();
 			this.renderPersonList(listContainer);
+			this.updateResultsCount(container);
 		});
 
 		// Results count
-		container.createDiv({ cls: 'crc-wizard-results-count' })
-			.createSpan({ text: `${this.filteredPeople.length} of ${this.allPeople.length} people` });
+		const resultsCount = container.createDiv({ cls: 'crc-wizard-results-count' });
+		resultsCount.createSpan({ text: `${this.filteredPeople.length} of ${this.allPeople.length} people` });
 
 		this.renderPersonList(listContainer);
+	}
+
+	/**
+	 * Update the results count display
+	 */
+	private updateResultsCount(container: HTMLElement): void {
+		const resultsDiv = container.querySelector('.crc-wizard-results-count');
+		if (resultsDiv) {
+			resultsDiv.empty();
+			resultsDiv.createSpan({ text: `${this.filteredPeople.length} of ${this.allPeople.length} people` });
+		}
 	}
 
 	private renderSelectedPerson(container: HTMLElement): void {
