@@ -7,6 +7,10 @@
  * - Step 3: Scope and style options
  * - Step 4: Preview
  * - Step 5: Output settings and generation
+ *
+ * @deprecated Use UnifiedTreeWizardModal instead. This wizard has been superseded
+ * by the unified wizard which supports both Canvas and PDF output formats.
+ * This file will be removed in a future release.
  */
 
 import { Modal, Setting, Notice, TFile, TFolder, setIcon, normalizePath } from 'obsidian';
@@ -109,6 +113,7 @@ interface WizardFormData {
 
 /**
  * Tree Generation Wizard Modal
+ * @deprecated Use UnifiedTreeWizardModal instead
  */
 export class TreeGenerationWizardModal extends Modal {
 	private plugin: CanvasRootsPlugin;

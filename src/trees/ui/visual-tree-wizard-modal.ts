@@ -2,6 +2,10 @@
  * Visual Tree Wizard Modal
  *
  * Modal for configuring and generating visual tree PDF diagrams.
+ *
+ * @deprecated Use UnifiedTreeWizardModal instead. This wizard has been superseded
+ * by the unified wizard which supports both Canvas and PDF output formats.
+ * This file will be removed in a future release.
  */
 
 import { Modal, Setting, Notice, setIcon } from 'obsidian';
@@ -37,6 +41,7 @@ export interface VisualTreeWizardOptions {
 
 /**
  * Modal for configuring visual tree PDF generation
+ * @deprecated Use UnifiedTreeWizardModal instead
  */
 export class VisualTreeWizardModal extends Modal {
 	private plugin: CanvasRootsPlugin;
