@@ -308,7 +308,7 @@ The tab rename clarifies the distinction: "Canvas Trees" for interactive explora
 - Extend `PdfGeneratorService` with tree diagram rendering
 - Custom SVG icons in `src/ui/tree-icons/` directory
 
-See [Visual Tree Charts Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/visual-tree-charts.md) for implementation details.
+See [Tree Visualization Overhaul Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/tree-visualization-overhaul.md) for implementation details.
 
 ---
 
