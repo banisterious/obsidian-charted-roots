@@ -4025,7 +4025,7 @@ export class ControlCenterModal extends Modal {
 	/**
 	 * Render the Canvas Trees tab
 	 *
-	 * Shows intro with "New Tree" button and list of recent trees
+	 * Shows stats, quick actions, recent trees, and tips
 	 */
 	private showTreeGenerationTab(): void {
 		const container = this.contentContainer;
@@ -4033,45 +4033,81 @@ export class ControlCenterModal extends Modal {
 		// Title
 		container.createEl('h2', { text: 'Canvas Trees', cls: 'cr-card-title--no-margin' });
 
-		// Intro text with action button
-		const introRow = container.createDiv({ cls: 'crc-tree-intro-row' });
-		introRow.createEl('p', {
+		// Intro text
+		container.createEl('p', {
 			text: 'Generate visual family trees on the Obsidian Canvas.',
-			cls: 'crc-text-muted'
+			cls: 'crc-text-muted crc-tree-intro'
 		});
 
+		// Get data for stats
+		const graphService = this.plugin.createFamilyGraphService();
+		const familyComponents = graphService.findAllFamilyComponents();
+		const recentTrees = this.plugin.settings.recentTrees?.slice(0, 10) || [];
+		const totalPeopleInTrees = recentTrees.reduce((sum, t) => sum + (t.peopleCount || 0), 0);
+		const totalPeopleInVault = familyComponents.reduce((sum, c) => sum + c.size, 0);
+
+		// Stats row
+		const statsRow = container.createDiv({ cls: 'crc-tree-stats-row' });
+
+		const treeStat = statsRow.createDiv({ cls: 'crc-tree-stat' });
+		treeStat.createDiv({ cls: 'crc-tree-stat__value', text: String(recentTrees.length) });
+		treeStat.createDiv({ cls: 'crc-tree-stat__label', text: 'Trees' });
+
+		const peopleStat = statsRow.createDiv({ cls: 'crc-tree-stat' });
+		peopleStat.createDiv({ cls: 'crc-tree-stat__value', text: String(totalPeopleInTrees) });
+		peopleStat.createDiv({ cls: 'crc-tree-stat__label', text: 'People in trees' });
+
+		const familyStat = statsRow.createDiv({ cls: 'crc-tree-stat' });
+		familyStat.createDiv({ cls: 'crc-tree-stat__value', text: String(familyComponents.length) });
+		familyStat.createDiv({ cls: 'crc-tree-stat__label', text: 'Family groups' });
+
+		const vaultStat = statsRow.createDiv({ cls: 'crc-tree-stat' });
+		vaultStat.createDiv({ cls: 'crc-tree-stat__value', text: String(totalPeopleInVault) });
+		vaultStat.createDiv({ cls: 'crc-tree-stat__label', text: 'People in vault' });
+
+		// Quick actions row
+		const actionsRow = container.createDiv({ cls: 'crc-tree-actions-row' });
+
 		// New Tree button (opens wizard)
-		const newTreeBtn = introRow.createEl('button', {
-			cls: 'cr-btn cr-btn--primary crc-new-tree-btn'
+		const newTreeBtn = actionsRow.createEl('button', {
+			cls: 'cr-btn cr-btn--primary'
 		});
 		newTreeBtn.appendChild(createLucideIcon('plus', 16));
 		newTreeBtn.appendText('New Tree');
 		newTreeBtn.addEventListener('click', () => {
 			const wizard = new TreeGenerationWizardModal(this.plugin, {
 				onComplete: () => {
-					// Refresh the tab to show the new tree in recent list
 					this.showTab(this.activeTab);
 				}
 			});
 			wizard.open();
 		});
 
-		// Generate all trees button (if multiple family groups)
-		const graphService = this.plugin.createFamilyGraphService();
-		const familyComponents = graphService.findAllFamilyComponents();
-		if (familyComponents.length > 1) {
-			const allTreesBtn = container.createEl('button', {
-				cls: 'cr-btn cr-btn--secondary',
-				text: `Generate all trees (${familyComponents.length} family groups)`
+		// Open Latest button (if we have trees)
+		if (recentTrees.length > 0) {
+			const openLatestBtn = actionsRow.createEl('button', {
+				cls: 'cr-btn cr-btn--secondary'
 			});
-			allTreesBtn.style.marginTop = '8px';
+			openLatestBtn.appendChild(createLucideIcon('external-link', 16));
+			openLatestBtn.appendText('Open Latest');
+			openLatestBtn.addEventListener('click', () => {
+				void this.openCanvasTree(recentTrees[0].canvasPath);
+			});
+		}
+
+		// Generate all trees button (if multiple family groups)
+		if (familyComponents.length > 1) {
+			const allTreesBtn = actionsRow.createEl('button', {
+				cls: 'cr-btn cr-btn--secondary'
+			});
+			allTreesBtn.appendChild(createLucideIcon('network', 16));
+			allTreesBtn.appendText(`Generate All (${familyComponents.length})`);
 			allTreesBtn.addEventListener('click', () => {
 				void this.openAndGenerateAllTrees();
 			});
 		}
 
 		// Recent Canvas Trees section
-		const recentTrees = this.plugin.settings.recentTrees?.slice(0, 10) || [];
 		if (recentTrees.length > 0) {
 			const recentSection = this.createAccordionSection(
 				container,
@@ -4153,12 +4189,49 @@ export class ControlCenterModal extends Modal {
 			});
 		} else {
 			// Empty state when no recent trees
-			container.createEl('p', {
-				text: 'No canvas trees generated yet. Click "New Tree" above to create your first family tree canvas.',
-				cls: 'crc-text-muted crc-text-sm',
-				attr: { style: 'margin-top: 16px;' }
+			const emptyState = container.createDiv({ cls: 'crc-tree-empty-state' });
+			const emptyIcon = emptyState.createDiv({ cls: 'crc-tree-empty-icon' });
+			emptyIcon.appendChild(createLucideIcon('git-branch', 48));
+			emptyState.createEl('h3', { text: 'No trees yet' });
+			emptyState.createEl('p', {
+				text: 'Create your first family tree canvas to visualize your genealogy research.',
+				cls: 'crc-text-muted'
+			});
+			const emptyBtn = emptyState.createEl('button', {
+				cls: 'cr-btn cr-btn--primary'
+			});
+			emptyBtn.appendChild(createLucideIcon('plus', 16));
+			emptyBtn.appendText('Create Your First Tree');
+			emptyBtn.addEventListener('click', () => {
+				const wizard = new TreeGenerationWizardModal(this.plugin, {
+					onComplete: () => {
+						this.showTab(this.activeTab);
+					}
+				});
+				wizard.open();
 			});
 		}
+
+		// Tips section (collapsed by default)
+		const tipsSection = this.createAccordionSection(
+			container,
+			'Tips',
+			'lightbulb',
+			false
+		);
+		const tipsContent = tipsSection.content;
+
+		const tipsList = tipsContent.createEl('ul', { cls: 'crc-tree-tips-list' });
+		const tips = [
+			'Use "Ancestors" or "Descendants" layouts for focused views of a single lineage.',
+			'The "Combined" layout shows both ancestors and descendants from your selected person.',
+			'Filter by collection to generate trees for specific family branches.',
+			'Canvas trees include embedded metadata so you can regenerate them later.',
+			'Right-click a recent tree for options like regenerate, reveal in explorer, or delete.'
+		];
+		tips.forEach(tip => {
+			tipsList.createEl('li', { text: tip });
+		});
 	}
 
 	/**

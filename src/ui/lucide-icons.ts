@@ -68,6 +68,7 @@ export type LucideIconName =
 	| 'package'        // Staging/import packages
 	| 'shield-check'   // Data quality
 	| 'layers'         // Layers/generations
+	| 'network'        // Network/connected trees
 	| 'arrow-up-down'  // Bidirectional/ancestor-descendant
 	| 'map-pin'        // Places/locations
 	| 'globe'          // World/geography

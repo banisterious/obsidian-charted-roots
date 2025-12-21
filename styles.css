@@ -22007,24 +22007,91 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 /* ========================================
-   Intro Row with New Tree Button
+   Canvas Trees Tab Styles
    ======================================== */
 
-.crc-tree-intro-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--cr-spacing-md);
+/* Intro text */
+.crc-tree-intro {
+  margin: 0 0 var(--cr-spacing-md) 0;
+}
+
+/* Stats row */
+.crc-tree-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--cr-spacing-sm);
   margin-bottom: var(--cr-spacing-md);
+  padding: var(--cr-spacing-md);
+  background: var(--background-secondary);
+  border-radius: var(--cr-radius-md);
+  border: 1px solid var(--background-modifier-border);
 }
 
-.crc-tree-intro-row p {
+.crc-tree-stat {
+  text-align: center;
+}
+
+.crc-tree-stat__value {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-normal);
+  line-height: 1.2;
+}
+
+.crc-tree-stat__label {
+  font-size: var(--cr-font-sm);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Actions row */
+.crc-tree-actions-row {
+  display: flex;
+  gap: var(--cr-spacing-sm);
+  margin-bottom: var(--cr-spacing-md);
+  flex-wrap: wrap;
+}
+
+/* Empty state */
+.crc-tree-empty-state {
+  text-align: center;
+  padding: var(--cr-spacing-xl) var(--cr-spacing-md);
+  margin: var(--cr-spacing-md) 0;
+  background: var(--background-secondary);
+  border-radius: var(--cr-radius-md);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.crc-tree-empty-icon {
+  margin-bottom: var(--cr-spacing-md);
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.crc-tree-empty-state h3 {
+  margin: 0 0 var(--cr-spacing-xs) 0;
+  font-size: var(--cr-font-lg);
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.crc-tree-empty-state p {
+  margin: 0 0 var(--cr-spacing-md) 0;
+  max-width: 300px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Tips list */
+.crc-tree-tips-list {
   margin: 0;
-  flex: 1;
+  padding-left: 20px;
+  font-size: var(--cr-font-sm);
+  color: var(--text-muted);
 }
 
-.crc-new-tree-btn {
-  flex-shrink: 0;
+.crc-tree-tips-list li {
+  padding: 4px 0;
 }
 
 /* ========================================
