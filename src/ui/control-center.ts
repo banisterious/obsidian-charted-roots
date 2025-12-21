@@ -4034,11 +4034,11 @@ export class ControlCenterModal extends Modal {
 		const container = this.contentContainer;
 
 		// Title
-		container.createEl('h2', { text: 'Tree output', cls: 'cr-card-title--no-margin' });
+		container.createEl('h2', { text: 'Canvas Trees', cls: 'cr-card-title--no-margin' });
 
 		// Intro text
 		container.createEl('p', {
-			text: 'Generate visual family trees and export to various formats.',
+			text: 'Generate visual family trees on the Obsidian Canvas.',
 			cls: 'crc-text-muted'
 		});
 
@@ -4433,12 +4433,12 @@ export class ControlCenterModal extends Modal {
 				customSpouseLabelsSelect.disabled = true;
 			});
 
-		// ----- Section 5: Recent Trees (collapsed by default) -----
-		const recentTrees = this.plugin.settings.recentTrees?.slice(0, 5) || [];
+		// ----- Section 5: Recent Canvas Trees (collapsed by default) -----
+		const recentTrees = this.plugin.settings.recentTrees?.slice(0, 10) || [];
 		if (recentTrees.length > 0) {
 			const recentSection = this.createAccordionSection(
 				leftPanel,
-				'Recent trees',
+				'Recent canvas trees',
 				'clock',
 				false,
 				`${recentTrees.length}`
@@ -4446,29 +4446,86 @@ export class ControlCenterModal extends Modal {
 			const recentContent = recentSection.content;
 
 			recentTrees.forEach((tree, index) => {
-				const treeBtn = recentContent.createEl('button', {
-					cls: `crc-btn crc-btn--secondary crc-btn--block ${index > 0 ? 'crc-mt-2' : ''}`,
-					text: tree.canvasName.replace('.canvas', '')
-				});
-				const treeIcon = createLucideIcon('file', 16);
-				treeBtn.prepend(treeIcon);
-				treeBtn.createSpan({
-					cls: 'crc-badge crc-ml-2',
-					text: `${tree.peopleCount} people`
+				// Create a card-like container for each tree
+				const treeItem = recentContent.createDiv({
+					cls: `crc-recent-tree-item ${index > 0 ? 'crc-mt-2' : ''}`
 				});
 
-				treeBtn.addEventListener('click', () => {
-					void (async () => {
-						const file = this.app.vault.getAbstractFileByPath(tree.canvasPath);
-						if (file instanceof TFile) {
-							const leaf = this.app.workspace.getLeaf(false);
-							await leaf.openFile(file);
-							this.close();
-						} else {
-							new Notice(`Canvas file not found: ${tree.canvasPath}`);
-						}
-					})();
+				// Left side: icon and info
+				const treeInfo = treeItem.createDiv({ cls: 'crc-recent-tree-info' });
+
+				// Title row with icon
+				const titleRow = treeInfo.createDiv({ cls: 'crc-recent-tree-title' });
+				const treeIcon = createLucideIcon('git-branch', 16);
+				titleRow.appendChild(treeIcon);
+				titleRow.createSpan({
+					text: tree.canvasName.replace('.canvas', ''),
+					cls: 'crc-recent-tree-name'
 				});
+
+				// Metadata row
+				const metaRow = treeInfo.createDiv({ cls: 'crc-recent-tree-meta' });
+				metaRow.createSpan({
+					text: `${tree.peopleCount} people`,
+					cls: 'crc-badge crc-badge--small'
+				});
+				if (tree.rootPerson) {
+					metaRow.createSpan({ text: ' · ', cls: 'crc-text-muted' });
+					metaRow.createSpan({
+						text: `Root: ${tree.rootPerson}`,
+						cls: 'crc-text-muted crc-text-sm'
+					});
+				}
+				if (tree.timestamp) {
+					metaRow.createSpan({ text: ' · ', cls: 'crc-text-muted' });
+					metaRow.createSpan({
+						text: this.formatTimeAgo(tree.timestamp),
+						cls: 'crc-text-muted crc-text-sm'
+					});
+				}
+
+				// Right side: action buttons
+				const actionRow = treeItem.createDiv({ cls: 'crc-recent-tree-actions' });
+
+				// Open button
+				const openBtn = actionRow.createEl('button', {
+					cls: 'crc-btn crc-btn--icon crc-btn--ghost',
+					attr: { 'aria-label': 'Open canvas' }
+				});
+				openBtn.appendChild(createLucideIcon('external-link', 14));
+				openBtn.addEventListener('click', (e) => {
+					e.stopPropagation();
+					void this.openCanvasTree(tree.canvasPath);
+				});
+
+				// More actions button (context menu)
+				const moreBtn = actionRow.createEl('button', {
+					cls: 'crc-btn crc-btn--icon crc-btn--ghost',
+					attr: { 'aria-label': 'More actions' }
+				});
+				moreBtn.appendChild(createLucideIcon('more-vertical', 14));
+				moreBtn.addEventListener('click', (e) => {
+					e.stopPropagation();
+					this.showRecentTreeContextMenu(e, tree);
+				});
+
+				// Click on the whole item to open
+				treeItem.addEventListener('click', () => {
+					void this.openCanvasTree(tree.canvasPath);
+				});
+			});
+		} else {
+			// Empty state when no recent trees
+			const emptySection = this.createAccordionSection(
+				leftPanel,
+				'Recent canvas trees',
+				'clock',
+				false
+			);
+			const emptyContent = emptySection.content;
+			emptyContent.createEl('p', {
+				text: 'No canvas trees generated yet. Configure options above and click "Generate canvas" to create your first tree.',
+				cls: 'crc-text-muted crc-text-sm'
 			});
 		}
 
@@ -14899,6 +14956,163 @@ export class ControlCenterModal extends Modal {
 	private validateDates(): void {
 		new Notice('Date validation is preview-only. Review issues and manually correct dates in your notes.');
 		this.previewValidateDates();
+	}
+
+	// =========================================================================
+	// RECENT CANVAS TREES HELPERS
+	// =========================================================================
+
+	/**
+	 * Open a canvas tree file
+	 */
+	private async openCanvasTree(canvasPath: string): Promise<void> {
+		const file = this.app.vault.getAbstractFileByPath(canvasPath);
+		if (file instanceof TFile) {
+			const leaf = this.app.workspace.getLeaf(false);
+			await leaf.openFile(file);
+			this.close();
+		} else {
+			new Notice(`Canvas file not found: ${canvasPath}`);
+		}
+	}
+
+	/**
+	 * Show context menu for a recent canvas tree
+	 */
+	private showRecentTreeContextMenu(event: MouseEvent, tree: RecentTreeInfo): void {
+		const menu = new Menu();
+
+		// Open in new tab
+		menu.addItem((item) => {
+			item.setTitle('Open')
+				.setIcon('external-link')
+				.onClick(() => {
+					void this.openCanvasTree(tree.canvasPath);
+				});
+		});
+
+		// Open in new tab
+		menu.addItem((item) => {
+			item.setTitle('Open in new tab')
+				.setIcon('plus')
+				.onClick(() => {
+					void (async () => {
+						const file = this.app.vault.getAbstractFileByPath(tree.canvasPath);
+						if (file instanceof TFile) {
+							const leaf = this.app.workspace.getLeaf('tab');
+							await leaf.openFile(file);
+						} else {
+							new Notice(`Canvas file not found: ${tree.canvasPath}`);
+						}
+					})();
+				});
+		});
+
+		menu.addSeparator();
+
+		// Regenerate canvas
+		menu.addItem((item) => {
+			item.setTitle('Regenerate')
+				.setIcon('refresh-cw')
+				.onClick(() => {
+					void (async () => {
+						const file = this.app.vault.getAbstractFileByPath(tree.canvasPath);
+						if (file instanceof TFile) {
+							await this.plugin.regenerateCanvas(file);
+							new Notice('Canvas regenerated');
+						} else {
+							new Notice(`Canvas file not found: ${tree.canvasPath}`);
+						}
+					})();
+				});
+		});
+
+		// Reveal in navigation
+		menu.addItem((item) => {
+			item.setTitle('Reveal in navigation')
+				.setIcon('folder')
+				.onClick(() => {
+					const file = this.app.vault.getAbstractFileByPath(tree.canvasPath);
+					if (file instanceof TFile) {
+						// Trigger file explorer reveal
+						this.app.workspace.revealLeaf(
+							this.app.workspace.getLeavesOfType('file-explorer')[0]
+						);
+						// Use internal API to reveal file if available
+						const fileExplorer = this.app.workspace.getLeavesOfType('file-explorer')[0];
+						if (fileExplorer && 'view' in fileExplorer) {
+							const view = fileExplorer.view as { revealInFolder?: (file: TFile) => void };
+							if (view.revealInFolder) {
+								view.revealInFolder(file);
+							}
+						}
+					} else {
+						new Notice(`Canvas file not found: ${tree.canvasPath}`);
+					}
+				});
+		});
+
+		menu.addSeparator();
+
+		// Remove from recent
+		menu.addItem((item) => {
+			item.setTitle('Remove from recent')
+				.setIcon('x')
+				.onClick(() => {
+					void (async () => {
+						if (this.plugin.settings.recentTrees) {
+							this.plugin.settings.recentTrees = this.plugin.settings.recentTrees.filter(
+								t => t.canvasPath !== tree.canvasPath
+							);
+							await this.plugin.saveSettings();
+							// Refresh the tab
+							this.showTab(this.activeTab);
+							new Notice('Removed from recent trees');
+						}
+					})();
+				});
+		});
+
+		// Delete canvas file
+		menu.addItem((item) => {
+			item.setTitle('Delete canvas')
+				.setIcon('trash-2')
+				.onClick(() => {
+					void (async () => {
+						const file = this.app.vault.getAbstractFileByPath(tree.canvasPath);
+						if (file instanceof TFile) {
+							// Confirm deletion
+							const confirmed = await new Promise<boolean>((resolve) => {
+								const modal = new ConfirmationModal(
+									this.app,
+									'Delete Canvas Tree',
+									`Are you sure you want to delete "${tree.canvasName}"? This action cannot be undone.`,
+									(result) => resolve(result)
+								);
+								modal.open();
+							});
+
+							if (confirmed) {
+								await this.app.vault.trash(file, true);
+								// Remove from recent trees
+								if (this.plugin.settings.recentTrees) {
+									this.plugin.settings.recentTrees = this.plugin.settings.recentTrees.filter(
+										t => t.canvasPath !== tree.canvasPath
+									);
+									await this.plugin.saveSettings();
+								}
+								// Refresh the tab
+								this.showTab(this.activeTab);
+								new Notice('Canvas deleted');
+							}
+						} else {
+							new Notice(`Canvas file not found: ${tree.canvasPath}`);
+						}
+					})();
+				});
+		});
+
+		menu.showAtMouseEvent(event);
 	}
 }
 

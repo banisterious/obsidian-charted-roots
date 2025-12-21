@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-21 10:55:55 UTC
+ * - Generated: 2025-12-21 18:14:06 UTC
  * - Components: 35 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -21497,7 +21497,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: TREE-OUTPUT.CSS
    ========================================================================== */
 
-/* Component Size: 425 lines, 8.68 KB */
+/* Component Size: 507 lines, 10.28 KB */
 
 /* Tree Output Tab - Two-Panel Layout */
 
@@ -21924,6 +21924,88 @@ body:has(.cr-media-linker) .suggestion-container {
   margin: 0;
 }
 
+/* ========================================
+   Recent Canvas Trees
+   ======================================== */
+
+.crc-recent-tree-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cr-spacing-sm);
+  padding: 8px 12px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--cr-transition-fast);
+}
+
+.crc-recent-tree-item:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--background-modifier-border-hover);
+}
+
+.crc-recent-tree-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.crc-recent-tree-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-normal);
+}
+
+.crc-recent-tree-title svg {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.crc-recent-tree-name {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.crc-recent-tree-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding-left: 22px; /* Align with title text after icon */
+}
+
+.crc-recent-tree-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity var(--cr-transition-fast);
+}
+
+.crc-recent-tree-item:hover .crc-recent-tree-actions {
+  opacity: 1;
+}
+
+/* Small badge variant */
+.crc-badge--small {
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+}
+
 
 /* End of tree-output.css */
 
@@ -22194,10 +22276,10 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-21 10:55:55 UTC
+ * Build completed: 2025-12-21 18:14:06 UTC
  * Components processed: 35
- * Total lines: 21856
- * Total size: 433.65 KB
+ * Total lines: 21938
+ * Total size: 435.26 KB
  * Build duration: 0.03 seconds
  *
  * Component breakdown:
@@ -22231,7 +22313,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - dashboard.css: 366 lines, 7.11 KB
  * - universe-wizard.css: 621 lines, 11.05 KB
  * - preferences.css: 242 lines, 5.29 KB
- * - tree-output.css: 425 lines, 8.68 KB
+ * - tree-output.css: 507 lines, 10.28 KB
  * - dynamic-content.css: 190 lines, 4.08 KB
  * - animations.css: 16 lines, 0.18 KB
  * - responsive.css: 9 lines, 0.13 KB
