@@ -27,6 +27,7 @@ import { VIEW_TYPE_STATISTICS, SECTION_IDS } from '../constants/statistics-const
 import { REPORT_METADATA } from '../../reports/types/report-types';
 import type { ReportType } from '../../reports/types/report-types';
 import { ReportGeneratorModal } from '../../reports/ui/report-generator-modal';
+import { UnifiedTreeWizardModal } from '../../trees/ui/unified-tree-wizard-modal';
 
 /**
  * Statistics Dashboard workspace view
@@ -982,10 +983,26 @@ export class StatisticsView extends ItemView {
 			});
 
 			generateBtn.addEventListener('click', () => {
-				const modal = new ReportGeneratorModal(this.app, this.plugin, {
-					reportType: type as ReportType
-				});
-				modal.open();
+				// Visual tree types open the unified wizard directly
+				const visualTreeTypes: Record<string, 'full' | 'ancestors' | 'descendants' | 'fan'> = {
+					'pedigree-tree-pdf': 'ancestors',
+					'descendant-tree-pdf': 'descendants',
+					'hourglass-tree-pdf': 'full',
+					'fan-chart-pdf': 'fan'
+				};
+
+				if (type in visualTreeTypes) {
+					const wizard = new UnifiedTreeWizardModal(this.plugin, {
+						outputFormat: 'pdf',
+						treeType: visualTreeTypes[type]
+					});
+					wizard.open();
+				} else {
+					const modal = new ReportGeneratorModal(this.app, this.plugin, {
+						reportType: type as ReportType
+					});
+					modal.open();
+				}
 			});
 		}
 
