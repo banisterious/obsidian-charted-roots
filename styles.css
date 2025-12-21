@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-21 18:14:06 UTC
+ * - Generated: 2025-12-21 20:04:12 UTC
  * - Components: 35 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -21497,7 +21497,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: TREE-OUTPUT.CSS
    ========================================================================== */
 
-/* Component Size: 507 lines, 10.28 KB */
+/* Component Size: 1049 lines, 20.36 KB */
 
 /* Tree Output Tab - Two-Panel Layout */
 
@@ -22006,6 +22006,548 @@ body:has(.cr-media-linker) .suggestion-container {
   color: var(--text-muted);
 }
 
+/* ========================================
+   Intro Row with New Tree Button
+   ======================================== */
+
+.crc-tree-intro-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--cr-spacing-md);
+  margin-bottom: var(--cr-spacing-md);
+}
+
+.crc-tree-intro-row p {
+  margin: 0;
+  flex: 1;
+}
+
+.crc-new-tree-btn {
+  flex-shrink: 0;
+}
+
+/* ========================================
+   Tree Generation Wizard Modal
+   ======================================== */
+
+/* Modal sizing */
+.crc-tree-wizard {
+  max-width: 700px;
+  width: 700px;
+}
+
+.crc-tree-wizard .modal-content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+}
+
+/* Search input */
+.crc-wizard-search {
+  margin-bottom: var(--cr-spacing-md);
+}
+
+.crc-wizard-search-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-primary);
+}
+
+.crc-wizard-search-wrapper svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.crc-wizard-search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  color: var(--text-normal);
+  outline: none;
+}
+
+.crc-wizard-search-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Selected person display */
+.crc-wizard-selected-person {
+  margin-bottom: var(--cr-spacing-md);
+}
+
+.crc-wizard-selected-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-radius: 8px;
+}
+
+.crc-wizard-selected-card svg {
+  flex-shrink: 0;
+}
+
+.crc-wizard-selected-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.crc-wizard-selected-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.crc-wizard-selected-dates {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.crc-wizard-clear-btn {
+  padding: 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-on-accent);
+  opacity: 0.7;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.crc-wizard-clear-btn:hover {
+  opacity: 1;
+  background: rgb(255 255 255 / 15%);
+}
+
+/* Toolbar row (search + sort) */
+.crc-wizard-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.crc-wizard-toolbar .crc-wizard-search-wrapper {
+  flex: 1;
+}
+
+.crc-wizard-sort {
+  flex-shrink: 0;
+}
+
+.crc-wizard-select {
+  padding: 6px 10px;
+  font-size: 13px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  cursor: pointer;
+}
+
+/* Filter row */
+.crc-wizard-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.crc-wizard-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.crc-wizard-filter-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-right: 4px;
+}
+
+.crc-wizard-filter-chip {
+  padding: 3px 10px;
+  font-size: 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 12px;
+  background: var(--background-primary);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--cr-transition-fast);
+}
+
+.crc-wizard-filter-chip:hover {
+  border-color: var(--interactive-accent);
+  color: var(--text-normal);
+}
+
+.crc-wizard-filter-chip--active {
+  background: var(--interactive-accent);
+  border-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.crc-wizard-filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.crc-wizard-filter-toggle input[type="checkbox"] {
+  margin: 0;
+}
+
+/* Results count */
+.crc-wizard-results-count {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-bottom: 6px;
+}
+
+/* Person list */
+.crc-wizard-person-list {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+}
+
+.crc-wizard-person-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--background-modifier-border);
+  transition: background-color var(--cr-transition-fast);
+}
+
+.crc-wizard-person-row:last-child {
+  border-bottom: none;
+}
+
+.crc-wizard-person-row:hover {
+  background: var(--background-modifier-hover);
+}
+
+.crc-wizard-person-row--selected {
+  background: var(--background-secondary-alt);
+}
+
+.crc-wizard-person-row input[type="radio"] {
+  flex-shrink: 0;
+}
+
+.crc-wizard-person-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.crc-wizard-person-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.crc-wizard-person-dates {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.crc-wizard-empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.crc-wizard-more {
+  padding: 12px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-style: italic;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+/* Tree type cards - compact horizontal layout */
+.crc-wizard-tree-types {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.crc-wizard-type-card {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all var(--cr-transition-fast);
+  text-align: left;
+}
+
+.crc-wizard-type-card svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.crc-wizard-type-card:hover {
+  border-color: var(--interactive-accent);
+  background: var(--background-secondary-alt);
+}
+
+.crc-wizard-type-card--selected {
+  border-color: var(--interactive-accent);
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.crc-wizard-type-card--selected svg {
+  color: var(--text-on-accent);
+}
+
+.crc-wizard-type-card svg {
+  color: var(--text-muted);
+}
+
+.crc-wizard-type-label {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Hide description in compact mode */
+.crc-wizard-type-desc {
+  display: none;
+}
+
+/* Compact settings for Step 2 (layout options) */
+.crc-tree-wizard .cr-wizard-form .setting-item {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--background-modifier-border-focus);
+}
+
+.crc-tree-wizard .cr-wizard-form .setting-item:last-child {
+  border-bottom: none;
+}
+
+.crc-tree-wizard .cr-wizard-form .setting-item-info {
+  flex: 1;
+}
+
+.crc-tree-wizard .cr-wizard-form .setting-item-description {
+  margin-top: 1px;
+  line-height: 1.3;
+}
+
+/* Reduce step header and description */
+.crc-tree-wizard .cr-wizard-step-header {
+  margin-bottom: 4px;
+}
+
+.crc-tree-wizard .cr-wizard-step-heading {
+  font-size: 16px;
+  margin: 0 0 2px 0;
+}
+
+.crc-tree-wizard .cr-wizard-step-counter {
+  font-size: 11px;
+  margin: 0;
+}
+
+.crc-tree-wizard .cr-wizard-step-desc {
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+
+/* Reduce subsection label margin */
+.crc-tree-wizard .cr-wizard-subsection {
+  margin-bottom: 2px;
+  font-size: 11px;
+}
+
+/* Preview container */
+.crc-wizard-preview-container {
+  height: 270px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-primary);
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.crc-wizard-preview-controls {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.crc-wizard-preview-summary {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.crc-wizard-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+}
+
+.crc-wizard-warning {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 24px;
+  text-align: center;
+  color: var(--text-warning);
+  font-size: 13px;
+}
+
+.crc-wizard-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 24px;
+  text-align: center;
+  color: var(--text-error);
+  font-size: 13px;
+}
+
+/* Output summary */
+.crc-wizard-output-summary {
+  margin-top: var(--cr-spacing-md);
+  padding: var(--cr-spacing-md);
+  background: var(--background-secondary);
+  border-radius: 8px;
+}
+
+.crc-wizard-summary-list {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.crc-wizard-summary-list li {
+  padding: 2px 0;
+}
+
+/* Disabled button state */
+.cr-btn--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ========================================
+   Options Step - Details/Summary Sections
+   ======================================== */
+
+.crc-wizard-options-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.crc-wizard-details {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-secondary);
+  overflow: hidden;
+}
+
+.crc-wizard-details-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  user-select: none;
+  background: var(--background-modifier-border-hover);
+  transition: background-color var(--cr-transition-fast);
+  list-style: none;
+}
+
+.crc-wizard-details-summary::-webkit-details-marker {
+  display: none;
+}
+
+.crc-wizard-details-summary::before {
+  content: "";
+  width: 0;
+  height: 0;
+  border-left: 5px solid var(--text-muted);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  flex-shrink: 0;
+  transition: transform var(--cr-transition-fast);
+}
+
+.crc-wizard-details[open] > .crc-wizard-details-summary::before {
+  transform: rotate(90deg);
+}
+
+.crc-wizard-details-summary:hover {
+  background: var(--background-modifier-hover);
+}
+
+.crc-wizard-details-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.crc-wizard-details-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.crc-wizard-details-content {
+  padding: 8px 12px 12px;
+}
+
+/* Settings within details sections */
+.crc-wizard-details-content .setting-item {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--background-modifier-border-focus);
+}
+
+.crc-wizard-details-content .setting-item:last-child {
+  border-bottom: none;
+}
+
+.crc-wizard-details-content .setting-item-info {
+  flex: 1;
+}
+
+.crc-wizard-details-content .setting-item-description {
+  margin-top: 1px;
+  line-height: 1.3;
+}
+
 
 /* End of tree-output.css */
 
@@ -22276,10 +22818,10 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-21 18:14:06 UTC
+ * Build completed: 2025-12-21 20:04:12 UTC
  * Components processed: 35
- * Total lines: 21938
- * Total size: 435.26 KB
+ * Total lines: 22480
+ * Total size: 445.34 KB
  * Build duration: 0.03 seconds
  *
  * Component breakdown:
@@ -22313,7 +22855,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - dashboard.css: 366 lines, 7.11 KB
  * - universe-wizard.css: 621 lines, 11.05 KB
  * - preferences.css: 242 lines, 5.29 KB
- * - tree-output.css: 507 lines, 10.28 KB
+ * - tree-output.css: 1049 lines, 20.36 KB
  * - dynamic-content.css: 190 lines, 4.08 KB
  * - animations.css: 16 lines, 0.18 KB
  * - responsive.css: 9 lines, 0.13 KB
