@@ -172,6 +172,88 @@ Each tree type has a custom SVG icon for the report tile, following Lucide desig
 </svg>
 ```
 
+### V2 Icon Alternatives (AI-Generated)
+
+Alternative icon designs generated via Nano Banana Pro and optimized for Lucide style.
+
+#### Descendant Tree Icon (V2)
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Root node at top -->
+  <circle cx="12" cy="4" r="2.5"/>
+  <!-- Child nodes -->
+  <circle cx="5" cy="13" r="2"/>
+  <circle cx="19" cy="13" r="2"/>
+  <!-- Grandchild nodes -->
+  <circle cx="5" cy="21" r="1.5"/>
+  <circle cx="19" cy="21" r="1.5"/>
+  <!-- Lines from root to children -->
+  <line x1="10" y1="6" x2="6.5" y2="11"/>
+  <line x1="14" y1="6" x2="17.5" y2="11"/>
+  <!-- Lines from children to grandchildren -->
+  <line x1="5" y1="15" x2="5" y2="19.5"/>
+  <line x1="19" y1="15" x2="19" y2="19.5"/>
+</svg>
+```
+
+#### Fan Chart Icon (V2)
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Outer arc -->
+  <path d="M 2 20 A 12 12 0 0 1 22 20"/>
+  <!-- Inner arc -->
+  <path d="M 6 20 A 8 8 0 0 1 18 20"/>
+  <!-- Radial dividers -->
+  <line x1="12" y1="20" x2="12" y2="8"/>
+  <line x1="12" y1="20" x2="4" y2="12"/>
+  <line x1="12" y1="20" x2="20" y2="12"/>
+</svg>
+```
+
+#### Hourglass Tree Icon (V2)
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Center root node -->
+  <circle cx="12" cy="12" r="2.5"/>
+  <!-- Parent nodes (top) -->
+  <circle cx="4" cy="4" r="2"/>
+  <circle cx="20" cy="4" r="2"/>
+  <!-- Child nodes (bottom) -->
+  <circle cx="4" cy="20" r="2"/>
+  <circle cx="20" cy="20" r="2"/>
+  <!-- Lines to parents -->
+  <line x1="10" y1="10" x2="5.5" y2="5.5"/>
+  <line x1="14" y1="10" x2="18.5" y2="5.5"/>
+  <!-- Lines to children -->
+  <line x1="10" y1="14" x2="5.5" y2="18.5"/>
+  <line x1="14" y1="14" x2="18.5" y2="18.5"/>
+</svg>
+```
+
+#### Pedigree Tree Icon (V2)
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Root node at bottom -->
+  <circle cx="12" cy="20" r="2.5"/>
+  <!-- Parent nodes -->
+  <circle cx="5" cy="11" r="2"/>
+  <circle cx="19" cy="11" r="2"/>
+  <!-- Grandparent nodes -->
+  <circle cx="5" cy="3" r="1.5"/>
+  <circle cx="19" cy="3" r="1.5"/>
+  <!-- Lines from root to parents -->
+  <line x1="10" y1="18" x2="6.5" y2="13"/>
+  <line x1="14" y1="18" x2="17.5" y2="13"/>
+  <!-- Lines from parents to grandparents -->
+  <line x1="5" y1="9" x2="5" y2="4.5"/>
+  <line x1="19" y1="9" x2="19" y2="4.5"/>
+</svg>
+```
+
 ---
 
 ## UI Changes
