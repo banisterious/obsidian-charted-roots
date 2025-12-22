@@ -32,42 +32,18 @@ This document outlines planned features for Canvas Roots. For completed features
 
 ## Completed Features
 
-For detailed implementation documentation of completed features, see [Release History](Release-History).
+For the complete list of implemented features, see [Release History](Release-History).
 
 | Version | Feature | Summary |
 |:-------:|---------|---------|
 | v0.14.0 | [Visual Tree Charts](Release-History#visual-tree-charts-v0140) | Unified tree wizard for Canvas/PDF, 4 visual tree report types, custom SVG icons |
-| v0.13.6 | [Control Center Dashboard](Release-History#control-center-dashboard-v0136) | Dashboard tab with 9 quick-action tiles, collapsible Vault Health, Recent Files with context menu |
-| v0.13.5 | [Extended Report Types](Release-History#extended-report-types-v0135) | 6 new report types: Source Summary, Timeline, Place Summary, Media Inventory, Universe Overview, Collection Overview |
-| v0.13.4 | [PDF Report Export](Release-History#pdf-report-export-v0134) | Export reports as styled PDFs with cover page, logo support, 100% local generation |
-| v0.13.0 | [Universe Management](Release-History#universe-management-v0130) | First-class universe entity, Universes tab, setup wizard, statistics integration |
-| v0.12.12 | [Configurable Normalization](Release-History#configurable-normalization-v01212) | Schema-aware sex normalization modes for worldbuilders |
-| v0.12.10 | [Step & Adoptive Parent Support](Release-History#step--adoptive-parent-support-v01210) | GEDCOM PEDI tags, Gramps mrel/frel, GEDCOM X lineage types, dedicated fields, canvas visualization |
-| v0.12.9 | [Statistics & Reports](Statistics-And-Reports) | Dashboard with metrics, drill-down, and genealogical report generation |
-| v0.12.8 | [Dynamic Note Content](Release-History#dynamic-note-content-v0128) | Live computed timeline and relationships blocks in person notes |
-| v0.12.6 | [Gramps Source Import](Release-History#gramps-source-import-v0126) | Import sources, citations, and repositories from Gramps XML |
-| v0.12.5 | [Bulk Source-Image Linking](Release-History#bulk-source-image-linking-v0125) | Import images as sources, link media to existing sources |
+| v0.13.6 | [Control Center Dashboard](Release-History#control-center-dashboard-v0136) | Dashboard tab with quick-action tiles, collapsible Vault Health, Recent Files |
+| v0.13.4 | [PDF Report Export](Release-History#pdf-report-export-v0134) | Export reports as styled PDFs with cover page and logo support |
+| v0.13.0 | [Universe Management](Release-History#universe-management-v0130) | First-class universe entity for worldbuilders |
+| v0.12.9 | [Statistics & Reports](Statistics-And-Reports) | Dashboard with metrics, drill-down, and genealogical reports |
 | v0.11.0 | [Export v2](Release-History#export-v2-v0110) | Full entity export with round-trip fidelity |
-| v0.10.20 | [Sex/Gender Identity Fields](Release-History#sexgender-identity-fields-v01020) | Separate gender_identity field with export support |
-| v0.10.19 | [Unified Property Configuration](Release-History#unified-property-configuration-v01019) | Consolidated property and value alias management |
-| v0.10.17 | [Data Enhancement Pass](Release-History#data-enhancement-pass-v01017) | Generate place notes from existing data with progress and editing |
-| v0.10.3 | [Type Customization](Release-History#type-customization-v0103) | Full type managers for all note categories |
-| v0.10.2 | [Flexible Note Type Detection](Release-History#flexible-note-type-detection-v0102) | Support cr_type, tags, avoids conflicts |
-| v0.10.1 | [GEDCOM Import v2](Release-History#gedcom-import-v2-v0101) | Enhanced import with sources, events, and places |
-| v0.10.0 | [Chronological Story Mapping](Release-History#chronological-story-mapping-v0100) | Event notes, timelines, narrative support |
-| v0.9.4 | [Value Aliases](Release-History#value-aliases-v094) | Custom terminology for property values |
-| v0.9.3 | [Property Aliases](Release-History#property-aliases-v093) | Map custom property names to canonical fields |
-| v0.9.2 | [Events Tab](Release-History#events-tab-v092) | Control Center tab for event management |
-| v0.9.1 | [Style Settings Integration](Release-History#style-settings-integration-v091) | Customize colors via Style Settings plugin |
-| v0.9.0 | [Evidence Visualization](Release-History#evidence-visualization-v090) | GPS-aligned research methodology tools |
-| v0.8.0 | [Source Media Gallery](Release-History#source-media-gallery--document-viewer-v080) | Evidence management and citation generator |
-| v0.7.0 | [Organization Notes](Release-History#organization-notes-v070) | Non-genealogical hierarchies |
-| v0.7.0 | [Fictional Date Systems](Release-History#fictional-date-systems-v070) | Custom calendars and eras |
-| v0.7.0 | [Custom Relationship Types](Release-History#custom-relationship-types-v070) | Non-familial relationships |
-| v0.6.3 | [Schema Validation](Release-History#schema-validation-v063) | User-defined data quality rules |
-| v0.6.2 | [Maps Tab](Release-History#maps-tab-v062) | Control Center tab for map management |
-| v0.6.0 | [Geographic Features](Release-History#geographic-features-v060) | Interactive Leaflet.js map view |
-| v0.6.0 | [Import/Export Enhancements](Release-History#importexport-enhancements-v060) | GEDCOM, GEDCOM X, Gramps, CSV support |
+
+**Earlier releases:** GEDCOM/Gramps/GEDCOM X import, geographic maps, evidence visualization, custom relationship types, fictional calendars, and more. See [Release History](Release-History) for details.
 
 ---
 
