@@ -333,6 +333,22 @@
   stroke: #fff;
 }
 
+/* SVG Card avatar images */
+.cr-fcv-chart-container.f3 .card_image {
+  overflow: hidden;
+}
+
+.cr-fcv-chart-container.f3 .card_image image {
+  /* Ensure avatar images render with rounded corners via clip-path */
+  border-radius: 4px;
+}
+
+.cr-fcv-chart-container.f3 .card_image .genderless-icon rect {
+  /* Fallback placeholder styling */
+  rx: 4;
+  ry: 4;
+}
+
 /* Connection lines */
 .cr-fcv-chart-container.f3 .link {
   stroke: var(--text-color);

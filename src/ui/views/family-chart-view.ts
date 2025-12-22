@@ -14,6 +14,7 @@ import { FamilyGraphService, PersonNode } from '../../core/family-graph';
 import type { ColorScheme } from '../../settings';
 import { getLogger } from '../../core/logging';
 import { PersonPickerModal } from '../person-picker';
+import { MediaService } from '../../core/media-service';
 
 const logger = getLogger('FamilyChartView');
 
@@ -1050,6 +1051,18 @@ export class FamilyChartView extends ItemView {
 			return false;
 		});
 
+		// Resolve avatar from person's media (first thumbnailable image/video)
+		let avatar: string | undefined;
+		if (person.media && person.media.length > 0) {
+			const mediaService = this.plugin.getMediaService();
+			if (mediaService) {
+				const thumbnailFile = mediaService.getFirstThumbnailFile(person.media);
+				if (thumbnailFile) {
+					avatar = this.app.vault.getResourcePath(thumbnailFile);
+				}
+			}
+		}
+
 		return {
 			id: person.crId,
 			data: {
@@ -1058,6 +1071,7 @@ export class FamilyChartView extends ItemView {
 				gender,
 				birthday: person.birthDate,
 				deathday: person.deathDate,
+				avatar,
 			},
 			rels: {
 				parents,

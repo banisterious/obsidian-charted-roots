@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-22 17:47:03 UTC
+ * - Generated: 2025-12-22 17:57:56 UTC
  * - Components: 35 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -8257,7 +8257,7 @@ settings:
    COMPONENT: FAMILY-CHART-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1003 lines, 23.19 KB */
+/* Component Size: 1019 lines, 23.54 KB */
 
 /**
  * Family Chart View Styles
@@ -8592,6 +8592,22 @@ settings:
 
 .cr-fcv-chart-container.f3 .cr-open-note-btn:hover path {
   stroke: #fff;
+}
+
+/* SVG Card avatar images */
+.cr-fcv-chart-container.f3 .card_image {
+  overflow: hidden;
+}
+
+.cr-fcv-chart-container.f3 .card_image image {
+  /* Ensure avatar images render with rounded corners via clip-path */
+  border-radius: 4px;
+}
+
+.cr-fcv-chart-container.f3 .card_image .genderless-icon rect {
+  /* Fallback placeholder styling */
+  rx: 4;
+  ry: 4;
 }
 
 /* Connection lines */
@@ -23668,10 +23684,10 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-22 17:47:03 UTC
+ * Build completed: 2025-12-22 17:57:56 UTC
  * Components processed: 35
- * Total lines: 23330
- * Total size: 462.07 KB
+ * Total lines: 23346
+ * Total size: 462.42 KB
  * Build duration: 0.04 seconds
  *
  * Component breakdown:
@@ -23690,7 +23706,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - find-on-canvas.css: 114 lines, 1.97 KB
  * - folder-scan.css: 155 lines, 2.56 KB
  * - relationship-calculator.css: 302 lines, 5.21 KB
- * - family-chart-view.css: 1003 lines, 23.19 KB
+ * - family-chart-view.css: 1019 lines, 23.54 KB
  * - data-quality.css: 1393 lines, 27.56 KB
  * - relationships.css: 517 lines, 9.76 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB
