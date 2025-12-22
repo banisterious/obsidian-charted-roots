@@ -2431,9 +2431,15 @@ export class FamilyChartView extends ItemView {
 			});
 
 			if (includeAvatars && avatarCount > 0) {
-				// Warn about large exports that may crash
+				// Warn about large exports that may crash due to memory exhaustion
 				if (avatarCount > 75) {
-					new Notice(`Warning: Exporting ${avatarCount} avatars may cause issues. Consider using "Export as SVG (no avatars)" instead.`, 8000);
+					const depthHint = (this.ancestryDepth === null || this.progenyDepth === null)
+						? ' Try reducing tree depth first (branch icon in toolbar).'
+						: '';
+					new Notice(
+						`Warning: Exporting ${avatarCount} avatars may cause issues.${depthHint} Consider "Export as SVG (no avatars)" for large trees.`,
+						10000
+					);
 				}
 				// Embed avatar images as base64 for export
 				await this.embedImagesAsBase64(svgClone);

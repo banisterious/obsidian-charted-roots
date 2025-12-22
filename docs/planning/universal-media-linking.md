@@ -1390,11 +1390,18 @@ Challenges:
 Exporting large trees with avatars to SVG can be resource-intensive due to base64 encoding of images. Improvements:
 
 1. **Sequential image processing** — Images are now processed one at a time to reduce memory pressure
-2. **UI thread yielding** — `setTimeout(10)` breaks every 3 images prevent UI freezing and allow garbage collection
+2. **UI thread yielding** — `setTimeout(10)` breaks every 3 images to prevent UI freezing and allow garbage collection
 3. **User notification** — Shows notice for exports with 50+ images: "Embedding N images... This may take a moment."
 4. **No-avatar export option** — Export menu now includes "Export as SVG (no avatars)" for faster/smaller exports
+5. **Depth limit guidance** — Warning for large exports suggests using tree depth limits to reduce visible nodes
 
-For very large trees (100+ avatars), use "Export as SVG (no avatars)" if the full export causes issues.
+**Workaround for large trees (100+ avatars):**
+
+For very large trees where avatar export causes memory exhaustion:
+
+1. **Use tree depth limits** — Click the branch icon in toolbar to limit ancestry/progeny depth (e.g., 3-4 generations)
+2. **Export smaller sections** — Navigate to different root people to export focused subtrees
+3. **Use no-avatar export** — "Export as SVG (no avatars)" always works regardless of tree size
 
 ---
 
