@@ -72,6 +72,7 @@ export class BulkMediaLinkModal extends Modal {
 	private selectedEntityType: MediaEntityType = 'person';
 	private entities: EntityItem[] = [];
 	private selectedEntities: Set<string> = new Set();
+	private preselectedFiles: TFile[] = [];
 
 	// UI elements
 	private entityTypeSelect!: HTMLSelectElement;
@@ -83,6 +84,13 @@ export class BulkMediaLinkModal extends Modal {
 		super(app);
 		this.plugin = plugin;
 		this.mediaService = new MediaService(app, plugin.settings);
+	}
+
+	/**
+	 * Set preselected media files (used when coming from Find Unlinked)
+	 */
+	setPreselectedFiles(files: TFile[]): void {
+		this.preselectedFiles = files;
 	}
 
 	onOpen(): void {
@@ -112,9 +120,14 @@ export class BulkMediaLinkModal extends Modal {
 		setIcon(icon, 'image-plus');
 		titleSection.appendText('Bulk link media');
 
+		// Show different subtitle when files are preselected
+		const subtitleText = this.preselectedFiles.length > 0
+			? `Link ${this.preselectedFiles.length} selected file(s) to entities`
+			: 'Link media files to multiple entities at once';
+
 		header.createDiv({
 			cls: 'crc-picker-subtitle',
-			text: 'Link media files to multiple entities at once'
+			text: subtitleText
 		});
 
 		// Entity type selector
@@ -463,6 +476,12 @@ export class BulkMediaLinkModal extends Modal {
 		const selectedCount = this.selectedEntities.size;
 		const typeConfig = ENTITY_TYPES.find(t => t.value === this.selectedEntityType);
 		const typeName = typeConfig?.label.toLowerCase() || 'entities';
+
+		// If we have preselected files, use them directly
+		if (this.preselectedFiles.length > 0) {
+			void this.linkMediaToEntities(this.preselectedFiles);
+			return;
+		}
 
 		new MediaPickerModal(
 			this.app,

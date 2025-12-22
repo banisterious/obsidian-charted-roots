@@ -14,6 +14,7 @@ import type CanvasRootsPlugin from '../../../main';
 import { MediaService, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, AUDIO_EXTENSIONS, PDF_EXTENSIONS, DOCUMENT_EXTENSIONS } from '../media-service';
 import { BulkMediaLinkModal } from './bulk-media-link-modal';
 import { MediaGalleryModal } from './media-gallery-modal';
+import { UnlinkedMediaModal } from './unlinked-media-modal';
 import { SourceMediaLinkerModal } from '../../sources/ui/source-media-linker';
 import { FamilyGraphService } from '../family-graph';
 import { PlaceGraphService } from '../place-graph';
@@ -316,13 +317,11 @@ export class MediaManagerModal extends Modal {
 	}
 
 	/**
-	 * Open Find Unlinked (placeholder)
+	 * Open Find Unlinked modal
 	 */
 	private openFindUnlinked(): void {
 		this.close();
-		// TODO: Implement unlinked media finder modal
-		// For now, we'll use a notice as placeholder
-		// new UnlinkedMediaModal(this.app, this.plugin).open();
+		new UnlinkedMediaModal(this.app, this.plugin).open();
 	}
 
 	/**
