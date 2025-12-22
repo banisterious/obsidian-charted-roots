@@ -294,6 +294,11 @@ export interface CanvasRootsSettings {
 	dashboardRecentFiles: RecentFileEntry[];
 	/** Whether the user has seen the Dashboard first-run notice */
 	dashboardFirstVisitDone: boolean;
+	// Media folder filtering
+	/** Folders to scan for media files (used by Find Unlinked, Media Manager stats, Media Picker) */
+	mediaFolders: string[];
+	/** Whether to limit media scanning to specified folders */
+	enableMediaFolderFilter: boolean;
 }
 
 /**
@@ -522,7 +527,10 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	// Dashboard settings
 	dashboardVaultHealthCollapsed: false,      // Default: expanded on first visit
 	dashboardRecentFiles: [],                  // Empty by default
-	dashboardFirstVisitDone: false             // Show welcome notice on first visit
+	dashboardFirstVisitDone: false,            // Show welcome notice on first visit
+	// Media folder filtering
+	mediaFolders: [],                          // Empty = no filtering (scan entire vault)
+	enableMediaFolderFilter: false             // Disabled by default for backwards compatibility
 };
 
 export class CanvasRootsSettingTab extends PluginSettingTab {

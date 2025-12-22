@@ -812,6 +812,32 @@ function renderFolderLocationsCard(
 		(v) => { plugin.settings.stagingFolder = v; }
 	);
 
+	// Section: Media Folders
+	content.createEl('h4', {
+		text: 'Media folder filtering',
+		cls: 'cr-aliases-section-title'
+	});
+
+	content.createEl('p', {
+		cls: 'crc-text-muted',
+		text: 'Limit media discovery to specific folders. This affects Find Unlinked, Media Manager stats, and the media picker—but not already-linked media or the Browse Gallery.'
+	});
+
+	// Enable media folder filter toggle
+	new Setting(content)
+		.setName('Limit media scanning to specified folders')
+		.setDesc('When enabled, only scan the folders listed below for media files')
+		.addToggle(toggle => toggle
+			.setValue(plugin.settings.enableMediaFolderFilter)
+			.onChange(async (value) => {
+				plugin.settings.enableMediaFolderFilter = value;
+				await plugin.saveSettings();
+			}));
+
+	// Media folders list
+	const mediaFoldersContainer = content.createDiv({ cls: 'cr-media-folders-list' });
+	renderMediaFoldersList(mediaFoldersContainer, plugin);
+
 	// Note about advanced settings
 	const advancedNote = content.createDiv({ cls: 'cr-info-box cr-info-box--muted' });
 	const advancedIcon = advancedNote.createSpan({ cls: 'cr-info-box-icon' });
@@ -821,6 +847,77 @@ function renderFolderLocationsCard(
 	});
 
 	container.appendChild(card);
+}
+
+/**
+ * Render the media folders list with add/remove functionality
+ */
+function renderMediaFoldersList(
+	container: HTMLElement,
+	plugin: CanvasRootsPlugin
+): void {
+	container.empty();
+
+	const folders = plugin.settings.mediaFolders;
+
+	// Render existing folders
+	for (let i = 0; i < folders.length; i++) {
+		const folder = folders[i];
+		const row = container.createDiv({ cls: 'cr-media-folder-row' });
+
+		// Folder icon
+		const iconEl = row.createSpan({ cls: 'cr-media-folder-icon' });
+		setIcon(iconEl, 'folder');
+
+		// Folder path text
+		row.createSpan({ cls: 'cr-media-folder-path', text: folder });
+
+		// Remove button
+		const removeBtn = row.createSpan({ cls: 'cr-media-folder-remove' });
+		setIcon(removeBtn, 'x');
+		removeBtn.setAttribute('aria-label', 'Remove folder');
+
+		removeBtn.addEventListener('click', async () => {
+			plugin.settings.mediaFolders = folders.filter((_, idx) => idx !== i);
+			await plugin.saveSettings();
+			renderMediaFoldersList(container, plugin);
+		});
+	}
+
+	// Add folder row
+	const addRow = container.createDiv({ cls: 'cr-media-folder-add-row' });
+
+	// Create a wrapper for the text input with folder suggest
+	const inputWrapper = addRow.createDiv({ cls: 'cr-media-folder-input-wrapper' });
+
+	const addSetting = new Setting(inputWrapper)
+		.addText(text => {
+			text.setPlaceholder('Add media folder...');
+
+			// Attach folder autocomplete
+			new FolderSuggest(plugin.app, text, async (value) => {
+				if (value.trim() && !folders.includes(value.trim())) {
+					plugin.settings.mediaFolders = [...folders, value.trim()];
+					await plugin.saveSettings();
+					renderMediaFoldersList(container, plugin);
+				}
+			});
+
+			// Also handle Enter key
+			text.inputEl.addEventListener('keydown', async (e) => {
+				if (e.key === 'Enter') {
+					const value = text.inputEl.value.trim();
+					if (value && !folders.includes(value)) {
+						plugin.settings.mediaFolders = [...folders, value];
+						await plugin.saveSettings();
+						renderMediaFoldersList(container, plugin);
+					}
+				}
+			});
+		});
+
+	// Remove the default styling from the Setting
+	addSetting.settingEl.addClass('cr-media-folder-add-setting');
 }
 
 /**

@@ -239,3 +239,76 @@
 .cr-settings-callout a:hover {
   text-decoration: underline;
 }
+
+/* ==========================================================================
+   Media Folders List
+   ========================================================================== */
+
+.cr-media-folders-list {
+  margin-top: var(--cr-spacing-sm);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  overflow: hidden;
+}
+
+.cr-media-folder-row {
+  display: flex;
+  align-items: center;
+  gap: var(--cr-spacing-sm);
+  padding: var(--cr-spacing-sm) var(--cr-spacing-md);
+  border-bottom: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+}
+
+.cr-media-folder-row:hover {
+  background: var(--background-modifier-hover);
+}
+
+.cr-media-folder-icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.cr-media-folder-path {
+  flex: 1;
+  font-family: var(--font-monospace);
+  font-size: 0.9em;
+}
+
+.cr-media-folder-remove {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+
+.cr-media-folder-remove:hover {
+  color: var(--text-error);
+  background: var(--background-modifier-error);
+}
+
+.cr-media-folder-add-row {
+  padding: var(--cr-spacing-xs) var(--cr-spacing-sm);
+  background: var(--background-primary);
+}
+
+.cr-media-folder-add-setting {
+  border: none !important;
+  padding: 0 !important;
+}
+
+.cr-media-folder-add-setting .setting-item-info {
+  display: none;
+}
+
+.cr-media-folder-add-setting .setting-item-control {
+  width: 100%;
+}
+
+.cr-media-folder-add-setting input[type="text"] {
+  width: 100%;
+}
