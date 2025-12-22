@@ -10,7 +10,7 @@ This document outlines planned features for Canvas Roots. For completed features
 - [Planned Features](#planned-features)
   - [Universal Media Linking](#universal-media-linking) ⚡ High
   - [Calendarium Integration](#calendarium-integration) ⚡ High
-  - [Visual Tree Charts](#visual-tree-charts) 📋 Medium
+  - [Visual Tree PDF Enhancements](#visual-tree-pdf-enhancements) 💡 Low
   - [Post-Import Cleanup Wizard](#post-import-cleanup-wizard) 📋 Medium
   - [Report Wizard Enhancements](#report-wizard-enhancements) 📋 Medium
   - [Universe Management Enhancements](#universe-management-enhancements) 💡 Low
@@ -36,6 +36,7 @@ For detailed implementation documentation of completed features, see [Release Hi
 
 | Version | Feature | Summary |
 |:-------:|---------|---------|
+| v0.14.0 | [Visual Tree Charts](Release-History#visual-tree-charts-v0140) | Unified tree wizard for Canvas/PDF, 4 visual tree report types, custom SVG icons |
 | v0.13.6 | [Control Center Dashboard](Release-History#control-center-dashboard-v0136) | Dashboard tab with 9 quick-action tiles, collapsible Vault Health, Recent Files with context menu |
 | v0.13.5 | [Extended Report Types](Release-History#extended-report-types-v0135) | 6 new report types: Source Summary, Timeline, Place Summary, Media Inventory, Universe Overview, Collection Overview |
 | v0.13.4 | [PDF Report Export](Release-History#pdf-report-export-v0134) | Export reports as styled PDFs with cover page, logo support, 100% local generation |
@@ -214,101 +215,48 @@ See [Calendarium Integration Planning Document](https://github.com/banisterious/
 
 ---
 
-### Visual Tree Charts
+### Visual Tree PDF Enhancements
 
-**Priority:** 📋 Medium — Printable tree diagrams for sharing and archiving
+**Priority:** 💡 Low — Improve pdfmake tree rendering to match Family Chart quality
 
-**Summary:** Add a "Visual Trees" category to Statistics and Reports for generating printable tree diagrams as PDF. This consolidates all printable output in one location while keeping canvas generation (for interactive exploration) in the Tree Output tab.
+**Summary:** Enhance the pdfmake-based visual tree PDF rendering to match the quality of the Family Chart jsPDF export, enabling eventual library consolidation.
 
-**Problem Statement:**
+**Current State:**
 
-Genealogists regularly need printed family trees for:
-- Family reunions and gatherings
-- Research trips to archives, courthouses, or cemeteries
-- Sharing with elderly relatives who prefer paper
-- Wall displays for home or genealogical society meetings
-- Documentation for lineage society applications (DAR, SAR, etc.)
+The unified wizard's PDF output (pdfmake) produces functional but basic tree diagrams. The Family Chart view's PDF export (jsPDF) is significantly better:
 
-Currently, Canvas Roots generates interactive Obsidian canvas files but lacks direct PDF export for visual tree diagrams. The Family Chart view has PDF/PNG export using jsPDF, but this is separate from the Report Generator.
+| Feature | Family Chart (jsPDF) | Unified Wizard (pdfmake) |
+|---------|---------------------|-------------------------|
+| Spouse positioning | Side-by-side | Stacked or offset |
+| Connector lines | Orthogonal routing | Diagonal lines |
+| Node styling | Card with profile icon | Simple boxes |
+| Visual indicators | Corner badges | Colored dots |
+| Overall polish | Professional | Functional |
 
-**Proposed Solution:**
+**Proposed Improvements:**
 
-Add visual tree chart types to Statistics and Reports:
+| Enhancement | Description |
+|-------------|-------------|
+| **Orthogonal connectors** | Route lines with right-angle turns instead of diagonals |
+| **Profile silhouettes** | Add person icons to node boxes |
+| **Spouse layout** | Position spouses side-by-side on same row |
+| **Corner badges** | Add indicators for gender, living status, etc. |
+| **Better spacing** | Match Family Chart's node arrangement algorithm |
 
-| Chart Type | Description |
-|------------|-------------|
-| **Pedigree Tree** | Ancestors branching upward from root person |
-| **Descendant Tree** | Descendants branching downward from root person |
-| **Hourglass Tree** | Both ancestors and descendants from root person |
-| **Fan Chart** | Semicircular pedigree with radiating ancestor segments |
+**Benefits of Consolidation (Future):**
 
-Each chart type opens a wizard modal for configuration, then renders directly to PDF via pdfmake.
+- Single PDF library (smaller bundle)
+- Unified styling across all PDF exports
+- Simpler maintenance
 
-**Chart Wizard Options:**
+**When to Revisit:**
 
-| Option | Description |
-|--------|-------------|
-| Root person | Person picker to select starting individual |
-| Generations | Number of generations to include (2-10+) |
-| Layout direction | Vertical or horizontal orientation |
-| Node content | What to display (name, dates, photos, etc.) |
-| Styling | Colors, fonts, line styles |
+This becomes higher priority when:
+- Users request unified styling across PDF outputs
+- Bundle size becomes a concern
+- Major updates to either library require maintenance
 
-**Custom SVG Icons:**
-
-Each tree type will have a custom SVG icon for the report tile, making chart types immediately recognizable:
-
-| Chart | Icon Concept |
-|-------|--------------|
-| Pedigree Tree | Branching upward `╱╲` expanding up |
-| Descendant Tree | Branching downward, inverted pedigree |
-| Hourglass Tree | Diamond shape `><` showing both directions |
-| Fan Chart | Semicircle with radiating segments |
-
-Icons will be themeable (inherit CSS colors for light/dark mode) and consistent with existing UI style.
-
-**Library Consolidation:**
-
-- Remove jsPDF dependency from Family Chart view
-- Use pdfmake for all PDF generation (reports and tree charts)
-- Single PDF library = smaller bundle, less maintenance
-
-**UI Changes:**
-
-| Location | Current | After |
-|----------|---------|-------|
-| **Tree Output tab** | Named "Tree Output" | Renamed to "Canvas Trees" to clarify it generates canvas files |
-| **Tree Output tab** | Export button in preview panel | Button navigates to Statistics and Reports |
-| **Family Chart view** | Export button (jsPDF) | Button navigates to Statistics and Reports |
-
-The tab rename clarifies the distinction: "Canvas Trees" for interactive exploration, "Visual Trees" (in Reports) for printable PDF output.
-
-**Scope Boundaries:**
-
-| In Scope | Out of Scope |
-|----------|--------------|
-| PDF tree diagram generation | Canvas file generation (stays in Tree Output tab) |
-| pdfmake-based rendering | jsPDF support |
-| Tree wizard in Reports | Changes to Tree Output tab |
-
-**Phased Implementation:**
-
-| Phase | Scope |
-|-------|-------|
-| 1 | Pedigree Tree chart with basic wizard, pdfmake rendering |
-| 2 | Descendant Tree and Hourglass Tree charts |
-| 3 | Fan Chart (more complex radial layout) |
-| 4 | Custom SVG icons for all chart types |
-| 5 | Remove jsPDF, update Family Chart view |
-
-**Technical Notes:**
-
-- New `VisualTreeService` for tree layout calculations
-- New `TreeChartWizardModal` for chart configuration
-- Extend `PdfGeneratorService` with tree diagram rendering
-- Custom SVG icons in `src/ui/tree-icons/` directory
-
-See [Tree Visualization Overhaul Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/tree-visualization-overhaul.md) for implementation details.
+See [Tree Visualization Overhaul Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/tree-visualization-overhaul.md) for technical details.
 
 ---
 

@@ -8,6 +8,8 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 
 ## Table of Contents
 
+- [v0.14.x](#v014x)
+  - [Visual Tree Charts](#visual-tree-charts-v0140)
 - [v0.13.x](#v013x)
   - [Control Center Dashboard](#control-center-dashboard-v0136)
   - [Extended Report Types](#extended-report-types-v0135)
@@ -48,6 +50,78 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
   - [Maps Tab](#maps-tab-v062)
   - [Geographic Features](#geographic-features-v060)
   - [Import/Export Enhancements](#importexport-enhancements-v060)
+
+---
+
+## v0.14.x
+
+### Visual Tree Charts (v0.14.0)
+
+Unified tree generation wizard supporting both Canvas and PDF output, with visual tree reports in the Statistics Dashboard.
+
+**Problem Solved:**
+- Two separate wizards for Canvas and PDF tree generation created confusion
+- No visual tree diagrams in the Statistics and Reports system
+- Canvas Trees tab lacked modern dashboard design
+- No custom icons for tree chart types
+
+**Features:**
+
+| Feature | Description |
+|---------|-------------|
+| **Unified Tree Wizard** | Single wizard for both Canvas and PDF output with dynamic step flow |
+| **Visual Tree Reports** | 4 chart types in Statistics Dashboard: Pedigree, Descendant, Hourglass, Fan Chart |
+| **Custom SVG Icons** | Themeable icons for each chart type (`cr-pedigree-tree`, `cr-descendant-tree`, `cr-hourglass-tree`, `cr-fan-chart`) |
+| **Canvas Trees Tab** | Redesigned dashboard with recent trees, statistics, and quick actions |
+| **PDF Options** | Page size, orientation, node content, color schemes, large tree handling |
+
+**Wizard Step Flow:**
+
+```
+Step 1: Person Selection
+    ↓
+Step 2: Tree Type Selection
+    ↓
+Step 3: Output Format (Canvas vs PDF)
+    ├── Canvas → Step 4a: Canvas Options → Step 5a: Preview → Step 6a: Output
+    └── PDF → Step 4b: PDF Options → Step 5b: Output
+```
+
+**Chart Types:**
+
+| Chart Type | Description |
+|------------|-------------|
+| **Pedigree Tree** | Ancestors branching upward from root person |
+| **Descendant Tree** | Descendants branching downward from root person |
+| **Hourglass Tree** | Both ancestors and descendants from root person |
+| **Fan Chart** | Semicircular pedigree (PDF only, placeholder for future) |
+
+**PDF Generation Paths:**
+
+| Path | Library | Quality | Use Case |
+|------|---------|---------|----------|
+| **Unified Wizard** | pdfmake | Good | Quick PDF generation from wizard |
+| **Family Chart View** | jsPDF | Excellent | High-quality printable output |
+
+The Family Chart view produces superior visual output (orthogonal connectors, profile icons, better spouse positioning). Both paths are maintained for different use cases.
+
+**Files Changed:**
+
+| File | Change |
+|------|--------|
+| `src/trees/ui/unified-tree-wizard-modal.ts` | New unified wizard modal |
+| `src/trees/services/visual-tree-service.ts` | Tree building and layout service |
+| `src/reports/services/pdf-report-renderer.ts` | Extended with visual tree PDF generation |
+| `src/reports/types/report-types.ts` | Added 4 visual tree report types |
+| `src/ui/lucide-icons.ts` | Added 4 custom SVG icons |
+| `src/ui/control-center.ts` | Canvas Trees tab dashboard redesign |
+| `styles/tree-output.css` | New card and wizard styles |
+
+**Removed Files:**
+- `src/trees/ui/tree-generation-wizard.ts` (1500+ lines, replaced by unified wizard)
+- `src/trees/ui/visual-tree-wizard-modal.ts` (570+ lines, replaced by unified wizard)
+
+See [Canvas Trees](Canvas-Trees) for user documentation and [Tree Visualization Overhaul Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/tree-visualization-overhaul.md) for implementation details.
 
 ---
 

@@ -87,11 +87,20 @@ Comprehensive planning document for modernizing tree visualization in Canvas Roo
 - `src/trees/ui/tree-generation-wizard.ts` - Removed (was 1500+ lines)
 - `src/trees/ui/visual-tree-wizard-modal.ts` - Removed (was 570+ lines)
 
-### Remaining
+### Deferred
 
-#### Phase 3: Library Consolidation (Not Started)
-- Migrate Family Chart PDF export from jsPDF to pdfmake
-- Remove jsPDF dependency
+#### Phase 3: Library Consolidation (Deferred)
+
+**Reason:** The Family Chart PDF export (jsPDF) produces significantly higher quality output than the current pdfmake visual trees:
+- Proper spouse positioning side-by-side
+- Clean orthogonal connector lines with proper routing
+- Card-style nodes with profile silhouette icons
+- Corner badges/indicators
+- Better overall visual hierarchy
+
+**Decision (2025-12-22):** Keep jsPDF and defer consolidation until the pdfmake visual trees can match the Family Chart quality. The pdfmake trees remain useful for quick PDF generation from the unified wizard, while the Family Chart view provides high-quality printable output.
+
+**Future path:** Rather than migrating Family Chart to pdfmake, improve the pdfmake visual tree rendering to match Family Chart quality. See Roadmap entry "Visual Tree PDF Enhancements" for planned improvements.
 
 ---
 
