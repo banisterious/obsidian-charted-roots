@@ -79,11 +79,14 @@ export class MediaManagerModal extends Modal {
 	private calculateStats(): void {
 		const mediaService = new MediaService(this.app, this.plugin.settings);
 
-		// Count total media files in vault
+		// Count total media files in vault (applying media folder filter if enabled)
 		const allFiles = this.app.vault.getFiles();
 		const mediaFiles = allFiles.filter(f => {
 			const ext = '.' + f.extension.toLowerCase();
-			return ALL_MEDIA_EXTENSIONS.includes(ext);
+			if (!ALL_MEDIA_EXTENSIONS.includes(ext)) return false;
+			// Apply media folder filter
+			if (!this.isInMediaFolders(f.path)) return false;
+			return true;
 		});
 		const totalMediaFiles = mediaFiles.length;
 
@@ -331,5 +334,24 @@ export class MediaManagerModal extends Modal {
 	private openSourceMediaLinker(): void {
 		this.close();
 		new SourceMediaLinkerModal(this.app, this.plugin).open();
+	}
+
+	/**
+	 * Check if a file path is within the configured media folders.
+	 * Returns true if filter is disabled, folders are empty, or file is in a media folder.
+	 */
+	private isInMediaFolders(filePath: string): boolean {
+		const { enableMediaFolderFilter, mediaFolders } = this.plugin.settings;
+
+		// If filter is disabled or no folders configured, accept all files
+		if (!enableMediaFolderFilter || mediaFolders.length === 0) {
+			return true;
+		}
+
+		// Check if file is in any of the configured folders
+		return mediaFolders.some(folder => {
+			const normalizedFolder = folder.endsWith('/') ? folder : `${folder}/`;
+			return filePath.startsWith(normalizedFolder) || filePath.startsWith(folder + '/');
+		});
 	}
 }
