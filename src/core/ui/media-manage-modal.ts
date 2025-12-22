@@ -209,7 +209,7 @@ export class MediaManageModal extends Modal {
 		if (!item.file) {
 			const missingBadge = meta.createSpan({ cls: 'crc-badge crc-badge--warning' });
 			setIcon(missingBadge, 'alert-triangle');
-			missingBadge.appendText(' Missing');
+			missingBadge.appendText(' File not found');
 		}
 
 		// Thumbnail badge for first item
