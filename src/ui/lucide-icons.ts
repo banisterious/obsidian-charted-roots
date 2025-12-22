@@ -6,50 +6,59 @@
 import { addIcon, setIcon } from 'obsidian';
 
 /**
- * Custom SVG icons for visual tree reports (V2 designs from planning doc)
- * Following Lucide design guidelines: 24x24 canvas, 2px stroke, round caps/joins
+ * Custom SVG icons for visual tree reports
+ *
+ * IMPORTANT: Obsidian's addIcon() expects:
+ * - SVG content WITHOUT the <svg> wrapper (Obsidian adds its own)
+ * - Icons must fit within a 0 0 100 100 viewBox
+ * - Follow Lucide guidelines: 2px stroke equivalent (scaled to 100), round joins/caps
  */
 const CUSTOM_ICONS: Record<string, string> = {
-	'pedigree-tree': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="20" r="2.5"/>
-  <circle cx="5" cy="11" r="2"/>
-  <circle cx="19" cy="11" r="2"/>
-  <circle cx="5" cy="3" r="1.5"/>
-  <circle cx="19" cy="3" r="1.5"/>
-  <line x1="10" y1="18" x2="6.5" y2="13"/>
-  <line x1="14" y1="18" x2="17.5" y2="13"/>
-  <line x1="5" y1="9" x2="5" y2="4.5"/>
-  <line x1="19" y1="9" x2="19" y2="4.5"/>
-</svg>`,
-	'descendant-tree': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="4" r="2.5"/>
-  <circle cx="5" cy="13" r="2"/>
-  <circle cx="19" cy="13" r="2"/>
-  <circle cx="5" cy="21" r="1.5"/>
-  <circle cx="19" cy="21" r="1.5"/>
-  <line x1="10" y1="6" x2="6.5" y2="11"/>
-  <line x1="14" y1="6" x2="17.5" y2="11"/>
-  <line x1="5" y1="15" x2="5" y2="19.5"/>
-  <line x1="19" y1="15" x2="19" y2="19.5"/>
-</svg>`,
-	'hourglass-tree': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="12" r="2.5"/>
-  <circle cx="4" cy="4" r="2"/>
-  <circle cx="20" cy="4" r="2"/>
-  <circle cx="4" cy="20" r="2"/>
-  <circle cx="20" cy="20" r="2"/>
-  <line x1="10" y1="10" x2="5.5" y2="5.5"/>
-  <line x1="14" y1="10" x2="18.5" y2="5.5"/>
-  <line x1="10" y1="14" x2="5.5" y2="18.5"/>
-  <line x1="14" y1="14" x2="18.5" y2="18.5"/>
-</svg>`,
-	'fan-chart': `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M 2 20 A 12 12 0 0 1 22 20"/>
-  <path d="M 6 20 A 8 8 0 0 1 18 20"/>
-  <line x1="12" y1="20" x2="12" y2="8"/>
-  <line x1="12" y1="20" x2="4" y2="12"/>
-  <line x1="12" y1="20" x2="20" y2="12"/>
-</svg>`
+	// Pedigree tree: root at bottom, ancestors branching up
+	'cr-pedigree-tree': `
+		<circle cx="50" cy="80" r="12" fill="none" stroke="currentColor" stroke-width="8"/>
+		<circle cx="20" cy="42" r="10" fill="none" stroke="currentColor" stroke-width="8"/>
+		<circle cx="80" cy="42" r="10" fill="none" stroke="currentColor" stroke-width="8"/>
+		<circle cx="20" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="8"/>
+		<circle cx="80" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="8"/>
+		<line x1="40" y1="72" x2="28" y2="52" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+		<line x1="60" y1="72" x2="72" y2="52" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+		<line x1="20" y1="32" x2="20" y2="20" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+		<line x1="80" y1="32" x2="80" y2="20" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+	`,
+	// Descendant tree: root at top, descendants branching down
+	'cr-descendant-tree': `
+		<circle cx="50" cy="20" r="12" fill="none" stroke="currentColor" stroke-width="8"/>
+		<circle cx="20" cy="58" r="10" fill="none" stroke="currentColor" stroke-width="8"/>
+		<circle cx="80" cy="58" r="10" fill="none" stroke="currentColor" stroke-width="8"/>
+		<circle cx="20" cy="88" r="8" fill="none" stroke="currentColor" stroke-width="8"/>
+		<circle cx="80" cy="88" r="8" fill="none" stroke="currentColor" stroke-width="8"/>
+		<line x1="40" y1="28" x2="28" y2="48" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+		<line x1="60" y1="28" x2="72" y2="48" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+		<line x1="20" y1="68" x2="20" y2="80" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+		<line x1="80" y1="68" x2="80" y2="80" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+	`,
+	// Hourglass tree: root in center, ancestors above, descendants below
+	'cr-hourglass-tree': `
+		<circle cx="50" cy="50" r="12" fill="none" stroke="currentColor" stroke-width="8"/>
+		<circle cx="15" cy="15" r="10" fill="none" stroke="currentColor" stroke-width="8"/>
+		<circle cx="85" cy="15" r="10" fill="none" stroke="currentColor" stroke-width="8"/>
+		<circle cx="15" cy="85" r="10" fill="none" stroke="currentColor" stroke-width="8"/>
+		<circle cx="85" cy="85" r="10" fill="none" stroke="currentColor" stroke-width="8"/>
+		<line x1="40" y1="40" x2="24" y2="24" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+		<line x1="60" y1="40" x2="76" y2="24" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+		<line x1="40" y1="60" x2="24" y2="76" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+		<line x1="60" y1="60" x2="76" y2="76" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+	`,
+	// Fan chart: semicircular ancestor chart
+	'cr-fan-chart': `
+		<path d="M 8 88 A 54 54 0 0 1 92 88" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+		<path d="M 20 88 A 42 42 0 0 1 80 88" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+		<path d="M 32 88 A 30 30 0 0 1 68 88" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+		<line x1="50" y1="88" x2="50" y2="34" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+		<line x1="50" y1="88" x2="12" y2="50" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+		<line x1="50" y1="88" x2="88" y2="50" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+	`
 };
 
 /**
@@ -178,10 +187,10 @@ export type LucideIconName =
 	| 'hourglass' // Hourglass tree fallback
 	| 'pie-chart' // Fan chart fallback
 	// Custom icons (registered via addIcon)
-	| 'pedigree-tree' // Pedigree tree icon
-	| 'descendant-tree' // Descendant tree icon
-	| 'hourglass-tree' // Hourglass tree icon
-	| 'fan-chart' // Fan chart icon
+	| 'cr-pedigree-tree' // Pedigree tree icon
+	| 'cr-descendant-tree' // Descendant tree icon
+	| 'cr-hourglass-tree' // Hourglass tree icon
+	| 'cr-fan-chart' // Fan chart icon
 	// Unified wizard
 	| 'layout-dashboard'; // Canvas output format
 

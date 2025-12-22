@@ -212,28 +212,28 @@ export class VisualTreeWizardModal extends Modal {
 				id: 'pedigree',
 				label: 'Pedigree',
 				desc: 'Ancestors branching upward',
-				icon: 'pedigree-tree',
+				icon: 'cr-pedigree-tree',
 				available: true
 			},
 			{
 				id: 'descendant',
 				label: 'Descendant',
 				desc: 'Descendants branching downward',
-				icon: 'descendant-tree',
+				icon: 'cr-descendant-tree',
 				available: false // Phase 2.2
 			},
 			{
 				id: 'hourglass',
 				label: 'Hourglass',
 				desc: 'Ancestors and descendants',
-				icon: 'hourglass-tree',
+				icon: 'cr-hourglass-tree',
 				available: false // Phase 2.2
 			},
 			{
 				id: 'fan',
 				label: 'Fan chart',
 				desc: 'Semicircular pedigree',
-				icon: 'fan-chart',
+				icon: 'cr-fan-chart',
 				available: false // Phase 2.3
 			}
 		];

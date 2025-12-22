@@ -1473,3 +1473,31 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Chart type badge shown in step header */
+.cr-wizard-step-badges {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.cr-wizard-step-badges:empty {
+  display: none;
+}
+
+.crc-wizard-chart-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.crc-wizard-chart-badge--secondary {
+  background: var(--background-modifier-border);
+  color: var(--text-normal);
+}

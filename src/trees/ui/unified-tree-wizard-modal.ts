@@ -413,6 +413,28 @@ export class UnifiedTreeWizardModal extends Modal {
 
 		// Step header
 		const stepHeader = this.contentContainer.createDiv({ cls: 'cr-wizard-step-header' });
+
+		// Show badges for selections made in previous steps
+		const badgeContainer = stepHeader.createDiv({ cls: 'cr-wizard-step-badges' });
+
+		// Show tree type badge after step 2 (tree-type)
+		if (this.currentStepIndex >= 2) {
+			const treeTypeBadge = badgeContainer.createDiv({ cls: 'crc-wizard-chart-badge' });
+			treeTypeBadge.createSpan({
+				text: this.formData.outputFormat === 'pdf'
+					? this.getPdfChartTypeLabel()
+					: this.getTreeTypeLabel()
+			});
+		}
+
+		// Show output format badge after step 3 (output-format)
+		if (this.currentStepIndex >= 3) {
+			const formatBadge = badgeContainer.createDiv({ cls: 'crc-wizard-chart-badge crc-wizard-chart-badge--secondary' });
+			formatBadge.createSpan({
+				text: this.formData.outputFormat === 'pdf' ? 'PDF' : 'Canvas'
+			});
+		}
+
 		stepHeader.createEl('h3', { text: step.title, cls: 'cr-wizard-step-heading' });
 		stepHeader.createEl('p', { text: `Step ${this.currentStepIndex + 1} of ${flow.length}`, cls: 'cr-wizard-step-counter' });
 
@@ -748,10 +770,10 @@ export class UnifiedTreeWizardModal extends Modal {
 		const treeTypeContainer = form.createDiv({ cls: 'crc-wizard-tree-types' });
 
 		const treeTypes: { id: TreeType; label: string; desc: string; icon: LucideIconName; pdfOnly?: boolean }[] = [
-			{ id: 'full', label: 'Full tree', desc: 'Ancestors and descendants', icon: 'git-branch' },
-			{ id: 'ancestors', label: 'Ancestors', desc: 'Parents, grandparents, etc.', icon: 'arrow-up' },
-			{ id: 'descendants', label: 'Descendants', desc: 'Children, grandchildren, etc.', icon: 'arrow-down' },
-			{ id: 'fan', label: 'Fan chart', desc: 'Semicircular pedigree', icon: 'fan-chart' as LucideIconName, pdfOnly: true }
+			{ id: 'full', label: 'Full tree', desc: 'Ancestors and descendants', icon: 'cr-hourglass-tree' as LucideIconName },
+			{ id: 'ancestors', label: 'Ancestors', desc: 'Parents, grandparents, etc.', icon: 'cr-pedigree-tree' as LucideIconName },
+			{ id: 'descendants', label: 'Descendants', desc: 'Children, grandchildren, etc.', icon: 'cr-descendant-tree' as LucideIconName },
+			{ id: 'fan', label: 'Fan chart', desc: 'Semicircular pedigree', icon: 'cr-fan-chart' as LucideIconName, pdfOnly: true }
 		];
 
 		for (const type of treeTypes) {
@@ -1324,7 +1346,7 @@ export class UnifiedTreeWizardModal extends Modal {
 
 		const summaryList = summarySection.createEl('ul', { cls: 'crc-wizard-summary-list' });
 		summaryList.createEl('li', { text: `Root person: ${this.formData.rootPerson?.name || 'Not selected'}` });
-		summaryList.createEl('li', { text: `Tree type: ${this.getTreeTypeLabel()}` });
+		summaryList.createEl('li', { text: `Chart type: ${this.getPdfChartTypeLabel()}` });
 
 		// Show effective page size (may be overridden by large tree handling)
 		const effectivePageSize = this.treeSizeAnalysis?.isLarge &&
@@ -1595,11 +1617,13 @@ export class UnifiedTreeWizardModal extends Modal {
 			? this.formData.maxAncestorGenerations || 5
 			: this.formData.maxDescendantGenerations || 5;
 
+		const chartType = this.formData.treeType === 'full' ? 'hourglass' :
+			this.formData.treeType === 'ancestors' ? 'pedigree' :
+				this.formData.treeType === 'descendants' ? 'descendant' : 'fan';
+
 		const options: VisualTreeOptions = {
 			rootPersonCrId: this.formData.rootPerson.crId,
-			chartType: this.formData.treeType === 'full' ? 'hourglass' :
-				this.formData.treeType === 'ancestors' ? 'pedigree' :
-					this.formData.treeType === 'descendants' ? 'descendant' : 'fan',
+			chartType,
 			maxGenerations,
 			pageSize: this.formData.pageSize,
 			orientation: this.formData.orientation,
@@ -1689,6 +1713,18 @@ export class UnifiedTreeWizardModal extends Modal {
 	private getTreeTypeLabel(): string {
 		switch (this.formData.treeType) {
 			case 'full': return 'Full Tree';
+			case 'ancestors': return 'Pedigree Chart';
+			case 'descendants': return 'Descendant Chart';
+			case 'fan': return 'Fan Chart';
+		}
+	}
+
+	/**
+	 * Get the PDF chart type label (more specific for PDF output)
+	 */
+	private getPdfChartTypeLabel(): string {
+		switch (this.formData.treeType) {
+			case 'full': return 'Hourglass Chart';
 			case 'ancestors': return 'Pedigree Chart';
 			case 'descendants': return 'Descendant Chart';
 			case 'fan': return 'Fan Chart';

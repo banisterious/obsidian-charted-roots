@@ -840,7 +840,22 @@
 }
 
 .cr-sv-report-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-accent);
+  flex-shrink: 0;
+}
+
+/* Ensure consistent icon sizing for both Lucide and custom SVG icons.
+   Custom icons registered via addIcon have explicit width/height attributes
+   on the SVG element that need to be overridden. */
+.cr-sv-report-card-icon svg,
+.cr-sv-report-card-icon .svg-icon {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px;
+  min-height: 18px;
 }
 
 .cr-sv-report-card-title {

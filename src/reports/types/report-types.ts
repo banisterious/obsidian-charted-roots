@@ -712,7 +712,7 @@ export const REPORT_METADATA: Record<ReportType, ReportMetadata> = {
 		type: 'pedigree-chart',
 		name: 'Pedigree chart',
 		description: 'Ancestor tree formatted as markdown',
-		icon: 'git-branch',
+		icon: 'cr-pedigree-tree',
 		category: 'genealogical',
 		requiresPerson: true,
 		entityType: 'person'
@@ -721,7 +721,7 @@ export const REPORT_METADATA: Record<ReportType, ReportMetadata> = {
 		type: 'descendant-chart',
 		name: 'Descendant chart',
 		description: 'Descendant tree formatted as markdown',
-		icon: 'git-fork',
+		icon: 'cr-descendant-tree',
 		category: 'genealogical',
 		requiresPerson: true,
 		entityType: 'person'
@@ -800,7 +800,7 @@ export const REPORT_METADATA: Record<ReportType, ReportMetadata> = {
 		type: 'pedigree-tree-pdf',
 		name: 'Pedigree tree PDF',
 		description: 'Graphical ancestor tree with positioned boxes and lines',
-		icon: 'pedigree-tree',
+		icon: 'cr-pedigree-tree',
 		category: 'visual-trees',
 		requiresPerson: true,
 		entityType: 'person'
@@ -809,7 +809,7 @@ export const REPORT_METADATA: Record<ReportType, ReportMetadata> = {
 		type: 'descendant-tree-pdf',
 		name: 'Descendant tree PDF',
 		description: 'Graphical descendant tree branching downward',
-		icon: 'descendant-tree',
+		icon: 'cr-descendant-tree',
 		category: 'visual-trees',
 		requiresPerson: true,
 		entityType: 'person'
@@ -818,7 +818,7 @@ export const REPORT_METADATA: Record<ReportType, ReportMetadata> = {
 		type: 'hourglass-tree-pdf',
 		name: 'Hourglass tree PDF',
 		description: 'Both ancestors and descendants from a root person',
-		icon: 'hourglass-tree',
+		icon: 'cr-hourglass-tree',
 		category: 'visual-trees',
 		requiresPerson: true,
 		entityType: 'person'
@@ -827,7 +827,7 @@ export const REPORT_METADATA: Record<ReportType, ReportMetadata> = {
 		type: 'fan-chart-pdf',
 		name: 'Fan chart PDF',
 		description: 'Semicircular pedigree with radiating ancestor segments',
-		icon: 'fan-chart',
+		icon: 'cr-fan-chart',
 		category: 'visual-trees',
 		requiresPerson: true,
 		entityType: 'person'
