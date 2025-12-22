@@ -9,6 +9,7 @@ Canvas Roots depends on several external libraries for specialized functionality
 - [Leaflet](#leaflet)
 - [D3](#d3)
 - [jsPDF](#jspdf)
+- [JSZip](#jszip)
 - [Dependency Management](#dependency-management)
 
 ---
@@ -240,6 +241,53 @@ map.addLayer(markers);
 
 ---
 
+## JSZip
+
+**Purpose:** ZIP archive extraction for Gramps Package (.gpkg) import.
+
+**Version:** ^3.10.1
+
+**Location:** `src/gramps/gpkg-extractor.ts`
+
+**Usage pattern:**
+
+```typescript
+import JSZip from 'jszip';
+
+// Load ZIP from ArrayBuffer
+const zip = await JSZip.loadAsync(data);
+
+// Iterate over files
+for (const [path, file] of Object.entries(zip.files)) {
+  if (file.dir) continue;
+
+  // Extract as different types
+  const text = await file.async('string');
+  const binary = await file.async('uint8array');
+  const buffer = await file.async('arraybuffer');
+}
+```
+
+**Key features used:**
+
+| Feature | Description |
+|---------|-------------|
+| `loadAsync()` | Parse ZIP from ArrayBuffer, Blob, or base64 |
+| `file.async()` | Extract file contents as string, Uint8Array, or ArrayBuffer |
+| `files` | Object with all entries (directories have `dir: true`) |
+
+**Gramps Package structure:**
+- `.gpkg` files are ZIP archives containing:
+  - `data.gramps` - Gramps XML file (may be gzip-compressed)
+  - `media/` - Directory with referenced media files (images, documents)
+
+**Notes:**
+- Lightweight (~90KB minified, ~30KB gzipped)
+- Pure JavaScript, no native dependencies
+- Works in browser and Node.js environments
+
+---
+
 ## Dependency Management
 
 **Bundle considerations:**
@@ -250,6 +298,7 @@ map.addLayer(markers);
 | Leaflet + plugins | ~500 KB | Dynamic import |
 | family-chart | ~200 KB | Static import |
 | D3 | ~300 KB | Static import |
+| JSZip | ~90 KB | Static import |
 
 **Type definitions (devDependencies):**
 - `@types/leaflet`
