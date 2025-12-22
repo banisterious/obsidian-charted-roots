@@ -431,6 +431,9 @@ export class OrganizationService {
 			parentOrg = this.resolveWikilinkToCrId(fm.parent_org);
 		}
 
+		// Parse media array
+		const media = this.parseMediaProperty(fm);
+
 		return {
 			file,
 			crId: fm.cr_id,
@@ -442,8 +445,32 @@ export class OrganizationService {
 			dissolved: fm.dissolved,
 			motto: fm.motto,
 			seat: fm.seat,
-			universe: fm.universe
+			universe: fm.universe,
+			media: media.length > 0 ? media : undefined
 		};
+	}
+
+	/**
+	 * Parse media array from frontmatter.
+	 * Expects YAML array format:
+	 *   media:
+	 *     - "[[file1.jpg]]"
+	 *     - "[[file2.jpg]]"
+	 */
+	private parseMediaProperty(fm: Record<string, unknown>): string[] {
+		if (!fm.media) return [];
+
+		// Handle array format
+		if (Array.isArray(fm.media)) {
+			return fm.media.filter((item): item is string => typeof item === 'string');
+		}
+
+		// Single value - wrap in array
+		if (typeof fm.media === 'string') {
+			return [fm.media];
+		}
+
+		return [];
 	}
 
 	/**

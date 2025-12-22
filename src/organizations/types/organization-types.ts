@@ -76,6 +76,8 @@ export interface OrganizationInfo {
 	seat?: string;
 	/** Universe scope */
 	universe?: string;
+	/** Media files linked to this organization (wikilinks) */
+	media?: string[];
 }
 
 /**

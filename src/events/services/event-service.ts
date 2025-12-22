@@ -668,6 +668,10 @@ export class EventService {
 		const afterValue = resolveProperty(frontmatter, 'after', aliases);
 		const timelineValue = resolveProperty(frontmatter, 'timeline', aliases);
 		const groupsValue = resolveProperty(frontmatter, 'groups', aliases);
+		const mediaValue = resolveProperty(frontmatter, 'media', aliases);
+
+		// Parse media array
+		const media = fmToStringArray(mediaValue);
 
 		return {
 			file,
@@ -691,7 +695,8 @@ export class EventService {
 			after: fmToStringArray(afterValue),
 			timeline: timelineValue ? fmToString(timelineValue) : undefined,
 			sortOrder: typeof frontmatter.sort_order === 'number' ? frontmatter.sort_order : undefined,
-			groups: fmToStringArray(groupsValue)
+			groups: fmToStringArray(groupsValue),
+			media: media.length > 0 ? media : undefined
 		};
 	}
 

@@ -67,6 +67,9 @@ export interface PersonNode {
 
 	// Conflict count (number of unresolved source conflicts for this person)
 	conflictCount?: number;
+
+	// Media files linked to this person (wikilinks)
+	media?: string[];
 }
 
 /**
@@ -1355,6 +1358,9 @@ export class FamilyGraphService {
 		const collection = this.resolveProperty<string>(fm, 'collection');
 		const universe = this.resolveProperty<string>(fm, 'universe');
 
+		// Parse media array
+		const media = this.parseMediaProperty(fm);
+
 		return {
 			crId,
 			name,
@@ -1381,8 +1387,32 @@ export class FamilyGraphService {
 			childrenCrIds, // Now populated from frontmatter (deduplicated above)
 			collectionName,
 			collection,
-			universe
+			universe,
+			media: media.length > 0 ? media : undefined
 		};
+	}
+
+	/**
+	 * Parse media array from frontmatter.
+	 * Expects YAML array format:
+	 *   media:
+	 *     - "[[file1.jpg]]"
+	 *     - "[[file2.jpg]]"
+	 */
+	private parseMediaProperty(fm: Record<string, unknown>): string[] {
+		if (!fm.media) return [];
+
+		// Handle array format
+		if (Array.isArray(fm.media)) {
+			return fm.media.filter((item): item is string => typeof item === 'string');
+		}
+
+		// Single value - wrap in array
+		if (typeof fm.media === 'string') {
+			return [fm.media];
+		}
+
+		return [];
 	}
 
 	/**

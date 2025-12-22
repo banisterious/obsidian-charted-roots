@@ -386,6 +386,8 @@ export interface EventNote {
 	sortOrder?: number;
 	/** Groups/factions involved in this event (for filtering by nation, faction, etc.) */
 	groups?: string[];
+	/** Media files linked to this event (wikilinks) */
+	media?: string[];
 }
 
 /**

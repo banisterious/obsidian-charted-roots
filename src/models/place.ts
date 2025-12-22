@@ -134,6 +134,8 @@ export interface PlaceNode {
 	coordinates?: GeoCoordinates;
 	customCoordinates?: CustomCoordinates;
 	collection?: string;
+	/** Media files linked to this place (wikilinks) */
+	media?: string[];
 }
 
 /**

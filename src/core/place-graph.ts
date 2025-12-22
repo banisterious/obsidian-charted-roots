@@ -1164,6 +1164,9 @@ export class PlaceGraphService {
 			}
 		}
 
+		// Parse media array
+		const media = this.parseMediaProperty(fm);
+
 		return {
 			node: {
 				id: fm.cr_id,
@@ -1177,9 +1180,33 @@ export class PlaceGraphService {
 				aliases,
 				coordinates,
 				customCoordinates,
-				collection: fm.collection
+				collection: fm.collection,
+				media: media.length > 0 ? media : undefined
 			},
 			parentWikilink
 		};
+	}
+
+	/**
+	 * Parse media array from frontmatter.
+	 * Expects YAML array format:
+	 *   media:
+	 *     - "[[file1.jpg]]"
+	 *     - "[[file2.jpg]]"
+	 */
+	private parseMediaProperty(fm: Record<string, unknown>): string[] {
+		if (!fm.media) return [];
+
+		// Handle array format
+		if (Array.isArray(fm.media)) {
+			return fm.media.filter((item): item is string => typeof item === 'string');
+		}
+
+		// Single value - wrap in array
+		if (typeof fm.media === 'string') {
+			return [fm.media];
+		}
+
+		return [];
 	}
 }
