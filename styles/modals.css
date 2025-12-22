@@ -7295,14 +7295,21 @@
    UNLINKED MEDIA MODAL
    ========================================================================== */
 
-.crc-unlinked-media-modal {
-  width: 90vw;
+.modal:has(.crc-unlinked-media-modal) {
   max-width: 1000px;
+  width: 90vw;
   height: 85vh;
   max-height: 800px;
 }
 
-.crc-unlinked-media-modal .modal-content {
+.modal:has(.crc-unlinked-media-modal) .modal-content {
+  padding: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.crc-unlinked-media-modal {
   display: flex;
   flex-direction: column;
   height: 100%;

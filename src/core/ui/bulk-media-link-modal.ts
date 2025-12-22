@@ -231,6 +231,7 @@ export class BulkMediaLinkModal extends Modal {
 		familyGraph.setFolderFilter(folderFilter);
 		familyGraph.setPropertyAliases(this.plugin.settings.propertyAliases);
 		familyGraph.setValueAliases(this.plugin.settings.valueAliases);
+		familyGraph.ensureCacheLoaded();
 
 		const people = familyGraph.getAllPeople();
 		const peopleWithoutMedia = people.filter(p => !p.media || p.media.length === 0);

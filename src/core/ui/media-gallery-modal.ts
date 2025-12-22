@@ -98,8 +98,11 @@ export class MediaGalleryModal extends Modal {
 		familyGraph.setFolderFilter(folderFilter);
 		familyGraph.setPropertyAliases(this.plugin.settings.propertyAliases);
 		familyGraph.setValueAliases(this.plugin.settings.valueAliases);
+		familyGraph.ensureCacheLoaded();
 
-		for (const person of familyGraph.getAllPeople()) {
+		const allPeople = familyGraph.getAllPeople();
+
+		for (const person of allPeople) {
 			if (person.media && person.media.length > 0) {
 				for (const ref of person.media) {
 					const item = this.mediaService.resolveMediaItem(ref);
@@ -119,7 +122,9 @@ export class MediaGalleryModal extends Modal {
 
 		// Events
 		const eventService = new EventService(this.app, this.plugin.settings);
-		for (const event of eventService.getAllEvents()) {
+		const allEvents = eventService.getAllEvents();
+
+		for (const event of allEvents) {
 			if (event.media && event.media.length > 0) {
 				for (const ref of event.media) {
 					const item = this.mediaService.resolveMediaItem(ref);
@@ -185,7 +190,9 @@ export class MediaGalleryModal extends Modal {
 
 		// Sources
 		const sourceService = new SourceService(this.app, this.plugin.settings);
-		for (const source of sourceService.getAllSources()) {
+		const allSources = sourceService.getAllSources();
+
+		for (const source of allSources) {
 			if (source.media && source.media.length > 0) {
 				const sourceFile = this.app.vault.getAbstractFileByPath(source.filePath);
 				if (sourceFile instanceof TFile) {

@@ -112,6 +112,7 @@ export class UnlinkedMediaModal extends Modal {
 		familyGraph.setFolderFilter(folderFilter);
 		familyGraph.setPropertyAliases(this.plugin.settings.propertyAliases);
 		familyGraph.setValueAliases(this.plugin.settings.valueAliases);
+		familyGraph.ensureCacheLoaded();
 
 		for (const person of familyGraph.getAllPeople()) {
 			if (person.media && person.media.length > 0) {

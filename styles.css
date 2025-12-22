@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-22 19:39:05 UTC
+ * - Generated: 2025-12-22 20:16:49 UTC
  * - Components: 35 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -620,7 +620,7 @@ settings:
    COMPONENT: MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 7700 lines, 142.59 KB */
+/* Component Size: 7707 lines, 142.71 KB */
 
 /* ==========================================================================
    Canvas Roots Control Center - Styling
@@ -7919,14 +7919,21 @@ settings:
    UNLINKED MEDIA MODAL
    ========================================================================== */
 
-.crc-unlinked-media-modal {
-  width: 90vw;
+.modal:has(.crc-unlinked-media-modal) {
   max-width: 1000px;
+  width: 90vw;
   height: 85vh;
   max-height: 800px;
 }
 
-.crc-unlinked-media-modal .modal-content {
+.modal:has(.crc-unlinked-media-modal) .modal-content {
+  padding: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.crc-unlinked-media-modal {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -24669,11 +24676,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-22 19:39:05 UTC
+ * Build completed: 2025-12-22 20:16:49 UTC
  * Components processed: 35
- * Total lines: 24331
- * Total size: 480.91 KB
- * Build duration: 0.03 seconds
+ * Total lines: 24338
+ * Total size: 481.04 KB
+ * Build duration: 0.05 seconds
  *
  * Component breakdown:
  * - variables.css: 48 lines, 1.33 KB
@@ -24684,7 +24691,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - nodes.css: 12 lines, 0.3 KB
  * - edges.css: 4 lines, 0.07 KB
  * - settings.css: 131 lines, 3.53 KB
- * - modals.css: 7700 lines, 142.59 KB
+ * - modals.css: 7707 lines, 142.71 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
  * - validation.css: 84 lines, 1.47 KB

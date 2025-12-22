@@ -96,6 +96,7 @@ export class MediaManagerModal extends Modal {
 		familyGraph.setFolderFilter(folderFilter);
 		familyGraph.setPropertyAliases(this.plugin.settings.propertyAliases);
 		familyGraph.setValueAliases(this.plugin.settings.valueAliases);
+		familyGraph.ensureCacheLoaded();
 		const people = familyGraph.getAllPeople();
 		let entitiesWithoutMedia = 0;
 

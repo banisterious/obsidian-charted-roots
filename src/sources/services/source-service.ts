@@ -441,11 +441,23 @@ export class SourceService {
 			return null;
 		}
 
-		// Collect media fields (media, media_2, media_3, etc.)
+		// Collect media fields
+		// Supports both YAML array format and legacy numbered format (media, media_2, media_3, etc.)
 		const media: string[] = [];
 		if (frontmatter.media) {
-			media.push(fmToString(frontmatter.media));
+			if (Array.isArray(frontmatter.media)) {
+				// YAML array format: media: ["[[file1.jpg]]", "[[file2.jpg]]"]
+				for (const item of frontmatter.media) {
+					if (typeof item === 'string') {
+						media.push(item);
+					}
+				}
+			} else {
+				// Single value format: media: "[[file.jpg]]"
+				media.push(fmToString(frontmatter.media));
+			}
 		}
+		// Also check legacy numbered format (media_2, media_3, etc.)
 		for (let i = 2; i <= 20; i++) {
 			const key = `media_${i}`;
 			if (frontmatter[key]) {
