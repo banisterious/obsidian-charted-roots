@@ -1886,27 +1886,37 @@ export class FamilyChartView extends ItemView {
 				logger.warn('export', 'Failed to convert image to base64', { href, error });
 			}
 
-			// Yield to UI thread every few images to prevent freezing
-			// and allow garbage collection
-			if (i % 3 === 0) {
-				await new Promise(resolve => setTimeout(resolve, 10));
-			}
+			// Yield after EVERY image for large exports to allow GC
+			// Longer delay (50ms) gives browser time to reclaim memory
+			await new Promise(resolve => setTimeout(resolve, totalImages > 50 ? 50 : 10));
 		}
 	}
 
 	/**
 	 * Convert an image URL to a base64 data URI
+	 * Downscales large images to reduce memory usage and base64 string size
 	 */
-	private async convertImageToBase64(url: string): Promise<string | null> {
+	private async convertImageToBase64(url: string, maxSize: number = 150): Promise<string | null> {
 		return new Promise((resolve) => {
 			const img = new Image();
 			img.crossOrigin = 'anonymous';
 
 			img.onload = () => {
 				try {
+					// Downscale large images to reduce memory and base64 size
+					// Avatars display at ~60-80px, so 150px is plenty
+					let width = img.naturalWidth;
+					let height = img.naturalHeight;
+
+					if (width > maxSize || height > maxSize) {
+						const scale = maxSize / Math.max(width, height);
+						width = Math.round(width * scale);
+						height = Math.round(height * scale);
+					}
+
 					const canvas = document.createElement('canvas');
-					canvas.width = img.naturalWidth;
-					canvas.height = img.naturalHeight;
+					canvas.width = width;
+					canvas.height = height;
 
 					const ctx = canvas.getContext('2d');
 					if (!ctx) {
@@ -1914,8 +1924,9 @@ export class FamilyChartView extends ItemView {
 						return;
 					}
 
-					ctx.drawImage(img, 0, 0);
-					const dataUrl = canvas.toDataURL('image/png');
+					ctx.drawImage(img, 0, 0, width, height);
+					// Use JPEG for photos (smaller) with good quality
+					const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
 					resolve(dataUrl);
 				} catch (error) {
 					logger.warn('export', 'Failed to convert image to canvas', { url, error });
