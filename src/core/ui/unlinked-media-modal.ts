@@ -179,6 +179,9 @@ export class UnlinkedMediaModal extends Modal {
 			if (!ALL_MEDIA_EXTENSIONS.includes(ext)) continue;
 			if (this.linkedPaths.has(file.path)) continue;
 
+			// Apply media folder filter if enabled
+			if (!this.isInMediaFolders(file.path)) continue;
+
 			const mediaType = this.getMediaType(ext);
 			this.allItems.push({
 				file,
@@ -194,6 +197,25 @@ export class UnlinkedMediaModal extends Modal {
 		this.isLoading = false;
 		this.updateCount();
 		this.renderGrid();
+	}
+
+	/**
+	 * Check if a file path is within the configured media folders.
+	 * Returns true if filter is disabled, folders are empty, or file is in a media folder.
+	 */
+	private isInMediaFolders(filePath: string): boolean {
+		const { enableMediaFolderFilter, mediaFolders } = this.plugin.settings;
+
+		// If filter is disabled or no folders configured, accept all files
+		if (!enableMediaFolderFilter || mediaFolders.length === 0) {
+			return true;
+		}
+
+		// Check if file is in any of the configured folders
+		return mediaFolders.some(folder => {
+			const normalizedFolder = folder.endsWith('/') ? folder : `${folder}/`;
+			return filePath.startsWith(normalizedFolder) || filePath.startsWith(folder + '/');
+		});
 	}
 
 	/**
