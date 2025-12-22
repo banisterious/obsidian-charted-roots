@@ -1239,13 +1239,13 @@ For large vaults with many media:
 - [ ] Existing Source media functionality continues working
 
 ### Phase 2
-- [ ] "Link Media" context menu action works for all entity types
-- [ ] "Manage media..." context menu opens reorder modal
-- [ ] Drag-and-drop reordering updates frontmatter correctly
-- [ ] First item displays "Thumbnail" badge in reorder UI
+- [x] "Link Media" context menu action works for all entity types
+- [x] "Manage media..." context menu opens reorder modal
+- [x] Drag-and-drop reordering updates frontmatter correctly
+- [x] First item displays "Thumbnail" badge in reorder UI
 - [ ] Bulk media linking supports all entity types
 - [ ] Unified media gallery shows media from all sources
-- [ ] Media indicators visible in Control Center entity tables
+- [x] Media indicators visible in Control Center entity tables
 
 ### Phase 3
 - [x] Person thumbnails display on Family Chart nodes (avatar field populated from first media)
