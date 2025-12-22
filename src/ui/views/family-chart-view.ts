@@ -55,6 +55,7 @@ interface FamilyChartViewState {
 	showBirthDates?: boolean;
 	showDeathDates?: boolean;
 	showKinshipLabels?: boolean;
+	showAvatars?: boolean;
 	isHorizontal?: boolean;
 	// Tree depth limits
 	ancestryDepth?: number | null;  // null = unlimited
@@ -82,6 +83,7 @@ export class FamilyChartView extends ItemView {
 	private showBirthDates: boolean = true;
 	private showDeathDates: boolean = false;
 	private showKinshipLabels: boolean = false;
+	private showAvatars: boolean = true; // Show person avatar thumbnails on cards
 	private isHorizontal: boolean = false; // Tree orientation: false = vertical (top-to-bottom), true = horizontal (left-to-right)
 	// Tree depth limits (null = unlimited)
 	private ancestryDepth: number | null = null;
@@ -1053,7 +1055,7 @@ export class FamilyChartView extends ItemView {
 
 		// Resolve avatar from person's media (first thumbnailable image/video)
 		let avatar: string | undefined;
-		if (person.media && person.media.length > 0) {
+		if (this.showAvatars && person.media && person.media.length > 0) {
 			const mediaService = this.plugin.getMediaService();
 			if (mediaService) {
 				const thumbnailFile = mediaService.getFirstThumbnailFile(person.media);
@@ -1407,19 +1409,19 @@ export class FamilyChartView extends ItemView {
 		menu.addItem((item) => {
 			item.setTitle('Export as PNG')
 				.setIcon('image')
-				.onClick(() => this.exportAsPng());
+				.onClick(() => void this.exportAsPng());
 		});
 
 		menu.addItem((item) => {
 			item.setTitle('Export as SVG')
 				.setIcon('file-code')
-				.onClick(() => this.exportAsSvg());
+				.onClick(() => void this.exportAsSvg());
 		});
 
 		menu.addItem((item) => {
 			item.setTitle('Export as PDF')
 				.setIcon('file-text')
-				.onClick(() => this.exportAsPdf());
+				.onClick(() => void this.exportAsPdf());
 		});
 
 		menu.showAtMouseEvent(e);
@@ -1511,7 +1513,7 @@ export class FamilyChartView extends ItemView {
 	/**
 	 * Export the chart as PNG
 	 */
-	private exportAsPng(): void {
+	private async exportAsPng(): Promise<void> {
 		if (!this.f3Chart) return;
 
 		const svg = this.f3Chart.svg;
@@ -1544,6 +1546,9 @@ export class FamilyChartView extends ItemView {
 				new Notice(`Chart too large for PNG export (${Math.round(scaledArea / 1000000)}M pixels). Try SVG export instead.`, 0);
 				return;
 			}
+
+			// Embed avatar images as base64 for export
+			await this.embedImagesAsBase64(svgClone);
 
 			// Serialize SVG
 			const serializer = new XMLSerializer();
@@ -1782,6 +1787,76 @@ export class FamilyChartView extends ItemView {
 		return { svgClone, width, height };
 	}
 
+	/**
+	 * Convert image URLs in SVG to base64 data URIs for export
+	 * This is necessary because app:// URLs don't work outside Obsidian
+	 */
+	private async embedImagesAsBase64(svgClone: SVGSVGElement): Promise<void> {
+		const imageElements = svgClone.querySelectorAll('image[href]');
+
+		const conversionPromises: Promise<void>[] = [];
+
+		imageElements.forEach((imgEl) => {
+			const href = imgEl.getAttribute('href') || imgEl.getAttributeNS('http://www.w3.org/1999/xlink', 'href');
+			if (!href) return;
+
+			// Only convert app:// URLs (Obsidian internal)
+			if (!href.startsWith('app://')) return;
+
+			const promise = this.convertImageToBase64(href).then((base64) => {
+				if (base64) {
+					imgEl.setAttribute('href', base64);
+					// Also set xlink:href for older SVG viewers
+					imgEl.setAttributeNS('http://www.w3.org/1999/xlink', 'href', base64);
+				}
+			}).catch((error) => {
+				logger.warn('export', 'Failed to convert image to base64', { href, error });
+			});
+
+			conversionPromises.push(promise);
+		});
+
+		await Promise.all(conversionPromises);
+	}
+
+	/**
+	 * Convert an image URL to a base64 data URI
+	 */
+	private async convertImageToBase64(url: string): Promise<string | null> {
+		return new Promise((resolve) => {
+			const img = new Image();
+			img.crossOrigin = 'anonymous';
+
+			img.onload = () => {
+				try {
+					const canvas = document.createElement('canvas');
+					canvas.width = img.naturalWidth;
+					canvas.height = img.naturalHeight;
+
+					const ctx = canvas.getContext('2d');
+					if (!ctx) {
+						resolve(null);
+						return;
+					}
+
+					ctx.drawImage(img, 0, 0);
+					const dataUrl = canvas.toDataURL('image/png');
+					resolve(dataUrl);
+				} catch (error) {
+					logger.warn('export', 'Failed to convert image to canvas', { url, error });
+					resolve(null);
+				}
+			};
+
+			img.onerror = () => {
+				logger.warn('export', 'Failed to load image for conversion', { url });
+				resolve(null);
+			};
+
+			img.src = url;
+		});
+	}
+
 	// ============ Layout Configuration ============
 
 	/**
@@ -1882,6 +1957,12 @@ export class FamilyChartView extends ItemView {
 			item.setTitle(`${this.showKinshipLabels ? '✓ ' : ''}Show kinship labels`)
 				.setIcon('tag')
 				.onClick(() => this.toggleKinshipLabels());
+		});
+
+		menu.addItem((item) => {
+			item.setTitle(`${this.showAvatars ? '✓ ' : ''}Show avatars`)
+				.setIcon('image')
+				.onClick(() => this.toggleAvatars());
 		});
 
 		menu.addSeparator();
@@ -1988,6 +2069,18 @@ export class FamilyChartView extends ItemView {
 		this.showKinshipLabels = !this.showKinshipLabels;
 		this.renderKinshipLabels();
 		new Notice(`Kinship labels ${this.showKinshipLabels ? 'shown' : 'hidden'}`);
+	}
+
+	/**
+	 * Toggle avatar display on cards
+	 */
+	private toggleAvatars(): void {
+		this.showAvatars = !this.showAvatars;
+		// Need to re-initialize chart to re-transform person data with/without avatars
+		if (this.f3Chart && this.rootPersonId) {
+			this.initializeChart();
+		}
+		new Notice(`Avatars ${this.showAvatars ? 'shown' : 'hidden'}`);
 	}
 
 	/**
@@ -2238,7 +2331,7 @@ export class FamilyChartView extends ItemView {
 	/**
 	 * Export the chart as SVG
 	 */
-	private exportAsSvg(): void {
+	private async exportAsSvg(): Promise<void> {
 		if (!this.f3Chart) return;
 
 		const svg = this.f3Chart.svg;
@@ -2250,6 +2343,9 @@ export class FamilyChartView extends ItemView {
 		try {
 			// Prepare SVG for export using shared helper
 			const { svgClone } = this.prepareSvgForExport(svg as SVGSVGElement);
+
+			// Embed avatar images as base64 for export
+			await this.embedImagesAsBase64(svgClone);
 
 			// Serialize
 			const serializer = new XMLSerializer();
@@ -2275,7 +2371,7 @@ export class FamilyChartView extends ItemView {
 	/**
 	 * Export the chart as PDF
 	 */
-	private exportAsPdf(): void {
+	private async exportAsPdf(): Promise<void> {
 		if (!this.f3Chart) return;
 
 		const svg = this.f3Chart.svg;
@@ -2309,6 +2405,9 @@ export class FamilyChartView extends ItemView {
 				new Notice(`Chart too large for PDF export (${Math.round(scaledArea / 1000000)}M pixels). Try SVG export instead.`, 0);
 				return;
 			}
+
+			// Embed avatar images as base64 for export
+			await this.embedImagesAsBase64(svgClone);
 
 			// Serialize SVG
 			const serializer = new XMLSerializer();
@@ -2819,6 +2918,7 @@ export class FamilyChartView extends ItemView {
 			showBirthDates: this.showBirthDates,
 			showDeathDates: this.showDeathDates,
 			showKinshipLabels: this.showKinshipLabels,
+			showAvatars: this.showAvatars,
 			isHorizontal: this.isHorizontal,
 			ancestryDepth: this.ancestryDepth,
 			progenyDepth: this.progenyDepth,
@@ -2856,6 +2956,9 @@ export class FamilyChartView extends ItemView {
 		}
 		if (state.showKinshipLabels !== undefined) {
 			this.showKinshipLabels = state.showKinshipLabels;
+		}
+		if (state.showAvatars !== undefined) {
+			this.showAvatars = state.showAvatars;
 		}
 		if (state.isHorizontal !== undefined) {
 			this.isHorizontal = state.isHorizontal;

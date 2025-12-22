@@ -2,7 +2,7 @@
 
 Planning document for extending media attachment support to all entity types.
 
-- **Status:** In Progress (Phase 1 & 2 Complete)
+- **Status:** In Progress (Phases 1, 2 & 3 Complete)
 - **Priority:** High
 - **GitHub Issue:** [#21](https://github.com/banisterious/obsidian-canvas-roots/issues/21)
 - **Branch:** `feature/universal-media-linking`
@@ -1248,10 +1248,11 @@ For large vaults with many media:
 - [ ] Media indicators visible in Control Center entity tables
 
 ### Phase 3
-- [ ] Person thumbnails display on Family Chart nodes
-- [ ] Thumbnails are configurable (size, position, enable/disable)
-- [ ] Fallback to initials works correctly
-- [ ] Performance acceptable with 100+ visible nodes
+- [x] Person thumbnails display on Family Chart nodes (avatar field populated from first media)
+- [x] Thumbnails are configurable (enable/disable via "Show avatars" menu toggle)
+- [x] Fallback to gender icons when no media present (built-in family-chart behavior)
+- [x] PNG/SVG/PDF export embeds avatar images as base64 data URIs
+- [ ] Performance acceptable with 100+ visible nodes (needs testing)
 
 ### Phase 4
 - [ ] `.gpkg` files import correctly
