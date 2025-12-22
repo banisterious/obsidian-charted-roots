@@ -7358,17 +7358,17 @@
 
 .crc-unlinked-media-search {
   flex: 1;
-  position: relative;
   display: flex;
   align-items: center;
+  gap: 8px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 8px 12px;
 }
 
 .crc-unlinked-media-search-icon {
-  position: absolute;
-  left: 10px;
   color: var(--text-muted);
-  display: flex;
-  align-items: center;
 }
 
 .crc-unlinked-media-search-icon svg {
@@ -7377,16 +7377,11 @@
 }
 
 .crc-unlinked-media-search-input {
-  width: 100%;
-  padding: 8px 12px 8px 36px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
-  background: var(--background-primary);
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-normal);
   font-size: 14px;
-}
-
-.crc-unlinked-media-search-input:focus {
-  border-color: var(--interactive-accent);
   outline: none;
 }
 

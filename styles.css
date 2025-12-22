@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-22 20:16:49 UTC
+ * - Generated: 2025-12-22 20:21:29 UTC
  * - Components: 35 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -620,7 +620,7 @@ settings:
    COMPONENT: MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 7707 lines, 142.71 KB */
+/* Component Size: 7702 lines, 142.6 KB */
 
 /* ==========================================================================
    Canvas Roots Control Center - Styling
@@ -7982,17 +7982,17 @@ settings:
 
 .crc-unlinked-media-search {
   flex: 1;
-  position: relative;
   display: flex;
   align-items: center;
+  gap: 8px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 8px 12px;
 }
 
 .crc-unlinked-media-search-icon {
-  position: absolute;
-  left: 10px;
   color: var(--text-muted);
-  display: flex;
-  align-items: center;
 }
 
 .crc-unlinked-media-search-icon svg {
@@ -8001,16 +8001,11 @@ settings:
 }
 
 .crc-unlinked-media-search-input {
-  width: 100%;
-  padding: 8px 12px 8px 36px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
-  background: var(--background-primary);
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-normal);
   font-size: 14px;
-}
-
-.crc-unlinked-media-search-input:focus {
-  border-color: var(--interactive-accent);
   outline: none;
 }
 
@@ -24676,11 +24671,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-22 20:16:49 UTC
+ * Build completed: 2025-12-22 20:21:29 UTC
  * Components processed: 35
- * Total lines: 24338
- * Total size: 481.04 KB
- * Build duration: 0.05 seconds
+ * Total lines: 24333
+ * Total size: 480.92 KB
+ * Build duration: 0.04 seconds
  *
  * Component breakdown:
  * - variables.css: 48 lines, 1.33 KB
@@ -24691,7 +24686,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - nodes.css: 12 lines, 0.3 KB
  * - edges.css: 4 lines, 0.07 KB
  * - settings.css: 131 lines, 3.53 KB
- * - modals.css: 7707 lines, 142.71 KB
+ * - modals.css: 7702 lines, 142.6 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
  * - validation.css: 84 lines, 1.47 KB
