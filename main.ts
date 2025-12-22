@@ -49,6 +49,9 @@ import { TimelineProcessor, RelationshipsProcessor } from './src/dynamic-content
 import { UniverseService, EditUniverseModal } from './src/universes';
 import { RecentFilesService, RecentEntityType } from './src/core/recent-files-service';
 import { registerCustomIcons } from './src/ui/lucide-icons';
+import { MediaService } from './src/core/media-service';
+import { MediaPickerModal } from './src/core/ui/media-picker-modal';
+import { MediaManageModal } from './src/core/ui/media-manage-modal';
 
 const logger = getLogger('CanvasRootsPlugin');
 
@@ -60,6 +63,7 @@ export default class CanvasRootsPlugin extends Plugin {
 	private folderFilter: FolderFilterService | null = null;
 	private eventService: EventService | null = null;
 	private recentFilesService: RecentFilesService | null = null;
+	private mediaService: MediaService | null = null;
 
 	/**
 	 * Flag to temporarily disable bidirectional sync during bulk operations (e.g., import)
@@ -135,6 +139,13 @@ export default class CanvasRootsPlugin extends Plugin {
 	 */
 	getRecentFilesService(): RecentFilesService | null {
 		return this.recentFilesService;
+	}
+
+	/**
+	 * Get the media service for entity media operations
+	 */
+	getMediaService(): MediaService | null {
+		return this.mediaService;
 	}
 
 	/**
@@ -241,6 +252,9 @@ export default class CanvasRootsPlugin extends Plugin {
 
 		// Initialize recent files service
 		this.recentFilesService = new RecentFilesService(this);
+
+		// Initialize media service
+		this.mediaService = new MediaService(this.app, this.settings);
 
 		// Run migration for property rename (collection_name -> group_name)
 		await this.migrateCollectionNameToGroupName();
@@ -1331,6 +1345,34 @@ export default class CanvasRootsPlugin extends Plugin {
 										});
 								});
 
+								// Media submenu
+								submenu.addItem((subItem) => {
+									const mediaSubmenu: Menu = subItem
+										.setTitle('Media')
+										.setIcon('image')
+										.setSubmenu();
+
+									mediaSubmenu.addItem((mediaItem) => {
+										mediaItem
+											.setTitle('Link media...')
+											.setIcon('image-plus')
+											.onClick(() => {
+												const placeName = fm?.name || file.basename;
+												this.openLinkMediaModal(file, 'place', placeName);
+											});
+									});
+
+									mediaSubmenu.addItem((mediaItem) => {
+										mediaItem
+											.setTitle('Manage media...')
+											.setIcon('settings')
+											.onClick(() => {
+												const placeName = fm?.name || file.basename;
+												this.openManageMediaModal(file, 'place', placeName);
+											});
+									});
+								});
+
 								submenu.addSeparator();
 
 								// Add essential properties submenu
@@ -1440,6 +1482,26 @@ export default class CanvasRootsPlugin extends Plugin {
 									.setIcon('map-pin')
 									.onClick(async () => {
 										await this.geocodeSinglePlace(file);
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Link media...')
+									.setIcon('image-plus')
+									.onClick(() => {
+										const placeName = fm?.name || file.basename;
+										this.openLinkMediaModal(file, 'place', placeName);
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Manage media...')
+									.setIcon('settings')
+									.onClick(() => {
+										const placeName = fm?.name || file.basename;
+										this.openManageMediaModal(file, 'place', placeName);
 									});
 							});
 
@@ -1937,6 +1999,34 @@ export default class CanvasRootsPlugin extends Plugin {
 										});
 								});
 
+								// Media submenu
+								submenu.addItem((subItem) => {
+									const mediaSubmenu: Menu = subItem
+										.setTitle('Media')
+										.setIcon('image')
+										.setSubmenu();
+
+									mediaSubmenu.addItem((mediaItem) => {
+										mediaItem
+											.setTitle('Link media...')
+											.setIcon('image-plus')
+											.onClick(() => {
+												const personName = cache?.frontmatter?.name || file.basename;
+												this.openLinkMediaModal(file, 'person', personName);
+											});
+									});
+
+									mediaSubmenu.addItem((mediaItem) => {
+										mediaItem
+											.setTitle('Manage media...')
+											.setIcon('settings')
+											.onClick(() => {
+												const personName = cache?.frontmatter?.name || file.basename;
+												this.openManageMediaModal(file, 'person', personName);
+											});
+									});
+								});
+
 								// Insert dynamic blocks
 								submenu.addItem((subItem) => {
 									subItem
@@ -2329,6 +2419,26 @@ export default class CanvasRootsPlugin extends Plugin {
 
 							menu.addItem((item) => {
 								item
+									.setTitle('Canvas Roots: Link media...')
+									.setIcon('image-plus')
+									.onClick(() => {
+										const personName = cache?.frontmatter?.name || file.basename;
+										this.openLinkMediaModal(file, 'person', personName);
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Manage media...')
+									.setIcon('settings')
+									.onClick(() => {
+										const personName = cache?.frontmatter?.name || file.basename;
+										this.openManageMediaModal(file, 'person', personName);
+									});
+							});
+
+							menu.addItem((item) => {
+								item
 									.setTitle('Canvas Roots: Insert dynamic blocks')
 									.setIcon('layout-template')
 									.onClick(async () => {
@@ -2541,6 +2651,34 @@ export default class CanvasRootsPlugin extends Plugin {
 										});
 								});
 
+								// Media submenu
+								submenu.addItem((subItem) => {
+									const mediaSubmenu: Menu = subItem
+										.setTitle('Media')
+										.setIcon('image')
+										.setSubmenu();
+
+									mediaSubmenu.addItem((mediaItem) => {
+										mediaItem
+											.setTitle('Link media...')
+											.setIcon('image-plus')
+											.onClick(() => {
+												const eventTitle = cache?.frontmatter?.title || file.basename;
+												this.openLinkMediaModal(file, 'event', eventTitle);
+											});
+									});
+
+									mediaSubmenu.addItem((mediaItem) => {
+										mediaItem
+											.setTitle('Manage media...')
+											.setIcon('settings')
+											.onClick(() => {
+												const eventTitle = cache?.frontmatter?.title || file.basename;
+												this.openManageMediaModal(file, 'event', eventTitle);
+											});
+									});
+								});
+
 								submenu.addSeparator();
 
 								// Add essential event properties
@@ -2606,6 +2744,26 @@ export default class CanvasRootsPlugin extends Plugin {
 									.setIcon('edit')
 									.onClick(() => {
 										this.openEditEventModal(file);
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Link media...')
+									.setIcon('image-plus')
+									.onClick(() => {
+										const eventTitle = cache?.frontmatter?.title || file.basename;
+										this.openLinkMediaModal(file, 'event', eventTitle);
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Manage media...')
+									.setIcon('settings')
+									.onClick(() => {
+										const eventTitle = cache?.frontmatter?.title || file.basename;
+										this.openManageMediaModal(file, 'event', eventTitle);
 									});
 							});
 
@@ -4404,6 +4562,75 @@ export default class CanvasRootsPlugin extends Plugin {
 
 			new Notice(`Linked source: ${source.title}`);
 		}).open();
+	}
+
+	/**
+	 * Open media picker to link media files to an entity
+	 */
+	private openLinkMediaModal(file: TFile, entityType: string, entityName: string): void {
+		if (!this.mediaService) {
+			new Notice('Media service not available');
+			return;
+		}
+
+		// Get existing media from frontmatter
+		const cache = this.app.metadataCache.getFileCache(file);
+		const existingMedia = this.mediaService.parseMediaProperty(cache?.frontmatter || {});
+
+		new MediaPickerModal(
+			this.app,
+			this.mediaService,
+			async (selectedFiles) => {
+				if (!this.mediaService) return;
+
+				// Add each selected file as a wikilink
+				for (const mediaFile of selectedFiles) {
+					const wikilink = this.mediaService.pathToWikilink(mediaFile.path);
+					await this.mediaService.addMediaToEntity(file, wikilink);
+				}
+
+				new Notice(`Linked ${selectedFiles.length} media file${selectedFiles.length !== 1 ? 's' : ''} to ${entityName}`);
+			},
+			{
+				title: 'Link media',
+				subtitle: `Select media files to link to ${entityName}`,
+				multiSelect: true,
+				existingMedia
+			}
+		).open();
+	}
+
+	/**
+	 * Open media manage modal to view, reorder, and remove media from an entity
+	 */
+	private openManageMediaModal(file: TFile, entityType: string, entityName: string): void {
+		if (!this.mediaService) {
+			new Notice('Media service not available');
+			return;
+		}
+
+		// Get existing media from frontmatter
+		const cache = this.app.metadataCache.getFileCache(file);
+		const existingMedia = this.mediaService.parseMediaProperty(cache?.frontmatter || {});
+
+		new MediaManageModal(
+			this.app,
+			this.mediaService,
+			file,
+			existingMedia,
+			async (updatedMediaRefs) => {
+				if (!this.mediaService) return;
+				await this.mediaService.updateMediaProperty(file, updatedMediaRefs);
+			},
+			() => {
+				// Re-open the link media modal when "Add media" is clicked
+				this.openLinkMediaModal(file, entityType, entityName);
+			},
+			{
+				entityName,
+				entityType
+			}
+		).open();
 	}
 
 	/**
