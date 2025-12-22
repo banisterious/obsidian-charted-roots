@@ -14,6 +14,7 @@ Planning document for extending media attachment support to all entity types.
 - Fixed Media Gallery and Unlinked Media modals not finding linked media (missing `ensureCacheLoaded()` call)
 - Added YAML array format support for `media` property in SourceService
 - Fixed Unlinked Media modal styling (CSS `:has()` selector pattern, search field styling)
+- Added Phase 3.5: Media Folder Filter enhancement (planned)
 
 ---
 
@@ -710,6 +711,115 @@ interface ThumbnailSettings {
 
 ---
 
+### Phase 3.5: Media Folder Filter
+
+**Focus:** Allow users to limit media scanning to specific folders.
+
+#### Problem
+
+Users with large vaults often have many unrelated media files (screenshots, app assets, random images). The "Find Unlinked" modal and Media Manager stats include these files, creating noise and making it harder to identify genealogy/worldbuilding media that should be linked.
+
+#### Solution
+
+Add a "Media folders" setting that limits where Canvas Roots looks for media files. This affects discovery operations (finding unlinked files, counting vault media) but not operations on already-linked media.
+
+#### Scope
+
+1. **Settings additions**
+   - `mediaFolders: string[]` — List of folders to scan for media
+   - `enableMediaFolderFilter: boolean` — Toggle to enable/disable the filter
+
+2. **Settings UI** (Preferences > Folder locations)
+   - "Media folders" multi-folder selector (same pattern as existing folder settings)
+   - "Limit media scanning to specified folders" toggle
+   - Help text explaining what's affected
+
+3. **Apply filter to**
+   - Find Unlinked modal — Only show orphaned files from media folders
+   - Media Manager hub stats — Count only files in media folders
+   - MediaPickerModal — Show only files from media folders when linking
+
+4. **Do NOT apply filter to**
+   - Browse Gallery — Already shows only linked media
+   - Existing linked media references — Links work regardless of filter
+
+#### Implementation Notes
+
+**Settings Interface:**
+
+```typescript
+interface CanvasRootsSettings {
+  // ... existing settings ...
+
+  /** Folders to scan for media files */
+  mediaFolders: string[];
+
+  /** Whether to limit media scanning to specified folders */
+  enableMediaFolderFilter: boolean;
+}
+```
+
+**Default Values:**
+
+```typescript
+const DEFAULT_SETTINGS: CanvasRootsSettings = {
+  // ... existing defaults ...
+  mediaFolders: [],
+  enableMediaFolderFilter: false,  // Disabled by default for backwards compatibility
+};
+```
+
+**Media Folder Filter Service:**
+
+```typescript
+/**
+ * Check if a file is within the configured media folders.
+ * Returns true if:
+ * - Filter is disabled (enableMediaFolderFilter === false)
+ * - mediaFolders is empty
+ * - File path starts with any of the configured folder paths
+ */
+function isInMediaFolders(filePath: string, settings: CanvasRootsSettings): boolean {
+  if (!settings.enableMediaFolderFilter || settings.mediaFolders.length === 0) {
+    return true;  // No filtering - accept all files
+  }
+
+  return settings.mediaFolders.some(folder => {
+    const normalizedFolder = folder.endsWith('/') ? folder : `${folder}/`;
+    return filePath.startsWith(normalizedFolder);
+  });
+}
+```
+
+**Settings UI:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Media folders                                               │
+│  ┌─────────────────────────────────────────────────────┐    │
+│  │ + Add folder                                         │    │
+│  └─────────────────────────────────────────────────────┘    │
+│  media/genealogy                                      [×]    │
+│  attachments/family-photos                            [×]    │
+│                                                              │
+│  ☑ Limit media scanning to specified folders                 │
+│    Only show media from these folders in Find Unlinked,      │
+│    Media Manager stats, and media picker.                    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/settings.ts` | Add `mediaFolders` and `enableMediaFolderFilter` settings |
+| `src/settings/preferences-tab.ts` | Add UI in Folder locations section |
+| `src/core/ui/unlinked-media-modal.ts` | Filter files by media folders |
+| `src/core/ui/media-manager-modal.ts` | Filter stats by media folders |
+| `src/core/ui/media-picker-modal.ts` | Filter file list by media folders |
+
+---
+
 ### Phase 4: Gramps Package Import
 
 **Focus:** Import `.gpkg` files with bundled media.
@@ -1261,6 +1371,15 @@ For large vaults with many media:
 - [x] Fallback to gender icons when no media present (built-in family-chart behavior)
 - [x] PNG/SVG/PDF export embeds avatar images as base64 data URIs
 - [ ] Performance acceptable with 100+ visible nodes (needs testing)
+
+### Phase 3.5: Media Folder Filter
+- [ ] "Media folders" setting added to Preferences > Folder locations
+- [ ] "Limit media scanning to specified folders" toggle
+- [ ] Filter applied to Find Unlinked modal
+- [ ] Filter applied to Media Manager hub stats
+- [ ] Filter applied to MediaPickerModal
+- [ ] Browse Gallery unaffected (already shows only linked media)
+- [ ] Backwards compatible (empty folders + disabled = scan entire vault)
 
 ### Phase 4
 - [ ] `.gpkg` files import correctly
