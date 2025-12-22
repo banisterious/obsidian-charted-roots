@@ -5,7 +5,7 @@
  * organizations list, statistics, and hierarchy.
  */
 
-import { setIcon, Setting, TFile } from 'obsidian';
+import { Menu, setIcon, Setting, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { LucideIconName } from '../../ui/lucide-icons';
 import { createLucideIcon } from '../../ui/lucide-icons';
@@ -316,6 +316,60 @@ function renderOrganizationRow(
 				editFile: org.file
 			}).open();
 		}
+	});
+
+	// Context menu
+	row.addEventListener('contextmenu', (e) => {
+		e.preventDefault();
+		if (!(org.file instanceof TFile)) return;
+
+		const menu = new Menu();
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Open note')
+				.setIcon('file')
+				.onClick(async () => {
+					await plugin.trackRecentFile(org.file, 'organization');
+					void plugin.app.workspace.getLeaf(false).openFile(org.file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Open in new tab')
+				.setIcon('file-plus')
+				.onClick(async () => {
+					await plugin.trackRecentFile(org.file, 'organization');
+					void plugin.app.workspace.getLeaf('tab').openFile(org.file);
+				});
+		});
+
+		menu.addSeparator();
+
+		// Media actions
+		const mediaCount = org.media?.length || 0;
+		menu.addItem((item) => {
+			item
+				.setTitle('Link media...')
+				.setIcon('image-plus')
+				.onClick(() => {
+					plugin.openLinkMediaModal(org.file, 'organization', org.name);
+				});
+		});
+
+		if (mediaCount > 0) {
+			menu.addItem((item) => {
+				item
+					.setTitle(`Manage media (${mediaCount})...`)
+					.setIcon('images')
+					.onClick(() => {
+						plugin.openManageMediaModal(org.file, 'organization', org.name);
+					});
+			});
+		}
+
+		menu.showAtMouseEvent(e);
 	});
 
 	// Name cell
