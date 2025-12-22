@@ -6382,7 +6382,9 @@
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .crc-media-picker-item:hover {
@@ -6605,7 +6607,9 @@
   cursor: pointer;
   padding: 4px;
   border-radius: 4px;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
   flex-shrink: 0;
 }
 

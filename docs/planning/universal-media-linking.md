@@ -2,9 +2,10 @@
 
 Planning document for extending media attachment support to all entity types.
 
-- **Status:** Planning
+- **Status:** In Progress (Phase 1 & 2 Complete)
 - **Priority:** High
 - **GitHub Issue:** [#21](https://github.com/banisterious/obsidian-canvas-roots/issues/21)
+- **Branch:** `feature/universal-media-linking`
 - **Created:** 2025-12-20
 - **Updated:** 2025-12-22
 
