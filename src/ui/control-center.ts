@@ -3243,6 +3243,53 @@ export class ControlCenterModal extends Modal {
 			});
 		}
 
+		// Media actions - submenu on desktop, flat on mobile
+		if (useSubmenu) {
+			menu.addItem((item) => {
+				item
+					.setTitle('Media')
+					.setIcon('image');
+				const submenu = item.setSubmenu();
+
+				submenu.addItem((subitem) => {
+					subitem
+						.setTitle('Link media...')
+						.setIcon('image-plus')
+						.onClick(() => {
+							this.plugin.openLinkMediaModal(person.file, 'person', person.name);
+						});
+				});
+
+				submenu.addItem((subitem) => {
+					subitem
+						.setTitle('Manage media...')
+						.setIcon('images')
+						.onClick(() => {
+							this.plugin.openManageMediaModal(person.file, 'person', person.name);
+						});
+				});
+			});
+		} else {
+			// Mobile: flat menu with descriptive titles
+			menu.addItem((item) => {
+				item
+					.setTitle('Link media...')
+					.setIcon('image-plus')
+					.onClick(() => {
+						this.plugin.openLinkMediaModal(person.file, 'person', person.name);
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle('Manage media...')
+					.setIcon('images')
+					.onClick(() => {
+						this.plugin.openManageMediaModal(person.file, 'person', person.name);
+					});
+			});
+		}
+
 		menu.showAtMouseEvent(event);
 	}
 
