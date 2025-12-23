@@ -65,6 +65,27 @@ The staging folder is used for importing GEDCOM/CSV files before merging into yo
 
 Set **Enable staging isolation** to automatically exclude the staging folder from normal scans.
 
+### Media Folders
+
+Control which folders Canvas Roots scans when discovering media files.
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| **Limit media scanning to specified folders** | Off | When enabled, only scan listed folders for media |
+| **Media folders** | *(empty)* | List of folders to scan (one per line) |
+
+When enabled, folder filtering affects:
+- **Find Unlinked** results in the Media Manager
+- **Media Manager statistics** (total files, coverage percentage)
+- **Media picker** file lists when linking media
+
+It does **not** affect:
+- Already-linked media (always displayed regardless of location)
+- **Linked Media Gallery** (shows all linked media)
+- Media imported from Gramps packages
+
+See [Media Management](Media-Management#media-folder-settings) for more details.
+
 ---
 
 ## Property Aliases
