@@ -8,6 +8,9 @@ Canvas Roots can render live, computed content directly within person notes usin
 
 - [Overview](#overview)
 - [Block Types](#block-types)
+  - [Timeline Block](#timeline-block)
+  - [Relationships Block](#relationships-block)
+  - [Media Block](#media-block)
 - [Rendered Output](#rendered-output)
 - [Freeze to Markdown](#freeze-to-markdown)
 - [Inserting Blocks](#inserting-blocks)
@@ -106,6 +109,52 @@ title: Family Tree
 ```
 ~~~
 
+### Media Block
+
+The `canvas-roots-media` block displays a gallery of media files linked to the person.
+
+~~~markdown
+```canvas-roots-media
+columns: 3
+size: medium
+```
+~~~
+
+**What it displays:**
+- All media files linked via the `media` frontmatter property
+- Image thumbnails in a responsive grid
+- Document placeholders for non-image files (PDFs, etc.)
+- First item highlighted as the "thumbnail" (used for Family Chart avatars)
+
+**Configuration options:**
+
+| Option | Values | Description |
+|--------|--------|-------------|
+| `columns` | 2-6, `auto` | Number of columns in grid (default: 3) |
+| `size` | `small`, `medium`, `large` | Thumbnail size (default: medium) |
+| `editable` | `true`, `false` | Enable drag-to-reorder (default: false) |
+| `title` | string | Custom header text (default: "Media") |
+
+**Example with options:**
+
+~~~markdown
+```canvas-roots-media
+columns: 4
+size: large
+editable: true
+title: Photos & Documents
+```
+~~~
+
+**Editable Mode:**
+
+When `editable: true` is set:
+- Items show a drag handle on hover
+- Drag items to reorder their position
+- First item becomes the thumbnail (shown on Family Chart nodes)
+- Frontmatter is updated automatically when you drop
+- Gallery has a dashed border to indicate edit mode
+
 ## Rendered Output
 
 In reading view, code blocks render as styled containers:
@@ -157,22 +206,39 @@ sort: chronological
 
 The frozen content preserves wikilinks and can be edited like any markdown.
 
+**Media gallery freeze:**
+
+Media galleries freeze to a styled callout that displays images in a responsive grid:
+
+~~~markdown
+> [!info|cr-frozen-gallery]
+> ![[portrait.jpg]]
+> ![[wedding-photo.jpg]]
+> ![[birth-certificate.pdf]]
+~~~
+
+The frozen gallery:
+- Uses Obsidian's native callout syntax with a special `cr-frozen-gallery` metadata tag
+- Renders images in a flex layout with configurable styling
+- Click-and-hold on an image to zoom to full screen
+- Styling can be customized via the Style Settings plugin
+
 ## Inserting Blocks
 
 ### Create Person Modal
 
-When creating a new person note via the Create Person modal, enable the "Include dynamic blocks" toggle to automatically add timeline and relationships blocks to the note body.
+When creating a new person note via the Create Person modal, enable the "Include dynamic blocks" toggle to automatically add timeline, relationships, and media blocks to the note body.
 
 ### Import Wizards
 
-All import wizards (GEDCOM, Gramps, CSV) include an "Include dynamic blocks" toggle. When enabled, imported person notes will include the blocks.
+All import wizards (GEDCOM, Gramps, CSV) include an "Include dynamic blocks" toggle. When enabled, imported person notes will include all three block types. Media blocks are included with `editable: true` by default.
 
 ### Context Menu
 
 Right-click on a person note in the file explorer:
 
 1. Select **Insert dynamic blocks**
-2. Both timeline and relationships blocks are added to the note body
+2. Timeline, relationships, and media blocks are added to the note body
 
 ### Bulk Insert (Folders)
 

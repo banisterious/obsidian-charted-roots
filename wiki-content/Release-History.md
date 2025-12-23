@@ -8,6 +8,8 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 
 ## Table of Contents
 
+- [v0.15.x](#v015x)
+  - [Universal Media Linking](#universal-media-linking-v0150)
 - [v0.14.x](#v014x)
   - [Visual Tree Charts](#visual-tree-charts-v0140)
 - [v0.13.x](#v013x)
@@ -50,6 +52,117 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
   - [Maps Tab](#maps-tab-v062)
   - [Geographic Features](#geographic-features-v060)
   - [Import/Export Enhancements](#importexport-enhancements-v060)
+
+---
+
+## v0.15.x
+
+### Universal Media Linking (v0.15.0)
+
+Extend the `media` property to all entity types (Person, Event, Place, Organization) with Gramps Package (`.gpkg`) import support and dynamic inline galleries.
+
+**Problem Solved:**
+- The `media` property was only supported on Source notes
+- Gramps Package (`.gpkg`) import ignored bundled media files
+- No way to display media galleries inline within person notes
+- Writers and worldbuilders couldn't attach character portraits, location art, or scene illustrations
+
+**Features:**
+
+| Feature | Description |
+|---------|-------------|
+| **Universal media property** | `media` supported on Person, Event, Place, Source, Organization notes |
+| **Gramps Package import** | `.gpkg` files import with media extraction to vault |
+| **Media linking during import** | Media files linked to all entity types based on Gramps `objref` references |
+| **Dynamic media gallery** | `canvas-roots-media` code block renders inline gallery |
+| **Editable mode** | Drag-to-reorder with `editable: true` option |
+| **Freeze to callout** | Convert gallery to styled `[!info|cr-frozen-gallery]` callout |
+| **Style Settings** | Gallery appearance customizable via Style Settings plugin |
+| **Find Unlinked Media** | Tool to discover orphaned media files in vault |
+| **Media folder filtering** | Settings to exclude folders from media searches |
+
+**Dynamic Media Gallery:**
+
+~~~markdown
+```canvas-roots-media
+columns: 3
+size: medium
+editable: false
+title: Media
+```
+~~~
+
+**Configuration options:**
+
+| Option | Values | Description |
+|--------|--------|-------------|
+| `columns` | 2-6, `auto` | Number of columns in grid (default: 3) |
+| `size` | `small`, `medium`, `large` | Thumbnail size (default: medium) |
+| `editable` | `true`, `false` | Enable drag-to-reorder (default: false) |
+| `title` | string | Custom header text (default: "Media") |
+
+**Editable Mode:**
+
+When `editable: true` is set:
+- Items show a drag handle on hover
+- Drag items to reorder their position
+- First item becomes the thumbnail (shown on Family Chart nodes)
+- Frontmatter is updated automatically when you drop
+- Gallery has a dashed border to indicate edit mode
+
+**Frozen Gallery:**
+
+Click the freeze button (❄️) to convert to a styled callout:
+
+~~~markdown
+> [!info|cr-frozen-gallery]
+> ![[portrait.jpg]]
+> ![[wedding-photo.jpg]]
+> ![[birth-certificate.pdf]]
+~~~
+
+The frozen gallery renders images in a flex layout with click-and-hold zoom.
+
+**Entity Support:**
+
+| Entity Type | Use Cases |
+|-------------|-----------|
+| **Person** | Photos, portraits, scanned documents, character concept art |
+| **Event** | Ceremony photos, certificates, scene illustrations |
+| **Place** | Location photos, historical maps, fantasy maps, floor plans |
+| **Organization** | Logos, group photos, faction banners, heraldry |
+| **Source** | Original records, digitized documents |
+
+**Gramps Package Import:**
+
+When importing a `.gpkg` file:
+1. Media files are extracted to your configured media folder
+2. `objref` elements in the Gramps XML are resolved to vault paths
+3. `media` wikilinks are added to Person, Event, Place, and Source frontmatter
+4. First media item serves as thumbnail (matching Gramps convention)
+
+**Implementation Phases:**
+
+| Phase | Scope |
+|-------|-------|
+| Phase 1 | Add `media` property to Person, Event, Place, Organization schemas |
+| Phase 2 | Find Unlinked Media tool, Media Manager integration |
+| Phase 3 | Media folder filtering and settings |
+| Phase 4 | Gramps Package (`.gpkg`) import with media extraction |
+| Phase 5 | Dynamic `canvas-roots-media` block with freeze support |
+
+**Files Changed:**
+
+| File | Change |
+|------|--------|
+| `src/gramps/types.ts` | Added `mediaRefs` to GrampsPerson, GrampsEvent, GrampsPlace interfaces |
+| `src/gramps/gramps-parser.ts` | Parse `objref` elements, populate `mediaRefs` arrays |
+| `src/gramps/gramps-importer.ts` | Resolve media refs to wikilinks during note creation |
+| `src/dynamic-content/media-processor.ts` | New processor for `canvas-roots-media` blocks |
+| `src/dynamic-content/dynamic-content-service.ts` | Media gallery rendering and freeze logic |
+| `styles/dynamic-content.css` | Gallery grid, editable mode, frozen callout styles |
+
+See [Dynamic Note Content: Media Block](Dynamic-Note-Content#media-block) for usage documentation and [Universal Media Linking Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/universal-media-linking.md) for implementation details.
 
 ---
 

@@ -216,8 +216,11 @@ Canvas Roots supports importing family data from [Gramps](https://gramps-project
 
 ### Supported File Formats
 
+- **`.gpkg`** - Gramps Package (recommended) — bundles XML data with media files
 - **`.gramps`** - Native Gramps compressed format (gzip-compressed XML)
 - **`.xml`** - Uncompressed Gramps XML export
+
+> **💡 Tip:** Export from Gramps as `.gpkg` to include media files (photos, documents, scans). Canvas Roots will extract them to your vault automatically.
 
 ### Importing a Gramps File
 
@@ -226,9 +229,10 @@ Canvas Roots supports importing family data from [Gramps](https://gramps-project
 2. Set **Format** to "Gramps XML" and **Direction** to "Import"
 3. If folders aren't configured, expand **Configure folders** to set your people folder
 4. Click **Import Gramps XML**
-5. Select your `.gramps` or `.xml` file
-6. Review the file analysis (people, families, places, events found)
+5. Select your `.gpkg`, `.gramps`, or `.xml` file
+6. Review the file analysis (people, families, places, events, sources, media found)
 7. Configure import options:
+   - **Create source notes** - Source records with citations (default: on)
    - **Create place notes** - Location notes linked from person birth/death places (default: off)
    - **Create event notes** - Birth, death, marriage, and other life events (default: off)
 8. Click **Import**
@@ -237,9 +241,11 @@ Canvas Roots supports importing family data from [Gramps](https://gramps-project
 
 | Note Type | What's Created |
 |-----------|----------------|
-| **People** | One note per individual with relationships, dates, places |
-| **Places** | One note per location (when enabled), linked from person notes |
-| **Events** | One note per life event (when enabled), linked to persons and places |
+| **People** | One note per individual with relationships, dates, places, and linked media |
+| **Sources** | One note per source record with citations and linked media |
+| **Places** | One note per location (when enabled), linked from person notes, with linked media |
+| **Events** | One note per life event (when enabled), linked to persons, places, and media |
+| **Media** | Files extracted from `.gpkg` packages to your media folder |
 
 ### Place Linking
 
@@ -285,11 +291,20 @@ Gramps place types are preserved and mapped to Canvas Roots place types:
 2. Add research notes below the frontmatter in each file
 3. Generate tree using Control Center → Tree Generation
 
+### Media Import from .gpkg
+
+When importing a `.gpkg` package file, Canvas Roots:
+
+1. **Extracts media files** to your configured media folder
+2. **Links media to entities** — Photos, documents, and scans attached in Gramps are linked to the corresponding person, event, place, or source notes via the `media` frontmatter property
+3. **Preserves order** — The first media item serves as the thumbnail (matching Gramps convention)
+
+Media extracted from Gramps packages can be viewed using the [Media Gallery](Dynamic-Note-Content#media-block) dynamic block.
+
 ### Limitations
 
-- **Sources**: Source/citation import is not yet supported (planned for future release)
-- **Media**: Media references are not imported
 - **Notes**: Gramps note records are not imported as separate notes
+- **Repositories**: Repository records create properties on sources but not separate notes
 
 ## CSV Import/Export
 
