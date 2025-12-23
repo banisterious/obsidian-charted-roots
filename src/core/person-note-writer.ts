@@ -420,6 +420,7 @@ export async function createPersonNote(
 			bodyLines.push('```canvas-roots-media');
 			bodyLines.push('columns: 3');
 			bodyLines.push('size: medium');
+			bodyLines.push('editable: true');
 			bodyLines.push('```');
 			bodyLines.push('');
 		}

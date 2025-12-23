@@ -6557,6 +6557,7 @@ export default class CanvasRootsPlugin extends Plugin {
 						blocksToAdd.push('```canvas-roots-media');
 						blocksToAdd.push('columns: 3');
 						blocksToAdd.push('size: medium');
+						blocksToAdd.push('editable: true');
 						blocksToAdd.push('```');
 						blocksToAdd.push('');
 					}

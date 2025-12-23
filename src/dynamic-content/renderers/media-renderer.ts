@@ -321,6 +321,7 @@ export class MediaRenderer {
 
 		const itemEl = grid.createDiv({ cls: itemClasses.join(' ') });
 		itemEl.dataset.index = String(index);
+		itemEl.dataset.wikilink = item.wikilink;
 
 		// Add drag handle when editable
 		if (this.isEditable) {
@@ -353,14 +354,14 @@ export class MediaRenderer {
 			const resourcePath = this.plugin.app.vault.getResourcePath(item.file);
 			img.src = resourcePath;
 
-			// Add click handler to open in default viewer (only when not dragging)
-			if (!this.isEditable) {
-				itemEl.addEventListener('click', () => {
-					if (item.file) {
-						this.plugin.app.workspace.openLinkText(item.path, '', false);
-					}
-				});
-			}
+			// Add click handler to open in default viewer
+			// In editable mode, use double-click to avoid conflicts with drag
+			const clickEvent = this.isEditable ? 'dblclick' : 'click';
+			itemEl.addEventListener(clickEvent, () => {
+				if (item.file) {
+					this.plugin.app.workspace.openLinkText(item.path, '', false);
+				}
+			});
 
 			// Add thumbnail badge if applicable
 			if (item.isThumbnail) {
@@ -378,14 +379,14 @@ export class MediaRenderer {
 			const nameEl = itemEl.createDiv({ cls: 'cr-media__doc-name' });
 			nameEl.textContent = item.file?.basename || item.path.split('/').pop() || 'Document';
 
-			// Add click handler (only when not editable)
-			if (!this.isEditable) {
-				itemEl.addEventListener('click', () => {
-					if (item.file) {
-						this.plugin.app.workspace.openLinkText(item.path, '', false);
-					}
-				});
-			}
+			// Add click handler to open document
+			// In editable mode, use double-click to avoid conflicts with drag
+			const clickEvent = this.isEditable ? 'dblclick' : 'click';
+			itemEl.addEventListener(clickEvent, () => {
+				if (item.file) {
+					this.plugin.app.workspace.openLinkText(item.path, '', false);
+				}
+			});
 		}
 	}
 
@@ -446,7 +447,7 @@ export class MediaRenderer {
 	 * Reorder items and update frontmatter
 	 */
 	private async reorderItems(fromIndex: number, toIndex: number): Promise<void> {
-		if (!this.currentContext) return;
+		if (!this.currentContext || !this.gridElement) return;
 
 		// Move item in array
 		const [movedItem] = this.currentItems.splice(fromIndex, 1);
@@ -457,11 +458,105 @@ export class MediaRenderer {
 			item.isThumbnail = i === 0;
 		});
 
+		// Visually reorder DOM elements
+		this.updateGridOrder();
+
 		// Update frontmatter
 		const newMediaRefs = this.currentItems.map(item => item.wikilink);
 		await this.updateMediaFrontmatter(this.currentContext.file, newMediaRefs);
 
 		new Notice('Media order updated');
+	}
+
+	/**
+	 * Update the visual order of grid items to match currentItems
+	 */
+	private updateGridOrder(): void {
+		if (!this.gridElement) return;
+
+		const domItems = Array.from(this.gridElement.children) as HTMLElement[];
+
+		// Build a map of wikilink -> DOM element for matching
+		const domMap = new Map<string, HTMLElement>();
+		for (const domItem of domItems) {
+			const wikilink = this.getWikilinkFromDom(domItem);
+			if (wikilink) {
+				domMap.set(wikilink, domItem);
+			}
+		}
+
+		// Re-append in new order based on currentItems
+		for (let i = 0; i < this.currentItems.length; i++) {
+			const mediaItem = this.currentItems[i];
+			const domItem = domMap.get(mediaItem.wikilink);
+
+			if (domItem) {
+				// Update thumbnail styling
+				if (i === 0) {
+					domItem.addClass('cr-media__item--thumbnail');
+					// Add badge if not present
+					if (!domItem.querySelector('.cr-media__badge')) {
+						const badge = domItem.createDiv({ cls: 'cr-media__badge', text: 'Thumbnail' });
+						badge.setAttribute('aria-label', 'This image is used as the thumbnail');
+					}
+				} else {
+					domItem.removeClass('cr-media__item--thumbnail');
+					// Remove badge if present
+					const badge = domItem.querySelector('.cr-media__badge');
+					if (badge) badge.remove();
+				}
+
+				// Update index
+				domItem.dataset.index = String(i);
+				domItem.dataset.wikilink = mediaItem.wikilink;
+
+				// Re-append to move to correct position
+				this.gridElement.appendChild(domItem);
+			}
+		}
+
+		// Re-setup drag events with new indices
+		const newItems = Array.from(this.gridElement.children) as HTMLElement[];
+		newItems.forEach((el, i) => {
+			// Remove old listeners by cloning (simplest approach)
+			const newEl = el.cloneNode(true) as HTMLElement;
+			el.replaceWith(newEl);
+			this.setupDragEvents(newEl, i);
+		});
+	}
+
+	/**
+	 * Extract the wikilink from a DOM element for matching
+	 */
+	private getWikilinkFromDom(el: HTMLElement): string | null {
+		// Check stored data attribute first
+		if (el.dataset.wikilink) {
+			return el.dataset.wikilink;
+		}
+
+		// For images, extract from src
+		const img = el.querySelector('img');
+		if (img && img.src) {
+			// Match against current items by checking if src contains the file path
+			for (const item of this.currentItems) {
+				if (item.file && img.src.includes(encodeURIComponent(item.file.name))) {
+					return item.wikilink;
+				}
+			}
+		}
+
+		// For documents, match by name
+		const docName = el.querySelector('.cr-media__doc-name');
+		if (docName?.textContent) {
+			for (const item of this.currentItems) {
+				const expectedName = item.file?.basename || item.path.split('/').pop() || '';
+				if (docName.textContent === expectedName) {
+					return item.wikilink;
+				}
+			}
+		}
+
+		return null;
 	}
 
 	/**
