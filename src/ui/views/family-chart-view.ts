@@ -11,7 +11,7 @@ import * as d3 from 'd3';
 import { jsPDF } from 'jspdf';
 import type CanvasRootsPlugin from '../../../main';
 import { FamilyGraphService, PersonNode } from '../../core/family-graph';
-import type { ColorScheme } from '../../settings';
+import type { ColorScheme, FamilyChartColors } from '../../settings';
 import { getLogger } from '../../core/logging';
 import { PersonPickerModal } from '../person-picker';
 import { FamilyChartExportWizard } from './family-chart-export-wizard';
@@ -310,6 +310,14 @@ export class FamilyChartView extends ItemView {
 		});
 		setIcon(displayBtn, 'eye');
 		displayBtn.addEventListener('click', (e) => this.showDisplayMenu(e));
+
+		// Style settings button (colors, themes)
+		const styleBtn = rightControls.createEl('button', {
+			cls: 'cr-fcv-btn clickable-icon',
+			attr: { 'aria-label': 'Chart colors' }
+		});
+		setIcon(styleBtn, 'palette');
+		styleBtn.addEventListener('click', (e) => this.showStyleMenu(e));
 
 		// Depth settings button (ancestry/progeny limits)
 		const depthBtn = rightControls.createEl('button', {
@@ -815,19 +823,29 @@ export class FamilyChartView extends ItemView {
 
 		// Apply theme-appropriate styling
 		const isDarkMode = document.body.classList.contains('theme-dark');
+		const customColors = this.plugin.settings.familyChartColors;
 
 		// Set CSS variables - family-chart relies on these for card colors
+		// Use custom colors if set, otherwise use defaults
 		this.chartContainerEl.setCssProps({
-			'--female-color': 'rgb(196, 138, 146)',
-			'--male-color': 'rgb(120, 159, 172)',
-			'--genderless-color': 'lightgray',
-			'--background-color': isDarkMode ? 'rgb(33, 33, 33)' : 'rgb(250, 250, 250)',
-			'--text-color': isDarkMode ? '#fff' : '#333'
+			'--female-color': customColors?.femaleColor ?? 'rgb(196, 138, 146)',
+			'--male-color': customColors?.maleColor ?? 'rgb(120, 159, 172)',
+			'--genderless-color': customColors?.unknownColor ?? 'lightgray',
+			'--background-color': isDarkMode
+				? (customColors?.backgroundDark ?? 'rgb(33, 33, 33)')
+				: (customColors?.backgroundLight ?? 'rgb(250, 250, 250)'),
+			'--text-color': isDarkMode
+				? (customColors?.textDark ?? '#fff')
+				: (customColors?.textLight ?? '#333')
 		});
 		// Set direct styles on container (hidden until chart is positioned)
 		this.chartContainerEl.setCssStyles({
-			backgroundColor: isDarkMode ? 'rgb(33, 33, 33)' : 'rgb(250, 250, 250)',
-			color: isDarkMode ? '#fff' : '#333',
+			backgroundColor: isDarkMode
+				? (customColors?.backgroundDark ?? 'rgb(33, 33, 33)')
+				: (customColors?.backgroundLight ?? 'rgb(250, 250, 250)'),
+			color: isDarkMode
+				? (customColors?.textDark ?? '#fff')
+				: (customColors?.textLight ?? '#333'),
 			visibility: 'hidden'
 		});
 
@@ -3032,6 +3050,235 @@ export class FamilyChartView extends ItemView {
 	}
 
 	/**
+	 * Theme preset definitions for family chart colors
+	 */
+	private static readonly THEME_PRESETS: Record<string, { name: string; colors: FamilyChartColors }> = {
+		classic: {
+			name: 'Classic',
+			colors: {
+				femaleColor: 'rgb(196, 138, 146)',
+				maleColor: 'rgb(120, 159, 172)',
+				unknownColor: 'rgb(211, 211, 211)',
+				backgroundLight: 'rgb(250, 250, 250)',
+				backgroundDark: 'rgb(33, 33, 33)',
+				textLight: '#333333',
+				textDark: '#ffffff'
+			}
+		},
+		pastel: {
+			name: 'Pastel',
+			colors: {
+				femaleColor: '#f4c2c2',
+				maleColor: '#a7c7e7',
+				unknownColor: '#e6e6fa',
+				backgroundLight: 'rgb(250, 250, 250)',
+				backgroundDark: 'rgb(33, 33, 33)',
+				textLight: '#333333',
+				textDark: '#ffffff'
+			}
+		},
+		earth: {
+			name: 'Earth Tones',
+			colors: {
+				femaleColor: '#cc7a6f',
+				maleColor: '#8fbc8f',
+				unknownColor: '#d2b48c',
+				backgroundLight: 'rgb(250, 250, 250)',
+				backgroundDark: 'rgb(33, 33, 33)',
+				textLight: '#333333',
+				textDark: '#ffffff'
+			}
+		},
+		contrast: {
+			name: 'High Contrast',
+			colors: {
+				femaleColor: '#ff00ff',
+				maleColor: '#00ffff',
+				unknownColor: '#ffff00',
+				backgroundLight: '#ffffff',
+				backgroundDark: '#000000',
+				textLight: '#000000',
+				textDark: '#ffffff'
+			}
+		},
+		mono: {
+			name: 'Monochrome',
+			colors: {
+				femaleColor: '#666666',
+				maleColor: '#888888',
+				unknownColor: '#aaaaaa',
+				backgroundLight: 'rgb(250, 250, 250)',
+				backgroundDark: 'rgb(33, 33, 33)',
+				textLight: '#333333',
+				textDark: '#ffffff'
+			}
+		}
+	};
+
+	/**
+	 * Show style/theme menu
+	 */
+	private showStyleMenu(e: MouseEvent): void {
+		const menu = new Menu();
+		const currentColors = this.plugin.settings.familyChartColors;
+
+		// Header
+		menu.addItem((item) => {
+			item.setTitle('Theme')
+				.setIcon('palette')
+				.setDisabled(true);
+		});
+
+		menu.addSeparator();
+
+		// Preset themes
+		for (const [key, preset] of Object.entries(FamilyChartView.THEME_PRESETS)) {
+			const isSelected = this.isPresetActive(key, currentColors);
+			menu.addItem((item) => {
+				item.setTitle(`${isSelected ? '✓ ' : '  '}${preset.name}`)
+					.onClick(() => this.applyThemePreset(key));
+			});
+		}
+
+		menu.addSeparator();
+
+		// Customize option
+		menu.addItem((item) => {
+			item.setTitle('Customize...')
+				.setIcon('settings')
+				.onClick(() => this.showCustomizeModal());
+		});
+
+		// Reset option
+		menu.addItem((item) => {
+			item.setTitle('Reset to defaults')
+				.setIcon('rotate-ccw')
+				.onClick(() => this.resetToDefaultColors());
+		});
+
+		menu.showAtMouseEvent(e);
+	}
+
+	/**
+	 * Check if a preset is currently active
+	 */
+	private isPresetActive(presetKey: string, currentColors?: FamilyChartColors): boolean {
+		if (!currentColors) {
+			// No custom colors = classic/default
+			return presetKey === 'classic';
+		}
+
+		const preset = FamilyChartView.THEME_PRESETS[presetKey];
+		if (!preset) return false;
+
+		// Compare key colors (female, male, unknown)
+		return currentColors.femaleColor === preset.colors.femaleColor &&
+			currentColors.maleColor === preset.colors.maleColor &&
+			currentColors.unknownColor === preset.colors.unknownColor;
+	}
+
+	/**
+	 * Apply a theme preset
+	 */
+	private async applyThemePreset(presetKey: string): Promise<void> {
+		const preset = FamilyChartView.THEME_PRESETS[presetKey];
+		if (!preset) return;
+
+		// Save to settings
+		this.plugin.settings.familyChartColors = { ...preset.colors };
+		await this.plugin.saveSettings();
+
+		// Apply to chart
+		this.applyCustomColors();
+
+		new Notice(`Applied "${preset.name}" theme`);
+	}
+
+	/**
+	 * Reset to default colors (removes custom settings)
+	 */
+	private async resetToDefaultColors(): Promise<void> {
+		delete this.plugin.settings.familyChartColors;
+		await this.plugin.saveSettings();
+
+		// Clear inline styles
+		this.clearCustomColors();
+
+		new Notice('Colors reset to defaults');
+	}
+
+	/**
+	 * Apply custom colors from settings to the chart container
+	 */
+	private applyCustomColors(): void {
+		const colors = this.plugin.settings.familyChartColors;
+		if (!colors || !this.chartContainerEl) return;
+
+		const el = this.chartContainerEl;
+		const isDark = document.body.classList.contains('theme-dark');
+
+		// Set family-chart library variables (used for card colors)
+		el.style.setProperty('--female-color', colors.femaleColor);
+		el.style.setProperty('--male-color', colors.maleColor);
+		el.style.setProperty('--genderless-color', colors.unknownColor);
+		el.style.setProperty('--background-color', isDark ? colors.backgroundDark : colors.backgroundLight);
+		el.style.setProperty('--text-color', isDark ? colors.textDark : colors.textLight);
+
+		// Also set our cr-fcv variables for consistency with Style Settings
+		el.style.setProperty('--cr-fcv-female-color', colors.femaleColor);
+		el.style.setProperty('--cr-fcv-male-color', colors.maleColor);
+		el.style.setProperty('--cr-fcv-unknown-color', colors.unknownColor);
+		if (isDark) {
+			el.style.setProperty('--cr-fcv-background-dark', colors.backgroundDark);
+			el.style.setProperty('--cr-fcv-text-dark', colors.textDark);
+		} else {
+			el.style.setProperty('--cr-fcv-background-light', colors.backgroundLight);
+			el.style.setProperty('--cr-fcv-text-light', colors.textLight);
+		}
+
+		// Update container background directly
+		el.style.backgroundColor = isDark ? colors.backgroundDark : colors.backgroundLight;
+		el.style.color = isDark ? colors.textDark : colors.textLight;
+	}
+
+	/**
+	 * Clear custom color inline styles (reverts to CSS defaults or Style Settings)
+	 */
+	private clearCustomColors(): void {
+		if (!this.chartContainerEl) return;
+
+		const el = this.chartContainerEl;
+		const isDark = document.body.classList.contains('theme-dark');
+
+		// Clear family-chart library variables
+		el.style.removeProperty('--female-color');
+		el.style.removeProperty('--male-color');
+		el.style.removeProperty('--genderless-color');
+		el.style.removeProperty('--background-color');
+		el.style.removeProperty('--text-color');
+
+		// Clear our cr-fcv variables
+		el.style.removeProperty('--cr-fcv-female-color');
+		el.style.removeProperty('--cr-fcv-male-color');
+		el.style.removeProperty('--cr-fcv-unknown-color');
+		el.style.removeProperty('--cr-fcv-background-light');
+		el.style.removeProperty('--cr-fcv-background-dark');
+		el.style.removeProperty('--cr-fcv-text-light');
+		el.style.removeProperty('--cr-fcv-text-dark');
+
+		// Reset container background to defaults
+		el.style.backgroundColor = isDark ? 'rgb(33, 33, 33)' : 'rgb(250, 250, 250)';
+		el.style.color = isDark ? '#fff' : '#333';
+	}
+
+	/**
+	 * Show the customize colors modal
+	 */
+	private showCustomizeModal(): void {
+		new FamilyChartStyleModal(this.app, this.plugin, this).open();
+	}
+
+	/**
 	 * Toggle birth dates display
 	 */
 	private toggleBirthDates(): void {
@@ -4103,6 +4350,249 @@ class DeletePersonConfirmModal extends Modal {
 		confirmBtn.addEventListener('click', () => {
 			this.onResult(true);
 			this.close();
+		});
+	}
+
+	onClose(): void {
+		this.contentEl.empty();
+	}
+}
+
+/**
+ * Modal for customizing family chart colors
+ */
+class FamilyChartStyleModal extends Modal {
+	private plugin: CanvasRootsPlugin;
+	private view: FamilyChartView;
+	private colors: FamilyChartColors;
+	private originalColors: FamilyChartColors | undefined;
+
+	constructor(app: App, plugin: CanvasRootsPlugin, view: FamilyChartView) {
+		super(app);
+		this.plugin = plugin;
+		this.view = view;
+		this.originalColors = plugin.settings.familyChartColors
+			? { ...plugin.settings.familyChartColors }
+			: undefined;
+		// Start with current colors or defaults
+		this.colors = plugin.settings.familyChartColors
+			? { ...plugin.settings.familyChartColors }
+			: { ...FamilyChartView['THEME_PRESETS'].classic.colors };
+	}
+
+	onOpen(): void {
+		const { contentEl, titleEl, modalEl } = this;
+		titleEl.setText('Chart Colors');
+		modalEl.addClass('cr-fcv-style-modal');
+
+		// Card colors section
+		const cardSection = contentEl.createDiv({ cls: 'cr-fcv-color-section' });
+		cardSection.createEl('h3', { text: 'Card Colors' });
+
+		this.createColorRow(cardSection, 'Female', this.colors.femaleColor, (val) => {
+			this.colors.femaleColor = val;
+			this.previewColors();
+		});
+
+		this.createColorRow(cardSection, 'Male', this.colors.maleColor, (val) => {
+			this.colors.maleColor = val;
+			this.previewColors();
+		});
+
+		this.createColorRow(cardSection, 'Unknown', this.colors.unknownColor, (val) => {
+			this.colors.unknownColor = val;
+			this.previewColors();
+		});
+
+		// Background section
+		const bgSection = contentEl.createDiv({ cls: 'cr-fcv-color-section' });
+		const isDark = document.body.classList.contains('theme-dark');
+		bgSection.createEl('h3', { text: `Background (${isDark ? 'dark' : 'light'} theme)` });
+
+		if (isDark) {
+			this.createColorRow(bgSection, 'Background', this.colors.backgroundDark, (val) => {
+				this.colors.backgroundDark = val;
+				this.previewColors();
+			});
+			this.createColorRow(bgSection, 'Text', this.colors.textDark, (val) => {
+				this.colors.textDark = val;
+				this.previewColors();
+			});
+		} else {
+			this.createColorRow(bgSection, 'Background', this.colors.backgroundLight, (val) => {
+				this.colors.backgroundLight = val;
+				this.previewColors();
+			});
+			this.createColorRow(bgSection, 'Text', this.colors.textLight, (val) => {
+				this.colors.textLight = val;
+				this.previewColors();
+			});
+		}
+
+		// Presets section
+		const presetsSection = contentEl.createDiv({ cls: 'cr-fcv-color-section' });
+		presetsSection.createEl('h3', { text: 'Presets' });
+		const presetsRow = presetsSection.createDiv({ cls: 'cr-fcv-presets-row' });
+
+		for (const [, preset] of Object.entries(FamilyChartView['THEME_PRESETS'])) {
+			const presetBtn = presetsRow.createEl('button', {
+				text: preset.name,
+				cls: 'cr-fcv-preset-btn'
+			});
+			presetBtn.addEventListener('click', () => {
+				this.colors = { ...preset.colors };
+				this.previewColors();
+				this.refreshColorInputs();
+			});
+		}
+
+		// Button row
+		const buttonRow = contentEl.createDiv({ cls: 'cr-fcv-button-row' });
+
+		const resetBtn = buttonRow.createEl('button', {
+			text: 'Reset',
+			cls: 'cr-fcv-btn-secondary'
+		});
+		resetBtn.addEventListener('click', () => {
+			this.colors = { ...FamilyChartView['THEME_PRESETS'].classic.colors };
+			this.previewColors();
+			this.refreshColorInputs();
+		});
+
+		// Spacer
+		buttonRow.createDiv({ cls: 'cr-fcv-button-spacer' });
+
+		const cancelBtn = buttonRow.createEl('button', {
+			text: 'Cancel',
+			cls: 'cr-fcv-btn-secondary'
+		});
+		cancelBtn.addEventListener('click', () => {
+			// Restore original colors
+			if (this.originalColors) {
+				this.plugin.settings.familyChartColors = this.originalColors;
+				this.view['applyCustomColors']();
+			} else {
+				delete this.plugin.settings.familyChartColors;
+				this.view['clearCustomColors']();
+			}
+			this.close();
+		});
+
+		const applyBtn = buttonRow.createEl('button', {
+			text: 'Apply',
+			cls: 'mod-cta'
+		});
+		applyBtn.addEventListener('click', async () => {
+			// Save colors
+			this.plugin.settings.familyChartColors = { ...this.colors };
+			await this.plugin.saveSettings();
+			new Notice('Colors applied');
+			this.close();
+		});
+	}
+
+	/**
+	 * Create a color picker row
+	 */
+	private createColorRow(
+		container: HTMLElement,
+		label: string,
+		value: string,
+		onChange: (value: string) => void
+	): HTMLElement {
+		const row = container.createDiv({ cls: 'cr-fcv-color-row' });
+
+		row.createEl('label', { text: label });
+
+		const inputContainer = row.createDiv({ cls: 'cr-fcv-color-input-container' });
+
+		const colorInput = inputContainer.createEl('input', {
+			type: 'color',
+			cls: 'cr-fcv-color-input',
+			value: this.toHex(value)
+		});
+		colorInput.dataset.field = label.toLowerCase();
+
+		const hexDisplay = inputContainer.createEl('span', {
+			text: this.toHex(value),
+			cls: 'cr-fcv-hex-display'
+		});
+
+		colorInput.addEventListener('input', (e) => {
+			const hex = (e.target as HTMLInputElement).value;
+			hexDisplay.setText(hex);
+			onChange(hex);
+		});
+
+		return row;
+	}
+
+	/**
+	 * Convert various color formats to hex
+	 */
+	private toHex(color: string): string {
+		// If already hex, return as-is
+		if (color.startsWith('#')) {
+			return color.length === 4
+				? `#${color[1]}${color[1]}${color[2]}${color[2]}${color[3]}${color[3]}`
+				: color;
+		}
+
+		// Parse rgb/rgba
+		const rgbMatch = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+		if (rgbMatch) {
+			const r = parseInt(rgbMatch[1]).toString(16).padStart(2, '0');
+			const g = parseInt(rgbMatch[2]).toString(16).padStart(2, '0');
+			const b = parseInt(rgbMatch[3]).toString(16).padStart(2, '0');
+			return `#${r}${g}${b}`;
+		}
+
+		return '#808080'; // Fallback gray
+	}
+
+	/**
+	 * Preview colors in real-time
+	 */
+	private previewColors(): void {
+		this.plugin.settings.familyChartColors = { ...this.colors };
+		this.view['applyCustomColors']();
+	}
+
+	/**
+	 * Refresh all color inputs after preset selection
+	 */
+	private refreshColorInputs(): void {
+		const inputs = this.contentEl.querySelectorAll('.cr-fcv-color-input') as NodeListOf<HTMLInputElement>;
+		const isDark = document.body.classList.contains('theme-dark');
+
+		inputs.forEach((input) => {
+			const field = input.dataset.field;
+			let value = '';
+
+			switch (field) {
+				case 'female':
+					value = this.colors.femaleColor;
+					break;
+				case 'male':
+					value = this.colors.maleColor;
+					break;
+				case 'unknown':
+					value = this.colors.unknownColor;
+					break;
+				case 'background':
+					value = isDark ? this.colors.backgroundDark : this.colors.backgroundLight;
+					break;
+				case 'text':
+					value = isDark ? this.colors.textDark : this.colors.textLight;
+					break;
+			}
+
+			if (value) {
+				const hex = this.toHex(value);
+				input.value = hex;
+				const hexDisplay = input.parentElement?.querySelector('.cr-fcv-hex-display');
+				if (hexDisplay) hexDisplay.setText(hex);
+			}
 		});
 	}
 

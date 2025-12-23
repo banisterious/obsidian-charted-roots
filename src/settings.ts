@@ -78,6 +78,27 @@ export interface LastFamilyChartExportSettings {
 }
 
 /**
+ * Custom colors for Family Chart view
+ * When set, these override the default CSS variables
+ */
+export interface FamilyChartColors {
+	/** Female card background color */
+	femaleColor: string;
+	/** Male card background color */
+	maleColor: string;
+	/** Unknown gender card background color */
+	unknownColor: string;
+	/** Chart background color (light theme) */
+	backgroundLight: string;
+	/** Chart background color (dark theme) */
+	backgroundDark: string;
+	/** Card text color (light theme) */
+	textLight: string;
+	/** Card text color (dark theme) */
+	textDark: string;
+}
+
+/**
  * Arrow style for relationship edges
  * - 'directed': Single arrow pointing to child/target (default)
  * - 'bidirectional': Arrows on both ends
@@ -195,6 +216,8 @@ export interface CanvasRootsSettings {
 	lastGrampsExport?: LastExportInfo;
 	lastCsvExport?: LastExportInfo;
 	lastFamilyChartExport?: LastFamilyChartExportSettings;
+	// Family Chart custom colors
+	familyChartColors?: FamilyChartColors;
 	// Folder filtering
 	folderFilterMode: FolderFilterMode;
 	excludedFolders: string[];
