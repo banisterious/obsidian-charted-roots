@@ -11,6 +11,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.15.1] - 2025-12-23
+
+### Added
+
+- **Family Chart Export Wizard** - Replaced the export dropdown menu with a multi-step wizard modal. Features 5 quick presets (Quick Share, High Quality, Print Ready, Editable, Document), format-specific options, scope selection (full tree or limited depth), and progress tracking with phase indicators.
+
+- **ODT export format** - Export Family Chart as OpenDocument Text (.odt) files for editing in LibreOffice Writer or Microsoft Word. Enables merging visual tree charts with narrative text for comprehensive family history documents. Uses JSZip for ZIP archive creation with manual XML generation.
+
+- **Family Chart Styling Panel** - Added palette button to toolbar for quick theme access. Choose from 5 preset themes (Classic, Pastel, Earth Tones, High Contrast, Monochrome) or customize all 7 chart colors via the Customize modal with live preview.
+
+- **Export progress modal** - Real-time progress tracking during export with phase indicators (Preparing, Embedding avatars, Rendering, Encoding, Saving), progress bar, and cancel button.
+
+- **Export settings memory** - Last-used export format, scale, page size, layout, orientation, and cover page settings are remembered for next export.
+
+### Changed
+
+- **Export button behavior** - The toolbar export button now opens the Export Wizard instead of a dropdown menu, providing better discoverability and preventing accidental exports.
+
+- **Custom colors on chart initialization** - Chart colors are now applied from settings when the chart initializes, not just when changed via the styling panel.
+
+---
+
 ## [0.15.0] - 2025-12-22
 
 ### Added
