@@ -13,6 +13,20 @@ import { EventService } from '../services/event-service';
 import { EventNote, getEventType, DATE_PRECISION_LABELS } from '../types/event-types';
 
 /**
+ * Extract unique calendar/date system values from events
+ * Returns sorted array of calendar names
+ */
+function getUniqueCalendars(events: EventNote[]): string[] {
+	const calendars = new Set<string>();
+	for (const event of events) {
+		if (event.dateSystem) {
+			calendars.add(event.dateSystem);
+		}
+	}
+	return Array.from(calendars).sort();
+}
+
+/**
  * Sort events chronologically
  */
 function sortEventsChronologically(events: EventNote[]): EventNote[] {
@@ -142,14 +156,43 @@ export function renderPlaceTimelineCard(
 		});
 	}
 
+	// Get all calendars across all events for the calendar filter
+	const allEvents = eventService.getAllEvents();
+	const calendars = getUniqueCalendars(allEvents);
+	let selectedCalendar: string | null = null;
+
+	// Calendar filter dropdown (only show if multiple calendars)
+	let calendarSelect: HTMLSelectElement | null = null;
+	if (calendars.length > 1) {
+		const calendarFilterContainer = filterRow.createDiv({ cls: 'crc-place-timeline-calendar-filter' });
+
+		const filterLabel = calendarFilterContainer.createEl('label', {
+			cls: 'crc-timeline-filter-label'
+		});
+		const calendarIcon = createLucideIcon('calendar', 14);
+		filterLabel.appendChild(calendarIcon);
+		filterLabel.appendText(' Calendar:');
+
+		calendarSelect = calendarFilterContainer.createEl('select', { cls: 'crc-timeline-filter' });
+		calendarSelect.createEl('option', { text: 'All calendars', attr: { value: '' } });
+
+		for (const calendar of calendars) {
+			const eventsInCalendar = allEvents.filter(e => e.dateSystem === calendar).length;
+			calendarSelect.createEl('option', {
+				text: `${calendar} (${eventsInCalendar})`,
+				attr: { value: calendar }
+			});
+		}
+	}
+
 	// Timeline container
 	const timelineContainer = container.createDiv({ cls: 'crc-place-timeline-content' });
 
 	// Initial state
 	renderPlaceSelectionPrompt(timelineContainer);
 
-	// Handle place selection
-	placeSelect.addEventListener('change', () => {
+	// Function to update timeline based on current selections
+	const updateTimeline = () => {
 		const selectedPlace = placeSelect.value;
 		if (selectedPlace) {
 			renderPlaceTimeline(
@@ -158,12 +201,24 @@ export function renderPlaceTimelineCard(
 				app,
 				settings,
 				eventService,
+				selectedCalendar,
 				options?.onPlaceSelect
 			);
 		} else {
 			renderPlaceSelectionPrompt(timelineContainer);
 		}
-	});
+	};
+
+	// Handle place selection
+	placeSelect.addEventListener('change', updateTimeline);
+
+	// Handle calendar filter selection
+	if (calendarSelect) {
+		calendarSelect.addEventListener('change', () => {
+			selectedCalendar = calendarSelect!.value || null;
+			updateTimeline();
+		});
+	}
 }
 
 /**
@@ -189,19 +244,28 @@ function renderPlaceTimeline(
 	app: App,
 	settings: CanvasRootsSettings,
 	eventService: EventService,
+	calendarFilter: string | null,
 	onPlaceSelect?: (placeName: string) => void
 ): void {
 	container.empty();
 
 	// Get events for this place
 	const placeLink = `[[${placeName}]]`;
-	const events = eventService.getEventsAtPlace(placeLink);
+	let events = eventService.getEventsAtPlace(placeLink);
+
+	// Apply calendar filter if specified
+	if (calendarFilter) {
+		events = events.filter(e => e.dateSystem === calendarFilter);
+	}
+
 	const sortedEvents = sortEventsChronologically(events);
 
 	if (sortedEvents.length === 0) {
 		const emptyState = container.createDiv({ cls: 'crc-place-timeline__empty' });
 		emptyState.createEl('p', {
-			text: 'No events at this location.',
+			text: calendarFilter
+				? `No events at this location for calendar "${calendarFilter}".`
+				: 'No events at this location.',
 			cls: 'crc-text--muted'
 		});
 		return;

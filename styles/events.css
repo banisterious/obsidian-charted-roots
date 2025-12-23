@@ -28,6 +28,35 @@
   font-size: var(--font-ui-smaller);
 }
 
+.crc-person-timeline__filter {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  margin-bottom: var(--size-4-3);
+  padding-bottom: var(--size-4-2);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.crc-timeline-filter-label {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2-1);
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.crc-timeline-filter-label svg {
+  opacity: 0.7;
+}
+
+/* Place timeline calendar filter container */
+.crc-place-timeline-calendar-filter {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
 /* ==========================================================================
    Timeline Event Item
    ========================================================================== */

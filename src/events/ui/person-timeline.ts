@@ -12,6 +12,20 @@ import { EventService } from '../services/event-service';
 import { EventNote, getEventType, DATE_PRECISION_LABELS } from '../types/event-types';
 
 /**
+ * Extract unique calendar/date system values from events
+ * Returns sorted array of calendar names, with undefined values grouped as "Unknown"
+ */
+function getUniqueCalendars(events: EventNote[]): string[] {
+	const calendars = new Set<string>();
+	for (const event of events) {
+		if (event.dateSystem) {
+			calendars.add(event.dateSystem);
+		}
+	}
+	return Array.from(calendars).sort();
+}
+
+/**
  * Sort events chronologically
  * Events with dates come first (sorted by date), then events without dates
  */
@@ -83,18 +97,10 @@ export function renderPersonTimeline(
 
 	// Get events for this person using wikilink format
 	const personLink = `[[${personFile.basename}]]`;
-	const events = eventService.getEventsForPerson(personLink);
-
-	// Sort chronologically
-	const sortedEvents = sortEventsChronologically(events);
-
-	// Apply max limit if specified
-	const displayEvents = options?.maxEvents
-		? sortedEvents.slice(0, options.maxEvents)
-		: sortedEvents;
+	const allEvents = eventService.getEventsForPerson(personLink);
 
 	// Empty state
-	if (displayEvents.length === 0) {
+	if (allEvents.length === 0) {
 		if (options?.showEmptyState !== false) {
 			const emptyState = container.createDiv({ cls: 'crc-person-timeline__empty' });
 			emptyState.createEl('p', {
@@ -105,22 +111,92 @@ export function renderPersonTimeline(
 		return;
 	}
 
-	// Timeline container
-	const timeline = container.createDiv({ cls: 'crc-person-timeline__list' });
+	// Check if we have multiple calendars
+	const calendars = getUniqueCalendars(allEvents);
+	let selectedCalendar: string | null = null;
 
-	// Render each event
-	for (const event of displayEvents) {
-		renderTimelineEvent(timeline, event, app, settings, options?.onEventClick);
-	}
+	// Render the timeline with optional filter
+	const renderTimeline = () => {
+		// Clear existing content (but keep filter if it exists)
+		const existingFilter = container.querySelector('.crc-person-timeline__filter');
+		const existingTimeline = container.querySelector('.crc-person-timeline__list');
+		const existingMore = container.querySelector('.crc-person-timeline__more');
+		if (existingTimeline) existingTimeline.remove();
+		if (existingMore) existingMore.remove();
 
-	// Show "more" indicator if truncated
-	if (options?.maxEvents && sortedEvents.length > options.maxEvents) {
-		const moreIndicator = container.createDiv({ cls: 'crc-person-timeline__more' });
-		moreIndicator.createEl('span', {
-			text: `+ ${sortedEvents.length - options.maxEvents} more events`,
-			cls: 'crc-text--muted'
+		// Filter events by selected calendar
+		const filteredEvents = selectedCalendar
+			? allEvents.filter(e => e.dateSystem === selectedCalendar)
+			: allEvents;
+
+		// Sort chronologically
+		const sortedEvents = sortEventsChronologically(filteredEvents);
+
+		// Apply max limit if specified
+		const displayEvents = options?.maxEvents
+			? sortedEvents.slice(0, options.maxEvents)
+			: sortedEvents;
+
+		// Empty state after filtering
+		if (displayEvents.length === 0) {
+			const emptyState = container.createDiv({ cls: 'crc-person-timeline__list' });
+			emptyState.createEl('p', {
+				text: selectedCalendar
+					? `No events found for calendar "${selectedCalendar}".`
+					: 'No events recorded.',
+				cls: 'crc-text--muted'
+			});
+			return;
+		}
+
+		// Timeline container
+		const timeline = container.createDiv({ cls: 'crc-person-timeline__list' });
+
+		// Render each event
+		for (const event of displayEvents) {
+			renderTimelineEvent(timeline, event, app, settings, options?.onEventClick);
+		}
+
+		// Show "more" indicator if truncated
+		if (options?.maxEvents && sortedEvents.length > options.maxEvents) {
+			const moreIndicator = container.createDiv({ cls: 'crc-person-timeline__more' });
+			moreIndicator.createEl('span', {
+				text: `+ ${sortedEvents.length - options.maxEvents} more events`,
+				cls: 'crc-text--muted'
+			});
+		}
+	};
+
+	// Add calendar filter dropdown if multiple calendars exist
+	if (calendars.length > 1) {
+		const filterContainer = container.createDiv({ cls: 'crc-person-timeline__filter' });
+
+		const filterLabel = filterContainer.createEl('label', {
+			cls: 'crc-timeline-filter-label'
+		});
+		const calendarIcon = createLucideIcon('calendar', 14);
+		filterLabel.appendChild(calendarIcon);
+		filterLabel.appendText(' Calendar:');
+
+		const filterSelect = filterContainer.createEl('select', { cls: 'crc-timeline-filter' });
+		filterSelect.createEl('option', { text: 'All calendars', attr: { value: '' } });
+
+		for (const calendar of calendars) {
+			const eventsInCalendar = allEvents.filter(e => e.dateSystem === calendar).length;
+			filterSelect.createEl('option', {
+				text: `${calendar} (${eventsInCalendar})`,
+				attr: { value: calendar }
+			});
+		}
+
+		filterSelect.addEventListener('change', () => {
+			selectedCalendar = filterSelect.value || null;
+			renderTimeline();
 		});
 	}
+
+	// Initial render
+	renderTimeline();
 }
 
 /**
