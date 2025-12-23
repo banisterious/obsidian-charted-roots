@@ -6528,8 +6528,9 @@ export default class CanvasRootsPlugin extends Plugin {
 					const content = await this.app.vault.read(file);
 					const hasRelationships = content.includes('```canvas-roots-relationships');
 					const hasTimeline = content.includes('```canvas-roots-timeline');
+					const hasMedia = content.includes('```canvas-roots-media');
 
-					if (hasRelationships && hasTimeline) {
+					if (hasRelationships && hasTimeline && hasMedia) {
 						skippedCount++;
 						processedCount++;
 						continue;
@@ -6548,6 +6549,14 @@ export default class CanvasRootsPlugin extends Plugin {
 					if (!hasTimeline) {
 						blocksToAdd.push('```canvas-roots-timeline');
 						blocksToAdd.push('sort: chronological');
+						blocksToAdd.push('```');
+						blocksToAdd.push('');
+					}
+
+					if (!hasMedia) {
+						blocksToAdd.push('```canvas-roots-media');
+						blocksToAdd.push('columns: 3');
+						blocksToAdd.push('size: medium');
 						blocksToAdd.push('```');
 						blocksToAdd.push('');
 					}

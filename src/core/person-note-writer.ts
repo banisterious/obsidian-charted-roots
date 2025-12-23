@@ -72,7 +72,7 @@ export type FilenameFormat = 'original' | 'kebab-case' | 'snake_case';
 /**
  * Dynamic block types that can be included in person notes
  */
-export type DynamicBlockType = 'timeline' | 'relationships';
+export type DynamicBlockType = 'timeline' | 'relationships' | 'media';
 
 /**
  * Options for person note creation
@@ -411,6 +411,15 @@ export async function createPersonNote(
 		if (dynamicBlockTypes.includes('timeline')) {
 			bodyLines.push('```canvas-roots-timeline');
 			bodyLines.push('sort: chronological');
+			bodyLines.push('```');
+			bodyLines.push('');
+		}
+
+		// Add media gallery block
+		if (dynamicBlockTypes.includes('media')) {
+			bodyLines.push('```canvas-roots-media');
+			bodyLines.push('columns: 3');
+			bodyLines.push('size: medium');
 			bodyLines.push('```');
 			bodyLines.push('');
 		}
