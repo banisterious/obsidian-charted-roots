@@ -38,25 +38,21 @@ Universe Notes support:
 - **Canonical registry**: One note per fictional world with metadata
 - **Entity aggregation**: See all people, events, places, sources, and organizations in a universe
 - **Guided setup**: Wizard to create universe with linked calendar, map, and schema
-- **Conditional visibility**: Universes tab only appears when relevant
+- **Always accessible**: Universes tab is always visible with helpful getting started tiles
 
 ---
 
 ## Creating Universe Notes
 
-### Finding the Create Universe Button
+### Ways to Create a Universe
 
-The Universes tab is **hidden by default** in the Control Center — it only appears once you have created at least one universe or have orphan universe strings in your vault.
+There are several entry points to create a new universe:
 
-**To create your first universe:**
-
-1. Open the Control Center (`Ctrl/Cmd+Shift+F` or command palette: "Open Control Center")
-2. Navigate to the **Statistics** tab
-3. Scroll to the **Universes** section
-4. Click the **Create** button next to "Create universe"
-5. Follow the multi-step wizard
-
-Once you've created your first universe, the **Universes tab** will appear in the Control Center sidebar for easier access.
+| Method | How |
+|--------|-----|
+| **Command palette** | `Ctrl/Cmd+P` → "Canvas Roots: Create universe" |
+| **Universes tab** | Open Control Center → Universes tab → "Create Universe" tile |
+| **Statistics tab** | Open Control Center → Statistics tab → Universes section → Create button |
 
 ### Using the Create Universe Wizard
 
@@ -66,11 +62,11 @@ The wizard guides you through creating:
 - An optional custom map
 - An optional validation schema scoped to the universe
 
-**After you have at least one universe:**
+**From the Universes tab:**
 
-1. Open the Control Center
-2. Navigate to the **Universes** tab (now visible)
-3. Click **Create universe** in the Actions card
+1. Open the Control Center (`Ctrl/Cmd+Shift+F` or command palette: "Open Control Center")
+2. Navigate to the **Universes** tab
+3. Click the **Create Universe** tile (if no universes exist) or the **Create universe** button in the Actions card
 4. Follow the multi-step wizard
 
 ### Manual Creation
@@ -169,24 +165,21 @@ erDiagram
 
 ## Universes Tab
 
-The Universes tab appears in the Control Center when:
-- Any universe notes exist in the vault, OR
-- Any orphan universe strings exist (entities with `universe` field but no matching universe note)
+The Universes tab is always visible in the Control Center, providing easy access to universe management.
 
-This keeps the UI clean for genealogists who never use fictional worlds.
+### Quick Actions Card
 
-### Actions Card
+The first card provides quick access to universe-related features:
 
-The Actions card at the top provides quick access to:
-
-| Action | Description |
-|--------|-------------|
-| **Create universe** | Opens the Create Universe wizard |
-| **Create universes base** | Creates the Obsidian Bases template for browsing universes |
+| Tile | Description |
+|------|-------------|
+| **Create Universe** | Opens the Create Universe wizard to set up a new fictional world |
+| **Date Systems** | Links to the Events tab to learn about custom calendars |
+| **Custom Maps** | Links to the Places tab to learn about custom geographic maps |
 
 ### Your Universes Card
 
-Lists all universe notes in your vault with:
+The second card lists all universe notes with:
 - Universe name and description
 - Entity counts (people, events, places, sources, organizations)
 - Click to open the universe note
@@ -322,9 +315,8 @@ The template includes these formulas:
 
 | Command | Description |
 |---------|-------------|
+| Create universe | Opens the Create Universe wizard |
 | Create universes base template | Creates the Bases template file |
-
-> **Note:** There is currently no dedicated command to create a universe note. Use the Statistics tab or Universes tab (once visible) to access the Create Universe wizard.
 
 ---
 

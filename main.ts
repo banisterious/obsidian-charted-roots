@@ -46,7 +46,7 @@ import { CreateEventModal } from './src/events/ui/create-event-modal';
 import { isPlaceNote, isSourceNote, isEventNote, isMapNote, isSchemaNote, isUniverseNote } from './src/utils/note-type-detection';
 import { GeocodingService } from './src/maps/services/geocoding-service';
 import { TimelineProcessor, RelationshipsProcessor, MediaProcessor } from './src/dynamic-content';
-import { UniverseService, EditUniverseModal } from './src/universes';
+import { UniverseService, EditUniverseModal, UniverseWizardModal } from './src/universes';
 import { RecentFilesService, RecentEntityType } from './src/core/recent-files-service';
 import { registerCustomIcons } from './src/ui/lucide-icons';
 import { MediaService } from './src/core/media-service';
@@ -445,6 +445,19 @@ export default class CanvasRootsPlugin extends Plugin {
 			name: 'Create events base template',
 			callback: () => {
 				void this.createEventsBaseTemplate();
+			}
+		});
+
+		// Add command: Create Universe
+		this.addCommand({
+			id: 'create-universe',
+			name: 'Create universe',
+			callback: () => {
+				new UniverseWizardModal(this, {
+					onComplete: () => {
+						// Universe created successfully
+					}
+				}).open();
 			}
 		});
 

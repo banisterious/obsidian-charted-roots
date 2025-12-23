@@ -299,31 +299,12 @@ export class ControlCenterModal extends Modal {
 	}
 
 	/**
-	 * Check if the Universes tab should be visible
-	 * Shows when universes exist or orphan universe references exist
-	 */
-	private shouldShowUniversesTab(): boolean {
-		const universeService = new UniverseService(this.plugin);
-		const universes = universeService.getAllUniverses();
-		const orphans = universeService.findOrphanUniverses();
-		return universes.length > 0 || orphans.length > 0;
-	}
-
-	/**
 	 * Create navigation list with all tabs
 	 */
 	private createNavigationList(container: HTMLElement): void {
 		const list = container.createEl('ul', { cls: 'crc-nav-list' });
 
-		// Check conditional visibility for universes tab
-		const showUniverses = this.shouldShowUniversesTab();
-
 		TAB_CONFIGS.forEach((tabConfig) => {
-			// Skip universes tab if no universes exist
-			if (tabConfig.id === 'universes' && !showUniverses) {
-				return;
-			}
-
 			const listItem = list.createEl('li', {
 				cls: `crc-nav-item ${tabConfig.id === this.activeTab ? 'crc-nav-item--active' : ''}`
 			});
@@ -8002,33 +7983,93 @@ export class ControlCenterModal extends Modal {
 			return { ...u, counts, totalEntities };
 		});
 
-		// Universe List Card (main card, similar to Person notes)
+		// Quick Actions Card
+		const actionsCard = this.createCard({
+			title: 'Quick Actions',
+			icon: 'zap',
+			subtitle: 'Create universes and explore related features'
+		});
+		const actionsContent = actionsCard.querySelector('.crc-card__content') as HTMLElement;
+
+		const tileGrid = actionsContent.createDiv({ cls: 'crc-dashboard-tile-grid' });
+
+		// Tile 1: Create Universe
+		const createTile = tileGrid.createDiv({ cls: 'crc-dashboard-tile' });
+		createTile.setAttribute('data-tile-id', 'create-universe');
+		createTile.setAttribute('title', 'Create a new fictional world with optional calendar, map, and schema');
+		const createIcon = createTile.createDiv({ cls: 'crc-dashboard-tile-icon' });
+		setLucideIcon(createIcon, 'globe', 24);
+		createTile.createDiv({ cls: 'crc-dashboard-tile-label', text: 'Create Universe' });
+		createTile.setAttribute('tabindex', '0');
+		createTile.setAttribute('role', 'button');
+		createTile.addEventListener('click', () => {
+			new UniverseWizardModal(this.plugin, {
+				onComplete: () => this.showUniversesTab()
+			}).open();
+		});
+		createTile.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				new UniverseWizardModal(this.plugin, {
+					onComplete: () => this.showUniversesTab()
+				}).open();
+			}
+		});
+
+		// Tile 2: Fictional Date Systems
+		const calendarTile = tileGrid.createDiv({ cls: 'crc-dashboard-tile' });
+		calendarTile.setAttribute('data-tile-id', 'fictional-calendars');
+		calendarTile.setAttribute('title', 'Learn about custom calendars for fictional worlds');
+		const calendarIcon = calendarTile.createDiv({ cls: 'crc-dashboard-tile-icon' });
+		setLucideIcon(calendarIcon, 'calendar-plus', 24);
+		calendarTile.createDiv({ cls: 'crc-dashboard-tile-label', text: 'Date Systems' });
+		calendarTile.setAttribute('tabindex', '0');
+		calendarTile.setAttribute('role', 'button');
+		calendarTile.addEventListener('click', () => {
+			this.switchTab('events');
+		});
+		calendarTile.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				this.switchTab('events');
+			}
+		});
+
+		// Tile 3: Custom Maps
+		const mapTile = tileGrid.createDiv({ cls: 'crc-dashboard-tile' });
+		mapTile.setAttribute('data-tile-id', 'custom-maps');
+		mapTile.setAttribute('title', 'Learn about custom maps for fictional geography');
+		const mapIcon = mapTile.createDiv({ cls: 'crc-dashboard-tile-icon' });
+		setLucideIcon(mapIcon, 'map', 24);
+		mapTile.createDiv({ cls: 'crc-dashboard-tile-label', text: 'Custom Maps' });
+		mapTile.setAttribute('tabindex', '0');
+		mapTile.setAttribute('role', 'button');
+		mapTile.addEventListener('click', () => {
+			this.switchTab('places');
+		});
+		mapTile.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				this.switchTab('places');
+			}
+		});
+
+		container.appendChild(actionsCard);
+
+		// Universe List Card
 		const listCard = this.createCard({
-			title: 'Universe notes',
+			title: 'Your Universes',
 			icon: 'globe',
 			subtitle: 'All universe notes in your vault'
 		});
 		const listContent = listCard.querySelector('.crc-card__content') as HTMLElement;
 
 		if (universeItems.length === 0) {
-			// Empty state
+			// Empty state message
 			const emptyState = listContent.createDiv({ cls: 'crc-empty-state' });
 			emptyState.createEl('p', {
-				text: 'No universe notes found in your vault.',
+				text: 'No universe notes found. Click "Create Universe" above to get started.',
 				cls: 'crc-text--muted'
-			});
-			emptyState.createEl('p', {
-				text: 'Create your first universe to start organizing fictional worlds with custom calendars, maps, and validation rules.',
-				cls: 'crc-text--muted crc-text--small crc-mb-3'
-			});
-			const startBtn = emptyState.createEl('button', {
-				text: 'Create universe',
-				cls: 'crc-btn crc-btn--primary'
-			});
-			startBtn.addEventListener('click', () => {
-				new UniverseWizardModal(this.plugin, {
-					onComplete: () => this.showUniversesTab()
-				}).open();
 			});
 		} else {
 			// Controls row (filter + sort + search)

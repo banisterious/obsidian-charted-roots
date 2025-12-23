@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Create universe command** - New command palette entry "Canvas Roots: Create universe" opens the Universe Wizard directly, making universe creation more discoverable.
+
+- **Universes tab always visible** - The Universes tab is now always shown in the Control Center sidebar, even when no universes exist. Previously it was hidden until the first universe was created.
+
+- **Quick Actions tiles in Universes tab** - The Universes tab now displays a tile-based quick actions bar with three options: Create Universe, Date Systems (links to Events tab), and Custom Maps (links to Places tab). These tiles are always visible for quick access.
+
+### Changed
+
+- **Universe discoverability** - Users can now discover and create universes from three entry points: command palette, Universes tab tiles, or Statistics tab. Previously the only entry was buried in the Statistics tab.
+
 ---
 
 ## [0.15.1] - 2025-12-23
