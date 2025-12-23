@@ -58,6 +58,26 @@ export interface LastExportInfo {
 }
 
 /**
+ * Last-used settings for Family Chart export wizard
+ */
+export interface LastFamilyChartExportSettings {
+	/** Last selected format */
+	format: 'png' | 'svg' | 'pdf' | 'odt';
+	/** Last avatar setting */
+	includeAvatars: boolean;
+	/** Last PNG scale */
+	scale: number;
+	/** Last PDF page size */
+	pageSize: 'fit' | 'a4' | 'letter' | 'legal' | 'tabloid';
+	/** Last PDF layout */
+	layout: 'single' | 'tiled';
+	/** Last PDF orientation */
+	orientation: 'auto' | 'portrait' | 'landscape';
+	/** Last cover page setting */
+	includeCoverPage: boolean;
+}
+
+/**
  * Arrow style for relationship edges
  * - 'directed': Single arrow pointing to child/target (default)
  * - 'bidirectional': Arrows on both ends
@@ -174,6 +194,7 @@ export interface CanvasRootsSettings {
 	lastGedcomXExport?: LastExportInfo;
 	lastGrampsExport?: LastExportInfo;
 	lastCsvExport?: LastExportInfo;
+	lastFamilyChartExport?: LastFamilyChartExportSettings;
 	// Folder filtering
 	folderFilterMode: FolderFilterMode;
 	excludedFolders: string[];

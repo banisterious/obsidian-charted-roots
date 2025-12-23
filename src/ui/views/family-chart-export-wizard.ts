@@ -160,7 +160,7 @@ export class FamilyChartExportWizard extends Modal {
 	}
 
 	/**
-	 * Get default form data based on current chart state
+	 * Get default form data based on current chart state and last-used settings
 	 */
 	private getDefaultFormData(): ExportFormData {
 		const info = this.chartView.getExportInfo();
@@ -169,18 +169,21 @@ export class FamilyChartExportWizard extends Modal {
 		const date = new Date().toISOString().split('T')[0];
 		const defaultFilename = `${sanitizedName}-family-chart-${date}`;
 
+		// Load last-used settings if available
+		const lastExport = this.plugin.settings.lastFamilyChartExport;
+
 		return {
 			selectedPreset: null,
-			format: 'png',
+			format: lastExport?.format ?? 'png',
 			filename: defaultFilename,
-			includeAvatars: true,
+			includeAvatars: lastExport?.includeAvatars ?? true,
 			scope: 'full',
 			limitedDepth: 3,
-			scale: 2,
-			pageSize: 'fit',
-			layout: 'single',
-			orientation: 'auto',
-			includeCoverPage: false,
+			scale: lastExport?.scale ?? 2,
+			pageSize: lastExport?.pageSize ?? 'fit',
+			layout: lastExport?.layout ?? 'single',
+			orientation: lastExport?.orientation ?? 'auto',
+			includeCoverPage: lastExport?.includeCoverPage ?? false,
 			coverTitle: `${displayName} Family Tree`,
 			coverSubtitle: ''
 		};
@@ -902,11 +905,30 @@ export class FamilyChartExportWizard extends Modal {
 				progressModal.markComplete();
 				// Auto-close after brief delay
 				setTimeout(() => progressModal.close(), 1500);
+
+				// Save last-used settings for next time
+				await this.saveLastExportSettings();
 			}
 
 		} catch (error) {
 			console.error('Export failed:', error);
 			new Notice(`Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
 		}
+	}
+
+	/**
+	 * Save the current export settings for next time
+	 */
+	private async saveLastExportSettings(): Promise<void> {
+		this.plugin.settings.lastFamilyChartExport = {
+			format: this.formData.format,
+			includeAvatars: this.formData.includeAvatars,
+			scale: this.formData.scale,
+			pageSize: this.formData.pageSize,
+			layout: this.formData.layout,
+			orientation: this.formData.orientation,
+			includeCoverPage: this.formData.includeCoverPage
+		};
+		await this.plugin.saveSettings();
 	}
 }
