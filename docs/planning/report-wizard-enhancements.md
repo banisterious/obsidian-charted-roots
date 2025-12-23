@@ -98,6 +98,29 @@ Currently, Markdown output has no customization. Proposed additions:
 | **Introductory notes** | Text block after title (equivalent to PDF cover notes) | None |
 | **Include metadata block** | YAML frontmatter with report info | Off |
 
+### ODT Export Options
+
+ODT (OpenDocument Text) provides an editable document format that can be opened in LibreOffice Writer, Microsoft Word, and other word processors. This enables users to:
+- Merge family reports with narrative text
+- Apply custom formatting and styling
+- Create professional family history books
+- Share documents with non-technical family members
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| **Include cover page** | Title page with report info | On |
+| **Include table of contents** | Auto-generated TOC | On |
+| **Date format** | MDY, DMY, YMD for dates in content | MDY |
+| **Custom title** | Override default report title | None |
+| **Custom subtitle** | Additional subtitle line | None |
+| **Introductory notes** | Text block after title | None |
+
+**Implementation Notes:**
+- Uses JSZip for creating the ODT ZIP archive (same as Family Chart export)
+- Manual XML generation for content.xml, styles.xml, meta.xml, manifest.xml
+- Same approach as `src/ui/views/odt-generator.ts` but extended for multi-page text content
+- Supports embedded images (logo, any media references) in Pictures/ folder
+
 ### Save to Vault Options
 
 Same as Markdown export, plus:
@@ -183,10 +206,11 @@ A hybrid approach:
 - Preview of what will be included (optional)
 
 #### Step 4: Output & Styling
-- Output method selection (Vault / MD / PDF)
+- Output method selection (Vault / MD / PDF / ODT)
 - **Conditional sections based on output:**
   - **All outputs:** Date format, custom title, custom subtitle, introductory notes
   - **PDF only:** Page size, cover page, logo, accent color, header/footer options, watermark
+  - **ODT only:** Cover page, table of contents toggle
   - **Vault only:** Output folder, filename template
 
 ### Quick Generate Feature
@@ -250,7 +274,7 @@ interface ReportWizardState {
   };
 
   // Step 4
-  outputMethod: 'vault' | 'download-md' | 'download-pdf';
+  outputMethod: 'vault' | 'download-md' | 'download-pdf' | 'download-odt';
   commonOptions: {
     dateFormat: 'mdy' | 'dmy' | 'ymd';
     customTitle: string;
@@ -258,6 +282,7 @@ interface ReportWizardState {
     introductoryNotes: string;
   };
   pdfOptions: PdfOptions;
+  odtOptions: OdtOptions;
   vaultOptions: {
     outputFolder: string;
     filenameTemplate: string;
@@ -327,7 +352,15 @@ src/reports/ui/
 - Introductory notes
 - Metadata block option
 
-### Phase 6: Advanced Features
+### Phase 6: ODT Export
+- Add ODT as fourth output method (alongside Vault / MD / PDF)
+- Implement ODT generation using JSZip + manual XML (same approach as Family Chart)
+- Support all common options: custom title, subtitle, introductory notes
+- Include document structure: cover page (optional), table of contents, report content
+- Embed any images (logos, media references) as Pictures/
+- Benefits: Editable in LibreOffice/Word, mergeable with other documents
+
+### Phase 7: Advanced Features
 - Filename templates for vault saves
 - Header/footer graphics
 - Preset export/import for sharing
@@ -361,7 +394,7 @@ interface ReportPreset {
   };
 
   // Output configuration
-  outputMethod: 'vault' | 'download-md' | 'download-pdf';
+  outputMethod: 'vault' | 'download-md' | 'download-pdf' | 'download-odt';
 
   // Common options (all formats)
   commonOptions: {
@@ -383,6 +416,12 @@ interface ReportPreset {
     watermarkText?: string;
     watermarkOpacity?: number;
     fontSize?: number;
+  };
+
+  // ODT-specific options (only if outputMethod is 'download-odt')
+  odtOptions?: {
+    includeCoverPage: boolean;
+    includeTableOfContents: boolean;
   };
 
   // Vault-specific options (only if outputMethod is 'vault')
@@ -416,6 +455,7 @@ Consider shipping a few default presets as examples:
 | **Family Archive** | PDF with cover page, serif font, full details |
 | **Quick Share** | MD download, minimal options, no sources |
 | **Research Draft** | Vault save, includes sources, no styling |
+| **Editable Document** | ODT with cover page and TOC, ready for further editing |
 
 Users could modify or delete these.
 
@@ -536,4 +576,6 @@ This could be combined with the wizard for advanced options.
 | 2025-12-20 | Hybrid wizard + quick generate approach | Best of both worlds: power users get speed, new users get guidance |
 | 2025-12-20 | Include preset system | Valuable for reducing repetitive configuration in common workflows |
 | 2025-12-20 | 6-phase implementation plan | Allows incremental delivery with foundation first |
+| 2025-12-23 | Added Phase 6: ODT Export | Editable document format enables merging with narrative text; uses same JSZip approach as Family Chart ODT export |
+| 2025-12-23 | Renumbered Advanced Features to Phase 7 | ODT export is higher priority than advanced features |
 | | | |
