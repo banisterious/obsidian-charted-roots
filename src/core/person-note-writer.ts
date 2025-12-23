@@ -62,6 +62,8 @@ export interface PersonData {
 	birthPlaceName?: string;     // Birth place name for wikilink display
 	deathPlaceCrId?: string;     // Death place cr_id for reliable resolution
 	deathPlaceName?: string;     // Death place name for wikilink display
+	// Media references
+	media?: string[];            // Wikilinks to media files (e.g., ["[[photo.jpg]]"])
 }
 
 /**
@@ -337,6 +339,13 @@ export async function createPersonNote(
 			frontmatter[prop('adoptive_mother_id')] = person.adoptiveMotherCrId;
 			logger.debug('adoptive_mother', `Added (id only): ${person.adoptiveMotherCrId}`);
 		}
+	}
+
+	// Add media references if available
+	if (person.media && person.media.length > 0) {
+		// Media is stored as array of wikilinks
+		frontmatter[prop('media')] = person.media;
+		logger.debug('media', `Added ${person.media.length} media references`);
 	}
 
 	// Ensure all essential properties are present (even if empty)

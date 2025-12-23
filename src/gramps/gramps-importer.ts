@@ -310,7 +310,7 @@ export class GrampsImporter {
 				let placeIndex = 0;
 				for (const [handle, place] of grampsData.places) {
 					try {
-						await this.importPlace(place, placesFolder, options);
+						await this.importPlace(place, placesFolder, options, result.mediaHandleToPath);
 						result.placesImported = (result.placesImported || 0) + 1;
 						result.placeNotesCreated = (result.placeNotesCreated || 0) + 1;
 
@@ -387,7 +387,8 @@ export class GrampsImporter {
 						grampsData,
 						options,
 						grampsToCrId,
-						placeNameToWikilink
+						placeNameToWikilink,
+						result.mediaHandleToPath
 					);
 
 					grampsToCrId.set(handle, crId);
@@ -444,7 +445,8 @@ export class GrampsImporter {
 							placeNameToWikilink,
 							citationToSourceWikilink,
 							eventsFolder,
-							options
+							options,
+							result.mediaHandleToPath
 						);
 						result.eventsImported = (result.eventsImported || 0) + 1;
 						result.eventNotesCreated = (result.eventNotesCreated || 0) + 1;
@@ -507,7 +509,8 @@ export class GrampsImporter {
 		grampsData: ParsedGrampsData,
 		options: GrampsImportOptions,
 		grampsToCrId: Map<string, string>,
-		placeNameToWikilink: Map<string, string>
+		placeNameToWikilink: Map<string, string>,
+		mediaHandleToPath?: Map<string, string>
 	): Promise<string> {
 		const crId = generateCrId();
 
@@ -519,6 +522,18 @@ export class GrampsImporter {
 			? (placeNameToWikilink.get(person.deathPlace) || person.deathPlace)
 			: undefined;
 
+		// Resolve media references to wikilinks
+		const resolvedMedia: string[] = [];
+		if (person.mediaRefs && person.mediaRefs.length > 0 && mediaHandleToPath) {
+			for (const ref of person.mediaRefs) {
+				const vaultPath = mediaHandleToPath.get(ref);
+				if (vaultPath) {
+					const filename = vaultPath.split('/').pop() || vaultPath;
+					resolvedMedia.push(`"[[${filename}]]"`);
+				}
+			}
+		}
+
 		// Convert Gramps person to PersonData
 		const personData: PersonData = {
 			name: person.name || 'Unknown',
@@ -528,7 +543,8 @@ export class GrampsImporter {
 			birthPlace: birthPlaceValue,
 			deathPlace: deathPlaceValue,
 			occupation: person.occupation,
-			sex: person.gender === 'M' ? 'male' : person.gender === 'F' ? 'female' : undefined
+			sex: person.gender === 'M' ? 'male' : person.gender === 'F' ? 'female' : undefined,
+			media: resolvedMedia.length > 0 ? resolvedMedia : undefined
 		};
 
 		// Add relationship references with Gramps handles (temporary) and names
@@ -934,16 +950,30 @@ export class GrampsImporter {
 	private async importPlace(
 		place: ParsedGrampsPlace,
 		placesFolder: string,
-		options: GrampsImportOptions
+		options: GrampsImportOptions,
+		mediaHandleToPath?: Map<string, string>
 	): Promise<string> {
 		const crId = generateCrId();
+
+		// Resolve media references to wikilinks
+		const resolvedMedia: string[] = [];
+		if (place.mediaRefs && place.mediaRefs.length > 0 && mediaHandleToPath) {
+			for (const ref of place.mediaRefs) {
+				const vaultPath = mediaHandleToPath.get(ref);
+				if (vaultPath) {
+					const filename = vaultPath.split('/').pop() || vaultPath;
+					resolvedMedia.push(`"[[${filename}]]"`);
+				}
+			}
+		}
 
 		// Convert Gramps place to PlaceData
 		const placeData: PlaceData = {
 			name: place.name || `Unknown Place (${place.id || place.handle})`,
 			crId: crId,
 			// Map Gramps place type to Canvas Roots place type if possible
-			placeType: this.mapGrampsPlaceType(place.type)
+			placeType: this.mapGrampsPlaceType(place.type),
+			media: resolvedMedia.length > 0 ? resolvedMedia : undefined
 		};
 
 		// Write place note using the createPlaceNote function
@@ -1164,12 +1194,25 @@ export class GrampsImporter {
 		placeNameToWikilink: Map<string, string>,
 		citationToSourceWikilink: Map<string, string>,
 		eventsFolder: string,
-		options: GrampsImportOptions
+		options: GrampsImportOptions,
+		mediaHandleToPath?: Map<string, string>
 	): Promise<string> {
 		const crId = generateCrId();
 
 		// Map Gramps event type to Canvas Roots event type
 		const eventType = this.mapGrampsEventType(event.type);
+
+		// Resolve media references to wikilinks
+		const resolvedMedia: string[] = [];
+		if (event.mediaRefs && event.mediaRefs.length > 0 && mediaHandleToPath) {
+			for (const ref of event.mediaRefs) {
+				const vaultPath = mediaHandleToPath.get(ref);
+				if (vaultPath) {
+					const filename = vaultPath.split('/').pop() || vaultPath;
+					resolvedMedia.push(`[[${filename}]]`);
+				}
+			}
+		}
 
 		// Get person names for the title
 		const personNames: string[] = [];
@@ -1245,6 +1288,14 @@ export class GrampsImporter {
 
 		if (event.description) {
 			frontmatterLines.push(`${prop('description')}: "${event.description.replace(/"/g, '\\"')}"`);
+		}
+
+		// Add media references
+		if (resolvedMedia.length > 0) {
+			frontmatterLines.push(`${prop('media')}:`);
+			for (const m of resolvedMedia) {
+				frontmatterLines.push(`  - "${m}"`);
+			}
 		}
 
 		frontmatterLines.push('---');

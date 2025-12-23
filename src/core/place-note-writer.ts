@@ -47,6 +47,7 @@ export interface PlaceData {
 	customCoordinates?: CustomCoordinates;
 	historicalNames?: HistoricalName[];
 	collection?: string;       // User-defined collection/grouping
+	media?: string[];          // Wikilinks to media files
 }
 
 /**
@@ -160,6 +161,11 @@ export async function createPlaceNote(
 	// Collection (user-defined grouping)
 	if (place.collection) {
 		frontmatter[prop('collection')] = place.collection;
+	}
+
+	// Media references
+	if (place.media && place.media.length > 0) {
+		frontmatter[prop('media')] = place.media;
 	}
 
 	logger.debug('frontmatter', `Final: ${JSON.stringify(frontmatter)}`);
