@@ -69,8 +69,10 @@ export function generatePeopleBaseTemplate(aliasesOrOptions: PropertyAliases | P
 	const mother = getPropertyName('mother', aliases);
 	const spouse = getPropertyName('spouse', aliases);
 	const child = getPropertyName('child', aliases);
+	const media = getPropertyName('media', aliases);
 
 	return `visibleProperties:
+  - formula.thumbnail
   - formula.display_name
   - note.${father}
   - note.${mother}
@@ -92,6 +94,7 @@ filters:
   and:
     - '${cr_type} == "person"'
 formulas:
+  thumbnail: 'if(!${media}.isEmpty(), image(list(${media})[0]), "")'
   display_name: '${name} || file.name'
   age: 'if(${born}.isEmpty(), "Unknown", if(${died}.isEmpty() && (now() - ${born}).years.floor() < ${maxLivingAge}, (now() - ${born}).years.floor() + " years", if(${born} && !${died}.isEmpty(), (${died} - ${born}).years.floor() + " years", "Unknown")))'
   birth_display: 'if(${born}, ${born}.format("YYYY-MM-DD"), "")'
@@ -99,6 +102,8 @@ formulas:
 properties:
   ${cr_id}:
     displayName: ID
+  formula.thumbnail:
+    displayName: Photo
   formula.display_name:
     displayName: Name
   note.${father}:
