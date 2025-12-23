@@ -11,6 +11,7 @@ The Interactive Family Chart View is a persistent, interactive visualization pan
 - [Display Options](#display-options)
 - [Edit Mode](#edit-mode)
 - [Exporting the Chart](#exporting-the-chart)
+- [Styling](#styling)
 - [State Persistence](#state-persistence)
 - [Multiple Chart Views](#multiple-chart-views)
 - [Toolbar Reference](#toolbar-reference)
@@ -118,19 +119,87 @@ Changes made in the chart automatically update the underlying markdown notes:
 
 ## Exporting the Chart
 
-### PNG Export
+Click the **Export** button in the toolbar to open the Export Wizard.
 
-1. Click the export menu button in the toolbar
-2. Select **Export as PNG**
-3. High-resolution image (2x resolution) is saved
+### Quick Presets
 
-### SVG Export
+Choose from 5 preset configurations for common use cases:
 
-1. Click the export menu button in the toolbar
-2. Select **Export as SVG**
-3. Scalable vector graphic is saved for further editing
+| Preset | Format | Settings | Use Case |
+|--------|--------|----------|----------|
+| **Quick Share** | PNG | 1x scale, no avatars | Social media, messaging |
+| **High Quality** | PNG | 2x scale, with avatars | Printing, archiving |
+| **Print Ready** | PDF | Cover page, with avatars | Physical prints, sharing |
+| **Editable** | SVG | Vector format, no avatars | Editing in Inkscape/Illustrator |
+| **Document** | ODT | Cover page, with avatars | Merging with reports in Word/LibreOffice |
 
-Both exports preserve your current color scheme and theme (dark/light mode).
+### Custom Export Options
+
+Click **Customize** to configure export settings manually:
+
+**Format Options:**
+- **PNG**: Raster image with configurable scale (1x, 2x, 3x, 4x)
+- **SVG**: Scalable vector graphics for editing
+- **PDF**: Multi-page document with optional cover page
+- **ODT**: OpenDocument Text for editing in LibreOffice/Word
+
+**PDF/ODT Options:**
+- Page size: Fit to content, A4, Letter, Legal, Tabloid
+- Layout: Single page or tiled across multiple pages
+- Orientation: Auto, Portrait, Landscape
+- Cover page: Optional title page with custom title and subtitle
+
+**General Options:**
+- Include avatars: Show person thumbnails in export
+- Filename: Customize the output filename
+
+### Export Progress
+
+Large exports show a progress modal with:
+- Phase indicators (Preparing, Embedding avatars, Rendering, Encoding, Saving)
+- Progress bar
+- Cancel button
+
+### Settings Memory
+
+Your last-used export settings (format, scale, page options) are remembered for next time.
+
+## Styling
+
+### Theme Presets
+
+Click the **palette button** in the toolbar to access color themes:
+
+| Theme | Description |
+|-------|-------------|
+| **Classic** | Traditional pink/blue genealogy colors (default) |
+| **Pastel** | Lighter, softer tones |
+| **Earth Tones** | Natural terracotta, sage, and sand colors |
+| **High Contrast** | Magenta/cyan/yellow for accessibility |
+| **Monochrome** | Grayscale, no color coding |
+
+### Custom Colors
+
+Select **Customize...** from the palette menu to open the color picker modal:
+
+| Color | Description |
+|-------|-------------|
+| **Female card** | Background color for female person cards |
+| **Male card** | Background color for male person cards |
+| **Unknown card** | Background color for unknown gender cards |
+| **Background (light)** | Chart background in light theme |
+| **Background (dark)** | Chart background in dark theme |
+| **Text (light)** | Card text color in light theme |
+| **Text (dark)** | Card text color in dark theme |
+
+Colors update in real-time as you adjust them. Click **Apply** to save, or **Reset to defaults** to revert.
+
+### Style Settings Integration
+
+If you have the [Style Settings](https://github.com/mgmeyers/obsidian-style-settings) plugin installed:
+- In-view settings (from the palette menu) take precedence
+- "Reset to defaults" clears in-view settings, revealing Style Settings values
+- Both can coexist—use in-view for quick switching, Style Settings for vault-wide defaults
 
 ## State Persistence
 
@@ -171,13 +240,14 @@ This allows you to:
 | Button | Function |
 |--------|----------|
 | Color dropdown | Switch between color schemes |
+| Palette | Access theme presets and custom color picker |
 | Zoom in/out | Adjust zoom level |
 | Search | Find and navigate to a specific person |
 | Edit toggle | Enable/disable edit mode |
 | Undo/Redo | Reverse or replay edits (edit mode only) |
 | Fit to view | Zoom to show entire tree |
 | Layout settings | Adjust spacing, date display, and kinship labels |
-| Export menu | Save as PNG or SVG |
+| Export | Open export wizard (PNG, SVG, PDF, ODT) |
 | Refresh | Reload data from notes |
 
 ## Family Chart vs Canvas
@@ -187,8 +257,9 @@ This allows you to:
 | **Exploration** | Best for browsing large trees | Better for static documentation |
 | **Editing** | Direct in-chart editing | Edit source notes, regenerate |
 | **Persistence** | View survives reloads | Canvas file saved permanently |
-| **Export** | PNG/SVG images | Canvas file, Excalidraw |
+| **Export** | PNG, SVG, PDF, ODT | Canvas file, Excalidraw |
 | **Integration** | Live sync with notes | Snapshot at generation time |
+| **Styling** | Theme presets, custom colors | Style Settings only |
 | **Use case** | Interactive research | Shareable family tree |
 
 **Recommendation:** Use Family Chart View for day-to-day exploration and quick edits. Use Canvas Generation for creating permanent, shareable family tree documents.
