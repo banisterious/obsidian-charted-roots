@@ -11,6 +11,8 @@ Common questions about Canvas Roots.
 - [Tree Generation](#tree-generation)
 - [Family Chart View](#family-chart-view)
 - [Import/Export](#importexport)
+- [Media](#media)
+- [Reports & Output](#reports--output)
 - [Geographic Features](#geographic-features)
 - [Performance](#performance)
 - [Troubleshooting](#troubleshooting)
@@ -146,6 +148,107 @@ No. Canvas Roots detects duplicates by `cr_id` and updates relationships without
 Enable privacy protection in Settings → Canvas Roots → GEDCOM:
 - Set a birth year threshold
 - Choose to exclude or anonymize living persons
+
+## Media
+
+### What types of media can I link to entities?
+
+Canvas Roots supports images, videos, audio, PDFs, and documents. Media can be linked to:
+- People
+- Events
+- Places
+- Organizations
+- Sources
+
+Use the `media` property in frontmatter with wikilinks:
+
+```yaml
+media:
+  - "[[portrait.jpg]]"
+  - "[[birth-certificate.pdf]]"
+```
+
+### What's the difference between the media linking tools?
+
+Canvas Roots offers several ways to link media, each suited to different workflows:
+
+| Tool | Best for | Access |
+|------|----------|--------|
+| **Bulk Link Media** | Linking files to multiple entities at once | Dashboard → Media → Bulk Link Media |
+| **Find Unlinked** | Discovering orphaned media files | Dashboard → Media → Find Unlinked |
+| **Source Media Linker** | Smart filename matching to sources | Dashboard → Media → Source Media Linker |
+| **Linked Media Gallery** | Browsing all linked media | Dashboard → Media → Linked Media Gallery |
+
+See [Media Management](Media-Management) for detailed documentation.
+
+### How do I display media in person notes?
+
+Use the dynamic `canvas-roots-media` code block:
+
+~~~markdown
+```canvas-roots-media
+columns: 3
+editable: true
+```
+~~~
+
+This renders a gallery from the note's `media` property. With `editable: true`, you can drag to reorder—the first item becomes the thumbnail shown on Family Chart cards.
+
+### How do I get media into my vault from Gramps?
+
+Export from Gramps as a **Gramps Package (`.gpkg`)** file, which bundles XML data and media files together. When you import the `.gpkg` file, Canvas Roots automatically:
+1. Extracts media files to your configured media folder
+2. Creates notes with `media` properties linking to the extracted files
+
+## Reports & Output
+
+### What export/output options does Canvas Roots offer?
+
+Canvas Roots provides several ways to visualize and share your data:
+
+| Output Type | Formats | Best for |
+|-------------|---------|----------|
+| **Family Chart** | PNG, SVG, PDF, ODT | Interactive exploration, sharing trees |
+| **Canvas** | Obsidian Canvas, Excalidraw | Permanent documentation, Obsidian integration |
+| **Reports** | Markdown, PDF | Narrative genealogy, research documentation |
+| **Data Export** | GEDCOM, Gramps XML, CSV | Backup, sharing with other software |
+
+### When should I use Family Chart vs Canvas generation?
+
+**Use Family Chart View when:**
+- Exploring and navigating your tree interactively
+- Making quick edits to person data
+- Exporting to share (PNG, PDF)
+- You want live sync with your notes
+
+**Use Canvas generation when:**
+- Creating a permanent, editable document
+- You want to annotate the tree in Obsidian
+- Exporting to Excalidraw for further editing
+- Building a static reference document
+
+### What report types are available?
+
+Canvas Roots includes several genealogical report types:
+
+- **Ancestor Report** — List of ancestors with dates and places
+- **Descendant Report** — List of descendants organized by generation
+- **Family Group Sheet** — Traditional genealogy format for a nuclear family
+- **Timeline Report** — Chronological view of events
+- **Pedigree Chart** — Visual ancestor tree (PDF)
+- **Descendant Tree** — Visual descendant tree (PDF)
+- **Media Inventory** — Catalog of linked media files
+
+Access reports via **Dashboard → Reports** or the command palette.
+
+### Can I export reports as PDF?
+
+Yes. Most reports support PDF export with:
+- Custom cover page with title and subtitle
+- Optional logo
+- Styled formatting
+
+Click "Export as PDF" when viewing a report.
 
 ## Geographic Features
 
