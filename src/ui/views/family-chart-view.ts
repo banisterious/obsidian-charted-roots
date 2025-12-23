@@ -15,6 +15,7 @@ import type { ColorScheme } from '../../settings';
 import { getLogger } from '../../core/logging';
 import { PersonPickerModal } from '../person-picker';
 import { FamilyChartExportWizard } from './family-chart-export-wizard';
+import type { FamilyChartExportProgress, ProgressCallback } from './family-chart-export-progress-modal';
 
 const logger = getLogger('FamilyChartView');
 
@@ -1517,15 +1518,18 @@ export class FamilyChartView extends ItemView {
 		includeCoverPage?: boolean;
 		coverTitle?: string;
 		coverSubtitle?: string;
+		// Progress tracking
+		onProgress?: ProgressCallback;
+		isCancelled?: () => boolean;
 	}): Promise<void> {
-		const { format, filename, includeAvatars, scale } = options;
+		const { format, filename, includeAvatars, scale, onProgress, isCancelled } = options;
 
 		switch (format) {
 			case 'png':
-				await this.exportAsPngWithOptions(filename, includeAvatars, scale ?? 2);
+				await this.exportAsPngWithOptions(filename, includeAvatars, scale ?? 2, onProgress, isCancelled);
 				break;
 			case 'svg':
-				await this.exportAsSvgWithOptions(filename, includeAvatars);
+				await this.exportAsSvgWithOptions(filename, includeAvatars, onProgress, isCancelled);
 				break;
 			case 'pdf':
 				await this.exportAsPdfWithOptions(filename, includeAvatars, scale ?? 2, {
@@ -1535,7 +1539,7 @@ export class FamilyChartView extends ItemView {
 					includeCoverPage: options.includeCoverPage ?? false,
 					coverTitle: options.coverTitle ?? '',
 					coverSubtitle: options.coverSubtitle ?? ''
-				});
+				}, onProgress, isCancelled);
 				break;
 		}
 	}
@@ -1543,7 +1547,13 @@ export class FamilyChartView extends ItemView {
 	/**
 	 * Export as PNG with options
 	 */
-	private async exportAsPngWithOptions(filename: string, includeAvatars: boolean, scale: number): Promise<void> {
+	private async exportAsPngWithOptions(
+		filename: string,
+		includeAvatars: boolean,
+		scale: number,
+		onProgress?: ProgressCallback,
+		isCancelled?: () => boolean
+	): Promise<void> {
 		if (!this.f3Chart) return;
 
 		const svg = this.f3Chart.svg;
@@ -1553,6 +1563,8 @@ export class FamilyChartView extends ItemView {
 		}
 
 		try {
+			onProgress?.({ phase: 'preparing', current: 0, total: 100, message: 'Preparing chart...' });
+
 			const { svgClone, width, height } = this.prepareSvgForExport(svg as SVGSVGElement);
 
 			logger.debug('export-png', 'Preparing PNG export', { width, height, scale, includeAvatars });
@@ -1574,9 +1586,13 @@ export class FamilyChartView extends ItemView {
 				return;
 			}
 
+			// Check for cancellation
+			if (isCancelled?.()) return;
+
 			// Handle avatars based on option
 			if (includeAvatars) {
-				await this.embedImagesAsBase64(svgClone);
+				await this.embedImagesAsBase64WithProgress(svgClone, onProgress, isCancelled);
+				if (isCancelled?.()) return;
 			} else {
 				// Remove avatar images
 				const imageElements = svgClone.querySelectorAll('image[href]');
@@ -1587,6 +1603,8 @@ export class FamilyChartView extends ItemView {
 					}
 				});
 			}
+
+			onProgress?.({ phase: 'rendering', current: 0, total: 100, message: 'Rendering image...' });
 
 			// Serialize SVG
 			const serializer = new XMLSerializer();
@@ -1610,14 +1628,18 @@ export class FamilyChartView extends ItemView {
 				ctx.drawImage(img, 0, 0);
 				URL.revokeObjectURL(svgUrl);
 
+				onProgress?.({ phase: 'encoding', current: 0, total: 100, message: 'Creating PNG...' });
+
 				canvas.toBlob((blob) => {
 					if (blob) {
+						onProgress?.({ phase: 'saving', current: 0, total: 100, message: 'Saving file...' });
 						const url = URL.createObjectURL(blob);
 						const link = document.createElement('a');
 						link.href = url;
 						link.download = filename;
 						link.click();
 						URL.revokeObjectURL(url);
+						onProgress?.({ phase: 'complete', current: 100, total: 100, message: 'Done!' });
 						new Notice('PNG exported successfully');
 					} else {
 						new Notice('Failed to create PNG image');
@@ -1639,7 +1661,12 @@ export class FamilyChartView extends ItemView {
 	/**
 	 * Export as SVG with options
 	 */
-	private async exportAsSvgWithOptions(filename: string, includeAvatars: boolean): Promise<void> {
+	private async exportAsSvgWithOptions(
+		filename: string,
+		includeAvatars: boolean,
+		onProgress?: ProgressCallback,
+		isCancelled?: () => boolean
+	): Promise<void> {
 		if (!this.f3Chart) return;
 
 		const svg = this.f3Chart.svg;
@@ -1649,12 +1676,18 @@ export class FamilyChartView extends ItemView {
 		}
 
 		try {
+			onProgress?.({ phase: 'preparing', current: 0, total: 100, message: 'Preparing chart...' });
+
 			const { svgClone } = this.prepareSvgForExport(svg as SVGSVGElement);
+
+			// Check for cancellation
+			if (isCancelled?.()) return;
 
 			// Handle avatars based on option
 			const imageElements = svgClone.querySelectorAll('image[href]');
 			if (includeAvatars) {
-				await this.embedImagesAsBase64(svgClone);
+				await this.embedImagesAsBase64WithProgress(svgClone, onProgress, isCancelled);
+				if (isCancelled?.()) return;
 			} else {
 				imageElements.forEach((imgEl) => {
 					const href = imgEl.getAttribute('href') || imgEl.getAttributeNS('http://www.w3.org/1999/xlink', 'href');
@@ -1663,6 +1696,8 @@ export class FamilyChartView extends ItemView {
 					}
 				});
 			}
+
+			onProgress?.({ phase: 'saving', current: 0, total: 100, message: 'Saving file...' });
 
 			// Serialize and download
 			const serializer = new XMLSerializer();
@@ -1675,6 +1710,7 @@ export class FamilyChartView extends ItemView {
 			link.click();
 			URL.revokeObjectURL(url);
 
+			onProgress?.({ phase: 'complete', current: 100, total: 100, message: 'Done!' });
 			new Notice('SVG exported successfully');
 
 		} catch (error) {
@@ -1697,7 +1733,9 @@ export class FamilyChartView extends ItemView {
 			includeCoverPage: boolean;
 			coverTitle: string;
 			coverSubtitle: string;
-		}
+		},
+		onProgress?: ProgressCallback,
+		isCancelled?: () => boolean
 	): Promise<void> {
 		if (!this.f3Chart) return;
 
@@ -1708,6 +1746,8 @@ export class FamilyChartView extends ItemView {
 		}
 
 		try {
+			onProgress?.({ phase: 'preparing', current: 0, total: 100, message: 'Preparing chart...' });
+
 			const { svgClone, width, height } = this.prepareSvgForExport(svg as SVGSVGElement);
 
 			logger.debug('export-pdf', 'Preparing PDF export', {
@@ -1731,9 +1771,13 @@ export class FamilyChartView extends ItemView {
 				return;
 			}
 
+			// Check for cancellation
+			if (isCancelled?.()) return;
+
 			// Handle avatars based on option
 			if (includeAvatars) {
-				await this.embedImagesAsBase64(svgClone);
+				await this.embedImagesAsBase64WithProgress(svgClone, onProgress, isCancelled);
+				if (isCancelled?.()) return;
 			} else {
 				const imageElements = svgClone.querySelectorAll('image[href]');
 				imageElements.forEach((imgEl) => {
@@ -1753,6 +1797,8 @@ export class FamilyChartView extends ItemView {
 			const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
 			const svgUrl = URL.createObjectURL(svgBlob);
 
+			onProgress?.({ phase: 'rendering', current: 0, total: 100, message: 'Rendering image...' });
+
 			// Create canvas
 			const canvas = document.createElement('canvas');
 			canvas.width = scaledWidth;
@@ -1768,6 +1814,8 @@ export class FamilyChartView extends ItemView {
 				ctx.scale(scale, scale);
 				ctx.drawImage(img, 0, 0);
 				URL.revokeObjectURL(svgUrl);
+
+				onProgress?.({ phase: 'encoding', current: 0, total: 100, message: 'Creating PDF...' });
 
 				// Determine PDF dimensions and orientation
 				const pageSpec = FamilyChartView.PDF_PAGE_SIZES[pdfOptions.pageSize];
@@ -1865,7 +1913,9 @@ export class FamilyChartView extends ItemView {
 				// Add footer to chart page
 				this.addPdfFooter(pdf, currentPage, totalPages, useRoboto);
 
+				onProgress?.({ phase: 'saving', current: 0, total: 100, message: 'Saving file...' });
 				pdf.save(filename);
+				onProgress?.({ phase: 'complete', current: 100, total: 100, message: 'Done!' });
 				new Notice('PDF exported successfully');
 			};
 			img.onerror = () => {
@@ -2535,6 +2585,66 @@ export class FamilyChartView extends ItemView {
 
 			// Yield after EVERY image for large exports to allow GC
 			// Longer delay (50ms) gives browser time to reclaim memory
+			await new Promise(resolve => setTimeout(resolve, totalImages > 50 ? 50 : 10));
+		}
+	}
+
+	/**
+	 * Convert image URLs in SVG to base64 data URIs with progress reporting
+	 * Used by the export wizard to show progress during avatar embedding
+	 */
+	private async embedImagesAsBase64WithProgress(
+		svgClone: SVGSVGElement,
+		onProgress?: ProgressCallback,
+		isCancelled?: () => boolean
+	): Promise<void> {
+		const imageElements = svgClone.querySelectorAll('image[href]');
+
+		// Filter to only app:// URLs that need conversion
+		const imagesToConvert: { element: Element; href: string }[] = [];
+		imageElements.forEach((imgEl) => {
+			const href = imgEl.getAttribute('href') || imgEl.getAttributeNS('http://www.w3.org/1999/xlink', 'href');
+			if (!href) return;
+			// Only convert app:// URLs (Obsidian internal)
+			if (!href.startsWith('app://')) return;
+			imagesToConvert.push({ element: imgEl, href });
+		});
+
+		if (imagesToConvert.length === 0) return;
+
+		const totalImages = imagesToConvert.length;
+
+		logger.debug('export', 'Embedding images as base64 with progress', { totalImages });
+
+		// Process images ONE AT A TIME to prevent memory pressure
+		for (let i = 0; i < totalImages; i++) {
+			// Check for cancellation
+			if (isCancelled?.()) {
+				logger.debug('export', 'Image embedding cancelled');
+				return;
+			}
+
+			const { element, href } = imagesToConvert[i];
+
+			// Report progress
+			onProgress?.({
+				phase: 'embedding',
+				current: i + 1,
+				total: totalImages,
+				message: `Embedding avatar ${i + 1} of ${totalImages}...`
+			});
+
+			try {
+				const base64 = await this.convertImageToBase64(href);
+				if (base64) {
+					element.setAttribute('href', base64);
+					element.setAttributeNS('http://www.w3.org/1999/xlink', 'href', base64);
+				}
+			} catch (error) {
+				logger.warn('export', 'Failed to convert image to base64', { href, error });
+			}
+
+			// Yield after EVERY image for large exports to allow GC
 			await new Promise(resolve => setTimeout(resolve, totalImages > 50 ? 50 : 10));
 		}
 	}

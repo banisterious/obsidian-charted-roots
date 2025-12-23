@@ -605,36 +605,76 @@
 }
 
 /* ==========================================================================
-   PROGRESS STATE (for long exports)
+   FAMILY CHART EXPORT PROGRESS MODAL
    ========================================================================== */
 
-.cr-export-progress {
-  padding: 20px;
-  text-align: center;
+.cr-fcv-export-progress-modal {
+  max-width: 400px;
+  width: 400px;
 }
 
-.cr-export-progress-bar {
-  height: 8px;
-  background: var(--background-modifier-border);
-  border-radius: 4px;
-  overflow: hidden;
+.cr-fcv-export-progress-modal .modal-content {
+  padding: 24px;
+}
+
+/* Phase indicator */
+.cr-fcv-export-phase {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.cr-fcv-export-phase__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--background-modifier-hover);
+}
+
+.cr-fcv-export-phase__icon svg {
+  color: var(--text-accent);
+}
+
+.cr-fcv-export-phase__label {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+/* Progress bar */
+.cr-fcv-export-progress {
   margin-bottom: 12px;
 }
 
-.cr-export-progress-fill {
-  height: 100%;
-  background: var(--interactive-accent);
+.cr-fcv-export-progress__track {
+  height: 8px;
   border-radius: 4px;
-  transition: width 0.2s ease;
+  background: var(--background-modifier-border);
+  overflow: hidden;
 }
 
-.cr-export-progress-text {
-  font-size: 14px;
-  color: var(--text-normal);
-  margin-bottom: 4px;
+.cr-fcv-export-progress__bar {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--interactive-accent);
+  transition: width 0.2s ease-out;
 }
 
-.cr-export-progress-phase {
+.cr-fcv-export-progress__text {
   font-size: 13px;
   color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Buttons */
+.cr-fcv-export-buttons {
+  display: flex;
+  justify-content: center;
+  padding-top: 12px;
+  border-top: 1px solid var(--background-modifier-border);
 }

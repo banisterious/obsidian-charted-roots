@@ -14,6 +14,7 @@ import { Modal, Notice, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import { createLucideIcon } from '../lucide-icons';
 import type { FamilyChartView } from './family-chart-view';
+import { FamilyChartExportProgressModal } from './family-chart-export-progress-modal';
 
 /**
  * Export format types
@@ -846,10 +847,22 @@ export class FamilyChartExportWizard extends Modal {
 				return;
 			}
 
-			// Close the modal first for a cleaner UX
+			// Close the wizard modal
 			this.close();
 
-			// Perform the export with format-specific options
+			// Determine format name for progress modal title
+			const formatNames: Record<string, string> = {
+				png: 'PNG',
+				svg: 'SVG',
+				pdf: 'PDF'
+			};
+			const formatName = formatNames[this.formData.format] || this.formData.format.toUpperCase();
+
+			// Create and open progress modal
+			const progressModal = new FamilyChartExportProgressModal(this.app, formatName);
+			progressModal.open();
+
+			// Perform the export with progress tracking
 			await this.chartView.exportWithOptions({
 				format: this.formData.format as 'png' | 'svg' | 'pdf',
 				filename,
@@ -861,8 +874,25 @@ export class FamilyChartExportWizard extends Modal {
 				orientation: this.formData.orientation,
 				includeCoverPage: this.formData.includeCoverPage,
 				coverTitle: this.formData.coverTitle,
-				coverSubtitle: this.formData.coverSubtitle
+				coverSubtitle: this.formData.coverSubtitle,
+				// Progress tracking
+				onProgress: (progress) => {
+					if (progressModal.cancelled) return;
+					progressModal.updateProgress(progress);
+				},
+				isCancelled: () => progressModal.cancelled
 			});
+
+			// Handle completion
+			if (progressModal.cancelled) {
+				progressModal.markCancelled();
+				// Auto-close after brief delay
+				setTimeout(() => progressModal.close(), 1000);
+			} else {
+				progressModal.markComplete();
+				// Auto-close after brief delay
+				setTimeout(() => progressModal.close(), 1500);
+			}
 
 		} catch (error) {
 			console.error('Export failed:', error);
