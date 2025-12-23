@@ -228,6 +228,23 @@
   box-shadow: 0 0 0 1px var(--interactive-accent);
 }
 
+.cr-export-preset-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+  color: var(--text-muted);
+}
+
+.cr-export-preset-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.cr-export-preset-card--selected .cr-export-preset-icon {
+  color: var(--interactive-accent);
+}
+
 .cr-export-preset-label {
   font-size: 12px;
   font-weight: 600;

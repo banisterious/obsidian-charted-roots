@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-23 17:17:02 UTC
+ * - Generated: 2025-12-23 18:41:01 UTC
  * - Components: 36 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -10414,7 +10414,7 @@ settings:
    COMPONENT: FAMILY-CHART-EXPORT.CSS
    ========================================================================== */
 
-/* Component Size: 681 lines, 14.29 KB */
+/* Component Size: 698 lines, 14.59 KB */
 
 /* ==========================================================================
    FAMILY CHART EXPORT WIZARD
@@ -10644,6 +10644,23 @@ settings:
   border-color: var(--interactive-accent);
   background: var(--background-secondary);
   box-shadow: 0 0 0 1px var(--interactive-accent);
+}
+
+.cr-export-preset-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+  color: var(--text-muted);
+}
+
+.cr-export-preset-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.cr-export-preset-card--selected .cr-export-preset-icon {
+  color: var(--interactive-accent);
 }
 
 .cr-export-preset-label {
@@ -25890,10 +25907,10 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-23 17:17:02 UTC
+ * Build completed: 2025-12-23 18:41:01 UTC
  * Components processed: 36
- * Total lines: 25543
- * Total size: 507.13 KB
+ * Total lines: 25560
+ * Total size: 507.43 KB
  * Build duration: 0.04 seconds
  *
  * Component breakdown:
@@ -25913,7 +25930,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - folder-scan.css: 155 lines, 2.56 KB
  * - relationship-calculator.css: 302 lines, 5.21 KB
  * - family-chart-view.css: 1019 lines, 23.54 KB
- * - family-chart-export.css: 681 lines, 14.29 KB
+ * - family-chart-export.css: 698 lines, 14.59 KB
  * - data-quality.css: 1393 lines, 27.56 KB
  * - relationships.css: 517 lines, 9.76 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB

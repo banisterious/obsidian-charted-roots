@@ -28,6 +28,7 @@ interface ExportPreset {
 	id: string;
 	label: string;
 	description: string;
+	icon: string;
 	format: ExportFormat;
 	includeAvatars: boolean;
 	scale?: number;          // PNG only
@@ -42,6 +43,7 @@ const EXPORT_PRESETS: ExportPreset[] = [
 		id: 'quick-share',
 		label: 'Quick Share',
 		description: 'PNG · 1x · No avatars',
+		icon: 'zap',
 		format: 'png',
 		includeAvatars: false,
 		scale: 1
@@ -50,6 +52,7 @@ const EXPORT_PRESETS: ExportPreset[] = [
 		id: 'high-quality',
 		label: 'High Quality',
 		description: 'PNG · 2x · With avatars',
+		icon: 'sparkles',
 		format: 'png',
 		includeAvatars: true,
 		scale: 2
@@ -58,6 +61,7 @@ const EXPORT_PRESETS: ExportPreset[] = [
 		id: 'print-ready',
 		label: 'Print Ready',
 		description: 'PDF · Cover page',
+		icon: 'printer',
 		format: 'pdf',
 		includeAvatars: true,
 		includeCoverPage: true
@@ -66,6 +70,7 @@ const EXPORT_PRESETS: ExportPreset[] = [
 		id: 'editable',
 		label: 'Editable',
 		description: 'SVG · Vector format',
+		icon: 'pen-tool',
 		format: 'svg',
 		includeAvatars: false
 	},
@@ -73,6 +78,7 @@ const EXPORT_PRESETS: ExportPreset[] = [
 		id: 'document',
 		label: 'Document',
 		description: 'ODT · For merging',
+		icon: 'file-text',
 		format: 'odt',
 		includeAvatars: true,
 		includeCoverPage: true
@@ -369,6 +375,10 @@ export class FamilyChartExportWizard extends Modal {
 			const presetCard = presetsGrid.createDiv({
 				cls: `cr-export-preset-card ${this.formData.selectedPreset === preset.id ? 'cr-export-preset-card--selected' : ''}`
 			});
+
+			// Icon
+			const iconEl = presetCard.createDiv({ cls: 'cr-export-preset-icon' });
+			setIcon(iconEl, preset.icon);
 
 			presetCard.createDiv({ cls: 'cr-export-preset-label', text: preset.label });
 			presetCard.createDiv({ cls: 'cr-export-preset-desc', text: preset.description });
