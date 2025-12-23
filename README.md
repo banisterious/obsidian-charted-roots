@@ -150,7 +150,7 @@
 ### Canvas Trees
 | Canvas Trees Interface | Generated Family Tree |
 |:---------------------:|:---------------------:|
-| ![Canvas Trees interface](docs/images/canvas-roots-control-center-tree-output-tab.png) | ![Family tree canvas](docs/images/family-tree-canvas.png) |
+| ![Canvas Trees interface](docs/images/canvas-roots-generate-tree.png) | ![Family tree canvas](docs/images/family-tree-canvas.png) |
 | Person browser, layout selection, interactive preview | Automated genealogical layout with spouse and parent-child connections |
 
 ### Interactive Family Chart View
