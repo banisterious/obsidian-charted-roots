@@ -260,6 +260,9 @@ export class FamilyChartExportWizard extends Modal {
 		if (!this.contentContainer) return;
 		this.contentContainer.empty();
 
+		// Recalculate estimate based on current options
+		this.estimate = this.calculateEstimate();
+
 		if (this.currentStep === 0) {
 			this.renderStep1(this.contentContainer);
 		} else {
@@ -382,7 +385,6 @@ export class FamilyChartExportWizard extends Modal {
 			radio.checked = this.formData.includeAvatars === opt.value;
 			radio.addEventListener('change', () => {
 				this.formData.includeAvatars = opt.value;
-				this.estimate = this.calculateEstimate();
 				this.renderCurrentStep();
 			});
 
@@ -395,50 +397,24 @@ export class FamilyChartExportWizard extends Modal {
 		const scopeSection = container.createDiv({ cls: 'cr-export-section' });
 		scopeSection.createEl('h3', { text: 'Scope', cls: 'cr-export-section-title' });
 
-		const scopeOptions = [
-			{ value: 'full', label: 'Full tree', desc: 'Respects current depth settings' },
-			{ value: 'limited', label: 'Limited depth', desc: '' }
-		];
+		// Full tree option (always selected for now)
+		const fullTreeRow = scopeSection.createDiv({ cls: 'cr-export-radio-row' });
+		const fullTreeRadio = fullTreeRow.createEl('input', {
+			type: 'radio',
+			attr: { name: 'scope', id: 'scope-full', checked: 'checked' }
+		});
+		fullTreeRadio.checked = true;
 
-		for (const opt of scopeOptions) {
-			const optionRow = scopeSection.createDiv({ cls: 'cr-export-radio-row' });
+		const fullTreeLabel = fullTreeRow.createEl('label', { attr: { for: 'scope-full' } });
+		fullTreeLabel.createSpan({ text: 'Full tree', cls: 'cr-export-radio-label' });
+		fullTreeLabel.createSpan({ text: ' (uses current depth settings from toolbar)', cls: 'cr-export-radio-desc' });
 
-			const radio = optionRow.createEl('input', {
-				type: 'radio',
-				attr: { name: 'scope', id: `scope-${opt.value}` }
-			});
-			radio.checked = this.formData.scope === opt.value;
-			radio.addEventListener('change', () => {
-				this.formData.scope = opt.value as 'full' | 'limited';
-				this.renderCurrentStep();
-			});
-
-			const label = optionRow.createEl('label', { attr: { for: `scope-${opt.value}` } });
-			label.createSpan({ text: opt.label, cls: 'cr-export-radio-label' });
-			if (opt.desc) {
-				label.createSpan({ text: ` (${opt.desc})`, cls: 'cr-export-radio-desc' });
-			}
-
-			// Depth selector for limited scope
-			if (opt.value === 'limited') {
-				const depthSelect = optionRow.createEl('select', {
-					cls: 'cr-export-depth-select'
-				});
-				depthSelect.disabled = this.formData.scope !== 'limited';
-
-				for (let i = 2; i <= 5; i++) {
-					const option = depthSelect.createEl('option', {
-						value: String(i),
-						text: `${i} generations`
-					});
-					if (i === this.formData.limitedDepth) option.selected = true;
-				}
-
-				depthSelect.addEventListener('change', () => {
-					this.formData.limitedDepth = parseInt(depthSelect.value);
-				});
-			}
-		}
+		// Note about adjusting depth
+		const scopeHint = scopeSection.createDiv({ cls: 'cr-export-scope-hint' });
+		scopeHint.createSpan({
+			text: 'Tip: Adjust tree depth using the branch icon in the toolbar before exporting.',
+			cls: 'cr-export-hint-text'
+		});
 
 		// Format-specific options
 		this.renderFormatSpecificOptions(container);
