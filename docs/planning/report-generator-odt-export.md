@@ -14,28 +14,22 @@ Add ODT (Open Document Text) export capability to the Report Generator, enabling
 
 ## Motivation
 
-**Primary Use Case:** Document merging workflow
+**Primary Use Case:** Editable report export
 
-Users want to create comprehensive family history documents by combining:
-- Descendant/ancestor reports (text content)
-- Visual tree charts (images)
-- Custom narrative sections
+Users want an editable format for genealogical reports that:
+- Can be opened in word processors (LibreOffice Writer, Microsoft Word)
+- Preserves formatting better than plain Markdown
+- Allows further editing before printing or sharing
 
-Currently, users must:
-1. Export reports as Markdown or PDF
-2. Export visual trees separately
-3. Manually combine in an external word processor
-
-With ODT export, users can:
-1. Export reports as ODT (editable)
-2. Export visual trees as ODT (from Family Chart Export Modal)
-3. Merge documents directly in LibreOffice/Word
-
-**Secondary Benefits:**
+**Benefits:**
 - Editable output format (unlike PDF)
 - Wide software compatibility
-- Preserves formatting better than plain Markdown
+- Preserves formatting (headings, bold, lists)
 - Standard format for document exchange
+
+**Future Use Case (Deferred):** Document merging workflow
+
+Combining text reports with visual tree charts requires image embedding, which depends on Visual Tree PDF Enhancements. This will be addressed in Phase 4 after pdfmake rendering quality is improved.
 
 ---
 
