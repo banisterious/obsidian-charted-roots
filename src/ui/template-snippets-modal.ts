@@ -6,7 +6,7 @@
 import { App, Modal, Notice } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 
-export type TemplateType = 'person' | 'place' | 'source' | 'organization' | 'proof' | 'event';
+export type TemplateType = 'person' | 'event' | 'place' | 'source' | 'organization' | 'universe' | 'proof' | 'reference';
 
 /**
  * Property aliases mapping type
@@ -71,72 +71,50 @@ export class TemplateSnippetsModal extends Modal {
 			cls: 'crc-text--muted'
 		});
 
-		// Tab selector
-		const tabContainer = contentEl.createDiv({ cls: 'crc-template-tabs' });
+		// Tile grid for template type selection
+		const tileGrid = contentEl.createDiv({ cls: 'crc-template-tile-grid' });
 
-		const tabs: Array<{ type: TemplateType; label: string; el?: HTMLButtonElement }> = [
-			{ type: 'person', label: 'Person' },
-			{ type: 'place', label: 'Place' },
-			{ type: 'source', label: 'Source' },
-			{ type: 'organization', label: 'Organization' },
-			{ type: 'proof', label: 'Proof summary' },
-			{ type: 'event', label: 'Event' }
+		type TileConfig = { type: TemplateType; label: string; icon: string; el?: HTMLButtonElement };
+		const tiles: TileConfig[] = [
+			{ type: 'person', label: 'People', icon: 'users' },
+			{ type: 'event', label: 'Events', icon: 'calendar' },
+			{ type: 'place', label: 'Places', icon: 'map-pin' },
+			{ type: 'source', label: 'Sources', icon: 'archive' },
+			{ type: 'organization', label: 'Organizations', icon: 'building' },
+			{ type: 'universe', label: 'Universes', icon: 'globe' },
+			{ type: 'proof', label: 'Proof summaries', icon: 'scale' },
+			{ type: 'reference', label: 'Reference', icon: 'book-open' }
 		];
 
-		for (const tab of tabs) {
-			tab.el = tabContainer.createEl('button', {
-				text: tab.label,
-				cls: `crc-template-tab${tab.type === this.selectedType ? ' crc-template-tab--active' : ''}`
+		for (const tile of tiles) {
+			const tileEl = tileGrid.createEl('button', {
+				cls: `crc-template-tile${tile.type === this.selectedType ? ' crc-template-tile--active' : ''}`
 			});
+			tile.el = tileEl;
+
+			const iconContainer = tileEl.createDiv({ cls: 'crc-template-tile-icon' });
+			iconContainer.appendChild(createLucideIcon(tile.icon as Parameters<typeof createLucideIcon>[0], 20));
+
+			tileEl.createDiv({ cls: 'crc-template-tile-label', text: tile.label });
 		}
 
 		// Template content container
 		const templateContainer = contentEl.createDiv({ cls: 'crc-template-container' });
 
-		// Tab switching
-		for (const tab of tabs) {
-			tab.el?.addEventListener('click', () => {
-				this.selectedType = tab.type;
-				for (const t of tabs) {
-					t.el?.removeClass('crc-template-tab--active');
+		// Tile click handlers
+		for (const tile of tiles) {
+			tile.el?.addEventListener('click', () => {
+				this.selectedType = tile.type;
+				for (const t of tiles) {
+					t.el?.removeClass('crc-template-tile--active');
 				}
-				tab.el?.addClass('crc-template-tab--active');
+				tile.el?.addClass('crc-template-tile--active');
 				this.renderTemplates(templateContainer);
 			});
 		}
 
 		// Initial render
 		this.renderTemplates(templateContainer);
-
-		// Variable reference section
-		const referenceSection = contentEl.createDiv({ cls: 'crc-template-reference crc-mt-4' });
-		referenceSection.createEl('h4', { text: 'Templater variable reference', cls: 'crc-mb-2' });
-
-		const referenceContent = referenceSection.createDiv({ cls: 'crc-template-reference-content' });
-		this.renderVariableReference(referenceContent);
-
-		// Schema documentation link
-		const schemaSection = contentEl.createDiv({ cls: 'crc-template-schema-link crc-mt-3' });
-		const schemaNote = schemaSection.createEl('p', { cls: 'crc-text--muted' });
-		schemaNote.appendText('These templates include common fields. For the complete list of supported frontmatter properties, see the ');
-		const schemaLink = schemaNote.createEl('a', {
-			text: 'Frontmatter schema reference',
-			cls: 'crc-link',
-			href: 'https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/reference/frontmatter-schema.md'
-		});
-		schemaLink.setAttribute('target', '_blank');
-		schemaNote.appendText('.');
-
-		// Advanced setup link (user scripts)
-		const advancedNote = schemaSection.createEl('p', { cls: 'crc-text--muted crc-mt-2' });
-		advancedNote.appendText('For advanced setup with reusable user scripts and cr_id generation functions, see the ');
-		const advancedLink = advancedNote.createEl('a', {
-			text: 'Templater integration guide',
-			cls: 'crc-link',
-			href: 'https://github.com/banisterious/obsidian-canvas-roots/wiki/Templater-Integration'
-		});
-		advancedLink.setAttribute('target', '_blank');
-		advancedNote.appendText('.');
 
 		// Close button
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons crc-mt-4' });
@@ -158,10 +136,19 @@ export class TemplateSnippetsModal extends Modal {
 	private renderTemplates(container: HTMLElement): void {
 		container.empty();
 
+		// Special case for reference tab - shows variable reference instead of templates
+		if (this.selectedType === 'reference') {
+			this.renderReferenceContent(container);
+			return;
+		}
+
 		let templates: TemplateSnippet[];
 		switch (this.selectedType) {
 			case 'person':
 				templates = this.getPersonTemplates();
+				break;
+			case 'event':
+				templates = this.getEventTemplates();
 				break;
 			case 'place':
 				templates = this.getPlaceTemplates();
@@ -172,12 +159,14 @@ export class TemplateSnippetsModal extends Modal {
 			case 'organization':
 				templates = this.getOrganizationTemplates();
 				break;
+			case 'universe':
+				templates = this.getUniverseTemplates();
+				break;
 			case 'proof':
 				templates = this.getProofTemplates();
 				break;
-			case 'event':
-				templates = this.getEventTemplates();
-				break;
+			default:
+				templates = [];
 		}
 
 		for (const template of templates) {
@@ -256,6 +245,41 @@ export class TemplateSnippetsModal extends Modal {
 	}
 
 	/**
+	 * Render the reference content (variable reference + documentation links)
+	 */
+	private renderReferenceContent(container: HTMLElement): void {
+		// Variable reference section
+		const referenceSection = container.createDiv({ cls: 'crc-template-reference-section' });
+		referenceSection.createEl('h4', { text: 'Templater variable reference', cls: 'crc-mb-2' });
+
+		const referenceContent = referenceSection.createDiv({ cls: 'crc-template-reference-content' });
+		this.renderVariableReference(referenceContent);
+
+		// Schema documentation link
+		const schemaSection = container.createDiv({ cls: 'crc-template-schema-link crc-mt-3' });
+		const schemaNote = schemaSection.createEl('p', { cls: 'crc-text--muted' });
+		schemaNote.appendText('These templates include common fields. For the complete list of supported frontmatter properties, see the ');
+		const schemaLink = schemaNote.createEl('a', {
+			text: 'Frontmatter schema reference',
+			cls: 'crc-link',
+			href: 'https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/reference/frontmatter-schema.md'
+		});
+		schemaLink.setAttribute('target', '_blank');
+		schemaNote.appendText('.');
+
+		// Advanced setup link (user scripts)
+		const advancedNote = schemaSection.createEl('p', { cls: 'crc-text--muted crc-mt-2' });
+		advancedNote.appendText('For advanced setup with reusable user scripts and cr_id generation functions, see the ');
+		const advancedLink = advancedNote.createEl('a', {
+			text: 'Templater integration guide',
+			cls: 'crc-link',
+			href: 'https://github.com/banisterious/obsidian-canvas-roots/wiki/Templater-Integration'
+		});
+		advancedLink.setAttribute('target', '_blank');
+		advancedNote.appendText('.');
+	}
+
+	/**
 	 * Get person note templates
 	 */
 	private getPersonTemplates(): TemplateSnippet[] {
@@ -280,7 +304,7 @@ ${p('died')}:
 			},
 			{
 				name: 'Full person note',
-				description: 'Complete template with family relationships and place fields',
+				description: 'Complete template with family relationships, dynamic blocks, and place fields',
 				template: `---
 ${p('cr_type')}: person
 ${p('cr_id')}: <% tp.date.now("YYYYMMDDHHmmss") %>
@@ -315,6 +339,16 @@ collection:
 ## Biography
 
 <% tp.file.cursor() %>
+
+## Family
+
+\`\`\`cr-family
+\`\`\`
+
+## Timeline
+
+\`\`\`cr-timeline
+\`\`\`
 
 ## Notes
 
@@ -707,6 +741,103 @@ ${p('collection')}:
 ## Notable members
 
 ## See also
+
+`
+			}
+		];
+	}
+
+	/**
+	 * Get universe note templates
+	 */
+	private getUniverseTemplates(): TemplateSnippet[] {
+		const p = (canonical: string) => getPropertyName(canonical, this.propertyAliases);
+
+		return [
+			{
+				name: 'Basic universe note',
+				description: 'Minimal template for fictional worlds and settings',
+				template: `---
+${p('cr_type')}: universe
+${p('cr_id')}: <% tp.date.now("YYYYMMDDHHmmss") %>
+${p('name')}: "<% tp.file.title %>"
+description:
+status: active
+---
+
+# <% tp.file.title %>
+
+<% tp.file.cursor() %>`
+			},
+			{
+				name: 'Full universe note',
+				description: 'Complete template with all universe fields',
+				template: `---
+${p('cr_type')}: universe
+${p('cr_id')}: <% tp.date.now("YYYYMMDDHHmmss") %>
+${p('name')}: "<% tp.file.title %>"
+description: "<% tp.system.prompt("Brief description of this universe?", "", false) %>"
+author: "<% tp.system.prompt("Creator/author of this world?", "", false) %>"
+genre: <% tp.system.suggester(["Fantasy", "Science Fiction", "Historical Fiction", "Alternate History", "Horror", "Mystery", "Other"], ["fantasy", "scifi", "historical", "alt_history", "horror", "mystery", "other"]) %>
+status: <% tp.system.suggester(["Active", "Draft", "Archived"], ["active", "draft", "archived"]) %>
+default_calendar:
+default_map:
+---
+
+# <% tp.file.title %>
+
+## Overview
+
+<% tp.file.cursor() %>
+
+## History
+
+## Major locations
+
+## Notable figures
+
+## Custom date systems
+
+## Maps
+
+`
+			},
+			{
+				name: 'Universe with calendar',
+				description: 'Template including custom date system setup',
+				template: `---
+${p('cr_type')}: universe
+${p('cr_id')}: <% tp.date.now("YYYYMMDDHHmmss") %>
+${p('name')}: "<% tp.file.title %>"
+description:
+author:
+genre: fantasy
+status: active
+default_calendar: "<% tp.file.title %>-calendar"
+---
+
+# <% tp.file.title %>
+
+## Overview
+
+<% tp.file.cursor() %>
+
+## Custom calendar
+
+This universe uses a custom date system. Define your calendar in the Date Systems settings.
+
+### Eras
+-
+
+### Months
+-
+
+### Notable dates
+-
+
+## Major locations
+
+## Notable figures
 
 `
 			}
