@@ -264,10 +264,10 @@ export const TOOL_CONFIGS: ToolConfig[] = [
 		description: 'Open interactive family chart view'
 	},
 	{
-		id: 'report-wizard',
-		name: 'Report Wizard',
-		icon: 'file-text',
-		description: 'Generate reports with the wizard'
+		id: 'reports',
+		name: 'Reports',
+		icon: 'bar-chart',
+		description: 'Narrative reports and visual charts'
 	}
 ];
 

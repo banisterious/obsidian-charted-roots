@@ -415,10 +415,10 @@ export class ControlCenterModal extends Modal {
 				this.plugin.activateFamilyChartView(undefined, true, true);
 				this.close();
 				break;
-			case 'report-wizard':
-				// Import and open report wizard
-				import('../reports/ui/report-wizard-modal').then(({ ReportWizardModal }) => {
-					new ReportWizardModal(this.plugin).open();
+			case 'reports':
+				// Import and open reports hub modal
+				import('./reports-hub-modal').then(({ ReportsHubModal }) => {
+					new ReportsHubModal(this.app, this.plugin).open();
 				});
 				break;
 		}

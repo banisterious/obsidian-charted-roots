@@ -7980,3 +7980,124 @@
 .crc-media-folder-filter-toggle:has(.crc-media-folder-filter-checkbox:checked):hover {
   background: var(--interactive-accent-hover);
 }
+
+/* ==========================================================================
+   Reports Hub Modal
+   ========================================================================== */
+
+.modal:has(.crc-reports-hub-modal) {
+  max-width: 500px;
+  width: 90vw;
+}
+
+.modal:has(.crc-reports-hub-modal) .modal-content {
+  padding: 0;
+}
+
+.crc-reports-hub-modal {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.crc-reports-hub-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.crc-reports-hub-header-icon {
+  width: 36px;
+  height: 36px;
+  background: rgba(var(--interactive-accent-rgb), 0.15);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--interactive-accent);
+}
+
+.crc-reports-hub-header-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.crc-reports-hub-header h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Action cards grid */
+.crc-reports-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  padding: 24px;
+}
+
+@media (max-width: 500px) {
+  .crc-reports-hub-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Action card */
+.crc-reports-hub-card {
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 10px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.crc-reports-hub-card:hover {
+  border-color: var(--interactive-accent);
+  background: rgba(var(--interactive-accent-rgb), 0.08);
+}
+
+.crc-reports-hub-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.crc-reports-hub-card-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crc-reports-hub-card-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Icon color variants */
+.crc-reports-hub-card-icon--narrative {
+  background: rgba(99, 102, 241, 0.15);
+  color: rgb(99, 102, 241);
+}
+
+.crc-reports-hub-card-icon--visual {
+  background: rgba(16, 185, 129, 0.15);
+  color: rgb(16, 185, 129);
+}
+
+.crc-reports-hub-card-title {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.crc-reports-hub-card-description {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
