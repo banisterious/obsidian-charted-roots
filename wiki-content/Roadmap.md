@@ -8,6 +8,7 @@ This document outlines planned features for Canvas Roots. For completed features
 
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
+  - [Import/Export Hub](#importexport-hub) ⚡ High
   - [Post-Import Cleanup Wizard](#post-import-cleanup-wizard) 📋 Medium
   - [Universe Management Enhancements](#universe-management-enhancements) 💡 Low
   - [Calendarium Integration](#calendarium-integration) 💡 Low
@@ -60,6 +61,66 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 | ⚡ High | Core workflow | Completes essential data portability |
 | 📋 Medium | User value | Highly requested sharing/output features |
 | 💡 Low | Specialized | Advanced use cases, niche workflows |
+
+---
+
+### Import/Export Hub
+
+**Priority:** ⚡ High — Core data portability with guided wizards
+
+**Summary:** Replace the Import/Export tab in Control Center with a modal-based hub that launches step-by-step wizards for importing and exporting genealogical data. Integrates reference numbering directly into the import flow.
+
+**Problem Statement:**
+
+The current import/export experience is fragmented:
+- **Scattered UI:** Import/export lives in a Control Center tab, but progress displays in separate modals
+- **Disconnected numbering:** Post-import reference numbering is a separate modal, not integrated into the import workflow
+- **Limited guidance:** No step-by-step flow for format selection, options, and preview
+
+**Hub Modal:**
+
+Two-card layout (matching Reports Hub and Media Manager patterns):
+- **Import Card** — Launch import wizard for GEDCOM, Gramps, CSV
+- **Export Card** — Launch export wizard with folder and privacy options
+
+**Import Wizard (7 Steps):**
+
+| Step | Purpose |
+|------|---------|
+| 1. Format | Select GEDCOM 5.5.1, GEDCOM X (JSON), Gramps XML/.gpkg, or CSV |
+| 2. File | Drag-and-drop file picker |
+| 3. Options | Entity types, target folder, conflict handling |
+| 4. Preview | Entity counts, duplicate warnings |
+| 5. Import | Progress with real-time log |
+| 6. Numbering | Optional reference numbering (Ahnentafel, d'Aboville, Henry, Generation) |
+| 7. Complete | Summary with actions |
+
+**Export Wizard (6 Steps):**
+
+| Step | Purpose |
+|------|---------|
+| 1. Format | Select GEDCOM 5.5.1, GEDCOM X (JSON), Gramps XML, or CSV |
+| 2. Folders | Preference folders or custom folder pickers |
+| 3. Options | Privacy controls, inclusions (sources, places, notes, media) |
+| 4. Preview | Entity counts, privacy summary |
+| 5. Export | Progress with real-time log |
+| 6. Complete | Download/save options |
+
+**Key Features:**
+
+- **Gramps media support:** `.gpkg` format includes embedded media, extracted and linked during import
+- **Integrated numbering:** Root person picker with four numbering systems (replaces separate post-import modal)
+- **Privacy controls:** Living person exclusion with redact vs. exclude options, preview warnings
+- **Folder selection:** "Preference folders" uses configured paths; "Specify folders" allows custom selection
+
+**Technical Notes:**
+
+- Reuses existing import/export logic (GEDCOM parsing, export generation)
+- Reuses `ReferenceNumberingService` from `src/core/reference-numbering.ts`
+- New files: `import-export-hub-modal.ts`, `import-wizard-modal.ts`, `export-wizard-modal.ts`
+- Updates `TOOL_CONFIGS` (add hub), removes from `TAB_CONFIGS` (remove tab)
+
+See [Import/Export Hub Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/import-export-hub-plan.md) for implementation details.
 
 ---
 
