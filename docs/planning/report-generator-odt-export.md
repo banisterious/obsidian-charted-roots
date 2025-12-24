@@ -1,8 +1,9 @@
 # Report Generator ODT Export
 
-**Status:** Planned
+**Status:** In Progress (Phases 1-3 Complete)
 **Priority:** Medium
 **Created:** 2025-12-23
+**Updated:** 2025-12-24
 
 ---
 
@@ -238,28 +239,31 @@ ${bodyContent}
 
 ## Implementation Plan
 
-### Phase 1: Core ODT Generation
+### Phase 1: Core ODT Generation ✅
 
-1. Create `OdtGenerator` class in `src/reports/services/odt-generator.ts`
-2. Implement basic XML generation (mimetype, manifest, styles, content)
-3. Add markdown-to-ODT content conversion
-4. Test with simple text output
+1. ✅ Create `OdtGenerator` class in `src/reports/services/odt-generator.ts`
+2. ✅ Implement basic XML generation (mimetype, manifest, styles, content)
+3. ✅ Add markdown-to-ODT content conversion
+4. ✅ Test with simple text output
 
-### Phase 2: Report Generator Integration
+### Phase 2: Report Generator Integration ✅
 
-1. Add "ODT" option to output format selector in Report Generator modal
-2. Wire up ODT generation to report output pipeline
-3. Generate ODT from report markdown content
-4. Add cover page support using existing cover page options
+1. ✅ Add "ODT" option to output format selector in Report Generator modal
+2. ✅ Wire up ODT generation to report output pipeline
+3. ✅ Generate ODT from report markdown content
+4. ✅ Add cover page support (infrastructure in place, disabled for simplicity)
 
-### Phase 3: Rich Content Support
+### Phase 3: Rich Content Support ✅
 
-1. Add support for tables (common in reports)
-2. Add support for lists (bullet points, numbered)
-3. Add support for bold/italic text
-4. Handle wikilinks (convert to plain text or hyperlinks)
+1. ✅ Add support for tables with styled headers and cell padding
+2. ✅ Add support for lists (bullet points, numbered)
+3. ✅ Add support for bold/italic text
+4. ✅ Handle wikilinks (converted to bold text)
+5. ✅ Add small caps styling for genealogy labels (Husband, Wife, Birth, etc.)
 
-### Phase 4: Image Embedding
+### Phase 4: Image Embedding (Deferred)
+
+Depends on Visual Tree PDF Enhancements for improved pdfmake rendering quality.
 
 1. Add image embedding capability for visual tree reports
 2. Coordinate with Family Chart Export Modal ODT export
@@ -267,10 +271,10 @@ ${bodyContent}
 
 ### Phase 5: Polish & Testing
 
-1. Test with LibreOffice Writer
+1. ✅ Test with LibreOffice Writer
 2. Test with Microsoft Word
 3. Test with Google Docs (via upload)
-4. Validate document merging workflow
+4. Validate document merging workflow (deferred to Phase 4)
 5. Handle edge cases (very large reports, many images)
 
 ---
@@ -278,8 +282,8 @@ ${bodyContent}
 ## File Locations
 
 - **ODT Generator:** `src/reports/services/odt-generator.ts`
-- **Report Generator Modal:** `src/reports/modals/report-generator-modal.ts`
-- **Export type definitions:** `src/reports/types.ts`
+- **Report Generator Modal:** `src/reports/ui/report-generator-modal.ts`
+- **Report type definitions:** `src/reports/types/report-types.ts`
 
 ---
 
@@ -313,29 +317,30 @@ All existing report types should support ODT export:
 
 ## Success Criteria
 
-### Phase 1-2: Basic ODT Export
-- [ ] ODT option appears in Report Generator output format selector
-- [ ] Basic text reports export as valid ODT files
-- [ ] ODT files open in LibreOffice Writer without errors
+### Phase 1-2: Basic ODT Export ✅
+- [x] ODT option appears in Report Generator output format selector
+- [x] Basic text reports export as valid ODT files
+- [x] ODT files open in LibreOffice Writer without errors
 - [ ] ODT files open in Microsoft Word without errors
-- [ ] Cover page renders correctly when enabled
+- [x] Cover page infrastructure in place (disabled for simplicity)
 
-### Phase 3: Rich Content
-- [ ] Tables render correctly in ODT output
-- [ ] Lists (bullet and numbered) render correctly
-- [ ] Bold and italic text preserved
-- [ ] Wikilinks handled gracefully
+### Phase 3: Rich Content ✅
+- [x] Tables render correctly in ODT output
+- [x] Lists (bullet and numbered) render correctly
+- [x] Bold and italic text preserved
+- [x] Wikilinks handled gracefully (converted to bold text)
+- [x] Small caps for genealogy labels
 
-### Phase 4: Images
+### Phase 4: Images (Deferred)
 - [ ] Visual tree reports can embed chart images
 - [ ] Image sizing is appropriate for page
 - [ ] Images display correctly in word processors
 
-### Phase 5: Workflow Validation
-- [ ] User can export Descendant Report as ODT
-- [ ] User can export visual tree as ODT (from Family Chart)
-- [ ] User can merge the two documents in LibreOffice/Word
-- [ ] Merged document retains formatting from both sources
+### Phase 5: Workflow Validation (Partial)
+- [x] User can export text reports as ODT
+- [ ] User can export visual tree as ODT (from Family Chart) — deferred
+- [ ] User can merge the two documents in LibreOffice/Word — deferred
+- [ ] Merged document retains formatting from both sources — deferred
 
 ---
 
