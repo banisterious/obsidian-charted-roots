@@ -134,114 +134,167 @@ Same as Markdown export, plus:
 
 ## Wizard UI Design
 
-### Approach Comparison
+### Design Inspiration: Family Chart Export Wizard
 
-| Approach | Pros | Cons |
-|----------|------|------|
-| **Current Modal** | Quick for power users, familiar pattern | Overwhelming, hard to scale |
-| **Multi-Step Wizard** | Focused steps, progressive disclosure, scalable | More clicks, navigation complexity |
-| **Tabbed Modal** | Organized sections, single view | Still shows all options, limited scalability |
-| **Hybrid: Quick + Advanced** | Best of both worlds | Two code paths to maintain |
+The Report Wizard follows the same two-step pattern as the Family Chart Export wizard (`src/ui/views/family-chart-export-wizard.ts`):
 
-### Recommended: Multi-Step Wizard with Quick Generate
+| Family Chart Export | Report Generator |
+|---------------------|------------------|
+| Step 1: Quick Export | Step 1: Quick Generate |
+| Step 2: Customize | Step 2: Customize |
 
-A hybrid approach:
+This provides consistency across the plugin and a familiar UX pattern.
 
-1. **Quick Generate** (default for repeat users)
-   - Remembers last settings
-   - Single-click generate with previous options
-   - "Customize" button to enter wizard
+### Two-Step Wizard Structure
 
-2. **Full Wizard** (for new users or customization)
-   - Step-by-step with clear progression
-   - Back/Next navigation
-   - Optional steps can be skipped
+#### Step 1: Quick Generate
 
-### Proposed Wizard Steps
+The primary screen where most users complete their task. Contains:
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  Generate Report                            Step 1 of 4 │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  ○ ○ ○ ○  (step indicators)                            │
-│                                                         │
-│  STEP 1: Choose Report Type                            │
-│  ─────────────────────────                             │
-│                                                         │
-│  [Category Filter: All ▼]                              │
-│                                                         │
-│  ┌─────────────────────┐  ┌─────────────────────┐     │
-│  │ 📊 Ahnentafel       │  │ 📊 Pedigree Chart   │     │
-│  │ Numbered ancestors  │  │ ASCII ancestor tree │     │
-│  └─────────────────────┘  └─────────────────────┘     │
-│  ...                                                   │
-│                                                         │
-│                              [Cancel]  [Next →]        │
-└─────────────────────────────────────────────────────────┘
-```
-
-#### Step 1: Report Type
-- Category filter chips
-- Report cards with icons and descriptions
-- Selection highlights
-
-#### Step 2: Subject Selection
-- Varies by report type:
-  - Person picker (most reports)
-  - Place picker (Place Summary)
-  - Universe picker (Universe Overview)
-  - Collection picker (Collection Overview)
-  - None (Media Inventory, Gaps Report)
-- Generation/depth options where applicable
-
-#### Step 3: Content Options
-- Report-specific toggles:
-  - Include spouses
-  - Include sources
-  - Include details
-  - Include children
-  - Date range (Timeline)
-  - etc.
-- Preview of what will be included (optional)
-
-#### Step 4: Output & Styling
-- Output method selection (Vault / MD / PDF / ODT)
-- **Conditional sections based on output:**
-  - **All outputs:** Date format, custom title, custom subtitle, introductory notes
-  - **PDF only:** Page size, cover page, logo, accent color, header/footer options, watermark
-  - **ODT only:** Cover page, table of contents toggle
-  - **Vault only:** Output folder, filename template
-
-### Quick Generate Feature
-
-For users who generate reports frequently:
+1. **Report Type Selection** — Tile-based category picker with expandable report types
+2. **Subject Selection** — Person/place/universe picker (varies by report type)
+3. **Output Format** — Format tiles (Vault, PDF, ODT, MD)
+4. **Filename** — Editable filename with format extension
 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  Generate Report                                        │
 ├─────────────────────────────────────────────────────────┤
+│  ① ─── ②   Step 1 of 2: Quick Generate                 │
 │                                                         │
-│  RECENT                                                │
-│  ┌───────────────────────────────────────────────────┐ │
-│  │ Ahnentafel for John Smith → PDF                   │ │
-│  │ [Generate] [Edit]                                 │ │
-│  └───────────────────────────────────────────────────┘ │
+│  REPORT TYPE                                            │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐       │
+│  │ 📋 Genealo- │ │ 📊 Statis-  │ │ 🌳 Visual   │       │
+│  │ gical (4)   │ │ tical (3)   │ │ Trees (4)   │       │
+│  └─────────────┘ └─────────────┘ └─────────────┘       │
+│  ┌─────────────┐ ┌─────────────┐                       │
+│  │ 🔗 Relation-│ │ 🌍 Place    │  ← Single-report     │
+│  │ ship Finder │ │ Summary     │    categories go      │
+│  └─────────────┘ └─────────────┘    directly to report │
 │                                                         │
-│  PRESETS                                               │
-│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐      │
-│  │ Family      │ │ Quick       │ │ Research    │      │
-│  │ Archive     │ │ Share       │ │ Draft       │      │
-│  └─────────────┘ └─────────────┘ └─────────────┘      │
+│  ▼ Genealogical Reports (expanded)                     │
+│  ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌─────────┐│
+│  │Ahnentafel │ │Descendant │ │Family Grp │ │Pedigree ││
+│  │           │ │Report     │ │Sheet      │ │Chart    ││
+│  └───────────┘ └───────────┘ └───────────┘ └─────────┘│
+│  ─────────────────────────────────────────────────────  │
+│  SUBJECT                                                │
+│  [👤 Select a person...]                               │
+│  ─────────────────────────────────────────────────────  │
+│  FORMAT                                                 │
+│  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐          │
+│  │ Vault  │ │  PDF   │ │  ODT   │ │   MD   │          │
+│  └────────┘ └────────┘ └────────┘ └────────┘          │
+│  ─────────────────────────────────────────────────────  │
+│  FILENAME                                               │
+│  [family-group-sheet-john-smith-2025-12-24    ] .pdf   │
 │                                                         │
-│  [+ New Report]                                        │
-│                                                         │
+│                    [Cancel]  [Customize →]  [Generate] │
 └─────────────────────────────────────────────────────────┘
 ```
 
-**Recent Reports:** Shows the last 3-5 generated reports with one-click regenerate or edit options.
+**Key behaviors:**
+- Clicking a multi-report category (Genealogical, Statistical, Visual) expands to show report type tiles
+- Clicking a single-report category (Relationship Finder, Place Summary) selects that report directly
+- Subject picker adapts to report type (person, place, universe, collection, or none)
+- "Generate" button available immediately once required fields are filled
+- "Customize →" advances to Step 2 for power users
 
-**Presets:** User-saved configurations for common workflows (see Preset System below).
+#### Step 2: Customize
+
+Advanced options for power users. Contains:
+
+1. **Content Options** — Report-specific toggles (spouses, sources, details, generations)
+2. **Format-Specific Options** — Conditional on selected format:
+   - **PDF:** Page size, cover page, logo, accent color, header/footer
+   - **ODT:** Cover page, table of contents
+   - **Vault:** Output folder
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Generate Report                                        │
+├─────────────────────────────────────────────────────────┤
+│  ① ─── ②   Step 2 of 2: Customize                      │
+│                                                         │
+│  CONTENT OPTIONS                                        │
+│  ┌─────────────────────────────────────────────────────┐│
+│  │ ○ Include spouses    ○ Include sources             ││
+│  │ ○ Include details    Generations: [5 ▼]            ││
+│  └─────────────────────────────────────────────────────┘│
+│  ─────────────────────────────────────────────────────  │
+│  PDF OPTIONS                                            │
+│  Page size: [A4 ▼]                                     │
+│  ☑ Include cover page                                  │
+│    Title: [Family Group Sheet: John Smith         ]    │
+│    Subtitle: [                                    ]    │
+│  ─────────────────────────────────────────────────────  │
+│  ▶ Advanced Styling (collapsed)                        │
+│  ─────────────────────────────────────────────────────  │
+│  ESTIMATE                                               │
+│  People: 45  |  Est. size: ~120KB                      │
+│                                                         │
+│                         [← Back]              [Generate]│
+└─────────────────────────────────────────────────────────┘
+```
+
+**Key behaviors:**
+- Shows only options relevant to selected format
+- Advanced styling collapsed by default (accent color, watermark, etc.)
+- "Back" returns to Step 1 with all selections preserved
+- Estimate panel shows scope (like Family Chart Export wizard)
+
+### Category and Report Type Tiles
+
+**Categories (5 tiles):**
+
+| Category | Icon | Reports | Behavior |
+|----------|------|---------|----------|
+| Genealogical | 📋 | 4 | Expands to show tiles |
+| Statistical | 📊 | 3 | Expands to show tiles |
+| Visual Trees | 🌳 | 4 | Expands to show tiles |
+| Relationship Finder | 🔗 | 1 | Direct selection |
+| Place Summary | 🌍 | 1 | Direct selection |
+
+**Report Types by Category:**
+
+| Genealogical | Statistical | Visual Trees |
+|--------------|-------------|--------------|
+| Ahnentafel | Data Quality | Pedigree Tree |
+| Descendant Report | Gaps Report | Descendant Tree |
+| Family Group Sheet | Timeline | Hourglass Tree |
+| Pedigree Chart | | Fan Chart |
+
+### Footer Layout
+
+Matches Family Chart Export wizard pattern:
+
+- **Step 1:** `[Cancel]` on left, `[Customize →]` + `[Generate]` on right
+- **Step 2:** `[← Back]` on left, `[Generate]` on right
+
+### UI Flexibility Note
+
+The tile-based approach for report type selection can be swapped for a dropdown if testing reveals scrolling issues. The underlying wizard structure (two steps, state management, navigation) remains the same regardless of selection UI.
+
+### Future: Presets (Phase 3)
+
+After the core wizard is implemented, add preset support:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  PRESETS                                                │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐       │
+│  │ ⚡ Quick    │ │ 📄 Full     │ │ 🖨️ Print    │       │
+│  │ Share      │ │ Ancestry    │ │ Ready       │       │
+│  │ MD·minimal │ │ PDF·5 gen   │ │ PDF·cover   │       │
+│  └─────────────┘ └─────────────┘ └─────────────┘       │
+│                                                         │
+│  ──────────────── or ────────────────                  │
+│                                                         │
+│  [+ New Report]                                        │
+└─────────────────────────────────────────────────────────┘
+```
+
+Presets appear above the report type selection. Clicking a preset pre-fills all options and prompts only for subject selection.
 
 ---
 
@@ -249,43 +302,37 @@ For users who generate reports frequently:
 
 ### State Management
 
-Current approach uses instance variables in the modal class. For wizard:
+State is organized by the two-step structure:
 
 ```typescript
 interface ReportWizardState {
-  // Step 1
+  // Step 1: Quick Generate
   reportType: ReportType | null;
-
-  // Step 2
+  selectedCategory: ReportCategory | null;  // For UI state
   subject: {
     personCrId?: string;
+    personName?: string;
     placeCrId?: string;
+    placeName?: string;
     universeCrId?: string;
     collectionId?: string;
   };
-  generationLimit: number;
+  outputMethod: 'vault' | 'download-md' | 'download-pdf' | 'download-odt';
+  filename: string;
 
-  // Step 3
+  // Step 2: Customize
   contentOptions: {
     includeSpouses: boolean;
     includeSources: boolean;
     includeDetails: boolean;
+    includeChildren: boolean;
+    maxGenerations: number;
     // ... report-specific options
-  };
-
-  // Step 4
-  outputMethod: 'vault' | 'download-md' | 'download-pdf' | 'download-odt';
-  commonOptions: {
-    dateFormat: 'mdy' | 'dmy' | 'ymd';
-    customTitle: string;
-    customSubtitle: string;
-    introductoryNotes: string;
   };
   pdfOptions: PdfOptions;
   odtOptions: OdtOptions;
   vaultOptions: {
     outputFolder: string;
-    filenameTemplate: string;
   };
 }
 ```
@@ -294,21 +341,20 @@ interface ReportWizardState {
 
 ```
 src/reports/ui/
-├── report-generator-modal.ts      # Entry point, manages wizard flow
+├── report-wizard-modal.ts         # New wizard modal (replaces report-generator-modal.ts)
 ├── wizard/
-│   ├── WizardContainer.ts         # Step navigation, state management
 │   ├── steps/
-│   │   ├── ReportTypeStep.ts      # Step 1
-│   │   ├── SubjectStep.ts         # Step 2
-│   │   ├── ContentOptionsStep.ts  # Step 3
-│   │   └── OutputStep.ts          # Step 4
+│   │   ├── QuickGenerateStep.ts   # Step 1: Report type, subject, format, filename
+│   │   └── CustomizeStep.ts       # Step 2: Content options, format-specific options
 │   ├── components/
-│   │   ├── StepIndicator.ts       # Progress dots
-│   │   ├── ReportCard.ts          # Clickable report type card
-│   │   ├── PersonPicker.ts        # Reusable person selector
-│   │   └── ColorPicker.ts         # Accent color selector
-│   └── quick-generate/
-│       └── QuickGenerateView.ts   # Last-used quick generate
+│   │   ├── StepIndicator.ts       # Progress dots (① ─── ②)
+│   │   ├── CategoryTile.ts        # Clickable category card
+│   │   ├── ReportTypeTile.ts      # Clickable report type card
+│   │   ├── FormatTile.ts          # Output format selection card
+│   │   └── EstimatePanel.ts       # People count, file size estimate
+│   └── presets/                   # Phase 3
+│       └── PresetCards.ts         # Preset selection UI
+├── report-generator-modal.ts      # Legacy modal (deprecated, kept for compatibility)
 ```
 
 ### Backward Compatibility
@@ -316,26 +362,30 @@ src/reports/ui/
 - Existing command palette command continues to work
 - API for programmatic report generation unchanged
 - Settings migration for saved preferences
+- Legacy `ReportGeneratorModal` remains available during transition
 
 ---
 
 ## Phased Implementation
 
-### Phase 1: Foundation
-- Refactor modal into wizard container with step components
-- Implement basic navigation (back/next/cancel)
-- Step 1 (Report Type) and Step 2 (Subject) functional
-- No new options yet, just reorganization
+### Phase 1: Two-Step Wizard Foundation
+- Create new `ReportWizardModal` class
+- Implement step navigation (step indicator, back/next/cancel)
+- Step 1: Category tiles, report type tiles, subject picker, format tiles, filename
+- Step 2: Content options, format-specific options
+- Footer layout matching Family Chart Export wizard
+- Wire up report generation with existing services
 
-### Phase 2: Content & Output Steps
-- Step 3 (Content Options) with report-specific toggles
-- Step 4 (Output) with current options organized by output type
-- Recent Reports tracking (last 5 generated)
+### Phase 2: Polish & Estimate
+- Add estimate panel (people count, file size)
+- Remember last-used settings per report type
+- Smooth transitions between steps
+- Keyboard navigation support
 
 ### Phase 3: Preset System
 - Preset data model and storage
-- "Save as Preset" button in wizard step 4
-- Quick Generate home screen with preset cards
+- "Save as Preset" button in Step 2
+- Preset cards at top of Step 1
 - Preset management (edit, duplicate, delete)
 - Optional: Built-in starter presets
 
@@ -507,7 +557,7 @@ interface RecentReportEntry {
 
 ## Open Questions
 
-1. **Step count trade-off:** 4 steps feels right, but should Content Options (Step 3) be optional/skippable for simple reports?
+1. **Tile vs dropdown:** If tile-based report selection causes scrolling issues, should we switch to a dropdown? (Note: UI is designed to be swappable.)
 
 2. **Mobile experience:** Obsidian mobile has limited screen space. Should wizard adapt to smaller screens?
 
@@ -578,4 +628,7 @@ This could be combined with the wizard for advanced options.
 | 2025-12-20 | 6-phase implementation plan | Allows incremental delivery with foundation first |
 | 2025-12-23 | Added Phase 6: ODT Export | Editable document format enables merging with narrative text; uses same JSZip approach as Family Chart ODT export |
 | 2025-12-23 | Renumbered Advanced Features to Phase 7 | ODT export is higher priority than advanced features |
+| 2025-12-24 | Redesigned as two-step wizard | Align with Family Chart Export wizard pattern; reduces from 4 steps to 2 for faster workflow |
+| 2025-12-24 | Tile-based report type selection | Visual consistency with export wizard; can swap to dropdown if scrolling becomes an issue |
+| 2025-12-24 | Category expansion for multi-report categories | Single-report categories (Relationship Finder, Place Summary) select directly; multi-report categories expand to show tiles |
 | | | |

@@ -1,9 +1,10 @@
 # Visual Tree PDF Enhancements
 
-**Status:** Planned
+**Status:** Complete (Phase 1)
 **Priority:** Low
 **Extracted from:** `archive/tree-visualization-overhaul.md` (Phase 3: Library Consolidation)
 **Created:** 2025-12-23
+**Updated:** 2025-12-24
 
 ---
 
@@ -192,13 +193,15 @@ Implement in phases, starting with lowest risk:
 
 ### Phase 1: Quick Quality Improvements
 
-1. Modify `renderVisualTree()` in `pdf-report-renderer.ts`:
-   - Remove explicit `height` from image content
-   - Test output quality
+1. ✅ Modify `renderVisualTree()` in `pdf-report-renderer.ts`:
+   - ✅ Remove explicit `height` from image content (2025-12-24)
+   - ✅ Also applied to `renderVisualTrees()` for multi-page exports
+   - ✅ Tested - insufficient on its own
 
-2. If insufficient, increase scale factor in `visual-tree-svg-renderer.ts`:
-   - Change scale from 2 to 3 or 4
-   - Measure file size impact
+2. ✅ Increase scale factor in `visual-tree-svg-renderer.ts`:
+   - ✅ Changed scale from 2× to 4× (2025-12-24)
+   - ✅ Tested - significant quality improvement, now comparable to jsPDF
+   - Note: File size increase is acceptable trade-off for quality
 
 ### Phase 2: Dynamic Page Sizing
 

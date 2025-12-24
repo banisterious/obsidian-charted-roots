@@ -1869,14 +1869,13 @@ export class PdfReportRenderer {
 			margin: [0, 0, 0, 20]
 		});
 
-		// Add the tree image
+		// Add the tree image - only specify width to let pdfmake maintain aspect ratio
+		// (specifying both width and height causes resampling which degrades quality)
 		const imageWidth = layout.page.width - layout.margins.left - layout.margins.right;
-		const imageHeight = layout.page.height - layout.margins.top - layout.margins.bottom - 80; // Reserve space for title
 
 		content.push({
 			image: imageDataUrl,
 			width: imageWidth,
-			height: imageHeight,
 			alignment: 'center'
 		});
 
@@ -1960,14 +1959,12 @@ export class PdfReportRenderer {
 			const svgString = svgRenderer.renderToSvg(layout, options);
 			const imageDataUrl = await svgRenderer.svgToDataUrl(svgString, layout.page.width, layout.page.height);
 
-			// Add the tree image
+			// Add the tree image - only specify width to let pdfmake maintain aspect ratio
 			const imageWidth = layout.page.width - layout.margins.left - layout.margins.right;
-			const imageHeight = layout.page.height - layout.margins.top - layout.margins.bottom - 80;
 
 			content.push({
 				image: imageDataUrl,
 				width: imageWidth,
-				height: imageHeight,
 				alignment: 'center'
 			});
 		}

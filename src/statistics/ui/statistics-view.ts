@@ -26,7 +26,7 @@ import type {
 import { VIEW_TYPE_STATISTICS, SECTION_IDS } from '../constants/statistics-constants';
 import { REPORT_METADATA } from '../../reports/types/report-types';
 import type { ReportType } from '../../reports/types/report-types';
-import { ReportGeneratorModal } from '../../reports/ui/report-generator-modal';
+import { ReportWizardModal, type ReportWizardOptions } from '../../reports/ui/report-wizard-modal';
 import { UnifiedTreeWizardModal } from '../../trees/ui/unified-tree-wizard-modal';
 
 /**
@@ -1042,7 +1042,7 @@ export class StatisticsView extends ItemView {
 			});
 
 			generateBtn.addEventListener('click', () => {
-				const modal = new ReportGeneratorModal(this.app, this.plugin, {
+				const modal = new ReportWizardModal(this.plugin, {
 					reportType: type as ReportType
 				});
 				modal.open();

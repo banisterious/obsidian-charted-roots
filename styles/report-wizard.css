@@ -1,0 +1,734 @@
+/* ==========================================================================
+   REPORT WIZARD
+   ========================================================================== */
+
+/* Modal sizing */
+.cr-report-wizard {
+  max-width: 480px;
+  width: 480px;
+}
+
+.cr-report-wizard .modal-content {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 80vh;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   HEADER
+   ========================================================================== */
+
+.cr-report-wizard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+/* Title with icon */
+.cr-report-wizard .cr-wizard-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.cr-report-wizard .cr-wizard-title svg {
+  color: var(--text-accent);
+}
+
+.cr-report-wizard-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+
+.cr-report-wizard-close:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+/* ==========================================================================
+   STEP PROGRESS INDICATOR
+   ========================================================================== */
+
+.cr-report-wizard .cr-wizard-progress {
+  margin: 0;
+  padding: 6px 16px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-report-wizard .cr-wizard-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 4px;
+}
+
+.cr-report-wizard .cr-wizard-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+}
+
+.cr-report-wizard .cr-wizard-step--active {
+  opacity: 1;
+}
+
+.cr-report-wizard .cr-wizard-step--completed {
+  opacity: 0.8;
+}
+
+.cr-report-wizard .cr-wizard-step-number {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--background-modifier-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.cr-report-wizard .cr-wizard-step--active .cr-wizard-step-number {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.cr-report-wizard .cr-wizard-step--completed .cr-wizard-step-number {
+  background: var(--color-green);
+  color: white;
+}
+
+.cr-report-wizard .cr-wizard-step--completed .cr-wizard-step-number svg {
+  width: 14px;
+  height: 14px;
+}
+
+.cr-report-wizard .cr-wizard-step-info {
+  display: none;
+}
+
+.cr-report-wizard .cr-wizard-step--active .cr-wizard-step-info {
+  display: block;
+}
+
+.cr-report-wizard .cr-wizard-step-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.cr-report-wizard .cr-wizard-connector {
+  width: 16px;
+  height: 2px;
+  background: var(--background-modifier-border);
+  margin: 0 3px;
+}
+
+.cr-report-wizard .cr-wizard-connector--completed {
+  background: var(--color-green);
+}
+
+/* Step info below circles */
+.cr-report-step-info {
+  text-align: center;
+}
+
+.cr-report-step-counter {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.cr-report-step-description {
+  font-size: 13px;
+  color: var(--text-normal);
+}
+
+/* ==========================================================================
+   CONTENT
+   ========================================================================== */
+
+.cr-report-wizard-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px 16px;
+  min-height: 0;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   SECTIONS
+   ========================================================================== */
+
+.cr-report-section {
+  margin-bottom: 8px;
+}
+
+.cr-report-section-title {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.cr-report-separator {
+  margin: 6px 0;
+  border: none;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+/* ==========================================================================
+   REPORT TYPE DROPDOWN
+   ========================================================================== */
+
+.cr-report-dropdown-row {
+  margin-bottom: 8px;
+}
+
+.cr-report-dropdown {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 8px 32px 8px 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 5px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 13px;
+  line-height: 1.4;
+  min-height: 36px;
+  height: auto;
+  cursor: pointer;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  text-overflow: ellipsis;
+}
+
+.cr-report-dropdown:hover {
+  border-color: var(--interactive-accent);
+}
+
+.cr-report-dropdown:focus {
+  border-color: var(--interactive-accent);
+  outline: none;
+  box-shadow: 0 0 0 2px hsla(var(--interactive-accent-hsl), 0.2);
+}
+
+.cr-report-dropdown optgroup {
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cr-report-dropdown option {
+  font-weight: normal;
+  color: var(--text-normal);
+  padding: 8px 12px;
+}
+
+.cr-report-dropdown-desc {
+  margin-top: 4px;
+  padding: 6px 8px;
+  background: var(--background-secondary);
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   CATEGORY TILES
+   ========================================================================== */
+
+.cr-report-category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.cr-report-category-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.cr-report-category-tile:hover {
+  border-color: var(--interactive-accent);
+  background: var(--background-secondary);
+}
+
+.cr-report-category-tile--selected {
+  border-color: var(--interactive-accent);
+  background: var(--background-secondary);
+  box-shadow: 0 0 0 1px var(--interactive-accent);
+}
+
+.cr-report-tile-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+  color: var(--text-muted);
+}
+
+.cr-report-tile-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.cr-report-category-tile--selected .cr-report-tile-icon {
+  color: var(--interactive-accent);
+}
+
+.cr-report-tile-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-normal);
+  margin-bottom: 2px;
+}
+
+.cr-report-tile-count {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   REPORT TYPE TILES (expanded from category)
+   ========================================================================== */
+
+.cr-report-types-container {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+}
+
+.cr-report-types-header {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.cr-report-types-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.cr-report-type-tile {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: var(--background-primary);
+}
+
+.cr-report-type-tile:hover {
+  border-color: var(--interactive-accent);
+}
+
+.cr-report-type-tile--selected {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 1px var(--interactive-accent);
+}
+
+.cr-report-type-tile .cr-report-tile-icon {
+  margin-bottom: 2px;
+}
+
+.cr-report-type-tile--selected .cr-report-tile-icon {
+  color: var(--interactive-accent);
+}
+
+.cr-report-type-tile .cr-report-tile-label {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.cr-report-tile-desc {
+  font-size: 10px;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+/* ==========================================================================
+   SUBJECT PICKER
+   ========================================================================== */
+
+.cr-report-subject-picker {
+  margin-top: 4px;
+}
+
+.cr-report-subject-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 14px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 5px;
+  background: var(--background-primary);
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: normal;
+  min-height: 48px;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.cr-report-subject-button:hover {
+  border-color: var(--interactive-accent);
+  background: var(--background-secondary);
+}
+
+.cr-report-subject-button--selected {
+  color: var(--text-normal);
+  border-color: var(--interactive-accent);
+}
+
+.cr-report-subject-button svg {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.cr-report-subject-button--selected svg {
+  color: var(--interactive-accent);
+}
+
+.cr-report-no-subject {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 6px 0;
+}
+
+/* ==========================================================================
+   FORMAT TILES
+   ========================================================================== */
+
+.cr-report-format-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.cr-report-format-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 6px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cr-report-format-tile:hover {
+  border-color: var(--interactive-accent);
+  background: var(--background-secondary);
+}
+
+.cr-report-format-tile--selected {
+  border-color: var(--interactive-accent);
+  background: var(--background-secondary);
+  box-shadow: 0 0 0 1px var(--interactive-accent);
+}
+
+.cr-report-format-tile .cr-report-tile-icon {
+  margin-bottom: 4px;
+}
+
+.cr-report-format-tile--selected .cr-report-tile-icon {
+  color: var(--interactive-accent);
+}
+
+.cr-report-format-tile .cr-report-tile-label {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   FILENAME INPUT
+   ========================================================================== */
+
+.cr-report-filename-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+}
+
+.cr-report-filename-input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 5px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 13px;
+  font-family: var(--font-monospace);
+}
+
+.cr-report-filename-input:focus {
+  border-color: var(--interactive-accent);
+  outline: none;
+}
+
+.cr-report-filename-ext {
+  font-size: 13px;
+  font-family: var(--font-monospace);
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   STEP 2 - OPTIONS
+   ========================================================================== */
+
+.cr-report-options-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cr-report-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.cr-report-checkbox {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.cr-report-toggle-label {
+  font-size: 14px;
+  color: var(--text-normal);
+  cursor: pointer;
+}
+
+.cr-report-option-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+.cr-report-option-label {
+  font-size: 14px;
+  color: var(--text-normal);
+  min-width: 100px;
+}
+
+.cr-report-select {
+  padding: 6px 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 13px;
+  min-width: 80px;
+}
+
+.cr-report-select:focus {
+  border-color: var(--interactive-accent);
+  outline: none;
+}
+
+.cr-report-input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 13px;
+}
+
+.cr-report-input:focus {
+  border-color: var(--interactive-accent);
+  outline: none;
+}
+
+.cr-report-input::placeholder {
+  color: var(--text-faint);
+}
+
+.cr-report-option-row--vertical {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.cr-report-textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.cr-report-textarea:focus {
+  border-color: var(--interactive-accent);
+  outline: none;
+}
+
+.cr-report-textarea::placeholder {
+  color: var(--text-faint);
+}
+
+/* ==========================================================================
+   FOOTER
+   ========================================================================== */
+
+.cr-report-wizard-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.cr-report-footer-right {
+  display: flex;
+  gap: 10px;
+}
+
+/* Button styles matching Family Chart Export wizard */
+.cr-report-wizard-footer .cr-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+  color: var(--text-normal);
+}
+
+.cr-report-wizard-footer .cr-btn:hover {
+  background: var(--background-secondary);
+}
+
+/* Outline style (accent border, no fill) - for secondary actions like "Customize" */
+.cr-report-wizard-footer .cr-btn--outline {
+  border-color: var(--interactive-accent);
+  background: transparent;
+  color: var(--interactive-accent);
+}
+
+.cr-report-wizard-footer .cr-btn--outline:hover {
+  background: hsla(var(--interactive-accent-hsl), 0.1);
+}
+
+/* Primary style (filled accent) - for main action */
+.cr-report-wizard-footer .cr-btn--primary {
+  background: var(--interactive-accent);
+  border-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.cr-report-wizard-footer .cr-btn--primary:hover {
+  background: var(--interactive-accent-hover);
+  border-color: var(--interactive-accent-hover);
+}
+
+/* Disabled state */
+.cr-report-wizard-footer .cr-btn--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.cr-report-wizard-footer .cr-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ==========================================================================
+   ESTIMATE PANEL (Step 4)
+   ========================================================================== */
+
+.cr-report-estimate-panel {
+  background: var(--background-secondary);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+
+.cr-report-estimate-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.cr-report-estimate-row:first-child {
+  padding-top: 0;
+}
+
+.cr-report-estimate-row:last-child {
+  padding-bottom: 0;
+}
+
+.cr-report-estimate-label {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.cr-report-estimate-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-normal);
+}

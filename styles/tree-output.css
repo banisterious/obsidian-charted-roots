@@ -578,17 +578,17 @@
 
 /* Selected person display */
 .crc-wizard-selected-person {
-  margin-bottom: var(--cr-spacing-md);
+  margin-bottom: 8px;
 }
 
 .crc-wizard-selected-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 10px;
+  padding: 8px 12px;
   background: var(--interactive-accent);
   color: var(--text-on-accent);
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .crc-wizard-selected-card svg {
@@ -630,7 +630,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .crc-wizard-toolbar .crc-wizard-search-wrapper {
@@ -656,9 +656,9 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 4px;
-  margin-bottom: 8px;
+  gap: 10px;
+  margin-top: 6px;
+  margin-bottom: 0;
 }
 
 .crc-wizard-filter-group {
@@ -712,12 +712,12 @@
 .crc-wizard-results-count {
   font-size: 11px;
   color: var(--text-faint);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 /* Person list */
 .crc-wizard-person-list {
-  max-height: 220px;
+  max-height: 180px;
   overflow-y: auto;
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
@@ -726,8 +726,8 @@
 .crc-wizard-person-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
+  gap: 10px;
+  padding: 6px 10px;
   cursor: pointer;
   border-bottom: 1px solid var(--background-modifier-border);
   transition: background-color var(--cr-transition-fast);
@@ -766,14 +766,14 @@
 }
 
 .crc-wizard-empty {
-  padding: 24px;
+  padding: 16px;
   text-align: center;
   color: var(--text-muted);
   font-size: 13px;
 }
 
 .crc-wizard-more {
-  padding: 12px;
+  padding: 8px;
   text-align: center;
   color: var(--text-muted);
   font-size: 12px;

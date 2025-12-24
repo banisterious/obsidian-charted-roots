@@ -106,7 +106,7 @@ export class VisualTreeSvgRenderer {
 
 			const img = new Image();
 			const canvas = document.createElement('canvas');
-			const scale = 2; // 2x resolution for better quality
+			const scale = 4; // 4x resolution for sharper PDF output
 			canvas.width = width * scale;
 			canvas.height = height * scale;
 

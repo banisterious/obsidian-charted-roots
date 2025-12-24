@@ -14,7 +14,7 @@ import { CreatePlaceModal } from './create-place-modal';
 import { CreateEventModal } from '../events/ui/create-event-modal';
 import { CreateSourceModal } from '../sources/ui/create-source-modal';
 import { CreateOrganizationModal } from '../organizations/ui/create-organization-modal';
-import { ReportGeneratorModal } from '../reports/ui/report-generator-modal';
+import { ReportWizardModal } from '../reports/ui/report-wizard-modal';
 import { MediaManagerModal } from '../core/ui/media-manager-modal';
 import { FamilyGraphService } from '../core/family-graph';
 import { PlaceGraphService } from '../core/place-graph';
@@ -218,7 +218,7 @@ function renderQuickActionsSection(
 			description: 'Generate a genealogical report',
 			action: () => {
 				closeModal();
-				new ReportGeneratorModal(app, plugin).open();
+				new ReportWizardModal(plugin).open();
 			}
 		},
 		{

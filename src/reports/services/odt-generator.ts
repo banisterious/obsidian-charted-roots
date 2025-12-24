@@ -17,6 +17,7 @@ export interface OdtExportOptions {
 	title?: string;
 	subtitle?: string;
 	author?: string;
+	coverNotes?: string;
 	includeCoverPage: boolean;
 }
 
@@ -153,6 +154,11 @@ export class OdtGenerator {
     <style:style style:name="Horizontal_20_Line" style:display-name="Horizontal Line" style:family="paragraph">
       <style:paragraph-properties fo:margin-top="0.3cm" fo:margin-bottom="0.3cm" fo:border-bottom="0.5pt solid #000000"/>
     </style:style>
+
+    <!-- Page break style -->
+    <style:style style:name="Page_20_Break" style:display-name="Page Break" style:family="paragraph">
+      <style:paragraph-properties fo:break-after="page"/>
+    </style:style>
   </office:styles>
 </office:document-styles>`;
 
@@ -236,8 +242,31 @@ ${coverPage}${bodyContent}
 			content += `      <text:p text:style-name="Subtitle">${this.escapeXml(options.author)}</text:p>\n`;
 		}
 
-		// Add page break after cover
-		content += '      <text:p text:style-name="Standard"><text:soft-page-break/></text:p>\n';
+		// Add cover notes if provided
+		if (options.coverNotes && options.coverNotes.trim()) {
+			content += '      <text:p text:style-name="Standard"/>\n'; // Spacing
+			// Split by paragraphs (double newline) and render each
+			const paragraphs = options.coverNotes.split(/\n\n+/).map(p => p.trim()).filter(p => p);
+			for (const paragraph of paragraphs) {
+				// Replace single newlines with line breaks within paragraphs
+				const lines = paragraph.split('\n');
+				if (lines.length === 1) {
+					content += `      <text:p text:style-name="Standard">${this.escapeXml(paragraph)}</text:p>\n`;
+				} else {
+					content += '      <text:p text:style-name="Standard">';
+					for (let i = 0; i < lines.length; i++) {
+						content += this.escapeXml(lines[i]);
+						if (i < lines.length - 1) {
+							content += '<text:line-break/>';
+						}
+					}
+					content += '</text:p>\n';
+				}
+			}
+		}
+
+		// Add hard page break after cover
+		content += '      <text:p text:style-name="Page_20_Break"/>\n';
 
 		return content;
 	}

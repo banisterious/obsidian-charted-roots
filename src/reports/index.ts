@@ -38,3 +38,5 @@ export { GapsReportGenerator } from './services/gaps-report-generator';
 // UI Components
 export { ReportGeneratorModal } from './ui/report-generator-modal';
 export type { ReportGeneratorModalOptions } from './ui/report-generator-modal';
+export { ReportWizardModal } from './ui/report-wizard-modal';
+export type { ReportWizardOptions } from './ui/report-wizard-modal';
