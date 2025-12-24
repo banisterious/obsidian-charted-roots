@@ -9,6 +9,9 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.15.x](#v015x)
+  - [Visual Tree PDF Quality Improvements](#visual-tree-pdf-quality-improvements-v0153)
+  - [Report Wizard Enhancements](#report-wizard-enhancements-v0153)
+  - [Report Generator ODT Export](#report-generator-odt-export-v0153)
   - [Calendarium Integration Phase 2](#calendarium-integration-phase-2-v0152)
   - [Family Chart Export Wizard](#family-chart-export-wizard-v0151)
   - [Family Chart Styling Panel](#family-chart-styling-panel-v0151)
@@ -59,6 +62,136 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.15.x
+
+### Visual Tree PDF Quality Improvements (v0.15.3)
+
+Improved rendering quality for Visual Tree PDFs generated from the unified tree wizard, achieving parity with Family Chart PDF exports.
+
+**Problem Solved:**
+- Visual Tree PDFs generated via pdfmake appeared slightly blurry compared to Family Chart PDFs using jsPDF
+- The pdfmake image embedding was resampling the tree image, causing quality loss
+- No dynamic page sizing option for optimal digital viewing
+
+**Changes:**
+
+| Change | Description |
+|--------|-------------|
+| **4× scale rendering** | Increased canvas scale from 2× to 4× in `visual-tree-svg-renderer.ts` |
+| **Aspect ratio preservation** | Removed explicit height constraint from pdfmake image content |
+| **Quality parity** | Visual Tree PDFs now match Family Chart PDF sharpness |
+
+**Technical Details:**
+
+The quality difference stemmed from how images are embedded in PDFs:
+
+- **jsPDF (Family Chart):** Sizes the PDF page to match the content, avoiding any resampling
+- **pdfmake (Visual Tree):** Used fixed page sizes with explicit width/height, causing resampling
+
+The fix increases the source canvas resolution (4× instead of 2×) to compensate for any resampling, and removes the explicit height constraint to preserve aspect ratio.
+
+**Files Changed:**
+
+| File | Change |
+|------|--------|
+| `src/trees/services/visual-tree-svg-renderer.ts` | Changed scale from 2 to 4 |
+| `src/reports/services/pdf-report-renderer.ts` | Removed height from image content |
+
+See [Visual Tree PDF Enhancements Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/visual-tree-pdf-enhancements.md) for technical analysis.
+
+---
+
+### Report Wizard Enhancements (v0.15.3)
+
+Multi-step wizard interface for the Report Generator with improved UX, step-by-step navigation, and streamlined report creation.
+
+**Problem Solved:**
+- The Report Generator modal had grown complex with 13 report types, 5 categories, and extensive PDF options
+- All options were displayed at once, creating cognitive overload
+- No way to save common report configurations for reuse
+
+**Features:**
+
+| Feature | Description |
+|---------|-------------|
+| **5-step wizard** | Report Type → Subject → Content Options → Output & Styling → Generate |
+| **Step navigation** | Previous/Next buttons with step indicator |
+| **Category filtering** | Filter reports by category (Genealogical, Research, Timeline, Geographic, Summary) |
+| **Dynamic options** | Content options step adapts to selected report type |
+| **Format selection** | Choose output format (Vault, Markdown, PDF, ODT) in Output step |
+
+**Wizard Steps:**
+
+| Step | Purpose |
+|------|---------|
+| 1. Report Type | Category filter + report selection from 13 types |
+| 2. Subject | Person/place/universe/collection picker based on report type |
+| 3. Content Options | Report-specific toggles (generations, spouses, sources, etc.) |
+| 4. Output & Styling | Format selection + PDF/ODT customization options |
+| 5. Generate | Review settings and generate report |
+
+**Files Changed:**
+
+| File | Change |
+|------|--------|
+| `src/reports/ui/report-wizard-modal.ts` | New multi-step wizard modal |
+| `src/reports/services/pdf-report-renderer.ts` | ODT generation support |
+| `styles/report-wizard.css` | Wizard styling with compact cards |
+
+See [Report Wizard Enhancements Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/report-wizard-enhancements.md) for implementation details.
+
+---
+
+### Report Generator ODT Export (v0.15.3)
+
+ODT (Open Document Text) export capability for all report types, enabling document merging workflows with LibreOffice Writer and Microsoft Word.
+
+**Problem Solved:**
+- Reports could only be saved as Markdown or PDF
+- No editable document format for further customization
+- Users couldn't easily merge text reports with visual tree charts
+
+**Features:**
+
+| Feature | Description |
+|---------|-------------|
+| **All 13 report types** | ODT export available for all report types |
+| **Cover page support** | Optional title page with logo, title, subtitle, and notes |
+| **Rich content** | Tables, lists, bold/italic text preserved |
+| **Image embedding** | Visual tree charts embedded as images (for tree reports) |
+| **Title in document** | Optional title at top of document (when not using cover page) |
+| **No external dependencies** | Uses JSZip (bundled with Obsidian) + manual XML generation |
+
+**ODT Generation:**
+
+ODT files are ZIP archives containing XML. The generator creates:
+
+| File | Purpose |
+|------|---------|
+| `content.xml` | Document content with text, tables, and images |
+| `styles.xml` | Paragraph, table, and character styles |
+| `meta.xml` | Document metadata (title, author, date) |
+| `manifest.xml` | File manifest for the archive |
+| `Pictures/` | Embedded images (tree charts, logos) |
+
+**Unified Tree Wizard Integration:**
+
+The unified tree wizard also supports ODT output:
+- ODT option in Step 3 (Output Format)
+- Title field in Step 5 for document title
+- Filename based on title field value
+- Tree image embedded in ODT document
+
+**Files Changed:**
+
+| File | Change |
+|------|--------|
+| `src/reports/services/odt-generator.ts` | New ODT generation service |
+| `src/reports/services/pdf-report-renderer.ts` | ODT generation for reports |
+| `src/trees/ui/unified-tree-wizard-modal.ts` | ODT support in tree wizard |
+
+See [Report Generator ODT Export Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/report-generator-odt-export.md) for implementation details.
+
+---
 
 ### Calendarium Integration Phase 2 (v0.15.2)
 

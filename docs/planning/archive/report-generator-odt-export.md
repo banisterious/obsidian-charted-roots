@@ -1,9 +1,11 @@
 # Report Generator ODT Export
 
-**Status:** Complete (Phases 1-3)
+**Status:** ✅ Complete
 **Priority:** Medium
 **Created:** 2025-12-23
-**Updated:** 2025-12-24
+**Completed:** 2025-12-24
+
+> **Note:** This document has been archived. See [Release History](../../wiki-content/Release-History.md#odt-export-v016x) for the summary.
 
 ---
 

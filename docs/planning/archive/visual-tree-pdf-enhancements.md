@@ -1,10 +1,12 @@
 # Visual Tree PDF Enhancements
 
-**Status:** Complete (Phase 1)
+**Status:** ✅ Complete
 **Priority:** Low
 **Extracted from:** `archive/tree-visualization-overhaul.md` (Phase 3: Library Consolidation)
 **Created:** 2025-12-23
-**Updated:** 2025-12-24
+**Completed:** 2025-12-24
+
+> **Note:** This document has been archived. See [Release History](../../wiki-content/Release-History.md#visual-tree-pdf-quality-improvements-v016x) for the summary.
 
 ---
 
@@ -223,11 +225,11 @@ Implement in phases, starting with lowest risk:
 
 ## Success Criteria
 
-- [ ] Visual Tree PDF text is as sharp as Family Chart PDF
-- [ ] Lines and borders render crisply without blur
-- [ ] Quality improvement doesn't significantly increase file size (< 2× increase acceptable)
-- [ ] Standard page sizes still work for users who need printable output
-- [ ] "Fit to Content" option available for best quality digital viewing
+- [x] Visual Tree PDF text is as sharp as Family Chart PDF
+- [x] Lines and borders render crisply without blur
+- [x] Quality improvement doesn't significantly increase file size (< 2× increase acceptable)
+- [x] Standard page sizes still work for users who need printable output
+- [ ] "Fit to Content" option available for best quality digital viewing (deferred to Phase 2)
 
 ---
 

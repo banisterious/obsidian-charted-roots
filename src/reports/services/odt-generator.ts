@@ -11,6 +11,18 @@ import { getLogger } from '../../core/logging';
 const logger = getLogger('OdtGenerator');
 
 /**
+ * Embedded image data for ODT
+ */
+export interface OdtEmbeddedImage {
+	/** Base64 PNG data (with or without data URL prefix) */
+	data: string;
+	/** Image width in cm */
+	width: number;
+	/** Image height in cm */
+	height: number;
+}
+
+/**
  * Options for ODT generation
  */
 export interface OdtExportOptions {
@@ -19,6 +31,8 @@ export interface OdtExportOptions {
 	author?: string;
 	coverNotes?: string;
 	includeCoverPage: boolean;
+	/** Optional embedded image (for visual tree exports) */
+	embedImage?: OdtEmbeddedImage;
 }
 
 /**
@@ -38,16 +52,21 @@ export class OdtGenerator {
 	 * @returns A Blob containing the ODT file
 	 */
 	async generate(markdown: string, options: OdtExportOptions): Promise<Blob> {
-		logger.info('generate', 'Generating ODT document', { title: options.title });
+		logger.info('generate', 'Generating ODT document', { title: options.title, hasImage: !!options.embedImage });
 
 		// Reset zip for new document
 		this.zip = new JSZip();
 
 		// Add required ODT components
 		this.addMimetype();
-		this.addManifest();
+		this.addManifest(!!options.embedImage);
 		this.addStyles();
 		this.addContent(markdown, options);
+
+		// Add embedded image if provided
+		if (options.embedImage) {
+			this.addImage(options.embedImage);
+		}
 
 		// Generate the ODT file
 		const blob = await this.zip.generateAsync({
@@ -71,12 +90,20 @@ export class OdtGenerator {
 	/**
 	 * Add the manifest file
 	 */
-	private addManifest(): void {
-		const manifest = `<?xml version="1.0" encoding="UTF-8"?>
+	private addManifest(hasImage: boolean): void {
+		let manifest = `<?xml version="1.0" encoding="UTF-8"?>
 <manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0" manifest:version="1.2">
   <manifest:file-entry manifest:full-path="/" manifest:media-type="application/vnd.oasis.opendocument.text"/>
   <manifest:file-entry manifest:full-path="content.xml" manifest:media-type="text/xml"/>
-  <manifest:file-entry manifest:full-path="styles.xml" manifest:media-type="text/xml"/>
+  <manifest:file-entry manifest:full-path="styles.xml" manifest:media-type="text/xml"/>`;
+
+		if (hasImage) {
+			manifest += `
+  <manifest:file-entry manifest:full-path="Pictures/" manifest:media-type=""/>
+  <manifest:file-entry manifest:full-path="Pictures/tree.png" manifest:media-type="image/png"/>`;
+		}
+
+		manifest += `
 </manifest:manifest>`;
 
 		this.zip.file('META-INF/manifest.xml', manifest);
@@ -178,12 +205,22 @@ export class OdtGenerator {
 			coverPage = this.generateCoverPage(options);
 		}
 
+		// Generate image content if present (with title if not using cover page)
+		let imageContent = '';
+		if (options.embedImage) {
+			const imageTitle = !options.includeCoverPage ? options.title : undefined;
+			imageContent = this.generateImageContent(options.embedImage, imageTitle);
+		}
+
 		const content = `<?xml version="1.0" encoding="UTF-8"?>
 <office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
                          xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
                          xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
                          xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"
                          xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"
+                         xmlns:draw="urn:oasis:names:tc:opendocument:xmlns:drawing:1.0"
+                         xmlns:svg="urn:oasis:names:tc:opendocument:xmlns:svg-compatible:1.0"
+                         xmlns:xlink="http://www.w3.org/1999/xlink"
                          office:version="1.2">
   <office:automatic-styles>
     <style:style style:name="Table" style:family="table">
@@ -209,15 +246,40 @@ export class OdtGenerator {
       <style:paragraph-properties fo:margin-top="0cm" fo:margin-bottom="0cm"/>
       <style:text-properties fo:font-size="10pt" fo:font-weight="bold"/>
     </style:style>
+    <style:style style:name="TreeImage" style:family="graphic">
+      <style:graphic-properties style:horizontal-pos="center" style:horizontal-rel="paragraph"/>
+    </style:style>
   </office:automatic-styles>
   <office:body>
     <office:text>
-${coverPage}${bodyContent}
+${coverPage}${imageContent}${bodyContent}
     </office:text>
   </office:body>
 </office:document-content>`;
 
 		this.zip.file('content.xml', content);
+	}
+
+	/**
+	 * Generate image frame content for embedded image
+	 * @param image - The embedded image data
+	 * @param title - Optional title to display above the image
+	 */
+	private generateImageContent(image: OdtEmbeddedImage, title?: string): string {
+		let content = '';
+
+		// Add title above image if provided
+		if (title) {
+			content += `      <text:p text:style-name="Title">${this.escapeXml(title)}</text:p>\n`;
+		}
+
+		content += `      <text:p text:style-name="Standard">
+        <draw:frame draw:style-name="TreeImage" draw:name="FamilyTree" text:anchor-type="paragraph" svg:width="${image.width}cm" svg:height="${image.height}cm">
+          <draw:image xlink:href="Pictures/tree.png" xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>
+        </draw:frame>
+      </text:p>
+`;
+		return content;
 	}
 
 	/**
@@ -519,6 +581,19 @@ ${coverPage}${bodyContent}
 		}
 
 		return result;
+	}
+
+	/**
+	 * Add an embedded image to the ODT
+	 */
+	private addImage(image: OdtEmbeddedImage): void {
+		// Remove data URL prefix if present
+		const base64Data = image.data.replace(/^data:image\/png;base64,/, '');
+
+		// Add image to Pictures folder
+		this.zip.file('Pictures/tree.png', base64Data, { base64: true });
+
+		logger.info('addImage', 'Added embedded image', { width: image.width, height: image.height });
 	}
 
 	/**

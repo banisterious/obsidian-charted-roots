@@ -2,10 +2,13 @@
 
 Planning document for enhancing the report generator with additional customization options and a wizard-based UI.
 
-- **Status:** Planning
+- **Status:** ✅ Complete (Phase 1-2)
 - **Priority:** Medium
 - **GitHub Issue:** #TBD
 - **Created:** 2025-12-20
+- **Completed:** 2025-12-24
+
+> **Note:** This document has been archived. See [Release History](../../wiki-content/Release-History.md#report-wizard-enhancements-v016x) for the summary. Phases 1-2 (two-step wizard, ODT export) are complete. Phases 3+ (presets, advanced PDF options) remain for future work.
 
 ---
 

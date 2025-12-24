@@ -26,7 +26,9 @@ import { ensureFolderExists } from '../../core/canvas-utils';
 import { getLogger } from '../../core/logging';
 import { isPersonNote } from '../../utils/note-type-detection';
 import { VisualTreeService } from '../services/visual-tree-service';
+import { VisualTreeSvgRenderer } from '../services/visual-tree-svg-renderer';
 import { PdfReportRenderer } from '../../reports/services/pdf-report-renderer';
+import { OdtGenerator } from '../../reports/services/odt-generator';
 import type {
 	VisualTreeOptions,
 	VisualTreePageSize,
@@ -101,7 +103,7 @@ interface PersonFilterOptions {
 /**
  * Output format
  */
-type OutputFormat = 'canvas' | 'pdf';
+type OutputFormat = 'canvas' | 'pdf' | 'odt';
 
 /**
  * Unified form data for the wizard
@@ -292,6 +294,7 @@ export class UnifiedTreeWizardModal extends Modal {
 				ALL_STEPS.find(s => s.id === 'canvas-output')!
 			];
 		} else {
+			// PDF and ODT share the same options step
 			return [
 				...baseSteps,
 				ALL_STEPS.find(s => s.id === 'pdf-options')!,
@@ -892,17 +895,15 @@ export class UnifiedTreeWizardModal extends Modal {
 		});
 
 		const canvasIcon = canvasCard.createDiv({ cls: 'crc-wizard-format-icon' });
-		canvasIcon.appendChild(createLucideIcon('layout-dashboard', 32));
+		canvasIcon.appendChild(createLucideIcon('layout-dashboard', 20));
 
 		const canvasInfo = canvasCard.createDiv({ cls: 'crc-wizard-format-info' });
 		canvasInfo.createDiv({ cls: 'crc-wizard-format-title', text: 'Obsidian Canvas' });
 		canvasInfo.createDiv({ cls: 'crc-wizard-format-desc', text: 'Interactive tree you can edit and explore' });
 
 		const canvasFeatures = canvasInfo.createEl('ul', { cls: 'crc-wizard-format-features' });
-		canvasFeatures.createEl('li', { text: 'Click to open linked notes' });
-		canvasFeatures.createEl('li', { text: 'Add notes and annotations' });
-		canvasFeatures.createEl('li', { text: 'Pan and zoom to explore' });
-		canvasFeatures.createEl('li', { text: 'Edit layout manually' });
+		canvasFeatures.createEl('li', { text: 'Click nodes to open notes' });
+		canvasFeatures.createEl('li', { text: 'Pan, zoom, and edit layout' });
 
 		canvasCard.addEventListener('click', () => {
 			this.formData.outputFormat = 'canvas';
@@ -920,7 +921,7 @@ export class UnifiedTreeWizardModal extends Modal {
 		});
 
 		const pdfIcon = pdfCard.createDiv({ cls: 'crc-wizard-format-icon' });
-		pdfIcon.appendChild(createLucideIcon('file-image', 32));
+		pdfIcon.appendChild(createLucideIcon('file-image', 20));
 
 		const pdfInfo = pdfCard.createDiv({ cls: 'crc-wizard-format-info' });
 		pdfInfo.createDiv({ cls: 'crc-wizard-format-title', text: 'PDF Document' });
@@ -928,12 +929,32 @@ export class UnifiedTreeWizardModal extends Modal {
 
 		const pdfFeatures = pdfInfo.createEl('ul', { cls: 'crc-wizard-format-features' });
 		pdfFeatures.createEl('li', { text: 'Print on paper up to 24×36"' });
-		pdfFeatures.createEl('li', { text: 'Share with family members' });
-		pdfFeatures.createEl('li', { text: 'Professional styled appearance' });
-		pdfFeatures.createEl('li', { text: 'Multiple page sizes' });
+		pdfFeatures.createEl('li', { text: 'Multiple page sizes available' });
 
 		pdfCard.addEventListener('click', () => {
 			this.formData.outputFormat = 'pdf';
+			this.renderProgress();
+			this.renderCurrentStep();
+		});
+
+		// ODT card
+		const odtCard = formatContainer.createDiv({
+			cls: `crc-wizard-format-card ${this.formData.outputFormat === 'odt' ? 'crc-wizard-format-card--selected' : ''}`
+		});
+
+		const odtIcon = odtCard.createDiv({ cls: 'crc-wizard-format-icon' });
+		odtIcon.appendChild(createLucideIcon('file-text', 20));
+
+		const odtInfo = odtCard.createDiv({ cls: 'crc-wizard-format-info' });
+		odtInfo.createDiv({ cls: 'crc-wizard-format-title', text: 'ODT Document' });
+		odtInfo.createDiv({ cls: 'crc-wizard-format-desc', text: 'Editable document for word processors' });
+
+		const odtFeatures = odtInfo.createEl('ul', { cls: 'crc-wizard-format-features' });
+		odtFeatures.createEl('li', { text: 'Open in LibreOffice or Word' });
+		odtFeatures.createEl('li', { text: 'Add text before printing' });
+
+		odtCard.addEventListener('click', () => {
+			this.formData.outputFormat = 'odt';
 			this.renderProgress();
 			this.renderCurrentStep();
 		});
@@ -1343,8 +1364,9 @@ export class UnifiedTreeWizardModal extends Modal {
 	// ========== PDF OUTPUT STEP ==========
 
 	private renderPdfOutputStep(container: HTMLElement): void {
+		const formatName = this.formData.outputFormat === 'odt' ? 'ODT' : 'PDF';
 		container.createEl('p', {
-			text: 'Review your settings and generate the PDF.',
+			text: `Review your settings and generate the ${formatName}.`,
 			cls: 'cr-wizard-step-desc'
 		});
 
@@ -1352,7 +1374,7 @@ export class UnifiedTreeWizardModal extends Modal {
 
 		new Setting(form)
 			.setName('Title')
-			.setDesc('Custom title for the PDF (optional)')
+			.setDesc(`Custom title for the ${formatName} (optional)`)
 			.addText(text => text
 				.setPlaceholder('Leave blank for auto-generated title')
 				.setValue(this.formData.pdfTitle)
@@ -1413,8 +1435,10 @@ export class UnifiedTreeWizardModal extends Modal {
 
 			nextBtn.addEventListener('click', () => this.goNext());
 		} else {
+			const buttonText = this.formData.outputFormat === 'canvas' ? 'Generate Canvas' :
+				this.formData.outputFormat === 'pdf' ? 'Generate PDF' : 'Generate ODT';
 			const generateBtn = rightBtns.createEl('button', {
-				text: this.formData.outputFormat === 'canvas' ? 'Generate Canvas' : 'Generate PDF',
+				text: buttonText,
 				cls: 'cr-btn cr-btn--primary'
 			});
 			generateBtn.prepend(createLucideIcon('sparkles', 16));
@@ -1428,8 +1452,10 @@ export class UnifiedTreeWizardModal extends Modal {
 			generateBtn.addEventListener('click', () => {
 				if (this.formData.outputFormat === 'canvas') {
 					void this.generateCanvas();
-				} else {
+				} else if (this.formData.outputFormat === 'pdf') {
 					void this.generatePdf();
+				} else {
+					void this.generateOdt();
 				}
 			});
 		}
@@ -1677,6 +1703,94 @@ export class UnifiedTreeWizardModal extends Modal {
 		} catch (error) {
 			console.error('Error generating PDF:', error);
 			new Notice('Error generating PDF. Check console for details.');
+		}
+	}
+
+	private async generateOdt(): Promise<void> {
+		if (!this.formData.rootPerson) {
+			new Notice('Please select a root person.');
+			return;
+		}
+
+		const maxGenerations = this.formData.treeType === 'ancestors' || this.formData.treeType === 'fan'
+			? this.formData.maxAncestorGenerations || 5
+			: this.formData.maxDescendantGenerations || 5;
+
+		const chartType = this.formData.treeType === 'full' ? 'hourglass' :
+			this.formData.treeType === 'ancestors' ? 'pedigree' :
+				this.formData.treeType === 'descendants' ? 'descendant' : 'fan';
+
+		const options: VisualTreeOptions = {
+			rootPersonCrId: this.formData.rootPerson.crId,
+			chartType,
+			maxGenerations,
+			pageSize: this.formData.pageSize,
+			orientation: this.formData.orientation,
+			nodeContent: this.formData.nodeContent,
+			colorScheme: this.formData.pdfColorScheme,
+			includeSpouses: this.formData.includeSpouses,
+			title: this.formData.pdfTitle || `${this.formData.rootPerson.name} - ${this.getTreeTypeLabel()}`,
+			largeTreeHandling: this.treeSizeAnalysis?.isLarge ? this.formData.largeTreeHandling : undefined
+		};
+
+		try {
+			new Notice('Generating ODT...');
+
+			const layouts = this.visualTreeService.buildLayouts(options);
+
+			if (layouts.length === 0) {
+				new Notice('Failed to generate tree layout. The person may not have any ancestors.');
+				return;
+			}
+
+			// Use first layout for now (multi-page ODT could be added later)
+			const layout = layouts[0];
+
+			// Render to SVG
+			const svgRenderer = new VisualTreeSvgRenderer();
+			const svgString = svgRenderer.renderToSvg(layout, options);
+
+			// Convert to PNG data URL
+			const imageDataUrl = await svgRenderer.svgToDataUrl(svgString, layout.page.width, layout.page.height);
+
+			// Calculate image dimensions in cm for ODT (assuming 72 DPI)
+			// A4 is 21cm wide, Letter is 21.59cm wide. Use ~18cm for margins
+			const maxWidthCm = 18;
+			const aspectRatio = layout.page.height / layout.page.width;
+			const imageWidthCm = maxWidthCm;
+			const imageHeightCm = maxWidthCm * aspectRatio;
+
+			// Generate ODT with embedded image
+			const odtGenerator = new OdtGenerator();
+			const title = options.title || `${this.formData.rootPerson.name} Family Tree`;
+
+			const odtBlob = await odtGenerator.generate('', {
+				title,
+				includeCoverPage: false,
+				embedImage: {
+					data: imageDataUrl,
+					width: imageWidthCm,
+					height: imageHeightCm
+				}
+			});
+
+			// Download the ODT file - use the title for the filename
+			const fileName = `${title.replace(/[^a-zA-Z0-9]/g, '_')}.odt`;
+			const url = URL.createObjectURL(odtBlob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = fileName;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			URL.revokeObjectURL(url);
+
+			new Notice(`ODT generated with ${layout.stats.peopleCount} people across ${layout.stats.generationsCount} generations.`);
+			this.close();
+
+		} catch (error) {
+			console.error('Error generating ODT:', error);
+			new Notice('Error generating ODT. Check console for details.');
 		}
 	}
 

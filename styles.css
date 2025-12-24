@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-24 15:27:46 UTC
+ * - Generated: 2025-12-24 15:59:05 UTC
  * - Components: 37 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -24715,7 +24715,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: TREE-OUTPUT.CSS
    ========================================================================== */
 
-/* Component Size: 1504 lines, 29.34 KB */
+/* Component Size: 1548 lines, 30.08 KB */
 
 /* Tree Output Tab - Two-Panel Layout */
 
@@ -26040,8 +26040,8 @@ body:has(.cr-media-linker) .suggestion-container {
 
 /* Large tree warning */
 .cr-large-tree-warning {
-  margin: 16px 0;
-  padding: 12px;
+  margin: 8px 0;
+  padding: 8px 10px;
   background: var(--background-modifier-error-rgb, rgba(255, 100, 100, 0.1));
   border: 1px solid var(--text-warning);
   border-radius: var(--radius-m);
@@ -26050,42 +26050,47 @@ body:has(.cr-media-linker) .suggestion-container {
 .cr-large-tree-warning-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-weight: 600;
+  font-size: 13px;
   color: var(--text-warning);
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .cr-large-tree-warning-header svg {
   color: var(--text-warning);
+  width: 16px;
+  height: 16px;
 }
 
 .cr-large-tree-warning-info p {
-  margin: 0 0 12px 0;
+  margin: 0 0 6px 0;
   color: var(--text-muted);
-  font-size: var(--cr-font-sm);
-  line-height: 1.5;
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .cr-large-tree-warning-options p {
-  margin: 0 0 8px 0;
+  margin: 0 0 4px 0;
   font-weight: 500;
+  font-size: 12px;
 }
 
 .cr-large-tree-option {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  padding: 8px 0;
+  gap: 6px;
+  padding: 3px 0;
 }
 
 .cr-large-tree-option input[type="radio"] {
-  margin-top: 3px;
+  margin-top: 2px;
   flex-shrink: 0;
 }
 
 .cr-large-tree-option label {
-  line-height: 1.4;
+  line-height: 1.3;
+  font-size: 12px;
   cursor: pointer;
 }
 
@@ -26095,7 +26100,7 @@ body:has(.cr-media-linker) .suggestion-container {
 
 .cr-large-tree-option label span {
   color: var(--text-muted);
-  font-size: var(--cr-font-sm);
+  font-size: 11px;
 }
 
 /* ==========================================================================
@@ -26107,18 +26112,51 @@ body:has(.cr-media-linker) .suggestion-container {
   width: 750px;
 }
 
+/* Compact settings for unified wizard steps */
+.crc-unified-wizard .setting-item {
+  padding: 4px 0 !important;
+  border-bottom: none !important;
+  border-top: none !important;
+}
+
+.crc-unified-wizard .setting-item-info {
+  flex: 1;
+}
+
+.crc-unified-wizard .setting-item-name {
+  font-size: 13px;
+}
+
+.crc-unified-wizard .setting-item-description {
+  font-size: 11px;
+  margin-top: 0;
+  line-height: 1.2;
+}
+
+.crc-unified-wizard .cr-wizard-step-desc {
+  font-size: 12px;
+  margin-bottom: 6px;
+  color: var(--text-muted);
+}
+
+.crc-unified-wizard .cr-wizard-form {
+  margin-top: 0;
+}
+
 /* Output format selection cards */
 .crc-wizard-output-formats {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .crc-wizard-format-card {
   display: flex;
-  flex-direction: column;
-  padding: 16px;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
   background: var(--background-secondary);
   border: 2px solid var(--background-modifier-border);
   border-radius: 8px;
@@ -26140,12 +26178,17 @@ body:has(.cr-media-linker) .suggestion-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  margin-bottom: 12px;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
   background: var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: 6px;
   color: var(--text-muted);
+}
+
+.crc-wizard-format-icon svg {
+  width: 20px;
+  height: 20px;
 }
 
 .crc-wizard-format-card--selected .crc-wizard-format-icon {
@@ -26155,31 +26198,32 @@ body:has(.cr-media-linker) .suggestion-container {
 
 .crc-wizard-format-info {
   flex: 1;
+  min-width: 0;
 }
 
 .crc-wizard-format-title {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-normal);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .crc-wizard-format-desc {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
 .crc-wizard-format-features {
   margin: 0;
-  padding-left: 18px;
-  font-size: 12px;
+  padding-left: 14px;
+  font-size: 11px;
   color: var(--text-muted);
   list-style-type: disc;
 }
 
 .crc-wizard-format-features li {
-  padding: 2px 0;
+  padding: 1px 0;
 }
 
 .crc-wizard-format-card--selected .crc-wizard-format-title {
@@ -26805,10 +26849,10 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-24 15:27:46 UTC
+ * Build completed: 2025-12-24 15:59:05 UTC
  * Components processed: 37
- * Total lines: 26449
- * Total size: 526.54 KB
+ * Total lines: 26493
+ * Total size: 527.28 KB
  * Build duration: 0.03 seconds
  *
  * Component breakdown:
@@ -26844,7 +26888,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - dashboard.css: 366 lines, 7.11 KB
  * - universe-wizard.css: 621 lines, 11.05 KB
  * - preferences.css: 315 lines, 6.86 KB
- * - tree-output.css: 1504 lines, 29.34 KB
+ * - tree-output.css: 1548 lines, 30.08 KB
  * - dynamic-content.css: 504 lines, 10.79 KB
  * - animations.css: 16 lines, 0.18 KB
  * - responsive.css: 9 lines, 0.13 KB
