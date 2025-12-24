@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-24 16:16:12 UTC
+ * - Generated: 2025-12-24 21:32:25 UTC
  * - Components: 37 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -677,7 +677,7 @@ settings:
    COMPONENT: MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 7787 lines, 144.64 KB */
+/* Component Size: 7870 lines, 146.13 KB */
 
 /* ==========================================================================
    Canvas Roots Control Center - Styling
@@ -938,8 +938,7 @@ settings:
 }
 
 .crc-drawer__header {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--background-modifier-border);
+  display: none; /* Removed - redundant with grouped navigation */
 }
 
 .crc-drawer__title {
@@ -951,7 +950,7 @@ settings:
 }
 
 .crc-drawer__content {
-  padding: 4px 0;
+  padding: 2px 0;
 }
 
 /* Navigation list */
@@ -1015,7 +1014,63 @@ settings:
 .crc-nav-divider {
   height: 1px;
   background: var(--background-modifier-border);
-  margin: 6px 16px;
+  margin: 3px 16px;
+}
+
+/* Navigation groups */
+.crc-nav-group {
+  padding: 2px 0;
+}
+
+.crc-nav-group--with-divider {
+  margin-top: 2px;
+  padding-top: 2px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.crc-nav-group__label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1px 12px 2px;
+  margin: 0 8px;
+}
+
+/* Compact navigation items for grouped layout */
+.crc-nav-group .crc-nav-item {
+  padding: 4px 10px 3px;
+  margin: 0 6px;
+  border-radius: 4px;
+}
+
+.crc-nav-group .crc-nav-item__icon {
+  margin-right: 8px;
+}
+
+.crc-nav-group .crc-nav-item__text {
+  font-size: 13px;
+}
+
+/* Tool entries (open modals/leaves instead of switching tabs) */
+.crc-nav-item--tool {
+  color: var(--text-muted);
+}
+
+.crc-nav-item--tool:hover {
+  color: var(--text-normal);
+}
+
+.crc-nav-item__indicator {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text-faint);
+  opacity: 0.7;
+}
+
+.crc-nav-item--tool:hover .crc-nav-item__indicator {
+  opacity: 1;
 }
 
 /* ==========================================================================
@@ -7012,6 +7067,34 @@ settings:
 .crc-mobile-mode .crc-nav-item {
   padding: 8px 16px;
   margin: 0 8px;
+}
+
+/* Navigation groups on mobile - tighter spacing */
+.crc-mobile-mode .crc-nav-group {
+  padding: 1px 0;
+}
+
+.crc-mobile-mode .crc-nav-group--with-divider {
+  margin-top: 1px;
+  padding-top: 1px;
+}
+
+.crc-mobile-mode .crc-nav-group__label {
+  padding: 0 12px 2px;
+  font-size: 9px;
+}
+
+.crc-mobile-mode .crc-nav-group .crc-nav-item {
+  padding: 6px 12px;
+  margin: 0 4px;
+}
+
+.crc-mobile-mode .crc-nav-group .crc-nav-item__text {
+  font-size: 13px;
+}
+
+.crc-mobile-mode .crc-nav-group .crc-nav-item__icon {
+  margin-right: 6px;
 }
 
 /* Close drawer button for mobile */
@@ -23387,7 +23470,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: DASHBOARD.CSS
    ========================================================================== */
 
-/* Component Size: 366 lines, 7.11 KB */
+/* Component Size: 397 lines, 7.7 KB */
 
 /* ==========================================================================
    Dashboard Tab Styles
@@ -23751,6 +23834,37 @@ body:has(.cr-media-linker) .suggestion-container {
 .crc-dashboard-first-run-dismiss:hover {
   background: rgba(var(--background-modifier-hover-rgb), 0.5);
   color: var(--text-normal);
+}
+
+/* Documentation links card */
+.crc-dashboard-docs-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.crc-dashboard-docs-icon {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.crc-dashboard-docs-content {
+  flex: 1;
+}
+
+.crc-dashboard-docs-content .crc-link {
+  color: var(--interactive-accent);
+  text-decoration: none;
+}
+
+.crc-dashboard-docs-content .crc-link:hover {
+  text-decoration: underline;
 }
 
 /* End of dashboard.css */
@@ -26850,11 +26964,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-24 16:16:12 UTC
+ * Build completed: 2025-12-24 21:32:25 UTC
  * Components processed: 37
- * Total lines: 26494
- * Total size: 527.32 KB
- * Build duration: 0.04 seconds
+ * Total lines: 26608
+ * Total size: 529.39 KB
+ * Build duration: 0.03 seconds
  *
  * Component breakdown:
  * - variables.css: 56 lines, 1.61 KB
@@ -26865,7 +26979,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - nodes.css: 12 lines, 0.3 KB
  * - edges.css: 4 lines, 0.07 KB
  * - settings.css: 131 lines, 3.53 KB
- * - modals.css: 7787 lines, 144.64 KB
+ * - modals.css: 7870 lines, 146.13 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
  * - validation.css: 84 lines, 1.47 KB
@@ -26886,7 +27000,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - organizations.css: 245 lines, 4.36 KB
  * - sources.css: 2659 lines, 53.94 KB
  * - statistics.css: 1518 lines, 30.21 KB
- * - dashboard.css: 366 lines, 7.11 KB
+ * - dashboard.css: 397 lines, 7.7 KB
  * - universe-wizard.css: 621 lines, 11.05 KB
  * - preferences.css: 315 lines, 6.86 KB
  * - tree-output.css: 1548 lines, 30.08 KB

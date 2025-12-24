@@ -257,8 +257,7 @@
 }
 
 .crc-drawer__header {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--background-modifier-border);
+  display: none; /* Removed - redundant with grouped navigation */
 }
 
 .crc-drawer__title {
@@ -270,7 +269,7 @@
 }
 
 .crc-drawer__content {
-  padding: 4px 0;
+  padding: 2px 0;
 }
 
 /* Navigation list */
@@ -334,17 +333,17 @@
 .crc-nav-divider {
   height: 1px;
   background: var(--background-modifier-border);
-  margin: 6px 16px;
+  margin: 3px 16px;
 }
 
 /* Navigation groups */
 .crc-nav-group {
-  padding: 4px 0;
+  padding: 2px 0;
 }
 
 .crc-nav-group--with-divider {
-  margin-top: 4px;
-  padding-top: 4px;
+  margin-top: 2px;
+  padding-top: 2px;
   border-top: 1px solid var(--background-modifier-border);
 }
 
@@ -354,14 +353,14 @@
   color: var(--text-faint);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 2px 12px 4px;
+  padding: 1px 12px 2px;
   margin: 0 8px;
 }
 
 /* Compact navigation items for grouped layout */
 .crc-nav-group .crc-nav-item {
-  padding: 4px 10px;
-  margin: 1px 6px;
+  padding: 4px 10px 3px;
+  margin: 0 6px;
   border-radius: 4px;
 }
 
@@ -370,7 +369,7 @@
 }
 
 .crc-nav-group .crc-nav-item__text {
-  font-size: 12px;
+  font-size: 13px;
 }
 
 /* Tool entries (open modals/leaves instead of switching tabs) */
@@ -6387,6 +6386,34 @@
 .crc-mobile-mode .crc-nav-item {
   padding: 8px 16px;
   margin: 0 8px;
+}
+
+/* Navigation groups on mobile - tighter spacing */
+.crc-mobile-mode .crc-nav-group {
+  padding: 1px 0;
+}
+
+.crc-mobile-mode .crc-nav-group--with-divider {
+  margin-top: 1px;
+  padding-top: 1px;
+}
+
+.crc-mobile-mode .crc-nav-group__label {
+  padding: 0 12px 2px;
+  font-size: 9px;
+}
+
+.crc-mobile-mode .crc-nav-group .crc-nav-item {
+  padding: 6px 12px;
+  margin: 0 4px;
+}
+
+.crc-mobile-mode .crc-nav-group .crc-nav-item__text {
+  font-size: 13px;
+}
+
+.crc-mobile-mode .crc-nav-group .crc-nav-item__icon {
+  margin-right: 6px;
 }
 
 /* Close drawer button for mobile */
