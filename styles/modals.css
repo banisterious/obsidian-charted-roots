@@ -337,6 +337,42 @@
   margin: 6px 16px;
 }
 
+/* Navigation groups */
+.crc-nav-group {
+  padding: 4px 0;
+}
+
+.crc-nav-group--with-divider {
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.crc-nav-group__label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 12px 4px;
+  margin: 0 8px;
+}
+
+/* Compact navigation items for grouped layout */
+.crc-nav-group .crc-nav-item {
+  padding: 4px 10px;
+  margin: 1px 6px;
+  border-radius: 4px;
+}
+
+.crc-nav-group .crc-nav-item__icon {
+  margin-right: 8px;
+}
+
+.crc-nav-group .crc-nav-item__text {
+  font-size: 12px;
+}
+
 /* ==========================================================================
    CONTENT AREA
    ========================================================================== */

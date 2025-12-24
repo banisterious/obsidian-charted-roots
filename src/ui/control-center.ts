@@ -1,6 +1,6 @@
 import { App, Menu, MenuItem, Modal, Notice, Platform, Setting, TFile, TFolder, setIcon, normalizePath } from 'obsidian';
 import CanvasRootsPlugin from '../../main';
-import { TAB_CONFIGS, createLucideIcon, setLucideIcon, LucideIconName } from './lucide-icons';
+import { TAB_CONFIGS, NAV_GROUPS, createLucideIcon, setLucideIcon, LucideIconName } from './lucide-icons';
 import { ensureFolderExists } from '../core/canvas-utils';
 import { createPersonNote, PersonData } from '../core/person-note-writer';
 import { PersonPickerModal, PersonInfo, PlaceInfo, extractPlaceInfo } from './person-picker';
@@ -301,28 +301,56 @@ export class ControlCenterModal extends Modal {
 	}
 
 	/**
-	 * Create navigation list with all tabs
+	 * Create navigation list with grouped tabs
 	 */
 	private createNavigationList(container: HTMLElement): void {
-		const list = container.createEl('ul', { cls: 'crc-nav-list' });
+		// Legacy tab IDs that should be hidden from navigation
+		const hiddenTabs = new Set(['guide', 'statistics']);
 
-		TAB_CONFIGS.forEach((tabConfig) => {
-			const listItem = list.createEl('li', {
-				cls: `crc-nav-item ${tabConfig.id === this.activeTab ? 'crc-nav-item--active' : ''}`
-			});
-			listItem.setAttribute('data-tab', tabConfig.id);
+		// Render groups in order
+		NAV_GROUPS.forEach((groupConfig, groupIndex) => {
+			// Get tabs for this group (excluding hidden ones)
+			const groupTabs = TAB_CONFIGS.filter(
+				tab => tab.group === groupConfig.id && !hiddenTabs.has(tab.id)
+			);
 
-			// Icon
-			const graphic = listItem.createDiv({ cls: 'crc-nav-item__icon' });
-			setLucideIcon(graphic, tabConfig.icon, 20);
+			if (groupTabs.length === 0) return;
 
-			// Text
-			const text = listItem.createDiv({ cls: 'crc-nav-item__text' });
-			text.textContent = tabConfig.name;
+			// Create group container
+			const groupEl = container.createDiv({ cls: 'crc-nav-group' });
 
-			// Click handler
-			listItem.addEventListener('click', () => {
-				this.switchTab(tabConfig.id);
+			// Add divider before all groups except the first
+			if (groupIndex > 0) {
+				groupEl.addClass('crc-nav-group--with-divider');
+			}
+
+			// Add group label if present
+			if (groupConfig.label) {
+				const labelEl = groupEl.createDiv({ cls: 'crc-nav-group__label' });
+				labelEl.textContent = groupConfig.label;
+			}
+
+			// Create list for this group's tabs
+			const list = groupEl.createEl('ul', { cls: 'crc-nav-list' });
+
+			groupTabs.forEach((tabConfig) => {
+				const listItem = list.createEl('li', {
+					cls: `crc-nav-item ${tabConfig.id === this.activeTab ? 'crc-nav-item--active' : ''}`
+				});
+				listItem.setAttribute('data-tab', tabConfig.id);
+
+				// Icon
+				const graphic = listItem.createDiv({ cls: 'crc-nav-item__icon' });
+				setLucideIcon(graphic, tabConfig.icon, 16);
+
+				// Text
+				const text = listItem.createDiv({ cls: 'crc-nav-item__text' });
+				text.textContent = tabConfig.name;
+
+				// Click handler
+				listItem.addEventListener('click', () => {
+					this.switchTab(tabConfig.id);
+				});
 			});
 		});
 	}

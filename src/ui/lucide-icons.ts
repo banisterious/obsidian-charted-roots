@@ -195,6 +195,30 @@ export type LucideIconName =
 	| 'layout-dashboard'; // Canvas output format
 
 /**
+ * Navigation group identifiers
+ */
+export type NavGroup = 'dashboard' | 'entities' | 'data-structure' | 'output' | 'settings';
+
+/**
+ * Navigation group configuration
+ */
+export interface NavGroupConfig {
+	id: NavGroup;
+	label: string | null;  // null = no label (e.g., Dashboard)
+}
+
+/**
+ * Navigation group definitions with display labels
+ */
+export const NAV_GROUPS: NavGroupConfig[] = [
+	{ id: 'dashboard', label: null },
+	{ id: 'entities', label: 'Entities' },
+	{ id: 'data-structure', label: 'Data & Structure' },
+	{ id: 'output', label: 'Output' },
+	{ id: 'settings', label: 'Settings' }
+];
+
+/**
  * Tab configuration for Control Center navigation
  */
 export interface TabConfig {
@@ -202,113 +226,138 @@ export interface TabConfig {
 	name: string;
 	icon: LucideIconName;
 	description: string;
+	group: NavGroup;
 }
 
 /**
  * Control Center tab configurations
+ * Ordered by group for rendering
  */
 export const TAB_CONFIGS: TabConfig[] = [
+	// Dashboard (ungrouped)
 	{
 		id: 'dashboard',
 		name: 'Dashboard',
 		icon: 'home',
-		description: 'Quick actions and vault overview'
+		description: 'Quick actions and vault overview',
+		group: 'dashboard'
 	},
-	{
-		id: 'guide',
-		name: 'Guide',
-		icon: 'book-open',
-		description: 'Quick start guide and getting started'
-	},
-	{
-		id: 'import-export',
-		name: 'Import/Export',
-		icon: 'file-text',
-		description: 'Import and export genealogical data (GEDCOM, CSV)'
-	},
+	// Entities group
 	{
 		id: 'people',
 		name: 'People',
 		icon: 'users',
-		description: 'Person notes, statistics, and data entry'
+		description: 'Person notes, statistics, and data entry',
+		group: 'entities'
 	},
 	{
 		id: 'events',
 		name: 'Events',
 		icon: 'calendar',
-		description: 'Date systems and temporal data'
+		description: 'Date systems and temporal data',
+		group: 'entities'
 	},
 	{
 		id: 'places',
 		name: 'Places',
 		icon: 'map-pin',
-		description: 'Geographic locations and place statistics'
-	},
-	{
-		id: 'maps',
-		name: 'Maps',
-		icon: 'map',
-		description: 'Map visualizations and custom maps'
+		description: 'Geographic locations and place statistics',
+		group: 'entities'
 	},
 	{
 		id: 'sources',
 		name: 'Sources',
 		icon: 'archive',
-		description: 'Evidence and source documentation'
-	},
-	{
-		id: 'schemas',
-		name: 'Schemas',
-		icon: 'clipboard-check',
-		description: 'Validation schemas for data consistency'
-	},
-	{
-		id: 'relationships',
-		name: 'Relationships',
-		icon: 'link-2',
-		description: 'Custom relationship types and connections'
+		description: 'Evidence and source documentation',
+		group: 'entities'
 	},
 	{
 		id: 'organizations',
 		name: 'Organizations',
 		icon: 'building',
-		description: 'Manage organizations and memberships'
+		description: 'Manage organizations and memberships',
+		group: 'entities'
 	},
 	{
 		id: 'universes',
 		name: 'Universes',
 		icon: 'globe',
-		description: 'Manage fictional universes and worlds'
+		description: 'Manage fictional universes and worlds',
+		group: 'entities'
 	},
 	{
 		id: 'collections',
 		name: 'Collections',
 		icon: 'folder',
-		description: 'Browse and organize family groups and collections'
+		description: 'Browse and organize family groups and collections',
+		group: 'entities'
+	},
+	// Data & Structure group
+	{
+		id: 'import-export',
+		name: 'Import/Export',
+		icon: 'file-text',
+		description: 'Import and export genealogical data (GEDCOM, CSV)',
+		group: 'data-structure'
 	},
 	{
 		id: 'data-quality',
 		name: 'Data quality',
 		icon: 'shield-check',
-		description: 'Analyze data quality and find issues'
+		description: 'Analyze data quality and find issues',
+		group: 'data-structure'
+	},
+	{
+		id: 'schemas',
+		name: 'Schemas',
+		icon: 'clipboard-check',
+		description: 'Validation schemas for data consistency',
+		group: 'data-structure'
+	},
+	{
+		id: 'relationships',
+		name: 'Relationships',
+		icon: 'link-2',
+		description: 'Custom relationship types and connections',
+		group: 'data-structure'
+	},
+	// Output group
+	{
+		id: 'tree-generation',
+		name: 'Canvas Trees',
+		icon: 'git-branch',
+		description: 'Generate interactive tree canvases',
+		group: 'output'
+	},
+	{
+		id: 'maps',
+		name: 'Maps',
+		icon: 'map',
+		description: 'Map visualizations and custom maps',
+		group: 'output'
+	},
+	// Settings group
+	{
+		id: 'preferences',
+		name: 'Preferences',
+		icon: 'sliders',
+		description: 'Aliases, folder locations, and canvas settings',
+		group: 'settings'
+	},
+	// Legacy tabs (kept for backwards compatibility, will be removed)
+	{
+		id: 'guide',
+		name: 'Guide',
+		icon: 'book-open',
+		description: 'Quick start guide and getting started',
+		group: 'dashboard'  // Hidden - content moved to Dashboard
 	},
 	{
 		id: 'statistics',
 		name: 'Statistics',
 		icon: 'bar-chart-2',
-		description: 'Vault statistics, data completeness, and quality metrics'
-	},
-	{
-		id: 'tree-generation',
-		name: 'Canvas Trees',
-		icon: 'git-branch',
-		description: 'Generate interactive tree canvases'
-	},
-	{
-		id: 'preferences',
-		name: 'Preferences',
-		icon: 'sliders',
-		description: 'Aliases, folder locations, and canvas settings'
+		description: 'Vault statistics, data completeness, and quality metrics',
+		group: 'dashboard'  // Hidden - use Statistics leaf instead
 	}
 ];
 
