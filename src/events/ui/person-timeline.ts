@@ -118,7 +118,6 @@ export function renderPersonTimeline(
 	// Render the timeline with optional filter
 	const renderTimeline = () => {
 		// Clear existing content (but keep filter if it exists)
-		const existingFilter = container.querySelector('.crc-person-timeline__filter');
 		const existingTimeline = container.querySelector('.crc-person-timeline__list');
 		const existingMore = container.querySelector('.crc-person-timeline__more');
 		if (existingTimeline) existingTimeline.remove();

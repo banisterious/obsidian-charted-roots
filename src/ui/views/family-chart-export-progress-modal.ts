@@ -89,7 +89,7 @@ export class FamilyChartExportProgressModal extends Modal {
 		const progressContainer = contentEl.createDiv({ cls: 'cr-fcv-export-progress' });
 		const progressTrack = progressContainer.createDiv({ cls: 'cr-fcv-export-progress__track' });
 		this.progressBar = progressTrack.createDiv({ cls: 'cr-fcv-export-progress__bar' });
-		this.progressBar.style.width = '0%';
+		this.progressBar.setCssProps({ '--progress-width': '0%' });
 
 		// Progress text
 		this.progressText = contentEl.createDiv({
@@ -136,7 +136,7 @@ export class FamilyChartExportProgressModal extends Modal {
 		const percentage = progress.total > 0
 			? Math.round((progress.current / progress.total) * 100)
 			: 0;
-		this.progressBar.style.width = `${percentage}%`;
+		this.progressBar.setCssProps({ '--progress-width': `${percentage}%` });
 
 		// Update progress text
 		if (progress.message) {
@@ -157,12 +157,12 @@ export class FamilyChartExportProgressModal extends Modal {
 		this.currentPhase = 'complete';
 		this.phaseLabel.textContent = 'Export complete';
 		this.updatePhaseIcon('complete');
-		this.progressBar.style.width = '100%';
+		this.progressBar.setCssProps({ '--progress-width': '100%' });
 		this.progressText.textContent = 'Done!';
 
 		// Hide cancel button on completion
 		if (this.cancelButton) {
-			this.cancelButton.style.display = 'none';
+			this.cancelButton.addClass('cr-hidden');
 		}
 	}
 
@@ -176,7 +176,7 @@ export class FamilyChartExportProgressModal extends Modal {
 		this.progressText.textContent = '';
 
 		if (this.cancelButton) {
-			this.cancelButton.style.display = 'none';
+			this.cancelButton.addClass('cr-hidden');
 		}
 	}
 

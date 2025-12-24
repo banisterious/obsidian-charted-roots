@@ -678,6 +678,7 @@
   height: 100%;
   border-radius: 4px;
   background: var(--interactive-accent);
+  width: var(--progress-width, 0%);
   transition: width 0.2s ease-out;
 }
 

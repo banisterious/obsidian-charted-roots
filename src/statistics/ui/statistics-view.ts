@@ -26,7 +26,7 @@ import type {
 import { VIEW_TYPE_STATISTICS, SECTION_IDS } from '../constants/statistics-constants';
 import { REPORT_METADATA } from '../../reports/types/report-types';
 import type { ReportType } from '../../reports/types/report-types';
-import { ReportWizardModal, type ReportWizardOptions } from '../../reports/ui/report-wizard-modal';
+import { ReportWizardModal } from '../../reports/ui/report-wizard-modal';
 import { UnifiedTreeWizardModal } from '../../trees/ui/unified-tree-wizard-modal';
 
 /**

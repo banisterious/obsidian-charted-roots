@@ -11,7 +11,7 @@
  * Design inspired by FamilyChartExportWizard for consistency.
  */
 
-import { Modal, Notice, setIcon, Setting } from 'obsidian';
+import { Modal, Notice, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import { createLucideIcon, setLucideIcon, LucideIconName } from '../../ui/lucide-icons';
 import type { PersonInfo } from '../../ui/person-picker';
@@ -37,9 +37,7 @@ import {
 	ReportType,
 	ReportCategory,
 	REPORT_METADATA,
-	REPORT_CATEGORY_METADATA,
 	getReportsByCategory,
-	ReportMetadata,
 	FamilyGroupSheetResult,
 	IndividualSummaryResult,
 	AhnentafelResult,
@@ -690,7 +688,7 @@ export class ReportWizardModal extends Modal {
 	/**
 	 * Load all people from the vault
 	 */
-	private async loadPeople(): Promise<void> {
+	private loadPeople(): void {
 		const files = this.app.vault.getMarkdownFiles();
 		const people: PersonInfo[] = [];
 
@@ -1163,9 +1161,6 @@ export class ReportWizardModal extends Modal {
 		section.createEl('h3', { text: 'Content Options', cls: 'cr-report-section-title' });
 
 		const optionsGrid = section.createDiv({ cls: 'cr-report-options-grid' });
-
-		// Get report-specific options based on report type
-		const reportMeta = this.formData.reportType ? REPORT_METADATA[this.formData.reportType] : null;
 
 		// Include spouses (for applicable reports)
 		if (this.shouldShowOption('spouses')) {
