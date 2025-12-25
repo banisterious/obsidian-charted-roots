@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Expandable parse warnings** - Import wizard Step 4 (Preview) now shows a clickable warning section with chevron icon. Click to expand and view up to 10 warning details, with "...and X more" shown if there are additional warnings.
+
+### Fixed
+
+- **Duplicate event detection in Gramps import** - Gramps importer now detects and skips duplicate events (same type + person + date) that may exist in the source file. Duplicate count is displayed in the import summary.
+
+- **Progress reporting for relationships phase** - Gramps import progress indicator now updates during the relationship linking phase, which previously showed no progress while relationships were being established.
+
+- **Media block missing from dynamic blocks** - All importers (GEDCOM, Gramps, CSV, GEDCOM X) now include the media block in person notes by default. Previously only timeline and relationships blocks were created.
+
 ---
 
 ## [0.16.0] - 2025-12-24

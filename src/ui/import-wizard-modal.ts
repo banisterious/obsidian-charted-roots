@@ -598,11 +598,35 @@ export class ImportWizardModal extends Modal {
 		// Show warnings if any
 		if (this.formData.parseWarnings.length > 0) {
 			const warningEl = section.createDiv({ cls: 'crc-import-preview-warning' });
-			const warningIcon = warningEl.createDiv({ cls: 'crc-import-preview-warning-icon' });
+			const warningHeader = warningEl.createDiv({ cls: 'crc-import-preview-warning-header' });
+			const warningIcon = warningHeader.createDiv({ cls: 'crc-import-preview-warning-icon' });
 			setIcon(warningIcon, 'alert-triangle');
-			warningEl.createDiv({
+			warningHeader.createDiv({
 				cls: 'crc-import-preview-warning-text',
 				text: `${this.formData.parseWarnings.length} warning(s) found during parsing`
+			});
+			const expandIcon = warningHeader.createDiv({ cls: 'crc-import-preview-warning-expand' });
+			setIcon(expandIcon, 'chevron-down');
+
+			// Create collapsible details container
+			const warningDetails = warningEl.createDiv({ cls: 'crc-import-preview-warning-details' });
+			warningDetails.style.display = 'none';
+			for (const warning of this.formData.parseWarnings.slice(0, 10)) {
+				warningDetails.createDiv({ cls: 'crc-import-preview-warning-detail', text: warning });
+			}
+			if (this.formData.parseWarnings.length > 10) {
+				warningDetails.createDiv({
+					cls: 'crc-import-preview-warning-more',
+					text: `...and ${this.formData.parseWarnings.length - 10} more`
+				});
+			}
+
+			// Toggle expansion on click
+			warningHeader.style.cursor = 'pointer';
+			warningHeader.addEventListener('click', () => {
+				const isExpanded = warningDetails.style.display !== 'none';
+				warningDetails.style.display = isExpanded ? 'none' : 'block';
+				setIcon(expandIcon, isExpanded ? 'chevron-down' : 'chevron-up');
 			});
 		}
 
