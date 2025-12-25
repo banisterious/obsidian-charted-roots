@@ -614,38 +614,53 @@ export class DataQualityService {
 	private checkDataFormat(person: PersonNode): DataQualityIssue[] {
 		const issues: DataQualityIssue[] = [];
 
+		// Read raw frontmatter to get actual on-disk values
+		// The PersonNode cache may have stale values after fixes are applied
+		const cache = this.app.metadataCache.getFileCache(person.file);
+		const fm = cache?.frontmatter as Record<string, unknown> | undefined;
+
+		// Get raw date values from frontmatter (handle Date objects and numbers)
+		const rawBorn = fm?.['born'];
+		const rawDied = fm?.['died'];
+		const birthDate = rawBorn instanceof Date
+			? rawBorn.toISOString().split('T')[0]
+			: typeof rawBorn === 'number'
+				? String(rawBorn)
+				: typeof rawBorn === 'string' ? rawBorn : undefined;
+		const deathDate = rawDied instanceof Date
+			? rawDied.toISOString().split('T')[0]
+			: typeof rawDied === 'number'
+				? String(rawDied)
+				: typeof rawDied === 'string' ? rawDied : undefined;
+
 		// Non-standard date format for birth
-		if (person.birthDate && !this.isStandardDateFormat(person.birthDate)) {
+		if (birthDate && !this.isStandardDateFormat(birthDate)) {
 			issues.push({
 				code: 'NON_STANDARD_DATE',
-				message: `Birth date "${person.birthDate}" is not in standard format (YYYY-MM-DD or YYYY)`,
+				message: `Birth date "${birthDate}" is not in standard format (YYYY-MM-DD or YYYY)`,
 				severity: 'info',
 				category: 'data_format',
 				person,
-				details: { field: 'birthDate', value: person.birthDate },
+				details: { field: 'birthDate', value: birthDate },
 			});
 		}
 
 		// Non-standard date format for death
-		if (person.deathDate && !this.isStandardDateFormat(person.deathDate)) {
+		if (deathDate && !this.isStandardDateFormat(deathDate)) {
 			issues.push({
 				code: 'NON_STANDARD_DATE',
-				message: `Death date "${person.deathDate}" is not in standard format (YYYY-MM-DD or YYYY)`,
+				message: `Death date "${deathDate}" is not in standard format (YYYY-MM-DD or YYYY)`,
 				severity: 'info',
 				category: 'data_format',
 				person,
-				details: { field: 'deathDate', value: person.deathDate },
+				details: { field: 'deathDate', value: deathDate },
 			});
 		}
 
 		// Non-standard gender value - flag values that can be normalized to canonical GEDCOM codes
 		// Canonical values are: M, F, X (nonbinary/other), U (unknown)
-		// NOTE: We must read the RAW frontmatter value, not person.sex, because the PersonNode
-		// cache normalizes 'female'→'F', 'male'→'M' etc. during load. We need to detect the
-		// actual on-disk value to determine if normalization is needed.
 		const canonicalGenders = ['M', 'F', 'X', 'U'];
-		const cache = this.app.metadataCache.getFileCache(person.file);
-		const rawSex = cache?.frontmatter?.['sex'] as string | undefined;
+		const rawSex = fm?.['sex'] as string | undefined;
 		if (rawSex && !canonicalGenders.includes(rawSex)) {
 			issues.push({
 				code: 'INVALID_GENDER',
