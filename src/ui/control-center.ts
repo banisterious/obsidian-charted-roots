@@ -11709,6 +11709,21 @@ export class ControlCenterModal extends Modal {
 			this.showTab('schemas');
 		});
 
+		// Cleanup Wizard button
+		const wizardSection = quickStartContent.createDiv({ cls: 'crc-mt-3' });
+		const wizardBtn = wizardSection.createEl('button', {
+			cls: 'crc-btn crc-btn--primary'
+		});
+		const wizardIcon = wizardBtn.createSpan({ cls: 'crc-btn-icon' });
+		setIcon(wizardIcon, 'sparkles');
+		wizardBtn.createSpan({ text: 'Run Cleanup Wizard' });
+		wizardBtn.addEventListener('click', () => {
+			this.close();
+			void import('./cleanup-wizard-modal').then(({ CleanupWizardModal }) => {
+				new CleanupWizardModal(this.app, this.plugin).open();
+			});
+		});
+
 		container.appendChild(quickStartCard);
 
 		// Research Gaps Section (only when fact-level tracking is enabled)
