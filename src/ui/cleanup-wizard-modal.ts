@@ -15,7 +15,7 @@
  * Step 10: Flatten Properties — Fix nested frontmatter (batch)
  */
 
-import { App, Modal, Notice, setIcon } from 'obsidian';
+import { App, Modal, Notice, setIcon, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import {
 	DataQualityService,
@@ -29,6 +29,9 @@ import { FolderFilterService } from '../core/folder-filter';
 import { getLogger } from '../core/logging';
 import type { CleanupWizardPersistedState } from '../settings';
 import { findPlaceNameVariants, findDuplicatePlaceNotes, mergeDuplicatePlaces, type PlaceVariantMatch, type PlaceDuplicateGroup } from './standardize-place-variants-modal';
+import { GeocodingService, type GeocodingResult, type BulkGeocodingResult } from '../maps/services/geocoding-service';
+import { PlaceGraphService } from '../core/place-graph';
+import type { PlaceNode } from '../models/place';
 
 const logger = getLogger('CleanupWizard');
 
@@ -229,6 +232,13 @@ export class CleanupWizardModal extends Modal {
 	private placeDuplicateGroups: PlaceDuplicateGroup[] = [];
 	private showDeduplicationStep = false;
 
+	// Geocoding state
+	private ungeocodedPlaces: PlaceNode[] = [];
+	private geocodingService: GeocodingService | null = null;
+	private isGeocoding = false;
+	private geocodingCancelled = false;
+	private geocodingResults: GeocodingResult[] = [];
+
 	constructor(app: App, plugin: CanvasRootsPlugin) {
 		super(app);
 		this.plugin = plugin;
@@ -252,6 +262,16 @@ export class CleanupWizardModal extends Modal {
 			);
 		}
 		return this.dataQualityService;
+	}
+
+	/**
+	 * Initialize the GeocodingService (lazy initialization)
+	 */
+	private getGeocodingService(): GeocodingService {
+		if (!this.geocodingService) {
+			this.geocodingService = new GeocodingService(this.app);
+		}
+		return this.geocodingService;
 	}
 
 	/**
@@ -1438,6 +1458,9 @@ export class CleanupWizardModal extends Modal {
 			case 'place-variants':
 				this.renderPlaceVariantsStep(container, stepState);
 				break;
+			case 'geocode':
+				this.renderGeocodeStep(container, stepState);
+				break;
 			default:
 				// Placeholder for unimplemented interactive steps
 				this.renderInteractiveStepPlaceholder(container, stepConfig);
@@ -1839,6 +1862,338 @@ export class CleanupWizardModal extends Modal {
 		} else {
 			new Notice(`Merged ${totalDeletedFiles} duplicate${totalDeletedFiles !== 1 ? 's' : ''}, updated ${totalUpdatedLinks} link${totalUpdatedLinks !== 1 ? 's' : ''}`);
 		}
+
+		this.renderCurrentView();
+	}
+
+	/**
+	 * Render Step 8: Bulk Geocode interactive UI
+	 */
+	private renderGeocodeStep(container: HTMLElement, stepState: StepState): void {
+		// If geocoding is in progress, show progress view
+		if (this.isGeocoding) {
+			this.renderGeocodeProgress(container, stepState);
+			return;
+		}
+
+		// If we have results from a completed run, show results
+		if (this.geocodingResults.length > 0) {
+			this.renderGeocodeResults(container, stepState);
+			return;
+		}
+
+		// Check for ungeocoded places
+		if (this.ungeocodedPlaces.length === 0 && this.state.preScanComplete) {
+			const noIssues = container.createDiv({ cls: 'crc-cleanup-no-issues' });
+			const icon = noIssues.createDiv({ cls: 'crc-cleanup-no-issues-icon' });
+			setIcon(icon, 'check-circle');
+			noIssues.createDiv({ cls: 'crc-cleanup-no-issues-text', text: 'All places have coordinates!' });
+			noIssues.createDiv({ cls: 'crc-cleanup-no-issues-hint', text: 'Your place notes already have geographic coordinates. You can skip to the next step.' });
+			return;
+		}
+
+		const preview = container.createDiv({ cls: 'crc-cleanup-preview' });
+
+		// Summary
+		const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
+		summary.textContent = `Found ${this.ungeocodedPlaces.length} place${this.ungeocodedPlaces.length === 1 ? '' : 's'} without coordinates.`;
+
+		// Description
+		const desc = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
+		desc.textContent = 'This will use OpenStreetMap\'s Nominatim service to look up coordinates. The process respects the API rate limit (1 request per second).';
+
+		// Estimated time
+		const estimatedMinutes = Math.ceil(this.ungeocodedPlaces.length / 60);
+		const timeText = estimatedMinutes === 1 ? 'about 1 minute' : `about ${estimatedMinutes} minutes`;
+		const timeEstimate = preview.createDiv({ cls: 'crc-cleanup-geocode-time' });
+		const timeIcon = timeEstimate.createSpan({ cls: 'crc-cleanup-geocode-time-icon' });
+		setIcon(timeIcon, 'clock');
+		timeEstimate.createSpan({ text: `Estimated time: ${timeText}` });
+
+		// Places list preview
+		const listContainer = preview.createDiv({ cls: 'crc-cleanup-geocode-list-container' });
+		const listTitle = listContainer.createDiv({ cls: 'crc-cleanup-geocode-list-title' });
+		listTitle.textContent = 'Places to geocode:';
+
+		const placesList = listContainer.createDiv({ cls: 'crc-cleanup-geocode-list' });
+		const maxDisplay = 20;
+		const displayPlaces = this.ungeocodedPlaces.slice(0, maxDisplay);
+
+		for (const place of displayPlaces) {
+			const item = placesList.createDiv({ cls: 'crc-cleanup-geocode-list-item' });
+			const iconEl = item.createSpan({ cls: 'crc-cleanup-geocode-list-icon' });
+			setIcon(iconEl, 'map-pin');
+			item.createSpan({ text: place.name, cls: 'crc-cleanup-geocode-list-name' });
+		}
+
+		if (this.ungeocodedPlaces.length > maxDisplay) {
+			const moreEl = placesList.createDiv({ cls: 'crc-cleanup-geocode-list-more' });
+			moreEl.textContent = `... and ${this.ungeocodedPlaces.length - maxDisplay} more`;
+		}
+
+		// Warning
+		const warning = preview.createDiv({ cls: 'crc-cleanup-warning' });
+		const warningIcon = warning.createDiv({ cls: 'crc-cleanup-warning-icon' });
+		setIcon(warningIcon, 'alert-triangle');
+		warning.createSpan({ text: 'Backup your vault before proceeding. This operation will modify place notes to add coordinates.' });
+
+		// Start button
+		const applyContainer = preview.createDiv({ cls: 'crc-cleanup-geocode-apply' });
+		const startBtn = applyContainer.createEl('button', {
+			cls: 'crc-btn crc-btn--primary'
+		});
+		const startIcon = startBtn.createSpan({ cls: 'crc-btn-icon' });
+		setIcon(startIcon, 'map');
+		startBtn.createSpan({ text: `Start geocoding ${this.ungeocodedPlaces.length} places` });
+
+		startBtn.addEventListener('click', async () => {
+			await this.startGeocoding(stepState);
+		});
+	}
+
+	/**
+	 * Render geocoding progress view
+	 */
+	private renderGeocodeProgress(container: HTMLElement, stepState: StepState): void {
+		const progress = container.createDiv({ cls: 'crc-cleanup-geocode-progress' });
+
+		// Progress header
+		const header = progress.createDiv({ cls: 'crc-cleanup-geocode-progress-header' });
+		header.createSpan({ text: 'Geocoding in progress...', cls: 'crc-cleanup-geocode-progress-title' });
+
+		// Progress stats
+		const stats = progress.createDiv({ cls: 'crc-cleanup-geocode-progress-stats' });
+		const processed = this.geocodingResults.length;
+		const total = this.ungeocodedPlaces.length;
+		const percent = total > 0 ? Math.round((processed / total) * 100) : 0;
+
+		const successCount = this.geocodingResults.filter(r => r.success && r.coordinates).length;
+		const failedCount = this.geocodingResults.filter(r => !r.success || !r.coordinates).length;
+
+		stats.createSpan({ text: `${processed} of ${total} (${percent}%)` });
+
+		// Progress bar
+		const progressBarContainer = progress.createDiv({ cls: 'crc-cleanup-geocode-progress-bar-container' });
+		const progressBar = progressBarContainer.createDiv({ cls: 'crc-cleanup-geocode-progress-bar' });
+		progressBar.style.width = `${percent}%`;
+
+		// Stats breakdown
+		const breakdown = progress.createDiv({ cls: 'crc-cleanup-geocode-progress-breakdown' });
+
+		const successStat = breakdown.createSpan({ cls: 'crc-cleanup-geocode-stat crc-cleanup-geocode-stat--success' });
+		const successIcon = successStat.createSpan({ cls: 'crc-cleanup-geocode-stat-icon' });
+		setIcon(successIcon, 'check');
+		successStat.createSpan({ text: `${successCount} found` });
+
+		const failedStat = breakdown.createSpan({ cls: 'crc-cleanup-geocode-stat crc-cleanup-geocode-stat--failed' });
+		const failedIcon = failedStat.createSpan({ cls: 'crc-cleanup-geocode-stat-icon' });
+		setIcon(failedIcon, 'x');
+		failedStat.createSpan({ text: `${failedCount} not found` });
+
+		// Results list (live updating)
+		const resultsList = progress.createDiv({ cls: 'crc-cleanup-geocode-results-list' });
+
+		// Show last 10 results
+		const recentResults = this.geocodingResults.slice(-10);
+		for (const result of recentResults) {
+			const item = resultsList.createDiv({ cls: 'crc-cleanup-geocode-result-item' });
+
+			const icon = item.createSpan({ cls: 'crc-cleanup-geocode-result-icon' });
+			if (result.success && result.coordinates) {
+				setIcon(icon, 'check');
+				icon.addClass('crc-cleanup-geocode-result-icon--success');
+			} else {
+				setIcon(icon, 'x');
+				icon.addClass('crc-cleanup-geocode-result-icon--failed');
+			}
+
+			const name = item.createSpan({ cls: 'crc-cleanup-geocode-result-name' });
+			name.textContent = result.placeName;
+
+			if (result.success && result.coordinates) {
+				const coords = item.createSpan({ cls: 'crc-cleanup-geocode-result-coords' });
+				coords.textContent = `(${result.coordinates.lat.toFixed(4)}, ${result.coordinates.long.toFixed(4)})`;
+			} else if (result.error) {
+				const error = item.createSpan({ cls: 'crc-cleanup-geocode-result-error' });
+				error.textContent = result.error;
+			}
+		}
+
+		// Cancel button
+		const cancelContainer = progress.createDiv({ cls: 'crc-cleanup-geocode-cancel' });
+		const cancelBtn = cancelContainer.createEl('button', {
+			cls: 'crc-btn crc-btn--secondary'
+		});
+		cancelBtn.textContent = this.geocodingCancelled ? 'Cancelling...' : 'Cancel';
+		cancelBtn.disabled = this.geocodingCancelled;
+
+		cancelBtn.addEventListener('click', () => {
+			this.geocodingCancelled = true;
+			cancelBtn.textContent = 'Cancelling...';
+			cancelBtn.disabled = true;
+		});
+	}
+
+	/**
+	 * Render geocoding results view
+	 */
+	private renderGeocodeResults(container: HTMLElement, stepState: StepState): void {
+		const results = container.createDiv({ cls: 'crc-cleanup-geocode-results' });
+
+		// Summary
+		const successCount = this.geocodingResults.filter(r => r.success && r.coordinates).length;
+		const failedCount = this.geocodingResults.filter(r => !r.success || !r.coordinates).length;
+
+		const summary = results.createDiv({ cls: 'crc-cleanup-geocode-results-summary' });
+
+		const successSummary = summary.createDiv({ cls: 'crc-cleanup-geocode-summary-stat crc-cleanup-geocode-summary-stat--success' });
+		const successIcon = successSummary.createDiv({ cls: 'crc-cleanup-geocode-summary-icon' });
+		setIcon(successIcon, 'check-circle');
+		successSummary.createDiv({ cls: 'crc-cleanup-geocode-summary-value', text: String(successCount) });
+		successSummary.createDiv({ cls: 'crc-cleanup-geocode-summary-label', text: 'Coordinates found' });
+
+		const failedSummary = summary.createDiv({ cls: 'crc-cleanup-geocode-summary-stat crc-cleanup-geocode-summary-stat--failed' });
+		const failedIcon = failedSummary.createDiv({ cls: 'crc-cleanup-geocode-summary-icon' });
+		setIcon(failedIcon, 'x-circle');
+		failedSummary.createDiv({ cls: 'crc-cleanup-geocode-summary-value', text: String(failedCount) });
+		failedSummary.createDiv({ cls: 'crc-cleanup-geocode-summary-label', text: 'Not found' });
+
+		// Results table
+		const tableContainer = results.createDiv({ cls: 'crc-cleanup-geocode-table-container' });
+		const table = tableContainer.createEl('table', { cls: 'crc-cleanup-geocode-table' });
+
+		const thead = table.createEl('thead');
+		const headerRow = thead.createEl('tr');
+		headerRow.createEl('th', { text: '', cls: 'crc-cleanup-geocode-th-status' });
+		headerRow.createEl('th', { text: 'Place' });
+		headerRow.createEl('th', { text: 'Result' });
+
+		const tbody = table.createEl('tbody');
+
+		// Show all results (with scroll)
+		for (const result of this.geocodingResults) {
+			const row = tbody.createEl('tr', { cls: 'crc-cleanup-geocode-row' });
+
+			// Status icon
+			const tdStatus = row.createEl('td', { cls: 'crc-cleanup-geocode-td-status' });
+			const statusIcon = tdStatus.createSpan();
+			if (result.success && result.coordinates) {
+				setIcon(statusIcon, 'check');
+				statusIcon.addClass('crc-cleanup-geocode-status--success');
+			} else {
+				setIcon(statusIcon, 'x');
+				statusIcon.addClass('crc-cleanup-geocode-status--failed');
+			}
+
+			// Place name
+			row.createEl('td', { text: result.placeName, cls: 'crc-cleanup-geocode-td-name' });
+
+			// Result
+			const tdResult = row.createEl('td', { cls: 'crc-cleanup-geocode-td-result' });
+			if (result.success && result.coordinates) {
+				tdResult.textContent = `${result.coordinates.lat.toFixed(4)}, ${result.coordinates.long.toFixed(4)}`;
+				tdResult.addClass('crc-cleanup-geocode-result--coords');
+			} else {
+				tdResult.textContent = result.error || 'Not found';
+				tdResult.addClass('crc-cleanup-geocode-result--error');
+			}
+		}
+
+		// Show failed places if any
+		if (failedCount > 0) {
+			const failedNote = results.createDiv({ cls: 'crc-cleanup-geocode-failed-note' });
+			const noteIcon = failedNote.createSpan({ cls: 'crc-cleanup-geocode-failed-note-icon' });
+			setIcon(noteIcon, 'info');
+			failedNote.createSpan({ text: 'Places not found may have unusual names or be too specific. You can try geocoding them manually.' });
+		}
+
+		// Update step state
+		stepState.status = 'complete';
+		stepState.fixCount = successCount;
+
+		// Done button
+		const doneContainer = results.createDiv({ cls: 'crc-cleanup-geocode-done' });
+		const doneBtn = doneContainer.createEl('button', {
+			cls: 'crc-btn crc-btn--primary'
+		});
+		const doneIcon = doneBtn.createSpan({ cls: 'crc-btn-icon' });
+		setIcon(doneIcon, 'check');
+		doneBtn.createSpan({ text: 'Done' });
+
+		doneBtn.addEventListener('click', () => {
+			// Clear results and re-render
+			this.geocodingResults = [];
+			this.renderCurrentView();
+		});
+	}
+
+	/**
+	 * Start the geocoding process
+	 */
+	private async startGeocoding(stepState: StepState): Promise<void> {
+		if (this.isGeocoding) return;
+
+		this.isGeocoding = true;
+		this.geocodingCancelled = false;
+		this.geocodingResults = [];
+		stepState.status = 'in_progress';
+		this.renderCurrentView();
+
+		const geocodingService = this.getGeocodingService();
+		const placeGraph = this.plugin.createPlaceGraphService();
+
+		for (let i = 0; i < this.ungeocodedPlaces.length; i++) {
+			// Check for cancellation
+			if (this.geocodingCancelled) {
+				logger.info('startGeocoding', `Geocoding cancelled at ${i} of ${this.ungeocodedPlaces.length}`);
+				break;
+			}
+
+			const place = this.ungeocodedPlaces[i];
+
+			// Get parent place name for more accurate lookup
+			let parentName: string | undefined;
+			if (place.parentId) {
+				const parentPlace = placeGraph.getPlaceByCrId(place.parentId);
+				parentName = parentPlace?.name;
+			}
+
+			// Geocode the place
+			const result = await geocodingService.geocodeSingle(place.name, parentName);
+			this.geocodingResults.push(result);
+
+			// Update the file if successful
+			if (result.success && result.coordinates) {
+				const file = this.app.vault.getAbstractFileByPath(place.filePath);
+				if (file instanceof TFile) {
+					try {
+						await geocodingService.updatePlaceCoordinates(file, result.coordinates);
+					} catch (error) {
+						logger.warn('startGeocoding', `Failed to update ${place.name}: ${error}`);
+					}
+				}
+			}
+
+			// Re-render to show progress (every 5 items to avoid too much re-rendering)
+			if (i % 5 === 0 || i === this.ungeocodedPlaces.length - 1) {
+				this.renderCurrentView();
+			}
+		}
+
+		// Complete
+		this.isGeocoding = false;
+
+		const successCount = this.geocodingResults.filter(r => r.success && r.coordinates).length;
+		const failedCount = this.geocodingResults.filter(r => !r.success || !r.coordinates).length;
+
+		if (this.geocodingCancelled) {
+			new Notice(`Geocoding cancelled. Found ${successCount} coordinates.`);
+		} else {
+			new Notice(`Geocoding complete! Found ${successCount} coordinates, ${failedCount} not found.`);
+		}
+
+		// Clear the ungeocoded places list since we've processed them
+		this.ungeocodedPlaces = [];
 
 		this.renderCurrentView();
 	}
@@ -2252,7 +2607,19 @@ export class CleanupWizardModal extends Modal {
 			this.state.steps[7].issueCount = this.placeVariantMatches.length;
 			logger.debug('runPreScan', `Step 7 (Place Variants): ${this.placeVariantMatches.length} issues`);
 
-			// Steps 6, 8, 9 (source migration, geocode, hierarchy)
+			// Step 8: Ungeocoded places
+			const placeGraph = this.plugin.createPlaceGraphService();
+			placeGraph.reloadCache();
+			const allPlaces = placeGraph.getAllPlaces();
+			// Filter to places without coordinates that are "real" category
+			this.ungeocodedPlaces = allPlaces.filter(place =>
+				!place.coordinates &&
+				['real', 'historical', 'disputed'].includes(place.category)
+			);
+			this.state.steps[8].issueCount = this.ungeocodedPlaces.length;
+			logger.debug('runPreScan', `Step 8 (Geocode): ${this.ungeocodedPlaces.length} places without coordinates`);
+
+			// Steps 6, 9 (source migration, hierarchy)
 			// These require different services - leave as 0 for now (Phase 2)
 
 			this.state.preScanComplete = true;

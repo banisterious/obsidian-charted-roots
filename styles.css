@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-25 22:46:38 UTC
+ * - Generated: 2025-12-25 23:05:00 UTC
  * - Components: 37 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -677,7 +677,7 @@ settings:
    COMPONENT: MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 11233 lines, 208.37 KB */
+/* Component Size: 11608 lines, 215.17 KB */
 
 /* ==========================================================================
    Canvas Roots Control Center - Styling
@@ -11910,6 +11910,381 @@ settings:
 .crc-cleanup-warning-icon svg {
   width: 16px;
   height: 16px;
+}
+
+/* =====================================================
+   Step 8: Geocoding UI Styles
+   ===================================================== */
+
+/* Time estimate */
+.crc-cleanup-geocode-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.crc-cleanup-geocode-time-icon {
+  display: flex;
+  align-items: center;
+}
+
+.crc-cleanup-geocode-time-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Places list preview */
+.crc-cleanup-geocode-list-container {
+  margin: 16px 0;
+}
+
+.crc-cleanup-geocode-list-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-normal);
+  margin-bottom: 8px;
+}
+
+.crc-cleanup-geocode-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 8px;
+  background: var(--background-secondary);
+}
+
+.crc-cleanup-geocode-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 13px;
+}
+
+.crc-cleanup-geocode-list-icon {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.crc-cleanup-geocode-list-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.crc-cleanup-geocode-list-name {
+  color: var(--text-normal);
+}
+
+.crc-cleanup-geocode-list-more {
+  padding: 8px 0 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Apply button container */
+.crc-cleanup-geocode-apply {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* Progress view */
+.crc-cleanup-geocode-progress {
+  padding: 16px 0;
+}
+
+.crc-cleanup-geocode-progress-header {
+  margin-bottom: 12px;
+}
+
+.crc-cleanup-geocode-progress-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.crc-cleanup-geocode-progress-stats {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.crc-cleanup-geocode-progress-bar-container {
+  height: 8px;
+  background: var(--background-modifier-border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.crc-cleanup-geocode-progress-bar {
+  height: 100%;
+  background: var(--interactive-accent);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.crc-cleanup-geocode-progress-breakdown {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.crc-cleanup-geocode-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.crc-cleanup-geocode-stat-icon {
+  display: flex;
+  align-items: center;
+}
+
+.crc-cleanup-geocode-stat-icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.crc-cleanup-geocode-stat--success {
+  color: var(--color-green);
+}
+
+.crc-cleanup-geocode-stat--failed {
+  color: var(--text-muted);
+}
+
+/* Results list during progress */
+.crc-cleanup-geocode-results-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 8px;
+  background: var(--background-secondary);
+  margin-bottom: 16px;
+}
+
+.crc-cleanup-geocode-result-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 13px;
+}
+
+.crc-cleanup-geocode-result-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.crc-cleanup-geocode-result-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.crc-cleanup-geocode-result-icon--success {
+  color: var(--color-green);
+}
+
+.crc-cleanup-geocode-result-icon--failed {
+  color: var(--text-muted);
+}
+
+.crc-cleanup-geocode-result-name {
+  flex: 1;
+  color: var(--text-normal);
+}
+
+.crc-cleanup-geocode-result-coords {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-monospace);
+}
+
+.crc-cleanup-geocode-result-error {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.crc-cleanup-geocode-cancel {
+  display: flex;
+  justify-content: center;
+}
+
+/* Results view */
+.crc-cleanup-geocode-results {
+  padding: 16px 0;
+}
+
+.crc-cleanup-geocode-results-summary {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 20px;
+  justify-content: center;
+}
+
+.crc-cleanup-geocode-summary-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 24px;
+  border-radius: 8px;
+  background: var(--background-secondary);
+}
+
+.crc-cleanup-geocode-summary-stat--success .crc-cleanup-geocode-summary-icon {
+  color: var(--color-green);
+}
+
+.crc-cleanup-geocode-summary-stat--failed .crc-cleanup-geocode-summary-icon {
+  color: var(--text-muted);
+}
+
+.crc-cleanup-geocode-summary-icon {
+  margin-bottom: 8px;
+}
+
+.crc-cleanup-geocode-summary-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.crc-cleanup-geocode-summary-value {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.crc-cleanup-geocode-summary-stat--success .crc-cleanup-geocode-summary-value {
+  color: var(--color-green);
+}
+
+.crc-cleanup-geocode-summary-stat--failed .crc-cleanup-geocode-summary-value {
+  color: var(--text-muted);
+}
+
+.crc-cleanup-geocode-summary-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Results table */
+.crc-cleanup-geocode-table-container {
+  max-height: 250px;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.crc-cleanup-geocode-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.crc-cleanup-geocode-table th {
+  position: sticky;
+  top: 0;
+  background: var(--background-secondary);
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.crc-cleanup-geocode-th-status {
+  width: 30px;
+}
+
+.crc-cleanup-geocode-table tbody tr {
+  border-bottom: 1px solid var(--background-modifier-border-hover);
+}
+
+.crc-cleanup-geocode-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.crc-cleanup-geocode-table td {
+  padding: 8px 12px;
+}
+
+.crc-cleanup-geocode-td-status {
+  text-align: center;
+}
+
+.crc-cleanup-geocode-td-status svg {
+  width: 14px;
+  height: 14px;
+}
+
+.crc-cleanup-geocode-status--success {
+  color: var(--color-green);
+}
+
+.crc-cleanup-geocode-status--failed {
+  color: var(--text-muted);
+}
+
+.crc-cleanup-geocode-td-name {
+  color: var(--text-normal);
+}
+
+.crc-cleanup-geocode-td-result {
+  font-family: var(--font-monospace);
+  font-size: 12px;
+}
+
+.crc-cleanup-geocode-result--coords {
+  color: var(--text-muted);
+}
+
+.crc-cleanup-geocode-result--error {
+  color: var(--text-muted);
+  font-style: italic;
+  font-family: var(--font-text);
+}
+
+/* Failed note */
+.crc-cleanup-geocode-failed-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.crc-cleanup-geocode-failed-note-icon {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.crc-cleanup-geocode-failed-note-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Done button container */
+.crc-cleanup-geocode-done {
+  display: flex;
+  justify-content: center;
 }
 
 
@@ -30310,11 +30685,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-25 22:46:38 UTC
+ * Build completed: 2025-12-25 23:05:00 UTC
  * Components processed: 37
- * Total lines: 29954
- * Total size: 591.31 KB
- * Build duration: 0.05 seconds
+ * Total lines: 30329
+ * Total size: 598.11 KB
+ * Build duration: 0.04 seconds
  *
  * Component breakdown:
  * - variables.css: 56 lines, 1.61 KB
@@ -30325,7 +30700,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - nodes.css: 12 lines, 0.3 KB
  * - edges.css: 4 lines, 0.07 KB
  * - settings.css: 131 lines, 3.53 KB
- * - modals.css: 11233 lines, 208.37 KB
+ * - modals.css: 11608 lines, 215.17 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
  * - validation.css: 84 lines, 1.47 KB

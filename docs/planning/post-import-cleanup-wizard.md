@@ -543,7 +543,7 @@ The mockup includes:
 | 5 | ✅ Complete | Orphan reference clearing with preview |
 | 6 | ⏳ Pending | Source array migration (service exists, wizard integration TBD) |
 | 7 | ✅ Complete | Place variant standardization with interactive table, select all/deselect, canonical override |
-| 8 | ⏳ Pending | Bulk geocoding (interactive step) |
+| 8 | ✅ Complete | Bulk geocoding with progress tracking, cancellation, and results summary |
 | 9 | ⏳ Pending | Place hierarchy enrichment (interactive step) |
 | 10 | ✅ Complete | Nested property flattening with preview |
 
@@ -567,6 +567,30 @@ The mockup includes:
 - Reference count column
 - Strikethrough styling for selected variants
 - Uses existing `findPlaceNameVariants()` from `standardize-place-variants-modal.ts`
+
+**Step 7b Place Deduplication:** After variant standardization:
+- Automatically detects Place notes with identical `full_name` values
+- Shows file list with reference counts for each duplicate
+- Recommends canonical file based on highest reference count
+- User can override canonical selection via dropdown
+- Updates all wikilinks in Person notes to point to canonical file
+- Moves duplicate files to trash
+
+**Step 8 Bulk Geocode:** Interactive geocoding with:
+- Pre-scan detection of places without coordinates (filtering by category: real, historical, disputed)
+- Time estimate based on number of places (1 request/second rate limit)
+- Scrollable list preview of places to geocode
+- Real-time progress view with:
+  - Progress bar and percentage
+  - Success/failure counters
+  - Live results list showing last 10 geocoded places
+  - Cancel button with confirmation state
+- Results summary showing:
+  - Large success/failure count cards
+  - Scrollable table of all results with coordinates or error messages
+  - Note about manually geocoding failed places
+- Uses existing `GeocodingService` for API calls and file updates
+- Respects Nominatim rate limit (1100ms between requests)
 
 ### Bug Fixes Applied
 
