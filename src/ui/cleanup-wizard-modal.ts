@@ -763,8 +763,18 @@ export class CleanupWizardModal extends Modal {
 		const stepState = this.state.steps[stepConfig.number];
 		const tile = container.createDiv({ cls: 'crc-cleanup-tile' });
 
+		// Check for unmet dependencies
+		const unmetDeps = this.getUnmetDependencies(stepConfig);
+		const hasUnmetDeps = unmetDeps.length > 0;
+
 		// Add status class
 		tile.addClass(`crc-cleanup-tile--${stepState.status}`);
+
+		// Add dependency class if has unmet dependencies
+		if (hasUnmetDeps && stepState.status === 'pending') {
+			tile.addClass('crc-cleanup-tile--has-deps');
+			tile.setAttribute('title', `Recommended: Complete ${unmetDeps.join(' and ')} first`);
+		}
 
 		// Step number badge
 		const numberBadge = tile.createDiv({ cls: 'crc-cleanup-tile-number' });
@@ -779,7 +789,13 @@ export class CleanupWizardModal extends Modal {
 
 		switch (stepState.status) {
 			case 'pending':
-				if (stepState.issueCount > 0) {
+				// Show dependency indicator if has unmet dependencies
+				if (hasUnmetDeps) {
+					const depIcon = badge.createSpan({ cls: 'crc-cleanup-tile-badge-icon' });
+					setIcon(depIcon, 'link');
+					badge.createSpan({ text: 'Has deps' });
+					badge.addClass('crc-cleanup-tile-badge--deps');
+				} else if (stepState.issueCount > 0) {
 					badge.textContent = `${stepState.issueCount} ${stepState.issueCount === 1 ? 'fix' : 'fixes'}`;
 					badge.addClass('crc-cleanup-tile-badge--count');
 				} else if (this.state.preScanComplete) {
