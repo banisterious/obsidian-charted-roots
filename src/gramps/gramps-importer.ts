@@ -1213,8 +1213,10 @@ export class GrampsImporter {
 
 		const content = frontmatterLines.join('\n') + body;
 
-		// Generate file name
-		const fileName = this.slugify(title) + '.md';
+		// Generate file name - include truncated cr_id for uniqueness
+		// This prevents collisions when two sources have the same title
+		const crIdSuffix = crId.split('-')[0]; // First segment of cr_id
+		const fileName = this.slugify(title) + `-${crIdSuffix}.md`;
 		const filePath = normalizePath(`${sourcesFolder}/${fileName}`);
 
 		// Check if file already exists
@@ -1401,8 +1403,10 @@ export class GrampsImporter {
 		const body = `\n# ${title}\n\n${event.description || ''}\n`;
 		const content = frontmatterLines.join('\n') + body;
 
-		// Create file
-		const fileName = this.slugify(title) + '.md';
+		// Create file - include truncated cr_id for uniqueness
+		// This prevents collisions when two people have the same name (e.g., two "Alexander White" with birth events)
+		const crIdSuffix = crId.split('-')[0]; // First segment of cr_id (e.g., "ksu" from "ksu-724-rnm-918")
+		const fileName = this.slugify(title) + `-${crIdSuffix}.md`;
 		const filePath = normalizePath(`${eventsFolder}/${fileName}`);
 
 		// Check if file already exists
