@@ -1249,6 +1249,9 @@ export class CleanupWizardModal extends Modal {
 		const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
 		summary.textContent = `${genderIssues.length} gender value${genderIssues.length === 1 ? '' : 's'} will be normalized:`;
 
+		const hint = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
+		hint.textContent = 'Click a row to open the person note for editing.';
+
 		const list = preview.createDiv({ cls: 'crc-cleanup-preview-list' });
 
 		const maxDisplay = 15;
@@ -1256,7 +1259,7 @@ export class CleanupWizardModal extends Modal {
 		const remaining = genderIssues.length - maxDisplay;
 
 		for (const issue of displayItems) {
-			const row = list.createDiv({ cls: 'crc-cleanup-preview-row' });
+			const row = list.createDiv({ cls: 'crc-cleanup-preview-row crc-cleanup-preview-row--clickable' });
 
 			const iconEl = row.createDiv({ cls: 'crc-cleanup-preview-icon' });
 			setIcon(iconEl, 'user');
@@ -1272,6 +1275,12 @@ export class CleanupWizardModal extends Modal {
 			const change = content.createSpan({ cls: 'crc-cleanup-preview-change' });
 			const currentValue = issue.details?.['value'] as string || '?';
 			change.textContent = `"${currentValue}" → standard format`;
+
+			// Click to open the person file
+			row.addEventListener('click', () => {
+				this.close();
+				void this.app.workspace.openLinkText(issue.person.file.path, '', false);
+			});
 		}
 
 		if (remaining > 0) {
@@ -1293,6 +1302,9 @@ export class CleanupWizardModal extends Modal {
 		const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
 		summary.textContent = `${orphanIssues.length} orphan reference${orphanIssues.length === 1 ? '' : 's'} will be cleared:`;
 
+		const hint = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
+		hint.textContent = 'Click a row to open the person note for editing.';
+
 		const list = preview.createDiv({ cls: 'crc-cleanup-preview-list' });
 
 		const maxDisplay = 15;
@@ -1300,7 +1312,7 @@ export class CleanupWizardModal extends Modal {
 		const remaining = orphanIssues.length - maxDisplay;
 
 		for (const issue of displayItems) {
-			const row = list.createDiv({ cls: 'crc-cleanup-preview-row' });
+			const row = list.createDiv({ cls: 'crc-cleanup-preview-row crc-cleanup-preview-row--clickable' });
 
 			const iconEl = row.createDiv({ cls: 'crc-cleanup-preview-icon' });
 			setIcon(iconEl, 'unlink');
@@ -1312,6 +1324,12 @@ export class CleanupWizardModal extends Modal {
 
 			const desc = content.createSpan({ cls: 'crc-cleanup-preview-desc' });
 			desc.textContent = `: ${issue.message}`;
+
+			// Click to open the person file
+			row.addEventListener('click', () => {
+				this.close();
+				void this.app.workspace.openLinkText(issue.person.file.path, '', false);
+			});
 		}
 
 		if (remaining > 0) {
@@ -1333,6 +1351,9 @@ export class CleanupWizardModal extends Modal {
 		const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
 		summary.textContent = `${nestedIssues.length} nested propert${nestedIssues.length === 1 ? 'y' : 'ies'} will be flattened:`;
 
+		const hint = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
+		hint.textContent = 'Click a row to open the person note for editing.';
+
 		const list = preview.createDiv({ cls: 'crc-cleanup-preview-list' });
 
 		const maxDisplay = 15;
@@ -1340,7 +1361,7 @@ export class CleanupWizardModal extends Modal {
 		const remaining = nestedIssues.length - maxDisplay;
 
 		for (const issue of displayItems) {
-			const row = list.createDiv({ cls: 'crc-cleanup-preview-row' });
+			const row = list.createDiv({ cls: 'crc-cleanup-preview-row crc-cleanup-preview-row--clickable' });
 
 			const iconEl = row.createDiv({ cls: 'crc-cleanup-preview-icon' });
 			setIcon(iconEl, 'layers');
@@ -1354,6 +1375,12 @@ export class CleanupWizardModal extends Modal {
 			const propName = issue.details?.['property'] as string || 'unknown';
 			const nestedKeys = issue.details?.['nestedKeys'] as string || '';
 			propInfo.textContent = `: ${propName} → ${propName}_${nestedKeys.split(', ').join(`, ${propName}_`)}`;
+
+			// Click to open the person file
+			row.addEventListener('click', () => {
+				this.close();
+				void this.app.workspace.openLinkText(issue.person.file.path, '', false);
+			});
 		}
 
 		if (remaining > 0) {
