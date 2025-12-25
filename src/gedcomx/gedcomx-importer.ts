@@ -7,7 +7,13 @@
 
 import { App, Notice, TFile, normalizePath } from 'obsidian';
 import { GedcomXParser, ParsedGedcomXData, ParsedGedcomXPerson } from './gedcomx-parser';
-import { GedcomXValidationResult } from './gedcomx-types';
+import {
+	GedcomXValidationResult,
+	GedcomXDocument,
+	GedcomXSourceDescription,
+	GedcomXFact,
+	extractTypeName
+} from './gedcomx-types';
 import { createPersonNote, PersonData } from '../core/person-note-writer';
 import { generateCrId } from '../core/uuid';
 import { getErrorMessage } from '../core/error-utils';
@@ -37,6 +43,14 @@ export interface GedcomXImportOptions {
 	createPlaceNotes?: boolean;
 	/** Folder to store place notes */
 	placesFolder?: string;
+	/** Create event notes from person facts */
+	createEventNotes?: boolean;
+	/** Folder to store event notes */
+	eventsFolder?: string;
+	/** Create source notes from source descriptions */
+	createSourceNotes?: boolean;
+	/** Folder to store source notes */
+	sourcesFolder?: string;
 }
 
 /**
@@ -54,6 +68,10 @@ export interface GedcomXImportResult {
 	malformedDataCount?: number;
 	/** Number of place notes created */
 	placesCreated?: number;
+	/** Number of event notes created */
+	eventsCreated?: number;
+	/** Number of source notes created */
+	sourcesCreated?: number;
 }
 
 /**
@@ -217,6 +235,66 @@ export class GedcomXImporter {
 				}
 			}
 
+			// Parse raw JSON to access source descriptions (not in parsed data)
+			const rawDocument = JSON.parse(content) as GedcomXDocument;
+
+			// Mapping from source ID to wikilink (for linking in event notes)
+			const sourceIdToWikilink = new Map<string, string>();
+
+			// Create source notes if requested
+			if (options.createSourceNotes && rawDocument.sourceDescriptions) {
+				const sourcesFolder = options.sourcesFolder || options.peopleFolder;
+				await this.ensureFolderExists(sourcesFolder);
+
+				const sourceCount = rawDocument.sourceDescriptions.length;
+				if (sourceCount > 0) {
+					new Notice(`Creating ${sourceCount} source notes...`);
+
+					for (const source of rawDocument.sourceDescriptions) {
+						try {
+							const { crId, wikilink } = await this.createSourceNote(source, sourcesFolder);
+							if (source.id) {
+								sourceIdToWikilink.set(source.id, wikilink);
+							}
+							result.sourcesCreated = (result.sourcesCreated || 0) + 1;
+						} catch (error: unknown) {
+							const sourceTitle = source.titles?.[0]?.value || source.id || 'Unknown source';
+							result.errors.push(
+								`Failed to import source ${sourceTitle}: ${getErrorMessage(error)}`
+							);
+						}
+					}
+				}
+			}
+
+			// Create event notes if requested (from person facts)
+			if (options.createEventNotes) {
+				const eventsFolder = options.eventsFolder || options.peopleFolder;
+				await this.ensureFolderExists(eventsFolder);
+
+				// Collect all events from persons
+				const allEvents = this.collectAllEvents(gedcomXData, rawDocument);
+				if (allEvents.length > 0) {
+					new Notice(`Creating ${allEvents.length} event notes...`);
+
+					for (const eventInfo of allEvents) {
+						try {
+							await this.createEventNote(
+								eventInfo,
+								eventsFolder,
+								placeNameToWikilink,
+								sourceIdToWikilink
+							);
+							result.eventsCreated = (result.eventsCreated || 0) + 1;
+						} catch (error: unknown) {
+							result.errors.push(
+								`Failed to import event ${eventInfo.title}: ${getErrorMessage(error)}`
+							);
+						}
+					}
+				}
+			}
+
 			// Create person notes
 			new Notice('Creating person notes...');
 
@@ -267,7 +345,19 @@ export class GedcomXImporter {
 			}
 
 			// Enhanced import complete notice
-			let importMessage = `Import complete: ${result.notesCreated} people imported`;
+			let importMessage = `Import complete: ${result.notesCreated} people`;
+
+			if (result.sourcesCreated && result.sourcesCreated > 0) {
+				importMessage += `, ${result.sourcesCreated} sources`;
+			}
+
+			if (result.eventsCreated && result.eventsCreated > 0) {
+				importMessage += `, ${result.eventsCreated} events`;
+			}
+
+			if (result.placesCreated && result.placesCreated > 0) {
+				importMessage += `, ${result.placesCreated} places`;
+			}
 
 			if (result.malformedDataCount && result.malformedDataCount > 0) {
 				importMessage += `. ${result.malformedDataCount} had missing/invalid data`;
@@ -280,7 +370,7 @@ export class GedcomXImporter {
 			new Notice(importMessage, 8000);
 			result.success = result.errors.length === 0;
 
-			logger.info('importFile', `Import complete: ${result.notesCreated} notes created, ${result.errors.length} errors`);
+			logger.info('importFile', `Import complete: ${result.notesCreated} people, ${result.eventsCreated || 0} events, ${result.sourcesCreated || 0} sources, ${result.errors.length} errors`);
 
 		} catch (error: unknown) {
 			const errorMsg = getErrorMessage(error);
@@ -730,5 +820,219 @@ export class GedcomXImporter {
 			.replace(/[\\/:*?"<>|[\]]/g, '-')
 			.replace(/\s+/g, ' ')
 			.trim();
+	}
+
+	// ============================================================================
+	// Source Note Creation
+	// ============================================================================
+
+	/**
+	 * Create a source note from GEDCOM X source description
+	 */
+	private async createSourceNote(
+		source: GedcomXSourceDescription,
+		sourcesFolder: string
+	): Promise<{ crId: string; wikilink: string }> {
+		const crId = generateCrId();
+
+		// Extract title from source
+		const title = source.titles?.[0]?.value || source.id || 'Unknown Source';
+
+		// Extract citation text
+		const citation = source.citations?.[0]?.value;
+
+		// Build frontmatter
+		const frontmatterLines: string[] = [
+			'---',
+			'cr_type: source',
+			`cr_id: ${crId}`,
+			`title: "${title.replace(/"/g, '\\"')}"`,
+			`source_type: document`
+		];
+
+		// Add citation if available
+		if (citation) {
+			frontmatterLines.push(`citation: "${citation.replace(/"/g, '\\"')}"`);
+		}
+
+		// Add about/URL if available
+		if (source.about) {
+			frontmatterLines.push(`url: "${source.about.replace(/"/g, '\\"')}"`);
+		}
+
+		frontmatterLines.push('confidence: unknown');
+		frontmatterLines.push('---');
+
+		// Build note body
+		let body = `\n# ${title}\n\n`;
+
+		if (citation) {
+			body += `**Citation:** ${citation}\n\n`;
+		}
+
+		if (source.about) {
+			body += `**URL:** ${source.about}\n\n`;
+		}
+
+		body += `_Imported from GEDCOM X_\n`;
+
+		const content = frontmatterLines.join('\n') + body;
+
+		// Create filename
+		const safeFileName = this.sanitizeFilename(title);
+		const filePath = normalizePath(`${sourcesFolder}/${safeFileName}.md`);
+
+		// Handle duplicate filenames
+		let finalPath = filePath;
+		let counter = 1;
+		while (this.app.vault.getAbstractFileByPath(finalPath)) {
+			finalPath = normalizePath(`${sourcesFolder}/${safeFileName}-${counter}.md`);
+			counter++;
+		}
+
+		await this.app.vault.create(finalPath, content);
+
+		// Extract the wikilink name from the path
+		const wikilinkName = finalPath.replace(/\.md$/, '').split('/').pop() || title;
+
+		return { crId, wikilink: `[[${wikilinkName}]]` };
+	}
+
+	// ============================================================================
+	// Event Note Creation
+	// ============================================================================
+
+	/**
+	 * Collect all events from GEDCOM X data
+	 */
+	private collectAllEvents(
+		parsedData: ParsedGedcomXData,
+		rawDocument: GedcomXDocument
+	): Array<{ title: string; eventType: string; date?: string; place?: string; personName?: string; sourceRefs: string[] }> {
+		const events: Array<{ title: string; eventType: string; date?: string; place?: string; personName?: string; sourceRefs: string[] }> = [];
+
+		// Collect events from raw persons (to get full fact data)
+		if (rawDocument.persons) {
+			for (const rawPerson of rawDocument.persons) {
+				const parsedPerson = parsedData.persons.get(rawPerson.id);
+				const personName = parsedPerson?.name || 'Unknown';
+
+				if (rawPerson.facts) {
+					for (const fact of rawPerson.facts) {
+						const eventType = extractTypeName(fact.type);
+						const title = `${eventType} of ${personName}`;
+
+						// Extract source references
+						const sourceRefs: string[] = [];
+						if (fact.sources) {
+							for (const sourceRef of fact.sources) {
+								if (sourceRef.description) {
+									// Remove leading # if present
+									const sourceId = sourceRef.description.startsWith('#')
+										? sourceRef.description.substring(1)
+										: sourceRef.description;
+									sourceRefs.push(sourceId);
+								}
+							}
+						}
+
+						events.push({
+							title,
+							eventType: eventType.toLowerCase(),
+							date: fact.date?.original || fact.date?.formal,
+							place: fact.place?.original,
+							personName,
+							sourceRefs
+						});
+					}
+				}
+			}
+		}
+
+		return events;
+	}
+
+	/**
+	 * Create an event note
+	 */
+	private async createEventNote(
+		eventInfo: { title: string; eventType: string; date?: string; place?: string; personName?: string; sourceRefs: string[] },
+		eventsFolder: string,
+		placeNameToWikilink: Map<string, string>,
+		sourceIdToWikilink: Map<string, string>
+	): Promise<void> {
+		const crId = generateCrId();
+
+		// Build frontmatter
+		const frontmatterLines: string[] = [
+			'---',
+			'cr_type: event',
+			`cr_id: ${crId}`,
+			`title: "${eventInfo.title.replace(/"/g, '\\"')}"`,
+			`event_type: ${eventInfo.eventType}`
+		];
+
+		// Add date if available
+		if (eventInfo.date) {
+			frontmatterLines.push(`date: "${eventInfo.date.replace(/"/g, '\\"')}"`);
+		}
+
+		// Add person reference
+		if (eventInfo.personName) {
+			frontmatterLines.push(`person: "${eventInfo.personName.replace(/"/g, '\\"')}"`);
+		}
+
+		// Add place (as wikilink if place note exists)
+		if (eventInfo.place) {
+			const placeWikilink = placeNameToWikilink.get(eventInfo.place);
+			if (placeWikilink) {
+				frontmatterLines.push(`place: "${placeWikilink}"`);
+			} else {
+				frontmatterLines.push(`place: "${eventInfo.place.replace(/"/g, '\\"')}"`);
+			}
+		}
+
+		// Add source references
+		if (eventInfo.sourceRefs.length > 0) {
+			frontmatterLines.push(`sources:`);
+			for (const sourceId of eventInfo.sourceRefs) {
+				const sourceWikilink = sourceIdToWikilink.get(sourceId);
+				if (sourceWikilink) {
+					frontmatterLines.push(`  - "${sourceWikilink}"`);
+				}
+			}
+		}
+
+		frontmatterLines.push('confidence: unknown');
+		frontmatterLines.push('---');
+
+		// Build note body
+		let body = `\n# ${eventInfo.title}\n\n`;
+
+		if (eventInfo.date) {
+			body += `**Date:** ${eventInfo.date}\n\n`;
+		}
+
+		if (eventInfo.place) {
+			body += `**Place:** ${eventInfo.place}\n\n`;
+		}
+
+		body += `_Imported from GEDCOM X_\n`;
+
+		const content = frontmatterLines.join('\n') + body;
+
+		// Create filename
+		const safeFileName = this.sanitizeFilename(eventInfo.title);
+		const filePath = normalizePath(`${eventsFolder}/${safeFileName}.md`);
+
+		// Handle duplicate filenames
+		let finalPath = filePath;
+		let counter = 1;
+		while (this.app.vault.getAbstractFileByPath(finalPath)) {
+			finalPath = normalizePath(`${eventsFolder}/${safeFileName}-${counter}.md`);
+			counter++;
+		}
+
+		await this.app.vault.create(finalPath, content);
 	}
 }

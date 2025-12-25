@@ -124,6 +124,21 @@ export interface CsvImportOptions {
 
 	/** Folder to store place notes */
 	placesFolder?: string;
+
+	/** Create event notes from birth/death data */
+	createEventNotes?: boolean;
+
+	/** Folder to store event notes */
+	eventsFolder?: string;
+
+	/** Create a source note for this CSV import */
+	createSourceNote?: boolean;
+
+	/** Folder to store source notes */
+	sourcesFolder?: string;
+
+	/** Title for the source note (defaults to filename) */
+	sourceTitle?: string;
 }
 
 /**
@@ -142,6 +157,10 @@ export interface CsvImportResult {
 	malformedDataCount?: number;
 	/** Number of place notes created */
 	placesCreated?: number;
+	/** Number of event notes created */
+	eventsCreated?: number;
+	/** Number of source notes created */
+	sourcesCreated?: number;
 }
 
 /**
@@ -278,6 +297,25 @@ export class CsvImporter {
 				}
 			}
 
+			// Mapping from source to wikilink (CSV has one source - the file itself)
+			let sourceWikilink: string | undefined;
+
+			// Create source note if requested (representing the CSV file as a source)
+			if (options.createSourceNote) {
+				const sourcesFolder = options.sourcesFolder || options.peopleFolder;
+				await this.ensureFolderExists(sourcesFolder);
+
+				const sourceTitle = options.sourceTitle || options.fileName || 'CSV Import';
+				try {
+					const { wikilink } = await this.createSourceNote(sourceTitle, sourcesFolder, options.fileName);
+					sourceWikilink = wikilink;
+					result.sourcesCreated = 1;
+					new Notice(`Created source note for ${sourceTitle}`);
+				} catch (error: unknown) {
+					result.errors.push(`Failed to create source note: ${getErrorMessage(error)}`);
+				}
+			}
+
 			// Create person notes
 			new Notice('Creating person notes...');
 
@@ -286,6 +324,15 @@ export class CsvImporter {
 
 			// Also create mapping of existing IDs from CSV to cr_ids
 			const csvIdToCrId = new Map<string, string>();
+
+			// Track person info for event creation
+			const personInfoForEvents: Array<{
+				name: string;
+				birthDate?: string;
+				birthPlace?: string;
+				deathDate?: string;
+				deathPlace?: string;
+			}> = [];
 
 			// First pass: Create all person notes
 			for (let i = 0; i < parseResult.rows.length; i++) {
@@ -326,10 +373,24 @@ export class CsvImporter {
 					// Track malformed data
 					const birthDate = this.getColumnValue(row, mapping.birthDate);
 					const deathDate = this.getColumnValue(row, mapping.deathDate);
+					const birthPlace = this.getColumnValue(row, mapping.birthPlace);
+					const deathPlace = this.getColumnValue(row, mapping.deathPlace);
+
 					if (!name || !birthDate || !deathDate) {
 						if (result.malformedDataCount !== undefined) {
 							result.malformedDataCount++;
 						}
+					}
+
+					// Track person info for event creation
+					if (name && (birthDate || deathDate)) {
+						personInfoForEvents.push({
+							name,
+							birthDate,
+							birthPlace,
+							deathDate,
+							deathPlace
+						});
 					}
 
 				} catch (error: unknown) {
@@ -359,8 +420,77 @@ export class CsvImporter {
 				}
 			}
 
+			// Create event notes if requested (birth/death events)
+			if (options.createEventNotes && personInfoForEvents.length > 0) {
+				const eventsFolder = options.eventsFolder || options.peopleFolder;
+				await this.ensureFolderExists(eventsFolder);
+
+				// Count potential events
+				let eventCount = 0;
+				for (const person of personInfoForEvents) {
+					if (person.birthDate) eventCount++;
+					if (person.deathDate) eventCount++;
+				}
+
+				if (eventCount > 0) {
+					new Notice(`Creating ${eventCount} event notes...`);
+
+					for (const person of personInfoForEvents) {
+						// Create birth event
+						if (person.birthDate) {
+							try {
+								await this.createEventNote(
+									`Birth of ${person.name}`,
+									'birth',
+									person.birthDate,
+									person.birthPlace,
+									person.name,
+									eventsFolder,
+									placeNameToWikilink,
+									sourceWikilink
+								);
+								result.eventsCreated = (result.eventsCreated || 0) + 1;
+							} catch (error: unknown) {
+								result.errors.push(`Failed to create birth event for ${person.name}: ${getErrorMessage(error)}`);
+							}
+						}
+
+						// Create death event
+						if (person.deathDate) {
+							try {
+								await this.createEventNote(
+									`Death of ${person.name}`,
+									'death',
+									person.deathDate,
+									person.deathPlace,
+									person.name,
+									eventsFolder,
+									placeNameToWikilink,
+									sourceWikilink
+								);
+								result.eventsCreated = (result.eventsCreated || 0) + 1;
+							} catch (error: unknown) {
+								result.errors.push(`Failed to create death event for ${person.name}: ${getErrorMessage(error)}`);
+							}
+						}
+					}
+				}
+			}
+
 			// Enhanced import complete notice
-			let importMessage = `Import complete: ${result.notesCreated} created, ${result.notesUpdated} updated`;
+			let importMessage = `Import complete: ${result.notesCreated} people`;
+
+			if (result.sourcesCreated && result.sourcesCreated > 0) {
+				importMessage += `, ${result.sourcesCreated} source`;
+			}
+
+			if (result.eventsCreated && result.eventsCreated > 0) {
+				importMessage += `, ${result.eventsCreated} events`;
+			}
+
+			if (result.placesCreated && result.placesCreated > 0) {
+				importMessage += `, ${result.placesCreated} places`;
+			}
 
 			if (result.malformedDataCount && result.malformedDataCount > 0) {
 				importMessage += `. ${result.malformedDataCount} had missing data`;
@@ -797,5 +927,147 @@ export class CsvImporter {
 			.replace(/[\\/:*?"<>|[\]]/g, '-')
 			.replace(/\s+/g, ' ')
 			.trim();
+	}
+
+	// ============================================================================
+	// Source Note Creation
+	// ============================================================================
+
+	/**
+	 * Create a source note for this CSV import
+	 */
+	private async createSourceNote(
+		title: string,
+		sourcesFolder: string,
+		fileName?: string
+	): Promise<{ crId: string; wikilink: string }> {
+		const crId = generateCrId();
+
+		// Build frontmatter
+		const frontmatterLines: string[] = [
+			'---',
+			'cr_type: source',
+			`cr_id: ${crId}`,
+			`title: "${title.replace(/"/g, '\\"')}"`,
+			`source_type: document`
+		];
+
+		if (fileName) {
+			frontmatterLines.push(`original_file: "${fileName.replace(/"/g, '\\"')}"`);
+		}
+
+		frontmatterLines.push('confidence: unknown');
+		frontmatterLines.push('---');
+
+		// Build note body
+		let body = `\n# ${title}\n\n`;
+		body += `**Source Type:** CSV Import\n\n`;
+
+		if (fileName) {
+			body += `**Original File:** ${fileName}\n\n`;
+		}
+
+		body += `_Imported from CSV_\n`;
+
+		const content = frontmatterLines.join('\n') + body;
+
+		// Create filename
+		const safeFileName = this.sanitizeFilename(title);
+		const filePath = normalizePath(`${sourcesFolder}/${safeFileName}.md`);
+
+		// Handle duplicate filenames
+		let finalPath = filePath;
+		let counter = 1;
+		while (this.app.vault.getAbstractFileByPath(finalPath)) {
+			finalPath = normalizePath(`${sourcesFolder}/${safeFileName}-${counter}.md`);
+			counter++;
+		}
+
+		await this.app.vault.create(finalPath, content);
+
+		// Extract the wikilink name from the path
+		const wikilinkName = finalPath.replace(/\.md$/, '').split('/').pop() || title;
+
+		return { crId, wikilink: `[[${wikilinkName}]]` };
+	}
+
+	// ============================================================================
+	// Event Note Creation
+	// ============================================================================
+
+	/**
+	 * Create an event note
+	 */
+	private async createEventNote(
+		title: string,
+		eventType: string,
+		date: string,
+		place: string | undefined,
+		personName: string,
+		eventsFolder: string,
+		placeNameToWikilink: Map<string, string>,
+		sourceWikilink?: string
+	): Promise<void> {
+		const crId = generateCrId();
+
+		// Build frontmatter
+		const frontmatterLines: string[] = [
+			'---',
+			'cr_type: event',
+			`cr_id: ${crId}`,
+			`title: "${title.replace(/"/g, '\\"')}"`,
+			`event_type: ${eventType}`
+		];
+
+		// Add date
+		frontmatterLines.push(`date: "${date.replace(/"/g, '\\"')}"`);
+
+		// Add person reference
+		frontmatterLines.push(`person: "${personName.replace(/"/g, '\\"')}"`);
+
+		// Add place (as wikilink if place note exists)
+		if (place) {
+			const placeWikilink = placeNameToWikilink.get(place);
+			if (placeWikilink) {
+				frontmatterLines.push(`place: "${placeWikilink}"`);
+			} else {
+				frontmatterLines.push(`place: "${place.replace(/"/g, '\\"')}"`);
+			}
+		}
+
+		// Add source reference if available
+		if (sourceWikilink) {
+			frontmatterLines.push(`sources:`);
+			frontmatterLines.push(`  - "${sourceWikilink}"`);
+		}
+
+		frontmatterLines.push('confidence: unknown');
+		frontmatterLines.push('---');
+
+		// Build note body
+		let body = `\n# ${title}\n\n`;
+		body += `**Date:** ${date}\n\n`;
+
+		if (place) {
+			body += `**Place:** ${place}\n\n`;
+		}
+
+		body += `_Imported from CSV_\n`;
+
+		const content = frontmatterLines.join('\n') + body;
+
+		// Create filename
+		const safeFileName = this.sanitizeFilename(title);
+		const filePath = normalizePath(`${eventsFolder}/${safeFileName}.md`);
+
+		// Handle duplicate filenames
+		let finalPath = filePath;
+		let counter = 1;
+		while (this.app.vault.getAbstractFileByPath(finalPath)) {
+			finalPath = normalizePath(`${eventsFolder}/${safeFileName}-${counter}.md`);
+			counter++;
+		}
+
+		await this.app.vault.create(finalPath, content);
 	}
 }
