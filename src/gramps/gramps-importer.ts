@@ -305,20 +305,19 @@ export class GrampsImporter {
 
 			// Create place notes FIRST if requested (so we can link to them from person notes)
 			if (options.createPlaceNotes && grampsData.places.size > 0) {
-				// Only import places that have ptitle (fully qualified hierarchical names)
-				// Places without ptitle are intermediate hierarchy components (county, state, country)
-				// that shouldn't be imported as standalone notes - their names are already
-				// included in the ptitle of leaf places (e.g., "Atlanta, Fulton County, Georgia, USA")
+				// Only import places that have ptitle with commas (fully qualified hierarchical names)
+				// Gramps generates ptitle for all places, but only leaf places have comma-separated
+				// hierarchies like "Atlanta, Fulton County, Georgia, USA"
+				// Intermediate places have ptitle like "Atlanta Fulton County" (no commas)
 				const leafPlaces = Array.from(grampsData.places.entries()).filter(([, place]) => {
-					return place.hasPtitle === true;
+					// Must have ptitle AND it must contain commas (indicating hierarchy)
+					return place.hasPtitle === true && place.name?.includes(',');
 				});
 
 				const placesTotal = leafPlaces.length;
 				reportProgress('places', 0, placesTotal, `Creating ${placesTotal} place notes...`);
 				const placesFolder = options.placesFolder || options.peopleFolder;
 				await this.ensureFolderExists(placesFolder);
-
-				logger.info('importFile', `Filtering places: ${grampsData.places.size} total, ${leafPlaces.length} with ptitle (importing), ${grampsData.places.size - leafPlaces.length} hierarchy components (skipped)`);
 
 				let placeIndex = 0;
 				for (const [handle, place] of leafPlaces) {
@@ -342,6 +341,36 @@ export class GrampsImporter {
 					}
 					placeIndex++;
 					reportProgress('places', placeIndex, placesTotal);
+				}
+
+				// Build additional mappings for malformed place names (space-separated → comma-separated)
+				// Some Gramps exports have places like "Boston Suffolk County" that should map to
+				// "Boston, Suffolk County, Massachusetts, USA"
+				for (const [, place] of grampsData.places) {
+					if (!place.name || place.name.includes(',')) continue;
+
+					// This is a space-separated name without commas
+					// Try to find a matching comma-separated place
+					const spaceSeparatedName = place.name;
+
+					// Try matching with progressively more words from the beginning
+					// This handles multi-word city names like "Los Angeles", "San Jose", "New Orleans"
+					const words = spaceSeparatedName.split(' ');
+					let matched = false;
+
+					for (let numWords = 1; numWords <= Math.min(words.length, 3) && !matched; numWords++) {
+						const prefix = words.slice(0, numWords).join(' ');
+
+						// Look for a place that starts with this prefix followed by a comma
+						for (const [properName, wikilink] of placeNameToWikilink) {
+							if (properName.startsWith(prefix + ',')) {
+								// Found a match - add mapping from space-separated to proper wikilink
+								placeNameToWikilink.set(spaceSeparatedName, wikilink);
+								matched = true;
+								break;
+							}
+						}
+					}
 				}
 			}
 

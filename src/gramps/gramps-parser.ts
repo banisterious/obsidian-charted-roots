@@ -746,8 +746,13 @@ export class GrampsParser {
 		// - <ptitle> - Full hierarchical name (e.g., "Atlanta, Fulton County, Georgia, USA")
 		// - <pname value="..."> - Individual place name component (e.g., "Atlanta")
 		// Prefer ptitle if available as it contains the full place hierarchy
-		const ptitle = el.querySelector('ptitle')?.textContent?.trim();
+		let ptitle = el.querySelector('ptitle')?.textContent?.trim();
 		const pname = el.querySelector('pname')?.getAttribute('value');
+
+		// Strip wikilink brackets if present (some Gramps exports include these)
+		if (ptitle) {
+			ptitle = ptitle.replace(/^\[\[/, '').replace(/\]\]$/, '');
+		}
 
 		const place: GrampsPlace = {
 			handle,
