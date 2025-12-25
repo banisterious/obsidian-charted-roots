@@ -101,6 +101,7 @@ interface ExportWizardFormData {
 		events: number;
 	};
 	livingCount: number;
+	previewScanned: boolean;
 
 	// Step 5: Export (progress)
 	exportedCount: number;
@@ -166,6 +167,7 @@ export class ExportWizardModal extends Modal {
 	private currentStep: number = 0;
 	private formData: ExportWizardFormData;
 	private contentContainer: HTMLElement | null = null;
+	private footerContainer: HTMLElement | null = null;
 	private progressContainer: HTMLElement | null = null;
 
 	// Step definitions
@@ -215,6 +217,7 @@ export class ExportWizardModal extends Modal {
 				events: 0
 			},
 			livingCount: 0,
+			previewScanned: false,
 
 			// Step 5
 			exportedCount: 0,
@@ -249,6 +252,9 @@ export class ExportWizardModal extends Modal {
 
 		// Content container
 		this.contentContainer = contentEl.createDiv({ cls: 'crc-export-wizard-content' });
+
+		// Footer container (outside content for proper positioning)
+		this.footerContainer = contentEl.createDiv({ cls: 'crc-export-wizard-footer-container' });
 
 		// Render current step
 		this.renderCurrentStep();
@@ -316,8 +322,9 @@ export class ExportWizardModal extends Modal {
 	 * Render the current step
 	 */
 	private renderCurrentStep(): void {
-		if (!this.contentContainer) return;
+		if (!this.contentContainer || !this.footerContainer) return;
 		this.contentContainer.empty();
+		this.footerContainer.empty();
 
 		// Update step progress indicator
 		this.updateStepProgress();
@@ -343,8 +350,8 @@ export class ExportWizardModal extends Modal {
 				break;
 		}
 
-		// Render footer with navigation buttons
-		this.renderFooter(this.contentContainer);
+		// Render footer with navigation buttons (in separate container)
+		this.renderFooter(this.footerContainer);
 	}
 
 	/**
@@ -524,8 +531,8 @@ export class ExportWizardModal extends Modal {
 		const section = container.createDiv({ cls: 'crc-export-section' });
 		section.createEl('h3', { text: 'Preview', cls: 'crc-export-section-title' });
 
-		// Check if we need to scan the vault
-		if (this.formData.previewCounts.people === 0) {
+		// Check if we need to scan the vault (only scan once)
+		if (!this.formData.previewScanned) {
 			const loadingEl = section.createDiv({ cls: 'crc-export-preview-loading' });
 			loadingEl.textContent = 'Scanning vault...';
 			this.scanVaultForPreview();
@@ -618,6 +625,7 @@ export class ExportWizardModal extends Modal {
 				events: 0 // Would need EventService
 			};
 			this.formData.livingCount = livingCount;
+			this.formData.previewScanned = true;
 
 			// Re-render to show results
 			this.renderCurrentStep();
@@ -629,6 +637,7 @@ export class ExportWizardModal extends Modal {
 				sources: 0,
 				events: 0
 			};
+			this.formData.previewScanned = true;
 			this.renderCurrentStep();
 		}
 	}

@@ -8644,7 +8644,314 @@
 /* Option row with input */
 .crc-import-option-row,
 .crc-export-option-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin-top: 8px;
+}
+
+.crc-import-option-label,
+.crc-export-option-label {
+  font-size: 14px;
+  color: var(--text-normal);
+  flex-shrink: 0;
+}
+
+.crc-import-select,
+.crc-export-select {
+  padding: 6px 12px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  color: var(--text-normal);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.crc-import-select:focus,
+.crc-export-select:focus {
+  border-color: var(--interactive-accent);
+  outline: none;
+}
+
+.crc-import-help-text,
+.crc-export-help-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+
+/* Folder grid for Step 2 */
+.crc-import-folders-grid,
+.crc-export-folders-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.crc-import-folder-row,
+.crc-export-folder-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+}
+
+.crc-import-folder-label,
+.crc-export-folder-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-normal);
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.crc-import-folder-value,
+.crc-export-folder-value {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-family: var(--font-monospace);
+}
+
+.crc-import-folder-input-wrapper,
+.crc-export-folder-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+/* Privacy options for Step 3 */
+.crc-import-privacy-options,
+.crc-export-privacy-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.crc-import-privacy-option,
+.crc-export-privacy-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--background-secondary);
+  border: 2px solid var(--background-modifier-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.crc-import-privacy-option:hover,
+.crc-export-privacy-option:hover {
+  border-color: var(--interactive-accent);
+}
+
+.crc-import-privacy-option--selected,
+.crc-export-privacy-option--selected {
+  border-color: var(--interactive-accent);
+  background: rgba(var(--interactive-accent-rgb), 0.1);
+}
+
+.crc-import-radio,
+.crc-export-radio {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--background-modifier-border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.crc-import-privacy-option--selected .crc-import-radio,
+.crc-export-privacy-option--selected .crc-export-radio {
+  border-color: var(--interactive-accent);
+}
+
+.crc-import-privacy-option--selected .crc-import-radio::after,
+.crc-export-privacy-option--selected .crc-export-radio::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background: var(--interactive-accent);
+  border-radius: 50%;
+}
+
+.crc-import-radio-content,
+.crc-export-radio-content {
+  flex: 1;
+}
+
+.crc-import-radio-label,
+.crc-export-radio-label {
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.crc-import-radio-description,
+.crc-export-radio-description {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Small input variant */
+.crc-import-input--small,
+.crc-export-input--small {
+  width: 80px;
+  text-align: center;
+}
+
+/* Export Preview section */
+.crc-export-preview-card {
+  background: var(--background-secondary);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.crc-export-preview-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.crc-export-preview-setting {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.crc-export-preview-setting-label {
+  font-weight: 500;
+  min-width: 80px;
+}
+
+.crc-export-preview-setting-value {
+  color: var(--text-muted);
+}
+
+.crc-export-preview-setting--warning .crc-export-preview-setting-value {
+  color: rgb(251, 191, 36);
+}
+
+.crc-export-preview-loading {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-muted);
+}
+
+.crc-export-preview-counts {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 500px) {
+  .crc-export-preview-counts {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.crc-export-preview-count {
+  text-align: center;
+  padding: 16px 12px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+}
+
+.crc-export-preview-count-icon {
+  margin-bottom: 8px;
+  color: var(--interactive-accent);
+}
+
+.crc-export-preview-count-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.crc-export-preview-count-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.crc-export-preview-count-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.crc-export-preview-ready {
+  text-align: center;
+  padding: 12px;
+  color: rgb(74, 222, 128);
+  font-weight: 500;
+}
+
+/* Export Progress bar */
+.crc-export-progress-bar {
+  height: 8px;
+  background: var(--background-secondary);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.crc-export-progress-fill {
+  height: 100%;
+  background: var(--interactive-accent);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.crc-export-progress-status {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.crc-export-log {
+  max-height: 200px;
+  overflow-y: auto;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  padding: 12px;
+  font-family: var(--font-monospace);
+  font-size: 12px;
+}
+
+/* Export setting rows (for preview summary) */
+.crc-export-setting-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.crc-export-setting-label {
+  font-weight: 500;
+  min-width: 80px;
+  color: var(--text-normal);
+}
+
+.crc-export-setting-value {
+  color: var(--text-muted);
+}
+
+.crc-export-setting-value--warning {
+  color: rgb(251, 191, 36);
+}
+
+/* Footer container (separate from scrollable content) */
+.crc-export-wizard-footer-container {
+  flex-shrink: 0;
 }
 
 .crc-import-input,
