@@ -9976,3 +9976,537 @@
   color: var(--text-muted);
   font-size: 13px;
 }
+
+/* ==========================================================================
+   CLEANUP WIZARD MODAL
+   ========================================================================== */
+
+/* Modal sizing */
+.modal:has(.crc-cleanup-wizard) {
+  max-width: 700px;
+  width: 90vw;
+}
+
+.modal:has(.crc-cleanup-wizard) .modal-content {
+  padding: 0;
+}
+
+.crc-cleanup-wizard {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Wizard header */
+.crc-cleanup-wizard-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+/* Content area */
+.crc-cleanup-wizard-content {
+  padding: 16px 20px;
+  overflow-y: auto;
+  max-height: 65vh;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Footer */
+.crc-cleanup-wizard-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--background-modifier-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.crc-cleanup-footer-left,
+.crc-cleanup-footer-right {
+  display: flex;
+  gap: 8px;
+}
+
+/* Section styling */
+.crc-cleanup-section {
+  margin-bottom: 16px;
+}
+
+/* Intro text */
+.crc-cleanup-intro {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+/* Scanning indicator */
+.crc-cleanup-scanning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.crc-cleanup-spinner {
+  animation: crc-spin 1s linear infinite;
+}
+
+.crc-cleanup-spinner svg {
+  width: 16px;
+  height: 16px;
+}
+
+@keyframes crc-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Tile grid (5x2) */
+.crc-cleanup-tile-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .crc-cleanup-tile-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 400px) {
+  .crc-cleanup-tile-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Step tile */
+.crc-cleanup-tile {
+  position: relative;
+  background: var(--background-secondary);
+  border: 2px solid var(--background-modifier-border);
+  border-radius: 10px;
+  padding: 12px 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.crc-cleanup-tile:hover {
+  border-color: var(--interactive-accent);
+  background: rgba(var(--interactive-accent-rgb), 0.08);
+}
+
+.crc-cleanup-tile--complete {
+  border-color: rgb(74, 222, 128);
+  background: rgba(74, 222, 128, 0.1);
+}
+
+.crc-cleanup-tile--complete:hover {
+  border-color: rgb(74, 222, 128);
+  background: rgba(74, 222, 128, 0.15);
+}
+
+.crc-cleanup-tile--skipped {
+  opacity: 0.6;
+}
+
+.crc-cleanup-tile--in_progress {
+  border-color: var(--interactive-accent);
+  background: rgba(var(--interactive-accent-rgb), 0.1);
+}
+
+/* Step number badge */
+.crc-cleanup-tile-number {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.crc-cleanup-tile--complete .crc-cleanup-tile-number {
+  background: rgb(74, 222, 128);
+  color: #000;
+}
+
+/* Tile title */
+.crc-cleanup-tile-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-normal);
+  margin-top: 8px;
+  line-height: 1.3;
+}
+
+/* Tile badge */
+.crc-cleanup-tile-badge {
+  font-size: 10px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  margin-top: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.crc-cleanup-tile-badge--count {
+  background: rgba(var(--interactive-accent-rgb), 0.15);
+  color: var(--interactive-accent);
+}
+
+.crc-cleanup-tile-badge--empty {
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+}
+
+.crc-cleanup-tile-badge--pending {
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+}
+
+.crc-cleanup-tile-badge--progress {
+  background: rgba(var(--interactive-accent-rgb), 0.15);
+  color: var(--interactive-accent);
+}
+
+.crc-cleanup-tile-badge--complete {
+  background: rgba(74, 222, 128, 0.2);
+  color: rgb(74, 222, 128);
+}
+
+.crc-cleanup-tile-badge--skipped {
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+}
+
+.crc-cleanup-tile-badge-icon svg {
+  width: 10px;
+  height: 10px;
+}
+
+/* Step progress indicator */
+.crc-cleanup-wizard-progress {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.crc-cleanup-progress-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.crc-cleanup-progress-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--background-modifier-border);
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.crc-cleanup-progress-dot--active {
+  background: var(--interactive-accent);
+  box-shadow: 0 0 0 3px rgba(var(--interactive-accent-rgb), 0.3);
+}
+
+.crc-cleanup-progress-dot--complete {
+  background: rgb(74, 222, 128);
+}
+
+.crc-cleanup-progress-dot--skipped {
+  background: var(--text-muted);
+  opacity: 0.5;
+}
+
+.crc-cleanup-progress-connector {
+  width: 20px;
+  height: 2px;
+  background: var(--background-modifier-border);
+  flex-shrink: 0;
+}
+
+.crc-cleanup-progress-connector--done {
+  background: rgb(74, 222, 128);
+}
+
+.crc-cleanup-step-label {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+/* Step view */
+.crc-cleanup-step-title {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.crc-cleanup-step-description {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.crc-cleanup-step-content {
+  min-height: 150px;
+}
+
+/* No issues message */
+.crc-cleanup-no-issues {
+  text-align: center;
+  padding: 32px;
+  background: rgba(74, 222, 128, 0.1);
+  border-radius: 12px;
+}
+
+.crc-cleanup-no-issues-icon {
+  color: rgb(74, 222, 128);
+  margin-bottom: 12px;
+}
+
+.crc-cleanup-no-issues-icon svg {
+  width: 40px;
+  height: 40px;
+}
+
+.crc-cleanup-no-issues-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-normal);
+  margin-bottom: 8px;
+}
+
+.crc-cleanup-no-issues-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Step complete message */
+.crc-cleanup-step-complete {
+  text-align: center;
+  padding: 32px;
+  background: rgba(74, 222, 128, 0.1);
+  border-radius: 12px;
+}
+
+.crc-cleanup-step-complete-icon {
+  color: rgb(74, 222, 128);
+  margin-bottom: 12px;
+}
+
+.crc-cleanup-step-complete-icon svg {
+  width: 40px;
+  height: 40px;
+}
+
+.crc-cleanup-step-complete-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-normal);
+  margin-bottom: 8px;
+}
+
+.crc-cleanup-step-complete-count {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Placeholder */
+.crc-cleanup-placeholder {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  background: var(--background-secondary);
+  border-radius: 8px;
+}
+
+/* Preview table */
+.crc-cleanup-preview-summary {
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.crc-cleanup-preview-table {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Interactive step note */
+.crc-cleanup-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(var(--interactive-accent-rgb), 0.1);
+  border-radius: 8px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.crc-cleanup-note-icon {
+  flex-shrink: 0;
+  color: var(--interactive-accent);
+}
+
+.crc-cleanup-note-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Issue list */
+.crc-cleanup-issue-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Summary screen */
+.crc-cleanup-summary-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.crc-cleanup-summary-icon {
+  color: rgb(74, 222, 128);
+  margin-bottom: 8px;
+}
+
+.crc-cleanup-summary-icon svg {
+  width: 48px;
+  height: 48px;
+}
+
+.crc-cleanup-summary-header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+/* Stat cards */
+.crc-cleanup-summary-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 500px) {
+  .crc-cleanup-summary-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+.crc-cleanup-stat-card {
+  text-align: center;
+  padding: 16px;
+  background: var(--background-secondary);
+  border-radius: 10px;
+}
+
+.crc-cleanup-stat-icon {
+  color: var(--interactive-accent);
+  margin-bottom: 8px;
+}
+
+.crc-cleanup-stat-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.crc-cleanup-stat-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.crc-cleanup-stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Breakdown list */
+.crc-cleanup-breakdown-title {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.crc-cleanup-breakdown {
+  background: var(--background-secondary);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.crc-cleanup-breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.crc-cleanup-breakdown-row:last-child {
+  border-bottom: none;
+}
+
+.crc-cleanup-breakdown-label {
+  font-size: 13px;
+  color: var(--text-normal);
+}
+
+.crc-cleanup-breakdown-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.crc-cleanup-breakdown-icon {
+  flex-shrink: 0;
+}
+
+.crc-cleanup-breakdown-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.crc-cleanup-breakdown-icon--complete {
+  color: rgb(74, 222, 128);
+}
+
+.crc-cleanup-breakdown-icon--skipped {
+  color: var(--text-muted);
+}
+
+.crc-cleanup-breakdown-pending {
+  font-style: italic;
+}

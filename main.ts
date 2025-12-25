@@ -52,6 +52,7 @@ import { registerCustomIcons } from './src/ui/lucide-icons';
 import { MediaService } from './src/core/media-service';
 import { MediaPickerModal } from './src/core/ui/media-picker-modal';
 import { MediaManageModal } from './src/core/ui/media-manage-modal';
+import { CleanupWizardModal } from './src/ui/cleanup-wizard-modal';
 
 const logger = getLogger('CanvasRootsPlugin');
 
@@ -337,6 +338,15 @@ export default class CanvasRootsPlugin extends Plugin {
 			name: 'Open statistics dashboard',
 			callback: () => {
 				void this.activateStatisticsView();
+			}
+		});
+
+		// Add command: Post-Import Cleanup Wizard
+		this.addCommand({
+			id: 'open-cleanup-wizard',
+			name: 'Post-import cleanup wizard',
+			callback: () => {
+				new CleanupWizardModal(this.app, this).open();
 			}
 		});
 
