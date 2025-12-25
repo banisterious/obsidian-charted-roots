@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-25 22:27:00 UTC
+ * - Generated: 2025-12-25 22:46:38 UTC
  * - Components: 37 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -677,7 +677,7 @@ settings:
    COMPONENT: MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 11097 lines, 205.94 KB */
+/* Component Size: 11233 lines, 208.37 KB */
 
 /* ==========================================================================
    Canvas Roots Control Center - Styling
@@ -11774,6 +11774,142 @@ settings:
   margin-top: 16px;
   display: flex;
   justify-content: flex-end;
+}
+
+/* ==========================================================================
+   PLACE DEDUPLICATION STEP (Step 7b)
+   ========================================================================== */
+
+.crc-cleanup-dedup-table-container {
+  max-height: 350px;
+  overflow-y: auto;
+  margin-top: 12px;
+}
+
+.crc-cleanup-dedup-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.crc-cleanup-dedup-table thead {
+  position: sticky;
+  top: 0;
+  background: var(--background-primary);
+  z-index: 1;
+}
+
+.crc-cleanup-dedup-table th {
+  text-align: left;
+  padding: 8px 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.crc-cleanup-dedup-th-files {
+  width: 50%;
+}
+
+.crc-cleanup-dedup-th-keep {
+  width: 25%;
+}
+
+.crc-cleanup-dedup-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  vertical-align: top;
+}
+
+.crc-cleanup-dedup-row:last-child td {
+  border-bottom: none;
+}
+
+.crc-cleanup-dedup-row:hover {
+  background: var(--background-modifier-hover);
+}
+
+.crc-cleanup-dedup-name {
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.crc-cleanup-dedup-files {
+  padding: 6px 10px;
+}
+
+.crc-cleanup-dedup-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.crc-cleanup-dedup-file-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.crc-cleanup-dedup-file-name {
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  color: var(--text-normal);
+}
+
+.crc-cleanup-dedup-ref-badge {
+  font-size: 11px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+}
+
+.crc-cleanup-dedup-rec-badge {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  font-weight: 500;
+}
+
+.crc-cleanup-dedup-keep {
+  padding: 6px 10px;
+}
+
+.crc-cleanup-dedup-select {
+  width: 100%;
+  min-width: 140px;
+}
+
+.crc-cleanup-dedup-apply {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.crc-cleanup-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-top: 12px;
+  background: rgba(var(--color-yellow-rgb), 0.1);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.crc-cleanup-warning-icon {
+  flex-shrink: 0;
+  color: var(--color-yellow);
+}
+
+.crc-cleanup-warning-icon svg {
+  width: 16px;
+  height: 16px;
 }
 
 
@@ -30174,10 +30310,10 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-25 22:27:00 UTC
+ * Build completed: 2025-12-25 22:46:38 UTC
  * Components processed: 37
- * Total lines: 29818
- * Total size: 588.88 KB
+ * Total lines: 29954
+ * Total size: 591.31 KB
  * Build duration: 0.05 seconds
  *
  * Component breakdown:
@@ -30189,7 +30325,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - nodes.css: 12 lines, 0.3 KB
  * - edges.css: 4 lines, 0.07 KB
  * - settings.css: 131 lines, 3.53 KB
- * - modals.css: 11097 lines, 205.94 KB
+ * - modals.css: 11233 lines, 208.37 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
  * - validation.css: 84 lines, 1.47 KB

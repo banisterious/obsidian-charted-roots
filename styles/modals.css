@@ -11094,3 +11094,139 @@
   display: flex;
   justify-content: flex-end;
 }
+
+/* ==========================================================================
+   PLACE DEDUPLICATION STEP (Step 7b)
+   ========================================================================== */
+
+.crc-cleanup-dedup-table-container {
+  max-height: 350px;
+  overflow-y: auto;
+  margin-top: 12px;
+}
+
+.crc-cleanup-dedup-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.crc-cleanup-dedup-table thead {
+  position: sticky;
+  top: 0;
+  background: var(--background-primary);
+  z-index: 1;
+}
+
+.crc-cleanup-dedup-table th {
+  text-align: left;
+  padding: 8px 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.crc-cleanup-dedup-th-files {
+  width: 50%;
+}
+
+.crc-cleanup-dedup-th-keep {
+  width: 25%;
+}
+
+.crc-cleanup-dedup-table td {
+  padding: 10px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  vertical-align: top;
+}
+
+.crc-cleanup-dedup-row:last-child td {
+  border-bottom: none;
+}
+
+.crc-cleanup-dedup-row:hover {
+  background: var(--background-modifier-hover);
+}
+
+.crc-cleanup-dedup-name {
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.crc-cleanup-dedup-files {
+  padding: 6px 10px;
+}
+
+.crc-cleanup-dedup-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.crc-cleanup-dedup-file-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.crc-cleanup-dedup-file-name {
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  color: var(--text-normal);
+}
+
+.crc-cleanup-dedup-ref-badge {
+  font-size: 11px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+}
+
+.crc-cleanup-dedup-rec-badge {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  font-weight: 500;
+}
+
+.crc-cleanup-dedup-keep {
+  padding: 6px 10px;
+}
+
+.crc-cleanup-dedup-select {
+  width: 100%;
+  min-width: 140px;
+}
+
+.crc-cleanup-dedup-apply {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.crc-cleanup-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-top: 12px;
+  background: rgba(var(--color-yellow-rgb), 0.1);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.crc-cleanup-warning-icon {
+  flex-shrink: 0;
+  color: var(--color-yellow);
+}
+
+.crc-cleanup-warning-icon svg {
+  width: 16px;
+  height: 16px;
+}

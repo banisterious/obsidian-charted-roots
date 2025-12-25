@@ -575,6 +575,33 @@ The mockup includes:
 - Date normalization writes to `born`/`died` fields (was writing to wrong field names)
 - Consolidated frontmatter cache access in `checkDataFormat()` to avoid redundant calls
 
+## Future Enhancements
+
+### Step 7b: Deduplicate Place Notes
+
+After standardizing place name variants (Step 7), multiple Place notes may end up with identical `full_name` values. For example:
+- `Chicago Illinois.md` with `full_name: "Chicago, Illinois, USA"`
+- `Chicago, IL.md` with `full_name: "Chicago, Illinois, USA"` (after variant standardization)
+
+**Deduplication Process:**
+1. **Detect duplicates:** Group Place notes by their `full_name` field value
+2. **Show preview:** Display groups of duplicate Place notes with their reference counts
+3. **Select canonical:** User chooses which Place note to keep as the canonical version (default: most referenced)
+4. **Merge metadata:** Optionally merge any unique metadata from duplicates into canonical
+5. **Update wikilinks:** Rewrite all wikilinks in Person notes to point to canonical Place note
+6. **Delete duplicates:** Remove duplicate Place notes (or move to trash folder)
+
+**Implementation Notes:**
+- Must run AFTER Step 7 (variant standardization) to catch newly-created duplicates
+- Wikilink updates require scanning all Person note frontmatter fields that may contain Place links
+- Consider offering "dry run" mode to preview changes without applying
+- Track deleted files for undo capability (move to `.trash` instead of permanent delete)
+
+**Fields to update when rewriting wikilinks:**
+- `birth_place`, `death_place`, `burial_place`
+- `spouse{N}_marriage_location`
+- Any other fields containing `[[Place Name]]` wikilinks
+
 ## Open Questions
 
 1. **Step reordering:** Should users be able to reorder steps, or is the fixed order essential for data integrity?

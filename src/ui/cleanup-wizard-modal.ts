@@ -28,7 +28,7 @@ import {
 import { FolderFilterService } from '../core/folder-filter';
 import { getLogger } from '../core/logging';
 import type { CleanupWizardPersistedState } from '../settings';
-import { findPlaceNameVariants, type PlaceVariantMatch } from './standardize-place-variants-modal';
+import { findPlaceNameVariants, findDuplicatePlaceNotes, mergeDuplicatePlaces, type PlaceVariantMatch, type PlaceDuplicateGroup } from './standardize-place-variants-modal';
 
 const logger = getLogger('CleanupWizard');
 
@@ -226,6 +226,8 @@ export class CleanupWizardModal extends Modal {
 	private qualityReport: DataQualityReport | null = null;
 	private bidirectionalIssues: BidirectionalInconsistency[] = [];
 	private placeVariantMatches: PlaceVariantMatch[] = [];
+	private placeDuplicateGroups: PlaceDuplicateGroup[] = [];
+	private showDeduplicationStep = false;
 
 	constructor(app: App, plugin: CanvasRootsPlugin) {
 		super(app);
@@ -1461,7 +1463,21 @@ export class CleanupWizardModal extends Modal {
 	 * Render Step 7: Place Variants interactive UI
 	 */
 	private renderPlaceVariantsStep(container: HTMLElement, stepState: StepState): void {
+		// Check if we should show deduplication step (after variants are fixed)
+		if (this.showDeduplicationStep) {
+			this.renderPlaceDeduplicationStep(container, stepState);
+			return;
+		}
+
 		if (this.placeVariantMatches.length === 0 && this.state.preScanComplete) {
+			// No variants found - check for duplicates instead
+			this.placeDuplicateGroups = findDuplicatePlaceNotes(this.app);
+			if (this.placeDuplicateGroups.length > 0) {
+				this.showDeduplicationStep = true;
+				this.renderPlaceDeduplicationStep(container, stepState);
+				return;
+			}
+
 			const noIssues = container.createDiv({ cls: 'crc-cleanup-no-issues' });
 			const icon = noIssues.createDiv({ cls: 'crc-cleanup-no-issues-icon' });
 			setIcon(icon, 'check-circle');
@@ -1636,7 +1652,6 @@ export class CleanupWizardModal extends Modal {
 			}
 		}
 
-		stepState.status = 'complete';
 		stepState.fixCount = totalUpdated;
 
 		if (errors.length > 0) {
@@ -1646,6 +1661,183 @@ export class CleanupWizardModal extends Modal {
 			new Notice(`Standardized ${totalUpdated} place reference${totalUpdated !== 1 ? 's' : ''}`);
 		} else {
 			new Notice('No changes were needed');
+		}
+
+		// Check for duplicates after variant standardization
+		this.placeDuplicateGroups = findDuplicatePlaceNotes(this.app);
+		if (this.placeDuplicateGroups.length > 0) {
+			// Show deduplication step instead of marking complete
+			this.showDeduplicationStep = true;
+			stepState.status = 'in_progress'; // Keep in progress for deduplication
+			new Notice(`Found ${this.placeDuplicateGroups.length} duplicate place${this.placeDuplicateGroups.length !== 1 ? 's' : ''} to merge`);
+		} else {
+			stepState.status = 'complete';
+		}
+
+		this.renderCurrentView();
+	}
+
+	/**
+	 * Render Step 7b: Place Deduplication UI
+	 */
+	private renderPlaceDeduplicationStep(container: HTMLElement, stepState: StepState): void {
+		if (this.placeDuplicateGroups.length === 0) {
+			// No duplicates - step is complete
+			stepState.status = 'complete';
+			const complete = container.createDiv({ cls: 'crc-cleanup-step-complete' });
+			const icon = complete.createDiv({ cls: 'crc-cleanup-step-complete-icon' });
+			setIcon(icon, 'check-circle');
+			complete.createDiv({ cls: 'crc-cleanup-step-complete-text', text: 'Place cleanup complete!' });
+			if (stepState.fixCount > 0) {
+				complete.createDiv({ cls: 'crc-cleanup-step-complete-count', text: `${stepState.fixCount} items processed` });
+			}
+			return;
+		}
+
+		const preview = container.createDiv({ cls: 'crc-cleanup-preview' });
+
+		// Summary
+		const totalDupes = this.placeDuplicateGroups.reduce((sum, g) => sum + g.files.length - 1, 0);
+		const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
+		summary.textContent = `Found ${this.placeDuplicateGroups.length} place${this.placeDuplicateGroups.length === 1 ? '' : 's'} with duplicates (${totalDupes} duplicate file${totalDupes === 1 ? '' : 's'} to merge).`;
+
+		const hint = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
+		hint.textContent = 'Select which file to keep as canonical for each place. Duplicates will be merged and deleted.';
+
+		// Table container
+		const tableContainer = preview.createDiv({ cls: 'crc-cleanup-dedup-table-container' });
+		const table = tableContainer.createEl('table', { cls: 'crc-cleanup-dedup-table' });
+
+		const thead = table.createEl('thead');
+		const headerRow = thead.createEl('tr');
+		headerRow.createEl('th', { text: 'Place Name' });
+		headerRow.createEl('th', { text: 'Files', cls: 'crc-cleanup-dedup-th-files' });
+		headerRow.createEl('th', { text: 'Keep', cls: 'crc-cleanup-dedup-th-keep' });
+
+		const tbody = table.createEl('tbody');
+
+		// Track selected canonical files for each group
+		const canonicalSelections = new Map<PlaceDuplicateGroup, import('obsidian').TFile>();
+
+		// Initialize with recommended canonicals
+		for (const group of this.placeDuplicateGroups) {
+			canonicalSelections.set(group, group.recommendedCanonical);
+		}
+
+		// Render each duplicate group
+		for (const group of this.placeDuplicateGroups) {
+			const row = tbody.createEl('tr', { cls: 'crc-cleanup-dedup-row' });
+
+			// Place name
+			const tdName = row.createEl('td', { cls: 'crc-cleanup-dedup-name' });
+			tdName.textContent = group.fullName;
+
+			// Files list
+			const tdFiles = row.createEl('td', { cls: 'crc-cleanup-dedup-files' });
+			const fileList = tdFiles.createDiv({ cls: 'crc-cleanup-dedup-file-list' });
+
+			for (const file of group.files) {
+				const fileItem = fileList.createDiv({ cls: 'crc-cleanup-dedup-file-item' });
+				const fileName = fileItem.createSpan({ cls: 'crc-cleanup-dedup-file-name' });
+				fileName.textContent = file.basename;
+
+				const refCount = group.refCounts.get(file) || 0;
+				const refBadge = fileItem.createSpan({ cls: 'crc-cleanup-dedup-ref-badge' });
+				refBadge.textContent = `${refCount} ref${refCount === 1 ? '' : 's'}`;
+
+				if (file === group.recommendedCanonical) {
+					const recBadge = fileItem.createSpan({ cls: 'crc-cleanup-dedup-rec-badge' });
+					recBadge.textContent = 'recommended';
+				}
+			}
+
+			// Canonical selector
+			const tdKeep = row.createEl('td', { cls: 'crc-cleanup-dedup-keep' });
+			const select = tdKeep.createEl('select', { cls: 'dropdown crc-cleanup-dedup-select' });
+
+			for (const file of group.files) {
+				const refCount = group.refCounts.get(file) || 0;
+				const option = select.createEl('option', {
+					value: file.path,
+					text: `${file.basename} (${refCount} refs)`
+				});
+				if (file === group.recommendedCanonical) {
+					option.selected = true;
+				}
+			}
+
+			select.addEventListener('change', () => {
+				const selectedFile = group.files.find(f => f.path === select.value);
+				if (selectedFile) {
+					canonicalSelections.set(group, selectedFile);
+				}
+			});
+		}
+
+		// Warning
+		const warning = preview.createDiv({ cls: 'crc-cleanup-warning' });
+		const warningIcon = warning.createDiv({ cls: 'crc-cleanup-warning-icon' });
+		setIcon(warningIcon, 'alert-triangle');
+		warning.createSpan({ text: 'Duplicate files will be moved to trash. All references will be updated to point to the canonical file.' });
+
+		// Apply button
+		const applyContainer = preview.createDiv({ cls: 'crc-cleanup-dedup-apply' });
+		const applyBtn = applyContainer.createEl('button', {
+			cls: 'crc-btn crc-btn--primary'
+		});
+		const applyIcon = applyBtn.createSpan({ cls: 'crc-btn-icon' });
+		setIcon(applyIcon, 'git-merge');
+		applyBtn.createSpan({ text: `Merge ${this.placeDuplicateGroups.length} duplicate group${this.placeDuplicateGroups.length === 1 ? '' : 's'}` });
+
+		applyBtn.addEventListener('click', async () => {
+			await this.applyPlaceDeduplication(canonicalSelections, stepState);
+		});
+
+		// Skip button
+		const skipBtn = applyContainer.createEl('button', {
+			cls: 'crc-btn crc-btn--secondary',
+			text: 'Skip Deduplication'
+		});
+		skipBtn.addEventListener('click', () => {
+			this.showDeduplicationStep = false;
+			stepState.status = 'complete';
+			this.renderCurrentView();
+		});
+	}
+
+	/**
+	 * Apply place deduplication
+	 */
+	private async applyPlaceDeduplication(
+		canonicalSelections: Map<PlaceDuplicateGroup, import('obsidian').TFile>,
+		stepState: StepState
+	): Promise<void> {
+		let totalUpdatedLinks = 0;
+		let totalDeletedFiles = 0;
+		const errors: string[] = [];
+
+		for (const [group, canonicalFile] of canonicalSelections.entries()) {
+			try {
+				const result = await mergeDuplicatePlaces(this.app, group, canonicalFile);
+				totalUpdatedLinks += result.updatedLinks;
+				totalDeletedFiles += result.deletedFiles;
+			} catch (error) {
+				const message = error instanceof Error ? error.message : 'Unknown error';
+				errors.push(`${group.fullName}: ${message}`);
+			}
+		}
+
+		// Update step state
+		stepState.fixCount += totalDeletedFiles;
+		stepState.status = 'complete';
+		this.showDeduplicationStep = false;
+		this.placeDuplicateGroups = [];
+
+		if (errors.length > 0) {
+			console.error('Errors during deduplication:', errors);
+			new Notice(`Merged ${totalDeletedFiles} duplicates, updated ${totalUpdatedLinks} links. ${errors.length} errors.`);
+		} else {
+			new Notice(`Merged ${totalDeletedFiles} duplicate${totalDeletedFiles !== 1 ? 's' : ''}, updated ${totalUpdatedLinks} link${totalUpdatedLinks !== 1 ? 's' : ''}`);
 		}
 
 		this.renderCurrentView();

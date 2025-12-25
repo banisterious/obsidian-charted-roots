@@ -506,6 +506,212 @@ export class StandardizePlaceVariantsModal extends Modal {
 }
 
 /**
+ * A group of duplicate Place notes that share the same full_name
+ */
+export interface PlaceDuplicateGroup {
+	/** The shared full_name value */
+	fullName: string;
+	/** The Place note files in this group */
+	files: TFile[];
+	/** Reference counts for each file (how many Person notes link to it) */
+	refCounts: Map<TFile, number>;
+	/** The recommended canonical file (most references) */
+	recommendedCanonical: TFile;
+}
+
+/**
+ * Find duplicate Place notes (notes with the same full_name)
+ * This should be run AFTER variant standardization to catch newly-created duplicates
+ */
+export function findDuplicatePlaceNotes(app: App): PlaceDuplicateGroup[] {
+	const files = app.vault.getMarkdownFiles();
+
+	// Group Place notes by their full_name
+	const placesByFullName = new Map<string, TFile[]>();
+
+	for (const file of files) {
+		const cache = app.metadataCache.getFileCache(file);
+		if (!cache?.frontmatter) continue;
+
+		const fm = cache.frontmatter;
+		if (fm.cr_type !== 'place') continue;
+
+		const fullName = fm.full_name;
+		if (!fullName || typeof fullName !== 'string') continue;
+
+		const normalizedFullName = fullName.trim().toLowerCase();
+		const existing = placesByFullName.get(normalizedFullName) || [];
+		existing.push(file);
+		placesByFullName.set(normalizedFullName, existing);
+	}
+
+	// Count references to each Place note from Person notes
+	const refCounts = new Map<string, number>(); // file path -> count
+
+	for (const file of files) {
+		const cache = app.metadataCache.getFileCache(file);
+		if (!cache?.frontmatter) continue;
+
+		const fm = cache.frontmatter;
+		// Only count references from Person notes
+		if (fm.cr_type !== 'person') continue;
+
+		// Check all place fields for wikilinks
+		const placeFields = ['birth_place', 'death_place', 'burial_place'];
+
+		// Add spouse marriage locations
+		let spouseIndex = 1;
+		while (fm[`spouse${spouseIndex}`] || fm[`spouse${spouseIndex}_id`]) {
+			placeFields.push(`spouse${spouseIndex}_marriage_location`);
+			spouseIndex++;
+		}
+
+		for (const field of placeFields) {
+			const value = fm[field];
+			if (!value || typeof value !== 'string') continue;
+
+			// Extract wikilink target
+			const match = value.match(/^\[\[([^\]|]+)/);
+			if (match) {
+				const linkTarget = match[1];
+				// Resolve the link to a file
+				const linkedFile = app.metadataCache.getFirstLinkpathDest(linkTarget, file.path);
+				if (linkedFile) {
+					const current = refCounts.get(linkedFile.path) || 0;
+					refCounts.set(linkedFile.path, current + 1);
+				}
+			}
+		}
+	}
+
+	// Build duplicate groups (only groups with 2+ files)
+	const duplicateGroups: PlaceDuplicateGroup[] = [];
+
+	for (const [fullName, placeFiles] of placesByFullName.entries()) {
+		if (placeFiles.length < 2) continue;
+
+		// Build ref count map for this group
+		const groupRefCounts = new Map<TFile, number>();
+		let maxRefs = 0;
+		let recommendedCanonical = placeFiles[0];
+
+		for (const placeFile of placeFiles) {
+			const count = refCounts.get(placeFile.path) || 0;
+			groupRefCounts.set(placeFile, count);
+
+			if (count > maxRefs) {
+				maxRefs = count;
+				recommendedCanonical = placeFile;
+			}
+		}
+
+		// Get the original (non-lowercase) full_name from the first file
+		const cache = app.metadataCache.getFileCache(placeFiles[0]);
+		const originalFullName = cache?.frontmatter?.full_name || fullName;
+
+		duplicateGroups.push({
+			fullName: originalFullName,
+			files: placeFiles,
+			refCounts: groupRefCounts,
+			recommendedCanonical
+		});
+	}
+
+	// Sort by number of duplicates descending
+	duplicateGroups.sort((a, b) => b.files.length - a.files.length);
+
+	return duplicateGroups;
+}
+
+/**
+ * Merge duplicate Place notes into a canonical note
+ * - Updates all wikilinks pointing to duplicates to point to canonical
+ * - Deletes (trashes) the duplicate notes
+ */
+export async function mergeDuplicatePlaces(
+	app: App,
+	group: PlaceDuplicateGroup,
+	canonicalFile: TFile
+): Promise<{ updatedLinks: number; deletedFiles: number }> {
+	const duplicateFiles = group.files.filter(f => f.path !== canonicalFile.path);
+	let updatedLinks = 0;
+
+	// Get the canonical note's basename for wikilink updates
+	const canonicalBasename = canonicalFile.basename;
+
+	// Update all Person notes that link to duplicate Place notes
+	const allFiles = app.vault.getMarkdownFiles();
+
+	for (const file of allFiles) {
+		const cache = app.metadataCache.getFileCache(file);
+		if (!cache?.frontmatter) continue;
+
+		const fm = cache.frontmatter;
+		if (fm.cr_type !== 'person') continue;
+
+		// Check all place fields for wikilinks to duplicates
+		const fieldsToUpdate: Array<{ field: string; newValue: string }> = [];
+
+		const checkField = (fieldName: string) => {
+			const value = fm[fieldName];
+			if (!value || typeof value !== 'string') return;
+
+			// Extract wikilink target
+			const match = value.match(/^\[\[([^\]|]+)(\|[^\]]+)?\]\]$/);
+			if (!match) return;
+
+			const linkTarget = match[1];
+			const displayText = match[2] || ''; // e.g., |display text
+
+			// Resolve the link to a file
+			const linkedFile = app.metadataCache.getFirstLinkpathDest(linkTarget, file.path);
+			if (!linkedFile) return;
+
+			// Check if this links to a duplicate
+			if (duplicateFiles.some(dup => dup.path === linkedFile.path)) {
+				// Update to point to canonical
+				const newValue = `[[${canonicalBasename}${displayText}]]`;
+				fieldsToUpdate.push({ field: fieldName, newValue });
+			}
+		};
+
+		// Check standard place fields
+		checkField('birth_place');
+		checkField('death_place');
+		checkField('burial_place');
+
+		// Check spouse marriage locations
+		let spouseIndex = 1;
+		while (fm[`spouse${spouseIndex}`] || fm[`spouse${spouseIndex}_id`]) {
+			checkField(`spouse${spouseIndex}_marriage_location`);
+			spouseIndex++;
+		}
+
+		if (fieldsToUpdate.length > 0) {
+			await app.fileManager.processFrontMatter(file, (frontmatter) => {
+				for (const update of fieldsToUpdate) {
+					frontmatter[update.field] = update.newValue;
+				}
+			});
+			updatedLinks += fieldsToUpdate.length;
+		}
+	}
+
+	// Delete (trash) the duplicate files
+	let deletedFiles = 0;
+	for (const dupFile of duplicateFiles) {
+		try {
+			await app.vault.trash(dupFile, true); // true = use system trash
+			deletedFiles++;
+		} catch (error) {
+			console.error(`Failed to delete duplicate: ${dupFile.path}`, error);
+		}
+	}
+
+	return { updatedLinks, deletedFiles };
+}
+
+/**
  * Find place name variants in the vault
  * Scans both Place notes (full_name field) and Person notes (place fields)
  */
