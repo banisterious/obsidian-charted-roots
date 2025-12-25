@@ -33,6 +33,10 @@ export interface GedcomXImportOptions {
 	includeDynamicBlocks?: boolean;
 	/** Which dynamic block types to include */
 	dynamicBlockTypes?: DynamicBlockType[];
+	/** Create place notes from unique places */
+	createPlaceNotes?: boolean;
+	/** Folder to store place notes */
+	placesFolder?: string;
 }
 
 /**
@@ -48,6 +52,8 @@ export interface GedcomXImportResult {
 	validation?: GedcomXValidationResult;
 	fileName?: string;
 	malformedDataCount?: number;
+	/** Number of place notes created */
+	placesCreated?: number;
 }
 
 /**
@@ -176,15 +182,43 @@ export class GedcomXImporter {
 			new Notice(`Parsed ${gedcomXData.persons.size} individuals`);
 			logger.info('importFile', `Starting import of ${gedcomXData.persons.size} persons`);
 
-			// Create person notes
-			new Notice('Creating person notes...');
-
 			// Ensure people folder exists
 			await this.ensureFolderExists(options.peopleFolder);
 
 			// Create mapping of GEDCOM X IDs to cr_ids and file paths
 			const gedcomXToCrId = new Map<string, string>();
 			const gedcomXToFilePath = new Map<string, string>();
+
+			// Mapping from place name to wikilink (for linking in person notes)
+			const placeNameToWikilink = new Map<string, string>();
+
+			// Create place notes FIRST if requested (so we can link to them from person notes)
+			if (options.createPlaceNotes) {
+				const placesFolder = options.placesFolder || options.peopleFolder;
+				await this.ensureFolderExists(placesFolder);
+
+				// Collect all unique places
+				const allPlaces = this.collectAllPlaces(gedcomXData);
+
+				if (allPlaces.size > 0) {
+					new Notice(`Creating ${allPlaces.size} place notes...`);
+
+					for (const placeString of allPlaces) {
+						try {
+							const { crId, wikilink } = await this.createPlaceNote(placeString, placesFolder, options);
+							placeNameToWikilink.set(placeString, wikilink);
+							result.placesCreated = (result.placesCreated || 0) + 1;
+						} catch (error: unknown) {
+							result.errors.push(
+								`Failed to import place ${placeString}: ${getErrorMessage(error)}`
+							);
+						}
+					}
+				}
+			}
+
+			// Create person notes
+			new Notice('Creating person notes...');
 
 			// First pass: Create all person notes
 			for (const [personId, person] of gedcomXData.persons) {
@@ -193,7 +227,8 @@ export class GedcomXImporter {
 						person,
 						gedcomXData,
 						options,
-						gedcomXToCrId
+						gedcomXToCrId,
+						placeNameToWikilink
 					);
 
 					gedcomXToCrId.set(personId, crId);
@@ -265,9 +300,28 @@ export class GedcomXImporter {
 		person: ParsedGedcomXPerson,
 		gedcomXData: ParsedGedcomXData,
 		options: GedcomXImportOptions,
-		gedcomXToCrId: Map<string, string>
+		gedcomXToCrId: Map<string, string>,
+		placeNameToWikilink: Map<string, string>
 	): Promise<{ crId: string; filePath: string }> {
 		const crId = generateCrId();
+
+		// Convert place strings to wikilinks if place notes were created
+		let birthPlaceValue = person.birthPlace;
+		let deathPlaceValue = person.deathPlace;
+
+		if (person.birthPlace) {
+			const wikilink = placeNameToWikilink.get(person.birthPlace);
+			if (wikilink) {
+				birthPlaceValue = wikilink;
+			}
+		}
+
+		if (person.deathPlace) {
+			const wikilink = placeNameToWikilink.get(person.deathPlace);
+			if (wikilink) {
+				deathPlaceValue = wikilink;
+			}
+		}
 
 		// Convert GEDCOM X person to PersonData
 		const personData: PersonData = {
@@ -275,8 +329,8 @@ export class GedcomXImporter {
 			crId: crId,
 			birthDate: person.birthDate,
 			deathDate: person.deathDate,
-			birthPlace: person.birthPlace,
-			deathPlace: person.deathPlace,
+			birthPlace: birthPlaceValue,
+			deathPlace: deathPlaceValue,
 			occupation: person.occupation,
 			sex: person.gender === 'M' ? 'male' : person.gender === 'F' ? 'female' : undefined
 		};
@@ -545,5 +599,136 @@ export class GedcomXImporter {
 		if (!folder) {
 			await this.app.vault.createFolder(normalizedPath);
 		}
+	}
+
+	/**
+	 * Collect all unique places from GEDCOM X data
+	 */
+	private collectAllPlaces(gedcomXData: ParsedGedcomXData): Set<string> {
+		const places = new Set<string>();
+
+		for (const [, person] of gedcomXData.persons) {
+			if (person.birthPlace) {
+				places.add(person.birthPlace);
+			}
+			if (person.deathPlace) {
+				places.add(person.deathPlace);
+			}
+		}
+
+		return places;
+	}
+
+	/**
+	 * Create a place note
+	 * @returns Object containing the cr_id and the wikilink
+	 */
+	private async createPlaceNote(
+		placeString: string,
+		placesFolder: string,
+		options: GedcomXImportOptions
+	): Promise<{ crId: string; wikilink: string }> {
+		const crId = generateCrId();
+
+		// Parse place hierarchy (comma-separated)
+		const parts = placeString.split(',').map(p => p.trim()).filter(p => p.length > 0);
+		const name = parts[0] || placeString;
+
+		// Infer place type from hierarchy
+		const placeType = this.inferPlaceType(parts);
+
+		// Build frontmatter
+		const frontmatterLines: string[] = [
+			'---',
+			'cr_type: place',
+			`cr_id: ${crId}`,
+			`title: "${name.replace(/"/g, '\\"')}"`,
+			`place_type: ${placeType}`
+		];
+
+		// Add full place string for reference/search
+		if (parts.length > 1) {
+			frontmatterLines.push(`full_name: "${placeString.replace(/"/g, '\\"')}"`);
+		}
+
+		frontmatterLines.push('---');
+
+		// Build note body
+		let body = `\n# ${name}\n\n`;
+
+		if (parts.length > 1) {
+			body += `**Location:** ${placeString}\n\n`;
+		}
+
+		body += `_Imported from GEDCOM X_\n`;
+
+		const content = frontmatterLines.join('\n') + body;
+
+		// Create filename - include parent for disambiguation if needed
+		let baseName: string;
+		if (parts.length > 1) {
+			baseName = `${name} ${parts[1]}`;
+		} else {
+			baseName = name;
+		}
+
+		// Sanitize filename
+		const safeFileName = this.sanitizeFilename(baseName);
+		const filePath = normalizePath(`${placesFolder}/${safeFileName}.md`);
+
+		// Handle duplicate filenames
+		let finalPath = filePath;
+		let counter = 1;
+		while (this.app.vault.getAbstractFileByPath(finalPath)) {
+			finalPath = normalizePath(`${placesFolder}/${safeFileName}-${counter}.md`);
+			counter++;
+		}
+
+		await this.app.vault.create(finalPath, content);
+
+		// Extract the wikilink name from the path
+		const wikilinkName = finalPath.replace(/\.md$/, '').split('/').pop() || name;
+
+		return { crId, wikilink: `[[${wikilinkName}]]` };
+	}
+
+	/**
+	 * Infer place type from hierarchy parts
+	 */
+	private inferPlaceType(parts: string[]): string {
+		if (parts.length === 1) {
+			return 'unknown';
+		}
+
+		// Check last part for country indicators
+		const lastPart = parts[parts.length - 1].toLowerCase();
+		if (['usa', 'united states', 'us', 'uk', 'united kingdom', 'canada', 'australia'].includes(lastPart)) {
+			if (parts.length === 2) {
+				return 'state';
+			} else if (parts.length === 3) {
+				return 'county';
+			} else {
+				return 'city';
+			}
+		}
+
+		// Default based on position in hierarchy
+		if (parts.length === 2) {
+			return 'region';
+		} else if (parts.length >= 3) {
+			return 'city';
+		}
+
+		return 'unknown';
+	}
+
+	/**
+	 * Sanitize a string for use as a filename
+	 */
+	private sanitizeFilename(name: string): string {
+		return name
+			.replace(/[\\/:*?"<>|[\]]/g, '-')
+			.replace(/\s+/g, ' ')
+			.trim();
 	}
 }

@@ -118,6 +118,12 @@ export interface CsvImportOptions {
 
 	/** Which dynamic block types to include */
 	dynamicBlockTypes?: DynamicBlockType[];
+
+	/** Create place notes from unique places */
+	createPlaceNotes?: boolean;
+
+	/** Folder to store place notes */
+	placesFolder?: string;
 }
 
 /**
@@ -134,6 +140,8 @@ export interface CsvImportResult {
 	fileName?: string;
 	/** Count of people with missing/invalid data */
 	malformedDataCount?: number;
+	/** Number of place notes created */
+	placesCreated?: number;
 }
 
 /**
@@ -239,11 +247,39 @@ export class CsvImporter {
 				return result;
 			}
 
-			// Create person notes
-			new Notice('Creating person notes...');
-
 			// Ensure people folder exists
 			await this.ensureFolderExists(options.peopleFolder);
+
+			// Mapping from place name to wikilink (for linking in person notes)
+			const placeNameToWikilink = new Map<string, string>();
+
+			// Create place notes FIRST if requested (so we can link to them from person notes)
+			if (options.createPlaceNotes) {
+				const placesFolder = options.placesFolder || options.peopleFolder;
+				await this.ensureFolderExists(placesFolder);
+
+				// Collect all unique places from CSV data
+				const allPlaces = this.collectAllPlaces(parseResult.rows, mapping);
+
+				if (allPlaces.size > 0) {
+					new Notice(`Creating ${allPlaces.size} place notes...`);
+
+					for (const placeString of allPlaces) {
+						try {
+							const { crId, wikilink } = await this.createPlaceNote(placeString, placesFolder);
+							placeNameToWikilink.set(placeString, wikilink);
+							result.placesCreated = (result.placesCreated || 0) + 1;
+						} catch (error: unknown) {
+							result.errors.push(
+								`Failed to import place ${placeString}: ${getErrorMessage(error)}`
+							);
+						}
+					}
+				}
+			}
+
+			// Create person notes
+			new Notice('Creating person notes...');
 
 			// Create mapping of row index to cr_id (for relationship resolution)
 			const rowToCrId = new Map<number, string>();
@@ -259,7 +295,8 @@ export class CsvImporter {
 					const { crId, created, updated } = await this.importRow(
 						row,
 						mapping,
-						options
+						options,
+						placeNameToWikilink
 					);
 
 					rowToCrId.set(i, crId);
@@ -351,7 +388,8 @@ export class CsvImporter {
 	private async importRow(
 		row: CsvRow,
 		mapping: Partial<CsvColumnMapping>,
-		options: CsvImportOptions
+		options: CsvImportOptions,
+		placeNameToWikilink: Map<string, string>
 	): Promise<{ crId: string; created: boolean; updated: boolean }> {
 		// Get or generate cr_id
 		let crId = this.getColumnValue(row, mapping.crId);
@@ -379,14 +417,35 @@ export class CsvImporter {
 			return { crId, created: false, updated: false };
 		}
 
+		// Convert place strings to wikilinks if place notes were created
+		const rawBirthPlace = this.getColumnValue(row, mapping.birthPlace);
+		const rawDeathPlace = this.getColumnValue(row, mapping.deathPlace);
+
+		let birthPlaceValue = rawBirthPlace;
+		let deathPlaceValue = rawDeathPlace;
+
+		if (rawBirthPlace) {
+			const wikilink = placeNameToWikilink.get(rawBirthPlace);
+			if (wikilink) {
+				birthPlaceValue = wikilink;
+			}
+		}
+
+		if (rawDeathPlace) {
+			const wikilink = placeNameToWikilink.get(rawDeathPlace);
+			if (wikilink) {
+				deathPlaceValue = wikilink;
+			}
+		}
+
 		// Build PersonData
 		const personData: PersonData = {
 			name,
 			crId,
 			birthDate: this.getColumnValue(row, mapping.birthDate),
 			deathDate: this.getColumnValue(row, mapping.deathDate),
-			birthPlace: this.getColumnValue(row, mapping.birthPlace),
-			deathPlace: this.getColumnValue(row, mapping.deathPlace),
+			birthPlace: birthPlaceValue,
+			deathPlace: deathPlaceValue,
 			occupation: this.getColumnValue(row, mapping.occupation),
 			sex: this.normalizeGender(this.getColumnValue(row, mapping.sex))
 		};
@@ -605,5 +664,138 @@ export class CsvImporter {
 		if (!folder) {
 			await this.app.vault.createFolder(normalizedPath);
 		}
+	}
+
+	/**
+	 * Collect all unique places from CSV rows
+	 */
+	private collectAllPlaces(rows: CsvRow[], mapping: Partial<CsvColumnMapping>): Set<string> {
+		const places = new Set<string>();
+
+		for (const row of rows) {
+			const birthPlace = this.getColumnValue(row, mapping.birthPlace);
+			const deathPlace = this.getColumnValue(row, mapping.deathPlace);
+
+			if (birthPlace) {
+				places.add(birthPlace);
+			}
+			if (deathPlace) {
+				places.add(deathPlace);
+			}
+		}
+
+		return places;
+	}
+
+	/**
+	 * Create a place note
+	 * @returns Object containing the cr_id and the wikilink
+	 */
+	private async createPlaceNote(
+		placeString: string,
+		placesFolder: string
+	): Promise<{ crId: string; wikilink: string }> {
+		const crId = generateCrId();
+
+		// Parse place hierarchy (comma-separated)
+		const parts = placeString.split(',').map(p => p.trim()).filter(p => p.length > 0);
+		const name = parts[0] || placeString;
+
+		// Infer place type from hierarchy
+		const placeType = this.inferPlaceType(parts);
+
+		// Build frontmatter
+		const frontmatterLines: string[] = [
+			'---',
+			'cr_type: place',
+			`cr_id: ${crId}`,
+			`title: "${name.replace(/"/g, '\\"')}"`,
+			`place_type: ${placeType}`
+		];
+
+		// Add full place string for reference/search
+		if (parts.length > 1) {
+			frontmatterLines.push(`full_name: "${placeString.replace(/"/g, '\\"')}"`);
+		}
+
+		frontmatterLines.push('---');
+
+		// Build note body
+		let body = `\n# ${name}\n\n`;
+
+		if (parts.length > 1) {
+			body += `**Location:** ${placeString}\n\n`;
+		}
+
+		body += `_Imported from CSV_\n`;
+
+		const content = frontmatterLines.join('\n') + body;
+
+		// Create filename - include parent for disambiguation if needed
+		let baseName: string;
+		if (parts.length > 1) {
+			baseName = `${name} ${parts[1]}`;
+		} else {
+			baseName = name;
+		}
+
+		// Sanitize filename
+		const safeFileName = this.sanitizeFilename(baseName);
+		const filePath = normalizePath(`${placesFolder}/${safeFileName}.md`);
+
+		// Handle duplicate filenames
+		let finalPath = filePath;
+		let counter = 1;
+		while (this.app.vault.getAbstractFileByPath(finalPath)) {
+			finalPath = normalizePath(`${placesFolder}/${safeFileName}-${counter}.md`);
+			counter++;
+		}
+
+		await this.app.vault.create(finalPath, content);
+
+		// Extract the wikilink name from the path
+		const wikilinkName = finalPath.replace(/\.md$/, '').split('/').pop() || name;
+
+		return { crId, wikilink: `[[${wikilinkName}]]` };
+	}
+
+	/**
+	 * Infer place type from hierarchy parts
+	 */
+	private inferPlaceType(parts: string[]): string {
+		if (parts.length === 1) {
+			return 'unknown';
+		}
+
+		// Check last part for country indicators
+		const lastPart = parts[parts.length - 1].toLowerCase();
+		if (['usa', 'united states', 'us', 'uk', 'united kingdom', 'canada', 'australia'].includes(lastPart)) {
+			if (parts.length === 2) {
+				return 'state';
+			} else if (parts.length === 3) {
+				return 'county';
+			} else {
+				return 'city';
+			}
+		}
+
+		// Default based on position in hierarchy
+		if (parts.length === 2) {
+			return 'region';
+		} else if (parts.length >= 3) {
+			return 'city';
+		}
+
+		return 'unknown';
+	}
+
+	/**
+	 * Sanitize a string for use as a filename
+	 */
+	private sanitizeFilename(name: string): string {
+		return name
+			.replace(/[\\/:*?"<>|[\]]/g, '-')
+			.replace(/\s+/g, ' ')
+			.trim();
 	}
 }
