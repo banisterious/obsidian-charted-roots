@@ -275,8 +275,8 @@ Compact horizontal bar on step views:
 
 | Location | Trigger | Context |
 |----------|---------|---------|
-| Import Results modal | "Run Cleanup Wizard" button | After completing GEDCOM import |
-| Data Quality tab | "Post-Import Cleanup Wizard" button | Manual access anytime |
+| Import Wizard results | "Run Cleanup Wizard" button | After completing GEDCOM import |
+| Control Center > Data Quality > Quick Start card | Action button | Manual access from Data Quality tab |
 | Command palette | "Canvas Roots: Post-Import Cleanup Wizard" | Keyboard shortcut access |
 
 ## Smart Defaults

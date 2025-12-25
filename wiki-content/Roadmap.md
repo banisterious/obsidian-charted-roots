@@ -128,8 +128,8 @@ After a GEDCOM import (especially from a file with data quality issues), users f
 - Connects step circles with lines (green when complete)
 
 **Entry Points:**
-- Button in Import Results modal: "Run Cleanup Wizard"
-- Data Quality tab: "Post-Import Cleanup Wizard" button
+- Import Wizard results: "Run Cleanup Wizard" button
+- Control Center > Data Quality > Quick Start card: Action button
 - Command palette: "Canvas Roots: Post-Import Cleanup Wizard"
 
 **Smart Defaults:**
