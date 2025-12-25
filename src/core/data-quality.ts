@@ -638,16 +638,22 @@ export class DataQualityService {
 			});
 		}
 
-		// Invalid gender value
-		const validGenders = ['M', 'F', 'Male', 'Female', 'male', 'female', 'nonbinary', 'Nonbinary', 'unknown', 'Unknown'];
-		if (person.sex && !validGenders.includes(person.sex)) {
+		// Non-standard gender value - flag values that can be normalized to canonical GEDCOM codes
+		// Canonical values are: M, F, X (nonbinary/other), U (unknown)
+		// NOTE: We must read the RAW frontmatter value, not person.sex, because the PersonNode
+		// cache normalizes 'female'→'F', 'male'→'M' etc. during load. We need to detect the
+		// actual on-disk value to determine if normalization is needed.
+		const canonicalGenders = ['M', 'F', 'X', 'U'];
+		const cache = this.app.metadataCache.getFileCache(person.file);
+		const rawSex = cache?.frontmatter?.['sex'] as string | undefined;
+		if (rawSex && !canonicalGenders.includes(rawSex)) {
 			issues.push({
 				code: 'INVALID_GENDER',
-				message: `Gender value "${person.sex}" is not standard (expected male/female/nonbinary/unknown)`,
+				message: `Gender value "${rawSex}" is not standard GEDCOM format (expected M/F/X/U)`,
 				severity: 'warning',
 				category: 'data_format',
 				person,
-				details: { value: person.sex },
+				details: { value: rawSex },
 			});
 		}
 
