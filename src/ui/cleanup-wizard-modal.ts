@@ -31,7 +31,8 @@ import type { CleanupWizardPersistedState } from '../settings';
 import { findPlaceNameVariants, findDuplicatePlaceNotes, mergeDuplicatePlaces, type PlaceVariantMatch, type PlaceDuplicateGroup } from './standardize-place-variants-modal';
 import { GeocodingService, type GeocodingResult, type BulkGeocodingResult } from '../maps/services/geocoding-service';
 import { PlaceGraphService } from '../core/place-graph';
-import type { PlaceNode } from '../models/place';
+import { createPlaceNote, updatePlaceNote, type PlaceData } from '../core/place-note-writer';
+import type { PlaceNode, PlaceType } from '../models/place';
 
 const logger = getLogger('CleanupWizard');
 
@@ -85,6 +86,43 @@ interface CleanupWizardState {
 	isPreScanning: boolean;
 	preScanComplete: boolean;
 }
+
+/**
+ * Result of hierarchy enrichment for a single place
+ */
+interface HierarchyEnrichmentResult {
+	placeName: string;
+	success: boolean;
+	/** Parsed hierarchy components from geocoding */
+	hierarchy?: string[];
+	/** Parent places created */
+	parentsCreated?: string[];
+	/** Parent place linked to */
+	parentLinked?: string;
+	/** Error message if failed */
+	error?: string;
+	/** Whether place was skipped (already has parent) */
+	skipped?: boolean;
+}
+
+/**
+ * Known place type mappings from OSM/Nominatim address components
+ */
+const OSM_TYPE_MAP: Record<string, PlaceType> = {
+	country: 'country',
+	state: 'state',
+	province: 'province',
+	region: 'region',
+	county: 'county',
+	city: 'city',
+	town: 'town',
+	village: 'village',
+	municipality: 'city',
+	district: 'district',
+	suburb: 'district',
+	neighbourhood: 'district',
+	hamlet: 'village'
+};
 
 /**
  * Wizard step definitions
@@ -238,6 +276,14 @@ export class CleanupWizardModal extends Modal {
 	private isGeocoding = false;
 	private geocodingCancelled = false;
 	private geocodingResults: GeocodingResult[] = [];
+
+	// Hierarchy enrichment state
+	private placesWithoutParent: PlaceNode[] = [];
+	private isEnrichingHierarchy = false;
+	private hierarchyEnrichmentCancelled = false;
+	private hierarchyEnrichmentResults: HierarchyEnrichmentResult[] = [];
+	private hierarchyCreateMissingParents = true;
+	private hierarchyPlacesDirectory = '';
 
 	constructor(app: App, plugin: CanvasRootsPlugin) {
 		super(app);
@@ -1461,6 +1507,9 @@ export class CleanupWizardModal extends Modal {
 			case 'geocode':
 				this.renderGeocodeStep(container, stepState);
 				break;
+			case 'hierarchy':
+				this.renderHierarchyStep(container, stepState);
+				break;
 			default:
 				// Placeholder for unimplemented interactive steps
 				this.renderInteractiveStepPlaceholder(container, stepConfig);
@@ -2198,6 +2247,607 @@ export class CleanupWizardModal extends Modal {
 		this.renderCurrentView();
 	}
 
+	// ========================================
+	// Step 9: Place Hierarchy Enrichment
+	// ========================================
+
+	/**
+	 * Render Step 9: Place Hierarchy interactive UI
+	 */
+	private renderHierarchyStep(container: HTMLElement, stepState: StepState): void {
+		// If enrichment is in progress, show progress view
+		if (this.isEnrichingHierarchy) {
+			this.renderHierarchyProgress(container, stepState);
+			return;
+		}
+
+		// If we have results from a completed run, show results
+		if (this.hierarchyEnrichmentResults.length > 0) {
+			this.renderHierarchyResults(container, stepState);
+			return;
+		}
+
+		// Check for places without parent
+		if (this.placesWithoutParent.length === 0 && this.state.preScanComplete) {
+			const noIssues = container.createDiv({ cls: 'crc-cleanup-no-issues' });
+			const icon = noIssues.createDiv({ cls: 'crc-cleanup-no-issues-icon' });
+			setIcon(icon, 'check-circle');
+			noIssues.createDiv({ cls: 'crc-cleanup-no-issues-text', text: 'All places have parent hierarchies!' });
+			noIssues.createDiv({ cls: 'crc-cleanup-no-issues-hint', text: 'Your place notes already have parent places defined. You can skip to the next step.' });
+			return;
+		}
+
+		const preview = container.createDiv({ cls: 'crc-cleanup-preview' });
+
+		// Summary
+		const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
+		summary.textContent = `Found ${this.placesWithoutParent.length} place${this.placesWithoutParent.length === 1 ? '' : 's'} without parent hierarchy.`;
+
+		// Description
+		const desc = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
+		desc.textContent = 'This will geocode each place, parse the full address into hierarchy components (city → county → state → country), and create or link parent place notes.';
+
+		// Estimated time
+		const estimatedMinutes = Math.ceil(this.placesWithoutParent.length / 60);
+		const timeText = estimatedMinutes === 1 ? 'about 1 minute' : `about ${estimatedMinutes} minutes`;
+		const timeEstimate = preview.createDiv({ cls: 'crc-cleanup-hierarchy-time' });
+		const timeIcon = timeEstimate.createSpan({ cls: 'crc-cleanup-hierarchy-time-icon' });
+		setIcon(timeIcon, 'clock');
+		timeEstimate.createSpan({ text: `Estimated time: ${timeText}` });
+
+		// Settings
+		const settingsContainer = preview.createDiv({ cls: 'crc-cleanup-hierarchy-settings' });
+
+		// Create missing parents toggle
+		const createParentsRow = settingsContainer.createDiv({ cls: 'crc-cleanup-hierarchy-setting' });
+		const createParentsLabel = createParentsRow.createEl('label', { cls: 'crc-cleanup-hierarchy-setting-label' });
+		const createParentsCheckbox = createParentsLabel.createEl('input', { type: 'checkbox' });
+		createParentsCheckbox.checked = this.hierarchyCreateMissingParents;
+		createParentsCheckbox.addEventListener('change', () => {
+			this.hierarchyCreateMissingParents = createParentsCheckbox.checked;
+		});
+		createParentsLabel.createSpan({ text: ' Create missing parent places' });
+		createParentsRow.createDiv({ cls: 'crc-cleanup-hierarchy-setting-desc', text: 'Automatically create place notes for missing parents in the hierarchy' });
+
+		// Directory input
+		const dirRow = settingsContainer.createDiv({ cls: 'crc-cleanup-hierarchy-setting' });
+		dirRow.createDiv({ cls: 'crc-cleanup-hierarchy-setting-label', text: 'Directory for new places' });
+		const dirInput = dirRow.createEl('input', {
+			type: 'text',
+			cls: 'crc-cleanup-hierarchy-input',
+			placeholder: 'e.g., Places'
+		});
+		dirInput.value = this.hierarchyPlacesDirectory;
+		dirInput.addEventListener('change', () => {
+			this.hierarchyPlacesDirectory = dirInput.value;
+		});
+		dirRow.createDiv({ cls: 'crc-cleanup-hierarchy-setting-desc', text: 'Where to create new parent place notes' });
+
+		// Places list preview
+		const listContainer = preview.createDiv({ cls: 'crc-cleanup-hierarchy-list-container' });
+		const listTitle = listContainer.createDiv({ cls: 'crc-cleanup-hierarchy-list-title' });
+		listTitle.textContent = 'Places to enrich:';
+
+		const placesList = listContainer.createDiv({ cls: 'crc-cleanup-hierarchy-list' });
+		const maxDisplay = 20;
+		const displayPlaces = this.placesWithoutParent.slice(0, maxDisplay);
+
+		for (const place of displayPlaces) {
+			const item = placesList.createDiv({ cls: 'crc-cleanup-hierarchy-list-item' });
+			const iconEl = item.createSpan({ cls: 'crc-cleanup-hierarchy-list-icon' });
+			setIcon(iconEl, 'map-pin');
+			item.createSpan({ text: place.name, cls: 'crc-cleanup-hierarchy-list-name' });
+			if (place.placeType) {
+				item.createSpan({ text: ` (${place.placeType})`, cls: 'crc-cleanup-hierarchy-list-type' });
+			}
+		}
+
+		if (this.placesWithoutParent.length > maxDisplay) {
+			const moreEl = placesList.createDiv({ cls: 'crc-cleanup-hierarchy-list-more' });
+			moreEl.textContent = `... and ${this.placesWithoutParent.length - maxDisplay} more`;
+		}
+
+		// Warning
+		const warning = preview.createDiv({ cls: 'crc-cleanup-warning' });
+		const warningIcon = warning.createDiv({ cls: 'crc-cleanup-warning-icon' });
+		setIcon(warningIcon, 'alert-triangle');
+		warning.createSpan({ text: 'Backup your vault before proceeding. This operation will create new files and modify existing place notes.' });
+
+		// Start button
+		const applyContainer = preview.createDiv({ cls: 'crc-cleanup-hierarchy-apply' });
+		const startBtn = applyContainer.createEl('button', {
+			cls: 'crc-btn crc-btn--primary'
+		});
+		const startIcon = startBtn.createSpan({ cls: 'crc-btn-icon' });
+		setIcon(startIcon, 'git-branch');
+		startBtn.createSpan({ text: `Start enriching ${this.placesWithoutParent.length} places` });
+
+		startBtn.addEventListener('click', async () => {
+			await this.startHierarchyEnrichment(stepState);
+		});
+	}
+
+	/**
+	 * Render hierarchy enrichment progress view
+	 */
+	private renderHierarchyProgress(container: HTMLElement, stepState: StepState): void {
+		const progress = container.createDiv({ cls: 'crc-cleanup-hierarchy-progress' });
+
+		// Progress header
+		const header = progress.createDiv({ cls: 'crc-cleanup-hierarchy-progress-header' });
+		header.createSpan({ text: 'Enriching place hierarchies...', cls: 'crc-cleanup-hierarchy-progress-title' });
+
+		// Progress stats
+		const stats = progress.createDiv({ cls: 'crc-cleanup-hierarchy-progress-stats' });
+		const processed = this.hierarchyEnrichmentResults.length;
+		const total = this.placesWithoutParent.length;
+		const percent = total > 0 ? Math.round((processed / total) * 100) : 0;
+
+		const successCount = this.hierarchyEnrichmentResults.filter(r => r.success).length;
+		const failedCount = this.hierarchyEnrichmentResults.filter(r => !r.success && !r.skipped).length;
+		const parentsCreated = this.hierarchyEnrichmentResults.reduce((sum, r) => sum + (r.parentsCreated?.length || 0), 0);
+
+		stats.createSpan({ text: `${processed} of ${total} (${percent}%)` });
+
+		// Progress bar
+		const progressBarContainer = progress.createDiv({ cls: 'crc-cleanup-hierarchy-progress-bar-container' });
+		const progressBar = progressBarContainer.createDiv({ cls: 'crc-cleanup-hierarchy-progress-bar' });
+		progressBar.style.width = `${percent}%`;
+
+		// Stats breakdown
+		const breakdown = progress.createDiv({ cls: 'crc-cleanup-hierarchy-progress-breakdown' });
+
+		const successStat = breakdown.createSpan({ cls: 'crc-cleanup-hierarchy-stat crc-cleanup-hierarchy-stat--success' });
+		const successIcon = successStat.createSpan({ cls: 'crc-cleanup-hierarchy-stat-icon' });
+		setIcon(successIcon, 'check');
+		successStat.createSpan({ text: `${successCount} enriched` });
+
+		const createdStat = breakdown.createSpan({ cls: 'crc-cleanup-hierarchy-stat crc-cleanup-hierarchy-stat--created' });
+		const createdIcon = createdStat.createSpan({ cls: 'crc-cleanup-hierarchy-stat-icon' });
+		setIcon(createdIcon, 'plus');
+		createdStat.createSpan({ text: `${parentsCreated} parents created` });
+
+		const failedStat = breakdown.createSpan({ cls: 'crc-cleanup-hierarchy-stat crc-cleanup-hierarchy-stat--failed' });
+		const failedIcon = failedStat.createSpan({ cls: 'crc-cleanup-hierarchy-stat-icon' });
+		setIcon(failedIcon, 'x');
+		failedStat.createSpan({ text: `${failedCount} failed` });
+
+		// Results list (live updating)
+		const resultsList = progress.createDiv({ cls: 'crc-cleanup-hierarchy-results-list' });
+
+		// Show last 10 results
+		const recentResults = this.hierarchyEnrichmentResults.slice(-10);
+		for (const result of recentResults) {
+			const item = resultsList.createDiv({ cls: 'crc-cleanup-hierarchy-result-item' });
+
+			const icon = item.createSpan({ cls: 'crc-cleanup-hierarchy-result-icon' });
+			if (result.success) {
+				setIcon(icon, 'check');
+				icon.addClass('crc-cleanup-hierarchy-result-icon--success');
+			} else if (result.skipped) {
+				setIcon(icon, 'minus');
+				icon.addClass('crc-cleanup-hierarchy-result-icon--skipped');
+			} else {
+				setIcon(icon, 'x');
+				icon.addClass('crc-cleanup-hierarchy-result-icon--failed');
+			}
+
+			const name = item.createSpan({ cls: 'crc-cleanup-hierarchy-result-name' });
+			name.textContent = result.placeName;
+
+			if (result.success && result.parentLinked) {
+				const detail = item.createSpan({ cls: 'crc-cleanup-hierarchy-result-detail' });
+				const createdText = result.parentsCreated && result.parentsCreated.length > 0
+					? ` (+${result.parentsCreated.length})`
+					: '';
+				detail.textContent = ` → ${result.parentLinked}${createdText}`;
+			} else if (result.error) {
+				const error = item.createSpan({ cls: 'crc-cleanup-hierarchy-result-error' });
+				error.textContent = result.error;
+			}
+		}
+
+		// Cancel button
+		const cancelContainer = progress.createDiv({ cls: 'crc-cleanup-hierarchy-cancel' });
+		const cancelBtn = cancelContainer.createEl('button', {
+			cls: 'crc-btn crc-btn--secondary'
+		});
+		cancelBtn.textContent = this.hierarchyEnrichmentCancelled ? 'Cancelling...' : 'Cancel';
+		cancelBtn.disabled = this.hierarchyEnrichmentCancelled;
+
+		cancelBtn.addEventListener('click', () => {
+			this.hierarchyEnrichmentCancelled = true;
+			cancelBtn.textContent = 'Cancelling...';
+			cancelBtn.disabled = true;
+		});
+	}
+
+	/**
+	 * Render hierarchy enrichment results view
+	 */
+	private renderHierarchyResults(container: HTMLElement, stepState: StepState): void {
+		const results = container.createDiv({ cls: 'crc-cleanup-hierarchy-results' });
+
+		// Summary
+		const successCount = this.hierarchyEnrichmentResults.filter(r => r.success).length;
+		const failedCount = this.hierarchyEnrichmentResults.filter(r => !r.success && !r.skipped).length;
+		const parentsCreated = this.hierarchyEnrichmentResults.reduce((sum, r) => sum + (r.parentsCreated?.length || 0), 0);
+
+		const summary = results.createDiv({ cls: 'crc-cleanup-hierarchy-results-summary' });
+
+		const successSummary = summary.createDiv({ cls: 'crc-cleanup-hierarchy-summary-stat crc-cleanup-hierarchy-summary-stat--success' });
+		const successIcon = successSummary.createDiv({ cls: 'crc-cleanup-hierarchy-summary-icon' });
+		setIcon(successIcon, 'check-circle');
+		successSummary.createDiv({ cls: 'crc-cleanup-hierarchy-summary-value', text: String(successCount) });
+		successSummary.createDiv({ cls: 'crc-cleanup-hierarchy-summary-label', text: 'Places enriched' });
+
+		const createdSummary = summary.createDiv({ cls: 'crc-cleanup-hierarchy-summary-stat crc-cleanup-hierarchy-summary-stat--created' });
+		const createdIcon = createdSummary.createDiv({ cls: 'crc-cleanup-hierarchy-summary-icon' });
+		setIcon(createdIcon, 'plus-circle');
+		createdSummary.createDiv({ cls: 'crc-cleanup-hierarchy-summary-value', text: String(parentsCreated) });
+		createdSummary.createDiv({ cls: 'crc-cleanup-hierarchy-summary-label', text: 'Parents created' });
+
+		const failedSummary = summary.createDiv({ cls: 'crc-cleanup-hierarchy-summary-stat crc-cleanup-hierarchy-summary-stat--failed' });
+		const failedIcon = failedSummary.createDiv({ cls: 'crc-cleanup-hierarchy-summary-icon' });
+		setIcon(failedIcon, 'x-circle');
+		failedSummary.createDiv({ cls: 'crc-cleanup-hierarchy-summary-value', text: String(failedCount) });
+		failedSummary.createDiv({ cls: 'crc-cleanup-hierarchy-summary-label', text: 'Failed' });
+
+		// Results table
+		const tableContainer = results.createDiv({ cls: 'crc-cleanup-hierarchy-table-container' });
+		const table = tableContainer.createEl('table', { cls: 'crc-cleanup-hierarchy-table' });
+
+		const thead = table.createEl('thead');
+		const headerRow = thead.createEl('tr');
+		headerRow.createEl('th', { text: '', cls: 'crc-cleanup-hierarchy-th-status' });
+		headerRow.createEl('th', { text: 'Place' });
+		headerRow.createEl('th', { text: 'Result' });
+
+		const tbody = table.createEl('tbody');
+
+		// Show all results (with scroll)
+		for (const result of this.hierarchyEnrichmentResults) {
+			const row = tbody.createEl('tr', { cls: 'crc-cleanup-hierarchy-row' });
+
+			// Status icon
+			const tdStatus = row.createEl('td', { cls: 'crc-cleanup-hierarchy-td-status' });
+			const statusIcon = tdStatus.createSpan();
+			if (result.success) {
+				setIcon(statusIcon, 'check');
+				statusIcon.addClass('crc-cleanup-hierarchy-status--success');
+			} else if (result.skipped) {
+				setIcon(statusIcon, 'minus');
+				statusIcon.addClass('crc-cleanup-hierarchy-status--skipped');
+			} else {
+				setIcon(statusIcon, 'x');
+				statusIcon.addClass('crc-cleanup-hierarchy-status--failed');
+			}
+
+			// Place name
+			row.createEl('td', { text: result.placeName, cls: 'crc-cleanup-hierarchy-td-name' });
+
+			// Result
+			const tdResult = row.createEl('td', { cls: 'crc-cleanup-hierarchy-td-result' });
+			if (result.success && result.parentLinked) {
+				const createdText = result.parentsCreated && result.parentsCreated.length > 0
+					? ` (created: ${result.parentsCreated.join(', ')})`
+					: '';
+				tdResult.textContent = `→ ${result.parentLinked}${createdText}`;
+				tdResult.addClass('crc-cleanup-hierarchy-result--success');
+			} else if (result.skipped) {
+				tdResult.textContent = 'Already has parent';
+				tdResult.addClass('crc-cleanup-hierarchy-result--skipped');
+			} else {
+				tdResult.textContent = result.error || 'Failed';
+				tdResult.addClass('crc-cleanup-hierarchy-result--error');
+			}
+		}
+
+		// Show failed places note if any
+		if (failedCount > 0) {
+			const failedNote = results.createDiv({ cls: 'crc-cleanup-hierarchy-failed-note' });
+			const noteIcon = failedNote.createSpan({ cls: 'crc-cleanup-hierarchy-failed-note-icon' });
+			setIcon(noteIcon, 'info');
+			failedNote.createSpan({ text: 'Places that failed may have unusual names or not be found in OpenStreetMap. You can enrich them manually.' });
+		}
+
+		// Update step state
+		stepState.status = 'complete';
+		stepState.fixCount = successCount;
+
+		// Done button
+		const doneContainer = results.createDiv({ cls: 'crc-cleanup-hierarchy-done' });
+		const doneBtn = doneContainer.createEl('button', {
+			cls: 'crc-btn crc-btn--primary'
+		});
+		const doneIcon = doneBtn.createSpan({ cls: 'crc-btn-icon' });
+		setIcon(doneIcon, 'check');
+		doneBtn.createSpan({ text: 'Done' });
+
+		doneBtn.addEventListener('click', () => {
+			// Clear results and re-render
+			this.hierarchyEnrichmentResults = [];
+			this.renderCurrentView();
+		});
+	}
+
+	/**
+	 * Start the hierarchy enrichment process
+	 */
+	private async startHierarchyEnrichment(stepState: StepState): Promise<void> {
+		if (this.isEnrichingHierarchy) return;
+
+		this.isEnrichingHierarchy = true;
+		this.hierarchyEnrichmentCancelled = false;
+		this.hierarchyEnrichmentResults = [];
+		stepState.status = 'in_progress';
+		this.renderCurrentView();
+
+		const geocodingService = this.getGeocodingService();
+		const placeGraph = this.plugin.createPlaceGraphService();
+
+		for (let i = 0; i < this.placesWithoutParent.length; i++) {
+			// Check for cancellation
+			if (this.hierarchyEnrichmentCancelled) {
+				logger.info('startHierarchyEnrichment', `Enrichment cancelled at ${i} of ${this.placesWithoutParent.length}`);
+				break;
+			}
+
+			const place = this.placesWithoutParent[i];
+
+			// Enrich this place's hierarchy
+			const result = await this.enrichPlaceHierarchy(place, geocodingService, placeGraph);
+			this.hierarchyEnrichmentResults.push(result);
+
+			// Re-render to show progress (every 5 items to avoid too much re-rendering)
+			if (i % 5 === 0 || i === this.placesWithoutParent.length - 1) {
+				this.renderCurrentView();
+			}
+		}
+
+		// Complete
+		this.isEnrichingHierarchy = false;
+
+		const successCount = this.hierarchyEnrichmentResults.filter(r => r.success).length;
+		const parentsCreated = this.hierarchyEnrichmentResults.reduce((sum, r) => sum + (r.parentsCreated?.length || 0), 0);
+		const failedCount = this.hierarchyEnrichmentResults.filter(r => !r.success && !r.skipped).length;
+
+		if (this.hierarchyEnrichmentCancelled) {
+			new Notice(`Hierarchy enrichment cancelled. Enriched ${successCount} places, created ${parentsCreated} parents.`);
+		} else {
+			new Notice(`Hierarchy enrichment complete! Enriched ${successCount} places, created ${parentsCreated} parents. ${failedCount} failed.`);
+		}
+
+		// Clear the places list since we've processed them
+		this.placesWithoutParent = [];
+
+		this.renderCurrentView();
+	}
+
+	/**
+	 * Enrich hierarchy for a single place
+	 */
+	private async enrichPlaceHierarchy(
+		place: PlaceNode,
+		geocodingService: GeocodingService,
+		placeGraph: PlaceGraphService
+	): Promise<HierarchyEnrichmentResult> {
+		const result: HierarchyEnrichmentResult = {
+			placeName: place.name,
+			success: false
+		};
+
+		try {
+			// Build search query - use existing parent if available for better accuracy
+			let searchQuery = place.name;
+			if (place.parentId) {
+				const parent = placeGraph.getPlaceByCrId(place.parentId);
+				if (parent) {
+					searchQuery = `${place.name}, ${parent.name}`;
+				}
+			}
+
+			// Geocode the place with detailed address info
+			const geocodeResult = await geocodingService.geocodeWithDetails(searchQuery);
+
+			if (!geocodeResult.success || !geocodeResult.addressComponents) {
+				result.error = geocodeResult.error || 'No address found';
+				return result;
+			}
+
+			// Parse hierarchy from address components
+			const hierarchy = this.parseHierarchyFromAddress(geocodeResult.addressComponents, place.name);
+			result.hierarchy = hierarchy;
+
+			// Check if this place IS a country (top-level, no parent needed)
+			const isCountry = geocodeResult.addressComponents.country?.toLowerCase() === place.name.toLowerCase();
+
+			if (hierarchy.length === 0) {
+				if (isCountry) {
+					// Countries are top-level - just update coordinates, no parent needed
+					const file = this.app.vault.getAbstractFileByPath(place.filePath);
+					if (file instanceof TFile) {
+						await updatePlaceNote(this.app, file, {
+							placeType: 'country',
+							coordinates: geocodeResult.coordinates
+						});
+					}
+					result.success = true;
+					result.parentsCreated = [];
+					result.parentLinked = '(top-level country)';
+					return result;
+				}
+				result.error = 'Could not parse hierarchy';
+				return result;
+			}
+
+			// Find or create parent places and link them
+			const { parentId, parentsCreated } = await this.findOrCreateParentChain(
+				hierarchy,
+				place,
+				geocodeResult.addressComponents,
+				placeGraph
+			);
+
+			if (parentId) {
+				// Update the original place to link to its parent
+				const file = this.app.vault.getAbstractFileByPath(place.filePath);
+				if (file instanceof TFile) {
+					const parentPlace = placeGraph.getPlaceByCrId(parentId);
+					await updatePlaceNote(this.app, file, {
+						parentPlace: parentPlace?.name,
+						parentPlaceId: parentId,
+						// Also update coordinates if we got them
+						coordinates: geocodeResult.coordinates
+					});
+				}
+
+				result.success = true;
+				result.parentsCreated = parentsCreated;
+				result.parentLinked = placeGraph.getPlaceByCrId(parentId)?.name;
+			} else {
+				result.error = 'Could not establish parent chain';
+			}
+
+		} catch (error) {
+			result.error = error instanceof Error ? error.message : 'Unknown error';
+		}
+
+		return result;
+	}
+
+	/**
+	 * Parse hierarchy from Nominatim address components
+	 * Returns array from most specific to least specific (excluding the place itself)
+	 */
+	private parseHierarchyFromAddress(
+		addressComponents: Record<string, string>,
+		placeName: string
+	): string[] {
+		const hierarchy: string[] = [];
+
+		// Order of address components from most specific to least
+		const componentOrder = [
+			'city', 'town', 'village', 'municipality', 'hamlet',
+			'county', 'district', 'suburb',
+			'state', 'province', 'region',
+			'country'
+		];
+
+		// Track what we've added to avoid duplicates
+		const added = new Set<string>();
+		added.add(placeName.toLowerCase()); // Don't include the place itself
+
+		for (const component of componentOrder) {
+			const value = addressComponents[component];
+			if (value && !added.has(value.toLowerCase())) {
+				hierarchy.push(value);
+				added.add(value.toLowerCase());
+			}
+		}
+
+		return hierarchy;
+	}
+
+	/**
+	 * Find or create the parent chain for a place
+	 * Returns the cr_id of the immediate parent
+	 */
+	private async findOrCreateParentChain(
+		hierarchy: string[],
+		place: PlaceNode,
+		addressComponents: Record<string, string>,
+		placeGraph: PlaceGraphService
+	): Promise<{ parentId: string | undefined; parentsCreated: string[] }> {
+		const parentsCreated: string[] = [];
+		let childId: string | undefined;
+
+		// Work backwards from country to most specific parent
+		// This ensures each place has its parent created before it
+		const reversedHierarchy = [...hierarchy].reverse();
+
+		for (let i = 0; i < reversedHierarchy.length; i++) {
+			const name = reversedHierarchy[i];
+			const isImmediateParent = i === reversedHierarchy.length - 1;
+
+			// Try to find existing place with this name
+			let existingPlace = this.findPlaceByName(name, placeGraph);
+
+			if (!existingPlace && this.hierarchyCreateMissingParents) {
+				// Determine place type from address components
+				const placeType = this.inferPlaceType(name, addressComponents);
+
+				// Create the place
+				const placeData: PlaceData = {
+					name,
+					placeType,
+					// Link to previously created parent if we have one
+					parentPlaceId: childId,
+					parentPlace: childId ? placeGraph.getPlaceByCrId(childId)?.name : undefined
+				};
+
+				try {
+					const file = await createPlaceNote(this.app, placeData, {
+						directory: this.hierarchyPlacesDirectory,
+						openAfterCreate: false
+					});
+
+					// Get the cr_id from the created file
+					const cache = this.app.metadataCache.getFileCache(file);
+					const newCrId = cache?.frontmatter?.cr_id;
+
+					if (newCrId) {
+						parentsCreated.push(name);
+
+						// Refresh the place graph to include the new place
+						placeGraph.reloadCache();
+
+						existingPlace = placeGraph.getPlaceByCrId(newCrId);
+						childId = newCrId;
+					}
+				} catch (error) {
+					console.error(`Failed to create place "${name}":`, error);
+				}
+			} else if (existingPlace) {
+				childId = existingPlace.id;
+			}
+
+			// Return the immediate parent's ID
+			if (isImmediateParent && existingPlace) {
+				return { parentId: existingPlace.id, parentsCreated };
+			}
+		}
+
+		// Return the most specific parent we found/created
+		return { parentId: childId, parentsCreated };
+	}
+
+	/**
+	 * Find an existing place by name
+	 */
+	private findPlaceByName(name: string, placeGraph: PlaceGraphService): PlaceNode | undefined {
+		const allPlaces = placeGraph.getAllPlaces();
+		const nameLower = name.toLowerCase();
+
+		return allPlaces.find(p =>
+			p.name.toLowerCase() === nameLower ||
+			p.aliases.some(a => a.toLowerCase() === nameLower)
+		);
+	}
+
+	/**
+	 * Infer place type from address components
+	 */
+	private inferPlaceType(name: string, addressComponents: Record<string, string>): PlaceType | undefined {
+		// Check which component matches this name
+		for (const [component, value] of Object.entries(addressComponents)) {
+			if (value.toLowerCase() === name.toLowerCase()) {
+				return OSM_TYPE_MAP[component];
+			}
+		}
+		return undefined;
+	}
+
 	/**
 	 * Update place references in specific files
 	 */
@@ -2619,8 +3269,19 @@ export class CleanupWizardModal extends Modal {
 			this.state.steps[8].issueCount = this.ungeocodedPlaces.length;
 			logger.debug('runPreScan', `Step 8 (Geocode): ${this.ungeocodedPlaces.length} places without coordinates`);
 
-			// Steps 6, 9 (source migration, hierarchy)
-			// These require different services - leave as 0 for now (Phase 2)
+			// Step 9: Places without parent hierarchy
+			// Filter to places without parent that are "real" category
+			// Exclude top-level types (countries, regions) - they don't need parent linking
+			const topLevelTypes = ['country', 'region'];
+			this.placesWithoutParent = allPlaces.filter(place =>
+				!place.parentId &&
+				!topLevelTypes.includes(place.placeType || '') &&
+				['real', 'historical', 'disputed'].includes(place.category)
+			);
+			this.state.steps[9].issueCount = this.placesWithoutParent.length;
+			logger.debug('runPreScan', `Step 9 (Hierarchy): ${this.placesWithoutParent.length} places without parent`);
+
+			// Step 6 (source migration) - requires different service, leave as 0 for now
 
 			this.state.preScanComplete = true;
 			logger.info('runPreScan', 'Pre-scan complete');

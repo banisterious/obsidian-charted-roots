@@ -11605,3 +11605,476 @@
   display: flex;
   justify-content: center;
 }
+
+/* ============================================
+   Step 9: Place Hierarchy Enrichment Styles
+   ============================================ */
+
+/* Time estimate */
+.crc-cleanup-hierarchy-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  margin-top: 12px;
+}
+
+.crc-cleanup-hierarchy-time-icon {
+  display: flex;
+  align-items: center;
+}
+
+.crc-cleanup-hierarchy-time-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Settings section */
+.crc-cleanup-hierarchy-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 20px 0;
+  padding: 16px;
+  background: var(--background-secondary);
+  border-radius: var(--radius-m);
+}
+
+.crc-cleanup-hierarchy-setting {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.crc-cleanup-hierarchy-setting-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.crc-cleanup-hierarchy-setting-label input[type="checkbox"] {
+  margin: 0;
+}
+
+.crc-cleanup-hierarchy-setting-desc {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  padding-left: 24px;
+}
+
+.crc-cleanup-hierarchy-input {
+  width: 100%;
+  max-width: 300px;
+  padding: 6px 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+}
+
+.crc-cleanup-hierarchy-input:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+}
+
+/* Places list preview */
+.crc-cleanup-hierarchy-list-container {
+  margin-top: 16px;
+}
+
+.crc-cleanup-hierarchy-list-title {
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.crc-cleanup-hierarchy-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-secondary);
+}
+
+.crc-cleanup-hierarchy-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  font-size: var(--font-ui-small);
+}
+
+.crc-cleanup-hierarchy-list-item:last-child {
+  border-bottom: none;
+}
+
+.crc-cleanup-hierarchy-list-icon {
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+}
+
+.crc-cleanup-hierarchy-list-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.crc-cleanup-hierarchy-list-name {
+  flex: 1;
+}
+
+.crc-cleanup-hierarchy-list-type {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.crc-cleanup-hierarchy-list-more {
+  padding: 8px 10px;
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: var(--font-ui-smaller);
+}
+
+/* Apply button container */
+.crc-cleanup-hierarchy-apply {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+/* Progress view */
+.crc-cleanup-hierarchy-progress {
+  padding: 16px 0;
+}
+
+.crc-cleanup-hierarchy-progress-header {
+  margin-bottom: 12px;
+}
+
+.crc-cleanup-hierarchy-progress-title {
+  font-weight: 600;
+  font-size: var(--font-ui-medium);
+}
+
+.crc-cleanup-hierarchy-progress-stats {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  margin-bottom: 8px;
+}
+
+.crc-cleanup-hierarchy-progress-bar-container {
+  height: 8px;
+  background: var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.crc-cleanup-hierarchy-progress-bar {
+  height: 100%;
+  background: var(--interactive-accent);
+  transition: width 0.3s ease;
+}
+
+.crc-cleanup-hierarchy-progress-breakdown {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.crc-cleanup-hierarchy-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-ui-small);
+}
+
+.crc-cleanup-hierarchy-stat-icon {
+  display: flex;
+  align-items: center;
+}
+
+.crc-cleanup-hierarchy-stat-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.crc-cleanup-hierarchy-stat--success {
+  color: var(--text-success);
+}
+
+.crc-cleanup-hierarchy-stat--created {
+  color: var(--interactive-accent);
+}
+
+.crc-cleanup-hierarchy-stat--failed {
+  color: var(--text-warning);
+}
+
+/* Results list during progress */
+.crc-cleanup-hierarchy-results-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-secondary);
+  margin-bottom: 16px;
+}
+
+.crc-cleanup-hierarchy-result-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  font-size: var(--font-ui-small);
+}
+
+.crc-cleanup-hierarchy-result-item:last-child {
+  border-bottom: none;
+}
+
+.crc-cleanup-hierarchy-result-icon {
+  display: flex;
+  align-items: center;
+}
+
+.crc-cleanup-hierarchy-result-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.crc-cleanup-hierarchy-result-icon--success {
+  color: var(--text-success);
+}
+
+.crc-cleanup-hierarchy-result-icon--skipped {
+  color: var(--text-muted);
+}
+
+.crc-cleanup-hierarchy-result-icon--failed {
+  color: var(--text-warning);
+}
+
+.crc-cleanup-hierarchy-result-name {
+  flex-shrink: 0;
+}
+
+.crc-cleanup-hierarchy-result-detail {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.crc-cleanup-hierarchy-result-error {
+  color: var(--text-warning);
+  font-size: var(--font-ui-smaller);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Cancel button container */
+.crc-cleanup-hierarchy-cancel {
+  display: flex;
+  justify-content: center;
+}
+
+/* Results view */
+.crc-cleanup-hierarchy-results {
+  padding: 16px 0;
+}
+
+/* Summary cards */
+.crc-cleanup-hierarchy-results-summary {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.crc-cleanup-hierarchy-summary-stat {
+  flex: 1;
+  min-width: 120px;
+  padding: 16px;
+  border-radius: var(--radius-m);
+  background: var(--background-secondary);
+  text-align: center;
+}
+
+.crc-cleanup-hierarchy-summary-stat--success {
+  border-left: 3px solid var(--text-success);
+}
+
+.crc-cleanup-hierarchy-summary-stat--created {
+  border-left: 3px solid var(--interactive-accent);
+}
+
+.crc-cleanup-hierarchy-summary-stat--failed {
+  border-left: 3px solid var(--text-warning);
+}
+
+.crc-cleanup-hierarchy-summary-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.crc-cleanup-hierarchy-summary-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.crc-cleanup-hierarchy-summary-stat--success .crc-cleanup-hierarchy-summary-icon {
+  color: var(--text-success);
+}
+
+.crc-cleanup-hierarchy-summary-stat--created .crc-cleanup-hierarchy-summary-icon {
+  color: var(--interactive-accent);
+}
+
+.crc-cleanup-hierarchy-summary-stat--failed .crc-cleanup-hierarchy-summary-icon {
+  color: var(--text-warning);
+}
+
+.crc-cleanup-hierarchy-summary-value {
+  font-size: 2em;
+  font-weight: 600;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.crc-cleanup-hierarchy-summary-label {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+/* Results table */
+.crc-cleanup-hierarchy-table-container {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  margin-bottom: 16px;
+}
+
+.crc-cleanup-hierarchy-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-ui-small);
+}
+
+.crc-cleanup-hierarchy-table thead {
+  position: sticky;
+  top: 0;
+  background: var(--background-secondary);
+  z-index: 1;
+}
+
+.crc-cleanup-hierarchy-table th {
+  text-align: left;
+  padding: 8px 10px;
+  font-weight: 500;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.crc-cleanup-hierarchy-th-status {
+  width: 30px;
+}
+
+.crc-cleanup-hierarchy-row {
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.crc-cleanup-hierarchy-row:last-child {
+  border-bottom: none;
+}
+
+.crc-cleanup-hierarchy-row:hover {
+  background: var(--background-secondary-alt);
+}
+
+.crc-cleanup-hierarchy-td-status {
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.crc-cleanup-hierarchy-td-status svg {
+  width: 14px;
+  height: 14px;
+}
+
+.crc-cleanup-hierarchy-status--success {
+  color: var(--text-success);
+}
+
+.crc-cleanup-hierarchy-status--skipped {
+  color: var(--text-muted);
+}
+
+.crc-cleanup-hierarchy-status--failed {
+  color: var(--text-warning);
+}
+
+.crc-cleanup-hierarchy-td-name {
+  padding: 8px 10px;
+}
+
+.crc-cleanup-hierarchy-td-result {
+  padding: 8px 10px;
+}
+
+.crc-cleanup-hierarchy-result--success {
+  color: var(--text-muted);
+}
+
+.crc-cleanup-hierarchy-result--skipped {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.crc-cleanup-hierarchy-result--error {
+  color: var(--text-warning);
+}
+
+/* Failed note */
+.crc-cleanup-hierarchy-failed-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  background: var(--background-secondary);
+  border-radius: var(--radius-s);
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  margin-bottom: 16px;
+}
+
+.crc-cleanup-hierarchy-failed-note-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.crc-cleanup-hierarchy-failed-note-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Done button container */
+.crc-cleanup-hierarchy-done {
+  display: flex;
+  justify-content: center;
+}
