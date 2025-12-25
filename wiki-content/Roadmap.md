@@ -11,6 +11,7 @@ This document outlines planned features for Canvas Roots. For completed features
   - [v0.17.0: Data Cleanup Bundle](#v0170-data-cleanup-bundle) 📋 Medium
     - [Post-Import Cleanup Wizard](#post-import-cleanup-wizard)
     - [Source Array Migration](#source-array-migration)
+  - [Excalidraw Export Enhancements](#excalidraw-export-enhancements) 📋 Medium
   - [Universe Management Enhancements](#universe-management-enhancements) 💡 Low
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
@@ -212,6 +213,53 @@ The source migration is integrated as Step 6 in the Post-Import Cleanup Wizard:
 
 **Documentation:**
 - See [Source Array Migration Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/source-array-migration.md) for implementation details
+
+---
+
+### Excalidraw Export Enhancements
+
+**Priority:** 📋 Medium — Richer Excalidraw output with smart connectors and wiki links
+
+**Summary:** Enhance the Excalidraw export feature to leverage the full capabilities of the Obsidian Excalidraw plugin's ExcalidrawAutomate API. Current implementation generates basic shapes; enhancements add smart connectors, clickable wiki links, richer node content, and relationship-aware styling.
+
+**Current Limitations:**
+- Manual text sizing (approximate character width calculation)
+- Point-to-point arrows that don't adapt when elements are moved
+- No wiki links (can't click to navigate to person notes)
+- All edges styled the same (no spouse vs parent-child distinction)
+
+**Planned Enhancements:**
+
+| Phase | Feature | Value |
+|-------|---------|-------|
+| 1 | API Integration | Use ExcalidrawAutomate when available, fallback to JSON |
+| 2 | Rich Node Content | Add dates/places like PDF export |
+| 3 | Wiki Links | Clickable `[[Person Note]]` links in labels |
+| 4 | Smart Connectors | `connectObjects()` for adaptive arrows |
+| 5 | Relationship Styling | Dashed lines for spouses, solid for parent-child |
+| 6 | Element Grouping | Keep rect+text together as units |
+
+**Technical Approach:**
+
+Detect ExcalidrawAutomate API at runtime:
+```typescript
+const ea = (window as any).ExcalidrawAutomate;
+if (ea) {
+    // Use API for smart connectors, accurate text sizing
+    ea.connectObjects(personA, "bottom", personB, "top");
+} else {
+    // Fall back to current JSON generation
+}
+```
+
+**Key API Features:**
+- `ea.measureText()` — Accurate text dimensions
+- `ea.connectObjects()` — Smart connectors that snap and adapt
+- `ea.addText()` with `box` — Contained text boxes
+- `ea.addToGroup()` — Group related elements
+
+**Documentation:**
+- See [Excalidraw Export Enhancements Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/excalidraw-export-enhancements.md) for implementation details
 
 ---
 
