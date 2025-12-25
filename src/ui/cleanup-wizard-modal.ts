@@ -1677,15 +1677,22 @@ export class CleanupWizardModal extends Modal {
 				}
 			};
 
-			checkField('birth_place');
-			checkField('death_place');
-			checkField('burial_place');
+			// Check if this is a Place note - update full_name and title
+			if (fm.cr_type === 'place') {
+				checkField('full_name');
+				checkField('title');
+			} else {
+				// Person notes - check place fields
+				checkField('birth_place');
+				checkField('death_place');
+				checkField('burial_place');
 
-			// Check spouse marriage locations
-			let spouseIndex = 1;
-			while (fm[`spouse${spouseIndex}`] || fm[`spouse${spouseIndex}_id`]) {
-				checkField(`spouse${spouseIndex}_marriage_location`);
-				spouseIndex++;
+				// Check spouse marriage locations
+				let spouseIndex = 1;
+				while (fm[`spouse${spouseIndex}`] || fm[`spouse${spouseIndex}_id`]) {
+					checkField(`spouse${spouseIndex}_marriage_location`);
+					spouseIndex++;
+				}
 			}
 
 			if (fieldsToUpdate.length > 0) {
