@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-25 03:20:44 UTC
+ * - Generated: 2025-12-25 03:35:37 UTC
  * - Components: 37 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -677,7 +677,7 @@ settings:
    COMPONENT: MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 9942 lines, 185.16 KB */
+/* Component Size: 9943 lines, 185.25 KB */
 
 /* ==========================================================================
    Canvas Roots Control Center - Styling
@@ -1609,15 +1609,15 @@ settings:
 }
 
 .crc-mt-2 {
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .crc-mt-3 {
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .crc-mt-4 {
-  margin-top: 16px;
+  margin-top: 14px;
 }
 
 .crc-mb-2 {
@@ -9020,9 +9020,9 @@ settings:
 /* Wizard content area */
 .crc-import-wizard-content,
 .crc-export-wizard-content {
-  padding: 20px;
+  padding: 16px 20px;
   overflow-y: auto;
-  max-height: 50vh;
+  max-height: 65vh;
   flex: 1;
   min-height: 0; /* Required for flex item to respect overflow */
 }
@@ -9048,7 +9048,7 @@ settings:
 /* Section styling */
 .crc-import-section,
 .crc-export-section {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .crc-import-section-title,
@@ -9255,7 +9255,7 @@ settings:
 /* Options section */
 .crc-import-options-title,
 .crc-export-options-title {
-  margin: 0 0 12px 0;
+  margin: 0 0 8px 0;
   font-size: 14px;
   font-weight: 600;
 }
@@ -9275,7 +9275,7 @@ settings:
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 0;
+  padding: 6px 0;
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
@@ -9347,8 +9347,8 @@ settings:
 .crc-export-option-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 8px;
+  gap: 8px;
+  margin-top: 4px;
 }
 
 .crc-import-option-label,
@@ -9430,18 +9430,18 @@ settings:
 .crc-export-privacy-options {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .crc-import-privacy-option,
 .crc-export-privacy-option {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 10px;
+  padding: 8px 12px;
   background: var(--background-secondary);
   border: 2px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -9492,20 +9492,13 @@ settings:
 .crc-import-radio-label,
 .crc-export-radio-label {
   font-weight: 500;
-  margin-bottom: 2px;
+  margin-bottom: 0;
 }
 
 .crc-import-radio-description,
 .crc-export-radio-description {
   font-size: 12px;
   color: var(--text-muted);
-}
-
-/* Small input variant */
-.crc-import-input--small,
-.crc-export-input--small {
-  width: 80px;
-  text-align: center;
 }
 
 /* Export Preview section */
@@ -9670,6 +9663,14 @@ settings:
 .crc-export-input:focus {
   border-color: var(--interactive-accent);
   outline: none;
+}
+
+/* Small input variant (must be after base input styles) */
+.crc-import-input.crc-import-input--small,
+.crc-export-input.crc-export-input--small {
+  width: 60px;
+  text-align: center;
+  flex-shrink: 0;
 }
 
 /* Conflict/choice options */
@@ -29019,10 +29020,10 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-25 03:20:44 UTC
+ * Build completed: 2025-12-25 03:35:37 UTC
  * Components processed: 37
- * Total lines: 28663
- * Total size: 568.1 KB
+ * Total lines: 28664
+ * Total size: 568.18 KB
  * Build duration: 0.03 seconds
  *
  * Component breakdown:
@@ -29034,7 +29035,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - nodes.css: 12 lines, 0.3 KB
  * - edges.css: 4 lines, 0.07 KB
  * - settings.css: 131 lines, 3.53 KB
- * - modals.css: 9942 lines, 185.16 KB
+ * - modals.css: 9943 lines, 185.25 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
  * - validation.css: 84 lines, 1.47 KB
