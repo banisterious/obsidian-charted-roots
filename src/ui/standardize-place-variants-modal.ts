@@ -507,9 +507,9 @@ export class StandardizePlaceVariantsModal extends Modal {
 
 /**
  * Find place name variants in the vault
+ * Scans both Place notes (full_name field) and Person notes (place fields)
  */
 export function findPlaceNameVariants(app: App): PlaceVariantMatch[] {
-	const matches: PlaceVariantMatch[] = [];
 	const files = app.vault.getMarkdownFiles();
 
 	// Track which variants we've found and their files
@@ -558,7 +558,21 @@ export function findPlaceNameVariants(app: App): PlaceVariantMatch[] {
 
 		const fm = cache.frontmatter;
 
-		// Check place fields
+		// Check if this is a Place note - scan full_name and title
+		if (fm.cr_type === 'place') {
+			// Check full_name field which contains the comma-separated place string
+			if (fm.full_name) {
+				checkPlaceValue(fm.full_name, file);
+			}
+			// Also check title in case it has variants
+			if (fm.title) {
+				checkPlaceValue(fm.title, file);
+			}
+			continue; // Skip person-specific fields for place notes
+		}
+
+		// For Person notes, check place fields (these are typically wikilinks to Place notes)
+		// The wikilink itself won't have variants, but raw place strings might
 		checkPlaceValue(fm.birth_place, file);
 		checkPlaceValue(fm.death_place, file);
 		checkPlaceValue(fm.burial_place, file);
@@ -572,6 +586,7 @@ export function findPlaceNameVariants(app: App): PlaceVariantMatch[] {
 	}
 
 	// Convert to matches array
+	const matches: PlaceVariantMatch[] = [];
 	for (const [key, data] of variantFiles.entries()) {
 		const [variant, canonical] = key.split('|||');
 		matches.push({
