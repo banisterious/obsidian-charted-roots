@@ -499,7 +499,11 @@ function formatObjectForYaml(obj: Record<string, unknown>, indent: number = 0): 
  */
 function sanitizeFilename(filename: string): string {
 	return filename
-		.replace(/[\\/:*?"<>|]/g, '-')
+		// Strip wikilink brackets if present
+		.replace(/^\[\[/, '')
+		.replace(/\]\]$/, '')
+		// Remove filesystem-invalid characters
+		.replace(/[\\/:*?"<>|[\]]/g, '-')
 		.replace(/\s+/g, ' ')
 		.trim();
 }
