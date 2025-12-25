@@ -12,6 +12,12 @@ The Control Center is Canvas Roots' central hub for all plugin operations. Acces
   - [Vault Health](#vault-health)
   - [Recent Files](#recent-files)
 - [Tab Overview](#tab-overview)
+  - [Dashboard](#dashboard)
+  - [Entities](#entities)
+  - [Data & Structure](#data--structure)
+  - [Output](#output)
+  - [Tools](#tools)
+  - [Settings](#settings)
 - [Navigation](#navigation)
 - [Mobile Support](#mobile-support)
 
@@ -42,13 +48,13 @@ Twelve action tiles arranged in a responsive grid (4×3 on desktop, 2×2 on mobi
 | **Source** | Create a new source note |
 | **Place** | Create a new place note |
 | **Organization** | Create a new organization note |
-| **Report** | Open the Report Generator |
+| **Report** | Open the Reports hub modal |
 | **Statistics** | Open the Statistics Dashboard view |
-| **Import** | Go to the Import/Export tab |
+| **Import** | Open the Import/Export hub modal |
 | **Canvas Trees** | Go to the Canvas Trees tab |
 | **Family Chart** | Open the interactive Family Chart view |
 | **Map** | Open the interactive Map View |
-| **Media** | Open the Find Unlinked Media tool |
+| **Media** | Open the Media Manager modal |
 
 ### Vault Health
 
@@ -78,26 +84,57 @@ Each item shows the file name and entity type badge (person, event, source, plac
 
 ## Tab Overview
 
-The Control Center contains 17 tabs organized by function:
+The Control Center navigation is organized into groups:
+
+### Dashboard
 
 | Tab | Purpose |
 |-----|---------|
 | **Dashboard** | Quick actions, vault health, recent files |
-| **Guide** | Getting started documentation and tutorials |
-| **Import/Export** | Import from GEDCOM, GEDCOM X, Gramps, CSV; Export to all formats |
+
+### Entities
+
+| Tab | Purpose |
+|-----|---------|
 | **People** | Browse, search, and manage person notes |
-| **Events** | Event notes, timeline export, event type management |
-| **Places** | Place notes, geocoding, place hierarchy |
-| **Maps** | Interactive map view, custom image maps, bulk geocoding |
-| **Sources** | Source notes, media gallery, citation generator |
+| **Events** | Date systems and temporal data |
+| **Places** | Geographic locations and place statistics |
+| **Sources** | Evidence and source documentation |
+| **Organizations** | Organization notes and membership tracking |
+| **Universes** | Fictional universe management (conditional) |
+| **Collections** | Family groups and custom collections |
+
+### Data & Structure
+
+| Tab | Purpose |
+|-----|---------|
+| **Data Quality** | Issue detection and batch fixes |
 | **Schemas** | Validation schemas for note consistency |
 | **Relationships** | Custom relationship type definitions |
-| **Organizations** | Organization notes and membership tracking |
-| **Universes** | Fictional universe management |
-| **Collections** | Family groups and custom collections |
-| **Data Quality** | Issue detection and batch fixes |
-| **Statistics** | Vault analytics and report generation |
+
+### Output
+
+| Tab | Purpose |
+|-----|---------|
 | **Canvas Trees** | Canvas tree generation with preview |
+| **Maps** | Interactive map view, custom image maps, bulk geocoding |
+
+### Tools
+
+These entries open dedicated modals or views instead of switching tabs:
+
+| Tool | Purpose |
+|------|---------|
+| **Templates** | View and copy template snippets |
+| **Media Manager** | Manage media files and attachments |
+| **Family Chart** | Open interactive family chart view |
+| **Reports** | Narrative reports and visual charts |
+| **Import/Export** | Import and export genealogical data (opens hub modal) |
+
+### Settings
+
+| Tab | Purpose |
+|-----|---------|
 | **Preferences** | Aliases, folders, and display settings |
 
 ---
