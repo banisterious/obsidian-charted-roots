@@ -268,6 +268,12 @@ export const TOOL_CONFIGS: ToolConfig[] = [
 		name: 'Reports',
 		icon: 'bar-chart',
 		description: 'Narrative reports and visual charts'
+	},
+	{
+		id: 'import-export',
+		name: 'Import/Export',
+		icon: 'arrow-up-down',
+		description: 'Import and export genealogical data'
 	}
 ];
 
@@ -335,13 +341,6 @@ export const TAB_CONFIGS: TabConfig[] = [
 		group: 'entities'
 	},
 	// Data & Structure group
-	{
-		id: 'import-export',
-		name: 'Import/Export',
-		icon: 'file-text',
-		description: 'Import and export genealogical data (GEDCOM, CSV)',
-		group: 'data-structure'
-	},
 	{
 		id: 'data-quality',
 		name: 'Data quality',

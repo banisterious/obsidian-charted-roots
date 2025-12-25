@@ -421,6 +421,12 @@ export class ControlCenterModal extends Modal {
 					new ReportsHubModal(this.app, this.plugin).open();
 				});
 				break;
+			case 'import-export':
+				// Import and open import/export hub modal
+				import('./import-export-hub-modal').then(({ ImportExportHubModal }) => {
+					new ImportExportHubModal(this.app, this.plugin).open();
+				});
+				break;
 		}
 	}
 
@@ -470,9 +476,6 @@ export class ControlCenterModal extends Modal {
 				break;
 			case 'tree-generation':
 				void this.showTreeGenerationTab();
-				break;
-			case 'import-export':
-				this.showImportExportTab();
 				break;
 			case 'data-quality':
 				this.showDataQualityTab();
@@ -8932,7 +8935,7 @@ export class ControlCenterModal extends Modal {
 	}
 
 	/**
-	 * Promote all staging and refresh Import/Export tab
+	 * Promote all staging and refresh
 	 */
 	private async promoteAllStagingAndRefresh(
 		stagingService: StagingService,
@@ -8940,20 +8943,18 @@ export class ControlCenterModal extends Modal {
 		_container: HTMLElement
 	): Promise<void> {
 		await this.promoteAllStaging(stagingService, crossImportService);
-		// Refresh the Import/Export tab
-		this.showImportExportTab();
+		// TODO: Refresh staging UI when integrated into modal
 	}
 
 	/**
-	 * Delete all staging and refresh Import/Export tab
+	 * Delete all staging and refresh
 	 */
 	private async deleteAllStagingAndRefresh(
 		stagingService: StagingService,
 		_container: HTMLElement
 	): Promise<void> {
 		await this.deleteAllStaging(stagingService);
-		// Refresh the Import/Export tab
-		this.showImportExportTab();
+		// TODO: Refresh staging UI when integrated into modal
 	}
 
 	/**
@@ -11194,8 +11195,7 @@ export class ControlCenterModal extends Modal {
 					message += ` (${result.filesSkipped} skipped as duplicates)`;
 				}
 				new Notice(message);
-				// Refresh the tab
-				this.showImportExportTab();
+				// TODO: Refresh staging UI when integrated into modal
 			} else {
 				new Notice(`Promotion failed: ${result.errors.join(', ')}`);
 			}
@@ -11232,8 +11232,7 @@ export class ControlCenterModal extends Modal {
 					message += ` (${result.filesSkipped} skipped as duplicates)`;
 				}
 				new Notice(message);
-				// Refresh the tab
-				this.showImportExportTab();
+				// TODO: Refresh staging UI when integrated into modal
 			} else {
 				new Notice(`Promotion failed: ${result.errors.join(', ')}`);
 			}
@@ -11268,8 +11267,7 @@ export class ControlCenterModal extends Modal {
 
 			if (result.success) {
 				new Notice(`Deleted ${result.filesDeleted} files from staging`);
-				// Refresh the tab
-				this.showImportExportTab();
+				// TODO: Refresh staging UI when integrated into modal
 			} else {
 				new Notice(`Delete failed: ${result.error}`);
 			}
@@ -11301,8 +11299,7 @@ export class ControlCenterModal extends Modal {
 
 			if (result.success) {
 				new Notice(`Deleted ${result.filesDeleted} files`);
-				// Refresh the tab
-				this.showImportExportTab();
+				// TODO: Refresh staging UI when integrated into modal
 			} else {
 				new Notice(`Delete failed: ${result.error}`);
 			}
