@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-25 00:27:52 UTC
+ * - Generated: 2025-12-25 00:49:21 UTC
  * - Components: 37 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -677,7 +677,7 @@ settings:
    COMPONENT: MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 9478 lines, 176.18 KB */
+/* Component Size: 9519 lines, 177.02 KB */
 
 /* ==========================================================================
    Canvas Roots Control Center - Styling
@@ -9248,6 +9248,8 @@ settings:
 }
 
 /* Toggle option row */
+.crc-import-toggle-row,
+.crc-export-toggle-row,
 .crc-import-toggle-option,
 .crc-export-toggle-option {
   display: flex;
@@ -9257,6 +9259,8 @@ settings:
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
+.crc-import-toggle-row:last-child,
+.crc-export-toggle-row:last-child,
 .crc-import-toggle-option:last-child,
 .crc-export-toggle-option:last-child {
   border-bottom: none;
@@ -9279,6 +9283,43 @@ settings:
 .crc-export-toggle-label small {
   color: var(--text-muted);
   font-size: 12px;
+}
+
+/* Toggle switch */
+.crc-import-toggle,
+.crc-export-toggle {
+  width: 42px;
+  height: 24px;
+  background: var(--background-modifier-border);
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.crc-import-toggle::after,
+.crc-export-toggle::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.crc-import-toggle--on,
+.crc-export-toggle--on {
+  background: var(--interactive-accent);
+}
+
+.crc-import-toggle--on::after,
+.crc-export-toggle--on::after {
+  transform: translateX(18px);
 }
 
 /* Option row with input */
@@ -28555,10 +28596,10 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-25 00:27:52 UTC
+ * Build completed: 2025-12-25 00:49:21 UTC
  * Components processed: 37
- * Total lines: 28199
- * Total size: 559.12 KB
+ * Total lines: 28240
+ * Total size: 559.95 KB
  * Build duration: 0.04 seconds
  *
  * Component breakdown:
@@ -28570,7 +28611,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - nodes.css: 12 lines, 0.3 KB
  * - edges.css: 4 lines, 0.07 KB
  * - settings.css: 131 lines, 3.53 KB
- * - modals.css: 9478 lines, 176.18 KB
+ * - modals.css: 9519 lines, 177.02 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
  * - validation.css: 84 lines, 1.47 KB

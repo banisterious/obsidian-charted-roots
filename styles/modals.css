@@ -8567,6 +8567,8 @@
 }
 
 /* Toggle option row */
+.crc-import-toggle-row,
+.crc-export-toggle-row,
 .crc-import-toggle-option,
 .crc-export-toggle-option {
   display: flex;
@@ -8576,6 +8578,8 @@
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
+.crc-import-toggle-row:last-child,
+.crc-export-toggle-row:last-child,
 .crc-import-toggle-option:last-child,
 .crc-export-toggle-option:last-child {
   border-bottom: none;
@@ -8598,6 +8602,43 @@
 .crc-export-toggle-label small {
   color: var(--text-muted);
   font-size: 12px;
+}
+
+/* Toggle switch */
+.crc-import-toggle,
+.crc-export-toggle {
+  width: 42px;
+  height: 24px;
+  background: var(--background-modifier-border);
+  border-radius: 12px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.crc-import-toggle::after,
+.crc-export-toggle::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.crc-import-toggle--on,
+.crc-export-toggle--on {
+  background: var(--interactive-accent);
+}
+
+.crc-import-toggle--on::after,
+.crc-export-toggle--on::after {
+  transform: translateX(18px);
 }
 
 /* Option row with input */
