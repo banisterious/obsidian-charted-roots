@@ -11,6 +11,8 @@ import { FamilyGraphService } from '../core/family-graph';
 import { PlaceGraphService } from '../core/place-graph';
 import { getDefaultPlaceCategory, CanvasRootsSettings } from '../settings';
 import { GeocodingService } from '../maps/services/geocoding-service';
+import type CanvasRootsPlugin from '../../main';
+import { ModalStatePersistence, renderResumePromptBanner } from './modal-state-persistence';
 
 /**
  * Parent place option for dropdown
@@ -74,6 +76,22 @@ function suggestParentType(childType?: string): PlaceType | undefined {
 }
 
 /**
+ * Form data structure for persistence
+ */
+interface PlaceFormData {
+	name: string;
+	placeCategory?: PlaceCategory;
+	placeType?: string;
+	universe?: string;
+	parentPlaceId?: string;
+	parentPlace?: string;
+	aliases?: string[];
+	collection?: string;
+	coordinates?: { lat: number; long: number };
+	directory?: string;
+}
+
+/**
  * Modal for creating or editing place notes
  */
 export class CreatePlaceModal extends Modal {
@@ -108,6 +126,12 @@ export class CreatePlaceModal extends Modal {
 	// Settings for default category
 	private settings?: CanvasRootsSettings;
 
+	// State persistence
+	private plugin?: CanvasRootsPlugin;
+	private persistence?: ModalStatePersistence<PlaceFormData>;
+	private savedSuccessfully: boolean = false;
+	private resumeBanner?: HTMLElement;
+
 	constructor(
 		app: App,
 		options?: {
@@ -123,6 +147,8 @@ export class CreatePlaceModal extends Modal {
 			// Edit mode options
 			editPlace?: PlaceNode;
 			editFile?: TFile;
+			// Plugin reference for state persistence
+			plugin?: CanvasRootsPlugin;
 		}
 	) {
 		super(app);
@@ -133,6 +159,12 @@ export class CreatePlaceModal extends Modal {
 		this.placeGraph = options?.placeGraph;
 		this.initialPlaceType = options?.initialPlaceType;
 		this.settings = options?.settings;
+		this.plugin = options?.plugin;
+
+		// Set up persistence (only in create mode)
+		if (this.plugin && !options?.editPlace) {
+			this.persistence = new ModalStatePersistence<PlaceFormData>(this.plugin, 'place');
+		}
 
 		// Check for edit mode
 		if (options?.editPlace && options?.editFile) {
@@ -386,6 +418,33 @@ export class CreatePlaceModal extends Modal {
 		const icon = createLucideIcon('map-pin', 24);
 		titleContainer.appendChild(icon);
 		titleContainer.appendText(this.editMode ? 'Edit place note' : 'Create place note');
+
+		// Check for persisted state (only in create mode)
+		if (this.persistence && !this.editMode) {
+			const existingState = this.persistence.getValidState();
+			if (existingState) {
+				const timeAgo = this.persistence.getTimeAgoString(existingState);
+				this.resumeBanner = renderResumePromptBanner(
+					contentEl,
+					timeAgo,
+					() => {
+						// Discard - clear state and remove banner
+						void this.persistence?.clear();
+						this.resumeBanner?.remove();
+						this.resumeBanner = undefined;
+					},
+					() => {
+						// Restore - populate form with saved data
+						this.restoreFromPersistedState(existingState.formData as PlaceFormData);
+						this.resumeBanner?.remove();
+						this.resumeBanner = undefined;
+						// Re-render form with restored data
+						contentEl.empty();
+						this.onOpen();
+					}
+				);
+			}
+		}
 
 		// Form container
 		const form = contentEl.createDiv({ cls: 'crc-form' });
@@ -767,7 +826,52 @@ export class CreatePlaceModal extends Modal {
 
 	onClose() {
 		const { contentEl } = this;
+
+		// Persist state if not saved successfully and we have persistence enabled
+		if (this.persistence && !this.editMode && !this.savedSuccessfully) {
+			const formData = this.gatherFormData();
+			if (this.persistence.hasContent(formData)) {
+				void this.persistence.persist(formData);
+			}
+		}
+
 		contentEl.empty();
+	}
+
+	/**
+	 * Gather current form data for persistence
+	 */
+	private gatherFormData(): PlaceFormData {
+		return {
+			name: this.placeData.name,
+			placeCategory: this.placeData.placeCategory,
+			placeType: this.placeData.placeType,
+			universe: this.placeData.universe,
+			parentPlaceId: this.placeData.parentPlaceId,
+			parentPlace: this.placeData.parentPlace,
+			aliases: this.placeData.aliases,
+			collection: this.placeData.collection,
+			coordinates: this.placeData.coordinates,
+			directory: this.directory
+		};
+	}
+
+	/**
+	 * Restore form state from persisted data
+	 */
+	private restoreFromPersistedState(formData: PlaceFormData): void {
+		this.placeData.name = formData.name || '';
+		this.placeData.placeCategory = formData.placeCategory;
+		this.placeData.placeType = formData.placeType as PlaceType | undefined;
+		this.placeData.universe = formData.universe;
+		this.placeData.parentPlaceId = formData.parentPlaceId;
+		this.placeData.parentPlace = formData.parentPlace;
+		this.placeData.aliases = formData.aliases;
+		this.placeData.collection = formData.collection;
+		this.placeData.coordinates = formData.coordinates;
+		if (formData.directory) {
+			this.directory = formData.directory;
+		}
 	}
 
 	/**
@@ -1038,6 +1142,12 @@ export class CreatePlaceModal extends Modal {
 			});
 
 			new Notice(`Created place note: ${file.basename}`);
+
+			// Mark as saved successfully and clear persisted state
+			this.savedSuccessfully = true;
+			if (this.persistence) {
+				void this.persistence.clear();
+			}
 
 			if (this.onCreated) {
 				this.onCreated(file);

@@ -20,6 +20,28 @@ import {
 } from '../types/event-types';
 import { DEFAULT_DATE_SYSTEMS } from '../../dates/constants/default-date-systems';
 import { getCalendariumBridge } from '../../integrations/calendarium-bridge';
+import type CanvasRootsPlugin from '../../../main';
+import { ModalStatePersistence, renderResumePromptBanner } from '../../ui/modal-state-persistence';
+
+/**
+ * Form data structure for persistence
+ */
+interface EventFormData {
+	title: string;
+	eventType: string;
+	date: string;
+	dateEnd: string;
+	datePrecision: DatePrecision;
+	person: string;
+	personCrId: string;
+	place: string;
+	confidence: EventConfidence;
+	description: string;
+	isCanonical: boolean;
+	universe: string;
+	dateSystem: string;
+	timeline: string;
+}
 
 /**
  * Modal for creating or editing event notes
@@ -51,6 +73,12 @@ export class CreateEventModal extends Modal {
 	private dateSystem = '';
 	private timeline = '';
 
+	// State persistence
+	private plugin?: CanvasRootsPlugin;
+	private persistence?: ModalStatePersistence<EventFormData>;
+	private savedSuccessfully = false;
+	private resumeBanner?: HTMLElement;
+
 	constructor(
 		app: App,
 		eventService: EventService,
@@ -63,6 +91,8 @@ export class CreateEventModal extends Modal {
 			// Edit mode options
 			editEvent?: EventNote;
 			editFile?: TFile;
+			// Plugin reference for state persistence
+			plugin?: CanvasRootsPlugin;
 		}
 	) {
 		super(app);
@@ -70,6 +100,12 @@ export class CreateEventModal extends Modal {
 		this.settings = settings;
 		this.onCreated = options?.onCreated;
 		this.onUpdated = options?.onUpdated;
+		this.plugin = options?.plugin;
+
+		// Set up persistence (only in create mode)
+		if (this.plugin && !options?.editEvent) {
+			this.persistence = new ModalStatePersistence<EventFormData>(this.plugin, 'event');
+		}
 
 		// Check for edit mode
 		if (options?.editEvent && options?.editFile) {
@@ -116,6 +152,33 @@ export class CreateEventModal extends Modal {
 		const icon = createLucideIcon('calendar', 24);
 		titleContainer.appendChild(icon);
 		titleContainer.appendText(this.editMode ? 'Edit event note' : 'Create event note');
+
+		// Check for persisted state (only in create mode)
+		if (this.persistence && !this.editMode) {
+			const existingState = this.persistence.getValidState();
+			if (existingState) {
+				const timeAgo = this.persistence.getTimeAgoString(existingState);
+				this.resumeBanner = renderResumePromptBanner(
+					contentEl,
+					timeAgo,
+					() => {
+						// Discard - clear state and remove banner
+						void this.persistence?.clear();
+						this.resumeBanner?.remove();
+						this.resumeBanner = undefined;
+					},
+					() => {
+						// Restore - populate form with saved data
+						this.restoreFromPersistedState(existingState.formData as EventFormData);
+						this.resumeBanner?.remove();
+						this.resumeBanner = undefined;
+						// Re-render form with restored data
+						contentEl.empty();
+						this.onOpen();
+					}
+				);
+			}
+		}
 
 		// Form container
 		const form = contentEl.createDiv({ cls: 'crc-form' });
@@ -331,7 +394,58 @@ export class CreateEventModal extends Modal {
 
 	onClose() {
 		const { contentEl } = this;
+
+		// Persist state if not saved successfully and we have persistence enabled
+		if (this.persistence && !this.editMode && !this.savedSuccessfully) {
+			const formData = this.gatherFormData();
+			if (this.persistence.hasContent(formData)) {
+				void this.persistence.persist(formData);
+			}
+		}
+
 		contentEl.empty();
+	}
+
+	/**
+	 * Gather current form data for persistence
+	 */
+	private gatherFormData(): EventFormData {
+		return {
+			title: this.title,
+			eventType: this.eventType,
+			date: this.date,
+			dateEnd: this.dateEnd,
+			datePrecision: this.datePrecision,
+			person: this.person,
+			personCrId: this.personCrId,
+			place: this.place,
+			confidence: this.confidence,
+			description: this.description,
+			isCanonical: this.isCanonical,
+			universe: this.universe,
+			dateSystem: this.dateSystem,
+			timeline: this.timeline
+		};
+	}
+
+	/**
+	 * Restore form state from persisted data
+	 */
+	private restoreFromPersistedState(formData: EventFormData): void {
+		this.title = formData.title || '';
+		this.eventType = formData.eventType || 'custom';
+		this.date = formData.date || '';
+		this.dateEnd = formData.dateEnd || '';
+		this.datePrecision = formData.datePrecision || 'exact';
+		this.person = formData.person || '';
+		this.personCrId = formData.personCrId || '';
+		this.place = formData.place || '';
+		this.confidence = formData.confidence || 'medium';
+		this.description = formData.description || '';
+		this.isCanonical = formData.isCanonical || false;
+		this.universe = formData.universe || '';
+		this.dateSystem = formData.dateSystem || '';
+		this.timeline = formData.timeline || '';
 	}
 
 	/**
@@ -500,6 +614,12 @@ export class CreateEventModal extends Modal {
 			const file = await this.eventService.createEvent(data);
 
 			new Notice(`Created event note: ${file.basename}`);
+
+			// Mark as saved successfully and clear persisted state
+			this.savedSuccessfully = true;
+			if (this.persistence) {
+				void this.persistence.clear();
+			}
 
 			// Open the created file
 			await this.app.workspace.openLinkText(file.path, '', false);
