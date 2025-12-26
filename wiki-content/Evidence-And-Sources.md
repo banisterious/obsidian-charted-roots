@@ -482,6 +482,13 @@ Canvas Roots doesn't include built-in OCR, but you can transcribe documents usin
 3. Paste transcription into source note body
 4. Add research notes interpreting the transcription
 
+## Further Reading
+
+The source classification and citation practices in Canvas Roots are informed by established genealogical methodology:
+
+- **Elizabeth Shown Mills**, *Evidence Explained: Citing History Sources from Artifacts to Cyberspace* (3rd ed., 2015) - The definitive guide to genealogical citation, introducing the distinction between sources, information, and evidence
+- **Board for Certification of Genealogists**, *Genealogy Standards* (2nd ed., 2019) - Defines the Genealogical Proof Standard (GPS) and professional research practices
+
 ## Related Pages
 
 - [Canvas Trees](Visual-Trees) - Generate trees with source indicators
