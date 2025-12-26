@@ -533,9 +533,13 @@ Sources can link to media files (images, scans, documents) in the vault:
 
 | Property | Type | Description | Example |
 |----------|------|-------------|---------|
-| `media` | `string` | Wikilink to first media file | `"[[census-1900-smith.jpg]]"` |
-| `media_2` | `string` | Wikilink to second media file | `"[[census-1900-smith-p2.jpg]]"` |
-| `media_3` | `string` | Continue pattern for additional files | ... |
+| `media` | `string[]` | Array of wikilinks to media files | See below |
+
+```yaml
+media:
+  - "[[census-1900-smith-p1.jpg]]"
+  - "[[census-1900-smith-p2.jpg]]"
+```
 
 ### Citation Override
 
