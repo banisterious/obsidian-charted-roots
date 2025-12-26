@@ -11,6 +11,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.17.0] - 2025-12-25
+
+### Added
+
+- **Post-Import Cleanup Wizard** - 10-step guided wizard that consolidates post-import data quality operations into a single sequential workflow. Accessible via command palette ("Canvas Roots: Post-Import Cleanup Wizard"), Data Quality tab, or Import Wizard completion screen.
+  - Step 1: Quality Report (review-only with collapsible categories)
+  - Step 2: Fix Bidirectional Relationships
+  - Step 3: Normalize Date Formats
+  - Step 4: Normalize Gender Values
+  - Step 5: Clear Orphan References
+  - Step 6: Migrate Source Properties (indexed to array format)
+  - Step 7: Standardize Place Variants (interactive)
+  - Step 8: Bulk Geocode (interactive with progress)
+  - Step 9: Enrich Place Hierarchy (interactive)
+  - Step 10: Flatten Nested Properties
+
+- **Wizard session persistence** - Cleanup wizard state is saved to settings, allowing interrupted sessions to be resumed. Progress, completed steps, and pending issues are preserved.
+
+- **v0.17.0 Migration Notice** - One-time workspace tab displayed when upgrading to v0.17.0, explaining the source format change and providing direct access to the Cleanup Wizard.
+
+- **Sources property alias support** - The `sources` property can now be aliased like other person note properties (Settings > Property Aliases).
+
+### Changed
+
+- **Source property format** - Sources are now stored as a YAML array (`sources: [...]`) instead of indexed properties (`source`, `source_2`, `source_3`). All importers (GEDCOM, Gramps, GEDCOM X, CSV) now write the array format.
+
+### Breaking Changes
+
+- **Indexed source format removed** - The legacy indexed source format (`source`, `source_2`, `source_3`) is no longer parsed. Notes using this format will not have their sources recognized until migrated. Use the Cleanup Wizard Step 6 to convert existing notes to the array format.
+
+---
+
 ## [0.16.1] - 2025-12-25
 
 ### Added
