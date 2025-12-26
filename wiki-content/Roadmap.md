@@ -11,6 +11,7 @@ This document outlines planned features for Canvas Roots. For completed features
   - [Create Person Enhancements](#create-person-enhancements) 📋 Medium
   - [Cleanup Wizard Phase 4](#cleanup-wizard-phase-4) 📋 Medium
   - [Gramps Notes Import](#gramps-notes-import) 📋 Medium
+  - [Research Level Property](#research-level-property) 📋 Medium
   - [Universe Management Enhancements](#universe-management-enhancements) 💡 Low
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
@@ -170,6 +171,43 @@ Dedicated wizard for creating an entire nuclear family at once with a guided ste
 
 **Documentation:**
 - See [Gramps Notes Import Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/gramps-notes-import.md) for detailed specifications
+
+---
+
+### Research Level Property
+
+**Priority:** 📋 Medium — Simple property with high research planning value
+
+**Status:** Planning
+
+**Summary:** Add a `research_level` property to Person notes to track research progress toward GPS-compliant documentation. Based on Yvette Hoitink's "Six Levels of Ancestral Profiles" system, this provides a simple way to identify which ancestors need more research.
+
+**Research Levels:**
+
+| Level | Name | Description |
+|-------|------|-------------|
+| 0 | Unidentified | Ancestor exists but no name established (placeholder) |
+| 1 | Name Only | Name known, appears in others' records, no vital dates |
+| 2 | Vital Statistics | Birth, marriage, death dates researched |
+| 3 | Life Events | Occupations, residences, children, spouses documented |
+| 4 | Extended Records | Property, military, religion, legal records researched |
+| 5 | GPS Complete | Exhaustive research complete, written proof summary exists |
+| 6 | Biography | Full narrative biography with historical context |
+
+**Phased Implementation:**
+
+| Phase | Feature | Description |
+|-------|---------|-------------|
+| 1 | Property Support | Add `research_level` to Person frontmatter schema |
+| 2 | Edit Modal | Add research level selector to Edit Person modal |
+| 3 | Research Gaps Report | Filter/sort by research level, show statistics |
+| 4 | Canvas Visualization | Optional color-coding of tree nodes by research level |
+
+Phases 1-2 ship together as minimum viable feature. Phase 3 adds significant value for research prioritization. Phase 4 is an optional enhancement.
+
+**Documentation:**
+- See [Research Level Property Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/research-level-property.md) for detailed specifications
+- Based on [Hoitink's Six Levels of Ancestral Profiles](https://www.dutchgenealogy.nl/six-levels-ancestral-profiles/)
 
 ---
 
