@@ -51,6 +51,7 @@ type WizardStep =
 	| 'canvas-options'
 	| 'canvas-preview'
 	| 'canvas-output'
+	| 'excalidraw-style'
 	| 'pdf-options'
 	| 'pdf-output';
 
@@ -73,6 +74,7 @@ const ALL_STEPS: StepConfig[] = [
 	{ id: 'canvas-options', title: 'Options', subtitle: 'Scope and style settings' },
 	{ id: 'canvas-preview', title: 'Preview', subtitle: 'Review your tree' },
 	{ id: 'canvas-output', title: 'Output', subtitle: 'Save location' },
+	{ id: 'excalidraw-style', title: 'Style', subtitle: 'Drawing options' },
 	{ id: 'pdf-options', title: 'Options', subtitle: 'Page and style settings' },
 	{ id: 'pdf-output', title: 'Generate', subtitle: 'Create PDF' }
 ];
@@ -304,8 +306,17 @@ export class UnifiedTreeWizardModal extends Modal {
 	private getStepFlow(): StepConfig[] {
 		const baseSteps = ALL_STEPS.filter(s => ['person', 'tree-type', 'output-format'].includes(s.id));
 
-		if (this.formData.outputFormat === 'canvas' || this.formData.outputFormat === 'excalidraw') {
-			// Canvas and Excalidraw share the same options flow
+		if (this.formData.outputFormat === 'excalidraw') {
+			// Excalidraw has an extra style step
+			return [
+				...baseSteps,
+				ALL_STEPS.find(s => s.id === 'canvas-options')!,
+				ALL_STEPS.find(s => s.id === 'canvas-preview')!,
+				ALL_STEPS.find(s => s.id === 'excalidraw-style')!,
+				ALL_STEPS.find(s => s.id === 'canvas-output')!
+			];
+		} else if (this.formData.outputFormat === 'canvas') {
+			// Canvas flow
 			return [
 				...baseSteps,
 				ALL_STEPS.find(s => s.id === 'canvas-options')!,
@@ -500,6 +511,9 @@ export class UnifiedTreeWizardModal extends Modal {
 				break;
 			case 'canvas-output':
 				this.renderCanvasOutputStep(stepContent);
+				break;
+			case 'excalidraw-style':
+				this.renderExcalidrawStyleStep(stepContent);
 				break;
 			case 'pdf-options':
 				this.renderPdfOptionsStep(stepContent);
@@ -1253,84 +1267,6 @@ export class UnifiedTreeWizardModal extends Modal {
 				.setValue(this.formData.openAfterGenerate)
 				.onChange(value => { this.formData.openAfterGenerate = value; }));
 
-		// Excalidraw-specific options (only shown when output format is Excalidraw)
-		if (this.formData.outputFormat === 'excalidraw') {
-			const excalidrawSection = form.createDiv({ cls: 'crc-wizard-excalidraw-options' });
-			excalidrawSection.createEl('h4', { text: 'Excalidraw Style', cls: 'cr-wizard-subsection' });
-
-			// Node content level
-			new Setting(excalidrawSection)
-				.setName('Node content')
-				.setDesc('What information to show in each person box')
-				.addDropdown(dropdown => dropdown
-					.addOption('name', 'Name only')
-					.addOption('name-dates', 'Name and dates')
-					.addOption('name-dates-places', 'Name, dates, and places')
-					.setValue(this.formData.excalidrawNodeContent)
-					.onChange(value => {
-						this.formData.excalidrawNodeContent = value as 'name' | 'name-dates' | 'name-dates-places';
-					}));
-
-			// Drawing style (roughness)
-			const roughnessDescriptions: Record<number, string> = {
-				0: 'Clean, precise lines',
-				1: 'Natural hand-drawn look',
-				2: 'Expressive cartoon style'
-			};
-			const roughnessSetting = new Setting(excalidrawSection)
-				.setName('Drawing style')
-				.setDesc(roughnessDescriptions[this.formData.excalidrawRoughness])
-				.addDropdown(dropdown => dropdown
-					.addOption('0', 'Architect (clean)')
-					.addOption('1', 'Artist (natural)')
-					.addOption('2', 'Cartoonist (rough)')
-					.setValue(String(this.formData.excalidrawRoughness))
-					.onChange(value => {
-						this.formData.excalidrawRoughness = parseInt(value) as 0 | 1 | 2;
-						roughnessSetting.setDesc(roughnessDescriptions[this.formData.excalidrawRoughness]);
-					}));
-
-			// Font family
-			new Setting(excalidrawSection)
-				.setName('Font')
-				.setDesc('Font style for text labels')
-				.addDropdown(dropdown => dropdown
-					.addOption('1', 'Virgil (hand-drawn)')
-					.addOption('5', 'Excalifont (hand-drawn)')
-					.addOption('4', 'Comic Shanns (comic)')
-					.addOption('2', 'Helvetica (clean)')
-					.addOption('6', 'Nunito (rounded)')
-					.addOption('7', 'Lilita One (display)')
-					.addOption('3', 'Cascadia (monospace)')
-					.setValue(String(this.formData.excalidrawFontFamily))
-					.onChange(value => {
-						this.formData.excalidrawFontFamily = parseInt(value) as 1 | 2 | 3 | 4 | 5 | 6 | 7;
-					}));
-
-			// Font size
-			new Setting(excalidrawSection)
-				.setName('Font size')
-				.setDesc('Size of text labels')
-				.addSlider(slider => slider
-					.setLimits(10, 32, 2)
-					.setValue(this.formData.excalidrawFontSize)
-					.setDynamicTooltip()
-					.onChange(value => { this.formData.excalidrawFontSize = value; }));
-
-			// Fill style
-			new Setting(excalidrawSection)
-				.setName('Fill style')
-				.setDesc('How shapes are filled')
-				.addDropdown(dropdown => dropdown
-					.addOption('solid', 'Solid')
-					.addOption('hachure', 'Hachure (diagonal lines)')
-					.addOption('cross-hatch', 'Cross-hatch')
-					.setValue(this.formData.excalidrawFillStyle)
-					.onChange(value => {
-						this.formData.excalidrawFillStyle = value as 'solid' | 'hachure' | 'cross-hatch';
-					}));
-		}
-
 		// Summary
 		const summarySection = form.createDiv({ cls: 'crc-wizard-output-summary' });
 		summarySection.createEl('h4', { text: 'Summary', cls: 'cr-wizard-subsection' });
@@ -1340,6 +1276,89 @@ export class UnifiedTreeWizardModal extends Modal {
 		summaryList.createEl('li', { text: `Tree type: ${this.getTreeTypeLabel()}` });
 		summaryList.createEl('li', { text: `Layout: ${this.formData.layoutAlgorithm}, ${this.formData.direction}` });
 		summaryList.createEl('li', { text: `Spouses: ${this.formData.includeSpouses ? 'Included' : 'Not included'}` });
+	}
+
+	// ========== EXCALIDRAW STYLE STEP ==========
+
+	private renderExcalidrawStyleStep(container: HTMLElement): void {
+		container.createEl('p', {
+			text: 'Configure the drawing style for your Excalidraw tree.',
+			cls: 'cr-wizard-step-desc'
+		});
+
+		const form = container.createDiv({ cls: 'cr-wizard-form' });
+
+		// Node content level
+		new Setting(form)
+			.setName('Node content')
+			.setDesc('What information to show in each person box')
+			.addDropdown(dropdown => dropdown
+				.addOption('name', 'Name only')
+				.addOption('name-dates', 'Name and dates')
+				.addOption('name-dates-places', 'Name, dates, and places')
+				.setValue(this.formData.excalidrawNodeContent)
+				.onChange(value => {
+					this.formData.excalidrawNodeContent = value as 'name' | 'name-dates' | 'name-dates-places';
+				}));
+
+		// Drawing style (roughness)
+		const roughnessDescriptions: Record<number, string> = {
+			0: 'Clean, precise lines',
+			1: 'Natural hand-drawn look',
+			2: 'Expressive cartoon style'
+		};
+		const roughnessSetting = new Setting(form)
+			.setName('Drawing style')
+			.setDesc(roughnessDescriptions[this.formData.excalidrawRoughness])
+			.addDropdown(dropdown => dropdown
+				.addOption('0', 'Architect (clean)')
+				.addOption('1', 'Artist (natural)')
+				.addOption('2', 'Cartoonist (rough)')
+				.setValue(String(this.formData.excalidrawRoughness))
+				.onChange(value => {
+					this.formData.excalidrawRoughness = parseInt(value) as 0 | 1 | 2;
+					roughnessSetting.setDesc(roughnessDescriptions[this.formData.excalidrawRoughness]);
+				}));
+
+		// Font family
+		new Setting(form)
+			.setName('Font')
+			.setDesc('Font style for text labels')
+			.addDropdown(dropdown => dropdown
+				.addOption('1', 'Virgil (hand-drawn)')
+				.addOption('5', 'Excalifont (hand-drawn)')
+				.addOption('4', 'Comic Shanns (comic)')
+				.addOption('2', 'Helvetica (clean)')
+				.addOption('6', 'Nunito (rounded)')
+				.addOption('7', 'Lilita One (display)')
+				.addOption('3', 'Cascadia (monospace)')
+				.setValue(String(this.formData.excalidrawFontFamily))
+				.onChange(value => {
+					this.formData.excalidrawFontFamily = parseInt(value) as 1 | 2 | 3 | 4 | 5 | 6 | 7;
+				}));
+
+		// Font size
+		new Setting(form)
+			.setName('Font size')
+			.setDesc('Size of text labels')
+			.addSlider(slider => slider
+				.setLimits(10, 32, 2)
+				.setValue(this.formData.excalidrawFontSize)
+				.setDynamicTooltip()
+				.onChange(value => { this.formData.excalidrawFontSize = value; }));
+
+		// Fill style
+		new Setting(form)
+			.setName('Fill style')
+			.setDesc('How shapes are filled')
+			.addDropdown(dropdown => dropdown
+				.addOption('solid', 'Solid')
+				.addOption('hachure', 'Hachure (diagonal lines)')
+				.addOption('cross-hatch', 'Cross-hatch')
+				.setValue(this.formData.excalidrawFillStyle)
+				.onChange(value => {
+					this.formData.excalidrawFillStyle = value as 'solid' | 'hachure' | 'cross-hatch';
+				}));
 	}
 
 	// ========== PDF OPTIONS STEP ==========
