@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Missing space in timeline block** - Fixed missing space between event type and "in" preposition (e.g., "Bornin" now correctly displays as "Born in").
 
+- **Bases not created during import** - Bases files (people.base, places.base, etc.) are now created after import even when some errors occur. Previously, any import error would prevent bases creation even though notes were successfully created.
+
 ---
 
 ## [0.17.2] - 2025-12-26

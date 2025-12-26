@@ -817,6 +817,9 @@ export class ImportWizardModal extends Modal {
 				this.formData.importResult = result;
 				this.formData.importedCount = result.individualsImported;
 
+				// Calculate total notes created
+				const totalCreated = result.individualsImported + result.eventsCreated + result.sourcesCreated + result.placesCreated;
+
 				if (result.success) {
 					progressFill.setCssProps({ width: '100%' });
 					addLogEntry(`Import complete! ${result.individualsImported} people imported.`, 'success');
@@ -836,9 +839,6 @@ export class ImportWizardModal extends Modal {
 						addLogEntry(warning, 'warning');
 					}
 
-					// Auto-create bases for imported note types
-					void this.plugin.createAllBases({ silent: true });
-
 					// Auto-advance to numbering step after a short delay
 					setTimeout(() => {
 						this.currentStep = 5; // Numbering step
@@ -851,6 +851,11 @@ export class ImportWizardModal extends Modal {
 						addLogEntry(error, 'error');
 					}
 					this.isImporting = false;
+				}
+
+				// Auto-create bases for imported note types (even if some errors occurred)
+				if (totalCreated > 0) {
+					void this.plugin.createAllBases({ silent: true });
 				}
 			} else if (this.formData.format === 'gramps') {
 				addLogEntry('Starting Gramps import...');
@@ -899,6 +904,12 @@ export class ImportWizardModal extends Modal {
 				this.formData.importResult = result;
 				this.formData.importedCount = result.individualsImported;
 
+				// Calculate total notes created
+				const grampsTotal = result.individualsImported +
+					(result.placeNotesCreated || 0) +
+					(result.sourceNotesCreated || 0) +
+					(result.eventNotesCreated || 0);
+
 				if (result.success) {
 					progressFill.setCssProps({ width: '100%' });
 					addLogEntry(`Import complete! ${result.individualsImported} people imported.`, 'success');
@@ -924,9 +935,6 @@ export class ImportWizardModal extends Modal {
 						addLogEntry(error, 'warning');
 					}
 
-					// Auto-create bases for imported note types
-					void this.plugin.createAllBases({ silent: true });
-
 					// Auto-advance to numbering step after a short delay
 					setTimeout(() => {
 						this.currentStep = 5; // Numbering step
@@ -939,6 +947,11 @@ export class ImportWizardModal extends Modal {
 						addLogEntry(error, 'error');
 					}
 					this.isImporting = false;
+				}
+
+				// Auto-create bases for imported note types (even if some errors occurred)
+				if (grampsTotal > 0) {
+					void this.plugin.createAllBases({ silent: true });
 				}
 			} else {
 				// Other formats not yet implemented

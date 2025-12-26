@@ -7198,15 +7198,12 @@ export default class CanvasRootsPlugin extends Plugin {
 		const skipped: string[] = [];
 		const silent = options?.silent ?? false;
 
-		// Check if Bases feature is available
-		if (!this.isBasesAvailable()) {
-			if (!silent) {
-				const proceed = await this.confirmBaseCreation();
-				if (!proceed) return { created, skipped };
-			} else {
-				// In silent mode (auto-create), skip if Bases not available
-				return { created, skipped };
-			}
+		// In interactive mode, confirm with user if Bases feature isn't already in use
+		// In silent mode (auto-create after import), always proceed - bases files are useful
+		// even if the Bases plugin isn't currently enabled
+		if (!silent && !this.isBasesAvailable()) {
+			const proceed = await this.confirmBaseCreation();
+			if (!proceed) return { created, skipped };
 		}
 
 		// Determine the target folder
