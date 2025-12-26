@@ -52,23 +52,26 @@ sources:
 
 ## Migration Strategy
 
-### Phase 1: Support Both Formats (Non-Breaking)
-1. Update parsing logic to accept both indexed (`source_*`) and array (`sources`) formats
-2. Continue writing in indexed format for compatibility
+### Phase 1: Support Both Formats (Non-Breaking) ✅
+1. ✅ Update parsing logic to accept both indexed (`source_*`) and array (`sources`) formats
+2. ✅ Continue writing in indexed format for compatibility
 3. Add deprecation notices in documentation
 
-### Phase 2: Migration Tooling
-1. Create migration command in Control Center (Data Quality tab)
-2. Bulk convert existing notes from indexed to array format
-3. Provide dry-run option to preview changes
-4. **Wizard Integration:** Add as Step 6 in Post-Import Cleanup Wizard
+### Phase 2: Migration Tooling ✅
+1. ✅ Create `SourceMigrationService` in `src/sources/services/`
+   - `detectIndexedSources()` - Find notes with indexed source properties
+   - `previewMigration()` - Preview changes without modifying files
+   - `migrateToArrayFormat()` - Apply migration to notes
+2. ✅ **Wizard Integration:** Add as Step 6 in Post-Import Cleanup Wizard
    - Pre-scan detects notes using indexed format
    - Preview shows proposed changes before applying
    - Batch migration with progress indicator
-   - Skip option if no indexed sources detected
+   - Auto-skip if no indexed sources detected
 
 ### Phase 3: Deprecate Indexed Format
-1. Switch default writing format to array
+1. Switch default writing format to array in importers
+   - Gramps importer (`src/gramps/gramps-importer.ts`)
+   - GEDCOM importer (`src/gedcom/gedcom-importer-v2.ts`)
 2. Add console warnings when indexed format is detected
 3. Update all documentation
 
@@ -96,22 +99,25 @@ sources:
 
 ## Implementation Notes
 
-### Service Architecture
-- New `SourceMigrationService` class in `src/services/`
-- Integrates with `DataQualityService` for consistency with other batch operations
-- Reuses existing frontmatter update patterns from `DataQualityService`
+### Service Architecture ✅
+- `SourceMigrationService` class in `src/sources/services/source-migration-service.ts`
+- Standalone service (not integrated into DataQualityService to keep concerns separate)
+- Reuses existing frontmatter update patterns via Obsidian's `processFrontMatter`
 
-### Wizard Step Implementation
+### Wizard Step Implementation ✅
 ```typescript
-// In CleanupWizardModal step definitions
+// In CleanupWizardModal WIZARD_STEPS array
 {
-  id: 'migrate-sources',
+  id: 'source-migrate',
+  number: 6,
   title: 'Migrate Source Properties',
-  description: 'Convert indexed source properties to array format',
+  shortTitle: 'Sources',
+  description: 'Convert indexed source properties (source_2, source_3) to array format.',
+  type: 'batch',
   service: 'SourceMigrationService',
-  method: 'migrateToArrayFormat',
-  previewMethod: 'previewMigration',
-  detectMethod: 'detectIndexedSources'
+  detectMethod: 'detectIndexedSources',
+  applyMethod: 'migrateToArrayFormat',
+  dependencies: [5]
 }
 ```
 
