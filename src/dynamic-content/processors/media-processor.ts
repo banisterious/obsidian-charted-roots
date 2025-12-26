@@ -12,7 +12,7 @@
  * ```
  */
 
-import { MarkdownPostProcessorContext, MarkdownRenderChild } from 'obsidian';
+import { MarkdownPostProcessorContext, MarkdownRenderChild, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import { DynamicContentService } from '../services/dynamic-content-service';
 import { MediaRenderer } from '../renderers/media-renderer';
@@ -50,8 +50,24 @@ export class MediaProcessor {
 			const component = new MarkdownRenderChild(el);
 			ctx.addChild(component);
 
-			// Render the media gallery
+			// Initial render
 			this.renderer.render(el, context, config, component);
+
+			// Register for metadata changes to re-render when frontmatter changes
+			const metadataHandler = (changedFile: TFile) => {
+				if (changedFile.path === context.file.path) {
+					// Re-build context to get fresh data
+					const freshContext = this.service.buildContext(ctx);
+					// Clear and re-render
+					el.empty();
+					this.renderer.render(el, freshContext, config, component);
+				}
+			};
+
+			// Register the event and store reference for cleanup
+			component.registerEvent(
+				this.plugin.app.metadataCache.on('changed', metadataHandler)
+			);
 
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);

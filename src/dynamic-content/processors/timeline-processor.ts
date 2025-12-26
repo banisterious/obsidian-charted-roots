@@ -12,7 +12,7 @@
  * ```
  */
 
-import { MarkdownPostProcessorContext, MarkdownRenderChild } from 'obsidian';
+import { MarkdownPostProcessorContext, MarkdownRenderChild, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import { DynamicContentService } from '../services/dynamic-content-service';
 import { TimelineRenderer } from '../renderers/timeline-renderer';
@@ -56,8 +56,24 @@ export class TimelineProcessor {
 			const component = new MarkdownRenderChild(el);
 			ctx.addChild(component);
 
-			// Render the timeline
+			// Initial render
 			await this.renderer.render(el, context, config, component);
+
+			// Register for metadata changes to re-render when frontmatter changes
+			const metadataHandler = async (changedFile: TFile) => {
+				if (changedFile.path === context.file.path) {
+					// Re-build context to get fresh data
+					const freshContext = this.service.buildContext(ctx);
+					// Clear and re-render
+					el.empty();
+					await this.renderer.render(el, freshContext, config, component);
+				}
+			};
+
+			// Register the event and store reference for cleanup
+			component.registerEvent(
+				this.plugin.app.metadataCache.on('changed', metadataHandler)
+			);
 
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);

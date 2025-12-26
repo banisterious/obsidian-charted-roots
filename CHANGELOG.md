@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Base templates not created on import** - Import Wizard now auto-creates base templates (people, places, events, sources, organizations) after successful imports, matching the Control Center behavior.
 
+- **Dynamic blocks not updating on frontmatter changes** - The `canvas-roots-media`, `canvas-roots-timeline`, and `canvas-roots-relationships` code blocks now automatically re-render when frontmatter properties are modified, without requiring the note to be closed and reopened.
+
 ---
 
 ## [0.17.1] - 2025-12-25
