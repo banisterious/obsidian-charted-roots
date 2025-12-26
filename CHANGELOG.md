@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Duplicate event note filenames during import** - Fixed "File already exists" errors when importing GEDCOM files with multiple events that generate identical titles (e.g., multiple "Marriage of Unknown and Unknown" events). The importer now tracks created filenames during the import session to prevent race conditions with vault indexing.
 
+- **Missing space in timeline block** - Fixed missing space between event type and "in" preposition (e.g., "Bornin" now correctly displays as "Born in").
+
 ---
 
 ## [0.17.2] - 2025-12-26

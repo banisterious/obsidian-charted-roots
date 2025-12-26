@@ -220,7 +220,9 @@ export class TimelineRenderer {
 
 			// Place (if present)
 			if (entry.place) {
-				li.createSpan({ cls: 'cr-timeline__place', text: ` in ${entry.place}` });
+				// Add space before "in" - using separate text node to avoid whitespace collapsing
+				li.appendText(' ');
+				li.createSpan({ cls: 'cr-timeline__place', text: `in ${entry.place}` });
 			}
 		}
 	}
