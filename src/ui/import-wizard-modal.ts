@@ -836,6 +836,9 @@ export class ImportWizardModal extends Modal {
 						addLogEntry(warning, 'warning');
 					}
 
+					// Auto-create bases for imported note types
+					void this.plugin.createAllBases({ silent: true });
+
 					// Auto-advance to numbering step after a short delay
 					setTimeout(() => {
 						this.currentStep = 5; // Numbering step
@@ -920,6 +923,9 @@ export class ImportWizardModal extends Modal {
 					for (const error of result.errors.slice(0, 5)) {
 						addLogEntry(error, 'warning');
 					}
+
+					// Auto-create bases for imported note types
+					void this.plugin.createAllBases({ silent: true });
 
 					// Auto-advance to numbering step after a short delay
 					setTimeout(() => {
