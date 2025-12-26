@@ -8,6 +8,7 @@ This document outlines planned features for Canvas Roots. For completed features
 
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
+  - [Create Person Enhancements](#create-person-enhancements) 📋 Medium
   - [Cleanup Wizard Phase 4](#cleanup-wizard-phase-4) 📋 Medium
   - [Universe Management Enhancements](#universe-management-enhancements) 💡 Low
   - [Calendarium Integration](#calendarium-integration) 💡 Low
@@ -55,6 +56,40 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 | ⚡ High | Core workflow | Completes essential data portability |
 | 📋 Medium | User value | Highly requested sharing/output features |
 | 💡 Low | Specialized | Advanced use cases, niche workflows |
+
+---
+
+### Create Person Enhancements
+
+**Priority:** 📋 Medium — Improved data entry for family relationships
+
+**Status:** Planning
+
+**Summary:** Enhance the Create/Edit Person modal to support linking children and improve the overall data entry experience. Phase 1 adds children linking to the Edit modal; Phase 2 considers a wizard or tabbed modal for comprehensive data entry.
+
+**Phase 1: Children Section in Edit Modal**
+
+| Feature | Description |
+|---------|-------------|
+| Children picker | Multi-select person picker in Edit mode to link children |
+| Auto-detection | Infer `father`/`mother` field from parent's `sex` |
+| Bidirectional sync | Leverage existing bidirectional linker for automatic updates |
+
+**Phase 2: Wizard/Tabbed Modal (Future)**
+
+| Approach | Description |
+|----------|-------------|
+| Tabbed modal | Organize fields into collapsible sections (Basic, Dates & Places, Family, Extended) |
+| Full wizard | Step-by-step guided entry similar to Report Wizard |
+
+**When This Becomes Relevant:**
+
+- Users report the modal is overwhelming
+- Need to add more relationship types or source linking
+- Mobile users need simplified entry flow
+
+**Documentation:**
+- See [Create Person Enhancements Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/create-person-enhancements.md) for detailed specifications
 
 ---
 

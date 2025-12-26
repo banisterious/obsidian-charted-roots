@@ -381,5 +381,5 @@ Recommended implementation sequence:
 
 ## Related Documentation
 
-- [Post-Import Cleanup Wizard](./post-import-cleanup-wizard.md) - Main planning document
-- [Source Array Migration](./source-array-migration.md) - Step 6 details
+- [Post-Import Cleanup Wizard](./archive/post-import-cleanup-wizard.md) - Main planning document
+- [Source Array Migration](./archive/source-array-migration.md) - Step 6 details

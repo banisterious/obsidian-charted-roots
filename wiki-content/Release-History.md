@@ -182,7 +182,7 @@ A 10-step guided wizard that consolidates post-import data quality operations in
 | `src/ui/modals/cleanup-wizard-modal.ts` | Main wizard modal with step navigation |
 | `styles/cleanup-wizard.css` | Wizard-specific styling |
 
-See [Post-Import Cleanup Wizard Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/post-import-cleanup-wizard.md) for implementation details.
+See [Post-Import Cleanup Wizard Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/post-import-cleanup-wizard.md) for implementation details.
 
 ---
 
@@ -245,7 +245,7 @@ sources:
 
 **Breaking Change:** The indexed format (`source`, `source_2`, etc.) is no longer parsed. Users with legacy notes should run the Cleanup Wizard Step 6 to migrate.
 
-See [Source Array Migration Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/source-array-migration.md) for implementation details.
+See [Source Array Migration Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/source-array-migration.md) for implementation details.
 
 ---
 
