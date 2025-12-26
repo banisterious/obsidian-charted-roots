@@ -54,6 +54,7 @@ export const CANONICAL_PERSON_PROPERTIES = [
 	'occupation',
 	'universe',
 	'image',
+	'sources',
 	'sourced_facts',
 	'relationships'
 ] as const;
@@ -517,11 +518,18 @@ export const PERSON_PROPERTY_METADATA: PropertyMetadata[] = [
 		commonAliases: ['photo', 'portrait', 'picture', 'avatar']
 	},
 	{
+		canonical: 'sources',
+		label: 'Sources',
+		description: 'Source citations for this person',
+		category: 'person',
+		commonAliases: ['citations', 'references', 'evidence']
+	},
+	{
 		canonical: 'sourced_facts',
 		label: 'Sourced facts',
 		description: 'Facts with source citations',
 		category: 'person',
-		commonAliases: ['sources', 'citations', 'evidence']
+		commonAliases: ['cited_facts']
 	},
 	{
 		canonical: 'relationships',
