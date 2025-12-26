@@ -33,6 +33,7 @@ import { GeocodingService, type GeocodingResult, type BulkGeocodingResult } from
 import { PlaceGraphService } from '../core/place-graph';
 import { createPlaceNote, updatePlaceNote, type PlaceData } from '../core/place-note-writer';
 import type { PlaceNode, PlaceType } from '../models/place';
+import { SourceMigrationService, type IndexedSourceNote, type SourceMigrationPreview } from '../sources/services/source-migration-service';
 
 const logger = getLogger('CleanupWizard');
 
@@ -285,6 +286,10 @@ export class CleanupWizardModal extends Modal {
 	private hierarchyCreateMissingParents = true;
 	private hierarchyPlacesDirectory = '';
 
+	// Source migration state
+	private sourceMigrationService: SourceMigrationService | null = null;
+	private indexedSourceNotes: IndexedSourceNote[] = [];
+
 	// Step completion tracking for dependency checks
 	private stepCompletion: Record<string, { completed: boolean; completedAt: number; issuesFixed: number }> = {};
 
@@ -321,6 +326,16 @@ export class CleanupWizardModal extends Modal {
 			this.geocodingService = new GeocodingService(this.app);
 		}
 		return this.geocodingService;
+	}
+
+	/**
+	 * Initialize the SourceMigrationService (lazy initialization)
+	 */
+	private getSourceMigrationService(): SourceMigrationService {
+		if (!this.sourceMigrationService) {
+			this.sourceMigrationService = new SourceMigrationService(this.app, this.plugin.settings);
+		}
+		return this.sourceMigrationService;
 	}
 
 	/**
@@ -1191,6 +1206,9 @@ export class CleanupWizardModal extends Modal {
 			case 'orphan-clear':
 				this.renderOrphanPreview(container);
 				break;
+			case 'source-migrate':
+				this.renderSourceMigrationPreview(container);
+				break;
 			case 'flatten-props':
 				this.renderNestedPropsPreview(container);
 				break;
@@ -1499,6 +1517,53 @@ export class CleanupWizardModal extends Modal {
 			row.addEventListener('click', () => {
 				this.close();
 				void this.app.workspace.openLinkText(issue.person.file.path, '', false);
+			});
+		}
+
+		if (remaining > 0) {
+			const moreEl = list.createDiv({ cls: 'crc-cleanup-preview-more' });
+			moreEl.textContent = `... and ${remaining} more`;
+		}
+	}
+
+	/**
+	 * Render preview for Step 6: Source Migration
+	 */
+	private renderSourceMigrationPreview(container: HTMLElement): void {
+		if (this.indexedSourceNotes.length === 0) return;
+
+		const preview = container.createDiv({ cls: 'crc-cleanup-preview' });
+		const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
+		summary.textContent = `${this.indexedSourceNotes.length} note${this.indexedSourceNotes.length === 1 ? '' : 's'} will be migrated:`;
+
+		const hint = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
+		hint.textContent = 'Indexed properties (source, source_2, source_3...) will be converted to a sources array.';
+
+		const list = preview.createDiv({ cls: 'crc-cleanup-preview-list' });
+
+		const maxDisplay = 15;
+		const displayItems = this.indexedSourceNotes.slice(0, maxDisplay);
+		const remaining = this.indexedSourceNotes.length - maxDisplay;
+
+		for (const note of displayItems) {
+			const row = list.createDiv({ cls: 'crc-cleanup-preview-row crc-cleanup-preview-row--clickable' });
+
+			const iconEl = row.createDiv({ cls: 'crc-cleanup-preview-icon' });
+			setIcon(iconEl, 'file-text');
+
+			const content = row.createDiv({ cls: 'crc-cleanup-preview-content' });
+
+			const fileName = content.createSpan({ cls: 'crc-cleanup-preview-person' });
+			fileName.textContent = note.file.basename;
+
+			const desc = content.createSpan({ cls: 'crc-cleanup-preview-desc' });
+			const sourceCount = note.indexedSources.length;
+			desc.textContent = `: ${sourceCount} source${sourceCount === 1 ? '' : 's'} → sources array`;
+
+			// Click to open the file
+			row.addEventListener('click', () => {
+				this.close();
+				void this.app.workspace.openLinkText(note.file.path, '', false);
 			});
 		}
 
@@ -3197,7 +3262,16 @@ export class CleanupWizardModal extends Modal {
 				case 'flatten-props':
 					result = await service.flattenNestedProperties();
 					break;
-				// TODO: Add other batch methods as they're implemented (source-migrate)
+				case 'source-migrate': {
+					const sourceMigrationService = this.getSourceMigrationService();
+					const migrationResult = await sourceMigrationService.migrateToArrayFormat(this.indexedSourceNotes);
+					result = {
+						processed: migrationResult.processed,
+						modified: migrationResult.modified,
+						errors: migrationResult.errors
+					};
+					break;
+				}
 				default:
 					// Placeholder for unimplemented methods
 					await new Promise(resolve => setTimeout(resolve, 500));
@@ -3413,7 +3487,11 @@ export class CleanupWizardModal extends Modal {
 			this.state.steps[9].issueCount = this.placesWithoutParent.length;
 			logger.debug('runPreScan', `Step 9 (Hierarchy): ${this.placesWithoutParent.length} places without parent`);
 
-			// Step 6 (source migration) - requires different service, leave as 0 for now
+			// Step 6: Source migration (indexed → array format)
+			const sourceMigrationService = this.getSourceMigrationService();
+			this.indexedSourceNotes = sourceMigrationService.detectIndexedSources();
+			this.state.steps[6].issueCount = this.indexedSourceNotes.length;
+			logger.debug('runPreScan', `Step 6 (Sources): ${this.indexedSourceNotes.length} notes with indexed sources`);
 
 			this.state.preScanComplete = true;
 			logger.info('runPreScan', 'Pre-scan complete');
