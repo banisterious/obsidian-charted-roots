@@ -68,12 +68,16 @@ sources:
    - Batch migration with progress indicator
    - Auto-skip if no indexed sources detected
 
-### Phase 3: Deprecate Indexed Format
-1. Switch default writing format to array in importers
-   - Gramps importer (`src/gramps/gramps-importer.ts`)
-   - GEDCOM importer (`src/gedcom/gedcom-importer-v2.ts`)
-2. Add console warnings when indexed format is detected
-3. Update all documentation
+### Phase 3: Deprecate Indexed Format ✅
+1. ✅ Switch default writing format to array in importers
+   - Gramps importer already uses array format
+   - GEDCOM importer already uses array format
+2. ✅ Add console warnings when indexed format is detected
+   - Warning logged once per session when pre-scan finds indexed sources
+3. ✅ Update documentation
+   - Updated `wiki-content/Frontmatter-Reference.md` with `sources` property
+   - Added `sources` to supported property aliases list
+   - Added deprecation note pointing to Cleanup Wizard Step 6
 
 ### Phase 4: Remove Indexed Support
 1. Remove indexed format parsing (major version bump)
