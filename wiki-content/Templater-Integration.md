@@ -95,7 +95,7 @@ name: <% tp.file.title %>
 
 ### Person Note Template
 
-```yaml
+~~~markdown
 ---
 cr_id: <% tp.user.generateCrId() %>
 cr_type: person
@@ -111,7 +111,19 @@ group_name: ""
 ---
 
 ## Biography
+
+## Family
+
+```canvas-roots-relationships
+type: immediate
 ```
+
+## Timeline
+
+```canvas-roots-timeline
+sort: chronological
+```
+~~~
 
 ### Place Note Template
 
@@ -217,5 +229,6 @@ If you previously used a different ID format (like timestamps), Canvas Roots wil
 ## Related Documentation
 
 - [Data Entry](Data-Entry) - Creating person notes
+- [Dynamic Note Content](Dynamic-Note-Content) - Timeline, relationships, and media blocks
 - [Frontmatter Reference](Frontmatter-Reference) - Complete property documentation
 - [Context Menus](Context-Menus) - Add essential properties action

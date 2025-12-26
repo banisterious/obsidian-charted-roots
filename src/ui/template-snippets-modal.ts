@@ -345,12 +345,21 @@ collection:
 
 ## Family
 
-\`\`\`cr-family
+\`\`\`canvas-roots-relationships
+type: immediate
 \`\`\`
 
 ## Timeline
 
-\`\`\`cr-timeline
+\`\`\`canvas-roots-timeline
+sort: chronological
+\`\`\`
+
+## Media
+
+\`\`\`canvas-roots-media
+columns: 3
+editable: true
 \`\`\`
 
 ## Notes
