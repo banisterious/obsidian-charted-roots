@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Spouse relationships styled with dashed lines
   - Wiki links on nodes for navigation back to person notes
   - Rich labels with name, dates, and birthplace
+  - Dedicated style options step with drawing style, font, fill, and stroke settings
+  - Node content options: name only, name + dates, or name + dates + places
 
 ### Fixed
 
