@@ -11,6 +11,7 @@ import { ValueAliasService } from '../core/value-alias-service';
 import type {
 	MapData,
 	MapMarker,
+	PlaceMarker,
 	MigrationPath,
 	AggregatedPath,
 	JourneyPath,
@@ -110,6 +111,9 @@ export class MapDataService {
 		// Build markers
 		const markers = this.buildMarkers(people, filters);
 
+		// Build standalone place markers (places with coordinates, not tied to person events)
+		const placeMarkers = this.buildPlaceMarkers(filters);
+
 		// Build migration paths (birth → death)
 		const paths = this.buildPaths(people, filters);
 
@@ -144,6 +148,7 @@ export class MapDataService {
 
 		logger.debug('get-data-complete', 'Map data prepared', {
 			markers: markers.length,
+			placeMarkers: placeMarkers.length,
 			paths: paths.length,
 			journeyPaths: journeyPaths.length,
 			collections: collections.length,
@@ -152,6 +157,7 @@ export class MapDataService {
 
 		return {
 			markers,
+			placeMarkers,
 			paths,
 			aggregatedPaths,
 			journeyPaths,
@@ -223,9 +229,16 @@ export class MapDataService {
 			}
 
 			// Parse pixel coordinates for pixel-based maps
-			// Supports both flat (pixel_x, pixel_y) and nested (pixel_coordinates.x, pixel_coordinates.y) formats
-			const pixelX = this.parseCoordinate(fm.pixel_x) ?? this.parsePixelCoordinates(fm.pixel_coordinates).x;
-			const pixelY = this.parseCoordinate(fm.pixel_y) ?? this.parsePixelCoordinates(fm.pixel_coordinates).y;
+			// Supports multiple formats:
+			// - pixel_x, pixel_y (documented format)
+			// - custom_coordinates_x, custom_coordinates_y (from place-note-writer)
+			// - pixel_coordinates.x, pixel_coordinates.y (nested format)
+			const pixelX = this.parseCoordinate(fm.pixel_x)
+				?? this.parseCoordinate(fm.custom_coordinates_x)
+				?? this.parsePixelCoordinates(fm.pixel_coordinates).x;
+			const pixelY = this.parseCoordinate(fm.pixel_y)
+				?? this.parseCoordinate(fm.custom_coordinates_y)
+				?? this.parsePixelCoordinates(fm.pixel_coordinates).y;
 
 			const placeData: PlaceData = {
 				crId: fmToString(fm.cr_id, ''),
@@ -386,6 +399,43 @@ export class MapDataService {
 		}
 
 		return markers;
+	}
+
+	/**
+	 * Build standalone place markers from place cache
+	 * These are places with coordinates that can be shown independently of person events
+	 */
+	private buildPlaceMarkers(filters: MapFilters): PlaceMarker[] {
+		const placeMarkers: PlaceMarker[] = [];
+
+		for (const place of this.placeCache.values()) {
+			// Skip places without valid coordinates
+			if (!this.hasValidCoordinates(place)) continue;
+
+			// Apply universe filter if set
+			if (filters.universe && place.universe !== filters.universe) continue;
+
+			// Apply place category filter if set
+			if (filters.placeCategories && filters.placeCategories.length > 0) {
+				if (!place.category || !filters.placeCategories.includes(place.category)) {
+					continue;
+				}
+			}
+
+			placeMarkers.push({
+				placeId: place.crId,
+				placeName: place.name,
+				lat: place.lat,
+				lng: place.lng,
+				pixelX: place.pixelX,
+				pixelY: place.pixelY,
+				category: place.category,
+				universe: place.universe
+			});
+		}
+
+		logger.debug('build-place-markers', `Built ${placeMarkers.length} place markers`);
+		return placeMarkers;
 	}
 
 	/**

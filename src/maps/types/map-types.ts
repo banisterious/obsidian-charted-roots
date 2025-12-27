@@ -99,6 +99,28 @@ export interface MapMarker {
 }
 
 /**
+ * A marker representing a standalone place (not tied to a person event)
+ */
+export interface PlaceMarker {
+	/** cr_id of the place */
+	placeId: string;
+	/** Display name of the place */
+	placeName: string;
+	/** Latitude coordinate (for geographic coordinate system) */
+	lat?: number;
+	/** Longitude coordinate (for geographic coordinate system) */
+	lng?: number;
+	/** Pixel X coordinate (for pixel coordinate system) */
+	pixelX?: number;
+	/** Pixel Y coordinate (for pixel coordinate system) */
+	pixelY?: number;
+	/** Place category (real, fictional, etc.) */
+	category?: string;
+	/** Universe for fictional places */
+	universe?: string;
+}
+
+/**
  * A migration path connecting birth to death location
  */
 export interface MigrationPath {
@@ -316,6 +338,8 @@ export interface LayerVisibility {
 	journeys: boolean;
 	/** Show heat map layer */
 	heatMap: boolean;
+	/** Show all places (not just those with person events) */
+	places: boolean;
 }
 
 /**
@@ -392,6 +416,8 @@ export interface PersonLifeSpan {
 export interface MapData {
 	/** All markers to display */
 	markers: MapMarker[];
+	/** Standalone place markers (not tied to person events) */
+	placeMarkers: PlaceMarker[];
 	/** All migration paths to display (birth → death) */
 	paths: MigrationPath[];
 	/** Aggregated paths (for line weight visualization) */
@@ -667,5 +693,6 @@ export const DEFAULT_LAYER_VISIBILITY: LayerVisibility = {
 	// Other layers
 	paths: true,
 	journeys: false,  // Off by default (can be visually busy with many people)
-	heatMap: false
+	heatMap: false,
+	places: false     // Off by default (shows all places regardless of person events)
 };

@@ -9,9 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **"All places" layer in Map View** - New layer toggle in the Layers menu shows all places with coordinates, not just those referenced by person events. Useful for viewing standalone places on custom maps, especially for fictional worlds where places may not yet have associated person notes.
+
+- **Pixel coordinate support in Create Place modal** - When creating fictional, mythological, or legendary places, the modal now shows pixel coordinate fields (X/Y) instead of geographic coordinates. These coordinates are used for pixel-based custom maps.
+
 ### Fixed
 
 - **Custom maps not appearing in gallery after creation** - Fixed issue where newly created custom maps wouldn't appear in the Control Center Maps tab gallery. The gallery now correctly detects maps using the `cr_type: map` frontmatter property in addition to the legacy `type: map` format.
+
+- **Pixel coordinate format mismatch** - Fixed issue where places with pixel coordinates weren't appearing on maps. The map data service now reads multiple property formats (`pixel_x`/`pixel_y`, `custom_coordinates_x`/`custom_coordinates_y`) for compatibility.
 
 ---
 

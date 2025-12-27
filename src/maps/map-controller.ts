@@ -68,6 +68,7 @@ import { getLogger } from '../core/logging';
 import type {
 	MapData,
 	MapMarker,
+	PlaceMarker,
 	MigrationPath,
 	JourneyPath,
 	MapSettings,
@@ -107,6 +108,8 @@ export class MapController {
 	private burialClusterGroup: L.MarkerClusterGroup | null = null;
 	// Single cluster group for all additional event types (residence, occupation, etc.)
 	private eventsClusterGroup: L.MarkerClusterGroup | null = null;
+	// Cluster group for standalone place markers (not tied to person events)
+	private placesClusterGroup: L.MarkerClusterGroup | null = null;
 	private pathLayer: L.LayerGroup | null = null;
 	private journeyLayer: L.LayerGroup | null = null;
 	private heatLayer: L.Layer | null = null;
@@ -143,7 +146,8 @@ export class MapController {
 		// Other layers
 		paths: true,
 		journeys: false,
-		heatMap: false
+		heatMap: false,
+		places: false
 	};
 
 	// Callback for when active map changes
@@ -251,6 +255,14 @@ export class MapController {
 			iconCreateFunction: (cluster) => this.createClusterIcon(cluster, this.settings.residenceMarkerColor)
 		});
 		this.eventsClusterGroup.addTo(this.map);
+
+		// Places cluster group (for standalone places not tied to person events)
+		// Uses a distinct color (teal) to differentiate from event markers
+		this.placesClusterGroup = createMarkerClusterGroup({
+			...clusterOptions,
+			iconCreateFunction: (cluster) => this.createClusterIcon(cluster, '#0891b2')
+		});
+		// Don't add to map by default - controlled by layer visibility
 	}
 
 	/**
@@ -411,6 +423,7 @@ export class MapController {
 		try {
 			this.currentData = data;
 			this.renderMarkers(data.markers);
+			this.renderPlaceMarkers(data.placeMarkers);
 			this.renderPaths(data.paths);
 			this.renderJourneyPaths(data.journeyPaths);
 			this.renderHeatMap(data.markers);
@@ -493,6 +506,95 @@ export class MapController {
 		}
 
 		logger.debug('render-markers', `Rendered ${markers.length} markers`);
+	}
+
+	/**
+	 * Render standalone place markers on the map
+	 */
+	private renderPlaceMarkers(placeMarkers: PlaceMarker[]): void {
+		// Clear existing place markers
+		this.placesClusterGroup?.clearLayers();
+
+		if (!placeMarkers || placeMarkers.length === 0) {
+			return;
+		}
+
+		for (const place of placeMarkers) {
+			const leafletMarker = this.createPlaceMarker(place);
+			this.placesClusterGroup?.addLayer(leafletMarker);
+		}
+
+		logger.debug('render-place-markers', `Rendered ${placeMarkers.length} place markers`);
+	}
+
+	/**
+	 * Create a Leaflet marker from place marker data
+	 */
+	private createPlaceMarker(data: PlaceMarker): L.Marker {
+		// Teal color for place markers
+		const color = '#0891b2';
+		const icon = this.createMarkerIcon(color);
+
+		// Use pixel coordinates for pixel CRS, otherwise use lat/lng
+		let coords: L.LatLngExpression;
+		if (this.currentCRS === 'pixel' && data.pixelX !== undefined && data.pixelY !== undefined) {
+			coords = [data.pixelY, data.pixelX];
+		} else if (data.lat !== undefined && data.lng !== undefined) {
+			coords = [data.lat, data.lng];
+		} else {
+			// No valid coordinates - skip
+			return L.marker([0, 0], { icon });
+		}
+
+		const marker = L.marker(coords, { icon });
+
+		// Create popup content
+		const popupContent = this.createPlacePopupContent(data);
+		marker.bindPopup(popupContent);
+
+		return marker;
+	}
+
+	/**
+	 * Create popup content for a place marker
+	 */
+	private createPlacePopupContent(data: PlaceMarker): HTMLElement {
+		const container = document.createElement('div');
+		container.className = 'cr-map-popup';
+
+		container.createEl('div', {
+			cls: 'cr-map-popup-name',
+			text: data.placeName
+		});
+
+		if (data.category) {
+			container.createEl('div', {
+				cls: 'cr-map-popup-type',
+				text: data.category.charAt(0).toUpperCase() + data.category.slice(1)
+			});
+		}
+
+		if (data.universe) {
+			container.createEl('div', {
+				cls: 'cr-map-popup-place',
+				text: `Universe: ${data.universe}`
+			});
+		}
+
+		// Open place note button
+		const btnContainer = container.createEl('div', {
+			cls: 'cr-map-popup-buttons'
+		});
+
+		const openPlaceBtn = btnContainer.createEl('button', {
+			cls: 'cr-map-popup-btn',
+			text: 'Open place'
+		});
+		openPlaceBtn.addEventListener('click', () => {
+			this.openNoteById(data.placeId);
+		});
+
+		return container;
 	}
 
 	/**
@@ -1044,6 +1146,15 @@ export class MapController {
 				this.map.addLayer(this.heatLayer);
 			} else if (!layers.heatMap && this.map.hasLayer(this.heatLayer)) {
 				this.map.removeLayer(this.heatLayer);
+			}
+		}
+
+		// Standalone places
+		if (this.placesClusterGroup) {
+			if (layers.places && !this.map.hasLayer(this.placesClusterGroup)) {
+				this.map.addLayer(this.placesClusterGroup);
+			} else if (!layers.places && this.map.hasLayer(this.placesClusterGroup)) {
+				this.map.removeLayer(this.placesClusterGroup);
 			}
 		}
 	}

@@ -105,10 +105,13 @@ export class CreatePlaceModal extends Modal {
 	private parentPlaceOptions: Map<string, ParentPlaceOption[]> = new Map();
 	private allParentOptions: ParentPlaceOption[] = []; // Flat list for filtering
 	private coordSectionEl?: HTMLElement;
+	private pixelCoordSectionEl?: HTMLElement;
 	private parentPlaceSettingEl?: HTMLElement;
 	private parentDropdownEl?: HTMLSelectElement;
 	private latInputEl?: HTMLInputElement;
 	private longInputEl?: HTMLInputElement;
+	private pixelXInputEl?: HTMLInputElement;
+	private pixelYInputEl?: HTMLInputElement;
 	private customTypeInputEl?: HTMLInputElement;
 	private typeDropdownEl?: HTMLSelectElement;
 
@@ -781,6 +784,48 @@ export class CreatePlaceModal extends Modal {
 			});
 		longSetting.settingEl.addClass('crc-coord-input');
 
+		// Pixel coordinates section (for fictional/mythological places on pixel-based maps)
+		this.pixelCoordSectionEl = form.createDiv({ cls: 'crc-coord-section' });
+
+		const pixelCoordHeader = new Setting(this.pixelCoordSectionEl)
+			.setName('Pixel coordinates')
+			.setDesc('For places on pixel-based custom maps (e.g., fantasy worlds)');
+		pixelCoordHeader.settingEl.addClass('crc-coord-header');
+
+		const pixelCoordInputs = this.pixelCoordSectionEl.createDiv({ cls: 'crc-coord-inputs' });
+
+		// Pixel X
+		const pixelXSetting = new Setting(pixelCoordInputs)
+			.setName('X')
+			.addText(text => {
+				this.pixelXInputEl = text.inputEl;
+				text.setPlaceholder('0')
+					.onChange(value => {
+						this.updatePixelCoordinates('x', value);
+					});
+				// Set initial value if editing
+				if (this.placeData.customCoordinates?.x !== undefined) {
+					text.setValue(this.placeData.customCoordinates.x.toString());
+				}
+			});
+		pixelXSetting.settingEl.addClass('crc-coord-input');
+
+		// Pixel Y
+		const pixelYSetting = new Setting(pixelCoordInputs)
+			.setName('Y')
+			.addText(text => {
+				this.pixelYInputEl = text.inputEl;
+				text.setPlaceholder('0')
+					.onChange(value => {
+						this.updatePixelCoordinates('y', value);
+					});
+				// Set initial value if editing
+				if (this.placeData.customCoordinates?.y !== undefined) {
+					text.setValue(this.placeData.customCoordinates.y.toString());
+				}
+			});
+		pixelYSetting.settingEl.addClass('crc-coord-input');
+
 		// Show/hide coordinates based on category
 		this.updateCoordinatesVisibility();
 
@@ -998,19 +1043,32 @@ export class CreatePlaceModal extends Modal {
 	 * Update visibility of coordinates section based on category
 	 */
 	private updateCoordinatesVisibility(): void {
-		if (!this.coordSectionEl) return;
+		const category = this.placeData.placeCategory || 'real';
 
-		// Show coordinates for real, historical, disputed places
-		const showCoords = ['real', 'historical', 'disputed'].includes(
-			this.placeData.placeCategory || 'real'
-		);
+		// Show geographic coordinates for real, historical, disputed places
+		const showGeoCoords = ['real', 'historical', 'disputed'].includes(category);
 
-		if (showCoords) {
-			this.coordSectionEl.removeClass('crc-hidden');
-		} else {
-			this.coordSectionEl.addClass('crc-hidden');
-			// Clear coordinates when hiding
-			this.placeData.coordinates = undefined;
+		// Show pixel coordinates for fictional, mythological, legendary places
+		const showPixelCoords = ['fictional', 'mythological', 'legendary'].includes(category);
+
+		if (this.coordSectionEl) {
+			if (showGeoCoords) {
+				this.coordSectionEl.removeClass('crc-hidden');
+			} else {
+				this.coordSectionEl.addClass('crc-hidden');
+				// Clear geographic coordinates when hiding
+				this.placeData.coordinates = undefined;
+			}
+		}
+
+		if (this.pixelCoordSectionEl) {
+			if (showPixelCoords) {
+				this.pixelCoordSectionEl.removeClass('crc-hidden');
+			} else {
+				this.pixelCoordSectionEl.addClass('crc-hidden');
+				// Clear pixel coordinates when hiding
+				this.placeData.customCoordinates = undefined;
+			}
 		}
 	}
 
@@ -1056,6 +1114,47 @@ export class CreatePlaceModal extends Modal {
 			this.placeData.coordinates.lat = num;
 		} else {
 			this.placeData.coordinates.long = num;
+		}
+	}
+
+	/**
+	 * Update pixel coordinates from input with validation
+	 */
+	private updatePixelCoordinates(field: 'x' | 'y', value: string): void {
+		const trimmed = value.trim();
+
+		// Initialize customCoordinates object if needed
+		if (!this.placeData.customCoordinates) {
+			this.placeData.customCoordinates = { x: 0, y: 0 };
+		}
+
+		if (!trimmed) {
+			// Set to 0 if empty
+			if (field === 'x') {
+				this.placeData.customCoordinates.x = 0;
+			} else {
+				this.placeData.customCoordinates.y = 0;
+			}
+			// Clear entire object if both are 0
+			if (this.placeData.customCoordinates.x === 0 && this.placeData.customCoordinates.y === 0) {
+				this.placeData.customCoordinates = undefined;
+			}
+			return;
+		}
+
+		const num = parseFloat(trimmed);
+		if (isNaN(num)) return;
+
+		// Pixel coordinates should be non-negative
+		if (num < 0) {
+			new Notice('Pixel coordinates must be non-negative');
+			return;
+		}
+
+		if (field === 'x') {
+			this.placeData.customCoordinates.x = num;
+		} else {
+			this.placeData.customCoordinates.y = num;
 		}
 	}
 

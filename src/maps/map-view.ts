@@ -73,7 +73,8 @@ export class MapView extends ItemView {
 		// Other layers
 		paths: true,
 		journeys: false,
-		heatMap: false
+		heatMap: false,
+		places: false
 	};
 
 	// Time slider state
@@ -487,6 +488,17 @@ export class MapView extends ItemView {
 				.setChecked(this.layers.heatMap)
 				.onClick(() => {
 					this.layers.heatMap = !this.layers.heatMap;
+					this.mapController?.setLayerVisibility(this.layers);
+				});
+		});
+
+		menu.addSeparator();
+
+		menu.addItem((item) => {
+			item.setTitle('All places')
+				.setChecked(this.layers.places)
+				.onClick(() => {
+					this.layers.places = !this.layers.places;
 					this.mapController?.setLayerVisibility(this.layers);
 				});
 		});
