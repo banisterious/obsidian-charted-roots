@@ -21,6 +21,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.17.5] - 2025-12-27
+
+### Added
+
+- **Research Level property for tracking research progress** - New `research_level` property (0-6) on person notes to track progress toward GPS-compliant documentation, based on Yvette Hoitink's "Six Levels of Ancestral Profiles" system. Levels range from 0 (Unidentified) to 6 (Biography). Select via dropdown in Create/Edit Person modal.
+
+- **Research Level in Gaps Report** - The Gaps Report now includes research level features: filter by research level (e.g., show only Level 0-2), sort by research level, display level in report table, and summary statistics showing count of ancestors at each level range.
+
+- **Research Level export to GEDCOM and Gramps** - The `research_level` property is exported as `_RESEARCH_LEVEL` custom tag in GEDCOM files and as `<attribute type="Research Level">` in Gramps XML exports.
+
+- **Research Level import from GEDCOM and Gramps** - When importing files that contain research level data (from previous Canvas Roots exports), the `_RESEARCH_LEVEL` tag (GEDCOM) or "Research Level" attribute (Gramps) is automatically imported back into person notes.
+
+- **Research Level in Bases** - Person bases include "By research level" grouped view, "Needs research" filtered view (Level ≤ 2), and "Not assessed" filtered view for tracking research progress across your tree.
+
+---
+
 ## [0.17.4] - 2025-12-27
 
 ### Added

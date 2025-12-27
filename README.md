@@ -1,6 +1,6 @@
 # Canvas Roots: Genealogical Family Tree Plugin for Obsidian
 
-[![Version](https://img.shields.io/badge/version-0.17.4-blue.svg)](https://github.com/banisterious/obsidian-canvas-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md)
+[![Version](https://img.shields.io/badge/version-0.17.5-blue.svg)](https://github.com/banisterious/obsidian-canvas-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md)
 
 **Canvas Roots** brings professional genealogical tools to Obsidian—import, organize, visualize, and share family histories and fictional worlds without leaving your vault. From GEDCOM imports to PDF reports, interactive charts to map views, manage your research with the power of linked Markdown notes. Built for genealogists, historians, writers, and world-builders.
 
@@ -114,7 +114,8 @@
 | **Source Quality Classification** | Rate sources as Primary, Secondary, or Derivative per GPS methodology |
 | **Fact-Level Source Tracking** | Track which specific facts (birth, death, marriage) have source citations |
 | **Proof Summary Notes** | Document reasoning chains for genealogical conclusions with evidence linking |
-| **Research Gaps Report** | Identify under-researched facts across your tree with priority ranking |
+| **Research Level Property** | Track research progress (0-6 scale) based on GPS methodology—from unidentified to full biography |
+| **Research Gaps Report** | Identify under-researched facts across your tree with priority ranking and research level filtering |
 | **Source Conflict Detection** | Detect and track conflicting evidence requiring resolution |
 | **Source Media Gallery** | Thumbnail grid of source media with search, filtering, and lightbox viewer |
 | **Citation Generator** | Generate citations in Chicago, Evidence Explained, MLA, and Turabian formats |
