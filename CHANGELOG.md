@@ -9,7 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.17.4] - 2025-12-27
+
 ### Added
+
+- **Statistics entry in Control Center Tools** - Added Statistics to the Tools group in Control Center, providing an entry point to the Statistics View. Previously, Statistics View was only accessible via command palette after the old Statistics tab was retired.
 
 - **Configured media folders in Bulk Media Linker** - The Link Media to Sources wizard now offers to use media folders configured in Control Center → Preferences. When folders are configured, users can select from them with checkboxes or switch to custom folder entry. Files from multiple configured folders are combined automatically.
 
