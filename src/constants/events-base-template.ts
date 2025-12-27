@@ -54,7 +54,7 @@ export function generateEventsBaseTemplate(aliases: PropertyAliases = {}): strin
   - note.${title}
   - note.${event_type}
   - note.${date}
-  - note.${person}
+  - formula.participant
   - note.${place}
   - note.${confidence}
   - note.${date_precision}
@@ -68,6 +68,7 @@ formulas:
   year_only: 'if(${date}, ${date}.year, "")'
   has_sources: 'if(${sources}, "Yes", "No")'
   is_dated: 'if(${date}, "Dated", "Relative only")'
+  participant: 'if(${person}, ${person}, ${persons}.map([value, html("<span style=\\"margin-left:-0.25em\\">,</span>")]).flat().slice(0, -1))'
 properties:
   ${cr_id}:
     displayName: ID
@@ -115,6 +116,8 @@ properties:
     displayName: Has Sources
   formula.is_dated:
     displayName: Date Status
+  formula.participant:
+    displayName: Person(s)
 views:
   - name: All Events
     type: table
@@ -122,7 +125,7 @@ views:
       - note.${title}
       - note.${event_type}
       - note.${date}
-      - note.${person}
+      - formula.participant
       - note.${place}
   - name: By Type
     type: table
