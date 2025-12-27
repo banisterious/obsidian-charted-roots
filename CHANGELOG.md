@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.17.8] - 2025-12-27
+
+### Fixed
+
+- **Gramps import: multiple events of same type silently skipped** - Fixed issue where multiple events of the same type with the same participants (e.g., several residence events for a married couple) would only import the first event. The filename now includes the event date to ensure uniqueness. (#43)
+
+---
+
 ## [0.17.7] - 2025-12-27
 
 ### Changed
