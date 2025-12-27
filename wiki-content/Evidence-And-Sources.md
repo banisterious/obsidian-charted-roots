@@ -52,6 +52,8 @@ Canvas Roots' source management system is inspired by the **Genealogical Proof S
 
 While Canvas Roots doesn't enforce strict GPS compliance, the source management features are designed to support these practices. Source notes capture citation details, quality classifications help you evaluate evidence, and the Research Gaps Report identifies where more research is needed.
 
+To track overall research progress toward GPS-compliant documentation, you can use the [`research_level`](Frontmatter-Reference#research-level) property on person notes. This 0-6 scale (based on Yvette Hoitink's "Six Levels of Ancestral Profiles") helps you identify which ancestors need more work.
+
 The Evidence & Source Management features enable you to:
 
 - Create **source notes** documenting evidence (census records, vital records, photos, etc.)
