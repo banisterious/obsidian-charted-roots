@@ -10028,9 +10028,69 @@ export class ControlCenterModal extends Modal {
 					})
 				);
 
-			// Preserve media folder structure toggle (only for .gpkg with media)
+			// Media folder selection and structure options (only for .gpkg with media)
 			let preserveMediaStructure = this.plugin.settings.preserveMediaFolderStructure;
+			let selectedMediaFolder = this.plugin.settings.mediaFolders[0] || 'Canvas Roots/Media';
+			let customMediaFolder = '';
 			if (this.gpkgExtractionResult && this.gpkgExtractionResult.mediaFiles.size > 0) {
+				const mediaCount = this.gpkgExtractionResult.mediaFiles.size;
+
+				// Build media folder options from settings
+				const mediaFolderOptions: Record<string, string> = {};
+				const configuredFolders = this.plugin.settings.mediaFolders || [];
+				if (configuredFolders.length > 0) {
+					for (const folder of configuredFolders) {
+						mediaFolderOptions[folder] = folder;
+					}
+				}
+				// Always include default as fallback
+				if (!mediaFolderOptions['Canvas Roots/Media']) {
+					mediaFolderOptions['Canvas Roots/Media'] = 'Canvas Roots/Media (default)';
+				}
+				// Add custom option
+				mediaFolderOptions['__custom__'] = 'Custom folder...';
+
+				// Container for custom folder input (hidden initially)
+				let customFolderContainer: HTMLElement | null = null;
+
+				const mediaFolderSetting = new Setting(optionsSection)
+					.setName(`Media folder (${mediaCount.toLocaleString()} files)`)
+					.setDesc('Choose where to extract media files from the package')
+					.addDropdown(dropdown => dropdown
+						.addOptions(mediaFolderOptions)
+						.setValue(selectedMediaFolder)
+						.onChange(value => {
+							if (value === '__custom__') {
+								// Show custom folder input
+								if (customFolderContainer) {
+									customFolderContainer.style.display = 'flex';
+								}
+								selectedMediaFolder = customMediaFolder || 'Canvas Roots/Media';
+							} else {
+								// Hide custom folder input
+								if (customFolderContainer) {
+									customFolderContainer.style.display = 'none';
+								}
+								selectedMediaFolder = value;
+							}
+						})
+					);
+
+				// Add custom folder text input (initially hidden)
+				customFolderContainer = mediaFolderSetting.controlEl.createDiv({ cls: 'crc-custom-folder-input' });
+				customFolderContainer.style.display = 'none';
+				customFolderContainer.style.marginLeft = '8px';
+				const customInput = customFolderContainer.createEl('input', {
+					type: 'text',
+					placeholder: 'Enter folder path...',
+					cls: 'crc-input'
+				});
+				customInput.style.width = '200px';
+				customInput.addEventListener('input', () => {
+					customMediaFolder = customInput.value.trim();
+					selectedMediaFolder = customMediaFolder || 'Canvas Roots/Media';
+				});
+
 				new Setting(optionsSection)
 					.setName('Preserve media folder structure')
 					.setDesc('Recreate the original subfolder hierarchy from the source instead of importing all media to a flat folder')
@@ -10059,7 +10119,8 @@ export class ControlCenterModal extends Modal {
 					createEventNotes,
 					eventsFolder,
 					includeDynamicBlocks,
-					preserveMediaStructure
+					preserveMediaStructure,
+					selectedMediaFolder
 				);
 			});
 
@@ -10085,7 +10146,8 @@ export class ControlCenterModal extends Modal {
 		createEventNotes: boolean = false,
 		eventsFolder?: string,
 		includeDynamicBlocks: boolean = false,
-		preserveMediaFolderStructure: boolean = false
+		preserveMediaFolderStructure: boolean = false,
+		mediaFolder: string = 'Canvas Roots/Media'
 	): Promise<void> {
 		// Show progress modal (reuse GEDCOM modal, update title after open)
 		const progressModal = new GedcomImportProgressModal(this.app);
@@ -10127,7 +10189,7 @@ export class ControlCenterModal extends Modal {
 				dynamicBlockTypes: ['media', 'timeline', 'relationships'],
 				// Pass media files from .gpkg extraction if available
 				mediaFiles: this.gpkgExtractionResult?.mediaFiles,
-				mediaFolder: this.plugin.settings.mediaFolders[0] || 'Canvas Roots/Media',
+				mediaFolder,
 				extractMedia: this.gpkgExtractionResult !== undefined,
 				preserveMediaFolderStructure,
 				onProgress: (progress) => {
