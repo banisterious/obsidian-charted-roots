@@ -13,6 +13,7 @@ This document outlines planned features for Canvas Roots. For completed features
   - [Gramps Notes Import](#gramps-notes-import) 📋 Medium
   - [Research Level Property](#research-level-property) 📋 Medium
   - [Universe Management Enhancements](#universe-management-enhancements) 💡 Low
+  - [Custom Relationships on Canvas Trees](#custom-relationships-on-canvas-trees) 💡 Low
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
 - [Future Considerations](#future-considerations)
@@ -246,6 +247,41 @@ These enhancements become valuable when users have:
 - Want streamlined navigation within a single universe context
 
 See [Universe Management Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/universe-management.md) for implementation details.
+
+---
+
+### Custom Relationships on Canvas Trees
+
+**Priority:** 💡 Low — Worldbuilder feature for non-biological lineages
+
+**Status:** Planning
+
+**Summary:** Render custom relationships (defined in the `relationships` frontmatter array) as labeled edges on canvas trees and family charts. Currently, only biological and step/adoptive parent relationships appear on trees. Custom relationship types like vampire sire/childer, guild master/apprentice, or magical bonds are tracked in the Relationships tab but don't render on visual trees.
+
+**Use Cases:**
+- **Vampire lineages:** Sire/childer relationships forming parallel "family" structures
+- **Guild apprenticeships:** Master/apprentice lineages in fantasy worldbuilding
+- **Magical bonds:** Familiar bonds, mentor relationships, magical adoption
+- **Feudal systems:** Lord/vassal relationships, sworn sword bonds
+- **Non-biological kinship:** Godparents, sworn siblings, adopted-but-not-legally relationships
+
+**Current Workaround:** Users can configure property aliases (`sire` → `father`) to render custom lineages using the standard parent/child infrastructure, but edges display as generic parent/child rather than with custom labels.
+
+**Proposed Features:**
+
+| Feature | Description |
+|---------|-------------|
+| Parse `relationships` array | FamilyGraphBuilder reads `relationships` frontmatter entries |
+| Filter by relationship category | Only render relationships marked as "lineage" or "parent-child" type |
+| Custom edge labels | Display relationship type on edge (e.g., "sire", "mentor") |
+| Edge styling | Distinct styling for custom vs biological relationships (color, dash pattern) |
+| Tree wizard option | Checkbox to include/exclude custom relationships from tree generation |
+
+**Technical Approach:**
+1. Integrate `RelationshipService` with `FamilyGraphBuilder`
+2. Add relationship category property (lineage, peer, association) to custom relationship types
+3. When generating trees, include "lineage" category relationships as parent/child edges
+4. Apply custom edge styling based on relationship type
 
 ---
 
