@@ -274,6 +274,12 @@ export const TOOL_CONFIGS: ToolConfig[] = [
 		name: 'Import/Export',
 		icon: 'arrow-up-down',
 		description: 'Import and export genealogical data'
+	},
+	{
+		id: 'statistics',
+		name: 'Statistics',
+		icon: 'bar-chart-2',
+		description: 'Open the statistics dashboard'
 	}
 ];
 

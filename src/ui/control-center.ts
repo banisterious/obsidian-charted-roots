@@ -427,6 +427,11 @@ export class ControlCenterModal extends Modal {
 					new ImportExportHubModal(this.app, this.plugin).open();
 				});
 				break;
+			case 'statistics':
+				// Open statistics view leaf
+				void this.plugin.activateStatisticsView();
+				this.close();
+				break;
 		}
 	}
 
