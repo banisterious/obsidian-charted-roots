@@ -287,7 +287,9 @@ See [Universe Management Planning Document](https://github.com/banisterious/obsi
 
 **Status:** Planning
 
-**Summary:** Render custom relationships (defined in the `relationships` frontmatter array) as labeled edges on canvas trees and family charts. Currently, only biological and step/adoptive parent relationships appear on trees. Custom relationship types like vampire sire/childer, guild master/apprentice, or magical bonds are tracked in the Relationships tab but don't render on visual trees.
+**The Problem:** The `relationships` array in frontmatter is not parsed by the family graph or canvas tree generation. Only direct properties (`stepfather`, `adoptive_father`, etc.) are read. Users who define step-parents or adoptive parents via the relationships array don't see them on canvas trees.
+
+**Summary:** Render custom relationships (defined in the `relationships` frontmatter array) as labeled edges on canvas trees and family charts. Currently, only biological and step/adoptive parent relationships appear on trees — and only when using direct properties, not the relationships array. Custom relationship types like vampire sire/childer, guild master/apprentice, or magical bonds are tracked in the Relationships tab but don't render on visual trees.
 
 **Use Cases:**
 - **Vampire lineages:** Sire/childer relationships forming parallel "family" structures
@@ -296,23 +298,39 @@ See [Universe Management Planning Document](https://github.com/banisterious/obsi
 - **Feudal systems:** Lord/vassal relationships, sworn sword bonds
 - **Non-biological kinship:** Godparents, sworn siblings, adopted-but-not-legally relationships
 
-**Current Workaround:** Users can configure property aliases (`sire` → `father`) to render custom lineages using the standard parent/child infrastructure, but edges display as generic parent/child rather than with custom labels.
+**Current Workaround:** Use direct frontmatter properties instead of the relationships array:
+
+```yaml
+# Instead of:
+relationships:
+  - type: adoptive_parent
+    target: "[[John Doe]]"
+
+# Use:
+adoptive_father: "[[John Doe]]"
+```
+
+Users can also configure property aliases (`sire` → `father`) to render custom lineages using the standard parent/child infrastructure, but edges display as generic parent/child rather than with custom labels.
 
 **Proposed Features:**
 
 | Feature | Description |
 |---------|-------------|
-| Parse `relationships` array | FamilyGraphBuilder reads `relationships` frontmatter entries |
+| Parse `relationships` array | FamilyGraphService reads `relationships` frontmatter entries |
+| Map to family roles | `step_parent`, `adoptive_parent`, etc. map to existing step/adoptive parent handling |
 | Filter by relationship category | Only render relationships marked as "lineage" or "parent-child" type |
 | Custom edge labels | Display relationship type on edge (e.g., "sire", "mentor") |
 | Edge styling | Distinct styling for custom vs biological relationships (color, dash pattern) |
 | Tree wizard option | Checkbox to include/exclude custom relationships from tree generation |
 
 **Technical Approach:**
-1. Integrate `RelationshipService` with `FamilyGraphBuilder`
-2. Add relationship category property (lineage, peer, association) to custom relationship types
-3. When generating trees, include "lineage" category relationships as parent/child edges
-4. Apply custom edge styling based on relationship type
+1. Parse `relationships` array in `FamilyGraphService.parsePersonFromFrontmatter()`
+2. Map relationship types to family graph roles (step_parent → stepfatherCrIds/stepmotherCrIds based on target gender)
+3. Add support for foster parents and guardians
+4. Apply custom edge styling based on relationship type definitions
+
+**Documentation:**
+- See [Relationships Array in Family Graph Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/relationships-array-family-graph.md) for detailed specifications
 
 ---
 
