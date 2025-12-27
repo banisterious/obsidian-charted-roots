@@ -1917,7 +1917,7 @@ Each Control Center tab now includes a "Manage types" card:
 | Sources | 6 built-in source types | Custom types, categories, description |
 | Organizations | 11 built-in org types | Custom types, categories |
 | Relationships | 17 built-in relationship types | Custom types, color, line style (solid, dashed, dotted) |
-| Places | 15 built-in place types | Custom types, categories, hierarchy level (0-99) |
+| Places | 16 built-in place types | Custom types, categories, hierarchy level (0-99) |
 
 **Type Management Features:**
 - **Create custom types**: Add new types with full customization
