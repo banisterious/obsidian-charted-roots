@@ -13,6 +13,7 @@ Canvas Roots allows you to create custom map images for fictional worlds, histor
 - [Using Your Custom Map](#using-your-custom-map)
 - [Map Actions](#map-actions)
 - [Coordinate Systems](#coordinate-systems)
+  - [Adding Places to Pixel-Based Maps](#adding-places-to-pixel-based-maps)
 - [Frontmatter Reference](#frontmatter-reference)
 
 ---
@@ -243,13 +244,37 @@ center_x: 1024   # Optional: default center
 center_y: 1536
 ```
 
-When using pixel coordinates, places should have `pixel_x` and `pixel_y` properties instead of `coordinates`:
+### Adding Places to Pixel-Based Maps
+
+When using pixel coordinates, places need `pixel_x` and `pixel_y` properties instead of geographic coordinates. Currently, the Create Place modal doesn't have fields for pixel coordinates, so you'll need to add them manually:
+
+1. **Create the place note** using Control Center → Places → Create place note
+   - Set the category to "Fictional" or "Mythological"
+   - Set the universe to match your map's universe
+2. **Open the place note** in the editor
+3. **Add pixel coordinates** to the frontmatter:
 
 ```yaml
-# In place note
+---
+cr_type: place
+name: Winterfell
+place_category: fictional
+universe: got
 pixel_x: 450
 pixel_y: 780
+---
 ```
+
+**Finding pixel coordinates:**
+
+To determine the pixel coordinates for a location on your map image:
+
+1. Open the map image in an image editor (or use your OS image viewer)
+2. Hover over the desired location to see the pixel coordinates
+3. Note the X (horizontal) and Y (vertical) values
+4. The origin (0, 0) is at the top-left corner of the image
+
+**Tip:** If your image editor shows coordinates from the bottom-left, subtract the Y value from the image height to convert to top-left origin.
 
 ---
 
