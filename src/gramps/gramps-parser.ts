@@ -331,9 +331,25 @@ export class GrampsParser {
 		for (const [handle, grampsEvent] of database.events) {
 			// Find persons associated with this event
 			const personHandles: string[] = [];
+
+			// Check person event references
 			for (const [personHandle, person] of database.persons) {
 				if (person.eventrefs.some(ref => ref.hlink === handle)) {
 					personHandles.push(personHandle);
+				}
+			}
+
+			// Check family event references (for marriage, divorce, residence, etc.)
+			// These events are attached to families, not directly to persons
+			for (const [, family] of database.families) {
+				if (family.eventrefs.some(ref => ref.hlink === handle)) {
+					// Add father and mother as participants
+					if (family.father && !personHandles.includes(family.father)) {
+						personHandles.push(family.father);
+					}
+					if (family.mother && !personHandles.includes(family.mother)) {
+						personHandles.push(family.mother);
+					}
 				}
 			}
 

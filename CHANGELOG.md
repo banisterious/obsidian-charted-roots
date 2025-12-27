@@ -9,7 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.17.6] - 2025-12-27
+
 ### Fixed
+
+- **Gramps import: family events missing Person field** - Events with multiple participants (marriage, divorce, residence, etc.) now correctly populate the Person property when importing from Gramps. These events are attached to families rather than persons in Gramps XML, and are now properly linked to both spouses.
 
 - **"Create person note" command opening retired tab** - The command palette "Canvas Roots: Create person note" command now directly opens the Create Person modal instead of attempting to open the retired Data Entry tab in Control Center.
 
