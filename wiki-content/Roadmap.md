@@ -10,7 +10,7 @@ This document outlines planned features for Canvas Roots. For completed features
 - [Planned Features](#planned-features)
   - [Create Person Enhancements](#create-person-enhancements) 📋 Medium
   - [Cleanup Wizard Phase 4](#cleanup-wizard-phase-4) 📋 Medium
-  - [Gramps Notes Import](#gramps-notes-import) 📋 Medium
+  - [Gramps Notes & Family Integration](#gramps-notes--family-integration) 📋 Medium
   - [Research Level Property](#research-level-property) 📋 Medium
   - [Universe Management Enhancements](#universe-management-enhancements) 💡 Low
   - [Custom Relationships on Canvas Trees](#custom-relationships-on-canvas-trees) 💡 Low
@@ -133,45 +133,37 @@ Dedicated wizard for creating an entire nuclear family at once with a guided ste
 
 ---
 
-### Gramps Notes Import
+### Gramps Notes & Family Integration
 
-**Priority:** 📋 Medium — Preserve research notes from Gramps imports
+**Priority:** 📋 Medium — Preserve research notes and family structure from Gramps imports
 
 **Status:** Planning
 
-**Summary:** Import notes attached to Gramps entities (people, events, places, etc.) during Gramps XML import. Gramps allows users to attach free-form notes containing research notes, biographical information, and source transcriptions. These should be preserved when importing into Canvas Roots.
+**Summary:** Import notes attached to Gramps entities and potentially introduce a Family entity type. Gramps treats notes and families as first-class entities with rich metadata. This feature ensures that data is preserved when importing into Canvas Roots, with optional advanced features for users who need them.
 
-**Background:**
-- Gramps notes can be attached to people, families, events, places, sources, citations, media, and repositories
-- Each note has a type (Person Note, Research, Transcript, etc.) and text content
-- Notes are stored separately and referenced via `noteref` elements
-- Source notes are already imported (used in source note content)
+**Design Principles:**
+- Start conservatively with embedded notes (appended to entity content)
+- Advanced features (separate note files, Family entity, sync) are opt-in
+- Preserve all Gramps metadata in frontmatter for future use and round-tripping
+- Don't complicate the experience for users with simpler requirements
 
-**Phase 1: Person Notes**
+**Phased Implementation:**
 
-| Feature | Description |
-|---------|-------------|
-| Parse person noteRefs | Extract note references from person elements |
-| Import toggle | Add "Import notes" checkbox in Import Wizard |
-| Append to content | Add "## Notes" section to person note body |
-| Preserve note type | Include note type as subsection header |
+| Phase | Feature | Default |
+|-------|---------|---------|
+| 1 | Embedded person notes | Enabled |
+| 2 | Other entity notes (events, places) | Enabled |
+| 3 | Family entity type | Opt-in |
+| 4 | Separate note files | Opt-in |
+| 5 | Export & sync back to Gramps | Future |
 
-**Phase 2: Other Entity Notes (Future)**
-
-| Entity | Approach |
-|--------|----------|
-| Events | Append to event note content |
-| Places | Append to place note content |
-| Families | TBD - attach to marriage event or both spouses? |
-
-**Open Questions:**
-- Where should notes appear? (content body vs frontmatter vs separate files)
-- How to handle Gramps note formatting/styling?
-- Should private notes (`priv="1"`) be imported?
-- Default: opt-in or opt-out?
+**Privacy Handling:**
+- Gramps notes can be marked private (`priv="1"`)
+- Phase 1: Add `private: true` to frontmatter; user configures sync/publish exclusions
+- Future: Optional separate folder for private content, or skip private notes entirely
 
 **Documentation:**
-- See [Gramps Notes Import Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/gramps-notes-import.md) for detailed specifications
+- See [Gramps Notes & Family Integration Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/gramps-notes-family-integration.md) for detailed specifications
 
 ---
 
