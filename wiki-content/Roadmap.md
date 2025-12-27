@@ -9,6 +9,7 @@ This document outlines planned features for Canvas Roots. For completed features
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
   - [Create Person Enhancements](#create-person-enhancements) 📋 Medium
+  - [Event Person Property Consolidation](#event-person-property-consolidation) 📋 Medium
   - [Cleanup Wizard Phase 4](#cleanup-wizard-phase-4) 📋 Medium
   - [Gramps Notes & Family Integration](#gramps-notes--family-integration) 📋 Medium
   - [Research Level Property](#research-level-property) 📋 Medium
@@ -98,6 +99,38 @@ Dedicated wizard for creating an entire nuclear family at once with a guided ste
 
 **Documentation:**
 - See [Create Person Enhancements Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/create-person-enhancements.md) for detailed specifications
+
+---
+
+### Event Person Property Consolidation
+
+**Priority:** 📋 Medium — Schema simplification for events
+
+**Status:** Planning
+
+**The Problem:** Event notes currently use two different properties to track participants:
+- `person` (string): Single participant for individual events (birth, death, occupation)
+- `persons` (array): Multiple participants for family events (marriage, divorce, residence)
+
+This duality creates complexity in base templates (requires formula workarounds), importers (must decide which property to use), and user understanding.
+
+**Goal:** Consolidate to a single `persons` array property that works for all events.
+
+**Phased Implementation:**
+
+| Phase | Feature | Description |
+|-------|---------|-------------|
+| 1 | Update Importers | Gramps and GEDCOM importers always use `persons` array |
+| 2 | Update Base Templates | Simplify formula now that all events use `persons` |
+| 3 | Migration Tool | Cleanup wizard step to migrate `person` → `persons` |
+| 4 | Documentation | Update Frontmatter Reference, add migration notes |
+
+**Backward Compatibility:**
+- Base templates continue reading both properties during transition
+- Migration is opt-in via cleanup wizard
+
+**Documentation:**
+- See [Event Person Property Consolidation Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/event-person-property-consolidation.md) for detailed specifications
 
 ---
 
