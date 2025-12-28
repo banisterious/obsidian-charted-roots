@@ -5,7 +5,7 @@ Planning document for enhancing person creation and editing workflows.
 - **Status:** Planning (Phase 1 scoped for v0.18.1)
 - **GitHub Issue:** #TBD
 - **Created:** 2025-12-18
-- **Updated:** 2025-12-28
+- **Updated:** 2025-12-28 (Phase 4 wizard core implemented)
 
 ---
 
@@ -208,8 +208,10 @@ After adding a relationship, the user returns to the action panel to add more or
 
 ---
 
-## Phase 4: Family Creation Wizard (Future)
+## Phase 4: Family Creation Wizard ✅ (v0.18.1)
 
+> **Status:** Implemented
+>
 > **Standalone feature:** Does not depend on Phases 1-3. Addresses a different use case (batch family creation from scratch).
 
 A dedicated wizard for creating an entire nuclear family at once.
@@ -247,33 +249,38 @@ To make room for "Create Family" on the Dashboard while keeping 12 tiles:
 ### Implementation Checklist
 
 #### Entry Points
-- [ ] Add command: `Canvas Roots: Create family wizard`
-- [ ] Add "Create Family" tile to Dashboard (after removing Reports)
-- [ ] Add "Create Family" to TOOL_CONFIGS in lucide-icons.ts
-- [ ] Add "Create family" button to People tab Actions card
-- [ ] Add "Create family" to People folder context menu
+- [x] Add command: `Canvas Roots: Create family wizard`
+- [x] Add "Create Family" tile to Dashboard (after removing Reports)
+- [x] Add "Create Family" to TOOL_CONFIGS in lucide-icons.ts
+- [x] Add "Create family" button to People tab Actions card
+- [x] Add "Create family" to People folder context menu
 
 #### Statistics/Reports Consolidation
-- [ ] Rename "Statistics" to "Statistics & Reports" in TOOL_CONFIGS
-- [ ] Update description to mention reports
-- [ ] Remove "Reports" entry from TOOL_CONFIGS
+- [x] Rename "Statistics" to "Statistics & Reports" in TOOL_CONFIGS
+- [x] Update description to mention reports
+- [x] Remove "Reports" entry from TOOL_CONFIGS
 
 #### Wizard Modal
-- [ ] Create `src/ui/family-creation-wizard.ts`
-- [ ] Implement step-based navigation with state management
-- [ ] Step 1: Central person form (reuse QuickCreatePersonModal patterns)
-- [ ] Step 2: Spouse list with add/edit/remove
-- [ ] Step 3: Children list with add/edit/remove
-- [ ] Step 4: Parents (father/mother) with add/edit/remove
-- [ ] Step 5: Review with family tree visualization and stats
-- [ ] Batch note creation with relationship linking
-- [ ] Completion screen with created notes list
+- [x] Create `src/ui/family-creation-wizard.ts`
+- [x] Implement step-based navigation with state management
+- [x] Step 1: Central person form (reuse QuickCreatePersonModal patterns)
+- [x] Step 2: Spouse list with add/edit/remove
+- [x] Step 3: Children list with add/edit/remove
+- [x] Step 4: Parents (father/mother) with add/edit/remove
+- [x] Step 5: Review with family tree visualization and stats
+- [x] Batch note creation with relationship linking
+- [x] Completion screen with created notes list
 
 #### Styles
-- [ ] Add wizard-specific styles to styles.css
-- [ ] Step indicator styles
-- [ ] Person card list styles
-- [ ] Family tree preview styles
+- [x] Add wizard-specific styles to `styles/family-wizard.css`
+- [x] Step indicator styles
+- [x] Person card list styles
+- [x] Family tree preview styles
+
+#### Additional Implementations
+- [x] Modal state persistence support (via `ModalStatePersistence` utility)
+- [x] Resume prompt banner when previous session detected
+- [x] Merge existing relationships when linking (doesn't overwrite existing data)
 
 ### Alternative: Tabbed Modal
 
