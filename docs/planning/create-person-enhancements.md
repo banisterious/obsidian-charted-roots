@@ -118,7 +118,7 @@ CreatePersonModal
 - [x] Update `createRelationshipField()` to pass `onCreateNew` to picker
 - [x] Map field type to suggested sex: father→male, mother→female, spouse→undefined
 - [x] Pass current directory to quick create modal
-- [ ] Test: create person, add father via picker, create new father inline
+- [x] Test: create person, add father via picker, create new father inline
 
 #### Phase 1d: Step/Adoptive Parents
 - [x] Extend to stepfather, stepmother, adoptive father, adoptive mother fields
@@ -169,6 +169,7 @@ Add the ability to view and manage children directly from the Edit Person modal.
 - Uses `MultiRelationshipField` interface for managing multiple children
 - `PersonPickerModal` used for child selection with inline creation support
 - `BidirectionalLinker.syncChildToParent()` handles child → parent sync based on parent's sex
+- `BidirectionalLinker.removeParentFromChild()` handles deletion sync (clears child's parent field when removed from parent)
 - `person-note-writer.ts` updated to handle `childCrId`/`childName` in `updatePersonNote()`
 
 ### Open Questions (Deferred)
