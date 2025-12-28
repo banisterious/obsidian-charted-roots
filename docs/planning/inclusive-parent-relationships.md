@@ -225,6 +225,6 @@ When creating a parent inline:
 
 ## Related Documents
 
-- [Create Person Enhancements](./create-person-enhancements.md) - Inline creation features
+- [Create Person Enhancements](./archive/create-person-enhancements.md) - Inline creation features
 - [Frontmatter Reference](../../wiki-content/Frontmatter-Reference.md) - Property documentation
 - [Data Entry](../../wiki-content/Data-Entry.md) - Modal documentation

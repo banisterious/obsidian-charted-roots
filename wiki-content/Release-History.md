@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.18.x](#v018x)
+  - [Create Person Enhancements](#create-person-enhancements-v0181)
   - [Event Person Property Consolidation](#event-person-property-consolidation-v0180)
 - [v0.17.x](#v017x)
   - [Research Level Property](#research-level-property-v0175)
@@ -72,6 +73,96 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.18.x
+
+### Create Person Enhancements (v0.18.1)
+
+A comprehensive set of enhancements to streamline family tree creation, addressing the tedious workflow of jumping in and out of modals when building a family tree from scratch.
+
+**Problem Solved:**
+
+Building a family tree required constant context-switching:
+1. Create Person A → Save → Close
+2. Create Person B → Save → Close
+3. Edit Person A to link B as spouse → Save → Close
+4. Create Child C → Save → Close
+5. Edit Child C to set parents → Save → Close
+6. ...repeat endlessly
+
+**Solution:**
+
+Four phases of enhancements enable continuous family creation without leaving the modal flow.
+
+**Phase 1: Inline Person Creation**
+
+| Feature | Description |
+|---------|-------------|
+| "Create new" in pickers | When selecting father/mother/spouse, offer "Create new person" option |
+| QuickCreatePersonModal | Simplified sub-modal for creating new family members inline |
+| Smart defaults | Pre-fill sex for parents (father→male, mother→female) |
+| Folder context menu | "Create person" option in People folder context menu |
+
+**Phase 2: Children Section in Edit Modal**
+
+| Feature | Description |
+|---------|-------------|
+| Children picker | Multi-select person picker to view/manage children in Edit mode |
+| Inline creation | Create new children directly using Phase 1 infrastructure |
+| Auto-detection | Infer `father`/`mother` field from parent's `sex` property |
+| Bidirectional sync | Adding/removing children updates both parent and child notes |
+
+**Phase 3: "Add Another" Flow**
+
+After creating a person, the modal shows quick actions to continue building the family:
+- **Add spouse** → Opens spouse picker with inline creation
+- **Add child** → Opens child picker with inline creation
+- **Add parent** → Shows father/mother choice, then opens parent picker
+- **Done** → Closes modal
+
+**Phase 4: Family Creation Wizard**
+
+A dedicated 5-step wizard for creating an entire nuclear family at once:
+
+| Step | Description |
+|------|-------------|
+| Start | Choose mode: start from scratch or build around existing person |
+| Step 1 | Create central person (name, nickname, sex, birth date) |
+| Step 2 | Add spouse(s) — supports multiple, create new or pick existing |
+| Step 3 | Add children — create new or pick existing |
+| Step 4 | Add parents (father and mother) |
+| Step 5 | Review — visual family tree preview, stats summary, confirm |
+
+**Wizard Features:**
+
+| Feature | Description |
+|---------|-------------|
+| Visual tree preview | Mini family tree showing all members with initials |
+| Batch creation | All notes created with relationships automatically linked |
+| Merge logic | Links existing persons without overwriting their existing relationships |
+| State persistence | Resume interrupted wizard sessions via `ModalStatePersistence` |
+| Multiple entry points | Command palette, Dashboard tile, People tab, folder context menu |
+
+**Bundled Enhancement: Nickname Property**
+
+Added `nickname` as a first-class frontmatter property:
+- Added to `PersonData` interface
+- Supported in Create/Edit Person and QuickCreate modals
+- Import support for GEDCOM (`NICK`), Gramps (`nick`), and GEDCOM X
+
+**Entry Points:**
+
+| Entry Point | Action |
+|-------------|--------|
+| Command: `Canvas Roots: Create family wizard` | Opens Family Creation Wizard |
+| Dashboard → Create Family tile | Opens Family Creation Wizard |
+| People tab → Actions → Create family | Opens Family Creation Wizard |
+| People folder context menu → Create family | Opens wizard with folder pre-selected |
+| People folder context menu → Create person | Opens CreatePersonModal with folder pre-selected |
+
+**Documentation:**
+- [Create Person Enhancements Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/create-person-enhancements.md) - Detailed specifications
+- [Data Entry](Data-Entry) - User documentation
+
+---
 
 ### Event Person Property Consolidation (v0.18.0)
 

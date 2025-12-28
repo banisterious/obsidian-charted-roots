@@ -8,7 +8,6 @@ This document outlines planned features for Canvas Roots. For completed features
 
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
-  - [Create Person Enhancements](#create-person-enhancements) 📋 Medium
   - [Timeline Export Consolidation](#timeline-export-consolidation) 📋 Medium
   - [Inclusive Parent Relationships](#inclusive-parent-relationships) 📋 Medium
   - [Cleanup Wizard Phase 4](#cleanup-wizard-phase-4) 📋 Medium
@@ -16,6 +15,7 @@ This document outlines planned features for Canvas Roots. For completed features
   - [Custom Map Authoring](#custom-map-authoring) 💡 Low
   - [Custom Relationships on Canvas Trees](#custom-relationships-on-canvas-trees) 💡 Low
   - [Calendarium Integration](#calendarium-integration) 💡 Low
+  - [Staging Management](#staging-management) 💡 Low
   - [Universe Management Enhancements](#universe-management-enhancements) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
 - [Future Considerations](#future-considerations)
@@ -39,6 +39,7 @@ For the complete list of implemented features, see [Release History](Release-His
 
 | Version | Feature | Summary |
 |:-------:|---------|---------|
+| v0.18.1 | [Create Person Enhancements](Release-History#create-person-enhancements-v0181) | Inline person creation, children management, "Add Another" flow, Family Creation Wizard, nickname property |
 | v0.18.0 | [Event Person Property Consolidation](Release-History#event-person-property-consolidation-v0180) | Unified `persons` array for all events, migration wizard step, backward-compatible reading |
 | v0.17.5 | [Research Level Property](Release-History#research-level-property-v0175) | Track research progress with 7-level GPS-based system, Edit Modal selector, Research Gaps Report integration |
 | v0.17.0 | [Post-Import Cleanup Wizard](Release-History#post-import-cleanup-wizard-v0170) | 10-step guided wizard for post-import data quality (relationships, dates, genders, places, sources) |
@@ -58,45 +59,6 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 | ⚡ High | Core workflow | Completes essential data portability |
 | 📋 Medium | User value | Highly requested sharing/output features |
 | 💡 Low | Specialized | Advanced use cases, niche workflows |
-
----
-
-### Create Person Enhancements
-
-**Priority:** 📋 Medium — Continuous family creation workflow
-
-**Status:** Planning
-
-**The Problem:** Building a family tree from scratch requires constant jumping in and out of modals. Create person, save, close, create another, save, close, go back and link them, save, close... endlessly.
-
-**Goal:** Enable continuous family creation without leaving the modal flow.
-
-**Phase 1: Inline Person Creation**
-
-| Feature | Description |
-|---------|-------------|
-| "Create new" in pickers | When selecting father/mother/spouse/child, offer "Create new person" option |
-| Sub-modal creation | Opens simplified create form, returns to parent modal with link |
-| Smart defaults | Pre-fill sex for parents, pre-fill relationships for children/spouses |
-
-**Phase 2: Children Section in Edit Modal**
-
-| Feature | Description |
-|---------|-------------|
-| Children picker | Multi-select person picker to view/manage children |
-| Inline creation | Create new children directly (builds on Phase 1) |
-| Auto-detection | Infer `father`/`mother` field from parent's `sex` |
-
-**Phase 3: "Add Another" Flow (Future)**
-
-After creating a person, offer quick actions: "Add spouse", "Add child", "Add parent", "Done" — keeping users in a family-building flow.
-
-**Phase 4: Family Creation Wizard (Future)**
-
-Dedicated wizard for creating an entire nuclear family at once with a guided step-by-step flow.
-
-**Documentation:**
-- See [Create Person Enhancements Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/create-person-enhancements.md) for detailed specifications
 
 ---
 
@@ -398,6 +360,57 @@ See [Fictional Date Systems - Calendarium Integration](Fictional-Date-Systems#ca
 **Future Consideration:** Per-calendar frontmatter fields (e.g., `mycalendar-date` instead of `fc-calendar` + `fc-date`) to allow one note to have dates across multiple calendars.
 
 See [Calendarium Integration Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/calendarium-integration.md) for implementation details.
+
+---
+
+### Staging Management
+
+**Priority:** 💡 Low — Review and manage imported data before promoting to main tree
+
+**Status:** Planning
+
+**Summary:** Add a dedicated interface for managing data in the staging folder. The Import Wizard supports importing to staging folders, but there's currently no UI to review, check for duplicates, promote, or delete staged imports after they're created.
+
+**The Problem:** After importing data to staging:
+1. No way to see what's in staging from the UI
+2. No way to check for duplicates against the main tree
+3. No way to promote reviewed imports to the main folder
+4. No way to delete rejected imports
+5. Users must manually move/delete files
+
+**Staging Workflow:**
+
+| Step | Action | Description |
+|------|--------|-------------|
+| 1 | Import to Staging | Import wizard creates notes in staging subfolder |
+| 2 | Review | View imported people, check for duplicates |
+| 3 | Resolve | Mark duplicates as "same person" (skip) or "different" (promote) |
+| 4 | Promote | Move reviewed files to main people folder |
+| 5 | Cleanup | Delete rejected staging data |
+
+**Planned Features:**
+
+| Feature | Description |
+|---------|-------------|
+| Staging overview | Display staging folder stats, subfolder list with counts |
+| Duplicate detection | Compare staging people against main tree by name/ID/dates |
+| Duplicate review modal | Side-by-side comparison with resolution options |
+| Promote operations | Move files to main tree, skip "same person" duplicates |
+| Delete operations | Remove staging files with confirmation |
+| Per-subfolder actions | Check/promote/delete individual import batches |
+
+**Entry Points (Proposed):**
+- Command palette: "Canvas Roots: Manage staging area"
+- Import Wizard success screen: "View in Staging Manager"
+- Dashboard tile (when staging has data)
+
+**Services Available:**
+- `StagingService` — File operations, stats, promote/delete
+- `CrossImportDetectionService` — Duplicate detection and resolution tracking
+- `CrossImportReviewModal` — Existing duplicate review UI
+
+**Documentation:**
+- See [Staging Management Enhancement Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/staging-management-enhancement.md) for detailed specifications
 
 ---
 
