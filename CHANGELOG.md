@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.17.9] - 2025-12-27
+
 ### Added
 
 - **"All places" layer in Map View** - New layer toggle in the Layers menu shows all places with coordinates, not just those referenced by person events. Useful for viewing standalone places on custom maps, especially for fictional worlds where places may not yet have associated person notes.
