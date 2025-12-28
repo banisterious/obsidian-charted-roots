@@ -2259,7 +2259,77 @@ export class ReportWizardModal extends Modal {
 		options.includeChildren = this.formData.includeChildren;
 		options.maxGenerations = this.formData.maxGenerations;
 
+		// Add timeline-specific options
+		if (this.isTimelineReport()) {
+			this.addTimelineOptions(options);
+		}
+
 		return options;
+	}
+
+	/**
+	 * Add timeline-specific options to report options
+	 */
+	private addTimelineOptions(options: ReportOptions & Record<string, unknown>): void {
+		// Core timeline options
+		options.format = this.formData.timelineFormat;
+		options.grouping = this.formData.timelineGrouping;
+		options.includeDescriptions = this.formData.timelineIncludeDescriptions;
+
+		// Filters
+		if (this.formData.timelineDateFrom) {
+			options.dateFrom = this.formData.timelineDateFrom;
+		}
+		if (this.formData.timelineDateTo) {
+			options.dateTo = this.formData.timelineDateTo;
+		}
+		if (this.formData.timelineEventTypes.length > 0) {
+			options.eventTypes = this.formData.timelineEventTypes;
+		} else {
+			options.eventTypes = [];
+		}
+		if (this.formData.timelinePersonFilter.length > 0) {
+			options.personFilter = this.formData.timelinePersonFilter;
+		} else {
+			options.personFilter = [];
+		}
+		if (this.formData.timelinePlaceFilter.length > 0) {
+			options.placeFilter = this.formData.timelinePlaceFilter;
+		} else {
+			options.placeFilter = [];
+		}
+		options.includeChildPlaces = this.formData.timelineIncludeChildPlaces;
+		if (this.formData.timelineGroupFilter) {
+			options.groupFilter = this.formData.timelineGroupFilter;
+		}
+
+		// Canvas/Excalidraw options
+		if (this.formData.timelineFormat === 'canvas' || this.formData.timelineFormat === 'excalidraw') {
+			options.canvasOptions = {
+				layoutStyle: this.formData.timelineLayoutStyle,
+				colorScheme: this.formData.timelineColorScheme,
+				includeOrderingEdges: this.formData.timelineIncludeOrderingEdges
+			};
+		}
+
+		// Excalidraw-specific options
+		if (this.formData.timelineFormat === 'excalidraw') {
+			options.excalidrawOptions = {
+				layoutStyle: this.formData.timelineLayoutStyle,
+				colorScheme: this.formData.timelineColorScheme,
+				includeOrderingEdges: this.formData.timelineIncludeOrderingEdges,
+				drawingStyle: this.formData.excalidrawDrawingStyle,
+				fontFamily: this.formData.excalidrawFontFamily,
+				strokeWidth: this.formData.excalidrawStrokeWidth
+			};
+		}
+
+		// Callout options
+		if (this.formData.timelineFormat === 'markdown_callout') {
+			options.calloutOptions = {
+				calloutType: this.formData.timelineCalloutType
+			};
+		}
 	}
 
 	/**
