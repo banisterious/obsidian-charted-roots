@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Dynamic block order ignored during import** - Fixed issue where the Media block always appeared last in person notes regardless of the configured order. Dynamic blocks now respect the order specified in `dynamicBlockTypes`, placing Media first by default.
+
 - **Custom maps not appearing in gallery after creation** - Fixed issue where newly created custom maps wouldn't appear in the Control Center Maps tab gallery. The gallery now correctly detects maps using the `cr_type: map` frontmatter property in addition to the legacy `type: map` format.
 
 - **Pixel coordinate format mismatch** - Fixed issue where places with pixel coordinates weren't appearing on maps. The map data service now reads multiple property formats (`pixel_x`/`pixel_y`, `custom_coordinates_x`/`custom_coordinates_y`) for compatibility.

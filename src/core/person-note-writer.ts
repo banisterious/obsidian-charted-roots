@@ -413,32 +413,27 @@ export async function createPersonNote(
 	// Build note content
 	const bodyLines: string[] = ['', '# Research Notes', '', '', ''];
 
-	// Add dynamic content blocks if requested
+	// Add dynamic content blocks if requested, in the order specified by dynamicBlockTypes
 	if (includeDynamicBlocks && dynamicBlockTypes.length > 0) {
-		// Add relationships block first (usually comes before timeline in a person note)
-		if (dynamicBlockTypes.includes('relationships')) {
-			bodyLines.push('```canvas-roots-relationships');
-			bodyLines.push('type: immediate');
-			bodyLines.push('```');
-			bodyLines.push('');
-		}
-
-		// Add timeline block
-		if (dynamicBlockTypes.includes('timeline')) {
-			bodyLines.push('```canvas-roots-timeline');
-			bodyLines.push('sort: chronological');
-			bodyLines.push('```');
-			bodyLines.push('');
-		}
-
-		// Add media gallery block
-		if (dynamicBlockTypes.includes('media')) {
-			bodyLines.push('```canvas-roots-media');
-			bodyLines.push('columns: 3');
-			bodyLines.push('size: medium');
-			bodyLines.push('editable: true');
-			bodyLines.push('```');
-			bodyLines.push('');
+		for (const blockType of dynamicBlockTypes) {
+			if (blockType === 'media') {
+				bodyLines.push('```canvas-roots-media');
+				bodyLines.push('columns: 3');
+				bodyLines.push('size: medium');
+				bodyLines.push('editable: true');
+				bodyLines.push('```');
+				bodyLines.push('');
+			} else if (blockType === 'timeline') {
+				bodyLines.push('```canvas-roots-timeline');
+				bodyLines.push('sort: chronological');
+				bodyLines.push('```');
+				bodyLines.push('');
+			} else if (blockType === 'relationships') {
+				bodyLines.push('```canvas-roots-relationships');
+				bodyLines.push('type: immediate');
+				bodyLines.push('```');
+				bodyLines.push('');
+			}
 		}
 	}
 
