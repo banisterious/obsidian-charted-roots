@@ -150,6 +150,7 @@ erDiagram
 | Property | Type | Description | Example |
 |----------|------|-------------|---------|
 | `name` | `string` | Display name of the person | `"John Robert Smith"` |
+| `nickname` | `string` | Informal name, pet name, or alternate identity | `"Jack"`, `"The Colonel"` |
 | `born` | `string` | Birth date (YYYY, YYYY-MM, or YYYY-MM-DD) | `"1888-05-15"` |
 | `died` | `string` | Death date (YYYY, YYYY-MM, or YYYY-MM-DD) | `"1952-08-20"` |
 | `birth_place` | `string` | Location of birth | `"London, England"` |
