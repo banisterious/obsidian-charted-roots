@@ -51,8 +51,9 @@ interface PersonFormData {
 	fatherName?: string;
 	motherCrId?: string;
 	motherName?: string;
-	spouseCrId?: string;
-	spouseName?: string;
+	// Spouses (multi-relationship)
+	spouseCrIds?: string[];
+	spouseNames?: string[];
 	stepfatherCrId?: string;
 	stepfatherName?: string;
 	stepmotherCrId?: string;
@@ -86,7 +87,8 @@ export class CreatePersonModal extends Modal {
 	// Relationship fields
 	private fatherField: RelationshipField = {};
 	private motherField: RelationshipField = {};
-	private spouseField: RelationshipField = {};
+	// Spouses (multi-relationship)
+	private spousesField: MultiRelationshipField = { crIds: [], names: [] };
 	// Step and adoptive parents
 	private stepfatherField: RelationshipField = {};
 	private stepmotherField: RelationshipField = {};
@@ -214,11 +216,11 @@ export class CreatePersonModal extends Modal {
 			if (ep.motherId || ep.motherName) {
 				this.motherField = { crId: ep.motherId, name: ep.motherName };
 			}
-			if ((ep.spouseIds && ep.spouseIds.length > 0) || (ep.spouseNames && ep.spouseNames.length > 0)) {
-				// For now, only handle first spouse in the modal
-				this.spouseField = {
-					crId: ep.spouseIds?.[0],
-					name: ep.spouseNames?.[0]
+			// Spouses (multi-relationship)
+			if (ep.spouseIds && ep.spouseIds.length > 0) {
+				this.spousesField = {
+					crIds: [...ep.spouseIds],
+					names: ep.spouseNames ? [...ep.spouseNames] : []
 				};
 			}
 			// Step and adoptive parents
@@ -433,8 +435,13 @@ export class CreatePersonModal extends Modal {
 		// Mother relationship
 		this.createRelationshipField(relSection, 'Mother', this.motherField);
 
-		// Spouse relationship
-		this.createRelationshipField(relSection, 'Spouse', this.spouseField);
+		// Spouses section (multi-select, shown in edit mode or if spouses exist)
+		if (this.editMode || this.spousesField.crIds.length > 0) {
+			this.createSpousesField(relSection);
+		} else {
+			// In create mode with no spouses, show single spouse picker for simplicity
+			this.createSingleSpouseField(relSection);
+		}
 
 		// Children section (only in edit mode or if children already exist)
 		if (this.editMode || this.childrenField.crIds.length > 0) {
@@ -658,8 +665,9 @@ export class CreatePersonModal extends Modal {
 			fatherName: this.fatherField.name,
 			motherCrId: this.motherField.crId,
 			motherName: this.motherField.name,
-			spouseCrId: this.spouseField.crId,
-			spouseName: this.spouseField.name,
+			// Spouses (multi-relationship)
+			spouseCrIds: this.spousesField.crIds.length > 0 ? [...this.spousesField.crIds] : undefined,
+			spouseNames: this.spousesField.names.length > 0 ? [...this.spousesField.names] : undefined,
 			stepfatherCrId: this.stepfatherField.crId,
 			stepfatherName: this.stepfatherField.name,
 			stepmotherCrId: this.stepmotherField.crId,
@@ -706,8 +714,12 @@ export class CreatePersonModal extends Modal {
 		if (formData.motherCrId || formData.motherName) {
 			this.motherField = { crId: formData.motherCrId, name: formData.motherName };
 		}
-		if (formData.spouseCrId || formData.spouseName) {
-			this.spouseField = { crId: formData.spouseCrId, name: formData.spouseName };
+		// Spouses (multi-relationship)
+		if (formData.spouseCrIds && formData.spouseCrIds.length > 0) {
+			this.spousesField = {
+				crIds: [...formData.spouseCrIds],
+				names: formData.spouseNames ? [...formData.spouseNames] : []
+			};
 		}
 		if (formData.stepfatherCrId || formData.stepfatherName) {
 			this.stepfatherField = { crId: formData.stepfatherCrId, name: formData.stepfatherName };
@@ -1016,6 +1028,155 @@ export class CreatePersonModal extends Modal {
 	}
 
 	/**
+	 * Create single spouse field for create mode (simplified UX)
+	 * When a spouse is added, it gets moved to spousesField array
+	 */
+	private createSingleSpouseField(container: HTMLElement): void {
+		const spouseContainer = container.createDiv({ cls: 'crc-spouse-field' });
+
+		const setting = new Setting(spouseContainer)
+			.setName('Spouse')
+			.setDesc('Link to an existing person or create a new one');
+
+		let inputEl: HTMLInputElement;
+		let linkBtnEl: HTMLButtonElement;
+
+		setting.addText(text => {
+			inputEl = text.inputEl;
+			text
+				.setPlaceholder('Click link button to select...')
+				.setDisabled(true);
+		});
+
+		setting.addButton(button => {
+			linkBtnEl = button.buttonEl;
+			const icon = createLucideIcon('link', 16);
+			button.buttonEl.empty();
+			button.buttonEl.appendChild(icon);
+			button.setTooltip('Link spouse');
+
+			button.onClick(() => {
+				const createContext: RelationshipContext = {
+					relationshipType: 'spouse',
+					directory: this.directory
+				};
+
+				const picker = new PersonPickerModal(this.app, (person: PersonInfo) => {
+					// Add to spousesField array
+					if (!this.spousesField.crIds.includes(person.crId)) {
+						this.spousesField.crIds.push(person.crId);
+						this.spousesField.names.push(person.name);
+					}
+					inputEl.value = person.name;
+					inputEl.addClass('crc-input--linked');
+					setting.setDesc(`Linked to: ${person.name}`);
+				}, {
+					title: 'Select spouse',
+					subtitle: 'Select an existing person or create a new one',
+					createContext: createContext,
+					onCreateNew: () => {
+						// Callback signals inline creation support
+					},
+					plugin: this.plugin
+				});
+				picker.open();
+			});
+		});
+	}
+
+	/**
+	 * Create the spouses multi-select field
+	 * Shows a list of currently linked spouses with ability to add/remove
+	 */
+	private createSpousesField(container: HTMLElement): void {
+		const spousesContainer = container.createDiv({ cls: 'crc-spouses-field' });
+
+		// Header with label and add button
+		const header = spousesContainer.createDiv({ cls: 'crc-spouses-field__header' });
+		header.createSpan({ cls: 'crc-spouses-field__label', text: 'Spouses' });
+
+		const addBtn = header.createEl('button', {
+			cls: 'crc-btn crc-btn--secondary crc-btn--small'
+		});
+		const addIcon = createLucideIcon('plus', 14);
+		addBtn.appendChild(addIcon);
+		addBtn.appendText(' Add spouse');
+
+		// List of current spouses
+		const spouseList = spousesContainer.createDiv({ cls: 'crc-spouses-field__list' });
+
+		// Render function to update the list
+		const renderSpouseList = () => {
+			spouseList.empty();
+
+			if (this.spousesField.crIds.length === 0) {
+				const emptyState = spouseList.createDiv({ cls: 'crc-spouses-field__empty' });
+				emptyState.setText('No spouses linked');
+				return;
+			}
+
+			for (let i = 0; i < this.spousesField.crIds.length; i++) {
+				const crId = this.spousesField.crIds[i];
+				const name = this.spousesField.names[i] || crId;
+
+				const spouseItem = spouseList.createDiv({ cls: 'crc-spouses-field__item' });
+
+				// Spouse name
+				const nameSpan = spouseItem.createSpan({ cls: 'crc-spouses-field__name' });
+				nameSpan.setText(name);
+
+				// Remove button
+				const removeBtn = spouseItem.createEl('button', {
+					cls: 'crc-btn crc-btn--icon crc-btn--danger',
+					attr: { 'aria-label': `Remove ${name}` }
+				});
+				const removeIcon = createLucideIcon('x', 14);
+				removeBtn.appendChild(removeIcon);
+
+				removeBtn.addEventListener('click', () => {
+					// Remove from arrays
+					this.spousesField.crIds.splice(i, 1);
+					this.spousesField.names.splice(i, 1);
+					renderSpouseList();
+				});
+			}
+		};
+
+		// Initial render
+		renderSpouseList();
+
+		// Add button handler
+		addBtn.addEventListener('click', () => {
+			const createContext: RelationshipContext = {
+				relationshipType: 'spouse',
+				directory: this.directory
+			};
+
+			const picker = new PersonPickerModal(this.app, (person: PersonInfo) => {
+				// Check if already added
+				if (this.spousesField.crIds.includes(person.crId)) {
+					new Notice(`${person.name} is already linked as a spouse`);
+					return;
+				}
+
+				// Add to arrays
+				this.spousesField.crIds.push(person.crId);
+				this.spousesField.names.push(person.name);
+				renderSpouseList();
+			}, {
+				title: 'Select spouse',
+				subtitle: 'Select an existing person or create a new one',
+				createContext: createContext,
+				onCreateNew: () => {
+					// This callback signals inline creation support
+				},
+				plugin: this.plugin
+			});
+			picker.open();
+		});
+	}
+
+	/**
 	 * Create the person note
 	 */
 	private async createPerson(): Promise<void> {
@@ -1052,10 +1213,10 @@ export class CreatePersonModal extends Modal {
 				data.motherName = this.motherField.name;
 			}
 
-			// Add spouse relationship
-			if (this.spouseField.crId && this.spouseField.name) {
-				data.spouseCrId = [this.spouseField.crId];
-				data.spouseName = [this.spouseField.name];
+			// Add spouse relationships
+			if (this.spousesField.crIds.length > 0) {
+				data.spouseCrId = [...this.spousesField.crIds];
+				data.spouseName = [...this.spousesField.names];
 			}
 
 			// Add step-father relationship
@@ -1177,12 +1338,12 @@ export class CreatePersonModal extends Modal {
 				data.motherName = undefined;
 			}
 
-			// Add spouse relationship
-			if (this.spouseField.crId || this.spouseField.name) {
-				data.spouseCrId = this.spouseField.crId ? [this.spouseField.crId] : undefined;
-				data.spouseName = this.spouseField.name ? [this.spouseField.name] : undefined;
+			// Add spouse relationships
+			if (this.spousesField.crIds.length > 0) {
+				data.spouseCrId = [...this.spousesField.crIds];
+				data.spouseName = [...this.spousesField.names];
 			} else {
-				// Explicitly clear spouse if unlinked
+				// Explicitly clear spouses if all removed
 				data.spouseCrId = [];
 				data.spouseName = [];
 			}
