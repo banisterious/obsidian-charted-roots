@@ -25,6 +25,14 @@ interface RelationshipField {
 }
 
 /**
+ * Multi-relationship field data (for children)
+ */
+interface MultiRelationshipField {
+	crIds: string[];
+	names: string[];
+}
+
+/**
  * Form data structure for persistence
  */
 interface PersonFormData {
@@ -53,6 +61,9 @@ interface PersonFormData {
 	adoptiveFatherName?: string;
 	adoptiveMotherCrId?: string;
 	adoptiveMotherName?: string;
+	// Children fields
+	childCrIds?: string[];
+	childNames?: string[];
 	// Place fields
 	birthPlaceCrId?: string;
 	birthPlaceName?: string;
@@ -81,6 +92,8 @@ export class CreatePersonModal extends Modal {
 	private stepmotherField: RelationshipField = {};
 	private adoptiveFatherField: RelationshipField = {};
 	private adoptiveMotherField: RelationshipField = {};
+	// Children (multi-relationship)
+	private childrenField: MultiRelationshipField = { crIds: [], names: [] };
 	// Place fields
 	private birthPlaceField: RelationshipField = {};
 	private deathPlaceField: RelationshipField = {};
@@ -145,6 +158,9 @@ export class CreatePersonModal extends Modal {
 				adoptiveFatherName?: string;
 				adoptiveMotherId?: string;
 				adoptiveMotherName?: string;
+				// Children
+				childIds?: string[];
+				childNames?: string[];
 			};
 			// Universe options
 			existingUniverses?: string[];
@@ -224,6 +240,13 @@ export class CreatePersonModal extends Modal {
 			}
 			if (ep.deathPlaceId || ep.deathPlaceName) {
 				this.deathPlaceField = { crId: ep.deathPlaceId, name: ep.deathPlaceName };
+			}
+			// Children
+			if (ep.childIds && ep.childIds.length > 0) {
+				this.childrenField = {
+					crIds: [...ep.childIds],
+					names: ep.childNames ? [...ep.childNames] : []
+				};
 			}
 			// Get directory from file path
 			const pathParts = options.editFile.path.split('/');
@@ -412,6 +435,11 @@ export class CreatePersonModal extends Modal {
 
 		// Spouse relationship
 		this.createRelationshipField(relSection, 'Spouse', this.spouseField);
+
+		// Children section (only in edit mode or if children already exist)
+		if (this.editMode || this.childrenField.crIds.length > 0) {
+			this.createChildrenField(relSection);
+		}
 
 		// Step and adoptive parents section
 		const stepAdoptSection = form.createDiv({ cls: 'crc-relationship-section' });
@@ -640,6 +668,9 @@ export class CreatePersonModal extends Modal {
 			adoptiveFatherName: this.adoptiveFatherField.name,
 			adoptiveMotherCrId: this.adoptiveMotherField.crId,
 			adoptiveMotherName: this.adoptiveMotherField.name,
+			// Children fields
+			childCrIds: this.childrenField.crIds.length > 0 ? [...this.childrenField.crIds] : undefined,
+			childNames: this.childrenField.names.length > 0 ? [...this.childrenField.names] : undefined,
 			// Place fields
 			birthPlaceCrId: this.birthPlaceField.crId,
 			birthPlaceName: this.birthPlaceField.name,
@@ -697,6 +728,14 @@ export class CreatePersonModal extends Modal {
 		}
 		if (formData.deathPlaceCrId || formData.deathPlaceName) {
 			this.deathPlaceField = { crId: formData.deathPlaceCrId, name: formData.deathPlaceName };
+		}
+
+		// Children fields
+		if (formData.childCrIds && formData.childCrIds.length > 0) {
+			this.childrenField = {
+				crIds: [...formData.childCrIds],
+				names: formData.childNames ? [...formData.childNames] : []
+			};
 		}
 	}
 
@@ -883,6 +922,100 @@ export class CreatePersonModal extends Modal {
 	}
 
 	/**
+	 * Create the children multi-select field
+	 * Shows a list of currently linked children with ability to add/remove
+	 */
+	private createChildrenField(container: HTMLElement): void {
+		const childrenContainer = container.createDiv({ cls: 'crc-children-field' });
+
+		// Header with label and add button
+		const header = childrenContainer.createDiv({ cls: 'crc-children-field__header' });
+		header.createSpan({ cls: 'crc-children-field__label', text: 'Children' });
+
+		const addBtn = header.createEl('button', {
+			cls: 'crc-btn crc-btn--secondary crc-btn--small'
+		});
+		const addIcon = createLucideIcon('plus', 14);
+		addBtn.appendChild(addIcon);
+		addBtn.appendText(' Add child');
+
+		// List of current children
+		const childList = childrenContainer.createDiv({ cls: 'crc-children-field__list' });
+
+		// Render function to update the list
+		const renderChildList = () => {
+			childList.empty();
+
+			if (this.childrenField.crIds.length === 0) {
+				const emptyState = childList.createDiv({ cls: 'crc-children-field__empty' });
+				emptyState.setText('No children linked');
+				return;
+			}
+
+			for (let i = 0; i < this.childrenField.crIds.length; i++) {
+				const crId = this.childrenField.crIds[i];
+				const name = this.childrenField.names[i] || crId;
+
+				const childItem = childList.createDiv({ cls: 'crc-children-field__item' });
+
+				// Child name
+				const nameSpan = childItem.createSpan({ cls: 'crc-children-field__name' });
+				nameSpan.setText(name);
+
+				// Remove button
+				const removeBtn = childItem.createEl('button', {
+					cls: 'crc-btn crc-btn--icon crc-btn--danger',
+					attr: { 'aria-label': `Remove ${name}` }
+				});
+				const removeIcon = createLucideIcon('x', 14);
+				removeBtn.appendChild(removeIcon);
+
+				removeBtn.addEventListener('click', () => {
+					// Remove from arrays
+					this.childrenField.crIds.splice(i, 1);
+					this.childrenField.names.splice(i, 1);
+					renderChildList();
+				});
+			}
+		};
+
+		// Initial render
+		renderChildList();
+
+		// Add button handler
+		addBtn.addEventListener('click', () => {
+			// Build context for inline creation - suggest child relationship
+			const createContext: RelationshipContext = {
+				relationshipType: 'child',
+				parentCrId: this.personData.crId,
+				directory: this.directory
+			};
+
+			const picker = new PersonPickerModal(this.app, (person: PersonInfo) => {
+				// Check if already added
+				if (this.childrenField.crIds.includes(person.crId)) {
+					new Notice(`${person.name} is already linked as a child`);
+					return;
+				}
+
+				// Add to arrays
+				this.childrenField.crIds.push(person.crId);
+				this.childrenField.names.push(person.name);
+				renderChildList();
+			}, {
+				title: 'Select child',
+				subtitle: 'Select an existing person or create a new one',
+				createContext: createContext,
+				onCreateNew: () => {
+					// This callback signals inline creation support
+				},
+				plugin: this.plugin
+			});
+			picker.open();
+		});
+	}
+
+	/**
 	 * Create the person note
 	 */
 	private async createPerson(): Promise<void> {
@@ -947,6 +1080,12 @@ export class CreatePersonModal extends Modal {
 			if (this.adoptiveMotherField.crId && this.adoptiveMotherField.name) {
 				data.adoptiveMotherCrId = this.adoptiveMotherField.crId;
 				data.adoptiveMotherName = this.adoptiveMotherField.name;
+			}
+
+			// Add children
+			if (this.childrenField.crIds.length > 0) {
+				data.childCrId = [...this.childrenField.crIds];
+				data.childName = [...this.childrenField.names];
 			}
 
 			// Add birth place
@@ -1082,6 +1221,16 @@ export class CreatePersonModal extends Modal {
 			} else {
 				data.adoptiveMotherCrId = undefined;
 				data.adoptiveMotherName = undefined;
+			}
+
+			// Add children
+			if (this.childrenField.crIds.length > 0) {
+				data.childCrId = [...this.childrenField.crIds];
+				data.childName = [...this.childrenField.names];
+			} else {
+				// Explicitly clear children if all removed
+				data.childCrId = [];
+				data.childName = [];
 			}
 
 			// Add birth place

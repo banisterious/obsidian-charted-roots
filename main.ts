@@ -4972,6 +4972,23 @@ export default class CanvasRootsPlugin extends Plugin {
 			}
 		}
 
+		// Extract children names/IDs
+		const childNames: string[] = [];
+		const childIds: string[] = [];
+		if (fm.child) {
+			const children = Array.isArray(fm.child) ? fm.child : [fm.child];
+			for (const c of children) {
+				const name = extractName(String(c));
+				if (name) childNames.push(name);
+			}
+		}
+		if (fm.children_id) {
+			const ids = Array.isArray(fm.children_id) ? fm.children_id : [fm.children_id];
+			for (const id of ids) {
+				childIds.push(String(id));
+			}
+		}
+
 		// Get family graph for collection options
 		const familyGraph = new FamilyGraphService(this.app);
 		void familyGraph.reloadCache();
@@ -5005,6 +5022,8 @@ export default class CanvasRootsPlugin extends Plugin {
 				motherName: extractName(fm.mother),
 				spouseIds: spouseIds.length > 0 ? spouseIds : undefined,
 				spouseNames: spouseNames.length > 0 ? spouseNames : undefined,
+				childIds: childIds.length > 0 ? childIds : undefined,
+				childNames: childNames.length > 0 ? childNames : undefined,
 				collection: fm.collection,
 				universe: fm.universe
 			},

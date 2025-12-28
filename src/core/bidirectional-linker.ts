@@ -199,6 +199,18 @@ export class BidirectionalLinker {
 				await this.syncSpouse(spouse.link, personFile, personName, personCrId, spouse.index);
 			}
 
+			// Sync children relationships (child → parent direction)
+			// When children are linked to this person, set their father/mother based on this person's sex
+			const childrenLinks = frontmatter.child || frontmatter.children || [];
+			const childrenArray = Array.isArray(childrenLinks) ? childrenLinks : [childrenLinks];
+			const personSex = frontmatter.sex || frontmatter.gender;
+
+			for (const childLink of childrenArray) {
+				if (childLink) {
+					await this.syncChildToParent(childLink, personFile, personName, personCrId, personSex);
+				}
+			}
+
 			// Update snapshot for future deletion detection
 			this.updateSnapshot(personFile.path, frontmatter);
 
@@ -513,6 +525,113 @@ export class BidirectionalLinker {
 				crId: personCrId
 			});
 		}
+	}
+
+	/**
+	 * Sync child-to-parent relationship (child gets parent reference)
+	 * When a parent adds a child, the child's father/mother field is set based on parent's sex
+	 *
+	 * @param childLink Wikilink to child
+	 * @param parentFile Parent's file
+	 * @param parentName Parent's name
+	 * @param parentCrId Parent's cr_id
+	 * @param parentSex Parent's sex (male/female/other)
+	 */
+	private async syncChildToParent(
+		childLink: unknown,
+		parentFile: TFile,
+		parentName: string,
+		parentCrId: string,
+		parentSex?: string
+	): Promise<void> {
+		const childFile = this.resolveLink(childLink, parentFile);
+		if (!childFile) {
+			logger.warn('bidirectional-linking', 'Child file not found', {
+				childLink,
+				parentFile: parentFile.path
+			});
+			return;
+		}
+
+		// Read child's frontmatter
+		const childCache = this.app.metadataCache.getFileCache(childFile);
+		if (!childCache?.frontmatter) {
+			logger.warn('bidirectional-linking', 'Child has no frontmatter', {
+				childFile: childFile.path
+			});
+			return;
+		}
+
+		const childFm = childCache.frontmatter;
+		const parentLinkText = `[[${parentName}]]`;
+
+		// Determine which parent field to set based on parent's sex
+		let parentField: 'father' | 'mother' | undefined;
+		let parentIdField: 'father_id' | 'mother_id' | undefined;
+
+		if (parentSex === 'male') {
+			parentField = 'father';
+			parentIdField = 'father_id';
+		} else if (parentSex === 'female') {
+			parentField = 'mother';
+			parentIdField = 'mother_id';
+		} else {
+			// Unknown/other sex - log warning and skip auto-setting
+			// User can manually set the relationship in the child's note
+			logger.debug('bidirectional-linking', 'Parent sex unknown, skipping automatic child-parent link', {
+				parentFile: parentFile.path,
+				childFile: childFile.path,
+				parentSex
+			});
+			return;
+		}
+
+		// Check if parent is already set in child's field
+		const existingParent = childFm[parentField];
+		const existingParentId = childFm[parentIdField];
+
+		// Check if already linked by cr_id
+		if (existingParentId === parentCrId) {
+			logger.debug('bidirectional-linking', 'Parent already set in child', {
+				childFile: childFile.path,
+				parentField,
+				parentCrId
+			});
+			return;
+		}
+
+		// Check if already linked by wikilink
+		if (existingParent) {
+			const existingParentStr = typeof existingParent === 'string' ? existingParent : String(existingParent);
+			if (existingParentStr.includes(parentName) || existingParentStr.includes(parentFile.basename)) {
+				logger.debug('bidirectional-linking', 'Parent already set in child (by link)', {
+					childFile: childFile.path,
+					parentField,
+					existingParent: existingParentStr
+				});
+				return;
+			}
+
+			// A different parent is already set - don't overwrite
+			logger.debug('bidirectional-linking', 'Child already has a different parent, not overwriting', {
+				childFile: childFile.path,
+				parentField,
+				existingParent: existingParentStr
+			});
+			return;
+		}
+
+		// Set the parent field on the child (dual storage)
+		await this.setField(childFile, parentField, parentLinkText);
+		await this.setField(childFile, parentIdField, parentCrId);
+
+		logger.info('bidirectional-linking', 'Set parent on child (child-to-parent sync)', {
+			childFile: childFile.path,
+			parentFile: parentFile.path,
+			parentField,
+			wikilink: parentLinkText,
+			crId: parentCrId
+		});
 	}
 
 	/**

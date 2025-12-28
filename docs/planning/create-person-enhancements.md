@@ -131,9 +131,9 @@ CreatePersonModal
 
 ---
 
-## Phase 2: Add Children Section to Edit Modal
+## Phase 2: Add Children Section to Edit Modal ✅ (v0.18.1)
 
-> **Depends on:** Phase 1 (uses inline creation pattern). Can be implemented in same release.
+> **Status:** Implemented
 
 Add the ability to view and manage children directly from the Edit Person modal.
 
@@ -146,30 +146,32 @@ Add the ability to view and manage children directly from the Edit Person modal.
 
 ### Scope
 
-1. **Children section in Edit mode**
+1. **Children section in Edit mode** ✅
    - Add "Children" section with multi-select person picker
    - Display currently linked children (from `child` array)
    - Allow adding existing children or creating new ones (via Phase 1)
-   - Consider showing in Create mode too for "create whole family" workflow
+   - Shows in Edit mode when children exist or always in Edit mode
 
-2. **Parent field auto-detection**
+2. **Parent field auto-detection** ✅
    - When adding children, auto-detect which parent field to set based on parent's `sex` field
    - Male → set child's `father` field
    - Female → set child's `mother` field
-   - Unknown/other → prompt user to choose
+   - Unknown/other → skip auto-setting (user can manually set in child's note)
 
-3. **Bidirectional sync**
+3. **Bidirectional sync** ✅
    - Adding child to parent's `child` array triggers bidirectional linker
-   - Child's `father`/`mother` field updated automatically
+   - Child's `father`/`mother` field updated automatically via `syncChildToParent()`
    - Removing child updates both directions
 
-### Implementation Notes
+### Implementation Details
 
-- Reuse existing PersonPickerModal with multi-select support
-- Similar pattern to existing spouses field
-- Consider filtering candidates (people without this person as parent already)
+- Children section added to `CreatePersonModal` in Edit mode
+- Uses `MultiRelationshipField` interface for managing multiple children
+- `PersonPickerModal` used for child selection with inline creation support
+- `BidirectionalLinker.syncChildToParent()` handles child → parent sync based on parent's sex
+- `person-note-writer.ts` updated to handle `childCrId`/`childName` in `updatePersonNote()`
 
-### Open Questions
+### Open Questions (Deferred)
 
 1. Should we filter candidate children to exclude people already linked to another parent of the same type?
 2. Should there be a confirmation when adding many children at once?

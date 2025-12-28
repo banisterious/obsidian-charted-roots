@@ -3173,6 +3173,19 @@ export class ControlCenterModal extends Modal {
 			const fatherId = fm.father_id || fm.father;
 			const motherId = fm.mother_id || fm.mother;
 			const spouseIds = fm.spouse_id || fm.spouse;
+			const childIds = fm.children_id || fm.child;
+
+			// Extract child names from wikilinks
+			const extractName = (value: unknown): string | undefined => {
+				if (!value || typeof value !== 'string') return undefined;
+				const match = value.match(/\[\[([^\]]+)\]\]/);
+				return match ? match[1] : value;
+			};
+			let childNames: string[] | undefined;
+			if (fm.child) {
+				const children = Array.isArray(fm.child) ? fm.child : [fm.child];
+				childNames = children.map(c => extractName(String(c))).filter((n): n is string => !!n);
+			}
 
 			const placeGraph = this.plugin.createPlaceGraphService();
 			const familyGraph = this.plugin.createFamilyGraphService();
@@ -3202,6 +3215,8 @@ export class ControlCenterModal extends Modal {
 					fatherId: typeof fatherId === 'string' ? fatherId : undefined,
 					motherId: typeof motherId === 'string' ? motherId : undefined,
 					spouseIds: Array.isArray(spouseIds) ? spouseIds : (spouseIds ? [spouseIds] : undefined),
+					childIds: Array.isArray(childIds) ? childIds : (childIds ? [childIds] : undefined),
+					childNames: childNames,
 					collection: fm.collection,
 					universe: fm.universe
 				},

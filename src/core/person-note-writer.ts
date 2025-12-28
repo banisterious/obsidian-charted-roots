@@ -758,6 +758,30 @@ export async function updatePersonNote(
 			}
 		}
 
+		// Handle children relationships
+		if (person.childCrId !== undefined || person.childName !== undefined) {
+			if (person.childCrId && person.childCrId.length > 0) {
+				if (person.childName && person.childName.length === person.childCrId.length) {
+					frontmatter.child = person.childName.length === 1
+						? `[[${person.childName[0]}]]`
+						: person.childName.map(c => `[[${c}]]`);
+					frontmatter.children_id = person.childCrId.length === 1
+						? person.childCrId[0]
+						: person.childCrId;
+				} else {
+					frontmatter.children_id = person.childCrId.length === 1
+						? person.childCrId[0]
+						: person.childCrId;
+				}
+				logger.debug('update-children', `Set children: ${JSON.stringify(person.childName)}, ids: ${JSON.stringify(person.childCrId)}`);
+			} else {
+				// Clear children
+				delete frontmatter.child;
+				delete frontmatter.children_id;
+				logger.debug('update-children', 'Cleared children');
+			}
+		}
+
 		logger.debug('update-person', `Updated frontmatter for ${file.path}`);
 	});
 }

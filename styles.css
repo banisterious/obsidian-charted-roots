@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-28 18:12:20 UTC
+ * - Generated: 2025-12-28 18:40:08 UTC
  * - Components: 38 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -681,7 +681,7 @@ settings:
    COMPONENT: MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 12223 lines, 227.31 KB */
+/* Component Size: 12306 lines, 229.08 KB */
 
 /* ==========================================================================
    Canvas Roots Control Center - Styling
@@ -761,6 +761,84 @@ settings:
   margin: 12px 0 6px 0;
   padding-top: 12px;
   border-top: 1px dashed var(--background-modifier-border);
+}
+
+/* ==========================================================================
+   CHILDREN FIELD - Multi-select for linking children
+   ========================================================================== */
+
+.crc-children-field {
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  background: var(--background-secondary);
+}
+
+.crc-children-field__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.crc-children-field__label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.crc-children-field__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.crc-children-field__empty {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-style: italic;
+  padding: 8px 0;
+}
+
+.crc-children-field__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+}
+
+.crc-children-field__name {
+  font-size: 14px;
+  color: var(--text-normal);
+}
+
+/* Small icon button for remove */
+.crc-btn--icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-s);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.crc-btn--icon:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.crc-btn--icon.crc-btn--danger:hover {
+  background: rgba(var(--color-red-rgb), 0.1);
+  color: var(--color-red);
 }
 
 /* Modal header with icon */
@@ -1676,6 +1754,11 @@ settings:
   padding: 16px 20px 8px;
   border-bottom: 1px solid var(--background-modifier-border);
   flex-shrink: 0;
+}
+
+/* "Create new" button in person picker - add spacing below */
+.crc-picker-create-new-btn {
+  margin-bottom: 12px;
 }
 
 .crc-picker-sort {
@@ -31585,10 +31668,10 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-28 18:12:20 UTC
+ * Build completed: 2025-12-28 18:40:08 UTC
  * Components processed: 38
- * Total lines: 31220
- * Total size: 615.8 KB
+ * Total lines: 31303
+ * Total size: 617.57 KB
  * Build duration: 0.03 seconds
  *
  * Component breakdown:
@@ -31600,7 +31683,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - nodes.css: 12 lines, 0.3 KB
  * - edges.css: 4 lines, 0.07 KB
  * - settings.css: 131 lines, 3.53 KB
- * - modals.css: 12223 lines, 227.31 KB
+ * - modals.css: 12306 lines, 229.08 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
  * - validation.css: 84 lines, 1.47 KB
