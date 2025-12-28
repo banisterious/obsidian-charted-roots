@@ -3,6 +3,7 @@
 Planning document for merging timeline export functionality from the Events tab into the unified Reports system.
 
 - **Status:** Planning
+- **Target Version:** v0.18.2
 - **GitHub Issue:** #TBD
 - **Priority:** Medium
 - **Created:** 2025-12-27
@@ -47,7 +48,7 @@ Users must navigate between two different UIs to access the full range of export
 |--------|--------|-------|
 | Canvas | Events tab | Native Obsidian canvas with linked nodes |
 | Excalidraw | Events tab | Requires Excalidraw plugin; hide if unavailable |
-| Markdown: Callout | Events tab | Vertical timeline with year columns, colored dots (requires CSS) |
+| Markdown: Callout | Events tab | Vertical timeline with year columns, colored dots (plugin styling) |
 | Markdown: Table | Both | Compact table format |
 | Markdown: List | Events tab | Simple bullet list, maximum compatibility |
 | Markdown: Dataview | Events tab | Dynamic query (requires Dataview plugin) |
@@ -72,6 +73,22 @@ Users must navigate between two different UIs to access the full range of export
 - By decade
 - By person
 - By place
+
+### Grouping Behavior by Format
+
+| Format | None | By Year | By Decade | By Person | By Place |
+|--------|------|---------|-----------|-----------|----------|
+| **Canvas** | Single timeline, chronological | Canvas groups with year labels | Canvas groups with decade labels | Swim lanes (existing) | Canvas groups with place names |
+| **Excalidraw** | Single timeline | Frames with year headers | Frames with decade headers | Swim lanes with frames | Frames with place names |
+| **PDF/ODT** | Flat list | Section headers per year | Section headers per decade | Section headers per person | Section headers per place |
+| **Markdown: Callout** | Year headers (default) | Same as default | Decade headers instead | Separate callout blocks per person | Separate callout blocks per place |
+| **Markdown: Table** | Single table | Year column, sorted | Decade column added | Person column, sorted | Place column, sorted |
+| **Markdown: List** | H2 headers by year | Same as default | H2 by decade | H2 by person name | H2 by place name |
+| **Dataview** | Single query | `GROUP BY year` | `GROUP BY decade` | `GROUP BY person` | `GROUP BY place` |
+
+**Notes:**
+- Callout format inherently groups by year, so "By year" = current behavior
+- "By person/place" for callouts creates a fundamentally different structure with outer grouping by person/place and inner grouping by year
 
 ### Styling Options (from Events tab)
 
@@ -128,7 +145,7 @@ Documents
   [ ] ODT — Editable document (LibreOffice, Word)
 
 Markdown
-  [ ] Vertical Timeline — Styled callouts with year columns (requires CSS)
+  [ ] Vertical Timeline — Styled callouts with year columns (plugin styling)
   [ ] Table — Compact data table
   [ ] Simple List — Maximum compatibility, no styling required
   [ ] Dataview Query — Dynamic, auto-updating (requires Dataview)
@@ -244,17 +261,85 @@ interface TimelineReportOptions {
 
 ## Migration Path
 
-1. **v0.18.0**: Add all formats to Reports Timeline (feature parity)
-2. **v0.18.x**: Add deprecation notice to Events tab Export card
+1. **v0.18.2**: Add all formats to Reports Timeline (feature parity)
+2. **v0.18.3**: Add deprecation notice to Events tab Export card
 3. **v0.19.0**: Remove Events tab Export card entirely
 
 ---
 
 ## Open Questions
 
-1. Should we preserve the "quick export" feel with a simplified mode in Reports?
-2. Should Canvas/Excalidraw exports support grouping options?
-3. Should data quality insights be a separate collapsible section or inline warnings?
+### 1. Quick Export Mode
+
+**Question:** Should we preserve the "quick export" feel with a simplified mode in Reports?
+
+**Recommendation:** Yes — add a "Simple Mode" toggle at the top of the wizard.
+
+When enabled:
+- Skip Step 3 (Format Options) entirely
+- Use sensible defaults: chronological order, no grouping, standard colors
+- Single-click path: Select format → Export immediately
+- Power users toggle off "Simple Mode" for full control
+
+This preserves the fast workflow of the Events tab while keeping everything in one place. The toggle state persists in settings.
+
+### 2. Canvas/Excalidraw Grouping
+
+**Question:** Should Canvas/Excalidraw exports support grouping options?
+
+**Recommendation:** Yes — extend current "group by person" to support additional grouping.
+
+| Grouping | Visual Treatment |
+|----------|------------------|
+| By person | Swim lanes (current behavior) |
+| By year/decade | Vertical columns with year headers, events stacked within |
+| By place | Geographic clustering with labeled regions |
+
+Implementation:
+- Canvas: Use native Obsidian canvas groups for visual separation
+- Excalidraw: Use frames or colored background rectangles
+
+Note: "By place" grouping may require layout algorithm changes for non-linear arrangements.
+
+### 3. Data Quality Insights
+
+**Question:** Should data quality insights be a separate collapsible section or inline warnings?
+
+**Recommendation:** Collapsible section in Step 4 (Preview).
+
+```
+▼ Data Quality (3 issues)
+  ⚠️ 2 events have no sources
+  ⚠️ 1 gap: 1892-1899 (7 years, no events)
+
+[Export anyway] [Review issues first]
+```
+
+Benefits:
+- Keeps the preview clean while making issues discoverable
+- "Review issues first" links to the Data Quality tab for detailed analysis
+- Collapsed by default if no issues; expanded if issues exist
+- Non-blocking — users can export despite warnings
+
+### 4. Saved Report Configurations
+
+**Question:** How should saved/recent report configurations handle the new formats?
+
+**Recommendation:** Format-aware presets with migration support.
+
+**Named Presets:**
+- Allow users to save named presets like "Family Timeline (Canvas)" or "Research Report (PDF)"
+- Store complete configuration including format type and all options
+- Display in a dropdown at the top of the wizard for quick access
+
+**Recent Reports:**
+- Continue tracking recent exports with format information
+- Display format icon/badge in recent reports list
+
+**Migration:**
+- Existing saved timeline configs (pre-consolidation) default to `markdown_table` format
+- First load detects missing `format` field and applies sensible default
+- No user action required — existing presets continue to work
 
 ---
 
