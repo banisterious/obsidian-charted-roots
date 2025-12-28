@@ -15,7 +15,7 @@
  * - odt: ODT document (uses existing ODT export)
  */
 
-import { App } from 'obsidian';
+import { App, TFile } from 'obsidian';
 import type { CanvasRootsSettings } from '../../settings';
 import type {
 	TimelineReportOptions,
@@ -29,6 +29,7 @@ import { FolderFilterService } from '../../core/folder-filter';
 import { EventService } from '../../events/services/event-service';
 import { EventNote } from '../../events/types/event-types';
 import { TimelineCanvasExporter, TimelineCanvasOptions } from '../../events/services/timeline-canvas-exporter';
+import { ExcalidrawExporter, ExcalidrawExportOptions } from '../../excalidraw/excalidraw-exporter';
 import { getLogger } from '../../core/logging';
 
 const logger = getLogger('TimelineGenerator');
@@ -198,6 +199,100 @@ export class TimelineGenerator {
 		// Use the existing canvas exporter
 		const canvasExporter = new TimelineCanvasExporter(this.app, this.settings);
 		return canvasExporter.exportToCanvas(events, canvasOptions);
+	}
+
+	/**
+	 * Export timeline to Excalidraw format
+	 *
+	 * This creates an Excalidraw file by first exporting to Canvas,
+	 * then converting to Excalidraw format.
+	 */
+	async exportToExcalidraw(options: TimelineReportOptions): Promise<TimelineVisualExportResult> {
+		logger.info('exportToExcalidraw', 'Exporting timeline to Excalidraw', { options });
+
+		// First, export to Canvas
+		const canvasResult = await this.exportToCanvas(options);
+		if (!canvasResult.success || !canvasResult.path) {
+			return {
+				success: false,
+				error: canvasResult.error || 'Canvas export failed'
+			};
+		}
+
+		try {
+			// Get the canvas file
+			const canvasFile = this.app.vault.getAbstractFileByPath(canvasResult.path);
+			if (!canvasFile || !(canvasFile instanceof TFile)) {
+				return { success: false, error: 'Canvas file not found after export' };
+			}
+
+			// Build Excalidraw export options
+			const excalidrawOpts = options.excalidrawOptions;
+			const roughnessMap: Record<string, number> = {
+				'architect': 0,
+				'artist': 1,
+				'cartoonist': 2
+			};
+			const strokeWidthMap: Record<string, number> = {
+				'thin': 1,
+				'normal': 2,
+				'bold': 3,
+				'extra-bold': 4
+			};
+
+			const exportOptions: ExcalidrawExportOptions = {
+				canvasFile,
+				fileName: canvasResult.path.replace('.canvas', '').split('/').pop(),
+				preserveColors: true,
+				roughness: roughnessMap[excalidrawOpts?.drawingStyle || 'artist'] ?? 1,
+				fontFamily: this.mapFontFamily(excalidrawOpts?.fontFamily),
+				strokeWidth: strokeWidthMap[excalidrawOpts?.strokeWidth || 'normal'] ?? 2
+			};
+
+			// Convert to Excalidraw
+			const excalidrawExporter = new ExcalidrawExporter(this.app);
+			const excalidrawResult = await excalidrawExporter.exportToExcalidraw(exportOptions);
+
+			if (excalidrawResult.success && excalidrawResult.excalidrawContent) {
+				const excalidrawPath = canvasResult.path.replace('.canvas', '.excalidraw.md');
+				const existingFile = this.app.vault.getAbstractFileByPath(excalidrawPath);
+
+				if (existingFile instanceof TFile) {
+					await this.app.vault.modify(existingFile, excalidrawResult.excalidrawContent);
+				} else {
+					await this.app.vault.create(excalidrawPath, excalidrawResult.excalidrawContent);
+				}
+
+				return { success: true, path: excalidrawPath };
+			} else {
+				return {
+					success: false,
+					error: excalidrawResult.errors?.join(', ') || 'Excalidraw conversion failed'
+				};
+			}
+		} catch (error) {
+			logger.error('exportToExcalidraw', 'Failed to export to Excalidraw', { error });
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : 'Unknown error'
+			};
+		}
+	}
+
+	/**
+	 * Map font family string to Excalidraw font family number
+	 */
+	private mapFontFamily(fontFamily?: string): 1 | 2 | 3 | 4 | 5 | 6 | 7 {
+		const fontMap: Record<string, 1 | 2 | 3 | 4 | 5 | 6 | 7> = {
+			'Virgil': 1,
+			'Helvetica': 2,
+			'Cascadia': 3,
+			'Comic Shanns': 4,
+			'Excalifont': 5,
+			'Nunito': 6,
+			'Lilita One': 7
+		};
+		return fontMap[fontFamily || 'Virgil'] ?? 1;
 	}
 
 	/**
