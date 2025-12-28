@@ -47,9 +47,9 @@ let distortableImageLoaded = false;
 /**
  * Initialize the distortable image plugins
  * These libraries expect L to be globally available on window
- * We use require() instead of import because we need to set window.L first
+ * We use dynamic import() after setting window.L first
  */
-function initDistortableImagePlugins(): void {
+async function initDistortableImagePlugins(): Promise<void> {
 	if (distortableImageLoaded) return;
 
 	// Ensure L is on window BEFORE loading the plugins
@@ -57,9 +57,10 @@ function initDistortableImagePlugins(): void {
 		(window as unknown as { L: typeof L }).L = L;
 	}
 
-	// Use require() to load the plugins after setting window.L
-	require('leaflet-toolbar');
-	require('leaflet-distortableimage');
+	// Use dynamic import() to load the plugins after setting window.L
+	// These plugins register themselves on the global L object
+	await import('leaflet-toolbar');
+	await import('leaflet-distortableimage');
 
 	distortableImageLoaded = true;
 	logger.debug('init-plugins', 'Distortable image plugins initialized');
@@ -70,9 +71,9 @@ function initDistortableImagePlugins(): void {
  * This is called before creating a distortable overlay
  * Note: CSS is now in styles/leaflet-distortable.css (bundled with plugin)
  */
-function ensureDistortableImageLoaded(): void {
-	// Initialize the plugins (sets window.L and requires the libraries)
-	initDistortableImagePlugins();
+async function ensureDistortableImageLoaded(): Promise<void> {
+	// Initialize the plugins (sets window.L and imports the libraries)
+	await initDistortableImagePlugins();
 
 	// Verify the plugins loaded correctly
 	const globalWindow = window as unknown as { L: typeof L & { Toolbar2?: unknown; distortableImageOverlay?: unknown } };
@@ -602,8 +603,8 @@ export class ImageMapManager {
 		}
 
 		try {
-			// Ensure distortable image plugin is loaded (synchronous with require())
-			ensureDistortableImageLoaded();
+			// Ensure distortable image plugin is loaded
+			await ensureDistortableImageLoaded();
 
 			const imageUrl = await this.getImageUrl(config.imagePath);
 			if (!imageUrl) {

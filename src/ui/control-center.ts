@@ -8534,7 +8534,7 @@ export class ControlCenterModal extends Modal {
 
 		// Status cell
 		const statusCell = row.createEl('td', { cls: 'crc-person-table__td' });
-		const _statusBadge = statusCell.createSpan({
+		statusCell.createSpan({
 			text: universe.status || 'active',
 			cls: `crc-badge crc-badge--${universe.status || 'active'}`
 		});

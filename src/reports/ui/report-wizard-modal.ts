@@ -38,6 +38,8 @@ import {
 	ReportCategory,
 	REPORT_METADATA,
 	getReportsByCategory,
+	ReportOptions,
+	ReportResult,
 	FamilyGroupSheetResult,
 	IndividualSummaryResult,
 	AhnentafelResult,
@@ -53,6 +55,24 @@ import {
 	CollectionOverviewResult
 } from '../types/report-types';
 import { UnifiedTreeWizardModal } from '../../trees/ui/unified-tree-wizard-modal';
+
+/**
+ * Union of all specific report result types (for PDF/ODT rendering)
+ */
+type SpecificReportResult =
+	| FamilyGroupSheetResult
+	| IndividualSummaryResult
+	| AhnentafelResult
+	| GapsReportResult
+	| RegisterReportResult
+	| PedigreeChartResult
+	| DescendantChartResult
+	| SourceSummaryResult
+	| TimelineReportResult
+	| PlaceSummaryResult
+	| MediaInventoryResult
+	| UniverseOverviewResult
+	| CollectionOverviewResult;
 
 /**
  * Output format types
@@ -1567,13 +1587,15 @@ export class ReportWizardModal extends Modal {
 		}
 
 		try {
-			// Build report options
+			// Build report options dynamically based on form data
+			// The options object is built to match the specific report type's requirements
 			const options = this.buildReportOptions();
 
 			// Generate the report
+			// Type assertion is safe because buildReportOptions constructs valid options for the selected report type
 			const result = await this.reportService.generateReport(
 				this.formData.reportType,
-				options
+				options as unknown as Parameters<ReportGenerationService['generateReport']>[1]
 			);
 
 			if (!result.success) {
@@ -1630,10 +1652,10 @@ export class ReportWizardModal extends Modal {
 
 	/**
 	 * Build report options from form data
+	 * Returns ReportOptions with additional properties based on report type
 	 */
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	private buildReportOptions(): any {
-		const options: Record<string, unknown> = {
+	private buildReportOptions(): ReportOptions & Record<string, unknown> {
+		const options: ReportOptions & Record<string, unknown> = {
 			outputMethod: this.formData.outputFormat === 'md' ? 'download' : this.formData.outputFormat,
 			outputFolder: this.formData.outputFolder,
 			filename: this.formData.filename,
@@ -1670,17 +1692,18 @@ export class ReportWizardModal extends Modal {
 	/**
 	 * Handle output based on format
 	 */
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	private async handleOutput(result: any): Promise<void> {
+	private async handleOutput(result: ReportResult): Promise<void> {
 		const filename = `${this.formData.filename}.${this.getFileExtension()}`;
 
 		switch (this.formData.outputFormat) {
 			case 'pdf':
-				await this.generatePdf(result);
+				// Cast to specific result type for PDF rendering
+				await this.generatePdf(result as SpecificReportResult);
 				break;
 
 			case 'odt':
-				await this.generateOdt(result);
+				// Cast to specific result type for ODT rendering
+				await this.generateOdt(result as SpecificReportResult);
 				break;
 
 			case 'md':
@@ -1696,8 +1719,7 @@ export class ReportWizardModal extends Modal {
 	/**
 	 * Generate PDF from result
 	 */
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	private async generatePdf(result: any): Promise<void> {
+	private async generatePdf(result: SpecificReportResult): Promise<void> {
 		const pdfOptions = {
 			pageSize: this.formData.pdfPageSize,
 			fontStyle: 'serif' as const,
@@ -1757,8 +1779,7 @@ export class ReportWizardModal extends Modal {
 	/**
 	 * Generate ODT from result
 	 */
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	private async generateOdt(result: any): Promise<void> {
+	private async generateOdt(result: SpecificReportResult): Promise<void> {
 		const odtOptions = {
 			title: this.formData.odtCoverTitle || this.getDefaultCoverTitle(),
 			subtitle: this.formData.odtCoverSubtitle || (this.formData.subject.personName

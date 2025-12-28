@@ -177,14 +177,11 @@ export class MapDataService {
 		this.placeCache.clear();
 		this.placeByNameCache.clear();
 
-		const placesFolder = this.plugin.settings.placesFolder;
-
 		const files = this.plugin.app.vault.getMarkdownFiles();
 
 		for (const file of files) {
 			// Process files in places folder OR any file that is a place note
 			// This ensures fictional places outside the places folder are still included
-			const inPlacesFolder = placesFolder && file.path.startsWith(placesFolder);
 
 			let fm: Record<string, unknown> | undefined;
 

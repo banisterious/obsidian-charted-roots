@@ -269,11 +269,10 @@ export class ExcalidrawExporter {
 	 * Check if ExcalidrawAutomate API is available
 	 */
 	private getExcalidrawAutomate(): ExcalidrawAutomate | null {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const ea = (window as any).ExcalidrawAutomate;
+		const ea = (window as unknown as { ExcalidrawAutomate?: ExcalidrawAutomate }).ExcalidrawAutomate;
 		if (ea && typeof ea.addRect === 'function') {
 			logger.info('export', 'ExcalidrawAutomate API detected');
-			return ea as ExcalidrawAutomate;
+			return ea;
 		}
 		logger.info('export', 'ExcalidrawAutomate API not available, using JSON fallback');
 		return null;
@@ -610,12 +609,11 @@ export class ExcalidrawExporter {
 
 			if (labelText) {
 				// ExcalidrawAutomate API style object - not DOM styles
-				// eslint-disable-next-line obsidianmd/no-static-styles-assignment
-				ea.style.strokeColor = '#1e1e1e'; // Text always dark
-				// eslint-disable-next-line obsidianmd/no-static-styles-assignment
-				ea.style.textAlign = 'center';
-				// eslint-disable-next-line obsidianmd/no-static-styles-assignment
-				ea.style.verticalAlign = 'middle';
+				Object.assign(ea.style, {
+					strokeColor: '#1e1e1e', // Text always dark
+					textAlign: 'center',
+					verticalAlign: 'middle'
+				});
 
 				// Calculate text dimensions for centering
 				// Note: We cannot use ea.measureText() as it requires an active view
@@ -706,8 +704,7 @@ export class ExcalidrawExporter {
 		}
 
 		// Get elements from EA
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const elements = Object.values(ea.elementsDict) as any as (ExcalidrawRectangle | ExcalidrawText | ExcalidrawArrow)[];
+		const elements = Object.values(ea.elementsDict) as unknown as (ExcalidrawRectangle | ExcalidrawText | ExcalidrawArrow)[];
 
 		return {
 			type: 'excalidraw',
