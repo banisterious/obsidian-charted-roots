@@ -487,7 +487,12 @@ export class ReportWizardModal extends Modal {
 		const formatSection = container.createDiv({ cls: 'cr-report-section' });
 		formatSection.createEl('h3', { text: 'Output Format', cls: 'cr-report-section-title' });
 
-		this.renderFormatSection(formatSection);
+		// Timeline reports have special format selection
+		if (this.isTimelineReport()) {
+			this.renderTimelineFormatSection(formatSection);
+		} else {
+			this.renderFormatSection(formatSection);
+		}
 	}
 
 	/**
@@ -1052,6 +1057,143 @@ export class ReportWizardModal extends Modal {
 	}
 
 	/**
+	 * Render timeline-specific format selection with categories
+	 */
+	private renderTimelineFormatSection(container: HTMLElement): void {
+		// Visual Exports category
+		this.renderTimelineFormatCategory(container, 'Visual Exports', [
+			{
+				id: 'canvas' as TimelineExportFormat,
+				label: 'Canvas',
+				icon: 'layout-grid',
+				desc: 'Interactive Obsidian canvas with linked nodes'
+			},
+			{
+				id: 'excalidraw' as TimelineExportFormat,
+				label: 'Excalidraw',
+				icon: 'pencil',
+				desc: 'Hand-drawn style diagram (requires Excalidraw)'
+			}
+		]);
+
+		// Documents category
+		this.renderTimelineFormatCategory(container, 'Documents', [
+			{
+				id: 'pdf' as TimelineExportFormat,
+				label: 'PDF',
+				icon: 'file-text',
+				desc: 'Professional document for printing/sharing'
+			},
+			{
+				id: 'odt' as TimelineExportFormat,
+				label: 'ODT',
+				icon: 'file',
+				desc: 'Editable document (LibreOffice, Word)'
+			}
+		]);
+
+		// Markdown category
+		this.renderTimelineFormatCategory(container, 'Markdown', [
+			{
+				id: 'markdown_callout' as TimelineExportFormat,
+				label: 'Vertical Timeline',
+				icon: 'list',
+				desc: 'Styled callouts with year columns (plugin styling)'
+			},
+			{
+				id: 'markdown_table' as TimelineExportFormat,
+				label: 'Table',
+				icon: 'table',
+				desc: 'Compact data table'
+			},
+			{
+				id: 'markdown_list' as TimelineExportFormat,
+				label: 'Simple List',
+				icon: 'list-minus',
+				desc: 'Maximum compatibility, no styling required'
+			},
+			{
+				id: 'markdown_dataview' as TimelineExportFormat,
+				label: 'Dataview Query',
+				icon: 'database',
+				desc: 'Dynamic, auto-updating (requires Dataview)'
+			}
+		]);
+	}
+
+	/**
+	 * Render a category of timeline format options
+	 */
+	private renderTimelineFormatCategory(
+		container: HTMLElement,
+		categoryName: string,
+		formats: { id: TimelineExportFormat; label: string; icon: string; desc: string }[]
+	): void {
+		const categorySection = container.createDiv({ cls: 'cr-timeline-format-category' });
+		categorySection.createEl('h4', { text: categoryName, cls: 'cr-timeline-format-category-title' });
+
+		const formatList = categorySection.createDiv({ cls: 'cr-timeline-format-list' });
+
+		for (const format of formats) {
+			const isSelected = this.formData.timelineFormat === format.id;
+			const formatRow = formatList.createDiv({
+				cls: `cr-timeline-format-row ${isSelected ? 'cr-timeline-format-row--selected' : ''}`
+			});
+
+			// Radio button
+			formatRow.createEl('input', {
+				type: 'radio',
+				attr: {
+					name: 'timeline-format',
+					value: format.id,
+					...(isSelected ? { checked: 'true' } : {})
+				}
+			});
+
+			// Icon
+			const iconEl = formatRow.createDiv({ cls: 'cr-timeline-format-icon' });
+			setLucideIcon(iconEl, format.icon as LucideIconName, 18);
+
+			// Label and description
+			const textEl = formatRow.createDiv({ cls: 'cr-timeline-format-text' });
+			textEl.createDiv({ cls: 'cr-timeline-format-label', text: format.label });
+			textEl.createDiv({ cls: 'cr-timeline-format-desc', text: format.desc });
+
+			// Click handler for entire row
+			formatRow.addEventListener('click', () => {
+				this.formData.timelineFormat = format.id;
+				// Also update the generic output format for compatibility
+				this.syncOutputFormatFromTimeline();
+				this.updateFilename();
+				this.renderCurrentStep();
+			});
+		}
+	}
+
+	/**
+	 * Sync the generic outputFormat from timeline format selection
+	 */
+	private syncOutputFormatFromTimeline(): void {
+		switch (this.formData.timelineFormat) {
+			case 'pdf':
+				this.formData.outputFormat = 'pdf';
+				break;
+			case 'odt':
+				this.formData.outputFormat = 'odt';
+				break;
+			case 'canvas':
+			case 'excalidraw':
+				// Visual exports go to vault
+				this.formData.outputFormat = 'vault';
+				break;
+			default:
+				// Markdown formats
+				this.formData.outputFormat = 'vault';
+				break;
+		}
+	}
+
+	/**
 	 * Render filename section
 	 */
 	private renderFilenameSection(container: HTMLElement): void {
@@ -1078,6 +1220,17 @@ export class ReportWizardModal extends Modal {
 	 * Get file extension based on output format
 	 */
 	private getFileExtension(): string {
+		// For timeline reports, use timeline-specific format
+		if (this.isTimelineReport()) {
+			switch (this.formData.timelineFormat) {
+				case 'pdf': return 'pdf';
+				case 'odt': return 'odt';
+				case 'canvas': return 'canvas';
+				case 'excalidraw': return 'excalidraw.md';
+				default: return 'md';
+			}
+		}
+		// For other reports, use generic output format
 		switch (this.formData.outputFormat) {
 			case 'pdf': return 'pdf';
 			case 'odt': return 'odt';
