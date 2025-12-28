@@ -104,7 +104,7 @@ CreatePersonModal
 - [x] Minimal form: name (required), sex dropdown, birth date (optional)
 - [x] Accept `suggestedSex` and `directory` options
 - [x] "Create and link" button calls `createPersonNote()` and returns `PersonInfo`
-- [ ] Add `ModalStatePersistence` support (matches CreatePersonModal pattern)
+- [x] ~~Add `ModalStatePersistence` support~~ — Skipped: modal is ephemeral by design
 - [x] Add styles to `styles.css` (reuse existing `.crc-form` classes)
 
 #### Phase 1b: PersonPickerModal Enhancement
