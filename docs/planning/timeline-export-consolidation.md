@@ -108,6 +108,36 @@ Users must navigate between two different UIs to access the full range of export
 - Date format
 - Cover page with title, subtitle, notes
 
+**Markdown: Callout:**
+
+The callout format uses two nested callout types:
+
+| Callout | Default | Purpose |
+|---------|---------|---------|
+| Outer container | `[!cr-timeline-outer]` | Wraps entire timeline, displays title |
+| Year/event entries | `[!cr-timeline]` | Individual year blocks with color modifier (e.g., `\|green`) |
+
+Example output:
+```markdown
+> [!cr-timeline-outer] Family Timeline
+>
+>> [!cr-timeline|green] [[1850]]
+>> - [[Birth of John Smith]]
+>> 	- (March 15, 1850)
+```
+
+**Custom callout types:** Users can specify their own callout type names to leverage existing CSS styling. The wizard provides a dropdown with presets plus a custom option:
+
+| Option | Description |
+|--------|-------------|
+| cr-timeline (default) | Plugin's built-in styled callout |
+| timeline | Common callout name |
+| event | Common callout name |
+| note | Obsidian's built-in note callout |
+| Custom... | Text field for any custom callout name |
+
+The custom callout applies to the inner year/event callouts only. The outer container uses `cr-timeline-outer` for structural styling.
+
 ### Data Quality Insights (from Events tab)
 
 - Timeline gaps (5+ year periods with no events)
@@ -117,6 +147,22 @@ Users must navigate between two different UIs to access the full range of export
 ---
 
 ## Wizard Flow Design
+
+### Simple Mode Toggle
+
+A "Simple Mode" toggle at the top of the wizard enables quick exports:
+- When enabled: Skip Step 3 (Format Options), use sensible defaults
+- Single-click path: Select format → Export immediately
+- Toggle state persists in settings
+- Power users disable for full control
+
+### Saved Presets
+
+Named presets dropdown at top of wizard for quick access:
+- Save complete configurations including format and all options
+- Examples: "Family Timeline (Canvas)", "Research Report (PDF)"
+- Recent reports list shows format icon/badge
+- Migration: Existing configs default to `markdown_table` format
 
 ### Step 1: Report Type & Filters
 
@@ -159,7 +205,10 @@ Dynamically shows options based on selected format:
 - Layout selector (horizontal/vertical/Gantt)
 - Color scheme selector
 - Ordering edges toggle
-- Group by person toggle
+- Grouping selector:
+  - By person: Swim lanes (current behavior)
+  - By year/decade: Vertical columns with headers, events stacked within
+  - By place: Labeled regions (may require layout algorithm changes)
 - (Excalidraw only) Drawing style, font, stroke options
 
 **If PDF or ODT:**
@@ -172,12 +221,20 @@ Dynamically shows options based on selected format:
 - Include descriptions toggle
 - Include sources toggle
 
+**If Markdown: Callout (Vertical Timeline):**
+- Callout type selector (presets + custom option)
+
 ### Step 4: Preview & Export
 
 - Quick stats: event count, date range, unique people/places
-- Data quality warnings (gaps, unsourced, orphans)
+- Data quality section (collapsible):
+  - Collapsed by default if no issues; expanded if issues exist
+  - Shows gaps, unsourced events, orphan events
+  - "Review issues first" links to Data Quality tab
+  - Non-blocking — users can export despite warnings
 - Export destination (vault folder, download)
 - Export button
+- Save as preset button
 
 ---
 
@@ -242,6 +299,9 @@ interface TimelineReportOptions {
   excalidrawOptions?: ExcalidrawExportOptions;
   pdfOptions?: PdfExportOptions;
   markdownOptions?: MarkdownExportOptions;
+  calloutOptions?: {
+    calloutType: string;  // 'cr-timeline' | 'timeline' | 'event' | 'note' | custom
+  };
 }
 ```
 
@@ -264,82 +324,6 @@ interface TimelineReportOptions {
 1. **v0.18.2**: Add all formats to Reports Timeline (feature parity)
 2. **v0.18.3**: Add deprecation notice to Events tab Export card
 3. **v0.19.0**: Remove Events tab Export card entirely
-
----
-
-## Open Questions
-
-### 1. Quick Export Mode
-
-**Question:** Should we preserve the "quick export" feel with a simplified mode in Reports?
-
-**Recommendation:** Yes — add a "Simple Mode" toggle at the top of the wizard.
-
-When enabled:
-- Skip Step 3 (Format Options) entirely
-- Use sensible defaults: chronological order, no grouping, standard colors
-- Single-click path: Select format → Export immediately
-- Power users toggle off "Simple Mode" for full control
-
-This preserves the fast workflow of the Events tab while keeping everything in one place. The toggle state persists in settings.
-
-### 2. Canvas/Excalidraw Grouping
-
-**Question:** Should Canvas/Excalidraw exports support grouping options?
-
-**Recommendation:** Yes — extend current "group by person" to support additional grouping.
-
-| Grouping | Visual Treatment |
-|----------|------------------|
-| By person | Swim lanes (current behavior) |
-| By year/decade | Vertical columns with year headers, events stacked within |
-| By place | Geographic clustering with labeled regions |
-
-Implementation:
-- Canvas: Use native Obsidian canvas groups for visual separation
-- Excalidraw: Use frames or colored background rectangles
-
-Note: "By place" grouping may require layout algorithm changes for non-linear arrangements.
-
-### 3. Data Quality Insights
-
-**Question:** Should data quality insights be a separate collapsible section or inline warnings?
-
-**Recommendation:** Collapsible section in Step 4 (Preview).
-
-```
-▼ Data Quality (3 issues)
-  ⚠️ 2 events have no sources
-  ⚠️ 1 gap: 1892-1899 (7 years, no events)
-
-[Export anyway] [Review issues first]
-```
-
-Benefits:
-- Keeps the preview clean while making issues discoverable
-- "Review issues first" links to the Data Quality tab for detailed analysis
-- Collapsed by default if no issues; expanded if issues exist
-- Non-blocking — users can export despite warnings
-
-### 4. Saved Report Configurations
-
-**Question:** How should saved/recent report configurations handle the new formats?
-
-**Recommendation:** Format-aware presets with migration support.
-
-**Named Presets:**
-- Allow users to save named presets like "Family Timeline (Canvas)" or "Research Report (PDF)"
-- Store complete configuration including format type and all options
-- Display in a dropdown at the top of the wizard for quick access
-
-**Recent Reports:**
-- Continue tracking recent exports with format information
-- Display format icon/badge in recent reports list
-
-**Migration:**
-- Existing saved timeline configs (pre-consolidation) default to `markdown_table` format
-- First load detects missing `format` field and applies sensible default
-- No user action required — existing presets continue to work
 
 ---
 
