@@ -237,6 +237,52 @@ This becomes valuable when:
 
 ---
 
+## Bundled Enhancement: Nickname Property Support
+
+> **Standalone feature:** Can be implemented independently. Bundled here for v0.18.1 release.
+
+Add `nickname` as a first-class frontmatter property on Person notes, with import support.
+
+### Motivation
+
+Users want to capture informal names, aliases, and nicknames:
+- "Bobby" for "Robert"
+- "Gram" for grandmother
+- Stage names, pen names, or titles used in daily life
+
+The `nickname` property already exists in the property alias system (with aliases `alias`, `known_as`, `goes_by`), but:
+- It's not in the `PersonData` interface
+- Importers don't populate it
+- Create/Edit Person modal doesn't show it
+
+### Scope
+
+1. **PersonData interface** — Add `nickname?: string` field
+2. **Person note writer** — Write `nickname` to frontmatter when present
+3. **Import support**
+   - Gramps: Map `nick` element to `nickname` (already parsed, not written)
+   - GEDCOM: Map `NICK` tag to `nickname`
+   - GEDCOM X: Check for nickname in names array
+4. **Create/Edit Person modal** — Add optional nickname field
+
+### Implementation Checklist
+
+#### Nickname Infrastructure
+- [ ] Add `nickname?: string` to `PersonData` interface in `person-note-writer.ts`
+- [ ] Add nickname writing logic to `createPersonNote()`
+- [ ] Add nickname update logic to `updatePersonNote()`
+
+#### Import Support
+- [ ] Gramps importer: Populate `nickname` from parsed `nick` field
+- [ ] GEDCOM importer: Parse and populate `NICK` tag
+- [ ] GEDCOM X importer: Check for nickname name type
+
+#### Modal Integration
+- [ ] Add nickname field to CreatePersonModal (optional, after name field)
+- [ ] Add nickname field to QuickCreatePersonModal (optional)
+
+---
+
 ## Completed Enhancements
 
 ### Place Picker Integration ✅ (v0.14.x)
