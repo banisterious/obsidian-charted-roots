@@ -1269,12 +1269,272 @@ export class ReportWizardModal extends Modal {
 	// ========== STEP 3: CUSTOMIZE ==========
 
 	private renderStep3(container: HTMLElement): void {
+		// Timeline reports have different customization options
+		if (this.isTimelineReport()) {
+			this.renderTimelineOptionsStep(container);
+			return;
+		}
+
 		// Content Options section
 		this.renderContentOptionsSection(container);
 
 		// Format-specific options
 		container.createEl('hr', { cls: 'cr-report-separator' });
 		this.renderFormatSpecificOptions(container);
+	}
+
+	/**
+	 * Render timeline-specific options for Step 3
+	 */
+	private renderTimelineOptionsStep(container: HTMLElement): void {
+		const format = this.formData.timelineFormat;
+
+		// Canvas/Excalidraw options
+		if (format === 'canvas' || format === 'excalidraw') {
+			this.renderTimelineVisualOptions(container);
+			if (format === 'excalidraw') {
+				container.createEl('hr', { cls: 'cr-report-separator' });
+				this.renderExcalidrawStyleOptions(container);
+			}
+		}
+		// PDF/ODT options
+		else if (format === 'pdf' || format === 'odt') {
+			this.renderPdfOptions(container);
+		}
+		// Markdown options
+		else {
+			this.renderTimelineMarkdownOptions(container);
+			if (format === 'markdown_callout') {
+				container.createEl('hr', { cls: 'cr-report-separator' });
+				this.renderTimelineCalloutOptions(container);
+			}
+		}
+	}
+
+	/**
+	 * Render Canvas/Excalidraw visual options
+	 */
+	private renderTimelineVisualOptions(container: HTMLElement): void {
+		const section = container.createDiv({ cls: 'cr-report-section' });
+		section.createEl('h3', { text: 'Visual Options', cls: 'cr-report-section-title' });
+
+		// Layout style
+		const layoutRow = section.createDiv({ cls: 'cr-report-option-row' });
+		layoutRow.createSpan({ text: 'Layout:', cls: 'cr-report-option-label' });
+
+		const layoutSelect = layoutRow.createEl('select', { cls: 'cr-report-select' });
+		const layoutOptions: { value: TimelineLayoutStyle; label: string }[] = [
+			{ value: 'horizontal', label: 'Horizontal' },
+			{ value: 'vertical', label: 'Vertical' },
+			{ value: 'gantt', label: 'Gantt (by date and person)' }
+		];
+		for (const opt of layoutOptions) {
+			const option = layoutSelect.createEl('option', { value: opt.value, text: opt.label });
+			if (opt.value === this.formData.timelineLayoutStyle) option.selected = true;
+		}
+		layoutSelect.addEventListener('change', () => {
+			this.formData.timelineLayoutStyle = layoutSelect.value as TimelineLayoutStyle;
+		});
+
+		// Color scheme
+		const colorRow = section.createDiv({ cls: 'cr-report-option-row' });
+		colorRow.createSpan({ text: 'Color scheme:', cls: 'cr-report-option-label' });
+
+		const colorSelect = colorRow.createEl('select', { cls: 'cr-report-select' });
+		const colorOptions: { value: TimelineColorScheme; label: string }[] = [
+			{ value: 'event_type', label: 'By event type' },
+			{ value: 'category', label: 'By category' },
+			{ value: 'confidence', label: 'By confidence' },
+			{ value: 'monochrome', label: 'Monochrome' }
+		];
+		for (const opt of colorOptions) {
+			const option = colorSelect.createEl('option', { value: opt.value, text: opt.label });
+			if (opt.value === this.formData.timelineColorScheme) option.selected = true;
+		}
+		colorSelect.addEventListener('change', () => {
+			this.formData.timelineColorScheme = colorSelect.value as TimelineColorScheme;
+		});
+
+		// Grouping
+		const groupingRow = section.createDiv({ cls: 'cr-report-option-row' });
+		groupingRow.createSpan({ text: 'Group by:', cls: 'cr-report-option-label' });
+
+		const groupingSelect = groupingRow.createEl('select', { cls: 'cr-report-select' });
+		const groupingOptions: { value: typeof this.formData.timelineGrouping; label: string }[] = [
+			{ value: 'none', label: 'None (flat timeline)' },
+			{ value: 'by_year', label: 'By year' },
+			{ value: 'by_decade', label: 'By decade' },
+			{ value: 'by_person', label: 'By person (swim lanes)' },
+			{ value: 'by_place', label: 'By place' }
+		];
+		for (const opt of groupingOptions) {
+			const option = groupingSelect.createEl('option', { value: opt.value, text: opt.label });
+			if (opt.value === this.formData.timelineGrouping) option.selected = true;
+		}
+		groupingSelect.addEventListener('change', () => {
+			this.formData.timelineGrouping = groupingSelect.value as typeof this.formData.timelineGrouping;
+		});
+
+		// Include ordering edges toggle
+		this.renderToggleOption(section, 'Include ordering edges (before/after relationships)',
+			this.formData.timelineIncludeOrderingEdges, (value) => {
+				this.formData.timelineIncludeOrderingEdges = value;
+			});
+	}
+
+	/**
+	 * Render Excalidraw-specific style options
+	 */
+	private renderExcalidrawStyleOptions(container: HTMLElement): void {
+		const section = container.createDiv({ cls: 'cr-report-section' });
+		section.createEl('h3', { text: 'Excalidraw Style', cls: 'cr-report-section-title' });
+
+		// Drawing style
+		const styleRow = section.createDiv({ cls: 'cr-report-option-row' });
+		styleRow.createSpan({ text: 'Drawing style:', cls: 'cr-report-option-label' });
+
+		const styleSelect = styleRow.createEl('select', { cls: 'cr-report-select' });
+		const styleOptions: { value: typeof this.formData.excalidrawDrawingStyle; label: string }[] = [
+			{ value: 'architect', label: 'Architect (clean)' },
+			{ value: 'artist', label: 'Artist (natural)' },
+			{ value: 'cartoonist', label: 'Cartoonist (rough)' }
+		];
+		for (const opt of styleOptions) {
+			const option = styleSelect.createEl('option', { value: opt.value, text: opt.label });
+			if (opt.value === this.formData.excalidrawDrawingStyle) option.selected = true;
+		}
+		styleSelect.addEventListener('change', () => {
+			this.formData.excalidrawDrawingStyle = styleSelect.value as typeof this.formData.excalidrawDrawingStyle;
+		});
+
+		// Font family
+		const fontRow = section.createDiv({ cls: 'cr-report-option-row' });
+		fontRow.createSpan({ text: 'Font:', cls: 'cr-report-option-label' });
+
+		const fontSelect = fontRow.createEl('select', { cls: 'cr-report-select' });
+		const fontOptions = ['Virgil', 'Excalifont', 'Comic Shanns', 'Helvetica', 'Nunito', 'Lilita One', 'Cascadia'];
+		for (const font of fontOptions) {
+			const option = fontSelect.createEl('option', { value: font, text: font });
+			if (font === this.formData.excalidrawFontFamily) option.selected = true;
+		}
+		fontSelect.addEventListener('change', () => {
+			this.formData.excalidrawFontFamily = fontSelect.value;
+		});
+
+		// Stroke width
+		const strokeRow = section.createDiv({ cls: 'cr-report-option-row' });
+		strokeRow.createSpan({ text: 'Stroke width:', cls: 'cr-report-option-label' });
+
+		const strokeSelect = strokeRow.createEl('select', { cls: 'cr-report-select' });
+		const strokeOptions: { value: typeof this.formData.excalidrawStrokeWidth; label: string }[] = [
+			{ value: 'thin', label: 'Thin' },
+			{ value: 'normal', label: 'Normal' },
+			{ value: 'bold', label: 'Bold' },
+			{ value: 'extra-bold', label: 'Extra Bold' }
+		];
+		for (const opt of strokeOptions) {
+			const option = strokeSelect.createEl('option', { value: opt.value, text: opt.label });
+			if (opt.value === this.formData.excalidrawStrokeWidth) option.selected = true;
+		}
+		strokeSelect.addEventListener('change', () => {
+			this.formData.excalidrawStrokeWidth = strokeSelect.value as typeof this.formData.excalidrawStrokeWidth;
+		});
+	}
+
+	/**
+	 * Render markdown format options for timeline
+	 */
+	private renderTimelineMarkdownOptions(container: HTMLElement): void {
+		const section = container.createDiv({ cls: 'cr-report-section' });
+		section.createEl('h3', { text: 'Markdown Options', cls: 'cr-report-section-title' });
+
+		// Grouping
+		const groupingRow = section.createDiv({ cls: 'cr-report-option-row' });
+		groupingRow.createSpan({ text: 'Group by:', cls: 'cr-report-option-label' });
+
+		const groupingSelect = groupingRow.createEl('select', { cls: 'cr-report-select' });
+		const groupingOptions: { value: typeof this.formData.timelineGrouping; label: string }[] = [
+			{ value: 'none', label: 'None (flat list)' },
+			{ value: 'by_year', label: 'By year' },
+			{ value: 'by_decade', label: 'By decade' },
+			{ value: 'by_person', label: 'By person' },
+			{ value: 'by_place', label: 'By place' }
+		];
+		for (const opt of groupingOptions) {
+			const option = groupingSelect.createEl('option', { value: opt.value, text: opt.label });
+			if (opt.value === this.formData.timelineGrouping) option.selected = true;
+		}
+		groupingSelect.addEventListener('change', () => {
+			this.formData.timelineGrouping = groupingSelect.value as typeof this.formData.timelineGrouping;
+		});
+
+		// Include descriptions toggle
+		this.renderToggleOption(section, 'Include event descriptions',
+			this.formData.timelineIncludeDescriptions, (value) => {
+				this.formData.timelineIncludeDescriptions = value;
+			});
+
+		// Include sources toggle
+		this.renderToggleOption(section, 'Include sources',
+			this.formData.includeSources, (value) => {
+				this.formData.includeSources = value;
+			});
+	}
+
+	/**
+	 * Render callout-specific options
+	 */
+	private renderTimelineCalloutOptions(container: HTMLElement): void {
+		const section = container.createDiv({ cls: 'cr-report-section' });
+		section.createEl('h3', { text: 'Callout Style', cls: 'cr-report-section-title' });
+
+		// Callout type selector
+		const calloutRow = section.createDiv({ cls: 'cr-report-option-row' });
+		calloutRow.createSpan({ text: 'Callout type:', cls: 'cr-report-option-label' });
+
+		const calloutSelect = calloutRow.createEl('select', { cls: 'cr-report-select' });
+		const calloutOptions = [
+			{ value: 'cr-timeline', label: 'cr-timeline (plugin default)' },
+			{ value: 'timeline', label: 'timeline' },
+			{ value: 'event', label: 'event' },
+			{ value: 'note', label: 'note (Obsidian built-in)' },
+			{ value: 'custom', label: 'Custom...' }
+		];
+		for (const opt of calloutOptions) {
+			const option = calloutSelect.createEl('option', { value: opt.value, text: opt.label });
+			if (opt.value === this.formData.timelineCalloutType ||
+				(opt.value === 'custom' && !calloutOptions.slice(0, -1).some(o => o.value === this.formData.timelineCalloutType))) {
+				option.selected = true;
+			}
+		}
+
+		// Custom input (hidden by default)
+		const customInputRow = section.createDiv({ cls: 'cr-report-option-row cr-report-custom-callout' });
+		customInputRow.createSpan({ text: 'Custom name:', cls: 'cr-report-option-label' });
+		const customInput = customInputRow.createEl('input', {
+			type: 'text',
+			cls: 'cr-report-input',
+			placeholder: 'Enter callout type name',
+			value: calloutOptions.slice(0, -1).some(o => o.value === this.formData.timelineCalloutType)
+				? '' : this.formData.timelineCalloutType
+		});
+
+		// Show/hide custom input based on selection
+		const updateCustomVisibility = () => {
+			customInputRow.style.display = calloutSelect.value === 'custom' ? 'flex' : 'none';
+		};
+		updateCustomVisibility();
+
+		calloutSelect.addEventListener('change', () => {
+			if (calloutSelect.value !== 'custom') {
+				this.formData.timelineCalloutType = calloutSelect.value;
+			}
+			updateCustomVisibility();
+		});
+
+		customInput.addEventListener('input', () => {
+			this.formData.timelineCalloutType = customInput.value || 'cr-timeline';
+		});
 	}
 
 	// ========== STEP 4: GENERATE ==========
