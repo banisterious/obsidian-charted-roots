@@ -313,13 +313,15 @@ The `nickname` property already exists in the property alias system (with aliase
 
 ## Known Limitations to Address
 
-### Multiple Spouses in Edit Modal
+### Multiple Spouses in Edit Modal ✅ (v0.18.1)
 
-The current CreatePersonModal only handles a single spouse field, with a comment: "For now, only handle first spouse in the modal." This is a separate issue from the inline creation workflow but should be addressed:
+> **Status:** Implemented
 
-- **Current state:** Only first spouse shown/editable in modal
-- **Desired state:** Multi-select spouse field (similar to planned children section)
-- **When to fix:** Could be bundled with Phase 2 (children section uses same multi-select pattern)
+The CreatePersonModal now supports multiple spouses using the same multi-select pattern as children:
+
+- Edit mode shows `createSpousesField()` with add/remove UI
+- Create mode shows simplified single-spouse picker (adds to array internally)
+- Full support for viewing, adding, and removing multiple spouses
 
 ---
 
