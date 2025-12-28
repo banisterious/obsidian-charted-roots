@@ -13,7 +13,7 @@ This document outlines planned features for Canvas Roots. For completed features
   - [Inclusive Parent Relationships](#inclusive-parent-relationships) 📋 Medium
   - [Cleanup Wizard Phase 4](#cleanup-wizard-phase-4) 📋 Medium
   - [Gramps Notes & Family Integration](#gramps-notes--family-integration) 📋 Medium
-  - [Draggable Place Markers](#draggable-place-markers) 💡 Low
+  - [Custom Map Authoring](#custom-map-authoring) 💡 Low
   - [Custom Relationships on Canvas Trees](#custom-relationships-on-canvas-trees) 💡 Low
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Universe Management Enhancements](#universe-management-enhancements) 💡 Low
@@ -250,36 +250,43 @@ Users must navigate between two UIs to access the full range of export options.
 
 ---
 
-### Draggable Place Markers
+### Custom Map Authoring
 
-**Priority:** 💡 Low — Enhanced map editing for custom maps
+**Priority:** 💡 Low — Streamlined place creation and positioning for custom maps
 
 **Status:** Planning
 
-**Summary:** Allow users to drag place markers on maps to reposition them, automatically updating the place note's frontmatter coordinates. This dramatically improves the workflow for positioning locations on custom maps, especially pixel-based fictional maps where manually determining coordinates is tedious.
+**Summary:** Enable intuitive place creation and positioning directly on maps. Currently, adding places to custom maps requires tedious manual coordinate entry—opening the map image in an external editor, finding pixel coordinates, typing them into frontmatter, reloading, and repeating until correct. This feature set eliminates that friction.
 
-**The Problem:** Currently, positioning a place on a custom map requires:
+**The Problem:** Adding places to custom maps requires:
 1. Open the map image in an external editor to find coordinates
 2. Manually edit the place note's frontmatter
 3. Reload the map to verify placement
-4. Repeat until correct
+4. Repeat until correct — for every place
 
-**Proposed Features:**
+**Phased Implementation:**
 
-| Feature | Description |
-|---------|-------------|
-| Edit Places toggle | Toolbar button to enable marker dragging (prevents accidental moves) |
-| Drag-to-reposition | Drag any place marker to new location |
-| Auto-update frontmatter | Automatically save new coordinates to place note |
-| Undo support | Toast with "Undo" button after each move |
-| Click-to-create (future) | Click empty map area to create new place at that location |
+| Phase | Feature | Description |
+|-------|---------|-------------|
+| 1 | Click-to-Create Place | Click on map → capture coordinates → open Create Place modal with coordinates pre-filled |
+| 2 | Draggable Place Markers | Drag markers to reposition, auto-update frontmatter, undo support |
+| 3 | Place Coordinate Import | Bulk import places from CSV/JSON with preview and conflict handling |
+| 4 | Map Configuration Wizard | Guided setup for custom maps with coordinate system definition |
 
-**Coordinate Systems:**
-- Geographic maps: Update `latitude`/`longitude` properties
-- Pixel-based maps: Update `pixel_x`/`pixel_y` properties
+**Phase 1: Click-to-Create Place**
+- Edit mode toggle (prevents accidental creation during viewing)
+- Coordinates captured from click location (lat/lng or pixel_x/pixel_y)
+- Create Place modal opens with coordinates pre-filled
+- Works with both geographic and pixel-based maps
+
+**Phase 2: Draggable Place Markers**
+- Markers become draggable when edit mode is active
+- Drag-end updates place note frontmatter with new coordinates
+- Toast notification with Undo option
+- See [Draggable Place Markers](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/draggable-place-markers.md) for technical details
 
 **Documentation:**
-- See [Draggable Place Markers Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/draggable-place-markers.md) for detailed specifications
+- See [Custom Map Authoring Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/custom-map-authoring.md) for detailed specifications
 
 ---
 

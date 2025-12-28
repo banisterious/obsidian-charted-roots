@@ -2,10 +2,13 @@
 
 Planning document for enabling interactive repositioning of place markers on maps with automatic frontmatter updates.
 
-**Status:** Planning
-**GitHub Issue:** #TBD
-**Priority:** Low
-**Created:** 2025-12-27
+- **Status:** Planning
+- **GitHub Issue:** #TBD
+- **Priority:** Low
+- **Created:** 2025-12-27
+- **Updated:** 2025-12-28
+
+> **Note:** This document is Phase 2 of the [Custom Map Authoring](./custom-map-authoring.md) plan. See that document for the full roadmap including Click-to-Create (Phase 1), Coordinate Import (Phase 3), and Map Configuration Wizard (Phase 4).
 
 ---
 
