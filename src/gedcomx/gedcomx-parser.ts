@@ -28,6 +28,7 @@ export interface ParsedGedcomXPerson {
 	name: string;
 	givenName?: string;
 	surname?: string;
+	nickname?: string;
 	gender?: 'M' | 'F';
 	birthDate?: string;
 	birthPlace?: string;
@@ -211,7 +212,7 @@ export class GedcomXParser {
 		}
 
 		// Extract name
-		const { fullName, givenName, surname } = this.extractName(person);
+		const { fullName, givenName, surname, nickname } = this.extractName(person);
 
 		// Extract facts
 		const birthFact = this.findFact(person.facts, GEDCOMX_TYPES.BIRTH);
@@ -223,6 +224,7 @@ export class GedcomXParser {
 			name: fullName || `Unknown (${person.id})`,
 			givenName,
 			surname,
+			nickname,
 			gender: convertGender(person.gender),
 			birthDate: this.extractDate(birthFact),
 			birthPlace: this.extractPlace(birthFact),
@@ -244,16 +246,17 @@ export class GedcomXParser {
 		fullName: string | undefined;
 		givenName: string | undefined;
 		surname: string | undefined;
+		nickname: string | undefined;
 	} {
 		if (!person.names || person.names.length === 0) {
-			return { fullName: undefined, givenName: undefined, surname: undefined };
+			return { fullName: undefined, givenName: undefined, surname: undefined, nickname: undefined };
 		}
 
 		// Find preferred name or use first name
 		const name = person.names.find(n => n.preferred) || person.names[0];
 
 		if (!name.nameForms || name.nameForms.length === 0) {
-			return { fullName: undefined, givenName: undefined, surname: undefined };
+			return { fullName: undefined, givenName: undefined, surname: undefined, nickname: undefined };
 		}
 
 		const nameForm = name.nameForms[0];
@@ -280,7 +283,18 @@ export class GedcomXParser {
 			}
 		}
 
-		return { fullName, givenName, surname };
+		// Look for a nickname in the names array (a name with type containing 'Nickname')
+		let nickname: string | undefined;
+		for (const n of person.names) {
+			if (n.type && extractTypeName(n.type).toLowerCase().includes('nickname')) {
+				if (n.nameForms && n.nameForms.length > 0) {
+					nickname = n.nameForms[0].fullText;
+					break;
+				}
+			}
+		}
+
+		return { fullName, givenName, surname, nickname };
 	}
 
 	/**

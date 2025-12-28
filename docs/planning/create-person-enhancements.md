@@ -100,34 +100,34 @@ CreatePersonModal
 ### Implementation Checklist
 
 #### Phase 1a: QuickCreatePersonModal
-- [ ] Create `src/ui/quick-create-person-modal.ts`
-- [ ] Minimal form: name (required), sex dropdown, birth date (optional)
-- [ ] Accept `suggestedSex` and `directory` options
-- [ ] "Create and link" button calls `createPersonNote()` and returns `PersonInfo`
+- [x] Create `src/ui/quick-create-person-modal.ts`
+- [x] Minimal form: name (required), sex dropdown, birth date (optional)
+- [x] Accept `suggestedSex` and `directory` options
+- [x] "Create and link" button calls `createPersonNote()` and returns `PersonInfo`
 - [ ] Add `ModalStatePersistence` support (matches CreatePersonModal pattern)
-- [ ] Add styles to `styles.css` (reuse existing `.crc-form` classes)
+- [x] Add styles to `styles.css` (reuse existing `.crc-form` classes)
 
 #### Phase 1b: PersonPickerModal Enhancement
-- [ ] Add `onCreateNew` callback option to `PersonPickerModal` constructor
-- [ ] Add `RelationshipContext` interface: `{ relationshipType, suggestedSex?, parentCrId?, directory? }`
-- [ ] Render "+ Create new person" button at top of results (or in header)
-- [ ] Button click opens `QuickCreatePersonModal` with context
-- [ ] On sub-modal close with result, call `onSelect` with new `PersonInfo`
+- [x] Add `onCreateNew` callback option to `PersonPickerModal` constructor
+- [x] Add `RelationshipContext` interface: `{ relationshipType, suggestedSex?, parentCrId?, directory? }`
+- [x] Render "+ Create new person" button at top of results (or in header)
+- [x] Button click opens `QuickCreatePersonModal` with context
+- [x] On sub-modal close with result, call `onSelect` with new `PersonInfo`
 
 #### Phase 1c: CreatePersonModal Integration
-- [ ] Update `createRelationshipField()` to pass `onCreateNew` to picker
-- [ ] Map field type to suggested sex: father→male, mother→female, spouse→undefined
-- [ ] Pass current directory to quick create modal
+- [x] Update `createRelationshipField()` to pass `onCreateNew` to picker
+- [x] Map field type to suggested sex: father→male, mother→female, spouse→undefined
+- [x] Pass current directory to quick create modal
 - [ ] Test: create person, add father via picker, create new father inline
 
 #### Phase 1d: Step/Adoptive Parents
-- [ ] Extend to stepfather, stepmother, adoptive father, adoptive mother fields
-- [ ] Same pattern: pre-fill sex based on field type
+- [x] Extend to stepfather, stepmother, adoptive father, adoptive mother fields
+- [x] Same pattern: pre-fill sex based on field type
 
 #### Phase 1e: Folder Context Menu
-- [ ] Add "Create person" to People folder context menu (Canvas Roots submenu)
-- [ ] Pass clicked folder path as `directory` option to CreatePersonModal
-- [ ] Works for People folder and any subfolder within it
+- [x] Add "Create person" to People folder context menu (Canvas Roots submenu)
+- [x] Pass clicked folder path as `directory` option to CreatePersonModal
+- [x] Works for People folder and any subfolder within it
 
 ---
 
@@ -276,18 +276,18 @@ The `nickname` property already exists in the property alias system (with aliase
 ### Implementation Checklist
 
 #### Nickname Infrastructure
-- [ ] Add `nickname?: string` to `PersonData` interface in `person-note-writer.ts`
-- [ ] Add nickname writing logic to `createPersonNote()`
-- [ ] Add nickname update logic to `updatePersonNote()`
+- [x] Add `nickname?: string` to `PersonData` interface in `person-note-writer.ts`
+- [x] Add nickname writing logic to `createPersonNote()`
+- [x] Add nickname update logic to `updatePersonNote()`
 
 #### Import Support
-- [ ] Gramps importer: Populate `nickname` from parsed `nick` field
-- [ ] GEDCOM importer: Parse and populate `NICK` tag
-- [ ] GEDCOM X importer: Check for nickname name type
+- [x] Gramps importer: Populate `nickname` from parsed `nick` field
+- [x] GEDCOM importer: Parse and populate `NICK` tag
+- [x] GEDCOM X importer: Check for nickname name type
 
 #### Modal Integration
-- [ ] Add nickname field to CreatePersonModal (optional, after name field)
-- [ ] Add nickname field to QuickCreatePersonModal (optional)
+- [x] Add nickname field to CreatePersonModal (optional, after name field)
+- [x] Add nickname field to QuickCreatePersonModal (optional)
 
 ---
 

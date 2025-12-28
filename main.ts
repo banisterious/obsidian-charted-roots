@@ -3131,6 +3131,11 @@ export default class CanvasRootsPlugin extends Plugin {
 					const isEventsFolder = file.path === this.settings.eventsFolder;
 					const isOrganizationsFolder = file.path === this.settings.organizationsFolder;
 
+					// Check for subfolders within People folder (for Create person action)
+					const isPeopleSubfolder = !isPeopleFolder &&
+						this.settings.peopleFolder &&
+						file.path.startsWith(this.settings.peopleFolder + '/');
+
 					// Helper to get files in folder
 					const getFilesInFolder = () => this.app.vault.getMarkdownFiles()
 						.filter(f => f.path.startsWith(file.path + '/'));
@@ -3144,6 +3149,25 @@ export default class CanvasRootsPlugin extends Plugin {
 
 							// === PEOPLE FOLDER ===
 							if (isPeopleFolder) {
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Create person')
+										.setIcon('user-plus')
+										.onClick(() => {
+											const modal = new CreatePersonModal(this.app, {
+												directory: file.path,
+												familyGraph: this.createFamilyGraphService(),
+												propertyAliases: this.settings.propertyAliases,
+												placeGraph: this.createPlaceGraphService(),
+												settings: this.settings,
+												plugin: this
+											});
+											modal.open();
+										});
+								});
+
+								submenu.addSeparator();
+
 								submenu.addItem((subItem) => {
 									subItem
 										.setTitle('Import GEDCOM')
@@ -3228,6 +3252,27 @@ export default class CanvasRootsPlugin extends Plugin {
 										.setIcon('bar-chart-2')
 										.onClick(() => {
 											this.showFolderStatistics(file);
+										});
+								});
+							}
+
+							// === PEOPLE SUBFOLDER ===
+							// Show "Create person" for subfolders within People folder
+							else if (isPeopleSubfolder) {
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Create person')
+										.setIcon('user-plus')
+										.onClick(() => {
+											const modal = new CreatePersonModal(this.app, {
+												directory: file.path,
+												familyGraph: this.createFamilyGraphService(),
+												propertyAliases: this.settings.propertyAliases,
+												placeGraph: this.createPlaceGraphService(),
+												settings: this.settings,
+												plugin: this
+											});
+											modal.open();
 										});
 								});
 							}
@@ -3651,6 +3696,23 @@ export default class CanvasRootsPlugin extends Plugin {
 						if (isPeopleFolder) {
 							menu.addItem((item) => {
 								item
+									.setTitle('Canvas Roots: Create person')
+									.setIcon('user-plus')
+									.onClick(() => {
+										const modal = new CreatePersonModal(this.app, {
+											directory: file.path,
+											familyGraph: this.createFamilyGraphService(),
+											propertyAliases: this.settings.propertyAliases,
+											placeGraph: this.createPlaceGraphService(),
+											settings: this.settings,
+											plugin: this
+										});
+										modal.open();
+									});
+							});
+
+							menu.addItem((item) => {
+								item
 									.setTitle('Canvas Roots: Import GEDCOM')
 									.setIcon('upload')
 									.onClick(() => {
@@ -3702,6 +3764,27 @@ export default class CanvasRootsPlugin extends Plugin {
 									.setIcon('git-fork')
 									.onClick(async () => {
 										await this.generateAllTrees();
+									});
+							});
+						}
+
+						// === PEOPLE SUBFOLDER (MOBILE) ===
+						// Show "Create person" for subfolders within People folder
+						else if (isPeopleSubfolder) {
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: Create person')
+									.setIcon('user-plus')
+									.onClick(() => {
+										const modal = new CreatePersonModal(this.app, {
+											directory: file.path,
+											familyGraph: this.createFamilyGraphService(),
+											propertyAliases: this.settings.propertyAliases,
+											placeGraph: this.createPlaceGraphService(),
+											settings: this.settings,
+											plugin: this
+										});
+										modal.open();
 									});
 							});
 						}

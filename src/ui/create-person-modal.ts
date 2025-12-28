@@ -10,6 +10,7 @@ import { FamilyGraphService } from '../core/family-graph';
 import { PlaceGraphService } from '../core/place-graph';
 import { PersonPickerModal, PersonInfo } from './person-picker';
 import { PlacePickerModal, SelectedPlaceInfo } from './place-picker';
+import { RelationshipContext } from './quick-create-person-modal';
 import type { CanvasRootsSettings } from '../settings';
 import type CanvasRootsPlugin from '../../main';
 import { ModalStatePersistence, renderResumePromptBanner } from './modal-state-persistence';
@@ -326,6 +327,17 @@ export class CreatePersonModal extends Modal {
 				.setValue(this.personData.name)
 				.onChange(value => {
 					this.personData.name = value;
+				}));
+
+		// Nickname (optional)
+		new Setting(form)
+			.setName('Nickname')
+			.setDesc('Informal name or alias (optional)')
+			.addText(text => text
+				.setPlaceholder('e.g., Bobby, Gram')
+				.setValue(this.personData.nickname || '')
+				.onChange(value => {
+					this.personData.nickname = value || undefined;
 				}));
 
 		// Sex
@@ -747,7 +759,10 @@ export class CreatePersonModal extends Modal {
 					setting.setDesc(`Click "Link" to select ${label.toLowerCase()}`);
 					updateButton(false);
 				} else {
-					// Open person picker
+					// Build relationship context for inline creation
+					const createContext = this.buildRelationshipContext(label);
+
+					// Open person picker with inline creation support
 					const picker = new PersonPickerModal(this.app, (person: PersonInfo) => {
 						fieldData.name = person.name;
 						fieldData.crId = person.crId;
@@ -755,11 +770,43 @@ export class CreatePersonModal extends Modal {
 						inputEl.addClass('crc-input--linked');
 						setting.setDesc(`Linked to: ${person.name}`);
 						updateButton(true);
+					}, {
+						title: `Select ${label.toLowerCase()}`,
+						createContext: createContext,
+						onCreateNew: () => {
+							// This callback is called when user clicks "Create new"
+							// The picker handles opening QuickCreatePersonModal internally
+						},
+						plugin: this.plugin
 					});
 					picker.open();
 				}
 			});
 		});
+	}
+
+	/**
+	 * Build relationship context for inline person creation
+	 * Maps field labels to suggested sex values
+	 */
+	private buildRelationshipContext(label: string): RelationshipContext {
+		const labelLower = label.toLowerCase();
+
+		// Determine suggested sex based on relationship type
+		let suggestedSex: 'male' | 'female' | undefined;
+		if (labelLower.includes('father')) {
+			suggestedSex = 'male';
+		} else if (labelLower.includes('mother')) {
+			suggestedSex = 'female';
+		}
+		// Spouse has no suggested sex
+
+		return {
+			relationshipType: label.toLowerCase(),
+			suggestedSex,
+			parentCrId: this.personData.crId,
+			directory: this.directory
+		};
 	}
 
 	/**

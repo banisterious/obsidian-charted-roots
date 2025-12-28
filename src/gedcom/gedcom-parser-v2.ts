@@ -468,6 +468,9 @@ export class GedcomParserV2 {
 						case 'SURN':
 							individual.surname = value;
 							break;
+						case 'NICK':
+							individual.nickname = value;
+							break;
 					}
 				}
 			}

@@ -29,6 +29,7 @@ function getWriteProperty(canonical: string, aliases: Record<string, string>): s
 export interface PersonData {
 	name: string;
 	crId?: string;
+	nickname?: string;           // Informal name, alias, or nickname (e.g., "Bobby" for Robert)
 	birthDate?: string;
 	deathDate?: string;
 	birthPlace?: string;
@@ -169,6 +170,10 @@ export async function createPersonNote(
 		// Fallback for plain text (legacy or unlinked)
 		frontmatter[prop('death_place')] = person.deathPlace;
 		logger.debug('deathPlace', `Added (plain text): ${person.deathPlace}`);
+	}
+
+	if (person.nickname) {
+		frontmatter[prop('nickname')] = person.nickname;
 	}
 
 	if (person.occupation) {
@@ -613,6 +618,13 @@ export async function updatePersonNote(
 				frontmatter.sex = person.sex;
 			} else {
 				delete frontmatter.sex;
+			}
+		}
+		if (person.nickname !== undefined) {
+			if (person.nickname) {
+				frontmatter.nickname = person.nickname;
+			} else {
+				delete frontmatter.nickname;
 			}
 		}
 		if (person.occupation !== undefined) {

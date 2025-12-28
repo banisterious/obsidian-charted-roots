@@ -40,6 +40,7 @@ export interface ParsedGrampsPerson {
 	name: string;
 	givenName?: string;
 	surname?: string;
+	nickname?: string;          // Informal name or alias from Gramps <nick> element
 	gender?: 'M' | 'F';
 	birthDate?: string;
 	birthPlace?: string;
@@ -1070,6 +1071,7 @@ export class GrampsParser {
 			name: fullName || `Unknown (${person.id || person.handle})`,
 			givenName: primaryName?.first,
 			surname: primaryName?.surname,
+			nickname: primaryName?.nick,
 			gender: convertGrampsGender(person.gender),
 			birthDate,
 			birthPlace,

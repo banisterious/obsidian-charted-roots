@@ -618,6 +618,7 @@ export class GrampsImporter {
 		const personData: PersonData = {
 			name: person.name || 'Unknown',
 			crId: crId,
+			nickname: person.nickname,
 			birthDate: person.birthDate,
 			deathDate: person.deathDate,
 			birthPlace: birthPlaceValue,

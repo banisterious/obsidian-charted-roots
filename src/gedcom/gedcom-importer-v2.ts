@@ -505,6 +505,7 @@ export class GedcomImporterV2 {
 		const personData: PersonData = {
 			name: individual.name || 'Unknown',
 			crId: crId,
+			nickname: individual.nickname,
 			birthDate: GedcomParserV2.gedcomDateToISO(individual.birthDate || ''),
 			deathDate: GedcomParserV2.gedcomDateToISO(individual.deathDate || ''),
 			birthPlace: birthPlaceValue,

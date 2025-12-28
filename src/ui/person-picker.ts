@@ -3,6 +3,8 @@ import { createLucideIcon } from './lucide-icons';
 import { FamilyGraphService, PersonNode } from '../core/family-graph';
 import { FolderFilterService } from '../core/folder-filter';
 import { isPersonNote } from '../utils/note-type-detection';
+import { QuickCreatePersonModal, RelationshipContext } from './quick-create-person-modal';
+import type CanvasRootsPlugin from '../../main';
 
 /**
  * Place reference info for person detail view
@@ -83,6 +85,12 @@ export interface PersonPickerOptions {
 	subtitle?: string;
 	/** Optional folder filter service */
 	folderFilter?: FolderFilterService;
+	/** Callback for inline person creation - if provided, shows "Create new" button */
+	onCreateNew?: (context: RelationshipContext) => void;
+	/** Context for inline creation (relationship type, suggested sex, etc.) */
+	createContext?: RelationshipContext;
+	/** Plugin reference for quick create modal */
+	plugin?: CanvasRootsPlugin;
 }
 
 /**
@@ -112,6 +120,9 @@ export class PersonPickerModal extends Modal {
 	private familyComponentsLoaded = false;
 	private customTitle?: string;
 	private customSubtitle?: string;
+	private onCreateNew?: (context: RelationshipContext) => void;
+	private createContext?: RelationshipContext;
+	private plugin?: CanvasRootsPlugin;
 
 	constructor(app: App, onSelect: (person: PersonInfo) => void, options?: PersonPickerOptions | FolderFilterService) {
 		super(app);
@@ -126,6 +137,9 @@ export class PersonPickerModal extends Modal {
 			this.customTitle = opts.title;
 			this.customSubtitle = opts.subtitle;
 			this.folderFilter = opts.folderFilter;
+			this.onCreateNew = opts.onCreateNew;
+			this.createContext = opts.createContext;
+			this.plugin = opts.plugin;
 		}
 	}
 
@@ -370,6 +384,20 @@ export class PersonPickerModal extends Modal {
 
 		// Search and sort section
 		const searchSection = contentEl.createDiv({ cls: 'crc-picker-search' });
+
+		// "Create new" button (shown at top if onCreateNew is provided)
+		if (this.onCreateNew) {
+			const createNewBtn = searchSection.createEl('button', {
+				cls: 'crc-btn crc-btn--secondary crc-picker-create-new-btn'
+			});
+			const plusIcon = createLucideIcon('plus', 16);
+			createNewBtn.appendChild(plusIcon);
+			createNewBtn.appendText(this.getCreateNewButtonLabel());
+
+			createNewBtn.addEventListener('click', () => {
+				this.openQuickCreateModal();
+			});
+		}
 
 		// Search input
 		this.searchInput = searchSection.createEl('input', {
@@ -686,5 +714,32 @@ export class PersonPickerModal extends Modal {
 		card.addEventListener('mouseleave', () => {
 			card.removeClass('crc-picker-item--hover');
 		});
+	}
+
+	/**
+	 * Get the label for the "Create new" button based on relationship context
+	 */
+	private getCreateNewButtonLabel(): string {
+		if (this.createContext?.relationshipType) {
+			const relType = this.createContext.relationshipType.toLowerCase();
+			return ` Create new ${relType}`;
+		}
+		return ' Create new person';
+	}
+
+	/**
+	 * Open the QuickCreatePersonModal for inline person creation
+	 */
+	private openQuickCreateModal(): void {
+		const modal = new QuickCreatePersonModal(this.app, {
+			context: this.createContext,
+			plugin: this.plugin,
+			onCreated: (person: PersonInfo) => {
+				// Person was created - select it and close this picker
+				this.onSelect(person);
+				this.close();
+			}
+		});
+		modal.open();
 	}
 }

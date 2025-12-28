@@ -416,6 +416,7 @@ export class GedcomXImporter {
 		const personData: PersonData = {
 			name: person.name || 'Unknown',
 			crId: crId,
+			nickname: person.nickname,
 			birthDate: person.birthDate,
 			deathDate: person.deathDate,
 			birthPlace: birthPlaceValue,

@@ -281,6 +281,7 @@ export interface GedcomIndividualV2 {
 	name: string;
 	givenName?: string;
 	surname?: string;
+	nickname?: string;
 	sex?: 'M' | 'F' | 'U';
 
 	// Core dates (still stored as flat properties for compatibility)
