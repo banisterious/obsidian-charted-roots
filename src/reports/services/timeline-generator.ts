@@ -3,6 +3,16 @@
  *
  * Generates chronological reports of events with dates, participants,
  * places, and optional grouping by year/decade/person/place.
+ *
+ * Supports multiple output formats:
+ * - markdown_table: Traditional table format (default)
+ * - markdown_callout: Styled callout blocks with year grouping
+ * - markdown_list: Simple bullet list
+ * - markdown_dataview: Dynamic Dataview query
+ * - canvas: Obsidian Canvas visual timeline
+ * - excalidraw: Excalidraw visual timeline
+ * - pdf: PDF document (uses existing PDF export)
+ * - odt: ODT document (uses existing ODT export)
  */
 
 import { App } from 'obsidian';
@@ -11,7 +21,8 @@ import type {
 	TimelineReportOptions,
 	TimelineReportResult,
 	TimelineEntry,
-	ReportPerson
+	ReportPerson,
+	TimelineExportFormat
 } from '../types/report-types';
 import { FamilyGraphService } from '../../core/family-graph';
 import { FolderFilterService } from '../../core/folder-filter';
@@ -98,8 +109,13 @@ export class TimelineGenerator {
 			groupedEntries = this.groupEntries(entries, options.grouping);
 		}
 
-		// Generate markdown content
-		const content = this.generateMarkdown(
+		// Determine format (default to markdown_table for backwards compatibility)
+		const format: TimelineExportFormat = options.format || 'markdown_table';
+
+		// Generate content based on format
+		const content = await this.generateContent(
+			format,
+			events,
 			dateRange,
 			summary,
 			entries,
@@ -108,7 +124,7 @@ export class TimelineGenerator {
 		);
 
 		const date = new Date().toISOString().split('T')[0];
-		const suggestedFilename = `Timeline Report - ${date}.md`;
+		const suggestedFilename = this.getSuggestedFilename(format, date);
 
 		return {
 			success: true,
@@ -125,6 +141,68 @@ export class TimelineGenerator {
 			entries,
 			groupedEntries
 		};
+	}
+
+	/**
+	 * Generate content based on the selected format
+	 */
+	private async generateContent(
+		format: TimelineExportFormat,
+		events: EventNote[],
+		dateRange: { from?: string; to?: string },
+		summary: { eventCount: number; participantCount: number; placeCount: number },
+		entries: TimelineEntry[],
+		groupedEntries: Record<string, TimelineEntry[]> | undefined,
+		options: TimelineReportOptions
+	): Promise<string> {
+		switch (format) {
+			case 'markdown_table':
+				return this.generateMarkdownTable(dateRange, summary, entries, groupedEntries, options);
+
+			case 'markdown_callout':
+				return this.generateMarkdownCallout(entries, groupedEntries, options);
+
+			case 'markdown_list':
+				return this.generateMarkdownList(entries, groupedEntries, options);
+
+			case 'markdown_dataview':
+				return this.generateMarkdownDataview(options);
+
+			case 'canvas':
+				// Canvas export is handled separately - return placeholder
+				// The actual canvas file is created by TimelineCanvasExporter
+				return `Canvas export requested. Use exportToCanvas() for visual output.`;
+
+			case 'excalidraw':
+				// Excalidraw export is handled separately - return placeholder
+				return `Excalidraw export requested. Use exportToExcalidraw() for visual output.`;
+
+			case 'pdf':
+			case 'odt':
+				// PDF/ODT use the table format as base, then convert
+				return this.generateMarkdownTable(dateRange, summary, entries, groupedEntries, options);
+
+			default:
+				logger.warn('generateContent', `Unknown format: ${format}, falling back to table`);
+				return this.generateMarkdownTable(dateRange, summary, entries, groupedEntries, options);
+		}
+	}
+
+	/**
+	 * Get suggested filename based on format
+	 */
+	private getSuggestedFilename(format: TimelineExportFormat, date: string): string {
+		const extensions: Record<TimelineExportFormat, string> = {
+			markdown_table: '.md',
+			markdown_callout: '.md',
+			markdown_list: '.md',
+			markdown_dataview: '.md',
+			canvas: '.canvas',
+			excalidraw: '.excalidraw.md',
+			pdf: '.pdf',
+			odt: '.odt'
+		};
+		return `Timeline Report - ${date}${extensions[format] || '.md'}`;
 	}
 
 	/**
@@ -349,9 +427,9 @@ export class TimelineGenerator {
 	}
 
 	/**
-	 * Generate markdown content for the Timeline Report
+	 * Generate markdown table content for the Timeline Report
 	 */
-	private generateMarkdown(
+	private generateMarkdownTable(
 		dateRange: { from?: string; to?: string },
 		summary: { eventCount: number; participantCount: number; placeCount: number },
 		entries: TimelineEntry[],
@@ -442,5 +520,224 @@ export class TimelineGenerator {
 				lines.push(`| ${date} | ${type} | ${participants} | ${place} |`);
 			}
 		}
+	}
+
+	/**
+	 * Generate markdown callout format (vertical timeline with year columns)
+	 */
+	private generateMarkdownCallout(
+		entries: TimelineEntry[],
+		groupedEntries: Record<string, TimelineEntry[]> | undefined,
+		options: TimelineReportOptions
+	): string {
+		const lines: string[] = [];
+		const calloutType = options.calloutOptions?.calloutType || 'cr-timeline';
+
+		// Group by year if not already grouped
+		const byYear = groupedEntries && options.grouping === 'by_year'
+			? groupedEntries
+			: this.groupEntries(entries, 'by_year');
+
+		// Sort years chronologically
+		const years = Object.keys(byYear).sort();
+
+		// Outer container callout
+		lines.push(`> [!cr-timeline-outer] Timeline`);
+		lines.push('>');
+
+		for (const year of years) {
+			const yearEntries = byYear[year];
+			// Use a color based on the most common event type in this year
+			const color = this.getCalloutColorForEntries(yearEntries);
+
+			lines.push(`>> [!${calloutType}|${color}] [[${year}]]`);
+
+			for (const entry of yearEntries) {
+				const participants = entry.participants
+					.map(p => p.crId ? `[[${p.name}]]` : p.name)
+					.join(', ');
+
+				// Event title line
+				lines.push(`>> - [[${entry.type}${participants ? ` of ${participants}` : ''}]]`);
+
+				// Date line (indented)
+				if (entry.date) {
+					lines.push(`>> \t- (${entry.date})`);
+				}
+
+				// Place line (indented)
+				if (entry.place && options.includeDescriptions) {
+					lines.push(`>> \t- Location: [[${entry.place}]]`);
+				}
+
+				// Description line (indented)
+				if (entry.description && options.includeDescriptions) {
+					lines.push(`>> \t- ${entry.description}`);
+				}
+			}
+
+			lines.push('>>');
+		}
+
+		return lines.join('\n');
+	}
+
+	/**
+	 * Get callout color for a group of entries based on event types
+	 */
+	private getCalloutColorForEntries(entries: TimelineEntry[]): string {
+		// Map event types to callout colors
+		const typeColors: Record<string, string> = {
+			birth: 'green',
+			death: 'red',
+			marriage: 'pink',
+			divorce: 'orange',
+			baptism: 'cyan',
+			burial: 'purple',
+			residence: 'blue',
+			occupation: 'yellow'
+		};
+
+		// Find the most common event type
+		const typeCounts: Record<string, number> = {};
+		for (const entry of entries) {
+			const type = entry.type.toLowerCase();
+			typeCounts[type] = (typeCounts[type] || 0) + 1;
+		}
+
+		let maxCount = 0;
+		let dominantType = '';
+		for (const [type, count] of Object.entries(typeCounts)) {
+			if (count > maxCount) {
+				maxCount = count;
+				dominantType = type;
+			}
+		}
+
+		return typeColors[dominantType] || 'blue';
+	}
+
+	/**
+	 * Generate markdown list format (simple bullet list with year headers)
+	 */
+	private generateMarkdownList(
+		entries: TimelineEntry[],
+		groupedEntries: Record<string, TimelineEntry[]> | undefined,
+		options: TimelineReportOptions
+	): string {
+		const lines: string[] = [];
+		const date = new Date().toLocaleDateString();
+
+		// Title
+		lines.push('# Timeline');
+		lines.push('');
+		lines.push(`Generated: ${date}`);
+		lines.push('');
+
+		// Use grouping if specified, otherwise group by year
+		const grouped = groupedEntries || this.groupEntries(entries, 'by_year');
+		const keys = Object.keys(grouped).sort();
+
+		for (const key of keys) {
+			const groupEntries = grouped[key];
+
+			// Section header
+			lines.push(`## ${key}`);
+			lines.push('');
+
+			for (const entry of groupEntries) {
+				const participants = entry.participants
+					.map(p => p.crId ? `[[${p.name}]]` : p.name)
+					.join(', ');
+
+				// Main bullet point
+				let line = `- **${entry.type}**`;
+				if (participants) {
+					line += `: ${participants}`;
+				}
+				if (entry.date) {
+					line += ` (${entry.date})`;
+				}
+				lines.push(line);
+
+				// Sub-bullets for additional info
+				if (entry.place) {
+					lines.push(`  - Location: [[${entry.place}]]`);
+				}
+				if (entry.description && options.includeDescriptions) {
+					lines.push(`  - ${entry.description}`);
+				}
+				if (options.includeSources && entry.sources.length > 0) {
+					lines.push(`  - Sources: ${entry.sources.join(', ')}`);
+				}
+			}
+
+			lines.push('');
+		}
+
+		return lines.join('\n');
+	}
+
+	/**
+	 * Generate markdown Dataview query format
+	 */
+	private generateMarkdownDataview(options: TimelineReportOptions): string {
+		const lines: string[] = [];
+
+		lines.push('# Timeline (Dataview)');
+		lines.push('');
+		lines.push('This timeline updates automatically based on your event notes.');
+		lines.push('');
+
+		// Build the Dataview query
+		lines.push('```dataview');
+		lines.push('TABLE WITHOUT ID');
+		lines.push('  date as "Date",');
+		lines.push('  event_type as "Event",');
+		lines.push('  person as "Person",');
+		lines.push('  place as "Place"');
+		lines.push('FROM ""');
+		lines.push('WHERE cr_type = "event"');
+
+		// Add filters if specified
+		if (options.eventTypes && options.eventTypes.length > 0) {
+			const types = options.eventTypes.map(t => `"${t}"`).join(', ');
+			lines.push(`  AND contains([${types}], event_type)`);
+		}
+
+		if (options.personFilter && options.personFilter.length > 0) {
+			// Person filter - check if person field contains any of the filtered people
+			const people = options.personFilter.map(p => `"${p}"`).join(', ');
+			lines.push(`  AND contains([${people}], person)`);
+		}
+
+		if (options.dateFrom) {
+			lines.push(`  AND date >= date("${options.dateFrom}")`);
+		}
+
+		if (options.dateTo) {
+			lines.push(`  AND date <= date("${options.dateTo}")`);
+		}
+
+		// Sorting
+		lines.push('SORT date ASC');
+
+		// Grouping
+		if (options.grouping === 'by_year') {
+			lines.push('GROUP BY dateformat(date, "yyyy")');
+		} else if (options.grouping === 'by_decade') {
+			lines.push('GROUP BY floor(year(date) / 10) * 10');
+		} else if (options.grouping === 'by_person') {
+			lines.push('GROUP BY person');
+		} else if (options.grouping === 'by_place') {
+			lines.push('GROUP BY place');
+		}
+
+		lines.push('```');
+		lines.push('');
+		lines.push('> [!note] Requirements');
+		lines.push('> This query requires the [Dataview](https://github.com/blacksmithgu/obsidian-dataview) plugin.');
+
+		return lines.join('\n');
 	}
 }
