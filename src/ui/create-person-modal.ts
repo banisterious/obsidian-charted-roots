@@ -1055,6 +1055,7 @@ export class CreatePersonModal extends Modal {
 		setting.addButton(button => {
 			const icon = createLucideIcon('link', 16);
 			button.buttonEl.empty();
+			button.buttonEl.addClass('crc-btn', 'crc-btn--secondary');
 			button.buttonEl.appendChild(icon);
 			button.buttonEl.appendText(' Link');
 			button.setTooltip('Link spouse');
