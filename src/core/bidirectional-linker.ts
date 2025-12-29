@@ -405,8 +405,13 @@ export class BidirectionalLinker {
 		// Check by cr_id first (more reliable)
 		const hasChildById = childrenIdsArray.includes(childCrId);
 
+		// Create wikilink using basename if it differs from name, otherwise use name
+		// This handles duplicate names correctly (e.g., "John Doe 1.md" with name "John Doe")
+		const childLinkText = childFile.basename !== childName
+			? `[[${childFile.basename}|${childName}]]`
+			: `[[${childName}]]`;
+
 		// Also check wikilinks for backward compatibility
-		const childLinkText = `[[${childName}]]`;
 		const hasChildByLink = childrenLinksArray.some(child => {
 			const linkText = typeof child === 'string' ? child : String(child);
 			return linkText.includes(childName) || linkText.includes(childFile.basename);
@@ -484,7 +489,10 @@ export class BidirectionalLinker {
 			? Array.isArray(spouseIds) ? spouseIds : [spouseIds]
 			: [];
 
-		const personLinkText = `[[${personName}]]`;
+		// Create wikilink using basename if it differs from name, otherwise use name
+		const personLinkText = personFile.basename !== personName
+			? `[[${personFile.basename}|${personName}]]`
+			: `[[${personName}]]`;
 
 		// Check by cr_id first (more reliable)
 		if (spouseIdsArray.includes(personCrId)) {
@@ -604,7 +612,11 @@ export class BidirectionalLinker {
 		}
 
 		const childFm = childCache.frontmatter;
-		const parentLinkText = `[[${parentName}]]`;
+
+		// Create wikilink using basename if it differs from name, otherwise use name
+		const parentLinkText = parentFile.basename !== parentName
+			? `[[${parentFile.basename}|${parentName}]]`
+			: `[[${parentName}]]`;
 
 		// Determine which parent field to set based on parent's sex
 		let parentField: 'father' | 'mother' | undefined;
@@ -694,8 +706,10 @@ export class BidirectionalLinker {
 		}
 
 		// Remove from both child and children_id arrays
+		// Try all possible formats: [[name]], [[basename]], [[basename|name]]
 		await this.removeFromArrayField(parentFile, 'child', `[[${childName}]]`);
-		await this.removeFromArrayField(parentFile, 'child', `[[${childFile.basename}]]`); // Handle basename variant
+		await this.removeFromArrayField(parentFile, 'child', `[[${childFile.basename}]]`);
+		await this.removeFromArrayField(parentFile, 'child', `[[${childFile.basename}|${childName}]]`);
 		await this.removeFromArrayField(parentFile, 'children_id', childCrId);
 
 		logger.info('bidirectional-linking', 'Removed child from parent (deletion sync)', {
@@ -822,8 +836,10 @@ export class BidirectionalLinker {
 		}
 
 		// Remove from simple spouse/spouse_id arrays
+		// Try all possible formats: [[name]], [[basename]], [[basename|name]]
 		await this.removeFromArrayField(spouseFile, 'spouse', `[[${personName}]]`);
-		await this.removeFromArrayField(spouseFile, 'spouse', `[[${personFile.basename}]]`); // Handle basename variant
+		await this.removeFromArrayField(spouseFile, 'spouse', `[[${personFile.basename}]]`);
+		await this.removeFromArrayField(spouseFile, 'spouse', `[[${personFile.basename}|${personName}]]`);
 		await this.removeFromArrayField(spouseFile, 'spouse_id', personCrId);
 
 		// Remove from indexed spouse properties (spouse1, spouse2, etc.)
