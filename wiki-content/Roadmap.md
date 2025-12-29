@@ -172,38 +172,46 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 
 ### Custom Map Authoring
 
-**Priority:** 💡 Low — Streamlined place creation and positioning for custom maps
+**Priority:** 💡 Low — Streamlined map creation and place positioning for custom maps
 
 **Status:** Planning
 
-**Summary:** Enable intuitive place creation and positioning directly on maps. Currently, adding places to custom maps requires tedious manual coordinate entry—opening the map image in an external editor, finding pixel coordinates, typing them into frontmatter, reloading, and repeating until correct. This feature set eliminates that friction.
+**Summary:** Enable intuitive custom map creation and place positioning. Currently, setting up a custom map requires understanding coordinate systems and bounds, while adding places requires tedious manual coordinate entry. This feature set provides a guided wizard for map creation and eliminates coordinate friction for place management.
 
-**The Problem:** Adding places to custom maps requires:
-1. Open the map image in an external editor to find coordinates
-2. Manually edit the place note's frontmatter
-3. Reload the map to verify placement
-4. Repeat until correct — for every place
+**The Problems:**
+
+1. **Map Creation:** Setting up a custom map requires understanding coordinate systems, bounds, and configuration options upfront
+2. **Place Positioning:** Adding places requires opening the map in an external editor, finding pixel coordinates, typing them into frontmatter, and repeating until correct
 
 **Phased Implementation:**
 
 | Phase | Feature | Description |
 |-------|---------|-------------|
-| 1 | Click-to-Create Place | Click on map → capture coordinates → open Create Place modal with coordinates pre-filled |
-| 2 | Draggable Place Markers | Drag markers to reposition, auto-update frontmatter, undo support |
-| 3 | Place Coordinate Import | Bulk import places from CSV/JSON with preview and conflict handling |
-| 4 | Map Configuration Wizard | Guided setup for custom maps with coordinate system definition |
+| 1 | Map Creation Wizard | 4-step guided wizard: select image → configure map → add initial places → review & create |
+| 2 | Right-Click to Create Place | Right-click on map → "Create place here" → coordinates auto-filled |
+| 3 | Draggable Place Markers | Drag markers to reposition (edit mode), auto-update frontmatter, undo support |
+| 4 | Place Coordinate Import | Bulk import places from CSV/JSON with preview and conflict handling |
 
-**Phase 1: Click-to-Create Place**
-- Edit mode toggle (prevents accidental creation during viewing)
-- Coordinates captured from click location (lat/lng or pixel_x/pixel_y)
-- Create Place modal opens with coordinates pre-filled
+**Phase 1: Map Creation Wizard**
+- Guided 4-step wizard for creating custom maps
+- Step 1: Select map image from vault (with preview)
+- Step 2: Configure name, universe, coordinate system (pixel default)
+- Step 3: Click on map to add initial places (optional)
+- Step 4: Review and create all notes at once
+- Entry points: Control Center, command palette, image context menu
+
+**Phase 2: Right-Click to Create Place**
+- Right-click anywhere on a custom map in Map View
+- Context menu: "Create place here"
+- Opens Create Place modal with coordinates pre-filled
+- No edit mode required (right-click is intentional)
 - Works with both geographic and pixel-based maps
 
-**Phase 2: Draggable Place Markers**
-- Markers become draggable when edit mode is active
-- Drag-end updates place note frontmatter with new coordinates
-- Toast notification with Undo option
-- See [Draggable Place Markers](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/draggable-place-markers.md) for technical details
+**Phase 3: Draggable Place Markers**
+- Edit mode required (prevents accidental moves when panning)
+- Drag markers to reposition, frontmatter updates automatically
+- Toast notification with Undo option (5-second window)
+- Rounds to appropriate precision (integers for pixel, 6 decimals for geo)
 
 **Documentation:**
 - See [Custom Map Authoring Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/custom-map-authoring.md) for detailed specifications
