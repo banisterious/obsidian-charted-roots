@@ -127,12 +127,12 @@ export async function createPlaceNote(
 
 	// Parent place (dual storage)
 	if (place.parentPlaceId && place.parentPlace) {
-		frontmatter[prop('parent_place')] = formatWikilink(place.parentPlace);
+		frontmatter[prop('parent_place')] = createSmartWikilink(place.parentPlace, app);
 		frontmatter.parent_place_id = place.parentPlaceId;
 	} else if (place.parentPlaceId) {
 		frontmatter.parent_place_id = place.parentPlaceId;
 	} else if (place.parentPlace) {
-		frontmatter[prop('parent_place')] = formatWikilink(place.parentPlace);
+		frontmatter[prop('parent_place')] = createSmartWikilink(place.parentPlace, app);
 	}
 
 	// Coordinates (only for real/historical/disputed places) - flat properties
@@ -273,7 +273,7 @@ export async function updatePlaceNote(
 		}
 	}
 	if (updates.parentPlace !== undefined) {
-		newFrontmatter.parent_place = formatWikilink(updates.parentPlace);
+		newFrontmatter.parent_place = createSmartWikilink(updates.parentPlace, app);
 	}
 	if (updates.parentPlaceId !== undefined) {
 		newFrontmatter.parent_place_id = updates.parentPlaceId;
@@ -416,6 +416,28 @@ function formatWikilink(value: string): string {
 	}
 	// Plain text - convert to wikilink
 	return `"[[${value}]]"`;
+}
+
+/**
+ * Create a wikilink with proper handling of duplicate filenames
+ * Uses [[basename|name]] format when basename differs from name
+ * @param name The display name
+ * @param app The Obsidian app instance for file resolution
+ */
+function createSmartWikilink(name: string, app: App): string {
+	// If already a wikilink, quote and return as-is
+	if (name.startsWith('[[') && name.endsWith(']]')) {
+		return `"${name}"`;
+	}
+
+	// Try to resolve the name to a file
+	const resolvedFile = app.metadataCache.getFirstLinkpathDest(name, '');
+	if (resolvedFile && resolvedFile.basename !== name) {
+		return `"[[${resolvedFile.basename}|${name}]]"`;
+	}
+
+	// Standard format
+	return `"[[${name}]]"`;
 }
 
 /**
