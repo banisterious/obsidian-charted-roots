@@ -30,9 +30,6 @@ const CONFIG = {
     'style-settings.css', // Style Settings plugin configuration
     'base.css',          // Base structural elements
     'layout.css',        // Layout utilities
-    'canvas.css',        // Canvas-specific styling
-    'nodes.css',         // Family tree node styling
-    'edges.css',         // Relationship edge styling
     'settings.css',      // Settings interface
     'modals.css',        // Modal dialogs
     'duplicate-detection.css', // Duplicate detection modal
@@ -62,9 +59,7 @@ const CONFIG = {
     'tree-output.css',   // Tree output two-panel layout
     'dynamic-content.css', // Dynamic content blocks (timeline, relationships)
     'migration-notice.css', // Migration notice view (upgrade notifications)
-    'animations.css',    // Keyframes and transitions
-    'responsive.css',    // Responsive breakpoints
-    'theme.css'          // Theme compatibility (last)
+    'responsive.css'     // Responsive breakpoints
   ],
 
   // Files to exclude from processing
