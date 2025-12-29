@@ -466,6 +466,7 @@ export class TimelineGenerator {
 			date: event.date || '',
 			sortDate: this.extractSortDate(event.date || '') || '9999-99-99',
 			type: event.eventType,
+			eventName: event.title,
 			description: event.description,
 			participants,
 			place: placeName,
@@ -709,8 +710,12 @@ export class TimelineGenerator {
 					.map(p => p.crId ? `[[${p.name}]]` : p.name)
 					.join(', ');
 
-				// Event title line
-				lines.push(`>> - [[${entry.type}${participants ? ` of ${participants}` : ''}]]`);
+				// Event title line - link to the event note
+				const eventLink = entry.eventName ? `[[${entry.eventName}]]` : `**${entry.type}**`;
+				const eventTitle = participants
+					? `${eventLink} (${participants})`
+					: eventLink;
+				lines.push(`>> - ${eventTitle}`);
 
 				// Date line (indented)
 				if (entry.date) {

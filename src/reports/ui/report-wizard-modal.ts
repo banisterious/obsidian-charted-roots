@@ -1122,7 +1122,7 @@ export class ReportWizardModal extends Modal {
 	}
 
 	/**
-	 * Render a category of timeline format options
+	 * Render a category of timeline format options as tiles
 	 */
 	private renderTimelineFormatCategory(
 		container: HTMLElement,
@@ -1132,40 +1132,45 @@ export class ReportWizardModal extends Modal {
 		const categorySection = container.createDiv({ cls: 'cr-timeline-format-category' });
 		categorySection.createEl('h4', { text: categoryName, cls: 'cr-timeline-format-category-title' });
 
-		const formatList = categorySection.createDiv({ cls: 'cr-timeline-format-list' });
+		const tileGrid = categorySection.createDiv({ cls: 'cr-timeline-format-grid' });
 
 		for (const format of formats) {
 			const isSelected = this.formData.timelineFormat === format.id;
-			const formatRow = formatList.createDiv({
-				cls: `cr-timeline-format-row ${isSelected ? 'cr-timeline-format-row--selected' : ''}`
+			const tile = tileGrid.createDiv({
+				cls: `cr-timeline-format-tile ${isSelected ? 'cr-timeline-format-tile--selected' : ''}`
 			});
 
-			// Radio button
-			formatRow.createEl('input', {
-				type: 'radio',
-				attr: {
-					name: 'timeline-format',
-					value: format.id,
-					...(isSelected ? { checked: 'true' } : {})
-				}
-			});
+			// Icon container
+			const iconContainer = tile.createDiv({ cls: 'cr-timeline-format-tile-icon' });
+			setLucideIcon(iconContainer, format.icon as LucideIconName, 24);
 
-			// Icon
-			const iconEl = formatRow.createDiv({ cls: 'cr-timeline-format-icon' });
-			setLucideIcon(iconEl, format.icon as LucideIconName, 18);
+			// Label
+			tile.createDiv({ cls: 'cr-timeline-format-tile-label', text: format.label });
 
-			// Label and description
-			const textEl = formatRow.createDiv({ cls: 'cr-timeline-format-text' });
-			textEl.createDiv({ cls: 'cr-timeline-format-label', text: format.label });
-			textEl.createDiv({ cls: 'cr-timeline-format-desc', text: format.desc });
+			// Tooltip with description
+			tile.setAttribute('title', format.desc);
+			tile.setAttribute('aria-label', `${format.label}: ${format.desc}`);
 
-			// Click handler for entire row
-			formatRow.addEventListener('click', () => {
+			// Click handler
+			tile.addEventListener('click', () => {
 				this.formData.timelineFormat = format.id;
-				// Also update the generic output format for compatibility
 				this.syncOutputFormatFromTimeline();
 				this.updateFilename();
 				this.renderCurrentStep();
+			});
+
+			// Keyboard accessibility
+			tile.setAttribute('tabindex', '0');
+			tile.setAttribute('role', 'radio');
+			tile.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+			tile.addEventListener('keydown', (e) => {
+				if (e.key === 'Enter' || e.key === ' ') {
+					e.preventDefault();
+					this.formData.timelineFormat = format.id;
+					this.syncOutputFormatFromTimeline();
+					this.updateFilename();
+					this.renderCurrentStep();
+				}
 			});
 		}
 	}

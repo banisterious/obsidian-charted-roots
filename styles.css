@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-28 23:46:09 UTC
+ * - Generated: 2025-12-29 00:02:49 UTC
  * - Components: 39 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -15936,7 +15936,7 @@ settings:
    COMPONENT: REPORT-WIZARD.CSS
    ========================================================================== */
 
-/* Component Size: 889 lines, 19.08 KB */
+/* Component Size: 888 lines, 19.4 KB */
 
 /* ==========================================================================
    REPORT WIZARD
@@ -16658,10 +16658,11 @@ settings:
 
 /* ==========================================================================
    TIMELINE FORMAT SELECTION (Step 2 for Timeline reports)
+   Tile-based layout for format selection
    ========================================================================== */
 
 .cr-timeline-format-category {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .cr-timeline-format-category:last-child {
@@ -16669,89 +16670,87 @@ settings:
 }
 
 .cr-timeline-format-category-title {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--text-muted);
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   padding: 0;
 }
 
-.cr-timeline-format-list {
+/* Tile grid - 2 columns for Visual/Documents, 4 columns for Markdown */
+.cr-timeline-format-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+/* 4 columns for Markdown category (has 4 items) */
+.cr-timeline-format-category:last-child .cr-timeline-format-grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Individual format tile */
+.cr-timeline-format-tile {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-}
-
-.cr-timeline-format-row {
-  display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  border-radius: 6px;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 8px;
+  border-radius: 8px;
   background: var(--background-secondary);
+  border: 2px solid transparent;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition: all 0.15s ease;
+  min-height: 70px;
 }
 
-.cr-timeline-format-row:hover {
+.cr-timeline-format-tile:hover {
   background: var(--background-modifier-hover);
+  border-color: var(--background-modifier-border);
 }
 
-.cr-timeline-format-row--selected {
+.cr-timeline-format-tile:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+}
+
+/* Selected tile state */
+.cr-timeline-format-tile--selected {
   background: var(--interactive-accent);
-  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
 }
 
-.cr-timeline-format-row--selected:hover {
+.cr-timeline-format-tile--selected:hover {
   background: var(--interactive-accent-hover);
+  border-color: var(--interactive-accent-hover);
 }
 
-.cr-timeline-format-row input[type="radio"] {
-  margin: 0;
-  flex-shrink: 0;
-}
-
-.cr-timeline-format-icon {
-  flex-shrink: 0;
+/* Tile icon */
+.cr-timeline-format-tile-icon {
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-muted);
 }
 
-.cr-timeline-format-row--selected .cr-timeline-format-icon {
+.cr-timeline-format-tile--selected .cr-timeline-format-tile-icon {
   color: var(--text-on-accent);
 }
 
-.cr-timeline-format-text {
-  flex: 1;
-  min-width: 0;
-}
-
-.cr-timeline-format-label {
-  font-size: 14px;
+/* Tile label */
+.cr-timeline-format-tile-label {
+  font-size: 12px;
   font-weight: 500;
   color: var(--text-normal);
-  margin-bottom: 2px;
+  text-align: center;
+  line-height: 1.2;
 }
 
-.cr-timeline-format-row--selected .cr-timeline-format-label {
+.cr-timeline-format-tile--selected .cr-timeline-format-tile-label {
   color: var(--text-on-accent);
-}
-
-.cr-timeline-format-desc {
-  font-size: 12px;
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.cr-timeline-format-row--selected .cr-timeline-format-desc {
-  color: var(--text-on-accent);
-  opacity: 0.85;
 }
 
 /* ==========================================================================
@@ -32810,11 +32809,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-28 23:46:09 UTC
+ * Build completed: 2025-12-29 00:02:49 UTC
  * Components processed: 39
- * Total lines: 32436
- * Total size: 641.27 KB
- * Build duration: 0.03 seconds
+ * Total lines: 32435
+ * Total size: 641.6 KB
+ * Build duration: 0.04 seconds
  *
  * Component breakdown:
  * - variables.css: 56 lines, 1.61 KB
@@ -32834,7 +32833,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - relationship-calculator.css: 302 lines, 5.21 KB
  * - family-chart-view.css: 1127 lines, 25.81 KB
  * - family-chart-export.css: 699 lines, 14.62 KB
- * - report-wizard.css: 889 lines, 19.08 KB
+ * - report-wizard.css: 888 lines, 19.4 KB
  * - data-quality.css: 1393 lines, 27.56 KB
  * - relationships.css: 517 lines, 9.76 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB

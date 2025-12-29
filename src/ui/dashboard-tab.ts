@@ -220,7 +220,11 @@ function renderQuickActionsSection(
 	};
 
 	// Define the 12 tiles
+	// Row 1: Core entity creation (Person, Event, Place, Source)
+	// Row 2: Family & visualization (Family, Family Chart, Canvas Trees, Map)
+	// Row 3: Analysis & utilities (Reports Wizard, Stats & Reports, Media, Import/Export)
 	const tiles: DashboardTile[] = [
+		// Row 1: Core entity creation
 		{
 			id: 'create-person',
 			label: 'Person',
@@ -236,12 +240,20 @@ function renderQuickActionsSection(
 			action: openCreateEvent
 		},
 		{
+			id: 'create-place',
+			label: 'Place',
+			icon: 'map-pin',
+			description: 'Create a new place note',
+			action: openCreatePlace
+		},
+		{
 			id: 'create-source',
 			label: 'Source',
 			icon: 'file-text',
 			description: 'Create a new source note',
 			action: openCreateSource
 		},
+		// Row 2: Family & visualization
 		{
 			id: 'create-family',
 			label: 'Family',
@@ -253,31 +265,14 @@ function renderQuickActionsSection(
 			}
 		},
 		{
-			id: 'statistics-reports',
-			label: 'Stats & Reports',
-			icon: 'chart-bar-decreasing',
-			description: 'Statistics dashboard and report generation',
+			id: 'family-chart',
+			label: 'Family Chart',
+			icon: 'users',
+			description: 'Open the interactive family chart',
 			action: () => {
 				closeModal();
-				void plugin.activateStatisticsView();
+				void plugin.activateFamilyChartView();
 			}
-		},
-		{
-			id: 'import-export',
-			label: 'Import/Export',
-			icon: 'arrow-up-down',
-			description: 'Import or export genealogical data',
-			action: () => {
-				closeModal();
-				new ImportExportHubModal(app, plugin).open();
-			}
-		},
-		{
-			id: 'create-place',
-			label: 'Place',
-			icon: 'map-pin',
-			description: 'Create a new place note',
-			action: openCreatePlace
 		},
 		{
 			id: 'tree-output',
@@ -298,6 +293,27 @@ function renderQuickActionsSection(
 				void plugin.activateMapView();
 			}
 		},
+		// Row 3: Analysis & utilities
+		{
+			id: 'reports',
+			label: 'Reports Wizard',
+			icon: 'file-text',
+			description: 'Generate timeline and narrative reports',
+			action: () => {
+				closeModal();
+				new ReportWizardModal(plugin).open();
+			}
+		},
+		{
+			id: 'statistics-reports',
+			label: 'Stats & Reports',
+			icon: 'chart-bar-decreasing',
+			description: 'Statistics dashboard and report generation',
+			action: () => {
+				closeModal();
+				void plugin.activateStatisticsView();
+			}
+		},
 		{
 			id: 'media-manager',
 			label: 'Media',
@@ -309,23 +325,13 @@ function renderQuickActionsSection(
 			}
 		},
 		{
-			id: 'reports',
-			label: 'Reports',
-			icon: 'file-text',
-			description: 'Generate timeline and narrative reports',
+			id: 'import-export',
+			label: 'Import/Export',
+			icon: 'arrow-up-down',
+			description: 'Import or export genealogical data',
 			action: () => {
 				closeModal();
-				new ReportWizardModal(plugin).open();
-			}
-		},
-		{
-			id: 'family-chart',
-			label: 'Family Chart',
-			icon: 'users',
-			description: 'Open the interactive family chart',
-			action: () => {
-				closeModal();
-				void plugin.activateFamilyChartView();
+				new ImportExportHubModal(app, plugin).open();
 			}
 		}
 	];

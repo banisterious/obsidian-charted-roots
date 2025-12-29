@@ -588,6 +588,8 @@ export interface TimelineEntry {
 	sortDate: string;
 	/** Event type */
 	type: string;
+	/** Event note title (for wikilinks) */
+	eventName: string;
 	/** Event description */
 	description?: string;
 	/** Participants */
