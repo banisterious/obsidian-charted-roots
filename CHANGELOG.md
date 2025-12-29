@@ -22,6 +22,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Missing "Link" text on spouse button** - Added "Link" text label to spouse link button in create person modal (was showing only icon)
 
+- **Data quality checker incorrectly flagging schema-defined structures** - Fixed false warnings for intentional nested structures:
+  - `sourced_facts` and `evidence` properties are now whitelisted and won't trigger "nested structure" warnings
+  - Cleanup wizard will no longer flatten these properties, preventing breakage of the Evidence Service
+  - Users can now safely use GPS (Genealogical Proof Standard) research tracking features without getting false data quality warnings
+
 ---
 
 ## [0.18.4] - 2025-12-29
