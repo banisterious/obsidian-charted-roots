@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.18.4] - 2025-12-29
+
 ### Changed
 
 - **CSS Architecture Refactoring** - Improved maintainability and organization of the plugin's CSS codebase:
