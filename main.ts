@@ -4,6 +4,7 @@ import { ControlCenterModal } from './src/ui/control-center';
 import { RegenerateOptionsModal } from './src/ui/regenerate-options-modal';
 import { TreeStatisticsModal } from './src/ui/tree-statistics-modal';
 import { PersonPickerModal } from './src/ui/person-picker';
+import { RelationshipContext } from './src/ui/quick-create-person-modal';
 import { RelationshipManager } from './src/core/relationship-manager';
 import { RelationshipValidator } from './src/core/relationship-validator';
 import { ValidationResultsModal } from './src/ui/validation-results-modal';
@@ -1823,21 +1824,36 @@ export default class CanvasRootsPlugin extends Plugin {
 										relItem
 											.setTitle('Add parent')
 											.setIcon('user')
-											.onClick(() => {
+											.onClick(async () => {
+												// Ask which parent type first
+												const parentType = await this.promptParentType();
+												if (!parentType) return;
+
+												// Build context for inline creation
+												const cache = this.app.metadataCache.getFileCache(file);
+												const crId = cache?.frontmatter?.cr_id;
+												const directory = file.parent?.path || '';
+
+												const createContext: RelationshipContext = {
+													relationshipType: parentType,
+													suggestedSex: parentType === 'father' ? 'male' : 'female',
+													parentCrId: crId,
+													directory: directory
+												};
+
 												const picker = new PersonPickerModal(this.app, (selectedPerson) => {
 													void (async () => {
 														const relationshipMgr = new RelationshipManager(this.app, this.relationshipHistory);
-
-														// Ask which parent type
-														const parentType = await this.promptParentType();
-														if (parentType) {
-															await relationshipMgr.addParentRelationship(
-																file,
-																selectedPerson.file,
-																parentType
-															);
-														}
+														await relationshipMgr.addParentRelationship(
+															file,
+															selectedPerson.file,
+															parentType
+														);
 													})();
+												}, {
+													title: `Select ${parentType}`,
+													createContext: createContext,
+													plugin: this
 												});
 												picker.open();
 											});
