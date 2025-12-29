@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.18.5] - 2025-12-29
+
 ### Fixed
 
 - **Bidirectional linking for spouse's children** - Fixed critical regression where children added to a parent would not be automatically linked to the parent's spouse:
