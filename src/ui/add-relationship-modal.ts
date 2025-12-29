@@ -5,6 +5,7 @@
 
 import { App, Modal, Notice, Setting, TFile } from 'obsidian';
 import { PersonPickerModal, PersonInfo } from './person-picker';
+import { RelationshipContext } from './quick-create-person-modal';
 import { RelationshipService } from '../relationships';
 import type { RelationshipTypeDefinition, RawRelationship } from '../relationships';
 import type CanvasRootsPlugin from '../../main';
@@ -91,11 +92,30 @@ export class AddRelationshipModal extends Modal {
 		targetSetting.addButton(btn => btn
 			.setButtonText('Select person')
 			.onClick(() => {
+				// Build context for inline creation
+				const cache = this.app.metadataCache.getFileCache(this.sourceFile);
+				const crId = cache?.frontmatter?.cr_id;
+				const directory = this.sourceFile.parent?.path || '';
+
+				// Use selected relationship type (if any)
+				const relationshipType = this.selectedType?.id || 'related';
+
+				const createContext: RelationshipContext = {
+					relationshipType: relationshipType,
+					suggestedSex: undefined, // Custom relationships don't suggest sex
+					parentCrId: crId,
+					directory: directory
+				};
+
 				const picker = new PersonPickerModal(this.app, (selected) => {
 					this.selectedTarget = selected;
 					targetDisplay.empty();
 					targetDisplay.createSpan({ text: selected.name });
 					this.updateAddButton();
+				}, {
+					title: 'Select person',
+					createContext: createContext,
+					plugin: this.plugin
 				});
 				picker.open();
 			})
