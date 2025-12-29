@@ -28,7 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `.crc-field-list` - Converted to scoped selectors to prevent conflicts between different contexts
   - `.cr-modal-buttons` - Consolidated to single base definition in `base.css`
 
-- **Missing bidirectional parent-child relationship linking** - Fixed critical bug where creating a person with parents or children would only create one-way relationships. When you create a person and link them to a father/mother, the parent's `children_id` array is now automatically updated to include the new child. Similarly, when you add a child to a person, the child's `father_id` or `mother_id` is automatically set. This ensures family relationships are always properly bidirectional, matching how spouse relationships already worked.
+- **Missing bidirectional parent-child relationship linking** - Fixed critical bug where creating a person with parents or children would only create one-way relationships. Now all relationship creation flows properly maintain bidirectional links:
+  - **Person creation**: When you create a person and link them to a father/mother, the parent's `children_id` array is automatically updated. When you add children during creation, each child's `father_id` or `mother_id` is automatically set based on the parent's sex.
+  - **Post-create actions**: When using "Add child", "Add spouse", or "Add parent" buttons in the post-creation flow, both sides of the relationship are now properly updated.
+  - **Spouse relationships**: Refactored existing spouse linking to use proper dual storage (wikilink + ID) via `updatePersonNote()`.
+
+  This ensures family relationships are always bidirectional across all creation flows, not just for spouse relationships.
 
 ---
 
