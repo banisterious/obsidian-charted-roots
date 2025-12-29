@@ -12,12 +12,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **"Create new" buttons in context menu relationship flows** - Added inline person creation to all relationship context menu options:
-  - "Add parent" → Shows "Create new father" or "Create new mother" button with sex pre-filled
+  - "Add father" → Shows "Create new father" button with sex pre-filled as male
+  - "Add mother" → Shows "Create new mother" button with sex pre-filled as female
   - "Add spouse" → Shows "Create new spouse" button with opposite sex suggested (if known)
   - "Add child" → Shows "Create new child" button
   - "Add custom relationship" → Shows "Create new [relationship type]" button
   - Matches the behavior of the Create Person modal for a consistent user experience
   - Streamlines workflow from 3 steps (close modal, create person, re-open modal) down to 1 step
+
+### Changed
+
+- **Split "Add parent" into "Add father" and "Add mother"** - Context menu now shows separate options instead of prompting with an intermediate modal:
+  - Eliminates the extra step of choosing parent type
+  - More discoverable and straightforward
+  - Consistent with having separate "Create new father" and "Create new mother" buttons
 
 ### Fixed
 
