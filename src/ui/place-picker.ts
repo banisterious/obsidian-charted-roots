@@ -213,6 +213,18 @@ export class PlacePickerModal extends Modal {
 		// Search section
 		const searchSection = contentEl.createDiv({ cls: 'crc-picker-search' });
 
+		// "Create new" button (shown at top)
+		const createNewBtn = searchSection.createEl('button', {
+			cls: 'crc-btn crc-btn--secondary crc-picker-create-new-btn'
+		});
+		const plusIcon = createLucideIcon('plus', 16);
+		createNewBtn.appendChild(plusIcon);
+		createNewBtn.appendText(' Create new place');
+
+		createNewBtn.addEventListener('click', () => {
+			this.openCreatePlaceModal();
+		});
+
 		// Search input
 		this.searchInput = searchSection.createEl('input', {
 			cls: 'crc-form-input',
@@ -287,17 +299,6 @@ export class PlacePickerModal extends Modal {
 		// Results container
 		this.resultsContainer = contentEl.createDiv({ cls: 'crc-picker-results' });
 		this.renderResults();
-
-		// Footer with "Create new" button
-		const footer = contentEl.createDiv({ cls: 'crc-picker-footer' });
-		const createBtn = footer.createEl('button', { cls: 'crc-btn crc-btn--secondary' });
-		const plusIcon = createLucideIcon('plus', 16);
-		createBtn.appendChild(plusIcon);
-		createBtn.appendText(' Create new place');
-
-		createBtn.addEventListener('click', () => {
-			this.openCreatePlaceModal();
-		});
 	}
 
 	/**
