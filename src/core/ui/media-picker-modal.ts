@@ -5,7 +5,8 @@
  * from the vault to link to entities (person, place, event, organization).
  */
 
-import { App, Modal, TFile, setIcon } from 'obsidian';
+import { App, Modal, TFile, Notice, normalizePath, setIcon } from 'obsidian';
+import type CanvasRootsPlugin from '../../../main';
 import {
 	MediaService,
 	MediaType,
@@ -71,6 +72,7 @@ interface MediaFileItem {
  */
 export class MediaPickerModal extends Modal {
 	private mediaService: MediaService;
+	private plugin: CanvasRootsPlugin | null;
 	private onSelect: (files: TFile[]) => void;
 	private options: MediaPickerOptions;
 
@@ -90,10 +92,12 @@ export class MediaPickerModal extends Modal {
 		app: App,
 		mediaService: MediaService,
 		onSelect: (files: TFile[]) => void,
-		options?: MediaPickerOptions
+		options?: MediaPickerOptions,
+		plugin?: CanvasRootsPlugin
 	) {
 		super(app);
 		this.mediaService = mediaService;
+		this.plugin = plugin || null;
 		this.onSelect = onSelect;
 		this.options = options || {};
 
@@ -208,6 +212,20 @@ export class MediaPickerModal extends Modal {
 
 		// Search section
 		const searchSection = contentEl.createDiv({ cls: 'crc-picker-search' });
+
+		// "Upload files..." button (shown at top, only if plugin is available)
+		if (this.plugin) {
+			const uploadBtn = searchSection.createEl('button', {
+				cls: 'crc-btn crc-btn--secondary crc-picker-upload-btn'
+			});
+			const uploadIcon = uploadBtn.createSpan({ cls: 'crc-btn-icon' });
+			setIcon(uploadIcon, 'upload');
+			uploadBtn.appendText(' Upload files...');
+
+			uploadBtn.addEventListener('click', () => {
+				this.openUploadDialog();
+			});
+		}
 
 		this.searchInput = searchSection.createEl('input', {
 			cls: 'crc-form-input',
@@ -508,5 +526,119 @@ export class MediaPickerModal extends Modal {
 		}
 
 		this.close();
+	}
+
+	/**
+	 * Open file upload dialog
+	 */
+	private openUploadDialog(): void {
+		if (!this.plugin) return;
+
+		const input = document.createElement('input');
+		input.type = 'file';
+		input.multiple = true;
+		input.accept = ALL_MEDIA_EXTENSIONS.join(',');
+
+		input.addEventListener('change', async () => {
+			if (input.files && input.files.length > 0) {
+				await this.handleFileUpload(input.files);
+			}
+		});
+
+		input.click();
+	}
+
+	/**
+	 * Handle file upload
+	 */
+	private async handleFileUpload(fileList: FileList): Promise<void> {
+		if (!this.plugin) return;
+
+		const folder = this.plugin.settings.mediaFolders[0];
+		if (!folder) {
+			new Notice('No media folder configured. Please configure media folders in Preferences.');
+			return;
+		}
+
+		// Ensure folder exists
+		await this.ensureFolderExists(folder);
+
+		const uploadedPaths: string[] = [];
+
+		for (let i = 0; i < fileList.length; i++) {
+			const file = fileList[i];
+			const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+
+			// Validate file type
+			if (!ALL_MEDIA_EXTENSIONS.includes(ext)) {
+				new Notice(`Unsupported file type: ${file.name}`);
+				continue;
+			}
+
+			try {
+				const finalPath = await this.uploadFile(file, folder);
+				if (finalPath) {
+					uploadedPaths.push(finalPath);
+				}
+			} catch (error) {
+				console.error('Error uploading file:', error);
+				new Notice(`Failed to upload ${file.name}`);
+			}
+		}
+
+		if (uploadedPaths.length > 0) {
+			new Notice(`Uploaded ${uploadedPaths.length} file${uploadedPaths.length > 1 ? 's' : ''} to ${folder}`);
+
+			// Reload media files and auto-select newly uploaded files
+			this.loadMediaFiles();
+
+			// Auto-select the uploaded files
+			for (const path of uploadedPaths) {
+				this.selectedFiles.add(path);
+			}
+
+			// Update the display
+			this.filterMedia();
+		}
+	}
+
+	/**
+	 * Upload a single file
+	 */
+	private async uploadFile(file: File, folder: string): Promise<string | null> {
+		// Read file as ArrayBuffer
+		const arrayBuffer = await file.arrayBuffer();
+
+		// Generate unique filename if needed
+		let fileName = file.name;
+		let finalPath = normalizePath(`${folder}/${fileName}`);
+
+		// Handle collision with auto-rename
+		let counter = 1;
+		while (this.app.vault.getAbstractFileByPath(finalPath)) {
+			const nameParts = file.name.split('.');
+			const ext = nameParts.pop();
+			const baseName = nameParts.join('.');
+			fileName = `${baseName} ${counter}.${ext}`;
+			finalPath = normalizePath(`${folder}/${fileName}`);
+			counter++;
+		}
+
+		// Create file
+		await this.app.vault.createBinary(finalPath, arrayBuffer);
+
+		return finalPath;
+	}
+
+	/**
+	 * Ensure folder exists, create if needed
+	 */
+	private async ensureFolderExists(path: string): Promise<void> {
+		const normalizedPath = normalizePath(path);
+		const folder = this.app.vault.getAbstractFileByPath(normalizedPath);
+
+		if (!folder) {
+			await this.app.vault.createFolder(normalizedPath);
+		}
 	}
 }

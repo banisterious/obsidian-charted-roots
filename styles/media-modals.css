@@ -153,6 +153,19 @@
   color: var(--text-muted);
 }
 
+/* Upload button in media picker */
+.crc-picker-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.crc-picker-upload-btn .crc-btn-icon {
+  display: flex;
+  align-items: center;
+}
+
 /* ==========================================================================
    Media Manage Modal
    ========================================================================== */

@@ -9,7 +9,7 @@
  * - Source Media Linker (smart source-image matching)
  */
 
-import { App, Modal, setIcon } from 'obsidian';
+import { App, Modal, Notice, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import { MediaService, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, AUDIO_EXTENSIONS, PDF_EXTENSIONS, DOCUMENT_EXTENSIONS } from '../media-service';
 import { BulkMediaLinkModal } from './bulk-media-link-modal';
@@ -17,6 +17,7 @@ import { MediaGalleryModal } from './media-gallery-modal';
 import { UnlinkedMediaModal } from './unlinked-media-modal';
 import { SourceMediaLinkerModal } from '../../sources/ui/source-media-linker';
 import { MediaUploadModal } from './media-upload-modal';
+import { MediaPickerModal } from './media-picker-modal';
 import { FamilyGraphService } from '../family-graph';
 import { PlaceGraphService } from '../place-graph';
 import { EventService } from '../../events/services/event-service';
@@ -370,12 +371,26 @@ export class MediaManagerModal extends Modal {
 	}
 
 	/**
-	 * Open Link Media flow - MediaPickerModal in media-first mode (Phase 4 - to be implemented)
+	 * Open Link Media flow - MediaPickerModal in media-first mode
 	 */
 	private openLinkMedia(): void {
 		this.close();
-		// TODO: Phase 4 - Open MediaPickerModal without pre-selected entity
-		console.log('Link Media - to be implemented in Phase 4');
+		const mediaService = new MediaService(this.app, this.plugin.settings);
+		new MediaPickerModal(
+			this.app,
+			mediaService,
+			(files) => {
+				if (files.length > 0) {
+					new Notice(`Selected ${files.length} file${files.length > 1 ? 's' : ''}. This feature will link them to entities in a future update.`);
+				}
+			},
+			{
+				title: 'Select media to link',
+				subtitle: 'Choose media files, then select entities to link them to',
+				multiSelect: true
+			},
+			this.plugin
+		).open();
 	}
 
 	/**
