@@ -258,10 +258,43 @@
   padding: var(--cr-spacing-sm) var(--cr-spacing-md);
   border-bottom: 1px solid var(--background-modifier-border);
   background: var(--background-secondary);
+  cursor: grab;
+  transition: all 0.15s ease;
 }
 
 .cr-media-folder-row:hover {
   background: var(--background-modifier-hover);
+}
+
+.cr-media-folder-row:active {
+  cursor: grabbing;
+}
+
+.cr-media-folder-row--dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.cr-media-folder-row--drag-over {
+  border-top: 2px solid var(--interactive-accent);
+  margin-top: -2px;
+}
+
+.cr-media-folder-handle {
+  display: flex;
+  align-items: center;
+  color: var(--text-faint);
+  cursor: grab;
+  padding: 4px;
+  transition: color 0.15s ease;
+}
+
+.cr-media-folder-handle:hover {
+  color: var(--text-muted);
+}
+
+.cr-media-folder-row:active .cr-media-folder-handle {
+  cursor: grabbing;
 }
 
 .cr-media-folder-icon {

@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-29 17:39:35 UTC
+ * - Generated: 2025-12-29 23:21:07 UTC
  * - Components: 39 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -30196,7 +30196,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: PREFERENCES.CSS
    ========================================================================== */
 
-/* Component Size: 315 lines, 6.86 KB */
+/* Component Size: 348 lines, 7.43 KB */
 
 /* ==========================================================================
    Preferences Tab Styles
@@ -30458,10 +30458,43 @@ body:has(.cr-media-linker) .suggestion-container {
   padding: var(--cr-spacing-sm) var(--cr-spacing-md);
   border-bottom: 1px solid var(--background-modifier-border);
   background: var(--background-secondary);
+  cursor: grab;
+  transition: all 0.15s ease;
 }
 
 .cr-media-folder-row:hover {
   background: var(--background-modifier-hover);
+}
+
+.cr-media-folder-row:active {
+  cursor: grabbing;
+}
+
+.cr-media-folder-row--dragging {
+  opacity: 0.5;
+  cursor: grabbing;
+}
+
+.cr-media-folder-row--drag-over {
+  border-top: 2px solid var(--interactive-accent);
+  margin-top: -2px;
+}
+
+.cr-media-folder-handle {
+  display: flex;
+  align-items: center;
+  color: var(--text-faint);
+  cursor: grab;
+  padding: 4px;
+  transition: color 0.15s ease;
+}
+
+.cr-media-folder-handle:hover {
+  color: var(--text-muted);
+}
+
+.cr-media-folder-row:active .cr-media-folder-handle {
+  cursor: grabbing;
 }
 
 .cr-media-folder-icon {
@@ -32753,11 +32786,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-29 17:39:35 UTC
+ * Build completed: 2025-12-29 23:21:07 UTC
  * Components processed: 39
- * Total lines: 32379
- * Total size: 640.81 KB
- * Build duration: 0.03 seconds
+ * Total lines: 32412
+ * Total size: 641.37 KB
+ * Build duration: 0.05 seconds
  *
  * Component breakdown:
  * - variables.css: 56 lines, 1.61 KB
@@ -32794,7 +32827,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - dashboard.css: 397 lines, 7.7 KB
  * - universe-wizard.css: 621 lines, 11.05 KB
  * - family-wizard.css: 743 lines, 15.52 KB
- * - preferences.css: 315 lines, 6.86 KB
+ * - preferences.css: 348 lines, 7.43 KB
  * - tree-output.css: 1548 lines, 30.08 KB
  * - dynamic-content.css: 504 lines, 10.79 KB
  * - migration-notice.css: 135 lines, 2.67 KB

@@ -854,10 +854,20 @@ function renderMediaFoldersList(
 
 	const folders = plugin.settings.mediaFolders;
 
+	// State for drag and drop
+	let draggedIndex = -1;
+
 	// Render existing folders
 	for (let i = 0; i < folders.length; i++) {
 		const folder = folders[i];
 		const row = container.createDiv({ cls: 'cr-media-folder-row' });
+
+		// Make row draggable
+		row.setAttribute('draggable', 'true');
+
+		// Drag handle
+		const dragHandle = row.createSpan({ cls: 'cr-media-folder-handle' });
+		setIcon(dragHandle, 'grip-vertical');
 
 		// Folder icon
 		const iconEl = row.createSpan({ cls: 'cr-media-folder-icon' });
@@ -876,6 +886,63 @@ function renderMediaFoldersList(
 			void plugin.saveSettings().then(() => {
 				renderMediaFoldersList(container, plugin);
 			});
+		});
+
+		// Drag and drop event handlers
+		row.addEventListener('dragstart', (e: DragEvent) => {
+			draggedIndex = i;
+			row.addClass('cr-media-folder-row--dragging');
+			if (e.dataTransfer) {
+				e.dataTransfer.effectAllowed = 'move';
+				e.dataTransfer.setData('text/plain', i.toString());
+			}
+		});
+
+		row.addEventListener('dragend', () => {
+			row.removeClass('cr-media-folder-row--dragging');
+			// Remove drag-over indicators from all rows
+			container.querySelectorAll('.cr-media-folder-row').forEach(r => {
+				r.removeClass('cr-media-folder-row--drag-over');
+			});
+		});
+
+		row.addEventListener('dragover', (e: DragEvent) => {
+			e.preventDefault();
+			if (e.dataTransfer) {
+				e.dataTransfer.dropEffect = 'move';
+			}
+		});
+
+		row.addEventListener('dragenter', (e: DragEvent) => {
+			e.preventDefault();
+			if (i !== draggedIndex) {
+				row.addClass('cr-media-folder-row--drag-over');
+			}
+		});
+
+		row.addEventListener('dragleave', (e: DragEvent) => {
+			// Only remove class if we're actually leaving the row
+			const relatedTarget = e.relatedTarget as HTMLElement;
+			if (!row.contains(relatedTarget)) {
+				row.removeClass('cr-media-folder-row--drag-over');
+			}
+		});
+
+		row.addEventListener('drop', async (e: DragEvent) => {
+			e.preventDefault();
+
+			if (draggedIndex === -1 || draggedIndex === i) {
+				return;
+			}
+
+			// Reorder the folders array
+			const newFolders = [...folders];
+			const [movedFolder] = newFolders.splice(draggedIndex, 1);
+			newFolders.splice(i, 0, movedFolder);
+
+			plugin.settings.mediaFolders = newFolders;
+			await plugin.saveSettings();
+			renderMediaFoldersList(container, plugin);
 		});
 	}
 
