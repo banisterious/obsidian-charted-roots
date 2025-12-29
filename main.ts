@@ -1864,11 +1864,36 @@ export default class CanvasRootsPlugin extends Plugin {
 											.setTitle('Add spouse')
 											.setIcon('heart')
 											.onClick(() => {
+												// Build context for inline creation
+												const cache = this.app.metadataCache.getFileCache(file);
+												const crId = cache?.frontmatter?.cr_id;
+												const currentSex = cache?.frontmatter?.sex;
+												const directory = file.parent?.path || '';
+
+												// Suggest opposite sex if current person's sex is known
+												let suggestedSex: 'male' | 'female' | undefined;
+												if (currentSex === 'male' || currentSex === 'm') {
+													suggestedSex = 'female';
+												} else if (currentSex === 'female' || currentSex === 'f') {
+													suggestedSex = 'male';
+												}
+
+												const createContext: RelationshipContext = {
+													relationshipType: 'spouse',
+													suggestedSex: suggestedSex,
+													parentCrId: crId,
+													directory: directory
+												};
+
 												const picker = new PersonPickerModal(this.app, (selectedPerson) => {
 													void (async () => {
 														const relationshipMgr = new RelationshipManager(this.app, this.relationshipHistory);
 														await relationshipMgr.addSpouseRelationship(file, selectedPerson.file);
 													})();
+												}, {
+													title: 'Select spouse',
+													createContext: createContext,
+													plugin: this
 												});
 												picker.open();
 											});
