@@ -6417,9 +6417,9 @@ export default class CanvasRootsPlugin extends Plugin {
 					let propertiesAdded = false;
 
 					await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
-						// type: Must be "source"
-						if (frontmatter.type !== 'source') {
-							frontmatter.type = 'source';
+						// cr_type: Must be "source"
+						if (frontmatter.cr_type !== 'source') {
+							frontmatter.cr_type = 'source';
 							propertiesAdded = true;
 						}
 
@@ -6510,9 +6510,9 @@ export default class CanvasRootsPlugin extends Plugin {
 					let propertiesAdded = false;
 
 					await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
-						// type: Must be "event"
-						if (frontmatter.type !== 'event') {
-							frontmatter.type = 'event';
+						// cr_type: Must be "event"
+						if (frontmatter.cr_type !== 'event') {
+							frontmatter.cr_type = 'event';
 							propertiesAdded = true;
 						}
 
