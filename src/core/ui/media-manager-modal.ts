@@ -18,6 +18,7 @@ import { UnlinkedMediaModal } from './unlinked-media-modal';
 import { SourceMediaLinkerModal } from '../../sources/ui/source-media-linker';
 import { MediaUploadModal } from './media-upload-modal';
 import { MediaPickerModal } from './media-picker-modal';
+import { EntityPickerModal } from './entity-picker-modal';
 import { FamilyGraphService } from '../family-graph';
 import { PlaceGraphService } from '../place-graph';
 import { EventService } from '../../events/services/event-service';
@@ -381,7 +382,8 @@ export class MediaManagerModal extends Modal {
 			mediaService,
 			(files) => {
 				if (files.length > 0) {
-					new Notice(`Selected ${files.length} file${files.length > 1 ? 's' : ''}. This feature will link them to entities in a future update.`);
+					// Open EntityPickerModal with the selected files
+					new EntityPickerModal(this.app, this.plugin, files).open();
 				}
 			},
 			{
