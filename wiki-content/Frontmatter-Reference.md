@@ -196,6 +196,19 @@ Canvas Roots supports dual storage: wikilinks for Obsidian graph visibility, plu
 | `mother` | `string` | Wikilink to mother's note | `"[[Mary Jones]]"` |
 | `mother_id` | `string` | Mother's `cr_id` | `"m7654321-..."` |
 
+#### Wikilink Format for Duplicate Names
+
+When multiple people have the same name, Obsidian creates files like "John Doe 1.md", "John Doe 2.md". Canvas Roots handles this automatically using Obsidian's alias format:
+
+```yaml
+father: "[[John Doe 1|John Doe]]"  # Links to "John Doe 1.md", displays as "John Doe"
+```
+
+**How it works:**
+- The plugin automatically uses `[[filename|display name]]` format when the file's basename differs from the person's name
+- This applies to all relationship fields (father, mother, spouse, children) and other entity references
+- You don't need to create these manually - the plugin handles it when you add relationships
+
 ### Spouse Relationships
 
 #### Simple Format (Single or Multiple Spouses)

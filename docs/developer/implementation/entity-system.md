@@ -331,11 +331,60 @@ children_id:
 1. **Wikilinks** (father/mother/spouse/children): Enable Obsidian's link graph, backlinks, and hover previews
 2. **ID fields** (_id suffix): Provide reliable resolution that survives file renames
 
+### Wikilink Alias Format for Duplicate Names
+
+When Obsidian has multiple files with the same name, it appends a number to the filename (e.g., "John Doe 1.md", "John Doe 2.md"). Canvas Roots handles this by using Obsidian's alias format:
+
+```yaml
+father: "[[John Doe 1|John Doe]]"  # Points to "John Doe 1.md", displays as "John Doe"
+```
+
+**When alias format is used:**
+- When the file basename differs from the person's name property
+- Automatically applied by all wikilink-generating code (bidirectional linker, importers, note writers, etc.)
+- Format: `[[basename|display_name]]` where basename is the filename without `.md` extension
+
+**Implementation pattern:**
+
+```typescript
+function createSmartWikilink(name: string, file: TFile | null, app: App): string {
+    if (file && file.basename !== name) {
+        return `[[${file.basename}|${name}]]`;
+    }
+    if (!file) {
+        const resolvedFile = app.metadataCache.getFirstLinkpathDest(name, '');
+        if (resolvedFile && resolvedFile.basename !== name) {
+            return `[[${resolvedFile.basename}|${name}]]`;
+        }
+    }
+    return `[[${name}]]`;
+}
+```
+
+**Downstream parsing:**
+
+All code that reads wikilinks must use `extractWikilinkPath()` utility to handle alias format:
+
+```typescript
+import { extractWikilinkPath } from '../utils/wikilink-resolver';
+
+const wikilink = "[[John Doe 1|John Doe]]";
+const path = extractWikilinkPath(wikilink);  // Returns: "John Doe 1"
+```
+
+This affects:
+- **Exporters** (GEDCOM, Gramps, GedcomX) - must parse wikilinks to extract paths
+- **Dynamic content blocks** (relationships, media) - both live rendering and freeze-to-markdown
+- **Report generators** - timeline, place summary, collection overview, media inventory
+- **Family Graph** - uses cr_ids instead of wikilinks, unaffected by this issue
+
 ### Implementation
 
-- **bidirectional-linker.ts**: Creates/updates both wikilink and _id fields when syncing relationships
+- **bidirectional-linker.ts**: Creates/updates both wikilink and _id fields when syncing relationships, uses alias format for duplicates
 - **family-graph.ts**: Reads from _id fields first, falls back to wikilink resolution for legacy support
 - **gedcom-importer.ts**: Two-pass import: creates wikilinks in first pass, replaces with cr_ids in _id fields in second pass
+- **person-note-writer.ts**: Used by all importers, creates smart wikilinks with alias format
+- **utils/wikilink-resolver.ts**: `extractWikilinkPath()` handles all three formats: `[[name]]`, `[[basename]]`, `[[basename|name]]`
 
 ---
 
