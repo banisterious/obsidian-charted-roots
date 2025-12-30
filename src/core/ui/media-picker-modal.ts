@@ -5,7 +5,7 @@
  * from the vault to link to entities (person, place, event, organization).
  */
 
-import { App, Modal, TFile, Notice, normalizePath, setIcon } from 'obsidian';
+import { App, Modal, TFile, Notice, normalizePath, setIcon, TextComponent } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import {
 	MediaService,
@@ -16,6 +16,7 @@ import {
 	PDF_EXTENSIONS,
 	DOCUMENT_EXTENSIONS
 } from '../media-service';
+import { FolderSuggest } from './folder-suggest';
 
 /**
  * All supported media extensions
@@ -87,6 +88,8 @@ export class MediaPickerModal extends Modal {
 	private searchInput!: HTMLInputElement;
 	private resultsContainer!: HTMLElement;
 	private selectionCountEl?: HTMLElement;
+	private folderConfigContainer: HTMLElement | null = null;
+	private pendingFileList: FileList | null = null;
 
 	constructor(
 		app: App,
@@ -556,10 +559,19 @@ export class MediaPickerModal extends Modal {
 
 		const folder = this.plugin.settings.mediaFolders[0];
 		if (!folder) {
-			new Notice('No media folder configured. Please configure media folders in Preferences.');
+			// Store pending files and show folder config
+			this.pendingFileList = fileList;
+			this.showFolderConfigSection();
 			return;
 		}
 
+		await this.performFileUpload(fileList, folder);
+	}
+
+	/**
+	 * Perform the actual file upload
+	 */
+	private async performFileUpload(fileList: FileList, folder: string): Promise<void> {
 		// Ensure folder exists
 		await this.ensureFolderExists(folder);
 
@@ -600,6 +612,88 @@ export class MediaPickerModal extends Modal {
 			// Update the display
 			this.filterMedia();
 		}
+	}
+
+	/**
+	 * Show inline folder configuration section
+	 */
+	private showFolderConfigSection(): void {
+		// Remove existing folder config if any
+		this.folderConfigContainer?.remove();
+
+		// Create folder config container above the results
+		this.folderConfigContainer = this.resultsContainer.createDiv({ cls: 'crc-folder-config-section' });
+		this.resultsContainer.insertBefore(this.folderConfigContainer, this.resultsContainer.firstChild);
+
+		// Warning icon and title
+		const header = this.folderConfigContainer.createDiv({ cls: 'crc-folder-config-header' });
+		const headerIcon = header.createSpan({ cls: 'crc-folder-config-icon' });
+		setIcon(headerIcon, 'folder-cog');
+		header.createSpan({ text: 'Configure Media Folder', cls: 'crc-folder-config-title' });
+
+		// Description
+		this.folderConfigContainer.createEl('p', {
+			text: 'No media folder is configured. Enter a folder path to store uploaded media files.',
+			cls: 'crc-folder-config-desc'
+		});
+
+		// Folder input with suggest
+		const inputRow = this.folderConfigContainer.createDiv({ cls: 'crc-folder-config-input-row' });
+
+		const inputWrapper = inputRow.createDiv({ cls: 'crc-folder-config-input-wrapper' });
+		const textComponent = new TextComponent(inputWrapper);
+		textComponent.setPlaceholder('e.g., Media or Attachments/Media');
+		textComponent.inputEl.addClass('crc-folder-config-input');
+
+		let selectedFolder = '';
+
+		// Add folder suggest
+		new FolderSuggest(this.app, textComponent, (value) => {
+			selectedFolder = value;
+		});
+
+		// Also update on manual input
+		textComponent.onChange((value) => {
+			selectedFolder = value;
+		});
+
+		// Set folder button
+		const setFolderBtn = inputRow.createEl('button', {
+			cls: 'crc-btn crc-btn--primary',
+			text: 'Set folder'
+		});
+
+		setFolderBtn.addEventListener('click', async () => {
+			const folderPath = selectedFolder.trim() || textComponent.getValue().trim();
+
+			if (!folderPath) {
+				new Notice('Please enter a folder path');
+				return;
+			}
+
+			// Save the folder to settings
+			this.plugin!.settings.mediaFolders = [folderPath];
+			this.plugin!.settings.enableMediaFolderFilter = true;
+			await this.plugin!.saveSettings();
+
+			// Remove the config section
+			this.folderConfigContainer?.remove();
+			this.folderConfigContainer = null;
+
+			// Proceed with pending upload if any
+			if (this.pendingFileList) {
+				const fileList = this.pendingFileList;
+				this.pendingFileList = null;
+				await this.performFileUpload(fileList, folderPath);
+			}
+
+			// Reload media files to show the new folder's contents
+			this.loadMediaFiles();
+			this.filterMedia();
+		});
+
+		// Focus the input
+		textComponent.inputEl.focus();
 	}
 
 	/**

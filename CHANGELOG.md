@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Inline media folder configuration** - When uploading media with no folder configured, an inline folder picker now appears instead of just showing an error notice. Set the folder directly in the modal and continue uploading.
+
 ### Fixed
 
 - **Context menu relationship actions** - "Add father/mother/spouse/child" now correctly write both wikilink and ID fields (dual storage pattern), fixing bidirectional linking

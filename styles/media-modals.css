@@ -1853,3 +1853,75 @@
 .crc-entity-picker-person-filters {
   border-bottom: 1px solid var(--background-modifier-border);
 }
+
+/* ==========================================================================
+   Folder Configuration Section (inline config when media folder not set)
+   ========================================================================== */
+
+.crc-folder-config-section {
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-left: 4px solid var(--interactive-accent);
+  border-radius: 6px;
+  padding: 16px;
+  margin: 12px;
+}
+
+.crc-folder-config-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.crc-folder-config-icon {
+  color: var(--interactive-accent);
+}
+
+.crc-folder-config-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.crc-folder-config-title {
+  font-weight: 600;
+  font-size: var(--font-ui-medium);
+}
+
+.crc-folder-config-desc {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  margin: 0 0 12px 0;
+}
+
+.crc-folder-config-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.crc-folder-config-input-wrapper {
+  flex: 1;
+}
+
+.crc-folder-config-input {
+  width: 100%;
+}
+
+/* Folder suggestion dropdown styling */
+.cr-folder-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+}
+
+.cr-folder-suggestion-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.cr-folder-suggestion-icon svg {
+  width: 16px;
+  height: 16px;
+}

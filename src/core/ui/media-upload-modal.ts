@@ -12,10 +12,11 @@
  * - File type validation
  */
 
-import { App, Modal, Notice, TFile, normalizePath } from 'obsidian';
+import { App, Modal, Notice, TFile, normalizePath, TextComponent, Setting } from 'obsidian';
 import { setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import { IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, AUDIO_EXTENSIONS, PDF_EXTENSIONS, DOCUMENT_EXTENSIONS } from '../media-service';
+import { FolderSuggest } from './folder-suggest';
 
 /**
  * All supported media extensions
@@ -48,6 +49,8 @@ export class MediaUploadModal extends Modal {
 	private dropZone: HTMLElement | null = null;
 	private filesListContainer: HTMLElement | null = null;
 	private uploadButton: HTMLButtonElement | null = null;
+	private folderConfigContainer: HTMLElement | null = null;
+	private bodyEl: HTMLElement | null = null;
 
 	constructor(app: App, plugin: CanvasRootsPlugin) {
 		super(app);
@@ -80,7 +83,8 @@ export class MediaUploadModal extends Modal {
 		setIcon(headerIcon, 'upload');
 		header.createEl('h2', { text: 'Upload Media' });
 
-		const body = contentEl.createDiv({ cls: 'crc-modal-body' });
+		this.bodyEl = contentEl.createDiv({ cls: 'crc-modal-body' });
+		const body = this.bodyEl;
 
 		// Drop zone
 		this.dropZone = body.createDiv({ cls: 'crc-upload-drop-zone' });
@@ -296,10 +300,17 @@ export class MediaUploadModal extends Modal {
 		const destination = this.getUploadFolder();
 
 		if (!destination) {
-			new Notice('No media folder configured. Please configure media folders in Preferences.');
+			this.showFolderConfigSection();
 			return;
 		}
 
+		await this.performUpload(destination);
+	}
+
+	/**
+	 * Perform the actual upload to a destination folder
+	 */
+	private async performUpload(destination: string): Promise<void> {
 		// Ensure folder exists
 		await this.ensureFolderExists(destination);
 
@@ -320,6 +331,95 @@ export class MediaUploadModal extends Modal {
 		if (uploadedCount > 0) {
 			new Notice(`Uploaded ${uploadedCount} file${uploadedCount > 1 ? 's' : ''} to ${destination}`);
 			this.close();
+		}
+	}
+
+	/**
+	 * Show inline folder configuration section
+	 */
+	private showFolderConfigSection(): void {
+		if (!this.bodyEl) return;
+
+		// Remove existing folder config if any
+		this.folderConfigContainer?.remove();
+
+		// Create folder config container at the top of the body
+		this.folderConfigContainer = this.bodyEl.createDiv({ cls: 'crc-folder-config-section' });
+		this.bodyEl.insertBefore(this.folderConfigContainer, this.bodyEl.firstChild);
+
+		// Warning icon and title
+		const header = this.folderConfigContainer.createDiv({ cls: 'crc-folder-config-header' });
+		const headerIcon = header.createSpan({ cls: 'crc-folder-config-icon' });
+		setIcon(headerIcon, 'folder-cog');
+		header.createSpan({ text: 'Configure Media Folder', cls: 'crc-folder-config-title' });
+
+		// Description
+		this.folderConfigContainer.createEl('p', {
+			text: 'No media folder is configured. Enter a folder path to store uploaded media files.',
+			cls: 'crc-folder-config-desc'
+		});
+
+		// Folder input with suggest
+		const inputRow = this.folderConfigContainer.createDiv({ cls: 'crc-folder-config-input-row' });
+
+		const inputWrapper = inputRow.createDiv({ cls: 'crc-folder-config-input-wrapper' });
+		const textComponent = new TextComponent(inputWrapper);
+		textComponent.setPlaceholder('e.g., Media or Attachments/Media');
+		textComponent.inputEl.addClass('crc-folder-config-input');
+
+		let selectedFolder = '';
+
+		// Add folder suggest
+		new FolderSuggest(this.app, textComponent, (value) => {
+			selectedFolder = value;
+		});
+
+		// Also update on manual input
+		textComponent.onChange((value) => {
+			selectedFolder = value;
+		});
+
+		// Set folder button
+		const setFolderBtn = inputRow.createEl('button', {
+			cls: 'crc-btn crc-btn--primary',
+			text: 'Set folder'
+		});
+
+		setFolderBtn.addEventListener('click', async () => {
+			const folderPath = selectedFolder.trim() || textComponent.getValue().trim();
+
+			if (!folderPath) {
+				new Notice('Please enter a folder path');
+				return;
+			}
+
+			// Save the folder to settings
+			this.plugin.settings.mediaFolders = [folderPath];
+			this.plugin.settings.enableMediaFolderFilter = true;
+			await this.plugin.saveSettings();
+
+			// Remove the config section
+			this.folderConfigContainer?.remove();
+			this.folderConfigContainer = null;
+
+			// Update the destination display
+			this.updateDestinationDisplay();
+
+			// Proceed with upload
+			await this.performUpload(folderPath);
+		});
+
+		// Focus the input
+		textComponent.inputEl.focus();
+	}
+
+	/**
+	 * Update the destination display after folder is configured
+	 */
+	private updateDestinationDisplay(): void {
+		const destPath = this.contentEl.querySelector('.crc-upload-destination-path');
+		if (destPath) {
+			destPath.textContent = this.getUploadDestination();
 		}
 	}
 
