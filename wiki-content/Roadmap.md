@@ -8,6 +8,7 @@ This document outlines planned features for Canvas Roots. For completed features
 
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
+  - [Nested Properties Redesign](#nested-properties-redesign) 📋 Medium
   - [Inclusive Parent Relationships](#inclusive-parent-relationships) 📋 Medium
   - [Cleanup Wizard Phase 4](#cleanup-wizard-phase-4) 📋 Medium
   - [Gramps Notes & Family Integration](#gramps-notes--family-integration) 📋 Medium
@@ -60,6 +61,63 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 | ⚡ High | Core workflow | Completes essential data portability |
 | 📋 Medium | User value | Highly requested sharing/output features |
 | 💡 Low | Specialized | Advanced use cases, niche workflows |
+
+---
+
+### Nested Properties Redesign
+
+**Priority:** 📋 Medium — Fix architectural incompatibility with Obsidian's property panel
+
+**Status:** Planning
+
+**The Problem:** Two features (`sourced_facts` for evidence tracking, `events` for life events) use nested YAML structures (objects within objects, arrays of objects) that are incompatible with Obsidian's property panel. This causes "Type mismatch" warnings and risks data corruption if users click "update" in the property panel.
+
+**Goal:** Redesign both features to use Obsidian-compatible flat property structures while maintaining full functionality and providing automatic migration for existing users.
+
+**Solution:**
+
+**Evidence Tracking:** Replace nested `sourced_facts` with individual flat properties:
+```yaml
+# Current (nested - incompatible)
+sourced_facts:
+  birth_date:
+    sources: ["[[1870 Census]]", "[[Birth Cert]]"]
+
+# New (flat - compatible)
+sourced_birth_date:
+  - "[[1870 Census]]"
+  - "[[Birth Cert]]"
+```
+
+**Life Events:** Replace inline `events` array with separate event note files:
+```yaml
+# Current (nested - incompatible)
+events:
+  - event_type: residence
+    place: "[[New York]]"
+    date_from: "1920"
+
+# New (flat - compatible)
+life_events:
+  - "[[Events/John - Residence - NYC 1920]]"
+```
+
+**Implementation:**
+
+| Phase | Feature | Description |
+|-------|---------|-------------|
+| 1 | Flat Alternatives | Add support for new flat property formats |
+| 2 | Migration Wizard | Add Cleanup Wizard steps to convert existing data |
+| 3 | Backward Compatibility | Read both old and new formats during transition |
+| 4 | Deprecation | Mark old format as legacy, encourage migration |
+
+**Benefits:**
+- Fully compatible with Obsidian's property panel
+- No more confusing "Type mismatch" warnings
+- Safer editing experience (no accidental data corruption)
+- Event notes become first-class entities (searchable, linkable, organized)
+
+**Documentation:** See [docs/planning/nested-properties-redesign.md](../docs/planning/nested-properties-redesign.md) for full technical plan.
 
 ---
 
