@@ -8,7 +8,6 @@ This document outlines planned features for Canvas Roots. For completed features
 
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
-  - [Media Upload and Management Enhancement](#media-upload-and-management-enhancement) ⚡ High
   - [Inclusive Parent Relationships](#inclusive-parent-relationships) 📋 Medium
   - [Cleanup Wizard Phase 4](#cleanup-wizard-phase-4) 📋 Medium
   - [Gramps Notes & Family Integration](#gramps-notes--family-integration) 📋 Medium
@@ -39,6 +38,7 @@ For the complete list of implemented features, see [Release History](Release-His
 
 | Version | Feature | Summary |
 |:-------:|---------|---------|
+| v0.18.6 | [Media Upload and Management Enhancement](Release-History#media-upload-and-management-enhancement-v0186) | Direct file upload with drag-and-drop, 6-tile Media Manager dashboard, inline upload in media picker, entity picker with filters |
 | v0.18.2 | [Timeline Export Consolidation](Release-History#timeline-export-consolidation-v0182) | Unified timeline exports in Reports wizard with all 8 formats, consolidated filters, deprecation notice on Events tab |
 | v0.18.1 | [Create Person Enhancements](Release-History#create-person-enhancements-v0181) | Inline person creation, children management, "Add Another" flow, Family Creation Wizard, nickname property |
 | v0.18.0 | [Event Person Property Consolidation](Release-History#event-person-property-consolidation-v0180) | Unified `persons` array for all events, migration wizard step, backward-compatible reading |
@@ -60,63 +60,6 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 | ⚡ High | Core workflow | Completes essential data portability |
 | 📋 Medium | User value | Highly requested sharing/output features |
 | 💡 Low | Specialized | Advanced use cases, niche workflows |
-
----
-
-### Media Upload and Management Enhancement
-
-**Priority:** ⚡ High — Enable direct file upload for streamlined media workflow
-
-**Status:** Planning
-
-**The Problem:** Users can link existing vault files to entities (people, places, events), but cannot upload new files directly from the plugin. This requires manual file management outside of Canvas Roots, breaking the workflow when users want to attach scanned documents, photos, or certificates to their research.
-
-**Goal:** Add file upload capability to media management system with both standalone (Dashboard) and inline (context menu) workflows.
-
-**User Request:** "Can't link the Birth Certificate or picture" — user attempted to link media files that weren't yet in their vault.
-
-**Proposed Solution:**
-
-**Architecture:** "Read Many, Write One"
-- Files upload to first configured media folder (`mediaFolders[0]`)
-- MediaPickerModal browses all media folders
-- Users can reorganize files later via Obsidian's file explorer
-- Requires drag-and-drop reordering in Preferences (critical foundation)
-
-**Dashboard Enhancement (6-tile layout)**
-- Expand Media Manager from 4 tiles to 6 tiles in 3×2 grid
-- Row 1 (Browse & Discover): Linked Gallery, Find Unlinked, Source Linker
-- Row 2 (Add & Link): Upload Media, Link Media, Bulk Link to Entities
-- "Upload Media" tile: Simple standalone upload modal with optional entity linking
-- "Link Media" tile: MediaPickerModal in media-first mode (pick files → pick entities)
-
-**Context Menu Enhancement**
-- Add "Upload files..." button to MediaPickerModal (follows PlacePickerModal pattern)
-- Inline upload workflow: right-click entity → Media → Link media → Upload → auto-select
-- Same enhanced MediaPickerModal serves both context menu (entity-first) and Dashboard (media-first)
-
-**Upload Features**
-- Drag-and-drop file upload with browse fallback
-- Multiple file selection
-- Auto-upload to `mediaFolders[0]` (read-only destination display)
-- Auto-rename collision handling (e.g., `photo.jpg` → `photo 1.jpg`)
-- File type validation with error feedback
-- Progress indicators for large files
-
-**Key Design Decisions:**
-- Media folders separate from maps folder (maps via place map picker)
-- No destination dropdown (simplified UX)
-- Expand existing MediaPickerModal instead of new separate modal
-
-**Implementation Phases:**
-1. Media folder drag-and-drop reordering in Preferences (critical foundation)
-2. Dashboard 6-tile layout expansion
-3. Simple MediaUploadModal for standalone uploads
-4. Enhanced MediaPickerModal with inline upload
-5. Polish: progress indicators, error handling, advanced settings
-
-**Documentation:**
-- See [Media Upload Enhancement Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/media-upload-enhancement.md) for detailed specifications
 
 ---
 

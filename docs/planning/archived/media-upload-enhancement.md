@@ -1,9 +1,10 @@
 # Media Upload and Management Enhancement
 
-**Status:** Planning
+**Status:** ✅ Completed
 **Priority:** High
-**Target Version:** TBD
+**Target Version:** 0.18.6
 **Created:** 2025-12-29
+**Completed:** 2025-12-29
 **GitHub Issue:** [#60](https://github.com/banisterious/obsidian-canvas-roots/issues/60)
 
 ---
@@ -342,42 +343,76 @@ Note: No need for `defaultMediaUploadFolder` - always use `mediaFolders[0]`
 
 ## Implementation Phases
 
-### Phase 1: Settings Enhancement (Foundation)
-**Priority:** Critical - Required before upload feature
-- Add drag-and-drop reordering to media folders list in Preferences
-- Location: `src/ui/preferences-tab.ts`, `renderMediaFoldersList()` function
-- Allows users to set upload destination by reordering folders
+### Phase 1: Settings Enhancement (Foundation) ✅
+**Status:** Completed
+- ✅ Add drag-and-drop reordering to media folders list in Preferences
+- ✅ Location: `src/ui/preferences-tab.ts`, `renderMediaFoldersList()` function
+- ✅ Allows users to set upload destination by reordering folders
+- **Files modified:** `src/ui/preferences-tab.ts`, `styles/preferences.css`
 
-### Phase 2: Dashboard Layout Expansion
-- Expand MediaManagerModal from 4 to 6 tiles (3×2 grid)
-- Add "Upload Media" tile (opens simple standalone upload modal)
-- Add "Link Media" tile (opens MediaPickerModal in media-first mode)
-- Rename "Bulk Link Media" to "Bulk Link to Entities"
+### Phase 2: Dashboard Layout Expansion ✅
+**Status:** Completed
+- ✅ Expand MediaManagerModal from 4 to 6 tiles (3×2 grid)
+- ✅ Add "Upload Media" tile (opens simple standalone upload modal)
+- ✅ Add "Link Media" tile (opens MediaPickerModal in media-first mode)
+- ✅ Rename "Bulk Link Media" to "Bulk Link to Entities"
+- **Files modified:** `src/core/ui/media-manager-modal.ts`, `styles/control-center.css`
 
-### Phase 3: Simple Upload Modal (Dashboard)
-- Create lightweight MediaUploadModal
-- Drag-and-drop zone + browse button
-- Upload to `mediaFolders[0]` with read-only destination display
-- Optional entity linking checkbox
-- Auto-rename collision handling
-- File type validation
+### Phase 3: Simple Upload Modal (Dashboard) ✅
+**Status:** Completed
+- ✅ Create lightweight MediaUploadModal
+- ✅ Drag-and-drop zone + browse button
+- ✅ Upload to `mediaFolders[0]` with read-only destination display
+- ✅ Optional entity linking after upload
+- ✅ Auto-rename collision handling (incremental numbering)
+- ✅ File type validation
+- **Files created:** `src/core/ui/media-upload-modal.ts`
+- **Files modified:** `styles/media-modals.css`
 
-### Phase 4: Enhanced MediaPickerModal (Context Menu)
-- Add "Upload files..." button at top (like PlacePickerModal pattern)
-- Inline upload workflow:
-  1. User clicks "Upload files..."
-  2. Select files from computer
-  3. Upload to `mediaFolders[0]`
-  4. Auto-select newly uploaded files in grid
-  5. User links to pre-selected entity
-- Serves both context menu (entity pre-selected) and Dashboard "Link Media" tile (no pre-selected entity)
+### Phase 4: Enhanced MediaPickerModal (Context Menu) ✅
+**Status:** Completed
+- ✅ Add "Upload files..." button at top (like PlacePickerModal pattern)
+- ✅ Inline upload workflow implemented
+- ✅ Auto-select newly uploaded files in grid
+- ✅ Serves both context menu (entity pre-selected) and Dashboard "Link Media" tile
+- ✅ Create EntityPickerModal for media-first workflow
+- ✅ Add person-specific filters and sorting to EntityPickerModal
+- ✅ Enable upload button in context menu flow
+- **Files created:** `src/core/ui/entity-picker-modal.ts`
+- **Files modified:** `src/core/ui/media-picker-modal.ts`, `main.ts`, `styles/media-modals.css`
 
-### Phase 5: Polish & Advanced Features
-- Progress indicators for large uploads
-- Enhanced error handling with retry
-- Optional: Prompt-based collision handling (vs. auto-rename)
-- Optional: File size limits setting
-- Documentation and user guidance
+### Phase 5: Polish & Advanced Features ⏭️
+**Status:** Deferred to future release
+- ⏭️ Progress indicators for large uploads
+- ⏭️ Enhanced error handling with retry
+- ⏭️ Optional: Prompt-based collision handling (vs. auto-rename)
+- ⏭️ Optional: File size limits setting
+- ⏭️ Documentation and user guidance
+
+---
+
+## Implementation Summary
+
+**Total commits:** 5
+**Files created:** 2
+- `src/core/ui/media-upload-modal.ts` (302 lines)
+- `src/core/ui/entity-picker-modal.ts` (608 lines)
+
+**Files modified:** 6
+- `src/ui/preferences-tab.ts` (drag-and-drop reordering)
+- `src/core/ui/media-manager-modal.ts` (6-tile layout)
+- `src/core/ui/media-picker-modal.ts` (inline upload button)
+- `main.ts` (context menu upload support)
+- `styles/preferences.css` (folder reordering styles)
+- `styles/media-modals.css` (upload and entity picker styles)
+
+**Key Features Delivered:**
+1. **Media folder reordering** - Drag-and-drop interface in settings
+2. **6-tile Media Manager** - Expanded dashboard with clear workflow separation
+3. **Standalone upload** - MediaUploadModal for bulk file uploads
+4. **Inline upload** - "Upload files..." button in MediaPickerModal
+5. **Entity picker** - Full entity selection with person filters/sorting
+6. **Consistent upload** - Available in both media-first and entity-first workflows
 
 ---
 

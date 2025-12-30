@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.18.x](#v018x)
+  - [Media Upload and Management Enhancement](#media-upload-and-management-enhancement-v0186)
   - [Timeline Export Consolidation](#timeline-export-consolidation-v0182)
   - [Create Person Enhancements](#create-person-enhancements-v0181)
   - [Event Person Property Consolidation](#event-person-property-consolidation-v0180)
@@ -74,6 +75,122 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.18.x
+
+### Media Upload and Management Enhancement (v0.18.6)
+
+Comprehensive media upload and management system allowing users to upload files directly from Canvas Roots and link them to entities without manual file management.
+
+**Problem Solved:**
+
+Users could link existing vault files to entities (people, places, events, etc.), but had no way to upload new files directly from the plugin. This required breaking the workflow to manually add files to the vault before linking them, creating friction when attaching scanned documents, photos, or certificates to research.
+
+**User Request:** "Can't link the Birth Certificate or picture" ([GitHub Issue #60](https://github.com/banisterious/obsidian-canvas-roots/issues/60))
+
+**Solution:**
+
+A complete media upload and linking system with multiple workflows:
+
+**1. Settings Enhancement**
+- Drag-and-drop reordering of media folders in Preferences
+- First folder in list becomes upload destination
+- Visual feedback during drag operations
+
+**2. Expanded Media Manager Dashboard**
+- 6-tile layout (3×2 grid) vs. previous 4-tile layout
+- **Row 1 (Browse & Discover):**
+  - Linked Media Gallery — view all linked media with filters
+  - Find Unlinked — discover orphaned media files
+  - Source Media Linker — smart filename-based matching
+- **Row 2 (Add & Link):**
+  - Upload Media — standalone file upload with optional linking
+  - Link Media — media-first workflow (select files → choose entities)
+  - Bulk Link to Entities — entity-first workflow (select entities → choose files)
+
+**3. Standalone Upload Modal**
+- Drag-and-drop file upload with browse fallback
+- Upload to first configured media folder
+- Read-only destination display with helpful hint
+- Multiple file selection
+- Auto-rename collision handling (incremental numbering)
+- File type validation
+- Optional entity linking after upload
+
+**4. Inline Upload in Media Picker**
+- "Upload files..." button in MediaPickerModal
+- Follows PlacePickerModal "Create new place" pattern
+- Auto-selects newly uploaded files
+- Available in both context menu and Dashboard workflows
+
+**5. Entity Picker Modal**
+- Select entities after choosing media files (media-first workflow)
+- Supports all entity types: Person, Event, Place, Organization, Source
+- **Person-specific filters:**
+  - Living status: All / Living only / Deceased only
+  - Birth date: All / Has date / Missing date
+  - Sex: All / Male / Female
+- **Person-specific sorting:**
+  - Name (A-Z / Z-A)
+  - Birth year (oldest first / youngest first)
+  - Recently modified
+- Shows which entities already have selected media linked
+- Bulk linking with progress modal for ≥5 entities
+
+**6. Consistent Upload Availability**
+- Context menu flow: Right-click entity → Media → Link media → Upload files
+- Media Manager tile: Link Media → Upload files
+- Both workflows use same enhanced MediaPickerModal
+
+**Architecture:**
+
+**"Read Many, Write One" model:**
+- Files upload to `mediaFolders[0]` (first configured folder)
+- MediaPickerModal browses ALL media folders
+- Users can reorganize files later via Obsidian's file explorer
+- Drag-and-drop reordering in settings allows changing upload destination
+
+**Key Design Decisions:**
+- Media folders separate from maps folder (maps via place map picker)
+- No destination dropdown (simplified UX, predictable behavior)
+- Auto-rename collision handling vs. prompting user
+- Inline upload in existing modals vs. separate upload-only modal
+
+**Implementation:**
+
+**Files Created:**
+- `src/core/ui/media-upload-modal.ts` (302 lines) — Standalone upload modal
+- `src/core/ui/entity-picker-modal.ts` (608 lines) — Entity selection with filtering
+
+**Files Modified:**
+- `src/ui/preferences-tab.ts` — Drag-and-drop reordering
+- `src/core/ui/media-manager-modal.ts` — 6-tile layout
+- `src/core/ui/media-picker-modal.ts` — Inline upload button
+- `main.ts` — Context menu upload support
+- `styles/preferences.css` — Folder reordering styles
+- `styles/media-modals.css` — Upload and entity picker styles
+
+**User Benefits:**
+- No context switching to add files to vault
+- Streamlined workflow for attaching documents to research
+- Consistent upload experience across all entry points
+- Visual media folder management in settings
+- Powerful entity selection with filters for media-first workflows
+
+**Technical Details:**
+
+Uses Obsidian Vault API:
+```typescript
+await this.app.vault.createBinary(path, arrayBuffer)
+```
+
+Auto-rename collision handling:
+- `photo.jpg` → `photo 1.jpg` → `photo 2.jpg` (incremental)
+- Prevents overwrite accidents
+- Allows quick bulk uploads without manual renaming
+
+**Planning Documentation:**
+- See [archived planning document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archived/media-upload-enhancement.md) for detailed specifications
+
+---
 
 ### Timeline Export Consolidation (v0.18.2)
 
