@@ -156,6 +156,8 @@ export class MapController {
 	private onEditModeChangeCallback: ((enabled: boolean) => void) | null = null;
 	// Callback for when corners are saved
 	private onCornersSavedCallback: (() => void) | null = null;
+	// Callback for place marker context menu (right-click)
+	private onPlaceMarkerContextMenuCallback: ((placeId: string, placeName: string, event: MouseEvent) => void) | null = null;
 
 	constructor(container: HTMLElement, settings: MapSettings, plugin: CanvasRootsPlugin) {
 		this.container = container;
@@ -551,6 +553,17 @@ export class MapController {
 		// Create popup content
 		const popupContent = this.createPlacePopupContent(data);
 		marker.bindPopup(popupContent);
+
+		// Add context menu (right-click) handler
+		marker.on('contextmenu', (e: L.LeafletMouseEvent) => {
+			// Prevent default and stop propagation to avoid map's context menu
+			L.DomEvent.preventDefault(e.originalEvent);
+			L.DomEvent.stopPropagation(e.originalEvent);
+
+			if (this.onPlaceMarkerContextMenuCallback) {
+				this.onPlaceMarkerContextMenuCallback(data.placeId, data.placeName, e.originalEvent);
+			}
+		});
 
 		return marker;
 	}
@@ -1785,6 +1798,13 @@ export class MapController {
 	 */
 	onCornersSaved(callback: () => void): void {
 		this.onCornersSavedCallback = callback;
+	}
+
+	/**
+	 * Register a callback for place marker context menu (right-click)
+	 */
+	onPlaceMarkerContextMenu(callback: (placeId: string, placeName: string, event: MouseEvent) => void): void {
+		this.onPlaceMarkerContextMenuCallback = callback;
 	}
 
 	/**

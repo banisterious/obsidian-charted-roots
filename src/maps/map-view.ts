@@ -630,6 +630,133 @@ export class MapView extends ItemView {
 	}
 
 	/**
+	 * Show context menu for a place marker (right-click)
+	 */
+	private showPlaceMarkerContextMenu(placeId: string, placeName: string, event: MouseEvent): void {
+		const menu = new Menu();
+
+		menu.addItem((item) => {
+			item.setTitle('Edit place')
+				.setIcon('pencil')
+				.onClick(() => {
+					void this.editPlace(placeId);
+				});
+		});
+
+		menu.addItem((item) => {
+			item.setTitle('Open note')
+				.setIcon('file-text')
+				.onClick(() => {
+					void this.openPlaceNote(placeId);
+				});
+		});
+
+		menu.addSeparator();
+
+		menu.addItem((item) => {
+			item.setTitle('Copy coordinates')
+				.setIcon('copy')
+				.onClick(() => {
+					void this.copyPlaceCoordinates(placeId);
+				});
+		});
+
+		menu.showAtMouseEvent(event);
+	}
+
+	/**
+	 * Open a place note for editing in CreatePlaceModal
+	 */
+	private async editPlace(placeId: string): Promise<void> {
+		// Get services from plugin
+		const pluginWithServices = this.plugin as unknown as {
+			createFamilyGraphService: () => unknown;
+			createPlaceGraphService: () => import('../core/place-graph').PlaceGraphService;
+		};
+
+		const placeGraph = pluginWithServices.createPlaceGraphService();
+		placeGraph.reloadCache();
+
+		const place = placeGraph.getPlaceByCrId(placeId);
+		if (!place) {
+			new Notice(`Place not found: ${placeId}`);
+			return;
+		}
+
+		// Find the file for this place
+		const file = this.app.vault.getMarkdownFiles().find(f => {
+			const cache = this.app.metadataCache.getFileCache(f);
+			return cache?.frontmatter?.cr_id === placeId;
+		});
+
+		if (!file) {
+			new Notice(`Place file not found for: ${place.name}`);
+			return;
+		}
+
+		const modal = new CreatePlaceModal(this.app, {
+			editPlace: place,
+			editFile: file,
+			familyGraph: pluginWithServices.createFamilyGraphService() as import('../core/family-graph').FamilyGraphService,
+			placeGraph,
+			settings: this.plugin.settings,
+			plugin: this.plugin,
+			onUpdated: () => {
+				void this.refreshData(true);
+			}
+		});
+
+		modal.open();
+	}
+
+	/**
+	 * Open a place note in the editor
+	 */
+	private async openPlaceNote(placeId: string): Promise<void> {
+		const file = this.app.vault.getMarkdownFiles().find(f => {
+			const cache = this.app.metadataCache.getFileCache(f);
+			return cache?.frontmatter?.cr_id === placeId;
+		});
+
+		if (file) {
+			await this.app.workspace.openLinkText(file.path, '', false);
+		} else {
+			new Notice(`Place file not found: ${placeId}`);
+		}
+	}
+
+	/**
+	 * Copy place coordinates to clipboard
+	 */
+	private async copyPlaceCoordinates(placeId: string): Promise<void> {
+		const pluginWithServices = this.plugin as unknown as {
+			createPlaceGraphService: () => import('../core/place-graph').PlaceGraphService;
+		};
+
+		const placeGraph = pluginWithServices.createPlaceGraphService();
+		placeGraph.reloadCache();
+
+		const place = placeGraph.getPlaceByCrId(placeId);
+		if (!place) {
+			new Notice(`Place not found: ${placeId}`);
+			return;
+		}
+
+		let coordText = '';
+		if (place.coordinates) {
+			coordText = `${place.coordinates.lat}, ${place.coordinates.long}`;
+		} else if (place.customCoordinates) {
+			coordText = `${place.customCoordinates.x}, ${place.customCoordinates.y}`;
+		} else {
+			new Notice('No coordinates found for this place');
+			return;
+		}
+
+		await navigator.clipboard.writeText(coordText);
+		new Notice(`Coordinates copied: ${coordText}`);
+	}
+
+	/**
 	 * Split this view to create a side-by-side comparison
 	 */
 	private splitView(direction: 'horizontal' | 'vertical'): void {
@@ -1024,6 +1151,11 @@ export class MapView extends ItemView {
 			// Register corners saved callback
 			this.mapController.onCornersSaved(() => {
 				new Notice('Map alignment saved to frontmatter');
+			});
+
+			// Register place marker context menu callback
+			this.mapController.onPlaceMarkerContextMenu((placeId, placeName, event) => {
+				this.showPlaceMarkerContextMenu(placeId, placeName, event);
 			});
 
 			// Load custom maps and populate dropdown
