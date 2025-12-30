@@ -244,8 +244,8 @@ export class UnifiedTreeWizardModal extends Modal {
 			outputFormat: options?.outputFormat ?? 'canvas',
 
 			// Canvas defaults
-			includeStepParents: false,
-			includeAdoptiveParents: false,
+			includeStepParents: true,
+			includeAdoptiveParents: true,
 			collectionFilter: '',
 			placeFilter: '',
 			placeFilterTypes: new Set(['birth', 'death']),
