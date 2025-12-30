@@ -7,12 +7,27 @@
 
 import { App, Modal, Setting, Notice } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
-import type { RelationshipTypeDefinition, RelationshipLineStyle, RelationshipCategory } from '../types/relationship-types';
+import type { RelationshipTypeDefinition, RelationshipLineStyle, RelationshipCategory, FamilyGraphMapping } from '../types/relationship-types';
 import {
 	DEFAULT_RELATIONSHIP_TYPES,
 	getAllRelationshipCategories,
 	getAllRelationshipTypesWithCustomizations
 } from '../constants/default-relationship-types';
+
+/**
+ * Family graph mapping options for the dropdown
+ */
+const FAMILY_GRAPH_MAPPING_OPTIONS: { value: FamilyGraphMapping; label: string }[] = [
+	{ value: 'parent', label: 'Parent (gender-neutral)' },
+	{ value: 'father', label: 'Father' },
+	{ value: 'mother', label: 'Mother' },
+	{ value: 'stepparent', label: 'Step-parent' },
+	{ value: 'adoptive_parent', label: 'Adoptive parent' },
+	{ value: 'foster_parent', label: 'Foster parent' },
+	{ value: 'guardian', label: 'Guardian' },
+	{ value: 'spouse', label: 'Spouse' },
+	{ value: 'child', label: 'Child' }
+];
 
 /**
  * Color presets for relationship types
@@ -65,6 +80,8 @@ export class RelationshipTypeEditorModal extends Modal {
 	private category: RelationshipCategory = 'social';
 	private inverse: string = '';
 	private symmetric: boolean = false;
+	private includeOnFamilyTree: boolean = false;
+	private familyGraphMapping: FamilyGraphMapping | '' = '';
 
 	constructor(app: App, plugin: CanvasRootsPlugin, options: RelationshipTypeEditorModalOptions) {
 		super(app);
@@ -83,6 +100,8 @@ export class RelationshipTypeEditorModal extends Modal {
 			this.category = options.editType.category;
 			this.inverse = options.editType.inverse || '';
 			this.symmetric = options.editType.symmetric;
+			this.includeOnFamilyTree = options.editType.includeOnFamilyTree || false;
+			this.familyGraphMapping = options.editType.familyGraphMapping || '';
 		} else if (options.customizeBuiltIn) {
 			// Customizing a built-in type
 			this.customizeMode = true;
@@ -244,6 +263,50 @@ export class RelationshipTypeEditorModal extends Modal {
 							this.inverse = '';
 						}
 					}));
+
+			// Family Tree Integration section
+			contentEl.createEl('h3', { text: 'Family Tree Integration', cls: 'crc-section-heading' });
+
+			// Include on family tree toggle
+			let mappingDropdownEl: HTMLSelectElement | null = null;
+
+			new Setting(contentEl)
+				.setName('Include on family trees')
+				.setDesc('Show this relationship type on canvas trees and family charts')
+				.addToggle(toggle => toggle
+					.setValue(this.includeOnFamilyTree)
+					.onChange(value => {
+						this.includeOnFamilyTree = value;
+						// Show/hide the mapping dropdown
+						if (mappingDropdownEl) {
+							mappingDropdownEl.parentElement!.parentElement!.style.display = value ? '' : 'none';
+						}
+						// Clear mapping if disabled
+						if (!value) {
+							this.familyGraphMapping = '';
+						}
+					}));
+
+			// Family graph mapping dropdown
+			const mappingSetting = new Setting(contentEl)
+				.setName('Maps to')
+				.setDesc('Which family relationship this type represents on trees')
+				.addDropdown(dropdown => {
+					dropdown.addOption('', '(select mapping)');
+					FAMILY_GRAPH_MAPPING_OPTIONS.forEach(opt => {
+						dropdown.addOption(opt.value, opt.label);
+					});
+					dropdown.setValue(this.familyGraphMapping);
+					dropdown.onChange(value => {
+						this.familyGraphMapping = value as FamilyGraphMapping | '';
+					});
+					mappingDropdownEl = dropdown.selectEl;
+				});
+
+			// Initially hide if not included on family tree
+			if (!this.includeOnFamilyTree) {
+				mappingSetting.settingEl.style.display = 'none';
+			}
 		}
 
 		// Color picker
@@ -381,7 +444,9 @@ export class RelationshipTypeEditorModal extends Modal {
 				category: this.category,
 				inverse: this.inverse || undefined,
 				symmetric: this.symmetric,
-				builtIn: false
+				builtIn: false,
+				includeOnFamilyTree: this.includeOnFamilyTree || undefined,
+				familyGraphMapping: this.familyGraphMapping || undefined
 			};
 		}
 
@@ -409,7 +474,9 @@ export class RelationshipTypeEditorModal extends Modal {
 			category: this.category,
 			inverse: this.inverse || undefined,
 			symmetric: this.symmetric,
-			builtIn: false
+			builtIn: false,
+			includeOnFamilyTree: this.includeOnFamilyTree || undefined,
+			familyGraphMapping: this.familyGraphMapping || undefined
 		};
 
 		existingTypes.push(typeDef);

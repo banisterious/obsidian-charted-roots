@@ -336,6 +336,12 @@ export class RelationshipService {
 
 	/**
 	 * Parse relationships from a person note's frontmatter
+	 *
+	 * Supports two formats:
+	 * 1. NEW flat properties: godparent: ["[[John]]"], godparent_id: ["john_123"]
+	 * 2. LEGACY nested array: relationships: [{type: "godparent", target: "[[John]]", ...}]
+	 *
+	 * Both formats are read for backward compatibility, but new writes use flat properties.
 	 */
 	private parsePersonRelationships(file: TFile): ParsedRelationship[] {
 		const cache = this.plugin.app.metadataCache.getFileCache(file);
@@ -347,16 +353,115 @@ export class RelationshipService {
 
 		if (!sourceCrId) return [];
 
-		const rawRelationships = fm.relationships as RawRelationship[] | undefined;
-		if (!rawRelationships || !Array.isArray(rawRelationships)) return [];
-
 		const parsed: ParsedRelationship[] = [];
+
+		// Parse NEW flat properties format
+		this.parseFlatRelationships(file, fm, sourceCrId, sourceName, parsed);
+
+		// Parse LEGACY nested array format (for backward compatibility)
+		this.parseLegacyRelationshipsArray(file, fm, sourceCrId, sourceName, parsed);
+
+		return parsed;
+	}
+
+	/**
+	 * Parse flat relationship properties (new format)
+	 * e.g., godparent: ["[[John]]"], godparent_id: ["john_123"]
+	 */
+	private parseFlatRelationships(
+		file: TFile,
+		fm: Record<string, unknown>,
+		sourceCrId: string,
+		sourceName: string,
+		parsed: ParsedRelationship[]
+	): void {
+		const allTypes = this.getAllRelationshipTypes();
+
+		for (const typeDef of allTypes) {
+			const typeId = typeDef.id;
+
+			// Check for the type property (e.g., "godparent", "mentor")
+			const targetValue = fm[typeId];
+			if (!targetValue) continue;
+
+			// Normalize to array
+			const targets = Array.isArray(targetValue) ? targetValue : [targetValue];
+			const targetIds = this.normalizeToArray(fm[`${typeId}_id`]);
+			const fromDates = this.normalizeToArray(fm[`${typeId}_from`]);
+			const toDates = this.normalizeToArray(fm[`${typeId}_to`]);
+
+			for (let i = 0; i < targets.length; i++) {
+				const target = targets[i];
+				if (typeof target !== 'string') continue;
+
+				// Must be a wikilink
+				if (!isWikilink(target)) {
+					logger.warn('parse', 'Flat relationship target must be wikilink', {
+						file: file.path,
+						type: typeId,
+						target
+					});
+					continue;
+				}
+
+				const targetName = extractWikilinkName(target);
+				const targetPath = extractWikilinkPath(target);
+
+				// Try to resolve target cr_id
+				let targetCrId = targetIds[i] as string | undefined;
+				let targetFilePath: string | undefined;
+
+				if (targetCrId) {
+					targetFilePath = this.personCrIdToFilePath.get(targetCrId);
+				} else {
+					// Try to find by file path
+					const targetFile = this.plugin.app.metadataCache.getFirstLinkpathDest(targetPath, file.path);
+					if (targetFile instanceof TFile) {
+						const targetCache = this.plugin.app.metadataCache.getFileCache(targetFile);
+						targetCrId = targetCache?.frontmatter?.cr_id as string | undefined;
+						targetFilePath = targetFile.path;
+					}
+				}
+
+				parsed.push({
+					type: typeDef,
+					sourceCrId,
+					sourceName,
+					sourceFilePath: file.path,
+					targetCrId,
+					targetName,
+					targetFilePath,
+					from: fromDates[i] as string | undefined,
+					to: toDates[i] as string | undefined,
+					isInferred: false
+				});
+			}
+		}
+	}
+
+	/**
+	 * Parse legacy nested relationships array (for backward compatibility)
+	 */
+	private parseLegacyRelationshipsArray(
+		file: TFile,
+		fm: Record<string, unknown>,
+		sourceCrId: string,
+		sourceName: string,
+		parsed: ParsedRelationship[]
+	): void {
+		const rawRelationships = fm.relationships as RawRelationship[] | undefined;
+		if (!rawRelationships || !Array.isArray(rawRelationships)) return;
+
+		// Track what we've already parsed from flat properties to avoid duplicates
+		const existingKeys = new Set(
+			parsed.map(p => `${p.type.id}:${p.targetCrId || p.targetName}`)
+		);
 
 		for (const raw of rawRelationships) {
 			// Validate
 			const validation = this.validateRelationship(raw);
 			if (!validation.isValid) {
-				logger.warn('parse', 'Invalid relationship', {
+				logger.warn('parse', 'Invalid relationship in legacy array', {
 					file: file.path,
 					errors: validation.errors
 				});
@@ -387,6 +492,12 @@ export class RelationshipService {
 				}
 			}
 
+			// Skip if already parsed from flat properties
+			const key = `${typeDef.id}:${targetCrId || targetName}`;
+			if (existingKeys.has(key)) {
+				continue;
+			}
+
 			parsed.push({
 				type: typeDef,
 				sourceCrId,
@@ -401,8 +512,14 @@ export class RelationshipService {
 				isInferred: false
 			});
 		}
+	}
 
-		return parsed;
+	/**
+	 * Normalize a value to an array (helper for flat properties)
+	 */
+	private normalizeToArray(value: unknown): unknown[] {
+		if (!value) return [];
+		return Array.isArray(value) ? value : [value];
 	}
 
 	/**

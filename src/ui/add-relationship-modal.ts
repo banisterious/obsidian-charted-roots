@@ -7,7 +7,7 @@ import { App, Modal, Notice, Setting, TFile } from 'obsidian';
 import { PersonPickerModal, PersonInfo } from './person-picker';
 import { RelationshipContext } from './quick-create-person-modal';
 import { RelationshipService } from '../relationships';
-import type { RelationshipTypeDefinition, RawRelationship } from '../relationships';
+import type { RelationshipTypeDefinition } from '../relationships';
 import type CanvasRootsPlugin from '../../main';
 
 /**
@@ -177,36 +177,28 @@ export class AddRelationshipModal extends Modal {
 			return;
 		}
 
-		// Create the relationship object
-		const relationship: RawRelationship = {
-			type: this.selectedType.id,
-			target: `[[${this.selectedTarget.file.basename}]]`,
-			target_id: targetCrId
-		};
-
-		if (this.notes.trim()) {
-			relationship.notes = this.notes.trim();
-		}
+		const typeId = this.selectedType.id;
+		const targetWikilink = `[[${this.selectedTarget.file.basename}]]`;
 
 		try {
-			// Read current frontmatter
+			// Write flat properties (new format)
 			await this.app.fileManager.processFrontMatter(this.sourceFile, (frontmatter) => {
-				// Initialize relationships array if it doesn't exist
-				if (!frontmatter.relationships) {
-					frontmatter.relationships = [];
-				}
+				// Get existing values for this relationship type
+				const existingTargets = this.normalizeToArray(frontmatter[typeId]);
+				const existingIds = this.normalizeToArray(frontmatter[`${typeId}_id`]);
 
 				// Check for duplicates
-				const exists = frontmatter.relationships.some((rel: RawRelationship) =>
-					rel.type === relationship.type && rel.target_id === relationship.target_id
-				);
-
-				if (exists) {
+				if (existingIds.includes(targetCrId)) {
 					throw new Error('This relationship already exists');
 				}
 
 				// Add the new relationship
-				frontmatter.relationships.push(relationship);
+				existingTargets.push(targetWikilink);
+				existingIds.push(targetCrId);
+
+				// Write back (use array if multiple, single value if only one)
+				frontmatter[typeId] = existingTargets.length === 1 ? existingTargets[0] : existingTargets;
+				frontmatter[`${typeId}_id`] = existingIds.length === 1 ? existingIds[0] : existingIds;
 			});
 
 			const typeName = this.selectedType.name;
@@ -220,6 +212,15 @@ export class AddRelationshipModal extends Modal {
 			const msg = error instanceof Error ? error.message : 'Unknown error';
 			new Notice(`Failed to add relationship: ${msg}`);
 		}
+	}
+
+	/**
+	 * Normalize a value to an array
+	 */
+	private normalizeToArray(value: unknown): string[] {
+		if (!value) return [];
+		if (Array.isArray(value)) return value.map(v => String(v));
+		return [String(value)];
 	}
 
 	onClose() {

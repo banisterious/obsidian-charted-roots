@@ -13,6 +13,8 @@ import { FolderFilterService } from './folder-filter';
 import type { CanvasRootsSettings, ValueAliasSettings } from '../settings';
 import { CANONICAL_GENDERS, BUILTIN_SYNONYMS } from './value-alias-service';
 import { isSourceNote, isEventNote, isPlaceNote } from '../utils/note-type-detection';
+import type { RawRelationship, FamilyGraphMapping } from '../relationships/types/relationship-types';
+import { getRelationshipType, getAllRelationshipTypesWithCustomizations } from '../relationships/constants/default-relationship-types';
 
 const logger = getLogger('FamilyGraph');
 
@@ -1303,6 +1305,29 @@ export class FamilyGraphService {
 		const adoptiveMotherValue = this.resolveProperty<string>(fm, 'adoptive_mother');
 		const adoptiveMotherCrId = adoptiveMotherIdValue || this.extractCrIdFromWikilink(adoptiveMotherValue);
 
+		// Parse relationships array for family-relevant types
+		// This supplements direct properties (stepfather, adoptive_father, etc.)
+		const relationshipsFromArray = this.parseRelationshipsArrayForFamilyGraph(fm);
+
+		// Merge relationships from array with direct properties (deduplicating)
+		// Direct properties take precedence for single-value fields (adoptive parents)
+		// Array fields (step-parents, parents) are merged and deduplicated
+		for (const stepfatherId of relationshipsFromArray.stepfatherCrIds) {
+			if (!stepfatherCrIds.includes(stepfatherId)) {
+				stepfatherCrIds.push(stepfatherId);
+			}
+		}
+		for (const stepmotherId of relationshipsFromArray.stepmotherCrIds) {
+			if (!stepmotherCrIds.includes(stepmotherId)) {
+				stepmotherCrIds.push(stepmotherId);
+			}
+		}
+		for (const parentId of relationshipsFromArray.parentCrIds) {
+			if (!parentCrIds.includes(parentId)) {
+				parentCrIds.push(parentId);
+			}
+		}
+
 		// Parse spouse relationships
 		// Priority: 1) Enhanced flat indexed format (spouse1, spouse2...), 2) Legacy 'spouse_id' or 'spouse' fields
 		let spouseCrIds: string[] = [];
@@ -1561,6 +1586,123 @@ export class FamilyGraphService {
 
 		// Already sorted by index (which represents marriage order)
 		return relationships;
+	}
+
+	/**
+	 * Parses relationship type properties from frontmatter for family-relevant types.
+	 * Returns cr_ids organized by relationship mapping (stepparent, parent, etc.)
+	 *
+	 * Supports two formats:
+	 * 1. NEW flat properties: step_parent: ["[[John]]"], step_parent_id: ["john_123"]
+	 * 2. LEGACY nested array: relationships: [{type: "step_parent", target: "[[John]]", ...}]
+	 *
+	 * Only processes relationship types that have:
+	 * 1. includeOnFamilyTree: true
+	 * 2. A valid familyGraphMapping
+	 */
+	private parseRelationshipsArrayForFamilyGraph(fm: Record<string, unknown>): {
+		stepfatherCrIds: string[];
+		stepmotherCrIds: string[];
+		parentCrIds: string[];
+		// Note: adoptive parents, foster parents, guardians, spouses, children
+		// could be added here in the future when their integration is implemented
+	} {
+		const result = {
+			stepfatherCrIds: [] as string[],
+			stepmotherCrIds: [] as string[],
+			parentCrIds: [] as string[]
+		};
+
+		// Get all relationship types with family tree mappings
+		const allTypes = getAllRelationshipTypesWithCustomizations(
+			this.settings?.customRelationshipTypes ?? [],
+			this.settings?.showBuiltInRelationshipTypes ?? true
+		);
+
+		const familyRelevantTypes = allTypes.filter(t =>
+			t.includeOnFamilyTree && t.familyGraphMapping
+		);
+
+		// Process NEW flat properties format
+		for (const typeDef of familyRelevantTypes) {
+			const typeId = typeDef.id;
+
+			// Check for flat property (e.g., step_parent, step_parent_id)
+			const targetValue = fm[typeId];
+			if (!targetValue) continue;
+
+			const targets = Array.isArray(targetValue) ? targetValue : [targetValue];
+			const targetIds = this.normalizeToStringArray(fm[`${typeId}_id`]);
+
+			for (let i = 0; i < targets.length; i++) {
+				const target = String(targets[i]);
+				const targetCrId = targetIds[i] || this.extractCrIdFromWikilink(target);
+				if (!targetCrId) continue;
+
+				this.addToFamilyGraphResult(result, typeDef.familyGraphMapping as FamilyGraphMapping, targetCrId);
+			}
+		}
+
+		// Process LEGACY nested array format (for backward compatibility)
+		const relationships = fm.relationships;
+		if (relationships && Array.isArray(relationships)) {
+			for (const rel of relationships as RawRelationship[]) {
+				if (!rel.type || !rel.target) continue;
+
+				const typeDef = getRelationshipType(rel.type);
+				if (!typeDef?.includeOnFamilyTree || !typeDef.familyGraphMapping) continue;
+
+				const targetCrId = rel.target_id || this.extractCrIdFromWikilink(rel.target);
+				if (!targetCrId) continue;
+
+				// Skip if already added from flat properties
+				const mapping = typeDef.familyGraphMapping as FamilyGraphMapping;
+				if (mapping === 'parent' && result.parentCrIds.includes(targetCrId)) continue;
+				if (mapping === 'stepparent' && (result.stepfatherCrIds.includes(targetCrId) || result.stepmotherCrIds.includes(targetCrId))) continue;
+
+				this.addToFamilyGraphResult(result, mapping, targetCrId);
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Helper to add a cr_id to the appropriate family graph result array
+	 */
+	private addToFamilyGraphResult(
+		result: { stepfatherCrIds: string[]; stepmotherCrIds: string[]; parentCrIds: string[] },
+		mapping: FamilyGraphMapping,
+		targetCrId: string
+	): void {
+		switch (mapping) {
+			case 'parent':
+				if (!result.parentCrIds.includes(targetCrId)) {
+					result.parentCrIds.push(targetCrId);
+				}
+				break;
+
+			case 'stepparent':
+				// Step-parent - for now add to stepfather by default
+				// TODO: Look up target's sex to assign to stepfatherCrIds or stepmotherCrIds
+				if (!result.stepfatherCrIds.includes(targetCrId)) {
+					result.stepfatherCrIds.push(targetCrId);
+				}
+				break;
+
+			// Other mappings (adoptive_parent, foster_parent, guardian, spouse, child)
+			// are not yet integrated into the family graph parsing
+			// They still require the direct frontmatter properties
+		}
+	}
+
+	/**
+	 * Normalize a value to a string array (helper for flat properties)
+	 */
+	private normalizeToStringArray(value: unknown): string[] {
+		if (!value) return [];
+		if (Array.isArray(value)) return value.map(v => String(v));
+		return [String(value)];
 	}
 
 	/**

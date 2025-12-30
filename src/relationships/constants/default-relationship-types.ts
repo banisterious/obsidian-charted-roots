@@ -47,7 +47,9 @@ export const DEFAULT_RELATIONSHIP_TYPES: RelationshipTypeDefinition[] = [
 		color: '#a855f7',
 		lineStyle: 'solid',
 		symmetric: true,
-		builtIn: true
+		builtIn: true,
+		includeOnFamilyTree: true,
+		familyGraphMapping: 'spouse'
 	},
 	{
 		id: 'parent',
@@ -57,7 +59,9 @@ export const DEFAULT_RELATIONSHIP_TYPES: RelationshipTypeDefinition[] = [
 		lineStyle: 'solid',
 		inverse: 'child',
 		symmetric: false,
-		builtIn: true
+		builtIn: true,
+		includeOnFamilyTree: true,
+		familyGraphMapping: 'parent'
 	},
 	{
 		id: 'child',
@@ -67,7 +71,9 @@ export const DEFAULT_RELATIONSHIP_TYPES: RelationshipTypeDefinition[] = [
 		lineStyle: 'solid',
 		inverse: 'parent',
 		symmetric: false,
-		builtIn: true
+		builtIn: true,
+		includeOnFamilyTree: true,
+		familyGraphMapping: 'child'
 	},
 	{
 		id: 'sibling',
@@ -88,7 +94,9 @@ export const DEFAULT_RELATIONSHIP_TYPES: RelationshipTypeDefinition[] = [
 		lineStyle: 'solid',
 		inverse: 'ward',
 		symmetric: false,
-		builtIn: true
+		builtIn: true,
+		includeOnFamilyTree: false,
+		familyGraphMapping: 'guardian'
 	},
 	{
 		id: 'ward',
@@ -98,7 +106,9 @@ export const DEFAULT_RELATIONSHIP_TYPES: RelationshipTypeDefinition[] = [
 		lineStyle: 'solid',
 		inverse: 'guardian',
 		symmetric: false,
-		builtIn: true
+		builtIn: true,
+		includeOnFamilyTree: false,
+		familyGraphMapping: 'child'
 	},
 	{
 		id: 'step_parent',
@@ -108,7 +118,9 @@ export const DEFAULT_RELATIONSHIP_TYPES: RelationshipTypeDefinition[] = [
 		lineStyle: 'dashed',
 		inverse: 'step_child',
 		symmetric: false,
-		builtIn: true
+		builtIn: true,
+		includeOnFamilyTree: true,
+		familyGraphMapping: 'stepparent'
 	},
 	{
 		id: 'step_child',
@@ -118,7 +130,9 @@ export const DEFAULT_RELATIONSHIP_TYPES: RelationshipTypeDefinition[] = [
 		lineStyle: 'dashed',
 		inverse: 'step_parent',
 		symmetric: false,
-		builtIn: true
+		builtIn: true,
+		includeOnFamilyTree: true,
+		familyGraphMapping: 'child'
 	},
 	{
 		id: 'adoptive_parent',
@@ -128,7 +142,9 @@ export const DEFAULT_RELATIONSHIP_TYPES: RelationshipTypeDefinition[] = [
 		lineStyle: 'dotted',
 		inverse: 'adopted_child',
 		symmetric: false,
-		builtIn: true
+		builtIn: true,
+		includeOnFamilyTree: true,
+		familyGraphMapping: 'adoptive_parent'
 	},
 	{
 		id: 'adopted_child',
@@ -138,7 +154,9 @@ export const DEFAULT_RELATIONSHIP_TYPES: RelationshipTypeDefinition[] = [
 		lineStyle: 'dotted',
 		inverse: 'adoptive_parent',
 		symmetric: false,
-		builtIn: true
+		builtIn: true,
+		includeOnFamilyTree: true,
+		familyGraphMapping: 'child'
 	},
 	{
 		id: 'foster_parent',
@@ -148,7 +166,9 @@ export const DEFAULT_RELATIONSHIP_TYPES: RelationshipTypeDefinition[] = [
 		lineStyle: 'solid',
 		inverse: 'foster_child',
 		symmetric: false,
-		builtIn: true
+		builtIn: true,
+		includeOnFamilyTree: false,
+		familyGraphMapping: 'foster_parent'
 	},
 	{
 		id: 'foster_child',
@@ -158,7 +178,9 @@ export const DEFAULT_RELATIONSHIP_TYPES: RelationshipTypeDefinition[] = [
 		lineStyle: 'solid',
 		inverse: 'foster_parent',
 		symmetric: false,
-		builtIn: true
+		builtIn: true,
+		includeOnFamilyTree: false,
+		familyGraphMapping: 'child'
 	},
 
 	// Religious/Spiritual

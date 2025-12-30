@@ -34,6 +34,21 @@ export interface RelationshipCategoryDefinition {
 export type RelationshipLineStyle = 'solid' | 'dashed' | 'dotted';
 
 /**
+ * Family graph mapping for relationship types that should appear on family trees.
+ * Determines which FamilyGraphNode property the relationship maps to.
+ */
+export type FamilyGraphMapping =
+	| 'parent'          // Maps to parentsCrIds (gender-neutral)
+	| 'father'          // Maps to fatherCrId
+	| 'mother'          // Maps to motherCrId
+	| 'stepparent'      // Maps to stepfatherCrIds/stepmotherCrIds based on sex
+	| 'adoptive_parent' // Maps to adoptiveFatherCrId/adoptiveMotherCrId based on sex
+	| 'foster_parent'   // Maps to fosterParentCrIds (future)
+	| 'guardian'        // Maps to guardianCrIds (future)
+	| 'spouse'          // Maps to spouseCrIds
+	| 'child';          // Maps to childrenCrIds
+
+/**
  * Definition of a relationship type
  */
 export interface RelationshipTypeDefinition {
@@ -55,6 +70,16 @@ export interface RelationshipTypeDefinition {
 	symmetric: boolean;
 	/** Whether this is a built-in type (cannot be deleted) */
 	builtIn: boolean;
+	/**
+	 * Whether this relationship type should appear on family trees/charts.
+	 * Default: false for custom types, varies for built-in types.
+	 */
+	includeOnFamilyTree?: boolean;
+	/**
+	 * Which family graph property this relationship maps to.
+	 * Only used when includeOnFamilyTree is true.
+	 */
+	familyGraphMapping?: FamilyGraphMapping;
 }
 
 /**
