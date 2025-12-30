@@ -137,7 +137,7 @@ export class SourceSummaryGenerator {
 
 		// If no coverage data, scan for direct source links in the person note
 		if (!coverage) {
-			warnings.push('No sourced_facts data found. Consider adding fact-level source tracking.');
+			warnings.push('No fact-level source tracking data found. Consider adding sourced_* properties.');
 		}
 
 		// Optionally include children's sources
