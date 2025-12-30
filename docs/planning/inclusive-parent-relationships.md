@@ -43,10 +43,10 @@ This is a reasonable request that aligns with the plugin's goal of supporting di
 | Name | `enableInclusiveParents` |
 | Type | Toggle (boolean) |
 | Default | `false` (off) |
-| Location | Settings > Preferences |
+| Location | Control Center > Preferences |
 
 **When enabled:**
-- Shows a "Parent" (or custom label) field in Create/Edit Person modal
+- Shows a "Parents" (or custom label) field in Create/Edit Person modal
 - Adds `parents` and `parents_id` properties to person schema
 - Includes parents in relationship displays and family graph
 
@@ -60,17 +60,15 @@ This is a reasonable request that aligns with the plugin's goal of supporting di
 |----------|-------|
 | Name | `parentFieldLabel` |
 | Type | Text input |
-| Default | `"Parent"` |
-| Location | Settings > Preferences (only shown when Setting 1 is enabled) |
+| Default | `"Parents"` |
+| Location | Control Center > Preferences (only shown when Setting 1 is enabled) |
 
 **Purpose:** Customize the label shown in the UI for the gender-neutral parent field.
 
 **Examples:**
-- "Parent" (default)
-- "Progenitor"
-- "Guardian"
-- "Sire"
-- "Creator"
+- "Parents" (default)
+- "Progenitors"
+- "Guardians"
 - Any user-defined term
 
 ---
@@ -176,50 +174,104 @@ When creating a parent inline:
 
 ### Phase 4: Bidirectional Linking
 
-1. When person A has `parents: [[B]]`, optionally add A to B's `child` array
-2. Consider whether parent→child linking should be automatic or manual
-3. Handle the asymmetry (parent is gender-neutral, but child→parent could be father/mother)
+**Decision: Automatic bidirectional linking using `children` array**
+
+When a person is added to the `parents` array, automatically add them to each parent's `children` array:
+
+1. **Jamie's note:**
+   ```yaml
+   parents:
+     - "[[Alex Smith]]"
+     - "[[Jordan Smith]]"
+   parents_id:
+     - "I0045"
+     - "I0046"
+   ```
+
+2. **Alex's note (automatically updated):**
+   ```yaml
+   children:
+     - "[[Jamie Smith]]"
+   ```
+
+3. **Jordan's note (automatically updated):**
+   ```yaml
+   children:
+     - "[[Jamie Smith]]"
+   ```
+
+**Implementation:**
+- Use `children` array (consistent with existing father/mother → children pattern)
+- Each parent in `parents` array gets the child added to their `children` array
+- Deduplication: Don't add duplicates if child already exists
+- Mixed usage: If a person uses both `parents` and `father`/`mother`, all relationships are honored independently
 
 ---
 
-## Open Questions
+## Decisions Made
 
-1. **Bidirectional linking behavior**
-   - Should adding someone as a `parent` automatically add the child to their `child` array?
-   - If yes, this creates consistency. If no, user has more control.
+1. **Bidirectional linking behavior** ✓
+   - **Decision:** Automatic bidirectional linking using `children` array
+   - When adding someone as a `parent`, automatically add the child to their `children` array
+   - See Phase 4 implementation details above
 
-2. **Canvas visualization**
-   - How should parents appear on canvas? Same as father/mother but with different label?
-   - Should there be a visual distinction?
+2. **Canvas visualization** ✓
+   - **Decision:** Same visual treatment as father/mother, just different label
+   - No special color/icon distinction needed
+   - The label difference is sufficient
 
-3. **Property alias interaction**
-   - Should `parentFieldLabel` also rename the frontmatter property, or just the UI label?
-   - Recommendation: UI label only, keep `parents` as canonical property name for consistency
+3. **Property alias interaction** ✓
+   - **Decision:** UI label only, keep `parents` as canonical property name
+   - If user sets label to "Guardians", the UI shows "Guardians" but frontmatter stays `parents: [[...]]`
+   - Ensures consistency and makes documentation easier to follow
 
-4. **Migration path**
-   - Should we offer a tool to convert father/mother to parents?
-   - Probably not needed - users can use both systems as they prefer
+4. **Migration path** ✓
+   - **Decision:** No migration tool needed
+   - Users can use both systems as they prefer (coexistence is the goal)
+   - Manual conversion is simple enough if users want to switch
 
-5. **Gramps/GEDCOM import**
-   - These formats use gendered parent roles (HUSB/WIFE, father/mother)
-   - Import should continue using father/mother; users can manually adjust
-   - Future: option to import all parents as gender-neutral?
+5. **Gramps/GEDCOM import** ✓
+   - **Decision:** Keep imports gendered (existing behavior)
+   - Import continues using father/mother; users can manually adjust afterward
+   - Future enhancement: Optional toggle to import as gender-neutral (deferred)
 
 ---
 
 ## Implementation Checklist
 
-- [ ] Add `enableInclusiveParents` setting
-- [ ] Add `parentFieldLabel` setting (conditional)
-- [ ] Add `parents` and `parents_id` to person schema
-- [ ] Update CreatePersonModal with parents field
-- [ ] Implement multi-select parents picker
-- [ ] Update FamilyGraphService for parents relationships
-- [ ] Update bidirectional linker (if applicable)
+### Phase 1: Settings and Schema
+- [ ] Add `enableInclusiveParents` toggle to Control Center > Preferences
+- [ ] Add `parentFieldLabel` text setting (conditional visibility when toggle is on)
+- [ ] Add `parents` and `parents_id` to PersonFrontmatter type definition
 - [ ] Update Frontmatter Reference documentation
+
+### Phase 2: Create/Edit Modal
+- [ ] Add parents field to CreatePersonModal (multi-select, like children field)
+- [ ] Implement "Add parent" button with person picker
+- [ ] Support inline creation of new parents (via person picker)
+- [ ] Handle saving/loading of `parents` and `parents_id` arrays
+- [ ] Only show parents field when `enableInclusiveParents` is enabled
+- [ ] Use `parentFieldLabel` setting for field label (default: "Parents")
+
+### Phase 3: Family Graph Integration
+- [ ] Update FamilyGraphService to read `parents`/`parents_id` relationships
+- [ ] Include parents in ancestor/descendant calculations
+- [ ] Display parents in relationship views (canvas-roots-relationships block)
+- [ ] Treat parents same as father/mother for graph traversal
+
+### Phase 4: Bidirectional Linking
+- [ ] Update BidirectionalLinker to handle `parents` → `children` linking
+- [ ] When parent is added to `parents` array, add child to parent's `children` array
+- [ ] Implement deduplication (don't add if already exists)
+- [ ] Handle removal (when parent removed from `parents`, remove child from their `children`)
+- [ ] Test mixed usage (both `parents` and `father`/`mother` on same person)
+
+### Documentation and Testing
 - [ ] Update Data Entry documentation
 - [ ] Add CHANGELOG entry
 - [ ] Test with various family configurations
+- [ ] Test bidirectional linking edge cases
+- [ ] Test with property aliases enabled
 
 ---
 
@@ -228,3 +280,4 @@ When creating a parent inline:
 - [Create Person Enhancements](./archive/create-person-enhancements.md) - Inline creation features
 - [Frontmatter Reference](../../wiki-content/Frontmatter-Reference.md) - Property documentation
 - [Data Entry](../../wiki-content/Data-Entry.md) - Modal documentation
+- [UI Mockup](../mockups/create-person-modal-inclusive-parents.html) - Visual design for Create Person modal with parents field
