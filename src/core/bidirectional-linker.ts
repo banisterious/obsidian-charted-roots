@@ -12,6 +12,10 @@ const logger = getLogger('BidirectionalLinker');
 interface RelationshipSnapshot {
 	father?: string;
 	mother?: string;
+	adoptive_father?: string;
+	adoptive_mother?: string;
+	stepfather?: string | string[];
+	stepmother?: string | string[];
 	spouse?: string | string[];
 	children?: string | string[];
 	child?: string | string[];  // Actual property name in frontmatter
@@ -168,6 +172,62 @@ export class BidirectionalLinker {
 				);
 			}
 
+			// Sync adoptive father relationship
+			if (frontmatter.adoptive_father) {
+				await this.syncAdoptiveParentChild(
+					frontmatter.adoptive_father,
+					personFile,
+					personName,
+					personCrId,
+					'adoptive_father'
+				);
+			}
+
+			// Sync adoptive mother relationship
+			if (frontmatter.adoptive_mother) {
+				await this.syncAdoptiveParentChild(
+					frontmatter.adoptive_mother,
+					personFile,
+					personName,
+					personCrId,
+					'adoptive_mother'
+				);
+			}
+
+			// Sync step-father relationship(s)
+			const stepfatherLinks = frontmatter.stepfather;
+			const stepfatherArray = stepfatherLinks
+				? Array.isArray(stepfatherLinks) ? stepfatherLinks : [stepfatherLinks]
+				: [];
+			for (const stepfatherLink of stepfatherArray) {
+				if (stepfatherLink) {
+					await this.syncStepParentChild(
+						stepfatherLink,
+						personFile,
+						personName,
+						personCrId,
+						'stepfather'
+					);
+				}
+			}
+
+			// Sync step-mother relationship(s)
+			const stepmotherLinks = frontmatter.stepmother;
+			const stepmotherArray = stepmotherLinks
+				? Array.isArray(stepmotherLinks) ? stepmotherLinks : [stepmotherLinks]
+				: [];
+			for (const stepmotherLink of stepmotherArray) {
+				if (stepmotherLink) {
+					await this.syncStepParentChild(
+						stepmotherLink,
+						personFile,
+						personName,
+						personCrId,
+						'stepmother'
+					);
+				}
+			}
+
 			// Sync spouse relationship(s)
 			// Handle both simple spouse/spouse_id and indexed spouse1/spouse1_id format
 			const spousesToSync: Array<{link: unknown, index?: number}> = [];
@@ -247,6 +307,36 @@ export class BidirectionalLinker {
 		// Check for deleted mother relationship
 		if (previousSnapshot.mother && !currentFrontmatter.mother) {
 			await this.removeChildFromParent(previousSnapshot.mother, personFile, personName, personCrId);
+		}
+
+		// Check for deleted adoptive father relationship
+		if (previousSnapshot.adoptive_father && !currentFrontmatter.adoptive_father) {
+			await this.removeAdoptedChildFromParent(previousSnapshot.adoptive_father, personFile, personName, personCrId);
+		}
+
+		// Check for deleted adoptive mother relationship
+		if (previousSnapshot.adoptive_mother && !currentFrontmatter.adoptive_mother) {
+			await this.removeAdoptedChildFromParent(previousSnapshot.adoptive_mother, personFile, personName, personCrId);
+		}
+
+		// Check for deleted step-father relationships
+		const previousStepfathers = this.extractSpouseLinks(previousSnapshot.stepfather);
+		const currentStepfathers = this.extractSpouseLinks(currentFrontmatter.stepfather);
+
+		for (const previousStepfather of previousStepfathers) {
+			if (!currentStepfathers.includes(previousStepfather)) {
+				await this.removeStepChildFromParent(previousStepfather, personFile, personName, personCrId);
+			}
+		}
+
+		// Check for deleted step-mother relationships
+		const previousStepmothers = this.extractSpouseLinks(previousSnapshot.stepmother);
+		const currentStepmothers = this.extractSpouseLinks(currentFrontmatter.stepmother);
+
+		for (const previousStepmother of previousStepmothers) {
+			if (!currentStepmothers.includes(previousStepmother)) {
+				await this.removeStepChildFromParent(previousStepmother, personFile, personName, personCrId);
+			}
 		}
 
 		// Check for deleted spouse relationships (simple format)
@@ -336,6 +426,10 @@ export class BidirectionalLinker {
 		const snapshot: RelationshipSnapshot = {
 			father: frontmatter.father,
 			mother: frontmatter.mother,
+			adoptive_father: frontmatter.adoptive_father,
+			adoptive_mother: frontmatter.adoptive_mother,
+			stepfather: frontmatter.stepfather,
+			stepmother: frontmatter.stepmother,
 			spouse: frontmatter.spouse,
 			children: frontmatter.children,
 			child: childSnapshot  // Capture child array for deletion detection
@@ -688,6 +782,162 @@ export class BidirectionalLinker {
 	}
 
 	/**
+	 * Sync adoptive parent-child relationship (dual storage)
+	 * Ensures adoptive parent has this person in their adopted_child/adopted_child_id arrays
+	 *
+	 * @param adoptiveParentLink Wikilink to adoptive parent
+	 * @param childFile Child's file
+	 * @param childName Child's name
+	 * @param childCrId Child's cr_id
+	 * @param relationshipType 'adoptive_father' or 'adoptive_mother'
+	 */
+	private async syncAdoptiveParentChild(
+		adoptiveParentLink: unknown,
+		childFile: TFile,
+		childName: string,
+		childCrId: string,
+		relationshipType: 'adoptive_father' | 'adoptive_mother'
+	): Promise<void> {
+		const adoptiveParentFile = this.resolveLink(adoptiveParentLink, childFile);
+		if (!adoptiveParentFile) {
+			logger.warn('bidirectional-linking', `${relationshipType} file not found`, {
+				adoptiveParentLink,
+				childFile: childFile.path
+			});
+			return;
+		}
+
+		// Read adoptive parent's frontmatter
+		const adoptiveParentCache = this.app.metadataCache.getFileCache(adoptiveParentFile);
+		if (!adoptiveParentCache?.frontmatter) {
+			logger.warn('bidirectional-linking', 'Adoptive parent has no frontmatter', {
+				adoptiveParentFile: adoptiveParentFile.path
+			});
+			return;
+		}
+
+		// Check if child is already in adoptive parent's adopted_child arrays
+		const adoptedChildLinks = adoptiveParentCache.frontmatter.adopted_child || [];
+		const adoptedChildIds = adoptiveParentCache.frontmatter.adopted_child_id || [];
+		const adoptedChildLinksArray = Array.isArray(adoptedChildLinks) ? adoptedChildLinks : [adoptedChildLinks];
+		const adoptedChildIdsArray = Array.isArray(adoptedChildIds) ? adoptedChildIds : [adoptedChildIds];
+
+		// Check by cr_id first (more reliable)
+		const hasChildById = adoptedChildIdsArray.includes(childCrId);
+
+		// Create wikilink using basename if it differs from name, otherwise use name
+		const childLinkText = childFile.basename !== childName
+			? `[[${childFile.basename}|${childName}]]`
+			: `[[${childName}]]`;
+
+		// Also check wikilinks for backward compatibility
+		const hasChildByLink = adoptedChildLinksArray.some(child => {
+			const linkText = typeof child === 'string' ? child : String(child);
+			return linkText.includes(childName) || linkText.includes(childFile.basename);
+		});
+
+		if (hasChildById || hasChildByLink) {
+			logger.debug('bidirectional-linking', 'Adopted child already in adoptive parent', {
+				adoptiveParentFile: adoptiveParentFile.path,
+				childFile: childFile.path,
+				hasById: hasChildById,
+				hasByLink: hasChildByLink
+			});
+			return;
+		}
+
+		// Add child to adoptive parent's adopted_child arrays (dual storage)
+		await this.addToArrayField(adoptiveParentFile, 'adopted_child', childLinkText);
+		await this.addToArrayField(adoptiveParentFile, 'adopted_child_id', childCrId);
+
+		logger.info('bidirectional-linking', 'Added adopted child to adoptive parent (dual storage)', {
+			adoptiveParentFile: adoptiveParentFile.path,
+			childFile: childFile.path,
+			relationshipType,
+			wikilink: childLinkText,
+			crId: childCrId
+		});
+	}
+
+	/**
+	 * Sync step-parent-child relationship (dual storage)
+	 * Ensures step-parent has this person in their step_child/step_child_id arrays
+	 *
+	 * @param stepParentLink Wikilink to step-parent
+	 * @param childFile Child's file
+	 * @param childName Child's name
+	 * @param childCrId Child's cr_id
+	 * @param relationshipType 'stepfather' or 'stepmother'
+	 */
+	private async syncStepParentChild(
+		stepParentLink: unknown,
+		childFile: TFile,
+		childName: string,
+		childCrId: string,
+		relationshipType: 'stepfather' | 'stepmother'
+	): Promise<void> {
+		const stepParentFile = this.resolveLink(stepParentLink, childFile);
+		if (!stepParentFile) {
+			logger.warn('bidirectional-linking', `${relationshipType} file not found`, {
+				stepParentLink,
+				childFile: childFile.path
+			});
+			return;
+		}
+
+		// Read step-parent's frontmatter
+		const stepParentCache = this.app.metadataCache.getFileCache(stepParentFile);
+		if (!stepParentCache?.frontmatter) {
+			logger.warn('bidirectional-linking', 'Step-parent has no frontmatter', {
+				stepParentFile: stepParentFile.path
+			});
+			return;
+		}
+
+		// Check if child is already in step-parent's step_child arrays
+		const stepChildLinks = stepParentCache.frontmatter.step_child || [];
+		const stepChildIds = stepParentCache.frontmatter.step_child_id || [];
+		const stepChildLinksArray = Array.isArray(stepChildLinks) ? stepChildLinks : [stepChildLinks];
+		const stepChildIdsArray = Array.isArray(stepChildIds) ? stepChildIds : [stepChildIds];
+
+		// Check by cr_id first (more reliable)
+		const hasChildById = stepChildIdsArray.includes(childCrId);
+
+		// Create wikilink using basename if it differs from name, otherwise use name
+		const childLinkText = childFile.basename !== childName
+			? `[[${childFile.basename}|${childName}]]`
+			: `[[${childName}]]`;
+
+		// Also check wikilinks for backward compatibility
+		const hasChildByLink = stepChildLinksArray.some(child => {
+			const linkText = typeof child === 'string' ? child : String(child);
+			return linkText.includes(childName) || linkText.includes(childFile.basename);
+		});
+
+		if (hasChildById || hasChildByLink) {
+			logger.debug('bidirectional-linking', 'Step-child already in step-parent', {
+				stepParentFile: stepParentFile.path,
+				childFile: childFile.path,
+				hasById: hasChildById,
+				hasByLink: hasChildByLink
+			});
+			return;
+		}
+
+		// Add child to step-parent's step_child arrays (dual storage)
+		await this.addToArrayField(stepParentFile, 'step_child', childLinkText);
+		await this.addToArrayField(stepParentFile, 'step_child_id', childCrId);
+
+		logger.info('bidirectional-linking', 'Added step-child to step-parent (dual storage)', {
+			stepParentFile: stepParentFile.path,
+			childFile: childFile.path,
+			relationshipType,
+			wikilink: childLinkText,
+			crId: childCrId
+		});
+	}
+
+	/**
 	 * Remove a child from a parent's children array (handles deletion sync)
 	 */
 	private async removeChildFromParent(
@@ -806,6 +1056,72 @@ export class BidirectionalLinker {
 			parentField,
 			parentName,
 			parentCrId
+		});
+	}
+
+	/**
+	 * Remove an adopted child from an adoptive parent's adopted_child arrays (handles deletion sync)
+	 */
+	private async removeAdoptedChildFromParent(
+		adoptiveParentLink: unknown,
+		childFile: TFile,
+		childName: string,
+		childCrId: string
+	): Promise<void> {
+		const adoptiveParentFile = this.resolveLink(adoptiveParentLink, childFile);
+		if (!adoptiveParentFile) {
+			logger.warn('bidirectional-linking', 'Adoptive parent file not found for deletion sync', {
+				adoptiveParentLink,
+				childFile: childFile.path
+			});
+			return;
+		}
+
+		// Remove from both adopted_child and adopted_child_id arrays
+		// Try all possible formats: [[name]], [[basename]], [[basename|name]]
+		await this.removeFromArrayField(adoptiveParentFile, 'adopted_child', `[[${childName}]]`);
+		await this.removeFromArrayField(adoptiveParentFile, 'adopted_child', `[[${childFile.basename}]]`);
+		await this.removeFromArrayField(adoptiveParentFile, 'adopted_child', `[[${childFile.basename}|${childName}]]`);
+		await this.removeFromArrayField(adoptiveParentFile, 'adopted_child_id', childCrId);
+
+		logger.info('bidirectional-linking', 'Removed adopted child from adoptive parent (deletion sync)', {
+			adoptiveParentFile: adoptiveParentFile.path,
+			childFile: childFile.path,
+			childName,
+			childCrId
+		});
+	}
+
+	/**
+	 * Remove a step-child from a step-parent's step_child arrays (handles deletion sync)
+	 */
+	private async removeStepChildFromParent(
+		stepParentLink: unknown,
+		childFile: TFile,
+		childName: string,
+		childCrId: string
+	): Promise<void> {
+		const stepParentFile = this.resolveLink(stepParentLink, childFile);
+		if (!stepParentFile) {
+			logger.warn('bidirectional-linking', 'Step-parent file not found for deletion sync', {
+				stepParentLink,
+				childFile: childFile.path
+			});
+			return;
+		}
+
+		// Remove from both step_child and step_child_id arrays
+		// Try all possible formats: [[name]], [[basename]], [[basename|name]]
+		await this.removeFromArrayField(stepParentFile, 'step_child', `[[${childName}]]`);
+		await this.removeFromArrayField(stepParentFile, 'step_child', `[[${childFile.basename}]]`);
+		await this.removeFromArrayField(stepParentFile, 'step_child', `[[${childFile.basename}|${childName}]]`);
+		await this.removeFromArrayField(stepParentFile, 'step_child_id', childCrId);
+
+		logger.info('bidirectional-linking', 'Removed step-child from step-parent (deletion sync)', {
+			stepParentFile: stepParentFile.path,
+			childFile: childFile.path,
+			childName,
+			childCrId
 		});
 	}
 
