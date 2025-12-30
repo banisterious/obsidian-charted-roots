@@ -2,7 +2,7 @@
 
 Planning document for custom map creation and place management workflows.
 
-- **Status:** In Progress (Phase 1-3 Complete)
+- **Status:** Complete (Phase 1-3 implemented, Phase 4-5 deferred)
 - **GitHub Issue:** #66
 - **Created:** 2025-12-28
 - **Updated:** 2025-12-30
@@ -284,7 +284,9 @@ async updatePlaceCoordinates(placeId: string, coords: LatLng) {
 
 ---
 
-## Phase 4: Place Coordinate Import
+## Phase 4: Place Coordinate Import (Deferred)
+
+> **Status:** Deferred for future consideration. The wizard's click-to-add and Map View's right-click-to-create flows cover most use cases.
 
 Import places from a coordinates file (CSV/JSON) with bulk creation.
 
@@ -320,7 +322,7 @@ Worldbuilders often have existing location data:
 
 ---
 
-## Phase 5: Additional Entry Points (Future)
+## Phase 5: Additional Entry Points (Deferred)
 
 ### Context Menu on Image File
 
@@ -440,14 +442,9 @@ Right-click an image file in the file explorer:
 - [x] Implement undo: revert frontmatter and refresh map
 - [x] Auto-dismiss toast after 8 seconds
 
-### Phase 4: Place Coordinate Import
+### Phase 4: Place Coordinate Import (Deferred)
 
-- [ ] Design import wizard UI
-- [ ] Implement CSV parser with column mapping
-- [ ] Implement JSON parser
-- [ ] Add preview visualization on map
-- [ ] Batch place note creation
-- [ ] Conflict detection and resolution UI
+_Deferred for future consideration._
 
 ---
 
