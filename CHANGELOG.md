@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Relationships array integration with family graph** - Relationship types defined in the `relationships` array now appear on canvas trees and family charts (#41):
+  - New `includeOnFamilyTree` and `familyGraphMapping` properties on relationship type definitions
+  - Built-in types `step_parent`, `adoptive_parent`, `parent`, `spouse`, `child` enabled by default
+  - Built-in types `guardian`, `ward`, `foster_parent`, `foster_child` opt-in (disabled by default)
+  - Custom relationship types can opt-in via the relationship type editor UI
+  - Deduplication between direct properties and relationships array entries
+
 ---
 
 ## [0.18.8] - 2025-12-30

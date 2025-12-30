@@ -13,6 +13,8 @@ import { FolderFilterService } from './folder-filter';
 import type { CanvasRootsSettings, ValueAliasSettings } from '../settings';
 import { CANONICAL_GENDERS, BUILTIN_SYNONYMS } from './value-alias-service';
 import { isSourceNote, isEventNote, isPlaceNote } from '../utils/note-type-detection';
+import type { RawRelationship, FamilyGraphMapping } from '../relationships/types/relationship-types';
+import { getRelationshipType } from '../relationships/constants/default-relationship-types';
 
 const logger = getLogger('FamilyGraph');
 
@@ -1303,6 +1305,29 @@ export class FamilyGraphService {
 		const adoptiveMotherValue = this.resolveProperty<string>(fm, 'adoptive_mother');
 		const adoptiveMotherCrId = adoptiveMotherIdValue || this.extractCrIdFromWikilink(adoptiveMotherValue);
 
+		// Parse relationships array for family-relevant types
+		// This supplements direct properties (stepfather, adoptive_father, etc.)
+		const relationshipsFromArray = this.parseRelationshipsArrayForFamilyGraph(fm);
+
+		// Merge relationships from array with direct properties (deduplicating)
+		// Direct properties take precedence for single-value fields (adoptive parents)
+		// Array fields (step-parents, parents) are merged and deduplicated
+		for (const stepfatherId of relationshipsFromArray.stepfatherCrIds) {
+			if (!stepfatherCrIds.includes(stepfatherId)) {
+				stepfatherCrIds.push(stepfatherId);
+			}
+		}
+		for (const stepmotherId of relationshipsFromArray.stepmotherCrIds) {
+			if (!stepmotherCrIds.includes(stepmotherId)) {
+				stepmotherCrIds.push(stepmotherId);
+			}
+		}
+		for (const parentId of relationshipsFromArray.parentCrIds) {
+			if (!parentCrIds.includes(parentId)) {
+				parentCrIds.push(parentId);
+			}
+		}
+
 		// Parse spouse relationships
 		// Priority: 1) Enhanced flat indexed format (spouse1, spouse2...), 2) Legacy 'spouse_id' or 'spouse' fields
 		let spouseCrIds: string[] = [];
@@ -1561,6 +1586,84 @@ export class FamilyGraphService {
 
 		// Already sorted by index (which represents marriage order)
 		return relationships;
+	}
+
+	/**
+	 * Parses the relationships array from frontmatter for family-relevant types.
+	 * Returns cr_ids organized by relationship mapping (stepparent, parent, etc.)
+	 *
+	 * Only processes relationship types that have:
+	 * 1. includeOnFamilyTree: true
+	 * 2. A valid familyGraphMapping
+	 */
+	private parseRelationshipsArrayForFamilyGraph(fm: Record<string, unknown>): {
+		stepfatherCrIds: string[];
+		stepmotherCrIds: string[];
+		parentCrIds: string[];
+		// Note: adoptive parents, foster parents, guardians, spouses, children
+		// could be added here in the future when their integration is implemented
+	} {
+		const result = {
+			stepfatherCrIds: [] as string[],
+			stepmotherCrIds: [] as string[],
+			parentCrIds: [] as string[]
+		};
+
+		// Check if relationships array exists
+		const relationships = fm.relationships;
+		if (!relationships || !Array.isArray(relationships)) {
+			return result;
+		}
+
+		// Process each relationship entry
+		for (const rel of relationships as RawRelationship[]) {
+			if (!rel.type || !rel.target) {
+				continue;
+			}
+
+			// Look up the relationship type definition
+			const typeDef = getRelationshipType(rel.type);
+			if (!typeDef) {
+				continue;
+			}
+
+			// Only process types flagged for family tree inclusion
+			if (!typeDef.includeOnFamilyTree || !typeDef.familyGraphMapping) {
+				continue;
+			}
+
+			// Extract target cr_id (prefer target_id, fallback to extracting from wikilink)
+			const targetCrId = rel.target_id || this.extractCrIdFromWikilink(rel.target);
+			if (!targetCrId) {
+				continue;
+			}
+
+			// Map based on familyGraphMapping
+			const mapping = typeDef.familyGraphMapping as FamilyGraphMapping;
+			switch (mapping) {
+				case 'parent':
+					// Gender-neutral parent - add to parentCrIds
+					result.parentCrIds.push(targetCrId);
+					break;
+
+				case 'stepparent':
+					// Step-parent - need to determine gender of target
+					// For now, add to stepfather by default (gender lookup would require cache access)
+					// TODO: Look up target's sex to assign to stepfatherCrIds or stepmotherCrIds
+					result.stepfatherCrIds.push(targetCrId);
+					break;
+
+				// Other mappings (adoptive_parent, foster_parent, guardian, spouse, child)
+				// are not yet integrated into the family graph parsing
+				// They still require the direct frontmatter properties
+
+				default:
+					// Unhandled mapping - skip for now
+					break;
+			}
+		}
+
+		return result;
 	}
 
 	/**
