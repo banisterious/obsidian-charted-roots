@@ -29,7 +29,7 @@ This document covers two complementary problems:
 1. **Map Creation Wizard** — A guided, multi-step wizard that walks users through creating a map and optionally adding initial places
 2. **Right-click to Create Place** — In Map View, right-click on empty map space to create a place with coordinates auto-filled ✅
 3. **Place Marker Context Menu** — Right-click on a place marker to edit, open note, or copy coordinates ✅
-4. **Draggable Place Markers** — Reposition existing places by dragging their markers (requires edit mode)
+4. **Draggable Place Markers** — Reposition existing places by dragging their markers (requires edit mode) ✅
 
 ---
 
@@ -420,25 +420,25 @@ Right-click an image file in the file explorer:
 ### Phase 3: Draggable Place Markers
 
 #### Phase 3a: Edit Mode Enhancement
-- [ ] Extend existing edit mode to include marker dragging
-- [ ] Update edit mode banner text to reflect expanded scope
-- [ ] Ensure edit mode persists across layer changes
+- [x] Extend existing edit mode to include marker dragging
+- [x] Update edit mode banner text to reflect expanded scope
+- [x] Ensure edit mode persists across layer changes
 
 #### Phase 3b: Draggable Markers
-- [ ] Modify `MarkerManager` to create draggable markers when in edit mode
-- [ ] Add drag event handlers for coordinate capture
-- [ ] Convert coordinates appropriately for map type (geo vs pixel)
+- [x] Modify `MapController.createPlaceMarker()` to create draggable markers when in edit mode
+- [x] Add drag event handlers for coordinate capture
+- [x] Convert coordinates appropriately for map type (geo vs pixel)
 
 #### Phase 3c: Frontmatter Updates
-- [ ] Add `updatePlaceCoordinates` method to `MapDataService`
-- [ ] Handle property aliases for coordinates
-- [ ] Round to appropriate precision
+- [x] Add `handlePlaceMarkerDragged` method to `MapView`
+- [x] Handle property aliases for coordinates (custom_coordinates_x/y, pixel_x/y, coordinates.lat/long, etc.)
+- [x] Round to appropriate precision (integers for pixel, 6 decimals for geo)
 
 #### Phase 3d: Undo Support
-- [ ] Track previous coordinates before drag
-- [ ] Show toast with Undo action
-- [ ] Implement undo: revert frontmatter and marker position
-- [ ] Auto-dismiss toast after ~5 seconds
+- [x] Track previous coordinates before drag
+- [x] Show toast with Undo link
+- [x] Implement undo: revert frontmatter and refresh map
+- [x] Auto-dismiss toast after 8 seconds
 
 ### Phase 4: Place Coordinate Import
 

@@ -158,6 +158,8 @@ export class MapController {
 	private onCornersSavedCallback: (() => void) | null = null;
 	// Callback for place marker context menu (right-click)
 	private onPlaceMarkerContextMenuCallback: ((placeId: string, placeName: string, event: MouseEvent) => void) | null = null;
+	// Callback for when a place marker is dragged to a new position
+	private onPlaceMarkerDraggedCallback: ((placeId: string, placeName: string, newCoords: { lat: number; lng: number; pixelX?: number; pixelY?: number }) => void) | null = null;
 
 	constructor(container: HTMLElement, settings: MapSettings, plugin: CanvasRootsPlugin) {
 		this.container = container;
@@ -548,7 +550,14 @@ export class MapController {
 			return L.marker([0, 0], { icon });
 		}
 
-		const marker = L.marker(coords, { icon });
+		// Make marker draggable when in edit mode
+		const marker = L.marker(coords, {
+			icon,
+			draggable: this.editModeEnabled
+		});
+
+		// Store place data on the marker for later use
+		(marker as L.Marker & { placeData?: PlaceMarker }).placeData = data;
 
 		// Create popup content
 		const popupContent = this.createPlacePopupContent(data);
@@ -562,6 +571,25 @@ export class MapController {
 
 			if (this.onPlaceMarkerContextMenuCallback) {
 				this.onPlaceMarkerContextMenuCallback(data.placeId, data.placeName, e.originalEvent);
+			}
+		});
+
+		// Add drag end handler
+		marker.on('dragend', (e: L.DragEndEvent) => {
+			const newLatLng = e.target.getLatLng();
+			const newCoords: { lat: number; lng: number; pixelX?: number; pixelY?: number } = {
+				lat: newLatLng.lat,
+				lng: newLatLng.lng
+			};
+
+			// For pixel maps, convert to pixel coordinates
+			if (this.currentCRS === 'pixel') {
+				newCoords.pixelX = Math.round(newLatLng.lng);  // X is longitude
+				newCoords.pixelY = Math.round(newLatLng.lat);  // Y is latitude
+			}
+
+			if (this.onPlaceMarkerDraggedCallback) {
+				this.onPlaceMarkerDraggedCallback(data.placeId, data.placeName, newCoords);
 			}
 		});
 
@@ -1677,6 +1705,9 @@ export class MapController {
 
 			this.editModeEnabled = true;
 
+			// Update place marker draggability
+			this.updatePlaceMarkerDraggability();
+
 			// Notify listeners
 			if (this.onEditModeChangeCallback) {
 				this.onEditModeChangeCallback(true);
@@ -1727,6 +1758,9 @@ export class MapController {
 			await this.restoreRegularOverlay();
 
 			this.editModeEnabled = false;
+
+			// Update place marker draggability
+			this.updatePlaceMarkerDraggability();
 
 			// Notify listeners
 			if (this.onEditModeChangeCallback) {
@@ -1805,6 +1839,33 @@ export class MapController {
 	 */
 	onPlaceMarkerContextMenu(callback: (placeId: string, placeName: string, event: MouseEvent) => void): void {
 		this.onPlaceMarkerContextMenuCallback = callback;
+	}
+
+	/**
+	 * Register a callback for when a place marker is dragged to a new position
+	 */
+	onPlaceMarkerDragged(callback: (placeId: string, placeName: string, newCoords: { lat: number; lng: number; pixelX?: number; pixelY?: number }) => void): void {
+		this.onPlaceMarkerDraggedCallback = callback;
+	}
+
+	/**
+	 * Update the draggable state of all place markers
+	 * Called when edit mode is toggled
+	 */
+	private updatePlaceMarkerDraggability(): void {
+		if (!this.placesClusterGroup) return;
+
+		this.placesClusterGroup.eachLayer((layer) => {
+			if (layer instanceof L.Marker) {
+				if (this.editModeEnabled) {
+					layer.dragging?.enable();
+				} else {
+					layer.dragging?.disable();
+				}
+			}
+		});
+
+		logger.debug('marker-draggability', `Updated place marker draggability: ${this.editModeEnabled}`);
 	}
 
 	/**

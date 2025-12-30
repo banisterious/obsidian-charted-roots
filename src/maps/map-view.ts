@@ -5,7 +5,7 @@
  * birth/death locations and migration patterns.
  */
 
-import { ItemView, WorkspaceLeaf, Menu, Notice } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Menu, Notice, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { getLogger } from '../core/logging';
 import { MapController } from './map-controller';
@@ -726,6 +726,163 @@ export class MapView extends ItemView {
 	}
 
 	/**
+	 * Handle place marker being dragged to a new position
+	 * Updates frontmatter and provides undo support
+	 */
+	private async handlePlaceMarkerDragged(
+		placeId: string,
+		placeName: string,
+		newCoords: { lat: number; lng: number; pixelX?: number; pixelY?: number }
+	): Promise<void> {
+		// Find the file for this place
+		const file = this.app.vault.getMarkdownFiles().find(f => {
+			const cache = this.app.metadataCache.getFileCache(f);
+			return cache?.frontmatter?.cr_id === placeId;
+		});
+
+		if (!file) {
+			new Notice(`Place file not found: ${placeName}`);
+			return;
+		}
+
+		// Get current coordinates for undo
+		const cache = this.app.metadataCache.getFileCache(file);
+		const fm = cache?.frontmatter;
+		const isPixelMap = newCoords.pixelX !== undefined && newCoords.pixelY !== undefined;
+
+		// Store previous coordinates for undo
+		let previousCoords: { lat?: number; lng?: number; pixelX?: number; pixelY?: number };
+		if (isPixelMap) {
+			previousCoords = {
+				pixelX: fm?.custom_coordinates_x ?? fm?.pixel_x,
+				pixelY: fm?.custom_coordinates_y ?? fm?.pixel_y
+			};
+		} else {
+			// Geographic coordinates - check nested and flat formats
+			if (fm?.coordinates && typeof fm.coordinates === 'object') {
+				const coords = fm.coordinates as { lat?: number; long?: number; lng?: number };
+				previousCoords = {
+					lat: coords.lat,
+					lng: coords.long ?? coords.lng
+				};
+			} else {
+				previousCoords = {
+					lat: fm?.coordinates_lat ?? fm?.latitude,
+					lng: fm?.coordinates_long ?? fm?.longitude
+				};
+			}
+		}
+
+		// Update frontmatter
+		try {
+			await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
+				if (isPixelMap) {
+					// Update pixel coordinates
+					// Use custom_coordinates_x/y if they exist, otherwise pixel_x/y
+					if (frontmatter.custom_coordinates_x !== undefined || frontmatter.custom_coordinates_y !== undefined) {
+						frontmatter.custom_coordinates_x = newCoords.pixelX;
+						frontmatter.custom_coordinates_y = newCoords.pixelY;
+					} else {
+						frontmatter.pixel_x = newCoords.pixelX;
+						frontmatter.pixel_y = newCoords.pixelY;
+					}
+				} else {
+					// Update geographic coordinates
+					// Check what format exists and use that
+					if (frontmatter.coordinates && typeof frontmatter.coordinates === 'object') {
+						// Nested format: coordinates: { lat, long }
+						frontmatter.coordinates.lat = parseFloat(newCoords.lat.toFixed(6));
+						frontmatter.coordinates.long = parseFloat(newCoords.lng.toFixed(6));
+					} else if (frontmatter.coordinates_lat !== undefined || frontmatter.coordinates_long !== undefined) {
+						// Flat format: coordinates_lat, coordinates_long
+						frontmatter.coordinates_lat = parseFloat(newCoords.lat.toFixed(6));
+						frontmatter.coordinates_long = parseFloat(newCoords.lng.toFixed(6));
+					} else {
+						// Legacy format: latitude, longitude
+						frontmatter.latitude = parseFloat(newCoords.lat.toFixed(6));
+						frontmatter.longitude = parseFloat(newCoords.lng.toFixed(6));
+					}
+				}
+			});
+
+			// Format coordinates for display
+			let coordText: string;
+			if (isPixelMap) {
+				coordText = `(${newCoords.pixelX}, ${newCoords.pixelY})`;
+			} else {
+				const latDir = newCoords.lat >= 0 ? 'N' : 'S';
+				const lngDir = newCoords.lng >= 0 ? 'E' : 'W';
+				coordText = `(${Math.abs(newCoords.lat).toFixed(4)}°${latDir}, ${Math.abs(newCoords.lng).toFixed(4)}°${lngDir})`;
+			}
+
+			// Show toast with undo option
+			const fragment = document.createDocumentFragment();
+			fragment.appendText(`Moved "${placeName}" to ${coordText} `);
+
+			const undoLink = document.createElement('a');
+			undoLink.textContent = 'Undo';
+			undoLink.href = '#';
+			undoLink.style.cursor = 'pointer';
+			undoLink.addEventListener('click', async (e) => {
+				e.preventDefault();
+				await this.undoPlaceMove(file, previousCoords, isPixelMap, placeName);
+			});
+			fragment.appendChild(undoLink);
+
+			new Notice(fragment, 8000);
+		} catch (error) {
+			logger.error('drag-update-error', `Failed to update coordinates for ${placeName}`, { error });
+			new Notice(`Failed to update coordinates for ${placeName}`);
+			// Refresh map to restore marker to original position
+			void this.refreshData(true);
+		}
+	}
+
+	/**
+	 * Undo a place marker move by restoring previous coordinates
+	 */
+	private async undoPlaceMove(
+		file: TFile,
+		previousCoords: { lat?: number; lng?: number; pixelX?: number; pixelY?: number },
+		isPixelMap: boolean,
+		placeName: string
+	): Promise<void> {
+		try {
+			await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
+				if (isPixelMap) {
+					// Restore pixel coordinates
+					if (frontmatter.custom_coordinates_x !== undefined || frontmatter.custom_coordinates_y !== undefined) {
+						frontmatter.custom_coordinates_x = previousCoords.pixelX;
+						frontmatter.custom_coordinates_y = previousCoords.pixelY;
+					} else {
+						frontmatter.pixel_x = previousCoords.pixelX;
+						frontmatter.pixel_y = previousCoords.pixelY;
+					}
+				} else {
+					// Restore geographic coordinates
+					if (frontmatter.coordinates && typeof frontmatter.coordinates === 'object') {
+						frontmatter.coordinates.lat = previousCoords.lat;
+						frontmatter.coordinates.long = previousCoords.lng;
+					} else if (frontmatter.coordinates_lat !== undefined || frontmatter.coordinates_long !== undefined) {
+						frontmatter.coordinates_lat = previousCoords.lat;
+						frontmatter.coordinates_long = previousCoords.lng;
+					} else {
+						frontmatter.latitude = previousCoords.lat;
+						frontmatter.longitude = previousCoords.lng;
+					}
+				}
+			});
+
+			new Notice(`Restored "${placeName}" to original position`);
+			// Refresh map to show restored position
+			void this.refreshData(true);
+		} catch (error) {
+			logger.error('undo-error', `Failed to undo move for ${placeName}`, { error });
+			new Notice(`Failed to undo move for ${placeName}`);
+		}
+	}
+
+	/**
 	 * Copy place coordinates to clipboard
 	 */
 	private async copyPlaceCoordinates(placeId: string): Promise<void> {
@@ -1158,6 +1315,11 @@ export class MapView extends ItemView {
 				this.showPlaceMarkerContextMenu(placeId, placeName, event);
 			});
 
+			// Register place marker dragged callback
+			this.mapController.onPlaceMarkerDragged((placeId, placeName, newCoords) => {
+				void this.handlePlaceMarkerDragged(placeId, placeName, newCoords);
+			});
+
 			// Load custom maps and populate dropdown
 			this.loadCustomMaps();
 
@@ -1550,7 +1712,7 @@ export class MapView extends ItemView {
 		// Banner text
 		const textEl = this.editBannerEl.createDiv({ cls: 'cr-map-edit-banner-text' });
 		textEl.createEl('strong', { text: 'Edit mode:' });
-		textEl.appendText(' Drag corners to align the map image.');
+		textEl.appendText(' Drag corners to align the map image, or drag place markers to reposition them.');
 
 		// Button container
 		const btnContainer = this.editBannerEl.createDiv({ cls: 'cr-map-edit-controls' });
