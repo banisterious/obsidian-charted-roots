@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.18.8] - 2025-12-30
+
 ### Added
 
 - **Inline media folder configuration** - When uploading media with no folder configured, an inline folder picker now appears instead of just showing an error notice. Set the folder directly in the modal and continue uploading.
