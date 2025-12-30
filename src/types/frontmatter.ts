@@ -76,8 +76,27 @@ export interface PersonFrontmatter {
 	/**
 	 * Fact-level source tracking for GPS-aligned research
 	 * Maps fact keys (birth_date, death_date, etc.) to source citations
+	 *
+	 * @deprecated Use individual sourced_* properties instead (e.g., sourced_birth_date)
+	 * This nested format is incompatible with Obsidian's property panel.
+	 * Maintained for backward compatibility until migration is complete.
 	 */
 	sourced_facts?: SourcedFacts;
+	/**
+	 * Flat sourced fact properties (Obsidian-compatible format)
+	 * Each is an array of wikilinks to source notes.
+	 * These replace the nested sourced_facts object.
+	 */
+	sourced_birth_date?: string[];
+	sourced_birth_place?: string[];
+	sourced_death_date?: string[];
+	sourced_death_place?: string[];
+	sourced_parents?: string[];
+	sourced_marriage_date?: string[];
+	sourced_marriage_place?: string[];
+	sourced_spouse?: string[];
+	sourced_occupation?: string[];
+	sourced_residence?: string[];
 	/**
 	 * Research level tracking based on Hoitink's Six Levels
 	 * 0-6 scale from "Unidentified" to "Biography"

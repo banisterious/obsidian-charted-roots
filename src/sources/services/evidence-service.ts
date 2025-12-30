@@ -16,7 +16,9 @@ import {
 	PersonResearchCoverage,
 	SourceQuality,
 	FACT_KEYS,
-	getSourceQuality
+	getSourceQuality,
+	FACT_KEY_TO_SOURCED_PROPERTY,
+	SOURCED_PROPERTY_NAMES
 } from '../types/source-types';
 import { SourceService } from './source-service';
 
@@ -92,14 +94,24 @@ export class EvidenceService {
 		if (!crId) return null;
 
 		const name = (fm.name as string) || file.basename;
-		const sourcedFacts = fm.sourced_facts as SourcedFacts | undefined;
+
+		// Read from both legacy sourced_facts and new flat sourced_* properties
+		const legacySourcedFacts = fm.sourced_facts as SourcedFacts | undefined;
 
 		// Calculate coverage for each fact
 		const facts: FactCoverage[] = [];
 		let sourcedCount = 0;
 
 		for (const factKey of FACT_KEYS) {
-			const coverage = this.calculateFactCoverage(factKey, sourcedFacts);
+			// Get sources from new flat property (preferred)
+			const flatPropertyName = FACT_KEY_TO_SOURCED_PROPERTY[factKey];
+			const flatSources = this.normalizeSourcesToArray(fm[flatPropertyName]);
+
+			// Fall back to legacy sourced_facts if no flat property data
+			const coverage = flatSources.length > 0
+				? this.calculateFactCoverageFromSources(factKey, flatSources)
+				: this.calculateFactCoverage(factKey, legacySourcedFacts);
+
 			facts.push(coverage);
 			if (coverage.status !== 'unsourced') {
 				sourcedCount++;
@@ -116,6 +128,54 @@ export class EvidenceService {
 			sourcedFactCount: sourcedCount,
 			totalFactCount: FACT_KEYS.length,
 			facts
+		};
+	}
+
+	/**
+	 * Normalize a frontmatter value to an array of source wikilinks
+	 * Handles string, array, or undefined values
+	 */
+	private normalizeSourcesToArray(value: unknown): string[] {
+		if (!value) return [];
+		if (Array.isArray(value)) return value.map(v => String(v));
+		return [String(value)];
+	}
+
+	/**
+	 * Calculate coverage status for a fact from a list of source wikilinks
+	 * Used for new flat sourced_* properties
+	 */
+	private calculateFactCoverageFromSources(factKey: FactKey, sources: string[]): FactCoverage {
+		// Empty array means explicitly tracked as unsourced
+		if (sources.length === 0) {
+			return {
+				factKey,
+				status: 'unsourced',
+				sourceCount: 0,
+				sources: []
+			};
+		}
+
+		// Has sources - determine quality
+		const qualities = this.getSourceQualities(sources);
+		const bestQuality = this.getBestQuality(qualities);
+		const hasPrimary = qualities.includes('primary');
+
+		let status: FactCoverageStatus;
+		if (sources.length >= 2 && hasPrimary) {
+			status = 'well-sourced';
+		} else if (hasPrimary) {
+			status = 'sourced';
+		} else {
+			status = 'weakly-sourced';
+		}
+
+		return {
+			factKey,
+			status,
+			sourceCount: sources.length,
+			bestQuality,
+			sources
 		};
 	}
 
@@ -144,9 +204,9 @@ export class EvidenceService {
 			const coverage = this.getFactCoverageForFile(file);
 			if (!coverage) continue;
 
-			// Check if person has any sourced_facts data
+			// Check if person has any sourced_facts data (legacy or new flat properties)
 			const cache = this.app.metadataCache.getFileCache(file);
-			const hasTracking = cache?.frontmatter?.sourced_facts !== undefined;
+			const hasTracking = this.hasAnyFactTracking(cache?.frontmatter);
 
 			if (hasTracking) {
 				summary.totalPeopleTracked++;
@@ -330,6 +390,28 @@ export class EvidenceService {
 		if (byTitle) return byTitle;
 
 		return undefined;
+	}
+
+	/**
+	 * Check if frontmatter has any fact tracking data
+	 * Checks both legacy sourced_facts and new flat sourced_* properties
+	 */
+	private hasAnyFactTracking(frontmatter: Record<string, unknown> | undefined): boolean {
+		if (!frontmatter) return false;
+
+		// Check legacy sourced_facts
+		if (frontmatter.sourced_facts !== undefined) {
+			return true;
+		}
+
+		// Check any of the new flat sourced_* properties
+		for (const propName of SOURCED_PROPERTY_NAMES) {
+			if (frontmatter[propName] !== undefined) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

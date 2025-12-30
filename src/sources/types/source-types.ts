@@ -72,6 +72,78 @@ export const FACT_KEY_LABELS: Record<FactKey, string> = {
 };
 
 /**
+ * Flat property names for sourced facts (Obsidian-compatible format)
+ *
+ * These replace the nested `sourced_facts` object with individual properties.
+ * Each property is an array of wikilinks to source notes.
+ *
+ * Example:
+ * ```yaml
+ * sourced_birth_date: ["[[1870 Census]]", "[[Birth Certificate]]"]
+ * sourced_death_date: ["[[Death Certificate]]"]
+ * ```
+ */
+export type SourcedPropertyName =
+	| 'sourced_birth_date'
+	| 'sourced_birth_place'
+	| 'sourced_death_date'
+	| 'sourced_death_place'
+	| 'sourced_parents'
+	| 'sourced_marriage_date'
+	| 'sourced_marriage_place'
+	| 'sourced_spouse'
+	| 'sourced_occupation'
+	| 'sourced_residence';
+
+/**
+ * Map from FactKey to its corresponding sourced property name
+ */
+export const FACT_KEY_TO_SOURCED_PROPERTY: Record<FactKey, SourcedPropertyName> = {
+	birth_date: 'sourced_birth_date',
+	birth_place: 'sourced_birth_place',
+	death_date: 'sourced_death_date',
+	death_place: 'sourced_death_place',
+	parents: 'sourced_parents',
+	marriage_date: 'sourced_marriage_date',
+	marriage_place: 'sourced_marriage_place',
+	spouse: 'sourced_spouse',
+	occupation: 'sourced_occupation',
+	residence: 'sourced_residence'
+};
+
+/**
+ * Map from sourced property name to its FactKey
+ */
+export const SOURCED_PROPERTY_TO_FACT_KEY: Record<SourcedPropertyName, FactKey> = {
+	sourced_birth_date: 'birth_date',
+	sourced_birth_place: 'birth_place',
+	sourced_death_date: 'death_date',
+	sourced_death_place: 'death_place',
+	sourced_parents: 'parents',
+	sourced_marriage_date: 'marriage_date',
+	sourced_marriage_place: 'marriage_place',
+	sourced_spouse: 'spouse',
+	sourced_occupation: 'occupation',
+	sourced_residence: 'residence'
+};
+
+/**
+ * All sourced property names
+ */
+export const SOURCED_PROPERTY_NAMES: SourcedPropertyName[] = [
+	'sourced_birth_date',
+	'sourced_birth_place',
+	'sourced_death_date',
+	'sourced_death_place',
+	'sourced_parents',
+	'sourced_marriage_date',
+	'sourced_marriage_place',
+	'sourced_spouse',
+	'sourced_occupation',
+	'sourced_residence'
+];
+
+/**
  * Source citation for a specific fact
  */
 export interface FactSourceEntry {
