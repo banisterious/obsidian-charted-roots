@@ -1848,3 +1848,8 @@
   text-overflow: ellipsis;
   margin-top: 2px;
 }
+
+/* Person filters for entity picker */
+.crc-entity-picker-person-filters {
+  border-bottom: 1px solid var(--background-modifier-border);
+}

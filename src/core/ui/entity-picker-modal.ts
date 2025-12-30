@@ -26,6 +26,20 @@ import { getOrganizationType } from '../../organizations/constants/organization-
 import { SourceService } from '../../sources/services/source-service';
 
 /**
+ * Sort options for person list
+ */
+type PersonSortOption = 'name-asc' | 'name-desc' | 'birth-asc' | 'birth-desc' | 'recent';
+
+/**
+ * Filter options for person list
+ */
+interface PersonFilterOptions {
+	livingStatus: 'all' | 'living' | 'deceased';
+	hasBirthDate: 'all' | 'yes' | 'no';
+	sex: 'all' | 'M' | 'F';
+}
+
+/**
  * Entity item for display in the modal
  */
 interface EntityItem {
@@ -41,6 +55,12 @@ interface EntityItem {
 	subtitle?: string;
 	/** Whether this entity already has the media files linked */
 	hasMedia?: boolean;
+	/** Birth date (for people sorting/filtering) */
+	birthDate?: string;
+	/** Death date (for people filtering) */
+	deathDate?: string;
+	/** Sex (for people filtering) */
+	sex?: string;
 }
 
 /**
@@ -74,12 +94,21 @@ export class EntityPickerModal extends Modal {
 	private selectedEntities: Set<string> = new Set();
 	private searchQuery: string = '';
 
+	// Person filters and sort
+	private personSortOption: PersonSortOption = 'name-asc';
+	private personFilters: PersonFilterOptions = {
+		livingStatus: 'all',
+		hasBirthDate: 'all',
+		sex: 'all'
+	};
+
 	// UI elements
 	private entityTypeSelect!: HTMLSelectElement;
 	private searchInput!: HTMLInputElement;
 	private entityListContainer!: HTMLElement;
 	private selectionCountEl!: HTMLElement;
 	private linkButton!: HTMLButtonElement;
+	private personFiltersContainer?: HTMLElement;
 
 	constructor(app: App, plugin: CanvasRootsPlugin, preselectedFiles: TFile[]) {
 		super(app);
@@ -153,6 +182,10 @@ export class EntityPickerModal extends Modal {
 			this.renderEntityList();
 		});
 
+		// Person filters container (shown only for people)
+		this.personFiltersContainer = contentEl.createDiv({ cls: 'crc-entity-picker-person-filters' });
+		this.renderPersonFilters();
+
 		// Instructions
 		const instructions = contentEl.createDiv({ cls: 'crc-info-callout crc-mb-3' });
 		instructions.createEl('p', {
@@ -222,6 +255,9 @@ export class EntityPickerModal extends Modal {
 				break;
 		}
 
+		// Update person filters UI visibility
+		this.renderPersonFilters();
+
 		this.renderEntityList();
 		this.updateSelectionCount();
 	}
@@ -245,8 +281,14 @@ export class EntityPickerModal extends Modal {
 			file: p.file,
 			isSelected: false,
 			subtitle: this.formatPersonSubtitle(p),
-			hasMedia: this.hasAnyPreselectedMedia(p.media || [])
+			hasMedia: this.hasAnyPreselectedMedia(p.media || []),
+			birthDate: p.birthDate,
+			deathDate: p.deathDate,
+			sex: p.sex
 		}));
+
+		// Sort people based on current sort option
+		this.sortPeople();
 	}
 
 	/**
@@ -376,15 +418,211 @@ export class EntityPickerModal extends Modal {
 	}
 
 	/**
+	 * Render person filters (shown only when entity type is 'person')
+	 */
+	private renderPersonFilters(): void {
+		if (!this.personFiltersContainer) return;
+
+		this.personFiltersContainer.empty();
+
+		// Only show for people
+		if (this.selectedEntityType !== 'person') {
+			this.personFiltersContainer.style.display = 'none';
+			return;
+		}
+
+		this.personFiltersContainer.style.display = '';
+
+		// Sort dropdown
+		const sortContainer = this.personFiltersContainer.createDiv({ cls: 'crc-picker-sort' });
+		sortContainer.createSpan({ cls: 'crc-picker-sort__label', text: 'Sort by:' });
+		const sortSelect = sortContainer.createEl('select', { cls: 'crc-form-select' });
+
+		const sortOptions: Array<{ value: PersonSortOption; label: string }> = [
+			{ value: 'name-asc', label: 'Name (A-Z)' },
+			{ value: 'name-desc', label: 'Name (Z-A)' },
+			{ value: 'birth-asc', label: 'Birth year (oldest first)' },
+			{ value: 'birth-desc', label: 'Birth year (youngest first)' },
+			{ value: 'recent', label: 'Recently modified' }
+		];
+
+		sortOptions.forEach(opt => {
+			const option = sortSelect.createEl('option', { value: opt.value, text: opt.label });
+			if (opt.value === this.personSortOption) {
+				option.selected = true;
+			}
+		});
+
+		sortSelect.addEventListener('change', () => {
+			this.personSortOption = sortSelect.value as PersonSortOption;
+			this.sortPeople();
+			this.renderEntityList();
+		});
+
+		// Filters container
+		const filtersContainer = this.personFiltersContainer.createDiv({ cls: 'crc-picker-filters' });
+
+		// Living status filter
+		const livingFilter = filtersContainer.createDiv({ cls: 'crc-picker-filter' });
+		livingFilter.createSpan({ cls: 'crc-picker-filter__label', text: 'Living:' });
+		const livingSelect = livingFilter.createEl('select', { cls: 'crc-form-select crc-form-select--small' });
+		[
+			{ value: 'all', label: 'All' },
+			{ value: 'living', label: 'Living only' },
+			{ value: 'deceased', label: 'Deceased only' }
+		].forEach(opt => {
+			const option = livingSelect.createEl('option', { value: opt.value, text: opt.label });
+			if (opt.value === this.personFilters.livingStatus) {
+				option.selected = true;
+			}
+		});
+		livingSelect.addEventListener('change', () => {
+			this.personFilters.livingStatus = livingSelect.value as PersonFilterOptions['livingStatus'];
+			this.renderEntityList();
+		});
+
+		// Birth date filter
+		const birthFilter = filtersContainer.createDiv({ cls: 'crc-picker-filter' });
+		birthFilter.createSpan({ cls: 'crc-picker-filter__label', text: 'Birth date:' });
+		const birthSelect = birthFilter.createEl('select', { cls: 'crc-form-select crc-form-select--small' });
+		[
+			{ value: 'all', label: 'All' },
+			{ value: 'yes', label: 'Has date' },
+			{ value: 'no', label: 'Missing date' }
+		].forEach(opt => {
+			const option = birthSelect.createEl('option', { value: opt.value, text: opt.label });
+			if (opt.value === this.personFilters.hasBirthDate) {
+				option.selected = true;
+			}
+		});
+		birthSelect.addEventListener('change', () => {
+			this.personFilters.hasBirthDate = birthSelect.value as PersonFilterOptions['hasBirthDate'];
+			this.renderEntityList();
+		});
+
+		// Sex filter
+		const sexFilter = filtersContainer.createDiv({ cls: 'crc-picker-filter' });
+		sexFilter.createSpan({ cls: 'crc-picker-filter__label', text: 'Sex:' });
+		const sexSelect = sexFilter.createEl('select', { cls: 'crc-form-select crc-form-select--small' });
+		[
+			{ value: 'all', label: 'All' },
+			{ value: 'M', label: 'Male' },
+			{ value: 'F', label: 'Female' }
+		].forEach(opt => {
+			const option = sexSelect.createEl('option', { value: opt.value, text: opt.label });
+			if (opt.value === this.personFilters.sex) {
+				option.selected = true;
+			}
+		});
+		sexSelect.addEventListener('change', () => {
+			this.personFilters.sex = sexSelect.value as PersonFilterOptions['sex'];
+			this.renderEntityList();
+		});
+	}
+
+	/**
+	 * Sort people based on current sort option
+	 */
+	private sortPeople(): void {
+		if (this.selectedEntityType !== 'person') return;
+
+		switch (this.personSortOption) {
+			case 'name-asc':
+				this.entities.sort((a, b) => a.name.localeCompare(b.name));
+				break;
+			case 'name-desc':
+				this.entities.sort((a, b) => b.name.localeCompare(a.name));
+				break;
+			case 'birth-asc':
+				this.entities.sort((a, b) => this.compareBirthDates(a.birthDate, b.birthDate, true));
+				break;
+			case 'birth-desc':
+				this.entities.sort((a, b) => this.compareBirthDates(a.birthDate, b.birthDate, false));
+				break;
+			case 'recent':
+				this.entities.sort((a, b) => b.file.stat.mtime - a.file.stat.mtime);
+				break;
+		}
+	}
+
+	/**
+	 * Compare birth dates for sorting
+	 * @param ascending - true for oldest first, false for youngest first
+	 */
+	private compareBirthDates(dateA: string | undefined, dateB: string | undefined, ascending: boolean): number {
+		// Put people without birth dates at the end
+		if (!dateA && !dateB) return 0;
+		if (!dateA) return 1;
+		if (!dateB) return -1;
+
+		// Parse dates - try to extract year from various formats
+		const yearA = this.extractYear(dateA);
+		const yearB = this.extractYear(dateB);
+
+		if (yearA === null && yearB === null) return 0;
+		if (yearA === null) return 1;
+		if (yearB === null) return -1;
+
+		return ascending ? yearA - yearB : yearB - yearA;
+	}
+
+	/**
+	 * Extract year from a date string (supports various formats)
+	 */
+	private extractYear(dateStr: string): number | null {
+		// Try to match a 4-digit year
+		const yearMatch = dateStr.match(/\b(\d{4})\b/);
+		if (yearMatch) {
+			return parseInt(yearMatch[1], 10);
+		}
+		return null;
+	}
+
+	/**
+	 * Apply person-specific filters to entities
+	 */
+	private applyPersonFilters(entities: EntityItem[]): EntityItem[] {
+		if (this.selectedEntityType !== 'person') return entities;
+
+		return entities.filter(entity => {
+			// Living status filter
+			if (this.personFilters.livingStatus !== 'all') {
+				const isDeceased = !!entity.deathDate;
+				if (this.personFilters.livingStatus === 'living' && isDeceased) return false;
+				if (this.personFilters.livingStatus === 'deceased' && !isDeceased) return false;
+			}
+
+			// Birth date filter
+			if (this.personFilters.hasBirthDate !== 'all') {
+				const hasBirth = !!entity.birthDate;
+				if (this.personFilters.hasBirthDate === 'yes' && !hasBirth) return false;
+				if (this.personFilters.hasBirthDate === 'no' && hasBirth) return false;
+			}
+
+			// Sex filter
+			if (this.personFilters.sex !== 'all') {
+				if (entity.sex !== this.personFilters.sex) return false;
+			}
+
+			return true;
+		});
+	}
+
+	/**
 	 * Render the entity list with search filtering
 	 */
 	private renderEntityList(): void {
 		this.entityListContainer.empty();
 
-		// Filter by search query
+		// Start with all entities
 		let filteredEntities = this.entities;
+
+		// Apply person-specific filters
+		filteredEntities = this.applyPersonFilters(filteredEntities);
+
+		// Filter by search query
 		if (this.searchQuery) {
-			filteredEntities = this.entities.filter(e =>
+			filteredEntities = filteredEntities.filter(e =>
 				e.name.toLowerCase().includes(this.searchQuery) ||
 				(e.subtitle && e.subtitle.toLowerCase().includes(this.searchQuery))
 			);
@@ -395,12 +633,15 @@ export class EntityPickerModal extends Modal {
 			return;
 		}
 
-		// Sort alphabetically by name
-		const sortedEntities = [...filteredEntities].sort((a, b) =>
-			a.name.localeCompare(b.name)
-		);
+		// For non-people, sort alphabetically by name
+		// For people, they're already sorted by sortPeople()
+		if (this.selectedEntityType !== 'person') {
+			filteredEntities = [...filteredEntities].sort((a, b) =>
+				a.name.localeCompare(b.name)
+			);
+		}
 
-		for (const entity of sortedEntities) {
+		for (const entity of filteredEntities) {
 			this.renderEntityRow(entity);
 		}
 	}
@@ -493,10 +734,15 @@ export class EntityPickerModal extends Modal {
 	 * Select all visible entities
 	 */
 	private selectAll(): void {
-		// Only select entities visible in current search
+		// Only select entities visible in current search and filters
 		let visibleEntities = this.entities;
+
+		// Apply person-specific filters
+		visibleEntities = this.applyPersonFilters(visibleEntities);
+
+		// Apply search filter
 		if (this.searchQuery) {
-			visibleEntities = this.entities.filter(e =>
+			visibleEntities = visibleEntities.filter(e =>
 				e.name.toLowerCase().includes(this.searchQuery) ||
 				(e.subtitle && e.subtitle.toLowerCase().includes(this.searchQuery))
 			);
