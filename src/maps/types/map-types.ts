@@ -50,10 +50,10 @@ export interface LifeEvent {
 	event_type: EventType;
 	/** Wikilink to place note */
 	place: string;
-	/** Start date (YYYY, YYYY-MM, or YYYY-MM-DD) */
-	date_from?: string;
+	/** Start date (YYYY as number, or YYYY-MM, or YYYY-MM-DD as string) */
+	date_from?: string | number;
 	/** End date for duration events */
-	date_to?: string;
+	date_to?: string | number;
 	/** Brief description */
 	description?: string;
 }

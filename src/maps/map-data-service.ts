@@ -62,15 +62,15 @@ interface PlaceData {
 interface PersonData {
 	crId: string;
 	name: string;
-	born?: string;
-	died?: string;
+	born?: string | number; // Can be year-only number (e.g., 1765) or date string (e.g., "1765-01-01")
+	died?: string | number; // Can be year-only number (e.g., 1820) or date string (e.g., "1820-12-15")
 	birthPlace?: string;
 	birthPlaceId?: string;
 	deathPlace?: string;
 	deathPlaceId?: string;
 	marriagePlace?: string;
 	marriagePlaceId?: string;
-	marriageDate?: string;
+	marriageDate?: string | number; // Can be year-only number or date string
 	burialPlace?: string;
 	burialPlaceId?: string;
 	collection?: string;
@@ -338,8 +338,8 @@ export class MapDataService {
 			parsed.push({
 				event_type: resolvedEventType,
 				place: place,
-				date_from: eventObj.date_from as string | undefined,
-				date_to: eventObj.date_to as string | undefined,
+				date_from: (typeof eventObj.date_from === 'string' || typeof eventObj.date_from === 'number') ? eventObj.date_from : undefined,
+				date_to: (typeof eventObj.date_to === 'string' || typeof eventObj.date_to === 'number') ? eventObj.date_to : undefined,
 				description: eventObj.description as string | undefined
 			});
 		}
@@ -440,7 +440,7 @@ export class MapDataService {
 		type: MarkerType,
 		placeId: string | undefined,
 		placeName: string | undefined,
-		date: string | undefined,
+		date: string | number | undefined,
 		filters: MapFilters
 	): MapMarker | null {
 		const place = this.resolvePlace(placeId, placeName);
@@ -454,6 +454,9 @@ export class MapDataService {
 		// Apply year filter
 		if (!this.isInYearRange(year, filters)) return null;
 
+		// Convert date to string for display (if it's a number year, convert to string)
+		const dateStr = date !== undefined ? String(date) : undefined;
+
 		return {
 			personId: person.crId,
 			personName: person.name,
@@ -464,7 +467,7 @@ export class MapDataService {
 			pixelY: place.pixelY,
 			placeName: place.name,
 			placeId: place.crId,
-			date,
+			date: dateStr,
 			year,
 			collection: person.collection,
 			universe: place.universe,
@@ -494,6 +497,10 @@ export class MapDataService {
 		// Apply year filter (check if event overlaps with filter range)
 		if (!this.isEventInYearRange(year, yearTo, filters)) return null;
 
+		// Convert dates to strings for display (if they're number years, convert to string)
+		const dateFromStr = event.date_from !== undefined ? String(event.date_from) : undefined;
+		const dateToStr = event.date_to !== undefined ? String(event.date_to) : undefined;
+
 		return {
 			personId: person.crId,
 			personName: person.name,
@@ -504,9 +511,9 @@ export class MapDataService {
 			pixelY: place.pixelY,
 			placeName: place.name,
 			placeId: place.crId,
-			date: event.date_from,
+			date: dateFromStr,
 			year,
-			dateTo: event.date_to,
+			dateTo: dateToStr,
 			yearTo,
 			description: event.description,
 			collection: person.collection,
@@ -706,7 +713,7 @@ export class MapDataService {
 						name: birthPlace.name,
 						placeId: birthPlace.crId,
 						eventType: 'birth',
-						date: person.born,
+						date: person.born !== undefined ? String(person.born) : undefined,
 						year: birthYear
 					});
 					pathUniverse = birthPlace.universe;
@@ -726,7 +733,7 @@ export class MapDataService {
 						name: marriagePlace.name,
 						placeId: marriagePlace.crId,
 						eventType: 'marriage',
-						date: person.marriageDate,
+						date: person.marriageDate !== undefined ? String(person.marriageDate) : undefined,
 						year: marriageYear
 					});
 					if (!pathUniverse) pathUniverse = marriagePlace.universe;
@@ -750,9 +757,9 @@ export class MapDataService {
 								name: place.name,
 								placeId: place.crId,
 								eventType: event.event_type,
-								date: event.date_from,
+								date: event.date_from !== undefined ? String(event.date_from) : undefined,
 								year,
-								dateTo: event.date_to,
+								dateTo: event.date_to !== undefined ? String(event.date_to) : undefined,
 								yearTo,
 								description: event.description
 							});
@@ -775,7 +782,7 @@ export class MapDataService {
 						name: deathPlace.name,
 						placeId: deathPlace.crId,
 						eventType: 'death',
-						date: person.died,
+						date: person.died !== undefined ? String(person.died) : undefined,
 						year: deathYear
 					});
 					if (!pathUniverse) pathUniverse = deathPlace.universe;
@@ -796,7 +803,7 @@ export class MapDataService {
 						name: burialPlace.name,
 						placeId: burialPlace.crId,
 						eventType: 'burial',
-						date: person.died,
+						date: person.died !== undefined ? String(person.died) : undefined,
 						year: burialYear
 					});
 					if (!pathUniverse) pathUniverse = burialPlace.universe;
@@ -973,17 +980,29 @@ export class MapDataService {
 	}
 
 	/**
-	 * Extract year from a date string
+	 * Extract year from a date string or number
 	 */
-	private extractYear(dateStr?: string): number | undefined {
+	private extractYear(dateStr?: string | number): number | undefined {
 		if (!dateStr) return undefined;
 
+		// If it's already a number, assume it's a year
+		if (typeof dateStr === 'number') {
+			// Validate it's a reasonable year (4 digits)
+			if (dateStr >= 1000 && dateStr <= 9999) {
+				return Math.floor(dateStr);
+			}
+			return undefined;
+		}
+
+		// Convert to string for regex matching
+		const dateString = String(dateStr);
+
 		// Try ISO format (YYYY-MM-DD)
-		const isoMatch = dateStr.match(/^(\d{4})/);
+		const isoMatch = dateString.match(/^(\d{4})/);
 		if (isoMatch) return parseInt(isoMatch[1]);
 
 		// Try other common formats
-		const yearMatch = dateStr.match(/\b(\d{4})\b/);
+		const yearMatch = dateString.match(/\b(\d{4})\b/);
 		if (yearMatch) return parseInt(yearMatch[1]);
 
 		return undefined;
