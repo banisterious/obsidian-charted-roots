@@ -9,14 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+### Changed
 
-- **Relationships array integration with family graph** - Relationship types defined in the `relationships` array now appear on canvas trees and family charts (#41):
-  - New `includeOnFamilyTree` and `familyGraphMapping` properties on relationship type definitions
-  - Built-in types `step_parent`, `adoptive_parent`, `parent`, `spouse`, `child` enabled by default
-  - Built-in types `guardian`, `ward`, `foster_parent`, `foster_child` opt-in (disabled by default)
-  - Custom relationship types can opt-in via the relationship type editor UI
-  - Deduplication between direct properties and relationships array entries
+- **Flat relationship properties** - Relationships now use Obsidian-compatible flat properties instead of nested arrays (#41):
+  - **New format**: `godparent: ["[[John Smith]]"]`, `godparent_id: ["john_123"]`
+  - **Pattern**: Each relationship type uses its ID as the property name (e.g., `mentor`, `witness`, `godparent`)
+  - **Parallel arrays**: Optional `_id`, `_from`, `_to` suffix properties for metadata
+  - **Properties UI compatible**: All properties are simple lists or text values
+  - **Backward compatible**: Legacy `relationships` array still read for existing data
+  - **Family tree integration**: New `includeOnFamilyTree` and `familyGraphMapping` properties on relationship type definitions
+  - **Custom types**: Can opt-in to family tree display via relationship type editor UI
 
 ---
 

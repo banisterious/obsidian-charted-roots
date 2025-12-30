@@ -2,9 +2,9 @@
 
 Planning document for integrating the `relationships` array with the family graph and canvas tree generation.
 
-- **Status:** Planning
+- **Status:** In Progress (Redesigning)
 - **GitHub Issue:** [#41](https://github.com/banisterious/obsidian-canvas-roots/issues/41)
-- **Priority:** Low
+- **Priority:** High
 - **Created:** 2025-12-27
 - **Updated:** 2025-12-30
 
@@ -246,9 +246,98 @@ This keeps it **opt-in** - custom relationship types won't appear on trees unles
 
 ---
 
+## Flat Properties Redesign (2025-12-30)
+
+### Problem with Nested `relationships` Array
+
+The current `relationships` array uses nested objects which are **incompatible with Obsidian's Properties UI**:
+
+```yaml
+# Current (NESTED - incompatible with Properties UI)
+relationships:
+  - type: godparent
+    target: "[[John Smith]]"
+    target_id: john_123
+    from: "1850"
+    notes: "Baptism sponsor"
+```
+
+This causes:
+- "Type mismatch" warnings in Properties panel
+- Risk of data corruption if user clicks "update"
+- Poor UX - users can't edit relationships through Obsidian's native UI
+
+### Flat Properties Design
+
+Replace the nested array with **individual properties per relationship type**, following the existing pattern used for family relationships (`spouse`, `stepfather`, etc.):
+
+```yaml
+# NEW (FLAT - Obsidian compatible)
+godparent: ["[[John Smith]]"]
+godparent_id: ["john_123"]
+
+# Multiple relationships of same type
+mentor: ["[[Alice Brown]]", "[[Bob Jones]]"]
+mentor_id: ["alice_456", "bob_789"]
+
+# Optional date metadata (parallel arrays)
+witness: ["[[Jane Doe]]"]
+witness_id: ["jane_111"]
+witness_from: ["1850"]
+witness_to: ["1860"]
+```
+
+### Property Naming Convention
+
+| Relationship Type | Properties |
+|-------------------|------------|
+| `godparent` | `godparent`, `godparent_id`, `godparent_from`, `godparent_to` |
+| `mentor` | `mentor`, `mentor_id`, `mentor_from`, `mentor_to` |
+| `witness` | `witness`, `witness_id`, `witness_from`, `witness_to` |
+| etc. | Pattern: `{type}`, `{type}_id`, `{type}_from`, `{type}_to` |
+
+### Design Decisions
+
+1. **Notes field dropped** - Rarely used, can go in note body instead
+2. **Parallel arrays for metadata** - `_from` and `_to` arrays align by index with main array
+3. **Single values also supported** - `godparent: "[[John]]"` works (not just arrays)
+4. **Matches existing family pattern** - Consistent with `spouse`, `stepfather`, etc.
+
+### Benefits
+
+1. **Obsidian Properties UI compatible** - All properties are simple lists or text
+2. **Consistent** - Same pattern as existing family relationship properties
+3. **User-friendly** - Easy to edit in Properties panel or Source mode
+4. **No "type mismatch" warnings**
+
+### Trade-offs
+
+1. **More properties** - Users with many relationship types will have more frontmatter properties
+2. **Parallel arrays** - Date metadata requires keeping arrays in sync (but rarely used)
+3. **Migration needed** - Existing `relationships` arrays need migration
+
+### Migration Strategy
+
+1. **Read both formats** - Service reads old nested array AND new flat properties
+2. **Write new format only** - UI writes flat properties
+3. **Migration wizard** - Cleanup Wizard step to convert old → new
+4. **Deprecation** - Warn when reading old format, encourage migration
+
+### Implementation Checklist
+
+- [ ] Update `RelationshipService` to read flat properties
+- [ ] Update `AddRelationshipModal` to write flat properties
+- [ ] Remove `parseRelationshipsArrayForFamilyGraph()` from `family-graph.ts`
+- [ ] Keep `includeOnFamilyTree`/`familyGraphMapping` on type definitions (still useful)
+- [ ] Add migration wizard step
+- [ ] Update documentation
+
+---
+
 ## References
 
 - [Custom Relationships on Canvas Trees](../wiki-content/Roadmap.md#custom-relationships-on-canvas-trees) - Related roadmap item
+- [Nested Properties Redesign](./nested-properties-redesign.md) - Related architectural issue
 - `src/core/family-graph.ts` - Family graph service
 - `src/relationships/services/relationship-service.ts` - Relationship parsing
 - `src/relationships/constants/default-relationship-types.ts` - Built-in types
