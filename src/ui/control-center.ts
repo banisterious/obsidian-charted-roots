@@ -29,6 +29,7 @@ import { PlaceNetworkModal } from './place-network-modal';
 import { TemplateSnippetsModal } from './template-snippets-modal';
 import { CreatePersonModal } from './create-person-modal';
 import { CreateMapModal } from './create-map-modal';
+import { CreateMapWizardModal } from './create-map-wizard-modal';
 import { resolvePathToFile } from '../utils/wikilink-resolver';
 import { renderWorldMapPreview } from '../maps/ui/world-map-preview';
 import { BulkGeocodeModal } from '../maps/ui/bulk-geocode-modal';
@@ -6133,12 +6134,20 @@ export class ControlCenterModal extends Modal {
 
 		const customMapsContent = customMapsCard.querySelector('.crc-card__content') as HTMLElement;
 
-		// Create map button
+		// Create map buttons
 		new Setting(customMapsContent)
 			.setName('Create custom map')
 			.setDesc('Create a new map note for a fictional or historical world')
 			.addButton(button => button
-				.setButtonText('Create map')
+				.setButtonText('Wizard')
+				.setCta()
+				.onClick(() => {
+					new CreateMapWizardModal(this.app, this.plugin, {
+						directory: this.plugin.settings.mapsFolder
+					}).open();
+				}))
+			.addButton(button => button
+				.setButtonText('Quick create')
 				.onClick(() => {
 					new CreateMapModal(this.app, {
 						directory: this.plugin.settings.mapsFolder,

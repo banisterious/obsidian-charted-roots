@@ -37,6 +37,7 @@ import { FolderFilterService } from './src/core/folder-filter';
 import { SplitWizardModal } from './src/ui/split-wizard-modal';
 import { CreatePlaceModal } from './src/ui/create-place-modal';
 import { CreatePersonModal } from './src/ui/create-person-modal';
+import { CreateMapWizardModal } from './src/ui/create-map-wizard-modal';
 import { PlaceGraphService } from './src/core/place-graph';
 import { MergeDuplicatePlacesModal, findDuplicatePlaceNotes } from './src/ui/merge-duplicate-places-modal';
 import { SchemaService, ValidationService } from './src/schemas';
@@ -706,6 +707,17 @@ export default class CanvasRootsPlugin extends Plugin {
 					placeGraph: this.createPlaceGraphService(),
 					settings: this.settings,
 					plugin: this
+				}).open();
+			}
+		});
+
+		// Add command: Create Custom Map
+		this.addCommand({
+			id: 'create-custom-map',
+			name: 'Create custom map',
+			callback: () => {
+				new CreateMapWizardModal(this.app, this, {
+					directory: this.settings.mapsFolder
 				}).open();
 			}
 		});

@@ -60,6 +60,7 @@ const CONFIG = {
     'dashboard.css',     // Dashboard tab (Control Center home)
     'universe-wizard.css', // Universe setup wizard modal
     'family-wizard.css', // Family creation wizard modal
+    'map-wizard.css',    // Map creation wizard modal
     'preferences.css',   // Preferences tab
     'tree-output.css',   // Tree output two-panel layout
     'dynamic-content.css', // Dynamic content blocks (timeline, relationships)
