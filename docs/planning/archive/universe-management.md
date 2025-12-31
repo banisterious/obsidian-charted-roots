@@ -580,7 +580,9 @@ Creating a note from an orphan:
 **✅ Phase 1 Complete** — Universe entity type, UniverseService, types
 **✅ Phase 2 Complete** — Universes tab, Statistics section, Guide card
 **✅ Phase 3 Complete** — Universe Setup Wizard with calendar/map/schema steps
-**📋 Phase 4 Pending** — Enhanced features (dashboard, filtering, batch operations)
+**✅ Phase 4 Complete** — Dashboard-like Quick Actions tiles, filter/sort/search in Universes tab, entity counts
+
+**Remaining (not prioritized):** Batch operations (move entities between universes, bulk universe assignment)
 
 ---
 

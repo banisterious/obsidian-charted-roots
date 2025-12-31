@@ -14,12 +14,12 @@ This document outlines planned features for Canvas Roots. For completed features
   - [Property Naming Normalization](#property-naming-normalization) 📋 Medium
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Staging Management](#staging-management) 💡 Low
-  - [Universe Management Enhancements](#universe-management-enhancements) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
 - [Future Considerations](#future-considerations)
   - [Ghost Nodes for Unresolved Links](#ghost-nodes-for-unresolved-links)
   - [Research Tracking](#research-tracking)
   - [Dynasty Management](#dynasty-management)
+  - [Universe Batch Operations](#universe-batch-operations)
   - [Sensitive Field Redaction](#sensitive-field-redaction)
   - [Inclusive Identity & Privacy Enhancements](#inclusive-identity--privacy-enhancements)
   - [Data Analysis Scope Expansion](#data-analysis-scope-expansion)
@@ -301,44 +301,6 @@ See [Calendarium Integration Planning Document](https://github.com/banisterious/
 
 ---
 
-### Universe Management Enhancements
-
-**Priority:** 💡 Low — Advanced features for power users
-
-**Status:** ✅ Core implementation complete | Phase 4 enhancements planned
-
-**Summary:** Additional enhancements to the universe management system. The core universe management features are complete—universe entity type, Universes tab in Control Center, Statistics integration, Guide tab documentation, Create Universe wizard, and context menu actions. These enhancements add power-user features for advanced workflows.
-
-**Current Implementation (Complete):**
-
-- Universe as first-class entity type (`cr_type: universe`)
-- UniverseService with CRUD operations, aggregation, orphan detection
-- Universes tab in Control Center (conditional visibility)
-- Create Universe wizard with guided setup
-- Statistics → Universes section with entity counts and drill-down
-- Guide tab → Universe notes documentation
-- Context menu: "Add essential universe properties"
-- Universes base template with 12 pre-configured views
-
-**Planned Enhancements:**
-
-| Feature | Description |
-|---------|-------------|
-| Universe dashboard | Enhanced overview with visual entity counts, quick access to related entities |
-| Universe-scoped filtering | Filter quick switcher and searches by universe |
-| Batch operations | Move entities between universes, bulk universe assignment |
-
-**When This Becomes Relevant:**
-
-These enhancements become valuable when users have:
-- Multiple universes with many entities each
-- Need to reorganize entities between universes
-- Want streamlined navigation within a single universe context
-
-See [Universe Management Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/universe-management.md) for implementation details.
-
----
-
 ### Transcript Nodes & Oral History
 
 **Priority:** 💡 Low — Specialized for oral history researchers
@@ -417,6 +379,14 @@ Tools for tracking succession and inheritance in worldbuilding:
 - Title/position inheritance rules
 - Regnal numbering
 - Heir designation and succession events
+
+### Universe Batch Operations
+
+Bulk operations for managing entities across universes:
+
+- Move entities between universes
+- Bulk universe assignment to existing entities
+- Universe merge/split tools
 
 ### Sensitive Field Redaction
 
