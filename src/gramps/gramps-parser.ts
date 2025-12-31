@@ -64,6 +64,8 @@ export interface ParsedGrampsPerson {
 	marriages: Map<string, { date?: string; place?: string }>;
 	// Media references
 	mediaRefs: string[];
+	// Note references
+	noteRefs: string[];
 	// Custom attributes (e.g., Research Level)
 	attributes: Record<string, string>;
 }
@@ -1187,6 +1189,7 @@ export class GrampsParser {
 			spouseRefs: [],
 			marriages: new Map(),
 			mediaRefs: person.mediaRefs || [],
+			noteRefs: person.noteRefs || [],
 			attributes
 		};
 	}

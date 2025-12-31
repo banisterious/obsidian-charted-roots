@@ -6,7 +6,8 @@
 
 import { App, Notice, TFile, normalizePath } from 'obsidian';
 import { GrampsParser, ParsedGrampsData, ParsedGrampsPerson, ParsedGrampsPlace, ParsedGrampsEvent, ParsedGrampsSource } from './gramps-parser';
-import { GrampsValidationResult } from './gramps-types';
+import { GrampsNote, GrampsValidationResult } from './gramps-types';
+import { formatNotesSection, hasPrivateNote } from './gramps-note-converter';
 import { createPersonNote, PersonData } from '../core/person-note-writer';
 import { createPlaceNote, PlaceData } from '../core/place-note-writer';
 import { generateCrId } from '../core/uuid';
@@ -633,6 +634,24 @@ export class GrampsImporter {
 			const level = parseInt(person.attributes['Research Level'], 10);
 			if (!isNaN(level) && level >= 0 && level <= 6) {
 				personData.researchLevel = level as 0 | 1 | 2 | 3 | 4 | 5 | 6;
+			}
+		}
+
+		// Resolve and append notes from Gramps
+		if (person.noteRefs && person.noteRefs.length > 0) {
+			const resolvedNotes: GrampsNote[] = [];
+			for (const noteRef of person.noteRefs) {
+				const note = grampsData.database.notes.get(noteRef);
+				if (note) {
+					resolvedNotes.push(note);
+				}
+			}
+			if (resolvedNotes.length > 0) {
+				personData.notesContent = formatNotesSection(resolvedNotes);
+				// Set private flag if any note is marked private
+				if (hasPrivateNote(resolvedNotes)) {
+					personData.private = true;
+				}
 			}
 		}
 

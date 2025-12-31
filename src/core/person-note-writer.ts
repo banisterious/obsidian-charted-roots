@@ -105,6 +105,10 @@ export interface PersonData {
 	media?: string[];            // Wikilinks to media files (e.g., ["[[photo.jpg]]"])
 	// Research tracking
 	researchLevel?: ResearchLevel;  // Research level (0-6) based on Hoitink's Six Levels
+	// Notes content (from Gramps import)
+	notesContent?: string;       // Markdown notes content to append to note body
+	// Privacy flag
+	private?: boolean;           // Mark note as private (e.g., for Gramps priv flag)
 }
 
 /**
@@ -231,6 +235,11 @@ export async function createPersonNote(
 
 	if (person.researchLevel !== undefined) {
 		frontmatter[prop('research_level')] = person.researchLevel;
+	}
+
+	// Privacy flag (e.g., from Gramps priv attribute)
+	if (person.private === true) {
+		frontmatter[prop('private')] = 'true';
 	}
 
 	// Handle relationships using dual storage: wikilinks for Obsidian + _id fields for reliability
@@ -498,6 +507,11 @@ export async function createPersonNote(
 				bodyLines.push('');
 			}
 		}
+	}
+
+	// Append notes content (from Gramps import) at the end
+	if (person.notesContent) {
+		bodyLines.push(person.notesContent);
 	}
 
 	const noteContent = [
