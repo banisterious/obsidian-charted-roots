@@ -55,6 +55,7 @@ interface ImportWizardFormData {
 	importSources: boolean;
 	importEvents: boolean;
 	importMedia: boolean;
+	importNotes: boolean;  // Import notes attached to entities (Gramps only)
 	mediaFolder: string;
 	preserveMediaFolderStructure: boolean;
 	includeDynamicBlocks: boolean;
@@ -185,6 +186,7 @@ export class ImportWizardModal extends Modal {
 			importSources: true,
 			importEvents: true,
 			importMedia: true,
+			importNotes: true,  // Default: import notes (Gramps only)
 			mediaFolder: this.plugin?.settings?.mediaFolders?.[0] || 'Canvas Roots/Media',
 			preserveMediaFolderStructure: false,
 			includeDynamicBlocks: true,
@@ -499,6 +501,10 @@ export class ImportWizardModal extends Modal {
 		if (this.formData.format === 'gramps') {
 			this.renderToggleOption(entityOptions, 'Media', 'Attached media files', this.formData.importMedia, (val) => {
 				this.formData.importMedia = val;
+			});
+
+			this.renderToggleOption(entityOptions, 'Notes', 'Append Gramps notes to entity content', this.formData.importNotes, (val) => {
+				this.formData.importNotes = val;
 			});
 		}
 
@@ -992,6 +998,7 @@ export class ImportWizardModal extends Modal {
 					mediaFolder: this.formData.mediaFolder,
 					preserveMediaFolderStructure: this.formData.preserveMediaFolderStructure,
 					extractMedia: this.formData.importMedia && this.formData.gpkgExtractionResult !== null,
+					importNotes: this.formData.importNotes,
 					onProgress: (progress) => {
 						// Update UI based on progress
 						const percent = progress.total > 0 ? Math.round((progress.current / progress.total) * 100) : 0;

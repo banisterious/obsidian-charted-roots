@@ -80,6 +80,8 @@ export interface GrampsImportOptions {
 	extractMedia?: boolean;
 	/** Preserve subfolder structure when extracting media (default: false = flat folder) */
 	preserveMediaFolderStructure?: boolean;
+	/** Whether to import notes attached to entities (default: true) */
+	importNotes?: boolean;
 }
 
 /**
@@ -637,8 +639,8 @@ export class GrampsImporter {
 			}
 		}
 
-		// Resolve and append notes from Gramps
-		if (person.noteRefs && person.noteRefs.length > 0) {
+		// Resolve and append notes from Gramps (if enabled)
+		if (options.importNotes !== false && person.noteRefs && person.noteRefs.length > 0) {
 			const resolvedNotes: GrampsNote[] = [];
 			for (const noteRef of person.noteRefs) {
 				const note = grampsData.database.notes.get(noteRef);
