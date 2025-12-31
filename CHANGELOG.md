@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Dynamic block metadata timing** - Timeline and relationships blocks now show "Waiting for metadata..." instead of errors when opened on newly created person notes, then auto-refresh when ready ([#74](https://github.com/banisterious/obsidian-canvas-roots/issues/74))
+- **Timeline event detection** - Timeline block now listens for event note changes and file creation, so new events appear without requiring a page refresh ([#74](https://github.com/banisterious/obsidian-canvas-roots/issues/74))
 - **Settings label clarity** - Renamed "Maps folder" setting to "Map notes folder" to clarify it controls where map notes are created, not map images ([#71](https://github.com/banisterious/obsidian-canvas-roots/issues/71))
 - **ESLint compliance** - Fixed 36 non-sentence-case ESLint errors across 15 files (unused imports, promise handling, style assignments, async/await issues)
 - **Event template properties** - Templater event templates now use `persons` array instead of deprecated `person` property ([#69](https://github.com/banisterious/obsidian-canvas-roots/issues/69))
