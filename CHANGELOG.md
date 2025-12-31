@@ -38,6 +38,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Step/adoptive parent canvas positioning** - Fixed step/adoptive parents not rendering on generated canvas trees; positioning pass was missing after layout engine ([#75](https://github.com/banisterious/obsidian-canvas-roots/issues/75))
 - **Circular relationship freeze** - Added cycle detection to prevent Obsidian from freezing when circular parent-child relationships exist (e.g., A is parent of B and B is parent of A); cycles are now detected and broken with a warning ([#83](https://github.com/banisterious/obsidian-canvas-roots/issues/83))
 
+### Changed
+
+- **Person note context menu reorganization** - Restructured the Canvas Roots context menu for person notes to be less cluttered and more intuitive ([#82](https://github.com/banisterious/obsidian-canvas-roots/issues/82)):
+  - Renamed "Add relationship..." to "Relationships" submenu
+  - Moved "Validate relationships" and "Calculate relationship..." into Relationships submenu
+  - Removed duplicate "More options..." entry (same as "Generate visual tree")
+  - Added "More" submenu with less frequently used actions: Find on canvas, Open in map view, Set group name, Set collection, Insert dynamic blocks, Create place notes, Validate against schemas, Add essential properties, Add cr_id
+
 ---
 
 ## [0.18.12] - 2025-12-31
