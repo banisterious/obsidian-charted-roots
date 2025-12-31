@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Duplicate children_id during Gramps import** - Fixed duplicate values appearing in `children_id` arrays after importing Gramps .gpkg files; bidirectional sync now suspended during import to prevent file watcher from triggering relationship sync before Phase 2 handle replacement ([#84](https://github.com/banisterious/obsidian-canvas-roots/issues/84))
 - **Deprecated `child` property in imports** - New person notes now use `children` (plural) property instead of deprecated `child` (singular), matching v0.18.11 property naming normalization ([#85](https://github.com/banisterious/obsidian-canvas-roots/issues/85))
+- **Lint warnings from Obsidian bot** - Fixed various lint issues flagged during PR review: Object stringification, async/await usage, deprecated method calls, innerHTML usage, and type assertions
 
 ---
 
