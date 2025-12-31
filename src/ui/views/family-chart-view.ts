@@ -1088,11 +1088,20 @@ export class FamilyChartView extends ItemView {
 		// If no biological or gender-neutral parents, use adoptive parents as fallback
 		// This ensures adopted children appear connected to their adoptive family
 		if (parents.length === 0) {
+			// Gender-specific adoptive parents
 			if (person.adoptiveFatherCrId && validIds.has(person.adoptiveFatherCrId)) {
 				parents.push(person.adoptiveFatherCrId);
 			}
 			if (person.adoptiveMotherCrId && validIds.has(person.adoptiveMotherCrId)) {
 				parents.push(person.adoptiveMotherCrId);
+			}
+			// Gender-neutral adoptive parents
+			if (person.adoptiveParentCrIds) {
+				for (const adoptiveParentId of person.adoptiveParentCrIds) {
+					if (validIds.has(adoptiveParentId) && parents.length < 2) {
+						parents.push(adoptiveParentId);
+					}
+				}
 			}
 		}
 
@@ -1122,7 +1131,12 @@ export class FamilyChartView extends ItemView {
 			// Check adoptive parent relationship (only if child has no biological or gender-neutral parents)
 			// This matches the parent logic: adoptive parents only used when no biological/gender-neutral parents
 			if (!childPerson.fatherCrId && !childPerson.motherCrId && (!childPerson.parentCrIds || childPerson.parentCrIds.length === 0)) {
+				// Gender-specific adoptive parents
 				if (childPerson.adoptiveFatherCrId === person.crId || childPerson.adoptiveMotherCrId === person.crId) {
+					return true;
+				}
+				// Gender-neutral adoptive parents
+				if (childPerson.adoptiveParentCrIds && childPerson.adoptiveParentCrIds.includes(person.crId)) {
 					return true;
 				}
 			}
