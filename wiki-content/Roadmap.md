@@ -9,9 +9,7 @@ This document outlines planned features for Canvas Roots. For completed features
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
   - [Edit Person Modal: Events & Sources](#edit-person-modal-events--sources) 📋 Medium
-  - [Cleanup Wizard Phase 4](#cleanup-wizard-phase-4) 📋 Medium
   - [Gramps Notes & Family Integration](#gramps-notes--family-integration) 📋 Medium
-  - [Property Naming Normalization](#property-naming-normalization) 📋 Medium
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Staging Management](#staging-management) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
@@ -37,6 +35,8 @@ For the complete list of implemented features, see [Release History](Release-His
 
 | Version | Feature | Summary |
 |:-------:|---------|---------|
+| v0.18.11 | [Cleanup Wizard Phase 4](Release-History#cleanup-wizard-phase-4-v01811) | Batch progress indicators, keyboard navigation for accessibility |
+| v0.18.11 | [Property Naming Normalization](Release-History#property-naming-normalization-v01811) | `child` → `children` migration, Cleanup Wizard Step 14, documentation updates |
 | v0.18.10 | [Custom Map Authoring](Release-History#custom-map-authoring-v01810) | 4-step Map Creation Wizard, right-click to create places, draggable place markers with undo, icon-only Map View toolbar |
 | v0.18.9 | [Nested Properties Redesign](Release-History#nested-properties-redesign-v0189) | Flat property format for evidence tracking (`sourced_*`) and life events (`life_events` → event notes), 13-step Cleanup Wizard |
 | v0.18.9 | [Custom Relationships on Canvas Trees](Release-History#custom-relationships-on-canvas-trees-v0189) | Custom relationship types with flat properties, family tree integration via `includeOnFamilyTree` and `familyGraphMapping` |
@@ -93,38 +93,6 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 
 ---
 
-### Cleanup Wizard Phase 4
-
-**Priority:** 📋 Medium — UX polish and customization for the Post-Import Cleanup Wizard
-
-**Status:** Planning | Depends on v0.17.0 completion
-
-**Summary:** User experience refinements for the Post-Import Cleanup Wizard. These enhancements improve accessibility, allow workflow customization, and add visual polish without changing core functionality.
-
-**Planned Features:**
-
-| Task | Feature | Value |
-|------|---------|-------|
-| 1 | Batch Progress Indicators | Progress bars for large batch operations (Steps 2-6, 10) |
-| 2 | Keyboard Navigation | Arrow keys, Enter/Escape, number shortcuts for accessibility |
-| 3 | Step Reordering | Drag-drop tiles with dependency validation |
-| 4 | Cleanup Profiles | Save/load named configurations (Full, Quick, Places Only) |
-| 5 | Step Transition Animations | Smooth tile expansion, slide transitions, staggered results |
-| 6 | Schema Integration | Hook into future schema validation system |
-
-**Implementation Order:**
-1. Batch progress indicators (high priority, UX improvement for large vaults)
-2. Keyboard navigation (high priority, accessibility)
-3. Animations (quick UX win)
-4. Cleanup profiles (power user feature)
-5. Step reordering (complex, may not be needed if profiles suffice)
-6. Schema integration (deferred until schema validation exists)
-
-**Documentation:**
-- See [Cleanup Wizard Phase 4 Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/cleanup-wizard-phase4.md) for detailed specifications
-
----
-
 ### Gramps Notes & Family Integration
 
 **Priority:** 📋 Medium — Preserve research notes and family structure from Gramps imports
@@ -156,39 +124,6 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 
 **Documentation:**
 - See [Gramps Notes & Family Integration Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/gramps-notes-family-integration.md) for detailed specifications
-
----
-
-### Property Naming Normalization
-
-**Priority:** 📋 Medium — Standardize property names for consistency and Obsidian compatibility
-
-**Status:** In Progress | [#65](https://github.com/banisterious/obsidian-canvas-roots/issues/65)
-
-**Summary:** Normalize inconsistent property names across the schema. The primary target is the `child` → `children` migration, but this pattern applies to other legacy property inconsistencies.
-
-**Current Status (v0.18.9):**
-- Core code now writes to `children` (preferred) instead of `child` (legacy)
-- Read operations check both properties for backward compatibility
-- Control Center deduplication migrates `child` → `children` during cleanup
-
-**Planned Work:**
-
-| Phase | Task | Description |
-|-------|------|-------------|
-| 1 | Cleanup Wizard Step 14 | Batch migrate `child` → `children` across vault |
-| 2 | Audit Import/Export | Ensure GEDCOM, Gramps, CSV use `children` consistently |
-| 3 | Documentation | Update schema docs, mark `child` as deprecated |
-| 4 | Remove Legacy Support | Future breaking change to remove `child` read support |
-
-**Affected Properties:**
-
-| Legacy | Preferred | Reason |
-|--------|-----------|--------|
-| `child` | `children` | Match `children_id`, consistent pluralization |
-
-**Documentation:**
-- See [Deprecate Child Property Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/deprecate-child-property.md) for detailed specifications
 
 ---
 

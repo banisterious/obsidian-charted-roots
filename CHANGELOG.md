@@ -17,6 +17,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.18.11] - 2025-12-30
+
+### Added
+
+- **Cleanup Wizard Phase 4** - UX improvements for the Post-Import Cleanup Wizard ([#65](https://github.com/banisterious/obsidian-canvas-roots/issues/65)):
+
+  **Batch Progress Indicators**
+  - Real-time progress bars during batch operations (Steps 2-6, 10-14)
+  - Shows "Processing X of Y notes..." with current filename
+  - UI re-renders every 5 items to show progress without excessive updates
+  - Progress callbacks added to all batch methods in DataQualityService and migration services
+
+  **Keyboard Navigation**
+  - Arrow keys to navigate between tiles on overview screen
+  - Enter/Space to activate focused tile
+  - Escape to return to overview or close modal
+  - ARIA attributes (role, aria-label) for screen reader accessibility
+  - Visual focus indicators matching hover styles
+
+- **Property Naming Normalization** - Standardized `child` → `children` property naming ([#65](https://github.com/banisterious/obsidian-canvas-roots/issues/65)):
+
+  **Cleanup Wizard Step 14**
+  - Batch migrate legacy `child` property to `children` across vault
+  - Preview shows notes that will be updated
+  - Merges with existing `children` if both properties exist (deduplicates)
+  - Removes legacy `child` property after migration
+
+  **Documentation Updates**
+  - `children` marked as canonical property in Frontmatter-Reference.md
+  - Deprecation notice added for `child` property
+  - Updated example person note to use `children`
+
+### Fixed
+
+- **Cleanup Wizard extensibility** - Fixed hardcoded step count (10) to use `WIZARD_STEPS.length`, enabling future step additions without code changes
+
+---
+
 ## [0.18.10] - 2025-12-30
 
 ### Added

@@ -1,6 +1,6 @@
 # Deprecate `child` Property in Favor of `children`
 
-**Status:** In Progress
+**Status:** Complete
 **Issue:** #65
 **Priority:** Medium
 **Target Release:** v0.18.11
@@ -23,15 +23,7 @@ This causes duplicate properties to appear in YAML when both systems write to th
 
 ### Remaining Work
 
-1. **Add Cleanup Wizard Step** - Create Step 14 to migrate `child` → `children`
-   - Detect person notes with `child` property
-   - Preview migration (show what will be renamed)
-   - Apply: rename `child` to `children`, preserving values
-
-2. **Update Schema/Documentation**
-   - Document `children` as the canonical property
-   - Mark `child` as deprecated in any schema definitions
-   - Update wiki documentation
+None — all work completed in v0.18.11.
 
 ## Import/Export Audit (2024-12-30)
 
@@ -137,6 +129,7 @@ await app.fileManager.processFrontMatter(file, (fm) => {
 - `src/core/person-note-writer.ts` - Write to `children`, delete `child`
 - `src/ui/control-center.ts` - Dedup migrates `child` → `children`
 
-### v0.18.11 (planned)
-- `src/ui/cleanup-wizard-modal.ts` - Add Step 14
-- Wiki documentation updates (Frontmatter-Reference.md, Data-Entry.md)
+### v0.18.11 (completed)
+- `src/ui/cleanup-wizard-modal.ts` - Added Step 14 with detection, preview, and migration
+- `wiki-content/Frontmatter-Reference.md` - Updated `children` as canonical, added deprecation note for `child`
+- Fixed hardcoded step count (10) to use `WIZARD_STEPS.length` for extensibility

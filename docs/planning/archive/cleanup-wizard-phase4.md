@@ -4,9 +4,10 @@
 
 Phase 4 focuses on user experience refinements for the Post-Import Cleanup Wizard. These enhancements improve usability, accessibility, and personalization without changing core functionality.
 
-**Status:** Planning
-**Target Version:** v0.18.0 or later (post Data Cleanup Bundle)
-**Prerequisite:** Phase 1-3 complete (Steps 1-10 functional)
+**Status:** Complete
+**Target Version:** v0.18.11
+**Completed:** 2025-12-30
+**Prerequisite:** Phase 1-3 complete (Steps 1-14 functional)
 
 ## Tasks
 
@@ -155,14 +156,15 @@ private async applyBatchFixes(stepConfig: WizardStepConfig): Promise<void> {
 
 ### Task 2: Keyboard Navigation
 
-**Goal:** Full keyboard accessibility for wizard navigation.
+**Goal:** Full keyboard accessibility for wizard navigation within the modal.
+
+**Scope:** Modal-only navigation (no global hotkeys).
 
 **Requirements:**
 - Arrow keys for tile selection on overview
 - Enter to select/activate focused tile
 - Escape to go back or close modal
 - Tab/Shift+Tab for form field navigation
-- Number keys 1-0 as shortcuts for steps 1-10
 
 **Implementation:**
 
@@ -204,12 +206,6 @@ private handleOverviewKeyboard(e: KeyboardEvent): void {
       this.activateFocusedTile();
       e.preventDefault();
       break;
-    case '1': case '2': case '3': case '4': case '5':
-    case '6': case '7': case '8': case '9': case '0':
-      const stepNum = e.key === '0' ? 10 : parseInt(e.key);
-      this.navigateToStep(stepNum);
-      e.preventDefault();
-      break;
   }
 }
 ```
@@ -230,9 +226,10 @@ private handleOverviewKeyboard(e: KeyboardEvent): void {
 
 **Constraints:**
 - Cannot violate step dependencies
-- Steps 7 → 7b → 8 → 9 must remain in order (place operations)
+- Steps 7 → 8 → 9 must remain in order (place operations)
 - Step 1 (Quality Report) must remain first
 - Step 2 (Bidirectional) should remain before 3-6
+- Steps 11-14 (migrations) are independent and can be reordered freely
 
 **Implementation Approach:**
 
@@ -248,19 +245,22 @@ interface StepOrder {
   isCustom: boolean;
 }
 
-// Dependency graph for validation
+// Dependency graph for validation (14 steps)
 const STEP_DEPENDENCIES: Record<string, string[]> = {
-  'quality-report': [],
-  'bidirectional': [],
-  'dates': ['bidirectional'],
-  'gender': ['bidirectional'],
-  'orphans': ['bidirectional'],
-  'sources': ['orphans'],
-  'place-variants': [],
-  'place-dedup': ['place-variants'],
-  'geocode': ['place-variants'],
-  'place-hierarchy': ['geocode'],
-  'flatten': []
+  'quality-report': [],           // Step 1
+  'bidirectional': [],            // Step 2
+  'date-normalize': ['bidirectional'],      // Step 3
+  'gender-normalize': ['bidirectional'],    // Step 4
+  'orphan-clear': ['bidirectional'],        // Step 5
+  'source-migrate': ['orphan-clear'],       // Step 6
+  'place-variants': [],           // Step 7
+  'geocode': ['place-variants'],  // Step 8
+  'place-hierarchy': ['geocode'], // Step 9
+  'flatten-props': [],            // Step 10
+  'event-person-migrate': [],     // Step 11
+  'sourced-facts-migrate': [],    // Step 12
+  'life-events-migrate': [],      // Step 13
+  'child-to-children': []         // Step 14
 };
 
 function isValidOrder(order: string[]): boolean {
@@ -330,15 +330,15 @@ const BUILTIN_PROFILES: CleanupProfile[] = [
     id: 'full',
     name: 'Full Cleanup',
     description: 'Run all cleanup steps',
-    enabledSteps: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    enabledSteps: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
     isBuiltIn: true,
     modified: 0
   },
   {
     id: 'quick',
     name: 'Quick Cleanup',
-    description: 'Essential fixes only (Steps 1-5)',
-    enabledSteps: [1, 2, 3, 4, 5],
+    description: 'Essential fixes only (Steps 1-6)',
+    enabledSteps: [1, 2, 3, 4, 5, 6],
     isBuiltIn: true,
     modified: 0
   },
@@ -346,7 +346,15 @@ const BUILTIN_PROFILES: CleanupProfile[] = [
     id: 'places',
     name: 'Places Only',
     description: 'Place standardization and geocoding',
-    enabledSteps: [7, 8, 9],
+    enabledSteps: [7, 8, 9, 10],
+    isBuiltIn: true,
+    modified: 0
+  },
+  {
+    id: 'migrations',
+    name: 'Migrations Only',
+    description: 'Property format migrations (Steps 11-14)',
+    enabledSteps: [11, 12, 13, 14],
     isBuiltIn: true,
     modified: 0
   }
