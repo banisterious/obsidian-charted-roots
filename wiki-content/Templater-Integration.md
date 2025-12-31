@@ -155,7 +155,7 @@ title: <% tp.file.title %>
 event_type: custom
 date: ""
 date_precision: unknown
-person: ""
+persons: []
 place: ""
 sources: []
 confidence: unknown
