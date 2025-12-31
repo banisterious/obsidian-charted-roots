@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Settings label clarity** - Renamed "Maps folder" setting to "Map notes folder" to clarify it controls where map notes are created, not map images ([#71](https://github.com/banisterious/obsidian-canvas-roots/issues/71))
+
 ---
 
 ## [0.18.10] - 2025-12-30
