@@ -578,7 +578,8 @@ export class GrampsParser {
 			childof: [],
 			parentin: [],
 			mediaRefs: [],
-			attributes: []
+			attributes: [],
+			noteRefs: []
 		};
 
 		// Parse names
@@ -697,7 +698,8 @@ export class GrampsParser {
 			place: el.querySelector('place')?.getAttribute('hlink') || undefined,
 			description: el.querySelector('description')?.textContent || undefined,
 			citationRefs,
-			mediaRefs
+			mediaRefs,
+			noteRefs: []
 		};
 
 		return event;
@@ -790,7 +792,8 @@ export class GrampsParser {
 			type: el.getAttribute('type') || undefined,
 			parentRef,
 			hasPtitle: !!ptitle,
-			mediaRefs
+			mediaRefs,
+			noteRefs: []
 		};
 
 		return place;

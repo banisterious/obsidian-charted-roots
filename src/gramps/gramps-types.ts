@@ -66,6 +66,7 @@ export interface GrampsEvent {
 	description?: string;
 	citationRefs: string[];  // Handle links to citations
 	mediaRefs: string[];     // Handle links to media objects
+	noteRefs: string[];      // Handle links to notes
 }
 
 /**
@@ -81,6 +82,7 @@ export interface GrampsPlace {
 	/** Whether this place has a ptitle (full hierarchical name) */
 	hasPtitle?: boolean;
 	mediaRefs: string[];  // Handle links to media objects
+	noteRefs: string[];   // Handle links to notes
 }
 
 /**
@@ -113,6 +115,7 @@ export interface GrampsPerson {
 	parentin: string[];  // Handle links to families where this person is a parent
 	mediaRefs: string[]; // Handle links to media objects
 	attributes: GrampsAttribute[];  // Custom person attributes
+	noteRefs: string[];  // Handle links to notes
 }
 
 /**
