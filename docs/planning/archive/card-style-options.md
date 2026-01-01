@@ -1,8 +1,8 @@
 # Card Style Options for Family Chart
 
-**Status:** Planning
+**Status:** ✅ Complete
 **Priority:** Medium
-**Issue:** [#87](https://github.com/banisterious/obsidian-canvas-roots/issues/87)
+**Issue:** [#87](https://github.com/banisterious/obsidian-canvas-roots/issues/87), [#88](https://github.com/banisterious/obsidian-canvas-roots/issues/88)
 
 ---
 
@@ -365,18 +365,18 @@ HTML cards use DOM elements instead of SVG. For large trees (100+ nodes), benchm
 
 ## Testing Checklist
 
-- [ ] Rectangle style works as before (no regression)
-- [ ] Circle style displays circular avatars correctly
-- [ ] Circle style falls back to rectangle for no-avatar persons
-- [ ] Compact style displays text-only cards without avatars
-- [ ] Mini style displays smaller cards with name only
-- [ ] Gender colors apply correctly in all styles
-- [ ] Card click navigation works in all styles
-- [ ] Open note button appears and works (except Mini where hidden)
-- [ ] Switching styles refreshes chart correctly
-- [ ] Style persists across view reopening (per-view state)
-- [ ] Export produces expected output for each style
-- [ ] All styles work with horizontal and vertical orientations
+- [x] Rectangle style works as before (no regression)
+- [x] Circle style displays circular avatars correctly
+- [x] Circle style falls back to rectangle for no-avatar persons (actually uses text label)
+- [x] Compact style displays text-only cards without avatars
+- [x] Mini style displays smaller cards with name only
+- [x] Gender colors apply correctly in all styles
+- [x] Card click navigation works in all styles
+- [x] Open note button appears and works (all styles, smaller on mini)
+- [x] Switching styles refreshes chart correctly
+- [x] Style persists across view reopening (per-view state via requestSaveLayout)
+- [x] Export produces expected output for each style (circle uses native SVG elements)
+- [x] All styles work with horizontal and vertical orientations
 - [ ] Mini style renders correctly with large trees (100+ nodes)
 
 ---

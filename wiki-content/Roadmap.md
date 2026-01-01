@@ -8,7 +8,6 @@ This document outlines planned features for Canvas Roots. For completed features
 
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
-  - [Card Style Options](#card-style-options) 📋 Medium
   - [Gramps Notes & Family Integration](#gramps-notes--family-integration) 📋 Medium
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Staging Management](#staging-management) 💡 Low
@@ -35,6 +34,7 @@ For the complete list of implemented features, see [Release History](Release-His
 
 | Version | Feature | Summary |
 |:-------:|---------|---------|
+| v0.18.15 | [Card Style Options](Release-History#card-style-options-v01815) | 4 card styles (Rectangle, Circle, Compact, Mini) for Family Chart with state persistence and export support |
 | v0.18.14 | [Edit Person Events & Sources](Release-History#edit-person-events--sources-v01814) | Sources and Events sections in Edit Person modal with link/create/unlink, type badges with colors |
 | v0.18.11 | [Cleanup Wizard Phase 4](Release-History#cleanup-wizard-phase-4-v01811) | Batch progress indicators, keyboard navigation for accessibility |
 | v0.18.11 | [Property Naming Normalization](Release-History#property-naming-normalization-v01811) | `child` → `children` migration, Cleanup Wizard Step 14, documentation updates |
@@ -58,25 +58,6 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 | ⚡ High | Core workflow | Completes essential data portability |
 | 📋 Medium | User value | Highly requested sharing/output features |
 | 💡 Low | Specialized | Advanced use cases, niche workflows |
-
----
-
-### Card Style Options
-
-**Priority:** 📋 Medium — Flexible visualization options for Family Chart
-
-**Status:** Planning
-
-**Summary:** Add multiple card style options to the Family Chart view, allowing users to choose the visualization that best fits their needs.
-
-**Card Styles:**
-- **Rectangle** (default) — Current SVG cards with square avatars
-- **Circle** — HTML cards with circular avatars, rectangular fallback for persons without photos
-- **Compact** — Text-only cards without avatars, ideal for large trees or structure focus
-- **Mini** — Smaller cards fitting more generations on screen
-
-**Documentation:**
-- See [Card Style Options Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/card-style-options.md) for detailed specifications
 
 ---
 

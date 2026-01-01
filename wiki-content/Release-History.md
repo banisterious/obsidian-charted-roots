@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.18.x](#v018x)
+  - [Card Style Options](#card-style-options-v01815)
   - [Edit Person Events & Sources](#edit-person-events--sources-v01814)
   - [Cleanup Wizard Phase 4](#cleanup-wizard-phase-4-v01811)
   - [Property Naming Normalization](#property-naming-normalization-v01811)
@@ -81,6 +82,44 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.18.x
+
+### Card Style Options (v0.18.15)
+
+Choose from 4 card styles in Family Chart view to match your visualization needs.
+
+**Card Styles:**
+
+| Style | Description |
+|-------|-------------|
+| Rectangle | Default style with avatar thumbnails and full details (name, dates) |
+| Circle | Circular avatar cards with name labels below |
+| Compact | Text-only cards without avatars for denser layouts |
+| Mini | Smaller name-only cards for high-level overviews |
+
+**Features:**
+
+| Feature | Description |
+|---------|-------------|
+| Style menu | Access via toolbar Style menu → Card Style submenu |
+| State persistence | Card style persists across Obsidian restarts |
+| Export support | PNG/PDF export works with all card styles including Circle |
+| Open note button | Appears on all card styles (smaller on Mini) |
+
+**Technical Details:**
+
+- Rectangle, Compact, Mini use SVG card renderer
+- Circle uses HTML card renderer with custom styling
+- Circle cards are converted to native SVG elements during export to avoid tainted canvas issues
+- State is saved immediately when changing style via `requestSaveLayout()`
+
+**Files Modified:**
+
+| File | Changes |
+|------|---------|
+| `src/ui/views/family-chart-view.ts` | Card style state, menu, renderer switching, export embedding |
+| `styles/family-chart-view.css` | Circle card styles, gender-based colors |
+
+---
 
 ### Edit Person Events & Sources (v0.18.14)
 
