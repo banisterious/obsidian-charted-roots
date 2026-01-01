@@ -360,6 +360,7 @@ Add checkbox to Gramps import options:
 | `src/ui/control-center.ts` | Add conditional Notes card to Dashboard tab |
 | `src/core/vault-stats.ts` | Add notes stats (count, by type) |
 | `src/ui/create-note-modal.ts` | **New file**: Modal for creating notes manually |
+| `src/ui/template-snippets-modal.ts` | Add 'note' to `TemplateType`, add Notes tile, add `getNoteTemplates()` |
 | `Canvas Roots/Bases/Note.md` | **New file**: Base template for note creation |
 
 **11. Control Center integration**
@@ -427,6 +428,86 @@ private: false
 ---
 
 {{content}}
+```
+
+**13. Templater templates modal**
+
+Add a Notes tile to the existing Templater templates modal (`src/ui/template-snippets-modal.ts`):
+
+Changes required:
+- Add `'note'` to `TemplateType` union
+- Add Notes tile to `tiles` array: `{ type: 'note', label: 'Notes', icon: 'file-text' }`
+- Add case for `'note'` in `renderTemplates()` switch
+- Add `getNoteTemplates()` method
+
+**Note templates to include:**
+
+```typescript
+private getNoteTemplates(): TemplateSnippet[] {
+    const p = (canonical: string) => getPropertyName(canonical, this.propertyAliases);
+
+    return [
+        {
+            name: 'Basic note',
+            description: 'Minimal template for research notes',
+            template: `---
+${p('cr_type')}: note
+${p('cr_id')}: <% tp.date.now("YYYYMMDDHHmmss") %>
+cr_note_type: <% tp.system.suggester(["Research", "Person Note", "Transcript", "Source text", "General"], ["Research", "Person Note", "Transcript", "Source text", "General"]) %>
+private: false
+---
+
+# <% tp.file.title %>
+
+<% tp.file.cursor() %>`
+        },
+        {
+            name: 'Research note',
+            description: 'Template for documenting research findings',
+            template: `---
+${p('cr_type')}: note
+${p('cr_id')}: <% tp.date.now("YYYYMMDDHHmmss") %>
+cr_note_type: Research
+private: false
+linked_entities:
+  - "[[<% tp.system.prompt("Related person/event/source?", "", false) %>]]"
+---
+
+# <% tp.file.title %>
+
+## Summary
+
+<% tp.file.cursor() %>
+
+## Sources consulted
+
+## Next steps
+
+`
+        },
+        {
+            name: 'Transcript note',
+            description: 'For document transcriptions',
+            template: `---
+${p('cr_type')}: note
+${p('cr_id')}: <% tp.date.now("YYYYMMDDHHmmss") %>
+cr_note_type: Transcript
+private: false
+source: "[[<% tp.system.prompt("Source document?", "", false) %>]]"
+---
+
+# Transcript: <% tp.file.title %>
+
+## Original text
+
+<% tp.file.cursor() %>
+
+## Transcription notes
+
+`
+        }
+    ];
+}
 ```
 
 **7. Shared notes handling**
@@ -641,14 +722,15 @@ The `priv` attribute on Gramps notes indicates private/sensitive content.
 10. [ ] Add Note base template to `Canvas Roots/Bases/`
 11. [ ] Register "Create note" command in command palette
 12. [ ] Register file-menu context action for Notes folder ("New Canvas Roots note")
+13. [ ] Add Notes tile and templates to Templater templates modal
 
 *Control Center:*
-13. [ ] Add notes stats to `VaultStatsService` (count, by type)
-14. [ ] Add conditional Notes card to Dashboard tab
+14. [ ] Add notes stats to `VaultStatsService` (count, by type)
+15. [ ] Add conditional Notes card to Dashboard tab
 
 *Testing:*
-15. [ ] Test import with sample Gramps file containing shared notes
-16. [ ] Test manual note creation via modal and template
+16. [ ] Test import with sample Gramps file containing shared notes
+17. [ ] Test manual note creation via modal and template
 
 ### Example Output (Phase 1)
 
