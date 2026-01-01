@@ -4,9 +4,9 @@
 
 Add events and sources fields to the Edit Person modal, allowing users to manage all person-related data from a single interface instead of editing multiple notes separately.
 
-**Status:** Phase 1 Complete | Phase 2 Complete | Phase 3 Planned
+**Status:** ✅ Complete (All Phases)
 **Issue:** [#33](https://github.com/banisterious/obsidian-canvas-roots/issues/33)
-**Target Version:** v0.18.14
+**Released:** v0.18.14
 
 ## Problem Statement
 
@@ -385,11 +385,18 @@ class EventPickerModal extends FuzzySuggestModal<EventNote> {
 - `13bbb73` - Add link/unlink event functionality with EventPickerModal
 - `bb829a8` - Add create event button to Edit Person modal
 
-### Phase 3: Polish
-1. Form state persistence for new fields
-2. Duplicate detection and warnings
-3. Event display formatting (type badges, dates)
-4. Source display formatting (type badges)
+### Phase 3: Polish ✅ Complete
+
+| Step | Task | Status |
+|------|------|--------|
+| 1 | Form state persistence for new fields | ✅ Done (already implemented) |
+| 2 | Duplicate detection and warnings | ✅ Done (via excludeSources/excludeEvents) |
+| 3 | Event display formatting (type badges, dates) | ✅ Done |
+| 4 | Source display formatting (type badges) | ✅ Done |
+
+**Commits:**
+- `43f8a77` - Fix plugin reference in Edit Person context menu handler
+- `607048e` - Add type badges with colors to Events and Sources displays
 
 ## Testing Considerations
 

@@ -8,7 +8,6 @@ This document outlines planned features for Canvas Roots. For completed features
 
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
-  - [Edit Person Modal: Events & Sources](#edit-person-modal-events--sources) 📋 Medium
   - [Gramps Notes & Family Integration](#gramps-notes--family-integration) 📋 Medium
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Staging Management](#staging-management) 💡 Low
@@ -35,6 +34,7 @@ For the complete list of implemented features, see [Release History](Release-His
 
 | Version | Feature | Summary |
 |:-------:|---------|---------|
+| v0.18.14 | [Edit Person Events & Sources](Release-History#edit-person-events--sources-v01814) | Sources and Events sections in Edit Person modal with link/create/unlink, type badges with colors |
 | v0.18.11 | [Cleanup Wizard Phase 4](Release-History#cleanup-wizard-phase-4-v01811) | Batch progress indicators, keyboard navigation for accessibility |
 | v0.18.11 | [Property Naming Normalization](Release-History#property-naming-normalization-v01811) | `child` → `children` migration, Cleanup Wizard Step 14, documentation updates |
 | v0.18.10 | [Custom Map Authoring](Release-History#custom-map-authoring-v01810) | 4-step Map Creation Wizard, right-click to create places, draggable place markers with undo, icon-only Map View toolbar |
@@ -57,42 +57,6 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 | ⚡ High | Core workflow | Completes essential data portability |
 | 📋 Medium | User value | Highly requested sharing/output features |
 | 💡 Low | Specialized | Advanced use cases, niche workflows |
-
----
-
-### Edit Person Modal: Events & Sources
-
-**Priority:** 📋 Medium — Expand person editing with related entity linking
-
-**Status:** ✅ Phase 1 complete | ✅ Phase 2 complete | Phase 3 planned | [#33](https://github.com/banisterious/obsidian-canvas-roots/issues/33)
-
-**Summary:** Add events and sources fields to the Edit Person modal, allowing users to manage all person-related data from a single interface instead of editing multiple notes separately.
-
-**Features:**
-
-| Feature | Description | Status |
-|---------|-------------|--------|
-| Sources section | Multi-value picker to link source notes with create-new support | ✅ Complete |
-| Source storage | Stores as `sources`/`sources_id` arrays in person frontmatter | ✅ Complete |
-| Events section | Display events referencing this person; link existing or create new events | ✅ Complete |
-| Event linking | Updates event note's `persons` array to include this person | ✅ Complete |
-
-**Technical Notes:**
-- Events use inverse relationships: event notes contain `persons: ["[[Person]]"]`
-- Linking an event from the person modal modifies the event note, not the person note
-- Sources follow the existing multi-value picker pattern (like spouses/children)
-- Uses dual-storage pattern: `sources` (wikilinks) + `sources_id` (cr_ids) for reliable linking
-
-**Implementation Phases:**
-
-| Phase | Feature | Status |
-|-------|---------|--------|
-| 1 | Sources section (multi-value picker) | ✅ Complete |
-| 2 | Events section (read-only display, link/create/unlink) | ✅ Complete |
-| 3 | Polish (form persistence, duplicate detection, display formatting) | Planned |
-
-**Documentation:**
-- See [Edit Person Events & Sources Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/edit-person-events-sources.md) for detailed specifications
 
 ---
 

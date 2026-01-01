@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.18.x](#v018x)
+  - [Edit Person Events & Sources](#edit-person-events--sources-v01814)
   - [Cleanup Wizard Phase 4](#cleanup-wizard-phase-4-v01811)
   - [Property Naming Normalization](#property-naming-normalization-v01811)
   - [Custom Map Authoring](#custom-map-authoring-v01810)
@@ -80,6 +81,46 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.18.x
+
+### Edit Person Events & Sources (v0.18.14)
+
+Add events and sources sections to the Edit Person modal, allowing users to manage all person-related data from a single interface instead of editing multiple notes separately.
+
+**Features:**
+
+| Feature | Description |
+|---------|-------------|
+| Sources section | Multi-value picker to link source notes with Link and Create buttons |
+| Source storage | Stores as `sources` (wikilinks) and `sources_id` (cr_ids) arrays for reliable linking |
+| Events section | Display events referencing this person with type badges and dates |
+| Event linking | Link/unlink existing events or create new events with person pre-filled |
+| Type badges | Color-coded type badges for both events and sources matching picker modal styles |
+
+**Data Model:**
+
+- Events use inverse relationships: event notes contain `persons: ["[[Person]]"]`
+- Linking an event from the person modal modifies the event note, not the person note
+- Sources follow the dual-storage pattern: `sources` (wikilinks) + `sources_id` (cr_ids)
+
+**Implementation:**
+
+| Phase | Feature | Status |
+|-------|---------|--------|
+| 1 | Sources section with multi-value picker | ✅ Complete |
+| 2 | Events section with link/create/unlink | ✅ Complete |
+| 3 | Polish (type badges, display formatting) | ✅ Complete |
+
+**Bug Fixes:**
+
+| Fix | Description |
+|-----|-------------|
+| Context menu Edit Person | Fixed missing plugin reference causing "Plugin not available" error |
+| Children display | Fixed children displaying as cr_ids instead of names (#86) |
+
+**Documentation:**
+- See [Edit Person Events & Sources Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/archive/edit-person-events-sources.md) for detailed specifications
+
+---
 
 ### Cleanup Wizard Phase 4 (v0.18.11)
 
