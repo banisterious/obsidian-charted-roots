@@ -441,8 +441,6 @@ export class GrampsImporter {
 			// Create separate note files if requested (Phase 4)
 			const noteHandleToWikilink = new Map<string, string>();
 			if (options.createSeparateNoteFiles && grampsData.database.notes.size > 0) {
-				const notesTotal = grampsData.database.notes.size;
-				reportProgress('notes', 0, notesTotal, `Creating ${notesTotal} separate note files...`);
 				const notesFolder = options.notesFolder || 'Canvas Roots/Notes';
 				await this.ensureFolderExists(notesFolder);
 
@@ -453,8 +451,29 @@ export class GrampsImporter {
 					grampsData.places
 				);
 
+				// Collect notes referenced by sources - these are already embedded in source notes
+				// and should not be created as separate files
+				const sourceOnlyNotes = new Set<string>();
+				for (const [, source] of grampsData.database.sources) {
+					if (source.noteRefs) {
+						for (const noteRef of source.noteRefs) {
+							// Only exclude if this note is NOT also referenced by person/event/place
+							if (!noteReferenceMap.has(noteRef)) {
+								sourceOnlyNotes.add(noteRef);
+							}
+						}
+					}
+				}
+
+				// Filter to only notes that should become separate files
+				const notesToCreate = [...grampsData.database.notes.entries()]
+					.filter(([handle]) => !sourceOnlyNotes.has(handle));
+
+				const notesTotal = notesToCreate.length;
+				reportProgress('notes', 0, notesTotal, `Creating ${notesTotal} separate note files...`);
+
 				let noteIndex = 0;
-				for (const [handle, note] of grampsData.database.notes) {
+				for (const [handle, note] of notesToCreate) {
 					try {
 						const entityRef = noteReferenceMap.get(handle);
 						const writeResult = await writeNoteFile(this.app, note, {
