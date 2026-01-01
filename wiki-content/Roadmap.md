@@ -8,6 +8,7 @@ This document outlines planned features for Canvas Roots. For completed features
 
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
+  - [Export Privacy & Sensitive Data](#export-privacy--sensitive-data) 📋 Medium
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Staging Management](#staging-management) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
@@ -16,8 +17,6 @@ This document outlines planned features for Canvas Roots. For completed features
   - [Research Tracking](#research-tracking)
   - [Dynasty Management](#dynasty-management)
   - [Universe Batch Operations](#universe-batch-operations)
-  - [Sensitive Field Redaction](#sensitive-field-redaction)
-  - [Inclusive Identity & Privacy Enhancements](#inclusive-identity--privacy-enhancements)
   - [Data Analysis Scope Expansion](#data-analysis-scope-expansion)
   - [Import Wizard Filename Parser Enhancements](#import-wizard-filename-parser-enhancements)
   - [Person Note Templates](#person-note-templates)
@@ -60,6 +59,30 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 | ⚡ High | Core workflow | Completes essential data portability |
 | 📋 Medium | User value | Highly requested sharing/output features |
 | 💡 Low | Specialized | Advanced use cases, niche workflows |
+
+---
+
+### Export Privacy & Sensitive Data
+
+**Priority:** 📋 Medium — Protect sensitive information in exports and UI display
+
+**Status:** Partial — Infrastructure exists, redaction not yet implemented
+
+**Summary:** Ensure sensitive personal information is properly handled during export and display operations.
+
+**Already Implemented:**
+- **Sensitive field identification** — `SENSITIVE_FIELDS` constant identifies `ssn` and `identityNumber` fields imported from GEDCOM
+- **Gender identity model** — `sex`/`gender`/`gender_identity` data model (see [Specialized Features](../docs/developer/implementation/specialized-features.md#privacy-and-gender-identity-protection))
+
+**Planned:**
+- **Sensitive field redaction** — Automatically exclude SSN, identity numbers from exports regardless of living/deceased status
+- **Underscore-prefix privacy convention** — Treat fields prefixed with `_` (e.g., `_previous_names`, `_medical_notes`) as private:
+  - Exclude from person picker and search results
+  - Exclude from canvas labels
+  - Require confirmation before including in exports
+- **Deadname protection** — Automatic suppression of `_previous_names` in display contexts while preserving for historical research
+- **Export privacy warnings** — Show confirmation dialog when exporting data containing private fields
+- **Pronouns field** — Add `pronouns` property for respectful communication in reports and UI
 
 ---
 
@@ -265,24 +288,6 @@ Bulk operations for managing entities across universes:
 - Move entities between universes
 - Bulk universe assignment to existing entities
 - Universe merge/split tools
-
-### Sensitive Field Redaction
-
-Automatically redact sensitive personal information (SSN, identity numbers) from exports, regardless of living/deceased status. Currently, sensitive fields imported via GEDCOM v2 are stored but should never appear in exports.
-
-### Inclusive Identity & Privacy Enhancements
-
-Extend the privacy system to better support inclusive identity management:
-
-- **Pronouns field** - Add `pronouns` property (e.g., "she/her", "they/them") for respectful communication in reports and UI
-- **Underscore-prefix privacy convention** - Treat fields prefixed with `_` (e.g., `_previous_names`, `_medical_notes`) as private/sensitive:
-  - Exclude from person picker and search results
-  - Exclude from canvas labels
-  - Require confirmation before including in exports
-- **Deadname protection** - Automatic suppression of `_previous_names` in display contexts while preserving for historical research
-- **Export privacy warnings** - Show confirmation dialog when exporting data containing private fields
-
-This builds on the existing `sex`/`gender`/`gender_identity` data model documented in [Specialized Features](../docs/developer/implementation/specialized-features.md#privacy-and-gender-identity-protection).
 
 ### Data Analysis Scope Expansion
 
