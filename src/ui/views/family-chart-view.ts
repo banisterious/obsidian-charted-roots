@@ -46,6 +46,11 @@ interface FamilyChartPerson {
 }
 
 /**
+ * Card style options for Family Chart
+ */
+type CardStyle = 'rectangle' | 'circle' | 'compact' | 'mini';
+
+/**
  * View state that gets persisted
  */
 interface FamilyChartViewState {
@@ -67,6 +72,8 @@ interface FamilyChartViewState {
 	showSingleParentEmptyCard?: boolean;
 	sortChildrenByBirthDate?: boolean;
 	hidePrivateLiving?: boolean;
+	// Card style
+	cardStyle?: CardStyle;
 	[key: string]: unknown;  // Index signature for Record<string, unknown> compatibility
 }
 
@@ -95,6 +102,8 @@ export class FamilyChartView extends ItemView {
 	private showSingleParentEmptyCard: boolean = false;
 	private sortChildrenByBirthDate: boolean = false;
 	private hidePrivateLiving: boolean = false;
+	// Card style: rectangle (default SVG), circle (HTML circular), compact (text-only), mini (smaller)
+	private cardStyle: CardStyle = 'rectangle';
 
 	// family-chart instances
 	private f3Chart: ReturnType<typeof f3.createChart> | null = null;
