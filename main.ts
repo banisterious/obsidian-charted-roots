@@ -5239,7 +5239,8 @@ export default class CanvasRootsPlugin extends Plugin {
 			placeGraph,
 			settings: this.settings,
 			propertyAliases: this.settings.propertyAliases,
-			existingUniverses: allUniverses
+			existingUniverses: allUniverses,
+			plugin: this
 		}).open();
 	}
 

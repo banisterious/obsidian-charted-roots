@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2025-12-31 23:28:24 UTC
+ * - Generated: 2026-01-01 00:40:56 UTC
  * - Components: 40 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -6326,7 +6326,7 @@ settings:
    COMPONENT: ENTITY-CREATE-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 543 lines, 10.63 KB */
+/* Component Size: 684 lines, 13.45 KB */
 
 /* ==========================================================================
    PERSON PICKER MODAL
@@ -6738,6 +6738,147 @@ settings:
 .crc-spouses-field__name {
   font-size: 14px;
   color: var(--text-normal);
+}
+
+/* ==========================================================================
+   Sources Multi-Select Field (similar to spouses field)
+   ========================================================================== */
+
+.crc-sources-field {
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  background: var(--background-secondary);
+}
+
+.crc-sources-field__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.crc-sources-field__label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.crc-sources-field__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.crc-sources-field__empty {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-style: italic;
+  padding: 8px 0;
+}
+
+.crc-sources-field__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--background-primary);
+  border-radius: var(--radius-s);
+}
+
+.crc-sources-field__name {
+  font-size: 14px;
+  color: var(--text-normal);
+}
+
+.crc-sources-field__buttons {
+  display: flex;
+  gap: 6px;
+}
+
+/* ==========================================================================
+   Events Display Field (read-only, shows events referencing person)
+   ========================================================================== */
+
+.crc-events-field {
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  background: var(--background-secondary);
+}
+
+.crc-events-field__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.crc-events-field__label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.crc-events-field__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.crc-events-field__empty {
+  color: var(--text-muted);
+  font-size: 13px;
+  font-style: italic;
+  padding: 8px 0;
+}
+
+.crc-events-field__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--background-primary);
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.crc-events-field__item:hover {
+  background: var(--background-modifier-hover);
+}
+
+.crc-events-field__info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.crc-events-field__title {
+  font-size: 14px;
+  color: var(--text-normal);
+  font-weight: 500;
+}
+
+.crc-events-field__type {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: var(--radius-s);
+  background: var(--background-modifier-border);
+  color: var(--text-muted);
+}
+
+.crc-events-field__date {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.crc-events-field__buttons {
+  display: flex;
+  gap: 6px;
 }
 
 /* ==========================================================================
@@ -33998,10 +34139,10 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2025-12-31 23:28:24 UTC
+ * Build completed: 2026-01-01 00:40:56 UTC
  * Components processed: 40
- * Total lines: 33615
- * Total size: 665.36 KB
+ * Total lines: 33756
+ * Total size: 668.18 KB
  * Build duration: 0.04 seconds
  *
  * Component breakdown:
@@ -34011,7 +34152,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - layout.css: 22 lines, 0.24 KB
  * - settings.css: 131 lines, 3.53 KB
  * - control-center.css: 5673 lines, 105.32 KB
- * - entity-create-modals.css: 543 lines, 10.63 KB
+ * - entity-create-modals.css: 684 lines, 13.45 KB
  * - place-modals.css: 932 lines, 17.28 KB
  * - media-modals.css: 1928 lines, 36.72 KB
  * - import-export-wizard.css: 1779 lines, 33.41 KB
