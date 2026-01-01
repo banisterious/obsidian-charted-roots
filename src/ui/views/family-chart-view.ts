@@ -918,11 +918,11 @@ export class FamilyChartView extends ItemView {
 			switch (this.cardStyle) {
 				case 'circle':
 					// HTML cards with circular avatar / rectangle fallback
+					// Note: Don't set cardDim to let CSS control circular sizing
 					this.f3Card = this.f3Chart.setCardHtml()
 						.setStyle('imageCircleRect')
 						.setCardDisplay(displayFields)
 						.setCardImageField('avatar')
-						.setCardDim({ w: 200, h: 70, img_w: 60, img_h: 60, img_x: 5, img_y: 5 })
 						.setOnCardClick((e: MouseEvent, d: { data: { id: string; [key: string]: unknown } }) => this.handleCardClick(e, d))
 						.setOnCardUpdate(this.createOpenNoteButtonCallback());
 					break;
