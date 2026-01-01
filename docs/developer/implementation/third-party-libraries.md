@@ -99,26 +99,39 @@ const docDefinition: TDocumentDefinitions = {
 ```typescript
 import f3 from 'family-chart';
 
-// Layout calculation
-const store = f3.createStore({
-  data: chartData,
-  node_separation: 200,
-  level_separation: 150
-});
-f3.CalculateTree({ store });
+// Create chart instance
+const chart = f3.createChart(container, chartData)
+  .setTransitionTime(800)
+  .setCardXSpacing(250)
+  .setCardYSpacing(150);
 
-// Interactive chart (in FamilyChartView)
-const chart = f3({
-  id: 'family-chart-container',
-  transition_time: 1000,
-  card: {
-    w: 220,
-    h: 70,
-    // ...
-  }
-});
-chart.updateTree({ data: chartData });
+// Configure card renderer (SVG or HTML)
+const card = chart.setCardSvg()  // or .setCardHtml()
+  .setCardDisplay([['first name', 'last name'], ['birthday']])
+  .setCardDim({ w: 200, h: 70, text_x: 75, text_y: 15, img_w: 60, img_h: 60, img_x: 5, img_y: 5 })
+  .setOnCardClick((e, d) => handleCardClick(e, d))
+  .setOnCardUpdate((d) => handleCardUpdate(d));
+
+// Set root person and render
+chart.updateMainId(rootPersonId);
+chart.updateTree({ initial: true });
 ```
+
+**Card renderers:**
+
+| Renderer | Method | Use Case |
+|----------|--------|----------|
+| SVG | `setCardSvg()` | Default, Rectangle/Compact/Mini styles |
+| HTML | `setCardHtml()` | Circle style with custom DOM structure |
+
+**Card styles (Canvas Roots):**
+
+| Style | Renderer | Card Dimensions |
+|-------|----------|-----------------|
+| Rectangle | SVG | 200×70, avatar 60×60 |
+| Circle | HTML | Custom DOM, circular avatar |
+| Compact | SVG | 180×50, no avatar |
+| Mini | SVG | 120×35, no avatar |
 
 **Data format:**
 
@@ -126,10 +139,12 @@ chart.updateTree({ data: chartData });
 interface FamilyChartPerson {
   id: string;
   data: {
-    first_name: string;
-    last_name: string;
+    'first name': string;
+    'last name': string;
+    gender: 'M' | 'F' | '';
     birthday?: string;
-    // ...
+    deathday?: string;
+    avatar?: string;
   };
   rels: {
     father?: string;
@@ -145,6 +160,9 @@ interface FamilyChartPerson {
 - Multi-generational layout
 - Zoom and pan navigation
 - Node selection and highlighting
+- SVG and HTML card renderers
+- `setOnCardUpdate()` callback for custom UI (open note button)
+- Edit mode via `editTree()` API
 
 ---
 
