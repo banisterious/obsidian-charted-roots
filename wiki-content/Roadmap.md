@@ -20,6 +20,7 @@ This document outlines planned features for Canvas Roots. For completed features
   - [Sensitive Field Redaction](#sensitive-field-redaction)
   - [Inclusive Identity & Privacy Enhancements](#inclusive-identity--privacy-enhancements)
   - [Data Analysis Scope Expansion](#data-analysis-scope-expansion)
+  - [Import Wizard Filename Parser Enhancements](#import-wizard-filename-parser-enhancements)
   - [Person Note Templates](#person-note-templates)
   - [Accessibility](#accessibility)
   - [Obsidian Publish Support](#obsidian-publish-support)
@@ -323,6 +324,21 @@ Expand Data Quality → Data Analysis scope options beyond folder-based filterin
 - Note-type-specific validations (e.g., place notes check for missing coordinates, person notes check for missing birth date)
 
 This requires generalizing the `DataQualityIssue` interface to support multiple note types instead of just `PersonNode`.
+
+### Import Wizard Filename Parser Enhancements
+
+Extend the Bulk Source Image Import wizard's filename parser to recognize additional naming conventions used by genealogists:
+
+**Enumeration District / Page patterns:**
+- `YYYY-recordType_State_County_Locality-ED-p` (e.g., `1880-census_SC_Chester_Baton-Rouge-ED37-p60`)
+- Support for slave schedules: `1850-slave-schedule_VA_Henrico-ED12-p3`
+
+This pattern is already documented as a [recommended naming convention](Evidence-And-Sources#page-level-naming-for-multi-page-records) but not yet recognized by the automatic parser. Benefits include:
+- Linking multiple families to the same enumeration page
+- Supporting FAN (Friends, Associates, Neighbors) research workflows
+- Better handling of enslaved ancestor research where context matters
+
+**Note:** Canvas Roots intentionally avoids dictating naming conventions—this would be an opt-in enhancement for users who follow the ED/page pattern.
 
 ### Person Note Templates
 
