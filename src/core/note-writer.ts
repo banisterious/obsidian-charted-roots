@@ -192,18 +192,29 @@ export async function writeNoteFile(
 }
 
 /**
- * Build a note-to-entity reference map from Gramps data
+ * Entity reference info for note naming
+ */
+export interface NoteEntityReference {
+	entityName: string;
+	entityType: 'person' | 'event' | 'place' | 'source';
+}
+
+/**
+ * Build a note-to-entity reference map from parsed Gramps data
  * Maps note handle to the first entity that references it
+ *
+ * This is used to generate meaningful note names like "Research on John Smith"
+ * instead of just "Research N0001"
  */
 export function buildNoteReferenceMap(
-	persons: Map<string, { name?: string; noteRefs?: string[] }>,
-	events?: Map<string, { title?: string; noteRefs?: string[] }>,
-	places?: Map<string, { name?: string; noteRefs?: string[] }>,
-	sources?: Map<string, { title?: string; noteRefs?: string[] }>
-): Map<string, { entityName: string; entityType: string }> {
-	const map = new Map<string, { entityName: string; entityType: string }>();
+	persons: Map<string, { name?: string; noteRefs: string[] }>,
+	events?: Map<string, { type?: string; description?: string; noteRefs: string[] }>,
+	places?: Map<string, { name?: string; noteRefs: string[] }>,
+	sources?: Map<string, { title?: string; noteRefs: string[] }>
+): Map<string, NoteEntityReference> {
+	const map = new Map<string, NoteEntityReference>();
 
-	// Process persons
+	// Process persons first (most common reference)
 	for (const [, person] of persons) {
 		if (person.noteRefs) {
 			for (const noteRef of person.noteRefs) {
@@ -224,7 +235,7 @@ export function buildNoteReferenceMap(
 				for (const noteRef of event.noteRefs) {
 					if (!map.has(noteRef)) {
 						map.set(noteRef, {
-							entityName: event.title || 'Unknown Event',
+							entityName: event.description || event.type || 'Unknown Event',
 							entityType: 'event'
 						});
 					}
