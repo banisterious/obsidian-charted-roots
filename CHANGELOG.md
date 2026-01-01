@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Separate Note Files (Phase 4)** - Create standalone note entity files during Gramps import ([#79](https://github.com/banisterious/obsidian-canvas-roots/issues/79), [#80](https://github.com/banisterious/obsidian-canvas-roots/issues/80)):
+
+  **Import Integration**
+  - New "Create separate note files" checkbox in Gramps import wizard (opt-in, default off)
+  - Notes created as `cr_type: note` entities in configured Notes folder
+  - Note names generated from type + first referencing entity (e.g., "Research on John Smith")
+  - Entity notes sections use wikilinks instead of embedded content when enabled
+  - Source-only notes excluded (already embedded in source notes)
+
+  **Manual Note Creation**
+  - Create Note modal with note type, title, privacy toggle, and linked entities
+  - Linked entities field with typed entity pickers: dropdown menu (Person, Event, Place, Source) opens corresponding picker modal
+  - "Canvas Roots: Create note" command in command palette
+  - Right-click context menu "New Canvas Roots note" in Notes folder
+  - Notes tile and 3 templates added to Templater templates modal
+
+  **Infrastructure**
+  - `notesFolder` setting (default: "Canvas Roots/Notes")
+  - Notes base template for Obsidian Bases with 11 views
+  - Form state persistence for Create Note modal
+
 ---
 
 ## [0.18.14] - 2025-12-31
