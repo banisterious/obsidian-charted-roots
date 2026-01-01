@@ -10,6 +10,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 
 - [v0.18.x](#v018x)
   - [Card Style Options](#card-style-options-v01815)
+  - [Gramps Notes Integration](#gramps-notes-integration-v01813)
   - [Edit Person Events & Sources](#edit-person-events--sources-v01814)
   - [Cleanup Wizard Phase 4](#cleanup-wizard-phase-4-v01811)
   - [Property Naming Normalization](#property-naming-normalization-v01811)
@@ -118,6 +119,56 @@ Choose from 4 card styles in Family Chart view to match your visualization needs
 |------|---------|
 | `src/ui/views/family-chart-view.ts` | Card style state, menu, renderer switching, export embedding |
 | `styles/family-chart-view.css` | Circle card styles, gender-based colors |
+
+---
+
+### Gramps Notes Integration (v0.18.13)
+
+Import notes attached to Gramps entities during Gramps XML/.gpkg import.
+
+**Phased Implementation:**
+
+| Phase | Feature | Version | Status |
+|-------|---------|---------|--------|
+| 1 | Embedded person notes | v0.18.13 | ✅ Complete |
+| 2 | Other entity notes (events, places) | v0.18.13 | ✅ Complete |
+| 3 | Family entity type | — | Deferred |
+| 4 | Separate note files | v0.18.15 | ✅ Complete |
+| 5 | Export & sync back to Gramps | — | Deferred |
+
+**Phase 1-2: Embedded Notes (v0.18.13)**
+
+| Feature | Description |
+|---------|-------------|
+| Person notes | Import notes attached to persons as "## Notes" section at bottom of person note |
+| Multiple notes | Organized by type (e.g., "### Research", "### Person Note") |
+| Style conversion | Bold, italic, strikethrough, underline, superscript, subscript, links |
+| Formatted notes | Preformatted notes wrapped in code fences to preserve whitespace |
+| Privacy handling | `private: true` added to frontmatter if any note has privacy flag |
+| Event notes | Notes attached to events appended to event note content |
+| Place notes | Notes attached to places appended to place note content |
+| Family notes | Family-level notes attached to marriage/partnership events |
+| Import wizard | Toggle to enable/disable notes import (enabled by default) |
+
+**Phase 4: Separate Note Files (v0.18.15)**
+
+| Feature | Description |
+|---------|-------------|
+| Import option | "Create separate note files" checkbox in Gramps import wizard (opt-in) |
+| Note entities | Notes created as `cr_type: note` entities in configured Notes folder |
+| Note naming | Generated from type + first referencing entity (e.g., "Research on John Smith") |
+| Entity linking | Entity notes sections use wikilinks instead of embedded content |
+| Create Note modal | Manual note creation with note type, title, privacy toggle, linked entities |
+| Context menu | "New Canvas Roots note" in Notes folder right-click menu |
+| Command palette | "Canvas Roots: Create note" command |
+| Bases template | Notes base template with 11 views |
+
+**Deferred Phases:**
+
+Phases 3 (Family Entity) and 5 (Export & Sync) are deferred indefinitely pending user demand. See [planning doc](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/gramps-notes-family-integration.md) for rationale.
+
+**Documentation:**
+- See [Gramps Notes & Family Integration Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/gramps-notes-family-integration.md) for detailed specifications
 
 ---
 

@@ -8,7 +8,6 @@ This document outlines planned features for Canvas Roots. For completed features
 
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
-  - [Gramps Notes & Family Integration](#gramps-notes--family-integration) 📋 Medium
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Staging Management](#staging-management) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
@@ -35,7 +34,9 @@ For the complete list of implemented features, see [Release History](Release-His
 
 | Version | Feature | Summary |
 |:-------:|---------|---------|
+| v0.18.15 | [Gramps Notes Phase 4](Release-History#gramps-notes-integration-v01813) | Separate note files (opt-in) with Create Note modal and Notes folder |
 | v0.18.15 | [Card Style Options](Release-History#card-style-options-v01815) | 4 card styles (Rectangle, Circle, Compact, Mini) for Family Chart with state persistence and export support |
+| v0.18.13 | [Gramps Notes Phases 1-2](Release-History#gramps-notes-integration-v01813) | Import notes from Gramps entities with style conversion and privacy handling |
 | v0.18.14 | [Edit Person Events & Sources](Release-History#edit-person-events--sources-v01814) | Sources and Events sections in Edit Person modal with link/create/unlink, type badges with colors |
 | v0.18.11 | [Cleanup Wizard Phase 4](Release-History#cleanup-wizard-phase-4-v01811) | Batch progress indicators, keyboard navigation for accessibility |
 | v0.18.11 | [Property Naming Normalization](Release-History#property-naming-normalization-v01811) | `child` → `children` migration, Cleanup Wizard Step 14, documentation updates |
@@ -59,40 +60,6 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 | ⚡ High | Core workflow | Completes essential data portability |
 | 📋 Medium | User value | Highly requested sharing/output features |
 | 💡 Low | Specialized | Advanced use cases, niche workflows |
-
----
-
-### Gramps Notes & Family Integration
-
-**Priority:** 📋 Medium — Preserve research notes and family structure from Gramps imports
-
-**Status:** ✅ Phase 1 complete | ✅ Phase 2 complete | ✅ Phase 4 complete | Phase 3 deferred | Phase 5 deferred
-
-**Summary:** Import notes attached to Gramps entities and potentially introduce a Family entity type. Gramps treats notes and families as first-class entities with rich metadata. This feature ensures that data is preserved when importing into Canvas Roots, with optional advanced features for users who need them.
-
-**Design Principles:**
-- Start conservatively with embedded notes (appended to entity content)
-- Advanced features (separate note files, Family entity, sync) are opt-in
-- Preserve all Gramps metadata in frontmatter for future use and round-tripping
-- Don't complicate the experience for users with simpler requirements
-
-**Phased Implementation:**
-
-| Phase | Feature | Default | Status |
-|-------|---------|---------|--------|
-| 1 | Embedded person notes | Enabled | ✅ Complete |
-| 2 | Other entity notes (events, places) | Enabled | ✅ Complete |
-| 3 | Family entity type | Opt-in | Deferred |
-| 4 | Separate note files | Opt-in | ✅ Complete |
-| 5 | Export & sync back to Gramps | Future | Deferred |
-
-**Privacy Handling:**
-- Gramps notes can be marked private (`priv="1"`)
-- Phase 1: Add `private: true` to frontmatter; user configures sync/publish exclusions
-- Future: Optional separate folder for private content, or skip private notes entirely
-
-**Documentation:**
-- See [Gramps Notes & Family Integration Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/gramps-notes-family-integration.md) for detailed specifications
 
 ---
 
