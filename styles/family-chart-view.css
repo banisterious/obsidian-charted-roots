@@ -1124,3 +1124,96 @@
   background-color: var(--background-modifier-hover);
   color: var(--text-normal);
 }
+
+/* ============================================================
+ * Card Style Options
+ * CSS for different card visualization styles
+ * ============================================================ */
+
+/* ------------------------------------------------------------
+ * Circular Avatar Card Styles (imageCircle / imageCircleRect)
+ * Used when cardStyle = 'circle'
+ * ------------------------------------------------------------ */
+
+.cr-fcv-chart-container.f3 div.card-image-circle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  border-radius: 8px;
+  min-width: 100px;
+}
+
+.cr-fcv-chart-container.f3 div.card-image-circle img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.cr-fcv-chart-container.f3 div.card-image-circle .person-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cr-fcv-chart-container.f3 div.card-image-circle .person-icon svg {
+  width: 40px;
+  height: 40px;
+  opacity: 0.7;
+}
+
+.cr-fcv-chart-container.f3 div.card-image-circle .card-label {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+/* Rectangular fallback styling (matches existing rect cards) */
+.cr-fcv-chart-container.f3 div.card-rect {
+  width: 200px;
+  min-height: 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 10px 15px;
+  border-radius: 5px;
+}
+
+/* ------------------------------------------------------------
+ * Compact Card Styles (text-only, no avatars)
+ * Used when cardStyle = 'compact'
+ * ------------------------------------------------------------ */
+
+.cr-fcv-chart-container.card-style-compact rect.card-bg {
+  width: 180px;
+  height: 50px;
+}
+
+.cr-fcv-chart-container.card-style-compact text {
+  font-size: 11px;
+}
+
+/* ------------------------------------------------------------
+ * Mini Card Styles (smaller for overview)
+ * Used when cardStyle = 'mini'
+ * ------------------------------------------------------------ */
+
+.cr-fcv-chart-container.card-style-mini rect.card-bg {
+  width: 120px;
+  height: 35px;
+}
+
+.cr-fcv-chart-container.card-style-mini text {
+  font-size: 10px;
+}
+
+/* Hide "Open note" button on mini cards - too small */
+.cr-fcv-chart-container.card-style-mini .open-note-btn {
+  display: none;
+}
