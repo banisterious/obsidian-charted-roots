@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.18.15] - 2026-01-01
+
 ### Added
 
 - **Card Style Options** - Choose from 4 card styles in Family Chart view ([#87](https://github.com/banisterious/obsidian-canvas-roots/issues/87)):
