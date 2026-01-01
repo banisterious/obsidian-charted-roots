@@ -205,12 +205,14 @@ export interface NoteEntityReference {
  *
  * This is used to generate meaningful note names like "Research on John Smith"
  * instead of just "Research N0001"
+ *
+ * Note: ParsedGrampsSource doesn't have noteRefs (notes are pre-resolved to noteText),
+ * so sources are not included in the reference map. Person notes are most common anyway.
  */
 export function buildNoteReferenceMap(
 	persons: Map<string, { name?: string; noteRefs: string[] }>,
 	events?: Map<string, { type?: string; description?: string; noteRefs: string[] }>,
-	places?: Map<string, { name?: string; noteRefs: string[] }>,
-	sources?: Map<string, { title?: string; noteRefs: string[] }>
+	places?: Map<string, { name?: string; noteRefs: string[] }>
 ): Map<string, NoteEntityReference> {
 	const map = new Map<string, NoteEntityReference>();
 
@@ -253,22 +255,6 @@ export function buildNoteReferenceMap(
 						map.set(noteRef, {
 							entityName: place.name || 'Unknown Place',
 							entityType: 'place'
-						});
-					}
-				}
-			}
-		}
-	}
-
-	// Process sources
-	if (sources) {
-		for (const [, source] of sources) {
-			if (source.noteRefs) {
-				for (const noteRef of source.noteRefs) {
-					if (!map.has(noteRef)) {
-						map.set(noteRef, {
-							entityName: source.title || 'Unknown Source',
-							entityType: 'source'
 						});
 					}
 				}

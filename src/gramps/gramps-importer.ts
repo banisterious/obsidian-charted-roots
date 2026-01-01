@@ -10,6 +10,7 @@ import { GrampsNote, GrampsValidationResult } from './gramps-types';
 import { formatNotesSection, hasPrivateNote } from './gramps-note-converter';
 import { createPersonNote, PersonData } from '../core/person-note-writer';
 import { createPlaceNote, PlaceData } from '../core/place-note-writer';
+import { writeNoteFile, buildNoteReferenceMap } from '../core/note-writer';
 import { generateCrId } from '../core/uuid';
 import { getErrorMessage } from '../core/error-utils';
 import { getLogger } from '../core/logging';
@@ -25,6 +26,7 @@ export type GrampsImportPhase =
 	| 'media'
 	| 'places'
 	| 'sources'
+	| 'notes'
 	| 'people'
 	| 'relationships'
 	| 'events'
@@ -436,6 +438,50 @@ export class GrampsImporter {
 				}
 			}
 
+			// Create separate note files if requested (Phase 4)
+			const noteHandleToWikilink = new Map<string, string>();
+			if (options.createSeparateNoteFiles && grampsData.database.notes.size > 0) {
+				const notesTotal = grampsData.database.notes.size;
+				reportProgress('notes', 0, notesTotal, `Creating ${notesTotal} separate note files...`);
+				const notesFolder = options.notesFolder || 'Canvas Roots/Notes';
+				await this.ensureFolderExists(notesFolder);
+
+				// Build note-to-entity reference map for meaningful names
+				const noteReferenceMap = buildNoteReferenceMap(
+					grampsData.persons,
+					grampsData.events,
+					grampsData.places
+				);
+
+				let noteIndex = 0;
+				for (const [handle, note] of grampsData.database.notes) {
+					try {
+						const entityRef = noteReferenceMap.get(handle);
+						const writeResult = await writeNoteFile(this.app, note, {
+							notesFolder,
+							propertyAliases: options.propertyAliases,
+							referencingEntityName: entityRef?.entityName,
+							overwriteExisting: options.overwriteExisting
+						});
+
+						if (writeResult.success) {
+							noteHandleToWikilink.set(handle, writeResult.wikilink);
+							result.separateNoteFilesCreated = (result.separateNoteFilesCreated || 0) + 1;
+						} else {
+							result.errors.push(
+								`Failed to create note file ${note.id || handle}: ${writeResult.error}`
+							);
+						}
+					} catch (error: unknown) {
+						result.errors.push(
+							`Failed to create note ${note.id || handle}: ${getErrorMessage(error)}`
+						);
+					}
+					noteIndex++;
+					reportProgress('notes', noteIndex, notesTotal);
+				}
+			}
+
 			// Create person notes
 			const peopleTotal = grampsData.persons.size;
 			reportProgress('people', 0, peopleTotal, 'Creating person notes...');
@@ -450,7 +496,8 @@ export class GrampsImporter {
 						options,
 						grampsToCrId,
 						placeNameToWikilink,
-						result.mediaHandleToPath
+						result.mediaHandleToPath,
+						noteHandleToWikilink
 					);
 
 					grampsToCrId.set(handle, crId);
@@ -599,7 +646,8 @@ export class GrampsImporter {
 		options: GrampsImportOptions,
 		grampsToCrId: Map<string, string>,
 		placeNameToWikilink: Map<string, string>,
-		mediaHandleToPath?: Map<string, string>
+		mediaHandleToPath?: Map<string, string>,
+		noteHandleToWikilink?: Map<string, string>
 	): Promise<string> {
 		const crId = generateCrId();
 
@@ -647,18 +695,40 @@ export class GrampsImporter {
 
 		// Resolve and append notes from Gramps (if enabled)
 		if (options.importNotes !== false && person.noteRefs && person.noteRefs.length > 0) {
-			const resolvedNotes: GrampsNote[] = [];
-			for (const noteRef of person.noteRefs) {
-				const note = grampsData.database.notes.get(noteRef);
-				if (note) {
-					resolvedNotes.push(note);
+			// Check if we're using separate note files (Phase 4)
+			if (options.createSeparateNoteFiles && noteHandleToWikilink && noteHandleToWikilink.size > 0) {
+				// Use wikilinks to separate note files
+				const noteWikilinks: string[] = [];
+				for (const noteRef of person.noteRefs) {
+					const wikilink = noteHandleToWikilink.get(noteRef);
+					if (wikilink) {
+						noteWikilinks.push(wikilink);
+					}
+					// Check privacy even when using separate files
+					const note = grampsData.database.notes.get(noteRef);
+					if (note?.private) {
+						personData.private = true;
+					}
 				}
-			}
-			if (resolvedNotes.length > 0) {
-				personData.notesContent = formatNotesSection(resolvedNotes);
-				// Set private flag if any note is marked private
-				if (hasPrivateNote(resolvedNotes)) {
-					personData.private = true;
+				if (noteWikilinks.length > 0) {
+					// Format as markdown list of wikilinks
+					personData.notesContent = '## Notes\n\n' + noteWikilinks.map(l => `- ${l}`).join('\n');
+				}
+			} else {
+				// Embed note content (original behavior)
+				const resolvedNotes: GrampsNote[] = [];
+				for (const noteRef of person.noteRefs) {
+					const note = grampsData.database.notes.get(noteRef);
+					if (note) {
+						resolvedNotes.push(note);
+					}
+				}
+				if (resolvedNotes.length > 0) {
+					personData.notesContent = formatNotesSection(resolvedNotes);
+					// Set private flag if any note is marked private
+					if (hasPrivateNote(resolvedNotes)) {
+						personData.private = true;
+					}
 				}
 			}
 		}
