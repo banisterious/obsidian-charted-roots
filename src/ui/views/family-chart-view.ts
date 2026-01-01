@@ -902,6 +902,7 @@ export class FamilyChartView extends ItemView {
 			}
 
 			// Configure cards based on current card style
+			// Each inner array is a line, with fields joined by space
 			const displayFields: string[][] = [['first name', 'last name']];
 			if (this.showBirthDates && this.showDeathDates) {
 				displayFields.push(['birthday', 'deathday']);
@@ -1259,26 +1260,51 @@ export class FamilyChartView extends ItemView {
 			// Check if button already exists (prevents duplicates on re-render)
 			if (d3.select(cardEl).select('.cr-open-note-btn').size() > 0) return;
 
+			// Get button position based on card style
+			// Card dimensions vary: rectangle=200x70, compact=180x50, mini=120x35
+			// Button radius=9, position near right edge
+			let btnX: number;
+			let btnY: number;
+			let btnRadius: number;
+			switch (view.cardStyle) {
+				case 'compact':
+					btnX = 162; // 180 width, position near right edge
+					btnY = 12;
+					btnRadius = 9;
+					break;
+				case 'mini':
+					btnX = 108; // 120 width, position near right edge
+					btnY = 10;
+					btnRadius = 7;
+					break;
+				default: // rectangle
+					btnX = 185; // 200 width, position near right edge
+					btnY = 12;
+					btnRadius = 9;
+			}
+
 			// Create button group positioned in top-right corner
-			// Card dimensions: w=200, h=70, button radius=9
 			// Append to .card group (not .card-inner which has clip-path that clips the button)
-			// Position button center at (170, 12) - inside the card near right edge
 			const btnGroup = d3.select(cardEl)
 				.select('.card')
 				.append('g')
 				.attr('class', 'cr-open-note-btn')
-				.attr('transform', 'translate(170, 12)')
+				.attr('transform', `translate(${btnX}, ${btnY})`)
 				.style('cursor', 'pointer');
 
 			// Add circle background
 			btnGroup.append('circle')
-				.attr('r', 9)
+				.attr('r', btnRadius)
 				.attr('fill', 'var(--background-primary)')
 				.attr('stroke', 'var(--text-muted)')
 				.attr('stroke-width', 1);
 
 			// Add file-text icon (simplified SVG path for a document)
-			btnGroup.append('path')
+			// Scale icon for mini cards
+			const iconScale = btnRadius < 9 ? 0.7 : 1;
+			const iconGroup = btnGroup.append('g')
+				.attr('transform', `scale(${iconScale})`);
+			iconGroup.append('path')
 				.attr('d', 'M-4,-5 L2,-5 L5,-2 L5,5 L-4,5 Z M2,-5 L2,-2 L5,-2')
 				.attr('fill', 'none')
 				.attr('stroke', 'var(--text-muted)')
@@ -3775,6 +3801,7 @@ export class FamilyChartView extends ItemView {
 		if (!this.f3Chart || !this.f3Card) return;
 
 		// Build card display array based on options
+		// Each inner array is a line, with fields joined by space
 		const displayFields: string[][] = [['first name', 'last name']];
 
 		if (this.showBirthDates && this.showDeathDates) {
