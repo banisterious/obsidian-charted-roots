@@ -5164,8 +5164,8 @@ export default class CanvasRootsPlugin extends Plugin {
 		// Extract children names/IDs
 		const childNames: string[] = [];
 		const childIds: string[] = [];
-		if (fm.child) {
-			const children = Array.isArray(fm.child) ? fm.child : [fm.child];
+		if (fm.children) {
+			const children = Array.isArray(fm.children) ? fm.children : [fm.children];
 			for (const c of children) {
 				const name = extractName(String(c));
 				if (name) childNames.push(name);
