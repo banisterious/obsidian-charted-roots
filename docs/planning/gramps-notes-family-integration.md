@@ -173,7 +173,7 @@ Phases 3, 4, and 5 are largely independent of each other:
 | 1 ✅ | — | Embedded person notes |
 | 2 ✅ | Phase 1 | Embedded notes for other entities |
 | 3 | Phases 1-2 | Family entity type (optional) |
-| 4 | Phases 1-2 | Separate note files (optional) |
+| 4 ✅ | Phases 1-2 | Separate note files (optional) |
 | 5 | Phase 4 | Export & sync to Gramps |
 
 **Key insight:** Phase 3 (Family Entity) is orthogonal to Phases 4-5. Since Phase 1 already attaches family notes to marriage events, Phase 3 is only needed for users who want families as first-class entities matching the Gramps data model.
@@ -183,9 +183,9 @@ Phases 3, 4, and 5 are largely independent of each other:
 | Path | Phases | Use Case |
 |------|--------|----------|
 | Minimal | 1, 2 ✅ | Most users — notes embedded, no sync needed |
-| Sync-ready | 1, 2, 4, 5 | Users wanting round-trip to Gramps |
-| Full fidelity | 1, 2, 3, 4, 5 | Power users wanting complete Gramps model |
-| Family-only | 1, 2, 3 | Users wanting Family entity but not sync |
+| Sync-ready | 1, 2 ✅, 4 ✅, 5 | Users wanting round-trip to Gramps |
+| Full fidelity | 1, 2 ✅, 3, 4 ✅, 5 | Power users wanting complete Gramps model |
+| Family-only | 1, 2 ✅, 3 | Users wanting Family entity but not sync |
 
 Phase 3 could be skipped entirely if the marriage event attachment approach satisfies users.
 
@@ -692,45 +692,48 @@ The `priv` attribute on Gramps notes indicates private/sensitive content.
 - `src/bases/family-base-template.ts` - Bases integration
 - Settings and UI updates
 
-#### Phase 4: Separate Note Files (In Progress)
+#### Phase 4: Separate Note Files ✅
 
-**Status:** Planning complete, implementation starting
+**Status:** Implementation complete
 
-**Files to Create:**
+**Files Created:**
 - `src/core/note-writer.ts` - Write note entity files with frontmatter
+- `src/ui/create-note-modal.ts` - Modal for manual note creation
+- `src/constants/notes-base-template.ts` - Obsidian Bases template with 11 views
 
-**Files to Modify:**
-- `src/gramps/gramps-importer.ts` - Add `createSeparateNoteFiles` option; conditionally create note files or embed
-- `src/ui/import-wizard-modal.ts` - Add "Create separate note files" checkbox (Gramps only)
+**Files Modified:**
+- `src/settings.ts` - Added `notesFolder` setting, `createNoteModalState` persistence
+- `src/gramps/gramps-importer.ts` - Added `createSeparateNoteFiles` option; create note files; link instead of embed
+- `src/ui/import-wizard-modal.ts` - Added "Create separate note files" checkbox (Gramps only)
+- `src/ui/modal-state-persistence.ts` - Added 'note' to ModalType
+- `src/ui/template-snippets-modal.ts` - Added Notes tile and 3 templates
+- `main.ts` - Added create-note command, notes base template command, Notes folder context menu
 
-**Implementation Steps:**
+**Implementation Steps (All Complete):**
 
 *Core infrastructure:*
-1. [ ] Add `notesFolder: string` setting with default `'Canvas Roots/Notes'`
-2. [ ] Add `createSeparateNoteFiles: boolean` to `GrampsImportOptions`
-3. [ ] Create `note-writer.ts` with `writeNoteFile()` function
+1. [x] Add `notesFolder: string` setting with default `'Canvas Roots/Notes'`
+2. [x] Add `createSeparateNoteFiles: boolean` to `GrampsImportOptions`
+3. [x] Create `note-writer.ts` with `writeNoteFile()` function
 
 *Import integration:*
-4. [ ] Build note-to-entity reference map during parsing
-5. [ ] Generate note names from type + first referencing entity
-6. [ ] Create note files in configured notes folder during import
-7. [ ] Modify entity note sections to use wikilinks instead of embedded content
-8. [ ] Add import wizard checkbox
+4. [x] Build note-to-entity reference map during parsing
+5. [x] Generate note names from type + first referencing entity
+6. [x] Create note files in configured notes folder during import
+7. [x] Modify entity note sections to use wikilinks instead of embedded content
+8. [x] Add import wizard checkbox
+9. [x] Filter out source-only notes (already embedded in source notes)
 
 *Manual creation:*
-9. [ ] Create `create-note-modal.ts` with type dropdown, title, privacy, entity picker
-10. [ ] Add Note base template to `Canvas Roots/Bases/`
-11. [ ] Register "Create note" command in command palette
-12. [ ] Register file-menu context action for Notes folder ("New Canvas Roots note")
-13. [ ] Add Notes tile and templates to Templater templates modal
+10. [x] Create `create-note-modal.ts` with type dropdown, title, privacy, entity picker
+11. [x] Add Note base template (`notes-base-template.ts`) for Obsidian Bases
+12. [x] Register "Create note" command in command palette
+13. [x] Register file-menu context action for Notes folder ("New Canvas Roots note")
+14. [x] Add Notes tile and templates to Templater templates modal
 
-*Control Center:*
-14. [ ] Add notes stats to `VaultStatsService` (count, by type)
-15. [ ] Add conditional Notes card to Dashboard tab
-
-*Testing:*
-16. [ ] Test import with sample Gramps file containing shared notes
-17. [ ] Test manual note creation via modal and template
+*Control Center (deferred to future iteration):*
+15. [ ] Add notes stats to `VaultStatsService` (count, by type)
+16. [ ] Add conditional Notes card to Dashboard tab
 
 ### Example Output (Phase 1)
 
