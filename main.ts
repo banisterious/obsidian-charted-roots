@@ -887,6 +887,16 @@ export default class CanvasRootsPlugin extends Plugin {
 			}
 		});
 
+		// Add command: Create Note (Phase 4 Gramps Notes)
+		this.addCommand({
+			id: 'create-note',
+			name: 'Create note',
+			callback: async () => {
+				const { CreateNoteModal } = await import('./src/ui/create-note-modal');
+				new CreateNoteModal(this.app, this).open();
+			}
+		});
+
 		// Add command: Open Sources Tab
 		this.addCommand({
 			id: 'open-sources-tab',
@@ -3304,6 +3314,7 @@ export default class CanvasRootsPlugin extends Plugin {
 					const isSourcesFolder = file.path === this.settings.sourcesFolder;
 					const isEventsFolder = file.path === this.settings.eventsFolder;
 					const isOrganizationsFolder = file.path === this.settings.organizationsFolder;
+					const isNotesFolder = file.path === this.settings.notesFolder;
 
 					// Check for subfolders within People folder (for Create person action)
 					const isPeopleSubfolder = !isPeopleFolder &&
@@ -3645,6 +3656,48 @@ export default class CanvasRootsPlugin extends Plugin {
 										.setIcon('table')
 										.onClick(async () => {
 											await this.createOrganizationsBaseTemplate(file);
+										});
+								});
+
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Show folder statistics')
+										.setIcon('bar-chart-2')
+										.onClick(() => {
+											this.showFolderStatistics(file);
+										});
+								});
+							}
+
+							// === NOTES FOLDER (Phase 4 Gramps Notes) ===
+							else if (isNotesFolder) {
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('New Canvas Roots note')
+										.setIcon('file-plus')
+										.onClick(async () => {
+											const { CreateNoteModal } = await import('./src/ui/create-note-modal');
+											new CreateNoteModal(this.app, this).open();
+										});
+								});
+
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Add cr_id')
+										.setIcon('key')
+										.onClick(async () => {
+											await this.addCrId(getFilesInFolder());
+										});
+								});
+
+								submenu.addSeparator();
+
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('New notes base from template')
+										.setIcon('table')
+										.onClick(async () => {
+											await this.createNotesBaseTemplate(file);
 										});
 								});
 
@@ -4077,6 +4130,28 @@ export default class CanvasRootsPlugin extends Plugin {
 									.setIcon('table')
 									.onClick(async () => {
 										await this.createOrganizationsBaseTemplate(file);
+									});
+							});
+						}
+
+						// === NOTES FOLDER (MOBILE - Phase 4 Gramps Notes) ===
+						else if (isNotesFolder) {
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: New note')
+									.setIcon('file-plus')
+									.onClick(async () => {
+										const { CreateNoteModal } = await import('./src/ui/create-note-modal');
+										new CreateNoteModal(this.app, this).open();
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Canvas Roots: New notes base')
+									.setIcon('table')
+									.onClick(async () => {
+										await this.createNotesBaseTemplate(file);
 									});
 							});
 						}
