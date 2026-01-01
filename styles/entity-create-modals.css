@@ -541,6 +541,34 @@
   color: var(--text-muted);
 }
 
+.crc-events-field__buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.crc-events-field__buttons button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: var(--radius-s);
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.crc-events-field__buttons button:hover {
+  background: var(--interactive-accent-hover);
+}
+
+.crc-events-field__buttons button svg {
+  width: 12px;
+  height: 12px;
+}
+
 /* ==========================================================================
    Post-Create Actions Panel (Add Another Flow)
    ========================================================================== */

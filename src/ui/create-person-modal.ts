@@ -20,6 +20,7 @@ import { SourceService } from '../sources/services/source-service';
 import { EventService } from '../events/services/event-service';
 import type { EventNote } from '../events/types/event-types';
 import { EventPickerModal } from '../events/ui/event-picker-modal';
+import { CreateEventModal } from '../events/ui/create-event-modal';
 
 /**
  * Relationship field data
@@ -1295,12 +1296,22 @@ export class CreatePersonModal extends Modal {
 		const header = eventsContainer.createDiv({ cls: 'crc-events-field__header' });
 		header.createSpan({ cls: 'crc-events-field__label', text: 'Events' });
 
-		const addBtn = header.createEl('button', {
+		// Button container for multiple buttons
+		const buttonContainer = header.createDiv({ cls: 'crc-events-field__buttons' });
+
+		const linkBtn = buttonContainer.createEl('button', {
 			cls: 'crc-btn crc-btn--secondary crc-btn--small'
 		});
-		const addIcon = createLucideIcon('plus', 14);
-		addBtn.appendChild(addIcon);
-		addBtn.appendText(' Link event');
+		const linkIcon = createLucideIcon('link', 14);
+		linkBtn.appendChild(linkIcon);
+		linkBtn.appendText(' Link');
+
+		const createBtn = buttonContainer.createEl('button', {
+			cls: 'crc-btn crc-btn--secondary crc-btn--small'
+		});
+		const createIcon = createLucideIcon('plus', 14);
+		createBtn.appendChild(createIcon);
+		createBtn.appendText(' Create');
 
 		// List of events referencing this person
 		const eventList = eventsContainer.createDiv({ cls: 'crc-events-field__list' });
@@ -1364,8 +1375,8 @@ export class CreatePersonModal extends Modal {
 		// Initial render
 		renderEventList();
 
-		// Add button handler - open event picker
-		addBtn.addEventListener('click', () => {
+		// Link button handler - open event picker
+		linkBtn.addEventListener('click', () => {
 			if (!this.plugin) {
 				new Notice('Plugin not available');
 				return;
@@ -1381,8 +1392,40 @@ export class CreatePersonModal extends Modal {
 					renderEventList();
 				},
 				excludeEvents,
-				allowCreate: false  // For now, just link existing events
+				allowCreate: false
 			}).open();
+		});
+
+		// Create button handler - open create event modal with person pre-filled
+		createBtn.addEventListener('click', () => {
+			if (!this.plugin) {
+				new Notice('Plugin not available');
+				return;
+			}
+
+			const eventService = this.plugin.getEventService();
+			if (!eventService) {
+				new Notice('Event service not available');
+				return;
+			}
+
+			new CreateEventModal(
+				this.app,
+				eventService,
+				this.plugin.settings,
+				{
+					initialPerson: {
+						name: this.personData.name || '',
+						crId: this.personData.crId || ''
+					},
+					onCreated: () => {
+						// Refresh the event list after creation
+						// Need a small delay for the cache to update
+						setTimeout(() => renderEventList(), 100);
+					},
+					plugin: this.plugin
+				}
+			).open();
 		});
 	}
 
