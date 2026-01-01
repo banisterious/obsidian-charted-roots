@@ -1368,8 +1368,9 @@ export class FamilyChartView extends ItemView {
 			}
 
 			// Replace entire card HTML with properly centered structure
+			// Note: transform and pointer-events are set via CSS in .card-style-circle .card
 			card.outerHTML = `
-			<div class="card" style="transform: translate(-50%, -50%); pointer-events: auto;">
+			<div class="card">
 				${cardInner}
 			</div>
 			`;

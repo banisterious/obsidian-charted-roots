@@ -1143,10 +1143,12 @@
   pointer-events: auto;
   color: #fff;
   position: relative;
+  /* Center the card on the node position */
+  transform: translate(-50%, -50%);
+  /* Reset Obsidian's .card defaults */
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  /* Reset Obsidian's .card defaults */
   padding: 0 !important;
   margin: 0 !important;
   border-radius: 0 !important;

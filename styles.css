@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-01-01 19:03:20 UTC
+ * - Generated: 2026-01-01 19:08:59 UTC
  * - Components: 40 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -14901,7 +14901,7 @@ settings:
    COMPONENT: FAMILY-CHART-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1270 lines, 29.81 KB */
+/* Component Size: 1272 lines, 29.89 KB */
 
 /**
  * Family Chart View Styles
@@ -16048,10 +16048,12 @@ settings:
   pointer-events: auto;
   color: #fff;
   position: relative;
+  /* Center the card on the node position */
+  transform: translate(-50%, -50%);
+  /* Reset Obsidian's .card defaults */
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  /* Reset Obsidian's .card defaults */
   padding: 0 !important;
   margin: 0 !important;
   border-radius: 0 !important;
@@ -34375,10 +34377,10 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-01-01 19:03:21 UTC
+ * Build completed: 2026-01-01 19:08:59 UTC
  * Components processed: 40
- * Total lines: 33992
- * Total size: 674.27 KB
+ * Total lines: 33994
+ * Total size: 674.35 KB
  * Build duration: 0.04 seconds
  *
  * Component breakdown:
@@ -34399,7 +34401,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - find-on-canvas.css: 114 lines, 1.97 KB
  * - folder-scan.css: 155 lines, 2.56 KB
  * - relationship-calculator.css: 302 lines, 5.21 KB
- * - family-chart-view.css: 1270 lines, 29.81 KB
+ * - family-chart-view.css: 1272 lines, 29.89 KB
  * - family-chart-export.css: 699 lines, 14.62 KB
  * - report-wizard.css: 888 lines, 19.4 KB
  * - data-quality.css: 1393 lines, 27.56 KB
