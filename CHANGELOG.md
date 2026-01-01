@@ -40,6 +40,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Notes base template for Obsidian Bases with 11 views
   - Form state persistence for Create Note modal
 
+### Fixed
+
+- **Export text overflow** - Fixed text spilling outside card bounds in PNG/PDF exports; clip-path attributes now preserved during SVG preparation ([#88](https://github.com/banisterious/obsidian-canvas-roots/issues/88))
+- **High Contrast theme readability** - Fixed white text on bright cyan/magenta backgrounds in dark mode; High Contrast preset now uses black text for accessibility ([#88](https://github.com/banisterious/obsidian-canvas-roots/issues/88))
+
 ---
 
 ## [0.18.14] - 2025-12-31
