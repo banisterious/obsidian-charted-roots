@@ -2,17 +2,17 @@
 
 Planning document for Gramps notes import/export and potentially introducing a Family entity type.
 
-- **Status:** In Progress (Phase 1 & 2 complete)
+- **Status:** In Progress (Phases 1, 2 & 4 complete)
 - **GitHub Issue:** [#36](https://github.com/banisterious/obsidian-canvas-roots/issues/36)
 - **Sub-issues:**
   - [#76](https://github.com/banisterious/obsidian-canvas-roots/issues/76) Phase 1: Embedded Notes ✅
   - [#77](https://github.com/banisterious/obsidian-canvas-roots/issues/77) Phase 2: Other Entity Notes ✅
   - [#79](https://github.com/banisterious/obsidian-canvas-roots/issues/79) Phase 3: Family Entity (Optional)
-  - [#80](https://github.com/banisterious/obsidian-canvas-roots/issues/80) Phase 4: Separate Note Files (Optional)
+  - [#80](https://github.com/banisterious/obsidian-canvas-roots/issues/80) Phase 4: Separate Note Files (Optional) ✅
   - [#81](https://github.com/banisterious/obsidian-canvas-roots/issues/81) Phase 5: Gramps Export & Sync Support
 - **Priority:** Medium
 - **Created:** 2025-12-26
-- **Updated:** 2025-12-31
+- **Updated:** 2026-01-01
 
 ---
 
