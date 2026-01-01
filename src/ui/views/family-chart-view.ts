@@ -923,7 +923,7 @@ export class FamilyChartView extends ItemView {
 						.setCardDisplay(displayFields)
 						.setCardImageField('avatar')
 						.setCardDim({ w: 200, h: 70, img_w: 60, img_h: 60, img_x: 5, img_y: 5 })
-						.setOnCardClick((e, d) => this.handleCardClick(e, d))
+						.setOnCardClick((e: MouseEvent, d: { data: { id: string; [key: string]: unknown } }) => this.handleCardClick(e, d))
 						.setOnCardUpdate(this.createOpenNoteButtonCallback());
 					break;
 
@@ -931,7 +931,7 @@ export class FamilyChartView extends ItemView {
 					// Text-only cards, no avatars
 					this.f3Card = this.f3Chart.setCardSvg()
 						.setCardDisplay(displayFields)
-						.setCardDim({ w: 180, h: 50, text_x: 10, text_y: 12, img_w: 0, img_h: 0 })
+						.setCardDim({ w: 180, h: 50, text_x: 10, text_y: 12, img_w: 0, img_h: 0, img_x: 0, img_y: 0 })
 						.setOnCardClick((e, d) => this.handleCardClick(e, d))
 						.setOnCardUpdate(this.createOpenNoteButtonCallback());
 					break;
@@ -940,7 +940,7 @@ export class FamilyChartView extends ItemView {
 					// Smaller cards for overview (name only)
 					this.f3Card = this.f3Chart.setCardSvg()
 						.setCardDisplay([['first name', 'last name']])
-						.setCardDim({ w: 120, h: 35, text_x: 5, text_y: 10, img_w: 0, img_h: 0 })
+						.setCardDim({ w: 120, h: 35, text_x: 5, text_y: 10, img_w: 0, img_h: 0, img_x: 0, img_y: 0 })
 						.setOnCardClick((e, d) => this.handleCardClick(e, d))
 						.setOnCardUpdate(this.createOpenNoteButtonCallback());
 					break;
