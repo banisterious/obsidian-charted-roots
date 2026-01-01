@@ -13,6 +13,8 @@ Real-world examples of how people use Canvas Roots for genealogy, worldbuilding,
 - [Visualizing Migration Patterns](#visualizing-migration-patterns)
 - [Tracking DNA Matches](#tracking-dna-matches)
 - [Researching Enslaved Ancestors (Beyond Kin)](#researching-enslaved-ancestors-beyond-kin)
+- [One-Name Studies](#one-name-studies)
+- [FAN Cluster Analysis](#fan-cluster-analysis)
 - [Exporting to Share with Family](#exporting-to-share-with-family)
 - [Using Bases for Data Views](#using-bases-for-data-views)
 
@@ -243,6 +245,112 @@ You're researching enslaved ancestors using the [Beyond Kin methodology](https:/
 
 - [Beyond Kin Project](https://beyondkin.org/) — Methodology and naming conventions for documenting enslaved populations
 - [Custom Relationships](Custom-Relationships) — Full documentation for the `custom_relationships` property
+
+---
+
+### One-Name Studies
+
+**User type:** Genealogist
+**Features used:** Collections, Custom Relationships, Person Notes, Source Notes, Canvas Trees
+**Complexity:** Intermediate
+
+**The Challenge**
+
+You're conducting a one-name study—researching all individuals with a particular surname regardless of whether they're related to you. You need to track hundreds of people who may or may not be connected, organize them by geographic region or time period, and identify potential family groups within the larger dataset.
+
+**The Approach**
+
+1. Create a **Collection** for your one-name study (e.g., "Henderson One-Name Study")
+2. Create **Person Notes** for each individual you discover, adding them to the collection
+3. Use the `collection` property to tag all study participants:
+   ```yaml
+   collection: Henderson One-Name Study
+   ```
+4. Organize by sub-collections for geographic regions or lineages:
+   ```yaml
+   collection:
+     - Henderson One-Name Study
+     - Henderson - Virginia Branch
+   ```
+5. Use **Custom Relationships** to track speculative connections:
+   ```yaml
+   custom_relationships:
+     - type: possibly_related_to
+       person: "[[James Henderson (1820-1890)]]"
+       notes: "Same county, similar age, may be brothers"
+   ```
+6. Generate **Canvas Trees** for confirmed family groups within the study
+7. Use the **Statistics View** to analyze your dataset (counts by region, time period, etc.)
+
+**Tips**
+
+- **Naming conventions:** Include distinguishing details in note titles: "John Henderson (1785-1850, Augusta Co, VA)" to differentiate individuals with the same name.
+- **Unconnected individuals:** Not everyone needs family links. Person notes can stand alone until you find connections.
+- **DNA matches:** Track DNA connections using custom relationships like `dna_match` with notes about shared cM and predicted relationship.
+- **Research status:** Add a custom property like `research_status: confirmed | probable | speculative` to track your confidence level.
+
+**Further Reading**
+
+- [Guild of One-Name Studies](https://one-name.org/) — Resources for conducting surname studies
+- [Collections](Data-Management#collections) — Organizing people into groups
+- [Custom Relationships](Custom-Relationships) — Tracking non-family connections
+
+---
+
+### FAN Cluster Analysis
+
+**User type:** Genealogist
+**Features used:** Custom Relationships, Person Notes, Source Notes, Place Notes
+**Complexity:** Intermediate
+
+**The Challenge**
+
+You're stuck on a brick wall ancestor and need to research their Friends, Associates, and Neighbors (FAN cluster) to find indirect evidence. You want to track people who appear alongside your ancestor in records—witnesses, neighbors on census pages, fellow church members—and document how they connect.
+
+**The Approach**
+
+1. Create **Person Notes** for your target ancestor and each FAN cluster member
+2. Create **Source Notes** for records where cluster members appear together
+3. Define custom relationship types for FAN connections:
+
+| Type | Description |
+|------|-------------|
+| `neighbor` | Lived nearby (census, land records) |
+| `witness` | Witnessed a document (deeds, marriages, wills) |
+| `bondsman` | Posted bond for marriage or other legal matter |
+| `fellow_congregant` | Same church membership |
+| `business_associate` | Business dealings, partnerships |
+| `migration_companion` | Moved together to a new location |
+
+4. Add FAN relationships to person notes:
+   ```yaml
+   custom_relationships:
+     - type: witness
+       person: "[[Samuel Thompson]]"
+       date: "1823-05-15"
+       source: "[[Deed Book C, p. 142]]"
+       notes: "Witnessed land sale from John to William"
+     - type: neighbor
+       person: "[[Robert Brown]]"
+       date: "1820"
+       source: "[[1820 Census - Augusta County]]"
+       notes: "Listed 3 households apart"
+   ```
+5. Use **Place Notes** to document locations where the cluster appears
+6. Generate a **Canvas Tree** with custom relationships enabled to visualize the cluster
+
+**Tips**
+
+- **Census neighbors:** People listed near each other on census pages often traveled together. Note the page number and enumeration order.
+- **Recurring names:** When the same names appear across multiple record types, that's a strong cluster signal.
+- **Geographic tracking:** Use Place Notes to map where cluster members appear over time—they may reveal migration patterns.
+- **Source-first approach:** Create Source Notes as you find records, then link all individuals who appear in each source.
+
+**Further Reading**
+
+- [Evidence Explained](https://www.evidenceexplained.com/) — Elizabeth Shown Mills' methodology for analyzing evidence
+- [Custom Relationships](Custom-Relationships) — Full documentation for tracking non-family connections
+- [Evidence and Sources](Evidence-And-Sources) — Source citation and analysis
 
 ---
 
