@@ -166,6 +166,7 @@ erDiagram
 | `sex` | `string` | Biological sex (for GEDCOM, historical records) | `"male"`, `"female"`, `"nonbinary"`, `"unknown"` |
 | `gender` | `string` | Gender (backwards compatibility - prefer `sex` or `gender_identity`) | `"Male"`, `"Female"` |
 | `gender_identity` | `string` | Gender identity (distinct from biological sex) | `"male"`, `"female"`, `"nonbinary"`, `"genderfluid"` |
+| `pronouns` | `string` | Pronouns for the person (displayed in person pickers when enabled) | `"she/her"`, `"they/them"`, `"he/him"` |
 | `occupation` | `string` | Primary occupation | `"Farmer"` |
 | `research_level` | `number` | Research progress level (0-6) | `3` |
 
@@ -926,7 +927,7 @@ All person note properties can be aliased:
 
 | Category | Properties |
 |----------|------------|
-| Identity | `name`, `cr_id`, `sex`, `gender`, `gender_identity`, `nickname`, `maiden_name` |
+| Identity | `name`, `cr_id`, `sex`, `gender`, `gender_identity`, `pronouns`, `nickname`, `maiden_name` |
 | Dates | `born`, `died` |
 | Places | `birth_place`, `death_place` |
 | Relationships | `father`, `father_id`, `mother`, `mother_id`, `spouse`, `spouse_id`, `children`, `children_id` |
@@ -1013,6 +1014,7 @@ died: "1952-08-20"
 birth_place: "London, England"
 death_place: "New York, USA"
 sex: "male"
+pronouns: "he/him"
 occupation: "Merchant"
 father: "[[John Smith Sr]]"
 father_id: "f1234567-..."
