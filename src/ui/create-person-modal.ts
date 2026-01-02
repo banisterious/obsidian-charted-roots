@@ -2119,7 +2119,7 @@ export class CreatePersonModal extends Modal {
 			} else if (relationshipType === 'child') {
 				// Add to child array
 				const existingChildIds = cache?.frontmatter?.children_id || [];
-				const existingChildNames = cache?.frontmatter?.child || [];
+				const existingChildNames = cache?.frontmatter?.children || [];
 
 				// Normalize to arrays
 				const childIds = Array.isArray(existingChildIds) ? [...existingChildIds] : existingChildIds ? [existingChildIds] : [];

@@ -702,7 +702,7 @@ export async function addChildToParent(
 	// Get existing children data
 	const cache = app.metadataCache.getFileCache(parentFile);
 	const existingChildIds = cache?.frontmatter?.children_id;
-	const existingChildNames = cache?.frontmatter?.child;
+	const existingChildNames = cache?.frontmatter?.children;
 
 	// Normalize to arrays
 	let childIds: string[] = [];
