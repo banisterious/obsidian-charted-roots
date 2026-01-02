@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Pronouns included in all report outputs (Markdown, ODT, PDF)
   - PDF reports updated: Individual Summary and Family Group Sheet vital statistics
 
+- **Manual living status override** - Override automatic living/deceased detection for privacy protection ([#97](https://github.com/banisterious/obsidian-canvas-roots/issues/97)):
+  - New `cr_living` frontmatter property (boolean)
+  - `cr_living: true` — Always treat as living (protected in exports)
+  - `cr_living: false` — Always treat as deceased (not protected)
+  - Absent `cr_living` uses automatic detection (existing behavior)
+  - "Living status override" dropdown in Edit Person modal (shown when privacy protection enabled)
+  - Supported in all export formats: GEDCOM, GEDCOM X, Gramps XML, CSV
+
 ### Fixed
 
 - **ESLint compliance for Obsidian plugin review** - Addressed lint issues flagged by Obsidian's plugin review bot:
