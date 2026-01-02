@@ -589,7 +589,7 @@ function renderVaultHealthSection(
 	const summary = details.createEl('summary', { cls: 'crc-dashboard-collapsible-header' });
 	const chevron = summary.createSpan({ cls: 'crc-dashboard-chevron' });
 	setLucideIcon(chevron, 'chevron-right', 14);
-	summary.createSpan({ text: 'Vault Health', cls: 'crc-dashboard-collapsible-title' });
+	summary.createSpan({ text: 'Vault health', cls: 'crc-dashboard-collapsible-title' });
 
 	// Content container
 	const content = details.createDiv({ cls: 'crc-dashboard-collapsible-content' });

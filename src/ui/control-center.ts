@@ -4332,7 +4332,7 @@ export class ControlCenterModal extends Modal {
 		const recentCard = container.createDiv({ cls: 'crc-tree-card' });
 		const recentHeader = recentCard.createDiv({ cls: 'crc-tree-card__header crc-tree-card__header--simple' });
 		recentHeader.appendChild(createLucideIcon('clock', 18));
-		recentHeader.createSpan({ text: 'Recent Trees', cls: 'crc-tree-card__title' });
+		recentHeader.createSpan({ text: 'Recent trees', cls: 'crc-tree-card__title' });
 		if (recentTrees.length > 0) {
 			recentHeader.createSpan({ text: String(recentTrees.length), cls: 'crc-tree-card__badge' });
 		}
