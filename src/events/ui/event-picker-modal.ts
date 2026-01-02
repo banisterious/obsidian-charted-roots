@@ -7,7 +7,6 @@
 
 import { App, Modal, TFile } from 'obsidian';
 import { createLucideIcon } from '../../ui/lucide-icons';
-import { EventService } from '../services/event-service';
 import type { EventNote } from '../types/event-types';
 import { getEventType } from '../types/event-types';
 import type CanvasRootsPlugin from '../../../main';

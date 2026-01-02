@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **ESLint compliance for Obsidian plugin review** - Addressed lint issues flagged by Obsidian's plugin review bot:
+  - Removed deprecated `substr()` calls in GEDCOM parser, replaced with `substring()`
+  - Eliminated `@typescript-eslint/no-explicit-any` violations by adding proper type definitions for pdfmake and family-chart libraries
+  - Added description comments to remaining `eslint-disable` directives
+  - Refactored `this` aliasing to use `bind()` pattern in Family Chart view
+  - Removed ~240 lines of unused `_CrossImportReviewModal` class
+  - Removed unused imports (`EventService`, `ReportResult`, `CrossImportDetectionService`)
+  - Fixed `no-misused-promises` error in async event handler
+
 ---
 
 ## [0.18.15] - 2026-01-01

@@ -36,6 +36,25 @@ import type {
 	CollectionOverviewResult
 } from '../types/report-types';
 import { REPORT_METADATA, REPORT_CATEGORY_METADATA, getReportsByCategory } from '../types/report-types';
+
+/**
+ * Union of all specific report result types.
+ * Used for type-safe handling in PDF/ODT generation where we need access to specific properties.
+ */
+type SpecificReportResult =
+	| FamilyGroupSheetResult
+	| IndividualSummaryResult
+	| AhnentafelResult
+	| GapsReportResult
+	| RegisterReportResult
+	| PedigreeChartResult
+	| DescendantChartResult
+	| SourceSummaryResult
+	| TimelineReportResult
+	| PlaceSummaryResult
+	| MediaInventoryResult
+	| UniverseOverviewResult
+	| CollectionOverviewResult;
 import type { ReportCategory } from '../types/report-types';
 import { ReportGenerationService } from '../services/report-generation-service';
 import { PdfReportRenderer } from '../services/pdf-report-renderer';
@@ -1774,12 +1793,14 @@ export class ReportGeneratorModal extends Modal {
 			}
 
 			// Handle output based on method
+			// Cast to SpecificReportResult since we know the report type determines the result structure
+			const specificResult = result as SpecificReportResult;
 			if (this.outputMethod === 'pdf') {
 				// Generate PDF using the structured result data
-				await this.generatePdfFromResult(result);
+				await this.generatePdfFromResult(specificResult);
 			} else if (this.outputMethod === 'odt') {
 				// Generate ODT from markdown content
-				await this.generateOdtFromResult(result);
+				await this.generateOdtFromResult(specificResult);
 			} else if (this.outputMethod === 'download') {
 				this.reportService.downloadReport(result.content, result.suggestedFilename);
 				new Notice('Report downloaded');
@@ -1807,8 +1828,7 @@ export class ReportGeneratorModal extends Modal {
 	/**
 	 * Generate PDF from the report result
 	 */
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Report result types vary by report type; union would be complex
-	private async generatePdfFromResult(result: any): Promise<void> {
+	private async generatePdfFromResult(result: SpecificReportResult): Promise<void> {
 		const pdfOptions = {
 			pageSize: this.pdfOptions.pageSize,
 			fontStyle: 'serif' as const,
@@ -1867,18 +1887,19 @@ export class ReportGeneratorModal extends Modal {
 	/**
 	 * Generate ODT from the report result
 	 */
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Report result types vary by report type; union would be complex
-	private async generateOdtFromResult(result: any): Promise<void> {
+	private async generateOdtFromResult(result: SpecificReportResult): Promise<void> {
 		const metadata = REPORT_METADATA[this.selectedReportType];
 
 		// Extract title from the result or use report metadata
-		const title = result.rootPerson?.name
-			? `${metadata.name}: ${result.rootPerson.name}`
+		// Note: rootPerson only exists on some report types (Ahnentafel, Register, Pedigree, Descendant)
+		const rootPerson = 'rootPerson' in result ? result.rootPerson : undefined;
+		const title = rootPerson?.name
+			? `${metadata.name}: ${rootPerson.name}`
 			: metadata.name;
 
 		const odtOptions = {
 			title,
-			subtitle: result.rootPerson?.name ? `Report for ${result.rootPerson.name}` : undefined,
+			subtitle: rootPerson?.name ? `Report for ${rootPerson.name}` : undefined,
 			includeCoverPage: false // Keep it simple for Phase 1
 		};
 

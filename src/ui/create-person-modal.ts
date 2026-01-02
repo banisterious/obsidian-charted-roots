@@ -18,7 +18,6 @@ import { ResearchLevel, RESEARCH_LEVELS } from '../types/frontmatter';
 import { SourcePickerModal } from '../sources/ui/source-picker-modal';
 import { CreateSourceModal } from '../sources/ui/create-source-modal';
 import { SourceService } from '../sources/services/source-service';
-import { EventService } from '../events/services/event-service';
 import type { EventNote } from '../events/types/event-types';
 import { getEventType } from '../events/types/event-types';
 import { EventPickerModal } from '../events/ui/event-picker-modal';
@@ -1439,10 +1438,12 @@ export class CreatePersonModal extends Modal {
 				const unlinkIcon = createLucideIcon('unlink', 14);
 				unlinkBtn.appendChild(unlinkIcon);
 
-				unlinkBtn.addEventListener('click', async (e) => {
+				unlinkBtn.addEventListener('click', (e) => {
 					e.stopPropagation();
-					await this.unlinkEventFromPerson(event);
-					renderEventList();
+					void (async () => {
+						await this.unlinkEventFromPerson(event);
+						renderEventList();
+					})();
 				});
 
 				// Click info area to open event note
@@ -1951,7 +1952,6 @@ export class CreatePersonModal extends Modal {
 	private showParentTypeSelector(): void {
 		// Create a simple modal-like overlay within our modal
 		const { contentEl } = this;
-		const _existingContent = contentEl.innerHTML;
 
 		contentEl.empty();
 

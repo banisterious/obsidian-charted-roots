@@ -6,9 +6,25 @@
  */
 
 import { ItemView, WorkspaceLeaf, Menu, TFile, Notice, setIcon, Modal, App } from 'obsidian';
-import f3 from 'family-chart';
+import f3, { TreeDatum } from 'family-chart';
 import * as d3 from 'd3';
 import { jsPDF } from 'jspdf';
+
+/**
+ * Type for the vfs_fonts module with multiple possible export shapes.
+ * Different bundler configurations export the vfs differently.
+ * Uses index signature to allow font file property access.
+ */
+interface VfsFontsModule {
+	pdfMake?: { vfs: Record<string, string> };
+	default?: {
+		pdfMake?: { vfs: Record<string, string> };
+		vfs?: Record<string, string>;
+		[fontFile: string]: unknown;
+	};
+	vfs?: Record<string, string>;
+	[fontFile: string]: unknown;
+}
 import type CanvasRootsPlugin from '../../../main';
 import { FamilyGraphService, PersonNode } from '../../core/family-graph';
 import type { ColorScheme, FamilyChartColors } from '../../settings';
@@ -1268,95 +1284,103 @@ export class FamilyChartView extends ItemView {
 	 * instance for the click handler.
 	 */
 	private createOpenNoteButtonCallback(): (d: { data: { id: string } }) => void {
-		// eslint-disable-next-line @typescript-eslint/no-this-alias -- Capture view reference for use inside regular function below
-		const view = this;
+		// Use bind to capture view reference while allowing family-chart to set `this` to the card element
+		return this.addOpenNoteButton.bind(this);
+	}
 
-		// Return a regular function so `this` is bound to the card element by family-chart
-		return function(this: SVGGElement, d: { data: { id: string } }) {
-			// eslint-disable-next-line @typescript-eslint/no-this-alias -- Capture card element reference for d3 operations
-			const cardEl = this;
-			const personId = d.data.id;
+	/**
+	 * Add open note button to a family-chart card element.
+	 * Called with `this` bound to the view instance via bind() in createOpenNoteButtonCallback.
+	 * The card element is found via d3.select using the person ID from the data parameter.
+	 */
+	private addOpenNoteButton(this: FamilyChartView, d: { data: { id: string } }): void {
+		const personId = d.data.id;
+		// Find the card container element using d3's data binding
+		const cardSelection = d3.selectAll<SVGGElement, { data: { id: string } }>('.card_cont')
+			.filter((nodeData) => nodeData?.data?.id === personId);
+		if (cardSelection.empty()) return;
+		const cardEl = cardSelection.node();
+		if (!cardEl) return;
 
-			// Check if button already exists (prevents duplicates on re-render)
-			if (d3.select(cardEl).select('.cr-open-note-btn').size() > 0) return;
+		// Check if button already exists (prevents duplicates on re-render)
+		if (d3.select(cardEl).select('.cr-open-note-btn').size() > 0) return;
 
-			// Get button position based on card style
-			// Card dimensions vary by style and whether both dates are shown (taller cards)
-			// Button radius=9, position near right edge
-			const needsTallerCards = view.showBirthDates && view.showDeathDates;
-			let btnX: number;
-			let btnY: number;
-			let btnRadius: number;
-			switch (view.cardStyle) {
-				case 'compact':
-					btnX = 162; // 180 width, position near right edge
-					btnY = 12;
-					btnRadius = 9;
-					break;
-				case 'mini':
-					btnX = 108; // 120 width, position near right edge
-					btnY = 10;
-					btnRadius = 7;
-					break;
-				default: // rectangle
-					// Width is 220 when both dates shown, 200 otherwise
-					btnX = needsTallerCards ? 205 : 185;
-					btnY = 12;
-					btnRadius = 9;
-			}
+		// Get button position based on card style
+		// Card dimensions vary by style and whether both dates are shown (taller cards)
+		// Button radius=9, position near right edge
+		const needsTallerCards = this.showBirthDates && this.showDeathDates;
+		let btnX: number;
+		let btnY: number;
+		let btnRadius: number;
+		switch (this.cardStyle) {
+			case 'compact':
+				btnX = 162; // 180 width, position near right edge
+				btnY = 12;
+				btnRadius = 9;
+				break;
+			case 'mini':
+				btnX = 108; // 120 width, position near right edge
+				btnY = 10;
+				btnRadius = 7;
+				break;
+			default: // rectangle
+				// Width is 220 when both dates shown, 200 otherwise
+				btnX = needsTallerCards ? 205 : 185;
+				btnY = 12;
+				btnRadius = 9;
+		}
 
-			// Create button group positioned in top-right corner
-			// Append to .card group (not .card-inner which has clip-path that clips the button)
-			const btnGroup = d3.select(cardEl)
-				.select('.card')
-				.append('g')
-				.attr('class', 'cr-open-note-btn')
-				.attr('transform', `translate(${btnX}, ${btnY})`)
-				.style('cursor', 'pointer');
+		// Create button group positioned in top-right corner
+		// Append to .card group (not .card-inner which has clip-path that clips the button)
+		const btnGroup = d3.select(cardEl)
+			.select('.card')
+			.append('g')
+			.attr('class', 'cr-open-note-btn')
+			.attr('transform', `translate(${btnX}, ${btnY})`)
+			.style('cursor', 'pointer');
 
-			// Add circle background
-			btnGroup.append('circle')
-				.attr('r', btnRadius)
+		// Add circle background
+		btnGroup.append('circle')
+			.attr('r', btnRadius)
+			.attr('fill', 'var(--background-primary)')
+			.attr('stroke', 'var(--text-muted)')
+			.attr('stroke-width', 1);
+
+		// Add file-text icon (simplified SVG path for a document)
+		// Scale icon for mini cards
+		const iconScale = btnRadius < 9 ? 0.7 : 1;
+		const iconGroup = btnGroup.append('g')
+			.attr('transform', `scale(${iconScale})`);
+		iconGroup.append('path')
+			.attr('d', 'M-4,-5 L2,-5 L5,-2 L5,5 L-4,5 Z M2,-5 L2,-2 L5,-2')
+			.attr('fill', 'none')
+			.attr('stroke', 'var(--text-muted)')
+			.attr('stroke-width', 1.2)
+			.attr('stroke-linecap', 'round')
+			.attr('stroke-linejoin', 'round');
+
+		// Add click handler - arrow function preserves `this` binding from bind()
+		btnGroup.on('click', (event: MouseEvent) => {
+			event.stopPropagation(); // Prevent card click from triggering
+			void this.openPersonNote(personId);
+		});
+
+		// Add hover effect
+		btnGroup.on('mouseenter', function() {
+			d3.select(this).select('circle')
+				.attr('fill', 'var(--interactive-accent)')
+				.attr('stroke', 'var(--interactive-accent)');
+			d3.select(this).select('path')
+				.attr('stroke', 'var(--text-on-accent)');
+		});
+
+		btnGroup.on('mouseleave', function() {
+			d3.select(this).select('circle')
 				.attr('fill', 'var(--background-primary)')
-				.attr('stroke', 'var(--text-muted)')
-				.attr('stroke-width', 1);
-
-			// Add file-text icon (simplified SVG path for a document)
-			// Scale icon for mini cards
-			const iconScale = btnRadius < 9 ? 0.7 : 1;
-			const iconGroup = btnGroup.append('g')
-				.attr('transform', `scale(${iconScale})`);
-			iconGroup.append('path')
-				.attr('d', 'M-4,-5 L2,-5 L5,-2 L5,5 L-4,5 Z M2,-5 L2,-2 L5,-2')
-				.attr('fill', 'none')
-				.attr('stroke', 'var(--text-muted)')
-				.attr('stroke-width', 1.2)
-				.attr('stroke-linecap', 'round')
-				.attr('stroke-linejoin', 'round');
-
-			// Add click handler
-			btnGroup.on('click', function(event: MouseEvent) {
-				event.stopPropagation(); // Prevent card click from triggering
-				void view.openPersonNote(personId);
-			});
-
-			// Add hover effect
-			btnGroup.on('mouseenter', function() {
-				d3.select(this).select('circle')
-					.attr('fill', 'var(--interactive-accent)')
-					.attr('stroke', 'var(--interactive-accent)');
-				d3.select(this).select('path')
-					.attr('stroke', 'var(--text-on-accent)');
-			});
-
-			btnGroup.on('mouseleave', function() {
-				d3.select(this).select('circle')
-					.attr('fill', 'var(--background-primary)')
-					.attr('stroke', 'var(--text-muted)');
-				d3.select(this).select('path')
-					.attr('stroke', 'var(--text-muted)');
-			});
-		};
+				.attr('stroke', 'var(--text-muted)');
+			d3.select(this).select('path')
+				.attr('stroke', 'var(--text-muted)');
+		});
 	}
 
 	/**
@@ -1366,72 +1390,85 @@ export class FamilyChartView extends ItemView {
 	 * This approach uses setOnCardUpdate to replace the card's outerHTML with a custom
 	 * structure that properly centers the circle on the node position.
 	 */
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	private createCircleCardCallback(): (d: any) => void {
-		const view = this;
+	private createCircleCardCallback(): (d: TreeDatum) => void {
+		// Use bind to capture view reference while family-chart sets container element context
+		return this.updateCircleCard.bind(this);
+	}
 
-		return function(this: HTMLElement, d: any) {
-			const card = this.querySelector('.card');
-			if (!card) return;
+	/**
+	 * Update a card element to use circle card styling.
+	 * Called with `this` bound to the view instance via bind() in createCircleCardCallback.
+	 * The card container is found via d3.select using the person ID from the data parameter.
+	 */
+	private updateCircleCard(this: FamilyChartView, d: TreeDatum): void {
+		const personId = d.data.id;
+		// Find the card container element using d3's data binding
+		const containerSelection = d3.selectAll<HTMLElement, TreeDatum>('.card_cont')
+			.filter((nodeData) => nodeData?.data?.id === personId);
+		if (containerSelection.empty()) return;
+		const container = containerSelection.node();
+		if (!container) return;
 
-			// Build class list for gender styling
-			const classList = [];
-			const gender = d.data.data.gender as string;
-			if (gender === 'M') classList.push('card-male');
-			else if (gender === 'F') classList.push('card-female');
-			else classList.push('card-genderless');
-			if (d.data.main) classList.push('card-main');
+		const card = container.querySelector('.card');
+		if (!card) return;
 
-			// Build name
-			const firstName = d.data.data['first name'] || '';
-			const lastName = d.data.data['last name'] || '';
-			const name = `${firstName} ${lastName}`.trim() || 'Unknown';
+		// Build class list for gender styling
+		const classList = [];
+		const gender = d.data.data.gender as string;
+		if (gender === 'M') classList.push('card-male');
+		else if (gender === 'F') classList.push('card-female');
+		else classList.push('card-genderless');
+		if (d.data.main) classList.push('card-main');
 
-			// Build label with optional dates
-			const parts = [name];
-			if (view.showBirthDates && d.data.data.birthday) {
-				parts.push(d.data.data.birthday);
-			}
-			if (view.showDeathDates && d.data.data.deathday) {
-				parts.push(d.data.data.deathday);
-			}
-			const label = parts.join('<br>');
+		// Build name
+		const firstName = d.data.data['first name'] || '';
+		const lastName = d.data.data['last name'] || '';
+		const name = `${firstName} ${lastName}`.trim() || 'Unknown';
 
-			const avatar = d.data.data.avatar as string | undefined;
+		// Build label with optional dates
+		const parts = [name];
+		if (this.showBirthDates && d.data.data.birthday) {
+			parts.push(d.data.data.birthday);
+		}
+		if (this.showDeathDates && d.data.data.deathday) {
+			parts.push(d.data.data.deathday);
+		}
+		const label = parts.join('<br>');
 
-			// Build card inner HTML based on whether avatar exists
-			let cardInner: string;
-			if (avatar) {
-				cardInner = `
-				<div class="card-image ${classList.join(' ')}">
-					<img src="${avatar}">
-					<div class="card-label">${label}</div>
-				</div>
-				`;
-			} else {
-				cardInner = `
-				<div class="card-text ${classList.join(' ')}">
-					${label}
-				</div>
-				`;
-			}
+		const avatar = d.data.data.avatar as string | undefined;
 
-			// Replace entire card HTML with properly centered structure
-			// Note: transform and pointer-events are set via CSS in .card-style-circle .card
-			card.outerHTML = `
-			<div class="card">
-				${cardInner}
+		// Build card inner HTML based on whether avatar exists
+		let cardInner: string;
+		if (avatar) {
+			cardInner = `
+			<div class="card-image ${classList.join(' ')}">
+				<img src="${avatar}">
+				<div class="card-label">${label}</div>
 			</div>
 			`;
+		} else {
+			cardInner = `
+			<div class="card-text ${classList.join(' ')}">
+				${label}
+			</div>
+			`;
+		}
 
-			// Re-attach click handler to the new card element
-			const newCard = this.querySelector('.card');
-			if (newCard) {
-				newCard.addEventListener('click', (e: Event) => {
-					view.handleCardClick(e as MouseEvent, d);
-				});
-			}
-		};
+		// Replace entire card HTML with properly centered structure
+		// Note: transform and pointer-events are set via CSS in .card-style-circle .card
+		card.outerHTML = `
+		<div class="card">
+			${cardInner}
+		</div>
+		`;
+
+		// Re-attach click handler to the new card element
+		const newCard = container.querySelector('.card');
+		if (newCard) {
+			newCard.addEventListener('click', (e: Event) => {
+				this.handleCardClick(e as MouseEvent, d);
+			});
+		}
 	}
 
 	/**
@@ -2334,8 +2371,7 @@ export class FamilyChartView extends ItemView {
 	private async loadRobotoFonts(): Promise<Record<string, string> | null> {
 		try {
 			const vfsFonts = await import('pdfmake/build/vfs_fonts');
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any -- vfs_fonts export structure varies
-			const vfsModule = vfsFonts as any;
+			const vfsModule = vfsFonts as VfsFontsModule;
 
 			// Debug: log the actual structure we're getting
 			logger.debug('pdf-fonts', 'VFS module structure', {
@@ -2347,7 +2383,7 @@ export class FamilyChartView extends ItemView {
 			});
 
 			// Try multiple possible structures based on bundler behavior
-			let vfs = null;
+			let vfs: Record<string, string> | null = null;
 
 			// Structure 1: Direct pdfMake.vfs
 			if (vfsModule.pdfMake?.vfs) {
@@ -2371,12 +2407,12 @@ export class FamilyChartView extends ItemView {
 			}
 			// Structure 5: The module itself might be the vfs object (check for Roboto keys)
 			else if (vfsModule['Roboto-Regular.ttf']) {
-				vfs = vfsModule;
+				vfs = vfsModule as unknown as Record<string, string>;
 				logger.debug('pdf-fonts', 'Module itself is the VFS');
 			}
 			// Structure 6: default is the vfs object
 			else if (vfsModule.default?.['Roboto-Regular.ttf']) {
-				vfs = vfsModule.default;
+				vfs = vfsModule.default as unknown as Record<string, string>;
 				logger.debug('pdf-fonts', 'default is the VFS');
 			}
 
@@ -2408,10 +2444,10 @@ export class FamilyChartView extends ItemView {
 			logger.debug('pdf-fonts', 'Successfully loaded Roboto fonts from pdfmake VFS');
 
 			return {
-				regular,
-				medium,
-				italic: italic || regular, // Fallback to regular if italic missing
-				mediumItalic: mediumItalic || medium // Fallback to medium if mediumItalic missing
+				regular: regular,
+				medium: medium,
+				italic: italic ?? regular, // Fallback to regular if italic missing
+				mediumItalic: mediumItalic ?? medium // Fallback to medium if mediumItalic missing
 			};
 		} catch (error) {
 			logger.warn('pdf-fonts', 'Failed to load Roboto fonts, falling back to Helvetica', { error });

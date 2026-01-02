@@ -6,13 +6,75 @@
  */
 
 import { Notice } from 'obsidian';
-// Use loose typing for pdfmake due to complex Content type requirements that vary between versions
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- pdfmake Content type is complex and version-dependent
-type Content = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- pdfmake TDocumentDefinitions type is complex and version-dependent
-type TDocumentDefinitions = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- pdfmake StyleDictionary type is complex and version-dependent
-type StyleDictionary = any;
+/**
+ * Minimal type definitions for pdfmake to avoid strict type checking issues.
+ * pdfmake's type definitions are complex and don't match all our content structures.
+ * Using looser types here allows flexibility while still providing basic type safety.
+ */
+
+/** Basic content type for pdfmake - allows any valid content structure */
+type Content = Record<string, unknown> | string | Content[];
+
+/** Document definition for pdfmake */
+interface TDocumentDefinitions {
+	pageSize: string | { width: number; height: number };
+	pageOrientation?: 'portrait' | 'landscape';
+	pageMargins: [number, number, number, number];
+	defaultStyle: Record<string, unknown>;
+	header?: (currentPage: number, pageCount: number) => Content;
+	footer?: (currentPage: number, pageCount: number) => Content;
+	content: Content;
+	styles: StyleDictionary;
+}
+
+/** Style dictionary for pdfmake */
+interface StyleDictionary {
+	[styleName: string]: Record<string, unknown>;
+}
+
+/** Font dictionary for pdfmake */
+interface TFontDictionary {
+	[fontName: string]: {
+		normal?: string;
+		bold?: string;
+		italics?: string;
+		bolditalics?: string;
+	};
+}
+
+/** Table node type for layout callbacks */
+interface ContentTable {
+	table: {
+		body: unknown[][];
+		widths?: unknown[];
+		headerRows?: number;
+	};
+}
+
+/** Created PDF interface with download method */
+interface TCreatedPdf {
+	download(filename: string): void;
+	getBlob(cb: (blob: Blob) => void): void;
+}
+
+/**
+ * Type for the dynamically loaded pdfmake module instance.
+ */
+interface PdfMakeInstance {
+	createPdf(docDefinition: TDocumentDefinitions): TCreatedPdf;
+	vfs: { [file: string]: string };
+	fonts: TFontDictionary;
+}
+
+/**
+ * Type for the vfs_fonts module with multiple possible export shapes.
+ * Different bundler configurations export the vfs differently.
+ */
+interface VfsFontsModule {
+	pdfMake?: { vfs: { [file: string]: string } };
+	default?: { pdfMake?: { vfs: { [file: string]: string } } };
+	vfs?: { [file: string]: string };
+}
 import type {
 	FamilyGroupSheetResult,
 	IndividualSummaryResult,
@@ -89,30 +151,40 @@ const COLORS = {
  * Lazily loads pdfmake to minimize bundle impact.
  */
 export class PdfReportRenderer {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any -- pdfmake instance type is not exported
-	private pdfMake: any = null;
+	private _pdfMake: PdfMakeInstance | null = null;
+
+	/**
+	 * Get the pdfmake instance. Must call ensurePdfMake() first.
+	 * @throws Error if pdfmake is not initialized
+	 */
+	private get pdfMake(): PdfMakeInstance {
+		if (!this._pdfMake) {
+			throw new Error('pdfmake not initialized. Call ensurePdfMake() first.');
+		}
+		return this._pdfMake;
+	}
 
 	/**
 	 * Ensure pdfmake is loaded (lazy loading)
 	 */
 	private async ensurePdfMake(): Promise<void> {
-		if (this.pdfMake) return;
+		if (this._pdfMake) return;
 
 		new Notice('Preparing PDF export...');
 
 		// Dynamic import - only loads when needed
 		const pdfMakeModule = await import('pdfmake/build/pdfmake');
-		this.pdfMake = pdfMakeModule.default || pdfMakeModule;
+		this._pdfMake = (pdfMakeModule.default ?? pdfMakeModule) as unknown as PdfMakeInstance;
 
 		// Load the virtual file system with embedded Roboto font
 		const vfsFonts = await import('pdfmake/build/vfs_fonts');
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any -- vfs_fonts export structure varies between bundler configurations
-		const vfsModule = vfsFonts as any;
-		this.pdfMake.vfs = vfsModule.pdfMake?.vfs || vfsModule.default?.pdfMake?.vfs || vfsModule.vfs;
+		const vfsModule = vfsFonts as VfsFontsModule;
+		const vfs = vfsModule.pdfMake?.vfs ?? vfsModule.default?.pdfMake?.vfs ?? vfsModule.vfs ?? {};
+		this._pdfMake.vfs = vfs;
 
 		// Use Roboto font (included in vfs_fonts.js)
 		// Map our font names to Roboto variants
-		this.pdfMake.fonts = {
+		this._pdfMake.fonts = {
 			Roboto: {
 				normal: 'Roboto-Regular.ttf',
 				bold: 'Roboto-Medium.ttf',
@@ -279,8 +351,7 @@ export class PdfReportRenderer {
 				]
 			},
 			layout: {
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any -- pdfmake layout callback node type is not exported
-				hLineWidth: (i: number, node: any) => (i === 0 || i === 1 || i === node.table.body.length ? 0.5 : 0.25),
+				hLineWidth: (i: number, node: ContentTable) => (i === 0 || i === 1 || i === node.table.body.length ? 0.5 : 0.25),
 				vLineWidth: () => 0.25,
 				hLineColor: (i: number) => (i === 1 ? '#666666' : COLORS.borderLight),
 				vLineColor: () => COLORS.borderLight,

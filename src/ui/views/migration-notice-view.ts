@@ -82,7 +82,7 @@ export class MigrationNoticeView extends ItemView {
 		return true; // Equal versions
 	}
 
-	// eslint-disable-next-line @typescript-eslint/require-await
+	// eslint-disable-next-line @typescript-eslint/require-await -- ItemView.onOpen requires async signature
 	async onOpen(): Promise<void> {
 		const container = this.containerEl.children[1];
 		container.empty();
