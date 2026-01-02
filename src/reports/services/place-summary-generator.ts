@@ -328,7 +328,7 @@ export class PlaceSummaryGenerator {
 	/**
 	 * Convert a person node to ReportPerson
 	 */
-	private nodeToReportPerson(node: { crId: string; name: string; birthDate?: string; birthPlace?: string; deathDate?: string; deathPlace?: string; file: { path: string } }): ReportPerson {
+	private nodeToReportPerson(node: { crId: string; name: string; birthDate?: string; birthPlace?: string; deathDate?: string; deathPlace?: string; pronouns?: string; file: { path: string } }): ReportPerson {
 		return {
 			crId: node.crId,
 			name: node.name,
@@ -336,6 +336,7 @@ export class PlaceSummaryGenerator {
 			birthPlace: node.birthPlace,
 			deathDate: node.deathDate,
 			deathPlace: node.deathPlace,
+			pronouns: node.pronouns,
 			filePath: node.file.path
 		};
 	}

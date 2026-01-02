@@ -227,6 +227,7 @@ export class GapsReportGenerator {
 			deathDate: node.deathDate,
 			deathPlace: node.deathPlace,
 			sex: this.normalizeSex(node.sex),
+			pronouns: node.pronouns,
 			occupation: node.occupation,
 			filePath: node.file.path,
 			researchLevel: node.researchLevel

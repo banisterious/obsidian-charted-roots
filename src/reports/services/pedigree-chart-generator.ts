@@ -251,6 +251,7 @@ export class PedigreeChartGenerator {
 			deathDate: node.deathDate,
 			deathPlace: node.deathPlace,
 			sex: this.normalizeSex(node.sex),
+			pronouns: node.pronouns,
 			occupation: node.occupation,
 			filePath: node.file.path
 		};

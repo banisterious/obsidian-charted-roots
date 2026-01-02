@@ -123,6 +123,7 @@ export class IndividualSummaryGenerator {
 			deathDate: node.deathDate,
 			deathPlace: node.deathPlace,
 			sex: this.normalizeSex(node.sex),
+			pronouns: node.pronouns,
 			occupation: node.occupation,
 			filePath: node.file.path
 		};
@@ -283,6 +284,9 @@ export class IndividualSummaryGenerator {
 		}
 		if (person.sex) {
 			lines.push(`- **Sex:** ${person.sex.charAt(0).toUpperCase() + person.sex.slice(1)}`);
+		}
+		if (person.pronouns) {
+			lines.push(`- **Pronouns:** ${person.pronouns}`);
 		}
 		if (options.includeAttributes && person.occupation) {
 			lines.push(`- **Occupation:** ${person.occupation}`);

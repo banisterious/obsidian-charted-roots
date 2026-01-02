@@ -31,6 +31,7 @@ export interface PersonNode {
 	burialPlace?: string;
 	occupation?: string;
 	sex?: string;
+	pronouns?: string;
 	researchLevel?: number;  // Research level (0-6) based on Hoitink's Six Levels
 	file: TFile;
 
@@ -1499,6 +1500,7 @@ export class FamilyGraphService {
 		// Check 'sex' first (GEDCOM standard), then 'gender' for backwards compatibility
 		const rawSex = this.resolveProperty<string>(fm, 'sex') || this.resolveProperty<string>(fm, 'gender');
 		const sex = this.resolveGender(rawSex);
+		const pronouns = this.resolveProperty<string>(fm, 'pronouns');
 		const collectionName = this.resolveProperty<string>(fm, 'group_name');
 		const collection = this.resolveProperty<string>(fm, 'collection');
 		const universe = this.resolveProperty<string>(fm, 'universe');
@@ -1517,6 +1519,7 @@ export class FamilyGraphService {
 			burialPlace,
 			occupation,
 			sex,
+			pronouns,
 			file,
 			// Biological parents
 			fatherCrId: fatherCrId || undefined,
