@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.18.17] - 2026-01-02
+
 ### Added
 
 - **Rename file when person name changes** - Option to rename the note file when editing a person's name ([#107](https://github.com/banisterious/obsidian-canvas-roots/issues/107)):
