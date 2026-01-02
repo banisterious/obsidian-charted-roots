@@ -355,4 +355,172 @@ export class RelationshipManager {
 			});
 		}
 	}
+
+	/**
+	 * Update relationship wikilinks when a person is renamed
+	 * Finds all notes that reference this person and updates the wikilink to the new name
+	 * @param personCrId The cr_id of the renamed person
+	 * @param oldName The previous name
+	 * @param newName The new name
+	 * @param newFile The renamed file
+	 */
+	async updateRelationshipWikilinks(
+		personCrId: string,
+		oldName: string,
+		newName: string,
+		newFile: TFile
+	): Promise<void> {
+		logger.info('relationship-manager', 'Updating relationship wikilinks after rename', {
+			personCrId,
+			oldName,
+			newName,
+			newPath: newFile.path
+		});
+
+		const newWikilink = this.createSmartWikilink(newName, newFile);
+		const oldWikilinks = [
+			`[[${oldName}]]`,
+			`[[${oldName}|${oldName}]]`  // Aliased form
+		];
+
+		// Find all markdown files
+		const markdownFiles = this.app.vault.getMarkdownFiles();
+		let updatedCount = 0;
+
+		for (const file of markdownFiles) {
+			// Skip the renamed file itself
+			if (file.path === newFile.path) continue;
+
+			const cache = this.app.metadataCache.getFileCache(file);
+			if (!cache?.frontmatter) continue;
+
+			// Check if this file references the person by cr_id
+			const fm = cache.frontmatter;
+			const referencesPersonById = this.frontmatterContainsCrId(fm, personCrId);
+
+			if (referencesPersonById) {
+				await this.updateWikilinksInFile(file, oldWikilinks, newWikilink, personCrId);
+				updatedCount++;
+			}
+		}
+
+		logger.info('relationship-manager', `Updated wikilinks in ${updatedCount} files`);
+	}
+
+	/**
+	 * Check if frontmatter contains a reference to the given cr_id
+	 */
+	private frontmatterContainsCrId(fm: Record<string, unknown>, crId: string): boolean {
+		const idFields = [
+			'father_id', 'mother_id',
+			'stepfather_id', 'stepmother_id',
+			'adoptive_father_id', 'adoptive_mother_id',
+			'parents_id', 'spouse_id', 'children_id'
+		];
+
+		for (const field of idFields) {
+			const value = fm[field];
+			if (!value) continue;
+
+			if (typeof value === 'string' && value === crId) {
+				return true;
+			}
+			if (Array.isArray(value) && value.includes(crId)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Update wikilinks in a file's frontmatter
+	 */
+	private async updateWikilinksInFile(
+		file: TFile,
+		oldWikilinks: string[],
+		newWikilink: string,
+		personCrId: string
+	): Promise<void> {
+		const wikiliinkFields = [
+			'father', 'mother',
+			'stepfather', 'stepmother',
+			'adoptive_father', 'adoptive_mother',
+			'parents', 'spouse', 'children'
+		];
+
+		try {
+			await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
+				for (const field of wikiliinkFields) {
+					const value = frontmatter[field];
+					if (!value) continue;
+
+					if (typeof value === 'string') {
+						// Check if this wikilink matches any old form
+						if (oldWikilinks.some(old => value.includes(old.slice(2, -2)))) {
+							// Verify by checking the corresponding _id field
+							const idField = this.getIdFieldName(field);
+							const idValue = frontmatter[idField];
+							if (this.idMatches(idValue, personCrId)) {
+								frontmatter[field] = newWikilink;
+							}
+						}
+					} else if (Array.isArray(value)) {
+						// Update matching entries in array
+						const idField = this.getIdFieldName(field);
+						const idValue = frontmatter[idField];
+
+						for (let i = 0; i < value.length; i++) {
+							const entry = value[i];
+							if (typeof entry === 'string' && oldWikilinks.some(old => entry.includes(old.slice(2, -2)))) {
+								// For arrays, check if the cr_id at the same index matches
+								if (Array.isArray(idValue) && idValue[i] === personCrId) {
+									value[i] = newWikilink;
+								} else if (typeof idValue === 'string' && idValue === personCrId) {
+									// Single ID but array of names (shouldn't happen but handle it)
+									value[i] = newWikilink;
+								}
+							}
+						}
+					}
+				}
+			});
+		} catch (error) {
+			logger.error('relationship-manager', 'Failed to update wikilinks in file', {
+				file: file.path,
+				error: getErrorMessage(error)
+			});
+		}
+	}
+
+	/**
+	 * Get the corresponding _id field name for a wikilink field
+	 */
+	private getIdFieldName(field: string): string {
+		const fieldMap: Record<string, string> = {
+			'father': 'father_id',
+			'mother': 'mother_id',
+			'stepfather': 'stepfather_id',
+			'stepmother': 'stepmother_id',
+			'adoptive_father': 'adoptive_father_id',
+			'adoptive_mother': 'adoptive_mother_id',
+			'parents': 'parents_id',
+			'spouse': 'spouse_id',
+			'children': 'children_id'
+		};
+		return fieldMap[field] || `${field}_id`;
+	}
+
+	/**
+	 * Check if an ID value matches the target cr_id
+	 */
+	private idMatches(idValue: unknown, targetCrId: string): boolean {
+		if (typeof idValue === 'string') {
+			return idValue === targetCrId;
+		}
+		if (Array.isArray(idValue)) {
+			return idValue.includes(targetCrId);
+		}
+		return false;
+	}
 }

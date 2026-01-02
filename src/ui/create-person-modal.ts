@@ -5,6 +5,7 @@
 
 import { App, Modal, Setting, TFile, Notice, normalizePath } from 'obsidian';
 import { createPersonNote, updatePersonNote, PersonData, DynamicBlockType, addBidirectionalSpouseLink, addChildToParent, addParentToChild } from '../core/person-note-writer';
+import { RelationshipManager } from '../core/relationship-manager';
 import { createLucideIcon } from './lucide-icons';
 import { FamilyGraphService } from '../core/family-graph';
 import { PlaceGraphService } from '../core/place-graph';
@@ -2476,12 +2477,27 @@ export class CreatePersonModal extends Modal {
 					const newPath = this.generateUniqueFilename(folder, this.personData.name);
 
 					try {
+						// Get cr_id before rename for updating relationships
+						const cache = this.app.metadataCache.getFileCache(this.editingFile);
+						const personCrId = cache?.frontmatter?.cr_id;
+
 						await this.app.vault.rename(this.editingFile, newPath);
 						// Get the renamed file reference
 						const newFile = this.app.vault.getAbstractFileByPath(newPath);
 						if (newFile instanceof TFile) {
 							renamedFile = newFile;
 							new Notice(`Renamed file to: ${newFile.basename}`);
+
+							// Update relationship wikilinks in other notes
+							if (personCrId) {
+								const relationshipManager = new RelationshipManager(this.app);
+								await relationshipManager.updateRelationshipWikilinks(
+									personCrId,
+									this.originalName,
+									this.personData.name,
+									newFile
+								);
+							}
 						}
 					} catch (renameError) {
 						console.error('Failed to rename file:', renameError);
