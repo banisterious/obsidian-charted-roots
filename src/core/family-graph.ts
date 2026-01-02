@@ -1508,7 +1508,15 @@ export class FamilyGraphService {
 		const researchLevel = this.resolveProperty<number>(fm, 'research_level');
 
 		// cr_living is a boolean for manual living status override (no aliasing needed)
-		const cr_living = typeof fm.cr_living === 'boolean' ? fm.cr_living : undefined;
+		// Handle both boolean and string representations (YAML may parse as string in some cases)
+		let cr_living: boolean | undefined = undefined;
+		if (typeof fm.cr_living === 'boolean') {
+			cr_living = fm.cr_living;
+		} else if (fm.cr_living === 'true') {
+			cr_living = true;
+		} else if (fm.cr_living === 'false') {
+			cr_living = false;
+		}
 
 		// Parse media array
 		const media = this.parseMediaProperty(fm);
