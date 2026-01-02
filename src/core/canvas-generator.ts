@@ -754,10 +754,9 @@ export class CanvasGenerator {
 	}
 
 	/**
-	 * Generates groups for couples who have children together
-	 * Groups contain only the parent pair (not their children)
-	 * This creates separate groups for different parenting partnerships
-	 * (e.g., bio parents in one group, step-parent + bio parent in another)
+	 * Generates groups for couples (spouses)
+	 * Groups contain only the couple pair
+	 * Uses spouse relationships to find couples
 	 */
 	private generateNuclearFamilyGroups(
 		familyTree: FamilyTree,
@@ -768,52 +767,50 @@ export class CanvasGenerator {
 		const padding = 20;
 		const processedCouples = new Set<string>();
 
-		// Find all couples (parent pairs who have children together)
-		for (const [_crId, person] of familyTree.nodes) {
-			// Look for people who have parents
-			const fatherId = person.fatherCrId;
-			const motherId = person.motherCrId;
+		// Find all couples via spouse relationships
+		for (const [personCrId, person] of familyTree.nodes) {
+			// Check if this person has spouses
+			if (!person.spouseCrIds || person.spouseCrIds.length === 0) continue;
 
-			// We need both parents to form a couple group
-			if (!fatherId || !motherId) continue;
+			for (const spouseCrId of person.spouseCrIds) {
+				// Create a couple key (sorted for consistency to avoid duplicates)
+				const coupleKey = [personCrId, spouseCrId].sort().join('|');
+				if (processedCouples.has(coupleKey)) continue;
+				processedCouples.add(coupleKey);
 
-			// Create a couple key from parent IDs (sorted for consistency)
-			const coupleKey = [fatherId, motherId].sort().join('|');
-			if (processedCouples.has(coupleKey)) continue;
-			processedCouples.add(coupleKey);
+				// Check if both are in the tree and positioned
+				if (!nodeMap.has(personCrId) || !nodeMap.has(spouseCrId)) continue;
 
-			// Check if both parents are in the tree and positioned
-			if (!nodeMap.has(fatherId) || !nodeMap.has(motherId)) continue;
+				// Calculate bounding box for the couple
+				const coupleMembers = [personCrId, spouseCrId];
+				const bounds = this.calculateBoundingBox(
+					coupleMembers,
+					nodeMap,
+					opts.nodeWidth,
+					opts.nodeHeight
+				);
 
-			// Calculate bounding box for just the couple (not children)
-			const coupleMembers = [fatherId, motherId];
-			const bounds = this.calculateBoundingBox(
-				coupleMembers,
-				nodeMap,
-				opts.nodeWidth,
-				opts.nodeHeight
-			);
+				if (!bounds) continue;
 
-			if (!bounds) continue;
+				// Get couple names for the label (use last names)
+				const person1 = familyTree.nodes.get(personCrId);
+				const person2 = familyTree.nodes.get(spouseCrId);
+				const name1 = person1?.name?.split(' ').pop() || '';
+				const name2 = person2?.name?.split(' ').pop() || '';
+				const label = name1 && name2
+					? `${name1} & ${name2}`
+					: name1 || name2 || 'Couple';
 
-			// Get couple names for the label
-			const father = familyTree.nodes.get(fatherId);
-			const mother = familyTree.nodes.get(motherId);
-			const fatherName = father?.name?.split(' ').pop() || '';
-			const motherName = mother?.name?.split(' ').pop() || '';
-			const label = fatherName && motherName
-				? `${fatherName} & ${motherName}`
-				: fatherName || motherName || 'Couple';
-
-			groups.push({
-				id: this.generateId(),
-				type: 'group',
-				label,
-				x: bounds.x - padding,
-				y: bounds.y - padding,
-				width: bounds.width + padding * 2,
-				height: bounds.height + padding * 2
-			});
+				groups.push({
+					id: this.generateId(),
+					type: 'group',
+					label,
+					x: bounds.x - padding,
+					y: bounds.y - padding,
+					width: bounds.width + padding * 2,
+					height: bounds.height + padding * 2
+				});
+			}
 		}
 
 		return groups;
