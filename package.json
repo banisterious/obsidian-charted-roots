@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-canvas-roots",
-	"version": "0.18.17",
+	"version": "0.18.18",
 	"description": "Family tree visualization for genealogists and worldbuilders. Interactive charts, geographic maps, evidence tracking, GEDCOM support, and fictional calendars.",
 	"main": "main.js",
 	"scripts": {

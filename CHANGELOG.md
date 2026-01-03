@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.18.18] - 2026-01-02
+
 ### Fixed
 
 - **Couples grouping not detecting all couples** - "By couples" grouping now correctly groups all couples with `spouse_id` set ([#105](https://github.com/banisterious/obsidian-canvas-roots/issues/105)):
