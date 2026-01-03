@@ -688,8 +688,10 @@ function renderVaultHealthContent(
 	setLucideIcon(issuesIcon, 'alert-triangle', 16);
 	issuesLabel.createSpan({ text: 'Data issues' });
 
-	// Count orphaned people as issues
-	const issueCount = stats.people.orphanedPeople;
+	// Calculate total issues to match Statistics Dashboard
+	// (missing birth dates + orphaned people + unsourced events)
+	const missingBirthDate = stats.people.totalPeople - stats.people.peopleWithBirthDate;
+	const issueCount = missingBirthDate + stats.people.orphanedPeople + stats.events.unsourcedEvents;
 	issuesLabel.createSpan({
 		cls: 'crc-dashboard-issues-badge',
 		text: issueCount.toString()

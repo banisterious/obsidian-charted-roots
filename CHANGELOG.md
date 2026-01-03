@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Changed place text from separate text node to leading space in span content
   - Fixes "Residencein" appearing instead of "Residence in"
 
+- **Dashboard "data issues" count links to wrong destination** - Dashboard now shows the same issue count as Statistics Dashboard ([#115](https://github.com/banisterious/obsidian-canvas-roots/issues/115)):
+  - Changed dashboard to calculate total issues as: missing birth dates + orphaned people + unsourced events
+  - Added `unsourcedEvents` to VaultStatsService for efficient counting
+  - Previously dashboard showed only orphaned people (34) while Statistics Dashboard showed full total (7,223)
+
 ---
 
 ## [0.18.19] - 2026-01-03

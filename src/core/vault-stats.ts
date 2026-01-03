@@ -50,6 +50,7 @@ export interface MapStats {
  */
 export interface EventStats {
 	totalEvents: number;
+	unsourcedEvents: number;
 	byType: Record<string, number>;
 }
 
@@ -142,6 +143,7 @@ export class VaultStatsService {
 
 		// Event stats
 		let totalEvents = 0;
+		let unsourcedEvents = 0;
 		const eventsByType: Record<string, number> = {};
 
 		// Source stats
@@ -179,6 +181,10 @@ export class VaultStatsService {
 				totalEvents++;
 				const eventType = fm.event_type || 'uncategorized';
 				eventsByType[eventType] = (eventsByType[eventType] || 0) + 1;
+				// Check if event has sources
+				if (!fm.sources || (Array.isArray(fm.sources) && fm.sources.length === 0)) {
+					unsourcedEvents++;
+				}
 				continue;
 			}
 
@@ -266,6 +272,7 @@ export class VaultStatsService {
 			},
 			events: {
 				totalEvents,
+				unsourcedEvents,
 				byType: eventsByType
 			},
 			sources: {
