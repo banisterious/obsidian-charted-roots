@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.18.19] - 2026-01-03
+
 ### Fixed
 
 - **Relationship calculator not traversing gender-neutral parents** - BFS pathfinding now correctly traverses `parents`/`parents_id` relationships ([#109](https://github.com/banisterious/obsidian-canvas-roots/issues/109)):
