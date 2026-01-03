@@ -1056,6 +1056,11 @@ export class GrampsImporter {
 			}
 		}
 
+		// Clean up any remaining unresolved Gramps handles in _id fields
+		// These occur when a referenced person doesn't exist in the imported data
+		// Pattern matches: property_id: _HANDLE (Gramps handles start with _ followed by alphanumeric)
+		updatedContent = this.cleanupUnresolvedGrampsHandles(updatedContent);
+
 		// Write updated content if changed
 		if (updatedContent !== content) {
 			await this.app.vault.modify(file, updatedContent);
@@ -1067,6 +1072,37 @@ export class GrampsImporter {
 	 */
 	private escapeRegex(str: string): string {
 		return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	}
+
+	/**
+	 * Clean up unresolved Gramps handles from frontmatter
+	 *
+	 * After the handle-to-cr_id replacement pass, some handles may remain if
+	 * the referenced person doesn't exist in the imported data. This removes
+	 * those invalid references to prevent issues with relationship traversal.
+	 *
+	 * Handles single-value fields (e.g., mother_id: _HANDLE) by clearing the value,
+	 * and array items (e.g., - _HANDLE) by removing the entire line.
+	 */
+	private cleanupUnresolvedGrampsHandles(content: string): string {
+		// Gramps handles: start with underscore, followed by alphanumeric characters
+		// e.g., _PTHMF88SXO93W8QTDJ or _bc09aafc5ba1cb2a871
+		const grampsHandlePattern = /_[A-Za-z0-9]+/;
+
+		// Clean single-value _id fields: "property_id: _HANDLE" -> "property_id: "
+		// This preserves the property but clears the invalid value
+		content = content.replace(
+			new RegExp(`^(\\w+_id):\\s+${grampsHandlePattern.source}\\s*$`, 'gm'),
+			'$1: '
+		);
+
+		// Clean array items that are unresolved handles: "  - _HANDLE" -> remove line
+		content = content.replace(
+			new RegExp(`^\\s{2}-\\s+${grampsHandlePattern.source}\\s*\\n`, 'gm'),
+			''
+		);
+
+		return content;
 	}
 
 	/**
