@@ -1271,18 +1271,26 @@ export class ImportWizardModal extends Modal {
 		completeEl.createDiv({ cls: 'crc-import-complete-title', text: 'Import Complete!' });
 		completeEl.createDiv({ cls: 'crc-import-complete-message', text: 'Your data has been successfully imported.' });
 
-		// Summary stats
+		// Summary stats - use actual imported counts from result, not file preview counts
 		const stats = section.createDiv({ cls: 'crc-import-complete-stats' });
 
+		// Get actual counts from import result, falling back to 0 if entity type wasn't imported
+		const result = this.formData.importResult;
+		const actualPeople = this.formData.importPeople ? (result?.individualsImported ?? 0) : 0;
+		const actualPlaces = this.formData.importPlaces ? (this.getImportedPlaceCount() ?? 0) : 0;
+		const actualSources = this.formData.importSources ? (this.getImportedSourceCount() ?? 0) : 0;
+		const actualEvents = this.formData.importEvents ? (this.getImportedEventCount() ?? 0) : 0;
+
 		const statItems = [
-			{ label: 'People', value: this.formData.previewCounts.people, color: 'blue' },
-			{ label: 'Places', value: this.formData.previewCounts.places, color: 'green' },
-			{ label: 'Sources', value: this.formData.previewCounts.sources, color: 'purple' },
-			{ label: 'Events', value: this.formData.previewCounts.events, color: 'orange' }
+			{ label: 'People', value: actualPeople, color: 'blue', enabled: this.formData.importPeople },
+			{ label: 'Places', value: actualPlaces, color: 'green', enabled: this.formData.importPlaces },
+			{ label: 'Sources', value: actualSources, color: 'purple', enabled: this.formData.importSources },
+			{ label: 'Events', value: actualEvents, color: 'orange', enabled: this.formData.importEvents }
 		];
 
 		for (const stat of statItems) {
-			if (stat.value > 0) {
+			// Only show stats for entity types that were selected for import
+			if (stat.enabled && stat.value > 0) {
 				const statEl = stats.createDiv({ cls: 'crc-import-complete-stat' });
 				statEl.createDiv({ cls: `crc-import-complete-stat-value crc-import-complete-stat-value--${stat.color}`, text: String(stat.value) });
 				statEl.createDiv({ cls: 'crc-import-complete-stat-label', text: stat.label });
@@ -1501,5 +1509,56 @@ export class ImportWizardModal extends Modal {
 			case 'generation': return 'Generation';
 			default: return '';
 		}
+	}
+
+	/**
+	 * Get imported place count from result (handles both GEDCOM and Gramps result types)
+	 */
+	private getImportedPlaceCount(): number {
+		const result = this.formData.importResult;
+		if (!result) return 0;
+
+		// GEDCOM result uses 'placesCreated', Gramps uses 'placeNotesCreated'
+		if ('placesCreated' in result) {
+			return result.placesCreated;
+		}
+		if ('placeNotesCreated' in result) {
+			return result.placeNotesCreated ?? 0;
+		}
+		return 0;
+	}
+
+	/**
+	 * Get imported source count from result (handles both GEDCOM and Gramps result types)
+	 */
+	private getImportedSourceCount(): number {
+		const result = this.formData.importResult;
+		if (!result) return 0;
+
+		// GEDCOM result uses 'sourcesCreated', Gramps uses 'sourceNotesCreated'
+		if ('sourcesCreated' in result) {
+			return result.sourcesCreated;
+		}
+		if ('sourceNotesCreated' in result) {
+			return result.sourceNotesCreated ?? 0;
+		}
+		return 0;
+	}
+
+	/**
+	 * Get imported event count from result (handles both GEDCOM and Gramps result types)
+	 */
+	private getImportedEventCount(): number {
+		const result = this.formData.importResult;
+		if (!result) return 0;
+
+		// GEDCOM result uses 'eventsCreated', Gramps uses 'eventNotesCreated'
+		if ('eventsCreated' in result) {
+			return result.eventsCreated;
+		}
+		if ('eventNotesCreated' in result) {
+			return result.eventNotesCreated ?? 0;
+		}
+		return 0;
 	}
 }
