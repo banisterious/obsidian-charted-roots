@@ -1,0 +1,156 @@
+0 HEAD
+1 SOUR Canvas Roots Test
+2 VERS 1.0
+2 NAME Couples Grouping Test (4 generations)
+1 DEST ANY
+1 DATE 02 JAN 2026
+1 SUBM @SUBM1@
+1 FILE gedcom-couples-grouping-test.ged
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+0 @SUBM1@ SUBM
+1 NAME Canvas Roots User
+1 NOTE Test file for couples grouping across 4 generations, including childless couple (Larry & Monica)
+0 @I1@ INDI
+1 NAME Albert /Smith/
+2 GIVN Albert
+2 SURN Smith
+1 SEX M
+1 BIRT
+2 DATE 10 MAY 1940
+1 FAMS @F1@
+0 @I2@ INDI
+1 NAME Betty /Smith/
+2 GIVN Betty
+2 SURN Smith
+1 SEX F
+1 BIRT
+2 DATE 15 AUG 1942
+1 FAMS @F1@
+0 @I3@ INDI
+1 NAME Charles /Smith/
+2 GIVN Charles
+2 SURN Smith
+1 SEX M
+1 BIRT
+2 DATE 20 JAN 1965
+1 FAMC @F1@
+1 FAMS @F2@
+0 @I4@ INDI
+1 NAME Diana /Jones/
+2 GIVN Diana
+2 SURN Jones
+1 SEX F
+1 BIRT
+2 DATE 5 MAR 1967
+1 FAMS @F2@
+0 @I5@ INDI
+1 NAME Edward /Smith/
+2 GIVN Edward
+2 SURN Smith
+1 SEX M
+1 BIRT
+2 DATE 12 JUN 1990
+1 FAMC @F2@
+1 FAMS @F3@
+0 @I6@ INDI
+1 NAME Fiona /Brown/
+2 GIVN Fiona
+2 SURN Brown
+1 SEX F
+1 BIRT
+2 DATE 8 SEP 1992
+1 FAMS @F3@
+0 @I7@ INDI
+1 NAME George /Smith/
+2 GIVN George
+2 SURN Smith
+1 SEX M
+1 BIRT
+2 DATE 25 DEC 2015
+1 FAMC @F3@
+0 @I8@ INDI
+1 NAME Hannah /Smith/
+2 GIVN Hannah
+2 SURN Smith
+1 SEX F
+1 BIRT
+2 DATE 14 FEB 2018
+1 FAMC @F3@
+0 @I9@ INDI
+1 NAME Isaac /Smith/
+2 GIVN Isaac
+2 SURN Smith
+1 SEX M
+1 BIRT
+2 DATE 3 NOV 1992
+1 FAMC @F2@
+1 FAMS @F4@
+0 @I10@ INDI
+1 NAME Julia /White/
+2 GIVN Julia
+2 SURN White
+1 SEX F
+1 BIRT
+2 DATE 17 APR 1994
+1 FAMS @F4@
+0 @I11@ INDI
+1 NAME Kevin /Smith/
+2 GIVN Kevin
+2 SURN Smith
+1 SEX M
+1 BIRT
+2 DATE 9 JUL 2020
+1 FAMC @F4@
+0 @I12@ INDI
+1 NAME Larry /Smith/
+2 GIVN Larry
+2 SURN Smith
+1 SEX M
+1 BIRT
+2 DATE 18 MAR 1995
+1 FAMC @F2@
+1 FAMS @F5@
+0 @I13@ INDI
+1 NAME Monica /Davis/
+2 GIVN Monica
+2 SURN Davis
+1 SEX F
+1 BIRT
+2 DATE 22 JUL 1997
+1 FAMS @F5@
+0 @F1@ FAM
+1 HUSB @I1@
+1 WIFE @I2@
+1 MARR
+2 DATE 1 JUN 1963
+1 CHIL @I3@
+0 @F2@ FAM
+1 HUSB @I3@
+1 WIFE @I4@
+1 MARR
+2 DATE 15 MAY 1988
+1 CHIL @I5@
+1 CHIL @I9@
+1 CHIL @I12@
+0 @F3@ FAM
+1 HUSB @I5@
+1 WIFE @I6@
+1 MARR
+2 DATE 20 AUG 2014
+1 CHIL @I7@
+1 CHIL @I8@
+0 @F4@ FAM
+1 HUSB @I9@
+1 WIFE @I10@
+1 MARR
+2 DATE 10 OCT 2019
+1 CHIL @I11@
+0 @F5@ FAM
+1 HUSB @I12@
+1 WIFE @I13@
+1 MARR
+2 DATE 5 JUN 2022
+0 TRLR

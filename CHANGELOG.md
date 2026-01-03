@@ -36,6 +36,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Couples grouping not detecting all couples** - "By couples" grouping now correctly groups all couples with `spouse_id` set ([#105](https://github.com/banisterious/obsidian-canvas-roots/issues/105)):
+  - Changed from child-parent inference to direct spouse relationship detection
+  - Fixes couples without children not being grouped
+  - Fixes couples whose children use gender-neutral `parents` field instead of `father`/`mother`
+
 - **Children display property not accumulating** - When adding multiple children via "Add child" button, the `children` display property now correctly shows all children instead of just the first ([#106](https://github.com/banisterious/obsidian-canvas-roots/issues/106)):
   - Fixed reading from legacy `child` property instead of normalized `children` property
   - Affected both Create Person modal and bidirectional linking
