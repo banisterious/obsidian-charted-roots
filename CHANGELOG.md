@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Relationship calculator asymmetry with unresolved Gramps handles** - BFS pathfinding now filters out invalid references ([#109](https://github.com/banisterious/obsidian-canvas-roots/issues/109)):
+  - Added detection and filtering of unresolved Gramps handles (e.g., `_PTHMF88SXO93W8QTDJ`) in relationship fields
+  - Root cause: When Gramps data contains duplicate person names with different handles, the import may leave Gramps handles in `father_id`/`mother_id` fields instead of cr_ids
+  - BFS pathfinding now skips these invalid references instead of failing to traverse
+  - Applied filtering to all relationship field parsing: `father_id`, `mother_id`, `children_id`, `spouse_id`, step-parent fields, adoptive parent fields
+
+---
+
 ## [0.18.20] - 2026-01-03
 
 ### Fixed

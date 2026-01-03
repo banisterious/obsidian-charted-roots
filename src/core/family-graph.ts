@@ -1351,14 +1351,16 @@ export class FamilyGraphService {
 
 		// Parse father relationship (prefer _id field, fallback to father field for legacy)
 		// Both father_id and father support aliases
+		// Filter out unresolved Gramps handles that weren't replaced during import
 		const fatherIdValue = this.resolveProperty<string>(fm, 'father_id');
 		const fatherValue = this.resolveProperty<string>(fm, 'father');
-		const fatherCrId = fatherIdValue || this.extractCrIdFromWikilink(fatherValue);
+		const fatherCrId = this.filterGrampsHandle(fatherIdValue || this.extractCrIdFromWikilink(fatherValue) || undefined);
 
 		// Parse mother relationship (prefer _id field, fallback to mother field for legacy)
+		// Filter out unresolved Gramps handles that weren't replaced during import
 		const motherIdValue = this.resolveProperty<string>(fm, 'mother_id');
 		const motherValue = this.resolveProperty<string>(fm, 'mother');
-		const motherCrId = motherIdValue || this.extractCrIdFromWikilink(motherValue);
+		const motherCrId = this.filterGrampsHandle(motherIdValue || this.extractCrIdFromWikilink(motherValue) || undefined);
 
 		// Parse gender-neutral parent relationships (opt-in via settings)
 		const parentsIdValue = this.resolveProperty<string | string[]>(fm, 'parents_id');
@@ -1375,13 +1377,14 @@ export class FamilyGraphService {
 		const stepmotherCrIds = this.extractCrIdsFromField(stepmotherIdValue, stepmotherValue);
 
 		// Parse adoptive parent relationships (gender-specific)
+		// Filter out unresolved Gramps handles
 		const adoptiveFatherIdValue = this.resolveProperty<string>(fm, 'adoptive_father_id');
 		const adoptiveFatherValue = this.resolveProperty<string>(fm, 'adoptive_father');
-		const adoptiveFatherCrId = adoptiveFatherIdValue || this.extractCrIdFromWikilink(adoptiveFatherValue);
+		const adoptiveFatherCrId = this.filterGrampsHandle(adoptiveFatherIdValue || this.extractCrIdFromWikilink(adoptiveFatherValue) || undefined);
 
 		const adoptiveMotherIdValue = this.resolveProperty<string>(fm, 'adoptive_mother_id');
 		const adoptiveMotherValue = this.resolveProperty<string>(fm, 'adoptive_mother');
-		const adoptiveMotherCrId = adoptiveMotherIdValue || this.extractCrIdFromWikilink(adoptiveMotherValue);
+		const adoptiveMotherCrId = this.filterGrampsHandle(adoptiveMotherIdValue || this.extractCrIdFromWikilink(adoptiveMotherValue) || undefined);
 
 		// Parse gender-neutral adoptive parent relationships (can be array)
 		const adoptiveParentIdValue = this.resolveProperty<string | string[]>(fm, 'adoptive_parent_id');
@@ -1418,6 +1421,7 @@ export class FamilyGraphService {
 
 		// Parse spouse relationships
 		// Priority: 1) Enhanced flat indexed format (spouse1, spouse2...), 2) Legacy 'spouse_id' or 'spouse' fields
+		// Filter out unresolved Gramps handles
 		let spouseCrIds: string[] = [];
 		let spouses: SpouseRelationship[] | undefined;
 
@@ -1426,7 +1430,7 @@ export class FamilyGraphService {
 		if (fm.spouse1 || fm.spouse1_id) {
 			// Enhanced flat indexed format with metadata - cast fm for parseIndexedSpouseRelationships
 			spouses = this.parseIndexedSpouseRelationships(fm as unknown as PersonFrontmatter);
-			spouseCrIds = spouses.map(s => s.personId).filter(id => id);
+			spouseCrIds = this.filterGrampsHandles(spouses.map(s => s.personId).filter(id => id));
 		} else {
 			// Legacy format: simple array of cr_ids or wikilinks (with alias support)
 			const spouseIdField = this.resolveProperty<string | string[]>(fm, 'spouse_id');
@@ -1457,17 +1461,21 @@ export class FamilyGraphService {
 						.filter(v => v);
 				}
 			}
+
+			// Filter out any unresolved Gramps handles
+			spouseCrIds = this.filterGrampsHandles(spouseCrIds);
 		}
 
 		// Parse children arrays (prefer _id field, fallback to son/daughter/children fields for legacy)
 		// All child-related properties support aliases
+		// Filter out unresolved Gramps handles
 		let childrenCrIds: string[] = [];
 
 		const childrenIdField = this.resolveProperty<string | string[]>(fm, 'children_id');
 		if (childrenIdField) {
 			// Use _id field (dual storage), deduplicating to avoid issues with family-chart
 			const rawChildren = Array.isArray(childrenIdField) ? childrenIdField : [childrenIdField];
-			childrenCrIds = [...new Set(rawChildren)];
+			childrenCrIds = this.filterGrampsHandles([...new Set(rawChildren)]);
 		} else {
 			// Fallback to legacy fields (with alias support)
 			// Check for 'child' field
@@ -1482,6 +1490,9 @@ export class FamilyGraphService {
 				const children = Array.isArray(fm.children) ? fm.children : [fm.children];
 				childrenCrIds.push(...(children as string[]).map(v => this.extractCrIdFromWikilink(v) || v).filter((v): v is string => !!v));
 			}
+
+			// Filter out any unresolved Gramps handles from legacy fields
+			childrenCrIds = this.filterGrampsHandles(childrenCrIds);
 		}
 
 		// Note: Frontmatter uses 'born'/'died' properties, mapped to birthDate/deathDate internally
@@ -1614,8 +1625,52 @@ export class FamilyGraphService {
 	}
 
 	/**
+	 * Check if a value looks like an unresolved Gramps handle.
+	 * Gramps handles start with underscore followed by uppercase letters and digits,
+	 * e.g., "_PTHMF88SXO93W8QTDJ" or "_bc09aafc5ba1cb2a871"
+	 *
+	 * Valid Canvas Roots cr_ids have format: xxx-123-xxx-123
+	 * (3 lowercase letters, 3 digits, 3 lowercase letters, 3 digits)
+	 */
+	private isUnresolvedGrampsHandle(value: string | undefined): boolean {
+		if (!value) return false;
+
+		// Gramps handles start with underscore
+		if (!value.startsWith('_')) return false;
+
+		// Valid cr_ids have a specific format with hyphens
+		// Pattern: xxx-123-xxx-123 (lowercase letters and digits separated by hyphens)
+		const crIdPattern = /^[a-z]{3}-\d{3}-[a-z]{3}-\d{3}$/;
+		if (crIdPattern.test(value)) return false;
+
+		// If it starts with _ and doesn't match cr_id format, it's likely a Gramps handle
+		return true;
+	}
+
+	/**
+	 * Filter out unresolved Gramps handles from a cr_id value.
+	 * Returns undefined if the value is an unresolved handle, otherwise returns the value.
+	 */
+	private filterGrampsHandle(value: string | undefined): string | undefined {
+		if (!value) return undefined;
+		if (this.isUnresolvedGrampsHandle(value)) {
+			logger.debug('filterGrampsHandle', 'Skipping unresolved Gramps handle', { handle: value });
+			return undefined;
+		}
+		return value;
+	}
+
+	/**
+	 * Filter out unresolved Gramps handles from an array of cr_ids.
+	 */
+	private filterGrampsHandles(values: string[]): string[] {
+		return values.filter(v => !this.isUnresolvedGrampsHandle(v));
+	}
+
+	/**
 	 * Extracts an array of cr_ids from _id and wikilink fields
 	 * Handles both single values and arrays
+	 * Filters out unresolved Gramps handles
 	 */
 	private extractCrIdsFromField(idValue: string | string[] | undefined, wikilinkValue: string | string[] | undefined): string[] {
 		const result: string[] = [];
@@ -1635,7 +1690,8 @@ export class FamilyGraphService {
 			}
 		}
 
-		return [...new Set(result)]; // Deduplicate
+		// Deduplicate and filter out unresolved Gramps handles
+		return this.filterGrampsHandles([...new Set(result)]);
 	}
 
 	/**
