@@ -190,13 +190,13 @@ export class StatisticsView extends ItemView {
 			avgCompleteness >= 80 ? 'cr-sv-card-good' : avgCompleteness >= 50 ? 'cr-sv-card-moderate' : 'cr-sv-card-low'
 		);
 
-		// Issues count
+		// Issues count (core issues: missing births, orphans, unsourced events)
 		const totalIssues = quality.missingBirthDate + quality.orphanedPeople + quality.unsourcedEvents;
 		createSummaryCard(
 			'Issues',
 			formatNumber(totalIssues),
 			'alert-triangle',
-			'Items needing attention',
+			'Missing births + orphans + unsourced events',
 			totalIssues === 0 ? 'cr-sv-card-good' : 'cr-sv-card-warning'
 		);
 	}

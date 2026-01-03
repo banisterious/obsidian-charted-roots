@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added `unsourcedEvents` to VaultStatsService for efficient counting
   - Previously dashboard showed only orphaned people (34) while Statistics Dashboard showed full total (7,223)
 
+- **Statistics Dashboard total doesn't match visible category sums** - Clarified what the "Issues" total represents ([#116](https://github.com/banisterious/obsidian-canvas-roots/issues/116)):
+  - Changed subtitle from "Items needing attention" to "Missing births + orphans + unsourced events"
+  - The total intentionally includes only core actionable issues, not all quality metrics
+
 ---
 
 ## [0.18.19] - 2026-01-03
