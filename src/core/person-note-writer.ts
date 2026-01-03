@@ -462,11 +462,8 @@ export async function createPersonNote(
 	if (!(spouseProp in frontmatter) && !(spouseIdProp in frontmatter)) {
 		frontmatter[spouseProp] = [];
 	}
-	const childProp = prop('child');
-	const childrenIdProp = prop('children_id');
-	if (!(childProp in frontmatter) && !(childrenIdProp in frontmatter)) {
-		frontmatter[childProp] = [];
-	}
+	// Note: children property is intentionally not added as empty by default
+	// It will be populated when children are actually added via relationships
 	const groupNameProp = prop('group_name');
 	if (!(groupNameProp in frontmatter)) {
 		frontmatter[groupNameProp] = '';
