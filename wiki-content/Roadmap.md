@@ -84,8 +84,8 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 |-------|---------|-------|--------|-------------|
 | 1 | Sensitive field redaction | [#96](https://github.com/banisterious/obsidian-canvas-roots/issues/96) | ✅ | Implicit via `PersonNode` whitelist + explicit utilities |
 | 2 | `cr_living` override | [#97](https://github.com/banisterious/obsidian-canvas-roots/issues/97) | ✅ | Manual frontmatter property to override living detection |
-| 3 | Underscore-prefix convention | [#98](https://github.com/banisterious/obsidian-canvas-roots/issues/98) | | Treat `_`-prefixed fields as private |
-| 4-5 | Deadname + Export warnings | [#99](https://github.com/banisterious/obsidian-canvas-roots/issues/99) | | Suppress `_previous_names`, warn on export |
+| 3 | Explicit private fields list | [#98](https://github.com/banisterious/obsidian-canvas-roots/issues/98) | ✅ | `private_fields` frontmatter property |
+| 4-5 | Deadname + Export warnings | [#99](https://github.com/banisterious/obsidian-canvas-roots/issues/99) | ✅ | Confirmation dialog before exporting private fields |
 | 6 | Discoverability | [#100](https://github.com/banisterious/obsidian-canvas-roots/issues/100) | | First-run notice, export dialog warnings |
 | 7 | Pronouns field | [#101](https://github.com/banisterious/obsidian-canvas-roots/issues/101) | ✅ | Add `pronouns` property support |
 | 8 | Canvas privacy | [#102](https://github.com/banisterious/obsidian-canvas-roots/issues/102) | | Privacy-aware canvas generation |
