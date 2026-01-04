@@ -14,7 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Privacy-aware canvas generation** ([#102](https://github.com/banisterious/obsidian-canvas-roots/issues/102)):
   - New privacy options in Tree Wizard for canvas and Excalidraw generation
   - Living persons can be obfuscated with text nodes showing "Living", "Private", or initials
+  - Text nodes include wikilink for navigation to the person's note
   - Choose between 'text' format (no file link) or 'file' format (keeps clickable link)
+  - Preview step shows count of privacy-protected persons (e.g., "42 people · 5 privacy-protected")
   - Option follows global privacy setting by default, can be overridden per-generation
   - Supports 'hidden' privacy setting to completely exclude living persons from canvas
 
