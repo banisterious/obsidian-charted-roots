@@ -299,6 +299,16 @@ export class BidirectionalLinker {
 				}
 			}
 
+			// Sync adopted children relationships (adopted_child on parent → adoptive_parent on child)
+			const adoptedChildLinks = frontmatter.adopted_child || [];
+			const adoptedChildArray = Array.isArray(adoptedChildLinks) ? adoptedChildLinks : [adoptedChildLinks];
+
+			for (const adoptedChildLink of adoptedChildArray) {
+				if (adoptedChildLink) {
+					await this.syncAdoptedChildToParent(adoptedChildLink, personFile, personName, personCrId);
+				}
+			}
+
 			// Update snapshot for future deletion detection
 			this.updateSnapshot(personFile.path, frontmatter);
 
@@ -922,6 +932,90 @@ export class BidirectionalLinker {
 			relationshipType,
 			wikilink: childLinkText,
 			crId: childCrId
+		});
+	}
+
+	/**
+	 * Sync adopted_child → adoptive_parent relationship (reverse direction)
+	 * When a parent has adopted_child set, ensure the child has adoptive_parent pointing back
+	 *
+	 * @param adoptedChildLink Wikilink to adopted child
+	 * @param parentFile Parent's (adoptive parent) file
+	 * @param parentName Parent's name
+	 * @param parentCrId Parent's cr_id
+	 */
+	private async syncAdoptedChildToParent(
+		adoptedChildLink: unknown,
+		parentFile: TFile,
+		parentName: string,
+		parentCrId: string
+	): Promise<void> {
+		const childFile = this.resolveLink(adoptedChildLink, parentFile);
+		if (!childFile) {
+			logger.warn('bidirectional-linking', 'Adopted child file not found', {
+				adoptedChildLink,
+				parentFile: parentFile.path
+			});
+			return;
+		}
+
+		// Read child's frontmatter
+		const childCache = this.app.metadataCache.getFileCache(childFile);
+		if (!childCache?.frontmatter) {
+			logger.warn('bidirectional-linking', 'Adopted child has no frontmatter', {
+				childFile: childFile.path
+			});
+			return;
+		}
+
+		// Check if parent is already in child's adoptive_parent arrays
+		const adoptiveParentLinks = childCache.frontmatter.adoptive_parent || [];
+		const adoptiveParentIds = childCache.frontmatter.adoptive_parent_id || [];
+		const adoptiveParentLinksArray = Array.isArray(adoptiveParentLinks) ? adoptiveParentLinks : [adoptiveParentLinks];
+		const adoptiveParentIdsArray = Array.isArray(adoptiveParentIds) ? adoptiveParentIds : [adoptiveParentIds];
+
+		// Also check gender-specific adoptive parent fields
+		const adoptiveFatherLink = childCache.frontmatter.adoptive_father;
+		const adoptiveMotherLink = childCache.frontmatter.adoptive_mother;
+		const adoptiveFatherId = childCache.frontmatter.adoptive_father_id;
+		const adoptiveMotherId = childCache.frontmatter.adoptive_mother_id;
+
+		// Check by cr_id first (most reliable)
+		const hasParentById = adoptiveParentIdsArray.includes(parentCrId) ||
+			adoptiveFatherId === parentCrId ||
+			adoptiveMotherId === parentCrId;
+
+		// Create wikilink for comparison
+		const parentLinkText = parentFile.basename !== parentName
+			? `[[${parentFile.basename}|${parentName}]]`
+			: `[[${parentName}]]`;
+
+		// Also check wikilinks for backward compatibility
+		const hasParentByLink = adoptiveParentLinksArray.some(parent => {
+			const linkText = typeof parent === 'string' ? parent : String(parent);
+			return linkText.includes(parentName) || linkText.includes(parentFile.basename);
+		}) || (adoptiveFatherLink && (String(adoptiveFatherLink).includes(parentName) || String(adoptiveFatherLink).includes(parentFile.basename)))
+			|| (adoptiveMotherLink && (String(adoptiveMotherLink).includes(parentName) || String(adoptiveMotherLink).includes(parentFile.basename)));
+
+		if (hasParentById || hasParentByLink) {
+			logger.debug('bidirectional-linking', 'Adoptive parent already in adopted child', {
+				childFile: childFile.path,
+				parentFile: parentFile.path,
+				hasById: hasParentById,
+				hasByLink: hasParentByLink
+			});
+			return;
+		}
+
+		// Add parent to child's adoptive_parent arrays (dual storage)
+		await this.addToArrayField(childFile, 'adoptive_parent', parentLinkText);
+		await this.addToArrayField(childFile, 'adoptive_parent_id', parentCrId);
+
+		logger.info('bidirectional-linking', 'Added adoptive parent to adopted child (dual storage)', {
+			childFile: childFile.path,
+			parentFile: parentFile.path,
+			wikilink: parentLinkText,
+			crId: parentCrId
 		});
 	}
 
