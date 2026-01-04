@@ -23,6 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Users can choose to include, exclude, or cancel the export
   - Supports deadname protection via `previous_names` + `private_fields` pattern
 
+- **Privacy feature discoverability** ([#100](https://github.com/banisterious/obsidian-canvas-roots/issues/100)):
+  - First-run notice shown after importing data when living persons are detected and privacy protection is disabled
+  - Users can configure privacy settings, dismiss permanently, or be reminded later
+  - Export wizard preview now shows info notice when privacy is disabled and living persons will be exported
+  - Both notices link directly to privacy configuration settings
+
 ### Fixed
 
 - **Control Center and person picker freezes on large vaults** ([#113](https://github.com/banisterious/obsidian-canvas-roots/issues/113)):
