@@ -324,3 +324,43 @@ export function createPrivacyService(settings: {
 		hideDetailsForLiving: settings.hideDetailsForLiving
 	});
 }
+
+// ============================================================================
+// Private Fields Utilities
+// ============================================================================
+// These utilities support user-defined private fields via the `private_fields`
+// frontmatter property. Fields listed there are treated as private and can be
+// excluded from exports.
+
+/**
+ * Check if a field name is marked as private by the user.
+ */
+export function isPrivateField(fieldName: string, privateFields: string[]): boolean {
+	return privateFields.includes(fieldName);
+}
+
+/**
+ * Get only the private field values from a frontmatter object.
+ * Returns a new object containing only the fields listed in privateFields.
+ */
+export function getPrivateFieldValues(
+	frontmatter: Record<string, unknown>,
+	privateFields: string[]
+): Record<string, unknown> {
+	return Object.fromEntries(
+		Object.entries(frontmatter).filter(([key]) => privateFields.includes(key))
+	);
+}
+
+/**
+ * Filter out private fields from a data object.
+ * Returns a new object with private fields removed.
+ */
+export function filterPrivateFields<T extends Record<string, unknown>>(
+	data: T,
+	privateFields: string[]
+): Partial<T> {
+	return Object.fromEntries(
+		Object.entries(data).filter(([key]) => !privateFields.includes(key))
+	) as Partial<T>;
+}

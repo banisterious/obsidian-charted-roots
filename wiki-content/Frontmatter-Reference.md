@@ -274,6 +274,38 @@ spouses:
 | `cr_living` | `boolean` | Manual override for living status detection. When `true`, person is treated as living (protected in exports). When `false`, person is treated as deceased (not protected). When omitted, automatic detection is used based on death date and age threshold. | `true`, `false` |
 | `collection` | `string` | User-defined grouping/collection name | `"Smith Family"` |
 | `private` | `boolean` | Marks note as containing private data (set automatically during Gramps import if any attached note has privacy flag) | `true` |
+| `private_fields` | `string[]` | List of field names to treat as private. These fields will be excluded from exports unless explicitly included with user confirmation. | `["previous_names", "medical_notes"]` |
+
+#### Private Fields
+
+The `private_fields` property allows you to mark specific frontmatter fields as private. Fields listed here will be excluded from exports by default, with a confirmation dialog shown before any private data is included.
+
+**Common use cases:**
+
+| Field | Use Case |
+|-------|----------|
+| `previous_names` | Protect deadnames or names a person no longer uses |
+| `medical_notes` | Sensitive health information |
+| `legal_notes` | Legal matters or immigration status |
+| `personal_notes` | Private family information |
+
+**Example:**
+
+```yaml
+name: Alex Johnson
+previous_names:
+  - Alexandra Johnson
+  - Alex Smith
+medical_notes: "Family history of heart disease"
+private_fields:
+  - previous_names
+  - medical_notes
+```
+
+**Behavior:**
+- Fields listed in `private_fields` are still visible in the note content and Edit Person modal
+- During export, private fields trigger a confirmation dialog
+- Users can choose to include private fields, exclude them, or cancel the export
 
 ### Media Files
 

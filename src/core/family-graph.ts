@@ -84,6 +84,9 @@ export interface PersonNode {
 
 	// Media files linked to this person (wikilinks)
 	media?: string[];
+
+	// Fields marked as private by user (from private_fields frontmatter)
+	privateFields?: string[];
 }
 
 /**
@@ -1537,6 +1540,13 @@ export class FamilyGraphService {
 			cr_living = false;
 		}
 
+		// Parse private_fields array (fields user has marked as private)
+		// Normalize to array, handling single string or array input
+		const privateFieldsRaw = fm.private_fields;
+		const privateFields: string[] = Array.isArray(privateFieldsRaw)
+			? privateFieldsRaw.filter((f): f is string => typeof f === 'string')
+			: (typeof privateFieldsRaw === 'string' ? [privateFieldsRaw] : []);
+
 		// Parse media array
 		const media = this.parseMediaProperty(fm);
 
@@ -1576,7 +1586,8 @@ export class FamilyGraphService {
 			collection,
 			universe,
 			researchLevel,
-			media: media.length > 0 ? media : undefined
+			media: media.length > 0 ? media : undefined,
+			privateFields: privateFields.length > 0 ? privateFields : undefined
 		};
 	}
 

@@ -186,90 +186,136 @@ Add `cr_living` frontmatter property to manually override automatic detection.
 
 ---
 
-### Phase 3: Underscore-Prefix Privacy Convention (P2) — [#98](https://github.com/banisterious/obsidian-canvas-roots/issues/98)
+### Phase 3: Explicit Private Fields List (P2) — [#98](https://github.com/banisterious/obsidian-canvas-roots/issues/98)
 
-Treat fields prefixed with `_` as private user data.
+Use an explicit `private_fields` frontmatter property to mark fields as private.
+
+**Why not underscore-prefix convention:**
+- Conflicts with existing `_id` suffix pattern (e.g., `father_id`, `spouse1_id`)
+- Gramps handle detection already uses underscore-prefix logic
+- Explicit list is clearer and avoids ambiguity
+
+**Frontmatter example:**
+```yaml
+name: Jane Smith
+previous_names:
+  - Jane Doe
+  - Jane Johnson
+medical_notes: "Family history of heart disease"
+private_fields:
+  - previous_names
+  - medical_notes
+```
 
 **Behavior:**
-- Fields like `_previous_names`, `_medical_notes`, `_private_notes` are treated as private
-- **Excluded from:** Person picker display, search results, canvas labels
-- **Included in:** Note content, Edit Person modal
+- Fields listed in `private_fields` array are treated as private
+- **Excluded from:** Exports (unless explicitly included), search result previews
+- **Included in:** Note content, Edit Person modal, internal processing
 - **Export:** Requires confirmation dialog (see Phase 5)
 
 **Implementation:**
 
-1. **Create utility function**:
+1. **Add to PersonNode interface** in `family-graph.ts`:
    ```typescript
-   export function isPrivateField(fieldName: string): boolean {
-       return fieldName.startsWith('_');
+   privateFields?: string[];  // Field names marked as private
+   ```
+
+2. **Extract from frontmatter** in `buildPersonNode()`:
+   ```typescript
+   const privateFields = fm.private_fields;
+   // Normalize to array
+   const privateFieldList = Array.isArray(privateFields)
+       ? privateFields
+       : privateFields ? [privateFields] : [];
+   ```
+
+3. **Create utility functions** in `privacy-service.ts`:
+   ```typescript
+   export function isPrivateField(fieldName: string, privateFields: string[]): boolean {
+       return privateFields.includes(fieldName);
    }
 
-   export function getPublicFields<T extends Record<string, unknown>>(data: T): Partial<T> {
+   export function getPrivateFieldValues(
+       frontmatter: Record<string, unknown>,
+       privateFields: string[]
+   ): Record<string, unknown> {
        return Object.fromEntries(
-           Object.entries(data).filter(([key]) => !isPrivateField(key))
+           Object.entries(frontmatter).filter(([key]) => privateFields.includes(key))
+       );
+   }
+
+   export function filterPrivateFields<T extends Record<string, unknown>>(
+       data: T,
+       privateFields: string[]
+   ): Partial<T> {
+       return Object.fromEntries(
+           Object.entries(data).filter(([key]) => !privateFields.includes(key))
        ) as Partial<T>;
    }
    ```
 
-2. **Apply in display contexts:**
-   - `PersonPickerModal` — Filter display fields
-   - `PersonSuggest` — Filter suggestion display
-   - Canvas node labels — Filter label content (if we generate labels)
-
-3. **Preserve in editing contexts:**
-   - `EditPersonModal` — Show all fields including private
-   - Frontmatter — Never strip private fields from notes
+4. **Apply in export contexts:**
+   - Check `privateFields` before including field values in exports
+   - Trigger confirmation dialog if private fields would be exported
 
 **Files to modify:**
+- `src/core/family-graph.ts` — Add `privateFields` to `PersonNode`, extract from frontmatter
 - `src/core/privacy-service.ts` — Add utility functions
-- `src/ui/person-picker-modal.ts` — Filter display
-- `src/ui/person-suggest.ts` — Filter suggestions
-- Canvas label generation (if applicable)
+- Exporters — Check private fields before export (Phase 5)
+
+**Documentation:**
+- Document `private_fields` property in Frontmatter Reference
+- Add examples for common use cases (previous names, medical notes, etc.)
 
 ---
 
 ### Phase 4: Deadname Protection (P2) — [#99](https://github.com/banisterious/obsidian-canvas-roots/issues/99)
 
-Automatic suppression of `_previous_names` in display contexts.
+Protection for `previous_names` field when marked as private.
 
 **Behavior:**
-- `_previous_names` field is never shown in:
-  - Person picker
-  - Search results
-  - Canvas labels
-  - Family chart display names
-  - Report headers
-- `_previous_names` IS shown in:
+- When `previous_names` is listed in `private_fields`, it is excluded from exports
+- `previous_names` IS shown in:
   - Edit Person modal
   - Full note content
-  - Export (with confirmation)
+  - Export (only with explicit confirmation)
 
 **Rationale:**
 - Previous names may include deadnames (names a person no longer uses)
 - Displaying deadnames without consent can cause harm
-- Research value preserved in note content and exports
-- Underscore prefix makes intent clear
+- Research value preserved in note content
+- Explicit `private_fields` list makes intent clear and user-controlled
 
 **Implementation:**
-- Covered by Phase 3 (underscore-prefix convention)
-- Document `_previous_names` as the recommended field for this use case
-- Add to person schema documentation
+- Covered by Phase 3 (`private_fields` list)
+- Document `previous_names` + `private_fields` pattern for this use case
+- Add to person schema documentation with examples
+
+**Example:**
+```yaml
+name: Alex Johnson
+previous_names:
+  - Alexandra Johnson
+  - Alex Smith
+private_fields:
+  - previous_names
+```
 
 ---
 
 ### Phase 5: Export Warnings for Private Fields (P2) — [#99](https://github.com/banisterious/obsidian-canvas-roots/issues/99)
 
-Show confirmation dialog when export would include underscore-prefixed fields.
+Show confirmation dialog when export would include fields marked as private.
 
 **Behavior:**
-1. Before export, scan for underscore-prefixed fields in export data
+1. Before export, scan for people with `private_fields` that have values
 2. If found, show confirmation dialog:
    ```
    ⚠️ Export contains private fields
 
    The following private fields will be included in this export:
-   • _previous_names (23 people)
-   • _medical_notes (5 people)
+   • previous_names (23 people)
+   • medical_notes (5 people)
 
    [Include private fields] [Exclude private fields] [Cancel]
    ```
@@ -277,25 +323,50 @@ Show confirmation dialog when export would include underscore-prefixed fields.
 
 **Implementation:**
 
-1. **Add to export flow** in each exporter:
+1. **Scan for private fields** before export:
+   ```typescript
+   interface PrivateFieldSummary {
+       fieldName: string;
+       peopleCount: number;
+   }
+
+   function scanForPrivateFields(people: PersonNode[]): PrivateFieldSummary[] {
+       const fieldCounts = new Map<string, number>();
+
+       for (const person of people) {
+           if (!person.privateFields?.length) continue;
+           for (const field of person.privateFields) {
+               fieldCounts.set(field, (fieldCounts.get(field) || 0) + 1);
+           }
+       }
+
+       return Array.from(fieldCounts.entries())
+           .map(([fieldName, peopleCount]) => ({ fieldName, peopleCount }))
+           .sort((a, b) => b.peopleCount - a.peopleCount);
+   }
+   ```
+
+2. **Add to export flow** in each exporter:
    ```typescript
    async export(options: ExportOptions): Promise<ExportResult> {
-       const privateFieldSummary = this.scanForPrivateFields(data);
+       const privateFieldSummary = scanForPrivateFields(people);
        if (privateFieldSummary.length > 0 && !options.skipPrivateWarning) {
            const decision = await this.showPrivateFieldsWarning(privateFieldSummary);
            if (decision === 'cancel') return { cancelled: true };
            if (decision === 'exclude') {
-               data = this.stripPrivateFields(data);
+               // Filter private field values from export data
+               people = this.stripPrivateFieldValues(people);
            }
        }
        // Continue with export...
    }
    ```
 
-2. **Create warning modal** `PrivateFieldsWarningModal`
+3. **Create warning modal** `PrivateFieldsWarningModal`
 
 **Files to modify:**
 - `src/ui/private-fields-warning-modal.ts` — New file
+- `src/core/privacy-service.ts` — Add `scanForPrivateFields()` utility
 - `src/gedcom/gedcom-exporter.ts` — Add check
 - `src/gedcomx/gedcomx-exporter.ts` — Add check
 - `src/gramps/gramps-exporter.ts` — Add check
@@ -425,7 +496,7 @@ Add privacy options to canvas tree generation.
 |-------|-------|--------------|------------|--------|
 | 1 | #96 Sensitive field redaction | ✅ Yes | — | Low-Medium |
 | 2 | #97 `cr_living` override | ✅ Yes | — | Low |
-| 3 | #98 Underscore-prefix convention | ✅ Yes | — | Medium |
+| 3 | #98 Explicit private fields list | ✅ Yes | — | Medium |
 | 4-5 | #99 Deadname + Export warnings | ❌ No | Phase 3 | Medium-High |
 | 6 | #100 Discoverability | ✅ Yes | — | Medium |
 | 7 | #101 Pronouns field | ✅ Yes | — | Low |
@@ -433,10 +504,10 @@ Add privacy options to canvas tree generation.
 
 ### Recommended Implementation Order (Quick Wins First)
 
-1. **#101 Pronouns field** — Lowest effort, completely isolated, immediate user value
-2. **#97 `cr_living` override** — Single function change, useful for edge cases
-3. **#96 Sensitive field redaction** — Infrastructure exists, wire to 4 exporters
-4. **#98 Underscore-prefix convention** — Medium effort, unlocks #99
+1. **#101 Pronouns field** — Lowest effort, completely isolated, immediate user value ✅ COMPLETE
+2. **#97 `cr_living` override** — Single function change, useful for edge cases ✅ COMPLETE
+3. **#96 Sensitive field redaction** — Infrastructure exists, wire to 4 exporters ✅ COMPLETE
+4. **#98 Explicit private fields list** — Add `private_fields` support, unlocks #99
 5. **#100 Discoverability** — New modals, import triggers
 6. **#99 Deadname + Export warnings** — Depends on #98
 7. **#102 Canvas privacy** — Larger scope, lower priority
@@ -447,7 +518,7 @@ Add privacy options to canvas tree generation.
 Independent (can start anytime):
   #96 Sensitive Fields ─────────┐
   #97 cr_living Override ───────┤
-  #98 Underscore Prefix ────────┼───► #99 Deadname + Export Warnings
+  #98 Private Fields List ──────┼───► #99 Deadname + Export Warnings
   #100 Discoverability ─────────┤         (depends on #98)
   #101 Pronouns ────────────────┤
   #102 Canvas Privacy ──────────┘
@@ -481,14 +552,15 @@ Independent (can start anytime):
 1. **Privacy-And-Security.md** — Add sections for:
    - Sensitive field redaction
    - `cr_living` override
-   - Underscore-prefix convention
+   - `private_fields` list
    - Deadname protection
    - Pronouns field
 
 2. **Person-Notes.md** — Document new properties:
    - `cr_living`
    - `pronouns`
-   - Underscore-prefix fields
+   - `private_fields`
+   - `previous_names`
 
 3. **Import-Export.md** — Add:
    - Sensitive field handling
@@ -519,22 +591,27 @@ Independent (can start anytime):
 - [x] Document `cr_living` property in Frontmatter Reference
 - [x] Add toggle to Edit Person modal (shown when privacy protection enabled)
 
-### Phase 3: Underscore-Prefix Convention
-- [ ] Add `isPrivateField()` and `getPublicFields()` utilities
-- [ ] Filter private fields in PersonPickerModal
-- [ ] Filter private fields in PersonSuggest
-- [ ] Document underscore-prefix convention
+### Phase 3: Explicit Private Fields List ✅
+- [x] Add `privateFields` to `PersonNode` interface in `family-graph.ts`
+- [x] Extract `private_fields` from frontmatter in `buildPersonNode()`
+- [x] Add utility functions to `privacy-service.ts`:
+  - [x] `isPrivateField(fieldName, privateFields)`
+  - [x] `getPrivateFieldValues(frontmatter, privateFields)`
+  - [x] `filterPrivateFields(data, privateFields)`
+- [x] Document `private_fields` property in Frontmatter Reference
 
 ### Phase 4: Deadname Protection
-- [ ] Document `_previous_names` as recommended field
-- [ ] Verify covered by Phase 3 implementation
+- [ ] Document `previous_names` + `private_fields` pattern for deadname protection
+- [ ] Add example to Frontmatter Reference
+- [ ] Verify Phase 3 implementation handles this use case
 
 ### Phase 5: Export Warnings
-- [ ] Create PrivateFieldsWarningModal
-- [ ] Add private field scan to GEDCOM export
-- [ ] Add private field scan to GEDCOM X export
-- [ ] Add private field scan to Gramps export
-- [ ] Add private field scan to CSV export
+- [ ] Add `scanForPrivateFields()` utility to `privacy-service.ts`
+- [ ] Create `PrivateFieldsWarningModal`
+- [ ] Add private field check to GEDCOM export
+- [ ] Add private field check to GEDCOM X export
+- [ ] Add private field check to Gramps export
+- [ ] Add private field check to CSV export
 
 ### Phase 6: Discoverability
 - [ ] Create privacy notice modal
