@@ -88,6 +88,42 @@ dna_notes: "Matches on chromosome 7"  # Free-form notes
 - Filter/sort in Bases views (e.g., "Show all BKM matches", "Sort by cM")
 - Zero impact on non-DNA workflows
 
+### Bases View Template
+
+Provide a pre-configured "DNA Matches" Bases view that users can create from the Control Center:
+
+**Columns:**
+- Name (person link)
+- `dna_shared_cm` — Shared cM
+- `dna_match_type` — Match type (BKM/BMM/etc.)
+- `dna_testing_company` — Testing company
+- `dna_endogamy_flag` — Endogamy indicator
+
+**Default Sort:** `dna_shared_cm` descending (highest matches first)
+
+**Default Filter:** `dna_shared_cm` is not empty (only show persons with DNA data)
+
+This leverages existing Bases infrastructure—no new code required beyond the template definition.
+
+### Template Snippets
+
+Document example Templater/Templates snippets for DNA match notes:
+
+```yaml
+---
+cr_type: person
+personType: DNA Match
+dna_shared_cm:
+dna_testing_company:
+dna_kit_id:
+dna_match_type: unconfirmed
+dna_endogamy_flag: false
+dna_notes:
+---
+```
+
+Include in documentation with usage guidance.
+
 ---
 
 ## Phase 2: DNA Match Person Subtype
