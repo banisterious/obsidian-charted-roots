@@ -21,6 +21,7 @@ import { PersonPickerModal, type PersonInfo } from './person-picker';
 import { GrampsParser } from '../gramps/gramps-parser';
 import { extractGpkg, type GpkgExtractionResult } from '../gramps/gpkg-extractor';
 import { GrampsImporter, type GrampsImportOptions, type GrampsImportResult } from '../gramps/gramps-importer';
+import { readFileWithDecompression } from '../core/compression-utils';
 import { PrivacyNoticeModal } from './privacy-notice-modal';
 
 /**
@@ -826,8 +827,8 @@ export class ImportWizardModal extends Modal {
 					// Store extraction result for use during import
 					this.formData.gpkgExtractionResult = extraction;
 				} else {
-					// Plain .gramps XML file - read as text
-					grampsXml = await this.formData.file.text();
+					// Plain .gramps XML file - may be gzip-compressed
+					grampsXml = await readFileWithDecompression(this.formData.file);
 				}
 
 				// Store the extracted/read XML content
