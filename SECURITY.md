@@ -264,12 +264,28 @@ When sharing logs for debugging or support, PII is automatically protected:
 - **Collaborative Research**: Share tree structure with researchers who need patterns, not names
 - **Bug Reports**: Share logs publicly without exposing family data
 
+### Private Fields Protection
+
+Mark specific fields as private using the `private_fields` frontmatter property:
+
+- **User-defined list**: Specify which fields contain sensitive information
+- **Export warnings**: Confirmation dialog shown before exporting private fields
+- **Deadname protection**: Use `private_fields: [previous_names]` to protect previous names
+- **Common use cases**: Medical notes, legal information, personal notes
+
+**Example:**
+```yaml
+name: Alex Johnson
+previous_names:
+  - Alexandra Johnson
+private_fields:
+  - previous_names
+```
+
 ## Future Security Enhancements
 
 Additional planned improvements:
 
-- **Private fields list**: User-defined `private_fields` frontmatter property to mark specific fields as private, with export confirmation dialogs
-- **Deadname protection**: Protection for `previous_names` field when marked as private
 - **Canvas obfuscation mode**: Temporary display mode for screenshots/presentations
 - Optional encryption for cr_id values
 - Audit logging capabilities
