@@ -60,7 +60,7 @@ This document covers:
 | Deadname protection | ✅ **Complete** — `private_fields` + `previous_names` pattern documented |
 | `cr_living` manual override | ✅ **Complete** |
 | Pronouns field | ✅ **Complete** |
-| Canvas obfuscation mode | Not implemented |
+| Canvas obfuscation mode | ✅ **Complete** — Privacy-aware canvas generation in Tree Wizard |
 | Export warnings for private fields | ✅ **Complete** — `PrivateFieldsWarningModal` in Export Wizard |
 | Privacy feature discoverability | ✅ **Complete** — `PrivacyNoticeModal` after import, export preview warning |
 
@@ -436,7 +436,7 @@ Add `pronouns` property support for respectful communication.
 
 ---
 
-### Phase 8: Privacy-Aware Canvas Generation (P3) — [#102](https://github.com/banisterious/obsidian-canvas-roots/issues/102)
+### Phase 8: Privacy-Aware Canvas Generation (P3) — [#102](https://github.com/banisterious/obsidian-canvas-roots/issues/102) ✅ COMPLETE
 
 Add privacy options to canvas tree generation.
 
@@ -445,46 +445,33 @@ Add privacy options to canvas tree generation.
 - Runtime obfuscation is **not feasible**
 - Privacy must be applied **at generation time**
 
-**Behavior:**
-- Add toggle to canvas generation modal: "Apply privacy protection"
-- When enabled:
-  - Living persons matching `hidden` format are excluded entirely
-  - Living persons matching other formats get text nodes with obfuscated names instead of file nodes
-  - Text nodes include wikilink for navigation: `**[Living]**\n[[John Smith]]`
+**What was implemented:**
+- Privacy Options section in Tree Wizard (canvas and Excalidraw)
+- Toggle: "Apply privacy protection" (defaults to global setting)
+- Format dropdown: "text" (no file link) or "file" (keeps clickable link)
+- Living persons shown as text nodes with obfuscated display name
+- Text nodes include wikilink for navigation: `**Living**\n\n[[John Smith]]\n\n_Privacy protected_`
+- Preview step shows count of privacy-protected persons
+- 'hidden' privacy setting excludes living persons from canvas entirely
 
-**Implementation:**
+**Files modified:**
+- `src/core/canvas-generator.ts` — Privacy node creation, `createPersonNode()` helper
+- `src/trees/ui/unified-tree-wizard-modal.ts` — Privacy UI, living count in preview
 
-1. **Extend `CanvasGenerationOptions`**:
-   ```typescript
-   applyCanvasPrivacy?: boolean;
-   canvasPrivacyFormat?: 'living' | 'private' | 'initials' | 'hidden';
-   ```
+#### Known Limitations
 
-2. **Modify `generateCanvas()` in `canvas-generator.ts`**:
-   ```typescript
-   for (const position of layoutResult.positions) {
-       const person = position.person;
-       if (options.applyCanvasPrivacy && this.privacyService.isLiving(person)) {
-           const format = options.canvasPrivacyFormat || this.settings.privacyDisplayFormat;
-           if (format === 'hidden') {
-               continue; // Skip node entirely
-           }
-           // Create text node instead of file node
-           canvasNodes.push(this.createObfuscatedNode(person, position, format));
-       } else {
-           canvasNodes.push(this.createFileNode(person, position));
-       }
-   }
-   ```
+Canvas privacy has inherent limitations compared to export privacy:
 
-3. **Update canvas generation modal UI**:
-   - Add "Privacy" section with toggle and format dropdown
-   - Show count of living persons that will be affected
+| Limitation | Explanation |
+|------------|-------------|
+| **File nodes reveal identity** | The 'file' format still links to the actual person note. The filename (e.g., `John Smith.md`) is visible in the canvas JSON and when hovering. Use 'text' format for stronger protection. |
+| **Wikilinks in text nodes** | Text nodes include `[[filename]]` for navigation convenience. This reveals the filename, though not the full path. |
+| **Canvas JSON is not encrypted** | The `.canvas` file is plain JSON. Anyone with vault access can read it, including file paths. |
+| **No runtime protection** | Privacy is applied at generation time only. If you regenerate a canvas without privacy enabled, all data is exposed. |
+| **Shared canvases** | If you share a canvas file (e.g., via git, sync, or export), privacy-protected text nodes still contain wikilinks that reveal filenames. |
+| **Edges remain** | Relationship edges to/from privacy-protected nodes are still drawn, which may reveal family structure. |
 
-**Files to modify:**
-- `src/trees/tree-types.ts` — Extend options
-- `src/core/canvas-generator.ts` — Apply privacy during generation
-- `src/ui/tree-generation-modal.ts` — Add privacy options
+**Best practice:** For maximum privacy when sharing family trees, use the export formats (GEDCOM, CSV) with privacy enabled, rather than sharing canvas files directly.
 
 ---
 
@@ -510,7 +497,7 @@ Add privacy options to canvas tree generation.
 4. **#98 Explicit private fields list** — Add `private_fields` support, unlocks #99 ✅ COMPLETE
 5. **#99 Deadname + Export warnings** — Depends on #98 ✅ COMPLETE
 6. **#100 Discoverability** — New modals, import triggers ✅ COMPLETE
-7. **#102 Canvas privacy** — Larger scope, lower priority
+7. **#102 Canvas privacy** — Larger scope, lower priority ✅ COMPLETE
 
 ### Dependency Diagram
 
@@ -627,11 +614,11 @@ Independent (can start anytime):
 - [x] Include pronouns in relevant reports
 - [x] Document pronouns property
 
-### Phase 8: Canvas Privacy
-- [ ] Add privacy options to CanvasGenerationOptions
-- [ ] Implement privacy logic in canvas-generator.ts
-- [ ] Add privacy section to tree generation modal UI
-- [ ] Document canvas privacy limitations
+### Phase 8: Canvas Privacy ✅ COMPLETE
+- [x] Add privacy options to CanvasGenerationOptions
+- [x] Implement privacy logic in canvas-generator.ts
+- [x] Add privacy section to tree generation modal UI
+- [x] Document canvas privacy limitations
 
 ---
 
