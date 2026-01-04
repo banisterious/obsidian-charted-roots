@@ -20,6 +20,7 @@ import type { PersonInfo } from '../../ui/person-picker';
 import { TreePreviewRenderer } from '../../ui/tree-preview';
 import { FamilyGraphService, TreeOptions } from '../../core/family-graph';
 import { CanvasGenerator, CanvasGenerationOptions } from '../../core/canvas-generator';
+import { createPrivacyService } from '../../core/privacy-service';
 import type { LayoutOptions } from '../../core/layout-engine';
 import type { CanvasColor, ColorScheme, CanvasGroupingStrategy, LayoutType, RecentTreeInfo } from '../../settings';
 import { ensureFolderExists } from '../../core/canvas-utils';
@@ -140,6 +141,8 @@ interface UnifiedWizardFormData {
 	spouseEdgeLabelFormat: 'none' | 'date-only' | 'date-location' | 'full';
 	layoutAlgorithm: LayoutAlgorithm;
 	canvasGroupingStrategy: CanvasGroupingStrategy;
+	applyCanvasPrivacy: boolean;
+	canvasPrivacyFormat: 'text' | 'file';
 
 	// PDF-specific (Step 4b)
 	pageSize: VisualTreePageSize;
@@ -260,6 +263,8 @@ export class UnifiedTreeWizardModal extends Modal {
 			spouseEdgeLabelFormat: plugin.settings.spouseEdgeLabelFormat,
 			layoutAlgorithm: plugin.settings.defaultLayoutType as LayoutAlgorithm,
 			canvasGroupingStrategy: plugin.settings.canvasGroupingStrategy,
+			applyCanvasPrivacy: plugin.settings.enablePrivacyProtection,
+			canvasPrivacyFormat: 'text',
 
 			// PDF defaults
 			pageSize: 'letter',
@@ -1077,6 +1082,39 @@ export class UnifiedTreeWizardModal extends Modal {
 				.setValue(this.formData.placeFilter)
 				.onChange(value => { this.formData.placeFilter = value; }));
 
+		// Privacy section
+		const privacyDetails = form.createEl('details', { cls: 'crc-wizard-details' });
+		privacyDetails.open = false;
+		const privacySummary = privacyDetails.createEl('summary', { cls: 'crc-wizard-details-summary' });
+		privacySummary.createSpan({ text: 'Privacy options', cls: 'crc-wizard-details-title' });
+		if (this.formData.applyCanvasPrivacy) {
+			privacySummary.createSpan({ text: '(privacy enabled)', cls: 'crc-wizard-details-hint' });
+		}
+
+		const privacyContent = privacyDetails.createDiv({ cls: 'crc-wizard-details-content' });
+
+		new Setting(privacyContent)
+			.setName('Apply privacy protection')
+			.setDesc('Obfuscate names and hide details for living persons')
+			.addToggle(toggle => toggle
+				.setValue(this.formData.applyCanvasPrivacy)
+				.onChange(value => {
+					this.formData.applyCanvasPrivacy = value;
+					// Re-render to update hint
+					this.renderCurrentStep();
+				}));
+
+		if (this.formData.applyCanvasPrivacy) {
+			new Setting(privacyContent)
+				.setName('Privacy format')
+				.setDesc('How protected persons appear on the canvas')
+				.addDropdown(dropdown => dropdown
+					.addOption('text', 'Text node (no file link)')
+					.addOption('file', 'File node (keeps link)')
+					.setValue(this.formData.canvasPrivacyFormat)
+					.onChange(value => { this.formData.canvasPrivacyFormat = value as 'text' | 'file'; }));
+		}
+
 		// Style section
 		const styleDetails = form.createEl('details', { cls: 'crc-wizard-details' });
 		styleDetails.open = false;
@@ -1725,6 +1763,8 @@ export class UnifiedTreeWizardModal extends Modal {
 				showSourceIndicators: this.plugin.settings.showSourceIndicators,
 				showResearchCoverage: this.plugin.settings.trackFactSourcing,
 				canvasGroupingStrategy: this.formData.canvasGroupingStrategy,
+				applyCanvasPrivacy: this.formData.applyCanvasPrivacy,
+				canvasPrivacyFormat: this.formData.canvasPrivacyFormat,
 				canvasRootsMetadata: {
 					plugin: 'canvas-roots',
 					generation: {
@@ -1747,6 +1787,18 @@ export class UnifiedTreeWizardModal extends Modal {
 			};
 
 			const canvasGenerator = new CanvasGenerator();
+
+			// Set up privacy service if privacy protection is enabled
+			if (this.formData.applyCanvasPrivacy) {
+				const privacyService = createPrivacyService({
+					enablePrivacyProtection: true,
+					livingPersonAgeThreshold: this.plugin.settings.livingPersonAgeThreshold,
+					privacyDisplayFormat: this.plugin.settings.privacyDisplayFormat,
+					hideDetailsForLiving: this.plugin.settings.hideDetailsForLiving
+				});
+				canvasGenerator.setPrivacyService(privacyService);
+			}
+
 			const canvasData = canvasGenerator.generateCanvas(familyTree, canvasOptions);
 
 			logger.info('unified-wizard', 'Canvas data generated', {
@@ -1858,10 +1910,24 @@ export class UnifiedTreeWizardModal extends Modal {
 				spouseEdgeLabelFormat: this.formData.spouseEdgeLabelFormat,
 				showSourceIndicators: this.plugin.settings.showSourceIndicators,
 				showResearchCoverage: this.plugin.settings.trackFactSourcing,
-				canvasGroupingStrategy: this.formData.canvasGroupingStrategy
+				canvasGroupingStrategy: this.formData.canvasGroupingStrategy,
+				applyCanvasPrivacy: this.formData.applyCanvasPrivacy,
+				canvasPrivacyFormat: this.formData.canvasPrivacyFormat
 			};
 
 			const canvasGenerator = new CanvasGenerator();
+
+			// Set up privacy service if privacy protection is enabled
+			if (this.formData.applyCanvasPrivacy) {
+				const privacyService = createPrivacyService({
+					enablePrivacyProtection: true,
+					livingPersonAgeThreshold: this.plugin.settings.livingPersonAgeThreshold,
+					privacyDisplayFormat: this.plugin.settings.privacyDisplayFormat,
+					hideDetailsForLiving: this.plugin.settings.hideDetailsForLiving
+				});
+				canvasGenerator.setPrivacyService(privacyService);
+			}
+
 			const canvasData = canvasGenerator.generateCanvas(familyTree, canvasOptions);
 
 			// Create temporary canvas file
