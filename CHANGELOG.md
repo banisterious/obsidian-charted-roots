@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.18.21] - 2026-01-03
+
 ### Added
 
 - **Private fields support** ([#98](https://github.com/banisterious/obsidian-canvas-roots/issues/98)):
