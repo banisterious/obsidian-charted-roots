@@ -348,6 +348,11 @@ export class PersonPickerModal extends Modal {
 				return null;
 			}
 
+			// Skip notes without cr_id - they can't be linked in relationships
+			if (!fm.cr_id) {
+				return null;
+			}
+
 			// Extract name (from frontmatter or filename)
 			// Ensure name is a string - fm.name could be an array or other type
 			const rawName = fm.name;
