@@ -1246,6 +1246,36 @@ export class UnifiedTreeWizardModal extends Modal {
 			summaryContainer.empty();
 			summaryContainer.createSpan({ text: `${nodeCount} people in tree` });
 
+			// Show living persons count if privacy is enabled
+			if (this.formData.applyCanvasPrivacy) {
+				const privacyService = createPrivacyService({
+					enablePrivacyProtection: true,
+					livingPersonAgeThreshold: this.plugin.settings.livingPersonAgeThreshold,
+					privacyDisplayFormat: this.plugin.settings.privacyDisplayFormat,
+					hideDetailsForLiving: this.plugin.settings.hideDetailsForLiving
+				});
+
+				let livingCount = 0;
+				for (const person of familyTree.nodes.values()) {
+					if (privacyService.isLikelyLiving({
+						name: person.name,
+						birthDate: person.birthDate,
+						deathDate: person.deathDate,
+						cr_living: person.cr_living
+					})) {
+						livingCount++;
+					}
+				}
+
+				if (livingCount > 0) {
+					summaryContainer.createSpan({ text: ' · ' });
+					summaryContainer.createSpan({
+						text: `${livingCount} privacy-protected`,
+						cls: 'crc-wizard-privacy-count'
+					});
+				}
+			}
+
 			if (nodeCount > 200) {
 				this.previewContainer.empty();
 				this.previewContainer.createDiv({
