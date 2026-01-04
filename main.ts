@@ -35,6 +35,7 @@ import { MapView, VIEW_TYPE_MAP } from './src/maps/map-view';
 import { StatisticsView, VIEW_TYPE_STATISTICS } from './src/statistics';
 import { TreePreviewRenderer } from './src/ui/tree-preview';
 import { FolderFilterService } from './src/core/folder-filter';
+import { TemplateFilterService } from './src/core/template-filter';
 import { SplitWizardModal } from './src/ui/split-wizard-modal';
 import { CreatePlaceModal } from './src/ui/create-place-modal';
 import { CreatePersonModal } from './src/ui/create-person-modal';
@@ -66,6 +67,7 @@ export default class CanvasRootsPlugin extends Plugin {
 	public bidirectionalLinker: BidirectionalLinker | null = null;
 	private relationshipHistory: RelationshipHistoryService | null = null;
 	private folderFilter: FolderFilterService | null = null;
+	private templateFilter: TemplateFilterService | null = null;
 	private eventService: EventService | null = null;
 	private recentFilesService: RecentFilesService | null = null;
 	private mediaService: MediaService | null = null;
@@ -104,6 +106,13 @@ export default class CanvasRootsPlugin extends Plugin {
 	 */
 	getFolderFilter(): FolderFilterService | null {
 		return this.folderFilter;
+	}
+
+	/**
+	 * Get the template filter service for detecting template folders
+	 */
+	getTemplateFilter(): TemplateFilterService | null {
+		return this.templateFilter;
 	}
 
 	/**
@@ -252,6 +261,10 @@ export default class CanvasRootsPlugin extends Plugin {
 		// Initialize folder filter service
 		this.folderFilter = new FolderFilterService(this.settings);
 
+		// Initialize template filter service (connects to folder filter)
+		this.templateFilter = new TemplateFilterService(this.app, this.settings);
+		this.folderFilter.setTemplateFilter(this.templateFilter);
+
 		// Initialize event service
 		this.eventService = new EventService(this.app, this.settings);
 
@@ -271,6 +284,11 @@ export default class CanvasRootsPlugin extends Plugin {
 		// Delay to ensure Style Settings plugin is loaded first
 		this.app.workspace.onLayoutReady(() => {
 			this.app.workspace.trigger('parse-style-settings');
+
+			// Initialize template folder detection after plugins are loaded
+			if (this.templateFilter) {
+				this.templateFilter.initialize();
+			}
 		});
 
 		// Register family chart view

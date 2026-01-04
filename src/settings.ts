@@ -239,6 +239,11 @@ export interface CanvasRootsSettings {
 	// Staging folder
 	stagingFolder: string;
 	enableStagingIsolation: boolean;
+	// Template folder filtering
+	/** Auto-detect template folders from Templates/Templater/QuickAdd plugins */
+	autoDetectTemplateFolders: boolean;
+	/** Additional folders to treat as template folders (excluded from note discovery) */
+	templateFolders: string[];
 	// Place category defaults
 	defaultPlaceCategory: PlaceCategory;
 	placeCategoryRules: PlaceCategoryRule[];
@@ -583,6 +588,9 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	// Staging folder defaults
 	stagingFolder: '',             // Empty = no staging configured (must be set by user)
 	enableStagingIsolation: true,  // When staging folder is set, auto-exclude from normal operations
+	// Template folder filtering defaults
+	autoDetectTemplateFolders: true,  // Auto-detect from Templates/Templater/QuickAdd plugins
+	templateFolders: [],              // Additional user-specified template folders
 	// Place category defaults
 	defaultPlaceCategory: 'real',  // Default place category when creating new places
 	placeCategoryRules: [],        // Folder/collection-based category rules
@@ -1107,6 +1115,50 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					}));
 		}
+
+		// Template folder filtering
+		new Setting(advancedContent)
+			.setName('Auto-detect template folders')
+			.setDesc('Automatically exclude template folders (from Templates, Templater, QuickAdd plugins)')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.autoDetectTemplateFolders)
+				.onChange(async (value) => {
+					this.plugin.settings.autoDetectTemplateFolders = value;
+					await this.plugin.saveSettings();
+					// Refresh template filter and display
+					const templateFilter = this.plugin.getTemplateFilter();
+					if (templateFilter) {
+						templateFilter.refresh();
+					}
+					this.display();
+				}));
+
+		// Show detected template folders (read-only info)
+		const templateFilter = this.plugin.getTemplateFilter();
+		const detectedFolders = templateFilter?.getDetectedFolders() || [];
+		if (detectedFolders.length > 0 && this.plugin.settings.autoDetectTemplateFolders) {
+			const detectedInfo = advancedContent.createDiv({ cls: 'setting-item-description cr-info-box' });
+			detectedInfo.createEl('strong', { text: '📁 Detected template folders:' });
+			detectedInfo.createEl('br');
+			detectedInfo.appendText(detectedFolders.join(', '));
+		}
+
+		// Additional template folders (user-specified)
+		new Setting(advancedContent)
+			.setName('Additional template folders')
+			.setDesc('Additional folders to exclude from note discovery (one per line)')
+			.addTextArea(textArea => textArea
+				.setPlaceholder('_templates\nmy-templates')
+				.setValue((this.plugin.settings.templateFolders || []).join('\n'))
+				.onChange(async (value) => {
+					const folderList = value
+						.split('\n')
+						.map(f => f.trim())
+						.filter(f => f.length > 0);
+
+					this.plugin.settings.templateFolders = folderList;
+					await this.plugin.saveSettings();
+				}));
 
 	}
 

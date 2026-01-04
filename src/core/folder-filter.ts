@@ -1,12 +1,24 @@
 import { TFile } from 'obsidian';
 import type { CanvasRootsSettings, FolderFilterMode } from '../settings';
+import type { TemplateFilterService } from './template-filter';
 
 /**
  * Service for filtering files based on folder inclusion/exclusion rules.
  * Used to control which folders are scanned for person notes.
+ * Also integrates with TemplateFilterService to exclude template folders.
  */
 export class FolderFilterService {
+	private templateFilter: TemplateFilterService | null = null;
+
 	constructor(private settings: CanvasRootsSettings) {}
+
+	/**
+	 * Set the template filter service for template folder exclusion.
+	 * Should be called after TemplateFilterService is initialized.
+	 */
+	setTemplateFilter(templateFilter: TemplateFilterService): void {
+		this.templateFilter = templateFilter;
+	}
 
 	/**
 	 * Check if a file should be included in person note discovery
@@ -23,6 +35,11 @@ export class FolderFilterService {
 	shouldIncludePath(filePath: string): boolean {
 		// First check staging folder exclusion (takes precedence)
 		if (this.shouldExcludeAsStaging(filePath)) {
+			return false;
+		}
+
+		// Check template folder exclusion
+		if (this.shouldExcludeAsTemplate(filePath)) {
 			return false;
 		}
 
@@ -51,6 +68,16 @@ export class FolderFilterService {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Check if a file should be excluded because it's in a template folder
+	 */
+	private shouldExcludeAsTemplate(filePath: string): boolean {
+		if (!this.templateFilter) {
+			return false;
+		}
+		return this.templateFilter.isInTemplateFolder(filePath);
 	}
 
 	/**
@@ -112,7 +139,12 @@ export class FolderFilterService {
 	/**
 	 * Get list of active filters for UI display or debugging
 	 */
-	getActiveFilters(): { mode: FolderFilterMode; folders: string[]; stagingFolder: string | null } {
+	getActiveFilters(): {
+		mode: FolderFilterMode;
+		folders: string[];
+		stagingFolder: string | null;
+		templateFolders: string[];
+	} {
 		return {
 			mode: this.settings.folderFilterMode,
 			folders: this.settings.folderFilterMode === 'exclude'
@@ -122,16 +154,28 @@ export class FolderFilterService {
 					: [],
 			stagingFolder: this.settings.enableStagingIsolation && this.settings.stagingFolder
 				? this.settings.stagingFolder
-				: null
+				: null,
+			templateFolders: this.templateFilter?.getAllTemplateFolders() || []
 		};
 	}
 
 	/**
-	 * Check if filtering is currently enabled (either folder filter or staging isolation)
+	 * Check if filtering is currently enabled (folder filter, staging isolation, or template filtering)
 	 */
 	isEnabled(): boolean {
+		const hasTemplateFiltering = this.templateFilter !== null &&
+			this.templateFilter.getAllTemplateFolders().length > 0;
+
 		return this.settings.folderFilterMode !== 'disabled' ||
-			(this.settings.enableStagingIsolation && !!this.settings.stagingFolder);
+			(this.settings.enableStagingIsolation && !!this.settings.stagingFolder) ||
+			hasTemplateFiltering;
+	}
+
+	/**
+	 * Check if a file is in a template folder
+	 */
+	isInTemplateFolder(filePath: string): boolean {
+		return this.templateFilter?.isInTemplateFolder(filePath) ?? false;
 	}
 
 	/**
