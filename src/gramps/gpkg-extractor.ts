@@ -58,36 +58,66 @@ async function decompressGzipToBytes(data: Uint8Array): Promise<Uint8Array> {
 		throw new Error('DecompressionStream API not available. Cannot decompress gzip data.');
 	}
 
-	const ds = new DecompressionStream('gzip');
-	const writer = ds.writable.getWriter();
-	const reader = ds.readable.getReader();
+	logger.debug('decompressGzipToBytes', `Starting decompression of ${data.length} bytes`);
 
-	// Write compressed data and close writer
-	// Must await these operations to signal completion to the reader
-	await writer.write(data);
-	await writer.close();
+	try {
+		const ds = new DecompressionStream('gzip');
+		const writer = ds.writable.getWriter();
+		const reader = ds.readable.getReader();
 
-	// Read decompressed data
-	const chunks: Uint8Array[] = [];
-	let done = false;
-	while (!done) {
-		const { value, done: readerDone } = await reader.read();
-		if (value) {
-			chunks.push(value);
+		// Create a promise that rejects after timeout
+		const timeoutMs = 30000; // 30 seconds
+		const timeoutPromise = new Promise<never>((_, reject) => {
+			setTimeout(() => reject(new Error(`Decompression timed out after ${timeoutMs}ms`)), timeoutMs);
+		});
+
+		// Write compressed data and close writer
+		// Must await these operations to signal completion to the reader
+		const writePromise = (async () => {
+			await writer.write(data);
+			await writer.close();
+			logger.debug('decompressGzipToBytes', 'Finished writing compressed data to stream');
+		})();
+
+		// Read decompressed data with timeout
+		const readPromise = (async () => {
+			const chunks: Uint8Array[] = [];
+			let done = false;
+			let totalRead = 0;
+			while (!done) {
+				const { value, done: readerDone } = await reader.read();
+				if (value) {
+					chunks.push(value);
+					totalRead += value.length;
+				}
+				done = readerDone;
+			}
+			logger.debug('decompressGzipToBytes', `Read ${chunks.length} chunks, total ${totalRead} bytes`);
+			return chunks;
+		})();
+
+		// Wait for write to complete
+		await Promise.race([writePromise, timeoutPromise]);
+
+		// Wait for read to complete
+		const chunks = await Promise.race([readPromise, timeoutPromise]);
+
+		// Combine chunks
+		const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+		const combined = new Uint8Array(totalLength);
+		let offset = 0;
+		for (const chunk of chunks) {
+			combined.set(chunk, offset);
+			offset += chunk.length;
 		}
-		done = readerDone;
-	}
 
-	// Combine chunks
-	const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
-	const combined = new Uint8Array(totalLength);
-	let offset = 0;
-	for (const chunk of chunks) {
-		combined.set(chunk, offset);
-		offset += chunk.length;
+		logger.debug('decompressGzipToBytes', `Decompression complete: ${data.length} -> ${combined.length} bytes`);
+		return combined;
+	} catch (error) {
+		const message = error instanceof Error ? error.message : 'Unknown error';
+		logger.error('decompressGzipToBytes', `Decompression failed: ${message}`);
+		throw new Error(`Failed to decompress gzip data: ${message}`);
 	}
-
-	return combined;
 }
 
 /**
