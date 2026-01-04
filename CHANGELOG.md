@@ -26,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Previously, global string replacement caused all `[[George Hall]]` references to point to the same file
   - Now uses cr_id-targeted replacement to match each wikilink with its corresponding `_id` field
 
+- **Gramps import: wikilinks point to wrong person when names are duplicated** ([#133](https://github.com/banisterious/obsidian-canvas-roots/issues/133)):
+  - Same fix as #132 applied to the Gramps XML importer
+  - Affects .gramps and .gpkg file imports
+
 ---
 
 ## [0.18.21] - 2026-01-03
