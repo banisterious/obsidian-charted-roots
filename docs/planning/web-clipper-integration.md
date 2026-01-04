@@ -3,10 +3,10 @@
 Planning document for integrating Obsidian Web Clipper with Canvas Roots for genealogical research.
 
 - **Status:** Planning
-- **GitHub Issue:** #128
+- **GitHub Issue:** [#128](https://github.com/banisterious/obsidian-canvas-roots/issues/128)
 - **Created:** 2025-01-04
 - **Updated:** 2025-01-04
-- **Depends On:** #137 (Staging Management UI) for Phase 2
+- **Depends On:** [#137](https://github.com/banisterious/obsidian-canvas-roots/issues/137) (Staging Management UI) for Phase 2
 
 ---
 
