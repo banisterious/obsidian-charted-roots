@@ -1040,35 +1040,8 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		const advancedDetails = containerEl.createEl('details', { cls: 'cr-settings-section' });
 		const advancedSummary = advancedDetails.createEl('summary');
 		advancedSummary.createSpan({ text: 'Advanced' });
-		advancedSummary.createSpan({ cls: 'cr-section-desc', text: 'Staging, folder filtering, and edge cases' });
+		advancedSummary.createSpan({ cls: 'cr-section-desc', text: 'Folder filtering and edge cases' });
 		const advancedContent = advancedDetails.createDiv({ cls: 'cr-section-content' });
-
-		// Staging folder
-		new Setting(advancedContent)
-			.setName('Staging folder')
-			.setDesc('Folder for imports before merging into main tree')
-			.addText(text => text
-				.setPlaceholder('People-Staging')
-				.setValue(this.plugin.settings.stagingFolder)
-				.onChange(async (value) => {
-					this.plugin.settings.stagingFolder = value;
-					await this.plugin.saveSettings();
-					// Refresh to show/hide the isolation toggle
-					this.display();
-				}));
-
-		// Only show isolation toggle if staging folder is configured
-		if (this.plugin.settings.stagingFolder) {
-			new Setting(advancedContent)
-				.setName('Enable staging isolation')
-				.setDesc('Exclude staging folder from normal operations')
-				.addToggle(toggle => toggle
-					.setValue(this.plugin.settings.enableStagingIsolation)
-					.onChange(async (value) => {
-						this.plugin.settings.enableStagingIsolation = value;
-						await this.plugin.saveSettings();
-					}));
-		}
 
 		// Folder filtering
 		new Setting(advancedContent)

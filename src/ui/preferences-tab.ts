@@ -805,12 +805,25 @@ function renderFolderLocationsCard(
 
 	// Staging folder
 	createFolderSetting(
-		'Staging folder',
+		'Import staging folder',
 		'Folder for import staging (isolated from main vault during processing)',
 		'Canvas Roots/Staging',
 		() => plugin.settings.stagingFolder,
 		(v) => { plugin.settings.stagingFolder = v; }
 	);
+
+	// Staging isolation toggle (only show if staging folder is configured)
+	if (plugin.settings.stagingFolder) {
+		new Setting(content)
+			.setName('Enable staging isolation')
+			.setDesc('Exclude staging folder from normal operations (statistics, family charts, etc.)')
+			.addToggle(toggle => toggle
+				.setValue(plugin.settings.enableStagingIsolation)
+				.onChange(async (value) => {
+					plugin.settings.enableStagingIsolation = value;
+					await plugin.saveSettings();
+				}));
+	}
 
 	// Section: Media Folders
 	content.createEl('h4', {
@@ -843,7 +856,7 @@ function renderFolderLocationsCard(
 	const advancedIcon = advancedNote.createSpan({ cls: 'cr-info-box-icon' });
 	setIcon(advancedIcon, 'settings');
 	advancedNote.createSpan({
-		text: 'For staging isolation and folder filtering options, see Settings → Canvas Roots → Advanced.'
+		text: 'For folder filtering options (include/exclude folders from discovery), see Settings → Canvas Roots → Advanced.'
 	});
 
 	container.appendChild(card);
