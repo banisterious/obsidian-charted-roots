@@ -1083,16 +1083,19 @@ function formatFilename(name: string, format: FilenameFormat): string {
 		.replace(/[\\/:*?"<>|()\[\]{}]/g, '')
 		.trim();
 
+	// Fallback to 'Unknown' if sanitization results in empty string
+	const safeName = sanitized || 'Unknown';
+
 	switch (format) {
 		case 'kebab-case':
-			return sanitized
+			return safeName
 				.toLowerCase()
 				.replace(/[^a-z0-9]+/g, '-')
 				.replace(/^-+|-+$/g, '')
 				.substring(0, 100) + '.md';
 
 		case 'snake_case':
-			return sanitized
+			return safeName
 				.toLowerCase()
 				.replace(/[^a-z0-9]+/g, '_')
 				.replace(/^_+|_+$/g, '')
@@ -1101,6 +1104,6 @@ function formatFilename(name: string, format: FilenameFormat): string {
 		case 'original':
 		default:
 			// Keep original casing and spaces, just sanitize
-			return sanitized.replace(/\s+/g, ' ').substring(0, 100) + '.md';
+			return safeName.replace(/\s+/g, ' ').substring(0, 100) + '.md';
 	}
 }
