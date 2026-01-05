@@ -1,5 +1,18 @@
 import { App, TFile, TFolder } from 'obsidian';
 import type { CanvasRootsSettings } from '../settings';
+import { detectNoteType, type NoteType } from '../utils/note-type-detection';
+
+/**
+ * Entity type counts for staging statistics
+ */
+export interface EntityTypeCounts {
+	person: number;
+	place: number;
+	source: number;
+	event: number;
+	organization: number;
+	other: number;
+}
 
 /**
  * Information about a staging subfolder (import batch)
@@ -8,7 +21,9 @@ export interface StagingSubfolderInfo {
 	path: string;
 	name: string;
 	fileCount: number;
+	/** @deprecated Use entityCounts instead */
 	personCount: number;
+	entityCounts: EntityTypeCounts;
 	modifiedDate: Date | null;
 }
 
@@ -19,6 +34,7 @@ export interface PromoteResult {
 	success: boolean;
 	filesPromoted: number;
 	filesSkipped: number;
+	filesRenamed: number;
 	errors: string[];
 }
 
@@ -93,10 +109,7 @@ export class StagingService {
 		for (const child of stagingFolder.children) {
 			if (child instanceof TFolder) {
 				const files = this.getFilesInFolder(child);
-				const personFiles = files.filter(f => {
-					const cache = this.app.metadataCache.getFileCache(f);
-					return cache?.frontmatter?.cr_id;
-				});
+				const entityCounts = this.countEntityTypes(files);
 
 				// Get most recent modification date
 				let latestModified: Date | null = null;
@@ -111,7 +124,8 @@ export class StagingService {
 					path: child.path,
 					name: child.name,
 					fileCount: files.length,
-					personCount: personFiles.length,
+					personCount: entityCounts.person, // Deprecated but kept for compatibility
+					entityCounts,
 					modifiedDate: latestModified
 				});
 			}
@@ -128,40 +142,92 @@ export class StagingService {
 	}
 
 	/**
+	 * Count entity types in a list of files
+	 */
+	private countEntityTypes(files: TFile[]): EntityTypeCounts {
+		const counts: EntityTypeCounts = {
+			person: 0,
+			place: 0,
+			source: 0,
+			event: 0,
+			organization: 0,
+			other: 0
+		};
+
+		for (const file of files) {
+			const cache = this.app.metadataCache.getFileCache(file);
+			const fm = cache?.frontmatter;
+			if (!fm) {
+				counts.other++;
+				continue;
+			}
+
+			const noteType = detectNoteType(fm, cache, this.settings.noteTypeDetection);
+			if (noteType && noteType in counts) {
+				counts[noteType as keyof EntityTypeCounts]++;
+			} else if (fm.cr_id) {
+				// Has cr_id but no detected type - count as person (legacy behavior)
+				counts.person++;
+			} else {
+				counts.other++;
+			}
+		}
+
+		return counts;
+	}
+
+	/**
 	 * Get total counts for staging area
 	 */
-	getStagingStats(): { totalFiles: number; totalPeople: number; subfolderCount: number } {
+	getStagingStats(): {
+		totalFiles: number;
+		totalEntities: number;
+		entityCounts: EntityTypeCounts;
+		subfolderCount: number;
+		/** @deprecated Use totalEntities instead */
+		totalPeople: number;
+	} {
 		const files = this.getStagingFiles();
-		const personFiles = this.getStagingPersonFiles();
 		const subfolders = this.getStagingSubfolders();
+		const entityCounts = this.countEntityTypes(files);
+		const totalEntities = entityCounts.person + entityCounts.place +
+			entityCounts.source + entityCounts.event + entityCounts.organization;
 
 		return {
 			totalFiles: files.length,
-			totalPeople: personFiles.length,
-			subfolderCount: subfolders.length
+			totalEntities,
+			entityCounts,
+			subfolderCount: subfolders.length,
+			totalPeople: entityCounts.person // Deprecated
 		};
 	}
 
 	/**
 	 * Promote a single file from staging to main tree
 	 */
-	async promoteFile(file: TFile): Promise<{ success: boolean; newPath: string; error?: string }> {
+	async promoteFile(file: TFile): Promise<{ success: boolean; newPath: string; renamed: boolean; error?: string }> {
 		if (!this.isInStagingFolder(file.path)) {
-			return { success: false, newPath: '', error: 'File is not in staging folder' };
+			return { success: false, newPath: '', renamed: false, error: 'File is not in staging folder' };
 		}
 
 		const mainPath = this.settings.peopleFolder;
 
 		// Calculate new path: replace staging folder with main folder
 		// Also strip any subfolder structure (flatten to main folder)
-		const fileName = file.name;
-		const newPath = mainPath ? `${mainPath}/${fileName}` : fileName;
+		const baseName = file.basename;
+		const extension = file.extension;
+		let newPath = mainPath ? `${mainPath}/${file.name}` : file.name;
+		let renamed = false;
 
 		try {
-			// Check if target exists
-			const existing = this.app.vault.getAbstractFileByPath(newPath);
-			if (existing) {
-				return { success: false, newPath, error: `File already exists at ${newPath}` };
+			// Check if target exists and find unique name if needed
+			let counter = 1;
+			while (this.app.vault.getAbstractFileByPath(newPath)) {
+				// Use Obsidian's naming convention: "Name 1.md", "Name 2.md", etc.
+				const newName = `${baseName} ${counter}.${extension}`;
+				newPath = mainPath ? `${mainPath}/${newName}` : newName;
+				counter++;
+				renamed = true;
 			}
 
 			// Ensure target folder exists
@@ -172,10 +238,10 @@ export class StagingService {
 			// Move the file
 			await this.app.fileManager.renameFile(file, newPath);
 
-			return { success: true, newPath };
+			return { success: true, newPath, renamed };
 		} catch (error) {
 			const errorMsg = error instanceof Error ? error.message : String(error);
-			return { success: false, newPath, error: errorMsg };
+			return { success: false, newPath, renamed: false, error: errorMsg };
 		}
 	}
 
@@ -185,11 +251,11 @@ export class StagingService {
 	async promoteSubfolder(subfolderPath: string, options: PromoteOptions = {}): Promise<PromoteResult> {
 		const folder = this.app.vault.getAbstractFileByPath(subfolderPath);
 		if (!(folder instanceof TFolder)) {
-			return { success: false, filesPromoted: 0, filesSkipped: 0, errors: ['Subfolder not found'] };
+			return { success: false, filesPromoted: 0, filesSkipped: 0, filesRenamed: 0, errors: ['Subfolder not found'] };
 		}
 
 		const files = this.getFilesInFolder(folder);
-		const results: PromoteResult = { success: true, filesPromoted: 0, filesSkipped: 0, errors: [] };
+		const results: PromoteResult = { success: true, filesPromoted: 0, filesSkipped: 0, filesRenamed: 0, errors: [] };
 
 		for (const file of files) {
 			// Check if file should be skipped (e.g., marked as same person)
@@ -205,6 +271,9 @@ export class StagingService {
 			const result = await this.promoteFile(file);
 			if (result.success) {
 				results.filesPromoted++;
+				if (result.renamed) {
+					results.filesRenamed++;
+				}
 			} else {
 				results.errors.push(`${file.name}: ${result.error}`);
 			}
@@ -221,7 +290,7 @@ export class StagingService {
 	 */
 	async promoteAll(options: PromoteOptions = {}): Promise<PromoteResult> {
 		const files = this.getStagingFiles();
-		const results: PromoteResult = { success: true, filesPromoted: 0, filesSkipped: 0, errors: [] };
+		const results: PromoteResult = { success: true, filesPromoted: 0, filesSkipped: 0, filesRenamed: 0, errors: [] };
 
 		for (const file of files) {
 			// Check if file should be skipped (e.g., marked as same person)
@@ -237,6 +306,9 @@ export class StagingService {
 			const result = await this.promoteFile(file);
 			if (result.success) {
 				results.filesPromoted++;
+				if (result.renamed) {
+					results.filesRenamed++;
+				}
 			} else {
 				results.errors.push(`${file.name}: ${result.error}`);
 			}
