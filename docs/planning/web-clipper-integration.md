@@ -77,6 +77,28 @@ Canvas Roots will monitor staging folder for files containing these properties.
    - Shows files with clipper metadata
    - Optionally persist filter selection
 
+### Implementation Details & Decisions
+
+**Unreviewed tracking:**
+- Start with simple approach: count resets when Staging Manager is opened with clips visible
+- Can enhance later with per-file tracking if users request it
+
+**Detection scope:**
+- Only monitor staging folder (as configured in settings)
+- Prevents performance issues from scanning entire vault
+- User must configure Web Clipper to output to staging folder
+- Clips outside staging folder won't be detected
+
+**Property conflicts:**
+- Use unprefixed properties (`clipped_from`, `clip_source_type`) for simplicity
+- Low risk of conflict since these are clearly clipper-specific
+- Document in Phase 1 user guide
+
+**Filter mechanism:**
+- Extend existing Staging Manager search/filter to support property matching
+- Simple text match on property names initially
+- Can enhance with property-specific UI later
+
 ### Benefits
 
 - Works with any user-created templates (no repo commitment needed)
@@ -179,6 +201,16 @@ More sophisticated extraction capabilities.
    - Community wiki page?
    - Eventually accept PRs to docs/clipper-templates/?
 
+6. **"Unreviewed" tracking** — How to determine when clipped notes have been reviewed?
+   - Option A: Count resets when Dashboard indicator is clicked (current plan)
+   - Option B: Track per-file when promoted/deleted from staging
+   - Option C: Manual reset button in Dashboard/Staging Manager
+
+7. **Detection scope** — Where should Canvas Roots detect clipped notes?
+   - Staging folder only (current plan - simpler, better performance)
+   - Anywhere in vault (more flexible, performance concern)
+   - Configurable setting?
+
 ---
 
 ## Documentation Updates (Phase 1)
@@ -191,11 +223,22 @@ More sophisticated extraction capabilities.
 
 ### User Guide Content
 
-Document how to:
-1. Create Web Clipper templates with clipper metadata properties
-2. Configure output folder to staging
-3. Use Dashboard indicator to review clipped notes
-4. Share templates in Discussions
+**Phase 1 Setup Guide must include:**
+- How to configure Web Clipper output folder to match Canvas Roots staging folder
+- Warning: clips outside staging folder won't be detected
+- Example template showing recommended metadata properties (`clip_source_type`, `clipped_from`, `clipped_date`)
+- Screenshots of Dashboard indicator and Staging Manager filter
+- How to share templates in Discussions
+
+**Example template snippet for documentation:**
+```yaml
+---
+clip_source_type: obituary
+clipped_from: "{{url}}"
+clipped_date: "{{date}}"
+# ... other genealogical properties
+---
+```
 
 ---
 
