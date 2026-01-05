@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Timeline event location spacing: fixed missing space between event links and location text (e.g., "Murder of Agrippina in Baiae")
+- **Filename sanitization for special characters** ([#139](https://github.com/banisterious/obsidian-canvas-roots/issues/139)): Strip parentheses and brackets from filenames to prevent wikilink errors (e.g., `Susan (Sue)` → `Susan Sue.md`). Fallback to `Unknown.md` when sanitization results in empty string
 
 ---
 
