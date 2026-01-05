@@ -92,6 +92,55 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 
 ---
 
+### Optional Person Names
+
+**Priority:** 📋 Medium — Supports real-world genealogical research workflows
+
+**Status:** Planning
+
+**GitHub Issue:** [#140](https://github.com/banisterious/obsidian-canvas-roots/issues/140)
+
+**Summary:** Enable users to create person notes without requiring a name, addressing the common genealogical research scenario where relationships are known before individual identities are discovered.
+
+**The Problem:** Researchers often need to add persons to track family relationships before discovering their names. Current workaround requires manually creating placeholder names like `[father of John]` or `[Smith]`, which feels awkward and requires later cleanup.
+
+**The Solution:** Make name fields optional with smart handling:
+- **`cr_id` filenames** for unnamed persons (e.g., `cr-abc123.md`)
+- **Automatic rename** when names are added later
+- **Relationship integrity** maintained via `cr_id`-based linking (already implemented)
+- **Optional placeholder property** to distinguish "temporarily unnamed" from "true unknown"
+
+**Phased Approach:**
+
+| Phase | Feature | Status |
+|-------|---------|--------|
+| 1 | Core Functionality | Ready to implement |
+| 2 | Metadata & Filtering | Future enhancement |
+
+**Phase 1 — Core Functionality:**
+- Make Given Name and Surname optional in Create Person modal
+- Use `cr_id` as filename for unnamed persons
+- Automatic file renaming when name added
+- Display `cr_id` in UI with subtle styling
+- Leverage existing rename functionality for wikilink updates
+
+**Phase 2 — Metadata & Filtering:**
+- Opt-in `placeholder` property checkbox
+- Visual indicators for unnamed persons
+- Research Gaps Report filtering for unnamed persons
+- Dashboard statistics
+
+**User Impact:** Non-breaking change
+- Coexists with existing manual placeholder approach
+- No migration required for existing notes
+- All relationship links survive automatic rename
+- Leverages existing dual storage pattern (`cr_id` + wikilinks)
+
+**Documentation:**
+- See [Optional Person Names Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/optional-person-names.md) for detailed specifications
+
+---
+
 ### Web Clipper Integration
 
 **Priority:** 📋 Medium — Streamlines research capture for all genealogists
