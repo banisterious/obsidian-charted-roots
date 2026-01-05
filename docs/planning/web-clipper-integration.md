@@ -100,7 +100,7 @@ clip_source_type: obituary
 5. Browse genealogy site, click Web Clipper, select template
 6. Note created in staging folder with extracted data
 7. Review and edit in Obsidian
-8. Use Staging Manager (#137) to promote to main tree
+8. Use Staging Manager ([#137](https://github.com/banisterious/obsidian-canvas-roots/issues/137)) to promote to main tree
 
 ### Implementation Steps
 
@@ -124,7 +124,7 @@ Based on community feedback:
 
 ## Phase 2: File Watcher (Future)
 
-**Status:** Blocked by #137 (Staging Management UI)
+**Status:** Blocked by [#137](https://github.com/banisterious/obsidian-canvas-roots/issues/137) (Staging Management UI)
 
 Automatically detect clipped notes and offer guided import.
 
@@ -138,7 +138,7 @@ Automatically detect clipped notes and offer guided import.
 
 ### Dependencies
 
-- **#137 Staging Management UI** — Provides the review/promote workflow
+- **[#137](https://github.com/banisterious/obsidian-canvas-roots/issues/137) Staging Management UI** — Provides the review/promote workflow
 - File watching capability (Obsidian's vault events)
 
 ### Implementation Considerations
@@ -294,6 +294,6 @@ Each template should include:
 
 ## Notes
 
-This plan was created based on GitHub issue #128 discussion. Key community input:
+This plan was created based on GitHub issue [#128](https://github.com/banisterious/obsidian-canvas-roots/issues/128) discussion. Key community input:
 - @wilbry tested templates and noted Web Clipper requires double quotes in prompts
 - Clipper variables in context field improve LLM extraction quality

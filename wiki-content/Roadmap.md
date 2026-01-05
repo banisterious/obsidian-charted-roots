@@ -8,6 +8,7 @@ This document outlines planned features for Canvas Roots. For completed features
 
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
+  - [Web Clipper Integration](#web-clipper-integration) 📋 Medium
   - [DMS Coordinate Conversion](#dms-coordinate-conversion) 💡 Low
   - [DNA Match Tracking](#dna-match-tracking) 💡 Low
   - [Calendarium Integration](#calendarium-integration) 💡 Low
@@ -57,6 +58,48 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 | ⚡ High | Core workflow | Completes essential data portability |
 | 📋 Medium | User value | Highly requested sharing/output features |
 | 💡 Low | Specialized | Advanced use cases, niche workflows |
+
+---
+
+### Web Clipper Integration
+
+**Priority:** 📋 Medium — Streamlines research capture for all genealogists
+
+**Status:** Planning
+
+**GitHub Issue:** [#128](https://github.com/banisterious/obsidian-canvas-roots/issues/128)
+
+**Summary:** Ready-to-use templates for Obsidian Web Clipper that capture genealogical data from common research sources (obituaries, Find A Grave, FamilySearch, Wikipedia) directly into Canvas Roots-compatible notes with structured frontmatter.
+
+**The Problem:** Genealogists frequently clip data from web sources during research. Without templates, users must manually structure clipped content with Canvas Roots frontmatter, leading to inconsistent data entry and extra work.
+
+**Phased Approach:**
+
+| Phase | Feature | Status |
+|-------|---------|--------|
+| 1 | Template Distribution | Ready to implement |
+| 2 | File Watcher | Blocked by [#137](https://github.com/banisterious/obsidian-canvas-roots/issues/137) |
+| 3 | Enhanced Extraction | Conceptual |
+
+**Phase 1 — Template Distribution:**
+- Distribute JSON template files for manual import into Web Clipper
+- Templates for: Generic Obituary (LLM extraction), Find A Grave (CSS selectors), FamilySearch Person (CSS selectors), Wikipedia Biography (Schema.org)
+- Output notes include Canvas Roots frontmatter (`cr_type`, `name`, `born`, `died`, etc.) plus clipping metadata
+- User configures output folder to staging for review before promotion
+
+**Phase 2 — File Watcher (Future):**
+- Automatically detect clipped notes in staging folder
+- Show notification: "3 new clipped notes to review"
+- Open Staging Manager with filter for clipped notes
+- Depends on Staging Management UI ([#137](https://github.com/banisterious/obsidian-canvas-roots/issues/137))
+
+**Phase 3 — Enhanced Extraction (Future):**
+- Relationship extraction from obituary "survived by" sections
+- Multi-person clipping from census pages
+- Auto-create source notes linked to clipped people
+
+**Documentation:**
+- See [Web Clipper Integration Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/web-clipper-integration.md) for detailed specifications
 
 ---
 
