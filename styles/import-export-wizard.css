@@ -1358,6 +1358,35 @@
   height: 16px;
 }
 
+/* Staging manager prompt in import complete */
+.crc-import-staging-prompt {
+  padding: 16px;
+  background: var(--background-secondary);
+  border-radius: 10px;
+  text-align: center;
+}
+
+.crc-import-staging-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.crc-import-staging-note-icon {
+  flex-shrink: 0;
+  color: var(--interactive-accent);
+  margin-top: 2px;
+}
+
+.crc-import-staging-note-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* Scope/radio options */
 .crc-wizard-scope-options {
   display: flex;

@@ -1339,6 +1339,30 @@ export class ImportWizardModal extends Modal {
 			});
 		});
 
+		// Staging Manager prompt (show when imported to staging folder)
+		if (this.isImportedToStaging()) {
+			const stagingSection = section.createDiv({ cls: 'crc-import-staging-prompt crc-mt-3' });
+			const stagingNote = stagingSection.createDiv({ cls: 'crc-import-staging-note' });
+			const stagingInfoIcon = stagingNote.createSpan({ cls: 'crc-import-staging-note-icon' });
+			setIcon(stagingInfoIcon, 'archive');
+			stagingNote.createSpan({
+				text: 'Data imported to staging. Review and promote to your main tree when ready.'
+			});
+
+			const stagingBtn = stagingSection.createEl('button', {
+				cls: 'crc-btn crc-btn--secondary crc-mt-2'
+			});
+			const stagingBtnIcon = stagingBtn.createSpan({ cls: 'crc-btn-icon' });
+			setIcon(stagingBtnIcon, 'archive');
+			stagingBtn.createSpan({ text: 'Manage Staging' });
+			stagingBtn.addEventListener('click', () => {
+				this.close();
+				void import('./staging-management-modal').then(({ StagingManagementModal }) => {
+					new StagingManagementModal(this.app, this.plugin).open();
+				});
+			});
+		}
+
 		// Check for privacy notice (after first import with living persons)
 		void this.checkPrivacyNotice();
 	}
@@ -1622,6 +1646,22 @@ export class ImportWizardModal extends Modal {
 			case 'generation': return 'Generation';
 			default: return '';
 		}
+	}
+
+	/**
+	 * Check if the import was to the staging folder
+	 */
+	private isImportedToStaging(): boolean {
+		const stagingFolder = this.plugin.settings.stagingFolder;
+		if (!stagingFolder || !this.plugin.settings.enableStagingIsolation) {
+			return false;
+		}
+
+		const targetFolder = this.formData.targetFolder.toLowerCase().replace(/^\/|\/$/g, '');
+		const normalizedStaging = stagingFolder.toLowerCase().replace(/^\/|\/$/g, '');
+
+		// Check if target is the staging folder or a subfolder of it
+		return targetFolder === normalizedStaging || targetFolder.startsWith(normalizedStaging + '/');
 	}
 
 	/**
