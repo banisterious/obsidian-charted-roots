@@ -373,6 +373,24 @@ export class StagingService {
 	}
 
 	/**
+	 * Get files in a specific subfolder with their entity types
+	 */
+	getSubfolderFiles(subfolderPath: string): Array<{ file: TFile; entityType: NoteType | null }> {
+		const folder = this.app.vault.getAbstractFileByPath(subfolderPath);
+		if (!(folder instanceof TFolder)) return [];
+
+		const files = this.getFilesInFolder(folder);
+		return files.map(file => {
+			const cache = this.app.metadataCache.getFileCache(file);
+			const fm = cache?.frontmatter;
+			const entityType = fm
+				? detectNoteType(fm, cache, this.settings.noteTypeDetection)
+				: null;
+			return { file, entityType };
+		});
+	}
+
+	/**
 	 * Check if a file path is in the staging folder
 	 */
 	private isInStagingFolder(filePath: string): boolean {

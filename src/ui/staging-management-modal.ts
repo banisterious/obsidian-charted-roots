@@ -8,7 +8,7 @@
  * - Delete staging data
  */
 
-import { App, Modal, Notice, setIcon } from 'obsidian';
+import { App, Modal, Notice, setIcon, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import {
 	StagingService,
@@ -17,6 +17,7 @@ import {
 } from '../core/staging-service';
 import { CrossImportDetectionService } from '../core/cross-import-detection';
 import { FolderFilterService } from '../core/folder-filter';
+import type { NoteType } from '../utils/note-type-detection';
 
 /**
  * Staging Management Modal
@@ -25,6 +26,7 @@ export class StagingManagementModal extends Modal {
 	private plugin: CanvasRootsPlugin;
 	private stagingService: StagingService;
 	private crossImportService: CrossImportDetectionService | null = null;
+	private expandedBatches: Set<string> = new Set();
 
 	constructor(app: App, plugin: CanvasRootsPlugin) {
 		super(app);
@@ -246,10 +248,21 @@ export class StagingManagementModal extends Modal {
 	 * Render a single subfolder item
 	 */
 	private renderSubfolderItem(container: HTMLElement, subfolder: StagingSubfolderInfo): void {
-		const item = container.createDiv({ cls: 'crc-staging-item' });
+		const isExpanded = this.expandedBatches.has(subfolder.path);
+		const item = container.createDiv({
+			cls: `crc-staging-item ${isExpanded ? 'is-expanded' : ''}`
+		});
 
-		// Header with folder icon and name
+		// Clickable header with folder icon and name
 		const header = item.createDiv({ cls: 'crc-staging-item-header' });
+		header.setAttribute('role', 'button');
+		header.setAttribute('tabindex', '0');
+		header.setAttribute('aria-expanded', isExpanded.toString());
+
+		// Chevron for expand/collapse
+		const chevron = header.createDiv({ cls: 'crc-staging-item-chevron' });
+		setIcon(chevron, 'chevron-right');
+
 		const iconEl = header.createDiv({ cls: 'crc-staging-item-icon' });
 		setIcon(iconEl, 'folder');
 
@@ -269,6 +282,19 @@ export class StagingManagementModal extends Modal {
 			statsLine.createSpan({ text: modifiedText, cls: 'crc-staging-item-date' });
 		}
 
+		// Toggle expand on header click
+		header.addEventListener('click', (e) => {
+			// Don't toggle if clicking on actions
+			if ((e.target as HTMLElement).closest('.crc-staging-item-actions')) return;
+			this.toggleBatchExpanded(subfolder.path);
+		});
+		header.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				this.toggleBatchExpanded(subfolder.path);
+			}
+		});
+
 		// Actions
 		const actions = item.createDiv({ cls: 'crc-staging-item-actions' });
 
@@ -279,7 +305,10 @@ export class StagingManagementModal extends Modal {
 		});
 		setIcon(checkBtn, 'search');
 		checkBtn.createSpan({ text: 'Check duplicates' });
-		checkBtn.addEventListener('click', () => this.handleCheckDuplicates(subfolder.path));
+		checkBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			this.handleCheckDuplicates(subfolder.path);
+		});
 
 		// Promote button
 		const promoteBtn = actions.createEl('button', {
@@ -288,7 +317,10 @@ export class StagingManagementModal extends Modal {
 		});
 		setIcon(promoteBtn, 'arrow-up-right');
 		promoteBtn.createSpan({ text: 'Promote' });
-		promoteBtn.addEventListener('click', () => this.handlePromoteSubfolder(subfolder));
+		promoteBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			this.handlePromoteSubfolder(subfolder);
+		});
 
 		// Delete button
 		const deleteBtn = actions.createEl('button', {
@@ -296,7 +328,87 @@ export class StagingManagementModal extends Modal {
 			attr: { 'aria-label': 'Delete' }
 		});
 		setIcon(deleteBtn, 'trash-2');
-		deleteBtn.addEventListener('click', () => this.handleDeleteSubfolder(subfolder));
+		deleteBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			this.handleDeleteSubfolder(subfolder);
+		});
+
+		// Expandable file list
+		if (isExpanded) {
+			this.renderFileList(item, subfolder.path);
+		}
+	}
+
+	/**
+	 * Toggle batch expansion state
+	 */
+	private toggleBatchExpanded(path: string): void {
+		if (this.expandedBatches.has(path)) {
+			this.expandedBatches.delete(path);
+		} else {
+			this.expandedBatches.add(path);
+		}
+		this.renderContent();
+	}
+
+	/**
+	 * Render the file list for an expanded batch
+	 */
+	private renderFileList(container: HTMLElement, subfolderPath: string): void {
+		const files = this.stagingService.getSubfolderFiles(subfolderPath);
+		if (files.length === 0) return;
+
+		const fileList = container.createDiv({ cls: 'crc-staging-file-list' });
+
+		for (const { file, entityType } of files) {
+			const fileRow = fileList.createDiv({ cls: 'crc-staging-file-row' });
+			fileRow.setAttribute('role', 'button');
+			fileRow.setAttribute('tabindex', '0');
+
+			// Entity type icon
+			const typeIcon = fileRow.createDiv({ cls: 'crc-staging-file-icon' });
+			setIcon(typeIcon, this.getEntityTypeIcon(entityType));
+
+			// File name
+			fileRow.createDiv({
+				cls: 'crc-staging-file-name',
+				text: file.basename
+			});
+
+			// Entity type badge
+			if (entityType) {
+				fileRow.createDiv({
+					cls: 'crc-staging-file-type',
+					text: entityType
+				});
+			}
+
+			// Click to open file
+			const openFile = () => {
+				this.app.workspace.openLinkText(file.path, '', true);
+			};
+			fileRow.addEventListener('click', openFile);
+			fileRow.addEventListener('keydown', (e) => {
+				if (e.key === 'Enter' || e.key === ' ') {
+					e.preventDefault();
+					openFile();
+				}
+			});
+		}
+	}
+
+	/**
+	 * Get icon for entity type
+	 */
+	private getEntityTypeIcon(entityType: NoteType | null): string {
+		switch (entityType) {
+			case 'person': return 'user';
+			case 'place': return 'map-pin';
+			case 'source': return 'book-open';
+			case 'event': return 'calendar';
+			case 'organization': return 'building';
+			default: return 'file';
+		}
 	}
 
 	/**
