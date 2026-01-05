@@ -3,9 +3,9 @@
 Planning document for adding staging management functionality to Import/Export wizards.
 
 - **Status:** Planning
-- **GitHub Issue:** #TBD
+- **GitHub Issue:** [#137](https://github.com/banisterious/obsidian-canvas-roots/issues/137)
 - **Created:** 2025-12-28
-- **Updated:** 2025-12-28
+- **Updated:** 2025-01-04
 
 ---
 
@@ -18,10 +18,12 @@ The Import/Export wizards currently allow importing to staging folders, but ther
 Staging is a workflow for reviewing imported genealogical data before promoting it to the main family tree:
 
 1. **Import to Staging** - Import GEDCOM/Gramps/CSV files into a staging subfolder
-2. **Review** - Check for duplicates against existing people in the main tree
-3. **Resolve** - Mark duplicates as "same person" (skip) or "different person" (promote)
-4. **Promote** - Move reviewed files to the main people folder
+2. **Review** - Check for duplicates against existing entities in the main tree
+3. **Resolve** - Mark duplicates as "same entity" (skip) or "different entity" (promote)
+4. **Promote** - Move reviewed files to the main folder
 5. **Cleanup** - Delete rejected staging data
+
+**Supported Entity Types:** Staging handles all Canvas Roots entity types imported from external sources: people, places, sources, events, organizations. The UI displays entity counts and allows filtering by `cr_type`.
 
 ---
 
@@ -32,9 +34,13 @@ Staging is a workflow for reviewing imported genealogical data before promoting 
 Display staging folder status with statistics:
 
 - **Staging folder path** (from `settings.stagingFolder`)
-- **Total people** in staging
+- **Total entities** in staging (with breakdown by `cr_type`)
 - **Subfolder count** (each import creates a subfolder by default)
-- **Per-subfolder stats**: name, person count, modified date
+- **Per-subfolder stats**: name, entity count by type, modified date
+
+**Subfolder Naming Convention:** Import Wizard creates subfolders using the pattern `{source-type}-{YYYY-MM-DD}` (e.g., `gedcom-2025-01-04`, `gramps-2025-01-04`).
+
+**Empty State:** When staging folder is empty, display: "No staged imports. Use the Import Wizard to import data to staging, or configure Web Clipper to save clips here." Include a button to open Import Wizard.
 
 **UI Pattern from deprecated tab:**
 ```
@@ -77,11 +83,13 @@ Shows matched pairs side-by-side:
 
 **Resolution Storage:**
 - `CrossImportDetectionService.getResolutions()` returns array of `{ stagingCrId, resolution: 'same' | 'different' }`
-- Resolutions are checked during promote to skip "same person" entries
+- Resolutions are stored **in-memory only** for the current session
+- If user closes the modal without promoting, resolutions are discarded (user re-reviews next time)
+- Resolutions are checked during promote to skip "same entity" entries
 
 ### 4. Promote Operations
 
-Move staging files to the main people folder.
+Move staging files to the main folder.
 
 **Service:** `StagingService`
 
@@ -115,15 +123,18 @@ interface PromoteResult {
   success: boolean;
   filesPromoted: number;
   filesSkipped: number;  // Due to duplicate resolution
+  filesRenamed: number;  // Due to filename conflicts
   errors: string[];
 }
 ```
 
+**Filename Conflict Handling:** If a file with the same name already exists in the destination folder, append a numeric suffix following Obsidian's convention: `John Smith.md` → `John Smith 1.md`. Report renamed files in the result notice.
+
 **UI Flow:**
 1. Click "Promote" or "Promote all"
-2. Confirmation dialog: "This will move X people from staging to your main people folder. Files marked as 'same person' will be skipped. Continue?"
+2. Confirmation dialog: "This will move X entities from staging to your main folder. Files marked as 'same entity' will be skipped. Continue?"
 3. Execute promote with shouldSkip callback
-4. Notice: "Promoted X people to main tree (Y skipped as duplicates)"
+4. Notice: "Promoted X entities to main tree (Y skipped as duplicates, Z renamed to avoid conflicts)"
 5. Refresh staging UI
 
 ### 5. Delete Operations
@@ -297,8 +308,20 @@ The following CSS classes were used in the deprecated tab and should be reused o
 
 ---
 
+## Future Considerations
+
+### Web Clipper Integration ([#128](https://github.com/banisterious/obsidian-canvas-roots/issues/128))
+
+Phase 2 of Web Clipper Integration depends on this feature. The Staging Manager should support:
+- Filtering by `clip_source_type` frontmatter to show only clipped notes
+- Badge/indicator showing count of unreviewed clipped notes
+- See [Web Clipper Integration Planning](web-clipper-integration.md) for details
+
+---
+
 ## Related Documents
 
+- [Web Clipper Integration Planning](web-clipper-integration.md)
 - [Import Wizard](../../wiki-content/Data-Entry.md#import-wizard)
 - [Data Entry](../../wiki-content/Data-Entry.md)
 - Deprecated tab code: Control Center `showImportExportTab()` (removed in v0.18.x)
