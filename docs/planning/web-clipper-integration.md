@@ -109,6 +109,13 @@ Canvas Roots will monitor staging folder for files containing these properties.
 - Simple text match on property names initially
 - Can enhance with property-specific UI later
 
+**Dashboard indicator placement:**
+- Hybrid approach: Dedicated card shown only when clipped notes exist
+- Card appears dynamically when clips detected, hidden when staging cleared
+- Rationale: Clean Dashboard for non-clippers, prominent when relevant, room for future features
+- Layout shift acts as visual feedback for clip detection
+- Can be smoothed with animation in implementation
+
 ### Benefits
 
 - Works with any user-created templates (no repo commitment needed)
@@ -195,20 +202,43 @@ More sophisticated extraction capabilities.
 
 ### Wiki Pages to Create/Update
 
-- [ ] Create or update: `Data-Entry.md` — Document Web Clipper workflow with Canvas Roots
-- [ ] Update: `Roadmap.md` — Reflect revised phasing ✅
-- [ ] Update: Planning doc — Reflect revised phasing ✅
+- [ ] Create: `wiki-content/Web-Clipper-Integration.md` — Dedicated setup and usage guide
+- [ ] Update: `wiki-content/Data-Entry.md` — Add "Clipping from Web Sources" section with overview and link to full guide
+- [x] Update: `Roadmap.md` — Reflect revised phasing
+- [x] Update: Planning doc — Reflect revised phasing
 
-### User Guide Content
+### Web-Clipper-Integration.md Structure
 
-**Phase 1 Setup Guide must include:**
-- How to configure Web Clipper output folder to match Canvas Roots staging folder
-- Warning: clips outside staging folder won't be detected
-- Example template showing recommended metadata properties (`clip_source_type`, `clipped_from`, `clipped_date`)
-- Screenshots of Dashboard indicator and Staging Manager filter
-- How to share templates in Discussions
+**New dedicated wiki page** with comprehensive setup and usage guide:
 
-**Example template snippet for documentation:**
+1. **Overview**
+   - What is Web Clipper Integration
+   - When to use it (capturing obituaries, Find A Grave, etc.)
+   - How it works with Staging Manager
+
+2. **Setup**
+   - Install Obsidian Web Clipper extension
+   - Configure output folder to match Canvas Roots staging folder
+   - Warning: clips outside staging folder won't be detected
+
+3. **Creating Templates**
+   - Required metadata properties (`clip_source_type`, `clipped_from`, `clipped_date`)
+   - Benefits of including each property
+   - Example minimal template
+   - Tips for LLM-based extraction (based on wilbry's testing)
+
+4. **Workflow**
+   - Clipping content from web
+   - Reviewing clips in Dashboard
+   - Using Staging Manager filter
+   - Promoting to main tree
+
+5. **Community Templates**
+   - How to share templates in Discussions
+   - Where to find community-shared templates
+   - Note about future official templates (Phase 2)
+
+**Example template snippet:**
 ```yaml
 ---
 clip_source_type: obituary
@@ -217,6 +247,16 @@ clipped_date: "{{date}}"
 # ... other genealogical properties
 ---
 ```
+
+### Data-Entry.md Updates
+
+**Add new section:** "Clipping from Web Sources"
+
+Brief overview with:
+- What Web Clipper Integration does
+- Quick workflow summary
+- Link to full [Web Clipper Integration](Web-Clipper-Integration) guide
+- When to use clipping vs manual entry vs GEDCOM import
 
 ---
 
