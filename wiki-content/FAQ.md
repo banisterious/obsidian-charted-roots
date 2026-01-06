@@ -32,6 +32,47 @@ Canvas Roots is an Obsidian plugin that transforms genealogical data stored in y
 
 No. Canvas Roots uses YAML frontmatter in your markdown notes, which is a simple key-value format. If you can write `name: John Smith`, you can use Canvas Roots.
 
+### Is Canvas Roots right for me? Do I need to be technical?
+
+Canvas Roots is designed for genealogists and worldbuilders who want the power of Obsidian's note-taking system combined with visual family trees. But it does have a learning curve. Here's how to assess if it's a good fit:
+
+**You'll likely thrive with Canvas Roots if:**
+- You're already comfortable with Obsidian or willing to learn it
+- You want to own your genealogy data locally (not in the cloud)
+- You value flexibility and customization over simplicity
+- You enjoy linking notes, building knowledge systems, or using markdown
+- You're researching complex family relationships or doing serious genealogical research
+- You have a technical family member who can help with setup if needed
+
+**Canvas Roots might be overwhelming if:**
+- You've never used Obsidian before (steep learning curve for both)
+- You just want to "see a tree" without managing research notes
+- You prefer clicking buttons over editing YAML frontmatter
+- You need extensive hand-holding or step-by-step wizards for every task
+- You're looking for cloud-synced collaboration with family members
+
+**About the technical requirements:**
+
+- **Obsidian itself:** You need to be comfortable installing desktop software and understanding concepts like "vaults" (folders), plugins, and settings. If terms like "file explorer" or "command palette" are unfamiliar, there's a learning curve ahead.
+
+- **Installing Canvas Roots:** Currently, Canvas Roots requires [BRAT](https://github.com/TfTHacker/obsidian42-brat) (a plugin for installing beta plugins). This adds complexity: install Obsidian → enable community plugins → install BRAT → use BRAT to install Canvas Roots. For non-technical users, this can be daunting.
+
+- **Using Canvas Roots:** Once installed, you don't need coding knowledge. If you can write `name: John Smith` in your notes, you can use Canvas Roots. But you do need comfort with:
+  - Editing text files (markdown notes)
+  - Understanding YAML frontmatter (the `---` section at the top of notes)
+  - Navigating settings panels
+  - Troubleshooting when things don't work as expected
+
+**Alternative approaches:**
+
+- **Have a technical helper:** Many users successfully use Canvas Roots with a family member handling the installation and initial setup. Once configured, day-to-day use is much simpler.
+- **Start simple:** If you're already using Obsidian for other purposes (notes, journaling, research), adding Canvas Roots is less overwhelming than learning both at once.
+- **Try traditional software first:** If the technical barrier seems too high, consider starting with user-friendly genealogy software. You can always export to GEDCOM and import to Canvas Roots later.
+
+**The honest truth:** Canvas Roots rewards investment. If you're willing to climb the learning curve, it offers unmatched flexibility for serious genealogical research within Obsidian. But if you're looking for something you can master in an afternoon, this probably isn't it.
+
+Still interested? Start with the [Getting Started](Getting-Started) guide and join the [community discussions](https://github.com/banisterious/obsidian-canvas-roots/discussions) where others can help.
+
 ### Can I use Canvas Roots for fictional family trees?
 
 Yes! Canvas Roots works equally well for real genealogy and fictional world-building. Use the `universe` property on place notes to organize fictional worlds, and the geographic features support custom image maps for fantasy worlds.

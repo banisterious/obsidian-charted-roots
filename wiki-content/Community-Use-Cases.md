@@ -8,6 +8,7 @@ Real-world examples of how people use Canvas Roots for genealogy, worldbuilding,
 
 **Genealogists**
 - [Getting Started from Ancestry or FamilySearch](#getting-started-from-ancestry-or-familysearch)
+- [Helping a Non-Technical Family Member Get Started](#helping-a-non-technical-family-member-get-started)
 - [Importing from Genealogy Software](#importing-from-genealogy-software)
 - [Building a Family Tree from Scratch](#building-a-family-tree-from-scratch)
 - [Adding a New Family Member](#adding-a-new-family-member)
@@ -116,6 +117,132 @@ You've been building your family tree on Ancestry.com or FamilySearch, but you'r
 - **Canvas Roots works offline:** Once imported, your data is stored locally in your Obsidian vault. No internet required.
 - **Going back is possible:** If you decide Canvas Roots isn't for you, you can export to GEDCOM anytime and re-import to other genealogy software.
 - **Don't stress about perfection:** The Cleanup Wizard will help you find and fix data issues over time. You don't need to fix everything at once.
+
+---
+
+### Helping a Non-Technical Family Member Get Started
+
+**User type:** Genealogist (supporter helping a family member)
+**Features used:** Installation, BRAT, Create Person, Family Chart
+**Complexity:** Beginner (with technical support)
+
+**The Challenge**
+
+Your 78-year-old relative expressed interest in using Canvas Roots to organize their family tree research. They're not technical—they use email and Facebook, but terms like "plugin" or "YAML" are foreign. You want to help them get started without overwhelming them or committing to being permanent tech support.
+
+**The Reality**
+
+This use case is based on a real experience: the installation process (Obsidian → BRAT → Canvas Roots) was successful, but left the relative feeling overwhelmed. While they could technically use the plugin with guidance, the setup complexity created anxiety about using it independently going forward.
+
+**Honest Assessment: Is This a Good Fit?**
+
+Before you begin, ask:
+
+1. **Is your relative already using Obsidian?** If not, they're learning two complex tools at once. This significantly increases overwhelm.
+2. **Do they want to *manage research* or just *view a tree*?** If they just want to see relationships visualized, simpler tools (Ancestry, FamilySearch, Gramps) may be better fits.
+3. **Are you available for ongoing support?** Canvas Roots has a learning curve. Expect follow-up questions about editing notes, troubleshooting, and using features.
+4. **Do they enjoy learning new technology?** Some older users thrive on this challenge. Others find it stressful.
+
+**If you decide to proceed:**
+
+**The Setup Approach**
+
+Do the technical heavy lifting for them:
+
+1. **Install Obsidian** on their computer
+   - Use their computer, not yours (different operating systems can confuse later instructions)
+   - Set up a dedicated vault for their family tree
+   - Enable community plugins in Settings → Community plugins
+
+2. **Install BRAT plugin**
+   - Browse community plugins → Search for "BRAT" → Install and enable
+   - Explain: "This lets you use Canvas Roots, which isn't in the official plugin store yet"
+
+3. **Install Canvas Roots via BRAT**
+   - Settings → BRAT → Add Beta plugin
+   - Enter: `banisterious/obsidian-canvas-roots`
+   - Enable the plugin after installation
+
+4. **Configure basic settings together**
+   - Walk through Canvas Roots settings
+   - Set up folder paths (where notes will be saved)
+   - Show them where settings are so they can find them later
+
+5. **Create their first few people together**
+   - Open Control Center → People → Create Person
+   - Enter their parents or grandparents
+   - Show how to link relationships
+   - Generate a simple family chart
+
+6. **Create a cheat sheet**
+   - Write down common tasks in plain language:
+     - "To add a new person: Click the ribbon icon → People → Create Person"
+     - "To see your tree: Click the ribbon icon → Open Family Chart"
+   - Include screenshots if possible
+   - Leave this document open in their vault for reference
+
+**What to Emphasize**
+
+- **You can't break it:** Reassure them that editing notes won't destroy their data. Obsidian keeps backups.
+- **Start simple:** They don't need to use every feature. Focus on: adding people, linking relationships, viewing the chart.
+- **It's okay to ask for help:** Give them a way to contact you (phone, email) when stuck.
+
+**What Will Be Overwhelming**
+
+Be prepared for these pain points:
+
+- **YAML frontmatter:** The `---` section at the top of notes looks intimidating. Emphasize they can use the GUI (Control Center) to avoid editing it directly.
+- **File management:** Obsidian shows files in folders. If they're not comfortable with file systems, this is confusing.
+- **Jargon:** Terms like "vault," "canvas," "wikilink," and "ribbon" are Obsidian-specific. Use analogies: "Vault = your filing cabinet, Canvas = your bulletin board."
+- **Where to click:** Obsidian has many UI elements (ribbon, command palette, sidebar). Show them the 2-3 places they'll use most often.
+
+**Tips for Supporters**
+
+- **Do the first session in person or via screen share:** Don't try to walk them through installation over the phone.
+- **Set realistic expectations:** They won't be proficient immediately. This is okay.
+- **Start with import if they have data:** If they've been using Ancestry or FamilySearch, import their GEDCOM first. Starting with a populated tree is less abstract than creating people from scratch.
+- **Check in after a week:** Follow up to see how they're doing. Offer a second session to answer questions.
+- **Know when to pivot:** If they're still struggling after 2-3 sessions, Canvas Roots might not be the right tool. Consider alternatives like Gramps (which has a GUI) or helping them use Ancestry/FamilySearch.
+
+**Signs They'll Be Successful**
+
+- They're excited about the idea of "owning their data"
+- They've used other note-taking or organization software before
+- They're willing to experiment and learn by trial and error
+- They ask clarifying questions rather than shutting down when confused
+
+**Signs This Might Not Work**
+
+- They expect it to "just work" without learning
+- They're frustrated or anxious during setup
+- They repeatedly ask "Why is this so complicated?" or "Why can't it be simpler?"
+- They need step-by-step instructions for every single action
+
+**Alternative: Be Their Canvas Roots Manager**
+
+If they have the research knowledge but not the technical skills, consider a different model:
+
+- **They do the research** (gathering records, talking to relatives, taking notes)
+- **You manage Canvas Roots** (entering data, maintaining the tree, generating charts)
+- **You share outputs** (export PDFs, images of the tree, printed reports)
+
+This division of labor can work well for family history projects where the genealogist has the knowledge and the technical family member has the skills.
+
+**Long-Term Sustainability**
+
+For Canvas Roots to work long-term for a non-technical user:
+
+1. **They need to become comfortable with basic Obsidian concepts** (notes, folders, links)
+2. **They should use primarily the Control Center GUI** rather than editing YAML directly
+3. **They need a support person** for when things go wrong (you, or the community)
+
+Without these, they'll likely abandon the tool due to frustration.
+
+**Related**
+
+- [Getting Started from Ancestry or FamilySearch](#getting-started-from-ancestry-or-familysearch) — Importing existing data
+- [Building a Family Tree from Scratch](#building-a-family-tree-from-scratch) — Creating people and relationships
+- [FAQ: Is Canvas Roots right for me?](FAQ#is-canvas-roots-right-for-me-do-i-need-to-be-technical) — Self-assessment for technical comfort
 
 ---
 
