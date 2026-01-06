@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.18.25] - 2026-01-05
+
 ### Added
 
 - **Web Clipper Integration - Phase 1** ([#128](https://github.com/banisterious/obsidian-canvas-roots/issues/128)):
@@ -18,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Multi-level filtering: stats, batches, and files filtered based on clipper metadata
   - Unread clip count resets when Staging Manager opens
   - Works with any user-created Web Clipper templates
+  - Comprehensive wiki documentation with setup guide, template examples, workflow instructions, and troubleshooting
 
 ### Fixed
 
