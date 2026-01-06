@@ -16,6 +16,7 @@ This page covers how to create person notes with relationship data that Canvas R
 - [Example Person Note](#example-person-note)
 - [Multiple Spouse Support](#multiple-spouse-support)
 - [Wikilinks vs IDs](#wikilinks-vs-ids)
+- [Clipping from Web Sources](#clipping-from-web-sources)
 - [Bulk Data Entry](#bulk-data-entry)
 - [Other Data Types](#other-data-types)
 - [Next Steps](#next-steps)
@@ -255,6 +256,46 @@ Canvas Roots supports both wikilinks and ID-based relationships:
 father: "[[John Smith Sr]]"
 father_id: xyz-789-uvw-012
 ```
+
+## Clipping from Web Sources
+
+Capture genealogical data directly from web pages using [Obsidian Web Clipper](https://help.obsidian.md/Clipper). This method is ideal for collecting data from online sources like obituaries, Find A Grave, FamilySearch, and historical archives.
+
+### Quick Overview
+
+1. Install Obsidian Web Clipper browser extension
+2. Configure output to your Canvas Roots staging folder
+3. Create Web Clipper templates with special metadata properties
+4. Clip content from web pages
+5. Review and verify in Staging Manager (Dashboard shows "3 clips (1 new)")
+6. Promote verified data to your main tree
+
+### When to Use Web Clipper vs Other Methods
+
+| Method | Best For |
+|--------|----------|
+| **Web Clipper** | Capturing data from websites (obituaries, Find A Grave, FamilySearch) |
+| **Manual Entry** | Adding known family members with existing knowledge |
+| **GEDCOM Import** | Migrating from other genealogy software |
+| **CSV Import** | Structured data from spreadsheets |
+
+### Benefits of the Staging Workflow
+
+The Web Clipper integration uses Canvas Roots' staging folder, which provides:
+- Review clips before adding to main tree
+- Detect potential duplicates before promotion
+- Verify LLM-extracted data for accuracy
+- Batch process multiple clips at once
+
+### Learn More
+
+See the full [Web Clipper Integration](Web-Clipper-Integration) guide for:
+- Detailed setup instructions
+- Template creation tips
+- LLM extraction best practices
+- Troubleshooting common issues
+
+---
 
 ## Bulk Data Entry
 
