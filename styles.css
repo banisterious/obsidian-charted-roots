@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-canvas-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-01-05 01:47:11 UTC
+ * - Generated: 2026-01-06 00:25:11 UTC
  * - Components: 41 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -12081,7 +12081,7 @@ settings:
    COMPONENT: STAGING-MANAGER.CSS
    ========================================================================== */
 
-/* Component Size: 503 lines, 10.05 KB */
+/* Component Size: 553 lines, 11.17 KB */
 
 /* =============================================================================
    Staging Manager Modal
@@ -12135,6 +12135,56 @@ settings:
   margin: 0;
   font-size: 18px;
   font-weight: 600;
+}
+
+/* -----------------------------------------------------------------------------
+   Filter Toggles
+   ----------------------------------------------------------------------------- */
+
+.crc-staging-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--background-secondary);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.crc-staging-filter-label {
+  font-size: 0.9em;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.crc-staging-filter-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.crc-staging-filter-btn {
+  padding: 4px 12px;
+  font-size: 0.85em;
+  background: var(--background-primary);
+  color: var(--text-muted);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.crc-staging-filter-btn:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.crc-staging-filter-btn-active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+}
+
+.crc-staging-filter-btn-active:hover {
+  filter: brightness(1.1);
 }
 
 /* -----------------------------------------------------------------------------
@@ -30236,7 +30286,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: DASHBOARD.CSS
    ========================================================================== */
 
-/* Component Size: 444 lines, 8.58 KB */
+/* Component Size: 491 lines, 9.46 KB */
 
 /* ==========================================================================
    Dashboard Tab Styles
@@ -30573,6 +30623,53 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 .crc-dashboard-staging-btn:hover {
+  filter: brightness(1.1);
+}
+
+/* Clipped Notes Section */
+.crc-dashboard-clipped-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background: rgba(var(--color-cyan-rgb), 0.1);
+  border: 1px solid var(--color-cyan);
+  border-radius: 8px;
+}
+
+.crc-dashboard-clipped-icon {
+  display: flex;
+  align-items: center;
+  color: var(--color-cyan);
+  flex-shrink: 0;
+}
+
+.crc-dashboard-clipped-content {
+  flex: 1;
+  font-size: 0.9em;
+  color: var(--text-normal);
+  min-width: 0;
+}
+
+.crc-dashboard-clipped-stats {
+  color: var(--text-muted);
+}
+
+.crc-dashboard-clipped-btn {
+  padding: 6px 12px;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85em;
+  font-weight: 500;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.crc-dashboard-clipped-btn:hover {
   filter: brightness(1.1);
 }
 
@@ -34600,7 +34697,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: DYNAMIC-CONTENT.CSS
    ========================================================================== */
 
-/* Component Size: 504 lines, 10.79 KB */
+/* Component Size: 509 lines, 10.85 KB */
 
 /**
  * Dynamic Content Styles
@@ -34715,6 +34812,11 @@ body:has(.cr-media-linker) .suggestion-container {
 
 .cr-timeline__title {
   color: var(--text-normal);
+}
+
+.cr-timeline__title p {
+  display: inline;
+  margin: 0;
 }
 
 .cr-timeline__title a {
@@ -35276,11 +35378,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-01-05 01:47:11 UTC
+ * Build completed: 2026-01-06 00:25:11 UTC
  * Components processed: 41
- * Total lines: 34884
- * Total size: 691.94 KB
- * Build duration: 0.06 seconds
+ * Total lines: 34986
+ * Total size: 694 KB
+ * Build duration: 0.04 seconds
  *
  * Component breakdown:
  * - variables.css: 56 lines, 1.61 KB
@@ -35293,7 +35395,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - place-modals.css: 932 lines, 17.28 KB
  * - media-modals.css: 1928 lines, 36.72 KB
  * - import-export-wizard.css: 2069 lines, 39.05 KB
- * - staging-manager.css: 503 lines, 10.05 KB
+ * - staging-manager.css: 553 lines, 11.17 KB
  * - cleanup-wizard.css: 2206 lines, 40.82 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
@@ -35315,13 +35417,13 @@ body:has(.cr-media-linker) .suggestion-container {
  * - organizations.css: 238 lines, 4.23 KB
  * - sources.css: 2796 lines, 56.78 KB
  * - statistics.css: 1553 lines, 30.97 KB
- * - dashboard.css: 444 lines, 8.58 KB
+ * - dashboard.css: 491 lines, 9.46 KB
  * - universe-wizard.css: 621 lines, 11.05 KB
  * - family-wizard.css: 743 lines, 15.52 KB
  * - map-wizard.css: 606 lines, 12.52 KB
  * - preferences.css: 348 lines, 7.43 KB
  * - tree-output.css: 1548 lines, 30.08 KB
- * - dynamic-content.css: 504 lines, 10.79 KB
+ * - dynamic-content.css: 509 lines, 10.85 KB
  * - migration-notice.css: 135 lines, 2.67 KB
  * - responsive.css: 9 lines, 0.13 KB
  */

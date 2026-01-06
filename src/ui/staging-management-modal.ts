@@ -29,18 +29,25 @@ export interface StagingManagementOptions {
 /**
  * Staging Management Modal
  */
+type StagingFilterMode = 'all' | 'clipped' | 'imports';
+
 export class StagingManagementModal extends Modal {
 	private plugin: CanvasRootsPlugin;
 	private stagingService: StagingService;
 	private crossImportService: CrossImportDetectionService | null = null;
 	private expandedBatches: Set<string> = new Set();
-	private filterClipped: boolean;
+	private filterMode: StagingFilterMode;
 
 	constructor(app: App, plugin: CanvasRootsPlugin, options?: StagingManagementOptions) {
 		super(app);
 		this.plugin = plugin;
 		this.stagingService = new StagingService(app, plugin.settings);
-		this.filterClipped = options?.filterClipped ?? false;
+		// Map old boolean to new enum for backward compatibility
+		if (options?.filterClipped) {
+			this.filterMode = 'clipped';
+		} else {
+			this.filterMode = 'all';
+		}
 	}
 
 	onOpen(): void {
@@ -72,8 +79,11 @@ export class StagingManagementModal extends Modal {
 			return;
 		}
 
-		// Get staging stats
-		const stats = this.stagingService.getStagingStats();
+		// Filter toggles
+		this.renderFilterToggles(contentEl);
+
+		// Get staging stats (filtered based on current mode)
+		const stats = this.getFilteredStats();
 
 		// Empty state
 		if (stats.totalFiles === 0) {
@@ -92,6 +102,56 @@ export class StagingManagementModal extends Modal {
 	}
 
 	/**
+	 * Get filtered stats based on current filter mode
+	 */
+	private getFilteredStats(): { totalFiles: number; totalEntities: number; entityCounts: EntityTypeCounts; subfolderCount: number } {
+		const allStats = this.stagingService.getStagingStats();
+
+		// If showing all or no web clipper service, return unfiltered stats
+		const webClipperService = this.plugin.getWebClipperService();
+		if (this.filterMode === 'all' || !webClipperService) {
+			return allStats;
+		}
+
+		// Filter files based on mode
+		const allFiles = this.stagingService.getStagingFiles();
+		const filteredFiles = allFiles.filter(file => {
+			if (this.filterMode === 'clipped') {
+				return webClipperService.isClippedNote(file);
+			} else if (this.filterMode === 'imports') {
+				return !webClipperService.isClippedNote(file);
+			}
+			return true;
+		});
+
+		// Recalculate stats for filtered files
+		const entityCounts = this.stagingService.countEntityTypes(filteredFiles);
+		const totalEntities = entityCounts.person + entityCounts.place + entityCounts.source +
+		                      entityCounts.event + entityCounts.organization + entityCounts.other;
+
+		// Count subfolders that have at least one matching file
+		const subfolders = this.stagingService.getStagingSubfolders();
+		const subfolderCount = subfolders.filter(subfolder => {
+			const files = this.stagingService.getSubfolderFiles(subfolder.path);
+			return files.some(({ file }) => {
+				if (this.filterMode === 'clipped') {
+					return webClipperService.isClippedNote(file);
+				} else if (this.filterMode === 'imports') {
+					return !webClipperService.isClippedNote(file);
+				}
+				return true;
+			});
+		}).length;
+
+		return {
+			totalFiles: filteredFiles.length,
+			totalEntities,
+			entityCounts,
+			subfolderCount
+		};
+	}
+
+	/**
 	 * Render the modal header
 	 */
 	private renderHeader(container: HTMLElement): void {
@@ -99,6 +159,46 @@ export class StagingManagementModal extends Modal {
 		const headerIcon = header.createDiv({ cls: 'crc-staging-header-icon' });
 		setIcon(headerIcon, 'archive');
 		header.createEl('h2', { text: 'Staging Manager' });
+	}
+
+	/**
+	 * Render filter toggle buttons
+	 */
+	private renderFilterToggles(container: HTMLElement): void {
+		const filterContainer = container.createDiv({ cls: 'crc-staging-filter' });
+		filterContainer.createSpan({ text: 'Show: ', cls: 'crc-staging-filter-label' });
+
+		const buttonGroup = filterContainer.createDiv({ cls: 'crc-staging-filter-buttons' });
+
+		// All button
+		const allBtn = buttonGroup.createEl('button', {
+			text: 'All',
+			cls: this.filterMode === 'all' ? 'crc-staging-filter-btn crc-staging-filter-btn-active' : 'crc-staging-filter-btn'
+		});
+		allBtn.addEventListener('click', () => {
+			this.filterMode = 'all';
+			this.renderContent();
+		});
+
+		// Clipped button
+		const clippedBtn = buttonGroup.createEl('button', {
+			text: 'Clipped',
+			cls: this.filterMode === 'clipped' ? 'crc-staging-filter-btn crc-staging-filter-btn-active' : 'crc-staging-filter-btn'
+		});
+		clippedBtn.addEventListener('click', () => {
+			this.filterMode = 'clipped';
+			this.renderContent();
+		});
+
+		// Other button
+		const otherBtn = buttonGroup.createEl('button', {
+			text: 'Other',
+			cls: this.filterMode === 'imports' ? 'crc-staging-filter-btn crc-staging-filter-btn-active' : 'crc-staging-filter-btn'
+		});
+		otherBtn.addEventListener('click', () => {
+			this.filterMode = 'imports';
+			this.renderContent();
+		});
 	}
 
 	/**
@@ -242,7 +342,25 @@ export class StagingManagementModal extends Modal {
 	 * Render the subfolder list
 	 */
 	private renderSubfolderList(container: HTMLElement): void {
-		const subfolders = this.stagingService.getStagingSubfolders();
+		let subfolders = this.stagingService.getStagingSubfolders();
+		if (subfolders.length === 0) return;
+
+		// Filter subfolders based on mode
+		const webClipperService = this.plugin.getWebClipperService();
+		if (webClipperService && this.filterMode !== 'all') {
+			subfolders = subfolders.filter(subfolder => {
+				const files = this.stagingService.getSubfolderFiles(subfolder.path);
+				return files.some(({ file }) => {
+					if (this.filterMode === 'clipped') {
+						return webClipperService.isClippedNote(file);
+					} else if (this.filterMode === 'imports') {
+						return !webClipperService.isClippedNote(file);
+					}
+					return true;
+				});
+			});
+		}
+
 		if (subfolders.length === 0) return;
 
 		const list = container.createDiv({ cls: 'crc-staging-list' });
@@ -366,12 +484,17 @@ export class StagingManagementModal extends Modal {
 	private renderFileList(container: HTMLElement, subfolderPath: string): void {
 		let files = this.stagingService.getSubfolderFiles(subfolderPath);
 
-		// Apply clipped notes filter if enabled
-		if (this.filterClipped) {
-			const webClipperService = this.plugin.getWebClipperService();
-			if (webClipperService) {
+		// Apply filter based on mode
+		const webClipperService = this.plugin.getWebClipperService();
+		if (webClipperService) {
+			if (this.filterMode === 'clipped') {
+				// Show only clipped notes
 				files = files.filter(({ file }) => webClipperService.isClippedNote(file));
+			} else if (this.filterMode === 'imports') {
+				// Show only non-clipped files
+				files = files.filter(({ file }) => !webClipperService.isClippedNote(file));
 			}
+			// 'all' mode: no filtering
 		}
 
 		if (files.length === 0) return;

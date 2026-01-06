@@ -144,7 +144,7 @@ export class StagingService {
 	/**
 	 * Count entity types in a list of files
 	 */
-	private countEntityTypes(files: TFile[]): EntityTypeCounts {
+	countEntityTypes(files: TFile[]): EntityTypeCounts {
 		const counts: EntityTypeCounts = {
 			person: 0,
 			place: 0,

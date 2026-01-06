@@ -53,6 +53,56 @@
 }
 
 /* -----------------------------------------------------------------------------
+   Filter Toggles
+   ----------------------------------------------------------------------------- */
+
+.crc-staging-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--background-secondary);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.crc-staging-filter-label {
+  font-size: 0.9em;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.crc-staging-filter-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.crc-staging-filter-btn {
+  padding: 4px 12px;
+  font-size: 0.85em;
+  background: var(--background-primary);
+  color: var(--text-muted);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.crc-staging-filter-btn:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.crc-staging-filter-btn-active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+}
+
+.crc-staging-filter-btn-active:hover {
+  filter: brightness(1.1);
+}
+
+/* -----------------------------------------------------------------------------
    Empty State
    ----------------------------------------------------------------------------- */
 
