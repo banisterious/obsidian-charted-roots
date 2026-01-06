@@ -220,9 +220,10 @@ export class TimelineRenderer {
 
 			// Place (if present)
 			if (entry.place) {
-				// Include the space directly in the span text to avoid whitespace collapsing
+				// Add non-breaking space before "in" to prevent whitespace collapse
 				// when MarkdownRenderer creates block-level elements for wikilinks
-				li.createSpan({ cls: 'cr-timeline__place', text: ` in ${entry.place}` });
+				li.appendText('\u00A0');
+				li.createSpan({ cls: 'cr-timeline__place', text: `in ${entry.place}` });
 			}
 		}
 	}
