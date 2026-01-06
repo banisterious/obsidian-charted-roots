@@ -1,0 +1,61 @@
+{
+	"schemaVersion": "0.1.0",
+	"name": "Find a Grave - Person",
+	"behavior": "create",
+	"noteNameFormat": "Grave - {{title}}",
+	"path": "",
+	"noteContentFormat": "# {{title}}\n\n## Vital Information\n\n**Born:** {{published}} in {{selector:#birthLocationLabel}}\n**Died:** {{selector:#deathDateLabel}} in {{selector:#deathLocationLabel}}\n**Burial:** {{selector:#cemeteryNameLabel}}, {{selector:#cemeteryCityName}}, {{selector:#cemeteryCountyName}}, {{selector:#cemeteryStateName}}, {{selector:#cemeteryCountryName}}\n\n## Content\n\n{{content}}\n\n## Photo\n\n{{image}}\n\n## Source\n\nFind a Grave Memorial: {{url}}\nClipped: {{date}}",
+	"properties": [
+		{
+			"name": "clip_source_type",
+			"value": "findagrave",
+			"type": "text"
+		},
+		{
+			"name": "clipped_from",
+			"value": "{{url}}",
+			"type": "text"
+		},
+		{
+			"name": "clipped_date",
+			"value": "{{date}}",
+			"type": "text"
+		},
+		{
+			"name": "note_type",
+			"value": "person",
+			"type": "text"
+		},
+		{
+			"name": "name",
+			"value": "{{title}}",
+			"type": "text"
+		},
+		{
+			"name": "birth_date",
+			"value": "{{published}}",
+			"type": "text"
+		},
+		{
+			"name": "birth_place",
+			"value": "{{selector:#birthLocationLabel}}",
+			"type": "text"
+		},
+		{
+			"name": "death_date",
+			"value": "{{selector:#deathDateLabel}}",
+			"type": "text"
+		},
+		{
+			"name": "death_place",
+			"value": "{{selector:#deathLocationLabel}}",
+			"type": "text"
+		},
+		{
+			"name": "burial_place",
+			"value": "{{selector:#cemeteryNameLabel}}, {{selector:#cemeteryCityName}}, {{selector:#cemeteryCountyName}}, {{selector:#cemeteryStateName}}, {{selector:#cemeteryCountryName}}",
+			"type": "text"
+		}
+	],
+	"triggers": ["findagrave.com/memorial/*"]
+}

@@ -136,8 +136,9 @@ Initial templates created and tested:
 
 | Template | Source | Extraction Method | Status |
 |----------|--------|-------------------|--------|
-| Find A Grave | findagrave.com | CSS selectors + LLM | ✅ Released |
-| Generic Obituary | Any obituary site | LLM extraction | 📋 Planned |
+| Find A Grave - Person | findagrave.com | CSS selectors only | ✅ Released |
+| Find A Grave - Person (LLM) | findagrave.com | CSS selectors + AI | ✅ Released |
+| Generic Obituary | Any obituary site | AI extraction | 📋 Planned |
 | FamilySearch Person | familysearch.org | CSS selectors | 📋 Planned |
 | Ancestry Record | ancestry.com | Schema.org/CSS | 📋 Planned |
 
@@ -153,8 +154,27 @@ All official templates follow these standards:
 
 ### Find a Grave Template Details
 
-**File:** `docs/clipper-templates/findagrave-person-llm.json`
-**Extraction Strategy:** Hybrid (CSS selectors for structured data + LLM for biography/family)
+Two versions available to suit different workflows:
+
+#### 1. CSS Selectors Only (`findagrave-person.json`)
+**Extraction Strategy:** Pure CSS selectors for all structured data
+
+**Advantages:**
+- No Interpreter setup required
+- Faster extraction
+- No AI costs
+- Works offline
+
+**Extracts:**
+- Birth/death dates and places via CSS selectors
+- Full burial location via CSS selectors
+- Memorial photo
+- Raw page content (includes biography/family as unformatted text)
+
+**Note name format:** Uses page title (e.g., "Grave - Gilbert Seymour Armstrong (1923-1987) - Find a...")
+
+#### 2. Hybrid with AI (`findagrave-person-llm.json`)
+**Extraction Strategy:** CSS selectors for structured data + AI for unstructured content
 
 **CSS Selectors Used:**
 - `#birthLocationLabel` - Birth place
@@ -162,13 +182,13 @@ All official templates follow these standards:
 - `#deathLocationLabel` - Death place
 - `#cemeteryNameLabel`, `#cemeteryCityName`, `#cemeteryCountyName`, `#cemeteryStateName`, `#cemeteryCountryName` - Full burial location
 
-**LLM-Extracted Fields:**
-- Person's full name (for filename)
-- Biography text (if available)
-- Family information (spouse, children, etc.)
+**AI-Extracted Fields:**
+- Person's full name (for cleaner filename: "Grave - Gilbert Seymour Armstrong")
+- Biography text parsed from content
+- Family information parsed from content
 
 **Requirements:**
-- Interpreter must be enabled for LLM extraction
+- Interpreter must be enabled
 - Recommended model: Claude Sonnet 4.5 or equivalent
 
 ---

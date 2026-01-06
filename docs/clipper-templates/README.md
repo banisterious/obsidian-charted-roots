@@ -21,13 +21,44 @@ This directory contains official Web Clipper templates optimized for genealogica
 
 ## Available Templates
 
+### Find a Grave - Person
+**File:** `findagrave-person.json`
+**URL Pattern:** `findagrave.com/memorial/*`
+**Auto-triggers:** Yes
+
+Simple, fast template that extracts structured data from Find a Grave memorial pages using CSS selectors only.
+
+**Extracts:**
+- Birth date and place
+- Death date and place
+- Burial location (cemetery with full address)
+- Memorial photo
+- Full page content (includes biography and family information as text)
+
+**Requirements:**
+- No Interpreter needed
+- Works immediately after import
+
+**Canvas Roots Properties:**
+- `clip_source_type`: "findagrave"
+- `clipped_from`: Memorial URL
+- `clipped_date`: Date clipped
+- `note_type`: "person"
+- `birth_date`, `birth_place`
+- `death_date`, `death_place`
+- `burial_place`
+
+---
+
 ### Find a Grave - Person (LLM)
 **File:** `findagrave-person-llm.json`
 **URL Pattern:** `findagrave.com/memorial/*`
 **Auto-triggers:** Yes
 
-Extracts biographical data from Find a Grave memorial pages including:
-- Full name (extracted via AI)
+Enhanced template that uses AI to extract person's name and parse biography/family information from unstructured content.
+
+**Extracts:**
+- Full name (extracted via AI for cleaner filename)
 - Birth date and place
 - Death date and place
 - Burial location (cemetery with full address)
@@ -36,7 +67,7 @@ Extracts biographical data from Find a Grave memorial pages including:
 - Memorial photo
 
 **Requirements:**
-- Interpreter must be enabled for biography and family extraction
+- Interpreter must be enabled for name and biography extraction
 - Recommended model: Claude Sonnet 4.5 or equivalent
 
 **Canvas Roots Properties:**
