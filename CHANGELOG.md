@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Event edit modal deletes custom frontmatter properties** ([#150](https://github.com/banisterious/obsidian-canvas-roots/issues/150)): Fixed editing events through the context menu deleting custom properties added via Templater or manually. The edit modal was rebuilding frontmatter from scratch, only preserving known properties. Solution: Switched to Obsidian's `processFrontMatter` API which safely updates only managed properties while preserving all others.
+- **BCE date sorting in dynamic timeline blocks** ([#146](https://github.com/banisterious/obsidian-canvas-roots/issues/146)): Fixed events spanning BCE/AD boundary sorting incorrectly in timeline codeblocks. The `extractYear` method only matched positive years, so "11 BCE" was extracted as "11" instead of "-11", causing it to appear after "14 AD". Now properly handles BCE/BC suffix, ISO negative years, and AD/CE suffix formats.
 
 ---
 
