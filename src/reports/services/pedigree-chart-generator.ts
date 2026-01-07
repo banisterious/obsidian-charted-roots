@@ -170,8 +170,10 @@ export class PedigreeChartGenerator {
 
 		// For a cleaner presentation, we'll use a different approach:
 		// Build the tree as an indented list where each level shows parents
-		// Note: Not using code blocks to ensure proper PDF export rendering
+		// Use 'text' code block to ensure monospace font with Unicode support in PDF
+		lines.push('```text');
 		lines.push(this.buildTreeNode(1, ancestors, options, 0, '', ''));
+		lines.push('```');
 
 		return lines.join('\n');
 	}
