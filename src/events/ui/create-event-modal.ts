@@ -728,92 +728,76 @@ export class CreateEventModal extends Modal {
 		}
 
 		try {
-			// Read current file content
-			const content = await this.app.vault.read(this.editingFile);
+			// Use processFrontMatter to safely update only managed properties
+			// while preserving all custom/unknown properties
+			await this.app.fileManager.processFrontMatter(this.editingFile, (frontmatter) => {
+				// Update managed properties
+				frontmatter.cr_type = 'event';
+				frontmatter.title = this.title.trim();
+				frontmatter.event_type = this.eventType;
+				frontmatter.date_precision = this.datePrecision;
+				frontmatter.confidence = this.confidence;
 
-			// Parse existing frontmatter
-			const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
-			if (!frontmatterMatch) {
-				new Notice('Could not parse frontmatter');
-				return;
-			}
+				// Handle optional fields - set or remove
+				if (this.date.trim()) {
+					frontmatter.date = this.date.trim();
+				} else {
+					delete frontmatter.date;
+				}
 
-			const bodyContent = content.slice(frontmatterMatch[0].length).trim();
+				if (this.dateEnd.trim()) {
+					frontmatter.date_end = this.dateEnd.trim();
+				} else {
+					delete frontmatter.date_end;
+				}
 
-			// Build updated frontmatter
-			const frontmatterLines: string[] = [];
-			frontmatterLines.push(`cr_type: event`);
-			frontmatterLines.push(`title: "${this.title.trim().replace(/"/g, '\\"')}"`);
-			frontmatterLines.push(`event_type: ${this.eventType}`);
+				if (this.person.trim()) {
+					frontmatter.person = `[[${this.person.trim()}]]`;
+				} else {
+					delete frontmatter.person;
+				}
 
-			if (this.date.trim()) {
-				frontmatterLines.push(`date: "${this.date.trim()}"`);
-			}
-			if (this.dateEnd.trim()) {
-				frontmatterLines.push(`date_end: "${this.dateEnd.trim()}"`);
-			}
-			frontmatterLines.push(`date_precision: ${this.datePrecision}`);
+				if (this.place.trim()) {
+					const placeValue = this.place.trim().startsWith('[[') ? this.place.trim() : `[[${this.place.trim()}]]`;
+					frontmatter.place = placeValue;
+				} else {
+					delete frontmatter.place;
+				}
 
-			if (this.person.trim()) {
-				frontmatterLines.push(`person: "[[${this.person.trim()}]]"`);
-			}
-			if (this.place.trim()) {
-				// Check if already has wikilink brackets
-				const placeValue = this.place.trim().startsWith('[[') ? this.place.trim() : `[[${this.place.trim()}]]`;
-				frontmatterLines.push(`place: "${placeValue}"`);
-			}
-			frontmatterLines.push(`confidence: ${this.confidence}`);
+				if (this.description.trim()) {
+					frontmatter.description = this.description.trim();
+				} else {
+					delete frontmatter.description;
+				}
 
-			if (this.description.trim()) {
-				frontmatterLines.push(`description: "${this.description.trim().replace(/"/g, '\\"')}"`);
-			}
-			if (this.timeline.trim()) {
-				const timelineValue = this.timeline.trim().startsWith('[[') ? this.timeline.trim() : `[[${this.timeline.trim()}]]`;
-				frontmatterLines.push(`timeline: "${timelineValue}"`);
-			}
-			if (this.isCanonical) {
-				frontmatterLines.push(`is_canonical: true`);
-			}
-			if (this.universe.trim()) {
-				frontmatterLines.push(`universe: "${this.universe.trim()}"`);
-			}
-			if (this.dateSystem) {
-				frontmatterLines.push(`date_system: ${this.dateSystem}`);
-			}
+				if (this.timeline.trim()) {
+					const timelineValue = this.timeline.trim().startsWith('[[') ? this.timeline.trim() : `[[${this.timeline.trim()}]]`;
+					frontmatter.timeline = timelineValue;
+				} else {
+					delete frontmatter.timeline;
+				}
 
-			// Preserve cr_id from original frontmatter
-			const crIdMatch = frontmatterMatch[1].match(/cr_id:\s*(.+)/);
-			if (crIdMatch) {
-				frontmatterLines.push(`cr_id: ${crIdMatch[1].trim()}`);
-			}
+				if (this.isCanonical) {
+					frontmatter.is_canonical = true;
+				} else {
+					delete frontmatter.is_canonical;
+				}
 
-			// Preserve before/after relationships if they exist
-			const beforeMatch = frontmatterMatch[1].match(/before:\s*([\s\S]*?)(?=\n[a-z_]+:|$)/);
-			if (beforeMatch) {
-				frontmatterLines.push(`before:${beforeMatch[1]}`);
-			}
-			const afterMatch = frontmatterMatch[1].match(/after:\s*([\s\S]*?)(?=\n[a-z_]+:|$)/);
-			if (afterMatch) {
-				frontmatterLines.push(`after:${afterMatch[1]}`);
-			}
+				if (this.universe.trim()) {
+					frontmatter.universe = this.universe.trim();
+				} else {
+					delete frontmatter.universe;
+				}
 
-			// Preserve sources if they exist
-			const sourcesMatch = frontmatterMatch[1].match(/sources:\s*([\s\S]*?)(?=\n[a-z_]+:|$)/);
-			if (sourcesMatch) {
-				frontmatterLines.push(`sources:${sourcesMatch[1]}`);
-			}
+				if (this.dateSystem) {
+					frontmatter.date_system = this.dateSystem;
+				} else {
+					delete frontmatter.date_system;
+				}
 
-			// Preserve sort_order if it exists
-			const sortOrderMatch = frontmatterMatch[1].match(/sort_order:\s*(\d+)/);
-			if (sortOrderMatch) {
-				frontmatterLines.push(`sort_order: ${sortOrderMatch[1]}`);
-			}
-
-			// Build new content
-			const newContent = `---\n${frontmatterLines.join('\n')}\n---\n\n${bodyContent}`;
-
-			// Write updated content
-			await this.app.vault.modify(this.editingFile, newContent);
+				// Note: cr_id, before, after, sources, sort_order, and any custom
+				// properties are automatically preserved since we don't touch them
+			});
 
 			new Notice(`Updated event note: ${this.editingFile.basename}`);
 
