@@ -9,9 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **MyHeritage GEDCOM compatibility** ([#144](https://github.com/banisterious/obsidian-canvas-roots/issues/144)): Automatically detect and fix MyHeritage GEDCOM export issues during import. MyHeritage exports contain UTF-8 BOM, double-encoded HTML entities (`&amp;lt;` instead of `<`), and `<br>` tags that prevent parsing. New preprocessing automatically detects MyHeritage files (via `1 SOUR MYHERITAGE` tag) and applies fixes. Three modes available in Settings → Import/Export: Auto (default, detect and fix), MyHeritage (always fix), None (disabled). Import results modal shows what was fixed.
+
 ### Fixed
 
 - **Special character sanitization for all importers** ([#139](https://github.com/banisterious/obsidian-canvas-roots/issues/139)): Extended relationship name sanitization to Gramps, CSV, and GedcomX importers. Previously only the GEDCOM importer sanitized names containing special characters like `"`, `()`, `[]`, `{}`. Now all importers use a shared `sanitizeName()` utility to ensure wikilinks in relationship fields (father, mother, spouse, stepparents, adoptive parents, children) match sanitized filenames, preventing "linked to person who doesn't exist" warnings.
+- **Duplicate person filenames during batch import**: Fixed "File already exists" errors when importing multiple people with identical names (e.g., multiple "Son (stillborn)" entries). The vault index doesn't update fast enough between sequential file creations, causing race conditions. Solution: Track created paths in a Set and add retry logic with counter increment, matching the existing approach used for event notes.
 
 ---
 
