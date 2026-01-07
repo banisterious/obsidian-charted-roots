@@ -144,6 +144,18 @@ properties:
     displayName: Henry #
   file.path:
     displayName: Location
+  note.dna_shared_cm:
+    displayName: Shared cM
+  note.dna_match_type:
+    displayName: Match Type
+  note.dna_testing_company:
+    displayName: Testing Company
+  note.dna_endogamy_flag:
+    displayName: Endogamy
+  note.dna_kit_id:
+    displayName: Kit ID
+  note.dna_notes:
+    displayName: DNA Notes
 views:
   - type: table
     name: All family members
@@ -401,6 +413,23 @@ views:
         - 'lineage.isEmpty()'
     order:
       - file.name
+  - type: table
+    name: DNA Matches
+    filters:
+      and:
+        - '!${cr_id}.isEmpty()'
+        - '!dna_shared_cm.isEmpty()'
+    order:
+      - dna_shared_cm DESC
+    visibleProperties:
+      - formula.display_name
+      - note.dna_shared_cm
+      - note.dna_match_type
+      - note.dna_testing_company
+      - note.dna_endogamy_flag
+      - note.dna_notes
+    summaries:
+      dna_shared_cm: Average
 `;
 }
 

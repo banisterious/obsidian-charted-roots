@@ -385,6 +385,39 @@ ${p('birth_place')}: "<% tp.system.prompt("Birth place?", "", false) %>"
 # <% tp.file.title %>
 
 <% tp.file.cursor() %>`
+			},
+			{
+				name: 'DNA match',
+				description: 'Template for tracking DNA matches from genetic genealogy',
+				template: `---
+${p('cr_type')}: person
+${p('cr_id')}:
+${p('name')}: "<% tp.file.title %>"
+
+# DNA match information
+dna_shared_cm: <% tp.system.prompt("Shared centiMorgans?", "", false) %>
+dna_testing_company: <% tp.system.suggester(["AncestryDNA", "23andMe", "FamilyTreeDNA", "MyHeritage", "LivingDNA", "GEDmatch"], ["AncestryDNA", "23andMe", "FamilyTreeDNA", "MyHeritage", "LivingDNA", "GEDmatch"]) %>
+dna_kit_id:
+dna_match_type: <% tp.system.suggester(["BKM (Best Known Match)", "BMM (Best Mystery Match)", "Confirmed", "Unconfirmed"], ["BKM", "BMM", "confirmed", "unconfirmed"]) %>
+dna_endogamy_flag: false
+dna_notes:
+---
+
+# <% tp.file.title %>
+
+## Match details
+
+- **Shared DNA:** cM
+- **Testing company:**
+- **Match type:**
+
+## Relationship hypothesis
+
+<% tp.file.cursor() %>
+
+## Research notes
+
+`
 			}
 		];
 	}

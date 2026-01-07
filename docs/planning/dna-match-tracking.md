@@ -377,7 +377,7 @@ Canvas Roots provides a place to **record and organize** key DNA matches alongsi
 
 | Phase | Status |
 |-------|--------|
-| Phase 1 | Planned |
+| Phase 1 | Implemented |
 | Phase 2 | Planned |
 | Phase 3 | Planned |
 | Phase 4 | Future Consideration |
