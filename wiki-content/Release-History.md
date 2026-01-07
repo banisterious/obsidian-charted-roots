@@ -9,6 +9,9 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.18.x](#v018x)
+  - [Optional Person Names](#optional-person-names-v01827)
+  - [DMS Coordinate Conversion](#dms-coordinate-conversion-v01827)
+  - [DNA Match Tracking - Phase 1](#dna-match-tracking---phase-1-v01827)
   - [Web Clipper Integration - Phase 1](#web-clipper-integration---phase-1-v01825)
   - [Staging Management](#staging-management-v01824)
   - [Export Privacy & Sensitive Data](#export-privacy--sensitive-data-v01822)
@@ -86,6 +89,117 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.18.x
+
+### Optional Person Names (v0.18.27)
+
+Create placeholder person notes without names, filling in details later as research progresses.
+
+**GitHub Issue:** [#140](https://github.com/banisterious/obsidian-canvas-roots/issues/140)
+
+**Features Implemented:**
+
+| Feature | Description |
+|---------|-------------|
+| Optional name fields | Given Name and Surname are no longer required when creating person notes |
+| Unnamed display | Unnamed persons display as "Unnamed" in Family Wizard and other UI components |
+| Data quality warning | `NO_NAME` warning added to Data Quality Report for persons without names |
+| Completeness metrics | `withName` metric added to track persons with names vs. unnamed |
+
+**Use Case:**
+
+Genealogists often know relationships before identities. For example, "John's father existed" is known before discovering the father's name. This feature allows creating placeholder persons to build family structures, then filling in names as research progresses.
+
+**Files Modified:**
+
+- `src/core/person-note-writer.ts` — Made `name` property optional in `PersonData` interface
+- `src/ui/create-person-modal.ts` — Removed name validation, allowing empty names
+- `src/ui/family-creation-wizard.ts` — Display "Unnamed" fallback for persons without names
+- `src/core/data-quality.ts` — Added `NO_NAME` warning and `withName` completeness metric
+
+**Documentation:**
+
+- [Optional Person Names Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/optional-person-names.md)
+
+---
+
+### DMS Coordinate Conversion (v0.18.27)
+
+Opt-in DMS (degrees, minutes, seconds) parsing for coordinate input in place creation.
+
+**GitHub Issue:** [#121](https://github.com/banisterious/obsidian-canvas-roots/issues/121)
+
+**Features Implemented:**
+
+| Feature | Description |
+|---------|-------------|
+| DMS format parsing | Enter coordinates like `33°51'08"N` or `33 51 08 N` |
+| Auto-conversion | DMS automatically converts to decimal degrees for storage |
+| Opt-in setting | Enable via Settings → Data & detection → "Accept DMS coordinate format" |
+| Multiple formats | Supports symbol notation, space-separated, hyphen-separated, and direction prefix |
+
+**Supported Formats:**
+
+- `33°51'08"N` — Standard DMS with symbols
+- `33 51 08 N` — Space-separated
+- `33-51-08-N` — Hyphen-separated
+- `N 33 51 08` — Direction prefix
+- `33.8522` — Decimal pass-through (always supported)
+
+**Files Modified:**
+
+- `src/utils/coordinate-converter.ts` — New DMS parsing utility
+- `src/settings.ts` — Added `enableDMSCoordinates` setting
+- `src/ui/create-place-modal.ts` — Integrated DMS parser into coordinate inputs
+
+**Documentation:**
+
+- [DMS Coordinate Conversion Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/dms-coordinate-conversion.md)
+
+---
+
+### DNA Match Tracking - Phase 1 (v0.18.27)
+
+Lightweight DNA match tracking for genetic genealogy workflows.
+
+**GitHub Issue:** [#126](https://github.com/banisterious/obsidian-canvas-roots/issues/126)
+
+**Features Implemented:**
+
+| Feature | Description |
+|---------|-------------|
+| DNA match template | Template snippet in template snippets modal with Templater prompts |
+| Bases view | "DNA Matches" view in People Bases template, filtered by `dna_shared_cm` |
+| Property display names | Friendly names for DNA properties in Bases views |
+| Documented properties | `dna_shared_cm`, `dna_testing_company`, `dna_kit_id`, `dna_match_type`, `dna_endogamy_flag`, `dna_notes` |
+
+**DNA Properties:**
+
+| Property | Description | Example |
+|----------|-------------|---------|
+| `dna_shared_cm` | Shared centiMorgans | `1847` |
+| `dna_testing_company` | Testing company | `AncestryDNA`, `23andMe`, `FamilyTreeDNA` |
+| `dna_kit_id` | Kit identifier | `ABC123` |
+| `dna_match_type` | Match classification | `BKM`, `BMM`, `confirmed`, `unconfirmed` |
+| `dna_endogamy_flag` | Endogamy indicator | `true` / `false` |
+| `dna_notes` | Free-form notes | `Matches on chromosome 7` |
+
+**Match Types:**
+
+- `BKM` — Best Known Match (confirmed relationship, high confidence)
+- `BMM` — Best Mystery Match (strong match, relationship unknown)
+- `confirmed` — DNA confirms documented relationship
+- `unconfirmed` — Match recorded but not yet analyzed
+
+**Files Modified:**
+
+- `src/ui/template-snippets-modal.ts` — Added DNA match template
+- `src/constants/base-template.ts` — Added DNA Matches view and property display names
+
+**Future Phases:**
+
+Phase 2-4 (planned) will add UI support for DNA Match person subtype, DNA relationship type, and visualization/reports. See [DNA Match Tracking Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/dna-match-tracking.md) for details.
+
+---
 
 ### Web Clipper Integration - Phase 1 (v0.18.25)
 

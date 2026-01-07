@@ -9,11 +9,8 @@ This document outlines planned features for Canvas Roots. For completed features
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
   - [Plugin Rename: Charted Roots](#plugin-rename-charted-roots) 📋 Medium
-  - [Optional Person Names](#optional-person-names) 📋 Medium
-  - [Web Clipper Integration](#web-clipper-integration) 📋 Medium
   - [GPS Research Workflow Integration](#gps-research-workflow-integration) 📋 Medium
   - [MyHeritage GEDCOM Import Compatibility](#myheritage-gedcom-import-compatibility) 📋 Medium
-  - [DMS Coordinate Conversion](#dms-coordinate-conversion) 💡 Low
   - [DNA Match Tracking](#dna-match-tracking) 💡 Low
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
@@ -34,6 +31,9 @@ For the complete list of implemented features, see [Release History](Release-His
 
 | Version | Feature | Summary |
 |:-------:|---------|---------|
+| v0.18.27 | [Optional Person Names](Release-History#optional-person-names-v01827) | Create placeholder persons without names; fill in later as research progresses |
+| v0.18.27 | [DMS Coordinate Conversion](Release-History#dms-coordinate-conversion-v01827) | Opt-in DMS format parsing for coordinate inputs (e.g., `33°51'08"N`) |
+| v0.18.27 | [DNA Match Tracking - Phase 1](Release-History#dna-match-tracking---phase-1-v01827) | DNA match template snippet, "DNA Matches" Bases view, documented frontmatter properties |
 | v0.18.25 | [Web Clipper Integration - Phase 1](Release-History#web-clipper-integration---phase-1-v01825) | Auto-detect web-clipped notes with metadata properties, Dashboard breakdown, Staging Manager filtering (All/Clipped/Other), file watcher integration |
 | v0.18.24 | [Staging Management](Release-History#staging-management-v01824) | Dedicated UI for managing staged imports: view stats, check duplicates, promote to main tree, expandable file lists |
 | v0.18.22 | [Export Privacy & Sensitive Data](Release-History#export-privacy--sensitive-data-v01822) | Complete privacy feature set: canvas privacy, sensitive field redaction, private fields, deadname protection, discoverability |
@@ -93,102 +93,6 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 **Documentation:**
 - See [Plugin Rename Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/plugin-rename.md) for detailed specifications
 - Community discussion: [#58](https://github.com/banisterious/obsidian-canvas-roots/discussions/58)
-
----
-
-### Optional Person Names
-
-**Priority:** 📋 Medium — Supports real-world genealogical research workflows
-
-**Status:** Planning
-
-**GitHub Issue:** [#140](https://github.com/banisterious/obsidian-canvas-roots/issues/140)
-
-**Summary:** Enable users to create person notes without requiring a name, addressing the common genealogical research scenario where relationships are known before individual identities are discovered.
-
-**The Problem:** Researchers often need to add persons to track family relationships before discovering their names. Current workaround requires manually creating placeholder names like `[father of John]` or `[Smith]`, which feels awkward and requires later cleanup.
-
-**The Solution:** Make name fields optional with smart handling:
-- **`cr_id` filenames** for unnamed persons (e.g., `cr-abc123.md`)
-- **Automatic rename** when names are added later
-- **Relationship integrity** maintained via `cr_id`-based linking (already implemented)
-- **Optional placeholder property** to distinguish "temporarily unnamed" from "true unknown"
-
-**Phased Approach:**
-
-| Phase | Feature | Status |
-|-------|---------|--------|
-| 1 | Core Functionality | Ready to implement |
-| 2 | Metadata & Filtering | Future enhancement |
-
-**Phase 1 — Core Functionality:**
-- Make Given Name and Surname optional in Create Person modal
-- Use `cr_id` as filename for unnamed persons
-- Automatic file renaming when name added
-- Display `cr_id` in UI with subtle styling
-- Leverage existing rename functionality for wikilink updates
-
-**Phase 2 — Metadata & Filtering:**
-- Opt-in `placeholder` property checkbox
-- Visual indicators for unnamed persons
-- Research Gaps Report filtering for unnamed persons
-- Dashboard statistics
-
-**User Impact:** Non-breaking change
-- Coexists with existing manual placeholder approach
-- No migration required for existing notes
-- All relationship links survive automatic rename
-- Leverages existing dual storage pattern (`cr_id` + wikilinks)
-
-**Documentation:**
-- See [Optional Person Names Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/optional-person-names.md) for detailed specifications
-
----
-
-### Web Clipper Integration
-
-**Priority:** 📋 Medium — Streamlines research capture for all genealogists
-
-**Status:** Phase 1 complete (v0.18.25+), Phase 2 pending community feedback
-
-**GitHub Issue:** [#128](https://github.com/banisterious/obsidian-canvas-roots/issues/128)
-
-**Summary:** Integration with Obsidian Web Clipper to streamline capturing genealogical data from web sources. Phase 1 adds detection, Dashboard integration, and filtering for clipped notes.
-
-**The Problem:** Genealogists frequently clip data from web sources (obituaries, Find A Grave, FamilySearch, Wikipedia) during research. Users can create their own Web Clipper templates and output to staging, but lacked guided integration and convenient filtering.
-
-**Phased Approach:**
-
-| Phase | Feature | Status |
-|-------|---------|--------|
-| 1 | File Watcher & Dashboard Integration | ✅ Complete (v0.18.25+) |
-| 2 | Official Template Distribution | After community feedback |
-| 3 | Enhanced Extraction | Conceptual |
-
-**Phase 1 — File Watcher & Dashboard Integration:** ✅ Complete (v0.18.25)
-
-See [Release History](Release-History#web-clipper-integration---phase-1-v01825) for full implementation details.
-
-- Detects clipped notes in staging folder (files with `clip_source_type`, `clipped_from`, or `clipped_date` properties)
-- Unified Dashboard "Staging" card shows breakdown: "3 clips (1 new), 1 other"
-- Toggle buttons in Staging Manager: [All] [Clipped] [Other]
-- Multi-level filtering (stats, batches, files)
-- Works with any user-created Web Clipper templates
-
-**Phase 2 — Official Template Distribution:** ✅ In Progress (v0.18.26+)
-- Curated JSON template files in `docs/clipper-templates/`
-- Templates released: Find A Grave (CSS selectors), Find A Grave (LLM), Generic Obituary (LLM), FamilySearch Person (LLM), Wikipedia Biography (LLM), Wikipedia Biography (Basic)
-- Templates planned: Ancestry Record
-- Use canonical Canvas Roots property names
-- Comprehensive README with setup instructions
-
-**Phase 3 — Enhanced Extraction (Future):**
-- Relationship extraction from obituary "survived by" sections
-- Multi-person clipping from census pages
-- Auto-create source notes linked to clipped people
-
-**Documentation:**
-- See [Web Clipper Integration Planning](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/web-clipper-integration.md) for detailed specifications
 
 ---
 
@@ -288,43 +192,11 @@ Non-technical users cannot import these files without using hex editors or text 
 
 ---
 
-### DMS Coordinate Conversion
-
-**Priority:** 💡 Low — Specialized for genealogists working with historical maps
-
-**Status:** Planning
-
-**Summary:** Opt-in support for entering coordinates in DMS (degrees, minutes, seconds) format when creating places. When enabled, coordinate input fields accept both decimal degrees and DMS formats, automatically converting DMS to decimal for storage.
-
-**Use Case:** Genealogical researchers often copy coordinates from historical maps that use DMS notation (e.g., `33°51'08"N, 83°37'06"W`). Currently, users must manually convert to decimal degrees before entering.
-
-**Feature Toggle:**
-- Setting: "Accept DMS coordinate format" (default: off)
-- Location: Places section in settings
-- When enabled, coordinate inputs accept formats like `33°51'08"N` or `33 51 08 N`
-
-**Supported Formats:**
-- `33°51'08"N` — Standard DMS with symbols
-- `33 51 08 N` — Space-separated
-- `33-51-08-N` — Hyphen-separated
-- `N 33 51 08` — Direction prefix
-- `33.8522` — Decimal pass-through (always supported)
-
-**Implementation:**
-- New utility: `src/utils/coordinate-converter.ts`
-- Settings toggle in Places section
-- Integration with Create Place modal coordinate inputs
-- Unit tests for parser
-
-See [DMS Coordinate Conversion Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/dms-coordinate-conversion.md) for detailed specifications.
-
----
-
 ### DNA Match Tracking
 
 **Priority:** 💡 Low — Specialized for genetic genealogists
 
-**Status:** Planning
+**Status:** Phase 1 complete (v0.18.27+), Phases 2-4 planned
 
 **Summary:** Lightweight DNA match tracking for genetic genealogists, designed to record key DNA matches alongside family tree research. Keeps advanced features out of the way of users who don't need them.
 
@@ -335,12 +207,19 @@ See [DMS Coordinate Conversion Planning Document](https://github.com/banisteriou
 
 **Phased Approach (all opt-in):**
 
-| Phase | Feature | Gated By |
-|-------|---------|----------|
-| 1 | Frontmatter properties (`dna_shared_cm`, `dna_match_type`, etc.) | Documentation only |
-| 2 | DNA Match person subtype with UI support | `enableDnaTracking` setting |
-| 3 | DNA relationship type (bidirectional, non-transitive) | `enableDnaTracking` setting |
-| 4 | Visualization & reports | `enableDnaVisualization` setting |
+| Phase | Feature | Gated By | Status |
+|-------|---------|----------|--------|
+| 1 | Frontmatter properties (`dna_shared_cm`, `dna_match_type`, etc.) | Documentation only | ✅ Complete (v0.18.27) |
+| 2 | DNA Match person subtype with UI support | `enableDnaTracking` setting | Planned |
+| 3 | DNA relationship type (bidirectional, non-transitive) | `enableDnaTracking` setting | Planned |
+| 4 | Visualization & reports | `enableDnaVisualization` setting | Future |
+
+**Phase 1 — Documentation & Templates:** ✅ Complete (v0.18.27)
+
+- DNA match template snippet in template snippets modal
+- "DNA Matches" view in People Bases template (filters by `dna_shared_cm`, sorts by highest matches first)
+- DNA property display names in base template
+- Documented frontmatter properties for manual use
 
 **Match Types:**
 - `BKM` — Best Known Match (confirmed relationship, high confidence)
