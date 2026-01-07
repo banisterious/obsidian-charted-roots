@@ -14,6 +14,7 @@ import { writeNoteFile, buildNoteReferenceMap } from '../core/note-writer';
 import { generateCrId } from '../core/uuid';
 import { getErrorMessage } from '../core/error-utils';
 import { getLogger } from '../core/logging';
+import { sanitizeName } from '../utils/name-sanitization';
 
 const logger = getLogger('GrampsImporter');
 
@@ -758,11 +759,13 @@ export class GrampsImporter {
 		}
 
 		// Add relationship references with Gramps handles (temporary) and names
+		// Names are sanitized to match filename sanitization, preventing wikilink resolution failures
+		// when names contain special characters like quotes, parentheses, or brackets (#139)
 		if (person.fatherRef) {
 			personData.fatherCrId = person.fatherRef; // Temporary Gramps handle
 			const father = grampsData.persons.get(person.fatherRef);
 			if (father) {
-				personData.fatherName = father.name || 'Unknown';
+				personData.fatherName = sanitizeName(father.name || 'Unknown');
 			}
 		}
 
@@ -770,7 +773,7 @@ export class GrampsImporter {
 			personData.motherCrId = person.motherRef; // Temporary Gramps handle
 			const mother = grampsData.persons.get(person.motherRef);
 			if (mother) {
-				personData.motherName = mother.name || 'Unknown';
+				personData.motherName = sanitizeName(mother.name || 'Unknown');
 			}
 		}
 
@@ -778,7 +781,7 @@ export class GrampsImporter {
 			personData.spouseCrId = person.spouseRefs; // Temporary Gramps handles
 			personData.spouseName = person.spouseRefs.map(ref => {
 				const spouse = grampsData.persons.get(ref);
-				return spouse?.name || 'Unknown';
+				return sanitizeName(spouse?.name || 'Unknown');
 			});
 		}
 
@@ -787,7 +790,7 @@ export class GrampsImporter {
 			personData.stepfatherCrId = person.stepfatherRefs; // Temporary Gramps handles
 			personData.stepfatherName = person.stepfatherRefs.map(ref => {
 				const stepfather = grampsData.persons.get(ref);
-				return stepfather?.name || 'Unknown';
+				return sanitizeName(stepfather?.name || 'Unknown');
 			});
 		}
 
@@ -795,7 +798,7 @@ export class GrampsImporter {
 			personData.stepmotherCrId = person.stepmotherRefs; // Temporary Gramps handles
 			personData.stepmotherName = person.stepmotherRefs.map(ref => {
 				const stepmother = grampsData.persons.get(ref);
-				return stepmother?.name || 'Unknown';
+				return sanitizeName(stepmother?.name || 'Unknown');
 			});
 		}
 
@@ -804,7 +807,7 @@ export class GrampsImporter {
 			personData.adoptiveFatherCrId = person.adoptiveFatherRef; // Temporary Gramps handle
 			const adoptiveFather = grampsData.persons.get(person.adoptiveFatherRef);
 			if (adoptiveFather) {
-				personData.adoptiveFatherName = adoptiveFather.name || 'Unknown';
+				personData.adoptiveFatherName = sanitizeName(adoptiveFather.name || 'Unknown');
 			}
 		}
 
@@ -812,7 +815,7 @@ export class GrampsImporter {
 			personData.adoptiveMotherCrId = person.adoptiveMotherRef; // Temporary Gramps handle
 			const adoptiveMother = grampsData.persons.get(person.adoptiveMotherRef);
 			if (adoptiveMother) {
-				personData.adoptiveMotherName = adoptiveMother.name || 'Unknown';
+				personData.adoptiveMotherName = sanitizeName(adoptiveMother.name || 'Unknown');
 			}
 		}
 
@@ -823,7 +826,7 @@ export class GrampsImporter {
 			if (child.fatherRef === person.handle || child.motherRef === person.handle) {
 				if (!childRefs.includes(childHandle)) {
 					childRefs.push(childHandle);
-					childNames.push(child.name || 'Unknown');
+					childNames.push(sanitizeName(child.name || 'Unknown'));
 				}
 			}
 		}
@@ -1288,19 +1291,6 @@ export class GrampsImporter {
 		);
 
 		return content;
-	}
-
-	/**
-	 * Generate file name from person name
-	 */
-	private generateFileName(name: string): string {
-		// Sanitize name for file system
-		const sanitized = name
-			.replace(/[\\/:*?"<>|]/g, '-')
-			.replace(/\s+/g, ' ')
-			.trim();
-
-		return `${sanitized}.md`;
 	}
 
 	/**
