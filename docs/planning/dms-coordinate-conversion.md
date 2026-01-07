@@ -1,5 +1,11 @@
 # Plan: DMS to Decimal Degrees Coordinate Conversion (Issue #121)
 
+- **Status:** Implemented
+- **GitHub Issue:** [#121](https://github.com/banisterious/obsidian-canvas-roots/issues/121)
+- **Implemented:** 2026-01-07
+
+---
+
 ## Overview
 Add opt-in DMS (degrees, minutes, seconds) parsing to coordinate input fields in the place creation modal. When enabled via settings, users can enter coordinates in either decimal or DMS format, and the system automatically detects and converts DMS to decimal.
 
