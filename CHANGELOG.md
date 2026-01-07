@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **BCE/AD date sorting in timelines** ([#146](https://github.com/banisterious/obsidian-canvas-roots/issues/146)): Fixed incorrect chronological ordering of events spanning the BCE/AD boundary. Events with BCE dates (e.g., "11 BCE") now properly sort before AD dates (e.g., "14 AD"). Root cause: sort-order-service.ts used lexicographic string comparison which doesn't handle negative years correctly. Solution: Added compareDates() helper that extracts years numerically for proper chronological ordering.
+- **Timeline place text whitespace collapse** ([#146](https://github.com/banisterious/obsidian-canvas-roots/issues/146)): Fixed missing space between event title and place in dynamic timeline blocks. Browser was collapsing whitespace when MarkdownRenderer created block-level elements for wikilinks, causing "Marriage of Person Ain Place" instead of "Marriage of Person A in Place". Solution: Added non-breaking space (`\u00A0`) before "in" text to prevent whitespace collapse.
 
 ---
 
