@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Special character sanitization for all importers** ([#139](https://github.com/banisterious/obsidian-canvas-roots/issues/139)): Extended relationship name sanitization to Gramps, CSV, and GedcomX importers. Previously only the GEDCOM importer sanitized names containing special characters like `"`, `()`, `[]`, `{}`. Now all importers use a shared `sanitizeName()` utility to ensure wikilinks in relationship fields (father, mother, spouse, stepparents, adoptive parents, children) match sanitized filenames, preventing "linked to person who doesn't exist" warnings.
 - **Duplicate person filenames during batch import**: Fixed "File already exists" errors when importing multiple people with identical names (e.g., multiple "Son (stillborn)" entries). The vault index doesn't update fast enough between sequential file creations, causing race conditions. Solution: Track created paths in a Set and add retry logic with counter increment, matching the existing approach used for event notes.
+- **Map view "Link existing place" crash** ([#151](https://github.com/banisterious/obsidian-canvas-roots/issues/151)): Fixed error "createFolderFilterService is not a function" when using right-click → "Link existing place here" on maps. The code was calling non-existent factory methods on the plugin object. Solution: Import and instantiate `FolderFilterService` and `PlaceGraphService` directly.
+- **Edit Place modal styling issues**: Fixed truncated labels (e.g., "Parent place" showing as "P...") and horizontal scrollbar in the Edit Place modal. Added CSS to prevent setting-item labels from shrinking and constrained dropdown widths.
 
 ---
 
