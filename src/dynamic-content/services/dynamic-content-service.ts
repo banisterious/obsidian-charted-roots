@@ -92,15 +92,36 @@ export class DynamicContentService {
 
 	/**
 	 * Parse a single value from config
-	 * - Comma-separated values become arrays
+	 * - Comma-separated values become arrays (but not if commas are inside wikilinks)
 	 * - "true"/"false" become booleans
 	 * - Numbers become numbers
 	 * - Everything else stays as string
 	 */
 	private parseValue(value: string): string | number | boolean | string[] {
-		// Check for comma-separated list
+		// Check for comma-separated list, but only split if commas are outside wikilinks
+		// This prevents breaking values like [[Person Name|Alias]] or [[Place, City]]
 		if (value.includes(',')) {
-			return value.split(',').map(v => v.trim()).filter(v => v.length > 0);
+			// Count brackets to determine if commas are inside wikilinks
+			let bracketDepth = 0;
+			let hasCommaOutsideBrackets = false;
+
+			for (let i = 0; i < value.length; i++) {
+				if (value[i] === '[' && value[i + 1] === '[') {
+					bracketDepth++;
+					i++; // Skip next bracket
+				} else if (value[i] === ']' && value[i + 1] === ']') {
+					bracketDepth--;
+					i++; // Skip next bracket
+				} else if (value[i] === ',' && bracketDepth === 0) {
+					hasCommaOutsideBrackets = true;
+					break;
+				}
+			}
+
+			// Only split on commas if we found commas outside wikilinks
+			if (hasCommaOutsideBrackets) {
+				return value.split(',').map(v => v.trim()).filter(v => v.length > 0);
+			}
 		}
 
 		// Check for boolean
