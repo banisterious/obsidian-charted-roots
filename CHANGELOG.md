@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Ambiguous wikilink detection in Data Quality** ([#104](https://github.com/banisterious/obsidian-canvas-roots/issues/104)): The Data Quality report now detects when wikilinks in relationship fields (father, mother, spouse, children, etc.) match multiple files with the same basename. When multiple person notes share the same name (e.g., two "John Smith.md" files in different folders), wikilink references become ambiguous and cannot be resolved. The new check generates warnings (code: `AMBIGUOUS_WIKILINK`, category: relationship_inconsistency) suggesting users add `_id` fields (e.g., `father_id`) to disambiguate. This is part of Phase 3 of the wikilink-to-cr_id resolution implementation.
 
+### Fixed
+
+- **Infinite preprocessing loop in GEDCOM import** ([#144](https://github.com/banisterious/obsidian-canvas-roots/issues/144)): Fixed infinite loop causing repeated preprocessing during GEDCOM import. The import wizard Step 4 (Preview) was triggering concurrent calls to parseFileForPreview() because renders occurred while async parsing was still in progress. Added isParsing guard flag to prevent concurrent parsing attempts.
+
 ---
 
 ## [0.18.29] - 2026-01-07
