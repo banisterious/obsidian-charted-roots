@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.18.30] - 2026-01-08
+
 ### Added
 
 - **Ambiguous wikilink detection in Data Quality** ([#104](https://github.com/banisterious/obsidian-canvas-roots/issues/104)): The Data Quality report now detects when wikilinks in relationship fields (father, mother, spouse, children, etc.) match multiple files with the same basename. When multiple person notes share the same name (e.g., two "John Smith.md" files in different folders), wikilink references become ambiguous and cannot be resolved. The new check generates warnings (code: `AMBIGUOUS_WIKILINK`, category: relationship_inconsistency) suggesting users add `_id` fields (e.g., `father_id`) to disambiguate. This is part of Phase 3 of the wikilink-to-cr_id resolution implementation.
