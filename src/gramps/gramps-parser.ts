@@ -99,6 +99,8 @@ export interface ParsedGrampsEvent {
 	description?: string;
 	/** Person handles associated with this event */
 	personHandles: string[];
+	/** Map of person handle to their role in the event (e.g., "Primary", "Family", "Witness") */
+	personRoles?: Map<string, string>;
 	/** Citation handles for this event */
 	citationHandles: string[];
 	/** Media references */
@@ -349,9 +351,14 @@ export class GrampsParser {
 			const noteRefs: string[] = [...(grampsEvent.noteRefs || [])];
 
 			// Check person event references
+			const personRoles = new Map<string, string>();
 			for (const [personHandle, person] of database.persons) {
-				if (person.eventrefs.some(ref => ref.hlink === handle)) {
+				const eventRef = person.eventrefs.find(ref => ref.hlink === handle);
+				if (eventRef) {
 					personHandles.push(personHandle);
+					if (eventRef.role) {
+						personRoles.set(personHandle, eventRef.role);
+					}
 				}
 			}
 
@@ -394,6 +401,7 @@ export class GrampsParser {
 				placeName,
 				description: grampsEvent.description,
 				personHandles,
+				personRoles: personRoles.size > 0 ? personRoles : undefined,
 				citationHandles: grampsEvent.citationRefs || [],
 				mediaRefs: grampsEvent.mediaRefs || [],
 				noteRefs,

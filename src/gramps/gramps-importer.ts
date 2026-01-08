@@ -1714,9 +1714,27 @@ export class GrampsImporter {
 		}
 
 		// Get person names for the title
+		// Prefer the principal participant (role="Primary") for event naming
 		const personNames: string[] = [];
 		const personWikilinks: string[] = [];
-		for (const personHandle of event.personHandles) {
+
+		// First, try to find the primary participant
+		let primaryPersonHandle: string | undefined;
+		if (event.personRoles) {
+			for (const [handle, role] of event.personRoles) {
+				if (role === 'Primary') {
+					primaryPersonHandle = handle;
+					break;
+				}
+			}
+		}
+
+		// Use primary participant if found, otherwise fall back to first person
+		const displayHandles = primaryPersonHandle
+			? [primaryPersonHandle]
+			: event.personHandles.slice(0, 1);
+
+		for (const personHandle of displayHandles) {
 			const person = grampsData.persons.get(personHandle);
 			if (person) {
 				personNames.push(person.name || 'Unknown');

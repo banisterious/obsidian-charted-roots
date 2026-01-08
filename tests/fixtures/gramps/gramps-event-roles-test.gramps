@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE database PUBLIC "-//Gramps//DTD Gramps XML 1.7.1//EN"
+"http://gramps-project.org/xml/1.7.1/grampsxml.dtd">
+<database xmlns="http://gramps-project.org/xml/1.7.1/">
+  <header>
+    <created date="2026-01-08" version="5.1.6"/>
+  </header>
+  <people>
+    <person handle="_baby001" id="I0001">
+      <gender>M</gender>
+      <name type="Birth Name">
+        <first>John</first>
+        <surname>Smith</surname>
+      </name>
+      <eventref hlink="_birth001" role="Primary"/>
+      <childof hlink="_fam001"/>
+    </person>
+    <person handle="_mother001" id="I0002">
+      <gender>F</gender>
+      <name type="Birth Name">
+        <first>Mary</first>
+        <surname>Smith</surname>
+      </name>
+      <eventref hlink="_birth001" role="Witness"/>
+      <parentin hlink="_fam001"/>
+    </person>
+    <person handle="_father001" id="I0003">
+      <gender>M</gender>
+      <name type="Birth Name">
+        <first>Robert</first>
+        <surname>Smith</surname>
+      </name>
+      <parentin hlink="_fam001"/>
+    </person>
+  </people>
+  <families>
+    <family handle="_fam001" id="F0001">
+      <father hlink="_father001"/>
+      <mother hlink="_mother001"/>
+      <childref hlink="_baby001"/>
+    </family>
+  </families>
+  <events>
+    <event handle="_birth001" id="E0001">
+      <type>Birth</type>
+      <dateval val="2000-01-15"/>
+      <place hlink="_place001"/>
+      <description>Birth at hospital</description>
+    </event>
+  </events>
+  <places>
+    <placeobj handle="_place001" id="P0001" type="Hospital">
+      <pname value="City Hospital"/>
+    </placeobj>
+  </places>
+</database>
