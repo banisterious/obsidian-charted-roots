@@ -2,9 +2,9 @@
 	"schemaVersion": "0.1.0",
 	"name": "Find a Grave - Person",
 	"behavior": "create",
-	"noteNameFormat": "Grave - {{title}}",
+	"noteNameFormat": "{{selector:.bio-name}}",
 	"path": "",
-	"noteContentFormat": "# {{title}}\n\n## Vital Information\n\n**Born:** {{published}} in {{selector:#birthLocationLabel}}\n**Died:** {{selector:#deathDateLabel}} in {{selector:#deathLocationLabel}}\n**Burial:** {{selector:#cemeteryNameLabel}}, {{selector:#cemeteryCityName}}, {{selector:#cemeteryCountyName}}, {{selector:#cemeteryStateName}}, {{selector:#cemeteryCountryName}}\n\n## Content\n\n{{content}}\n\n## Photo\n\n{{image}}\n\n## Source\n\nFind a Grave Memorial: {{url}}\nClipped: {{date}}",
+	"noteContentFormat": "# {{selector:.bio-name}}\n\n## Vital Information\n\n**Born:** {{published}} in {{selector:#birthLocationLabel}}\n**Died:** {{selector:#deathDateLabel}} in {{selector:#deathLocationLabel}}\n**Burial:** {{selector:#cemeteryNameLabel}}, {{selector:#cemeteryCityName}}, {{selector:#cemeteryCountyName}}, {{selector:#cemeteryStateName}}, {{selector:#cemeteryCountryName}}\n\n## Content\n\n{{content}}\n\n## Photo\n\n{{image}}\n\n## Source\n\nFind a Grave Memorial: {{url}}\nClipped: {{date}}",
 	"properties": [
 		{
 			"name": "clip_source_type",
@@ -28,7 +28,7 @@
 		},
 		{
 			"name": "name",
-			"value": "{{title}}",
+			"value": "{{selector:.bio-name}}",
 			"type": "text"
 		},
 		{
@@ -57,5 +57,5 @@
 			"type": "text"
 		}
 	],
-	"triggers": ["findagrave.com/memorial/*"]
+	"triggers": ["https://www.findagrave.com/memorial/*"]
 }

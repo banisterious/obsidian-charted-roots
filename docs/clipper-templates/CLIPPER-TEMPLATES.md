@@ -5,7 +5,9 @@ This directory contains official Web Clipper templates optimized for genealogica
 ## Prerequisites
 
 1. **Install Obsidian Web Clipper** - Install the official [Obsidian Web Clipper](https://obsidian.md/clipper) browser extension
-2. **Configure Web Clipper** - Set output folder to match your Canvas Roots staging folder (Settings → Canvas Roots → Staging Folder)
+2. **Configure output path** - After importing a template, edit the `path` field to match your Canvas Roots staging folder
+   - Example: If your staging folder is `Family Tree/Staging`, set `"path": "Family Tree/Staging"`
+   - Or configure the default output folder in Web Clipper settings
 3. **Enable Interpreter (optional)** - Some templates use AI extraction. Configure in Web Clipper settings → Interpreter
 
 ## How to Import Templates
@@ -23,12 +25,13 @@ This directory contains official Web Clipper templates optimized for genealogica
 
 ### Find a Grave - Person
 **File:** `findagrave-person.json`
-**URL Pattern:** `findagrave.com/memorial/*`
+**URL Pattern:** `https://www.findagrave.com/memorial/*`
 **Auto-triggers:** Yes
 
 Simple, fast template that extracts structured data from Find a Grave memorial pages using CSS selectors only.
 
 **Extracts:**
+- Person's full name (via CSS selector `.bio-name` for clean filenames)
 - Birth date and place
 - Death date and place
 - Burial location (cemetery with full address)
@@ -44,6 +47,7 @@ Simple, fast template that extracts structured data from Find a Grave memorial p
 - `clipped_from`: Memorial URL
 - `clipped_date`: Date clipped
 - `note_type`: "person"
+- `name`: Person's full name
 - `birth_date`, `birth_place`
 - `death_date`, `death_place`
 - `burial_place`
@@ -52,7 +56,7 @@ Simple, fast template that extracts structured data from Find a Grave memorial p
 
 ### Find a Grave - Person (LLM)
 **File:** `findagrave-person-llm.json`
-**URL Pattern:** `findagrave.com/memorial/*`
+**URL Pattern:** `https://www.findagrave.com/memorial/*`
 **Auto-triggers:** Yes
 
 Enhanced template that uses AI to extract person's name and parse biography/family information from unstructured content.

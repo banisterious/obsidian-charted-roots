@@ -2,7 +2,7 @@
 	"schemaVersion": "0.1.0",
 	"name": "Find a Grave - Person (LLM)",
 	"behavior": "create",
-	"noteNameFormat": "Grave - {{\"person's full name\"}}",
+	"noteNameFormat": "{{\"person's full name\"}}",
 	"path": "",
 	"noteContentFormat": "# {{\"person's full name\"}}\n\n## Vital Information\n\n**Born:** {{published}} in {{selector:#birthLocationLabel}}\n**Died:** {{selector:#deathDateLabel}} in {{selector:#deathLocationLabel}}\n**Burial:** {{selector:#cemeteryNameLabel}}, {{selector:#cemeteryCityName}}, {{selector:#cemeteryCountyName}}, {{selector:#cemeteryStateName}}, {{selector:#cemeteryCountryName}}\n\n{{#if \"biography text\"}}## Biography\n\n{{\"biography text\"}}\n\n{{/if}}{{#if \"spouse and family members\"}}## Family\n\n{{\"spouse and family members\"}}\n\n{{/if}}## Photo\n\n{{image}}\n\n## Source\n\nFind a Grave Memorial: {{url}}\nClipped: {{date}}",
 	"properties": [
@@ -57,6 +57,6 @@
 			"type": "text"
 		}
 	],
-	"triggers": ["findagrave.com/memorial/*"],
+	"triggers": ["https://www.findagrave.com/memorial/*"],
 	"context": "Extract biographical information from this Find a Grave memorial. Page content: {{content}}. Return only the exact requested information with no extra text."
 }
