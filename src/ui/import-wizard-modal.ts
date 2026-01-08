@@ -862,15 +862,13 @@ export class ImportWizardModal extends Modal {
 				this.formData.parseErrors = validation.errors.map(e => e.message);
 				this.formData.parseWarnings = validation.warnings.map(w => w.message);
 			}
-
-			// Re-render to show results
-			this.renderCurrentStep();
 		} catch (error) {
 			this.formData.parseErrors = [`Failed to read file: ${error instanceof Error ? error.message : 'Unknown error'}`];
-			this.renderCurrentStep();
 		} finally {
-			// Always clear the parsing flag
+			// Clear the parsing flag before re-rendering
 			this.isParsing = false;
+			// Re-render to show results
+			this.renderCurrentStep();
 		}
 	}
 
