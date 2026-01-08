@@ -6,6 +6,13 @@
   max-width: 500px;
 }
 
+/* Fix for setting items with multiple controls (dropdown + text input) */
+/* Prevent the info section from being truncated when controls take up space */
+.crc-create-place-modal .setting-item-info {
+  flex-shrink: 0;
+  min-width: 120px;
+}
+
 /* Coordinate inputs section */
 .crc-coord-section {
   margin-top: 8px;
