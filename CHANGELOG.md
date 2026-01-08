@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.18.28] - 2026-01-07
+
 ### Added
 
 - **MyHeritage GEDCOM compatibility** ([#144](https://github.com/banisterious/obsidian-canvas-roots/issues/144)): Automatically detect and fix MyHeritage GEDCOM export issues during import. MyHeritage exports contain UTF-8 BOM, double-encoded HTML entities (`&amp;lt;` instead of `<`), and `<br>` tags that prevent parsing. New preprocessing automatically detects MyHeritage files (via `1 SOUR MYHERITAGE` tag) and applies fixes. Three modes available in Settings → Import/Export: Auto (default, detect and fix), MyHeritage (always fix), None (disabled). Import results modal shows what was fixed.
