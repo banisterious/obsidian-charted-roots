@@ -191,6 +191,9 @@ export default class CanvasRootsPlugin extends Plugin {
 		if (this.folderFilter) {
 			graphService.setFolderFilter(this.folderFilter);
 		}
+		if (this.personIndex) {
+			graphService.setPersonIndex(this.personIndex);
+		}
 		// Set settings for note type detection
 		graphService.setSettings(this.settings);
 
