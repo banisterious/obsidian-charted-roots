@@ -10,6 +10,7 @@ import { getLogger } from './logging';
 import { SpouseRelationship } from '../models/person';
 import { PersonFrontmatter } from '../types/frontmatter';
 import { FolderFilterService } from './folder-filter';
+import { PersonIndexService } from './person-index-service';
 import type { CanvasRootsSettings, ValueAliasSettings } from '../settings';
 import { CANONICAL_GENDERS, BUILTIN_SYNONYMS } from './value-alias-service';
 import { isSourceNote, isEventNote, isPlaceNote } from '../utils/note-type-detection';
@@ -198,6 +199,7 @@ export class FamilyGraphService {
 	private app: App;
 	private personCache: Map<string, PersonNode>;
 	private folderFilter: FolderFilterService | null = null;
+	private personIndex: PersonIndexService | null = null;
 	private propertyAliases: Record<string, string> = {};
 	private valueAliases: ValueAliasSettings = { eventType: {}, sex: {}, gender_identity: {}, placeCategory: {}, noteType: {} };
 	private settings: CanvasRootsSettings | null = null;
@@ -212,6 +214,13 @@ export class FamilyGraphService {
 	 */
 	setFolderFilter(folderFilter: FolderFilterService): void {
 		this.folderFilter = folderFilter;
+	}
+
+	/**
+	 * Set the person index service for wikilink resolution
+	 */
+	setPersonIndex(personIndex: PersonIndexService): void {
+		this.personIndex = personIndex;
 	}
 
 	/**
@@ -1638,15 +1647,31 @@ export class FamilyGraphService {
 			return null;
 		}
 
-		// Check if it's a wikilink format: [[Name]] or "[[Name]]"
-		const wikilinkMatch = value.match(/\[\[([^\]]+)\]\]/);
+		// Check if it's a wikilink format: [[Name]] or [[Name|Alias]]
+		const wikilinkMatch = value.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/);
 		if (!wikilinkMatch) {
 			// Not a wikilink, might be a direct cr_id
 			return value;
 		}
 
-		// It's a wikilink - we can't extract cr_id from it, return null
-		// The _id field should be used instead for reliable resolution
+		// Extract basename from wikilink (handles both [[Name]] and [[Path/Name]])
+		const basename = wikilinkMatch[1];
+
+		// Use PersonIndexService to resolve wikilink (if available)
+		if (this.personIndex) {
+			const crId = this.personIndex.getCrIdByWikilink(basename);
+			if (crId) {
+				return crId;
+			}
+
+			// Wikilink couldn't be resolved (no match or ambiguous)
+			logger.debug('extractCrIdFromWikilink', `Could not resolve wikilink: ${value}`);
+			return null;
+		}
+
+		// PersonIndexService not available - fall back to old behavior
+		// (return null for wikilinks, requiring _id fields)
+		logger.debug('extractCrIdFromWikilink', 'PersonIndexService not available, wikilink not resolved');
 		return null;
 	}
 
