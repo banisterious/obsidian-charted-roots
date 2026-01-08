@@ -1,8 +1,8 @@
 # Place Category → Folder Mapping
 
-**Status:** Planning
-**Related Issue:** #163
-**Created:** 2026-01-08
+- **Status:** Planning
+- **Related Issue:** [#163](https://github.com/banisterious/obsidian-canvas-roots/issues/163)
+- **Created:** 2026-01-08
 
 ## Problem Statement
 
