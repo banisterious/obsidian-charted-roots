@@ -104,6 +104,21 @@ Solutions to common issues with Canvas Roots.
 4. Review import log for specific errors
 5. Some GEDCOM exports from older software may have non-standard tags
 
+**Sharing files for bug reports:**
+
+If you need to share your GEDCOM file to help debug import issues, use the anonymization tool to protect your privacy:
+
+1. Download the anonymization script: [tools/anonymize_gedcom.py](https://github.com/banisterious/obsidian-canvas-roots/blob/main/tools/anonymize_gedcom.py)
+2. Run it on your GEDCOM file:
+   ```
+   python anonymize_gedcom.py your_file.ged anonymized_file.ged
+   ```
+3. The script replaces names with "Person 1", "Person 2", etc. while preserving the file structure
+4. Optional flags:
+   - `--keep-dates` - Preserve dates (useful for date-related bugs)
+   - `--keep-places` - Preserve place names (useful for place-related bugs)
+5. Review the anonymized file before sharing to ensure you're comfortable with the content
+
 ### GEDCOM export missing data
 
 **Symptoms:** Exported GEDCOM has fewer people or missing relationships.
