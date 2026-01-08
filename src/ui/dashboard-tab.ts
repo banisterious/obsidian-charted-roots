@@ -211,6 +211,8 @@ function renderQuickActionsSection(
 		closeModal();
 		new CreatePlaceModal(app, {
 			directory: plugin.settings.placesFolder || 'Canvas Roots/Places',
+			familyGraph: plugin.createFamilyGraphService(),
+			placeGraph: new PlaceGraphService(app),
 			settings: plugin.settings,
 			plugin,
 			onCreated: (file) => {
