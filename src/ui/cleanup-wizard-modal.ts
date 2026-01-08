@@ -391,6 +391,9 @@ export class CleanupWizardModal extends Modal {
 				folderFilter,
 				this.plugin
 			);
+			if (this.plugin.personIndex) {
+				this.dataQualityService.setPersonIndex(this.plugin.personIndex);
+			}
 		}
 		return this.dataQualityService;
 	}

@@ -12,6 +12,7 @@ import { App, TFile } from 'obsidian';
 import { getLogger } from './logging';
 import { FamilyGraphService, PersonNode } from './family-graph';
 import { FolderFilterService } from './folder-filter';
+import { PersonIndexService } from './person-index-service';
 import { CanvasRootsSettings } from '../settings';
 import { ALL_NOTE_TYPES, NoteType } from '../utils/note-type-detection';
 import { CANONICAL_SEX_VALUES, CanonicalSex, BUILTIN_SYNONYMS } from './value-alias-service';
@@ -161,6 +162,7 @@ export interface DataQualityOptions {
  */
 export class DataQualityService {
 	private schemaService: SchemaService | null = null;
+	private personIndex: PersonIndexService | null = null;
 
 	constructor(
 		private app: App,
@@ -173,6 +175,13 @@ export class DataQualityService {
 		if (plugin) {
 			this.schemaService = new SchemaService(plugin);
 		}
+	}
+
+	/**
+	 * Set PersonIndexService for wikilink resolution checks
+	 */
+	setPersonIndex(personIndex: PersonIndexService): void {
+		this.personIndex = personIndex;
 	}
 
 	/**
@@ -223,6 +232,8 @@ export class DataQualityService {
 			}
 			if (checks.relationshipInconsistencies) {
 				issues.push(...this.checkRelationshipInconsistencies(person, peopleMap));
+				// Also check for ambiguous wikilinks (part of relationship quality)
+				issues.push(...this.checkAmbiguousWikilinks(person));
 			}
 			if (checks.missingData) {
 				issues.push(...this.checkMissingData(person));
@@ -909,6 +920,79 @@ export class DataQualityService {
 				property: 'type',
 			},
 		});
+
+		return issues;
+	}
+
+	/**
+	 * Check for ambiguous wikilinks in relationship fields
+	 * Detects when a wikilink could resolve to multiple files (same basename)
+	 */
+	private checkAmbiguousWikilinks(person: PersonNode): DataQualityIssue[] {
+		const issues: DataQualityIssue[] = [];
+
+		// Skip if PersonIndexService not available
+		if (!this.personIndex) {
+			return issues;
+		}
+
+		// Read raw frontmatter to check for wikilink fields
+		const cache = this.app.metadataCache.getFileCache(person.file);
+		const fm = cache?.frontmatter as Record<string, unknown> | undefined;
+		if (!fm) {
+			return issues;
+		}
+
+		// Relationship fields that support wikilinks
+		const wikilinkFields = [
+			'father', 'mother', 'spouse', 'children', 'parents',
+			'stepfather', 'stepmother', 'adoptive_father',
+			'adoptive_mother', 'adoptive_parent'
+		];
+
+		for (const field of wikilinkFields) {
+			// Skip if _id field exists (takes precedence)
+			const idField = `${field}_id`;
+			if (fm[idField]) {
+				continue;
+			}
+
+			const value = fm[field];
+			if (!value) {
+				continue;
+			}
+
+			// Handle both single values and arrays
+			const values = Array.isArray(value) ? value : [value];
+
+			for (const val of values) {
+				if (typeof val === 'string' && val.includes('[[')) {
+					// Extract wikilink text
+					const match = val.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/);
+					if (match) {
+						const wikilink = match[1];
+
+						// Check if this wikilink is ambiguous
+						if (this.personIndex.hasAmbiguousFilename(wikilink)) {
+							const matchCount = this.personIndex.getFilesWithBasename(wikilink).length;
+							issues.push({
+								code: 'AMBIGUOUS_WIKILINK',
+								message: `Wikilink [[${wikilink}]] matches ${matchCount} files`,
+								severity: 'warning',
+								category: 'relationship_inconsistency',
+								person,
+								details: {
+									field,
+									wikilink: val,
+									matchCount,
+									suggestion: `Add ${idField} field to disambiguate`
+								}
+							});
+						}
+					}
+				}
+			}
+		}
 
 		return issues;
 	}

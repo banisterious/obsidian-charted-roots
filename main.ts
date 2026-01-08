@@ -70,7 +70,7 @@ export default class CanvasRootsPlugin extends Plugin {
 	private relationshipHistory: RelationshipHistoryService | null = null;
 	private folderFilter: FolderFilterService | null = null;
 	private templateFilter: TemplateFilterService | null = null;
-	private personIndex: PersonIndexService | null = null;
+	public personIndex: PersonIndexService | null = null;
 	private eventService: EventService | null = null;
 	private recentFilesService: RecentFilesService | null = null;
 	private mediaService: MediaService | null = null;

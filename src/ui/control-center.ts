@@ -2571,6 +2571,9 @@ export class ControlCenterModal extends Modal {
 			folderFilter,
 			this.plugin
 		);
+		if (this.plugin.personIndex) {
+			dataQuality.setPersonIndex(this.plugin.personIndex);
+		}
 
 		// Detect conflicts
 		const inconsistencies = dataQuality.detectBidirectionalInconsistencies();
@@ -9454,6 +9457,9 @@ export class ControlCenterModal extends Modal {
 			folderFilter,
 			this.plugin
 		);
+		if (this.plugin.personIndex) {
+			dataQualityService.setPersonIndex(this.plugin.personIndex);
+		}
 
 		// Run analysis (synchronous)
 		const report = dataQualityService.analyze({
@@ -9734,6 +9740,9 @@ export class ControlCenterModal extends Modal {
 			folderFilter,
 			this.plugin
 		);
+		if (this.plugin.personIndex) {
+			dataQualityService.setPersonIndex(this.plugin.personIndex);
+		}
 
 		// Get preview
 		const preview = await dataQualityService.previewNormalization({ scope, folderPath });
@@ -9775,6 +9784,9 @@ export class ControlCenterModal extends Modal {
 			folderFilter,
 			this.plugin
 		);
+		if (this.plugin.personIndex) {
+			dataQualityService.setPersonIndex(this.plugin.personIndex);
+		}
 
 		let result: BatchOperationResult;
 		let operationName: string;
@@ -10963,6 +10975,9 @@ export class ControlCenterModal extends Modal {
 			folderFilter1,
 			this.plugin
 		);
+		if (this.plugin.personIndex) {
+			dataQuality1.setPersonIndex(this.plugin.personIndex);
+		}
 
 		new Notice('Detecting bidirectional relationship inconsistencies...');
 
@@ -11031,6 +11046,9 @@ export class ControlCenterModal extends Modal {
 			folderFilter2,
 			this.plugin
 		);
+		if (this.plugin.personIndex) {
+			dataQuality2.setPersonIndex(this.plugin.personIndex);
+		}
 
 		new Notice('Detecting inconsistencies...');
 
@@ -11091,6 +11109,9 @@ export class ControlCenterModal extends Modal {
 			folderFilter3,
 			this.plugin
 		);
+		if (this.plugin.personIndex) {
+			dataQuality3.setPersonIndex(this.plugin.personIndex);
+		}
 
 		const issues = dataQuality3.detectImpossibleDates();
 
