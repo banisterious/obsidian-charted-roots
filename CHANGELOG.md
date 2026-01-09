@@ -9,9 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.18.31] - 2026-01-08
+
 ### Added
 
-- **GEDCOM anonymization tool**: Added `tools/anonymize_gedcom.py` script to help users create shareable test files when reporting GEDCOM import issues without exposing sensitive genealogical data. The script anonymizes names, places, dates, notes, and contact information while preserving GEDCOM structure and relationships for debugging. Supports `--keep-dates` and `--keep-places` flags for targeted debugging scenarios.
+- **GEDCOM anonymization tool**: Added `tools/anonymize_gedcom.py` script to help users create shareable test files when reporting GEDCOM import issues without exposing sensitive genealogical data. The script anonymizes names, places, dates, notes, and contact information while preserving GEDCOM structure and relationships for debugging. Supports `--keep-dates` and `--keep-places` flags for targeted debugging scenarios. See [Troubleshooting wiki](https://github.com/banisterious/obsidian-canvas-roots/wiki/Troubleshooting#sharing-gedcom-files-for-debugging) for usage instructions.
 
 ### Fixed
 
@@ -21,10 +25,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Dynamic blocks fail with 'value.startsWith is not a function' error** ([#160](https://github.com/banisterious/obsidian-canvas-roots/issues/160)): Fixed timeline and relationships dynamic blocks crashing when config values contain commas inside wikilinks. The config parser was splitting all comma-containing values into arrays, breaking values like `[[Person Name|Alias]]` or `[[Place, City]]`. Now only splits on commas outside wikilink brackets.
 - **Import Wizard Preview stuck on 'Parsing file...'** ([#161](https://github.com/banisterious/obsidian-canvas-roots/issues/161)): Fixed Preview step getting stuck showing "Parsing file..." indefinitely. The `isParsing` flag was being cleared in the finally block after the UI re-render, causing the render to always see the loading state. Moved the flag reset before the render call so the parsed counts display properly.
 - **Create Place modal doesn't recognize existing parent places** ([#162](https://github.com/banisterious/obsidian-canvas-roots/issues/162)): Fixed modal prompting to create duplicate parent places even when they already exist. Two scenarios were broken: (1) When typing a parent name that exists as a grandparent, the stale place graph cache didn't reflect the newly created intermediate place, causing it to miss existing grandparents. Now reloads the cache before opening each parent modal. (2) When selecting an existing parent from the dropdown, the modal still prompted for creation because `pendingParentPlace` wasn't cleared. Now clears the pending parent flag in all dropdown selection cases.
-
----
-
-## [0.18.31] - 2026-01-08
 
 ### Documentation
 
