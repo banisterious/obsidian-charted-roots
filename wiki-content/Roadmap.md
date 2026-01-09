@@ -16,6 +16,7 @@ This document outlines planned features for Canvas Roots. For completed features
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
   - [Romantic Relationship Label Preference](#romantic-relationship-label-preference) 💡 Low
+  - [Timeline Event Description Display](#timeline-event-description-display) 💡 Low
 - [Future Considerations](#future-considerations)
   - [Research Tracking](#research-tracking)
   - [Dynasty Management](#dynasty-management)
@@ -412,6 +413,48 @@ oral_facts:
 - Opt-in preference for users who want "Partner" terminology
 
 See [Spouse/Partner Terminology Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/spouse-partner-terminology.md) for detailed specifications.
+
+---
+
+### Timeline Event Description Display
+
+**Priority:** 💡 Low — UI refinement for descriptive event types
+
+**Status:** Planning
+
+**GitHub Issue:** [#157](https://github.com/banisterious/obsidian-canvas-roots/issues/157)
+
+**Summary:** For certain event types (Occupation, Residence, Military, Education), display the event description instead of the event title in person timelines. This provides more meaningful information at a glance.
+
+**The Problem:** Timeline currently shows event titles like "Occupation of F MISTET" which don't convey useful information. The actual occupation (e.g., "Prêtre de Ligné") is stored in the event's `description` field but not displayed.
+
+**Current Behavior:**
+```
+1850 — Occupation of F MISTET
+```
+
+**Proposed Behavior:**
+```
+1850 — Occupation: Prêtre de Ligné
+```
+
+**Affected Event Types:**
+- Occupation — job titles, professions
+- Residence — locations, addresses
+- Military — service details
+- Education — schools, degrees
+
+**Implementation:**
+- Modify timeline renderer to check event type
+- For descriptive types with a description, show `{Type}: {description}`
+- Fall back to title if no description exists
+- Single file change (~30-60 minutes)
+
+**User Impact:** Non-breaking change
+- Events without descriptions continue showing title
+- Birth/Death/Marriage events unaffected
+
+See [Timeline Event Description Display Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/timeline-event-description-display.md) for detailed specifications.
 
 ---
 
