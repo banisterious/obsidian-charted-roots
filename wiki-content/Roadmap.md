@@ -15,6 +15,7 @@ This document outlines planned features for Canvas Roots. For completed features
   - [Per-Map Marker Assignment](#per-map-marker-assignment) 💡 Low
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
+  - [Romantic Relationship Label Preference](#romantic-relationship-label-preference) 💡 Low
 - [Future Considerations](#future-considerations)
   - [Research Tracking](#research-tracking)
   - [Dynasty Management](#dynasty-management)
@@ -375,6 +376,42 @@ oral_facts:
 - Map relationship structure of interviews
 - Interview as central hub node
 - Edge thickness indicates mention frequency
+
+---
+
+### Romantic Relationship Label Preference
+
+**Priority:** 💡 Low — UI terminology preference for inclusive documentation
+
+**Status:** Planning
+
+**GitHub Issue:** [#167](https://github.com/banisterious/obsidian-canvas-roots/issues/167)
+
+**Summary:** Add a preference setting that lets users choose whether the UI displays "Spouse" or "Partner" throughout the plugin — in menus, forms, labels, and wizards. The underlying data structure stays the same; this only changes what users see in the interface.
+
+**The Problem:** Some users prefer "partner" as a more inclusive term that covers all romantic relationships (marriages, civil unions, long-term partnerships, liaisons) without implying legal marriage. The current UI uses "spouse" consistently, which can feel inappropriate for users documenting non-marriage relationships.
+
+**The Solution:** A simple preference toggle:
+- **Setting name**: "Romantic relationship label"
+- **Options**: "Spouse" (default) | "Partner"
+- **Scope**: UI labels only — does not affect frontmatter property names
+
+**Implementation:**
+- Add setting to Preferences → Display
+- Create helper function that returns appropriate label based on preference
+- Update ~37 UI strings across 14 files
+
+**What Does NOT Change:**
+- Frontmatter property names (`spouse`, `partners`)
+- Property alias mappings
+- Data model and relationship types
+- Export formats (GEDCOM, CSV)
+
+**User Impact:** Non-breaking change
+- Default behavior unchanged (shows "Spouse")
+- Opt-in preference for users who want "Partner" terminology
+
+See [Spouse/Partner Terminology Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/spouse-partner-terminology.md) for detailed specifications.
 
 ---
 
