@@ -1,0 +1,77 @@
+{
+	"schemaVersion": "0.1.0",
+	"name": "Wikidata - Place",
+	"behavior": "create",
+	"noteNameFormat": "{{\"place name\"}}",
+	"path": "",
+	"noteContentFormat": "# {{\"place name\"}}\n\n## Geographic Information\n\n{{\"geographic details\"}}\n\n## Administrative Information\n\n{{\"administrative details\"}}\n\n{{#if \"alternate names\"}}## Alternate Names\n\n{{\"alternate names\"}}\n\n{{/if}}## Description\n\n{{\"description\"}}\n\n## Source\n\nWikidata: {{url}}\nWikidata ID: {{\"wikidata id\"}}\n{{#if \"wikipedia url\"}}Wikipedia: {{\"wikipedia url\"}}\n{{/if}}Clipped: {{date}}",
+	"properties": [
+		{
+			"name": "clip_source_type",
+			"value": "wikidata",
+			"type": "text"
+		},
+		{
+			"name": "clipped_from",
+			"value": "{{url}}",
+			"type": "text"
+		},
+		{
+			"name": "clipped_date",
+			"value": "{{date}}",
+			"type": "text"
+		},
+		{
+			"name": "cr_type",
+			"value": "place",
+			"type": "text"
+		},
+		{
+			"name": "note_type",
+			"value": "place",
+			"type": "text"
+		},
+		{
+			"name": "name",
+			"value": "{{\"place name\"}}",
+			"type": "text"
+		},
+		{
+			"name": "coordinates_lat",
+			"value": "{{\"latitude\"}}",
+			"type": "text"
+		},
+		{
+			"name": "coordinates_long",
+			"value": "{{\"longitude\"}}",
+			"type": "text"
+		},
+		{
+			"name": "place_type",
+			"value": "{{\"place type\"}}",
+			"type": "text"
+		},
+		{
+			"name": "place_category",
+			"value": "real",
+			"type": "text"
+		},
+		{
+			"name": "parent_place",
+			"value": "{{\"parent place\"}}",
+			"type": "text"
+		},
+		{
+			"name": "wikidata_id",
+			"value": "{{\"wikidata id\"}}",
+			"type": "text"
+		},
+		{
+			"name": "wikipedia_url",
+			"value": "{{\"wikipedia url\"}}",
+			"type": "text"
+		}
+	],
+	"triggers": ["wikidata.org/wiki/Q"],
+	"context": "Extract place information from this Wikidata page. Page URL: {{url}}. Page content: {{content}}.\n\nIMPORTANT: This is a Wikidata page about a GEOGRAPHIC PLACE (city, country, state, county, village, etc.), NOT a person. You are extracting PLACE DATA with coordinates and administrative hierarchies.\n\nLook for the structured data on the page including properties like \"coordinate location\", \"instance of\", \"located in the administrative territorial entity\", \"country\", etc.\n\nReturn ONLY the requested data with NO explanatory text or prefixes. If a field is not found, return an empty string.\n\nWikidata ID (extract the Q-number from the URL, e.g., if URL is wikidata.org/wiki/Q84 then return \"Q84\")\nPlace name (the primary English label at the top of the page - just the name without any disambiguation text in parentheses)\nLatitude (decimal format from \"coordinate location\" property, e.g., 51.5074 - extract ONLY the latitude number)\nLongitude (decimal format from \"coordinate location\" property, e.g., -0.1278 - extract ONLY the longitude number)\nPlace type (look for \"instance of\" property - return simple type like \"city\", \"country\", \"state\", \"county\", \"village\", \"town\", etc.)\nParent place (look for \"located in the administrative territorial entity\" or \"country\" property - return ONLY the name of the immediate parent place, e.g., \"England\" not \"located in England\")\nAlternate names (look for aliases and labels in other languages - format as markdown list with language in parentheses like \"- Londres (French)\\n- Londres (Spanish)\" - if none, return empty string)\nGeographic details (format as markdown list: **Coordinates:** lat, lng on first line, then add **Country:** if available, **Continent:** if available, **Population:** if available, **Area:** if available, **Elevation:** if available - ONLY include fields with data)\nAdministrative details (format as markdown with information about administrative hierarchy, what country/state/province this is in, what type of administrative division it is)\nDescription (the short description shown under the title on Wikidata - usually one sentence)\nWikipedia URL (if there is a link to English Wikipedia article, provide the full https:// URL, otherwise return empty string)"
+}
