@@ -17,6 +17,7 @@ This document outlines planned features for Canvas Roots. For completed features
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
   - [Romantic Relationship Label Preference](#romantic-relationship-label-preference) 💡 Low
   - [Timeline Event Description Display](#timeline-event-description-display) 💡 Low
+  - [Place Category Folder Mapping](#place-category-folder-mapping) 💡 Low
 - [Future Considerations](#future-considerations)
   - [Research Tracking](#research-tracking)
   - [Dynasty Management](#dynasty-management)
@@ -455,6 +456,46 @@ See [Spouse/Partner Terminology Planning Document](https://github.com/banisterio
 - Birth/Death/Marriage events unaffected
 
 See [Timeline Event Description Display Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/timeline-event-description-display.md) for detailed specifications.
+
+---
+
+### Place Category Folder Mapping
+
+**Priority:** 💡 Low — Organization improvement for place notes
+
+**Status:** Planning
+
+**GitHub Issue:** [#163](https://github.com/banisterious/obsidian-canvas-roots/issues/163)
+
+**Summary:** Automatically store places in category-specific subfolders. When creating a place with `place_category: historical`, it would be saved to `Places/Historical/` instead of the root `Places/` folder.
+
+**The Problem:** Currently, place categories work in one direction only:
+- **Folder → Category** (implemented): Folder path determines the default category via configurable rules
+- **Category → Folder** (missing): Category selection does NOT determine storage location
+
+Users expect that selecting a category would organize the place into the corresponding folder automatically.
+
+**Proposed Behavior:**
+```
+Places/
+  Real/         (place_category: real)
+  Historical/   (place_category: historical)
+  Fictional/    (place_category: fictional)
+  ...
+```
+
+**Implementation:**
+- Add `useCategorySubfolders` setting (default: true for new installs)
+- When creating a place, determine folder based on category
+- Create subfolder automatically if it doesn't exist
+- Support optional custom category → folder mappings for power users
+
+**User Impact:** Non-breaking change
+- Disabled by default on upgrade to avoid disrupting existing organization
+- Enabled by default for new installs
+- Optional bulk migration tool to reorganize existing places
+
+See [Place Category Folder Mapping Planning Document](https://github.com/banisterious/obsidian-canvas-roots/blob/main/docs/planning/place-category-folder-mapping.md) for detailed specifications.
 
 ---
 
