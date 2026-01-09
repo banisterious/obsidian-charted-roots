@@ -1,6 +1,7 @@
 import { App, TFile, TFolder } from 'obsidian';
 import type { CanvasRootsSettings } from '../settings';
 import { detectNoteType, type NoteType } from '../utils/note-type-detection';
+import { generateCrId } from './uuid';
 
 /**
  * Entity type counts for staging statistics
@@ -210,7 +211,10 @@ export class StagingService {
 			return { success: false, newPath: '', renamed: false, error: 'File is not in staging folder' };
 		}
 
-		const mainPath = this.settings.peopleFolder;
+		// Determine target folder based on note type
+		const cache = this.app.metadataCache.getFileCache(file);
+		const noteType = cache ? detectNoteType(cache.frontmatter) : null;
+		const mainPath = this.getTargetFolder(noteType);
 
 		// Calculate new path: replace staging folder with main folder
 		// Also strip any subfolder structure (flatten to main folder)
@@ -238,11 +242,59 @@ export class StagingService {
 			// Move the file
 			await this.app.fileManager.renameFile(file, newPath);
 
+			// Post-promotion: ensure cr_id and clean up clipper metadata
+			const movedFile = this.app.vault.getAbstractFileByPath(newPath);
+			if (movedFile instanceof TFile) {
+				await this.ensureCrIdAndCleanup(movedFile);
+			}
+
 			return { success: true, newPath, renamed };
 		} catch (error) {
 			const errorMsg = error instanceof Error ? error.message : String(error);
 			return { success: false, newPath, renamed: false, error: errorMsg };
 		}
+	}
+
+	/**
+	 * Get target folder for a note type
+	 */
+	private getTargetFolder(noteType: NoteType | null): string {
+		if (!noteType) {
+			return this.settings.peopleFolder;
+		}
+
+		switch (noteType) {
+			case 'person':
+				return this.settings.peopleFolder;
+			case 'place':
+				return this.settings.placesFolder;
+			case 'event':
+				return this.settings.eventsFolder;
+			case 'source':
+				return this.settings.sourcesFolder;
+			case 'map':
+				return this.settings.mapsFolder;
+			default:
+				// Default to people folder for unknown types
+				return this.settings.peopleFolder;
+		}
+	}
+
+	/**
+	 * Ensure promoted file has cr_id and clean up clipper metadata
+	 */
+	private async ensureCrIdAndCleanup(file: TFile): Promise<void> {
+		await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
+			// Add cr_id if missing and note is a Canvas Roots entity
+			if ((frontmatter.cr_type || frontmatter.note_type) && !frontmatter.cr_id) {
+				frontmatter.cr_id = generateCrId();
+			}
+
+			// Remove clipper metadata
+			delete frontmatter.clip_source_type;
+			delete frontmatter.clipped_from;
+			delete frontmatter.clipped_date;
+		});
 	}
 
 	/**
