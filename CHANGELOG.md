@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Enhanced
+
+- **Staging promotion workflow** ([#165](https://github.com/banisterious/obsidian-canvas-roots/issues/165)): Enhanced the promotion process to automatically assign `cr_id` to notes missing it, route notes to correct folders based on type (places to Places folder, events to Events folder, etc.), and remove clipper metadata on promotion. This ensures Web Clipper notes (like Wikidata places) are fully functional in Canvas Roots immediately after promotion.
+
 ---
 
 ## [0.18.31] - 2026-01-08
