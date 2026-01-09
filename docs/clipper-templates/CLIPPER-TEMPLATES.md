@@ -212,6 +212,44 @@ Simple template that captures Wikipedia article content without AI processing. F
 
 ---
 
+### Wikidata - Place (LLM)
+**File:** `wikidata-place-llm.json`
+**URL Pattern:** `wikidata.org/wiki/Q`
+**Auto-triggers:** Yes
+
+AI-powered template that extracts structured geographic place data from Wikidata entities. Captures coordinates, administrative hierarchies, and comprehensive place metadata.
+
+**Extracts:**
+- Wikidata ID (Q-number)
+- Place name (primary English label)
+- Coordinates (latitude and longitude)
+- Place type (city, country, state, village, etc.)
+- Parent place (administrative territory)
+- Alternate names
+- Administrative hierarchy
+- Wikipedia link
+- Description
+
+**Requirements:**
+- Interpreter must be enabled
+- Recommended model: Claude Sonnet 4.5 or equivalent
+
+**Canvas Roots Properties:**
+- `clip_source_type`: "wikidata"
+- `clipped_from`: Wikidata URL
+- `clipped_date`: Date clipped
+- `cr_type`: "place"
+- `note_type`: "place"
+- `place_category`: "real"
+- `coordinates_lat`, `coordinates_long`
+- `place_type`
+- `parent_place`
+- `wikidata_id`
+
+**Note:** This template works seamlessly with Canvas Roots' enhanced staging promotion workflow. Promoted Wikidata places are automatically assigned a `cr_id`, routed to the Places folder, and have clipper metadata removed, making them fully functional Canvas Roots entities.
+
+---
+
 ## Using Templates with Canvas Roots
 
 Once you've imported a template and clipped content:
