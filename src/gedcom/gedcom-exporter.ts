@@ -349,13 +349,27 @@ export class GedcomExporter {
 		}
 
 		// Build individual ID map first
+		// Prefer original GEDCOM xref if available (for round-trip support #175)
 		const crIdToGedcomId = new Map<string, string>();
+		const usedGedcomIds = new Set<string>();
 		let individualCounter = 1;
 
 		for (const person of people) {
-			const gedcomId = `I${individualCounter}`;
+			let gedcomId: string;
+
+			// Use original GEDCOM xref if available and not already used
+			if (person.externalId && person.externalIdSource === 'gedcom' && !usedGedcomIds.has(person.externalId)) {
+				gedcomId = person.externalId;
+			} else {
+				// Generate new ID, ensuring no collision with preserved xrefs
+				do {
+					gedcomId = `I${individualCounter}`;
+					individualCounter++;
+				} while (usedGedcomIds.has(gedcomId));
+			}
+
+			usedGedcomIds.add(gedcomId);
 			crIdToGedcomId.set(person.crId, gedcomId);
-			individualCounter++;
 		}
 
 		// Extract families BEFORE building individual records (needed for FAMS/FAMC references)

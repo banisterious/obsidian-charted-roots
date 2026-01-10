@@ -88,6 +88,10 @@ export interface PersonNode {
 
 	// Fields marked as private by user (from private_fields frontmatter)
 	privateFields?: string[];
+
+	// External IDs for import round-trip support (#175)
+	externalId?: string;         // Original ID from import source (e.g., GEDCOM xref, Gramps handle)
+	externalIdSource?: string;   // Source of the external ID (e.g., "gedcom", "gramps")
 }
 
 /**
@@ -1553,6 +1557,10 @@ export class FamilyGraphService {
 		const universe = this.resolveProperty<string>(fm, 'universe');
 		const researchLevel = this.resolveProperty<number>(fm, 'research_level');
 
+		// External IDs for import round-trip support (#175)
+		const externalId = this.resolveProperty<string>(fm, 'external_id');
+		const externalIdSource = this.resolveProperty<string>(fm, 'external_id_source');
+
 		// cr_living is a boolean for manual living status override (no aliasing needed)
 		// Handle both boolean and string representations (YAML may parse as string in some cases)
 		let cr_living: boolean | undefined = undefined;
@@ -1611,7 +1619,10 @@ export class FamilyGraphService {
 			universe,
 			researchLevel,
 			media: media.length > 0 ? media : undefined,
-			privateFields: privateFields.length > 0 ? privateFields : undefined
+			privateFields: privateFields.length > 0 ? privateFields : undefined,
+			// External IDs for import round-trip (#175)
+			externalId,
+			externalIdSource
 		};
 	}
 
