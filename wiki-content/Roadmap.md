@@ -15,7 +15,6 @@ This document outlines planned features for Charted Roots. For completed feature
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
   - [Romantic Relationship Label Preference](#romantic-relationship-label-preference) 💡 Low
   - [Timeline Event Description Display](#timeline-event-description-display) 💡 Low
-  - [Place Category Folder Mapping](#place-category-folder-mapping) 💡 Low
   - [Multiple Surname Support](#multiple-surname-support) 💡 Low
 - [Future Considerations](#future-considerations)
   - [Research Tracking](#research-tracking)
@@ -34,21 +33,13 @@ For the complete list of implemented features, see [Release History](Release-His
 
 | Version | Feature | Summary |
 |:-------:|---------|---------|
+| v0.19.3 | [Place Category Folder Mapping](Release-History#place-category-folder-mapping-v0193) | Automatic organization of places into category-based subfolders |
 | v0.19.2 | [Partial Date Support](Release-History#partial-date-support-v0192) | GEDCOM import preserves date precision (year-only, month+year, qualifiers, ranges) |
 | v0.19.0 | [Plugin Rename](Release-History#plugin-rename-canvas-roots--charted-roots-v0190) | Renamed from Canvas Roots to Charted Roots with automatic vault migration |
 | v0.18.32 | [Automatic Wikilink Resolution](Release-History#automatic-wikilink-resolution-v01832) | Resolve `[[Person Name]]` wikilinks to cr_id values in relationship fields |
 | v0.18.28 | [MyHeritage GEDCOM Import Compatibility](Release-History#myheritage-gedcom-import-compatibility-v01828) | Auto-detect and fix MyHeritage GEDCOM exports (BOM, double-encoded entities, `<br>` tags) |
-| v0.18.27 | [Optional Person Names](Release-History#optional-person-names-v01827) | Create placeholder persons without names; fill in later as research progresses |
-| v0.18.27 | [DMS Coordinate Conversion](Release-History#dms-coordinate-conversion-v01827) | Opt-in DMS format parsing for coordinate inputs (e.g., `33°51'08"N`) |
-| v0.18.27 | [DNA Match Tracking - Phase 1](Release-History#dna-match-tracking---phase-1-v01827) | DNA match template snippet, "DNA Matches" Bases view, documented frontmatter properties |
-| v0.18.25 | [Web Clipper Integration - Phase 1](Release-History#web-clipper-integration---phase-1-v01825) | Auto-detect web-clipped notes with metadata properties, Dashboard breakdown, Staging Manager filtering (All/Clipped/Other), file watcher integration |
-| v0.18.24 | [Staging Management](Release-History#staging-management-v01824) | Dedicated UI for managing staged imports: view stats, check duplicates, promote to main tree, expandable file lists |
-| v0.18.22 | [Export Privacy & Sensitive Data](Release-History#export-privacy--sensitive-data-v01822) | Complete privacy feature set: canvas privacy, sensitive field redaction, private fields, deadname protection, discoverability |
-| v0.18.15 | [Card Style Options](Release-History#card-style-options-v01815) | 4 card styles (Rectangle, Circle, Compact, Mini) for Family Chart with state persistence and export support |
-| v0.18.15 | [Gramps Notes Phase 4](Release-History#gramps-notes-integration-v01813) | Separate note files (opt-in) with Create Note modal and Notes folder |
-| v0.18.14 | [Edit Person Events & Sources](Release-History#edit-person-events--sources-v01814) | Sources and Events sections in Edit Person modal with link/create/unlink, type badges with colors |
 
-**Earlier releases:** Gramps Notes, Cleanup Wizard, Custom Map Authoring, Nested Properties Redesign, and more. See [Release History](Release-History) for details.
+See [Release History](Release-History) for earlier releases.
 
 ---
 
@@ -375,46 +366,6 @@ See [Spouse/Partner Terminology Planning Document](https://github.com/banisterio
 - Birth/Death/Marriage events unaffected
 
 See [Timeline Event Description Display Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/timeline-event-description-display.md) for detailed specifications.
-
----
-
-### Place Category Folder Mapping
-
-**Priority:** 💡 Low — Organization improvement for place notes
-
-**Status:** Planning
-
-**GitHub Issue:** [#163](https://github.com/banisterious/obsidian-charted-roots/issues/163)
-
-**Summary:** Automatically store places in category-specific subfolders. When creating a place with `place_category: historical`, it would be saved to `Places/Historical/` instead of the root `Places/` folder.
-
-**The Problem:** Currently, place categories work in one direction only:
-- **Folder → Category** (implemented): Folder path determines the default category via configurable rules
-- **Category → Folder** (missing): Category selection does NOT determine storage location
-
-Users expect that selecting a category would organize the place into the corresponding folder automatically.
-
-**Proposed Behavior:**
-```
-Places/
-  Real/         (place_category: real)
-  Historical/   (place_category: historical)
-  Fictional/    (place_category: fictional)
-  ...
-```
-
-**Implementation:**
-- Add `useCategorySubfolders` setting (default: true for new installs)
-- When creating a place, determine folder based on category
-- Create subfolder automatically if it doesn't exist
-- Support optional custom category → folder mappings for power users
-
-**User Impact:** Non-breaking change
-- Disabled by default on upgrade to avoid disrupting existing organization
-- Enabled by default for new installs
-- Optional bulk migration tool to reorganize existing places
-
-See [Place Category Folder Mapping Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/place-category-folder-mapping.md) for detailed specifications.
 
 ---
 

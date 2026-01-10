@@ -10,6 +10,13 @@ import type { DynamicBlockContext, DynamicBlockConfig } from '../services/dynami
 import type { DynamicContentService } from '../services/dynamic-content-service';
 
 /**
+ * Event types that should display description instead of title (#157)
+ * These are "descriptive" event types where the description (e.g., "Farmer", "Paris")
+ * is more informative than the generated title (e.g., "Occupation of John Smith")
+ */
+const DESCRIPTION_DISPLAY_TYPES = ['occupation', 'residence', 'military', 'education'];
+
+/**
  * Timeline entry combining events from EventService with person birth/death
  */
 export interface TimelineEntry {
@@ -203,19 +210,27 @@ export class TimelineRenderer {
 			// Separator
 			li.createSpan({ cls: 'cr-timeline__separator', text: ' — ' });
 
+			// Determine display text (#157)
+			// For descriptive event types, show "Type: description" instead of title
+			let displayText = entry.title;
+			if (DESCRIPTION_DISPLAY_TYPES.includes(entry.type) && entry.description) {
+				const typeLabel = entry.type.charAt(0).toUpperCase() + entry.type.slice(1);
+				displayText = `${typeLabel}: ${entry.description}`;
+			}
+
 			// Event title with optional link
 			const titleSpan = li.createSpan({ cls: 'cr-timeline__title' });
 			if (entry.eventFile) {
 				// Render as wikilink
 				await MarkdownRenderer.render(
 					context.familyGraph['app'], // Access app from familyGraph
-					`[[${entry.eventFile}|${entry.title}]]`,
+					`[[${entry.eventFile}|${displayText}]]`,
 					titleSpan,
 					context.file.path,
 					component
 				);
 			} else {
-				titleSpan.textContent = entry.title;
+				titleSpan.textContent = displayText;
 			}
 
 			// Place (if present)
@@ -271,11 +286,18 @@ export class TimelineRenderer {
 		for (const entry of this.currentEntries) {
 			let line = `- **${entry.year || entry.date || '?'}** — `;
 
+			// Determine display text (#157)
+			let displayText = entry.title;
+			if (DESCRIPTION_DISPLAY_TYPES.includes(entry.type) && entry.description) {
+				const typeLabel = entry.type.charAt(0).toUpperCase() + entry.type.slice(1);
+				displayText = `${typeLabel}: ${entry.description}`;
+			}
+
 			// Add title with wikilink if it's an event
 			if (entry.eventFile) {
-				line += `[[${entry.eventFile}|${entry.title}]]`;
+				line += `[[${entry.eventFile}|${displayText}]]`;
 			} else {
-				line += entry.title;
+				line += displayText;
 			}
 
 			// Add place
