@@ -104,30 +104,64 @@ This is the only phase requiring code changes. UI modals already preserve raw in
 
 **File:** `src/gedcom/gedcom-parser.ts:443`
 
-Current behavior:
+**Current implementation (verified Jan 2026):**
+
 ```typescript
-// Year only → fabricates month/day
-if (match3) {
-    return `${match3[1]}-01-01`;
+static gedcomDateToISO(gedcomDate: string): string | undefined {
+    if (!gedcomDate) return undefined;
+
+    // Remove qualifiers like ABT, BEF, AFT, etc.
+    const cleaned = gedcomDate.replace(/^(ABT|BEF|AFT|CAL|EST)\s+/i, '').trim();
+
+    // Format: DD MMM YYYY (e.g., "15 MAR 1950")
+    const match1 = cleaned.match(/^(\d{1,2})\s+([A-Z]{3})\s+(\d{4})$/i);
+    if (match1) {
+        const day = match1[1].padStart(2, '0');
+        const month = this.monthToNumber(match1[2]);
+        const year = match1[3];
+        return `${year}-${month}-${day}`;
+    }
+
+    // Format: MMM YYYY (e.g., "MAR 1950")
+    const match2 = cleaned.match(/^([A-Z]{3})\s+(\d{4})$/i);
+    if (match2) {
+        const month = this.monthToNumber(match2[1]);
+        const year = match2[2];
+        return `${year}-${month}-01`;  // ← adds false day
+    }
+
+    // Format: YYYY (e.g., "1950")
+    const match3 = cleaned.match(/^(\d{4})$/);
+    if (match3) {
+        return `${match3[1]}-01-01`;  // ← adds false month/day
+    }
+
+    return undefined;
 }
 ```
 
-New behavior:
-```typescript
-// Year only → preserve as-is
-if (match3) {
-    return match3[1];
-}
-```
+**Issues identified:**
+1. Qualifiers (`ABT`, `BEF`, `AFT`, `CAL`, `EST`) are **stripped and discarded**
+2. Month + year adds `-01` day
+3. Year only adds `-01-01` month/day
+4. `BET X AND Y` ranges are **not handled** (returns `undefined`)
 
-Full changes:
-- Year only (`1850`) → return `1850`
-- Month + year (`MAR 1855`) → return `1855-03` (ISO partial)
-- Full date (`15 MAR 1855`) → return `1855-03-15` (unchanged)
-- Qualifiers (`ABT`, `BEF`, `AFT`, `CAL`, `EST`) → preserve prefix with normalized date
-  - `ABT MAR 1855` → `ABT 1855-03`
-  - `BEF 1950` → `BEF 1950`
-- Ranges (`BET X AND Y`) → preserve as-is
+**Required changes:**
+
+| Input | Current Output | New Output |
+|-------|----------------|------------|
+| `1850` | `1850-01-01` | `1850` |
+| `MAR 1855` | `1855-03-01` | `1855-03` |
+| `15 MAR 1855` | `1855-03-15` | `1855-03-15` (unchanged) |
+| `ABT 1878` | `1878-01-01` | `ABT 1878` |
+| `ABT MAR 1855` | `1855-03-01` | `ABT 1855-03` |
+| `BEF 1950` | `1950-01-01` | `BEF 1950` |
+| `BET 1882 AND 1885` | `undefined` | `BET 1882 AND 1885` |
+
+**Implementation approach:**
+1. Extract qualifier prefix (if present) instead of discarding it
+2. Parse the date portion
+3. Return qualifier + normalized date (without false precision)
 
 #### 1.2 Rename Function
 
