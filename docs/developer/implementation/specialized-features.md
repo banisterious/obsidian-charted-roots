@@ -150,8 +150,11 @@ class DateService {
   // Calculate age between dates
   calculateAge(birthDateStr: string, deathDateStr?: string, universe?: string): AgeCalculation | null;
 
-  // Format a date for display
+  // Format a date for display (returns original for standard dates)
   formatDate(dateStr: string, universe?: string): string;
+
+  // Format for user-friendly display, prettifying GEDCOM qualifiers (v0.19.2+)
+  formatDisplayDate(dateStr: string, universe?: string): string;
 
   // Quick check if string looks like fictional date
   looksLikeFictionalDate(dateStr: string): boolean;
@@ -166,10 +169,29 @@ class DateService {
 2. Fall back to standard date extraction (handles YYYY-MM-DD, "about 1920", date ranges, etc.)
 
 **Standard Date Patterns Recognized:**
-- ISO format: `YYYY-MM-DD`, `YYYY`
+- ISO format: `YYYY-MM-DD`, `YYYY-MM`, `YYYY`
+- GEDCOM qualifiers: `ABT 1920`, `BEF 1920`, `AFT 1920`, `CAL 1920`, `EST 1920`
+- GEDCOM ranges: `BET 1920 AND 1930`
 - Approximate: `about 1920`, `circa 1850`, `c. 1900`, `~1920`
 - Ranges: `1920-1930`, `between 1920 and 1930`
 - Relative: `before 1920`, `after 1920`
+
+**Display Formatting (v0.19.2+):**
+
+The `formatDisplayDate()` method prettifies GEDCOM qualifiers for UI display:
+
+| Stored Format | Display Format |
+|---------------|----------------|
+| `ABT 1878` | c. 1878 |
+| `BEF 1950` | before 1950 |
+| `AFT 1880` | after 1880 |
+| `CAL 1945` | c. 1945 |
+| `EST 1880` | c. 1880 |
+| `BET 1882 AND 1885` | 1882–1885 |
+| `1855-03` | Mar 1855 |
+| `ABT 1875-03` | c. Mar 1875 |
+
+A standalone utility `formatDisplayDate()` is also exported from `src/dates/utils/date-display.ts` for use without a full DateService instance.
 
 ### FictionalDateParser
 

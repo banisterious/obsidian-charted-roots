@@ -115,14 +115,33 @@ flowchart LR
 
 ## Data Transformations
 
-**Date conversion:**
+**Date conversion (v0.19.2+):**
+
+Dates preserve their original precision instead of being normalized to full ISO format:
+
 ```
-GEDCOM Format          → ISO Format
-15 MAR 1950           → 1950-03-15
-MAR 1950              → 1950-03-01
-1950                  → 1950-01-01
-ABT 15 MAR 1950       → 1950-03-15 (precision: estimated)
+GEDCOM Format          → Stored Format         → Display Format
+15 MAR 1950           → 1950-03-15            → 15 Mar 1950
+MAR 1950              → 1950-03               → Mar 1950
+1950                  → 1950                  → 1950
+ABT 1878              → ABT 1878              → c. 1878
+BEF 1950              → BEF 1950              → before 1950
+AFT 1880              → AFT 1880              → after 1880
+BET 1882 AND 1885     → BET 1882 AND 1885     → 1882–1885
+CAL 1945              → CAL 1945              → c. 1945
+EST 1880              → EST 1880              → c. 1880
+ABT MAR 1875          → ABT 1875-03           → c. Mar 1875
 ```
+
+**Key files:**
+- `GedcomParser.normalizeGedcomDate()` — converts GEDCOM dates to storage format
+- `DateService.formatDisplayDate()` — prettifies qualified dates for UI display
+- `formatDisplayDate()` utility — standalone version in `src/dates/utils/date-display.ts`
+
+**Export round-trip:** Exporters convert stored formats back to each format's expected structure:
+- GEDCOM: `1950-03` → `MAR 1950`, qualifiers preserved
+- Gramps: Strips qualifiers (uses quality attribute), preserves ISO partial formats
+- GedcomX: Strips qualifiers, converts to formal date format (`+YYYY-MM-DD`)
 
 **Event type mappings:**
 
