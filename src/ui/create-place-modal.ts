@@ -121,6 +121,7 @@ export class CreatePlaceModal extends Modal {
 	private editMode: boolean = false;
 	private editingFile?: TFile;
 	private editingPlaceId?: string;
+	private originalCategory?: PlaceCategory; // Track original category for move prompt (#163)
 
 	// Track custom parent place for auto-creation
 	private pendingParentPlace?: string;
@@ -195,6 +196,8 @@ export class CreatePlaceModal extends Modal {
 			this.editingPlaceId = options.editPlace.id;
 			// Populate placeData from the existing place
 			this.placeData = this.placeNodeToPlaceData(options.editPlace);
+			// Store original category for move prompt (#163)
+			this.originalCategory = options.editPlace.category;
 			// Get directory from file path
 			const pathParts = options.editFile.path.split('/');
 			pathParts.pop(); // Remove filename
@@ -1486,18 +1489,149 @@ export class CreatePlaceModal extends Modal {
 		}
 
 		try {
+			// Check if category changed and useCategorySubfolders is enabled (#163)
+			const newCategory = this.placeData.placeCategory || 'real';
+			const categoryChanged = this.originalCategory &&
+				this.originalCategory !== newCategory &&
+				this.settings?.useCategorySubfolders;
+
+			if (categoryChanged) {
+				// Calculate the target folder for the new category
+				const targetFolder = getPlaceFolderForCategory(this.settings!, newCategory);
+				const currentFolder = this.directory;
+
+				// Only prompt if the target folder is different
+				if (targetFolder !== currentFolder) {
+					// Show move prompt modal
+					this.showMovePrompt(targetFolder, async (shouldMove) => {
+						await this.completeUpdate(shouldMove ? targetFolder : undefined);
+					});
+					return;
+				}
+			}
+
+			// No category change or subfolders disabled - just update
+			await this.completeUpdate();
+		} catch (error) {
+			console.error('Failed to update place note:', error);
+			new Notice(`Failed to update place note: ${error instanceof Error ? error.message : 'Unknown error'}`);
+		}
+	}
+
+	/**
+	 * Complete the place update, optionally moving the file (#163)
+	 */
+	private async completeUpdate(targetFolder?: string): Promise<void> {
+		if (!this.editingFile) return;
+
+		try {
+			// Update the note content first
 			await updatePlaceNote(this.app, this.editingFile, this.placeData);
 
-			new Notice(`Updated place note: ${this.editingFile.basename}`);
-
-			if (this.onUpdated) {
-				this.onUpdated(this.editingFile);
+			// Move file if target folder specified
+			if (targetFolder) {
+				const newFile = await this.moveFileToFolder(this.editingFile, targetFolder);
+				if (newFile) {
+					new Notice(`Updated and moved place note to: ${targetFolder}`);
+					if (this.onUpdated) {
+						this.onUpdated(newFile);
+					}
+				} else {
+					new Notice(`Updated place note (move failed): ${this.editingFile.basename}`);
+					if (this.onUpdated) {
+						this.onUpdated(this.editingFile);
+					}
+				}
+			} else {
+				new Notice(`Updated place note: ${this.editingFile.basename}`);
+				if (this.onUpdated) {
+					this.onUpdated(this.editingFile);
+				}
 			}
 
 			this.close();
 		} catch (error) {
 			console.error('Failed to update place note:', error);
 			new Notice(`Failed to update place note: ${error instanceof Error ? error.message : 'Unknown error'}`);
+		}
+	}
+
+	/**
+	 * Show a prompt to move the file to the category folder (#163)
+	 */
+	private showMovePrompt(targetFolder: string, callback: (shouldMove: boolean) => void): void {
+		const categoryLabel = (this.placeData.placeCategory || 'real').charAt(0).toUpperCase() +
+			(this.placeData.placeCategory || 'real').slice(1);
+
+		// Create a simple confirmation modal
+		const modal = new Modal(this.app);
+		modal.titleEl.setText('Move place to category folder?');
+
+		const content = modal.contentEl;
+		content.createEl('p', {
+			text: `Category changed to "${categoryLabel}". Would you like to move this place to the matching folder?`
+		});
+		content.createEl('p', {
+			cls: 'crc-text-muted',
+			text: `Target: ${targetFolder}/`
+		});
+
+		const buttonContainer = content.createDiv({ cls: 'crc-modal-buttons' });
+
+		const keepBtn = buttonContainer.createEl('button', {
+			text: 'Keep here',
+			cls: 'crc-btn'
+		});
+		keepBtn.addEventListener('click', () => {
+			modal.close();
+			callback(false);
+		});
+
+		const moveBtn = buttonContainer.createEl('button', {
+			text: 'Move',
+			cls: 'crc-btn crc-btn--primary'
+		});
+		moveBtn.addEventListener('click', () => {
+			modal.close();
+			callback(true);
+		});
+
+		modal.open();
+	}
+
+	/**
+	 * Move a file to a new folder (#163)
+	 * Creates the folder if it doesn't exist
+	 * Returns the new file reference or null if move failed
+	 */
+	private async moveFileToFolder(file: TFile, targetFolder: string): Promise<TFile | null> {
+		try {
+			// Ensure target folder exists
+			const normalizedFolder = normalizePath(targetFolder);
+			const existingFolder = this.app.vault.getAbstractFileByPath(normalizedFolder);
+			if (!existingFolder) {
+				await this.app.vault.createFolder(normalizedFolder);
+			}
+
+			// Build new path
+			const newPath = normalizePath(`${targetFolder}/${file.name}`);
+
+			// Check if file already exists at target
+			const existingFile = this.app.vault.getAbstractFileByPath(newPath);
+			if (existingFile) {
+				new Notice(`A file already exists at ${newPath}`);
+				return null;
+			}
+
+			// Move the file
+			await this.app.fileManager.renameFile(file, newPath);
+
+			// Return the file at the new location
+			return this.app.vault.getAbstractFileByPath(newPath) as TFile;
+		} catch (error) {
+			console.error('Failed to move file:', error);
+			new Notice(`Failed to move file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			return null;
 		}
 	}
 }
