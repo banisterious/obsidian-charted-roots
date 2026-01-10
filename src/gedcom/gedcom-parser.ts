@@ -438,36 +438,79 @@ export class GedcomParser {
 	}
 
 	/**
-	 * Convert GEDCOM date to ISO format (YYYY-MM-DD)
+	 * Normalize GEDCOM date to a consistent format while preserving precision.
+	 *
+	 * - Full dates (DD MMM YYYY) → ISO format (YYYY-MM-DD)
+	 * - Month + year (MMM YYYY) → ISO partial (YYYY-MM)
+	 * - Year only (YYYY) → year only (YYYY)
+	 * - Qualifiers (ABT, BEF, AFT, CAL, EST) → preserved as prefix
+	 * - Ranges (BET X AND Y) → passed through as-is
+	 *
+	 * @deprecated Use normalizeGedcomDate() instead - this alias exists for backwards compatibility
 	 */
 	static gedcomDateToISO(gedcomDate: string): string | undefined {
+		return this.normalizeGedcomDate(gedcomDate);
+	}
+
+	/**
+	 * Normalize GEDCOM date to a consistent format while preserving precision.
+	 *
+	 * Output formats:
+	 * - Full dates: YYYY-MM-DD (e.g., "1950-03-15")
+	 * - Month + year: YYYY-MM (e.g., "1950-03")
+	 * - Year only: YYYY (e.g., "1950")
+	 * - With qualifiers: "ABT 1950", "BEF 1950-03", etc.
+	 * - Ranges: "BET 1882 AND 1885" (passed through)
+	 */
+	static normalizeGedcomDate(gedcomDate: string): string | undefined {
 		if (!gedcomDate) return undefined;
 
-		// Remove qualifiers like ABT, BEF, AFT, etc.
-		const cleaned = gedcomDate.replace(/^(ABT|BEF|AFT|CAL|EST)\s+/i, '').trim();
+		const trimmed = gedcomDate.trim();
 
-		// Try to parse common formats
-		// Format: DD MMM YYYY (e.g., "15 MAR 1950")
-		const match1 = cleaned.match(/^(\d{1,2})\s+([A-Z]{3})\s+(\d{4})$/i);
-		if (match1) {
-			const day = match1[1].padStart(2, '0');
-			const month = this.monthToNumber(match1[2]);
-			const year = match1[3];
+		// Handle date ranges (BET X AND Y) - pass through as-is
+		if (/^BET\s+.+\s+AND\s+.+$/i.test(trimmed)) {
+			return trimmed.toUpperCase();
+		}
+
+		// Extract qualifier prefix if present (ABT, BEF, AFT, CAL, EST)
+		const qualifierMatch = trimmed.match(/^(ABT|BEF|AFT|CAL|EST)\s+(.+)$/i);
+		const qualifier = qualifierMatch ? qualifierMatch[1].toUpperCase() : null;
+		const datePart = qualifierMatch ? qualifierMatch[2].trim() : trimmed;
+
+		// Parse the date portion
+		const normalized = this.parseDatePart(datePart);
+		if (!normalized) return undefined;
+
+		// Return with qualifier prefix if present
+		return qualifier ? `${qualifier} ${normalized}` : normalized;
+	}
+
+	/**
+	 * Parse a date string (without qualifiers) into normalized format.
+	 * Preserves precision - doesn't add false month/day.
+	 */
+	private static parseDatePart(datePart: string): string | undefined {
+		// Format: DD MMM YYYY (e.g., "15 MAR 1950") → YYYY-MM-DD
+		const fullMatch = datePart.match(/^(\d{1,2})\s+([A-Z]{3})\s+(\d{4})$/i);
+		if (fullMatch) {
+			const day = fullMatch[1].padStart(2, '0');
+			const month = this.monthToNumber(fullMatch[2]);
+			const year = fullMatch[3];
 			return `${year}-${month}-${day}`;
 		}
 
-		// Format: MMM YYYY (e.g., "MAR 1950")
-		const match2 = cleaned.match(/^([A-Z]{3})\s+(\d{4})$/i);
-		if (match2) {
-			const month = this.monthToNumber(match2[1]);
-			const year = match2[2];
-			return `${year}-${month}-01`;
+		// Format: MMM YYYY (e.g., "MAR 1950") → YYYY-MM
+		const monthYearMatch = datePart.match(/^([A-Z]{3})\s+(\d{4})$/i);
+		if (monthYearMatch) {
+			const month = this.monthToNumber(monthYearMatch[1]);
+			const year = monthYearMatch[2];
+			return `${year}-${month}`;
 		}
 
-		// Format: YYYY (e.g., "1950")
-		const match3 = cleaned.match(/^(\d{4})$/);
-		if (match3) {
-			return `${match3[1]}-01-01`;
+		// Format: YYYY (e.g., "1950") → YYYY
+		const yearMatch = datePart.match(/^(\d{4})$/);
+		if (yearMatch) {
+			return yearMatch[1];
 		}
 
 		return undefined;
