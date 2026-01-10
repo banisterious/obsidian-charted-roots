@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **MyHeritage GEDCOM whitespace-only line handling** ([#144](https://github.com/banisterious/obsidian-charted-roots/issues/144)): Fixed preprocessing of MyHeritage GEDCOM files where tab-only lines between continuation fragments caused parse errors. Whitespace-only lines are now skipped entirely, allowing subsequent continuation content to be properly appended to the previous valid GEDCOM line.
+
+### Enhanced
+
+- **Async GEDCOM parsing for large files** ([#144](https://github.com/banisterious/obsidian-charted-roots/issues/144)): Added async versions of GEDCOM parsing functions (`parseAsync`, `parseContentAsync`, `analyzeFileAsync`) that yield to the event loop periodically. This prevents UI freezing when importing large MyHeritage files (800KB+, 40K+ lines). The import wizard now uses async parsing with progress callbacks.
+
+- **GEDCOM anonymization script**: Improved `tools/anonymize_gedcom.py` to explicitly strip BOM characters and warn about malformed early lines. Updated documentation to clarify that `0 HEAD` and `0 TRLR` records are preserved.
+
 ---
 
 ## [0.19.0] - 2026-01-09
