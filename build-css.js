@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Canvas Roots CSS Build System
+ * Charted Roots CSS Build System
  *
  * A Node.js build script that:
  * - Lints CSS with Stylelint
@@ -148,13 +148,13 @@ function generateBuildHeader(componentCount) {
   const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
 
   return `/* ==========================================================================
-   Canvas Roots Plugin Stylesheet - BUILT VERSION
+   Charted Roots Plugin Stylesheet - BUILT VERSION
    ========================================================================== */
 
-/* Canvas Roots: Family Trees in Obsidian Canvas
+/* Charted Roots: Family Trees in Obsidian
  * An Obsidian plugin for creating and visualizing family trees using D3.js layouts.
  *
- * GitHub: https://github.com/banisterious/obsidian-canvas-roots
+ * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
  * - Generated: ${timestamp}
@@ -412,7 +412,7 @@ async function main() {
   const isFormatOnly = args.includes('--format') || args.includes('-f');
   const isBuildOnly = args.includes('--build-only') || args.includes('-b');
 
-  console.log(chalk.cyan('\n🎨 Canvas Roots CSS Build System v1.0.0\n'));
+  console.log(chalk.cyan('\n🎨 Charted Roots CSS Build System v1.0.0\n'));
 
   try {
     if (isLintOnly) {
