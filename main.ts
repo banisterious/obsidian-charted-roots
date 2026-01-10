@@ -60,6 +60,7 @@ import { MediaManageModal } from './src/core/ui/media-manage-modal';
 import { CleanupWizardModal } from './src/ui/cleanup-wizard-modal';
 import { MigrationNoticeView, VIEW_TYPE_MIGRATION_NOTICE } from './src/ui/views/migration-notice-view';
 import { WebClipperService } from './src/core/web-clipper-service';
+import { PluginRenameMigrationService, showMigrationNotice } from './src/migration/plugin-rename-migration-service';
 
 const logger = getLogger('CanvasRootsPlugin');
 
@@ -301,6 +302,10 @@ export default class CanvasRootsPlugin extends Plugin {
 
 		// Run migration for property rename (collection_name -> group_name)
 		await this.migrateCollectionNameToGroupName();
+
+		// Run migration for plugin rename (Canvas Roots -> Charted Roots)
+		// This updates canvas metadata and code block types in vault files
+		await this.migrateCanvasRootsToChartedRoots();
 
 		// Add settings tab
 		this.addSettingTab(new CanvasRootsSettingTab(this.app, this));
@@ -7947,6 +7952,47 @@ export default class CanvasRootsPlugin extends Plugin {
 			}
 		} catch (error: unknown) {
 			logger.error('migration', 'Error during collection_name to group_name migration', error);
+		}
+	}
+
+	/**
+	 * Migrate vault data from Canvas Roots to Charted Roots format
+	 * Updates canvas metadata and code block types
+	 * Only runs once (tracked by settings.migratedToChartedRoots flag)
+	 */
+	private async migrateCanvasRootsToChartedRoots(): Promise<void> {
+		// Skip if already migrated
+		if (this.settings.migratedToChartedRoots) {
+			return;
+		}
+
+		try {
+			const migrationService = new PluginRenameMigrationService(this.app);
+
+			// Check if migration is actually needed
+			const needed = await migrationService.isMigrationNeeded();
+			if (!needed) {
+				// No files to migrate, just set the flag
+				this.settings.migratedToChartedRoots = true;
+				await this.saveSettings();
+				return;
+			}
+
+			// Run migration
+			logger.info('migration', 'Starting Canvas Roots to Charted Roots migration');
+			const result = await migrationService.runMigration();
+
+			// Show notice to user
+			showMigrationNotice(result);
+
+			// Set flag to prevent re-running
+			this.settings.migratedToChartedRoots = true;
+			await this.saveSettings();
+
+			logger.info('migration', 'Canvas Roots to Charted Roots migration complete', result);
+		} catch (error: unknown) {
+			logger.error('migration', 'Error during Canvas Roots to Charted Roots migration', error);
+			// Don't set flag on error so migration can be retried
 		}
 	}
 

@@ -416,6 +416,12 @@ export interface CanvasRootsSettings {
 	enableInclusiveParents: boolean;
 	/** Label for gender-neutral parent field (e.g., "Parents", "Guardians", "Progenitors") */
 	parentFieldLabel: string;
+	// Plugin rename migration (Canvas Roots → Charted Roots)
+	/**
+	 * True when migration from Canvas Roots to Charted Roots is complete.
+	 * Migration updates canvas metadata and code block types in vault files.
+	 */
+	migratedToChartedRoots?: boolean;
 }
 
 /**
