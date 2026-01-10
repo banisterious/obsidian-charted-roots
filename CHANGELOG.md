@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.19.3] - 2026-01-10
+
 ### Added
 
 - **Category-based place organization** ([#163](https://github.com/banisterious/obsidian-charted-roots/issues/163)): Places can now be automatically organized into category-based subfolders (e.g., `Places/Historical/`, `Places/Fictional/`). Enable in Settings → Preferences → "Use category-based subfolders". Features include:
