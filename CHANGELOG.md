@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Data Quality check**: Detects places in wrong folders with bulk "Organize places" action
   - **Bulk migration modal**: Move multiple misplaced places at once
 
+- **Timeline event description display** ([#157](https://github.com/banisterious/obsidian-charted-roots/issues/157)): For descriptive event types (occupation, residence, military, education), timelines now show "Type: description" instead of the generic title. Example: "1850 — Occupation: Farmer" instead of "Occupation of John Smith". This makes timeline entries more informative at a glance.
+
 - **External ID preservation for import round-trip** ([#175](https://github.com/banisterious/obsidian-charted-roots/issues/175)): GEDCOM and Gramps imports now store the original source ID (`external_id`) and source type (`external_id_source`) in frontmatter. When exporting back to GEDCOM, original xref IDs (e.g., `@I0001@`) are preserved, enabling cleaner round-trip workflows with other genealogy software.
 
 ---

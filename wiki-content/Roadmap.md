@@ -14,7 +14,6 @@ This document outlines planned features for Charted Roots. For completed feature
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
   - [Romantic Relationship Label Preference](#romantic-relationship-label-preference) 💡 Low
-  - [Timeline Event Description Display](#timeline-event-description-display) 💡 Low
   - [Multiple Surname Support](#multiple-surname-support) 💡 Low
 - [Future Considerations](#future-considerations)
   - [Research Tracking](#research-tracking)
@@ -34,6 +33,7 @@ For the complete list of implemented features, see [Release History](Release-His
 | Version | Feature | Summary |
 |:-------:|---------|---------|
 | v0.19.3 | [Place Category Folder Mapping](Release-History#place-category-folder-mapping-v0193) | Automatic organization of places into category-based subfolders |
+| v0.19.3 | [Timeline Event Description Display](Release-History#timeline-event-description-display-v0193) | Descriptive event types show description instead of title in timelines |
 | v0.19.2 | [Partial Date Support](Release-History#partial-date-support-v0192) | GEDCOM import preserves date precision (year-only, month+year, qualifiers, ranges) |
 | v0.19.0 | [Plugin Rename](Release-History#plugin-rename-canvas-roots--charted-roots-v0190) | Renamed from Canvas Roots to Charted Roots with automatic vault migration |
 | v0.18.32 | [Automatic Wikilink Resolution](Release-History#automatic-wikilink-resolution-v01832) | Resolve `[[Person Name]]` wikilinks to cr_id values in relationship fields |
@@ -324,48 +324,6 @@ oral_facts:
 - Opt-in preference for users who want "Partner" terminology
 
 See [Spouse/Partner Terminology Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/spouse-partner-terminology.md) for detailed specifications.
-
----
-
-### Timeline Event Description Display
-
-**Priority:** 💡 Low — UI refinement for descriptive event types
-
-**Status:** Planning
-
-**GitHub Issue:** [#157](https://github.com/banisterious/obsidian-charted-roots/issues/157)
-
-**Summary:** For certain event types (Occupation, Residence, Military, Education), display the event description instead of the event title in person timelines. This provides more meaningful information at a glance.
-
-**The Problem:** Timeline currently shows event titles like "Occupation of F MISTET" which don't convey useful information. The actual occupation (e.g., "Prêtre de Ligné") is stored in the event's `description` field but not displayed.
-
-**Current Behavior:**
-```
-1850 — Occupation of F MISTET
-```
-
-**Proposed Behavior:**
-```
-1850 — Occupation: Prêtre de Ligné
-```
-
-**Affected Event Types:**
-- Occupation — job titles, professions
-- Residence — locations, addresses
-- Military — service details
-- Education — schools, degrees
-
-**Implementation:**
-- Modify timeline renderer to check event type
-- For descriptive types with a description, show `{Type}: {description}`
-- Fall back to title if no description exists
-- Single file change (~30-60 minutes)
-
-**User Impact:** Non-breaking change
-- Events without descriptions continue showing title
-- Birth/Death/Marriage events unaffected
-
-See [Timeline Event Description Display Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/timeline-event-description-display.md) for detailed specifications.
 
 ---
 
