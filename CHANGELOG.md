@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.19.1] - 2026-01-10
+
 ### Fixed
 
 - **MyHeritage GEDCOM whitespace-only line handling** ([#144](https://github.com/banisterious/obsidian-charted-roots/issues/144)): Fixed preprocessing of MyHeritage GEDCOM files where tab-only lines between continuation fragments caused parse errors. Whitespace-only lines are now skipped entirely, allowing subsequent continuation content to be properly appended to the previous valid GEDCOM line.
