@@ -707,7 +707,10 @@ export class GrampsImporter {
 			deathPlace: deathPlaceValue,
 			occupation: person.occupation,
 			sex: person.gender === 'M' ? 'male' : person.gender === 'F' ? 'female' : undefined,
-			media: resolvedMedia.length > 0 ? resolvedMedia : undefined
+			media: resolvedMedia.length > 0 ? resolvedMedia : undefined,
+			// Store Gramps handle for round-trip support (#175)
+			externalId: person.handle,
+			externalIdSource: 'gramps'
 		};
 
 		// Handle Research Level attribute (from Gramps person attributes)
