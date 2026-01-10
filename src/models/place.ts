@@ -228,7 +228,8 @@ export type PlaceIssueType =
 	| 'duplicate_name'         // Multiple places with same name, no disambiguation
 	| 'fictional_with_coords'  // Fictional place has real-world coordinates
 	| 'real_missing_coords'    // Real place missing coordinates
-	| 'invalid_category';      // Unrecognized place category
+	| 'invalid_category'       // Unrecognized place category
+	| 'wrong_category_folder'; // Place not in category-appropriate folder (#163)
 
 /**
  * Default place category when not specified

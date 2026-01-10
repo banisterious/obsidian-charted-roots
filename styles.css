@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-01-10 22:42:47 UTC
+ * - Generated: 2026-01-10 22:51:20 UTC
  * - Components: 41 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -32837,7 +32837,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: PREFERENCES.CSS
    ========================================================================== */
 
-/* Component Size: 348 lines, 7.43 KB */
+/* Component Size: 431 lines, 9.44 KB */
 
 /* ==========================================================================
    Preferences Tab Styles
@@ -33185,6 +33185,89 @@ body:has(.cr-media-linker) .suggestion-container {
 
 .cr-media-folder-add-setting input[type="text"] {
   width: 100%;
+}
+
+/* ==========================================================================
+   Category Folder Rules (#163)
+   ========================================================================== */
+
+.cr-category-folder-rules {
+  margin-top: var(--cr-spacing-sm);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  overflow: hidden;
+}
+
+.cr-category-folder-rule {
+  display: flex;
+  align-items: center;
+  gap: var(--cr-spacing-sm);
+  padding: var(--cr-spacing-sm) var(--cr-spacing-md);
+  border-bottom: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+}
+
+.cr-category-folder-rule:last-child {
+  border-bottom: none;
+}
+
+.cr-category-folder-rule--add {
+  background: var(--background-primary);
+  padding: var(--cr-spacing-xs) var(--cr-spacing-md);
+}
+
+.cr-category-folder-rule-category {
+  font-weight: 500;
+  min-width: 100px;
+}
+
+.cr-category-folder-rule-arrow {
+  color: var(--text-muted);
+  font-weight: normal;
+}
+
+.cr-category-folder-rule-folder {
+  flex: 1;
+  font-family: var(--font-monospace);
+  font-size: 0.9em;
+  padding: var(--cr-spacing-xs) var(--cr-spacing-sm);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-primary);
+}
+
+.cr-category-folder-rule-folder:focus {
+  border-color: var(--interactive-accent);
+  outline: none;
+}
+
+.cr-category-folder-rule-select {
+  min-width: 120px;
+  padding: var(--cr-spacing-xs) var(--cr-spacing-sm);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-primary);
+  cursor: pointer;
+}
+
+.cr-category-folder-rule-select:focus {
+  border-color: var(--interactive-accent);
+  outline: none;
+}
+
+.cr-category-folder-rule-remove {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.15s ease;
+}
+
+.cr-category-folder-rule-remove:hover {
+  color: var(--text-error);
+  background: var(--background-modifier-error);
 }
 
 
@@ -35432,10 +35515,10 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-01-10 22:42:47 UTC
+ * Build completed: 2026-01-10 22:51:20 UTC
  * Components processed: 41
- * Total lines: 35040
- * Total size: 695.26 KB
+ * Total lines: 35123
+ * Total size: 697.28 KB
  * Build duration: 0.04 seconds
  *
  * Component breakdown:
@@ -35475,7 +35558,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - universe-wizard.css: 621 lines, 11.05 KB
  * - family-wizard.css: 743 lines, 15.52 KB
  * - map-wizard.css: 606 lines, 12.52 KB
- * - preferences.css: 348 lines, 7.43 KB
+ * - preferences.css: 431 lines, 9.44 KB
  * - tree-output.css: 1548 lines, 30.08 KB
  * - dynamic-content.css: 509 lines, 10.94 KB
  * - migration-notice.css: 135 lines, 2.67 KB

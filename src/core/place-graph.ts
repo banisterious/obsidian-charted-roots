@@ -22,6 +22,7 @@ import {
 } from '../models/place';
 import { FolderFilterService } from './folder-filter';
 import type { CanvasRootsSettings, ValueAliasSettings } from '../settings';
+import { getPlaceFolderForCategory } from '../settings';
 import { CANONICAL_PLACE_CATEGORIES, type CanonicalPlaceCategory } from './value-alias-service';
 import { isPlaceNote, isPersonNote } from '../utils/note-type-detection';
 
@@ -557,6 +558,24 @@ export class PlaceGraphService {
 					placeName: place.name,
 					filePath: place.filePath
 				});
+			}
+
+			// Check if place is in wrong category folder (#163)
+			if (this.settings?.useCategorySubfolders && place.filePath) {
+				const expectedFolder = getPlaceFolderForCategory(this.settings, place.category);
+				const actualFolder = place.filePath.substring(0, place.filePath.lastIndexOf('/'));
+				// Compare normalized paths (trim trailing slashes)
+				const normalizedExpected = expectedFolder.replace(/\/+$/, '');
+				const normalizedActual = actualFolder.replace(/\/+$/, '');
+				if (normalizedExpected !== normalizedActual) {
+					issues.push({
+						type: 'wrong_category_folder',
+						message: `Place "${place.name}" (${place.category}) should be in "${expectedFolder}" but is in "${actualFolder}"`,
+						placeId: place.id,
+						placeName: place.name,
+						filePath: place.filePath
+					});
+				}
 			}
 		}
 

@@ -218,6 +218,7 @@ function loadDataQualityCard(
 	if (issuesByType.has('circular_hierarchy')) categoryCount++;
 	if (issuesByType.has('fictional_with_coords')) categoryCount++;
 	if (issuesByType.has('invalid_category')) categoryCount++;
+	if (issuesByType.has('wrong_category_folder')) categoryCount++;
 
 	// If no issues at all, show success message
 	if (totalIssues === 0) {
@@ -407,6 +408,23 @@ function loadDataQualityCard(
 					new StandardizePlaceTypesModal(plugin.app, placeService, {
 						onComplete: () => showTab('places')
 					}).open();
+				}
+			}
+		});
+	}
+
+	// 6b. Places in wrong category folders (#163)
+	const wrongFolderPlaces = issuesByType.get('wrong_category_folder') || [];
+	if (wrongFolderPlaces.length > 0 && plugin.settings.useCategorySubfolders) {
+		renderSimplifiedIssueRow(sectionsContainer, {
+			icon: 'folder',
+			title: `${wrongFolderPlaces.length} place${wrongFolderPlaces.length !== 1 ? 's' : ''} in wrong folder`,
+			description: 'Places not stored in their category-appropriate subfolder',
+			action: {
+				label: 'Organize places',
+				onClick: () => {
+					// Bulk migration command will be added in next step
+					new Notice('Bulk migration feature coming soon. Use Edit Place to move individual places.');
 				}
 			}
 		});
