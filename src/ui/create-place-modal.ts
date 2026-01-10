@@ -9,7 +9,7 @@ import { PlaceCategory, PlaceType, PlaceNode, KNOWN_PLACE_TYPES } from '../model
 import { createLucideIcon } from './lucide-icons';
 import { FamilyGraphService } from '../core/family-graph';
 import { PlaceGraphService } from '../core/place-graph';
-import { getDefaultPlaceCategory, CanvasRootsSettings } from '../settings';
+import { getDefaultPlaceCategory, getPlaceFolderForCategory, CanvasRootsSettings } from '../settings';
 import { GeocodingService } from '../maps/services/geocoding-service';
 import type CanvasRootsPlugin from '../../main';
 import { ModalStatePersistence, renderResumePromptBanner } from './modal-state-persistence';
@@ -115,6 +115,7 @@ export class CreatePlaceModal extends Modal {
 	private pixelYInputEl?: HTMLInputElement;
 	private customTypeInputEl?: HTMLInputElement;
 	private typeDropdownEl?: HTMLSelectElement;
+	private directoryInputEl?: HTMLInputElement;
 
 	// Edit mode properties
 	private editMode: boolean = false;
@@ -174,7 +175,6 @@ export class CreatePlaceModal extends Modal {
 		}
 	) {
 		super(app);
-		this.directory = options?.directory || '';
 		this.onCreated = options?.onCreated;
 		this.onUpdated = options?.onUpdated;
 		this.familyGraph = options?.familyGraph;
@@ -206,7 +206,7 @@ export class CreatePlaceModal extends Modal {
 				? 'fictional'
 				: (this.settings
 					? getDefaultPlaceCategory(this.settings, {
-						folder: this.directory,
+						folder: options?.directory || '',
 						collection: options?.initialCollection
 					})
 					: 'real');
@@ -218,6 +218,15 @@ export class CreatePlaceModal extends Modal {
 				collection: options?.initialCollection,
 				universe: options?.initialUniverse
 			};
+
+			// Set directory: use explicit option, or calculate from category (#163)
+			if (options?.directory) {
+				this.directory = options.directory;
+			} else if (this.settings) {
+				this.directory = getPlaceFolderForCategory(this.settings, defaultCategory);
+			} else {
+				this.directory = '';
+			}
 
 			// Handle prefilled coordinates from map right-click
 			if (options?.prefilledCoordinates) {
@@ -524,6 +533,13 @@ export class CreatePlaceModal extends Modal {
 					this.updateUniverseVisibility(form);
 					// Show/hide coordinates based on category
 					this.updateCoordinatesVisibility();
+					// Update directory based on category (#163)
+					if (!this.editMode && this.settings) {
+						this.directory = getPlaceFolderForCategory(this.settings, value as PlaceCategory);
+						if (this.directoryInputEl) {
+							this.directoryInputEl.value = this.directory;
+						}
+					}
 				}));
 
 		// Place type
@@ -918,12 +934,15 @@ export class CreatePlaceModal extends Modal {
 			new Setting(form)
 				.setName('Directory')
 				.setDesc('Where to create the place note')
-				.addText(text => text
-					.setPlaceholder('e.g., Places')
-					.setValue(this.directory)
-					.onChange(value => {
-						this.directory = value;
-					}));
+				.addText(text => {
+					this.directoryInputEl = text.inputEl;
+					text
+						.setPlaceholder('e.g., Places')
+						.setValue(this.directory)
+						.onChange(value => {
+							this.directory = value;
+						});
+				});
 		}
 
 		// Update universe visibility based on initial category
