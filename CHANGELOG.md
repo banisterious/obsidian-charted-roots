@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **GEDCOM import preserves partial date precision** ([#172](https://github.com/banisterious/obsidian-charted-roots/issues/172)): GEDCOM dates now preserve their original precision instead of being normalized to full ISO format. Year-only dates (`1850`) stay as `1850` instead of becoming `1850-01-01`. Month+year dates (`MAR 1855`) become `1855-03` instead of `1855-03-01`. Date qualifiers (`ABT`, `BEF`, `AFT`, `CAL`, `EST`) and ranges (`BET 1882 AND 1885`) are now preserved. This maintains source fidelity and prevents false precision in genealogical data.
 
+### Enhanced
+
+- **User-friendly date display formatting** ([#172](https://github.com/banisterious/obsidian-charted-roots/issues/172)): Qualified dates are now prettified throughout the UI. `ABT 1878` displays as "c. 1878", `BEF 1950` as "before 1950", `AFT 1880` as "after 1880", and `BET 1882 AND 1885` as "1882–1885". ISO partial dates like `1855-03` display as "Mar 1855". This formatting applies to person tables, person picker, timelines, tree previews, and visual tree exports.
+
 ---
 
 ## [0.19.1] - 2026-01-10
