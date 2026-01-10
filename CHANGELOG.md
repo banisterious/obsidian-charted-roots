@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **External ID preservation for import round-trip** ([#175](https://github.com/banisterious/obsidian-charted-roots/issues/175)): GEDCOM and Gramps imports now store the original source ID (`external_id`) and source type (`external_id_source`) in frontmatter. When exporting back to GEDCOM, original xref IDs (e.g., `@I0001@`) are preserved, enabling cleaner round-trip workflows with other genealogy software.
+
 ---
 
 ## [0.19.2] - 2026-01-10
