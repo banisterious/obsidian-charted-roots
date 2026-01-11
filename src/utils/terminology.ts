@@ -9,15 +9,15 @@ import type { CanvasRootsSettings } from '../settings';
 
 /**
  * Get the appropriate label for romantic relationships based on user preference.
- * @param settings Plugin settings
+ * @param settings Plugin settings (defaults to 'spouse' terminology if undefined)
  * @param options.plural Return plural form ("Spouses" or "Partners")
  * @param options.lowercase Return lowercase form
  */
 export function getSpouseLabel(
-	settings: CanvasRootsSettings,
+	settings: CanvasRootsSettings | undefined,
 	options?: { plural?: boolean; lowercase?: boolean }
 ): string {
-	const isPartner = settings.romanticRelationshipLabel === 'partner';
+	const isPartner = settings?.romanticRelationshipLabel === 'partner';
 	let label: string;
 
 	if (options?.plural) {
@@ -32,7 +32,7 @@ export function getSpouseLabel(
 /**
  * Get action label like "Add spouse" or "Add partner"
  */
-export function getAddSpouseLabel(settings: CanvasRootsSettings): string {
+export function getAddSpouseLabel(settings: CanvasRootsSettings | undefined): string {
 	return `Add ${getSpouseLabel(settings, { lowercase: true })}`;
 }
 
@@ -40,7 +40,7 @@ export function getAddSpouseLabel(settings: CanvasRootsSettings): string {
  * Get compound labels like "Spouse arrows" or "Partner arrows"
  */
 export function getSpouseCompoundLabel(
-	settings: CanvasRootsSettings,
+	settings: CanvasRootsSettings | undefined,
 	suffix: string
 ): string {
 	return `${getSpouseLabel(settings)} ${suffix}`;

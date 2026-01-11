@@ -14,6 +14,7 @@ import { PlacePickerModal, SelectedPlaceInfo } from './place-picker';
 import { RelationshipContext } from './quick-create-person-modal';
 import type { CanvasRootsSettings } from '../settings';
 import type CanvasRootsPlugin from '../../main';
+import { getSpouseLabel, getAddSpouseLabel } from '../utils/terminology';
 import { ModalStatePersistence, renderResumePromptBanner } from './modal-state-persistence';
 import { ResearchLevel, RESEARCH_LEVELS } from '../types/frontmatter';
 import { SourcePickerModal } from '../sources/ui/source-picker-modal';
@@ -1717,7 +1718,7 @@ export class CreatePersonModal extends Modal {
 		const spouseContainer = container.createDiv({ cls: 'crc-spouse-field' });
 
 		const setting = new Setting(spouseContainer)
-			.setName('Spouse')
+			.setName(getSpouseLabel(this.plugin?.settings))
 			.setDesc('Link to an existing person or create a new one');
 
 		let inputEl: HTMLInputElement;
@@ -1735,7 +1736,7 @@ export class CreatePersonModal extends Modal {
 			button.buttonEl.addClass('crc-btn', 'crc-btn--secondary');
 			button.buttonEl.appendChild(icon);
 			button.buttonEl.appendText(' Link');
-			button.setTooltip('Link spouse');
+			button.setTooltip(`Link ${getSpouseLabel(this.plugin?.settings, { lowercase: true })}`);
 
 			button.onClick(() => {
 				const createContext: RelationshipContext = {
@@ -1753,7 +1754,7 @@ export class CreatePersonModal extends Modal {
 					inputEl.addClass('crc-input--linked');
 					setting.setDesc(`Linked to: ${person.name}`);
 				}, {
-					title: 'Select spouse',
+					title: `Select ${getSpouseLabel(this.plugin?.settings, { lowercase: true })}`,
 					subtitle: 'Select an existing person or create a new one',
 					createContext: createContext,
 					onCreateNew: () => {
@@ -1775,14 +1776,14 @@ export class CreatePersonModal extends Modal {
 
 		// Header with label and add button
 		const header = spousesContainer.createDiv({ cls: 'crc-spouses-field__header' });
-		header.createSpan({ cls: 'crc-spouses-field__label', text: 'Spouses' });
+		header.createSpan({ cls: 'crc-spouses-field__label', text: getSpouseLabel(this.plugin?.settings, { plural: true }) });
 
 		const addBtn = header.createEl('button', {
 			cls: 'crc-btn crc-btn--secondary crc-btn--small'
 		});
 		const addIcon = createLucideIcon('plus', 14);
 		addBtn.appendChild(addIcon);
-		addBtn.appendText(' Add spouse');
+		addBtn.appendText(` ${getAddSpouseLabel(this.plugin?.settings)}`);
 
 		// List of current spouses
 		const spouseList = spousesContainer.createDiv({ cls: 'crc-spouses-field__list' });
@@ -1793,7 +1794,7 @@ export class CreatePersonModal extends Modal {
 
 			if (this.spousesField.crIds.length === 0) {
 				const emptyState = spouseList.createDiv({ cls: 'crc-spouses-field__empty' });
-				emptyState.setText('No spouses linked');
+				emptyState.setText(`No ${getSpouseLabel(this.plugin?.settings, { plural: true, lowercase: true })} linked`);
 				return;
 			}
 
@@ -1837,7 +1838,7 @@ export class CreatePersonModal extends Modal {
 			const picker = new PersonPickerModal(this.app, (person: PersonInfo) => {
 				// Check if already added
 				if (this.spousesField.crIds.includes(person.crId)) {
-					new Notice(`${person.name} is already linked as a spouse`);
+					new Notice(`${person.name} is already linked as a ${getSpouseLabel(this.plugin?.settings, { lowercase: true })}`);
 					return;
 				}
 
@@ -1846,7 +1847,7 @@ export class CreatePersonModal extends Modal {
 				this.spousesField.names.push(person.name);
 				renderSpouseList();
 			}, {
-				title: 'Select spouse',
+				title: `Select ${getSpouseLabel(this.plugin?.settings, { lowercase: true })}`,
 				subtitle: 'Select an existing person or create a new one',
 				createContext: createContext,
 				onCreateNew: () => {
@@ -1894,7 +1895,7 @@ export class CreatePersonModal extends Modal {
 		const actionsGrid = actionsSection.createDiv({ cls: 'crc-post-create-actions__grid' });
 
 		// Add spouse button
-		this.createActionButton(actionsGrid, 'heart', 'Add spouse', () => {
+		this.createActionButton(actionsGrid, 'heart', getAddSpouseLabel(this.plugin?.settings), () => {
 			this.openPostCreatePicker('spouse');
 		});
 
@@ -1957,8 +1958,8 @@ export class CreatePersonModal extends Modal {
 			this.showParentTypeSelector();
 			return;
 		} else if (relationshipType === 'spouse') {
-			pickerTitle = 'Select spouse';
-			relationshipLabel = 'spouse';
+			pickerTitle = `Select ${getSpouseLabel(this.plugin?.settings, { lowercase: true })}`;
+			relationshipLabel = getSpouseLabel(this.plugin?.settings, { lowercase: true });
 		} else {
 			pickerTitle = 'Select child';
 			relationshipLabel = 'child';
