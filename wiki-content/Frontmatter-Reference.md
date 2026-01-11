@@ -123,11 +123,12 @@ erDiagram
     }
 
     MEMBERSHIP {
-        string org FK
-        string org_id FK
-        string role
-        string from
-        string to
+        string membership_orgs FK "parallel array"
+        string membership_org_ids FK "parallel array"
+        string membership_roles "parallel array"
+        string membership_from_dates "parallel array"
+        string membership_to_dates "parallel array"
+        string membership_notes "parallel array"
     }
 ```
 
@@ -1513,9 +1514,51 @@ Organization notes can link to media files (logos, group photos, heraldry):
 
 ## Person Membership Properties
 
-Person notes can include an array of organization memberships.
+Person notes can include organization memberships using parallel arrays (recommended) or legacy formats.
 
-### Membership Array
+### Flat Parallel Arrays (Recommended)
+
+The preferred format uses parallel arrays where each index represents the same membership:
+
+```yaml
+membership_orgs:
+  - "[[House Stark]]"
+  - "[[Small Council]]"
+membership_org_ids:
+  - org-house-stark
+  - org-small-council
+membership_roles:
+  - Lord of Winterfell
+  - Hand of the King
+membership_from_dates:
+  - "283 AC"
+  - "298 AC"
+membership_to_dates:
+  - "298 AC"
+  - "298 AC"
+membership_notes:
+  - ""
+  - "Appointed after death of Jon Arryn"
+```
+
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `membership_orgs` | `string[]` | Wikilinks to organization notes | `["[[House Stark]]", "[[Small Council]]"]` |
+| `membership_org_ids` | `string[]` | Organization `cr_id`s for robust linking | `["org-house-stark", "org-small-council"]` |
+| `membership_roles` | `string[]` | Roles/positions within organizations | `["Lord of Winterfell", "Hand of the King"]` |
+| `membership_from_dates` | `string[]` | Start dates of memberships | `["283 AC", "298 AC"]` |
+| `membership_to_dates` | `string[]` | End dates (empty string if current) | `["298 AC", "298 AC"]` |
+| `membership_notes` | `string[]` | Additional context for each membership | `["", "Appointed after death of Jon Arryn"]` |
+
+**Benefits of flat format:**
+- Works correctly with Obsidian's Properties editor
+- Better compatibility with Dataview queries
+- Consistent with `sourced_*` properties pattern
+- No "Type mismatch" warnings in Properties view
+
+### Legacy Nested Array Format (Deprecated)
+
+> **Deprecation Note:** The nested `memberships` array is deprecated as of v0.19.5. Use the flat parallel arrays above. Existing notes using this format still work, but new memberships are saved in the flat format. Use the Data Quality panel to migrate legacy formats.
 
 ```yaml
 memberships:
@@ -1531,16 +1574,15 @@ memberships:
     to: "298 AC"
 ```
 
-### Membership Properties
+### Legacy Simple Format (Deprecated)
 
-| Property | Type | Required | Description | Example |
-|----------|------|----------|-------------|---------|
-| `org` | `string` | Yes | Wikilink to organization note | `"[[House Stark]]"` |
-| `org_id` | `string` | No | Organization's `cr_id` for robust linking | `"org-house-stark"` |
-| `role` | `string` | No | Role or position within organization | `"Lord of Winterfell"` |
-| `from` | `string` | No | Start date of membership | `"283 AC"` |
-| `to` | `string` | No | End date (leave empty if current) | `"298 AC"` |
-| `notes` | `string` | No | Additional context | `"First to declare for Robert"` |
+> **Deprecation Note:** The simple `house`/`organization` fields are deprecated. Use the flat parallel arrays above.
+
+```yaml
+house: "[[House Stark]]"
+house_id: org-house-stark
+role: Lord of Winterfell
+```
 
 ---
 
