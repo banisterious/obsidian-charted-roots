@@ -10,6 +10,7 @@ import type { OrganizationCategoryDefinition } from './organizations/types/organ
 import type { RelationshipCategoryDefinition } from './relationships/types/relationship-types';
 import type { PlaceTypeDefinition, PlaceTypeCategoryDefinition } from './places/types/place-types';
 import type { GedcomCompatibilityMode } from './gedcom/gedcom-preprocessor';
+import { getSpouseCompoundLabel } from './utils/terminology';
 import {
 	PropertyAliasService,
 	PERSON_PROPERTY_METADATA,
@@ -1195,8 +1196,8 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(canvasContent)
-			.setName('Spouse arrows')
-			.setDesc('Arrow style for spouse relationships')
+			.setName(getSpouseCompoundLabel(this.plugin.settings, 'arrows'))
+			.setDesc('Arrow style for spouse/partner relationships')
 			.addDropdown(dropdown => dropdown
 				.addOption('directed', 'Directed (→)')
 				.addOption('bidirectional', 'Bidirectional (↔)')
@@ -1208,11 +1209,11 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				}));
 
 		// --- Spouse edges subsection ---
-		canvasContent.createEl('h4', { text: 'Spouse edges', cls: 'cr-subsection-title' });
+		canvasContent.createEl('h4', { text: getSpouseCompoundLabel(this.plugin.settings, 'edges'), cls: 'cr-subsection-title' });
 
 		new Setting(canvasContent)
-			.setName('Show spouse edges')
-			.setDesc('Display edges between spouses with marriage metadata')
+			.setName(`Show ${getSpouseCompoundLabel(this.plugin.settings, 'edges').toLowerCase()}`)
+			.setDesc('Display edges between spouses/partners with marriage metadata')
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.showSpouseEdges)
 				.onChange(async (value) => {
@@ -1221,8 +1222,8 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(canvasContent)
-			.setName('Spouse edge label format')
-			.setDesc('How to display marriage information on spouse edges')
+			.setName(getSpouseCompoundLabel(this.plugin.settings, 'edge label format'))
+			.setDesc('How to display marriage information on spouse/partner edges')
 			.addDropdown(dropdown => dropdown
 				.addOption('none', 'None')
 				.addOption('date-only', 'Date only')

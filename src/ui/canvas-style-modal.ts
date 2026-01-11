@@ -11,6 +11,7 @@ import type { ArrowStyle, ColorScheme, CanvasColor, SpouseEdgeLabelFormat } from
 import type { StyleOverrides } from '../core/canvas-style-overrides';
 import type { CanvasData } from '../core/canvas-generator';
 import { getLogger } from '../core/logging';
+import { getSpouseCompoundLabel } from '../utils/terminology';
 
 const logger = getLogger('CanvasStyleModal');
 
@@ -100,8 +101,8 @@ export class CanvasStyleModal extends Modal {
 
 		// Spouse arrow style
 		new Setting(contentEl)
-			.setName('Spouse arrows')
-			.setDesc('Arrow style for spouse relationships')
+			.setName(getSpouseCompoundLabel(this.plugin.settings, 'arrows'))
+			.setDesc('Arrow style for spouse/partner relationships')
 			.addDropdown(dropdown => {
 				dropdown
 					.addOption('', '(Use global setting)')
@@ -136,8 +137,8 @@ export class CanvasStyleModal extends Modal {
 
 		// Spouse edge color
 		new Setting(contentEl)
-			.setName('Spouse edge color')
-			.setDesc('Color for spouse relationship edges')
+			.setName(getSpouseCompoundLabel(this.plugin.settings, 'edge color'))
+			.setDesc('Color for spouse/partner relationship edges')
 			.addDropdown(dropdown => {
 				dropdown
 					.addOption('', '(Use global setting)')
@@ -156,7 +157,7 @@ export class CanvasStyleModal extends Modal {
 
 		// Show spouse edges
 		new Setting(contentEl)
-			.setName('Show spouse edges')
+			.setName(`Show ${getSpouseCompoundLabel(this.plugin.settings, 'edges').toLowerCase()}`)
 			.setDesc('Display marriage relationship edges on canvas')
 			.addDropdown(dropdown => {
 				dropdown
@@ -171,8 +172,8 @@ export class CanvasStyleModal extends Modal {
 
 		// Spouse label format
 		new Setting(contentEl)
-			.setName('Spouse edge labels')
-			.setDesc('Label format for spouse relationship edges')
+			.setName(getSpouseCompoundLabel(this.plugin.settings, 'edge labels'))
+			.setDesc('Label format for spouse/partner relationship edges')
 			.addDropdown(dropdown => {
 				dropdown
 					.addOption('', '(Use global setting)')

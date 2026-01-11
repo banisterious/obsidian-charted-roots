@@ -40,6 +40,8 @@ import type {
 	TreeSizeAnalysis
 } from '../types/visual-tree-types';
 
+import { getSpouseLabel, getSpouseCompoundLabel } from '../../utils/terminology';
+
 const logger = getLogger('unified-tree-wizard');
 
 /**
@@ -911,8 +913,8 @@ export class UnifiedTreeWizardModal extends Modal {
 
 		// Include spouses
 		new Setting(form)
-			.setName('Include spouses')
-			.setDesc('Show spouse nodes alongside each person')
+			.setName(`Include ${getSpouseLabel(this.plugin.settings, { plural: true, lowercase: true })}`)
+			.setDesc(`Show ${getSpouseLabel(this.plugin.settings, { lowercase: true })} nodes alongside each person`)
 			.addToggle(toggle => toggle
 				.setValue(this.formData.includeSpouses)
 				.onChange(value => {
@@ -1167,7 +1169,7 @@ export class UnifiedTreeWizardModal extends Modal {
 				.onChange(value => { this.formData.parentChildArrowStyle = value as 'directed' | 'bidirectional' | 'undirected'; }));
 
 		new Setting(styleContent)
-			.setName('Spouse arrows')
+			.setName(getSpouseCompoundLabel(this.plugin.settings, 'arrows'))
 			.addDropdown(dropdown => dropdown
 				.addOption('directed', 'Directed (arrow)')
 				.addOption('bidirectional', 'Bidirectional (double arrow)')
@@ -1176,7 +1178,7 @@ export class UnifiedTreeWizardModal extends Modal {
 				.onChange(value => { this.formData.spouseArrowStyle = value as 'directed' | 'bidirectional' | 'undirected'; }));
 
 		new Setting(styleContent)
-			.setName('Show spouse edges')
+			.setName(`Show ${getSpouseCompoundLabel(this.plugin.settings, 'edges').toLowerCase()}`)
 			.setDesc('Display marriage/partnership relationship edges')
 			.addToggle(toggle => toggle
 				.setValue(this.formData.showSpouseEdges)
@@ -1356,7 +1358,7 @@ export class UnifiedTreeWizardModal extends Modal {
 		summaryList.createEl('li', { text: `Root person: ${this.formData.rootPerson?.name || 'Not selected'}` });
 		summaryList.createEl('li', { text: `Tree type: ${this.getTreeTypeLabel()}` });
 		summaryList.createEl('li', { text: `Layout: ${this.formData.layoutAlgorithm}, ${this.formData.direction}` });
-		summaryList.createEl('li', { text: `Spouses: ${this.formData.includeSpouses ? 'Included' : 'Not included'}` });
+		summaryList.createEl('li', { text: `${getSpouseLabel(this.plugin.settings, { plural: true })}: ${this.formData.includeSpouses ? 'Included' : 'Not included'}` });
 	}
 
 	// ========== EXCALIDRAW STYLE STEP ==========

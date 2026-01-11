@@ -82,6 +82,7 @@ import {
 	type ValueAliasField
 } from '../core/value-alias-service';
 import { createIntegrationsCard } from '../integrations/integrations-settings';
+import { getSpouseCompoundLabel } from '../utils/terminology';
 
 /**
  * Render the Preferences tab content
@@ -1398,8 +1399,8 @@ export function renderCanvasStylingCard(
 
 	// Spouse Arrow Style
 	new Setting(content)
-		.setName('Spouse arrows')
-		.setDesc('Arrow style for spouse relationships')
+		.setName(getSpouseCompoundLabel(plugin.settings, 'arrows'))
+		.setDesc('Arrow style for spouse/partner relationships')
 		.addDropdown(dropdown => dropdown
 			.addOption('directed', 'Directed (→) - single arrow')
 			.addOption('bidirectional', 'Bidirectional (↔) - arrows on both ends')
@@ -1408,31 +1409,31 @@ export function renderCanvasStylingCard(
 			.onChange(async (value) => {
 				plugin.settings.spouseArrowStyle = value as ArrowStyle;
 				await plugin.saveSettings();
-				new Notice('Spouse arrow style updated');
+				new Notice(`${getSpouseCompoundLabel(plugin.settings, 'arrow style')} updated`);
 			}));
 
 	// Section: Spouse Edges
 	content.createEl('h4', {
-		text: 'Spouse edge display',
+		text: getSpouseCompoundLabel(plugin.settings, 'edge display'),
 		cls: 'cr-aliases-section-title'
 	});
 
 	// Show Spouse Edges Toggle
 	new Setting(content)
-		.setName('Show spouse edges')
-		.setDesc('Display edges between spouses with marriage metadata. When disabled (default), spouses are visually grouped by positioning only.')
+		.setName(`Show ${getSpouseCompoundLabel(plugin.settings, 'edges').toLowerCase()}`)
+		.setDesc('Display edges between spouses/partners with marriage metadata. When disabled (default), spouses are visually grouped by positioning only.')
 		.addToggle(toggle => toggle
 			.setValue(plugin.settings.showSpouseEdges)
 			.onChange(async (value) => {
 				plugin.settings.showSpouseEdges = value;
 				await plugin.saveSettings();
-				new Notice('Spouse edge display updated');
+				new Notice(`${getSpouseCompoundLabel(plugin.settings, 'edge display')} updated`);
 			}));
 
 	// Spouse Edge Label Format
 	new Setting(content)
-		.setName('Spouse edge label format')
-		.setDesc('How to display marriage information on spouse edges (only applies when "Show spouse edges" is enabled)')
+		.setName(getSpouseCompoundLabel(plugin.settings, 'edge label format'))
+		.setDesc(`How to display marriage information on ${getSpouseCompoundLabel(plugin.settings, 'edges').toLowerCase()} (only applies when edges are enabled)`)
 		.addDropdown(dropdown => dropdown
 			.addOption('none', 'None - no labels')
 			.addOption('date-only', 'Date only - e.g., "m. 1985"')
@@ -1442,7 +1443,7 @@ export function renderCanvasStylingCard(
 			.onChange(async (value) => {
 				plugin.settings.spouseEdgeLabelFormat = value as SpouseEdgeLabelFormat;
 				await plugin.saveSettings();
-				new Notice('Spouse edge label format updated');
+				new Notice(`${getSpouseCompoundLabel(plugin.settings, 'edge label format')} updated`);
 			}));
 
 	container.appendChild(card);
