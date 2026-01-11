@@ -64,6 +64,7 @@ interface ImportWizardFormData {
 	includeDynamicBlocks: boolean;
 	targetFolder: string;
 	conflictHandling: ConflictHandling;
+	largeImportMode: boolean;  // Suspend sync-on-modify during import for better performance
 
 	// Step 4: Preview (populated after parsing)
 	previewCounts: {
@@ -199,6 +200,7 @@ export class ImportWizardModal extends Modal {
 			includeDynamicBlocks: true,
 			targetFolder: this.plugin?.settings?.peopleFolder || 'People',
 			conflictHandling: 'skip',
+			largeImportMode: false,  // Default: off (user must opt-in for large imports)
 
 			// Step 4
 			previewCounts: {
@@ -571,6 +573,19 @@ export class ImportWizardModal extends Modal {
 				this.renderCurrentStep();
 			});
 		}
+
+		// Large Import Mode (advanced option)
+		section.createEl('h4', { text: 'Performance', cls: 'crc-import-options-title crc-mt-3' });
+
+		this.renderToggleOption(
+			section,
+			'Large import mode',
+			'Suspends relationship syncing during import to prevent timeouts. Recommended for imports with 500+ people.',
+			this.formData.largeImportMode,
+			(val) => {
+				this.formData.largeImportMode = val;
+			}
+		);
 	}
 
 	/**
@@ -971,89 +986,107 @@ export class ImportWizardModal extends Modal {
 					throw new Error('No file content available');
 				}
 
-				// Build import options
-				const settings = this.plugin.settings;
-				const options: GedcomImportOptionsV2 = {
-					peopleFolder: this.formData.targetFolder || settings.peopleFolder,
-					eventsFolder: settings.eventsFolder,
-					sourcesFolder: settings.sourcesFolder,
-					placesFolder: settings.placesFolder,
-					overwriteExisting: this.formData.conflictHandling === 'overwrite',
-					fileName: this.formData.fileName,
-					createPeopleNotes: this.formData.importPeople,
-					createEventNotes: this.formData.importEvents,
-					createSourceNotes: this.formData.importSources,
-					createPlaceNotes: this.formData.importPlaces,
-					includeDynamicBlocks: this.formData.includeDynamicBlocks,
-					dynamicBlockTypes: ['media', 'timeline', 'relationships'],
-					compatibilityMode: settings.gedcomCompatibilityMode,
-					onProgress: (progress) => {
-						// Update UI based on progress
-						const percent = progress.total > 0 ? Math.round((progress.current / progress.total) * 100) : 0;
-						progressFill.setCssProps({ width: `${percent}%` });
-						statusEl.textContent = progress.message || `${progress.phase}: ${progress.current}/${progress.total}`;
-
-						if (progress.message) {
-							addLogEntry(progress.message);
-						}
-					}
-				};
-
-				// Run import
-				console.log('[ImportWizard] Starting import with:', {
-					hasFileContent: !!this.formData.fileContent,
-					fileContentLength: this.formData.fileContent?.length,
-					hasParsedData: !!this.formData.parsedData,
-					parsedDataSize: this.formData.parsedData?.individuals?.size
-				});
-				const result = await this.importer.importFile(
-					this.formData.fileContent,
-					options,
-					this.formData.parsedData || undefined
-				);
-
-				this.formData.importResult = result;
-				this.formData.importedCount = result.individualsImported;
-
-				// Calculate total notes created
-				const totalCreated = result.individualsImported + result.eventsCreated + result.sourcesCreated + result.placesCreated;
-
-				if (result.success) {
-					progressFill.setCssProps({ width: '100%' });
-					addLogEntry(`Import complete! ${result.individualsImported} people imported.`, 'success');
-
-					if (result.eventsCreated > 0) {
-						addLogEntry(`Created ${result.eventsCreated} event notes.`, 'success');
-					}
-					if (result.sourcesCreated > 0) {
-						addLogEntry(`Created ${result.sourcesCreated} source notes.`, 'success');
-					}
-					if (result.placesCreated > 0) {
-						addLogEntry(`Created ${result.placesCreated} place notes.`, 'success');
-					}
-
-					// Show any warnings
-					for (const warning of result.warnings.slice(0, 5)) {
-						addLogEntry(warning, 'warning');
-					}
-
-					// Auto-advance to numbering step after a short delay
-					setTimeout(() => {
-						this.currentStep = 5; // Numbering step
-						this.isImporting = false;
-						this.renderCurrentStep();
-					}, 1500);
-				} else {
-					addLogEntry('Import failed!', 'error');
-					for (const error of result.errors) {
-						addLogEntry(error, 'error');
-					}
-					this.isImporting = false;
+				// Large Import Mode: suspend relationship syncing to prevent timeouts
+				if (this.formData.largeImportMode) {
+					addLogEntry('Large import mode enabled - suspending relationship sync');
+					new Notice('Large import mode: relationship sync suspended');
+					this.plugin.disableBidirectionalSync();
+					this.plugin.bidirectionalLinker?.suspend();
 				}
 
-				// Auto-create bases for imported note types (even if some errors occurred)
-				if (totalCreated > 0) {
-					void this.plugin.createAllBases({ silent: true });
+				try {
+					// Build import options
+					const settings = this.plugin.settings;
+					const options: GedcomImportOptionsV2 = {
+						peopleFolder: this.formData.targetFolder || settings.peopleFolder,
+						eventsFolder: settings.eventsFolder,
+						sourcesFolder: settings.sourcesFolder,
+						placesFolder: settings.placesFolder,
+						overwriteExisting: this.formData.conflictHandling === 'overwrite',
+						fileName: this.formData.fileName,
+						createPeopleNotes: this.formData.importPeople,
+						createEventNotes: this.formData.importEvents,
+						createSourceNotes: this.formData.importSources,
+						createPlaceNotes: this.formData.importPlaces,
+						includeDynamicBlocks: this.formData.includeDynamicBlocks,
+						dynamicBlockTypes: ['media', 'timeline', 'relationships'],
+						compatibilityMode: settings.gedcomCompatibilityMode,
+						onProgress: (progress) => {
+							// Update UI based on progress
+							const percent = progress.total > 0 ? Math.round((progress.current / progress.total) * 100) : 0;
+							progressFill.setCssProps({ width: `${percent}%` });
+							statusEl.textContent = progress.message || `${progress.phase}: ${progress.current}/${progress.total}`;
+
+							if (progress.message) {
+								addLogEntry(progress.message);
+							}
+						}
+					};
+
+					// Run import
+					console.log('[ImportWizard] Starting import with:', {
+						hasFileContent: !!this.formData.fileContent,
+						fileContentLength: this.formData.fileContent?.length,
+						hasParsedData: !!this.formData.parsedData,
+						parsedDataSize: this.formData.parsedData?.individuals?.size
+					});
+					const result = await this.importer.importFile(
+						this.formData.fileContent,
+						options,
+						this.formData.parsedData || undefined
+					);
+
+					this.formData.importResult = result;
+					this.formData.importedCount = result.individualsImported;
+
+					// Calculate total notes created
+					const totalCreated = result.individualsImported + result.eventsCreated + result.sourcesCreated + result.placesCreated;
+
+					if (result.success) {
+						progressFill.setCssProps({ width: '100%' });
+						addLogEntry(`Import complete! ${result.individualsImported} people imported.`, 'success');
+
+						if (result.eventsCreated > 0) {
+							addLogEntry(`Created ${result.eventsCreated} event notes.`, 'success');
+						}
+						if (result.sourcesCreated > 0) {
+							addLogEntry(`Created ${result.sourcesCreated} source notes.`, 'success');
+						}
+						if (result.placesCreated > 0) {
+							addLogEntry(`Created ${result.placesCreated} place notes.`, 'success');
+						}
+
+						// Show any warnings
+						for (const warning of result.warnings.slice(0, 5)) {
+							addLogEntry(warning, 'warning');
+						}
+
+						// Auto-advance to numbering step after a short delay
+						setTimeout(() => {
+							this.currentStep = 5; // Numbering step
+							this.isImporting = false;
+							this.renderCurrentStep();
+						}, 1500);
+					} else {
+						addLogEntry('Import failed!', 'error');
+						for (const error of result.errors) {
+							addLogEntry(error, 'error');
+						}
+						this.isImporting = false;
+					}
+
+					// Auto-create bases for imported note types (even if some errors occurred)
+					if (totalCreated > 0) {
+						void this.plugin.createAllBases({ silent: true });
+					}
+				} finally {
+					// Large Import Mode: re-enable relationship sync after import completes
+					if (this.formData.largeImportMode) {
+						this.plugin.enableBidirectionalSync();
+						this.plugin.bidirectionalLinker?.resume();
+						addLogEntry('Large import mode complete - relationship sync restored');
+						new Notice('Import complete: relationship sync restored');
+					}
 				}
 			} else if (this.formData.format === 'gramps') {
 				addLogEntry('Starting Gramps import...');
@@ -1062,8 +1095,13 @@ export class ImportWizardModal extends Modal {
 					throw new Error('No file content available');
 				}
 
-				// Disable bidirectional sync during import to prevent duplicate relationships
-				// The file watcher would otherwise trigger syncRelationships before Phase 2 replaces Gramps handles with cr_ids
+				// Gramps always suspends bidirectional sync during import to prevent duplicate relationships.
+				// The file watcher would otherwise trigger syncRelationships before Phase 2 replaces Gramps handles with cr_ids.
+				// Show notice if user explicitly enabled Large Import Mode.
+				if (this.formData.largeImportMode) {
+					addLogEntry('Large import mode enabled - suspending relationship sync');
+					new Notice('Large import mode: relationship sync suspended');
+				}
 				this.plugin.disableBidirectionalSync();
 				this.plugin.bidirectionalLinker?.suspend();
 
@@ -1166,6 +1204,11 @@ export class ImportWizardModal extends Modal {
 					// Re-enable bidirectional sync after import completes (success or failure)
 					this.plugin.enableBidirectionalSync();
 					this.plugin.bidirectionalLinker?.resume();
+					// Show completion notice if Large Import Mode was enabled
+					if (this.formData.largeImportMode) {
+						addLogEntry('Large import mode complete - relationship sync restored');
+						new Notice('Import complete: relationship sync restored');
+					}
 				}
 			} else {
 				// Other formats not yet implemented
