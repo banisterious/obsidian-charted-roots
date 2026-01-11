@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Edit current note command**: New command "Edit current note" opens the appropriate edit modal (person, place, or event) for the active note. Assign a hotkey in Settings → Hotkeys to quickly edit notes without navigating through the file menu. Reduces the friction of: 3-dot menu → Charted Roots → Edit.
+
 ---
 
 ## [0.19.3] - 2026-01-10

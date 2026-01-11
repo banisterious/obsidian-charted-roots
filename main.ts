@@ -48,7 +48,7 @@ import { AddRelationshipModal } from './src/ui/add-relationship-modal';
 import { SourcePickerModal, SourceService, CreateSourceModal, CitationGeneratorModal, EvidenceService, ProofSummaryService } from './src/sources';
 import { EventService } from './src/events/services/event-service';
 import { CreateEventModal } from './src/events/ui/create-event-modal';
-import { isPlaceNote, isSourceNote, isEventNote, isMapNote, isSchemaNote, isUniverseNote } from './src/utils/note-type-detection';
+import { isPlaceNote, isSourceNote, isEventNote, isMapNote, isSchemaNote, isUniverseNote, isPersonNote } from './src/utils/note-type-detection';
 import { GeocodingService } from './src/maps/services/geocoding-service';
 import { TimelineProcessor, RelationshipsProcessor, MediaProcessor } from './src/dynamic-content';
 import { UniverseService, EditUniverseModal, UniverseWizardModal } from './src/universes';
@@ -518,6 +518,43 @@ export default class CanvasRootsPlugin extends Plugin {
 				if (this.eventService) {
 					new CreateEventModal(this.app, this.eventService, this.settings).open();
 				}
+			}
+		});
+
+		// Add command: Edit current note (opens appropriate edit modal based on note type)
+		this.addCommand({
+			id: 'edit-current-note',
+			name: 'Edit current note',
+			checkCallback: (checking) => {
+				const activeFile = this.app.workspace.getActiveFile();
+				if (!activeFile || activeFile.extension !== 'md') {
+					return false;
+				}
+
+				const cache = this.app.metadataCache.getFileCache(activeFile);
+				const fm = cache?.frontmatter;
+				const detectionSettings = this.settings.noteTypeDetection;
+
+				// Check if this is a supported note type
+				const isPerson = isPersonNote(fm, cache, detectionSettings);
+				const isPlace = isPlaceNote(fm, cache, detectionSettings);
+				const isEvent = isEventNote(fm, cache, detectionSettings);
+
+				if (!isPerson && !isPlace && !isEvent) {
+					return false;
+				}
+
+				if (!checking) {
+					if (isPerson) {
+						this.openEditPersonModal(activeFile);
+					} else if (isPlace) {
+						this.openEditPlaceModal(activeFile);
+					} else if (isEvent) {
+						this.openEditEventModal(activeFile);
+					}
+				}
+
+				return true;
 			}
 		});
 

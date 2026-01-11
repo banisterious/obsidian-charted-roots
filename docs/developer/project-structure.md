@@ -457,6 +457,8 @@ canvas-roots/
 | **Data Quality** | | |
 | Fix Bidirectional Relationships | ✅ Complete | Sync all bidirectional relationship links in vault |
 | Detect Duplicate People | ✅ Complete | Find potential duplicate person records |
+| **Editing** | | |
+| Edit Current Note | ✅ Complete | Opens appropriate edit modal (person/place/event) for active note |
 
 ---
 
