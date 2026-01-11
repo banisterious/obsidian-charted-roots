@@ -1,6 +1,7 @@
 # Settings Consolidation
 
 - **Status:** Planning
+- **Target Version:** v0.19.5
 - **Related Issue:** [#176](https://github.com/banisterious/obsidian-charted-roots/issues/176)
 - **Created:** 2026-01-10
 - **Origin:** User feedback from jeff962 in [Discussion #147](https://github.com/banisterious/obsidian-charted-roots/discussions/147)
@@ -94,3 +95,13 @@ Proposed section structure for consolidated Plugin Settings:
 - Verify all settings save/load correctly after migration
 - Test that deprecated Preferences still functions during transition
 - Ensure no regressions in property/value alias behavior
+
+## Success Criteria
+
+- [ ] All Preferences settings accessible in Plugin Settings
+- [ ] Preferences tab shows deprecation notice with link
+- [ ] Property alias editing works in new location
+- [ ] Value alias editing works in new location
+- [ ] Folder suggestions work in new location
+- [ ] No regression in existing functionality
+- [ ] Cross-reference callouts removed from both locations
