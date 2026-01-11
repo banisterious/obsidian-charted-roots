@@ -628,7 +628,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	mapsFolder: 'Charted Roots/Places/Maps',
 	schemasFolder: 'Charted Roots/Schemas',
 	canvasesFolder: 'Charted Roots/Canvases',
-	logExportPath: '.canvas-roots/logs',
+	logExportPath: '.charted-roots/logs',
 	logLevel: 'debug',
 	obfuscateLogExports: true,  // Secure by default - protect PII in log exports
 	recentTrees: [],
@@ -868,6 +868,36 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		this.createFolderSetting(foldersContent, 'Bases folder', 'Default folder for Obsidian Bases files', 'Charted Roots/Bases',
 			() => this.plugin.settings.basesFolder, (v) => { this.plugin.settings.basesFolder = v; });
 
+		// --- Media folder filtering subsection ---
+		foldersContent.createEl('h4', { text: 'Media folder filtering', cls: 'cr-subsection-title' });
+
+		foldersContent.createEl('p', {
+			cls: 'setting-item-description',
+			text: 'Limit media discovery to specific folders. This affects Find Unlinked, Media Manager stats, and the media picker—but not already-linked media or the Browse Gallery.'
+		});
+
+		new Setting(foldersContent)
+			.setName('Limit media scanning to specified folders')
+			.setDesc('When enabled, only scan the folders listed below for media files')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.enableMediaFolderFilter)
+				.onChange(async (value) => {
+					this.plugin.settings.enableMediaFolderFilter = value;
+					await this.plugin.saveSettings();
+				}));
+
+		// Media folders list with drag-and-drop
+		const mediaFoldersContainer = foldersContent.createDiv({ cls: 'cr-media-folders-list' });
+		this.renderMediaFoldersList(mediaFoldersContainer);
+
+		// Note about advanced settings
+		const advancedNote = foldersContent.createDiv({ cls: 'cr-info-box cr-info-box--muted' });
+		const advancedIcon = advancedNote.createSpan({ cls: 'cr-info-box-icon' });
+		setIcon(advancedIcon, 'settings');
+		advancedNote.createSpan({
+			text: 'For folder filtering options (include/exclude folders from discovery), see Advanced below.'
+		});
+
 		// --- System folders subsection ---
 		foldersContent.createEl('h4', { text: 'System folders', cls: 'cr-subsection-title' });
 
@@ -877,7 +907,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		this.createFolderSetting(foldersContent, 'Staging folder', 'Folder for import staging (isolated from main vault)', 'Charted Roots/Staging',
 			() => this.plugin.settings.stagingFolder, (v) => { this.plugin.settings.stagingFolder = v; });
 
-		this.createFolderSetting(foldersContent, 'Log export folder', 'Vault folder for exported log files', '.canvas-roots/logs',
+		this.createFolderSetting(foldersContent, 'Log export folder', 'Vault folder for exported log files', '.charted-roots/logs',
 			() => this.plugin.settings.logExportPath, (v) => { this.plugin.settings.logExportPath = v; });
 
 		// ═══════════════════════════════════════════════════════════════════════
@@ -1502,31 +1532,6 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
-		// --- Media folders subsection ---
-		advancedContent.createEl('h4', { text: 'Media folders', cls: 'cr-subsection-title' });
-
-		new Setting(advancedContent)
-			.setName('Limit media scanning')
-			.setDesc('Only scan specified folders for media files')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.enableMediaFolderFilter)
-				.onChange(async (value) => {
-					this.plugin.settings.enableMediaFolderFilter = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(advancedContent)
-			.setName('Media folders')
-			.setDesc('Folders to scan for media files (one per line)')
-			.addTextArea(textArea => textArea
-				.setPlaceholder('Attachments\nMedia')
-				.setValue((this.plugin.settings.mediaFolders || []).join('\n'))
-				.onChange(async (value) => {
-					const folderList = value.split('\n').map(f => f.trim()).filter(f => f.length > 0);
-					this.plugin.settings.mediaFolders = folderList;
-					await this.plugin.saveSettings();
-				}));
-
 		// --- Research tools subsection ---
 		advancedContent.createEl('h4', { text: 'Research tools', cls: 'cr-subsection-title' });
 
@@ -1648,8 +1653,8 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					});
 					const content = lines.join('\n');
 
-					const folder = this.plugin.settings.logExportPath || '.canvas-roots/logs';
-					const filename = `canvas-roots-${new Date().toISOString().replace(/[:.]/g, '-')}.log`;
+					const folder = this.plugin.settings.logExportPath || '.charted-roots/logs';
+					const filename = `charted-roots-${new Date().toISOString().replace(/[:.]/g, '-')}.log`;
 					const fullPath = normalizePath(`${folder}/${filename}`);
 
 					const folderPath = normalizePath(folder);
@@ -1890,6 +1895,145 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				});
 			}
 		});
+	}
+
+	/**
+	 * Render the media folders list with add/remove and drag-drop functionality
+	 */
+	private renderMediaFoldersList(container: HTMLElement): void {
+		container.empty();
+
+		const folders = this.plugin.settings.mediaFolders;
+
+		// State for drag and drop
+		let draggedIndex = -1;
+
+		// Render existing folders
+		for (let i = 0; i < folders.length; i++) {
+			const folder = folders[i];
+			const row = container.createDiv({ cls: 'cr-media-folder-row' });
+
+			// Make row draggable
+			row.setAttribute('draggable', 'true');
+
+			// Drag handle
+			const dragHandle = row.createSpan({ cls: 'cr-media-folder-handle' });
+			setIcon(dragHandle, 'grip-vertical');
+
+			// Folder icon
+			const iconEl = row.createSpan({ cls: 'cr-media-folder-icon' });
+			setIcon(iconEl, 'folder');
+
+			// Folder path text
+			row.createSpan({ cls: 'cr-media-folder-path', text: folder });
+
+			// Remove button
+			const removeBtn = row.createSpan({ cls: 'cr-media-folder-remove' });
+			setIcon(removeBtn, 'x');
+			removeBtn.setAttribute('aria-label', 'Remove folder');
+
+			removeBtn.addEventListener('click', () => {
+				this.plugin.settings.mediaFolders = folders.filter((_, idx) => idx !== i);
+				void this.plugin.saveSettings().then(() => {
+					this.renderMediaFoldersList(container);
+				});
+			});
+
+			// Drag and drop event handlers
+			row.addEventListener('dragstart', (e: DragEvent) => {
+				draggedIndex = i;
+				row.addClass('cr-media-folder-row--dragging');
+				if (e.dataTransfer) {
+					e.dataTransfer.effectAllowed = 'move';
+					e.dataTransfer.setData('text/plain', i.toString());
+				}
+			});
+
+			row.addEventListener('dragend', () => {
+				row.removeClass('cr-media-folder-row--dragging');
+				// Remove drag-over indicators from all rows
+				container.querySelectorAll('.cr-media-folder-row').forEach(r => {
+					r.removeClass('cr-media-folder-row--drag-over');
+				});
+			});
+
+			row.addEventListener('dragover', (e: DragEvent) => {
+				e.preventDefault();
+				if (e.dataTransfer) {
+					e.dataTransfer.dropEffect = 'move';
+				}
+			});
+
+			row.addEventListener('dragenter', (e: DragEvent) => {
+				e.preventDefault();
+				if (i !== draggedIndex) {
+					row.addClass('cr-media-folder-row--drag-over');
+				}
+			});
+
+			row.addEventListener('dragleave', (e: DragEvent) => {
+				// Only remove class if we're actually leaving the row
+				const relatedTarget = e.relatedTarget as HTMLElement;
+				if (!row.contains(relatedTarget)) {
+					row.removeClass('cr-media-folder-row--drag-over');
+				}
+			});
+
+			row.addEventListener('drop', (e: DragEvent) => {
+				e.preventDefault();
+
+				if (draggedIndex === -1 || draggedIndex === i) {
+					return;
+				}
+
+				// Reorder the folders array
+				const newFolders = [...folders];
+				const [movedFolder] = newFolders.splice(draggedIndex, 1);
+				newFolders.splice(i, 0, movedFolder);
+
+				this.plugin.settings.mediaFolders = newFolders;
+				void this.plugin.saveSettings().then(() => {
+					this.renderMediaFoldersList(container);
+				});
+			});
+		}
+
+		// Add folder row
+		const addRow = container.createDiv({ cls: 'cr-media-folder-add-row' });
+
+		// Create a wrapper for the text input with folder suggest
+		const inputWrapper = addRow.createDiv({ cls: 'cr-media-folder-input-wrapper' });
+
+		const addSetting = new Setting(inputWrapper)
+			.addText(text => {
+				text.setPlaceholder('Add media folder...');
+
+				// Attach folder autocomplete
+				new FolderSuggest(this.app, text, (value) => {
+					if (value.trim() && !folders.includes(value.trim())) {
+						this.plugin.settings.mediaFolders = [...folders, value.trim()];
+						void this.plugin.saveSettings().then(() => {
+							this.renderMediaFoldersList(container);
+						});
+					}
+				});
+
+				// Also handle Enter key
+				text.inputEl.addEventListener('keydown', (e) => {
+					if (e.key === 'Enter') {
+						const value = text.inputEl.value.trim();
+						if (value && !folders.includes(value)) {
+							this.plugin.settings.mediaFolders = [...folders, value];
+							void this.plugin.saveSettings().then(() => {
+								this.renderMediaFoldersList(container);
+							});
+						}
+					}
+				});
+			});
+
+		// Remove the default styling from the Setting
+		addSetting.settingEl.addClass('cr-media-folder-add-setting');
 	}
 }
 

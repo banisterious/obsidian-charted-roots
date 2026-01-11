@@ -96,25 +96,24 @@ export function renderPreferencesTab(
 	const propertyAliasService = new PropertyAliasService(plugin);
 	const valueAliasService = new ValueAliasService(plugin);
 
-	// Cross-reference callout pointing to Plugin Settings
-	const settingsCallout = container.createDiv({ cls: 'cr-info-box cr-settings-callout' });
-	const settingsIcon = settingsCallout.createSpan({ cls: 'cr-info-box-icon' });
-	setIcon(settingsIcon, 'settings');
-	settingsCallout.appendText('For privacy, research tools, logging, and advanced options, see ');
-	const settingsLink = settingsCallout.createEl('a', {
+	// Deprecation notice - these settings have moved to Plugin Settings
+	const deprecationNotice = container.createDiv({ cls: 'cr-info-box cr-deprecation-notice' });
+	const warningIcon = deprecationNotice.createSpan({ cls: 'cr-info-box-icon' });
+	setIcon(warningIcon, 'alert-triangle');
+	deprecationNotice.createEl('strong', { text: 'This tab is deprecated.' });
+	deprecationNotice.appendText(' All settings have been consolidated in ');
+	const settingsLink = deprecationNotice.createEl('a', {
 		text: 'Settings → Charted Roots',
 		href: '#'
 	});
 	settingsLink.addEventListener('click', (e) => {
 		e.preventDefault();
-		// Close Control Center first, then open Obsidian settings to Charted Roots plugin
 		closeModal?.();
-		// Access Obsidian's internal settings API (not exported in types)
 		const appWithSettings = plugin.app as App & { setting?: { open: () => void; openTabById: (id: string) => void } };
 		appWithSettings.setting?.open();
 		appWithSettings.setting?.openTabById('canvas-roots');
 	});
-	settingsCallout.appendText('.');
+	deprecationNotice.appendText('. This tab will be removed in a future release.');
 
 	// Aliases card (property names + property values)
 	renderAliasesCard(container, plugin, propertyAliasService, valueAliasService, createCard, showTab);
