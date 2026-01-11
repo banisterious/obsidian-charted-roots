@@ -815,27 +815,73 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					});
 			});
 
-		// Cross-reference callout pointing to Control Center Preferences
-		const preferencesCallout = containerEl.createDiv({ cls: 'setting-item-description cr-info-box cr-preferences-callout' });
-		preferencesCallout.createEl('strong', { text: '💡 Looking for folder locations, property aliases, or canvas styling?' });
-		preferencesCallout.createEl('br');
-		preferencesCallout.appendText('These settings are in ');
-		const preferencesLink = preferencesCallout.createEl('a', {
-			text: 'Control Center → Preferences',
-			href: '#'
-		});
-		preferencesLink.addEventListener('click', (e) => {
-			e.preventDefault();
-			// Close the plugin settings modal first, then open Control Center
-			// Access Obsidian's internal settings API (not exported in types)
-			const appWithSettings = this.app as App & { setting?: { close: () => void } };
-			appWithSettings.setting?.close();
-			this.app.workspace.trigger('charted-roots:open-control-center', 'preferences');
-		});
-		preferencesCallout.appendText(' for easier access alongside other configuration options.');
+		// ═══════════════════════════════════════════════════════════════════════
+		// SECTION 1: FOLDERS
+		// ═══════════════════════════════════════════════════════════════════════
+		const foldersDetails = containerEl.createEl('details', { cls: 'cr-settings-section' });
+		foldersDetails.setAttribute('open', ''); // Open by default
+		const foldersSummary = foldersDetails.createEl('summary');
+		foldersSummary.createSpan({ text: 'Folders' });
+		foldersSummary.createSpan({ cls: 'cr-section-desc', text: 'Where Charted Roots stores and finds notes' });
+		const foldersContent = foldersDetails.createDiv({ cls: 'cr-section-content' });
+
+		// Folder explanation
+		const folderExplanation = foldersContent.createDiv({ cls: 'setting-item-description cr-info-box' });
+		folderExplanation.appendText('These folders determine where new notes are created. Charted Roots identifies notes by their properties (cr_type), not their location—your notes can live anywhere in your vault.');
+
+		// --- Entity folders subsection ---
+		foldersContent.createEl('h4', { text: 'Entity folders', cls: 'cr-subsection-title' });
+
+		this.createFolderSetting(foldersContent, 'People folder', 'Default folder for person notes', 'Charted Roots/People',
+			() => this.plugin.settings.peopleFolder, (v) => { this.plugin.settings.peopleFolder = v; });
+
+		this.createFolderSetting(foldersContent, 'Places folder', 'Default folder for place notes', 'Charted Roots/Places',
+			() => this.plugin.settings.placesFolder, (v) => { this.plugin.settings.placesFolder = v; });
+
+		this.createFolderSetting(foldersContent, 'Events folder', 'Default folder for event notes', 'Charted Roots/Events',
+			() => this.plugin.settings.eventsFolder, (v) => { this.plugin.settings.eventsFolder = v; });
+
+		this.createFolderSetting(foldersContent, 'Sources folder', 'Default folder for source notes', 'Charted Roots/Sources',
+			() => this.plugin.settings.sourcesFolder, (v) => { this.plugin.settings.sourcesFolder = v; });
+
+		this.createFolderSetting(foldersContent, 'Organizations folder', 'Default folder for organization notes', 'Charted Roots/Organizations',
+			() => this.plugin.settings.organizationsFolder, (v) => { this.plugin.settings.organizationsFolder = v; });
+
+		this.createFolderSetting(foldersContent, 'Universes folder', 'Default folder for universe notes (fictional worlds)', 'Charted Roots/Universes',
+			() => this.plugin.settings.universesFolder, (v) => { this.plugin.settings.universesFolder = v; });
+
+		// --- Output folders subsection ---
+		foldersContent.createEl('h4', { text: 'Output folders', cls: 'cr-subsection-title' });
+
+		this.createFolderSetting(foldersContent, 'Canvases folder', 'Default folder for generated canvas files', 'Charted Roots/Canvases',
+			() => this.plugin.settings.canvasesFolder, (v) => { this.plugin.settings.canvasesFolder = v; });
+
+		this.createFolderSetting(foldersContent, 'Maps folder', 'Default folder for map notes', 'Charted Roots/Places/Maps',
+			() => this.plugin.settings.mapsFolder, (v) => { this.plugin.settings.mapsFolder = v; });
+
+		this.createFolderSetting(foldersContent, 'Timelines folder', 'Default folder for timeline notes', 'Charted Roots/Timelines',
+			() => this.plugin.settings.timelinesFolder, (v) => { this.plugin.settings.timelinesFolder = v; });
+
+		this.createFolderSetting(foldersContent, 'Reports folder', 'Default folder for generated reports', 'Charted Roots/Reports',
+			() => this.plugin.settings.reportsFolder, (v) => { this.plugin.settings.reportsFolder = v; });
+
+		this.createFolderSetting(foldersContent, 'Bases folder', 'Default folder for Obsidian Bases files', 'Charted Roots/Bases',
+			() => this.plugin.settings.basesFolder, (v) => { this.plugin.settings.basesFolder = v; });
+
+		// --- System folders subsection ---
+		foldersContent.createEl('h4', { text: 'System folders', cls: 'cr-subsection-title' });
+
+		this.createFolderSetting(foldersContent, 'Schemas folder', 'Default folder for validation schemas', 'Charted Roots/Schemas',
+			() => this.plugin.settings.schemasFolder, (v) => { this.plugin.settings.schemasFolder = v; });
+
+		this.createFolderSetting(foldersContent, 'Staging folder', 'Folder for import staging (isolated from main vault)', 'Charted Roots/Staging',
+			() => this.plugin.settings.stagingFolder, (v) => { this.plugin.settings.stagingFolder = v; });
+
+		this.createFolderSetting(foldersContent, 'Log export folder', 'Vault folder for exported log files', '.canvas-roots/logs',
+			() => this.plugin.settings.logExportPath, (v) => { this.plugin.settings.logExportPath = v; });
 
 		// ═══════════════════════════════════════════════════════════════════════
-		// DATA & DETECTION SECTION (Collapsible)
+		// SECTION 2: DATA & DETECTION
 		// ═══════════════════════════════════════════════════════════════════════
 		const dataDetails = containerEl.createEl('details', { cls: 'cr-settings-section' });
 		dataDetails.setAttribute('open', ''); // Open by default
@@ -1288,5 +1334,89 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				}
 			}
 		});
+	}
+
+	/**
+	 * Helper to create a folder setting with autocomplete
+	 */
+	private createFolderSetting(
+		container: HTMLElement,
+		name: string,
+		desc: string,
+		placeholder: string,
+		getValue: () => string,
+		setValue: (v: string) => void
+	): void {
+		new Setting(container)
+			.setName(name)
+			.setDesc(desc)
+			.addText(text => {
+				text
+					.setPlaceholder(placeholder)
+					.setValue(getValue())
+					.onChange(async (value) => {
+						setValue(value);
+						await this.plugin.saveSettings();
+					});
+
+				// Attach folder autocomplete
+				new FolderSuggest(this.app, text, (value) => {
+					void (async () => {
+						setValue(value);
+						await this.plugin.saveSettings();
+					})();
+				});
+			});
+	}
+}
+
+/**
+ * Inline suggest for folder paths with autocomplete from existing vault folders
+ */
+class FolderSuggest extends AbstractInputSuggest<TFolder> {
+	private textComponent: TextComponent;
+	private onSelectValue: (value: string) => void;
+
+	constructor(app: App, textComponent: TextComponent, onSelectValue: (value: string) => void) {
+		super(app, textComponent.inputEl);
+		this.textComponent = textComponent;
+		this.onSelectValue = onSelectValue;
+	}
+
+	getSuggestions(inputStr: string): TFolder[] {
+		const lowerInput = inputStr.toLowerCase();
+		const folders: TFolder[] = [];
+
+		// Get all folders from the vault
+		const rootFolder = this.app.vault.getRoot();
+		this.collectFolders(rootFolder, folders);
+
+		// Filter by input
+		return folders
+			.filter(folder => folder.path.toLowerCase().includes(lowerInput))
+			.sort((a, b) => a.path.localeCompare(b.path))
+			.slice(0, 20); // Limit results
+	}
+
+	private collectFolders(folder: TFolder, result: TFolder[]): void {
+		for (const child of folder.children) {
+			if (child instanceof TFolder) {
+				result.push(child);
+				this.collectFolders(child, result);
+			}
+		}
+	}
+
+	renderSuggestion(folder: TFolder, el: HTMLElement): void {
+		el.addClass('cr-folder-suggestion');
+		const iconSpan = el.createSpan({ cls: 'cr-folder-suggestion-icon' });
+		setIcon(iconSpan, 'folder');
+		el.createSpan({ text: folder.path });
+	}
+
+	selectSuggestion(folder: TFolder): void {
+		this.textComponent.setValue(folder.path);
+		this.onSelectValue(folder.path);
+		this.close();
 	}
 }
