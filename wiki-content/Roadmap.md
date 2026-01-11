@@ -9,6 +9,7 @@ This document outlines planned features for Charted Roots. For completed feature
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
   - [GPS Research Workflow Integration](#gps-research-workflow-integration) 📋 Medium
+  - [GEDCOM Notes Support](#gedcom-notes-support) 📋 Medium
   - [DNA Match Tracking](#dna-match-tracking) 💡 Low
   - [Per-Map Marker Assignment](#per-map-marker-assignment) 💡 Low
   - [Calendarium Integration](#calendarium-integration) 💡 Low
@@ -109,6 +110,53 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 **Documentation:**
 - See [Research Workflow Integration Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/research-workflow-integration.md) for detailed specifications
 - Community contributors: @ANYroots (IRN structure, GPS methodology, templates), @wilbry (lightweight approach, unified design)
+
+---
+
+### GEDCOM Notes Support
+
+**Priority:** 📋 Medium — Completes GEDCOM round-trip data portability
+
+**Status:** Planning
+
+**GitHub Issue:** [#179](https://github.com/banisterious/obsidian-charted-roots/issues/179)
+
+**Summary:** Import GEDCOM NOTE records attached to individuals, families, events, and sources. Export notes back to GEDCOM for round-trip compatibility.
+
+**The Problem:** GEDCOM files often contain research notes, biographical narratives, and source transcriptions in NOTE records. Currently these notes are not imported, losing valuable context that genealogists have documented.
+
+**The Solution:** Full NOTE support across import and export:
+- Parse individual-level, family-level, event-level, and shared NOTE records
+- Support inline notes (`1 NOTE text`) and referenced notes (`1 NOTE @N001@`)
+- Handle continuation lines (`CONT`/`CONC`) correctly
+- Optional separate note files with wikilinks (like Gramps import)
+- Export notes back to GEDCOM format
+
+**Phased Approach:**
+
+| Phase | Feature | Status |
+|-------|---------|--------|
+| 0 | Preprocessor enhancement for CONT lines | Planning |
+| 1 | Parse individual and family notes | Planning |
+| 2 | Parse shared NOTE records (0-level) | Planning |
+| 3 | Write notes to person/family notes | Planning |
+| 4 | Optional separate note files | Planning |
+| 5 | Settings UI for note options | Planning |
+| 6 | GEDCOM export with notes | Planning |
+
+**Key Features:**
+- **Continuation line handling** — Proper CONT (newline) vs CONC (concatenate) support
+- **Referenced notes** — Resolve `@N001@` references to shared NOTE records
+- **Family notes** — Write to marriage events or relationship notes
+- **Separate note files** — Optional feature matching Gramps import behavior
+- **Round-trip support** — Preserve note IDs for export compatibility
+
+**User Impact:** Non-breaking change
+- Existing imports continue to work
+- Notes appear in person note content or as linked files
+- New setting toggles for note import behavior
+
+See [GEDCOM Notes Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/gedcom-notes.md) for detailed specifications.
 
 ---
 
