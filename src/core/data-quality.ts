@@ -2136,6 +2136,133 @@ export class DataQualityService {
 	}
 
 	/**
+	 * Migrate legacy memberships to flat parallel arrays format
+	 *
+	 * Converts from:
+	 * 1. Nested 'memberships' array: [{org, org_id, role, from, to, notes}]
+	 * 2. Simple 'house'/'organization' fields with optional house_id/organization_id and role
+	 *
+	 * To new flat format:
+	 * - membership_orgs: string[]
+	 * - membership_org_ids: string[]
+	 * - membership_roles: string[]
+	 * - membership_from_dates: string[]
+	 * - membership_to_dates: string[]
+	 * - membership_notes: string[]
+	 */
+	async migrateLegacyMemberships(options: DataQualityOptions = {}): Promise<BatchOperationResult> {
+		const people = this.getPeopleForScope(options);
+		const results: BatchOperationResult = {
+			processed: 0,
+			modified: 0,
+			errors: [],
+		};
+
+		for (let i = 0; i < people.length; i++) {
+			const person = people[i];
+			options.progress?.onProgress(i + 1, people.length, person.file.basename);
+
+			// Get the cached frontmatter for this file
+			const cache = this.app.metadataCache.getFileCache(person.file);
+			if (!cache?.frontmatter) {
+				results.processed++;
+				continue;
+			}
+
+			const fm = cache.frontmatter as Record<string, unknown>;
+
+			// Skip if already has new format
+			if (Array.isArray(fm['membership_orgs']) && fm['membership_orgs'].length > 0) {
+				results.processed++;
+				continue;
+			}
+
+			// Collect memberships from legacy formats
+			const orgs: string[] = [];
+			const orgIds: string[] = [];
+			const roles: string[] = [];
+			const fromDates: string[] = [];
+			const toDates: string[] = [];
+			const notes: string[] = [];
+			const keysToRemove: string[] = [];
+
+			// Check for legacy nested 'memberships' array
+			if (Array.isArray(fm['memberships']) && fm['memberships'].length > 0) {
+				for (const m of fm['memberships']) {
+					if (typeof m === 'object' && m !== null) {
+						const membership = m as Record<string, unknown>;
+						if (membership['org']) {
+							orgs.push(String(membership['org'] || ''));
+							orgIds.push(String(membership['org_id'] || ''));
+							roles.push(String(membership['role'] || ''));
+							fromDates.push(String(membership['from'] || ''));
+							toDates.push(String(membership['to'] || ''));
+							notes.push(String(membership['notes'] || ''));
+						}
+					}
+				}
+				keysToRemove.push('memberships');
+			}
+
+			// Check for simple house/organization format (only if no nested format found)
+			if (orgs.length === 0 && (fm['house'] || fm['organization'])) {
+				const orgLink = String(fm['house'] || fm['organization'] || '');
+				const orgId = String(fm['house_id'] || fm['organization_id'] || '');
+				const role = String(fm['role'] || '');
+
+				orgs.push(orgLink);
+				orgIds.push(orgId);
+				roles.push(role);
+				fromDates.push('');
+				toDates.push('');
+				notes.push('');
+
+				// Mark fields to remove
+				if (fm['house']) keysToRemove.push('house');
+				if (fm['house_id']) keysToRemove.push('house_id');
+				if (fm['organization']) keysToRemove.push('organization');
+				if (fm['organization_id']) keysToRemove.push('organization_id');
+				// Note: Don't remove 'role' as it might be used for other purposes
+			}
+
+			// Skip if no memberships found
+			if (orgs.length === 0) {
+				results.processed++;
+				continue;
+			}
+
+			// Migrate: add flat arrays and remove legacy fields
+			try {
+				await this.app.fileManager.processFrontMatter(person.file, (frontmatter) => {
+					// Add new flat arrays
+					frontmatter['membership_orgs'] = orgs;
+					frontmatter['membership_org_ids'] = orgIds;
+					frontmatter['membership_roles'] = roles;
+					frontmatter['membership_from_dates'] = fromDates;
+					frontmatter['membership_to_dates'] = toDates;
+					frontmatter['membership_notes'] = notes;
+
+					// Remove legacy fields
+					for (const key of keysToRemove) {
+						delete frontmatter[key];
+					}
+				});
+				results.modified++;
+			} catch (error) {
+				results.errors.push({
+					file: person.file.path,
+					error: error instanceof Error ? error.message : String(error),
+				});
+			}
+
+			results.processed++;
+		}
+
+		logger.info('migrate-memberships', `Migrated legacy memberships: ${results.modified}/${results.processed} files modified`);
+		return results;
+	}
+
+	/**
 	 * Preview what batch normalization would do without making changes
 	 *
 	 * For sex normalization, behavior depends on settings.sexNormalizationMode:
@@ -2152,6 +2279,7 @@ export class DataQualityService {
 			genderSkipped: [],
 			orphanClearing: [],
 			legacyTypeMigration: [],
+			legacyMembershipsMigration: [],
 		};
 
 		// Build lookup of valid cr_ids for orphan detection
@@ -2264,6 +2392,32 @@ export class DataQualityService {
 						oldValue: typeValue,
 						newValue: typeValue,
 					});
+				}
+
+				// Check legacy memberships - skip if already has new format
+				if (!Array.isArray(fm['membership_orgs']) || fm['membership_orgs'].length === 0) {
+					// Check nested memberships array
+					if (Array.isArray(fm['memberships']) && fm['memberships'].length > 0) {
+						const memberships = fm['memberships'] as Array<Record<string, unknown>>;
+						const orgRefs = memberships
+							.filter(m => m && m['org'])
+							.map(m => String(m['org']));
+						preview.legacyMembershipsMigration.push({
+							person,
+							format: 'nested',
+							membershipCount: memberships.length,
+							orgReferences: orgRefs,
+						});
+					}
+					// Check simple house/organization format
+					else if (fm['house'] || fm['organization']) {
+						preview.legacyMembershipsMigration.push({
+							person,
+							format: 'simple',
+							membershipCount: 1,
+							orgReferences: [String(fm['house'] || fm['organization'])],
+						});
+					}
 				}
 			}
 		}
@@ -2416,6 +2570,18 @@ export interface NormalizationPreview {
 	genderSkipped: SkippedGenderNote[];
 	orphanClearing: NormalizationChange[];
 	legacyTypeMigration: NormalizationChange[];
+	legacyMembershipsMigration: LegacyMembershipMigration[];
+}
+
+/**
+ * A legacy membership migration preview entry
+ */
+export interface LegacyMembershipMigration {
+	person: PersonNode;
+	format: 'nested' | 'simple';
+	membershipCount: number;
+	/** For nested: org names; for simple: house/organization field value */
+	orgReferences: string[];
 }
 
 /**
