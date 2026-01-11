@@ -25,7 +25,6 @@ export class AddMembershipModal extends Modal {
 	private role: string = '';
 	private fromDate: string = '';
 	private toDate: string = '';
-	private notes: string = '';
 
 	constructor(app: App, plugin: CanvasRootsPlugin, personFile: TFile, onSuccess: () => void) {
 		super(app);
@@ -119,15 +118,6 @@ export class AddMembershipModal extends Modal {
 				.setValue(this.toDate)
 				.onChange(value => this.toDate = value));
 
-		// Notes
-		new Setting(contentEl)
-			.setName('Notes')
-			.setDesc('Additional context (optional)')
-			.addText(text => text
-				.setPlaceholder('Additional notes...')
-				.setValue(this.notes)
-				.onChange(value => this.notes = value));
-
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'cr-modal-buttons' });
 
@@ -162,9 +152,6 @@ export class AddMembershipModal extends Modal {
 		}
 		if (this.toDate.trim()) {
 			membership.to = this.toDate.trim();
-		}
-		if (this.notes.trim()) {
-			membership.notes = this.notes.trim();
 		}
 
 		try {
