@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Duplicate nodes in canvas trees with pedigree collapse** ([#186](https://github.com/banisterious/obsidian-charted-roots/issues/186)): Persons appearing in multiple ancestry paths (e.g., when siblings marry into the same family) now display as a single node with edges from both paths converging to it.
+
 - **Custom relationship edge colors on canvas trees** ([#185](https://github.com/banisterious/obsidian-charted-roots/issues/185)): Custom relationships that map to standard family tree connections (e.g., a "Godparent" relationship mapped to Parent) now display with their configured color and line style on canvas trees. Previously these relationships appeared correctly but used the default parent or spouse edge color instead of the custom color.
 
 ---
