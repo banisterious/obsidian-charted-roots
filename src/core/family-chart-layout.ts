@@ -71,12 +71,14 @@ export class FamilyChartLayoutEngine {
 		const generationMap = this.calculateGenerations(familyTree, topAncestor.crId);
 
 		// Extract positions from family-chart's tree
-		const positions: NodePosition[] = [];
+		// Use a Map to deduplicate nodes that may appear multiple times due to pedigree collapse
+		// (when the same ancestor is reachable through multiple paths, e.g., siblings who marry)
+		const positionMap = new Map<string, NodePosition>();
 
 		for (const node of tree.data) {
 			const person = familyTree.nodes.get(node.data.id);
-			if (person) {
-				positions.push({
+			if (person && !positionMap.has(person.crId)) {
+				positionMap.set(person.crId, {
 					crId: person.crId,
 					person,
 					x: node.x || 0,
@@ -85,6 +87,8 @@ export class FamilyChartLayoutEngine {
 				});
 			}
 		}
+
+		const positions = Array.from(positionMap.values());
 
 		// Add missing people (siblings-in-law, etc.) that family-chart excluded
 		// These are people connected only through marriage, not blood relation

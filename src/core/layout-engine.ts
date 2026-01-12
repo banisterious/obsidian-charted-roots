@@ -109,7 +109,9 @@ export class LayoutEngine {
 		const layoutRoot = layout(root);
 
 		// Extract positioned nodes with generation tracking
-		const positions: NodePosition[] = [];
+		// Use a Map to deduplicate nodes that appear multiple times due to pedigree collapse
+		// (when the same ancestor is reachable through multiple paths, e.g., siblings who marry)
+		const positionMap = new Map<string, NodePosition>();
 
 		layoutRoot.each((node) => {
 			const person = node.data.person;
@@ -123,14 +125,20 @@ export class LayoutEngine {
 				? -node.depth  // Negative for ancestors
 				: node.depth;  // Positive for descendants
 
-			positions.push({
-				crId: person.crId,
-				person,
-				x,
-				y,
-				generation
-			});
+			// Only keep the first occurrence of each person (which has the full subtree)
+			// Later occurrences are stub nodes from pedigree collapse
+			if (!positionMap.has(person.crId)) {
+				positionMap.set(person.crId, {
+					crId: person.crId,
+					person,
+					x,
+					y,
+					generation
+				});
+			}
 		});
+
+		const positions = Array.from(positionMap.values());
 
 		return {
 			positions,
