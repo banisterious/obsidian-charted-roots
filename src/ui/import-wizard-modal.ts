@@ -58,7 +58,7 @@ interface ImportWizardFormData {
 	importEvents: boolean;
 	importMedia: boolean;
 	importNotes: boolean;  // Import notes attached to entities (GEDCOM and Gramps)
-	createSeparateNoteFiles: boolean;  // Create separate note files instead of embedding (Gramps only)
+	createSeparateNoteFiles: boolean;  // Create separate note files instead of embedding (GEDCOM and Gramps)
 	mediaFolder: string;
 	preserveMediaFolderStructure: boolean;
 	includeDynamicBlocks: boolean;
@@ -194,7 +194,7 @@ export class ImportWizardModal extends Modal {
 			importEvents: true,
 			importMedia: true,
 			importNotes: true,  // Default: import notes (GEDCOM and Gramps)
-			createSeparateNoteFiles: false,  // Default: embed notes (Gramps only)
+			createSeparateNoteFiles: false,  // Default: embed notes (GEDCOM and Gramps)
 			mediaFolder: this.plugin?.settings?.mediaFolders?.[0] || 'Charted Roots/Media',
 			preserveMediaFolderStructure: false,
 			includeDynamicBlocks: true,
@@ -513,7 +513,16 @@ export class ImportWizardModal extends Modal {
 		if (this.formData.format === 'gedcom') {
 			this.renderToggleOption(entityOptions, 'Notes', 'Append GEDCOM notes to person content', this.formData.importNotes, (val) => {
 				this.formData.importNotes = val;
+				// Refresh to show/hide dependent option
+				this.renderCurrentStep();
 			});
+
+			// Show separate note files option only when Notes is enabled
+			if (this.formData.importNotes) {
+				this.renderToggleOption(entityOptions, 'Create separate note files', 'Create individual note files instead of embedding content', this.formData.createSeparateNoteFiles, (val) => {
+					this.formData.createSeparateNoteFiles = val;
+				});
+			}
 		}
 
 		if (this.formData.format === 'gramps') {
@@ -1016,6 +1025,8 @@ export class ImportWizardModal extends Modal {
 						createSourceNotes: this.formData.importSources,
 						createPlaceNotes: this.formData.importPlaces,
 						importNotes: this.formData.importNotes,
+						createSeparateNoteFiles: this.formData.createSeparateNoteFiles,
+						notesFolder: settings.notesFolder,
 						includeDynamicBlocks: this.formData.includeDynamicBlocks,
 						dynamicBlockTypes: ['media', 'timeline', 'relationships'],
 						compatibilityMode: settings.gedcomCompatibilityMode,
@@ -1062,6 +1073,9 @@ export class ImportWizardModal extends Modal {
 						}
 						if (result.placesCreated > 0) {
 							addLogEntry(`Created ${result.placesCreated} place notes.`, 'success');
+						}
+						if (result.separateNoteFilesCreated && result.separateNoteFilesCreated > 0) {
+							addLogEntry(`Created ${result.separateNoteFilesCreated} separate note files.`, 'success');
 						}
 
 						// Show any warnings

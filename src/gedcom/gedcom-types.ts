@@ -422,6 +422,10 @@ export interface GedcomImportOptionsV2 {
 
 	/** Import notes attached to individuals (default: true) */
 	importNotes?: boolean;
+	/** Create separate note files instead of embedding in person notes */
+	createSeparateNoteFiles?: boolean;
+	/** Folder for separate note files (when createSeparateNoteFiles is true) */
+	notesFolder?: string;
 
 	/** Filename format for created notes (legacy single format) */
 	filenameFormat?: FilenameFormat;
@@ -454,6 +458,7 @@ export interface GedcomImportResultV2 {
 	placesCreated: number;
 	placesUpdated: number;
 	notesImported: number;
+	separateNoteFilesCreated?: number;
 	errors: string[];
 	warnings: string[];
 	/** Whether preprocessing was applied to the GEDCOM content */

@@ -18,6 +18,7 @@ import {
 } from './gedcom-types';
 import { preprocessGedcom, preprocessGedcomAsync, type GedcomCompatibilityMode, type PreprocessResult } from './gedcom-preprocessor';
 import { formatGedcomNotesSection } from './gedcom-note-formatter';
+import { writeGedcomNoteFile, buildGedcomNoteReferenceMap } from '../core/note-writer';
 import { getLogger } from '../core/logging';
 import { createPersonNote, PersonData } from '../core/person-note-writer';
 import { generateCrId } from '../core/uuid';
@@ -501,7 +502,47 @@ export class GedcomImporterV2 {
 				}
 			}
 
-			// Phase 1b: Create all person notes (if enabled)
+			// Phase 1b: Create separate note files (if enabled)
+			const gedcomNoteIdToWikilink = new Map<string, string>();
+			if (options.createSeparateNoteFiles && options.importNotes !== false && gedcomData.notes.size > 0) {
+				const notesFolder = options.notesFolder || 'Charted Roots/Notes';
+				await this.ensureFolderExists(notesFolder);
+
+				// Build note-to-person reference map for meaningful names
+				const noteReferenceMap = buildGedcomNoteReferenceMap(gedcomData.individuals);
+
+				const totalNotes = gedcomData.notes.size;
+				let noteIndex = 0;
+
+				for (const [noteId, noteRecord] of gedcomData.notes) {
+					try {
+						const referencingPersonName = noteReferenceMap.get(noteId);
+						const writeResult = await writeGedcomNoteFile(this.app, noteRecord, {
+							notesFolder,
+							propertyAliases: options.propertyAliases,
+							referencingPersonName,
+							overwriteExisting: options.overwriteExisting
+						});
+
+						if (writeResult.success) {
+							gedcomNoteIdToWikilink.set(noteId, writeResult.wikilink);
+							result.separateNoteFilesCreated = (result.separateNoteFilesCreated || 0) + 1;
+						} else {
+							result.errors.push(
+								`Failed to create note file ${noteId}: ${writeResult.error}`
+							);
+						}
+					} catch (error: unknown) {
+						result.errors.push(
+							`Failed to create note ${noteId}: ${getErrorMessage(error)}`
+						);
+					}
+					noteIndex++;
+					reportProgress({ phase: 'people', current: noteIndex, total: totalNotes, message: `Creating note files (${noteIndex}/${totalNotes})...` });
+				}
+			}
+
+			// Phase 1c: Create all person notes (if enabled)
 			if (options.createPeopleNotes) {
 				const totalPeople = gedcomData.individuals.size;
 				let personIndex = 0;
@@ -517,7 +558,8 @@ export class GedcomImporterV2 {
 							options,
 							gedcomToCrId,
 							placeToNoteInfo,
-							createdPersonPaths
+							createdPersonPaths,
+							gedcomNoteIdToWikilink
 						);
 
 						gedcomToCrId.set(gedcomId, crId);
@@ -660,7 +702,8 @@ export class GedcomImporterV2 {
 		options: GedcomImportOptionsV2,
 		gedcomToCrId: Map<string, string>,
 		placeToNoteInfo: Map<string, PlaceNoteInfo>,
-		createdPersonPaths?: Set<string>
+		createdPersonPaths?: Set<string>,
+		noteIdToWikilink?: Map<string, string>
 	): Promise<{ crId: string; notePath: string; notesCount: number }> {
 		const crId = generateCrId();
 
@@ -780,22 +823,67 @@ export class GedcomImporterV2 {
 		// Add notes if enabled (default: true)
 		let notesCount = 0;
 		if (options.importNotes !== false) {
-			// Collect all notes: inline notes + resolved referenced notes
-			const allNotes: string[] = [...(individual.notes || [])];
-
-			// Resolve referenced notes
-			if (individual.noteRefs && individual.noteRefs.length > 0) {
-				for (const noteRef of individual.noteRefs) {
-					const noteRecord = gedcomData.notes.get(noteRef);
-					if (noteRecord && noteRecord.text) {
-						allNotes.push(noteRecord.text);
+			// Check if we're using separate note files
+			if (options.createSeparateNoteFiles && noteIdToWikilink && noteIdToWikilink.size > 0) {
+				// Use wikilinks to separate note files for referenced notes
+				const noteWikilinks: string[] = [];
+				if (individual.noteRefs && individual.noteRefs.length > 0) {
+					for (const noteRef of individual.noteRefs) {
+						const wikilink = noteIdToWikilink.get(noteRef);
+						if (wikilink) {
+							noteWikilinks.push(wikilink);
+						}
 					}
 				}
-			}
 
-			if (allNotes.length > 0) {
-				personData.notesContent = formatGedcomNotesSection(allNotes);
-				notesCount = allNotes.length;
+				// Inline notes are still embedded (they have no separate file)
+				const inlineNotes = individual.notes || [];
+
+				if (noteWikilinks.length > 0 || inlineNotes.length > 0) {
+					const sections: string[] = ['## Notes', ''];
+
+					// Add wikilinks to separate note files
+					if (noteWikilinks.length > 0) {
+						for (const link of noteWikilinks) {
+							sections.push(`- ${link}`);
+						}
+						sections.push('');
+					}
+
+					// Add inline notes
+					if (inlineNotes.length > 0) {
+						for (let i = 0; i < inlineNotes.length; i++) {
+							const header = inlineNotes.length === 1
+								? 'GEDCOM note'
+								: `GEDCOM note ${i + 1}`;
+							sections.push(`### ${header}`);
+							sections.push('');
+							sections.push(inlineNotes[i]);
+							sections.push('');
+						}
+					}
+
+					personData.notesContent = sections.join('\n');
+					notesCount = noteWikilinks.length + inlineNotes.length;
+				}
+			} else {
+				// Embed note content (original behavior)
+				const allNotes: string[] = [...(individual.notes || [])];
+
+				// Resolve referenced notes
+				if (individual.noteRefs && individual.noteRefs.length > 0) {
+					for (const noteRef of individual.noteRefs) {
+						const noteRecord = gedcomData.notes.get(noteRef);
+						if (noteRecord && noteRecord.text) {
+							allNotes.push(noteRecord.text);
+						}
+					}
+				}
+
+				if (allNotes.length > 0) {
+					personData.notesContent = formatGedcomNotesSection(allNotes);
+					notesCount = allNotes.length;
+				}
 			}
 		}
 

@@ -1,10 +1,11 @@
 /**
  * Note Writer
- * Creates separate note entity files for Phase 4 Gramps integration
+ * Creates separate note entity files for Phase 4 Gramps and GEDCOM integration
  */
 
 import { App, normalizePath } from 'obsidian';
 import type { GrampsNote } from '../gramps/gramps-types';
+import type { GedcomNoteRecord } from '../gedcom/gedcom-types';
 import { generateCrId } from './uuid';
 import { convertNoteToMarkdown } from '../gramps/gramps-note-converter';
 
@@ -257,6 +258,151 @@ export function buildNoteReferenceMap(
 							entityType: 'place'
 						});
 					}
+				}
+			}
+		}
+	}
+
+	return map;
+}
+
+// ============================================================================
+// GEDCOM Note Writing
+// ============================================================================
+
+/**
+ * Options for writing a GEDCOM note file
+ */
+export interface GedcomNoteWriteOptions {
+	/** Folder to create the note in */
+	notesFolder: string;
+	/** Property aliases for custom frontmatter names */
+	propertyAliases?: Record<string, string>;
+	/** Name of the person referencing this note (for generating note name) */
+	referencingPersonName?: string;
+	/** Whether to overwrite existing files */
+	overwriteExisting?: boolean;
+}
+
+/**
+ * Generate a filename for a GEDCOM note
+ *
+ * Naming convention:
+ * 1. If linked to a person: "Note on John Smith"
+ * 2. If no linked person: "GEDCOM Note N0001"
+ */
+export function generateGedcomNoteFilename(
+	noteId: string,
+	referencingPersonName?: string
+): string {
+	if (referencingPersonName) {
+		return `Note on ${referencingPersonName}`;
+	}
+	// Use the GEDCOM ID stripped of @ symbols
+	const cleanId = noteId.replace(/@/g, '');
+	return `GEDCOM Note ${cleanId}`;
+}
+
+/**
+ * Write a GEDCOM note as a separate note file
+ */
+export async function writeGedcomNoteFile(
+	app: App,
+	note: GedcomNoteRecord,
+	options: GedcomNoteWriteOptions
+): Promise<NoteWriteResult> {
+	const aliases = options.propertyAliases || {};
+	const prop = (canonical: string) => getWriteProperty(canonical, aliases);
+
+	// Generate cr_id using the GEDCOM note ID
+	const cleanId = note.id.replace(/@/g, '');
+	const crId = `note_${cleanId || generateCrId()}`;
+
+	// Generate filename
+	const baseFilename = sanitizeFilename(
+		generateGedcomNoteFilename(note.id, options.referencingPersonName)
+	);
+
+	// Check for existing files and add suffix if needed
+	let filename = baseFilename;
+	let filePath = normalizePath(`${options.notesFolder}/${filename}.md`);
+	let suffix = 1;
+
+	if (!options.overwriteExisting) {
+		while (app.vault.getAbstractFileByPath(filePath)) {
+			suffix++;
+			filename = `${baseFilename} (${suffix})`;
+			filePath = normalizePath(`${options.notesFolder}/${filename}.md`);
+		}
+	}
+
+	// Build frontmatter
+	const frontmatterLines: string[] = [
+		'---',
+		`${prop('cr_type')}: note`,
+		`${prop('cr_id')}: ${crId}`,
+		`${prop('gedcom_id')}: ${note.id}`
+	];
+
+	frontmatterLines.push('---');
+
+	// Note content is plain text
+	const content = note.text || '';
+
+	// Build full file content
+	const fileContent = frontmatterLines.join('\n') + '\n\n' + content;
+
+	try {
+		// Ensure folder exists
+		const folder = app.vault.getAbstractFileByPath(options.notesFolder);
+		if (!folder) {
+			await app.vault.createFolder(options.notesFolder);
+		}
+
+		// Check if file exists
+		const existingFile = app.vault.getAbstractFileByPath(filePath);
+		if (existingFile && options.overwriteExisting) {
+			await app.vault.modify(existingFile as import('obsidian').TFile, fileContent);
+		} else {
+			await app.vault.create(filePath, fileContent);
+		}
+
+		return {
+			success: true,
+			path: filePath,
+			crId,
+			wikilink: `[[${filename}]]`,
+			filename
+		};
+	} catch (error) {
+		return {
+			success: false,
+			path: filePath,
+			crId,
+			wikilink: `[[${filename}]]`,
+			filename,
+			error: error instanceof Error ? error.message : String(error)
+		};
+	}
+}
+
+/**
+ * Build a note-to-person reference map from parsed GEDCOM data
+ * Maps note ID to the first person that references it
+ *
+ * This is used to generate meaningful note names like "Note on John Smith"
+ * instead of just "GEDCOM Note N001"
+ */
+export function buildGedcomNoteReferenceMap(
+	individuals: Map<string, { name?: string; noteRefs: string[] }>
+): Map<string, string> {
+	const map = new Map<string, string>();
+
+	for (const [, individual] of individuals) {
+		if (individual.noteRefs) {
+			for (const noteRef of individual.noteRefs) {
+				if (!map.has(noteRef)) {
+					map.set(noteRef, individual.name || 'Unknown Person');
 				}
 			}
 		}
