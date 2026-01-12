@@ -11,6 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **GEDCOM notes import** ([#179](https://github.com/banisterious/obsidian-charted-roots/issues/179)): GEDCOM NOTE tags attached to individuals are now imported and appended to person notes. Features include:
+  - Inline notes (text directly in NOTE tag)
+  - Multi-line notes with CONT/CONC continuation
+  - Referenced notes (shared NOTE records via @N001@ references)
+  - Optional import toggle in import wizard (Step 3 → Entity types → Notes)
+  - Notes appear in "## Notes" section with "### GEDCOM note" headers
+
 - **Large import mode** ([#180](https://github.com/banisterious/obsidian-charted-roots/issues/180)): New toggle in import wizard (Step 3 → Performance) that suspends relationship syncing during import to prevent file system timeouts on large imports (500+ people). Shows notices when activated and when import completes.
 
 ### Changed
