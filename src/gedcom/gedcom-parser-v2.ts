@@ -84,13 +84,15 @@ export class GedcomParserV2 {
 			individuals: new Map(),
 			families: new Map(),
 			sources: new Map(),
+			notes: new Map(),
 			header: {}
 		};
 
-		let currentRecord: 'INDI' | 'FAM' | 'SOUR' | 'HEAD' | null = null;
+		let currentRecord: 'INDI' | 'FAM' | 'SOUR' | 'NOTE' | 'HEAD' | null = null;
 		let currentIndividual: GedcomIndividualV2 | null = null;
 		let currentFamily: GedcomFamilyV2 | null = null;
 		let currentSource: GedcomSource | null = null;
+		let currentNoteRecord: { id: string; text: string } | null = null;
 		let currentEvent: GedcomEvent | null = null;
 		let currentCitation: GedcomSourceCitation | null = null;
 		let currentFamcRef: FamilyAsChildRef | undefined = undefined;
@@ -100,12 +102,13 @@ export class GedcomParserV2 {
 			// Level 0 records - start of new record
 			if (line.level === 0) {
 				// Save previous records
-				this.saveCurrentRecords(data, currentIndividual, currentFamily, currentSource, currentEvent);
+				this.saveCurrentRecords(data, currentIndividual, currentFamily, currentSource, currentNoteRecord, currentEvent);
 
 				// Reset state
 				currentIndividual = null;
 				currentFamily = null;
 				currentSource = null;
+				currentNoteRecord = null;
 				currentEvent = null;
 				currentCitation = null;
 				currentFamcRef = undefined;
@@ -122,6 +125,13 @@ export class GedcomParserV2 {
 				} else if (line.xref && line.tag === 'SOUR') {
 					currentRecord = 'SOUR';
 					currentSource = this.createEmptySource(line.xref);
+				} else if (line.xref && line.tag === 'NOTE') {
+					// Shared NOTE record (0 @N001@ NOTE text...)
+					currentRecord = 'NOTE';
+					currentNoteRecord = {
+						id: line.xref,
+						text: line.value || ''
+					};
 				} else if (line.tag === 'TRLR') {
 					currentRecord = null;
 				}
@@ -175,11 +185,22 @@ export class GedcomParserV2 {
 						this.parseSourceLine(line, currentSource);
 					}
 					break;
+
+				case 'NOTE':
+					// NOTE records can have CONT/CONC lines, but these are handled
+					// by the preprocessor. Any remaining content at level 1+ would be
+					// unusual but we can append it to the note text if needed.
+					if (currentNoteRecord && line.level === 1 && line.tag === 'CONC') {
+						currentNoteRecord.text += line.value || '';
+					} else if (currentNoteRecord && line.level === 1 && line.tag === 'CONT') {
+						currentNoteRecord.text += '\n' + (line.value || '');
+					}
+					break;
 			}
 		}
 
 		// Save final records
-		this.saveCurrentRecords(data, currentIndividual, currentFamily, currentSource, currentEvent);
+		this.saveCurrentRecords(data, currentIndividual, currentFamily, currentSource, currentNoteRecord, currentEvent);
 
 		// Link families to individuals
 		this.linkFamilies(data);
@@ -285,13 +306,15 @@ export class GedcomParserV2 {
 			individuals: new Map(),
 			families: new Map(),
 			sources: new Map(),
+			notes: new Map(),
 			header: {}
 		};
 
-		let currentRecord: 'INDI' | 'FAM' | 'SOUR' | 'HEAD' | null = null;
+		let currentRecord: 'INDI' | 'FAM' | 'SOUR' | 'NOTE' | 'HEAD' | null = null;
 		let currentIndividual: GedcomIndividualV2 | null = null;
 		let currentFamily: GedcomFamilyV2 | null = null;
 		let currentSource: GedcomSource | null = null;
+		let currentNoteRecord: { id: string; text: string } | null = null;
 		let currentEvent: GedcomEvent | null = null;
 		let currentCitation: GedcomSourceCitation | null = null;
 		let currentFamcRef: FamilyAsChildRef | undefined = undefined;
@@ -306,12 +329,13 @@ export class GedcomParserV2 {
 			// Level 0 records - start of new record
 			if (line.level === 0) {
 				// Save previous records
-				this.saveCurrentRecords(data, currentIndividual, currentFamily, currentSource, currentEvent);
+				this.saveCurrentRecords(data, currentIndividual, currentFamily, currentSource, currentNoteRecord, currentEvent);
 
 				// Reset state
 				currentIndividual = null;
 				currentFamily = null;
 				currentSource = null;
+				currentNoteRecord = null;
 				currentEvent = null;
 				currentCitation = null;
 				currentFamcRef = undefined;
@@ -328,6 +352,13 @@ export class GedcomParserV2 {
 				} else if (line.xref && line.tag === 'SOUR') {
 					currentRecord = 'SOUR';
 					currentSource = this.createEmptySource(line.xref);
+				} else if (line.xref && line.tag === 'NOTE') {
+					// Shared NOTE record (0 @N001@ NOTE text...)
+					currentRecord = 'NOTE';
+					currentNoteRecord = {
+						id: line.xref,
+						text: line.value || ''
+					};
 				} else if (line.tag === 'TRLR') {
 					currentRecord = null;
 				}
@@ -389,6 +420,17 @@ export class GedcomParserV2 {
 						this.parseSourceLine(line, currentSource);
 					}
 					break;
+
+				case 'NOTE':
+					// NOTE records can have CONT/CONC lines, but these are handled
+					// by the preprocessor. Any remaining content at level 1+ would be
+					// unusual but we can append it to the note text if needed.
+					if (currentNoteRecord && line.level === 1 && line.tag === 'CONC') {
+						currentNoteRecord.text += line.value || '';
+					} else if (currentNoteRecord && line.level === 1 && line.tag === 'CONT') {
+						currentNoteRecord.text += '\n' + (line.value || '');
+					}
+					break;
 			}
 
 			// Yield periodically
@@ -401,7 +443,7 @@ export class GedcomParserV2 {
 		}
 
 		// Save final records
-		this.saveCurrentRecords(data, currentIndividual, currentFamily, currentSource, currentEvent);
+		this.saveCurrentRecords(data, currentIndividual, currentFamily, currentSource, currentNoteRecord, currentEvent);
 
 		// Link families to individuals
 		this.linkFamilies(data);
@@ -421,7 +463,9 @@ export class GedcomParserV2 {
 			familyAsChildRefs: [],
 			familyAsSpouseRefs: [],
 			events: [],
-			attributes: {}
+			attributes: {},
+			notes: [],
+			noteRefs: []
 		};
 	}
 
@@ -429,7 +473,9 @@ export class GedcomParserV2 {
 		return {
 			id,
 			childRefs: [],
-			events: []
+			events: [],
+			notes: [],
+			noteRefs: []
 		};
 	}
 
@@ -457,6 +503,7 @@ export class GedcomParserV2 {
 		individual: GedcomIndividualV2 | null,
 		family: GedcomFamilyV2 | null,
 		source: GedcomSource | null,
+		noteRecord: { id: string; text: string } | null,
 		event: GedcomEvent | null
 	): void {
 		// Save pending event to its parent
@@ -477,6 +524,9 @@ export class GedcomParserV2 {
 		}
 		if (source && source.id) {
 			data.sources.set(source.id, source);
+		}
+		if (noteRecord && noteRecord.id) {
+			data.notes.set(noteRecord.id, noteRecord);
 		}
 	}
 
@@ -577,6 +627,16 @@ export class GedcomParserV2 {
 				}
 				case 'FAMS':
 					individual.familyAsSpouseRefs.push(value.replace(/@/g, ''));
+					break;
+				case 'NOTE':
+					// Individual-level note (1 NOTE under INDI)
+					if (value.startsWith('@') && value.endsWith('@')) {
+						// Reference to shared NOTE record
+						individual.noteRefs.push(value.replace(/@/g, ''));
+					} else {
+						// Inline note (CONT/CONC already handled by preprocessor)
+						individual.notes.push(value);
+					}
 					break;
 			}
 
@@ -731,6 +791,16 @@ export class GedcomParserV2 {
 					break;
 				case 'CHIL':
 					family.childRefs.push(value.replace(/@/g, ''));
+					break;
+				case 'NOTE':
+					// Family-level note (1 NOTE under FAM)
+					if (value.startsWith('@') && value.endsWith('@')) {
+						// Reference to shared NOTE record
+						family.noteRefs.push(value.replace(/@/g, ''));
+					} else {
+						// Inline note (CONT/CONC already handled by preprocessor)
+						family.notes.push(value);
+					}
 					break;
 			}
 
