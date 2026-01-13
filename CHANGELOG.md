@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.19.6] - 2026-01-12
+
 ### Added
 
 - **Per-map place filtering** ([#153](https://github.com/banisterious/obsidian-charted-roots/issues/153)): Places can now be restricted to specific custom maps within the same universe. Add a `maps` property to place notes with an array of map IDs to control which maps the place appears on. Places without a `maps` property continue to appear on all maps in their universe (backward compatible). The Create/Edit Place modal includes a "Restrict to maps" section with checkboxes for available maps. When creating a place by right-clicking on a custom map, the current map is auto-selected.
