@@ -160,7 +160,15 @@ custom_coordinates_map: [string]
 
 # World-building
 universe: [wikilink to Universe]
+
+# Per-map filtering (optional)
+maps: [string[]]               # Map IDs to restrict this place to
 ```
+
+**Per-map filtering:**
+- If `maps` is undefined/empty: Place appears on all maps with matching universe (default)
+- If `maps` is defined: Place only appears on the specified map(s)
+- Example: `maps: [north-map, westeros-full-map]`
 
 ### Event Note Structure
 

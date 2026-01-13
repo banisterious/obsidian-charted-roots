@@ -623,6 +623,8 @@ export class MapView extends ItemView {
 		// Get universe from the current map (null for real world)
 		const universe = this.mapController?.getActiveMapUniverse() ?? undefined;
 		const isPixelMap = coords.pixelX !== undefined && coords.pixelY !== undefined;
+		// Get current map ID for auto-populating maps field (#153)
+		const currentMapId = this.mapController?.getActiveMapId();
 
 		// Get services from plugin
 		const pluginWithServices = this.plugin as unknown as {
@@ -644,6 +646,8 @@ export class MapView extends ItemView {
 				pixelY: coords.pixelY,
 				isPixelMap
 			},
+			// Pass current map ID for auto-populating maps field (#153)
+			currentMapId: isPixelMap ? currentMapId : undefined,
 			onCreated: () => {
 				// Refresh the map to show the new place marker
 				void this.refreshData(true);
@@ -1350,10 +1354,11 @@ export class MapView extends ItemView {
 			// Initialize the map
 			await this.mapController.initialize();
 
-			// Register map change callback to filter by universe and sync dropdown
+			// Register map change callback to filter by universe/mapId and sync dropdown
 			this.mapController.onMapChange((mapId, universe) => {
-				// Update universe filter
+				// Update filters for universe and per-map filtering
 				this.filters.universe = universe ?? undefined;
+				this.filters.mapId = mapId;
 
 				// Sync dropdown
 				if (this.mapSelectEl) {

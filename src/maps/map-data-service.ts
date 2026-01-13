@@ -54,6 +54,10 @@ interface PlaceData {
 	category?: string;
 	universe?: string;
 	parentPlace?: string;
+	/** Map IDs this place is restricted to (if undefined, shows on all maps in universe) */
+	maps?: string[];
+	/** Single map ID shorthand (normalized to maps array internally) */
+	mapId?: string;
 }
 
 /**
@@ -234,6 +238,14 @@ export class MapDataService {
 				?? this.parseCoordinate(fm.custom_coordinates_y)
 				?? this.parsePixelCoordinates(fm.pixel_coordinates).y;
 
+			// Extract maps array (for per-map filtering)
+			let maps: string[] | undefined;
+			if (Array.isArray(fm.maps)) {
+				maps = fm.maps.map((m: unknown) => String(m)).filter((m: string) => m.length > 0);
+				if (maps.length === 0) maps = undefined;
+			}
+			const mapId = fm.map_id ? fmToString(fm.map_id) : undefined;
+
 			const placeData: PlaceData = {
 				crId: fmToString(fm.cr_id, ''),
 				name: fmToString(fm.name, file.basename),
@@ -243,7 +255,9 @@ export class MapDataService {
 				pixelY,
 				category: fm.place_category ? fmToString(fm.place_category) : undefined,
 				universe: fm.universe ? fmToString(fm.universe) : undefined,
-				parentPlace: this.extractLinkTarget(fm.parent_place) || undefined
+				parentPlace: this.extractLinkTarget(fm.parent_place) || undefined,
+				maps,
+				mapId
 			};
 
 			if (placeData.crId) {
@@ -409,6 +423,13 @@ export class MapDataService {
 			// Apply universe filter if set
 			if (filters.universe && place.universe !== filters.universe) continue;
 
+			// Apply per-map filter if place specifies maps restriction
+			// Normalize map_id to array format, then check if current map is in the list
+			const placeMaps = place.maps || (place.mapId ? [place.mapId] : null);
+			if (placeMaps && filters.mapId && !placeMaps.includes(filters.mapId)) {
+				continue;
+			}
+
 			// Apply place category filter if set
 			if (filters.placeCategories && filters.placeCategories.length > 0) {
 				if (!place.category || !filters.placeCategories.includes(place.category)) {
@@ -448,6 +469,12 @@ export class MapDataService {
 
 		// Apply universe filter
 		if (filters.universe && place.universe !== filters.universe) return null;
+
+		// Apply per-map filter if place specifies maps restriction
+		const placeMaps = place.maps || (place.mapId ? [place.mapId] : null);
+		if (placeMaps && filters.mapId && !placeMaps.includes(filters.mapId)) {
+			return null;
+		}
 
 		const year = this.extractYear(date);
 
@@ -562,6 +589,17 @@ export class MapDataService {
 	}
 
 	/**
+	 * Check if a place is visible on the current map (passes per-map filtering)
+	 * Returns true if the place has no maps restriction, or if the current mapId is in its maps list
+	 */
+	private isPlaceVisibleOnMap(place: PlaceData, filters: MapFilters): boolean {
+		if (!filters.mapId) return true; // No map filter active
+		const placeMaps = place.maps || (place.mapId ? [place.mapId] : null);
+		if (!placeMaps) return true; // Place has no restriction, visible on all maps
+		return placeMaps.includes(filters.mapId);
+	}
+
+	/**
 	 * Build migration paths from person data
 	 */
 	private buildPaths(people: PersonData[], filters: MapFilters): MigrationPath[] {
@@ -584,6 +622,18 @@ export class MapDataService {
 			const pathUniverse = birthPlace.universe || deathPlace.universe;
 			if (filters.universe && pathUniverse !== filters.universe) {
 				continue;
+			}
+
+			// Apply per-map filter - both endpoints must be visible on current map
+			// If either place has a maps restriction that excludes the current map, skip the path
+			if (filters.mapId) {
+				const birthMaps = birthPlace.maps || (birthPlace.mapId ? [birthPlace.mapId] : null);
+				const deathMaps = deathPlace.maps || (deathPlace.mapId ? [deathPlace.mapId] : null);
+				const birthVisible = !birthMaps || birthMaps.includes(filters.mapId);
+				const deathVisible = !deathMaps || deathMaps.includes(filters.mapId);
+				if (!birthVisible || !deathVisible) {
+					continue;
+				}
 			}
 
 			// Skip if same location (check both geographic and pixel coordinates)
@@ -702,8 +752,9 @@ export class MapDataService {
 			// Add birth waypoint
 			const birthPlace = this.resolvePlace(person.birthPlaceId, person.birthPlace);
 			if (birthPlace && this.hasValidCoordinates(birthPlace)) {
-				// Apply universe filter
-				if (!filters.universe || birthPlace.universe === filters.universe) {
+				// Apply universe and per-map filters
+				if ((!filters.universe || birthPlace.universe === filters.universe) &&
+					this.isPlaceVisibleOnMap(birthPlace, filters)) {
 					const birthYear = this.extractYear(person.born);
 					waypoints.push({
 						lat: birthPlace.lat ?? 0,
@@ -723,7 +774,8 @@ export class MapDataService {
 			// Add marriage waypoint (if has date for chronological ordering)
 			const marriagePlace = this.resolvePlace(person.marriagePlaceId, person.marriagePlace);
 			if (marriagePlace && this.hasValidCoordinates(marriagePlace) && person.marriageDate) {
-				if (!filters.universe || marriagePlace.universe === filters.universe) {
+				if ((!filters.universe || marriagePlace.universe === filters.universe) &&
+					this.isPlaceVisibleOnMap(marriagePlace, filters)) {
 					const marriageYear = this.extractYear(person.marriageDate);
 					waypoints.push({
 						lat: marriagePlace.lat ?? 0,
@@ -746,7 +798,8 @@ export class MapDataService {
 					const placeName = this.extractPlaceString(event.place);
 					const place = this.resolvePlace(undefined, placeName);
 					if (place && this.hasValidCoordinates(place)) {
-						if (!filters.universe || place.universe === filters.universe) {
+						if ((!filters.universe || place.universe === filters.universe) &&
+							this.isPlaceVisibleOnMap(place, filters)) {
 							const year = this.extractYear(event.date_from);
 							const yearTo = this.extractYear(event.date_to);
 							waypoints.push({
@@ -772,7 +825,8 @@ export class MapDataService {
 			// Add death waypoint
 			const deathPlace = this.resolvePlace(person.deathPlaceId, person.deathPlace);
 			if (deathPlace && this.hasValidCoordinates(deathPlace)) {
-				if (!filters.universe || deathPlace.universe === filters.universe) {
+				if ((!filters.universe || deathPlace.universe === filters.universe) &&
+					this.isPlaceVisibleOnMap(deathPlace, filters)) {
 					const deathYear = this.extractYear(person.died);
 					waypoints.push({
 						lat: deathPlace.lat ?? 0,

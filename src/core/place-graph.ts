@@ -1197,6 +1197,9 @@ export class PlaceGraphService {
 		// Parse media array
 		const media = this.parseMediaProperty(fm);
 
+		// Parse maps array for per-map filtering (#153)
+		const maps = this.parseMapsProperty(fm);
+
 		return {
 			node: {
 				id: fm.cr_id,
@@ -1211,7 +1214,8 @@ export class PlaceGraphService {
 				coordinates,
 				customCoordinates,
 				collection: fm.collection,
-				media: media.length > 0 ? media : undefined
+				media: media.length > 0 ? media : undefined,
+				maps: maps.length > 0 ? maps : undefined
 			},
 			parentWikilink
 		};
@@ -1235,6 +1239,33 @@ export class PlaceGraphService {
 		// Single value - wrap in array
 		if (typeof fm.media === 'string') {
 			return [fm.media];
+		}
+
+		return [];
+	}
+
+	/**
+	 * Parse maps array from frontmatter for per-map filtering (#153).
+	 * Expects YAML array format:
+	 *   maps:
+	 *     - "map-id-1"
+	 *     - "map-id-2"
+	 * Also accepts single value (map_id) for backward compatibility.
+	 */
+	private parseMapsProperty(fm: Record<string, unknown>): string[] {
+		// Check for maps array
+		if (fm.maps) {
+			if (Array.isArray(fm.maps)) {
+				return fm.maps.filter((item): item is string => typeof item === 'string');
+			}
+			if (typeof fm.maps === 'string') {
+				return [fm.maps];
+			}
+		}
+
+		// Fall back to map_id single value
+		if (fm.map_id && typeof fm.map_id === 'string') {
+			return [fm.map_id];
 		}
 
 		return [];

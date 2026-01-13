@@ -291,6 +291,8 @@ export interface MapFilters {
 	collection?: string;
 	/** Filter by universe (for fictional maps) */
 	universe?: string;
+	/** Current map ID for per-map place filtering */
+	mapId?: string;
 	/** Minimum year (inclusive) */
 	yearFrom?: number;
 	/** Maximum year (inclusive) */

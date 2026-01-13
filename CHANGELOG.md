@@ -9,7 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Per-map place filtering** ([#153](https://github.com/banisterious/obsidian-charted-roots/issues/153)): Places can now be restricted to specific custom maps within the same universe. Add a `maps` property to place notes with an array of map IDs to control which maps the place appears on. Places without a `maps` property continue to appear on all maps in their universe (backward compatible). The Create/Edit Place modal includes a "Restrict to maps" section with checkboxes for available maps. When creating a place by right-clicking on a custom map, the current map is auto-selected.
+
 ### Fixed
+
+- **Map view not opening from Control Center** ([#188](https://github.com/banisterious/obsidian-charted-roots/issues/188)): Fixed command ID prefix in Control Center that prevented the map view from opening when clicked.
 
 - **Duplicate nodes in canvas trees with pedigree collapse** ([#186](https://github.com/banisterious/obsidian-charted-roots/issues/186)): Persons appearing in multiple ancestry paths (e.g., when siblings marry into the same family) now display as a single node with edges from both paths converging to it.
 

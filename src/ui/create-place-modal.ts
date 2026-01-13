@@ -11,9 +11,20 @@ import { FamilyGraphService } from '../core/family-graph';
 import { PlaceGraphService } from '../core/place-graph';
 import { getDefaultPlaceCategory, getPlaceFolderForCategory, CanvasRootsSettings } from '../settings';
 import { GeocodingService } from '../maps/services/geocoding-service';
+import { ImageMapManager } from '../maps/image-map-manager';
+import type { CustomMapConfig } from '../maps/types/map-types';
 import type CanvasRootsPlugin from '../../main';
 import { ModalStatePersistence, renderResumePromptBanner } from './modal-state-persistence';
 import { parseLatitude, parseLongitude, isDMSFormat } from '../utils/coordinate-converter';
+
+/**
+ * Map option for the maps multi-select
+ */
+interface MapOption {
+	id: string;
+	name: string;
+	universe?: string;
+}
 
 /**
  * Parent place option for dropdown
@@ -90,6 +101,7 @@ interface PlaceFormData {
 	collection?: string;
 	coordinates?: { lat: number; long: number };
 	directory?: string;
+	maps?: string[];
 }
 
 /**
@@ -147,6 +159,11 @@ export class CreatePlaceModal extends Modal {
 	private savedSuccessfully: boolean = false;
 	private resumeBanner?: HTMLElement;
 
+	// Per-map filtering (#153)
+	private availableMaps: MapOption[] = [];
+	private currentMapId?: string;
+	private mapsSectionEl?: HTMLElement;
+
 	constructor(
 		app: App,
 		options?: {
@@ -173,6 +190,8 @@ export class CreatePlaceModal extends Modal {
 				pixelY?: number;
 				isPixelMap?: boolean;
 			};
+			// Current map ID for auto-populating maps field (#153)
+			currentMapId?: string;
 		}
 	) {
 		super(app);
@@ -256,6 +275,14 @@ export class CreatePlaceModal extends Modal {
 		this.loadExistingCollections();
 		// Build parent place options for dropdown
 		this.loadParentPlaceOptions();
+		// Load available maps for per-map filtering (#153)
+		this.currentMapId = options?.currentMapId;
+		this.loadAvailableMaps();
+
+		// Auto-populate maps field with current map if creating from a custom map (#153)
+		if (!this.editMode && this.currentMapId && options?.prefilledCoordinates?.isPixelMap) {
+			this.placeData.maps = [this.currentMapId];
+		}
 	}
 
 	/**
@@ -273,7 +300,8 @@ export class CreatePlaceModal extends Modal {
 			parentPlace: place.parentId ? this.getParentPlaceName(place.parentId) : undefined,
 			coordinates: place.coordinates ? { ...place.coordinates } : undefined,
 			customCoordinates: place.customCoordinates ? { ...place.customCoordinates } : undefined,
-			collection: place.collection
+			collection: place.collection,
+			maps: place.maps ? [...place.maps] : undefined
 		};
 	}
 
@@ -311,6 +339,31 @@ export class CreatePlaceModal extends Modal {
 		// Sort alphabetically
 		this.existingCollections = Array.from(collections).sort((a, b) =>
 			a.toLowerCase().localeCompare(b.toLowerCase())
+		);
+	}
+
+	/**
+	 * Load available custom maps for per-map filtering (#153)
+	 */
+	private loadAvailableMaps(): void {
+		this.availableMaps = [];
+
+		// Use ImageMapManager to get custom maps
+		const mapsFolder = this.settings?.mapsFolder || 'Maps';
+		const mapManager = new ImageMapManager(this.app, mapsFolder);
+		const configs = mapManager.loadMapConfigs();
+
+		for (const config of configs) {
+			this.availableMaps.push({
+				id: config.id,
+				name: config.name,
+				universe: config.universe
+			});
+		}
+
+		// Sort alphabetically by name
+		this.availableMaps.sort((a, b) =>
+			a.name.toLowerCase().localeCompare(b.name.toLowerCase())
 		);
 	}
 
@@ -932,6 +985,62 @@ export class CreatePlaceModal extends Modal {
 		// Show/hide coordinates based on category
 		this.updateCoordinatesVisibility();
 
+		// Maps restriction section (for per-map filtering #153)
+		// Only show for fictional/mythological/legendary places when custom maps exist
+		this.mapsSectionEl = form.createDiv({ cls: 'crc-maps-section' });
+
+		if (this.availableMaps.length > 0) {
+			const mapsSetting = new Setting(this.mapsSectionEl)
+				.setName('Restrict to maps')
+				.setDesc('Only show this place on selected maps (leave empty for all maps)');
+
+			// Create a container for checkboxes
+			const mapsContainer = this.mapsSectionEl.createDiv({ cls: 'crc-maps-checkboxes' });
+
+			// Get current universe to filter maps
+			const currentUniverse = this.placeData.universe;
+
+			// Filter maps to show only those in the same universe (if universe is set)
+			const relevantMaps = currentUniverse
+				? this.availableMaps.filter(m => m.universe === currentUniverse)
+				: this.availableMaps;
+
+			if (relevantMaps.length === 0) {
+				mapsContainer.createEl('span', {
+					text: 'No maps available for this universe',
+					cls: 'crc-text-muted'
+				});
+			} else {
+				for (const map of relevantMaps) {
+					const isChecked = this.placeData.maps?.includes(map.id) ?? false;
+
+					const checkboxContainer = mapsContainer.createDiv({ cls: 'crc-maps-checkbox' });
+					const checkbox = checkboxContainer.createEl('input', {
+						type: 'checkbox',
+						attr: { id: `map-${map.id}` }
+					});
+					checkbox.checked = isChecked;
+					checkbox.addEventListener('change', () => {
+						this.updateMapsSelection(map.id, checkbox.checked);
+					});
+
+					const label = checkboxContainer.createEl('label', {
+						text: map.name,
+						attr: { for: `map-${map.id}` }
+					});
+
+					// Highlight current map if this is the one being viewed
+					if (map.id === this.currentMapId) {
+						label.addClass('crc-maps-current');
+						label.appendText(' (current)');
+					}
+				}
+			}
+		}
+
+		// Show/hide maps section based on category
+		this.updateMapsVisibility();
+
 		// Directory setting (only show in create mode)
 		if (!this.editMode) {
 			new Setting(form)
@@ -1003,7 +1112,8 @@ export class CreatePlaceModal extends Modal {
 			aliases: this.placeData.aliases,
 			collection: this.placeData.collection,
 			coordinates: this.placeData.coordinates,
-			directory: this.directory
+			directory: this.directory,
+			maps: this.placeData.maps
 		};
 	}
 
@@ -1020,6 +1130,7 @@ export class CreatePlaceModal extends Modal {
 		this.placeData.aliases = formData.aliases;
 		this.placeData.collection = formData.collection;
 		this.placeData.coordinates = formData.coordinates;
+		this.placeData.maps = formData.maps;
 		if (formData.directory) {
 			this.directory = formData.directory;
 		}
@@ -1175,6 +1286,48 @@ export class CreatePlaceModal extends Modal {
 				// Clear pixel coordinates when hiding
 				this.placeData.customCoordinates = undefined;
 			}
+		}
+	}
+
+	/**
+	 * Update visibility of the maps section based on category (#153)
+	 * Maps restriction is only relevant for fictional/mythological/legendary places
+	 */
+	private updateMapsVisibility(): void {
+		if (!this.mapsSectionEl) return;
+
+		const category = this.placeData.placeCategory || 'real';
+		const showMaps = ['fictional', 'mythological', 'legendary'].includes(category) &&
+			this.availableMaps.length > 0;
+
+		if (showMaps) {
+			this.mapsSectionEl.removeClass('crc-hidden');
+		} else {
+			this.mapsSectionEl.addClass('crc-hidden');
+			// Clear maps selection when hiding
+			this.placeData.maps = undefined;
+		}
+	}
+
+	/**
+	 * Update the maps selection when a checkbox is toggled (#153)
+	 */
+	private updateMapsSelection(mapId: string, selected: boolean): void {
+		if (!this.placeData.maps) {
+			this.placeData.maps = [];
+		}
+
+		if (selected) {
+			if (!this.placeData.maps.includes(mapId)) {
+				this.placeData.maps.push(mapId);
+			}
+		} else {
+			this.placeData.maps = this.placeData.maps.filter(id => id !== mapId);
+		}
+
+		// Clear array if empty
+		if (this.placeData.maps.length === 0) {
+			this.placeData.maps = undefined;
 		}
 	}
 

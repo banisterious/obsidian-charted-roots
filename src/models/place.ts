@@ -137,6 +137,8 @@ export interface PlaceNode {
 	collection?: string;
 	/** Media files linked to this place (wikilinks) */
 	media?: string[];
+	/** Map IDs this place appears on (for per-map filtering) */
+	maps?: string[];
 }
 
 /**

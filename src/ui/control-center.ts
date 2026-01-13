@@ -1953,7 +1953,7 @@ export class ControlCenterModal extends Modal {
 			{ icon: 'download', title: 'Export data', desc: 'GEDCOM, CSV formats', tab: 'import-export' },
 			{ icon: 'shield-check', title: 'Clean up data', desc: 'Post-import workflow', tab: 'data-quality' },
 			{ icon: 'git-branch', title: 'Generate tree', desc: 'Create visual canvas', tab: 'tree-generation' },
-			{ icon: 'map', title: 'Open map view', desc: 'Geographic visualization', tab: null, command: 'canvas-roots:open-map-view' },
+			{ icon: 'map', title: 'Open map view', desc: 'Geographic visualization', tab: null, command: 'charted-roots:open-map-view' },
 			{ icon: 'users', title: 'Manage people', desc: 'Browse and edit', tab: 'people' },
 			{ icon: 'clipboard-check', title: 'Validate schemas', desc: 'Check data consistency', tab: 'schemas' }
 		];
@@ -6254,8 +6254,8 @@ export class ControlCenterModal extends Modal {
 		renderWorldMapPreview(mapViewContent, this.app, {
 			places,
 			onClick: () => {
-				this.app.commands.executeCommandById('canvas-roots:open-map-view');
 				this.close();
+				this.app.commands.executeCommandById('charted-roots:open-map-view');
 			}
 		});
 
@@ -6266,8 +6266,8 @@ export class ControlCenterModal extends Modal {
 			.addButton(button => button
 				.setButtonText('Open new map')
 				.onClick(() => {
-					this.app.commands.executeCommandById('canvas-roots:open-new-map-view');
 					this.close();
+					this.app.commands.executeCommandById('charted-roots:open-new-map-view');
 				}));
 
 		// Bulk geocode places without coordinates

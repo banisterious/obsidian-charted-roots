@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-01-12 17:35:48 UTC
+ * - Generated: 2026-01-13 00:40:45 UTC
  * - Components: 41 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -7125,7 +7125,7 @@ settings:
    COMPONENT: PLACE-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 1009 lines, 19.31 KB */
+/* Component Size: 1048 lines, 20.08 KB */
 
 /* ==========================================================================
    CREATE PLACE MODAL
@@ -8134,6 +8134,45 @@ settings:
 .crc-organize-places-modal .crc-place-list-td--folder svg {
   color: var(--text-muted);
   vertical-align: middle;
+}
+
+/* ==========================================================================
+   MAPS RESTRICTION SECTION (#153)
+   Per-map filtering for fictional places
+   ========================================================================== */
+
+.crc-maps-section {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.crc-maps-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 8px;
+  padding-left: 4px;
+}
+
+.crc-maps-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.crc-maps-checkbox input[type="checkbox"] {
+  margin: 0;
+}
+
+.crc-maps-checkbox label {
+  cursor: pointer;
+  font-size: var(--font-ui-small);
+}
+
+.crc-maps-current {
+  font-weight: var(--font-semibold);
+  color: var(--text-accent);
 }
 
 
@@ -35584,11 +35623,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-01-12 17:35:48 UTC
+ * Build completed: 2026-01-13 00:40:45 UTC
  * Components processed: 41
- * Total lines: 35192
- * Total size: 699.01 KB
- * Build duration: 0.09 seconds
+ * Total lines: 35231
+ * Total size: 699.77 KB
+ * Build duration: 0.03 seconds
  *
  * Component breakdown:
  * - variables.css: 56 lines, 1.61 KB
@@ -35598,7 +35637,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - settings.css: 131 lines, 3.53 KB
  * - control-center.css: 5673 lines, 105.32 KB
  * - entity-create-modals.css: 790 lines, 15.74 KB
- * - place-modals.css: 1009 lines, 19.31 KB
+ * - place-modals.css: 1048 lines, 20.08 KB
  * - media-modals.css: 1928 lines, 36.72 KB
  * - import-export-wizard.css: 2113 lines, 39.86 KB
  * - staging-manager.css: 555 lines, 11.21 KB

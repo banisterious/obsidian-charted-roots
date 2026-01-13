@@ -1006,3 +1006,42 @@
   color: var(--text-muted);
   vertical-align: middle;
 }
+
+/* ==========================================================================
+   MAPS RESTRICTION SECTION (#153)
+   Per-map filtering for fictional places
+   ========================================================================== */
+
+.crc-maps-section {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.crc-maps-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 8px;
+  padding-left: 4px;
+}
+
+.crc-maps-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.crc-maps-checkbox input[type="checkbox"] {
+  margin: 0;
+}
+
+.crc-maps-checkbox label {
+  cursor: pointer;
+  font-size: var(--font-ui-small);
+}
+
+.crc-maps-current {
+  font-weight: var(--font-semibold);
+  color: var(--text-accent);
+}

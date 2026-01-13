@@ -2,7 +2,7 @@
 
 Planning document for per-map marker filtering in Charted Roots.
 
-- **Status:** Planning
+- **Status:** Complete
 - **GitHub Issue:** [#153](https://github.com/banisterious/obsidian-charted-roots/issues/153)
 - **Created:** 2026-01-07
 
@@ -297,6 +297,6 @@ if (!startVisible || !endVisible) continue;
 
 | Phase | Status |
 |-------|--------|
-| Phase 1 | Planning |
-| Phase 2 | Future |
-| Phase 3 | Future |
+| Phase 1 | ✅ Complete |
+| Phase 2 | ✅ Complete |
+| Phase 3 | ✅ Complete |

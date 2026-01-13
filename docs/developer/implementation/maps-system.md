@@ -153,6 +153,38 @@ image_height: 3072
 - Nested format (legacy): `bounds: {north: 50}`
 - Automatic fallback between formats
 
+## Per-Map Place Filtering
+
+Places can be restricted to specific custom maps using the `maps` property in place note frontmatter.
+
+**Place note frontmatter:**
+```yaml
+cr_type: place
+name: Winterfell
+universe: westeros
+custom_coordinates_x: 500
+custom_coordinates_y: 700
+maps:
+  - north-map
+  - westeros-full-map
+```
+
+**Behavior:**
+- If `maps` is undefined/empty: Place appears on all maps with matching universe (default)
+- If `maps` is defined: Place only appears on the specified map(s)
+- Also accepts `map_id: single-map-id` as shorthand for a single-map restriction
+
+**Implementation:**
+- `MapFilters` interface includes `mapId?: string` for current map
+- `MapDataService.buildPlaceMarkers()` filters by map restriction
+- `isPlaceVisibleOnMap()` helper used for path/journey endpoint filtering
+- Paths only appear if both endpoints are visible on current map
+
+**UI Support:**
+- Create Place modal shows "Restrict to maps" checkboxes
+- Maps filtered by universe (only shows maps in same universe)
+- When creating from map click, current map is auto-selected
+
 ## Map Creation Wizard
 
 `CreateMapWizardModal` (`src/ui/create-map-wizard-modal.ts`) provides a guided 4-step workflow for creating custom maps with interactive place marker placement.

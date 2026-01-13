@@ -96,9 +96,12 @@ export function renderWorldMapPreview(
 
 	// Add click overlay (transparent div to capture clicks)
 	const clickOverlay = mapContainer.createDiv({ cls: 'cr-world-map-click-overlay' });
+	// Ensure overlay captures pointer events
+	clickOverlay.style.pointerEvents = 'auto';
 
-	// Make entire container clickable
+	// Make entire container clickable - add handler to both overlay and container
 	clickOverlay.addEventListener('click', onClick);
+	mapContainer.addEventListener('click', onClick);
 	mapContainer.setAttribute('role', 'button');
 	mapContainer.setAttribute('tabindex', '0');
 	mapContainer.setAttribute('aria-label', `Open map view. ${count} places with coordinates.`);

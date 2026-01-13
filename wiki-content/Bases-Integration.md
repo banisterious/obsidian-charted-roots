@@ -441,6 +441,9 @@ The Places template provides **14 predefined views** for managing geographic loc
 - **Orphan Places** — No parent place defined
 - **By Collection** — Grouped by research collection
 
+**Per-Map Views:**
+- **By Map** — Grouped by `maps` property (see below)
+
 ### Special Feature: Map Link
 
 The Places template includes a clickable map link formula:
@@ -467,6 +470,21 @@ hierarchy_path: 'if(parent_place, parent_place + " → " + name, name)'
 ```yaml
 coordinates: 'if(coordinates_lat, coordinates_lat + ", " + coordinates_long, "")'
 ```
+
+### Custom View: By Map
+
+For fictional universes with multiple custom maps, create a "By Map" view to see which places appear on each map:
+
+```yaml
+views:
+  - name: By Map
+    order:
+      - property: note.maps
+        direction: asc
+    groupBy: note.maps
+```
+
+The `maps` property is an optional array of map IDs. Places without a `maps` property appear on all maps in their universe, while places with `maps: [north-map, westeros-full-map]` only appear on those specific maps.
 
 ---
 
