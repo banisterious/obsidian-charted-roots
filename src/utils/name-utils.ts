@@ -17,10 +17,9 @@ import type { PersonNode } from '../core/family-graph';
  * Extract surnames from a person for statistics and grouping.
  *
  * Priority order:
- * 1. Explicit `surnames` array (for multi-surname cultures)
- * 2. Explicit `surname` string (for compound surnames)
- * 3. `maiden_name` (for users who use maiden name as primary identifier)
- * 4. Parse last word from `name` (fallback for Western naming)
+ * 1. Explicit `surnames` array
+ * 2. `maiden_name` (for users who use maiden name as primary identifier)
+ * 3. Parse last word from `name` (fallback for Western naming)
  *
  * @param person - The person node to extract surnames from
  * @returns Array of surnames (may be empty if no name data)
@@ -31,17 +30,12 @@ export function extractSurnames(person: PersonNode): string[] {
 		return person.surnames;
 	}
 
-	// Priority 2: Explicit surname string
-	if (person.surname) {
-		return [person.surname];
-	}
-
-	// Priority 3: Maiden name (for users who use maiden name as primary)
+	// Priority 2: Maiden name (for users who use maiden name as primary)
 	if (person.maidenName) {
 		return [person.maidenName];
 	}
 
-	// Priority 4: Parse from name (last word)
+	// Priority 3: Parse from name (last word)
 	if (person.name) {
 		const parts = person.name.trim().split(/\s+/);
 		if (parts.length > 1) {
@@ -59,7 +53,7 @@ export function extractSurnames(person: PersonNode): string[] {
  * to match against any surname the person has used.
  *
  * Includes:
- * - Explicit surnames/surname
+ * - Explicit surnames array
  * - Maiden name
  * - Married name(s)
  * - Parsed surname from name (as fallback)
@@ -73,9 +67,6 @@ export function extractAllSurnames(person: PersonNode): string[] {
 	// Add explicit surnames
 	if (person.surnames?.length) {
 		person.surnames.forEach(s => surnames.add(s));
-	}
-	if (person.surname) {
-		surnames.add(person.surname);
 	}
 
 	// Add maiden name

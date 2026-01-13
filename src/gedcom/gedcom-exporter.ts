@@ -618,9 +618,8 @@ export class GedcomExporter {
 				lines.push(`2 GIVN ${givenName}`);
 			}
 
-			// Surname: prefer explicit surname, then check surnames array, fall back to parsed
-			const surname = person.surname
-				|| (person.surnames && person.surnames.length > 0 ? person.surnames.join(' ') : undefined)
+			// Surname: prefer explicit surnames array, fall back to parsed
+			const surname = (person.surnames && person.surnames.length > 0 ? person.surnames.join(' ') : undefined)
 				|| this.parseNameParts(displayName).surname;
 			if (surname) {
 				lines.push(`2 SURN ${surname}`);

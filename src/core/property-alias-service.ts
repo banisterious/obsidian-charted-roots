@@ -22,7 +22,6 @@ export const CANONICAL_PERSON_PROPERTIES = [
 	'maiden_name',
 	// Name components (for multi-surname cultures and married/maiden name tracking)
 	'given_name',
-	'surname',
 	'surnames',
 	'married_name',
 	'married_names',
@@ -187,7 +186,6 @@ export const CANONICAL_PROPERTY_LABELS: Record<string, string> = {
 	nickname: 'Nickname',
 	maiden_name: 'Maiden name',
 	given_name: 'Given name',
-	surname: 'Surname',
 	surnames: 'Surnames',
 	married_name: 'Married name',
 	married_names: 'Married names',
@@ -347,18 +345,11 @@ export const PERSON_PROPERTY_METADATA: PropertyMetadata[] = [
 		commonAliases: ['first_name', 'forename', 'christian_name']
 	},
 	{
-		canonical: 'surname',
-		label: 'Surname',
-		description: 'Family name/surname',
-		category: 'person',
-		commonAliases: ['last_name', 'family_name']
-	},
-	{
 		canonical: 'surnames',
 		label: 'Surnames',
-		description: 'Multiple surnames (for Hispanic/Portuguese naming conventions)',
+		description: 'Family name(s)/surname(s)',
 		category: 'person',
-		commonAliases: []
+		commonAliases: ['surname', 'last_name', 'family_name']
 	},
 	{
 		canonical: 'married_name',

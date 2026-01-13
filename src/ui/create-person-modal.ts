@@ -163,7 +163,6 @@ export class CreatePersonModal extends Modal {
 				pronouns?: string;
 				// Name components (#174, #192)
 				givenName?: string;
-				surname?: string;
 				surnames?: string[];
 				maidenName?: string;
 				marriedName?: string;
@@ -247,7 +246,6 @@ export class CreatePersonModal extends Modal {
 				pronouns: ep.pronouns,
 				// Name components (#174, #192)
 				givenName: ep.givenName,
-				surname: ep.surname,
 				surnames: ep.surnames,
 				maidenName: ep.maidenName,
 				marriedName: ep.marriedName,
@@ -445,13 +443,18 @@ export class CreatePersonModal extends Modal {
 				}));
 
 		new Setting(form)
-			.setName('Surname')
-			.setDesc('Family name / surname (useful for compound surnames like "da Silva")')
+			.setName('Surname(s)')
+			.setDesc('Family name(s) - separate multiple with commas (e.g., "García, López")')
 			.addText(text => text
-				.setPlaceholder('e.g., García López, da Silva')
-				.setValue(this.personData.surname || '')
+				.setPlaceholder('e.g., García, López')
+				.setValue(this.personData.surnames?.join(', ') || '')
 				.onChange(value => {
-					this.personData.surname = value || undefined;
+					if (value) {
+						// Split on commas, trim whitespace
+						this.personData.surnames = value.split(',').map(s => s.trim()).filter(s => s);
+					} else {
+						this.personData.surnames = undefined;
+					}
 				}));
 
 		// Maiden/married names - only show in edit mode

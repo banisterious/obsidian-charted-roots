@@ -67,8 +67,7 @@ export interface PersonData {
 	nickname?: string;           // Informal name, alias, or nickname (e.g., "Bobby" for Robert)
 	// Name components (#174, #192)
 	givenName?: string;          // First/given name(s) - from GEDCOM GIVN tag
-	surname?: string;            // Primary surname - for compound surnames like "da Silva"
-	surnames?: string[];         // Multiple surnames - for Hispanic/Portuguese naming
+	surnames?: string[];         // Surnames - supports single or multiple
 	maidenName?: string;         // Birth surname (before marriage)
 	marriedName?: string;        // Married surname (single marriage)
 	marriedNames?: string[];     // Multiple married surnames (multiple marriages)
@@ -243,9 +242,6 @@ export async function createPersonNote(
 	// Name components (#174, #192)
 	if (person.givenName) {
 		frontmatter[prop('given_name')] = person.givenName;
-	}
-	if (person.surname) {
-		frontmatter[prop('surname')] = person.surname;
 	}
 	if (person.surnames && person.surnames.length > 0) {
 		frontmatter[prop('surnames')] = person.surnames;

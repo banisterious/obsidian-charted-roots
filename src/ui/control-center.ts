@@ -3276,7 +3276,6 @@ export class ControlCenterModal extends Modal {
 					pronouns: fm.pronouns,
 					// Name components (#174, #192)
 					givenName: fm.given_name,
-					surname: fm.surname,
 					surnames: Array.isArray(fm.surnames) ? fm.surnames : (fm.surnames ? [fm.surnames] : undefined),
 					maidenName: fm.maiden_name,
 					marriedName: fm.married_name,
