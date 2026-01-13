@@ -50,6 +50,7 @@ export interface PlaceData {
 	media?: string[];          // Wikilinks to media files
 	notesContent?: string;     // Markdown notes content to append
 	private?: boolean;         // Privacy flag (if any attached note is private)
+	maps?: string[];           // Map IDs this place appears on (for per-map filtering)
 }
 
 /**
@@ -176,6 +177,11 @@ export async function createPlaceNote(
 	// Privacy flag (if any attached note is private)
 	if (place.private) {
 		frontmatter[prop('private')] = true;
+	}
+
+	// Map restrictions (for per-map filtering)
+	if (place.maps && place.maps.length > 0) {
+		frontmatter[prop('maps')] = place.maps;
 	}
 
 	logger.debug('frontmatter', `Final: ${JSON.stringify(frontmatter)}`);
@@ -330,6 +336,13 @@ export async function updatePlaceNote(
 			newFrontmatter.collection = updates.collection;
 		} else {
 			delete newFrontmatter.collection;
+		}
+	}
+	if (updates.maps !== undefined) {
+		if (updates.maps && updates.maps.length > 0) {
+			newFrontmatter.maps = updates.maps;
+		} else {
+			delete newFrontmatter.maps;
 		}
 	}
 
