@@ -9,10 +9,10 @@ This document outlines planned features for Charted Roots. For completed feature
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
   - [GPS Research Workflow Integration](#gps-research-workflow-integration) 📋 Medium
+  - [Name Components](#name-components) 📋 Medium
   - [DNA Match Tracking](#dna-match-tracking) 💡 Low
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
-  - [Name Components](#name-components) 📋 Medium
 - [Future Considerations](#future-considerations)
   - [Research Tracking](#research-tracking)
   - [Dynasty Management](#dynasty-management)
@@ -110,6 +110,56 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 **Documentation:**
 - See [Research Workflow Integration Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/research-workflow-integration.md) for detailed specifications
 - Community contributors: @ANYroots (IRN structure, GPS methodology, templates), @wilbry (lightweight approach, unified design)
+
+---
+
+### Name Components
+
+**Priority:** 📋 Medium — Internationalization and flexible naming conventions
+
+**Status:** Planning
+
+**GitHub Issues:** [#174](https://github.com/banisterious/obsidian-charted-roots/issues/174), [#192](https://github.com/banisterious/obsidian-charted-roots/issues/192)
+
+**Summary:** Support explicit name component properties in frontmatter for:
+1. **Multiple surnames** (#174): Hispanic, Portuguese, and other multi-surname naming conventions
+2. **Maiden/married names** (#190/#192): Tracking birth and married surnames separately
+
+**The Problem:**
+- "Top Surnames" statistic only extracts the last word of a name—"José García López" counts only "López"
+- No way to track married vs. maiden surnames for flexible naming conventions
+- Split Wizard surname matching is limited
+
+**The Solution:** Add explicit name component frontmatter properties:
+
+```yaml
+# Hispanic (two surnames)
+name: "José García López"
+surnames:
+  - García
+  - López
+
+# Maiden name tracking
+name: "Jane Smith"
+maiden_name: "Jones"
+
+# Or maiden-name-as-primary convention
+name: "Jane Jones"
+married_name: "Smith"
+```
+
+**Implementation:**
+- Add `surname`, `surnames`, `given_name`, `married_name`, `married_names` properties
+- Populate from GEDCOM `SURN`/`GIVN` tags on import
+- Statistics and Split Wizard use explicit surnames when available
+- Support in person creation/edit modals
+
+**User Impact:** Non-breaking change
+- Existing name parsing continues to work
+- Users can optionally add explicit name components for accurate statistics
+- Supports both "married name primary" and "maiden name primary" conventions
+
+See [Name Components Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/name-components.md) for detailed specifications.
 
 ---
 
@@ -240,56 +290,6 @@ oral_facts:
 - Map relationship structure of interviews
 - Interview as central hub node
 - Edge thickness indicates mention frequency
-
----
-
-### Name Components
-
-**Priority:** 📋 Medium — Internationalization and flexible naming conventions
-
-**Status:** Planning
-
-**GitHub Issues:** [#174](https://github.com/banisterious/obsidian-charted-roots/issues/174), [#192](https://github.com/banisterious/obsidian-charted-roots/issues/192)
-
-**Summary:** Support explicit name component properties in frontmatter for:
-1. **Multiple surnames** (#174): Hispanic, Portuguese, and other multi-surname naming conventions
-2. **Maiden/married names** (#190/#192): Tracking birth and married surnames separately
-
-**The Problem:**
-- "Top Surnames" statistic only extracts the last word of a name—"José García López" counts only "López"
-- No way to track married vs. maiden surnames for flexible naming conventions
-- Split Wizard surname matching is limited
-
-**The Solution:** Add explicit name component frontmatter properties:
-
-```yaml
-# Hispanic (two surnames)
-name: "José García López"
-surnames:
-  - García
-  - López
-
-# Maiden name tracking
-name: "Jane Smith"
-maiden_name: "Jones"
-
-# Or maiden-name-as-primary convention
-name: "Jane Jones"
-married_name: "Smith"
-```
-
-**Implementation:**
-- Add `surname`, `surnames`, `given_name`, `married_name`, `married_names` properties
-- Populate from GEDCOM `SURN`/`GIVN` tags on import
-- Statistics and Split Wizard use explicit surnames when available
-- Support in person creation/edit modals
-
-**User Impact:** Non-breaking change
-- Existing name parsing continues to work
-- Users can optionally add explicit name components for accurate statistics
-- Supports both "married name primary" and "maiden name primary" conventions
-
-See [Name Components Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/name-components.md) for detailed specifications.
 
 ---
 
