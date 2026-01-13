@@ -191,6 +191,9 @@ export interface CanvasGenerationOptions extends LayoutOptions {
 
 	/** Format for privacy-protected nodes: 'text' shows obfuscated text node, 'file' keeps clickable file node */
 	canvasPrivacyFormat?: 'text' | 'file';
+
+	/** Custom relationship types from settings (for edge styling) */
+	customRelationshipTypes?: import('../relationships').RelationshipTypeDefinition[];
 }
 
 /**
@@ -251,6 +254,14 @@ export class CanvasGenerator {
 		const layoutType = options.layoutType ?? 'standard';
 		const spacingMultiplier = layoutType === 'compact' ? 0.5 : 1.0;
 
+		// Build relationship types map for edge styling (custom types take priority)
+		const relationshipTypes = new Map<string, RelationshipTypeDefinition>();
+		if (options.customRelationshipTypes) {
+			for (const type of options.customRelationshipTypes) {
+				relationshipTypes.set(type.id, type);
+			}
+		}
+
 		const opts = {
 			nodeSpacingX: (options.nodeSpacingX ?? 300) * spacingMultiplier,
 			nodeSpacingY: (options.nodeSpacingY ?? 200) * spacingMultiplier,
@@ -273,7 +284,9 @@ export class CanvasGenerator {
 			showResearchCoverage: options.showResearchCoverage ?? false,
 			canvasGroupingStrategy: options.canvasGroupingStrategy ?? 'none' as const,
 			applyCanvasPrivacy: options.applyCanvasPrivacy ?? false,
-			canvasPrivacyFormat: options.canvasPrivacyFormat ?? 'text' as const
+			canvasPrivacyFormat: options.canvasPrivacyFormat ?? 'text' as const,
+			// Custom relationship types for edge styling
+			relationshipTypes: relationshipTypes.size > 0 ? relationshipTypes : undefined
 		};
 
 		logger.debug('canvas-generation', 'Canvas generation options', {
