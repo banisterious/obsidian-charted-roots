@@ -26,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - GEDCOM export writes name components to GIVN/SURN tags
   - Create/Edit Person modal includes fields for all name components
 
+### Fixed
+
+- **Family chart shows wrong person when root is filtered** ([#191](https://github.com/banisterious/obsidian-charted-roots/issues/191)): When opening a family chart for a person excluded by the folder filter, the chart now shows a helpful notice instead of silently displaying an unrelated entity.
+
 ---
 
 ## [0.19.6] - 2026-01-12
