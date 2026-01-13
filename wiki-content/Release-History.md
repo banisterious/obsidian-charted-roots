@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.19.x](#v019x)
+  - [Name Components](#name-components-v0197)
   - [Per-Map Marker Assignment](#per-map-marker-assignment-v0196)
   - [GEDCOM Notes Support](#gedcom-notes-support-v0195)
   - [Timeline Event Description Display](#timeline-event-description-display-v0195)
@@ -98,6 +99,77 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.19.x
+
+### Name Components (v0.19.7)
+
+Explicit name component properties in frontmatter for multi-surname cultures (Hispanic, Portuguese) and maiden/married name tracking.
+
+**GitHub Issues:** [#174](https://github.com/banisterious/obsidian-charted-roots/issues/174), [#192](https://github.com/banisterious/obsidian-charted-roots/issues/192)
+
+**Features Implemented:**
+
+| Feature | Description |
+|---------|-------------|
+| `given_name` property | First/given name(s) - populated from GEDCOM GIVN tag |
+| `surnames` property | Array of surnames - supports multiple (Hispanic/Portuguese naming) |
+| `maiden_name` property | Birth surname (already existed with aliases) |
+| `married_names` property | Array of married surnames - supports multiple marriages |
+| Statistics integration | Top Surnames counts all surnames in array |
+| Split Wizard integration | Matches against all surname variants |
+| GEDCOM import | Writes `given_name` and `surnames` from GIVN/SURN tags |
+| GEDCOM export | Exports name components to GIVN/SURN tags |
+| Create/Edit Person modal | Fields for all name component properties |
+
+**Usage Examples:**
+
+Hispanic dual surnames:
+```yaml
+name: "José García López"
+surnames:
+  - García
+  - López
+```
+
+Maiden name tracking:
+```yaml
+name: "Jane Smith"
+maiden_name: "Jones"
+```
+
+Maiden-name-as-primary convention:
+```yaml
+name: "Jane Jones"
+married_names:
+  - "Smith"
+  - "Williams"
+```
+
+**Property Priority for Statistics:**
+
+When computing surname statistics via `extractSurnames()`:
+1. If `surnames` array exists → count each surname
+2. Else if `maiden_name` exists → count that (for maiden-name-primary users)
+3. Else → fall back to parsing last word from `name`
+
+**Files Modified:**
+
+- `src/utils/name-utils.ts` — **New**: `extractSurnames()`, `extractAllSurnames()`, `matchesSurname()`
+- `src/core/property-alias-service.ts` — Added name component property definitions
+- `src/core/family-graph.ts` — Added PersonNode properties, frontmatter parsing
+- `src/statistics/services/statistics-service.ts` — Uses `extractSurnames()`
+- `src/ui/split-wizard-modal.ts` — Uses `matchesSurname()` for matching
+- `src/gedcom/gedcom-importer-v2.ts` — Writes name components to frontmatter
+- `src/core/person-note-writer.ts` — Supports writing name components
+- `src/ui/create-person-modal.ts` — Added name component input fields
+- `src/ui/control-center.ts` — Passes name components to edit modal
+- `main.ts` — Context menu passes name components to edit modal
+- `src/gedcom/gedcom-exporter.ts` — Exports name components to GEDCOM tags
+
+**Documentation:**
+
+- [Name Components Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/name-components.md)
+
+---
 
 ### Per-Map Marker Assignment (v0.19.6)
 
