@@ -708,6 +708,7 @@ export class ControlCenterModal extends Modal {
 						spouseEdgeLabelFormat: this.plugin.settings.spouseEdgeLabelFormat,
 						showSourceIndicators: this.plugin.settings.showSourceIndicators,
 						showResearchCoverage: this.plugin.settings.trackFactSourcing,
+						customRelationshipTypes: this.plugin.settings.customRelationshipTypes,
 						canvasRootsMetadata: {
 							plugin: 'charted-roots' as const,
 							generation: {
@@ -4638,6 +4639,7 @@ export class ControlCenterModal extends Modal {
 				spouseEdgeLabelFormat: this.plugin.settings.spouseEdgeLabelFormat,
 				showSourceIndicators: this.plugin.settings.showSourceIndicators,
 				showResearchCoverage: this.plugin.settings.trackFactSourcing,
+				customRelationshipTypes: this.plugin.settings.customRelationshipTypes,
 				canvasRootsMetadata: {
 					plugin: 'charted-roots',
 					generation: {

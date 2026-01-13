@@ -1797,6 +1797,7 @@ export class UnifiedTreeWizardModal extends Modal {
 				canvasGroupingStrategy: this.formData.canvasGroupingStrategy,
 				applyCanvasPrivacy: this.formData.applyCanvasPrivacy,
 				canvasPrivacyFormat: this.formData.canvasPrivacyFormat,
+				customRelationshipTypes: this.plugin.settings.customRelationshipTypes,
 				canvasRootsMetadata: {
 					plugin: 'charted-roots',
 					generation: {
@@ -1944,7 +1945,8 @@ export class UnifiedTreeWizardModal extends Modal {
 				showResearchCoverage: this.plugin.settings.trackFactSourcing,
 				canvasGroupingStrategy: this.formData.canvasGroupingStrategy,
 				applyCanvasPrivacy: this.formData.applyCanvasPrivacy,
-				canvasPrivacyFormat: this.formData.canvasPrivacyFormat
+				canvasPrivacyFormat: this.formData.canvasPrivacyFormat,
+				customRelationshipTypes: this.plugin.settings.customRelationshipTypes
 			};
 
 			const canvasGenerator = new CanvasGenerator();

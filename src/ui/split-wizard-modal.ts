@@ -1759,7 +1759,8 @@ export class SplitWizardModal extends Modal {
 		return await this.splitService.generateGenerationSplitCanvases(
 			this.app,
 			tree,
-			options
+			options,
+			{ customRelationshipTypes: this.settings.customRelationshipTypes }
 		);
 	}
 
@@ -1788,7 +1789,8 @@ export class SplitWizardModal extends Modal {
 		return await this.splitService.generateBranchSplitCanvases(
 			this.app,
 			tree,
-			options
+			options,
+			{ customRelationshipTypes: this.settings.customRelationshipTypes }
 		);
 	}
 
@@ -1819,7 +1821,8 @@ export class SplitWizardModal extends Modal {
 		const result = await this.splitService.generateLineageCanvas(
 			this.app,
 			tree,
-			options
+			options,
+			{ customRelationshipTypes: this.settings.customRelationshipTypes }
 		);
 
 		return [result];
@@ -1845,7 +1848,8 @@ export class SplitWizardModal extends Modal {
 		return await this.splitService.generateCollectionSplitCanvases(
 			this.app,
 			this.tree,
-			options
+			options,
+			{ customRelationshipTypes: this.settings.customRelationshipTypes }
 		);
 	}
 
@@ -1877,7 +1881,8 @@ export class SplitWizardModal extends Modal {
 		return await this.splitService.generateAncestorDescendantCanvases(
 			this.app,
 			tree,
-			options
+			options,
+			{ customRelationshipTypes: this.settings.customRelationshipTypes }
 		);
 	}
 
@@ -2040,7 +2045,8 @@ export class SplitWizardModal extends Modal {
 		// Generate canvas data for the subset
 		const canvasData = this.splitService.generateCanvasDataForSubset(
 			tree,
-			includedCrIds
+			includedCrIds,
+			{ customRelationshipTypes: this.settings.customRelationshipTypes }
 		);
 
 		if (!canvasData) {
