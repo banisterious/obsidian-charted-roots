@@ -5498,6 +5498,12 @@ export default class CanvasRootsPlugin extends Plugin {
 				name: String(fm.name || ''),
 				gender: fm.gender || fm.sex,
 				pronouns: fm.pronouns,
+				// Name components (#174, #192)
+				givenName: fm.given_name,
+				surnames: Array.isArray(fm.surnames) ? fm.surnames : (fm.surnames ? [fm.surnames] : undefined),
+				maidenName: fm.maiden_name,
+				marriedNames: Array.isArray(fm.married_names) ? fm.married_names : (fm.married_names ? [fm.married_names] : undefined),
+				// Dates and places
 				born: fm.born,
 				died: fm.died,
 				birthPlace: fm.birth_place,
