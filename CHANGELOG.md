@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **DNA match tracking** ([#126](https://github.com/banisterious/obsidian-charted-roots/issues/126)): Opt-in DNA match tracking for genetic genealogy workflows. Enable via Settings → Advanced → DNA tracking:
+  - **DNA Match person type**: Select "DNA Match" when creating persons to mark them as genetic matches
+  - **DNA Information fields**: Track shared cM, testing company, kit ID, match type (BKM/BMM/confirmed/unconfirmed), endogamy flag, and notes in Edit Person modal
+  - **DNA Match relationship**: New `dna_match` relationship type with bidirectional syncing (adding A→B automatically creates B→A)
+  - **DNA badge in person picker**: Shows flask icon and shared cM value for DNA matches
+  - All DNA features are invisible when setting is disabled (default: OFF)
+
+---
+
+## [0.19.8] - 2026-01-14
+
 ### Fixed
 
 - **Name components not saving in Edit Person modal** ([#174](https://github.com/banisterious/obsidian-charted-roots/issues/174)): Name component fields (given name, surnames, maiden name, married names) were not being written to frontmatter when editing existing person notes. The fields displayed correctly when reading but changes were not persisted.
