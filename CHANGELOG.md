@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **DNA badge in person picker**: Shows flask icon and shared cM value for DNA matches
   - All DNA features are invisible when setting is disabled (default: OFF)
 
+### Fixed
+
+- **Legacy command IDs not working**: Fixed UI buttons in Control Center tabs (People, Places, Events, Organizations, Sources) that were still using the old `canvas-roots:` command prefix instead of `charted-roots:`, causing "Create base" and similar actions to fail silently.
+
 ---
 
 ## [0.19.8] - 2026-01-14
