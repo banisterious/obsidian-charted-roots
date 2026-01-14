@@ -1615,6 +1615,27 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					}));
 		}
 
+		// --- DNA tracking subsection ---
+		advancedContent.createEl('h4', { text: 'DNA tracking', cls: 'cr-subsection-title' });
+
+		new Setting(advancedContent)
+			.setName('Enable DNA match tracking')
+			.setDesc('Show DNA-related fields and options for genetic genealogy workflows')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.enableDnaTracking)
+				.onChange(async (value) => {
+					this.plugin.settings.enableDnaTracking = value;
+					await this.plugin.saveSettings();
+					this.display();
+				}));
+
+		if (this.plugin.settings.enableDnaTracking) {
+			advancedContent.createEl('p', {
+				cls: 'setting-item-description',
+				text: 'When enabled: "DNA Match" person type available in Create Person, DNA fields shown in Edit Person modal, DNA Match relationship type available.'
+			});
+		}
+
 		// --- Integrations subsection ---
 		advancedContent.createEl('h4', { text: 'Integrations', cls: 'cr-subsection-title' });
 
