@@ -537,16 +537,9 @@ export class CreatePersonModal extends Modal {
 					}));
 		}
 
-		// DNA Information section (only shown when DNA tracking enabled AND person has DNA data or is DNA Match type)
-		const hasDnaData = this.personData.dnaSharedCm !== undefined ||
-			this.personData.dnaTestingCompany ||
-			this.personData.dnaKitId ||
-			this.personData.dnaMatchType ||
-			this.personData.dnaEndogamyFlag !== undefined ||
-			this.personData.dnaNotes;
-		const isDnaMatch = this.personData.personType === 'DNA Match';
-
-		if (this.plugin?.settings.enableDnaTracking && (isDnaMatch || hasDnaData)) {
+		// DNA Information section (shown when DNA tracking is enabled)
+		// Always show when setting is on, so users can add DNA data to any person
+		if (this.plugin?.settings.enableDnaTracking) {
 			const dnaSection = form.createDiv({ cls: 'crc-dna-section' });
 			dnaSection.createEl('h4', { text: 'DNA information', cls: 'crc-section-header crc-section-header--secondary' });
 
