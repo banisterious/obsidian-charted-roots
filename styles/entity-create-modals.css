@@ -225,6 +225,24 @@
   font-weight: 400;
 }
 
+.crc-picker-item__dna-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #9333ea20;
+  color: #9333ea;
+  font-size: 11px;
+  font-weight: 500;
+  margin-left: 6px;
+}
+
+.theme-dark .crc-picker-item__dna-badge {
+  background: #9333ea30;
+  color: #a855f7;
+}
+
 .crc-picker-item__meta {
   display: flex;
   gap: 8px;

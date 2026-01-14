@@ -20,6 +20,7 @@ interface RelationshipSnapshot {
 	spouse?: string | string[];
 	children?: string | string[];
 	child?: string | string[];  // Actual property name in frontmatter
+	dna_match?: string | string[];  // DNA match relationships (opt-in)
 	// Indexed spouse properties
 	[key: `spouse${number}`]: string | undefined;
 }
@@ -45,8 +46,17 @@ export class BidirectionalLinker {
 	private folderFilter: FolderFilterService | null = null;
 	private suspended = false;
 	private enableInclusiveParents = false;
+	private enableDnaTracking = false;
 
 	constructor(private app: App) {}
+
+	/**
+	 * Set whether DNA match tracking is enabled
+	 * When enabled, dna_match relationships will be synced bidirectionally
+	 */
+	setEnableDnaTracking(enabled: boolean): void {
+		this.enableDnaTracking = enabled;
+	}
 
 	/**
 	 * Set whether gender-neutral parent terminology is enabled
@@ -309,6 +319,19 @@ export class BidirectionalLinker {
 				}
 			}
 
+			// Sync DNA match relationships (only when DNA tracking is enabled)
+			// DNA matches are symmetric: A↔B creates B↔A
+			if (this.enableDnaTracking) {
+				const dnaMatchLinks = frontmatter.dna_match || [];
+				const dnaMatchArray = Array.isArray(dnaMatchLinks) ? dnaMatchLinks : [dnaMatchLinks];
+
+				for (const dnaMatchLink of dnaMatchArray) {
+					if (dnaMatchLink) {
+						await this.syncDnaMatch(dnaMatchLink, personFile, personName, personCrId);
+					}
+				}
+			}
+
 			// Update snapshot for future deletion detection
 			this.updateSnapshot(personFile.path, frontmatter);
 
@@ -427,6 +450,18 @@ export class BidirectionalLinker {
 				await this.removeParentFromChild(previousChild, personFile, personName, personCrId, parentSex);
 			}
 		}
+
+		// Check for deleted DNA match relationships (only when DNA tracking is enabled)
+		if (this.enableDnaTracking) {
+			const previousDnaMatches = this.extractSpouseLinks(previousSnapshot.dna_match);
+			const currentDnaMatches = this.extractSpouseLinks(currentFrontmatter.dna_match);
+
+			for (const previousDnaMatch of previousDnaMatches) {
+				if (!currentDnaMatches.includes(previousDnaMatch)) {
+					await this.removeDnaMatchLink(previousDnaMatch, personFile, personName, personCrId);
+				}
+			}
+		}
 	}
 
 	/**
@@ -477,6 +512,12 @@ export class BidirectionalLinker {
 			? childValue
 			: undefined;
 
+		// Extract dna_match property - may come from index signature with broader type
+		const dnaMatchValue = frontmatter['dna_match'];
+		const dnaMatchSnapshot = (typeof dnaMatchValue === 'string' || Array.isArray(dnaMatchValue))
+			? dnaMatchValue as string | string[]
+			: undefined;
+
 		const snapshot: RelationshipSnapshot = {
 			father: frontmatter.father,
 			mother: frontmatter.mother,
@@ -487,7 +528,8 @@ export class BidirectionalLinker {
 			parents: frontmatter.parents,
 			spouse: frontmatter.spouse,
 			children: frontmatter.children,
-			child: childSnapshot  // Capture child array for deletion detection
+			child: childSnapshot,  // Capture child array for deletion detection
+			dna_match: dnaMatchSnapshot  // Capture DNA matches for deletion detection
 		};
 
 		// Capture indexed spouse properties
@@ -1348,6 +1390,124 @@ export class BidirectionalLinker {
 
 		logger.info('bidirectional-linking', 'Removed spouse bidirectional link (deletion sync)', {
 			spouseFile: spouseFile.path,
+			personFile: personFile.path,
+			personName,
+			personCrId
+		});
+	}
+
+	/**
+	 * Sync DNA match relationship (bidirectional, symmetric)
+	 * Ensures both persons list each other as DNA matches
+	 *
+	 * @param matchLink Wikilink to DNA match
+	 * @param personFile Person's file
+	 * @param personName Person's name
+	 * @param personCrId Person's cr_id
+	 */
+	private async syncDnaMatch(
+		matchLink: unknown,
+		personFile: TFile,
+		personName: string,
+		personCrId: string
+	): Promise<void> {
+		const matchFile = this.resolveLink(matchLink, personFile);
+		if (!matchFile) {
+			logger.warn('bidirectional-linking', 'DNA match file not found', {
+				matchLink,
+				personFile: personFile.path
+			});
+			return;
+		}
+
+		// Read match person's frontmatter
+		const matchCache = this.app.metadataCache.getFileCache(matchFile);
+		if (!matchCache?.frontmatter) {
+			logger.warn('bidirectional-linking', 'DNA match has no frontmatter', {
+				matchFile: matchFile.path
+			});
+			return;
+		}
+
+		const matchFm = matchCache.frontmatter;
+
+		// Check if person is already linked in the match's dna_match array
+		const matchLinks = matchFm.dna_match;
+		const matchIds = matchFm.dna_match_id;
+		const matchLinksArray = matchLinks
+			? Array.isArray(matchLinks) ? matchLinks : [matchLinks]
+			: [];
+		const matchIdsArray = matchIds
+			? Array.isArray(matchIds) ? matchIds : [matchIds]
+			: [];
+
+		// Create wikilink using basename if it differs from name, otherwise use name
+		const personLinkText = personFile.basename !== personName
+			? `[[${personFile.basename}|${personName}]]`
+			: `[[${personName}]]`;
+
+		// Check if already linked by cr_id (more reliable)
+		if (matchIdsArray.includes(personCrId)) {
+			logger.debug('bidirectional-linking', 'DNA match already linked by ID', {
+				matchFile: matchFile.path,
+				personFile: personFile.path
+			});
+			return;
+		}
+
+		// Also check wikilinks for backward compatibility
+		const alreadyLinkedByLink = matchLinksArray.some(match => {
+			const linkText = typeof match === 'string' ? match : String(match);
+			return linkText.includes(personName) || linkText.includes(personFile.basename);
+		});
+
+		if (alreadyLinkedByLink) {
+			logger.debug('bidirectional-linking', 'DNA match already linked by name', {
+				matchFile: matchFile.path,
+				personFile: personFile.path
+			});
+			return;
+		}
+
+		// Add person to match's dna_match arrays (dual storage)
+		await this.addToArrayField(matchFile, 'dna_match', personLinkText);
+		await this.addToArrayField(matchFile, 'dna_match_id', personCrId);
+
+		logger.info('bidirectional-linking', 'Added DNA match bidirectional link', {
+			matchFile: matchFile.path,
+			personFile: personFile.path,
+			wikilink: personLinkText,
+			crId: personCrId
+		});
+	}
+
+	/**
+	 * Remove DNA match link from the other person's note (handles deletion sync)
+	 */
+	private async removeDnaMatchLink(
+		matchLink: unknown,
+		personFile: TFile,
+		personName: string,
+		personCrId: string
+	): Promise<void> {
+		const matchFile = this.resolveLink(matchLink, personFile);
+		if (!matchFile) {
+			logger.warn('bidirectional-linking', 'DNA match file not found for deletion sync', {
+				matchLink,
+				personFile: personFile.path
+			});
+			return;
+		}
+
+		// Remove from both dna_match and dna_match_id arrays
+		// Try all possible formats: [[name]], [[basename]], [[basename|name]]
+		await this.removeFromArrayField(matchFile, 'dna_match', `[[${personName}]]`);
+		await this.removeFromArrayField(matchFile, 'dna_match', `[[${personFile.basename}]]`);
+		await this.removeFromArrayField(matchFile, 'dna_match', `[[${personFile.basename}|${personName}]]`);
+		await this.removeFromArrayField(matchFile, 'dna_match_id', personCrId);
+
+		logger.info('bidirectional-linking', 'Removed DNA match bidirectional link (deletion sync)', {
+			matchFile: matchFile.path,
 			personFile: personFile.path,
 			personName,
 			personCrId

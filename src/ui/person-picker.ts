@@ -61,6 +61,10 @@ export interface PersonInfo {
 	deathPlace?: PlaceInfo;
 	burialPlace?: PlaceInfo;
 	file: TFile;
+	/** Person type (e.g., "DNA Match") - only set when DNA tracking is enabled */
+	personType?: string;
+	/** Shared cM value for DNA matches */
+	dnaSharedCm?: number;
 }
 
 /**
@@ -364,6 +368,13 @@ export class PersonPickerModal extends Modal {
 			const birthDate = fm.born instanceof Date ? fm.born.toISOString().split('T')[0] : fm.born;
 			const deathDate = fm.died instanceof Date ? fm.died.toISOString().split('T')[0] : fm.died;
 
+			// Extract DNA fields when DNA tracking is enabled
+			const enableDnaTracking = this.plugin?.settings?.enableDnaTracking;
+			const personType = enableDnaTracking ? fm.personType : undefined;
+			const dnaSharedCm = enableDnaTracking && typeof fm.dna_shared_cm === 'number'
+				? fm.dna_shared_cm
+				: undefined;
+
 			return {
 				name,
 				crId: fm.cr_id,
@@ -374,7 +385,9 @@ export class PersonPickerModal extends Modal {
 				birthPlace: extractPlaceInfo(fm.birth_place),
 				deathPlace: extractPlaceInfo(fm.death_place),
 				burialPlace: extractPlaceInfo(fm.burial_place),
-				file
+				file,
+				personType,
+				dnaSharedCm
 			};
 		} catch (error: unknown) {
 			console.error('Error extracting person info from file:', file.path, error);
@@ -718,6 +731,17 @@ export class PersonPickerModal extends Modal {
 		// Show pronouns if enabled in settings and person has pronouns
 		if (this.plugin?.settings.showPronouns && person.pronouns) {
 			nameContainer.createSpan({ cls: 'crc-picker-item__pronouns', text: `(${person.pronouns})` });
+		}
+
+		// Show DNA Match badge when DNA tracking is enabled and person has DNA data
+		if (this.plugin?.settings.enableDnaTracking && (person.personType === 'DNA Match' || person.dnaSharedCm)) {
+			const dnaBadge = nameContainer.createSpan({ cls: 'crc-picker-item__dna-badge' });
+			const dnaIcon = createLucideIcon('flask-conical', 12);
+			dnaBadge.appendChild(dnaIcon);
+			// Show cM value if available
+			if (person.dnaSharedCm) {
+				dnaBadge.appendText(`${person.dnaSharedCm} cM`);
+			}
 		}
 
 		// Meta info (dates if available, otherwise cr_id)

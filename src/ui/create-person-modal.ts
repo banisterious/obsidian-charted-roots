@@ -158,6 +158,7 @@ export class CreatePersonModal extends Modal {
 			editPersonData?: {
 				crId: string;
 				name: string;
+				personType?: string;
 				sex?: string;
 				gender?: string; // Kept for backwards compatibility
 				pronouns?: string;
@@ -204,6 +205,13 @@ export class CreatePersonModal extends Modal {
 				// Sources
 				sourceIds?: string[];
 				sourceNames?: string[];
+				// DNA tracking fields
+				dnaSharedCm?: number;
+				dnaTestingCompany?: string;
+				dnaKitId?: string;
+				dnaMatchType?: string;
+				dnaEndogamyFlag?: boolean;
+				dnaNotes?: string;
 			};
 			// Universe options
 			existingUniverses?: string[];
@@ -241,6 +249,7 @@ export class CreatePersonModal extends Modal {
 			this.personData = {
 				name: ep.name,
 				crId: ep.crId,
+				personType: ep.personType,
 				sex: ep.sex || ep.gender, // sex preferred, gender for backwards compatibility
 				pronouns: ep.pronouns,
 				// Name components (#174, #192)
@@ -257,7 +266,14 @@ export class CreatePersonModal extends Modal {
 				researchLevel: ep.researchLevel,
 				cr_living: ep.cr_living,
 				collection: ep.collection,
-				universe: ep.universe
+				universe: ep.universe,
+				// DNA tracking fields
+				dnaSharedCm: ep.dnaSharedCm,
+				dnaTestingCompany: ep.dnaTestingCompany,
+				dnaKitId: ep.dnaKitId,
+				dnaMatchType: ep.dnaMatchType,
+				dnaEndogamyFlag: ep.dnaEndogamyFlag,
+				dnaNotes: ep.dnaNotes
 			};
 			// Set up relationship fields
 			if (ep.fatherId || ep.fatherName) {
@@ -506,6 +522,103 @@ export class CreatePersonModal extends Modal {
 				.onChange(value => {
 					this.personData.pronouns = value || undefined;
 				}));
+
+		// Person type (only shown when DNA tracking is enabled)
+		if (this.plugin?.settings.enableDnaTracking) {
+			new Setting(form)
+				.setName('Person type')
+				.setDesc('Classify this person (for genetic genealogy workflows)')
+				.addDropdown(dropdown => dropdown
+					.addOption('', '(Regular person)')
+					.addOption('DNA Match', 'DNA Match')
+					.setValue(this.personData.personType || '')
+					.onChange(value => {
+						this.personData.personType = value || undefined;
+					}));
+		}
+
+		// DNA Information section (shown when DNA tracking is enabled)
+		// Always show when setting is on, so users can add DNA data to any person
+		if (this.plugin?.settings.enableDnaTracking) {
+			const dnaSection = form.createDiv({ cls: 'crc-dna-section' });
+			dnaSection.createEl('h4', { text: 'DNA information', cls: 'crc-section-header crc-section-header--secondary' });
+
+			// Shared cM (number input)
+			new Setting(dnaSection)
+				.setName('Shared cM')
+				.setDesc('Shared centiMorgans with this match')
+				.addText(text => text
+					.setPlaceholder('e.g., 1847')
+					.setValue(this.personData.dnaSharedCm?.toString() || '')
+					.onChange(value => {
+						const num = parseFloat(value);
+						this.personData.dnaSharedCm = isNaN(num) ? undefined : num;
+					}));
+
+			// Testing Company (dropdown)
+			new Setting(dnaSection)
+				.setName('Testing company')
+				.setDesc('DNA testing service provider')
+				.addDropdown(dropdown => dropdown
+					.addOption('', '(Not specified)')
+					.addOption('AncestryDNA', 'AncestryDNA')
+					.addOption('23andMe', '23andMe')
+					.addOption('FamilyTreeDNA', 'FamilyTreeDNA')
+					.addOption('MyHeritage', 'MyHeritage')
+					.addOption('LivingDNA', 'LivingDNA')
+					.addOption('GEDmatch', 'GEDmatch')
+					.setValue(this.personData.dnaTestingCompany || '')
+					.onChange(value => {
+						this.personData.dnaTestingCompany = value || undefined;
+					}));
+
+			// Kit ID (text input)
+			new Setting(dnaSection)
+				.setName('Kit ID')
+				.setDesc('DNA kit identifier')
+				.addText(text => text
+					.setPlaceholder('e.g., ABC123')
+					.setValue(this.personData.dnaKitId || '')
+					.onChange(value => {
+						this.personData.dnaKitId = value || undefined;
+					}));
+
+			// Match Type (dropdown)
+			new Setting(dnaSection)
+				.setName('Match type')
+				.setDesc('Classification of this DNA match')
+				.addDropdown(dropdown => dropdown
+					.addOption('', '(Not classified)')
+					.addOption('BKM', 'BKM (Best Known Match)')
+					.addOption('BMM', 'BMM (Best Mystery Match)')
+					.addOption('confirmed', 'Confirmed relationship')
+					.addOption('unconfirmed', 'Unconfirmed')
+					.setValue(this.personData.dnaMatchType || '')
+					.onChange(value => {
+						this.personData.dnaMatchType = value || undefined;
+					}));
+
+			// Endogamy Flag (toggle)
+			new Setting(dnaSection)
+				.setName('Endogamy flag')
+				.setDesc('Mark if match may be affected by endogamy (inflated cM values)')
+				.addToggle(toggle => toggle
+					.setValue(this.personData.dnaEndogamyFlag || false)
+					.onChange(value => {
+						this.personData.dnaEndogamyFlag = value || undefined;
+					}));
+
+			// Notes (textarea)
+			new Setting(dnaSection)
+				.setName('DNA notes')
+				.setDesc('Additional notes about this DNA match')
+				.addTextArea(textarea => textarea
+					.setPlaceholder('e.g., Matches on chromosome 7')
+					.setValue(this.personData.dnaNotes || '')
+					.onChange(value => {
+						this.personData.dnaNotes = value || undefined;
+					}));
+		}
 
 		// Birth date
 		new Setting(form)
@@ -2394,6 +2507,7 @@ export class CreatePersonModal extends Modal {
 			// Build person data with relationships
 			const data: Partial<PersonData> = {
 				name: this.personData.name,
+				personType: this.personData.personType,
 				birthDate: this.personData.birthDate,
 				deathDate: this.personData.deathDate,
 				sex: this.personData.sex,
@@ -2405,7 +2519,14 @@ export class CreatePersonModal extends Modal {
 				givenName: this.personData.givenName,
 				surnames: this.personData.surnames,
 				maidenName: this.personData.maidenName,
-				marriedNames: this.personData.marriedNames
+				marriedNames: this.personData.marriedNames,
+				// DNA tracking fields
+				dnaSharedCm: this.personData.dnaSharedCm,
+				dnaTestingCompany: this.personData.dnaTestingCompany,
+				dnaKitId: this.personData.dnaKitId,
+				dnaMatchType: this.personData.dnaMatchType,
+				dnaEndogamyFlag: this.personData.dnaEndogamyFlag,
+				dnaNotes: this.personData.dnaNotes
 			};
 
 			// Add father relationship

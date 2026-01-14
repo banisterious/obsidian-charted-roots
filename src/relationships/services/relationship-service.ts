@@ -40,6 +40,7 @@ export class RelationshipService {
 
 	/**
 	 * Get all relationship type definitions (built-in + custom)
+	 * Filters out types that require settings that aren't enabled.
 	 */
 	getAllRelationshipTypes(): RelationshipTypeDefinition[] {
 		const builtIn = this.plugin.settings.showBuiltInRelationshipTypes
@@ -51,6 +52,12 @@ export class RelationshipService {
 		const typeMap = new Map<string, RelationshipTypeDefinition>();
 
 		for (const type of builtIn) {
+			// Filter out types that require a setting that isn't enabled
+			if (type.requiresSetting) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				const settingValue = (this.plugin.settings as any)[type.requiresSetting];
+				if (!settingValue) continue;
+			}
 			typeMap.set(type.id, type);
 		}
 		for (const type of custom) {
@@ -239,7 +246,8 @@ export class RelationshipService {
 			religious: 0,
 			professional: 0,
 			social: 0,
-			feudal: 0
+			feudal: 0,
+			dna: 0
 		};
 
 		for (const rel of definedRels) {

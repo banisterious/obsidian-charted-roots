@@ -444,6 +444,9 @@ export interface CanvasRootsSettings {
 	enableInclusiveParents: boolean;
 	/** Label for gender-neutral parent field (e.g., "Parents", "Guardians", "Progenitors") */
 	parentFieldLabel: string;
+	// DNA match tracking (opt-in feature)
+	/** Enable DNA match tracking features (person subtype, relationship type, UI fields) */
+	enableDnaTracking: boolean;
 	// Plugin rename migration (Charted Roots → Charted Roots)
 	/**
 	 * True when migration from Charted Roots to Charted Roots is complete.
@@ -791,7 +794,9 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	frozenGalleryCalloutType: 'info',          // Callout type for frozen media galleries
 	// Inclusive parent relationships (opt-in feature)
 	enableInclusiveParents: false,             // Default: OFF - users opt-in to gender-neutral parents
-	parentFieldLabel: 'Parents'                // Default label for gender-neutral parent field
+	parentFieldLabel: 'Parents',               // Default label for gender-neutral parent field
+	// DNA match tracking (opt-in feature)
+	enableDnaTracking: false                   // Default: OFF - users opt-in to DNA match tracking
 };
 
 export class CanvasRootsSettingTab extends PluginSettingTab {
@@ -1608,6 +1613,27 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 						this.plugin.settings.showResearchGapsInStatus = value;
 						await this.plugin.saveSettings();
 					}));
+		}
+
+		// --- DNA tracking subsection ---
+		advancedContent.createEl('h4', { text: 'DNA tracking', cls: 'cr-subsection-title' });
+
+		new Setting(advancedContent)
+			.setName('Enable DNA match tracking')
+			.setDesc('Show DNA-related fields and options for genetic genealogy workflows')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.enableDnaTracking)
+				.onChange(async (value) => {
+					this.plugin.settings.enableDnaTracking = value;
+					await this.plugin.saveSettings();
+					this.display();
+				}));
+
+		if (this.plugin.settings.enableDnaTracking) {
+			advancedContent.createEl('p', {
+				cls: 'setting-item-description',
+				text: 'When enabled: "DNA Match" person type available in Create Person, DNA fields shown in Edit Person modal, DNA Match relationship type available.'
+			});
 		}
 
 		// --- Integrations subsection ---

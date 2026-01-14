@@ -4597,6 +4597,7 @@ export default class CanvasRootsPlugin extends Plugin {
 				this.bidirectionalLinker.setFolderFilter(this.folderFilter);
 			}
 			this.bidirectionalLinker.setEnableInclusiveParents(this.settings.enableInclusiveParents);
+			this.bidirectionalLinker.setEnableDnaTracking(this.settings.enableDnaTracking);
 		}
 
 		// Run after a 1-second delay to not impact plugin load performance
@@ -4724,6 +4725,7 @@ export default class CanvasRootsPlugin extends Plugin {
 							this.bidirectionalLinker.setFolderFilter(this.folderFilter);
 						}
 						this.bidirectionalLinker.setEnableInclusiveParents(this.settings.enableInclusiveParents);
+						this.bidirectionalLinker.setEnableDnaTracking(this.settings.enableDnaTracking);
 					}
 					await this.bidirectionalLinker.syncRelationships(file);
 				} catch (error: unknown) {
@@ -4780,6 +4782,7 @@ export default class CanvasRootsPlugin extends Plugin {
 		// Update bidirectional linker with current settings
 		if (this.bidirectionalLinker) {
 			this.bidirectionalLinker.setEnableInclusiveParents(this.settings.enableInclusiveParents);
+			this.bidirectionalLinker.setEnableDnaTracking(this.settings.enableDnaTracking);
 		}
 	}
 
@@ -5496,6 +5499,7 @@ export default class CanvasRootsPlugin extends Plugin {
 			editPersonData: {
 				crId: String(fm.cr_id),
 				name: String(fm.name || ''),
+				personType: fm.personType,
 				gender: fm.gender || fm.sex,
 				pronouns: fm.pronouns,
 				// Name components (#174, #192)
@@ -5526,7 +5530,14 @@ export default class CanvasRootsPlugin extends Plugin {
 				parentIds: parentIds.length > 0 ? parentIds : undefined,
 				parentNames: parentNames.length > 0 ? parentNames : undefined,
 				collection: fm.collection,
-				universe: fm.universe
+				universe: fm.universe,
+				// DNA tracking fields
+				dnaSharedCm: typeof fm.dna_shared_cm === 'number' ? fm.dna_shared_cm : undefined,
+				dnaTestingCompany: fm.dna_testing_company,
+				dnaKitId: fm.dna_kit_id,
+				dnaMatchType: fm.dna_match_type,
+				dnaEndogamyFlag: typeof fm.dna_endogamy_flag === 'boolean' ? fm.dna_endogamy_flag : undefined,
+				dnaNotes: fm.dna_notes
 			},
 			familyGraph,
 			placeGraph,

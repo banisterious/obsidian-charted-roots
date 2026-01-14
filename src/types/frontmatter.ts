@@ -43,6 +43,8 @@ export const RESEARCH_LEVELS: Record<ResearchLevel, { name: string; description:
 export interface PersonFrontmatter {
 	cr_id?: string;
 	name?: string;
+	/** Person subtype (e.g., "DNA Match" for genetic genealogy) */
+	personType?: string;
 	// Biological parents
 	father?: string;
 	father_id?: string;
@@ -114,8 +116,21 @@ export interface PersonFrontmatter {
 	 * Enables reliable linking even when source notes are renamed.
 	 */
 	sources_id?: string[];
+	// DNA tracking properties (opt-in via enableDnaTracking setting)
+	/** Shared centiMorgans */
+	dna_shared_cm?: number;
+	/** Testing company (AncestryDNA, 23andMe, FamilyTreeDNA, MyHeritage, LivingDNA, GEDmatch) */
+	dna_testing_company?: string;
+	/** Kit identifier */
+	dna_kit_id?: string;
+	/** Match type: BKM | BMM | confirmed | unconfirmed */
+	dna_match_type?: string;
+	/** Flag for endogamous populations */
+	dna_endogamy_flag?: boolean;
+	/** Free-form notes about the DNA match */
+	dna_notes?: string;
 	// Index signature for dynamic properties (spouse1, spouse1_id, spouse2, etc.)
-	[key: string]: string | string[] | number | SourcedFacts | undefined;
+	[key: string]: string | string[] | number | boolean | SourcedFacts | undefined;
 }
 
 /**

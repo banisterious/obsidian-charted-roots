@@ -414,6 +414,34 @@ Charted Roots provides a place to **record and organize** key DNA matches alongs
 | Phase | Status | Target |
 |-------|--------|--------|
 | Phase 1 | ✅ Implemented | v0.18.x |
-| Phase 2 | Planned | v0.19.9 |
-| Phase 3 | Planned | v0.19.9 |
+| Phase 2 | ✅ Implemented | v0.19.9 |
+| Phase 3 | ✅ Implemented | v0.19.9 |
 | Phase 4 | Future Consideration | — |
+
+### Phase 2 Implementation Notes
+
+Completed in feature branch `feature/dna-match-tracking`:
+
+- Added `enableDnaTracking` setting (default: OFF)
+- Added DNA tracking toggle in Settings → Advanced → DNA tracking
+- Added `personType` field to PersonFrontmatter and PersonData interfaces
+- Added Person Type dropdown to Create/Edit Person modal (when setting enabled)
+- Added DNA Information section with all fields (Shared cM, Testing Company, Kit ID, Match Type, Endogamy Flag, Notes)
+- DNA fields show for all persons when setting is ON (not just DNA Match types)
+- Both entry points covered: Control Center row click + File Explorer context menu
+
+### Phase 3 Implementation Notes
+
+Completed in feature branch `feature/dna-match-tracking`:
+
+- Added `dna_match` relationship type (symmetric, opt-in via `requiresSetting`)
+- Added `dna` relationship category with proper display name
+- Relationship service filters types by `requiresSetting` (e.g., hides `dna_match` when tracking disabled)
+- Added bidirectional DNA match syncing in BidirectionalLinker:
+  - `syncDnaMatch()` method ensures A↔B creates B↔A
+  - Deletion sync removes relationship from both sides
+  - Uses `dna_match` and `dna_match_id` dual storage pattern
+- Added DNA badge to person picker:
+  - Shows flask-conical icon for DNA Match persons
+  - Displays shared cM value when available
+  - Purple color theme consistent with DNA relationship type

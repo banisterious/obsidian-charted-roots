@@ -189,6 +189,8 @@ export type LucideIconName =
 	| 'git-fork' // Descendant tree fallback
 	| 'hourglass' // Hourglass tree fallback
 	| 'pie-chart' // Fan chart fallback
+	// DNA tracking
+	| 'flask-conical' // DNA match badge
 	// Custom icons (registered via addIcon)
 	| 'cr-pedigree-tree' // Pedigree tree icon
 	| 'cr-descendant-tree' // Descendant tree icon

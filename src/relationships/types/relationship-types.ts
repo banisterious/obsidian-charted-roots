@@ -14,7 +14,8 @@ export type RelationshipCategory =
 	| 'religious'    // Godparent, mentor, disciple
 	| 'professional' // Master, apprentice, employer
 	| 'social'       // Witness, neighbor, companion, ally, rival
-	| 'feudal';      // Liege, vassal (world-building)
+	| 'feudal'       // Liege, vassal (world-building)
+	| 'dna';         // DNA/genetic matches (opt-in)
 
 /**
  * Definition of a relationship category for grouping types
@@ -80,6 +81,11 @@ export interface RelationshipTypeDefinition {
 	 * Only used when includeOnFamilyTree is true.
 	 */
 	familyGraphMapping?: FamilyGraphMapping;
+	/**
+	 * Setting that must be enabled for this relationship type to appear.
+	 * Used for opt-in features like DNA tracking.
+	 */
+	requiresSetting?: string;
 }
 
 /**
@@ -161,7 +167,8 @@ export const RELATIONSHIP_CATEGORY_NAMES: Record<RelationshipCategory, string> =
 	religious: 'Religious/Spiritual',
 	professional: 'Professional',
 	social: 'Social',
-	feudal: 'Feudal/World-building'
+	feudal: 'Feudal/World-building',
+	dna: 'DNA/Genetic'
 };
 
 /**

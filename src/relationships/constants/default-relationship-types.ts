@@ -16,7 +16,8 @@ export const BUILT_IN_RELATIONSHIP_CATEGORIES: RelationshipCategoryDefinition[] 
 	{ id: 'religious', name: 'Religious/Spiritual', sortOrder: 2 },
 	{ id: 'professional', name: 'Professional', sortOrder: 3 },
 	{ id: 'social', name: 'Social', sortOrder: 4 },
-	{ id: 'feudal', name: 'Feudal/World-building', sortOrder: 5 }
+	{ id: 'feudal', name: 'Feudal/World-building', sortOrder: 5 },
+	{ id: 'dna', name: 'DNA/Genetic', sortOrder: 6 }
 ];
 
 /**
@@ -343,6 +344,21 @@ export const DEFAULT_RELATIONSHIP_TYPES: RelationshipTypeDefinition[] = [
 		lineStyle: 'dashed',
 		symmetric: true,
 		builtIn: true
+	},
+
+	// DNA/Genetic (opt-in via enableDnaTracking setting)
+	{
+		id: 'dna_match',
+		name: 'DNA match',
+		category: 'dna',
+		color: '#9333ea',
+		lineStyle: 'dashed',
+		symmetric: true,
+		builtIn: true,
+		includeOnFamilyTree: false,
+		description: 'Genetic DNA match (not a genealogical relationship)',
+		/** This relationship type requires enableDnaTracking setting */
+		requiresSetting: 'enableDnaTracking'
 	}
 ];
 

@@ -64,6 +64,8 @@ export interface PersonData {
 	/** Display name (optional - allows creating placeholder persons) */
 	name?: string;
 	crId?: string;
+	/** Person subtype (e.g., "DNA Match" for genetic genealogy) */
+	personType?: string;
 	nickname?: string;           // Informal name, alias, or nickname (e.g., "Bobby" for Robert)
 	// Name components (#174, #192)
 	givenName?: string;          // First/given name(s) - from GEDCOM GIVN tag
@@ -124,6 +126,13 @@ export interface PersonData {
 	// External IDs (for import round-trip)
 	externalId?: string;         // Original ID from import source (e.g., GEDCOM xref, Gramps handle)
 	externalIdSource?: string;   // Source of the external ID (e.g., "gedcom", "gramps")
+	// DNA tracking fields (opt-in via enableDnaTracking setting)
+	dnaSharedCm?: number;        // Shared centiMorgans
+	dnaTestingCompany?: string;  // Testing company (AncestryDNA, 23andMe, etc.)
+	dnaKitId?: string;           // Kit identifier
+	dnaMatchType?: string;       // BKM | BMM | confirmed | unconfirmed
+	dnaEndogamyFlag?: boolean;   // Flag for endogamous populations
+	dnaNotes?: string;           // Free-form notes
 }
 
 /**
@@ -204,13 +213,18 @@ export async function createPersonNote(
 	// Build frontmatter with essential properties
 	// Essential properties are always included (per Guide documentation)
 	// Property names respect user-configured aliases
-	const frontmatter: Record<string, string | string[] | number> = {
+	const frontmatter: Record<string, string | string[] | number | boolean> = {
 		[prop('cr_id')]: crId,
 		[prop('cr_type')]: 'person',
 		[prop('name')]: person.name || '',
 		[prop('born')]: person.birthDate || '',
 		[prop('died')]: person.deathDate || ''
 	};
+
+	// Person type (e.g., "DNA Match" for genetic genealogy)
+	if (person.personType) {
+		frontmatter[prop('personType')] = person.personType;
+	}
 
 	// Birth place (dual storage: wikilink + ID for reliable resolution)
 	if (person.birthPlaceCrId && person.birthPlaceName) {
@@ -296,6 +310,26 @@ export async function createPersonNote(
 	if (person.externalIdSource) {
 		frontmatter[prop('external_id_source')] = person.externalIdSource;
 		logger.debug('externalIdSource', `Added: ${person.externalIdSource}`);
+	}
+
+	// DNA tracking fields (opt-in via enableDnaTracking setting)
+	if (person.dnaSharedCm !== undefined) {
+		frontmatter[prop('dna_shared_cm')] = person.dnaSharedCm;
+	}
+	if (person.dnaTestingCompany) {
+		frontmatter[prop('dna_testing_company')] = person.dnaTestingCompany;
+	}
+	if (person.dnaKitId) {
+		frontmatter[prop('dna_kit_id')] = person.dnaKitId;
+	}
+	if (person.dnaMatchType) {
+		frontmatter[prop('dna_match_type')] = person.dnaMatchType;
+	}
+	if (person.dnaEndogamyFlag !== undefined) {
+		frontmatter[prop('dna_endogamy_flag')] = person.dnaEndogamyFlag;
+	}
+	if (person.dnaNotes) {
+		frontmatter[prop('dna_notes')] = person.dnaNotes;
 	}
 
 	// Handle relationships using dual storage: wikilinks for Obsidian + _id fields for reliability
@@ -942,6 +976,13 @@ export async function updatePersonNote(
 	await app.fileManager.processFrontMatter(file, (frontmatter) => {
 		// Update basic fields if provided
 		if (person.name !== undefined) frontmatter.name = person.name;
+		if (person.personType !== undefined) {
+			if (person.personType) {
+				frontmatter.personType = person.personType;
+			} else {
+				delete frontmatter.personType;
+			}
+		}
 		if (person.birthDate !== undefined) frontmatter.born = person.birthDate || '';
 		if (person.deathDate !== undefined) frontmatter.died = person.deathDate || '';
 		if (person.sex !== undefined) {
@@ -1013,6 +1054,49 @@ export async function updatePersonNote(
 				frontmatter.research_level = person.researchLevel;
 			} else {
 				delete frontmatter.research_level;
+			}
+		}
+		// DNA tracking fields
+		if (person.dnaSharedCm !== undefined) {
+			if (typeof person.dnaSharedCm === 'number') {
+				frontmatter.dna_shared_cm = person.dnaSharedCm;
+			} else {
+				delete frontmatter.dna_shared_cm;
+			}
+		}
+		if (person.dnaTestingCompany !== undefined) {
+			if (person.dnaTestingCompany) {
+				frontmatter.dna_testing_company = person.dnaTestingCompany;
+			} else {
+				delete frontmatter.dna_testing_company;
+			}
+		}
+		if (person.dnaKitId !== undefined) {
+			if (person.dnaKitId) {
+				frontmatter.dna_kit_id = person.dnaKitId;
+			} else {
+				delete frontmatter.dna_kit_id;
+			}
+		}
+		if (person.dnaMatchType !== undefined) {
+			if (person.dnaMatchType) {
+				frontmatter.dna_match_type = person.dnaMatchType;
+			} else {
+				delete frontmatter.dna_match_type;
+			}
+		}
+		if (person.dnaEndogamyFlag !== undefined) {
+			if (typeof person.dnaEndogamyFlag === 'boolean') {
+				frontmatter.dna_endogamy_flag = person.dnaEndogamyFlag;
+			} else {
+				delete frontmatter.dna_endogamy_flag;
+			}
+		}
+		if (person.dnaNotes !== undefined) {
+			if (person.dnaNotes) {
+				frontmatter.dna_notes = person.dnaNotes;
+			} else {
+				delete frontmatter.dna_notes;
 			}
 		}
 		// Handle birth place (dual storage: wikilink + ID)
