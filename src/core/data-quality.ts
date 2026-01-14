@@ -237,6 +237,8 @@ export class DataQualityService {
 				issues.push(...this.checkRelationshipInconsistencies(person, peopleMap));
 				// Also check for ambiguous wikilinks (part of relationship quality)
 				issues.push(...this.checkAmbiguousWikilinks(person));
+				// Check for missing relationship IDs (wikilink exists but _id is empty)
+				issues.push(...this.checkMissingRelationshipIds(person));
 			}
 			if (checks.missingData) {
 				issues.push(...this.checkMissingData(person));
@@ -1045,6 +1047,108 @@ export class DataQualityService {
 									wikilink: val,
 									matchCount,
 									suggestion: `Add ${idField} field to disambiguate`
+								}
+							});
+						}
+					}
+				}
+			}
+		}
+
+		return issues;
+	}
+
+	/**
+	 * Check for missing relationship IDs when wikilinks exist
+	 * Detects when a wikilink field has a value but the corresponding _id field is empty
+	 */
+	private checkMissingRelationshipIds(person: PersonNode): DataQualityIssue[] {
+		const issues: DataQualityIssue[] = [];
+
+		// Skip if PersonIndexService not available
+		if (!this.personIndex) {
+			return issues;
+		}
+
+		// Read raw frontmatter to check for wikilink fields
+		const cache = this.app.metadataCache.getFileCache(person.file);
+		const fm = cache?.frontmatter as Record<string, unknown> | undefined;
+		if (!fm) {
+			return issues;
+		}
+
+		// Relationship fields that use the wikilink + _id dual storage pattern
+		const relationshipFields = [
+			'father', 'mother', 'spouse', 'children', 'parents',
+			'stepfather', 'stepmother', 'adoptive_father',
+			'adoptive_mother', 'adoptive_parent',
+			// Custom relationship types also use this pattern
+			'mentor', 'disciple', 'godparent', 'godchild',
+			'guardian', 'ward', 'master', 'apprentice',
+			'employer', 'employee', 'liege', 'vassal',
+			'dna_match'
+		];
+
+		for (const field of relationshipFields) {
+			const idField = `${field}_id`;
+			const value = fm[field];
+			const idValue = fm[idField];
+
+			if (!value) {
+				continue;
+			}
+
+			// Handle both single values and arrays
+			const values = Array.isArray(value) ? value : [value];
+			const idValues = idValue ? (Array.isArray(idValue) ? idValue : [idValue]) : [];
+
+			for (let i = 0; i < values.length; i++) {
+				const val = values[i];
+
+				// Skip if this index already has an ID
+				if (idValues[i]) {
+					continue;
+				}
+
+				if (typeof val === 'string' && val.includes('[[')) {
+					// Extract wikilink text
+					const match = val.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/);
+					if (match) {
+						const wikilinkPath = match[1];
+
+						// Try to resolve the wikilink
+						const resolvedCrId = this.personIndex.getCrIdByWikilink(wikilinkPath);
+
+						if (resolvedCrId) {
+							// Can be repaired - report as info
+							issues.push({
+								code: 'MISSING_RELATIONSHIP_ID',
+								message: `Missing ${idField} for wikilink [[${wikilinkPath}]]`,
+								severity: 'info',
+								category: 'relationship_inconsistency',
+								person,
+								details: {
+									field,
+									wikilink: val,
+									resolvedCrId,
+									repairable: true
+								}
+							});
+						} else if (this.personIndex.hasAmbiguousFilename(wikilinkPath)) {
+							// Ambiguous - already reported by checkAmbiguousWikilinks
+							// Skip to avoid duplicate reporting
+						} else {
+							// Broken link or target missing cr_id
+							issues.push({
+								code: 'UNRESOLVABLE_RELATIONSHIP_WIKILINK',
+								message: `Cannot resolve wikilink [[${wikilinkPath}]] for ${field}`,
+								severity: 'warning',
+								category: 'relationship_inconsistency',
+								person,
+								details: {
+									field,
+									wikilink: val,
+									reason: 'broken_or_missing_crid'
 								}
 							});
 						}
@@ -2571,6 +2675,42 @@ export interface NormalizationPreview {
 	orphanClearing: NormalizationChange[];
 	legacyTypeMigration: NormalizationChange[];
 	legacyMembershipsMigration: LegacyMembershipMigration[];
+	/** Missing relationship IDs that can be repaired */
+	missingIdRepairs: MissingIdRepair[];
+	/** Unresolvable wikilinks (broken, ambiguous, or target missing cr_id) */
+	unresolvableWikilinks: UnresolvableWikilink[];
+}
+
+/**
+ * A missing relationship ID that can be repaired
+ */
+export interface MissingIdRepair {
+	person: PersonNode;
+	/** The relationship field (e.g., 'father', 'spouse') */
+	field: string;
+	/** The wikilink value (e.g., '[[John Smith]]') */
+	wikilink: string;
+	/** The resolved cr_id to add */
+	resolvedCrId: string;
+	/** Display name of the target person */
+	targetName: string;
+	/** Index in array field (for array fields like children) */
+	arrayIndex?: number;
+}
+
+/**
+ * A wikilink that cannot be automatically repaired
+ */
+export interface UnresolvableWikilink {
+	person: PersonNode;
+	/** The relationship field */
+	field: string;
+	/** The wikilink value */
+	wikilink: string;
+	/** Why it cannot be resolved */
+	reason: 'broken' | 'ambiguous' | 'target_missing_crid';
+	/** Additional details (e.g., match count for ambiguous) */
+	details?: string;
 }
 
 /**
