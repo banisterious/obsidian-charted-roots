@@ -43,6 +43,8 @@ export const RESEARCH_LEVELS: Record<ResearchLevel, { name: string; description:
 export interface PersonFrontmatter {
 	cr_id?: string;
 	name?: string;
+	/** Person subtype (e.g., "DNA Match" for genetic genealogy) */
+	personType?: string;
 	// Biological parents
 	father?: string;
 	father_id?: string;

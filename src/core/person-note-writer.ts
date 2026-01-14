@@ -64,6 +64,8 @@ export interface PersonData {
 	/** Display name (optional - allows creating placeholder persons) */
 	name?: string;
 	crId?: string;
+	/** Person subtype (e.g., "DNA Match" for genetic genealogy) */
+	personType?: string;
 	nickname?: string;           // Informal name, alias, or nickname (e.g., "Bobby" for Robert)
 	// Name components (#174, #192)
 	givenName?: string;          // First/given name(s) - from GEDCOM GIVN tag
@@ -211,6 +213,11 @@ export async function createPersonNote(
 		[prop('born')]: person.birthDate || '',
 		[prop('died')]: person.deathDate || ''
 	};
+
+	// Person type (e.g., "DNA Match" for genetic genealogy)
+	if (person.personType) {
+		frontmatter[prop('personType')] = person.personType;
+	}
 
 	// Birth place (dual storage: wikilink + ID for reliable resolution)
 	if (person.birthPlaceCrId && person.birthPlaceName) {
