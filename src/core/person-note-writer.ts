@@ -972,6 +972,35 @@ export async function updatePersonNote(
 				delete frontmatter.nickname;
 			}
 		}
+		// Name components (#174, #192)
+		if (person.givenName !== undefined) {
+			if (person.givenName) {
+				frontmatter.given_name = person.givenName;
+			} else {
+				delete frontmatter.given_name;
+			}
+		}
+		if (person.surnames !== undefined) {
+			if (person.surnames && person.surnames.length > 0) {
+				frontmatter.surnames = person.surnames;
+			} else {
+				delete frontmatter.surnames;
+			}
+		}
+		if (person.maidenName !== undefined) {
+			if (person.maidenName) {
+				frontmatter.maiden_name = person.maidenName;
+			} else {
+				delete frontmatter.maiden_name;
+			}
+		}
+		if (person.marriedNames !== undefined) {
+			if (person.marriedNames && person.marriedNames.length > 0) {
+				frontmatter.married_names = person.marriedNames;
+			} else {
+				delete frontmatter.married_names;
+			}
+		}
 		if (person.occupation !== undefined) {
 			if (person.occupation) {
 				frontmatter.occupation = person.occupation;
