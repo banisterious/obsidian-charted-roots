@@ -4597,6 +4597,7 @@ export default class CanvasRootsPlugin extends Plugin {
 				this.bidirectionalLinker.setFolderFilter(this.folderFilter);
 			}
 			this.bidirectionalLinker.setEnableInclusiveParents(this.settings.enableInclusiveParents);
+			this.bidirectionalLinker.setEnableDnaTracking(this.settings.enableDnaTracking);
 		}
 
 		// Run after a 1-second delay to not impact plugin load performance
@@ -4724,6 +4725,7 @@ export default class CanvasRootsPlugin extends Plugin {
 							this.bidirectionalLinker.setFolderFilter(this.folderFilter);
 						}
 						this.bidirectionalLinker.setEnableInclusiveParents(this.settings.enableInclusiveParents);
+						this.bidirectionalLinker.setEnableDnaTracking(this.settings.enableDnaTracking);
 					}
 					await this.bidirectionalLinker.syncRelationships(file);
 				} catch (error: unknown) {
@@ -4780,6 +4782,7 @@ export default class CanvasRootsPlugin extends Plugin {
 		// Update bidirectional linker with current settings
 		if (this.bidirectionalLinker) {
 			this.bidirectionalLinker.setEnableInclusiveParents(this.settings.enableInclusiveParents);
+			this.bidirectionalLinker.setEnableDnaTracking(this.settings.enableDnaTracking);
 		}
 	}
 
