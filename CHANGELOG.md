@@ -18,6 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **DNA badge in person picker**: Shows flask icon and shared cM value for DNA matches
   - All DNA features are invisible when setting is disabled (default: OFF)
 
+- **Repair missing relationship IDs** ([#197](https://github.com/banisterious/obsidian-charted-roots/issues/197)): New batch operation in Control Center → Data Quality to populate missing `_id` fields from resolvable wikilinks. This improves relationship reliability when notes are renamed:
+  - Detects wikilinks without corresponding `_id` fields (e.g., `father` without `father_id`)
+  - Resolves wikilinks to their `cr_id` values using the person index
+  - Preview shows all repairs with warnings for unresolvable wikilinks (broken links, ambiguous targets, or targets missing cr_id)
+  - Supports both single-value and array fields (e.g., `children`, `spouse`)
+
 ### Fixed
 
 - **Legacy command IDs not working**: Fixed UI buttons in Control Center tabs (People, Places, Events, Organizations, Sources) that were still using the old `canvas-roots:` command prefix instead of `charted-roots:`, causing "Create base" and similar actions to fail silently.

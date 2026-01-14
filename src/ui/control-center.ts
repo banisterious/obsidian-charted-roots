@@ -9406,6 +9406,20 @@ export class ControlCenterModal extends Modal {
 				.onClick(() => void this.runBatchOperation('orphans', selectedScope, selectedFolder))
 			);
 
+		// Repair missing relationship IDs
+		new Setting(batchContent)
+			.setName('Repair missing relationship IDs')
+			.setDesc('Populate _id fields from resolvable wikilinks (e.g., father_id from father)')
+			.addButton(btn => btn
+				.setButtonText('Preview')
+				.onClick(() => void this.previewBatchOperation('missing_ids', selectedScope, selectedFolder))
+			)
+			.addButton(btn => btn
+				.setButtonText('Apply')
+				.setCta()
+				.onClick(() => void this.runBatchOperation('missing_ids', selectedScope, selectedFolder))
+			);
+
 		// Migrate legacy type property (only show if cr_type is the primary)
 		if (this.plugin.settings.noteTypeDetection?.primaryTypeProperty === 'cr_type') {
 			new Setting(batchContent)
@@ -9821,7 +9835,7 @@ export class ControlCenterModal extends Modal {
 	 * Preview a batch operation
 	 */
 	private async previewBatchOperation(
-		operation: 'dates' | 'sex' | 'orphans' | 'legacy_type',
+		operation: 'dates' | 'sex' | 'orphans' | 'legacy_type' | 'missing_ids',
 		scope: 'all' | 'staging' | 'folder',
 		folderPath?: string
 	): Promise<void> {
@@ -9865,7 +9879,7 @@ export class ControlCenterModal extends Modal {
 	 * Run a batch operation
 	 */
 	private async runBatchOperation(
-		operation: 'dates' | 'sex' | 'orphans' | 'legacy_type',
+		operation: 'dates' | 'sex' | 'orphans' | 'legacy_type' | 'missing_ids',
 		scope: 'all' | 'staging' | 'folder',
 		folderPath?: string
 	): Promise<void> {
@@ -9907,6 +9921,10 @@ export class ControlCenterModal extends Modal {
 				case 'legacy_type':
 					operationName = 'Legacy type migration';
 					result = await dataQualityService.migrateLegacyTypeProperty({ scope, folderPath });
+					break;
+				case 'missing_ids':
+					operationName = 'Missing ID repair';
+					result = await dataQualityService.repairMissingIds({ scope, folderPath });
 					break;
 			}
 
@@ -13083,7 +13101,7 @@ class ImpossibleDatesPreviewModal extends Modal {
  * Modal for previewing batch operation changes
  */
 class BatchPreviewModal extends Modal {
-	private operation: 'dates' | 'sex' | 'orphans' | 'legacy_type';
+	private operation: 'dates' | 'sex' | 'orphans' | 'legacy_type' | 'missing_ids';
 	private preview: NormalizationPreview;
 	private onApply: () => Promise<void>;
 	private sexNormalizationDisabled: boolean;
@@ -13104,7 +13122,7 @@ class BatchPreviewModal extends Modal {
 
 	constructor(
 		app: App,
-		operation: 'dates' | 'sex' | 'orphans' | 'legacy_type',
+		operation: 'dates' | 'sex' | 'orphans' | 'legacy_type' | 'missing_ids',
 		preview: NormalizationPreview,
 		onApply: () => Promise<void>,
 		sexNormalizationDisabled = false
@@ -13128,6 +13146,7 @@ class BatchPreviewModal extends Modal {
 			sex: 'Preview: Sex normalization',
 			orphans: 'Preview: Clear orphan references',
 			legacy_type: 'Preview: Migrate legacy type property',
+			missing_ids: 'Preview: Repair missing relationship IDs',
 		};
 		titleEl.setText(titles[this.operation]);
 
@@ -13147,6 +13166,21 @@ class BatchPreviewModal extends Modal {
 					text: ' Sex normalization is disabled. The preview below shows what would be changed, but no changes will be applied. Change this in Settings → Charted Roots → Sex & gender.'
 				});
 			}
+		} else if (this.operation === 'missing_ids') {
+			contentEl.createEl('p', {
+				text: 'Populates missing _id fields by resolving wikilinks to their cr_id values. This improves relationship reliability when notes are renamed.',
+				cls: 'crc-text-muted crc-text-small'
+			});
+
+			// Show unresolvable wikilinks warning if any
+			if (this.preview.unresolvableWikilinks.length > 0) {
+				const warningDiv = contentEl.createDiv({ cls: 'crc-warning-callout' });
+				const warningIcon = createLucideIcon('alert-triangle', 16);
+				warningDiv.appendChild(warningIcon);
+				warningDiv.createSpan({
+					text: ` ${this.preview.unresolvableWikilinks.length} wikilink(s) could not be resolved (broken links, ambiguous targets, or targets missing cr_id). These will be skipped.`
+				});
+			}
 		}
 
 		// Get changes for this operation
@@ -13162,6 +13196,15 @@ class BatchPreviewModal extends Modal {
 				break;
 			case 'legacy_type':
 				this.allChanges = [...this.preview.legacyTypeMigration];
+				break;
+			case 'missing_ids':
+				// Convert MissingIdRepair to the standard change format
+				this.allChanges = this.preview.missingIdRepairs.map(repair => ({
+					person: { name: repair.person.name },
+					field: repair.field.replace(/s$/, '') + '_id' + (repair.arrayIndex !== undefined ? `[${repair.arrayIndex}]` : ''),
+					oldValue: '(missing)',
+					newValue: repair.resolvedCrId
+				}));
 				break;
 		}
 
