@@ -126,6 +126,13 @@ export interface PersonData {
 	// External IDs (for import round-trip)
 	externalId?: string;         // Original ID from import source (e.g., GEDCOM xref, Gramps handle)
 	externalIdSource?: string;   // Source of the external ID (e.g., "gedcom", "gramps")
+	// DNA tracking fields (opt-in via enableDnaTracking setting)
+	dnaSharedCm?: number;        // Shared centiMorgans
+	dnaTestingCompany?: string;  // Testing company (AncestryDNA, 23andMe, etc.)
+	dnaKitId?: string;           // Kit identifier
+	dnaMatchType?: string;       // BKM | BMM | confirmed | unconfirmed
+	dnaEndogamyFlag?: boolean;   // Flag for endogamous populations
+	dnaNotes?: string;           // Free-form notes
 }
 
 /**
@@ -206,7 +213,7 @@ export async function createPersonNote(
 	// Build frontmatter with essential properties
 	// Essential properties are always included (per Guide documentation)
 	// Property names respect user-configured aliases
-	const frontmatter: Record<string, string | string[] | number> = {
+	const frontmatter: Record<string, string | string[] | number | boolean> = {
 		[prop('cr_id')]: crId,
 		[prop('cr_type')]: 'person',
 		[prop('name')]: person.name || '',
@@ -303,6 +310,26 @@ export async function createPersonNote(
 	if (person.externalIdSource) {
 		frontmatter[prop('external_id_source')] = person.externalIdSource;
 		logger.debug('externalIdSource', `Added: ${person.externalIdSource}`);
+	}
+
+	// DNA tracking fields (opt-in via enableDnaTracking setting)
+	if (person.dnaSharedCm !== undefined) {
+		frontmatter[prop('dna_shared_cm')] = person.dnaSharedCm;
+	}
+	if (person.dnaTestingCompany) {
+		frontmatter[prop('dna_testing_company')] = person.dnaTestingCompany;
+	}
+	if (person.dnaKitId) {
+		frontmatter[prop('dna_kit_id')] = person.dnaKitId;
+	}
+	if (person.dnaMatchType) {
+		frontmatter[prop('dna_match_type')] = person.dnaMatchType;
+	}
+	if (person.dnaEndogamyFlag !== undefined) {
+		frontmatter[prop('dna_endogamy_flag')] = person.dnaEndogamyFlag;
+	}
+	if (person.dnaNotes) {
+		frontmatter[prop('dna_notes')] = person.dnaNotes;
 	}
 
 	// Handle relationships using dual storage: wikilinks for Obsidian + _id fields for reliability

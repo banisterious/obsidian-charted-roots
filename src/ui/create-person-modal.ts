@@ -205,6 +205,13 @@ export class CreatePersonModal extends Modal {
 				// Sources
 				sourceIds?: string[];
 				sourceNames?: string[];
+				// DNA tracking fields
+				dnaSharedCm?: number;
+				dnaTestingCompany?: string;
+				dnaKitId?: string;
+				dnaMatchType?: string;
+				dnaEndogamyFlag?: boolean;
+				dnaNotes?: string;
 			};
 			// Universe options
 			existingUniverses?: string[];
@@ -259,7 +266,14 @@ export class CreatePersonModal extends Modal {
 				researchLevel: ep.researchLevel,
 				cr_living: ep.cr_living,
 				collection: ep.collection,
-				universe: ep.universe
+				universe: ep.universe,
+				// DNA tracking fields
+				dnaSharedCm: ep.dnaSharedCm,
+				dnaTestingCompany: ep.dnaTestingCompany,
+				dnaKitId: ep.dnaKitId,
+				dnaMatchType: ep.dnaMatchType,
+				dnaEndogamyFlag: ep.dnaEndogamyFlag,
+				dnaNotes: ep.dnaNotes
 			};
 			// Set up relationship fields
 			if (ep.fatherId || ep.fatherName) {
@@ -520,6 +534,96 @@ export class CreatePersonModal extends Modal {
 					.setValue(this.personData.personType || '')
 					.onChange(value => {
 						this.personData.personType = value || undefined;
+					}));
+		}
+
+		// DNA Information section (only shown when DNA tracking enabled AND person has DNA data or is DNA Match type)
+		const hasDnaData = this.personData.dnaSharedCm !== undefined ||
+			this.personData.dnaTestingCompany ||
+			this.personData.dnaKitId ||
+			this.personData.dnaMatchType ||
+			this.personData.dnaEndogamyFlag !== undefined ||
+			this.personData.dnaNotes;
+		const isDnaMatch = this.personData.personType === 'DNA Match';
+
+		if (this.plugin?.settings.enableDnaTracking && (isDnaMatch || hasDnaData)) {
+			const dnaSection = form.createDiv({ cls: 'crc-dna-section' });
+			dnaSection.createEl('h4', { text: 'DNA information', cls: 'crc-section-header crc-section-header--secondary' });
+
+			// Shared cM (number input)
+			new Setting(dnaSection)
+				.setName('Shared cM')
+				.setDesc('Shared centiMorgans with this match')
+				.addText(text => text
+					.setPlaceholder('e.g., 1847')
+					.setValue(this.personData.dnaSharedCm?.toString() || '')
+					.onChange(value => {
+						const num = parseFloat(value);
+						this.personData.dnaSharedCm = isNaN(num) ? undefined : num;
+					}));
+
+			// Testing Company (dropdown)
+			new Setting(dnaSection)
+				.setName('Testing company')
+				.setDesc('DNA testing service provider')
+				.addDropdown(dropdown => dropdown
+					.addOption('', '(Not specified)')
+					.addOption('AncestryDNA', 'AncestryDNA')
+					.addOption('23andMe', '23andMe')
+					.addOption('FamilyTreeDNA', 'FamilyTreeDNA')
+					.addOption('MyHeritage', 'MyHeritage')
+					.addOption('LivingDNA', 'LivingDNA')
+					.addOption('GEDmatch', 'GEDmatch')
+					.setValue(this.personData.dnaTestingCompany || '')
+					.onChange(value => {
+						this.personData.dnaTestingCompany = value || undefined;
+					}));
+
+			// Kit ID (text input)
+			new Setting(dnaSection)
+				.setName('Kit ID')
+				.setDesc('DNA kit identifier')
+				.addText(text => text
+					.setPlaceholder('e.g., ABC123')
+					.setValue(this.personData.dnaKitId || '')
+					.onChange(value => {
+						this.personData.dnaKitId = value || undefined;
+					}));
+
+			// Match Type (dropdown)
+			new Setting(dnaSection)
+				.setName('Match type')
+				.setDesc('Classification of this DNA match')
+				.addDropdown(dropdown => dropdown
+					.addOption('', '(Not classified)')
+					.addOption('BKM', 'BKM (Best Known Match)')
+					.addOption('BMM', 'BMM (Best Mystery Match)')
+					.addOption('confirmed', 'Confirmed relationship')
+					.addOption('unconfirmed', 'Unconfirmed')
+					.setValue(this.personData.dnaMatchType || '')
+					.onChange(value => {
+						this.personData.dnaMatchType = value || undefined;
+					}));
+
+			// Endogamy Flag (toggle)
+			new Setting(dnaSection)
+				.setName('Endogamy flag')
+				.setDesc('Mark if match may be affected by endogamy (inflated cM values)')
+				.addToggle(toggle => toggle
+					.setValue(this.personData.dnaEndogamyFlag || false)
+					.onChange(value => {
+						this.personData.dnaEndogamyFlag = value || undefined;
+					}));
+
+			// Notes (textarea)
+			new Setting(dnaSection)
+				.setName('DNA notes')
+				.setDesc('Additional notes about this DNA match')
+				.addTextArea(textarea => textarea
+					.setPlaceholder('e.g., Matches on chromosome 7')
+					.setValue(this.personData.dnaNotes || '')
+					.onChange(value => {
+						this.personData.dnaNotes = value || undefined;
 					}));
 		}
 

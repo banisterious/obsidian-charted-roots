@@ -3301,7 +3301,14 @@ export class ControlCenterModal extends Modal {
 					parentIds: Array.isArray(parentIds) ? parentIds : (parentIds ? [parentIds] : undefined),
 					parentNames: parentNames,
 					collection: fm.collection,
-					universe: fm.universe
+					universe: fm.universe,
+					// DNA tracking fields
+					dnaSharedCm: typeof fm.dna_shared_cm === 'number' ? fm.dna_shared_cm : undefined,
+					dnaTestingCompany: fm.dna_testing_company,
+					dnaKitId: fm.dna_kit_id,
+					dnaMatchType: fm.dna_match_type,
+					dnaEndogamyFlag: typeof fm.dna_endogamy_flag === 'boolean' ? fm.dna_endogamy_flag : undefined,
+					dnaNotes: fm.dna_notes
 				},
 				familyGraph,
 				placeGraph,
