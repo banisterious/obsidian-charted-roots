@@ -29,7 +29,13 @@ export type NoteType =
 	| 'schema'
 	| 'universe'
 	| 'proof_summary'
-	| 'timeline-export';
+	| 'timeline-export'
+	// Research workflow entity types
+	| 'research_project'
+	| 'research_report'
+	| 'individual_research_note'
+	| 'research_journal'
+	| 'research_log_entry';
 
 /**
  * All recognized note types for validation
@@ -44,7 +50,13 @@ export const ALL_NOTE_TYPES: readonly NoteType[] = [
 	'schema',
 	'universe',
 	'proof_summary',
-	'timeline-export'
+	'timeline-export',
+	// Research workflow entity types
+	'research_project',
+	'research_report',
+	'individual_research_note',
+	'research_journal',
+	'research_log_entry'
 ] as const;
 
 /**
@@ -75,7 +87,19 @@ const TAG_TO_TYPE_MAP: Record<string, NoteType> = {
 	'universe': 'universe',
 	'proof-summary': 'proof_summary',
 	'proof_summary': 'proof_summary',
-	'timeline': 'timeline-export'
+	'timeline': 'timeline-export',
+	// Research workflow entity types
+	'research-project': 'research_project',
+	'research_project': 'research_project',
+	'research-report': 'research_report',
+	'research_report': 'research_report',
+	'individual-research-note': 'individual_research_note',
+	'individual_research_note': 'individual_research_note',
+	'irn': 'individual_research_note',
+	'research-journal': 'research_journal',
+	'research_journal': 'research_journal',
+	'research-log-entry': 'research_log_entry',
+	'research_log_entry': 'research_log_entry'
 };
 
 /**
@@ -349,4 +373,86 @@ export function isProofSummaryNote(
 	settings?: NoteTypeDetectionSettings | null
 ): boolean {
 	return isNoteType(frontmatter, 'proof_summary', cache, settings);
+}
+
+// ============================================================================
+// Research Workflow Entity Detection
+// ============================================================================
+
+/**
+ * Research entity types for convenience
+ */
+export const RESEARCH_NOTE_TYPES: readonly NoteType[] = [
+	'research_project',
+	'research_report',
+	'individual_research_note',
+	'research_journal',
+	'research_log_entry'
+] as const;
+
+/**
+ * Check if a note is any research entity type
+ */
+export function isResearchNote(
+	frontmatter: Record<string, unknown> | undefined | null,
+	cache?: CachedMetadata | null,
+	settings?: NoteTypeDetectionSettings | null
+): boolean {
+	const noteType = detectNoteType(frontmatter, cache, settings);
+	return noteType !== null && RESEARCH_NOTE_TYPES.includes(noteType as typeof RESEARCH_NOTE_TYPES[number]);
+}
+
+/**
+ * Check if a note is a research project note
+ */
+export function isResearchProjectNote(
+	frontmatter: Record<string, unknown> | undefined | null,
+	cache?: CachedMetadata | null,
+	settings?: NoteTypeDetectionSettings | null
+): boolean {
+	return isNoteType(frontmatter, 'research_project', cache, settings);
+}
+
+/**
+ * Check if a note is a research report note
+ */
+export function isResearchReportNote(
+	frontmatter: Record<string, unknown> | undefined | null,
+	cache?: CachedMetadata | null,
+	settings?: NoteTypeDetectionSettings | null
+): boolean {
+	return isNoteType(frontmatter, 'research_report', cache, settings);
+}
+
+/**
+ * Check if a note is an individual research note (IRN)
+ */
+export function isIndividualResearchNote(
+	frontmatter: Record<string, unknown> | undefined | null,
+	cache?: CachedMetadata | null,
+	settings?: NoteTypeDetectionSettings | null
+): boolean {
+	return isNoteType(frontmatter, 'individual_research_note', cache, settings);
+}
+
+/**
+ * Check if a note is a research journal note
+ */
+export function isResearchJournalNote(
+	frontmatter: Record<string, unknown> | undefined | null,
+	cache?: CachedMetadata | null,
+	settings?: NoteTypeDetectionSettings | null
+): boolean {
+	return isNoteType(frontmatter, 'research_journal', cache, settings);
+}
+
+/**
+ * Check if a note is a research log entry note
+ */
+export function isResearchLogEntryNote(
+	frontmatter: Record<string, unknown> | undefined | null,
+	cache?: CachedMetadata | null,
+	settings?: NoteTypeDetectionSettings | null
+): boolean {
+	return isNoteType(frontmatter, 'research_log_entry', cache, settings);
 }

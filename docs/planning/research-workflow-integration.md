@@ -2,9 +2,10 @@
 
 Unified planning document for GPS-aligned research workflow features combining entity management (#125) and workflow tracking (#124).
 
-- **Status:** Planning
+- **Status:** Phase 1 Complete
 - **GitHub Issue:** [#145](https://github.com/banisterious/obsidian-charted-roots/issues/145) (consolidates #124, #125)
 - **Created:** 2026-01-05
+- **Phase 1 Completed:** 2026-01-15
 - **Contributors:** @ANYroots, @wilbry, @banisterious
 
 ---
@@ -351,7 +352,7 @@ Research Notebook/
 
 ## Phase 1: Foundation
 
-**Status:** Ready for implementation
+**Status:** ✅ Complete (2026-01-15)
 
 **Scope:** Basic entity recognition and schema support.
 

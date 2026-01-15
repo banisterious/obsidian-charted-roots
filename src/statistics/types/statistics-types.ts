@@ -17,6 +17,12 @@ export interface EntityCounts {
 	organizations: number;
 	universes: number;
 	canvases: number;
+	// Research workflow entities
+	researchProjects: number;
+	researchReports: number;
+	individualResearchNotes: number;
+	researchJournals: number;
+	researchLogEntries: number;
 }
 
 /**
@@ -507,4 +513,50 @@ export interface UniverseWithEntityCounts {
 	status: string;
 	file: TFile;
 	entityCounts: UniverseEntityCounts;
+}
+
+// =============================================================================
+// Research Workflow Statistics Types
+// =============================================================================
+
+/**
+ * Research project status distribution
+ */
+export interface ResearchProjectStatusDistribution {
+	open: number;
+	'in-progress': number;
+	'on-hold': number;
+	completed: number;
+}
+
+/**
+ * Research report status distribution
+ */
+export interface ResearchReportStatusDistribution {
+	draft: number;
+	review: number;
+	final: number;
+	published: number;
+}
+
+/**
+ * Research entity statistics
+ */
+export interface ResearchStatistics {
+	/** Total research projects */
+	projectCount: number;
+	/** Total research reports */
+	reportCount: number;
+	/** Total individual research notes (IRNs) */
+	irnCount: number;
+	/** Total research journals */
+	journalCount: number;
+	/** Total research log entries (separate notes) */
+	logEntryCount: number;
+	/** Project status distribution */
+	projectsByStatus: ResearchProjectStatusDistribution;
+	/** Report status distribution */
+	reportsByStatus: ResearchReportStatusDistribution;
+	/** Number of private research entities */
+	privateCount: number;
 }

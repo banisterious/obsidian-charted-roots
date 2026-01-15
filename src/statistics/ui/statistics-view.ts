@@ -279,6 +279,11 @@ export class StatisticsView extends ItemView {
 			return this.buildUniversesContent();
 		});
 
+		// Research workflow section
+		this.buildSection(sectionsContainer, SECTION_IDS.RESEARCH, 'Research entities', 'folder-search', () => {
+			return this.buildResearchContent();
+		});
+
 		// === Extended Statistics (Phase 3) ===
 
 		// Longevity Analysis section
@@ -966,6 +971,124 @@ export class StatisticsView extends ItemView {
 					text: 'No entities yet'
 				});
 			}
+		}
+
+		return content;
+	}
+
+	/**
+	 * Build research entities section content
+	 */
+	private buildResearchContent(): HTMLElement {
+		const content = document.createElement('div');
+		content.addClass('cr-sv-research');
+
+		if (!this.service) {
+			content.createSpan({ cls: 'crc-text-muted', text: 'Service not available' });
+			return content;
+		}
+
+		const research = this.service.getResearchStatistics();
+		const totalResearch = research.projectCount + research.reportCount +
+			research.irnCount + research.journalCount + research.logEntryCount;
+
+		if (totalResearch === 0) {
+			content.createSpan({ cls: 'crc-text-muted', text: 'No research entities found' });
+			return content;
+		}
+
+		// Research entity summary
+		const grid = content.createDiv({ cls: 'cr-sv-research-grid' });
+
+		// Research projects with status breakdown
+		if (research.projectCount > 0) {
+			const projectCard = grid.createDiv({ cls: 'cr-sv-research-card' });
+			const projectHeader = projectCard.createDiv({ cls: 'cr-sv-research-header' });
+			const projectIcon = projectHeader.createSpan({ cls: 'cr-sv-research-icon' });
+			setIcon(projectIcon, 'folder-search');
+			projectHeader.createSpan({ cls: 'cr-sv-research-title', text: 'Projects' });
+			projectHeader.createSpan({ cls: 'cr-sv-research-count', text: research.projectCount.toString() });
+
+			const projectDetails = projectCard.createDiv({ cls: 'cr-sv-research-details' });
+			const statuses = research.projectsByStatus;
+			if (statuses['in-progress'] > 0) {
+				projectDetails.createSpan({ cls: 'cr-sv-research-status cr-sv-research-status--in-progress', text: `${statuses['in-progress']} in progress` });
+			}
+			if (statuses['open'] > 0) {
+				projectDetails.createSpan({ cls: 'cr-sv-research-status cr-sv-research-status--open', text: `${statuses['open']} open` });
+			}
+			if (statuses['on-hold'] > 0) {
+				projectDetails.createSpan({ cls: 'cr-sv-research-status cr-sv-research-status--on-hold', text: `${statuses['on-hold']} on hold` });
+			}
+			if (statuses['completed'] > 0) {
+				projectDetails.createSpan({ cls: 'cr-sv-research-status cr-sv-research-status--completed', text: `${statuses['completed']} completed` });
+			}
+		}
+
+		// Research reports with status breakdown
+		if (research.reportCount > 0) {
+			const reportCard = grid.createDiv({ cls: 'cr-sv-research-card' });
+			const reportHeader = reportCard.createDiv({ cls: 'cr-sv-research-header' });
+			const reportIcon = reportHeader.createSpan({ cls: 'cr-sv-research-icon' });
+			setIcon(reportIcon, 'file-text');
+			reportHeader.createSpan({ cls: 'cr-sv-research-title', text: 'Reports' });
+			reportHeader.createSpan({ cls: 'cr-sv-research-count', text: research.reportCount.toString() });
+
+			const reportDetails = reportCard.createDiv({ cls: 'cr-sv-research-details' });
+			const statuses = research.reportsByStatus;
+			if (statuses['draft'] > 0) {
+				reportDetails.createSpan({ cls: 'cr-sv-research-status cr-sv-research-status--draft', text: `${statuses['draft']} draft` });
+			}
+			if (statuses['review'] > 0) {
+				reportDetails.createSpan({ cls: 'cr-sv-research-status cr-sv-research-status--review', text: `${statuses['review']} in review` });
+			}
+			if (statuses['final'] > 0) {
+				reportDetails.createSpan({ cls: 'cr-sv-research-status cr-sv-research-status--final', text: `${statuses['final']} final` });
+			}
+			if (statuses['published'] > 0) {
+				reportDetails.createSpan({ cls: 'cr-sv-research-status cr-sv-research-status--published', text: `${statuses['published']} published` });
+			}
+		}
+
+		// IRNs
+		if (research.irnCount > 0) {
+			const irnCard = grid.createDiv({ cls: 'cr-sv-research-card' });
+			const irnHeader = irnCard.createDiv({ cls: 'cr-sv-research-header' });
+			const irnIcon = irnHeader.createSpan({ cls: 'cr-sv-research-icon' });
+			setIcon(irnIcon, 'user-search');
+			irnHeader.createSpan({ cls: 'cr-sv-research-title', text: 'Individual research notes' });
+			irnHeader.createSpan({ cls: 'cr-sv-research-count', text: research.irnCount.toString() });
+		}
+
+		// Research journals
+		if (research.journalCount > 0) {
+			const journalCard = grid.createDiv({ cls: 'cr-sv-research-card' });
+			const journalHeader = journalCard.createDiv({ cls: 'cr-sv-research-header' });
+			const journalIcon = journalHeader.createSpan({ cls: 'cr-sv-research-icon' });
+			setIcon(journalIcon, 'book-open');
+			journalHeader.createSpan({ cls: 'cr-sv-research-title', text: 'Journals' });
+			journalHeader.createSpan({ cls: 'cr-sv-research-count', text: research.journalCount.toString() });
+		}
+
+		// Log entries
+		if (research.logEntryCount > 0) {
+			const logCard = grid.createDiv({ cls: 'cr-sv-research-card' });
+			const logHeader = logCard.createDiv({ cls: 'cr-sv-research-header' });
+			const logIcon = logHeader.createSpan({ cls: 'cr-sv-research-icon' });
+			setIcon(logIcon, 'list-plus');
+			logHeader.createSpan({ cls: 'cr-sv-research-title', text: 'Log entries' });
+			logHeader.createSpan({ cls: 'cr-sv-research-count', text: research.logEntryCount.toString() });
+		}
+
+		// Private entities note
+		if (research.privateCount > 0) {
+			const privateNote = content.createDiv({ cls: 'cr-sv-research-private-note' });
+			const privateIcon = privateNote.createSpan({ cls: 'cr-sv-research-private-icon' });
+			setIcon(privateIcon, 'lock');
+			privateNote.createSpan({
+				cls: 'crc-text-muted',
+				text: `${research.privateCount} private research ${research.privateCount === 1 ? 'entity' : 'entities'} (excluded from exports)`
+			});
 		}
 
 		return content;

@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Research workflow entity types (Phase 1)** ([#145](https://github.com/banisterious/obsidian-charted-roots/issues/145)): Foundation for GPS-aligned research workflow tracking. Adds five new entity types: `research_project`, `research_report`, `individual_research_note`, `research_journal`, and `research_log_entry`. These can be identified via `cr_type` frontmatter or tags like `#research-project` or `#irn`. A new "Research entities" section in the Statistics Dashboard shows counts by type with status breakdowns (e.g., projects in-progress vs completed, reports draft vs published).
+
 ---
 
 ## [0.19.10] - 2026-01-15

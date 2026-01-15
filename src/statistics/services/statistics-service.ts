@@ -45,7 +45,11 @@ import type {
 	DecadeEventCount,
 	TimelineGap,
 	// Universe types
-	UniverseWithEntityCounts
+	UniverseWithEntityCounts,
+	// Research workflow types
+	ResearchStatistics,
+	ResearchProjectStatusDistribution,
+	ResearchReportStatusDistribution
 } from '../types/statistics-types';
 import { DEFAULT_TOP_LIST_LIMIT, CACHE_DEBOUNCE_MS, getGenerationLabel } from '../constants/statistics-constants';
 
@@ -224,18 +228,34 @@ export class StatisticsService {
 	 * Compute entity counts
 	 */
 	private computeEntityCounts(vaultStats: ReturnType<VaultStatsService['collectStats']>, peopleCount: number): EntityCounts {
-		// Get organization and universe counts
+		// Get organization, universe, and research entity counts
 		let orgCount = 0;
 		let universeCount = 0;
+		let researchProjects = 0;
+		let researchReports = 0;
+		let individualResearchNotes = 0;
+		let researchJournals = 0;
+		let researchLogEntries = 0;
+
 		try {
 			const files = this.app.vault.getMarkdownFiles();
 			for (const file of files) {
 				const cache = this.app.metadataCache.getFileCache(file);
-				if (cache?.frontmatter?.cr_type === 'organization') {
+				const crType = cache?.frontmatter?.cr_type;
+				if (crType === 'organization') {
 					orgCount++;
-				}
-				if (cache?.frontmatter?.cr_type === 'universe') {
+				} else if (crType === 'universe') {
 					universeCount++;
+				} else if (crType === 'research_project') {
+					researchProjects++;
+				} else if (crType === 'research_report') {
+					researchReports++;
+				} else if (crType === 'individual_research_note') {
+					individualResearchNotes++;
+				} else if (crType === 'research_journal') {
+					researchJournals++;
+				} else if (crType === 'research_log_entry') {
+					researchLogEntries++;
 				}
 			}
 		} catch {
@@ -249,7 +269,12 @@ export class StatisticsService {
 			sources: vaultStats.sources.totalSources,
 			organizations: orgCount,
 			universes: universeCount,
-			canvases: vaultStats.canvases.totalCanvases
+			canvases: vaultStats.canvases.totalCanvases,
+			researchProjects,
+			researchReports,
+			individualResearchNotes,
+			researchJournals,
+			researchLogEntries
 		};
 	}
 
@@ -1621,6 +1646,87 @@ export class StatisticsService {
 		}
 
 		return gaps;
+	}
+
+	// =========================================================================
+	// Research Workflow Statistics
+	// =========================================================================
+
+	/**
+	 * Get detailed research workflow statistics
+	 */
+	getResearchStatistics(): ResearchStatistics {
+		const projectsByStatus: ResearchProjectStatusDistribution = {
+			'open': 0,
+			'in-progress': 0,
+			'on-hold': 0,
+			'completed': 0
+		};
+		const reportsByStatus: ResearchReportStatusDistribution = {
+			'draft': 0,
+			'review': 0,
+			'final': 0,
+			'published': 0
+		};
+
+		let projectCount = 0;
+		let reportCount = 0;
+		let irnCount = 0;
+		let journalCount = 0;
+		let logEntryCount = 0;
+		let privateCount = 0;
+
+		const files = this.app.vault.getMarkdownFiles();
+		for (const file of files) {
+			const cache = this.app.metadataCache.getFileCache(file);
+			const fm = cache?.frontmatter;
+			if (!fm) continue;
+
+			const crType = fm.cr_type;
+			const isPrivate = fm.private === true;
+
+			switch (crType) {
+				case 'research_project':
+					projectCount++;
+					if (isPrivate) privateCount++;
+					const projectStatus = (fm.status as string) || 'open';
+					if (projectStatus in projectsByStatus) {
+						projectsByStatus[projectStatus as keyof typeof projectsByStatus]++;
+					}
+					break;
+				case 'research_report':
+					reportCount++;
+					if (isPrivate) privateCount++;
+					const reportStatus = (fm.status as string) || 'draft';
+					if (reportStatus in reportsByStatus) {
+						reportsByStatus[reportStatus as keyof typeof reportsByStatus]++;
+					}
+					break;
+				case 'individual_research_note':
+					irnCount++;
+					if (isPrivate) privateCount++;
+					break;
+				case 'research_journal':
+					journalCount++;
+					if (isPrivate) privateCount++;
+					break;
+				case 'research_log_entry':
+					logEntryCount++;
+					if (isPrivate) privateCount++;
+					break;
+			}
+		}
+
+		return {
+			projectCount,
+			reportCount,
+			irnCount,
+			journalCount,
+			logEntryCount,
+			projectsByStatus,
+			reportsByStatus,
+			privateCount
+		};
 	}
 
 	// =========================================================================

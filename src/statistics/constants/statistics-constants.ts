@@ -36,6 +36,8 @@ export const SECTION_IDS = {
 	PLACES_BY_CATEGORY: 'places-by-category',
 	GENDER_DISTRIBUTION: 'gender-distribution',
 	UNIVERSES: 'universes',
+	// Research workflow
+	RESEARCH: 'research',
 	// Phase 3: Extended Statistics
 	LONGEVITY: 'longevity',
 	FAMILY_SIZE: 'family-size',
