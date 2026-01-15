@@ -193,19 +193,47 @@ export class EventService {
 	}
 
 	/**
+	 * Event types that should only appear on a person's timeline if they are the principal.
+	 * Participants (in the `persons` array) should not see these events on their own timelines.
+	 *
+	 * - birth: Parents listed in birth event shouldn't have child's birth on their timeline
+	 * - death: Family members present at death shouldn't see it as their own death
+	 * - baptism/christening: Godparents shouldn't see baptism on their timeline
+	 * - funeral: Attendees shouldn't see funeral on their timeline
+	 */
+	private static readonly PRINCIPAL_ONLY_EVENT_TYPES = new Set([
+		'birth',
+		'death',
+		'baptism',
+		'christening',
+		'funeral'
+	]);
+
+	/**
 	 * Get events for a person (by wikilink)
+	 *
+	 * For most event types, returns events where the person is either the principal
+	 * (singular `person` field) or a participant (in `persons` array).
+	 *
+	 * For birth, death, baptism, christening, and funeral events, only returns
+	 * events where the person is the principal. This prevents parents from seeing
+	 * their child's birth on their own timeline, or family members from seeing
+	 * a relative's death as if it were their own.
 	 */
 	getEventsForPerson(personLink: string): EventNote[] {
 		const events = this.getAllEvents();
 		const normalizedLink = this.normalizeWikilink(personLink);
 		return events.filter(e => {
-			if (e.person && this.normalizeWikilink(e.person) === normalizedLink) {
-				return true;
+			const isPrincipal = e.person && this.normalizeWikilink(e.person) === normalizedLink;
+			const isParticipant = e.persons?.some(p => this.normalizeWikilink(p) === normalizedLink);
+
+			// For principal-only event types, only include if person is the principal
+			if (EventService.PRINCIPAL_ONLY_EVENT_TYPES.has(e.eventType)) {
+				return isPrincipal;
 			}
-			if (e.persons?.some(p => this.normalizeWikilink(p) === normalizedLink)) {
-				return true;
-			}
-			return false;
+
+			// For other events, include if principal OR participant
+			return isPrincipal || isParticipant;
 		});
 	}
 

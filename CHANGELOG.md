@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Surname drill-down not using explicit surnames** ([#174](https://github.com/banisterious/obsidian-charted-roots/issues/174)): When clicking a surname in the Statistics Dashboard to see matching people, only parsed surnames from names were matched. Now the drill-down uses `extractSurnames()` for consistency with counting, properly matching people with explicit `surnames`, `maiden_name`, or parsed surnames.
 
+- **Birth/death events appearing on wrong person's timeline** ([#183](https://github.com/banisterious/obsidian-charted-roots/issues/183)): When a person appeared in an event's `persons` array (as a participant, witness, or family member), that event incorrectly appeared on their timeline. Now birth, death, baptism, christening, and funeral events only appear on the timeline of the principal (the person in the singular `person` field). This prevents parents from seeing their child's birth as their own, or family members from seeing a relative's death on their timeline.
+
 ---
 
 ## [0.19.11] - 2026-01-15
