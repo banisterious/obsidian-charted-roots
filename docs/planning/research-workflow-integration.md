@@ -780,6 +780,17 @@ status: in-progress
 - **Flexibility:** Not enforced; recognized for navigation if present
 - **Clarity:** "Up" is intuitive for hierarchy ("go up one level")
 
+### Why `subject` vs `up`?
+
+**Decision:** IRNs use both `subject` (person being researched) and `up` (parent in research hierarchy).
+
+**Rationale:**
+- **`subject`:** Links the IRN to the **person note** being researched (e.g., `subject: "[[John Smith]]"`)
+- **`up`:** Links to the **research project** or parent entity in the research hierarchy (e.g., `up: "[[Identity of John Smith Project]]"`)
+- **Different purposes:** `subject` identifies *who* the research is about; `up` identifies *where* it sits in the research organization
+- **Example:** An IRN about John Smith might have `subject: "[[John Smith]]"` (the person) and `up: "[[Smith Family Research Project]]"` (the parent project)
+- **Both optional:** Neither property is required; users can organize however they prefer
+
 ---
 
 ## Community Feedback Integration
