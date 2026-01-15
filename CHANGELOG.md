@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Gramps event description not used as title** ([#206](https://github.com/banisterious/obsidian-charted-roots/issues/206)): When importing events from Gramps, the event's description/designation field is now used as the event title. If no description exists, the title is auto-generated as before (e.g., "Birth of John Smith").
+
 - **Proof summaries appearing in people list** ([#145](https://github.com/banisterious/obsidian-charted-roots/issues/145)): Fixed two issues with proof summary notes: (1) Create Proof Summary modal now generates `cr_type: proof_summary` instead of the non-standard `type: proof_summary`, and (2) proof summaries with `cr_id` but no explicit type are no longer incorrectly detected as person notes.
 
 - **Surname drill-down not using explicit surnames** ([#174](https://github.com/banisterious/obsidian-charted-roots/issues/174)): When clicking a surname in the Statistics Dashboard to see matching people, only parsed surnames from names were matched. Now the drill-down uses `extractSurnames()` for consistency with counting, properly matching people with explicit `surnames`, `maiden_name`, or parsed surnames.

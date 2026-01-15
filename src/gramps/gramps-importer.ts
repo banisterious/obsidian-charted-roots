@@ -1847,10 +1847,13 @@ export class GrampsImporter {
 		}
 
 		// Generate event title
+		// Use Gramps description as title if available, otherwise auto-generate
 		const eventTypeLabel = this.getEventTypeLabel(eventType);
-		const title = personNames.length > 0
-			? `${eventTypeLabel} of ${personNames.join(' and ')}`
-			: `${eventTypeLabel} (${event.id || event.handle})`;
+		const title = event.description
+			? event.description
+			: (personNames.length > 0
+				? `${eventTypeLabel} of ${personNames.join(' and ')}`
+				: `${eventTypeLabel} (${event.id || event.handle})`);
 
 		// Resolve place to wikilink if available
 		const placeValue = event.placeName
