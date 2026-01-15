@@ -60,6 +60,7 @@ export function generatePeopleBaseTemplate(aliasesOrOptions: PropertyAliases | P
 
 	// Get aliased property names
 	const name = getPropertyName('name', aliases);
+	const surnames = getPropertyName('surnames', aliases);
 	const cr_id = getPropertyName('cr_id', aliases);
 	const cr_type = getPropertyName('cr_type', aliases);
 	const sex = getPropertyName('sex', aliases);
@@ -75,6 +76,7 @@ export function generatePeopleBaseTemplate(aliasesOrOptions: PropertyAliases | P
 	return `visibleProperties:
   - formula.thumbnail
   - formula.display_name
+  - note.${surnames}
   - note.${father}
   - note.${mother}
   - note.${spouse}
@@ -108,6 +110,8 @@ properties:
     displayName: Photo
   formula.display_name:
     displayName: Name
+  note.${surnames}:
+    displayName: Surnames
   note.${father}:
     displayName: Father
   note.${mother}:
