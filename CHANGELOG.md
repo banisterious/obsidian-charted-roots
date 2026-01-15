@@ -9,9 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.19.10] - 2026-01-15
+
 ### Added
 
-- **Surnames column in People base**: The surnames property is now available as a column in the People base template for sorting and display.
+- **Surnames column in People base** ([#174](https://github.com/banisterious/obsidian-charted-roots/issues/174)): The surnames property is now available as a column in the People base template for sorting and display.
 
 ### Fixed
 
