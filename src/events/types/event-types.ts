@@ -60,6 +60,7 @@ export const CORE_EVENT_TYPES = [
  */
 export const EXTENDED_EVENT_TYPES = [
 	'residence',
+	'census',
 	'occupation',
 	'military',
 	'immigration',
@@ -158,6 +159,15 @@ export const EVENT_TYPE_DEFINITIONS: EventTypeDefinition[] = [
 		description: 'Change of residence',
 		icon: 'home',
 		color: '#60a5fa',
+		category: 'life',
+		isBuiltIn: true
+	},
+	{
+		id: 'census',
+		name: 'Census',
+		description: 'Census record documenting household',
+		icon: 'clipboard-list',
+		color: '#8b5cf6',
 		category: 'life',
 		isBuiltIn: true
 	},

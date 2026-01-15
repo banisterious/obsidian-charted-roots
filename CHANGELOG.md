@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Census event type** ([#205](https://github.com/banisterious/obsidian-charted-roots/issues/205)): Added `census` as a built-in event type with proper icon and styling. Gramps census events are now correctly imported as `event_type: census` instead of `custom`.
+
 ### Fixed
 
 - **Proof summaries appearing in people list** ([#145](https://github.com/banisterious/obsidian-charted-roots/issues/145)): Fixed two issues with proof summary notes: (1) Create Proof Summary modal now generates `cr_type: proof_summary` instead of the non-standard `type: proof_summary`, and (2) proof summaries with `cr_id` but no explicit type are no longer incorrectly detected as person notes.
