@@ -28,6 +28,7 @@ For the complete list of implemented features, see [Release History](Release-His
 
 | Version | Feature | Summary |
 |:-------:|---------|---------|
+| v0.19.11 | [Research Workflow Phase 1](Release-History#research-workflow-phase-1-v01911) | GPS-aligned research entity types with Statistics Dashboard integration |
 | v0.19.9 | [DNA Match Tracking](Release-History#dna-match-tracking-v0199) | Opt-in DNA match tracking with person type, fields, bidirectional relationships, and person picker badge |
 | v0.19.7 | [Name Components](Release-History#name-components-v0197) | Explicit surname properties for multi-surname cultures and maiden/married name tracking |
 | v0.19.6 | [Per-Map Marker Assignment](Release-History#per-map-marker-assignment-v0196) | Restrict places to specific custom maps within a universe |
