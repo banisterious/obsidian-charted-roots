@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Duplicate adopted child nodes in family chart** ([#201](https://github.com/banisterious/obsidian-charted-roots/issues/201)): When both directions of an adoptive relationship were specified (parent has `adopted_child` and child has `adoptive_parent`), duplicate child nodes appeared in the family chart view.
+
 - **"Add essential place properties" ignores default category setting** ([#199](https://github.com/banisterious/obsidian-charted-roots/issues/199)): The context menu command now respects the "Default Place Category" setting instead of always defaulting to "real".
 
 ---
