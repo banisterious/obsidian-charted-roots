@@ -2,7 +2,8 @@
 
 Planning document for integrating Obsidian Web Clipper with Charted Roots for genealogical research.
 
-- **Status:** Ready for implementation
+- **Status:** Phase 1 Complete
+- **Implemented Version:** v0.18.25
 - **GitHub Issue:** [#128](https://github.com/banisterious/obsidian-charted-roots/issues/128)
 - **Created:** 2025-01-04
 - **Updated:** 2026-01-05 (Phase 1 decisions finalized based on community feedback)

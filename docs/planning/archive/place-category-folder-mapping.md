@@ -1,6 +1,7 @@
 # Place Category → Folder Mapping
 
-- **Status:** Planning
+- **Status:** Complete
+- **Implemented Version:** v0.19.3
 - **Related Issue:** [#163](https://github.com/banisterious/obsidian-charted-roots/issues/163)
 - **Created:** 2026-01-08
 

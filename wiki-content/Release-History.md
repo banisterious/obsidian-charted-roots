@@ -272,7 +272,7 @@ When computing surname statistics via `extractSurnames()`:
 
 **Documentation:**
 
-- [Name Components Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/name-components.md)
+- [Name Components Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/name-components.md)
 
 ---
 
@@ -366,7 +366,7 @@ Separate file (when enabled):
 
 **Documentation:**
 
-- [GEDCOM Notes Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/gedcom-notes.md)
+- [GEDCOM Notes Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/gedcom-notes.md)
 
 **Future Work:**
 
@@ -451,7 +451,7 @@ UI preference setting to choose whether the plugin displays "Spouse" or "Partner
 
 **Documentation:**
 
-- [Spouse/Partner Terminology Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/spouse-partner-terminology.md)
+- [Spouse/Partner Terminology Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/spouse-partner-terminology.md)
 
 ---
 
@@ -812,7 +812,7 @@ The toggle buttons filter at three levels:
 
 - [Web Clipper Integration](Web-Clipper-Integration) — User guide with setup and workflow
 - [Data Entry](Data-Entry#clipping-from-web-sources) — Comparison with other data entry methods
-- [Web Clipper Integration Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/web-clipper-integration.md) — Implementation details
+- [Web Clipper Integration Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/web-clipper-integration.md) — Implementation details
 
 **Future Phases:**
 
