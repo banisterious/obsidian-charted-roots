@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Surnames column in People base**: The surnames property is now available as a column in the People base template for sorting and display.
+
 ### Fixed
 
 - **Data quality inconsistencies** ([#200](https://github.com/banisterious/obsidian-charted-roots/issues/200)): "Orphaned people" now correctly excludes those with adoptive parents, step parents, gender-neutral parents, or children. Organizations are no longer counted as people. The "non-biological parents only" metric now includes gender-neutral adoptive parents.
