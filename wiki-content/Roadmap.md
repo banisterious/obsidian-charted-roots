@@ -12,6 +12,8 @@ This document outlines planned features for Charted Roots. For completed feature
   - [GEDCOM Media Import](#gedcom-media-import) 📋 Medium
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Event Type Icons for Visual Views](#event-type-icons-for-visual-views) 💡 Low
+  - [Multi-Spouse Visual Cues](#multi-spouse-visual-cues) 💡 Low
+  - [Unified Place Lookup](#unified-place-lookup) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
 - [Future Considerations](#future-considerations)
   - [Research Tracking](#research-tracking)
@@ -254,6 +256,84 @@ See [Calendarium Integration Planning Document](https://github.com/banisterious/
 - Icon size options
 
 See [Event Type Icons Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/event-type-icons.md) for implementation details.
+
+---
+
+### Multi-Spouse Visual Cues
+
+**Priority:** 💡 Low — Clarity for complex family structures
+
+**Status:** Planning
+
+**GitHub Issue:** [#195](https://github.com/banisterious/obsidian-charted-roots/issues/195)
+
+**Summary:** Add visual cues to the family chart to clarify relationships when a person has multiple spouses, making it clear who the "hub" person is.
+
+**The Problem:** When displaying multi-spouse families in the family chart, the horizontal layout can be ambiguous:
+
+```
+Philomene > Régis > Morven
+```
+
+This makes it look like Régis connects the other two, when actually Philomene is the person with multiple marriages.
+
+**The Solution:** Add spouse numbering on the connecting edges (①, ② etc.) to indicate marriage order. Numbers work in static exports (PNG, SVG, PDF) unlike hover-based solutions.
+
+**Phase 1 Scope:**
+- Detect multi-spouse scenarios in chart data
+- Add numbered labels to spouse connection edges
+- Position labels at edge midpoint
+- Style consistently with existing chart elements
+
+**Phase 2 (Future):**
+- Marriage date annotations on edges (when available)
+- Settings toggle for numbering vs dates
+
+See [Multi-Spouse Visual Cues Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/multi-spouse-visual-cues.md) for implementation details.
+
+---
+
+### Unified Place Lookup
+
+**Priority:** 💡 Low — Streamlined place creation from external databases
+
+**Status:** Planning
+
+**Related Issue:** [#128](https://github.com/banisterious/obsidian-charted-roots/issues/128) (Web Clipper Integration)
+
+**Summary:** Query multiple place databases (FamilySearch Places, Wikidata, GeoNames, GOV) from a single interface and create properly-formatted place notes with coordinates, hierarchies, and standardized names.
+
+**The Problem:** Creating accurate place notes requires manual research across multiple sources to obtain standardized names, coordinates, historical jurisdictions, and parent-child relationships. This is time-consuming and error-prone.
+
+**The Solution:** A unified lookup service integrated into the Create Place modal and command palette that queries multiple sources in parallel, displays results with confidence scores, and auto-populates place form fields.
+
+**Key Features:**
+- "Lookup" button in Create Place modal
+- Multi-source search with side-by-side comparison
+- Automatic parent hierarchy creation
+- Bulk place standardization for existing notes
+- Source-specific IDs stored as properties (`familysearch_place_id`, `wikidata_id`, etc.)
+
+**Data Sources:**
+
+| Source | Best For |
+|--------|----------|
+| FamilySearch Places | U.S. genealogy, historical jurisdictions |
+| Wikidata | Well-known places, multilingual research |
+| GeoNames | Modern geography, worldwide coverage |
+| GOV | German/European historical boundaries |
+| Nominatim | Geocoding historical names |
+
+**Phased Approach:**
+
+| Phase | Feature |
+|-------|---------|
+| 1 | Core lookup service (FamilySearch, Wikidata, GeoNames) |
+| 2 | UI integration (modal, command palette) |
+| 3 | Parent hierarchy creation, bulk standardization |
+| 4 | GOV/Nominatim, historical date support |
+
+See [Unified Place Lookup Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/unified-place-lookup.md) for implementation details.
 
 ---
 
