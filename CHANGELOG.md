@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.19.12] - 2026-01-15
+
 ### Added
 
 - **Census event type** ([#205](https://github.com/banisterious/obsidian-charted-roots/issues/205)): Added `census` as a built-in event type with proper icon and styling. Gramps census events are now correctly imported as `event_type: census` instead of `custom`.

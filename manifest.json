@@ -1,7 +1,7 @@
 {
 	"id": "charted-roots",
 	"name": "Charted Roots",
-	"version": "0.19.11",
+	"version": "0.19.12",
 	"minAppVersion": "1.7.2",
 	"description": "Family tree visualization for genealogists and worldbuilders. Interactive charts, geographic maps, evidence tracking, GEDCOM support, and fictional calendars.",
 	"author": "banisterious",
