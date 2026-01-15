@@ -2,7 +2,7 @@ import { App, TFile } from 'obsidian';
 import { SpouseValue } from '../types/frontmatter';
 import { FolderFilterService } from './folder-filter';
 import type { CanvasRootsSettings } from '../settings';
-import { isPlaceNote, isMapNote, isSourceNote, isEventNote } from '../utils/note-type-detection';
+import { isPlaceNote, isMapNote, isSourceNote, isEventNote, isOrganizationNote } from '../utils/note-type-detection';
 
 /**
  * Vault statistics for person notes
@@ -196,6 +196,11 @@ export class VaultStatsService {
 				continue;
 			}
 
+			// Skip organization notes (they're not people)
+			if (isOrganizationNote(fm, cache, this.settings?.noteTypeDetection)) {
+				continue;
+			}
+
 			// Check for person notes (has cr_id)
 			// Apply folder filter if configured
 			if (this.folderFilter && !this.folderFilter.shouldIncludeFile(file)) {
@@ -235,6 +240,10 @@ export class VaultStatsService {
 			if (personData.spouseCount > 0) {
 				peopleWithSpouse++;
 				totalSpouseLinks += personData.spouseCount;
+				hasRelationships = true;
+			}
+			// Also check for any parent type (step, adoptive, gender-neutral) or children
+			if (personData.hasAnyParent || personData.hasChildren) {
 				hasRelationships = true;
 			}
 
@@ -318,6 +327,8 @@ export class VaultStatsService {
 		hasDeathDate: boolean;
 		hasFather: boolean;
 		hasMother: boolean;
+		hasAnyParent: boolean;
+		hasChildren: boolean;
 		spouseCount: number;
 		birthYear: number | null;
 	} | null {
@@ -338,12 +349,33 @@ export class VaultStatsService {
 			const birthDate = fm.born || fm.birth_date;
 			const birthYear = this.extractYear(birthDate);
 
+			// Check for any type of parent relationship
+			const hasAnyParent = !!(
+				fm.father || fm.father_id ||
+				fm.mother || fm.mother_id ||
+				fm.parent || fm.parent_id ||
+				fm.parents || fm.parents_id ||
+				fm.stepfather || fm.stepfather_id ||
+				fm.stepmother || fm.stepmother_id ||
+				fm.adoptive_father || fm.adoptive_father_id ||
+				fm.adoptive_mother || fm.adoptive_mother_id ||
+				fm.adoptive_parent || fm.adoptive_parent_id
+			);
+
+			// Check for any type of children relationship
+			const hasChildren = !!(
+				fm.children || fm.children_id ||
+				fm.adopted_child || fm.adopted_child_id
+			);
+
 			return {
 				hasCrId: true,
 				hasBirthDate: !!(fm.born || fm.birth_date),
 				hasDeathDate: !!(fm.died || fm.death_date),
 				hasFather: !!(fm.father || fm.father_id),
 				hasMother: !!(fm.mother || fm.mother_id),
+				hasAnyParent,
+				hasChildren,
 				spouseCount: this.getSpouseCount(fm.spouse || fm.spouse_id),
 				birthYear
 			};

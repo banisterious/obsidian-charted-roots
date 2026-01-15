@@ -13,7 +13,7 @@ import { FolderFilterService } from './folder-filter';
 import { PersonIndexService } from './person-index-service';
 import type { CanvasRootsSettings, ValueAliasSettings } from '../settings';
 import { CANONICAL_GENDERS, BUILTIN_SYNONYMS } from './value-alias-service';
-import { isSourceNote, isEventNote, isPlaceNote } from '../utils/note-type-detection';
+import { isSourceNote, isEventNote, isPlaceNote, isOrganizationNote } from '../utils/note-type-detection';
 import type { RawRelationship, FamilyGraphMapping } from '../relationships/types/relationship-types';
 import { getRelationshipType, getAllRelationshipTypesWithCustomizations } from '../relationships/constants/default-relationship-types';
 
@@ -1423,6 +1423,9 @@ export class FamilyGraphService {
 			}
 			return { isPlace: true };
 		}
+		if (isOrganizationNote(fm, cache, noteTypeSettings)) {
+			return { isOrganization: true };
+		}
 
 		// Extract name (from frontmatter or filename) with alias support
 		const name = this.resolveProperty<string>(fm, 'name') || file.basename;
@@ -2218,11 +2221,13 @@ export class FamilyGraphService {
 		const peopleWithParents = allPeople.filter(p => p.fatherCrId || p.motherCrId || p.parentCrIds.length > 0).length;
 		const peopleWithSpouses = allPeople.filter(p => p.spouseCrIds.length > 0).length;
 		const peopleWithChildren = allPeople.filter(p => p.childrenCrIds.length > 0).length;
-		// Orphaned = no parents AND no spouse AND no children
+		// Orphaned = no parents (biological, step, or adoptive) AND no spouse AND no children (biological or adopted)
 		const orphanedPeople = allPeople.filter(p =>
 			!p.fatherCrId && !p.motherCrId && p.parentCrIds.length === 0 &&
+			p.stepfatherCrIds.length === 0 && p.stepmotherCrIds.length === 0 &&
+			!p.adoptiveFatherCrId && !p.adoptiveMotherCrId && p.adoptiveParentCrIds.length === 0 &&
 			p.spouseCrIds.length === 0 &&
-			p.childrenCrIds.length === 0
+			p.childrenCrIds.length === 0 && p.adoptedChildCrIds.length === 0
 		).length;
 
 		// Find bridge people (people in multiple collections or connecting families)

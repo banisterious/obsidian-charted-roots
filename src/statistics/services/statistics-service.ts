@@ -373,17 +373,22 @@ export class StatisticsService {
 		for (const person of people) {
 			const hasBiologicalFather = !!person.fatherCrId;
 			const hasBiologicalMother = !!person.motherCrId;
+			// Also check gender-neutral biological parents
+			const hasBiologicalParent = hasBiologicalFather || hasBiologicalMother ||
+				(person.parentCrIds?.length ?? 0) > 0;
 			const hasStepParent = (person.stepfatherCrIds?.length ?? 0) > 0 ||
 				(person.stepmotherCrIds?.length ?? 0) > 0;
-			const hasAdoptiveParent = !!person.adoptiveFatherCrId || !!person.adoptiveMotherCrId;
+			// Include gender-neutral adoptive parents array
+			const hasAdoptiveParent = !!person.adoptiveFatherCrId || !!person.adoptiveMotherCrId ||
+				(person.adoptiveParentCrIds?.length ?? 0) > 0;
 
 			// Biologically orphaned: no biological parents but has step or adoptive
-			if (!hasBiologicalFather && !hasBiologicalMother && (hasStepParent || hasAdoptiveParent)) {
+			if (!hasBiologicalParent && (hasStepParent || hasAdoptiveParent)) {
 				biologicallyOrphaned++;
 			}
 
 			// Blended family: has both biological and step/adoptive parents
-			if ((hasBiologicalFather || hasBiologicalMother) && (hasStepParent || hasAdoptiveParent)) {
+			if (hasBiologicalParent && (hasStepParent || hasAdoptiveParent)) {
 				blendedFamilyCount++;
 			}
 		}
