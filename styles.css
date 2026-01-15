@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-01-14 19:36:22 UTC
+ * - Generated: 2026-01-15 17:21:13 UTC
  * - Components: 41 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -28904,7 +28904,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: STATISTICS.CSS
    ========================================================================== */
 
-/* Component Size: 1553 lines, 30.97 KB */
+/* Component Size: 1654 lines, 33.24 KB */
 
 /**
  * Statistics Tab & View Styles
@@ -30457,6 +30457,107 @@ body:has(.cr-media-linker) .suggestion-container {
   font-size: var(--font-ui-small);
   padding-top: var(--size-4-2);
   border-top: 1px solid var(--background-modifier-border);
+}
+
+/* Research Entities Section */
+.cr-sv-research {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-3);
+}
+
+.cr-sv-research-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--size-4-3);
+}
+
+.cr-sv-research-card {
+  display: flex;
+  flex-direction: column;
+  padding: var(--size-4-3);
+  background-color: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+}
+
+.cr-sv-research-header {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
+.cr-sv-research-icon {
+  flex-shrink: 0;
+  color: var(--text-accent);
+}
+
+.cr-sv-research-title {
+  flex: 1;
+  font-weight: var(--font-semibold);
+}
+
+.cr-sv-research-count {
+  font-size: var(--font-ui-large);
+  font-weight: var(--font-bold);
+  color: var(--text-accent);
+}
+
+.cr-sv-research-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-4-1);
+  margin-top: var(--size-4-2);
+  padding-top: var(--size-4-2);
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.cr-sv-research-status {
+  font-size: var(--font-ui-smaller);
+  padding: 2px 6px;
+  border-radius: var(--radius-s);
+  background-color: var(--background-modifier-hover);
+}
+
+.cr-sv-research-status--in-progress,
+.cr-sv-research-status--review {
+  background-color: var(--color-blue-rgb, 0, 122, 204);
+  background-color: rgba(var(--color-blue-rgb, 0, 122, 204), 0.15);
+  color: var(--text-normal);
+}
+
+.cr-sv-research-status--open,
+.cr-sv-research-status--draft {
+  background-color: rgba(var(--color-base-50, 128), 0.15);
+  color: var(--text-muted);
+}
+
+.cr-sv-research-status--on-hold {
+  background-color: rgba(var(--color-yellow-rgb, 224, 172, 0), 0.15);
+  color: var(--text-normal);
+}
+
+.cr-sv-research-status--completed,
+.cr-sv-research-status--final,
+.cr-sv-research-status--published {
+  background-color: rgba(var(--color-green-rgb, 8, 185, 78), 0.15);
+  color: var(--text-normal);
+}
+
+.cr-sv-research-private-note {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  margin-top: var(--size-4-2);
+  padding: var(--size-4-2) var(--size-4-3);
+  background-color: var(--background-secondary);
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-small);
+}
+
+.cr-sv-research-private-icon {
+  flex-shrink: 0;
+  color: var(--text-muted);
 }
 
 
@@ -35641,11 +35742,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-01-14 19:36:22 UTC
+ * Build completed: 2026-01-15 17:21:13 UTC
  * Components processed: 41
- * Total lines: 35249
- * Total size: 700.09 KB
- * Build duration: 0.06 seconds
+ * Total lines: 35350
+ * Total size: 702.36 KB
+ * Build duration: 0.31 seconds
  *
  * Component breakdown:
  * - variables.css: 56 lines, 1.61 KB
@@ -35679,7 +35780,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - timeline-callouts.css: 321 lines, 10.66 KB
  * - organizations.css: 238 lines, 4.23 KB
  * - sources.css: 2796 lines, 56.78 KB
- * - statistics.css: 1553 lines, 30.97 KB
+ * - statistics.css: 1654 lines, 33.24 KB
  * - dashboard.css: 491 lines, 9.46 KB
  * - universe-wizard.css: 621 lines, 11.05 KB
  * - family-wizard.css: 743 lines, 15.52 KB
