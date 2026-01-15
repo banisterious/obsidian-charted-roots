@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Birth/death events appearing on wrong person's timeline** ([#183](https://github.com/banisterious/obsidian-charted-roots/issues/183)): When a person appeared in an event's `persons` array (as a participant, witness, or family member), that event incorrectly appeared on their timeline. Now birth, death, baptism, christening, and funeral events only appear on the timeline of the principal (the person in the singular `person` field). This prevents parents from seeing their child's birth as their own, or family members from seeing a relative's death on their timeline.
 
+- **Birth/death event notes not linking from timeline** ([#207](https://github.com/banisterious/obsidian-charted-roots/issues/207)): Gramps-imported birth/death events now properly set the `person` field for the principal, allowing them to appear on the correct person's timeline. For backwards compatibility, events without a `person` field will use the first entry in the `persons` array as the principal.
+
 ---
 
 ## [0.19.11] - 2026-01-15

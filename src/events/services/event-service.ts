@@ -229,7 +229,17 @@ export class EventService {
 
 			// For principal-only event types, only include if person is the principal
 			if (EventService.PRINCIPAL_ONLY_EVENT_TYPES.has(e.eventType)) {
-				return isPrincipal;
+				// Check explicit person field first
+				if (isPrincipal) return true;
+
+				// Fall back to persons[0] for backwards compatibility with older imports
+				// that didn't set the person field
+				if (!e.person && e.persons?.length) {
+					const firstPerson = this.normalizeWikilink(e.persons[0]);
+					return firstPerson === normalizedLink;
+				}
+
+				return false;
 			}
 
 			// For other events, include if principal OR participant

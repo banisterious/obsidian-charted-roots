@@ -1877,7 +1877,16 @@ export class GrampsImporter {
 			frontmatterLines.push(`${prop('date')}: ${event.date}`);
 		}
 
-		// Add person references - always use persons array for consistency
+		// For principal-only event types (birth, death, baptism, christening, funeral),
+		// set the singular 'person' field to the primary participant so timeline
+		// filtering works correctly (these events should only appear on the
+		// principal's timeline, not on parents/witnesses/attendees)
+		const principalOnlyTypes = ['birth', 'death', 'baptism', 'christening', 'funeral'];
+		if (principalOnlyTypes.includes(eventType) && personWikilinks.length > 0) {
+			frontmatterLines.push(`${prop('person')}: "${personWikilinks[0]}"`);
+		}
+
+		// Add all person references in persons array
 		if (allPersonWikilinks.length > 0) {
 			frontmatterLines.push(`${prop('persons')}:`);
 			for (const p of allPersonWikilinks) {
