@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.19.13] - 2026-01-16
+
 ### Added
 
 - **GEDCOM media import** ([#202](https://github.com/banisterious/obsidian-charted-roots/issues/202)): Import media references (OBJE records) from GEDCOM files with full parity to Gramps media handling:
@@ -22,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Research coverage badge not showing in People tab** ([#145](https://github.com/banisterious/obsidian-charted-roots/issues/145)): When "Enable fact-level source tracking" is enabled in settings, the research coverage badge now appears in the Control Center's People tab, showing what percentage of facts are sourced for each person.
+
+- **Create Family wizard creating duplicates for existing people** ([#208](https://github.com/banisterious/obsidian-charted-roots/issues/208)): When building a family around existing person notes, the wizard now correctly links them instead of creating duplicate notes. The review step now shows separate lists for "New notes to create" and "Existing notes to link", with appropriate button labeling. Also fixed an issue where linking all-existing people would fail with "No people to create".
 
 ---
 
@@ -42,8 +48,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Birth/death events appearing on wrong person's timeline** ([#183](https://github.com/banisterious/obsidian-charted-roots/issues/183)): When a person appeared in an event's `persons` array (as a participant, witness, or family member), that event incorrectly appeared on their timeline. Now birth, death, baptism, christening, and funeral events only appear on the timeline of the principal (the person in the singular `person` field). This prevents parents from seeing their child's birth as their own, or family members from seeing a relative's death on their timeline.
 
 - **Birth/death event notes not linking from timeline** ([#207](https://github.com/banisterious/obsidian-charted-roots/issues/207)): Gramps-imported birth/death events now properly set the `person` field for the principal, allowing them to appear on the correct person's timeline. For backwards compatibility, events without a `person` field will use the first entry in the `persons` array as the principal.
-
-- **Create Family wizard creating duplicates for existing people** ([#208](https://github.com/banisterious/obsidian-charted-roots/issues/208)): When building a family around existing person notes, the wizard now correctly links them instead of creating duplicate notes. The review step now shows separate lists for "New notes to create" and "Existing notes to link", with appropriate button labeling. Also fixed an issue where linking all-existing people would fail with "No people to create".
 
 ---
 
