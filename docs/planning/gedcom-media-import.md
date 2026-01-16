@@ -22,25 +22,43 @@ From @jeff962:
 
 ---
 
-## Current State
+## Implementation Summary
 
-### Gramps Import (Full Support)
+Both Phase 1 and Phase 2 are complete. The GEDCOM importer now has full media support:
 
-The Gramps importer (`src/gramps/`) has comprehensive media handling:
+### Features Implemented
 
-1. **Parses media objects** from `<object>` elements in Gramps XML
-2. **Extracts media files** from `.gpkg` packages to vault
-3. **Maps handles to vault paths** via `mediaHandleToPath`
-4. **Resolves references** on persons, places, events, sources
-5. **Adds `media` property** to frontmatter with wikilinks
+1. **GEDCOM media types** (`src/gedcom/gedcom-types.ts`)
+   - `GedcomMedia` interface for top-level OBJE records
+   - `GedcomInlineMedia` interface for embedded media
+   - `mediaRefs` arrays on individual, family, source, and event types
 
-### GEDCOM Import (No Support)
+2. **OBJE parsing** (`src/gedcom/gedcom-parser-v2.ts`)
+   - Parses top-level `0 @Oxxxx@ OBJE` records into `media` Map
+   - Collects `1 OBJE @Oxxxx@` references on INDI, FAM, SOUR
+   - Supports inline OBJE (no pointer) with nested FILE/FORM/TITL
+   - Handles event-level media (`2 OBJE` under BIRT, DEAT, MARR, etc.)
 
-The GEDCOM importer (`src/gedcom/`) currently:
+3. **Path resolution** (`src/gedcom/gedcom-importer-v2.ts`)
+   - Extracts filename from GEDCOM FILE paths
+   - Optional prefix stripping for complex path structures
+   - Validates files exist in vault using `getFirstLinkpathDest`
+   - Tracks and reports missing media files
 
-- Has **no handling for OBJE tags** at all
-- No types defined for media objects
-- No parsing of media references on INDI, FAM, SOUR, etc.
+4. **Frontmatter generation**
+   - Adds `media` property with wikilinks to person notes
+   - Adds `media` property to event notes
+   - Format: `media: ["[[filename.jpg]]"]`
+
+5. **Import wizard UI** (`src/ui/import-wizard-modal.ts`)
+   - "Media references" toggle to enable/disable media import
+   - "External media path prefix" text field
+   - Live preview showing path → wikilink mappings (up to 3 samples)
+
+6. **Validation & reporting**
+   - Checks if resolved filenames exist in vault
+   - Shows media count in import complete Notice
+   - Separate Notice for missing files with filenames listed
 
 ---
 
