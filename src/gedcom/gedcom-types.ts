@@ -187,6 +187,8 @@ export interface GedcomEvent {
 	spouse2Ref?: string;
 	/** Is this a family event (MARR, DIV, etc.)? */
 	isFamilyEvent: boolean;
+	/** Media references (GEDCOM @Oxxxx@ IDs) */
+	mediaRefs?: string[];
 }
 
 /**
@@ -223,6 +225,8 @@ export interface GedcomSource {
 	repositoryRef?: string;
 	/** Notes */
 	notes?: string;
+	/** Media references (GEDCOM @Oxxxx@ IDs) */
+	mediaRefs?: string[];
 }
 
 // ============================================================================
@@ -313,6 +317,11 @@ export interface GedcomIndividualV2 {
 	notes: string[];
 	// References to shared NOTE records (@N001@ style)
 	noteRefs: string[];
+
+	// Media references (GEDCOM @Oxxxx@ IDs)
+	mediaRefs: string[];
+	// Inline media (OBJE without pointer)
+	inlineMedia: GedcomInlineMedia[];
 }
 
 /**
@@ -335,6 +344,11 @@ export interface GedcomFamilyV2 {
 	notes: string[];
 	// References to shared NOTE records (@N001@ style)
 	noteRefs: string[];
+
+	// Media references (GEDCOM @Oxxxx@ IDs)
+	mediaRefs: string[];
+	// Inline media (OBJE without pointer)
+	inlineMedia: GedcomInlineMedia[];
 }
 
 /**
@@ -345,6 +359,37 @@ export interface GedcomNoteRecord {
 	text: string;
 }
 
+// ============================================================================
+// Media Object Types
+// ============================================================================
+
+/**
+ * Parsed GEDCOM media object (0 @Oxxxx@ OBJE)
+ */
+export interface GedcomMedia {
+	/** GEDCOM ID (e.g., 'O205') */
+	id: string;
+	/** File path from GEDCOM FILE tag */
+	filePath: string;
+	/** File format (e.g., 'jpg', 'png', 'pdf') */
+	format?: string;
+	/** Title/description from TITL tag */
+	title?: string;
+}
+
+/**
+ * Inline media reference (OBJE without pointer)
+ * Some GEDCOM files embed media directly without separate OBJE records
+ */
+export interface GedcomInlineMedia {
+	/** File path from FILE tag */
+	filePath: string;
+	/** File format */
+	format?: string;
+	/** Title/description */
+	title?: string;
+}
+
 /**
  * Complete parsed GEDCOM data (v2)
  */
@@ -353,6 +398,7 @@ export interface GedcomDataV2 {
 	families: Map<string, GedcomFamilyV2>;
 	sources: Map<string, GedcomSource>;
 	notes: Map<string, GedcomNoteRecord>;
+	media: Map<string, GedcomMedia>;
 	header: {
 		source?: string;
 		version?: string;
@@ -427,6 +473,15 @@ export interface GedcomImportOptionsV2 {
 	/** Folder for separate note files (when createSeparateNoteFiles is true) */
 	notesFolder?: string;
 
+	/** Import media references from OBJE records (default: true) */
+	importMedia?: boolean;
+	/** External media path prefix to strip when resolving paths
+	 * e.g., "/media/linuxstore/pictures/Ancestors" would be stripped from
+	 * "/media/linuxstore/pictures/Ancestors/Hatfield/photo.jpg"
+	 * leaving "Hatfield/photo.jpg" for wikilink generation
+	 */
+	mediaPathPrefix?: string;
+
 	/** Filename format for created notes (legacy single format) */
 	filenameFormat?: FilenameFormat;
 	/** Per-type filename formats (takes precedence over filenameFormat) */
@@ -459,6 +514,12 @@ export interface GedcomImportResultV2 {
 	placesUpdated: number;
 	notesImported: number;
 	separateNoteFilesCreated?: number;
+	/** Number of media objects found in GEDCOM */
+	mediaObjectsFound?: number;
+	/** Number of media references linked to notes */
+	mediaReferencesLinked?: number;
+	/** Media references that could not be resolved */
+	unresolvedMediaRefs?: string[];
 	errors: string[];
 	warnings: string[];
 	/** Whether preprocessing was applied to the GEDCOM content */
