@@ -1378,58 +1378,63 @@ export class FamilyCreationWizardModal extends Modal {
 	}
 
 	/**
-	 * Create all people and link relationships
+	 * Create new people and link all relationships
 	 */
 	private async createAllPeople(): Promise<void> {
 		const peopleToCreate = this.getPeopleToCreate();
+		const existingPeople = this.getExistingPeopleToLink();
 
-		if (peopleToCreate.length === 0) {
-			new Notice('No people to create');
+		// Check if there's anything to do
+		if (peopleToCreate.length === 0 && existingPeople.length === 0) {
+			new Notice('No people to create or link');
 			return;
 		}
 
 		try {
-			// Ensure directory exists
-			const normalizedDir = normalizePath(this.directory);
-			const folder = this.app.vault.getAbstractFileByPath(normalizedDir);
-			if (!folder) {
-				await this.app.vault.createFolder(normalizedDir);
+			// Only create directory and notes if we have new people to create
+			if (peopleToCreate.length > 0) {
+				// Ensure directory exists
+				const normalizedDir = normalizePath(this.directory);
+				const folder = this.app.vault.getAbstractFileByPath(normalizedDir);
+				if (!folder) {
+					await this.app.vault.createFolder(normalizedDir);
+				}
+
+				// Create new people
+				for (const person of peopleToCreate) {
+					const crId = generateCrId();
+					person.crId = crId;
+
+					const personData: PersonData = {
+						name: person.name.trim(),
+						crId: crId
+					};
+
+					if (person.nickname) {
+						personData.nickname = person.nickname.trim();
+					}
+
+					if (person.sex) {
+						personData.sex = person.sex;
+					}
+
+					if (person.birthDate) {
+						personData.birthDate = person.birthDate;
+					}
+
+					const file = await createPersonNote(this.app, personData, {
+						directory: this.directory,
+						openAfterCreate: false,
+						includeDynamicBlocks: true,
+						dynamicBlockTypes: ['media', 'timeline', 'relationships']
+					});
+
+					person.file = file;
+					this.state.createdFiles.push(file);
+				}
 			}
 
-			// Create all people first
-			for (const person of peopleToCreate) {
-				const crId = generateCrId();
-				person.crId = crId;
-
-				const personData: PersonData = {
-					name: person.name.trim(),
-					crId: crId
-				};
-
-				if (person.nickname) {
-					personData.nickname = person.nickname.trim();
-				}
-
-				if (person.sex) {
-					personData.sex = person.sex;
-				}
-
-				if (person.birthDate) {
-					personData.birthDate = person.birthDate;
-				}
-
-				const file = await createPersonNote(this.app, personData, {
-					directory: this.directory,
-					openAfterCreate: false,
-					includeDynamicBlocks: true,
-					dynamicBlockTypes: ['media', 'timeline', 'relationships']
-				});
-
-				person.file = file;
-				this.state.createdFiles.push(file);
-			}
-
-			// Now link relationships
+			// Now link relationships (for both new and existing people)
 			await this.linkRelationships();
 
 			// Mark as completed successfully and clear persisted state
