@@ -381,6 +381,14 @@
   fill: var(--text-muted);
 }
 
+.cr-fcv-chart-container.f3 .cr-kinship-label--numbered {
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  fill: var(--text-accent);
+  opacity: 1;
+}
+
 /* ============================================================
  * HTML Card Styles (for HTML card mode)
  * ============================================================ */

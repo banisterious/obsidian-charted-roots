@@ -1045,8 +1045,9 @@ export class FamilyChartView extends ItemView {
 			}, 50);
 
 			// Render kinship labels if enabled (after chart is rendered)
+			// Delay must be longer than family-chart's transition_time (1000-2000ms)
 			if (this.showKinshipLabels) {
-				setTimeout(() => this.renderKinshipLabels(), 100);
+				setTimeout(() => this.renderKinshipLabels(), 1500);
 			}
 		} catch (error) {
 			// Remove loading overlay and show error state
@@ -3847,7 +3848,13 @@ export class FamilyChartView extends ItemView {
 	 */
 	private toggleKinshipLabels(): void {
 		this.showKinshipLabels = !this.showKinshipLabels;
-		this.renderKinshipLabels();
+		// If enabling, wait for any ongoing animations to complete
+		// If disabling, render immediately to remove labels
+		if (this.showKinshipLabels) {
+			setTimeout(() => this.renderKinshipLabels(), 1500);
+		} else {
+			this.renderKinshipLabels();
+		}
 		new Notice(`Kinship labels ${this.showKinshipLabels ? 'shown' : 'hidden'}`);
 	}
 
@@ -3974,17 +3981,26 @@ export class FamilyChartView extends ItemView {
 	 * Adds text labels showing relationship type (Father, Mother, Spouse, etc.)
 	 */
 	private renderKinshipLabels(): void {
-		if (!this.chartContainerEl) return;
+		if (!this.chartContainerEl) {
+			logger.debug('kinship-labels', 'No chart container');
+			return;
+		}
 
 		// Remove existing kinship labels
 		const existingLabels = this.chartContainerEl.querySelectorAll('.cr-kinship-label');
 		existingLabels.forEach(label => label.remove());
 
-		if (!this.showKinshipLabels) return;
+		if (!this.showKinshipLabels) {
+			logger.debug('kinship-labels', 'Kinship labels disabled');
+			return;
+		}
 
 		// Get the SVG element
 		const svg = this.chartContainerEl.querySelector('svg.main_svg');
-		if (!svg) return;
+		if (!svg) {
+			logger.debug('kinship-labels', 'No SVG found');
+			return;
+		}
 
 		// Build a lookup map of person ID to person data
 		const personMap = new Map<string, FamilyChartPerson>();
@@ -3992,9 +4008,15 @@ export class FamilyChartView extends ItemView {
 			personMap.set(person.id, person);
 		}
 
+		// Build a map of card positions by person ID for spouse link identification
+		const cardPositions = this.getCardPositions();
+
 		// Find the links group and add labels
 		const linksGroup = svg.querySelector('.links_view');
-		if (!linksGroup) return;
+		if (!linksGroup) {
+			logger.debug('kinship-labels', 'No links_view group found');
+			return;
+		}
 
 		// Create a group for kinship labels
 		const labelsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -4021,15 +4043,50 @@ export class FamilyChartView extends ItemView {
 			// Create label text
 			const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
 			label.setAttribute('class', 'cr-kinship-label');
-			label.setAttribute('x', String(midpoint.x));
-			label.setAttribute('y', String(midpoint.y));
+
+			// For spouse links, position label above the line to avoid overlapping cards
+			// Position closer to spouse end (85% along path) to avoid other intermediate cards
+			let labelX = midpoint.x;
+			let labelY = midpoint.y - 20; // Offset above the line
+
+			if (isSpouseLink) {
+				const endpoints = this.getLinkEndpoints(linkEl);
+				if (endpoints) {
+					// Position label in the visible gap near the spouse (end) card
+					// Cards are ~200px wide, centered on their position, so card edge is ~100px from center
+					// Position label 25px before the spouse's card edge (125px from spouse center)
+					// This places labels in the visible gap between cards, near each spouse
+					const dx = endpoints.end.x - endpoints.start.x;
+					const dy = endpoints.end.y - endpoints.start.y;
+					const linkLength = Math.sqrt(dx * dx + dy * dy);
+
+					// Fixed offset from end (spouse position): 125px back from spouse center
+					const offsetFromSpouse = 125;
+					const ratio = Math.max(1 - (offsetFromSpouse / linkLength), 0.5); // Stay in second half
+
+					labelX = endpoints.start.x + dx * ratio;
+					labelY = endpoints.start.y + dy * ratio - 20;
+				}
+			}
+
+			label.setAttribute('x', String(labelX));
+			label.setAttribute('y', String(labelY));
 			label.setAttribute('text-anchor', 'middle');
 			label.setAttribute('dominant-baseline', 'middle');
 
 			// Set appropriate label text
 			if (isSpouseLink) {
-				label.textContent = getSpouseLabel(this.plugin.settings);
-				label.classList.add('cr-kinship-label--spouse');
+				// Try to determine spouse number for multi-spouse scenarios (#195)
+				const spouseNumber = this.getSpouseNumberForLink(linkEl, cardPositions, personMap);
+				if (spouseNumber !== null) {
+					// Multi-spouse: show circled number
+					label.textContent = this.getCircledNumber(spouseNumber);
+					label.classList.add('cr-kinship-label--spouse', 'cr-kinship-label--numbered');
+				} else {
+					// Single spouse or couldn't determine: show regular label
+					label.textContent = getSpouseLabel(this.plugin.settings);
+					label.classList.add('cr-kinship-label--spouse');
+				}
 			} else {
 				// Parent-child link - label based on direction
 				// Links go from child to parent in family-chart
@@ -4040,8 +4097,145 @@ export class FamilyChartView extends ItemView {
 			labelsGroup.appendChild(label);
 		});
 
-		// Append labels group to SVG (after links so labels appear on top)
-		svg.appendChild(labelsGroup);
+		// Append labels group inside the view group so they follow pan/zoom transforms
+		// The view group contains links_view and cards_view and has the pan/zoom transform
+		const viewGroup = svg.querySelector('.view');
+		if (viewGroup) {
+			viewGroup.appendChild(labelsGroup);
+			logger.debug('kinship-labels', 'Appended labels to .view group');
+		} else {
+			// Fallback to SVG root if no view group found
+			svg.appendChild(labelsGroup);
+			logger.debug('kinship-labels', 'Appended labels to SVG root (no .view group)');
+		}
+	}
+
+	/**
+	 * Get card center positions by person ID
+	 * Used to identify which people are connected by spouse links
+	 */
+	private getCardPositions(): Map<string, { x: number; y: number }> {
+		const positions = new Map<string, { x: number; y: number }>();
+
+		// Use D3 to get card positions with their bound data
+		d3.selectAll<SVGGElement, { data: { id: string } }>('.card_cont')
+			.each(function(nodeData) {
+				if (!nodeData?.data?.id) return;
+
+				const personId = nodeData.data.id;
+				const cardEl = this as SVGGElement;
+
+				// Get transform from the card container
+				const transform = cardEl.getAttribute('transform');
+				if (!transform) return;
+
+				// Parse translate(x, y) from transform
+				const match = transform.match(/translate\(\s*([^,]+),\s*([^)]+)\)/);
+				if (!match) return;
+
+				const x = parseFloat(match[1]);
+				const y = parseFloat(match[2]);
+				if (!isNaN(x) && !isNaN(y)) {
+					positions.set(personId, { x, y });
+				}
+			});
+
+		return positions;
+	}
+
+	/**
+	 * Determine the spouse number for a link in multi-spouse scenarios (#195)
+	 * Returns 1-based spouse index if this is a multi-spouse link, null otherwise
+	 */
+	private getSpouseNumberForLink(
+		linkPath: SVGPathElement,
+		cardPositions: Map<string, { x: number; y: number }>,
+		personMap: Map<string, FamilyChartPerson>
+	): number | null {
+		// Get the link endpoints from the path
+		const endpoints = this.getLinkEndpoints(linkPath);
+		if (!endpoints) return null;
+
+		// Find which persons are at each endpoint by matching positions
+		const tolerance = 50; // Position matching tolerance in pixels
+		let person1Id: string | null = null;
+		let person2Id: string | null = null;
+
+		for (const [personId, pos] of cardPositions) {
+			const dist1 = Math.sqrt(
+				Math.pow(pos.x - endpoints.start.x, 2) +
+				Math.pow(pos.y - endpoints.start.y, 2)
+			);
+			const dist2 = Math.sqrt(
+				Math.pow(pos.x - endpoints.end.x, 2) +
+				Math.pow(pos.y - endpoints.end.y, 2)
+			);
+
+			if (dist1 < tolerance && !person1Id) {
+				person1Id = personId;
+			} else if (dist2 < tolerance && !person2Id) {
+				person2Id = personId;
+			}
+		}
+
+		if (!person1Id || !person2Id) return null;
+
+		// Check if either person has multiple spouses
+		const person1 = personMap.get(person1Id);
+		const person2 = personMap.get(person2Id);
+
+		if (!person1 || !person2) return null;
+
+		// Find the "hub" person (the one with multiple spouses)
+		let hubPerson: FamilyChartPerson | null = null;
+		let spouseId: string | null = null;
+
+		if (person1.rels.spouses.length > 1 && person1.rels.spouses.includes(person2Id)) {
+			hubPerson = person1;
+			spouseId = person2Id;
+		} else if (person2.rels.spouses.length > 1 && person2.rels.spouses.includes(person1Id)) {
+			hubPerson = person2;
+			spouseId = person1Id;
+		}
+
+		if (!hubPerson || !spouseId) return null;
+
+		// Return 1-based spouse index
+		const spouseIndex = hubPerson.rels.spouses.indexOf(spouseId);
+		return spouseIndex >= 0 ? spouseIndex + 1 : null;
+	}
+
+	/**
+	 * Get the start and end points of a path element
+	 */
+	private getLinkEndpoints(path: SVGPathElement): { start: { x: number; y: number }; end: { x: number; y: number } } | null {
+		try {
+			const pathLength = path.getTotalLength();
+			if (pathLength === 0) return null;
+
+			const start = path.getPointAtLength(0);
+			const end = path.getPointAtLength(pathLength);
+
+			return {
+				start: { x: start.x, y: start.y },
+				end: { x: end.x, y: end.y }
+			};
+		} catch {
+			return null;
+		}
+	}
+
+	/**
+	 * Convert a number to a circled Unicode character (①, ②, ③, etc.)
+	 * For numbers 1-20, uses Unicode circled numbers; for higher numbers, falls back to (N)
+	 */
+	private getCircledNumber(n: number): string {
+		// Unicode circled numbers: ① is U+2460 (9312 decimal)
+		if (n >= 1 && n <= 20) {
+			return String.fromCharCode(9311 + n);
+		}
+		// Fallback for numbers > 20
+		return `(${n})`;
 	}
 
 	/**
@@ -4112,8 +4306,8 @@ export class FamilyChartView extends ItemView {
 
 		// Re-render kinship labels after tree update
 		if (this.showKinshipLabels) {
-			// Small delay to ensure SVG is fully rendered
-			setTimeout(() => this.renderKinshipLabels(), 100);
+			// Delay must be longer than family-chart's transition_time (1000-2000ms)
+			setTimeout(() => this.renderKinshipLabels(), 1500);
 		}
 	}
 

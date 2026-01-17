@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-01-17 19:02:32 UTC
+ * - Generated: 2026-01-17 20:40:44 UTC
  * - Components: 41 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -16217,7 +16217,7 @@ settings:
    COMPONENT: FAMILY-CHART-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1274 lines, 29.96 KB */
+/* Component Size: 1282 lines, 30.12 KB */
 
 /**
  * Family Chart View Styles
@@ -16600,6 +16600,14 @@ settings:
 
 .cr-fcv-chart-container.f3 .cr-kinship-label--parent {
   fill: var(--text-muted);
+}
+
+.cr-fcv-chart-container.f3 .cr-kinship-label--numbered {
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  fill: var(--text-accent);
+  opacity: 1;
 }
 
 /* ============================================================
@@ -36013,11 +36021,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-01-17 19:02:33 UTC
+ * Build completed: 2026-01-17 20:40:44 UTC
  * Components processed: 41
- * Total lines: 35621
- * Total size: 708.13 KB
- * Build duration: 0.94 seconds
+ * Total lines: 35629
+ * Total size: 708.29 KB
+ * Build duration: 0.35 seconds
  *
  * Component breakdown:
  * - variables.css: 56 lines, 1.61 KB
@@ -36038,7 +36046,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - find-on-canvas.css: 114 lines, 1.97 KB
  * - folder-scan.css: 155 lines, 2.56 KB
  * - relationship-calculator.css: 302 lines, 5.21 KB
- * - family-chart-view.css: 1274 lines, 29.96 KB
+ * - family-chart-view.css: 1282 lines, 30.12 KB
  * - family-chart-export.css: 699 lines, 14.62 KB
  * - report-wizard.css: 888 lines, 19.4 KB
  * - data-quality.css: 1393 lines, 27.56 KB
