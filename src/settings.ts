@@ -802,6 +802,11 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 export class CanvasRootsSettingTab extends PluginSettingTab {
 	plugin: CanvasRootsPlugin;
 
+	// Track which sections are open (by section name) to preserve state across re-renders
+	private openSections: Set<string> = new Set();
+	// Track if this is the first render (to avoid restoring state on initial load)
+	private hasRendered = false;
+
 	constructor(app: App, plugin: CanvasRootsPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
@@ -809,6 +814,12 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 
 	display(): void {
 		const { containerEl } = this;
+
+		// Save current scroll position and section states before re-render
+		const scrollTop = containerEl.scrollTop;
+		if (this.hasRendered) {
+			this.saveOpenSections(containerEl);
+		}
 
 		containerEl.empty();
 
@@ -828,7 +839,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		// SECTION 1: FOLDERS
 		// ═══════════════════════════════════════════════════════════════════════
 		const foldersDetails = containerEl.createEl('details', { cls: 'cr-settings-section' });
-		foldersDetails.setAttribute('open', ''); // Open by default
+		foldersDetails.dataset.sectionName = 'folders';
 		const foldersSummary = foldersDetails.createEl('summary');
 		foldersSummary.createSpan({ text: 'Folders' });
 		foldersSummary.createSpan({ cls: 'cr-section-desc', text: 'Where Charted Roots stores and finds notes' });
@@ -923,7 +934,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		// SECTION 2: DATA & DETECTION
 		// ═══════════════════════════════════════════════════════════════════════
 		const dataDetails = containerEl.createEl('details', { cls: 'cr-settings-section' });
-		dataDetails.setAttribute('open', ''); // Open by default
+		dataDetails.dataset.sectionName = 'data';
 		const dataSummary = dataDetails.createEl('summary');
 		dataSummary.createSpan({ text: 'Data & detection' });
 		dataSummary.createSpan({ cls: 'cr-section-desc', text: 'How Charted Roots identifies and syncs notes' });
@@ -1022,6 +1033,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		// PRIVACY & EXPORT SECTION (Collapsible)
 		// ═══════════════════════════════════════════════════════════════════════
 		const privacyDetails = containerEl.createEl('details', { cls: 'cr-settings-section' });
+		privacyDetails.dataset.sectionName = 'privacy';
 		const privacySummary = privacyDetails.createEl('summary');
 		privacySummary.createSpan({ text: 'Privacy & export' });
 		privacySummary.createSpan({ cls: 'cr-section-desc', text: 'Control how data is protected and exported' });
@@ -1090,6 +1102,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		// SECTION 3: CANVAS & TREES
 		// ═══════════════════════════════════════════════════════════════════════
 		const canvasDetails = containerEl.createEl('details', { cls: 'cr-settings-section' });
+		canvasDetails.dataset.sectionName = 'canvas';
 		const canvasSummary = canvasDetails.createEl('summary');
 		canvasSummary.createSpan({ text: 'Canvas & trees' });
 		canvasSummary.createSpan({ cls: 'cr-section-desc', text: 'Tree generation layout and styling' });
@@ -1244,6 +1257,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		// SECTION 5: DATES & VALIDATION
 		// ═══════════════════════════════════════════════════════════════════════
 		const datesDetails = containerEl.createEl('details', { cls: 'cr-settings-section' });
+		datesDetails.dataset.sectionName = 'dates';
 		const datesSummary = datesDetails.createEl('summary');
 		datesSummary.createSpan({ text: 'Dates & validation' });
 		datesSummary.createSpan({ cls: 'cr-section-desc', text: 'Date format and validation rules' });
@@ -1306,6 +1320,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		// SECTION 6: SEX & GENDER
 		// ═══════════════════════════════════════════════════════════════════════
 		const sexDetails = containerEl.createEl('details', { cls: 'cr-settings-section' });
+		sexDetails.dataset.sectionName = 'sex';
 		const sexSummary = sexDetails.createEl('summary');
 		sexSummary.createSpan({ text: 'Sex & gender' });
 		sexSummary.createSpan({ cls: 'cr-section-desc', text: 'Sex normalization and inclusive options' });
@@ -1374,6 +1389,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		// SECTION 7: PLACES
 		// ═══════════════════════════════════════════════════════════════════════
 		const placesDetails = containerEl.createEl('details', { cls: 'cr-settings-section' });
+		placesDetails.dataset.sectionName = 'places';
 		const placesSummary = placesDetails.createEl('summary');
 		placesSummary.createSpan({ text: 'Places' });
 		placesSummary.createSpan({ cls: 'cr-section-desc', text: 'Place organization and coordinate handling' });
@@ -1441,6 +1457,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		// SECTION 8: PROPERTY & VALUE ALIASES
 		// ═══════════════════════════════════════════════════════════════════════
 		const aliasesDetails = containerEl.createEl('details', { cls: 'cr-settings-section' });
+		aliasesDetails.dataset.sectionName = 'aliases';
 		const aliasesSummary = aliasesDetails.createEl('summary');
 		aliasesSummary.createSpan({ text: 'Property & value aliases' });
 		aliasesSummary.createSpan({ cls: 'cr-section-desc', text: 'Custom frontmatter names and value mappings' });
@@ -1491,6 +1508,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		// SECTION 9: ADVANCED
 		// ═══════════════════════════════════════════════════════════════════════
 		const advancedDetails = containerEl.createEl('details', { cls: 'cr-settings-section' });
+		advancedDetails.dataset.sectionName = 'advanced';
 		const advancedSummary = advancedDetails.createEl('summary');
 		advancedSummary.createSpan({ text: 'Advanced' });
 		advancedSummary.createSpan({ cls: 'cr-section-desc', text: 'Less frequently used settings' });
@@ -1731,6 +1749,15 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					new Notice(`Exported ${logs.length} log entries to ${fullPath}`);
 				}));
 
+		// Restore section open states and scroll position after re-render
+		if (this.hasRendered) {
+			this.restoreOpenSections(containerEl);
+			// Use requestAnimationFrame to ensure DOM is updated before scrolling
+			requestAnimationFrame(() => {
+				containerEl.scrollTop = scrollTop;
+			});
+		}
+		this.hasRendered = true;
 	}
 
 	/**
@@ -1770,6 +1797,31 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				if (normalizedQuery && visibleCount > 0) {
 					(section as HTMLDetailsElement).open = true;
 				}
+			}
+		});
+	}
+
+	/**
+	 * Save which sections are currently open
+	 */
+	private saveOpenSections(containerEl: HTMLElement): void {
+		this.openSections.clear();
+		const sections = containerEl.querySelectorAll<HTMLDetailsElement>('.cr-settings-section[data-section-name]');
+		sections.forEach(section => {
+			if (section.open && section.dataset.sectionName) {
+				this.openSections.add(section.dataset.sectionName);
+			}
+		});
+	}
+
+	/**
+	 * Restore previously open sections
+	 */
+	private restoreOpenSections(containerEl: HTMLElement): void {
+		const sections = containerEl.querySelectorAll<HTMLDetailsElement>('.cr-settings-section[data-section-name]');
+		sections.forEach(section => {
+			if (section.dataset.sectionName && this.openSections.has(section.dataset.sectionName)) {
+				section.open = true;
 			}
 		});
 	}
