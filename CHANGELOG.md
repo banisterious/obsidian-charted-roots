@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Per-spouse marriage metadata** ([#204](https://github.com/banisterious/obsidian-charted-roots/issues/204)): Edit Person modal now supports per-spouse marriage metadata with progressive disclosure. Click the calendar icon next to any spouse to expand and enter marriage date, location, status (current/divorced/widowed/separated/annulled), and divorce date. When metadata is present, the indexed property format (`spouse1`, `spouse1_marriage_date`, etc.) is used; otherwise the legacy array format is preserved.
+
 ### Improved
 
 - **Settings tab UX**: All sections now start collapsed, and toggling settings that trigger a re-render no longer resets section state or scroll position.
