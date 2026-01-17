@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.19.14] - 2026-01-17
+
 ### Added
 
 - **Multi-spouse visual cues in family chart** ([#195](https://github.com/banisterious/obsidian-charted-roots/issues/195)): When a person has multiple spouses, circled numbers (①②③...) now appear on spouse connection lines to indicate marriage order. This clarifies who the "hub" person is in complex family structures. Enable via "Show kinship labels" in the chart toolbar. Works in PNG, SVG, and PDF exports.
