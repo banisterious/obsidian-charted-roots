@@ -4,6 +4,8 @@
 
 **Status:** Planning
 
+**Prerequisite:** ✅ [#204](https://github.com/banisterious/obsidian-charted-roots/issues/204) - Per-spouse marriage metadata UI (completed)
+
 ---
 
 ## Problem Statement
@@ -63,6 +65,7 @@ Add visual cues to distinguish spouse relationships when a person has multiple s
 **Phase 2 (optional): Marriage date annotations**
 - If `spouse1_marriage_date` or marriage event data available, show year
 - Falls back to numbering if no date available
+- ✅ Data infrastructure now available via #204 (Edit Person modal supports entering marriage dates per spouse)
 
 ---
 
@@ -83,6 +86,7 @@ The family chart is rendered using D3.js in [src/ui/views/family-chart-view.ts](
 Spouse information comes from:
 - Simple array: `spouse: ["[[Person A]]", "[[Person B]]"]` - use array index
 - Indexed format: `spouse1`, `spouse2`, etc. - use explicit numbering
+- Marriage metadata: `spouse1_marriage_date`, `spouse1_marriage_location`, etc. (populated via Edit Person modal, #204)
 - Marriage events: Can provide dates for chronological ordering
 
 ### Export Compatibility
