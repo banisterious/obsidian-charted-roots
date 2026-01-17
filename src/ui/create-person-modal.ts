@@ -3,7 +3,7 @@
  * Modal for creating or editing person notes with relationship linking
  */
 
-import { App, Modal, Setting, TFile, Notice, normalizePath } from 'obsidian';
+import { App, Modal, Setting, TFile, Notice, normalizePath, setIcon } from 'obsidian';
 import { createPersonNote, updatePersonNote, PersonData, DynamicBlockType, addBidirectionalSpouseLink, addChildToParent, addParentToChild } from '../core/person-note-writer';
 import { RelationshipManager } from '../core/relationship-manager';
 import { createLucideIcon } from './lucide-icons';
@@ -523,103 +523,7 @@ export class CreatePersonModal extends Modal {
 					this.personData.pronouns = value || undefined;
 				}));
 
-		// Person type (only shown when DNA tracking is enabled)
-		if (this.plugin?.settings.enableDnaTracking) {
-			new Setting(form)
-				.setName('Person type')
-				.setDesc('Classify this person (for genetic genealogy workflows)')
-				.addDropdown(dropdown => dropdown
-					.addOption('', '(Regular person)')
-					.addOption('DNA Match', 'DNA Match')
-					.setValue(this.personData.personType || '')
-					.onChange(value => {
-						this.personData.personType = value || undefined;
-					}));
-		}
-
-		// DNA Information section (shown when DNA tracking is enabled)
-		// Always show when setting is on, so users can add DNA data to any person
-		if (this.plugin?.settings.enableDnaTracking) {
-			const dnaSection = form.createDiv({ cls: 'crc-dna-section' });
-			dnaSection.createEl('h4', { text: 'DNA information', cls: 'crc-section-header crc-section-header--secondary' });
-
-			// Shared cM (number input)
-			new Setting(dnaSection)
-				.setName('Shared cM')
-				.setDesc('Shared centiMorgans with this match')
-				.addText(text => text
-					.setPlaceholder('e.g., 1847')
-					.setValue(this.personData.dnaSharedCm?.toString() || '')
-					.onChange(value => {
-						const num = parseFloat(value);
-						this.personData.dnaSharedCm = isNaN(num) ? undefined : num;
-					}));
-
-			// Testing Company (dropdown)
-			new Setting(dnaSection)
-				.setName('Testing company')
-				.setDesc('DNA testing service provider')
-				.addDropdown(dropdown => dropdown
-					.addOption('', '(Not specified)')
-					.addOption('AncestryDNA', 'AncestryDNA')
-					.addOption('23andMe', '23andMe')
-					.addOption('FamilyTreeDNA', 'FamilyTreeDNA')
-					.addOption('MyHeritage', 'MyHeritage')
-					.addOption('LivingDNA', 'LivingDNA')
-					.addOption('GEDmatch', 'GEDmatch')
-					.setValue(this.personData.dnaTestingCompany || '')
-					.onChange(value => {
-						this.personData.dnaTestingCompany = value || undefined;
-					}));
-
-			// Kit ID (text input)
-			new Setting(dnaSection)
-				.setName('Kit ID')
-				.setDesc('DNA kit identifier')
-				.addText(text => text
-					.setPlaceholder('e.g., ABC123')
-					.setValue(this.personData.dnaKitId || '')
-					.onChange(value => {
-						this.personData.dnaKitId = value || undefined;
-					}));
-
-			// Match Type (dropdown)
-			new Setting(dnaSection)
-				.setName('Match type')
-				.setDesc('Classification of this DNA match')
-				.addDropdown(dropdown => dropdown
-					.addOption('', '(Not classified)')
-					.addOption('BKM', 'BKM (Best Known Match)')
-					.addOption('BMM', 'BMM (Best Mystery Match)')
-					.addOption('confirmed', 'Confirmed relationship')
-					.addOption('unconfirmed', 'Unconfirmed')
-					.setValue(this.personData.dnaMatchType || '')
-					.onChange(value => {
-						this.personData.dnaMatchType = value || undefined;
-					}));
-
-			// Endogamy Flag (toggle)
-			new Setting(dnaSection)
-				.setName('Endogamy flag')
-				.setDesc('Mark if match may be affected by endogamy (inflated cM values)')
-				.addToggle(toggle => toggle
-					.setValue(this.personData.dnaEndogamyFlag || false)
-					.onChange(value => {
-						this.personData.dnaEndogamyFlag = value || undefined;
-					}));
-
-			// Notes (textarea)
-			new Setting(dnaSection)
-				.setName('DNA notes')
-				.setDesc('Additional notes about this DNA match')
-				.addTextArea(textarea => textarea
-					.setPlaceholder('e.g., Matches on chromosome 7')
-					.setValue(this.personData.dnaNotes || '')
-					.onChange(value => {
-						this.personData.dnaNotes = value || undefined;
-					}));
-		}
-
+		// === LIFE EVENTS SECTION (moved higher for better UX) ===
 		// Birth date
 		new Setting(form)
 			.setName('Birth date')
@@ -647,6 +551,11 @@ export class CreatePersonModal extends Modal {
 
 		// Death place (link field)
 		this.createPlaceField(form, 'Death place', this.deathPlaceField);
+
+		// === DNA INFORMATION (inline expansion, only when DNA tracking enabled) ===
+		if (this.plugin?.settings.enableDnaTracking) {
+			this.renderDnaSection(form);
+		}
 
 		// Research level (only shown when Research Tools are enabled)
 		if (this.settings?.trackFactSourcing) {
@@ -692,9 +601,6 @@ export class CreatePersonModal extends Modal {
 			this.createEventsField(form);
 		}
 
-		// Sources section
-		this.createSourcesField(form);
-
 		// Relationship fields section header
 		const relSection = form.createDiv({ cls: 'crc-relationship-section' });
 		relSection.createEl('h4', { text: 'Family relationships', cls: 'crc-section-header' });
@@ -718,27 +624,11 @@ export class CreatePersonModal extends Modal {
 			this.createChildrenField(relSection);
 		}
 
-		// Step and adoptive parents section
-		const stepAdoptSection = form.createDiv({ cls: 'crc-relationship-section' });
-		stepAdoptSection.createEl('h4', { text: 'Step & adoptive parents (optional)', cls: 'crc-section-header crc-section-header--secondary' });
+		// === STEP & ADOPTIVE PARENTS (inline expansion) ===
+		this.renderStepAdoptiveSection(relSection);
 
-		// Step-father
-		this.createRelationshipField(stepAdoptSection, 'Step-father', this.stepfatherField);
-
-		// Step-mother
-		this.createRelationshipField(stepAdoptSection, 'Step-mother', this.stepmotherField);
-
-		// Adoptive father
-		this.createRelationshipField(stepAdoptSection, 'Adoptive father', this.adoptiveFatherField);
-
-		// Adoptive mother
-		this.createRelationshipField(stepAdoptSection, 'Adoptive mother', this.adoptiveMotherField);
-
-		// Gender-neutral parents (only shown if enabled in settings)
-		if (this.plugin?.settings.enableInclusiveParents) {
-			const parentsLabel = this.plugin.settings.parentFieldLabel || 'Parents';
-			this.createParentsField(stepAdoptSection, parentsLabel);
-		}
+		// === SOURCES (inline expansion) ===
+		this.renderSourcesSection(form);
 
 		// Collection - dropdown with existing + text for custom
 		const collectionSetting = new Setting(form)
@@ -883,8 +773,8 @@ export class CreatePersonModal extends Modal {
 					}));
 		}
 
-		// Buttons
-		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
+		// Buttons (sticky footer)
+		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons crc-modal-buttons--sticky' });
 
 		const cancelBtn = buttonContainer.createEl('button', {
 			text: 'Cancel',
@@ -1419,6 +1309,272 @@ export class CreatePersonModal extends Modal {
 			});
 			picker.open();
 		});
+	}
+
+	// =========================================================================
+	// INLINE EXPANSION SECTIONS
+	// These sections use a Material Design-inspired progressive disclosure pattern
+	// =========================================================================
+
+	/**
+	 * Check if DNA section has any data
+	 */
+	private hasDnaData(): boolean {
+		return !!(
+			this.personData.personType ||
+			this.personData.dnaSharedCm ||
+			this.personData.dnaTestingCompany ||
+			this.personData.dnaKitId ||
+			this.personData.dnaMatchType ||
+			this.personData.dnaEndogamyFlag ||
+			this.personData.dnaNotes
+		);
+	}
+
+	/**
+	 * Check if step/adoptive section has any data
+	 */
+	private hasStepAdoptiveData(): boolean {
+		return !!(
+			this.stepfatherField.crId ||
+			this.stepmotherField.crId ||
+			this.adoptiveFatherField.crId ||
+			this.adoptiveMotherField.crId ||
+			this.parentsField.crIds.length > 0
+		);
+	}
+
+	/**
+	 * Check if sources section has any data
+	 */
+	private hasSourcesData(): boolean {
+		return this.sourcesField.crIds.length > 0;
+	}
+
+	/**
+	 * Render DNA section with inline expansion
+	 */
+	private renderDnaSection(container: HTMLElement): void {
+		const hasData = this.hasDnaData();
+		const wrapper = container.createDiv({ cls: 'crc-inline-expand' });
+
+		// Create expansion link (hidden when expanded)
+		const expandLink = wrapper.createDiv({ cls: 'crc-inline-expand__trigger' });
+		const linkIcon = expandLink.createSpan({ cls: 'crc-inline-expand__icon' });
+		setIcon(linkIcon, 'plus');
+		expandLink.createSpan({ text: 'Add DNA information', cls: 'crc-inline-expand__text' });
+
+		// Create content container (hidden by default unless has data)
+		const content = wrapper.createDiv({ cls: 'crc-inline-expand__content' });
+
+		// Collapse link (shown when expanded)
+		const collapseHeader = content.createDiv({ cls: 'crc-inline-expand__header' });
+		collapseHeader.createSpan({ text: 'DNA information', cls: 'crc-inline-expand__title' });
+		const collapseLink = collapseHeader.createEl('button', {
+			cls: 'crc-inline-expand__collapse clickable-icon',
+			attr: { 'aria-label': 'Collapse section' }
+		});
+		setIcon(collapseLink, 'chevron-up');
+
+		// If has data, start expanded
+		if (hasData) {
+			wrapper.addClass('crc-inline-expand--expanded');
+		}
+
+		// Toggle handlers
+		expandLink.addEventListener('click', () => {
+			wrapper.addClass('crc-inline-expand--expanded');
+		});
+		collapseLink.addEventListener('click', () => {
+			wrapper.removeClass('crc-inline-expand--expanded');
+		});
+
+		// DNA fields
+		const fields = content.createDiv({ cls: 'crc-inline-expand__fields' });
+
+		// Person type
+		new Setting(fields)
+			.setName('Person type')
+			.setDesc('Classify this person (for genetic genealogy workflows)')
+			.addDropdown(dropdown => dropdown
+				.addOption('', '(Regular person)')
+				.addOption('DNA Match', 'DNA Match')
+				.setValue(this.personData.personType || '')
+				.onChange(value => {
+					this.personData.personType = value || undefined;
+				}));
+
+		// Shared cM
+		new Setting(fields)
+			.setName('Shared cM')
+			.setDesc('Shared centiMorgans with this match')
+			.addText(text => text
+				.setPlaceholder('e.g., 1847')
+				.setValue(this.personData.dnaSharedCm?.toString() || '')
+				.onChange(value => {
+					const num = parseFloat(value);
+					this.personData.dnaSharedCm = isNaN(num) ? undefined : num;
+				}));
+
+		// Testing Company
+		new Setting(fields)
+			.setName('Testing company')
+			.setDesc('DNA testing service provider')
+			.addDropdown(dropdown => dropdown
+				.addOption('', '(Not specified)')
+				.addOption('AncestryDNA', 'AncestryDNA')
+				.addOption('23andMe', '23andMe')
+				.addOption('FamilyTreeDNA', 'FamilyTreeDNA')
+				.addOption('MyHeritage', 'MyHeritage')
+				.addOption('LivingDNA', 'LivingDNA')
+				.addOption('GEDmatch', 'GEDmatch')
+				.setValue(this.personData.dnaTestingCompany || '')
+				.onChange(value => {
+					this.personData.dnaTestingCompany = value || undefined;
+				}));
+
+		// Kit ID
+		new Setting(fields)
+			.setName('Kit ID')
+			.setDesc('DNA kit identifier')
+			.addText(text => text
+				.setPlaceholder('e.g., ABC123')
+				.setValue(this.personData.dnaKitId || '')
+				.onChange(value => {
+					this.personData.dnaKitId = value || undefined;
+				}));
+
+		// Match Type
+		new Setting(fields)
+			.setName('Match type')
+			.setDesc('Classification of this DNA match')
+			.addDropdown(dropdown => dropdown
+				.addOption('', '(Not classified)')
+				.addOption('BKM', 'BKM (Best Known Match)')
+				.addOption('BMM', 'BMM (Best Mystery Match)')
+				.addOption('confirmed', 'Confirmed relationship')
+				.addOption('unconfirmed', 'Unconfirmed')
+				.setValue(this.personData.dnaMatchType || '')
+				.onChange(value => {
+					this.personData.dnaMatchType = value || undefined;
+				}));
+
+		// Endogamy Flag
+		new Setting(fields)
+			.setName('Endogamy flag')
+			.setDesc('Mark if match may be affected by endogamy (inflated cM values)')
+			.addToggle(toggle => toggle
+				.setValue(this.personData.dnaEndogamyFlag || false)
+				.onChange(value => {
+					this.personData.dnaEndogamyFlag = value || undefined;
+				}));
+
+		// DNA Notes
+		new Setting(fields)
+			.setName('DNA notes')
+			.setDesc('Additional notes about this DNA match')
+			.addTextArea(textarea => textarea
+				.setPlaceholder('e.g., Matches on chromosome 7')
+				.setValue(this.personData.dnaNotes || '')
+				.onChange(value => {
+					this.personData.dnaNotes = value || undefined;
+				}));
+	}
+
+	/**
+	 * Render step/adoptive parents section with inline expansion
+	 */
+	private renderStepAdoptiveSection(container: HTMLElement): void {
+		const hasData = this.hasStepAdoptiveData();
+		const wrapper = container.createDiv({ cls: 'crc-inline-expand' });
+
+		// Create expansion link
+		const expandLink = wrapper.createDiv({ cls: 'crc-inline-expand__trigger' });
+		const linkIcon = expandLink.createSpan({ cls: 'crc-inline-expand__icon' });
+		setIcon(linkIcon, 'plus');
+		expandLink.createSpan({ text: 'Add step or adoptive parents', cls: 'crc-inline-expand__text' });
+
+		// Create content container
+		const content = wrapper.createDiv({ cls: 'crc-inline-expand__content' });
+
+		// Collapse header
+		const collapseHeader = content.createDiv({ cls: 'crc-inline-expand__header' });
+		collapseHeader.createSpan({ text: 'Step & adoptive parents', cls: 'crc-inline-expand__title' });
+		const collapseLink = collapseHeader.createEl('button', {
+			cls: 'crc-inline-expand__collapse clickable-icon',
+			attr: { 'aria-label': 'Collapse section' }
+		});
+		setIcon(collapseLink, 'chevron-up');
+
+		// If has data, start expanded
+		if (hasData) {
+			wrapper.addClass('crc-inline-expand--expanded');
+		}
+
+		// Toggle handlers
+		expandLink.addEventListener('click', () => {
+			wrapper.addClass('crc-inline-expand--expanded');
+		});
+		collapseLink.addEventListener('click', () => {
+			wrapper.removeClass('crc-inline-expand--expanded');
+		});
+
+		// Step/adoptive fields
+		const fields = content.createDiv({ cls: 'crc-inline-expand__fields' });
+
+		this.createRelationshipField(fields, 'Step-father', this.stepfatherField);
+		this.createRelationshipField(fields, 'Step-mother', this.stepmotherField);
+		this.createRelationshipField(fields, 'Adoptive father', this.adoptiveFatherField);
+		this.createRelationshipField(fields, 'Adoptive mother', this.adoptiveMotherField);
+
+		// Gender-neutral parents (only shown if enabled in settings)
+		if (this.plugin?.settings.enableInclusiveParents) {
+			const parentsLabel = this.plugin.settings.parentFieldLabel || 'Parents';
+			this.createParentsField(fields, parentsLabel);
+		}
+	}
+
+	/**
+	 * Render sources section with inline expansion
+	 */
+	private renderSourcesSection(container: HTMLElement): void {
+		const hasData = this.hasSourcesData();
+		const wrapper = container.createDiv({ cls: 'crc-inline-expand' });
+
+		// Create expansion link
+		const expandLink = wrapper.createDiv({ cls: 'crc-inline-expand__trigger' });
+		const linkIcon = expandLink.createSpan({ cls: 'crc-inline-expand__icon' });
+		setIcon(linkIcon, 'plus');
+		expandLink.createSpan({ text: 'Add sources', cls: 'crc-inline-expand__text' });
+
+		// Create content container
+		const content = wrapper.createDiv({ cls: 'crc-inline-expand__content' });
+
+		// Collapse header
+		const collapseHeader = content.createDiv({ cls: 'crc-inline-expand__header' });
+		collapseHeader.createSpan({ text: 'Sources', cls: 'crc-inline-expand__title' });
+		const collapseLink = collapseHeader.createEl('button', {
+			cls: 'crc-inline-expand__collapse clickable-icon',
+			attr: { 'aria-label': 'Collapse section' }
+		});
+		setIcon(collapseLink, 'chevron-up');
+
+		// If has data, start expanded
+		if (hasData) {
+			wrapper.addClass('crc-inline-expand--expanded');
+		}
+
+		// Toggle handlers
+		expandLink.addEventListener('click', () => {
+			wrapper.addClass('crc-inline-expand--expanded');
+		});
+		collapseLink.addEventListener('click', () => {
+			wrapper.removeClass('crc-inline-expand--expanded');
+		});
+
+		// Sources field content (reuse existing method)
+		const fields = content.createDiv({ cls: 'crc-inline-expand__fields' });
+		this.createSourcesField(fields);
 	}
 
 	/**

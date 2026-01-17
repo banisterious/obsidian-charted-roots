@@ -805,3 +805,126 @@
   font-weight: 500;
   color: var(--text-normal);
 }
+
+/* ==========================================================================
+   INLINE EXPANSION SECTIONS
+   Material Design-inspired progressive disclosure for optional form sections
+   ========================================================================== */
+
+.crc-inline-expand {
+  margin: var(--size-4-2) 0;
+}
+
+/* Expansion trigger link */
+.crc-inline-expand__trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2-3);
+  padding: var(--size-2-3) var(--size-4-1);
+  color: var(--text-accent);
+  cursor: pointer;
+  border-radius: var(--radius-s);
+  transition: background-color 0.15s ease;
+}
+
+.crc-inline-expand__trigger:hover {
+  background: var(--background-modifier-hover);
+}
+
+.crc-inline-expand__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: var(--text-accent);
+}
+
+.crc-inline-expand__icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.crc-inline-expand__text {
+  font-size: var(--font-ui-small);
+  font-weight: 500;
+}
+
+/* Content container - hidden by default */
+.crc-inline-expand__content {
+  display: none;
+  margin-top: var(--size-2-2);
+  padding: var(--size-4-2);
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+}
+
+/* Collapse header inside content */
+.crc-inline-expand__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--size-4-2);
+  padding-bottom: var(--size-2-3);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.crc-inline-expand__title {
+  font-size: var(--font-ui-small);
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.crc-inline-expand__collapse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--text-muted);
+  border-radius: var(--radius-s);
+}
+
+.crc-inline-expand__collapse:hover {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover);
+}
+
+.crc-inline-expand__fields {
+  /* Remove default setting-item margins for tighter layout */
+}
+
+/* stylelint-disable-next-line selector-class-pattern -- Obsidian's setting structure */
+.crc-inline-expand__fields .setting-item {
+  border-top: none;
+  padding-top: var(--size-2-3);
+  padding-bottom: var(--size-2-3);
+}
+
+/* Expanded state */
+.crc-inline-expand--expanded .crc-inline-expand__trigger {
+  display: none;
+}
+
+.crc-inline-expand--expanded .crc-inline-expand__content {
+  display: block;
+}
+
+/* ==========================================================================
+   STICKY FOOTER FOR MODAL BUTTONS
+   Keeps action buttons visible while scrolling long forms
+   ========================================================================== */
+
+.crc-modal-buttons--sticky {
+  position: sticky;
+  bottom: 0;
+  margin-top: var(--size-4-4);
+  padding: var(--size-4-3) 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    var(--modal-background) 20%
+  );
+  z-index: 10;
+}
