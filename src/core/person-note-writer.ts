@@ -58,6 +58,18 @@ function createSmartWikilink(name: string, app: App): string {
 }
 
 /**
+ * Per-spouse marriage metadata for indexed spouse format (#204)
+ */
+export interface SpouseMetadata {
+	crId: string;
+	name: string;
+	marriageDate?: string;
+	marriageLocation?: string;
+	marriageStatus?: 'current' | 'divorced' | 'widowed' | 'separated' | 'annulled';
+	divorceDate?: string;
+}
+
+/**
  * Person data for note creation
  */
 export interface PersonData {
@@ -92,6 +104,7 @@ export interface PersonData {
 	motherName?: string;    // Mother's name for wikilink display
 	spouseCrId?: string[];  // Spouse(s) cr_id for reliable resolution
 	spouseName?: string[];  // Spouse(s) name for wikilink display
+	spouseMetadata?: SpouseMetadata[];  // Per-spouse marriage metadata (#204)
 	childCrId?: string[];   // Children's cr_ids for reliable resolution
 	childName?: string[];   // Children's names for wikilink display
 	// Step-parent relationships

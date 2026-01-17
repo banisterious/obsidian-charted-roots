@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-01-17 18:38:54 UTC
+ * - Generated: 2026-01-17 18:58:33 UTC
  * - Components: 41 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -6326,7 +6326,7 @@ settings:
    COMPONENT: ENTITY-CREATE-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 931 lines, 18.97 KB */
+/* Component Size: 1005 lines, 20.6 KB */
 
 /* ==========================================================================
    PERSON PICKER MODAL
@@ -6757,6 +6757,7 @@ settings:
   padding: 8px 0;
 }
 
+/* Legacy spouse field item (no longer used, kept for backwards compat) */
 .crc-spouses-field__item {
   display: flex;
   align-items: center;
@@ -6769,6 +6770,79 @@ settings:
 .crc-spouses-field__name {
   font-size: 14px;
   color: var(--text-normal);
+}
+
+/* ==========================================================================
+   Spouse Item with Marriage Metadata Expansion (#204)
+   ========================================================================== */
+
+.crc-spouse-item {
+  background: var(--background-primary);
+  border-radius: var(--radius-s);
+  overflow: hidden;
+}
+
+.crc-spouse-item__main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+}
+
+.crc-spouse-item__name {
+  font-size: 14px;
+  color: var(--text-normal);
+  font-weight: 500;
+}
+
+.crc-spouse-item__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Metadata expansion content - hidden by default */
+.crc-spouse-item__metadata {
+  display: none;
+  padding: 12px;
+  border-top: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary-alt);
+}
+
+/* Show metadata when expanded */
+.crc-spouse-item--expanded .crc-spouse-item__metadata {
+  display: block;
+}
+
+/* Compact settings inside metadata */
+.crc-spouse-item__metadata .setting-item {
+  padding: 8px 0;
+  border-top: none;
+}
+
+.crc-spouse-item__metadata .setting-item:first-child {
+  padding-top: 0;
+}
+
+.crc-spouse-item__metadata .setting-item-info {
+  flex: 0 0 100px;
+}
+
+.crc-spouse-item__metadata .setting-item-name {
+  font-size: 12px;
+}
+
+.crc-spouse-item__metadata .setting-item-control {
+  flex: 1;
+}
+
+/* Collapse row at bottom of metadata */
+.crc-spouse-item__collapse-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--background-modifier-border);
 }
 
 /* ==========================================================================
@@ -35939,11 +36013,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-01-17 18:38:54 UTC
+ * Build completed: 2026-01-17 18:58:33 UTC
  * Components processed: 41
- * Total lines: 35547
- * Total size: 706.5 KB
- * Build duration: 0.28 seconds
+ * Total lines: 35621
+ * Total size: 708.13 KB
+ * Build duration: 0.32 seconds
  *
  * Component breakdown:
  * - variables.css: 56 lines, 1.61 KB
@@ -35952,7 +36026,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - layout.css: 22 lines, 0.25 KB
  * - settings.css: 131 lines, 3.53 KB
  * - control-center.css: 5673 lines, 105.32 KB
- * - entity-create-modals.css: 931 lines, 18.97 KB
+ * - entity-create-modals.css: 1005 lines, 20.6 KB
  * - place-modals.css: 1048 lines, 20.08 KB
  * - media-modals.css: 1928 lines, 36.72 KB
  * - import-export-wizard.css: 2187 lines, 41.08 KB

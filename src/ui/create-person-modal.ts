@@ -43,6 +43,30 @@ interface MultiRelationshipField {
 }
 
 /**
+ * Marriage status options
+ */
+type MarriageStatus = 'current' | 'divorced' | 'widowed' | 'separated' | 'annulled';
+
+/**
+ * Spouse with marriage metadata for enhanced spouse tracking (#204)
+ */
+interface SpouseWithMetadata {
+	crId: string;
+	name: string;
+	marriageDate?: string;
+	marriageLocation?: string;
+	marriageStatus?: MarriageStatus;
+	divorceDate?: string;
+}
+
+/**
+ * Multi-relationship field data with per-spouse metadata
+ */
+interface SpousesFieldData {
+	spouses: SpouseWithMetadata[];
+}
+
+/**
  * Form data structure for persistence
  */
 interface PersonFormData {
@@ -62,9 +86,10 @@ interface PersonFormData {
 	fatherName?: string;
 	motherCrId?: string;
 	motherName?: string;
-	// Spouses (multi-relationship)
+	// Spouses (multi-relationship with optional metadata)
 	spouseCrIds?: string[];
 	spouseNames?: string[];
+	spouseMetadata?: SpouseWithMetadata[];
 	stepfatherCrId?: string;
 	stepfatherName?: string;
 	stepmotherCrId?: string;
@@ -104,8 +129,8 @@ export class CreatePersonModal extends Modal {
 	// Relationship fields
 	private fatherField: RelationshipField = {};
 	private motherField: RelationshipField = {};
-	// Spouses (multi-relationship)
-	private spousesField: MultiRelationshipField = { crIds: [], names: [] };
+	// Spouses (multi-relationship with metadata)
+	private spousesField: SpousesFieldData = { spouses: [] };
 	// Step and adoptive parents
 	private stepfatherField: RelationshipField = {};
 	private stepmotherField: RelationshipField = {};
@@ -282,12 +307,19 @@ export class CreatePersonModal extends Modal {
 			if (ep.motherId || ep.motherName) {
 				this.motherField = { crId: ep.motherId, name: ep.motherName };
 			}
-			// Spouses (multi-relationship)
+			// Spouses (multi-relationship with metadata)
 			if (ep.spouseIds && ep.spouseIds.length > 0) {
-				this.spousesField = {
-					crIds: [...ep.spouseIds],
-					names: ep.spouseNames ? [...ep.spouseNames] : []
-				};
+				// If we have metadata, use it; otherwise build from arrays
+				if (ep.spouseMetadata && ep.spouseMetadata.length > 0) {
+					this.spousesField = { spouses: [...ep.spouseMetadata] };
+				} else {
+					this.spousesField = {
+						spouses: ep.spouseIds.map((crId, i) => ({
+							crId,
+							name: ep.spouseNames?.[i] || crId
+						}))
+					};
+				}
 			}
 			// Step and adoptive parents
 			if (ep.stepfatherId || ep.stepfatherName) {
@@ -612,7 +644,7 @@ export class CreatePersonModal extends Modal {
 		this.createRelationshipField(relSection, 'Mother', this.motherField);
 
 		// Spouses section (multi-select, shown in edit mode or if spouses exist)
-		if (this.editMode || this.spousesField.crIds.length > 0) {
+		if (this.editMode || this.spousesField.spouses.length > 0) {
 			this.createSpousesField(relSection);
 		} else {
 			// In create mode with no spouses, show single spouse picker for simplicity
@@ -832,9 +864,10 @@ export class CreatePersonModal extends Modal {
 			fatherName: this.fatherField.name,
 			motherCrId: this.motherField.crId,
 			motherName: this.motherField.name,
-			// Spouses (multi-relationship)
-			spouseCrIds: this.spousesField.crIds.length > 0 ? [...this.spousesField.crIds] : undefined,
-			spouseNames: this.spousesField.names.length > 0 ? [...this.spousesField.names] : undefined,
+			// Spouses (multi-relationship with metadata)
+			spouseCrIds: this.spousesField.spouses.length > 0 ? this.spousesField.spouses.map(s => s.crId) : undefined,
+			spouseNames: this.spousesField.spouses.length > 0 ? this.spousesField.spouses.map(s => s.name) : undefined,
+			spouseMetadata: this.spousesField.spouses.length > 0 ? [...this.spousesField.spouses] : undefined,
 			stepfatherCrId: this.stepfatherField.crId,
 			stepfatherName: this.stepfatherField.name,
 			stepmotherCrId: this.stepmotherField.crId,
@@ -888,11 +921,15 @@ export class CreatePersonModal extends Modal {
 		if (formData.motherCrId || formData.motherName) {
 			this.motherField = { crId: formData.motherCrId, name: formData.motherName };
 		}
-		// Spouses (multi-relationship)
-		if (formData.spouseCrIds && formData.spouseCrIds.length > 0) {
+		// Spouses (multi-relationship with metadata)
+		if (formData.spouseMetadata && formData.spouseMetadata.length > 0) {
+			this.spousesField = { spouses: [...formData.spouseMetadata] };
+		} else if (formData.spouseCrIds && formData.spouseCrIds.length > 0) {
 			this.spousesField = {
-				crIds: [...formData.spouseCrIds],
-				names: formData.spouseNames ? [...formData.spouseNames] : []
+				spouses: formData.spouseCrIds.map((crId, i) => ({
+					crId,
+					name: formData.spouseNames?.[i] || crId
+				}))
 			};
 		}
 		if (formData.stepfatherCrId || formData.stepfatherName) {
@@ -2084,9 +2121,11 @@ export class CreatePersonModal extends Modal {
 
 				const picker = new PersonPickerModal(this.app, (person: PersonInfo) => {
 					// Add to spousesField array
-					if (!this.spousesField.crIds.includes(person.crId)) {
-						this.spousesField.crIds.push(person.crId);
-						this.spousesField.names.push(person.name);
+					if (!this.spousesField.spouses.some(s => s.crId === person.crId)) {
+						this.spousesField.spouses.push({
+							crId: person.crId,
+							name: person.name
+						});
 					}
 					inputEl.value = person.name;
 					inputEl.addClass('crc-input--linked');
@@ -2106,8 +2145,8 @@ export class CreatePersonModal extends Modal {
 	}
 
 	/**
-	 * Create the spouses multi-select field
-	 * Shows a list of currently linked spouses with ability to add/remove
+	 * Create the spouses multi-select field with per-spouse metadata expansion (#204)
+	 * Shows a list of currently linked spouses with ability to add/remove and add marriage details
 	 */
 	private createSpousesField(container: HTMLElement): void {
 		const spousesContainer = container.createDiv({ cls: 'crc-spouses-field' });
@@ -2130,36 +2169,15 @@ export class CreatePersonModal extends Modal {
 		const renderSpouseList = () => {
 			spouseList.empty();
 
-			if (this.spousesField.crIds.length === 0) {
+			if (this.spousesField.spouses.length === 0) {
 				const emptyState = spouseList.createDiv({ cls: 'crc-spouses-field__empty' });
 				emptyState.setText(`No ${getSpouseLabel(this.plugin?.settings, { plural: true, lowercase: true })} linked`);
 				return;
 			}
 
-			for (let i = 0; i < this.spousesField.crIds.length; i++) {
-				const crId = this.spousesField.crIds[i];
-				const name = this.spousesField.names[i] || crId;
-
-				const spouseItem = spouseList.createDiv({ cls: 'crc-spouses-field__item' });
-
-				// Spouse name
-				const nameSpan = spouseItem.createSpan({ cls: 'crc-spouses-field__name' });
-				nameSpan.setText(name);
-
-				// Remove button
-				const removeBtn = spouseItem.createEl('button', {
-					cls: 'crc-btn crc-btn--icon crc-btn--danger',
-					attr: { 'aria-label': `Remove ${name}` }
-				});
-				const removeIcon = createLucideIcon('x', 14);
-				removeBtn.appendChild(removeIcon);
-
-				removeBtn.addEventListener('click', () => {
-					// Remove from arrays
-					this.spousesField.crIds.splice(i, 1);
-					this.spousesField.names.splice(i, 1);
-					renderSpouseList();
-				});
+			for (let i = 0; i < this.spousesField.spouses.length; i++) {
+				const spouse = this.spousesField.spouses[i];
+				this.renderSpouseItem(spouseList, spouse, i, renderSpouseList);
 			}
 		};
 
@@ -2175,14 +2193,16 @@ export class CreatePersonModal extends Modal {
 
 			const picker = new PersonPickerModal(this.app, (person: PersonInfo) => {
 				// Check if already added
-				if (this.spousesField.crIds.includes(person.crId)) {
+				if (this.spousesField.spouses.some(s => s.crId === person.crId)) {
 					new Notice(`${person.name} is already linked as a ${getSpouseLabel(this.plugin?.settings, { lowercase: true })}`);
 					return;
 				}
 
-				// Add to arrays
-				this.spousesField.crIds.push(person.crId);
-				this.spousesField.names.push(person.name);
+				// Add to spouses array
+				this.spousesField.spouses.push({
+					crId: person.crId,
+					name: person.name
+				});
 				renderSpouseList();
 			}, {
 				title: `Select ${getSpouseLabel(this.plugin?.settings, { lowercase: true })}`,
@@ -2194,6 +2214,163 @@ export class CreatePersonModal extends Modal {
 				plugin: this.plugin
 			});
 			picker.open();
+		});
+	}
+
+	/**
+	 * Render a single spouse item with inline expansion for marriage metadata
+	 */
+	private renderSpouseItem(
+		container: HTMLElement,
+		spouse: SpouseWithMetadata,
+		index: number,
+		onUpdate: () => void
+	): void {
+		const hasMetadata = !!(spouse.marriageDate || spouse.marriageLocation || spouse.marriageStatus || spouse.divorceDate);
+		const spouseItem = container.createDiv({ cls: 'crc-spouse-item' });
+
+		// Main row: name + actions
+		const mainRow = spouseItem.createDiv({ cls: 'crc-spouse-item__main' });
+
+		// Spouse name
+		const nameSpan = mainRow.createSpan({ cls: 'crc-spouse-item__name' });
+		nameSpan.setText(spouse.name);
+
+		// Action buttons container
+		const actions = mainRow.createDiv({ cls: 'crc-spouse-item__actions' });
+
+		// Expand/collapse button for metadata (only show if not already expanded)
+		const expandBtn = actions.createEl('button', {
+			cls: 'crc-btn crc-btn--icon crc-btn--ghost',
+			attr: { 'aria-label': 'Add marriage details' }
+		});
+		const expandIcon = createLucideIcon(hasMetadata ? 'chevron-down' : 'calendar-plus', 14);
+		expandBtn.appendChild(expandIcon);
+
+		// Remove button
+		const removeBtn = actions.createEl('button', {
+			cls: 'crc-btn crc-btn--icon crc-btn--danger',
+			attr: { 'aria-label': `Remove ${spouse.name}` }
+		});
+		const removeIcon = createLucideIcon('x', 14);
+		removeBtn.appendChild(removeIcon);
+
+		removeBtn.addEventListener('click', () => {
+			this.spousesField.spouses.splice(index, 1);
+			onUpdate();
+		});
+
+		// Metadata expansion content (hidden by default unless has data)
+		const metadataContent = spouseItem.createDiv({ cls: 'crc-spouse-item__metadata' });
+
+		// Helper to render metadata fields
+		const renderMetadataFields = () => {
+			metadataContent.empty();
+
+			// Marriage date
+			new Setting(metadataContent)
+				.setName('Marriage date')
+				.addText(text => text
+					.setPlaceholder('YYYY-MM-DD')
+					.setValue(spouse.marriageDate || '')
+					.onChange(value => {
+						spouse.marriageDate = value || undefined;
+					}));
+
+			// Marriage location (with place picker if placeGraph available)
+			const locationSetting = new Setting(metadataContent)
+				.setName('Marriage location');
+
+			if (this.placeGraph) {
+				let locationInput: HTMLInputElement;
+				locationSetting.addText(text => {
+					locationInput = text.inputEl;
+					text
+						.setPlaceholder('Click link to select...')
+						.setValue(spouse.marriageLocation || '')
+						.setDisabled(true);
+				});
+				locationSetting.addButton(button => {
+					const icon = createLucideIcon('link', 14);
+					button.buttonEl.empty();
+					button.buttonEl.addClass('crc-btn', 'crc-btn--secondary', 'crc-btn--small');
+					button.buttonEl.appendChild(icon);
+					button.onClick(() => {
+						const picker = new PlacePickerModal(
+							this.app,
+							(place: SelectedPlaceInfo) => {
+								spouse.marriageLocation = place.name;
+								locationInput.value = place.name;
+							},
+							{
+								title: 'Select marriage location',
+								subtitle: 'Select a place or type a location',
+								plugin: this.plugin
+							}
+						);
+						picker.open();
+					});
+				});
+			} else {
+				locationSetting.addText(text => text
+					.setPlaceholder('e.g., St. Mary\'s Church, London')
+					.setValue(spouse.marriageLocation || '')
+					.onChange(value => {
+						spouse.marriageLocation = value || undefined;
+					}));
+			}
+
+			// Marriage status
+			new Setting(metadataContent)
+				.setName('Status')
+				.addDropdown(dropdown => dropdown
+					.addOption('', '(Not specified)')
+					.addOption('current', 'Current')
+					.addOption('divorced', 'Divorced')
+					.addOption('widowed', 'Widowed')
+					.addOption('separated', 'Separated')
+					.addOption('annulled', 'Annulled')
+					.setValue(spouse.marriageStatus || '')
+					.onChange(value => {
+						spouse.marriageStatus = (value as MarriageStatus) || undefined;
+					}));
+
+			// Divorce date (only shown if status indicates it might be relevant)
+			new Setting(metadataContent)
+				.setName('Divorce date')
+				.addText(text => text
+					.setPlaceholder('YYYY-MM-DD')
+					.setValue(spouse.divorceDate || '')
+					.onChange(value => {
+						spouse.divorceDate = value || undefined;
+					}));
+
+			// Collapse link
+			const collapseRow = metadataContent.createDiv({ cls: 'crc-spouse-item__collapse-row' });
+			const collapseLink = collapseRow.createEl('button', {
+				cls: 'crc-btn crc-btn--ghost crc-btn--small',
+				text: 'Collapse'
+			});
+			collapseLink.addEventListener('click', () => {
+				spouseItem.removeClass('crc-spouse-item--expanded');
+			});
+		};
+
+		// Start expanded if has metadata
+		if (hasMetadata) {
+			spouseItem.addClass('crc-spouse-item--expanded');
+			renderMetadataFields();
+		}
+
+		// Expand button handler
+		expandBtn.addEventListener('click', () => {
+			const isExpanded = spouseItem.hasClass('crc-spouse-item--expanded');
+			if (isExpanded) {
+				spouseItem.removeClass('crc-spouse-item--expanded');
+			} else {
+				spouseItem.addClass('crc-spouse-item--expanded');
+				renderMetadataFields();
+			}
 		});
 	}
 
@@ -2551,10 +2728,11 @@ export class CreatePersonModal extends Modal {
 				data.motherName = this.motherField.name;
 			}
 
-			// Add spouse relationships
-			if (this.spousesField.crIds.length > 0) {
-				data.spouseCrId = [...this.spousesField.crIds];
-				data.spouseName = [...this.spousesField.names];
+			// Add spouse relationships (with metadata for #204)
+			if (this.spousesField.spouses.length > 0) {
+				data.spouseCrId = this.spousesField.spouses.map(s => s.crId);
+				data.spouseName = this.spousesField.spouses.map(s => s.name);
+				data.spouseMetadata = this.spousesField.spouses;
 			}
 
 			// Add step-father relationship
@@ -2705,14 +2883,16 @@ export class CreatePersonModal extends Modal {
 				data.motherName = undefined;
 			}
 
-			// Add spouse relationships
-			if (this.spousesField.crIds.length > 0) {
-				data.spouseCrId = [...this.spousesField.crIds];
-				data.spouseName = [...this.spousesField.names];
+			// Add spouse relationships (with metadata for #204)
+			if (this.spousesField.spouses.length > 0) {
+				data.spouseCrId = this.spousesField.spouses.map(s => s.crId);
+				data.spouseName = this.spousesField.spouses.map(s => s.name);
+				data.spouseMetadata = this.spousesField.spouses;
 			} else {
 				// Explicitly clear spouses if all removed
 				data.spouseCrId = [];
 				data.spouseName = [];
+				data.spouseMetadata = [];
 			}
 
 			// Add step-father relationship
