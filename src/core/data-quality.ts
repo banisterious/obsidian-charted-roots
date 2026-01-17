@@ -1840,6 +1840,32 @@ export class DataQualityService {
 						const childFatherId = child.fatherCrId;
 						const childMotherId = child.motherCrId;
 
+						// Check if child already lists this person as a parent in any form
+						const isInGenderNeutralParents = child.parentCrIds.includes(person.crId);
+						const isInAdoptiveParents = child.adoptiveParentCrIds.includes(person.crId);
+
+						// Skip if person is already a gender-neutral parent of the child
+						if (isInGenderNeutralParents || isInAdoptiveParents) {
+							continue;
+						}
+
+						// Skip sex-based normalization when:
+						// 1. Gender-neutral parents setting is enabled AND child uses parents array
+						// 2. This relationship uses a custom relationship type (e.g., sire/childer)
+						const enableInclusiveParents = this.settings.enableInclusiveParents;
+						const childHasGenderNeutralParents = child.parentCrIds.length > 0;
+						const hasCustomRelationshipType = child.parentRelationshipTypes?.has(person.crId);
+
+						// If gender-neutral mode is on and child uses parents[], don't normalize to mother/father
+						if (enableInclusiveParents && childHasGenderNeutralParents) {
+							continue;
+						}
+
+						// If this is a custom relationship type, don't normalize
+						if (hasCustomRelationshipType) {
+							continue;
+						}
+
 						if (childFatherId !== person.crId && childMotherId !== person.crId) {
 							// Determine which parent field this person should occupy based on their sex
 							const sex = person.sex;
@@ -1861,7 +1887,8 @@ export class DataQualityService {
 								// Check if this person is listed as a step-father or adoptive father of the child
 								// If so, this is not a conflict - they're a non-biological parent
 								const isStepOrAdoptiveFather = child.stepfatherCrIds.includes(person.crId) ||
-									child.adoptiveFatherCrId === person.crId;
+									child.adoptiveFatherCrId === person.crId ||
+									child.adoptiveParentCrIds.includes(person.crId);
 
 								if (!isStepOrAdoptiveFather) {
 									// Check if current father also claims this child - if so, it's a conflict
@@ -1895,7 +1922,8 @@ export class DataQualityService {
 								// Check if this person is listed as a step-mother or adoptive mother of the child
 								// If so, this is not a conflict - they're a non-biological parent
 								const isStepOrAdoptiveMother = child.stepmotherCrIds.includes(person.crId) ||
-									child.adoptiveMotherCrId === person.crId;
+									child.adoptiveMotherCrId === person.crId ||
+									child.adoptiveParentCrIds.includes(person.crId);
 
 								if (!isStepOrAdoptiveMother) {
 									// Check if current mother also claims this child - if so, it's a conflict
