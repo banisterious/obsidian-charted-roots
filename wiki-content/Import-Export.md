@@ -198,6 +198,46 @@ During import, a modal shows:
 - `DIV` - Divorce events → `spouse1_divorce_date`
 - `PLAC` - Marriage locations → `spouse1_marriage_location`
 
+**Media Import (OBJE Records):**
+
+GEDCOM media object (OBJE) records can be imported to link photos, documents, and scans to person, event, and source notes.
+
+*Enabling Media Import:*
+1. In the import wizard Options step, enable **Media references**
+2. If your GEDCOM contains absolute paths (e.g., `/media/pictures/Ancestors/photo.jpg`), optionally set a **Path prefix to strip** to convert them to vault-relative paths
+
+*What Gets Imported:*
+- Top-level `0 @Oxxxx@ OBJE` record definitions
+- `1 OBJE @Oxxxx@` references on individuals, families, sources, and events
+- Inline OBJE records with embedded FILE paths
+- Media titles (TITL tags) are preserved for reference
+
+*Path Resolution:*
+
+| GEDCOM Path | Path Prefix | Result |
+|-------------|-------------|--------|
+| `/media/pictures/photo.jpg` | `/media/pictures/` | `[[photo.jpg]]` |
+| `C:\Photos\scan.pdf` | `C:\Photos\` | `[[scan.pdf]]` |
+| `photo.jpg` | (none) | `[[photo.jpg]]` |
+
+*Import Wizard Preview:*
+
+Before import, the wizard shows a live preview of how GEDCOM paths will be converted to wikilinks. This helps you verify the path prefix setting is correct.
+
+*Vault Validation:*
+
+After import, Charted Roots validates that referenced media files exist in your vault. A notification reports any missing files, allowing you to copy them to your media folder.
+
+*Frontmatter Output:*
+
+```yaml
+media:
+  - "[[photo1.jpg]]"
+  - "[[document.pdf]]"
+```
+
+> **💡 Tip:** If your media is stored in an external folder, consider using Obsidian's symlink support to link that folder into your vault's media directory.
+
 ### After Import
 
 1. **Wait for sync completion** - If bidirectional sync is enabled, Charted Roots automatically processes all imported relationships. Progress notifications show sync status.
