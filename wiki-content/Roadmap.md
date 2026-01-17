@@ -332,19 +332,13 @@ These features are under consideration but not yet prioritized.
 
 ### Research Tracking
 
-**Summary:** Tools for tracking research progress toward GPS-compliant documentation.
+**Summary:** Core research tracking features are already implemented; workflow features are covered under [GPS Research Workflow Integration](#gps-research-workflow-integration).
 
 **Already Implemented:**
 - **Research level property** (v0.17.x) — 7-level scale (0-6) based on Hoitink's "Six Levels of Ancestral Profiles," with Edit Person modal, Research Gaps Report filtering/sorting, and Bases views
 - **Confidence levels** — Source confidence (high/medium/low/unknown), proof confidence (proven/probable/possible/disproven)
 - **Source documentation per fact** — `sourced_*` properties linking facts to sources, coverage percentages in reports
 - **Proof summaries** — GPS-aligned proof summary notes with evidence tracking, conflict detection, and resolution
-
-**Potential Future Additions:**
-- Research to-do tracking (per-person or per-fact task lists)
-- Research log notes (session-based research journals)
-
-For DNA match tracking, see [DNA Match Tracking](#dna-match-tracking) in Planned Features.
 
 See [Evidence and Sources](Evidence-And-Sources) for documentation on existing features.
 
