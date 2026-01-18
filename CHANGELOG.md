@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Create event context menu action**: Right-clicking the Events folder now shows "Create event" in the Charted Roots submenu, matching the pattern for People and Places folders.
+
 ---
 
 ## [0.19.14] - 2026-01-17

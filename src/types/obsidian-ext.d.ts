@@ -5,7 +5,7 @@
  * that exist at runtime but aren't included in the published types.
  */
 
-import { Menu } from 'obsidian';
+import 'obsidian';
 
 declare module 'obsidian' {
 	interface MenuItem {

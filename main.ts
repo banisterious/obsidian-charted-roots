@@ -3768,6 +3768,22 @@ export default class CanvasRootsPlugin extends Plugin {
 							else if (isEventsFolder) {
 								submenu.addItem((subItem) => {
 									subItem
+										.setTitle('Create event')
+										.setIcon('calendar-plus')
+										.onClick(() => {
+											const eventService = this.getEventService();
+											if (eventService) {
+												new CreateEventModal(this.app, eventService, this.settings, {
+													plugin: this
+												}).open();
+											}
+										});
+								});
+
+								submenu.addSeparator();
+
+								submenu.addItem((subItem) => {
+									subItem
 										.setTitle('Add essential event properties')
 										.setIcon('calendar')
 										.onClick(async () => {
@@ -4271,6 +4287,20 @@ export default class CanvasRootsPlugin extends Plugin {
 
 						// === EVENTS FOLDER (MOBILE) ===
 						else if (isEventsFolder) {
+							menu.addItem((item) => {
+								item
+									.setTitle('Charted Roots: Create event')
+									.setIcon('calendar-plus')
+									.onClick(() => {
+										const eventService = this.getEventService();
+										if (eventService) {
+											new CreateEventModal(this.app, eventService, this.settings, {
+												plugin: this
+											}).open();
+										}
+									});
+							});
+
 							menu.addItem((item) => {
 								item
 									.setTitle('Charted Roots: Add essential event properties')
