@@ -63,6 +63,9 @@ export function renderDashboardTab(options: DashboardTabOptions): void {
 	// Quick Actions section
 	renderQuickActionsSection(container, plugin, app, switchTab, closeModal);
 
+	// Dockable Views section
+	renderDockableViewsSection(container, plugin, closeModal);
+
 	// Staging section (if there are staged imports or clipped notes)
 	renderStagingSection(container, plugin, app, closeModal);
 
@@ -338,6 +341,121 @@ function renderQuickActionsSection(
 			action: () => {
 				closeModal();
 				new ImportExportHubModal(app, plugin).open();
+			}
+		}
+	];
+
+	// Render each tile
+	for (const tile of tiles) {
+		renderTile(grid, tile);
+	}
+}
+
+/**
+ * Render the Dockable Views tile grid
+ */
+function renderDockableViewsSection(
+	container: HTMLElement,
+	plugin: CanvasRootsPlugin,
+	closeModal: () => void
+): void {
+	// Section header
+	const header = container.createDiv({ cls: 'crc-dashboard-section-header' });
+	header.createSpan({ text: 'Dockable views', cls: 'crc-dashboard-section-title' });
+
+	// Tile grid
+	const grid = container.createDiv({ cls: 'crc-dashboard-tile-grid' });
+
+	// Define the dockable view tiles
+	const tiles: DashboardTile[] = [
+		{
+			id: 'view-people',
+			label: 'People',
+			icon: 'users',
+			description: 'Open people browser in sidebar',
+			action: () => {
+				closeModal();
+				void plugin.activatePeopleView();
+			}
+		},
+		{
+			id: 'view-places',
+			label: 'Places',
+			icon: 'map-pin',
+			description: 'Open places browser in sidebar',
+			action: () => {
+				closeModal();
+				void plugin.activatePlacesView();
+			}
+		},
+		{
+			id: 'view-events',
+			label: 'Events',
+			icon: 'calendar',
+			description: 'Open events browser in sidebar',
+			action: () => {
+				closeModal();
+				void plugin.activateEventsView();
+			}
+		},
+		{
+			id: 'view-sources',
+			label: 'Sources',
+			icon: 'book-open',
+			description: 'Open sources browser in sidebar',
+			action: () => {
+				closeModal();
+				void plugin.activateSourcesView();
+			}
+		},
+		{
+			id: 'view-organizations',
+			label: 'Organizations',
+			icon: 'building',
+			description: 'Open organizations browser in sidebar',
+			action: () => {
+				closeModal();
+				void plugin.activateOrganizationsView();
+			}
+		},
+		{
+			id: 'view-relationships',
+			label: 'Relationships',
+			icon: 'git-merge',
+			description: 'Open relationships browser in sidebar',
+			action: () => {
+				closeModal();
+				void plugin.activateRelationshipsView();
+			}
+		},
+		{
+			id: 'view-universes',
+			label: 'Universes',
+			icon: 'globe',
+			description: 'Open universes browser in sidebar',
+			action: () => {
+				closeModal();
+				void plugin.activateUniversesView();
+			}
+		},
+		{
+			id: 'view-collections',
+			label: 'Collections',
+			icon: 'folder',
+			description: 'Open collections browser in sidebar',
+			action: () => {
+				closeModal();
+				void plugin.activateCollectionsView();
+			}
+		},
+		{
+			id: 'view-data-quality',
+			label: 'Data quality',
+			icon: 'shield-check',
+			description: 'Open data quality dashboard in sidebar',
+			action: () => {
+				closeModal();
+				void plugin.activateDataQualityView();
 			}
 		}
 	];

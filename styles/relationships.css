@@ -549,11 +549,12 @@
   width: 28px;
   height: 28px;
   color: var(--text-muted);
-  opacity: 0;
+  opacity: 0.6;
   transition: opacity 150ms ease;
 }
 
-.crc-card__header:hover .crc-card__dock-btn {
+.crc-card__header:hover .crc-card__dock-btn,
+.crc-card__dock-btn:hover {
   opacity: 1;
 }
 
