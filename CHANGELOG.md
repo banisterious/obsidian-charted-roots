@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.20.2] - 2026-02-03
+
 ### Added
 
 - **Dockable views section on Dashboard** ([#243](https://github.com/banisterious/obsidian-charted-roots/issues/243)): A new "Dockable views" section on the Dashboard tab provides a tile grid for quick access to all 9 sidebar views (People, Places, Events, Sources, Organizations, Relationships, Universes, Collections, Data Quality).
@@ -16,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Dock buttons always visible** ([#243](https://github.com/banisterious/obsidian-charted-roots/issues/243)): The dock buttons on Control Center card headers are now always visible (subtle 60% opacity) rather than requiring hover to discover them.
+
+- **Removed unused d3-dag dependency** ([#244](https://github.com/banisterious/obsidian-charted-roots/pull/244), thanks @Julschik): The `d3-dag` package was listed in dependencies but never imported. Removing it reduces bundle size.
+
+- **Improved type safety for place lookup** ([#245](https://github.com/banisterious/obsidian-charted-roots/pull/245), thanks @Julschik): Removed an unnecessary `as any` type cast in the place lookup flow.
 
 ---
 
