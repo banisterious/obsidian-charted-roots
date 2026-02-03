@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Dockable views section on Dashboard** ([#243](https://github.com/banisterious/obsidian-charted-roots/issues/243)): A new "Dockable views" section on the Dashboard tab provides a tile grid for quick access to all 9 sidebar views (People, Places, Events, Sources, Organizations, Relationships, Universes, Collections, Data Quality).
+
+### Changed
+
+- **Dock buttons always visible** ([#243](https://github.com/banisterious/obsidian-charted-roots/issues/243)): The dock buttons on Control Center card headers are now always visible (subtle 60% opacity) rather than requiring hover to discover them.
+
 ---
 
 ## [0.20.1] - 2026-01-31
