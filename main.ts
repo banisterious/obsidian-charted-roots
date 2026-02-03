@@ -1013,7 +1013,7 @@ export default class CanvasRootsPlugin extends Plugin {
 						new CreatePlaceModal(this.app, {
 							directory: this.settings.placesFolder || '',
 							initialName: result.standardizedName,
-							initialPlaceType: result.placeType as any,
+							initialPlaceType: result.placeType,
 							familyGraph: this.createFamilyGraphService(),
 							placeGraph: this.createPlaceGraphService(),
 							settings: this.settings,
