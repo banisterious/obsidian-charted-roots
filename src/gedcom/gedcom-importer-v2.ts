@@ -1397,25 +1397,22 @@ export class GedcomImporterV2 {
 			mediaWikilinks = mediaResult.wikilinks;
 		}
 
-		// Resolve event description from inline notes and/or note references
-		let eventDescription = event.description || '';
+		// Separate event description (short, for frontmatter) from notes (long, for body)
+		// The GEDCOM description goes in frontmatter; resolved notes go in the body
+		const eventDescription = event.description || 'Imported from GEDCOM';
+
+		// Resolve note references into body content
+		const notesContent: string[] = [];
 		if (event.noteRefs && event.noteRefs.length > 0) {
 			for (const noteRef of event.noteRefs) {
 				const noteRecord = gedcomData.notes.get(noteRef);
 				if (noteRecord && noteRecord.text) {
-					if (eventDescription) {
-						eventDescription += '\n\n' + noteRecord.text;
-					} else {
-						eventDescription = noteRecord.text;
-					}
+					notesContent.push(noteRecord.text);
 				}
 			}
 		}
-		if (!eventDescription) {
-			eventDescription = 'Imported from GEDCOM';
-		}
 
-		// Build event data
+		// Build event data - description is kept short for frontmatter
 		const eventData: CreateEventData = {
 			title,
 			eventType: event.eventType,
@@ -1431,7 +1428,15 @@ export class GedcomImporterV2 {
 		// Create the event note file directly (not using EventService to avoid circular deps)
 		const crId = generateCrId();
 		const frontmatterLines = this.buildEventFrontmatter(crId, eventData, sourceWikilinks, placeWikilink, mediaWikilinks);
-		const body = `\n# ${title}\n\n${eventData.description || ''}\n`;
+
+		// Build body: title, description, then notes section if present
+		let body = `\n# ${title}\n\n${eventDescription}\n`;
+		if (notesContent.length > 0) {
+			body += '\n## Notes\n\n';
+			for (const note of notesContent) {
+				body += note + '\n\n';
+			}
+		}
 		const content = frontmatterLines.join('\n') + body;
 
 		// Create file
