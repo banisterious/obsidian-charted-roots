@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Visual distinction for place markers on Map View** ([#164](https://github.com/banisterious/obsidian-charted-roots/issues/164)): Place markers now use hollow circles and render below event markers, making it easier to distinguish context (places) from primary data (events) when both layers are enabled.
+
+### Fixed
+
+- **Event notes not imported from GEDCOM** ([#249](https://github.com/banisterious/obsidian-charted-roots/issues/249)): Event-level NOTE tags that referenced shared note records were showing the reference code instead of the actual note text.
+
 ---
 
 ## [0.20.2] - 2026-02-03
