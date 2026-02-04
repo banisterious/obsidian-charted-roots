@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.20.3] - 2026-02-04
+
 ### Changed
 
 - **Visual distinction for place markers on Map View** ([#164](https://github.com/banisterious/obsidian-charted-roots/issues/164)): Place markers now use hollow circles and render below event markers, making it easier to distinguish context (places) from primary data (events) when both layers are enabled.
