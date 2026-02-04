@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **GEDCOM event notes causing malformed frontmatter** ([#249](https://github.com/banisterious/obsidian-charted-roots/issues/249)): The previous fix placed note text in the frontmatter description field, which broke YAML parsing for multi-line content and prevented events from appearing on timelines. Notes are now placed in a separate "Notes" section in the body.
+
 ---
 
 ## [0.20.3] - 2026-02-04
