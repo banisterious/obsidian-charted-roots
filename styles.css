@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-02-03 21:15:40 UTC
+ * - Generated: 2026-02-04 18:14:17 UTC
  * - Components: 44 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -22334,7 +22334,7 @@ settings:
    COMPONENT: MAP-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1973 lines, 40.2 KB */
+/* Component Size: 1998 lines, 40.72 KB */
 
 /* ==========================================================================
    Map View Styles
@@ -23305,6 +23305,31 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .cr-marker-icon {
   background: transparent;
   border: none;
+}
+
+/* Event marker dot - solid circle */
+.cr-marker-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Place marker icon container */
+.cr-place-marker-icon {
+  background: transparent;
+  border: none;
+}
+
+/* Place marker dot - hollow circle to distinguish from events */
+.cr-place-marker-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid;
+  background-color: transparent;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .cr-cluster-icon {
@@ -37318,11 +37343,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-02-03 21:15:41 UTC
+ * Build completed: 2026-02-04 18:14:18 UTC
  * Components processed: 44
- * Total lines: 36899
- * Total size: 733.13 KB
- * Build duration: 0.97 seconds
+ * Total lines: 36924
+ * Total size: 733.65 KB
+ * Build duration: 0.87 seconds
  *
  * Component breakdown:
  * - variables.css: 56 lines, 1.61 KB
@@ -37349,7 +37374,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - data-quality.css: 1393 lines, 27.56 KB
  * - relationships.css: 597 lines, 11.43 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB
- * - map-view.css: 1973 lines, 40.2 KB
+ * - map-view.css: 1998 lines, 40.72 KB
  * - leaflet-distortable.css: 368 lines, 7.73 KB
  * - date-systems.css: 287 lines, 5.31 KB
  * - events.css: 1515 lines, 30.63 KB

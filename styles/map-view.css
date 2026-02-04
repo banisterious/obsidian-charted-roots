@@ -969,6 +969,31 @@ svg.leaflet-image-layer.leaflet-interactive path {
   border: none;
 }
 
+/* Event marker dot - solid circle */
+.cr-marker-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Place marker icon container */
+.cr-place-marker-icon {
+  background: transparent;
+  border: none;
+}
+
+/* Place marker dot - hollow circle to distinguish from events */
+.cr-place-marker-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid;
+  background-color: transparent;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
 .cr-cluster-icon {
   background: transparent;
   border: none;

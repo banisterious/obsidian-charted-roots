@@ -538,11 +538,12 @@ export class MapController {
 
 	/**
 	 * Create a Leaflet marker from place marker data
+	 * Uses hollow circle style and lower z-index to distinguish from event markers
 	 */
 	private createPlaceMarker(data: PlaceMarker): L.Marker {
 		// Teal color for place markers
 		const color = '#0891b2';
-		const icon = this.createMarkerIcon(color);
+		const icon = this.createPlaceMarkerIcon(color);
 
 		// Use pixel coordinates for pixel CRS, otherwise use lat/lng
 		let coords: L.LatLngExpression;
@@ -556,9 +557,11 @@ export class MapController {
 		}
 
 		// Make marker draggable when in edit mode
+		// Use negative zIndexOffset so event markers render on top
 		const marker = L.marker(coords, {
 			icon,
-			draggable: this.editModeEnabled
+			draggable: this.editModeEnabled,
+			zIndexOffset: -1000
 		});
 
 		// Store place data on the marker for later use
@@ -674,10 +677,22 @@ export class MapController {
 	 */
 	private createMarkerIcon(color: string): L.DivIcon {
 		return L.divIcon({
-			html: `<div style="background-color: ${color}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+			html: `<div class="cr-marker-dot" style="background-color: ${color};"></div>`,
 			className: 'cr-marker-icon',
 			iconSize: L.point(16, 16),
 			iconAnchor: L.point(8, 8)
+		});
+	}
+
+	/**
+	 * Create a place marker icon - hollow circle style to distinguish from event markers
+	 */
+	private createPlaceMarkerIcon(color: string): L.DivIcon {
+		return L.divIcon({
+			html: `<div class="cr-place-marker-dot" style="border-color: ${color};"></div>`,
+			className: 'cr-place-marker-icon',
+			iconSize: L.point(14, 14),
+			iconAnchor: L.point(7, 7)
 		});
 	}
 
