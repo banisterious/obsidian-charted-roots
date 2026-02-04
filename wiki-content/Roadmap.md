@@ -9,6 +9,7 @@ This document outlines planned features for Charted Roots. For completed feature
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
   - [GPS Research Workflow Integration](#gps-research-workflow-integration) 📋 Medium
+  - [Map View Marker Layering](#map-view-marker-layering) 📋 Medium
   - [Unified Place Lookup](#unified-place-lookup) 💡 Low ✅ Phase 1-2 complete
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
@@ -97,6 +98,32 @@ Export features discussed in #145 are tracked separately:
 - [Research Workflow](Research-Workflow) — Usage documentation
 - [Research Workflow Integration Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/research-workflow-integration.md) — Full specifications for Phases 2-3
 - Community contributors: @ANYroots (IRN structure, GPS methodology), @wilbry (lightweight approach, unified design)
+
+---
+
+### Map View Marker Layering
+
+**Priority:** 📋 Medium — Improves usability of "All places" layer
+
+**Status:** 📋 Planning
+
+**GitHub Issue:** [#164](https://github.com/banisterious/obsidian-charted-roots/issues/164)
+
+**Summary:** Improve visual distinction between event markers and place markers when the "All places" layer is enabled, so both layers can be used together without confusion.
+
+**The Problem:** When "All places" is enabled, place markers and event markers use separate clustering, causing overlapping clusters and z-order conflicts. Users can't easily distinguish context (places) from primary data (events).
+
+**The Solution:** Z-ordering and visual differentiation:
+
+| Change | Description |
+|--------|-------------|
+| Z-ordering | Event markers render on top of place markers |
+| Visual style | Place markers use hollow circles or smaller/lower-opacity style |
+| Clustering | Adjust cluster thresholds so place clusters don't overlap event clusters |
+
+**Documentation:**
+- [Map View Marker Layering Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/map-view-marker-layering.md) — Implementation details
+- Community contributor: @ANYroots (use case, feedback)
 
 ---
 
