@@ -1397,6 +1397,24 @@ export class GedcomImporterV2 {
 			mediaWikilinks = mediaResult.wikilinks;
 		}
 
+		// Resolve event description from inline notes and/or note references
+		let eventDescription = event.description || '';
+		if (event.noteRefs && event.noteRefs.length > 0) {
+			for (const noteRef of event.noteRefs) {
+				const noteRecord = gedcomData.notes.get(noteRef);
+				if (noteRecord && noteRecord.text) {
+					if (eventDescription) {
+						eventDescription += '\n\n' + noteRecord.text;
+					} else {
+						eventDescription = noteRecord.text;
+					}
+				}
+			}
+		}
+		if (!eventDescription) {
+			eventDescription = 'Imported from GEDCOM';
+		}
+
 		// Build event data
 		const eventData: CreateEventData = {
 			title,
@@ -1406,7 +1424,7 @@ export class GedcomImporterV2 {
 			dateEnd: event.dateEnd,
 			persons: persons.length > 0 ? persons : undefined,
 			place: placeValue, // May be undefined if using wikilink
-			description: event.description || `Imported from GEDCOM`,
+			description: eventDescription,
 			confidence: 'unknown' as EventConfidence
 		};
 

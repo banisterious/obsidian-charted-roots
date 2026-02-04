@@ -796,10 +796,19 @@ export class GedcomParserV2 {
 					}
 
 					case 'NOTE':
-						if (!currentEvent.description) {
-							currentEvent.description = value;
+						// Check if this is a reference to a shared note record
+						if (value.startsWith('@') && value.endsWith('@')) {
+							if (!currentEvent.noteRefs) {
+								currentEvent.noteRefs = [];
+							}
+							currentEvent.noteRefs.push(value.replace(/@/g, ''));
 						} else {
-							currentEvent.description += '\n' + value;
+							// Inline note text
+							if (!currentEvent.description) {
+								currentEvent.description = value;
+							} else {
+								currentEvent.description += '\n' + value;
+							}
 						}
 						break;
 
@@ -1008,10 +1017,19 @@ export class GedcomParserV2 {
 					}
 
 					case 'NOTE':
-						if (!currentEvent.description) {
-							currentEvent.description = value;
+						// Check if this is a reference to a shared note record
+						if (value.startsWith('@') && value.endsWith('@')) {
+							if (!currentEvent.noteRefs) {
+								currentEvent.noteRefs = [];
+							}
+							currentEvent.noteRefs.push(value.replace(/@/g, ''));
 						} else {
-							currentEvent.description += '\n' + value;
+							// Inline note text
+							if (!currentEvent.description) {
+								currentEvent.description = value;
+							} else {
+								currentEvent.description += '\n' + value;
+							}
 						}
 						break;
 

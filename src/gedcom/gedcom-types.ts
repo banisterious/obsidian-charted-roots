@@ -177,8 +177,10 @@ export interface GedcomEvent {
 	sourceRefs: string[];
 	/** Source citation details (PAGE values) */
 	sourceCitations: GedcomSourceCitation[];
-	/** Description or notes */
+	/** Description or notes (inline text) */
 	description?: string;
+	/** Note references (GEDCOM @Nxxx@ IDs) */
+	noteRefs?: string[];
 	/** For individual events: the person's GEDCOM ID */
 	individualRef?: string;
 	/** For family events: spouse 1 GEDCOM ID */
