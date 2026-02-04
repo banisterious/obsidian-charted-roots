@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.20.x](#v020x)
+  - [Map View Marker Layering](#map-view-marker-layering-v0203)
   - [Control Center Modularization](#control-center-modularization)
 - [v0.19.x](#v019x)
   - [Inheritance & Succession Tracking](#inheritance--succession-tracking)
@@ -109,6 +110,28 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.20.x
+
+### Map View Marker Layering (v0.20.3)
+
+Improved visual distinction between event markers and place markers on the Map View when the "All places" layer is enabled.
+
+**GitHub Issue:** [#164](https://github.com/banisterious/obsidian-charted-roots/issues/164)
+
+**Changes:**
+
+| Change | Description |
+|--------|-------------|
+| Hollow circles | Place markers now use hollow teal circles instead of solid circles |
+| Z-ordering | Event markers render on top of place markers (`zIndexOffset: -1000`) |
+| CSS refactor | Marker icons now use CSS classes instead of inline styles |
+
+**Visual Distinction:**
+- **Event markers**: Solid colored circles (12px) — birth (red), death (black), etc.
+- **Place markers**: Hollow teal circles (10px) — clearly distinguishable as background context
+
+**Community contributor:** @ANYroots (use case, feedback)
+
+---
 
 ### Control Center Modularization
 
