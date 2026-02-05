@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.20.4] - 2026-02-05
+
 ### Changed
 
 - **Standardized border-radius with CSS variables** ([#248](https://github.com/banisterious/obsidian-charted-roots/pull/248), thanks @Julschik): Added `--cr-radius-xs/sm/md/lg` design tokens and replaced 295 hardcoded border-radius values across the codebase. No visual changes; this improves maintainability for future theming.
