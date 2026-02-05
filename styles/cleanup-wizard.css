@@ -76,21 +76,12 @@
 }
 
 .crc-cleanup-spinner {
-  animation: crc-spin 1s linear infinite;
+  animation: cr-spin 1s linear infinite;
 }
 
 .crc-cleanup-spinner svg {
   width: 16px;
   height: 16px;
-}
-
-@keyframes crc-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /* Tile grid (5x2) */
@@ -2159,7 +2150,7 @@
 }
 
 .crc-cleanup-batch-progress-spinner {
-  animation: crc-spin 1s linear infinite;
+  animation: cr-spin 1s linear infinite;
 }
 
 .crc-cleanup-batch-progress-spinner svg {

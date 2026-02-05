@@ -335,13 +335,7 @@
   border: 3px solid var(--background-modifier-border);
   border-top-color: var(--interactive-accent);
   border-radius: 50%;
-  animation: crc-spinner-rotate 1s linear infinite;
-}
-
-@keyframes crc-spinner-rotate {
-  to {
-    transform: rotate(360deg);
-  }
+  animation: cr-spin 1s linear infinite;
 }
 
 .crc-picker-loading__text {

@@ -1174,13 +1174,7 @@
   border: 2px solid var(--background-modifier-border);
   border-top-color: var(--interactive-accent);
   border-radius: 50%;
-  animation: cr-lookup-spin 0.8s linear infinite;
-}
-
-@keyframes cr-lookup-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  animation: cr-spin 0.8s linear infinite;
 }
 
 /* Error state */

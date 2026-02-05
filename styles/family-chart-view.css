@@ -726,18 +726,12 @@
   border: 3px solid var(--background-modifier-border);
   border-top-color: var(--interactive-accent);
   border-radius: 50%;
-  animation: cr-fcv-spin 0.8s linear infinite;
+  animation: cr-spin 0.8s linear infinite;
 }
 
 .cr-family-chart-loading__text {
   font-size: var(--font-ui-small);
   color: var(--text-muted);
-}
-
-@keyframes cr-fcv-spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 
 /* ============================================================

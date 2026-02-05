@@ -84,3 +84,14 @@
   padding-top: 1em;
   border-top: 1px solid var(--background-modifier-border);
 }
+
+/* ==========================================================================
+   Animations
+   ========================================================================== */
+
+/* Shared spinner animation - used by loading indicators throughout the plugin */
+@keyframes cr-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
