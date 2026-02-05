@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Standardized border-radius with CSS variables** ([#248](https://github.com/banisterious/obsidian-charted-roots/pull/248), thanks @Julschik): Added `--cr-radius-xs/sm/md/lg` design tokens and replaced 295 hardcoded border-radius values across the codebase. No visual changes; this improves maintainability for future theming.
 
+- **Consolidated duplicate spinner animations** ([#247](https://github.com/banisterious/obsidian-charted-roots/pull/247), thanks @Julschik): Merged 5 duplicate `@keyframes` definitions into a single shared `cr-spin` animation in base.css. No visual changes.
+
 ### Fixed
 
 - **GEDCOM event notes causing malformed frontmatter** ([#249](https://github.com/banisterious/obsidian-charted-roots/issues/249)): The previous fix placed note text in the frontmatter description field, which broke YAML parsing for multi-line content and prevented events from appearing on timelines. Notes are now placed in a separate "Notes" section in the body.
