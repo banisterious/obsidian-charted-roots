@@ -1399,7 +1399,8 @@ export class GedcomImporterV2 {
 
 		// Separate event description (short, for frontmatter) from notes (long, for body)
 		// The GEDCOM description goes in frontmatter; resolved notes go in the body
-		const eventDescription = event.description || 'Imported from GEDCOM';
+		// If no description provided, leave it empty rather than cluttering with placeholder text
+		const eventDescription = event.description || '';
 
 		// Resolve note references into body content
 		const notesContent: string[] = [];
@@ -1413,6 +1414,7 @@ export class GedcomImporterV2 {
 		}
 
 		// Build event data - description is kept short for frontmatter
+		// Only include description if it exists, to keep frontmatter clean
 		const eventData: CreateEventData = {
 			title,
 			eventType: event.eventType,
@@ -1421,7 +1423,7 @@ export class GedcomImporterV2 {
 			dateEnd: event.dateEnd,
 			persons: persons.length > 0 ? persons : undefined,
 			place: placeValue, // May be undefined if using wikilink
-			description: eventDescription,
+			description: eventDescription || undefined,
 			confidence: 'unknown' as EventConfidence
 		};
 
@@ -1429,8 +1431,11 @@ export class GedcomImporterV2 {
 		const crId = generateCrId();
 		const frontmatterLines = this.buildEventFrontmatter(crId, eventData, sourceWikilinks, placeWikilink, mediaWikilinks);
 
-		// Build body: title, description, then notes section if present
-		let body = `\n# ${title}\n\n${eventDescription}\n`;
+		// Build body: title, description (if provided), then notes section if present
+		let body = `\n# ${title}\n`;
+		if (eventDescription) {
+			body += `\n${eventDescription}\n`;
+		}
 		if (notesContent.length > 0) {
 			body += '\n## Notes\n\n';
 			for (const note of notesContent) {

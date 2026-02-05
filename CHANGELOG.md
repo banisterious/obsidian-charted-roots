@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **GEDCOM import no longer adds placeholder descriptions** ([#250](https://github.com/banisterious/obsidian-charted-roots/issues/250)): Events imported from GEDCOM without a description now have an empty description field instead of "Imported from GEDCOM", reducing timeline clutter.
+
 ---
 
 ## [0.20.4] - 2026-02-05
