@@ -189,7 +189,7 @@
 .cr-wizard-details {
   margin-top: 16px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
 }
 
 .cr-wizard-details-header {
@@ -247,7 +247,7 @@
   margin: 8px 0;
   padding: 12px;
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 13px;
   color: var(--text-muted);
   text-align: center;
@@ -288,7 +288,7 @@
   width: 100%;
   padding: 6px 8px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-primary);
   color: var(--text-normal);
   font-size: 13px;
@@ -345,7 +345,7 @@
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -413,7 +413,7 @@
 .cr-wizard-summary-card {
   padding: 12px 16px;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   border: 1px solid var(--background-modifier-border);
 }
 
@@ -487,7 +487,7 @@
   margin-bottom: 24px;
   padding: 16px;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
 }
 
 .cr-wizard-success-label {
@@ -552,7 +552,7 @@
   width: 100%;
   padding: 8px 12px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: var(--background-primary);
   color: var(--text-normal);
   font-size: 14px;
@@ -567,7 +567,7 @@
   max-height: 300px;
   overflow-y: auto;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
 }
 
 .cr-file-item {

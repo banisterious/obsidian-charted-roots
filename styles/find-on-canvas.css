@@ -11,7 +11,7 @@
 .cr-find-summary {
   padding: 1em;
   margin-bottom: 1em;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: var(--background-secondary);
 }
 
@@ -32,7 +32,7 @@
 
 .cr-find-result {
   padding: 1em;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   border: 1px solid var(--background-modifier-border);
   background: var(--background-secondary);
   transition: all 0.2s ease;
@@ -72,7 +72,7 @@
 .cr-find-result__badge {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-modifier-border);
   color: var(--text-muted);
   font-size: 11px;

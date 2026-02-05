@@ -111,13 +111,13 @@
   flex: 1;
   height: 8px;
   background: var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   overflow: hidden;
 }
 
 .crc-dq-completeness-bar {
   height: 100%;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   transition: width 0.3s ease;
 }
 
@@ -627,7 +627,7 @@
   width: 80px;
   height: 8px;
   background: var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -640,7 +640,7 @@
 .crc-progress-bar__fill {
   height: 100%;
   background: var(--color-green);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   transition: width 0.3s ease;
 }
 
@@ -1196,7 +1196,7 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   background: var(--background-modifier-hover);
 }
 
@@ -1212,7 +1212,7 @@
 
 .cr-place-generator-progress-bar {
   height: 8px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-modifier-border);
   overflow: hidden;
 }
@@ -1220,7 +1220,7 @@
 .cr-place-generator-progress-bar__fill {
   height: 100%;
   width: var(--progress-width, 0%);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--interactive-accent);
   transition: width 0.2s ease-out;
 }

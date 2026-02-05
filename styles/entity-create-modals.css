@@ -129,7 +129,7 @@
   justify-content: space-between;
   padding: 10px 12px;
   margin-bottom: 4px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: transparent;
   color: var(--text-muted);
   font-size: 13px;
@@ -181,7 +181,7 @@
 .crc-picker-item {
   padding: 12px 16px;
   margin-bottom: 8px;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   border: 1px solid var(--background-modifier-border);
   background: var(--background-secondary);
   cursor: pointer;
@@ -230,7 +230,7 @@
   align-items: center;
   gap: 3px;
   padding: 1px 6px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: #9333ea20;
   color: #9333ea;
   font-size: 11px;
@@ -254,7 +254,7 @@
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-modifier-border);
   color: var(--text-muted);
   font-size: 11px;
@@ -274,7 +274,7 @@
   padding: 12px 16px;
   margin-top: 16px;
   background: var(--background-secondary);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   font-size: 13px;
   font-weight: 500;
   color: var(--text-normal);

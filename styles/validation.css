@@ -9,7 +9,7 @@
   gap: 0.5em;
   padding: 1em;
   margin-bottom: 1em;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: var(--background-secondary);
   font-weight: 500;
 }
@@ -27,7 +27,7 @@
 
 .cr-validation-issue {
   padding: 1em;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   border: 1px solid var(--background-modifier-border);
   background: var(--background-secondary);
 }
@@ -67,7 +67,7 @@
 .cr-validation-issue__type-badge {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-modifier-border);
   color: var(--text-muted);
   font-size: 11px;

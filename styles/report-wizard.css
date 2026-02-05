@@ -241,7 +241,7 @@
   margin-top: 4px;
   padding: 6px 8px;
   background: var(--background-secondary);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   font-size: 11px;
   color: var(--text-muted);
   line-height: 1.4;
@@ -317,7 +317,7 @@
   margin-top: 12px;
   padding: 12px;
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
 }
 
 .cr-report-types-header {
@@ -548,7 +548,7 @@
 .cr-report-select {
   padding: 6px 10px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-primary);
   color: var(--text-normal);
   font-size: 13px;
@@ -564,7 +564,7 @@
   flex: 1;
   padding: 6px 10px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-primary);
   color: var(--text-normal);
   font-size: 13px;
@@ -589,7 +589,7 @@
   width: 100%;
   padding: 8px 10px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-primary);
   color: var(--text-normal);
   font-size: 13px;
@@ -685,7 +685,7 @@
 
 .cr-report-estimate-panel {
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   padding: 12px 14px;
   margin-bottom: 8px;
 }
@@ -759,7 +759,7 @@
   justify-content: center;
   gap: 6px;
   padding: 12px 8px;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   background: var(--background-secondary);
   border: 2px solid transparent;
   cursor: pointer;
@@ -820,7 +820,7 @@
 .cr-report-data-quality {
   margin-top: 12px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   overflow: hidden;
 }
 

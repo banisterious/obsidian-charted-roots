@@ -28,7 +28,7 @@
 .crc-dashboard-tile {
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   padding: 16px;
   text-align: center;
   cursor: pointer;
@@ -58,7 +58,7 @@
   align-items: center;
   justify-content: center;
   background: rgba(var(--interactive-accent-rgb), 0.15);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   color: var(--interactive-accent);
 }
 
@@ -73,7 +73,7 @@
 .crc-dashboard-collapsible {
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   margin-top: 16px;
 }
 
@@ -248,7 +248,7 @@
   padding: 8px 12px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -284,7 +284,7 @@
   color: var(--text-muted);
   background: var(--background-primary);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   text-transform: capitalize;
   flex-shrink: 0;
 }
@@ -298,7 +298,7 @@
   margin-bottom: 16px;
   background: rgba(var(--color-yellow-rgb), 0.1);
   border: 1px solid var(--color-yellow);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
 }
 
 .crc-dashboard-staging-icon {
@@ -324,7 +324,7 @@
   background: var(--interactive-accent);
   color: var(--text-on-accent);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 0.85em;
   font-weight: 500;
   cursor: pointer;
@@ -345,7 +345,7 @@
   margin-bottom: 16px;
   background: rgba(var(--color-cyan-rgb), 0.1);
   border: 1px solid var(--color-cyan);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
 }
 
 .crc-dashboard-clipped-icon {
@@ -371,7 +371,7 @@
   background: var(--interactive-accent);
   color: var(--text-on-accent);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 0.85em;
   font-weight: 500;
   cursor: pointer;
@@ -411,7 +411,7 @@
   gap: 12px;
   background: rgba(var(--interactive-accent-rgb), 0.1);
   border: 1px solid var(--interactive-accent);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   padding: 12px 16px;
   margin-bottom: 16px;
 }
@@ -445,7 +445,7 @@
   padding: 0;
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   color: var(--text-muted);
   cursor: pointer;
   flex-shrink: 0;
@@ -465,7 +465,7 @@
   margin-bottom: 16px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 13px;
 }
 

@@ -403,7 +403,7 @@
   background: rgb(0 0 0 / 60%);
   color: #fff;
   padding: 4px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   opacity: 0;
   z-index: 3;
   transition: opacity 0.15s ease;

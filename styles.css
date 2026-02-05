@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-02-04 18:14:17 UTC
+ * - Generated: 2026-02-05 19:41:01 UTC
  * - Components: 44 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -22,7 +22,7 @@
    COMPONENT: VARIABLES.CSS
    ========================================================================== */
 
-/* Component Size: 56 lines, 1.61 KB */
+/* Component Size: 62 lines, 1.85 KB */
 
 /* Charted Roots CSS Variables */
 
@@ -53,6 +53,12 @@
   /* Borders */
   --cr-border-width: 1px;
   --cr-border-radius: 6px;
+
+  /* Border radius scale */
+  --cr-radius-xs: 4px;  /* Small buttons, tight items */
+  --cr-radius-sm: 6px;  /* Default - matches --cr-border-radius */
+  --cr-radius-md: 8px;  /* Medium panels, cards */
+  --cr-radius-lg: 12px; /* Large containers */
 
   /* Family Chart View - customizable via Style Settings plugin */
   --cr-fcv-female-color: rgb(196, 138, 146);
@@ -644,7 +650,7 @@ settings:
    COMPONENT: CONTROL-CENTER.CSS
    ========================================================================== */
 
-/* Component Size: 5747 lines, 106.74 KB */
+/* Component Size: 5747 lines, 107.88 KB */
 
 /* ==========================================================================
    Charted Roots Control Center - Styling
@@ -930,7 +936,7 @@ settings:
   align-items: center;
   gap: 4px;
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   border: 1px solid var(--background-modifier-border);
   background: var(--background-secondary);
   color: var(--text-normal);
@@ -1047,7 +1053,7 @@ settings:
   opacity: 0.7;
   background: var(--background-modifier-border);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
 }
 
 .crc-nav-item--active .crc-nav-item__meta {
@@ -1087,7 +1093,7 @@ settings:
 .crc-nav-group .crc-nav-item {
   padding: 4px 10px 3px;
   margin: 0 6px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
 }
 
 .crc-nav-group .crc-nav-item__icon {
@@ -1138,7 +1144,7 @@ settings:
 .crc-card {
   margin-top: 1em;
   background: var(--background-secondary);
-  border-radius: 12px;
+  border-radius: var(--cr-radius-lg);
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.12),
     0 1px 2px rgba(0, 0, 0, 0.24);
@@ -1290,7 +1296,7 @@ settings:
 .crc-root-person-selected {
   padding: 16px;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   border: 1px solid var(--background-modifier-border);
   width: 100%;
 }
@@ -1416,7 +1422,7 @@ settings:
   gap: 8px;
   padding: 8px 16px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -1508,7 +1514,7 @@ settings:
   width: 100%;
   padding: 6px 10px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background-color: var(--background-primary);
   color: var(--text-normal);
   font-size: 13px;
@@ -1621,7 +1627,7 @@ settings:
 .crc-help-badge {
   display: inline-block;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--interactive-accent);
   color: var(--text-on-accent);
   font-size: 11px;
@@ -1711,7 +1717,7 @@ settings:
   width: 100%;
   height: 24px;
   background: var(--background-modifier-border);
-  border-radius: 12px;
+  border-radius: var(--cr-radius-lg);
   overflow: hidden;
   position: relative;
 }
@@ -1721,7 +1727,7 @@ settings:
   transition:
     width 0.3s ease,
     background-color 0.3s ease;
-  border-radius: 12px;
+  border-radius: var(--cr-radius-lg);
 }
 
 .crc-health-bar-fill--success {
@@ -1799,7 +1805,7 @@ settings:
 
 .crc-result-item {
   padding: 16px;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   border: 1px solid var(--background-modifier-border);
   transition: border-color 0.2s;
 }
@@ -1844,7 +1850,7 @@ settings:
   color: var(--text-muted);
   padding: 2px 8px;
   background: var(--background-secondary);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
 }
 
 .crc-result-item__body {
@@ -1922,7 +1928,7 @@ settings:
   align-items: center;
   gap: 12px;
   padding: 12px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   margin-bottom: 8px;
   background: var(--background-secondary);
   transition: background 0.2s ease;
@@ -1974,7 +1980,7 @@ settings:
 /* Collapsible Sections */
 .crc-collapsible {
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   margin-bottom: 8px;
   overflow: hidden;
 }
@@ -2082,7 +2088,7 @@ settings:
   text-align: center;
   padding: 16px 12px;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   cursor: pointer;
   transition:
     background 0.15s ease,
@@ -2124,7 +2130,7 @@ settings:
   text-align: center;
   padding: 12px 8px;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   cursor: pointer;
   transition:
     background 0.15s ease,
@@ -2203,7 +2209,7 @@ settings:
   gap: 8px;
   padding: 8px 12px;
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   text-decoration: none;
   color: var(--text-normal);
   transition: background 0.15s ease;
@@ -2265,7 +2271,7 @@ settings:
 .crc-docs-category__links a {
   display: block;
   padding: 6px 10px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   text-decoration: none;
   color: var(--text-normal);
   font-size: var(--font-ui-small);
@@ -2288,7 +2294,7 @@ settings:
 .crc-stat-box {
   padding: 16px;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   text-align: center;
 }
 
@@ -2338,7 +2344,7 @@ settings:
 .crc-progress-bar-bg {
   height: 8px;
   background: var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   overflow: hidden;
 }
 
@@ -2346,7 +2352,7 @@ settings:
   height: 100%;
   background: var(--interactive-accent);
   transition: width 0.3s ease;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
 }
 
 .crc-highlights-list,
@@ -2372,7 +2378,7 @@ settings:
   width: 100%;
   height: 400px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   margin: 16px 0;
   overflow: hidden;
   background: var(--background-secondary);
@@ -2460,7 +2466,7 @@ settings:
   border: 1px solid var(--background-modifier-border);
   background: var(--interactive-normal);
   color: var(--text-normal);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -2513,7 +2519,7 @@ settings:
 .crc-preview-color-scheme-select {
   font-size: 13px;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   border: 1px solid var(--background-modifier-border);
   background: var(--interactive-normal);
   color: var(--text-normal);
@@ -2538,7 +2544,7 @@ settings:
   border: 1px solid var(--background-modifier-border);
   background: var(--interactive-normal);
   color: var(--text-normal);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -2554,7 +2560,7 @@ settings:
   right: 0;
   background: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 100;
   min-width: 150px;
@@ -2592,7 +2598,7 @@ settings:
   padding: 8px 12px;
   background: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   font-size: 12px;
   line-height: 1.5;
@@ -2652,7 +2658,7 @@ settings:
   margin-bottom: 1em;
   padding: 0.75em;
   background: var(--background-secondary);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
 }
 
 /* Card title without top margin */
@@ -2708,7 +2714,7 @@ settings:
   gap: 0.75em;
   padding: 0.75em;
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
 }
 
 .cr-stat-icon {
@@ -2757,14 +2763,14 @@ settings:
   flex: 1;
   height: 8px;
   background: var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   overflow: hidden;
 }
 
 .cr-progress-bar {
   height: 100%;
   width: var(--progress-width, 0%);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   transition: width 0.3s ease;
 }
 
@@ -2794,7 +2800,7 @@ settings:
   margin-top: 0.75em;
   padding: 0.5em 0.75em;
   background: rgba(255, 165, 0, 0.1);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   font-size: 0.9em;
 }
 
@@ -2871,7 +2877,7 @@ settings:
   align-items: center;
   padding: 0.5em;
   background: var(--background-secondary);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
 }
 
 .cr-mini-stat-value {
@@ -2922,7 +2928,7 @@ settings:
   padding: 0.75em;
   margin-bottom: 0.5em;
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   transition: background 0.15s ease;
 }
 
@@ -2981,7 +2987,7 @@ settings:
   padding: 0.4em;
   background: transparent;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   cursor: pointer;
   color: var(--text-muted);
   transition: all 0.15s ease;
@@ -3078,7 +3084,7 @@ settings:
   padding: 12px 8px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   cursor: pointer;
   transition: all 0.15s ease;
   min-height: 70px;
@@ -3112,7 +3118,7 @@ settings:
   align-items: center;
   justify-content: center;
   background: rgba(var(--interactive-accent-rgb), 0.15);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   color: var(--interactive-accent);
 }
 
@@ -3153,7 +3159,7 @@ settings:
 .crc-template-reference-section {
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   padding: 16px;
 }
 
@@ -3171,7 +3177,7 @@ settings:
 .crc-template-card {
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   padding: 16px;
   margin-bottom: 12px;
 }
@@ -3198,7 +3204,7 @@ settings:
 .crc-template-code {
   background: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   padding: 12px;
   padding-right: 44px;
   margin: 0;
@@ -3224,7 +3230,7 @@ settings:
   right: 8px;
   width: 32px;
   height: 32px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
   color: var(--text-muted);
@@ -3258,7 +3264,7 @@ settings:
 
 .crc-template-reference-content {
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   padding: 12px;
 }
 
@@ -3288,7 +3294,7 @@ settings:
 .crc-template-var {
   background: var(--background-primary);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   font-family: var(--font-monospace);
   font-size: 11px;
   white-space: nowrap;
@@ -3347,7 +3353,7 @@ settings:
   width: 100%;
   padding: 8px 12px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: var(--background-primary);
   color: var(--text-normal);
   font-size: 14px;
@@ -3398,7 +3404,7 @@ settings:
   align-items: center;
   justify-content: space-between;
   padding: 6px 8px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   transition: background 150ms ease;
 }
 
@@ -3763,7 +3769,7 @@ settings:
 .cr-map-thumbnail {
   position: relative;
   aspect-ratio: 3/2;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   overflow: hidden;
   cursor: pointer;
   background: var(--background-secondary);
@@ -4548,7 +4554,7 @@ settings:
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   background: var(--background-modifier-hover);
 }
 
@@ -4569,7 +4575,7 @@ settings:
 
 .cr-import-progress__track {
   height: 8px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-modifier-border);
   overflow: hidden;
 }
@@ -4577,7 +4583,7 @@ settings:
 .cr-import-progress__bar {
   height: 100%;
   width: var(--progress-width, 0%);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--interactive-accent);
   transition: width 0.2s ease-out;
 }
@@ -4959,7 +4965,7 @@ settings:
 
 .cr-export-progress__track {
   height: 8px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-modifier-border);
   overflow: hidden;
 }
@@ -4967,7 +4973,7 @@ settings:
 .cr-export-progress__bar {
   height: 100%;
   width: var(--progress-width, 0%);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--interactive-accent);
   transition: width 0.2s ease-out;
 }
@@ -5017,7 +5023,7 @@ settings:
   gap: 12px;
   padding: 16px;
   margin-bottom: 16px;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   background: var(--background-modifier-hover);
 }
 
@@ -5063,7 +5069,7 @@ settings:
   max-height: 200px;
   overflow-y: auto;
   padding: 8px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: var(--background-secondary);
 }
 
@@ -5089,7 +5095,7 @@ settings:
 
 .cr-import-success-message {
   padding: 12px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: var(--background-modifier-success);
   color: var(--text-normal);
 }
@@ -5146,7 +5152,7 @@ settings:
   max-height: 150px;
   overflow-y: auto;
   padding: 8px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: var(--background-secondary);
   font-size: 12px;
 }
@@ -5210,7 +5216,7 @@ settings:
 .cr-progress-bar-container {
   height: 8px;
   background: var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   overflow: hidden;
   margin-bottom: 12px;
 }
@@ -5223,7 +5229,7 @@ settings:
   max-height: 250px;
   overflow-y: auto;
   padding: 8px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: var(--background-secondary);
   font-size: 12px;
 }
@@ -5311,13 +5317,13 @@ settings:
   margin: 16px 0;
   padding: 12px;
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
 }
 
 .cr-flatten-progress-bar {
   height: 8px;
   background: var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   overflow: hidden;
   margin-top: 8px;
 }
@@ -5325,7 +5331,7 @@ settings:
 .cr-flatten-progress-fill {
   height: 100%;
   background: var(--interactive-accent);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   transition: width 0.3s ease;
 }
 
@@ -5350,7 +5356,7 @@ settings:
   gap: 8px;
   padding: 8px 12px;
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
 }
 
 .cr-flatten-result-row svg {
@@ -5371,7 +5377,7 @@ settings:
 .cr-flatten-total {
   padding: 12px;
   background: var(--background-primary-alt);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   text-align: center;
 }
 
@@ -5379,7 +5385,7 @@ settings:
   margin-top: 16px;
   padding: 12px;
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   border: 1px solid var(--background-modifier-border);
 }
 
@@ -5684,7 +5690,7 @@ settings:
 
 .cr-ref-numbers-preview {
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   padding: 10px 14px;
   margin-bottom: 16px;
   font-size: 13px;
@@ -5710,7 +5716,7 @@ settings:
   padding: 12px 14px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   cursor: pointer;
   text-align: left;
   transition:
@@ -5798,7 +5804,7 @@ settings:
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   border: 1px solid var(--background-modifier-border);
   background: var(--background-secondary);
   color: var(--text-normal);
@@ -5822,7 +5828,7 @@ settings:
   align-items: center;
   gap: 4px;
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   border: 1px solid var(--background-modifier-border);
   background: var(--background-secondary);
   color: var(--text-normal);
@@ -5913,7 +5919,7 @@ settings:
 
 /* Cards on mobile */
 .crc-mobile-mode .crc-card {
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
 }
 
 .crc-mobile-mode .crc-card__header {
@@ -5984,7 +5990,7 @@ settings:
   height: 32px;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   border: none;
   background: transparent;
   color: var(--text-muted);
@@ -6033,7 +6039,7 @@ settings:
   width: 36px;
   height: 36px;
   background: rgba(var(--interactive-accent-rgb), 0.15);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6090,7 +6096,7 @@ settings:
 .crc-reports-hub-card-icon {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6154,7 +6160,7 @@ settings:
   width: 36px;
   height: 36px;
   background: rgba(var(--interactive-accent-rgb), 0.15);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6211,7 +6217,7 @@ settings:
 .crc-import-export-hub-card-icon {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6400,7 +6406,7 @@ settings:
    COMPONENT: ENTITY-CREATE-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 1094 lines, 22.41 KB */
+/* Component Size: 1094 lines, 22.48 KB */
 
 /* ==========================================================================
    PERSON PICKER MODAL
@@ -6533,7 +6539,7 @@ settings:
   justify-content: space-between;
   padding: 10px 12px;
   margin-bottom: 4px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: transparent;
   color: var(--text-muted);
   font-size: 13px;
@@ -6585,7 +6591,7 @@ settings:
 .crc-picker-item {
   padding: 12px 16px;
   margin-bottom: 8px;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   border: 1px solid var(--background-modifier-border);
   background: var(--background-secondary);
   cursor: pointer;
@@ -6634,7 +6640,7 @@ settings:
   align-items: center;
   gap: 3px;
   padding: 1px 6px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: #9333ea20;
   color: #9333ea;
   font-size: 11px;
@@ -6658,7 +6664,7 @@ settings:
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-modifier-border);
   color: var(--text-muted);
   font-size: 11px;
@@ -6678,7 +6684,7 @@ settings:
   padding: 12px 16px;
   margin-top: 16px;
   background: var(--background-secondary);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   font-size: 13px;
   font-weight: 500;
   color: var(--text-normal);
@@ -8918,7 +8924,7 @@ settings:
    COMPONENT: MEDIA-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 1928 lines, 36.72 KB */
+/* Component Size: 1928 lines, 37.15 KB */
 
 /* ==========================================================================
    Media Picker Modal
@@ -8977,7 +8983,7 @@ settings:
   flex-direction: column;
   background: var(--background-secondary);
   border: 2px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   overflow: hidden;
   cursor: pointer;
   transition:
@@ -9028,7 +9034,7 @@ settings:
   height: 20px;
   background: var(--background-primary);
   border: 2px solid var(--interactive-accent);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -9193,7 +9199,7 @@ settings:
   width: 48px;
   height: 48px;
   background: var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -9243,7 +9249,7 @@ settings:
   color: var(--text-muted);
   cursor: pointer;
   padding: 4px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   transition:
     color 0.15s ease,
     background-color 0.15s ease;
@@ -9267,7 +9273,7 @@ settings:
   gap: 4px;
   padding: 2px 6px;
   font-size: var(--font-ui-smaller);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-modifier-border);
   color: var(--text-muted);
 }
@@ -9367,7 +9373,7 @@ settings:
   align-items: center;
   justify-content: center;
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   color: var(--text-muted);
 }
 
@@ -9430,7 +9436,7 @@ settings:
   width: 36px;
   height: 36px;
   background: rgba(var(--interactive-accent-rgb), 0.15);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -9493,7 +9499,7 @@ settings:
 .crc-media-manager-card-icon {
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -9552,7 +9558,7 @@ settings:
   margin-top: 12px;
   padding: 4px 10px;
   background: var(--background-primary);
-  border-radius: 12px;
+  border-radius: var(--cr-radius-lg);
   font-size: 12px;
   color: var(--text-muted);
 }
@@ -9625,7 +9631,7 @@ settings:
   width: 36px;
   height: 36px;
   background: rgba(96, 165, 250, 0.15);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -9660,7 +9666,7 @@ settings:
   gap: 8px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   padding: 8px 12px;
 }
 
@@ -9692,7 +9698,7 @@ settings:
   padding: 6px 12px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   color: var(--text-muted);
   font-size: 12px;
   cursor: pointer;
@@ -9736,7 +9742,7 @@ settings:
 .crc-media-gallery-item {
   aspect-ratio: 1;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   overflow: hidden;
   cursor: pointer;
   position: relative;
@@ -9778,7 +9784,7 @@ settings:
   top: 8px;
   right: 8px;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
@@ -9953,7 +9959,7 @@ settings:
   gap: 8px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   padding: 8px 12px;
 }
 
@@ -9983,7 +9989,7 @@ settings:
 .crc-unlinked-media-filter-btn {
   padding: 6px 12px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: var(--background-secondary);
   color: var(--text-muted);
   font-size: 13px;
@@ -10015,7 +10021,7 @@ settings:
   padding: 10px 12px;
   margin-bottom: 12px;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   flex-shrink: 0;
 }
 
@@ -10049,7 +10055,7 @@ settings:
   gap: 6px;
   padding: 6px 12px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: var(--interactive-accent);
   color: var(--text-on-accent);
   font-size: 13px;
@@ -10214,7 +10220,7 @@ settings:
   top: 8px;
   right: 8px;
   padding: 3px 8px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
@@ -10311,7 +10317,7 @@ settings:
   padding: 6px 12px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   cursor: pointer;
   transition: all 0.15s ease;
   flex-shrink: 0;
@@ -10409,7 +10415,7 @@ settings:
   width: 32px;
   height: 32px;
   background: rgba(139, 92, 246, 0.15);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -10437,7 +10443,7 @@ settings:
 /* Drop zone */
 .crc-upload-drop-zone {
   border: 2px dashed var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   padding: 32px 24px;
   text-align: center;
   background: var(--background-secondary);
@@ -10491,7 +10497,7 @@ settings:
   margin-bottom: 20px;
   background: rgba(var(--interactive-accent-rgb), 0.1);
   border: 1px solid rgba(var(--interactive-accent-rgb), 0.3);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   padding: 12px;
 }
 
@@ -10542,7 +10548,7 @@ settings:
   font-size: 12px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
 }
 
 .crc-upload-file-item {
@@ -10551,7 +10557,7 @@ settings:
   gap: 10px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   padding: 10px 12px;
   transition: all 0.15s ease;
 }
@@ -10596,7 +10602,7 @@ settings:
   color: var(--text-muted);
   cursor: pointer;
   padding: 4px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   transition: all 0.15s ease;
   flex-shrink: 0;
 }
@@ -10716,7 +10722,7 @@ settings:
   align-items: center;
   justify-content: center;
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   color: var(--text-muted);
 }
 
@@ -10784,7 +10790,7 @@ settings:
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
   border-left: 4px solid var(--interactive-accent);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   padding: 16px;
   margin: 12px;
 }
@@ -10855,7 +10861,7 @@ settings:
    COMPONENT: IMPORT-EXPORT-WIZARD.CSS
    ========================================================================== */
 
-/* Component Size: 2187 lines, 41.08 KB */
+/* Component Size: 2187 lines, 41.74 KB */
 
 /* ==========================================================================
    IMPORT/EXPORT WIZARD MODALS
@@ -11059,7 +11065,7 @@ settings:
   width: 40px;
   height: 40px;
   background: rgba(var(--interactive-accent-rgb), 0.15);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11260,7 +11266,7 @@ settings:
   width: 42px;
   height: 24px;
   background: var(--background-modifier-border);
-  border-radius: 12px;
+  border-radius: var(--cr-radius-lg);
   position: relative;
   cursor: pointer;
   transition: background-color 0.15s ease;
@@ -11312,7 +11318,7 @@ settings:
   padding: 6px 12px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   color: var(--text-normal);
   font-size: 13px;
   cursor: pointer;
@@ -11347,7 +11353,7 @@ settings:
   gap: 12px;
   padding: 10px 12px;
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
 }
 
 .crc-import-folder-label,
@@ -11390,7 +11396,7 @@ settings:
   padding: 8px 12px;
   background: var(--background-secondary);
   border: 2px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -11453,7 +11459,7 @@ settings:
 /* Export Preview section */
 .crc-export-preview-card {
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   padding: 12px 16px;
   margin-bottom: 16px;
 }
@@ -11506,7 +11512,7 @@ settings:
   text-align: center;
   padding: 16px 12px;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
 }
 
 .crc-export-preview-count-icon {
@@ -11541,7 +11547,7 @@ settings:
 .crc-export-progress-bar {
   height: 8px;
   background: var(--background-secondary);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   overflow: hidden;
   margin-bottom: 12px;
 }
@@ -11549,7 +11555,7 @@ settings:
 .crc-export-progress-fill {
   height: 100%;
   background: var(--interactive-accent);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   transition: width 0.3s ease;
 }
 
@@ -11564,7 +11570,7 @@ settings:
   max-height: 200px;
   overflow-y: auto;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   padding: 12px;
   font-family: var(--font-monospace);
   font-size: 12px;
@@ -11603,7 +11609,7 @@ settings:
   padding: 8px 12px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   color: var(--text-normal);
   font-size: 13px;
 }
@@ -11642,7 +11648,7 @@ settings:
 .crc-media-preview {
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   padding: 10px 12px;
   font-size: 12px;
 }
@@ -11712,7 +11718,7 @@ settings:
   padding: 12px 16px;
   background: var(--background-secondary);
   border: 2px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -11775,7 +11781,7 @@ settings:
 /* Preview section */
 .crc-import-preview-card {
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   padding: 12px 16px;
   margin-bottom: 16px;
 }
@@ -11822,7 +11828,7 @@ settings:
   text-align: center;
   padding: 16px 12px;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
 }
 
 .crc-import-preview-count-icon {
@@ -11853,7 +11859,7 @@ settings:
   padding: 12px 16px;
   background: rgba(251, 191, 36, 0.1);
   border: 1px solid rgba(251, 191, 36, 0.3);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   margin-bottom: 12px;
 }
 
@@ -11912,7 +11918,7 @@ settings:
   padding: 12px 16px;
   background: rgba(248, 113, 113, 0.1);
   border: 1px solid rgba(248, 113, 113, 0.3);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   margin-bottom: 12px;
 }
 
@@ -11959,7 +11965,7 @@ settings:
 .crc-import-progress-bar {
   height: 8px;
   background: var(--background-secondary);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   overflow: hidden;
   margin-bottom: 12px;
 }
@@ -11967,7 +11973,7 @@ settings:
 .crc-import-progress-fill {
   height: 100%;
   background: var(--interactive-accent);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   transition: width 0.3s ease;
 }
 
@@ -11981,7 +11987,7 @@ settings:
 /* Import log */
 .crc-import-log {
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   padding: 12px;
   max-height: 200px;
   overflow-y: auto;
@@ -12055,7 +12061,7 @@ settings:
   padding: 12px 16px;
   background: var(--background-secondary);
   border: 2px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -12118,7 +12124,7 @@ settings:
   gap: 10px;
   padding: 12px 16px;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   border: 1px solid var(--background-modifier-border);
 }
 
@@ -12196,7 +12202,7 @@ settings:
   align-items: center;
   padding: 16px 12px;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   border: 1px solid var(--background-modifier-border);
 }
 
@@ -12234,7 +12240,7 @@ settings:
   padding: 12px 16px;
   background: rgba(96, 165, 250, 0.1);
   border: 1px solid rgba(96, 165, 250, 0.3);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   color: var(--text-normal);
 }
 
@@ -12278,7 +12284,7 @@ settings:
   padding: 12px 16px;
   background: rgba(251, 146, 60, 0.1);
   border: 1px solid rgba(251, 146, 60, 0.3);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   color: var(--text-normal);
   text-align: center;
 }
@@ -12291,7 +12297,7 @@ settings:
   padding: 12px 16px;
   background: rgba(74, 222, 128, 0.1);
   border: 1px solid rgba(74, 222, 128, 0.3);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   margin-top: 16px;
   color: var(--text-normal);
 }
@@ -12378,7 +12384,7 @@ settings:
   padding: 12px 16px;
   background: var(--background-secondary);
   border: 2px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -12462,7 +12468,7 @@ settings:
   text-align: center;
   padding: 12px;
   background: var(--background-primary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
 }
 
 .crc-wizard-preview-stat-value {
@@ -12482,7 +12488,7 @@ settings:
 .crc-wizard-warning {
   background: rgba(251, 191, 36, 0.1);
   border: 1px solid rgba(251, 191, 36, 0.3);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   padding: 16px;
   margin-bottom: 16px;
 }
@@ -12508,7 +12514,7 @@ settings:
 
 .crc-wizard-progress-bar-container {
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   height: 8px;
   overflow: hidden;
   margin-bottom: 12px;
@@ -12517,7 +12523,7 @@ settings:
 .crc-wizard-progress-bar {
   height: 100%;
   background: var(--interactive-accent);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   transition: width 0.3s ease;
 }
 
@@ -12534,7 +12540,7 @@ settings:
 
 .crc-wizard-progress-log {
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   padding: 12px;
   max-height: 150px;
   overflow-y: auto;
@@ -12658,7 +12664,7 @@ settings:
 /* Wizard buttons */
 .crc-btn {
   padding: 8px 16px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -12707,7 +12713,7 @@ settings:
   padding: 10px 14px;
   background: rgba(var(--interactive-accent-rgb), 0.1);
   border: 1px solid var(--interactive-accent);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
 }
 
 .crc-wizard-selected-person-name {
@@ -12750,7 +12756,7 @@ settings:
   padding: 8px 12px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   color: var(--text-normal);
   font-size: 13px;
 }
@@ -12772,7 +12778,7 @@ settings:
   padding: 6px 10px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   color: var(--text-normal);
   font-size: 13px;
   text-align: center;
@@ -12825,7 +12831,7 @@ settings:
   margin-bottom: 16px;
   padding: 12px;
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
 }
 
 .cr-private-fields-warning__item {
@@ -12856,7 +12862,7 @@ settings:
   margin-bottom: 20px;
   padding: 10px 12px;
   background: var(--background-modifier-info);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 13px;
   color: var(--text-muted);
 }
@@ -12877,7 +12883,7 @@ settings:
 
 .cr-private-fields-warning__buttons button {
   padding: 8px 16px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 14px;
   cursor: pointer;
 }
@@ -12951,7 +12957,7 @@ settings:
   margin-bottom: 20px;
   padding: 12px;
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
 }
 
 .cr-privacy-notice__feature {
@@ -12977,7 +12983,7 @@ settings:
 
 .cr-privacy-notice__buttons button {
   padding: 8px 16px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 14px;
   cursor: pointer;
 }
@@ -13013,7 +13019,7 @@ settings:
   margin-top: 16px;
   padding: 12px;
   background: var(--background-modifier-info);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 13px;
 }
 
@@ -13051,7 +13057,7 @@ settings:
    COMPONENT: STAGING-MANAGER.CSS
    ========================================================================== */
 
-/* Component Size: 555 lines, 11.21 KB */
+/* Component Size: 555 lines, 11.4 KB */
 
 /* =============================================================================
    Staging Manager Modal
@@ -13089,7 +13095,7 @@ settings:
   width: 36px;
   height: 36px;
   background: rgba(var(--interactive-accent-rgb), 0.15);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13137,7 +13143,7 @@ settings:
   background: var(--background-primary);
   color: var(--text-muted);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -13221,7 +13227,7 @@ settings:
   font-family: var(--font-monospace);
   background: var(--background-secondary);
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
 }
 
 .crc-staging-stats {
@@ -13234,7 +13240,7 @@ settings:
 .crc-staging-stat-card {
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   padding: 12px 16px;
   display: flex;
   flex-direction: column;
@@ -13246,7 +13252,7 @@ settings:
   width: 32px;
   height: 32px;
   background: rgba(var(--interactive-accent-rgb), 0.15);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13320,7 +13326,7 @@ settings:
 .crc-staging-item {
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   padding: 12px 16px;
   margin-bottom: 8px;
 }
@@ -13335,7 +13341,7 @@ settings:
   gap: 12px;
   margin-bottom: 12px;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   margin: -8px;
   padding: 8px;
   margin-bottom: 4px;
@@ -13373,7 +13379,7 @@ settings:
   width: 32px;
   height: 32px;
   background: rgba(var(--interactive-accent-rgb), 0.1);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13423,7 +13429,7 @@ settings:
   gap: 6px;
   padding: 6px 12px;
   font-size: 13px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   cursor: pointer;
   border: 1px solid var(--background-modifier-border);
   background: var(--background-primary);
@@ -13506,7 +13512,7 @@ settings:
   border: 1px solid var(--background-modifier-border);
   color: var(--text-normal);
   padding: 8px 16px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   cursor: pointer;
 }
 
@@ -13536,7 +13542,7 @@ settings:
   padding: 8px 12px;
   background: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -13577,7 +13583,7 @@ settings:
   color: var(--text-muted);
   background: var(--background-secondary);
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   text-transform: capitalize;
   flex-shrink: 0;
 }
@@ -13615,7 +13621,7 @@ settings:
    COMPONENT: CLEANUP-WIZARD.CSS
    ========================================================================== */
 
-/* Component Size: 2206 lines, 40.82 KB */
+/* Component Size: 2206 lines, 41.21 KB */
 
 /* ==========================================================================
    CLEANUP WIZARD MODAL
@@ -13688,7 +13694,7 @@ settings:
   gap: 8px;
   padding: 12px 16px;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   margin-bottom: 16px;
   font-size: 13px;
   color: var(--text-muted);
@@ -13815,7 +13821,7 @@ settings:
 .crc-cleanup-tile-badge {
   font-size: 10px;
   padding: 3px 6px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   margin-top: 6px;
   display: inline-flex;
   align-items: center;
@@ -13996,7 +14002,7 @@ settings:
   text-align: center;
   padding: 32px;
   background: rgba(74, 222, 128, 0.1);
-  border-radius: 12px;
+  border-radius: var(--cr-radius-lg);
 }
 
 .crc-cleanup-no-issues-icon {
@@ -14026,7 +14032,7 @@ settings:
   text-align: center;
   padding: 32px;
   background: rgba(74, 222, 128, 0.1);
-  border-radius: 12px;
+  border-radius: var(--cr-radius-lg);
 }
 
 .crc-cleanup-step-complete-icon {
@@ -14058,7 +14064,7 @@ settings:
   color: var(--text-muted);
   font-size: 13px;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
 }
 
 /* Preview table */
@@ -14069,7 +14075,7 @@ settings:
 
 .crc-cleanup-preview-table {
   border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   overflow: hidden;
 }
 
@@ -14080,7 +14086,7 @@ settings:
   gap: 8px;
   padding: 12px 16px;
   background: rgba(var(--interactive-accent-rgb), 0.1);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   margin-top: 16px;
   font-size: 13px;
   color: var(--text-muted);
@@ -14240,7 +14246,7 @@ settings:
   justify-content: center;
   padding: 20px 28px;
   background: var(--background-secondary);
-  border-radius: 12px;
+  border-radius: var(--cr-radius-lg);
   border: 1px solid var(--background-modifier-border);
   min-width: 100px;
 }
@@ -14284,7 +14290,7 @@ settings:
   justify-content: center;
   padding: 12px 16px;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   border: 1px solid var(--background-modifier-border);
   min-width: 80px;
   flex: 1;
@@ -14328,7 +14334,7 @@ settings:
 .crc-cleanup-category-card {
   margin-bottom: 8px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   overflow: hidden;
 }
 
@@ -14367,7 +14373,7 @@ settings:
 
 .crc-cleanup-category-badge {
   padding: 3px 10px;
-  border-radius: 12px;
+  border-radius: var(--cr-radius-lg);
   font-size: 12px;
   font-weight: 600;
   background: var(--background-modifier-border);
@@ -14412,7 +14418,7 @@ settings:
   align-items: flex-start;
   gap: 10px;
   padding: 8px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: var(--background-secondary);
 }
 
@@ -14509,7 +14515,7 @@ settings:
   align-items: flex-start;
   gap: 10px;
   padding: 10px 12px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
 }
@@ -14637,7 +14643,7 @@ settings:
   padding: 16px;
   margin-bottom: 16px;
   background: rgba(var(--color-green-rgb), 0.1);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
 }
 
 .crc-cleanup-step-partial-complete .crc-cleanup-step-complete-icon {
@@ -14692,7 +14698,7 @@ settings:
   max-height: 350px;
   overflow-y: auto;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   margin-top: 12px;
 }
 
@@ -14897,7 +14903,7 @@ settings:
   padding: 10px 12px;
   margin-top: 12px;
   background: rgba(var(--color-yellow-rgb), 0.1);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 12px;
   color: var(--text-muted);
 }
@@ -14952,7 +14958,7 @@ settings:
   max-height: 200px;
   overflow-y: auto;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   padding: 8px;
   background: var(--background-secondary);
 }
@@ -15019,7 +15025,7 @@ settings:
 .crc-cleanup-geocode-progress-bar-container {
   height: 8px;
   background: var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   overflow: hidden;
   margin-bottom: 12px;
 }
@@ -15027,7 +15033,7 @@ settings:
 .crc-cleanup-geocode-progress-bar {
   height: 100%;
   background: var(--interactive-accent);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   transition: width 0.3s ease;
 }
 
@@ -15067,7 +15073,7 @@ settings:
   max-height: 200px;
   overflow-y: auto;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   padding: 8px;
   background: var(--background-secondary);
   margin-bottom: 16px;
@@ -15139,7 +15145,7 @@ settings:
   flex-direction: column;
   align-items: center;
   padding: 16px 24px;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   background: var(--background-secondary);
 }
 
@@ -15185,7 +15191,7 @@ settings:
   max-height: 250px;
   overflow-y: auto;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   margin-bottom: 16px;
 }
 
@@ -15265,7 +15271,7 @@ settings:
   gap: 8px;
   padding: 10px 12px;
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 12px;
   color: var(--text-muted);
   margin-bottom: 16px;
@@ -15801,7 +15807,7 @@ settings:
 .crc-cleanup-batch-progress-bar-container {
   height: 8px;
   background: var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   overflow: hidden;
   margin-bottom: 12px;
 }
@@ -15809,7 +15815,7 @@ settings:
 .crc-cleanup-batch-progress-bar {
   height: 100%;
   background: var(--interactive-accent);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   transition: width 0.2s ease;
 }
 
@@ -16052,7 +16058,7 @@ settings:
    COMPONENT: VALIDATION.CSS
    ========================================================================== */
 
-/* Component Size: 79 lines, 1.41 KB */
+/* Component Size: 79 lines, 1.46 KB */
 
 /* Validation Results Modal */
 .cr-validation-results-modal {
@@ -16065,7 +16071,7 @@ settings:
   gap: 0.5em;
   padding: 1em;
   margin-bottom: 1em;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: var(--background-secondary);
   font-weight: 500;
 }
@@ -16083,7 +16089,7 @@ settings:
 
 .cr-validation-issue {
   padding: 1em;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   border: 1px solid var(--background-modifier-border);
   background: var(--background-secondary);
 }
@@ -16123,7 +16129,7 @@ settings:
 .cr-validation-issue__type-badge {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-modifier-border);
   color: var(--text-muted);
   font-size: 11px;
@@ -16140,7 +16146,7 @@ settings:
    COMPONENT: FIND-ON-CANVAS.CSS
    ========================================================================== */
 
-/* Component Size: 114 lines, 1.97 KB */
+/* Component Size: 114 lines, 2.01 KB */
 
 /* Find on Canvas Modal */
 .cr-find-on-canvas-modal {
@@ -16155,7 +16161,7 @@ settings:
 .cr-find-summary {
   padding: 1em;
   margin-bottom: 1em;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: var(--background-secondary);
 }
 
@@ -16176,7 +16182,7 @@ settings:
 
 .cr-find-result {
   padding: 1em;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   border: 1px solid var(--background-modifier-border);
   background: var(--background-secondary);
   transition: all 0.2s ease;
@@ -16216,7 +16222,7 @@ settings:
 .cr-find-result__badge {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-modifier-border);
   color: var(--text-muted);
   font-size: 11px;
@@ -16263,7 +16269,7 @@ settings:
    COMPONENT: FOLDER-SCAN.CSS
    ========================================================================== */
 
-/* Component Size: 155 lines, 2.56 KB */
+/* Component Size: 155 lines, 2.6 KB */
 
 /* Folder Scan Modal */
 .cr-folder-scan-modal {
@@ -16278,7 +16284,7 @@ settings:
 .cr-scan-summary {
   padding: 1.5em;
   margin-bottom: 1.5em;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   background: var(--background-secondary);
 }
 
@@ -16336,7 +16342,7 @@ settings:
 
 .cr-scan-result {
   padding: 1em;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   border: 1px solid var(--background-modifier-border);
   background: var(--background-secondary);
   transition: all 0.2s ease;
@@ -16370,7 +16376,7 @@ settings:
 .cr-scan-result__badge {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--color-orange);
   color: white;
   font-size: 11px;
@@ -16427,7 +16433,7 @@ settings:
    COMPONENT: RELATIONSHIP-CALCULATOR.CSS
    ========================================================================== */
 
-/* Component Size: 302 lines, 5.21 KB */
+/* Component Size: 302 lines, 5.27 KB */
 
 /* ==========================================================================
    Relationship Calculator Modal
@@ -16498,7 +16504,7 @@ settings:
 /* Person Cards */
 .cr-relcalc-card {
   padding: 16px;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   border: 1px solid var(--background-modifier-border);
   background: var(--background-secondary);
   transition: all 0.2s ease;
@@ -16563,7 +16569,7 @@ settings:
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-modifier-border);
   color: var(--text-muted);
   font-size: 12px;
@@ -16618,7 +16624,7 @@ settings:
 .cr-relcalc-result-stat {
   padding: 12px;
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   text-align: center;
 }
 
@@ -16665,7 +16671,7 @@ settings:
 .cr-relcalc-path__node {
   padding: 8px 12px;
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   border: 1px solid var(--background-modifier-border);
 }
 
@@ -16738,7 +16744,7 @@ settings:
    COMPONENT: FAMILY-CHART-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1282 lines, 30.12 KB */
+/* Component Size: 1282 lines, 30.15 KB */
 
 /**
  * Family Chart View Styles
@@ -17084,7 +17090,7 @@ settings:
 
 .cr-fcv-chart-container.f3 .card_image image {
   /* Ensure avatar images render with rounded corners via clip-path */
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
 }
 
 .cr-fcv-chart-container.f3 .card_image .genderless-icon rect {
@@ -17209,7 +17215,7 @@ settings:
   flex: 0 0 auto;
   padding: 5px;
   margin-right: 10px;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
 }
 
 .cr-fcv-chart-container.f3 div.card-image-rect svg {
@@ -18029,7 +18035,7 @@ settings:
    COMPONENT: FAMILY-CHART-EXPORT.CSS
    ========================================================================== */
 
-/* Component Size: 699 lines, 14.62 KB */
+/* Component Size: 699 lines, 14.78 KB */
 
 /* ==========================================================================
    FAMILY CHART EXPORT WIZARD
@@ -18081,7 +18087,7 @@ settings:
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   cursor: pointer;
   color: var(--text-muted);
   transition: all 0.15s ease;
@@ -18405,7 +18411,7 @@ settings:
   margin-top: 8px;
   padding: 6px 10px;
   background: var(--background-modifier-warning);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   font-size: 12px;
   color: var(--text-warning);
 }
@@ -18478,7 +18484,7 @@ settings:
   margin-left: auto;
   padding: 4px 8px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-primary);
   color: var(--text-normal);
   font-size: 13px;
@@ -18493,7 +18499,7 @@ settings:
   margin-top: 6px;
   padding: 6px 10px;
   background: var(--background-secondary);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
 }
 
 .cr-export-hint-text {
@@ -18530,7 +18536,7 @@ settings:
 .cr-export-select {
   padding: 6px 10px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-primary);
   color: var(--text-normal);
   font-size: 13px;
@@ -18546,7 +18552,7 @@ settings:
   flex: 1;
   padding: 6px 10px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-primary);
   color: var(--text-normal);
   font-size: 13px;
@@ -18570,7 +18576,7 @@ settings:
 .cr-export-scale-btn {
   padding: 6px 12px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-primary);
   color: var(--text-normal);
   font-size: 13px;
@@ -18681,7 +18687,7 @@ settings:
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   background: var(--background-modifier-hover);
 }
 
@@ -18702,14 +18708,14 @@ settings:
 
 .cr-fcv-export-progress__track {
   height: 8px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-modifier-border);
   overflow: hidden;
 }
 
 .cr-fcv-export-progress__bar {
   height: 100%;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--interactive-accent);
   width: var(--progress-width, 0%);
   transition: width 0.2s ease-out;
@@ -18737,7 +18743,7 @@ settings:
    COMPONENT: REPORT-WIZARD.CSS
    ========================================================================== */
 
-/* Component Size: 888 lines, 19.4 KB */
+/* Component Size: 888 lines, 19.53 KB */
 
 /* ==========================================================================
    REPORT WIZARD
@@ -18982,7 +18988,7 @@ settings:
   margin-top: 4px;
   padding: 6px 8px;
   background: var(--background-secondary);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   font-size: 11px;
   color: var(--text-muted);
   line-height: 1.4;
@@ -19058,7 +19064,7 @@ settings:
   margin-top: 12px;
   padding: 12px;
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
 }
 
 .cr-report-types-header {
@@ -19289,7 +19295,7 @@ settings:
 .cr-report-select {
   padding: 6px 10px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-primary);
   color: var(--text-normal);
   font-size: 13px;
@@ -19305,7 +19311,7 @@ settings:
   flex: 1;
   padding: 6px 10px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-primary);
   color: var(--text-normal);
   font-size: 13px;
@@ -19330,7 +19336,7 @@ settings:
   width: 100%;
   padding: 8px 10px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-primary);
   color: var(--text-normal);
   font-size: 13px;
@@ -19426,7 +19432,7 @@ settings:
 
 .cr-report-estimate-panel {
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   padding: 12px 14px;
   margin-bottom: 8px;
 }
@@ -19500,7 +19506,7 @@ settings:
   justify-content: center;
   gap: 6px;
   padding: 12px 8px;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   background: var(--background-secondary);
   border: 2px solid transparent;
   cursor: pointer;
@@ -19561,7 +19567,7 @@ settings:
 .cr-report-data-quality {
   margin-top: 12px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   overflow: hidden;
 }
 
@@ -19634,7 +19640,7 @@ settings:
    COMPONENT: DATA-QUALITY.CSS
    ========================================================================== */
 
-/* Component Size: 1393 lines, 27.56 KB */
+/* Component Size: 1393 lines, 27.67 KB */
 
 /**
  * Data Quality Tab Styles
@@ -19749,13 +19755,13 @@ settings:
   flex: 1;
   height: 8px;
   background: var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   overflow: hidden;
 }
 
 .crc-dq-completeness-bar {
   height: 100%;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   transition: width 0.3s ease;
 }
 
@@ -20265,7 +20271,7 @@ settings:
   width: 80px;
   height: 8px;
   background: var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -20278,7 +20284,7 @@ settings:
 .crc-progress-bar__fill {
   height: 100%;
   background: var(--color-green);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   transition: width 0.3s ease;
 }
 
@@ -20834,7 +20840,7 @@ settings:
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   background: var(--background-modifier-hover);
 }
 
@@ -20850,7 +20856,7 @@ settings:
 
 .cr-place-generator-progress-bar {
   height: 8px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-modifier-border);
   overflow: hidden;
 }
@@ -20858,7 +20864,7 @@ settings:
 .cr-place-generator-progress-bar__fill {
   height: 100%;
   width: var(--progress-width, 0%);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--interactive-accent);
   transition: width 0.2s ease-out;
 }
@@ -22334,7 +22340,7 @@ settings:
    COMPONENT: MAP-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1998 lines, 40.72 KB */
+/* Component Size: 1998 lines, 40.75 KB */
 
 /* ==========================================================================
    Map View Styles
@@ -22635,7 +22641,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 /* Toolbar styles */
 .leaflet-bar {
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.65);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
 }
 
 .leaflet-bar a {
@@ -22832,7 +22838,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .leaflet-popup-content-wrapper {
   padding: 1px;
   text-align: left;
-  border-radius: 12px;
+  border-radius: var(--cr-radius-lg);
 }
 
 .leaflet-popup-content {
@@ -25014,7 +25020,7 @@ input[type="text"]::-webkit-input-placeholder {
    COMPONENT: EVENTS.CSS
    ========================================================================== */
 
-/* Component Size: 1515 lines, 30.63 KB */
+/* Component Size: 1515 lines, 30.67 KB */
 
 /**
  * Events Styles
@@ -25889,7 +25895,7 @@ input[type="text"]::-webkit-input-placeholder {
   flex: 1;
   height: 8px;
   background-color: var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   position: relative;
   min-width: 100px;
 }
@@ -25899,7 +25905,7 @@ input[type="text"]::-webkit-input-placeholder {
   top: 0;
   height: 100%;
   background-color: var(--interactive-accent);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   opacity: 0.7;
 }
 
@@ -26472,7 +26478,7 @@ input[type="text"]::-webkit-input-placeholder {
   margin-bottom: 12px;
   background: hsl(var(--color-yellow-hsl) / 15%);
   border: 1px solid hsl(var(--color-yellow-hsl) / 30%);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 13px;
   line-height: 1.4;
   color: var(--text-normal);
@@ -26538,7 +26544,7 @@ input[type="text"]::-webkit-input-placeholder {
    COMPONENT: TIMELINE-CALLOUTS.CSS
    ========================================================================== */
 
-/* Component Size: 321 lines, 10.66 KB */
+/* Component Size: 321 lines, 10.68 KB */
 
 /**
  * Timeline Callout Styles
@@ -26593,7 +26599,7 @@ body {
 
 .callout[data-callout="cr-timeline-outer"] {
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background-color: var(--background-secondary);
   padding: var(--cr-spacing-md);
   width: var(--cr-timeline-width);
@@ -31942,7 +31948,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: DASHBOARD.CSS
    ========================================================================== */
 
-/* Component Size: 491 lines, 9.46 KB */
+/* Component Size: 491 lines, 9.64 KB */
 
 /* ==========================================================================
    Dashboard Tab Styles
@@ -31974,7 +31980,7 @@ body:has(.cr-media-linker) .suggestion-container {
 .crc-dashboard-tile {
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   padding: 16px;
   text-align: center;
   cursor: pointer;
@@ -32004,7 +32010,7 @@ body:has(.cr-media-linker) .suggestion-container {
   align-items: center;
   justify-content: center;
   background: rgba(var(--interactive-accent-rgb), 0.15);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   color: var(--interactive-accent);
 }
 
@@ -32019,7 +32025,7 @@ body:has(.cr-media-linker) .suggestion-container {
 .crc-dashboard-collapsible {
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   margin-top: 16px;
 }
 
@@ -32194,7 +32200,7 @@ body:has(.cr-media-linker) .suggestion-container {
   padding: 8px 12px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -32230,7 +32236,7 @@ body:has(.cr-media-linker) .suggestion-container {
   color: var(--text-muted);
   background: var(--background-primary);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   text-transform: capitalize;
   flex-shrink: 0;
 }
@@ -32244,7 +32250,7 @@ body:has(.cr-media-linker) .suggestion-container {
   margin-bottom: 16px;
   background: rgba(var(--color-yellow-rgb), 0.1);
   border: 1px solid var(--color-yellow);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
 }
 
 .crc-dashboard-staging-icon {
@@ -32270,7 +32276,7 @@ body:has(.cr-media-linker) .suggestion-container {
   background: var(--interactive-accent);
   color: var(--text-on-accent);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 0.85em;
   font-weight: 500;
   cursor: pointer;
@@ -32291,7 +32297,7 @@ body:has(.cr-media-linker) .suggestion-container {
   margin-bottom: 16px;
   background: rgba(var(--color-cyan-rgb), 0.1);
   border: 1px solid var(--color-cyan);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
 }
 
 .crc-dashboard-clipped-icon {
@@ -32317,7 +32323,7 @@ body:has(.cr-media-linker) .suggestion-container {
   background: var(--interactive-accent);
   color: var(--text-on-accent);
   border: none;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 0.85em;
   font-weight: 500;
   cursor: pointer;
@@ -32357,7 +32363,7 @@ body:has(.cr-media-linker) .suggestion-container {
   gap: 12px;
   background: rgba(var(--interactive-accent-rgb), 0.1);
   border: 1px solid var(--interactive-accent);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   padding: 12px 16px;
   margin-bottom: 16px;
 }
@@ -32391,7 +32397,7 @@ body:has(.cr-media-linker) .suggestion-container {
   padding: 0;
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   color: var(--text-muted);
   cursor: pointer;
   flex-shrink: 0;
@@ -32411,7 +32417,7 @@ body:has(.cr-media-linker) .suggestion-container {
   margin-bottom: 16px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 13px;
 }
 
@@ -32442,7 +32448,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: UNIVERSE-WIZARD.CSS
    ========================================================================== */
 
-/* Component Size: 621 lines, 11.05 KB */
+/* Component Size: 621 lines, 11.17 KB */
 
 /* ==========================================================================
    UNIVERSE SETUP WIZARD
@@ -32635,7 +32641,7 @@ body:has(.cr-media-linker) .suggestion-container {
 .cr-wizard-details {
   margin-top: 16px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
 }
 
 .cr-wizard-details-header {
@@ -32693,7 +32699,7 @@ body:has(.cr-media-linker) .suggestion-container {
   margin: 8px 0;
   padding: 12px;
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 13px;
   color: var(--text-muted);
   text-align: center;
@@ -32734,7 +32740,7 @@ body:has(.cr-media-linker) .suggestion-container {
   width: 100%;
   padding: 6px 8px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-primary);
   color: var(--text-normal);
   font-size: 13px;
@@ -32791,7 +32797,7 @@ body:has(.cr-media-linker) .suggestion-container {
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -32859,7 +32865,7 @@ body:has(.cr-media-linker) .suggestion-container {
 .cr-wizard-summary-card {
   padding: 12px 16px;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   border: 1px solid var(--background-modifier-border);
 }
 
@@ -32933,7 +32939,7 @@ body:has(.cr-media-linker) .suggestion-container {
   margin-bottom: 24px;
   padding: 16px;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
 }
 
 .cr-wizard-success-label {
@@ -32998,7 +33004,7 @@ body:has(.cr-media-linker) .suggestion-container {
   width: 100%;
   padding: 8px 12px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: var(--background-primary);
   color: var(--text-normal);
   font-size: 14px;
@@ -33013,7 +33019,7 @@ body:has(.cr-media-linker) .suggestion-container {
   max-height: 300px;
   overflow-y: auto;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
 }
 
 .cr-file-item {
@@ -33228,7 +33234,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: FAMILY-WIZARD.CSS
    ========================================================================== */
 
-/* Component Size: 743 lines, 15.52 KB */
+/* Component Size: 743 lines, 15.63 KB */
 
 /* ==========================================================================
    FAMILY CREATION WIZARD
@@ -33397,7 +33403,7 @@ body:has(.cr-media-linker) .suggestion-container {
   margin-top: 16px;
   padding: 16px;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
 }
 
 .crc-wizard-picker-label {
@@ -33425,7 +33431,7 @@ body:has(.cr-media-linker) .suggestion-container {
   padding: 12px 16px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
 }
 
 .crc-wizard-person-card-icon {
@@ -33484,7 +33490,7 @@ body:has(.cr-media-linker) .suggestion-container {
   color: var(--text-muted);
   cursor: pointer;
   padding: 4px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -33518,7 +33524,7 @@ body:has(.cr-media-linker) .suggestion-container {
   padding: 12px;
   background: var(--background-secondary);
   border: 2px dashed var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   color: var(--text-muted);
   cursor: pointer;
   font-size: 14px;
@@ -33598,7 +33604,7 @@ body:has(.cr-media-linker) .suggestion-container {
   text-align: center;
   padding: 16px 12px;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
 }
 
 .crc-wizard-stat-value {
@@ -33797,7 +33803,7 @@ body:has(.cr-media-linker) .suggestion-container {
 
 .crc-wizard-created-notes-list {
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   padding: 16px;
   margin-top: 16px;
   text-align: left;
@@ -33853,7 +33859,7 @@ body:has(.cr-media-linker) .suggestion-container {
 .crc-info-callout {
   background: rgb(96 165 250 / 10%);
   border: 1px solid rgb(96 165 250 / 30%);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   padding: 12px 16px;
   font-size: 13px;
   color: var(--text-muted);
@@ -33980,7 +33986,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: MAP-WIZARD.CSS
    ========================================================================== */
 
-/* Component Size: 606 lines, 12.52 KB */
+/* Component Size: 606 lines, 12.68 KB */
 
 /* ==========================================================================
    MAP CREATION WIZARD
@@ -34068,7 +34074,7 @@ body:has(.cr-media-linker) .suggestion-container {
   width: 120px;
   height: 90px;
   background: var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -34112,7 +34118,7 @@ body:has(.cr-media-linker) .suggestion-container {
   gap: 6px;
   background: var(--background-modifier-border);
   padding: 4px 10px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   font-size: 12px;
   color: var(--text-muted);
 }
@@ -34143,7 +34149,7 @@ body:has(.cr-media-linker) .suggestion-container {
   margin-top: 16px;
   padding: 16px;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
 }
 
 .crc-wizard-bounds-title {
@@ -34226,7 +34232,7 @@ body:has(.cr-media-linker) .suggestion-container {
   left: 12px;
   background: rgb(0 0 0 / 70%);
   padding: 8px 12px;
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 13px;
   color: white;
   display: flex;
@@ -34291,7 +34297,7 @@ body:has(.cr-media-linker) .suggestion-container {
   position: absolute;
   background: var(--background-primary);
   border: 1px solid var(--interactive-accent);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   padding: 8px 12px;
   display: flex;
   gap: 8px;
@@ -34305,7 +34311,7 @@ body:has(.cr-media-linker) .suggestion-container {
   font-size: 13px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   color: var(--text-normal);
 }
 
@@ -34351,7 +34357,7 @@ body:has(.cr-media-linker) .suggestion-container {
   gap: 12px;
   padding: 10px 12px;
   background: var(--background-secondary);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   margin-bottom: 8px;
 }
 
@@ -34431,7 +34437,7 @@ body:has(.cr-media-linker) .suggestion-container {
 
 .crc-wizard-summary-list {
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   overflow: hidden;
 }
 
@@ -34517,7 +34523,7 @@ body:has(.cr-media-linker) .suggestion-container {
   gap: 4px;
   background: var(--background-modifier-border);
   padding: 4px 10px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   font-size: 13px;
   color: var(--text-normal);
 }
@@ -34573,7 +34579,7 @@ body:has(.cr-media-linker) .suggestion-container {
   margin-top: 24px;
   padding: 16px;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
 }
 
 .crc-wizard-resume-preview-item {
@@ -35035,7 +35041,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: TREE-OUTPUT.CSS
    ========================================================================== */
 
-/* Component Size: 1548 lines, 30.08 KB */
+/* Component Size: 1548 lines, 30.41 KB */
 
 /* Tree Output Tab - Two-Panel Layout */
 
@@ -35067,7 +35073,7 @@ body:has(.cr-media-linker) .suggestion-container {
 .crc-accordion-section {
   margin-bottom: var(--cr-spacing-sm);
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   overflow: hidden;
   border: 1px solid var(--background-modifier-border);
 }
@@ -35201,7 +35207,7 @@ body:has(.cr-media-linker) .suggestion-container {
   display: flex;
   flex-direction: column;
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   border: 1px solid var(--background-modifier-border);
   overflow: hidden;
 }
@@ -35241,7 +35247,7 @@ body:has(.cr-media-linker) .suggestion-container {
   flex-shrink: 0; /* Don't shrink the generate panel */
   background: var(--background-secondary);
   padding: var(--cr-spacing-sm) var(--cr-spacing-md);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   border: 1px solid var(--background-modifier-border);
 }
 
@@ -35349,7 +35355,7 @@ body:has(.cr-media-linker) .suggestion-container {
   padding: 8px 12px;
   background: var(--interactive-accent);
   color: var(--text-on-accent);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 13px;
 }
 
@@ -35372,7 +35378,7 @@ body:has(.cr-media-linker) .suggestion-container {
   background: transparent;
   border: none;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
 }
 
 .crc-root-person-clear:hover {
@@ -35385,7 +35391,7 @@ body:has(.cr-media-linker) .suggestion-container {
   max-height: 250px;
   overflow-y: auto;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   padding: 4px;
 }
 
@@ -35395,7 +35401,7 @@ body:has(.cr-media-linker) .suggestion-container {
   align-items: center;
   gap: 8px;
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   cursor: pointer;
 }
 
@@ -35474,7 +35480,7 @@ body:has(.cr-media-linker) .suggestion-container {
   padding: 8px 12px;
   background: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   cursor: pointer;
   transition: all var(--cr-transition-fast);
 }
@@ -35539,7 +35545,7 @@ body:has(.cr-media-linker) .suggestion-container {
 .crc-badge--small {
   font-size: 10px;
   padding: 1px 6px;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   background: var(--background-modifier-border);
   color: var(--text-muted);
 }
@@ -35593,7 +35599,7 @@ body:has(.cr-media-linker) .suggestion-container {
   gap: 8px;
   padding: 8px 12px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: var(--background-primary);
 }
 
@@ -35627,7 +35633,7 @@ body:has(.cr-media-linker) .suggestion-container {
   padding: 8px 12px;
   background: var(--interactive-accent);
   color: var(--text-on-accent);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
 }
 
 .crc-wizard-selected-card svg {
@@ -35656,7 +35662,7 @@ body:has(.cr-media-linker) .suggestion-container {
   color: var(--text-on-accent);
   opacity: 0.7;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
 }
 
 .crc-wizard-clear-btn:hover {
@@ -35684,7 +35690,7 @@ body:has(.cr-media-linker) .suggestion-container {
   padding: 6px 10px;
   font-size: 13px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: var(--background-primary);
   color: var(--text-normal);
   cursor: pointer;
@@ -35716,7 +35722,7 @@ body:has(.cr-media-linker) .suggestion-container {
   padding: 3px 10px;
   font-size: 12px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 12px;
+  border-radius: var(--cr-radius-lg);
   background: var(--background-primary);
   color: var(--text-muted);
   cursor: pointer;
@@ -35759,7 +35765,7 @@ body:has(.cr-media-linker) .suggestion-container {
   max-height: 180px;
   overflow-y: auto;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
 }
 
 .crc-wizard-person-row {
@@ -35837,7 +35843,7 @@ body:has(.cr-media-linker) .suggestion-container {
   padding: 6px 8px;
   background: var(--background-secondary);
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   cursor: pointer;
   transition: all var(--cr-transition-fast);
   text-align: left;
@@ -35927,7 +35933,7 @@ body:has(.cr-media-linker) .suggestion-container {
 .crc-wizard-preview-container {
   height: 270px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: var(--background-primary);
   overflow: hidden;
   margin-bottom: 6px;
@@ -35979,7 +35985,7 @@ body:has(.cr-media-linker) .suggestion-container {
   margin-top: var(--cr-spacing-md);
   padding: var(--cr-spacing-md);
   background: var(--background-secondary);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
 }
 
 .crc-wizard-summary-list {
@@ -36011,7 +36017,7 @@ body:has(.cr-media-linker) .suggestion-container {
 
 .crc-wizard-details {
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background: var(--background-secondary);
   overflow: hidden;
 }
@@ -36479,7 +36485,7 @@ body:has(.cr-media-linker) .suggestion-container {
   padding: 12px;
   background: var(--background-secondary);
   border: 2px solid var(--background-modifier-border);
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   cursor: pointer;
   transition: all var(--cr-transition-fast);
 }
@@ -36502,7 +36508,7 @@ body:has(.cr-media-linker) .suggestion-container {
   height: 36px;
   flex-shrink: 0;
   background: var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   color: var(--text-muted);
 }
 
@@ -36592,7 +36598,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: DYNAMIC-CONTENT.CSS
    ========================================================================== */
 
-/* Component Size: 579 lines, 12.52 KB */
+/* Component Size: 579 lines, 12.53 KB */
 
 /**
  * Dynamic Content Styles
@@ -36999,7 +37005,7 @@ body:has(.cr-media-linker) .suggestion-container {
   background: rgb(0 0 0 / 60%);
   color: #fff;
   padding: 4px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   opacity: 0;
   z-index: 3;
   transition: opacity 0.15s ease;
@@ -37343,55 +37349,55 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-02-04 18:14:18 UTC
+ * Build completed: 2026-02-05 19:41:01 UTC
  * Components processed: 44
- * Total lines: 36924
- * Total size: 733.65 KB
- * Build duration: 0.87 seconds
+ * Total lines: 36930
+ * Total size: 738.41 KB
+ * Build duration: 0.24 seconds
  *
  * Component breakdown:
- * - variables.css: 56 lines, 1.61 KB
+ * - variables.css: 62 lines, 1.85 KB
  * - style-settings.css: 281 lines, 6.81 KB
  * - base.css: 87 lines, 1.22 KB
  * - layout.css: 22 lines, 0.25 KB
  * - settings.css: 131 lines, 3.53 KB
- * - control-center.css: 5747 lines, 106.74 KB
- * - entity-create-modals.css: 1094 lines, 22.41 KB
+ * - control-center.css: 5747 lines, 107.88 KB
+ * - entity-create-modals.css: 1094 lines, 22.48 KB
  * - place-modals.css: 1406 lines, 27.04 KB
- * - media-modals.css: 1928 lines, 36.72 KB
- * - import-export-wizard.css: 2187 lines, 41.08 KB
- * - staging-manager.css: 555 lines, 11.21 KB
- * - cleanup-wizard.css: 2206 lines, 40.82 KB
+ * - media-modals.css: 1928 lines, 37.15 KB
+ * - import-export-wizard.css: 2187 lines, 41.74 KB
+ * - staging-manager.css: 555 lines, 11.4 KB
+ * - cleanup-wizard.css: 2206 lines, 41.21 KB
  * - duplicate-detection.css: 163 lines, 2.82 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
- * - validation.css: 79 lines, 1.41 KB
- * - find-on-canvas.css: 114 lines, 1.97 KB
- * - folder-scan.css: 155 lines, 2.56 KB
- * - relationship-calculator.css: 302 lines, 5.21 KB
- * - family-chart-view.css: 1282 lines, 30.12 KB
- * - family-chart-export.css: 699 lines, 14.62 KB
- * - report-wizard.css: 888 lines, 19.4 KB
- * - data-quality.css: 1393 lines, 27.56 KB
+ * - validation.css: 79 lines, 1.46 KB
+ * - find-on-canvas.css: 114 lines, 2.01 KB
+ * - folder-scan.css: 155 lines, 2.6 KB
+ * - relationship-calculator.css: 302 lines, 5.27 KB
+ * - family-chart-view.css: 1282 lines, 30.15 KB
+ * - family-chart-export.css: 699 lines, 14.78 KB
+ * - report-wizard.css: 888 lines, 19.53 KB
+ * - data-quality.css: 1393 lines, 27.67 KB
  * - relationships.css: 597 lines, 11.43 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB
- * - map-view.css: 1998 lines, 40.72 KB
+ * - map-view.css: 1998 lines, 40.75 KB
  * - leaflet-distortable.css: 368 lines, 7.73 KB
  * - date-systems.css: 287 lines, 5.31 KB
- * - events.css: 1515 lines, 30.63 KB
- * - timeline-callouts.css: 321 lines, 10.66 KB
+ * - events.css: 1515 lines, 30.67 KB
+ * - timeline-callouts.css: 321 lines, 10.68 KB
  * - organizations.css: 561 lines, 10.42 KB
  * - sources.css: 2832 lines, 57.42 KB
  * - statistics.css: 1654 lines, 33.24 KB
- * - dashboard.css: 491 lines, 9.46 KB
- * - universe-wizard.css: 621 lines, 11.05 KB
+ * - dashboard.css: 491 lines, 9.64 KB
+ * - universe-wizard.css: 621 lines, 11.17 KB
  * - universes.css: 41 lines, 0.73 KB
  * - collections.css: 41 lines, 0.73 KB
  * - data-quality-view.css: 47 lines, 0.89 KB
- * - family-wizard.css: 743 lines, 15.52 KB
- * - map-wizard.css: 606 lines, 12.52 KB
+ * - family-wizard.css: 743 lines, 15.63 KB
+ * - map-wizard.css: 606 lines, 12.68 KB
  * - preferences.css: 431 lines, 9.44 KB
- * - tree-output.css: 1548 lines, 30.08 KB
- * - dynamic-content.css: 579 lines, 12.52 KB
+ * - tree-output.css: 1548 lines, 30.41 KB
+ * - dynamic-content.css: 579 lines, 12.53 KB
  * - migration-notice.css: 135 lines, 2.67 KB
  * - responsive.css: 9 lines, 0.13 KB
  */

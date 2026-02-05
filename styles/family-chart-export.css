@@ -48,7 +48,7 @@
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   cursor: pointer;
   color: var(--text-muted);
   transition: all 0.15s ease;
@@ -372,7 +372,7 @@
   margin-top: 8px;
   padding: 6px 10px;
   background: var(--background-modifier-warning);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   font-size: 12px;
   color: var(--text-warning);
 }
@@ -445,7 +445,7 @@
   margin-left: auto;
   padding: 4px 8px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-primary);
   color: var(--text-normal);
   font-size: 13px;
@@ -460,7 +460,7 @@
   margin-top: 6px;
   padding: 6px 10px;
   background: var(--background-secondary);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
 }
 
 .cr-export-hint-text {
@@ -497,7 +497,7 @@
 .cr-export-select {
   padding: 6px 10px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-primary);
   color: var(--text-normal);
   font-size: 13px;
@@ -513,7 +513,7 @@
   flex: 1;
   padding: 6px 10px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-primary);
   color: var(--text-normal);
   font-size: 13px;
@@ -537,7 +537,7 @@
 .cr-export-scale-btn {
   padding: 6px 12px;
   border: 1px solid var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-primary);
   color: var(--text-normal);
   font-size: 13px;
@@ -648,7 +648,7 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
   background: var(--background-modifier-hover);
 }
 
@@ -669,14 +669,14 @@
 
 .cr-fcv-export-progress__track {
   height: 8px;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--background-modifier-border);
   overflow: hidden;
 }
 
 .cr-fcv-export-progress__bar {
   height: 100%;
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   background: var(--interactive-accent);
   width: var(--progress-width, 0%);
   transition: width 0.2s ease-out;

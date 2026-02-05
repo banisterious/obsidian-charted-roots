@@ -871,7 +871,7 @@
   flex: 1;
   height: 8px;
   background-color: var(--background-modifier-border);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   position: relative;
   min-width: 100px;
 }
@@ -881,7 +881,7 @@
   top: 0;
   height: 100%;
   background-color: var(--interactive-accent);
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
   opacity: 0.7;
 }
 
@@ -1454,7 +1454,7 @@
   margin-bottom: 12px;
   background: hsl(var(--color-yellow-hsl) / 15%);
   border: 1px solid hsl(var(--color-yellow-hsl) / 30%);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   font-size: 13px;
   line-height: 1.4;
   color: var(--text-normal);

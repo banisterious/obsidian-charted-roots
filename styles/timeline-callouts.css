@@ -51,7 +51,7 @@ body {
 
 .callout[data-callout="cr-timeline-outer"] {
   border: 1px solid var(--background-modifier-border);
-  border-radius: 6px;
+  border-radius: var(--cr-radius-sm);
   background-color: var(--background-secondary);
   padding: var(--cr-spacing-md);
   width: var(--cr-timeline-width);

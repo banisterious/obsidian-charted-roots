@@ -342,7 +342,7 @@
 
 .cr-fcv-chart-container.f3 .card_image image {
   /* Ensure avatar images render with rounded corners via clip-path */
-  border-radius: 4px;
+  border-radius: var(--cr-radius-xs);
 }
 
 .cr-fcv-chart-container.f3 .card_image .genderless-icon rect {
@@ -467,7 +467,7 @@
   flex: 0 0 auto;
   padding: 5px;
   margin-right: 10px;
-  border-radius: 8px;
+  border-radius: var(--cr-radius-md);
 }
 
 .cr-fcv-chart-container.f3 div.card-image-rect svg {
