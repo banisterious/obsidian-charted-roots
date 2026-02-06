@@ -9,6 +9,7 @@ This document outlines planned features for Charted Roots. For completed feature
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
   - [GPS Research Workflow Integration](#gps-research-workflow-integration) 📋 Medium
+  - [Entity Profile Views](#entity-profile-views) 📋 Medium
   - [Unified Place Lookup](#unified-place-lookup) 💡 Low ✅ Phase 1-2 complete
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
@@ -98,6 +99,39 @@ Export features discussed in #145 are tracked separately:
 - [Research Workflow](Research-Workflow) — Usage documentation
 - [Research Workflow Integration Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/research-workflow-integration.md) — Full specifications for Phases 2-3
 - Community contributors: @ANYroots (IRN structure, GPS methodology), @wilbry (lightweight approach, unified design)
+
+---
+
+### Entity Profile Views
+
+**Priority:** 📋 Medium — Deep work on single entities without context-switching
+
+**Status:** 📋 Planning
+
+**GitHub Issue:** [#251](https://github.com/banisterious/obsidian-charted-roots/issues/251)
+
+**Discussion:** [#242](https://github.com/banisterious/obsidian-charted-roots/discussions/242)
+
+**Summary:** A dockable Profile View that auto-syncs to the active note and displays all related data for any entity type (Person, Place, Event, Source, Organization) in collapsible sections, enabling deep work without tab-hopping.
+
+**Key Features:**
+- Auto-sync to active note with pin/unpin toggle
+- Entity-specific section layouts (Person: Identity → Relationships → Events → Sources → Media → Data Quality)
+- Sticky identity header with section jump links
+- Breadcrumb navigation for cross-entity traversal
+- Inline editing with save-on-blur (Phase 2)
+
+**Phased Approach:**
+
+| Phase | Focus | Status |
+|-------|-------|--------|
+| Phase 1 | Read-only Profile View | Planned |
+| Phase 2 | Inline editing | Planned |
+| Phase 3 | Polish and integration | Planned |
+
+**Documentation:**
+- [Entity Profile Views Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/entity-profile-views.md)
+- Community contributors: @prentissw (workflow feedback, Relationships section)
 
 ---
 
