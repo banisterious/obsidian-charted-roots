@@ -41,15 +41,34 @@ The view uses a hybrid layout:
 
 | Entity type | Sections |
 |-------------|----------|
-| Person | Identity → Family → Events → Sources → Media → Data Quality |
+| Person | Identity → Relationships → Events → Sources → Media → Data Quality |
 | Place | Identity → Events at location → Sources → Media → Map preview |
 | Event | Identity → Participants → Sources → Media → Place link |
 | Source | Identity → Referenced facts → Persons cited → Media |
 | Organization | Identity → Members → Events → Sources → Media |
 
+#### Person Relationships section
+
+The Relationships section replaces the simpler "Family" section to accommodate all relationship types while keeping family relationships prominent.
+
+**Structure:**
+- **Family** (expanded by default)
+  - Parents
+  - Spouses
+  - Children
+  - Siblings
+- **Other relationships** (collapsed by default; hidden if empty)
+  - Witnesses / witnessed by
+  - Godparents / godchildren
+  - Guardians / wards
+  - Business partners
+  - Associates (general)
+
+**Rationale:** Family relationships are primary data for genealogy and should be immediately visible. Other relationship types (witnesses, godparents, business partners) provide valuable historical context but are secondary — collapsing them by default keeps the interface clean for users who don't need them, while making them discoverable for those who do.
+
 ### Section renderers
 
-Section renderers are standalone functions (e.g., `renderProfileFamilySection()`, `renderProfileEventsSection()`) following the existing tab renderer pattern from Phase 1. Sections shared across entity types (Sources, Media) use the same render function.
+Section renderers are standalone functions (e.g., `renderProfileRelationshipsSection()`, `renderProfileEventsSection()`) following the existing tab renderer pattern from Phase 1. Sections shared across entity types (Sources, Media) use the same render function.
 
 ---
 
@@ -123,7 +142,7 @@ The existing codebase provides strong building blocks:
 - Pin toggle: `cr-profile__pin-toggle`
 - Breadcrumb: `cr-profile__breadcrumb`
 - Section shared: `cr-profile__section`, `cr-profile__section-header`, `cr-profile__section-summary`
-- Section content: `cr-profile__identity`, `cr-profile__family`, `cr-profile__events`, `cr-profile__sources`, `cr-profile__media`, `cr-profile__data-quality`, `cr-profile__participants`, `cr-profile__members`, `cr-profile__map-preview`
+- Section content: `cr-profile__identity`, `cr-profile__relationships`, `cr-profile__relationships-family`, `cr-profile__relationships-other`, `cr-profile__events`, `cr-profile__sources`, `cr-profile__media`, `cr-profile__data-quality`, `cr-profile__participants`, `cr-profile__members`, `cr-profile__map-preview`
 
 ---
 
