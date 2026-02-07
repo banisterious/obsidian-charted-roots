@@ -529,6 +529,12 @@ export class EventService {
 		if (data.transferType) {
 			frontmatterLines.push(`${prop('transfer_type')}: ${data.transferType}`);
 		}
+		if (data.needsResearch && data.needsResearch.length > 0) {
+			frontmatterLines.push(`${prop('needs_research')}:`);
+			for (const q of data.needsResearch) {
+				frontmatterLines.push(`  - "${q.replace(/"/g, '\\"')}"`);
+			}
+		}
 
 		frontmatterLines.push('---');
 

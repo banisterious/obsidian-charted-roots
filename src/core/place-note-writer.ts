@@ -185,6 +185,11 @@ export async function createPlaceNote(
 		frontmatter[prop('maps')] = place.maps;
 	}
 
+	// Research questions
+	if (place.needsResearch && place.needsResearch.length > 0) {
+		frontmatter[prop('needs_research')] = place.needsResearch;
+	}
+
 	logger.debug('frontmatter', `Final: ${JSON.stringify(frontmatter)}`);
 
 	// Build YAML frontmatter string
@@ -344,6 +349,13 @@ export async function updatePlaceNote(
 			newFrontmatter.maps = updates.maps;
 		} else {
 			delete newFrontmatter.maps;
+		}
+	}
+	if (updates.needsResearch !== undefined) {
+		if (updates.needsResearch && updates.needsResearch.length > 0) {
+			newFrontmatter.needs_research = updates.needsResearch;
+		} else {
+			delete newFrontmatter.needs_research;
 		}
 	}
 

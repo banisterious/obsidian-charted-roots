@@ -146,6 +146,7 @@ export interface PersonData {
 	dnaMatchType?: string;       // BKM | BMM | confirmed | unconfirmed
 	dnaEndogamyFlag?: boolean;   // Flag for endogamous populations
 	dnaNotes?: string;           // Free-form notes
+	needsResearch?: string[];    // Research questions requiring investigation
 }
 
 /**
@@ -301,6 +302,10 @@ export async function createPersonNote(
 
 	if (person.researchLevel !== undefined) {
 		frontmatter[prop('research_level')] = person.researchLevel;
+	}
+
+	if (person.needsResearch && person.needsResearch.length > 0) {
+		frontmatter[prop('needs_research')] = person.needsResearch;
 	}
 
 	// Sources (dual storage: wikilinks + _id array)
@@ -1104,6 +1109,13 @@ export async function updatePersonNote(
 				frontmatter.research_level = person.researchLevel;
 			} else {
 				delete frontmatter.research_level;
+			}
+		}
+		if (person.needsResearch !== undefined) {
+			if (Array.isArray(person.needsResearch) && person.needsResearch.length > 0) {
+				frontmatter.needs_research = person.needsResearch;
+			} else {
+				delete frontmatter.needs_research;
 			}
 		}
 		// DNA tracking fields

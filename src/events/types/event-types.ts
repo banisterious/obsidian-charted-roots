@@ -439,6 +439,8 @@ export interface CreateEventData {
 	groups?: string[];
 	/** For transfer events: inheritance, purchase, gift, hire, seizure, birth, relocation */
 	transferType?: string;
+	/** Research questions requiring investigation for this event */
+	needsResearch?: string[];
 }
 
 /**
