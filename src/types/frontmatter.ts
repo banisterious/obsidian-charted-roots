@@ -106,6 +106,11 @@ export interface PersonFrontmatter {
 	 */
 	research_level?: ResearchLevel;
 	/**
+	 * Research questions requiring investigation
+	 * Array of questions/notes about what needs to be researched for this person
+	 */
+	needs_research?: string[];
+	/**
 	 * General person-level sources (distinct from fact-level sourced_* properties)
 	 * Array of wikilinks to source notes that document this person.
 	 * Migrated from legacy source, source_2, source_3 properties by SourceMigrationService.

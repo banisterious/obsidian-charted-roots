@@ -51,6 +51,7 @@ export interface PlaceData {
 	notesContent?: string;     // Markdown notes content to append
 	private?: boolean;         // Privacy flag (if any attached note is private)
 	maps?: string[];           // Map IDs this place appears on (for per-map filtering)
+	needsResearch?: string[];  // Research questions requiring investigation
 }
 
 /**

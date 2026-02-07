@@ -411,6 +411,8 @@ export interface EventNote {
 	media?: string[];
 	/** For transfer events: type of transfer (inheritance, purchase, gift, hire, seizure, birth, relocation) */
 	transferType?: string;
+	/** Research questions requiring investigation for this event */
+	needs_research?: string[];
 }
 
 /**
