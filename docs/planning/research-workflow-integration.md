@@ -460,7 +460,19 @@ Research Entities
 
 ## Phase 2: Workflow Integration
 
-**Status:** Future (after Phase 1 feedback)
+**Status:** Planning (community feedback received)
+
+**Community Feedback ([#230](https://github.com/banisterious/obsidian-charted-roots/issues/230)):**
+- Both @wilbry and @ANYroots prioritize **Needs-Research Tagging** as the most valuable feature
+- **Research Log Entry Form** (with markdown bullets) is second priority
+- Neither user is actively using `individual_research_note` or `research_journal` entity types
+- IRN Auto-Generation and Breadcrumb Navigation are lower priority based on current usage patterns
+
+**Implementation Order:**
+1. Needs-Research Tagging (start here)
+2. Research Log Entry Form
+3. IRN Auto-Generation (deferred)
+4. Breadcrumb Navigation (deferred)
 
 Enhance with workflow-specific features and UI improvements.
 
