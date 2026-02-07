@@ -577,6 +577,14 @@ export class BidirectionalLinker {
 			return;
 		}
 
+		// Only add relationship fields to person notes (must have cr_id)
+		if (!parentCache.frontmatter.cr_id) {
+			logger.debug('bidirectional-linking', 'Parent is not a person note (no cr_id), skipping', {
+				parentFile: parentFile.path
+			});
+			return;
+		}
+
 		const childCache = this.app.metadataCache.getFileCache(childFile);
 		const childCrId = childCache?.frontmatter?.cr_id;
 
@@ -660,6 +668,14 @@ export class BidirectionalLinker {
 		const spouseCache = this.app.metadataCache.getFileCache(spouseFile);
 		if (!spouseCache?.frontmatter) {
 			logger.warn('bidirectional-linking', 'Spouse has no frontmatter', {
+				spouseFile: spouseFile.path
+			});
+			return;
+		}
+
+		// Only add relationship fields to person notes (must have cr_id)
+		if (!spouseCache.frontmatter.cr_id) {
+			logger.debug('bidirectional-linking', 'Spouse is not a person note (no cr_id), skipping', {
 				spouseFile: spouseFile.path
 			});
 			return;
@@ -802,6 +818,14 @@ export class BidirectionalLinker {
 			return;
 		}
 
+		// Only add relationship fields to person notes (must have cr_id)
+		if (!childCache.frontmatter.cr_id) {
+			logger.debug('bidirectional-linking', 'Child is not a person note (no cr_id), skipping', {
+				childFile: childFile.path
+			});
+			return;
+		}
+
 		const childFm = childCache.frontmatter;
 
 		// If gender-neutral parents are enabled and child already has parents/parents_id,
@@ -934,6 +958,14 @@ export class BidirectionalLinker {
 			return;
 		}
 
+		// Only add relationship fields to person notes (must have cr_id)
+		if (!adoptiveParentCache.frontmatter.cr_id) {
+			logger.debug('bidirectional-linking', 'Adoptive parent is not a person note (no cr_id), skipping', {
+				adoptiveParentFile: adoptiveParentFile.path
+			});
+			return;
+		}
+
 		// Check if child is already in adoptive parent's adopted_child arrays
 		const adoptedChildLinks = adoptiveParentCache.frontmatter.adopted_child || [];
 		const adoptedChildIds = adoptiveParentCache.frontmatter.adopted_child_id || [];
@@ -1005,6 +1037,14 @@ export class BidirectionalLinker {
 		const childCache = this.app.metadataCache.getFileCache(childFile);
 		if (!childCache?.frontmatter) {
 			logger.warn('bidirectional-linking', 'Adopted child has no frontmatter', {
+				childFile: childFile.path
+			});
+			return;
+		}
+
+		// Only add relationship fields to person notes (must have cr_id)
+		if (!childCache.frontmatter.cr_id) {
+			logger.debug('bidirectional-linking', 'Adopted child is not a person note (no cr_id), skipping', {
 				childFile: childFile.path
 			});
 			return;
@@ -1091,6 +1131,14 @@ export class BidirectionalLinker {
 		const stepParentCache = this.app.metadataCache.getFileCache(stepParentFile);
 		if (!stepParentCache?.frontmatter) {
 			logger.warn('bidirectional-linking', 'Step-parent has no frontmatter', {
+				stepParentFile: stepParentFile.path
+			});
+			return;
+		}
+
+		// Only add relationship fields to person notes (must have cr_id)
+		if (!stepParentCache.frontmatter.cr_id) {
+			logger.debug('bidirectional-linking', 'Step-parent is not a person note (no cr_id), skipping', {
 				stepParentFile: stepParentFile.path
 			});
 			return;
@@ -1429,6 +1477,14 @@ export class BidirectionalLinker {
 			return;
 		}
 
+		// Only add relationship fields to person notes (must have cr_id)
+		if (!matchCache.frontmatter.cr_id) {
+			logger.debug('bidirectional-linking', 'DNA match is not a person note (no cr_id), skipping', {
+				matchFile: matchFile.path
+			});
+			return;
+		}
+
 		const matchFm = matchCache.frontmatter;
 
 		// Check if person is already linked in the match's dna_match array
@@ -1639,12 +1695,27 @@ export class BidirectionalLinker {
 				}
 
 				if (Array.isArray(existing)) {
-					// Filter out the value (check for exact match and partial match for wikilinks)
+					// Filter out the value (check for exact wikilink match)
+					// Extract the link target and display name from the value being removed
+					const valueWithoutBrackets = value.replace(/\[\[|\]\]/g, '');
+					const valueParts = valueWithoutBrackets.split('|');
+					const valueTarget = valueParts[0]; // File/link target
+					const valueDisplay = valueParts[1] || valueParts[0]; // Display name
+
 					const filtered = existing.filter(item => {
 						if (item === value) return false;
-						// Also check if item contains the value (for wikilink matching)
-						if (typeof item === 'string' && item.includes(value.replace(/\[\[|\]\]/g, ''))) {
-							return false;
+						if (typeof item === 'string') {
+							// Extract parts from the existing item
+							const itemWithoutBrackets = item.replace(/\[\[|\]\]/g, '');
+							const itemParts = itemWithoutBrackets.split('|');
+							const itemTarget = itemParts[0];
+							const itemDisplay = itemParts[1] || itemParts[0];
+
+							// Match if either the target or display name matches exactly
+							if (itemTarget === valueTarget || itemTarget === valueDisplay ||
+								itemDisplay === valueTarget || itemDisplay === valueDisplay) {
+								return false;
+							}
 						}
 						return true;
 					});
@@ -1655,9 +1726,23 @@ export class BidirectionalLinker {
 					} else if (filtered.length !== existing.length) {
 						frontmatter[fieldName] = filtered;
 					}
-				} else if (existing === value || (typeof existing === 'string' && existing.includes(value.replace(/\[\[|\]\]/g, '')))) {
-					// Single value matches, remove the field
-					delete frontmatter[fieldName];
+				} else if (typeof existing === 'string') {
+					// Single value - check for exact wikilink match
+					const valueWithoutBrackets = value.replace(/\[\[|\]\]/g, '');
+					const valueParts = valueWithoutBrackets.split('|');
+					const valueTarget = valueParts[0];
+					const valueDisplay = valueParts[1] || valueParts[0];
+
+					const existingWithoutBrackets = existing.replace(/\[\[|\]\]/g, '');
+					const existingParts = existingWithoutBrackets.split('|');
+					const existingTarget = existingParts[0];
+					const existingDisplay = existingParts[1] || existingParts[0];
+
+					if (existing === value ||
+						existingTarget === valueTarget || existingTarget === valueDisplay ||
+						existingDisplay === valueTarget || existingDisplay === valueDisplay) {
+						delete frontmatter[fieldName];
+					}
 				}
 			});
 		} catch (error) {

@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **GEDCOM import no longer adds placeholder descriptions** ([#250](https://github.com/banisterious/obsidian-charted-roots/issues/250)): Events imported from GEDCOM without a description now have an empty description field instead of "Imported from GEDCOM", reducing timeline clutter.
 
+### Fixed
+
+- **Bidirectional linker adding relationship fields to non-person files** ([#253](https://github.com/banisterious/obsidian-charted-roots/issues/253)): When linking family relationships, the sync methods now verify that target files have a `cr_id` before adding relationship properties. Previously, any file matching the link target could receive unexpected frontmatter fields.
+
+- **Partial matching in relationship removal causing unintended deletions** ([#253](https://github.com/banisterious/obsidian-charted-roots/issues/253)): The `removeFromArrayField` method used substring matching (`includes()`) which could match "John" inside "Johnny". Now uses exact wikilink target/display name matching to prevent accidental removal of similarly-named entries.
+
 ---
 
 ## [0.20.4] - 2026-02-05
