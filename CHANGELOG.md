@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **GEDCOM import no longer adds placeholder descriptions** ([#250](https://github.com/banisterious/obsidian-charted-roots/issues/250)): Events imported from GEDCOM without a description now have an empty description field instead of "Imported from GEDCOM", reducing timeline clutter.
 
+- **Wikidata place lookup now uses Obsidian's locale**: Place searches via Wikidata now respect the user's Obsidian language setting instead of hardcoded English. Dutch users will see Dutch place names, German users will see German names, etc. Falls back to English when translations are unavailable.
+
 ### Fixed
 
 - **Bidirectional linker adding relationship fields to non-person files** ([#253](https://github.com/banisterious/obsidian-charted-roots/issues/253)): When linking family relationships, the sync methods now verify that target files have a `cr_id` before adding relationship properties. Previously, any file matching the link target could receive unexpected frontmatter fields.
