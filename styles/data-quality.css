@@ -1390,3 +1390,56 @@
 .crc-person-link:hover {
   text-decoration: underline;
 }
+
+/* Research Needed Section */
+.crc-research-needed-section {
+  padding: var(--size-4-2);
+}
+
+.crc-research-needed-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-2);
+  margin-top: var(--size-4-3);
+}
+
+.crc-research-needed-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--size-4-2);
+  padding: var(--size-4-2);
+  background-color: var(--background-secondary);
+  border-radius: var(--radius-s);
+}
+
+.crc-research-needed-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.crc-research-needed-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-1);
+  min-width: 0;
+}
+
+.crc-research-needed-questions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-4-1);
+}
+
+.crc-research-needed-question {
+  display: inline-block;
+  padding: 2px var(--size-4-2);
+  background-color: var(--background-modifier-warning);
+  color: var(--text-normal);
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-smaller);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

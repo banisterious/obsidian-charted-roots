@@ -16,6 +16,7 @@ import { FolderFilterService } from '../core/folder-filter';
 import { DataQualityService } from '../core/data-quality';
 import type { DataQualityReport, DataQualityIssue, IssueSeverity, IssueCategory, BidirectionalInconsistency, ImpossibleDateIssue } from '../core/data-quality';
 import { PlaceGraphService } from '../core/place-graph';
+import { EventService } from '../events/services/event-service';
 import { PlaceGeneratorModal } from '../enhancement/ui/place-generator-modal';
 import { FlattenNestedPropertiesModal } from './flatten-nested-properties-modal';
 import { BulkMediaLinkModal } from '../core/ui/bulk-media-link-modal';
@@ -154,6 +155,9 @@ export function renderDataQualityTab(options: DataQualityTabOptions): void {
 	});
 
 	container.appendChild(quickStartCard);
+
+	// Research Needed Section (always show - independent of trackFactSourcing)
+	renderResearchNeededSection(container, options);
 
 	// Research Gaps Section (only when fact-level tracking is enabled)
 	if (plugin.settings.trackFactSourcing) {
@@ -403,6 +407,175 @@ export function renderDataQualityTab(options: DataQualityTabOptions): void {
 		);
 
 	container.appendChild(toolsCard);
+}
+
+// ---------------------------------------------------------------------------
+// Research Needed Section
+// ---------------------------------------------------------------------------
+
+interface ResearchNeededItem {
+	name: string;
+	file: TFile;
+	type: 'person' | 'event' | 'place';
+	questions: string[];
+}
+
+function renderResearchNeededSection(container: HTMLElement, options: DataQualityTabOptions): void {
+	const { plugin, app } = options;
+
+	// Query all entities with needs_research property
+	const items: ResearchNeededItem[] = [];
+
+	// Query people
+	const familyGraph = options.getCachedFamilyGraph();
+	const allPeople = familyGraph.getAllPeople();
+	for (const person of allPeople) {
+		const cache = app.metadataCache.getFileCache(person.file);
+		const questions = cache?.frontmatter?.needs_research;
+		if (Array.isArray(questions) && questions.length > 0) {
+			items.push({
+				name: person.name,
+				file: person.file,
+				type: 'person',
+				questions: questions.map(String)
+			});
+		}
+	}
+
+	// Query events
+	const eventService = new EventService(app, plugin.settings);
+	const allEvents = eventService.getAllEvents();
+	for (const event of allEvents) {
+		const cache = app.metadataCache.getFileCache(event.file);
+		const questions = cache?.frontmatter?.needs_research;
+		if (Array.isArray(questions) && questions.length > 0) {
+			items.push({
+				name: event.title,
+				file: event.file,
+				type: 'event',
+				questions: questions.map(String)
+			});
+		}
+	}
+
+	// Query places
+	const placeGraph = new PlaceGraphService(app);
+	const allPlaces = placeGraph.getAllPlaces();
+	for (const place of allPlaces) {
+		const cache = app.metadataCache.getFileCache(place.file);
+		const questions = cache?.frontmatter?.needs_research;
+		if (Array.isArray(questions) && questions.length > 0) {
+			items.push({
+				name: place.name,
+				file: place.file,
+				type: 'place',
+				questions: questions.map(String)
+			});
+		}
+	}
+
+	// Don't render card if no items
+	if (items.length === 0) {
+		return;
+	}
+
+	// Create card
+	const card = options.createCard({
+		title: 'Research needed',
+		icon: 'help-circle',
+		subtitle: 'Entities flagged for additional research'
+	});
+	const section = card.querySelector('.crc-card__content') as HTMLElement;
+	section.addClass('crc-research-needed-section');
+
+	// Summary stats
+	const statsRow = section.createDiv({ cls: 'crc-schema-summary-row' });
+
+	// Total entities
+	const totalStat = statsRow.createDiv({ cls: 'crc-schema-stat' });
+	setIcon(totalStat.createSpan({ cls: 'crc-schema-stat-icon' }), 'flag');
+	totalStat.createSpan({
+		text: `${items.length} entities`,
+		cls: 'crc-schema-stat-text'
+	});
+
+	// Total questions
+	const totalQuestions = items.reduce((sum, item) => sum + item.questions.length, 0);
+	const questionsStat = statsRow.createDiv({ cls: 'crc-schema-stat crc-schema-stat-warning' });
+	setIcon(questionsStat.createSpan({ cls: 'crc-schema-stat-icon' }), 'help-circle');
+	questionsStat.createSpan({
+		text: `${totalQuestions} questions`,
+		cls: 'crc-schema-stat-text'
+	});
+
+	// Count by type
+	const personCount = items.filter(i => i.type === 'person').length;
+	const eventCount = items.filter(i => i.type === 'event').length;
+	const placeCount = items.filter(i => i.type === 'place').length;
+
+	if (personCount > 0) {
+		const personStat = statsRow.createDiv({ cls: 'crc-schema-stat' });
+		setIcon(personStat.createSpan({ cls: 'crc-schema-stat-icon' }), 'user');
+		personStat.createSpan({
+			text: `${personCount} people`,
+			cls: 'crc-schema-stat-text'
+		});
+	}
+	if (eventCount > 0) {
+		const eventStat = statsRow.createDiv({ cls: 'crc-schema-stat' });
+		setIcon(eventStat.createSpan({ cls: 'crc-schema-stat-icon' }), 'calendar');
+		eventStat.createSpan({
+			text: `${eventCount} events`,
+			cls: 'crc-schema-stat-text'
+		});
+	}
+	if (placeCount > 0) {
+		const placeStat = statsRow.createDiv({ cls: 'crc-schema-stat' });
+		setIcon(placeStat.createSpan({ cls: 'crc-schema-stat-icon' }), 'map-pin');
+		placeStat.createSpan({
+			text: `${placeCount} places`,
+			cls: 'crc-schema-stat-text'
+		});
+	}
+
+	// List of items
+	const list = section.createDiv({ cls: 'crc-research-needed-list' });
+
+	for (const item of items) {
+		const itemEl = list.createDiv({ cls: 'crc-research-needed-item' });
+
+		// Icon by type
+		const iconEl = itemEl.createSpan({ cls: 'crc-research-needed-icon' });
+		const iconName = item.type === 'person' ? 'user' : item.type === 'event' ? 'calendar' : 'map-pin';
+		setIcon(iconEl, iconName);
+
+		// Content
+		const contentEl = itemEl.createDiv({ cls: 'crc-research-needed-content' });
+
+		// Clickable name
+		const nameLink = contentEl.createEl('a', {
+			text: item.name,
+			cls: 'crc-link',
+			href: '#'
+		});
+		nameLink.addEventListener('click', (e) => {
+			e.preventDefault();
+			options.closeModal();
+			void app.workspace.openLinkText(item.file.path, '', false);
+		});
+
+		// Questions as badges
+		const questionsEl = contentEl.createDiv({ cls: 'crc-research-needed-questions' });
+		for (const question of item.questions) {
+			const badge = questionsEl.createSpan({
+				cls: 'crc-research-needed-question',
+				text: question
+			});
+			badge.setAttribute('title', question);
+		}
+	}
+
+	container.appendChild(card);
 }
 
 // ---------------------------------------------------------------------------
