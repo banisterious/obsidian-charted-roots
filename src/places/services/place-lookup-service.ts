@@ -77,6 +77,48 @@ const RATE_LIMITS: Record<PlaceLookupSource, number> = {
 };
 
 /**
+ * Get the user's preferred language from Obsidian's locale setting.
+ * Falls back to 'en' if not available.
+ */
+function getUserLanguage(): string {
+	try {
+		// Obsidian exposes the user's language setting via moment.locale()
+		const locale = window.moment?.locale?.();
+		if (locale && typeof locale === 'string') {
+			// Extract primary language code (e.g., 'nl' from 'nl-NL')
+			return locale.split('-')[0].toLowerCase();
+		}
+	} catch {
+		// Fall back to English if moment is not available
+	}
+	return 'en';
+}
+
+/**
+ * Get a label from a Wikidata entity, trying user's language first, then English.
+ */
+function getWikidataLabel(
+	labels: Record<string, { value: string }> | undefined,
+	fallback: string
+): string {
+	if (!labels) return fallback;
+	const userLang = getUserLanguage();
+	return labels[userLang]?.value || labels.en?.value || fallback;
+}
+
+/**
+ * Get aliases from a Wikidata entity in user's language, falling back to English.
+ */
+function getWikidataAliases(aliases: Record<string, Array<{ value: string }>> | undefined): string[] {
+	if (!aliases) return [];
+	const userLang = getUserLanguage();
+	const userAliases = aliases[userLang]?.map(a => a.value) || [];
+	const enAliases = aliases.en?.map(a => a.value) || [];
+	// Combine user language aliases with English, deduplicating
+	return [...new Set([...userAliases, ...enAliases])];
+}
+
+/**
  * GeoNames feature codes to Charted Roots place types mapping
  */
 const GEONAMES_TYPE_MAP: Record<string, string> = {
@@ -216,8 +258,9 @@ export class PlaceLookupService {
 			if (qMatch) {
 				entityId = qMatch[0].toUpperCase();
 			} else {
-				// Search for place by name
-				const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(placeName)}&language=en&format=json&origin=*&type=item&limit=${options.maxResults || 5}`;
+				// Search for place by name (use user's language for better results)
+				const searchLang = getUserLanguage();
+				const searchUrl = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(placeName)}&language=${searchLang}&format=json&origin=*&type=item&limit=${options.maxResults || 5}`;
 				const searchResponse = await requestUrl({
 					url: searchUrl,
 					headers: { 'User-Agent': USER_AGENT }
@@ -296,24 +339,23 @@ export class PlaceLookupService {
 						headers: { 'User-Agent': USER_AGENT }
 					});
 					const parentData = parentResponse.json;
-					parentPlace = parentData.entities?.[parentId]?.labels?.en?.value;
+					parentPlace = getWikidataLabel(parentData.entities?.[parentId]?.labels, parentId);
 				} catch {
 					// Parent fetch failed, continue without
 				}
 			}
 
-			// Extract alternate names
-			const alternateNames: string[] = [];
-			if (entity.aliases?.en) {
-				alternateNames.push(...entity.aliases.en.map((a: { value: string }) => a.value));
-			}
+			// Extract alternate names (user's language + English)
+			const alternateNames = getWikidataAliases(entity.aliases);
 
-			// Extract Wikipedia URL
-			const wikipediaUrl = entity.sitelinks?.enwiki?.url;
+			// Extract Wikipedia URL (prefer user's language wiki, fall back to English)
+			const userLang = getUserLanguage();
+			const userWikiKey = `${userLang}wiki`;
+			const wikipediaUrl = entity.sitelinks?.[userWikiKey]?.url || entity.sitelinks?.enwiki?.url;
 
 			return {
 				source: 'wikidata',
-				standardizedName: entity.labels?.en?.value || entityId,
+				standardizedName: getWikidataLabel(entity.labels, entityId),
 				coordinates,
 				placeType,
 				parentPlace,
