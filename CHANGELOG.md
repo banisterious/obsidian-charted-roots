@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Needs-research tagging** ([#230](https://github.com/banisterious/obsidian-charted-roots/issues/230)): Flag person, event, or place notes for additional research using the `needs_research` frontmatter property. Supports multiple research questions per entity.
+  - **"Research needed" card** in Data Quality tab shows all entities flagged for research with clickable links and question badges
+  - **Command palette command** "Add research question to current note" opens a modal to add questions to the active person/event/place note
+  - Part of Phase 2 of the GPS Research Workflow Integration
+
+---
+
 ## [0.20.5] - 2026-02-07
 
 ### Changed
