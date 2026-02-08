@@ -65,6 +65,7 @@ export interface SpouseMetadata {
 	name: string;
 	marriageDate?: string;
 	marriageLocation?: string;
+	marriageLocationCrId?: string;
 	marriageStatus?: 'current' | 'divorced' | 'widowed' | 'separated' | 'annulled';
 	divorceDate?: string;
 }
@@ -404,7 +405,12 @@ export async function createPersonNote(
 				frontmatter[prop(`spouse${idx}_marriage_date`)] = spouse.marriageDate;
 			}
 			if (spouse.marriageLocation) {
-				frontmatter[prop(`spouse${idx}_marriage_location`)] = spouse.marriageLocation;
+				if (spouse.marriageLocationCrId) {
+					frontmatter[prop(`spouse${idx}_marriage_location`)] = `"${createSmartWikilink(spouse.marriageLocation, app)}"`;
+					frontmatter[prop(`spouse${idx}_marriage_location_id`)] = spouse.marriageLocationCrId;
+				} else {
+					frontmatter[prop(`spouse${idx}_marriage_location`)] = spouse.marriageLocation;
+				}
 			}
 			if (spouse.marriageStatus) {
 				frontmatter[prop(`spouse${idx}_marriage_status`)] = spouse.marriageStatus;
@@ -1280,6 +1286,7 @@ export async function updatePersonNote(
 				delete frontmatter[`spouse${i}_id`];
 				delete frontmatter[`spouse${i}_marriage_date`];
 				delete frontmatter[`spouse${i}_marriage_location`];
+				delete frontmatter[`spouse${i}_marriage_location_id`];
 				delete frontmatter[`spouse${i}_marriage_status`];
 				delete frontmatter[`spouse${i}_divorce_date`];
 			}
@@ -1297,7 +1304,13 @@ export async function updatePersonNote(
 						frontmatter[`spouse${idx}_marriage_date`] = spouse.marriageDate;
 					}
 					if (spouse.marriageLocation) {
-						frontmatter[`spouse${idx}_marriage_location`] = spouse.marriageLocation;
+						if (spouse.marriageLocationCrId) {
+							frontmatter[`spouse${idx}_marriage_location`] = createSmartWikilink(spouse.marriageLocation, app);
+							frontmatter[`spouse${idx}_marriage_location_id`] = spouse.marriageLocationCrId;
+						} else {
+							frontmatter[`spouse${idx}_marriage_location`] = spouse.marriageLocation;
+							delete frontmatter[`spouse${idx}_marriage_location_id`];
+						}
 					}
 					if (spouse.marriageStatus) {
 						frontmatter[`spouse${idx}_marriage_status`] = spouse.marriageStatus;

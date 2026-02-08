@@ -55,6 +55,7 @@ interface SpouseWithMetadata {
 	name: string;
 	marriageDate?: string;
 	marriageLocation?: string;
+	marriageLocationCrId?: string;
 	marriageStatus?: MarriageStatus;
 	divorceDate?: string;
 }
@@ -2301,6 +2302,7 @@ export class CreatePersonModal extends Modal {
 							this.app,
 							(place: SelectedPlaceInfo) => {
 								spouse.marriageLocation = place.name;
+								spouse.marriageLocationCrId = place.crId;
 								locationInput.value = place.name;
 							},
 							{
