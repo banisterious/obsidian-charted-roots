@@ -59,7 +59,7 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 
 **Priority:** 📋 Medium — Supports GPS methodology for serious genealogists
 
-**Status:** ✅ Phase 1 complete | Phases 2-3 planned
+**Status:** ✅ Phase 1 complete | ✅ Phase 2 Needs-Research Tagging complete | Remaining Phase 2-3 planned
 
 **GitHub Issue:** [#145](https://github.com/banisterious/obsidian-charted-roots/issues/145) (consolidates #124, #125)
 
@@ -69,15 +69,15 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 
 See [Research Workflow Phase 1 (v0.19.11)](Release-History#research-workflow-phase-1-v01911) for implementation details.
 
-**Phase 2 — Workflow Integration (Future):**
+**Phase 2 — Workflow Integration:**
 
-| Feature | Description |
-|---------|-------------|
-| Needs-research tagging | `needs_research` property on person/event/place notes with Data Quality integration |
-| IRN auto-generation | "Create Person with Research Note" command generates paired person + IRN files |
-| IRN refresh | "Refresh IRN from Sources" command updates auto-generated sections |
-| Breadcrumb navigation | Visual breadcrumb trail at top of research notes following `up` property chain |
-| Research log entry form | Modal for adding structured log entries (date, source, result, notes) |
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Needs-research tagging | `needs_research` property on person/event/place notes with Data Quality integration | ✅ Complete |
+| Research log entry form | Modal for adding structured log entries (date, source, result, notes) | Planned |
+| IRN auto-generation | "Create Person with Research Note" command generates paired person + IRN files | Deferred |
+| IRN refresh | "Refresh IRN from Sources" command updates auto-generated sections | Deferred |
+| Breadcrumb navigation | Visual breadcrumb trail at top of research notes following `up` property chain | Deferred |
 
 **Phase 3 — Advanced Features (Future):**
 

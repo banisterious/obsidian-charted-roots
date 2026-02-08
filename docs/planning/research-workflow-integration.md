@@ -460,7 +460,7 @@ Research Entities
 
 ## Phase 2: Workflow Integration
 
-**Status:** Planning (community feedback received)
+**Status:** ✅ Needs-Research Tagging complete | Remaining features planned
 
 **Community Feedback ([#230](https://github.com/banisterious/obsidian-charted-roots/issues/230)):**
 - Both @wilbry and @ANYroots prioritize **Needs-Research Tagging** as the most valuable feature
@@ -469,32 +469,32 @@ Research Entities
 - IRN Auto-Generation and Breadcrumb Navigation are lower priority based on current usage patterns
 
 **Implementation Order:**
-1. Needs-Research Tagging (start here)
+1. ✅ Needs-Research Tagging (complete)
 2. Research Log Entry Form
 3. IRN Auto-Generation (deferred)
 4. Breadcrumb Navigation (deferred)
 
 Enhance with workflow-specific features and UI improvements.
 
-### 1. Needs-Research Tagging
+### 1. Needs-Research Tagging ✅
 
 **Feature:** Tag persons/facts requiring investigation.
 
+**Status:** Complete
+
 **Implementation:**
-- Add `needs_research` property to person/event/place entities
-- Structure: `needs_research: ["research question", "another question"]`
-- Integrate with Data Quality dashboard
-- Show badge count on person notes in file explorer
+- ✅ `needs_research` property added to person/event/place entities
+- ✅ Structure: `needs_research: ["research question", "another question"]`
+- ✅ "Research needed" card in Data Quality tab showing flagged entities
+- ✅ "Add research question to current note" command with modal
+- File explorer badge deferred to future enhancement
 
 **Data Quality Card:**
-```
-Research Needed
-───────────────
-8 people needing research
-  - 4 missing birth records
-  - 2 conflicting sources
-  - 2 identity questions
-```
+
+The "Research needed" card displays:
+- Summary stats (total entities, total questions, counts by type)
+- List of flagged entities with clickable names
+- Question badges with truncation for long text
 
 ### 2. IRN Auto-Generation
 
