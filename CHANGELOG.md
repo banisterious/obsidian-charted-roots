@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Data Quality tools missing from Control Center** ([#256](https://github.com/banisterious/obsidian-charted-roots/issues/256)): Errors in the Research Needed section could prevent the rest of the Data Quality tab from rendering. Added error handling to ensure vault-wide analysis, batch operations, and data tools always appear.
+
+---
+
 ## [0.20.6] - 2026-02-07
 
 ### Added

@@ -157,14 +157,26 @@ export function renderDataQualityTab(options: DataQualityTabOptions): void {
 	container.appendChild(quickStartCard);
 
 	// Research Needed Section (always show - independent of trackFactSourcing)
-	renderResearchNeededSection(container, options);
+	try {
+		renderResearchNeededSection(container, options);
+	} catch (error) {
+		console.error('[Charted Roots] Error rendering Research Needed section:', error);
+	}
 
 	// Research Gaps Section (only when fact-level tracking is enabled)
 	if (plugin.settings.trackFactSourcing) {
-		renderResearchGapsSection(container, options);
+		try {
+			renderResearchGapsSection(container, options);
+		} catch (error) {
+			console.error('[Charted Roots] Error rendering Research Gaps section:', error);
+		}
 
 		// Source Conflicts Section
-		renderSourceConflictsSection(container, options);
+		try {
+			renderSourceConflictsSection(container, options);
+		} catch (error) {
+			console.error('[Charted Roots] Error rendering Source Conflicts section:', error);
+		}
 	}
 
 	// === VAULT-WIDE ANALYSIS ===
