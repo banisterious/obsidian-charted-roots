@@ -1538,7 +1538,7 @@ export class FamilyCreationWizardModal extends Modal {
 
 				// Add children to spouse (merge with existing)
 				if (childCrIds.length > 0 && spouse.file) {
-					const existingChildrenOnSpouse = getExistingArray(spouse.file, 'children_id', 'child');
+					const existingChildrenOnSpouse = getExistingArray(spouse.file, 'children_id', 'children');
 					const mergedChildrenOnSpouse = mergeArrays(existingChildrenOnSpouse, childCrIds, childNames);
 					await updatePersonNote(this.app, spouse.file, {
 						childCrId: mergedChildrenOnSpouse.ids,
@@ -1585,7 +1585,7 @@ export class FamilyCreationWizardModal extends Modal {
 
 		// Add children to central person (merge with existing)
 		if (childCrIds.length > 0 && centralFile) {
-			const existingChildrenOnCentral = getExistingArray(centralFile, 'children_id', 'child');
+			const existingChildrenOnCentral = getExistingArray(centralFile, 'children_id', 'children');
 			const mergedChildrenOnCentral = mergeArrays(existingChildrenOnCentral, childCrIds, childNames);
 			await updatePersonNote(this.app, centralFile, {
 				childCrId: mergedChildrenOnCentral.ids,
@@ -1604,7 +1604,7 @@ export class FamilyCreationWizardModal extends Modal {
 			}
 			// Add central person as child of father (merge with existing)
 			if (this.state.father.file) {
-				const existingChildrenOnFather = getExistingArray(this.state.father.file, 'children_id', 'child');
+				const existingChildrenOnFather = getExistingArray(this.state.father.file, 'children_id', 'children');
 				const mergedChildrenOnFather = mergeArrays(existingChildrenOnFather, [centralCrId], [centralName]);
 				await updatePersonNote(this.app, this.state.father.file, {
 					childCrId: mergedChildrenOnFather.ids,
@@ -1623,7 +1623,7 @@ export class FamilyCreationWizardModal extends Modal {
 			}
 			// Add central person as child of mother (merge with existing)
 			if (this.state.mother.file) {
-				const existingChildrenOnMother = getExistingArray(this.state.mother.file, 'children_id', 'child');
+				const existingChildrenOnMother = getExistingArray(this.state.mother.file, 'children_id', 'children');
 				const mergedChildrenOnMother = mergeArrays(existingChildrenOnMother, [centralCrId], [centralName]);
 				await updatePersonNote(this.app, this.state.mother.file, {
 					childCrId: mergedChildrenOnMother.ids,
