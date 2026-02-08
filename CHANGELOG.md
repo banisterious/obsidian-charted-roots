@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Children array missing names in Family Wizard** ([#257](https://github.com/banisterious/obsidian-charted-roots/issues/257)): When creating families via Control Center, the `children` array could have fewer entries than `children_id`. The helper function was reading the wrong property name (`child` instead of `children`).
+
+---
+
 ## [0.20.7] - 2026-02-08
 
 ### Fixed
@@ -14,8 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Data Quality tools missing from Control Center** ([#256](https://github.com/banisterious/obsidian-charted-roots/issues/256)): Errors in the Research Needed section could prevent the rest of the Data Quality tab from rendering. Added error handling to ensure vault-wide analysis, batch operations, and data tools always appear.
 
 - **Marriage location not saved as wikilink** ([#255](https://github.com/banisterious/obsidian-charted-roots/issues/255)): When selecting a place from the picker for marriage location, now saves both the wikilink format and the `spouse{n}_marriage_location_id` property for reliable resolution.
-
-- **Children array missing names in Family Wizard** ([#257](https://github.com/banisterious/obsidian-charted-roots/issues/257)): When creating families via Control Center, the `children` array could have fewer entries than `children_id`. The helper function was reading the wrong property name (`child` instead of `children`).
 
 ---
 
