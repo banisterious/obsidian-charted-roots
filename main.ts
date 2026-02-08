@@ -42,6 +42,7 @@ import { SourcesView, VIEW_TYPE_SOURCES } from './src/sources/ui/sources-view';
 import { UniversesView, VIEW_TYPE_UNIVERSES } from './src/universes/ui/universes-view';
 import { CollectionsView, VIEW_TYPE_COLLECTIONS } from './src/ui/collections-view';
 import { DataQualityView, VIEW_TYPE_DATA_QUALITY } from './src/ui/data-quality-view';
+import { AddResearchQuestionModal } from './src/ui/add-research-question-modal';
 import { TreePreviewRenderer } from './src/ui/tree-preview';
 import { FolderFilterService } from './src/core/folder-filter';
 import { TemplateFilterService } from './src/core/template-filter';
@@ -582,6 +583,32 @@ export default class CanvasRootsPlugin extends Plugin {
 			name: 'Open data quality',
 			callback: () => {
 				void this.activateDataQualityView();
+			}
+		});
+
+		// Add command: Add research question to current note
+		this.addCommand({
+			id: 'add-research-question',
+			name: 'Add research question to current note',
+			checkCallback: (checking: boolean) => {
+				const file = this.app.workspace.getActiveFile();
+				if (!file) return false;
+
+				const cache = this.app.metadataCache.getFileCache(file);
+				const crType = cache?.frontmatter?.cr_type;
+				const crId = cache?.frontmatter?.cr_id;
+
+				// Valid for person notes (with cr_id), event notes, and place notes
+				const validTypes = ['event', 'place'];
+				const isValidType = validTypes.includes(crType);
+				const isPersonNote = crId && !crType; // Person notes have cr_id but no cr_type
+
+				if (!isValidType && !isPersonNote) return false;
+
+				if (!checking) {
+					new AddResearchQuestionModal(this.app, file).open();
+				}
+				return true;
 			}
 		});
 
