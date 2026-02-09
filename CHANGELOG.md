@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Children array missing names in Family Wizard** ([#257](https://github.com/banisterious/obsidian-charted-roots/issues/257)): When creating families via Control Center, the `children` array could have fewer entries than `children_id`. The helper function was reading the wrong property name (`child` instead of `children`).
 
+- **Spouse field preserving corrupt data** ([#257](https://github.com/banisterious/obsidian-charted-roots/issues/257)): When spouse/children arrays had mismatched lengths (from prior corruption), the update would only write the `_id` field but preserve the corrupt wikilink field. Now clears both fields when arrays don't match.
+
+- **Edit Person modal not showing existing parent relationships** ([#257](https://github.com/banisterious/obsidian-charted-roots/issues/257)): The "Family relationships" panel showed "Click 'Link' to select father/mother" even when parent relationships existed. The modal was only receiving the `_id` fields but not the names needed for display.
+
 ---
 
 ## [0.20.7] - 2026-02-08

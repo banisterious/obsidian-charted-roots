@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-02-07 20:31:46 UTC
+ * - Generated: 2026-02-08 23:37:42 UTC
  * - Components: 44 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -19618,7 +19618,7 @@ settings:
    COMPONENT: DATA-QUALITY.CSS
    ========================================================================== */
 
-/* Component Size: 1393 lines, 27.67 KB */
+/* Component Size: 1446 lines, 28.73 KB */
 
 /**
  * Data Quality Tab Styles
@@ -21011,6 +21011,59 @@ settings:
 
 .crc-person-link:hover {
   text-decoration: underline;
+}
+
+/* Research Needed Section */
+.crc-research-needed-section {
+  padding: var(--size-4-2);
+}
+
+.crc-research-needed-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-2);
+  margin-top: var(--size-4-3);
+}
+
+.crc-research-needed-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--size-4-2);
+  padding: var(--size-4-2);
+  background-color: var(--background-secondary);
+  border-radius: var(--radius-s);
+}
+
+.crc-research-needed-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.crc-research-needed-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-1);
+  min-width: 0;
+}
+
+.crc-research-needed-questions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-4-1);
+}
+
+.crc-research-needed-question {
+  display: inline-block;
+  padding: 2px var(--size-4-2);
+  background-color: var(--background-modifier-warning);
+  color: var(--text-normal);
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-smaller);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 
@@ -37327,11 +37380,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-02-07 20:31:47 UTC
+ * Build completed: 2026-02-08 23:37:43 UTC
  * Components processed: 44
- * Total lines: 36908
- * Total size: 738.32 KB
- * Build duration: 0.98 seconds
+ * Total lines: 36961
+ * Total size: 739.37 KB
+ * Build duration: 1.15 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -37355,7 +37408,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - family-chart-view.css: 1276 lines, 30.08 KB
  * - family-chart-export.css: 699 lines, 14.78 KB
  * - report-wizard.css: 888 lines, 19.53 KB
- * - data-quality.css: 1393 lines, 27.67 KB
+ * - data-quality.css: 1446 lines, 28.73 KB
  * - relationships.css: 597 lines, 11.43 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB
  * - map-view.css: 1998 lines, 40.75 KB

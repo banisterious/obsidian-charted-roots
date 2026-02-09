@@ -1534,19 +1534,23 @@ function renderPersonTableRow(
 		const cache = app.metadataCache.getFileCache(person.file);
 		const fm = cache?.frontmatter || {};
 
-		// Extract relationship data
-		const fatherId = fm.father_id || fm.father;
-		const motherId = fm.mother_id || fm.mother;
+		// Extract relationship data (separate IDs and names for dual storage)
+		const fatherId = fm.father_id;
+		const motherId = fm.mother_id;
 		const spouseIds = fm.spouse_id || fm.spouse;
 		const childIds = fm.children_id || fm.child;
 		const parentIds = fm.parents_id;
 
-		// Extract child names from wikilinks
+		// Extract name from wikilink or plain string
 		const extractName = (value: unknown): string | undefined => {
 			if (!value || typeof value !== 'string') return undefined;
 			const match = value.match(/\[\[([^\]]+)\]\]/);
 			return match ? match[1] : value;
 		};
+
+		// Extract father/mother names from wikilinks
+		const fatherName = extractName(fm.father);
+		const motherName = extractName(fm.mother);
 		let childNames: string[] | undefined;
 		if (fm.child) {
 			const children = Array.isArray(fm.child) ? fm.child : [fm.child];
@@ -1599,7 +1603,9 @@ function renderPersonTableRow(
 				deathPlaceName: person.deathPlace?.placeName,
 				occupation: fm.occupation,
 				fatherId: typeof fatherId === 'string' ? fatherId : undefined,
+				fatherName: fatherName,
 				motherId: typeof motherId === 'string' ? motherId : undefined,
+				motherName: motherName,
 				spouseIds: Array.isArray(spouseIds) ? spouseIds : (spouseIds ? [spouseIds] : undefined),
 				childIds: Array.isArray(childIds) ? childIds : (childIds ? [childIds] : undefined),
 				childNames: childNames,

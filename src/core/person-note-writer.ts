@@ -1334,9 +1334,12 @@ export async function updatePersonNote(
 						? person.spouseCrId[0]
 						: person.spouseCrId;
 				} else {
+					// Mismatched arrays - only write IDs, clear potentially corrupt spouse field
+					delete frontmatter.spouse;
 					frontmatter.spouse_id = person.spouseCrId.length === 1
 						? person.spouseCrId[0]
 						: person.spouseCrId;
+					logger.warn('update-spouse', `Mismatched spouse arrays: ${person.spouseCrId.length} IDs, ${person.spouseName?.length ?? 0} names. Cleared spouse field.`);
 				}
 			} else {
 				// Clear spouse
@@ -1357,9 +1360,12 @@ export async function updatePersonNote(
 						? person.childCrId[0]
 						: person.childCrId;
 				} else {
+					// Mismatched arrays - only write IDs, clear potentially corrupt children field
+					delete frontmatter.children;
 					frontmatter.children_id = person.childCrId.length === 1
 						? person.childCrId[0]
 						: person.childCrId;
+					logger.warn('update-children', `Mismatched children arrays: ${person.childCrId.length} IDs, ${person.childName?.length ?? 0} names. Cleared children field.`);
 				}
 				// Remove legacy 'child' property if present
 				delete frontmatter.child;
