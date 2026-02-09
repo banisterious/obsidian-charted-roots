@@ -42,10 +42,12 @@ The view uses a hybrid layout:
 | Entity type | Sections |
 |-------------|----------|
 | Person | Identity → Relationships → Events → Sources → Media → Data Quality |
-| Place | Identity → Events at location → Sources → Media → Map preview |
-| Event | Identity → Participants → Sources → Media → Place link |
+| Place | Identity → Events at location → Sources → Media → Map preview → Research questions* |
+| Event | Identity → Participants → Sources → Media → Place link → Research questions* |
 | Source | Identity → Referenced facts → Persons cited → Media |
 | Organization | Identity → Members → Events → Sources → Media |
+
+*Research questions section only appears if `needs_research` property exists on the entity.
 
 #### Person Relationships section
 
@@ -53,18 +55,62 @@ The Relationships section replaces the simpler "Family" section to accommodate a
 
 **Structure:**
 - **Family** (expanded by default)
-  - Parents
+  - Parents (biological)
+  - Step-parents
+  - Adoptive parents
+  - Foster parents
   - Spouses
-  - Children
+  - Children (biological, step, adopted, foster)
   - Siblings
 - **Other relationships** (collapsed by default; hidden if empty)
-  - Witnesses / witnessed by
-  - Godparents / godchildren
-  - Guardians / wards
-  - Business partners
-  - Associates (general)
+  - *Religious:* Godparents / godchildren, Mentor / disciple
+  - *Professional:* Master / apprentice, Employer / employee
+  - *Social:* Witnesses, Neighbors, Companions, Betrothed
+  - *Legal:* Guardians / wards
+  - *Feudal (worldbuilding):* Liege / vassal, Allies, Rivals
+  - *DNA:* DNA matches (when `enableDnaTracking` is on)
+
+Relationship types are defined in `src/relationships/constants/default-relationship-types.ts` and are customizable via settings.
 
 **Rationale:** Family relationships are primary data for genealogy and should be immediately visible. Other relationship types (witnesses, godparents, business partners) provide valuable historical context but are secondary — collapsing them by default keeps the interface clean for users who don't need them, while making them discoverable for those who do.
+
+#### Person Data Quality section
+
+The Data Quality section provides research status at a glance:
+
+- **Research level** (0-6): Visual indicator based on Hoitink's "Six Levels of Ancestral Profiles"
+  - 0: Unidentified → 6: Biography (full narrative)
+- **Source coverage**: Percentage of key facts with sources attached (from `EvidenceService`)
+  - Shows which facts are sourced vs. unsourced (birth, death, parents, etc.)
+- **Research questions**: Items from `needs_research` property
+  - Clickable to jump to specific questions
+  - Quick-add button to append new questions
+- **Proof summaries**: Link to associated proof notes (if any exist)
+
+**Note:** Places and Events can also have `needs_research` questions displayed in their profiles, though they may not have research levels.
+
+#### Organization Members section
+
+The Members section displays organization membership:
+
+- **Member list**: People linked to this organization via `member` / `member_id` properties
+- **Roles** (if tracked): Position or role within the organization
+- **Membership dates** (if tracked): Start/end dates for membership
+- **Add member**: Button to link existing person to organization
+
+**Open question:** Should organizations support hierarchical roles (e.g., President → Vice President → Members)?
+
+#### Place Map Preview section
+
+The Map Preview section provides geographic context:
+
+- **Interactive map**: Embedded Leaflet map centered on place coordinates
+  - Uses `latitude` / `longitude` from place frontmatter
+  - Zoom controls for context
+- **Related places**: Nearby places from the place graph (optional)
+- **Open in Geo Map**: Button to open the full Geo Map view focused on this place
+
+**Fallback:** If no coordinates exist, shows a prompt to add them or displays "No location data."
 
 ### Section renderers
 
