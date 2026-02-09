@@ -867,17 +867,16 @@ export class GedcomImporterV2 {
 			});
 		}
 
-		// Extract children from families
+		// Find children (people who have this person as a biological parent)
+		// This approach matches the Gramps importer and prevents conflicts when a child
+		// appears in multiple families (e.g., remarriage, adoption records, data errors)
 		const childRefs: string[] = [];
 		const childNames: string[] = [];
-		for (const family of gedcomData.families.values()) {
-			if (family.husbandRef === individual.id || family.wifeRef === individual.id) {
-				for (const childRef of family.childRefs) {
-					if (!childRefs.includes(childRef)) {
-						childRefs.push(childRef);
-						const child = gedcomData.individuals.get(childRef);
-						childNames.push(this.sanitizeName(child?.name || 'Unknown'));
-					}
+		for (const [childId, child] of gedcomData.individuals) {
+			if (child.fatherRef === individual.id || child.motherRef === individual.id) {
+				if (!childRefs.includes(childId)) {
+					childRefs.push(childId);
+					childNames.push(this.sanitizeName(child.name || 'Unknown'));
 				}
 			}
 		}
@@ -1074,14 +1073,12 @@ export class GedcomImporterV2 {
 			}
 		}
 
-		// Collect child references from families where this person is a parent
-		for (const family of gedcomData.families.values()) {
-			if (family.husbandRef === individual.id || family.wifeRef === individual.id) {
-				for (const childRef of family.childRefs) {
-					const childCrId = gedcomToCrId.get(childRef);
-					if (childCrId && !replacements.some(r => r.from === childRef)) {
-						replacements.push({ from: childRef, to: childCrId });
-					}
+		// Collect child references (children who have this person as their biological parent)
+		for (const [childId, child] of gedcomData.individuals) {
+			if (child.fatherRef === individual.id || child.motherRef === individual.id) {
+				const childCrId = gedcomToCrId.get(childId);
+				if (childCrId && !replacements.some(r => r.from === childId)) {
+					replacements.push({ from: childId, to: childCrId });
 				}
 			}
 		}
@@ -1229,17 +1226,14 @@ export class GedcomImporterV2 {
 			}
 		}
 
-		// Children (array) - from families where this person is a parent
-		for (const family of gedcomData.families.values()) {
-			if (family.husbandRef === individual.id || family.wifeRef === individual.id) {
-				for (const childRef of family.childRefs) {
-					const childPath = gedcomToNotePath.get(childRef);
-					const child = gedcomData.individuals.get(childRef);
-					const childCrId = gedcomToCrId.get(childRef);
-					if (childPath && child?.name && childCrId) {
-						const actualFilename = this.getFilenameFromPath(childPath);
-						updatedContent = fixWikilinkInArrayByCrId(updatedContent, 'children', 'children_id', childCrId, child.name, actualFilename);
-					}
+		// Children (array) - fix wikilinks for children who have this person as their biological parent
+		for (const [childId, child] of gedcomData.individuals) {
+			if (child.fatherRef === individual.id || child.motherRef === individual.id) {
+				const childPath = gedcomToNotePath.get(childId);
+				const childCrId = gedcomToCrId.get(childId);
+				if (childPath && child.name && childCrId) {
+					const actualFilename = this.getFilenameFromPath(childPath);
+					updatedContent = fixWikilinkInArrayByCrId(updatedContent, 'children', 'children_id', childCrId, child.name, actualFilename);
 				}
 			}
 		}
