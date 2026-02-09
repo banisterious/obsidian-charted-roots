@@ -1462,11 +1462,22 @@ export class GrampsImporter {
 			}
 		};
 
-		// Collect from all Gramps places that have comma-separated names
+		// Collect from all Gramps places (including single-part names like "Illinois")
 		for (const [, place] of grampsData.places) {
-			if (place.name && place.name.includes(',')) {
+			if (place.name) {
 				addPlace(place.name);
 			}
+		}
+
+		// Also collect from persons (birthPlace, deathPlace)
+		for (const [, person] of grampsData.persons) {
+			if (person.birthPlace) addPlace(person.birthPlace);
+			if (person.deathPlace) addPlace(person.deathPlace);
+		}
+
+		// Also collect from events (placeName)
+		for (const [, event] of grampsData.events) {
+			if (event.placeName) addPlace(event.placeName);
 		}
 
 		return places;
