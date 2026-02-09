@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Edit Person modal not showing existing parent relationships** ([#257](https://github.com/banisterious/obsidian-charted-roots/issues/257)): The "Family relationships" panel showed "Click 'Link' to select father/mother" even when parent relationships existed. The modal was only receiving the `_id` fields but not the names needed for display.
 
+- **GEDCOM import causing parent claim conflicts** ([#258](https://github.com/banisterious/obsidian-charted-roots/issues/258)): When a child appeared in multiple GEDCOM families (e.g., remarriage modeling, adoption records), multiple parents would claim the same child. Changed child population logic to match Gramps importer—now only adds children whose `fatherRef`/`motherRef` matches the current person.
+
+- **Gramps import missing state-level place notes** ([#259](https://github.com/banisterious/obsidian-charted-roots/issues/259)): Place collection only included places with comma-separated names, skipping single-part names like "Illinois" or "USA". Now collects all places and also gathers from person/event records.
+
+- **GEDCOM source notes and properties not importing** ([#260](https://github.com/banisterious/obsidian-charted-roots/issues/260)): Source notes stored as references (`@N001@`) were not resolved to actual text content. Also added `gedcom_id` property for traceability, consistent `repository` property name, and source type inference matching Gramps importer.
+
 ---
 
 ## [0.20.7] - 2026-02-08

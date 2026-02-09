@@ -497,7 +497,7 @@ export class GedcomImporterV2 {
 				for (const [sourceId, source] of gedcomData.sources) {
 					reportProgress({ phase: 'sources', current: sourceIndex, total: totalSources });
 					try {
-						const notePath = await this.createSourceNote(source, options);
+						const notePath = await this.createSourceNote(source, gedcomData, options);
 						sourceIdToNotePath.set(sourceId, notePath);
 						result.sourcesCreated++;
 					} catch (error: unknown) {
@@ -1551,19 +1551,21 @@ export class GedcomImporterV2 {
 
 	private async createSourceNote(
 		source: GedcomSource,
+		gedcomData: GedcomDataV2,
 		options: GedcomImportOptionsV2
 	): Promise<string> {
 		const crId = generateCrId();
 
-		// Determine source type (GEDCOM doesn't distinguish, so default to 'document')
-		const sourceType = 'document';
+		// Infer source type from title (matching Gramps importer)
+		const sourceType = this.inferSourceType(source.title || '', source.author);
 
 		// Build frontmatter
+		const title = source.title || `Source ${source.id}`;
 		const frontmatterLines: string[] = [
 			'---',
 			'cr_type: source',
 			`cr_id: ${crId}`,
-			`title: "${(source.title || `Source ${source.id}`).replace(/"/g, '\\"')}"`,
+			`title: "${title.replace(/"/g, '\\"')}"`,
 			`source_type: ${sourceType}`
 		];
 
@@ -1572,12 +1574,12 @@ export class GedcomImporterV2 {
 			frontmatterLines.push(`author: "${source.author.replace(/"/g, '\\"')}"`);
 		}
 
-		// Add publisher if available
+		// Add publisher as repository (consistent naming with Gramps importer)
 		if (source.publisher) {
-			frontmatterLines.push(`source_repository: "${source.publisher.replace(/"/g, '\\"')}"`);
+			frontmatterLines.push(`repository: "${source.publisher.replace(/"/g, '\\"')}"`);
 		}
 
-		// Add publication info as notes/description
+		// Add publication info
 		if (source.publication) {
 			frontmatterLines.push(`publication_info: "${source.publication.replace(/"/g, '\\"')}"`);
 		}
@@ -1585,10 +1587,30 @@ export class GedcomImporterV2 {
 		// Default confidence for imported sources
 		frontmatterLines.push(`confidence: unknown`);
 
+		// Add GEDCOM ID preservation (matching Gramps importer's gramps_id/gramps_handle)
+		frontmatterLines.push(`gedcom_id: ${source.id}`);
+
 		frontmatterLines.push('---');
 
+		// Collect all notes (inline + resolved references)
+		const allNotes: string[] = [];
+
+		// Add inline notes
+		if (source.notes) {
+			allNotes.push(source.notes);
+		}
+
+		// Resolve note references
+		if (source.noteRefs && source.noteRefs.length > 0) {
+			for (const noteRef of source.noteRefs) {
+				const noteRecord = gedcomData.notes.get(noteRef);
+				if (noteRecord && noteRecord.text) {
+					allNotes.push(noteRecord.text);
+				}
+			}
+		}
+
 		// Build note body
-		const title = source.title || `Source ${source.id}`;
 		let body = `\n# ${title}\n\n`;
 
 		if (source.author) {
@@ -1600,8 +1622,10 @@ export class GedcomImporterV2 {
 		if (source.publication) {
 			body += `**Publication:** ${source.publication}\n\n`;
 		}
-		if (source.notes) {
-			body += `## Notes\n\n${source.notes}\n\n`;
+
+		// Add notes section with all resolved notes
+		if (allNotes.length > 0) {
+			body += `## Notes\n\n${allNotes.join('\n\n')}\n\n`;
 		}
 
 		body += `\n_Imported from GEDCOM source ${source.id}_\n`;
@@ -1677,6 +1701,42 @@ export class GedcomImporterV2 {
 			.split('_')
 			.map(word => word.charAt(0).toUpperCase() + word.slice(1))
 			.join(' ');
+	}
+
+	/**
+	 * Infer source type from title and author
+	 * (Matches Gramps importer behavior)
+	 */
+	private inferSourceType(title: string, _author?: string): string {
+		const lowerTitle = title.toLowerCase();
+
+		// Check for common patterns
+		if (lowerTitle.includes('census')) return 'census';
+		if (lowerTitle.includes('vital record') || lowerTitle.includes('birth') ||
+			lowerTitle.includes('death') || lowerTitle.includes('marriage certificate')) {
+			return 'vital_record';
+		}
+		if (lowerTitle.includes('church') || lowerTitle.includes('parish') ||
+			lowerTitle.includes('baptism') || lowerTitle.includes('burial')) {
+			return 'church_record';
+		}
+		if (lowerTitle.includes('military') || lowerTitle.includes('draft') ||
+			lowerTitle.includes('service record')) {
+			return 'military';
+		}
+		if (lowerTitle.includes('immigration') || lowerTitle.includes('passenger') ||
+			lowerTitle.includes('naturalization')) {
+			return 'immigration';
+		}
+		if (lowerTitle.includes('newspaper')) return 'newspaper';
+		if (lowerTitle.includes('bible')) return 'custom';
+		if (lowerTitle.includes('social security')) return 'vital_record';
+		if (lowerTitle.includes('obituary')) return 'obituary';
+		if (lowerTitle.includes('court') || lowerTitle.includes('probate')) return 'court_record';
+		if (lowerTitle.includes('land') || lowerTitle.includes('deed')) return 'land_deed';
+		if (lowerTitle.includes('photo')) return 'photo';
+
+		return 'document';
 	}
 
 	/**

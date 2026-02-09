@@ -1101,10 +1101,20 @@ export class GedcomParserV2 {
 				source.repositoryRef = line.value.replace(/@/g, '');
 				break;
 			case 'NOTE':
-				if (!source.notes) {
-					source.notes = line.value;
+				// Check if this is a reference to a shared NOTE record
+				if (line.value.startsWith('@') && line.value.endsWith('@')) {
+					// Reference to shared NOTE record
+					if (!source.noteRefs) {
+						source.noteRefs = [];
+					}
+					source.noteRefs.push(line.value.replace(/@/g, ''));
 				} else {
-					source.notes += '\n' + line.value;
+					// Inline note (CONT/CONC already handled by preprocessor)
+					if (!source.notes) {
+						source.notes = line.value;
+					} else {
+						source.notes += '\n' + line.value;
+					}
 				}
 				break;
 			case 'OBJE':

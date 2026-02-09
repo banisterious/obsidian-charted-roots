@@ -225,8 +225,10 @@ export interface GedcomSource {
 	publication?: string;
 	/** Repository reference */
 	repositoryRef?: string;
-	/** Notes */
+	/** Inline notes (text content) */
 	notes?: string;
+	/** Note references (GEDCOM @Nxxxx@ IDs) */
+	noteRefs?: string[];
 	/** Media references (GEDCOM @Oxxxx@ IDs) */
 	mediaRefs?: string[];
 }
