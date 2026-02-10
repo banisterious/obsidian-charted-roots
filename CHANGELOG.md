@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Gramps import creating broken place wikilinks for US states** ([#259](https://github.com/banisterious/obsidian-charted-roots/issues/259)): When Gramps places used state abbreviations (e.g., "IA, USA"), the importer created files like "IA.md" but child places and events generated wikilinks like `[[Iowa USA]]`. Now expands US state abbreviations to full names, matching GEDCOM importer behavior.
 
+### Diagnostics
+
+- **GEDCOM spouse linking investigation** ([#258](https://github.com/banisterious/obsidian-charted-roots/issues/258)): Added console logging to trace spouse relationship building during GEDCOM import. Filter developer console for the affected GEDCOM ID (e.g., `I0091`) to see linking details.
+
 ---
 
 ## [0.20.8] - 2026-02-09
