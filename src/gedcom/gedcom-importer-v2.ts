@@ -865,6 +865,10 @@ export class GedcomImporterV2 {
 				const spouse = gedcomData.individuals.get(ref);
 				return this.sanitizeName(spouse?.name || 'Unknown');
 			});
+			// Debug: trace spouse data for diagnosis
+			if (individual.name?.includes('William') && individual.name?.includes('Hurst')) {
+				console.debug(`[GEDCOM Import] Creating ${individual.name} (${individual.id}): spouseRefs=${JSON.stringify(individual.spouseRefs)}, spouseNames=${JSON.stringify(personData.spouseName)}`);
+			}
 		}
 
 		// Find children (people who have this person as a biological parent)
