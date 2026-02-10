@@ -19,6 +19,25 @@ import { sanitizeName } from '../utils/name-sanitization';
 const logger = getLogger('GrampsImporter');
 
 /**
+ * US State abbreviation to full name mapping for normalizing place names
+ */
+const US_STATE_ABBREVIATIONS: Record<string, string> = {
+	'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas',
+	'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware',
+	'FL': 'Florida', 'GA': 'Georgia', 'HI': 'Hawaii', 'ID': 'Idaho',
+	'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa', 'KS': 'Kansas',
+	'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland',
+	'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi',
+	'MO': 'Missouri', 'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada',
+	'NH': 'New Hampshire', 'NJ': 'New Jersey', 'NM': 'New Mexico', 'NY': 'New York',
+	'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio', 'OK': 'Oklahoma',
+	'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina',
+	'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah',
+	'VT': 'Vermont', 'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia',
+	'WI': 'Wisconsin', 'WY': 'Wyoming', 'DC': 'District of Columbia'
+};
+
+/**
  * Import progress phases for Gramps
  */
 export type GrampsImportPhase =
@@ -1393,13 +1412,35 @@ export class GrampsImporter {
 
 	/**
 	 * Parse a place name into hierarchy parts (split by comma)
+	 * Also expands US state abbreviations to full names for consistency with GEDCOM importer
 	 */
 	private parsePlaceHierarchy(placeName: string): string[] {
 		if (!placeName) return [];
 		return placeName
 			.split(',')
-			.map(p => p.trim())
-			.filter(p => p.length > 0);
+			.map(p => p.trim().replace(/\s+/g, ' ')) // Collapse multiple spaces
+			.filter(p => p.length > 0)
+			.flatMap(p => {
+				// Check if the whole part is a state abbreviation (e.g., "IA" → "Iowa")
+				const upperPart = p.toUpperCase();
+				if (US_STATE_ABBREVIATIONS[upperPart]) {
+					return [US_STATE_ABBREVIATIONS[upperPart]];
+				}
+
+				// Check for space-separated state abbreviation at the end (e.g., "Abbeville SC")
+				const words = p.split(' ');
+				if (words.length >= 2) {
+					const lastWord = words[words.length - 1].toUpperCase();
+					if (US_STATE_ABBREVIATIONS[lastWord]) {
+						// Split into locality and state
+						const locality = words.slice(0, -1).join(' ');
+						const state = US_STATE_ABBREVIATIONS[lastWord];
+						return [locality, state];
+					}
+				}
+
+				return [p];
+			});
 	}
 
 	/**

@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Duplicate person entries in event displays** ([#261](https://github.com/banisterious/obsidian-charted-roots/issues/261)): When an event had the same person in both `person` (singular/principal) and `persons` (array) fields, they could appear twice in timeline displays. Now deduplicates when collecting participants for display.
 
+- **Gramps import creating broken place wikilinks for US states** ([#259](https://github.com/banisterious/obsidian-charted-roots/issues/259)): When Gramps places used state abbreviations (e.g., "IA, USA"), the importer created files like "IA.md" but child places and events generated wikilinks like `[[Iowa USA]]`. Now expands US state abbreviations to full names, matching GEDCOM importer behavior.
+
 ---
 
 ## [0.20.8] - 2026-02-09
