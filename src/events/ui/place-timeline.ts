@@ -342,17 +342,18 @@ function renderFamilyPresenceAnalysis(
 	const eventsByPerson = new Map<string, EventNote[]>();
 
 	for (const event of events) {
-		const people: string[] = [];
+		// Use Set to deduplicate when person appears in both person and persons fields
+		const peopleSet = new Set<string>();
 		if (event.person) {
-			people.push(event.person.replace(/^\[\[/, '').replace(/\]\]$/, ''));
+			peopleSet.add(event.person.replace(/^\[\[/, '').replace(/\]\]$/, ''));
 		}
 		if (event.persons) {
 			for (const p of event.persons) {
-				people.push(p.replace(/^\[\[/, '').replace(/\]\]$/, ''));
+				peopleSet.add(p.replace(/^\[\[/, '').replace(/\]\]$/, ''));
 			}
 		}
 
-		for (const person of people) {
+		for (const person of peopleSet) {
 			if (!eventsByPerson.has(person)) {
 				eventsByPerson.set(person, []);
 			}
@@ -540,23 +541,23 @@ function renderPlaceTimelineEvent(
 		});
 	}
 
-	// Person row
-	const people: string[] = [];
+	// Person row - deduplicate when person appears in both person and persons fields
+	const peopleSet = new Set<string>();
 	if (event.person) {
-		people.push(event.person.replace(/^\[\[/, '').replace(/\]\]$/, ''));
+		peopleSet.add(event.person.replace(/^\[\[/, '').replace(/\]\]$/, ''));
 	}
 	if (event.persons) {
 		for (const p of event.persons) {
-			people.push(p.replace(/^\[\[/, '').replace(/\]\]$/, ''));
+			peopleSet.add(p.replace(/^\[\[/, '').replace(/\]\]$/, ''));
 		}
 	}
 
-	if (people.length > 0) {
+	if (peopleSet.size > 0) {
 		const personRow = content.createDiv({ cls: 'crc-place-timeline-event__person' });
 		const personIcon = createLucideIcon('user', 12);
 		personRow.appendChild(personIcon);
 		personRow.createEl('span', {
-			text: people.join(', '),
+			text: Array.from(peopleSet).join(', '),
 			cls: 'crc-place-timeline-event__person-name'
 		});
 	}

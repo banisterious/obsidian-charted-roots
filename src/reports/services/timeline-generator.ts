@@ -420,18 +420,19 @@ export class TimelineGenerator {
 
 	/**
 	 * Get participant identifiers from an event
+	 * Deduplicates when person appears in both person and persons fields
 	 */
 	private getEventParticipants(event: EventNote): string[] {
-		const participants: string[] = [];
+		const participants = new Set<string>();
 		if (event.person) {
-			participants.push(this.extractLinkName(event.person));
+			participants.add(this.extractLinkName(event.person));
 		}
 		if (event.persons) {
 			for (const p of event.persons) {
-				participants.push(this.extractLinkName(p));
+				participants.add(this.extractLinkName(p));
 			}
 		}
-		return participants;
+		return Array.from(participants);
 	}
 
 	/**
