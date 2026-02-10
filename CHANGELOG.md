@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Place type customizations not working** ([#263](https://github.com/banisterious/obsidian-charted-roots/issues/263)): The Create Place modal's type dropdown was hardcoded and ignored settings. Township was missing, hiding/renaming types had no effect, and custom types didn't appear. Now reads from settings and respects all customizations.
+
 ---
 
 ## [0.20.8] - 2026-02-09
