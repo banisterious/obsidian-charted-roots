@@ -6,6 +6,7 @@
 import { App, Modal, Setting, TFile, Notice, normalizePath } from 'obsidian';
 import { createPlaceNote, updatePlaceNote, PlaceData } from '../core/place-note-writer';
 import { PlaceCategory, PlaceType, PlaceNode, KNOWN_PLACE_TYPES } from '../models/place';
+import { getAllPlaceTypesWithCustomizations, getPlaceTypeHierarchyLevel } from '../places/constants/default-place-types';
 import { createLucideIcon } from './lucide-icons';
 import { FamilyGraphService } from '../core/family-graph';
 import { PlaceGraphService } from '../core/place-graph';
@@ -37,29 +38,6 @@ interface ParentPlaceOption {
 	path: string; // Hierarchy path like "England → UK"
 	placeType?: string; // The place type for filtering
 }
-
-/**
- * Hierarchy ordering for place types (smaller number = higher in hierarchy)
- */
-const PLACE_TYPE_HIERARCHY: Record<string, number> = {
-	planet: 0,
-	continent: 1,
-	country: 2,
-	state: 3,
-	province: 3,
-	region: 4,
-	county: 5,
-	district: 6,
-	city: 7,
-	town: 8,
-	village: 9,
-	parish: 10,
-	estate: 11,
-	castle: 11,
-	church: 12,
-	cemetery: 12,
-	other: 99
-};
 
 /**
  * Suggest a parent place type based on the child's type
@@ -620,29 +598,28 @@ export class CreatePlaceModal extends Modal {
 
 		typeSetting.addDropdown(dropdown => {
 			this.typeDropdownEl = dropdown.selectEl;
-			dropdown
-				.addOption('', '(Select type)')
-				.addOption('planet', 'Planet')
-				.addOption('continent', 'Continent')
-				.addOption('country', 'Country')
-				.addOption('state', 'State')
-				.addOption('province', 'Province')
-				.addOption('region', 'Region')
-				.addOption('county', 'County')
-				.addOption('city', 'City')
-				.addOption('town', 'Town')
-				.addOption('village', 'Village')
-				.addOption('district', 'District')
-				.addOption('parish', 'Parish')
-				.addOption('castle', 'Castle')
-				.addOption('estate', 'Estate')
-				.addOption('cemetery', 'Cemetery')
-				.addOption('church', 'Church')
-				.addOption('__custom__', 'Other...');
+			dropdown.addOption('', '(Select type)');
 
-			// Check if initial value is a known type or custom
+			// Get place types from settings (respects customizations, hidden types, custom types)
+			const placeTypes = getAllPlaceTypesWithCustomizations(
+				this.settings?.customPlaceTypes || [],
+				this.settings?.showBuiltInPlaceTypes !== false,
+				this.settings?.placeTypeCustomizations || {},
+				this.settings?.hiddenPlaceTypes || []
+			);
+
+			// Add all place types from settings
+			for (const placeType of placeTypes) {
+				dropdown.addOption(placeType.id, placeType.name);
+			}
+
+			// Always add "Other..." option for truly custom types
+			dropdown.addOption('__custom__', 'Other...');
+
+			// Check if initial value is in the dropdown options or is a custom type
 			const initialType = this.placeData.placeType;
-			const isCustomType = initialType && !KNOWN_PLACE_TYPES.includes(initialType as typeof KNOWN_PLACE_TYPES[number]);
+			const knownTypeIds = placeTypes.map(t => t.id);
+			const isCustomType = initialType && !knownTypeIds.includes(initialType);
 
 			if (isCustomType) {
 				dropdown.setValue('__custom__');
@@ -686,9 +663,15 @@ export class CreatePlaceModal extends Modal {
 					this.updateParentPlaceDropdown();
 				});
 
-			// Show input if editing a custom type
+			// Show input if editing a custom type (not in dropdown options)
 			const initialType = this.placeData.placeType;
-			const isCustomType = initialType && !KNOWN_PLACE_TYPES.includes(initialType as typeof KNOWN_PLACE_TYPES[number]);
+			const availableTypes = getAllPlaceTypesWithCustomizations(
+				this.settings?.customPlaceTypes || [],
+				this.settings?.showBuiltInPlaceTypes !== false,
+				this.settings?.placeTypeCustomizations || {},
+				this.settings?.hiddenPlaceTypes || []
+			);
+			const isCustomType = initialType && !availableTypes.some(t => t.id === initialType);
 
 			if (isCustomType) {
 				text.setValue(initialType);
@@ -1215,13 +1198,16 @@ export class CreatePlaceModal extends Modal {
 			return this.allParentOptions;
 		}
 
-		const selectedLevel = PLACE_TYPE_HIERARCHY[selectedType] ?? 99;
+		// Use dynamic hierarchy level from settings (respects customizations)
+		const customTypes = this.settings?.customPlaceTypes || [];
+		const customizations = this.settings?.placeTypeCustomizations || {};
+		const selectedLevel = getPlaceTypeHierarchyLevel(selectedType, customTypes, customizations);
 
 		// Filter to only show places that are higher in the hierarchy (smaller number)
 		// A city (7) can have country (2), state (3), region (4), county (5), district (6) as parents
 		// but not another city (7), town (8), village (9), etc.
 		return this.allParentOptions.filter(opt => {
-			const optLevel = PLACE_TYPE_HIERARCHY[opt.placeType || 'other'] ?? 99;
+			const optLevel = getPlaceTypeHierarchyLevel(opt.placeType || 'other', customTypes, customizations);
 			return optLevel < selectedLevel;
 		});
 	}
