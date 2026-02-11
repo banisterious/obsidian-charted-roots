@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Family chart cards rendering with broken positions** ([#257](https://github.com/banisterious/obsidian-charted-roots/issues/257)): The upstream family-chart library can produce `translate(undefined, undefined)` on card elements when certain node positions haven't been computed during animation. Added a MutationObserver that sanitizes invalid transforms, preventing text clipping and mispositioned cards.
+
+---
+
+## [0.20.9] - 2026-02-11
+
 ### Added
 
 - **Copy birth/death date from event to person note** ([#262](https://github.com/banisterious/obsidian-charted-roots/issues/262)): After creating or editing a birth or death event, a clickable notice offers to copy the event date to the linked person's `born` or `died` property. Skips the prompt if the person already has the matching date.

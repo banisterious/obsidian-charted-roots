@@ -170,6 +170,8 @@ export class FamilyChartView extends ItemView {
 
 	// Data cache
 	private chartData: FamilyChartPerson[] = [];
+	// MutationObserver to sanitize invalid SVG transforms from family-chart library
+	private transformObserver: MutationObserver | null = null;
 	// Avatar URL cache - maps crId to resolved avatar URL
 	// Persists across chart re-initializations to avoid repeated file lookups
 	private avatarUrlCache: Map<string, string> = new Map();
@@ -1011,6 +1013,9 @@ export class FamilyChartView extends ItemView {
 				this.f3Chart.updateMainId(this.rootPersonId);
 			}
 
+			// Sanitize invalid SVG transforms from the library before first render
+			this.setupTransformSanitizer();
+
 			// Initial render without fit (just get the tree in the DOM)
 			this.f3Chart.updateTree({ initial: true });
 
@@ -1060,6 +1065,40 @@ export class FamilyChartView extends ItemView {
 		logger.info('chart-init', 'Chart initialized', {
 			personCount: this.chartData.length,
 			rootPersonId: this.rootPersonId
+		});
+	}
+
+	/**
+	 * Set up a MutationObserver to sanitize invalid SVG transforms.
+	 *
+	 * The family-chart library can produce `translate(undefined, undefined)` on
+	 * entering card `<g>` elements when certain node positions haven't been
+	 * computed yet (upstream bug in calculateEnterAndExitPositions). This
+	 * observer catches those invalid transforms and replaces them with
+	 * `translate(0, 0)` so cards animate from the origin instead of breaking.
+	 */
+	private setupTransformSanitizer(): void {
+		if (!this.chartContainerEl) return;
+
+		this.transformObserver?.disconnect();
+
+		this.transformObserver = new MutationObserver((mutations) => {
+			for (const mutation of mutations) {
+				if (mutation.type === 'attributes' &&
+					mutation.attributeName === 'transform') {
+					const el = mutation.target as SVGElement;
+					const val = el.getAttribute('transform');
+					if (val && (val.includes('undefined') || val.includes('NaN'))) {
+						el.setAttribute('transform', 'translate(0, 0)');
+					}
+				}
+			}
+		});
+
+		this.transformObserver.observe(this.chartContainerEl, {
+			attributes: true,
+			attributeFilter: ['transform'],
+			subtree: true,
 		});
 	}
 
@@ -5015,6 +5054,10 @@ export class FamilyChartView extends ItemView {
 			this.f3EditTree.destroy();
 			this.f3EditTree = null;
 		}
+
+		// Disconnect transform sanitizer
+		this.transformObserver?.disconnect();
+		this.transformObserver = null;
 
 		// family-chart doesn't have an explicit destroy method
 		// Clean up by clearing the container
