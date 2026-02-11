@@ -24,6 +24,7 @@ import { DEFAULT_DATE_SYSTEMS } from '../../dates/constants/default-date-systems
 import { getCalendariumBridge } from '../../integrations/calendarium-bridge';
 import type CanvasRootsPlugin from '../../../main';
 import { ModalStatePersistence, renderResumePromptBanner } from '../../ui/modal-state-persistence';
+import { updatePersonNote, findPersonByCrId, type PersonData } from '../../core/person-note-writer';
 
 /**
  * Form data structure for persistence
@@ -724,6 +725,9 @@ export class CreateEventModal extends Modal {
 
 			new Notice(`Created event note: ${file.basename}`);
 
+			// Offer to copy date to person note for birth/death events
+			this.offerDateCopyToPersonNote();
+
 			// Mark as saved successfully and clear persisted state
 			this.savedSuccessfully = true;
 			if (this.persistence) {
@@ -839,6 +843,9 @@ export class CreateEventModal extends Modal {
 
 			new Notice(`Updated event note: ${this.editingFile.basename}`);
 
+			// Offer to copy date to person note for birth/death events
+			this.offerDateCopyToPersonNote();
+
 			// Invalidate cache
 			this.eventService.invalidateCache();
 
@@ -851,5 +858,50 @@ export class CreateEventModal extends Modal {
 			console.error('Failed to update event note:', error);
 			new Notice(`Failed to update event note: ${error instanceof Error ? error.message : 'Unknown error'}`);
 		}
+	}
+
+	/**
+	 * Offer to copy event date to the linked person's born/died property.
+	 * Shows a non-blocking Notice with a clickable button for birth/death events.
+	 */
+	private offerDateCopyToPersonNote(): void {
+		// Only for birth/death events with a linked person and date
+		if ((this.eventType !== 'birth' && this.eventType !== 'death') ||
+			!this.personCrId || !this.date.trim()) {
+			return;
+		}
+
+		const field = this.eventType === 'birth' ? 'born' : 'died';
+		const personName = this.person.trim();
+		const dateValue = this.date.trim();
+
+		// Resolve person file
+		const personFile = findPersonByCrId(this.app, this.personCrId);
+		if (!personFile) return;
+
+		// Check if person already has this date
+		const cache = this.app.metadataCache.getFileCache(personFile);
+		const existingDate = cache?.frontmatter?.[field];
+		if (existingDate === dateValue) return; // Already matches
+
+		// Build notice with clickable action
+		const fragment = document.createDocumentFragment();
+		const message = existingDate
+			? `${personName} has ${field}: ${existingDate}. Update to ${dateValue}?`
+			: `Copy ${this.eventType} date to ${personName}?`;
+		fragment.appendText(message);
+		fragment.createEl('br');
+		const btn = fragment.createEl('button', { text: `Set ${field} to ${dateValue}` });
+		btn.style.marginTop = '8px';
+		btn.addEventListener('click', async () => {
+			const updateData: Partial<PersonData> = this.eventType === 'birth'
+				? { birthDate: dateValue }
+				: { deathDate: dateValue };
+			await updatePersonNote(this.app, personFile, updateData);
+			new Notice(`Updated ${field} for ${personName}`);
+			notice.hide();
+		});
+
+		const notice = new Notice(fragment, 10000);
 	}
 }

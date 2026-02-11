@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Copy birth/death date from event to person note** ([#262](https://github.com/banisterious/obsidian-charted-roots/issues/262)): After creating or editing a birth or death event, a clickable notice offers to copy the event date to the linked person's `born` or `died` property. Skips the prompt if the person already has the matching date.
+
 ### Fixed
 
 - **CC click-row edit losing spouse/children data** ([#257](https://github.com/banisterious/obsidian-charted-roots/issues/257)): Opening the Edit Person modal from Control Center's People tab (click row) showed raw `cr_id` values instead of names for spouses and children, and corrupted data on save. Now extracts full spouse metadata and children names matching the hotkey edit path.
