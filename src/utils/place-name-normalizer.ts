@@ -27,7 +27,7 @@ export const US_STATE_ABBREVIATIONS: Record<string, string> = {
 /**
  * Set of all US state full names (lowercase for matching)
  */
-const US_STATE_NAMES = new Set(
+export const US_STATE_NAMES = new Set(
 	Object.values(US_STATE_ABBREVIATIONS).map(s => s.toLowerCase())
 );
 

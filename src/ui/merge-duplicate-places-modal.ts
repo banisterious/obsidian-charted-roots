@@ -9,6 +9,7 @@ import { PlaceGraphService } from '../core/place-graph';
 import { PlaceNode } from '../models/place';
 import type { CanvasRootsSettings } from '../settings';
 import { FolderFilterService } from '../core/folder-filter';
+import { US_STATE_ABBREVIATIONS, US_STATE_NAMES } from '../utils/place-name-normalizer';
 
 /**
  * A group of duplicate place notes that may represent the same location
@@ -1767,8 +1768,8 @@ function areBothDistinctKnownStates(name1: string, name2: string): boolean {
 	// If names are the same, they're not "distinct"
 	if (n1 === n2) return false;
 
-	const isState1 = US_STATE_FULL_NAMES.has(n1);
-	const isState2 = US_STATE_FULL_NAMES.has(n2);
+	const isState1 = US_STATE_NAMES.has(n1);
+	const isState2 = US_STATE_NAMES.has(n2);
 
 	// Both must be known states and different from each other
 	return isState1 && isState2;
@@ -1880,29 +1881,7 @@ function shareGeographicSuffixOnly(name1: string, name2: string): boolean {
 	return true;
 }
 
-/**
- * US State abbreviation to full name mapping
- */
-const US_STATE_ABBREVIATIONS: Record<string, string> = {
-	'al': 'alabama', 'ak': 'alaska', 'az': 'arizona', 'ar': 'arkansas',
-	'ca': 'california', 'co': 'colorado', 'ct': 'connecticut', 'de': 'delaware',
-	'fl': 'florida', 'ga': 'georgia', 'hi': 'hawaii', 'id': 'idaho',
-	'il': 'illinois', 'in': 'indiana', 'ia': 'iowa', 'ks': 'kansas',
-	'ky': 'kentucky', 'la': 'louisiana', 'me': 'maine', 'md': 'maryland',
-	'ma': 'massachusetts', 'mi': 'michigan', 'mn': 'minnesota', 'ms': 'mississippi',
-	'mo': 'missouri', 'mt': 'montana', 'ne': 'nebraska', 'nv': 'nevada',
-	'nh': 'new hampshire', 'nj': 'new jersey', 'nm': 'new mexico', 'ny': 'new york',
-	'nc': 'north carolina', 'nd': 'north dakota', 'oh': 'ohio', 'ok': 'oklahoma',
-	'or': 'oregon', 'pa': 'pennsylvania', 'ri': 'rhode island', 'sc': 'south carolina',
-	'sd': 'south dakota', 'tn': 'tennessee', 'tx': 'texas', 'ut': 'utah',
-	'vt': 'vermont', 'va': 'virginia', 'wa': 'washington', 'wv': 'west virginia',
-	'wi': 'wisconsin', 'wy': 'wyoming', 'dc': 'district of columbia'
-};
-
-/**
- * Full state name to normalized form mapping (for matching "South Carolina" to "south carolina")
- */
-const US_STATE_FULL_NAMES: Set<string> = new Set(Object.values(US_STATE_ABBREVIATIONS));
+// US_STATE_ABBREVIATIONS and US_STATE_NAMES imported from place-name-normalizer
 
 /**
  * Extract base name and normalized state from a place name
@@ -1925,23 +1904,24 @@ function extractBaseNameAndState(name: string): string | null {
 
 	// Check if the last part is a state abbreviation
 	const lastPart = parts[parts.length - 1];
-	if (US_STATE_ABBREVIATIONS[lastPart]) {
+	const upperLastPart = lastPart.toUpperCase();
+	if (US_STATE_ABBREVIATIONS[upperLastPart]) {
 		const baseName = parts.slice(0, -1).join(' ');
-		const stateName = US_STATE_ABBREVIATIONS[lastPart];
+		const stateName = US_STATE_ABBREVIATIONS[upperLastPart].toLowerCase();
 		return `${baseName}|${stateName}`;
 	}
 
 	// Check if the last two parts form a two-word state name
 	if (parts.length >= 3) {
 		const lastTwoParts = `${parts[parts.length - 2]} ${parts[parts.length - 1]}`;
-		if (US_STATE_FULL_NAMES.has(lastTwoParts)) {
+		if (US_STATE_NAMES.has(lastTwoParts)) {
 			const baseName = parts.slice(0, -2).join(' ');
 			return `${baseName}|${lastTwoParts}`;
 		}
 	}
 
 	// Check if the last part is a single-word state name
-	if (US_STATE_FULL_NAMES.has(lastPart)) {
+	if (US_STATE_NAMES.has(lastPart)) {
 		const baseName = parts.slice(0, -1).join(' ');
 		return `${baseName}|${lastPart}`;
 	}
@@ -1999,19 +1979,19 @@ function extractBaseName(name: string): string {
 			const lastPart = spaceParts[spaceParts.length - 1];
 
 			// Check if last part is a US state abbreviation (2 letters)
-			if (lastPart.length === 2 && US_STATE_ABBREVIATIONS[lastPart]) {
+			if (lastPart.length === 2 && US_STATE_ABBREVIATIONS[lastPart.toUpperCase()]) {
 				// Remove the state abbreviation to get base name
 				basePart = spaceParts.slice(0, -1).join(' ');
 			}
 			// Check if last two parts form a full state name (e.g., "South Carolina")
 			else if (spaceParts.length >= 3) {
 				const lastTwoParts = `${spaceParts[spaceParts.length - 2]} ${spaceParts[spaceParts.length - 1]}`;
-				if (US_STATE_FULL_NAMES.has(lastTwoParts)) {
+				if (US_STATE_NAMES.has(lastTwoParts)) {
 					basePart = spaceParts.slice(0, -2).join(' ');
 				}
 			}
 			// Check if last part is a single-word state name
-			else if (US_STATE_FULL_NAMES.has(lastPart)) {
+			else if (US_STATE_NAMES.has(lastPart)) {
 				basePart = spaceParts.slice(0, -1).join(' ');
 			}
 		}
