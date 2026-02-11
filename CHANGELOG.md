@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **CC click-row edit losing spouse/children data** ([#257](https://github.com/banisterious/obsidian-charted-roots/issues/257)): Opening the Edit Person modal from Control Center's People tab (click row) showed raw `cr_id` values instead of names for spouses and children, and corrupted data on save. Now extracts full spouse metadata and children names matching the hotkey edit path.
+
+- **Research level showing "Not assessed" despite value in frontmatter** ([#257](https://github.com/banisterious/obsidian-charted-roots/issues/257)): Both the CC click-row and hotkey edit paths failed to pass `research_level` to the Edit Person modal. Now reads from frontmatter and pre-fills correctly.
+
+- **Self-referential father when adding same-name child** ([#257](https://github.com/banisterious/obsidian-charted-roots/issues/257)): When a parent and child shared the same name (e.g., "William Hurst Sr." and "William Hurst Jr."), the bidirectional linker could resolve the child's wikilink back to the parent's own file. Added self-reference guards and excluded the current note from person picker results.
+
+- **Person count off-by-one between views** ([#257](https://github.com/banisterious/obsidian-charted-roots/issues/257)): VaultStatsService was not excluding proof summary and universe notes from person counts, while FamilyGraphService was. Aligned exclusion logic so counts match across views.
+
 - **Place type customizations not working** ([#263](https://github.com/banisterious/obsidian-charted-roots/issues/263)): The Create Place modal's type dropdown was hardcoded and ignored settings. Township was missing, hiding/renaming types had no effect, and custom types didn't appear. Now reads from settings and respects all customizations.
 
 - **Duplicate person entries in event displays** ([#261](https://github.com/banisterious/obsidian-charted-roots/issues/261)): When an event had the same person in both `person` (singular/principal) and `persons` (array) fields, they could appear twice in timeline displays. Now deduplicates when collecting participants for display.
