@@ -2,7 +2,7 @@ import { App, TFile } from 'obsidian';
 import { SpouseValue } from '../types/frontmatter';
 import { FolderFilterService } from './folder-filter';
 import type { CanvasRootsSettings } from '../settings';
-import { isPlaceNote, isMapNote, isSourceNote, isEventNote, isOrganizationNote } from '../utils/note-type-detection';
+import { isPlaceNote, isMapNote, isSourceNote, isEventNote, isOrganizationNote, isProofSummaryNote, isUniverseNote } from '../utils/note-type-detection';
 
 /**
  * Vault statistics for person notes
@@ -198,6 +198,14 @@ export class VaultStatsService {
 
 			// Skip organization notes (they're not people)
 			if (isOrganizationNote(fm, cache, this.settings?.noteTypeDetection)) {
+				continue;
+			}
+
+			// Skip proof summary and universe notes (they have cr_id but aren't people)
+			if (isProofSummaryNote(fm, cache, this.settings?.noteTypeDetection)) {
+				continue;
+			}
+			if (isUniverseNote(fm, cache, this.settings?.noteTypeDetection)) {
 				continue;
 			}
 
