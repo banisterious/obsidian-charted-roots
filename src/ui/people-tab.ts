@@ -22,7 +22,7 @@ import { BidirectionalLinker } from '../core/bidirectional-linker';
 import { CreatePersonModal } from './create-person-modal';
 import { TemplateSnippetsModal } from './template-snippets-modal';
 import { MediaManagerModal } from '../core/ui/media-manager-modal';
-import { createPersonNote, PersonData } from '../core/person-note-writer';
+import { createPersonNote, PersonData, SpouseMetadata } from '../core/person-note-writer';
 import { getLogger } from '../core/logging';
 import { getErrorMessage } from '../core/error-utils';
 import { renderPersonTimeline, createTimelineSummary } from '../events/ui/person-timeline';
@@ -1537,8 +1537,6 @@ function renderPersonTableRow(
 		// Extract relationship data (separate IDs and names for dual storage)
 		const fatherId = fm.father_id;
 		const motherId = fm.mother_id;
-		const spouseIds = fm.spouse_id || fm.spouse;
-		const childIds = fm.children_id || fm.child;
 		const parentIds = fm.parents_id;
 
 		// Extract name from wikilink or plain string
@@ -1551,25 +1549,93 @@ function renderPersonTableRow(
 		// Extract father/mother names from wikilinks
 		const fatherName = extractName(fm.father);
 		const motherName = extractName(fm.mother);
-		let childNames: string[] | undefined;
-		if (fm.child) {
-			const children = Array.isArray(fm.child) ? fm.child : [fm.child];
-			childNames = children.map(c => extractName(String(c))).filter((n): n is string => !!n);
+
+		// Extract spouse names/IDs - check for indexed format first (#204)
+		const spouseNames: string[] = [];
+		const spouseIds: string[] = [];
+		const spouseMetadata: SpouseMetadata[] = [];
+
+		let hasIndexedSpouses = false;
+		for (let i = 1; i <= 10; i++) {
+			const spouseLink = fm[`spouse${i}`];
+			const spouseId = fm[`spouse${i}_id`];
+			if (spouseLink || spouseId) {
+				hasIndexedSpouses = true;
+				const name = extractName(spouseLink);
+				const crId = String(spouseId || '');
+
+				if (name) spouseNames.push(name);
+				if (crId) spouseIds.push(crId);
+
+				spouseMetadata.push({
+					crId: crId || '',
+					name: name || crId || `Spouse ${i}`,
+					marriageDate: fm[`spouse${i}_marriage_date`] as string | undefined,
+					marriageLocation: fm[`spouse${i}_marriage_location`] as string | undefined,
+					marriageStatus: fm[`spouse${i}_marriage_status`] as SpouseMetadata['marriageStatus'],
+					divorceDate: fm[`spouse${i}_divorce_date`] as string | undefined
+				});
+			}
+		}
+
+		if (!hasIndexedSpouses) {
+			if (fm.spouse) {
+				const spouses = Array.isArray(fm.spouse) ? fm.spouse : [fm.spouse];
+				for (const s of spouses) {
+					const name = extractName(String(s));
+					if (name) spouseNames.push(name);
+				}
+			}
+			if (fm.spouse_id) {
+				const ids = Array.isArray(fm.spouse_id) ? fm.spouse_id : [fm.spouse_id];
+				for (const id of ids) {
+					spouseIds.push(String(id));
+				}
+			}
+		}
+
+		// Extract children names/IDs
+		const childNames: string[] = [];
+		const childIds: string[] = [];
+		if (fm.children) {
+			const children = Array.isArray(fm.children) ? fm.children : [fm.children];
+			for (const c of children) {
+				const name = extractName(String(c));
+				if (name) childNames.push(name);
+			}
+		}
+		if (fm.children_id) {
+			const ids = Array.isArray(fm.children_id) ? fm.children_id : [fm.children_id];
+			for (const id of ids) {
+				childIds.push(String(id));
+			}
 		}
 
 		// Extract source IDs and names
-		const sourceIds = fm.sources_id;
-		let sourceNames: string[] | undefined;
+		const sourceNames: string[] = [];
+		const sourceIds: string[] = [];
 		if (fm.sources) {
 			const sources = Array.isArray(fm.sources) ? fm.sources : [fm.sources];
-			sourceNames = sources.map(s => extractName(String(s))).filter((n): n is string => !!n);
+			for (const s of sources) {
+				const name = extractName(String(s));
+				if (name) sourceNames.push(name);
+			}
+		}
+		if (fm.sources_id) {
+			const ids = Array.isArray(fm.sources_id) ? fm.sources_id : [fm.sources_id];
+			for (const id of ids) {
+				sourceIds.push(String(id));
+			}
 		}
 
-		// Extract gender-neutral parent names
-		let parentNames: string[] | undefined;
+		// Extract gender-neutral parent names/IDs
+		const parentNames: string[] = [];
 		if (fm.parents) {
 			const parents = Array.isArray(fm.parents) ? fm.parents : [fm.parents];
-			parentNames = parents.map(p => extractName(String(p))).filter((n): n is string => !!n);
+			for (const p of parents) {
+				const name = extractName(String(p));
+				if (name) parentNames.push(name);
+			}
 		}
 
 		// Use cached graph services and universes to avoid expensive recomputation on every click
@@ -1602,17 +1668,20 @@ function renderPersonTableRow(
 				deathPlaceId: fm.death_place_id,
 				deathPlaceName: person.deathPlace?.placeName,
 				occupation: fm.occupation,
+				researchLevel: typeof fm.research_level === 'number' ? fm.research_level : undefined,
 				fatherId: typeof fatherId === 'string' ? fatherId : undefined,
 				fatherName: fatherName,
 				motherId: typeof motherId === 'string' ? motherId : undefined,
 				motherName: motherName,
-				spouseIds: Array.isArray(spouseIds) ? spouseIds : (spouseIds ? [spouseIds] : undefined),
-				childIds: Array.isArray(childIds) ? childIds : (childIds ? [childIds] : undefined),
-				childNames: childNames,
-				sourceIds: Array.isArray(sourceIds) ? sourceIds : (sourceIds ? [sourceIds] : undefined),
-				sourceNames: sourceNames,
+				spouseIds: spouseIds.length > 0 ? spouseIds : undefined,
+				spouseNames: spouseNames.length > 0 ? spouseNames : undefined,
+				spouseMetadata: spouseMetadata.length > 0 ? spouseMetadata : undefined,
+				childIds: childIds.length > 0 ? childIds : undefined,
+				childNames: childNames.length > 0 ? childNames : undefined,
+				sourceIds: sourceIds.length > 0 ? sourceIds : undefined,
+				sourceNames: sourceNames.length > 0 ? sourceNames : undefined,
 				parentIds: Array.isArray(parentIds) ? parentIds : (parentIds ? [parentIds] : undefined),
-				parentNames: parentNames,
+				parentNames: parentNames.length > 0 ? parentNames : undefined,
 				collection: fm.collection,
 				universe: fm.universe,
 				// DNA tracking fields

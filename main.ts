@@ -5936,6 +5936,7 @@ export default class CanvasRootsPlugin extends Plugin {
 				deathPlaceId: fm.death_place_id,
 				deathPlaceName: extractName(fm.death_place),
 				occupation: fm.occupation,
+				researchLevel: typeof fm.research_level === 'number' ? fm.research_level : undefined,
 				fatherId: fm.father_id,
 				fatherName: extractName(fm.father),
 				motherId: fm.mother_id,
