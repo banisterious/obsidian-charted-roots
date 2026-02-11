@@ -568,6 +568,16 @@ export class BidirectionalLinker {
 			return;
 		}
 
+		// Guard against self-referential links (person listed as their own parent)
+		if (parentFile.path === childFile.path) {
+			logger.warn('bidirectional-linking', 'Self-referential parent link detected, skipping', {
+				childFile: childFile.path,
+				parentLink,
+				relationshipType
+			});
+			return;
+		}
+
 		// Read parent's and child's frontmatter
 		const parentCache = this.app.metadataCache.getFileCache(parentFile);
 		if (!parentCache?.frontmatter) {
@@ -660,6 +670,15 @@ export class BidirectionalLinker {
 			logger.warn('bidirectional-linking', 'Spouse file not found', {
 				spouseLink,
 				personFile: personFile.path
+			});
+			return;
+		}
+
+		// Guard against self-referential links (person listed as their own spouse)
+		if (spouseFile.path === personFile.path) {
+			logger.warn('bidirectional-linking', 'Self-referential spouse link detected, skipping', {
+				personFile: personFile.path,
+				spouseLink
 			});
 			return;
 		}
@@ -805,6 +824,15 @@ export class BidirectionalLinker {
 			logger.warn('bidirectional-linking', 'Child file not found', {
 				childLink,
 				parentFile: parentFile.path
+			});
+			return;
+		}
+
+		// Guard against self-referential links (parent listed as their own child)
+		if (childFile.path === parentFile.path) {
+			logger.warn('bidirectional-linking', 'Self-referential child link detected, skipping', {
+				parentFile: parentFile.path,
+				childLink
 			});
 			return;
 		}

@@ -118,7 +118,8 @@ export class AddRelationshipModal extends Modal {
 					onCreateNew: () => {
 						// Callback signals inline creation support
 					},
-					plugin: this.plugin
+					plugin: this.plugin,
+					excludeFiles: [this.sourceFile]
 				});
 				picker.open();
 			})

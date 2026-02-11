@@ -1057,7 +1057,8 @@ export class CreatePersonModal extends Modal {
 							// This callback is called when user clicks "Create new"
 							// The picker handles opening QuickCreatePersonModal internally
 						},
-						plugin: this.plugin
+						plugin: this.plugin,
+						excludeFiles: this.editingFile ? [this.editingFile] : undefined
 					});
 					picker.open();
 				}
@@ -1250,7 +1251,8 @@ export class CreatePersonModal extends Modal {
 				onCreateNew: () => {
 					// This callback signals inline creation support
 				},
-				plugin: this.plugin
+				plugin: this.plugin,
+				excludeFiles: this.editingFile ? [this.editingFile] : undefined
 			});
 			picker.open();
 		});
@@ -1344,7 +1346,8 @@ export class CreatePersonModal extends Modal {
 				onCreateNew: () => {
 					// This callback signals inline creation support
 				},
-				plugin: this.plugin
+				plugin: this.plugin,
+				excludeFiles: this.editingFile ? [this.editingFile] : undefined
 			});
 			picker.open();
 		});
@@ -2139,7 +2142,8 @@ export class CreatePersonModal extends Modal {
 					onCreateNew: () => {
 						// Callback signals inline creation support
 					},
-					plugin: this.plugin
+					plugin: this.plugin,
+					excludeFiles: this.editingFile ? [this.editingFile] : undefined
 				});
 				picker.open();
 			});
@@ -2213,7 +2217,8 @@ export class CreatePersonModal extends Modal {
 				onCreateNew: () => {
 					// This callback signals inline creation support
 				},
-				plugin: this.plugin
+				plugin: this.plugin,
+				excludeFiles: this.editingFile ? [this.editingFile] : undefined
 			});
 			picker.open();
 		});
@@ -2502,7 +2507,8 @@ export class CreatePersonModal extends Modal {
 			onCreateNew: () => {
 				// Callback signals inline creation support
 			},
-			plugin: this.plugin
+			plugin: this.plugin,
+			excludeFiles: this.createdFile ? [this.createdFile] : undefined
 		});
 		picker.open();
 	}
@@ -2588,7 +2594,8 @@ export class CreatePersonModal extends Modal {
 			onCreateNew: () => {
 				// Callback signals inline creation support
 			},
-			plugin: this.plugin
+			plugin: this.plugin,
+			excludeFiles: this.createdFile ? [this.createdFile] : undefined
 		});
 		picker.open();
 	}

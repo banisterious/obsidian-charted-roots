@@ -99,6 +99,8 @@ export interface PersonPickerOptions {
 	plugin?: CanvasRootsPlugin;
 	/** Optional pre-cached FamilyGraphService to avoid expensive recomputation */
 	familyGraph?: FamilyGraphService;
+	/** Files to exclude from results (e.g., the current note to prevent self-referential links) */
+	excludeFiles?: TFile[];
 }
 
 /**
@@ -132,6 +134,7 @@ export class PersonPickerModal extends Modal {
 	private createContext?: RelationshipContext;
 	private plugin?: CanvasRootsPlugin;
 	private cachedFamilyGraph?: FamilyGraphService;
+	private excludeFiles?: Set<string>;
 
 	constructor(app: App, onSelect: (person: PersonInfo) => void, options?: PersonPickerOptions | FolderFilterService) {
 		super(app);
@@ -150,6 +153,9 @@ export class PersonPickerModal extends Modal {
 			this.createContext = opts.createContext;
 			this.plugin = opts.plugin;
 			this.cachedFamilyGraph = opts.familyGraph;
+			if (opts.excludeFiles && opts.excludeFiles.length > 0) {
+				this.excludeFiles = new Set(opts.excludeFiles.map(f => f.path));
+			}
 		}
 	}
 
@@ -207,6 +213,11 @@ export class PersonPickerModal extends Modal {
 		const files = this.app.vault.getMarkdownFiles();
 
 		for (const file of files) {
+			// Skip excluded files (e.g., current note to prevent self-referential links)
+			if (this.excludeFiles && this.excludeFiles.has(file.path)) {
+				continue;
+			}
+
 			// Apply folder filter if configured
 			if (this.folderFilter && !this.folderFilter.shouldIncludeFile(file)) {
 				continue;
