@@ -1435,6 +1435,43 @@ export class GrampsImporter {
 	}
 
 	/**
+	 * Build a full hierarchical place name by following the placeref chain.
+	 * Used for places that only have pname (no ptitle) — the hierarchy is
+	 * encoded in placeref links rather than a comma-separated string.
+	 *
+	 * Example: pname="Linn County" → parentRef → pname="IA" → parentRef → ptitle="USA"
+	 * Result: "Linn County, IA, USA"
+	 */
+	private resolveFullPlaceName(
+		place: ParsedGrampsPlace,
+		handleToPlace: Map<string, ParsedGrampsPlace>
+	): string {
+		if (!place.name) return '';
+
+		const nameParts: string[] = [place.name];
+		const visited = new Set<string>();
+		let current = place;
+
+		while (current.parentRef && !visited.has(current.parentRef)) {
+			visited.add(current.parentRef);
+			const parent = handleToPlace.get(current.parentRef);
+			if (!parent?.name) break;
+
+			if (parent.hasPtitle) {
+				// Parent has full hierarchical name — use it as the remaining suffix
+				nameParts.push(parent.name);
+				break;
+			} else {
+				// Parent only has pname — add it and continue up the chain
+				nameParts.push(parent.name);
+				current = parent;
+			}
+		}
+
+		return nameParts.join(', ');
+	}
+
+	/**
 	 * Infer place type from hierarchy position and name patterns
 	 */
 	private inferPlaceType(name: string, parts: string[]): string {
@@ -1469,8 +1506,12 @@ export class GrampsImporter {
 			const parts = this.parsePlaceHierarchy(placeName);
 			if (parts.length === 0) return;
 
-			// Add the full place
-			places.set(placeName, parts);
+			// Only set if we have more hierarchy info than existing entry
+			// (prevents overwriting resolved placeref chains with flat names)
+			const existing = places.get(placeName);
+			if (!existing || existing.length < parts.length) {
+				places.set(placeName, parts);
+			}
 
 			// Add all parent levels too
 			// E.g., "Springfield, Illinois, USA" creates:
@@ -1485,9 +1526,32 @@ export class GrampsImporter {
 			}
 		};
 
-		// Collect from all Gramps places (including single-part names like "Illinois")
+		// Build handle→place lookup for placeref chain resolution
+		const handleToPlace = new Map<string, ParsedGrampsPlace>();
+		for (const [handle, place] of grampsData.places) {
+			handleToPlace.set(handle, place);
+		}
+
+		// Collect from all Gramps places, resolving placeref chains when needed.
+		// Places with ptitle have the full hierarchy in the name (e.g., "IA, USA").
+		// Places without ptitle only have pname (e.g., "Linn County") with hierarchy
+		// encoded in <placeref> links — we follow the chain to build the full name.
 		for (const [, place] of grampsData.places) {
-			if (place.name) {
+			if (!place.name) continue;
+
+			if (!place.hasPtitle && place.parentRef) {
+				// No ptitle — build full hierarchical name from placeref chain
+				const resolvedName = this.resolveFullPlaceName(place, handleToPlace);
+				addPlace(resolvedName);
+				// Also map the original short name to the same hierarchy parts
+				// so event/person lookups (which use the short name) resolve correctly
+				if (resolvedName !== place.name) {
+					const resolvedParts = places.get(resolvedName);
+					if (resolvedParts) {
+						places.set(place.name, resolvedParts);
+					}
+				}
+			} else {
 				addPlace(place.name);
 			}
 		}

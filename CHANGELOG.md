@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Family chart cards rendering with broken positions** ([#257](https://github.com/banisterious/obsidian-charted-roots/issues/257)): The upstream family-chart library can produce `translate(undefined, undefined)` on card elements when certain node positions haven't been computed during animation. Added a MutationObserver that sanitizes invalid transforms, preventing text clipping and mispositioned cards.
 
+- **Gramps import missing place hierarchy from placeref chains** ([#259](https://github.com/banisterious/obsidian-charted-roots/issues/259)): Places without `<ptitle>` that encode hierarchy via `<placeref>` links (e.g., County → State → Country) were imported as flat single-level notes with no parent relationships. Now follows placeref chains to build full hierarchical names, matching GEDCOM importer behavior.
+
 ---
 
 ## [0.20.9] - 2026-02-11
