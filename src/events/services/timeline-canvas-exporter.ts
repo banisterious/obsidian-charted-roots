@@ -536,7 +536,7 @@ export class TimelineCanvasExporter {
 		const noPerson: EventNote[] = [];
 
 		for (const event of events) {
-			const person = event.person?.replace(/^\[\[/, '').replace(/\]\]$/, '') || '';
+			const person = (event.person || event.persons?.[0])?.replace(/^\[\[/, '').replace(/\]\]$/, '') || '';
 			if (person) {
 				if (!byPerson.has(person)) {
 					byPerson.set(person, []);
@@ -625,7 +625,7 @@ export class TimelineCanvasExporter {
 		const noPerson: EventNote[] = [];
 
 		for (const event of events) {
-			const person = event.person?.replace(/^\[\[/, '').replace(/\]\]$/, '') || '';
+			const person = (event.person || event.persons?.[0])?.replace(/^\[\[/, '').replace(/\]\]$/, '') || '';
 			if (person) {
 				if (!byPerson.has(person)) {
 					byPerson.set(person, []);

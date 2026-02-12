@@ -82,8 +82,6 @@ properties:
     displayName: End Date
   note.${date_precision}:
     displayName: Precision
-  note.${person}:
-    displayName: Person
   note.${persons}:
     displayName: People
   note.${place}:

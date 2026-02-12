@@ -787,11 +787,14 @@ export class CreateEventModal extends Modal {
 					delete frontmatter.date_end;
 				}
 
+				// Always use persons array for consistency (matches EventService pattern)
 				if (this.person.trim()) {
-					frontmatter.person = `[[${this.person.trim()}]]`;
+					frontmatter.persons = [`[[${this.person.trim()}]]`];
 				} else {
-					delete frontmatter.person;
+					delete frontmatter.persons;
 				}
+				// Always remove legacy person property during updates
+				delete frontmatter.person;
 
 				if (this.place.trim()) {
 					const placeValue = this.place.trim().startsWith('[[') ? this.place.trim() : `[[${this.place.trim()}]]`;

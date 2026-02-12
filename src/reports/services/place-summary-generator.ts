@@ -313,13 +313,20 @@ export class PlaceSummaryGenerator {
 	 * Get participant names from an event
 	 */
 	private getEventParticipants(event: { person?: string; persons?: string[] }): string[] {
+		const seen = new Set<string>();
 		const participants: string[] = [];
 		if (event.person) {
-			participants.push(this.extractLinkName(event.person));
+			const name = this.extractLinkName(event.person);
+			seen.add(name);
+			participants.push(name);
 		}
 		if (event.persons) {
 			for (const p of event.persons) {
-				participants.push(this.extractLinkName(p));
+				const name = this.extractLinkName(p);
+				if (!seen.has(name)) {
+					seen.add(name);
+					participants.push(name);
+				}
 			}
 		}
 		return participants;

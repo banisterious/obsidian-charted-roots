@@ -560,14 +560,17 @@ function renderEventTable(
 
 		// Person cell
 		const personCell = row.createEl('td', { cls: 'crc-timeline-cell-person' });
-		// Collect all people (from both person and persons fields)
-		const allPeople: string[] = [];
+		// Collect all people (from both person and persons fields), deduplicated
+		const personSet = new Set<string>();
 		if (event.person) {
-			allPeople.push(event.person.replace(/^\[\[/, '').replace(/\]\]$/, ''));
+			personSet.add(event.person.replace(/^\[\[/, '').replace(/\]\]$/, ''));
 		}
 		if (event.persons && event.persons.length > 0) {
-			allPeople.push(...event.persons.map(p => p.replace(/^\[\[/, '').replace(/\]\]$/, '')));
+			for (const p of event.persons) {
+				personSet.add(p.replace(/^\[\[/, '').replace(/\]\]$/, ''));
+			}
 		}
+		const allPeople = Array.from(personSet);
 
 		if (allPeople.length > 0) {
 			personCell.textContent = allPeople.join(', ');
