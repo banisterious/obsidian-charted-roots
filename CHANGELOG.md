@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Gramps import missing place hierarchy from placeref chains** ([#259](https://github.com/banisterious/obsidian-charted-roots/issues/259)): Places without `<ptitle>` that encode hierarchy via `<placeref>` links (e.g., County → State → Country) were imported as flat single-level notes with no parent relationships. Now follows placeref chains to build full hierarchical names, matching GEDCOM importer behavior.
 
+- **Duplicate person entries in event displays** ([#261](https://github.com/banisterious/obsidian-charted-roots/issues/261)): The event edit modal wrote a `person` property directly to frontmatter instead of using the `persons` array, causing the same person to appear twice in event listings. Fixed the edit modal to write `persons[]` consistently, added deduplication to remaining display paths, and made Gantt timeline grouping resilient to either format.
+
 ---
 
 ## [0.20.9] - 2026-02-11
