@@ -68,6 +68,8 @@ export interface ParsedGrampsPerson {
 	noteRefs: string[];
 	// Custom attributes (e.g., Research Level)
 	attributes: Record<string, string>;
+	// Resolved tag names
+	tags: string[];
 }
 
 /**
@@ -85,6 +87,8 @@ export interface ParsedGrampsPlace {
 	mediaRefs: string[];
 	/** Note references */
 	noteRefs: string[];
+	/** Resolved tag names */
+	tags: string[];
 }
 
 /**
@@ -109,6 +113,8 @@ export interface ParsedGrampsEvent {
 	noteRefs: string[];
 	/** Family handle if this event comes from a family (for family notes fallback) */
 	familyHandle?: string;
+	/** Resolved tag names */
+	tags: string[];
 }
 
 /**
@@ -131,6 +137,8 @@ export interface ParsedGrampsSource {
 	sourceMedium?: string;
 	/** Media reference handles (for user to resolve manually) - Phase 2.2 */
 	mediaRefs?: string[];
+	/** Resolved tag names */
+	tags: string[];
 }
 
 /**
@@ -156,6 +164,8 @@ export interface ParsedGrampsData {
 	events: Map<string, ParsedGrampsEvent>;
 	sources: Map<string, ParsedGrampsSource>;
 	citations: Map<string, ParsedGrampsCitation>;
+	/** Number of tag definitions found in the Gramps file */
+	tagCount: number;
 	header: {
 		source?: string;
 		version?: string;
@@ -311,6 +321,12 @@ export class GrampsParser {
 		// Parse raw Gramps database
 		const database = this.parseDatabase(doc);
 
+		// Helper to resolve tag handles to tag names
+		const resolveTags = (tagRefs: string[]): string[] =>
+			tagRefs
+				.map(h => database.tags.get(h)?.name)
+				.filter((n): n is string => !!n);
+
 		// Convert to parsed format with resolved relationships
 		const persons = new Map<string, ParsedGrampsPerson>();
 
@@ -318,6 +334,7 @@ export class GrampsParser {
 		for (const [handle, grampsPerson] of database.persons) {
 			const parsed = this.convertPerson(grampsPerson, database);
 			if (parsed) {
+				parsed.tags = resolveTags(grampsPerson.tagRefs);
 				persons.set(handle, parsed);
 			}
 		}
@@ -336,7 +353,8 @@ export class GrampsParser {
 				parentRef: grampsPlace.parentRef,
 				hasPtitle: grampsPlace.hasPtitle,
 				mediaRefs: grampsPlace.mediaRefs || [],
-				noteRefs: grampsPlace.noteRefs || []
+				noteRefs: grampsPlace.noteRefs || [],
+				tags: resolveTags(grampsPlace.tagRefs)
 			});
 		}
 
@@ -405,7 +423,8 @@ export class GrampsParser {
 				citationHandles: grampsEvent.citationRefs || [],
 				mediaRefs: grampsEvent.mediaRefs || [],
 				noteRefs,
-				familyHandle
+				familyHandle,
+				tags: resolveTags(grampsEvent.tagRefs)
 			});
 		}
 
@@ -454,7 +473,8 @@ export class GrampsParser {
 				repositoryName,
 				repositoryType,
 				sourceMedium,
-				mediaRefs
+				mediaRefs,
+				tags: resolveTags(grampsSource.tagRefs)
 			});
 		}
 
@@ -470,7 +490,7 @@ export class GrampsParser {
 			});
 		}
 
-		logger.info('parse', `Parsed ${persons.size} persons, ${places.size} places, ${events.size} events, ${sources.size} sources, ${citations.size} citations, and ${database.media.size} media objects from Gramps XML`);
+		logger.info('parse', `Parsed ${persons.size} persons, ${places.size} places, ${events.size} events, ${sources.size} sources, ${citations.size} citations, ${database.tags.size} tags, and ${database.media.size} media objects from Gramps XML`);
 
 		return {
 			persons,
@@ -478,6 +498,7 @@ export class GrampsParser {
 			events,
 			sources,
 			citations,
+			tagCount: database.tags.size,
 			header: {
 				source: database.header?.createdBy,
 				version: database.header?.version
@@ -499,7 +520,8 @@ export class GrampsParser {
 			citations: new Map(),
 			notes: new Map(),
 			repositories: new Map(),
-			media: new Map()
+			media: new Map(),
+			tags: new Map()
 		};
 
 		// Parse header
@@ -512,6 +534,21 @@ export class GrampsParser {
 				mediapath: header.querySelector('mediapath')?.textContent || undefined
 			};
 		}
+
+		// Parse tags first (all entities may reference them)
+		const tags = doc.querySelectorAll('tags > tag');
+		tags.forEach(tagEl => {
+			const handle = tagEl.getAttribute('handle');
+			const name = tagEl.getAttribute('name');
+			if (handle && name) {
+				database.tags.set(handle, {
+					handle,
+					name,
+					color: tagEl.getAttribute('color') || undefined,
+					priority: tagEl.getAttribute('priority') ? parseInt(tagEl.getAttribute('priority')!, 10) : undefined
+				});
+			}
+		});
 
 		// Parse events first (needed for person/family data)
 		const events = doc.querySelectorAll('events > event');
@@ -614,7 +651,8 @@ export class GrampsParser {
 			parentin: [],
 			mediaRefs: [],
 			attributes: [],
-			noteRefs: []
+			noteRefs: [],
+			tagRefs: []
 		};
 
 		// Parse names
@@ -673,6 +711,14 @@ export class GrampsParser {
 			const hlink = refEl.getAttribute('hlink');
 			if (hlink) {
 				person.noteRefs.push(hlink);
+			}
+		});
+
+		// Parse tag references
+		el.querySelectorAll('tagref').forEach(refEl => {
+			const hlink = refEl.getAttribute('hlink');
+			if (hlink) {
+				person.tagRefs.push(hlink);
 			}
 		});
 
@@ -742,6 +788,15 @@ export class GrampsParser {
 			}
 		});
 
+		// Parse tag references
+		const tagRefs: string[] = [];
+		el.querySelectorAll('tagref').forEach(refEl => {
+			const hlink = refEl.getAttribute('hlink');
+			if (hlink) {
+				tagRefs.push(hlink);
+			}
+		});
+
 		const event: GrampsEvent = {
 			handle,
 			id: el.getAttribute('id') || undefined,
@@ -751,7 +806,8 @@ export class GrampsParser {
 			description: el.querySelector('description')?.textContent || undefined,
 			citationRefs,
 			mediaRefs,
-			noteRefs
+			noteRefs,
+			tagRefs
 		};
 
 		return event;
@@ -846,6 +902,15 @@ export class GrampsParser {
 			}
 		});
 
+		// Parse tag references
+		const tagRefs: string[] = [];
+		el.querySelectorAll('tagref').forEach(refEl => {
+			const hlink = refEl.getAttribute('hlink');
+			if (hlink) {
+				tagRefs.push(hlink);
+			}
+		});
+
 		const place: GrampsPlace = {
 			handle,
 			id: el.getAttribute('id') || undefined,
@@ -854,7 +919,8 @@ export class GrampsParser {
 			parentRef,
 			hasPtitle: !!ptitle,
 			mediaRefs,
-			noteRefs
+			noteRefs,
+			tagRefs
 		};
 
 		return place;
@@ -875,7 +941,8 @@ export class GrampsParser {
 			mother: el.querySelector('mother')?.getAttribute('hlink') || undefined,
 			eventrefs: [],
 			children: [],
-			noteRefs: []
+			noteRefs: [],
+			tagRefs: []
 		};
 
 		// Parse event references
@@ -906,6 +973,14 @@ export class GrampsParser {
 			const hlink = refEl.getAttribute('hlink');
 			if (hlink) {
 				family.noteRefs.push(hlink);
+			}
+		});
+
+		// Parse tag references
+		el.querySelectorAll('tagref').forEach(refEl => {
+			const hlink = refEl.getAttribute('hlink');
+			if (hlink) {
+				family.tagRefs.push(hlink);
 			}
 		});
 
@@ -1128,6 +1203,15 @@ export class GrampsParser {
 			}
 		});
 
+		// Parse tag references
+		const tagRefs: string[] = [];
+		el.querySelectorAll('tagref').forEach(refEl => {
+			const hlink = refEl.getAttribute('hlink');
+			if (hlink) {
+				tagRefs.push(hlink);
+			}
+		});
+
 		const source: GrampsSource = {
 			handle,
 			id: el.getAttribute('id') || undefined,
@@ -1137,7 +1221,8 @@ export class GrampsParser {
 			abbrev: el.querySelector('sabbrev')?.textContent || undefined,
 			noteRefs,
 			repoRef,
-			mediaRefs
+			mediaRefs,
+			tagRefs
 		};
 
 		return source;
@@ -1230,7 +1315,8 @@ export class GrampsParser {
 			marriages: new Map(),
 			mediaRefs: person.mediaRefs || [],
 			noteRefs: person.noteRefs || [],
-			attributes
+			attributes,
+			tags: []
 		};
 	}
 

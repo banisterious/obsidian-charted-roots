@@ -55,6 +55,16 @@ export interface GrampsEventRef {
 }
 
 /**
+ * Tag record
+ */
+export interface GrampsTag {
+	handle: string;
+	name: string;
+	color?: string;
+	priority?: number;
+}
+
+/**
  * Event record
  */
 export interface GrampsEvent {
@@ -67,6 +77,7 @@ export interface GrampsEvent {
 	citationRefs: string[];  // Handle links to citations
 	mediaRefs: string[];     // Handle links to media objects
 	noteRefs: string[];      // Handle links to notes
+	tagRefs: string[];       // Handle links to tags
 }
 
 /**
@@ -83,6 +94,7 @@ export interface GrampsPlace {
 	hasPtitle?: boolean;
 	mediaRefs: string[];  // Handle links to media objects
 	noteRefs: string[];   // Handle links to notes
+	tagRefs: string[];    // Handle links to tags
 }
 
 /**
@@ -116,6 +128,7 @@ export interface GrampsPerson {
 	mediaRefs: string[]; // Handle links to media objects
 	attributes: GrampsAttribute[];  // Custom person attributes
 	noteRefs: string[];  // Handle links to notes
+	tagRefs: string[];   // Handle links to tags
 }
 
 /**
@@ -130,6 +143,7 @@ export interface GrampsFamily {
 	eventrefs: GrampsEventRef[];
 	children: GrampsChildRef[];
 	noteRefs: string[];  // Handle links to notes
+	tagRefs: string[];   // Handle links to tags
 }
 
 /**
@@ -145,6 +159,7 @@ export interface GrampsSource {
 	noteRefs: string[];  // Handle links to notes
 	repoRef?: GrampsRepoRef;  // Reference to repository with medium
 	mediaRefs: string[]; // Handle links to media objects (Phase 2.2)
+	tagRefs: string[];   // Handle links to tags
 }
 
 /**
@@ -250,6 +265,7 @@ export interface GrampsDatabase {
 	notes: Map<string, GrampsNote>;
 	repositories: Map<string, GrampsRepository>;
 	media: Map<string, GrampsMedia>;
+	tags: Map<string, GrampsTag>;
 	header?: {
 		createdBy?: string;
 		createdDate?: string;
