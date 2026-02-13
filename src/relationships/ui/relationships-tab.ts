@@ -129,7 +129,7 @@ export function renderRelationshipsList(options: RelationshipsListOptions): void
 	loading.createSpan({ text: 'Loading relationships...' });
 
 	try {
-		const relationships = service.getAllRelationships();
+		const relationships = service.getAllRelationshipsWithInferred();
 		const stats = service.getStats();
 
 		loading.remove();

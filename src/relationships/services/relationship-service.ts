@@ -219,6 +219,28 @@ export class RelationshipService {
 	}
 
 	/**
+	 * Get all relationships including inferred inverse relationships
+	 */
+	getAllRelationshipsWithInferred(forceRefresh = false): ParsedRelationship[] {
+		const defined = this.getAllRelationships(forceRefresh);
+
+		// Collect all person cr_ids involved in relationships
+		const allCrIds = new Set<string>();
+		for (const rel of defined) {
+			allCrIds.add(rel.sourceCrId);
+			if (rel.targetCrId) allCrIds.add(rel.targetCrId);
+		}
+
+		// Add inferred inverse relationships
+		const inferred: ParsedRelationship[] = [];
+		for (const crId of allCrIds) {
+			inferred.push(...this.getInverseRelationships(crId));
+		}
+
+		return [...defined, ...inferred];
+	}
+
+	/**
 	 * Get statistics about relationships in the vault
 	 */
 	getStats(): RelationshipStats {
