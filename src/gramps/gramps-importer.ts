@@ -1787,6 +1787,14 @@ export class GrampsImporter {
 			}
 		}
 
+		// Import Gramps tags as Obsidian tags
+		if (source.tags && source.tags.length > 0) {
+			frontmatterLines.push('tags:');
+			for (const t of source.tags) {
+				frontmatterLines.push(`  - "${t.replace(/"/g, '\\"')}"`);
+			}
+		}
+
 		frontmatterLines.push('---');
 
 		// Build note body with source notes if available
@@ -2045,6 +2053,14 @@ export class GrampsImporter {
 
 		if (hasPrivateNotes) {
 			frontmatterLines.push(`${prop('private')}: true`);
+		}
+
+		// Import Gramps tags as Obsidian tags
+		if (event.tags && event.tags.length > 0) {
+			frontmatterLines.push('tags:');
+			for (const t of event.tags) {
+				frontmatterLines.push(`  - "${t.replace(/"/g, '\\"')}"`);
+			}
 		}
 
 		frontmatterLines.push('---');
