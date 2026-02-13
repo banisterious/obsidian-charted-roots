@@ -2083,6 +2083,7 @@ export class FamilyGraphService {
 	 * Gets all cached person nodes
 	 */
 	getAllPeople(): PersonNode[] {
+		this.ensureCacheLoaded();
 		return Array.from(this.personCache.values());
 	}
 

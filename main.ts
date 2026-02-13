@@ -599,11 +599,11 @@ export default class CanvasRootsPlugin extends Plugin {
 				const crId = cache?.frontmatter?.cr_id;
 
 				// Valid for person notes (with cr_id), event notes, and place notes
-				const validTypes = ['event', 'place'];
+				const validTypes = ['person', 'event', 'place'];
 				const isValidType = validTypes.includes(crType);
-				const isPersonNote = crId && !crType; // Person notes have cr_id but no cr_type
+				const isLegacyPersonNote = crId && !crType; // Legacy person notes have cr_id but no cr_type
 
-				if (!isValidType && !isPersonNote) return false;
+				if (!isValidType && !isLegacyPersonNote) return false;
 
 				if (!checking) {
 					new AddResearchQuestionModal(this.app, file).open();
