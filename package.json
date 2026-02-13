@@ -16,7 +16,8 @@
 		"lint:css:fix": "stylelint \"styles/**/*.css\" --fix",
 		"format:css": "prettier --write \"styles/**/*.css\"",
 		"deploy": "./deploy.sh",
-		"dev:deploy": "./dev-deploy.sh"
+		"dev:deploy": "./dev-deploy.sh",
+		"postinstall": "node patch-family-chart.js"
 	},
 	"keywords": [
 		"obsidian",
