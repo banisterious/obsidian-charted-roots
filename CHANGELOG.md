@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Organization base template missing managed members** ([#264](https://github.com/banisterious/obsidian-charted-roots/issues/264)): Members added via the Manage Members modal were stored only on person notes, making them invisible to the organization base template. Member lists are now synced to the organization note's frontmatter on each add/remove/edit, and the base template includes a Members column.
 
+- **GEDCOM import assigns wrong spouses/children for duplicate names** ([#258](https://github.com/banisterious/obsidian-charted-roots/issues/258)): When importing people with identical names (e.g., 7 "William Hurst" individuals), wikilinks for spouses, children, and step-parents all pointed to the first person's file instead of the correct deduplicated file. The wikilink fixer now handles both single-value and array YAML formats and matches any wikilink format including piped links.
+
 ---
 
 ## [0.20.9] - 2026-02-11

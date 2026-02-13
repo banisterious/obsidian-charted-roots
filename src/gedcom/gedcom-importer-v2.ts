@@ -847,10 +847,6 @@ export class GedcomImporterV2 {
 				const spouse = gedcomData.individuals.get(ref);
 				return this.sanitizeName(spouse?.name || 'Unknown');
 			});
-			// Debug: trace spouse data for diagnosis
-			if (individual.name?.includes('William') && individual.name?.includes('Hurst')) {
-				console.debug(`[GEDCOM Import] Creating ${individual.name} (${individual.id}): spouseRefs=${JSON.stringify(individual.spouseRefs)}, spouseNames=${JSON.stringify(personData.spouseName)}`);
-			}
 		}
 
 		// Find children (people who have this person as a biological parent)
@@ -1069,12 +1065,6 @@ export class GedcomImporterV2 {
 			}
 		}
 
-		// DEBUG: Log replacements for debugging spouse_id issues
-		if (replacements.length > 0) {
-			console.debug(`[GEDCOM Import] Updating relationships for ${individual.name} (${individual.id}):`,
-				replacements.map(r => `${r.from} -> ${r.to}`).join(', '));
-		}
-
 		// Apply replacements
 		// Sort by length descending to replace longer IDs first (e.g., I27 before I2)
 		// This prevents partial matches where I2 matches within I27
@@ -1118,10 +1108,11 @@ export class GedcomImporterV2 {
 		): string => {
 			if (actualFilename === displayName) return content; // No change needed
 
-			// For single-value properties (father, mother), match the property line
-			// Pattern: property: "[[DisplayName]]" followed by property_id: cr_id
+			// For single-value properties, match the property line
+			// Pattern: property: "[[...]]" followed by property_id: cr_id
+			// Match any wikilink (simple or piped) — the cr_id anchor ensures correctness
 			const singleValuePattern = new RegExp(
-				`(${propertyName}:\\s*)"\\[\\[${this.escapeRegex(displayName)}\\]\\]"(\\n${idPropertyName}:\\s*${this.escapeRegex(targetCrId)})`,
+				`(${propertyName}:\\s*)"\\[\\[[^\\]]+\\]\\]"(\\n${idPropertyName}:\\s*${this.escapeRegex(targetCrId)})`,
 				'm'
 			);
 			if (singleValuePattern.test(content)) {
@@ -1130,7 +1121,7 @@ export class GedcomImporterV2 {
 
 			// Also try reverse order (id before wikilink)
 			const reversePattern = new RegExp(
-				`(${idPropertyName}:\\s*${this.escapeRegex(targetCrId)}\\n${propertyName}:\\s*)"\\[\\[${this.escapeRegex(displayName)}\\]\\]"`,
+				`(${idPropertyName}:\\s*${this.escapeRegex(targetCrId)}\\n${propertyName}:\\s*)"\\[\\[[^\\]]+\\]\\]"`,
 				'm'
 			);
 			if (reversePattern.test(content)) {
@@ -1166,12 +1157,12 @@ export class GedcomImporterV2 {
 			const wikilinkLines = wikilinkArrayMatch[2].split('\n').filter(line => line.trim().startsWith('- '));
 			if (targetIndex >= wikilinkLines.length) return content;
 
-			// Check if this line contains the display name we're looking for
+			// Check if this line contains a wikilink
 			const targetLine = wikilinkLines[targetIndex];
-			if (!targetLine.includes(`[[${displayName}]]`)) return content;
+			if (!targetLine.includes('[[')) return content;
 
-			// Replace only this specific line
-			const newLine = targetLine.replace(`[[${displayName}]]`, `[[${actualFilename}]]`);
+			// Replace the wikilink (handles both simple [[Name]] and piped [[file|Name]] formats)
+			const newLine = targetLine.replace(/\[\[[^\]]+\]\]/, `[[${actualFilename}]]`);
 			wikilinkLines[targetIndex] = newLine;
 
 			// Rebuild the array section
@@ -1201,25 +1192,37 @@ export class GedcomImporterV2 {
 			}
 		}
 
-		// Spouses (array)
+		// Spouses (array or single value)
 		for (const spouseRef of individual.spouseRefs) {
 			const spousePath = gedcomToNotePath.get(spouseRef);
 			const spouse = gedcomData.individuals.get(spouseRef);
 			const spouseCrId = gedcomToCrId.get(spouseRef);
 			if (spousePath && spouse?.name && spouseCrId) {
 				const actualFilename = this.getFilenameFromPath(spousePath);
-				updatedContent = fixWikilinkInArrayByCrId(updatedContent, 'spouse', 'spouse_id', spouseCrId, spouse.name, actualFilename);
+				const afterArray = fixWikilinkInArrayByCrId(updatedContent, 'spouse', 'spouse_id', spouseCrId, spouse.name, actualFilename);
+				if (afterArray !== updatedContent) {
+					updatedContent = afterArray;
+				} else {
+					// Fallback to single-value format (when only one spouse)
+					updatedContent = fixWikilinkByCrId(updatedContent, 'spouse', 'spouse_id', spouseCrId, spouse.name, actualFilename);
+				}
 			}
 		}
 
-		// Children (array) - fix wikilinks for children who have this person as their biological parent
+		// Children (array or single value) - fix wikilinks for children who have this person as their biological parent
 		for (const [childId, child] of gedcomData.individuals) {
 			if (child.fatherRef === individual.id || child.motherRef === individual.id) {
 				const childPath = gedcomToNotePath.get(childId);
 				const childCrId = gedcomToCrId.get(childId);
 				if (childPath && child.name && childCrId) {
 					const actualFilename = this.getFilenameFromPath(childPath);
-					updatedContent = fixWikilinkInArrayByCrId(updatedContent, 'children', 'children_id', childCrId, child.name, actualFilename);
+					const afterArray = fixWikilinkInArrayByCrId(updatedContent, 'children', 'children_id', childCrId, child.name, actualFilename);
+					if (afterArray !== updatedContent) {
+						updatedContent = afterArray;
+					} else {
+						// Fallback to single-value format (when only one child)
+						updatedContent = fixWikilinkByCrId(updatedContent, 'children', 'children_id', childCrId, child.name, actualFilename);
+					}
 				}
 			}
 		}
@@ -1227,25 +1230,35 @@ export class GedcomImporterV2 {
 		// Step/adoptive parents
 		const stepAdoptiveParentsForWikilinks = this.extractStepAdoptiveParents(individual, gedcomData);
 
-		// Stepfathers (array)
+		// Stepfathers (array or single value)
 		for (const stepfatherRef of stepAdoptiveParentsForWikilinks.stepfatherRefs) {
 			const stepfatherPath = gedcomToNotePath.get(stepfatherRef);
 			const stepfather = gedcomData.individuals.get(stepfatherRef);
 			const stepfatherCrId = gedcomToCrId.get(stepfatherRef);
 			if (stepfatherPath && stepfather?.name && stepfatherCrId) {
 				const actualFilename = this.getFilenameFromPath(stepfatherPath);
-				updatedContent = fixWikilinkInArrayByCrId(updatedContent, 'stepfather', 'stepfather_id', stepfatherCrId, stepfather.name, actualFilename);
+				const afterArray = fixWikilinkInArrayByCrId(updatedContent, 'stepfather', 'stepfather_id', stepfatherCrId, stepfather.name, actualFilename);
+				if (afterArray !== updatedContent) {
+					updatedContent = afterArray;
+				} else {
+					updatedContent = fixWikilinkByCrId(updatedContent, 'stepfather', 'stepfather_id', stepfatherCrId, stepfather.name, actualFilename);
+				}
 			}
 		}
 
-		// Stepmothers (array)
+		// Stepmothers (array or single value)
 		for (const stepmotherRef of stepAdoptiveParentsForWikilinks.stepmotherRefs) {
 			const stepmotherPath = gedcomToNotePath.get(stepmotherRef);
 			const stepmother = gedcomData.individuals.get(stepmotherRef);
 			const stepmotherCrId = gedcomToCrId.get(stepmotherRef);
 			if (stepmotherPath && stepmother?.name && stepmotherCrId) {
 				const actualFilename = this.getFilenameFromPath(stepmotherPath);
-				updatedContent = fixWikilinkInArrayByCrId(updatedContent, 'stepmother', 'stepmother_id', stepmotherCrId, stepmother.name, actualFilename);
+				const afterArray = fixWikilinkInArrayByCrId(updatedContent, 'stepmother', 'stepmother_id', stepmotherCrId, stepmother.name, actualFilename);
+				if (afterArray !== updatedContent) {
+					updatedContent = afterArray;
+				} else {
+					updatedContent = fixWikilinkByCrId(updatedContent, 'stepmother', 'stepmother_id', stepmotherCrId, stepmother.name, actualFilename);
+				}
 			}
 		}
 
