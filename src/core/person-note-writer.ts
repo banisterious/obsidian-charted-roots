@@ -148,6 +148,7 @@ export interface PersonData {
 	dnaEndogamyFlag?: boolean;   // Flag for endogamous populations
 	dnaNotes?: string;           // Free-form notes
 	needsResearch?: string[];    // Research questions requiring investigation
+	tags?: string[];             // Obsidian tags (e.g., from Gramps import)
 }
 
 /**
@@ -307,6 +308,10 @@ export async function createPersonNote(
 
 	if (person.needsResearch && person.needsResearch.length > 0) {
 		frontmatter[prop('needs_research')] = person.needsResearch;
+	}
+
+	if (person.tags && person.tags.length > 0) {
+		frontmatter['tags'] = person.tags;
 	}
 
 	// Sources (dual storage: wikilinks + _id array)

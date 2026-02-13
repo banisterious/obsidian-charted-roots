@@ -713,6 +713,11 @@ export class GrampsImporter {
 			}
 		}
 
+		// Import Gramps tags as Obsidian tags
+		if (person.tags && person.tags.length > 0) {
+			personData.tags = person.tags;
+		}
+
 		// Resolve and append notes from Gramps (if enabled)
 		if (options.importNotes !== false && person.noteRefs && person.noteRefs.length > 0) {
 			// Check if we're using separate note files (Phase 4)
@@ -1674,7 +1679,8 @@ export class GrampsImporter {
 				placeType: placeType,
 				parentPlace: parentWikilink ? `[[${parentWikilink}]]` : undefined,
 				parentPlaceId: parentCrId,
-				media: resolvedMedia.length > 0 ? resolvedMedia : undefined
+				media: resolvedMedia.length > 0 ? resolvedMedia : undefined,
+				tags: grampsPlace?.tags && grampsPlace.tags.length > 0 ? grampsPlace.tags : undefined
 			};
 
 			// Write place note

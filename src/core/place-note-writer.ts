@@ -52,6 +52,7 @@ export interface PlaceData {
 	private?: boolean;         // Privacy flag (if any attached note is private)
 	maps?: string[];           // Map IDs this place appears on (for per-map filtering)
 	needsResearch?: string[];  // Research questions requiring investigation
+	tags?: string[];           // Obsidian tags (e.g., from Gramps import)
 }
 
 /**
@@ -188,6 +189,10 @@ export async function createPlaceNote(
 	// Research questions
 	if (place.needsResearch && place.needsResearch.length > 0) {
 		frontmatter[prop('needs_research')] = place.needsResearch;
+	}
+
+	if (place.tags && place.tags.length > 0) {
+		frontmatter['tags'] = place.tags;
 	}
 
 	logger.debug('frontmatter', `Final: ${JSON.stringify(frontmatter)}`);
