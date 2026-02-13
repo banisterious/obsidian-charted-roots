@@ -262,116 +262,88 @@ export async function updatePlaceNote(
 	file: TFile,
 	updates: Partial<PlaceData>
 ): Promise<void> {
-	const content = await app.vault.read(file);
-
-	// Parse existing frontmatter
-	const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
-	if (!frontmatterMatch) {
-		logger.warn('update', `No frontmatter found in: ${file.path}`);
-		return;
-	}
-
-	const bodyContent = content.substring(frontmatterMatch[0].length);
-
-	// Get current frontmatter from cache
-	const cache = app.metadataCache.getFileCache(file);
-	const currentFrontmatter = cache?.frontmatter || {};
-
-	// Apply updates
-	const newFrontmatter: Record<string, unknown> = { ...currentFrontmatter };
-
-	if (updates.name !== undefined) {
-		newFrontmatter.name = updates.name;
-	}
-	if (updates.aliases !== undefined) {
-		newFrontmatter.aliases = updates.aliases;
-	}
-	if (updates.placeCategory !== undefined) {
-		if (updates.placeCategory === DEFAULT_PLACE_CATEGORY) {
-			delete newFrontmatter.place_category;
-		} else {
-			newFrontmatter.place_category = updates.placeCategory;
+	await app.fileManager.processFrontMatter(file, (frontmatter) => {
+		if (updates.name !== undefined) {
+			frontmatter.name = updates.name;
 		}
-	}
-	if (updates.placeType !== undefined) {
-		newFrontmatter.place_type = updates.placeType;
-	}
-	if (updates.universe !== undefined) {
-		if (updates.universe && isUniverseApplicable(updates.placeCategory || currentFrontmatter.place_category)) {
-			newFrontmatter.universe = updates.universe;
-		} else {
-			delete newFrontmatter.universe;
+		if (updates.aliases !== undefined) {
+			frontmatter.aliases = updates.aliases;
 		}
-	}
-	if (updates.parentPlace !== undefined) {
-		newFrontmatter.parent_place = createSmartWikilink(updates.parentPlace, app);
-	}
-	if (updates.parentPlaceId !== undefined) {
-		newFrontmatter.parent_place_id = updates.parentPlaceId;
-	}
-	if (updates.coordinates !== undefined) {
-		// Remove any legacy nested coordinates
-		delete newFrontmatter.coordinates;
-		// Write flat properties
-		if (updates.coordinates) {
-			newFrontmatter.coordinates_lat = updates.coordinates.lat;
-			newFrontmatter.coordinates_long = updates.coordinates.long;
-		} else {
-			delete newFrontmatter.coordinates_lat;
-			delete newFrontmatter.coordinates_long;
-		}
-	}
-	if (updates.customCoordinates !== undefined) {
-		// Remove any legacy nested custom_coordinates
-		delete newFrontmatter.custom_coordinates;
-		// Write flat properties
-		if (updates.customCoordinates) {
-			newFrontmatter.custom_coordinates_x = updates.customCoordinates.x;
-			newFrontmatter.custom_coordinates_y = updates.customCoordinates.y;
-			if (updates.customCoordinates.map) {
-				newFrontmatter.custom_coordinates_map = updates.customCoordinates.map;
+		if (updates.placeCategory !== undefined) {
+			if (updates.placeCategory === DEFAULT_PLACE_CATEGORY) {
+				delete frontmatter.place_category;
 			} else {
-				delete newFrontmatter.custom_coordinates_map;
+				frontmatter.place_category = updates.placeCategory;
 			}
-		} else {
-			delete newFrontmatter.custom_coordinates_x;
-			delete newFrontmatter.custom_coordinates_y;
-			delete newFrontmatter.custom_coordinates_map;
 		}
-	}
-	if (updates.historicalNames !== undefined) {
-		newFrontmatter.historical_names = updates.historicalNames;
-	}
-	if (updates.collection !== undefined) {
-		if (updates.collection) {
-			newFrontmatter.collection = updates.collection;
-		} else {
-			delete newFrontmatter.collection;
+		if (updates.placeType !== undefined) {
+			frontmatter.place_type = updates.placeType;
 		}
-	}
-	if (updates.maps !== undefined) {
-		if (updates.maps && updates.maps.length > 0) {
-			newFrontmatter.maps = updates.maps;
-		} else {
-			delete newFrontmatter.maps;
+		if (updates.universe !== undefined) {
+			if (updates.universe && isUniverseApplicable(updates.placeCategory || frontmatter.place_category)) {
+				frontmatter.universe = updates.universe;
+			} else {
+				delete frontmatter.universe;
+			}
 		}
-	}
-	if (updates.needsResearch !== undefined) {
-		if (updates.needsResearch && updates.needsResearch.length > 0) {
-			newFrontmatter.needs_research = updates.needsResearch;
-		} else {
-			delete newFrontmatter.needs_research;
+		if (updates.parentPlace !== undefined) {
+			frontmatter.parent_place = createWikilink(updates.parentPlace, app);
 		}
-	}
+		if (updates.parentPlaceId !== undefined) {
+			frontmatter.parent_place_id = updates.parentPlaceId;
+		}
+		if (updates.coordinates !== undefined) {
+			delete frontmatter.coordinates; // Remove legacy nested
+			if (updates.coordinates) {
+				frontmatter.coordinates_lat = updates.coordinates.lat;
+				frontmatter.coordinates_long = updates.coordinates.long;
+			} else {
+				delete frontmatter.coordinates_lat;
+				delete frontmatter.coordinates_long;
+			}
+		}
+		if (updates.customCoordinates !== undefined) {
+			delete frontmatter.custom_coordinates; // Remove legacy nested
+			if (updates.customCoordinates) {
+				frontmatter.custom_coordinates_x = updates.customCoordinates.x;
+				frontmatter.custom_coordinates_y = updates.customCoordinates.y;
+				if (updates.customCoordinates.map) {
+					frontmatter.custom_coordinates_map = updates.customCoordinates.map;
+				} else {
+					delete frontmatter.custom_coordinates_map;
+				}
+			} else {
+				delete frontmatter.custom_coordinates_x;
+				delete frontmatter.custom_coordinates_y;
+				delete frontmatter.custom_coordinates_map;
+			}
+		}
+		if (updates.historicalNames !== undefined) {
+			frontmatter.historical_names = updates.historicalNames;
+		}
+		if (updates.collection !== undefined) {
+			if (updates.collection) {
+				frontmatter.collection = updates.collection;
+			} else {
+				delete frontmatter.collection;
+			}
+		}
+		if (updates.maps !== undefined) {
+			if (updates.maps && updates.maps.length > 0) {
+				frontmatter.maps = updates.maps;
+			} else {
+				delete frontmatter.maps;
+			}
+		}
+		if (updates.needsResearch !== undefined) {
+			if (updates.needsResearch && updates.needsResearch.length > 0) {
+				frontmatter.needs_research = updates.needsResearch;
+			} else {
+				delete frontmatter.needs_research;
+			}
+		}
+	});
 
-	// Remove Obsidian metadata properties that shouldn't be in YAML output
-	delete newFrontmatter.position;
-
-	// Build new content
-	const yamlContent = buildYamlFrontmatter(newFrontmatter);
-	const newContent = yamlContent + bodyContent;
-
-	await app.vault.modify(file, newContent);
 	logger.info('update', `Updated place note: ${file.path}`);
 }
 
@@ -471,6 +443,22 @@ function createSmartWikilink(name: string, app: App): string {
 
 	// Standard format
 	return `"[[${name}]]"`;
+}
+
+/**
+ * Create a wikilink for use with processFrontMatter (no YAML quoting)
+ */
+function createWikilink(name: string, app: App): string {
+	if (name.startsWith('[[') && name.endsWith(']]')) {
+		return name;
+	}
+
+	const resolvedFile = app.metadataCache.getFirstLinkpathDest(name, '');
+	if (resolvedFile && resolvedFile.basename !== name) {
+		return `[[${resolvedFile.basename}|${name}]]`;
+	}
+
+	return `[[${name}]]`;
 }
 
 /**
