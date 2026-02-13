@@ -432,6 +432,16 @@ interface ResearchNeededItem {
 	questions: string[];
 }
 
+function parseResearchQuestions(value: unknown): string[] {
+	if (Array.isArray(value)) {
+		return value.map(String).filter(s => s.trim().length > 0);
+	}
+	if (typeof value === 'string' && value.trim().length > 0) {
+		return [value];
+	}
+	return [];
+}
+
 function renderResearchNeededSection(container: HTMLElement, options: DataQualityTabOptions): void {
 	const { plugin, app } = options;
 
@@ -443,13 +453,13 @@ function renderResearchNeededSection(container: HTMLElement, options: DataQualit
 	const allPeople = familyGraph.getAllPeople();
 	for (const person of allPeople) {
 		const cache = app.metadataCache.getFileCache(person.file);
-		const questions = cache?.frontmatter?.needs_research;
-		if (Array.isArray(questions) && questions.length > 0) {
+		const questions = parseResearchQuestions(cache?.frontmatter?.needs_research);
+		if (questions.length > 0) {
 			items.push({
 				name: person.name,
 				file: person.file,
 				type: 'person',
-				questions: questions.map(String)
+				questions
 			});
 		}
 	}
@@ -459,13 +469,13 @@ function renderResearchNeededSection(container: HTMLElement, options: DataQualit
 	const allEvents = eventService.getAllEvents();
 	for (const event of allEvents) {
 		const cache = app.metadataCache.getFileCache(event.file);
-		const questions = cache?.frontmatter?.needs_research;
-		if (Array.isArray(questions) && questions.length > 0) {
+		const questions = parseResearchQuestions(cache?.frontmatter?.needs_research);
+		if (questions.length > 0) {
 			items.push({
 				name: event.title,
 				file: event.file,
 				type: 'event',
-				questions: questions.map(String)
+				questions
 			});
 		}
 	}
@@ -475,13 +485,13 @@ function renderResearchNeededSection(container: HTMLElement, options: DataQualit
 	const allPlaces = placeGraph.getAllPlaces();
 	for (const place of allPlaces) {
 		const cache = app.metadataCache.getFileCache(place.file);
-		const questions = cache?.frontmatter?.needs_research;
-		if (Array.isArray(questions) && questions.length > 0) {
+		const questions = parseResearchQuestions(cache?.frontmatter?.needs_research);
+		if (questions.length > 0) {
 			items.push({
 				name: place.name,
 				file: place.file,
 				type: 'place',
-				questions: questions.map(String)
+				questions
 			});
 		}
 	}

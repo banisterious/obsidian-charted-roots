@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased]
+## [0.20.10] - 2026-02-13
 
 ### Added
 
@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **GEDCOM import assigns wrong spouses/children for duplicate names** ([#258](https://github.com/banisterious/obsidian-charted-roots/issues/258)): When importing people with identical names (e.g., 7 "William Hurst" individuals), wikilinks for spouses, children, and step-parents all pointed to the first person's file instead of the correct deduplicated file. The wikilink fixer now handles both single-value and array YAML formats and matches any wikilink format including piped links.
 
-- **"Research needed" card and command missing for person notes** ([#266](https://github.com/banisterious/obsidian-charted-roots/issues/266)): The "Add research question" command palette entry didn't appear for person notes with `cr_type: person` (only legacy notes without `cr_type` were recognized). Additionally, the Data Quality card didn't load the person cache before querying, so the "Research needed" card was empty when Data Quality was the first tab visited.
+- **"Research needed" card and command missing for person notes** ([#266](https://github.com/banisterious/obsidian-charted-roots/issues/266)): The "Add research question" command palette entry didn't appear for person notes with `cr_type: person` (only legacy notes without `cr_type` were recognized). Additionally, the Data Quality card didn't load the person cache before querying, so the "Research needed" card was empty when Data Quality was the first tab visited. Also fixed `needs_research` not being recognized when Obsidian's property type is set to "text" instead of "list".
 
 ---
 
