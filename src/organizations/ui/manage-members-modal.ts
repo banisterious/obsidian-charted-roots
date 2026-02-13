@@ -289,6 +289,9 @@ export class ManageOrganizationMembersModal extends Modal {
 			// Wait for metadata cache to update
 			await this.waitForCacheUpdate(member.personFile);
 
+			// Sync members list to org note
+			await this.membershipService.syncMembersToOrg(this.organization.file, this.organization.crId);
+
 			// Reload members
 			this.loadMembers();
 			this.onMembersChanged?.();
@@ -335,6 +338,9 @@ export class ManageOrganizationMembersModal extends Modal {
 
 			// Wait for metadata cache to update
 			await this.waitForCacheUpdate(member.personFile);
+
+			// Sync members list to org note
+			await this.membershipService.syncMembersToOrg(this.organization.file, this.organization.crId);
 
 			// Reload members
 			this.loadMembers();
@@ -397,6 +403,9 @@ export class ManageOrganizationMembersModal extends Modal {
 
 		// Wait for metadata cache to update for all modified files
 		await this.waitForFilesCache(addedFiles);
+
+		// Sync members list to org note
+		await this.membershipService.syncMembersToOrg(this.organization.file, this.organization.crId);
 
 		// Reload members
 		this.loadMembers();

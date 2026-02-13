@@ -11,6 +11,7 @@ export const ORGANIZATIONS_BASE_TEMPLATE = `visibleProperties:
   - note.seat
   - note.universe
   - note.collection
+  - note.members
 summaries:
   total_organizations: 'values.length'
 filters:
@@ -41,6 +42,10 @@ properties:
     displayName: Universe
   note.collection:
     displayName: Collection
+  note.members:
+    displayName: Members
+  note.members_id:
+    displayName: Member IDs
   formula.display_name:
     displayName: Display Name
   formula.is_active:
@@ -56,6 +61,7 @@ views:
       - note.parent_org
       - note.founded
       - note.dissolved
+      - note.members
   - name: By Type
     type: table
     groupBy:

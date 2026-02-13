@@ -292,6 +292,28 @@ export class MembershipService {
 	}
 
 	/**
+	 * Sync members list to an organization note's frontmatter
+	 *
+	 * Updates `members` and `members_id` arrays on the org note so that
+	 * Obsidian Bases queries against org notes can display member data.
+	 */
+	async syncMembersToOrg(orgFile: TFile, orgCrId: string): Promise<void> {
+		const members = this.getOrganizationMembers(orgCrId);
+
+		await this.app.fileManager.processFrontMatter(orgFile, (frontmatter) => {
+			if (members.length > 0) {
+				frontmatter.members = members.map(m => `[[${m.personName}]]`);
+				frontmatter.members_id = members.map(m => m.personCrId);
+			} else {
+				delete frontmatter.members;
+				delete frontmatter.members_id;
+			}
+		});
+
+		logger.info('syncMembersToOrg', `Synced ${members.length} members to ${orgFile.basename}`);
+	}
+
+	/**
 	 * Get count of people with memberships and total memberships
 	 */
 	getMembershipStats(): { peopleWithMemberships: number; totalMemberships: number } {
