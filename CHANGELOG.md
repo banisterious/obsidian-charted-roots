@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Duplicate person entries in event displays** ([#261](https://github.com/banisterious/obsidian-charted-roots/issues/261)): The event edit modal wrote a `person` property directly to frontmatter instead of using the `persons` array, causing the same person to appear twice in event listings. Fixed the edit modal to write `persons[]` consistently, added deduplication to remaining display paths, and made Gantt timeline grouping resilient to either format.
 
+- **Inferred relationships filter shows no results** ([#264](https://github.com/banisterious/obsidian-charted-roots/issues/264)): The relationships tab displayed a count of inferred relationships in the summary but the "Inferred only" filter returned nothing. The list now includes both defined and inferred inverse relationships so all filters work correctly.
+
+- **Organization base template missing managed members** ([#264](https://github.com/banisterious/obsidian-charted-roots/issues/264)): Members added via the Manage Members modal were stored only on person notes, making them invisible to the organization base template. Member lists are now synced to the organization note's frontmatter on each add/remove/edit, and the base template includes a Members column.
+
 ---
 
 ## [0.20.9] - 2026-02-11
