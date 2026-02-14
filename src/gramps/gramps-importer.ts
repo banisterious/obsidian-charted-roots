@@ -1599,45 +1599,77 @@ export class GrampsImporter {
 		const sortedPlaces = Array.from(places.entries())
 			.sort((a, b) => a[1].length - b[1].length);
 
-		const totalPlaces = sortedPlaces.length;
-		let placeIndex = 0;
-
-		for (const [placeString, parts] of sortedPlaces) {
-			reportProgress('places', placeIndex, totalPlaces);
-
-			const name = parts[0]; // Most specific part
+		// Group entries by canonical fileName to prevent duplicate file creation.
+		// Multiple map keys can resolve to the same fileName after abbreviation
+		// expansion (e.g., "IA, USA", "Iowa, USA", and "IA" all produce "Iowa USA").
+		// Without grouping, each would try to create the same file, and vault index
+		// delays can cause duplicates like "Iowa USA 1.md".
+		const computeFileName = (parts: string[]): string => {
+			const name = parts[0];
 			const sanitizedName = name
 				.replace(/[\\/:*?"<>|[\]]/g, '-')
 				.replace(/\s+/g, ' ')
 				.trim();
-
-			// Add disambiguation if needed (e.g., "Illinois USA" to distinguish from city named Illinois)
 			let fileName = sanitizedName;
 			if (parts.length > 1 && parts.length <= 2) {
 				fileName = `${sanitizedName} ${parts[1]}`;
 			}
+			return fileName;
+		};
 
+		const fileNameGroups = new Map<string, { fileName: string; entries: Array<[string, string[]]> }>();
+		for (const [placeString, parts] of sortedPlaces) {
+			const fileName = computeFileName(parts);
+			const existing = fileNameGroups.get(fileName);
+			if (existing) {
+				existing.entries.push([placeString, parts]);
+			} else {
+				fileNameGroups.set(fileName, { fileName, entries: [[placeString, parts]] });
+			}
+		}
+
+		// Track paths created in this import run to avoid vault index race conditions
+		const createdPaths = new Set<string>();
+		const totalGroups = fileNameGroups.size;
+		let groupIndex = 0;
+
+		for (const [, { fileName, entries }] of fileNameGroups) {
+			reportProgress('places', groupIndex, totalGroups);
+
+			// All entries in a group share the same parts; use the first
+			const [, parts] = entries[0];
+			const name = parts[0];
 			const filePath = normalizePath(`${placesFolder}/${fileName}.md`);
 
-			// Check if already exists
-			if (this.app.vault.getAbstractFileByPath(filePath)) {
-				// Try to read existing cr_id
-				const existingFile = this.app.vault.getAbstractFileByPath(filePath);
+			// Check if already exists (vault index or our own tracking set)
+			const existingFile = this.app.vault.getAbstractFileByPath(filePath);
+			if (existingFile || createdPaths.has(filePath)) {
+				// Try to read existing cr_id from vault
 				if (existingFile instanceof TFile) {
 					const content = await this.app.vault.read(existingFile);
 					const crIdMatch = content.match(/^cr_id:\s*(.+)$/m);
 					if (crIdMatch) {
-						placeNameToCrId.set(placeString, crIdMatch[1].trim());
+						const existingCrId = crIdMatch[1].trim();
+						for (const [key] of entries) {
+							placeNameToCrId.set(key, existingCrId);
+						}
 					}
 				}
-				placeNameToWikilink.set(placeString, `[[${fileName}]]`);
-				placeIndex++;
+				// Map ALL keys in group to the same wikilink
+				for (const [key] of entries) {
+					placeNameToWikilink.set(key, `[[${fileName}]]`);
+				}
+				groupIndex++;
 				continue;
 			}
 
 			const crId = generateCrId();
-			placeNameToCrId.set(placeString, crId);
-			placeNameToWikilink.set(placeString, `[[${fileName}]]`);
+
+			// Map ALL keys in this group to the same wikilink and cr_id
+			for (const [key] of entries) {
+				placeNameToCrId.set(key, crId);
+				placeNameToWikilink.set(key, `[[${fileName}]]`);
+			}
 
 			// Get parent info if exists
 			let parentWikilink: string | undefined;
@@ -1651,13 +1683,16 @@ export class GrampsImporter {
 			// Infer place type
 			const placeType = this.inferPlaceType(name, parts);
 
-			// Look up original Gramps place for media/notes
+			// Look up original Gramps place for media/notes — check all keys in group
 			let grampsPlace: ParsedGrampsPlace | undefined;
-			for (const [, p] of grampsData.places) {
-				if (p.name === placeString) {
-					grampsPlace = p;
-					break;
+			for (const [key] of entries) {
+				for (const [, p] of grampsData.places) {
+					if (p.name === key) {
+						grampsPlace = p;
+						break;
+					}
 				}
+				if (grampsPlace) break;
 			}
 
 			// Resolve media references
@@ -1689,8 +1724,9 @@ export class GrampsImporter {
 				propertyAliases: options.propertyAliases
 			});
 
+			createdPaths.add(filePath);
 			created++;
-			placeIndex++;
+			groupIndex++;
 		}
 
 		return { placeNameToWikilink, placeNameToCrId, created };
