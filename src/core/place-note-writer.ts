@@ -65,6 +65,10 @@ export interface CreatePlaceNoteOptions {
 	openAfterCreate?: boolean;
 	/** Property aliases for writing custom property names (user property → canonical) */
 	propertyAliases?: Record<string, string>;
+	/** Override the auto-computed filename (without .md extension).
+	 *  When provided, this is used instead of deriving from place.name.
+	 *  Useful when the importer computes a disambiguated name (e.g., "Pennsylvania USA"). */
+	fileName?: string;
 }
 
 /**
@@ -217,8 +221,8 @@ export async function createPlaceNote(
 	contentParts.push('');
 	const noteContent = contentParts.join('\n');
 
-	// Sanitize filename (remove invalid characters)
-	const filename = sanitizeFilename(cleanName || 'Untitled Place');
+	// Use caller-provided filename or derive from place name
+	const filename = options.fileName ?? sanitizeFilename(cleanName || 'Untitled Place');
 
 	// Build full path
 	const fullPath = directory

@@ -1718,10 +1718,12 @@ export class GrampsImporter {
 				tags: grampsPlace?.tags && grampsPlace.tags.length > 0 ? grampsPlace.tags : undefined
 			};
 
-			// Write place note
+			// Write place note — pass the computed fileName so createPlaceNote uses it
+			// instead of deriving from place.name (which is just parts[0] without parent suffix)
 			await createPlaceNote(this.app, placeData, {
 				directory: placesFolder,
-				propertyAliases: options.propertyAliases
+				propertyAliases: options.propertyAliases,
+				fileName
 			});
 
 			createdPaths.add(filePath);
