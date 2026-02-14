@@ -1107,13 +1107,17 @@ export class ImportWizardModal extends Modal {
 					throw new Error('No file content available');
 				}
 
-				// Large Import Mode: suspend relationship syncing to prevent timeouts
+				// Always suspend bidirectional sync during GEDCOM import to prevent
+				// the file watcher from adding duplicate relationships. During Phase 1,
+				// wikilinks for duplicate names (e.g., "William Hurst") initially resolve
+				// to the first created file. The bidirectional linker would then add children
+				// to the wrong parent before Phase 2 corrects the wikilinks.
 				if (this.formData.largeImportMode) {
 					addLogEntry('Large import mode enabled - suspending relationship sync');
 					new Notice('Large import mode: relationship sync suspended');
-					this.plugin.disableBidirectionalSync();
-					this.plugin.bidirectionalLinker?.suspend();
 				}
+				this.plugin.disableBidirectionalSync();
+				this.plugin.bidirectionalLinker?.suspend();
 
 				try {
 					// Build import options
@@ -1209,10 +1213,10 @@ export class ImportWizardModal extends Modal {
 						void this.plugin.createAllBases({ silent: true });
 					}
 				} finally {
-					// Large Import Mode: re-enable relationship sync after import completes
+					// Re-enable relationship sync after import completes
+					this.plugin.enableBidirectionalSync();
+					this.plugin.bidirectionalLinker?.resume();
 					if (this.formData.largeImportMode) {
-						this.plugin.enableBidirectionalSync();
-						this.plugin.bidirectionalLinker?.resume();
 						addLogEntry('Large import mode complete - relationship sync restored');
 						new Notice('Import complete: relationship sync restored');
 					}

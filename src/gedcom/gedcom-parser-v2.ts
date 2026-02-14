@@ -1191,10 +1191,6 @@ export class GedcomParserV2 {
 
 				if (husband && !husband.spouseRefs.includes(family.wifeRef)) {
 					husband.spouseRefs.push(family.wifeRef);
-					// Debug: trace spouse linking for diagnosis
-					if (husband.name?.includes('William') && husband.name?.includes('Hurst')) {
-						console.debug(`[GEDCOM Parser] Linking spouse to ${husband.name} (${husband.id}): added ${family.wifeRef} from family ${family.id}. Total spouses: ${husband.spouseRefs.length}`);
-					}
 				}
 				if (wife && !wife.spouseRefs.includes(family.husbandRef)) {
 					wife.spouseRefs.push(family.husbandRef);
@@ -1208,11 +1204,5 @@ export class GedcomParserV2 {
 			}
 		}
 
-		// Debug: dump all individuals named "William Hurst" after linking
-		for (const [id, ind] of data.individuals) {
-			if (ind.name?.includes('William') && ind.name?.includes('Hurst')) {
-				console.debug(`[GEDCOM Parser] After linkFamilies - ${ind.name} (${id}): spouseRefs=${JSON.stringify(ind.spouseRefs)}, fatherRef=${ind.fatherRef}, motherRef=${ind.motherRef}`);
-			}
-		}
 	}
 }
