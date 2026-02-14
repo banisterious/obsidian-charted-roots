@@ -1201,55 +1201,18 @@ export class FamilyGraphService {
 		this.personCache.clear();
 
 		const files = this.app.vault.getMarkdownFiles();
-		let folderFilterExcluded = 0;
-		let noCrId = 0;
-		let isOtherType = 0;
-		let noCacheOrFrontmatter = 0;
-		let detectedAsSource = 0;
-		let detectedAsEvent = 0;
-		let detectedAsPlace = 0;
-
-		console.debug(`[DEBUG] loadPersonCache: Starting with ${files.length} total markdown files`);
 
 		for (const file of files) {
 			// Apply folder filter if configured
 			if (this.folderFilter && !this.folderFilter.shouldIncludeFile(file)) {
-				folderFilterExcluded++;
 				continue;
 			}
 
 			const personNode = this.extractPersonNode(file);
 			if (personNode && 'crId' in personNode) {
 				this.personCache.set(personNode.crId, personNode);
-			} else if (personNode) {
-				// It's a typed response indicating what type it is
-				if ('isSource' in personNode) {
-					detectedAsSource++;
-				} else if ('isEvent' in personNode) {
-					detectedAsEvent++;
-				} else if ('isPlace' in personNode) {
-					detectedAsPlace++;
-				}
-				isOtherType++;
-			} else {
-				// Debug why this file wasn't included
-				const cache = this.app.metadataCache.getFileCache(file);
-				if (!cache || !cache.frontmatter) {
-					noCacheOrFrontmatter++;
-				} else if (!cache.frontmatter.cr_id) {
-					noCrId++;
-				}
 			}
 		}
-
-		console.debug(`[DEBUG] loadPersonCache: Found ${this.personCache.size} person notes`);
-		console.debug(`[DEBUG] loadPersonCache: Excluded by folder filter: ${folderFilterExcluded}`);
-		console.debug(`[DEBUG] loadPersonCache: No cache/frontmatter: ${noCacheOrFrontmatter}`);
-		console.debug(`[DEBUG] loadPersonCache: No cr_id: ${noCrId}`);
-		console.debug(`[DEBUG] loadPersonCache: Other note type (event/place/source): ${isOtherType}`);
-		console.debug(`[DEBUG] loadPersonCache:   - Detected as source: ${detectedAsSource}`);
-		console.debug(`[DEBUG] loadPersonCache:   - Detected as event: ${detectedAsEvent}`);
-		console.debug(`[DEBUG] loadPersonCache:   - Detected as place: ${detectedAsPlace}`);
 
 		// Second pass: build child relationships (merge explicit and inferred)
 		for (const [crId, person] of this.personCache.entries()) {

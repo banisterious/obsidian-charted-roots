@@ -481,15 +481,18 @@ function renderResearchNeededSection(container: HTMLElement, options: DataQualit
 	}
 
 	// Query places
+	// PlaceNode has filePath (string) rather than file (TFile), so resolve it
 	const placeGraph = new PlaceGraphService(app);
 	const allPlaces = placeGraph.getAllPlaces();
 	for (const place of allPlaces) {
-		const cache = app.metadataCache.getFileCache(place.file);
+		const placeFile = app.vault.getAbstractFileByPath(place.filePath);
+		if (!(placeFile instanceof TFile)) continue;
+		const cache = app.metadataCache.getFileCache(placeFile);
 		const questions = parseResearchQuestions(cache?.frontmatter?.needs_research);
 		if (questions.length > 0) {
 			items.push({
 				name: place.name,
-				file: place.file,
+				file: placeFile,
 				type: 'place',
 				questions
 			});
