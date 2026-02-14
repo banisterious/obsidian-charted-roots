@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Import Gramps tags as Obsidian tags** ([#267](https://github.com/banisterious/obsidian-charted-roots/issues/267)): Gramps tags (e.g., "notable", "needs review") are now parsed from `<tag>` definitions and `<tagref>` elements and written as standard Obsidian `tags` frontmatter arrays on person, event, place, and source notes.
 
+- **Dynamic block for organization members** ([#268](https://github.com/banisterious/obsidian-charted-roots/issues/268)): Organization notes now support a `charted-roots-members` code block that renders members grouped by role with wikilinks and date ranges. Supports `group-by`, `sort`, `show-dates`, `show-former`, and `title` config options, live updates when membership data changes, and freeze-to-markdown. Available via context menu ("Insert members block") or the "Insert dynamic blocks" command.
+
 ### Fixed
 
 - **Family chart cards rendering with broken positions** ([#257](https://github.com/banisterious/obsidian-charted-roots/issues/257)): The upstream family-chart library can produce `translate(undefined, undefined)` on card elements when certain node positions haven't been computed during animation. Added a postinstall patch that guards all enter-position assignments with `?? 0` fallbacks, preventing undefined values from reaching D3 transitions. The existing MutationObserver remains as defense-in-depth.

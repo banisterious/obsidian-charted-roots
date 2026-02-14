@@ -15,7 +15,7 @@ import type { EventNote } from '../../events/types/event-types';
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
 
 /** Block type for freeze operations */
-export type DynamicBlockType = 'canvas-roots-timeline' | 'canvas-roots-relationships' | 'canvas-roots-media' | 'charted-roots-source-roles' | 'charted-roots-transfers';
+export type DynamicBlockType = 'canvas-roots-timeline' | 'canvas-roots-relationships' | 'canvas-roots-media' | 'charted-roots-source-roles' | 'charted-roots-transfers' | 'charted-roots-members';
 
 /**
  * Parsed configuration from a code block

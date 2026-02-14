@@ -22,3 +22,6 @@ export { SourceRolesRenderer } from './renderers/source-roles-renderer';
 
 export { TransfersProcessor } from './processors/transfers-processor';
 export { TransfersRenderer } from './renderers/transfers-renderer';
+
+export { MembersProcessor } from './processors/members-processor';
+export { MembersRenderer } from './renderers/members-renderer';

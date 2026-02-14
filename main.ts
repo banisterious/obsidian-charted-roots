@@ -62,7 +62,7 @@ import { EventService } from './src/events/services/event-service';
 import { CreateEventModal } from './src/events/ui/create-event-modal';
 import { isPlaceNote, isSourceNote, isEventNote, isMapNote, isSchemaNote, isUniverseNote, isPersonNote, isOrganizationNote } from './src/utils/note-type-detection';
 import { GeocodingService } from './src/maps/services/geocoding-service';
-import { TimelineProcessor, RelationshipsProcessor, MediaProcessor, SourceRolesProcessor, TransfersProcessor } from './src/dynamic-content';
+import { TimelineProcessor, RelationshipsProcessor, MediaProcessor, SourceRolesProcessor, TransfersProcessor, MembersProcessor } from './src/dynamic-content';
 import { UniverseService, EditUniverseModal, UniverseWizardModal } from './src/universes';
 import { RecentFilesService, RecentEntityType } from './src/core/recent-files-service';
 import { registerCustomIcons } from './src/ui/lucide-icons';
@@ -470,6 +470,13 @@ export default class CanvasRootsPlugin extends Plugin {
 		this.registerMarkdownCodeBlockProcessor(
 			'charted-roots-transfers',
 			(source, el, ctx) => transfersProcessor.process(source, el, ctx)
+		);
+
+		// Members processor (#268)
+		const membersProcessor = new MembersProcessor(this);
+		this.registerMarkdownCodeBlockProcessor(
+			'charted-roots-members',
+			(source, el, ctx) => membersProcessor.process(source, el, ctx)
 		);
 
 		// Add ribbon icon for control center
@@ -1157,7 +1164,7 @@ export default class CanvasRootsPlugin extends Plugin {
 		// Add command: Insert Dynamic Blocks
 		this.addCommand({
 			id: 'insert-dynamic-blocks',
-			name: 'Insert dynamic blocks in current person note',
+			name: 'Insert dynamic blocks in current note',
 			callback: async () => {
 				const activeFile = this.app.workspace.getActiveFile();
 
@@ -3393,6 +3400,16 @@ export default class CanvasRootsPlugin extends Plugin {
 										});
 								});
 
+								// Insert members block (#268)
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Insert members block')
+										.setIcon('layout-template')
+										.onClick(async () => {
+											await this.insertMembersBlock(file);
+										});
+								});
+
 								// Open in Organizations tab
 								submenu.addItem((subItem) => {
 									subItem
@@ -3447,6 +3464,15 @@ export default class CanvasRootsPlugin extends Plugin {
 										} else {
 											new Notice('Could not load organization');
 										}
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Charted Roots: Insert members block')
+									.setIcon('layout-template')
+									.onClick(async () => {
+										await this.insertMembersBlock(file);
 									});
 							});
 
@@ -7570,7 +7596,7 @@ export default class CanvasRootsPlugin extends Plugin {
 
 			for (const file of files) {
 				try {
-					// Check if this is a person note with cr_id
+					// Check if this note has cr_id
 					const cache = this.app.metadataCache.getFileCache(file);
 					if (!cache?.frontmatter?.cr_id) {
 						skippedCount++;
@@ -7578,42 +7604,56 @@ export default class CanvasRootsPlugin extends Plugin {
 						continue;
 					}
 
-					// Check if it already has dynamic blocks (check both old and new format)
 					const content = await this.app.vault.read(file);
-					const hasRelationships = content.includes('```charted-roots-relationships') || content.includes('```canvas-roots-relationships');
-					const hasTimeline = content.includes('```charted-roots-timeline') || content.includes('```canvas-roots-timeline');
-					const hasMedia = content.includes('```charted-roots-media') || content.includes('```canvas-roots-media');
-
-					if (hasRelationships && hasTimeline && hasMedia) {
-						skippedCount++;
-						processedCount++;
-						continue;
-					}
-
-					// Build the blocks to add (use new charted-roots format)
 					const blocksToAdd: string[] = [];
+					const detectionSettings = this.settings.noteTypeDetection;
 
-					if (!hasRelationships) {
-						blocksToAdd.push('```charted-roots-relationships');
-						blocksToAdd.push('type: immediate');
+					if (isOrganizationNote(cache.frontmatter, cache, detectionSettings)) {
+						// Organization note: insert members block (#268)
+						const hasMembers = content.includes('```charted-roots-members');
+						if (hasMembers) {
+							skippedCount++;
+							processedCount++;
+							continue;
+						}
+						blocksToAdd.push('```charted-roots-members');
+						blocksToAdd.push('group-by: role');
 						blocksToAdd.push('```');
 						blocksToAdd.push('');
-					}
+					} else {
+						// Person note: insert relationships, timeline, media blocks
+						const hasRelationships = content.includes('```charted-roots-relationships') || content.includes('```canvas-roots-relationships');
+						const hasTimeline = content.includes('```charted-roots-timeline') || content.includes('```canvas-roots-timeline');
+						const hasMedia = content.includes('```charted-roots-media') || content.includes('```canvas-roots-media');
 
-					if (!hasTimeline) {
-						blocksToAdd.push('```charted-roots-timeline');
-						blocksToAdd.push('sort: chronological');
-						blocksToAdd.push('```');
-						blocksToAdd.push('');
-					}
+						if (hasRelationships && hasTimeline && hasMedia) {
+							skippedCount++;
+							processedCount++;
+							continue;
+						}
 
-					if (!hasMedia) {
-						blocksToAdd.push('```charted-roots-media');
-						blocksToAdd.push('columns: 3');
-						blocksToAdd.push('size: medium');
-						blocksToAdd.push('editable: true');
-						blocksToAdd.push('```');
-						blocksToAdd.push('');
+						if (!hasRelationships) {
+							blocksToAdd.push('```charted-roots-relationships');
+							blocksToAdd.push('type: immediate');
+							blocksToAdd.push('```');
+							blocksToAdd.push('');
+						}
+
+						if (!hasTimeline) {
+							blocksToAdd.push('```charted-roots-timeline');
+							blocksToAdd.push('sort: chronological');
+							blocksToAdd.push('```');
+							blocksToAdd.push('');
+						}
+
+						if (!hasMedia) {
+							blocksToAdd.push('```charted-roots-media');
+							blocksToAdd.push('columns: 3');
+							blocksToAdd.push('size: medium');
+							blocksToAdd.push('editable: true');
+							blocksToAdd.push('```');
+							blocksToAdd.push('');
+						}
 					}
 
 					if (blocksToAdd.length === 0) {
@@ -7665,7 +7705,7 @@ export default class CanvasRootsPlugin extends Plugin {
 				if (addedCount === 1) {
 					new Notice('Added dynamic content blocks');
 				} else if (skippedCount === 1) {
-					new Notice('Note already has dynamic blocks or is not a person note');
+					new Notice('Note already has dynamic blocks or is not a supported note type');
 				} else {
 					new Notice('Failed to add dynamic blocks');
 				}
@@ -7719,6 +7759,40 @@ export default class CanvasRootsPlugin extends Plugin {
 			const message = error instanceof Error ? error.message : String(error);
 			console.error('Error inserting source roles block:', error);
 			new Notice(`Failed to add source roles block: ${message}`);
+		}
+	}
+
+	/**
+	 * Insert a members dynamic block into an organization note (#268)
+	 * Adds the block after frontmatter
+	 */
+	private async insertMembersBlock(file: TFile): Promise<void> {
+		try {
+			const content = await this.app.vault.read(file);
+
+			if (content.includes('```charted-roots-members')) {
+				new Notice('Members block already exists in this note');
+				return;
+			}
+
+			const blockLines = [
+				'',
+				'```charted-roots-members',
+				'group-by: role',
+				'```',
+				''
+			];
+
+			// Append to end of file
+			const newContent = content.trimEnd() + '\n' + blockLines.join('\n');
+			await this.app.vault.modify(file, newContent);
+
+			new Notice('Members block added');
+
+		} catch (error: unknown) {
+			const message = error instanceof Error ? error.message : String(error);
+			console.error('Error inserting members block:', error);
+			new Notice(`Failed to add members block: ${message}`);
 		}
 	}
 
