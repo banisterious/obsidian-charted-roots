@@ -219,8 +219,9 @@ export class MembersRenderer {
 
 			const section = contentEl.createDiv({ cls: 'cr-members__section' });
 
-			// Only show heading when there are multiple groups
-			if (groups.size > 1) {
+			// Show heading when there are multiple groups, or when the
+			// single group has a named role (not the default "Members")
+			if (groups.size > 1 || heading !== NO_ROLE_HEADING) {
 				section.createEl('h4', { cls: 'cr-members__heading', text: heading });
 			}
 
@@ -298,7 +299,7 @@ export class MembersRenderer {
 		for (const [heading, entries] of groups) {
 			if (entries.length === 0) continue;
 
-			if (groups.size > 1) {
+			if (groups.size > 1 || heading !== NO_ROLE_HEADING) {
 				lines.push(`### ${heading}`);
 				lines.push('');
 			}

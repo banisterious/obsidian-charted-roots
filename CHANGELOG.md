@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Gramps import place filename mismatch causes missing place notes** ([#259](https://github.com/banisterious/obsidian-charted-roots/issues/259)): The place note writer computed its own filename from the short place name (e.g., "Pennsylvania") instead of using the importer's disambiguated name with parent suffix (e.g., "Pennsylvania USA"), causing wikilinks to point to non-existent files while actual files were created with wrong names and duplicate suffixes.
+
+- **Members dynamic block missing role headings for single-role orgs** ([#264](https://github.com/banisterious/obsidian-charted-roots/issues/264)): When an organization had members in only one role group, the role heading was hidden, making it impossible to see what role members held. Additionally, the membership service read path did not coerce single-value frontmatter strings into arrays, which could cause role data to be lost when a person had only one membership.
+
+---
+
 ## [0.20.11] - 2026-02-14
 
 ### Added
@@ -21,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Gramps import missing place hierarchy from placeref chains** ([#259](https://github.com/banisterious/obsidian-charted-roots/issues/259)): Places without `<ptitle>` that encode hierarchy via `<placeref>` links (e.g., County → State → Country) were imported as flat single-level notes with no parent relationships. Now follows placeref chains to build full hierarchical names, matching GEDCOM importer behavior.
 
-- **Gramps import creates duplicate state files and broken place links** ([#259](https://github.com/banisterious/obsidian-charted-roots/issues/259)): Multiple place map entries resolving to the same canonical file name (e.g., "IA, USA" and "Iowa, USA" both producing "Iowa USA.md") caused duplicate files like "Iowa USA 1.md" and inconsistent wikilinks. Place entries are now grouped by canonical file name before creation, and a path-tracking set prevents vault index race conditions from producing duplicates. Additionally, the place note writer was computing its own filename from the short place name (e.g., "Pennsylvania") instead of using the importer's disambiguated name (e.g., "Pennsylvania USA"), causing mismatches between wikilinks and actual files.
+- **Gramps import creates duplicate state files and broken place links** ([#259](https://github.com/banisterious/obsidian-charted-roots/issues/259)): Multiple place map entries resolving to the same canonical file name (e.g., "IA, USA" and "Iowa, USA" both producing "Iowa USA.md") caused duplicate files like "Iowa USA 1.md" and inconsistent wikilinks. Place entries are now grouped by canonical file name before creation, and a path-tracking set prevents vault index race conditions from producing duplicates.
 
 - **Duplicate person entries in event displays** ([#261](https://github.com/banisterious/obsidian-charted-roots/issues/261)): The event edit modal wrote a `person` property directly to frontmatter instead of using the `persons` array, causing the same person to appear twice in event listings. Fixed the edit modal to write `persons[]` consistently, added deduplication to remaining display paths, and made Gantt timeline grouping resilient to either format.
 

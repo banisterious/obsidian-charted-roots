@@ -64,14 +64,23 @@ export class MembershipService {
 		const personCrId = fm.cr_id || '';
 		const personName = typeof fm.name === 'string' ? fm.name : personFile.basename;
 
+		// Coerce a frontmatter value into a string array.
+		// Obsidian may store single-item YAML lists as plain strings.
+		const toArray = (val: unknown): string[] => {
+			if (Array.isArray(val)) return val as string[];
+			if (typeof val === 'string' && val) return [val];
+			return [];
+		};
+
 		// Priority 1: Check for flat parallel arrays (new format)
-		if (Array.isArray(fm.membership_orgs) && fm.membership_orgs.length > 0) {
-			const orgs = fm.membership_orgs as string[];
-			const orgIds = (fm.membership_org_ids as string[] | undefined) || [];
-			const roles = (fm.membership_roles as string[] | undefined) || [];
-			const fromDates = (fm.membership_from_dates as string[] | undefined) || [];
-			const toDates = (fm.membership_to_dates as string[] | undefined) || [];
-			const notes = (fm.membership_notes as string[] | undefined) || [];
+		const fmOrgs = toArray(fm.membership_orgs);
+		if (fmOrgs.length > 0) {
+			const orgs = fmOrgs;
+			const orgIds = toArray(fm.membership_org_ids);
+			const roles = toArray(fm.membership_roles);
+			const fromDates = toArray(fm.membership_from_dates);
+			const toDates = toArray(fm.membership_to_dates);
+			const notes = toArray(fm.membership_notes);
 
 			for (let i = 0; i < orgs.length; i++) {
 				const orgLink = orgs[i];
