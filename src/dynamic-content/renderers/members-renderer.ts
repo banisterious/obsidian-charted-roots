@@ -18,6 +18,7 @@ interface MemberEntry {
 	filePath?: string;
 	role: string;
 	dateRange?: string;
+	notes?: string;
 	isCurrent: boolean;
 }
 
@@ -88,7 +89,8 @@ export class MembersRenderer {
 		// Group and render
 		const groupBy = config['group-by'] as string ?? 'role';
 		if (groupBy === 'role') {
-			const groups = this.groupByRole(entries);
+			const roleOrder = this.parseRoleOrder(config);
+			const groups = this.groupByRole(entries, roleOrder);
 			await this.renderSections(contentEl, groups, context, component);
 		} else {
 			// Flat list — single group under the title
@@ -129,6 +131,7 @@ export class MembersRenderer {
 	): MemberEntry[] {
 		const showFormer = config['show-former'] !== false;
 		const showDates = config['show-dates'] !== false;
+		const showNotes = config['show-notes'] === true;
 		const sortBy = config.sort as string ?? 'name';
 
 		const entries: MemberEntry[] = [];
@@ -145,6 +148,11 @@ export class MembersRenderer {
 				role: member.role || '',
 				isCurrent: member.isCurrent
 			};
+
+			// Membership notes
+			if (showNotes && member.notes) {
+				entry.notes = member.notes;
+			}
 
 			// Build date range
 			if (showDates && (member.from || member.to)) {
@@ -177,10 +185,11 @@ export class MembersRenderer {
 	}
 
 	/**
-	 * Group entries by role
-	 * Named roles sorted alphabetically first, no-role group last
+	 * Group entries by role.
+	 * If roleOrder is provided, those roles appear first in that sequence;
+	 * remaining named roles follow alphabetically; no-role group is last.
 	 */
-	private groupByRole(entries: MemberEntry[]): Map<string, MemberEntry[]> {
+	private groupByRole(entries: MemberEntry[], roleOrder?: string[]): Map<string, MemberEntry[]> {
 		const roleMap = new Map<string, MemberEntry[]>();
 
 		for (const entry of entries) {
@@ -190,19 +199,50 @@ export class MembersRenderer {
 			roleMap.set(role, group);
 		}
 
-		// Sort: named roles alphabetically, NO_ROLE_HEADING last
+		// Build ordered key list
 		const sorted = new Map<string, MemberEntry[]>();
-		const keys = Array.from(roleMap.keys()).sort((a, b) => {
-			if (a === NO_ROLE_HEADING) return 1;
-			if (b === NO_ROLE_HEADING) return -1;
-			return a.localeCompare(b);
-		});
 
-		for (const key of keys) {
-			sorted.set(key, roleMap.get(key)!);
+		if (roleOrder && roleOrder.length > 0) {
+			// Pinned roles first, in the specified order
+			const pinned = new Set(roleOrder);
+			for (const role of roleOrder) {
+				if (roleMap.has(role)) {
+					sorted.set(role, roleMap.get(role)!);
+				}
+			}
+			// Remaining named roles alphabetically
+			const remaining = Array.from(roleMap.keys())
+				.filter(k => k !== NO_ROLE_HEADING && !pinned.has(k))
+				.sort((a, b) => a.localeCompare(b));
+			for (const key of remaining) {
+				sorted.set(key, roleMap.get(key)!);
+			}
+		} else {
+			// Default: named roles alphabetically
+			const named = Array.from(roleMap.keys())
+				.filter(k => k !== NO_ROLE_HEADING)
+				.sort((a, b) => a.localeCompare(b));
+			for (const key of named) {
+				sorted.set(key, roleMap.get(key)!);
+			}
+		}
+
+		// No-role group always last
+		if (roleMap.has(NO_ROLE_HEADING)) {
+			sorted.set(NO_ROLE_HEADING, roleMap.get(NO_ROLE_HEADING)!);
 		}
 
 		return sorted;
+	}
+
+	/**
+	 * Parse the role-order config value into an array of role names
+	 */
+	private parseRoleOrder(config: DynamicBlockConfig): string[] | undefined {
+		const raw = config['role-order'];
+		if (!raw || typeof raw !== 'string') return undefined;
+		const roles = raw.split(',').map(r => r.trim()).filter(r => r.length > 0);
+		return roles.length > 0 ? roles : undefined;
 	}
 
 	/**
@@ -255,6 +295,11 @@ export class MembersRenderer {
 				if (entry.dateRange) {
 					li.createSpan({ cls: 'cr-members__dates', text: ` ${entry.dateRange}` });
 				}
+
+				// Notes
+				if (entry.notes) {
+					li.createSpan({ cls: 'cr-members__notes', text: ` — ${entry.notes}` });
+				}
 			}
 		}
 	}
@@ -292,8 +337,9 @@ export class MembersRenderer {
 		}
 
 		const groupBy = this.currentConfig['group-by'] as string ?? 'role';
+		const roleOrder = this.parseRoleOrder(this.currentConfig);
 		const groups = groupBy === 'role'
-			? this.groupByRole(this.currentEntries)
+			? this.groupByRole(this.currentEntries, roleOrder)
 			: new Map<string, MemberEntry[]>([[NO_ROLE_HEADING, this.currentEntries]]);
 
 		for (const [heading, entries] of groups) {
@@ -318,6 +364,10 @@ export class MembersRenderer {
 
 				if (entry.dateRange) {
 					line += ` ${entry.dateRange}`;
+				}
+
+				if (entry.notes) {
+					line += ` — ${entry.notes}`;
 				}
 
 				lines.push(line);

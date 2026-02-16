@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Members block `show-notes` and `role-order` config options** ([#268](https://github.com/banisterious/obsidian-charted-roots/issues/268)): The `charted-roots-members` block now supports `show-notes: true` to display membership notes alongside each member, and `role-order: Role A, Role B, ...` to control the display order of role groups instead of defaulting to alphabetical.
+
 ### Fixed
 
 - **Gramps import place filename mismatch causes missing place notes** ([#259](https://github.com/banisterious/obsidian-charted-roots/issues/259)): The place note writer computed its own filename from the short place name (e.g., "Pennsylvania") instead of using the importer's disambiguated name with parent suffix (e.g., "Pennsylvania USA"), causing wikilinks to point to non-existent files while actual files were created with wrong names and duplicate suffixes.

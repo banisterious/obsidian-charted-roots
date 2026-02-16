@@ -261,6 +261,12 @@
   margin-left: var(--cr-spacing-xs);
 }
 
+.cr-members__notes {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  font-style: italic;
+}
+
 /* ==========================================================================
    Media Gallery Block
    ========================================================================== */
