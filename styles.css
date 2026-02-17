@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-02-14 16:38:20 UTC
+ * - Generated: 2026-02-17 17:33:14 UTC
  * - Components: 44 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -36629,7 +36629,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: DYNAMIC-CONTENT.CSS
    ========================================================================== */
 
-/* Component Size: 636 lines, 13.59 KB */
+/* Component Size: 642 lines, 13.7 KB */
 
 /**
  * Dynamic Content Styles
@@ -36892,6 +36892,12 @@ body:has(.cr-media-linker) .suggestion-container {
   color: var(--text-muted);
   font-size: var(--font-ui-smaller);
   margin-left: var(--cr-spacing-xs);
+}
+
+.cr-members__notes {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  font-style: italic;
 }
 
 /* ==========================================================================
@@ -37437,11 +37443,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-02-14 16:38:21 UTC
+ * Build completed: 2026-02-17 17:33:15 UTC
  * Components processed: 44
- * Total lines: 37018
- * Total size: 740.43 KB
- * Build duration: 1.15 seconds
+ * Total lines: 37024
+ * Total size: 740.53 KB
+ * Build duration: 1.03 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -37485,7 +37491,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - map-wizard.css: 606 lines, 12.68 KB
  * - preferences.css: 431 lines, 9.44 KB
  * - tree-output.css: 1548 lines, 30.41 KB
- * - dynamic-content.css: 636 lines, 13.59 KB
+ * - dynamic-content.css: 642 lines, 13.7 KB
  * - migration-notice.css: 135 lines, 2.67 KB
  * - responsive.css: 9 lines, 0.13 KB
  */

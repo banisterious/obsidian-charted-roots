@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Members dynamic block missing role headings for single-role orgs** ([#264](https://github.com/banisterious/obsidian-charted-roots/issues/264)): When an organization had members in only one role group, the role heading was hidden, making it impossible to see what role members held. Additionally, the membership service read path did not coerce single-value frontmatter strings into arrays, which could cause role data to be lost when a person had only one membership.
 
+- **Edit place modal still corrupts wikilink arrays in frontmatter** ([#263](https://github.com/banisterious/obsidian-charted-roots/issues/263)): Obsidian's `processFrontMatter` re-serializes all YAML and its serializer strips quotes from `[[wikilink]]` values. On the next parse, bare `[[...]]` is interpreted as nested YAML arrays, corrupting user-defined properties like Factions or Districts into `{0: ["value"]}` objects. The place note updater now re-quotes any bare wikilinks in the frontmatter immediately after `processFrontMatter` completes.
+
 ---
 
 ## [0.20.11] - 2026-02-14

@@ -348,7 +348,53 @@ export async function updatePlaceNote(
 		}
 	});
 
+	// Post-fix: Obsidian's processFrontMatter re-serializes the entire YAML.
+	// Its serializer may strip quotes from values containing [[wikilinks]],
+	// causing YAML to reinterpret them as nested arrays on the next parse.
+	// Re-quote any bare [[...]] values in the frontmatter to prevent corruption.
+	await requoteWikilinksInFrontmatter(app, file);
+
 	logger.info('update', `Updated place note: ${file.path}`);
+}
+
+/**
+ * Re-quote any bare [[wikilinks]] in a file's YAML frontmatter.
+ *
+ * Obsidian's YAML serializer can strip quotes from wikilink values,
+ * turning `"[[Place Name]]"` into `[[Place Name]]`. In YAML, unquoted
+ * `[[...]]` is parsed as a nested array, corrupting the data on
+ * the next read. This function wraps any bare occurrences in quotes.
+ */
+async function requoteWikilinksInFrontmatter(app: App, file: TFile): Promise<void> {
+	await app.vault.process(file, (content) => {
+		// Find frontmatter boundaries
+		const fmStart = content.indexOf('---');
+		if (fmStart !== 0) return content;
+		const fmEnd = content.indexOf('---', 3);
+		if (fmEnd === -1) return content;
+
+		const before = content.slice(0, fmStart);
+		const frontmatter = content.slice(fmStart, fmEnd + 3);
+		const after = content.slice(fmEnd + 3);
+
+		// Match bare [[...]] that aren't already inside quotes.
+		// Targets values like `- [[Foo]]` or `key: [[Foo]]` where the
+		// wikilink is not surrounded by " characters on the same line.
+		const fixed = frontmatter.replace(
+			/^(\s*(?:-\s*)?(?:\w[\w\s]*:\s*)?)(\[\[.+?\]\])(\s*)$/gm,
+			(match, prefix: string, wikilink: string, suffix: string) => {
+				// Check if the line already has quotes around the wikilink
+				const trimmedPrefix = prefix.trimEnd();
+				if (trimmedPrefix.endsWith('"') || trimmedPrefix.endsWith("'")) {
+					return match; // Already quoted
+				}
+				return `${prefix}"${wikilink}"${suffix}`;
+			}
+		);
+
+		if (fixed === frontmatter) return content;
+		return before + fixed + after;
+	});
 }
 
 /**
