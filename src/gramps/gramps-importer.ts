@@ -1723,7 +1723,8 @@ export class GrampsImporter {
 			await createPlaceNote(this.app, placeData, {
 				directory: placesFolder,
 				propertyAliases: options.propertyAliases,
-				fileName
+				fileName,
+				includeDynamicBlocks: options.includeDynamicBlocks
 			});
 
 			createdPaths.add(filePath);
@@ -1839,6 +1840,11 @@ export class GrampsImporter {
 		let body = `\n# ${title}\n`;
 		if (source.noteText) {
 			body += `\n${source.noteText}\n`;
+		}
+
+		// Add media block if dynamic blocks enabled and source has media
+		if (options.includeDynamicBlocks && resolvedMediaLinks.length > 0) {
+			body += '\n```charted-roots-media\ncolumns: 3\nsize: medium\neditable: true\n```\n';
 		}
 
 		// Add note about unresolved media refs that need manual resolution
@@ -2104,7 +2110,11 @@ export class GrampsImporter {
 		frontmatterLines.push('---');
 
 		// Build note body
-		const body = `\n# ${title}\n\n${event.description || ''}\n${notesContent}`;
+		let mediaBlock = '';
+		if (options.includeDynamicBlocks && resolvedMedia.length > 0) {
+			mediaBlock = '\n```charted-roots-media\ncolumns: 3\nsize: medium\neditable: true\n```\n';
+		}
+		const body = `\n# ${title}\n\n${event.description || ''}\n${mediaBlock}${notesContent}`;
 		const content = frontmatterLines.join('\n') + body;
 
 		// Create file

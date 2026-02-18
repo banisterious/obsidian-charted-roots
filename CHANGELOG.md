@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Media block inserted for event, place, and source notes** ([#269](https://github.com/banisterious/obsidian-charted-roots/issues/269)): The `charted-roots-media` dynamic block is now inserted into event, place, and source notes that have media attachments — both during Gramps/GEDCOM import (when "Include dynamic blocks" is enabled) and via the "Insert dynamic blocks" command. Previously, media blocks were only added to person notes.
+
 ### Fixed
 
 - **Members block `role-order` config option ignored** ([#268](https://github.com/banisterious/obsidian-charted-roots/issues/268)): The `role-order` config value was silently discarded because the config parser splits comma-separated values into arrays, but `parseRoleOrder` only accepted strings. Role groups now display in the user-specified order.

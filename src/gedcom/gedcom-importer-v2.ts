@@ -1435,6 +1435,12 @@ export class GedcomImporterV2 {
 				body += note + '\n\n';
 			}
 		}
+
+		// Add media block if dynamic blocks enabled and event has media
+		if (options.includeDynamicBlocks && mediaWikilinks.length > 0) {
+			body += '\n```charted-roots-media\ncolumns: 3\nsize: medium\neditable: true\n```\n';
+		}
+
 		const content = frontmatterLines.join('\n') + body;
 
 		// Create file
@@ -1589,6 +1595,26 @@ export class GedcomImporterV2 {
 		// Add GEDCOM ID preservation (matching Gramps importer's gramps_id/gramps_handle)
 		frontmatterLines.push(`gedcom_id: ${source.id}`);
 
+		// Resolve media references on the source
+		let mediaWikilinks: string[] = [];
+		if (options.importMedia !== false && source.mediaRefs && source.mediaRefs.length > 0) {
+			const mediaResult = this.resolveMediaRefs(
+				source.mediaRefs,
+				undefined,
+				gedcomData,
+				options
+			);
+			mediaWikilinks = mediaResult.wikilinks;
+		}
+
+		// Add media references as wikilinks
+		if (mediaWikilinks.length > 0) {
+			frontmatterLines.push(`media:`);
+			for (const media of mediaWikilinks) {
+				frontmatterLines.push(`  - "${media}"`);
+			}
+		}
+
 		frontmatterLines.push('---');
 
 		// Collect all notes (inline + resolved references)
@@ -1628,6 +1654,11 @@ export class GedcomImporterV2 {
 		}
 
 		body += `\n_Imported from GEDCOM source ${source.id}_\n`;
+
+		// Add media block if dynamic blocks enabled and source has media
+		if (options.includeDynamicBlocks && mediaWikilinks.length > 0) {
+			body += '\n```charted-roots-media\ncolumns: 3\nsize: medium\neditable: true\n```\n';
+		}
 
 		const content = frontmatterLines.join('\n') + body;
 

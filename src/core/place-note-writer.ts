@@ -69,6 +69,8 @@ export interface CreatePlaceNoteOptions {
 	 *  When provided, this is used instead of deriving from place.name.
 	 *  Useful when the importer computes a disambiguated name (e.g., "Pennsylvania USA"). */
 	fileName?: string;
+	/** Include dynamic content blocks in the note body */
+	includeDynamicBlocks?: boolean;
 }
 
 /**
@@ -212,6 +214,16 @@ export async function createPlaceNote(
 		'',
 		''
 	];
+
+	// Add media block if dynamic blocks enabled and place has media
+	if (options.includeDynamicBlocks && place.media && place.media.length > 0) {
+		contentParts.push('```charted-roots-media');
+		contentParts.push('columns: 3');
+		contentParts.push('size: medium');
+		contentParts.push('editable: true');
+		contentParts.push('```');
+		contentParts.push('');
+	}
 
 	// Append notes content if provided
 	if (place.notesContent) {

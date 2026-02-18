@@ -7608,7 +7608,9 @@ export default class CanvasRootsPlugin extends Plugin {
 					const blocksToAdd: string[] = [];
 					const detectionSettings = this.settings.noteTypeDetection;
 
-					if (isOrganizationNote(cache.frontmatter, cache, detectionSettings)) {
+					const fm = cache.frontmatter;
+
+					if (isOrganizationNote(fm, cache, detectionSettings)) {
 						// Organization note: insert members block (#268)
 						const hasMembers = content.includes('```charted-roots-members');
 						if (hasMembers) {
@@ -7620,7 +7622,7 @@ export default class CanvasRootsPlugin extends Plugin {
 						blocksToAdd.push('group-by: role');
 						blocksToAdd.push('```');
 						blocksToAdd.push('');
-					} else {
+					} else if (isPersonNote(fm, cache, detectionSettings)) {
 						// Person note: insert relationships, timeline, media blocks
 						const hasRelationships = content.includes('```charted-roots-relationships') || content.includes('```canvas-roots-relationships');
 						const hasTimeline = content.includes('```charted-roots-timeline') || content.includes('```canvas-roots-timeline');
@@ -7654,6 +7656,29 @@ export default class CanvasRootsPlugin extends Plugin {
 							blocksToAdd.push('```');
 							blocksToAdd.push('');
 						}
+					} else if (
+						isEventNote(fm, cache, detectionSettings) ||
+						isPlaceNote(fm, cache, detectionSettings) ||
+						isSourceNote(fm, cache, detectionSettings)
+					) {
+						// Event/Place/Source notes: media block only (#269)
+						const hasMedia = content.includes('```charted-roots-media') || content.includes('```canvas-roots-media');
+						if (hasMedia) {
+							skippedCount++;
+							processedCount++;
+							continue;
+						}
+						blocksToAdd.push('```charted-roots-media');
+						blocksToAdd.push('columns: 3');
+						blocksToAdd.push('size: medium');
+						blocksToAdd.push('editable: true');
+						blocksToAdd.push('```');
+						blocksToAdd.push('');
+					} else {
+						// Unknown entity type — skip
+						skippedCount++;
+						processedCount++;
+						continue;
 					}
 
 					if (blocksToAdd.length === 0) {
