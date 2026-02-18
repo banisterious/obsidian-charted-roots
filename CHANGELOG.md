@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Relationship calculator shows "Blood Relation: Yes" for in-law relationships** ([#270](https://github.com/banisterious/obsidian-charted-roots/issues/270)): When a relationship path passed through a spouse link, the blood relation flag was still reported as "Yes" due to an overly broad OR condition that was always true when generations were present. Blood relation is now correctly determined solely by the absence of spouse links in the path.
 
+- **Non-person notes with cr_id appearing in People tab** ([#271](https://github.com/banisterious/obsidian-charted-roots/issues/271)): Notes with unrecognized `cr_type` values (e.g., `hex` for hex map tiles) that also had a `cr_id` were incorrectly detected as person notes because the fallback heuristic only checked for known entity properties. The detection now rejects any note that has an explicit type property set, even if the value isn't in the plugin's recognized type list.
+
 ---
 
 ## [0.20.12] - 2026-02-17

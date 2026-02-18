@@ -284,6 +284,15 @@ export function isPersonNote(
 	// Special case: person notes can also be detected by cr_id without explicit type
 	// This maintains backwards compatibility with existing vaults
 	if (frontmatter?.cr_id && !detectNoteType(frontmatter, cache, settings)) {
+		// If the note has an explicit type property that we don't recognize
+		// (e.g., cr_type: "hex"), it's definitely not a person note
+		const s = settings ?? DEFAULT_NOTE_TYPE_DETECTION_SETTINGS;
+		const primary = s.primaryTypeProperty;
+		const fallback = primary === 'cr_type' ? 'type' : 'cr_type';
+		if (frontmatter[primary] || frontmatter[fallback]) {
+			return false;
+		}
+
 		// Has cr_id but no explicit type - check it's not another entity type
 		// by looking for distinguishing properties
 		if (
