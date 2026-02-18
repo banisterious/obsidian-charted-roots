@@ -311,7 +311,7 @@ export class RelationshipCalculator {
 
 		const commonAncestor = commonAncestorIndex >= 0 ? path[commonAncestorIndex].person : undefined;
 		const isDirectLine = generationsUp === 0 || generationsDown === 0;
-		const isBloodRelation = !hasSpouseConnection || (generationsUp > 0 || generationsDown > 0);
+		const isBloodRelation = !hasSpouseConnection;
 
 		// Generate description
 		const description = this.generateRelationshipDescription(

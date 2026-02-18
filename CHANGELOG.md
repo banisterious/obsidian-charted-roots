@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Members block `role-order` config option ignored** ([#268](https://github.com/banisterious/obsidian-charted-roots/issues/268)): The `role-order` config value was silently discarded because the config parser splits comma-separated values into arrays, but `parseRoleOrder` only accepted strings. Role groups now display in the user-specified order.
 
+- **Relationship calculator shows "Blood Relation: Yes" for in-law relationships** ([#270](https://github.com/banisterious/obsidian-charted-roots/issues/270)): When a relationship path passed through a spouse link, the blood relation flag was still reported as "Yes" due to an overly broad OR condition that was always true when generations were present. Blood relation is now correctly determined solely by the absence of spouse links in the path.
+
 ---
 
 ## [0.20.12] - 2026-02-17
