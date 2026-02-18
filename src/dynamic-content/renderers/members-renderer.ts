@@ -240,8 +240,13 @@ export class MembersRenderer {
 	 */
 	private parseRoleOrder(config: DynamicBlockConfig): string[] | undefined {
 		const raw = config['role-order'];
-		if (!raw || typeof raw !== 'string') return undefined;
-		const roles = raw.split(',').map(r => r.trim()).filter(r => r.length > 0);
+		if (!raw) return undefined;
+		// parseValue may return a string[] (comma-separated) or a single string
+		const roles = Array.isArray(raw)
+			? (raw as string[]).map(r => r.trim()).filter(r => r.length > 0)
+			: typeof raw === 'string'
+				? raw.split(',').map(r => r.trim()).filter(r => r.length > 0)
+				: [];
 		return roles.length > 0 ? roles : undefined;
 	}
 

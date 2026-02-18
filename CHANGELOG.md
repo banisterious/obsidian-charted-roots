@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Members block `role-order` config option ignored** ([#268](https://github.com/banisterious/obsidian-charted-roots/issues/268)): The `role-order` config value was silently discarded because the config parser splits comma-separated values into arrays, but `parseRoleOrder` only accepted strings. Role groups now display in the user-specified order.
+
+---
+
 ## [0.20.12] - 2026-02-17
 
 ### Added
