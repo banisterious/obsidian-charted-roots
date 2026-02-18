@@ -98,23 +98,102 @@ The Members section displays organization membership:
 - **Membership dates** (if tracked): Start/end dates for membership
 - **Add member**: Button to link existing person to organization
 
-**Open question:** Should organizations support hierarchical roles (e.g., President → Vice President → Members)?
+**Decision:** Flat member list for Phase 1. Hierarchical role display (e.g., President → Vice President → Members) can be revisited if users request it.
 
 #### Place Map Preview section
 
 The Map Preview section provides geographic context:
 
-- **Interactive map**: Embedded Leaflet map centered on place coordinates
+- **Static map**: Embedded Leaflet map centered on place coordinates, rendered as a non-interactive snapshot
   - Uses `latitude` / `longitude` from place frontmatter
-  - Zoom controls for context
-- **Related places**: Nearby places from the place graph (optional)
-- **Open in Geo Map**: Button to open the full Geo Map view focused on this place
+  - Shows this place only (no nearby/related places — adds complexity without clear value)
+- **Open in Geo Map**: Clicking the map opens the full interactive Geo Map view focused on this place
 
 **Fallback:** If no coordinates exist, shows a prompt to add them or displays "No location data."
+
+#### Source Referenced Facts section
+
+The Referenced Facts section answers "what claims does this source support?" by querying entities that cite this source via `sourced_*` frontmatter properties.
+
+- **Fact list**: Shows the actual facts with values (e.g., `birth_date: 1842-05-12`, `death_place: Springfield`) where the corresponding `sourced_*` property includes this source
+- **Entity links**: Each fact links back to the entity it belongs to (person, event, place)
+- **Grouped by entity**: Facts are grouped under the entity they belong to, so the user sees "John Smith: birth_date, death_date" rather than a flat list
+
+**Implementation:** Query all notes in the vault where any `sourced_*` property value contains a wikilink to this source note. Extract the corresponding unsourced property name and value. This is a vault-wide search and should be cached per source entity.
 
 ### Section renderers
 
 Section renderers are standalone functions (e.g., `renderProfileRelationshipsSection()`, `renderProfileEventsSection()`) following the existing tab renderer pattern from Phase 1. Sections shared across entity types (Sources, Media) use the same render function.
+
+### File and module structure
+
+```
+src/profile-view/
+  profile-view.ts              # ProfileView class (ItemView subclass), auto-sync, pin/unpin
+  profile-data-loader.ts       # Coordinated data loading, caching, entity resolution
+  profile-types.ts             # Shared types: ProfileEntityData, SectionState, BreadcrumbEntry
+  sections/
+    section-base.ts            # Collapsible section infrastructure (expand/collapse, summary rendering)
+    identity-section.ts        # Identity header content (shared across all entity types)
+    relationships-section.ts   # Person relationships (family + other subsections)
+    events-section.ts          # Events list (person, place, organization)
+    sources-section.ts         # Sources list (person, event, place, organization)
+    media-section.ts           # Media grid (all entity types)
+    data-quality-section.ts    # Research level, coverage, questions (person-only)
+    participants-section.ts    # Event participants
+    members-section.ts         # Organization members
+    map-preview-section.ts     # Place map snapshot
+    referenced-facts-section.ts # Source referenced facts
+```
+
+Sections shared across entity types (Sources, Media, Events) are single renderer files called with entity-specific data. The view class orchestrates which sections to render based on detected entity type.
+
+### Auto-sync mechanism
+
+The view listens for `workspace.on('active-leaf-change')` to detect note switches.
+
+- **Debounce**: 150ms debounce on the listener to avoid flicker during rapid navigation (e.g., holding arrow keys in the file explorer)
+- **Same-entity guard**: If the resolved entity's `cr_id` matches the currently displayed entity, skip re-render entirely
+- **Non-entity notes**: When the active note is not a recognized entity, the view freezes on the last displayed entity rather than showing a blank pane. A subtle indicator (e.g., dimmed header or "not synced" badge) signals that the view is stale.
+- **Pinned instances**: Pinned views ignore `active-leaf-change` entirely
+
+### Data loading
+
+A single coordinated load fires per entity switch, orchestrated by `ProfileDataLoader`:
+
+1. Resolve entity type and core frontmatter data
+2. Fan out service calls in parallel (`FamilyGraphService`, `EventService`, `SourceService`, `MediaService`, etc.) based on which sections the entity type needs
+3. Pass resolved data into section renderers
+
+**Collapsed sections** receive their data but skip DOM rendering. This keeps expand instant (no fetch delay) while avoiding unnecessary DOM work. Phase 3 can refine this with true lazy-render if profiling shows the parallel service calls are a bottleneck.
+
+**Caching**: `ProfileDataLoader` caches the last loaded entity's data keyed by `cr_id`. Navigating back to a recently viewed entity reuses the cache (invalidated on `vault.on('modify')` for that file).
+
+### View states
+
+| State | Behavior |
+|-------|----------|
+| **Loading** | Skeleton placeholder in the section area while data resolves. Header shows entity name immediately from frontmatter. |
+| **Non-entity note active** | Freeze on last entity. Show a subtle "not following active note" indicator. If no entity has been shown yet, display an empty state with instructions. |
+| **Empty section** | Section header still visible with summary showing "None" or "0 items". Section body shows a contextual empty message (e.g., "No events recorded", "No media attached"). |
+| **Error** | Section-level error display (e.g., "Could not load events"). Other sections render normally. |
+
+### Section collapsed summaries
+
+When collapsed, each section shows a compact summary string:
+
+| Section | Collapsed summary example |
+|---------|--------------------------|
+| Relationships | "3 family, 2 other" |
+| Events | "12 events" |
+| Sources | "4 sources" |
+| Media | "8 items" |
+| Data Quality | "Level 4 · 67% sourced" |
+| Participants | "3 participants" |
+| Members | "15 members" |
+| Map preview | "43.6°N, 72.3°W" (or "No coordinates") |
+| Referenced facts | "7 facts across 3 entities" |
+| Research questions | "2 open questions" |
 
 ---
 
@@ -238,3 +317,8 @@ The existing codebase provides strong building blocks:
 | Browser relationship | Profile is additional option, not replacement | Preserves existing workflow for users who prefer raw markdown |
 | Cross-entity links | Navigate in-place; pop-out for side-by-side | Simple default; explicit action for multi-pane |
 | Multiple instances | Allowed (not single-instance) | Enables side-by-side via pinned panes |
+| Auto-sync event | `active-leaf-change` with 150ms debounce | Avoids flicker on rapid navigation; same-entity guard prevents redundant re-renders |
+| Data loading | Single coordinated load per entity switch | Parallel service calls, collapsed sections receive data but skip DOM; keeps expand instant |
+| Non-entity active note | Freeze on last entity with stale indicator | Better than blank pane; user retains context |
+| Organization hierarchy | Flat member list (Phase 1) | Sufficient for current use; revisit if requested |
+| Map preview | Static snapshot, click to open Geo Map | Simpler than full Leaflet embed; sufficient for coordinate review |
