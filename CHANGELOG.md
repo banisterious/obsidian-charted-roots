@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Create Family modal corrupts existing notes when children share names with existing people** ([#277](https://github.com/banisterious/obsidian-charted-roots/issues/277)): When creating children whose names matched existing people in the vault (e.g., adding "James Hardwick" b.1851 when "James Hardwick" b.1770 already existed), the wizard wrote wikilinks that resolved to the wrong file. The bidirectional linker then fired on the partially-written state and overwrote the existing person's father/mother fields, turning grandparents into children. The wizard now suspends the bidirectional linker during batch operations and constructs file-aware wikilinks that correctly target deduplicated filenames.
+
+---
+
+## [0.20.13] - 2026-02-18
+
 ### Added
 
 - **Media block inserted for event, place, and source notes** ([#269](https://github.com/banisterious/obsidian-charted-roots/issues/269)): The `charted-roots-media` dynamic block is now inserted into event, place, and source notes that have media attachments — both during Gramps/GEDCOM import (when "Include dynamic blocks" is enabled) and via the "Insert dynamic blocks" command. Previously, media blocks were only added to person notes.
