@@ -44,6 +44,13 @@ function stripWikilink(text: string): string {
  * @param app The Obsidian app instance for file resolution
  */
 function createSmartWikilink(name: string, app: App): string {
+	// If already formatted as a complete wikilink, return as-is
+	// This allows callers to pass pre-constructed [[basename|display]] links
+	// that bypass name-based resolution (avoids wrong-file resolution on duplicates)
+	if (name.startsWith('[[') && name.endsWith(']]')) {
+		return name;
+	}
+
 	// Strip existing brackets if present
 	const cleanName = stripWikilink(name);
 

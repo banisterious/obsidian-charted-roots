@@ -1390,6 +1390,13 @@ export class FamilyCreationWizardModal extends Modal {
 			return;
 		}
 
+		// Suspend bidirectional linker to prevent it from firing on partial state
+		// during batch note creation (same pattern as create-person-modal, import wizard)
+		const wasSuspended = this.plugin.bidirectionalLinker?.['suspended'];
+		if (this.plugin.bidirectionalLinker && !wasSuspended) {
+			this.plugin.bidirectionalLinker.suspend();
+		}
+
 		try {
 			// Only create directory and notes if we have new people to create
 			if (peopleToCreate.length > 0) {
@@ -1448,6 +1455,11 @@ export class FamilyCreationWizardModal extends Modal {
 		} catch (error) {
 			logger.error('create-family', 'Failed to create family', { error });
 			new Notice(`Failed to create family: ${error instanceof Error ? error.message : 'Unknown error'}`);
+		} finally {
+			// Resume bidirectional linker if we suspended it
+			if (this.plugin.bidirectionalLinker && !wasSuspended) {
+				this.plugin.bidirectionalLinker.resume();
+			}
 		}
 	}
 
@@ -1487,9 +1499,22 @@ export class FamilyCreationWizardModal extends Modal {
 			return { ids: resultIds, names: resultNames };
 		};
 
+		// Helper to get the wikilink-ready name for a person.
+		// Uses [[basename|displayName]] when the file basename differs from the
+		// display name (e.g., deduplicated filenames like "James Hardwick 1.md"
+		// for a person named "James Hardwick"). This prevents wikilinks from
+		// resolving to the wrong file when duplicate names exist in the vault.
+		const getLinkName = (person: { name: string; file?: TFile }): string => {
+			if (person.file && person.file.basename !== person.name) {
+				return `[[${person.file.basename}|${person.name}]]`;
+			}
+			return person.name;
+		};
+
 		// Get central person info
 		let centralCrId: string;
 		let centralName: string;
+		let centralLinkName: string;
 		let centralSex: string;
 		let centralFile: TFile | undefined;
 
@@ -1507,20 +1532,27 @@ export class FamilyCreationWizardModal extends Modal {
 			return;
 		}
 
+		// Build file-aware link name for the central person
+		centralLinkName = centralFile && centralFile.basename !== centralName
+			? `[[${centralFile.basename}|${centralName}]]`
+			: centralName;
+
 		// Collect all children info for parent linking
 		const childCrIds = this.state.children
 			.filter(c => c.crId)
 			.map(c => c.crId!);
 		const childNames = this.state.children
 			.filter(c => c.crId)
-			.map(c => c.name);
+			.map(c => getLinkName(c));
 
 		// Link spouses (bidirectional)
 		for (const spouse of this.state.spouses) {
 			if (spouse.file && spouse.crId) {
+				const spouseLinkName = getLinkName(spouse);
+
 				// Add central person as spouse of spouse (merge with existing)
 				const existingSpousesOnSpouse = getExistingArray(spouse.file, 'spouse_id', 'spouse');
-				const mergedSpousesOnSpouse = mergeArrays(existingSpousesOnSpouse, [centralCrId], [centralName]);
+				const mergedSpousesOnSpouse = mergeArrays(existingSpousesOnSpouse, [centralCrId], [centralLinkName]);
 				await updatePersonNote(this.app, spouse.file, {
 					spouseCrId: mergedSpousesOnSpouse.ids,
 					spouseName: mergedSpousesOnSpouse.names
@@ -1529,7 +1561,7 @@ export class FamilyCreationWizardModal extends Modal {
 				// Add spouse to central person (merge with existing)
 				if (centralFile) {
 					const existingSpousesOnCentral = getExistingArray(centralFile, 'spouse_id', 'spouse');
-					const mergedSpousesOnCentral = mergeArrays(existingSpousesOnCentral, [spouse.crId], [spouse.name]);
+					const mergedSpousesOnCentral = mergeArrays(existingSpousesOnCentral, [spouse.crId], [spouseLinkName]);
 					await updatePersonNote(this.app, centralFile, {
 						spouseCrId: mergedSpousesOnCentral.ids,
 						spouseName: mergedSpousesOnCentral.names
@@ -1555,27 +1587,28 @@ export class FamilyCreationWizardModal extends Modal {
 				if (centralSex === 'male') {
 					await updatePersonNote(this.app, child.file, {
 						fatherCrId: centralCrId,
-						fatherName: centralName
+						fatherName: centralLinkName
 					});
 				} else if (centralSex === 'female') {
 					await updatePersonNote(this.app, child.file, {
 						motherCrId: centralCrId,
-						motherName: centralName
+						motherName: centralLinkName
 					});
 				}
 
 				// Also link spouses as parents of children
 				for (const spouse of this.state.spouses) {
 					if (spouse.crId && child.file) {
+						const spouseLinkName = getLinkName(spouse);
 						if (spouse.sex === 'male') {
 							await updatePersonNote(this.app, child.file, {
 								fatherCrId: spouse.crId,
-								fatherName: spouse.name
+								fatherName: spouseLinkName
 							});
 						} else if (spouse.sex === 'female') {
 							await updatePersonNote(this.app, child.file, {
 								motherCrId: spouse.crId,
-								motherName: spouse.name
+								motherName: spouseLinkName
 							});
 						}
 					}
@@ -1595,17 +1628,19 @@ export class FamilyCreationWizardModal extends Modal {
 
 		// Link parents (bidirectional)
 		if (this.state.father?.crId) {
+			const fatherLinkName = getLinkName(this.state.father);
+
 			// Set father on central person
 			if (centralFile) {
 				await updatePersonNote(this.app, centralFile, {
 					fatherCrId: this.state.father.crId,
-					fatherName: this.state.father.name
+					fatherName: fatherLinkName
 				});
 			}
 			// Add central person as child of father (merge with existing)
 			if (this.state.father.file) {
 				const existingChildrenOnFather = getExistingArray(this.state.father.file, 'children_id', 'children');
-				const mergedChildrenOnFather = mergeArrays(existingChildrenOnFather, [centralCrId], [centralName]);
+				const mergedChildrenOnFather = mergeArrays(existingChildrenOnFather, [centralCrId], [centralLinkName]);
 				await updatePersonNote(this.app, this.state.father.file, {
 					childCrId: mergedChildrenOnFather.ids,
 					childName: mergedChildrenOnFather.names
@@ -1614,17 +1649,19 @@ export class FamilyCreationWizardModal extends Modal {
 		}
 
 		if (this.state.mother?.crId) {
+			const motherLinkName = getLinkName(this.state.mother);
+
 			// Set mother on central person
 			if (centralFile) {
 				await updatePersonNote(this.app, centralFile, {
 					motherCrId: this.state.mother.crId,
-					motherName: this.state.mother.name
+					motherName: motherLinkName
 				});
 			}
 			// Add central person as child of mother (merge with existing)
 			if (this.state.mother.file) {
 				const existingChildrenOnMother = getExistingArray(this.state.mother.file, 'children_id', 'children');
-				const mergedChildrenOnMother = mergeArrays(existingChildrenOnMother, [centralCrId], [centralName]);
+				const mergedChildrenOnMother = mergeArrays(existingChildrenOnMother, [centralCrId], [centralLinkName]);
 				await updatePersonNote(this.app, this.state.mother.file, {
 					childCrId: mergedChildrenOnMother.ids,
 					childName: mergedChildrenOnMother.names
@@ -1634,9 +1671,12 @@ export class FamilyCreationWizardModal extends Modal {
 
 		// Link father and mother as spouses to each other (merge with existing)
 		if (this.state.father?.crId && this.state.mother?.crId) {
+			const fatherLinkName = getLinkName(this.state.father);
+			const motherLinkName = getLinkName(this.state.mother);
+
 			if (this.state.father.file) {
 				const existingSpousesOnFather = getExistingArray(this.state.father.file, 'spouse_id', 'spouse');
-				const mergedSpousesOnFather = mergeArrays(existingSpousesOnFather, [this.state.mother.crId], [this.state.mother.name]);
+				const mergedSpousesOnFather = mergeArrays(existingSpousesOnFather, [this.state.mother.crId], [motherLinkName]);
 				await updatePersonNote(this.app, this.state.father.file, {
 					spouseCrId: mergedSpousesOnFather.ids,
 					spouseName: mergedSpousesOnFather.names
@@ -1644,7 +1684,7 @@ export class FamilyCreationWizardModal extends Modal {
 			}
 			if (this.state.mother.file) {
 				const existingSpousesOnMother = getExistingArray(this.state.mother.file, 'spouse_id', 'spouse');
-				const mergedSpousesOnMother = mergeArrays(existingSpousesOnMother, [this.state.father.crId], [this.state.father.name]);
+				const mergedSpousesOnMother = mergeArrays(existingSpousesOnMother, [this.state.father.crId], [fatherLinkName]);
 				await updatePersonNote(this.app, this.state.mother.file, {
 					spouseCrId: mergedSpousesOnMother.ids,
 					spouseName: mergedSpousesOnMother.names
