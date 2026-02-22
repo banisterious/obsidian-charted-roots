@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Family chart shows non-binary and unknown sex as male** ([#280](https://github.com/banisterious/obsidian-charted-roots/issues/280)): The family chart view forced all non-female sex values to male, so people with non-binary or unknown sex always appeared with the male color. The chart now correctly maps non-binary (`X`) and unknown (`U`) sex codes and renders them with distinct colors (muted gold for non-binary, gray for unknown) across all card styles and exports. The info panel also displays and allows editing of all four sex values.
+
 - **Sources block shows filename instead of title and missing fact labels** ([#278](https://github.com/banisterious/obsidian-charted-roots/issues/278)): The `charted-roots-sources` block displayed the source note's filename rather than its `title` frontmatter property, and the Facts column was always empty for vaults using the legacy `sourced_facts` nested object. The title column now uses `[[filename|title]]` display syntax, and the processor reads from both flat `sourced_*` properties and the legacy `sourced_facts` format.
 
 ---

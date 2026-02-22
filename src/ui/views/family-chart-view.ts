@@ -49,7 +49,7 @@ interface FamilyChartPerson {
 	data: {
 		'first name': string;
 		'last name': string;
-		gender: 'M' | 'F';
+		gender: 'M' | 'F' | 'X' | 'U' | '';
 		birthday?: string;
 		deathday?: string;
 		avatar?: string;
@@ -155,7 +155,7 @@ export class FamilyChartView extends ItemView {
 	private infoPanelActionsEl: HTMLElement | null = null;
 	private selectedPersonId: string | null = null;
 	private infoPanelEditMode: boolean = false;
-	private infoPanelEditData: { firstName: string; lastName: string; birthDate: string; deathDate: string; gender: 'M' | 'F' | '' } | null = null;
+	private infoPanelEditData: { firstName: string; lastName: string; birthDate: string; deathDate: string; gender: 'M' | 'F' | 'X' | 'U' | '' } | null = null;
 
 	// Sync state (prevent infinite loops during sync)
 	private isSyncing: boolean = false;
@@ -488,7 +488,7 @@ export class FamilyChartView extends ItemView {
 		this.createInfoField(fieldsSection, 'Death date', personData.data.deathday || '');
 
 		// Sex
-		const sexDisplay = personData.data.gender === 'F' ? 'Female' : personData.data.gender === 'M' ? 'Male' : '';
+		const sexDisplay = personData.data.gender === 'M' ? 'Male' : personData.data.gender === 'F' ? 'Female' : personData.data.gender === 'X' ? 'Non-binary' : personData.data.gender === 'U' ? 'Unknown' : '';
 		this.createInfoField(fieldsSection, 'Sex', sexDisplay);
 
 		// Relationships section
@@ -540,7 +540,7 @@ export class FamilyChartView extends ItemView {
 				lastName: personData.data['last name'] || '',
 				birthDate: personData.data.birthday || '',
 				deathDate: personData.data.deathday || '',
-				gender: (personData.data.gender as 'M' | 'F' | '') || ''
+				gender: (personData.data.gender as 'M' | 'F' | 'X' | 'U' | '') || ''
 			};
 		}
 
@@ -572,9 +572,10 @@ export class FamilyChartView extends ItemView {
 		sexField.createDiv({ cls: 'cr-fcv-info-field-label', text: 'Sex' });
 		const sexSelect = sexField.createEl('select', { cls: 'cr-fcv-info-field-select dropdown' });
 		const options = [
-			{ value: '', label: 'Unknown' },
+			{ value: 'U', label: 'Unknown' },
 			{ value: 'M', label: 'Male' },
-			{ value: 'F', label: 'Female' }
+			{ value: 'F', label: 'Female' },
+			{ value: 'X', label: 'Non-binary' }
 		];
 		for (const opt of options) {
 			const optionEl = sexSelect.createEl('option', { value: opt.value, text: opt.label });
@@ -584,7 +585,7 @@ export class FamilyChartView extends ItemView {
 		}
 		sexSelect.addEventListener('change', () => {
 			if (this.infoPanelEditData) {
-				this.infoPanelEditData.gender = sexSelect.value as 'M' | 'F' | '';
+				this.infoPanelEditData.gender = sexSelect.value as 'M' | 'F' | 'X' | 'U' | '';
 			}
 		});
 
@@ -724,7 +725,7 @@ export class FamilyChartView extends ItemView {
 			lastName: personData.data['last name'] || '',
 			birthDate: personData.data.birthday || '',
 			deathDate: personData.data.deathday || '',
-			gender: (personData.data.gender as 'M' | 'F' | '') || ''
+			gender: (personData.data.gender as 'M' | 'F' | 'X' | 'U' | '') || ''
 		};
 		this.renderInfoPanelContent();
 	}
@@ -771,7 +772,7 @@ export class FamilyChartView extends ItemView {
 			this.chartData[personIndex].data['last name'] = this.infoPanelEditData.lastName;
 			this.chartData[personIndex].data.birthday = this.infoPanelEditData.birthDate;
 			this.chartData[personIndex].data.deathday = this.infoPanelEditData.deathDate;
-			if (this.infoPanelEditData.gender === 'M' || this.infoPanelEditData.gender === 'F') {
+			if (this.infoPanelEditData.gender === 'M' || this.infoPanelEditData.gender === 'F' || this.infoPanelEditData.gender === 'X' || this.infoPanelEditData.gender === 'U') {
 				this.chartData[personIndex].data.gender = this.infoPanelEditData.gender;
 			}
 		}
@@ -1199,11 +1200,15 @@ export class FamilyChartView extends ItemView {
 		// Priority: explicit given_name/surnames properties, then fallback to parsing name field
 		const { firstName, lastName } = this.extractNameComponents(person);
 
-		// Map gender - family-chart requires 'M' or 'F', default to 'M' if unknown
-		let gender: 'M' | 'F' = 'M';
+		// Map gender - family-chart uses M/F/X/U codes
+		let gender: 'M' | 'F' | 'X' | 'U' | '' = 'U';
 		const sex = person.sex?.toLowerCase();
-		if (sex === 'f' || sex === 'female') {
+		if (sex === 'm' || sex === 'male') {
+			gender = 'M';
+		} else if (sex === 'f' || sex === 'female') {
 			gender = 'F';
+		} else if (sex === 'x' || sex === 'nonbinary' || sex === 'non-binary' || sex === 'other' || sex === 'intersex') {
+			gender = 'X';
 		}
 
 		// Build parents array - family-chart library allows max 2 parents per person
@@ -1350,7 +1355,7 @@ export class FamilyChartView extends ItemView {
 	 * Called with `this` bound to the view instance via bind() in createOpenNoteButtonCallback.
 	 * The card element is found via d3.select using the person ID from the data parameter.
 	 */
-	private addOpenNoteButton(this: FamilyChartView, d: { data: { id: string } }): void {
+	private addOpenNoteButton(this: FamilyChartView, d: { data: { id: string; data?: { gender?: string } } }): void {
 		const personId = d.data.id;
 		// Find the card container element using d3's data binding
 		const cardSelection = d3.selectAll<SVGGElement, { data: { id: string } }>('.card_cont')
@@ -1358,6 +1363,14 @@ export class FamilyChartView extends ItemView {
 		if (cardSelection.empty()) return;
 		const cardEl = cardSelection.node();
 		if (!cardEl) return;
+
+		// Fix gender class — the library only knows M/F, so correct X/U after rendering
+		const gender = d.data.data?.gender;
+		if (gender === 'X' || gender === 'U') {
+			const cardG = d3.select(cardEl).select('.card');
+			cardG.classed('card-genderless', false);
+			cardG.classed(gender === 'X' ? 'card-nonbinary' : 'card-genderless', true);
+		}
 
 		// Check if button already exists (prevents duplicates on re-render)
 		if (d3.select(cardEl).select('.cr-open-note-btn').size() > 0) return;
@@ -1474,6 +1487,7 @@ export class FamilyChartView extends ItemView {
 		const gender = d.data.data.gender as string;
 		if (gender === 'M') classList.push('card-male');
 		else if (gender === 'F') classList.push('card-female');
+		else if (gender === 'X') classList.push('card-nonbinary');
 		else classList.push('card-genderless');
 		if (d.data.main) classList.push('card-main');
 
@@ -2953,6 +2967,7 @@ export class FamilyChartView extends ItemView {
 		const bgColor = isDark ? 'rgb(33, 33, 33)' : 'rgb(250, 250, 250)';
 		const femaleColor = 'rgba(154, 89, 113, 1)';
 		const maleColor = 'rgba(69, 123, 141, 1)';
+		const nonbinaryColor = 'rgba(180, 150, 60, 1)';
 		const genderlessColor = 'rgb(59, 85, 96)';
 
 		// Embed CSS styles directly in the SVG for standalone rendering
@@ -2966,6 +2981,7 @@ export class FamilyChartView extends ItemView {
 			.card-body-rect { fill: ${bgColor}; }
 			.card-female .card-body-rect { fill: ${femaleColor}; }
 			.card-male .card-body-rect { fill: ${maleColor}; }
+			.card-nonbinary .card-body-rect { fill: ${nonbinaryColor}; }
 			.card-genderless .card-body-rect { fill: ${genderlessColor}; }
 			.link { stroke: ${textColor}; stroke-width: 2px; fill: none; }
 			.card-main-outline { stroke: ${textColor}; stroke-width: 3px; }
@@ -3077,6 +3093,7 @@ export class FamilyChartView extends ItemView {
 		// Theme colors
 		const femaleColor = 'rgb(196, 138, 146)';
 		const maleColor = 'rgb(120, 159, 172)';
+		const nonbinaryColor = 'rgb(200, 175, 80)';
 		const genderlessColor = 'lightgray';
 		const labelBgColor = 'rgba(0, 0, 0, 0.6)';
 		const textColor = '#fff';
@@ -3104,10 +3121,11 @@ export class FamilyChartView extends ItemView {
 
 			const isMale = cardInner.classList.contains('card-male');
 			const isFemale = cardInner.classList.contains('card-female');
+			const isNonbinary = cardInner.classList.contains('card-nonbinary');
 			const isImage = cardInner.classList.contains('card-image');
 
 			// Determine background color
-			const bgColor = isFemale ? femaleColor : isMale ? maleColor : genderlessColor;
+			const bgColor = isFemale ? femaleColor : isMale ? maleColor : isNonbinary ? nonbinaryColor : genderlessColor;
 
 			// Create a group for this card
 			const cardGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');

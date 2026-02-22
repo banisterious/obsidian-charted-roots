@@ -213,6 +213,7 @@
   /* family-chart CSS variables - customizable via Style Settings plugin */
   --female-color: var(--cr-fcv-female-color, rgb(196, 138, 146));
   --male-color: var(--cr-fcv-male-color, rgb(120, 159, 172));
+  --nonbinary-color: var(--cr-fcv-nonbinary-color, rgb(200, 175, 80));
   --genderless-color: var(--cr-fcv-unknown-color, rgb(211, 211, 211));
   --background-color: var(--cr-fcv-background-dark, rgb(33, 33, 33));
   --text-color: var(--cr-fcv-text-dark, #fff);
@@ -251,6 +252,12 @@
 .cr-fcv-chart-container.f3 .card-male .card-body-rect,
 .cr-fcv-chart-container.f3 .card-male .text-overflow-mask {
   fill: var(--male-color);
+}
+
+.cr-fcv-chart-container.f3 rect.card-nonbinary,
+.cr-fcv-chart-container.f3 .card-nonbinary .card-body-rect,
+.cr-fcv-chart-container.f3 .card-nonbinary .text-overflow-mask {
+  fill: var(--nonbinary-color);
 }
 
 .cr-fcv-chart-container.f3 .card-genderless .card-body-rect,
@@ -418,6 +425,11 @@
 .cr-fcv-chart-container.f3 div.card-male .card-inner,
 .cr-fcv-chart-container.f3 div.card-male .person-icon svg {
   background-color: var(--male-color);
+}
+
+.cr-fcv-chart-container.f3 div.card-nonbinary .card-inner,
+.cr-fcv-chart-container.f3 div.card-nonbinary .person-icon svg {
+  background-color: var(--nonbinary-color);
 }
 
 .cr-fcv-chart-container.f3 div.card-genderless .card-inner,
@@ -1236,6 +1248,9 @@
 }
 .cr-fcv-chart-container.card-style-circle div.card-male {
   background-color: rgb(120, 159, 172);
+}
+.cr-fcv-chart-container.card-style-circle div.card-nonbinary {
+  background-color: rgb(200, 175, 80);
 }
 .cr-fcv-chart-container.card-style-circle div.card-genderless {
   background-color: lightgray;
