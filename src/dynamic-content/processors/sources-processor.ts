@@ -18,7 +18,7 @@ import { DynamicContentService } from '../services/dynamic-content-service';
 import { SourcesRenderer, type SourceTableRow } from '../renderers/sources-renderer';
 import { SourceService } from '../../sources/services/source-service';
 import type { SourceNote, FactKey } from '../../sources/types/source-types';
-import { SOURCED_PROPERTY_NAMES, SOURCED_PROPERTY_TO_FACT_KEY } from '../../sources/types/source-types';
+import { SOURCED_PROPERTY_NAMES, SOURCED_PROPERTY_TO_FACT_KEY, FACT_KEY_LABELS } from '../../sources/types/source-types';
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
 
 /**
@@ -126,6 +126,38 @@ export class SourcesProcessor {
 					const facts = new Set<FactKey>();
 					facts.add(factKey);
 					sourceMap.set(resolved.crId, { source: resolved, facts });
+				}
+			}
+		}
+
+		// 3. Legacy sourced_facts fallback (nested object format)
+		const legacySourcedFacts = fm.sourced_facts;
+		if (legacySourcedFacts && typeof legacySourcedFacts === 'object' && !Array.isArray(legacySourcedFacts)) {
+			for (const [factKeyStr, value] of Object.entries(legacySourcedFacts as Record<string, unknown>)) {
+				// Validate this is a known fact key
+				if (!(factKeyStr in FACT_KEY_LABELS)) continue;
+				const factKey = factKeyStr as FactKey;
+
+				// Value can be { sources: [...] } or directly [...]
+				const links: unknown[] = Array.isArray(value)
+					? value
+					: (value && typeof value === 'object' && 'sources' in value && Array.isArray((value as Record<string, unknown>).sources))
+						? (value as Record<string, unknown[]>).sources
+						: [];
+
+				for (const link of links) {
+					if (typeof link !== 'string') continue;
+					const resolved = this.resolveSourceFromLink(link, file.path, sourceService);
+					if (!resolved) continue;
+
+					const existing = sourceMap.get(resolved.crId);
+					if (existing) {
+						existing.facts.add(factKey);
+					} else {
+						const facts = new Set<FactKey>();
+						facts.add(factKey);
+						sourceMap.set(resolved.crId, { source: resolved, facts });
+					}
 				}
 			}
 		}

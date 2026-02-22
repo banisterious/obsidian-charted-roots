@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Sources block shows filename instead of title and missing fact labels** ([#278](https://github.com/banisterious/obsidian-charted-roots/issues/278)): The `charted-roots-sources` block displayed the source note's filename rather than its `title` frontmatter property, and the Facts column was always empty for vaults using the legacy `sourced_facts` nested object. The title column now uses `[[filename|title]]` display syntax, and the processor reads from both flat `sourced_*` properties and the legacy `sourced_facts` format.
+
+---
+
 ## [0.20.14] - 2026-02-22
 
 ### Added

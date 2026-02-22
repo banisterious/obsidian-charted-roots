@@ -196,10 +196,11 @@ export class SourcesRenderer {
 				typeCell.setText(row.source.sourceType);
 			}
 
-			// Title column (wikilink)
+			// Title column (wikilink with display title)
 			const titleCell = tr.createEl('td', { cls: 'cr-sources__title' });
 			const basename = row.source.filePath.replace(/\.md$/, '').split('/').pop() || row.source.title;
-			const wikilink = `[[${basename}]]`;
+			const displayTitle = row.source.title && row.source.title !== basename ? row.source.title : undefined;
+			const wikilink = displayTitle ? `[[${basename}|${displayTitle}]]` : `[[${basename}]]`;
 			await MarkdownRenderer.render(
 				component.containerEl.doc.defaultView?.app ?? (app as never),
 				wikilink,
@@ -254,7 +255,8 @@ export class SourcesRenderer {
 		for (const row of this.currentRows) {
 			const type = row.typeDef?.name || row.source.sourceType;
 			const basename = row.source.filePath.replace(/\.md$/, '').split('/').pop() || row.source.title;
-			const titleLink = `[[${basename}]]`;
+			const displayTitle = row.source.title && row.source.title !== basename ? row.source.title : undefined;
+			const titleLink = displayTitle ? `[[${basename}|${displayTitle}]]` : `[[${basename}]]`;
 			const date = row.source.date ? this.service.formatDate(row.source.date) : '—';
 			const facts = row.facts.length > 0
 				? row.facts.map(f => FACT_KEY_LABELS[f]).join(', ')
