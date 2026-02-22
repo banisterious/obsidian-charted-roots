@@ -25,6 +25,8 @@ Charted Roots supports multiple genealogical data formats for interoperability w
 | **GEDCOM X** | ✅ | ✅ | Modern JSON-based FamilySearch format |
 | **Gramps XML** | ✅ | ✅ | Gramps genealogy software (`.gramps`, `.xml`, `.gpkg` with media) |
 | **CSV** | ✅ | ✅ | Spreadsheet-compatible tabular data |
+| **ODT** | — | ✅ | OpenDocument text reports via `OdtGenerator` |
+| **Excalidraw** | — | ✅ | Hand-drawn style tree diagrams via `ExcalidrawExporter` |
 
 **Gramps file formats:**
 
@@ -40,10 +42,12 @@ When importing `.gpkg` files, media files are extracted to the configured media 
 
 | Format | Module | Key Classes |
 |--------|--------|-------------|
-| GEDCOM 5.5.1 | `src/gedcom/` | `GedcomImporter`, `GedcomParser`, `GedcomExporter`, `GedcomQualityAnalyzer` |
-| GEDCOM X | `src/gedcomx/` | `GedcomxImporter`, `GedcomxParser`, `GedcomxExporter` |
-| Gramps XML | `src/gramps/` | `GrampsImporter`, `GrampsParser`, `GrampsExporter`, `GpkgExtractor` |
-| CSV | `src/csv/` | `CsvImporter`, `CsvExporter` |
+| GEDCOM 5.5.1 | `src/gedcom/` | `GedcomImporterV2`, `GedcomParserV2`, `GedcomExporter`, `analyzeGedcomQuality()` / `applyQualityFixes()` |
+| GEDCOM X | `src/gedcomx/` | `GedcomXImporter`, `GedcomXParser`, `GedcomXExporter` |
+| Gramps XML | `src/gramps/` | `GrampsImporter`, `GrampsParser`, `GrampsExporter`, `gpkg-extractor.ts` (standalone functions) |
+| CSV | `src/csv/` | `CsvImporter`, `CsvParser`, `CsvExporter` |
+| ODT | `src/reports/services/` | `OdtGenerator` (report output only) |
+| Excalidraw | `src/excalidraw/` | `ExcalidrawExporter` (tree diagram output only) |
 
 ## Two-Pass Import Architecture
 

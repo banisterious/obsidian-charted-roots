@@ -24,7 +24,7 @@ This document covers the user interface implementation including context menus, 
 - [Settings and Configuration](#settings-and-configuration)
   - [Settings Interface](#settings-interface)
   - [Type Definitions](#type-definitions)
-  - [Settings Tab vs Preferences Tab](#settings-tab-vs-preferences-tab)
+  - [Settings Tab](#settings-tab)
   - [Default Values](#default-values)
 
 ---
@@ -159,7 +159,7 @@ See [Mobile Styling](../styling.md#mobile-styling) for CSS implementation detail
 
 ## Control Center Architecture
 
-The Control Center (`src/ui/control-center.ts`) is the primary user interface for Charted Roots, providing a centralized modal with 14 tabs covering all plugin functionality. After Phase 1 modularization, the modal shell is ~1,451 lines with tab rendering delegated to extracted component files in `src/ui/tabs/`. Nine tabs also have dockable sidebar ItemViews (see [Dockable Views](#dockable-views)).
+The Control Center (`src/ui/control-center.ts`) is the primary user interface for Charted Roots, providing a centralized modal with 13 tabs organized into navigation groups, plus a Tools group with 6 modal/leaf launchers. After Phase 1 modularization, the modal shell delegates tab rendering to extracted component files. Nine entity tabs have dockable sidebar ItemViews (see [Dockable Views](#dockable-views)).
 
 ### Modal Structure
 
@@ -199,60 +199,81 @@ class ControlCenterModal extends Modal {
 
 ### Tab System
 
-Tabs are defined in `src/ui/lucide-icons.ts`:
+Tabs and navigation groups are defined in `src/ui/lucide-icons.ts`:
 
 ```typescript
+type NavGroup = 'dashboard' | 'entities' | 'data-structure' | 'output' | 'tools' | 'settings';
+
 interface TabConfig {
   id: string;         // URL-safe identifier
   name: string;       // Display name
   icon: LucideIconName;
   description: string;
+  group: NavGroup;    // Navigation group for drawer organization
 }
 
 export const TAB_CONFIGS: TabConfig[] = [
-  { id: 'dashboard', name: 'Dashboard', icon: 'layout-dashboard', description: '...' },
-  { id: 'people', name: 'People', icon: 'users', description: '...' },
-  // ... 12 more tabs
+  { id: 'dashboard', name: 'Dashboard', icon: 'home', description: '...', group: 'dashboard' },
+  { id: 'people', name: 'People', icon: 'users', description: '...', group: 'entities' },
+  // ... 11 more tabs
 ];
 ```
 
-**All 14 tabs:**
+**Navigation groups:**
 
-| Tab ID | Name | Purpose | Dockable |
-|--------|------|---------|----------|
-| `dashboard` | Dashboard | Quick-action tiles, vault health, recent files | — |
-| `people` | People | Person notes list, batch operations | ✓ |
-| `events` | Events | Event notes, date systems, timelines | ✓ |
-| `places` | Places | Place notes, geocoding, hierarchy | ✓ |
-| `sources` | Sources | Source notes, citations, media | ✓ |
-| `organizations` | Organizations | Organization notes | ✓ |
-| `universes` | Universes | Fictional universe management | ✓ |
-| `collections` | Collections | Family groups, custom collections | ✓ |
-| `data-quality` | Data Quality | Issue detection, batch fixes | ✓ |
-| `schemas` | Schemas | Validation schemas | — |
-| `relationships` | Relationships | Custom relationship types | ✓ |
-| `tree-generation` | Visual Trees | Canvas/chart generation | — |
-| `maps` | Maps | Map views, custom image maps | — |
-| `preferences` | Preferences | Deprecated; canvas layout/styling cards used by Visual Trees | — |
+| Group ID | Label | Contents |
+|----------|-------|----------|
+| `dashboard` | *(none)* | Dashboard tab |
+| `entities` | Entities | People, Events, Places, Sources, Organizations, Universes, Collections |
+| `data-structure` | Data & Structure | Data quality, Schemas, Relationships |
+| `output` | Output | Trees & reports, Maps |
+| `tools` | Tools | 6 tool entries (see below) |
 
-**Removed in Phase 1 modularization (v0.20.0):** Status, Guide, Statistics (legacy redirect tabs).
+**All 13 tabs:**
 
-**Dashboard tiles:**
+| Tab ID | Name | Group | Purpose | Dockable |
+|--------|------|-------|---------|----------|
+| `dashboard` | Dashboard | dashboard | Quick-action tiles, vault health, recent files | — |
+| `people` | People | entities | Person notes list, batch operations | ✓ |
+| `events` | Events | entities | Event notes, date systems, timelines | ✓ |
+| `places` | Places | entities | Place notes, geocoding, hierarchy | ✓ |
+| `sources` | Sources | entities | Source notes, citations, media | ✓ |
+| `organizations` | Organizations | entities | Organization notes | ✓ |
+| `universes` | Universes | entities | Fictional universe management | ✓ |
+| `collections` | Collections | entities | Family groups, custom collections | ✓ |
+| `data-quality` | Data quality | data-structure | Issue detection, batch fixes | ✓ |
+| `schemas` | Schemas | data-structure | Validation schemas | — |
+| `relationships` | Relationships | data-structure | Custom relationship types | ✓ |
+| `tree-generation` | Trees & reports | output | Canvas/chart generation, report wizard | — |
+| `maps` | Maps | output | Map views, custom image maps | — |
 
-The Dashboard tab displays quick-action tiles organized in a responsive grid:
+**Tools group:**
 
-| Tile | Icon | Description |
-|------|------|-------------|
-| Create Person | `user-plus` | Opens Create Person modal |
-| Import Data | `download` | Opens Import/Export tab |
-| Generate Tree | `git-fork` | Opens Tree Output tab |
-| Family Chart | `users` | Opens interactive chart (requires people) |
-| Geocode Places | `map-pin` | Batch geocode place notes |
-| View Map | `map` | Opens map view (requires places with coords) |
-| Find Unlinked Media | `image` | Opens unlinked media finder modal |
-| Run Data Quality | `check-circle` | Opens Data Quality tab |
+The Tools group renders modal/leaf launchers (not tabs) in the navigation drawer, marked with an external indicator (↗). Defined in `TOOL_CONFIGS`:
 
-Tiles are conditionally shown based on vault state (e.g., "Family Chart" requires person notes to exist).
+| Tool ID | Name | Action |
+|---------|------|--------|
+| `templates` | Templates | Opens template snippets modal |
+| `media-manager` | Media Manager | Opens media manager modal |
+| `family-chart` | Family Chart | Opens interactive family chart view |
+| `import-export` | Import/Export | Opens import/export hub modal |
+| `statistics` | Statistics | Opens statistics dashboard view |
+| `create-family` | Create Family | Opens family creation wizard |
+
+**Removed in Phase 1 modularization (v0.20.0):** Status, Guide, Statistics tabs (legacy redirect tabs). Preferences tab consolidated into Plugin Settings (#176).
+
+**Dashboard layout:**
+
+The Dashboard tab (`src/ui/dashboard-tab.ts`) displays several sections:
+
+1. **Quick Actions** — 12 tiles in a responsive grid (3 rows × 4):
+   - Row 1 (entity creation): Person, Event, Place, Source
+   - Row 2 (family & visualization): Family, Family Chart, Canvas Trees, Map
+   - Row 3 (analysis & utilities): Reports Wizard, Stats & Reports, Media, Import/Export
+2. **Dockable Views** — 9 tiles that open sidebar ItemViews (People, Places, Events, Sources, Organizations, Relationships, Universes, Collections, Data quality)
+3. **Staging** — Shows staged imports and clipped notes (if any)
+4. **Recent** — Recently accessed files
+5. **Vault Health** — Collapsible vault statistics via `VaultStatsService`
 
 ### Navigation and Routing
 
@@ -269,7 +290,7 @@ private showTab(tabId: string): void {
     case 'people':
       void this.showPeopleTab();
       break;
-    // ... 12 more cases
+    // ... 11 more cases
     default:
       this.showPlaceholderTab(tabId);
   }
@@ -409,7 +430,27 @@ if (Platform.isMobile) {
 
 ## Dockable Views
 
-Nine entity tabs have corresponding dockable ItemViews that open as persistent sidebar panels. Each view follows a dual-renderer architecture where the modal and dockable view share extracted tab components.
+Thirteen registered ItemViews provide persistent sidebar panels and dedicated views. Nine entity tabs have corresponding dockable views that share extracted tab components with the modal. Four additional views serve specialized purposes (family chart, map, statistics, migration notice).
+
+**All registered views:**
+
+| View Type Constant | View Type ID | Source |
+|---|---|---|
+| `VIEW_TYPE_PEOPLE` | `canvas-roots-people` | `src/ui/views/people-view.ts` |
+| `VIEW_TYPE_EVENTS` | `canvas-roots-events` | `src/dates/ui/events-view.ts` |
+| `VIEW_TYPE_PLACES` | `canvas-roots-places` | `src/ui/views/places-view.ts` |
+| `VIEW_TYPE_SOURCES` | `canvas-roots-sources` | `src/sources/ui/sources-view.ts` |
+| `VIEW_TYPE_ORGANIZATIONS` | `canvas-roots-organizations` | `src/organizations/ui/organizations-view.ts` |
+| `VIEW_TYPE_UNIVERSES` | `canvas-roots-universes` | `src/universes/ui/universes-view.ts` |
+| `VIEW_TYPE_COLLECTIONS` | `canvas-roots-collections` | `src/ui/collections-view.ts` |
+| `VIEW_TYPE_DATA_QUALITY` | `canvas-roots-data-quality` | `src/ui/data-quality-view.ts` |
+| `VIEW_TYPE_RELATIONSHIPS` | `canvas-roots-relationships` | `src/relationships/ui/relationships-view.ts` |
+| `VIEW_TYPE_FAMILY_CHART` | `canvas-roots-family-chart` | `src/ui/views/family-chart-view.ts` |
+| `VIEW_TYPE_MAP` | `canvas-roots-map` | `src/maps/map-view.ts` |
+| `VIEW_TYPE_STATISTICS` | `canvas-roots-statistics` | `src/statistics.ts` |
+| `VIEW_TYPE_MIGRATION_NOTICE` | `canvas-roots-migration-notice` | `src/ui/views/migration-notice-view.ts` |
+
+> **Note:** View type IDs still use the `canvas-roots-` prefix for backwards compatibility with existing workspace layouts. The `charted-roots-` prefix is used for dynamic content blocks and new registrations.
 
 ### Architecture
 
@@ -782,52 +823,24 @@ interface LastExportInfo {
 }
 ```
 
-### Settings Tab vs Preferences Tab
+### Settings Tab
 
-Charted Roots has two places for configuration:
+All plugin configuration is managed through the Obsidian Settings Tab (`CanvasRootsSettingTab` in `src/settings.ts`), accessed via Settings → Community Plugins → Charted Roots. The settings tab uses collapsible `<details>` sections with a search/filter box:
 
-**Obsidian Settings Tab** (`CanvasRootsSettingTab`):
-- Accessed via Settings → Community Plugins → Charted Roots
-- Contains: Logging level, log export path, log obfuscation toggle
-- Minimal surface area—most settings moved to Preferences tab
+**Sections:**
 
-```typescript
-export class CanvasRootsSettingTab extends PluginSettingTab {
-  display(): void {
-    const { containerEl } = this;
-    containerEl.empty();
+| Section | Contents |
+|---------|----------|
+| Folders | Entity folders, output folders, staging folder |
+| Data & Detection | Bidirectional sync, note type detection, cr_id generation |
+| Canvas & Trees | Layout, spacing, node colors, edge styles |
+| Dates & Validation | Date format, partial/circa/range dates |
+| Sex & Gender | Sex normalization mode, color assignments |
+| Places | Geocoding provider, coordinate display |
+| Property & Value Aliases | Custom property aliases, value aliases |
+| Advanced | Logging level, log export, obfuscation |
 
-    containerEl.createEl('h2', { text: 'Charted Roots Settings' });
-
-    // Logging settings only
-    new Setting(containerEl)
-      .setName('Log level')
-      .addDropdown(dropdown => {
-        dropdown.addOption('debug', 'Debug');
-        dropdown.addOption('info', 'Info');
-        // ...
-      });
-  }
-}
-```
-
-**Control Center Preferences Tab** (`preferences-tab.ts`):
-- Accessed via Control Center → Preferences
-- Contains: All other settings organized in cards
-- Provides richer UI with previews, inline help, and grouped controls
-
-```typescript
-export function renderPreferencesTab(
-  container: HTMLElement,
-  plugin: CanvasRootsPlugin,
-  showTab: (tabId: string) => void
-): void {
-  // Cards for: Folders, Property Aliases, Value Aliases,
-  // Canvas Styling, Privacy, Date Validation, Type Management, etc.
-}
-```
-
-**Rationale:** The Obsidian Settings tab is limited to simple controls. Complex settings like type customization, alias editing, and folder configuration work better in the Control Center's card-based UI.
+> **Note:** The Preferences tab was removed in v0.20.0 (#176). All settings were consolidated into the Plugin Settings tab. The file `preferences-tab.ts` still exists but is no longer rendered as a Control Center tab.
 
 ### Default Values
 

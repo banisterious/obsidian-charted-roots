@@ -51,8 +51,8 @@ The alias system normalizes data from various sources (GEDCOM imports, user inpu
 **Key methods:**
 
 ```typescript
-// Resolve custom property name to canonical name
-resolve(propertyName: string): string
+// Resolve a canonical property from frontmatter (checks canonical name, then all aliases)
+resolve(frontmatter: Record<string, unknown>, canonicalProperty: string): unknown
 
 // Get the property name to use when writing (user's preferred name)
 getWriteProperty(canonicalName: string): string
@@ -61,15 +61,16 @@ getWriteProperty(canonicalName: string): string
 getDisplayProperty(canonicalName: string): string
 ```
 
-**Canonical properties by note type:**
+**Canonical properties by note type** (defined in `CANONICAL_*_PROPERTIES` arrays):
 
-| Note Type | Canonical Properties |
+| Note Type | Key Canonical Properties (not exhaustive) |
 |-----------|---------------------|
-| Person | `name`, `born`, `died`, `birth_surname`, `father`, `mother`, `spouse`, `children`, `sex`, `gender_identity`, `cr_id`, `cr_type` |
-| Place | `name`, `place_type`, `coordinates_lat`, `coordinates_long`, `parent_place`, `cr_id`, `cr_type` |
-| Event | `title`, `event_type`, `date`, `end_date`, `person`, `place`, `description`, `cr_id`, `cr_type` |
-| Source | `name`, `source_type`, `author`, `publication_date`, `repository`, `cr_id`, `cr_type` |
-| Organization | `name`, `org_type`, `founded`, `dissolved`, `parent_org`, `cr_id`, `cr_type` |
+| Person | `name`, `born`, `died`, `maiden_name`, `father`, `mother`, `spouse`, `child`, `sex`, `gender`, `cr_id`, plus step/adoptive parent properties, `partners`, `children_id`, `occupation`, `sources`, etc. (~40 total) |
+| Place | `name`, `place_type`, `coordinates`, `parent_place`, `universe`, `property_of`, `cr_id`, `cr_type` |
+| Event | `title`, `event_type`, `date`, `date_end`, `person`, `persons`, `place`, `sources`, `cr_id`, `cr_type`, plus ordering/grouping/transfer properties |
+| Source | `title`, `source_type`, `author`, `repository`, `confidence`, `url`, `access_date`, `cr_id`, `cr_type`, plus Gramps and person role properties |
+
+> **Note:** The `PropertyAliasService` covers Person, Event, Place, Source, and Universe types. Organization properties are managed separately in `OrganizationService`.
 
 ### Value Aliases
 
@@ -118,19 +119,16 @@ The value alias service includes built-in synonyms for common variations, elimin
 | `other`, `nonbinary`, `non-binary`, `nb`, `x` | `X` |
 | `unknown`, `u`, `?` | `U` |
 
-**Event type synonyms:**
+**Event type synonyms** (from `BUILTIN_SYNONYMS` in `value-alias-service.ts`):
 
 | Input | Canonical |
 |-------|-----------|
-| `nameday`, `baptism`, `christening` | `birth` |
-| `burial`, `cremation`, `interment` | `death` |
-| `wedding`, `union`, `civil_union` | `marriage` |
-| `separation`, `annulment` | `divorce` |
-| `move`, `relocation`, `emigration`, `immigration` | `residence` |
-| `job`, `career`, `employment`, `profession` | `occupation` |
-| `schooling`, `degree`, `graduation` | `education` |
-| `service`, `enlistment`, `discharge` | `military` |
-| `bar_mitzvah`, `bat_mitzvah`, `confirmation`, `first_communion` | `religious` |
+| `born`, `nameday` | `birth` |
+| `died`, `passing` | `death` |
+| `wedding`, `married` | `marriage` |
+| `move`, `moved`, `relocation`, `migration` | `residence` |
+
+> **Note:** Unrecognized event types fall back to `custom`. Only the synonyms above are built-in — additional mappings can be added via user-defined value aliases in settings.
 
 **Resolution order:**
 1. User-defined aliases (highest priority)
@@ -195,19 +193,24 @@ Charted Roots uses nested properties for advanced features like the Evidence Ser
 
 ```
 src/core/
-├── data-quality.ts           # Main service (2,100+ lines)
+├── data-quality.ts           # Main service (3,000+ lines)
 ├── bidirectional-linker.ts   # Relationship sync service
 ├── value-alias-service.ts    # Sex/gender normalization support
 └── family-graph.ts           # Person data for analysis
 
 src/ui/
 ├── data-quality-tab.ts       # Control Center tab
-├── bulk-geocode-modal.ts     # Place geocoding modal
+├── data-quality-modals.ts    # Confirmation and result modals
+├── flatten-nested-properties-modal.ts
 ├── standardize-places-modal.ts
 ├── standardize-place-variants-modal.ts
 ├── standardize-place-types-modal.ts
 ├── merge-duplicate-places-modal.ts
 └── create-missing-places-modal.ts
+
+src/maps/ui/
+├── bulk-geocode-modal.ts     # Place geocoding modal
+└── enrich-place-hierarchy-modal.ts
 ```
 
 **Service initialization:**
@@ -302,11 +305,12 @@ interface DataQualityIssue {
 | `orphan_reference` | Links to non-existent cr_ids | Warning–Error |
 | `nested_property` | Non-flat frontmatter | Warning |
 | `legacy_type_property` | Uses `type` instead of `cr_type` | Info |
+| `legacy_membership` | Legacy organization membership format | Info |
 
 **Quality score calculation:**
 
 ```typescript
-// Penalty-based scoring (lines 1023-1032)
+// Penalty-based scoring
 const errorPenalty = bySeverity.error * 10;
 const warningPenalty = bySeverity.warning * 3;
 const infoPenalty = bySeverity.info * 1;
@@ -363,6 +367,9 @@ interface NormalizationPreview {
   genderSkipped: SkippedGenderNote[];  // Schema-protected notes
   orphanClearing: NormalizationChange[];
   legacyTypeMigration: NormalizationChange[];
+  legacyMembershipsMigration: LegacyMembershipMigration[];
+  missingIdRepairs: MissingIdRepair[];
+  unresolvableWikilinks: UnresolvableWikilink[];
 }
 
 interface NormalizationChange {
@@ -377,7 +384,7 @@ interface NormalizationChange {
 
 | Method | Purpose | Updates |
 |--------|---------|---------|
-| `normalizeDateFormats()` | Standardize to YYYY-MM-DD | `birth_date`, `death_date` |
+| `normalizeDateFormats()` | Standardize to YYYY-MM-DD | `born`, `died` |
 | `normalizeGenderValues()` | Standardize to M/F/X/U | `sex` |
 | `clearOrphanReferences()` | Remove invalid parent refs | `father_id`, `mother_id` |
 | `migrateLegacyTypeProperty()` | `type` → `cr_type` | `cr_type`, removes `type` |
@@ -402,7 +409,7 @@ interface NormalizationChange {
 - GEDCOM/Gramps/CSV imports (post-import pass)
 - Manual "Fix bidirectional relationships" command
 
-**Inconsistency types detected:**
+**Inconsistency types** (detected by `DataQualityService` in `data-quality.ts`, not by `BidirectionalLinker`):
 
 ```typescript
 type BidirectionalInconsistencyType =
@@ -411,6 +418,8 @@ type BidirectionalInconsistencyType =
   | 'missing-spouse-in-spouse'   // Spouse not reciprocated
   | 'conflicting-parent-claim';  // Two people claim same child
 ```
+
+> **Note:** `BidirectionalLinker` handles live file-modification event sync. The batch analysis and fix methods (`checkBidirectionalInconsistencies`, `fixBidirectionalInconsistencies`) live in `DataQualityService`.
 
 **Conflict handling:**
 
@@ -494,9 +503,9 @@ const normalizedValue = userAliases[normalizedKey] || BUILTIN_SYNONYMS.sex[norma
 
 ### Place Batch Operations
 
-Place data quality spans multiple modals in `src/ui/`:
+Place data quality spans multiple modals across `src/ui/` and `src/maps/ui/`:
 
-**Bulk Geocode** (`bulk-geocode-modal.ts`):
+**Bulk Geocode** (`src/maps/ui/bulk-geocode-modal.ts`):
 - Uses `GeocodingService` with OpenStreetMap Nominatim API
 - Rate-limited to 1 request/second (Nominatim policy)
 - Skips places that already have coordinates
@@ -520,7 +529,7 @@ Place data quality spans multiple modals in `src/ui/`:
 - Creates place notes with proper hierarchy
 - Supports batch creation with progress tracking
 
-**Enrich Place Hierarchy** (in `places-tab.ts`):
+**Enrich Place Hierarchy** (`src/maps/ui/enrich-place-hierarchy-modal.ts`):
 - Uses geocoding API to fill `contained_by` relationships
 - Builds chains: City → County → State → Country
 
@@ -685,7 +694,7 @@ interface CollectionAnalytics {
 
 ### Control Center Collections Tab
 
-The Collections tab (`showCollectionsTab()` in `control-center.ts`) provides:
+The Collections tab (`renderCollectionsTab()` in `src/ui/collections-tab.ts`, called by `control-center.ts`) provides:
 
 **Browse Modes** (dropdown selector):
 - "All people" - Complete vault listing

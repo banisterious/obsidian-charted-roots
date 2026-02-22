@@ -33,11 +33,11 @@ Charted Roots uses a structured entity system with typed notes identified by fro
 
 ### Core Entity Types
 
-Seven primary entity types plus three system types:
+Seven primary entity types plus system and research types:
 
 | Type | Purpose | Key Properties |
 |------|---------|----------------|
-| **Person** | Individual genealogical records | `name`, `born`, `died`, `father`, `mother`, `spouse`, `children`, `sex` |
+| **Person** | Individual genealogical records | `name`, `born`, `died`, `father`, `mother`, `spouse`, `children`, `sex`, `sources` |
 | **Place** | Geographic locations (real, historical, fictional) | `name`, `place_type`, `place_category`, `parent_place`, `coordinates_lat/long` |
 | **Event** | Timeline events (vital, life, narrative) | `title`, `event_type`, `date`, `person`, `place` |
 | **Source** | Evidence and documentation | `title`, `source_type`, `source_quality`, `source_repository` |
@@ -46,6 +46,8 @@ Seven primary entity types plus three system types:
 | **Map** | Custom image maps for fictional worlds | `name`, `universe`, `image_path`, `coordinate_system`, bounds |
 
 **System types:** Schema (validation), Proof_summary (research), Timeline-export
+
+**Research workflow types:** research_project, research_report, individual_research_note, research_journal, research_log_entry
 
 ```mermaid
 graph TB
@@ -66,6 +68,14 @@ graph TB
         Schema[Schema]
         Proof[Proof_summary]
         Timeline[Timeline-export]
+    end
+
+    subgraph "Research Workflow"
+        ResearchProject[Research project]
+        ResearchReport[Research report]
+        IRN[Individual research note]
+        ResearchJournal[Research journal]
+        ResearchLog[Research log entry]
     end
 
     Universe --> Map
@@ -101,6 +111,8 @@ father_id: abc-123-def-456    # cr_id for reliable resolution
 cr_id: [string]
 cr_type: person
 name: [string]
+personType: [string]           # Subtype (e.g., "DNA Match")
+group_name: [string]           # Family group/surname grouping
 
 # Biological parents
 father: [wikilink]
@@ -108,29 +120,67 @@ father_id: [string]
 mother: [wikilink]
 mother_id: [string]
 
+# Gender-neutral parents (opt-in via enableInclusiveParents setting)
+parents: [wikilink | wikilink[]]
+parents_id: [string | string[]]
+
 # Extended family (can be arrays)
 stepfather: [wikilink | wikilink[]]
+stepfather_id: [string | string[]]
 stepmother: [wikilink | wikilink[]]
+stepmother_id: [string | string[]]
 adoptive_father: [wikilink]
+adoptive_father_id: [string]
 adoptive_mother: [wikilink]
+adoptive_mother_id: [string]
 
-# Spouses and children
+# Spouses and children (dual storage)
 spouse: [wikilink | wikilink[]]
-spouse_id: [string]
-children: [wikilink[]]
+spouse_id: [string]            # Single cr_id (not array)
+children: [wikilink | wikilink[]]
+children_id: [string[]]        # Companion cr_id array
 
 # Demographics
-sex: M | F | X | U           # GEDCOM-compatible
-gender_identity: [string]     # Free-form identity
+sex: M | F | X | U           # GEDCOM-compatible, normalized via ValueAliasService
+gender: [string]              # Backwards-compatible alias for sex
+gender_identity: [string]     # Free-form identity (distinct from biological sex)
 
 # Key dates and places
-born: [date string]
-died: [date string]
+born: [date string]           # Canonical name; birth_date is a common alias
+died: [date string]           # Canonical name; death_date is a common alias
 birth_place: [wikilink to Place]
 death_place: [wikilink to Place]
 
+# General sources (person-level)
+sources: [wikilink[]]         # Wikilinks to source notes
+sources_id: [string[]]        # Companion cr_id array
+
+# Fact-level source tracking (flat, Obsidian-compatible)
+sourced_birth_date: [wikilink[]]
+sourced_birth_place: [wikilink[]]
+sourced_death_date: [wikilink[]]
+sourced_death_place: [wikilink[]]
+sourced_parents: [wikilink[]]
+sourced_marriage_date: [wikilink[]]
+sourced_marriage_place: [wikilink[]]
+sourced_spouse: [wikilink[]]
+sourced_occupation: [wikilink[]]
+sourced_residence: [wikilink[]]
+
 # Research tracking
-sourced_facts:
+research_level: [0-6]          # Hoitink's Six Levels (0=Unidentified … 6=Biography)
+needs_research: [string[]]     # Questions requiring investigation
+
+# DNA tracking (opt-in via enableDnaTracking setting)
+dna_shared_cm: [number]        # Shared centiMorgans
+dna_testing_company: [string]  # AncestryDNA, 23andMe, FamilyTreeDNA, etc.
+dna_kit_id: [string]
+dna_match_type: [string]       # BKM | BMM | confirmed | unconfirmed
+dna_endogamy_flag: [boolean]
+dna_notes: [string]
+
+# Legacy (deprecated)
+sourced_facts:                 # Nested format — use sourced_* properties instead
   birth_date:
     sources: [wikilink[]]
   # ... other facts
@@ -200,7 +250,7 @@ is_canonical: [boolean]
 
 **Event types (23 built-in):**
 - **Vital:** birth, death, marriage, divorce
-- **Life:** residence, occupation, military, immigration, education, burial, baptism, confirmation, ordination
+- **Life:** residence, census, occupation, military, immigration, education, burial, baptism, confirmation, ordination, transfer
 - **Narrative:** anecdote, lore_event, plot_point, flashback, foreshadowing, backstory, climax, resolution
 
 ### Source Note Structure
@@ -221,7 +271,10 @@ source_collection: [string]
 source_date: [date string]
 source_date_accessed: [date string]
 
-# Media
+# Location
+location: [string]             # Geographic location of record
+
+# Media (aggregated from media, media_2, media_3, etc.)
 media: [wikilink | wikilink[]]
 confidence: high | medium | low | unknown
 
@@ -235,7 +288,7 @@ family: [wikilink[]]           # Family members of principals
 others: [wikilink[]]           # Catch-all for other roles
 ```
 
-**Source types (15 built-in):** vital_record, obituary, census, church_record, court_record, land_deed, probate, military, immigration, photo, correspondence, newspaper, oral_history, custom
+**Source types (14 built-in):** vital_record, obituary, census, church_record, court_record, land_deed, probate, military, immigration, photo, correspondence, newspaper, oral_history, custom
 
 **Person role properties:**
 
@@ -284,7 +337,7 @@ The entity system uses wikilinks for Obsidian integration plus `_id` fields for 
 erDiagram
     Person ||--o{ Person : "father/mother/spouse/children"
     Person }o--o{ Place : "birth_place/death_place"
-    Person }o--o{ Source : "sourced_facts"
+    Person }o--o{ Source : "sources/sourced_*"
     Person }o--o{ Organization : "memberships"
 
     Event }o--|| Person : "person/persons"
@@ -307,7 +360,7 @@ erDiagram
 |------|-----|------------|
 | Person | Person | `father`, `mother`, `spouse`, `children`, stepparents, adoptive parents |
 | Person | Place | `birth_place`, `death_place` |
-| Person | Source | `sourced_facts.*.sources` |
+| Person | Source | `sources`, `sourced_*` properties |
 | Person | Organization | `memberships[].org` |
 | Event | Person | `person`, `persons` |
 | Event | Place | `place` |
@@ -341,8 +394,7 @@ mother: "[[Mom Smith]]"
 mother_id: pqr-345-stu-678
 spouse:
   - "[[Jane Doe]]"
-spouse_id:
-  - mno-901-jkl-234
+spouse_id: mno-901-jkl-234     # Single string, not array
 children:
   - "[[Child 1]]"
   - "[[Child 2]]"

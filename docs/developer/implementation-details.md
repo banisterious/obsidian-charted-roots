@@ -26,7 +26,7 @@ The implementation details have been organized into focused sub-documents for ea
 
 | Document | Description |
 |----------|-------------|
-| [UI Architecture](implementation/ui-architecture.md) | Context menus, Control Center (14 tabs), dockable views, settings, mobile adaptations |
+| [UI Architecture](implementation/ui-architecture.md) | Context menus, Control Center (13 tabs), dockable views, settings, mobile adaptations |
 
 ### Specialized Features
 
@@ -39,21 +39,21 @@ The implementation details have been organized into focused sub-documents for ea
 
 ### Entity Types
 
-Seven primary entity types: Person, Place, Event, Source, Organization, Universe, Map
+Eight primary entity types: Person, Place, Event, Source, Organization, Universe, Map, Schema (plus Timeline as a system type)
 
 See [Entity System](implementation/entity-system.md) for full details.
 
 ### Layout Engines
 
-Four layout algorithms: Family-Chart (default), Timeline, Hourglass, D3 (fallback)
+Three layout algorithms: Family-Chart (default), Timeline, Hourglass — plus a core layout engine (`layout-engine.ts`) that wraps D3's hierarchy layout as shared infrastructure
 
 See [Canvas and Charts](implementation/canvas-and-charts.md) for full details.
 
 ### Control Center Tabs
 
-14 tabs: Dashboard, People, Events, Places, Sources, Organizations, Universes, Collections, Data Quality, Schemas, Relationships, Maps, Visual Trees, Preferences
+13 tabs: Dashboard, People, Events, Places, Sources, Organizations, Universes, Collections, Data quality, Schemas, Relationships, Trees & reports, Maps — plus a Tools group with 6 modal/leaf launchers
 
-9 dockable sidebar views: People, Places, Events, Sources, Organizations, Relationships, Universes, Collections, Data Quality
+13 registered views: 9 entity dockable sidebar views (People, Places, Events, Sources, Organizations, Relationships, Universes, Collections, Data quality) plus 4 specialized views (Family Chart, Map, Statistics, Migration Notice)
 
 See [UI Architecture](implementation/ui-architecture.md) for full details.
 

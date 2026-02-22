@@ -121,13 +121,13 @@ Four built-in calendars in `src/dates/constants/default-date-systems.ts`:
 | Before Conquest | BC | 0 | backward |
 | After Conquest | AC | 0 | forward |
 
-**Star Wars Calendar** (`star_wars`):
+**Galactic Standard Calendar** (`star_wars`):
 | Era | Abbreviation | Epoch | Direction |
 |-----|--------------|-------|-----------|
 | Before the Battle of Yavin | BBY | 0 | backward |
 | After the Battle of Yavin | ABY | 0 | forward |
 
-**Generic Fantasy Calendar** (`generic_fantasy`):
+**Fantasy Ages** (`generic_fantasy`):
 - Four numbered ages (A1, A2, A3, A4) with 1000-year intervals
 
 ### DateService
@@ -145,22 +145,22 @@ class DateService {
   constructor(settings: DateServiceSettings);
 
   // Parse any date string (tries fictional first, then standard)
-  parseDate(dateStr: string, universe?: string): ParsedDate | null;
+  parseDate(dateStr: string | undefined, universe?: string): ParsedDate | null;
 
   // Calculate age between dates
   calculateAge(birthDateStr: string, deathDateStr?: string, universe?: string): AgeCalculation | null;
 
   // Format a date for display (returns original for standard dates)
-  formatDate(dateStr: string, universe?: string): string;
+  formatDate(dateStr: string | undefined, universe?: string): string;
 
   // Format for user-friendly display, prettifying GEDCOM qualifiers (v0.19.2+)
-  formatDisplayDate(dateStr: string, universe?: string): string;
+  formatDisplayDate(dateStr: string | undefined, universe?: string): string;
 
   // Quick check if string looks like fictional date
   looksLikeFictionalDate(dateStr: string): boolean;
 
   // Get canonical year for sorting
-  getCanonicalYear(dateStr: string, universe?: string): number | null;
+  getCanonicalYear(dateStr: string | undefined, universe?: string): number | null;
 }
 ```
 
@@ -286,7 +286,7 @@ The date systems card (`src/dates/ui/date-systems-card.ts`) provides management 
 - Stored in `settings.enableFictionalDates`
 
 **Built-in Systems Toggle:**
-- Show/hide preset calendars (Middle-earth, Westeros, Star Wars, Generic Fantasy)
+- Show/hide preset calendars (Middle-earth, Westeros, Galactic Standard, Fantasy Ages)
 - Stored in `settings.showBuiltInDateSystems`
 
 **System Sources Display:**
@@ -551,16 +551,17 @@ Charted Roots generates `.base` files for Obsidian's database-like Bases feature
 
 ### Base Templates
 
-Six base templates are available in `src/constants/`:
+Seven base templates are available in `src/constants/`:
 
 | Base | Template File | Key Properties | Views |
 |------|--------------|----------------|-------|
-| People | `base-template.ts` | name, cr_id, born, died, father, mother, spouse | 22 views |
-| Places | `places-base-template.ts` | name, place_type, coordinates, parent_place | 11 views |
-| Events | `events-base-template.ts` | title, event_type, date, person, place | 18 views |
-| Sources | `sources-base-template.ts` | name, source_type, confidence, media | 15 views |
-| Organizations | `organizations-base-template.ts` | name, org_type, parent_org, founded | 12 views |
-| Universes | `universes-base-template.ts` | name, status, author, genre | 10 views |
+| People | `base-template.ts` | name, cr_id, born, died, father, mother, spouse | 24 views |
+| Places | `places-base-template.ts` | name, place_type, coordinates, parent_place | 14 views |
+| Events | `events-base-template.ts` | title, event_type, date, person, place | 19 views |
+| Sources | `sources-base-template.ts` | name, source_type, confidence, media | 19 views |
+| Organizations | `organizations-base-template.ts` | name, org_type, parent_org, founded | 17 views |
+| Universes | `universes-base-template.ts` | name, status, author, genre | 12 views |
+| Notes | `notes-base-template.ts` | cr_note_type, private, linked_entities | 11 views |
 
 **Template structure:**
 ```yaml
@@ -627,17 +628,18 @@ function generatePeopleBaseTemplate(options?: {
 **Current support:**
 - People, Places, Events bases: Full alias support
 - Organizations, Sources, Universes: Static templates (no alias support yet)
+- Notes: Static template (no alias support, no registered command yet — template only)
 
 ### Base Creation Flow
 
 **Commands registered in `main.ts`:**
-- `canvas-roots:create-base-template` - People base
-- `canvas-roots:create-places-base-template` - Places base
-- `canvas-roots:create-events-base-template` - Events base
-- `canvas-roots:create-sources-base-template` - Sources base
-- `canvas-roots:create-organizations-base-template` - Organizations base
-- `canvas-roots:create-universes-base-template` - Universes base
-- `canvas-roots:create-all-bases` - All bases at once
+- `charted-roots:create-base-template` - People base
+- `charted-roots:create-places-base-template` - Places base
+- `charted-roots:create-events-base-template` - Events base
+- `charted-roots:create-sources-base-template` - Sources base
+- `charted-roots:create-organizations-base-template` - Organizations base
+- `charted-roots:create-universes-base-template` - Universes base
+- `charted-roots:create-all-bases` - All bases at once
 
 **Creation logic:**
 1. **Check availability** (`isBasesAvailable()`): Looks for existing `.base` files or enabled Bases plugin

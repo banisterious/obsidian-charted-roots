@@ -26,20 +26,18 @@ This document covers the Charted Roots CSS architecture, build system, and custo
 Charted Roots uses a modular CSS architecture with component files that are concatenated into a single `styles.css` for Obsidian.
 
 ```
-canvas-roots/
-├── styles/                    # Component CSS files (39 files)
+charted-roots/
+├── styles/                    # Component CSS files (44 files)
 │   ├── variables.css          # CSS custom properties
 │   ├── style-settings.css     # Style Settings plugin config
 │   ├── base.css               # Base structural elements
-│   ├── control-center.css     # Control Center core UI (~23KB)
-│   ├── cleanup-wizard.css     # Cleanup wizard modal (~38KB)
-│   ├── import-export-wizard.css # Import/Export wizards (~31KB)
-│   ├── media-modals.css       # Media management modals (~25KB)
-│   ├── place-modals.css       # Place-specific modals (~18KB)
-│   ├── entity-create-modals.css # Person/entity creation (~11KB)
+│   ├── control-center.css     # Control Center core UI (~107KB)
+│   ├── sources.css            # Sources tab (~57KB)
+│   ├── cleanup-wizard.css     # Cleanup wizard modal (~41KB)
+│   ├── import-export-wizard.css # Import/Export wizards (~41KB)
+│   ├── media-modals.css       # Media management modals (~37KB)
 │   ├── map-view.css           # Leaflet map styling (~40KB)
-│   ├── sources.css            # Sources tab (~55KB)
-│   └── ...                    # Other component files
+│   └── ...                    # 35 more component files
 ├── styles.css                 # Generated output (DO NOT EDIT)
 └── build-css.js               # Node.js build script
 ```
@@ -95,8 +93,9 @@ componentOrder: [
   'place-modals.css',        // 8. Place-specific modals
   'media-modals.css',        // 9. Media management modals
   'import-export-wizard.css', // 10. Import/Export wizards
-  'cleanup-wizard.css',      // 11. Cleanup wizard (all steps)
-  // ... additional components
+  'staging-manager.css',     // 11. Staging management
+  'cleanup-wizard.css',      // 12. Cleanup wizard (all steps)
+  // ... 32 more components
   'responsive.css'           // Responsive breakpoints (last)
 ]
 ```
@@ -147,7 +146,7 @@ Design tokens are defined in `styles/variables.css` and prefixed with `--cr-`.
 
 ### Colors
 
-Colors reference Obsidian's CSS variables for automatic theme compatibility:
+Colors reference Obsidian's CSS variables for automatic theme compatibility. All 37 custom properties are defined in `variables.css`:
 
 ```css
 :root {
@@ -157,15 +156,43 @@ Colors reference Obsidian's CSS variables for automatic theme compatibility:
   --cr-text: var(--text-normal);
   --cr-border: var(--background-modifier-border);
 
+  /* Node dimensions */
+  --cr-node-width: 200px;
+  --cr-node-height: 100px;
+  --cr-node-padding: var(--cr-spacing-md);
+
+  /* Borders */
+  --cr-border-width: 1px;
+  --cr-border-radius: 6px;
+  --cr-radius-xs: 4px;
+  --cr-radius-sm: 6px;
+  --cr-radius-md: 8px;
+  --cr-radius-lg: 12px;
+
   /* Family Chart colors - customizable via Style Settings */
   --cr-fcv-female-color: rgb(196, 138, 146);
   --cr-fcv-male-color: rgb(120, 159, 172);
   --cr-fcv-unknown-color: rgb(211, 211, 211);
+  --cr-fcv-background-light: rgb(250, 250, 250);
+  --cr-fcv-background-dark: rgb(33, 33, 33);
+  --cr-fcv-text-light: #333;
+  --cr-fcv-text-dark: #fff;
 
   /* Evidence colors - customizable via Style Settings */
   --cr-source-primary: #22c55e;
   --cr-source-secondary: #f59e0b;
   --cr-source-derivative: #ef4444;
+  --cr-coverage-high: #22c55e;
+  --cr-coverage-medium: #f59e0b;
+  --cr-coverage-low: #ef4444;
+
+  /* Frozen media gallery - customizable via Style Settings */
+  --cr-gallery-gap: 5px;
+  --cr-gallery-img-max-height: 200px;
+  --cr-gallery-img-max-width: 250px;
+  --cr-gallery-img-border-radius: 8px;
+  --cr-gallery-object-fit: cover;
+  --cr-gallery-background: transparent;
 }
 ```
 
@@ -191,7 +218,7 @@ Configuration is defined in `styles/style-settings.css`:
 /* @settings
 
 name: Charted Roots
-id: canvas-roots
+id: charted-roots
 settings:
   -
     id: family-chart-heading
@@ -215,6 +242,9 @@ settings:
 |----------|----------|
 | Family Chart View | Female/male/unknown card colors, background colors, text colors |
 | Evidence Visualization | Primary/secondary/derivative source colors, coverage level colors |
+| Canvas Node Dimensions | Node width and height for canvas trees |
+| Timeline Callouts | Dot colors per event type, title/date/description styling, connector colors |
+| Frozen Media Gallery | Image dimensions, border radius, gap, object-fit, background |
 
 Users with Style Settings installed can customize these values in Settings → Style Settings → Charted Roots.
 
@@ -230,23 +260,23 @@ Users with Style Settings installed can customize these values in Settings → S
 | `sources.css` | Sources tab, media gallery, citations | 55 KB |
 | `map-view.css` | Leaflet map view (includes bundled Leaflet CSS) | 40 KB |
 | `cleanup-wizard.css` | Cleanup wizard modal (all 9 steps) | 38 KB |
-| `import-export-wizard.css` | Import/Export wizard modals | 31 KB |
+| `import-export-wizard.css` | Import/Export wizard modals | 41 KB |
 | `statistics.css` | Statistics tab and workspace view | 30 KB |
 | `tree-output.css` | Tree output two-panel layout | 30 KB |
 | `events.css` | Events tab, timeline components | 28 KB |
 | `data-quality.css` | Data quality analysis tab | 28 KB |
-| `family-chart-view.css` | Interactive family chart | 24 KB |
-| `control-center.css` | Control Center core UI (tabs, navigation, cards) | 23 KB |
-| `media-modals.css` | Media picker, manager, gallery, bulk link | 25 KB |
+| `family-chart-view.css` | Interactive family chart | 30 KB |
+| `control-center.css` | Control Center core UI (tabs, navigation, cards) | 107 KB |
+| `media-modals.css` | Media picker, manager, gallery, bulk link | 37 KB |
 | `report-wizard.css` | Report generator wizard | 19 KB |
-| `place-modals.css` | Place creation, standardization, merge, network | 18 KB |
+| `place-modals.css` | Place creation, standardization, merge, network | 26 KB |
 | `family-wizard.css` | Family creation wizard | 15 KB |
 | `canvas-navigation.css` | Canvas navigation and split wizard | 15 KB |
 | `family-chart-export.css` | Family chart export wizard | 15 KB |
 | `map-wizard.css` | Map creation wizard modal | 13 KB |
 | `universe-wizard.css` | Universe setup wizard | 11 KB |
 | `staging-manager.css` | Staging management modal | 11 KB |
-| `entity-create-modals.css` | Person picker, create forms, relationships | 11 KB |
+| `entity-create-modals.css` | Person picker, create forms, relationships | 22 KB |
 | `timeline-callouts.css` | Timeline callout styles for markdown export | 11 KB |
 | `dynamic-content.css` | Dynamic content blocks | 11 KB |
 | `relationships.css` | Relationships tab | 10 KB |
@@ -255,7 +285,7 @@ Users with Style Settings installed can customize these values in Settings → S
 | `preferences.css` | Preferences tab | 7 KB |
 | `date-systems.css` | Date systems card | 5 KB |
 | `relationship-calculator.css` | Relationship calculator modal | 5 KB |
-| `organizations.css` | Organizations tab | 4 KB |
+| `organizations.css` | Organizations tab | 10 KB |
 | `settings.css` | Plugin settings tab | 4 KB |
 | `duplicate-detection.css` | Duplicate detection modal | 3 KB |
 | `migration-notice.css` | Migration notice view | 3 KB |
@@ -286,12 +316,12 @@ Charted Roots maintains compatibility with Obsidian themes by:
 
 2. **Respecting theme mode:**
    ```css
-   .theme-light .cr-family-chart {
+   .theme-light .cr-fcv-chart-container {
      background: var(--cr-fcv-background-light);
      color: var(--cr-fcv-text-light);
    }
 
-   .theme-dark .cr-family-chart {
+   .theme-dark .cr-fcv-chart-container {
      background: var(--cr-fcv-background-dark);
      color: var(--cr-fcv-text-dark);
    }
@@ -384,12 +414,20 @@ Component files use standard CSS media queries for responsive adjustments:
 | File | Breakpoint | Purpose |
 |------|------------|---------|
 | `responsive.css` | 768px | Global node dimension adjustments |
-| `family-chart-view.css` | 600px, 800px | Toolbar wrapping, label hiding |
-| `map-view.css` | 600px, 768px | Map controls and overlays |
-| `events.css` | 600px | Timeline layout adjustments |
-| `sources.css` | 500px | Media gallery grid |
-| `tree-output.css` | 900px | Two-panel layout collapse |
-| `relationship-calculator.css` | 500px | Calculator layout |
+| `control-center.css` | 500px | Template tiles, reports/import-export hub grids |
+| `family-chart-view.css` | 600px, 800px | Toolbar wrapping, info panel width |
+| `map-view.css` | 600px, 768px | Map controls, world map preview height |
+| `cleanup-wizard.css` | 400px, 500px, 600px | Tile grid columns (5→3→2), summary stats |
+| `media-modals.css` | 500px, 600px, 1024px | Media manager grid (3→2→1 columns), gallery controls |
+| `import-export-wizard.css` | 500px | Format grids, preview counts, stat grids |
+| `tree-output.css` | 600px, 900px | Two-panel layout collapse, output format cards |
+| `events.css` | 600px | Timeline connector and node sizing |
+| `sources.css` | 500px | Citation format grid |
+| `dashboard.css` | 500px | Dashboard tiles and metrics grids |
+| `staging-manager.css` | 500px | Stats grid, item actions |
+| `family-wizard.css` | 600px | Modal full width on mobile |
+| `map-wizard.css` | 700px | Modal full width on mobile |
+| `relationship-calculator.css` | 500px | Selection layout (row→column) |
 
 ### Adding Mobile Styles
 
@@ -443,8 +481,15 @@ npm run build:css
 ### CSS Conventions
 
 **Class naming:**
-- Prefix all classes with `cr-` (Charted Roots)
 - Use BEM-like naming: `.cr-component__element--modifier`
+- Four valid prefixes enforced by Stylelint:
+
+| Prefix | Usage |
+|--------|-------|
+| `cr-` | General plugin classes (most common) |
+| `crc-` | Control Center classes |
+| `canvas-roots-` | Legacy structural classes |
+| `charted-roots-` | New registrations and dynamic content blocks |
 
 **Selector specificity:**
 - Keep specificity low where possible

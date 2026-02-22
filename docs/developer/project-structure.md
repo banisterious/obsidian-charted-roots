@@ -18,6 +18,7 @@ This document describes the Charted Roots plugin directory layout and component 
   - [Statistics Module](#statistics-module-srcstatistics)
   - [Reports Module](#reports-module-srcreports)
   - [Universes Module](#universes-module-srcuniverses)
+  - [Trees Module](#trees-module-srctrees)
   - [Enhancement Module](#enhancement-module-srcenhancement)
   - [Dynamic Content Module](#dynamic-content-module-srcdynamic-content)
   - [UI Components](#ui-components-srcui)
@@ -31,7 +32,7 @@ This document describes the Charted Roots plugin directory layout and component 
 ## Directory Layout
 
 ```
-canvas-roots/
+charted-roots/
 ├── main.ts                    # Plugin entry point
 ├── styles.css                 # Final compiled CSS for Obsidian
 ├── src/
@@ -120,16 +121,38 @@ canvas-roots/
 │   ├── enhancement/           # Data enhancement tools
 │   │   ├── services/             # Place generator service
 │   │   └── ui/                   # Place generator modal
+│   ├── constants/             # Base templates for Obsidian Bases
+│   │   ├── base-template.ts       # People base template
+│   │   ├── events-base-template.ts
+│   │   ├── notes-base-template.ts
+│   │   ├── organizations-base-template.ts
+│   │   ├── places-base-template.ts
+│   │   ├── sources-base-template.ts
+│   │   └── universes-base-template.ts
 │   ├── dynamic-content/       # Live content rendering
-│   │   ├── processors/           # Code block processors
-│   │   ├── renderers/            # Content renderers
+│   │   ├── processors/           # Code block processors (7 blocks)
+│   │   ├── renderers/            # Content renderers (7 renderers)
 │   │   └── services/             # Dynamic content service
 │   ├── excalidraw/            # Excalidraw export
 │   │   └── excalidraw-exporter.ts # Export to Excalidraw format
+│   ├── migration/             # Plugin rename migration
+│   │   └── plugin-rename-migration-service.ts
 │   ├── models/                # TypeScript interfaces
 │   │   ├── person.ts             # Person data structures
 │   │   ├── place.ts              # Place data structures
 │   │   └── canvas.ts             # Canvas JSON types
+│   ├── research/              # Research workflow
+│   │   ├── index.ts              # Module exports
+│   │   └── types/                # Research type definitions
+│   ├── trees/                 # Visual tree generation
+│   │   ├── services/
+│   │   │   ├── visual-tree-service.ts       # Tree generation orchestration
+│   │   │   └── visual-tree-svg-renderer.ts  # SVG rendering
+│   │   ├── types/                # Visual tree type definitions
+│   │   └── ui/                   # Trees tab and wizard modal
+│   ├── types/                 # Shared type definitions
+│   │   ├── frontmatter.ts        # Person frontmatter interface
+│   │   └── obsidian-ext.d.ts     # Obsidian API extensions
 │   ├── utils/                 # Utility functions
 │   │   └── place-name-normalizer.ts # Place name standardization
 │   └── ui/                    # User interface components
@@ -193,6 +216,21 @@ canvas-roots/
 | `uuid.ts` | ✅ Complete | UUID v4 generation for `cr_id` fields |
 | `recent-files-service.ts` | ✅ Complete | Tracks recently accessed files for Dashboard recent section |
 | `vault-stats.ts` | ✅ Complete | Calculates vault-wide statistics |
+| `duplicate-detection.ts` | ✅ Complete | Finds potential duplicate person records |
+| `folder-filter.ts` | ✅ Complete | Configurable folder filtering for plugin scope |
+| `media-service.ts` | ✅ Complete | Media file association and management |
+| `media-association.ts` | ✅ Complete | Links media files to entity notes |
+| `merge-service.ts` | ✅ Complete | Merges duplicate person records |
+| `note-writer.ts` | ✅ Complete | Generic note writing (GEDCOM notes, research notes) |
+| `person-index-service.ts` | ✅ Complete | Fast person lookup index by cr_id and name |
+| `place-note-writer.ts` | ✅ Complete | Creates and updates place notes |
+| `property-alias-service.ts` | ✅ Complete | Canonical ↔ alias property name mapping |
+| `staging-service.ts` | ✅ Complete | Staging area for web clipper and bulk operations |
+| `template-filter.ts` | ✅ Complete | Filters template/example files from operations |
+| `value-alias-service.ts` | ✅ Complete | Value normalization (sex M/F/X/U, etc.) |
+| `web-clipper-service.ts` | ✅ Complete | Integration with web clipper for source import |
+| `compression-utils.ts` | ✅ Complete | Data compression for exports |
+| `export-statistics-service.ts` | ✅ Complete | Export statistics tracking |
 
 ### Sources Module (src/sources/)
 
@@ -351,10 +389,22 @@ canvas-roots/
 | `register-report-generator.ts` | ✅ Complete | NGSQ-style descendant report |
 | `pedigree-chart-generator.ts` | ✅ Complete | Markdown pedigree chart |
 | `descendant-chart-generator.ts` | ✅ Complete | Markdown descendant chart |
+| `collection-overview-generator.ts` | ✅ Complete | Collection overview report |
+| `media-inventory-generator.ts` | ✅ Complete | Media inventory report |
+| `place-summary-generator.ts` | ✅ Complete | Place summary report |
+| `source-summary-generator.ts` | ✅ Complete | Source summary report |
+| `sources-by-role-generator.ts` | ✅ Complete | Sources organized by person role |
+| `timeline-generator.ts` | ✅ Complete | Timeline report generation |
+| `universe-overview-generator.ts` | ✅ Complete | Universe overview report |
+| `research-report-export-generator.ts` | ✅ Complete | Research report export |
+| `odt-generator.ts` | ✅ Complete | OpenDocument (ODT) export |
+| `pdf-report-renderer.ts` | ✅ Complete | PDF rendering with pdfmake |
+| **Utils** | | |
+| `footnote-parser.ts` | ✅ Complete | Footnote parsing for reports |
 | **Types** | | |
 | `report-types.ts` | ✅ Complete | Report type definitions |
 | **UI Components** | | |
-| `report-generator-modal.ts` | ✅ Complete | Report generation modal with options |
+| `report-wizard-modal.ts` | ✅ Complete | Report wizard with template selection and options |
 
 ### Universes Module (src/universes/)
 
@@ -367,6 +417,19 @@ canvas-roots/
 | **UI Components** | | |
 | `universes-tab.ts` | ✅ Complete | Universes tab in Control Center |
 | `create-universe-modal.ts` | ✅ Complete | Modal for creating universe notes |
+
+### Trees Module (src/trees/)
+
+| Component | Status | Purpose |
+|-----------|--------|---------|
+| **Services** | | |
+| `visual-tree-service.ts` | ✅ Complete | Visual tree generation orchestration |
+| `visual-tree-svg-renderer.ts` | ✅ Complete | SVG rendering for tree export (PNG/SVG) |
+| **Types** | | |
+| `visual-tree-types.ts` | ✅ Complete | Visual tree type definitions |
+| **UI Components** | | |
+| `trees-tab.ts` | ✅ Complete | Trees & reports tab in Control Center |
+| `unified-tree-wizard-modal.ts` | ✅ Complete | Unified tree generation wizard |
 
 ### Enhancement Module (src/enhancement/)
 
@@ -382,19 +445,29 @@ canvas-roots/
 | Component | Status | Purpose |
 |-----------|--------|---------|
 | **Services** | | |
-| `dynamic-content-service.ts` | ✅ Complete | Code block processor registration |
+| `dynamic-content-service.ts` | ✅ Complete | Shared utilities: config parsing, context building, freeze-to-markdown |
 | **Processors** | | |
-| `timeline-processor.ts` | ✅ Complete | Timeline code block processor |
-| `relationships-processor.ts` | ✅ Complete | Relationships code block processor |
+| `timeline-processor.ts` | ✅ Complete | `charted-roots-timeline` code block |
+| `relationships-processor.ts` | ✅ Complete | `charted-roots-relationships` code block |
+| `media-processor.ts` | ✅ Complete | `charted-roots-media` code block |
+| `source-roles-processor.ts` | ✅ Complete | `charted-roots-source-roles` code block |
+| `transfers-processor.ts` | ✅ Complete | `charted-roots-transfers` code block |
+| `members-processor.ts` | ✅ Complete | `charted-roots-members` code block |
+| `sources-processor.ts` | ✅ Complete | `charted-roots-sources` code block |
 | **Renderers** | | |
 | `timeline-renderer.ts` | ✅ Complete | Timeline content renderer |
 | `relationships-renderer.ts` | ✅ Complete | Relationships content renderer |
+| `media-renderer.ts` | ✅ Complete | Media gallery renderer |
+| `source-roles-renderer.ts` | ✅ Complete | Person roles table renderer |
+| `transfers-renderer.ts` | ✅ Complete | Property transfers renderer |
+| `members-renderer.ts` | ✅ Complete | Organization members renderer |
+| `sources-renderer.ts` | ✅ Complete | Sources table renderer |
 
 ### UI Components (src/ui/)
 
 | Component | Status | Purpose |
 |-----------|--------|---------|
-| `control-center.ts` | ✅ Complete | Main Control Center modal with 14 tabs for all plugin functionality |
+| `control-center.ts` | ✅ Complete | Main Control Center modal with 13 tabs for all plugin functionality |
 | `dashboard-tab.ts` | ✅ Complete | Dashboard tab with quick-action tiles, vault health, and recent files |
 | `settings-tab.ts` | ✅ Complete | Plugin settings tab in Obsidian settings |
 | `canvas-style-modal.ts` | ✅ Complete | Modal for canvas styling options |
@@ -418,7 +491,26 @@ canvas-roots/
 | `standardize-places-modal.ts` | ✅ Complete | Bulk place name standardization |
 | `build-place-hierarchy-modal.ts` | ✅ Complete | Build place hierarchies from flat data |
 | `create-schema-modal.ts` | ✅ Complete | Create validation schemas for note types |
-| `template-snippets-modal.ts` | ✅ Complete | Templater snippet management |
+| `template-snippets-modal.ts` | ✅ Complete | Template snippets for dynamic blocks and properties |
+| `family-creation-wizard.ts` | ✅ Complete | Guided family creation (parents + children) |
+| `quick-create-person-modal.ts` | ✅ Complete | Quick person creation with minimal fields |
+| `import-wizard-modal.ts` | ✅ Complete | Unified import wizard (GEDCOM, Gramps, CSV) |
+| `export-wizard-modal.ts` | ✅ Complete | Unified export wizard |
+| `import-export-hub-modal.ts` | ✅ Complete | Import/export hub with format selection |
+| `cleanup-wizard-modal.ts` | ✅ Complete | Post-import cleanup operations |
+| `staging-management-modal.ts` | ✅ Complete | Manage web clipper staging area |
+| `create-place-modal.ts` | ✅ Complete | Modal for creating place notes |
+| `create-note-modal.ts` | ✅ Complete | Modal for creating generic notes |
+| `create-map-wizard-modal.ts` | ✅ Complete | Custom map creation wizard |
+| `reports-hub-modal.ts` | ✅ Complete | Reports hub with type selection |
+| `media-lightbox-modal.ts` | ✅ Complete | Full-screen media viewer |
+| `privacy-notice-modal.ts` | ✅ Complete | Privacy notice for exports |
+| `add-research-question-modal.ts` | ✅ Complete | Add research questions to notes |
+| **Dockable Views** | | |
+| `views/family-chart-view.ts` | ✅ Complete | Interactive family chart (family-chart library) |
+| `views/map-view.ts` | ✅ Complete | Leaflet map view with markers |
+| **Shared** | | |
+| `shared/card-component.ts` | ✅ Complete | Reusable card UI component |
 
 ### Data Models (src/models/)
 
@@ -457,8 +549,33 @@ canvas-roots/
 | **Data Quality** | | |
 | Fix Bidirectional Relationships | ✅ Complete | Sync all bidirectional relationship links in vault |
 | Detect Duplicate People | ✅ Complete | Find potential duplicate person records |
+| **Creation** | | |
+| Create Family | ✅ Complete | Opens family creation wizard |
+| Create Event Note | ✅ Complete | Create a new event note |
+| Create Organization Note | ✅ Complete | Create a new organization note |
+| Create Source Note | ✅ Complete | Create a new source note |
+| Create Note | ✅ Complete | Create a new generic note |
+| Create Custom Map | ✅ Complete | Create a custom image map |
 | **Editing** | | |
 | Edit Current Note | ✅ Complete | Opens appropriate edit modal (person/place/event) for active note |
+| Insert Dynamic Blocks | ✅ Complete | Insert dynamic blocks in current note |
+| **Views** | | |
+| Open Family Chart | ✅ Complete | Open new family chart view |
+| Open Family Chart for Note | ✅ Complete | Open family chart centered on current person |
+| Open Map View | ✅ Complete | Open new map view |
+| Open Statistics Dashboard | ✅ Complete | Open statistics dashboard view |
+| Open People/Events/Places/Sources/Organizations/Universes/Collections/Data Quality View | ✅ Complete | Open the corresponding dockable view |
+| **Import/Export** | | |
+| Add Research Question | ✅ Complete | Add research question to current note |
+| Manage Staging Area | ✅ Complete | Open staging area management |
+| Open Cleanup Wizard | ✅ Complete | Post-import cleanup |
+| Validate Vault Against Schemas | ✅ Complete | Run schema validation across all notes |
+| **Trees** | | |
+| Split Tree Wizard | ✅ Complete | Split incorrectly connected trees |
+| **Places** | | |
+| Merge Duplicate Place Notes | ✅ Complete | Merge duplicate places |
+| Look Up Place | ✅ Complete | Geocoding lookup |
+| Generate Place Notes from Place Strings | ✅ Complete | Bulk place note generation |
 
 ---
 
@@ -476,6 +593,13 @@ canvas-roots/
 | "Find on canvas" | ✅ Complete | Right-click on person note | Find this person across all canvases |
 | "Mark/Unmark as root person" | ✅ Complete | Right-click on person note | Toggle root person status for lineage tracking |
 | "Set group name" | ✅ Complete | Right-click on person note | Set custom name for family group |
+| "Edit person" | ✅ Complete | Right-click on person note | Open edit modal for person |
+| "Link/Manage media" | ✅ Complete | Right-click on person note | Media management submenu |
+| "Add source" | ✅ Complete | Right-click on person note | Link source to person |
+| "Add essential properties" | ✅ Complete | Right-click on person note | Add all standard person properties |
+| "Add cr_id" | ✅ Complete | Right-click on person note | Generate cr_id if missing |
+| "Insert dynamic blocks" | ✅ Complete | Right-click on person note | Insert timeline/relationships/media blocks |
+| "Open in family chart" | ✅ Complete | Right-click on person note | Open person in interactive family chart |
 | **Place Note Context Menu** | | | |
 | "Charted Roots" submenu | ✅ Complete | Right-click on place note | Geocode place, view on map, enrich hierarchy |
 | **Event Note Context Menu** | | | |
@@ -494,7 +618,16 @@ canvas-roots/
 | **Canvas Context Menu** | | | |
 | "Regenerate canvas" | ✅ Complete | Right-click on canvas file | Recalculates canvas layout |
 | "View tree statistics" | ✅ Complete | Right-click on canvas file | View statistics for the tree |
-| "Export" submenu | ✅ Complete | Right-click on canvas file | Export to Excalidraw, PNG, or SVG |
+| "Export" submenu | ✅ Complete | Right-click on canvas file | Export to Excalidraw, PNG, SVG, or PDF |
+| **Folder Context Menu (extended)** | | | |
+| "Add essential person properties" | ✅ Complete | Right-click on People folder | Bulk-add standard properties to all notes |
+| "Add cr_id" | ✅ Complete | Right-click on any entity folder | Bulk-generate cr_id for all notes |
+| "Insert dynamic blocks" | ✅ Complete | Right-click on People folder | Bulk-insert dynamic blocks |
+| "New base from template" | ✅ Complete | Right-click on entity folder | Create Obsidian Base from template |
+| "Generate all trees" | ✅ Complete | Right-click on People folder | Generate trees for all components |
+| **Multi-file Selection** | | | |
+| "Add essential properties" | ✅ Complete | Right-click on selected files | Bulk operations on selected files |
+| "Add cr_id" | ✅ Complete | Right-click on selected files | Bulk-generate cr_id for selected files |
 
 ---
 
@@ -513,22 +646,25 @@ canvas-roots/
 | Data Quality | ✅ Complete | Comprehensive data quality analysis: orphan refs, duplicates, date issues, bidirectional sync |
 | Schemas | ✅ Complete | Validation schemas for note type consistency |
 | Relationships | ✅ Complete | Custom relationship type definitions and management |
-| Visual Trees | ✅ Complete | Tree generation with layout options, color schemes, interactive preview, export to Canvas/Excalidraw/PNG/SVG |
+| Trees & reports | ✅ Complete | Tree generation with layout options, color schemes, interactive preview, export to Canvas/Excalidraw/PNG/SVG |
 | Maps | ✅ Complete | Leaflet map view with markers, custom image maps, bulk geocoding |
-| Preferences | 🟡 Deprecated | Settings consolidated into Plugin Settings; retained for canvas layout/styling cards used by Visual Trees |
 
 ### Dockable Sidebar Views
 
-9 entity tabs support dockable ItemViews that open as persistent sidebar panels:
+13 dockable ItemViews open as persistent sidebar panels or main panes:
 
 | View | View Type | Content |
 |------|-----------|---------|
-| PeopleView | `canvas-roots-people` | Filter/sort/search table with expandable details |
-| PlacesView | `canvas-roots-places` | Filter/sort/search table with category badges |
-| EventsView | `canvas-roots-events` | Type/person/search filters, sortable table |
-| SourcesView | `canvas-roots-sources` | Filter/sort table with type/confidence badges |
-| OrganizationsView | `canvas-roots-organizations` | Filter/sort table with type badges, member counts |
-| RelationshipsView | `canvas-roots-relationships` | Table with type badges, filter/sort |
-| UniversesView | `canvas-roots-universes` | Filter/sort/search table with status badges |
-| CollectionsView | `canvas-roots-collections` | Mode switcher + corresponding list |
-| DataQualityView | `canvas-roots-data-quality` | Read-only dashboard with quality score and issues |
+| PeopleView | `charted-roots-people` | Filter/sort/search table with expandable details |
+| PlacesView | `charted-roots-places` | Filter/sort/search table with category badges |
+| EventsView | `charted-roots-events` | Type/person/search filters, sortable table |
+| SourcesView | `charted-roots-sources` | Filter/sort table with type/confidence badges |
+| OrganizationsView | `charted-roots-organizations` | Filter/sort table with type badges, member counts |
+| RelationshipsView | `charted-roots-relationships` | Table with type badges, filter/sort |
+| UniversesView | `charted-roots-universes` | Filter/sort/search table with status badges |
+| CollectionsView | `charted-roots-collections` | Mode switcher + corresponding list |
+| DataQualityView | `charted-roots-data-quality` | Read-only dashboard with quality score and issues |
+| FamilyChartView | `charted-roots-family-chart` | Interactive family chart (family-chart library) |
+| MapView | `charted-roots-map` | Leaflet map with markers and popups |
+| StatisticsView | `charted-roots-statistics` | Statistics dashboard with charts and breakdowns |
+| MigrationNoticeView | `charted-roots-migration-notice` | One-time migration notice for plugin rename |

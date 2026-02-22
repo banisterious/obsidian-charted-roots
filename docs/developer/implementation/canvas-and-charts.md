@@ -22,6 +22,7 @@ This document covers canvas generation, PDF tree generation, and family chart la
   - [PDF Rendering](#pdf-rendering)
   - [Custom Icons](#custom-icons)
 - [Unified Tree Wizard](#unified-tree-wizard)
+  - [Output Formats](#output-formats)
 
 ---
 
@@ -63,7 +64,7 @@ Example:
 }
 ```
 
-**Implementation:** Custom `formatCanvasJson()` method in `control-center.ts` ensures exact format match.
+**Implementation:** `formatCanvasJson()` utility in `src/core/canvas-utils.ts` (also re-exported from `src/trees/ui/trees-tab.ts`). Private copies also exist in `unified-tree-wizard-modal.ts`, `timeline-canvas-exporter.ts`, and style modals.
 
 ### Known Issues & Solutions
 
@@ -75,12 +76,12 @@ Example:
 #### Issue: Canvas cleared on close/reopen
 **Cause:** JSON formatting didn't match Obsidian's exact requirements
 **Solution:** Implement custom JSON formatter with tabs and compact objects
-**Fixed in:** `control-center.ts` - `formatCanvasJson()` method
+**Fixed in:** `canvas-utils.ts` - `formatCanvasJson()` function
 
 #### Issue: Race condition when opening canvas
 **Cause:** Canvas opened before file system write completed
 **Solution:** Add 100ms delay before opening canvas file
-**Fixed in:** `control-center.ts` and `main.ts` - canvas opening logic
+**Fixed in:** `src/trees/ui/trees-tab.ts` and `src/trees/ui/unified-tree-wizard-modal.ts` - canvas opening logic
 
 #### Issue: GEDCOM import only shows root person in tree
 **Cause:** GEDCOM importer's second pass replaced IDs in wrong fields (father/mother/spouse instead of father_id/mother_id/spouse_id)
@@ -279,15 +280,19 @@ Visual Tree PDFs provide printable tree diagrams generated via pdfmake. This sys
 ```
 Person Notes (YAML frontmatter)
          ↓
-VisualTreeService (build tree + calculate layout)
+VisualTreeService.buildLayout(s)()
          ↓
-VisualTreeData (nodes with positions, edges)
+VisualTreeLayout (nodes with positions, edges)
          ↓
-PdfReportRenderer.generateVisualTreePdf()
+VisualTreeSvgRenderer (src/trees/services/visual-tree-svg-renderer.ts)
          ↓
-pdfmake Content (boxes, lines, text)
+SVG string
          ↓
-PDF Blob → Download
+PdfReportRenderer.renderVisualTree(s)()
+         ↓
+pdfmake Content (embedded SVG as data URL)
+         ↓
+PDF Download
 ```
 
 ### Visual Tree Service
@@ -298,40 +303,53 @@ PDF Blob → Download
 - `pedigree` - Ancestors only, binary branching upward
 - `descendant` - Descendants only, branching downward
 - `hourglass` - Both ancestors (up) and descendants (down)
-- `fan` - Semicircular radial layout (placeholder)
+- `fan` - Semicircular radial layout with polar-to-cartesian coordinate positioning
 
 **Key Methods:**
 ```typescript
-// Build tree data from person notes
-buildTree(rootCrId: string, options: VisualTreeOptions): VisualTreeData
+// Build a single layout from person notes
+buildLayout(options: VisualTreeOptions): VisualTreeLayout | null
 
-// Calculate node positions for layout
-calculateLayout(tree: VisualTreeData, chartType: VisualTreeChartType): void
+// Build multiple layouts (for large multi-page trees)
+buildLayouts(options: VisualTreeOptions): VisualTreeLayout[]
 
 // Analyze tree size for large tree handling
-analyzeTreeSize(rootCrId: string, options): TreeSizeAnalysis
+analyzeTreeSize(options: VisualTreeOptions): TreeSizeAnalysis | null
+
+// Individual chart type builders (also public)
+buildPedigreeLayout(options: VisualTreeOptions): VisualTreeLayout | null
+buildDescendantLayout(options: VisualTreeOptions): VisualTreeLayout | null
+buildHourglassLayout(options: VisualTreeOptions): VisualTreeLayout | null
+buildFanLayout(options: VisualTreeOptions): VisualTreeLayout | null
 ```
 
 **Large Tree Analysis:**
 ```typescript
 interface TreeSizeAnalysis {
     isLarge: boolean;
-    nodeCount: number;
-    generationCount: number;
-    estimatedWidth: number;
-    estimatedHeight: number;
-    recommendedPageSize?: VisualTreePageSize;
-    warnings: string[];
+    generationsCount: number;
+    maxNodesInGeneration: number;
+    estimatedCardWidth: number;
+    estimatedCardHeight: number;
+    recommendedPageSize: VisualTreePageSize | null;
+    pagesNeededForMultiPage: number;
+    canFitOnSinglePage: boolean;
 }
 ```
 
 ### PDF Rendering
 
-`src/reports/services/pdf-report-renderer.ts` extended with:
+`src/reports/services/pdf-report-renderer.ts` provides two methods:
 
 ```typescript
-async generateVisualTreePdf(options: VisualTreeOptions): Promise<Blob>
+// Single layout tree
+async renderVisualTree(layout: VisualTreeLayout, options: VisualTreeOptions): Promise<void>
+
+// Multiple layouts (large tree multi-page)
+async renderVisualTrees(layouts: VisualTreeLayout[], options: VisualTreeOptions): Promise<void>
 ```
+
+Both methods use `VisualTreeSvgRenderer` to produce SVG strings, convert them to data URLs, build pdfmake documents, and trigger a direct download (no `Blob` return).
 
 **PDF Content Structure:**
 1. Title section (optional)
@@ -341,19 +359,26 @@ async generateVisualTreePdf(options: VisualTreeOptions): Promise<Blob>
    - Text labels (name, dates, places based on nodeContent setting)
 
 **Color Schemes:**
-- `default` - Gender-based colors (blue/green for male, purple/pink for female)
+```typescript
+type VisualTreeColorScheme = 'default' | 'gender' | 'generation' | 'grayscale';
+```
+- `default` - Theme colors
+- `gender` - Color by gender (blue/green for male, purple/pink for female)
+- `generation` - Rainbow by generation level
 - `grayscale` - Black/white for printing
-- `generational` - Different colors per generation level
 
 **Page Sizes:**
 ```typescript
-type VisualTreePageSize = 'letter' | 'a4' | 'legal' | 'tabloid' | 'a3';
+type VisualTreePageSize = 'letter' | 'a4' | 'legal' | 'tabloid' | 'a3' | 'arch-d';
 ```
+(`arch-d` = 24×36 inches, architectural size for very large trees)
 
 **Large Tree Handling:**
 ```typescript
-type LargeTreeHandling = 'auto-scale' | 'auto-page-size' | 'limit-generations';
+type LargeTreeHandling = 'auto-page-size' | 'multi-page';
 ```
+- `auto-page-size` - Automatically use a larger page size
+- `multi-page` - Split across multiple pages by generation
 
 ### Custom Icons
 
@@ -387,7 +412,7 @@ Called during plugin initialization in `main.ts`.
 
 ## Unified Tree Wizard
 
-`src/trees/ui/unified-tree-wizard-modal.ts` provides a single wizard for both Canvas and PDF output.
+`src/trees/ui/unified-tree-wizard-modal.ts` provides a single wizard for Canvas, Excalidraw, PDF, and ODT output.
 
 ### Step Flow
 
@@ -396,9 +421,20 @@ Step 1: Person Selection
     ↓
 Step 2: Tree Type Selection
     ↓
-Step 3: Output Format (Canvas vs PDF)
-    ├── Canvas → Step 4a: Canvas Options → Step 5a: Preview → Step 6a: Output
-    └── PDF → Step 4b: PDF Options → Step 5b: Output
+Step 3: Output Format (Canvas / Excalidraw / PDF / ODT)
+    ├── Canvas    → Step 4a: Canvas Options → Step 5a: Preview → Step 6a: Output
+    ├── Excalidraw → Step 4c: Excalidraw Style → (generates directly)
+    ├── PDF       → Step 4b: PDF Options → Step 5b: Output
+    └── ODT       → (generates directly)
+```
+
+**Wizard steps** (defined in `ALL_STEPS`):
+`person` → `tree-type` → `output-format` → `canvas-options` / `excalidraw-style` / `pdf-options` → `canvas-preview` → `canvas-output` / `pdf-output`
+
+### Output Formats
+
+```typescript
+type OutputFormat = 'canvas' | 'excalidraw' | 'pdf' | 'odt';
 ```
 
 ### Form Data
@@ -409,25 +445,55 @@ interface UnifiedWizardFormData {
     rootPerson: PersonInfo | null;
 
     // Step 2: Tree Type
-    treeType: 'full' | 'ancestors' | 'descendants' | 'fan';
+    treeType: TreeType;
+    direction: 'vertical' | 'horizontal';
     maxAncestorGenerations: number;
     maxDescendantGenerations: number;
     includeSpouses: boolean;
 
     // Step 3: Output Format
-    outputFormat: 'canvas' | 'pdf';
+    outputFormat: OutputFormat;
 
-    // Canvas-specific options
-    layoutAlgorithm: 'standard' | 'compact' | 'timeline' | 'hourglass';
+    // Canvas-specific (Step 4a)
+    includeStepParents: boolean;
+    includeAdoptiveParents: boolean;
+    collectionFilter: string;
+    placeFilter: string;
+    placeFilterTypes: Set<'birth' | 'death' | 'marriage' | 'burial'>;
+    universeFilter: string;
     colorScheme: ColorScheme;
-    // ... edge styles, filters, etc.
+    parentChildArrowStyle: 'directed' | 'bidirectional' | 'undirected';
+    spouseArrowStyle: 'directed' | 'bidirectional' | 'undirected';
+    parentChildEdgeColor: CanvasColor;
+    spouseEdgeColor: CanvasColor;
+    showSpouseEdges: boolean;
+    spouseEdgeLabelFormat: 'none' | 'date-only' | 'date-location' | 'full';
+    layoutAlgorithm: LayoutAlgorithm;
+    canvasGroupingStrategy: CanvasGroupingStrategy;
+    applyCanvasPrivacy: boolean;
+    canvasPrivacyFormat: 'text' | 'file';
 
-    // PDF-specific options
+    // PDF-specific (Step 4b)
     pageSize: VisualTreePageSize;
-    orientation: 'portrait' | 'landscape';
+    orientation: VisualTreeOrientation;
     nodeContent: VisualTreeNodeContent;
     pdfColorScheme: VisualTreeColorScheme;
     largeTreeHandling: LargeTreeHandling;
+
+    // Excalidraw-specific
+    excalidrawRoughness: 0 | 1 | 2;
+    excalidrawFontFamily: 1 | 2 | 3 | 4 | 5 | 6 | 7;
+    excalidrawFontSize: number;
+    excalidrawStrokeWidth: number;
+    excalidrawFillStyle: 'solid' | 'hachure' | 'cross-hatch';
+    excalidrawStrokeStyle: 'solid' | 'dashed' | 'dotted';
+    excalidrawNodeContent: 'name' | 'name-dates' | 'name-dates-places';
+
+    // Output settings
+    canvasName: string;
+    saveFolder: string;
+    openAfterGenerate: boolean;
+    pdfTitle: string;
 }
 ```
 
@@ -452,6 +518,7 @@ wizard.open();
 ### Integration Points
 
 The unified wizard is opened from:
-1. **Control Center** - Canvas Trees tab "New Tree" button
-2. **Statistics View** - Visual Trees report tiles
-3. **Report Generator Modal** - Visual tree report types
+1. **Control Center** - Trees & reports tab "New tree" button
+2. **Statistics View** - Visual trees report tiles
+3. **Report Wizard Modal** - Visual tree report types
+4. **Reports Hub Modal** - Report hub entry point

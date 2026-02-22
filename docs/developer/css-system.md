@@ -8,18 +8,25 @@ Charted Roots uses a component-based CSS build system that automatically concate
 
 ```
 styles/
-├── variables.css      # CSS custom properties and design tokens
-├── base.css          # Base structural elements
-├── layout.css        # Layout utilities
-├── canvas.css        # Canvas-specific styling
-├── nodes.css         # Family tree node styling
-├── edges.css         # Relationship edge styling
-├── settings.css      # Settings interface
-├── modals.css        # Modal dialogs
-├── animations.css    # Keyframes and transitions
-├── responsive.css    # Responsive breakpoints
-└── theme.css         # Theme compatibility
+├── variables.css              # CSS custom properties and design tokens
+├── style-settings.css         # Style Settings plugin configuration
+├── base.css                   # Base structural elements
+├── layout.css                 # Layout utilities
+├── settings.css               # Settings interface
+├── control-center.css         # Control Center core UI
+├── entity-create-modals.css   # Person picker and entity creation modals
+├── place-modals.css           # Place-specific modals
+├── media-modals.css           # Media management modals
+├── import-export-wizard.css   # Import/Export wizard
+├── staging-manager.css        # Staging management modal
+├── cleanup-wizard.css         # Cleanup wizard (all steps)
+├── ...                        # 30+ more component files
+├── dynamic-content.css        # Dynamic content blocks
+├── migration-notice.css       # Migration notice view
+└── responsive.css             # Responsive breakpoints (last)
 ```
+
+The `styles/` directory contains **44 component CSS files**, concatenated in a defined order by `build-css.js`.
 
 ## Available Commands
 
@@ -62,23 +69,35 @@ The CSS build system follows this pipeline:
 3. **Build** - Components are concatenated in dependency order
 4. **Output** - Final `styles.css` is generated with build metadata
 
+The top-level `npm run build` calls `build:css` with `--no-fail-on-lint`, meaning lint warnings don't block production builds but errors still do.
+
 ## Component Order
 
-Components are concatenated in a specific order to ensure proper CSS cascade:
+Components are concatenated in a specific order defined in the `componentOrder` array in `build-css.js`. The order ensures proper CSS cascade:
 
-1. Variables (CSS custom properties)
-2. Base styles
-3. Layout utilities
-4. Feature-specific components
-5. Animations
-6. Responsive styles
-7. Theme compatibility (last)
+1. Variables and design tokens (`variables.css`, `style-settings.css`)
+2. Base and layout (`base.css`, `layout.css`)
+3. Settings (`settings.css`)
+4. Control Center and modals (largest group — `control-center.css`, entity/place/media modals, wizards)
+5. Feature views (family chart, reports, data quality, maps, events, etc.)
+6. Entity tabs (organizations, sources, universes, collections)
+7. Dynamic content blocks
+8. Responsive styles (last — `responsive.css`)
+
+Any `.css` file in `styles/` not listed in `componentOrder` or `excludedFiles` triggers an "orphaned files" warning during build.
 
 ## CSS Naming Conventions
 
 ### Class Names
 
-Use BEM-style naming with `cr-` or `canvas-roots-` prefix:
+Use BEM-style naming with one of four valid prefixes:
+
+| Prefix | Usage |
+|--------|-------|
+| `cr-` | General plugin classes (most common) |
+| `crc-` | Control Center classes (extensive — hundreds of classes) |
+| `canvas-roots-` | Legacy structural classes (e.g., `.canvas-roots-container`) |
+| `charted-roots-` | New registrations and dynamic content blocks |
 
 ```css
 /* Block */
@@ -89,6 +108,10 @@ Use BEM-style naming with `cr-` or `canvas-roots-` prefix:
 
 /* Block with modifier */
 .cr-person-node--highlighted { }
+
+/* Control Center prefix */
+.crc-drawer { }
+.crc-nav-item--active { }
 ```
 
 ### Custom Properties
@@ -114,27 +137,25 @@ The project uses Stylelint with these configurations:
 
 ### Key Rules
 
-- **Class Pattern**: `^(cr|canvas-roots)-[a-z0-9-]+(__[a-z0-9-]+)?(--[a-z0-9-]+)?$`
-- **Custom Property Pattern**: `^(md|cr)-[a-z0-9-]+$`
-- **Max Nesting Depth**: 3 levels
+- **Class Pattern**: `^(cr|crc|canvas-roots|charted-roots)-[a-z0-9-]+(__[a-z0-9-]+)?(--[a-z0-9-]+)?$`
+- **Custom Property Pattern**: Disabled (`null`) — no enforcement on custom property names
 - **String Quotes**: Double quotes
 - **Color Hex**: Short notation, lowercase
 
 ### Rule Overrides
 
-Some files have relaxed rules:
+Several files have relaxed rules to accommodate third-party code, Obsidian conventions, or legacy patterns:
 
-- `variables.css` - No custom property pattern enforcement
-- `theme.css` - No class pattern enforcement (allows `.theme-light`, `.theme-dark`)
+- `variables.css` - Custom property pattern disabled
+- 17 component files (including `base.css`, `events.css`, `family-chart-view.css`, `map-view.css`, `sources.css`, etc.) - Multiple relaxed rules including class pattern, custom property pattern, color notation, and duplicate selectors
+
+> **Note:** The `.stylelintrc.json` also contains stale overrides for `theme.css` and `modals.css` which no longer exist as files. These are harmless dead entries.
 
 ## Adding New Components
 
 To add a new CSS component:
 
-1. **Create the file** in `styles/` directory:
-   ```bash
-   touch styles/my-component.css
-   ```
+1. **Create the file** in `styles/` directory
 
 2. **Add to build order** in `build-css.js`:
    ```javascript
@@ -170,7 +191,7 @@ This will:
 ### Testing Styles
 
 1. Build CSS: `npm run build:css`
-2. Deploy to vault: `npm run deploy`
+2. Deploy to vault: `npm run deploy` (requires local `deploy.sh`)
 3. Reload Obsidian (Ctrl/Cmd + R)
 
 ## Integration with Main Build
@@ -182,11 +203,10 @@ npm run build
 ```
 
 This runs:
-1. TypeScript compilation
-2. JavaScript bundling (esbuild)
-3. CSS building (with `--no-fail-on-lint` flag)
-
-The `--no-fail-on-lint` flag allows the build to continue even if there are CSS linting warnings, but errors will still stop the build.
+1. Font building (`build:fonts`)
+2. TypeScript type checking
+3. JavaScript bundling (esbuild)
+4. CSS building (with `--no-fail-on-lint` flag)
 
 ## Theme Compatibility
 
@@ -204,14 +224,15 @@ Always prefer Obsidian's CSS variables for colors and common properties:
 
 ### Light and Dark Themes
 
-Use theme-specific overrides in `theme.css`:
+Theme-specific overrides are placed inline within the component files that need them:
 
 ```css
-.theme-light {
+/* In the relevant component file (e.g., family-chart-view.css) */
+.theme-light .cr-fcv-chart-container {
   /* Light theme specific overrides */
 }
 
-.theme-dark {
+.theme-dark .cr-fcv-chart-container {
   /* Dark theme specific overrides */
 }
 ```
