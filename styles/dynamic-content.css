@@ -632,6 +632,71 @@
 }
 
 /* ==========================================================================
+   Sources Block (charted-roots-sources)
+   ========================================================================== */
+
+.cr-sources__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-smaller);
+}
+
+.cr-sources__table th {
+  text-align: left;
+  font-weight: var(--font-semibold);
+  padding: var(--cr-spacing-xs) var(--cr-spacing-sm);
+  border-bottom: 2px solid var(--background-modifier-border);
+  color: var(--text-muted);
+  font-size: var(--font-smallest);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cr-sources__table td {
+  padding: var(--cr-spacing-xs) var(--cr-spacing-sm);
+  border-bottom: 1px solid var(--background-modifier-border-hover);
+  vertical-align: middle;
+}
+
+.cr-sources__table tr:last-child td {
+  border-bottom: none;
+}
+
+.cr-sources__type {
+  width: 2em;
+  text-align: center;
+}
+
+.cr-sources__type-icon {
+  display: inline-flex;
+  color: var(--text-muted);
+}
+
+.cr-sources__type-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cr-sources__title a {
+  color: var(--text-accent);
+  text-decoration: none;
+}
+
+.cr-sources__title a:hover {
+  text-decoration: underline;
+}
+
+.cr-sources__date {
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.cr-sources__facts {
+  color: var(--text-muted);
+  font-size: var(--font-smallest);
+}
+
+/* ==========================================================================
    Theme Compatibility
    ========================================================================== */
 

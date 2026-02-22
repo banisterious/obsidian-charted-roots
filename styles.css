@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-02-18 16:36:37 UTC
+ * - Generated: 2026-02-22 08:26:55 UTC
  * - Components: 44 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -36629,7 +36629,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: DYNAMIC-CONTENT.CSS
    ========================================================================== */
 
-/* Component Size: 642 lines, 13.7 KB */
+/* Component Size: 707 lines, 15.03 KB */
 
 /**
  * Dynamic Content Styles
@@ -37265,6 +37265,71 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 /* ==========================================================================
+   Sources Block (charted-roots-sources)
+   ========================================================================== */
+
+.cr-sources__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-smaller);
+}
+
+.cr-sources__table th {
+  text-align: left;
+  font-weight: var(--font-semibold);
+  padding: var(--cr-spacing-xs) var(--cr-spacing-sm);
+  border-bottom: 2px solid var(--background-modifier-border);
+  color: var(--text-muted);
+  font-size: var(--font-smallest);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cr-sources__table td {
+  padding: var(--cr-spacing-xs) var(--cr-spacing-sm);
+  border-bottom: 1px solid var(--background-modifier-border-hover);
+  vertical-align: middle;
+}
+
+.cr-sources__table tr:last-child td {
+  border-bottom: none;
+}
+
+.cr-sources__type {
+  width: 2em;
+  text-align: center;
+}
+
+.cr-sources__type-icon {
+  display: inline-flex;
+  color: var(--text-muted);
+}
+
+.cr-sources__type-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cr-sources__title a {
+  color: var(--text-accent);
+  text-decoration: none;
+}
+
+.cr-sources__title a:hover {
+  text-decoration: underline;
+}
+
+.cr-sources__date {
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.cr-sources__facts {
+  color: var(--text-muted);
+  font-size: var(--font-smallest);
+}
+
+/* ==========================================================================
    Theme Compatibility
    ========================================================================== */
 
@@ -37443,11 +37508,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-02-18 16:36:38 UTC
+ * Build completed: 2026-02-22 08:26:55 UTC
  * Components processed: 44
- * Total lines: 37024
- * Total size: 740.53 KB
- * Build duration: 0.95 seconds
+ * Total lines: 37089
+ * Total size: 741.87 KB
+ * Build duration: 0.34 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -37491,7 +37556,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - map-wizard.css: 606 lines, 12.68 KB
  * - preferences.css: 431 lines, 9.44 KB
  * - tree-output.css: 1548 lines, 30.41 KB
- * - dynamic-content.css: 642 lines, 13.7 KB
+ * - dynamic-content.css: 707 lines, 15.03 KB
  * - migration-notice.css: 135 lines, 2.67 KB
  * - responsive.css: 9 lines, 0.13 KB
  */
