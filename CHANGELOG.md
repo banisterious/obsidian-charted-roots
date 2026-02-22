@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Rename "Family" dashboard tile to "Create Family"**: Reduces confusion with the adjacent "Family Chart" tile by making the action explicit.
+
 ### Fixed
 
 - **Family chart fails to resolve wikilink-based relationships** ([#281](https://github.com/banisterious/obsidian-charted-roots/issues/281)): The family chart view constructed its own `FamilyGraphService` without wiring up the `PersonIndexService`, so all wikilink-based relationships (`father: [[Name]]`, `children: [[Name]]`, etc.) silently failed to resolve. People appeared as isolated cards with no connections. Only vaults using `_id` fields were unaffected.

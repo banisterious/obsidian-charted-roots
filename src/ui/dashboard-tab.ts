@@ -265,7 +265,7 @@ function renderQuickActionsSection(
 		// Row 2: Family & visualization
 		{
 			id: 'create-family',
-			label: 'Family',
+			label: 'Create Family',
 			icon: 'users',
 			description: 'Create a family group with wizard',
 			action: () => {
