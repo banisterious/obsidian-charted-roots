@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Cannot freeze dynamic blocks on person notes** ([#279](https://github.com/banisterious/obsidian-charted-roots/issues/279)): Freezing a dynamic block to markdown failed with "Could not find block in file" when the code block used the `charted-roots-*` name rather than the legacy `canvas-roots-*` name. The freeze function now matches either prefix. Template snippets also updated to use the current `charted-roots-*` naming convention.
 
+- **Non-binary and unknown sex not rendering distinct colors in charts** ([#280](https://github.com/banisterious/obsidian-charted-roots/issues/280)): The chart color logic checked for pre-normalization strings (e.g., `NONBINARY`) but the sex field is already normalized to canonical values (`M`/`F`/`X`/`U`), so non-binary people always fell through to the unknown color. All three renderers (canvas, tree preview, SVG export) now correctly match the canonical `X` value. The SVG renderer also gains a distinct non-binary color (muted gold).
+
 ---
 
 ## [0.20.13] - 2026-02-18
