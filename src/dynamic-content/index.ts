@@ -25,3 +25,6 @@ export { TransfersRenderer } from './renderers/transfers-renderer';
 
 export { MembersProcessor } from './processors/members-processor';
 export { MembersRenderer } from './renderers/members-renderer';
+
+export { SourcesProcessor } from './processors/sources-processor';
+export { SourcesRenderer } from './renderers/sources-renderer';

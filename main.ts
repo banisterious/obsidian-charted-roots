@@ -62,7 +62,7 @@ import { EventService } from './src/events/services/event-service';
 import { CreateEventModal } from './src/events/ui/create-event-modal';
 import { isPlaceNote, isSourceNote, isEventNote, isMapNote, isSchemaNote, isUniverseNote, isPersonNote, isOrganizationNote } from './src/utils/note-type-detection';
 import { GeocodingService } from './src/maps/services/geocoding-service';
-import { TimelineProcessor, RelationshipsProcessor, MediaProcessor, SourceRolesProcessor, TransfersProcessor, MembersProcessor } from './src/dynamic-content';
+import { TimelineProcessor, RelationshipsProcessor, MediaProcessor, SourceRolesProcessor, TransfersProcessor, MembersProcessor, SourcesProcessor } from './src/dynamic-content';
 import { UniverseService, EditUniverseModal, UniverseWizardModal } from './src/universes';
 import { RecentFilesService, RecentEntityType } from './src/core/recent-files-service';
 import { registerCustomIcons } from './src/ui/lucide-icons';
@@ -477,6 +477,17 @@ export default class CanvasRootsPlugin extends Plugin {
 		this.registerMarkdownCodeBlockProcessor(
 			'charted-roots-members',
 			(source, el, ctx) => membersProcessor.process(source, el, ctx)
+		);
+
+		// Sources processor (#278)
+		const sourcesProcessor = new SourcesProcessor(this);
+		this.registerMarkdownCodeBlockProcessor(
+			'charted-roots-sources',
+			(source, el, ctx) => sourcesProcessor.process(source, el, ctx)
+		);
+		this.registerMarkdownCodeBlockProcessor(
+			'canvas-roots-sources', // Legacy compatibility
+			(source, el, ctx) => sourcesProcessor.process(source, el, ctx)
 		);
 
 		// Add ribbon icon for control center
