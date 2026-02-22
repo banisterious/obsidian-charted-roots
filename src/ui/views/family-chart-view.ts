@@ -184,6 +184,10 @@ export class FamilyChartView extends ItemView {
 		if (folderFilter) {
 			this.familyGraphService.setFolderFilter(folderFilter);
 		}
+		if (plugin.personIndex) {
+			this.familyGraphService.setPersonIndex(plugin.personIndex);
+		}
+		this.familyGraphService.setSettings(plugin.settings);
 		this.familyGraphService.setPropertyAliases(plugin.settings.propertyAliases);
 		this.familyGraphService.setValueAliases(plugin.settings.valueAliases);
 	}
