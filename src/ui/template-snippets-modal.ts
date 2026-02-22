@@ -348,19 +348,19 @@ collection:
 
 ## Family
 
-\`\`\`canvas-roots-relationships
+\`\`\`charted-roots-relationships
 type: immediate
 \`\`\`
 
 ## Timeline
 
-\`\`\`canvas-roots-timeline
+\`\`\`charted-roots-timeline
 sort: chronological
 \`\`\`
 
 ## Media
 
-\`\`\`canvas-roots-media
+\`\`\`charted-roots-media
 columns: 3
 editable: true
 \`\`\`

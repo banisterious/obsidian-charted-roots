@@ -420,11 +420,13 @@ export class DynamicContentService {
 			const content = await this.plugin.app.vault.read(file);
 
 			// Find the code block pattern
-			// Match ```canvas-roots-* with any config, handling various line endings and whitespace
-			// Pattern: ``` followed by blockType, optional whitespace, newline (LF or CRLF),
-			// any content (non-greedy), and closing ```
+			// Match both charted-roots-* and canvas-roots-* prefixes so freeze works
+			// regardless of which name the user wrote in their note
+			const alt = blockType.startsWith('canvas-roots-')
+				? blockType.replace('canvas-roots-', 'charted-roots-')
+				: blockType.replace('charted-roots-', 'canvas-roots-');
 			const blockPattern = new RegExp(
-				'```' + blockType + '[^\\n]*(?:\\r?\\n)[\\s\\S]*?```',
+				'```(?:' + blockType + '|' + alt + ')[^\\n]*(?:\\r?\\n)[\\s\\S]*?```',
 				'g'
 			);
 
