@@ -1120,6 +1120,7 @@ export class CanvasGenerator {
 	 */
 	private getPersonColor(person: PersonNode): string {
 		// Use sex/gender field from frontmatter if available
+		// Values are typically canonical (M/F/X/U) after resolveGender() normalization
 		if (person.sex) {
 			const sex = person.sex.toUpperCase();
 			if (sex === 'M' || sex === 'MALE') {
@@ -1128,8 +1129,8 @@ export class CanvasGenerator {
 			if (sex === 'F' || sex === 'FEMALE') {
 				return '6'; // Purple for females
 			}
-			if (sex === 'NONBINARY') {
-				return '3'; // Yellow for non-binary
+			if (sex === 'X' || sex === 'NONBINARY' || sex === 'NON-BINARY' || sex === 'OTHER' || sex === 'INTERSEX') {
+				return '3'; // Yellow for non-binary/intersex
 			}
 		}
 

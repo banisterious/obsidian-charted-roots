@@ -20,9 +20,11 @@ import { formatDisplayDate } from '../../dates';
 const FAMILY_CHART_COLORS = {
 	male: 'rgb(120, 159, 172)',       // Teal blue
 	female: 'rgb(196, 138, 146)',     // Dusty rose
+	nonBinary: 'rgb(190, 170, 120)',  // Muted gold
 	unknown: 'rgb(180, 180, 180)',    // Gray
 	maleDark: 'rgb(90, 125, 136)',    // Darker teal for border/icon bg
 	femaleDark: 'rgb(160, 110, 118)', // Darker rose for border/icon bg
+	nonBinaryDark: 'rgb(155, 138, 95)',
 	unknownDark: 'rgb(140, 140, 140)',
 	text: '#ffffff',
 	textSecondary: 'rgba(255, 255, 255, 0.85)',
@@ -364,6 +366,13 @@ export class VisualTreeSvgRenderer {
 						fill: FAMILY_CHART_COLORS.female,
 						border: FAMILY_CHART_COLORS.femaleDark,
 						iconBg: FAMILY_CHART_COLORS.femaleDark,
+						text: FAMILY_CHART_COLORS.text
+					};
+				} else if (sex === 'x' || sex === 'nonbinary' || sex === 'non-binary' || sex === 'other' || sex === 'intersex') {
+					return {
+						fill: FAMILY_CHART_COLORS.nonBinary,
+						border: FAMILY_CHART_COLORS.nonBinaryDark,
+						iconBg: FAMILY_CHART_COLORS.nonBinaryDark,
 						text: FAMILY_CHART_COLORS.text
 					};
 				}
