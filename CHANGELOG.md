@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`charted-roots-sources` dynamic block for person notes** ([#278](https://github.com/banisterious/obsidian-charted-roots/issues/278)): New code block that renders a table of sources linked to the current person note. Gathers sources from both the general `sources` array and fact-level `sourced_*` properties, showing type icon, title wikilink, date, and which facts each source supports. Supports `title`, `sort`, `filter`, and `exclude` config options, freeze-to-markdown, and the `canvas-roots-sources` legacy alias.
+
 ### Fixed
 
 - **Create Family modal corrupts existing notes when children share names with existing people** ([#277](https://github.com/banisterious/obsidian-charted-roots/issues/277)): When creating children whose names matched existing people in the vault (e.g., adding "James Hardwick" b.1851 when "James Hardwick" b.1770 already existed), the wizard wrote wikilinks that resolved to the wrong file. The bidirectional linker then fired on the partially-written state and overwrote the existing person's father/mother fields, turning grandparents into children. The wizard now suspends the bidirectional linker during batch operations and constructs file-aware wikilinks that correctly target deduplicated filenames.
