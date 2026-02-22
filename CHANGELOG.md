@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **`charted-roots-sources` dynamic block for person notes** ([#278](https://github.com/banisterious/obsidian-charted-roots/issues/278)): New code block that renders a table of sources linked to the current person note. Gathers sources from both the general `sources` array and fact-level `sourced_*` properties, showing type icon, title wikilink, date, and which facts each source supports. Supports `title`, `sort`, `filter`, and `exclude` config options, freeze-to-markdown, and the `canvas-roots-sources` legacy alias.
+- **`charted-roots-sources` dynamic block for person notes** ([#278](https://github.com/banisterious/obsidian-charted-roots/issues/278)): New code block that renders a table of sources linked to the current person note. Gathers sources from both the general `sources` array and fact-level `sourced_*` properties, showing type icon, title wikilink, date, and which facts each source supports. Supports `title`, `sort`, `filter`, and `exclude` config options, and freeze-to-markdown.
 
 ### Fixed
 

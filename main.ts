@@ -485,10 +485,6 @@ export default class CanvasRootsPlugin extends Plugin {
 			'charted-roots-sources',
 			(source, el, ctx) => sourcesProcessor.process(source, el, ctx)
 		);
-		this.registerMarkdownCodeBlockProcessor(
-			'canvas-roots-sources', // Legacy compatibility
-			(source, el, ctx) => sourcesProcessor.process(source, el, ctx)
-		);
 
 		// Add ribbon icon for control center
 		this.addRibbonIcon('users', 'Open Charted Roots control center', () => {
