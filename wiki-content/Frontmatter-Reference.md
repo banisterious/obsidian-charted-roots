@@ -398,49 +398,41 @@ appraised_value: 150
 
 When the "Enable fact-level source tracking" setting is enabled, person notes can include detailed source citations for specific facts. This aligns with the Genealogical Proof Standard (GPS) methodology.
 
-| Property | Type | Description | Example |
-|----------|------|-------------|---------|
-| `sourced_facts` | `object` | Maps fact types to their source citations | See below |
+Each fact type has its own flat property containing an array of source wikilinks:
 
-**Structure:**
+| Property | Type | Description |
+|----------|------|-------------|
+| `sourced_birth_date` | `array` | Sources for date of birth |
+| `sourced_birth_place` | `array` | Sources for location of birth |
+| `sourced_death_date` | `array` | Sources for date of death |
+| `sourced_death_place` | `array` | Sources for location of death |
+| `sourced_parents` | `array` | Sources for parent relationships |
+| `sourced_spouse` | `array` | Sources for spouse relationships |
+| `sourced_marriage_date` | `array` | Sources for date of marriage |
+| `sourced_marriage_place` | `array` | Sources for location of marriage |
+| `sourced_occupation` | `array` | Sources for occupation |
+| `sourced_residence` | `array` | Sources for residence locations |
+
+**Example:**
 
 ```yaml
-sourced_facts:
-  birth_date:
-    sources:
-      - "[[1900 Census - Smith Family]]"
-      - "[[Birth Certificate - John Smith]]"
-  birth_place:
-    sources:
-      - "[[Birth Certificate - John Smith]]"
-  death_date:
-    sources:
-      - "[[Obituary - John Smith 1952]]"
-  parents:
-    sources:
-      - "[[1900 Census - Smith Family]]"
+sourced_birth_date:
+  - "[[1900 Census - Smith Family]]"
+  - "[[Birth Certificate - John Smith]]"
+sourced_birth_place:
+  - "[[Birth Certificate - John Smith]]"
+sourced_death_date:
+  - "[[Obituary - John Smith 1952]]"
+sourced_parents:
+  - "[[1900 Census - Smith Family]]"
 ```
 
-**Supported Fact Keys:**
-
-| Fact Key | Description |
-|----------|-------------|
-| `birth_date` | Date of birth |
-| `birth_place` | Location of birth |
-| `death_date` | Date of death |
-| `death_place` | Location of death |
-| `parents` | Parent relationships |
-| `marriage_date` | Date of marriage |
-| `marriage_place` | Location of marriage |
-| `spouse` | Spouse relationships |
-| `occupation` | Occupation |
-| `residence` | Residence locations |
-
 **Notes:**
-- Each fact key maps to an object containing a `sources` array of wikilinks
-- Missing keys are treated as "not yet tracked" (different from "unsourced")
-- An empty `sources` array means the fact is explicitly marked as unsourced
+- Each property is a simple array of source wikilinks, compatible with Obsidian's property panel
+- Missing properties are treated as "not yet tracked" (different from "unsourced")
+- An empty array means the fact is explicitly marked as unsourced
 - The Control Center's Data Quality tab shows research coverage statistics when this feature is enabled
+- The legacy nested `sourced_facts` format (pre-v0.18.9) is still read for backwards compatibility, but new notes should use the flat properties above
 
 ### Reference Numbering Systems
 

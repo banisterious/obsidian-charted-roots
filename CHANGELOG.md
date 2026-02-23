@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.20.15] - 2026-02-23
+
 ### Changed
 
 - **Rename "Family" dashboard tile to "Create Family"**: Reduces confusion with the adjacent "Family Chart" tile by making the action explicit.
