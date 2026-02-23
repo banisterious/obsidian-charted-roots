@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Bidirectional linker duplicates indexed spouse entries** ([#283](https://github.com/banisterious/obsidian-charted-roots/issues/283)): When manually adding `spouse1: "[[Name]]"` without the corresponding `spouse1_id`, the bidirectional linker didn't detect the existing link and created a duplicate at the next available slot. The duplicate check now also scans indexed wikilink fields, not just `_id` fields.
+
 - **Family chart fails to resolve wikilink-based relationships** ([#281](https://github.com/banisterious/obsidian-charted-roots/issues/281)): The family chart view constructed its own `FamilyGraphService` without wiring up the `PersonIndexService`, so all wikilink-based relationships (`father: [[Name]]`, `children: [[Name]]`, etc.) silently failed to resolve. People appeared as isolated cards with no connections. Only vaults using `_id` fields were unaffected.
 
 - **Family chart shows non-binary and unknown sex as male** ([#280](https://github.com/banisterious/obsidian-charted-roots/issues/280)): The family chart view forced all non-female sex values to male, so people with non-binary or unknown sex always appeared with the male color. The chart now correctly maps non-binary (`X`) and unknown (`U`) sex codes and renders them with distinct colors (muted gold for non-binary, gray for unknown) across all card styles and exports. The info panel also displays and allows editing of all four sex values.

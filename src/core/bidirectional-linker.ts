@@ -744,6 +744,21 @@ export class BidirectionalLinker {
 			}
 		}
 
+		// Check indexed spouse wikilink properties (spouse1, spouse2, etc.)
+		// Catches cases where spouse(N) is set but spouse(N)_id hasn't been added yet
+		if (!alreadyLinked) {
+			for (const key of Object.keys(spouseFm)) {
+				const match = key.match(/^spouse(\d+)$/);
+				if (match) {
+					const linkText = typeof spouseFm[key] === 'string' ? spouseFm[key] : String(spouseFm[key]);
+					if (linkText.includes(personName) || linkText.includes(personFile.basename)) {
+						alreadyLinked = true;
+						break;
+					}
+				}
+			}
+		}
+
 		if (alreadyLinked) {
 			logger.debug('bidirectional-linking', 'Spouse already linked', {
 				spouseFile: spouseFile.path,
