@@ -383,7 +383,8 @@ export function renderDataQualityTab(options: DataQualityTabOptions): void {
 		{ value: 'events', label: 'Events', command: 'charted-roots:create-events-base-template' },
 		{ value: 'organizations', label: 'Organizations', command: 'charted-roots:create-organizations-base-template' },
 		{ value: 'sources', label: 'Sources', command: 'charted-roots:create-sources-base-template' },
-		{ value: 'universes', label: 'Universes', command: 'charted-roots:create-universes-base-template' }
+		{ value: 'universes', label: 'Universes', command: 'charted-roots:create-universes-base-template' },
+		{ value: 'research', label: 'Research', command: 'charted-roots:create-research-base-template' }
 	];
 
 	let selectedBaseType = baseTypes[0];

@@ -13,6 +13,7 @@ This document outlines planned features for Charted Roots. For completed feature
   - [Unified Place Lookup](#unified-place-lookup) 💡 Low ✅ Phase 1-2 complete
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
+  - [Mills-Aligned Source Classification](#mills-aligned-source-classification) 💡 Low
 - [Future Considerations](#future-considerations)
   - [Research Tracking](#research-tracking)
   - [Universe Batch Operations](#universe-batch-operations)
@@ -235,6 +236,37 @@ oral_facts:
 - Map relationship structure of interviews
 - Interview as central hub node
 - Edge thickness indicates mention frequency
+
+---
+
+### Mills-Aligned Source Classification
+
+**Priority:** 💡 Low — Specialized for GPS/BCG-oriented genealogists
+
+**Status:** 📋 Planning
+
+**GitHub Issue:** [#276](https://github.com/banisterious/obsidian-charted-roots/issues/276)
+
+**Summary:** Separate the current `source_quality` property into three independent classification axes from Mills' *Evidence Explained*, enabling precise analytical layering that matches how trained genealogists evaluate sources.
+
+**The Problem:** The current `source_quality` property mixes values from two different Mills classification systems (`primary`/`secondary` from information classification, `derivative` from source classification), making consistent application difficult for users following GPS methodology.
+
+**Proposed Changes:**
+
+| Property | Values | Purpose |
+|----------|--------|---------|
+| `source_quality` | `good`, `fair`, `poor` | Physical condition/legibility (corrected semantics) |
+| `source_classification` | `original`, `derivative`, `authored` | What is the document itself? |
+| `information_classification` | `primary`, `secondary`, `undetermined` | Who provided the information? |
+| `evidence_classification` | `direct`, `indirect`, `negative` | How does the information relate to the question? |
+
+**Key Design Decisions:**
+- All three new properties are optional — users who prefer simplicity continue using `confidence`
+- `source_quality` values change to match what the property name implies (physical condition)
+- Research Gaps Report and Data Quality tools surface whichever properties are present
+
+**Documentation:**
+- Community contributors: @ANYroots (Mills methodology, real-world examples)
 
 ---
 

@@ -22,6 +22,7 @@ import { ORGANIZATIONS_BASE_TEMPLATE } from './src/constants/organizations-base-
 import { SOURCES_BASE_TEMPLATE } from './src/constants/sources-base-template';
 import { UNIVERSES_BASE_TEMPLATE } from './src/constants/universes-base-template';
 import { NOTES_BASE_TEMPLATE } from './src/constants/notes-base-template';
+import { RESEARCH_BASE_TEMPLATE } from './src/constants/research-base-template';
 import { generateEventsBaseTemplate } from './src/constants/events-base-template';
 import { ExcalidrawExporter } from './src/excalidraw/excalidraw-exporter';
 import { BidirectionalLinker } from './src/core/bidirectional-linker';
@@ -841,6 +842,15 @@ export default class CanvasRootsPlugin extends Plugin {
 			name: 'Create notes base template',
 			callback: () => {
 				void this.createNotesBaseTemplate();
+			}
+		});
+
+		// Add command: Create Research Base Template
+		this.addCommand({
+			id: 'create-research-base-template',
+			name: 'Create research base template',
+			callback: () => {
+				void this.createResearchBaseTemplate();
 			}
 		});
 
@@ -8328,6 +8338,71 @@ export default class CanvasRootsPlugin extends Plugin {
 	}
 
 	/**
+	 * Create a research base template file in the specified folder
+	 */
+	private async createResearchBaseTemplate(folder?: TFolder) {
+		try {
+			// Validate: Check if Bases feature is available
+			const baseFiles = this.app.vault.getFiles().filter(f => f.extension === 'base');
+			// @ts-expect-error - accessing internal plugins
+			const basesInternalPlugin = this.app.internalPlugins?.plugins?.['bases'];
+			const isBasesAvailable = baseFiles.length > 0 ||
+				(basesInternalPlugin?.enabled === true);
+
+			if (!isBasesAvailable) {
+				const proceed = await this.confirmBaseCreation();
+				if (!proceed) return;
+			}
+
+			// Determine the target path - use basesFolder if configured, otherwise use context folder
+			const targetFolder = this.settings.basesFolder || (folder ? folder.path : '');
+			const folderPath = targetFolder ? targetFolder + '/' : '';
+			const defaultPath = folderPath + 'research.base';
+
+			// Create the bases folder if it doesn't exist
+			if (this.settings.basesFolder && !this.app.vault.getAbstractFileByPath(this.settings.basesFolder)) {
+				await this.app.vault.createFolder(this.settings.basesFolder);
+			}
+
+			// Check if file already exists
+			const existingFile = this.app.vault.getAbstractFileByPath(defaultPath);
+			if (existingFile) {
+				new Notice(`Research base template already exists at ${defaultPath}`);
+				// Open the existing file
+				if (existingFile instanceof TFile) {
+					const leaf = this.app.workspace.getLeaf(false);
+					await leaf.openFile(existingFile);
+				}
+				return;
+			}
+
+			// Create the file with template content
+			const file = await this.app.vault.create(defaultPath, RESEARCH_BASE_TEMPLATE);
+
+			new Notice('Research base template created with 12 pre-configured views!');
+			logger.info('research-base-template', `Created research base template at ${defaultPath}`);
+
+			// Open the newly created file
+			const leaf = this.app.workspace.getLeaf(false);
+			await leaf.openFile(file);
+		} catch (error: unknown) {
+			const errorMsg = getErrorMessage(error);
+			logger.error('research-base-template', 'Failed to create research base template', error);
+
+			// Provide specific error messages
+			if (errorMsg.includes('already exists')) {
+				new Notice('A file with this name already exists.');
+			} else if (errorMsg.includes('permission') || errorMsg.includes('EACCES')) {
+				new Notice('Permission denied. Check file system permissions.');
+			} else if (errorMsg.includes('ENOSPC')) {
+				new Notice('Disk full. Free up space and try again.');
+			} else {
+				new Notice(`Failed to create Research base template: ${errorMsg}`);
+			}
+		}
+	}
+
+	/**
 	 * Create an events base template file in the specified folder
 	 */
 	private async createEventsBaseTemplate(folder?: TFolder) {
@@ -8477,6 +8552,7 @@ export default class CanvasRootsPlugin extends Plugin {
 			{ name: 'events', file: 'events.base', generator: () => generateEventsBaseTemplate(this.settings.propertyAliases) },
 			{ name: 'organizations', file: 'organizations.base', generator: () => ORGANIZATIONS_BASE_TEMPLATE },
 			{ name: 'sources', file: 'sources.base', generator: () => SOURCES_BASE_TEMPLATE },
+			{ name: 'research', file: 'research.base', generator: () => RESEARCH_BASE_TEMPLATE },
 		];
 
 		for (const baseType of baseTypes) {
