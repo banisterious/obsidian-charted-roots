@@ -214,7 +214,7 @@
   --female-color: var(--cr-fcv-female-color, rgb(196, 138, 146));
   --male-color: var(--cr-fcv-male-color, rgb(120, 159, 172));
   --nonbinary-color: var(--cr-fcv-nonbinary-color, rgb(200, 175, 80));
-  --genderless-color: var(--cr-fcv-unknown-color, rgb(211, 211, 211));
+  --genderless-color: var(--cr-fcv-unknown-color, rgb(140, 140, 140));
   --background-color: var(--cr-fcv-background-dark, rgb(33, 33, 33));
   --text-color: var(--cr-fcv-text-dark, #fff);
 

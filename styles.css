@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-02-23 15:06:47 UTC
+ * - Generated: 2026-02-23 16:48:32 UTC
  * - Components: 44 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -16946,7 +16946,7 @@ settings:
   --female-color: var(--cr-fcv-female-color, rgb(196, 138, 146));
   --male-color: var(--cr-fcv-male-color, rgb(120, 159, 172));
   --nonbinary-color: var(--cr-fcv-nonbinary-color, rgb(200, 175, 80));
-  --genderless-color: var(--cr-fcv-unknown-color, rgb(211, 211, 211));
+  --genderless-color: var(--cr-fcv-unknown-color, rgb(140, 140, 140));
   --background-color: var(--cr-fcv-background-dark, rgb(33, 33, 33));
   --text-color: var(--cr-fcv-text-dark, #fff);
 
@@ -37523,11 +37523,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-02-23 15:06:48 UTC
+ * Build completed: 2026-02-23 16:48:34 UTC
  * Components processed: 44
  * Total lines: 37104
  * Total size: 742.41 KB
- * Build duration: 0.97 seconds
+ * Build duration: 1.82 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB

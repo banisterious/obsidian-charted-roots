@@ -888,7 +888,7 @@ export class FamilyChartView extends ItemView {
 		this.chartContainerEl.setCssProps({
 			'--female-color': customColors?.femaleColor ?? 'rgb(196, 138, 146)',
 			'--male-color': customColors?.maleColor ?? 'rgb(120, 159, 172)',
-			'--genderless-color': customColors?.unknownColor ?? 'lightgray',
+			'--genderless-color': customColors?.unknownColor ?? 'rgb(140, 140, 140)',
 			'--background-color': isDarkMode
 				? (customColors?.backgroundDark ?? 'rgb(33, 33, 33)')
 				: (customColors?.backgroundLight ?? 'rgb(250, 250, 250)'),
@@ -3098,7 +3098,7 @@ export class FamilyChartView extends ItemView {
 		const femaleColor = 'rgb(196, 138, 146)';
 		const maleColor = 'rgb(120, 159, 172)';
 		const nonbinaryColor = 'rgb(200, 175, 80)';
-		const genderlessColor = 'lightgray';
+		const genderlessColor = 'rgb(140, 140, 140)';
 		const labelBgColor = 'rgba(0, 0, 0, 0.6)';
 		const textColor = '#fff';
 
@@ -3590,7 +3590,7 @@ export class FamilyChartView extends ItemView {
 			colors: {
 				femaleColor: 'rgb(196, 138, 146)',
 				maleColor: 'rgb(120, 159, 172)',
-				unknownColor: 'rgb(211, 211, 211)',
+				unknownColor: 'rgb(140, 140, 140)',
 				backgroundLight: 'rgb(250, 250, 250)',
 				backgroundDark: 'rgb(33, 33, 33)',
 				textLight: '#333333',
