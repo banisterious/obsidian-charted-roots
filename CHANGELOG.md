@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Rename "Canvas Trees" dashboard tile to "Generate Canvas Tree"**: Clarifies that this tile generates a visualization from existing data, distinct from the interactive "Family Chart" view.
 
+- **Improve family chart empty state wording** ([#282](https://github.com/banisterious/obsidian-charted-roots/issues/282)): Replaced "Select a person" button with "Choose from list" to avoid confusion with Obsidian's file selection model.
+
 ### Fixed
 
 - **Bidirectional linker duplicates indexed spouse entries** ([#283](https://github.com/banisterious/obsidian-charted-roots/issues/283)): When manually adding `spouse1: "[[Name]]"` without the corresponding `spouse1_id`, the bidirectional linker didn't detect the existing link and created a duplicate at the next available slot. The duplicate check now also scans indexed wikilink fields, not just `_id` fields.

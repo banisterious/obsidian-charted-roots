@@ -809,11 +809,11 @@ export class FamilyChartView extends ItemView {
 		instructions.createEl('p', { text: 'To view a family chart:' });
 
 		const list = instructions.createEl('ul');
-		list.createEl('li', { text: 'Click "Select a person" below, or' });
+		list.createEl('li', { text: 'Choose a person from the list below, or' });
 		list.createEl('li', { text: 'Open a person note (with cr_id property) and run "Open family chart"' });
 
 		const selectBtn = emptyState.createEl('button', {
-			text: 'Select a person',
+			text: 'Choose from list',
 			cls: 'mod-cta'
 		});
 		selectBtn.addEventListener('click', () => { void this.promptSelectPerson(); });
