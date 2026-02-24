@@ -1580,39 +1580,36 @@ export class FamilyCreationWizardModal extends Modal {
 			}
 		}
 
-		// Link children (bidirectional)
+		// Link children (bidirectional) — consolidate both parents into a single
+		// updatePersonNote call per child to avoid processFrontMatter race conditions
 		for (const child of this.state.children) {
 			if (child.file && child.crId) {
-				// Set parent based on central person's sex
+				const parentFields: Partial<PersonData> = {};
+
+				// Central person as parent
 				if (centralSex === 'male') {
-					await updatePersonNote(this.app, child.file, {
-						fatherCrId: centralCrId,
-						fatherName: centralLinkName
-					});
+					parentFields.fatherCrId = centralCrId;
+					parentFields.fatherName = centralLinkName;
 				} else if (centralSex === 'female') {
-					await updatePersonNote(this.app, child.file, {
-						motherCrId: centralCrId,
-						motherName: centralLinkName
-					});
+					parentFields.motherCrId = centralCrId;
+					parentFields.motherName = centralLinkName;
 				}
 
-				// Also link spouses as parents of children
+				// First spouse of opposite sex as the other parent
 				for (const spouse of this.state.spouses) {
-					if (spouse.crId && child.file) {
+					if (spouse.crId) {
 						const spouseLinkName = getLinkName(spouse);
-						if (spouse.sex === 'male') {
-							await updatePersonNote(this.app, child.file, {
-								fatherCrId: spouse.crId,
-								fatherName: spouseLinkName
-							});
-						} else if (spouse.sex === 'female') {
-							await updatePersonNote(this.app, child.file, {
-								motherCrId: spouse.crId,
-								motherName: spouseLinkName
-							});
+						if (spouse.sex === 'male' && !parentFields.fatherCrId) {
+							parentFields.fatherCrId = spouse.crId;
+							parentFields.fatherName = spouseLinkName;
+						} else if (spouse.sex === 'female' && !parentFields.motherCrId) {
+							parentFields.motherCrId = spouse.crId;
+							parentFields.motherName = spouseLinkName;
 						}
 					}
 				}
+
+				await updatePersonNote(this.app, child.file, parentFields);
 			}
 		}
 

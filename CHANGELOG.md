@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Research Bases template** ([#231](https://github.com/banisterious/obsidian-charted-roots/issues/231)): New "Create research base template" command creates a `research.base` file with 12 pre-configured views for managing research workflow entities (projects, reports, IRNs, journals, log entries). Includes per-type views, status grouping, in-progress/completed filters, negative findings view, and private items filter. Also available from the Data Quality tab's base type dropdown and the "Create all base templates" command.
 
+### Fixed
+
+- **Create Family modal sets only one parent on children** ([#277](https://github.com/banisterious/obsidian-charted-roots/issues/277)): The modal made separate `processFrontMatter` calls to set father and mother on each child note. When these fired in rapid succession on the same file, the second call could read stale state and overwrite the first, leaving children with only one parent or none at all. Both parents are now written in a single call per child.
+
 ---
 
 ## [0.20.15] - 2026-02-23
