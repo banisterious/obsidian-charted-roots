@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Extractions dynamic block for source notes** ([#284](https://github.com/banisterious/obsidian-charted-roots/issues/284)): New `charted-roots-extractions` code block renders a reverse lookup from a source note to all entities that cite it. Shows three grouped sections — Persons (with fact-level citations), Events (with type, date, person, and place), and Places (derived from citing events with event counts). Supports freeze-to-markdown and live updates on metadata changes.
+
 - **Research Bases template** ([#231](https://github.com/banisterious/obsidian-charted-roots/issues/231)): New "Create research base template" command creates a `research.base` file with 12 pre-configured views for managing research workflow entities (projects, reports, IRNs, journals, log entries). Includes per-type views, status grouping, in-progress/completed filters, negative findings view, and private items filter. Also available from the Data Quality tab's base type dropdown and the "Create all base templates" command.
 
 ### Fixed

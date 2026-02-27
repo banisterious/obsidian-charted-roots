@@ -28,3 +28,6 @@ export { MembersRenderer } from './renderers/members-renderer';
 
 export { SourcesProcessor } from './processors/sources-processor';
 export { SourcesRenderer } from './renderers/sources-renderer';
+
+export { ExtractionsProcessor } from './processors/extractions-processor';
+export { ExtractionsRenderer } from './renderers/extractions-renderer';

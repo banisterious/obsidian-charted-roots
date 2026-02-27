@@ -63,7 +63,7 @@ import { EventService } from './src/events/services/event-service';
 import { CreateEventModal } from './src/events/ui/create-event-modal';
 import { isPlaceNote, isSourceNote, isEventNote, isMapNote, isSchemaNote, isUniverseNote, isPersonNote, isOrganizationNote } from './src/utils/note-type-detection';
 import { GeocodingService } from './src/maps/services/geocoding-service';
-import { TimelineProcessor, RelationshipsProcessor, MediaProcessor, SourceRolesProcessor, TransfersProcessor, MembersProcessor, SourcesProcessor } from './src/dynamic-content';
+import { TimelineProcessor, RelationshipsProcessor, MediaProcessor, SourceRolesProcessor, TransfersProcessor, MembersProcessor, SourcesProcessor, ExtractionsProcessor } from './src/dynamic-content';
 import { UniverseService, EditUniverseModal, UniverseWizardModal } from './src/universes';
 import { RecentFilesService, RecentEntityType } from './src/core/recent-files-service';
 import { registerCustomIcons } from './src/ui/lucide-icons';
@@ -485,6 +485,13 @@ export default class CanvasRootsPlugin extends Plugin {
 		this.registerMarkdownCodeBlockProcessor(
 			'charted-roots-sources',
 			(source, el, ctx) => sourcesProcessor.process(source, el, ctx)
+		);
+
+		// Extractions processor (#284) — reverse lookup: source → citing entities
+		const extractionsProcessor = new ExtractionsProcessor(this);
+		this.registerMarkdownCodeBlockProcessor(
+			'charted-roots-extractions',
+			(source, el, ctx) => extractionsProcessor.process(source, el, ctx)
 		);
 
 		// Add ribbon icon for control center
