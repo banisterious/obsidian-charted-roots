@@ -1,6 +1,6 @@
 # Dynamic Note Content
 
-Charted Roots can render live, computed content directly within notes using special code blocks. These blocks automatically display data from your vault and update when you view the note. Most blocks are designed for person notes, while some (Sources Block, Extractions Block, Source Roles Block) are intended for source notes.
+Charted Roots can render live, computed content directly within notes using special code blocks. These blocks automatically display data from your vault and update when you view the note. Most blocks are designed for person notes, while some target other note types: Sources Block, Extractions Block, and Source Roles Block are intended for source notes, and the Members Block is intended for organization notes.
 
 ---
 
@@ -13,6 +13,7 @@ Charted Roots can render live, computed content directly within notes using spec
   - [Media Block](#media-block)
   - [Source Roles Block](#source-roles-block)
   - [Transfers Block](#transfers-block)
+  - [Members Block](#members-block)
   - [Sources Block](#sources-block)
   - [Extractions Block](#extractions-block)
 - [Rendered Output](#rendered-output)
@@ -250,6 +251,66 @@ title: Ownership history
 - **Worldbuilding:** Track succession of titles, thrones, and positions
 
 **Related:** Transfer events require creating event notes with `event_type: transfer` and `transfer_type` property. See [Events & Timelines](Events-And-Timelines#event-types) for details on creating transfer events.
+
+### Members Block
+
+The `charted-roots-members` block displays the members of an organization, grouped by role. Place this block in an organization note to see all persons who are members.
+
+~~~markdown
+```charted-roots-members
+group-by: role
+```
+~~~
+
+**What it displays:**
+- All persons with a membership linking them to this organization
+- Members grouped by role, with clickable wikilinks to person notes
+- Date ranges for membership periods (e.g., "1850–1865" or "1920–present")
+- Former members shown with a dimmed style
+- Optional membership notes
+
+**Configuration options:**
+
+| Option | Values | Description |
+|--------|--------|-------------|
+| `group-by` | `role`, `none` | Group members by role (default: role) |
+| `sort` | `name`, `date` | Sort order within groups (default: name) |
+| `show-former` | `true`, `false` | Include former members (default: true) |
+| `show-dates` | `true`, `false` | Show membership date ranges (default: true) |
+| `show-notes` | `true`, `false` | Show membership notes (default: false) |
+| `role-order` | comma-separated roles | Pin specific roles to the top in order |
+| `title` | string | Custom header text (default: "Members") |
+
+**Example with options:**
+
+~~~markdown
+```charted-roots-members
+group-by: role
+sort: date
+show-notes: true
+role-order: Pastor, Elder, Deacon
+title: Congregation
+```
+~~~
+
+**Rendered output:**
+
+When grouped by role, each role gets its own heading:
+
+#### Pastor
+- [[John Smith]] (1850–1875)
+
+#### Elder
+- [[James Brown]] (1852–present)
+- [[Thomas Davis]] (1860–1868)
+
+#### Members
+- [[Jane Smith]]
+- [[Mary Johnson]]
+
+Roles listed in `role-order` appear first in that sequence; remaining named roles follow alphabetically; members with no role appear last under "Members."
+
+**Note:** This block is designed for organization notes (`cr_type: organization`). Membership data is stored on person notes via the `organizations` frontmatter property. See [Organizations](Organizations) for details on setting up organizations and memberships.
 
 ### Sources Block
 
