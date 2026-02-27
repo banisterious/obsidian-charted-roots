@@ -224,6 +224,14 @@ export class RelationshipService {
 	getAllRelationshipsWithInferred(forceRefresh = false): ParsedRelationship[] {
 		const defined = this.getAllRelationships(forceRefresh);
 
+		// Track defined relationships to skip duplicates during inference
+		const definedKeys = new Set<string>();
+		for (const rel of defined) {
+			if (rel.targetCrId) {
+				definedKeys.add(`${rel.sourceCrId}:${rel.targetCrId}:${rel.type.id}`);
+			}
+		}
+
 		// Collect all person cr_ids involved in relationships
 		const allCrIds = new Set<string>();
 		for (const rel of defined) {
@@ -231,10 +239,15 @@ export class RelationshipService {
 			if (rel.targetCrId) allCrIds.add(rel.targetCrId);
 		}
 
-		// Add inferred inverse relationships
+		// Add inferred inverse relationships, skipping those already explicitly defined
 		const inferred: ParsedRelationship[] = [];
 		for (const crId of allCrIds) {
-			inferred.push(...this.getInverseRelationships(crId));
+			for (const invRel of this.getInverseRelationships(crId)) {
+				const key = `${invRel.sourceCrId}:${invRel.targetCrId}:${invRel.type.id}`;
+				if (!definedKeys.has(key)) {
+					inferred.push(invRel);
+				}
+			}
 		}
 
 		return [...defined, ...inferred];

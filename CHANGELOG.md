@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Create Family modal sets only one parent on children** ([#277](https://github.com/banisterious/obsidian-charted-roots/issues/277)): The modal made separate `processFrontMatter` calls to set father and mother on each child note. When these fired in rapid succession on the same file, the second call could read stale state and overwrite the first, leaving children with only one parent or none at all. Both parents are now written in a single call per child.
 
+- **Duplicate relationships shown in Defined vs Inferred** ([#285](https://github.com/banisterious/obsidian-charted-roots/issues/285)): When both sides of a relationship were explicitly defined (e.g., mentor on Person A and disciple on Person B), the inverse inference engine didn't check whether the relationship already existed, causing every bidirectionally-defined relationship to appear twice — once as "defined" and once as "inferred." The "Inferred only" filter now correctly shows only relationships that are defined on one side.
+
 ---
 
 ## [0.20.15] - 2026-02-23
