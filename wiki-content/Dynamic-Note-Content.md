@@ -1,6 +1,6 @@
 # Dynamic Note Content
 
-Charted Roots can render live, computed content directly within person notes using special code blocks. These blocks automatically display data from your vault and update when you view the note.
+Charted Roots can render live, computed content directly within notes using special code blocks. These blocks automatically display data from your vault and update when you view the note. Most blocks are designed for person notes, while some (Sources Block, Extractions Block, Source Roles Block) are intended for source notes.
 
 ---
 
@@ -13,6 +13,8 @@ Charted Roots can render live, computed content directly within person notes usi
   - [Media Block](#media-block)
   - [Source Roles Block](#source-roles-block)
   - [Transfers Block](#transfers-block)
+  - [Sources Block](#sources-block)
+  - [Extractions Block](#extractions-block)
 - [Rendered Output](#rendered-output)
 - [Freeze to Markdown](#freeze-to-markdown)
 - [Inserting Blocks](#inserting-blocks)
@@ -248,6 +250,106 @@ title: Ownership history
 - **Worldbuilding:** Track succession of titles, thrones, and positions
 
 **Related:** Transfer events require creating event notes with `event_type: transfer` and `transfer_type` property. See [Events & Timelines](Events-And-Timelines#event-types) for details on creating transfer events.
+
+### Sources Block
+
+The `charted-roots-sources` block displays a table of sources linked to a person note. It shows each source's type, title, date, and which facts the source supports.
+
+~~~markdown
+```charted-roots-sources
+sort: chronological
+```
+~~~
+
+**What it displays:**
+- All sources linked via the `sources` frontmatter array
+- Sources referenced by `sourced_*` properties (fact-level citations)
+- Legacy `sourced_facts` entries
+- Source type icon, title as a clickable wikilink, date, and fact labels
+
+**Configuration options:**
+
+| Option | Values | Description |
+|--------|--------|-------------|
+| `sort` | `chronological`, `reverse`, `type` | Sort order (default: chronological) |
+| `filter` | comma-separated types | Only show these source types |
+| `exclude` | comma-separated types | Hide these source types |
+| `title` | string | Custom header text (default: "Sources") |
+
+**Example with options:**
+
+~~~markdown
+```charted-roots-sources
+sort: type
+filter: census, vital_record
+title: Census & Vital Records
+```
+~~~
+
+**Rendered output:**
+
+| Type | Title | Date | Facts |
+|------|-------|------|-------|
+| 📋 | [[1850 Census - Smith Family]] | 1850 | Name, Birth date, Residence |
+| 📜 | [[Birth Certificate - John Smith]] | 1845 | Name, Birth date, Birth place |
+
+**Fact-level citations:**
+
+When a source is linked via a `sourced_*` property (e.g., `sourced_birth_date`), the Facts column shows which specific facts cite that source. This gives a clear picture of what evidence each source provides for the person.
+
+**Note:** This block is designed for person notes (`cr_type: person`). See [Evidence & Sources](Evidence-And-Sources) for details on linking sources to persons.
+
+### Extractions Block
+
+The `charted-roots-extractions` block is the inverse of the Sources block — it renders a reverse lookup from a source note to all entities that cite it. Place this block in a source note to answer the question "what have I extracted from this source?"
+
+~~~markdown
+```charted-roots-extractions
+title: Extractions
+```
+~~~
+
+**What it displays:**
+
+Three grouped sections, each with a count in its heading:
+
+1. **Persons** — All person notes that reference this source via `sources`, `sourced_*`, or legacy `sourced_facts` properties. Shows which facts each person cites this source for.
+2. **Events** — All event notes that include this source in their `sources` array, sorted chronologically. Shows event type, title, date, person(s), and place.
+3. **Places** — Unique places derived from the citing events, with a count of how many events reference each place.
+
+**Configuration options:**
+
+| Option | Values | Description |
+|--------|--------|-------------|
+| `title` | string | Custom header text (default: "Extractions") |
+
+**Rendered output:**
+
+#### Persons (3)
+
+| Name | Facts cited |
+|------|------------|
+| [[John Smith]] | Name, Birth date |
+| [[Jane Smith]] | Name, Marriage date |
+| [[Mary Smith]] | Name |
+
+#### Events (2)
+
+| Type | Title | Date | Person(s) | Place |
+|------|-------|------|-----------|-------|
+| 🎂 | [[Birth of John Smith]] | 1845-03-15 | [[John Smith]] | [[Dublin, Ireland]] |
+| 💒 | [[Marriage of John and Jane]] | 1867-06-20 | [[John Smith]], [[Jane Smith]] | [[Boston, MA]] |
+
+#### Places (2)
+
+| Place | Events |
+|-------|--------|
+| [[Boston, MA]] | 1 |
+| [[Dublin, Ireland]] | 1 |
+
+Sections with no data are omitted. If no entities reference the source at all, an empty state message is shown.
+
+**Note:** This block is designed for source notes (`cr_type: source`). It complements the Sources block on person notes by providing the reverse perspective. See [Evidence & Sources](Evidence-And-Sources) for details on the source citation model.
 
 ## Rendered Output
 

@@ -454,6 +454,7 @@ charted-roots/
 | `transfers-processor.ts` | ✅ Complete | `charted-roots-transfers` code block |
 | `members-processor.ts` | ✅ Complete | `charted-roots-members` code block |
 | `sources-processor.ts` | ✅ Complete | `charted-roots-sources` code block |
+| `extractions-processor.ts` | ✅ Complete | `charted-roots-extractions` code block |
 | **Renderers** | | |
 | `timeline-renderer.ts` | ✅ Complete | Timeline content renderer |
 | `relationships-renderer.ts` | ✅ Complete | Relationships content renderer |
@@ -462,6 +463,7 @@ charted-roots/
 | `transfers-renderer.ts` | ✅ Complete | Property transfers renderer |
 | `members-renderer.ts` | ✅ Complete | Organization members renderer |
 | `sources-renderer.ts` | ✅ Complete | Sources table renderer |
+| `extractions-renderer.ts` | ✅ Complete | Source extractions renderer |
 
 ### UI Components (src/ui/)
 
