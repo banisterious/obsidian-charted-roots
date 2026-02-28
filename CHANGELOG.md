@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.20.17] - 2026-02-28
+
 ### Added
 
 - **Structured role lists for organizations** ([#274](https://github.com/banisterious/obsidian-charted-roots/issues/274)): New `roles` property on organization notes defines valid roles and display order. Role picker with autocomplete suggestions in Add Membership and Manage Members modals. Organization types can define default role templates. Members renderer uses 3-level fallback for role ordering: block `role-order` → org `roles` → alphabetical.
