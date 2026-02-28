@@ -308,7 +308,13 @@ When grouped by role, each role gets its own heading:
 - [[Jane Smith]]
 - [[Mary Johnson]]
 
-Roles listed in `role-order` appear first in that sequence; remaining named roles follow alphabetically; members with no role appear last under "Members."
+**Role ordering fallback chain:**
+
+1. **Block-level `role-order`** — if specified, those roles appear first in that sequence
+2. **Organization's `roles` property** — if the organization note defines a `roles` list, that order is used
+3. **Alphabetical** — remaining named roles follow alphabetically; members with no role appear last under "Members"
+
+This means if your organization note already defines `roles`, the members block will use that order automatically without needing `role-order` config.
 
 **Note:** This block is designed for organization notes (`cr_type: organization`). Membership data is stored on person notes via the `organizations` frontmatter property. See [Organizations](Organizations) for details on setting up organizations and memberships.
 

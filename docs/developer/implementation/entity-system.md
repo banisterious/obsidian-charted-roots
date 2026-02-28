@@ -322,6 +322,9 @@ dissolved: [date string]
 
 # World-building
 universe: [wikilink to Universe]
+
+# Structured roles (ordered list; first = highest rank)
+roles: [string[]]               # e.g., ["Lord", "Heir", "Castellan"]
 ```
 
 **Membership tracking** (in Person notes):

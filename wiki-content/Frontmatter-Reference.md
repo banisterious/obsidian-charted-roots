@@ -1646,6 +1646,14 @@ Organization notes define non-genealogical hierarchies such as noble houses, gui
 |----------|------|-------------|---------|
 | `seat` | `string` | Wikilink to primary location (place note) | `"[[Winterfell]]"` |
 
+### Roles
+
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `roles` | `string[]` | Ordered list of valid role names for this organization; controls display order in `charted-roots-members` blocks and provides autocomplete suggestions in membership modals | `["Lord", "Heir", "Castellan", "Maester"]` |
+
+Role list order defines rank/display order (first = highest). When a `charted-roots-members` block has no explicit `role-order` config, the organization's `roles` property is used as fallback. Organization types can define `defaultRoles` that auto-populate when creating new organizations of that type.
+
 ### Media Files
 
 Organization notes can link to media files (logos, group photos, heraldry):

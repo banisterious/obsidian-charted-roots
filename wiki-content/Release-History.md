@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.20.x](#v020x)
+  - [Structured Role Lists for Organizations](#structured-role-lists-for-organizations-v02017)
   - [Mills-Aligned Source Classification](#mills-aligned-source-classification-v02017)
   - [Map View Marker Layering](#map-view-marker-layering-v0203)
   - [Control Center Modularization](#control-center-modularization)
@@ -111,6 +112,39 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.20.x
+
+### Structured Role Lists for Organizations (v0.20.17)
+
+Adds a `roles` property to organization notes defining valid roles and display order, with role picker autocomplete in membership modals.
+
+**GitHub Issue:** [#274](https://github.com/banisterious/obsidian-charted-roots/issues/274)
+
+**New frontmatter property:**
+
+```yaml
+roles:
+  - Lord
+  - Heir
+  - Castellan
+  - Maester
+```
+
+List order defines rank/display order (first = highest). Stored on the org note.
+
+| Change | Description |
+|--------|-------------|
+| `roles` property | Ordered list of valid role names on organization notes |
+| Role picker | Autocomplete suggestions when adding/editing memberships |
+| Type default roles | Organization types can define default role templates |
+| Members block fallback | 3-level ordering: block `role-order` → org `roles` → alphabetical |
+| Chip editor UI | Add/remove roles with tag-style chips in create/edit modals |
+
+**Role ordering fallback chain** in `charted-roots-members` blocks:
+1. Block-level `role-order` config (explicit override)
+2. Organization's `roles` property (inherited from note)
+3. Alphabetical order (default)
+
+---
 
 ### Mills-Aligned Source Classification (v0.20.17)
 

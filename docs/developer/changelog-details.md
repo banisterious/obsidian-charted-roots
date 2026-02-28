@@ -14,9 +14,40 @@ This document contains detailed implementation notes for significant features. F
 - [Canvas Color Enhancements](#canvas-color-enhancements-2025-11-20)
 - [Evidence Visualization](#evidence-visualization-2025-12-05)
 - [GEDCOM Test Datasets](#gedcom-test-datasets-2025-11-20)
+- [Structured Role Lists for Organizations](#structured-role-lists-for-organizations-2026-02-28)
 - [Mills-Aligned Source Classification](#mills-aligned-source-classification-2026-02-28)
 
 ---
+
+## Structured Role Lists for Organizations (2026-02-28)
+
+**GitHub Issue:** [#274](https://github.com/banisterious/obsidian-charted-roots/issues/274)
+
+Adds a `roles` property to organization notes defining valid roles and display order, with role picker autocomplete in membership modals, per-type default role templates, and automatic role ordering in the members renderer.
+
+**Problem:** Organization membership roles were freeform text, causing typos, inconsistency, and repetitive data entry. The `role-order` config on `charted-roots-members` blocks helped with display ordering but had to be maintained per-block.
+
+**Solution:** A `roles` array on organization notes that serves as both a validation list and display-order specification:
+
+```yaml
+roles:
+  - Lord
+  - Heir
+  - Castellan
+  - Maester
+```
+
+**Implementation:**
+
+- **Type system** (`organization-types.ts`): Added `roles?: string[]` to `OrganizationInfo` and `OrganizationFrontmatter`; added `defaultRoles?: string[]` to `OrganizationTypeDefinition` for per-type role templates
+- **Organization service** (`organization-service.ts`): Parse, create, update roles; `getEffectiveRoles()` method with fallback chain (org roles → type default roles → empty)
+- **RoleSuggest** (`role-suggest.ts`): New `AbstractInputSuggest<string>` component for combobox-style autocomplete on role text inputs; works with both `Setting.addText()` and raw `<input>` elements
+- **Add Membership modal**: Role suggest attached dynamically when organization selection changes
+- **Manage Members modal**: Role suggest attached in inline edit form
+- **Members renderer**: 3-level fallback for role ordering: block-level `role-order` → org-level `roles` → alphabetical
+- **Create Organization modal**: Chip-based roles editor with add/remove, auto-populated from type defaults
+- **Organization Type Editor**: Default roles editor with same chip UI, persisted in all save paths (create, edit, customize built-in)
+- **CSS**: `.cr-roles-chip-list`, `.cr-roles-chip`, `.cr-roles-chip__remove` styles
 
 ## Mills-Aligned Source Classification (2026-02-28)
 

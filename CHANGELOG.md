@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Structured role lists for organizations** ([#274](https://github.com/banisterious/obsidian-charted-roots/issues/274)): New `roles` property on organization notes defines valid roles and display order. Role picker with autocomplete suggestions in Add Membership and Manage Members modals. Organization types can define default role templates. Members renderer uses 3-level fallback for role ordering: block `role-order` → org `roles` → alphabetical.
+
 - **Mills-aligned source classification** ([#276](https://github.com/banisterious/obsidian-charted-roots/issues/276)): Three optional classification axes from Mills' *Evidence Explained* — `source_classification` (original/derivative/authored narrative), `information_classification` (primary/secondary/undetermined), and `evidence_classification` (direct/indirect/negative). Adds collapsible classification section to Create Source modal, integrates with evidence analysis via `information_classification` precedence, and conditionally displays classification columns in Source Summary, Sources by Role, and PDF reports. Template snippets updated for census, vital record, and full templates.
 
 ---

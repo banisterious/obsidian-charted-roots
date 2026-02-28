@@ -57,6 +57,11 @@ founded: "Age of Heroes"
 motto: "Winter is Coming"
 seat: "[[Winterfell]]"
 universe: westeros
+roles:
+  - Lord
+  - Heir
+  - Castellan
+  - Maester
 ---
 ```
 
@@ -73,6 +78,7 @@ universe: westeros
 | `dissolved` | string | No | Dissolution date |
 | `motto` | string | No | Organization motto or slogan |
 | `seat` | wikilink | No | Primary location (link to place note) |
+| `roles` | string[] | No | Ordered list of valid role names (controls display order in members block) |
 | `universe` | string | No | Universe scope |
 
 ## Organization Types
@@ -141,7 +147,7 @@ memberships:
 
 The Add Membership modal provides:
 - Organization dropdown (sorted alphabetically)
-- Role field for position or title
+- Role field with autocomplete suggestions from the organization's defined roles (freeform entry also supported)
 - From/To date fields (support fictional date formats)
 - Notes field for additional context
 
@@ -165,6 +171,7 @@ The Control Center includes a dedicated **Organizations** tab with:
 - Table of available organization types
 - Color swatches and icons
 - Toggle to show/hide built-in types
+- Default role templates per type (auto-populated when creating new organizations)
 
 ### Data Tools Card
 - Create organizations base template button
@@ -239,6 +246,9 @@ Create organizations for regiments, divisions, and armies. Track soldiers' ranks
 Model churches, monasteries, and religious hierarchies. Track clergy positions and affiliations.
 
 ## Best Practices
+
+### Define Roles on Organizations
+Add a `roles` list to organization notes to define valid roles and display order. This enables role autocomplete when adding memberships and automatic role ordering in `charted-roots-members` blocks. You can also set default role templates per organization type so new organizations inherit a starting set.
 
 ### Use Consistent Type Assignment
 Choose the most appropriate organization type for each organization to enable effective filtering and visualization.

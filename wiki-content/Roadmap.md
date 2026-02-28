@@ -29,6 +29,7 @@ For the complete list of implemented features, see [Release History](Release-His
 
 | Version | Feature | Summary |
 |:-------:|---------|---------|
+| v0.20.17 | [Structured Role Lists](Release-History#structured-role-lists-for-organizations-v02017) | `roles` property on org notes with autocomplete picker, per-type defaults, and 3-level ordering fallback |
 | v0.20.17 | [Mills-Aligned Source Classification](Release-History#mills-aligned-source-classification-v02017) | Three independent classification axes from *Evidence Explained*: source, information, and evidence classification |
 | v0.20.3 | [Map View Marker Layering](Release-History#map-view-marker-layering-v0203) | Place markers now use hollow circles and render below event markers for visual distinction |
 | v0.20.0 | [Control Center Modularization](Release-History#control-center-modularization) | 9 dockable sidebar views (People, Places, Events, Sources, Organizations, Relationships, Universes, Collections, Data Quality) with filter/sort/search, auto-refresh, and state persistence |
