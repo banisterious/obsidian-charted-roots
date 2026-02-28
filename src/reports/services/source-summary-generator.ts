@@ -20,7 +20,10 @@ import { EvidenceService } from '../../sources/services/evidence-service';
 import {
 	SourceNote,
 	FACT_KEY_LABELS,
-	getSourceQuality
+	getSourceQuality,
+	SOURCE_CLASSIFICATION_LABELS,
+	INFORMATION_CLASSIFICATION_LABELS,
+	EVIDENCE_CLASSIFICATION_LABELS
 } from '../../sources/types/source-types';
 
 import { getLogger } from '../../core/logging';
@@ -123,6 +126,9 @@ export class SourceSummaryGenerator {
 								quality,
 								citation: sourceNote.citationOverride,
 								repository: sourceNote.repository,
+								sourceClassification: sourceNote.sourceClassification,
+								informationClassification: sourceNote.informationClassification,
+								evidenceClassification: sourceNote.evidenceClassification,
 								factTypes: [factLabel]
 							});
 						}
@@ -165,6 +171,9 @@ export class SourceSummaryGenerator {
 										sourceType: sourceNote.sourceType,
 										quality,
 										repository: sourceNote.repository,
+										sourceClassification: sourceNote.sourceClassification,
+										informationClassification: sourceNote.informationClassification,
+										evidenceClassification: sourceNote.evidenceClassification,
 										factTypes: [factLabel]
 									});
 								}
@@ -325,12 +334,20 @@ export class SourceSummaryGenerator {
 			lines.push('## Sources by fact');
 			lines.push('');
 
+			// Check if any source has Mills classification data
+			const hasMillsData = options.showQualityRatings && Object.values(sourcesByFactType).some(
+				entries => entries.some(e => e.sourceClassification || e.informationClassification || e.evidenceClassification)
+			);
+
 			for (const factType of factTypes) {
 				const entries = sourcesByFactType[factType];
 				lines.push(`### ${factType}`);
 				lines.push('');
 
-				if (options.showQualityRatings) {
+				if (hasMillsData) {
+					lines.push('| Source | Type | Quality | Source cls. | Information cls. | Evidence cls. |');
+					lines.push('|--------|------|---------|-------------|------------------|---------------|');
+				} else if (options.showQualityRatings) {
 					lines.push('| Source | Type | Quality |');
 					lines.push('|--------|------|---------|');
 				} else {
@@ -343,7 +360,12 @@ export class SourceSummaryGenerator {
 					const type = entry.sourceType || '';
 					const quality = this.formatQuality(entry.quality);
 
-					if (options.showQualityRatings) {
+					if (hasMillsData) {
+						const sc = entry.sourceClassification ? SOURCE_CLASSIFICATION_LABELS[entry.sourceClassification].label : '';
+						const ic = entry.informationClassification ? INFORMATION_CLASSIFICATION_LABELS[entry.informationClassification].label : '';
+						const ec = entry.evidenceClassification ? EVIDENCE_CLASSIFICATION_LABELS[entry.evidenceClassification].label : '';
+						lines.push(`| ${sourceLink} | ${type} | ${quality} | ${sc} | ${ic} | ${ec} |`);
+					} else if (options.showQualityRatings) {
 						lines.push(`| ${sourceLink} | ${type} | ${quality} |`);
 					} else {
 						lines.push(`| ${sourceLink} | ${type} |`);

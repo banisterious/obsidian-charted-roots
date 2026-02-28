@@ -98,6 +98,11 @@ import type {
 	VisualTreeOptions
 } from '../../trees/types/visual-tree-types';
 import { VisualTreeSvgRenderer } from '../../trees/services/visual-tree-svg-renderer';
+import {
+	SOURCE_CLASSIFICATION_LABELS,
+	INFORMATION_CLASSIFICATION_LABELS,
+	EVIDENCE_CLASSIFICATION_LABELS
+} from '../../sources/types/source-types';
 
 /**
  * PDF generation options
@@ -1415,6 +1420,11 @@ export class PdfReportRenderer {
 		if (factTypes.length > 0) {
 			content.push(this.buildSectionHeader('Sources by Fact'));
 
+			// Check if any source has Mills classification data
+			const hasMillsData = Object.values(result.sourcesByFactType).some(
+				entries => entries.some(e => e.sourceClassification || e.informationClassification || e.evidenceClassification)
+			);
+
 			for (const factType of factTypes) {
 				const entries = result.sourcesByFactType[factType];
 				content.push({
@@ -1423,11 +1433,27 @@ export class PdfReportRenderer {
 					margin: [0, 10, 0, 5],
 					fontSize: 10
 				});
-				content.push(this.buildDataTable(
-					['Source', 'Type', 'Quality'],
-					entries.map(e => [e.title, e.sourceType || '', e.quality || '']),
-					['*', 100, 80]
-				));
+
+				if (hasMillsData) {
+					content.push(this.buildDataTable(
+						['Source', 'Type', 'Quality', 'Source cls.', 'Info cls.', 'Evidence cls.'],
+						entries.map(e => [
+							e.title,
+							e.sourceType || '',
+							e.quality || '',
+							e.sourceClassification ? SOURCE_CLASSIFICATION_LABELS[e.sourceClassification].label : '',
+							e.informationClassification ? INFORMATION_CLASSIFICATION_LABELS[e.informationClassification].label : '',
+							e.evidenceClassification ? EVIDENCE_CLASSIFICATION_LABELS[e.evidenceClassification].label : ''
+						]),
+						['*', 80, 65, 70, 65, 65]
+					));
+				} else {
+					content.push(this.buildDataTable(
+						['Source', 'Type', 'Quality'],
+						entries.map(e => [e.title, e.sourceType || '', e.quality || '']),
+						['*', 100, 80]
+					));
+				}
 			}
 		}
 

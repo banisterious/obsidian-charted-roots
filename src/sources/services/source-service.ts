@@ -11,6 +11,9 @@ import {
 	SourceStats,
 	SourceConfidence,
 	SourceQuality,
+	SourceClassification,
+	InformationClassification,
+	EvidenceClassification,
 	SourceTypeDefinition,
 	getAllSourceTypes,
 	getSourceType,
@@ -230,6 +233,9 @@ export class SourceService {
 		media?: string[];
 		confidence?: SourceConfidence;
 		sourceQuality?: SourceQuality;
+		sourceClassification?: SourceClassification;
+		informationClassification?: InformationClassification;
+		evidenceClassification?: EvidenceClassification;
 		transcription?: string;
 		// Person roles (#219)
 		principals?: string[];
@@ -285,6 +291,15 @@ export class SourceService {
 		}
 		if (data.sourceQuality) {
 			frontmatterLines.push(`source_quality: ${data.sourceQuality}`);
+		}
+		if (data.sourceClassification) {
+			frontmatterLines.push(`source_classification: ${data.sourceClassification}`);
+		}
+		if (data.informationClassification) {
+			frontmatterLines.push(`information_classification: ${data.informationClassification}`);
+		}
+		if (data.evidenceClassification) {
+			frontmatterLines.push(`evidence_classification: ${data.evidenceClassification}`);
 		}
 
 		// Person role arrays (#219)
@@ -363,6 +378,9 @@ export class SourceService {
 		location?: string;
 		confidence?: SourceConfidence;
 		sourceQuality?: SourceQuality;
+		sourceClassification?: SourceClassification;
+		informationClassification?: InformationClassification;
+		evidenceClassification?: EvidenceClassification;
 		media?: string[];
 		// Person roles (#219)
 		principals?: string[];
@@ -430,6 +448,24 @@ export class SourceService {
 				frontmatter.source_quality = data.sourceQuality;
 			} else {
 				delete frontmatter.source_quality;
+			}
+
+			if (data.sourceClassification) {
+				frontmatter.source_classification = data.sourceClassification;
+			} else {
+				delete frontmatter.source_classification;
+			}
+
+			if (data.informationClassification) {
+				frontmatter.information_classification = data.informationClassification;
+			} else {
+				delete frontmatter.information_classification;
+			}
+
+			if (data.evidenceClassification) {
+				frontmatter.evidence_classification = data.evidenceClassification;
+			} else {
+				delete frontmatter.evidence_classification;
 			}
 
 			// Handle media fields - clear existing and set new
@@ -528,6 +564,33 @@ export class SourceService {
 			}
 		}
 
+		// Parse Mills source classification (#276)
+		let sourceClassification: SourceClassification | undefined;
+		if (frontmatter.source_classification) {
+			const sc = fmToString(frontmatter.source_classification).toLowerCase();
+			if (sc === 'original' || sc === 'derivative' || sc === 'authored_narrative') {
+				sourceClassification = sc;
+			}
+		}
+
+		// Parse Mills information classification (#276)
+		let informationClassification: InformationClassification | undefined;
+		if (frontmatter.information_classification) {
+			const ic = fmToString(frontmatter.information_classification).toLowerCase();
+			if (ic === 'primary' || ic === 'secondary' || ic === 'undetermined') {
+				informationClassification = ic;
+			}
+		}
+
+		// Parse Mills evidence classification (#276)
+		let evidenceClassification: EvidenceClassification | undefined;
+		if (frontmatter.evidence_classification) {
+			const ec = fmToString(frontmatter.evidence_classification).toLowerCase();
+			if (ec === 'direct' || ec === 'indirect' || ec === 'negative') {
+				evidenceClassification = ec;
+			}
+		}
+
 		// Parse person role arrays (#219)
 		const roleArrays: Partial<Record<PersonRoleProperty, string[]>> = {};
 		for (const prop of PERSON_ROLE_PROPERTIES) {
@@ -559,6 +622,9 @@ export class SourceService {
 			confidence,
 			citationOverride: frontmatter.citation_override ? fmToString(frontmatter.citation_override) : undefined,
 			sourceQuality,
+			sourceClassification,
+			informationClassification,
+			evidenceClassification,
 			// Person roles (#219)
 			...roleArrays
 		};

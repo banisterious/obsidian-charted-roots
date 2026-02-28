@@ -19,7 +19,7 @@ import type {
 	SourceConflict
 } from '../types/proof-types';
 import type { FactKey, SourceNote, SourceQuality } from '../types/source-types';
-import { FACT_KEYS, getSourceQuality } from '../types/source-types';
+import { FACT_KEYS, getEffectiveInformationQuality } from '../types/source-types';
 import { SourceService } from './source-service';
 import { generateCrId } from '../../core/uuid';
 import { isProofSummaryNote } from '../../utils/note-type-detection';
@@ -214,7 +214,7 @@ export class ProofSummaryService {
 
 		for (const evidence of proof.evidence) {
 			const sourceNote = this.findSourceByWikilink(evidence.source);
-			const quality: SourceQuality = sourceNote ? getSourceQuality(sourceNote) : 'secondary';
+			const quality: SourceQuality = sourceNote ? getEffectiveInformationQuality(sourceNote) : 'secondary';
 
 			conflictingSources.push({
 				source: evidence.source,

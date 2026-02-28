@@ -584,6 +584,12 @@ export interface SourceEntry {
 	citation?: string;
 	/** Repository name */
 	repository?: string;
+	/** Mills source classification */
+	sourceClassification?: 'original' | 'derivative' | 'authored_narrative';
+	/** Mills information classification */
+	informationClassification?: 'primary' | 'secondary' | 'undetermined';
+	/** Mills evidence classification */
+	evidenceClassification?: 'direct' | 'indirect' | 'negative';
 	/** Fact types this source supports */
 	factTypes: string[];
 }

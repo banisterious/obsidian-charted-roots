@@ -16,7 +16,7 @@ import {
 	PersonResearchCoverage,
 	SourceQuality,
 	FACT_KEYS,
-	getSourceQuality,
+	getEffectiveInformationQuality,
 	FACT_KEY_TO_SOURCED_PROPERTY,
 	SOURCED_PROPERTY_NAMES
 } from '../types/source-types';
@@ -350,7 +350,7 @@ export class EvidenceService {
 			// Find the source note
 			const source = this.findSourceByName(noteName);
 			if (source) {
-				qualities.push(getSourceQuality(source));
+				qualities.push(getEffectiveInformationQuality(source));
 			} else {
 				// Source not found, assume secondary
 				qualities.push('secondary');

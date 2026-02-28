@@ -22,6 +22,9 @@ import {
 	PERSON_ROLE_LABELS,
 	parsePersonRoleEntries,
 	getSourceQuality,
+	SOURCE_CLASSIFICATION_LABELS,
+	INFORMATION_CLASSIFICATION_LABELS,
+	EVIDENCE_CLASSIFICATION_LABELS,
 	type PersonRoleProperty
 } from '../../sources/types/source-types';
 
@@ -122,6 +125,9 @@ export class SourcesByRoleGenerator {
 								sourceType: source.sourceType,
 								quality,
 								repository: source.repository,
+								sourceClassification: source.sourceClassification,
+								informationClassification: source.informationClassification,
+								evidenceClassification: source.evidenceClassification,
 								factTypes: []
 							},
 							role: roleProp,
@@ -380,6 +386,15 @@ export class SourcesByRoleGenerator {
 			if (options.showSourceQuality && source.quality) {
 				lines.push(`- **Quality:** ${this.formatQuality(source.quality)}`);
 			}
+			if (options.showSourceQuality && source.sourceClassification) {
+				lines.push(`- **Source classification:** ${SOURCE_CLASSIFICATION_LABELS[source.sourceClassification].label}`);
+			}
+			if (options.showSourceQuality && source.informationClassification) {
+				lines.push(`- **Information classification:** ${INFORMATION_CLASSIFICATION_LABELS[source.informationClassification].label}`);
+			}
+			if (options.showSourceQuality && source.evidenceClassification) {
+				lines.push(`- **Evidence classification:** ${EVIDENCE_CLASSIFICATION_LABELS[source.evidenceClassification].label}`);
+			}
 			if (options.showRepositoryInfo && source.repository) {
 				lines.push(`- **Repository:** ${source.repository}`);
 			}
@@ -403,12 +418,18 @@ export class SourcesByRoleGenerator {
 		options: SourcesByRoleOptions,
 		includeRole = false
 	): void {
+		// Check if any entry has Mills classification data
+		const hasMillsData = options.showSourceQuality && entries.some(
+			e => e.source.sourceClassification || e.source.informationClassification || e.source.evidenceClassification
+		);
+
 		// Build header
 		const headers = ['Source'];
 		if (includeRole) headers.push('Role');
 		if (options.showRoleDetails) headers.push('Details');
 		headers.push('Date');
 		if (options.showSourceQuality) headers.push('Quality');
+		if (hasMillsData) headers.push('Source cls.', 'Information cls.', 'Evidence cls.');
 		if (options.showRepositoryInfo) headers.push('Repository');
 
 		lines.push('| ' + headers.join(' | ') + ' |');
@@ -437,6 +458,14 @@ export class SourcesByRoleGenerator {
 			// Quality
 			if (options.showSourceQuality) {
 				cols.push(this.formatQuality(entry.source.quality));
+			}
+
+			// Mills classifications
+			if (hasMillsData) {
+				const sc = entry.source.sourceClassification ? SOURCE_CLASSIFICATION_LABELS[entry.source.sourceClassification].label : '';
+				const ic = entry.source.informationClassification ? INFORMATION_CLASSIFICATION_LABELS[entry.source.informationClassification].label : '';
+				const ec = entry.source.evidenceClassification ? EVIDENCE_CLASSIFICATION_LABELS[entry.source.evidenceClassification].label : '';
+				cols.push(sc, ic, ec);
 			}
 
 			// Repository

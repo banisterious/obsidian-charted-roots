@@ -582,6 +582,8 @@ ${p('collection')}:
 location:
 ${p('confidence')}: high
 source_quality: derivative
+source_classification: derivative
+information_classification: primary
 media:
 ---
 
@@ -625,6 +627,9 @@ source_repository:
 location:
 ${p('confidence')}: high
 source_quality: primary
+source_classification: original
+information_classification: primary
+evidence_classification: direct
 media:
 ---
 
@@ -663,6 +668,9 @@ ${p('collection')}:
 location:
 ${p('confidence')}: <% tp.system.suggester(["High", "Medium", "Low", "Unknown"], ["high", "medium", "low", "unknown"]) %>
 source_quality: <% tp.system.suggester(["Primary (original record)", "Secondary (later account)", "Derivative (copy/transcription)"], ["primary", "secondary", "derivative"]) %>
+source_classification: <% tp.system.suggester(["Original", "Derivative", "Authored narrative"], ["original", "derivative", "authored_narrative"]) %>
+information_classification: <% tp.system.suggester(["Primary", "Secondary", "Undetermined"], ["primary", "secondary", "undetermined"]) %>
+evidence_classification: <% tp.system.suggester(["Direct", "Indirect", "Negative"], ["direct", "indirect", "negative"]) %>
 media:
   -
 citation_override:

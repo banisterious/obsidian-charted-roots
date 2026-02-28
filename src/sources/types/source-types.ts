@@ -25,6 +25,33 @@ export type SourceConfidence = 'high' | 'medium' | 'low' | 'unknown';
 export type SourceQuality = 'primary' | 'secondary' | 'derivative';
 
 /**
+ * Mills source classification: what is the document itself?
+ *
+ * - original: First recording of information, or an image of the original
+ * - derivative: A copy, transcription, abstract, or extract of another source
+ * - authored_narrative: An interpretive or synthesized work (e.g., published genealogy, biography)
+ */
+export type SourceClassification = 'original' | 'derivative' | 'authored_narrative';
+
+/**
+ * Mills information classification: who provided the information?
+ *
+ * - primary: Informant was a participant in or witness to the event
+ * - secondary: Informant learned of the event from memory, hearsay, or oral tradition
+ * - undetermined: Basis for the informant's knowledge is unknown
+ */
+export type InformationClassification = 'primary' | 'secondary' | 'undetermined';
+
+/**
+ * Mills evidence classification: how does the information relate to the research question?
+ *
+ * - direct: Answers the research question explicitly, on its face
+ * - indirect: Requires interpretation or combination with other evidence
+ * - negative: Absence of expected information is itself meaningful evidence
+ */
+export type EvidenceClassification = 'direct' | 'indirect' | 'negative';
+
+/**
  * Fact keys that can be tracked for source coverage
  */
 export type FactKey =
@@ -318,6 +345,12 @@ export interface SourceNote {
 	 * If not explicitly set, inferred from sourceType via getDefaultSourceQuality()
 	 */
 	sourceQuality?: SourceQuality;
+	/** Mills source classification: what is the document itself? */
+	sourceClassification?: SourceClassification;
+	/** Mills information classification: who provided the information? */
+	informationClassification?: InformationClassification;
+	/** Mills evidence classification: how does the information relate to the question? */
+	evidenceClassification?: EvidenceClassification;
 
 	// Person roles (#219)
 	/** Subject(s) of the document */
@@ -629,6 +662,74 @@ export const SOURCE_QUALITY_LABELS: Record<SourceQuality, { label: string; descr
 		description: 'Copies, transcriptions, or abstracts of other sources'
 	}
 };
+
+/**
+ * User-friendly labels for Mills source classification
+ */
+export const SOURCE_CLASSIFICATION_LABELS: Record<SourceClassification, { label: string; description: string }> = {
+	original: {
+		label: 'Original',
+		description: 'First recording of information, or an image of the original'
+	},
+	derivative: {
+		label: 'Derivative',
+		description: 'A copy, transcription, abstract, or extract of another source'
+	},
+	authored_narrative: {
+		label: 'Authored narrative',
+		description: 'An interpretive or synthesized work (e.g., published genealogy)'
+	}
+};
+
+/**
+ * User-friendly labels for Mills information classification
+ */
+export const INFORMATION_CLASSIFICATION_LABELS: Record<InformationClassification, { label: string; description: string }> = {
+	primary: {
+		label: 'Primary',
+		description: 'Informant was a participant in or witness to the event'
+	},
+	secondary: {
+		label: 'Secondary',
+		description: 'Informant learned of the event from memory, hearsay, or oral tradition'
+	},
+	undetermined: {
+		label: 'Undetermined',
+		description: "Basis for the informant's knowledge is unknown"
+	}
+};
+
+/**
+ * User-friendly labels for Mills evidence classification
+ */
+export const EVIDENCE_CLASSIFICATION_LABELS: Record<EvidenceClassification, { label: string; description: string }> = {
+	direct: {
+		label: 'Direct',
+		description: 'Answers the research question explicitly, on its face'
+	},
+	indirect: {
+		label: 'Indirect',
+		description: 'Requires interpretation or combination with other evidence'
+	},
+	negative: {
+		label: 'Negative',
+		description: 'Absence of expected information is itself meaningful evidence'
+	}
+};
+
+/**
+ * Get the effective information quality for a source.
+ * Prefers informationClassification when present; falls back to sourceQuality.
+ */
+export function getEffectiveInformationQuality(source: SourceNote): SourceQuality {
+	if (source.informationClassification) {
+		if (source.informationClassification === 'primary') return 'primary';
+		if (source.informationClassification === 'secondary') return 'secondary';
+		// 'undetermined' maps to 'secondary' for conservative analysis
+		return 'secondary';
+	}
+	return getSourceQuality(source);
+}
 
 /**
  * Source type category identifier

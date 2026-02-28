@@ -7,13 +7,16 @@
 
 import { App, Modal, Setting, Notice, TFile, FuzzySuggestModal, setIcon, AbstractInputSuggest, TextComponent } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
-import type { SourceConfidence, SourceNote } from '../types/source-types';
+import type { SourceConfidence, SourceNote, SourceClassification, InformationClassification, EvidenceClassification } from '../types/source-types';
 import {
 	getSourceTypesByCategory,
 	SOURCE_CATEGORY_NAMES,
 	PERSON_ROLE_PROPERTIES,
 	PERSON_ROLE_LABELS,
 	PERSON_ROLE_DESCRIPTIONS,
+	SOURCE_CLASSIFICATION_LABELS,
+	INFORMATION_CLASSIFICATION_LABELS,
+	EVIDENCE_CLASSIFICATION_LABELS,
 	type PersonRoleProperty
 } from '../types/source-types';
 import { SourceService } from '../services/source-service';
@@ -49,6 +52,9 @@ interface SourceFormData {
 	collection: string;
 	location: string;
 	confidence: SourceConfidence;
+	sourceClassification: SourceClassification | '';
+	informationClassification: InformationClassification | '';
+	evidenceClassification: EvidenceClassification | '';
 	transcription: string;
 	media: string[];
 	personRoles: PersonRoleEntry[];
@@ -151,6 +157,9 @@ export class CreateSourceModal extends Modal {
 	private collection: string = '';
 	private location: string = '';
 	private confidence: SourceConfidence = 'unknown';
+	private sourceClassification: SourceClassification | '' = '';
+	private informationClassification: InformationClassification | '' = '';
+	private evidenceClassification: EvidenceClassification | '' = '';
 	private transcription: string = '';
 	private media: string[] = [];
 
@@ -192,6 +201,9 @@ export class CreateSourceModal extends Modal {
 				this.collection = source.collection || '';
 				this.location = source.location || '';
 				this.confidence = source.confidence;
+				this.sourceClassification = source.sourceClassification || '';
+				this.informationClassification = source.informationClassification || '';
+				this.evidenceClassification = source.evidenceClassification || '';
 				this.media = [...source.media];
 
 				// Load existing person roles (#219)
@@ -372,6 +384,9 @@ export class CreateSourceModal extends Modal {
 				dropdown.onChange(value => this.confidence = value as SourceConfidence);
 			});
 
+		// Source classification section (Mills #276, inline-expand pattern)
+		this.renderClassificationSection(contentEl);
+
 		// Additional details section (inline-expand pattern)
 		this.renderAdditionalDetailsSection(contentEl);
 
@@ -389,6 +404,99 @@ export class CreateSourceModal extends Modal {
 			cls: 'mod-cta'
 		});
 		actionBtn.addEventListener('click', () => void this.saveSource());
+	}
+
+	/**
+	 * Check if classification section has any data
+	 */
+	private hasClassificationData(): boolean {
+		return !!(this.sourceClassification || this.informationClassification || this.evidenceClassification);
+	}
+
+	/**
+	 * Render source classification section (Mills #276, inline-expand pattern)
+	 */
+	private renderClassificationSection(container: HTMLElement): void {
+		const hasData = this.hasClassificationData();
+		const wrapper = container.createDiv({ cls: 'crc-inline-expand' });
+
+		// Create expansion link (hidden when expanded)
+		const expandLink = wrapper.createDiv({ cls: 'crc-inline-expand__trigger' });
+		const linkIcon = expandLink.createSpan({ cls: 'crc-inline-expand__icon' });
+		setIcon(linkIcon, 'plus');
+		expandLink.createSpan({ text: 'Add source classification', cls: 'crc-inline-expand__text' });
+
+		// Create content container (hidden by default unless has data)
+		const content = wrapper.createDiv({ cls: 'crc-inline-expand__content' });
+
+		// Collapse link (shown when expanded)
+		const collapseHeader = content.createDiv({ cls: 'crc-inline-expand__header' });
+		collapseHeader.createSpan({ text: 'Source classification (Mills)', cls: 'crc-inline-expand__title' });
+		const collapseLink = collapseHeader.createEl('button', {
+			cls: 'crc-inline-expand__collapse clickable-icon',
+			attr: { 'aria-label': 'Collapse section' }
+		});
+		setIcon(collapseLink, 'chevron-up');
+
+		// If has data, start expanded
+		if (hasData) {
+			wrapper.addClass('crc-inline-expand--expanded');
+		}
+
+		// Toggle handlers
+		expandLink.addEventListener('click', () => {
+			wrapper.addClass('crc-inline-expand--expanded');
+		});
+		collapseLink.addEventListener('click', () => {
+			wrapper.removeClass('crc-inline-expand--expanded');
+		});
+
+		// Fields container
+		const fields = content.createDiv({ cls: 'crc-inline-expand__fields' });
+
+		fields.createEl('p', {
+			text: 'Classify this source using the Evidence Explained framework (all optional).',
+			cls: 'setting-item-description'
+		});
+
+		// Source classification dropdown
+		new Setting(fields)
+			.setName('Source classification')
+			.setDesc('What is the document itself?')
+			.addDropdown(dropdown => {
+				dropdown.addOption('', 'Not set');
+				for (const [value, info] of Object.entries(SOURCE_CLASSIFICATION_LABELS)) {
+					dropdown.addOption(value, `${info.label} — ${info.description}`);
+				}
+				dropdown.setValue(this.sourceClassification);
+				dropdown.onChange(value => this.sourceClassification = value as SourceClassification | '');
+			});
+
+		// Information classification dropdown
+		new Setting(fields)
+			.setName('Information classification')
+			.setDesc('Who provided the information?')
+			.addDropdown(dropdown => {
+				dropdown.addOption('', 'Not set');
+				for (const [value, info] of Object.entries(INFORMATION_CLASSIFICATION_LABELS)) {
+					dropdown.addOption(value, `${info.label} — ${info.description}`);
+				}
+				dropdown.setValue(this.informationClassification);
+				dropdown.onChange(value => this.informationClassification = value as InformationClassification | '');
+			});
+
+		// Evidence classification dropdown
+		new Setting(fields)
+			.setName('Evidence classification')
+			.setDesc('How does the information relate to the research question?')
+			.addDropdown(dropdown => {
+				dropdown.addOption('', 'Not set');
+				for (const [value, info] of Object.entries(EVIDENCE_CLASSIFICATION_LABELS)) {
+					dropdown.addOption(value, `${info.label} — ${info.description}`);
+				}
+				dropdown.setValue(this.evidenceClassification);
+				dropdown.onChange(value => this.evidenceClassification = value as EvidenceClassification | '');
+			});
 	}
 
 	/**
@@ -798,6 +906,9 @@ export class CreateSourceModal extends Modal {
 			collection: this.collection,
 			location: this.location,
 			confidence: this.confidence,
+			sourceClassification: this.sourceClassification,
+			informationClassification: this.informationClassification,
+			evidenceClassification: this.evidenceClassification,
 			transcription: this.transcription,
 			media: [...this.media],
 			personRoles: [...this.personRoles]
@@ -817,6 +928,9 @@ export class CreateSourceModal extends Modal {
 		this.collection = formData.collection || '';
 		this.location = formData.location || '';
 		this.confidence = formData.confidence || 'unknown';
+		this.sourceClassification = formData.sourceClassification || '';
+		this.informationClassification = formData.informationClassification || '';
+		this.evidenceClassification = formData.evidenceClassification || '';
 		this.transcription = formData.transcription || '';
 		this.media = formData.media ? [...formData.media] : [];
 		this.personRoles = formData.personRoles ? [...formData.personRoles] : [];
@@ -932,6 +1046,9 @@ export class CreateSourceModal extends Modal {
 					collection: this.collection.trim() || undefined,
 					location: this.location.trim() || undefined,
 					confidence: this.confidence,
+					sourceClassification: this.sourceClassification || undefined,
+					informationClassification: this.informationClassification || undefined,
+					evidenceClassification: this.evidenceClassification || undefined,
 					media: this.media.length > 0 ? this.media : undefined,
 					// Person roles (#219)
 					...roleArrays
@@ -950,6 +1067,9 @@ export class CreateSourceModal extends Modal {
 					collection: this.collection.trim() || undefined,
 					location: this.location.trim() || undefined,
 					confidence: this.confidence,
+					sourceClassification: this.sourceClassification || undefined,
+					informationClassification: this.informationClassification || undefined,
+					evidenceClassification: this.evidenceClassification || undefined,
 					media: this.media.length > 0 ? this.media : undefined,
 					transcription: this.transcription.trim() || undefined,
 					// Person roles (#219)
