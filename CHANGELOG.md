@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Mills-aligned source classification** ([#276](https://github.com/banisterious/obsidian-charted-roots/issues/276)): Three optional classification axes from Mills' *Evidence Explained* — `source_classification` (original/derivative/authored narrative), `information_classification` (primary/secondary/undetermined), and `evidence_classification` (direct/indirect/negative). Adds collapsible classification section to Create Source modal, integrates with evidence analysis via `information_classification` precedence, and conditionally displays classification columns in Source Summary, Sources by Role, and PDF reports. Template snippets updated for census, vital record, and full templates.
+
+---
+
 ## [0.20.16] - 2026-02-27
 
 ### Added
