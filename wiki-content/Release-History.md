@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.20.x](#v020x)
+  - [Mills-Aligned Source Classification](#mills-aligned-source-classification-v02017)
   - [Map View Marker Layering](#map-view-marker-layering-v0203)
   - [Control Center Modularization](#control-center-modularization)
 - [v0.19.x](#v019x)
@@ -110,6 +111,35 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.20.x
+
+### Mills-Aligned Source Classification (v0.20.17)
+
+Adds three optional source classification axes from Elizabeth Shown Mills' *Evidence Explained*, enabling GPS-oriented genealogists to apply the standard analytical framework used in professional genealogy.
+
+**GitHub Issue:** [#276](https://github.com/banisterious/obsidian-charted-roots/issues/276)
+
+**New frontmatter properties:**
+
+| Property | Values | Question |
+|----------|--------|----------|
+| `source_classification` | `original`, `derivative`, `authored_narrative` | What is the document? |
+| `information_classification` | `primary`, `secondary`, `undetermined` | Who provided the info? |
+| `evidence_classification` | `direct`, `indirect`, `negative` | How does it relate to the question? |
+
+**Changes:**
+
+| Change | Description |
+|--------|-------------|
+| Create Source modal | Collapsible "Source classification (Mills)" section with three dropdowns |
+| Evidence analysis | `information_classification` takes precedence over `source_quality` when present |
+| Reports | Source Summary, Sources by Role, and PDF reports conditionally show classification columns |
+| Templates | Census (derivative/primary), vital record (original/primary/direct), full template (three suggesters) |
+
+All three properties are optional. Existing sources using only `source_quality` or `confidence` continue to work identically.
+
+**Community contributor:** @ANYroots (Mills methodology, real-world examples)
+
+---
 
 ### Map View Marker Layering (v0.20.3)
 

@@ -654,6 +654,42 @@ If `source_quality` is not explicitly set, Charted Roots infers quality from the
 
 **Note:** Users should override the default when appropriate. For example, a census transcription from Ancestry.com should be marked as `derivative` rather than accepting the default `primary` quality.
 
+### Source Classification (Mills' *Evidence Explained*)
+
+For users following Mills' methodology, three optional classification axes provide more precise analytical layering than `source_quality` alone. These are independent of each other — a source can have any combination.
+
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `source_classification` | `string` | What is the document itself? | `"original"`, `"derivative"`, `"authored_narrative"` |
+| `information_classification` | `string` | Who provided the information? | `"primary"`, `"secondary"`, `"undetermined"` |
+| `evidence_classification` | `string` | How does the information relate to the research question? | `"direct"`, `"indirect"`, `"negative"` |
+
+**Source Classification:**
+
+| Value | Description | Examples |
+|-------|-------------|----------|
+| `original` | First recording of information, or an image of the original | Original vital record, handwritten census schedule |
+| `derivative` | A copy, transcription, abstract, or extract of another source | Database transcription, published abstract, photocopy |
+| `authored_narrative` | An interpretive or synthesized work | Published genealogy, local history, biographical sketch |
+
+**Information Classification:**
+
+| Value | Description | Examples |
+|-------|-------------|----------|
+| `primary` | Information provided by a participant or eyewitness | Mother reporting a birth, census respondent's own age |
+| `secondary` | Information provided from memory, hearsay, or later knowledge | Informant reporting parent's birthplace on a death certificate |
+| `undetermined` | Cannot determine who provided the information | Unsigned record, anonymous entry |
+
+**Evidence Classification:**
+
+| Value | Description | Examples |
+|-------|-------------|----------|
+| `direct` | Directly answers the research question | Birth certificate proving date of birth |
+| `indirect` | Requires inference or combination with other evidence | Age on census implying birth year |
+| `negative` | Expected information is absent from the record | Person missing from a census where they should appear |
+
+**Relationship to `source_quality`:** These three properties provide finer-grained analysis alongside the existing `source_quality` property. When `information_classification` is set, it takes precedence over `source_quality` for evidence analysis (e.g., determining whether a source counts as "primary" or "secondary" in the Research Gaps Report).
+
 ### Media Files
 
 Sources can link to media files (images, scans, documents) in the vault:

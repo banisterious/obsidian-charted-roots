@@ -41,6 +41,11 @@ Charted Roots provides tools for managing genealogical sources and evidence, hel
   - [Confidence Levels](#confidence-levels)
 - [Transcription Tips](#transcription-tips)
   - [Workflow](#workflow)
+- [Source Classification (Mills)](#source-classification-mills)
+  - [The three axes](#the-three-axes)
+  - [Example](#example)
+  - [How it integrates](#how-it-integrates)
+- [Further Reading](#further-reading)
 - [Related Pages](#related-pages)
 
 ---
@@ -139,6 +144,10 @@ See [Bulk Source Image Import](#bulk-source-image-import) below for importing mu
 | `location` | string | No | Geographic location of record |
 | `media` | array | No | Array of media file wikilinks |
 | `confidence` | enum | No | `high`, `medium`, `low`, `unknown` |
+| `source_quality` | enum | No | `primary`, `secondary`, `derivative` |
+| `source_classification` | enum | No | `original`, `derivative`, `authored_narrative` |
+| `information_classification` | enum | No | `primary`, `secondary`, `undetermined` |
+| `evidence_classification` | enum | No | `direct`, `indirect`, `negative` |
 
 ### Source Types
 
@@ -592,6 +601,35 @@ Charted Roots doesn't include built-in OCR, but you can transcribe documents usi
 2. Open image in external tool or AI chat
 3. Paste transcription into source note body
 4. Add research notes interpreting the transcription
+
+## Source Classification (Mills)
+
+Charted Roots supports the three-axis classification system from Elizabeth Shown Mills' *Evidence Explained*. These optional properties provide finer-grained analysis than the basic `source_quality` property, and are available in the Create Source modal under the collapsible "Source classification (Mills)" section.
+
+### The three axes
+
+| Axis | Property | Question | Values |
+|------|----------|----------|--------|
+| Source | `source_classification` | What is the document? | `original`, `derivative`, `authored_narrative` |
+| Information | `information_classification` | Who provided the information? | `primary`, `secondary`, `undetermined` |
+| Evidence | `evidence_classification` | How does it relate to the research question? | `direct`, `indirect`, `negative` |
+
+These are independent of each other — the same document can be an *original* source providing *secondary* information that serves as *indirect* evidence.
+
+### Example
+
+A death certificate is typically:
+- **Source:** Original (the document itself is a first recording)
+- **Information:** Mixed — the date and place of death are primary (recorded by the attending physician), but the parents' names are secondary (reported by an informant from memory)
+- **Evidence:** Direct for the death event, indirect for the parents' identities
+
+### How it integrates
+
+When `information_classification` is set on a source, the evidence analysis system uses it instead of `source_quality` to determine whether a source counts as "primary" or "secondary" in the Research Gaps Report and proof summaries. Sources with only `source_quality` continue to work as before.
+
+The Source Summary and Sources by Role reports conditionally display classification columns when any source has Mills data.
+
+For detailed property documentation, see [Frontmatter Reference — Source Classification](Frontmatter-Reference#source-classification-mills-evidence-explained).
 
 ## Further Reading
 

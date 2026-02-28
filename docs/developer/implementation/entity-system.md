@@ -262,6 +262,11 @@ title: [string]
 source_type: [string]          # See source types below
 source_quality: primary | secondary | derivative
 
+# Mills classification (all optional)
+source_classification: original | derivative | authored_narrative
+information_classification: primary | secondary | undetermined
+evidence_classification: direct | indirect | negative
+
 # Repository
 source_repository: [string]
 source_repository_url: [string]

@@ -14,6 +14,39 @@ This document contains detailed implementation notes for significant features. F
 - [Canvas Color Enhancements](#canvas-color-enhancements-2025-11-20)
 - [Evidence Visualization](#evidence-visualization-2025-12-05)
 - [GEDCOM Test Datasets](#gedcom-test-datasets-2025-11-20)
+- [Mills-Aligned Source Classification](#mills-aligned-source-classification-2026-02-28)
+
+---
+
+## Mills-Aligned Source Classification (2026-02-28)
+
+**GitHub Issue:** [#276](https://github.com/banisterious/obsidian-charted-roots/issues/276)
+
+Adds three optional source classification axes from Elizabeth Shown Mills' *Evidence Explained*, enabling GPS-oriented genealogists to classify sources with precision matching professional methodology.
+
+**Problem:** The existing `source_quality` property (`primary`/`secondary`/`derivative`) conflates Mills' source and information classification systems, making consistent application difficult.
+
+**Solution:** Three independent, optional frontmatter properties alongside the existing `source_quality`:
+
+| Property | Values | Question |
+|----------|--------|----------|
+| `source_classification` | `original`, `derivative`, `authored_narrative` | What is the document? |
+| `information_classification` | `primary`, `secondary`, `undetermined` | Who provided the info? |
+| `evidence_classification` | `direct`, `indirect`, `negative` | How does it relate to the question? |
+
+**Implementation:**
+
+- **Type system** (`source-types.ts`): Three union types, label constants with descriptions, `getEffectiveInformationQuality()` bridge function that maps `information_classification` to the existing `SourceQuality` type for backward compatibility
+- **Source service** (`source-service.ts`): Create, update, and parse operations for all three properties with frontmatter validation
+- **Create Source modal** (`create-source-modal.ts`): Collapsible "Source classification (Mills)" section following the existing `crc-inline-expand` pattern, with three dropdowns and auto-expand when data exists
+- **Evidence analysis** (`evidence-service.ts`, `proof-summary-service.ts`): `getEffectiveInformationQuality()` replaces `getSourceQuality()` — when `information_classification` is present, it takes precedence
+- **Reports** (`source-summary-generator.ts`, `sources-by-role-generator.ts`, `pdf-report-renderer.ts`): Conditionally display Mills classification columns when any source has classification data
+- **Templates** (`template-snippets-modal.ts`): Census (derivative/primary), vital record (original/primary/direct), full template (three Templater suggesters)
+
+**Design decisions:**
+- `source_quality` remains fully functional with no semantic changes — gradual deprecation path
+- Classifications live on source notes, not per-claim (per-claim is v2 for proof summaries)
+- No breaking changes — existing data works identically
 
 ---
 
