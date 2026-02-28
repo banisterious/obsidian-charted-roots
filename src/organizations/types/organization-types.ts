@@ -39,6 +39,8 @@ export interface OrganizationTypeDefinition {
 	category: string;
 	/** Whether this is a built-in type */
 	isBuiltIn: boolean;
+	/** Default roles for organizations of this type (pre-populated on creation) */
+	defaultRoles?: string[];
 }
 
 /**
@@ -78,6 +80,8 @@ export interface OrganizationInfo {
 	universe?: string;
 	/** Media files linked to this organization (wikilinks) */
 	media?: string[];
+	/** Ordered list of valid roles for members of this organization */
+	roles?: string[];
 }
 
 /**
@@ -94,6 +98,7 @@ export interface OrganizationFrontmatter {
 	motto?: string;
 	seat?: string;
 	universe?: string;
+	roles?: string[];
 }
 
 /**

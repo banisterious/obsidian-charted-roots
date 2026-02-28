@@ -13,7 +13,7 @@ import type {
 	OrganizationStats,
 	OrganizationHierarchyNode
 } from '../types/organization-types';
-import { isValidOrganizationType } from '../constants/organization-types';
+import { isValidOrganizationType, getOrganizationType } from '../constants/organization-types';
 import { getLogger } from '../../core/logging';
 import { parseMediaRefs } from '../../core/media-service';
 import { isOrganizationNote } from '../../utils/note-type-detection';
@@ -231,6 +231,7 @@ export class OrganizationService {
 			founded?: string;
 			motto?: string;
 			seat?: string;
+			roles?: string[];
 			folder?: string;
 		}
 	): Promise<TFile> {
@@ -266,6 +267,12 @@ export class OrganizationService {
 		}
 		if (options?.seat) {
 			frontmatterLines.push(`seat: "${createSmartWikilink(options.seat, this.app)}"`);
+		}
+		if (options?.roles && options.roles.length > 0) {
+			frontmatterLines.push('roles:');
+			for (const role of options.roles) {
+				frontmatterLines.push(`  - "${role}"`);
+			}
 		}
 
 		frontmatterLines.push('---');
@@ -308,6 +315,7 @@ export class OrganizationService {
 			founded?: string;
 			motto?: string;
 			seat?: string;
+			roles?: string[];
 		}
 	): Promise<void> {
 		const cache = this.app.metadataCache.getFileCache(file);
@@ -366,12 +374,36 @@ export class OrganizationService {
 					delete frontmatter.seat;
 				}
 			}
+
+			if (data.roles !== undefined) {
+				if (data.roles.length > 0) {
+					frontmatter.roles = data.roles;
+				} else {
+					delete frontmatter.roles;
+				}
+			}
 		});
 
 		// Reload cache
 		this.reloadCache();
 
 		new Notice(`Updated organization: ${data.name || cache.frontmatter.name}`);
+	}
+
+	/**
+	 * Get the effective roles for an organization.
+	 * Falls back to the org type's default roles if the org has none defined.
+	 */
+	getEffectiveRoles(org: OrganizationInfo): string[] {
+		if (org.roles && org.roles.length > 0) {
+			return org.roles;
+		}
+		const typeDef = getOrganizationType(
+			org.orgType,
+			this.plugin.settings.customOrganizationTypes,
+			this.plugin.settings.organizationTypeCustomizations
+		);
+		return typeDef.defaultRoles || [];
 	}
 
 	/**
@@ -436,6 +468,11 @@ export class OrganizationService {
 		// Parse media array
 		const media = this.parseMediaProperty(fm);
 
+		// Parse roles array
+		const roles = Array.isArray(fm.roles)
+			? (fm.roles as string[]).filter(r => typeof r === 'string' && r.trim().length > 0)
+			: undefined;
+
 		return {
 			file,
 			crId: fm.cr_id,
@@ -448,7 +485,8 @@ export class OrganizationService {
 			motto: fm.motto,
 			seat: fm.seat,
 			universe: fm.universe,
-			media: media.length > 0 ? media : undefined
+			media: media.length > 0 ? media : undefined,
+			roles: roles && roles.length > 0 ? roles : undefined
 		};
 	}
 

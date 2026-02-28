@@ -558,3 +558,48 @@
 .cr-org-row--browse {
   cursor: default;
 }
+
+/* ==========================================================================
+   Role Chips (used in Create Organization + Type Editor modals)
+   ========================================================================== */
+
+.cr-roles-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 0 var(--size-4-12);
+}
+
+.cr-roles-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-s);
+  background-color: var(--background-modifier-hover);
+  font-size: 0.85em;
+  color: var(--text-normal);
+  line-height: 1.4;
+}
+
+.cr-roles-chip__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cr-roles-chip__remove:hover {
+  background-color: var(--background-modifier-error);
+  color: var(--text-on-accent);
+}

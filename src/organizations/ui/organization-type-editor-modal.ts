@@ -71,6 +71,7 @@ export class OrganizationTypeEditorModal extends Modal {
 	private icon: LucideIconName = 'folder';
 	private color: string = '#95a5a6';
 	private category: string = 'other';
+	private defaultRoles: string[] = [];
 
 	constructor(app: App, plugin: CanvasRootsPlugin, options: OrganizationTypeEditorModalOptions) {
 		super(app);
@@ -87,6 +88,7 @@ export class OrganizationTypeEditorModal extends Modal {
 			this.icon = options.editType.icon;
 			this.color = options.editType.color;
 			this.category = options.editType.category;
+			this.defaultRoles = options.editType.defaultRoles ? [...options.editType.defaultRoles] : [];
 		} else if (options.customizeBuiltIn) {
 			// Customizing a built-in type
 			this.customizeMode = true;
@@ -102,6 +104,7 @@ export class OrganizationTypeEditorModal extends Modal {
 				this.icon = existing.icon ?? options.customizeBuiltIn.icon;
 				this.color = existing.color ?? options.customizeBuiltIn.color;
 				this.category = existing.category ?? options.customizeBuiltIn.category;
+				this.defaultRoles = existing.defaultRoles ? [...existing.defaultRoles] : [];
 			} else {
 				this.name = options.customizeBuiltIn.name;
 				this.description = options.customizeBuiltIn.description || '';
@@ -264,6 +267,64 @@ export class OrganizationTypeEditorModal extends Modal {
 			});
 		});
 
+		// Default roles
+		const rolesContainer = contentEl.createDiv();
+		const renderRolesEditor = () => {
+			rolesContainer.empty();
+
+			const roleSetting = new Setting(rolesContainer)
+				.setName('Default roles')
+				.setDesc('Pre-populated roles when creating an organization of this type');
+
+			let addInput: HTMLInputElement | null = null;
+			roleSetting.addText(text => {
+				text.setPlaceholder('Add a role...');
+				addInput = text.inputEl;
+				text.inputEl.addEventListener('keydown', (e: KeyboardEvent) => {
+					if (e.key === 'Enter') {
+						e.preventDefault();
+						const value = text.getValue().trim();
+						if (value && !this.defaultRoles.includes(value)) {
+							this.defaultRoles.push(value);
+							text.setValue('');
+							renderRolesEditor();
+						}
+					}
+				});
+			});
+			roleSetting.addButton(btn => btn
+				.setIcon('plus')
+				.setTooltip('Add role')
+				.onClick(() => {
+					if (!addInput) return;
+					const value = addInput.value.trim();
+					if (value && !this.defaultRoles.includes(value)) {
+						this.defaultRoles.push(value);
+						addInput.value = '';
+						renderRolesEditor();
+					}
+				}));
+
+			if (this.defaultRoles.length > 0) {
+				const chipList = rolesContainer.createDiv({ cls: 'cr-roles-chip-list' });
+				for (let i = 0; i < this.defaultRoles.length; i++) {
+					const chip = chipList.createDiv({ cls: 'cr-roles-chip' });
+					chip.createSpan({ text: this.defaultRoles[i] });
+					const removeBtn = chip.createEl('button', {
+						cls: 'cr-roles-chip__remove',
+						attr: { 'aria-label': `Remove ${this.defaultRoles[i]}` }
+					});
+					removeBtn.textContent = '\u00d7';
+					const idx = i;
+					removeBtn.addEventListener('click', () => {
+						this.defaultRoles.splice(idx, 1);
+						renderRolesEditor();
+					});
+				}
+			}
+		};
+		renderRolesEditor();
+
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'cr-modal-buttons' });
 
@@ -333,6 +394,7 @@ export class OrganizationTypeEditorModal extends Modal {
 		if (this.description !== (builtIn.description || '')) customization.description = this.description.trim();
 		if (this.icon !== builtIn.icon) customization.icon = this.icon;
 		if (this.color !== builtIn.color) customization.color = this.color;
+		if (this.defaultRoles.length > 0) customization.defaultRoles = this.defaultRoles;
 
 		if (Object.keys(customization).length > 0) {
 			this.plugin.settings.organizationTypeCustomizations[this.id] = customization;
@@ -357,7 +419,8 @@ export class OrganizationTypeEditorModal extends Modal {
 				icon: this.icon,
 				color: this.color,
 				category: this.category,
-				isBuiltIn: false
+				isBuiltIn: false,
+				defaultRoles: this.defaultRoles.length > 0 ? this.defaultRoles : undefined
 			};
 		}
 
@@ -383,7 +446,8 @@ export class OrganizationTypeEditorModal extends Modal {
 			icon: this.icon,
 			color: this.color,
 			category: this.category,
-			isBuiltIn: false
+			isBuiltIn: false,
+			defaultRoles: this.defaultRoles.length > 0 ? this.defaultRoles : undefined
 		};
 
 		existingTypes.push(typeDef);

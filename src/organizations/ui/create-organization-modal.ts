@@ -7,7 +7,7 @@
 import { App, Modal, Setting, Notice, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { OrganizationType, OrganizationInfo } from '../types/organization-types';
-import { getAllOrganizationTypes } from '../constants/organization-types';
+import { getAllOrganizationTypes, getOrganizationType } from '../constants/organization-types';
 import { OrganizationService } from '../services/organization-service';
 import { ModalStatePersistence, renderResumePromptBanner } from '../../ui/modal-state-persistence';
 
@@ -22,6 +22,7 @@ interface OrganizationFormData {
 	founded: string;
 	motto: string;
 	seat: string;
+	roles: string[];
 	folder: string;
 }
 
@@ -55,6 +56,7 @@ export class CreateOrganizationModal extends Modal {
 	private founded: string = '';
 	private motto: string = '';
 	private seat: string = '';
+	private roles: string[] = [];
 	private folder: string;
 
 	// State persistence
@@ -84,6 +86,7 @@ export class CreateOrganizationModal extends Modal {
 				this.founded = options.editOrg.founded || '';
 				this.motto = options.editOrg.motto || '';
 				this.seat = options.editOrg.seat || '';
+				this.roles = options.editOrg.roles ? [...options.editOrg.roles] : [];
 			}
 		}
 
@@ -148,8 +151,80 @@ export class CreateOrganizationModal extends Modal {
 					dropdown.addOption(typeDef.id, typeDef.name);
 				}
 				dropdown.setValue(this.orgType);
-				dropdown.onChange(value => this.orgType = value as OrganizationType);
+				dropdown.onChange(value => {
+					this.orgType = value as OrganizationType;
+					// Auto-populate default roles from type template if roles are currently empty
+					if (this.roles.length === 0) {
+						const typeDef = getOrganizationType(
+							value,
+							this.plugin.settings.customOrganizationTypes,
+							this.plugin.settings.organizationTypeCustomizations
+						);
+						if (typeDef.defaultRoles && typeDef.defaultRoles.length > 0) {
+							this.roles = [...typeDef.defaultRoles];
+							renderRolesEditor();
+						}
+					}
+				});
 			});
+
+		// Roles editor
+		const rolesContainer = contentEl.createDiv();
+		const renderRolesEditor = () => {
+			rolesContainer.empty();
+
+			const roleSetting = new Setting(rolesContainer)
+				.setName('Roles')
+				.setDesc('Define valid roles for members (in display order)');
+
+			let addInput: HTMLInputElement | null = null;
+			roleSetting.addText(text => {
+				text.setPlaceholder('Add a role...');
+				addInput = text.inputEl;
+				text.inputEl.addEventListener('keydown', (e: KeyboardEvent) => {
+					if (e.key === 'Enter') {
+						e.preventDefault();
+						const value = text.getValue().trim();
+						if (value && !this.roles.includes(value)) {
+							this.roles.push(value);
+							text.setValue('');
+							renderRolesEditor();
+						}
+					}
+				});
+			});
+			roleSetting.addButton(btn => btn
+				.setIcon('plus')
+				.setTooltip('Add role')
+				.onClick(() => {
+					if (!addInput) return;
+					const value = addInput.value.trim();
+					if (value && !this.roles.includes(value)) {
+						this.roles.push(value);
+						addInput.value = '';
+						renderRolesEditor();
+					}
+				}));
+
+			if (this.roles.length > 0) {
+				const chipList = rolesContainer.createDiv({ cls: 'cr-roles-chip-list' });
+				for (let i = 0; i < this.roles.length; i++) {
+					const chip = chipList.createDiv({ cls: 'cr-roles-chip' });
+					chip.createSpan({ text: this.roles[i] });
+					const removeBtn = chip.createEl('button', {
+						cls: 'cr-roles-chip__remove',
+						attr: { 'aria-label': `Remove ${this.roles[i]}` }
+					});
+					removeBtn.textContent = '\u00d7';
+					const idx = i;
+					removeBtn.addEventListener('click', () => {
+						this.roles.splice(idx, 1);
+						renderRolesEditor();
+					});
+				}
+			}
+		};
+		renderRolesEditor();
 
 		// Parent organization
 		new Setting(contentEl)
@@ -256,6 +331,7 @@ export class CreateOrganizationModal extends Modal {
 			founded: this.founded,
 			motto: this.motto,
 			seat: this.seat,
+			roles: this.roles,
 			folder: this.folder
 		};
 	}
@@ -271,6 +347,7 @@ export class CreateOrganizationModal extends Modal {
 		this.founded = formData.founded || '';
 		this.motto = formData.motto || '';
 		this.seat = formData.seat || '';
+		this.roles = Array.isArray(formData.roles) ? formData.roles : [];
 		if (formData.folder) {
 			this.folder = formData.folder;
 		}
@@ -290,6 +367,7 @@ export class CreateOrganizationModal extends Modal {
 				founded: this.founded.trim() || undefined,
 				motto: this.motto.trim() || undefined,
 				seat: this.seat.trim() || undefined,
+				roles: this.roles.length > 0 ? this.roles : undefined,
 				folder: this.folder.trim() || undefined
 			});
 
@@ -326,7 +404,8 @@ export class CreateOrganizationModal extends Modal {
 				universe: this.universe.trim() || undefined,
 				founded: this.founded.trim() || undefined,
 				motto: this.motto.trim() || undefined,
-				seat: this.seat.trim() || undefined
+				seat: this.seat.trim() || undefined,
+				roles: this.roles
 			});
 
 			this.close();

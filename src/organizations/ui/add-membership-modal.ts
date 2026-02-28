@@ -4,11 +4,12 @@
  * Modal for adding an organization membership to a person note.
  */
 
-import { App, Modal, Setting, Notice, TFile } from 'obsidian';
+import { App, Modal, Setting, Notice, TFile, type TextComponent } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { MembershipData, OrganizationInfo } from '../types/organization-types';
 import { OrganizationService } from '../services/organization-service';
 import { MembershipService } from '../services/membership-service';
+import { RoleSuggest } from './role-suggest';
 
 /**
  * Modal for adding a membership to a person
@@ -89,17 +90,33 @@ export class AddMembershipModal extends Modal {
 				}
 				dropdown.onChange(value => {
 					this.selectedOrg = orgs.find(o => o.crId === value) || null;
+					// Attach role suggest with the selected org's roles
+					if (roleTextComponent && this.selectedOrg) {
+						const effectiveRoles = this.orgService.getEffectiveRoles(this.selectedOrg);
+						if (effectiveRoles.length > 0) {
+							new RoleSuggest(
+								this.app,
+								roleTextComponent.inputEl,
+								effectiveRoles,
+								(val) => { this.role = val; },
+								roleTextComponent
+							);
+						}
+					}
 				});
 			});
 
 		// Role
+		let roleTextComponent: TextComponent | null = null;
 		new Setting(contentEl)
 			.setName('Role')
 			.setDesc('Position or role within the organization')
-			.addText(text => text
-				.setPlaceholder('e.g., Lord, Member, Captain')
-				.setValue(this.role)
-				.onChange(value => this.role = value));
+			.addText(text => {
+				text.setPlaceholder('e.g., Lord, Member, Captain')
+					.setValue(this.role)
+					.onChange(value => this.role = value);
+				roleTextComponent = text;
+			});
 
 		// From date
 		new Setting(contentEl)

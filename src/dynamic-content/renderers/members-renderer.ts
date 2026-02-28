@@ -89,7 +89,11 @@ export class MembersRenderer {
 		// Group and render
 		const groupBy = config['group-by'] as string ?? 'role';
 		if (groupBy === 'role') {
-			const roleOrder = this.parseRoleOrder(config);
+			// Fallback chain: block-level role-order > org-level roles > alphabetical
+			let roleOrder = this.parseRoleOrder(config);
+			if (!roleOrder && context.organization.roles && context.organization.roles.length > 0) {
+				roleOrder = context.organization.roles;
+			}
 			const groups = this.groupByRole(entries, roleOrder);
 			await this.renderSections(contentEl, groups, context, component);
 		} else {
@@ -342,7 +346,10 @@ export class MembersRenderer {
 		}
 
 		const groupBy = this.currentConfig['group-by'] as string ?? 'role';
-		const roleOrder = this.parseRoleOrder(this.currentConfig);
+		let roleOrder = this.parseRoleOrder(this.currentConfig);
+		if (!roleOrder && this.currentContext?.organization.roles?.length) {
+			roleOrder = this.currentContext.organization.roles;
+		}
 		const groups = groupBy === 'role'
 			? this.groupByRole(this.currentEntries, roleOrder)
 			: new Map<string, MemberEntry[]>([[NO_ROLE_HEADING, this.currentEntries]]);
