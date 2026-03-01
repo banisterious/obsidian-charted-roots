@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Entity Profile View — Phase 1 read-only** ([#251](https://github.com/banisterious/obsidian-charted-roots/issues/251)): New dockable sidebar view that auto-syncs to the active note, displaying a comprehensive profile for any entity type (person, place, event, source, organization). Features a sticky identity header with entity type badge, avatar, and key metadata; collapsible sections for relationships, events, sources, media, data quality, participants, members, map preview, and referenced facts; pin/unpin toggle for freezing on a specific entity; breadcrumb navigation for in-place entity traversal; and state persistence across sessions. Accessible via command palette ("Open entity profile") and context menu ("Open profile") on all five entity types.
+
 ---
 
 ## [0.20.17] - 2026-02-28
