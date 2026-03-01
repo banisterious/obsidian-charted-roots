@@ -99,7 +99,7 @@ Export features discussed in #145 are tracked separately:
 
 **Documentation:**
 - [Research Workflow](Research-Workflow) — Usage documentation
-- [Research Workflow Integration Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/research-workflow-integration.md) — Full specifications for Phases 2-3
+- [Research Workflow Integration Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/research-workflow-integration.md) — Full specifications for Phases 2-3
 - Community contributors: @ANYroots (IRN structure, GPS methodology), @wilbry (lightweight approach, unified design)
 
 ---
@@ -190,7 +190,7 @@ Export features discussed in #145 are tracked separately:
 - Auto-populate coordinates, place type, and parent place from results
 - GeoNames username configuration in Settings → Places
 
-See [Unified Place Lookup Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/unified-place-lookup.md) for implementation details.
+See [Unified Place Lookup Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/unified-place-lookup.md) for implementation details.
 
 ---
 

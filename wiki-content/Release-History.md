@@ -236,7 +236,7 @@ Created 9 dockable sidebar views, each accessible via a dock button on the corre
 - Added pagination with load-more pattern
 - Added context menus on rows
 
-See [Control Center Modularization Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/control-center-modularization.md) for full specifications.
+See [Control Center Modularization Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/control-center-modularization.md) for full specifications.
 
 ---
 
@@ -278,7 +278,7 @@ source: "[[Probate Record 1845]]"
 notes: "Inherited upon father's death"
 ```
 
-See [Inheritance & Succession Tracking Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/inheritance-succession-tracking.md) for design details.
+See [Inheritance & Succession Tracking Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/inheritance-succession-tracking.md) for design details.
 
 ---
 
@@ -311,7 +311,7 @@ Manage organization memberships directly from the Organizations tab or file expl
 | Date joined | When the person joined the organization (supports fictional dates) |
 | Date left | When the person left; empty means currently active |
 
-See [Organization Member Management Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/organization-member-management.md) for design details.
+See [Organization Member Management Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/organization-member-management.md) for design details.
 
 ---
 
@@ -372,7 +372,7 @@ source: "[[Estate Inventory of John Smith Sr.]]"
 - Grouping: by role, by source, or chronological
 - Show role details and source quality ratings
 
-See [Person Roles in Sources Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/person-roles-in-sources.md) for implementation details.
+See [Person Roles in Sources Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/person-roles-in-sources.md) for implementation details.
 
 Community contributors: @ANYroots (original proposal, use cases, terminology), @wilbry (simplified role categories)
 
@@ -406,7 +406,7 @@ Display Lucide icons for event types in timelines and map popups, reducing visua
 
 **Note:** Canvas tree event nodes were not applicable since canvas exports use file embeds.
 
-See [Event Type Icons Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/event-type-icons.md) for implementation details.
+See [Event Type Icons Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/event-type-icons.md) for implementation details.
 
 ---
 
@@ -520,7 +520,7 @@ GPS-aligned research workflow entity types for managing research projects, repor
 **Documentation:**
 
 - [Research Workflow](Research-Workflow) — User documentation
-- [Research Workflow Integration Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/research-workflow-integration.md) — Detailed specifications
+- [Research Workflow Integration Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/research-workflow-integration.md) — Detailed specifications
 
 **Community Contributors:** @ANYroots (IRN structure, GPS methodology), @wilbry (lightweight approach, research journal concept)
 
