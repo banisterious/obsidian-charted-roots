@@ -2,7 +2,7 @@
 
 Planning document for entity Profile Views feature.
 
-**Status:** 📋 Planning
+**Status:** ✅ Phase 1 complete (v0.20.18) | Phases 2-3 planned
 
 **Related:** [#239](https://github.com/banisterious/obsidian-charted-roots/discussions/239) (Control Center modularization), [#240](https://github.com/banisterious/obsidian-charted-roots/discussions/240) (Dockable sidebar views), [#242](https://github.com/banisterious/obsidian-charted-roots/discussions/242) (Profile Views discussion)
 

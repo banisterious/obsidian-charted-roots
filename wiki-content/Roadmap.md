@@ -9,7 +9,7 @@ This document outlines planned features for Charted Roots. For completed feature
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
   - [GPS Research Workflow Integration](#gps-research-workflow-integration) 📋 Medium
-  - [Entity Profile Views](#entity-profile-views) 📋 Medium
+  - [Entity Profile Views](#entity-profile-views) 📋 Medium ✅ Phase 1 complete
   - [Unified Place Lookup](#unified-place-lookup) 💡 Low ✅ Phase 1-2 complete
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
@@ -29,6 +29,7 @@ For the complete list of implemented features, see [Release History](Release-His
 
 | Version | Feature | Summary |
 |:-------:|---------|---------|
+| v0.20.18 | [Entity Profile View](Release-History#entity-profile-view-v02018) | Auto-syncing sidebar with collapsible sections for all 5 entity types, pin/unpin, breadcrumb navigation, state persistence |
 | v0.20.17 | [Structured Role Lists](Release-History#structured-role-lists-for-organizations-v02017) | `roles` property on org notes with autocomplete picker, per-type defaults, and 3-level ordering fallback |
 | v0.20.17 | [Mills-Aligned Source Classification](Release-History#mills-aligned-source-classification-v02017) | Three independent classification axes from *Evidence Explained*: source, information, and evidence classification |
 | v0.20.3 | [Map View Marker Layering](Release-History#map-view-marker-layering-v0203) | Place markers now use hollow circles and render below event markers for visual distinction |
@@ -108,7 +109,7 @@ Export features discussed in #145 are tracked separately:
 
 **Priority:** 📋 Medium — Deep work on single entities without context-switching
 
-**Status:** 📋 Planning
+**Status:** ✅ Phase 1 complete (v0.20.18) | Phases 2-3 planned
 
 **GitHub Issue:** [#251](https://github.com/banisterious/obsidian-charted-roots/issues/251)
 
@@ -116,23 +117,56 @@ Export features discussed in #145 are tracked separately:
 
 **Summary:** A dockable Profile View that auto-syncs to the active note and displays all related data for any entity type (Person, Place, Event, Source, Organization) in collapsible sections, enabling deep work without tab-hopping.
 
-**Key Features:**
-- Auto-sync to active note with pin/unpin toggle
-- Entity-specific section layouts (Person: Identity → Relationships → Events → Sources → Media → Data Quality)
-- Sticky identity header with section jump links
-- Breadcrumb navigation for cross-entity traversal
-- Inline editing with save-on-blur (Phase 2)
-
 **Phased Approach:**
 
 | Phase | Focus | Status |
 |-------|-------|--------|
-| Phase 1 | Read-only Profile View | Planned |
+| Phase 1 | Read-only Profile View | ✅ Complete (v0.20.18) |
 | Phase 2 | Inline editing | Planned |
 | Phase 3 | Polish and integration | Planned |
 
+**Phase 1 — Read-only Profile View (Complete):**
+
+- Auto-syncing `ItemView` that follows the active note with 150ms debounce
+- Sticky identity header with entity type badge, avatar, key metadata, and pin toggle
+- Collapsible sections with chevron toggle and compact summaries
+- Full section coverage for all 5 entity types:
+  - **Person:** Relationships (family + custom), Events, Sources, Media, Data Quality
+  - **Place:** Events at location, Sources, Media, Map preview (coordinates + "Open in Geo Map")
+  - **Event:** Participants, Sources, Media
+  - **Source:** Referenced facts (vault-wide scan), Media
+  - **Organization:** Members, Events, Sources, Media
+- Pin/unpin toggle for freezing on a specific entity; multiple instances for side-by-side comparison
+- Breadcrumb navigation for in-place entity traversal
+- Context menu "Open profile" on all entity types + command palette entry
+- State persistence across sessions (pinned entity, section states, breadcrumbs)
+
+See [Entity Profile View](Entity-Profile-View) for usage documentation.
+
+**Phase 2 — Inline editing (Planned):**
+
+| Feature | Description |
+|---------|-------------|
+| Identity field editing | Edit name, dates, and metadata with save-on-blur |
+| Relationship management | Add/remove relationships via existing picker modals |
+| Inline event/source creation | Create events and sources from within the profile |
+| Frontmatter persistence | Immediate save on edit with undo support |
+
+**Phase 3 — Polish and integration (Planned):**
+
+| Feature | Description |
+|---------|-------------|
+| Section jump links | Quick navigation links in sticky header |
+| Browser view integration | "Open profile" row action in browser views |
+| Keyboard navigation | Navigate between sections via keyboard |
+| Mobile-responsive layout | Collapse sections by default, touch-friendly targets |
+| Embedded map preview | Leaflet map preview for place entities (replaces text coordinates) |
+| Performance optimization | Lazy-render sections on expand |
+
 **Documentation:**
-- [Entity Profile Views Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/entity-profile-views.md)
+- [Entity Profile View](Entity-Profile-View) — Usage documentation
+- [Entity Profile View Implementation](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/developer/implementation/profile-view.md) — Developer implementation guide
+- [Entity Profile Views Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/entity-profile-views.md) — Full specifications for all phases
 - Community contributors: @prentissw (workflow feedback, Relationships section)
 
 ---
