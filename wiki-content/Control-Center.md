@@ -150,10 +150,11 @@ Many Control Center tabs include a **dock button** (panel icon) in their card he
 | **Universes** | Filter/sort/search table with status badges | `Open universes` |
 | **Collections** | Mode switcher + corresponding list | `Open collections` |
 | **Data Quality** | Read-only dashboard with quality score and issues | `Open data quality` |
+| **[Entity Profile](Entity-Profile-View)** | Auto-syncing single-entity detail view with collapsible sections | `Open entity profile` |
 
 ### Key Behaviors
 
-- **Single instance**: Clicking the dock button when a view is already open focuses the existing instance
+- **Single instance**: Clicking the dock button when a view is already open focuses the existing instance (the Entity Profile View is an exception — it allows multiple instances via pinning)
 - **Modal stays open**: The dock button opens the view without closing the Control Center
 - **State persistence**: Filter, sort, and search preferences persist across sessions
 - **Auto-refresh**: All dockable views refresh automatically when vault files change (debounced 2s)

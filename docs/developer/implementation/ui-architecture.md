@@ -430,7 +430,7 @@ if (Platform.isMobile) {
 
 ## Dockable Views
 
-Thirteen registered ItemViews provide persistent sidebar panels and dedicated views. Nine entity tabs have corresponding dockable views that share extracted tab components with the modal. Four additional views serve specialized purposes (family chart, map, statistics, migration notice).
+Fourteen registered ItemViews provide persistent sidebar panels and dedicated views. Nine entity tabs have corresponding dockable views that share extracted tab components with the modal. The Entity Profile View provides auto-syncing single-entity detail (see [Profile View](profile-view.md)). Four additional views serve specialized purposes (family chart, map, statistics, migration notice).
 
 **All registered views:**
 
@@ -449,8 +449,9 @@ Thirteen registered ItemViews provide persistent sidebar panels and dedicated vi
 | `VIEW_TYPE_MAP` | `canvas-roots-map` | `src/maps/map-view.ts` |
 | `VIEW_TYPE_STATISTICS` | `canvas-roots-statistics` | `src/statistics.ts` |
 | `VIEW_TYPE_MIGRATION_NOTICE` | `canvas-roots-migration-notice` | `src/ui/views/migration-notice-view.ts` |
+| `VIEW_TYPE_ENTITY_PROFILE` | `charted-roots-entity-profile` | `src/profile-view/profile-view.ts` |
 
-> **Note:** View type IDs still use the `canvas-roots-` prefix for backwards compatibility with existing workspace layouts. The `charted-roots-` prefix is used for dynamic content blocks and new registrations.
+> **Note:** View type IDs still use the `canvas-roots-` prefix for backwards compatibility with existing workspace layouts. The `charted-roots-` prefix is used for dynamic content blocks and new registrations (e.g., the Entity Profile View).
 
 ### Architecture
 

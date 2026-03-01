@@ -72,6 +72,7 @@ import { MediaPickerModal } from './src/core/ui/media-picker-modal';
 import { MediaManageModal } from './src/core/ui/media-manage-modal';
 import { CleanupWizardModal } from './src/ui/cleanup-wizard-modal';
 import { MigrationNoticeView, VIEW_TYPE_MIGRATION_NOTICE } from './src/ui/views/migration-notice-view';
+import { ProfileView, VIEW_TYPE_ENTITY_PROFILE } from './src/profile-view/profile-view';
 import { WebClipperService } from './src/core/web-clipper-service';
 import { PluginRenameMigrationService, showMigrationNotice } from './src/migration/plugin-rename-migration-service';
 
@@ -412,6 +413,12 @@ export default class CanvasRootsPlugin extends Plugin {
 			(leaf) => new MigrationNoticeView(leaf, this)
 		);
 
+		// Register entity profile view
+		this.registerView(
+			VIEW_TYPE_ENTITY_PROFILE,
+			(leaf) => new ProfileView(leaf, this)
+		);
+
 		// Register URI protocol handler for opening map at specific coordinates
 		// Usage: obsidian://charted-roots-map?lat=51.5074&lng=-0.1278&zoom=12
 		// Also register legacy canvas-roots-map for backward compatibility
@@ -605,6 +612,15 @@ export default class CanvasRootsPlugin extends Plugin {
 			name: 'Open data quality',
 			callback: () => {
 				void this.activateDataQualityView();
+			}
+		});
+
+		// Add command: Open Entity Profile
+		this.addCommand({
+			id: 'open-entity-profile',
+			name: 'Open entity profile',
+			callback: () => {
+				void this.activateProfileView();
 			}
 		});
 
@@ -1805,6 +1821,16 @@ export default class CanvasRootsPlugin extends Plugin {
 										});
 								});
 
+								// Open profile
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Open profile')
+										.setIcon('id-card')
+										.onClick(async () => {
+											await this.activateProfileView(file);
+										});
+								});
+
 								// Media submenu
 								submenu.addItem((subItem) => {
 									const mediaSubmenu: Menu = subItem
@@ -1938,6 +1964,15 @@ export default class CanvasRootsPlugin extends Plugin {
 
 							menu.addItem((item) => {
 								item
+									.setTitle('Charted Roots: Open profile')
+									.setIcon('id-card')
+									.onClick(async () => {
+										await this.activateProfileView(file);
+									});
+							});
+
+							menu.addItem((item) => {
+								item
 									.setTitle('Charted Roots: Geocode place')
 									.setIcon('map-pin')
 									.onClick(async () => {
@@ -2044,6 +2079,16 @@ export default class CanvasRootsPlugin extends Plugin {
 										});
 								});
 
+								// Open profile
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Open profile')
+										.setIcon('id-card')
+										.onClick(async () => {
+											await this.activateProfileView(file);
+										});
+								});
+
 								// Add source roles block (#219)
 								submenu.addItem((subItem) => {
 									subItem
@@ -2137,6 +2182,15 @@ export default class CanvasRootsPlugin extends Plugin {
 									.onClick(() => {
 										const modal = new ControlCenterModal(this.app, this);
 										modal.openToTab('sources');
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Charted Roots: Open profile')
+									.setIcon('id-card')
+									.onClick(async () => {
+										await this.activateProfileView(file);
 									});
 							});
 
@@ -2449,6 +2503,16 @@ export default class CanvasRootsPlugin extends Plugin {
 											} else {
 												new Notice('Could not find cr_id for this person note');
 											}
+										});
+								});
+
+								// Open profile
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Open profile')
+										.setIcon('id-card')
+										.onClick(async () => {
+											await this.activateProfileView(file);
 										});
 								});
 
@@ -2824,6 +2888,15 @@ export default class CanvasRootsPlugin extends Plugin {
 									.setIcon('edit')
 									.onClick(() => {
 										this.openEditPersonModal(file);
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Charted Roots: Open profile')
+									.setIcon('id-card')
+									.onClick(async () => {
+										await this.activateProfileView(file);
 									});
 							});
 
@@ -3218,6 +3291,16 @@ export default class CanvasRootsPlugin extends Plugin {
 										});
 								});
 
+								// Open profile
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Open profile')
+										.setIcon('id-card')
+										.onClick(async () => {
+											await this.activateProfileView(file);
+										});
+								});
+
 								// Media submenu
 								submenu.addItem((subItem) => {
 									const mediaSubmenu: Menu = subItem
@@ -3311,6 +3394,15 @@ export default class CanvasRootsPlugin extends Plugin {
 									.setIcon('edit')
 									.onClick(() => {
 										this.openEditEventModal(file);
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Charted Roots: Open profile')
+									.setIcon('id-card')
+									.onClick(async () => {
+										await this.activateProfileView(file);
 									});
 							});
 
@@ -3444,6 +3536,16 @@ export default class CanvasRootsPlugin extends Plugin {
 											modal.openToTab('organizations');
 										});
 								});
+
+								// Open profile
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Open profile')
+										.setIcon('id-card')
+										.onClick(async () => {
+											await this.activateProfileView(file);
+										});
+								});
 							});
 						} else {
 							// Mobile: flat menu
@@ -3507,6 +3609,15 @@ export default class CanvasRootsPlugin extends Plugin {
 									.onClick(() => {
 										const modal = new ControlCenterModal(this.app, this);
 										modal.openToTab('organizations');
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Charted Roots: Open profile')
+									.setIcon('id-card')
+									.onClick(async () => {
+										await this.activateProfileView(file);
 									});
 							});
 						}
@@ -9086,6 +9197,47 @@ export default class CanvasRootsPlugin extends Plugin {
 				active: true
 			});
 			void workspace.revealLeaf(leaf);
+		}
+	}
+
+	/**
+	 * Open or reveal the entity profile view.
+	 * Finds an existing unpinned profile leaf, or creates a new one in the right sidebar.
+	 * If a file is provided, navigates the profile to that entity.
+	 */
+	async activateProfileView(file?: TFile): Promise<void> {
+		const { workspace } = this.app;
+
+		// Find an existing unpinned profile leaf
+		const leaves = workspace.getLeavesOfType(VIEW_TYPE_ENTITY_PROFILE);
+		const unpinnedLeaf = leaves.find(leaf => {
+			const view = leaf.view;
+			if (view instanceof ProfileView) {
+				const state = view.getState();
+				return !state.pinned;
+			}
+			return true;
+		});
+
+		if (unpinnedLeaf) {
+			void workspace.revealLeaf(unpinnedLeaf);
+			if (file && unpinnedLeaf.view instanceof ProfileView) {
+				unpinnedLeaf.view.navigateToFile(file);
+			}
+			return;
+		}
+
+		// Create a new leaf in the right sidebar
+		const leaf = workspace.getRightLeaf(false);
+		if (leaf) {
+			await leaf.setViewState({
+				type: VIEW_TYPE_ENTITY_PROFILE,
+				active: true
+			});
+			void workspace.revealLeaf(leaf);
+			if (file && leaf.view instanceof ProfileView) {
+				leaf.view.navigateToFile(file);
+			}
 		}
 	}
 

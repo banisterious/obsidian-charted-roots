@@ -26,6 +26,7 @@ Right-click on any markdown file with a `cr_id` frontmatter property:
 | Action | Description |
 |--------|-------------|
 | **Generate visual tree** | Open the Tree Wizard with this person pre-selected |
+| **[Open profile](Entity-Profile-View)** | Open the Entity Profile View for this person |
 | **Edit person** | Open the person editing modal |
 | **Add relationship...** | |
 | → Add parent | Add a father or mother relationship |
@@ -67,6 +68,7 @@ Right-click on markdown files with `type: place` in frontmatter:
 | **Set collection** | Add this place to a collection |
 | **Open in map view** | Show this place on the map |
 | **Edit place** | Open the place editing modal |
+| **[Open profile](Entity-Profile-View)** | Open the Entity Profile View for this place |
 | **Add essential properties** | Add missing place properties |
 
 ## Map Notes

@@ -21,6 +21,7 @@
 - [Staging & Cleanup](Staging-And-Cleanup)
 
 ### Exploration
+- [Entity Profile View](Entity-Profile-View)
 - [Family Chart View](Family-Chart-View)
 - [Geographic Features](Geographic-Features)
 - [Custom Maps](Custom-Maps)

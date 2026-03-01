@@ -68,6 +68,7 @@ const CONFIG = {
     'preferences.css',   // Preferences tab
     'tree-output.css',   // Tree output two-panel layout
     'dynamic-content.css', // Dynamic content blocks (timeline, relationships)
+    'profile-view.css',  // Entity profile dockable view
     'migration-notice.css', // Migration notice view (upgrade notifications)
     'responsive.css'     // Responsive breakpoints
   ],

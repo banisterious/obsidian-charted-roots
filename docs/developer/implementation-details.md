@@ -27,6 +27,7 @@ The implementation details have been organized into focused sub-documents for ea
 | Document | Description |
 |----------|-------------|
 | [UI Architecture](implementation/ui-architecture.md) | Context menus, Control Center (13 tabs), dockable views, settings, mobile adaptations |
+| [Profile View](implementation/profile-view.md) | Entity Profile View — auto-syncing single-entity detail view with collapsible sections, breadcrumbs, pin/unpin |
 
 ### Specialized Features
 
@@ -53,7 +54,7 @@ See [Canvas and Charts](implementation/canvas-and-charts.md) for full details.
 
 13 tabs: Dashboard, People, Events, Places, Sources, Organizations, Universes, Collections, Data quality, Schemas, Relationships, Trees & reports, Maps — plus a Tools group with 6 modal/leaf launchers
 
-13 registered views: 9 entity dockable sidebar views (People, Places, Events, Sources, Organizations, Relationships, Universes, Collections, Data quality) plus 4 specialized views (Family Chart, Map, Statistics, Migration Notice)
+14 registered views: 9 entity browser views (People, Places, Events, Sources, Organizations, Relationships, Universes, Collections, Data quality), the Entity Profile View (auto-syncing single-entity detail), plus 4 specialized views (Family Chart, Map, Statistics, Migration Notice)
 
 See [UI Architecture](implementation/ui-architecture.md) for full details.
 
