@@ -10,7 +10,7 @@
 >
 > The plugin will automatically migrate your vault data (canvas metadata and code blocks) on first load.
 
-[![Version](https://img.shields.io/badge/version-0.20.17-blue.svg)](https://github.com/banisterious/obsidian-charted-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md)
+[![Version](https://img.shields.io/badge/version-0.20.18-blue.svg)](https://github.com/banisterious/obsidian-charted-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md)
 
 **Charted Roots** brings professional genealogical tools to Obsidian—import, organize, visualize, and share family histories and fictional worlds without leaving your vault. From GEDCOM imports to PDF reports, interactive charts to map views, manage your research with the power of linked Markdown notes. Built for genealogists, historians, writers, and world-builders.
 
@@ -58,6 +58,17 @@
 | **Bidirectional Sync** | Chart edits update frontmatter; file changes refresh the chart |
 | **Multiple Color Schemes** | Gender, Generation, Collection, or Monochrome |
 | **Export Options** | High-quality PNG, SVG, PDF, or ODT with customizable filenames |
+
+### [Entity Profile View](https://github.com/banisterious/obsidian-charted-roots/wiki/Entity-Profile-View)
+
+| Feature | Description |
+|---------|-------------|
+| **Auto-syncing Sidebar** | Dockable panel that follows the active note, showing all related data for any entity type |
+| **Five Entity Types** | Full profiles for persons, places, events, sources, and organizations |
+| **Collapsible Sections** | Relationships, events, sources, media, data quality, participants, members, map preview, and referenced facts |
+| **Pin \& Unpin** | Freeze the profile on a specific entity for side-by-side comparison |
+| **Breadcrumb Navigation** | Click entity links within sections to navigate in-place with full history |
+| **State Persistence** | Section states, pinned entity, and breadcrumb history persist across sessions |
 
 ### [Data Management](https://github.com/banisterious/obsidian-charted-roots/wiki/Data-Management)
 
