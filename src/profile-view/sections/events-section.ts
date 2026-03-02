@@ -6,9 +6,7 @@
  */
 
 import type { App, TFile } from 'obsidian';
-import type { CanvasRootsSettings } from '../../settings';
 import type { EventNote } from '../../events/types/event-types';
-import type { EventService } from '../../events/services/event-service';
 import type { SectionToggleFn, EntityLinkClickFn, SectionState } from '../profile-types';
 import { renderProfileSection } from './section-base';
 
@@ -51,21 +49,23 @@ export function renderEventsSection(
 
 	// Try to use renderPersonTimeline for person events
 	if (options.personFile && options.personName) {
-		try {
-			// Dynamic import to avoid circular dependency
-			const { renderPersonTimeline } = require('../../events/ui/person-timeline');
-			renderPersonTimeline(
-				content,
-				options.personFile,
-				options.personName,
-				options.app,
-				options.plugin.settings,
-				options.plugin.eventService,
-				{ showEmptyState: true }
-			);
-			return;
-		} catch {
-			// Fallback to simple list
+		const eventService = options.plugin.getEventService();
+		if (eventService) {
+			try {
+				const { renderPersonTimeline } = require('../../events/ui/person-timeline');
+				renderPersonTimeline(
+					content,
+					options.personFile,
+					options.personName,
+					options.app,
+					options.plugin.settings,
+					eventService,
+					{ showEmptyState: true }
+				);
+				return;
+			} catch {
+				// Fallback to simple list
+			}
 		}
 	}
 

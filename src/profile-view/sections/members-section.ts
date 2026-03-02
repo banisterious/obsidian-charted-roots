@@ -70,10 +70,10 @@ export function renderMembersSection(
 		}
 
 		// Dates
-		if (member.fromDate || member.toDate) {
-			const dates = member.fromDate && member.toDate
-				? `${member.fromDate} – ${member.toDate}`
-				: member.fromDate || `– ${member.toDate}`;
+		if (member.from || member.to) {
+			const dates = member.from && member.to
+				? `${member.from} – ${member.to}`
+				: member.from || `– ${member.to}`;
 			row.createSpan({ text: dates, cls: 'cr-profile__member-dates' });
 		}
 

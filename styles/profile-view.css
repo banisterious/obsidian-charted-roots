@@ -146,12 +146,12 @@
   flex-shrink: 0;
 }
 
-.cr-profile__breadcrumb-item {
+.cr-profile__breadcrumb-link {
   cursor: pointer;
   color: var(--text-accent);
 }
 
-.cr-profile__breadcrumb-item:hover {
+.cr-profile__breadcrumb-link:hover {
   text-decoration: underline;
 }
 
@@ -271,7 +271,16 @@
    Relationships Section
    ========================================================================== */
 
-.cr-profile__relationships-subsection-title {
+.cr-profile__relationships-family,
+.cr-profile__relationships-other {
+  margin-bottom: var(--size-4-2);
+}
+
+.cr-profile__rel-group-header {
+  margin-bottom: var(--size-4-1);
+}
+
+.cr-profile__rel-group-title {
   font-size: var(--font-ui-smaller);
   font-weight: var(--font-semibold);
   color: var(--text-muted);
@@ -280,11 +289,26 @@
   margin: var(--size-4-3) 0 var(--size-4-1);
 }
 
-.cr-profile__relationships-subsection-title:first-child {
+.cr-profile__rel-group-title:first-child {
   margin-top: 0;
 }
 
-.cr-profile__relationship-row {
+.cr-profile__rel-group {
+  margin-bottom: var(--size-4-2);
+}
+
+.cr-profile__rel-category {
+  margin-bottom: var(--size-4-1);
+}
+
+.cr-profile__rel-category-label {
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-medium);
+  color: var(--text-muted);
+  margin: var(--size-4-2) 0 var(--size-4-1);
+}
+
+.cr-profile__rel-row {
   display: flex;
   align-items: baseline;
   gap: var(--size-4-2);
@@ -292,34 +316,22 @@
   font-size: var(--font-ui-small);
 }
 
-.cr-profile__relationship-label {
+.cr-profile__rel-type-label {
   color: var(--text-muted);
   flex-shrink: 0;
   min-width: 60px;
 }
 
-.cr-profile__relationship-value {
-  flex: 1;
-  min-width: 0;
-}
-
-.cr-profile__relationship-dates {
+.cr-profile__rel-dates {
   font-size: var(--font-ui-smaller);
   color: var(--text-faint);
-}
-
-.cr-profile__relationship-category {
-  font-size: var(--font-ui-smaller);
-  font-weight: var(--font-medium);
-  color: var(--text-muted);
-  margin: var(--size-4-2) 0 var(--size-4-1);
 }
 
 /* ==========================================================================
    Events Section
    ========================================================================== */
 
-.cr-profile__event-list {
+.cr-profile__events-list {
   display: flex;
   flex-direction: column;
   gap: var(--size-4-1);
@@ -340,26 +352,21 @@
   font-variant-numeric: tabular-nums;
 }
 
-.cr-profile__event-type {
+.cr-profile__event-type-label {
   color: var(--text-muted);
   flex-shrink: 0;
 }
 
-.cr-profile__event-name {
+.cr-profile__event-title {
   flex: 1;
   min-width: 0;
-}
-
-.cr-profile__event-place {
-  font-size: var(--font-ui-smaller);
-  color: var(--text-faint);
 }
 
 /* ==========================================================================
    Sources Section
    ========================================================================== */
 
-.cr-profile__source-list {
+.cr-profile__sources-list {
   display: flex;
   flex-direction: column;
   gap: var(--size-4-1);
@@ -392,16 +399,20 @@
   gap: var(--size-4-2);
 }
 
+.cr-profile__media-cell {
+  cursor: pointer;
+}
+
 .cr-profile__media-thumb {
   aspect-ratio: 1;
   border-radius: var(--radius-s);
   overflow: hidden;
-  cursor: pointer;
   border: 1px solid var(--background-modifier-border);
   transition: border-color 100ms ease-in-out;
 }
 
-.cr-profile__media-thumb:hover {
+.cr-profile__media-thumb:hover,
+.cr-profile__media-cell:hover .cr-profile__media-thumb {
   border-color: var(--text-accent);
 }
 
@@ -411,14 +422,13 @@
   object-fit: cover;
 }
 
-.cr-profile__media-file {
+.cr-profile__media-fallback {
   display: flex;
   align-items: center;
   justify-content: center;
   aspect-ratio: 1;
   border-radius: var(--radius-s);
   border: 1px solid var(--background-modifier-border);
-  cursor: pointer;
   font-size: var(--font-ui-smaller);
   color: var(--text-muted);
   text-align: center;
@@ -426,16 +436,27 @@
   word-break: break-all;
 }
 
-.cr-profile__media-file:hover {
+.cr-profile__media-cell:hover .cr-profile__media-fallback {
   border-color: var(--text-accent);
   color: var(--text-accent);
+}
+
+.cr-profile__media-filename {
+  display: block;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: var(--size-4-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ==========================================================================
    Data Quality Section
    ========================================================================== */
 
-.cr-profile__dq-research-level {
+.cr-profile__dq-level {
   display: flex;
   align-items: center;
   gap: var(--size-4-2);
@@ -443,21 +464,28 @@
   font-size: var(--font-ui-small);
 }
 
-.cr-profile__dq-level-bar {
+.cr-profile__dq-label {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+.cr-profile__dq-value {
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-medium);
+}
+
+.cr-profile__dq-bar {
   display: flex;
   gap: 2px;
   flex: 1;
-}
-
-.cr-profile__dq-level-segment {
   height: 6px;
-  flex: 1;
-  border-radius: 1px;
-  background-color: var(--background-modifier-border);
 }
 
-.cr-profile__dq-level-segment--filled {
+.cr-profile__dq-bar-fill {
+  height: 100%;
   background-color: var(--text-accent);
+  border-radius: 1px;
+  transition: width 200ms ease-in-out;
 }
 
 .cr-profile__dq-coverage {
@@ -479,7 +507,7 @@
   transition: width 200ms ease-in-out;
 }
 
-.cr-profile__dq-fact-list {
+.cr-profile__dq-facts {
   display: flex;
   flex-direction: column;
   gap: var(--size-4-1);
@@ -493,21 +521,21 @@
   gap: var(--size-4-2);
 }
 
-.cr-profile__dq-fact-icon {
+.cr-profile__dq-fact-status {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
 }
 
-.cr-profile__dq-fact-icon--sourced {
+.cr-profile__dq-fact-status--sourced {
   color: var(--text-success);
 }
 
-.cr-profile__dq-fact-icon--unsourced {
+.cr-profile__dq-fact-status--unsourced {
   color: var(--text-faint);
 }
 
-.cr-profile__dq-fact-name {
+.cr-profile__dq-fact-key {
   flex: 1;
   min-width: 0;
 }
@@ -516,32 +544,22 @@
   margin-top: var(--size-4-3);
 }
 
-.cr-profile__dq-questions-title {
-  font-size: var(--font-ui-smaller);
-  font-weight: var(--font-semibold);
-  color: var(--text-muted);
-  margin-bottom: var(--size-4-1);
-}
-
-.cr-profile__dq-question-item {
-  font-size: var(--font-ui-smaller);
-  padding: var(--size-4-1) 0;
-  color: var(--text-normal);
-}
-
 .cr-profile__dq-proofs {
   margin-top: var(--size-4-3);
 }
 
-.cr-profile__dq-proofs-title {
+/* ==========================================================================
+   Research Questions List
+   ========================================================================== */
+
+.cr-profile__research-list {
   font-size: var(--font-ui-smaller);
-  font-weight: var(--font-semibold);
-  color: var(--text-muted);
-  margin-bottom: var(--size-4-1);
+  padding-left: var(--size-4-4);
+  margin: var(--size-4-1) 0;
+  color: var(--text-normal);
 }
 
-.cr-profile__dq-proof-item {
-  font-size: var(--font-ui-smaller);
+.cr-profile__research-list li {
   padding: var(--size-4-1) 0;
 }
 
@@ -564,7 +582,7 @@
    Participants Section
    ========================================================================== */
 
-.cr-profile__participant-list {
+.cr-profile__participants-list {
   display: flex;
   flex-direction: column;
   gap: var(--size-4-1);
@@ -578,7 +596,7 @@
   font-size: var(--font-ui-small);
 }
 
-.cr-profile__participant-principal {
+.cr-profile__participant-badge {
   font-size: var(--font-ui-smaller);
   color: var(--text-muted);
   background-color: var(--background-modifier-hover);
@@ -590,40 +608,40 @@
    Referenced Facts Section (Source profiles)
    ========================================================================== */
 
-.cr-profile__ref-facts-group {
+.cr-profile__fact-group {
   margin-bottom: var(--size-4-3);
 }
 
-.cr-profile__ref-facts-group:last-child {
+.cr-profile__fact-group:last-child {
   margin-bottom: 0;
 }
 
-.cr-profile__ref-facts-entity {
+.cr-profile__fact-group-header {
   font-size: var(--font-ui-small);
   font-weight: var(--font-medium);
   margin-bottom: var(--size-4-1);
 }
 
-.cr-profile__ref-facts-list {
+.cr-profile__fact-list {
   display: flex;
   flex-direction: column;
   gap: var(--size-4-1);
   padding-left: var(--size-4-4);
 }
 
-.cr-profile__ref-fact-row {
+.cr-profile__fact-row {
   display: flex;
   align-items: baseline;
   gap: var(--size-4-2);
   font-size: var(--font-ui-smaller);
 }
 
-.cr-profile__ref-fact-key {
+.cr-profile__fact-key {
   color: var(--text-muted);
   flex-shrink: 0;
 }
 
-.cr-profile__ref-fact-value {
+.cr-profile__fact-value {
   color: var(--text-normal);
 }
 
@@ -631,7 +649,7 @@
    Members Section (Organization profiles)
    ========================================================================== */
 
-.cr-profile__member-list {
+.cr-profile__members-list {
   display: flex;
   flex-direction: column;
   gap: var(--size-4-1);
@@ -655,20 +673,15 @@
   color: var(--text-faint);
 }
 
-.cr-profile__member-status {
+.cr-profile__member-badge {
   font-size: var(--font-ui-smaller);
   padding: 0 var(--size-4-1);
   border-radius: var(--radius-s);
 }
 
-.cr-profile__member-status--current {
+.cr-profile__member-badge--current {
   background-color: var(--color-green-rgb, rgba(34, 197, 94, 0.15));
   color: var(--color-green, var(--text-success));
-}
-
-.cr-profile__member-status--former {
-  background-color: var(--background-modifier-hover);
-  color: var(--text-faint);
 }
 
 /* ==========================================================================
@@ -697,11 +710,16 @@
   font-size: var(--font-ui-small);
 }
 
+.cr-profile__empty-hint {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-faint);
+}
+
 /* ==========================================================================
    Error State
    ========================================================================== */
 
-.cr-profile__error {
+.cr-profile__error-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -710,13 +728,4 @@
   padding: var(--size-4-8);
   color: var(--text-error);
   text-align: center;
-}
-
-.cr-profile__error-icon {
-  width: 32px;
-  height: 32px;
-}
-
-.cr-profile__error-text {
-  font-size: var(--font-ui-small);
 }

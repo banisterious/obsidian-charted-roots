@@ -15,7 +15,7 @@ export interface IdentityHeaderOptions {
 	onTogglePin: () => void;
 	onOpenNote: (file: TFile) => void;
 	app: App;
-	mediaService: MediaService;
+	mediaService: MediaService | null;
 }
 
 export function renderIdentityHeader(
@@ -60,7 +60,7 @@ export function renderIdentityHeader(
 	const main = container.createDiv({ cls: 'cr-profile__header-main' });
 
 	// Avatar (person only)
-	if (data.entityType === 'person' && data.node.media && data.node.media.length > 0) {
+	if (data.entityType === 'person' && data.node.media && data.node.media.length > 0 && options.mediaService) {
 		const thumb = options.mediaService.getFirstThumbnailFile(data.node.media);
 		if (thumb) {
 			const avatarEl = main.createDiv({ cls: 'cr-profile__header-avatar' });

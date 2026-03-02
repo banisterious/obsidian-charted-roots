@@ -29,6 +29,7 @@ import { renderMapPreviewSection } from './sections/map-preview-section';
 import { renderParticipantsSection } from './sections/participants-section';
 import { renderReferencedFactsSection } from './sections/referenced-facts-section';
 import { renderMembersSection } from './sections/members-section';
+import { renderProfileSection } from './sections/section-base';
 import { detectNoteType, isPersonNote } from '../utils/note-type-detection';
 import type { NoteType } from '../utils/note-type-detection';
 
@@ -311,7 +312,7 @@ export class ProfileView extends ItemView {
 				void this.app.workspace.openLinkText(file.basename, file.path);
 			},
 			app: this.app,
-			mediaService: this.plugin.mediaService
+			mediaService: this.plugin.getMediaService()
 		});
 
 		// Breadcrumbs
@@ -500,7 +501,6 @@ export class ProfileView extends ItemView {
 		options: SectionRenderOptions
 	): void {
 		if (!this.sectionsEl) return;
-		const { renderProfileSection } = require('./sections/section-base');
 		const content = renderProfileSection(this.sectionsEl, {
 			sectionId: 'place-link',
 			title: 'Place',
@@ -525,7 +525,6 @@ export class ProfileView extends ItemView {
 		options: SectionRenderOptions
 	): void {
 		if (!this.sectionsEl) return;
-		const { renderProfileSection } = require('./sections/section-base');
 		const content = renderProfileSection(this.sectionsEl, {
 			sectionId: 'research-questions',
 			title: 'Research questions',

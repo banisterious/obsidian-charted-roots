@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-03-01 14:31:42 UTC
+ * - Generated: 2026-03-02 17:32:12 UTC
  * - Components: 45 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -37405,7 +37405,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: PROFILE-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 723 lines, 15.99 KB */
+/* Component Size: 732 lines, 16.2 KB */
 
 /**
  * Entity Profile View Styles
@@ -37555,12 +37555,12 @@ body:has(.cr-media-linker) .suggestion-container {
   flex-shrink: 0;
 }
 
-.cr-profile__breadcrumb-item {
+.cr-profile__breadcrumb-link {
   cursor: pointer;
   color: var(--text-accent);
 }
 
-.cr-profile__breadcrumb-item:hover {
+.cr-profile__breadcrumb-link:hover {
   text-decoration: underline;
 }
 
@@ -37680,7 +37680,16 @@ body:has(.cr-media-linker) .suggestion-container {
    Relationships Section
    ========================================================================== */
 
-.cr-profile__relationships-subsection-title {
+.cr-profile__relationships-family,
+.cr-profile__relationships-other {
+  margin-bottom: var(--size-4-2);
+}
+
+.cr-profile__rel-group-header {
+  margin-bottom: var(--size-4-1);
+}
+
+.cr-profile__rel-group-title {
   font-size: var(--font-ui-smaller);
   font-weight: var(--font-semibold);
   color: var(--text-muted);
@@ -37689,11 +37698,26 @@ body:has(.cr-media-linker) .suggestion-container {
   margin: var(--size-4-3) 0 var(--size-4-1);
 }
 
-.cr-profile__relationships-subsection-title:first-child {
+.cr-profile__rel-group-title:first-child {
   margin-top: 0;
 }
 
-.cr-profile__relationship-row {
+.cr-profile__rel-group {
+  margin-bottom: var(--size-4-2);
+}
+
+.cr-profile__rel-category {
+  margin-bottom: var(--size-4-1);
+}
+
+.cr-profile__rel-category-label {
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-medium);
+  color: var(--text-muted);
+  margin: var(--size-4-2) 0 var(--size-4-1);
+}
+
+.cr-profile__rel-row {
   display: flex;
   align-items: baseline;
   gap: var(--size-4-2);
@@ -37701,34 +37725,22 @@ body:has(.cr-media-linker) .suggestion-container {
   font-size: var(--font-ui-small);
 }
 
-.cr-profile__relationship-label {
+.cr-profile__rel-type-label {
   color: var(--text-muted);
   flex-shrink: 0;
   min-width: 60px;
 }
 
-.cr-profile__relationship-value {
-  flex: 1;
-  min-width: 0;
-}
-
-.cr-profile__relationship-dates {
+.cr-profile__rel-dates {
   font-size: var(--font-ui-smaller);
   color: var(--text-faint);
-}
-
-.cr-profile__relationship-category {
-  font-size: var(--font-ui-smaller);
-  font-weight: var(--font-medium);
-  color: var(--text-muted);
-  margin: var(--size-4-2) 0 var(--size-4-1);
 }
 
 /* ==========================================================================
    Events Section
    ========================================================================== */
 
-.cr-profile__event-list {
+.cr-profile__events-list {
   display: flex;
   flex-direction: column;
   gap: var(--size-4-1);
@@ -37749,26 +37761,21 @@ body:has(.cr-media-linker) .suggestion-container {
   font-variant-numeric: tabular-nums;
 }
 
-.cr-profile__event-type {
+.cr-profile__event-type-label {
   color: var(--text-muted);
   flex-shrink: 0;
 }
 
-.cr-profile__event-name {
+.cr-profile__event-title {
   flex: 1;
   min-width: 0;
-}
-
-.cr-profile__event-place {
-  font-size: var(--font-ui-smaller);
-  color: var(--text-faint);
 }
 
 /* ==========================================================================
    Sources Section
    ========================================================================== */
 
-.cr-profile__source-list {
+.cr-profile__sources-list {
   display: flex;
   flex-direction: column;
   gap: var(--size-4-1);
@@ -37801,16 +37808,20 @@ body:has(.cr-media-linker) .suggestion-container {
   gap: var(--size-4-2);
 }
 
+.cr-profile__media-cell {
+  cursor: pointer;
+}
+
 .cr-profile__media-thumb {
   aspect-ratio: 1;
   border-radius: var(--radius-s);
   overflow: hidden;
-  cursor: pointer;
   border: 1px solid var(--background-modifier-border);
   transition: border-color 100ms ease-in-out;
 }
 
-.cr-profile__media-thumb:hover {
+.cr-profile__media-thumb:hover,
+.cr-profile__media-cell:hover .cr-profile__media-thumb {
   border-color: var(--text-accent);
 }
 
@@ -37820,14 +37831,13 @@ body:has(.cr-media-linker) .suggestion-container {
   object-fit: cover;
 }
 
-.cr-profile__media-file {
+.cr-profile__media-fallback {
   display: flex;
   align-items: center;
   justify-content: center;
   aspect-ratio: 1;
   border-radius: var(--radius-s);
   border: 1px solid var(--background-modifier-border);
-  cursor: pointer;
   font-size: var(--font-ui-smaller);
   color: var(--text-muted);
   text-align: center;
@@ -37835,16 +37845,27 @@ body:has(.cr-media-linker) .suggestion-container {
   word-break: break-all;
 }
 
-.cr-profile__media-file:hover {
+.cr-profile__media-cell:hover .cr-profile__media-fallback {
   border-color: var(--text-accent);
   color: var(--text-accent);
+}
+
+.cr-profile__media-filename {
+  display: block;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: var(--size-4-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ==========================================================================
    Data Quality Section
    ========================================================================== */
 
-.cr-profile__dq-research-level {
+.cr-profile__dq-level {
   display: flex;
   align-items: center;
   gap: var(--size-4-2);
@@ -37852,21 +37873,28 @@ body:has(.cr-media-linker) .suggestion-container {
   font-size: var(--font-ui-small);
 }
 
-.cr-profile__dq-level-bar {
+.cr-profile__dq-label {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+.cr-profile__dq-value {
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-medium);
+}
+
+.cr-profile__dq-bar {
   display: flex;
   gap: 2px;
   flex: 1;
-}
-
-.cr-profile__dq-level-segment {
   height: 6px;
-  flex: 1;
-  border-radius: 1px;
-  background-color: var(--background-modifier-border);
 }
 
-.cr-profile__dq-level-segment--filled {
+.cr-profile__dq-bar-fill {
+  height: 100%;
   background-color: var(--text-accent);
+  border-radius: 1px;
+  transition: width 200ms ease-in-out;
 }
 
 .cr-profile__dq-coverage {
@@ -37888,7 +37916,7 @@ body:has(.cr-media-linker) .suggestion-container {
   transition: width 200ms ease-in-out;
 }
 
-.cr-profile__dq-fact-list {
+.cr-profile__dq-facts {
   display: flex;
   flex-direction: column;
   gap: var(--size-4-1);
@@ -37902,21 +37930,21 @@ body:has(.cr-media-linker) .suggestion-container {
   gap: var(--size-4-2);
 }
 
-.cr-profile__dq-fact-icon {
+.cr-profile__dq-fact-status {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
 }
 
-.cr-profile__dq-fact-icon--sourced {
+.cr-profile__dq-fact-status--sourced {
   color: var(--text-success);
 }
 
-.cr-profile__dq-fact-icon--unsourced {
+.cr-profile__dq-fact-status--unsourced {
   color: var(--text-faint);
 }
 
-.cr-profile__dq-fact-name {
+.cr-profile__dq-fact-key {
   flex: 1;
   min-width: 0;
 }
@@ -37925,32 +37953,22 @@ body:has(.cr-media-linker) .suggestion-container {
   margin-top: var(--size-4-3);
 }
 
-.cr-profile__dq-questions-title {
-  font-size: var(--font-ui-smaller);
-  font-weight: var(--font-semibold);
-  color: var(--text-muted);
-  margin-bottom: var(--size-4-1);
-}
-
-.cr-profile__dq-question-item {
-  font-size: var(--font-ui-smaller);
-  padding: var(--size-4-1) 0;
-  color: var(--text-normal);
-}
-
 .cr-profile__dq-proofs {
   margin-top: var(--size-4-3);
 }
 
-.cr-profile__dq-proofs-title {
+/* ==========================================================================
+   Research Questions List
+   ========================================================================== */
+
+.cr-profile__research-list {
   font-size: var(--font-ui-smaller);
-  font-weight: var(--font-semibold);
-  color: var(--text-muted);
-  margin-bottom: var(--size-4-1);
+  padding-left: var(--size-4-4);
+  margin: var(--size-4-1) 0;
+  color: var(--text-normal);
 }
 
-.cr-profile__dq-proof-item {
-  font-size: var(--font-ui-smaller);
+.cr-profile__research-list li {
   padding: var(--size-4-1) 0;
 }
 
@@ -37973,7 +37991,7 @@ body:has(.cr-media-linker) .suggestion-container {
    Participants Section
    ========================================================================== */
 
-.cr-profile__participant-list {
+.cr-profile__participants-list {
   display: flex;
   flex-direction: column;
   gap: var(--size-4-1);
@@ -37987,7 +38005,7 @@ body:has(.cr-media-linker) .suggestion-container {
   font-size: var(--font-ui-small);
 }
 
-.cr-profile__participant-principal {
+.cr-profile__participant-badge {
   font-size: var(--font-ui-smaller);
   color: var(--text-muted);
   background-color: var(--background-modifier-hover);
@@ -37999,40 +38017,40 @@ body:has(.cr-media-linker) .suggestion-container {
    Referenced Facts Section (Source profiles)
    ========================================================================== */
 
-.cr-profile__ref-facts-group {
+.cr-profile__fact-group {
   margin-bottom: var(--size-4-3);
 }
 
-.cr-profile__ref-facts-group:last-child {
+.cr-profile__fact-group:last-child {
   margin-bottom: 0;
 }
 
-.cr-profile__ref-facts-entity {
+.cr-profile__fact-group-header {
   font-size: var(--font-ui-small);
   font-weight: var(--font-medium);
   margin-bottom: var(--size-4-1);
 }
 
-.cr-profile__ref-facts-list {
+.cr-profile__fact-list {
   display: flex;
   flex-direction: column;
   gap: var(--size-4-1);
   padding-left: var(--size-4-4);
 }
 
-.cr-profile__ref-fact-row {
+.cr-profile__fact-row {
   display: flex;
   align-items: baseline;
   gap: var(--size-4-2);
   font-size: var(--font-ui-smaller);
 }
 
-.cr-profile__ref-fact-key {
+.cr-profile__fact-key {
   color: var(--text-muted);
   flex-shrink: 0;
 }
 
-.cr-profile__ref-fact-value {
+.cr-profile__fact-value {
   color: var(--text-normal);
 }
 
@@ -38040,7 +38058,7 @@ body:has(.cr-media-linker) .suggestion-container {
    Members Section (Organization profiles)
    ========================================================================== */
 
-.cr-profile__member-list {
+.cr-profile__members-list {
   display: flex;
   flex-direction: column;
   gap: var(--size-4-1);
@@ -38064,20 +38082,15 @@ body:has(.cr-media-linker) .suggestion-container {
   color: var(--text-faint);
 }
 
-.cr-profile__member-status {
+.cr-profile__member-badge {
   font-size: var(--font-ui-smaller);
   padding: 0 var(--size-4-1);
   border-radius: var(--radius-s);
 }
 
-.cr-profile__member-status--current {
+.cr-profile__member-badge--current {
   background-color: var(--color-green-rgb, rgba(34, 197, 94, 0.15));
   color: var(--color-green, var(--text-success));
-}
-
-.cr-profile__member-status--former {
-  background-color: var(--background-modifier-hover);
-  color: var(--text-faint);
 }
 
 /* ==========================================================================
@@ -38106,11 +38119,16 @@ body:has(.cr-media-linker) .suggestion-container {
   font-size: var(--font-ui-small);
 }
 
+.cr-profile__empty-hint {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-faint);
+}
+
 /* ==========================================================================
    Error State
    ========================================================================== */
 
-.cr-profile__error {
+.cr-profile__error-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -38119,15 +38137,6 @@ body:has(.cr-media-linker) .suggestion-container {
   padding: var(--size-4-8);
   color: var(--text-error);
   text-align: center;
-}
-
-.cr-profile__error-icon {
-  width: 32px;
-  height: 32px;
-}
-
-.cr-profile__error-text {
-  font-size: var(--font-ui-small);
 }
 
 
@@ -38300,11 +38309,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-03-01 14:31:43 UTC
+ * Build completed: 2026-03-02 17:32:13 UTC
  * Components processed: 45
- * Total lines: 37872
- * Total size: 759.39 KB
- * Build duration: 0.93 seconds
+ * Total lines: 37881
+ * Total size: 759.61 KB
+ * Build duration: 0.98 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -38349,7 +38358,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - preferences.css: 431 lines, 9.44 KB
  * - tree-output.css: 1548 lines, 30.41 KB
  * - dynamic-content.css: 707 lines, 15.03 KB
- * - profile-view.css: 723 lines, 15.99 KB
+ * - profile-view.css: 732 lines, 16.2 KB
  * - migration-notice.css: 135 lines, 2.67 KB
  * - responsive.css: 9 lines, 0.13 KB
  */

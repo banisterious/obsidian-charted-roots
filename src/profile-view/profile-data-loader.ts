@@ -5,7 +5,7 @@
  * Maintains a single-entity cache keyed by crId.
  */
 
-import type { App, TFile } from 'obsidian';
+import type { TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import type {
 	ProfileEntityType,
@@ -25,7 +25,7 @@ import { EvidenceService } from '../sources/services/evidence-service';
 import { ProofSummaryService } from '../sources/services/proof-summary-service';
 import { SourceService } from '../sources/services/source-service';
 import { SOURCED_PROPERTY_NAMES, SOURCED_PROPERTY_TO_FACT_KEY } from '../sources/types/source-types';
-import type { FactKey, SourcedPropertyName } from '../sources/types/source-types';
+import type { SourcedPropertyName } from '../sources/types/source-types';
 import { getLogger } from '../core/logging';
 
 const logger = getLogger('ProfileDataLoader');
@@ -116,7 +116,8 @@ export class ProfileDataLoader {
 		}
 
 		// Events
-		const events = this.plugin.eventService.getEventsForPerson(`[[${file.basename}]]`);
+		const eventService = this.plugin.getEventService();
+		const events = eventService?.getEventsForPerson(`[[${file.basename}]]`) ?? [];
 
 		// Relationships
 		const relService = new RelationshipService(this.plugin);
@@ -183,7 +184,8 @@ export class ProfileDataLoader {
 		}
 
 		// Events at location
-		const events = this.plugin.eventService.getEventsAtPlace(`[[${file.basename}]]`);
+		const eventService = this.plugin.getEventService();
+		const events = eventService?.getEventsAtPlace(`[[${file.basename}]]`) ?? [];
 
 		// Media
 		const media = this.resolveMedia(node.media);
@@ -215,7 +217,8 @@ export class ProfileDataLoader {
 		const name = (fm.name as string) || (fm.title as string) || file.basename;
 
 		// Find event by crId
-		const allEvents = this.plugin.eventService.getAllEvents();
+		const eventService = this.plugin.getEventService();
+		const allEvents = eventService?.getAllEvents() ?? [];
 		const event = allEvents.find(e => e.crId === crId);
 		if (!event) {
 			logger.warn('loadEvent', `EventNote not found for ${crId}`);
@@ -299,7 +302,8 @@ export class ProfileDataLoader {
 		const members = membershipService.getOrganizationMembers(crId);
 
 		// Events (placeholder — proper org event scanning deferred)
-		const events = this.plugin.eventService.getAllEvents().filter(e => {
+		const eventService = this.plugin.getEventService();
+		const events = (eventService?.getAllEvents() ?? []).filter(e => {
 			// Simple filter: events that mention the org name in participants
 			const orgBasename = file.basename;
 			if (e.person && e.person.includes(orgBasename)) return true;
@@ -411,8 +415,10 @@ export class ProfileDataLoader {
 	private resolveMedia(mediaRefs: string[] | undefined): MediaItem[] {
 		if (!mediaRefs || mediaRefs.length === 0) return [];
 
+		const mediaService = this.plugin.getMediaService();
+		if (!mediaService) return [];
+
 		const items: MediaItem[] = [];
-		const mediaService = this.plugin.mediaService;
 
 		for (const ref of mediaRefs) {
 			const name = ref.replace(/^\[\[/, '').replace(/\]\]$/, '').replace(/\|.*$/, '');

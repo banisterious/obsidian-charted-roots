@@ -137,7 +137,7 @@ function renderOtherSubsection(
 		for (const rel of rels) {
 			const row = catEl.createDiv({ cls: 'cr-profile__rel-row' });
 			row.createSpan({
-				text: rel.type?.label || rel.type?.id || 'Related',
+				text: rel.type?.name || rel.type?.id || 'Related',
 				cls: 'cr-profile__rel-type-label'
 			});
 
