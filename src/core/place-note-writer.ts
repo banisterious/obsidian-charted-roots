@@ -377,7 +377,7 @@ export async function updatePlaceNote(
  * `[[...]]` is parsed as a nested array, corrupting the data on
  * the next read. This function wraps any bare occurrences in quotes.
  */
-async function requoteWikilinksInFrontmatter(app: App, file: TFile): Promise<void> {
+export async function requoteWikilinksInFrontmatter(app: App, file: TFile): Promise<void> {
 	await app.vault.process(file, (content) => {
 		// Find frontmatter boundaries
 		const fmStart = content.indexOf('---');

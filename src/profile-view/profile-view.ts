@@ -16,7 +16,9 @@ import type {
 	BreadcrumbEntry,
 	SectionState,
 	SectionToggleFn,
-	EntityLinkClickFn
+	EntityLinkClickFn,
+	InlineEditSaveFn,
+	InlineEditNotifyFn
 } from './profile-types';
 import { ProfileDataLoader } from './profile-data-loader';
 import { renderIdentityHeader } from './sections/identity-section';
@@ -32,6 +34,8 @@ import { renderMembersSection } from './sections/members-section';
 import { renderProfileSection } from './sections/section-base';
 import { detectNoteType, isPersonNote } from '../utils/note-type-detection';
 import type { NoteType } from '../utils/note-type-detection';
+import { PropertyAliasService } from '../core/property-alias-service';
+import { requoteWikilinksInFrontmatter } from '../core/place-note-writer';
 
 export const VIEW_TYPE_ENTITY_PROFILE = 'charted-roots-entity-profile';
 
@@ -50,6 +54,9 @@ export class ProfileView extends ItemView {
 	private staleIndicator = false;
 	private sectionStates: SectionState = {};
 	private breadcrumbs: BreadcrumbEntry[] = [];
+
+	// Inline edit state
+	private selfModified = false;
 
 	// Debounce timers
 	private syncDebounceTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -108,6 +115,11 @@ export class ProfileView extends ItemView {
 			this.app.vault.on('modify', (file) => {
 				if (file instanceof TFile && file.path === this.currentEntityFilePath) {
 					this.dataLoader.invalidate(this.currentEntityCrId || '');
+					if (this.selfModified) {
+						// Skip re-render — DOM was updated optimistically by inline edit
+						this.selfModified = false;
+						return;
+					}
 					this.scheduleRefresh();
 				}
 			})
@@ -303,6 +315,38 @@ export class ProfileView extends ItemView {
 		this.breadcrumbEl.empty();
 		this.sectionsEl.empty();
 
+		// Inline edit callbacks
+		const onFieldSave: InlineEditSaveFn = async (property, newValue) => {
+			const file = this.currentEntityData?.file;
+			if (!file) return;
+
+			const aliasService = new PropertyAliasService(this.plugin);
+			const writeProperty = aliasService.getWriteProperty(property);
+
+			await this.app.fileManager.processFrontMatter(file, (fm) => {
+				if (newValue === '') {
+					delete fm[writeProperty];
+				} else if (['coordinates_lat', 'coordinates_long'].includes(property)) {
+					const num = parseFloat(newValue);
+					if (!isNaN(num)) fm[writeProperty] = num;
+				} else {
+					fm[writeProperty] = newValue;
+				}
+			});
+
+			// Re-quote wikilinks if needed (Obsidian YAML serializer strips quotes)
+			const wikilinkFields = ['birth_place', 'death_place', 'place', 'repository', 'seat', 'parent_place'];
+			if (wikilinkFields.includes(property)) {
+				await requoteWikilinksInFrontmatter(this.app, file);
+			}
+
+			this.dataLoader.invalidate(this.currentEntityCrId || '');
+		};
+
+		const onEditNotify: InlineEditNotifyFn = () => {
+			this.selfModified = true;
+		};
+
 		// Identity header
 		renderIdentityHeader(this.headerEl, data, {
 			pinned: this.pinned,
@@ -312,7 +356,9 @@ export class ProfileView extends ItemView {
 				void this.app.workspace.openLinkText(file.basename, file.path);
 			},
 			app: this.app,
-			mediaService: this.plugin.getMediaService()
+			mediaService: this.plugin.getMediaService(),
+			onFieldSave,
+			onEditNotify
 		});
 
 		// Breadcrumbs
