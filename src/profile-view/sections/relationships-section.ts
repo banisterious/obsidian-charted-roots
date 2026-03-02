@@ -15,6 +15,7 @@ interface RelationshipsSectionOptions {
 	onToggle: SectionToggleFn;
 	onEntityLinkClick: EntityLinkClickFn;
 	app: App;
+	plugin: import('../../../main').default;
 	familyCount: number;
 	otherCount: number;
 }
@@ -46,8 +47,9 @@ export function renderRelationshipsSection(
 		renderFamilySubsection(content, data, options);
 	}
 
-	// Other relationships subsection
-	const allOther = [...data.relationships, ...data.inverseRelationships];
+	// Other relationships subsection (exclude family category — already shown above)
+	const allOther = [...data.relationships, ...data.inverseRelationships]
+		.filter(rel => (rel.type?.category || 'other') !== 'family');
 	if (allOther.length > 0) {
 		renderOtherSubsection(content, allOther, options);
 	}
@@ -178,21 +180,23 @@ function renderRelGroup(
 		const row = group.createDiv({ cls: 'cr-profile__rel-row' });
 		row.createSpan({ text: entry.label, cls: 'cr-profile__rel-type-label' });
 
-		// Resolve name from personIndex if possible
-		const personInfo = options.app.metadataCache.getFirstLinkpathDest(entry.crId, '');
-		// For now, show crId as name; will be resolved by data loader
-		const displayName = personInfo?.basename || entry.crId;
+		// Resolve name via personIndex (cr_id → TFile → frontmatter name)
+		const personFile = options.plugin.personIndex?.getFileByCrId(entry.crId) ?? null;
+		let displayName = entry.crId;
+		if (personFile) {
+			const cache = options.app.metadataCache.getFileCache(personFile);
+			displayName = (cache?.frontmatter?.name as string) || personFile.basename;
+		}
+
 		const link = row.createSpan({
 			text: displayName,
 			cls: 'cr-profile__entity-link'
 		});
 
-		link.addEventListener('click', () => {
-			if (personInfo) {
-				const cache = options.app.metadataCache.getFileCache(personInfo);
-				const name = (cache?.frontmatter?.name as string) || personInfo.basename;
-				options.onEntityLinkClick(entry.crId, name, 'person', personInfo.path);
-			}
-		});
+		if (personFile) {
+			link.addEventListener('click', () => {
+				options.onEntityLinkClick(entry.crId, displayName, 'person', personFile.path);
+			});
+		}
 	}
 }

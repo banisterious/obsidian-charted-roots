@@ -369,7 +369,8 @@ export class ProfileView extends ItemView {
 		if (!this.sectionsEl) return;
 
 		const familyCount = this.countFamilyMembers(data);
-		const otherCount = data.relationships.length + data.inverseRelationships.length;
+		const otherCount = [...data.relationships, ...data.inverseRelationships]
+			.filter(rel => (rel.type?.category || 'other') !== 'family').length;
 
 		renderRelationshipsSection(this.sectionsEl, data, {
 			...options,
