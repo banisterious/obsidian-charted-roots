@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-03-02 17:44:25 UTC
+ * - Generated: 2026-03-02 18:10:08 UTC
  * - Components: 45 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -37405,7 +37405,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: PROFILE-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 732 lines, 16.2 KB */
+/* Component Size: 794 lines, 17.58 KB */
 
 /**
  * Entity Profile View Styles
@@ -38139,6 +38139,68 @@ body:has(.cr-media-linker) .suggestion-container {
   text-align: center;
 }
 
+/* ==========================================================================
+   Inline Editing
+   ========================================================================== */
+
+.cr-profile__editable {
+  cursor: pointer;
+  border-radius: var(--radius-s);
+  padding: 0 2px;
+  transition: background-color 100ms ease-in-out;
+}
+
+.cr-profile__editable:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.cr-profile__editable--editing {
+  cursor: default;
+}
+
+.cr-profile__editable--editing:hover {
+  background-color: transparent;
+}
+
+.cr-profile__editable-placeholder {
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+.cr-profile__edit-input,
+.cr-profile__edit-select {
+  font: inherit;
+  color: var(--text-normal);
+  background-color: var(--background-primary-alt);
+  border: 1px solid var(--background-modifier-border-focus);
+  border-radius: var(--radius-s);
+  padding: 0 var(--size-4-1);
+  outline: none;
+}
+
+.cr-profile__edit-input:focus,
+.cr-profile__edit-select:focus {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
+}
+
+.cr-profile__edit-input {
+  min-width: 60px;
+  max-width: 200px;
+}
+
+.cr-profile__header-name .cr-profile__edit-input {
+  font-size: var(--font-ui-large);
+  font-weight: var(--font-semibold);
+  width: 100%;
+  max-width: 100%;
+}
+
+.cr-profile__meta-separator {
+  color: var(--text-faint);
+  user-select: none;
+}
+
 
 /* End of profile-view.css */
 
@@ -38309,11 +38371,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-03-02 17:44:26 UTC
+ * Build completed: 2026-03-02 18:10:09 UTC
  * Components processed: 45
- * Total lines: 37881
- * Total size: 759.61 KB
- * Build duration: 0.89 seconds
+ * Total lines: 37943
+ * Total size: 760.98 KB
+ * Build duration: 0.81 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -38358,7 +38420,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - preferences.css: 431 lines, 9.44 KB
  * - tree-output.css: 1548 lines, 30.41 KB
  * - dynamic-content.css: 707 lines, 15.03 KB
- * - profile-view.css: 732 lines, 16.2 KB
+ * - profile-view.css: 794 lines, 17.58 KB
  * - migration-notice.css: 135 lines, 2.67 KB
  * - responsive.css: 9 lines, 0.13 KB
  */
