@@ -141,3 +141,40 @@ export interface ReferencedFact {
 	factKey: string;
 	factValue: string;
 }
+
+// ────────────────────────────────────────────────────────────
+// Inline editing (Phase 2)
+// ────────────────────────────────────────────────────────────
+
+/** Input type for inline editable fields */
+export type InlineEditInputType = 'text' | 'number' | 'select';
+
+/** Option for select dropdown fields */
+export interface SelectOption {
+	value: string;
+	label: string;
+}
+
+/** Configuration for a single editable field */
+export interface EditableFieldConfig {
+	/** Canonical frontmatter property name (e.g., 'born', 'sex') */
+	property: string;
+	/** Display label shown as tooltip (e.g., 'Birth date') */
+	label: string;
+	/** Formatted value for display */
+	displayValue: string;
+	/** Raw value for the input (may differ from displayValue for wikilinks) */
+	rawValue: string;
+	/** Input type */
+	inputType: InlineEditInputType;
+	/** Options for select inputs */
+	selectOptions?: SelectOption[];
+	/** Placeholder text when value is empty */
+	placeholder?: string;
+}
+
+/** Callback invoked when a field is saved */
+export type InlineEditSaveFn = (property: string, newValue: string) => Promise<void>;
+
+/** Callback to notify the profile view that an edit is about to save */
+export type InlineEditNotifyFn = () => void;
