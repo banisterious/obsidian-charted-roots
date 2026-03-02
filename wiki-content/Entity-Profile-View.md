@@ -17,6 +17,7 @@ The Entity Profile View is a dockable sidebar panel that gives you a comprehensi
   - [Event Profiles](#event-profiles)
   - [Source Profiles](#source-profiles)
   - [Organization Profiles](#organization-profiles)
+- [Inline Editing](#inline-editing)
 - [Navigating Between Entities](#navigating-between-entities)
 - [Multiple Profile Views](#multiple-profile-views)
 - [State Persistence](#state-persistence)
@@ -58,8 +59,8 @@ The top of the profile is a sticky header that stays visible as you scroll throu
 
 - **Entity type badge**: Color-coded label (Person, Place, Event, Source, Organization)
 - **Entity name**: The primary name from the note
-- **Key metadata**: Varies by entity type:
-  - Person: birth/death dates, birth place, occupation
+- **Key metadata**: Varies by entity type (see [Inline Editing](#inline-editing) for editable fields):
+  - Person: birth/death dates, birth place, occupation, sex
   - Place: category, coordinates
   - Event: type, date, place
   - Source: type, date, repository
@@ -67,6 +68,8 @@ The top of the profile is a sticky header that stays visible as you scroll throu
 - **Avatar**: For person entities with linked media, shows the first image as a thumbnail
 - **Pin toggle**: Pin/unpin the profile to freeze it on this entity
 - **Open note**: Button to jump to the underlying markdown file
+
+All identity header fields support [inline editing](#inline-editing) — click any value to edit it directly.
 
 ---
 
@@ -145,6 +148,45 @@ The Referenced Facts section answers the question: "What claims does this source
 | **Events** | Events associated with the organization |
 | **Sources** | Sources referencing the organization |
 | **Media** | Linked photos and documents |
+
+---
+
+## Inline Editing
+
+Identity header fields can be edited directly in the profile view — no need to open the note and modify frontmatter manually.
+
+### How it works
+
+1. **Click** any field value in the identity header (name, dates, metadata)
+2. The value transforms into a text input, number input, or dropdown
+3. **Enter** or click away to save — changes write immediately to frontmatter
+4. **Escape** to cancel without saving
+
+Only one field can be edited at a time. Clicking a second field saves the first automatically.
+
+### Editable fields by entity type
+
+| Entity | Fields |
+|--------|--------|
+| **Person** | Name, birth date, death date, birth place, occupation, sex (dropdown) |
+| **Place** | Name, category (dropdown), latitude, longitude |
+| **Event** | Title, event type, date, place |
+| **Source** | Title, source type, date, repository |
+| **Organization** | Name, organization type, founded, dissolved, seat |
+
+### Empty fields
+
+When a field has no value, it shows faint placeholder text (e.g., "Birth place...", "Occupation..."). Click the placeholder to add a value.
+
+### Dropdowns
+
+Some fields use dropdown selectors instead of free text:
+- **Sex** (person): Male, Female, Non-binary, Unknown
+- **Category** (place): Real, Historical, Disputed, Legendary, Mythological, Fictional
+
+### Property aliases
+
+If you've configured [property aliases](Property-Aliases) (custom frontmatter property names), inline edits respect those aliases — values are written to the correct aliased property.
 
 ---
 

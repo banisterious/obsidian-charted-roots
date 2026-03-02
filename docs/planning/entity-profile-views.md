@@ -2,7 +2,7 @@
 
 Planning document for entity Profile Views feature.
 
-**Status:** ✅ Phase 1 complete (v0.20.18) | Phases 2-3 planned
+**Status:** ✅ Phase 1-2 complete | Phase 3 planned
 
 **Related:** [#239](https://github.com/banisterious/obsidian-charted-roots/discussions/239) (Control Center modularization), [#240](https://github.com/banisterious/obsidian-charted-roots/discussions/240) (Dockable sidebar views), [#242](https://github.com/banisterious/obsidian-charted-roots/discussions/242) (Profile Views discussion)
 
@@ -286,13 +286,16 @@ The existing codebase provides strong building blocks:
 - Context menu and command palette entry points
 - State persistence (pinned entity, expanded sections, breadcrumb history)
 
-### Phase 2 — Inline editing
+### Phase 2 — Inline editing (complete)
 
-- Edit identity fields with save-on-blur
-- Add/remove relationships via existing picker modals
-- Create events and sources inline from within the profile
-- Immediate frontmatter persistence
-- Undo support for accidental edits
+- ✅ Click-to-edit for all identity header fields across all five entity types
+- ✅ Text, number, and select (dropdown) inputs with Enter/blur save, Escape cancel
+- ✅ Single-active-field tracking via module-scoped controller
+- ✅ Immediate frontmatter persistence via `processFrontMatter()` with property alias support
+- ✅ Wikilink requoting for link-valued fields
+- ✅ Self-modify guard to prevent redundant re-renders after inline edits
+- ✅ Empty fields show clickable placeholders when editing is available
+- Deferred: relationship management via picker modals, inline event/source creation, undo support
 
 ### Phase 3 — Polish and integration
 

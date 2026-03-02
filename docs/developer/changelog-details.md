@@ -14,8 +14,44 @@ This document contains detailed implementation notes for significant features. F
 - [Canvas Color Enhancements](#canvas-color-enhancements-2025-11-20)
 - [Evidence Visualization](#evidence-visualization-2025-12-05)
 - [GEDCOM Test Datasets](#gedcom-test-datasets-2025-11-20)
+- [Entity Profile View — Inline Editing](#entity-profile-view--inline-editing-2026-03-02)
 - [Structured Role Lists for Organizations](#structured-role-lists-for-organizations-2026-02-28)
 - [Mills-Aligned Source Classification](#mills-aligned-source-classification-2026-02-28)
+
+---
+
+## Entity Profile View — Inline Editing (2026-03-02)
+
+**GitHub Issue:** [#251](https://github.com/banisterious/obsidian-charted-roots/issues/251)
+
+Adds click-to-edit for all identity header fields in the Entity Profile View across all five entity types. Users can edit names, dates, metadata, and categorical fields directly in the profile without opening the underlying note.
+
+**Problem:** Phase 1 delivered a read-only profile view. Editing any field required opening the note and modifying frontmatter manually, breaking the "deep work without context-switching" goal.
+
+**Solution:** Click-to-edit controls on identity header fields with immediate frontmatter persistence. Click a value → input appears → Enter/blur saves, Escape cancels. One field active at a time.
+
+**Implementation:**
+
+- **Type system** (`profile-types.ts`): `EditableFieldConfig` with property name, display/raw values, input type (`text`/`number`/`select`), select options, and placeholder. `InlineEditSaveFn` and `InlineEditNotifyFn` callback types.
+- **Inline edit module** (`inline-edit.ts`): Module-scoped `activeEdit` singleton tracks the one active field. `createEditableField()` factory returns a span that transforms to input on click. `commitActiveEdit()` exported for pre-render cleanup. 150ms blur delay prevents race conditions when clicking between fields.
+- **Identity section refactor** (`identity-section.ts`): Major rewrite from joined metadata strings to individual editable fields. Per-entity field definitions with `renderPersonMeta()`, `getPlaceFields()`, `getEventFields()`, `getSourceFields()`, `renderOrgMeta()`. Person dates rendered as two separate born/died fields. Select dropdowns for sex (M/F/X/U) and place category (6 values). Number inputs for coordinates.
+- **Save callback** (`profile-view.ts`): Uses `PropertyAliasService.getWriteProperty()` for property name resolution, `app.fileManager.processFrontMatter()` for writes, `requoteWikilinksInFrontmatter()` for wikilink-valued fields. Handles empty → delete, number → `parseFloat()`. Invalidates data loader cache after save.
+- **Self-modify guard** (`profile-view.ts`): `selfModified` flag prevents the 2s debounced re-render from undoing optimistic DOM updates after inline edits, while still allowing external edits to trigger re-renders.
+- **CSS** (`profile-view.css`): `.cr-profile__editable` click-to-edit wrapper with hover highlight, `.cr-profile__editable-placeholder` faint italic for empty values, `.cr-profile__edit-input`/`.cr-profile__edit-select` input styling.
+
+**Editable fields:**
+
+| Entity | Fields |
+|--------|--------|
+| Person | name, born, died, birth_place, occupation, sex (select) |
+| Place | name, place_category (select), coordinates_lat (number), coordinates_long (number) |
+| Event | title, event_type, date, place |
+| Source | title, source_type, date, repository |
+| Organization | name, org_type, founded, dissolved, seat |
+
+**Files modified:** `profile-types.ts`, `identity-section.ts`, `profile-view.ts`, `place-note-writer.ts` (export `requoteWikilinksInFrontmatter`), `profile-view.css`
+
+**Files created:** `inline-edit.ts`
 
 ---
 

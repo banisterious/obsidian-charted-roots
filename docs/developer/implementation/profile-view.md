@@ -21,6 +21,7 @@ Implementation guide for the Entity Profile View — a dockable sidebar view tha
   - [Pin/Unpin](#pinunpin)
 - [State Persistence](#state-persistence)
 - [Context Menu Integration](#context-menu-integration)
+- [Inline Editing](#inline-editing)
 - [CSS Architecture](#css-architecture)
 - [Key Design Decisions](#key-design-decisions)
 
@@ -28,7 +29,7 @@ Implementation guide for the Entity Profile View — a dockable sidebar view tha
 
 ## Overview
 
-The Profile View (`VIEW_TYPE_ENTITY_PROFILE`) is a single `ItemView` that provides a focused, read-only workspace for any entity (person, place, event, source, organization). It auto-syncs to the active note, rendering entity-type-specific sections with a sticky identity header and collapsible detail sections below.
+The Profile View (`VIEW_TYPE_ENTITY_PROFILE`) is a single `ItemView` that provides a focused workspace for any entity (person, place, event, source, organization). It auto-syncs to the active note, rendering entity-type-specific sections with a sticky identity header and collapsible detail sections below. Identity header fields support inline editing with immediate frontmatter persistence.
 
 **Motivation:** Existing workflows are entity-type-centric (People tab, Events tab, Sources tab), but real work cuts across types. The Profile View keeps all related data visible together in collapsible sections, enabling deep work on a single entity without tab-hopping.
 
@@ -51,10 +52,11 @@ The Profile View (`VIEW_TYPE_ENTITY_PROFILE`) is a single `ItemView` that provid
 src/profile-view/
   profile-view.ts              # ProfileView class (ItemView subclass)
   profile-data-loader.ts       # Coordinated data loading, single-entity cache
-  profile-types.ts             # Shared types (discriminated union, view state)
+  profile-types.ts             # Shared types (discriminated union, view state, inline edit types)
+  inline-edit.ts               # Click-to-edit field utilities (single-active-field tracking)
   sections/
     section-base.ts            # Collapsible section infrastructure
-    identity-section.ts        # Sticky header (all entity types)
+    identity-section.ts        # Sticky header with editable fields (all entity types)
     relationships-section.ts   # Family + other relationships (person)
     events-section.ts          # Events list (person, place, organization)
     sources-section.ts         # Sources list (person, place, organization)
@@ -181,8 +183,10 @@ Shared sections (Events, Sources, Media) use the same renderer function called w
 - **Stale indicator**: "Not following" badge when the view is showing a frozen entity
 - **Open note button**: Opens the underlying markdown file
 - **Avatar**: For person entities with media, shows the first thumbnail
-- **Name**: Entity name from frontmatter
-- **Metadata**: Entity-type-specific (e.g., dates and occupation for person, coordinates for place)
+- **Name**: Entity name from frontmatter (editable via inline edit)
+- **Metadata**: Entity-type-specific editable fields (see [Inline Editing](#inline-editing))
+
+When `options.onFieldSave` is provided, all identity fields render as click-to-edit controls via `createEditableField()`. When null, the header renders in read-only mode.
 
 ---
 
@@ -242,6 +246,59 @@ All context menu items call `this.activateProfileView(file)` to open/reveal the 
 
 ---
 
+## Inline Editing
+
+Identity header fields support click-to-edit via the `inline-edit.ts` module.
+
+### Module state
+
+A module-scoped `activeEdit: ActiveEditController | null` ensures only one field edits at a time. `commitActiveEdit()` is exported so the view can save any in-progress edit before re-rendering.
+
+### Field factory
+
+`createEditableField(container, config, onSave, onNotify)` creates a `<span class="cr-profile__editable">` that:
+- Displays the field value (or placeholder if empty)
+- On click: commits any active edit, enters edit mode with an `<input>` or `<select>`
+- Enter/blur → save: calls `onNotify()` (sets self-modify flag), calls `onSave(property, value)`, optimistically updates DOM
+- Escape → cancel: restores original display
+- Blur uses a 150ms delay so clicking another editable field fires before the blur save
+
+### Input types
+
+| `inputType` | Renders | Used for |
+|-------------|---------|----------|
+| `text` | `<input type="text">` | Name, dates, occupation, event type, etc. |
+| `number` | `<input type="number" step="any">` | Latitude, longitude |
+| `select` | `<select>` with `<option>` elements | Sex (M/F/X/U), place category |
+
+### Save callback (`profile-view.ts`)
+
+The view creates an `onFieldSave` callback in `renderEntity()` that:
+
+1. Resolves the canonical property name via `PropertyAliasService.getWriteProperty()`
+2. Writes to frontmatter via `app.fileManager.processFrontMatter()`
+3. Handles special cases:
+   - Empty string → deletes the property
+   - Number fields (`coordinates_lat`, `coordinates_long`) → writes as `parseFloat()`
+   - Wikilink fields (`birth_place`, `place`, `repository`, `seat`) → calls `requoteWikilinksInFrontmatter()` afterward
+4. Invalidates the data loader cache for the entity
+
+### Self-modify guard
+
+A `selfModified` flag on `ProfileView` prevents the 2s debounced re-render after user-initiated edits. The save callback sets `selfModified = true` via `onEditNotify()`. The vault modify handler checks and resets it, skipping the re-render but still invalidating the cache so future navigations get fresh data.
+
+### Editable fields per entity type
+
+| Entity | Fields | Notes |
+|--------|--------|-------|
+| Person | name, born, died, birth_place, occupation, sex | Dates are two separate editable fields with ` – ` separator |
+| Place | name, place_category, coordinates_lat, coordinates_long | Category is a select dropdown |
+| Event | title, event_type, date, place | |
+| Source | title, source_type, date, repository | |
+| Organization | name, org_type, founded, dissolved, seat | Founded/dissolved are separate fields with `est.` prefix |
+
+---
+
 ## CSS Architecture
 
 All styles are in `styles/profile-view.css` using BEM with `cr-profile__` prefix.
@@ -259,6 +316,12 @@ All styles are in `styles/profile-view.css` using BEM with `cr-profile__` prefix
 | `.cr-profile__section-content` | Display none/block toggle |
 | `.cr-profile__media-grid` | CSS grid, auto-fill minmax(80px, 1fr) |
 | `.cr-profile__entity-link` | Clickable, text-accent, underline on hover |
+| `.cr-profile__editable` | Click-to-edit field wrapper, cursor pointer, hover highlight |
+| `.cr-profile__editable--editing` | Active edit state, no hover |
+| `.cr-profile__editable-placeholder` | Faint italic for empty field values |
+| `.cr-profile__edit-input` | Text/number input, inherits font |
+| `.cr-profile__edit-select` | Select dropdown, inherits font |
+| `.cr-profile__meta-separator` | ` · ` separator between metadata fields |
 | `.cr-profile__empty-state` | Centered placeholder |
 
 All colors use Obsidian CSS variables. Type badge colors use CSS variable fallbacks for theme compatibility.
@@ -277,3 +340,8 @@ All colors use Obsidian CSS variables. Type badge colors use CSS variable fallba
 | Non-entity active note | Freeze on last entity with stale badge | Better than blank pane; user retains context |
 | Map preview (Phase 1) | Text coordinates + "Open in Geo Map" button | Embedded Leaflet deferred to Phase 3 |
 | Coordinate properties | `lat`/`long` (not latitude/longitude) | Matches `GeoCoordinates` interface in `src/models/place.ts` |
+| Inline edit scope | Identity header fields only | Section content editing deferred to future phases |
+| Self-modify guard | `selfModified` flag skips re-render | Prevents 2s debounce from undoing optimistic DOM update |
+| Active edit tracking | Module-scoped singleton | One field at a time avoids race conditions |
+| Blur delay | 150ms timeout before saving on blur | Allows click on another field to fire before blur save |
+| Property aliasing | `PropertyAliasService.getWriteProperty()` | Respects user-configured property name mappings |

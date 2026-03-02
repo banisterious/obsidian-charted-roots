@@ -9,7 +9,7 @@ This document outlines planned features for Charted Roots. For completed feature
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
   - [GPS Research Workflow Integration](#gps-research-workflow-integration) 📋 Medium
-  - [Entity Profile Views](#entity-profile-views) 📋 Medium ✅ Phase 1 complete
+  - [Entity Profile Views](#entity-profile-views) 📋 Medium ✅ Phase 1-2 complete
   - [Unified Place Lookup](#unified-place-lookup) 💡 Low ✅ Phase 1-2 complete
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
@@ -109,7 +109,7 @@ Export features discussed in #145 are tracked separately:
 
 **Priority:** 📋 Medium — Deep work on single entities without context-switching
 
-**Status:** ✅ Phase 1 complete (v0.20.18) | Phases 2-3 planned
+**Status:** ✅ Phase 1-2 complete | Phase 3 planned
 
 **GitHub Issue:** [#251](https://github.com/banisterious/obsidian-charted-roots/issues/251)
 
@@ -122,7 +122,7 @@ Export features discussed in #145 are tracked separately:
 | Phase | Focus | Status |
 |-------|-------|--------|
 | Phase 1 | Read-only Profile View | ✅ Complete (v0.20.18) |
-| Phase 2 | Inline editing | Planned |
+| Phase 2 | Inline editing (identity fields) | ✅ Complete |
 | Phase 3 | Polish and integration | Planned |
 
 **Phase 1 — Read-only Profile View (Complete):**
@@ -143,14 +143,23 @@ Export features discussed in #145 are tracked separately:
 
 See [Entity Profile View](Entity-Profile-View) for usage documentation.
 
-**Phase 2 — Inline editing (Planned):**
+**Phase 2 — Inline editing (Complete):**
+
+- Click-to-edit for all identity header fields across all five entity types
+- Text, number, and select (dropdown) inputs — Enter or blur saves, Escape cancels
+- One field active at a time; clicking another field saves the first automatically
+- Empty fields show clickable placeholders for adding new values
+- Saves directly to frontmatter via `processFrontMatter()` with property alias support
+- Automatic wikilink requoting for link-valued fields (birth place, seat, repository, etc.)
+- Self-modify guard prevents redundant re-renders after inline edits
+
+**Phase 2 — Deferred to future phases:**
 
 | Feature | Description |
 |---------|-------------|
-| Identity field editing | Edit name, dates, and metadata with save-on-blur |
 | Relationship management | Add/remove relationships via existing picker modals |
 | Inline event/source creation | Create events and sources from within the profile |
-| Frontmatter persistence | Immediate save on edit with undo support |
+| Undo support | Undo beyond Escape-to-cancel |
 
 **Phase 3 — Polish and integration (Planned):**
 
