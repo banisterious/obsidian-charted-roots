@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Entity Profile View — Phase 2 inline editing** ([#251](https://github.com/banisterious/obsidian-charted-roots/issues/251)): Click-to-edit for identity header fields across all five entity types. Click any field value to transform it into an input; press Enter or blur to save, Escape to cancel. Supports text, number, and select inputs. Editable fields: name/title, dates (born, died, founded, dissolved), birth place, occupation, sex (dropdown), place category (dropdown), coordinates (number), event/source type, date, place/repository/seat. Only one field edits at a time. Empty fields show clickable placeholders when editing is available. Saves directly to frontmatter via `processFrontMatter()` with property alias support and wikilink requoting. Self-modify guard prevents redundant re-renders after inline edits.
+
 ### Fixed
 
 - **Entity Profile View bug fixes** ([#251](https://github.com/banisterious/obsidian-charted-roots/issues/251)): Fix property name bugs in members and relationships sections, correct private service access patterns, replace dynamic `require()` with static imports, and reconcile all CSS class names to match TypeScript DOM output. Resolve family relationship names from personIndex instead of showing raw cr_ids, and filter duplicate family-category entries from the Other Relationships subsection.
