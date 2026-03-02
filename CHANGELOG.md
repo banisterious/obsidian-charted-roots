@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Entity Profile View bug fixes** ([#251](https://github.com/banisterious/obsidian-charted-roots/issues/251)): Fix property name bugs in members and relationships sections, correct private service access patterns, replace dynamic `require()` with static imports, and reconcile all CSS class names to match TypeScript DOM output.
+- **Entity Profile View bug fixes** ([#251](https://github.com/banisterious/obsidian-charted-roots/issues/251)): Fix property name bugs in members and relationships sections, correct private service access patterns, replace dynamic `require()` with static imports, and reconcile all CSS class names to match TypeScript DOM output. Resolve family relationship names from personIndex instead of showing raw cr_ids, and filter duplicate family-category entries from the Other Relationships subsection.
 
 ---
 
