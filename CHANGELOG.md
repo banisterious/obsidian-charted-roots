@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Entity Profile View bug fixes** ([#251](https://github.com/banisterious/obsidian-charted-roots/issues/251)): Fix property name bugs in members and relationships sections, correct private service access patterns, replace dynamic `require()` with static imports, and reconcile all CSS class names to match TypeScript DOM output.
+
+---
+
 ## [0.20.18] - 2026-03-01
 
 ### Added
