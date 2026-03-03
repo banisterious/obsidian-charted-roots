@@ -9,7 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.20.19] - 2026-03-03
+
 ### Added
+
+- **Entity Profile View — Phase 3 polish** ([#251](https://github.com/banisterious/obsidian-charted-roots/issues/251)): Lazy section rendering defers DOM population until first expand via optional `contentRenderer` callback. Keyboard navigation follows WAI-ARIA accordion pattern (ArrowUp/Down, Enter/Space, Home/End) with ARIA attributes on section headers. Mobile-responsive layout adds 44px touch targets and a narrow-pane media query. Embedded Leaflet map preview for place profiles replaces text-only coordinates with an interactive map, marker, and "Open in Geo Map" button that passes focus coordinates.
 
 - **Entity Profile View — Phase 2 inline editing** ([#251](https://github.com/banisterious/obsidian-charted-roots/issues/251)): Click-to-edit for identity header fields across all five entity types. Click any field value to transform it into an input; press Enter or blur to save, Escape to cancel. Supports text, number, and select inputs. Editable fields: name/title, dates (born, died, founded, dissolved), birth place, occupation, sex (dropdown), place category (dropdown), coordinates (number), event/source type, date, place/repository/seat. Only one field edits at a time. Empty fields show clickable placeholders when editing is available. Saves directly to frontmatter via `processFrontMatter()` with property alias support and wikilink requoting. Self-modify guard prevents redundant re-renders after inline edits.
 
