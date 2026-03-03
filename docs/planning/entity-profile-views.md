@@ -2,7 +2,7 @@
 
 Planning document for entity Profile Views feature.
 
-**Status:** ✅ Phase 1-2 complete | Phase 3 planned
+**Status:** ✅ Phase 1-3 complete
 
 **Related:** [#239](https://github.com/banisterious/obsidian-charted-roots/discussions/239) (Control Center modularization), [#240](https://github.com/banisterious/obsidian-charted-roots/discussions/240) (Dockable sidebar views), [#242](https://github.com/banisterious/obsidian-charted-roots/discussions/242) (Profile Views discussion)
 
@@ -297,14 +297,15 @@ The existing codebase provides strong building blocks:
 - ✅ Empty fields show clickable placeholders when editing is available
 - Deferred: relationship management via picker modals, inline event/source creation, undo support
 
-### Phase 3 — Polish and integration
+### Phase 3 — Polish and integration (complete)
 
-- Section jump links in sticky header for quick navigation to sections
-- Browser view "Open profile" integration (click row → open profile)
-- Pop-out action for cross-entity links (open new pinned pane)
-- Keyboard navigation between sections
-- Mobile-responsive layout (collapse sections by default, touch-friendly targets)
-- Performance optimization (lazy-render sections on expand)
+- ✅ Lazy section rendering via optional `contentRenderer` callback (defers DOM until first expand)
+- ✅ Keyboard navigation between sections (WAI-ARIA accordion: ArrowUp/Down, Enter/Space, Home/End)
+- ✅ ARIA attributes on section headers (`tabindex`, `role="button"`, `aria-expanded`)
+- ✅ Mobile-responsive layout (`Platform.isMobile` → 44px touch targets, narrow-pane media query)
+- ✅ Embedded Leaflet map preview for place profiles (lazy init, cleanup on collapse/close)
+- ✅ "Open in Geo Map" button passes focus coordinates to center on place
+- Deferred: section jump links in sticky header, browser view row action, pop-out for cross-entity links
 
 ---
 
@@ -324,4 +325,4 @@ The existing codebase provides strong building blocks:
 | Data loading | Single coordinated load per entity switch | Parallel service calls, collapsed sections receive data but skip DOM; keeps expand instant |
 | Non-entity active note | Freeze on last entity with stale indicator | Better than blank pane; user retains context |
 | Organization hierarchy | Flat member list (Phase 1) | Sufficient for current use; revisit if requested |
-| Map preview | Static snapshot, click to open Geo Map | Simpler than full Leaflet embed; sufficient for coordinate review |
+| Map preview | Embedded Leaflet map with lazy init | Map initializes on section expand; cleaned up on collapse/close to prevent leaks |

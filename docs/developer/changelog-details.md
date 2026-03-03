@@ -14,9 +14,31 @@ This document contains detailed implementation notes for significant features. F
 - [Canvas Color Enhancements](#canvas-color-enhancements-2025-11-20)
 - [Evidence Visualization](#evidence-visualization-2025-12-05)
 - [GEDCOM Test Datasets](#gedcom-test-datasets-2025-11-20)
+- [Entity Profile View — Phase 3 Polish](#entity-profile-view--phase-3-polish-2026-03-03)
 - [Entity Profile View — Inline Editing](#entity-profile-view--inline-editing-2026-03-02)
 - [Structured Role Lists for Organizations](#structured-role-lists-for-organizations-2026-02-28)
 - [Mills-Aligned Source Classification](#mills-aligned-source-classification-2026-02-28)
+
+---
+
+## Entity Profile View — Phase 3 Polish (2026-03-03)
+
+**GitHub Issue:** [#251](https://github.com/banisterious/obsidian-charted-roots/issues/251)
+
+Adds lazy section rendering, keyboard navigation, mobile-responsive layout, and an embedded Leaflet map preview for place profiles.
+
+**Problem:** Phase 1-2 delivered a functional profile view with inline editing, but sections rendered eagerly even when collapsed, there was no keyboard accessibility, the layout didn't adapt to mobile, and the place map section showed only text coordinates.
+
+**Solution:** Four additions to the profile view infrastructure.
+
+**Implementation:**
+
+- **Lazy section rendering** (`section-base.ts`): Optional `contentRenderer` callback on `ProfileSectionOptions` defers DOM population until first expand. Uses `childElementCount === 0` guard (pattern from `people-tab.ts`). Optional `onCollapse` callback for cleanup. Fully backward-compatible — callers that don't use the new options work identically.
+- **Keyboard navigation** (`section-base.ts`): Section headers receive `tabindex="0"`, `role="button"`, and `aria-expanded` attributes. `keydown` handler implements WAI-ARIA accordion pattern: ArrowUp/Down moves focus between section headers (wrapping), Enter/Space toggles expand/collapse, Home/End jumps to first/last section. Helper functions `focusAdjacentHeader()` and `focusFirstOrLastHeader()` use DOM queries on `.cr-profile__section-header`.
+- **Mobile-responsive layout** (`profile-view.ts`, `profile-view.css`): `Platform.isMobile` detection adds `cr-profile--mobile` class with 44px touch targets on section headers. `@media (max-width: 400px)` query stacks header metadata vertically and hides section summaries for narrow panes. `isMobile` flag added to `SectionRenderOptions`.
+- **Embedded Leaflet map** (`map-preview-section.ts`): Replaces text-only coordinate display with an interactive Leaflet map using lazy rendering (map initializes on first section expand). Uses `L.divIcon` marker matching the map-controller pattern. `cleanupMapPreview()` exported for lifecycle management — called on collapse, entity switch, and view close. "Open in Geo Map" button now passes `focusCoordinates` (with `long` → `lng` translation) to center the full map on the place.
+
+**Files modified:** `section-base.ts`, `map-preview-section.ts`, `profile-view.ts`, `profile-view.css`
 
 ---
 

@@ -92,6 +92,11 @@ Below the header, the profile shows entity-specific data in collapsible sections
 - **Summary text**: When collapsed, shows a brief summary (e.g., "12 events", "4 sources", "Level 3 · 45% sourced")
 - **Section content**: The full data, shown when expanded
 
+**Keyboard navigation:** You can navigate between sections using the keyboard:
+- **Arrow Up/Down**: Move focus between section headers
+- **Enter or Space**: Toggle a section open or closed
+- **Home/End**: Jump to the first or last section
+
 Section expand/collapse states are remembered across sessions and between entities.
 
 ---
@@ -119,9 +124,9 @@ The Relationships section is split into two subsections:
 | **Events at location** | Events that occurred at this place |
 | **Sources** | Sources referencing this place |
 | **Media** | Linked photos and documents |
-| **Map** | Coordinates display and button to open the full Geo Map view |
+| **Map** | Embedded interactive map with marker and button to open the full Geo Map view |
 
-The Map section shows latitude and longitude values. Click "Open in Geo Map" to view the place on the interactive map.
+The Map section shows an embedded Leaflet map centered on the place's coordinates with a marker. Click "Open in Geo Map" to open the full interactive map focused on this place. If no coordinates are set, the section shows a prompt to add them.
 
 ### Event Profiles
 

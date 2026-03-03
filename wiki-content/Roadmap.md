@@ -9,7 +9,7 @@ This document outlines planned features for Charted Roots. For completed feature
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
   - [GPS Research Workflow Integration](#gps-research-workflow-integration) 📋 Medium
-  - [Entity Profile Views](#entity-profile-views) 📋 Medium ✅ Phase 1-2 complete
+  - [Entity Profile Views](#entity-profile-views) 📋 Medium ✅ Phase 1-3 complete
   - [Unified Place Lookup](#unified-place-lookup) 💡 Low ✅ Phase 1-2 complete
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
@@ -109,7 +109,7 @@ Export features discussed in #145 are tracked separately:
 
 **Priority:** 📋 Medium — Deep work on single entities without context-switching
 
-**Status:** ✅ Phase 1-2 complete | Phase 3 planned
+**Status:** ✅ Phase 1-3 complete
 
 **GitHub Issue:** [#251](https://github.com/banisterious/obsidian-charted-roots/issues/251)
 
@@ -123,7 +123,7 @@ Export features discussed in #145 are tracked separately:
 |-------|-------|--------|
 | Phase 1 | Read-only Profile View | ✅ Complete (v0.20.18) |
 | Phase 2 | Inline editing (identity fields) | ✅ Complete |
-| Phase 3 | Polish and integration | Planned |
+| Phase 3 | Polish and integration | ✅ Complete |
 
 **Phase 1 — Read-only Profile View (Complete):**
 
@@ -161,16 +161,20 @@ See [Entity Profile View](Entity-Profile-View) for usage documentation.
 | Inline event/source creation | Create events and sources from within the profile |
 | Undo support | Undo beyond Escape-to-cancel |
 
-**Phase 3 — Polish and integration (Planned):**
+**Phase 3 — Polish and integration (Complete):**
+
+- Lazy section rendering — optional `contentRenderer` defers DOM until first expand
+- Keyboard navigation — ArrowUp/Down, Enter/Space, Home/End on section headers (WAI-ARIA accordion)
+- Mobile-responsive layout — 44px touch targets, narrow-pane media query for stacked metadata
+- Embedded Leaflet map preview — interactive map for place profiles, lazy init/cleanup on collapse
+
+**Phase 3 — Deferred to future work:**
 
 | Feature | Description |
 |---------|-------------|
 | Section jump links | Quick navigation links in sticky header |
 | Browser view integration | "Open profile" row action in browser views |
-| Keyboard navigation | Navigate between sections via keyboard |
-| Mobile-responsive layout | Collapse sections by default, touch-friendly targets |
-| Embedded map preview | Leaflet map preview for place entities (replaces text coordinates) |
-| Performance optimization | Lazy-render sections on expand |
+| Pop-out action | Open cross-entity links in new pinned pane |
 
 **Documentation:**
 - [Entity Profile View](Entity-Profile-View) — Usage documentation

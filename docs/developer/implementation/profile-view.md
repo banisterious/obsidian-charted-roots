@@ -55,7 +55,7 @@ src/profile-view/
   profile-types.ts             # Shared types (discriminated union, view state, inline edit types)
   inline-edit.ts               # Click-to-edit field utilities (single-active-field tracking)
   sections/
-    section-base.ts            # Collapsible section infrastructure
+    section-base.ts            # Collapsible section infrastructure (lazy render, keyboard nav)
     identity-section.ts        # Sticky header with editable fields (all entity types)
     relationships-section.ts   # Family + other relationships (person)
     events-section.ts          # Events list (person, place, organization)
@@ -64,7 +64,7 @@ src/profile-view/
     data-quality-section.ts    # Research level, coverage, questions (person)
     participants-section.ts    # Event participants (event)
     members-section.ts         # Organization members (organization)
-    map-preview-section.ts     # Coordinates + "Open in Geo Map" (place)
+    map-preview-section.ts     # Embedded Leaflet map preview (place)
     referenced-facts-section.ts # Source referenced facts (source)
 ```
 
@@ -146,6 +146,10 @@ Entity type detection uses `detectNoteType()` from `src/utils/note-type-detectio
 
 Toggle works via CSS class `.cr-profile__section--expanded` on the section wrapper. State changes call `onToggle(sectionId, expanded)` so the view persists section state.
 
+**Lazy rendering:** Optional `contentRenderer` callback defers DOM population until first expand. When provided, the content div starts empty for collapsed sections. On first expand, `childElementCount === 0` triggers the renderer. An optional `onCollapse` callback handles cleanup (used by the Leaflet map preview to free resources). Callers that don't use these options work identically to before.
+
+**Keyboard navigation:** Section headers have `tabindex="0"`, `role="button"`, and `aria-expanded` attributes. A `keydown` handler implements the WAI-ARIA accordion pattern: ArrowUp/Down moves focus between headers (wrapping), Enter/Space toggles, Home/End jumps to first/last.
+
 ### Section Renderers
 
 Each section is a standalone exported function following the pattern:
@@ -158,7 +162,7 @@ export function renderEventsSection(
 ): void
 ```
 
-Options always include `sectionStates`, `onToggle`, and `onEntityLinkClick`. Section renderers receive their full data regardless of collapsed state — DOM is simply hidden via CSS, making expand instant.
+Options always include `sectionStates`, `onToggle`, `onEntityLinkClick`, and `isMobile`. Section renderers receive their full data regardless of collapsed state — DOM is simply hidden via CSS, making expand instant. Sections that use lazy rendering (e.g., map preview) provide a `contentRenderer` callback instead of populating the content div directly.
 
 ### Sections by Entity Type
 
@@ -322,6 +326,11 @@ All styles are in `styles/profile-view.css` using BEM with `cr-profile__` prefix
 | `.cr-profile__edit-input` | Text/number input, inherits font |
 | `.cr-profile__edit-select` | Select dropdown, inherits font |
 | `.cr-profile__meta-separator` | ` · ` separator between metadata fields |
+| `.cr-profile__section-header:focus-visible` | Keyboard focus ring (interactive-accent) |
+| `.cr-profile--mobile` | Mobile layout modifier (44px touch targets) |
+| `.cr-profile__map-container` | Embedded Leaflet map (200px height, rounded) |
+| `.cr-profile__map-marker` | Map marker icon (accent color dot) |
+| `.cr-profile__map-open-btn` | Full-width "Open in Geo Map" button |
 | `.cr-profile__empty-state` | Centered placeholder |
 
 All colors use Obsidian CSS variables. Type badge colors use CSS variable fallbacks for theme compatibility.
@@ -338,10 +347,13 @@ All colors use Obsidian CSS variables. Type badge colors use CSS variable fallba
 | Section data loading | Eager (collapsed sections receive data) | Makes expand instant; no fetch delay on toggle |
 | Source referenced facts | Vault-wide scan at load time | Adapted from ExtractionsProcessor; cached per entity |
 | Non-entity active note | Freeze on last entity with stale badge | Better than blank pane; user retains context |
-| Map preview (Phase 1) | Text coordinates + "Open in Geo Map" button | Embedded Leaflet deferred to Phase 3 |
+| Map preview | Embedded Leaflet map with lazy init | Map only initializes on section expand; cleaned up on collapse/close |
 | Coordinate properties | `lat`/`long` (not latitude/longitude) | Matches `GeoCoordinates` interface in `src/models/place.ts` |
 | Inline edit scope | Identity header fields only | Section content editing deferred to future phases |
 | Self-modify guard | `selfModified` flag skips re-render | Prevents 2s debounce from undoing optimistic DOM update |
 | Active edit tracking | Module-scoped singleton | One field at a time avoids race conditions |
 | Blur delay | 150ms timeout before saving on blur | Allows click on another field to fire before blur save |
 | Property aliasing | `PropertyAliasService.getWriteProperty()` | Respects user-configured property name mappings |
+| Lazy section rendering | Optional `contentRenderer` callback | Backward-compatible; defers DOM until first expand |
+| Keyboard navigation | WAI-ARIA accordion on section headers | ArrowUp/Down, Enter/Space, Home/End with focus wrapping |
+| Mobile detection | `Platform.isMobile` + CSS class | 44px touch targets; narrow-pane media query at 400px |
