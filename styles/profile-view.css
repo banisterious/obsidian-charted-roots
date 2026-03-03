@@ -821,3 +821,36 @@
     display: none;
   }
 }
+
+/* ── Embedded map preview ─────────────────────────────── */
+
+.cr-profile__map-container {
+  height: 200px;
+  border-radius: var(--radius-m);
+  overflow: hidden;
+  margin-bottom: var(--size-4-2);
+}
+
+.cr-profile__map-container .leaflet-container {
+  height: 100%;
+  width: 100%;
+}
+
+.cr-profile__map-marker {
+  background: transparent;
+  border: none;
+}
+
+.cr-profile__map-marker-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: var(--interactive-accent);
+  border: 2px solid var(--background-primary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.cr-profile__map-open-btn {
+  width: 100%;
+  margin-top: var(--size-4-2);
+}

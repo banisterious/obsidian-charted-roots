@@ -27,7 +27,7 @@ import { renderEventsSection } from './sections/events-section';
 import { renderSourcesSection } from './sections/sources-section';
 import { renderMediaSection } from './sections/media-section';
 import { renderDataQualitySection } from './sections/data-quality-section';
-import { renderMapPreviewSection } from './sections/map-preview-section';
+import { renderMapPreviewSection, cleanupMapPreview } from './sections/map-preview-section';
 import { renderParticipantsSection } from './sections/participants-section';
 import { renderReferencedFactsSection } from './sections/referenced-facts-section';
 import { renderMembersSection } from './sections/members-section';
@@ -136,6 +136,7 @@ export class ProfileView extends ItemView {
 	async onClose(): Promise<void> {
 		if (this.syncDebounceTimeout) clearTimeout(this.syncDebounceTimeout);
 		if (this.refreshTimeout) clearTimeout(this.refreshTimeout);
+		cleanupMapPreview();
 	}
 
 	// ── State persistence ───────────────────────────────────
@@ -312,6 +313,9 @@ export class ProfileView extends ItemView {
 
 	private renderEntity(data: ProfileEntityData): void {
 		if (!this.headerEl || !this.breadcrumbEl || !this.sectionsEl) return;
+
+		// Clean up Leaflet map before clearing DOM
+		cleanupMapPreview();
 
 		// Clear previous content
 		this.headerEl.empty();

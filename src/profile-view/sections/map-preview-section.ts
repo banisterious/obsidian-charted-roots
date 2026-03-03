@@ -1,65 +1,112 @@
 /**
  * Map Preview Section (Place)
  *
- * Phase 1: displays coordinates as text with a button to open
- * the full Geo Map view. Embedded Leaflet deferred to Phase 3.
+ * Embedded Leaflet map showing the place's coordinates with a marker.
+ * Uses lazy rendering — the map initializes only when the section expands.
  */
 
+import * as L from 'leaflet';
 import type { PlaceNode } from '../../models/place';
-import type { SectionToggleFn, SectionState } from '../profile-types';
-import type CanvasRootsPlugin from '../../../main';
+import type { SectionRenderOptions } from '../profile-view';
 import { renderProfileSection } from './section-base';
 
-interface MapPreviewSectionOptions {
-	sectionStates: SectionState;
-	onToggle: SectionToggleFn;
-	plugin: CanvasRootsPlugin;
+/** Module-level reference to the active preview map for lifecycle management */
+let activePreviewMap: L.Map | null = null;
+
+/**
+ * Clean up any active preview map. Called on entity switch and view close.
+ */
+export function cleanupMapPreview(): void {
+	if (activePreviewMap) {
+		activePreviewMap.remove();
+		activePreviewMap = null;
+	}
 }
 
 export function renderMapPreviewSection(
 	parent: HTMLElement,
 	node: PlaceNode,
-	options: MapPreviewSectionOptions
+	options: SectionRenderOptions
 ): void {
 	const hasCoords = node.coordinates &&
 		node.coordinates.lat !== undefined &&
 		node.coordinates.long !== undefined;
 
 	let summary = 'No coordinates';
+	let lat = 0;
+	let lon = 0;
 	if (hasCoords) {
-		const lat = node.coordinates!.lat;
-		const lon = node.coordinates!.long;
+		lat = node.coordinates!.lat;
+		lon = node.coordinates!.long;
 		summary = `${Math.abs(lat).toFixed(1)}°${lat >= 0 ? 'N' : 'S'}, ${Math.abs(lon).toFixed(1)}°${lon >= 0 ? 'E' : 'W'}`;
 	}
 
-	const content = renderProfileSection(parent, {
+	renderProfileSection(parent, {
 		sectionId: 'map-preview',
 		title: 'Map',
 		summary,
 		expanded: options.sectionStates['map-preview'] ?? false,
 		onToggle: options.onToggle,
-		icon: 'map'
-	});
-	if (!content) return;
+		icon: 'map',
+		contentRenderer: (content) => {
+			if (!hasCoords) {
+				content.createDiv({
+					cls: 'cr-profile__section-empty',
+					text: 'No location data. Add latitude and longitude to the place note.'
+				});
+				return;
+			}
 
-	if (!hasCoords) {
-		content.createDiv({ cls: 'cr-profile__section-empty', text: 'No location data. Add latitude and longitude to the place note.' });
-		return;
-	}
+			// Map container
+			const mapContainer = content.createDiv({ cls: 'cr-profile__map-container' });
 
-	const lat = node.coordinates!.lat;
-	const lon = node.coordinates!.long;
+			// Clean up any previous preview map
+			cleanupMapPreview();
 
-	const coordEl = content.createDiv({ cls: 'cr-profile__map-coords' });
-	coordEl.createSpan({ text: `Latitude: ${lat}` });
-	coordEl.createEl('br');
-	coordEl.createSpan({ text: `Longitude: ${lon}` });
+			// Initialize Leaflet map
+			const map = L.map(mapContainer, {
+				scrollWheelZoom: false,
+				zoomControl: true,
+				attributionControl: false,
+				dragging: true
+			});
+			map.setView([lat, lon], 12);
 
-	const openBtn = content.createEl('button', {
-		cls: 'mod-cta cr-profile__map-open-btn',
-		text: 'Open in Geo Map'
-	});
-	openBtn.addEventListener('click', () => {
-		void options.plugin.activateMapView();
+			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+				maxZoom: 18
+			}).addTo(map);
+
+			// Marker with simple dot icon (matches map-controller pattern)
+			const icon = L.divIcon({
+				html: '<div class="cr-profile__map-marker-dot"></div>',
+				className: 'cr-profile__map-marker',
+				iconSize: L.point(16, 16),
+				iconAnchor: L.point(8, 8)
+			});
+			L.marker([lat, lon], { icon }).addTo(map);
+
+			activePreviewMap = map;
+
+			// Invalidate map size after DOM layout settles
+			requestAnimationFrame(() => {
+				map.invalidateSize();
+			});
+
+			// "Open in Geo Map" button
+			const openBtn = content.createEl('button', {
+				cls: 'mod-cta cr-profile__map-open-btn',
+				text: 'Open in Geo Map'
+			});
+			openBtn.addEventListener('click', () => {
+				void options.plugin.activateMapView(undefined, false, undefined, {
+					lat,
+					lng: lon,
+					zoom: 14
+				});
+			});
+		},
+		onCollapse: () => {
+			cleanupMapPreview();
+		}
 	});
 }
