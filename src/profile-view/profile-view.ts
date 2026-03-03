@@ -7,7 +7,7 @@
  * event, source, and organization.
  */
 
-import { ItemView, TFile, WorkspaceLeaf, setIcon } from 'obsidian';
+import { ItemView, Platform, TFile, WorkspaceLeaf, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import type {
 	ProfileEntityData,
@@ -93,6 +93,9 @@ export class ProfileView extends ItemView {
 		const container = this.contentEl;
 		container.empty();
 		container.addClass('cr-profile');
+		if (Platform.isMobile) {
+			container.addClass('cr-profile--mobile');
+		}
 
 		// Create structural elements
 		this.headerEl = container.createDiv({ cls: 'cr-profile__header' });
@@ -385,7 +388,8 @@ export class ProfileView extends ItemView {
 			onToggle,
 			onEntityLinkClick,
 			app: this.app,
-			plugin: this.plugin
+			plugin: this.plugin,
+			isMobile: Platform.isMobile
 		};
 
 		// Render entity-type-specific sections
@@ -727,4 +731,5 @@ export interface SectionRenderOptions {
 	onEntityLinkClick: EntityLinkClickFn;
 	app: import('obsidian').App;
 	plugin: CanvasRootsPlugin;
+	isMobile: boolean;
 }

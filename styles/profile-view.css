@@ -791,3 +791,33 @@
   color: var(--text-faint);
   user-select: none;
 }
+
+/* ── Keyboard navigation ──────────────────────────────── */
+
+.cr-profile__section-header:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: -2px;
+  border-radius: var(--radius-s);
+}
+
+/* ── Mobile layout ────────────────────────────────────── */
+
+.cr-profile--mobile .cr-profile__section-header {
+  min-height: 44px;
+  padding: var(--size-4-2) var(--size-4-3);
+}
+
+@media (max-width: 400px) {
+  .cr-profile__header {
+    padding: var(--size-4-2);
+  }
+
+  .cr-profile__header-meta {
+    flex-direction: column;
+    gap: var(--size-4-1);
+  }
+
+  .cr-profile__section-summary {
+    display: none;
+  }
+}
