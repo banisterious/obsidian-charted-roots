@@ -9,9 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.20.20] - 2026-03-06
+
 ### Fixed
 
 - **Inferred relationship duplicates with gendered family properties** ([#285](https://github.com/banisterious/obsidian-charted-roots/issues/285)): Gendered family properties (`father`, `mother`, `stepfather`, `stepmother`, `adoptive_father`, `adoptive_mother`) are now treated as equivalent to their corresponding relationship types (`parents`, `step_parent`, `adoptive_parent`) during deduplication. Previously, using `father`/`mother` instead of `parents` in frontmatter would still produce a spurious inferred "Parent" entry in the Relationships tab.
+
+- **Role suggest dropdown unclickable in Manage Members modal** ([#286](https://github.com/banisterious/obsidian-charted-roots/issues/286)): Removed CSS `overflow-y: auto` from the member list container which clipped the role autocomplete popover, preventing role selection.
 
 ---
 
