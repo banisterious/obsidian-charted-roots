@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Inferred relationship duplicates with gendered family properties** ([#285](https://github.com/banisterious/obsidian-charted-roots/issues/285)): Gendered family properties (`father`, `mother`, `stepfather`, `stepmother`, `adoptive_father`, `adoptive_mother`) are now treated as equivalent to their corresponding relationship types (`parents`, `step_parent`, `adoptive_parent`) during deduplication. Previously, using `father`/`mother` instead of `parents` in frontmatter would still produce a spurious inferred "Parent" entry in the Relationships tab.
+
 ---
 
 ## [0.20.19] - 2026-03-03
