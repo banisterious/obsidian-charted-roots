@@ -232,6 +232,12 @@ export class RelationshipService {
 			}
 		}
 
+		// Also treat gendered family properties (father, mother, stepfather, etc.)
+		// as equivalent to their relationship type counterparts for dedup purposes.
+		// Without this, "father: [[Person B]]" on A's note wouldn't suppress
+		// the inferred "parents" relationship when B has "children: [[Person A]]".
+		this.addFamilyPropertyKeys(definedKeys);
+
 		// Collect all person cr_ids involved in relationships
 		const allCrIds = new Set<string>();
 		for (const rel of defined) {
@@ -251,6 +257,71 @@ export class RelationshipService {
 		}
 
 		return [...defined, ...inferred];
+	}
+
+	/**
+	 * Gendered family properties that are equivalent to relationship types.
+	 * e.g., "father"/"mother" in frontmatter = "parents" relationship type.
+	 */
+	private static readonly FAMILY_PROPERTY_TYPE_MAP: Array<{
+		property: string;
+		idProperty: string;
+		typeId: string;
+	}> = [
+		{ property: 'father', idProperty: 'father_id', typeId: 'parents' },
+		{ property: 'mother', idProperty: 'mother_id', typeId: 'parents' },
+		{ property: 'stepfather', idProperty: 'stepfather_id', typeId: 'step_parent' },
+		{ property: 'stepmother', idProperty: 'stepmother_id', typeId: 'step_parent' },
+		{ property: 'adoptive_father', idProperty: 'adoptive_father_id', typeId: 'adoptive_parent' },
+		{ property: 'adoptive_mother', idProperty: 'adoptive_mother_id', typeId: 'adoptive_parent' },
+	];
+
+	/**
+	 * Add dedup keys for gendered family properties (father, mother, etc.)
+	 * so they suppress equivalent inferred relationships (parents, step_parent, etc.).
+	 */
+	private addFamilyPropertyKeys(definedKeys: Set<string>): void {
+		for (const file of this.plugin.app.vault.getMarkdownFiles()) {
+			const cache = this.plugin.app.metadataCache.getFileCache(file);
+			if (!cache?.frontmatter) continue;
+
+			const fm = cache.frontmatter;
+			const sourceCrId = fm.cr_id as string | undefined;
+			if (!sourceCrId) continue;
+
+			for (const mapping of RelationshipService.FAMILY_PROPERTY_TYPE_MAP) {
+				// Prefer _id field, fall back to resolving wikilink
+				const idValue = fm[mapping.idProperty];
+				const propValue = fm[mapping.property];
+
+				// Collect all target cr_ids (handles both single and array values)
+				const targetCrIds: string[] = [];
+
+				if (idValue) {
+					const ids = Array.isArray(idValue) ? idValue : [idValue];
+					for (const id of ids) {
+						if (typeof id === 'string') targetCrIds.push(id);
+					}
+				} else if (propValue) {
+					// Resolve wikilinks to cr_ids
+					const values = Array.isArray(propValue) ? propValue : [propValue];
+					for (const val of values) {
+						if (typeof val !== 'string' || !isWikilink(val)) continue;
+						const linkPath = extractWikilinkPath(val);
+						const targetFile = this.plugin.app.metadataCache.getFirstLinkpathDest(linkPath, file.path);
+						if (targetFile instanceof TFile) {
+							const targetCache = this.plugin.app.metadataCache.getFileCache(targetFile);
+							const targetCrId = targetCache?.frontmatter?.cr_id as string | undefined;
+							if (targetCrId) targetCrIds.push(targetCrId);
+						}
+					}
+				}
+
+				for (const targetCrId of targetCrIds) {
+					definedKeys.add(`${sourceCrId}:${targetCrId}:${mapping.typeId}`);
+				}
+			}
+		}
 	}
 
 	/**
