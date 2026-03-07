@@ -384,6 +384,17 @@
   flex: 1;
 }
 
+.cr-manage-members-role-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-4-1);
+  margin-top: var(--size-4-1);
+}
+
+.cr-manage-members-role-chip {
+  font-size: var(--font-smallest);
+}
+
 .cr-manage-members-edit-actions {
   display: flex;
   justify-content: flex-end;

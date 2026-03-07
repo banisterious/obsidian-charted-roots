@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Cannot select roles in Manage Members modal** ([#286](https://github.com/banisterious/obsidian-charted-roots/issues/286)): Replaced the autocomplete suggest dropdown (which had z-index issues inside modals) with clickable role chips rendered directly below the role input.
+
 ---
 
 ## [0.20.20] - 2026-03-06

@@ -13,7 +13,6 @@ import type { OrganizationInfo, PersonMembership, MembershipData } from '../type
 import { MembershipService } from '../services/membership-service';
 import { OrganizationService } from '../services/organization-service';
 import { createLucideIcon } from '../../ui/lucide-icons';
-import { RoleSuggest } from './role-suggest';
 import { getLogger } from '../../core/logging';
 
 const logger = getLogger('ManageOrganizationMembersModal');
@@ -220,15 +219,21 @@ export class ManageOrganizationMembersModal extends Modal {
 		});
 		roleInput.value = member.role || '';
 
-		// Attach role suggest if the organization has defined roles
+		// Show clickable role chips if the organization has defined roles
 		const effectiveRoles = this.organizationService.getEffectiveRoles(this.organization);
 		if (effectiveRoles.length > 0) {
-			new RoleSuggest(
-				this.app,
-				roleInput,
-				effectiveRoles,
-				(value) => { roleInput.value = value; }
-			);
+			const rolesRow = form.createDiv({ cls: 'cr-manage-members-role-chips' });
+			for (const role of effectiveRoles) {
+				const chip = rolesRow.createEl('button', {
+					cls: 'cr-btn cr-btn--ghost cr-btn--small cr-manage-members-role-chip',
+					text: role
+				});
+				chip.addEventListener('click', (e) => {
+					e.preventDefault();
+					roleInput.value = role;
+					roleInput.focus();
+				});
+			}
 		}
 
 		// Date joined field
