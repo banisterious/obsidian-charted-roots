@@ -21,6 +21,12 @@ Charted Roots provides tools for managing genealogical sources and evidence, hel
   - [Enabling Source Indicators](#enabling-source-indicators)
   - [How Indicators Appear](#how-indicators-appear)
   - [How It Works](#how-it-works)
+- [Fact-Level Source Tracking](#fact-level-source-tracking)
+  - [Enabling Fact-Level Tracking](#enabling-fact-level-tracking)
+  - [Adding Sourced Facts](#adding-sourced-facts)
+  - [Trackable Facts](#trackable-facts)
+  - [Coverage Threshold](#coverage-threshold)
+  - [Where Coverage Appears](#where-coverage-appears)
 - [Sources Bases Template](#sources-bases-template)
   - [Creating a Sources Base](#creating-a-sources-base)
   - [Included Views](#included-views)
@@ -296,6 +302,73 @@ During tree generation, Charted Roots:
 3. Adds small text nodes near person nodes showing the count
 
 This helps you identify which ancestors need more research at a glance.
+
+## Fact-Level Source Tracking
+
+While [source indicators](#source-indicators-on-trees) show how many sources link to a person, **fact-level source tracking** goes deeper — it records *which specific facts* about a person have source citations. This aligns with the GPS principle that each key claim should be supported by evidence.
+
+When enabled, person notes display a coverage score (e.g., "3/10 facts sourced") in the Control Center's Data Quality card and the Entity Profile View.
+
+### Enabling Fact-Level Tracking
+
+1. Go to **Settings > Charted Roots > Research tools**
+2. Enable **"Track which specific facts have source citations"**
+
+### Adding Sourced Facts
+
+Add `sourced_*` properties to a person note's frontmatter, listing the source notes that support each fact as wikilink arrays:
+
+```yaml
+sourced_birth_date:
+  - "[[Birth Certificate - John Smith]]"
+  - "[[1870 Census - Smith Family]]"
+sourced_birth_place:
+  - "[[Birth Certificate - John Smith]]"
+sourced_parents:
+  - "[[1870 Census - Smith Family]]"
+sourced_occupation:
+  - "[[1900 Census - Smith Family]]"
+```
+
+Each property is a simple array of source wikilinks, compatible with Obsidian's property panel.
+
+**Important distinctions:**
+- A **missing property** means the fact hasn't been tracked yet
+- An **empty array** (`sourced_birth_date: []`) means the fact is explicitly marked as unsourced
+
+### Trackable Facts
+
+There are 10 fact types you can track:
+
+| Property | Description |
+|----------|-------------|
+| `sourced_birth_date` | Sources for date of birth |
+| `sourced_birth_place` | Sources for location of birth |
+| `sourced_death_date` | Sources for date of death |
+| `sourced_death_place` | Sources for location of death |
+| `sourced_parents` | Sources for parent relationships |
+| `sourced_spouse` | Sources for spouse relationships |
+| `sourced_marriage_date` | Sources for date of marriage |
+| `sourced_marriage_place` | Sources for location of marriage |
+| `sourced_occupation` | Sources for occupation |
+| `sourced_residence` | Sources for residence locations |
+
+### Coverage Threshold
+
+Not every person will have all 10 facts applicable (e.g., an ancestor who never married won't have marriage facts). The **fact coverage threshold** setting controls how many sourced facts count as "100% coverage."
+
+- Go to **Settings > Charted Roots > Research tools > Fact coverage threshold**
+- Default: **6** — sourcing 6 of the 10 facts gives 100% coverage
+- Adjust based on your research goals
+
+### Where Coverage Appears
+
+Once you add `sourced_*` properties, coverage data shows up in several places:
+
+- **Control Center > Data Quality** — Research gaps card showing unsourced and weakly sourced facts across your vault, grouped by fact type
+- **Entity Profile View** — Data quality section showing coverage percentage for the current person
+- **Source indicators on trees** — When coverage display is enabled, tree badges show the coverage percentage alongside the source count
+- **Reports** — Source summary and research gaps reports include fact coverage statistics
 
 ## Sources Bases Template
 
