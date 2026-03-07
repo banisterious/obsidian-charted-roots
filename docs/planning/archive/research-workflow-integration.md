@@ -599,7 +599,7 @@ status: in-progress
 
 ## Phase 3: Advanced Features
 
-**Status:** Conceptual (after Phase 2 feedback)
+**Status:** Partially complete (Templates/Bases shipped v0.20.16)
 
 ### 1. Negative Findings Surfacing
 
@@ -635,16 +635,15 @@ status: in-progress
 
 ### 4. Templates/Bases Integration
 
+**Status:** ✅ Complete (v0.20.16, commit 40276fa8)
+
 **Feature:** Ready-to-use Bases templates for research entities.
 
 **Implementation:**
-- Create Bases for:
-  - Research Project
-  - Research Report
-  - Individual Research Note
-  - Research Journal
-- Include sample content and property hints
-- Respect property aliases
+- ✅ "Create research base template" command
+- ✅ `research.base` file with 12 views covering all five research entity types
+- ✅ Per-type views, status grouping, negative findings view, and private items filter
+- ✅ Respects property aliases
 
 ---
 
