@@ -47,9 +47,17 @@ export function renderRelationshipsSection(
 		renderFamilySubsection(content, data, options);
 	}
 
-	// Other relationships subsection (exclude family category — already shown above)
-	const allOther = [...data.relationships, ...data.inverseRelationships]
-		.filter(rel => (rel.type?.category || 'other') !== 'family');
+	// Other relationships subsection
+	// Exclude: family category (shown above), types with familyGraphMapping (already in PersonNode),
+	// and deduplicate direct + inverse entries for the same relationship.
+	const allOther = deduplicateRelationships(
+		[...data.relationships, ...data.inverseRelationships]
+			.filter(rel => {
+				if ((rel.type?.category || 'other') === 'family') return false;
+				if (rel.type?.includeOnFamilyTree && rel.type?.familyGraphMapping) return false;
+				return true;
+			})
+	);
 	if (allOther.length > 0) {
 		renderOtherSubsection(content, allOther, options);
 	}
@@ -199,4 +207,15 @@ function renderRelGroup(
 			});
 		}
 	}
+}
+
+/** Remove duplicate relationships (same source, target, and type). */
+function deduplicateRelationships(rels: ParsedRelationship[]): ParsedRelationship[] {
+	const seen = new Set<string>();
+	return rels.filter(rel => {
+		const key = `${rel.sourceCrId}:${rel.targetCrId || ''}:${rel.type.id}`;
+		if (seen.has(key)) return false;
+		seen.add(key);
+		return true;
+	});
 }

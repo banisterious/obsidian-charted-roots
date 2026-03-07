@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Cannot select roles in Manage Members modal** ([#286](https://github.com/banisterious/obsidian-charted-roots/issues/286)): Replaced the autocomplete suggest dropdown (which had z-index issues inside modals) with clickable role chips rendered directly below the role input.
 
+- **Profile View relationship duplication** ([#289](https://github.com/banisterious/obsidian-charted-roots/issues/289)): Relationships with a `familyGraphMapping` (e.g., godparent) no longer appear in both the Family and Other subsections. Additionally, when both sides of a relationship are defined (A→B and B→A), the combined direct + inverse entries are now deduplicated.
+
 ---
 
 ## [0.20.20] - 2026-03-06

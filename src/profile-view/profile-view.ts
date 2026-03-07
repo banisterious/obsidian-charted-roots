@@ -423,8 +423,7 @@ export class ProfileView extends ItemView {
 		if (!this.sectionsEl) return;
 
 		const familyCount = this.countFamilyMembers(data);
-		const otherCount = [...data.relationships, ...data.inverseRelationships]
-			.filter(rel => (rel.type?.category || 'other') !== 'family').length;
+		const otherCount = this.countOtherRelationships(data);
 
 		renderRelationshipsSection(this.sectionsEl, data, {
 			...options,
@@ -690,6 +689,25 @@ export class ProfileView extends ItemView {
 	}
 
 	// ── Utility ─────────────────────────────────────────────
+
+	/**
+	 * Count "other" relationships, excluding family-category types and types
+	 * already shown in the family subsection via familyGraphMapping.
+	 * Also deduplicates direct + inverse entries for the same relationship.
+	 */
+	private countOtherRelationships(data: ProfileEntityData & { entityType: 'person' }): number {
+		const seen = new Set<string>();
+		let count = 0;
+		for (const rel of [...data.relationships, ...data.inverseRelationships]) {
+			if ((rel.type?.category || 'other') === 'family') continue;
+			if (rel.type?.includeOnFamilyTree && rel.type?.familyGraphMapping) continue;
+			const key = `${rel.sourceCrId}:${rel.targetCrId || ''}:${rel.type.id}`;
+			if (seen.has(key)) continue;
+			seen.add(key);
+			count++;
+		}
+		return count;
+	}
 
 	private countFamilyMembers(data: ProfileEntityData & { entityType: 'person' }): number {
 		const node = data.node;
