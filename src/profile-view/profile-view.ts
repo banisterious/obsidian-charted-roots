@@ -700,7 +700,7 @@ export class ProfileView extends ItemView {
 		let count = 0;
 		for (const rel of [...data.relationships, ...data.inverseRelationships]) {
 			if ((rel.type?.category || 'other') === 'family') continue;
-			if (rel.type?.includeOnFamilyTree && rel.type?.familyGraphMapping) continue;
+			if (rel.type?.builtIn && rel.type?.includeOnFamilyTree && rel.type?.familyGraphMapping) continue;
 			const key = `${rel.sourceCrId}:${rel.targetCrId || ''}:${rel.type.id}`;
 			if (seen.has(key)) continue;
 			seen.add(key);

@@ -48,13 +48,15 @@ export function renderRelationshipsSection(
 	}
 
 	// Other relationships subsection
-	// Exclude: family category (shown above), types with familyGraphMapping (already in PersonNode),
-	// and deduplicate direct + inverse entries for the same relationship.
+	// Exclude: family category (shown above), built-in types with familyGraphMapping (already in PersonNode).
+	// Custom types with familyGraphMapping are kept — the Family section renders them with generic labels,
+	// so they need to appear here with their custom type names (e.g., "Sire" instead of "Parent").
+	// Deduplicate direct + inverse entries for the same relationship.
 	const allOther = deduplicateRelationships(
 		[...data.relationships, ...data.inverseRelationships]
 			.filter(rel => {
 				if ((rel.type?.category || 'other') === 'family') return false;
-				if (rel.type?.includeOnFamilyTree && rel.type?.familyGraphMapping) return false;
+				if (rel.type?.builtIn && rel.type?.includeOnFamilyTree && rel.type?.familyGraphMapping) return false;
 				return true;
 			})
 	);
