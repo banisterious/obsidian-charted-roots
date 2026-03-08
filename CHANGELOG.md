@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.20.21] - 2026-03-08
+
 ### Added
 
 - **Link to existing event from context menu** ([#288](https://github.com/banisterious/obsidian-charted-roots/issues/288)): Person and source notes now have a "Link to existing event" option in their right-click context menu. Opens the event picker to search and select an event, then adds the person or source to the event's frontmatter.
