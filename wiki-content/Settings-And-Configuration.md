@@ -333,7 +333,7 @@ Privacy display format options:
 
 ## Research Tools (Optional)
 
-Advanced tools for genealogical research, aligned with the Genealogical Proof Standard.
+Found under **Advanced > Research tools** in the settings panel. Advanced tools for genealogical research, aligned with the Genealogical Proof Standard.
 
 | Setting | Default | Description |
 |---------|---------|-------------|
