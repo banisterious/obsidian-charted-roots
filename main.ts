@@ -2099,6 +2099,22 @@ export default class CanvasRootsPlugin extends Plugin {
 										});
 								});
 
+								// Link to existing event
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Link to existing event')
+										.setIcon('calendar-search')
+										.onClick(async () => {
+											const { EventPickerModal } = await import('./src/events/ui/event-picker-modal');
+											new EventPickerModal(this.app, this, {
+												onSelect: async (event) => {
+													await this.linkSourceToEvent(file, event);
+												},
+												allowCreate: false
+											}).open();
+										});
+								});
+
 								submenu.addSeparator();
 
 								// Add essential properties submenu
@@ -2200,6 +2216,21 @@ export default class CanvasRootsPlugin extends Plugin {
 									.setIcon('users')
 									.onClick(async () => {
 										await this.insertSourceRolesBlock(file);
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Charted Roots: Link to existing event')
+									.setIcon('calendar-search')
+									.onClick(async () => {
+										const { EventPickerModal } = await import('./src/events/ui/event-picker-modal');
+										new EventPickerModal(this.app, this, {
+											onSelect: async (event) => {
+												await this.linkSourceToEvent(file, event);
+											},
+											allowCreate: false
+										}).open();
 									});
 							});
 
@@ -2556,6 +2587,23 @@ export default class CanvasRootsPlugin extends Plugin {
 														}
 													).open();
 												}
+											});
+									});
+
+									eventsSubmenu.addItem((evItem) => {
+										evItem
+											.setTitle('Link to existing event')
+											.setIcon('calendar-search')
+											.onClick(async () => {
+												const { EventPickerModal } = await import('./src/events/ui/event-picker-modal');
+												new EventPickerModal(this.app, this, {
+													onSelect: async (event) => {
+														const cache = this.app.metadataCache.getFileCache(file);
+														const personName = cache?.frontmatter?.name || file.basename;
+														await this.linkPersonToEvent(file, personName, event);
+													},
+													allowCreate: false
+												}).open();
 											});
 									});
 
@@ -3107,6 +3155,23 @@ export default class CanvasRootsPlugin extends Plugin {
 												}
 											).open();
 										}
+									});
+							});
+
+							menu.addItem((item) => {
+								item
+									.setTitle('Charted Roots: Link to existing event')
+									.setIcon('calendar-search')
+									.onClick(async () => {
+										const cache = this.app.metadataCache.getFileCache(file);
+										const personName = cache?.frontmatter?.name || file.basename;
+										const { EventPickerModal } = await import('./src/events/ui/event-picker-modal');
+										new EventPickerModal(this.app, this, {
+											onSelect: async (event) => {
+												await this.linkPersonToEvent(file, personName, event);
+											},
+											allowCreate: false
+										}).open();
 									});
 							});
 
@@ -5611,6 +5676,76 @@ export default class CanvasRootsPlugin extends Plugin {
 				input.select();
 			}, 50);
 		});
+	}
+
+	/**
+	 * Link a person to an existing event by adding the person to the event's persons array
+	 */
+	private async linkPersonToEvent(personFile: TFile, personName: string, event: import('./src/events/types/event-types').EventNote): Promise<void> {
+		const personWikilink = `[[${personName}]]`;
+
+		try {
+			await this.app.fileManager.processFrontMatter(event.file, (frontmatter) => {
+				if (!frontmatter.persons) {
+					frontmatter.persons = [];
+				}
+				if (!Array.isArray(frontmatter.persons)) {
+					frontmatter.persons = [frontmatter.persons];
+				}
+
+				// Check if person is already linked
+				const alreadyLinked = frontmatter.persons.some((p: string) => {
+					const match = p.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/);
+					const refName = match ? match[1] : p;
+					return refName.toLowerCase() === personName.toLowerCase();
+				});
+
+				if (!alreadyLinked) {
+					frontmatter.persons.push(personWikilink);
+					new Notice(`Linked ${personName} to ${event.title || event.file.basename}`);
+				} else {
+					new Notice(`${personName} is already linked to this event`);
+				}
+			});
+		} catch (err) {
+			new Notice('Failed to link person to event');
+			console.error('linkPersonToEvent error:', err);
+		}
+	}
+
+	/**
+	 * Link a source to an existing event by adding the source to the event's sources array
+	 */
+	private async linkSourceToEvent(sourceFile: TFile, event: import('./src/events/types/event-types').EventNote): Promise<void> {
+		const sourceName = sourceFile.basename;
+		const sourceWikilink = `[[${sourceName}]]`;
+
+		try {
+			await this.app.fileManager.processFrontMatter(event.file, (frontmatter) => {
+				if (!frontmatter.sources) {
+					frontmatter.sources = [];
+				}
+				if (!Array.isArray(frontmatter.sources)) {
+					frontmatter.sources = [frontmatter.sources];
+				}
+
+				const alreadyLinked = frontmatter.sources.some((s: string) => {
+					const match = s.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/);
+					const refName = match ? match[1] : s;
+					return refName.toLowerCase() === sourceName.toLowerCase();
+				});
+
+				if (!alreadyLinked) {
+					frontmatter.sources.push(sourceWikilink);
+					new Notice(`Linked ${sourceName} to ${event.title || event.file.basename}`);
+				} else {
+					new Notice(`${sourceName} is already linked to this event`);
+				}
+			});
+		} catch (err) {
+			new Notice('Failed to link source to event');
+			console.error('linkSourceToEvent error:', err);
+		}
 	}
 
 	/**
