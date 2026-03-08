@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Link to existing event from context menu** ([#288](https://github.com/banisterious/obsidian-charted-roots/issues/288)): Person and source notes now have a "Link to existing event" option in their right-click context menu. Opens the event picker to search and select an event, then adds the person or source to the event's frontmatter.
+
 ### Fixed
 
 - **Cannot select roles in Manage Members modal** ([#286](https://github.com/banisterious/obsidian-charted-roots/issues/286)): Replaced the autocomplete suggest dropdown (which had z-index issues inside modals) with clickable role chips rendered directly below the role input.
