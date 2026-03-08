@@ -394,7 +394,7 @@ export interface ReportPerson {
 	deathDate?: string;
 	deathPlace?: string;
 	sex?: 'male' | 'female' | 'other' | 'unknown';
-	pronouns?: string;
+	pronouns?: string | string[];
 	occupation?: string;
 	filePath: string;
 	/** Research level (0-6) based on Hoitink's Six Levels */

@@ -56,7 +56,7 @@ export interface PersonInfo {
 	birthDate?: string;
 	deathDate?: string;
 	sex?: string;
-	pronouns?: string;
+	pronouns?: string | string[];
 	birthPlace?: PlaceInfo;
 	deathPlace?: PlaceInfo;
 	burialPlace?: PlaceInfo;
@@ -741,7 +741,8 @@ export class PersonPickerModal extends Modal {
 
 		// Show pronouns if enabled in settings and person has pronouns
 		if (this.plugin?.settings.showPronouns && person.pronouns) {
-			nameContainer.createSpan({ cls: 'crc-picker-item__pronouns', text: `(${person.pronouns})` });
+			const pronounsText = Array.isArray(person.pronouns) ? person.pronouns.join(', ') : person.pronouns;
+			nameContainer.createSpan({ cls: 'crc-picker-item__pronouns', text: `(${pronounsText})` });
 		}
 
 		// Show DNA Match badge when DNA tracking is enabled and person has DNA data

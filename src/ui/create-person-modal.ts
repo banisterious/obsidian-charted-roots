@@ -73,7 +73,7 @@ interface SpousesFieldData {
 interface PersonFormData {
 	name?: string;
 	sex?: string;
-	pronouns?: string;
+	pronouns?: string[];
 	birthDate?: string;
 	deathDate?: string;
 	occupation?: string;
@@ -187,7 +187,7 @@ export class CreatePersonModal extends Modal {
 				personType?: string;
 				sex?: string;
 				gender?: string; // Kept for backwards compatibility
-				pronouns?: string;
+				pronouns?: string | string[];
 				// Name components (#174, #192)
 				givenName?: string;
 				surnames?: string[];
@@ -278,7 +278,7 @@ export class CreatePersonModal extends Modal {
 				crId: ep.crId,
 				personType: ep.personType,
 				sex: ep.sex || ep.gender, // sex preferred, gender for backwards compatibility
-				pronouns: ep.pronouns,
+				pronouns: Array.isArray(ep.pronouns) ? ep.pronouns : ep.pronouns ? [ep.pronouns] : undefined,
 				// Name components (#174, #192)
 				givenName: ep.givenName,
 				surnames: ep.surnames,
@@ -546,16 +546,8 @@ export class CreatePersonModal extends Modal {
 					this.personData.sex = value || undefined;
 				}));
 
-		// Pronouns
-		new Setting(form)
-			.setName('Pronouns')
-			.setDesc('Pronouns for the person (optional)')
-			.addText(text => text
-				.setPlaceholder('e.g., she/her, they/them')
-				.setValue(this.personData.pronouns || '')
-				.onChange(value => {
-					this.personData.pronouns = value || undefined;
-				}));
+		// Pronouns (chip-style multi-value input)
+		this.renderPronounsField(form);
 
 		// === LIFE EVENTS SECTION (moved higher for better UX) ===
 		// Birth date
@@ -1391,6 +1383,84 @@ export class CreatePersonModal extends Modal {
 	 */
 	private hasSourcesData(): boolean {
 		return this.sourcesField.crIds.length > 0;
+	}
+
+	/**
+	 * Render pronouns field with chip-style multi-value input
+	 */
+	private renderPronounsField(container: HTMLElement): void {
+		const PRESET_PRONOUNS = ['she/her', 'he/him', 'they/them'];
+
+		const setting = new Setting(container)
+			.setName('Pronouns')
+			.setDesc('Pronouns for the person (optional)');
+
+		const controlEl = setting.controlEl;
+
+		// Chips container for selected pronouns
+		const chipsEl = controlEl.createDiv({ cls: 'cr-pronouns-chips' });
+
+		// Text input for custom pronouns
+		const inputEl = controlEl.createEl('input', {
+			cls: 'cr-pronouns-input',
+			attr: { type: 'text', placeholder: 'Add custom...' }
+		});
+
+		const renderChips = () => {
+			chipsEl.empty();
+			const current = this.personData.pronouns || [];
+			for (const pronoun of current) {
+				const chip = chipsEl.createDiv({ cls: 'cr-pronouns-chip' });
+				chip.createSpan({ text: pronoun });
+				const removeBtn = chip.createSpan({ cls: 'cr-pronouns-chip__remove', text: '\u00d7' });
+				removeBtn.addEventListener('click', () => {
+					this.personData.pronouns = current.filter(p => p !== pronoun);
+					if (this.personData.pronouns.length === 0) this.personData.pronouns = undefined;
+					renderChips();
+					renderPresets();
+				});
+			}
+		};
+
+		// Preset suggestion chips
+		const presetsEl = controlEl.createDiv({ cls: 'cr-pronouns-presets' });
+
+		const renderPresets = () => {
+			presetsEl.empty();
+			const current = this.personData.pronouns || [];
+			const available = PRESET_PRONOUNS.filter(p => !current.includes(p));
+			for (const preset of available) {
+				const btn = presetsEl.createEl('button', {
+					cls: 'cr-btn cr-btn--ghost cr-btn--small cr-pronouns-preset',
+					text: preset
+				});
+				btn.addEventListener('click', (e) => {
+					e.preventDefault();
+					if (!this.personData.pronouns) this.personData.pronouns = [];
+					this.personData.pronouns.push(preset);
+					renderChips();
+					renderPresets();
+				});
+			}
+		};
+
+		// Handle custom input via Enter or comma
+		inputEl.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter' || e.key === ',') {
+				e.preventDefault();
+				const value = inputEl.value.trim().replace(/,$/, '');
+				if (value && !(this.personData.pronouns || []).includes(value)) {
+					if (!this.personData.pronouns) this.personData.pronouns = [];
+					this.personData.pronouns.push(value);
+					renderChips();
+					renderPresets();
+				}
+				inputEl.value = '';
+			}
+		});
+
+		renderChips();
+		renderPresets();
 	}
 
 	/**

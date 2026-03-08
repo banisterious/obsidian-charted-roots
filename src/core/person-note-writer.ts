@@ -99,7 +99,7 @@ export interface PersonData {
 	deathPlace?: string;
 	occupation?: string;
 	sex?: string;
-	pronouns?: string;      // Pronouns (e.g., "she/her", "they/them")
+	pronouns?: string[];    // Pronouns (e.g., ["she/her", "they/them"])
 	cr_living?: boolean;    // Manual override for living status detection
 	collection?: string;    // User-defined grouping
 	universe?: string;      // Fictional universe or world
@@ -297,7 +297,7 @@ export async function createPersonNote(
 		frontmatter[prop('sex')] = person.sex;
 	}
 
-	if (person.pronouns) {
+	if (person.pronouns && person.pronouns.length > 0) {
 		frontmatter[prop('pronouns')] = person.pronouns;
 	}
 
@@ -1066,7 +1066,7 @@ export async function updatePersonNote(
 			}
 		}
 		if (person.pronouns !== undefined) {
-			if (person.pronouns) {
+			if (person.pronouns && person.pronouns.length > 0) {
 				frontmatter.pronouns = person.pronouns;
 			} else {
 				delete frontmatter.pronouns;

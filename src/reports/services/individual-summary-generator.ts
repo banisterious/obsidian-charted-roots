@@ -286,7 +286,8 @@ export class IndividualSummaryGenerator {
 			lines.push(`- **Sex:** ${person.sex.charAt(0).toUpperCase() + person.sex.slice(1)}`);
 		}
 		if (person.pronouns) {
-			lines.push(`- **Pronouns:** ${person.pronouns}`);
+			const pronounsText = Array.isArray(person.pronouns) ? person.pronouns.join(', ') : person.pronouns;
+			lines.push(`- **Pronouns:** ${pronounsText}`);
 		}
 		if (options.includeAttributes && person.occupation) {
 			lines.push(`- **Occupation:** ${person.occupation}`);

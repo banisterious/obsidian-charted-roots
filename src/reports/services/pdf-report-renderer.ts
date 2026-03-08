@@ -777,7 +777,7 @@ export class PdfReportRenderer {
 			content.push(this.buildSectionHeader('Husband'));
 			content.push(this.buildKeyValueTable([
 				{ label: 'Name', value: husband.name },
-				{ label: 'Pronouns', value: husband.pronouns || '' },
+				{ label: 'Pronouns', value: Array.isArray(husband.pronouns) ? husband.pronouns.join(', ') : husband.pronouns || '' },
 				{ label: 'Birth date', value: husband.birthDate || '' },
 				{ label: 'Birth place', value: this.stripWikilinks(husband.birthPlace) },
 				{ label: 'Death date', value: husband.deathDate || '' },
@@ -792,7 +792,7 @@ export class PdfReportRenderer {
 			content.push(this.buildSectionHeader('Wife'));
 			content.push(this.buildKeyValueTable([
 				{ label: 'Name', value: wife.name },
-				{ label: 'Pronouns', value: wife.pronouns || '' },
+				{ label: 'Pronouns', value: Array.isArray(wife.pronouns) ? wife.pronouns.join(', ') : wife.pronouns || '' },
 				{ label: 'Birth date', value: wife.birthDate || '' },
 				{ label: 'Birth place', value: this.stripWikilinks(wife.birthPlace) },
 				{ label: 'Death date', value: wife.deathDate || '' },
@@ -965,7 +965,7 @@ export class PdfReportRenderer {
 		content.push(this.buildKeyValueTable([
 			{ label: 'Name', value: result.person.name },
 			{ label: 'Sex', value: result.person.sex || 'Unknown' },
-			{ label: 'Pronouns', value: result.person.pronouns || '' },
+			{ label: 'Pronouns', value: Array.isArray(result.person.pronouns) ? result.person.pronouns.join(', ') : result.person.pronouns || '' },
 			{ label: 'Birth date', value: result.person.birthDate || '' },
 			{ label: 'Birth place', value: this.stripWikilinks(result.person.birthPlace) },
 			{ label: 'Death date', value: result.person.deathDate || '' },
