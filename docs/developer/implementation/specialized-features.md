@@ -436,22 +436,27 @@ const logsToExport = this.plugin.settings.obfuscateLogExports
 
 ### Pronouns Field
 
-The frontmatter supports a `pronouns` property for respectful communication:
+The frontmatter supports a `pronouns` property for respectful communication. Stored as a YAML array (single string also accepted for backward compatibility):
 
 ```yaml
-pronouns: she/her   # Free-form string
+pronouns:
+  - she/her
+  - they/them
 ```
+
+**Edit modal UI:** A chip-style multi-value input with preset suggestions (she/her, he/him, they/them) and free-text entry for custom pronouns. Each selected pronoun appears as a removable chip.
 
 **Display behavior:**
 - Controlled by `settings.showPronouns` (default: enabled)
-- Shown in person pickers after name in parentheses: "Jane Smith (she/her)"
-- Included in reports (Markdown, ODT, PDF)
+- Shown in person pickers after name in parentheses: "Jane Smith (she/her, they/them)"
+- Included in reports (Markdown, ODT, PDF) — array values joined with ", "
 - Editable via Edit Person modal
 
 **Implementation:**
-- Added to `PersonNode` interface in `src/core/family-graph.ts`
-- Extracted from frontmatter in `buildPersonNode()`
-- Passed to person picker modals and report generators
+- `PersonNode.pronouns` typed as `string | string[]` in `src/core/family-graph.ts`
+- `PersonData.pronouns` typed as `string[]` in `src/core/person-note-writer.ts`
+- All display paths normalize with `Array.isArray()` checks for backward compatibility
+- Chip input rendered by `renderPronounsField()` in `src/ui/create-person-modal.ts`
 
 ### Private Fields
 

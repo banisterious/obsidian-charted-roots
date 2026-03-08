@@ -147,7 +147,7 @@ memberships:
 
 The Add Membership modal provides:
 - Organization dropdown (sorted alphabetically)
-- Role field with autocomplete suggestions from the organization's defined roles (freeform entry also supported)
+- Role field with clickable role chips below the input showing the organization's defined roles (click a chip to fill the input). Freeform entry is also supported for roles not in the predefined list.
 - From/To date fields (support fictional date formats)
 - Notes field for additional context
 

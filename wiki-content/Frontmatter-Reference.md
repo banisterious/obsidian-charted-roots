@@ -167,7 +167,7 @@ erDiagram
 | `sex` | `string` | Biological sex (for GEDCOM, historical records) | `"male"`, `"female"`, `"nonbinary"`, `"unknown"` |
 | `gender` | `string` | Gender (backwards compatibility - prefer `sex` or `gender_identity`) | `"Male"`, `"Female"` |
 | `gender_identity` | `string` | Gender identity (distinct from biological sex) | `"male"`, `"female"`, `"nonbinary"`, `"genderfluid"` |
-| `pronouns` | `string` | Pronouns for the person (displayed in person pickers when enabled) | `"she/her"`, `"they/them"`, `"he/him"` |
+| `pronouns` | `string` or `string[]` | Pronouns for the person (displayed in person pickers when enabled). Supports a single string for backward compatibility, but array format is preferred. | `"she/her"`, `["she/her", "they/them"]` |
 | `occupation` | `string` | Primary occupation | `"Farmer"` |
 | `research_level` | `number` | Research progress level (0-6) | `3` |
 

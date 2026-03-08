@@ -49,6 +49,10 @@ Event notes are structured markdown files that document individual life events. 
 2. Click **"+ Create event note"**
 3. Complete the form fields
 
+**Linking a person or source to an existing event:**
+
+Right-click a person or source note → **Events** → **Link to existing event**. This opens the event picker to search and select an event, then adds the person or source to the event's frontmatter (`persons` or `sources` array).
+
 **Manual creation:**
 
 Create a new markdown file with this frontmatter structure:

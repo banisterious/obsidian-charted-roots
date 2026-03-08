@@ -114,8 +114,8 @@ Section expand/collapse states are remembered across sessions and between entiti
 | **Data Quality** | Research level (0-6), source coverage percentage, research questions, proof summaries |
 
 The Relationships section is split into two subsections:
-- **Family** (expanded by default): Biological parents, step/adoptive/foster parents, spouses with marriage dates, children, siblings
-- **Other** (collapsed by default, hidden if empty): Religious, professional, social, legal, and other relationship types
+- **Family** (expanded by default): Biological parents, step/adoptive/foster parents, spouses with marriage dates, children, siblings. Populated from the PersonNode's family graph properties.
+- **Other** (collapsed by default, hidden if empty): Religious, professional, social, legal, and other relationship types. Excludes relationships already shown in Family (those with a `familyGraphMapping`). When both sides of a relationship are defined (A→B and B→A), duplicates are automatically removed.
 
 ### Place Profiles
 

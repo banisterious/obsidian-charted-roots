@@ -176,6 +176,15 @@ Options always include `sectionStates`, `onToggle`, `onEntityLinkClick`, and `is
 
 Shared sections (Events, Sources, Media) use the same renderer function called with entity-specific data.
 
+### Relationships Section (Person)
+
+The person Relationships section (`relationships-section.ts`) splits into Family and Other subsections:
+
+- **Family**: Rendered from `PersonNode` properties (parents, spouses, children). These are populated by relationship types with a `familyGraphMapping`.
+- **Other**: Combines direct and inverse relationships, then filters out family-category types and types with `includeOnFamilyTree && familyGraphMapping` (already shown in Family). A `deduplicateRelationships()` helper removes entries where the same source/target/type appear in both the direct and inverse sets.
+
+The `otherCount` in the section summary uses the same filter and dedup logic via `countOtherRelationships()` in `profile-view.ts`.
+
 ---
 
 ## Identity Header

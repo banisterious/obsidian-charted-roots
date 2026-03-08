@@ -8,6 +8,7 @@ Charted Roots adds context menu actions throughout Obsidian. Right-click on file
 
 - [Person Notes](#person-notes)
 - [Place Notes](#place-notes)
+- [Source Notes](#source-notes)
 - [Map Notes](#map-notes)
 - [Canvas Files](#canvas-files)
 - [Folders](#folders)
@@ -41,6 +42,7 @@ Right-click on any markdown file with a `cr_id` frontmatter property:
 | **Add source...** | Add a source citation to this person |
 | **Events** | |
 | → Create event for this person | Open Create Event modal with person pre-filled |
+| → Link to existing event | Search for and link this person to an existing event note |
 | → Export timeline to Canvas | Export all events for this person to a Canvas file |
 | → Export timeline to Excalidraw | Export all events for this person to an Excalidraw file |
 | **Mark as root person** | Designate as a tree root (toggles to "Unmark" if already set) |
@@ -70,6 +72,20 @@ Right-click on markdown files with `type: place` in frontmatter:
 | **Edit place** | Open the place editing modal |
 | **[Open profile](Entity-Profile-View)** | Open the Entity Profile View for this place |
 | **Add essential properties** | Add missing place properties |
+
+## Source Notes
+
+Right-click on markdown files with `cr_type: source` in frontmatter:
+
+| Action | Description |
+|--------|-------------|
+| **Edit source** | Open the source editing modal |
+| **Generate citation** | Generate a formatted citation for this source |
+| **Open sources tab** | Open the Control Center Sources tab |
+| **[Open profile](Entity-Profile-View)** | Open the Entity Profile View for this source |
+| **Add source roles block** | Insert a dynamic source roles block into the note |
+| **Link to existing event** | Search for and link this source to an existing event note |
+| **Add essential properties** | Add missing source or person properties |
 
 ## Map Notes
 
@@ -155,6 +171,7 @@ Right-click on any person in the People tab list:
 | **Open in new tab** | Open the person's note in a new tab |
 | **Events** | |
 | → Create event for this person | Open Create Event modal with person pre-filled |
+| → Link to existing event | Search for and link this person to an existing event note |
 | → Export timeline to Canvas | Export all events for this person to a Canvas file |
 | → Export timeline to Excalidraw | Export all events for this person to an Excalidraw file |
 
