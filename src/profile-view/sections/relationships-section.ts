@@ -9,6 +9,7 @@ import type { App } from 'obsidian';
 import type { PersonProfileData, SectionToggleFn, EntityLinkClickFn, SectionState } from '../profile-types';
 import type { ParsedRelationship } from '../../relationships/types/relationship-types';
 import { renderProfileSection } from './section-base';
+import { capitalize } from '../../utils/format-utils';
 
 /**
  * Test whether a relationship belongs in the "Other" subsection.
@@ -148,7 +149,7 @@ function renderOtherSubsection(
 	for (const [category, rels] of byCategory) {
 		const catEl = otherEl.createDiv({ cls: 'cr-profile__rel-category' });
 		catEl.createSpan({
-			text: category.charAt(0).toUpperCase() + category.slice(1),
+			text: capitalize(category),
 			cls: 'cr-profile__rel-category-label'
 		});
 

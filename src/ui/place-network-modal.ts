@@ -7,6 +7,7 @@ import { App, Modal, Setting } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
 import { PlaceNode, PlaceCategory } from '../models/place';
+import { capitalize } from '../utils/format-utils';
 
 interface NetworkNode {
 	id: string;
@@ -604,7 +605,7 @@ export class PlaceNetworkModal extends Modal {
 				const item = legend.createDiv({ cls: 'crc-network-legend-item' });
 				const dot = item.createSpan({ cls: 'crc-network-legend-dot' });
 				dot.style.setProperty('background-color', this.getCategoryColor(cat));
-				item.createSpan({ text: cat.charAt(0).toUpperCase() + cat.slice(1) });
+				item.createSpan({ text: capitalize(cat) });
 			}
 		} else if (this.colorMode === 'type') {
 			const types = ['country', 'state', 'city', 'town', 'village'];
@@ -612,7 +613,7 @@ export class PlaceNetworkModal extends Modal {
 				const item = legend.createDiv({ cls: 'crc-network-legend-item' });
 				const dot = item.createSpan({ cls: 'crc-network-legend-dot' });
 				dot.style.setProperty('background-color', this.getTypeColor(type));
-				item.createSpan({ text: type.charAt(0).toUpperCase() + type.slice(1) });
+				item.createSpan({ text: capitalize(type) });
 			}
 		} else {
 			const gradientItem = legend.createDiv({ cls: 'crc-network-legend-item' });

@@ -9,6 +9,7 @@ import { RelationshipContext } from './quick-create-person-modal';
 import { RelationshipService } from '../relationships';
 import type { RelationshipTypeDefinition } from '../relationships';
 import type CanvasRootsPlugin from '../../main';
+import { capitalize } from '../utils/format-utils';
 
 /**
  * Modal for adding a custom relationship to a person note
@@ -69,7 +70,7 @@ export class AddRelationshipModal extends Modal {
 
 				// Group by category
 				for (const [category, categoryTypes] of typesByCategory) {
-					const categoryLabel = category.charAt(0).toUpperCase() + category.slice(1);
+					const categoryLabel = capitalize(category);
 					for (const type of categoryTypes) {
 						dropdown.addOption(type.id, `${categoryLabel}: ${type.name}`);
 					}

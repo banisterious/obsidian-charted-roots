@@ -13,6 +13,7 @@ import type {
 } from '../types/report-types';
 import { isUniverseNote } from '../../utils/note-type-detection';
 import { getLogger } from '../../core/logging';
+import { capitalize } from '../../utils/format-utils';
 
 const logger = getLogger('UniverseOverviewGenerator');
 
@@ -494,7 +495,7 @@ export class UniverseOverviewGenerator {
 		if (options.includeEntityList && entityLists) {
 			for (const [type, entities] of Object.entries(entityLists)) {
 				if (entities.length > 0) {
-					lines.push(`## ${type.charAt(0).toUpperCase() + type.slice(1)}`);
+					lines.push(`## ${capitalize(type)}`);
 					lines.push('');
 					for (const entity of entities) {
 						lines.push(`- [[${entity.name}]]`);

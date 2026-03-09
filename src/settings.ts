@@ -31,6 +31,7 @@ import {
 	CANONICAL_NOTE_TYPES,
 	type ValueAliasField
 } from './core/value-alias-service';
+import { capitalize } from './utils/format-utils';
 
 export interface RecentTreeInfo {
 	canvasPath: string;
@@ -626,7 +627,7 @@ export function getPlaceFolderForCategory(
 	// Fall back to automatic subfolder if enabled and not default category
 	if (settings.useCategorySubfolders && category !== defaultCategory) {
 		// Capitalize first letter: historical → Historical
-		const subfolder = category.charAt(0).toUpperCase() + category.slice(1);
+		const subfolder = capitalize(category);
 		return `${baseFolder}/${subfolder}`;
 	}
 

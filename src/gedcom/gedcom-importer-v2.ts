@@ -23,6 +23,7 @@ import { getLogger } from '../core/logging';
 import { createPersonNote, PersonData } from '../core/person-note-writer';
 import { generateCrId } from '../core/uuid';
 import { getErrorMessage } from '../core/error-utils';
+import { capitalize } from '../utils/format-utils';
 import type { CreateEventData, EventConfidence } from '../events/types/event-types';
 import { US_STATE_ABBREVIATIONS } from '../utils/place-name-normalizer';
 
@@ -1729,7 +1730,7 @@ export class GedcomImporterV2 {
 		// Convert snake_case to Title Case
 		return eventType
 			.split('_')
-			.map(word => word.charAt(0).toUpperCase() + word.slice(1))
+			.map(word => capitalize(word))
 			.join(' ');
 	}
 

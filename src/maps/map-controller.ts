@@ -66,6 +66,7 @@ function createMarkerClusterGroup(options?: L.MarkerClusterGroupOptions): L.Mark
 import { setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { getLogger } from '../core/logging';
+import { capitalize } from '../utils/format-utils';
 import { getEventType } from '../events/types/event-types';
 import type { LucideIconName } from '../ui/lucide-icons';
 import type {
@@ -619,7 +620,7 @@ export class MapController {
 		if (data.category) {
 			container.createEl('div', {
 				cls: 'cr-map-popup-type',
-				text: data.category.charAt(0).toUpperCase() + data.category.slice(1)
+				text: capitalize(data.category)
 			});
 		}
 
@@ -742,7 +743,7 @@ export class MapController {
 
 		const dateText = data.date ? `: ${data.date}` : '';
 		if (showText) {
-			const typeLabel = data.type.charAt(0).toUpperCase() + data.type.slice(1);
+			const typeLabel = capitalize(data.type);
 			typeRow.createEl('span', {
 				text: `${typeLabel}${dateText}`
 			});
@@ -1082,7 +1083,7 @@ export class MapController {
 				cls: 'cr-journey-waypoint'
 			});
 
-			const eventLabel = wp.eventType.charAt(0).toUpperCase() + wp.eventType.slice(1);
+			const eventLabel = capitalize(wp.eventType);
 			const dateText = wp.year ? ` (${wp.year})` : '';
 			wpEl.createEl('span', {
 				cls: 'cr-journey-waypoint-event',

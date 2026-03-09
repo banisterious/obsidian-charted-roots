@@ -7,6 +7,7 @@
 
 import type { TFile } from 'obsidian';
 import type { LucideIconName } from '../../ui/lucide-icons';
+import { capitalize } from '../../utils/format-utils';
 
 /**
  * Confidence level for event accuracy
@@ -663,7 +664,7 @@ export function getCategoryName(
 	if (custom) return custom.name;
 
 	// Fallback: capitalize the ID
-	return categoryId.charAt(0).toUpperCase() + categoryId.slice(1);
+	return capitalize(categoryId);
 }
 
 /**

@@ -32,6 +32,7 @@ import { TimelineCanvasExporter, TimelineCanvasOptions } from '../../events/serv
 import { ExcalidrawExporter, ExcalidrawExportOptions } from '../../excalidraw/excalidraw-exporter';
 import { getLogger } from '../../core/logging';
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
+import { capitalize } from '../../utils/format-utils';
 
 const logger = getLogger('TimelineGenerator');
 
@@ -663,7 +664,7 @@ export class TimelineGenerator {
 		for (const entry of entries) {
 			const date = entry.date || '';
 			// Capitalize event type and link to event note
-			const typeLabel = entry.type.charAt(0).toUpperCase() + entry.type.slice(1);
+			const typeLabel = capitalize(entry.type);
 			const eventCell = entry.eventName
 				? `[[${entry.eventName}|${typeLabel}]]`
 				: typeLabel;
@@ -810,7 +811,7 @@ export class TimelineGenerator {
 	 */
 	private formatEventDisplay(entry: TimelineEntry): string {
 		// Get the type label (capitalize first letter)
-		const typeLabel = entry.type.charAt(0).toUpperCase() + entry.type.slice(1);
+		const typeLabel = capitalize(entry.type);
 
 		// Build the event link using eventName as the file path
 		const eventLink = entry.eventName
@@ -876,7 +877,7 @@ export class TimelineGenerator {
 					.join(', ');
 
 				// Capitalize event type and link to event note
-				const typeLabel = entry.type.charAt(0).toUpperCase() + entry.type.slice(1);
+				const typeLabel = capitalize(entry.type);
 				const eventLink = entry.eventName
 					? `[[${entry.eventName}|${typeLabel}]]`
 					: `**${typeLabel}**`;

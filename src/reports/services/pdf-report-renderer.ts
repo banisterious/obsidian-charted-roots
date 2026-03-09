@@ -103,7 +103,7 @@ import {
 	INFORMATION_CLASSIFICATION_LABELS,
 	EVIDENCE_CLASSIFICATION_LABELS
 } from '../../sources/types/source-types';
-import { formatPronouns } from '../../utils/format-utils';
+import { capitalize, formatPronouns } from '../../utils/format-utils';
 
 /**
  * PDF generation options
@@ -1938,7 +1938,7 @@ export class PdfReportRenderer {
 		if (result.entityLists) {
 			for (const [type, entities] of Object.entries(result.entityLists)) {
 				if (entities.length > 0) {
-					content.push(this.buildSectionHeader(type.charAt(0).toUpperCase() + type.slice(1)));
+					content.push(this.buildSectionHeader(capitalize(type)));
 					content.push({
 						ul: entities.map(e => e.name),
 						margin: [20, 0, 0, 10]

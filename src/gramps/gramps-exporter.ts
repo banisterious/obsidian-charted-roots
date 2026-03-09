@@ -13,6 +13,7 @@ import { getErrorMessage } from '../core/error-utils';
 import { PrivacyService, type PrivacySettings } from '../core/privacy-service';
 import { PropertyAliasService } from '../core/property-alias-service';
 import { ValueAliasService } from '../core/value-alias-service';
+import { capitalize } from '../utils/format-utils';
 import { EventService } from '../events/services/event-service';
 import type { EventNote } from '../events/types/event-types';
 import { SourceService } from '../sources/services/source-service';
@@ -646,7 +647,7 @@ ${families.xml}
 		for (const [placeName, handle] of context.additionalPlaces) {
 			// Infer type from name
 			const placeType = this.inferPlaceTypeFromName(placeName) || 'Locality';
-			const grampsType = placeType.charAt(0).toUpperCase() + placeType.slice(1);
+			const grampsType = capitalize(placeType);
 
 			placeLines.push(`    <placeobj handle="${handle}" id="P${placeCounter++}" type="${this.escapeXml(grampsType)}">`);
 			placeLines.push(`      <ptitle>${this.escapeXml(placeName)}</ptitle>`);
@@ -718,7 +719,7 @@ ${families.xml}
 			'church': 'Church'
 		};
 
-		return mapping[placeType.toLowerCase()] || placeType.charAt(0).toUpperCase() + placeType.slice(1);
+		return mapping[placeType.toLowerCase()] || capitalize(placeType);
 	}
 
 	/**
@@ -1632,7 +1633,7 @@ ${families.xml}
 		};
 
 		// Return mapped type, or use the original event type if not mapped
-		return mapping[eventType] || eventType.charAt(0).toUpperCase() + eventType.slice(1);
+		return mapping[eventType] || capitalize(eventType);
 	}
 
 	/**

@@ -10,6 +10,7 @@ import type { DynamicBlockContext, DynamicBlockConfig } from '../services/dynami
 import type { DynamicContentService } from '../services/dynamic-content-service';
 import { getEventType } from '../../events/types/event-types';
 import type { LucideIconName } from '../../ui/lucide-icons';
+import { capitalize } from '../../utils/format-utils';
 
 /**
  * Event types that should ALWAYS show title, never description (#157)
@@ -241,7 +242,7 @@ export class TimelineRenderer {
 			// the verb for sentence structure (icon replaces the badge, not the verb)
 			let displayText = entry.title;
 			if (entry.description && !TITLE_ONLY_TYPES.includes(entry.type)) {
-				const typeLabel = entry.type.charAt(0).toUpperCase() + entry.type.slice(1);
+				const typeLabel = capitalize(entry.type);
 				displayText = `${typeLabel}: ${entry.description}`;
 			}
 
@@ -317,7 +318,7 @@ export class TimelineRenderer {
 			// Show "Type: description" for most event types when description exists
 			let displayText = entry.title;
 			if (entry.description && !TITLE_ONLY_TYPES.includes(entry.type)) {
-				const typeLabel = entry.type.charAt(0).toUpperCase() + entry.type.slice(1);
+				const typeLabel = capitalize(entry.type);
 				displayText = `${typeLabel}: ${entry.description}`;
 			}
 

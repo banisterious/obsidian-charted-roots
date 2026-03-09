@@ -15,6 +15,7 @@ import { GeocodingService } from '../maps/services/geocoding-service';
 import { ImageMapManager } from '../maps/image-map-manager';
 import type { CustomMapConfig } from '../maps/types/map-types';
 import type CanvasRootsPlugin from '../../main';
+import { capitalize } from '../utils/format-utils';
 import { ModalStatePersistence, renderResumePromptBanner } from './modal-state-persistence';
 import { parseLatitude, parseLongitude, isDMSFormat } from '../utils/coordinate-converter';
 import { PlaceLookupModal } from '../places/ui/place-lookup-modal';
@@ -482,7 +483,7 @@ export class CreatePlaceModal extends Modal {
 			church: 'Churches',
 			other: 'Other'
 		};
-		return names[type] || type.charAt(0).toUpperCase() + type.slice(1);
+		return names[type] || capitalize(type);
 	}
 
 	/**
@@ -1714,8 +1715,7 @@ export class CreatePlaceModal extends Modal {
 	 * Show a prompt to move the file to the category folder (#163)
 	 */
 	private showMovePrompt(targetFolder: string, callback: (shouldMove: boolean) => void): void {
-		const categoryLabel = (this.placeData.placeCategory || 'real').charAt(0).toUpperCase() +
-			(this.placeData.placeCategory || 'real').slice(1);
+		const categoryLabel = capitalize(this.placeData.placeCategory || 'real');
 
 		// Create a simple confirmation modal
 		const modal = new Modal(this.app);

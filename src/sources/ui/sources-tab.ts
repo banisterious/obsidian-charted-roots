@@ -13,6 +13,7 @@ import { SourceService } from '../services/source-service';
 import { CreateSourceModal } from './create-source-modal';
 import { SourceImageWizardModal } from './source-image-wizard';
 import { SourceMediaLinkerModal } from './source-media-linker';
+import { capitalize } from '../../utils/format-utils';
 import { renderMediaGallery } from './media-gallery';
 import { renderSourceTypeManagerCard } from './source-type-manager-card';
 import type { SourceNote } from '../types/source-types';
@@ -125,7 +126,7 @@ function renderSourcesOverviewCard(
 			const row = confidenceList.createDiv({ cls: 'cr-type-breakdown-row' });
 			const swatch = row.createDiv({ cls: 'cr-type-swatch' });
 			swatch.style.setProperty('background-color', confidenceColors[level] || '#6b7280');
-			row.createSpan({ text: level.charAt(0).toUpperCase() + level.slice(1) });
+			row.createSpan({ text: capitalize(level) });
 			row.createSpan({ text: String(count), cls: 'crc-text-muted' });
 		}
 

@@ -7,6 +7,7 @@ import { App, Modal, Notice, TFile } from 'obsidian';
 import { createLucideIcon, setLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
 import { PlaceNode, KnownPlaceType } from '../models/place';
+import { capitalize } from '../utils/format-utils';
 
 /**
  * Place types that should be reviewed/standardized
@@ -155,7 +156,7 @@ export class StandardizePlaceTypesModal extends Modal {
 
 		for (const type of STANDARD_SETTLEMENT_TYPES) {
 			const btn = bulkActions.createEl('button', {
-				text: type.charAt(0).toUpperCase() + type.slice(1),
+				text: capitalize(type),
 				cls: 'crc-btn crc-btn--small crc-btn--ghost crc-ml-1'
 			});
 			btn.addEventListener('click', () => this.setAllToType(type));
@@ -238,7 +239,7 @@ export class StandardizePlaceTypesModal extends Modal {
 
 		for (const type of STANDARD_SETTLEMENT_TYPES) {
 			const option = select.createEl('option', {
-				text: type.charAt(0).toUpperCase() + type.slice(1),
+				text: capitalize(type),
 				value: type
 			});
 			if (this.selectedTypes.get(place.id) === type) {

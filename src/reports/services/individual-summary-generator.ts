@@ -13,7 +13,7 @@ import type {
 	ReportEvent
 } from '../types/report-types';
 import { FamilyGraphService, PersonNode } from '../../core/family-graph';
-import { formatPronouns } from '../../utils/format-utils';
+import { capitalize, formatPronouns } from '../../utils/format-utils';
 import { FolderFilterService } from '../../core/folder-filter';
 import { EventService } from '../../events/services/event-service';
 import { getLogger } from '../../core/logging';
@@ -284,7 +284,7 @@ export class IndividualSummaryGenerator {
 			lines.push(`- **Death:** ${deathParts.join(', ')}`);
 		}
 		if (person.sex) {
-			lines.push(`- **Sex:** ${person.sex.charAt(0).toUpperCase() + person.sex.slice(1)}`);
+			lines.push(`- **Sex:** ${capitalize(person.sex)}`);
 		}
 		if (person.pronouns) {
 			lines.push(`- **Pronouns:** ${formatPronouns(person.pronouns)}`);

@@ -9,6 +9,7 @@ import { PlaceGraphService } from '../core/place-graph';
 import type { PlaceNode, PlaceIssue } from '../models/place';
 import type { CanvasRootsSettings } from '../settings';
 import { getPlaceFolderForCategory } from '../settings';
+import { capitalize } from '../utils/format-utils';
 
 interface MisplacedPlace {
 	place: PlaceNode;
@@ -211,7 +212,7 @@ export class OrganizePlacesModal extends Modal {
 			// Category badge
 			const categoryCell = row.createEl('td');
 			categoryCell.createEl('span', {
-				text: mp.place.category.charAt(0).toUpperCase() + mp.place.category.slice(1),
+				text: capitalize(mp.place.category),
 				cls: `crc-category-badge crc-category-badge--${mp.place.category}`
 			});
 

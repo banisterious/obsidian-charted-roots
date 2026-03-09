@@ -7,6 +7,7 @@ import { App, Modal, Setting, Notice, TFile } from 'obsidian';
 import { PlaceNode } from '../models/place';
 import { updatePlaceNote } from '../core/place-note-writer';
 import { createLucideIcon } from './lucide-icons';
+import { capitalize } from '../utils/format-utils';
 
 interface BuildPlaceHierarchyOptions {
 	onComplete?: (updated: number) => void;
@@ -226,7 +227,7 @@ export class BuildPlaceHierarchyModal extends Modal {
 			church: 'Churches',
 			other: 'Other'
 		};
-		return names[type] || type.charAt(0).toUpperCase() + type.slice(1);
+		return names[type] || capitalize(type);
 	}
 
 	/**

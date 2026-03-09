@@ -10,6 +10,7 @@ import { generateCrId } from '../core/uuid';
 import { createLucideIcon } from './lucide-icons';
 import { PersonInfo } from './person-picker';
 import type CanvasRootsPlugin from '../../main';
+import { capitalize } from '../utils/format-utils';
 
 /**
  * Context passed when creating a person inline from a relationship field
@@ -185,7 +186,7 @@ export class QuickCreatePersonModal extends Modal {
 
 		// Capitalize first letter of relationship type
 		const relType = this.context.relationshipType;
-		const capitalizedType = relType.charAt(0).toUpperCase() + relType.slice(1);
+		const capitalizedType = capitalize(relType);
 		return `Create new ${capitalizedType.toLowerCase()}`;
 	}
 

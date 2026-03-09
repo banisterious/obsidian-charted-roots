@@ -10,6 +10,7 @@ import type { CanvasRootsSettings } from '../settings';
 import { FamilyGraphService, type FamilyTree, type PersonNode } from '../core/family-graph';
 import { FolderFilterService } from '../core/folder-filter';
 import { extractSurnames, extractAllSurnames, matchesSurname } from '../utils/name-utils';
+import { capitalize } from '../utils/format-utils';
 import {
 	CanvasSplitService,
 	type GenerationSplitOptions,
@@ -848,7 +849,7 @@ export class SplitWizardModal extends Modal {
 			for (const surname of personSurnames) {
 				// Normalize case for counting
 				const normalized = surname.toLowerCase();
-				const displayName = surname.charAt(0).toUpperCase() + surname.slice(1);
+				const displayName = capitalize(surname);
 
 				// Track with normalized key but preserve display casing
 				const existing = surnames.get(normalized);
@@ -867,7 +868,7 @@ export class SplitWizardModal extends Modal {
 				if (b[1] !== a[1]) return b[1] - a[1];
 				return a[0].localeCompare(b[0]);
 			})
-			.map(([name]) => name.charAt(0).toUpperCase() + name.slice(1));
+			.map(([name]) => capitalize(name));
 	}
 
 	/**

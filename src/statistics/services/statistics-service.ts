@@ -11,6 +11,7 @@ import { VaultStatsService } from '../../core/vault-stats';
 import { FamilyGraphService, type PersonNode } from '../../core/family-graph';
 import { extractSurnames } from '../../utils/name-utils';
 import { FolderFilterService } from '../../core/folder-filter';
+import { capitalize } from '../../utils/format-utils';
 import { OrganizationService } from '../../organizations';
 import type {
 	StatisticsData,
@@ -528,7 +529,7 @@ export class StatisticsService {
 		// by capitalizing first letter (simple heuristic)
 		return Array.from(surnameCount.entries())
 			.map(([normalizedName, count]) => ({
-				name: normalizedName.charAt(0).toUpperCase() + normalizedName.slice(1),
+				name: capitalize(normalizedName),
 				count
 			}))
 			.sort((a, b) => b.count - a.count)

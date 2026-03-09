@@ -6,6 +6,7 @@
  */
 
 import { LucideIconName } from '../../ui/lucide-icons';
+import { capitalize } from '../../utils/format-utils';
 
 /**
  * Confidence level for source reliability
@@ -824,7 +825,7 @@ export function getSourceCategoryName(
 	if (custom) return custom.name;
 
 	// Fallback: use SOURCE_CATEGORY_NAMES or capitalize the ID
-	return SOURCE_CATEGORY_NAMES[categoryId] || categoryId.charAt(0).toUpperCase() + categoryId.slice(1);
+	return SOURCE_CATEGORY_NAMES[categoryId] || capitalize(categoryId);
 }
 
 /**

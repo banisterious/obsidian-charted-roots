@@ -10,6 +10,7 @@
  */
 
 import type { MediaAssociation } from './canvas-navigation';
+import { capitalize } from '../utils/format-utils';
 
 /**
  * Canvas node types for media detection
@@ -570,7 +571,7 @@ export class MediaAssociationService {
 		// Convert cr_id-style names to readable: "john-doe-1850" -> "John Doe 1850"
 		return match[1]
 			.split('-')
-			.map(part => part.charAt(0).toUpperCase() + part.slice(1))
+			.map(part => capitalize(part))
 			.join(' ');
 	}
 

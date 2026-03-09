@@ -15,6 +15,7 @@ import type {
 	InlineEditNotifyFn
 } from '../profile-types';
 import { createEditableField, createMetaSeparator, commitActiveEdit } from '../inline-edit';
+import { capitalize } from '../../utils/format-utils';
 
 export interface IdentityHeaderOptions {
 	pinned: boolean;
@@ -461,7 +462,7 @@ function renderMetaFields(
 // ── Helpers ─────────────────────────────────────────────────
 
 function formatEntityType(type: string): string {
-	return type.charAt(0).toUpperCase() + type.slice(1);
+	return capitalize(type);
 }
 
 function stripWikilink(link: string): string {
