@@ -13,7 +13,7 @@ import type {
 	TimelineEntry,
 	ReportPerson
 } from '../types/report-types';
-import { FamilyGraphService } from '../../core/family-graph';
+import { FamilyGraphService, createConfiguredFamilyGraph } from '../../core/family-graph';
 import { PlaceGraphService } from '../../core/place-graph';
 import { FolderFilterService } from '../../core/folder-filter';
 import { EventService } from '../../events/services/event-service';
@@ -53,14 +53,7 @@ export class PlaceSummaryGenerator {
 		}
 		placeGraph.ensureCacheLoaded();
 
-		const familyGraph = new FamilyGraphService(this.app);
-		if (this.settings.folderFilterMode !== 'disabled') {
-			familyGraph.setFolderFilter(new FolderFilterService(this.settings));
-		}
-		familyGraph.setPropertyAliases(this.settings.propertyAliases);
-		familyGraph.setValueAliases(this.settings.valueAliases);
-		familyGraph.setSettings(this.settings);
-		familyGraph.ensureCacheLoaded();
+		const familyGraph = createConfiguredFamilyGraph(this.app, this.settings);
 
 		const eventService = new EventService(this.app, this.settings);
 

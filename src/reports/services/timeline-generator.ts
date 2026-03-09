@@ -24,8 +24,7 @@ import type {
 	ReportPerson,
 	TimelineExportFormat
 } from '../types/report-types';
-import { FamilyGraphService } from '../../core/family-graph';
-import { FolderFilterService } from '../../core/folder-filter';
+import { FamilyGraphService, createConfiguredFamilyGraph } from '../../core/family-graph';
 import { EventService } from '../../events/services/event-service';
 import { EventNote } from '../../events/types/event-types';
 import { TimelineCanvasExporter, TimelineCanvasOptions } from '../../events/services/timeline-canvas-exporter';
@@ -69,14 +68,7 @@ export class TimelineGenerator {
 
 		// Initialize services
 		const eventService = new EventService(this.app, this.settings);
-		const familyGraph = new FamilyGraphService(this.app);
-		if (this.settings.folderFilterMode !== 'disabled') {
-			familyGraph.setFolderFilter(new FolderFilterService(this.settings));
-		}
-		familyGraph.setPropertyAliases(this.settings.propertyAliases);
-		familyGraph.setValueAliases(this.settings.valueAliases);
-		familyGraph.setSettings(this.settings);
-		familyGraph.ensureCacheLoaded();
+		const familyGraph = createConfiguredFamilyGraph(this.app, this.settings);
 
 		// Get all events
 		let events = eventService.getAllEvents();

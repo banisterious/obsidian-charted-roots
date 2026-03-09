@@ -12,9 +12,8 @@ import type {
 	ReportPerson,
 	ReportEvent
 } from '../types/report-types';
-import { FamilyGraphService, PersonNode } from '../../core/family-graph';
+import { FamilyGraphService, createConfiguredFamilyGraph, PersonNode } from '../../core/family-graph';
 import { capitalize, formatPronouns } from '../../utils/format-utils';
-import { FolderFilterService } from '../../core/folder-filter';
 import { EventService } from '../../events/services/event-service';
 import { getLogger } from '../../core/logging';
 
@@ -43,14 +42,7 @@ export class IndividualSummaryGenerator {
 		const events: ReportEvent[] = [];
 
 		// Initialize family graph service
-		const familyGraph = new FamilyGraphService(this.app);
-		if (this.settings.folderFilterMode !== 'disabled') {
-			familyGraph.setFolderFilter(new FolderFilterService(this.settings));
-		}
-		familyGraph.setPropertyAliases(this.settings.propertyAliases);
-		familyGraph.setValueAliases(this.settings.valueAliases);
-		familyGraph.setSettings(this.settings);
-		familyGraph.ensureCacheLoaded();
+		const familyGraph = createConfiguredFamilyGraph(this.app, this.settings);
 
 		// Get the person
 		const personNode = familyGraph.getPersonByCrId(options.personCrId);

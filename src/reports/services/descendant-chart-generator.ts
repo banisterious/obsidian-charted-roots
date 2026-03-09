@@ -13,8 +13,7 @@ import type {
 	DescendantEntry,
 	ReportPerson
 } from '../types/report-types';
-import { FamilyGraphService, PersonNode } from '../../core/family-graph';
-import { FolderFilterService } from '../../core/folder-filter';
+import { FamilyGraphService, createConfiguredFamilyGraph, PersonNode } from '../../core/family-graph';
 import { getLogger } from '../../core/logging';
 
 const logger = getLogger('DescendantChartGenerator');
@@ -44,14 +43,7 @@ export class DescendantChartGenerator {
 		const warnings: string[] = [];
 
 		// Initialize family graph service
-		const familyGraph = new FamilyGraphService(this.app);
-		if (this.settings.folderFilterMode !== 'disabled') {
-			familyGraph.setFolderFilter(new FolderFilterService(this.settings));
-		}
-		familyGraph.setPropertyAliases(this.settings.propertyAliases);
-		familyGraph.setValueAliases(this.settings.valueAliases);
-		familyGraph.setSettings(this.settings);
-		familyGraph.ensureCacheLoaded();
+		const familyGraph = createConfiguredFamilyGraph(this.app, this.settings);
 
 		// Get the root person
 		const rootNode = familyGraph.getPersonByCrId(options.rootPersonCrId);

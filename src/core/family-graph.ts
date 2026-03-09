@@ -2263,3 +2263,19 @@ export class FamilyGraphService {
 		};
 	}
 }
+
+/**
+ * Create a FamilyGraphService configured with folder filter, property/value aliases, and settings.
+ * Consolidates the repeated 7-line initialization pattern used across report generators and UI code.
+ */
+export function createConfiguredFamilyGraph(app: App, settings: CanvasRootsSettings): FamilyGraphService {
+	const familyGraph = new FamilyGraphService(app);
+	if (settings.folderFilterMode !== 'disabled') {
+		familyGraph.setFolderFilter(new FolderFilterService(settings));
+	}
+	familyGraph.setPropertyAliases(settings.propertyAliases);
+	familyGraph.setValueAliases(settings.valueAliases);
+	familyGraph.setSettings(settings);
+	familyGraph.ensureCacheLoaded();
+	return familyGraph;
+}
