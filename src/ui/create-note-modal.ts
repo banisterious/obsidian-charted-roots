@@ -29,7 +29,7 @@ export const NOTE_TYPES = [
 	{ id: 'Custom', label: 'Custom', description: 'User-defined type' }
 ] as const;
 
-export type NoteType = typeof NOTE_TYPES[number]['id'];
+type NoteType = typeof NOTE_TYPES[number]['id'];
 
 /**
  * Form data structure for persistence

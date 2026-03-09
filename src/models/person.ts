@@ -61,28 +61,6 @@ export interface SpouseRelationship {
 }
 
 /**
- * Normalized person data for graph processing
- */
-export interface PersonNode {
-	id: string;
-	name: string;
-	filePath: string;
-	fatherId?: string;
-	motherId?: string;
-
-	/** Legacy: simple array of spouse cr_ids (for backward compatibility) */
-	spouseIds: string[];
-
-	/** Enhanced: array of spouse relationships with metadata */
-	spouses?: SpouseRelationship[];
-
-	childIds: string[];
-	born?: string;
-	died?: string;
-	isRoot?: boolean;
-}
-
-/**
  * Family unit representing a marriage/partnership
  */
 export interface FamilyUnit {
