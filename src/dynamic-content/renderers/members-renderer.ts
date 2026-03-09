@@ -9,6 +9,7 @@
 import { MarkdownRenderer, MarkdownRenderChild, App, TFile } from 'obsidian';
 import type { DynamicBlockConfig, DynamicContentService } from '../services/dynamic-content-service';
 import type { OrganizationInfo, PersonMembership } from '../../organizations/types/organization-types';
+import { splitAndTrim } from '../../utils/format-utils';
 
 /**
  * Member entry for rendering
@@ -249,7 +250,7 @@ export class MembersRenderer {
 		const roles = Array.isArray(raw)
 			? (raw as string[]).map(r => r.trim()).filter(r => r.length > 0)
 			: typeof raw === 'string'
-				? raw.split(',').map(r => r.trim()).filter(r => r.length > 0)
+				? splitAndTrim(raw as string)
 				: [];
 		return roles.length > 0 ? roles : undefined;
 	}

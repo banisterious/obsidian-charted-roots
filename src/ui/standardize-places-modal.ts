@@ -8,6 +8,7 @@ import { createLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
 import { FamilyGraphService, PersonNode } from '../core/family-graph';
 import { PlaceReference, PlaceReferenceType } from '../models/place';
+import { splitAndTrim } from '../utils/format-utils';
 
 interface PlaceVariationGroup {
 	/** All variations found (including the suggested canonical) */
@@ -952,7 +953,7 @@ function isPunctuationVariation(a: string, b: string): boolean {
  */
 function parsePlaceHierarchy(name: string): string[] {
 	// First try splitting by comma
-	let parts = name.split(',').map(p => p.trim()).filter(p => p.length > 0);
+	let parts = splitAndTrim(name);
 
 	// If only one part and it has spaces, try to detect embedded hierarchy
 	// e.g., "Greene County Tennessee" -> ["Greene County", "Tennessee"]

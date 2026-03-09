@@ -12,6 +12,7 @@ import { generateCrId } from '../core/uuid';
 import { getLogger } from '../core/logging';
 import { getErrorMessage } from '../core/error-utils';
 import { sanitizeName } from '../utils/name-sanitization';
+import { splitAndTrim } from '../utils/format-utils';
 
 const logger = getLogger('CsvImporter');
 
@@ -602,7 +603,7 @@ export class CsvImporter {
 		const spouseIds = this.getColumnValue(row, mapping.spouseIds);
 		if (spouseNames || spouseIds) {
 			personData.spouseName = spouseNames?.split(';').map(s => sanitizeName(s.trim())).filter(s => s);
-			personData.spouseCrId = spouseIds?.split(';').map(s => s.trim()).filter(s => s);
+			personData.spouseCrId = spouseIds ? splitAndTrim(spouseIds, ';') : undefined;
 		}
 
 		// Create or update person note
@@ -688,8 +689,8 @@ export class CsvImporter {
 		const spouseNames = this.getColumnValue(row, mapping.spouseNames);
 
 		if (spouseIds) {
-			const ids = spouseIds.split(';').map(s => s.trim()).filter(s => s);
-			const names = spouseNames?.split(';').map(s => s.trim()).filter(s => s) || [];
+			const ids = splitAndTrim(spouseIds, ';');
+			const names = spouseNames ? splitAndTrim(spouseNames, ';') : [];
 
 			for (let i = 0; i < ids.length; i++) {
 				const resolvedId = this.resolveId(ids[i], names[i], idLookup);
@@ -831,7 +832,7 @@ export class CsvImporter {
 		const crId = generateCrId();
 
 		// Parse place hierarchy (comma-separated)
-		const parts = placeString.split(',').map(p => p.trim()).filter(p => p.length > 0);
+		const parts = splitAndTrim(placeString);
 		const name = parts[0] || placeString;
 
 		// Infer place type from hierarchy

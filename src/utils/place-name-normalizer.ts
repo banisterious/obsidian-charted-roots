@@ -5,6 +5,8 @@
  * Handles US state abbreviations, county abbreviations, and common formatting issues.
  */
 
+import { splitAndTrim } from './format-utils';
+
 /**
  * US state abbreviations mapped to full names
  */
@@ -67,7 +69,7 @@ export function normalizePlaceName(placeName: string): string {
 	}
 
 	// Split on commas
-	let parts = placeName.split(',').map(p => p.trim()).filter(p => p !== '');
+	let parts = splitAndTrim(placeName);
 
 	// Track if we found a US state (to decide whether to append USA)
 	let hasUSState = false;

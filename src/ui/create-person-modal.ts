@@ -23,6 +23,7 @@ import { SourceService } from '../sources/services/source-service';
 import type { EventNote } from '../events/types/event-types';
 import { getEventType } from '../events/types/event-types';
 import { EventPickerModal } from '../events/ui/event-picker-modal';
+import { splitAndTrim } from '../utils/format-utils';
 import { CreateEventModal } from '../events/ui/create-event-modal';
 import { getSourceType } from '../sources/types/source-types';
 
@@ -499,7 +500,7 @@ export class CreatePersonModal extends Modal {
 				.onChange(value => {
 					if (value) {
 						// Split on commas, trim whitespace
-						this.personData.surnames = value.split(',').map(s => s.trim()).filter(s => s);
+						this.personData.surnames = splitAndTrim(value);
 					} else {
 						this.personData.surnames = undefined;
 					}
@@ -525,7 +526,7 @@ export class CreatePersonModal extends Modal {
 					.setValue(this.personData.marriedNames?.join(', ') || '')
 					.onChange(value => {
 						if (value) {
-							this.personData.marriedNames = value.split(',').map(s => s.trim()).filter(s => s);
+							this.personData.marriedNames = splitAndTrim(value);
 						} else {
 							this.personData.marriedNames = undefined;
 						}

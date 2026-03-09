@@ -18,6 +18,7 @@ import { generateCrId } from '../core/uuid';
 import { getErrorMessage } from '../core/error-utils';
 import { getLogger } from '../core/logging';
 import { sanitizeName } from '../utils/name-sanitization';
+import { splitAndTrim } from '../utils/format-utils';
 
 const logger = getLogger('GedcomXImporter');
 
@@ -724,7 +725,7 @@ export class GedcomXImporter {
 		const crId = generateCrId();
 
 		// Parse place hierarchy (comma-separated)
-		const parts = placeString.split(',').map(p => p.trim()).filter(p => p.length > 0);
+		const parts = splitAndTrim(placeString);
 		const name = parts[0] || placeString;
 
 		// Infer place type from hierarchy

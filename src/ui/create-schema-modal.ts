@@ -5,6 +5,7 @@
 
 import { App, Modal, Setting, TFile, Notice } from 'obsidian';
 import { createLucideIcon, setLucideIcon } from './lucide-icons';
+import { splitAndTrim } from '../utils/format-utils';
 import type CanvasRootsPlugin from '../../main';
 import { SchemaService } from '../schemas';
 import type {
@@ -465,7 +466,7 @@ export class CreateSchemaModal extends Modal {
 						.setPlaceholder('e.g., male, female, other')
 						.setValue(propDef.values?.join(', ') || '')
 						.onChange(value => {
-							propDef.values = value.split(',').map(v => v.trim()).filter(v => v);
+							propDef.values = splitAndTrim(value);
 						}));
 			}
 

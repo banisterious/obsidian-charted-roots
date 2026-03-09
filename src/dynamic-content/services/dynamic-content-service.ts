@@ -13,6 +13,7 @@ import type { FamilyGraphService, PersonNode } from '../../core/family-graph';
 import type { EventService } from '../../events/services/event-service';
 import type { EventNote } from '../../events/types/event-types';
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
+import { splitAndTrim } from '../../utils/format-utils';
 
 /** Block type for freeze operations */
 export type DynamicBlockType = 'canvas-roots-timeline' | 'canvas-roots-relationships' | 'canvas-roots-media' | 'charted-roots-source-roles' | 'charted-roots-transfers' | 'charted-roots-members' | 'charted-roots-sources' | 'charted-roots-extractions';
@@ -127,7 +128,7 @@ export class DynamicContentService {
 
 			// Only split on commas if we found commas outside wikilinks
 			if (hasCommaOutsideBrackets) {
-				return value.split(',').map(v => v.trim()).filter(v => v.length > 0);
+				return splitAndTrim(value);
 			}
 		}
 

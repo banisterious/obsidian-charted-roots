@@ -9,6 +9,7 @@ import { createLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
 import { PlaceReference } from '../models/place';
 import { normalizePlaceName } from '../utils/place-name-normalizer';
+import { splitAndTrim } from '../utils/format-utils';
 
 interface MissingPlace {
 	name: string;
@@ -421,7 +422,7 @@ export class CreateMissingPlacesModal extends Modal {
 		if (!this.placeGraph) return null;
 
 		// Split the place name into components
-		const parts = placeName.split(',').map(p => p.trim()).filter(p => p !== '');
+		const parts = splitAndTrim(placeName);
 
 		// Need at least 2 parts to have a parent (place + parent)
 		if (parts.length < 2) return null;

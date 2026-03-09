@@ -15,7 +15,7 @@ import { GeocodingService } from '../maps/services/geocoding-service';
 import { ImageMapManager } from '../maps/image-map-manager';
 import type { CustomMapConfig } from '../maps/types/map-types';
 import type CanvasRootsPlugin from '../../main';
-import { capitalize } from '../utils/format-utils';
+import { capitalize, splitAndTrim } from '../utils/format-utils';
 import { ModalStatePersistence, renderResumePromptBanner } from './modal-state-persistence';
 import { parseLatitude, parseLongitude, isDMSFormat } from '../utils/coordinate-converter';
 import { PlaceLookupModal } from '../places/ui/place-lookup-modal';
@@ -786,7 +786,7 @@ export class CreatePlaceModal extends Modal {
 				.setValue(this.placeData.aliases?.join(', ') || '')
 				.onChange(value => {
 					if (value) {
-						this.placeData.aliases = value.split(',').map(a => a.trim()).filter(a => a);
+						this.placeData.aliases = splitAndTrim(value);
 					} else {
 						this.placeData.aliases = undefined;
 					}
