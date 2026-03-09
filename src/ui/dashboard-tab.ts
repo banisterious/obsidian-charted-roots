@@ -9,6 +9,7 @@ import CanvasRootsPlugin from '../../main';
 import { LucideIconName, setLucideIcon } from './lucide-icons';
 import { VaultStatsService, FullVaultStats } from '../core/vault-stats';
 import { getErrorMessage } from '../core/error-utils';
+import { pluralize } from '../utils/format-utils';
 import { CreatePersonModal } from './create-person-modal';
 import { CreatePlaceModal } from './create-place-modal';
 import { CreateEventModal } from '../events/ui/create-event-modal';
@@ -631,19 +632,19 @@ function renderStagingSection(
 	const breakdown: string[] = [];
 	if (clippedCount > 0) {
 		const unreadCount = webClipperService?.getUnreadClipCount() ?? 0;
-		const clippedText = clippedCount === 1 ? 'clip' : 'clips';
+		const clippedText = pluralize(clippedCount, 'clip');
 		const newBadge = unreadCount > 0 ? ` (${unreadCount} new)` : '';
 		breakdown.push(`${clippedCount} ${clippedText}${newBadge}`);
 	}
 	if (nonClippedCount > 0) {
-		const otherText = nonClippedCount === 1 ? 'other' : 'other';
+		const otherText = pluralize(nonClippedCount, 'other');
 		breakdown.push(`${nonClippedCount} ${otherText}`);
 	}
 
 	if (breakdown.length > 0) {
 		statsText.setText(` — ${breakdown.join(', ')}`);
 	} else {
-		statsText.setText(` — ${allStats.totalFiles} ${allStats.totalFiles === 1 ? 'file' : 'files'}`);
+		statsText.setText(` — ${allStats.totalFiles} ${pluralize(allStats.totalFiles, 'file')}`);
 	}
 
 	// Action button

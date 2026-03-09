@@ -16,6 +16,7 @@ import type CanvasRootsPlugin from '../../main';
 import { GedcomExporter, type GedcomExportOptions, type GedcomExportResult } from '../gedcom/gedcom-exporter';
 import { GedcomXExporter, type GedcomXExportOptions, type GedcomXExportResult } from '../gedcomx/gedcomx-exporter';
 import { FolderFilterService } from '../core/folder-filter';
+import { pluralize } from '../utils/format-utils';
 import type { PrivacySettings, PrivateFieldSummary } from '../core/privacy-service';
 import { scanForPrivateFields } from '../core/privacy-service';
 import { FamilyGraphService, type PersonNode } from '../core/family-graph';
@@ -613,7 +614,7 @@ export class ExportWizardModal extends Modal {
 			const content = noticeEl.createDiv({ cls: 'crc-export-privacy-notice__content' });
 			content.createDiv({
 				cls: 'crc-export-privacy-notice__text',
-				text: `Privacy protection is disabled. ${this.formData.livingCount} living ${this.formData.livingCount === 1 ? 'person' : 'persons'} will be exported with full details.`
+				text: `Privacy protection is disabled. ${this.formData.livingCount} living ${pluralize(this.formData.livingCount, 'person', 'persons')} will be exported with full details.`
 			});
 			const link = content.createDiv({
 				cls: 'crc-export-privacy-notice__link',

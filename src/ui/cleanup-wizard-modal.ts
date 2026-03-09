@@ -41,6 +41,7 @@ import { SourceMigrationService, type IndexedSourceNote } from '../sources/servi
 import { EventPersonMigrationService, type LegacyPersonEventNote } from '../events/services/event-person-migration-service';
 import { SourcedFactsMigrationService, type LegacySourcedFactsNote } from '../sources/services/sourced-facts-migration-service';
 import { LifeEventsMigrationService, type LegacyEventsNote } from '../events/services/life-events-migration-service';
+import { pluralize } from '../utils/format-utils';
 
 const logger = getLogger('CleanupWizard');
 
@@ -1033,7 +1034,7 @@ export class CleanupWizardModal extends Modal {
 					badge.createSpan({ text: 'Has deps' });
 					badge.addClass('crc-cleanup-tile-badge--deps');
 				} else if (stepState.issueCount > 0) {
-					badge.textContent = `${stepState.issueCount} ${stepState.issueCount === 1 ? 'fix' : 'fixes'}`;
+					badge.textContent = `${stepState.issueCount} ${pluralize(stepState.issueCount, 'fix', 'fixes')}`;
 					badge.addClass('crc-cleanup-tile-badge--count');
 				} else if (this.state.preScanComplete) {
 					badge.textContent = '0 issues';
@@ -1510,7 +1511,7 @@ export class CleanupWizardModal extends Modal {
 		// Auto-fixable section
 		if (autoFixable.length > 0) {
 			const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
-			summary.textContent = `${autoFixable.length} relationship${autoFixable.length === 1 ? '' : 's'} will be fixed:`;
+			summary.textContent = `${autoFixable.length} ${pluralize(autoFixable.length, 'relationship')} will be fixed:`;
 
 			const list = preview.createDiv({ cls: 'crc-cleanup-preview-list' });
 
@@ -1551,7 +1552,7 @@ export class CleanupWizardModal extends Modal {
 			const conflictHeader = conflictSection.createDiv({ cls: 'crc-cleanup-preview-conflict-header' });
 			const warningIcon = conflictHeader.createSpan({ cls: 'crc-cleanup-preview-conflict-icon' });
 			setIcon(warningIcon, 'alert-triangle');
-			conflictHeader.createSpan({ text: `${conflicts.length} conflict${conflicts.length === 1 ? '' : 's'} require manual resolution:` });
+			conflictHeader.createSpan({ text: `${conflicts.length} ${pluralize(conflicts.length, 'conflict')} require manual resolution:` });
 
 			const conflictHint = conflictSection.createDiv({ cls: 'crc-cleanup-preview-conflict-hint' });
 			conflictHint.textContent = 'Click a row to open the person note for editing.';
@@ -1600,7 +1601,7 @@ export class CleanupWizardModal extends Modal {
 			setIcon(successIcon, 'check-circle');
 			successSection.createDiv({
 				cls: 'crc-cleanup-step-complete-text',
-				text: `${fixCount} relationship${fixCount === 1 ? '' : 's'} fixed automatically`
+				text: `${fixCount} ${pluralize(fixCount, 'relationship')} fixed automatically`
 			});
 		}
 
@@ -1611,7 +1612,7 @@ export class CleanupWizardModal extends Modal {
 		const warningIcon = conflictHeader.createSpan({ cls: 'crc-cleanup-preview-conflict-icon' });
 		setIcon(warningIcon, 'alert-triangle');
 		conflictHeader.createSpan({
-			text: `${conflicts.length} conflict${conflicts.length === 1 ? '' : 's'} require manual resolution`
+			text: `${conflicts.length} ${pluralize(conflicts.length, 'conflict')} require manual resolution`
 		});
 
 		const conflictHint = conflictSection.createDiv({ cls: 'crc-cleanup-preview-conflict-hint' });
@@ -1656,7 +1657,7 @@ export class CleanupWizardModal extends Modal {
 
 		const preview = container.createDiv({ cls: 'crc-cleanup-preview' });
 		const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
-		summary.textContent = `${dateIssues.length} date${dateIssues.length === 1 ? '' : 's'} will be normalized to YYYY-MM-DD format:`;
+		summary.textContent = `${dateIssues.length} ${pluralize(dateIssues.length, 'date')} will be normalized to YYYY-MM-DD format:`;
 
 		const hint = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
 		hint.textContent = 'Click a row to open the person note for editing.';
@@ -1710,7 +1711,7 @@ export class CleanupWizardModal extends Modal {
 
 		const preview = container.createDiv({ cls: 'crc-cleanup-preview' });
 		const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
-		summary.textContent = `${genderIssues.length} gender value${genderIssues.length === 1 ? '' : 's'} will be normalized:`;
+		summary.textContent = `${genderIssues.length} ${pluralize(genderIssues.length, 'gender value')} will be normalized:`;
 
 		const hint = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
 		hint.textContent = 'Click a row to open the person note for editing.';
@@ -1763,7 +1764,7 @@ export class CleanupWizardModal extends Modal {
 
 		const preview = container.createDiv({ cls: 'crc-cleanup-preview' });
 		const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
-		summary.textContent = `${orphanIssues.length} orphan reference${orphanIssues.length === 1 ? '' : 's'} will be cleared:`;
+		summary.textContent = `${orphanIssues.length} ${pluralize(orphanIssues.length, 'orphan reference')} will be cleared:`;
 
 		const hint = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
 		hint.textContent = 'Click a row to open the person note for editing.';
@@ -1809,7 +1810,7 @@ export class CleanupWizardModal extends Modal {
 
 		const preview = container.createDiv({ cls: 'crc-cleanup-preview' });
 		const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
-		summary.textContent = `${this.indexedSourceNotes.length} note${this.indexedSourceNotes.length === 1 ? '' : 's'} will be migrated:`;
+		summary.textContent = `${this.indexedSourceNotes.length} ${pluralize(this.indexedSourceNotes.length, 'note')} will be migrated:`;
 
 		const hint = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
 		hint.textContent = 'Indexed properties (source, source_2, source_3...) will be converted to a sources array.';
@@ -1833,7 +1834,7 @@ export class CleanupWizardModal extends Modal {
 
 			const desc = content.createSpan({ cls: 'crc-cleanup-preview-desc' });
 			const sourceCount = note.indexedSources.length;
-			desc.textContent = `: ${sourceCount} source${sourceCount === 1 ? '' : 's'} → sources array`;
+			desc.textContent = `: ${sourceCount} ${pluralize(sourceCount, 'source')} → sources array`;
 
 			// Click to open the file
 			row.addEventListener('click', () => {
@@ -1859,7 +1860,7 @@ export class CleanupWizardModal extends Modal {
 
 		const preview = container.createDiv({ cls: 'crc-cleanup-preview' });
 		const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
-		summary.textContent = `${nestedIssues.length} nested propert${nestedIssues.length === 1 ? 'y' : 'ies'} will be flattened:`;
+		summary.textContent = `${nestedIssues.length} nested ${pluralize(nestedIssues.length, 'property', 'properties')} will be flattened:`;
 
 		const hint = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
 		hint.textContent = 'Click a row to open the person note for editing.';
@@ -1907,7 +1908,7 @@ export class CleanupWizardModal extends Modal {
 
 		const preview = container.createDiv({ cls: 'crc-cleanup-preview' });
 		const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
-		summary.textContent = `${this.legacyPersonEventNotes.length} event note${this.legacyPersonEventNotes.length === 1 ? '' : 's'} will be migrated:`;
+		summary.textContent = `${this.legacyPersonEventNotes.length} event ${pluralize(this.legacyPersonEventNotes.length, 'note')} will be migrated:`;
 
 		const hint = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
 		hint.textContent = 'The singular "person" property will be converted to a "persons" array.';
@@ -1958,7 +1959,7 @@ export class CleanupWizardModal extends Modal {
 		// Calculate total sources
 		const totalSources = this.legacySourcedFactsNotes.reduce((sum, note) => sum + note.totalSources, 0);
 
-		summary.textContent = `${this.legacySourcedFactsNotes.length} person note${this.legacySourcedFactsNotes.length === 1 ? '' : 's'} with ${totalSources} source citation${totalSources === 1 ? '' : 's'} will be migrated:`;
+		summary.textContent = `${this.legacySourcedFactsNotes.length} person ${pluralize(this.legacySourcedFactsNotes.length, 'note')} with ${totalSources} source ${pluralize(totalSources, 'citation')} will be migrated:`;
 
 		const hint = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
 		hint.textContent = 'The nested "sourced_facts" object will be converted to flat "sourced_*" properties.';
@@ -1981,7 +1982,7 @@ export class CleanupWizardModal extends Modal {
 			fileName.textContent = note.file.basename;
 
 			const desc = content.createSpan({ cls: 'crc-cleanup-preview-desc' });
-			desc.textContent = `: ${note.factKeys.length} fact type${note.factKeys.length === 1 ? '' : 's'}, ${note.totalSources} source${note.totalSources === 1 ? '' : 's'}`;
+			desc.textContent = `: ${note.factKeys.length} fact ${pluralize(note.factKeys.length, 'type')}, ${note.totalSources} ${pluralize(note.totalSources, 'source')}`;
 
 			// Click to open the file
 			row.addEventListener('click', () => {
@@ -2008,7 +2009,7 @@ export class CleanupWizardModal extends Modal {
 		// Calculate total events
 		const totalEvents = this.legacyEventsNotes.reduce((sum, note) => sum + note.eventCount, 0);
 
-		summary.textContent = `${this.legacyEventsNotes.length} person note${this.legacyEventsNotes.length === 1 ? '' : 's'} with ${totalEvents} inline event${totalEvents === 1 ? '' : 's'} will be migrated:`;
+		summary.textContent = `${this.legacyEventsNotes.length} person ${pluralize(this.legacyEventsNotes.length, 'note')} with ${totalEvents} inline ${pluralize(totalEvents, 'event')} will be migrated:`;
 
 		const hint = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
 		hint.textContent = 'Inline events will be converted to separate event note files linked via "life_events".';
@@ -2032,7 +2033,7 @@ export class CleanupWizardModal extends Modal {
 
 			const desc = content.createSpan({ cls: 'crc-cleanup-preview-desc' });
 			const eventTypes = [...new Set(note.events.map(e => e.event_type))];
-			desc.textContent = `: ${note.eventCount} event${note.eventCount === 1 ? '' : 's'} (${eventTypes.join(', ')})`;
+			desc.textContent = `: ${note.eventCount} ${pluralize(note.eventCount, 'event')} (${eventTypes.join(', ')})`;
 
 			// Click to open the file
 			row.addEventListener('click', () => {
@@ -2055,7 +2056,7 @@ export class CleanupWizardModal extends Modal {
 
 		const preview = container.createDiv({ cls: 'crc-cleanup-preview' });
 		const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
-		summary.textContent = `${this.legacyChildNotes.length} person note${this.legacyChildNotes.length === 1 ? '' : 's'} will be updated:`;
+		summary.textContent = `${this.legacyChildNotes.length} person ${pluralize(this.legacyChildNotes.length, 'note')} will be updated:`;
 
 		const hint = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
 		hint.textContent = 'The legacy "child" property will be converted to the "children" property.';
@@ -2105,7 +2106,7 @@ export class CleanupWizardModal extends Modal {
 
 		if (stepState.issueCount > 0) {
 			const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
-			summary.textContent = `${stepState.issueCount} ${stepState.issueCount === 1 ? 'item' : 'items'} will be fixed.`;
+			summary.textContent = `${stepState.issueCount} ${pluralize(stepState.issueCount, 'item')} will be fixed.`;
 
 			const note = preview.createDiv({ cls: 'crc-cleanup-note' });
 			const noteIcon = note.createDiv({ cls: 'crc-cleanup-note-icon' });
@@ -2197,7 +2198,7 @@ export class CleanupWizardModal extends Modal {
 		// Summary
 		const totalRefs = this.placeVariantMatches.reduce((sum, m) => sum + m.count, 0);
 		const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
-		summary.textContent = `Found ${this.placeVariantMatches.length} place name variant${this.placeVariantMatches.length === 1 ? '' : 's'} across ${totalRefs} reference${totalRefs === 1 ? '' : 's'}.`;
+		summary.textContent = `Found ${this.placeVariantMatches.length} place name ${pluralize(this.placeVariantMatches.length, 'variant')} across ${totalRefs} ${pluralize(totalRefs, 'reference')}.`;
 
 		const hint = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
 		hint.textContent = 'Select variants to standardize. The canonical form is shown on the right.';
@@ -2316,7 +2317,7 @@ export class CleanupWizardModal extends Modal {
 		const updateApplyButton = () => {
 			const textSpan = applyBtn.querySelector('span:last-child');
 			if (textSpan) {
-				textSpan.textContent = `Standardize ${selectedVariants.size} variant${selectedVariants.size === 1 ? '' : 's'}`;
+				textSpan.textContent = `Standardize ${selectedVariants.size} ${pluralize(selectedVariants.size, 'variant')}`;
 			}
 			applyBtn.disabled = selectedVariants.size === 0;
 		};
@@ -2409,7 +2410,7 @@ export class CleanupWizardModal extends Modal {
 		// Summary
 		const totalDupes = this.placeDuplicateGroups.reduce((sum, g) => sum + g.files.length - 1, 0);
 		const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
-		summary.textContent = `Found ${this.placeDuplicateGroups.length} place${this.placeDuplicateGroups.length === 1 ? '' : 's'} with duplicates (${totalDupes} duplicate file${totalDupes === 1 ? '' : 's'} to merge).`;
+		summary.textContent = `Found ${this.placeDuplicateGroups.length} ${pluralize(this.placeDuplicateGroups.length, 'place')} with duplicates (${totalDupes} duplicate ${pluralize(totalDupes, 'file')} to merge).`;
 
 		const hint = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
 		hint.textContent = 'Select which file to keep as canonical for each place. Duplicates will be merged and deleted.';
@@ -2453,7 +2454,7 @@ export class CleanupWizardModal extends Modal {
 
 				const refCount = group.refCounts.get(file) || 0;
 				const refBadge = fileItem.createSpan({ cls: 'crc-cleanup-dedup-ref-badge' });
-				refBadge.textContent = `${refCount} ref${refCount === 1 ? '' : 's'}`;
+				refBadge.textContent = `${refCount} ${pluralize(refCount, 'ref')}`;
 
 				if (file === group.recommendedCanonical) {
 					const recBadge = fileItem.createSpan({ cls: 'crc-cleanup-dedup-rec-badge' });
@@ -2497,7 +2498,7 @@ export class CleanupWizardModal extends Modal {
 		});
 		const applyIcon = applyBtn.createSpan({ cls: 'crc-btn-icon' });
 		setIcon(applyIcon, 'git-merge');
-		applyBtn.createSpan({ text: `Merge ${this.placeDuplicateGroups.length} duplicate group${this.placeDuplicateGroups.length === 1 ? '' : 's'}` });
+		applyBtn.createSpan({ text: `Merge ${this.placeDuplicateGroups.length} duplicate ${pluralize(this.placeDuplicateGroups.length, 'group')}` });
 
 		applyBtn.addEventListener('click', () => {
 			void this.applyPlaceDeduplication(canonicalSelections, stepState);
@@ -2598,7 +2599,7 @@ export class CleanupWizardModal extends Modal {
 
 		// Summary
 		const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
-		summary.textContent = `Found ${this.ungeocodedPlaces.length} place${this.ungeocodedPlaces.length === 1 ? '' : 's'} without coordinates.`;
+		summary.textContent = `Found ${this.ungeocodedPlaces.length} ${pluralize(this.ungeocodedPlaces.length, 'place')} without coordinates.`;
 
 		// Description
 		const desc = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
@@ -2606,7 +2607,7 @@ export class CleanupWizardModal extends Modal {
 
 		// Estimated time
 		const estimatedMinutes = Math.ceil(this.ungeocodedPlaces.length / 60);
-		const timeText = estimatedMinutes === 1 ? 'about 1 minute' : `about ${estimatedMinutes} minutes`;
+		const timeText = `about ${estimatedMinutes} ${pluralize(estimatedMinutes, 'minute')}`;
 		const timeEstimate = preview.createDiv({ cls: 'crc-cleanup-geocode-time' });
 		const timeIcon = timeEstimate.createSpan({ cls: 'crc-cleanup-geocode-time-icon' });
 		setIcon(timeIcon, 'clock');
@@ -2944,7 +2945,7 @@ export class CleanupWizardModal extends Modal {
 
 		// Summary
 		const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
-		summary.textContent = `Found ${this.placesWithoutParent.length} place${this.placesWithoutParent.length === 1 ? '' : 's'} without parent hierarchy.`;
+		summary.textContent = `Found ${this.placesWithoutParent.length} ${pluralize(this.placesWithoutParent.length, 'place')} without parent hierarchy.`;
 
 		// Description
 		const desc = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
@@ -2952,7 +2953,7 @@ export class CleanupWizardModal extends Modal {
 
 		// Estimated time
 		const estimatedMinutes = Math.ceil(this.placesWithoutParent.length / 60);
-		const timeText = estimatedMinutes === 1 ? 'about 1 minute' : `about ${estimatedMinutes} minutes`;
+		const timeText = `about ${estimatedMinutes} ${pluralize(estimatedMinutes, 'minute')}`;
 		const timeEstimate = preview.createDiv({ cls: 'crc-cleanup-hierarchy-time' });
 		const timeIcon = timeEstimate.createSpan({ cls: 'crc-cleanup-hierarchy-time-icon' });
 		setIcon(timeIcon, 'clock');

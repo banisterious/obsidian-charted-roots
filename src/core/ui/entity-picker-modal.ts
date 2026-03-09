@@ -13,6 +13,7 @@
  */
 
 import { App, Modal, TFile, setIcon, Notice, Setting } from 'obsidian';
+import { pluralize } from '../../utils/format-utils';
 import type CanvasRootsPlugin from '../../../main';
 import { MediaService, type MediaEntityType } from '../media-service';
 import { BulkMediaLinkProgressModal } from './bulk-media-link-progress-modal';
@@ -843,9 +844,9 @@ export class EntityPickerModal extends Modal {
 			// Show result notification for small operations
 			const fileCount = this.preselectedFiles.length;
 			if (errorCount === 0) {
-				new Notice(`Linked ${fileCount} media file${fileCount > 1 ? 's' : ''} to ${successCount} ${successCount === 1 ? 'entity' : 'entities'}`);
+				new Notice(`Linked ${fileCount} media ${pluralize(fileCount, 'file')} to ${successCount} ${pluralize(successCount, 'entity', 'entities')}`);
 			} else {
-				new Notice(`Linked media to ${successCount} ${successCount === 1 ? 'entity' : 'entities'}, ${errorCount} failed`);
+				new Notice(`Linked media to ${successCount} ${pluralize(successCount, 'entity', 'entities')}, ${errorCount} failed`);
 			}
 		}
 

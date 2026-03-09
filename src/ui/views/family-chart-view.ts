@@ -35,6 +35,7 @@ import type { ProgressCallback } from './family-chart-export-progress-modal';
 import { generateOdt } from './odt-generator';
 
 import { getSpouseLabel } from '../../utils/terminology';
+import { pluralize } from '../../utils/format-utils';
 
 const logger = getLogger('FamilyChartView');
 
@@ -3550,7 +3551,7 @@ export class FamilyChartView extends ItemView {
 
 		const ancestryOptions: (number | null)[] = [null, 1, 2, 3, 5];
 		for (const depth of ancestryOptions) {
-			const label = depth === null ? 'Unlimited' : `${depth} generation${depth === 1 ? '' : 's'}`;
+			const label = depth === null ? 'Unlimited' : `${depth} ${pluralize(depth, 'generation')}`;
 			const isSelected = this.ancestryDepth === depth;
 			menu.addItem((item) => {
 				item.setTitle(`${isSelected ? '✓ ' : '  '}${label}`)
@@ -3570,7 +3571,7 @@ export class FamilyChartView extends ItemView {
 
 		const progenyOptions: (number | null)[] = [null, 1, 2, 3, 5];
 		for (const depth of progenyOptions) {
-			const label = depth === null ? 'Unlimited' : `${depth} generation${depth === 1 ? '' : 's'}`;
+			const label = depth === null ? 'Unlimited' : `${depth} ${pluralize(depth, 'generation')}`;
 			const isSelected = this.progenyDepth === depth;
 			menu.addItem((item) => {
 				item.setTitle(`${isSelected ? '✓ ' : '  '}${label}`)
@@ -4016,7 +4017,7 @@ export class FamilyChartView extends ItemView {
 			this.initializeChart();
 		}
 
-		const label = depth === null ? 'unlimited' : `${depth} generation${depth === 1 ? '' : 's'}`;
+		const label = depth === null ? 'unlimited' : `${depth} ${pluralize(depth, 'generation')}`;
 		new Notice(`Ancestry depth: ${label}`);
 	}
 
@@ -4033,7 +4034,7 @@ export class FamilyChartView extends ItemView {
 			this.initializeChart();
 		}
 
-		const label = depth === null ? 'unlimited' : `${depth} generation${depth === 1 ? '' : 's'}`;
+		const label = depth === null ? 'unlimited' : `${depth} ${pluralize(depth, 'generation')}`;
 		new Notice(`Descendant depth: ${label}`);
 	}
 

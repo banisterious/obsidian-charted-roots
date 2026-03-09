@@ -6,6 +6,7 @@ import { FamilyGraphService, TreeOptions } from '../core/family-graph';
 import { CanvasGenerator } from '../core/canvas-generator';
 import { getLogger } from '../core/logging';
 import { getErrorMessage } from '../core/error-utils';
+import { pluralize } from '../utils/format-utils';
 import { SchemaValidationProgressModal } from './schema-validation-progress-modal';
 import type { RecentTreeInfo } from '../settings';
 import { ConfirmationModal } from './data-quality-modals';
@@ -820,7 +821,7 @@ export class ControlCenterModal extends Modal {
 			const warningMsg = this.contentContainer.createEl('p', {
 				cls: 'crc-text-warning crc-mt-3'
 			});
-			warningMsg.createEl('strong', { text: `⚠ ${failureCount} tree${failureCount === 1 ? '' : 's'} failed to generate.` });
+			warningMsg.createEl('strong', { text: `⚠ ${failureCount} ${pluralize(failureCount, 'tree')} failed to generate.` });
 			warningMsg.appendText(' See details below.');
 		}
 

@@ -23,6 +23,7 @@ import { BulkMediaLinkModal } from '../core/ui/bulk-media-link-modal';
 import { TemplateSnippetsModal } from './template-snippets-modal';
 import { AddPersonTypePreviewModal } from './add-person-type-modal';
 import { getErrorMessage } from '../core/error-utils';
+import { pluralize } from '../utils/format-utils';
 import {
 	EvidenceService,
 	FACT_KEY_LABELS,
@@ -773,7 +774,7 @@ function renderSourceConflictsSection(container: HTMLElement, options: DataQuali
 	const conflictIcon = conflictStat.createSpan({ cls: 'crc-schema-stat-icon' });
 	setIcon(conflictIcon, conflictedProofs.length > 0 ? 'alert-triangle' : 'check');
 	conflictStat.createSpan({
-		text: `${conflictedProofs.length} unresolved conflict${conflictedProofs.length !== 1 ? 's' : ''}`,
+		text: `${conflictedProofs.length} unresolved ${pluralize(conflictedProofs.length, 'conflict')}`,
 		cls: 'crc-schema-stat-text'
 	});
 
@@ -783,7 +784,7 @@ function renderSourceConflictsSection(container: HTMLElement, options: DataQuali
 	const proofIcon = proofStat.createSpan({ cls: 'crc-schema-stat-icon' });
 	setIcon(proofIcon, 'scale');
 	proofStat.createSpan({
-		text: `${allProofs.length} proof summar${allProofs.length !== 1 ? 'ies' : 'y'}`,
+		text: `${allProofs.length} proof ${pluralize(allProofs.length, 'summary', 'summaries')}`,
 		cls: 'crc-schema-stat-text'
 	});
 
@@ -1331,7 +1332,7 @@ function renderIssuesList(
 	// Show count
 	container.createDiv({
 		cls: 'crc-dq-issues-count',
-		text: `Showing ${filtered.length} issue${filtered.length === 1 ? '' : 's'}`
+		text: `Showing ${filtered.length} ${pluralize(filtered.length, 'issue')}`
 	});
 
 	// Render issues (limit to first 100 for performance)
@@ -1504,14 +1505,14 @@ export function renderDataQualityDashboard(options: DataQualityDashboardOptions)
 		setIcon(conflictStat.createSpan({ cls: 'crc-schema-stat-icon' }),
 			conflictedProofs.length > 0 ? 'alert-triangle' : 'check');
 		conflictStat.createSpan({
-			text: `${conflictedProofs.length} unresolved conflict${conflictedProofs.length !== 1 ? 's' : ''}`,
+			text: `${conflictedProofs.length} unresolved ${pluralize(conflictedProofs.length, 'conflict')}`,
 			cls: 'crc-schema-stat-text'
 		});
 
 		const proofStat = conflictStatsRow.createDiv({ cls: 'crc-schema-stat' });
 		setIcon(proofStat.createSpan({ cls: 'crc-schema-stat-icon' }), 'scale');
 		proofStat.createSpan({
-			text: `${allProofs.length} proof summar${allProofs.length !== 1 ? 'ies' : 'y'}`,
+			text: `${allProofs.length} proof ${pluralize(allProofs.length, 'summary', 'summaries')}`,
 			cls: 'crc-schema-stat-text'
 		});
 
@@ -1650,7 +1651,7 @@ export function renderDataQualityDashboard(options: DataQualityDashboardOptions)
 
 			issuesList.createDiv({
 				cls: 'crc-dq-issues-count',
-				text: `Showing ${filtered.length} issue${filtered.length === 1 ? '' : 's'}`
+				text: `Showing ${filtered.length} ${pluralize(filtered.length, 'issue')}`
 			});
 
 			const displayIssues = filtered.slice(0, 100);
@@ -1872,8 +1873,8 @@ export function previewRemoveDuplicateRelationships(plugin: CanvasRootsPlugin, a
 				changes.push({
 					person: { name: person.name || 'Unknown' },
 					field: 'spouse',
-					oldValue: `${fm.spouse.length} ${fm.spouse.length === 1 ? 'entry' : 'entries'} (${dupCount} ${dupCount === 1 ? 'duplicate' : 'duplicates'})`,
-					newValue: `${unique.length} ${unique.length === 1 ? 'entry' : 'entries'} (deduplicated)`,
+					oldValue: `${fm.spouse.length} ${pluralize(fm.spouse.length, 'entry', 'entries')} (${dupCount} ${pluralize(dupCount, 'duplicate')})`,
+					newValue: `${unique.length} ${pluralize(unique.length, 'entry', 'entries')} (deduplicated)`,
 					file: person.file
 				});
 			}
@@ -1887,8 +1888,8 @@ export function previewRemoveDuplicateRelationships(plugin: CanvasRootsPlugin, a
 				changes.push({
 					person: { name: person.name || 'Unknown' },
 					field: 'spouse_id',
-					oldValue: `${fm.spouse_id.length} ${fm.spouse_id.length === 1 ? 'entry' : 'entries'} (${dupCount} ${dupCount === 1 ? 'duplicate' : 'duplicates'})`,
-					newValue: `${unique.length} ${unique.length === 1 ? 'entry' : 'entries'} (deduplicated)`,
+					oldValue: `${fm.spouse_id.length} ${pluralize(fm.spouse_id.length, 'entry', 'entries')} (${dupCount} ${pluralize(dupCount, 'duplicate')})`,
+					newValue: `${unique.length} ${pluralize(unique.length, 'entry', 'entries')} (deduplicated)`,
 					file: person.file
 				});
 			}
@@ -1904,8 +1905,8 @@ export function previewRemoveDuplicateRelationships(plugin: CanvasRootsPlugin, a
 				changes.push({
 					person: { name: person.name || 'Unknown' },
 					field: fieldName,
-					oldValue: `${childrenArray.length} ${childrenArray.length === 1 ? 'entry' : 'entries'} (${dupCount} ${dupCount === 1 ? 'duplicate' : 'duplicates'})`,
-					newValue: `${unique.length} ${unique.length === 1 ? 'entry' : 'entries'} (deduplicated)`,
+					oldValue: `${childrenArray.length} ${pluralize(childrenArray.length, 'entry', 'entries')} (${dupCount} ${pluralize(dupCount, 'duplicate')})`,
+					newValue: `${unique.length} ${pluralize(unique.length, 'entry', 'entries')} (deduplicated)`,
 					file: person.file
 				});
 			}
@@ -1919,8 +1920,8 @@ export function previewRemoveDuplicateRelationships(plugin: CanvasRootsPlugin, a
 				changes.push({
 					person: { name: person.name || 'Unknown' },
 					field: 'children_id',
-					oldValue: `${fm.children_id.length} ${fm.children_id.length === 1 ? 'entry' : 'entries'} (${dupCount} ${dupCount === 1 ? 'duplicate' : 'duplicates'})`,
-					newValue: `${unique.length} ${unique.length === 1 ? 'entry' : 'entries'} (deduplicated)`,
+					oldValue: `${fm.children_id.length} ${pluralize(fm.children_id.length, 'entry', 'entries')} (${dupCount} ${pluralize(dupCount, 'duplicate')})`,
+					newValue: `${unique.length} ${pluralize(unique.length, 'entry', 'entries')} (deduplicated)`,
 					file: person.file
 				});
 			}
@@ -2019,7 +2020,7 @@ export async function removeDuplicateRelationships(plugin: CanvasRootsPlugin, ap
 
 	// Show result
 	if (modified > 0) {
-		new Notice(`\u2713 Removed duplicates from ${modified} ${modified === 1 ? 'file' : 'files'}`);
+		new Notice(`\u2713 Removed duplicates from ${modified} ${pluralize(modified, 'file')}`);
 	} else {
 		new Notice('No duplicate relationships found');
 	}
@@ -2153,7 +2154,7 @@ export function previewRemovePlaceholders(plugin: CanvasRootsPlugin, app: App, s
 					changes.push({
 						person: { name: person.name || 'Unknown' },
 						field,
-						oldValue: `[${value.length} placeholder ${value.length === 1 ? 'entry' : 'entries'}]`,
+						oldValue: `[${value.length} placeholder ${pluralize(value.length, 'entry', 'entries')}]`,
 						newValue: '(remove field)',
 						file: person.file
 					});
@@ -2324,7 +2325,7 @@ export async function removePlaceholders(plugin: CanvasRootsPlugin, app: App, sh
 
 	// Show result
 	if (modified > 0) {
-		new Notice(`\u2713 Removed placeholders from ${modified} ${modified === 1 ? 'file' : 'files'}`);
+		new Notice(`\u2713 Removed placeholders from ${modified} ${pluralize(modified, 'file')}`);
 	} else {
 		new Notice('No placeholder values found');
 	}
@@ -2423,7 +2424,7 @@ export async function addPersonType(plugin: CanvasRootsPlugin, app: App, showTab
 
 	// Show result
 	if (modified > 0) {
-		new Notice(`\u2713 Added cr_type property to ${modified} ${modified === 1 ? 'file' : 'files'}`);
+		new Notice(`\u2713 Added cr_type property to ${modified} ${pluralize(modified, 'file')}`);
 	} else {
 		new Notice('All person notes already have cr_type property');
 	}
@@ -2707,7 +2708,7 @@ export async function normalizeNames(plugin: CanvasRootsPlugin, app: App, showTa
 
 	// Show result
 	if (modified > 0) {
-		new Notice(`\u2713 Normalized names in ${modified} ${modified === 1 ? 'file' : 'files'}`);
+		new Notice(`\u2713 Normalized names in ${modified} ${pluralize(modified, 'file')}`);
 	} else {
 		new Notice('No names needed normalization');
 	}
@@ -2955,7 +2956,7 @@ export async function removeOrphanedRefs(plugin: CanvasRootsPlugin, app: App, sh
 	}
 
 	if (modified > 0) {
-		new Notice(`\u2713 Removed orphaned references from ${modified} ${modified === 1 ? 'file' : 'files'}`);
+		new Notice(`\u2713 Removed orphaned references from ${modified} ${pluralize(modified, 'file')}`);
 	} else {
 		new Notice('No orphaned cr_id references found');
 	}
@@ -3011,7 +3012,7 @@ export async function previewFixBidirectionalRelationships(plugin: CanvasRootsPl
 
 	// Notify about conflicts (handled separately in People tab)
 	if (conflictCount > 0) {
-		new Notice(`Found ${conflictCount} parent claim conflict${conflictCount === 1 ? '' : 's'}. See the "Parent claim conflicts" card in the People tab to resolve.`, 8000);
+		new Notice(`Found ${conflictCount} parent claim ${pluralize(conflictCount, 'conflict')}. See the "Parent claim conflicts" card in the People tab to resolve.`, 8000);
 	}
 
 	if (fixableInconsistencies.length === 0) {
@@ -3086,7 +3087,7 @@ export async function fixBidirectionalRelationships(plugin: CanvasRootsPlugin, a
 		const result = await dataQuality2.fixBidirectionalInconsistencies(inconsistencies);
 
 		if (result.modified > 0) {
-			new Notice(`\u2713 Fixed ${result.modified} of ${result.processed} inconsistenc${result.processed === 1 ? 'y' : 'ies'}. Wait a moment before re-checking.`, 5000);
+			new Notice(`\u2713 Fixed ${result.modified} of ${result.processed} ${pluralize(result.processed, 'inconsistency', 'inconsistencies')}. Wait a moment before re-checking.`, 5000);
 		} else {
 			new Notice('No inconsistencies were fixed');
 		}

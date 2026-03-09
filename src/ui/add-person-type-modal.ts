@@ -1,5 +1,6 @@
 import { App, Modal, TFile } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
+import { pluralize } from '../utils/format-utils';
 
 /**
  * Preview modal for adding cr_type property to person notes
@@ -104,7 +105,7 @@ export class AddPersonTypePreviewModal extends Modal {
 		cancelButton.addEventListener('click', () => this.close());
 
 		const applyButton = buttonContainer.createEl('button', {
-			text: `Apply to ${this.allChanges.length} note${this.allChanges.length === 1 ? '' : 's'}`,
+			text: `Apply to ${this.allChanges.length} ${pluralize(this.allChanges.length, 'note')}`,
 			cls: 'mod-cta'
 		});
 		applyButton.addEventListener('click', () => {
@@ -145,7 +146,7 @@ export class AddPersonTypePreviewModal extends Modal {
 
 		// Update count
 		if (this.countEl) {
-			this.countEl.textContent = `Found ${this.filteredChanges.length} of ${this.allChanges.length} person note${this.allChanges.length === 1 ? '' : 's'} needing cr_type property`;
+			this.countEl.textContent = `Found ${this.filteredChanges.length} of ${this.allChanges.length} person ${pluralize(this.allChanges.length, 'note')} needing cr_type property`;
 		}
 
 		// Render table

@@ -12,6 +12,7 @@ import type { LucideIconName } from './lucide-icons';
 import { CanvasGenerator, CanvasData } from '../core/canvas-generator';
 import { ensureFolderExists } from '../core/canvas-utils';
 import { getErrorMessage } from '../core/error-utils';
+import { pluralize } from '../utils/format-utils';
 import type { PersonNode } from '../core/family-graph';
 
 export type CollectionBrowseMode = 'all' | 'families' | 'collections';
@@ -138,7 +139,7 @@ function updateCollectionsList(
 		const listContent = listCard.createDiv({ cls: 'crc-card__content' });
 		listContent.createEl('p', {
 			cls: 'crc-text--muted',
-			text: `Found ${allPeople.length} ${allPeople.length === 1 ? 'person' : 'people'} in your vault.`
+			text: `Found ${allPeople.length} ${pluralize(allPeople.length, 'person', 'people')} in your vault.`
 		});
 
 		container.appendChild(listCard);
@@ -196,7 +197,7 @@ function updateCollectionsList(
 					const sizeCell = row.createEl('td', { cls: 'crc-person-table__td' });
 					sizeCell.createEl('span', {
 						cls: 'crc-badge',
-						text: `${component.size} ${component.size === 1 ? 'person' : 'people'}`
+						text: `${component.size} ${pluralize(component.size, 'person', 'people')}`
 					});
 
 					// Representative cell
@@ -256,7 +257,7 @@ function updateCollectionsList(
 				collectionHeader.createEl('strong', { text: `${collection.name} ` }); // Added space after name
 				collectionHeader.createEl('span', {
 					cls: 'crc-badge',
-					text: `${collection.size} ${collection.size === 1 ? 'person' : 'people'}`
+					text: `${collection.size} ${pluralize(collection.size, 'person', 'people')}`
 				});
 			});
 		}
@@ -286,7 +287,7 @@ function updateCollectionsList(
 					});
 					connectionHeader.createEl('span', {
 						cls: 'crc-badge',
-						text: `${connection.relationshipCount} ${connection.relationshipCount === 1 ? 'link' : 'links'}`
+						text: `${connection.relationshipCount} ${pluralize(connection.relationshipCount, 'link')}`
 					});
 
 					const bridgeInfo = connectionItem.createDiv({ cls: 'crc-text--muted' });
@@ -470,7 +471,7 @@ function loadAnalyticsData(container: HTMLElement, plugin: CanvasRootsPlugin): v
 
 			analytics.crossCollectionMetrics.topConnections.forEach(conn => {
 				connectionsList.createEl('li', {
-					text: `${conn.from} ↔ ${conn.to} (${conn.bridgeCount} ${conn.bridgeCount === 1 ? 'person' : 'people'})`
+					text: `${conn.from} ↔ ${conn.to} (${conn.bridgeCount} ${pluralize(conn.bridgeCount, 'person', 'people')})`
 				});
 			});
 		}
@@ -574,7 +575,7 @@ export function renderCollectionsList(options: CollectionsListOptions): void {
 
 			listContainer.createEl('p', {
 				cls: 'crc-text--muted',
-				text: `Found ${allPeople.length} ${allPeople.length === 1 ? 'person' : 'people'} in your vault.`
+				text: `Found ${allPeople.length} ${pluralize(allPeople.length, 'person', 'people')} in your vault.`
 			});
 
 		} else if (currentMode === 'families') {
@@ -672,7 +673,7 @@ export function renderCollectionsList(options: CollectionsListOptions): void {
 				collectionHeader.createEl('strong', { text: `${collection.name} ` });
 				collectionHeader.createEl('span', {
 					cls: 'crc-badge',
-					text: `${collection.size} ${collection.size === 1 ? 'person' : 'people'}`
+					text: `${collection.size} ${pluralize(collection.size, 'person', 'people')}`
 				});
 			});
 
@@ -695,7 +696,7 @@ export function renderCollectionsList(options: CollectionsListOptions): void {
 						});
 						connectionHeader.createEl('span', {
 							cls: 'crc-badge',
-							text: `${connection.relationshipCount} ${connection.relationshipCount === 1 ? 'link' : 'links'}`
+							text: `${connection.relationshipCount} ${pluralize(connection.relationshipCount, 'link')}`
 						});
 
 						const bridgeInfo = connectionItem.createDiv({ cls: 'crc-text--muted' });
@@ -749,7 +750,7 @@ function renderBrowseFamilyRow(
 	const sizeCell = row.createEl('td', { cls: 'crc-person-table__td' });
 	sizeCell.createEl('span', {
 		cls: 'crc-badge',
-		text: `${component.size} ${component.size === 1 ? 'person' : 'people'}`
+		text: `${component.size} ${pluralize(component.size, 'person', 'people')}`
 	});
 
 	// Representative cell

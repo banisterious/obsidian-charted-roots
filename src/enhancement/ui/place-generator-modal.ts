@@ -7,6 +7,7 @@
 
 import { App, Modal, Notice, Setting, TFile } from 'obsidian';
 import { createLucideIcon, setLucideIcon } from '../../ui/lucide-icons';
+import { pluralize } from '../../utils/format-utils';
 import {
 	PlaceGeneratorService,
 	PlaceGeneratorOptions,
@@ -426,7 +427,7 @@ export class PlaceGeneratorModal extends Modal {
 		// Update count
 		if (this.placesCountEl) {
 			if (this.filteredPlaces.length === this.allPlaces.length) {
-				this.placesCountEl.textContent = `${this.allPlaces.length} place${this.allPlaces.length === 1 ? '' : 's'} to create:`;
+				this.placesCountEl.textContent = `${this.allPlaces.length} ${pluralize(this.allPlaces.length, 'place')} to create:`;
 			} else {
 				this.placesCountEl.textContent = `Showing ${this.filteredPlaces.length} of ${this.allPlaces.length} places:`;
 			}
@@ -575,7 +576,7 @@ export class PlaceGeneratorModal extends Modal {
 				if (this.placesCountEl && this.previewResult) {
 					this.previewResult.notesCreated--;
 					const remaining = this.allPlaces.length;
-					this.placesCountEl.textContent = `${remaining} place${remaining === 1 ? '' : 's'} to create:`;
+					this.placesCountEl.textContent = `${remaining} ${pluralize(remaining, 'place')} to create:`;
 				}
 
 				new Notice(`Created place note: ${place.placeString}`);
@@ -899,7 +900,7 @@ export class PlaceGeneratorModal extends Modal {
 		// Update count
 		if (this.resultsCountEl) {
 			if (this.filteredResultNotes.length === this.resultNotes.length) {
-				this.resultsCountEl.textContent = `${this.resultNotes.length} place note${this.resultNotes.length === 1 ? '' : 's'}:`;
+				this.resultsCountEl.textContent = `${this.resultNotes.length} place ${pluralize(this.resultNotes.length, 'note')}:`;
 			} else {
 				this.resultsCountEl.textContent = `Showing ${this.filteredResultNotes.length} of ${this.resultNotes.length} notes:`;
 			}

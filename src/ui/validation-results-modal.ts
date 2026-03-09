@@ -1,6 +1,7 @@
 import { App, Modal } from 'obsidian';
 import { ValidationResult } from '../core/relationship-validator';
 import { createLucideIcon } from './lucide-icons';
+import { pluralize } from '../utils/format-utils';
 
 /**
  * Modal to display relationship validation results
@@ -43,7 +44,7 @@ export class ValidationResultsModal extends Modal {
 			errorIcon.addClass('cr-icon--error');
 			summary.appendChild(errorIcon);
 			summary.createEl('span', {
-				text: ` Found ${this.result.issues.length} issue${this.result.issues.length === 1 ? '' : 's'}`,
+				text: ` Found ${this.result.issues.length} ${pluralize(this.result.issues.length, 'issue')}`,
 				cls: 'cr-validation-summary__text'
 			});
 			summary.addClass('cr-text--error');

@@ -10,6 +10,7 @@ import { App } from 'obsidian';
 import type { CanvasRootsSettings } from '../../settings';
 import { createLucideIcon } from '../../ui/lucide-icons';
 import { EventService } from '../services/event-service';
+import { pluralize } from '../../utils/format-utils';
 import { EventNote, getEventType, DATE_PRECISION_LABELS } from '../types/event-types';
 
 /**
@@ -299,7 +300,7 @@ function renderPlaceTimeline(
 		const peopleIcon = createLucideIcon('users', 14);
 		peopleSection.appendChild(peopleIcon);
 		peopleSection.createEl('span', {
-			text: `${uniquePeople.length} ${uniquePeople.length === 1 ? 'person' : 'people'}: `,
+			text: `${uniquePeople.length} ${pluralize(uniquePeople.length, 'person', 'people')}: `,
 			cls: 'crc-place-timeline__people-label'
 		});
 

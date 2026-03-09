@@ -1,6 +1,7 @@
 import { App, Modal, Notice } from 'obsidian';
 import { CanvasSearchResult, CanvasFinder } from '../core/canvas-finder';
 import { createLucideIcon } from './lucide-icons';
+import { pluralize } from '../utils/format-utils';
 
 /**
  * Modal to display canvases containing a specific person
@@ -89,7 +90,7 @@ export class FindOnCanvasModal extends Modal {
 		// Summary
 		const summary = container.createDiv({ cls: 'cr-find-summary' });
 		summary.createEl('p', {
-			text: `Found on ${this.results.length} canvas${this.results.length === 1 ? '' : 'es'}`,
+			text: `Found on ${this.results.length} ${pluralize(this.results.length, 'canvas', 'canvases')}`,
 			cls: 'cr-find-summary__text'
 		});
 

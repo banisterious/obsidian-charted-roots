@@ -13,6 +13,7 @@
  */
 
 import { App, Notice, TFile } from 'obsidian';
+import { pluralize } from '../utils/format-utils';
 import { getLogger } from '../core/logging';
 
 const logger = getLogger('PluginRenameMigration');
@@ -266,11 +267,11 @@ export function showMigrationNotice(result: PluginRenameMigrationResult): void {
 	const parts: string[] = [];
 
 	if (result.canvasFilesUpdated > 0) {
-		parts.push(`${result.canvasFilesUpdated} canvas file${result.canvasFilesUpdated === 1 ? '' : 's'}`);
+		parts.push(`${result.canvasFilesUpdated} canvas ${pluralize(result.canvasFilesUpdated, 'file')}`);
 	}
 
 	if (result.markdownFilesUpdated > 0) {
-		parts.push(`${result.markdownFilesUpdated} note${result.markdownFilesUpdated === 1 ? '' : 's'} with code blocks`);
+		parts.push(`${result.markdownFilesUpdated} ${pluralize(result.markdownFilesUpdated, 'note')} with code blocks`);
 	}
 
 	const message = `Charted Roots: Migrated ${parts.join(' and ')} from Charted Roots format.`;

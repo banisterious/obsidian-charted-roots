@@ -8,6 +8,7 @@
 import { App, TFile, Notice } from 'obsidian';
 import { getLogger } from './logging';
 import { getErrorMessage } from './error-utils';
+import { pluralize } from '../utils/format-utils';
 
 const logger = getLogger('RelationshipHistory');
 
@@ -535,19 +536,19 @@ export function formatChangeTimestamp(timestamp: number): string {
 	// Less than an hour ago
 	if (diff < 60 * 60 * 1000) {
 		const minutes = Math.floor(diff / (60 * 1000));
-		return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+		return `${minutes} ${pluralize(minutes, 'minute')} ago`;
 	}
 
 	// Less than a day ago
 	if (diff < 24 * 60 * 60 * 1000) {
 		const hours = Math.floor(diff / (60 * 60 * 1000));
-		return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+		return `${hours} ${pluralize(hours, 'hour')} ago`;
 	}
 
 	// Less than a week ago
 	if (diff < 7 * 24 * 60 * 60 * 1000) {
 		const days = Math.floor(diff / (24 * 60 * 60 * 1000));
-		return `${days} day${days === 1 ? '' : 's'} ago`;
+		return `${days} ${pluralize(days, 'day')} ago`;
 	}
 
 	// Format as date

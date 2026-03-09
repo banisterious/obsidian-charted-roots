@@ -13,6 +13,7 @@ import type { OrganizationInfo, PersonMembership, MembershipData } from '../type
 import { MembershipService } from '../services/membership-service';
 import { OrganizationService } from '../services/organization-service';
 import { createLucideIcon } from '../../ui/lucide-icons';
+import { pluralize } from '../../utils/format-utils';
 import { getLogger } from '../../core/logging';
 
 const logger = getLogger('ManageOrganizationMembersModal');
@@ -415,7 +416,7 @@ export class ManageOrganizationMembersModal extends Modal {
 		}
 
 		if (addedCount > 0) {
-			new Notice(`Added ${addedCount} member${addedCount === 1 ? '' : 's'} to ${this.organization.name}`);
+			new Notice(`Added ${addedCount} ${pluralize(addedCount, 'member')} to ${this.organization.name}`);
 		}
 
 		// Wait for metadata cache to update for all modified files

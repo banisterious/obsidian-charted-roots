@@ -31,7 +31,7 @@ import {
 	CANONICAL_NOTE_TYPES,
 	type ValueAliasField
 } from './core/value-alias-service';
-import { capitalize } from './utils/format-utils';
+import { capitalize, pluralize } from './utils/format-utils';
 
 export interface RecentTreeInfo {
 	canvasPath: string;
@@ -2006,7 +2006,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		const summary = section.createEl('summary', { cls: 'cr-property-section-summary' });
 		summary.createSpan({ text: title, cls: 'cr-property-section-title' });
 		summary.createSpan({
-			text: `${aliasCount} ${aliasCount === 1 ? 'alias' : 'aliases'}`,
+			text: `${aliasCount} ${pluralize(aliasCount, 'alias', 'aliases')}`,
 			cls: 'cr-property-section-count'
 		});
 

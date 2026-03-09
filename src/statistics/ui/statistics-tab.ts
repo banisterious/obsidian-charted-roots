@@ -12,6 +12,7 @@ import { StatisticsService } from '../services/statistics-service';
 import { UniverseService } from '../../universes/services/universe-service';
 import { UniverseWizardModal } from '../../universes/ui/universe-wizard';
 import type { StatisticsData, TopListItem } from '../types/statistics-types';
+import { pluralize } from '../../utils/format-utils';
 import { VIEW_TYPE_STATISTICS } from '../constants/statistics-constants';
 
 /**
@@ -334,7 +335,7 @@ function renderUniversesCard(
 	const stats = universeService.getStats();
 
 	const subtitle = universes.length > 0
-		? `${universes.length} universe${universes.length === 1 ? '' : 's'}, ${stats.totalEntities} entities`
+		? `${universes.length} ${pluralize(universes.length, 'universe')}, ${stats.totalEntities} entities`
 		: 'Organize fictional worlds';
 
 	const card = createCard({
@@ -412,7 +413,7 @@ function renderUniversesCard(
 		const warningIcon = warning.createSpan({ cls: 'cr-warning-icon' });
 		setIcon(warningIcon, 'alert-triangle');
 		warning.createSpan({
-			text: `${orphans.length} orphan universe value${orphans.length === 1 ? '' : 's'} without note${orphans.length === 1 ? '' : 's'}`
+			text: `${orphans.length} orphan universe ${pluralize(orphans.length, 'value')} without ${pluralize(orphans.length, 'note')}`
 		});
 		const fixLink = warning.createEl('a', {
 			text: 'Fix →',

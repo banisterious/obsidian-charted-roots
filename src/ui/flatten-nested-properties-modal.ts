@@ -7,6 +7,7 @@
 import { App, Modal, Notice, Setting, TFile } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 import { detectNoteType } from '../utils/note-type-detection';
+import { pluralize } from '../utils/format-utils';
 
 /**
  * Definition of a nested property that can be flattened
@@ -330,7 +331,7 @@ export class FlattenNestedPropertiesModal extends Modal {
 
 			row.createSpan({ text: `${displayName}: ` });
 			row.createSpan({
-				text: `${files.length} note${files.length === 1 ? '' : 's'}`,
+				text: `${files.length} ${pluralize(files.length, 'note')}`,
 				cls: 'cr-flatten-count'
 			});
 
@@ -345,7 +346,7 @@ export class FlattenNestedPropertiesModal extends Modal {
 		// Total summary
 		const totalSummary = this.resultsContainer.createDiv({ cls: 'cr-flatten-total' });
 		totalSummary.createEl('strong', {
-			text: `Total: ${allFilesSet.size} note${allFilesSet.size === 1 ? '' : 's'} to flatten`
+			text: `Total: ${allFilesSet.size} ${pluralize(allFilesSet.size, 'note')} to flatten`
 		});
 
 		this.updateButtonStates();
@@ -458,9 +459,9 @@ export class FlattenNestedPropertiesModal extends Modal {
 
 			// Show completion message
 			if (errors === 0) {
-				new Notice(`Successfully flattened properties in ${flattened} note${flattened === 1 ? '' : 's'}.`);
+				new Notice(`Successfully flattened properties in ${flattened} ${pluralize(flattened, 'note')}.`);
 			} else {
-				new Notice(`Flattened ${flattened} note${flattened === 1 ? '' : 's'} with ${errors} error${errors === 1 ? '' : 's'}. Check console for details.`);
+				new Notice(`Flattened ${flattened} ${pluralize(flattened, 'note')} with ${errors} ${pluralize(errors, 'error')}. Check console for details.`);
 			}
 
 			// Call completion callback

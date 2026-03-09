@@ -11,6 +11,7 @@ import { FamilyChartLayoutEngine } from './family-chart-layout';
 import { TimelineLayoutEngine } from './timeline-layout';
 import { HourglassLayoutEngine } from './hourglass-layout';
 import { getLogger } from './logging';
+import { pluralize } from '../utils/format-utils';
 import type { PrivacyService, PrivacyResult } from './privacy-service';
 import type { ArrowStyle, SpouseEdgeLabelFormat } from '../settings';
 import type { SpouseRelationship } from '../models/person';
@@ -1545,7 +1546,7 @@ Generated: ${new Date().toLocaleString()}`;
 
 				if (fromNodeId && toNodeId) {
 					const edgeId = this.generateId();
-					const label = `${connection.bridgePeople.length} bridge ${connection.bridgePeople.length === 1 ? 'person' : 'people'}`;
+					const label = `${connection.bridgePeople.length} bridge ${pluralize(connection.bridgePeople.length, 'person', 'people')}`;
 
 					canvasEdges.push({
 						id: edgeId,

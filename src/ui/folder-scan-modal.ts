@@ -2,6 +2,7 @@ import { App, Modal, TFolder, TFile } from 'obsidian';
 import { RelationshipValidator, ValidationResult } from '../core/relationship-validator';
 import type { PersonIndexService } from '../core/person-index-service';
 import { createLucideIcon } from './lucide-icons';
+import { pluralize } from '../utils/format-utils';
 
 /**
  * Modal to display folder-wide validation scan results
@@ -184,7 +185,7 @@ export class FolderScanModal extends Modal {
 					});
 
 					resultHeader.createEl('span', {
-						text: `${result.issues.length} issue${result.issues.length === 1 ? '' : 's'}`,
+						text: `${result.issues.length} ${pluralize(result.issues.length, 'issue')}`,
 						cls: 'cr-scan-result__badge'
 					});
 

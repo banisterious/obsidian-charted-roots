@@ -7,6 +7,7 @@
 
 import { App, Modal } from 'obsidian';
 import { createLucideIcon, type LucideIconName } from './lucide-icons';
+import { pluralize } from '../utils/format-utils';
 
 /**
  * User decision from the privacy notice
@@ -45,7 +46,7 @@ export class PrivacyNoticeModal extends Modal {
 		// Description
 		const description = contentEl.createDiv({ cls: 'cr-privacy-notice__description' });
 		description.createEl('p', {
-			text: `Charted Roots detected ${this.livingCount} ${this.livingCount === 1 ? 'person' : 'people'} who may be living.`
+			text: `Charted Roots detected ${this.livingCount} ${pluralize(this.livingCount, 'person', 'people')} who may be living.`
 		});
 		description.createEl('p', {
 			text: 'Privacy protection can hide or anonymize living persons in exports to protect their personal information.'

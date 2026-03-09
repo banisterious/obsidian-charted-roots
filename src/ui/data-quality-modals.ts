@@ -12,6 +12,7 @@ import { App, Modal, TFile, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { createLucideIcon } from './lucide-icons';
 import type { NormalizationPreview } from '../core/data-quality';
+import { pluralize } from '../utils/format-utils';
 
 // ==========================================================================
 // DuplicateRelationshipsPreviewModal
@@ -135,7 +136,7 @@ export class DuplicateRelationshipsPreviewModal extends Modal {
 		cancelButton.addEventListener('click', () => this.close());
 
 		const applyButton = buttonContainer.createEl('button', {
-			text: `Apply ${this.allChanges.length} change${this.allChanges.length === 1 ? '' : 's'}`,
+			text: `Apply ${this.allChanges.length} ${pluralize(this.allChanges.length, 'change')}`,
 			cls: 'mod-cta'
 		});
 		applyButton.addEventListener('click', () => {
@@ -182,7 +183,7 @@ export class DuplicateRelationshipsPreviewModal extends Modal {
 		if (this.countEl) {
 			const peopleCount = new Set(this.allChanges.map(c => c.person.name)).size;
 			if (this.filteredChanges.length === this.allChanges.length) {
-				this.countEl.textContent = `Found ${this.allChanges.length} duplicate relationship ${this.allChanges.length === 1 ? 'entry' : 'entries'} across ${peopleCount} ${peopleCount === 1 ? 'person' : 'people'}:`;
+				this.countEl.textContent = `Found ${this.allChanges.length} duplicate relationship ${pluralize(this.allChanges.length, 'entry', 'entries')} across ${peopleCount} ${pluralize(peopleCount, 'person', 'people')}:`;
 			} else {
 				this.countEl.textContent = `Showing ${this.filteredChanges.length} of ${this.allChanges.length} duplicate entries:`;
 			}
@@ -384,7 +385,7 @@ export class PlaceholderRemovalPreviewModal extends Modal {
 		cancelButton.addEventListener('click', () => this.close());
 
 		const applyButton = buttonContainer.createEl('button', {
-			text: `Apply ${this.allChanges.length} change${this.allChanges.length === 1 ? '' : 's'}`,
+			text: `Apply ${this.allChanges.length} ${pluralize(this.allChanges.length, 'change')}`,
 			cls: 'mod-cta'
 		});
 		applyButton.addEventListener('click', () => {
@@ -431,7 +432,7 @@ export class PlaceholderRemovalPreviewModal extends Modal {
 		if (this.countEl) {
 			const peopleCount = new Set(this.allChanges.map(c => c.person.name)).size;
 			if (this.filteredChanges.length === this.allChanges.length) {
-				this.countEl.textContent = `Found ${this.allChanges.length} placeholder ${this.allChanges.length === 1 ? 'value' : 'values'} across ${peopleCount} ${peopleCount === 1 ? 'person' : 'people'}:`;
+				this.countEl.textContent = `Found ${this.allChanges.length} placeholder ${pluralize(this.allChanges.length, 'value')} across ${peopleCount} ${pluralize(peopleCount, 'person', 'people')}:`;
 			} else {
 				this.countEl.textContent = `Showing ${this.filteredChanges.length} of ${this.allChanges.length} placeholder values:`;
 			}
@@ -616,7 +617,7 @@ export class NameNormalizationPreviewModal extends Modal {
 		cancelButton.addEventListener('click', () => this.close());
 
 		const applyButton = buttonContainer.createEl('button', {
-			text: `Apply ${this.allChanges.length} change${this.allChanges.length === 1 ? '' : 's'}`,
+			text: `Apply ${this.allChanges.length} ${pluralize(this.allChanges.length, 'change')}`,
 			cls: 'mod-cta'
 		});
 		applyButton.addEventListener('click', () => {
@@ -659,7 +660,7 @@ export class NameNormalizationPreviewModal extends Modal {
 		if (this.countEl) {
 			const peopleCount = new Set(this.allChanges.map(c => c.person.name)).size;
 			if (this.filteredChanges.length === this.allChanges.length) {
-				this.countEl.textContent = `Found ${this.allChanges.length} ${this.allChanges.length === 1 ? 'name' : 'names'} to normalize across ${peopleCount} ${peopleCount === 1 ? 'person' : 'people'}:`;
+				this.countEl.textContent = `Found ${this.allChanges.length} ${pluralize(this.allChanges.length, 'name')} to normalize across ${peopleCount} ${pluralize(peopleCount, 'person', 'people')}:`;
 			} else {
 				this.countEl.textContent = `Showing ${this.filteredChanges.length} of ${this.allChanges.length} names:`;
 			}
@@ -859,7 +860,7 @@ export class OrphanedRefsPreviewModal extends Modal {
 		cancelButton.addEventListener('click', () => this.close());
 
 		const applyButton = buttonContainer.createEl('button', {
-			text: `Apply ${this.allChanges.length} change${this.allChanges.length === 1 ? '' : 's'}`,
+			text: `Apply ${this.allChanges.length} ${pluralize(this.allChanges.length, 'change')}`,
 			cls: 'mod-cta'
 		});
 		applyButton.addEventListener('click', () => {
@@ -912,7 +913,7 @@ export class OrphanedRefsPreviewModal extends Modal {
 		if (!this.tbody || !this.countEl) return;
 
 		// Update count
-		this.countEl.textContent = `Showing ${this.filteredChanges.length} of ${this.allChanges.length} orphaned reference${this.allChanges.length === 1 ? '' : 's'}`;
+		this.countEl.textContent = `Showing ${this.filteredChanges.length} of ${this.allChanges.length} orphaned ${pluralize(this.allChanges.length, 'reference')}`;
 
 		// Clear table
 		this.tbody.empty();
@@ -1117,7 +1118,7 @@ export class BidirectionalInconsistencyPreviewModal extends Modal {
 		cancelButton.addEventListener('click', () => this.close());
 
 		const applyButton = buttonContainer.createEl('button', {
-			text: `Fix ${this.allChanges.length} inconsistenc${this.allChanges.length === 1 ? 'y' : 'ies'}`,
+			text: `Fix ${this.allChanges.length} ${pluralize(this.allChanges.length, 'inconsistency', 'inconsistencies')}`,
 			cls: 'mod-cta'
 		});
 		applyButton.addEventListener('click', () => {
@@ -1167,7 +1168,7 @@ export class BidirectionalInconsistencyPreviewModal extends Modal {
 		if (this.countEl) {
 			const peopleCount = new Set(this.allChanges.map(c => c.person.name)).size;
 			if (this.filteredChanges.length === this.allChanges.length) {
-				this.countEl.textContent = `Found ${this.allChanges.length} inconsistenc${this.allChanges.length === 1 ? 'y' : 'ies'} across ${peopleCount} ${peopleCount === 1 ? 'person' : 'people'}:`;
+				this.countEl.textContent = `Found ${this.allChanges.length} ${pluralize(this.allChanges.length, 'inconsistency', 'inconsistencies')} across ${peopleCount} ${pluralize(peopleCount, 'person', 'people')}:`;
 			} else {
 				this.countEl.textContent = `Showing ${this.filteredChanges.length} of ${this.allChanges.length} inconsistencies:`;
 			}
@@ -1436,7 +1437,7 @@ export class ImpossibleDatesPreviewModal extends Modal {
 		if (this.countEl) {
 			const peopleCount = new Set(this.allChanges.map(c => c.person.name)).size;
 			if (this.filteredChanges.length === this.allChanges.length) {
-				this.countEl.textContent = `Found ${this.allChanges.length} issue${this.allChanges.length === 1 ? '' : 's'} across ${peopleCount} ${peopleCount === 1 ? 'person' : 'people'}:`;
+				this.countEl.textContent = `Found ${this.allChanges.length} ${pluralize(this.allChanges.length, 'issue')} across ${peopleCount} ${pluralize(peopleCount, 'person', 'people')}:`;
 			} else {
 				this.countEl.textContent = `Showing ${this.filteredChanges.length} of ${this.allChanges.length} issues:`;
 			}
@@ -1719,7 +1720,7 @@ export class BatchPreviewModal extends Modal {
 			const infoIcon = createLucideIcon('info', 16);
 			skippedHeader.appendChild(infoIcon);
 			skippedHeader.createSpan({
-				text: ` ${this.preview.genderSkipped.length} note${this.preview.genderSkipped.length === 1 ? '' : 's'} skipped (schema override)`
+				text: ` ${this.preview.genderSkipped.length} ${pluralize(this.preview.genderSkipped.length, 'note')} skipped (schema override)`
 			});
 
 			// Collapsible details
@@ -1768,7 +1769,7 @@ export class BatchPreviewModal extends Modal {
 		const actualChanges = this.allChanges.filter(c => !c.newValue.includes('(unrecognized'));
 		if (actualChanges.length > 0) {
 			const applyBtn = buttonContainer.createEl('button', {
-				text: `Apply ${actualChanges.length} change${actualChanges.length === 1 ? '' : 's'}`,
+				text: `Apply ${actualChanges.length} ${pluralize(actualChanges.length, 'change')}`,
 				cls: 'mod-cta'
 			});
 			applyBtn.addEventListener('click', () => {
@@ -1789,7 +1790,7 @@ export class BatchPreviewModal extends Modal {
 
 					// Update count to show completion
 					if (this.countEl) {
-						this.countEl.textContent = `\u2713 Successfully applied ${actualChanges.length} change${actualChanges.length === 1 ? '' : 's'}`;
+						this.countEl.textContent = `\u2713 Successfully applied ${actualChanges.length} ${pluralize(actualChanges.length, 'change')}`;
 					}
 				})();
 			});
@@ -1828,7 +1829,7 @@ export class BatchPreviewModal extends Modal {
 		// Update count
 		if (this.countEl) {
 			if (this.filteredChanges.length === this.allChanges.length) {
-				this.countEl.textContent = `${this.allChanges.length} change${this.allChanges.length === 1 ? '' : 's'} will be made:`;
+				this.countEl.textContent = `${this.allChanges.length} ${pluralize(this.allChanges.length, 'change')} will be made:`;
 			} else {
 				this.countEl.textContent = `Showing ${this.filteredChanges.length} of ${this.allChanges.length} changes:`;
 			}
@@ -1989,7 +1990,7 @@ export class DateValidationPreviewModal extends Modal {
 		// Summary
 		const summaryEl = contentEl.createDiv({ cls: 'crc-batch-summary' });
 		summaryEl.createEl('p', {
-			text: `Found ${this.allIssues.length} date${this.allIssues.length === 1 ? '' : 's'} with format issues.`,
+			text: `Found ${this.allIssues.length} ${pluralize(this.allIssues.length, 'date')} with format issues.`,
 			cls: 'crc-batch-summary-text'
 		});
 		this.countEl = summaryEl.createEl('p', {

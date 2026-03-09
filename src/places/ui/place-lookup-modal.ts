@@ -7,6 +7,7 @@
  */
 
 import { App, Modal, Setting, Notice, setIcon } from 'obsidian';
+import { pluralize } from '../../utils/format-utils';
 import {
 	PlaceLookupService,
 	PlaceLookupResult,
@@ -373,7 +374,7 @@ export class PlaceLookupModal extends Modal {
 		if (!this.resultsContainerEl) return;
 
 		const resultsHeader = this.resultsContainerEl.createDiv({ cls: 'cr-lookup-results-header' });
-		resultsHeader.createEl('h4', { text: `Found ${this.results.length} result${this.results.length === 1 ? '' : 's'}` });
+		resultsHeader.createEl('h4', { text: `Found ${this.results.length} ${pluralize(this.results.length, 'result')}` });
 
 		const resultsList = this.resultsContainerEl.createDiv({ cls: 'cr-lookup-results-list' });
 

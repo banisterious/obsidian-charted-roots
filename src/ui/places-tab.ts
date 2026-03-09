@@ -13,6 +13,7 @@ import { PlaceGraphService } from '../core/place-graph';
 import type { PlaceCategory } from '../models/place';
 import { CreatePlaceModal } from './create-place-modal';
 import { CreateMissingPlacesModal } from './create-missing-places-modal';
+import { pluralize } from '../utils/format-utils';
 import { StandardizePlacesModal, findPlaceNameVariations } from './standardize-places-modal';
 import { MergeDuplicatePlacesModal, findDuplicatePlaceNotes } from './merge-duplicate-places-modal';
 import { StandardizePlaceTypesModal, findNonStandardTypePlaces } from './standardize-place-types-modal';
@@ -285,7 +286,7 @@ function loadDataQualityCard(
 		cls: 'crc-dq-summary__count'
 	});
 	categoriesSummary.createEl('span', {
-		text: categoryCount === 1 ? 'category' : 'categories',
+		text: pluralize(categoryCount, 'category', 'categories'),
 		cls: 'crc-dq-summary__label'
 	});
 
@@ -304,7 +305,7 @@ function loadDataQualityCard(
 			expanded: expandedCount < 2,
 			items: missingPlaces.slice(0, 4).map(place => ({
 				name: place.name,
-				detail: `Referenced by ${place.count} ${place.count === 1 ? 'person' : 'people'}`,
+				detail: `Referenced by ${place.count} ${pluralize(place.count, 'person', 'people')}`,
 				action: {
 					label: 'Create',
 					primary: true,
@@ -1585,7 +1586,7 @@ function showNormalizePlaceNamesPreview(plugin: CanvasRootsPlugin, showTab: (tab
 	// Description
 	const description = contentEl.createDiv({ cls: 'crc-batch-description' });
 	description.createEl('p', {
-		text: `Found ${changes.length} place name${changes.length === 1 ? '' : 's'} that will be normalized.`
+		text: `Found ${changes.length} ${pluralize(changes.length, 'place name')} that will be normalized.`
 	});
 
 	// Table
@@ -1631,7 +1632,7 @@ function showNormalizePlaceNamesPreview(plugin: CanvasRootsPlugin, showTab: (tab
 	cancelButton.addEventListener('click', () => modal.close());
 
 	const applyButton = buttonContainer.createEl('button', {
-		text: `Apply ${changes.length} change${changes.length === 1 ? '' : 's'}`,
+		text: `Apply ${changes.length} ${pluralize(changes.length, 'change')}`,
 		cls: 'mod-cta'
 	});
 	applyButton.addEventListener('click', () => {
@@ -1721,7 +1722,7 @@ function showNormalizePlaceNamesApply(plugin: CanvasRootsPlugin, showTab: (tabId
 		}
 
 		if (modified > 0) {
-			new Notice(`✓ Normalized ${modified} place name${modified === 1 ? '' : 's'}`);
+			new Notice(`✓ Normalized ${modified} ${pluralize(modified, 'place name')}`);
 		} else {
 			new Notice('No place names needed normalization');
 		}

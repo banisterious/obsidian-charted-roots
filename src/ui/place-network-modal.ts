@@ -7,7 +7,7 @@ import { App, Modal, Setting } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
 import { PlaceNode, PlaceCategory } from '../models/place';
-import { capitalize } from '../utils/format-utils';
+import { capitalize, pluralize } from '../utils/format-utils';
 
 interface NetworkNode {
 	id: string;
@@ -461,7 +461,7 @@ export class PlaceNetworkModal extends Modal {
 		path.setAttribute('class', 'crc-migration-flow');
 
 		// Add tooltip data
-		path.setAttribute('data-tooltip', `${fromNode.name} → ${toNode.name}: ${flow.count} ${flow.count === 1 ? 'person' : 'people'}`);
+		path.setAttribute('data-tooltip', `${fromNode.name} → ${toNode.name}: ${flow.count} ${pluralize(flow.count, 'person', 'people')}`);
 
 		svg.appendChild(path);
 	}

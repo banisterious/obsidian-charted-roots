@@ -8,6 +8,7 @@ import { App, Menu, MenuItem, Modal, Notice, Setting, TFile, setIcon } from 'obs
 import type CanvasRootsPlugin from '../../../main';
 import { setLucideIcon, LucideIconName } from '../../ui/lucide-icons';
 import { createStatItem } from '../../ui/shared/card-component';
+import { pluralize } from '../../utils/format-utils';
 import { SchemaService } from '../services/schema-service';
 import { ValidationService } from '../services/validation-service';
 import type { SchemaNote, ValidationResult, ValidationSummary } from '../types/schema-types';
@@ -117,7 +118,7 @@ export async function renderSchemasTab(options: SchemasTabOptions): Promise<void
 				if (errorCount === 0) {
 					new Notice('✓ Validation passed! No schema violations found.');
 				} else {
-					new Notice(`Found ${errorCount} validation error${errorCount === 1 ? '' : 's'}`);
+					new Notice(`Found ${errorCount} validation ${pluralize(errorCount, 'error')}`);
 				}
 			} catch (error) {
 				progressModal.close();

@@ -6,6 +6,7 @@
 import { App, Modal } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
+import { pluralize } from '../utils/format-utils';
 
 interface DetailedMigration {
 	personId: string;
@@ -543,7 +544,7 @@ export class MigrationDiagramModal extends Modal {
 			path.setAttribute('marker-end', `url(#${arrowId})`);
 
 			// Tooltip
-			path.setAttribute('data-tooltip', `${flow.from} → ${flow.to}: ${flow.count} ${flow.count === 1 ? 'person' : 'people'}`);
+			path.setAttribute('data-tooltip', `${flow.from} → ${flow.to}: ${flow.count} ${pluralize(flow.count, 'person', 'people')}`);
 
 			svg.appendChild(path);
 		}

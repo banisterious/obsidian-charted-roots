@@ -8,6 +8,7 @@
 import { App, Modal } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 import type { PrivateFieldSummary } from '../core/privacy-service';
+import { pluralize } from '../utils/format-utils';
 
 /**
  * User decision for handling private fields in export
@@ -63,7 +64,7 @@ export class PrivateFieldsWarningModal extends Modal {
 			});
 
 			row.createEl('span', {
-				text: `(${item.peopleCount} ${item.peopleCount === 1 ? 'person' : 'people'})`,
+				text: `(${item.peopleCount} ${pluralize(item.peopleCount, 'person', 'people')})`,
 				cls: 'cr-private-fields-warning__count'
 			});
 		}

@@ -9,6 +9,7 @@ import { App } from 'obsidian';
 import { FamilyGraphService, PersonNode } from './family-graph';
 import { FolderFilterService } from './folder-filter';
 import { getLogger } from './logging';
+import { pluralize } from '../utils/format-utils';
 
 const logger = getLogger('RelationshipCalculator');
 
@@ -444,7 +445,7 @@ export class RelationshipCalculator {
 
 		const ordinal = this.getOrdinal(minGen);
 		const removalText = removal > 0
-			? ` ${removal}${removal === 1 ? ' time' : ' times'} removed`
+			? ` ${removal} ${pluralize(removal, 'time')} removed`
 			: '';
 
 		return `${ordinal} Cousin${removalText}`;

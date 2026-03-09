@@ -7,6 +7,7 @@
 
 import { ItemView, WorkspaceLeaf, setIcon, TFile, Menu } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
+import { pluralize } from '../../utils/format-utils';
 import { StatisticsService } from '../services/statistics-service';
 import type {
 	StatisticsData,
@@ -1087,7 +1088,7 @@ export class StatisticsView extends ItemView {
 			setIcon(privateIcon, 'lock');
 			privateNote.createSpan({
 				cls: 'crc-text-muted',
-				text: `${research.privateCount} private research ${research.privateCount === 1 ? 'entity' : 'entities'} (excluded from exports)`
+				text: `${research.privateCount} private research ${pluralize(research.privateCount, 'entity', 'entities')} (excluded from exports)`
 			});
 		}
 

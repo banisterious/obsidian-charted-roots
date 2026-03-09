@@ -7,6 +7,7 @@
 
 import { Setting, Notice, App, SliderComponent, AbstractInputSuggest, TextComponent, TFolder } from 'obsidian';
 import { setIcon } from 'obsidian';
+import { pluralize } from '../utils/format-utils';
 
 /**
  * Inline suggest for folder paths with autocomplete from existing vault folders
@@ -320,7 +321,7 @@ function renderValueSection(
 
 	// Alias count badge
 	summary.createSpan({
-		text: `${aliasCount} ${aliasCount === 1 ? 'alias' : 'aliases'}`,
+		text: `${aliasCount} ${pluralize(aliasCount, 'alias', 'aliases')}`,
 		cls: 'cr-property-section-count'
 	});
 

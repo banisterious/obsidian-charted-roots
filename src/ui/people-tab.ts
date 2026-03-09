@@ -11,6 +11,7 @@ import type CanvasRootsPlugin from '../../main';
 import type { LucideIconName } from './lucide-icons';
 import { createLucideIcon } from './lucide-icons';
 import { createStatItem } from './shared/card-component';
+import { pluralize } from '../utils/format-utils';
 import { PersonPickerModal, extractPlaceInfo } from './person-picker';
 import type { PersonInfo, PlaceInfo } from './person-picker';
 import { VaultStatsService } from '../core/vault-stats';
@@ -917,7 +918,7 @@ function loadParentClaimConflicts(container: HTMLElement, options: PeopleTabOpti
 	// Explanation
 	const explanation = container.createDiv({ cls: 'crc-info-callout crc-mb-3' });
 	explanation.createEl('p', {
-		text: `Found ${conflicts.length} conflict${conflicts.length === 1 ? '' : 's'} where multiple people claim the same child. Review each and choose which parent is correct.`,
+		text: `Found ${conflicts.length} ${pluralize(conflicts.length, 'conflict')} where multiple people claim the same child. Review each and choose which parent is correct.`,
 		cls: 'crc-text--small'
 	});
 
@@ -1035,7 +1036,7 @@ function loadParentClaimConflicts(container: HTMLElement, options: PeopleTabOpti
 	// Count display
 	const countDiv = container.createDiv({ cls: 'crc-conflicts-count crc-mt-2' });
 	countDiv.createSpan({
-		text: `${conflicts.length} conflict${conflicts.length === 1 ? '' : 's'} to resolve`,
+		text: `${conflicts.length} ${pluralize(conflicts.length, 'conflict')} to resolve`,
 		cls: 'crc-text--muted'
 	});
 }
@@ -1118,7 +1119,7 @@ function updateConflictCardCount(container: HTMLElement, tbody: HTMLElement): vo
 			cls: 'crc-text--muted'
 		});
 	} else if (countEl) {
-		countEl.textContent = `${remainingRows} conflict${remainingRows === 1 ? '' : 's'} to resolve`;
+		countEl.textContent = `${remainingRows} ${pluralize(remainingRows, 'conflict')} to resolve`;
 	}
 }
 

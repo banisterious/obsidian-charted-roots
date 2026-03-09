@@ -13,6 +13,7 @@ import type {
 	DateFormatOptions,
 	AgeCalculation
 } from '../types/date-types';
+import { pluralize } from '../../utils/format-utils';
 
 /**
  * Parser for fictional date systems
@@ -257,7 +258,7 @@ export class FictionalDateParser {
 		return {
 			years,
 			isExact: true,
-			display: `${years} ${years === 1 ? 'year' : 'years'}`
+			display: `${years} ${pluralize(years, 'year')}`
 		};
 	}
 
