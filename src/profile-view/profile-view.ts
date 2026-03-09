@@ -22,7 +22,7 @@ import type {
 } from './profile-types';
 import { ProfileDataLoader } from './profile-data-loader';
 import { renderIdentityHeader } from './sections/identity-section';
-import { renderRelationshipsSection } from './sections/relationships-section';
+import { renderRelationshipsSection, isOtherRelationship } from './sections/relationships-section';
 import { renderEventsSection } from './sections/events-section';
 import { renderSourcesSection } from './sections/sources-section';
 import { renderMediaSection } from './sections/media-section';
@@ -699,8 +699,7 @@ export class ProfileView extends ItemView {
 		const seen = new Set<string>();
 		let count = 0;
 		for (const rel of [...data.relationships, ...data.inverseRelationships]) {
-			if ((rel.type?.category || 'other') === 'family') continue;
-			if (rel.type?.builtIn && rel.type?.includeOnFamilyTree && rel.type?.familyGraphMapping) continue;
+			if (!isOtherRelationship(rel)) continue;
 			const key = `${rel.sourceCrId}:${rel.targetCrId || ''}:${rel.type.id}`;
 			if (seen.has(key)) continue;
 			seen.add(key);

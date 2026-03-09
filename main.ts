@@ -62,6 +62,7 @@ import { SourcePickerModal, SourceService, CreateSourceModal, CitationGeneratorM
 import { EventService } from './src/events/services/event-service';
 import { CreateEventModal } from './src/events/ui/create-event-modal';
 import { isPlaceNote, isSourceNote, isEventNote, isMapNote, isSchemaNote, isUniverseNote, isPersonNote, isOrganizationNote } from './src/utils/note-type-detection';
+import { extractWikilinkPath } from './src/utils/wikilink-resolver';
 import { GeocodingService } from './src/maps/services/geocoding-service';
 import { TimelineProcessor, RelationshipsProcessor, MediaProcessor, SourceRolesProcessor, TransfersProcessor, MembersProcessor, SourcesProcessor, ExtractionsProcessor } from './src/dynamic-content';
 import { UniverseService, EditUniverseModal, UniverseWizardModal } from './src/universes';
@@ -5679,73 +5680,51 @@ export default class CanvasRootsPlugin extends Plugin {
 	}
 
 	/**
-	 * Link a person to an existing event by adding the person to the event's persons array
+	 * Link an entity (person or source) to an existing event by adding a wikilink
+	 * to the specified frontmatter array property on the event note.
 	 */
-	private async linkPersonToEvent(personFile: TFile, personName: string, event: import('./src/events/types/event-types').EventNote): Promise<void> {
-		const personWikilink = `[[${personName}]]`;
+	private async linkEntityToEvent(
+		entityName: string,
+		event: import('./src/events/types/event-types').EventNote,
+		fieldName: 'persons' | 'sources'
+	): Promise<void> {
+		const wikilink = `[[${entityName}]]`;
 
 		try {
 			await this.app.fileManager.processFrontMatter(event.file, (frontmatter) => {
-				if (!frontmatter.persons) {
-					frontmatter.persons = [];
+				if (!frontmatter[fieldName]) {
+					frontmatter[fieldName] = [];
 				}
-				if (!Array.isArray(frontmatter.persons)) {
-					frontmatter.persons = [frontmatter.persons];
+				if (!Array.isArray(frontmatter[fieldName])) {
+					frontmatter[fieldName] = [frontmatter[fieldName]];
 				}
 
-				// Check if person is already linked
-				const alreadyLinked = frontmatter.persons.some((p: string) => {
-					const match = p.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/);
-					const refName = match ? match[1] : p;
-					return refName.toLowerCase() === personName.toLowerCase();
+				const alreadyLinked = frontmatter[fieldName].some((entry: string) => {
+					const refName = extractWikilinkPath(entry);
+					return refName.toLowerCase() === entityName.toLowerCase();
 				});
 
 				if (!alreadyLinked) {
-					frontmatter.persons.push(personWikilink);
-					new Notice(`Linked ${personName} to ${event.title || event.file.basename}`);
+					frontmatter[fieldName].push(wikilink);
+					new Notice(`Linked ${entityName} to ${event.title || event.file.basename}`);
 				} else {
-					new Notice(`${personName} is already linked to this event`);
+					new Notice(`${entityName} is already linked to this event`);
 				}
 			});
 		} catch (err) {
-			new Notice('Failed to link person to event');
-			console.error('linkPersonToEvent error:', err);
+			new Notice(`Failed to link ${entityName} to event`);
+			console.error('linkEntityToEvent error:', err);
 		}
 	}
 
-	/**
-	 * Link a source to an existing event by adding the source to the event's sources array
-	 */
+	/** Link a person to an existing event. */
+	private async linkPersonToEvent(personFile: TFile, personName: string, event: import('./src/events/types/event-types').EventNote): Promise<void> {
+		await this.linkEntityToEvent(personName, event, 'persons');
+	}
+
+	/** Link a source to an existing event. */
 	private async linkSourceToEvent(sourceFile: TFile, event: import('./src/events/types/event-types').EventNote): Promise<void> {
-		const sourceName = sourceFile.basename;
-		const sourceWikilink = `[[${sourceName}]]`;
-
-		try {
-			await this.app.fileManager.processFrontMatter(event.file, (frontmatter) => {
-				if (!frontmatter.sources) {
-					frontmatter.sources = [];
-				}
-				if (!Array.isArray(frontmatter.sources)) {
-					frontmatter.sources = [frontmatter.sources];
-				}
-
-				const alreadyLinked = frontmatter.sources.some((s: string) => {
-					const match = s.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/);
-					const refName = match ? match[1] : s;
-					return refName.toLowerCase() === sourceName.toLowerCase();
-				});
-
-				if (!alreadyLinked) {
-					frontmatter.sources.push(sourceWikilink);
-					new Notice(`Linked ${sourceName} to ${event.title || event.file.basename}`);
-				} else {
-					new Notice(`${sourceName} is already linked to this event`);
-				}
-			});
-		} catch (err) {
-			new Notice('Failed to link source to event');
-			console.error('linkSourceToEvent error:', err);
-		}
+		await this.linkEntityToEvent(sourceFile.basename, event, 'sources');
 	}
 
 	/**

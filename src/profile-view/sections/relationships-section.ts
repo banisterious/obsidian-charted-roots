@@ -10,6 +10,17 @@ import type { PersonProfileData, SectionToggleFn, EntityLinkClickFn, SectionStat
 import type { ParsedRelationship } from '../../relationships/types/relationship-types';
 import { renderProfileSection } from './section-base';
 
+/**
+ * Test whether a relationship belongs in the "Other" subsection.
+ * Excludes family-category types and built-in types with familyGraphMapping
+ * (already rendered in the Family subsection via PersonNode properties).
+ */
+export function isOtherRelationship(rel: ParsedRelationship): boolean {
+	if ((rel.type?.category || 'other') === 'family') return false;
+	if (rel.type?.builtIn && rel.type?.includeOnFamilyTree && rel.type?.familyGraphMapping) return false;
+	return true;
+}
+
 interface RelationshipsSectionOptions {
 	sectionStates: SectionState;
 	onToggle: SectionToggleFn;
@@ -53,12 +64,7 @@ export function renderRelationshipsSection(
 	// so they need to appear here with their custom type names (e.g., "Sire" instead of "Parent").
 	// Deduplicate direct + inverse entries for the same relationship.
 	const allOther = deduplicateRelationships(
-		[...data.relationships, ...data.inverseRelationships]
-			.filter(rel => {
-				if ((rel.type?.category || 'other') === 'family') return false;
-				if (rel.type?.builtIn && rel.type?.includeOnFamilyTree && rel.type?.familyGraphMapping) return false;
-				return true;
-			})
+		[...data.relationships, ...data.inverseRelationships].filter(isOtherRelationship)
 	);
 	if (allOther.length > 0) {
 		renderOtherSubsection(content, allOther, options);

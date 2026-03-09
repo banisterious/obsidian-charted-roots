@@ -13,6 +13,7 @@ import type {
 	ReportEvent
 } from '../types/report-types';
 import { FamilyGraphService, PersonNode } from '../../core/family-graph';
+import { formatPronouns } from '../../utils/format-utils';
 import { FolderFilterService } from '../../core/folder-filter';
 import { EventService } from '../../events/services/event-service';
 import { getLogger } from '../../core/logging';
@@ -286,8 +287,7 @@ export class IndividualSummaryGenerator {
 			lines.push(`- **Sex:** ${person.sex.charAt(0).toUpperCase() + person.sex.slice(1)}`);
 		}
 		if (person.pronouns) {
-			const pronounsText = Array.isArray(person.pronouns) ? person.pronouns.join(', ') : person.pronouns;
-			lines.push(`- **Pronouns:** ${pronounsText}`);
+			lines.push(`- **Pronouns:** ${formatPronouns(person.pronouns)}`);
 		}
 		if (options.includeAttributes && person.occupation) {
 			lines.push(`- **Occupation:** ${person.occupation}`);

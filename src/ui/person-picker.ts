@@ -3,6 +3,7 @@ import { createLucideIcon } from './lucide-icons';
 import { FamilyGraphService, PersonNode } from '../core/family-graph';
 import { FolderFilterService } from '../core/folder-filter';
 import { isPersonNote } from '../utils/note-type-detection';
+import { formatPronouns } from '../utils/format-utils';
 import { QuickCreatePersonModal, RelationshipContext } from './quick-create-person-modal';
 import type CanvasRootsPlugin from '../../main';
 import { formatDisplayDate } from '../dates';
@@ -741,8 +742,7 @@ export class PersonPickerModal extends Modal {
 
 		// Show pronouns if enabled in settings and person has pronouns
 		if (this.plugin?.settings.showPronouns && person.pronouns) {
-			const pronounsText = Array.isArray(person.pronouns) ? person.pronouns.join(', ') : person.pronouns;
-			nameContainer.createSpan({ cls: 'crc-picker-item__pronouns', text: `(${pronounsText})` });
+			nameContainer.createSpan({ cls: 'crc-picker-item__pronouns', text: `(${formatPronouns(person.pronouns)})` });
 		}
 
 		// Show DNA Match badge when DNA tracking is enabled and person has DNA data
