@@ -336,6 +336,29 @@ export default class CanvasRootsPlugin extends Plugin {
 			}
 		});
 
+		this.registerViews();
+		this.registerCodeBlockProcessors();
+		this.registerCommandsAndEvents();
+		this.registerContextMenus();
+
+		// Register file modification handler for bidirectional sync
+		this.registerFileModificationHandler();
+
+		// Initialize bidirectional relationship snapshots
+		// This enables deletion detection from the first edit after plugin load
+		if (this.settings.enableBidirectionalSync) {
+			this.initializeBidirectionalSnapshots();
+		}
+
+		// Initialize relationship history service
+		await this.initializeRelationshipHistory();
+	}
+
+	// =========================================================================
+	// View registrations
+	// =========================================================================
+
+	private registerViews(): void {
 		// Register family chart view
 		this.registerView(
 			VIEW_TYPE_FAMILY_CHART,
@@ -434,7 +457,13 @@ export default class CanvasRootsPlugin extends Plugin {
 		};
 		this.registerObsidianProtocolHandler('charted-roots-map', mapProtocolHandler);
 		this.registerObsidianProtocolHandler('canvas-roots-map', mapProtocolHandler); // Legacy compatibility
+	}
 
+	// =========================================================================
+	// Code block processors
+	// =========================================================================
+
+	private registerCodeBlockProcessors(): void {
 		// Register dynamic content code block processors
 		// Register both new (charted-roots-*) and legacy (canvas-roots-*) for backward compatibility
 		const timelineProcessor = new TimelineProcessor(this);
@@ -501,7 +530,13 @@ export default class CanvasRootsPlugin extends Plugin {
 			'charted-roots-extractions',
 			(source, el, ctx) => extractionsProcessor.process(source, el, ctx)
 		);
+	}
 
+	// =========================================================================
+	// Commands and workspace events
+	// =========================================================================
+
+	private registerCommandsAndEvents(): void {
 		// Add ribbon icon for control center
 		this.addRibbonIcon('users', 'Open Charted Roots control center', () => {
 			new ControlCenterModal(this.app, this).open();
@@ -1298,7 +1333,13 @@ export default class CanvasRootsPlugin extends Plugin {
 				new PlaceGeneratorModal(this.app, this.settings).open();
 			}
 		});
+	}
 
+	// =========================================================================
+	// Context menus
+	// =========================================================================
+
+	private registerContextMenus(): void {
 		// Add context menu items for person notes, canvas files, and folders
 		this.registerEvent(
 			this.app.workspace.on('file-menu', (menu, file) => {
@@ -5187,18 +5228,6 @@ export default class CanvasRootsPlugin extends Plugin {
 					}
 			})
 		);
-
-		// Register file modification handler for bidirectional sync
-		this.registerFileModificationHandler();
-
-		// Initialize bidirectional relationship snapshots
-		// This enables deletion detection from the first edit after plugin load
-		if (this.settings.enableBidirectionalSync) {
-			this.initializeBidirectionalSnapshots();
-		}
-
-		// Initialize relationship history service
-		await this.initializeRelationshipHistory();
 	}
 
 	/**
