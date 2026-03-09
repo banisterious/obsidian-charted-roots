@@ -13,6 +13,7 @@ import type {
 	ReportPerson
 } from '../types/report-types';
 import { FamilyGraphService, createConfiguredFamilyGraph, PersonNode } from '../../core/family-graph';
+import { nodeToReportPerson } from './report-utils';
 import { getLogger } from '../../core/logging';
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
 
@@ -106,7 +107,7 @@ export class CollectionOverviewGenerator {
 		};
 
 		// Convert to report persons
-		const reportMembers = displayMembers.map(p => this.nodeToReportPerson(p));
+		const reportMembers = displayMembers.map(p => nodeToReportPerson(p));
 
 		// Generate markdown content
 		const content = this.generateMarkdown(
@@ -370,36 +371,6 @@ export class CollectionOverviewGenerator {
 		const yearMatch = date.match(/\d{4}/);
 		if (yearMatch) return yearMatch[0] + '-01-01';
 		return '';
-	}
-
-	/**
-	 * Convert a PersonNode to ReportPerson
-	 */
-	private nodeToReportPerson(node: PersonNode): ReportPerson {
-		return {
-			crId: node.crId,
-			name: node.name,
-			birthDate: node.birthDate,
-			birthPlace: node.birthPlace,
-			deathDate: node.deathDate,
-			deathPlace: node.deathPlace,
-			sex: this.normalizeSex(node.sex),
-			pronouns: node.pronouns,
-			occupation: node.occupation,
-			filePath: node.file.path
-		};
-	}
-
-	/**
-	 * Normalize sex value
-	 */
-	private normalizeSex(sex?: string): 'male' | 'female' | 'other' | 'unknown' | undefined {
-		if (!sex) return undefined;
-		const lower = sex.toLowerCase();
-		if (lower === 'male' || lower === 'm') return 'male';
-		if (lower === 'female' || lower === 'f') return 'female';
-		if (lower === 'other') return 'other';
-		return 'unknown';
 	}
 
 	/**

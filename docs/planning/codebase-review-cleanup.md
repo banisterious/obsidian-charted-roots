@@ -30,9 +30,11 @@ Targeted searches across the full codebase for specific anti-patterns. Each can 
 - Duplicate `PersonFrontmatter` in merge-service.ts left as-is (different index signature, used internally)
 - 13 TODO comments audited — all legitimate future work
 
-### 1d. Inconsistent patterns
-- Service instantiation: some singleton, some on-demand — document which is which, standardize where possible
-- Type vs. constants file naming (`organization-types.ts` exists as both types and constants)
+### 1d. Inconsistent patterns — DONE
+- Renamed `organizations/constants/organization-types.ts` → `organization-type-defaults.ts` (resolved naming conflict with `types/organization-types.ts`)
+- Standardized RelationshipService imports to use barrel exports (2 files)
+- Service instantiation audit: 8 singletons on plugin, ~15 on-demand services, 9 factory functions exist but mostly unused. Standardizing would require architectural decisions — deferred to Phase 4 (main.ts decomposition)
+- Logger pattern (`getLogger()`) and vault read pattern (`app.vault.read()`) are already consistent
 
 ## Phase 2: Report generator base class
 

@@ -13,6 +13,7 @@ import type {
 	ReportEvent
 } from '../types/report-types';
 import { FamilyGraphService, createConfiguredFamilyGraph, PersonNode } from '../../core/family-graph';
+import { nodeToReportPerson } from './report-utils';
 import { capitalize, formatPronouns } from '../../utils/format-utils';
 import { EventService } from '../../events/services/event-service';
 import { getLogger } from '../../core/logging';
@@ -59,7 +60,7 @@ export class IndividualSummaryGenerator {
 			};
 		}
 
-		const person = this.nodeToReportPerson(personNode);
+		const person = nodeToReportPerson(personNode);
 
 		// Get events if requested
 		if (options.includeEvents) {
@@ -105,36 +106,6 @@ export class IndividualSummaryGenerator {
 	}
 
 	/**
-	 * Convert a PersonNode to ReportPerson
-	 */
-	private nodeToReportPerson(node: PersonNode): ReportPerson {
-		return {
-			crId: node.crId,
-			name: node.name,
-			birthDate: node.birthDate,
-			birthPlace: node.birthPlace,
-			deathDate: node.deathDate,
-			deathPlace: node.deathPlace,
-			sex: this.normalizeSex(node.sex),
-			pronouns: node.pronouns,
-			occupation: node.occupation,
-			filePath: node.file.path
-		};
-	}
-
-	/**
-	 * Normalize sex value to expected type
-	 */
-	private normalizeSex(sex?: string): 'male' | 'female' | 'other' | 'unknown' | undefined {
-		if (!sex) return undefined;
-		const lower = sex.toLowerCase();
-		if (lower === 'male' || lower === 'm') return 'male';
-		if (lower === 'female' || lower === 'f') return 'female';
-		if (lower === 'other') return 'other';
-		return 'unknown';
-	}
-
-	/**
 	 * Get family relationships for a person
 	 */
 	private getFamily(node: PersonNode, familyGraph: FamilyGraphService): {
@@ -156,23 +127,23 @@ export class IndividualSummaryGenerator {
 		// Parents
 		if (node.fatherCrId) {
 			const father = familyGraph.getPersonByCrId(node.fatherCrId);
-			if (father) family.father = this.nodeToReportPerson(father);
+			if (father) family.father = nodeToReportPerson(father);
 		}
 		if (node.motherCrId) {
 			const mother = familyGraph.getPersonByCrId(node.motherCrId);
-			if (mother) family.mother = this.nodeToReportPerson(mother);
+			if (mother) family.mother = nodeToReportPerson(mother);
 		}
 
 		// Spouses
 		for (const spouseCrId of node.spouseCrIds) {
 			const spouse = familyGraph.getPersonByCrId(spouseCrId);
-			if (spouse) family.spouses.push(this.nodeToReportPerson(spouse));
+			if (spouse) family.spouses.push(nodeToReportPerson(spouse));
 		}
 
 		// Children
 		for (const childCrId of node.childrenCrIds) {
 			const child = familyGraph.getPersonByCrId(childCrId);
-			if (child) family.children.push(this.nodeToReportPerson(child));
+			if (child) family.children.push(nodeToReportPerson(child));
 		}
 
 		return family;

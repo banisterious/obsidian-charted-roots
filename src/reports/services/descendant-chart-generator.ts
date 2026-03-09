@@ -14,6 +14,7 @@ import type {
 	ReportPerson
 } from '../types/report-types';
 import { FamilyGraphService, createConfiguredFamilyGraph, PersonNode } from '../../core/family-graph';
+import { nodeToReportPerson } from './report-utils';
 import { getLogger } from '../../core/logging';
 
 const logger = getLogger('DescendantChartGenerator');
@@ -60,7 +61,7 @@ export class DescendantChartGenerator {
 			};
 		}
 
-		const rootPerson = this.nodeToReportPerson(rootNode);
+		const rootPerson = nodeToReportPerson(rootNode);
 
 		// Build descendant entries
 		const entries: DescendantEntry[] = [];
@@ -120,14 +121,14 @@ export class DescendantChartGenerator {
 			for (const spouseCrId of node.spouseCrIds) {
 				const spouseNode = familyGraph.getPersonByCrId(spouseCrId);
 				if (spouseNode) {
-					spouses.push(this.nodeToReportPerson(spouseNode));
+					spouses.push(nodeToReportPerson(spouseNode));
 				}
 			}
 		}
 
 		// Add this person as an entry
 		entries.push({
-			person: this.nodeToReportPerson(node),
+			person: nodeToReportPerson(node),
 			level,
 			spouses
 		});
@@ -215,36 +216,6 @@ export class DescendantChartGenerator {
 		lines.push('```');
 
 		return lines.join('\n');
-	}
-
-	/**
-	 * Convert a PersonNode to ReportPerson
-	 */
-	private nodeToReportPerson(node: PersonNode): ReportPerson {
-		return {
-			crId: node.crId,
-			name: node.name,
-			birthDate: node.birthDate,
-			birthPlace: node.birthPlace,
-			deathDate: node.deathDate,
-			deathPlace: node.deathPlace,
-			sex: this.normalizeSex(node.sex),
-			pronouns: node.pronouns,
-			occupation: node.occupation,
-			filePath: node.file.path
-		};
-	}
-
-	/**
-	 * Normalize sex value to expected type
-	 */
-	private normalizeSex(sex?: string): 'male' | 'female' | 'other' | 'unknown' | undefined {
-		if (!sex) return undefined;
-		const lower = sex.toLowerCase();
-		if (lower === 'male' || lower === 'm') return 'male';
-		if (lower === 'female' || lower === 'f') return 'female';
-		if (lower === 'other') return 'other';
-		return 'unknown';
 	}
 
 	/**

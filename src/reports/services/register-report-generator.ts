@@ -18,6 +18,7 @@ import type {
 	ReportPerson
 } from '../types/report-types';
 import { FamilyGraphService, createConfiguredFamilyGraph, PersonNode } from '../../core/family-graph';
+import { nodeToReportPerson } from './report-utils';
 import { getLogger } from '../../core/logging';
 
 const logger = getLogger('RegisterReportGenerator');
@@ -73,7 +74,7 @@ export class RegisterReportGenerator {
 			};
 		}
 
-		const rootPerson = this.nodeToReportPerson(rootNode);
+		const rootPerson = nodeToReportPerson(rootNode);
 
 		// Build register entries using NGSQ numbering
 		const context: NumberingContext = {
@@ -138,7 +139,7 @@ export class RegisterReportGenerator {
 			for (const spouseCrId of node.spouseCrIds) {
 				const spouseNode = familyGraph.getPersonByCrId(spouseCrId);
 				if (spouseNode) {
-					spouses.push(this.nodeToReportPerson(spouseNode));
+					spouses.push(nodeToReportPerson(spouseNode));
 				}
 			}
 		}
@@ -149,7 +150,7 @@ export class RegisterReportGenerator {
 			const childNode = familyGraph.getPersonByCrId(childCrId);
 			if (childNode) {
 				children.push({
-					person: this.nodeToReportPerson(childNode),
+					person: nodeToReportPerson(childNode),
 					node: childNode
 				});
 			}
@@ -192,7 +193,7 @@ export class RegisterReportGenerator {
 		// Create entry for this person
 		const entry: RegisterEntry = {
 			registerNumber,
-			person: this.nodeToReportPerson(node),
+			person: nodeToReportPerson(node),
 			generation,
 			hasDescendants: childrenToContinue.length > 0,
 			spouses,
@@ -211,36 +212,6 @@ export class RegisterReportGenerator {
 		}
 
 		return registerNumber;
-	}
-
-	/**
-	 * Convert a PersonNode to ReportPerson
-	 */
-	private nodeToReportPerson(node: PersonNode): ReportPerson {
-		return {
-			crId: node.crId,
-			name: node.name,
-			birthDate: node.birthDate,
-			birthPlace: node.birthPlace,
-			deathDate: node.deathDate,
-			deathPlace: node.deathPlace,
-			sex: this.normalizeSex(node.sex),
-			pronouns: node.pronouns,
-			occupation: node.occupation,
-			filePath: node.file.path
-		};
-	}
-
-	/**
-	 * Normalize sex value to expected type
-	 */
-	private normalizeSex(sex?: string): 'male' | 'female' | 'other' | 'unknown' | undefined {
-		if (!sex) return undefined;
-		const lower = sex.toLowerCase();
-		if (lower === 'male' || lower === 'm') return 'male';
-		if (lower === 'female' || lower === 'f') return 'female';
-		if (lower === 'other') return 'other';
-		return 'unknown';
 	}
 
 	/**

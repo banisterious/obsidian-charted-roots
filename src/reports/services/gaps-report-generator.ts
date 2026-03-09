@@ -12,6 +12,7 @@ import type {
 	ReportPerson
 } from '../types/report-types';
 import { FamilyGraphService, createConfiguredFamilyGraph, PersonNode } from '../../core/family-graph';
+import { nodeToReportPerson } from './report-utils';
 import { getLogger } from '../../core/logging';
 
 const logger = getLogger('GapsReportGenerator');
@@ -69,7 +70,7 @@ export class GapsReportGenerator {
 		const unsourcedPeople: ReportPerson[] = [];
 
 		for (const person of allPeople) {
-			const reportPerson = this.nodeToReportPerson(person);
+			const reportPerson = nodeToReportPerson(person);
 
 			// Check birth date
 			if (options.fieldsToCheck.birthDate && !person.birthDate) {
@@ -205,37 +206,6 @@ export class GapsReportGenerator {
 
 		// Assume anyone born in the last 100 years could be living
 		return currentYear - birthYear < 100;
-	}
-
-	/**
-	 * Convert a PersonNode to ReportPerson
-	 */
-	private nodeToReportPerson(node: PersonNode): ReportPerson {
-		return {
-			crId: node.crId,
-			name: node.name,
-			birthDate: node.birthDate,
-			birthPlace: node.birthPlace,
-			deathDate: node.deathDate,
-			deathPlace: node.deathPlace,
-			sex: this.normalizeSex(node.sex),
-			pronouns: node.pronouns,
-			occupation: node.occupation,
-			filePath: node.file.path,
-			researchLevel: node.researchLevel
-		};
-	}
-
-	/**
-	 * Normalize sex value to expected type
-	 */
-	private normalizeSex(sex?: string): 'male' | 'female' | 'other' | 'unknown' | undefined {
-		if (!sex) return undefined;
-		const lower = sex.toLowerCase();
-		if (lower === 'male' || lower === 'm') return 'male';
-		if (lower === 'female' || lower === 'f') return 'female';
-		if (lower === 'other') return 'other';
-		return 'unknown';
 	}
 
 	/**

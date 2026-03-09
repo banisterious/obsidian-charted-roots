@@ -12,6 +12,7 @@ import type {
 	ReportPerson
 } from '../types/report-types';
 import { FamilyGraphService, createConfiguredFamilyGraph, PersonNode } from '../../core/family-graph';
+import { nodeToReportPerson } from './report-utils';
 import { getLogger } from '../../core/logging';
 
 const logger = getLogger('FamilyGroupSheetGenerator');
@@ -57,14 +58,14 @@ export class FamilyGroupSheetGenerator {
 			};
 		}
 
-		const primaryPerson = this.nodeToReportPerson(primaryNode);
+		const primaryPerson = nodeToReportPerson(primaryNode);
 
 		// Get spouses
 		const spouses: ReportPerson[] = [];
 		for (const spouseCrId of primaryNode.spouseCrIds) {
 			const spouseNode = familyGraph.getPersonByCrId(spouseCrId);
 			if (spouseNode) {
-				spouses.push(this.nodeToReportPerson(spouseNode));
+				spouses.push(nodeToReportPerson(spouseNode));
 			} else {
 				warnings.push(`Spouse not found: ${spouseCrId}`);
 			}
@@ -76,7 +77,7 @@ export class FamilyGroupSheetGenerator {
 			for (const childCrId of primaryNode.childrenCrIds) {
 				const childNode = familyGraph.getPersonByCrId(childCrId);
 				if (childNode) {
-					const childPerson = this.nodeToReportPerson(childNode);
+					const childPerson = nodeToReportPerson(childNode);
 					// Add spouse info for child if available
 					if (childNode.spouseCrIds.length > 0) {
 						const firstSpouse = familyGraph.getPersonByCrId(childNode.spouseCrIds[0]);
@@ -132,36 +133,6 @@ export class FamilyGroupSheetGenerator {
 	}
 
 	/**
-	 * Convert a PersonNode to ReportPerson
-	 */
-	private nodeToReportPerson(node: PersonNode): ReportPerson {
-		return {
-			crId: node.crId,
-			name: node.name,
-			birthDate: node.birthDate,
-			birthPlace: node.birthPlace,
-			deathDate: node.deathDate,
-			deathPlace: node.deathPlace,
-			sex: this.normalizeSex(node.sex),
-			pronouns: node.pronouns,
-			occupation: node.occupation,
-			filePath: node.file.path
-		};
-	}
-
-	/**
-	 * Normalize sex value to expected type
-	 */
-	private normalizeSex(sex?: string): 'male' | 'female' | 'other' | 'unknown' | undefined {
-		if (!sex) return undefined;
-		const lower = sex.toLowerCase();
-		if (lower === 'male' || lower === 'm') return 'male';
-		if (lower === 'female' || lower === 'f') return 'female';
-		if (lower === 'other') return 'other';
-		return 'unknown';
-	}
-
-	/**
 	 * Get parents for a person
 	 */
 	private getParents(
@@ -173,14 +144,14 @@ export class FamilyGroupSheetGenerator {
 		if (node.fatherCrId) {
 			const father = familyGraph.getPersonByCrId(node.fatherCrId);
 			if (father) {
-				result.father = this.nodeToReportPerson(father);
+				result.father = nodeToReportPerson(father);
 			}
 		}
 
 		if (node.motherCrId) {
 			const mother = familyGraph.getPersonByCrId(node.motherCrId);
 			if (mother) {
-				result.mother = this.nodeToReportPerson(mother);
+				result.mother = nodeToReportPerson(mother);
 			}
 		}
 

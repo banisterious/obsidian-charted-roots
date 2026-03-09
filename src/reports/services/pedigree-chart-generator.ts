@@ -13,6 +13,7 @@ import type {
 	ReportPerson
 } from '../types/report-types';
 import { FamilyGraphService, createConfiguredFamilyGraph, PersonNode } from '../../core/family-graph';
+import { nodeToReportPerson } from './report-utils';
 import { getLogger } from '../../core/logging';
 
 const logger = getLogger('PedigreeChartGenerator');
@@ -59,7 +60,7 @@ export class PedigreeChartGenerator {
 			};
 		}
 
-		const rootPerson = this.nodeToReportPerson(rootNode);
+		const rootPerson = nodeToReportPerson(rootNode);
 
 		// Build ancestor map using Sosa-Stradonitz numbering
 		const ancestors = new Map<number, ReportPerson>();
@@ -107,7 +108,7 @@ export class PedigreeChartGenerator {
 		maxGenerations: number,
 		currentGeneration: number
 	): void {
-		ancestors.set(sosaNumber, this.nodeToReportPerson(node));
+		ancestors.set(sosaNumber, nodeToReportPerson(node));
 
 		if (currentGeneration >= maxGenerations) {
 			return;
@@ -225,36 +226,6 @@ export class PedigreeChartGenerator {
 		}
 
 		return lines.join('\n');
-	}
-
-	/**
-	 * Convert a PersonNode to ReportPerson
-	 */
-	private nodeToReportPerson(node: PersonNode): ReportPerson {
-		return {
-			crId: node.crId,
-			name: node.name,
-			birthDate: node.birthDate,
-			birthPlace: node.birthPlace,
-			deathDate: node.deathDate,
-			deathPlace: node.deathPlace,
-			sex: this.normalizeSex(node.sex),
-			pronouns: node.pronouns,
-			occupation: node.occupation,
-			filePath: node.file.path
-		};
-	}
-
-	/**
-	 * Normalize sex value to expected type
-	 */
-	private normalizeSex(sex?: string): 'male' | 'female' | 'other' | 'unknown' | undefined {
-		if (!sex) return undefined;
-		const lower = sex.toLowerCase();
-		if (lower === 'male' || lower === 'm') return 'male';
-		if (lower === 'female' || lower === 'f') return 'female';
-		if (lower === 'other') return 'other';
-		return 'unknown';
 	}
 
 	/**

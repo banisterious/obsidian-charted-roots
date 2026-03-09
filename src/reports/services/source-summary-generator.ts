@@ -13,7 +13,8 @@ import type {
 	SourceEntry,
 	ReportPerson
 } from '../types/report-types';
-import { FamilyGraphService, createConfiguredFamilyGraph, PersonNode } from '../../core/family-graph';
+import { createConfiguredFamilyGraph } from '../../core/family-graph';
+import { nodeToReportPerson } from './report-utils';
 import { SourceService } from '../../sources/services/source-service';
 import { EvidenceService } from '../../sources/services/evidence-service';
 import {
@@ -67,7 +68,7 @@ export class SourceSummaryGenerator {
 			return this.errorResult(`Person not found: ${options.personCrId}`);
 		}
 
-		const person = this.nodeToReportPerson(personNode);
+		const person = nodeToReportPerson(personNode);
 
 		// Get fact coverage for this person
 		const coverage = evidenceService.getFactCoverage(options.personCrId);
@@ -248,36 +249,6 @@ export class SourceSummaryGenerator {
 		if (byTitle) return byTitle;
 
 		return undefined;
-	}
-
-	/**
-	 * Convert a PersonNode to ReportPerson
-	 */
-	private nodeToReportPerson(node: PersonNode): ReportPerson {
-		return {
-			crId: node.crId,
-			name: node.name,
-			birthDate: node.birthDate,
-			birthPlace: node.birthPlace,
-			deathDate: node.deathDate,
-			deathPlace: node.deathPlace,
-			sex: this.normalizeSex(node.sex),
-			pronouns: node.pronouns,
-			occupation: node.occupation,
-			filePath: node.file.path
-		};
-	}
-
-	/**
-	 * Normalize sex value to expected type
-	 */
-	private normalizeSex(sex?: string): 'male' | 'female' | 'other' | 'unknown' | undefined {
-		if (!sex) return undefined;
-		const lower = sex.toLowerCase();
-		if (lower === 'male' || lower === 'm') return 'male';
-		if (lower === 'female' || lower === 'f') return 'female';
-		if (lower === 'other') return 'other';
-		return 'unknown';
 	}
 
 	/**
