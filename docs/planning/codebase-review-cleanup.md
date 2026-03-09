@@ -57,18 +57,18 @@ Targeted searches across the full codebase for specific anti-patterns. Each can 
 - Base class for process() flow: each processor has unique metadata watching strategies, different re-render triggers, async/sync differences. A base class would add more complexity than it removes.
 - Constructor pattern varies (renderer instantiation differs per processor)
 
-## Phase 4: main.ts decomposition
+## Phase 4: main.ts decomposition — IN PROGRESS
 
-At 9,386 lines, this is the highest-impact structural change. Break into focused modules:
+**Completed:**
+- Decomposed `onload()` into `registerViews()`, `registerCodeBlockProcessors()`, `registerCommandsAndEvents()`, `registerContextMenus()` (onload went from ~4900 lines to 72 lines)
+- Extracted context menus + 34 supporting methods to `src/plugin/context-menus.ts` (5,604 lines)
+- main.ts reduced from 9,386 → 3,756 lines (60% reduction)
 
-| Module | Lines | Content |
-|--------|-------|---------|
-| `src/commands/index.ts` | ~500 | Command registrations |
-| `src/context-menus/index.ts` | ~800 | Context menu handlers |
-| `src/view-registration.ts` | ~100 | View type registrations |
-| `src/activation/index.ts` | ~300+ | activateMapView, activateChartView, etc. |
-
-main.ts becomes a thin orchestrator that imports and wires these together.
+**Remaining (lower priority, can be done incrementally):**
+- Extract commands (~800 lines) to `src/plugin/commands.ts`
+- Extract activation methods (~400 lines) to `src/plugin/activation.ts`
+- Extract base template methods (~530 lines) to `src/plugin/base-templates.ts`
+- Extract bulk property operations (~620 lines) to `src/plugin/bulk-operations.ts`
 
 ## Phase 5: Large modal/view decomposition
 
