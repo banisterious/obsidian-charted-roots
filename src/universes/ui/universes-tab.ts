@@ -15,6 +15,7 @@ import { EditUniverseModal } from './edit-universe-modal';
 import type { UniverseInfo, UniverseEntityCounts } from '../types';
 import { getLogger } from '../../core/logging';
 import { getErrorMessage } from '../../core/error-utils';
+import { confirmDeleteUniverse } from '../../plugin/context-menus';
 
 const logger = getLogger('UniversesTab');
 
@@ -511,7 +512,7 @@ function showUniverseContextMenu(
 		.setTitle('Delete universe')
 		.setIcon('trash-2')
 		.onClick(async () => {
-			const confirmed = await plugin.confirmDeleteUniverse(universe.name);
+			const confirmed = await confirmDeleteUniverse(plugin, universe.name);
 			if (confirmed) {
 				await app.fileManager.trashFile(universe.file);
 				new Notice(`Deleted universe: ${universe.name}`);

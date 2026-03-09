@@ -47,11 +47,15 @@ Targeted searches across the full codebase for specific anti-patterns. Each can 
 - Base class for constructor + logger: only ~7 lines per generator, and each `generate()` method has a different signature. A base class would add inheritance complexity without proportional benefit.
 - place-summary-generator uses a different node type — would need a generic or overload, adding complexity
 
-## Phase 3: Dynamic content processor base class
+## Phase 3: Dynamic content processor deduplication — DONE
 
-8 processors follow near-identical service + renderer pattern. Extract shared base.
+**Completed:**
+- Extracted `renderBlockError()` and `renderBlockLoading()` into `dynamic-content-service.ts`
+- Replaced identical private methods across all 8 processors (-67 lines net)
 
-**Files:** `src/dynamic-content/*.ts`
+**Deferred (low ROI):**
+- Base class for process() flow: each processor has unique metadata watching strategies, different re-render triggers, async/sync differences. A base class would add more complexity than it removes.
+- Constructor pattern varies (renderer instantiation differs per processor)
 
 ## Phase 4: main.ts decomposition
 
