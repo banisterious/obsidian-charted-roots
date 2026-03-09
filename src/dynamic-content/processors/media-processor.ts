@@ -14,7 +14,7 @@
 
 import { MarkdownPostProcessorContext, MarkdownRenderChild, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
-import { DynamicContentService } from '../services/dynamic-content-service';
+import { DynamicContentService, renderBlockError } from '../services/dynamic-content-service';
 import { MediaRenderer } from '../renderers/media-renderer';
 
 /**
@@ -71,15 +71,8 @@ export class MediaProcessor {
 
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
-			this.renderError(el, `Error rendering media gallery: ${message}`);
+			renderBlockError(el, `Error rendering media gallery: ${message}`);
 		}
 	}
 
-	/**
-	 * Render an error message
-	 */
-	private renderError(el: HTMLElement, message: string): void {
-		const container = el.createDiv({ cls: 'cr-dynamic-block cr-dynamic-block--error' });
-		container.createDiv({ cls: 'cr-dynamic-block__error-message', text: message });
-	}
 }

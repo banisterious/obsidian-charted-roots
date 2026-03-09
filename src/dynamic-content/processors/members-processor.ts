@@ -12,7 +12,7 @@
 
 import { MarkdownPostProcessorContext, MarkdownRenderChild, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
-import { DynamicContentService } from '../services/dynamic-content-service';
+import { DynamicContentService, renderBlockError } from '../services/dynamic-content-service';
 import { MembersRenderer, type MembersContext } from '../renderers/members-renderer';
 import { createOrganizationService } from '../../organizations/services/organization-service';
 import { createMembershipService } from '../../organizations/services/membership-service';
@@ -52,7 +52,7 @@ export class MembersProcessor {
 			const context = this.resolveOrgContext(ctx);
 
 			if (!context) {
-				this.renderError(el, 'This block must be placed in an organization note with a cr_id.');
+				renderBlockError(el, 'This block must be placed in an organization note with a cr_id.');
 				return;
 			}
 
@@ -95,7 +95,7 @@ export class MembersProcessor {
 
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
-			this.renderError(el, `Error rendering members: ${message}`);
+			renderBlockError(el, `Error rendering members: ${message}`);
 		}
 	}
 
@@ -143,11 +143,4 @@ export class MembersProcessor {
 		};
 	}
 
-	/**
-	 * Render an error message
-	 */
-	private renderError(el: HTMLElement, message: string): void {
-		const container = el.createDiv({ cls: 'cr-dynamic-block cr-dynamic-block--error' });
-		container.createDiv({ cls: 'cr-dynamic-block__error-message', text: message });
-	}
 }

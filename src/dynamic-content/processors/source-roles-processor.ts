@@ -14,7 +14,7 @@
 
 import { MarkdownPostProcessorContext, MarkdownRenderChild, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
-import { DynamicContentService } from '../services/dynamic-content-service';
+import { DynamicContentService, renderBlockError } from '../services/dynamic-content-service';
 import { SourceRolesRenderer, type SourceRolesContext } from '../renderers/source-roles-renderer';
 import { SourceService } from '../../sources/services/source-service';
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
@@ -55,7 +55,7 @@ export class SourceRolesProcessor {
 			const context = await this.resolveSourceContext(config, ctx, sourceService);
 
 			if (!context) {
-				this.renderError(el, 'Could not find source note. Specify a source with `source: "[[Source Name]]"` or use this block in a source note.');
+				renderBlockError(el, 'Could not find source note. Specify a source with `source: "[[Source Name]]"` or use this block in a source note.');
 				return;
 			}
 
@@ -83,7 +83,7 @@ export class SourceRolesProcessor {
 
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
-			this.renderError(el, `Error rendering source roles: ${message}`);
+			renderBlockError(el, `Error rendering source roles: ${message}`);
 		}
 	}
 
@@ -153,11 +153,4 @@ export class SourceRolesProcessor {
 		};
 	}
 
-	/**
-	 * Render an error message
-	 */
-	private renderError(el: HTMLElement, message: string): void {
-		const container = el.createDiv({ cls: 'cr-dynamic-block cr-dynamic-block--error' });
-		container.createDiv({ cls: 'cr-dynamic-block__error-message', text: message });
-	}
 }

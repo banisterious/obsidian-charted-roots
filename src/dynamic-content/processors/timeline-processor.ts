@@ -14,7 +14,7 @@
 
 import { MarkdownPostProcessorContext, MarkdownRenderChild, TAbstractFile, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
-import { DynamicContentService } from '../services/dynamic-content-service';
+import { DynamicContentService, renderBlockError, renderBlockLoading } from '../services/dynamic-content-service';
 import { TimelineRenderer } from '../renderers/timeline-renderer';
 
 /**
@@ -53,7 +53,7 @@ export class TimelineProcessor {
 			// If cr_id not found, the metadata cache may not be ready yet
 			// Show loading state and wait for the 'changed' event to re-render
 			if (!context.crId) {
-				this.renderLoading(el, 'Waiting for metadata...');
+				renderBlockLoading(el, 'Waiting for metadata...');
 
 				// Register for metadata changes - will re-render when cache is ready
 				const metadataHandler = async (changedFile: TFile) => {
@@ -65,7 +65,7 @@ export class TimelineProcessor {
 						if (freshContext.crId) {
 							await this.renderer.render(el, freshContext, config, component);
 						} else {
-							this.renderError(el, 'This note does not have a cr_id. Timeline can only be rendered in person notes.');
+							renderBlockError(el, 'This note does not have a cr_id. Timeline can only be rendered in person notes.');
 						}
 					}
 				};
@@ -127,23 +127,8 @@ export class TimelineProcessor {
 
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
-			this.renderError(el, `Error rendering timeline: ${message}`);
+			renderBlockError(el, `Error rendering timeline: ${message}`);
 		}
 	}
 
-	/**
-	 * Render an error message
-	 */
-	private renderError(el: HTMLElement, message: string): void {
-		const container = el.createDiv({ cls: 'cr-dynamic-block cr-dynamic-block--error' });
-		container.createDiv({ cls: 'cr-dynamic-block__error-message', text: message });
-	}
-
-	/**
-	 * Render a loading state
-	 */
-	private renderLoading(el: HTMLElement, message: string): void {
-		const container = el.createDiv({ cls: 'cr-dynamic-block cr-dynamic-block--loading' });
-		container.createDiv({ cls: 'cr-dynamic-block__loading-message', text: message });
-	}
 }

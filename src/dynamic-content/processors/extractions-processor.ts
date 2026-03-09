@@ -13,7 +13,7 @@
 
 import { MarkdownPostProcessorContext, MarkdownRenderChild, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
-import { DynamicContentService } from '../services/dynamic-content-service';
+import { DynamicContentService, renderBlockError } from '../services/dynamic-content-service';
 import { ExtractionsRenderer, type ExtractionData, type PersonExtractionRow } from '../renderers/extractions-renderer';
 import { EventService } from '../../events/services/event-service';
 import type { EventNote } from '../../events/types/event-types';
@@ -67,7 +67,7 @@ export class ExtractionsProcessor {
 
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
-			this.renderError(el, `Error rendering extractions: ${message}`);
+			renderBlockError(el, `Error rendering extractions: ${message}`);
 		}
 	}
 
@@ -212,13 +212,4 @@ export class ExtractionsProcessor {
 		return linkBasename === sourceBasename;
 	}
 
-	/**
-	 * Render an error message
-	 */
-	private renderError(el: HTMLElement, message: string): void {
-		el.createDiv({
-			cls: 'cr-dynamic-block cr-dynamic-block--error',
-			text: message
-		});
-	}
 }

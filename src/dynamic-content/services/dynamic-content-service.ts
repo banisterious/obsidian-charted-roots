@@ -455,3 +455,19 @@ export class DynamicContentService {
 		}
 	}
 }
+
+/**
+ * Render a standardized error message in a dynamic content block.
+ */
+export function renderBlockError(el: HTMLElement, message: string): void {
+	const container = el.createDiv({ cls: 'cr-dynamic-block cr-dynamic-block--error' });
+	container.createDiv({ cls: 'cr-dynamic-block__error-message', text: message });
+}
+
+/**
+ * Render a standardized loading state in a dynamic content block.
+ */
+export function renderBlockLoading(el: HTMLElement, message: string): void {
+	const container = el.createDiv({ cls: 'cr-dynamic-block cr-dynamic-block--loading' });
+	container.createDiv({ cls: 'cr-dynamic-block__loading-message', text: message });
+}

@@ -13,7 +13,7 @@
 
 import { MarkdownPostProcessorContext, MarkdownRenderChild, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
-import { DynamicContentService } from '../services/dynamic-content-service';
+import { DynamicContentService, renderBlockError, renderBlockLoading } from '../services/dynamic-content-service';
 import { RelationshipsRenderer } from '../renderers/relationships-renderer';
 
 /**
@@ -52,7 +52,7 @@ export class RelationshipsProcessor {
 			// If cr_id not found, the metadata cache may not be ready yet
 			// Show loading state and wait for the 'changed' event to re-render
 			if (!context.crId || !context.person) {
-				this.renderLoading(el, 'Waiting for metadata...');
+				renderBlockLoading(el, 'Waiting for metadata...');
 
 				// Register for metadata changes - will re-render when cache is ready
 				const metadataHandler = async (changedFile: TFile) => {
@@ -64,9 +64,9 @@ export class RelationshipsProcessor {
 						if (freshContext.crId && freshContext.person) {
 							await this.renderer.render(el, freshContext, config, component);
 						} else if (!freshContext.crId) {
-							this.renderError(el, 'This note does not have a cr_id. Relationships can only be rendered in person notes.');
+							renderBlockError(el, 'This note does not have a cr_id. Relationships can only be rendered in person notes.');
 						} else {
-							this.renderError(el, 'Could not find person data for this note.');
+							renderBlockError(el, 'Could not find person data for this note.');
 						}
 					}
 				};
@@ -98,23 +98,8 @@ export class RelationshipsProcessor {
 
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
-			this.renderError(el, `Error rendering relationships: ${message}`);
+			renderBlockError(el, `Error rendering relationships: ${message}`);
 		}
 	}
 
-	/**
-	 * Render an error message
-	 */
-	private renderError(el: HTMLElement, message: string): void {
-		const container = el.createDiv({ cls: 'cr-dynamic-block cr-dynamic-block--error' });
-		container.createDiv({ cls: 'cr-dynamic-block__error-message', text: message });
-	}
-
-	/**
-	 * Render a loading state
-	 */
-	private renderLoading(el: HTMLElement, message: string): void {
-		const container = el.createDiv({ cls: 'cr-dynamic-block cr-dynamic-block--loading' });
-		container.createDiv({ cls: 'cr-dynamic-block__loading-message', text: message });
-	}
 }

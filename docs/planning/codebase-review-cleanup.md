@@ -36,17 +36,16 @@ Targeted searches across the full codebase for specific anti-patterns. Each can 
 - Service instantiation audit: 8 singletons on plugin, ~15 on-demand services, 9 factory functions exist but mostly unused. Standardizing would require architectural decisions — deferred to Phase 4 (main.ts decomposition)
 - Logger pattern (`getLogger()`) and vault read pattern (`app.vault.read()`) are already consistent
 
-## Phase 2: Report generator base class
+## Phase 2: Report generator deduplication — DONE
 
-15 report generators share ~80% identical boilerplate:
-- Constructor signature `(app, settings)`
-- FamilyGraphService init with folder filter and property aliases
-- Logger creation
-- Similar generate() method structure
+**Completed:**
+- Extracted `nodeToReportPerson()` and `normalizeSex()` into `src/reports/services/report-utils.ts`
+- Replaced identical private methods in 10 generators (-290 lines)
+- `createConfiguredFamilyGraph()` factory already extracted in Phase 1b (-79 lines)
 
-**Approach:** Extract `BaseReportGenerator` with shared init, leaving each generator to implement only its specific logic. Estimated ~2,000-3,000 lines eliminated.
-
-**Files:** `src/reports/generators/*.ts` (15 files)
+**Deferred (low ROI):**
+- Base class for constructor + logger: only ~7 lines per generator, and each `generate()` method has a different signature. A base class would add inheritance complexity without proportional benefit.
+- place-summary-generator uses a different node type — would need a generic or overload, adding complexity
 
 ## Phase 3: Dynamic content processor base class
 

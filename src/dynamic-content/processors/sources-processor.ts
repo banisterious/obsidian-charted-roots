@@ -14,7 +14,7 @@
 
 import { MarkdownPostProcessorContext, MarkdownRenderChild, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
-import { DynamicContentService } from '../services/dynamic-content-service';
+import { DynamicContentService, renderBlockError } from '../services/dynamic-content-service';
 import { SourcesRenderer, type SourceTableRow } from '../renderers/sources-renderer';
 import { SourceService } from '../../sources/services/source-service';
 import type { SourceNote, FactKey } from '../../sources/types/source-types';
@@ -77,7 +77,7 @@ export class SourcesProcessor {
 
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
-			this.renderError(el, `Error rendering sources: ${message}`);
+			renderBlockError(el, `Error rendering sources: ${message}`);
 		}
 	}
 
@@ -194,11 +194,4 @@ export class SourcesProcessor {
 		return sourceService.getSourceByPath(linkedFile.path);
 	}
 
-	/**
-	 * Render an error message
-	 */
-	private renderError(el: HTMLElement, message: string): void {
-		const container = el.createDiv({ cls: 'cr-dynamic-block cr-dynamic-block--error' });
-		container.createDiv({ cls: 'cr-dynamic-block__error-message', text: message });
-	}
 }
