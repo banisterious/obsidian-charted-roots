@@ -19,7 +19,7 @@ import type { SourceNote } from '../sources/types/source-types';
 import { PlaceGraphService } from '../core/place-graph';
 import type { PlaceNode } from '../models/place';
 import type { CanvasRootsSettings } from '../settings';
-import { RelationshipService } from '../relationships/services/relationship-service';
+import { RelationshipService } from '../relationships';
 import { extractWikilinkPath } from '../utils/wikilink-resolver';
 
 const logger = getLogger('GedcomExporter');

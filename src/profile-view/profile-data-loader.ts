@@ -18,7 +18,7 @@ import type {
 	ReferencedFactGroup
 } from './profile-types';
 import type { MediaItem } from '../core/media-service';
-import { RelationshipService } from '../relationships/services/relationship-service';
+import { RelationshipService } from '../relationships';
 import { MembershipService } from '../organizations/services/membership-service';
 import { OrganizationService } from '../organizations/services/organization-service';
 import { EvidenceService } from '../sources/services/evidence-service';
