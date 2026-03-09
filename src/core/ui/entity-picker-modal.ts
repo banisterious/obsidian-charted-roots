@@ -23,7 +23,7 @@ import { FolderFilterService } from '../folder-filter';
 import { EventService } from '../../events/services/event-service';
 import type { EventNote } from '../../events/types/event-types';
 import { OrganizationService } from '../../organizations/services/organization-service';
-import { getOrganizationType } from '../../organizations/constants/organization-types';
+import { getOrganizationType } from '../../organizations/constants/organization-type-defaults';
 import { SourceService } from '../../sources/services/source-service';
 
 /**

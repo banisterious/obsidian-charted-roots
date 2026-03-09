@@ -15,7 +15,7 @@ import {
 	getAllOrganizationTypesWithCustomizations,
 	getAllOrganizationCategories,
 	isBuiltInOrganizationCategory
-} from '../constants/organization-types';
+} from '../constants/organization-type-defaults';
 import type { OrganizationTypeDefinition, OrganizationCategoryDefinition } from '../types/organization-types';
 import { OrganizationTypeEditorModal } from './organization-type-editor-modal';
 

@@ -31,7 +31,7 @@ export {
 	getOrganizationCategoryName,
 	isBuiltInOrganizationCategory,
 	isValidOrganizationType
-} from './constants/organization-types';
+} from './constants/organization-type-defaults';
 
 // Services
 export {

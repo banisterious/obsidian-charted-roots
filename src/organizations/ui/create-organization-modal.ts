@@ -7,7 +7,7 @@
 import { App, Modal, Setting, Notice, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { OrganizationType, OrganizationInfo } from '../types/organization-types';
-import { getAllOrganizationTypes, getOrganizationType } from '../constants/organization-types';
+import { getAllOrganizationTypes, getOrganizationType } from '../constants/organization-type-defaults';
 import { OrganizationService } from '../services/organization-service';
 import { ModalStatePersistence, renderResumePromptBanner } from '../../ui/modal-state-persistence';
 

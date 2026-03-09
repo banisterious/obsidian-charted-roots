@@ -8,7 +8,7 @@
 import { App, Modal, Setting, Notice } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { OrganizationTypeDefinition } from '../types/organization-types';
-import { BUILT_IN_ORGANIZATION_TYPES, getAllOrganizationCategories } from '../constants/organization-types';
+import { BUILT_IN_ORGANIZATION_TYPES, getAllOrganizationCategories } from '../constants/organization-type-defaults';
 import type { LucideIconName } from '../../ui/lucide-icons';
 import { setLucideIcon } from '../../ui/lucide-icons';
 

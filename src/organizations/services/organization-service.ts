@@ -13,7 +13,7 @@ import type {
 	OrganizationStats,
 	OrganizationHierarchyNode
 } from '../types/organization-types';
-import { isValidOrganizationType, getOrganizationType } from '../constants/organization-types';
+import { isValidOrganizationType, getOrganizationType } from '../constants/organization-type-defaults';
 import { getLogger } from '../../core/logging';
 import { parseMediaRefs } from '../../core/media-service';
 import { isOrganizationNote } from '../../utils/note-type-detection';
