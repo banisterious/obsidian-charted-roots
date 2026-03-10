@@ -852,6 +852,28 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					});
 			});
 
+		this.renderFoldersSection(containerEl);
+		this.renderDataSection(containerEl);
+		this.renderPrivacySection(containerEl);
+		this.renderCanvasSection(containerEl);
+		this.renderDatesSection(containerEl);
+		this.renderSexSection(containerEl);
+		this.renderPlacesSection(containerEl);
+		this.renderAliasesSection(containerEl);
+		this.renderAdvancedSection(containerEl);
+
+		// Restore section open states and scroll position after re-render
+		if (this.hasRendered) {
+			this.restoreOpenSections(containerEl);
+			// Use requestAnimationFrame to ensure DOM is updated before scrolling
+			requestAnimationFrame(() => {
+				containerEl.scrollTop = scrollTop;
+			});
+		}
+		this.hasRendered = true;
+	}
+
+	private renderFoldersSection(containerEl: HTMLElement): void {
 		// ═══════════════════════════════════════════════════════════════════════
 		// SECTION 1: FOLDERS
 		// ═══════════════════════════════════════════════════════════════════════
@@ -946,7 +968,9 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 
 		this.createFolderSetting(foldersContent, 'Log export folder', 'Vault folder for exported log files', '.charted-roots/logs',
 			() => this.plugin.settings.logExportPath, (v) => { this.plugin.settings.logExportPath = v; });
+	}
 
+	private renderDataSection(containerEl: HTMLElement): void {
 		// ═══════════════════════════════════════════════════════════════════════
 		// SECTION 2: DATA & DETECTION
 		// ═══════════════════════════════════════════════════════════════════════
@@ -1045,7 +1069,9 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					this.plugin.registerFileModificationHandler();
 				})
 				.setDisabled(!this.plugin.settings.enableBidirectionalSync));
+	}
 
+	private renderPrivacySection(containerEl: HTMLElement): void {
 		// ═══════════════════════════════════════════════════════════════════════
 		// PRIVACY & EXPORT SECTION (Collapsible)
 		// ═══════════════════════════════════════════════════════════════════════
@@ -1114,7 +1140,9 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					this.plugin.settings.exportFilenamePattern = value || '{name}-family-chart-{date}';
 					await this.plugin.saveSettings();
 				}));
+	}
 
+	private renderCanvasSection(containerEl: HTMLElement): void {
 		// ═══════════════════════════════════════════════════════════════════════
 		// SECTION 3: CANVAS & TREES
 		// ═══════════════════════════════════════════════════════════════════════
@@ -1285,7 +1313,9 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					this.plugin.settings.eventIconMode = value as EventIconMode;
 					await this.plugin.saveSettings();
 				}));
+	}
 
+	private renderDatesSection(containerEl: HTMLElement): void {
 		// ═══════════════════════════════════════════════════════════════════════
 		// SECTION 5: DATES & VALIDATION
 		// ═══════════════════════════════════════════════════════════════════════
@@ -1348,7 +1378,9 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					this.plugin.settings.requireLeadingZeros = value;
 					await this.plugin.saveSettings();
 				}));
+	}
 
+	private renderSexSection(containerEl: HTMLElement): void {
 		// ═══════════════════════════════════════════════════════════════════════
 		// SECTION 6: SEX & GENDER
 		// ═══════════════════════════════════════════════════════════════════════
@@ -1417,7 +1449,9 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					this.plugin.settings.romanticRelationshipLabel = value;
 					await this.plugin.saveSettings();
 				}));
+	}
 
+	private renderPlacesSection(containerEl: HTMLElement): void {
 		// ═══════════════════════════════════════════════════════════════════════
 		// SECTION 7: PLACES
 		// ═══════════════════════════════════════════════════════════════════════
@@ -1507,7 +1541,9 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		importNote.createSpan({
 			text: 'Imports (GEDCOM, Gramps) always create places in the base folder. Use Data Quality → "Places not in category folders" to organize them afterward.'
 		});
+	}
 
+	private renderAliasesSection(containerEl: HTMLElement): void {
 		// ═══════════════════════════════════════════════════════════════════════
 		// SECTION 8: PROPERTY & VALUE ALIASES
 		// ═══════════════════════════════════════════════════════════════════════
@@ -1558,7 +1594,9 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 
 		// Note type values
 		this.renderValueAliasSection(aliasesContent, 'Note type values', 'noteType', CANONICAL_NOTE_TYPES, NOTE_TYPE_LABELS, valueAliasService);
+	}
 
+	private renderAdvancedSection(containerEl: HTMLElement): void {
 		// ═══════════════════════════════════════════════════════════════════════
 		// SECTION 9: ADVANCED
 		// ═══════════════════════════════════════════════════════════════════════
@@ -1803,17 +1841,8 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					await this.app.vault.create(fullPath, content);
 					new Notice(`Exported ${logs.length} log entries to ${fullPath}`);
 				}));
-
-		// Restore section open states and scroll position after re-render
-		if (this.hasRendered) {
-			this.restoreOpenSections(containerEl);
-			// Use requestAnimationFrame to ensure DOM is updated before scrolling
-			requestAnimationFrame(() => {
-				containerEl.scrollTop = scrollTop;
-			});
-		}
-		this.hasRendered = true;
 	}
+
 
 	/**
 	 * Filter visible settings based on search query
