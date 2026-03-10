@@ -10,8 +10,8 @@ import { pluralize } from '../utils/format-utils';
 import { SchemaValidationProgressModal } from './schema-validation-progress-modal';
 import type { RecentTreeInfo } from '../settings';
 import { ConfirmationModal } from './data-quality-modals';
+import { renderDataQualityTab } from './data-quality-tab';
 import {
-	renderDataQualityTab,
 	previewRemoveDuplicateRelationships,
 	removeDuplicateRelationships,
 	previewRemovePlaceholders,
@@ -25,7 +25,7 @@ import {
 	previewDetectImpossibleDates,
 	previewValidateDates,
 	validateDates
-} from './data-quality-tab';
+} from './data-quality-batch-ops';
 import { PlaceGraphService } from '../core/place-graph';
 import { CreatePlaceModal } from './create-place-modal';
 import { MigrationDiagramModal } from './migration-diagram-modal';
