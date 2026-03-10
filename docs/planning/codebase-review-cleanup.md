@@ -57,29 +57,29 @@ Targeted searches across the full codebase for specific anti-patterns. Each can 
 - Base class for process() flow: each processor has unique metadata watching strategies, different re-render triggers, async/sync differences. A base class would add more complexity than it removes.
 - Constructor pattern varies (renderer instantiation differs per processor)
 
-## Phase 4: main.ts decomposition — IN PROGRESS
+## Phase 4: main.ts decomposition — DONE
 
 **Completed:**
 - Decomposed `onload()` into `registerViews()`, `registerCodeBlockProcessors()`, `registerCommandsAndEvents()`, `registerContextMenus()` (onload went from ~4900 lines to 72 lines)
 - Extracted context menus + 34 supporting methods to `src/plugin/context-menus.ts` (5,604 lines)
-- main.ts reduced from 9,386 → 3,756 lines (60% reduction)
+- Extracted commands to `src/plugin/commands.ts` (~859 lines)
+- Extracted activation methods to `src/plugin/activation.ts` (~277 lines, with shared `activateSidebarView()` helper)
+- Extracted base template methods to `src/plugin/base-templates.ts` (~252 lines, consolidated 8 near-identical methods into shared `createBaseFile()`)
+- Extracted bulk operations to `src/plugin/bulk-operations.ts` (~1,055 lines: edit modals, reference numbering, lineage, tree/canvas ops, dynamic blocks)
+- main.ts reduced from 9,386 → 937 lines (90% reduction)
 
-**Remaining (lower priority, can be done incrementally):**
-- Extract commands (~800 lines) to `src/plugin/commands.ts`
-- Extract activation methods (~400 lines) to `src/plugin/activation.ts`
-- Extract base template methods (~530 lines) to `src/plugin/base-templates.ts`
-- Extract bulk property operations (~620 lines) to `src/plugin/bulk-operations.ts`
+## Phase 5: Large modal/view decomposition — DONE (partial)
 
-## Phase 5: Large modal/view decomposition
+**Completed:**
+- `settings.ts`: decomposed `display()` from ~984 lines into 9 private `render*Section()` methods within the same class
+- `family-chart-view.ts`: extracted `DeletePersonConfirmModal` + `FamilyChartStyleModal` to `family-chart-view-modals.ts` (~291 lines); cleaned up private access bracket notation hacks
+- `data-quality-tab.ts`: extracted batch operations block (~1,500 lines) to `data-quality-batch-ops.ts`; updated callers in `control-center.ts`
 
-Lower priority — tackle after main.ts:
-- `family-chart-view.ts` (5,634 lines)
-- `cleanup-wizard-modal.ts` (4,210 lines)
-- `create-person-modal.ts` (3,175 lines)
-- `data-quality-tab.ts` (3,347 lines)
-- `settings.ts` (2,402 lines)
+**Deferred (single-class modals — too tightly coupled for safe extraction):**
+- `cleanup-wizard-modal.ts` (4,211 lines): single class, 180+ private methods all sharing wizard state; extraction would require making ~10+ fields public — high risk, low ROI
+- `create-person-modal.ts` (3,176 lines): same pattern — single class, 90+ private methods sharing modal state
 
-Each would be broken into smaller focused components/sections.
+**Note:** The export wizard for family-chart was already extracted before this phase (`family-chart-export-wizard.ts`, `family-chart-export-progress-modal.ts`). The remaining export implementation methods in family-chart-view.ts are deeply coupled to chart-specific private fields (`f3Chart`, `chartData`, etc.) — not extractable without exposing a large internal API.
 
 ## Execution approach
 
