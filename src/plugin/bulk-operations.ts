@@ -24,6 +24,7 @@ import { ExcalidrawExporter } from '../excalidraw/excalidraw-exporter';
 import { getErrorMessage } from '../core/error-utils';
 import { isPlaceNote, isSourceNote, isEventNote, isPersonNote, isOrganizationNote } from '../utils/note-type-detection';
 import type { SpouseMetadata } from '../core/person-note-writer';
+import { SOURCED_PROPERTY_NAMES } from '../sources/types/source-types';
 import { promptLineageName } from './context-menus';
 import { getLogger } from '../core/logging';
 
@@ -237,6 +238,24 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 		}
 	}
 
+	// Extract sourced facts (fact-level source tracking)
+	const sourcedFacts: Record<string, string[]> = {};
+	for (const prop of SOURCED_PROPERTY_NAMES) {
+		const raw = fm[prop];
+		if (raw) {
+			const arr = Array.isArray(raw) ? raw : [raw];
+			const names = arr
+				.map((v: unknown) => {
+					const match = String(v).match(/\[\[([^\]]+)\]\]/);
+					return match ? match[1] : String(v);
+				})
+				.filter((n: string) => n.length > 0);
+			if (names.length > 0) {
+				sourcedFacts[prop] = names;
+			}
+		}
+	}
+
 	// Extract gender-neutral parents names/IDs
 	const parentNames: string[] = [];
 	const parentIds: string[] = [];
@@ -309,7 +328,9 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 			dnaKitId: fm.dna_kit_id,
 			dnaMatchType: fm.dna_match_type,
 			dnaEndogamyFlag: typeof fm.dna_endogamy_flag === 'boolean' ? fm.dna_endogamy_flag : undefined,
-			dnaNotes: fm.dna_notes
+			dnaNotes: fm.dna_notes,
+			// Fact-level source tracking
+			sourcedFacts: Object.keys(sourcedFacts).length > 0 ? sourcedFacts : undefined
 		},
 		familyGraph,
 		placeGraph,

@@ -25,7 +25,8 @@ import { getEventType } from '../events/types/event-types';
 import { EventPickerModal } from '../events/ui/event-picker-modal';
 import { splitAndTrim } from '../utils/format-utils';
 import { CreateEventModal } from '../events/ui/create-event-modal';
-import { getSourceType } from '../sources/types/source-types';
+import { getSourceType, FACT_KEYS, FACT_KEY_LABELS, FACT_KEY_TO_SOURCED_PROPERTY, SOURCED_PROPERTY_NAMES } from '../sources/types/source-types';
+import type { FactKey, SourcedPropertyName } from '../sources/types/source-types';
 
 /**
  * Relationship field data
@@ -114,6 +115,8 @@ interface PersonFormData {
 	// Sources fields
 	sourceCrIds?: string[];
 	sourceNames?: string[];
+	// Fact-level source tracking
+	sourcedFacts?: Record<string, string[]>;
 }
 
 /**
@@ -149,6 +152,8 @@ export class CreatePersonModal extends Modal {
 	private settings?: CanvasRootsSettings;
 	// Sources field (multi-relationship)
 	private sourcesField: MultiRelationshipField = { crIds: [], names: [] };
+	// Fact-level source tracking (sourced_* properties)
+	private sourcedFactsFields: Record<string, string[]> = {};
 
 	// Edit mode properties
 	private editMode: boolean = false;
@@ -240,6 +245,8 @@ export class CreatePersonModal extends Modal {
 				dnaMatchType?: string;
 				dnaEndogamyFlag?: boolean;
 				dnaNotes?: string;
+				// Fact-level source tracking
+				sourcedFacts?: Record<string, string[]>;
 			};
 			// Universe options
 			existingUniverses?: string[];
@@ -364,6 +371,10 @@ export class CreatePersonModal extends Modal {
 					crIds: [...ep.sourceIds],
 					names: ep.sourceNames ? [...ep.sourceNames] : []
 				};
+			}
+			// Fact-level source tracking
+			if (ep.sourcedFacts) {
+				this.sourcedFactsFields = { ...ep.sourcedFacts };
 			}
 			// Get directory from file path
 			const pathParts = options.editFile.path.split('/');
@@ -657,6 +668,11 @@ export class CreatePersonModal extends Modal {
 		// === SOURCES (inline expansion) ===
 		this.renderSourcesSection(form);
 
+		// === SOURCE TRACKING (inline expansion, only when fact-level tracking enabled) ===
+		if (this.settings?.trackFactSourcing) {
+			this.renderSourceTrackingSection(form);
+		}
+
 		// Collection - dropdown with existing + text for custom
 		const collectionSetting = new Setting(form)
 			.setName('Collection')
@@ -884,7 +900,9 @@ export class CreatePersonModal extends Modal {
 			deathPlaceName: this.deathPlaceField.name,
 			// Sources fields
 			sourceCrIds: this.sourcesField.crIds.length > 0 ? [...this.sourcesField.crIds] : undefined,
-			sourceNames: this.sourcesField.names.length > 0 ? [...this.sourcesField.names] : undefined
+			sourceNames: this.sourcesField.names.length > 0 ? [...this.sourcesField.names] : undefined,
+			// Fact-level source tracking
+			sourcedFacts: Object.keys(this.sourcedFactsFields).length > 0 ? { ...this.sourcedFactsFields } : undefined
 		};
 	}
 
@@ -970,6 +988,11 @@ export class CreatePersonModal extends Modal {
 				crIds: [...formData.sourceCrIds],
 				names: formData.sourceNames ? [...formData.sourceNames] : []
 			};
+		}
+
+		// Fact-level source tracking
+		if (formData.sourcedFacts) {
+			this.sourcedFactsFields = { ...formData.sourcedFacts };
 		}
 	}
 
@@ -1387,6 +1410,13 @@ export class CreatePersonModal extends Modal {
 	}
 
 	/**
+	 * Check if source tracking section has any data
+	 */
+	private hasSourceTrackingData(): boolean {
+		return Object.values(this.sourcedFactsFields).some(arr => arr.length > 0);
+	}
+
+	/**
 	 * Render pronouns field with chip-style multi-value input
 	 */
 	private renderPronounsField(container: HTMLElement): void {
@@ -1688,6 +1718,123 @@ export class CreatePersonModal extends Modal {
 		// Sources field content (reuse existing method)
 		const fields = content.createDiv({ cls: 'crc-inline-expand__fields' });
 		this.createSourcesField(fields);
+	}
+
+	/**
+	 * Render source tracking section with inline expansion (#292)
+	 * Displays the 10 trackable fact types with per-fact source wikilinks
+	 */
+	private renderSourceTrackingSection(container: HTMLElement): void {
+		const hasData = this.hasSourceTrackingData();
+		const wrapper = container.createDiv({ cls: 'crc-inline-expand' });
+
+		// Create expansion link
+		const expandLink = wrapper.createDiv({ cls: 'crc-inline-expand__trigger' });
+		const linkIcon = expandLink.createSpan({ cls: 'crc-inline-expand__icon' });
+		setIcon(linkIcon, 'plus');
+		expandLink.createSpan({ text: 'Add fact-level source citations', cls: 'crc-inline-expand__text' });
+
+		// Create content container
+		const content = wrapper.createDiv({ cls: 'crc-inline-expand__content' });
+
+		// Collapse header
+		const collapseHeader = content.createDiv({ cls: 'crc-inline-expand__header' });
+		collapseHeader.createSpan({ text: 'Source tracking', cls: 'crc-inline-expand__title' });
+		const collapseLink = collapseHeader.createEl('button', {
+			cls: 'crc-inline-expand__collapse clickable-icon',
+			attr: { 'aria-label': 'Collapse section' }
+		});
+		setIcon(collapseLink, 'chevron-up');
+
+		// If has data, start expanded
+		if (hasData) {
+			wrapper.addClass('crc-inline-expand--expanded');
+		}
+
+		// Toggle handlers
+		expandLink.addEventListener('click', () => {
+			wrapper.addClass('crc-inline-expand--expanded');
+		});
+		collapseLink.addEventListener('click', () => {
+			wrapper.removeClass('crc-inline-expand--expanded');
+		});
+
+		const fields = content.createDiv({ cls: 'crc-inline-expand__fields' });
+
+		// Description
+		fields.createEl('p', {
+			text: 'Track which sources support each key fact. This data feeds the coverage score in data quality reports.',
+			cls: 'setting-item-description cr-source-tracking-desc'
+		});
+
+		// Render a row for each of the 10 fact types
+		for (const factKey of FACT_KEYS) {
+			const propName = FACT_KEY_TO_SOURCED_PROPERTY[factKey];
+			this.createSourcedFactRow(fields, factKey, propName);
+		}
+	}
+
+	/**
+	 * Create a single sourced-fact row with chip list and add button
+	 */
+	private createSourcedFactRow(
+		container: HTMLElement,
+		factKey: FactKey,
+		propName: SourcedPropertyName
+	): void {
+		const row = container.createDiv({ cls: 'cr-sourced-fact-row' });
+
+		const label = row.createDiv({ cls: 'cr-sourced-fact-row__label' });
+		label.setText(FACT_KEY_LABELS[factKey]);
+
+		const valueArea = row.createDiv({ cls: 'cr-sourced-fact-row__values' });
+
+		const chipContainer = valueArea.createDiv({ cls: 'cr-sourced-fact-row__chips' });
+
+		const renderChips = () => {
+			chipContainer.empty();
+			const names = this.sourcedFactsFields[propName] || [];
+			for (let i = 0; i < names.length; i++) {
+				const chip = chipContainer.createDiv({ cls: 'cr-sourced-fact-chip' });
+				chip.createSpan({ text: names[i], cls: 'cr-sourced-fact-chip__name' });
+				const removeBtn = chip.createSpan({ cls: 'cr-sourced-fact-chip__remove', text: '\u00d7' });
+				removeBtn.addEventListener('click', () => {
+					const arr = this.sourcedFactsFields[propName] || [];
+					arr.splice(i, 1);
+					if (arr.length === 0) {
+						delete this.sourcedFactsFields[propName];
+					}
+					renderChips();
+				});
+			}
+		};
+
+		// Add button
+		const addBtn = valueArea.createEl('button', {
+			cls: 'cr-sourced-fact-row__add clickable-icon',
+			attr: { 'aria-label': `Add source for ${FACT_KEY_LABELS[factKey]}` }
+		});
+		setIcon(addBtn, 'plus');
+		addBtn.addEventListener('click', () => {
+			if (!this.plugin) return;
+			const existingNames = this.sourcedFactsFields[propName] || [];
+			new SourcePickerModal(this.app, this.plugin, {
+				onSelect: (source) => {
+					const basename = source.filePath.replace(/\.md$/, '').split('/').pop() || source.title;
+					if (!this.sourcedFactsFields[propName]) {
+						this.sourcedFactsFields[propName] = [];
+					}
+					// Avoid duplicates
+					if (!this.sourcedFactsFields[propName].includes(basename)) {
+						this.sourcedFactsFields[propName].push(basename);
+					}
+					renderChips();
+				},
+				allowCreate: false
+			}).open();
+		});
+
+		renderChips();
 	}
 
 	/**
@@ -2870,6 +3017,11 @@ export class CreatePersonModal extends Modal {
 				data.sourceNames = [...this.sourcesField.names];
 			}
 
+			// Add fact-level source tracking
+			if (Object.keys(this.sourcedFactsFields).length > 0) {
+				data.sourcedFacts = { ...this.sourcedFactsFields };
+			}
+
 			// Add collection and universe
 			data.collection = this.getCollectionValue();
 			data.universe = this.getUniverseValue();
@@ -3061,6 +3213,13 @@ export class CreatePersonModal extends Modal {
 				data.sourceCrIds = [];
 				data.sourceNames = [];
 			}
+
+			// Add fact-level source tracking (always include so cleared facts are removed)
+			const sourcedFacts: Record<string, string[]> = {};
+			for (const prop of SOURCED_PROPERTY_NAMES) {
+				sourcedFacts[prop] = this.sourcedFactsFields[prop] || [];
+			}
+			data.sourcedFacts = sourcedFacts;
 
 			// Add collection and universe
 			data.collection = this.getCollectionValue();

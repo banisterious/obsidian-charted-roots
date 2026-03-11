@@ -1143,3 +1143,90 @@
 .cr-pronouns-preset {
   font-size: var(--font-smallest);
 }
+
+/* --------------------------------------------------------------------------
+   Source Tracking Section (#292) — fact-level source citations
+   -------------------------------------------------------------------------- */
+
+.cr-source-tracking-desc {
+  margin: 0 0 var(--size-4-2);
+  padding: 0;
+}
+
+.cr-sourced-fact-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--size-4-2);
+  padding: var(--size-4-1) 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-sourced-fact-row:last-child {
+  border-bottom: none;
+}
+
+.cr-sourced-fact-row__label {
+  flex: 0 0 120px;
+  font-size: var(--font-ui-small);
+  color: var(--text-normal);
+  padding-top: var(--size-4-1);
+}
+
+.cr-sourced-fact-row__values {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--size-4-1);
+  min-height: 28px;
+}
+
+.cr-sourced-fact-row__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-4-1);
+}
+
+.cr-sourced-fact-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2-1);
+  padding: var(--size-2-1) var(--size-4-2);
+  border-radius: var(--radius-s);
+  background: var(--background-modifier-hover);
+  font-size: var(--font-ui-smaller);
+  max-width: 200px;
+}
+
+.cr-sourced-fact-chip__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cr-sourced-fact-chip__remove {
+  cursor: pointer;
+  color: var(--text-faint);
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.cr-sourced-fact-chip__remove:hover {
+  color: var(--text-error);
+}
+
+.cr-sourced-fact-row__add {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cr-sourced-fact-row__add svg {
+  width: 14px;
+  height: 14px;
+}

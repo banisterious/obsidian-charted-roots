@@ -7,6 +7,7 @@ import { App, TFile, normalizePath } from 'obsidian';
 import { generateCrId } from './uuid';
 import { getLogger } from './logging';
 import type { ResearchLevel } from '../types/frontmatter';
+import { SOURCED_PROPERTY_NAMES } from '../sources/types/source-types';
 
 const logger = getLogger('PersonNoteWriter');
 
@@ -156,6 +157,8 @@ export interface PersonData {
 	dnaNotes?: string;           // Free-form notes
 	needsResearch?: string[];    // Research questions requiring investigation
 	tags?: string[];             // Obsidian tags (e.g., from Gramps import)
+	// Fact-level source tracking (sourced_* properties)
+	sourcedFacts?: Record<string, string[]>;  // Maps sourced property name → array of source basenames
 }
 
 /**
@@ -326,6 +329,16 @@ export async function createPersonNote(
 		frontmatter[prop('sources')] = person.sourceNames.map(name => `"${createSmartWikilink(name, app)}"`);
 		frontmatter[prop('sources_id')] = person.sourceCrIds;
 		logger.debug('sources', `Added ${person.sourceCrIds.length} sources`);
+	}
+
+	// Fact-level source tracking (sourced_* properties)
+	if (person.sourcedFacts) {
+		for (const sourcedProp of SOURCED_PROPERTY_NAMES) {
+			const names = person.sourcedFacts[sourcedProp];
+			if (names && names.length > 0) {
+				frontmatter[prop(sourcedProp)] = names.map(name => `"${createSmartWikilink(name, app)}"`);
+			}
+		}
 	}
 
 	// Privacy flag (e.g., from Gramps priv attribute)
@@ -1250,6 +1263,18 @@ export async function updatePersonNote(
 				// Clear sources
 				delete frontmatter.sources;
 				delete frontmatter.sources_id;
+			}
+		}
+
+		// Handle fact-level source tracking (sourced_* properties)
+		if (person.sourcedFacts !== undefined) {
+			for (const prop of SOURCED_PROPERTY_NAMES) {
+				const names = person.sourcedFacts[prop];
+				if (names && names.length > 0) {
+					frontmatter[prop] = names.map(name => `${createSmartWikilink(name, app)}`);
+				} else {
+					delete frontmatter[prop];
+				}
 			}
 		}
 
