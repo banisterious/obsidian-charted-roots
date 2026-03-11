@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.20.23] - 2026-03-11
+
 ### Added
 
 - **Negative findings dynamic code block** ([#287](https://github.com/banisterious/obsidian-charted-roots/issues/287)): New `charted-roots-negative-findings` code block that surfaces all negative research results across the vault. Parses both frontmatter (`research_log_entry` notes with `result: negative`) and markdown entries in research journals (lines matching `→ negative`). Renders a searchable table with date, source, searched-for text, project, and person columns. Supports grouping by person, project, or source, chronological/reverse sorting, project/person filters, and freeze-to-markdown.
