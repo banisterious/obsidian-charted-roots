@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Negative findings dynamic code block** ([#287](https://github.com/banisterious/obsidian-charted-roots/issues/287)): New `charted-roots-negative-findings` code block that surfaces all negative research results across the vault. Parses both frontmatter (`research_log_entry` notes with `result: negative`) and markdown entries in research journals (lines matching `→ negative`). Renders a searchable table with date, source, searched-for text, project, and person columns. Supports grouping by person, project, or source, chronological/reverse sorting, project/person filters, and freeze-to-markdown.
+
 ### Fixed
 
 - **Custom relationship types duplicated in Profile View** ([#289](https://github.com/banisterious/obsidian-charted-roots/issues/289)): Custom relationship types with a `familyGraphMapping` (e.g., "Sire" mapped to parent, "Childer" mapped to child) no longer produce duplicate entries. Previously both the custom name (e.g., "Sire" in Other) and the generic label (e.g., "Parent" in Family) appeared for the same person. The Family section now suppresses generic entries when a custom type in Other already covers that relationship.
