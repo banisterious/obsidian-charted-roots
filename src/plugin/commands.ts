@@ -24,6 +24,7 @@ import { CreateEventModal } from '../events/ui/create-event-modal';
 import { isPersonNote, isPlaceNote, isEventNote } from '../utils/note-type-detection';
 import { getErrorMessage } from '../core/error-utils';
 import { AddRelationshipModal } from '../ui/add-relationship-modal';
+import { CommandMenuModal } from '../ui/command-menu-modal';
 import { formatChangeDescription } from '../core/relationship-history';
 import {
 	promptAssignReferenceNumbers,
@@ -67,6 +68,15 @@ export function registerCommandsAndEvents(plugin: CanvasRootsPlugin): void {
 	// Add ribbon icon for control center
 	plugin.addRibbonIcon('users', 'Open Charted Roots control center', () => {
 		new ControlCenterModal(plugin.app, plugin).open();
+	});
+
+	// Add command: Open Command Menu (#290)
+	plugin.addCommand({
+		id: 'open-command-menu',
+		name: 'Open command menu',
+		callback: () => {
+			new CommandMenuModal(plugin.app).open();
+		}
 	});
 
 	// Add command: Open Control Center

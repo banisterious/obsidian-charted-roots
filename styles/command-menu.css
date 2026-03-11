@@ -1,0 +1,72 @@
+/* ==========================================================================
+   Command Menu / Multi-Action Launcher (#290)
+   ========================================================================== */
+
+/* Modal sizing */
+.cr-command-menu {
+  --cr-command-menu-width: 600px;
+}
+
+.cr-command-menu .prompt {
+  max-width: var(--cr-command-menu-width);
+}
+
+/* Category separator headers */
+.cr-command-menu__separator {
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-semibold);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: var(--size-4-2) var(--size-4-3);
+  pointer-events: none;
+  cursor: default;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+/* Prevent separator from being highlighted as active suggestion */
+.cr-command-menu .suggestion-item.is-selected.cr-command-menu__separator {
+  background: transparent;
+  cursor: default;
+}
+
+/* Command item layout */
+.cr-command-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  padding: var(--size-4-2) var(--size-4-3);
+}
+
+/* Command icon */
+.cr-command-menu__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.cr-command-menu__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Command name */
+.cr-command-menu__name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Category badge */
+.cr-command-menu__category {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-faint);
+  flex-shrink: 0;
+  margin-left: auto;
+}

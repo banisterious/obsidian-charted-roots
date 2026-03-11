@@ -58,6 +58,7 @@ const CONFIG = {
     'organizations.css', // Organizations tab
     'sources.css',       // Sources tab
     'statistics.css',    // Statistics tab and view
+    'command-menu.css',  // Command menu / multi-action launcher
     'dashboard.css',     // Dashboard tab (Control Center home)
     'universe-wizard.css', // Universe setup wizard modal
     'universes.css',     // Universes tab and dockable view

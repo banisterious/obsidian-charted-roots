@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Command menu / multi-action launcher** ([#290](https://github.com/banisterious/obsidian-charted-roots/issues/290)): A searchable modal that groups all 56 plugin commands into 6 categories (Create, View, Edit, Trees & numbering, Bases, Tools). Accessible via the "Open command menu" command (assignable to any hotkey) or the new Command Menu tile on the control center dashboard.
+
 ### Fixed
 
 - **Custom relationship types lost in Profile View** ([#289](https://github.com/banisterious/obsidian-charted-roots/issues/289)): Custom relationship types with a `familyGraphMapping` (e.g., "Sire" mapped to parent, "Childer" mapped to child) now correctly appear in the Other section with their custom names. Previously they were filtered out entirely, leaving only the generic base label in the Family section.

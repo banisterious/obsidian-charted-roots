@@ -18,6 +18,7 @@ import { ReportWizardModal } from '../reports/ui/report-wizard-modal';
 import { MediaManagerModal } from '../core/ui/media-manager-modal';
 import { ImportExportHubModal } from './import-export-hub-modal';
 import { FamilyCreationWizardModal } from './family-creation-wizard';
+import { CommandMenuModal } from './command-menu-modal';
 import { FamilyGraphService } from '../core/family-graph';
 import { PlaceGraphService } from '../core/place-graph';
 import { EventService } from '../events/services/event-service';
@@ -342,6 +343,17 @@ function renderQuickActionsSection(
 			action: () => {
 				closeModal();
 				new ImportExportHubModal(app, plugin).open();
+			}
+		},
+		// Row 4: Utilities
+		{
+			id: 'command-menu',
+			label: 'Command Menu',
+			icon: 'terminal',
+			description: 'Search and launch any plugin command',
+			action: () => {
+				closeModal();
+				new CommandMenuModal(app).open();
 			}
 		}
 	];
