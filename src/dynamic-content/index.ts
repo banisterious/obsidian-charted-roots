@@ -31,3 +31,6 @@ export { SourcesRenderer } from './renderers/sources-renderer';
 
 export { ExtractionsProcessor } from './processors/extractions-processor';
 export { ExtractionsRenderer } from './renderers/extractions-renderer';
+
+export { NegativeFindingsProcessor } from './processors/negative-findings-processor';
+export { NegativeFindingsRenderer } from './renderers/negative-findings-renderer';

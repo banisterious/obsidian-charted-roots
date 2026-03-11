@@ -697,6 +697,95 @@
 }
 
 /* ==========================================================================
+   Negative Findings Block (charted-roots-negative-findings)
+   ========================================================================== */
+
+.cr-negative-findings__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-smaller);
+}
+
+.cr-negative-findings__table th {
+  text-align: left;
+  font-weight: var(--font-semibold);
+  padding: var(--cr-spacing-xs) var(--cr-spacing-sm);
+  border-bottom: 2px solid var(--background-modifier-border);
+  color: var(--text-muted);
+  font-size: var(--font-smallest);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cr-negative-findings__table td {
+  padding: var(--cr-spacing-xs) var(--cr-spacing-sm);
+  border-bottom: 1px solid var(--background-modifier-border-hover);
+  vertical-align: middle;
+}
+
+.cr-negative-findings__table tr:last-child td {
+  border-bottom: none;
+}
+
+.cr-negative-findings__date {
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.cr-negative-findings__source a {
+  color: var(--text-accent);
+  text-decoration: none;
+}
+
+.cr-negative-findings__source a:hover {
+  text-decoration: underline;
+}
+
+.cr-negative-findings__searched-for {
+  color: var(--text-normal);
+}
+
+.cr-negative-findings__project a,
+.cr-negative-findings__person a {
+  color: var(--text-accent);
+  text-decoration: none;
+}
+
+.cr-negative-findings__project a:hover,
+.cr-negative-findings__person a:hover {
+  text-decoration: underline;
+}
+
+.cr-negative-findings__group {
+  margin-bottom: var(--cr-spacing-md);
+}
+
+.cr-negative-findings__group:last-child {
+  margin-bottom: 0;
+}
+
+.cr-negative-findings__group-header {
+  font-size: var(--font-ui-small);
+  margin-bottom: var(--cr-spacing-xs);
+  padding-bottom: var(--cr-spacing-xs);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-negative-findings__group-header p {
+  display: inline;
+  margin: 0;
+}
+
+.cr-negative-findings__group-header a {
+  color: var(--text-accent);
+  text-decoration: none;
+}
+
+.cr-negative-findings__group-header a:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
    Theme Compatibility
    ========================================================================== */
 
