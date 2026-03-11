@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Custom relationship types duplicated in Profile View** ([#289](https://github.com/banisterious/obsidian-charted-roots/issues/289)): Custom relationship types with a `familyGraphMapping` (e.g., "Sire" mapped to parent, "Childer" mapped to child) no longer produce duplicate entries. Previously both the custom name (e.g., "Sire" in Other) and the generic label (e.g., "Parent" in Family) appeared for the same person. The Family section now suppresses generic entries when a custom type in Other already covers that relationship.
+
 ---
 
 ## [0.20.22] - 2026-03-11
@@ -18,10 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Command menu / multi-action launcher** ([#290](https://github.com/banisterious/obsidian-charted-roots/issues/290)): A searchable modal that groups all 56 plugin commands into 6 categories (Create, View, Edit, Trees & numbering, Bases, Tools). Accessible via the "Open command menu" command (assignable to any hotkey) or the new Command Menu tile on the control center dashboard.
 
 - **Sourced facts in Edit Person modal** ([#292](https://github.com/banisterious/obsidian-charted-roots/issues/292)): A new collapsible "Source tracking" section in the Edit Person modal lets users add per-fact source citations for the 10 trackable facts (birth date/place, death date/place, parents, spouse, marriage date/place, occupation, residence). Each fact row shows linked sources as chips with a picker to add more. Only appears when fact-level source tracking is enabled in settings.
-
-### Fixed
-
-- **Custom relationship types lost in Profile View** ([#289](https://github.com/banisterious/obsidian-charted-roots/issues/289)): Custom relationship types with a `familyGraphMapping` (e.g., "Sire" mapped to parent, "Childer" mapped to child) now correctly appear in the Other section with their custom names. Previously they were filtered out entirely, leaving only the generic base label in the Family section.
 
 ---
 

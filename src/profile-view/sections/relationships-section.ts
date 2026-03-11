@@ -37,10 +37,30 @@ export function renderRelationshipsSection(
 	data: PersonProfileData,
 	options: RelationshipsSectionOptions
 ): void {
-	const totalCount = options.familyCount + options.otherCount;
+	// Other relationships subsection
+	// Exclude: family category (shown above), built-in types with familyGraphMapping (already in PersonNode).
+	// Custom types with familyGraphMapping are kept — they appear here with their custom type names
+	// (e.g., "Sire" instead of generic "Parent"), and the Family section suppresses the generic entry.
+	// Deduplicate direct + inverse entries for the same relationship.
+	const allOther = deduplicateRelationships(
+		[...data.relationships, ...data.inverseRelationships].filter(isOtherRelationship)
+	);
+
+	// Build set of crIds covered by custom Other relationships so the Family section
+	// can suppress generic entries for them (e.g., skip "Parent" when "Sire" covers it)
+	const otherTargetCrIds = new Set<string>();
+	for (const rel of allOther) {
+		if (rel.targetCrId && rel.type?.familyGraphMapping) {
+			otherTargetCrIds.add(rel.targetCrId);
+		}
+	}
+
+	// Adjust family count: subtract entries that will be suppressed in favor of custom Other relationships
+	const adjustedFamilyCount = options.familyCount - otherTargetCrIds.size;
+	const totalCount = adjustedFamilyCount + allOther.length;
 	const summaryParts: string[] = [];
-	if (options.familyCount > 0) summaryParts.push(`${options.familyCount} family`);
-	if (options.otherCount > 0) summaryParts.push(`${options.otherCount} other`);
+	if (adjustedFamilyCount > 0) summaryParts.push(`${adjustedFamilyCount} family`);
+	if (allOther.length > 0) summaryParts.push(`${allOther.length} other`);
 	const summary = summaryParts.length > 0 ? summaryParts.join(', ') : 'None';
 
 	const content = renderProfileSection(parent, {
@@ -55,18 +75,10 @@ export function renderRelationshipsSection(
 	if (!content) return;
 
 	// Family subsection (always expanded)
-	if (options.familyCount > 0) {
-		renderFamilySubsection(content, data, options);
+	if (adjustedFamilyCount > 0) {
+		renderFamilySubsection(content, data, options, otherTargetCrIds);
 	}
 
-	// Other relationships subsection
-	// Exclude: family category (shown above), built-in types with familyGraphMapping (already in PersonNode).
-	// Custom types with familyGraphMapping are kept — the Family section renders them with generic labels,
-	// so they need to appear here with their custom type names (e.g., "Sire" instead of "Parent").
-	// Deduplicate direct + inverse entries for the same relationship.
-	const allOther = deduplicateRelationships(
-		[...data.relationships, ...data.inverseRelationships].filter(isOtherRelationship)
-	);
 	if (allOther.length > 0) {
 		renderOtherSubsection(content, allOther, options);
 	}
@@ -75,30 +87,43 @@ export function renderRelationshipsSection(
 function renderFamilySubsection(
 	container: HTMLElement,
 	data: PersonProfileData,
-	options: RelationshipsSectionOptions
+	options: RelationshipsSectionOptions,
+	otherTargetCrIds: Set<string>
 ): void {
 	const familyEl = container.createDiv({ cls: 'cr-profile__relationships-family' });
 	const node = data.node;
 
-	// Parents
+	// Parents — skip IDs already covered by a custom relationship in the Other section
 	const parentEntries: { label: string; crId: string }[] = [];
-	if (node.fatherCrId) parentEntries.push({ label: 'Father', crId: node.fatherCrId });
-	if (node.motherCrId) parentEntries.push({ label: 'Mother', crId: node.motherCrId });
+	if (node.fatherCrId && !otherTargetCrIds.has(node.fatherCrId)) {
+		parentEntries.push({ label: 'Father', crId: node.fatherCrId });
+	}
+	if (node.motherCrId && !otherTargetCrIds.has(node.motherCrId)) {
+		parentEntries.push({ label: 'Mother', crId: node.motherCrId });
+	}
 	for (const id of node.parentCrIds || []) {
-		if (id !== node.fatherCrId && id !== node.motherCrId) {
+		if (id !== node.fatherCrId && id !== node.motherCrId && !otherTargetCrIds.has(id)) {
 			parentEntries.push({ label: 'Parent', crId: id });
 		}
 	}
 	for (const id of node.stepfatherCrIds || []) {
-		parentEntries.push({ label: 'Step-father', crId: id });
+		if (!otherTargetCrIds.has(id)) {
+			parentEntries.push({ label: 'Step-father', crId: id });
+		}
 	}
 	for (const id of node.stepmotherCrIds || []) {
-		parentEntries.push({ label: 'Step-mother', crId: id });
+		if (!otherTargetCrIds.has(id)) {
+			parentEntries.push({ label: 'Step-mother', crId: id });
+		}
 	}
-	if (node.adoptiveFatherCrId) parentEntries.push({ label: 'Adoptive father', crId: node.adoptiveFatherCrId });
-	if (node.adoptiveMotherCrId) parentEntries.push({ label: 'Adoptive mother', crId: node.adoptiveMotherCrId });
+	if (node.adoptiveFatherCrId && !otherTargetCrIds.has(node.adoptiveFatherCrId)) {
+		parentEntries.push({ label: 'Adoptive father', crId: node.adoptiveFatherCrId });
+	}
+	if (node.adoptiveMotherCrId && !otherTargetCrIds.has(node.adoptiveMotherCrId)) {
+		parentEntries.push({ label: 'Adoptive mother', crId: node.adoptiveMotherCrId });
+	}
 	for (const id of node.adoptiveParentCrIds || []) {
-		if (id !== node.adoptiveFatherCrId && id !== node.adoptiveMotherCrId) {
+		if (id !== node.adoptiveFatherCrId && id !== node.adoptiveMotherCrId && !otherTargetCrIds.has(id)) {
 			parentEntries.push({ label: 'Adoptive parent', crId: id });
 		}
 	}
@@ -107,19 +132,27 @@ function renderFamilySubsection(
 		renderRelGroup(familyEl, 'Parents', parentEntries, options);
 	}
 
-	// Spouses
+	// Spouses — skip IDs already covered by a custom relationship in the Other section
 	if (node.spouseCrIds && node.spouseCrIds.length > 0) {
-		const spouseEntries = node.spouseCrIds.map(id => ({ label: 'Spouse', crId: id }));
-		renderRelGroup(familyEl, 'Spouses', spouseEntries, options);
+		const spouseEntries = node.spouseCrIds
+			.filter(id => !otherTargetCrIds.has(id))
+			.map(id => ({ label: 'Spouse', crId: id }));
+		if (spouseEntries.length > 0) {
+			renderRelGroup(familyEl, 'Spouses', spouseEntries, options);
+		}
 	}
 
-	// Children
+	// Children — skip IDs already covered by a custom relationship in the Other section
 	const childEntries: { label: string; crId: string }[] = [];
 	for (const id of node.childrenCrIds || []) {
-		childEntries.push({ label: 'Child', crId: id });
+		if (!otherTargetCrIds.has(id)) {
+			childEntries.push({ label: 'Child', crId: id });
+		}
 	}
 	for (const id of node.adoptedChildCrIds || []) {
-		childEntries.push({ label: 'Adopted child', crId: id });
+		if (!otherTargetCrIds.has(id)) {
+			childEntries.push({ label: 'Adopted child', crId: id });
+		}
 	}
 	if (childEntries.length > 0) {
 		renderRelGroup(familyEl, 'Children', childEntries, options);
