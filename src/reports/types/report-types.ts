@@ -28,7 +28,9 @@ export type ReportType =
 	| 'hourglass-tree-pdf'
 	| 'fan-chart-pdf'
 	// Research document export
-	| 'research-report-export';
+	| 'research-report-export'
+	// Research analysis reports
+	| 'brick-wall-report';
 
 /**
  * Report categories for UI organization
@@ -381,6 +383,25 @@ export interface ResearchReportExportOptions extends ReportOptions {
 	notePath: string;
 	/** Optional custom title (overrides note title) */
 	customTitle?: string;
+}
+
+/**
+ * Sort order for brick wall report
+ */
+export type BrickWallSortOrder = 'generation' | 'name' | 'research_level';
+
+/**
+ * Options for Brick Wall Report (#297)
+ */
+export interface BrickWallReportOptions extends ReportOptions {
+	/** CR ID of the root person */
+	rootPersonCrId: string;
+	/** Maximum number of generations to traverse */
+	maxGenerations: number;
+	/** Include dates and places */
+	includeDetails: boolean;
+	/** Sort order for brick wall entries */
+	sortBy: BrickWallSortOrder;
 }
 
 /**
@@ -830,6 +851,45 @@ export interface ResearchReportExportResult extends ReportResult {
 }
 
 /**
+ * Brick wall entry — a terminal ancestor with no parents defined
+ */
+export interface BrickWallEntry {
+	/** Person data */
+	person: ReportPerson;
+	/** Generation number (1 = self, 2 = parents, etc.) */
+	generation: number;
+	/** Ahnentafel / Sosa-Stradonitz number */
+	ahnentafelNumber: number;
+	/** Lineage path from root to this ancestor (e.g., "Father's mother's father") */
+	lineagePath: string;
+	/** Number of source notes linked to this person */
+	sourceCount: number;
+}
+
+/**
+ * Brick Wall Report result (#297)
+ */
+export interface BrickWallReportResult extends ReportResult {
+	/** Root person */
+	rootPerson: ReportPerson;
+	/** Terminal ancestors (brick walls) */
+	brickWalls: BrickWallEntry[];
+	/** Summary statistics */
+	summary: {
+		/** Total ancestor slots searched */
+		totalSlots: number;
+		/** Ancestors found */
+		ancestorsFound: number;
+		/** Brick walls identified */
+		brickWallCount: number;
+		/** Deepest generation reached */
+		maxGeneration: number;
+		/** Completeness percentage (ancestors found / theoretical max) */
+		completeness: number;
+	};
+}
+
+/**
  * Report metadata for display
  */
 export interface ReportMetadata {
@@ -946,6 +1006,15 @@ export const REPORT_METADATA: Record<ReportType, ReportMetadata> = {
 		icon: 'file-text',
 		category: 'research',
 		requiresPerson: false
+	},
+	'brick-wall-report': {
+		type: 'brick-wall-report',
+		name: 'Brick wall report',
+		description: 'End-of-line ancestors with no parents — identifies where to focus research',
+		icon: 'alert-triangle',
+		category: 'research',
+		requiresPerson: true,
+		entityType: 'person'
 	},
 
 	// Timeline reports

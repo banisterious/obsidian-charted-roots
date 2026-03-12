@@ -54,6 +54,8 @@ import {
 	UniverseOverviewResult,
 	CollectionOverviewResult,
 	ResearchReportExportResult,
+	BrickWallReportResult,
+	BrickWallSortOrder,
 	TimelineExportFormat,
 	TimelineLayoutStyle,
 	TimelineColorScheme
@@ -77,7 +79,8 @@ type SpecificReportResult =
 	| MediaInventoryResult
 	| UniverseOverviewResult
 	| CollectionOverviewResult
-	| ResearchReportExportResult;
+	| ResearchReportExportResult
+	| BrickWallReportResult;
 
 /**
  * Output format types
@@ -110,7 +113,7 @@ const WIZARD_CATEGORIES: CategoryInfo[] = [
 		category: 'research',
 		name: 'Research',
 		icon: 'search',
-		reportCount: 4
+		reportCount: 5
 	},
 	{
 		category: 'timeline',
@@ -179,6 +182,7 @@ interface WizardFormData {
 	includeDetails: boolean;
 	includeChildren: boolean;
 	maxGenerations: number;
+	brickWallSortBy: BrickWallSortOrder;
 
 	// Step 3: PDF Options
 	pdfPageSize: 'A4' | 'LETTER';
@@ -311,6 +315,7 @@ export class ReportWizardModal extends Modal {
 			includeDetails: true,
 			includeChildren: true,
 			maxGenerations: 5,
+			brickWallSortBy: 'generation' as BrickWallSortOrder,
 
 			// PDF options
 			pdfPageSize: 'A4',
@@ -1902,6 +1907,26 @@ export class ReportWizardModal extends Modal {
 				this.formData.maxGenerations = parseInt(genSelect.value);
 			});
 		}
+
+		// Sort order (for brick wall report)
+		if (this.formData.reportType === 'brick-wall-report') {
+			const sortRow = section.createDiv({ cls: 'cr-report-option-row' });
+			sortRow.createSpan({ text: 'Sort by:', cls: 'cr-report-option-label' });
+
+			const sortSelect = sortRow.createEl('select', { cls: 'cr-report-select' });
+			const sortOptions: { value: BrickWallSortOrder; label: string }[] = [
+				{ value: 'generation', label: 'Generation (nearest first)' },
+				{ value: 'name', label: 'Name (alphabetical)' },
+				{ value: 'research_level', label: 'Research level (least researched first)' }
+			];
+			for (const opt of sortOptions) {
+				const option = sortSelect.createEl('option', { value: opt.value, text: opt.label });
+				if (opt.value === this.formData.brickWallSortBy) option.selected = true;
+			}
+			sortSelect.addEventListener('change', () => {
+				this.formData.brickWallSortBy = sortSelect.value as BrickWallSortOrder;
+			});
+		}
 	}
 
 	/**
@@ -1915,11 +1940,11 @@ export class ReportWizardModal extends Modal {
 			case 'spouses':
 				return ['register-report', 'descendant-chart'].includes(type);
 			case 'details':
-				return ['ahnentafel', 'pedigree-chart', 'descendant-chart', 'register-report'].includes(type);
+				return ['ahnentafel', 'pedigree-chart', 'descendant-chart', 'register-report', 'brick-wall-report'].includes(type);
 			case 'children':
 				return type === 'family-group-sheet';
 			case 'generations':
-				return ['ahnentafel', 'register-report', 'pedigree-chart', 'descendant-chart'].includes(type);
+				return ['ahnentafel', 'register-report', 'pedigree-chart', 'descendant-chart', 'brick-wall-report'].includes(type);
 			default:
 				return false;
 		}
@@ -2466,6 +2491,11 @@ export class ReportWizardModal extends Modal {
 		options.includeChildren = this.formData.includeChildren;
 		options.maxGenerations = this.formData.maxGenerations;
 
+		// Add brick-wall-specific options
+		if (this.formData.reportType === 'brick-wall-report') {
+			options.sortBy = this.formData.brickWallSortBy;
+		}
+
 		// Add timeline-specific options
 		if (this.isTimelineReport()) {
 			this.addTimelineOptions(options);
@@ -2629,6 +2659,9 @@ export class ReportWizardModal extends Modal {
 					result.content,
 					pdfOptions
 				);
+				break;
+			case 'brick-wall-report':
+				await this.pdfRenderer.renderBrickWallReport(result as BrickWallReportResult, pdfOptions);
 				break;
 			default:
 				throw new Error(`PDF rendering not supported for report type: ${this.formData.reportType}`);

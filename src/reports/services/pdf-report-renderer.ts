@@ -91,6 +91,7 @@ import type {
 	UniverseOverviewResult,
 	CollectionOverviewResult,
 	ResearchReportExportResult,
+	BrickWallReportResult,
 	ReportPerson
 } from '../types/report-types';
 import type {
@@ -2336,6 +2337,88 @@ export class PdfReportRenderer {
 		};
 
 		const filename = result.suggestedFilename || `${result.noteTitle.replace(/\s+/g, '-')}.pdf`;
+		this.pdfMake.createPdf(docDefinition).download(filename);
+
+		new Notice('PDF downloaded');
+	}
+
+	/**
+	 * Render Brick Wall Report to PDF
+	 */
+	async renderBrickWallReport(
+		result: BrickWallReportResult,
+		options: PdfOptions = DEFAULT_PDF_OPTIONS
+	): Promise<void> {
+		await this.ensurePdfMake();
+		this.currentOptions = options;
+
+		const defaultFont = this.getDefaultFont(options.fontStyle);
+		const defaultTitle = 'Brick Wall Report';
+		const defaultSubtitle = `End-of-line ancestors of ${result.rootPerson.name}`;
+
+		const scope = options.customTitleScope || 'both';
+		const coverTitle = (scope === 'cover' || scope === 'both') ? (options.customTitle || defaultTitle) : defaultTitle;
+		const headerTitle = (scope === 'headers' || scope === 'both') ? (options.customTitle || defaultTitle) : defaultTitle;
+		const subtitle = options.customSubtitle || defaultSubtitle;
+
+		const content: Content[] = [];
+
+		// Cover page
+		if (options.includeCoverPage) {
+			content.push(...this.buildCoverPage(coverTitle, subtitle, options.logoDataUrl, options.coverNotes, options.dateFormat));
+		}
+
+		// Title
+		content.push({ text: coverTitle, style: 'title' });
+		content.push({ text: subtitle, style: 'subtitle' });
+
+		// Summary
+		content.push(this.buildSectionHeader('Summary'));
+		content.push(this.buildKeyValueTable([
+			{ label: 'Ancestors found', value: result.summary.ancestorsFound.toString() },
+			{ label: 'Brick walls', value: result.summary.brickWallCount.toString() },
+			{ label: 'Deepest generation', value: result.summary.maxGeneration.toString() },
+			{ label: 'Tree completeness', value: `${result.summary.completeness}%` }
+		]));
+
+		// Brick walls table
+		if (result.brickWalls.length > 0) {
+			content.push(this.buildSectionHeader('Brick Walls'));
+			content.push(this.buildDataTable(
+				['#', 'Name', 'Gen', 'Vitals', 'Lineage', 'Sources'],
+				result.brickWalls.map(bw => [
+					bw.ahnentafelNumber.toString(),
+					bw.person.crId ? bw.person.name : bw.person.name,
+					bw.generation.toString(),
+					bw.person.crId ? this.formatVitals(bw.person) : '',
+					bw.lineagePath,
+					bw.sourceCount.toString()
+				]),
+				[30, 100, 30, '*', '*', 40]
+			));
+		} else {
+			content.push({
+				text: 'No brick walls found — all ancestor lines extend to the generation limit.',
+				margin: [0, 8, 0, 8],
+				italics: true
+			});
+		}
+
+		const docDefinition: TDocumentDefinitions = {
+			pageSize: options.pageSize,
+			pageOrientation: 'landscape',
+			pageMargins: [40, 60, 40, 60],
+			defaultStyle: {
+				font: defaultFont,
+				fontSize: 10
+			},
+			header: this.createHeader(headerTitle),
+			footer: this.createFooter(options.dateFormat),
+			content,
+			styles: this.getStyles(options.fontStyle)
+		};
+
+		const filename = `Brick-Wall-Report-${result.rootPerson.name.replace(/\s+/g, '-')}.pdf`;
 		this.pdfMake.createPdf(docDefinition).download(filename);
 
 		new Notice('PDF downloaded');

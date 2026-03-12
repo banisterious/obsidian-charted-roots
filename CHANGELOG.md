@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Brick wall report** ([#297](https://github.com/banisterious/obsidian-charted-roots/issues/297)): New report type that identifies end-of-line ancestors with no parents defined. Traverses the ancestor tree using Sosa-Stradonitz numbering and lists every terminal node with generation number, Ahnentafel number, lineage path, source count, and research level. Sortable by generation, name, or research level. Includes tree completeness statistics. Available as markdown, PDF (landscape), or ODT via the report wizard.
+
 ### Changed
 
 - **Dynamic code blocks use `charted-roots-*` prefix**: New person notes now use `charted-roots-timeline`, `charted-roots-relationships`, and `charted-roots-media` block names instead of the legacy `canvas-roots-*` prefix. Existing notes with the old prefix continue to work via backward-compatible aliases.
