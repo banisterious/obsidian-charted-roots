@@ -1,7 +1,7 @@
 /**
  * Media Renderer
  *
- * Renders media gallery HTML for the canvas-roots-media code block.
+ * Renders media gallery HTML for the charted-roots-media code block.
  * Creates a styled grid of thumbnails from the note's `media` frontmatter property.
  */
 
@@ -696,7 +696,7 @@ export class MediaRenderer {
 		const markdown = this.generateFrozenMarkdown();
 		await this.service.freezeToMarkdown(
 			this.currentContext.file,
-			'canvas-roots-media',
+			'charted-roots-media',
 			markdown
 		);
 	}

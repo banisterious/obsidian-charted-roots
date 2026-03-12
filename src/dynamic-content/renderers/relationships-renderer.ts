@@ -1,7 +1,7 @@
 /**
  * Relationships Renderer
  *
- * Renders relationships HTML for the canvas-roots-relationships code block.
+ * Renders relationships HTML for the charted-roots-relationships code block.
  * Creates grouped sections for family relationships with wikilinks.
  */
 
@@ -357,7 +357,7 @@ export class RelationshipsRenderer {
 		const markdown = this.generateMarkdown();
 		await this.service.freezeToMarkdown(
 			this.currentContext.file,
-			'canvas-roots-relationships',
+			'charted-roots-relationships',
 			markdown
 		);
 	}

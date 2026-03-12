@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Dynamic code blocks use `charted-roots-*` prefix**: New person notes now use `charted-roots-timeline`, `charted-roots-relationships`, and `charted-roots-media` block names instead of the legacy `canvas-roots-*` prefix. Existing notes with the old prefix continue to work via backward-compatible aliases.
+
 ---
 
 ## [0.20.23] - 2026-03-11

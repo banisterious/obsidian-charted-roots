@@ -1,7 +1,7 @@
 /**
  * Timeline Renderer
  *
- * Renders timeline HTML for the canvas-roots-timeline code block.
+ * Renders timeline HTML for the charted-roots-timeline code block.
  * Creates a styled list of events with dates and descriptions.
  */
 
@@ -300,7 +300,7 @@ export class TimelineRenderer {
 		const markdown = this.generateMarkdown();
 		await this.service.freezeToMarkdown(
 			this.currentContext.file,
-			'canvas-roots-timeline',
+			'charted-roots-timeline',
 			markdown
 		);
 	}

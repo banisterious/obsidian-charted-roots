@@ -796,7 +796,7 @@ export async function generateAllTrees(plugin: CanvasRootsPlugin) {
 
 /**
  * Insert dynamic content blocks into person note(s)
- * Adds canvas-roots-timeline and canvas-roots-relationships code blocks
+ * Adds charted-roots-timeline and charted-roots-relationships code blocks
  */
 export async function insertDynamicBlocks(plugin: CanvasRootsPlugin, files: TFile[]): Promise<void> {
 	// For bulk operations (10+ files), show progress

@@ -1,11 +1,11 @@
 /**
  * Media Processor
  *
- * Handles the `canvas-roots-media` code block.
+ * Handles the `charted-roots-media` code block.
  * Renders a gallery of media files linked to the current note.
  *
  * Usage in a note:
- * ```canvas-roots-media
+ * ```charted-roots-media
  * columns: 4
  * size: medium
  * filter: images
@@ -18,7 +18,7 @@ import { DynamicContentService, renderBlockError } from '../services/dynamic-con
 import { MediaRenderer } from '../renderers/media-renderer';
 
 /**
- * Processor for canvas-roots-media code blocks
+ * Processor for charted-roots-media code blocks
  */
 export class MediaProcessor {
 	private plugin: CanvasRootsPlugin;
@@ -32,7 +32,7 @@ export class MediaProcessor {
 	}
 
 	/**
-	 * Process a canvas-roots-media code block
+	 * Process a charted-roots-media code block
 	 */
 	process(
 		source: string,

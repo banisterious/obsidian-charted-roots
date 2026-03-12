@@ -1,11 +1,11 @@
 /**
  * Relationships Processor
  *
- * Handles the `canvas-roots-relationships` code block.
+ * Handles the `charted-roots-relationships` code block.
  * Renders family relationships for the current person note with wikilinks.
  *
  * Usage in a note:
- * ```canvas-roots-relationships
+ * ```charted-roots-relationships
  * type: immediate
  * include: parents, spouse, children
  * ```
@@ -17,7 +17,7 @@ import { DynamicContentService, renderBlockError, renderBlockLoading } from '../
 import { RelationshipsRenderer } from '../renderers/relationships-renderer';
 
 /**
- * Processor for canvas-roots-relationships code blocks
+ * Processor for charted-roots-relationships code blocks
  */
 export class RelationshipsProcessor {
 	private plugin: CanvasRootsPlugin;
@@ -31,7 +31,7 @@ export class RelationshipsProcessor {
 	}
 
 	/**
-	 * Process a canvas-roots-relationships code block
+	 * Process a charted-roots-relationships code block
 	 */
 	async process(
 		source: string,

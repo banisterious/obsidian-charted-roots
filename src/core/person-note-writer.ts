@@ -663,19 +663,19 @@ export async function createPersonNote(
 	if (includeDynamicBlocks && dynamicBlockTypes.length > 0) {
 		for (const blockType of dynamicBlockTypes) {
 			if (blockType === 'media') {
-				bodyLines.push('```canvas-roots-media');
+				bodyLines.push('```charted-roots-media');
 				bodyLines.push('columns: 3');
 				bodyLines.push('size: medium');
 				bodyLines.push('editable: true');
 				bodyLines.push('```');
 				bodyLines.push('');
 			} else if (blockType === 'timeline') {
-				bodyLines.push('```canvas-roots-timeline');
+				bodyLines.push('```charted-roots-timeline');
 				bodyLines.push('sort: chronological');
 				bodyLines.push('```');
 				bodyLines.push('');
 			} else if (blockType === 'relationships') {
-				bodyLines.push('```canvas-roots-relationships');
+				bodyLines.push('```charted-roots-relationships');
 				bodyLines.push('type: immediate');
 				bodyLines.push('```');
 				bodyLines.push('');

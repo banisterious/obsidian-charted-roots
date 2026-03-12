@@ -2,7 +2,7 @@
  * Media Lightbox Modal
  *
  * A shared lightbox modal for viewing images without navigating away
- * from the current note. Used by canvas-roots-media and sources media gallery.
+ * from the current note. Used by charted-roots-media and sources media gallery.
  */
 
 import { App, Modal, TFile, setIcon, MarkdownView, WorkspaceLeaf } from 'obsidian';

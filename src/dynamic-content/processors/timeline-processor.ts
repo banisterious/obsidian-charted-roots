@@ -1,11 +1,11 @@
 /**
  * Timeline Processor
  *
- * Handles the `canvas-roots-timeline` code block.
+ * Handles the `charted-roots-timeline` code block.
  * Renders a chronological list of events for the current person note.
  *
  * Usage in a note:
- * ```canvas-roots-timeline
+ * ```charted-roots-timeline
  * sort: chronological
  * include: birth, death, marriage, residence
  * limit: 10
@@ -18,7 +18,7 @@ import { DynamicContentService, renderBlockError, renderBlockLoading } from '../
 import { TimelineRenderer } from '../renderers/timeline-renderer';
 
 /**
- * Processor for canvas-roots-timeline code blocks
+ * Processor for charted-roots-timeline code blocks
  */
 export class TimelineProcessor {
 	private plugin: CanvasRootsPlugin;
@@ -32,7 +32,7 @@ export class TimelineProcessor {
 	}
 
 	/**
-	 * Process a canvas-roots-timeline code block
+	 * Process a charted-roots-timeline code block
 	 */
 	async process(
 		source: string,
