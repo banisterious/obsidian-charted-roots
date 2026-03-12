@@ -33,10 +33,16 @@ This document describes the Charted Roots plugin directory layout and component 
 
 ```
 charted-roots/
-├── main.ts                    # Plugin entry point
+├── main.ts                    # Plugin entry point (orchestration layer)
 ├── styles.css                 # Final compiled CSS for Obsidian
 ├── src/
 │   ├── settings.ts            # Plugin settings interface
+│   ├── plugin/                # Plugin orchestration (extracted from main.ts)
+│   │   ├── activation.ts          # View activation methods (14 activator functions)
+│   │   ├── base-templates.ts      # Base template creators (9 functions)
+│   │   ├── bulk-operations.ts     # Bulk operation commands (11 operations)
+│   │   ├── commands.ts            # Command registration and event handlers
+│   │   └── context-menus.ts       # File context menu implementation
 │   ├── core/                  # Core business logic
 │   │   ├── bidirectional-linker.ts   # Automatic relationship sync
 │   │   ├── canvas-generator.ts       # Canvas JSON generation
@@ -130,8 +136,8 @@ charted-roots/
 │   │   ├── sources-base-template.ts
 │   │   └── universes-base-template.ts
 │   ├── dynamic-content/       # Live content rendering
-│   │   ├── processors/           # Code block processors (7 blocks)
-│   │   ├── renderers/            # Content renderers (7 renderers)
+│   │   ├── processors/           # Code block processors (9 blocks)
+│   │   ├── renderers/            # Content renderers (9 renderers)
 │   │   └── services/             # Dynamic content service
 │   ├── excalidraw/            # Excalidraw export
 │   │   └── excalidraw-exporter.ts # Export to Excalidraw format
@@ -150,11 +156,17 @@ charted-roots/
 │   │   │   └── visual-tree-svg-renderer.ts  # SVG rendering
 │   │   ├── types/                # Visual tree type definitions
 │   │   └── ui/                   # Trees tab and wizard modal
+│   ├── profile-view/          # Entity Profile View
+│   │   ├── profile-view.ts       # Main ProfileView ItemView
+│   │   └── sections/             # Composable section renderers
 │   ├── types/                 # Shared type definitions
 │   │   ├── frontmatter.ts        # Person frontmatter interface
 │   │   └── obsidian-ext.d.ts     # Obsidian API extensions
 │   ├── utils/                 # Utility functions
-│   │   └── place-name-normalizer.ts # Place name standardization
+│   │   ├── format-utils.ts       # capitalize, pluralize, splitAndTrim, formatPronouns
+│   │   ├── note-type-detection.ts # Entity type detection from frontmatter
+│   │   ├── place-name-normalizer.ts # Place name standardization
+│   │   └── ...
 │   └── ui/                    # User interface components
 │       ├── control-center.ts     # Control Center modal
 │       ├── tree-preview.ts       # Interactive SVG preview
@@ -455,6 +467,7 @@ charted-roots/
 | `members-processor.ts` | ✅ Complete | `charted-roots-members` code block |
 | `sources-processor.ts` | ✅ Complete | `charted-roots-sources` code block |
 | `extractions-processor.ts` | ✅ Complete | `charted-roots-extractions` code block |
+| `negative-findings-processor.ts` | ✅ Complete | `charted-roots-negative-findings` code block |
 | **Renderers** | | |
 | `timeline-renderer.ts` | ✅ Complete | Timeline content renderer |
 | `relationships-renderer.ts` | ✅ Complete | Relationships content renderer |
@@ -464,6 +477,7 @@ charted-roots/
 | `members-renderer.ts` | ✅ Complete | Organization members renderer |
 | `sources-renderer.ts` | ✅ Complete | Sources table renderer |
 | `extractions-renderer.ts` | ✅ Complete | Source extractions renderer |
+| `negative-findings-renderer.ts` | ✅ Complete | Negative findings table renderer |
 
 ### UI Components (src/ui/)
 
@@ -508,6 +522,7 @@ charted-roots/
 | `media-lightbox-modal.ts` | ✅ Complete | Full-screen media viewer |
 | `privacy-notice-modal.ts` | ✅ Complete | Privacy notice for exports |
 | `add-research-question-modal.ts` | ✅ Complete | Add research questions to notes |
+| `command-menu-modal.ts` | ✅ Complete | Searchable categorized command launcher |
 | **Dockable Views** | | |
 | `views/family-chart-view.ts` | ✅ Complete | Interactive family chart (family-chart library) |
 | `views/map-view.ts` | ✅ Complete | Leaflet map view with markers |
@@ -524,7 +539,7 @@ charted-roots/
 
 ---
 
-## Commands (main.ts)
+## Commands (src/plugin/commands.ts)
 
 | Command | Status | Purpose |
 |---------|--------|---------|
@@ -653,7 +668,7 @@ charted-roots/
 
 ### Dockable Sidebar Views
 
-13 dockable ItemViews open as persistent sidebar panels or main panes:
+15 registered ItemViews open as persistent sidebar panels or main panes:
 
 | View | View Type | Content |
 |------|-----------|---------|
@@ -670,3 +685,4 @@ charted-roots/
 | MapView | `charted-roots-map` | Leaflet map with markers and popups |
 | StatisticsView | `charted-roots-statistics` | Statistics dashboard with charts and breakdowns |
 | MigrationNoticeView | `charted-roots-migration-notice` | One-time migration notice for plugin rename |
+| ProfileView | `charted-roots-entity-profile` | Auto-syncing entity detail view |

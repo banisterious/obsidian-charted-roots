@@ -23,6 +23,7 @@
   - [5.4. Use .setHeading() for Headings](#use-setheading-for-headings)
 - [6. Linting Commands](#6-linting-commands)
 - [7. Common Issues and Solutions](#7-common-issues-and-solutions)
+- [8. Shared Utilities and Factories](#8-shared-utilities-and-factories)
 
 ---
 
@@ -933,32 +934,41 @@ async function fetchData(): Promise<string | null> {
 **Reference:** [Obsidian Plugin Guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines)
 
 ### Settings Tab
+
+The Charted Roots settings tab decomposes `display()` into multiple private render methods for maintainability:
+
 ```typescript
-// ✅ CORRECT - Proper settings tab structure
-export class MySettingTab extends PluginSettingTab {
-  plugin: MyPlugin;
-
-  constructor(app: App, plugin: MyPlugin) {
-    super(app, plugin);
-    this.plugin = plugin;
-  }
-
+// ✅ CORRECT - Decomposed settings tab structure
+export class CanvasRootsSettingTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
 
-    // Use Title Case for headings
-    containerEl.createEl('h2', { text: 'Plugin Settings' });
-    containerEl.createEl('h3', { text: 'Layout Settings' });
+    // Decomposed into section methods — no monolithic display()
+    this.renderFoldersSection(containerEl);
+    this.renderDataSection(containerEl);
+    this.renderCanvasSection(containerEl);
+    this.renderDatesSection(containerEl);
+    this.renderSexSection(containerEl);
+    this.renderPlacesSection(containerEl);
+    this.renderAliasesSection(containerEl);
+    this.renderAdvancedSection(containerEl);
+  }
 
-    // Use camelCase properties, Title Case for .setName()
+  private renderFoldersSection(containerEl: HTMLElement): void {
+    // Use .setHeading() for section headers, sentence case
     new Setting(containerEl)
-      .setName('Default Node Width')
-      .setDesc('Width of person nodes in pixels')
+      .setName('Folders')
+      .setHeading();
+
+    // Sentence case for all UI text
+    new Setting(containerEl)
+      .setName('People folder')
+      .setDesc('Location for person notes')
       .addText(text => text
-        .setValue(String(this.plugin.settings.defaultNodeWidth))
+        .setValue(this.plugin.settings.peopleFolder)
         .onChange(async (value) => {
-          this.plugin.settings.defaultNodeWidth = parseInt(value);
+          this.plugin.settings.peopleFolder = value;
           await this.plugin.saveSettings();
         }));
   }
@@ -1276,6 +1286,64 @@ padding: 0 24px 24px 24px;
 /* ✅ Fix: Remove redundant value */
 padding: 0 24px 24px;
 ```
+
+---
+
+## 8. Shared Utilities and Factories
+
+Use these shared utilities instead of writing inline equivalents. They were extracted from ~200 duplicate patterns across the codebase.
+
+### Formatting Utilities (src/utils/format-utils.ts)
+
+```typescript
+import { capitalize, pluralize, splitAndTrim, formatPronouns } from '../utils/format-utils';
+
+// ✅ CORRECT — use shared utilities
+const label = capitalize(typeName);                    // "parent" → "Parent"
+const summary = `${count} ${pluralize(count, 'person')}`;  // "3 persons"
+const tags = splitAndTrim(tagString);                  // "a, b, , c" → ["a", "b", "c"]
+
+// ❌ WRONG — inline duplication
+const label = typeName.charAt(0).toUpperCase() + typeName.slice(1);
+const summary = `${count} person${count === 1 ? '' : 's'}`;
+const tags = tagString.split(',').map(s => s.trim()).filter(Boolean);
+```
+
+### Report Utilities (src/reports/services/report-utils.ts)
+
+```typescript
+import { nodeToReportPerson, normalizeSex } from './report-utils';
+
+// Convert a PersonNode for report output
+const person = nodeToReportPerson(node);
+
+// Normalize sex values to canonical form
+const sex = normalizeSex(raw); // "M" → "male", "F" → "female", etc.
+```
+
+### Dynamic Content Utilities (src/dynamic-content/services/dynamic-content-service.ts)
+
+```typescript
+import { DynamicContentService } from '../services/dynamic-content-service';
+
+// Standard error/loading states for code block processors
+DynamicContentService.renderBlockError(el, 'Could not find person note');
+DynamicContentService.renderBlockLoading(el, 'Loading timeline...');
+```
+
+### Graph Factory (src/core/family-graph.ts)
+
+```typescript
+// ✅ CORRECT — use the plugin's factory method
+const graphService = this.plugin.createFamilyGraphService();
+
+// ❌ WRONG — constructing and configuring manually
+const graphService = new FamilyGraphService(this.app);
+graphService.setFolderFilter(/* ... */);
+// ... duplicated configuration
+```
+
+The factory method applies folder filters, template filters, and current settings automatically. Used by 12+ report generators and UI components.
 
 ---
 

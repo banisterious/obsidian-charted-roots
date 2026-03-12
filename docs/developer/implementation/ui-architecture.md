@@ -35,55 +35,47 @@ This document covers the user interface implementation including context menus, 
 
 The plugin adds context menu items when right-clicking on files. The implementation uses nested submenus on desktop and flat menus on mobile for better UX.
 
-**Basic Pattern in main.ts:**
+**Implementation:** Context menus are implemented in `src/plugin/context-menus.ts` and registered from main.ts via:
 
 ```typescript
-this.registerEvent(
-  this.app.workspace.on('file-menu', (menu, file) => {
-    // Desktop: use nested submenus; Mobile: use flat menu with prefixes
-    const useSubmenu = Platform.isDesktop && !Platform.isMobile;
+// main.ts
+import { registerContextMenus } from './src/plugin/context-menus';
 
-    if (file instanceof TFile && file.extension === 'md') {
-      const cache = this.app.metadataCache.getFileCache(file);
-      const hasCrId = !!cache?.frontmatter?.cr_id;
+// In onload():
+this.registerContextMenus();
 
-      if (hasCrId) {
-        menu.addSeparator();
+// Which delegates to:
+private registerContextMenus(): void {
+  registerContextMenus(this);
+}
+```
 
-        if (useSubmenu) {
-          menu.addItem((item) => {
-            const submenu: Menu = item
-              .setTitle('Charted Roots')
-              .setIcon('git-fork')
-              .setSubmenu();
+**Basic Pattern in src/plugin/context-menus.ts:**
 
-            // Add submenu items...
-            submenu.addItem((subItem) => {
-              subItem
-                .setTitle('Generate Canvas tree')
-                .setIcon('layout')
-                .onClick(() => {
-                  const modal = new ControlCenterModal(this.app, this);
-                  modal.openWithPerson(file);
-                });
-            });
-          });
-        } else {
-          // Mobile: flat menu with prefix
-          menu.addItem((item) => {
-            item
-              .setTitle('Charted Roots: Generate family tree')
-              .setIcon('git-fork')
-              .onClick(() => {
-                const modal = new ControlCenterModal(this.app, this);
-                modal.openWithPerson(file);
-              });
-          });
+```typescript
+export function registerContextMenus(plugin: CanvasRootsPlugin): void {
+  plugin.registerEvent(
+    plugin.app.workspace.on('file-menu', (menu, file) => {
+      const useSubmenu = Platform.isDesktop && !Platform.isMobile;
+
+      if (file instanceof TFile && file.extension === 'md') {
+        const cache = plugin.app.metadataCache.getFileCache(file);
+        const hasCrId = !!cache?.frontmatter?.cr_id;
+
+        if (hasCrId) {
+          menu.addSeparator();
+          if (useSubmenu) {
+            // Desktop: nested submenus under "Charted Roots"
+            // ...
+          } else {
+            // Mobile: flat menu with "Charted Roots:" prefix
+            // ...
+          }
         }
       }
-    }
-  })
-);
+    })
+  );
+}
 ```
 
 **ControlCenterModal.openWithPerson() in control-center.ts:**
@@ -430,7 +422,7 @@ if (Platform.isMobile) {
 
 ## Dockable Views
 
-Fourteen registered ItemViews provide persistent sidebar panels and dedicated views. Nine entity tabs have corresponding dockable views that share extracted tab components with the modal. The Entity Profile View provides auto-syncing single-entity detail (see [Profile View](profile-view.md)). Four additional views serve specialized purposes (family chart, map, statistics, migration notice).
+Fifteen registered ItemViews provide persistent sidebar panels and dedicated views. Nine entity tabs have corresponding dockable views that share extracted tab components with the modal. The Entity Profile View provides auto-syncing single-entity detail (see [Profile View](profile-view.md)). Five additional views serve specialized purposes (family chart, map, statistics, migration notice). View activation methods are extracted to `src/plugin/activation.ts`.
 
 **All registered views:**
 
@@ -483,28 +475,34 @@ Each dockable view follows a 3-commit pattern:
 - **Auto-refresh**: Vault change listeners (modify/create/delete) with 2s debounce
 - **CSS prefix**: `cr-XX-` pattern (e.g., `cr-pv-` for People View, `cr-dqv-` for Data Quality View)
 
-### Registration (main.ts)
+### Registration (main.ts + src/plugin/activation.ts)
+
+View registration happens in `main.ts registerViews()`. Activation methods are extracted to `src/plugin/activation.ts`:
 
 ```typescript
+// main.ts — registerViews()
 this.registerView(VIEW_TYPE_PEOPLE, (leaf) => new PeopleView(leaf, this));
-this.addCommand({
-    id: 'open-people-view',
-    name: 'Open people',
-    callback: () => this.activatePeopleView()
-});
 
+// main.ts — delegates to extracted activation function
 async activatePeopleView(): Promise<void> {
-    const existing = this.app.workspace.getLeavesOfType(VIEW_TYPE_PEOPLE);
+    return _activatePeopleView(this);
+}
+
+// src/plugin/activation.ts
+export async function activatePeopleView(plugin: CanvasRootsPlugin): Promise<void> {
+    const existing = plugin.app.workspace.getLeavesOfType(VIEW_TYPE_PEOPLE);
     if (existing.length) {
-        this.app.workspace.revealLeaf(existing[0]);
+        plugin.app.workspace.revealLeaf(existing[0]);
         return;
     }
-    const leaf = this.app.workspace.getRightLeaf(false);
+    const leaf = plugin.app.workspace.getRightLeaf(false);
     if (leaf) {
         await leaf.setViewState({ type: VIEW_TYPE_PEOPLE, active: true });
     }
 }
 ```
+
+Commands that open views are registered in `src/plugin/commands.ts`.
 
 ---
 
