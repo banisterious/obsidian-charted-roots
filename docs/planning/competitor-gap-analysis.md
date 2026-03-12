@@ -42,53 +42,72 @@ Combine multiple reports (descendant register, family group sheets, timeline, so
 
 ## Feature request issues
 
-These extend an existing capability with well-defined scope.
+These extend an existing capability with well-defined scope. Ranked by overall value (research utility, engagement, effort, infrastructure reuse).
 
-### Person-focused map journey (#295)
+| Rank | Issue | Feature | Research | Engagement | Effort |
+|------|-------|---------|----------|------------|--------|
+| 1 | #297 | Brick wall report | High | Low | Small |
+| 2 | #298 | Unconnected people finder | High | Low | Small |
+| 3 | #300 | Kinship report | Medium | Medium | Small |
+| 4 | #301 | Record superlatives | Low | High | Small |
+| 5 | #296 | Historical context on timelines | Medium | High | Medium |
+| 6 | #295 | Person-focused map journey | Medium | High | Medium |
+| 7 | #299 | Calendar view | Low | High | Medium |
 
-Enhance existing journey paths with person selection, animated step-through playback, and richer waypoint context. The core journey path infrastructure (dashed polylines connecting life events chronologically) already exists — this adds the ability to isolate and explore a single person's or family's geographic story. Present in: MacFamilyTree ("Virtual Globe"), Gramps (person events map with connecting lines).
+---
 
-- **Extends:** Map view journey paths, map data service
-- **Scope:** Small-medium
-
-### Historical context on timelines (#296)
-
-Overlay historical events (wars, pandemics, migrations, local events) alongside a person's life events for context. Present in: Ancestry ("Historical Insights"), Legacy (chronology view).
-
-- **Extends:** Timeline dynamic block
-- **Scope:** Small-medium
-
-### End-of-line / brick wall report (#297)
+### 1. End-of-line / brick wall report (#297)
 
 Identify the furthest-back ancestor on each branch with no parents defined. Useful for prioritizing research. Present in: Gramps ("End of Line Report").
 
 - **Extends:** Report generators, family graph traversal
 - **Scope:** Small
+- **Value:** Highest research ROI — directly actionable output that guides where to focus next
 
-### Unconnected people finder (#298)
+### 2. Unconnected people finder (#298)
 
 Identify person notes not linked to the main family network (no parent, child, or spouse relationships connecting them to the root). Present in: Gramps ("Find Unconnected People," "Not Related Tool").
 
 - **Extends:** Data quality system, family graph analysis
 - **Scope:** Small
+- **Value:** Catches data quality issues, especially post-import. Existing `findAllFamilyComponents()` provides partial foundation.
 
-### Calendar view (#299)
-
-Monthly calendar showing birthdays, anniversaries, and death anniversaries for people in the vault. Present in: Gramps ("Calendar Report"), MacFamilyTree.
-
-- **Extends:** Event service, date parsing
-- **Scope:** Small-medium
-
-### Kinship report (#300)
+### 3. Kinship report (#300)
 
 List all people related to a selected person with their relationship description and degree (e.g., "2nd cousin once removed"). Present in: Gramps ("Kinship Report"), RootsMagic.
 
 - **Extends:** Relationship calculator
 - **Scope:** Small
+- **Value:** Natural extension of the existing relationship calculator — iterates over all reachable people rather than computing one pair at a time.
 
-### Record superlatives (#301)
+### 4. Record superlatives (#301)
 
 "Oldest person," "largest family," "most children," "longest marriage," etc. Present in: Gramps ("Records Report").
 
 - **Extends:** Statistics dashboard
 - **Scope:** Small
+- **Value:** Quick win. Engaging for family sharing, and doubles as a data quality check (e.g., a 150-year lifespan likely indicates a date error).
+
+### 5. Historical context on timelines (#296)
+
+Overlay historical events (wars, pandemics, migrations, local events) alongside a person's life events for context. Present in: Ancestry ("Historical Insights"), Legacy (chronology view).
+
+- **Extends:** Timeline dynamic block
+- **Scope:** Small-medium
+- **Value:** High engagement but requires a data source strategy (curated event sets or user-defined context notes).
+
+### 6. Person-focused map journey (#295)
+
+Enhance existing journey paths with person selection, animated step-through playback, and richer waypoint context. The core journey path infrastructure (dashed polylines connecting life events chronologically) already exists — this adds the ability to isolate and explore a single person's or family's geographic story. Present in: MacFamilyTree ("Virtual Globe"), Gramps (person events map with connecting lines).
+
+- **Extends:** Map view journey paths, map data service
+- **Scope:** Small-medium
+- **Value:** Visually compelling but the map system is already complex. Most of the infrastructure exists.
+
+### 7. Calendar view (#299)
+
+Monthly calendar showing birthdays, anniversaries, and death anniversaries for people in the vault. Present in: Gramps ("Calendar Report"), MacFamilyTree.
+
+- **Extends:** Event service, date parsing
+- **Scope:** Small-medium
+- **Value:** Nice-to-have for family engagement. Lowest research utility.
