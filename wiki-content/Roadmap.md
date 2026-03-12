@@ -11,6 +11,7 @@ This document outlines planned features for Charted Roots. For completed feature
   - [GPS Research Workflow Integration](#gps-research-workflow-integration) 📋 Medium
   - [Entity Profile Views](#entity-profile-views) 📋 Medium ✅ Phase 1-3 complete
   - [Unified Place Lookup](#unified-place-lookup) 💡 Low ✅ Phase 1-2 complete
+  - [Book & Narrative Compilation](#book--narrative-compilation) 📋 Medium
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
 - [Future Considerations](#future-considerations)
@@ -238,6 +239,56 @@ See [Entity Profile View](Entity-Profile-View) for usage documentation.
 - GeoNames username configuration in Settings → Places
 
 See [Unified Place Lookup Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/unified-place-lookup.md) for implementation details.
+
+---
+
+### Book & Narrative Compilation
+
+**Priority:** 📋 Medium — Publishable output from existing reports and notes
+
+**Status:** Planned
+
+**GitHub Issue:** [#294](https://github.com/banisterious/obsidian-charted-roots/issues/294)
+
+**Summary:** A book builder that combines multiple generated reports, visual trees, and user-written vault notes into a single sequenced document with cover page, table of contents, and optional index. Outputs as PDF or ODT. Modeled after RootsMagic "Publisher" and Gramps "Book Report," adapted for Obsidian's local-first workflow.
+
+**The Problem:** Users can generate individual reports and trees, but there's no way to combine them into a cohesive document for sharing with family or compiling research findings. Producing a polished family history book or a structured research dossier currently requires manual assembly outside the plugin.
+
+**Chapter Types:**
+
+| Type | Description |
+|------|-------------|
+| Generated report | Any of the 17 existing report types, configured inline |
+| Visual tree | Pedigree, descendant, hourglass, or fan chart embedded as image |
+| Vault note | User-written markdown rendered into the document |
+| Section divider | Title page for a new part of the book |
+
+**Presets:**
+
+| Template | Audience | Typical contents |
+|----------|----------|-----------------|
+| Family history book | Family sharing | Cover, pedigree chart, individual summaries, family group sheets, descendant register, timeline, bibliography, index |
+| Research compilation | Researcher | Cover, gaps report, source summaries, individual summaries, ahnentafel, bibliography |
+| Blank | Any | Empty canvas, user builds from scratch |
+
+**Phased Approach:**
+
+| Phase | Focus | Status |
+|-------|-------|--------|
+| Phase 1 | Core book engine — schema, generation service, PDF/ODT rendering, vault note conversion | Planned |
+| Phase 2 | Book builder UI — wizard modal, drag-and-drop chapter reordering, preset templates, `.book.json` save/load | Planned |
+| Phase 3 | Back matter — consolidated bibliography, name index, section dividers, chapter numbering | Planned |
+| Phase 4 | Template intelligence — auto-derive chapters from family graph, regenerate command, change detection | Planned |
+
+**Technical Approach:**
+- Book definitions stored as `.book.json` files in the vault, enabling re-generation as data changes
+- PDF rendering via existing pdfmake infrastructure with multi-section document assembly
+- ODT rendering via existing JSZip-based generator with sequential content sections
+- Visual trees embedded via existing SVG → PNG pipeline
+- Table of contents auto-generated from chapter titles with page references
+
+**Documentation:**
+- [Book & Narrative Compilation Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/book-narrative-compilation.md) — Full design and implementation plan
 
 ---
 
