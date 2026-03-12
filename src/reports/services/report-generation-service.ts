@@ -26,7 +26,8 @@ import type {
 	CollectionOverviewOptions,
 	ResearchReportExportOptions,
 	BrickWallReportOptions,
-	UnconnectedPeopleOptions
+	UnconnectedPeopleOptions,
+	KinshipReportOptions
 } from '../types/report-types';
 import { FamilyGroupSheetGenerator } from './family-group-sheet-generator';
 import { IndividualSummaryGenerator } from './individual-summary-generator';
@@ -45,6 +46,7 @@ import { CollectionOverviewGenerator } from './collection-overview-generator';
 import { ResearchReportExportGenerator } from './research-report-export-generator';
 import { BrickWallReportGenerator } from './brick-wall-report-generator';
 import { UnconnectedPeopleGenerator } from './unconnected-people-generator';
+import { KinshipReportGenerator } from './kinship-report-generator';
 import { getLogger } from '../../core/logging';
 
 const logger = getLogger('ReportGenerationService');
@@ -74,6 +76,7 @@ export class ReportGenerationService {
 	private researchReportExportGenerator: ResearchReportExportGenerator;
 	private brickWallReportGenerator: BrickWallReportGenerator;
 	private unconnectedPeopleGenerator: UnconnectedPeopleGenerator;
+	private kinshipReportGenerator: KinshipReportGenerator;
 
 	constructor(app: App, settings: CanvasRootsSettings) {
 		this.app = app;
@@ -97,6 +100,7 @@ export class ReportGenerationService {
 		this.researchReportExportGenerator = new ResearchReportExportGenerator(app, settings);
 		this.brickWallReportGenerator = new BrickWallReportGenerator(app, settings);
 		this.unconnectedPeopleGenerator = new UnconnectedPeopleGenerator(app, settings);
+		this.kinshipReportGenerator = new KinshipReportGenerator(app, settings);
 	}
 
 	/**
@@ -104,7 +108,7 @@ export class ReportGenerationService {
 	 */
 	async generateReport(
 		type: ReportType,
-		options: FamilyGroupSheetOptions | IndividualSummaryOptions | AhnentafelOptions | GapsReportOptions | RegisterReportOptions | PedigreeChartOptions | DescendantChartOptions | SourceSummaryOptions | SourcesByRoleOptions | TimelineReportOptions | PlaceSummaryOptions | MediaInventoryOptions | UniverseOverviewOptions | CollectionOverviewOptions | ResearchReportExportOptions | BrickWallReportOptions | UnconnectedPeopleOptions
+		options: FamilyGroupSheetOptions | IndividualSummaryOptions | AhnentafelOptions | GapsReportOptions | RegisterReportOptions | PedigreeChartOptions | DescendantChartOptions | SourceSummaryOptions | SourcesByRoleOptions | TimelineReportOptions | PlaceSummaryOptions | MediaInventoryOptions | UniverseOverviewOptions | CollectionOverviewOptions | ResearchReportExportOptions | BrickWallReportOptions | UnconnectedPeopleOptions | KinshipReportOptions
 	): Promise<ReportResult> {
 		logger.info('generate', `Generating ${type} report`);
 
@@ -161,6 +165,9 @@ export class ReportGenerationService {
 				break;
 			case 'unconnected-people':
 				result = await this.unconnectedPeopleGenerator.generate(options as UnconnectedPeopleOptions);
+				break;
+			case 'kinship-report':
+				result = await this.kinshipReportGenerator.generate(options as KinshipReportOptions);
 				break;
 			default:
 				return {

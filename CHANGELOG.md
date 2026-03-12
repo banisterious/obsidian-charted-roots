@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Unconnected people finder** ([#298](https://github.com/banisterious/obsidian-charted-roots/issues/298)): New report that identifies people not linked to a selected person's family network. Uses connected component analysis to find disconnected clusters and completely isolated records. Shows network coverage percentage, groups unconnected people by cluster, and lists isolated people separately. Available as markdown, PDF, or ODT.
 
+- **Kinship report** ([#300](https://github.com/banisterious/obsidian-charted-roots/issues/300)): New report listing all relatives of a person with proper genealogical relationship terms and degree. Uses the existing relationship calculator to compute terms for every reachable person (cousins with removals, in-laws, great-grandparents, etc.). Sortable by degree, name, or relationship type. Includes summary with blood vs. marriage breakdown and category counts.
+
 ### Changed
 
 - **Dynamic code blocks use `charted-roots-*` prefix**: New person notes now use `charted-roots-timeline`, `charted-roots-relationships`, and `charted-roots-media` block names instead of the legacy `canvas-roots-*` prefix. Existing notes with the old prefix continue to work via backward-compatible aliases.

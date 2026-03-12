@@ -31,7 +31,8 @@ export type ReportType =
 	| 'research-report-export'
 	// Research analysis reports
 	| 'brick-wall-report'
-	| 'unconnected-people';
+	| 'unconnected-people'
+	| 'kinship-report';
 
 /**
  * Report categories for UI organization
@@ -411,6 +412,23 @@ export interface BrickWallReportOptions extends ReportOptions {
 export interface UnconnectedPeopleOptions extends ReportOptions {
 	/** CR ID of the root person (defines the "main" network) */
 	rootPersonCrId: string;
+}
+
+/**
+ * Sort order for kinship report
+ */
+export type KinshipSortOrder = 'degree' | 'name' | 'relationship';
+
+/**
+ * Options for Kinship Report (#300)
+ */
+export interface KinshipReportOptions extends ReportOptions {
+	/** CR ID of the root person */
+	rootPersonCrId: string;
+	/** Maximum degree of relationship to include (default 20) */
+	maxDegree: number;
+	/** Sort order */
+	sortBy: KinshipSortOrder;
 }
 
 /**
@@ -929,6 +947,44 @@ export interface UnconnectedPeopleResult extends ReportResult {
 }
 
 /**
+ * A kinship entry — a person and their relationship to the root
+ */
+export interface KinshipEntry {
+	/** Person data */
+	person: ReportPerson;
+	/** Relationship description (e.g., "2nd Cousin 1 time removed") */
+	relationshipDescription: string;
+	/** Total degree (generationsUp + generationsDown) */
+	degree: number;
+	/** Generations up to common ancestor */
+	generationsUp: number;
+	/** Generations down from common ancestor */
+	generationsDown: number;
+	/** Whether this is a blood relation (vs. by marriage) */
+	isBloodRelation: boolean;
+	/** Whether this person is on a direct line (ancestor or descendant) */
+	isDirectLine: boolean;
+}
+
+/**
+ * Kinship Report result (#300)
+ */
+export interface KinshipReportResult extends ReportResult {
+	/** Root person */
+	rootPerson: ReportPerson;
+	/** All kinship entries */
+	entries: KinshipEntry[];
+	/** Summary statistics */
+	summary: {
+		totalRelatives: number;
+		bloodRelatives: number;
+		inLaws: number;
+		maxDegreeFound: number;
+		byCategory: Record<string, number>;
+	};
+}
+
+/**
  * Report metadata for display
  */
 export interface ReportMetadata {
@@ -1061,6 +1117,15 @@ export const REPORT_METADATA: Record<ReportType, ReportMetadata> = {
 		description: 'People not linked to the main family network — finds orphaned records',
 		icon: 'unlink',
 		category: 'research',
+		requiresPerson: true,
+		entityType: 'person'
+	},
+	'kinship-report': {
+		type: 'kinship-report',
+		name: 'Kinship report',
+		description: 'All relatives of a person with relationship terms and degree',
+		icon: 'git-merge',
+		category: 'genealogical',
 		requiresPerson: true,
 		entityType: 'person'
 	},

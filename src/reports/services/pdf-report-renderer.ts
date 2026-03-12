@@ -93,6 +93,7 @@ import type {
 	ResearchReportExportResult,
 	BrickWallReportResult,
 	UnconnectedPeopleResult,
+	KinshipReportResult,
 	ReportPerson
 } from '../types/report-types';
 import type {
@@ -2523,6 +2524,85 @@ export class PdfReportRenderer {
 		};
 
 		const filename = `Unconnected-People-${result.rootPerson.name.replace(/\s+/g, '-')}.pdf`;
+		this.pdfMake.createPdf(docDefinition).download(filename);
+
+		new Notice('PDF downloaded');
+	}
+
+	/**
+	 * Render Kinship Report to PDF
+	 */
+	async renderKinshipReport(
+		result: KinshipReportResult,
+		options: PdfOptions = DEFAULT_PDF_OPTIONS
+	): Promise<void> {
+		await this.ensurePdfMake();
+		this.currentOptions = options;
+
+		const defaultFont = this.getDefaultFont(options.fontStyle);
+		const defaultTitle = 'Kinship Report';
+		const defaultSubtitle = `Relatives of ${result.rootPerson.name}`;
+
+		const scope = options.customTitleScope || 'both';
+		const coverTitle = (scope === 'cover' || scope === 'both') ? (options.customTitle || defaultTitle) : defaultTitle;
+		const headerTitle = (scope === 'headers' || scope === 'both') ? (options.customTitle || defaultTitle) : defaultTitle;
+		const subtitle = options.customSubtitle || defaultSubtitle;
+
+		const content: Content[] = [];
+
+		// Cover page
+		if (options.includeCoverPage) {
+			content.push(...this.buildCoverPage(coverTitle, subtitle, options.logoDataUrl, options.coverNotes, options.dateFormat));
+		}
+
+		// Title
+		content.push({ text: coverTitle, style: 'title' });
+		content.push({ text: subtitle, style: 'subtitle' });
+
+		// Summary
+		content.push(this.buildSectionHeader('Summary'));
+		content.push(this.buildKeyValueTable([
+			{ label: 'Total relatives', value: result.summary.totalRelatives.toString() },
+			{ label: 'Blood relatives', value: result.summary.bloodRelatives.toString() },
+			{ label: 'By marriage', value: result.summary.inLaws.toString() },
+			{ label: 'Furthest degree', value: result.summary.maxDegreeFound.toString() }
+		]));
+
+		// Relatives table
+		if (result.entries.length > 0) {
+			content.push(this.buildSectionHeader('Relatives'));
+			content.push(this.buildDataTable(
+				['Name', 'Relationship', 'Degree', 'Blood'],
+				result.entries.map(e => [
+					e.person.name,
+					e.relationshipDescription,
+					e.degree.toString(),
+					e.isBloodRelation ? 'Yes' : 'No'
+				]),
+				['*', '*', 40, 40]
+			));
+		} else {
+			content.push({
+				text: 'No relatives found.',
+				margin: [0, 8, 0, 8],
+				italics: true
+			});
+		}
+
+		const docDefinition: TDocumentDefinitions = {
+			pageSize: options.pageSize,
+			pageMargins: [40, 60, 40, 60],
+			defaultStyle: {
+				font: defaultFont,
+				fontSize: 10
+			},
+			header: this.createHeader(headerTitle),
+			footer: this.createFooter(options.dateFormat),
+			content,
+			styles: this.getStyles(options.fontStyle)
+		};
+
+		const filename = `Kinship-Report-${result.rootPerson.name.replace(/\s+/g, '-')}.pdf`;
 		this.pdfMake.createPdf(docDefinition).download(filename);
 
 		new Notice('PDF downloaded');

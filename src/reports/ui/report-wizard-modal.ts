@@ -57,6 +57,8 @@ import {
 	BrickWallReportResult,
 	BrickWallSortOrder,
 	UnconnectedPeopleResult,
+	KinshipReportResult,
+	KinshipSortOrder,
 	TimelineExportFormat,
 	TimelineLayoutStyle,
 	TimelineColorScheme
@@ -82,7 +84,8 @@ type SpecificReportResult =
 	| CollectionOverviewResult
 	| ResearchReportExportResult
 	| BrickWallReportResult
-	| UnconnectedPeopleResult;
+	| UnconnectedPeopleResult
+	| KinshipReportResult;
 
 /**
  * Output format types
@@ -109,7 +112,7 @@ const WIZARD_CATEGORIES: CategoryInfo[] = [
 		category: 'genealogical',
 		name: 'Genealogical',
 		icon: 'users',
-		reportCount: 6
+		reportCount: 7
 	},
 	{
 		category: 'research',
@@ -185,6 +188,8 @@ interface WizardFormData {
 	includeChildren: boolean;
 	maxGenerations: number;
 	brickWallSortBy: BrickWallSortOrder;
+	kinshipSortBy: KinshipSortOrder;
+	kinshipMaxDegree: number;
 
 	// Step 3: PDF Options
 	pdfPageSize: 'A4' | 'LETTER';
@@ -318,6 +323,8 @@ export class ReportWizardModal extends Modal {
 			includeChildren: true,
 			maxGenerations: 5,
 			brickWallSortBy: 'generation' as BrickWallSortOrder,
+			kinshipSortBy: 'degree' as KinshipSortOrder,
+			kinshipMaxDegree: 20,
 
 			// PDF options
 			pdfPageSize: 'A4',
@@ -1929,6 +1936,43 @@ export class ReportWizardModal extends Modal {
 				this.formData.brickWallSortBy = sortSelect.value as BrickWallSortOrder;
 			});
 		}
+
+		// Kinship report options
+		if (this.formData.reportType === 'kinship-report') {
+			// Max degree
+			const degreeRow = section.createDiv({ cls: 'cr-report-option-row' });
+			degreeRow.createSpan({ text: 'Max degree:', cls: 'cr-report-option-label' });
+
+			const degreeSelect = degreeRow.createEl('select', { cls: 'cr-report-select' });
+			for (const num of [5, 10, 15, 20, 30]) {
+				const option = degreeSelect.createEl('option', {
+					value: String(num),
+					text: String(num)
+				});
+				if (num === this.formData.kinshipMaxDegree) option.selected = true;
+			}
+			degreeSelect.addEventListener('change', () => {
+				this.formData.kinshipMaxDegree = parseInt(degreeSelect.value);
+			});
+
+			// Sort order
+			const sortRow = section.createDiv({ cls: 'cr-report-option-row' });
+			sortRow.createSpan({ text: 'Sort by:', cls: 'cr-report-option-label' });
+
+			const sortSelect = sortRow.createEl('select', { cls: 'cr-report-select' });
+			const kinshipSortOptions: { value: KinshipSortOrder; label: string }[] = [
+				{ value: 'degree', label: 'Degree (closest first)' },
+				{ value: 'name', label: 'Name (alphabetical)' },
+				{ value: 'relationship', label: 'Relationship type' }
+			];
+			for (const opt of kinshipSortOptions) {
+				const option = sortSelect.createEl('option', { value: opt.value, text: opt.label });
+				if (opt.value === this.formData.kinshipSortBy) option.selected = true;
+			}
+			sortSelect.addEventListener('change', () => {
+				this.formData.kinshipSortBy = sortSelect.value as KinshipSortOrder;
+			});
+		}
 	}
 
 	/**
@@ -2498,6 +2542,12 @@ export class ReportWizardModal extends Modal {
 			options.sortBy = this.formData.brickWallSortBy;
 		}
 
+		// Add kinship-specific options
+		if (this.formData.reportType === 'kinship-report') {
+			options.maxDegree = this.formData.kinshipMaxDegree;
+			options.sortBy = this.formData.kinshipSortBy;
+		}
+
 		// Add timeline-specific options
 		if (this.isTimelineReport()) {
 			this.addTimelineOptions(options);
@@ -2667,6 +2717,9 @@ export class ReportWizardModal extends Modal {
 				break;
 			case 'unconnected-people':
 				await this.pdfRenderer.renderUnconnectedPeople(result as UnconnectedPeopleResult, pdfOptions);
+				break;
+			case 'kinship-report':
+				await this.pdfRenderer.renderKinshipReport(result as KinshipReportResult, pdfOptions);
 				break;
 			default:
 				throw new Error(`PDF rendering not supported for report type: ${this.formData.reportType}`);
