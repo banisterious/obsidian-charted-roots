@@ -92,6 +92,7 @@ import type {
 	CollectionOverviewResult,
 	ResearchReportExportResult,
 	BrickWallReportResult,
+	UnconnectedPeopleResult,
 	ReportPerson
 } from '../types/report-types';
 import type {
@@ -2419,6 +2420,109 @@ export class PdfReportRenderer {
 		};
 
 		const filename = `Brick-Wall-Report-${result.rootPerson.name.replace(/\s+/g, '-')}.pdf`;
+		this.pdfMake.createPdf(docDefinition).download(filename);
+
+		new Notice('PDF downloaded');
+	}
+
+	/**
+	 * Render Unconnected People report to PDF
+	 */
+	async renderUnconnectedPeople(
+		result: UnconnectedPeopleResult,
+		options: PdfOptions = DEFAULT_PDF_OPTIONS
+	): Promise<void> {
+		await this.ensurePdfMake();
+		this.currentOptions = options;
+
+		const defaultFont = this.getDefaultFont(options.fontStyle);
+		const defaultTitle = 'Unconnected People';
+		const defaultSubtitle = `People not linked to ${result.rootPerson.name}`;
+
+		const scope = options.customTitleScope || 'both';
+		const coverTitle = (scope === 'cover' || scope === 'both') ? (options.customTitle || defaultTitle) : defaultTitle;
+		const headerTitle = (scope === 'headers' || scope === 'both') ? (options.customTitle || defaultTitle) : defaultTitle;
+		const subtitle = options.customSubtitle || defaultSubtitle;
+
+		const content: Content[] = [];
+
+		// Cover page
+		if (options.includeCoverPage) {
+			content.push(...this.buildCoverPage(coverTitle, subtitle, options.logoDataUrl, options.coverNotes, options.dateFormat));
+		}
+
+		// Title
+		content.push({ text: coverTitle, style: 'title' });
+		content.push({ text: subtitle, style: 'subtitle' });
+
+		// Summary
+		content.push(this.buildSectionHeader('Summary'));
+		const connectedness = result.totalPeople > 0
+			? Math.round((result.mainComponentSize / result.totalPeople) * 100)
+			: 0;
+		content.push(this.buildKeyValueTable([
+			{ label: 'Total people', value: result.totalPeople.toString() },
+			{ label: 'Connected', value: result.mainComponentSize.toString() },
+			{ label: 'Unconnected', value: result.totalUnconnected.toString() },
+			{ label: 'Isolated (no relationships)', value: result.isolatedCount.toString() },
+			{ label: 'Network coverage', value: `${connectedness}%` }
+		]));
+
+		// Disconnected clusters
+		const clusters = result.disconnectedComponents.filter(c => c.people.length > 1);
+		if (clusters.length > 0) {
+			content.push(this.buildSectionHeader('Disconnected Clusters'));
+			for (const cluster of clusters) {
+				const label = cluster.collectionName
+					? `${cluster.collectionName} (${cluster.people.length})`
+					: `Cluster of ${cluster.people.length} (via ${cluster.representative.name})`;
+				content.push({ text: label, bold: true, margin: [0, 8, 0, 4] });
+				content.push(this.buildDataTable(
+					['Name', 'Birth', 'Death'],
+					cluster.people.map(p => [
+						p.name,
+						p.birthDate || '',
+						p.deathDate || ''
+					])
+				));
+			}
+		}
+
+		// Isolated people
+		const isolated = result.disconnectedComponents.filter(c => c.people.length === 1);
+		if (isolated.length > 0) {
+			content.push(this.buildSectionHeader('Isolated People'));
+			content.push(this.buildDataTable(
+				['Name', 'Birth', 'Death'],
+				isolated.map(c => {
+					const p = c.people[0];
+					return [p.name, p.birthDate || '', p.deathDate || ''];
+				})
+			));
+		}
+
+		if (result.totalUnconnected === 0) {
+			content.push({
+				text: 'All people in the vault are connected to the main family network.',
+				margin: [0, 8, 0, 8],
+				italics: true
+			});
+		}
+
+		const docDefinition: TDocumentDefinitions = {
+			pageSize: options.pageSize,
+			pageMargins: [40, 60, 40, 60],
+			defaultStyle: {
+				font: defaultFont,
+				fontSize: 10
+			},
+			header: this.createHeader(headerTitle),
+			footer: this.createFooter(options.dateFormat),
+			content,
+			styles: this.getStyles(options.fontStyle)
+		};
+
+		const filename = `Unconnected-People-${result.rootPerson.name.replace(/\s+/g, '-')}.pdf`;
 		this.pdfMake.createPdf(docDefinition).download(filename);
 
 		new Notice('PDF downloaded');

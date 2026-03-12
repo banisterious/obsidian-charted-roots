@@ -56,6 +56,7 @@ import {
 	ResearchReportExportResult,
 	BrickWallReportResult,
 	BrickWallSortOrder,
+	UnconnectedPeopleResult,
 	TimelineExportFormat,
 	TimelineLayoutStyle,
 	TimelineColorScheme
@@ -80,7 +81,8 @@ type SpecificReportResult =
 	| UniverseOverviewResult
 	| CollectionOverviewResult
 	| ResearchReportExportResult
-	| BrickWallReportResult;
+	| BrickWallReportResult
+	| UnconnectedPeopleResult;
 
 /**
  * Output format types
@@ -113,7 +115,7 @@ const WIZARD_CATEGORIES: CategoryInfo[] = [
 		category: 'research',
 		name: 'Research',
 		icon: 'search',
-		reportCount: 5
+		reportCount: 6
 	},
 	{
 		category: 'timeline',
@@ -2662,6 +2664,9 @@ export class ReportWizardModal extends Modal {
 				break;
 			case 'brick-wall-report':
 				await this.pdfRenderer.renderBrickWallReport(result as BrickWallReportResult, pdfOptions);
+				break;
+			case 'unconnected-people':
+				await this.pdfRenderer.renderUnconnectedPeople(result as UnconnectedPeopleResult, pdfOptions);
 				break;
 			default:
 				throw new Error(`PDF rendering not supported for report type: ${this.formData.reportType}`);

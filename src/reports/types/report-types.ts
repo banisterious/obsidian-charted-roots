@@ -30,7 +30,8 @@ export type ReportType =
 	// Research document export
 	| 'research-report-export'
 	// Research analysis reports
-	| 'brick-wall-report';
+	| 'brick-wall-report'
+	| 'unconnected-people';
 
 /**
  * Report categories for UI organization
@@ -402,6 +403,14 @@ export interface BrickWallReportOptions extends ReportOptions {
 	includeDetails: boolean;
 	/** Sort order for brick wall entries */
 	sortBy: BrickWallSortOrder;
+}
+
+/**
+ * Options for Unconnected People report (#298)
+ */
+export interface UnconnectedPeopleOptions extends ReportOptions {
+	/** CR ID of the root person (defines the "main" network) */
+	rootPersonCrId: string;
 }
 
 /**
@@ -890,6 +899,36 @@ export interface BrickWallReportResult extends ReportResult {
 }
 
 /**
+ * A disconnected component (group of people connected to each other but not to the main network)
+ */
+export interface DisconnectedComponent {
+	/** Representative person (oldest by birth date) */
+	representative: ReportPerson;
+	/** All people in this component */
+	people: ReportPerson[];
+	/** Collection name if all members share one */
+	collectionName?: string;
+}
+
+/**
+ * Unconnected People report result (#298)
+ */
+export interface UnconnectedPeopleResult extends ReportResult {
+	/** Root person defining the main network */
+	rootPerson: ReportPerson;
+	/** Size of the main connected component */
+	mainComponentSize: number;
+	/** Disconnected components (each is a group of mutually connected people not linked to the main network) */
+	disconnectedComponents: DisconnectedComponent[];
+	/** Total number of unconnected people */
+	totalUnconnected: number;
+	/** Total number of people in the vault */
+	totalPeople: number;
+	/** Completely isolated people (no relationships at all) */
+	isolatedCount: number;
+}
+
+/**
  * Report metadata for display
  */
 export interface ReportMetadata {
@@ -1012,6 +1051,15 @@ export const REPORT_METADATA: Record<ReportType, ReportMetadata> = {
 		name: 'Brick wall report',
 		description: 'End-of-line ancestors with no parents — identifies where to focus research',
 		icon: 'alert-triangle',
+		category: 'research',
+		requiresPerson: true,
+		entityType: 'person'
+	},
+	'unconnected-people': {
+		type: 'unconnected-people',
+		name: 'Unconnected people',
+		description: 'People not linked to the main family network — finds orphaned records',
+		icon: 'unlink',
 		category: 'research',
 		requiresPerson: true,
 		entityType: 'person'
