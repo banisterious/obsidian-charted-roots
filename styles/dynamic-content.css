@@ -896,6 +896,201 @@
   text-decoration: underline;
 }
 
+/* --------------------------------------------------------------------------
+   Research Timeline: Heatmap View
+   -------------------------------------------------------------------------- */
+
+.cr-research-timeline__heatmap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cr-spacing-sm);
+  overflow-x: auto;
+}
+
+.cr-research-timeline__heatmap-grid {
+  display: flex;
+  gap: 3px;
+}
+
+.cr-research-timeline__heatmap-week {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cr-research-timeline__heatmap-cell {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--background-modifier-border);
+}
+
+.cr-research-timeline__heatmap-cell--level-1 {
+  background: color-mix(in srgb, var(--color-green) 25%, var(--background-modifier-border));
+}
+
+.cr-research-timeline__heatmap-cell--level-2 {
+  background: color-mix(in srgb, var(--color-green) 50%, var(--background-modifier-border));
+}
+
+.cr-research-timeline__heatmap-cell--level-3 {
+  background: color-mix(in srgb, var(--color-green) 75%, var(--background-modifier-border));
+}
+
+.cr-research-timeline__heatmap-cell--level-4 {
+  background: var(--color-green);
+}
+
+.cr-research-timeline__heatmap-day-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-right: var(--cr-spacing-xs);
+  float: left;
+}
+
+.cr-research-timeline__heatmap-day-label {
+  height: 12px;
+  font-size: 9px;
+  line-height: 12px;
+  color: var(--text-muted);
+  text-align: right;
+  min-width: 24px;
+}
+
+.cr-research-timeline__heatmap-month-labels {
+  display: grid;
+  grid-auto-columns: 15px;
+  gap: 3px;
+  margin-left: calc(24px + var(--cr-spacing-xs));
+  margin-bottom: var(--cr-spacing-xs);
+  font-size: 9px;
+  color: var(--text-muted);
+}
+
+.cr-research-timeline__heatmap-month-label {
+  white-space: nowrap;
+}
+
+.cr-research-timeline__heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  justify-content: flex-end;
+}
+
+.cr-research-timeline__heatmap-legend-label {
+  font-size: var(--font-smallest);
+  color: var(--text-muted);
+  margin: 0 var(--cr-spacing-xs);
+}
+
+.cr-research-timeline__heatmap-summary {
+  font-size: var(--font-smaller);
+  color: var(--color-orange);
+  display: flex;
+  align-items: center;
+  gap: var(--cr-spacing-xs);
+}
+
+.cr-research-timeline__heatmap-summary-icon {
+  display: inline-flex;
+}
+
+.cr-research-timeline__heatmap-summary-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* --------------------------------------------------------------------------
+   Research Timeline: Timeline View
+   -------------------------------------------------------------------------- */
+
+.cr-research-timeline__timeline-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cr-spacing-xs);
+}
+
+.cr-research-timeline__timeline-row {
+  display: flex;
+  align-items: center;
+  gap: var(--cr-spacing-sm);
+  min-height: 24px;
+}
+
+.cr-research-timeline__timeline-label {
+  flex: 0 0 150px;
+  font-size: var(--font-smaller);
+  color: var(--text-normal);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+}
+
+.cr-research-timeline__timeline-bar {
+  flex: 1;
+  position: relative;
+  height: 20px;
+  background: var(--background-modifier-border);
+  border-radius: var(--radius-s);
+}
+
+.cr-research-timeline__timeline-gap {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: color-mix(in srgb, var(--color-orange) 20%, transparent);
+  border-left: 1px dashed var(--color-orange);
+  border-right: 1px dashed var(--color-orange);
+}
+
+.cr-research-timeline__timeline-marker {
+  position: absolute;
+  top: 2px;
+  width: 6px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--text-accent);
+  transform: translateX(-50%);
+}
+
+.cr-research-timeline__timeline-marker--positive {
+  background: var(--color-green);
+}
+
+.cr-research-timeline__timeline-marker--negative {
+  background: var(--color-red);
+}
+
+.cr-research-timeline__timeline-marker--inconclusive {
+  background: var(--color-yellow);
+}
+
+/* Date axis */
+.cr-research-timeline__timeline-axis {
+  display: flex;
+  align-items: center;
+  gap: var(--cr-spacing-sm);
+  margin-top: var(--cr-spacing-xs);
+  border-top: 1px solid var(--background-modifier-border);
+  padding-top: var(--cr-spacing-xs);
+}
+
+.cr-research-timeline__timeline-axis-bar {
+  display: flex;
+  justify-content: space-between;
+  background: transparent;
+  height: auto;
+}
+
+.cr-research-timeline__timeline-axis-start,
+.cr-research-timeline__timeline-axis-end {
+  font-size: var(--font-smallest);
+  color: var(--text-muted);
+}
+
 /* ==========================================================================
    Theme Compatibility
    ========================================================================== */

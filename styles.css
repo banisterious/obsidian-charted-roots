@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-03-13 19:03:01 UTC
+ * - Generated: 2026-03-13 19:10:15 UTC
  * - Components: 46 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -37025,7 +37025,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: DYNAMIC-CONTENT.CSS
    ========================================================================== */
 
-/* Component Size: 907 lines, 19.42 KB */
+/* Component Size: 1102 lines, 23.8 KB */
 
 /**
  * Dynamic Content Styles
@@ -37923,6 +37923,201 @@ body:has(.cr-media-linker) .suggestion-container {
 
 .cr-research-timeline__group-header a:hover {
   text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   Research Timeline: Heatmap View
+   -------------------------------------------------------------------------- */
+
+.cr-research-timeline__heatmap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cr-spacing-sm);
+  overflow-x: auto;
+}
+
+.cr-research-timeline__heatmap-grid {
+  display: flex;
+  gap: 3px;
+}
+
+.cr-research-timeline__heatmap-week {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cr-research-timeline__heatmap-cell {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  background: var(--background-modifier-border);
+}
+
+.cr-research-timeline__heatmap-cell--level-1 {
+  background: color-mix(in srgb, var(--color-green) 25%, var(--background-modifier-border));
+}
+
+.cr-research-timeline__heatmap-cell--level-2 {
+  background: color-mix(in srgb, var(--color-green) 50%, var(--background-modifier-border));
+}
+
+.cr-research-timeline__heatmap-cell--level-3 {
+  background: color-mix(in srgb, var(--color-green) 75%, var(--background-modifier-border));
+}
+
+.cr-research-timeline__heatmap-cell--level-4 {
+  background: var(--color-green);
+}
+
+.cr-research-timeline__heatmap-day-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-right: var(--cr-spacing-xs);
+  float: left;
+}
+
+.cr-research-timeline__heatmap-day-label {
+  height: 12px;
+  font-size: 9px;
+  line-height: 12px;
+  color: var(--text-muted);
+  text-align: right;
+  min-width: 24px;
+}
+
+.cr-research-timeline__heatmap-month-labels {
+  display: grid;
+  grid-auto-columns: 15px;
+  gap: 3px;
+  margin-left: calc(24px + var(--cr-spacing-xs));
+  margin-bottom: var(--cr-spacing-xs);
+  font-size: 9px;
+  color: var(--text-muted);
+}
+
+.cr-research-timeline__heatmap-month-label {
+  white-space: nowrap;
+}
+
+.cr-research-timeline__heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  justify-content: flex-end;
+}
+
+.cr-research-timeline__heatmap-legend-label {
+  font-size: var(--font-smallest);
+  color: var(--text-muted);
+  margin: 0 var(--cr-spacing-xs);
+}
+
+.cr-research-timeline__heatmap-summary {
+  font-size: var(--font-smaller);
+  color: var(--color-orange);
+  display: flex;
+  align-items: center;
+  gap: var(--cr-spacing-xs);
+}
+
+.cr-research-timeline__heatmap-summary-icon {
+  display: inline-flex;
+}
+
+.cr-research-timeline__heatmap-summary-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* --------------------------------------------------------------------------
+   Research Timeline: Timeline View
+   -------------------------------------------------------------------------- */
+
+.cr-research-timeline__timeline-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cr-spacing-xs);
+}
+
+.cr-research-timeline__timeline-row {
+  display: flex;
+  align-items: center;
+  gap: var(--cr-spacing-sm);
+  min-height: 24px;
+}
+
+.cr-research-timeline__timeline-label {
+  flex: 0 0 150px;
+  font-size: var(--font-smaller);
+  color: var(--text-normal);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+}
+
+.cr-research-timeline__timeline-bar {
+  flex: 1;
+  position: relative;
+  height: 20px;
+  background: var(--background-modifier-border);
+  border-radius: var(--radius-s);
+}
+
+.cr-research-timeline__timeline-gap {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: color-mix(in srgb, var(--color-orange) 20%, transparent);
+  border-left: 1px dashed var(--color-orange);
+  border-right: 1px dashed var(--color-orange);
+}
+
+.cr-research-timeline__timeline-marker {
+  position: absolute;
+  top: 2px;
+  width: 6px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--text-accent);
+  transform: translateX(-50%);
+}
+
+.cr-research-timeline__timeline-marker--positive {
+  background: var(--color-green);
+}
+
+.cr-research-timeline__timeline-marker--negative {
+  background: var(--color-red);
+}
+
+.cr-research-timeline__timeline-marker--inconclusive {
+  background: var(--color-yellow);
+}
+
+/* Date axis */
+.cr-research-timeline__timeline-axis {
+  display: flex;
+  align-items: center;
+  gap: var(--cr-spacing-sm);
+  margin-top: var(--cr-spacing-xs);
+  border-top: 1px solid var(--background-modifier-border);
+  padding-top: var(--cr-spacing-xs);
+}
+
+.cr-research-timeline__timeline-axis-bar {
+  display: flex;
+  justify-content: space-between;
+  background: transparent;
+  height: auto;
+}
+
+.cr-research-timeline__timeline-axis-start,
+.cr-research-timeline__timeline-axis-end {
+  font-size: var(--font-smallest);
+  color: var(--text-muted);
 }
 
 /* ==========================================================================
@@ -38970,11 +39165,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-03-13 19:03:02 UTC
+ * Build completed: 2026-03-13 19:10:15 UTC
  * Components processed: 46
- * Total lines: 38533
- * Total size: 773.58 KB
- * Build duration: 0.93 seconds
+ * Total lines: 38728
+ * Total size: 777.96 KB
+ * Build duration: 0.3 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -39019,7 +39214,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - map-wizard.css: 606 lines, 12.68 KB
  * - preferences.css: 431 lines, 9.44 KB
  * - tree-output.css: 1548 lines, 30.41 KB
- * - dynamic-content.css: 907 lines, 19.42 KB
+ * - dynamic-content.css: 1102 lines, 23.8 KB
  * - profile-view.css: 857 lines, 19.04 KB
  * - migration-notice.css: 135 lines, 2.67 KB
  * - responsive.css: 9 lines, 0.13 KB
