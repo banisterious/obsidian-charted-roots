@@ -1946,16 +1946,19 @@ export class ReportWizardModal extends Modal {
 			const degreeRow = section.createDiv({ cls: 'cr-report-option-row' });
 			degreeRow.createSpan({ text: 'Max degree:', cls: 'cr-report-option-label' });
 
-			const degreeSelect = degreeRow.createEl('select', { cls: 'cr-report-select' });
-			for (const num of [5, 10, 15, 20, 30]) {
-				const option = degreeSelect.createEl('option', {
-					value: String(num),
-					text: String(num)
-				});
-				if (num === this.formData.kinshipMaxDegree) option.selected = true;
-			}
-			degreeSelect.addEventListener('change', () => {
-				this.formData.kinshipMaxDegree = parseInt(degreeSelect.value);
+			const degreeInput = degreeRow.createEl('input', {
+				cls: 'cr-report-input',
+				type: 'number',
+				attr: { min: '1', step: '1' },
+				value: String(this.formData.kinshipMaxDegree)
+			});
+			degreeInput.addEventListener('change', () => {
+				const val = parseInt(degreeInput.value);
+				if (!isNaN(val) && val >= 1) {
+					this.formData.kinshipMaxDegree = val;
+				} else {
+					degreeInput.value = String(this.formData.kinshipMaxDegree);
+				}
 			});
 
 			// Sort order

@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Report generation limit removed** ([#297](https://github.com/banisterious/obsidian-charted-roots/issues/297)): The generations selector in the report wizard is now a free numeric input instead of a fixed dropdown (3–10). Users can enter any value with no upper limit.
 
+- **Kinship max degree limit removed** ([#300](https://github.com/banisterious/obsidian-charted-roots/issues/300)): The max degree selector in the kinship report is now a free numeric input instead of a fixed dropdown (5–30). Users can enter any value with no upper limit.
+
 ---
 
 ## [0.20.24] - 2026-03-12
