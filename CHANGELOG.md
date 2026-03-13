@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Record superlatives** ([#301](https://github.com/banisterious/obsidian-charted-roots/issues/301)): New "Record superlatives" section in the statistics dashboard showing notable individuals: oldest people, youngest deaths, most children, most marriages, longest marriages, earliest births, most recent deaths, and most documented people. Each entry is a clickable link with dates and the record value. Rendered as a card grid with ranked entries.
 
+### Changed
+
+- **Report generation limit removed** ([#297](https://github.com/banisterious/obsidian-charted-roots/issues/297)): The generations selector in the report wizard is now a free numeric input instead of a fixed dropdown (3–10). Users can enter any value with no upper limit.
+
 ---
 
 ## [0.20.24] - 2026-03-12

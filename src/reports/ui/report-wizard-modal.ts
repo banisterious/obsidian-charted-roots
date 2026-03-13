@@ -1903,17 +1903,20 @@ export class ReportWizardModal extends Modal {
 			const genRow = section.createDiv({ cls: 'cr-report-option-row' });
 			genRow.createSpan({ text: 'Generations:', cls: 'cr-report-option-label' });
 
-			const genSelect = genRow.createEl('select', { cls: 'cr-report-select' });
-			for (const num of [3, 4, 5, 6, 7, 8, 10]) {
-				const option = genSelect.createEl('option', {
-					value: String(num),
-					text: String(num)
-				});
-				if (num === this.formData.maxGenerations) option.selected = true;
-			}
+			const genInput = genRow.createEl('input', {
+				cls: 'cr-report-input',
+				type: 'number',
+				attr: { min: '1', step: '1' },
+				value: String(this.formData.maxGenerations)
+			});
 
-			genSelect.addEventListener('change', () => {
-				this.formData.maxGenerations = parseInt(genSelect.value);
+			genInput.addEventListener('change', () => {
+				const val = parseInt(genInput.value);
+				if (!isNaN(val) && val >= 1) {
+					this.formData.maxGenerations = val;
+				} else {
+					genInput.value = String(this.formData.maxGenerations);
+				}
 			});
 		}
 
