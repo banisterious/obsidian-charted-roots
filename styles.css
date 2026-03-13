@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-03-12 22:13:30 UTC
+ * - Generated: 2026-03-13 10:47:43 UTC
  * - Components: 46 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -30530,7 +30530,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: STATISTICS.CSS
    ========================================================================== */
 
-/* Component Size: 1654 lines, 33.24 KB */
+/* Component Size: 1754 lines, 35.24 KB */
 
 /**
  * Statistics Tab & View Styles
@@ -32184,6 +32184,106 @@ body:has(.cr-media-linker) .suggestion-container {
 .cr-sv-research-private-icon {
   flex-shrink: 0;
   color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Record Superlatives
+   ========================================================================== */
+
+.cr-sv-records-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--size-4-3);
+}
+
+.cr-sv-record-card {
+  background-color: var(--background-secondary);
+  border-radius: var(--radius-m);
+  padding: var(--size-4-3);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.cr-sv-record-header {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  margin-bottom: var(--size-4-3);
+  padding-bottom: var(--size-4-2);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-sv-record-icon {
+  flex-shrink: 0;
+  color: var(--text-accent);
+}
+
+.cr-sv-record-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cr-sv-record-title {
+  font-weight: var(--font-semibold);
+  font-size: var(--font-ui-small);
+}
+
+.cr-sv-record-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-2);
+}
+
+.cr-sv-record-row {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
+.cr-sv-record-rank {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-semibold);
+  background-color: var(--background-modifier-border);
+  color: var(--text-muted);
+}
+
+.cr-sv-record-rank-1 {
+  background-color: var(--color-yellow);
+  color: var(--text-on-accent);
+}
+
+.cr-sv-record-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.cr-sv-record-name {
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-ui-small);
+}
+
+.cr-sv-record-dates {
+  font-size: var(--font-ui-smaller);
+}
+
+.cr-sv-record-value {
+  flex-shrink: 0;
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-semibold);
+  color: var(--text-accent);
+  white-space: nowrap;
 }
 
 
@@ -38759,11 +38859,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-03-12 22:13:31 UTC
+ * Build completed: 2026-03-13 10:47:44 UTC
  * Components processed: 46
- * Total lines: 38322
- * Total size: 769.22 KB
- * Build duration: 1.02 seconds
+ * Total lines: 38422
+ * Total size: 771.22 KB
+ * Build duration: 0.93 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -38797,7 +38897,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - timeline-callouts.css: 321 lines, 10.68 KB
  * - organizations.css: 615 lines, 11.57 KB
  * - sources.css: 2832 lines, 57.42 KB
- * - statistics.css: 1654 lines, 33.24 KB
+ * - statistics.css: 1754 lines, 35.24 KB
  * - command-menu.css: 73 lines, 1.6 KB
  * - dashboard.css: 491 lines, 9.64 KB
  * - universe-wizard.css: 621 lines, 11.17 KB

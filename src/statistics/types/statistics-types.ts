@@ -474,6 +474,60 @@ export interface TimelineDensityAnalysis {
 	gaps: TimelineGap[];
 }
 
+// =============================================================================
+// Record Superlatives Types
+// =============================================================================
+
+/**
+ * A single record superlative entry (e.g., oldest person, most children)
+ */
+export interface RecordEntry {
+	/** Person's cr_id */
+	crId: string;
+	/** Display name */
+	name: string;
+	/** File reference for opening the note */
+	file: TFile;
+	/** The record value (e.g., "87 years", "12 children") */
+	displayValue: string;
+	/** Relevant dates for context (e.g., "1842–1929") */
+	dates?: string;
+}
+
+/**
+ * A record category with its entries
+ */
+export interface RecordCategory {
+	/** Category label (e.g., "Oldest person") */
+	label: string;
+	/** Icon name */
+	icon: string;
+	/** Top entries for this category (up to 3) */
+	entries: RecordEntry[];
+}
+
+/**
+ * Record superlatives analysis results
+ */
+export interface RecordSuperlatives {
+	/** Oldest people by lifespan */
+	oldestPeople: RecordCategory;
+	/** Youngest deaths */
+	youngestDeaths: RecordCategory;
+	/** Most children */
+	mostChildren: RecordCategory;
+	/** Most spouses/marriages */
+	mostSpouses: RecordCategory;
+	/** Earliest birth date */
+	earliestBirths: RecordCategory;
+	/** Most recent death date */
+	latestDeaths: RecordCategory;
+	/** Most documented (highest source count) */
+	mostDocumented: RecordCategory;
+	/** Longest lived (still living, by birth year) */
+	longestMarriages: RecordCategory;
+}
+
 /**
  * Combined extended statistics (Phase 3)
  */

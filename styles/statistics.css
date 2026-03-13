@@ -1651,3 +1651,103 @@
   flex-shrink: 0;
   color: var(--text-muted);
 }
+
+/* ==========================================================================
+   Record Superlatives
+   ========================================================================== */
+
+.cr-sv-records-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--size-4-3);
+}
+
+.cr-sv-record-card {
+  background-color: var(--background-secondary);
+  border-radius: var(--radius-m);
+  padding: var(--size-4-3);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.cr-sv-record-header {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  margin-bottom: var(--size-4-3);
+  padding-bottom: var(--size-4-2);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-sv-record-icon {
+  flex-shrink: 0;
+  color: var(--text-accent);
+}
+
+.cr-sv-record-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cr-sv-record-title {
+  font-weight: var(--font-semibold);
+  font-size: var(--font-ui-small);
+}
+
+.cr-sv-record-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-2);
+}
+
+.cr-sv-record-row {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
+.cr-sv-record-rank {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-semibold);
+  background-color: var(--background-modifier-border);
+  color: var(--text-muted);
+}
+
+.cr-sv-record-rank-1 {
+  background-color: var(--color-yellow);
+  color: var(--text-on-accent);
+}
+
+.cr-sv-record-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.cr-sv-record-name {
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-ui-small);
+}
+
+.cr-sv-record-dates {
+  font-size: var(--font-ui-smaller);
+}
+
+.cr-sv-record-value {
+  flex-shrink: 0;
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-semibold);
+  color: var(--text-accent);
+  white-space: nowrap;
+}

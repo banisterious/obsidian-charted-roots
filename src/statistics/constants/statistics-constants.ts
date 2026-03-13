@@ -38,6 +38,8 @@ export const SECTION_IDS = {
 	UNIVERSES: 'universes',
 	// Research workflow
 	RESEARCH: 'research',
+	// Record superlatives
+	RECORDS: 'records',
 	// Phase 3: Extended Statistics
 	LONGEVITY: 'longevity',
 	FAMILY_SIZE: 'family-size',

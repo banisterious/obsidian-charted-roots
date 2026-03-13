@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Kinship report** ([#300](https://github.com/banisterious/obsidian-charted-roots/issues/300)): New report listing all relatives of a person with proper genealogical relationship terms and degree. Uses the existing relationship calculator to compute terms for every reachable person (cousins with removals, in-laws, great-grandparents, etc.). Sortable by degree, name, or relationship type. Includes summary with blood vs. marriage breakdown and category counts.
 
+- **Record superlatives** ([#301](https://github.com/banisterious/obsidian-charted-roots/issues/301)): New "Record superlatives" section in the statistics dashboard showing notable individuals: oldest people, youngest deaths, most children, most marriages, longest marriages, earliest births, most recent deaths, and most documented people. Each entry is a clickable link with dates and the record value. Rendered as a card grid with ranked entries.
+
 ### Changed
 
 - **Dynamic code blocks use `charted-roots-*` prefix**: New person notes now use `charted-roots-timeline`, `charted-roots-relationships`, and `charted-roots-media` block names instead of the legacy `canvas-roots-*` prefix. Existing notes with the old prefix continue to work via backward-compatible aliases.

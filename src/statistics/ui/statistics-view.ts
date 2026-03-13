@@ -22,7 +22,9 @@ import type {
 	MigrationAnalysis,
 	SourceCoverageAnalysis,
 	TimelineDensityAnalysis,
-	UniverseWithEntityCounts
+	UniverseWithEntityCounts,
+	RecordSuperlatives,
+	RecordCategory
 } from '../types/statistics-types';
 import { VIEW_TYPE_STATISTICS, SECTION_IDS } from '../constants/statistics-constants';
 
@@ -283,6 +285,11 @@ export class StatisticsView extends ItemView {
 		// Research workflow section
 		this.buildSection(sectionsContainer, SECTION_IDS.RESEARCH, 'Research entities', 'folder-search', () => {
 			return this.buildResearchContent();
+		});
+
+		// Record Superlatives section
+		this.buildSection(sectionsContainer, SECTION_IDS.RECORDS, 'Record superlatives', 'trophy', () => {
+			return this.buildRecordsContent();
 		});
 
 		// === Extended Statistics (Phase 3) ===
@@ -1277,6 +1284,104 @@ export class StatisticsView extends ItemView {
 			tbody.insertBefore(drilldownRow, afterRow.nextSibling);
 		} else {
 			tbody.appendChild(drilldownRow);
+		}
+	}
+
+	// ==========================================================================
+	// Record Superlatives Content Builder
+	// ==========================================================================
+
+	/**
+	 * Build record superlatives content
+	 */
+	private buildRecordsContent(): HTMLElement {
+		const content = document.createElement('div');
+		content.addClass('cr-sv-records');
+
+		if (!this.service) return content;
+
+		const records: RecordSuperlatives = this.service.getRecordSuperlatives();
+
+		// Render each category as a card
+		const categories: RecordCategory[] = [
+			records.oldestPeople,
+			records.youngestDeaths,
+			records.mostChildren,
+			records.mostSpouses,
+			records.longestMarriages,
+			records.earliestBirths,
+			records.latestDeaths,
+			records.mostDocumented
+		];
+
+		const hasAnyRecords = categories.some(c => c.entries.length > 0);
+		if (!hasAnyRecords) {
+			content.createSpan({
+				cls: 'crc-text-muted',
+				text: 'No data available (requires people with dates and relationships)'
+			});
+			return content;
+		}
+
+		const grid = content.createDiv({ cls: 'cr-sv-records-grid' });
+
+		for (const category of categories) {
+			if (category.entries.length === 0) continue;
+			this.buildRecordCard(grid, category);
+		}
+
+		return content;
+	}
+
+	/**
+	 * Build a single record category card
+	 */
+	private buildRecordCard(container: HTMLElement, category: RecordCategory): void {
+		const card = container.createDiv({ cls: 'cr-sv-record-card' });
+
+		// Card header
+		const header = card.createDiv({ cls: 'cr-sv-record-header' });
+		const iconEl = header.createSpan({ cls: 'cr-sv-record-icon' });
+		setIcon(iconEl, category.icon);
+		header.createSpan({ cls: 'cr-sv-record-title', text: category.label });
+
+		// Entries list
+		const list = card.createDiv({ cls: 'cr-sv-record-list' });
+
+		for (let i = 0; i < category.entries.length; i++) {
+			const entry = category.entries[i];
+			const row = list.createDiv({ cls: 'cr-sv-record-row' });
+
+			// Rank indicator
+			const rank = row.createSpan({ cls: `cr-sv-record-rank cr-sv-record-rank-${i + 1}` });
+			rank.setText(`${i + 1}`);
+
+			// Person info
+			const info = row.createDiv({ cls: 'cr-sv-record-info' });
+
+			const nameLink = info.createEl('a', {
+				text: entry.name,
+				cls: 'cr-sv-record-name internal-link',
+				attr: { 'data-href': entry.file.path }
+			});
+			nameLink.addEventListener('click', (e) => {
+				e.preventDefault();
+				void this.app.workspace.getLeaf('tab').openFile(entry.file);
+			});
+			nameLink.addEventListener('contextmenu', (e) => {
+				e.preventDefault();
+				this.showPersonContextMenu(e, entry.file);
+			});
+			nameLink.addEventListener('mouseover', (e) => {
+				this.triggerHoverPreview(e, entry.file, nameLink);
+			});
+
+			if (entry.dates) {
+				info.createSpan({ cls: 'cr-sv-record-dates crc-text-muted', text: entry.dates });
+			}
+
+			// Value
+			row.createSpan({ cls: 'cr-sv-record-value', text: entry.displayValue });
 		}
 	}
 

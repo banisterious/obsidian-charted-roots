@@ -45,6 +45,10 @@ import type {
 	TimelineDensityAnalysis,
 	DecadeEventCount,
 	TimelineGap,
+	// Record superlatives
+	RecordSuperlatives,
+	RecordCategory,
+	RecordEntry,
 	// Universe types
 	UniverseWithEntityCounts,
 	// Research workflow types
@@ -1650,6 +1654,276 @@ export class StatisticsService {
 		}
 
 		return gaps;
+	}
+
+	// =========================================================================
+	// Record Superlatives
+	// =========================================================================
+
+	/**
+	 * Get record superlatives (oldest, youngest, most children, etc.)
+	 */
+	getRecordSuperlatives(): RecordSuperlatives {
+		const people = this.getFamilyGraphService().getAllPeople();
+		const topN = 3;
+
+		return {
+			oldestPeople: this.computeOldestPeople(people, topN),
+			youngestDeaths: this.computeYoungestDeaths(people, topN),
+			mostChildren: this.computeMostChildren(people, topN),
+			mostSpouses: this.computeMostSpouses(people, topN),
+			earliestBirths: this.computeEarliestBirths(people, topN),
+			latestDeaths: this.computeLatestDeaths(people, topN),
+			mostDocumented: this.computeMostDocumented(people, topN),
+			longestMarriages: this.computeLongestMarriages(people, topN)
+		};
+	}
+
+	/**
+	 * Build a RecordEntry from a person node
+	 */
+	private buildRecordEntry(person: PersonNode, displayValue: string): RecordEntry {
+		const dates = this.formatPersonDates(person);
+		return {
+			crId: person.crId,
+			name: person.name,
+			file: person.file,
+			displayValue,
+			dates: dates || undefined
+		};
+	}
+
+	/**
+	 * Format birth–death dates for display
+	 */
+	private formatPersonDates(person: PersonNode): string | null {
+		const birthYear = this.extractYear(person.birthDate);
+		const deathYear = this.extractYear(person.deathDate);
+
+		if (birthYear && deathYear) {
+			return `${birthYear}\u2013${deathYear}`;
+		} else if (birthYear) {
+			return `b. ${birthYear}`;
+		} else if (deathYear) {
+			return `d. ${deathYear}`;
+		}
+		return null;
+	}
+
+	/**
+	 * Oldest people by lifespan
+	 */
+	private computeOldestPeople(people: PersonNode[], topN: number): RecordCategory {
+		const withLifespan: { person: PersonNode; age: number }[] = [];
+
+		for (const person of people) {
+			const age = this.calculateLifespan(person);
+			if (age !== null && age >= 0 && age <= 120) {
+				withLifespan.push({ person, age });
+			}
+		}
+
+		withLifespan.sort((a, b) => b.age - a.age);
+
+		return {
+			label: 'Oldest people',
+			icon: 'crown',
+			entries: withLifespan.slice(0, topN).map(({ person, age }) =>
+				this.buildRecordEntry(person, `${age} years`)
+			)
+		};
+	}
+
+	/**
+	 * Youngest deaths (excluding infants under 1 to avoid data noise)
+	 */
+	private computeYoungestDeaths(people: PersonNode[], topN: number): RecordCategory {
+		const withLifespan: { person: PersonNode; age: number }[] = [];
+
+		for (const person of people) {
+			const age = this.calculateLifespan(person);
+			if (age !== null && age >= 1 && age <= 120) {
+				withLifespan.push({ person, age });
+			}
+		}
+
+		withLifespan.sort((a, b) => a.age - b.age);
+
+		return {
+			label: 'Youngest deaths',
+			icon: 'heart-crack',
+			entries: withLifespan.slice(0, topN).map(({ person, age }) =>
+				this.buildRecordEntry(person, `${age} years`)
+			)
+		};
+	}
+
+	/**
+	 * Most children
+	 */
+	private computeMostChildren(people: PersonNode[], topN: number): RecordCategory {
+		const withChildren = people
+			.filter(p => p.childrenCrIds.length > 0)
+			.map(p => ({ person: p, count: p.childrenCrIds.length }))
+			.sort((a, b) => b.count - a.count);
+
+		return {
+			label: 'Most children',
+			icon: 'baby',
+			entries: withChildren.slice(0, topN).map(({ person, count }) =>
+				this.buildRecordEntry(person, `${count} children`)
+			)
+		};
+	}
+
+	/**
+	 * Most spouses/marriages
+	 */
+	private computeMostSpouses(people: PersonNode[], topN: number): RecordCategory {
+		const withSpouses = people
+			.filter(p => p.spouseCrIds.length > 1)
+			.map(p => ({ person: p, count: p.spouseCrIds.length }))
+			.sort((a, b) => b.count - a.count);
+
+		return {
+			label: 'Most marriages',
+			icon: 'heart',
+			entries: withSpouses.slice(0, topN).map(({ person, count }) =>
+				this.buildRecordEntry(person, `${count} marriages`)
+			)
+		};
+	}
+
+	/**
+	 * Earliest births
+	 */
+	private computeEarliestBirths(people: PersonNode[], topN: number): RecordCategory {
+		const withBirth: { person: PersonNode; year: number }[] = [];
+
+		for (const person of people) {
+			const year = this.extractYear(person.birthDate);
+			if (year !== null) {
+				withBirth.push({ person, year });
+			}
+		}
+
+		withBirth.sort((a, b) => a.year - b.year);
+
+		return {
+			label: 'Earliest births',
+			icon: 'clock',
+			entries: withBirth.slice(0, topN).map(({ person, year }) =>
+				this.buildRecordEntry(person, `Born ${year}`)
+			)
+		};
+	}
+
+	/**
+	 * Most recent deaths
+	 */
+	private computeLatestDeaths(people: PersonNode[], topN: number): RecordCategory {
+		const withDeath: { person: PersonNode; year: number }[] = [];
+
+		for (const person of people) {
+			const year = this.extractYear(person.deathDate);
+			if (year !== null) {
+				withDeath.push({ person, year });
+			}
+		}
+
+		withDeath.sort((a, b) => b.year - a.year);
+
+		return {
+			label: 'Most recent deaths',
+			icon: 'calendar-check',
+			entries: withDeath.slice(0, topN).map(({ person, year }) =>
+				this.buildRecordEntry(person, `Died ${year}`)
+			)
+		};
+	}
+
+	/**
+	 * Most documented (highest source count)
+	 */
+	private computeMostDocumented(people: PersonNode[], topN: number): RecordCategory {
+		const withSources = people
+			.filter(p => (p.sourceCount ?? 0) > 0)
+			.map(p => ({ person: p, count: p.sourceCount ?? 0 }))
+			.sort((a, b) => b.count - a.count);
+
+		return {
+			label: 'Most documented',
+			icon: 'archive',
+			entries: withSources.slice(0, topN).map(({ person, count }) =>
+				this.buildRecordEntry(person, `${count} sources`)
+			)
+		};
+	}
+
+	/**
+	 * Longest marriages (by marriage duration: marriage date to death/divorce/current)
+	 */
+	private computeLongestMarriages(people: PersonNode[], topN: number): RecordCategory {
+		const marriages: { person: PersonNode; spouseName: string; years: number }[] = [];
+
+		for (const person of people) {
+			if (!person.spouses) continue;
+
+			for (const spouse of person.spouses) {
+				if (!spouse.marriageDate) continue;
+
+				const marriageYear = this.extractYear(spouse.marriageDate);
+				if (marriageYear === null) continue;
+
+				// Determine end year: divorce date, death date of either party, or current year
+				let endYear: number | null = null;
+
+				if (spouse.divorceDate) {
+					endYear = this.extractYear(spouse.divorceDate);
+				}
+
+				if (endYear === null) {
+					// Use death date of the person
+					const personDeathYear = this.extractYear(person.deathDate);
+					if (personDeathYear !== null) {
+						endYear = personDeathYear;
+					}
+				}
+
+				if (endYear === null) {
+					// Still ongoing — use current year
+					endYear = new Date().getFullYear();
+				}
+
+				const duration = endYear - marriageYear;
+				if (duration > 0 && duration <= 80) {
+					// Find spouse name
+					const spouseNode = people.find(p => p.crId === spouse.personId);
+					const spouseName = spouseNode ? spouseNode.name : spouse.personId;
+
+					marriages.push({ person, spouseName, years: duration });
+				}
+			}
+		}
+
+		// Deduplicate (same marriage appears on both spouses)
+		const seen = new Set<string>();
+		const deduped = marriages.filter(m => {
+			const key = [m.person.crId, m.spouseName].sort().join('|');
+			if (seen.has(key)) return false;
+			seen.add(key);
+			return true;
+		});
+
+		deduped.sort((a, b) => b.years - a.years);
+
+		return {
+			label: 'Longest marriages',
+			icon: 'heart-handshake',
+			entries: deduped.slice(0, topN).map(({ person, spouseName, years }) =>
+				this.buildRecordEntry(person, `${years} years (with ${spouseName})`)
+			)
+		};
 	}
 
 	// =========================================================================
