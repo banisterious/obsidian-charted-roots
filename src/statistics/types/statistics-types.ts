@@ -524,7 +524,7 @@ export interface RecordSuperlatives {
 	latestDeaths: RecordCategory;
 	/** Most documented (highest source count) */
 	mostDocumented: RecordCategory;
-	/** Longest lived (still living, by birth year) */
+	/** Longest marriages */
 	longestMarriages: RecordCategory;
 }
 

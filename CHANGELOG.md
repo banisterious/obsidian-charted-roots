@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Record superlatives** ([#301](https://github.com/banisterious/obsidian-charted-roots/issues/301)): New "Record superlatives" section in the statistics dashboard showing notable individuals: oldest people, youngest deaths, most children, most marriages, longest marriages, earliest births, most recent deaths, and most documented people. Each entry is a clickable link with dates and the record value. Rendered as a card grid with ranked entries.
+
+---
+
 ## [0.20.24] - 2026-03-12
 
 ### Added
@@ -16,8 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Unconnected people finder** ([#298](https://github.com/banisterious/obsidian-charted-roots/issues/298)): New report that identifies people not linked to a selected person's family network. Uses connected component analysis to find disconnected clusters and completely isolated records. Shows network coverage percentage, groups unconnected people by cluster, and lists isolated people separately. Available as markdown, PDF, or ODT.
 
 - **Kinship report** ([#300](https://github.com/banisterious/obsidian-charted-roots/issues/300)): New report listing all relatives of a person with proper genealogical relationship terms and degree. Uses the existing relationship calculator to compute terms for every reachable person (cousins with removals, in-laws, great-grandparents, etc.). Sortable by degree, name, or relationship type. Includes summary with blood vs. marriage breakdown and category counts.
-
-- **Record superlatives** ([#301](https://github.com/banisterious/obsidian-charted-roots/issues/301)): New "Record superlatives" section in the statistics dashboard showing notable individuals: oldest people, youngest deaths, most children, most marriages, longest marriages, earliest births, most recent deaths, and most documented people. Each entry is a clickable link with dates and the record value. Rendered as a card grid with ranked entries.
 
 ### Changed
 
