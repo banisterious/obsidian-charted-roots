@@ -23,7 +23,7 @@ import { PersonIndexService } from './src/core/person-index-service';
 import { PlaceGraphService } from './src/core/place-graph';
 import { EvidenceService, ProofSummaryService } from './src/sources';
 import { EventService } from './src/events/services/event-service';
-import { TimelineProcessor, RelationshipsProcessor, MediaProcessor, SourceRolesProcessor, TransfersProcessor, MembersProcessor, SourcesProcessor, ExtractionsProcessor, NegativeFindingsProcessor } from './src/dynamic-content';
+import { TimelineProcessor, RelationshipsProcessor, MediaProcessor, SourceRolesProcessor, TransfersProcessor, MembersProcessor, SourcesProcessor, ExtractionsProcessor, NegativeFindingsProcessor, ResearchTimelineProcessor } from './src/dynamic-content';
 import { RecentFilesService, RecentEntityType } from './src/core/recent-files-service';
 import { registerCustomIcons } from './src/ui/lucide-icons';
 import { MediaService } from './src/core/media-service';
@@ -542,6 +542,13 @@ export default class CanvasRootsPlugin extends Plugin {
 		this.registerMarkdownCodeBlockProcessor(
 			'charted-roots-negative-findings',
 			(source, el, ctx) => negativeFindingsProcessor.process(source, el, ctx)
+		);
+
+		// Research timeline processor (#293) — research activity log with gap detection
+		const researchTimelineProcessor = new ResearchTimelineProcessor(this);
+		this.registerMarkdownCodeBlockProcessor(
+			'charted-roots-research-timeline',
+			(source, el, ctx) => researchTimelineProcessor.process(source, el, ctx)
 		);
 	}
 

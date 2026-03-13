@@ -34,3 +34,6 @@ export { ExtractionsRenderer } from './renderers/extractions-renderer';
 
 export { NegativeFindingsProcessor } from './processors/negative-findings-processor';
 export { NegativeFindingsRenderer } from './renderers/negative-findings-renderer';
+
+export { ResearchTimelineProcessor } from './processors/research-timeline-processor';
+export { ResearchTimelineRenderer } from './renderers/research-timeline-renderer';

@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-03-13 10:47:43 UTC
+ * - Generated: 2026-03-13 19:03:01 UTC
  * - Components: 46 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -37025,7 +37025,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: DYNAMIC-CONTENT.CSS
    ========================================================================== */
 
-/* Component Size: 796 lines, 17.06 KB */
+/* Component Size: 907 lines, 19.42 KB */
 
 /**
  * Dynamic Content Styles
@@ -37811,6 +37811,117 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 .cr-negative-findings__group-header a:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   Research Timeline Block (#293)
+   ========================================================================== */
+
+.cr-research-timeline__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-smaller);
+}
+
+.cr-research-timeline__table th {
+  text-align: left;
+  padding: var(--cr-spacing-xs) var(--cr-spacing-sm);
+  border-bottom: 2px solid var(--background-modifier-border);
+  font-weight: var(--font-semibold);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.cr-research-timeline__table td {
+  padding: var(--cr-spacing-xs) var(--cr-spacing-sm);
+  border-bottom: 1px solid var(--background-modifier-border);
+  vertical-align: top;
+}
+
+.cr-research-timeline__table tbody tr:hover {
+  background: var(--background-modifier-hover);
+}
+
+/* Gap-flagged row */
+.cr-research-timeline__row--gap {
+  border-top: 2px solid var(--color-orange);
+}
+
+/* Date column */
+.cr-research-timeline__date {
+  white-space: nowrap;
+}
+
+/* Result column */
+.cr-research-timeline__result {
+  white-space: nowrap;
+}
+
+.cr-research-timeline__result-icon {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-right: 2px;
+}
+
+.cr-research-timeline__result-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.cr-research-timeline__result--positive {
+  color: var(--color-green);
+}
+
+.cr-research-timeline__result--negative {
+  color: var(--color-red);
+}
+
+.cr-research-timeline__result--inconclusive {
+  color: var(--color-yellow);
+}
+
+/* Gap column */
+.cr-research-timeline__gap {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.cr-research-timeline__gap--flagged {
+  color: var(--color-orange);
+  font-weight: var(--font-semibold);
+}
+
+/* Wikilink cells — inline rendering */
+.cr-research-timeline__source p,
+.cr-research-timeline__project p,
+.cr-research-timeline__person p {
+  display: inline;
+  margin: 0;
+}
+
+/* Group headers */
+.cr-research-timeline__group {
+  margin-bottom: var(--cr-spacing-md);
+}
+
+.cr-research-timeline__group-header {
+  margin-bottom: var(--cr-spacing-xs);
+  padding-bottom: var(--cr-spacing-xs);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-research-timeline__group-header p {
+  display: inline;
+  margin: 0;
+}
+
+.cr-research-timeline__group-header a {
+  color: var(--text-accent);
+  text-decoration: none;
+}
+
+.cr-research-timeline__group-header a:hover {
   text-decoration: underline;
 }
 
@@ -38859,10 +38970,10 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-03-13 10:47:44 UTC
+ * Build completed: 2026-03-13 19:03:02 UTC
  * Components processed: 46
- * Total lines: 38422
- * Total size: 771.22 KB
+ * Total lines: 38533
+ * Total size: 773.58 KB
  * Build duration: 0.93 seconds
  *
  * Component breakdown:
@@ -38908,7 +39019,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - map-wizard.css: 606 lines, 12.68 KB
  * - preferences.css: 431 lines, 9.44 KB
  * - tree-output.css: 1548 lines, 30.41 KB
- * - dynamic-content.css: 796 lines, 17.06 KB
+ * - dynamic-content.css: 907 lines, 19.42 KB
  * - profile-view.css: 857 lines, 19.04 KB
  * - migration-notice.css: 135 lines, 2.67 KB
  * - responsive.css: 9 lines, 0.13 KB

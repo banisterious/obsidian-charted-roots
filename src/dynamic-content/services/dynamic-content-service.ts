@@ -16,7 +16,7 @@ import { extractWikilinkPath } from '../../utils/wikilink-resolver';
 import { splitAndTrim } from '../../utils/format-utils';
 
 /** Block type for freeze operations */
-export type DynamicBlockType = 'charted-roots-timeline' | 'charted-roots-relationships' | 'charted-roots-media' | 'charted-roots-source-roles' | 'charted-roots-transfers' | 'charted-roots-members' | 'charted-roots-sources' | 'charted-roots-extractions' | 'charted-roots-negative-findings';
+export type DynamicBlockType = 'charted-roots-timeline' | 'charted-roots-relationships' | 'charted-roots-media' | 'charted-roots-source-roles' | 'charted-roots-transfers' | 'charted-roots-members' | 'charted-roots-sources' | 'charted-roots-extractions' | 'charted-roots-negative-findings' | 'charted-roots-research-timeline';
 
 /**
  * Parsed configuration from a code block

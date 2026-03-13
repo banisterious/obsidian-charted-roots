@@ -786,6 +786,117 @@
 }
 
 /* ==========================================================================
+   Research Timeline Block (#293)
+   ========================================================================== */
+
+.cr-research-timeline__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-smaller);
+}
+
+.cr-research-timeline__table th {
+  text-align: left;
+  padding: var(--cr-spacing-xs) var(--cr-spacing-sm);
+  border-bottom: 2px solid var(--background-modifier-border);
+  font-weight: var(--font-semibold);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.cr-research-timeline__table td {
+  padding: var(--cr-spacing-xs) var(--cr-spacing-sm);
+  border-bottom: 1px solid var(--background-modifier-border);
+  vertical-align: top;
+}
+
+.cr-research-timeline__table tbody tr:hover {
+  background: var(--background-modifier-hover);
+}
+
+/* Gap-flagged row */
+.cr-research-timeline__row--gap {
+  border-top: 2px solid var(--color-orange);
+}
+
+/* Date column */
+.cr-research-timeline__date {
+  white-space: nowrap;
+}
+
+/* Result column */
+.cr-research-timeline__result {
+  white-space: nowrap;
+}
+
+.cr-research-timeline__result-icon {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-right: 2px;
+}
+
+.cr-research-timeline__result-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.cr-research-timeline__result--positive {
+  color: var(--color-green);
+}
+
+.cr-research-timeline__result--negative {
+  color: var(--color-red);
+}
+
+.cr-research-timeline__result--inconclusive {
+  color: var(--color-yellow);
+}
+
+/* Gap column */
+.cr-research-timeline__gap {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.cr-research-timeline__gap--flagged {
+  color: var(--color-orange);
+  font-weight: var(--font-semibold);
+}
+
+/* Wikilink cells — inline rendering */
+.cr-research-timeline__source p,
+.cr-research-timeline__project p,
+.cr-research-timeline__person p {
+  display: inline;
+  margin: 0;
+}
+
+/* Group headers */
+.cr-research-timeline__group {
+  margin-bottom: var(--cr-spacing-md);
+}
+
+.cr-research-timeline__group-header {
+  margin-bottom: var(--cr-spacing-xs);
+  padding-bottom: var(--cr-spacing-xs);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-research-timeline__group-header p {
+  display: inline;
+  margin: 0;
+}
+
+.cr-research-timeline__group-header a {
+  color: var(--text-accent);
+  text-decoration: none;
+}
+
+.cr-research-timeline__group-header a:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
    Theme Compatibility
    ========================================================================== */
 
