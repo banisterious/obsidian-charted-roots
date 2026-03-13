@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Record superlatives** ([#301](https://github.com/banisterious/obsidian-charted-roots/issues/301)): New "Record superlatives" section in the statistics dashboard showing notable individuals: oldest people, youngest deaths, most children, most marriages, longest marriages, earliest births, most recent deaths, and most documented people. Each entry is a clickable link with dates and the record value. Rendered as a card grid with ranked entries.
 
+- **Research timeline dynamic code block** ([#293](https://github.com/banisterious/obsidian-charted-roots/issues/293)): New `charted-roots-research-timeline` code block with three view modes. Table view shows a chronological activity log with gap detection. Heatmap view renders a GitHub-style contribution grid showing 52 weeks of research activity density. Timeline view displays horizontal bars per person/project with color-coded result markers and highlighted gap regions. Supports filtering by person and project, configurable gap threshold, grouping, and freeze-to-markdown.
+
 ### Changed
 
 - **Report generation limit removed** ([#297](https://github.com/banisterious/obsidian-charted-roots/issues/297)): The generations selector in the report wizard is now a free numeric input instead of a fixed dropdown (3–10). Users can enter any value with no upper limit.
