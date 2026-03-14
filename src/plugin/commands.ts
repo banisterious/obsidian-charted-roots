@@ -866,4 +866,14 @@ export function registerCommandsAndEvents(plugin: CanvasRootsPlugin): void {
 			new PlaceGeneratorModal(plugin.app, plugin.settings).open();
 		}
 	});
+
+	// Add command: Open Book Builder
+	plugin.addCommand({
+		id: 'open-book-builder',
+		name: 'Open book builder',
+		callback: async () => {
+			const { BookBuilderModal } = await import('../book/ui/book-builder-modal');
+			new BookBuilderModal(plugin).open();
+		}
+	});
 }

@@ -47,6 +47,7 @@ const CONFIG = {
     'family-chart-view.css', // Interactive family chart view
     'family-chart-export.css', // Family chart export wizard modal
     'report-wizard.css', // Report generator wizard modal
+    'book-builder.css',  // Book builder wizard modal
     'data-quality.css',  // Data quality analysis tab
     'relationships.css', // Custom relationships tab
     'canvas-navigation.css', // Canvas navigation and split wizard

@@ -296,6 +296,29 @@ export function registerContextMenus(plugin: CanvasRootsPlugin): void {
 					}
 				}
 
+				// Book definition files (.book.json)
+				if (file instanceof TFile && file.path.endsWith('.book.json')) {
+					menu.addSeparator();
+					menu.addItem((item) => {
+						item.setTitle('Open in book builder');
+						item.setIcon('book-open');
+						item.onClick(async () => {
+							try {
+								const content = await plugin.app.vault.read(file);
+								const definition = JSON.parse(content);
+								const { BookBuilderModal } = await import('../book/ui/book-builder-modal');
+								new BookBuilderModal(plugin, {
+									definition,
+									sourceFilePath: file.path,
+								}).open();
+							} catch (error) {
+								logger.error('open-book-builder', 'Failed to open book definition', error);
+								new Notice('Failed to read book definition file');
+							}
+						});
+					});
+				}
+
 				// Markdown files: Person notes, Place notes, Source notes, Map notes, Schema notes, or plain notes
 				if (file instanceof TFile && file.extension === 'md') {
 					const cache = plugin.app.metadataCache.getFileCache(file);

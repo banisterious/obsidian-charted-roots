@@ -24,3 +24,5 @@ export type {
 export { BookGenerationService } from './services/book-generation-service';
 export { PdfBookRenderer } from './services/pdf-book-renderer';
 export { OdtBookRenderer } from './services/odt-book-renderer';
+export { BookBuilderModal } from './ui/book-builder-modal';
+export type { BookBuilderOptions } from './ui/book-builder-modal';

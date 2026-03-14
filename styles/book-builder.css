@@ -1,0 +1,370 @@
+/* ========================================================================
+ * Book Builder Modal
+ * ======================================================================== */
+
+/* Modal sizing */
+.modal:has(.cr-book-builder) {
+	max-width: 520px;
+	width: 520px;
+}
+
+.modal:has(.cr-book-builder) .modal-content {
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	max-height: 80vh;
+	overflow: hidden;
+}
+
+.cr-book-builder-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 8px 16px;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-book-builder-content {
+	flex: 1;
+	overflow-y: auto;
+	padding: 12px 16px;
+}
+
+/* ========================================================================
+ * Template Cards
+ * ======================================================================== */
+
+.cr-book-template-grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.cr-book-template-card {
+	padding: 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.cr-book-template-card:hover {
+	background: var(--background-modifier-hover);
+	border-color: var(--interactive-accent);
+}
+
+.cr-book-template-icon {
+	margin-bottom: 6px;
+	color: var(--interactive-accent);
+}
+
+.cr-book-template-label {
+	font-weight: var(--font-semibold);
+	margin-bottom: 4px;
+}
+
+.cr-book-template-desc {
+	font-size: var(--font-smallest);
+	color: var(--text-muted);
+	line-height: 1.4;
+}
+
+/* ========================================================================
+ * Chapter List
+ * ======================================================================== */
+
+.cr-book-chapters-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.cr-book-chapters-header .cr-report-section-title {
+	margin: 0;
+}
+
+.cr-book-chapter-list {
+	min-height: 120px;
+	max-height: 45vh;
+	overflow-y: auto;
+	margin-top: 8px;
+}
+
+.cr-book-chapter-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	margin-bottom: 4px;
+	background: var(--background-secondary);
+	cursor: grab;
+	transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.cr-book-chapter-row:hover {
+	background: var(--background-modifier-hover);
+}
+
+.cr-book-chapter-row--dragging {
+	opacity: 0.5;
+	background: var(--background-modifier-active-hover);
+}
+
+.cr-book-chapter-row--drag-over {
+	background: var(--background-modifier-active-hover);
+	border-top: 2px solid var(--interactive-accent);
+}
+
+.cr-book-chapter-row__handle {
+	flex-shrink: 0;
+	color: var(--text-muted);
+	cursor: grab;
+}
+
+.cr-book-chapter-row__handle:active {
+	cursor: grabbing;
+}
+
+.cr-book-chapter-row__number {
+	flex-shrink: 0;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background: var(--background-modifier-border);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: var(--font-smallest);
+	font-weight: var(--font-semibold);
+	color: var(--text-muted);
+}
+
+.cr-book-chapter-row__type-icon {
+	flex-shrink: 0;
+	color: var(--text-muted);
+}
+
+.cr-book-chapter-row__info {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.cr-book-chapter-row__title {
+	font-weight: var(--font-medium);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.cr-book-chapter-row__subtitle {
+	font-size: var(--font-smallest);
+	color: var(--text-muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.cr-book-chapter-row__actions {
+	display: flex;
+	gap: 4px;
+	flex-shrink: 0;
+	opacity: 0;
+	transition: opacity 0.15s ease;
+}
+
+.cr-book-chapter-row:hover .cr-book-chapter-row__actions {
+	opacity: 1;
+}
+
+.cr-book-chapter-row__action {
+	cursor: pointer;
+	color: var(--text-muted);
+	padding: 2px;
+	border-radius: var(--radius-s);
+}
+
+.cr-book-chapter-row__action:hover {
+	color: var(--text-normal);
+	background: var(--background-modifier-hover);
+}
+
+/* Empty state */
+.cr-book-empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	color: var(--text-muted);
+	text-align: center;
+}
+
+.cr-book-empty-state p {
+	margin: 4px 0;
+}
+
+/* ========================================================================
+ * Add Chapter Menu
+ * ======================================================================== */
+
+.cr-book-add-menu {
+	position: absolute;
+	z-index: var(--layer-menu);
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	box-shadow: var(--shadow-s);
+	padding: 4px;
+	min-width: 180px;
+}
+
+.cr-book-add-menu__item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 10px;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	font-size: var(--font-small);
+}
+
+.cr-book-add-menu__item:hover {
+	background: var(--background-modifier-hover);
+}
+
+/* ========================================================================
+ * Generate Step
+ * ======================================================================== */
+
+.cr-book-generate-summary {
+	padding: 8px 12px;
+	background: var(--background-secondary);
+	border-radius: var(--radius-s);
+	font-size: var(--font-small);
+	line-height: 1.6;
+}
+
+.cr-book-chapter-breakdown {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin-top: 8px;
+}
+
+.cr-book-breakdown-item {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	font-size: var(--font-smallest);
+	color: var(--text-muted);
+}
+
+/* Progress bar */
+.cr-book-progress-bar {
+	width: 100%;
+	height: 6px;
+	background: var(--background-modifier-border);
+	border-radius: 3px;
+	overflow: hidden;
+	margin-top: 8px;
+}
+
+.cr-book-progress-fill {
+	height: 100%;
+	background: var(--interactive-accent);
+	border-radius: 3px;
+	width: 0;
+	transition: width 0.3s ease;
+}
+
+.cr-book-progress-text {
+	font-size: var(--font-smallest);
+	color: var(--text-muted);
+	margin-top: 6px;
+}
+
+/* Save row */
+.cr-book-save-row {
+	margin-top: 8px;
+}
+
+/* ========================================================================
+ * Chapter Config Modal
+ * ======================================================================== */
+
+.modal:has(.cr-chapter-config-modal) {
+	max-width: 440px;
+	width: 440px;
+}
+
+.modal:has(.cr-chapter-config-modal) .modal-content {
+	padding: 0;
+}
+
+.cr-chapter-config-body {
+	padding: 12px 16px;
+}
+
+/* ========================================================================
+ * File Picker Modal
+ * ======================================================================== */
+
+.modal:has(.cr-file-picker-modal) {
+	max-width: 480px;
+	width: 480px;
+}
+
+.modal:has(.cr-file-picker-modal) .modal-content {
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	max-height: 70vh;
+	overflow: hidden;
+}
+
+.cr-file-picker-search {
+	padding: 8px 16px;
+}
+
+.cr-file-picker-results {
+	flex: 1;
+	overflow-y: auto;
+	padding: 0 8px 8px;
+}
+
+.cr-file-picker-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 8px;
+	border-radius: var(--radius-s);
+	cursor: pointer;
+	font-size: var(--font-small);
+}
+
+.cr-file-picker-item:hover {
+	background: var(--background-modifier-hover);
+}
+
+.cr-file-picker-item__icon {
+	flex-shrink: 0;
+	color: var(--text-muted);
+}
+
+.cr-file-picker-item__path {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.cr-file-picker-empty {
+	padding: 24px;
+	text-align: center;
+	color: var(--text-muted);
+}
