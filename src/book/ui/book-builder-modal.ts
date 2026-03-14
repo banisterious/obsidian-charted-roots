@@ -121,6 +121,9 @@ export class BookBuilderModal extends Modal {
 				dateFormat: 'mdy',
 				includeCoverPage: true,
 				includeTableOfContents: true,
+				includeBibliography: false,
+				includeNameIndex: false,
+				chapterNumbering: 'none',
 			};
 		}
 	}
@@ -812,6 +815,32 @@ export class BookBuilderModal extends Modal {
 		});
 		this.renderToggle(toggleSection, 'Table of contents', this.outputOptions.includeTableOfContents, (val) => {
 			this.outputOptions.includeTableOfContents = val;
+		});
+		this.renderToggle(toggleSection, 'Consolidated bibliography', this.outputOptions.includeBibliography, (val) => {
+			this.outputOptions.includeBibliography = val;
+		});
+		this.renderToggle(toggleSection, 'Name index', this.outputOptions.includeNameIndex, (val) => {
+			this.outputOptions.includeNameIndex = val;
+		});
+
+		// Chapter numbering
+		container.createEl('hr', { cls: 'cr-report-separator' });
+		const numberingSection = container.createDiv({ cls: 'cr-report-section' });
+		numberingSection.createEl('h3', { text: 'Chapter numbering', cls: 'cr-report-section-title' });
+
+		const numberingRow = numberingSection.createDiv({ cls: 'cr-report-option-row' });
+		numberingRow.createSpan({ text: 'Style:', cls: 'cr-report-option-label' });
+		const numberingSelect = numberingRow.createEl('select', { cls: 'cr-report-select' });
+		for (const opt of [
+			{ value: 'none', label: 'None' },
+			{ value: 'numeric', label: 'Numeric (1, 2, 3...)' },
+			{ value: 'roman', label: 'Roman numerals (I, II, III...)' }
+		]) {
+			const option = numberingSelect.createEl('option', { value: opt.value, text: opt.label });
+			if (opt.value === this.outputOptions.chapterNumbering) option.selected = true;
+		}
+		numberingSelect.addEventListener('change', () => {
+			this.outputOptions.chapterNumbering = numberingSelect.value as 'none' | 'numeric' | 'roman';
 		});
 	}
 
