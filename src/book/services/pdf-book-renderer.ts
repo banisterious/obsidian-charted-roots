@@ -16,6 +16,8 @@ import type {
 	BookOutputOptions,
 	BookMetadata,
 	ChapterGenerationResult,
+	BibliographyEntry,
+	NameIndexEntry,
 } from '../types/book-types';
 
 /** Color constants matching existing report palette */
@@ -43,11 +45,13 @@ export class PdfBookRenderer {
 	 */
 	async renderBook(
 		definition: BookDefinition,
-		chapterResults: ChapterGenerationResult[]
+		chapterResults: ChapterGenerationResult[],
+		bibliography: BibliographyEntry[] = [],
+		nameIndex: NameIndexEntry[] = []
 	): Promise<Blob> {
 		await this.pdfRenderer.ensurePdfMake();
 
-		const docDefinition = this.buildDocumentDefinition(definition, chapterResults);
+		const docDefinition = this.buildDocumentDefinition(definition, chapterResults, bibliography, nameIndex);
 
 		return new Promise<Blob>((resolve) => {
 			this.pdfRenderer.pdfMake.createPdf(docDefinition).getBlob((blob: Blob) => {
@@ -61,7 +65,9 @@ export class PdfBookRenderer {
 	 */
 	private buildDocumentDefinition(
 		definition: BookDefinition,
-		chapterResults: ChapterGenerationResult[]
+		chapterResults: ChapterGenerationResult[],
+		bibliography: BibliographyEntry[],
+		nameIndex: NameIndexEntry[]
 	): TDocumentDefinitions {
 		const { metadata, outputOptions } = definition;
 		const defaultFont = this.pdfRenderer.getDefaultFont(outputOptions.fontStyle);
@@ -85,18 +91,39 @@ export class PdfBookRenderer {
 
 		// Chapters
 		const successfulResults = chapterResults.filter(r => r.success);
+		let chapterNumber = 0;
 		for (let i = 0; i < successfulResults.length; i++) {
 			const result = successfulResults[i];
 			const chapter = definition.chapters.find(c => c.id === result.chapterId);
 			if (!chapter) continue;
 
+			// Number content chapters (not section dividers)
+			let displayTitle = chapter.title;
+			if (chapter.type !== 'section-divider' && outputOptions.chapterNumbering !== 'none') {
+				chapterNumber++;
+				const prefix = outputOptions.chapterNumbering === 'roman'
+					? this.toRoman(chapterNumber)
+					: String(chapterNumber);
+				displayTitle = `${prefix}. ${chapter.title}`;
+			}
+
 			const isFirstContent = i === 0;
 			content.push(...this.renderChapterContent(
-				chapter.title,
+				displayTitle,
 				chapter.type,
 				result,
 				chapter.pageBreakBefore || !isFirstContent
 			));
+		}
+
+		// Back matter: bibliography
+		if (outputOptions.includeBibliography && bibliography.length > 0) {
+			content.push(...this.renderBibliography(bibliography));
+		}
+
+		// Back matter: name index
+		if (outputOptions.includeNameIndex && nameIndex.length > 0) {
+			content.push(...this.renderNameIndex(nameIndex));
 		}
 
 		return {
@@ -277,6 +304,102 @@ export class PdfBookRenderer {
 		} as Content);
 
 		return content;
+	}
+
+	/**
+	 * Render consolidated bibliography as a back matter section.
+	 */
+	private renderBibliography(entries: BibliographyEntry[]): Content[] {
+		const content: Content[] = [
+			{ text: '', pageBreak: 'before' },
+			{
+				text: 'Bibliography',
+				style: 'title',
+				tocItem: true,
+				margin: [0, 0, 0, 15],
+			} as Content,
+		];
+
+		for (const entry of entries) {
+			content.push({
+				text: entry.citation,
+				fontSize: 9,
+				margin: [20, 0, 0, 4],
+				color: COLORS.primaryText,
+			} as Content);
+
+			if (entry.referencedIn.length > 1) {
+				content.push({
+					text: `Referenced in: ${entry.referencedIn.join(', ')}`,
+					fontSize: 8,
+					italics: true,
+					color: COLORS.secondaryText,
+					margin: [20, 0, 0, 6],
+				} as Content);
+			}
+		}
+
+		return content;
+	}
+
+	/**
+	 * Render name index as a back matter section.
+	 * Groups entries alphabetically by last name.
+	 */
+	private renderNameIndex(entries: NameIndexEntry[]): Content[] {
+		const content: Content[] = [
+			{ text: '', pageBreak: 'before' },
+			{
+				text: 'Name index',
+				style: 'title',
+				tocItem: true,
+				margin: [0, 0, 0, 15],
+			} as Content,
+		];
+
+		// Group by first letter of last name
+		let currentLetter = '';
+		for (const entry of entries) {
+			const lastName = entry.name.split(/\s+/).pop() || '';
+			const letter = lastName.charAt(0).toUpperCase();
+
+			if (letter !== currentLetter) {
+				currentLetter = letter;
+				content.push({
+					text: letter,
+					fontSize: 14,
+					bold: true,
+					color: COLORS.accentBar,
+					margin: [0, 10, 0, 4],
+				} as Content);
+			}
+
+			content.push({
+				text: [
+					{ text: entry.name, bold: true, fontSize: 9 },
+					{ text: ` — ${entry.chapters.join(', ')}`, fontSize: 9, color: COLORS.secondaryText },
+				],
+				margin: [10, 0, 0, 2],
+			} as Content);
+		}
+
+		return content;
+	}
+
+	/**
+	 * Convert a number to a Roman numeral string.
+	 */
+	private toRoman(num: number): string {
+		const values = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
+		const numerals = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I'];
+		let result = '';
+		for (let i = 0; i < values.length; i++) {
+			while (num >= values[i]) {
+				result += numerals[i];
+				num -= values[i];
+			}
+		}
+		return result;
 	}
 
 	/**

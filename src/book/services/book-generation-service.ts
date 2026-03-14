@@ -25,6 +25,8 @@ import type {
 	ReportChapterConfig,
 	VisualTreeChapterConfig,
 	VaultNoteChapterConfig,
+	BibliographyEntry,
+	NameIndexEntry,
 } from '../types/book-types';
 import { getLogger } from '../../core/logging';
 
@@ -140,14 +142,22 @@ export class BookGenerationService {
 			phase: 'rendering',
 		});
 
+		// Collect back matter data
+		const bibliography = definition.outputOptions.includeBibliography
+			? this.collectBibliography(chapterResults)
+			: [];
+		const nameIndex = definition.outputOptions.includeNameIndex
+			? this.collectNameIndex(chapterResults)
+			: [];
+
 		let blob: Blob;
 		try {
 			if (definition.outputOptions.format === 'pdf') {
 				const renderer = new PdfBookRenderer();
-				blob = await renderer.renderBook(definition, chapterResults);
+				blob = await renderer.renderBook(definition, chapterResults, bibliography, nameIndex);
 			} else {
 				const renderer = new OdtBookRenderer();
-				blob = await renderer.renderBook(definition, chapterResults);
+				blob = await renderer.renderBook(definition, chapterResults, bibliography, nameIndex);
 			}
 		} catch (err) {
 			const message = err instanceof Error ? err.message : String(err);
@@ -362,6 +372,89 @@ export class BookGenerationService {
 			success: true,
 			warnings: [],
 		};
+	}
+
+	/**
+	 * Collect and deduplicate bibliography entries from all chapter markdown.
+	 * Extracts footnote definitions ([^N]: text) from each chapter.
+	 */
+	collectBibliography(chapterResults: ChapterGenerationResult[]): BibliographyEntry[] {
+		const entryMap = new Map<string, BibliographyEntry>();
+
+		for (const result of chapterResults) {
+			if (!result.success || !result.markdown) continue;
+
+			// Match footnote definitions: [^1]: citation text (may span multiple lines)
+			const footnoteRegex = /^\[\^\d+\]:\s*(.+(?:\n(?!\[\^)(?!$).+)*)/gm;
+			let match;
+			while ((match = footnoteRegex.exec(result.markdown)) !== null) {
+				const citation = match[1].replace(/\n\s*/g, ' ').trim();
+				const key = citation.toLowerCase().replace(/\s+/g, ' ');
+
+				const existing = entryMap.get(key);
+				if (existing) {
+					if (!existing.referencedIn.includes(result.chapterTitle)) {
+						existing.referencedIn.push(result.chapterTitle);
+					}
+				} else {
+					entryMap.set(key, {
+						key,
+						citation,
+						referencedIn: [result.chapterTitle],
+					});
+				}
+			}
+		}
+
+		// Sort alphabetically by citation
+		return Array.from(entryMap.values())
+			.sort((a, b) => a.citation.localeCompare(b.citation));
+	}
+
+	/**
+	 * Collect person names mentioned across all chapters for the name index.
+	 * Looks for bold names (common in reports) and wikilink-style references.
+	 */
+	collectNameIndex(chapterResults: ChapterGenerationResult[]): NameIndexEntry[] {
+		const nameMap = new Map<string, Set<string>>();
+
+		for (const result of chapterResults) {
+			if (!result.success || !result.markdown) continue;
+
+			// Bold names: **First Last** (common pattern in reports)
+			const boldRegex = /\*\*([A-Z][a-zA-Z'-]+(?:\s+[A-Z][a-zA-Z'-]+)+)\*\*/g;
+			let match;
+			while ((match = boldRegex.exec(result.markdown)) !== null) {
+				const name = match[1].trim();
+				if (!nameMap.has(name)) {
+					nameMap.set(name, new Set());
+				}
+				nameMap.get(name)!.add(result.chapterTitle);
+			}
+
+			// Table cell names: | Name | pattern — first column often contains person names
+			const tableRowRegex = /^\|\s*\*?\*?([A-Z][a-zA-Z'-]+(?:\s+[A-Z][a-zA-Z'-]+)+)\*?\*?\s*\|/gm;
+			while ((match = tableRowRegex.exec(result.markdown)) !== null) {
+				const name = match[1].trim();
+				if (!nameMap.has(name)) {
+					nameMap.set(name, new Set());
+				}
+				nameMap.get(name)!.add(result.chapterTitle);
+			}
+		}
+
+		// Sort by last name, then first name
+		return Array.from(nameMap.entries())
+			.map(([name, chapters]) => ({
+				name,
+				chapters: Array.from(chapters),
+			}))
+			.sort((a, b) => {
+				const aLast = a.name.split(/\s+/).pop() || '';
+				const bLast = b.name.split(/\s+/).pop() || '';
+				if (aLast !== bLast) return aLast.localeCompare(bLast);
+				return a.name.localeCompare(b.name);
+			});
 	}
 
 	/**

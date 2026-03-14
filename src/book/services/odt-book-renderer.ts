@@ -11,6 +11,8 @@ import { OdtGenerator } from '../../reports/services/odt-generator';
 import type {
 	BookDefinition,
 	ChapterGenerationResult,
+	BibliographyEntry,
+	NameIndexEntry,
 } from '../types/book-types';
 
 /**
@@ -30,7 +32,9 @@ export class OdtBookRenderer {
 	 */
 	async renderBook(
 		definition: BookDefinition,
-		chapterResults: ChapterGenerationResult[]
+		chapterResults: ChapterGenerationResult[],
+		bibliography: BibliographyEntry[] = [],
+		nameIndex: NameIndexEntry[] = []
 	): Promise<Blob> {
 		const zip = new JSZip();
 		const { metadata, outputOptions } = definition;
@@ -67,11 +71,22 @@ export class OdtBookRenderer {
 		// Chapters
 		const successfulResults = chapterResults.filter(r => r.success);
 		let imageIndex = 0;
+		let chapterNumber = 0;
 
 		for (let i = 0; i < successfulResults.length; i++) {
 			const result = successfulResults[i];
 			const chapter = definition.chapters.find(c => c.id === result.chapterId);
 			if (!chapter) continue;
+
+			// Build display title with optional numbering
+			let displayTitle = chapter.title;
+			if (chapter.type !== 'section-divider' && outputOptions.chapterNumbering !== 'none') {
+				chapterNumber++;
+				const prefix = outputOptions.chapterNumbering === 'roman'
+					? this.toRoman(chapterNumber)
+					: String(chapterNumber);
+				displayTitle = `${prefix}. ${chapter.title}`;
+			}
 
 			// Page break before chapter (except first after cover/TOC)
 			if (i > 0 || outputOptions.includeCoverPage || outputOptions.includeTableOfContents) {
@@ -81,16 +96,12 @@ export class OdtBookRenderer {
 			switch (chapter.type) {
 				case 'report':
 				case 'vault-note': {
-					// Chapter heading
-					bodyContent += `      <text:h text:style-name="Heading_20_1" text:outline-level="1">${this.odtGenerator.escapeXml(chapter.title)}</text:h>\n`;
-					// Markdown content
+					bodyContent += `      <text:h text:style-name="Heading_20_1" text:outline-level="1">${this.odtGenerator.escapeXml(displayTitle)}</text:h>\n`;
 					bodyContent += this.odtGenerator.markdownToOdtContent(result.markdown || '');
 					break;
 				}
 				case 'visual-tree': {
-					// Chapter heading
-					bodyContent += `      <text:h text:style-name="Heading_20_1" text:outline-level="1">${this.odtGenerator.escapeXml(chapter.title)}</text:h>\n`;
-					// Embed image
+					bodyContent += `      <text:h text:style-name="Heading_20_1" text:outline-level="1">${this.odtGenerator.escapeXml(displayTitle)}</text:h>\n`;
 					if (result.imageDataUrl && result.imageDimensions) {
 						const filename = `tree_${imageIndex}.png`;
 						bodyContent += this.buildImageFrame(filename, result.imageDimensions);
@@ -102,10 +113,20 @@ export class OdtBookRenderer {
 				case 'section-divider': {
 					bodyContent += '      <text:p text:style-name="Standard"/>\n';
 					bodyContent += '      <text:p text:style-name="Standard"/>\n';
-					bodyContent += `      <text:h text:style-name="Heading_20_1" text:outline-level="1">${this.odtGenerator.escapeXml(chapter.title)}</text:h>\n`;
+					bodyContent += `      <text:h text:style-name="Heading_20_1" text:outline-level="1">${this.odtGenerator.escapeXml(displayTitle)}</text:h>\n`;
 					break;
 				}
 			}
+		}
+
+		// Back matter: bibliography
+		if (outputOptions.includeBibliography && bibliography.length > 0) {
+			bodyContent += this.renderBibliography(bibliography);
+		}
+
+		// Back matter: name index
+		if (outputOptions.includeNameIndex && nameIndex.length > 0) {
+			bodyContent += this.renderNameIndex(nameIndex);
 		}
 
 		// Build content.xml
@@ -130,14 +151,26 @@ export class OdtBookRenderer {
 		definition: BookDefinition,
 		chapterResults: ChapterGenerationResult[]
 	): string {
+		const { outputOptions } = definition;
 		const successfulIds = new Set(chapterResults.filter(r => r.success).map(r => r.chapterId));
 		let content = '';
+		let chapterNumber = 0;
 
 		content += '      <text:h text:style-name="Heading_20_1" text:outline-level="1">Table of contents</text:h>\n';
 
 		for (const chapter of definition.chapters) {
 			if (!successfulIds.has(chapter.id)) continue;
-			content += `      <text:p text:style-name="Standard">${this.odtGenerator.escapeXml(chapter.title)}</text:p>\n`;
+
+			let displayTitle = chapter.title;
+			if (chapter.type !== 'section-divider' && outputOptions.chapterNumbering !== 'none') {
+				chapterNumber++;
+				const prefix = outputOptions.chapterNumbering === 'roman'
+					? this.toRoman(chapterNumber)
+					: String(chapterNumber);
+				displayTitle = `${prefix}. ${chapter.title}`;
+			}
+
+			content += `      <text:p text:style-name="Standard">${this.odtGenerator.escapeXml(displayTitle)}</text:p>\n`;
 		}
 
 		return content;
@@ -156,6 +189,62 @@ export class OdtBookRenderer {
           <draw:image xlink:href="Pictures/${filename}" xlink:type="simple" xlink:show="embed" xlink:actuate="onLoad"/>
         </draw:frame>
       </text:p>\n`;
+	}
+
+	/**
+	 * Render consolidated bibliography as ODT content.
+	 */
+	private renderBibliography(entries: BibliographyEntry[]): string {
+		let content = '      <text:p text:style-name="Page_20_Break"/>\n';
+		content += '      <text:h text:style-name="Heading_20_1" text:outline-level="1">Bibliography</text:h>\n';
+
+		for (const entry of entries) {
+			content += `      <text:p text:style-name="Standard">${this.odtGenerator.escapeXml(entry.citation)}</text:p>\n`;
+			if (entry.referencedIn.length > 1) {
+				content += `      <text:p text:style-name="Footnote"><text:span text:style-name="Italic">Referenced in: ${this.odtGenerator.escapeXml(entry.referencedIn.join(', '))}</text:span></text:p>\n`;
+			}
+		}
+
+		return content;
+	}
+
+	/**
+	 * Render name index as ODT content, grouped by last name initial.
+	 */
+	private renderNameIndex(entries: NameIndexEntry[]): string {
+		let content = '      <text:p text:style-name="Page_20_Break"/>\n';
+		content += '      <text:h text:style-name="Heading_20_1" text:outline-level="1">Name index</text:h>\n';
+
+		let currentLetter = '';
+		for (const entry of entries) {
+			const lastName = entry.name.split(/\s+/).pop() || '';
+			const letter = lastName.charAt(0).toUpperCase();
+
+			if (letter !== currentLetter) {
+				currentLetter = letter;
+				content += `      <text:h text:style-name="Heading_20_2" text:outline-level="2">${this.odtGenerator.escapeXml(letter)}</text:h>\n`;
+			}
+
+			content += `      <text:p text:style-name="Standard"><text:span text:style-name="Bold">${this.odtGenerator.escapeXml(entry.name)}</text:span> — ${this.odtGenerator.escapeXml(entry.chapters.join(', '))}</text:p>\n`;
+		}
+
+		return content;
+	}
+
+	/**
+	 * Convert a number to a Roman numeral string.
+	 */
+	private toRoman(num: number): string {
+		const values = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
+		const numerals = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I'];
+		let result = '';
+		for (let i = 0; i < values.length; i++) {
+			while (num >= values[i]) {
+				result += numerals[i];
+				num -= values[i];
+			}
+		}
+		return result;
 	}
 
 	/**
