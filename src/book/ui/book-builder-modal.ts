@@ -351,7 +351,12 @@ export class BookBuilderModal extends Modal {
 			});
 		};
 
+		// Build family graph for template intelligence
+		const graphService = this.plugin.createFamilyGraphService();
+		const rootPerson = graphService.getPerson(rootPersonCrId);
+
 		if (templateId === 'family-history') {
+			// Charts section
 			addChapter('section-divider', 'Charts', { subtitle: 'Visual family tree charts' } as SectionDividerConfig);
 			addChapter('visual-tree', 'Pedigree chart', {
 				chartType: 'pedigree',
@@ -365,19 +370,43 @@ export class BookBuilderModal extends Modal {
 				rootPersonName,
 				maxGenerations: 5,
 			} as VisualTreeChapterConfig);
-			addChapter('section-divider', 'Reports', { subtitle: 'Detailed genealogical reports' } as SectionDividerConfig);
+
+			// Individual summaries for direct ancestors
+			addChapter('section-divider', 'Ancestors', { subtitle: 'Individual summaries for direct-line ancestors' } as SectionDividerConfig);
+
+			const ancestors = rootPerson ? this.getDirectLineAncestors(graphService, rootPersonCrId) : [];
+			// Root person first
 			addChapter('report', `Individual summary — ${rootPersonName}`, {
 				reportType: 'individual-summary' as ReportType,
 				subjectCrId: rootPersonCrId,
 				subjectName: rootPersonName,
 				reportOptions: { includeDetails: true, includeSources: true },
 			} as ReportChapterConfig);
-			addChapter('report', `Family group sheet — ${rootPersonName}`, {
-				reportType: 'family-group-sheet' as ReportType,
-				subjectCrId: rootPersonCrId,
-				subjectName: rootPersonName,
-				reportOptions: { includeChildren: true, includeSources: true },
-			} as ReportChapterConfig);
+			// Then ancestors by generation
+			for (const ancestor of ancestors) {
+				addChapter('report', `Individual summary — ${ancestor.name}`, {
+					reportType: 'individual-summary' as ReportType,
+					subjectCrId: ancestor.crId,
+					subjectName: ancestor.name,
+					reportOptions: { includeDetails: true, includeSources: true },
+				} as ReportChapterConfig);
+			}
+
+			// Family group sheets for each nuclear family in the direct line
+			addChapter('section-divider', 'Family groups', { subtitle: 'Family group sheets for direct-line families' } as SectionDividerConfig);
+
+			const familyHeads = this.getNuclearFamilyHeads(graphService, rootPersonCrId);
+			for (const head of familyHeads) {
+				addChapter('report', `Family group sheet — ${head.name}`, {
+					reportType: 'family-group-sheet' as ReportType,
+					subjectCrId: head.crId,
+					subjectName: head.name,
+					reportOptions: { includeChildren: true, includeSources: true },
+				} as ReportChapterConfig);
+			}
+
+			// Reference reports
+			addChapter('section-divider', 'Reference', { subtitle: 'Comprehensive genealogical reports' } as SectionDividerConfig);
 			addChapter('report', `Ahnentafel — ${rootPersonName}`, {
 				reportType: 'ahnentafel' as ReportType,
 				subjectCrId: rootPersonCrId,
@@ -390,6 +419,7 @@ export class BookBuilderModal extends Modal {
 				subjectName: rootPersonName,
 				reportOptions: { maxGenerations: 5, includeSpouses: true, includeSources: true },
 			} as ReportChapterConfig);
+
 		} else if (templateId === 'research-compilation') {
 			addChapter('report', `Brick wall report — ${rootPersonName}`, {
 				reportType: 'brick-wall-report' as ReportType,
@@ -403,12 +433,27 @@ export class BookBuilderModal extends Modal {
 				subjectName: rootPersonName,
 				reportOptions: {},
 			} as ReportChapterConfig);
+
+			// Individual summaries for direct ancestors
+			addChapter('section-divider', 'Individual summaries', {} as SectionDividerConfig);
+
 			addChapter('report', `Individual summary — ${rootPersonName}`, {
 				reportType: 'individual-summary' as ReportType,
 				subjectCrId: rootPersonCrId,
 				subjectName: rootPersonName,
 				reportOptions: { includeDetails: true, includeSources: true },
 			} as ReportChapterConfig);
+
+			const ancestors = rootPerson ? this.getDirectLineAncestors(graphService, rootPersonCrId) : [];
+			for (const ancestor of ancestors) {
+				addChapter('report', `Individual summary — ${ancestor.name}`, {
+					reportType: 'individual-summary' as ReportType,
+					subjectCrId: ancestor.crId,
+					subjectName: ancestor.name,
+					reportOptions: { includeDetails: true, includeSources: true },
+				} as ReportChapterConfig);
+			}
+
 			addChapter('report', `Ahnentafel — ${rootPersonName}`, {
 				reportType: 'ahnentafel' as ReportType,
 				subjectCrId: rootPersonCrId,
@@ -418,6 +463,95 @@ export class BookBuilderModal extends Modal {
 		}
 
 		this.chapters = chapters;
+	}
+
+	/**
+	 * Get direct-line ancestors (parents, grandparents, etc.) sorted by generation.
+	 * Returns unique ancestors up to 4 generations (parents through great-great-grandparents).
+	 */
+	private getDirectLineAncestors(
+		graphService: ReturnType<CanvasRootsPlugin['createFamilyGraphService']>,
+		rootCrId: string
+	): Array<{ crId: string; name: string; generation: number }> {
+		const result: Array<{ crId: string; name: string; generation: number }> = [];
+		const visited = new Set<string>();
+		const queue: Array<{ crId: string; generation: number }> = [{ crId: rootCrId, generation: 0 }];
+		const maxGenerations = 4;
+
+		while (queue.length > 0) {
+			const { crId, generation } = queue.shift()!;
+			if (visited.has(crId) || generation > maxGenerations) continue;
+			visited.add(crId);
+
+			const person = graphService.getPerson(crId);
+			if (!person) continue;
+
+			// Don't add root person (already handled separately)
+			if (crId !== rootCrId) {
+				result.push({ crId: person.crId, name: person.name, generation });
+			}
+
+			// Queue parents
+			if (person.fatherCrId && !visited.has(person.fatherCrId)) {
+				queue.push({ crId: person.fatherCrId, generation: generation + 1 });
+			}
+			if (person.motherCrId && !visited.has(person.motherCrId)) {
+				queue.push({ crId: person.motherCrId, generation: generation + 1 });
+			}
+			for (const parentCrId of person.parentCrIds) {
+				if (!visited.has(parentCrId)) {
+					queue.push({ crId: parentCrId, generation: generation + 1 });
+				}
+			}
+		}
+
+		// Sort by generation, then name within generation
+		return result.sort((a, b) => a.generation - b.generation || a.name.localeCompare(b.name));
+	}
+
+	/**
+	 * Get unique nuclear family heads in the direct ancestral line.
+	 * Each person with children represents a nuclear family. Deduplicate
+	 * by not including both spouses if both are in the direct line.
+	 */
+	private getNuclearFamilyHeads(
+		graphService: ReturnType<CanvasRootsPlugin['createFamilyGraphService']>,
+		rootCrId: string
+	): Array<{ crId: string; name: string }> {
+		const ancestors = this.getDirectLineAncestors(graphService, rootCrId);
+		const allDirectLine = new Set([rootCrId, ...ancestors.map(a => a.crId)]);
+		const familyHeads: Array<{ crId: string; name: string }> = [];
+		const coveredSpouses = new Set<string>();
+
+		// Root person first (if they have children)
+		const rootPerson = graphService.getPerson(rootCrId);
+		if (rootPerson && rootPerson.childrenCrIds.length > 0) {
+			familyHeads.push({ crId: rootPerson.crId, name: rootPerson.name });
+			// Mark their spouses as covered
+			for (const spouseId of rootPerson.spouseCrIds) {
+				if (allDirectLine.has(spouseId)) {
+					coveredSpouses.add(spouseId);
+				}
+			}
+		}
+
+		// Then ancestors
+		for (const ancestor of ancestors) {
+			if (coveredSpouses.has(ancestor.crId)) continue;
+
+			const person = graphService.getPerson(ancestor.crId);
+			if (!person || person.childrenCrIds.length === 0) continue;
+
+			familyHeads.push({ crId: person.crId, name: person.name });
+			// Mark their spouses as covered
+			for (const spouseId of person.spouseCrIds) {
+				if (allDirectLine.has(spouseId)) {
+					coveredSpouses.add(spouseId);
+				}
+			}
+		}
+
+		return familyHeads;
 	}
 
 	// ========== STEP 2: CHAPTERS ==========
