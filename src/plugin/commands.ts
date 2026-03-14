@@ -876,4 +876,37 @@ export function registerCommandsAndEvents(plugin: CanvasRootsPlugin): void {
 			new BookBuilderModal(plugin).open();
 		}
 	});
+
+	// Add command: Regenerate book from .book.json
+	plugin.addCommand({
+		id: 'regenerate-book',
+		name: 'Regenerate book from definition',
+		checkCallback: (checking: boolean) => {
+			const file = plugin.app.workspace.getActiveFile();
+			if (!file || !file.path.endsWith('.book.json')) return false;
+			if (checking) return true;
+
+			(async () => {
+				try {
+					const content = await plugin.app.vault.read(file);
+					const definition = JSON.parse(content);
+					const { BookGenerationService } = await import('../book/services/book-generation-service');
+					const service = new BookGenerationService(plugin.app, plugin.settings, plugin);
+
+					new Notice('Regenerating book...');
+					const result = await service.generateBook(definition);
+
+					if (result.success && result.blob) {
+						BookGenerationService.downloadBook(result.blob, result.suggestedFilename);
+						new Notice(`Book regenerated: ${result.stats.chapterCount} chapters`);
+					} else {
+						new Notice(`Book generation failed: ${result.errors.join(', ')}`);
+					}
+				} catch (err) {
+					new Notice(`Failed to regenerate book: ${err instanceof Error ? err.message : String(err)}`);
+				}
+			})();
+			return true;
+		}
+	});
 }

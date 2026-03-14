@@ -317,6 +317,31 @@ export function registerContextMenus(plugin: CanvasRootsPlugin): void {
 							}
 						});
 					});
+					menu.addItem((item) => {
+						item.setTitle('Regenerate book');
+						item.setIcon('refresh-cw');
+						item.onClick(async () => {
+							try {
+								const content = await plugin.app.vault.read(file);
+								const definition = JSON.parse(content);
+								const { BookGenerationService } = await import('../book/services/book-generation-service');
+								const service = new BookGenerationService(plugin.app, plugin.settings, plugin);
+
+								new Notice('Regenerating book...');
+								const result = await service.generateBook(definition);
+
+								if (result.success && result.blob) {
+									BookGenerationService.downloadBook(result.blob, result.suggestedFilename);
+									new Notice(`Book regenerated: ${result.stats.chapterCount} chapters`);
+								} else {
+									new Notice(`Book generation failed: ${result.errors.join(', ')}`);
+								}
+							} catch (error) {
+								logger.error('regenerate-book', 'Failed to regenerate book', error);
+								new Notice('Failed to regenerate book');
+							}
+						});
+					});
 				}
 
 				// Markdown files: Person notes, Place notes, Source notes, Map notes, Schema notes, or plain notes
