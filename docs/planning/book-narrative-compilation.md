@@ -146,20 +146,21 @@ Books saved as `.book.json` can be reopened in the builder to modify chapters or
 - ODT book renderer (`src/book/services/odt-book-renderer.ts`) — single ODT with cover, TOC, chapter headings, embedded images, page breaks
 - Exposed public methods on `PdfReportRenderer` and `OdtGenerator` for reuse by book renderers
 
-#### Phase 2: Book builder UI
+#### Phase 2: Book builder UI ✅ (v0.20.25)
 
-- Book builder modal (4-step wizard)
+- Book builder modal (4-step wizard) (`src/book/ui/book-builder-modal.ts`)
 - Chapter list with drag-and-drop reordering
-- Inline chapter configuration (reuse existing report option components)
-- Preset templates (family history book, research compilation)
+- Inline chapter configuration via `ChapterConfigModal` for all four chapter types
+- Preset templates (family history book, research compilation, blank)
 - Save/load book definitions as `.book.json`
+- Command registration and context menu on `.book.json` files
 
-#### Phase 3: Back matter and polish
+#### Phase 3: Back matter and polish ✅ (v0.20.25)
 
-- Consolidated bibliography (collect all footnotes/sources across chapters, deduplicate)
-- Name index (collect all person names across chapters with page references)
-- Section divider pages with decorative styling
-- Chapter numbering options (numbered, unnumbered, roman numerals for front matter)
+- Consolidated bibliography — collects footnote definitions across chapters, deduplicates by normalized text, sorted alphabetically
+- Name index — collects bold person names and table cell names across chapters, sorted by last name, grouped by initial letter
+- Enhanced section divider pages with upper/lower decorative lines and subtitle support
+- Chapter numbering options (none, numeric, Roman numerals) with TOC integration
 
 #### Phase 4: Template intelligence
 
