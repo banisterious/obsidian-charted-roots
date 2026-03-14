@@ -13,10 +13,10 @@ import { Notice } from 'obsidian';
  */
 
 /** Basic content type for pdfmake - allows any valid content structure */
-type Content = Record<string, unknown> | string | Content[];
+export type Content = Record<string, unknown> | string | Content[];
 
 /** Document definition for pdfmake */
-interface TDocumentDefinitions {
+export interface TDocumentDefinitions {
 	pageSize: string | { width: number; height: number };
 	pageOrientation?: 'portrait' | 'landscape';
 	pageMargins: [number, number, number, number];
@@ -28,7 +28,7 @@ interface TDocumentDefinitions {
 }
 
 /** Style dictionary for pdfmake */
-interface StyleDictionary {
+export interface StyleDictionary {
 	[styleName: string]: Record<string, unknown>;
 }
 
@@ -52,7 +52,7 @@ interface ContentTable {
 }
 
 /** Created PDF interface with download method */
-interface TCreatedPdf {
+export interface TCreatedPdf {
 	download(filename: string): void;
 	getBlob(cb: (blob: Blob) => void): void;
 }
@@ -194,7 +194,7 @@ export class PdfReportRenderer {
 	/**
 	 * Ensure pdfmake is loaded (lazy loading)
 	 */
-	private async ensurePdfMake(): Promise<void> {
+	public async ensurePdfMake(): Promise<void> {
 		if (this._pdfMake) return;
 
 		new Notice('Preparing PDF export...');
@@ -230,7 +230,7 @@ export class PdfReportRenderer {
 	 * Get the default font based on style preference
 	 * Note: Currently using Roboto for all styles (bundled with pdfmake)
 	 */
-	private getDefaultFont(_fontStyle: 'serif' | 'sans-serif'): string {
+	public getDefaultFont(_fontStyle: 'serif' | 'sans-serif'): string {
 		// Roboto is the only font bundled with pdfmake's vfs_fonts
 		// Future: could add serif font option with custom font embedding
 		return 'Roboto';
@@ -239,7 +239,7 @@ export class PdfReportRenderer {
 	/**
 	 * Get shared styles for all reports
 	 */
-	private getStyles(_fontStyle: 'serif' | 'sans-serif'): StyleDictionary {
+	public getStyles(_fontStyle: 'serif' | 'sans-serif'): StyleDictionary {
 		const headerFont = 'Roboto'; // Using Roboto (bundled with pdfmake)
 		return {
 			title: {
@@ -454,7 +454,7 @@ export class PdfReportRenderer {
 	/**
 	 * Strip wikilink brackets from text (e.g., [[Place Name]] -> Place Name)
 	 */
-	private stripWikilinks(text: string | undefined): string {
+	public stripWikilinks(text: string | undefined): string {
 		if (!text) return '';
 		return text.replace(/\[\[([^\]]+)\]\]/g, '$1');
 	}
@@ -462,7 +462,7 @@ export class PdfReportRenderer {
 	/**
 	 * Reset footnote collection for a new document
 	 */
-	private resetFootnotes(): void {
+	public resetFootnotes(): void {
 		this.footnotes = new Map();
 		this.footnoteOrder = [];
 		this.footnoteCounter = 0;
@@ -547,7 +547,7 @@ export class PdfReportRenderer {
 	/**
 	 * Build the endnotes section if there are any footnotes
 	 */
-	private buildEndnotesSection(): Content[] {
+	public buildEndnotesSection(): Content[] {
 		if (this.footnoteOrder.length === 0) {
 			return [];
 		}
@@ -636,7 +636,7 @@ export class PdfReportRenderer {
 	/**
 	 * Build a cover page for the report
 	 */
-	private buildCoverPage(
+	public buildCoverPage(
 		reportTitle: string,
 		subtitle?: string,
 		logoDataUrl?: string,
@@ -2620,7 +2620,7 @@ export class PdfReportRenderer {
 	 * - Tables
 	 * - Footnote markers (converted to superscript references)
 	 */
-	private markdownToPdfContent(markdown: string): Content[] {
+	public markdownToPdfContent(markdown: string): Content[] {
 		const content: Content[] = [];
 		const lines = markdown.split('\n');
 
@@ -2760,7 +2760,7 @@ export class PdfReportRenderer {
 	 *
 	 * Returns either a simple string or pdfmake text array for rich formatting.
 	 */
-	private processInlineFormatting(text: string): Content {
+	public processInlineFormatting(text: string): Content {
 		// First process footnotes
 		const withFootnotes = this.processFootnotes(text);
 
@@ -2820,7 +2820,7 @@ export class PdfReportRenderer {
 	/**
 	 * Parse markdown table into pdfmake table content
 	 */
-	private parseMarkdownTable(lines: string[]): Content | null {
+	public parseMarkdownTable(lines: string[]): Content | null {
 		if (lines.length < 2) return null;
 
 		// Parse header row

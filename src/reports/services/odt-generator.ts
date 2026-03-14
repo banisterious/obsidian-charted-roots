@@ -86,7 +86,7 @@ export class OdtGenerator {
 	/**
 	 * Add the mimetype file (must be first, uncompressed)
 	 */
-	private addMimetype(): void {
+	public addMimetype(): void {
 		this.zip.file('mimetype', 'application/vnd.oasis.opendocument.text', {
 			compression: 'STORE'
 		});
@@ -95,7 +95,7 @@ export class OdtGenerator {
 	/**
 	 * Add the manifest file
 	 */
-	private addManifest(hasImage: boolean): void {
+	public addManifest(hasImage: boolean): void {
 		let manifest = `<?xml version="1.0" encoding="UTF-8"?>
 <manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0" manifest:version="1.2">
   <manifest:file-entry manifest:full-path="/" manifest:media-type="application/vnd.oasis.opendocument.text"/>
@@ -117,7 +117,7 @@ export class OdtGenerator {
 	/**
 	 * Add the styles file
 	 */
-	private addStyles(): void {
+	public addStyles(): void {
 		const styles = `<?xml version="1.0" encoding="UTF-8"?>
 <office:document-styles xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
                         xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
@@ -296,7 +296,7 @@ ${coverPage}${imageContent}${bodyContent}
 	/**
 	 * Generate cover page content
 	 */
-	private generateCoverPage(options: OdtExportOptions): string {
+	public generateCoverPage(options: OdtExportOptions): string {
 		let content = '';
 
 		// Add some vertical space before title
@@ -347,7 +347,7 @@ ${coverPage}${imageContent}${bodyContent}
 	/**
 	 * Convert markdown content to ODT XML
 	 */
-	private markdownToOdtContent(markdown: string): string {
+	public markdownToOdtContent(markdown: string): string {
 		// Parse and extract footnotes from markdown
 		const parsed = parseFootnotes(markdown);
 		this.footnotes = parsed.footnotes;
@@ -447,7 +447,7 @@ ${coverPage}${imageContent}${bodyContent}
 	/**
 	 * Parse a markdown table and convert to ODT table XML
 	 */
-	private parseMarkdownTable(lines: string[], tableId: number): string {
+	public parseMarkdownTable(lines: string[], tableId: number): string {
 		if (lines.length < 2) {
 			// Not enough lines for a valid table
 			return lines.map(line =>
@@ -661,7 +661,7 @@ ${coverPage}${imageContent}${bodyContent}
 	/**
 	 * Escape special XML characters
 	 */
-	private escapeXml(text: string): string {
+	public escapeXml(text: string): string {
 		return text
 			.replace(/&/g, '&amp;')
 			.replace(/</g, '&lt;')
