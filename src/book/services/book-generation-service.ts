@@ -1,0 +1,405 @@
+/**
+ * Book Generation Service
+ *
+ * Orchestrates the generation of a complete book from a BookDefinition.
+ * Iterates through chapters, generates content for each (reports, visual trees,
+ * vault notes, section dividers), then delegates to PdfBookRenderer or
+ * OdtBookRenderer for final document assembly.
+ */
+
+import { App, Notice } from 'obsidian';
+import type CanvasRootsPlugin from '../../../main';
+import type { CanvasRootsSettings } from '../../settings';
+import { ReportGenerationService } from '../../reports/services/report-generation-service';
+import { VisualTreeService } from '../../trees/services/visual-tree-service';
+import { VisualTreeSvgRenderer } from '../../trees/services/visual-tree-svg-renderer';
+import type { VisualTreeOptions } from '../../trees/types/visual-tree-types';
+import { PdfBookRenderer } from './pdf-book-renderer';
+import { OdtBookRenderer } from './odt-book-renderer';
+import type {
+	BookDefinition,
+	BookChapter,
+	BookGenerationProgress,
+	BookGenerationResult,
+	ChapterGenerationResult,
+	ReportChapterConfig,
+	VisualTreeChapterConfig,
+	VaultNoteChapterConfig,
+} from '../types/book-types';
+import { getLogger } from '../../core/logging';
+
+const logger = getLogger('BookGenerationService');
+
+/**
+ * Strip YAML frontmatter from markdown content.
+ */
+function stripFrontmatter(content: string): string {
+	const match = content.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/);
+	if (match) {
+		return content.slice(match[0].length);
+	}
+	return content;
+}
+
+/**
+ * Strip wikilinks, keeping display text or link target.
+ */
+function stripWikilinks(content: string): string {
+	return content.replace(/\[\[([^\]|]+)(\|([^\]]+))?\]\]/g, (_match, target, _pipe, alias) => alias || target);
+}
+
+/**
+ * Strip charted-roots dynamic code blocks that won't render in a document.
+ */
+function stripDynamicBlocks(content: string): string {
+	return content.replace(/```charted-roots-[\s\S]*?```/g, '');
+}
+
+/**
+ * Sanitize vault note markdown for document rendering.
+ */
+function sanitizeVaultNoteMarkdown(rawContent: string): string {
+	let content = stripFrontmatter(rawContent);
+	content = stripWikilinks(content);
+	content = stripDynamicBlocks(content);
+	return content.trim();
+}
+
+export class BookGenerationService {
+	private app: App;
+	private settings: CanvasRootsSettings;
+	private plugin: CanvasRootsPlugin;
+
+	constructor(app: App, settings: CanvasRootsSettings, plugin: CanvasRootsPlugin) {
+		this.app = app;
+		this.settings = settings;
+		this.plugin = plugin;
+	}
+
+	/**
+	 * Generate a complete book from a definition.
+	 */
+	async generateBook(
+		definition: BookDefinition,
+		onProgress?: (progress: BookGenerationProgress) => void
+	): Promise<BookGenerationResult> {
+		const startTime = Date.now();
+		const chapterResults: ChapterGenerationResult[] = [];
+		const errors: string[] = [];
+		const warnings: string[] = [];
+		let totalPeople = 0;
+		let totalSources = 0;
+
+		logger.info('generateBook', `Generating book: ${definition.metadata.title}`, {
+			chapterCount: definition.chapters.length,
+			format: definition.outputOptions.format,
+		});
+
+		// Generate each chapter's content
+		for (let i = 0; i < definition.chapters.length; i++) {
+			const chapter = definition.chapters[i];
+
+			onProgress?.({
+				currentChapter: i + 1,
+				totalChapters: definition.chapters.length,
+				chapterTitle: chapter.title,
+				phase: 'generating',
+			});
+
+			const result = await this.generateChapter(chapter);
+			chapterResults.push(result);
+
+			if (!result.success && result.error) {
+				errors.push(`Chapter "${chapter.title}": ${result.error}`);
+			}
+			warnings.push(...result.warnings.map(w => `Chapter "${chapter.title}": ${w}`));
+		}
+
+		// Check if any chapters succeeded
+		const successfulCount = chapterResults.filter(r => r.success).length;
+		if (successfulCount === 0) {
+			return {
+				success: false,
+				suggestedFilename: this.buildFilename(definition),
+				errors: errors.length > 0 ? errors : ['No chapters generated successfully'],
+				warnings,
+				stats: {
+					chapterCount: 0,
+					totalPeople,
+					totalSources,
+					generationTimeMs: Date.now() - startTime,
+				},
+			};
+		}
+
+		// Render to the chosen format
+		onProgress?.({
+			currentChapter: definition.chapters.length,
+			totalChapters: definition.chapters.length,
+			chapterTitle: 'Assembling document',
+			phase: 'rendering',
+		});
+
+		let blob: Blob;
+		try {
+			if (definition.outputOptions.format === 'pdf') {
+				const renderer = new PdfBookRenderer();
+				blob = await renderer.renderBook(definition, chapterResults);
+			} else {
+				const renderer = new OdtBookRenderer();
+				blob = await renderer.renderBook(definition, chapterResults);
+			}
+		} catch (err) {
+			const message = err instanceof Error ? err.message : String(err);
+			logger.error('generateBook', 'Failed to render book', { error: message });
+			return {
+				success: false,
+				suggestedFilename: this.buildFilename(definition),
+				errors: [`Failed to render document: ${message}`],
+				warnings,
+				stats: {
+					chapterCount: successfulCount,
+					totalPeople,
+					totalSources,
+					generationTimeMs: Date.now() - startTime,
+				},
+			};
+		}
+
+		logger.info('generateBook', 'Book generated successfully', {
+			chapters: successfulCount,
+			timeMs: Date.now() - startTime,
+		});
+
+		return {
+			success: true,
+			blob,
+			suggestedFilename: this.buildFilename(definition),
+			errors,
+			warnings,
+			stats: {
+				chapterCount: successfulCount,
+				totalPeople,
+				totalSources,
+				generationTimeMs: Date.now() - startTime,
+			},
+		};
+	}
+
+	/**
+	 * Generate content for a single chapter, dispatching by type.
+	 */
+	private async generateChapter(chapter: BookChapter): Promise<ChapterGenerationResult> {
+		try {
+			switch (chapter.type) {
+				case 'report':
+					return await this.generateReportChapter(chapter);
+				case 'visual-tree':
+					return await this.generateVisualTreeChapter(chapter);
+				case 'vault-note':
+					return await this.generateVaultNoteChapter(chapter);
+				case 'section-divider':
+					return this.generateSectionDividerChapter(chapter);
+				default:
+					return {
+						chapterId: chapter.id,
+						chapterTitle: chapter.title,
+						chapterType: chapter.type,
+						success: false,
+						error: `Unknown chapter type: ${chapter.type}`,
+						warnings: [],
+					};
+			}
+		} catch (err) {
+			const message = err instanceof Error ? err.message : String(err);
+			logger.error('generateChapter', `Failed to generate chapter: ${chapter.title}`, { error: message });
+			return {
+				chapterId: chapter.id,
+				chapterTitle: chapter.title,
+				chapterType: chapter.type,
+				success: false,
+				error: message,
+				warnings: [],
+			};
+		}
+	}
+
+	/**
+	 * Generate a report chapter by delegating to ReportGenerationService.
+	 */
+	private async generateReportChapter(chapter: BookChapter): Promise<ChapterGenerationResult> {
+		const config = chapter.config as ReportChapterConfig;
+		const reportService = new ReportGenerationService(this.app, this.settings);
+
+		// Build options for the report generator
+		// The reportOptions should contain all necessary fields for the specific report type
+		const options = {
+			...config.reportOptions,
+			outputMethod: 'vault' as const, // We just want the markdown content
+		};
+
+		const result = await reportService.generateReport(
+			config.reportType,
+			options as Parameters<typeof reportService.generateReport>[1]
+		);
+
+		if (!result.success) {
+			return {
+				chapterId: chapter.id,
+				chapterTitle: chapter.title,
+				chapterType: chapter.type,
+				success: false,
+				error: result.error || 'Report generation failed',
+				warnings: result.warnings,
+			};
+		}
+
+		return {
+			chapterId: chapter.id,
+			chapterTitle: chapter.title,
+			chapterType: chapter.type,
+			success: true,
+			markdown: result.content,
+			warnings: result.warnings,
+		};
+	}
+
+	/**
+	 * Generate a visual tree chapter using the tree rendering pipeline.
+	 */
+	private async generateVisualTreeChapter(chapter: BookChapter): Promise<ChapterGenerationResult> {
+		const config = chapter.config as VisualTreeChapterConfig;
+		const familyGraphService = this.plugin.createFamilyGraphService();
+		const treeService = new VisualTreeService(this.app, familyGraphService);
+		const svgRenderer = new VisualTreeSvgRenderer();
+
+		const treeOptions: VisualTreeOptions = {
+			rootPersonCrId: config.rootPersonCrId,
+			chartType: config.chartType,
+			maxGenerations: config.maxGenerations,
+			pageSize: 'letter',
+			orientation: 'landscape',
+			nodeContent: 'name-dates',
+			colorScheme: 'default',
+			includeSpouses: true,
+		};
+
+		const layouts = treeService.buildLayouts(treeOptions);
+		if (layouts.length === 0) {
+			return {
+				chapterId: chapter.id,
+				chapterTitle: chapter.title,
+				chapterType: chapter.type,
+				success: false,
+				error: 'No tree layout generated',
+				warnings: [],
+			};
+		}
+
+		// Use the first layout (single-page for book chapters)
+		const layout = layouts[0];
+		const svgString = svgRenderer.renderToSvg(layout, treeOptions);
+		const imageDataUrl = await svgRenderer.svgToDataUrl(
+			svgString,
+			layout.page.width,
+			layout.page.height
+		);
+
+		return {
+			chapterId: chapter.id,
+			chapterTitle: chapter.title,
+			chapterType: chapter.type,
+			success: true,
+			imageDataUrl,
+			imageDimensions: {
+				width: layout.page.width,
+				height: layout.page.height,
+			},
+			warnings: [],
+		};
+	}
+
+	/**
+	 * Read a vault note and return its sanitized markdown content.
+	 */
+	private async generateVaultNoteChapter(chapter: BookChapter): Promise<ChapterGenerationResult> {
+		const config = chapter.config as VaultNoteChapterConfig;
+		const file = this.app.vault.getAbstractFileByPath(config.notePath);
+
+		if (!file) {
+			return {
+				chapterId: chapter.id,
+				chapterTitle: chapter.title,
+				chapterType: chapter.type,
+				success: false,
+				error: `File not found: ${config.notePath}`,
+				warnings: [],
+			};
+		}
+
+		// vault.read() works on TFile
+		const rawContent = await this.app.vault.read(file as import('obsidian').TFile);
+		const markdown = sanitizeVaultNoteMarkdown(rawContent);
+
+		return {
+			chapterId: chapter.id,
+			chapterTitle: chapter.title,
+			chapterType: chapter.type,
+			success: true,
+			markdown,
+			warnings: [],
+		};
+	}
+
+	/**
+	 * Generate a section divider — no content generation needed.
+	 */
+	private generateSectionDividerChapter(chapter: BookChapter): ChapterGenerationResult {
+		return {
+			chapterId: chapter.id,
+			chapterTitle: chapter.title,
+			chapterType: chapter.type,
+			success: true,
+			warnings: [],
+		};
+	}
+
+	/**
+	 * Build a suggested filename from the book metadata.
+	 */
+	private buildFilename(definition: BookDefinition): string {
+		const title = definition.metadata.title
+			.replace(/[^a-zA-Z0-9\s-]/g, '')
+			.replace(/\s+/g, '-')
+			.substring(0, 60);
+		const ext = definition.outputOptions.format === 'pdf' ? 'pdf' : 'odt';
+		return `${title}.${ext}`;
+	}
+
+	/**
+	 * Download the generated book blob.
+	 */
+	static downloadBook(blob: Blob, filename: string): void {
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = filename;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+
+		new Notice(`Book downloaded: ${filename}`);
+	}
+
+	/**
+	 * Save the generated book blob to the vault.
+	 */
+	async saveToVault(blob: Blob, filename: string, folder?: string): Promise<string> {
+		const path = folder ? `${folder}/${filename}` : filename;
+		const arrayBuffer = await blob.arrayBuffer();
+		await this.app.vault.createBinary(path, arrayBuffer);
+		new Notice(`Book saved: ${path}`);
+		return path;
+	}
+}
