@@ -184,7 +184,7 @@ export class PdfReportRenderer {
 	 * Get the pdfmake instance. Must call ensurePdfMake() first.
 	 * @throws Error if pdfmake is not initialized
 	 */
-	private get pdfMake(): PdfMakeInstance {
+	public get pdfMake(): PdfMakeInstance {
 		if (!this._pdfMake) {
 			throw new Error('pdfmake not initialized. Call ensurePdfMake() first.');
 		}
@@ -609,7 +609,7 @@ export class PdfReportRenderer {
 	/**
 	 * Create the document header
 	 */
-	private createHeader(reportTitle: string): (currentPage: number, pageCount: number) => Content {
+	public createHeader(reportTitle: string): (currentPage: number, pageCount: number) => Content {
 		return (currentPage: number, pageCount: number): Content => ({
 			columns: [
 				{ text: reportTitle, style: 'pageHeader', alignment: 'left' },
@@ -622,7 +622,7 @@ export class PdfReportRenderer {
 	/**
 	 * Create the document footer
 	 */
-	private createFooter(dateFormat?: 'mdy' | 'dmy' | 'ymd'): (currentPage: number, pageCount: number) => Content {
+	public createFooter(dateFormat?: 'mdy' | 'dmy' | 'ymd'): (currentPage: number, pageCount: number) => Content {
 		const generatedDate = this.formatDate(new Date(), dateFormat || 'mdy');
 		return (currentPage: number, pageCount: number): Content => ({
 			columns: [
