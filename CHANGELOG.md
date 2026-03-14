@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Book and narrative compilation** ([#294](https://github.com/banisterious/obsidian-charted-roots/issues/294)): A book builder that combines reports, visual trees, vault notes, and section dividers into a single PDF or ODT document. Features a 4-step wizard modal with drag-and-drop chapter ordering, preset templates (family history book, research compilation), consolidated bibliography, name index, chapter numbering (numeric or Roman), and enhanced section dividers. Templates derive chapters from the family graph. Saveable as `.book.json` definitions with a regenerate command and change detection.
+
+---
+
 ## [0.20.25] - 2026-03-13
 
 ### Added
