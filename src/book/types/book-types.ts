@@ -103,6 +103,10 @@ export interface BookDefinition {
 	metadata: BookMetadata;
 	chapters: BookChapter[];
 	outputOptions: BookOutputOptions;
+	/** ISO timestamp of the last successful generation */
+	lastGeneratedAt?: string;
+	/** Content hashes per chapter from the last generation (key: chapter ID, value: hash) */
+	lastChapterHashes?: Record<string, string>;
 }
 
 /** A single bibliography entry (deduplicated across chapters) */
@@ -161,4 +165,8 @@ export interface BookGenerationResult {
 		totalSources: number;
 		generationTimeMs: number;
 	};
+	/** Content hashes for each chapter (for change detection on next generation) */
+	chapterHashes?: Record<string, string>;
+	/** Chapters that changed since the last generation */
+	changedChapters?: string[];
 }

@@ -332,7 +332,17 @@ export function registerContextMenus(plugin: CanvasRootsPlugin): void {
 
 								if (result.success && result.blob) {
 									BookGenerationService.downloadBook(result.blob, result.suggestedFilename);
-									new Notice(`Book regenerated: ${result.stats.chapterCount} chapters`);
+
+									// Save updated hashes and timestamp
+									definition.lastGeneratedAt = new Date().toISOString();
+									definition.lastChapterHashes = result.chapterHashes;
+									await plugin.app.vault.modify(file, JSON.stringify(definition, null, '\t'));
+
+									const changedCount = result.changedChapters?.length ?? 0;
+									const changeMsg = definition.lastChapterHashes
+										? ` (${changedCount} chapter${changedCount !== 1 ? 's' : ''} changed)`
+										: '';
+									new Notice(`Book regenerated: ${result.stats.chapterCount} chapters${changeMsg}`);
 								} else {
 									new Notice(`Book generation failed: ${result.errors.join(', ')}`);
 								}

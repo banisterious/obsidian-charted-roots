@@ -176,8 +176,16 @@ export class BookGenerationService {
 			};
 		}
 
+		// Compute content hashes and detect changes
+		const chapterHashes = this.computeChapterHashes(chapterResults);
+		const changedChapters = this.detectChangedChapters(
+			chapterHashes,
+			definition.lastChapterHashes
+		);
+
 		logger.info('generateBook', 'Book generated successfully', {
 			chapters: successfulCount,
+			changedCount: changedChapters.length,
 			timeMs: Date.now() - startTime,
 		});
 
@@ -193,6 +201,8 @@ export class BookGenerationService {
 				totalSources,
 				generationTimeMs: Date.now() - startTime,
 			},
+			chapterHashes,
+			changedChapters,
 		};
 	}
 
@@ -455,6 +465,49 @@ export class BookGenerationService {
 				if (aLast !== bLast) return aLast.localeCompare(bLast);
 				return a.name.localeCompare(b.name);
 			});
+	}
+
+	/**
+	 * Compute a simple hash for each chapter's content for change detection.
+	 */
+	private computeChapterHashes(chapterResults: ChapterGenerationResult[]): Record<string, string> {
+		const hashes: Record<string, string> = {};
+		for (const result of chapterResults) {
+			if (!result.success) continue;
+			const content = result.markdown || result.imageDataUrl || '';
+			hashes[result.chapterId] = this.simpleHash(content);
+		}
+		return hashes;
+	}
+
+	/**
+	 * Compare current hashes with previous hashes to find changed chapters.
+	 */
+	private detectChangedChapters(
+		currentHashes: Record<string, string>,
+		previousHashes?: Record<string, string>
+	): string[] {
+		if (!previousHashes) return Object.keys(currentHashes);
+
+		const changed: string[] = [];
+		for (const [chapterId, hash] of Object.entries(currentHashes)) {
+			if (previousHashes[chapterId] !== hash) {
+				changed.push(chapterId);
+			}
+		}
+		return changed;
+	}
+
+	/**
+	 * Simple string hash (djb2 algorithm) for change detection.
+	 */
+	private simpleHash(str: string): string {
+		let hash = 5381;
+		for (let i = 0; i < str.length; i++) {
+			hash = ((hash << 5) + hash) + str.charCodeAt(i);
+			hash = hash & hash; // Convert to 32-bit integer
+		}
+		return (hash >>> 0).toString(36);
 	}
 
 	/**
