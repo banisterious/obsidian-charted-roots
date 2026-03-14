@@ -162,11 +162,11 @@ Books saved as `.book.json` can be reopened in the builder to modify chapters or
 - Enhanced section divider pages with upper/lower decorative lines and subtitle support
 - Chapter numbering options (none, numeric, Roman numerals) with TOC integration
 
-#### Phase 4: Template intelligence
+#### Phase 4: Template intelligence ✅ (v0.20.25)
 
-- Templates that derive chapter lists from the family graph (e.g., auto-generate one family group sheet per nuclear family in the direct line)
-- "Regenerate" command that re-runs all chapters with current vault data
-- Diff/change detection — highlight what changed since last generation
+- Templates traverse the family graph to auto-generate individual summaries for direct-line ancestors (up to 4 generations) and family group sheets for each nuclear family in the direct line, with spouse deduplication
+- "Regenerate book" command (`regenerate-book`) and context menu item on `.book.json` files — re-runs all chapters with current vault data without opening the wizard
+- Change detection via djb2 content hashing per chapter — stores `lastGeneratedAt` and `lastChapterHashes` in the `.book.json` definition, reports changed chapter count on regeneration
 
 ---
 
