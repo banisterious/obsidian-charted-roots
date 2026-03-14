@@ -112,7 +112,8 @@ export class PdfBookRenderer {
 				displayTitle,
 				chapter.type,
 				result,
-				chapter.pageBreakBefore || !isFirstContent
+				chapter.pageBreakBefore || !isFirstContent,
+				chapter.type === 'section-divider' ? (chapter.config as import('../types/book-types').SectionDividerConfig).subtitle : undefined
 			));
 		}
 
@@ -166,7 +167,8 @@ export class PdfBookRenderer {
 		title: string,
 		chapterType: string,
 		result: ChapterGenerationResult,
-		pageBreakBefore: boolean
+		pageBreakBefore: boolean,
+		subtitle?: string
 	): Content[] {
 		switch (chapterType) {
 			case 'report':
@@ -180,7 +182,7 @@ export class PdfBookRenderer {
 					pageBreakBefore
 				);
 			case 'section-divider':
-				return this.renderSectionDivider(title, pageBreakBefore);
+				return this.renderSectionDivider(title, pageBreakBefore, subtitle);
 			default:
 				return [];
 		}
@@ -261,11 +263,12 @@ export class PdfBookRenderer {
 	}
 
 	/**
-	 * Render section divider as a centered title page.
+	 * Render section divider as a centered title page with decorative elements.
 	 */
 	private renderSectionDivider(
 		title: string,
-		pageBreakBefore: boolean
+		pageBreakBefore: boolean,
+		subtitle?: string
 	): Content[] {
 		const content: Content[] = [];
 
@@ -276,18 +279,7 @@ export class PdfBookRenderer {
 		// Vertical spacer
 		content.push({ text: '', margin: [0, 150, 0, 0] });
 
-		// Section title
-		content.push({
-			text: title,
-			fontSize: 24,
-			bold: true,
-			alignment: 'center',
-			color: COLORS.primaryText,
-			tocItem: true,
-			margin: [0, 0, 0, 20],
-		} as Content);
-
-		// Decorative line
+		// Upper decorative line
 		content.push({
 			canvas: [
 				{
@@ -296,12 +288,51 @@ export class PdfBookRenderer {
 					y1: 0,
 					x2: 357,
 					y2: 0,
-					lineWidth: 1,
+					lineWidth: 0.5,
+					lineColor: COLORS.dividerLine,
+				},
+			],
+			margin: [0, 0, 0, 15],
+		} as Content);
+
+		// Section title
+		content.push({
+			text: title,
+			fontSize: 26,
+			bold: true,
+			alignment: 'center',
+			color: COLORS.primaryText,
+			tocItem: true,
+			margin: [0, 0, 0, 8],
+		} as Content);
+
+		// Lower decorative line
+		content.push({
+			canvas: [
+				{
+					type: 'line',
+					x1: 157,
+					y1: 0,
+					x2: 357,
+					y2: 0,
+					lineWidth: 0.5,
 					lineColor: COLORS.dividerLine,
 				},
 			],
 			margin: [0, 0, 0, 0],
 		} as Content);
+
+		// Subtitle if present
+		if (subtitle) {
+			content.push({
+				text: subtitle,
+				fontSize: 14,
+				italics: true,
+				alignment: 'center',
+				color: COLORS.secondaryText,
+				margin: [0, 15, 0, 0],
+			} as Content);
+		}
 
 		return content;
 	}

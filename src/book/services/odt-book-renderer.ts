@@ -114,6 +114,10 @@ export class OdtBookRenderer {
 					bodyContent += '      <text:p text:style-name="Standard"/>\n';
 					bodyContent += '      <text:p text:style-name="Standard"/>\n';
 					bodyContent += `      <text:h text:style-name="Heading_20_1" text:outline-level="1">${this.odtGenerator.escapeXml(displayTitle)}</text:h>\n`;
+					const dividerConfig = chapter.config as import('../types/book-types').SectionDividerConfig;
+					if (dividerConfig.subtitle) {
+						bodyContent += `      <text:p text:style-name="Subtitle">${this.odtGenerator.escapeXml(dividerConfig.subtitle)}</text:p>\n`;
+					}
 					break;
 				}
 			}
