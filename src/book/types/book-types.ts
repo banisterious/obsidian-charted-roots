@@ -87,6 +87,10 @@ export interface BookOutputOptions {
 	dateFormat: 'mdy' | 'dmy' | 'ymd';
 	includeCoverPage: boolean;
 	includeTableOfContents: boolean;
+	includeBibliography: boolean;
+	includeNameIndex: boolean;
+	/** Chapter numbering style */
+	chapterNumbering: 'none' | 'numeric' | 'roman';
 }
 
 /**
@@ -99,6 +103,24 @@ export interface BookDefinition {
 	metadata: BookMetadata;
 	chapters: BookChapter[];
 	outputOptions: BookOutputOptions;
+}
+
+/** A single bibliography entry (deduplicated across chapters) */
+export interface BibliographyEntry {
+	/** Unique key for deduplication (normalized source text) */
+	key: string;
+	/** Formatted citation text */
+	citation: string;
+	/** Chapter titles where this source was referenced */
+	referencedIn: string[];
+}
+
+/** A single name index entry */
+export interface NameIndexEntry {
+	/** Person's display name */
+	name: string;
+	/** Chapter titles where this person is mentioned */
+	chapters: string[];
 }
 
 /** Result of generating a single chapter */
