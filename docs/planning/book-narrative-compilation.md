@@ -138,17 +138,13 @@ Books saved as `.book.json` can be reopened in the builder to modify chapters or
 
 ### Phases
 
-#### Phase 1: Core book engine
+#### Phase 1: Core book engine ✅ (v0.20.25)
 
-- Book definition schema (TypeScript types + JSON storage)
-- Book generation service that orchestrates chapter generation
-- PDF book renderer extending existing `PdfReportRenderer`:
-  - Sequential chapter rendering into single pdfmake document
-  - Auto-generated table of contents with page numbers
-  - Page break handling between chapters
-  - Consistent header/footer across chapters
-- ODT book renderer extending existing `OdtGenerator`
-- Vault note rendering (markdown → PDF/ODT content)
+- Book definition schema (`src/book/types/book-types.ts`)
+- Book generation service (`src/book/services/book-generation-service.ts`) — orchestrates chapter generation, delegates to report/tree/vault services, sanitizes vault note markdown
+- PDF book renderer (`src/book/services/pdf-book-renderer.ts`) — single pdfmake document with cover page, auto-generated TOC, chapter headings, embedded tree images, section dividers, headers/footers
+- ODT book renderer (`src/book/services/odt-book-renderer.ts`) — single ODT with cover, TOC, chapter headings, embedded images, page breaks
+- Exposed public methods on `PdfReportRenderer` and `OdtGenerator` for reuse by book renderers
 
 #### Phase 2: Book builder UI
 
