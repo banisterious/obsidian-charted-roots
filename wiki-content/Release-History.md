@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.20.x](#v020x)
+  - [Book & Narrative Compilation](#book--narrative-compilation-v02026)
   - [Structured Role Lists for Organizations](#structured-role-lists-for-organizations-v02017)
   - [Mills-Aligned Source Classification](#mills-aligned-source-classification-v02017)
   - [Map View Marker Layering](#map-view-marker-layering-v0203)
@@ -112,6 +113,47 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.20.x
+
+### Book & Narrative Compilation (v0.20.26)
+
+A book builder that combines multiple generated reports, visual trees, and user-written vault notes into a single sequenced document with cover page, table of contents, and optional index. Outputs as PDF or ODT.
+
+**GitHub Issue:** [#294](https://github.com/banisterious/obsidian-charted-roots/issues/294)
+
+**Chapter Types:**
+
+| Type | Description |
+|------|-------------|
+| Generated report | Any of the 17 existing report types, configured inline |
+| Visual tree | Pedigree, descendant, hourglass, or fan chart embedded as image |
+| Vault note | User-written markdown rendered into the document |
+| Section divider | Title page for a new part of the book |
+
+**Preset Templates:**
+
+| Template | Audience | Typical contents |
+|----------|----------|-----------------|
+| Family history book | Family sharing | Cover, pedigree chart, individual summaries, family group sheets, descendant register, timeline, bibliography, index |
+| Research compilation | Researcher | Cover, gaps report, source summaries, individual summaries, ahnentafel, bibliography |
+| Blank | Any | Empty canvas, user builds from scratch |
+
+| Change | Description |
+|--------|-------------|
+| Book builder modal | 4-step wizard for metadata, chapter selection with drag-and-drop ordering, output config, and progress-tracked generation |
+| `.book.json` definitions | Saveable book definitions that can be reopened and re-generated as vault data changes |
+| Consolidated bibliography | Deduplicates footnotes across chapters into a single bibliography section |
+| Name index | Auto-generated index sorted by last name with alphabetical grouping |
+| Chapter numbering | Numeric or Roman numeral chapter numbers |
+| Template intelligence | Templates derive chapters from the family graph — individual summaries for direct-line ancestors, family group sheets per nuclear family |
+| Regenerate command | Re-generate a book from its `.book.json` definition without opening the wizard, with change detection reporting which chapters were updated |
+
+**Entry points:** "Open book builder" command, Control Center tile (Trees & reports tab), context menu on `.book.json` files.
+
+**Documentation:**
+- [Book Builder](Book-Builder) — Usage documentation
+- [Book & Narrative Compilation Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/book-narrative-compilation.md) — Design and implementation plan
+
+---
 
 ### Structured Role Lists for Organizations (v0.20.17)
 
