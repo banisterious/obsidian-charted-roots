@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Book generation error** ([#302](https://github.com/banisterious/obsidian-charted-roots/issues/302)): Fixed `downloadBook is not a function` error when generating a book, and fixed blank content in template-derived chapters (ancestors, family groups, reference pages) caused by the generation service not mapping the chapter's subject ID to the field name each report type expects.
+
+---
+
 ## [0.20.26] - 2026-03-15
 
 ### Added

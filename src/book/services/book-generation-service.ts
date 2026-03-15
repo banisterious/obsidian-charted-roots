@@ -251,11 +251,16 @@ export class BookGenerationService {
 		const config = chapter.config as ReportChapterConfig;
 		const reportService = new ReportGenerationService(this.app, this.settings);
 
-		// Build options for the report generator
-		// The reportOptions should contain all necessary fields for the specific report type
+		// Map subjectCrId to the field name expected by the specific report type
+		const personCrIdReports = ['family-group-sheet', 'individual-summary', 'source-summary', 'sources-by-role'];
+		const subjectField = personCrIdReports.includes(config.reportType)
+			? { personCrId: config.subjectCrId }
+			: { rootPersonCrId: config.subjectCrId };
+
 		const options = {
 			...config.reportOptions,
-			outputMethod: 'vault' as const, // We just want the markdown content
+			...subjectField,
+			outputMethod: 'vault' as const,
 		};
 
 		const result = await reportService.generateReport(
