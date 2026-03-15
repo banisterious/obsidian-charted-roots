@@ -9,8 +9,6 @@ This document outlines planned features for Charted Roots. For completed feature
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
   - [GPS Research Workflow Integration](#gps-research-workflow-integration) 📋 Medium ✅ Phase 3 mostly complete
-  - [Entity Profile Views](#entity-profile-views) 📋 Medium ✅ Phase 1-3 complete
-  - [Unified Place Lookup](#unified-place-lookup) 💡 Low ✅ Phase 1-2 complete
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
 - [Future Considerations](#future-considerations)
@@ -31,13 +29,14 @@ For the complete list of implemented features, see [Release History](Release-His
 |:-------:|---------|---------|
 | v0.20.26 | [Book & Narrative Compilation](Release-History#book--narrative-compilation-v02026) | Compile reports, visual trees, vault notes into single PDF/ODT documents with TOC, bibliography, name index |
 | v0.20.25 | [Research Timeline](Dynamic-Note-Content#research-timeline-block) | `charted-roots-research-timeline` code block with table, heatmap, and timeline views with gap detection |
-| v0.20.18 | [Entity Profile View](Release-History#entity-profile-view-v02018) | Auto-syncing sidebar with collapsible sections for all 5 entity types, pin/unpin, breadcrumb navigation, state persistence |
+| v0.20.18 | [Entity Profile View](Release-History#entity-profile-view-v02018) | Auto-syncing sidebar with collapsible sections for all 5 entity types, inline editing, pin/unpin, breadcrumb navigation, state persistence |
 | v0.20.17 | [Structured Role Lists](Release-History#structured-role-lists-for-organizations-v02017) | `roles` property on org notes with autocomplete picker, per-type defaults, and 3-level ordering fallback |
 | v0.20.17 | [Mills-Aligned Source Classification](Release-History#mills-aligned-source-classification-v02017) | Three independent classification axes from *Evidence Explained*: source, information, and evidence classification |
 | v0.20.3 | [Map View Marker Layering](Release-History#map-view-marker-layering-v0203) | Place markers now use hollow circles and render below event markers for visual distinction |
 | v0.20.0 | [Control Center Modularization](Release-History#control-center-modularization) | 9 dockable sidebar views (People, Places, Events, Sources, Organizations, Relationships, Universes, Collections, Data Quality) with filter/sort/search, auto-refresh, and state persistence |
 | v0.19.19 | [Inheritance & Succession Tracking](Release-History#inheritance--succession-tracking) | Track ownership changes, property transfers, and succession through event notes with dedicated UI |
 | v0.19.18 | [Organization Member Management](Release-History#organization-member-management) | Manage organization memberships via context menu with multi-select person picker and inline editing |
+| v0.19.17 | [Unified Place Lookup](Release-History#unified-place-lookup-v01917) | Query Wikidata, GeoNames, and Nominatim from a single interface to create place notes with coordinates and hierarchies |
 | v0.19.16 | [Person Roles in Sources](Release-History#person-roles-in-sources-v01916) | Track roles (witness, informant, official, etc.) on source notes with modal UI, dynamic block, and Sources by Role report |
 | v0.19.15 | [Event Type Icons](Release-History#event-type-icons-v01915) | Display Lucide icons for event types in timelines and map popups with configurable display modes |
 | v0.19.14 | [Multi-Spouse Visual Cues](Release-History#multi-spouse-visual-cues-v01914) | Circled spouse numbers (①②③) on family chart edges clarify multi-spouse relationships |
@@ -104,142 +103,6 @@ Export features discussed in #145 are tracked separately:
 - [Research Workflow](Research-Workflow) — Usage documentation
 - [Research Workflow Integration Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/research-workflow-integration.md) — Full specifications for Phases 2-3
 - Community contributors: @ANYroots (IRN structure, GPS methodology), @wilbry (lightweight approach, unified design)
-
----
-
-### Entity Profile Views
-
-**Priority:** 📋 Medium — Deep work on single entities without context-switching
-
-**Status:** ✅ Phase 1-3 complete
-
-**GitHub Issue:** [#251](https://github.com/banisterious/obsidian-charted-roots/issues/251)
-
-**Discussion:** [#242](https://github.com/banisterious/obsidian-charted-roots/discussions/242)
-
-**Summary:** A dockable Profile View that auto-syncs to the active note and displays all related data for any entity type (Person, Place, Event, Source, Organization) in collapsible sections, enabling deep work without tab-hopping.
-
-**Phased Approach:**
-
-| Phase | Focus | Status |
-|-------|-------|--------|
-| Phase 1 | Read-only Profile View | ✅ Complete (v0.20.18) |
-| Phase 2 | Inline editing (identity fields) | ✅ Complete |
-| Phase 3 | Polish and integration | ✅ Complete |
-
-**Phase 1 — Read-only Profile View (Complete):**
-
-- Auto-syncing `ItemView` that follows the active note with 150ms debounce
-- Sticky identity header with entity type badge, avatar, key metadata, and pin toggle
-- Collapsible sections with chevron toggle and compact summaries
-- Full section coverage for all 5 entity types:
-  - **Person:** Relationships (family + custom), Events, Sources, Media, Data Quality
-  - **Place:** Events at location, Sources, Media, Map preview (coordinates + "Open in Geo Map")
-  - **Event:** Participants, Sources, Media
-  - **Source:** Referenced facts (vault-wide scan), Media
-  - **Organization:** Members, Events, Sources, Media
-- Pin/unpin toggle for freezing on a specific entity; multiple instances for side-by-side comparison
-- Breadcrumb navigation for in-place entity traversal
-- Context menu "Open profile" on all entity types + command palette entry
-- State persistence across sessions (pinned entity, section states, breadcrumbs)
-
-See [Entity Profile View](Entity-Profile-View) for usage documentation.
-
-**Phase 2 — Inline editing (Complete):**
-
-- Click-to-edit for all identity header fields across all five entity types
-- Text, number, and select (dropdown) inputs — Enter or blur saves, Escape cancels
-- One field active at a time; clicking another field saves the first automatically
-- Empty fields show clickable placeholders for adding new values
-- Saves directly to frontmatter via `processFrontMatter()` with property alias support
-- Automatic wikilink requoting for link-valued fields (birth place, seat, repository, etc.)
-- Self-modify guard prevents redundant re-renders after inline edits
-
-**Phase 2 — Deferred to future phases:**
-
-| Feature | Description |
-|---------|-------------|
-| Relationship management | Add/remove relationships via existing picker modals |
-| Inline event/source creation | Create events and sources from within the profile |
-| Undo support | Undo beyond Escape-to-cancel |
-
-**Phase 3 — Polish and integration (Complete):**
-
-- Lazy section rendering — optional `contentRenderer` defers DOM until first expand
-- Keyboard navigation — ArrowUp/Down, Enter/Space, Home/End on section headers (WAI-ARIA accordion)
-- Mobile-responsive layout — 44px touch targets, narrow-pane media query for stacked metadata
-- Embedded Leaflet map preview — interactive map for place profiles, lazy init/cleanup on collapse
-
-**Phase 3 — Deferred to future work:**
-
-| Feature | Description |
-|---------|-------------|
-| Section jump links | Quick navigation links in sticky header |
-| Browser view integration | "Open profile" row action in browser views |
-| Pop-out action | Open cross-entity links in new pinned pane |
-
-**Documentation:**
-- [Entity Profile View](Entity-Profile-View) — Usage documentation
-- [Entity Profile View Implementation](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/developer/implementation/profile-view.md) — Developer implementation guide
-- [Entity Profile Views Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/entity-profile-views.md) — Full specifications for all phases
-- Community contributors: @prentissw (workflow feedback, Relationships section)
-
----
-
-### Unified Place Lookup
-
-**Priority:** 💡 Low — Streamlined place creation from external databases
-
-**Status:** ✅ Phase 1-2 complete | Phases 3-4 planned
-
-**GitHub Issue:** [#218](https://github.com/banisterious/obsidian-charted-roots/issues/218)
-
-**Related Issue:** [#128](https://github.com/banisterious/obsidian-charted-roots/issues/128) (Web Clipper Integration)
-
-**Summary:** Query multiple place databases (Wikidata, GeoNames, Nominatim) from a single interface and create properly-formatted place notes with coordinates, hierarchies, and standardized names.
-
-**The Problem:** Creating accurate place notes requires manual research across multiple sources to obtain standardized names, coordinates, historical jurisdictions, and parent-child relationships. This is time-consuming and error-prone.
-
-**The Solution:** A unified lookup service integrated into the Create Place modal and command palette that queries multiple sources in parallel, displays results, and auto-populates place form fields.
-
-**Key Features:**
-- "Look up place" button in Create Place modal header
-- Multi-source search with side-by-side comparison
-- Source selection chips (toggle Wikidata, GeoNames, OpenStreetMap)
-- Command palette command for standalone lookups
-- Automatic parent hierarchy creation (Phase 3)
-- Bulk place standardization for existing notes (Phase 4)
-
-**Data Sources:**
-
-| Source | Best For | Status |
-|--------|----------|--------|
-| Wikidata | Well-known places, multilingual research | ✅ Phase 1 |
-| GeoNames | Modern geography, worldwide coverage | ✅ Phase 1 (requires free username) |
-| Nominatim/OSM | Geocoding, address lookup | ✅ Phase 1 |
-| FamilySearch Places | U.S. genealogy, historical jurisdictions | Phase 3 (requires OAuth) |
-| GOV | German/European historical boundaries | Phase 3 (needs API research) |
-
-**Phased Approach:**
-
-| Phase | Feature | Status |
-|-------|---------|--------|
-| 1 | Core lookup service (Wikidata, GeoNames, Nominatim) with rate limiting | ✅ Complete |
-| 2 | UI integration (modal, command palette) | ✅ Complete |
-| 3 | FamilySearch (OAuth), GOV, parent hierarchy creation, historical dates | Planned |
-| 4 | Bulk standardization, place authority control, duplicate detection | Planned |
-
-**Phase 1-2 — Complete:**
-- PlaceLookupService with Wikidata, GeoNames, and Nominatim integration
-- Rate limiting (1 req/sec for Nominatim/GeoNames, 500ms for Wikidata)
-- Place type mapping (GeoNames fcode → Charted Roots, Wikidata P31 → Charted Roots)
-- PlaceLookupModal with source selection chips and result cards
-- "Look up place" button in Create Place modal header
-- "Look up place" command palette command
-- Auto-populate coordinates, place type, and parent place from results
-- GeoNames username configuration in Settings → Places
-
-See [Unified Place Lookup Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/unified-place-lookup.md) for implementation details.
 
 ---
 

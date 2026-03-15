@@ -10,11 +10,13 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 
 - [v0.20.x](#v020x)
   - [Book & Narrative Compilation](#book--narrative-compilation-v02026)
+  - [Entity Profile View](#entity-profile-view-v02018)
   - [Structured Role Lists for Organizations](#structured-role-lists-for-organizations-v02017)
   - [Mills-Aligned Source Classification](#mills-aligned-source-classification-v02017)
   - [Map View Marker Layering](#map-view-marker-layering-v0203)
   - [Control Center Modularization](#control-center-modularization)
 - [v0.19.x](#v019x)
+  - [Unified Place Lookup](#unified-place-lookup-v01917)
   - [Inheritance & Succession Tracking](#inheritance--succession-tracking)
   - [Organization Member Management](#organization-member-management)
   - [Person Roles in Sources](#person-roles-in-sources-v01916)
@@ -155,6 +157,56 @@ A book builder that combines multiple generated reports, visual trees, and user-
 
 ---
 
+### Entity Profile View (v0.20.18)
+
+A dockable Profile View that auto-syncs to the active note and displays all related data for any entity type (Person, Place, Event, Source, Organization) in collapsible sections, enabling deep work without tab-hopping.
+
+**GitHub Issue:** [#251](https://github.com/banisterious/obsidian-charted-roots/issues/251) | **Discussion:** [#242](https://github.com/banisterious/obsidian-charted-roots/discussions/242)
+
+**Phase 1 — Read-only Profile View:**
+
+| Change | Description |
+|--------|-------------|
+| Auto-syncing view | `ItemView` follows the active note with 150ms debounce |
+| Identity header | Entity type badge, avatar, key metadata, pin toggle |
+| Collapsible sections | Chevron toggle with compact summaries for all 5 entity types |
+| Person sections | Relationships (family + custom), Events, Sources, Media, Data Quality |
+| Place sections | Events at location, Sources, Media, Map preview (coordinates + "Open in Geo Map") |
+| Event sections | Participants, Sources, Media |
+| Source sections | Referenced facts (vault-wide scan), Media |
+| Organization sections | Members, Events, Sources, Media |
+| Pin/unpin | Freeze on a specific entity; multiple instances for side-by-side comparison |
+| Breadcrumb navigation | In-place entity traversal |
+| State persistence | Pinned entity, section states, breadcrumbs persist across sessions |
+
+**Phase 2 — Inline editing:**
+
+| Change | Description |
+|--------|-------------|
+| Click-to-edit | All identity header fields across all five entity types |
+| Input types | Text, number, and select (dropdown) — Enter or blur saves, Escape cancels |
+| Single active field | Clicking another field saves the first automatically |
+| Empty placeholders | Clickable placeholders for adding new values |
+| Frontmatter save | Direct save via `processFrontMatter()` with property alias support |
+| Wikilink requoting | Automatic requoting for link-valued fields |
+
+**Phase 3 — Polish and integration:**
+
+| Change | Description |
+|--------|-------------|
+| Lazy rendering | `contentRenderer` defers DOM until first expand |
+| Keyboard navigation | ArrowUp/Down, Enter/Space, Home/End on section headers (WAI-ARIA accordion) |
+| Mobile-responsive | 44px touch targets, narrow-pane media query for stacked metadata |
+| Map preview | Embedded Leaflet map for place profiles, lazy init/cleanup on collapse |
+
+**Documentation:**
+- [Entity Profile View](Entity-Profile-View) — Usage documentation
+- [Entity Profile View Implementation](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/developer/implementation/profile-view.md) — Developer implementation guide
+- [Entity Profile Views Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/entity-profile-views.md) — Full specifications for all phases
+- Community contributors: @prentissw (workflow feedback, Relationships section)
+
+---
+
 ### Structured Role Lists for Organizations (v0.20.17)
 
 Adds a `roles` property to organization notes defining valid roles and display order, with role picker autocomplete in membership modals.
@@ -283,6 +335,38 @@ See [Control Center Modularization Planning Document](https://github.com/baniste
 ---
 
 ## v0.19.x
+
+### Unified Place Lookup (v0.19.17)
+
+Query multiple place databases (Wikidata, GeoNames, Nominatim) from a single interface and create properly-formatted place notes with coordinates, hierarchies, and standardized names.
+
+**GitHub Issue:** [#218](https://github.com/banisterious/obsidian-charted-roots/issues/218) | **Related:** [#128](https://github.com/banisterious/obsidian-charted-roots/issues/128) (Web Clipper Integration)
+
+**Data Sources:**
+
+| Source | Best For | Status |
+|--------|----------|--------|
+| Wikidata | Well-known places, multilingual research | ✅ Complete |
+| GeoNames | Modern geography, worldwide coverage | ✅ Complete (requires free username) |
+| Nominatim/OSM | Geocoding, address lookup | ✅ Complete |
+| FamilySearch Places | U.S. genealogy, historical jurisdictions | Deferred (requires OAuth) |
+| GOV | German/European historical boundaries | Deferred (needs API research) |
+
+| Change | Description |
+|--------|-------------|
+| PlaceLookupService | Multi-source lookup with Wikidata, GeoNames, and Nominatim integration |
+| Rate limiting | 1 req/sec for Nominatim/GeoNames, 500ms for Wikidata |
+| Place type mapping | GeoNames fcode → Charted Roots, Wikidata P31 → Charted Roots |
+| PlaceLookupModal | Source selection chips and result cards with side-by-side comparison |
+| Create Place integration | "Look up place" button in Create Place modal header |
+| Command palette | Standalone "Look up place" command |
+| Auto-populate | Coordinates, place type, and parent place from results |
+| GeoNames config | Username configuration in Settings → Places |
+
+**Documentation:**
+- [Unified Place Lookup Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/unified-place-lookup.md) — Design and implementation plan
+
+---
 
 ### Inheritance & Succession Tracking
 
