@@ -115,6 +115,14 @@ const CATEGORIES: CategoryDef[] = [
 		],
 	},
 	{
+		label: 'Books & compilation',
+		icon: 'book',
+		commands: [
+			{ id: 'open-book-builder', name: 'Open book builder', icon: 'book' },
+			{ id: 'regenerate-book', name: 'Regenerate book', icon: 'refresh-cw' },
+		],
+	},
+	{
 		label: 'Tools',
 		icon: 'wrench',
 		commands: [

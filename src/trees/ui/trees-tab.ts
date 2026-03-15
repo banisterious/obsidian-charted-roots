@@ -31,6 +31,7 @@ import { UnifiedTreeWizardModal } from './unified-tree-wizard-modal';
 import { REPORT_METADATA } from '../../reports/types/report-types';
 import type { ReportType } from '../../reports/types/report-types';
 import { ReportWizardModal } from '../../reports/ui/report-wizard-modal';
+import { BookBuilderModal } from '../../book/ui/book-builder-modal';
 import type { FamilyGraphService } from '../../core/family-graph';
 
 const logger = getLogger('TreesTab');
@@ -302,6 +303,27 @@ function showTreeGenerationTab(options: TreesTabOptions): void {
 		'Right-click recent trees for regenerate, reveal, or delete options.'
 	];
 	tips.forEach(tip => tipsList.createEl('li', { text: tip }));
+
+	// === Book Builder Card ===
+	const bookCard = container.createDiv({ cls: 'crc-tree-card' });
+	const bookHeader = bookCard.createDiv({ cls: 'crc-tree-card__header crc-tree-card__header--simple' });
+	bookHeader.appendChild(createLucideIcon('book', 18));
+	bookHeader.createSpan({ text: 'Book builder', cls: 'crc-tree-card__title' });
+
+	const bookContent = bookCard.createDiv({ cls: 'crc-tree-card__content' });
+	const bookDesc = bookContent.createDiv({ cls: 'crc-text-muted crc-mb-2' });
+	bookDesc.setText('Compile reports, trees, and notes into a single PDF or ODT document.');
+
+	const bookActions = bookContent.createDiv({ cls: 'cr-sv-report-card-actions' });
+	const bookBtn = bookActions.createEl('button', {
+		cls: 'mod-cta',
+		text: 'Open book builder'
+	});
+
+	bookBtn.addEventListener('click', () => {
+		const modal = new BookBuilderModal(app, plugin);
+		modal.open();
+	});
 
 	// === Reports Card ===
 	const reportsCard = container.createDiv({ cls: 'crc-tree-card' });

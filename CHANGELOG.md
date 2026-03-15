@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Book builder entry points** ([#294](https://github.com/banisterious/obsidian-charted-roots/issues/294)): Added book builder tile to the Control Center's Trees & Reports tab and a "Books & compilation" category to the command menu.
+
 ### Fixed
 
 - **Book generation error** ([#302](https://github.com/banisterious/obsidian-charted-roots/issues/302)): Fixed `downloadBook is not a function` error when generating a book, and fixed blank content in template-derived chapters (ancestors, family groups, reference pages) caused by the generation service not mapping the chapter's subject ID to the field name each report type expects.
