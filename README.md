@@ -117,9 +117,11 @@
 | **Top Lists** | Interactive lists for surnames, locations, occupations, sources with drill-down to matching people |
 | **Extended Statistics** | Longevity analysis, family size patterns, marriage patterns, migration flows, timeline density |
 | **Visual Tree Charts** | Printable PDF tree diagrams: Pedigree, Descendant, Hourglass, and Fan Chart with custom icons |
-| **Genealogical Reports** | Family Group Sheet, Individual Summary, Ahnentafel, Gaps Report, Register Report, Pedigree/Descendant Charts |
-| **Extended Reports** | Source Summary, Timeline Report, Place Summary, Media Inventory, Universe Overview, Collection Overview, Research Report Export |
-| **PDF & ODT Export** | All 18 report types exportable as styled PDFs or editable ODT files with customizable cover pages, logos, and date formats |
+| **Genealogical Reports** | Family Group Sheet, Individual Summary, Ahnentafel, Kinship Report, Gaps Report, Register Report, Pedigree/Descendant Charts |
+| **Research Reports** | Source Summary, Brick Wall Report, Unconnected People Finder, Timeline Report, Place Summary, Media Inventory, Universe/Collection Overview |
+| **Record Superlatives** | Notable individuals: oldest, youngest deaths, most children, most marriages, longest marriages, earliest births, most documented |
+| **Book Builder** | Compile reports, trees, and vault notes into a single PDF or ODT document with cover page, TOC, bibliography, and name index |
+| **PDF & ODT Export** | All report types exportable as styled PDFs or editable ODT files with customizable cover pages, logos, and date formats |
 
 ### [Evidence & Sources](https://github.com/banisterious/obsidian-charted-roots/wiki/Evidence-And-Sources)
 
