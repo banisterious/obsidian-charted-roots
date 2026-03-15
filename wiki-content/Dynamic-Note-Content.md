@@ -16,6 +16,8 @@ Charted Roots can render live, computed content directly within notes using spec
   - [Members Block](#members-block)
   - [Sources Block](#sources-block)
   - [Extractions Block](#extractions-block)
+  - [Negative Findings Block](#negative-findings-block)
+  - [Research Timeline Block](#research-timeline-block)
 - [Rendered Output](#rendered-output)
 - [Freeze to Markdown](#freeze-to-markdown)
 - [Inserting Blocks](#inserting-blocks)
@@ -417,6 +419,91 @@ Three grouped sections, each with a count in its heading:
 Sections with no data are omitted. If no entities reference the source at all, an empty state message is shown.
 
 **Note:** This block is designed for source notes (`cr_type: source`). It complements the Sources block on person notes by providing the reverse perspective. See [Evidence & Sources](Evidence-And-Sources) for details on the source citation model.
+
+### Negative Findings Block
+
+The `charted-roots-negative-findings` block displays a log of negative research findings — sources searched that did not yield results for a person.
+
+~~~markdown
+```charted-roots-negative-findings
+sort: chronological
+```
+~~~
+
+**What it displays:**
+- All negative findings logged for the person from research journal entries
+- Date searched, source name, what was searched for, and notes
+- Helps identify which sources have already been exhausted
+
+See [Research Workflow](Research-Workflow) for details on logging negative findings.
+
+### Research Timeline Block
+
+The `charted-roots-research-timeline` block visualizes research activity across your vault with three view modes.
+
+~~~markdown
+```charted-roots-research-timeline
+view: table
+person: "[[John Smith]]"
+```
+~~~
+
+**View modes:**
+
+#### Table view (default)
+
+A chronological activity log showing all research sessions:
+
+| Column | Description |
+|--------|-------------|
+| **Date** | When the research was conducted |
+| **Source** | Source searched |
+| **Searched for** | What was being looked for |
+| **Result** | Positive, negative, or inconclusive (with icon) |
+| **Project** | Associated research project |
+| **Person** | Person the research relates to |
+| **Gap** | Days since last research activity (flagged if exceeding threshold) |
+
+Rows exceeding the gap threshold are highlighted in orange to draw attention to periods of inactivity.
+
+#### Heatmap view
+
+A GitHub-style contribution grid showing 52 weeks of research activity density. Color intensity indicates the number of research sessions per day. Includes a summary showing the longest gap period.
+
+~~~markdown
+```charted-roots-research-timeline
+view: heatmap
+```
+~~~
+
+#### Timeline view
+
+Horizontal bars per person or project with color-coded markers:
+- **Green**: Positive result
+- **Red**: Negative result
+- **Yellow**: Inconclusive result
+
+Gap regions between markers are highlighted to show periods of inactivity.
+
+~~~markdown
+```charted-roots-research-timeline
+view: timeline
+```
+~~~
+
+**Configuration options:**
+
+| Option | Values | Description |
+|--------|--------|-------------|
+| `view` | `table`, `heatmap`, `timeline` | Visualization mode (default: table) |
+| `person` | wikilink | Filter to a specific person |
+| `project` | string | Filter to a specific research project |
+| `gap` | number | Minimum days to flag as a gap (default: 30) |
+| `sort` | `chronological`, `reverse` | Sort order (default: chronological) |
+| `group` | `person`, `project`, `source` | Group rows by field (table view only) |
+| `title` | string | Custom header text |
+
+**Data sources:** Gathers entries from both `research_log_entry` frontmatter and `research_journal` markdown entries. Re-renders live when vault metadata changes. The table view supports freeze-to-markdown.
 
 ## Rendered Output
 

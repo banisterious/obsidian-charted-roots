@@ -15,6 +15,7 @@ Charted Roots provides a comprehensive statistics dashboard and report generatio
   - [Gender Distribution](#gender-distribution)
   - [Top Lists](#top-lists)
   - [Extended Statistics](#extended-statistics)
+  - [Record Superlatives](#record-superlatives)
 - [Reports](#reports)
   - [Report Types](#report-types)
   - [Generating Reports](#generating-reports)
@@ -150,6 +151,27 @@ Advanced demographic analysis for deeper research insights:
 - Events per decade visualization
 - Gap detection (periods with unusually low activity)
 
+### Record Superlatives
+
+The Record Superlatives section highlights notable individuals across eight categories:
+
+| Category | Description |
+|----------|-------------|
+| **Oldest people** | Longest-lived individuals by lifespan |
+| **Youngest deaths** | Shortest lifespans (excluding infants under 1 year) |
+| **Most children** | People with the most children |
+| **Most marriages** | People with the most spouses |
+| **Longest marriages** | Marriages with the longest duration |
+| **Earliest births** | People born earliest in the dataset |
+| **Most recent deaths** | People who died most recently |
+| **Most documented** | People with the most source citations |
+
+Each category shows the top 3 entries as a card with:
+- Ranked entries with gold highlighting for first place
+- Clickable person links (click to open, right-click for context menu, hover for preview)
+- Birth and death dates
+- The record value (e.g., "87 years", "12 children", "54 years married")
+
 ---
 
 ## Reports
@@ -160,8 +182,8 @@ Generate formatted reports from your data. Reports are organized into categories
 
 | Category | Reports |
 |----------|---------|
-| **Genealogical** | Ahnentafel, Pedigree Chart, Descendant Chart, Register Report, Family Group Sheet, Individual Summary |
-| **Research** | Source Summary, Gaps Report, Media Inventory |
+| **Genealogical** | Ahnentafel, Pedigree Chart, Descendant Chart, Register Report, Family Group Sheet, Individual Summary, Kinship Report |
+| **Research** | Source Summary, Gaps Report, Brick Wall Report, Unconnected People Finder, Media Inventory |
 | **Timeline** | Timeline Report |
 | **Geographic** | Place Summary |
 | **Summary** | Universe Overview, Collection Overview |
@@ -198,6 +220,23 @@ See [Canvas Trees](Visual-Trees) for detailed wizard documentation.
 | **Register Report** | Descendants with NGSQ-style numbering |
 | **Pedigree Chart** | Ancestor tree in ASCII art format |
 | **Descendant Chart** | Descendant tree in ASCII art format |
+| **Kinship Report** | All relatives of a person with genealogical relationship terms and degree |
+
+#### Kinship Report
+
+The Kinship Report lists all people connected to a selected person with proper genealogical relationship terms: parents, siblings, cousins (with removals), in-laws, great-grandparents, and more.
+
+**Options:**
+
+| Option | Description |
+|--------|-------------|
+| **Root person** | The person to calculate relationships from |
+| **Max degree** | Maximum relationship degree to include (free numeric input, no upper limit) |
+
+**Report contents:**
+- Each relative is listed with their name, relationship description (e.g., "2nd cousin 1 time removed"), total degree, and whether the connection is by blood or marriage
+- Sortable by degree (closest first), name, or relationship type
+- Summary includes total relatives, blood vs. marriage breakdown, furthest degree found, and counts by category (spouses, siblings, cousins, in-laws, etc.)
 
 #### Gaps Report
 
@@ -222,6 +261,8 @@ See [Frontmatter Reference](Frontmatter-Reference#research-level) for details on
 |--------|-------------|
 | **Source Summary** | All sources cited for a person, grouped by fact type with quality ratings and gap analysis |
 | **Sources by Role** | All sources where a person appears as witness, informant, official, or other role |
+| **Brick Wall Report** | Identifies end-of-line ancestors with no parents defined |
+| **Unconnected People Finder** | Identifies people not linked to a selected person's family network |
 | **Media Inventory** | Media files with linked entities, orphaned file detection, coverage gaps |
 
 #### Sources by Role
@@ -247,6 +288,40 @@ The Sources by Role report shows all sources where a selected person appears in 
 **Output:** A markdown report with a summary of sources by role and detailed tables.
 
 See [Person Roles in Sources](Evidence-And-Sources#person-roles-in-sources) for details on setting up role properties on source notes.
+
+#### Brick Wall Report
+
+The Brick Wall Report identifies end-of-line ancestors — people in your ancestor tree with no parents defined, as well as missing parent slots where only one parent line is known. This helps focus research efforts on the most productive lines.
+
+**Options:**
+
+| Option | Description |
+|--------|-------------|
+| **Root person** | The person to trace ancestors from |
+| **Max generations** | How many generations to traverse (free numeric input, no upper limit) |
+
+**Report contents:**
+- Each brick wall entry shows the person's name, generation number, Ahnentafel number, lineage path (e.g., "Father > Mother > Father"), source count, and research level
+- Sortable by generation (nearest first), name, or research level (least researched first)
+- Summary includes tree completeness statistics and per-generation breakdown
+- Available in all output formats: vault markdown, download, PDF (landscape layout), and ODT
+
+#### Unconnected People Finder
+
+The Unconnected People Finder identifies people not linked to a selected person's family network. This is useful for finding orphaned records after imports or identifying separate family lines that should be connected.
+
+**Options:**
+
+| Option | Description |
+|--------|-------------|
+| **Root person** | The person whose network to check against |
+
+**Report contents:**
+- Uses connected component analysis to find disconnected clusters and completely isolated records
+- Shows network coverage percentage (how much of your vault is connected to the root person)
+- Groups unconnected people by cluster (groups of people connected to each other but not to the root person)
+- Lists isolated people separately (no connections at all)
+- Available in all output formats: vault markdown, download, PDF, and ODT
 
 ### Timeline Reports
 
@@ -286,7 +361,7 @@ Common options available for most reports:
 | Option | Description |
 |--------|-------------|
 | **Root person** | The starting person for the report |
-| **Maximum generations** | How many generations to include (2-10) |
+| **Maximum generations** | How many generations to include (free numeric input, no upper limit) |
 | **Include details** | Show birth/death dates and places |
 | **Include spouses** | Show spouse information |
 | **Include sources** | Include source citations |

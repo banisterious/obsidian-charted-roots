@@ -14,6 +14,7 @@ The implementation details have been organized into focused sub-documents for ea
 | [Canvas and Charts](implementation/canvas-and-charts.md) | Canvas generation, family chart layout system, layout engines |
 | [Maps System](implementation/maps-system.md) | Leaflet maps, coordinate systems, geocoding, custom image maps |
 | [Reports System](implementation/reports-system.md) | Report types, PDF rendering, ODT export, report wizard |
+| [Book System](implementation/book-system.md) | Book compilation, multi-chapter PDF/ODT, templates, change detection |
 
 ### Data Management
 

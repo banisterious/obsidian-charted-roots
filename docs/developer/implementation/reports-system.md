@@ -16,7 +16,7 @@ This document covers the report generation system, including report types, rende
 
 ## Overview
 
-Charted Roots provides a comprehensive report generation system with 14 genealogical report types across 6 categories. Reports can be output in multiple formats:
+Charted Roots provides a comprehensive report generation system with 17 genealogical report types across 6 categories. Reports can be output in multiple formats:
 
 | Format | Description | Use Case |
 |--------|-------------|----------|
@@ -51,8 +51,8 @@ Based on outputMethod:
 
 | Category | Reports |
 |----------|---------|
-| **Genealogical** | Family Group Sheet, Individual Summary, Ahnentafel, Register Report, Pedigree Chart, Descendant Chart |
-| **Research** | Source Summary, Sources by Role, Gaps Report, Media Inventory |
+| **Genealogical** | Family Group Sheet, Individual Summary, Ahnentafel, Register Report, Pedigree Chart, Descendant Chart, Kinship Report |
+| **Research** | Source Summary, Sources by Role, Gaps Report, Brick Wall Report, Unconnected People Finder, Media Inventory |
 | **Timeline** | Timeline Report |
 | **Geographic** | Place Summary |
 | **Summary** | Universe Overview, Collection Overview |
@@ -76,6 +76,23 @@ interface AhnentafelOptions extends ReportOptions {
   rootPersonCrId: string;
   maxGenerations: number;
   includeDetails: boolean;
+}
+
+// Kinship Report
+interface KinshipReportOptions extends ReportOptions {
+  rootPersonCrId: string;
+  maxDegree: number;         // Free numeric input, no upper limit
+}
+
+// Brick Wall Report
+interface BrickWallReportOptions extends ReportOptions {
+  rootPersonCrId: string;
+  maxGenerations: number;    // Free numeric input, no upper limit
+}
+
+// Unconnected People Finder
+interface UnconnectedPeopleOptions extends ReportOptions {
+  rootPersonCrId: string;
 }
 
 // Gaps Report with research level filtering
@@ -153,6 +170,9 @@ const metadata = REPORT_METADATA['ahnentafel'];
 │   ├── register-report-generator.ts
 │   ├── pedigree-chart-generator.ts
 │   ├── descendant-chart-generator.ts
+│   ├── kinship-report-generator.ts
+│   ├── brick-wall-report-generator.ts
+│   ├── unconnected-people-generator.ts
 │   ├── source-summary-generator.ts
 │   ├── sources-by-role-generator.ts
 │   ├── timeline-generator.ts

@@ -34,6 +34,7 @@
 - [Visual Trees](Visual-Trees)
 - [Tree Preview](Tree-Preview)
 - [Statistics & Reports](Statistics-And-Reports)
+- [Book Builder](Book-Builder)
 
 ### World-Building
 - [Fictional Date Systems](Fictional-Date-Systems)

@@ -135,9 +135,13 @@ charted-roots/
 │   │   ├── places-base-template.ts
 │   │   ├── sources-base-template.ts
 │   │   └── universes-base-template.ts
+│   ├── book/                  # Book compilation
+│   │   ├── types/                 # Book definition types
+│   │   ├── services/              # Generation, PDF/ODT rendering
+│   │   └── ui/                    # Book builder modal
 │   ├── dynamic-content/       # Live content rendering
-│   │   ├── processors/           # Code block processors (9 blocks)
-│   │   ├── renderers/            # Content renderers (9 renderers)
+│   │   ├── processors/           # Code block processors (10 blocks)
+│   │   ├── renderers/            # Content renderers (10 renderers)
 │   │   └── services/             # Dynamic content service
 │   ├── excalidraw/            # Excalidraw export
 │   │   └── excalidraw-exporter.ts # Export to Excalidraw format
@@ -468,6 +472,7 @@ charted-roots/
 | `sources-processor.ts` | ✅ Complete | `charted-roots-sources` code block |
 | `extractions-processor.ts` | ✅ Complete | `charted-roots-extractions` code block |
 | `negative-findings-processor.ts` | ✅ Complete | `charted-roots-negative-findings` code block |
+| `research-timeline-processor.ts` | ✅ Complete | `charted-roots-research-timeline` code block |
 | **Renderers** | | |
 | `timeline-renderer.ts` | ✅ Complete | Timeline content renderer |
 | `relationships-renderer.ts` | ✅ Complete | Relationships content renderer |
@@ -478,6 +483,20 @@ charted-roots/
 | `sources-renderer.ts` | ✅ Complete | Sources table renderer |
 | `extractions-renderer.ts` | ✅ Complete | Source extractions renderer |
 | `negative-findings-renderer.ts` | ✅ Complete | Negative findings table renderer |
+| `research-timeline-renderer.ts` | ✅ Complete | Research timeline renderer (table, heatmap, timeline views) |
+
+### Book Module (src/book/)
+
+| Component | Status | Purpose |
+|-----------|--------|---------|
+| **Types** | | |
+| `book-types.ts` | ✅ Complete | Book definition schema, chapter types, generation result interfaces |
+| **Services** | | |
+| `book-generation-service.ts` | ✅ Complete | Orchestrates chapter generation, delegates to report/tree services |
+| `pdf-book-renderer.ts` | ✅ Complete | Multi-chapter PDF assembly with TOC, bibliography, name index |
+| `odt-book-renderer.ts` | ✅ Complete | Multi-chapter ODT assembly with same structure |
+| **UI** | | |
+| `book-builder-modal.ts` | ✅ Complete | 4-step wizard: metadata, chapters (drag-and-drop), output, generate |
 
 ### UI Components (src/ui/)
 
