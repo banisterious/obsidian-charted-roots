@@ -1131,7 +1131,7 @@ export class BookBuilderModal extends Modal {
 			});
 
 			if (result.success && result.blob) {
-				service.downloadBook(result.blob, result.suggestedFilename);
+				BookGenerationService.downloadBook(result.blob, result.suggestedFilename);
 				new Notice(`Book generated: ${result.suggestedFilename}`);
 
 				// Show warnings if any
