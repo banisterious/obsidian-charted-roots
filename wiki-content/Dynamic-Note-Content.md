@@ -63,6 +63,7 @@ sort: chronological
 | `exclude` | comma-separated types | Hide these event types |
 | `limit` | number | Maximum events to display |
 | `title` | string | Custom header text (default: "Timeline") |
+| `context` | `[[Note]]`, `none` | Historical context note to overlay (see below) |
 
 **Example with options:**
 
@@ -74,6 +75,39 @@ limit: 10
 title: Key Life Events
 ```
 ~~~
+
+#### Historical context overlay
+
+You can overlay historical events alongside a person's life events by referencing a context note. This helps understand what was happening in the world around them — wars, pandemics, economic events — and why ancestors may have made certain decisions.
+
+**Context note format:** Create a markdown note with date-prefixed list items:
+
+```markdown
+- 1861-1865: American Civil War
+- 1914: World War I begins
+- 1929-10-29: Black Tuesday
+- 1941-1945: World War II
+```
+
+Dates can be a single year (`1914`), a year range (`1861-1865`), or a full date (`1929-10-29`).
+
+**Usage:** Reference the note in your timeline block:
+
+~~~markdown
+```charted-roots-timeline
+context: [[US History]]
+```
+~~~
+
+To suppress the default context on a specific block, use `context: none`.
+
+**Filtering:** Context events are automatically filtered to the person's lifespan (with a 5-year margin on each end), so only relevant historical events appear.
+
+**Default setting:** Rather than adding `context:` to every timeline block, you can set a default context note in Settings > Advanced > **Default timeline context**. All timelines will use this note unless overridden per block.
+
+#### Age annotations
+
+When a person's birth date is known, all timeline events (including context events) display an age annotation showing the person's age at the time of the event. For example, a marriage in 1875 for someone born in 1850 would show "age 25".
 
 ### Relationships Block
 

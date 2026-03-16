@@ -444,6 +444,12 @@ Custom event types can be added with:
 - **Icon**: Lucide icon name
 - **Category**: `custom` (automatically assigned)
 
+### Timeline Settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| **Default timeline context** | *(empty)* | Note with historical events to overlay on all timelines (e.g., `[[World History]]`). Can be overridden per block with `context: [[Note]]` or suppressed with `context: none`. See [Dynamic Note Content](Dynamic-Note-Content#historical-context-overlay) for details. |
+
 ---
 
 ## Place Settings
