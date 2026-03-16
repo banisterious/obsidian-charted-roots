@@ -420,6 +420,8 @@ export interface CanvasRootsSettings {
 	// Dynamic content settings
 	/** Default historical context note for timelines (wikilink path) */
 	defaultTimelineContext: string;
+	/** Lifespan margin for filtering context events (0 = no filtering) */
+	contextLifespanMargin: number;
 	/** Callout type for frozen media galleries (info, note, etc.) */
 	frozenGalleryCalloutType: string;
 	// Cleanup wizard state (for resuming interrupted wizards)
@@ -811,6 +813,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	preserveMediaFolderStructure: false,       // Disabled by default for backwards compatibility
 	// Dynamic content settings
 	defaultTimelineContext: '',                // No default context note
+	contextLifespanMargin: 0,                 // 0 = no filtering (show all context events)
 	frozenGalleryCalloutType: 'info',          // Callout type for frozen media galleries
 	// Inclusive parent relationships (opt-in feature)
 	enableInclusiveParents: false,             // Default: OFF - users opt-in to gender-neutral parents
@@ -1784,6 +1787,20 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.defaultTimelineContext = value;
 					await this.plugin.saveSettings();
+				}));
+
+		new Setting(advancedContent)
+			.setName('Context lifespan margin')
+			.setDesc('Only show context events within this many years of the person\'s lifespan. Set to 0 to show all context events (default).')
+			.addText(text => text
+				.setPlaceholder('0')
+				.setValue(String(this.plugin.settings.contextLifespanMargin))
+				.onChange(async (value) => {
+					const val = parseInt(value);
+					if (!isNaN(val) && val >= 0) {
+						this.plugin.settings.contextLifespanMargin = val;
+						await this.plugin.saveSettings();
+					}
 				}));
 
 		// --- Logging subsection ---

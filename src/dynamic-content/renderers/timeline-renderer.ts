@@ -152,20 +152,27 @@ export class TimelineRenderer {
 		const contextPath = extractWikilinkPath(contextValue);
 		const contextEntries = await this.parseContextNote(contextPath, context, birthYear);
 
-		// Filter context events to the person's lifespan (with 5-year margin)
-		// If no person dates are available, include all context events
-		const personYears = entries
-			.filter(e => !e.isContext)
-			.map(e => parseInt(e.year))
-			.filter(y => !isNaN(y));
-		if (personYears.length > 0) {
-			const minYear = Math.min(...personYears) - 5;
-			const maxYear = Math.max(...personYears) + 5;
-			const filtered = contextEntries.filter(e => {
-				const year = parseInt(e.year);
-				return !isNaN(year) && year >= minYear && year <= maxYear;
-			});
-			entries.push(...filtered);
+		// Filter context events by margin (0 = no filtering, default)
+		const margin = typeof config.contextMargin === 'number'
+			? config.contextMargin
+			: (settings.contextLifespanMargin ?? 0);
+
+		if (margin > 0) {
+			const personYears = entries
+				.filter(e => !e.isContext)
+				.map(e => parseInt(e.year))
+				.filter(y => !isNaN(y));
+			if (personYears.length > 0) {
+				const minYear = Math.min(...personYears) - margin;
+				const maxYear = Math.max(...personYears) + margin;
+				const filtered = contextEntries.filter(e => {
+					const year = parseInt(e.year);
+					return !isNaN(year) && year >= minYear && year <= maxYear;
+				});
+				entries.push(...filtered);
+			} else {
+				entries.push(...contextEntries);
+			}
 		} else {
 			entries.push(...contextEntries);
 		}
