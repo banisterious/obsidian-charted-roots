@@ -418,6 +418,8 @@ export interface CanvasRootsSettings {
 	/** Preserve subfolder structure when extracting media from .gpkg files */
 	preserveMediaFolderStructure: boolean;
 	// Dynamic content settings
+	/** Default historical context note for timelines (wikilink path) */
+	defaultTimelineContext: string;
 	/** Callout type for frozen media galleries (info, note, etc.) */
 	frozenGalleryCalloutType: string;
 	// Cleanup wizard state (for resuming interrupted wizards)
@@ -808,6 +810,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	// Gramps import settings
 	preserveMediaFolderStructure: false,       // Disabled by default for backwards compatibility
 	// Dynamic content settings
+	defaultTimelineContext: '',                // No default context note
 	frozenGalleryCalloutType: 'info',          // Callout type for frozen media galleries
 	// Inclusive parent relationships (opt-in feature)
 	enableInclusiveParents: false,             // Default: OFF - users opt-in to gender-neutral parents
@@ -1769,6 +1772,17 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.syncCalendariumEvents)
 				.onChange(async (value) => {
 					this.plugin.settings.syncCalendariumEvents = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(advancedContent)
+			.setName('Default timeline context')
+			.setDesc('Note with historical events to overlay on all timelines (e.g., [[World History]]). Can be overridden per block with context: [[Note]].')
+			.addText(text => text
+				.setPlaceholder('[[My Historical Events]]')
+				.setValue(this.plugin.settings.defaultTimelineContext)
+				.onChange(async (value) => {
+					this.plugin.settings.defaultTimelineContext = value;
 					await this.plugin.saveSettings();
 				}));
 
