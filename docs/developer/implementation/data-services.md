@@ -1,9 +1,11 @@
 # Data Services
 
-This document covers data normalization, quality checking, and organizational services.
+This document covers data normalization, quality checking, organizational services, and statistics computation.
 
 ## Table of Contents
 
+- [Statistics Service](#statistics-service)
+  - [Record Superlatives](#record-superlatives)
 - [Property and Value Alias System](#property-and-value-alias-system)
   - [Property Aliases](#property-aliases)
   - [Value Aliases](#value-aliases)
@@ -24,6 +26,42 @@ This document covers data normalization, quality checking, and organizational se
   - [Control Center Collections Tab](#control-center-collections-tab)
   - [Collection-Filtered Tree Generation](#collection-filtered-tree-generation)
   - [Collection Overview Canvas Generation](#collection-overview-canvas-generation)
+
+---
+
+## Statistics Service
+
+`StatisticsService` (`src/statistics/services/statistics-service.ts`) provides computed analytics for the statistics dashboard. Core statistics (`StatisticsData`) are cached, but extended analyses are computed on demand via public methods called directly from the view.
+
+### Record Superlatives
+
+`getRecordSuperlatives(): RecordSuperlatives` returns the top 3 notable individuals across 8 categories:
+
+| Method | Category | Logic |
+|--------|----------|-------|
+| `computeOldestPeople()` | Oldest people | Lifespan 0–120, sorted descending |
+| `computeYoungestDeaths()` | Youngest deaths | Lifespan 1–120 (excludes infants <1), sorted ascending |
+| `computeMostChildren()` | Most children | By `childrenCrIds.length`, descending |
+| `computeMostSpouses()` | Most marriages | By `spouseCrIds.length` (>1 only), descending |
+| `computeEarliestBirths()` | Earliest births | By birth year, ascending |
+| `computeLatestDeaths()` | Most recent deaths | By death year, descending |
+| `computeMostDocumented()` | Most documented | By `sourceCount`, descending |
+| `computeLongestMarriages()` | Longest marriages | Marriage duration, descending |
+
+Each method returns a `RecordCategory` with `label`, `icon`, and `entries` (array of `RecordEntry`). A `RecordEntry` contains `crId`, `name`, `file` (TFile), `displayValue`, and `dates`.
+
+**Longest marriages computation** has special handling:
+- Start year from `SpouseRelationship.marriageDate`
+- End year cascade: `divorceDate` → person's `deathDate` → current year
+- Capped at 80 years to filter data errors
+- Deduplicates couples since the same marriage appears on both spouses' nodes (uses sorted crId pair as key)
+- Looks up spouse name via `people.find()` for the display value
+
+Helper methods:
+- `buildRecordEntry(person, displayValue)`: Creates a `RecordEntry` with formatted dates
+- `formatPersonDates(person)`: Returns `"YYYY–YYYY"`, `"b. YYYY"`, or `"d. YYYY"`
+
+Types are defined in `src/statistics/types/statistics-types.ts`: `RecordSuperlatives`, `RecordCategory`, `RecordEntry`.
 
 ---
 

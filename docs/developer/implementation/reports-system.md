@@ -838,6 +838,58 @@ private mapReportToTreeType(reportType: ReportType): TreeType {
 
 ---
 
+## Report-Specific Algorithms
+
+### Brick Wall Report
+
+**Generator:** `brick-wall-report-generator.ts`
+
+Identifies end-of-line ancestors — people with no parents defined — by traversing the ancestor tree from a selected root person using Sosa-Stradonitz (Ahnentafel) numbering.
+
+**Algorithm:**
+1. Start with root person (Ahnentafel number 1)
+2. Recursive BFS: for each person, check father (2n) and mother (2n+1)
+3. If a parent slot has no linked person, record it as a brick wall
+4. If a person has no parents at all, record them as a terminal ancestor
+5. Track lineage path (e.g., "Father > mother > father") for each entry
+
+**Output columns:** Name, generation number, Ahnentafel number, lineage path, source count, research level. Sortable by generation (nearest first), name, or research level (least researched first). Includes tree completeness statistics and per-generation breakdown.
+
+**Generation limit:** The `maxGenerations` field is a free numeric input with no upper limit. Traversal naturally stops when it runs out of ancestors.
+
+### Unconnected People Finder
+
+**Generator:** `unconnected-people-generator.ts`
+
+Identifies people not connected to a selected person's family network using connected component analysis.
+
+**Algorithm:**
+1. Build adjacency graph from all family relationships (parent-child, spouse)
+2. BFS/DFS from the root person to find all reachable people (the connected component)
+3. Any person not in the connected component is "unconnected"
+4. Group unconnected people into their own clusters (separate connected components)
+5. People with no relationships at all are listed as "isolated"
+
+**Output:** Network coverage percentage, groups of unconnected people by cluster, isolated people listed separately. Available in all output formats.
+
+### Kinship Report
+
+**Generator:** `kinship-report-generator.ts`
+
+Lists all relatives of a person with proper genealogical relationship terms and degree.
+
+**Algorithm:**
+1. From the root person, traverse the family graph to find all reachable people
+2. Use `RelationshipCalculator` to compute the genealogical relationship term for each (parent, sibling, 2nd cousin 1x removed, great-grandparent, sibling-in-law, etc.)
+3. Classify each relationship as blood or marriage
+4. Compute total degree (number of steps in the relationship path)
+
+**Output columns:** Name, relationship description, total degree, blood/marriage. Sortable by degree (closest first), name, or relationship type. Summary includes total relatives, blood vs. marriage breakdown, furthest degree, and counts by category.
+
+**Degree limit:** The `maxDegree` field is a free numeric input with no upper limit. The report includes all reachable people up to the specified degree.
+
+---
+
 ## Related Documentation
 
 - [Canvas and Charts](canvas-and-charts.md) - Visual tree generation

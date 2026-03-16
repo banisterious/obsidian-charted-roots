@@ -20,7 +20,7 @@ The implementation details have been organized into focused sub-documents for ea
 
 | Document | Description |
 |----------|-------------|
-| [Data Services](implementation/data-services.md) | Property/value aliases, data quality, batch operations, collections |
+| [Data Services](implementation/data-services.md) | Statistics service, property/value aliases, data quality, batch operations, collections |
 | [Import/Export](implementation/import-export.md) | GEDCOM, GEDCOM X, Gramps XML, CSV; source image management |
 
 ### User Interface
@@ -34,7 +34,7 @@ The implementation details have been organized into focused sub-documents for ea
 
 | Document | Description |
 |----------|-------------|
-| [Specialized Features](implementation/specialized-features.md) | Fictional date systems, privacy protection, Obsidian Bases integration |
+| [Specialized Features](implementation/specialized-features.md) | Timeline context overlays, research timelines, record superlatives, fictional date systems, privacy, Bases |
 | [Third-Party Libraries](implementation/third-party-libraries.md) | pdfmake, family-chart, Leaflet, D3, dependency management |
 
 ## Quick Reference

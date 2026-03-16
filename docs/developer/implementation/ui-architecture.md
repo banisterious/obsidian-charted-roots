@@ -236,7 +236,7 @@ export const TAB_CONFIGS: TabConfig[] = [
 | `data-quality` | Data quality | data-structure | Issue detection, batch fixes | ✓ |
 | `schemas` | Schemas | data-structure | Validation schemas | — |
 | `relationships` | Relationships | data-structure | Custom relationship types | ✓ |
-| `tree-generation` | Trees & reports | output | Canvas/chart generation, report wizard | — |
+| `tree-generation` | Trees & reports | output | Canvas/chart generation, report wizard, book builder | — |
 | `maps` | Maps | output | Map views, custom image maps | — |
 
 **Tools group:**
@@ -608,6 +608,36 @@ storedY = imageHeight - domY;
 // Rendering: Leaflet → DOM
 domY = imageHeight - storedY;
 ```
+
+### Book Builder Wizard
+
+`BookBuilderModal` (`src/book/ui/book-builder-modal.ts`) provides a 4-step workflow for creating multi-chapter book compilations.
+
+**Step flow:**
+
+| Step | Content | Key interactions |
+|------|---------|------------------|
+| 1. Setup | Title, subtitle, author, date, template picker, root person selector | Template selection populates chapter list |
+| 2. Chapters | Draggable chapter list with add/edit/remove | Drag-and-drop reordering via HTML5 drag API (grip handle pattern from media-manage-modal) |
+| 3. Output | Format (PDF/ODT), page size, font, TOC/cover/bibliography/index toggles | Same option patterns as report wizard |
+| 4. Generate | Summary, progress bar, save/download | Chapter-by-chapter progress callbacks |
+
+**Entry points:**
+- Command palette: "Open book builder"
+- Command menu: "Books & compilation" category
+- Control Center: Book builder tile in Trees & reports tab
+- Context menu: "Open in book builder" on `.book.json` files
+- Command palette: "Regenerate book" (re-runs without opening wizard)
+
+**Chapter types:** Each chapter type has an inline config form when adding/editing:
+- **Report** — report type dropdown, subject person picker, key options
+- **Visual tree** — chart type, root person, max generations
+- **Vault note** — file picker for `.md` files
+- **Section divider** — title and optional subtitle
+
+**Template intelligence:** The "Family history book" and "Research compilation" templates use `FamilyGraphService` to traverse the ancestor tree and auto-generate individual summary chapters for direct-line ancestors and family group sheet chapters for each nuclear family.
+
+**Save/load:** Book definitions are stored as `.book.json` files in the vault via `vault.create()`/`vault.read()`. The regenerate command reads a `.book.json` and runs all chapters without opening the modal.
 
 ### State Persistence
 

@@ -1,9 +1,22 @@
 # Specialized Features
 
-This document covers fictional date systems, privacy protection, and Obsidian Bases integration.
+This document covers fictional date systems, privacy protection, Obsidian Bases integration, timeline context overlays, research timelines, and record superlatives.
 
 ## Table of Contents
 
+- [Timeline Context Overlay](#timeline-context-overlay)
+  - [Context Note Format](#context-note-format)
+  - [Parameter Resolution](#parameter-resolution)
+  - [Age Annotations](#age-annotations)
+  - [Rendering](#rendering)
+- [Research Timeline](#research-timeline)
+  - [View Modes](#view-modes)
+  - [Data Parsing](#data-parsing)
+  - [Gap Detection](#gap-detection)
+- [Record Superlatives](#record-superlatives)
+  - [Categories](#categories)
+  - [Computation](#computation)
+  - [Display](#display)
 - [Fictional Date Systems](#fictional-date-systems)
   - [Date System Architecture](#date-system-architecture)
   - [FictionalDateSystem and Era Types](#fictionaldatesystem-and-era-types)
@@ -27,6 +40,119 @@ This document covers fictional date systems, privacy protection, and Obsidian Ba
   - [Property Aliases](#property-aliases)
   - [Base Creation Flow](#base-creation-flow)
   - [Control Center Integration](#control-center-integration)
+
+---
+
+## Timeline Context Overlay
+
+The timeline code block (`charted-roots-timeline`) supports overlaying historical events from a user-defined context note alongside a person's life events.
+
+### Context Note Format
+
+Context notes contain markdown list items with date-prefixed entries:
+
+```markdown
+- 1861-1865: American Civil War
+- 1914: World War I begins
+- 1929-10-29: Black Tuesday
+```
+
+The parser (`TimelineRenderer.parseContextNote()`) uses a regex to match:
+- Single years: `1914`
+- Year ranges: `1861-1865` (displayed as `1861–1865`)
+- Full dates: `1929-10-29`
+
+Lines not matching the pattern are silently skipped, so the note can include headings, prose, or other content alongside the event list.
+
+### Parameter Resolution
+
+Context is resolved with a cascade:
+
+1. `context: none` in the code block → no context (overrides default)
+2. `context: [[Note]]` in the code block → use that note
+3. `defaultTimelineContext` setting → global default for all timelines
+4. No value → no context
+
+Resolution happens in `TimelineRenderer.buildTimelineEntriesWithContext()`. The processor (`TimelineProcessor`) also resolves the context note path for change detection, re-rendering the block when the context note is modified.
+
+### Age Annotations
+
+When a person's birth date is known, all timeline entries (person events and context events) receive an `age` field computed as `entryYear - birthYear`. Rendered as an italic `(age N)` annotation next to the year.
+
+### Rendering
+
+Context events are visually distinct from person events:
+- CSS class `cr-timeline__item--context` applies muted background and reduced opacity
+- Landmark icon (`lucide:landmark`) instead of event type icons
+- Year and title use `--text-muted` color
+- Context events are filtered to the person's lifespan ± 5 years to avoid irrelevant entries
+
+Freeze-to-markdown includes context events with a 🏛️ prefix and age annotations in parentheses.
+
+---
+
+## Research Timeline
+
+The `charted-roots-research-timeline` code block visualizes research activity across the vault with three view modes.
+
+### View Modes
+
+**Table view** (`view: table`, default): Chronological activity log with columns for Date, Source, Searched For, Result, Project, Person, and Gap. Rows exceeding the configurable gap threshold (default 30 days) are flagged with orange highlighting.
+
+**Heatmap view** (`view: heatmap`): GitHub-style contribution grid showing 52 weeks of research activity density. Color intensity reflects the number of research sessions per day. Includes a longest-gap summary below the grid.
+
+**Timeline view** (`view: timeline`): Horizontal bars per person or project with color-coded markers (green = positive, red = negative, yellow = inconclusive) and highlighted gap regions between sessions.
+
+### Data Parsing
+
+Research activity is gathered from two sources:
+
+1. **`research_log_entry` notes**: Frontmatter with `date`, `source`, `searched_for`, `result`, `person`, `project` fields
+2. **`research_journal` notes**: Markdown entries parsed from structured content within journal notes
+
+Both sources are unified into a common `ResearchActivity` structure for rendering.
+
+### Gap Detection
+
+Gap detection is the primary value of the research timeline. The gap threshold is configurable via the `gap` parameter (default: 30 days). In table view, the "Gap" column shows days since the previous activity, with rows exceeding the threshold highlighted. In timeline view, gap regions are rendered as shaded spans between markers.
+
+---
+
+## Record Superlatives
+
+The statistics dashboard includes a "Record superlatives" section showing notable individuals across 8 categories.
+
+### Categories
+
+| Category | Criteria | Sort |
+|----------|----------|------|
+| Oldest people | Lifespan 0–120 years | Descending |
+| Youngest deaths | Lifespan 1–120 years (excludes infants <1) | Ascending |
+| Most children | By `childrenCrIds.length` | Descending |
+| Most marriages | By `spouseCrIds.length` (>1 only) | Descending |
+| Earliest births | By birth year | Ascending |
+| Most recent deaths | By death year | Descending |
+| Most documented | By `sourceCount` | Descending |
+| Longest marriages | Duration from marriage to divorce/death/current year | Descending |
+
+### Computation
+
+`StatisticsService.getRecordSuperlatives()` computes all 8 categories with `topN=3` (top 3 entries per category). Each category has a dedicated private method (e.g., `computeOldestPeople()`, `computeLongestMarriages()`).
+
+The longest marriages computation:
+- Uses `SpouseRelationship.marriageDate` for start year
+- End year cascade: `divorceDate` → person's `deathDate` → current year
+- Capped at 80 years to filter data errors
+- Deduplicates couples (same marriage appears on both spouses)
+
+Record superlatives are computed on demand (not cached in `StatisticsData`) via a public method called directly from the view.
+
+### Display
+
+Rendered as a card grid (`.cr-sv-records-grid`) using CSS `auto-fill, minmax(280px, 1fr)`. Each card shows the category icon, title, and ranked entries with:
+- Gold badge for rank 1 (using `--color-yellow`)
+- Clickable person links with hover preview
+- Dates and record value in accent color
 
 ---
 
