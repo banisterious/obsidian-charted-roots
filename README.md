@@ -74,7 +74,7 @@
 | **Family Creation Wizard** | 5-step guided workflow for creating interconnected family groups with automatic bidirectional relationship linking |
 | **[Schema Validation](https://github.com/banisterious/obsidian-charted-roots/wiki/Schema-Validation)** | User-defined schemas with required properties, type validation, enum constraints, and custom rules |
 | **Generate Place Notes** | Batch create place notes from references in person/event notes with hierarchy linking |
-| **[Dynamic Note Content](https://github.com/banisterious/obsidian-charted-roots/wiki/Dynamic-Note-Content)** | Live-rendered timeline, relationships, and media gallery blocks within person notes |
+| **[Dynamic Note Content](https://github.com/banisterious/obsidian-charted-roots/wiki/Dynamic-Note-Content)** | Live-rendered timeline, relationships, and media gallery blocks within person notes. Timelines support historical context overlays and age annotations |
 
 ### [Geographic Features](https://github.com/banisterious/obsidian-charted-roots/wiki/Geographic-Features)
 
