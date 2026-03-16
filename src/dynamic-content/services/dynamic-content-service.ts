@@ -59,6 +59,13 @@ export class DynamicContentService {
 	}
 
 	/**
+	 * Get the Obsidian App instance
+	 */
+	getApp() {
+		return this.plugin.app;
+	}
+
+	/**
 	 * Parse YAML-like config from code block source
 	 * Supports simple key: value pairs and arrays
 	 *

@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-03-14 15:46:08 UTC
+ * - Generated: 2026-03-16 12:12:46 UTC
  * - Components: 47 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -37405,7 +37405,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: DYNAMIC-CONTENT.CSS
    ========================================================================== */
 
-/* Component Size: 1102 lines, 23.8 KB */
+/* Component Size: 1133 lines, 24.48 KB */
 
 /**
  * Dynamic Content Styles
@@ -37558,6 +37558,37 @@ body:has(.cr-media-linker) .suggestion-container {
 .cr-timeline__place {
   color: var(--text-muted);
   font-size: var(--font-ui-smaller);
+}
+
+/* Age annotation */
+.cr-timeline__age {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  margin-left: var(--cr-spacing-xs);
+  font-style: italic;
+}
+
+/* Historical context events */
+.cr-timeline__item--context {
+  opacity: 0.75;
+  background-color: var(--background-secondary);
+  border-radius: var(--radius-s);
+  padding-left: var(--cr-spacing-xs);
+  padding-right: var(--cr-spacing-xs);
+  margin: var(--cr-spacing-xs) 0;
+}
+
+.cr-timeline__icon--context {
+  color: var(--text-muted);
+}
+
+.cr-timeline__item--context .cr-timeline__year {
+  color: var(--text-muted);
+  font-weight: var(--font-normal);
+}
+
+.cr-timeline__item--context .cr-timeline__title {
+  color: var(--text-muted);
 }
 
 /* ==========================================================================
@@ -39545,11 +39576,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-03-14 15:46:08 UTC
+ * Build completed: 2026-03-16 12:12:47 UTC
  * Components processed: 47
- * Total lines: 39099
- * Total size: 785.25 KB
- * Build duration: 0.48 seconds
+ * Total lines: 39130
+ * Total size: 785.93 KB
+ * Build duration: 0.9 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -39595,7 +39626,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - map-wizard.css: 606 lines, 12.68 KB
  * - preferences.css: 431 lines, 9.44 KB
  * - tree-output.css: 1548 lines, 30.41 KB
- * - dynamic-content.css: 1102 lines, 23.8 KB
+ * - dynamic-content.css: 1133 lines, 24.48 KB
  * - profile-view.css: 857 lines, 19.04 KB
  * - migration-notice.css: 135 lines, 2.67 KB
  * - responsive.css: 9 lines, 0.13 KB

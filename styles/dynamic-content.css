@@ -151,6 +151,37 @@
   font-size: var(--font-ui-smaller);
 }
 
+/* Age annotation */
+.cr-timeline__age {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  margin-left: var(--cr-spacing-xs);
+  font-style: italic;
+}
+
+/* Historical context events */
+.cr-timeline__item--context {
+  opacity: 0.75;
+  background-color: var(--background-secondary);
+  border-radius: var(--radius-s);
+  padding-left: var(--cr-spacing-xs);
+  padding-right: var(--cr-spacing-xs);
+  margin: var(--cr-spacing-xs) 0;
+}
+
+.cr-timeline__icon--context {
+  color: var(--text-muted);
+}
+
+.cr-timeline__item--context .cr-timeline__year {
+  color: var(--text-muted);
+  font-weight: var(--font-normal);
+}
+
+.cr-timeline__item--context .cr-timeline__title {
+  color: var(--text-muted);
+}
+
 /* ==========================================================================
    Relationships Block
    ========================================================================== */

@@ -5,12 +5,13 @@
  * Creates a styled list of events with dates and descriptions.
  */
 
-import { MarkdownRenderer, MarkdownRenderChild, setIcon } from 'obsidian';
+import { MarkdownRenderer, MarkdownRenderChild, setIcon, TFile } from 'obsidian';
 import type { DynamicBlockContext, DynamicBlockConfig } from '../services/dynamic-content-service';
 import type { DynamicContentService } from '../services/dynamic-content-service';
 import { getEventType } from '../../events/types/event-types';
 import type { LucideIconName } from '../../ui/lucide-icons';
 import { capitalize } from '../../utils/format-utils';
+import { extractWikilinkPath } from '../../utils/wikilink-resolver';
 
 /**
  * Event types that should ALWAYS show title, never description (#157)
@@ -31,6 +32,10 @@ export interface TimelineEntry {
 	description?: string;
 	/** For linking to the event note */
 	eventFile?: string;
+	/** Whether this is a historical context event (not a person event) */
+	isContext?: boolean;
+	/** Age of the person at the time of this event */
+	age?: number;
 }
 
 /**
@@ -57,8 +62,8 @@ export class TimelineRenderer {
 	): Promise<void> {
 		const container = el.createDiv({ cls: 'cr-dynamic-block cr-timeline' });
 
-		// Build timeline entries
-		const entries = this.buildTimelineEntries(context, config);
+		// Build timeline entries (including context events)
+		const entries = await this.buildTimelineEntriesWithContext(context, config);
 
 		// Store for freeze functionality
 		this.currentEntries = entries;
@@ -112,6 +117,119 @@ export class TimelineRenderer {
 		copyBtn.addEventListener('click', () => {
 			this.copyTimelineToClipboard(container);
 		});
+	}
+
+	/**
+	 * Build timeline entries with context events merged in
+	 */
+	private async buildTimelineEntriesWithContext(
+		context: DynamicBlockContext,
+		config: DynamicBlockConfig
+	): Promise<TimelineEntry[]> {
+		const entries = this.buildTimelineEntries(context, config);
+
+		// Add age annotations to person events
+		const birthYear = context.person?.birthDate
+			? parseInt(this.service.extractYear(context.person.birthDate))
+			: NaN;
+		if (!isNaN(birthYear)) {
+			for (const entry of entries) {
+				const entryYear = parseInt(entry.year);
+				if (!isNaN(entryYear) && entryYear >= birthYear) {
+					entry.age = entryYear - birthYear;
+				}
+			}
+		}
+
+		// Resolve context note path
+		const contextParam = config.context as string | undefined;
+		if (contextParam === 'none') return entries;
+
+		const settings = this.service.getSettings();
+		const contextValue = contextParam || settings.defaultTimelineContext;
+		if (!contextValue) return entries;
+
+		const contextPath = extractWikilinkPath(contextValue);
+		const contextEntries = await this.parseContextNote(contextPath, context, birthYear);
+
+		// Filter context events to the person's lifespan (with 5-year margin)
+		const personYears = entries
+			.filter(e => !e.isContext)
+			.map(e => parseInt(e.year))
+			.filter(y => !isNaN(y));
+		if (personYears.length > 0) {
+			const minYear = Math.min(...personYears) - 5;
+			const maxYear = Math.max(...personYears) + 5;
+			const filtered = contextEntries.filter(e => {
+				const year = parseInt(e.year);
+				return !isNaN(year) && year >= minYear && year <= maxYear;
+			});
+			entries.push(...filtered);
+		}
+
+		// Re-sort after merging
+		const sortOrder = config.sort as string || 'chronological';
+		entries.sort((a, b) => {
+			const yearA = parseInt(a.year) || 0;
+			const yearB = parseInt(b.year) || 0;
+			return sortOrder === 'reverse' ? yearB - yearA : yearA - yearB;
+		});
+
+		return entries;
+	}
+
+	/**
+	 * Parse a context note for historical events.
+	 * Expected format: markdown list items with date prefix.
+	 *   - 1861-1865: American Civil War
+	 *   - 1914: World War I begins
+	 *   - 1929-10-29: Black Tuesday
+	 */
+	private async parseContextNote(
+		notePath: string,
+		context: DynamicBlockContext,
+		birthYear: number
+	): Promise<TimelineEntry[]> {
+		const app = this.service.getApp();
+		const file = app.metadataCache.getFirstLinkpathDest(notePath, context.file.path);
+		if (!(file instanceof TFile)) return [];
+
+		const content = await app.vault.read(file);
+		const entries: TimelineEntry[] = [];
+
+		// Match list items: - YYYY or - YYYY-YYYY or - YYYY-MM-DD: description
+		const lineRegex = /^[-*]\s+(\d{4}(?:-\d{2}(?:-\d{2})?)?)\s*(?:[-–]\s*(\d{4}(?:-\d{2}(?:-\d{2})?)?))?:\s*(.+)$/;
+
+		for (const line of content.split('\n')) {
+			const match = line.trim().match(lineRegex);
+			if (!match) continue;
+
+			const startDate = match[1];
+			const endDate = match[2];
+			const title = match[3].trim();
+			const year = startDate.substring(0, 4);
+			const displayYear = endDate
+				? `${year}–${endDate.substring(0, 4)}`
+				: year;
+
+			const entry: TimelineEntry = {
+				date: startDate,
+				year: displayYear,
+				type: 'context',
+				title,
+				isContext: true
+			};
+
+			// Add age annotation for context events too
+			const entryYear = parseInt(year);
+			if (!isNaN(birthYear) && !isNaN(entryYear) && entryYear >= birthYear) {
+				entry.age = entryYear - birthYear;
+			}
+
+			entries.push(entry);
+		}
+
+		return entries;
 	}
 
 	/**
@@ -208,29 +326,46 @@ export class TimelineRenderer {
 		const list = contentEl.createEl('ul', { cls: 'cr-timeline__list' });
 
 		for (const entry of entries) {
-			const li = list.createEl('li', { cls: 'cr-timeline__item' });
+			const itemCls = entry.isContext
+				? 'cr-timeline__item cr-timeline__item--context'
+				: 'cr-timeline__item';
+			const li = list.createEl('li', { cls: itemCls });
 
-			// Get event type info for icon/color
-			const eventType = getEventType(
-				entry.type,
-				settings.customEventTypes || [],
-				settings.showBuiltInEventTypes !== false
-			);
+			if (entry.isContext) {
+				// Context events get a landmark icon
+				const iconSpan = li.createSpan({ cls: 'cr-timeline__icon cr-timeline__icon--context' });
+				setIcon(iconSpan, 'landmark' as LucideIconName);
+			} else {
+				// Get event type info for icon/color
+				const eventType = getEventType(
+					entry.type,
+					settings.customEventTypes || [],
+					settings.showBuiltInEventTypes !== false
+				);
 
-			// Icon (if icon mode is 'icon' or 'both')
-			if (showIcon && eventType) {
-				const iconSpan = li.createSpan({ cls: 'cr-timeline__icon' });
-				setIcon(iconSpan, eventType.icon as LucideIconName);
-				iconSpan.style.setProperty('color', eventType.color);
-				// Add tooltip for icon-only mode
-				if (iconMode === 'icon') {
-					iconSpan.setAttribute('title', eventType.name);
+				// Icon (if icon mode is 'icon' or 'both')
+				if (showIcon && eventType) {
+					const iconSpan = li.createSpan({ cls: 'cr-timeline__icon' });
+					setIcon(iconSpan, eventType.icon as LucideIconName);
+					iconSpan.style.setProperty('color', eventType.color);
+					// Add tooltip for icon-only mode
+					if (iconMode === 'icon') {
+						iconSpan.setAttribute('title', eventType.name);
+					}
 				}
 			}
 
 			// Year/date
 			const yearSpan = li.createSpan({ cls: 'cr-timeline__year' });
 			yearSpan.textContent = entry.year || entry.date || '?';
+
+			// Age annotation
+			if (entry.age !== undefined) {
+				li.createSpan({
+					cls: 'cr-timeline__age',
+					text: `age ${entry.age}`
+				});
+			}
 
 			// Separator
 			li.createSpan({ cls: 'cr-timeline__separator', text: ' — ' });
@@ -312,7 +447,10 @@ export class TimelineRenderer {
 		const lines: string[] = ['## Timeline', ''];
 
 		for (const entry of this.currentEntries) {
-			let line = `- **${entry.year || entry.date || '?'}** — `;
+			const yearDisplay = entry.year || entry.date || '?';
+			const ageStr = entry.age !== undefined ? ` (age ${entry.age})` : '';
+			const prefix = entry.isContext ? '🏛️ ' : '';
+			let line = `- **${yearDisplay}**${ageStr} — ${prefix}`;
 
 			// Determine display text (#157)
 			// Show "Type: description" for most event types when description exists

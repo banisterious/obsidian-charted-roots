@@ -16,6 +16,7 @@ import { MarkdownPostProcessorContext, MarkdownRenderChild, TAbstractFile, TFile
 import type CanvasRootsPlugin from '../../../main';
 import { DynamicContentService, renderBlockError, renderBlockLoading } from '../services/dynamic-content-service';
 import { TimelineRenderer } from '../renderers/timeline-renderer';
+import { extractWikilinkPath } from '../../utils/wikilink-resolver';
 
 /**
  * Processor for charted-roots-timeline code blocks
@@ -82,13 +83,31 @@ export class TimelineProcessor {
 			// Get the events folder for filtering event note changes
 			const eventsFolder = this.plugin.settings.eventsFolder || '';
 
+			// Resolve context note path for change detection
+			const contextParam = config.context as string | undefined;
+			const contextValue = contextParam !== 'none'
+				? (contextParam || this.plugin.settings.defaultTimelineContext)
+				: '';
+			const contextNotePath = contextValue
+				? extractWikilinkPath(contextValue)
+				: '';
+			const contextFile = contextNotePath
+				? this.plugin.app.metadataCache.getFirstLinkpathDest(contextNotePath, context.file.path)
+				: null;
+
 			// Register for metadata changes to re-render when frontmatter changes
 			const metadataHandler = async (changedFile: TFile) => {
 				// Re-render if the person's own file changed
 				if (changedFile.path === context.file.path) {
-					// Re-build context to get fresh data
 					const freshContext = this.service.buildContext(ctx);
-					// Clear and re-render
+					el.empty();
+					await this.renderer.render(el, freshContext, config, component);
+					return;
+				}
+
+				// Re-render if the context note changed
+				if (contextFile && changedFile.path === contextFile.path) {
+					const freshContext = this.service.buildContext(ctx);
 					el.empty();
 					await this.renderer.render(el, freshContext, config, component);
 					return;
@@ -96,9 +115,7 @@ export class TimelineProcessor {
 
 				// Also re-render if an event note changed (it might reference this person)
 				if (eventsFolder && changedFile.path.startsWith(eventsFolder)) {
-					// Re-build context to get fresh data (this will reload events)
 					const freshContext = this.service.buildContext(ctx);
-					// Clear and re-render
 					el.empty();
 					await this.renderer.render(el, freshContext, config, component);
 				}
