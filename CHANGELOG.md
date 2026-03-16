@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Historical context overlay and age annotations** ([#296](https://github.com/banisterious/obsidian-charted-roots/issues/296)): Timelines can now overlay historical events from a user-defined context note referenced via `context: [[Note]]` in the code block. Context events are filtered to the person's lifespan and rendered with muted styling and a landmark icon. New `defaultTimelineContext` setting applies a context note to all timelines globally. All timeline events now display age annotations when the person's birth date is known.
+
+---
+
 ## [0.20.27] - 2026-03-15
 
 ### Added
