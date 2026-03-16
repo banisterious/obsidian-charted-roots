@@ -153,6 +153,7 @@ export class TimelineRenderer {
 		const contextEntries = await this.parseContextNote(contextPath, context, birthYear);
 
 		// Filter context events to the person's lifespan (with 5-year margin)
+		// If no person dates are available, include all context events
 		const personYears = entries
 			.filter(e => !e.isContext)
 			.map(e => parseInt(e.year))
@@ -165,6 +166,8 @@ export class TimelineRenderer {
 				return !isNaN(year) && year >= minYear && year <= maxYear;
 			});
 			entries.push(...filtered);
+		} else {
+			entries.push(...contextEntries);
 		}
 
 		// Re-sort after merging
@@ -197,8 +200,9 @@ export class TimelineRenderer {
 		const content = await app.vault.read(file);
 		const entries: TimelineEntry[] = [];
 
-		// Match list items: - YYYY or - YYYY-YYYY or - YYYY-MM-DD: description
-		const lineRegex = /^[-*]\s+(\d{4}(?:-\d{2}(?:-\d{2})?)?)\s*(?:[-–]\s*(\d{4}(?:-\d{2}(?:-\d{2})?)?))?:\s*(.+)$/;
+		// Match lines with date prefix: bullet optional
+		// Formats: "- 1861-1865: Event", "1914: Event", "* 1929-10-29: Event"
+		const lineRegex = /^(?:[-*]\s+)?(\d{4}(?:-\d{2}(?:-\d{2})?)?)\s*(?:[-–]\s*(\d{4}(?:-\d{2}(?:-\d{2})?)?))?:\s*(.+)$/;
 
 		for (const line of content.split('\n')) {
 			const match = line.trim().match(lineRegex);
