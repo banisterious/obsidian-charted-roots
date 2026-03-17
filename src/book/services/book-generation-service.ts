@@ -260,7 +260,7 @@ export class BookGenerationService {
 		const options = {
 			...config.reportOptions,
 			...subjectField,
-			outputMethod: 'vault' as const,
+			outputMethod: 'download' as const,
 		};
 
 		const result = await reportService.generateReport(
