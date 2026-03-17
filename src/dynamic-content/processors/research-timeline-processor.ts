@@ -132,8 +132,8 @@ export class ResearchTimelineProcessor {
 				if (activity) activities.push(activity);
 			}
 
-			// Format 2: research_journal notes — parse markdown for → result entries
-			if (crType === 'research_journal') {
+			// Format 2: research_journal/research_report/research_project notes — parse markdown for → result entries
+			if (['research_journal', 'research_report', 'research_project'].includes(crType)) {
 				const markdownActivities = await this.extractActivitiesFromMarkdown(file, fm, projectFilter, personFilter);
 				activities.push(...markdownActivities);
 			}

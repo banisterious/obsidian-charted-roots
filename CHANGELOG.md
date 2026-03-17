@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Gaps report crash in report wizard** ([#306](https://github.com/banisterious/obsidian-charted-roots/issues/306)): The report wizard was missing gaps-specific options (`fieldsToCheck`, `maxItemsPerCategory`, research level filters) that the old report modal had, causing a crash when generating gaps reports. The wizard now includes the full set of gaps report configuration options.
+- **Negative findings and research timeline not scanning research reports** ([#305](https://github.com/banisterious/obsidian-charted-roots/issues/305)): The negative findings block and research timeline processors only scanned `research_journal` notes for markdown `→ negative` entries, missing users who log findings in `research_report` or `research_project` notes. Both processors now scan all three note types.
 
 ---
 

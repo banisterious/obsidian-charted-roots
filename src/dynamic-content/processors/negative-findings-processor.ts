@@ -130,8 +130,8 @@ export class NegativeFindingsProcessor {
 				if (finding) findings.push(finding);
 			}
 
-			// Format 2: research_journal notes — parse markdown for → negative entries
-			if (crType === 'research_journal') {
+			// Format 2: research_journal/research_report/research_project notes — parse markdown for → negative entries
+			if (['research_journal', 'research_report', 'research_project'].includes(crType)) {
 				const markdownFindings = await this.extractFindingsFromMarkdown(file, fm, projectFilter, personFilter);
 				findings.push(...markdownFindings);
 			}
