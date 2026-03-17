@@ -321,7 +321,7 @@ function showTreeGenerationTab(options: TreesTabOptions): void {
 	});
 
 	bookBtn.addEventListener('click', () => {
-		const modal = new BookBuilderModal(app, plugin);
+		const modal = new BookBuilderModal(plugin);
 		modal.open();
 	});
 
