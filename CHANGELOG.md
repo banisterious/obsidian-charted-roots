@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Book Builder missing ancestor and family group chapters** ([#309](https://github.com/banisterious/obsidian-charted-roots/issues/309)): `getPerson()` and `getPersonByCrId()` did not ensure the person cache was loaded, causing Book Builder templates to generate empty ancestor and family group sections when fact-level source tracking was disabled.
 - **Book Builder saving individual report files** ([#311](https://github.com/banisterious/obsidian-charted-roots/issues/311)): Generating a PDF book also saved each report chapter as a standalone markdown file in the vault.
 - **Unreadable tree charts in PDF output** ([#310](https://github.com/banisterious/obsidian-charted-roots/issues/310)): Visual tree charts used white text on light pastel backgrounds, making them unreadable in PDF/book output. Text color now uses dark tones matching the existing report palette. Long names that overflowed card boundaries are now clipped.
+- **Record superlatives ignoring years before 1000** ([#312](https://github.com/banisterious/obsidian-charted-roots/issues/312)): The year extraction regex required exactly 4 digits, so years like `800` were ignored and negative years like `-1000` had their sign stripped. Now supports 1+ digit years and negative (BCE) years.
 
 ---
 
