@@ -191,6 +191,18 @@ interface WizardFormData {
 	kinshipSortBy: KinshipSortOrder;
 	kinshipMaxDegree: number;
 
+	// Gaps report options
+	gapsFieldsToCheck: {
+		birthDate: boolean;
+		deathDate: boolean;
+		parents: boolean;
+		sources: boolean;
+	};
+	gapsMaxItemsPerCategory: number;
+	gapsResearchLevelMax: number | undefined;
+	gapsIncludeUnassessed: boolean;
+	gapsSortByResearchLevel: boolean;
+
 	// Step 3: PDF Options
 	pdfPageSize: 'A4' | 'LETTER';
 	pdfDateFormat: 'mdy' | 'dmy' | 'ymd';
@@ -325,6 +337,18 @@ export class ReportWizardModal extends Modal {
 			brickWallSortBy: 'generation' as BrickWallSortOrder,
 			kinshipSortBy: 'degree' as KinshipSortOrder,
 			kinshipMaxDegree: 20,
+
+			// Gaps report options
+			gapsFieldsToCheck: {
+				birthDate: true,
+				deathDate: true,
+				parents: true,
+				sources: true
+			},
+			gapsMaxItemsPerCategory: 50,
+			gapsResearchLevelMax: undefined,
+			gapsIncludeUnassessed: true,
+			gapsSortByResearchLevel: false,
 
 			// PDF options
 			pdfPageSize: 'A4',
@@ -1979,6 +2003,77 @@ export class ReportWizardModal extends Modal {
 				this.formData.kinshipSortBy = sortSelect.value as KinshipSortOrder;
 			});
 		}
+
+		// Gaps report options
+		if (this.formData.reportType === 'gaps-report') {
+			// Fields to check
+			const fieldsSection = section.createDiv({ cls: 'cr-report-subsection' });
+			fieldsSection.createEl('h4', { text: 'Fields to check', cls: 'cr-report-subsection-title' });
+
+			this.renderToggleOption(fieldsSection, 'Missing birth dates', this.formData.gapsFieldsToCheck.birthDate, (value) => {
+				this.formData.gapsFieldsToCheck.birthDate = value;
+			});
+			this.renderToggleOption(fieldsSection, 'Missing death dates', this.formData.gapsFieldsToCheck.deathDate, (value) => {
+				this.formData.gapsFieldsToCheck.deathDate = value;
+			});
+			this.renderToggleOption(fieldsSection, 'Missing parents', this.formData.gapsFieldsToCheck.parents, (value) => {
+				this.formData.gapsFieldsToCheck.parents = value;
+			});
+			this.renderToggleOption(fieldsSection, 'Unsourced people', this.formData.gapsFieldsToCheck.sources, (value) => {
+				this.formData.gapsFieldsToCheck.sources = value;
+			});
+
+			// Max items per category
+			const maxItemsRow = section.createDiv({ cls: 'cr-report-option-row' });
+			maxItemsRow.createSpan({ text: 'Max items per category:', cls: 'cr-report-option-label' });
+
+			const maxItemsInput = maxItemsRow.createEl('input', {
+				cls: 'cr-report-input',
+				type: 'number',
+				attr: { min: '10', max: '200', step: '10' },
+				value: String(this.formData.gapsMaxItemsPerCategory)
+			});
+			maxItemsInput.addEventListener('change', () => {
+				const val = parseInt(maxItemsInput.value);
+				if (!isNaN(val) && val >= 10 && val <= 200) {
+					this.formData.gapsMaxItemsPerCategory = val;
+				} else {
+					maxItemsInput.value = String(this.formData.gapsMaxItemsPerCategory);
+				}
+			});
+
+			// Research level filter
+			const researchRow = section.createDiv({ cls: 'cr-report-option-row' });
+			researchRow.createSpan({ text: 'Research level filter:', cls: 'cr-report-option-label' });
+
+			const researchSelect = researchRow.createEl('select', { cls: 'cr-report-select' });
+			const researchOptions: { value: string; label: string }[] = [
+				{ value: '', label: 'All levels' },
+				{ value: '0', label: 'Level 0 only (unidentified)' },
+				{ value: '1', label: 'Level 0–1 (minimal info)' },
+				{ value: '2', label: 'Level 0–2 (basic)' },
+				{ value: '3', label: 'Level 0–3 (moderate)' },
+				{ value: '4', label: 'Level 0–4 (detailed)' },
+				{ value: '5', label: 'Level 0–5 (comprehensive)' }
+			];
+			for (const opt of researchOptions) {
+				const option = researchSelect.createEl('option', { value: opt.value, text: opt.label });
+				if (opt.value === (this.formData.gapsResearchLevelMax?.toString() ?? '')) option.selected = true;
+			}
+			researchSelect.addEventListener('change', () => {
+				this.formData.gapsResearchLevelMax = researchSelect.value ? parseInt(researchSelect.value) : undefined;
+			});
+
+			// Include unassessed
+			this.renderToggleOption(section, 'Include unassessed people', this.formData.gapsIncludeUnassessed, (value) => {
+				this.formData.gapsIncludeUnassessed = value;
+			});
+
+			// Sort by research level
+			this.renderToggleOption(section, 'Sort by research level', this.formData.gapsSortByResearchLevel, (value) => {
+				this.formData.gapsSortByResearchLevel = value;
+			});
+		}
 	}
 
 	/**
@@ -2552,6 +2647,15 @@ export class ReportWizardModal extends Modal {
 		if (this.formData.reportType === 'kinship-report') {
 			options.maxDegree = this.formData.kinshipMaxDegree;
 			options.sortBy = this.formData.kinshipSortBy;
+		}
+
+		// Add gaps-report-specific options
+		if (this.formData.reportType === 'gaps-report') {
+			options.fieldsToCheck = this.formData.gapsFieldsToCheck;
+			options.maxItemsPerCategory = this.formData.gapsMaxItemsPerCategory;
+			options.researchLevelMax = this.formData.gapsResearchLevelMax;
+			options.includeUnassessed = this.formData.gapsIncludeUnassessed;
+			options.sortByResearchLevel = this.formData.gapsSortByResearchLevel;
 		}
 
 		// Add timeline-specific options
