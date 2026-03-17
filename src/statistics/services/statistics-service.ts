@@ -1485,10 +1485,22 @@ export class StatisticsService {
 	private extractYear(dateStr: string | undefined): number | null {
 		if (!dateStr || typeof dateStr !== 'string') return null;
 
-		// Try to extract 4-digit year
-		const match = dateStr.match(/\b(\d{4})\b/);
-		if (match) {
-			return parseInt(match[1], 10);
+		// Try negative year first (e.g., "-1000", "-500")
+		const negMatch = dateStr.match(/^-(\d+)/);
+		if (negMatch) {
+			return -parseInt(negMatch[1], 10);
+		}
+
+		// Try ISO-style leading year (e.g., "1855-03-15", "800", "42")
+		const isoMatch = dateStr.match(/^(\d+)/);
+		if (isoMatch) {
+			return parseInt(isoMatch[1], 10);
+		}
+
+		// Try year after qualifier (e.g., "ABT 800", "BEF 1950")
+		const qualMatch = dateStr.match(/\b(\d+)\b/);
+		if (qualMatch) {
+			return parseInt(qualMatch[1], 10);
 		}
 
 		return null;
