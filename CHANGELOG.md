@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.20.30] - 2026-03-17
+
 ### Fixed
 
 - **Gaps report crash in report wizard** ([#306](https://github.com/banisterious/obsidian-charted-roots/issues/306)): The report wizard was missing gaps-specific options (`fieldsToCheck`, `maxItemsPerCategory`, research level filters) that the old report modal had, causing a crash when generating gaps reports. The wizard now includes the full set of gaps report configuration options.
