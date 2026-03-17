@@ -409,9 +409,9 @@ export class FamilyGraphService {
 
 	/**
 	 * Gets a person by their cr_id
-	 * Note: Call ensureCacheLoaded() or generateTree() first to ensure cache is loaded
 	 */
 	getPersonByCrId(crId: string): PersonNode | undefined {
+		this.ensureCacheLoaded();
 		return this.personCache.get(crId);
 	}
 
@@ -2039,6 +2039,7 @@ export class FamilyGraphService {
 	 * Gets a person node by cr_id from cache
 	 */
 	getPerson(crId: string): PersonNode | undefined {
+		this.ensureCacheLoaded();
 		return this.personCache.get(crId);
 	}
 
