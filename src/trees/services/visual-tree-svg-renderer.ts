@@ -26,8 +26,8 @@ const FAMILY_CHART_COLORS = {
 	femaleDark: 'rgb(160, 110, 118)', // Darker rose for border/icon bg
 	nonBinaryDark: 'rgb(155, 138, 95)',
 	unknownDark: 'rgb(140, 140, 140)',
-	text: '#ffffff',
-	textSecondary: 'rgba(255, 255, 255, 0.85)',
+	text: '#333333',
+	textSecondary: '#555555',
 	line: 'rgb(100, 100, 100)',
 	background: 'rgb(250, 250, 250)'
 };
