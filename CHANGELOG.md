@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Default root person for Book Builder** ([#308](https://github.com/banisterious/obsidian-charted-roots/issues/308)): When applying a Book Builder template, the root person is now resolved automatically from the active note (if it's a person) or the person marked `root_person: true` in the vault. Falls back to the person picker if no default is found.
+
 ### Fixed
 
 - **Book Builder button in Control Center** ([#307](https://github.com/banisterious/obsidian-charted-roots/issues/307)): The "Open book builder" button passed incorrect arguments to the modal constructor, causing it to silently fail.
