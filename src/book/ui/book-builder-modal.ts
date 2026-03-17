@@ -329,12 +329,57 @@ export class BookBuilderModal extends Modal {
 	}
 
 	private applyTemplateWithPersonPicker(templateId: string): void {
+		// Try to resolve a default root person:
+		// 1. Active note if it's a person
+		// 2. Person marked root_person: true in the vault
+		const defaultPerson = this.resolveDefaultRootPerson();
+		if (defaultPerson) {
+			this.applyTemplate(templateId, defaultPerson.crId, defaultPerson.name);
+			this.currentStep = 1;
+			this.renderCurrentStep();
+			return;
+		}
+
 		const picker = new PersonPickerModal(this.app, (person: PersonInfo) => {
 			this.applyTemplate(templateId, person.crId, person.name);
 			this.currentStep = 1;
 			this.renderCurrentStep();
 		});
 		picker.open();
+	}
+
+	/**
+	 * Resolve a default root person from active note or root_person marker.
+	 */
+	private resolveDefaultRootPerson(): { crId: string; name: string } | null {
+		// 1. Check if the active note is a person
+		const activeFile = this.app.workspace.getActiveFile();
+		if (activeFile) {
+			const cache = this.app.metadataCache.getFileCache(activeFile);
+			const frontmatter = cache?.frontmatter;
+			if (frontmatter?.cr_id && frontmatter?.cr_type === 'person') {
+				return {
+					crId: frontmatter.cr_id,
+					name: frontmatter.name || activeFile.basename,
+				};
+			}
+			// Also detect person notes without explicit cr_type
+			if (frontmatter?.cr_id && (frontmatter?.given_name || frontmatter?.surnames)) {
+				return {
+					crId: frontmatter.cr_id,
+					name: frontmatter.name || activeFile.basename,
+				};
+			}
+		}
+
+		// 2. Check for root_person: true marker
+		const graphService = this.plugin.createFamilyGraphService();
+		const { rootPerson } = graphService.getMarkedRootPerson();
+		if (rootPerson) {
+			return { crId: rootPerson.crId, name: rootPerson.name };
+		}
+
+		return null;
 	}
 
 	private applyTemplate(templateId: string, rootPersonCrId: string, rootPersonName: string): void {
