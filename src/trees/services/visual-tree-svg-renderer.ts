@@ -225,11 +225,18 @@ export class VisualTreeSvgRenderer {
 		const baseFontSize = Math.max(7, Math.min(11, height / 5));
 		const lineHeight = baseFontSize * 1.25;
 
-		// Build text elements
-		const textElements: string[] = [];
+		// Build text elements with clipPath to prevent overflow
+		const clipId = `text-clip-${node.person.crId.replace(/[^a-zA-Z0-9]/g, '_')}`;
+		const textClipDef = `
+			<clipPath id="${clipId}">
+				<rect x="${textAreaX}" y="${cardY}" width="${textAreaWidth}" height="${height}" />
+			</clipPath>`;
+
+		const textElements: string[] = [textClipDef];
 		const totalTextHeight = textLines.length * lineHeight;
 		const textStartY = y - totalTextHeight / 2 + lineHeight * 0.35;
 
+		textElements.push(`<g clip-path="url(#${clipId})">`);
 		for (let i = 0; i < textLines.length; i++) {
 			const lineY = textStartY + i * lineHeight;
 			const fontSize = i === 0 ? baseFontSize : baseFontSize * 0.8;
@@ -250,6 +257,7 @@ export class VisualTreeSvgRenderer {
 				>${escapedText}</text>
 			`);
 		}
+		textElements.push('</g>');
 
 		// Gender indicator dots above the card
 		const dotY = cardY - 5;
