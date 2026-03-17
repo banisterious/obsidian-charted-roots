@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Book Builder button in Control Center** ([#307](https://github.com/banisterious/obsidian-charted-roots/issues/307)): The "Open book builder" button passed incorrect arguments to the modal constructor, causing it to silently fail.
+- **Book Builder missing ancestor and family group chapters** ([#309](https://github.com/banisterious/obsidian-charted-roots/issues/309)): `getPerson()` and `getPersonByCrId()` did not ensure the person cache was loaded, causing Book Builder templates to generate empty ancestor and family group sections when fact-level source tracking was disabled.
+
 ---
 
 ## [0.20.30] - 2026-03-17
