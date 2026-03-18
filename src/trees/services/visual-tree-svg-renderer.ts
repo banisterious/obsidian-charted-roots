@@ -242,7 +242,8 @@ export class VisualTreeSvgRenderer {
 			const fontSize = i === 0 ? baseFontSize : baseFontSize * 0.8;
 			const fill = colors.text;
 			const fontWeight = i === 0 ? 'bold' : 'normal';
-			const escapedText = this.escapeXml(textLines[i]);
+			const truncatedText = this.truncateText(textLines[i], textAreaWidth, fontSize, fontWeight === 'bold');
+			const escapedText = this.escapeXml(truncatedText);
 
 			textElements.push(`
 				<text
@@ -468,6 +469,22 @@ export class VisualTreeSvgRenderer {
 	/**
 	 * Escape XML special characters
 	 */
+	/**
+	 * Truncate text with ellipsis if it would overflow the available width.
+	 * Uses approximate character width based on font size.
+	 */
+	private truncateText(text: string, availableWidth: number, fontSize: number, isBold: boolean): string {
+		// Approximate average character width as proportion of font size
+		// Bold text is ~10% wider; sans-serif averages ~0.55 of font size per char
+		const charWidth = fontSize * (isBold ? 0.6 : 0.55);
+		const maxChars = Math.floor(availableWidth / charWidth);
+
+		if (text.length <= maxChars) return text;
+		if (maxChars <= 3) return text.substring(0, maxChars);
+
+		return text.substring(0, maxChars - 1) + '…';
+	}
+
 	private escapeXml(text: string): string {
 		return text
 			.replace(/&/g, '&amp;')

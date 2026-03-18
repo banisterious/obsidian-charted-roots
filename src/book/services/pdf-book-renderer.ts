@@ -235,19 +235,14 @@ export class PdfBookRenderer {
 	): Content[] {
 		const content: Content[] = [];
 
-		// Switch to landscape for tree charts
-		content.push({
-			text: '',
-			pageBreak: 'before',
-			pageOrientation: 'landscape',
-		} as Content);
-
-		// Chapter title
+		// Chapter title — switch to landscape on its page break
 		content.push({
 			text: title,
 			style: 'title',
 			tocItem: true,
 			margin: [0, 0, 0, 10],
+			pageBreak: 'before',
+			pageOrientation: 'landscape',
 		} as Content);
 
 		// Scale image to fit landscape content area (40pt margins on each side)
@@ -264,12 +259,6 @@ export class PdfBookRenderer {
 			width: displayWidth,
 			alignment: 'center',
 			margin: [0, 10, 0, 10],
-		} as Content);
-
-		// Switch back to portrait for subsequent chapters
-		content.push({
-			text: '',
-			pageBreak: 'after',
 			pageOrientation: 'portrait',
 		} as Content);
 
