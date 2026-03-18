@@ -59,6 +59,39 @@ Features are prioritized to complete the data lifecycle: **import → enhance �
 
 ---
 
+### Comprehensive GEDCOM Field Coverage
+
+**Priority:** ⚡ High — Core data portability for lossless GEDCOM roundtrips
+
+**Status:** In progress
+
+**GitHub Issue:** [#317](https://github.com/banisterious/obsidian-charted-roots/issues/317) (umbrella)
+
+**Summary:** Close all mechanical GEDCOM 5.5.1 field coverage gaps to ensure lossless import/export roundtrips. Several fields are either unsupported or only partially supported (parsed on import but dropped on export).
+
+**Planning document:** [gedcom-field-coverage.md](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/gedcom-field-coverage.md)
+
+**Gaps by user impact:**
+
+| Tier | Fields | Status |
+|------|--------|--------|
+| High | Person attribute export (TITL, RELI, NATI + 7 more) | Planned |
+| High | NICK export | Planned |
+| High | BURI.DATE import | Planned |
+| High | NPFX/NSFX (name prefix/suffix) | Planned |
+| High | FAM.MARR.DATE/PLAC import | ✅ Fixed (#314) |
+| Medium | SPFX (surname prefix) | Planned |
+| Medium | CAUS (cause of death) | Planned |
+| Medium | Marriage variants (MARB, MARC, MARL, MARS, DIVF) | Planned |
+| Medium | CHRA (adult christening) | Planned |
+| Low | AGE (age at event) | Planned |
+| Low | TEXT (source transcription) | Planned |
+| Low | Source NOTE/OBJE | Planned |
+
+**Related:** [#316](https://github.com/banisterious/obsidian-charted-roots/issues/316) — Citation-level metadata (PAGE/QUAY) tracked separately as it requires a data model decision.
+
+---
+
 ### GPS Research Workflow Integration
 
 **Priority:** 📋 Medium — Supports GPS methodology for serious genealogists
