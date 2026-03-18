@@ -12,7 +12,6 @@ import type {
 	VisualTreeNode,
 	VisualTreeConnection
 } from '../types/visual-tree-types';
-import { formatDisplayDate } from '../../dates';
 
 /**
  * Color scheme matching family-chart
@@ -20,14 +19,12 @@ import { formatDisplayDate } from '../../dates';
 const FAMILY_CHART_COLORS = {
 	male: 'rgb(120, 159, 172)',       // Teal blue
 	female: 'rgb(196, 138, 146)',     // Dusty rose
-	nonBinary: 'rgb(190, 170, 120)',  // Muted gold
 	unknown: 'rgb(180, 180, 180)',    // Gray
 	maleDark: 'rgb(90, 125, 136)',    // Darker teal for border/icon bg
 	femaleDark: 'rgb(160, 110, 118)', // Darker rose for border/icon bg
-	nonBinaryDark: 'rgb(155, 138, 95)',
 	unknownDark: 'rgb(140, 140, 140)',
-	text: '#333333',
-	textSecondary: '#555555',
+	text: '#ffffff',
+	textSecondary: 'rgba(255, 255, 255, 0.85)',
 	line: 'rgb(100, 100, 100)',
 	background: 'rgb(250, 250, 250)'
 };
@@ -109,7 +106,7 @@ export class VisualTreeSvgRenderer {
 
 			const img = new Image();
 			const canvas = document.createElement('canvas');
-			const scale = 4; // 4x resolution for sharper PDF output
+			const scale = 2; // 2x resolution for better quality
 			canvas.width = width * scale;
 			canvas.height = height * scale;
 
@@ -202,7 +199,7 @@ export class VisualTreeSvgRenderer {
 		const height = node.height * scale;
 
 		const colors = this.getNodeColors(node, options.colorScheme);
-		const textLines = this.getNodeTextLines(node, options.nodeContent, width);
+		const textLines = this.getNodeTextLines(node, options.nodeContent);
 
 		// Card dimensions
 		const cardX = x - width / 2;
@@ -225,25 +222,17 @@ export class VisualTreeSvgRenderer {
 		const baseFontSize = Math.max(7, Math.min(11, height / 5));
 		const lineHeight = baseFontSize * 1.25;
 
-		// Build text elements with clipPath to prevent overflow
-		const clipId = `text-clip-${node.person.crId.replace(/[^a-zA-Z0-9]/g, '_')}`;
-		const textClipDef = `
-			<clipPath id="${clipId}">
-				<rect x="${textAreaX}" y="${cardY}" width="${textAreaWidth}" height="${height}" />
-			</clipPath>`;
-
-		const textElements: string[] = [textClipDef];
+		// Build text elements
+		const textElements: string[] = [];
 		const totalTextHeight = textLines.length * lineHeight;
 		const textStartY = y - totalTextHeight / 2 + lineHeight * 0.35;
 
-		textElements.push(`<g clip-path="url(#${clipId})">`);
 		for (let i = 0; i < textLines.length; i++) {
 			const lineY = textStartY + i * lineHeight;
 			const fontSize = i === 0 ? baseFontSize : baseFontSize * 0.8;
 			const fill = colors.text;
 			const fontWeight = i === 0 ? 'bold' : 'normal';
-			const truncatedText = this.truncateText(textLines[i], textAreaWidth, fontSize, fontWeight === 'bold');
-			const escapedText = this.escapeXml(truncatedText);
+			const escapedText = this.escapeXml(textLines[i]);
 
 			textElements.push(`
 				<text
@@ -258,7 +247,6 @@ export class VisualTreeSvgRenderer {
 				>${escapedText}</text>
 			`);
 		}
-		textElements.push('</g>');
 
 		// Gender indicator dots above the card
 		const dotY = cardY - 5;
@@ -377,13 +365,6 @@ export class VisualTreeSvgRenderer {
 						iconBg: FAMILY_CHART_COLORS.femaleDark,
 						text: FAMILY_CHART_COLORS.text
 					};
-				} else if (sex === 'x' || sex === 'nonbinary' || sex === 'non-binary' || sex === 'other' || sex === 'intersex') {
-					return {
-						fill: FAMILY_CHART_COLORS.nonBinary,
-						border: FAMILY_CHART_COLORS.nonBinaryDark,
-						iconBg: FAMILY_CHART_COLORS.nonBinaryDark,
-						text: FAMILY_CHART_COLORS.text
-					};
 				}
 				return {
 					fill: FAMILY_CHART_COLORS.unknown,
@@ -436,26 +417,21 @@ export class VisualTreeSvgRenderer {
 	 */
 	private getNodeTextLines(
 		node: VisualTreeNode,
-		nodeContent: VisualTreeOptions['nodeContent'],
-		nodeWidth: number
+		nodeContent: VisualTreeOptions['nodeContent']
 	): string[] {
 		const lines: string[] = [node.person.name];
 
 		if (nodeContent === 'name-dates' || nodeContent === 'name-dates-places') {
+			// Format dates more compactly
 			if (node.person.birthDate) {
-				// Use year-only when nodes are narrow (< 120px)
-				if (nodeWidth < 120) {
-					const yearMatch = node.person.birthDate.match(/-?\d{1,4}/);
-					if (yearMatch) lines.push(yearMatch[0]);
-				} else {
-					lines.push(formatDisplayDate(node.person.birthDate));
-				}
+				lines.push(node.person.birthDate);
 			}
 		}
 
 		if (nodeContent === 'name-dates-places') {
-			if (node.person.birthPlace && nodeWidth >= 120) {
+			if (node.person.birthPlace) {
 				const place = this.stripWikilinks(node.person.birthPlace);
+				// Truncate long place names
 				lines.push(place.length > 25 ? place.substring(0, 22) + '...' : place);
 			}
 		}
@@ -474,22 +450,6 @@ export class VisualTreeSvgRenderer {
 	/**
 	 * Escape XML special characters
 	 */
-	/**
-	 * Truncate text with ellipsis if it would overflow the available width.
-	 * Uses approximate character width based on font size.
-	 */
-	private truncateText(text: string, availableWidth: number, fontSize: number, isBold: boolean): string {
-		// Approximate average character width as proportion of font size
-		// Bold text is ~10% wider; sans-serif averages ~0.55 of font size per char
-		const charWidth = fontSize * (isBold ? 0.6 : 0.55);
-		const maxChars = Math.floor(availableWidth / charWidth);
-
-		if (text.length <= maxChars) return text;
-		if (maxChars <= 3) return text.substring(0, maxChars);
-
-		return text.substring(0, maxChars - 1) + '…';
-	}
-
 	private escapeXml(text: string): string {
 		return text
 			.replace(/&/g, '&amp;')
