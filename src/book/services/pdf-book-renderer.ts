@@ -235,9 +235,12 @@ export class PdfBookRenderer {
 	): Content[] {
 		const content: Content[] = [];
 
-		if (pageBreakBefore) {
-			content.push({ text: '', pageBreak: 'before' });
-		}
+		// Switch to landscape for tree charts
+		content.push({
+			text: '',
+			pageBreak: 'before',
+			pageOrientation: 'landscape',
+		} as Content);
 
 		// Chapter title
 		content.push({
@@ -247,9 +250,13 @@ export class PdfBookRenderer {
 			margin: [0, 0, 0, 10],
 		} as Content);
 
-		// Scale image to fit page width (515pt content area for A4 with 40pt margins)
-		const maxWidth = 515;
-		const scale = Math.min(1, maxWidth / dimensions.width);
+		// Scale image to fit landscape content area (40pt margins on each side)
+		// Landscape letter: 792pt wide - 80pt margins = 712pt content area
+		const maxWidth = 712;
+		const maxHeight = 500; // Leave room for title and margins
+		const scaleW = Math.min(1, maxWidth / dimensions.width);
+		const scaleH = Math.min(1, maxHeight / dimensions.height);
+		const scale = Math.min(scaleW, scaleH);
 		const displayWidth = dimensions.width * scale;
 
 		content.push({
@@ -257,6 +264,13 @@ export class PdfBookRenderer {
 			width: displayWidth,
 			alignment: 'center',
 			margin: [0, 10, 0, 10],
+		} as Content);
+
+		// Switch back to portrait for subsequent chapters
+		content.push({
+			text: '',
+			pageBreak: 'after',
+			pageOrientation: 'portrait',
 		} as Content);
 
 		return content;
