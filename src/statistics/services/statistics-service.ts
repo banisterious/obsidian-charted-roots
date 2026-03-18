@@ -1497,7 +1497,13 @@ export class StatisticsService {
 			return parseInt(isoMatch[1], 10);
 		}
 
-		// Try year after qualifier (e.g., "ABT 800", "BEF 1950")
+		// Try negative year after prefix (e.g., "DE -90", "ABT -500")
+		const prefixNegMatch = dateStr.match(/\s-(\d+)/);
+		if (prefixNegMatch) {
+			return -parseInt(prefixNegMatch[1], 10);
+		}
+
+		// Try year after qualifier (e.g., "ABT 800", "BEF 1950", "DE 500")
 		const qualMatch = dateStr.match(/\b(\d+)\b/);
 		if (qualMatch) {
 			return parseInt(qualMatch[1], 10);
