@@ -228,34 +228,29 @@ export class VisualTreeService {
 		const generationsCount = Math.max(...ancestorData.map(a => a.generation)) + 1;
 		const maxNodesInGeneration = Math.pow(2, generationsCount - 1);
 
-		// Minimum dimensions to keep cards readable
-		const MIN_NODE_WIDTH = 100;
-		const MIN_NODE_HEIGHT = 40;
-		const TARGET_ASPECT_RATIO = 2.5; // Width to height ratio for family-chart style
+		// Size nodes to fit their content, then size the canvas to fit the nodes.
+		// This ensures names are always fully readable.
 
-		// Calculate node size to fit the page
-		// Reserve space for all generations vertically
-		const availableHeightPerGen = usableHeight / generationsCount;
-		let nodeHeight = Math.min(
-			DEFAULT_NODE_DIMENSIONS.height,
-			availableHeightPerGen - DEFAULT_NODE_DIMENSIONS.spacingY
-		);
-		// Enforce minimum height
-		nodeHeight = Math.max(nodeHeight, MIN_NODE_HEIGHT);
+		// Estimate the minimum node width needed for the longest name
+		// Average character is ~6px at 10pt font; icon area takes ~40% of height
+		const CHAR_WIDTH = 6;
+		const ICON_AREA_RATIO = 0.9; // Icon area is height * 0.9
+		const MIN_NODE_HEIGHT = 55;
+		const nodeHeight = MIN_NODE_HEIGHT;
+		const iconAreaWidth = nodeHeight * ICON_AREA_RATIO;
+		const textPadding = 8; // Left + right padding within text area
 
-		// Calculate width to fit the widest generation
-		const availableWidthPerNode = usableWidth / maxNodesInGeneration;
-		let nodeWidth = Math.min(
-			DEFAULT_NODE_DIMENSIONS.width,
-			availableWidthPerNode - DEFAULT_NODE_DIMENSIONS.spacingX
-		);
-		// Enforce minimum width and aspect ratio
-		nodeWidth = Math.max(nodeWidth, MIN_NODE_WIDTH, nodeHeight * TARGET_ASPECT_RATIO);
+		// Find the longest name across all ancestors
+		const longestName = ancestorData.reduce((max, a) => {
+			const nameLen = a.person.name?.length || 0;
+			return nameLen > max ? nameLen : max;
+		}, 0);
 
-		// Calculate the actual width needed for the widest generation
-		// This ensures no overlapping - tree may extend beyond page bounds
-		// but the SVG renderer will scale it to fit
-		const nodeSpacingX = Math.max(DEFAULT_NODE_DIMENSIONS.spacingX, nodeWidth * 0.15); // At least 15% of node width
+		// Calculate node width: icon area + text area (enough for the longest name)
+		const textWidth = longestName * CHAR_WIDTH + textPadding;
+		const nodeWidth = Math.max(DEFAULT_NODE_DIMENSIONS.width, iconAreaWidth + textWidth);
+
+		const nodeSpacingX = Math.max(DEFAULT_NODE_DIMENSIONS.spacingX, nodeWidth * 0.15);
 		const totalWidthNeeded = maxNodesInGeneration * (nodeWidth + nodeSpacingX) - nodeSpacingX;
 
 		// Position nodes relative to (0,0) - SVG renderer will center
@@ -311,6 +306,14 @@ export class VisualTreeService {
 		// Calculate bounding box
 		const bounds = this.calculateBounds(nodes);
 
+		// Expand page to fit content so the SVG renderer doesn't scale nodes down
+		const contentWidth = bounds.width + DEFAULT_MARGINS.left + DEFAULT_MARGINS.right;
+		const contentHeight = bounds.height + DEFAULT_MARGINS.top + DEFAULT_MARGINS.bottom;
+		const fitPage = {
+			width: Math.max(page.width, contentWidth),
+			height: Math.max(page.height, contentHeight)
+		};
+
 		return {
 			type: 'pedigree',
 			rootPerson: {
@@ -320,7 +323,7 @@ export class VisualTreeService {
 			nodes,
 			connections,
 			bounds,
-			page,
+			page: fitPage,
 			orientation: options.orientation,
 			margins: DEFAULT_MARGINS,
 			stats: {
