@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Default root person for Book Builder** ([#308](https://github.com/banisterious/obsidian-charted-roots/issues/308)): When applying a Book Builder template, the root person is now resolved automatically from the active note (if it's a person) or the person marked `root_person: true` in the vault. Falls back to the person picker if no default is found.
+- **Default root person for Book Builder** ([#308](https://github.com/banisterious/obsidian-charted-roots/issues/308)): When applying a Book Builder template, the person picker now opens with the default root person pre-selected in the search field. The default is resolved from the active note (if it's a person) or the person marked `root_person: true` in the vault. The picker always opens so the user can confirm or change the selection.
 
 ### Fixed
 
