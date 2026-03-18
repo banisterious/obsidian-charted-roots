@@ -202,7 +202,7 @@ export class VisualTreeSvgRenderer {
 		const height = node.height * scale;
 
 		const colors = this.getNodeColors(node, options.colorScheme);
-		const textLines = this.getNodeTextLines(node, options.nodeContent);
+		const textLines = this.getNodeTextLines(node, options.nodeContent, width);
 
 		// Card dimensions
 		const cardX = x - width / 2;
@@ -436,21 +436,26 @@ export class VisualTreeSvgRenderer {
 	 */
 	private getNodeTextLines(
 		node: VisualTreeNode,
-		nodeContent: VisualTreeOptions['nodeContent']
+		nodeContent: VisualTreeOptions['nodeContent'],
+		nodeWidth: number
 	): string[] {
 		const lines: string[] = [node.person.name];
 
 		if (nodeContent === 'name-dates' || nodeContent === 'name-dates-places') {
-			// Format dates more compactly
 			if (node.person.birthDate) {
-				lines.push(formatDisplayDate(node.person.birthDate));
+				// Use year-only when nodes are narrow (< 120px)
+				if (nodeWidth < 120) {
+					const yearMatch = node.person.birthDate.match(/-?\d{1,4}/);
+					if (yearMatch) lines.push(yearMatch[0]);
+				} else {
+					lines.push(formatDisplayDate(node.person.birthDate));
+				}
 			}
 		}
 
 		if (nodeContent === 'name-dates-places') {
-			if (node.person.birthPlace) {
+			if (node.person.birthPlace && nodeWidth >= 120) {
 				const place = this.stripWikilinks(node.person.birthPlace);
-				// Truncate long place names
 				lines.push(place.length > 25 ? place.substring(0, 22) + '...' : place);
 			}
 		}
