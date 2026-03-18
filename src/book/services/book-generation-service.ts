@@ -307,11 +307,11 @@ export class BookGenerationService {
 			nodeContent: 'name-dates',
 			colorScheme: 'default',
 			includeSpouses: true,
-			largeTreeHandling: 'auto-page-size',
 		};
 
-		const layouts = treeService.buildLayouts(treeOptions);
-		if (layouts.length === 0) {
+		// Build layout directly — page will expand to fit content-sized nodes
+		const layout = treeService.buildLayout(treeOptions);
+		if (!layout) {
 			return {
 				chapterId: chapter.id,
 				chapterTitle: chapter.title,
@@ -321,9 +321,6 @@ export class BookGenerationService {
 				warnings: [],
 			};
 		}
-
-		// Use the first layout (single-page for book chapters)
-		const layout = layouts[0];
 		const svgString = svgRenderer.renderToSvg(layout, treeOptions);
 		const imageDataUrl = await svgRenderer.svgToDataUrl(
 			svgString,
