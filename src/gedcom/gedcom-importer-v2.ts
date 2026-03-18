@@ -868,10 +868,10 @@ export class GedcomImporterV2 {
 							marriageDate = GedcomParserV2.gedcomDateToISO(family.marriageDate);
 						}
 						marriageLocation = family.marriagePlace;
-						// Check for divorce event
+						// Check for divorce event (event.date is already ISO-converted by the parser)
 						for (const event of family.events) {
 							if (event.tag === 'DIV' && event.date) {
-								divorceDate = GedcomParserV2.gedcomDateToISO(event.date);
+								divorceDate = event.date;
 							}
 						}
 						break;
@@ -1120,7 +1120,7 @@ export class GedcomImporterV2 {
 			// Match the ID only when followed by end of line, comma, bracket, or whitespace
 			// Include step/adoptive parent property names
 			updatedContent = updatedContent.replace(
-				new RegExp(`(father_id|mother_id|spouse_id|children_id|stepfather_id|stepmother_id|adoptive_father_id|adoptive_mother_id):\\s*${escapedFrom}(?=\\s*$|\\s*,|\\s*\\]|\\s*\\n)`, 'gm'),
+				new RegExp(`(father_id|mother_id|spouse_id|spouse\\d+_id|children_id|stepfather_id|stepmother_id|adoptive_father_id|adoptive_mother_id):\\s*${escapedFrom}(?=\\s*$|\\s*,|\\s*\\]|\\s*\\n)`, 'gm'),
 				`$1: ${to}`
 			);
 			// Replace in array format (YAML list items)

@@ -612,7 +612,8 @@ export async function createPersonNote(
 	}
 	const spouseProp = prop('spouse');
 	const spouseIdProp = prop('spouse_id');
-	if (!(spouseProp in frontmatter) && !(spouseIdProp in frontmatter)) {
+	const hasIndexedSpouse = Object.keys(frontmatter).some(k => /^spouse\d+/.test(k));
+	if (!(spouseProp in frontmatter) && !(spouseIdProp in frontmatter) && !hasIndexedSpouse) {
 		frontmatter[spouseProp] = [];
 	}
 	// Note: children property is intentionally not added as empty by default
