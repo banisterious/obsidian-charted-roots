@@ -7,20 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Changed
+
+- **Default root person shows picker** ([#308](https://github.com/banisterious/obsidian-charted-roots/issues/308)): The person picker now always opens when selecting a Book Builder template, with the default root person pre-selected in the search field. Previously, the picker was skipped entirely when a default was found.
+
+### Fixed
+
+- **Tree charts scaling down nodes** ([#310](https://github.com/banisterious/obsidian-charted-roots/issues/310)): All four chart layouts (pedigree, descendant, hourglass, fan) now expand the canvas to fit content at full size, so names remain fully readable regardless of tree size. This fix applies to both Book Builder tree chapters and standalone visual tree PDF exports.
+- **Record superlatives with fictional negative years** ([#312](https://github.com/banisterious/obsidian-charted-roots/issues/312)): Fictional dates with era prefixes and negative years (e.g., `DE -90`) were parsed as positive.
+- **GEDCOM import spouse ID replacement and divorce dates** ([#314](https://github.com/banisterious/obsidian-charted-roots/issues/314)): Indexed `spouse[N]_id` values were not being converted from GEDCOM refs to CR IDs. Divorce dates were silently dropped due to double-conversion. An empty legacy `spouse:` field was written alongside indexed properties.
+
+---
+
 ## [0.20.31] - 2026-03-18
 
 ### Added
 
-- **Default root person for Book Builder** ([#308](https://github.com/banisterious/obsidian-charted-roots/issues/308)): When applying a Book Builder template, the person picker now opens with the default root person pre-selected in the search field. The default is resolved from the active note (if it's a person) or the person marked `root_person: true` in the vault. The picker always opens so the user can confirm or change the selection.
+- **Default root person for Book Builder** ([#308](https://github.com/banisterious/obsidian-charted-roots/issues/308)): When applying a Book Builder template, the root person is now resolved automatically from the active note (if it's a person) or the person marked `root_person: true` in the vault. Falls back to the person picker if no default is found.
 
 ### Fixed
 
 - **Book Builder button in Control Center** ([#307](https://github.com/banisterious/obsidian-charted-roots/issues/307)): The "Open book builder" button passed incorrect arguments to the modal constructor, causing it to silently fail.
 - **Book Builder missing ancestor and family group chapters** ([#309](https://github.com/banisterious/obsidian-charted-roots/issues/309)): `getPerson()` and `getPersonByCrId()` did not ensure the person cache was loaded, causing Book Builder templates to generate empty ancestor and family group sections when fact-level source tracking was disabled.
 - **Book Builder saving individual report files** ([#311](https://github.com/banisterious/obsidian-charted-roots/issues/311)): Generating a PDF book also saved each report chapter as a standalone markdown file in the vault.
-- **Unreadable tree charts in PDF output** ([#310](https://github.com/banisterious/obsidian-charted-roots/issues/310)): Visual tree charts had two issues: white text on light pastel backgrounds, and nodes being scaled down to fit a fixed page size, making names truncated or unreadable. Text color now uses dark tones matching the report palette. All four chart layouts (pedigree, descendant, hourglass, fan) now expand the canvas to fit content at full size, so names remain fully readable regardless of tree size. This fix applies to both Book Builder tree chapters and standalone visual tree PDF exports.
+- **Unreadable tree charts in PDF output** ([#310](https://github.com/banisterious/obsidian-charted-roots/issues/310)): Visual tree charts used white text on light pastel backgrounds, making them unreadable in PDF/book output. Text color now uses dark tones matching the existing report palette. Long names that overflowed card boundaries are now clipped.
 - **Record superlatives ignoring years before 1000** ([#312](https://github.com/banisterious/obsidian-charted-roots/issues/312)): The year extraction regex required exactly 4 digits, so years like `800` were ignored and negative years like `-1000` had their sign stripped. Now supports 1+ digit years and negative (BCE) years.
-- **GEDCOM import dropping marriage date/place** ([#314](https://github.com/banisterious/obsidian-charted-roots/issues/314)): The GEDCOM parser correctly captured `FAM.MARR.DATE` and `FAM.MARR.PLAC`, but the importer never wrote them to indexed `spouse[N]_marriage_date` / `spouse[N]_marriage_location` frontmatter properties. Now populates `SpouseMetadata` with marriage date, place, and divorce date from the family record. Also fixed: indexed `spouse[N]_id` values were not being converted from GEDCOM refs to CR IDs, divorce dates were silently dropped due to double-conversion, and an empty legacy `spouse:` field was written alongside indexed properties.
+- **GEDCOM import dropping marriage date/place** ([#314](https://github.com/banisterious/obsidian-charted-roots/issues/314)): The GEDCOM parser correctly captured `FAM.MARR.DATE` and `FAM.MARR.PLAC`, but the importer never wrote them to indexed `spouse[N]_marriage_date` / `spouse[N]_marriage_location` frontmatter properties. Now populates `SpouseMetadata` with marriage date, place, and divorce date from the family record.
 
 ---
 
