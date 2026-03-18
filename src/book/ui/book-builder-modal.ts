@@ -329,22 +329,14 @@ export class BookBuilderModal extends Modal {
 	}
 
 	private applyTemplateWithPersonPicker(templateId: string): void {
-		// Try to resolve a default root person:
-		// 1. Active note if it's a person
-		// 2. Person marked root_person: true in the vault
+		// Try to resolve a default root person to pre-populate the search
 		const defaultPerson = this.resolveDefaultRootPerson();
-		if (defaultPerson) {
-			this.applyTemplate(templateId, defaultPerson.crId, defaultPerson.name);
-			this.currentStep = 1;
-			this.renderCurrentStep();
-			return;
-		}
 
 		const picker = new PersonPickerModal(this.app, (person: PersonInfo) => {
 			this.applyTemplate(templateId, person.crId, person.name);
 			this.currentStep = 1;
 			this.renderCurrentStep();
-		});
+		}, defaultPerson ? { initialSearch: defaultPerson.name } : undefined);
 		picker.open();
 	}
 

@@ -102,6 +102,8 @@ export interface PersonPickerOptions {
 	familyGraph?: FamilyGraphService;
 	/** Files to exclude from results (e.g., the current note to prevent self-referential links) */
 	excludeFiles?: TFile[];
+	/** Pre-populate the search field with this text */
+	initialSearch?: string;
 }
 
 /**
@@ -136,6 +138,7 @@ export class PersonPickerModal extends Modal {
 	private plugin?: CanvasRootsPlugin;
 	private cachedFamilyGraph?: FamilyGraphService;
 	private excludeFiles?: Set<string>;
+	private initialSearch?: string;
 
 	constructor(app: App, onSelect: (person: PersonInfo) => void, options?: PersonPickerOptions | FolderFilterService) {
 		super(app);
@@ -154,6 +157,7 @@ export class PersonPickerModal extends Modal {
 			this.createContext = opts.createContext;
 			this.plugin = opts.plugin;
 			this.cachedFamilyGraph = opts.familyGraph;
+			this.initialSearch = opts.initialSearch;
 			if (opts.excludeFiles && opts.excludeFiles.length > 0) {
 				this.excludeFiles = new Set(opts.excludeFiles.map(f => f.path));
 			}
@@ -175,6 +179,11 @@ export class PersonPickerModal extends Modal {
 			this.loadPeople();
 			this.hideLoadingState();
 			this.createModalContent();
+
+			// Apply initial search filter after UI is built
+			if (this.searchQuery) {
+				this.filterPeople();
+			}
 
 			// Load family components in the background (for sidebar tabs)
 			this.loadFamilyComponentsAsync();
@@ -453,6 +462,12 @@ export class PersonPickerModal extends Modal {
 				placeholder: 'Search by name...'
 			}
 		});
+
+		// Apply initial search if provided
+		if (this.initialSearch) {
+			this.searchInput.value = this.initialSearch;
+			this.searchQuery = this.initialSearch.toLowerCase();
+		}
 
 		this.searchInput.addEventListener('input', () => {
 			this.searchQuery = this.searchInput.value.toLowerCase();
