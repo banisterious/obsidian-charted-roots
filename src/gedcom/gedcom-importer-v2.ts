@@ -848,6 +848,49 @@ export class GedcomImporterV2 {
 				const spouse = gedcomData.individuals.get(ref);
 				return this.sanitizeName(spouse?.name || 'Unknown');
 			});
+
+			// Build spouse metadata with marriage date/place from family records
+			const spouseMetadata: import('../core/person-note-writer').SpouseMetadata[] = [];
+			for (const spouseRef of individual.spouseRefs) {
+				const spouse = gedcomData.individuals.get(spouseRef);
+				const spouseName = this.sanitizeName(spouse?.name || 'Unknown');
+
+				// Find the family record linking this individual to this spouse
+				let marriageDate: string | undefined;
+				let marriageLocation: string | undefined;
+				let divorceDate: string | undefined;
+				for (const [, family] of gedcomData.families) {
+					const isMatch =
+						(family.husbandRef === individual.id && family.wifeRef === spouseRef) ||
+						(family.wifeRef === individual.id && family.husbandRef === spouseRef);
+					if (isMatch) {
+						if (family.marriageDate) {
+							marriageDate = GedcomParserV2.gedcomDateToISO(family.marriageDate);
+						}
+						marriageLocation = family.marriagePlace;
+						// Check for divorce event
+						for (const event of family.events) {
+							if (event.tag === 'DIV' && event.date) {
+								divorceDate = GedcomParserV2.gedcomDateToISO(event.date);
+							}
+						}
+						break;
+					}
+				}
+
+				spouseMetadata.push({
+					crId: spouseRef,
+					name: spouseName,
+					marriageDate,
+					marriageLocation,
+					divorceDate
+				});
+			}
+
+			// Use indexed format if any marriage metadata exists
+			if (spouseMetadata.some(s => s.marriageDate || s.marriageLocation || s.divorceDate)) {
+				personData.spouseMetadata = spouseMetadata;
+			}
 		}
 
 		// Find children (people who have this person as a biological parent)
