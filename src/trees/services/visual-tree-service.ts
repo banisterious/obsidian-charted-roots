@@ -311,6 +311,14 @@ export class VisualTreeService {
 		// Calculate bounding box
 		const bounds = this.calculateBounds(nodes);
 
+		// Expand page to fit content so the SVG renderer doesn't scale nodes down
+		const contentWidth = bounds.width + DEFAULT_MARGINS.left + DEFAULT_MARGINS.right;
+		const contentHeight = bounds.height + DEFAULT_MARGINS.top + DEFAULT_MARGINS.bottom;
+		const fitPage = {
+			width: Math.max(page.width, contentWidth),
+			height: Math.max(page.height, contentHeight)
+		};
+
 		return {
 			type: 'pedigree',
 			rootPerson: {
@@ -320,7 +328,7 @@ export class VisualTreeService {
 			nodes,
 			connections,
 			bounds,
-			page,
+			page: fitPage,
 			orientation: options.orientation,
 			margins: DEFAULT_MARGINS,
 			stats: {
@@ -456,6 +464,14 @@ export class VisualTreeService {
 
 		const bounds = this.calculateBounds(nodes);
 
+		// Expand page to fit content so the SVG renderer doesn't scale nodes down
+		const contentWidth = bounds.width + DEFAULT_MARGINS.left + DEFAULT_MARGINS.right;
+		const contentHeight = bounds.height + DEFAULT_MARGINS.top + DEFAULT_MARGINS.bottom;
+		const fitPage = {
+			width: Math.max(page.width, contentWidth),
+			height: Math.max(page.height, contentHeight)
+		};
+
 		return {
 			type: 'descendant',
 			rootPerson: {
@@ -465,7 +481,7 @@ export class VisualTreeService {
 			nodes,
 			connections,
 			bounds,
-			page,
+			page: fitPage,
 			orientation: options.orientation,
 			margins: DEFAULT_MARGINS,
 			stats: {
@@ -697,6 +713,14 @@ export class VisualTreeService {
 		const bounds = this.calculateBounds(nodes);
 		const rootPerson = ancestorTree?.root || descendantTree?.root;
 
+		// Expand page to fit content so the SVG renderer doesn't scale nodes down
+		const contentWidth = bounds.width + DEFAULT_MARGINS.left + DEFAULT_MARGINS.right;
+		const contentHeight = bounds.height + DEFAULT_MARGINS.top + DEFAULT_MARGINS.bottom;
+		const fitPage = {
+			width: Math.max(page.width, contentWidth),
+			height: Math.max(page.height, contentHeight)
+		};
+
 		return {
 			type: 'hourglass',
 			rootPerson: rootPerson ? {
@@ -706,7 +730,7 @@ export class VisualTreeService {
 			nodes,
 			connections,
 			bounds,
-			page,
+			page: fitPage,
 			orientation: options.orientation,
 			margins: DEFAULT_MARGINS,
 			stats: {
@@ -826,6 +850,14 @@ export class VisualTreeService {
 
 		const bounds = this.calculateBounds(nodes);
 
+		// Expand page to fit content so the SVG renderer doesn't scale nodes down
+		const contentWidth = bounds.width + DEFAULT_MARGINS.left + DEFAULT_MARGINS.right;
+		const contentHeight = bounds.height + DEFAULT_MARGINS.top + DEFAULT_MARGINS.bottom;
+		const fitPage = {
+			width: Math.max(page.width, contentWidth),
+			height: Math.max(page.height, contentHeight)
+		};
+
 		return {
 			type: 'fan',
 			rootPerson: {
@@ -835,7 +867,7 @@ export class VisualTreeService {
 			nodes,
 			connections,
 			bounds,
-			page,
+			page: fitPage,
 			orientation: options.orientation,
 			margins: DEFAULT_MARGINS,
 			stats: {
