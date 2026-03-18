@@ -307,6 +307,7 @@ export class BookGenerationService {
 			nodeContent: 'name-dates',
 			colorScheme: 'default',
 			includeSpouses: true,
+			largeTreeHandling: 'auto-page-size',
 		};
 
 		const layouts = treeService.buildLayouts(treeOptions);
