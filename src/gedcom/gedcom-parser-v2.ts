@@ -822,6 +822,14 @@ export class GedcomParserV2 {
 						}
 						// Note: inline media on events could be added here if needed
 						break;
+
+					case 'CAUS':
+						currentEvent.cause = value;
+						break;
+
+					case 'AGE':
+						currentEvent.age = value;
+						break;
 				}
 			} else {
 				// Level 2 under NAME
@@ -835,6 +843,15 @@ export class GedcomParserV2 {
 							break;
 						case 'NICK':
 							individual.nickname = value;
+							break;
+						case 'NPFX':
+							individual.namePrefix = value;
+							break;
+						case 'NSFX':
+							individual.nameSuffix = value;
+							break;
+						case 'SPFX':
+							individual.surnamePrefix = value;
 							break;
 					}
 				}

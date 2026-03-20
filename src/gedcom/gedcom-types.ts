@@ -191,6 +191,10 @@ export interface GedcomEvent {
 	isFamilyEvent: boolean;
 	/** Media references (GEDCOM @Oxxxx@ IDs) */
 	mediaRefs?: string[];
+	/** Cause (CAUS sub-tag, e.g., cause of death) */
+	cause?: string;
+	/** Age at event (AGE sub-tag) */
+	age?: string;
 }
 
 /**
@@ -292,6 +296,9 @@ export interface GedcomIndividualV2 {
 	givenName?: string;
 	surname?: string;
 	nickname?: string;
+	namePrefix?: string;     // NPFX
+	nameSuffix?: string;     // NSFX
+	surnamePrefix?: string;  // SPFX
 	sex?: 'M' | 'F' | 'U';
 
 	// Core dates (still stored as flat properties for compatibility)

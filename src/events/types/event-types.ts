@@ -442,6 +442,10 @@ export interface CreateEventData {
 	transferType?: string;
 	/** Research questions requiring investigation for this event */
 	needsResearch?: string[];
+	/** Age at event (from GEDCOM AGE sub-tag) */
+	age?: string;
+	/** Cause (from GEDCOM CAUS sub-tag, e.g., cause of death) */
+	cause?: string;
 }
 
 /**

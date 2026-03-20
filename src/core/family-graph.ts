@@ -107,6 +107,24 @@ export interface PersonNode {
 	surnames?: string[];         // Surnames - supports single or multiple (Hispanic/Portuguese)
 	maidenName?: string;         // Birth surname (before marriage)
 	marriedNames?: string[];     // Married surnames (supports multiple marriages)
+	namePrefix?: string;         // Name prefix (NPFX: "Dr.", "Rev.")
+	nameSuffix?: string;         // Name suffix (NSFX: "Jr.", "III")
+	surnamePrefix?: string;      // Surname prefix (SPFX: "von", "de la")
+	nickname?: string;           // Nickname (NICK)
+
+	// GEDCOM attributes (#317)
+	burialDate?: string;         // Burial date (BURI.DATE)
+	deathCause?: string;         // Cause of death (DEAT.CAUS)
+	title?: string;              // Title/nobility (TITL)
+	religion?: string;           // Religion (RELI)
+	nationality?: string;        // Nationality (NATI)
+	physicalDescription?: string; // Physical description (DSCR)
+	identityNumber?: string;     // National ID number (IDNO)
+	property?: string;           // Property/possessions (PROP)
+	caste?: string;              // Caste (CAST)
+	childrenCount?: number;      // Number of children (NCHI)
+	marriageCount?: number;      // Number of marriages (NMR)
+	ssn?: string;                // Social Security Number (SSN)
 }
 
 /**
@@ -1614,6 +1632,24 @@ export class FamilyGraphService {
 		const marriedNames = marriedNamesRaw
 			? (Array.isArray(marriedNamesRaw) ? marriedNamesRaw : [marriedNamesRaw])
 			: undefined;
+		const namePrefix = this.resolveProperty<string>(fm, 'name_prefix');
+		const nameSuffix = this.resolveProperty<string>(fm, 'name_suffix');
+		const surnamePrefix = this.resolveProperty<string>(fm, 'surname_prefix');
+		const nickname = this.resolveProperty<string>(fm, 'nickname');
+
+		// GEDCOM attributes (#317)
+		const burialDate = this.resolveProperty<string>(fm, 'burial_date');
+		const deathCause = this.resolveProperty<string>(fm, 'death_cause');
+		const personTitle = this.resolveProperty<string>(fm, 'title');
+		const religion = this.resolveProperty<string>(fm, 'religion');
+		const nationality = this.resolveProperty<string>(fm, 'nationality');
+		const physicalDescription = this.resolveProperty<string>(fm, 'physical_description');
+		const identityNumber = this.resolveProperty<string>(fm, 'identity_number');
+		const personProperty = this.resolveProperty<string>(fm, 'property');
+		const caste = this.resolveProperty<string>(fm, 'caste');
+		const childrenCount = this.resolveProperty<number>(fm, 'children_count');
+		const marriageCount = this.resolveProperty<number>(fm, 'marriage_count');
+		const ssn = this.resolveProperty<string>(fm, 'ssn');
 
 		// cr_living is a boolean for manual living status override (no aliasing needed)
 		// Handle both boolean and string representations (YAML may parse as string in some cases)
@@ -1684,7 +1720,24 @@ export class FamilyGraphService {
 			givenName,
 			surnames,
 			maidenName,
-			marriedNames
+			marriedNames,
+			namePrefix,
+			nameSuffix,
+			surnamePrefix,
+			nickname,
+			// GEDCOM attributes (#317)
+			burialDate,
+			deathCause,
+			title: personTitle,
+			religion,
+			nationality,
+			physicalDescription,
+			identityNumber,
+			property: personProperty,
+			caste,
+			childrenCount,
+			marriageCount,
+			ssn
 		};
 	}
 

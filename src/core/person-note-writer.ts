@@ -159,6 +159,23 @@ export interface PersonData {
 	tags?: string[];             // Obsidian tags (e.g., from Gramps import)
 	// Fact-level source tracking (sourced_* properties)
 	sourcedFacts?: Record<string, string[]>;  // Maps sourced property name → array of source basenames
+	// GEDCOM name components (#317)
+	namePrefix?: string;         // Name prefix (NPFX: "Dr.", "Rev.")
+	nameSuffix?: string;         // Name suffix (NSFX: "Jr.", "III")
+	surnamePrefix?: string;      // Surname prefix (SPFX: "von", "de la")
+	// GEDCOM attributes (#317)
+	burialDate?: string;         // Burial date (BURI.DATE)
+	deathCause?: string;         // Cause of death (DEAT.CAUS)
+	title?: string;              // Title/nobility (TITL)
+	religion?: string;           // Religion (RELI)
+	nationality?: string;        // Nationality (NATI)
+	physicalDescription?: string; // Physical description (DSCR)
+	identityNumber?: string;     // National ID number (IDNO)
+	property?: string;           // Property/possessions (PROP)
+	caste?: string;              // Caste (CAST)
+	childrenCount?: number;      // Number of children (NCHI)
+	marriageCount?: number;      // Number of marriages (NMR)
+	ssn?: string;                // Social Security Number (SSN)
 }
 
 /**
@@ -290,6 +307,53 @@ export async function createPersonNote(
 	}
 	if (person.marriedNames && person.marriedNames.length > 0) {
 		frontmatter[prop('married_names')] = person.marriedNames;
+	}
+	if (person.namePrefix) {
+		frontmatter[prop('name_prefix')] = person.namePrefix;
+	}
+	if (person.nameSuffix) {
+		frontmatter[prop('name_suffix')] = person.nameSuffix;
+	}
+	if (person.surnamePrefix) {
+		frontmatter[prop('surname_prefix')] = person.surnamePrefix;
+	}
+
+	// GEDCOM attributes (#317)
+	if (person.burialDate) {
+		frontmatter[prop('burial_date')] = person.burialDate;
+	}
+	if (person.deathCause) {
+		frontmatter[prop('death_cause')] = person.deathCause;
+	}
+	if (person.title) {
+		frontmatter[prop('title')] = person.title;
+	}
+	if (person.religion) {
+		frontmatter[prop('religion')] = person.religion;
+	}
+	if (person.nationality) {
+		frontmatter[prop('nationality')] = person.nationality;
+	}
+	if (person.physicalDescription) {
+		frontmatter[prop('physical_description')] = person.physicalDescription;
+	}
+	if (person.identityNumber) {
+		frontmatter[prop('identity_number')] = person.identityNumber;
+	}
+	if (person.property) {
+		frontmatter[prop('property')] = person.property;
+	}
+	if (person.caste) {
+		frontmatter[prop('caste')] = person.caste;
+	}
+	if (person.childrenCount !== undefined) {
+		frontmatter[prop('children_count')] = person.childrenCount;
+	}
+	if (person.marriageCount !== undefined) {
+		frontmatter[prop('marriage_count')] = person.marriageCount;
+	}
+	if (person.ssn) {
+		frontmatter[prop('ssn')] = person.ssn;
 	}
 
 	if (person.occupation) {

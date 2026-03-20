@@ -624,6 +624,20 @@ export class GedcomExporter {
 			if (surname) {
 				lines.push(`2 SURN ${surname}`);
 			}
+
+			// Name prefix/suffix (#317)
+			if (person.namePrefix) {
+				lines.push(`2 NPFX ${person.namePrefix}`);
+			}
+			if (person.nameSuffix) {
+				lines.push(`2 NSFX ${person.nameSuffix}`);
+			}
+			if (person.surnamePrefix) {
+				lines.push(`2 SPFX ${person.surnamePrefix}`);
+			}
+			if (person.nickname) {
+				lines.push(`2 NICK ${person.nickname}`);
+			}
 		}
 
 		// Sex (resolve using alias services, infer from relationships if not found)
@@ -655,7 +669,7 @@ export class GedcomExporter {
 		}
 
 		// Death (always show - living persons won't have death data anyway)
-		if (person.deathDate || person.deathPlace) {
+		if (person.deathDate || person.deathPlace || person.deathCause) {
 			lines.push('1 DEAT');
 			if (person.deathDate) {
 				const deathDate = this.formatDateForGedcom(person.deathDate);
@@ -666,11 +680,42 @@ export class GedcomExporter {
 			if (person.deathPlace) {
 				lines.push(...this.buildPlaceLines(person.deathPlace, 2));
 			}
+			if (person.deathCause) {
+				lines.push(`2 CAUS ${person.deathCause}`);
+			}
+		}
+
+		// Burial (#317)
+		if (person.burialDate || person.burialPlace) {
+			lines.push('1 BURI');
+			if (person.burialDate) {
+				const burialDate = this.formatDateForGedcom(person.burialDate);
+				if (burialDate) {
+					lines.push(`2 DATE ${burialDate}`);
+				}
+			}
+			if (person.burialPlace) {
+				lines.push(...this.buildPlaceLines(person.burialPlace, 2));
+			}
 		}
 
 		// Occupation (hide for protected persons)
 		if (person.occupation && !privacyResult?.isProtected) {
 			lines.push(`1 OCCU ${person.occupation}`);
+		}
+
+		// Person attributes (#317) - hide for protected persons
+		if (!privacyResult?.isProtected) {
+			if (person.title) lines.push(`1 TITL ${person.title}`);
+			if (person.religion) lines.push(`1 RELI ${person.religion}`);
+			if (person.nationality) lines.push(`1 NATI ${person.nationality}`);
+			if (person.physicalDescription) lines.push(`1 DSCR ${person.physicalDescription}`);
+			if (person.identityNumber) lines.push(`1 IDNO ${person.identityNumber}`);
+			if (person.property) lines.push(`1 PROP ${person.property}`);
+			if (person.caste) lines.push(`1 CAST ${person.caste}`);
+			if (person.childrenCount !== undefined) lines.push(`1 NCHI ${person.childrenCount}`);
+			if (person.marriageCount !== undefined) lines.push(`1 NMR ${person.marriageCount}`);
+			if (person.ssn) lines.push(`1 SSN ${person.ssn}`);
 		}
 
 		// Add events linked to this person
@@ -1263,7 +1308,14 @@ export class GedcomExporter {
 			'bas_mitzvah': 'BASM',
 			'blessing': 'BLES',
 			'engagement': 'ENGA',
-			'annulment': 'ANUL'
+			'annulment': 'ANUL',
+			// Marriage variants and adult christening (#317)
+			'marriage_bann': 'MARB',
+			'marriage_contract': 'MARC',
+			'marriage_license': 'MARL',
+			'marriage_settlement': 'MARS',
+			'divorce_filed': 'DIVF',
+			'adult_christening': 'CHRA'
 		};
 
 		return mapping[eventType] || null;

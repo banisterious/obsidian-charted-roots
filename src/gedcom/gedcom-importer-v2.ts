@@ -779,6 +779,9 @@ export class GedcomImporterV2 {
 			name: individual.name || 'Unknown',
 			crId: crId,
 			nickname: individual.nickname,
+			namePrefix: individual.namePrefix,
+			nameSuffix: individual.nameSuffix,
+			surnamePrefix: individual.surnamePrefix,
 			// Name components from GEDCOM GIVN/SURN tags (#174, #192)
 			givenName: individual.givenName,
 			surnames: individual.surname ? [individual.surname] : undefined,
@@ -802,8 +805,25 @@ export class GedcomImporterV2 {
 				if (!isNaN(level) && level >= 0 && level <= 6) {
 					personData.researchLevel = level as 0 | 1 | 2 | 3 | 4 | 5 | 6;
 				}
+			} else if (propName === 'childrenCount' || propName === 'marriageCount') {
+				const num = parseInt(value, 10);
+				if (!isNaN(num)) {
+					(personData as unknown as Record<string, unknown>)[propName] = num;
+				}
 			} else {
 				(personData as unknown as Record<string, unknown>)[propName] = value;
+			}
+		}
+
+		// Extract burial date/place and death cause from events (#317)
+		for (const event of individual.events) {
+			if (event.tag === 'BURI') {
+				if (event.date) {
+					personData.burialDate = event.date;
+				}
+				// burial_place is not in PersonData but will be written via the event note
+			} else if (event.tag === 'DEAT' && event.cause) {
+				personData.deathCause = event.cause;
 			}
 		}
 
@@ -1461,7 +1481,9 @@ export class GedcomImporterV2 {
 			persons: persons.length > 0 ? persons : undefined,
 			place: placeValue, // May be undefined if using wikilink
 			description: eventDescription || undefined,
-			confidence: 'unknown' as EventConfidence
+			confidence: 'unknown' as EventConfidence,
+			age: event.age,
+			cause: event.cause
 		};
 
 		// Create the event note file directly (not using EventService to avoid circular deps)
@@ -1574,6 +1596,12 @@ export class GedcomImporterV2 {
 		}
 		if (data.description) {
 			lines.push(`description: "${data.description.replace(/"/g, '\\"')}"`);
+		}
+		if (data.age) {
+			lines.push(`age: "${data.age}"`);
+		}
+		if (data.cause) {
+			lines.push(`cause: "${data.cause.replace(/"/g, '\\"')}"`);
 		}
 		// Add source references as wikilinks
 		if (sourceWikilinks.length > 0) {
