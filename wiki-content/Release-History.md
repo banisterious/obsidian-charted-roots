@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.20.x](#v020x)
+  - [Comprehensive GEDCOM Field Coverage](#comprehensive-gedcom-field-coverage-v02033)
   - [Book & Narrative Compilation](#book--narrative-compilation-v02026)
   - [Entity Profile View](#entity-profile-view-v02018)
   - [Structured Role Lists for Organizations](#structured-role-lists-for-organizations-v02017)
@@ -115,6 +116,33 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.20.x
+
+### Comprehensive GEDCOM Field Coverage (v0.20.33)
+
+Full import/export support for 16+ additional GEDCOM 5.5.1 fields, ensuring near-lossless roundtrip data fidelity.
+
+**GitHub Issue:** [#317](https://github.com/banisterious/obsidian-charted-roots/issues/317) (umbrella)
+
+**New fields (import + export):**
+- **Name components:** NPFX (prefix), NSFX (suffix), SPFX (surname prefix), NICK (export added)
+- **Person attributes:** TITL, RELI, NATI, DSCR, IDNO, PROP, CAST, NCHI, NMR, SSN
+- **Burial:** BURI.DATE and BURI.PLAC imported to person frontmatter
+- **Death cause:** DEAT.CAUS imported to `death_cause`
+- **Age at event:** AGE sub-tag stored on event notes and re-exported
+- **Date ranges:** FROM/TO format now parsed and exported (previously only BET/AND)
+
+**Export roundtrip fixes:**
+- Family events (MARR, DIV, MARB, MARC, MARL, MARS, DIVF) export on FAM records instead of generic EVEN
+- NAME line constructed from explicit NPFX/GIVN/SPFX/SURN/NSFX components
+- Duplicate BIRT/DEAT/BURI/OCCU records eliminated
+- OCCU exports as inline value instead of NOTE sub-tag
+- Six event type export mappings added: MARB, MARC, MARL, MARS, DIVF, CHRA
+
+**Still open:** [#316](https://github.com/banisterious/obsidian-charted-roots/issues/316) — Citation-level metadata (PAGE/QUAY) requires a data model decision and is tracked separately.
+
+**Planning document:** [gedcom-field-coverage.md](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/gedcom-field-coverage.md)
+
+---
 
 ### Book & Narrative Compilation (v0.20.26)
 

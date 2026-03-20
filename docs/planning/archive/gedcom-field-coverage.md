@@ -2,7 +2,7 @@
 
 Planning document for comprehensive GEDCOM field coverage.
 
-**Status:** ✅ Tiers 1-2 complete, Tier 3 (AGE) complete, TEXT and NOTE/OBJE deferred
+**Status:** ✅ Complete (shipped in v0.20.33). TEXT and NOTE/OBJE deferred. Citation metadata (PAGE/QUAY) tracked separately in #316.
 
 **Related:** [#317](https://github.com/banisterious/obsidian-charted-roots/issues/317) (umbrella issue), [#316](https://github.com/banisterious/obsidian-charted-roots/issues/316) (citation metadata — separate design decision)
 
