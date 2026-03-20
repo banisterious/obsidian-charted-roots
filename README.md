@@ -30,7 +30,7 @@
 | Feature | Description |
 |---------|-------------|
 | **Full Entity Export** | Export people, events, sources, places, and custom relationships to all formats |
-| **GEDCOM 5.5.1** | Full round-trip import/export with validation, UUID preservation, privacy protection, and PEDI tag parsing for step/adoptive parents |
+| **GEDCOM 5.5.1** | Full round-trip import/export with comprehensive field coverage (name components, person attributes, family events, date ranges, burial data, cause of death, age at event), UUID preservation, privacy protection, and PEDI tag parsing for step/adoptive parents |
 | **GEDCOM X** | Import/export with FamilySearch JSON format and lineage type parsing for step/adoptive parents |
 | **Gramps XML** | Import/export for Gramps genealogy software; `.gpkg` package import extracts bundled media files |
 | **CSV/TSV** | Import/export for spreadsheet workflows with auto-detected column mapping |
