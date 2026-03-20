@@ -80,25 +80,29 @@ Less common fields but important for data accuracy and completeness.
 
 #### 7. Marriage variants (MARB, MARC, MARL, MARS, DIVF)
 
-- **Import:** Not clear if these are handled as generic events or dropped
-- **Export:** Likely not exported
-- **Fix:** Ensure all marriage-related event types are mapped through the event system
+- **Import:** Fully supported. Parser maps to `marriage_bann`, `marriage_contract`, `marriage_license`, `marriage_settlement`, `divorce_filed`. Importer creates event notes linked to both spouses.
+- **Export:** Not exported. `eventTypeToGedcomTag()` in `gedcom-exporter.ts` is missing these five mappings. Events fall through to generic `EVEN` with `TYPE` sub-tag, causing data degradation on roundtrip.
+- **Event types:** Not registered as built-in event types in `event-types.ts`. Work as custom events but lack icons/colors.
+- **Fix:** Add 5 entries to `eventTypeToGedcomTag()`. Optionally add built-in event type definitions.
 
 #### 8. CHRA (adult christening)
 
-- **Import:** Not clear if handled
-- **Export:** Likely not exported
-- **Fix:** Add as recognized event type if not already present
+- **Import:** Fully supported. Parser maps to `adult_christening`. Importer creates event notes.
+- **Export:** Not exported. Missing from `eventTypeToGedcomTag()`. Falls through to generic `EVEN`.
+- **Event types:** Not registered as built-in event type. Works as custom event.
+- **Fix:** Add 1 entry to `eventTypeToGedcomTag()`. Optionally add built-in event type definition.
 
-### Tier 3 — Lower impact
-
-Specialist use cases; derivable from other data or rarely used.
+### Tier 3 — Included
 
 #### 9. AGE (age at event)
 
 - **Import:** Not supported (sub-tag of any event)
 - **Export:** Not supported
-- **Fix:** Store as property on event notes. Low priority since age is derivable from birth date + event date
+- **Fix:** Store as `age` property on event notes. Useful when birth date is unknown but age was recorded in the source (e.g., census records)
+
+### Tier 3 — Deferred
+
+Deferred until further need or until #316 (citation model) is resolved.
 
 #### 10. TEXT (source transcription)
 
