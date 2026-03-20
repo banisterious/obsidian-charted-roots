@@ -181,7 +181,7 @@ A book builder that combines multiple generated reports, visual trees, and user-
 
 **Documentation:**
 - [Book Builder](Book-Builder) — Usage documentation
-- [Book & Narrative Compilation Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/book-narrative-compilation.md) — Design and implementation plan
+- [Book & Narrative Compilation Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/book-narrative-compilation.md) — Design and implementation plan
 
 ---
 
