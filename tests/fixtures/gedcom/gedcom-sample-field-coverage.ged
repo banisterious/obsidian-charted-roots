@@ -1,0 +1,149 @@
+0 HEAD
+1 SOUR TEST
+2 NAME Field Coverage Test
+2 VERS 1.0
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+1 SUBM @U1@
+0 @U1@ SUBM
+1 NAME Test Submitter
+
+0 @I1@ INDI
+1 NAME Dr. Johann /von Müller/ Jr.
+2 GIVN Johann
+2 SURN Müller
+2 NPFX Dr.
+2 NSFX Jr.
+2 SPFX von
+2 NICK Hans
+1 SEX M
+1 BIRT
+2 DATE 15 MAR 1850
+2 PLAC Berlin, Prussia
+1 DEAT
+2 DATE 22 NOV 1920
+2 PLAC Munich, Bavaria
+2 CAUS Heart failure
+1 BURI
+2 DATE 25 NOV 1920
+2 PLAC Waldfriedhof Cemetery, Munich
+1 TITL Count
+1 RELI Lutheran
+1 NATI German
+1 DSCR Tall, brown hair, blue eyes
+1 IDNO DE-1850-0315
+1 PROP Estate in Bavaria
+1 CAST Nobility
+1 NCHI 3
+1 NMR 2
+1 SSN 123-45-6789
+1 OCCU Professor of Philosophy
+1 CENS
+2 DATE 1880
+2 PLAC Berlin, Prussia
+2 AGE 30
+1 RESI
+2 DATE FROM 1870 TO 1890
+2 PLAC Berlin, Prussia
+2 AGE 20
+1 FAMS @F1@
+1 FAMS @F2@
+
+0 @I2@ INDI
+1 NAME Maria /Schmidt/
+2 GIVN Maria
+2 SURN Schmidt
+1 SEX F
+1 BIRT
+2 DATE 3 JUN 1855
+2 PLAC Vienna, Austria
+1 DEAT
+2 DATE 10 FEB 1900
+2 PLAC Berlin, Prussia
+1 RELI Catholic
+1 NATI Austrian
+1 FAMS @F1@
+
+0 @I3@ INDI
+1 NAME Elisabeth /Weber/
+2 GIVN Elisabeth
+2 SURN Weber
+2 NICK Lise
+1 SEX F
+1 BIRT
+2 DATE 12 SEP 1865
+2 PLAC Hamburg, Germany
+1 RELI Lutheran
+1 FAMS @F2@
+
+0 @I4@ INDI
+1 NAME Friedrich /von Müller/
+2 GIVN Friedrich
+2 SURN Müller
+2 SPFX von
+1 SEX M
+1 BIRT
+2 DATE 8 APR 1878
+2 PLAC Berlin, Prussia
+1 CHR
+2 DATE 15 APR 1878
+2 PLAC St. Mary Church, Berlin
+1 FAMC @F1@
+
+0 @I5@ INDI
+1 NAME Anna /von Müller/
+2 GIVN Anna
+2 SURN Müller
+2 SPFX von
+1 SEX F
+1 BIRT
+2 DATE 21 JUL 1880
+2 PLAC Berlin, Prussia
+1 CHRA
+2 DATE 5 AUG 1900
+2 PLAC Cathedral of Berlin
+1 FAMC @F1@
+
+0 @I6@ INDI
+1 NAME Karl /von Müller/
+2 GIVN Karl
+2 SURN Müller
+2 SPFX von
+1 SEX M
+1 BIRT
+2 DATE 14 DEC 1890
+2 PLAC Berlin, Prussia
+1 FAMC @F2@
+
+0 @F1@ FAM
+1 HUSB @I1@
+1 WIFE @I2@
+1 CHIL @I4@
+1 CHIL @I5@
+1 MARR
+2 DATE 12 JUN 1876
+2 PLAC Berlin Cathedral
+1 MARB
+2 DATE 1 MAY 1876
+2 PLAC Berlin Parish
+1 MARC
+2 DATE 15 MAY 1876
+1 MARL
+2 DATE 20 MAY 1876
+2 PLAC City Hall, Berlin
+
+0 @F2@ FAM
+1 HUSB @I1@
+1 WIFE @I3@
+1 CHIL @I6@
+1 MARR
+2 DATE 3 OCT 1888
+2 PLAC Hamburg City Hall
+1 DIV
+2 DATE 15 JAN 1895
+1 DIVF
+2 DATE 1 NOV 1894
+
+0 TRLR
