@@ -10,12 +10,10 @@ This document outlines planned features for Charted Roots. For completed feature
 - [Planned Features](#planned-features)
   - [GPS Research Workflow Integration](#gps-research-workflow-integration) 📋 Medium ✅ Phase 3 mostly complete
   - [Calendarium Integration](#calendarium-integration) 💡 Low
-  - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
 - [Future Considerations](#future-considerations)
   - [Universe Batch Operations](#universe-batch-operations)
   - [Import Wizard Filename Parser Enhancements](#import-wizard-filename-parser-enhancements)
   - [Accessibility](#accessibility)
-- [Known Limitations](#known-limitations)
 - [Contributing](#contributing)
 
 ---
@@ -124,34 +122,6 @@ See [Fictional Date Systems - Calendarium Integration](Fictional-Date-Systems#ca
 
 ---
 
-### Transcript Nodes & Oral History
-
-**Priority:** 💡 Low — Specialized for oral history researchers
-
-**Summary:** Time-stamped citations from audio/video with direct linking.
-
-**Schema:**
-```yaml
-oral_facts:
-  - media: "[[Interview with Grandma.mp3]]"
-    timestamp: "1m30s"
-    fact_type: birth_date
-    quote: "I was born on May 15th, 1922"
-```
-
-**Features:**
-- Deep links with timestamp: `[[Interview.mp3]]#t=1m30s`
-- Range support: `#t=1m30s-2m15s`
-- One-click playback from timestamp
-- Transcript nodes with speech bubble styling on canvas
-
-**Interview Subject Graph:**
-- Map relationship structure of interviews
-- Interview as central hub node
-- Edge thickness indicates mention frequency
-
----
-
 ## Future Considerations
 
 These features are under consideration but not yet prioritized.
@@ -202,23 +172,6 @@ This pattern is already documented as a [recommended naming convention](Evidence
 - Screen reader testing with NVDA (Windows) and VoiceOver (macOS)
 - Keyboard-only navigation testing
 - Automated accessibility linting where feasible
-
----
-
-## Known Limitations
-
-See [known-limitations.md](known-limitations.md) for complete details.
-
-**Key Limitations:**
-- Single vault only (no multi-vault merging)
-- No undo/redo for Bases edits (platform limitation)
-- No bulk operations from Bases multi-select (platform limitation)
-- Privacy obfuscation for canvas display requires generation-time application (runtime toggle not feasible due to Obsidian Canvas API limitations) — see [#95](https://github.com/banisterious/obsidian-charted-roots/issues/95)
-- Interactive Canvas features limited by Obsidian Canvas API
-
-### Context Menu Submenu Behavior
-
-On desktop, submenus don't dismiss when hovering over a different submenu. This is a limitation of Obsidian's native `Menu` API. Potential solutions (flattening menus, modal dialogs, custom menu component) are under consideration based on user feedback.
 
 ---
 
