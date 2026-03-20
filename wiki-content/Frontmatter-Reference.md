@@ -169,7 +169,41 @@ erDiagram
 | `gender_identity` | `string` | Gender identity (distinct from biological sex) | `"male"`, `"female"`, `"nonbinary"`, `"genderfluid"` |
 | `pronouns` | `string` or `string[]` | Pronouns for the person (displayed in person pickers when enabled). Supports a single string for backward compatibility, but array format is preferred. | `"she/her"`, `["she/her", "they/them"]` |
 | `occupation` | `string` | Primary occupation | `"Farmer"` |
+| `burial_date` | `string` | Burial date | `"1920-11-25"` |
+| `burial_place` | `string` | Location of burial | `"Waldfriedhof Cemetery, Munich"` |
+| `death_cause` | `string` | Cause of death | `"Heart failure"` |
 | `research_level` | `number` | Research progress level (0-6) | `3` |
+
+### Name Components
+
+Additional name fields for GEDCOM compatibility. These are populated during GEDCOM import and used for accurate GEDCOM export.
+
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `given_name` | `string` | First/given name(s) (GEDCOM GIVN) | `"Johann"` |
+| `surnames` | `string[]` | Surnames (supports multiple) | `["Müller"]` |
+| `maiden_name` | `string` | Birth surname (before marriage) | `"Schmidt"` |
+| `married_names` | `string[]` | Married surnames | `["Anderson", "Cooper"]` |
+| `name_prefix` | `string` | Name prefix (GEDCOM NPFX) | `"Dr."`, `"Rev."` |
+| `name_suffix` | `string` | Name suffix (GEDCOM NSFX) | `"Jr."`, `"III"` |
+| `surname_prefix` | `string` | Surname prefix (GEDCOM SPFX) | `"von"`, `"de la"` |
+
+### Person Attributes
+
+Additional person attributes imported from GEDCOM. All are optional strings unless noted.
+
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `title` | `string` | Title or nobility (GEDCOM TITL) | `"Count"`, `"Sir"` |
+| `religion` | `string` | Religion (GEDCOM RELI) | `"Lutheran"`, `"Catholic"` |
+| `nationality` | `string` | Nationality (GEDCOM NATI) | `"German"`, `"Austrian"` |
+| `physical_description` | `string` | Physical description (GEDCOM DSCR) | `"Tall, brown hair"` |
+| `identity_number` | `string` | National ID number (GEDCOM IDNO) | `"DE-1850-0315"` |
+| `property` | `string` | Property or possessions (GEDCOM PROP) | `"Estate in Bavaria"` |
+| `caste` | `string` | Caste (GEDCOM CAST) | `"Nobility"` |
+| `children_count` | `number` | Number of children (GEDCOM NCHI) | `3` |
+| `marriage_count` | `number` | Number of marriages (GEDCOM NMR) | `2` |
+| `ssn` | `string` | Social Security Number (GEDCOM SSN) | `"123-45-6789"` |
 
 ### Research Level
 
@@ -1417,6 +1451,8 @@ Transfer events track changes in ownership, property, or status. When `event_typ
 | Property | Type | Description | Example |
 |----------|------|-------------|---------|
 | `transfer_type` | `string` | Type of transfer | `"inheritance"`, `"purchase"`, `"gift"` |
+| `age` | `string` | Age at event (from GEDCOM AGE sub-tag) | `"30"`, `"INFANT"` |
+| `cause` | `string` | Cause (from GEDCOM CAUS sub-tag, e.g., cause of death) | `"Heart failure"` |
 
 **Transfer Types:**
 

@@ -112,10 +112,32 @@ flowchart LR
 
 | Format | Special Features |
 |--------|-----------------|
-| GEDCOM | Custom `_UID` tag for cr_id, `ASSO` records for custom relationships, `PEDI` for non-biological parents |
+| GEDCOM | Custom `_UID` tag for cr_id, `ASSO` records for custom relationships, `PEDI` for non-biological parents, full attribute roundtrip (#317) |
 | GEDCOM X | Type URIs for relationships, fact types mapped to standard URIs, place descriptions with coordinates |
 | Gramps | Full event/source/place integration, XML structure matching Gramps schema |
 | CSV | Configurable columns, flattened structure for spreadsheets |
+
+## GEDCOM Field Coverage (#317)
+
+The following GEDCOM 5.5.1 fields are fully supported for import and export roundtrips:
+
+**Name components (under `1 NAME`):** GIVN, SURN, NICK, NPFX, NSFX, SPFX
+
+**Person-level data:** BIRT (date/place), DEAT (date/place/CAUS), BURI (date/place), OCCU (inline value), SEX
+
+**Person attributes (level 1 tags):** TITL, RELI, NATI, DSCR, IDNO, PROP, CAST, NCHI, NMR, SSN
+
+**Event sub-tags:** DATE (including FROM/TO and BET/AND ranges), PLAC, AGE, CAUS, SOUR, NOTE
+
+**Family events (on FAM records):** MARR, DIV, MARB, MARC, MARL, MARS, DIVF
+
+**Individual events:** All standard GEDCOM event tags plus CHRA (adult christening)
+
+**Export deduplication:** When person-level data (birth/death/burial/occupation) exists in frontmatter, duplicate event notes for the same data are suppressed in the export.
+
+**Family event routing:** Events with types in `FAMILY_EVENT_TYPES` are filtered out of individual records and attached to the matching FAM record based on participant matching.
+
+**Not yet supported:** PAGE/QUAY (citation metadata, tracked in #316), TEXT (source transcription), source-level NOTE/OBJE.
 
 ## Data Transformations
 

@@ -298,7 +298,16 @@ Export your family data back to GEDCOM format for sharing with other genealogy s
 - All person notes in the selected folder
 - Relationships (parents, spouses, children)
 - Birth and death dates/places
-- Marriage metadata (dates, locations, divorce dates)
+- Burial date and place
+- Cause of death
+- Marriage metadata (dates, locations, divorce dates) on FAM records
+- Marriage variants (banns, contract, license, settlement) and divorce filed events
+- Name components: prefix (NPFX), suffix (NSFX), surname prefix (SPFX), nickname (NICK)
+- Person attributes: title, religion, nationality, physical description, ID number, property, caste, children count, marriage count, SSN
+- Occupation (inline value)
+- Age at event (AGE sub-tag)
+- Date ranges (FROM/TO and BET/AND)
+- Adult christening (CHRA) and standard christening (CHR) events
 - `cr_id` values preserved as `_UUID` tags
 - `group_name` values preserved as collection codes
 - `research_level` preserved as `_RESEARCH_LEVEL` custom tag (0-6)
