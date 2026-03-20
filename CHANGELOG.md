@@ -11,7 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Comprehensive GEDCOM field coverage** ([#317](https://github.com/banisterious/obsidian-charted-roots/issues/317)): Full import/export support for 16 additional GEDCOM fields. Name components: NPFX (prefix), NSFX (suffix), SPFX (surname prefix), NICK (export). Person attributes: TITL, RELI, NATI, DSCR, IDNO, PROP, CAST, NCHI, NMR, SSN (export added; import already worked). Burial date (BURI.DATE) now imports to `burial_date` and exports. Cause of death (DEAT.CAUS) imports to `death_cause` and exports. Age at event (AGE sub-tag) stored on event notes. Six missing event type export mappings added: MARB, MARC, MARL, MARS, DIVF, CHRA.
+- **Comprehensive GEDCOM field coverage** ([#317](https://github.com/banisterious/obsidian-charted-roots/issues/317)): Full import/export support for 16 additional GEDCOM fields. Name components: NPFX (prefix), NSFX (suffix), SPFX (surname prefix), NICK (export). Person attributes: TITL, RELI, NATI, DSCR, IDNO, PROP, CAST, NCHI, NMR, SSN (export added; import already worked). Burial date (BURI.DATE) now imports to `burial_date` and exports. Burial place (BURI.PLAC) now imports to `burial_place` frontmatter. Cause of death (DEAT.CAUS) imports to `death_cause` and exports. Age at event (AGE sub-tag) stored on event notes and re-exported. Six missing event type export mappings added: MARB, MARC, MARL, MARS, DIVF, CHRA.
+
+### Fixed
+
+- **GEDCOM export roundtrip improvements** ([#317](https://github.com/banisterious/obsidian-charted-roots/issues/317)): Family events (marriage, divorce, MARB, MARC, MARL, MARS, DIVF) now export on FAM records instead of as generic EVEN on individual records. FAM records include divorce date from spouse relationships. NAME line uses explicit NPFX/SPFX/NSFX components. Duplicate BIRT/DEAT/BURI/OCCU records eliminated when person-level data already covers them. OCCU exports inline value instead of NOTE sub-tag. FROM/TO date ranges now parsed and exported (previously only BET/AND was supported).
 
 ---
 
