@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Comprehensive GEDCOM field coverage** ([#317](https://github.com/banisterious/obsidian-charted-roots/issues/317)): Full import/export support for 16 additional GEDCOM fields. Name components: NPFX (prefix), NSFX (suffix), SPFX (surname prefix), NICK (export). Person attributes: TITL, RELI, NATI, DSCR, IDNO, PROP, CAST, NCHI, NMR, SSN (export added; import already worked). Burial date (BURI.DATE) now imports to `burial_date` and exports. Cause of death (DEAT.CAUS) imports to `death_cause` and exports. Age at event (AGE sub-tag) stored on event notes. Six missing event type export mappings added: MARB, MARC, MARL, MARS, DIVF, CHRA.
+
+---
+
 ## [0.20.32] - 2026-03-18
 
 ### Changed

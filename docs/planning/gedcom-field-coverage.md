@@ -2,7 +2,7 @@
 
 Planning document for comprehensive GEDCOM field coverage.
 
-**Status:** In progress
+**Status:** ✅ Tiers 1-2 complete, Tier 3 (AGE) complete, TEXT and NOTE/OBJE deferred
 
 **Related:** [#317](https://github.com/banisterious/obsidian-charted-roots/issues/317) (umbrella issue), [#316](https://github.com/banisterious/obsidian-charted-roots/issues/316) (citation metadata — separate design decision)
 
@@ -149,8 +149,8 @@ Corresponding properties for each new PersonNode field, following existing namin
 
 ## Implementation approach
 
-1. Add new fields to `PersonNode` interface
-2. Map frontmatter properties to PersonNode fields in the family graph builder
-3. Update GEDCOM parser to populate new fields on import
-4. Update GEDCOM exporter to write new fields on export
-5. Verify roundtrip: import → export → re-import produces identical data
+1. Add new fields to `PersonNode` interface ✅
+2. Map frontmatter properties to PersonNode fields in the family graph builder ✅
+3. Update GEDCOM parser to populate new fields on import ✅
+4. Update GEDCOM exporter to write new fields on export ✅
+5. Verify roundtrip: import → export → re-import produces identical data — pending user testing
