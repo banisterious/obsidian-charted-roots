@@ -12,7 +12,6 @@ This document outlines planned features for Charted Roots. For completed feature
   - [Calendarium Integration](#calendarium-integration) 💡 Low
   - [Transcript Nodes & Oral History](#transcript-nodes--oral-history) 💡 Low
 - [Future Considerations](#future-considerations)
-  - [Research Tracking](#research-tracking)
   - [Universe Batch Operations](#universe-batch-operations)
   - [Import Wizard Filename Parser Enhancements](#import-wizard-filename-parser-enhancements)
   - [Accessibility](#accessibility)
@@ -158,18 +157,6 @@ oral_facts:
 These features are under consideration but not yet prioritized.
 
 ---
-
-### Research Tracking
-
-**Summary:** Core research tracking features are already implemented; workflow features are covered under [GPS Research Workflow Integration](#gps-research-workflow-integration).
-
-**Already Implemented:**
-- **Research level property** (v0.17.x) — 7-level scale (0-6) based on Hoitink's "Six Levels of Ancestral Profiles," with Edit Person modal, Research Gaps Report filtering/sorting, and Bases views
-- **Confidence levels** — Source confidence (high/medium/low/unknown), proof confidence (proven/probable/possible/disproven)
-- **Source documentation per fact** — `sourced_*` properties linking facts to sources, coverage percentages in reports
-- **Proof summaries** — GPS-aligned proof summary notes with evidence tracking, conflict detection, and resolution
-
-See [Evidence and Sources](Evidence-And-Sources) for documentation on existing features.
 
 ### Universe Batch Operations
 
