@@ -81,6 +81,13 @@ export interface GedcomExportResult {
 /**
  * Internal representation of a GEDCOM family record
  */
+/** Event types that belong on FAM records, not INDI records */
+const FAMILY_EVENT_TYPES = new Set([
+	'marriage', 'divorce', 'annulment',
+	'marriage_bann', 'marriage_contract', 'marriage_license',
+	'marriage_settlement', 'divorce_filed'
+]);
+
 interface GedcomFamilyRecord {
 	id: string;
 	husbandId?: string;
@@ -88,6 +95,10 @@ interface GedcomFamilyRecord {
 	childIds: string[];
 	marriageDate?: string;
 	marriagePlace?: string;
+	divorceDate?: string;
+	divorcePlace?: string;
+	/** Additional family events (MARB, MARC, MARL, MARS, DIVF) */
+	familyEvents?: EventNote[];
 	/** Pedigree type for child relationships: 'birth' (default), 'step', 'adop' */
 	pediType?: 'birth' | 'step' | 'adop';
 }
@@ -431,6 +442,41 @@ export class GedcomExporter {
 			));
 		}
 
+		// Attach family event notes to their matching FAM records
+		const familyEventNotes = events.filter(e => FAMILY_EVENT_TYPES.has(e.eventType));
+		for (const event of familyEventNotes) {
+			// Find which family this event belongs to by matching persons
+			const eventPersonIds = new Set<string>();
+			if (event.person) {
+				const personLink = extractWikilinkPath(event.person);
+				for (const p of people) {
+					if (personLink === p.name || personLink === p.file.basename) {
+						eventPersonIds.add(crIdToGedcomId.get(p.crId) || '');
+					}
+				}
+			}
+			if (event.persons) {
+				for (const ep of event.persons) {
+					const personLink = extractWikilinkPath(ep);
+					for (const p of people) {
+						if (personLink === p.name || personLink === p.file.basename) {
+							eventPersonIds.add(crIdToGedcomId.get(p.crId) || '');
+						}
+					}
+				}
+			}
+
+			// Match to a family where both spouses are in the event's persons
+			for (const [family] of familyIdMap) {
+				if (family.husbandId && family.wifeId &&
+					eventPersonIds.has(family.husbandId) && eventPersonIds.has(family.wifeId)) {
+					if (!family.familyEvents) family.familyEvents = [];
+					family.familyEvents.push(event);
+					break;
+				}
+			}
+		}
+
 		// Build family records
 		for (const [family, familyId] of familyIdMap) {
 			lines.push(...this.buildFamilyRecord(family, familyId));
@@ -606,8 +652,20 @@ export class GedcomExporter {
 		const displayName = privacyResult?.isProtected
 			? privacyResult.displayName
 			: (person.name || 'Unknown');
-		const gedcomName = this.formatNameForGedcom(displayName);
-		lines.push(`1 NAME ${gedcomName}`);
+
+		// Build NAME line using explicit components when available (#317)
+		if (!privacyResult?.isProtected && (person.givenName || person.surnames)) {
+			const prefix = person.namePrefix ? `${person.namePrefix} ` : '';
+			const given = person.givenName || '';
+			const surnamePrefix = person.surnamePrefix ? `${person.surnamePrefix} ` : '';
+			const surname = person.surnames?.join(' ') || '';
+			const suffix = person.nameSuffix ? ` ${person.nameSuffix}` : '';
+			const gedcomName = `${prefix}${given} /${surnamePrefix}${surname}/${suffix}`.trim();
+			lines.push(`1 NAME ${gedcomName}`);
+		} else {
+			const gedcomName = this.formatNameForGedcom(displayName);
+			lines.push(`1 NAME ${gedcomName}`);
+		}
 
 		// Add given/surname if available (only if not obfuscated)
 		// Prefer explicit name components from frontmatter, fall back to parsing from display name
@@ -868,6 +926,41 @@ export class GedcomExporter {
 			}
 		}
 
+		if (family.divorceDate || family.divorcePlace) {
+			lines.push('1 DIV');
+
+			if (family.divorceDate) {
+				const divorceDate = this.formatDateForGedcom(family.divorceDate);
+				if (divorceDate) {
+					lines.push(`2 DATE ${divorceDate}`);
+				}
+			}
+
+			if (family.divorcePlace) {
+				lines.push(...this.buildPlaceLines(family.divorcePlace, 2));
+			}
+		}
+
+		// Additional family events (MARB, MARC, MARL, MARS, DIVF)
+		if (family.familyEvents) {
+			for (const event of family.familyEvents) {
+				const gedcomTag = this.eventTypeToGedcomTag(event.eventType);
+				if (gedcomTag) {
+					lines.push(`1 ${gedcomTag}`);
+					if (event.date) {
+						const gedcomDate = this.formatDateForGedcom(event.date);
+						if (gedcomDate) {
+							lines.push(`2 DATE ${gedcomDate}`);
+						}
+					}
+					if (event.place) {
+						const placeName = extractWikilinkPath(event.place);
+						lines.push(...this.buildPlaceLines(placeName, 2));
+					}
+				}
+			}
+		}
+
 		return lines;
 	}
 
@@ -901,6 +994,17 @@ export class GedcomExporter {
 							if (childGedcomId) {
 								family.childIds.push(childGedcomId);
 							}
+						}
+					}
+
+					// Populate marriage/divorce from spouse relationships
+					const father = person.fatherCrId ? people.find(p => p.crId === person.fatherCrId) : undefined;
+					if (father?.spouses && person.motherCrId) {
+						const spouseRel = father.spouses.find(s => s.personId === person.motherCrId);
+						if (spouseRel) {
+							family.marriageDate = spouseRel.marriageDate;
+							family.marriagePlace = spouseRel.marriageLocation;
+							family.divorceDate = spouseRel.divorceDate;
 						}
 					}
 
@@ -1041,6 +1145,7 @@ export class GedcomExporter {
 							if (spouseRelationship) {
 								family.marriageDate = spouseRelationship.marriageDate;
 								family.marriagePlace = spouseRelationship.marriageLocation;
+								family.divorceDate = spouseRelationship.divorceDate;
 							}
 						}
 
@@ -1351,19 +1456,40 @@ export class GedcomExporter {
 			return false;
 		});
 
+		// Filter out family events — they belong on FAM records, not INDI
+		// Also filter out birth/death/burial events that duplicate person-level data
+		const individualEvents = personEvents.filter(e => {
+			if (FAMILY_EVENT_TYPES.has(e.eventType)) return false;
+			if (e.eventType === 'birth' && person.birthDate) return false;
+			if (e.eventType === 'death' && person.deathDate) return false;
+			if (e.eventType === 'burial' && (person.burialDate || person.burialPlace)) return false;
+			if (e.eventType === 'occupation' && person.occupation) return false;
+			return true;
+		});
+
 		// Build GEDCOM lines for each event
-		for (const event of personEvents) {
+		for (const event of individualEvents) {
 			const gedcomTag = this.eventTypeToGedcomTag(event.eventType);
 
 			if (gedcomTag) {
 				// Standard GEDCOM event tag
 				lines.push(`1 ${gedcomTag}`);
 
-				// Add date if present
+				// Add date (with range support)
 				if (event.date) {
-					const gedcomDate = this.formatDateForGedcom(event.date);
-					if (gedcomDate) {
-						lines.push(`2 DATE ${gedcomDate}`);
+					if (event.dateEnd) {
+						const startDate = this.formatDateForGedcom(event.date);
+						const endDate = this.formatDateForGedcom(event.dateEnd);
+						if (startDate && endDate) {
+							lines.push(`2 DATE FROM ${startDate} TO ${endDate}`);
+						} else if (startDate) {
+							lines.push(`2 DATE ${startDate}`);
+						}
+					} else {
+						const gedcomDate = this.formatDateForGedcom(event.date);
+						if (gedcomDate) {
+							lines.push(`2 DATE ${gedcomDate}`);
+						}
 					}
 				}
 
@@ -1371,6 +1497,16 @@ export class GedcomExporter {
 				if (event.place) {
 					const placeName = extractWikilinkPath(event.place);
 					lines.push(...this.buildPlaceLines(placeName, 2));
+				}
+
+				// Add age if present
+				if (event.age) {
+					lines.push(`2 AGE ${event.age}`);
+				}
+
+				// Add cause if present
+				if (event.cause) {
+					lines.push(`2 CAUS ${event.cause}`);
 				}
 
 				// Add source references if present

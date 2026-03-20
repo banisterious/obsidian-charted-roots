@@ -414,6 +414,10 @@ export interface EventNote {
 	transferType?: string;
 	/** Research questions requiring investigation for this event */
 	needs_research?: string[];
+	/** Age at event (from GEDCOM AGE sub-tag) */
+	age?: string;
+	/** Cause (from GEDCOM CAUS sub-tag, e.g., cause of death) */
+	cause?: string;
 }
 
 /**

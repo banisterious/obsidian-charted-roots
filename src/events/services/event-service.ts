@@ -748,6 +748,8 @@ export class EventService {
 		const groupsValue = resolveProperty(frontmatter, 'groups', aliases);
 		const mediaValue = resolveProperty(frontmatter, 'media', aliases);
 		const transferTypeValue = resolveProperty(frontmatter, 'transfer_type', aliases);
+		const ageValue = resolveProperty(frontmatter, 'age', aliases);
+		const causeValue = resolveProperty(frontmatter, 'cause', aliases);
 
 		// Check for Calendarium fc-* fields when integration is enabled
 		if (this.settings.syncCalendariumEvents && this.settings.calendariumIntegration !== 'off') {
@@ -809,7 +811,9 @@ export class EventService {
 			sortOrder: typeof frontmatter.sort_order === 'number' ? frontmatter.sort_order : undefined,
 			groups: fmToStringArray(groupsValue),
 			media: media.length > 0 ? media : undefined,
-			transferType: transferTypeValue ? fmToString(transferTypeValue) : undefined
+			transferType: transferTypeValue ? fmToString(transferTypeValue) : undefined,
+			age: ageValue ? fmToString(ageValue) : undefined,
+			cause: causeValue ? fmToString(causeValue) : undefined
 		};
 	}
 
