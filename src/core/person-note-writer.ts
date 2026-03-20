@@ -165,6 +165,7 @@ export interface PersonData {
 	surnamePrefix?: string;      // Surname prefix (SPFX: "von", "de la")
 	// GEDCOM attributes (#317)
 	burialDate?: string;         // Burial date (BURI.DATE)
+	burialPlace?: string;        // Burial place (BURI.PLAC)
 	deathCause?: string;         // Cause of death (DEAT.CAUS)
 	title?: string;              // Title/nobility (TITL)
 	religion?: string;           // Religion (RELI)
@@ -321,6 +322,9 @@ export async function createPersonNote(
 	// GEDCOM attributes (#317)
 	if (person.burialDate) {
 		frontmatter[prop('burial_date')] = person.burialDate;
+	}
+	if (person.burialPlace) {
+		frontmatter[prop('burial_place')] = person.burialPlace;
 	}
 	if (person.deathCause) {
 		frontmatter[prop('death_cause')] = person.deathCause;

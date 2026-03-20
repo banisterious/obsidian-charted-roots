@@ -651,11 +651,18 @@ export function parseDateRange(dateRaw: string): {
 
 	const upper = dateRaw.toUpperCase().trim();
 	const betMatch = upper.match(/^BET\s+(.+)\s+AND\s+(.+)$/i);
-
 	if (betMatch) {
 		return {
 			startDate: betMatch[1].trim(),
 			endDate: betMatch[2].trim()
+		};
+	}
+
+	const fromToMatch = upper.match(/^FROM\s+(.+)\s+TO\s+(.+)$/i);
+	if (fromToMatch) {
+		return {
+			startDate: fromToMatch[1].trim(),
+			endDate: fromToMatch[2].trim()
 		};
 	}
 

@@ -821,7 +821,17 @@ export class GedcomImporterV2 {
 				if (event.date) {
 					personData.burialDate = event.date;
 				}
-				// burial_place is not in PersonData but will be written via the event note
+				if (event.place) {
+					// Convert to wikilink if place note exists
+					const normalizedPlace = this.normalizePlaceString(event.place);
+					const placeInfo = placeToNoteInfo.get(normalizedPlace);
+					if (placeInfo) {
+						const placeBaseName = placeInfo.path.replace(/\.md$/, '').split('/').pop() || '';
+						personData.burialPlace = `[[${placeBaseName}]]`;
+					} else {
+						personData.burialPlace = event.place;
+					}
+				}
 			} else if (event.tag === 'DEAT' && event.cause) {
 				personData.deathCause = event.cause;
 			}

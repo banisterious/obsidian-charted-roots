@@ -650,6 +650,10 @@ export class GedcomParserV2 {
 				// Some events have inline value (e.g., "1 OCCU Farmer")
 				if (value) {
 					currentEvent.description = value;
+					// OCCU with inline value also sets person occupation (#317)
+					if (tag === 'OCCU') {
+						individual.occupation = value;
+					}
 				}
 				return { currentEvent, currentCitation, currentFamcRef: undefined, currentInlineMedia: undefined };
 			}
