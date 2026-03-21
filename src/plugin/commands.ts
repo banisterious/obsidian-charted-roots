@@ -477,10 +477,9 @@ export function registerCommandsAndEvents(plugin: CanvasRootsPlugin): void {
 				new FindRelatedResearchModal(plugin.app, name, activeFile.basename).open();
 			} else {
 				const { PersonPickerModal } = await import('../ui/person-picker');
-				const picker = new PersonPickerModal(plugin.app, plugin);
-				picker.onChoose = (person) => {
+				const picker = new PersonPickerModal(plugin.app, (person) => {
 					new FindRelatedResearchModal(plugin.app, person.name, person.file.basename).open();
-				};
+				});
 				picker.open();
 			}
 		}
