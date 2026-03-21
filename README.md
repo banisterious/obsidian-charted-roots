@@ -2,13 +2,13 @@
 
 [![Version](https://img.shields.io/badge/version-0.20.33-blue.svg)](https://github.com/banisterious/obsidian-charted-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md)
 
-**Charted Roots** brings professional genealogical tools to Obsidian. Import, organize, visualize, and share family histories and fictional worlds without leaving your vault. From GEDCOM imports to PDF reports, interactive charts to map views, manage your research with the power of linked Markdown notes. Built for genealogists, historians, writers, and world-builders.
+**Charted Roots** brings professional genealogical tools to Obsidian. Import, organize, visualize, and share family histories and fictional worlds without leaving your vault. From GEDCOM imports to PDF reports, interactive charts to map views, manage your research with the power of linked Markdown notes. Built for genealogists, historians, writers, and worldbuilders.
 
 ## Demo
 
 [![Charted Roots Demo](https://img.youtube.com/vi/elQfn1fk1VQ/maxresdefault.jpg)](https://youtu.be/elQfn1fk1VQ)
 
-**Watch:** Import GEDCOM → Generate family tree → Interactive family chart → Geolocate places → Map view
+**Watch:** Import GEDCOM -> Generate family tree -> Interactive family chart -> Geolocate places → Map view
 
 ---
 
@@ -34,7 +34,7 @@
 
 - [**Interactive family chart**](https://github.com/banisterious/obsidian-charted-roots/wiki/Interactive-Family-Chart) with pan/zoom, direct relationship editing, bidirectional sync, multiple color schemes, and export to PNG, SVG, PDF, or ODT
 - [**Canvas trees**](https://github.com/banisterious/obsidian-charted-roots/wiki/Canvas-Trees) with 4 layout algorithms (Standard, Compact, Timeline, Hourglass), multi-family detection, and PNG/SVG/PDF export
-- [**Visual tree charts**](https://github.com/banisterious/obsidian-charted-roots/wiki/Statistics-And-Reports) — printable pedigree, descendant, hourglass, and fan charts as PDF
+- [**Visual tree charts**](https://github.com/banisterious/obsidian-charted-roots/wiki/Statistics-And-Reports) — printable pedigree, descendant, hourglass, and fan charts as PDF, Canvas, Excalidraw, or ODT
 - [**Entity profile view**](https://github.com/banisterious/obsidian-charted-roots/wiki/Entity-Profile-View) — auto-syncing sidebar with collapsible sections for all five entity types (person, place, event, source, organization)
 
 ### Import & Export
@@ -45,7 +45,7 @@
 
 ### Research & Reports
 
-- [**17 report types**](https://github.com/banisterious/obsidian-charted-roots/wiki/Statistics-And-Reports) — family group sheets, Ahnentafel, kinship, brick wall, gaps, timeline, and more — all exportable as PDF or ODT
+- [**17 report types**](https://github.com/banisterious/obsidian-charted-roots/wiki/Statistics-And-Reports) — family group sheets, Ahnentafel, kinship, brick wall, gaps, timeline, and more — export as PDF, ODT, or markdown
 - [**Book builder**](https://github.com/banisterious/obsidian-charted-roots/wiki/Book-Builder) — compile reports, trees, and vault notes into a single PDF or ODT with cover page, TOC, bibliography, and name index
 - [**Statistics dashboard**](https://github.com/banisterious/obsidian-charted-roots/wiki/Statistics-And-Reports) with record superlatives, longevity analysis, family size patterns, migration flows, and data quality alerts
 - [**Evidence tracking**](https://github.com/banisterious/obsidian-charted-roots/wiki/Evidence-And-Sources) with GPS methodology — source quality classification, fact-level citations, proof summaries, conflict detection, and citation generation
@@ -53,8 +53,8 @@
 ### Geographic
 
 - [**Interactive map view**](https://github.com/banisterious/obsidian-charted-roots/wiki/Geographic-Features) with marker clustering, migration paths, heat maps, time slider animation, and geocoding lookup
-- **Custom image maps** for fictional worlds with pixel or geographic coordinate systems
-- Place hierarchies (city -> state → country) with six categories (real, historical, disputed, legendary, mythological, fictional)
+- [**Custom image maps**](https://github.com/banisterious/obsidian-charted-roots/wiki/Custom-Maps) for fictional worlds with pixel or geographic coordinate systems
+- Place hierarchies (city -> state -> country) with six categories (real, historical, disputed, legendary, mythological, fictional)
 
 ### Data Management
 
