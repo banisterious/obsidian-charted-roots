@@ -94,7 +94,7 @@ cr_id: abc-123-def-456
 name: John Robert Smith
 father: "[[John Smith Sr]]"
 mother: "[[Jane Doe]]"
-spouse: ["[[Mary Jones]]"]
+spouse: "[[Mary Jones]]"
 born: 1888-05-15
 died: 1952-08-20
 ---
