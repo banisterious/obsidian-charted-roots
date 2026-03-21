@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-03-17 14:57:42 UTC
+ * - Generated: 2026-03-21 18:25:46 UTC
  * - Components: 47 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -38547,7 +38547,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: PROFILE-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 857 lines, 19.04 KB */
+/* Component Size: 954 lines, 21.14 KB */
 
 /**
  * Entity Profile View Styles
@@ -39406,6 +39406,103 @@ body:has(.cr-media-linker) .suggestion-container {
   margin-top: var(--size-4-2);
 }
 
+/* ==========================================================================
+   Research Activity Section
+   ========================================================================== */
+
+.cr-profile__research-group {
+  margin-bottom: var(--size-4-3);
+}
+
+.cr-profile__research-group:last-child {
+  margin-bottom: 0;
+}
+
+.cr-profile__research-group-header {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  padding: var(--size-4-1) 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+  margin-bottom: var(--size-4-2);
+}
+
+.cr-profile__research-group-icon {
+  display: inline-flex;
+  color: var(--text-muted);
+}
+
+.cr-profile__research-group-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.cr-profile__research-group-name {
+  font-weight: var(--font-semibold);
+}
+
+.cr-profile__research-group-count {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.cr-profile__research-group-dates {
+  color: var(--text-faint);
+  font-size: var(--font-ui-smaller);
+  margin-left: auto;
+}
+
+.cr-profile__research-entries {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-1);
+}
+
+.cr-profile__research-entry {
+  display: flex;
+  align-items: baseline;
+  gap: var(--size-4-2);
+  padding: var(--size-4-1) 0;
+}
+
+.cr-profile__research-type-badge {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-on-accent);
+  background-color: var(--interactive-accent);
+  padding: 1px 6px;
+  border-radius: var(--radius-s);
+  flex-shrink: 0;
+}
+
+.cr-profile__research-date {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.cr-profile__research-result {
+  font-size: var(--font-ui-smaller);
+  padding: 1px 6px;
+  border-radius: var(--radius-s);
+  flex-shrink: 0;
+}
+
+.cr-profile__research-result--positive {
+  color: var(--text-success);
+  background-color: rgba(var(--color-green-rgb), 0.15);
+}
+
+.cr-profile__research-result--negative {
+  color: var(--text-error);
+  background-color: rgba(var(--color-red-rgb), 0.15);
+}
+
+.cr-profile__research-result--inconclusive {
+  color: var(--text-warning);
+  background-color: rgba(var(--color-yellow-rgb), 0.15);
+}
+
 
 /* End of profile-view.css */
 
@@ -39576,11 +39673,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-03-17 14:57:43 UTC
+ * Build completed: 2026-03-21 18:25:47 UTC
  * Components processed: 47
- * Total lines: 39130
- * Total size: 785.93 KB
- * Build duration: 1.15 seconds
+ * Total lines: 39227
+ * Total size: 788.03 KB
+ * Build duration: 1.27 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -39627,7 +39724,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - preferences.css: 431 lines, 9.44 KB
  * - tree-output.css: 1548 lines, 30.41 KB
  * - dynamic-content.css: 1133 lines, 24.48 KB
- * - profile-view.css: 857 lines, 19.04 KB
+ * - profile-view.css: 954 lines, 21.14 KB
  * - migration-notice.css: 135 lines, 2.67 KB
  * - responsive.css: 9 lines, 0.13 KB
  */

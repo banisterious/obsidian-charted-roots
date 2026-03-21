@@ -31,6 +31,7 @@ import { renderMapPreviewSection, cleanupMapPreview } from './sections/map-previ
 import { renderParticipantsSection } from './sections/participants-section';
 import { renderReferencedFactsSection } from './sections/referenced-facts-section';
 import { renderMembersSection } from './sections/members-section';
+import { renderResearchSection } from './sections/research-section';
 import { renderProfileSection } from './sections/section-base';
 import { detectNoteType, isPersonNote } from '../utils/note-type-detection';
 import type { NoteType } from '../utils/note-type-detection';
@@ -449,6 +450,8 @@ export class ProfileView extends ItemView {
 		});
 
 		renderDataQualitySection(this.sectionsEl, data, options);
+
+		renderResearchSection(this.sectionsEl, data.file.basename, options);
 	}
 
 	private renderPlaceSections(

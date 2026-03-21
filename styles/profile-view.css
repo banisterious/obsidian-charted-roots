@@ -854,3 +854,100 @@
   width: 100%;
   margin-top: var(--size-4-2);
 }
+
+/* ==========================================================================
+   Research Activity Section
+   ========================================================================== */
+
+.cr-profile__research-group {
+  margin-bottom: var(--size-4-3);
+}
+
+.cr-profile__research-group:last-child {
+  margin-bottom: 0;
+}
+
+.cr-profile__research-group-header {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  padding: var(--size-4-1) 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+  margin-bottom: var(--size-4-2);
+}
+
+.cr-profile__research-group-icon {
+  display: inline-flex;
+  color: var(--text-muted);
+}
+
+.cr-profile__research-group-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.cr-profile__research-group-name {
+  font-weight: var(--font-semibold);
+}
+
+.cr-profile__research-group-count {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.cr-profile__research-group-dates {
+  color: var(--text-faint);
+  font-size: var(--font-ui-smaller);
+  margin-left: auto;
+}
+
+.cr-profile__research-entries {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-1);
+}
+
+.cr-profile__research-entry {
+  display: flex;
+  align-items: baseline;
+  gap: var(--size-4-2);
+  padding: var(--size-4-1) 0;
+}
+
+.cr-profile__research-type-badge {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-on-accent);
+  background-color: var(--interactive-accent);
+  padding: 1px 6px;
+  border-radius: var(--radius-s);
+  flex-shrink: 0;
+}
+
+.cr-profile__research-date {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.cr-profile__research-result {
+  font-size: var(--font-ui-smaller);
+  padding: 1px 6px;
+  border-radius: var(--radius-s);
+  flex-shrink: 0;
+}
+
+.cr-profile__research-result--positive {
+  color: var(--text-success);
+  background-color: rgba(var(--color-green-rgb), 0.15);
+}
+
+.cr-profile__research-result--negative {
+  color: var(--text-error);
+  background-color: rgba(var(--color-red-rgb), 0.15);
+}
+
+.cr-profile__research-result--inconclusive {
+  color: var(--text-warning);
+  background-color: rgba(var(--color-yellow-rgb), 0.15);
+}
