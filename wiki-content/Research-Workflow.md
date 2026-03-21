@@ -20,6 +20,7 @@ Charted Roots supports GPS-aligned research workflow features, enabling genealog
 - [Statistics Integration](#statistics-integration)
 - [Using with DataView and Bases](#using-with-dataview-and-bases)
 - [Example Workflows](#example-workflows)
+- [Find Related Research](#find-related-research)
 - [Related Pages](#related-pages)
 
 ---
@@ -447,6 +448,40 @@ Tags support nested paths (e.g., `#genealogy/research-project`).
 3. Link projects to the people being researched
 4. Track progress via project status
 5. View research entity counts in Statistics
+
+---
+
+## Find Related Research
+
+The **Find related research** command aggregates all research activity for a specific person across your vault, surfacing cross-project connections.
+
+### How to access
+
+- **Command palette:** Search for "Find related research for person"
+- **Command menu:** Listed under the Tools category
+- **Entity Profile View:** The "Research activity" section in person profiles shows the same data inline — see [Entity Profile View](Entity-Profile-View)
+
+If the active note is a person, the command opens the results modal directly. Otherwise, a person picker appears first.
+
+### What it shows
+
+The modal displays research entries grouped by project:
+
+- **Project header** — project name, entry count, and date range
+- **Entry details** — type badge (IRN, Log, Journal, Report, Project), clickable title, result indicator (positive/negative/inconclusive), and date
+- **Cross-project visibility** — immediately see which projects have researched the same person and how much overlap exists
+
+### What it searches
+
+The command scans the vault for:
+
+| Entity type | How the person is matched |
+|-------------|--------------------------|
+| Individual research note (IRN) | `subject` property matches the person |
+| Research log entry | `subject` or `person` property matches |
+| Research journal | Wikilink to the person in the note body |
+| Research report | Wikilink to the person in the note body |
+| Research project | Wikilink to the person in the note body |
 
 ---
 

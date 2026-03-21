@@ -112,10 +112,13 @@ Section expand/collapse states are remembered across sessions and between entiti
 | **Sources** | Sources cited in the person note |
 | **Media** | Thumbnail grid of linked photos and documents |
 | **Data Quality** | Research level (0-6), source coverage percentage, research questions, proof summaries |
+| **Research Activity** | Cross-project research entries (IRNs, log entries, journals, reports) grouped by project |
 
 The Relationships section is split into two subsections:
 - **Family** (expanded by default): Biological parents, step/adoptive/foster parents, spouses with marriage dates, children, siblings. Populated from the PersonNode's family graph properties.
 - **Other** (collapsed by default, hidden if empty): Religious, professional, social, legal, and other relationship types. Excludes relationships already shown in Family (those with a `familyGraphMapping`). When both sides of a relationship are defined (A→B and B→A), duplicates are automatically removed.
+
+The **Research Activity** section (collapsed by default, hidden if no research exists) scans the vault for all research entities that reference this person — IRNs by `subject`, log entries by `subject`/`person`, and journals/reports/projects by wikilink. Entries are grouped by research project with counts, date ranges, type badges, and result indicators. This surfaces cross-project research connections without leaving the profile. See also the [Find related research](Research-Workflow#find-related-research) command for an on-demand modal with the same view.
 
 ### Place Profiles
 
