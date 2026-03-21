@@ -464,6 +464,28 @@ export function registerCommandsAndEvents(plugin: CanvasRootsPlugin): void {
 		}
 	});
 
+	// Add command: Find Related Research
+	plugin.addCommand({
+		id: 'find-related-research',
+		name: 'Find related research for person',
+		callback: async () => {
+			const { FindRelatedResearchModal } = await import('../ui/find-related-research-modal');
+			const activeFile = plugin.app.workspace.getActiveFile();
+			if (activeFile && isPersonNote(plugin.app, activeFile)) {
+				const cache = plugin.app.metadataCache.getFileCache(activeFile);
+				const name = (cache?.frontmatter?.name as string) || activeFile.basename;
+				new FindRelatedResearchModal(plugin.app, name, activeFile.basename).open();
+			} else {
+				const { PersonPickerModal } = await import('../ui/person-picker');
+				const picker = new PersonPickerModal(plugin.app, plugin);
+				picker.onChoose = (person) => {
+					new FindRelatedResearchModal(plugin.app, person.name, person.file.basename).open();
+				};
+				picker.open();
+			}
+		}
+	});
+
 	// Add command: Find Duplicates
 	plugin.addCommand({
 		id: 'find-duplicates',

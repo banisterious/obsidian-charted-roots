@@ -130,6 +130,7 @@ const CATEGORIES: CategoryDef[] = [
 			{ id: 'manage-staging-area', name: 'Manage staging area', icon: 'inbox' },
 			{ id: 'open-cleanup-wizard', name: 'Post-import cleanup wizard', icon: 'wand' },
 			{ id: 'calculate-relationship', name: 'Calculate relationship', icon: 'git-merge' },
+			{ id: 'find-related-research', name: 'Find related research', icon: 'folder-search' },
 			{ id: 'find-duplicates', name: 'Find duplicate people', icon: 'copy' },
 			{ id: 'merge-duplicate-places', name: 'Merge duplicate places', icon: 'git-merge' },
 			{ id: 'validate-vault-schemas', name: 'Validate vault against schemas', icon: 'check-circle' },
