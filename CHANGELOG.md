@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Research activity section in Entity Profile View** ([#303](https://github.com/banisterious/obsidian-charted-roots/issues/303)): Person profiles now show a "Research activity" section that aggregates all research entities (IRNs, log entries, journals, reports, projects) referencing the person, grouped by project with date ranges and result indicators. Surfaces cross-project research connections at a glance.
+- **Cross-project research queries** ([#303](https://github.com/banisterious/obsidian-charted-roots/issues/303)): Two new ways to see all research activity for a person across projects. A "Research activity" section in person profiles aggregates IRNs, log entries, journals, reports, and projects referencing the person, grouped by project with date ranges and result indicators. A "Find related research" command (also in the command menu) opens a modal with the same grouped view, with a person picker if no person note is active.
 
 ---
 
