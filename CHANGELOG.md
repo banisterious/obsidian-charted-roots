@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Cross-project research queries** ([#303](https://github.com/banisterious/obsidian-charted-roots/issues/303)): Two new ways to see all research activity for a person across projects. A "Research activity" section in person profiles aggregates IRNs, log entries, journals, reports, and projects referencing the person, grouped by project with date ranges and result indicators. A "Find related research" command (also in the command menu) opens a modal with the same grouped view, with a person picker if no person note is active.
 
+### Fixed
+
+- **Built-in relationship additions from context menu** ([#318](https://github.com/banisterious/obsidian-charted-roots/issues/318)): Adding father, mother, spouse, or child from the right-click context menu silently failed. The `RelationshipManager` import was lost when context menus were extracted from main.ts. Also fixed the Add Relationship modal to properly handle built-in family relationship types.
+
 ---
 
 ## [0.20.33] - 2026-03-20
