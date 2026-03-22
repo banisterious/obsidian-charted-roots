@@ -10,6 +10,7 @@ import { RelationshipService } from '../relationships';
 import type { RelationshipTypeDefinition } from '../relationships';
 import type CanvasRootsPlugin from '../../main';
 import { capitalize } from '../utils/format-utils';
+import { RelationshipManager } from '../core/relationship-manager';
 
 /**
  * Modal for adding a custom relationship to a person note
@@ -179,29 +180,30 @@ export class AddRelationshipModal extends Modal {
 			return;
 		}
 
-		const typeId = this.selectedType.id;
-		const targetWikilink = `[[${this.selectedTarget.file.basename}]]`;
-
 		try {
-			// Write flat properties (new format)
-			await this.app.fileManager.processFrontMatter(this.sourceFile, (frontmatter) => {
-				// Get existing values for this relationship type
-				const existingTargets = this.normalizeToArray(frontmatter[typeId]);
-				const existingIds = this.normalizeToArray(frontmatter[`${typeId}_id`]);
-
-				// Check for duplicates
-				if (existingIds.includes(targetCrId)) {
-					throw new Error('This relationship already exists');
+			// For built-in family types, delegate to RelationshipManager
+			// which knows how to write the correct frontmatter properties
+			const mapping = this.selectedType.familyGraphMapping;
+			if (mapping) {
+				const mgr = new RelationshipManager(this.app, this.plugin.relationshipHistory);
+				if (mapping === 'spouse') {
+					await mgr.addSpouseRelationship(this.sourceFile, this.selectedTarget.file, targetCrId);
+				} else if (mapping === 'parent') {
+					// Determine father/mother from the target's sex
+					const targetSex = targetCache?.frontmatter?.sex;
+					const parentType = (targetSex === 'female' || targetSex === 'f') ? 'mother' : 'father';
+					await mgr.addParentRelationship(this.sourceFile, this.selectedTarget.file, parentType, targetCrId);
+				} else if (mapping === 'child') {
+					await mgr.addChildRelationship(this.sourceFile, this.selectedTarget.file, targetCrId);
+				} else {
+					// Other family mappings (guardian, stepparent, adoptive_parent, etc.)
+					// Use the generic relationship property write
+					await this.writeRelationshipProperties(targetCrId);
 				}
-
-				// Add the new relationship
-				existingTargets.push(targetWikilink);
-				existingIds.push(targetCrId);
-
-				// Write back (use array if multiple, single value if only one)
-				frontmatter[typeId] = existingTargets.length === 1 ? existingTargets[0] : existingTargets;
-				frontmatter[`${typeId}_id`] = existingIds.length === 1 ? existingIds[0] : existingIds;
-			});
+			} else {
+				// Custom/non-family relationships: write flat properties directly
+				await this.writeRelationshipProperties(targetCrId);
+			}
 
 			const typeName = this.selectedType.name;
 			new Notice(`Added ${typeName} relationship to ${targetName}`);
@@ -214,6 +216,31 @@ export class AddRelationshipModal extends Modal {
 			const msg = error instanceof Error ? error.message : 'Unknown error';
 			new Notice(`Failed to add relationship: ${msg}`);
 		}
+	}
+
+	/**
+	 * Write relationship as flat properties (for custom and non-core family types)
+	 */
+	private async writeRelationshipProperties(targetCrId: string): Promise<void> {
+		if (!this.selectedType || !this.selectedTarget) return;
+
+		const typeId = this.selectedType.id;
+		const targetWikilink = `[[${this.selectedTarget.file.basename}]]`;
+
+		await this.app.fileManager.processFrontMatter(this.sourceFile, (frontmatter) => {
+			const existingTargets = this.normalizeToArray(frontmatter[typeId]);
+			const existingIds = this.normalizeToArray(frontmatter[`${typeId}_id`]);
+
+			if (existingIds.includes(targetCrId)) {
+				throw new Error('This relationship already exists');
+			}
+
+			existingTargets.push(targetWikilink);
+			existingIds.push(targetCrId);
+
+			frontmatter[typeId] = existingTargets.length === 1 ? existingTargets[0] : existingTargets;
+			frontmatter[`${typeId}_id`] = existingIds.length === 1 ? existingIds[0] : existingIds;
+		});
 	}
 
 	/**
