@@ -27,6 +27,7 @@ import { PlaceLookupModal } from '../places/ui/place-lookup-modal';
 import { CreatePersonModal } from '../ui/create-person-modal';
 import { AddRelationshipModal } from '../ui/add-relationship-modal';
 import { RelationshipManager } from '../core/relationship-manager';
+import { RelationshipCalculatorModal } from '../ui/relationship-calculator-modal';
 import { SchemaService, ValidationService } from '../schemas';
 import { CreateMapWizardModal } from '../ui/create-map-wizard-modal';
 import { SplitWizardModal } from '../ui/split-wizard-modal';
