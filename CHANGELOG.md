@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Custom relationship types writing to wrong property** ([#319](https://github.com/banisterious/obsidian-charted-roots/issues/319)): Adding adopted child, step-child, foster child, or ward via the Add Relationship modal wrote to the `children` property instead of the type-specific property (`adopted_child`, `step_child`, `foster_child`, `ward`).
+
+---
+
 ## [0.20.34] - 2026-03-22
 
 ### Added
