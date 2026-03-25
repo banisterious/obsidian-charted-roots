@@ -3075,12 +3075,12 @@ export class CreatePersonModal extends Modal {
 			const data: Partial<PersonData> = {
 				name: this.personData.name,
 				personType: this.personData.personType,
-				birthDate: this.personData.birthDate,
-				deathDate: this.personData.deathDate,
+				birthDate: this.personData.birthDate ?? '',
+				deathDate: this.personData.deathDate ?? '',
 				sex: this.personData.sex,
 				pronouns: this.personData.pronouns,
 				cr_living: this.personData.cr_living,
-				occupation: this.personData.occupation,
+				occupation: this.personData.occupation ?? '',
 				researchLevel: this.personData.researchLevel,
 				// Name components (#174, #192)
 				givenName: this.personData.givenName,
