@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Custom relationship types writing to wrong property** ([#319](https://github.com/banisterious/obsidian-charted-roots/issues/319)): Adding adopted child, step-child, foster child, or ward via the Add Relationship modal wrote to the `children` property instead of the type-specific property (`adopted_child`, `step_child`, `foster_child`, `ward`).
+- **Calculate relationship and other context menu items failing** ([#320](https://github.com/banisterious/obsidian-charted-roots/issues/320)): 16 classes were used but not imported after context menus were extracted from main.ts. These relied on global scope resolution which could fail silently. All now have explicit imports.
 
 ---
 
