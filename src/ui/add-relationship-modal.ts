@@ -193,10 +193,12 @@ export class AddRelationshipModal extends Modal {
 					const targetSex = targetCache?.frontmatter?.sex;
 					const parentType = (targetSex === 'female' || targetSex === 'f') ? 'mother' : 'father';
 					await mgr.addParentRelationship(this.sourceFile, this.selectedTarget.file, parentType, targetCrId);
-				} else if (mapping === 'child') {
+				} else if (mapping === 'child' && this.selectedType.id === 'child') {
+					// Only biological child uses addChildRelationship
 					await mgr.addChildRelationship(this.sourceFile, this.selectedTarget.file, targetCrId);
 				} else {
-					// Other family mappings (guardian, stepparent, adoptive_parent, etc.)
+					// Other family mappings (guardian, stepparent, adoptive_parent,
+					// adopted_child, step_child, foster_child, ward, etc.)
 					// Use the generic relationship property write
 					await this.writeRelationshipProperties(targetCrId);
 				}
