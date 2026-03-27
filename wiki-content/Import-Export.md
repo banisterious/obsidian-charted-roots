@@ -149,6 +149,7 @@ During import, a modal shows:
 | **People** | One note per individual with relationships, dates, places |
 | **Events** | One note per life event (birth, death, marriage, etc.) linked to person |
 | **Sources** | One note per GEDCOM source record with citation metadata |
+| **Citations** | One note per source citation with PAGE and QUAY metadata (only created when PAGE or QUAY is present). Person notes are updated with a `citations` array. See [Citation Notes](Evidence-And-Sources#citation-notes) |
 | **Places** | Hierarchical place notes (city → county → state → country) |
 
 **Supported GEDCOM Tags:**
@@ -308,6 +309,7 @@ Export your family data back to GEDCOM format for sharing with other genealogy s
 - Age at event (AGE sub-tag)
 - Date ranges (FROM/TO and BET/AND)
 - Adult christening (CHRA) and standard christening (CHR) events
+- Citation metadata: PAGE and QUAY sub-tags on SOUR references (from citation notes)
 - `cr_id` values preserved as `_UUID` tags
 - `group_name` values preserved as collection codes
 - `research_level` preserved as `_RESEARCH_LEVEL` custom tag (0-6)
@@ -335,6 +337,17 @@ Charted Roots includes optional privacy controls for protecting living persons i
 - Share family trees publicly without exposing living relatives' data
 - Comply with genealogical privacy best practices
 - Create "public" and "private" versions of your research
+
+### Exporting to Gramps XML
+
+Export your family data to Gramps XML format (`.gramps`) for use with the Gramps desktop application. Available in the Export Wizard alongside GEDCOM.
+
+**What Gets Exported:**
+- All person notes with relationships, dates, and places
+- Events linked to persons with source references
+- Source records
+- Places with hierarchy
+- Citation metadata: `spage` and `confidence` elements on `sourceref` tags (from citation notes)
 
 ## Gramps XML Import
 
