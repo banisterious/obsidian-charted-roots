@@ -25,6 +25,7 @@ import { renderIdentityHeader } from './sections/identity-section';
 import { renderRelationshipsSection, isOtherRelationship } from './sections/relationships-section';
 import { renderEventsSection } from './sections/events-section';
 import { renderSourcesSection } from './sections/sources-section';
+import { renderCitationsSection } from './sections/citations-section';
 import { renderMediaSection } from './sections/media-section';
 import { renderDataQualitySection } from './sections/data-quality-section';
 import { renderMapPreviewSection, cleanupMapPreview } from './sections/map-preview-section';
@@ -36,6 +37,7 @@ import { renderProfileSection } from './sections/section-base';
 import { detectNoteType, isPersonNote } from '../utils/note-type-detection';
 import type { NoteType } from '../utils/note-type-detection';
 import { PropertyAliasService } from '../core/property-alias-service';
+import { CitationNoteService } from '../sources/services/citation-note-service';
 import { requoteWikilinksInFrontmatter } from '../core/place-note-writer';
 
 export const VIEW_TYPE_ENTITY_PROFILE = 'charted-roots-entity-profile';
@@ -443,6 +445,15 @@ export class ProfileView extends ItemView {
 			...options,
 			sectionId: 'sources'
 		});
+
+		// Citations section (loaded from citation notes)
+		if (data.crId) {
+			const citationService = new CitationNoteService(this.plugin);
+			const citations = citationService.getCitationsForSubject(data.crId);
+			if (citations.length > 0) {
+				renderCitationsSection(this.sectionsEl, citations, options);
+			}
+		}
 
 		renderMediaSection(this.sectionsEl, data.media, {
 			...options,

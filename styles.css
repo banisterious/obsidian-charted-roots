@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-03-21 18:43:19 UTC
+ * - Generated: 2026-03-27 18:14:09 UTC
  * - Components: 47 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -38708,7 +38708,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: PROFILE-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 954 lines, 21.14 KB */
+/* Component Size: 1023 lines, 22.8 KB */
 
 /**
  * Entity Profile View Styles
@@ -39664,6 +39664,75 @@ body:has(.cr-media-linker) .suggestion-container {
   background-color: rgba(var(--color-yellow-rgb), 0.15);
 }
 
+/* ==========================================================================
+   Citations Section
+   ========================================================================== */
+
+.cr-profile__citations-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cr-spacing-sm);
+}
+
+.cr-profile__citation-group {
+  padding: var(--cr-spacing-xs) 0;
+}
+
+.cr-profile__citation-source {
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--cr-spacing-xs);
+}
+
+.cr-profile__citation-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--cr-spacing-sm);
+  padding: var(--cr-spacing-xs) 0 var(--cr-spacing-xs) var(--cr-spacing-md);
+  border-bottom: 1px solid var(--background-modifier-border-hover);
+}
+
+.cr-profile__citation-row:last-child {
+  border-bottom: none;
+}
+
+.cr-profile__citation-fact {
+  color: var(--text-normal);
+  min-width: 100px;
+}
+
+.cr-profile__citation-page {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.cr-profile__citation-quality {
+  font-size: var(--font-ui-smaller);
+  padding: 1px 6px;
+  border-radius: var(--radius-s);
+  background-color: var(--background-secondary);
+  color: var(--text-muted);
+}
+
+.cr-profile__citation-quality[data-quality="3"] {
+  background-color: rgba(var(--color-green-rgb), 0.15);
+  color: var(--text-success);
+}
+
+.cr-profile__citation-quality[data-quality="2"] {
+  background-color: rgba(var(--color-blue-rgb), 0.15);
+  color: var(--text-accent);
+}
+
+.cr-profile__citation-quality[data-quality="1"] {
+  background-color: rgba(var(--color-yellow-rgb), 0.15);
+  color: var(--text-warning);
+}
+
+.cr-profile__citation-quality[data-quality="0"] {
+  background-color: rgba(var(--color-red-rgb), 0.15);
+  color: var(--text-error);
+}
+
 
 /* End of profile-view.css */
 
@@ -39834,11 +39903,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-03-21 18:43:19 UTC
+ * Build completed: 2026-03-27 18:14:10 UTC
  * Components processed: 47
- * Total lines: 39388
- * Total size: 791.14 KB
- * Build duration: 0.32 seconds
+ * Total lines: 39457
+ * Total size: 792.81 KB
+ * Build duration: 0.92 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -39885,7 +39954,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - preferences.css: 431 lines, 9.44 KB
  * - tree-output.css: 1548 lines, 30.41 KB
  * - dynamic-content.css: 1133 lines, 24.48 KB
- * - profile-view.css: 954 lines, 21.14 KB
+ * - profile-view.css: 1023 lines, 22.8 KB
  * - migration-notice.css: 135 lines, 2.67 KB
  * - responsive.css: 9 lines, 0.13 KB
  */
