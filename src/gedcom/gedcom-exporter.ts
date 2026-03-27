@@ -21,6 +21,7 @@ import type { PlaceNode } from '../models/place';
 import type { CanvasRootsSettings } from '../settings';
 import { RelationshipService } from '../relationships';
 import { extractWikilinkPath } from '../utils/wikilink-resolver';
+import type { CitationNote, CitationQuality } from '../sources/types/citation-types';
 
 const logger = getLogger('GedcomExporter');
 
@@ -60,6 +61,9 @@ export interface GedcomExportOptions {
 
 	/** Privacy settings for protecting living persons */
 	privacySettings?: PrivacySettings;
+
+	/** Citations folder for PAGE/QUAY export */
+	citationsFolder?: string;
 }
 
 /**
@@ -359,6 +363,10 @@ export class GedcomExporter {
 			sourceCounter++;
 		}
 
+		// Load citation notes for PAGE/QUAY export
+		// Key: "subjectCrId|fact|sourceCrId" → { page, quality }
+		const citationLookup = this.loadCitationLookup(options);
+
 		// Build individual ID map first
 		// Prefer original GEDCOM xref if available (for round-trip support #175)
 		const crIdToGedcomId = new Map<string, string>();
@@ -438,7 +446,8 @@ export class GedcomExporter {
 				options,
 				privacyService,
 				famsLookup.get(gedcomId),
-				famcLookup.get(gedcomId)
+				famcLookup.get(gedcomId),
+				citationLookup
 			));
 		}
 
@@ -634,7 +643,8 @@ export class GedcomExporter {
 		options: GedcomExportOptions,
 		privacyService: PrivacyService | null,
 		famsIds?: string[],
-		famcRefs?: FamcReference[]
+		famcRefs?: FamcReference[],
+		citationLookup?: Map<string, { page?: string; quality?: CitationQuality }>
 	): string[] {
 		const lines: string[] = [];
 
@@ -778,7 +788,7 @@ export class GedcomExporter {
 
 		// Add events linked to this person
 		if (events.length > 0) {
-			const eventLines = this.buildEventRecords(person, events, sourceIdMap);
+			const eventLines = this.buildEventRecords(person, events, sourceIdMap, citationLookup);
 			lines.push(...eventLines);
 		}
 
@@ -1430,7 +1440,12 @@ export class GedcomExporter {
 	 * Build event records for a person
 	 * Returns GEDCOM lines for events linked to this person
 	 */
-	private buildEventRecords(person: PersonNode, events: EventNote[], sourceIdMap: Map<string, string>): string[] {
+	private buildEventRecords(
+		person: PersonNode,
+		events: EventNote[],
+		sourceIdMap: Map<string, string>,
+		citationLookup?: Map<string, { page?: string; quality?: CitationQuality }>
+	): string[] {
 		const lines: string[] = [];
 
 		// Filter events that reference this person
@@ -1517,6 +1532,17 @@ export class GedcomExporter {
 							const sourceId = sourceIdMap.get(sourceCrId);
 							if (sourceId) {
 								lines.push(`2 SOUR @${sourceId}@`);
+								// Look up citation metadata (PAGE/QUAY)
+								if (citationLookup) {
+									const key = `${person.crId}|${event.eventType}|${sourceCrId}`;
+									const citation = citationLookup.get(key);
+									if (citation?.page) {
+										lines.push(`3 PAGE ${citation.page}`);
+									}
+									if (citation?.quality !== undefined) {
+										lines.push(`3 QUAY ${citation.quality}`);
+									}
+								}
 							}
 						}
 					}
@@ -1557,6 +1583,17 @@ export class GedcomExporter {
 							const sourceId = sourceIdMap.get(sourceCrId);
 							if (sourceId) {
 								lines.push(`2 SOUR @${sourceId}@`);
+								// Look up citation metadata (PAGE/QUAY)
+								if (citationLookup) {
+									const key = `${person.crId}|${event.eventType}|${sourceCrId}`;
+									const citation = citationLookup.get(key);
+									if (citation?.page) {
+										lines.push(`3 PAGE ${citation.page}`);
+									}
+									if (citation?.quality !== undefined) {
+										lines.push(`3 QUAY ${citation.quality}`);
+									}
+								}
 							}
 						}
 					}
@@ -1591,5 +1628,79 @@ export class GedcomExporter {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Load all citation notes and build a lookup map for PAGE/QUAY export.
+	 * Key format: "subjectCrId|eventType|sourceCrId"
+	 * The fact property (e.g., "birth_date") is mapped back to event type (e.g., "birth").
+	 */
+	private loadCitationLookup(
+		options: GedcomExportOptions
+	): Map<string, { page?: string; quality?: CitationQuality }> {
+		const lookup = new Map<string, { page?: string; quality?: CitationQuality }>();
+		const citationsFolder = options.citationsFolder || 'Charted Roots/Citations';
+
+		for (const file of this.app.vault.getMarkdownFiles()) {
+			if (!file.path.startsWith(citationsFolder)) continue;
+
+			const cache = this.app.metadataCache.getFileCache(file);
+			const fm = cache?.frontmatter;
+			if (!fm || fm.cr_type !== 'citation') continue;
+
+			const subjectCrId = fm.subject_id as string;
+			const fact = fm.fact as string;
+			const page = fm.page as string | undefined;
+			const quality = fm.quality as CitationQuality | undefined;
+
+			if (!subjectCrId || !fact) continue;
+			if (page === undefined && quality === undefined) continue;
+
+			// Resolve source cr_id from the source wikilink
+			const sourceWikilink = fm.source as string;
+			let sourceCrId = fm.source_id as string | undefined;
+			if (!sourceCrId && sourceWikilink) {
+				sourceCrId = this.extractSourceCrId(sourceWikilink) || undefined;
+			}
+			if (!sourceCrId) continue;
+
+			// Map fact back to event type for lookup key
+			const eventType = this.factToEventType(fact);
+
+			const key = `${subjectCrId}|${eventType}|${sourceCrId}`;
+			lookup.set(key, { page, quality });
+		}
+
+		logger.info('citations', `Loaded ${lookup.size} citation metadata entries for export`);
+		return lookup;
+	}
+
+	/**
+	 * Map a fact property name back to event type for citation lookup
+	 */
+	private factToEventType(fact: string): string {
+		const mapping: Record<string, string> = {
+			'birth_date': 'birth',
+			'death_date': 'death',
+			'burial_date': 'burial',
+			'baptism_date': 'baptism',
+			'christening_date': 'christening',
+			'marriage_date': 'marriage',
+			'divorce_date': 'divorce',
+			'census': 'census',
+			'immigration': 'immigration',
+			'emigration': 'emigration',
+			'naturalization': 'naturalization',
+			'residence': 'residence',
+			'occupation': 'occupation',
+			'education': 'education',
+			'military_service': 'military',
+			'confirmation': 'confirmation',
+			'ordination': 'ordination',
+			'retirement': 'retirement',
+			'will': 'will',
+			'probate': 'probate'
+		};
+		return mapping[fact] || fact;
 	}
 }
