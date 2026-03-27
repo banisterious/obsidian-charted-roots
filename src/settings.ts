@@ -424,6 +424,15 @@ export interface CanvasRootsSettings {
 	defaultTimelineContext: string;
 	/** Lifespan margin for filtering context events (0 = no filtering) */
 	contextLifespanMargin: number;
+	// Family events on timelines
+	/** Show children's births on timelines */
+	timelineShowChildrenBirths: boolean;
+	/** Show spouse deaths on timelines */
+	timelineShowSpouseDeaths: boolean;
+	/** Show parents' deaths on timelines */
+	timelineShowParentDeaths: boolean;
+	/** Show siblings' births on timelines */
+	timelineShowSiblingBirths: boolean;
 	/** Callout type for frozen media galleries (info, note, etc.) */
 	frozenGalleryCalloutType: string;
 	// Cleanup wizard state (for resuming interrupted wizards)
@@ -818,6 +827,10 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	// Dynamic content settings
 	defaultTimelineContext: '',                // No default context note
 	contextLifespanMargin: 0,                 // 0 = no filtering (show all context events)
+	timelineShowChildrenBirths: false,        // Off by default
+	timelineShowSpouseDeaths: false,
+	timelineShowParentDeaths: false,
+	timelineShowSiblingBirths: false,
 	frozenGalleryCalloutType: 'info',          // Callout type for frozen media galleries
 	// Inclusive parent relationships (opt-in feature)
 	enableInclusiveParents: false,             // Default: OFF - users opt-in to gender-neutral parents
@@ -1808,6 +1821,49 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 						this.plugin.settings.contextLifespanMargin = val;
 						await this.plugin.saveSettings();
 					}
+				}));
+
+		// --- Family events on timelines subsection ---
+		advancedContent.createEl('h4', { text: 'Family events on timelines', cls: 'cr-subsection-title' });
+
+		new Setting(advancedContent)
+			.setName('Show children\'s births')
+			.setDesc('Display birth events of children on the parent\'s timeline')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowChildrenBirths)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowChildrenBirths = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(advancedContent)
+			.setName('Show spouse deaths')
+			.setDesc('Display death events of spouses on the person\'s timeline')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowSpouseDeaths)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowSpouseDeaths = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(advancedContent)
+			.setName('Show parent deaths')
+			.setDesc('Display death events of parents on the person\'s timeline')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowParentDeaths)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowParentDeaths = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(advancedContent)
+			.setName('Show sibling births')
+			.setDesc('Display birth events of siblings on the person\'s timeline')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowSiblingBirths)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowSiblingBirths = value;
+					await this.plugin.saveSettings();
 				}));
 
 		// --- Logging subsection ---
