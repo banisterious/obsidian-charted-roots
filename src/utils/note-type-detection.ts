@@ -30,6 +30,8 @@ export type NoteType =
 	| 'universe'
 	| 'proof_summary'
 	| 'timeline-export'
+	// Citation entity type
+	| 'citation'
 	// Research workflow entity types
 	| 'research_project'
 	| 'research_report'
@@ -51,6 +53,7 @@ export const ALL_NOTE_TYPES: readonly NoteType[] = [
 	'universe',
 	'proof_summary',
 	'timeline-export',
+	'citation',
 	// Research workflow entity types
 	'research_project',
 	'research_report',
@@ -88,6 +91,7 @@ const TAG_TO_TYPE_MAP: Record<string, NoteType> = {
 	'proof-summary': 'proof_summary',
 	'proof_summary': 'proof_summary',
 	'timeline': 'timeline-export',
+	'citation': 'citation',
 	// Research workflow entity types
 	'research-project': 'research_project',
 	'research_project': 'research_project',
@@ -373,6 +377,17 @@ export function isSchemaNote(
 	settings?: NoteTypeDetectionSettings | null
 ): boolean {
 	return isNoteType(frontmatter, 'schema', cache, settings);
+}
+
+/**
+ * Check if a note is a citation note
+ */
+export function isCitationNote(
+	frontmatter: Record<string, unknown> | undefined | null,
+	cache?: CachedMetadata | null,
+	settings?: NoteTypeDetectionSettings | null
+): boolean {
+	return isNoteType(frontmatter, 'citation', cache, settings);
 }
 
 /**
