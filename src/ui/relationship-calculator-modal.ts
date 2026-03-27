@@ -2,6 +2,7 @@ import { App, Modal, Notice } from 'obsidian';
 import { PersonPickerModal, PersonInfo } from './person-picker';
 import { RelationshipCalculator, RelationshipResult, RelationshipStep } from '../core/relationship-calculator';
 import { createLucideIcon } from './lucide-icons';
+import type { PersonNode } from '../core/family-graph';
 
 /**
  * Modal for calculating relationships between two people
@@ -11,6 +12,8 @@ export class RelationshipCalculatorModal extends Modal {
 	private personA: PersonInfo | null = null;
 	private personB: PersonInfo | null = null;
 	private result: RelationshipResult | null = null;
+	private additionalResults: RelationshipResult[] = [];
+	private foundAncestorCrIds: string[] = [];
 
 	// UI elements
 	private personAContainer: HTMLElement;
@@ -152,6 +155,8 @@ export class RelationshipCalculatorModal extends Modal {
 			// Clear previous results when selection changes
 			this.resultsContainer.addClass('cr-hidden');
 			this.result = null;
+			this.additionalResults = [];
+			this.foundAncestorCrIds = [];
 		});
 		picker.open();
 	}
@@ -263,8 +268,22 @@ export class RelationshipCalculatorModal extends Modal {
 			this.renderPathVisualization(this.resultsContainer);
 		}
 
+		// Additional relationships (if already found)
+		if (this.additionalResults.length > 0) {
+			this.renderAdditionalResults(this.resultsContainer);
+		}
+
 		// Action buttons
 		const actionButtons = this.resultsContainer.createDiv({ cls: 'cr-relcalc-result-actions' });
+
+		// Find more button
+		const findMoreBtn = actionButtons.createEl('button', {
+			cls: 'crc-btn crc-btn--secondary'
+		});
+		const searchIcon = createLucideIcon('search', 14);
+		findMoreBtn.appendChild(searchIcon);
+		findMoreBtn.appendText('Find more relationships');
+		findMoreBtn.addEventListener('click', () => this.findMoreRelationships());
 
 		const copyBtn = actionButtons.createEl('button', {
 			cls: 'crc-btn crc-btn--secondary'
@@ -273,6 +292,76 @@ export class RelationshipCalculatorModal extends Modal {
 		copyBtn.appendChild(copyIcon);
 		copyBtn.appendText('Copy result');
 		copyBtn.addEventListener('click', () => this.copyResult());
+	}
+
+	private renderAdditionalResults(container: HTMLElement): void {
+		const section = container.createDiv({ cls: 'cr-relcalc-additional' });
+		section.createDiv({
+			cls: 'cr-relcalc-additional__title',
+			text: `Additional relationships (${this.additionalResults.length})`
+		});
+
+		for (const result of this.additionalResults) {
+			const row = section.createDiv({ cls: 'cr-relcalc-additional__row' });
+
+			const icon = this.getRelationshipIcon(result);
+			row.appendChild(icon);
+
+			row.createSpan({
+				cls: 'cr-relcalc-additional__desc',
+				text: result.relationshipDescription
+			});
+
+			if (result.commonAncestor) {
+				row.createSpan({
+					cls: 'cr-relcalc-additional__ancestor',
+					text: `via ${result.commonAncestor.name}`
+				});
+			}
+
+			if (result.isBloodRelation) {
+				row.createSpan({
+					cls: 'cr-relcalc-badge cr-relcalc-badge--blood',
+					text: 'blood'
+				});
+			} else {
+				row.createSpan({
+					cls: 'cr-relcalc-badge cr-relcalc-badge--marriage',
+					text: 'by marriage'
+				});
+			}
+		}
+	}
+
+	private findMoreRelationships(): void {
+		if (!this.personA || !this.personB || !this.result) return;
+
+		// Collect already-found common ancestor IDs
+		if (this.result.commonAncestor && !this.foundAncestorCrIds.includes(this.result.commonAncestor.crId)) {
+			this.foundAncestorCrIds.push(this.result.commonAncestor.crId);
+		}
+		for (const r of this.additionalResults) {
+			if (r.commonAncestor && !this.foundAncestorCrIds.includes(r.commonAncestor.crId)) {
+				this.foundAncestorCrIds.push(r.commonAncestor.crId);
+			}
+		}
+
+		const newResults = this.calculator.findAdditionalRelationships(
+			this.personA.crId,
+			this.personB.crId,
+			this.foundAncestorCrIds
+		);
+
+		if (newResults.length === 0) {
+			new Notice('No additional relationships found');
+			return;
+		}
+
+		this.additionalResults.push(...newResults);
+		new Notice(`Found ${newResults.length} additional relationship${newResults.length !== 1 ? 's' : ''}`);
+
+		// Re-render results to show the new ones
+		this.renderResults();
 	}
 
 	private renderPathVisualization(container: HTMLElement): void {
