@@ -2,7 +2,7 @@
 
 Planning document for citation-level metadata support.
 
-**Status:** ✅ Phase 1-2 complete | Phase 3-4 planned
+**Status:** ✅ Phase 1-3 complete | Phase 4 deferred
 
 **Related:** [#316](https://github.com/banisterious/obsidian-charted-roots/issues/316), [#317](https://github.com/banisterious/obsidian-charted-roots/issues/317) (GEDCOM field coverage umbrella)
 
@@ -109,12 +109,13 @@ For each citation note linked to a person:
 - ✅ Resolve place wikilinks in person-level exports
 - ✅ Fix place hierarchy order (GEDCOM most-specific-first)
 
-### Phase 3 — UI and commands
+### Phase 3 — UI and commands ✅
 
-- "Add citation" command — creates a citation note and links it to the current person
-- Citation picker modal — select source, enter page/quality, select fact
-- Display citations in Entity Profile View (person profile, sources section)
-- Citation count/coverage indicators
+- ✅ "Add citation" command — available on person/event notes via command palette and command menu
+- ✅ Add Citation modal — source picker, fact dropdown, page input, quality selector
+- ✅ Creates citation note and links it to the subject via `citations` array
+- ✅ Citations section in Entity Profile View — grouped by source, with fact labels, page references, and color-coded quality badges
+- Deferred: Citation count/coverage indicators (can revisit in Phase 4)
 
 ### Phase 4 — Integration
 
