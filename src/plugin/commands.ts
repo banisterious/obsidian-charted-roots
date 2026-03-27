@@ -25,6 +25,7 @@ import { isPersonNote, isPlaceNote, isEventNote } from '../utils/note-type-detec
 import { getErrorMessage } from '../core/error-utils';
 import { AddRelationshipModal } from '../ui/add-relationship-modal';
 import { CommandMenuModal } from '../ui/command-menu-modal';
+import { AddCitationModal } from '../sources/ui/add-citation-modal';
 import { formatChangeDescription } from '../core/relationship-history';
 import {
 	promptAssignReferenceNumbers,
@@ -218,6 +219,33 @@ export function registerCommandsAndEvents(plugin: CanvasRootsPlugin): void {
 
 			if (!checking) {
 				new AddResearchQuestionModal(plugin.app, file).open();
+			}
+			return true;
+		}
+	});
+
+	// Add command: Add citation to current note
+	plugin.addCommand({
+		id: 'add-citation',
+		name: 'Add citation to current note',
+		checkCallback: (checking: boolean) => {
+			const file = plugin.app.workspace.getActiveFile();
+			if (!file) return false;
+
+			const cache = plugin.app.metadataCache.getFileCache(file);
+			const crType = cache?.frontmatter?.cr_type;
+			const crId = cache?.frontmatter?.cr_id;
+
+			// Valid for person and event notes
+			const validTypes = ['person', 'event'];
+			const isValidType = validTypes.includes(crType);
+			const isLegacyPersonNote = crId && !crType;
+
+			if (!isValidType && !isLegacyPersonNote) return false;
+			if (!crId) return false;
+
+			if (!checking) {
+				new AddCitationModal(plugin.app, plugin, file, crId as string).open();
 			}
 			return true;
 		}

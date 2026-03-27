@@ -78,6 +78,7 @@ const CATEGORIES: CategoryDef[] = [
 		commands: [
 			{ id: 'edit-current-note', name: 'Edit current note', icon: 'pencil' },
 			{ id: 'add-research-question', name: 'Add research question', icon: 'help-circle' },
+			{ id: 'add-citation', name: 'Add citation', icon: 'quote' },
 			{ id: 'add-custom-relationship', name: 'Add custom relationship', icon: 'link' },
 			{ id: 'insert-dynamic-blocks', name: 'Insert dynamic blocks', icon: 'code' },
 		],
