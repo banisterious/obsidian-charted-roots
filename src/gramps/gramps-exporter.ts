@@ -557,14 +557,24 @@ ${families.xml}
 		// Add events from EventNote records (skip duplicates of person-level events)
 		for (const event of events) {
 			// Skip event notes that duplicate person-level data
-			if (event.person) {
-				const personLink = extractWikilinkPath(event.person);
+			// Check both event.person (principal) and event.persons (participants)
+			const allPersonRefs = [
+				...(event.person ? [event.person] : []),
+				...(event.persons || [])
+			];
+			let isDuplicate = false;
+			for (const personRef of allPersonRefs) {
+				const personLink = extractWikilinkPath(personRef);
 				const matchedPerson = people.find(p => p.name === personLink || p.file?.basename === personLink);
 				if (matchedPerson) {
 					const dupKey = `${event.eventType}:${matchedPerson.crId}`;
-					if (personLevelEventKeys.has(dupKey)) continue;
+					if (personLevelEventKeys.has(dupKey)) {
+						isDuplicate = true;
+						break;
+					}
 				}
 			}
+			if (isDuplicate) continue;
 			const eventHandle = `_e${this.generateHandle(context)}`;
 			const eventKey = `event:${event.crId}`;
 			context.eventHandles.set(eventKey, eventHandle);
