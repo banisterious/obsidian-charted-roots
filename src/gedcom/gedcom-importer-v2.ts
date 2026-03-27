@@ -720,7 +720,7 @@ export class GedcomImporterV2 {
 						if (subjectFile instanceof TFile) {
 							await this.app.fileManager.processFrontMatter(subjectFile, (frontmatter) => {
 								const existing = Array.isArray(frontmatter.citations) ? frontmatter.citations : [];
-								const newCitations = citationNames.map(name => `"[[${name}]]"`);
+								const newCitations = citationNames.map(name => `[[${name}]]`);
 								frontmatter.citations = [...existing, ...newCitations];
 							});
 						}
