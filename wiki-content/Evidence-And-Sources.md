@@ -27,6 +27,11 @@ Charted Roots provides tools for managing genealogical sources and evidence, hel
   - [Trackable Facts](#trackable-facts)
   - [Coverage Threshold](#coverage-threshold)
   - [Where Coverage Appears](#where-coverage-appears)
+- [Citation Notes](#citation-notes)
+  - [Citation Note Properties](#citation-note-properties)
+  - [Creating Citations](#creating-citations)
+  - [Where Citations Appear](#where-citations-appear)
+  - [Citation Folder](#citation-folder)
 - [Sources Bases Template](#sources-bases-template)
   - [Creating a Sources Base](#creating-a-sources-base)
   - [Included Views](#included-views)
@@ -369,6 +374,44 @@ Once you add `sourced_*` properties, coverage data shows up in several places:
 - **Entity Profile View** — Data quality section showing coverage percentage for the current person
 - **Source indicators on trees** — When coverage display is enabled, tree badges show the coverage percentage alongside the source count
 - **Reports** — Source summary and research gaps reports include fact coverage statistics
+
+## Citation Notes
+
+Citation notes provide per-citation metadata — linking a specific source to a specific fact on a person with page references and quality assessments. Each citation note represents one citation occurrence, mapping 1:1 to GEDCOM's `SOUR` blocks with `PAGE` and `QUAY` sub-tags.
+
+### Citation Note Properties
+
+| Property | Description | Example |
+|----------|-------------|---------|
+| `cr_type` | Always `citation` | `citation` |
+| `cr_id` | Auto-generated unique ID | `abc-123-def-456` |
+| `source` | Wikilink to the source note | `"[[Census 1850]]"` |
+| `subject` | Wikilink to the person or event note | `"[[John Smith]]"` |
+| `fact` | The frontmatter property being supported | `birth_date` |
+| `page` | Page, entry, or location within the source | `p. 42, entry 15` |
+| `quality` | Quality assessment (0–3, GEDCOM QUAY) | `3` |
+
+**Quality values:**
+- **0** — Unreliable
+- **1** — Questionable
+- **2** — Secondary evidence
+- **3** — Primary evidence
+
+### Creating Citations
+
+**Manually:** Open a person note and run "Charted Roots: Add citation to current note" from the command palette or the command menu (Edit > Add citation). Select a source, choose the fact being cited, and optionally enter a page reference and quality rating.
+
+**On GEDCOM import:** Citation notes are automatically generated from `SOUR` blocks that contain `PAGE` or `QUAY` metadata. Person notes are updated with a `citations` array linking to the generated notes.
+
+### Where Citations Appear
+
+- **Entity Profile View** — person profiles show a "Citations" section (after Sources) listing citations grouped by source, with fact labels, page references, and color-coded quality badges
+- **GEDCOM export** — citation metadata is written back as `PAGE` and `QUAY` sub-tags under `SOUR` references
+- **Gramps export** — citation metadata is written as `spage` and `confidence` elements within `sourceref` tags
+
+### Citation Folder
+
+Citation notes are stored in the Citations folder (default: `Charted Roots/Citations`). This is configurable in Settings > Folders.
 
 ## Sources Bases Template
 

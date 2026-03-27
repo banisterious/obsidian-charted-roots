@@ -110,6 +110,7 @@ Section expand/collapse states are remembered across sessions and between entiti
 | **Relationships** | Family members (parents, spouses, children, siblings) and other relationships (godparents, witnesses, mentors, etc.) |
 | **Events** | Timeline of events associated with this person |
 | **Sources** | Sources cited in the person note |
+| **Citations** | Citation notes grouped by source, with fact labels, page references, and quality badges. Hidden when no citations exist. See [Citation Notes](Evidence-And-Sources#citation-notes) |
 | **Media** | Thumbnail grid of linked photos and documents |
 | **Data Quality** | Research level (0-6), source coverage percentage, research questions, proof summaries |
 | **Research Activity** | Cross-project research entries (IRNs, log entries, journals, reports) grouped by project |
