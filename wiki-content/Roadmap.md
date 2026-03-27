@@ -87,7 +87,7 @@ See [Research Workflow Phase 1 (v0.19.11)](Release-History#research-workflow-pha
 |---------|-------------|--------|
 | Negative findings view | Query view surfacing all `result: negative` entries across projects | ✅ Complete (#287, v0.20.23) |
 | Research timeline | Visual timeline of research activities with gap detection | ✅ Complete (#293, v0.20.25) |
-| Cross-project queries | "Find related research" command on person notes | Planned (#303) |
+| Cross-project queries | "Find related research" command and Profile View section | ✅ Complete (#303, v0.20.34) |
 | Templates/Bases | Ready-to-use Bases templates for all research entity types | ✅ Complete (v0.20.16) |
 
 **Export & Citations (Separate):**
