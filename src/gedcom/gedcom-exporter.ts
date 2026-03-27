@@ -577,7 +577,9 @@ export class GedcomExporter {
 		}
 
 		const hierarchy = this.placeGraphService.getHierarchyPath(placeNode.id);
-		return hierarchy.map(p => p.name).join(', ');
+		// GEDCOM expects most-specific-first (locality, region, country)
+		// getHierarchyPath returns top-down, so reverse it
+		return hierarchy.map(p => p.name).reverse().join(', ');
 	}
 
 	/**
@@ -732,7 +734,7 @@ export class GedcomExporter {
 				}
 			}
 			if (person.birthPlace && (!privacyResult?.isProtected || privacyResult.showBirthPlace)) {
-				lines.push(...this.buildPlaceLines(person.birthPlace, 2));
+				lines.push(...this.buildPlaceLines(extractWikilinkPath(person.birthPlace), 2));
 			}
 			lines.push(...this.buildCitationSourceLines(person.crId, 'birth', sourceIdMap, citationLookup));
 		}
@@ -747,7 +749,7 @@ export class GedcomExporter {
 				}
 			}
 			if (person.deathPlace) {
-				lines.push(...this.buildPlaceLines(person.deathPlace, 2));
+				lines.push(...this.buildPlaceLines(extractWikilinkPath(person.deathPlace), 2));
 			}
 			if (person.deathCause) {
 				lines.push(`2 CAUS ${person.deathCause}`);
@@ -765,7 +767,7 @@ export class GedcomExporter {
 				}
 			}
 			if (person.burialPlace) {
-				lines.push(...this.buildPlaceLines(person.burialPlace, 2));
+				lines.push(...this.buildPlaceLines(extractWikilinkPath(person.burialPlace), 2));
 			}
 			lines.push(...this.buildCitationSourceLines(person.crId, 'burial', sourceIdMap, citationLookup));
 		}
@@ -935,7 +937,7 @@ export class GedcomExporter {
 			}
 
 			if (family.marriagePlace) {
-				lines.push(...this.buildPlaceLines(family.marriagePlace, 2));
+				lines.push(...this.buildPlaceLines(extractWikilinkPath(family.marriagePlace), 2));
 			}
 		}
 
@@ -950,7 +952,7 @@ export class GedcomExporter {
 			}
 
 			if (family.divorcePlace) {
-				lines.push(...this.buildPlaceLines(family.divorcePlace, 2));
+				lines.push(...this.buildPlaceLines(extractWikilinkPath(family.divorcePlace), 2));
 			}
 		}
 
