@@ -256,9 +256,11 @@ charted-roots/
 | `source-service.ts` | ✅ Complete | Parses source notes, extracts metadata, calculates source statistics |
 | `evidence-service.ts` | ✅ Complete | Fact-level source tracking, research coverage calculation, research gaps detection |
 | `citation-service.ts` | ✅ Complete | Citation generation in Chicago, Evidence Explained, MLA, Turabian formats |
+| `citation-note-service.ts` | ✅ Complete | Citation note CRUD — create, query by subject/source, batch creation for GEDCOM import |
 | `proof-summary-service.ts` | ✅ Complete | Proof summary note CRUD, conflict detection, evidence linking |
 | **Types** | | |
 | `source-types.ts` | ✅ Complete | Source quality, fact keys, sourced facts interfaces |
+| `citation-types.ts` | ✅ Complete | CitationNote, CitationData, CitationQuality interfaces |
 | `proof-types.ts` | ✅ Complete | Proof status, confidence levels, evidence support types |
 | `source-templates.ts` | ✅ Complete | Source note templates by type (vital records, census, etc.) |
 | **UI Components** | | |
@@ -268,6 +270,7 @@ charted-roots/
 | `source-picker-modal.ts` | ✅ Complete | Modal for selecting sources to link |
 | `media-gallery.ts` | ✅ Complete | Thumbnail grid of source media with lightbox viewer |
 | `citation-generator.ts` | ✅ Complete | Citation format selection and preview UI |
+| `add-citation-modal.ts` | ✅ Complete | Modal for creating citation notes with source picker, fact selector, page/quality inputs |
 
 ### Events Module (src/events/)
 

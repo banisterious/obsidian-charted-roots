@@ -60,6 +60,7 @@ src/profile-view/
     relationships-section.ts   # Family + other relationships (person)
     events-section.ts          # Events list (person, place, organization)
     sources-section.ts         # Sources list (person, place, organization)
+    citations-section.ts       # Citation notes grouped by source (person)
     media-section.ts           # Media thumbnail grid (all entity types)
     data-quality-section.ts    # Research level, coverage, questions (person)
     participants-section.ts    # Event participants (event)
