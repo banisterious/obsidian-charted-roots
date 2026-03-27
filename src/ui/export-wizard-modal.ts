@@ -930,6 +930,7 @@ export class ExportWizardModal extends Modal {
 
 				const options: GrampsExportOptions = {
 					peopleFolder: this.formData.peoplePath,
+					citationsFolder: this.formData.citationsPath,
 					fileName: `export-${new Date().toISOString().split('T')[0]}`,
 					includeMedia: this.formData.includeMedia,
 					privacySettings

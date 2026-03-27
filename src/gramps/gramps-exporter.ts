@@ -22,6 +22,7 @@ import { PlaceGraphService } from '../core/place-graph';
 import type { PlaceNode } from '../models/place';
 import type { CanvasRootsSettings } from '../settings';
 import { extractWikilinkPath } from '../utils/wikilink-resolver';
+import type { CitationQuality } from '../sources/types/citation-types';
 
 const logger = getLogger('GrampsExporter');
 
@@ -55,6 +56,12 @@ export interface GrampsExportOptions {
 
 	/** Privacy settings for protecting living persons */
 	privacySettings?: PrivacySettings;
+
+	/** Include media references */
+	includeMedia?: boolean;
+
+	/** Citations folder for PAGE/QUAY export */
+	citationsFolder?: string;
 }
 
 /**
@@ -364,9 +371,12 @@ export class GrampsExporter {
 		// Build families FIRST to populate familyHandles (needed for person back-references)
 		const familyData = this.extractFamilyData(people, context);
 
+		// Load citation lookup for PAGE/QUAY
+		const citationLookup = this.loadCitationLookup(options);
+
 		// Build XML sections
 		const sourcesXml = this.buildSources(sources, sourceHandles, context);
-		const eventsXml = this.buildEvents(people, events, context, sourceHandles, privacyService);
+		const eventsXml = this.buildEvents(people, events, context, sourceHandles, privacyService, citationLookup);
 		const placesXml = this.buildPlaces(places, context, placeHandleMap);
 		const persons = this.buildPersons(people, events, context, privacyService, familyData);
 		const families = this.buildFamiliesXml(familyData, context);
@@ -459,7 +469,8 @@ ${families.xml}
 		events: EventNote[],
 		context: GrampsExportContext,
 		sourceHandles: Map<string, string>,
-		privacyService: PrivacyService | null
+		privacyService: PrivacyService | null,
+		citationLookup?: Map<string, { page?: string; quality?: CitationQuality }>
 	): { xml: string; count: number } {
 		const eventLines: string[] = [];
 		let eventCounter = 1;
@@ -493,6 +504,7 @@ ${families.xml}
 					const placeHandle = this.getOrCreatePlace(extractWikilinkPath(person.birthPlace), context);
 					eventLines.push(`      <place hlink="${placeHandle}"/>`);
 				}
+				eventLines.push(...this.buildCitationSourceRefLines(person.crId, 'birth', sourceHandles, citationLookup));
 				eventLines.push('    </event>');
 			}
 
@@ -511,6 +523,7 @@ ${families.xml}
 					const placeHandle = this.getOrCreatePlace(extractWikilinkPath(person.deathPlace), context);
 					eventLines.push(`      <place hlink="${placeHandle}"/>`);
 				}
+				eventLines.push(...this.buildCitationSourceRefLines(person.crId, 'death', sourceHandles, citationLookup));
 				eventLines.push('    </event>');
 			}
 
@@ -529,6 +542,7 @@ ${families.xml}
 					const placeHandle = this.getOrCreatePlace(extractWikilinkPath(person.burialPlace), context);
 					eventLines.push(`      <place hlink="${placeHandle}"/>`);
 				}
+				eventLines.push(...this.buildCitationSourceRefLines(person.crId, 'burial', sourceHandles, citationLookup));
 				eventLines.push('    </event>');
 			}
 
@@ -1700,5 +1714,109 @@ ${families.xml}
 		}
 
 		return null;
+	}
+
+	/**
+	 * Build sourceref XML lines with PAGE/QUAY from citation lookup
+	 */
+	private buildCitationSourceRefLines(
+		personCrId: string,
+		eventType: string,
+		sourceHandles: Map<string, string>,
+		citationLookup?: Map<string, { page?: string; quality?: CitationQuality }>
+	): string[] {
+		if (!citationLookup) return [];
+
+		const lines: string[] = [];
+		for (const [key, citation] of citationLookup) {
+			if (!key.startsWith(`${personCrId}|${eventType}|`)) continue;
+			const sourceCrId = key.split('|')[2];
+			const sourceHandle = sourceHandles.get(sourceCrId);
+			if (sourceHandle) {
+				if (citation.page || citation.quality !== undefined) {
+					lines.push(`      <sourceref hlink="${sourceHandle}">`);
+					if (citation.page) {
+						lines.push(`        <spage>${this.escapeXml(citation.page)}</spage>`);
+					}
+					if (citation.quality !== undefined) {
+						lines.push(`        <confidence>${citation.quality}</confidence>`);
+					}
+					lines.push('      </sourceref>');
+				} else {
+					lines.push(`      <sourceref hlink="${sourceHandle}"/>`);
+				}
+			}
+		}
+		return lines;
+	}
+
+	/**
+	 * Load all citation notes and build a lookup map for PAGE/QUAY export.
+	 * Key format: "subjectCrId|eventType|sourceCrId"
+	 */
+	private loadCitationLookup(
+		options: GrampsExportOptions
+	): Map<string, { page?: string; quality?: CitationQuality }> {
+		const lookup = new Map<string, { page?: string; quality?: CitationQuality }>();
+		const citationsFolder = options.citationsFolder || 'Charted Roots/Citations';
+
+		for (const file of this.app.vault.getMarkdownFiles()) {
+			if (!file.path.startsWith(citationsFolder)) continue;
+
+			const cache = this.app.metadataCache.getFileCache(file);
+			const fm = cache?.frontmatter;
+			if (!fm || fm.cr_type !== 'citation') continue;
+
+			const subjectCrId = fm.subject_id as string;
+			const fact = fm.fact as string;
+			const page = fm.page as string | undefined;
+			const quality = fm.quality as CitationQuality | undefined;
+
+			if (!subjectCrId || !fact) continue;
+			if (page === undefined && quality === undefined) continue;
+
+			let sourceCrId = fm.source_id as string | undefined;
+			if (!sourceCrId) {
+				const sourceWikilink = fm.source as string;
+				sourceCrId = this.extractSourceCrId(sourceWikilink) || undefined;
+			}
+			if (!sourceCrId) continue;
+
+			const eventType = this.factToEventType(fact);
+			const key = `${subjectCrId}|${eventType}|${sourceCrId}`;
+			lookup.set(key, { page, quality });
+		}
+
+		logger.info('citations', `Loaded ${lookup.size} citation metadata entries for Gramps export`);
+		return lookup;
+	}
+
+	/**
+	 * Map a fact property name back to event type for citation lookup
+	 */
+	private factToEventType(fact: string): string {
+		const mapping: Record<string, string> = {
+			'birth_date': 'birth',
+			'death_date': 'death',
+			'burial_date': 'burial',
+			'baptism_date': 'baptism',
+			'christening_date': 'christening',
+			'marriage_date': 'marriage',
+			'divorce_date': 'divorce',
+			'census': 'census',
+			'immigration': 'immigration',
+			'emigration': 'emigration',
+			'naturalization': 'naturalization',
+			'residence': 'residence',
+			'occupation': 'occupation',
+			'education': 'education',
+			'military_service': 'military',
+			'confirmation': 'confirmation',
+			'ordination': 'ordination',
+			'retirement': 'retirement',
+			'will': 'will',
+			'probate': 'probate'
+		};
+		return mapping[fact] || fact;
 	}
 }
