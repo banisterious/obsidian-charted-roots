@@ -2,7 +2,7 @@
 
 Planning document for citation-level metadata support.
 
-**Status:** Planning
+**Status:** ✅ Phase 1 complete | Phase 2-4 planned
 
 **Related:** [#316](https://github.com/banisterious/obsidian-charted-roots/issues/316), [#317](https://github.com/banisterious/obsidian-charted-roots/issues/317) (GEDCOM field coverage umbrella)
 
@@ -88,13 +88,15 @@ For each citation note linked to a person:
 
 ## Implementation Phases
 
-### Phase 1 — Core model and GEDCOM import
+### Phase 1 — Core model and GEDCOM import ✅
 
-- Define `CitationNote` interface and types
-- Add `citationsFolder` setting (default: `Charted Roots/Citations`)
-- Create `CitationService` with CRUD operations
-- Update GEDCOM importer to generate citation notes from `SOUR.PAGE` and `SOUR.QUAY`
-- Add `citations` array to person notes on import
+- ✅ Define `CitationNote` interface and types (`src/sources/types/citation-types.ts`)
+- ✅ Register `citation` as entity type in note-type-detection
+- ✅ Add `citationsFolder` setting (default: `Charted Roots/Citations`)
+- ✅ Create `CitationNoteService` with CRUD operations (`src/sources/services/citation-note-service.ts`)
+- ✅ Update GEDCOM importer to generate citation notes from `SOUR.PAGE` and `SOUR.QUAY`
+- ✅ Add `citations` array to person notes on import
+- ✅ Test fixture: `tests/fixtures/gedcom/gedcom-sample-citation-metadata.ged`
 
 ### Phase 2 — GEDCOM export
 
