@@ -399,6 +399,8 @@ export interface CanvasRootsSettings {
 	calendariumIntegration: CalendariumIntegrationMode;
 	/** Show Calendarium dates (fc-date, fc-end) on timelines */
 	syncCalendariumEvents: boolean;
+	// Citations settings
+	citationsFolder: string;
 	// Reports settings
 	reportsFolder: string;
 	// Sex value normalization
@@ -798,6 +800,8 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	// Calendarium integration
 	calendariumIntegration: 'off',             // Default: no integration (invisible to users without Calendarium)
 	syncCalendariumEvents: false,              // Default: don't show fc-* dates on timelines
+	// Citations settings
+	citationsFolder: 'Charted Roots/Citations', // Default folder for citation notes
 	// Reports settings
 	reportsFolder: 'Charted Roots/Reports',     // Default folder for generated reports
 	// Sex value normalization
@@ -908,6 +912,9 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 
 		this.createFolderSetting(foldersContent, 'Sources folder', 'Default folder for source notes', 'Charted Roots/Sources',
 			() => this.plugin.settings.sourcesFolder, (v) => { this.plugin.settings.sourcesFolder = v; });
+
+		this.createFolderSetting(foldersContent, 'Citations folder', 'Default folder for citation notes', 'Charted Roots/Citations',
+			() => this.plugin.settings.citationsFolder, (v) => { this.plugin.settings.citationsFolder = v; });
 
 		this.createFolderSetting(foldersContent, 'Organizations folder', 'Default folder for organization notes', 'Charted Roots/Organizations',
 			() => this.plugin.settings.organizationsFolder, (v) => { this.plugin.settings.organizationsFolder = v; });
