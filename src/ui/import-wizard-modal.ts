@@ -172,7 +172,7 @@ export class ImportWizardModal extends Modal {
 		super(app);
 		this.plugin = plugin;
 		this.formData = this.getDefaultFormData();
-		this.importer = new GedcomImporterV2(app);
+		this.importer = new GedcomImporterV2(app, plugin);
 	}
 
 	/**

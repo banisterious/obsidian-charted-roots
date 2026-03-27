@@ -733,7 +733,7 @@ async function showGedcomAnalysis(
 
 		// Read and analyze file using v2 importer
 		const content = await file.text();
-		const importerV2 = new GedcomImporterV2(app);
+		const importerV2 = new GedcomImporterV2(app, plugin);
 		const analysis = importerV2.analyzeFile(content);
 
 		// Update UI with analysis results
@@ -1018,7 +1018,7 @@ async function handleGedcomImportV2(
 		const content = await file.text();
 
 		// Create v2 importer
-		const importer = new GedcomImporterV2(app);
+		const importer = new GedcomImporterV2(app, plugin);
 
 		// Parse and validate GEDCOM first (for quality preview)
 		const parseResult = importer.parseContent(content);

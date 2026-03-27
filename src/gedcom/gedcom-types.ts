@@ -525,6 +525,8 @@ export interface GedcomImportResultV2 {
 	placesUpdated: number;
 	notesImported: number;
 	separateNoteFilesCreated?: number;
+	/** Number of citation notes created */
+	citationsCreated?: number;
 	/** Number of media objects found in GEDCOM */
 	mediaObjectsFound?: number;
 	/** Number of media references linked to notes */

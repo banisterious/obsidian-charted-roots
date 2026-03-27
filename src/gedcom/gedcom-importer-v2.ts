@@ -6,6 +6,7 @@
  */
 
 import { App, Notice, TFile, TFolder, Vault, normalizePath } from 'obsidian';
+import type CanvasRootsPlugin from '../../main';
 import { GedcomParserV2 } from './gedcom-parser-v2';
 import {
 	GedcomDataV2,
@@ -26,6 +27,8 @@ import { getErrorMessage } from '../core/error-utils';
 import { capitalize } from '../utils/format-utils';
 import type { CreateEventData, EventConfidence } from '../events/types/event-types';
 import { US_STATE_ABBREVIATIONS } from '../utils/place-name-normalizer';
+import type { CitationData } from '../sources/types/citation-types';
+import { CitationNoteService } from '../sources/services/citation-note-service';
 
 /**
  * Information about a created place note
@@ -49,11 +52,13 @@ const logger = getLogger('GedcomImporter');
 
 export class GedcomImporterV2 {
 	private app: App;
+	private plugin: CanvasRootsPlugin;
 	/** Cached preprocess result from analyzeFile/parseContent for use in importFile */
 	private lastPreprocessResult?: PreprocessResult;
 
-	constructor(app: App) {
+	constructor(app: App, plugin: CanvasRootsPlugin) {
 		this.app = app;
+		this.plugin = plugin;
 	}
 
 	/**
@@ -454,6 +459,9 @@ export class GedcomImporterV2 {
 				await this.ensureFolderExists(options.placesFolder);
 			}
 
+			// Collect citation data during event creation for batch processing
+			const pendingCitations: CitationData[] = [];
+
 			// Create mapping of GEDCOM IDs to cr_ids and note paths
 			const gedcomToCrId = new Map<string, string>();
 			const gedcomToNotePath = new Map<string, string>();
@@ -635,7 +643,9 @@ export class GedcomImporterV2 {
 								sourceIdToNotePath,
 								placeToNoteInfo,
 								options,
-								createdEventPaths
+								createdEventPaths,
+								pendingCitations,
+								gedcomToCrId
 							);
 							result.eventsCreated++;
 						} catch (error: unknown) {
@@ -665,7 +675,9 @@ export class GedcomImporterV2 {
 								sourceIdToNotePath,
 								placeToNoteInfo,
 								options,
-								createdEventPaths
+								createdEventPaths,
+								pendingCitations,
+								gedcomToCrId
 							);
 							result.eventsCreated++;
 						} catch (error: unknown) {
@@ -681,6 +693,43 @@ export class GedcomImporterV2 {
 							await this.yieldToEventLoop();
 						}
 					}
+				}
+			}
+
+			// Phase 4: Create citation notes from collected citation data
+			if (pendingCitations.length > 0) {
+				reportProgress({ phase: 'citations', current: 0, total: pendingCitations.length, message: 'Creating citation notes…' });
+				try {
+					const citationService = new CitationNoteService(this.plugin);
+					const citationFiles = await citationService.createCitationNotes(pendingCitations);
+
+					// Group citation filenames by subject for updating person notes
+					const citationsBySubject = new Map<string, string[]>();
+					for (let i = 0; i < pendingCitations.length; i++) {
+						const subject = pendingCitations[i].subject;
+						const citationBaseName = citationFiles[i].basename;
+						const existing = citationsBySubject.get(subject) || [];
+						existing.push(citationBaseName);
+						citationsBySubject.set(subject, existing);
+					}
+
+					// Update person notes with citations arrays
+					for (const [subjectWikilink, citationNames] of citationsBySubject) {
+						const subjectBaseName = subjectWikilink.replace(/\[\[|\]\]/g, '');
+						const subjectFile = this.app.metadataCache.getFirstLinkpathDest(subjectBaseName, '');
+						if (subjectFile instanceof TFile) {
+							await this.app.fileManager.processFrontMatter(subjectFile, (frontmatter) => {
+								const existing = Array.isArray(frontmatter.citations) ? frontmatter.citations : [];
+								const newCitations = citationNames.map(name => `"[[${name}]]"`);
+								frontmatter.citations = [...existing, ...newCitations];
+							});
+						}
+					}
+
+					result.citationsCreated = citationFiles.length;
+					logger.info('citations', `Created ${citationFiles.length} citation notes`);
+				} catch (error: unknown) {
+					result.errors.push(`Failed to create citation notes: ${getErrorMessage(error)}`);
 				}
 			}
 
@@ -700,6 +749,9 @@ export class GedcomImporterV2 {
 			}
 			if (result.eventsCreated > 0) {
 				importMessage += `, ${result.eventsCreated} events`;
+			}
+			if (result.citationsCreated && result.citationsCreated > 0) {
+				importMessage += `, ${result.citationsCreated} citations`;
 			}
 			if (result.notesImported > 0) {
 				importMessage += `, ${result.notesImported} notes`;
@@ -1376,7 +1428,9 @@ export class GedcomImporterV2 {
 		sourceIdToNotePath: Map<string, string>,
 		placeToNoteInfo: Map<string, PlaceNoteInfo>,
 		options: GedcomImportOptionsV2,
-		createdEventPaths?: Set<string>
+		createdEventPaths?: Set<string>,
+		pendingCitations?: CitationData[],
+		gedcomToCrId?: Map<string, string>
 	): Promise<TFile> {
 		// Build event title
 		let title: string;
@@ -1432,6 +1486,34 @@ export class GedcomImporterV2 {
 			if (sourcePath) {
 				const baseName = sourcePath.replace(/\.md$/, '').split('/').pop() || '';
 				sourceWikilinks.push(baseName);
+			}
+		}
+
+		// Collect citation data for notes with PAGE or QUAY metadata
+		if (pendingCitations) {
+			const subjectRef = individual?.id || (family?.husbandRef ?? family?.wifeRef);
+			const subjectPath = subjectRef ? gedcomToNotePath.get(subjectRef) : undefined;
+			const subjectCrId = subjectRef && gedcomToCrId ? gedcomToCrId.get(subjectRef) : undefined;
+			const fact = this.eventTypeToFact(event.eventType);
+
+			if (subjectPath && fact) {
+				const subjectBaseName = subjectPath.replace(/\.md$/, '').split('/').pop() || '';
+				for (const citation of event.sourceCitations) {
+					if (citation.page || citation.quay !== undefined) {
+						const sourcePath = sourceIdToNotePath.get(citation.sourceRef);
+						if (sourcePath) {
+							const sourceBaseName = sourcePath.replace(/\.md$/, '').split('/').pop() || '';
+							pendingCitations.push({
+								source: `[[${sourceBaseName}]]`,
+								subject: `[[${subjectBaseName}]]`,
+								subjectCrId,
+								fact,
+								page: citation.page,
+								quality: citation.quay as (0 | 1 | 2 | 3 | undefined)
+							});
+						}
+					}
+				}
 			}
 		}
 
@@ -1805,6 +1887,35 @@ export class GedcomImporterV2 {
 		}
 		// Fall back to single format or default
 		return options.filenameFormat || 'original';
+	}
+
+	/**
+	 * Map GEDCOM event type to the corresponding frontmatter fact name
+	 */
+	private eventTypeToFact(eventType: string): string | undefined {
+		const mapping: Record<string, string> = {
+			'birth': 'birth_date',
+			'death': 'death_date',
+			'burial': 'burial_date',
+			'baptism': 'baptism_date',
+			'christening': 'christening_date',
+			'marriage': 'marriage_date',
+			'divorce': 'divorce_date',
+			'census': 'census',
+			'immigration': 'immigration',
+			'emigration': 'emigration',
+			'naturalization': 'naturalization',
+			'residence': 'residence',
+			'occupation': 'occupation',
+			'education': 'education',
+			'military': 'military_service',
+			'confirmation': 'confirmation',
+			'ordination': 'ordination',
+			'retirement': 'retirement',
+			'will': 'will',
+			'probate': 'probate'
+		};
+		return mapping[eventType] || eventType;
 	}
 
 	private formatEventType(eventType: string): string {
