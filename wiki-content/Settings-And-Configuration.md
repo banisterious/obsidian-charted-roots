@@ -449,6 +449,26 @@ Custom event types can be added with:
 | Setting | Default | Description |
 |---------|---------|-------------|
 | **Default timeline context** | *(empty)* | Note with historical events to overlay on all timelines (e.g., `[[World History]]`). Can be overridden per block with `context: [[Note]]` or suppressed with `context: none`. See [Dynamic Note Content](Dynamic-Note-Content#historical-context-overlay) for details. |
+| **Context lifespan margin** | `0` | Only show context events within this many years of the person's lifespan. `0` = show all (default). |
+
+### Family Events on Timelines
+
+Show significant life events of family members on person timelines. All off by default.
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| **Show children's births** | Off | Display "Birth of [[Child Name]]" entries |
+| **Show spouse deaths** | Off | Display "Death of [[Spouse Name]]" entries |
+| **Show parent deaths** | Off | Display "Death of [[Parent Name]]" entries |
+| **Show sibling births** | Off | Display "Birth of [[Sibling Name]]" entries |
+
+Each entry links to the family member's note and shows age annotations. Use `familyEvents: none` in an individual timeline code block to suppress family events on that specific timeline.
+
+### Relationship Calculator
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| **Max search depth** | `10` | Maximum generations to search when finding multiple relationships. `0` = unlimited (may be slow on large vaults). |
 
 ---
 
