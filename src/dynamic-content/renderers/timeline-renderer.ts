@@ -34,6 +34,8 @@ export interface TimelineEntry {
 	eventFile?: string;
 	/** Whether this is a historical context event (not a person event) */
 	isContext?: boolean;
+	/** Whether this is a family member's event (child birth, spouse death, etc.) */
+	isFamilyEvent?: boolean;
 	/** Age of the person at the time of this event */
 	age?: number;
 }
@@ -141,6 +143,13 @@ export class TimelineRenderer {
 			}
 		}
 
+		// Add family events if enabled (and not suppressed by per-block override)
+		const familyEventsParam = config.familyEvents as string | undefined;
+		if (familyEventsParam !== 'none' && context.person) {
+			const familyEntries = this.gatherFamilyEvents(context, birthYear);
+			entries.push(...familyEntries);
+		}
+
 		// Resolve context note path
 		const contextParam = config.context as string | undefined;
 		if (contextParam === 'none') return entries;
@@ -244,6 +253,136 @@ export class TimelineRenderer {
 	}
 
 	/**
+	 * Gather family events (children's births, spouse deaths, etc.)
+	 * based on settings toggles
+	 */
+	private gatherFamilyEvents(
+		context: DynamicBlockContext,
+		birthYear: number
+	): TimelineEntry[] {
+		const settings = this.service.getSettings();
+		const person = context.person;
+		if (!person) return [];
+
+		const entries: TimelineEntry[] = [];
+		const graph = context.familyGraph;
+
+		// Children's births
+		if (settings.timelineShowChildrenBirths && person.childrenCrIds) {
+			for (const childCrId of person.childrenCrIds) {
+				const child = graph.getPersonByCrId(childCrId);
+				if (child?.birthDate) {
+					const year = this.service.extractYear(child.birthDate);
+					const entry: TimelineEntry = {
+						date: this.service.formatDate(child.birthDate),
+						year,
+						type: 'family_birth',
+						title: `Birth of ${child.name}`,
+						eventFile: child.file?.basename,
+						isFamilyEvent: true
+					};
+					const entryYear = parseInt(year);
+					if (!isNaN(birthYear) && !isNaN(entryYear) && entryYear >= birthYear) {
+						entry.age = entryYear - birthYear;
+					}
+					entries.push(entry);
+				}
+			}
+		}
+
+		// Spouse deaths
+		if (settings.timelineShowSpouseDeaths && person.spouseCrIds) {
+			for (const spouseCrId of person.spouseCrIds) {
+				const spouse = graph.getPersonByCrId(spouseCrId);
+				if (spouse?.deathDate) {
+					const year = this.service.extractYear(spouse.deathDate);
+					const entry: TimelineEntry = {
+						date: this.service.formatDate(spouse.deathDate),
+						year,
+						type: 'family_death',
+						title: `Death of ${spouse.name}`,
+						eventFile: spouse.file?.basename,
+						isFamilyEvent: true
+					};
+					const entryYear = parseInt(year);
+					if (!isNaN(birthYear) && !isNaN(entryYear) && entryYear >= birthYear) {
+						entry.age = entryYear - birthYear;
+					}
+					entries.push(entry);
+				}
+			}
+		}
+
+		// Parent deaths
+		if (settings.timelineShowParentDeaths) {
+			const parentCrIds = [
+				person.fatherCrId,
+				person.motherCrId,
+				...(person.parentCrIds || [])
+			].filter(Boolean) as string[];
+
+			for (const parentCrId of parentCrIds) {
+				const parent = graph.getPersonByCrId(parentCrId);
+				if (parent?.deathDate) {
+					const year = this.service.extractYear(parent.deathDate);
+					const entry: TimelineEntry = {
+						date: this.service.formatDate(parent.deathDate),
+						year,
+						type: 'family_death',
+						title: `Death of ${parent.name}`,
+						eventFile: parent.file?.basename,
+						isFamilyEvent: true
+					};
+					const entryYear = parseInt(year);
+					if (!isNaN(birthYear) && !isNaN(entryYear) && entryYear >= birthYear) {
+						entry.age = entryYear - birthYear;
+					}
+					entries.push(entry);
+				}
+			}
+		}
+
+		// Sibling births
+		if (settings.timelineShowSiblingBirths) {
+			const parentCrIds = [person.fatherCrId, person.motherCrId].filter(Boolean) as string[];
+			const siblingCrIds = new Set<string>();
+
+			for (const parentCrId of parentCrIds) {
+				const parent = graph.getPersonByCrId(parentCrId);
+				if (parent?.childrenCrIds) {
+					for (const childCrId of parent.childrenCrIds) {
+						if (childCrId !== person.crId) {
+							siblingCrIds.add(childCrId);
+						}
+					}
+				}
+			}
+
+			for (const siblingCrId of siblingCrIds) {
+				const sibling = graph.getPersonByCrId(siblingCrId);
+				if (sibling?.birthDate) {
+					const year = this.service.extractYear(sibling.birthDate);
+					const entry: TimelineEntry = {
+						date: this.service.formatDate(sibling.birthDate),
+						year,
+						type: 'family_birth',
+						title: `Birth of ${sibling.name}`,
+						eventFile: sibling.file?.basename,
+						isFamilyEvent: true
+					};
+					const entryYear = parseInt(year);
+					if (!isNaN(birthYear) && !isNaN(entryYear) && entryYear >= birthYear) {
+						entry.age = entryYear - birthYear;
+					}
+					entries.push(entry);
+				}
+			}
+		}
+
+		return entries;
+	}
+
+	/**
 	 * Build timeline entries from events and person data
 	 */
 	private buildTimelineEntries(
@@ -337,15 +476,19 @@ export class TimelineRenderer {
 		const list = contentEl.createEl('ul', { cls: 'cr-timeline__list' });
 
 		for (const entry of entries) {
-			const itemCls = entry.isContext
-				? 'cr-timeline__item cr-timeline__item--context'
-				: 'cr-timeline__item';
+			let itemCls = 'cr-timeline__item';
+			if (entry.isContext) itemCls += ' cr-timeline__item--context';
+			if (entry.isFamilyEvent) itemCls += ' cr-timeline__item--family';
 			const li = list.createEl('li', { cls: itemCls });
 
 			if (entry.isContext) {
 				// Context events get a landmark icon
 				const iconSpan = li.createSpan({ cls: 'cr-timeline__icon cr-timeline__icon--context' });
 				setIcon(iconSpan, 'landmark' as LucideIconName);
+			} else if (entry.isFamilyEvent) {
+				// Family events get a users icon
+				const iconSpan = li.createSpan({ cls: 'cr-timeline__icon cr-timeline__icon--family' });
+				setIcon(iconSpan, 'users' as LucideIconName);
 			} else {
 				// Get event type info for icon/color
 				const eventType = getEventType(
@@ -460,7 +603,7 @@ export class TimelineRenderer {
 		for (const entry of this.currentEntries) {
 			const yearDisplay = entry.year || entry.date || '?';
 			const ageStr = entry.age !== undefined ? ` (age ${entry.age})` : '';
-			const prefix = entry.isContext ? '🏛️ ' : '';
+			const prefix = entry.isContext ? '🏛️ ' : entry.isFamilyEvent ? '👨‍👩‍👧 ' : '';
 			let line = `- **${yearDisplay}**${ageStr} — ${prefix}`;
 
 			// Determine display text (#157)
