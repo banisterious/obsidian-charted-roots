@@ -51,6 +51,9 @@ sort: chronological
 **What it displays:**
 - Birth and death dates from the person's frontmatter
 - All event notes linked to this person
+- Age annotations on each event (when birth date is known)
+- Family member events — children's births, spouse deaths, parent deaths, sibling births (when enabled in Settings > Advanced > [Family events on timelines](Settings-And-Configuration#family-events-on-timelines))
+- Historical context events from an overlay note (when configured)
 - Year, event type, and place for each entry
 - Clickable wikilinks to event and place notes
 
@@ -64,6 +67,8 @@ sort: chronological
 | `limit` | number | Maximum events to display |
 | `title` | string | Custom header text (default: "Timeline") |
 | `context` | `[[Note]]`, `none` | Historical context note to overlay (see below) |
+| `contextMargin` | number | Only show context events within N years of the person's lifespan (overrides global setting) |
+| `familyEvents` | `none` | Suppress family member events on this timeline (overrides global toggles) |
 
 **Example with options:**
 
