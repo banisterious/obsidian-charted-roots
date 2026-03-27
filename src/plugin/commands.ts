@@ -488,7 +488,7 @@ export function registerCommandsAndEvents(plugin: CanvasRootsPlugin): void {
 		id: 'calculate-relationship',
 		name: 'Calculate relationship between people',
 		callback: () => {
-			new RelationshipCalculatorModal(plugin.app).open();
+			new RelationshipCalculatorModal(plugin.app, plugin.settings).open();
 		}
 	});
 

@@ -3,12 +3,14 @@ import { PersonPickerModal, PersonInfo } from './person-picker';
 import { RelationshipCalculator, RelationshipResult, RelationshipStep } from '../core/relationship-calculator';
 import { createLucideIcon } from './lucide-icons';
 import type { PersonNode } from '../core/family-graph';
+import type { CanvasRootsSettings } from '../settings';
 
 /**
  * Modal for calculating relationships between two people
  */
 export class RelationshipCalculatorModal extends Modal {
 	private calculator: RelationshipCalculator;
+	private settings?: CanvasRootsSettings;
 	private personA: PersonInfo | null = null;
 	private personB: PersonInfo | null = null;
 	private result: RelationshipResult | null = null;
@@ -21,9 +23,10 @@ export class RelationshipCalculatorModal extends Modal {
 	private calculateButton: HTMLButtonElement;
 	private resultsContainer: HTMLElement;
 
-	constructor(app: App) {
+	constructor(app: App, settings?: CanvasRootsSettings) {
 		super(app);
 		this.calculator = new RelationshipCalculator(app);
+		this.settings = settings;
 	}
 
 	/**
@@ -346,10 +349,12 @@ export class RelationshipCalculatorModal extends Modal {
 			}
 		}
 
+		const maxDepth = this.settings?.relationshipMaxDepth ?? 10;
 		const newResults = this.calculator.findAdditionalRelationships(
 			this.personA.crId,
 			this.personB.crId,
-			this.foundAncestorCrIds
+			this.foundAncestorCrIds,
+			{ maxDepth }
 		);
 
 		if (newResults.length === 0) {

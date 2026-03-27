@@ -319,6 +319,8 @@ export interface CanvasRootsSettings {
 	relationshipCategoryCustomizations: Record<string, Partial<RelationshipCategoryDefinition>>;
 	/** Hidden/deleted built-in relationship category IDs */
 	hiddenRelationshipCategories: string[];
+	/** Max generation depth for relationship calculator (0 = unlimited) */
+	relationshipMaxDepth: number;
 	// Fictional date systems
 	enableFictionalDates: boolean;
 	fictionalDateSystems: FictionalDateSystem[];
@@ -732,6 +734,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	// Custom relationship types
 	customRelationshipTypes: [],   // User-defined relationship types (built-ins are always available)
 	showBuiltInRelationshipTypes: true,  // Whether to show built-in types in UI
+	relationshipMaxDepth: 10,            // Default: 10 generations (0 = unlimited)
 	relationshipTypeCustomizations: {},  // Overrides for built-in relationship types
 	hiddenRelationshipTypes: [],         // Relationship types hidden from dropdowns
 	customRelationshipCategories: [],    // User-defined relationship categories
@@ -1819,6 +1822,23 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					const val = parseInt(value);
 					if (!isNaN(val) && val >= 0) {
 						this.plugin.settings.contextLifespanMargin = val;
+						await this.plugin.saveSettings();
+					}
+				}));
+
+		// --- Relationship calculator subsection ---
+		advancedContent.createEl('h4', { text: 'Relationship calculator', cls: 'cr-subsection-title' });
+
+		new Setting(advancedContent)
+			.setName('Max search depth')
+			.setDesc('Maximum generations to search when calculating relationships. Set to 0 for unlimited (may be slow on large vaults).')
+			.addText(text => text
+				.setPlaceholder('10')
+				.setValue(String(this.plugin.settings.relationshipMaxDepth))
+				.onChange(async (value) => {
+					const val = parseInt(value);
+					if (!isNaN(val) && val >= 0) {
+						this.plugin.settings.relationshipMaxDepth = val;
 						await this.plugin.saveSettings();
 					}
 				}));

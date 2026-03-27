@@ -1325,7 +1325,7 @@ export function registerContextMenus(plugin: CanvasRootsPlugin): void {
 												const crId = cache?.frontmatter?.cr_id;
 												const personName = cache?.frontmatter?.name || file.basename;
 												if (crId) {
-													const modal = new RelationshipCalculatorModal(plugin.app);
+													const modal = new RelationshipCalculatorModal(plugin.app, plugin.settings);
 													modal.openWithPersonA({
 														name: personName,
 														crId: crId,
@@ -1883,7 +1883,7 @@ export function registerContextMenus(plugin: CanvasRootsPlugin): void {
 										const crId = cache?.frontmatter?.cr_id;
 										const personName = cache?.frontmatter?.name || file.basename;
 										if (crId) {
-											const modal = new RelationshipCalculatorModal(plugin.app);
+											const modal = new RelationshipCalculatorModal(plugin.app, plugin.settings);
 											modal.openWithPersonA({
 												name: personName,
 												crId: crId,
