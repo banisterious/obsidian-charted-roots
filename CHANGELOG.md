@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.20.36] - 2026-03-27
+
+### Added
+
+- **Citation metadata support** ([#316](https://github.com/banisterious/obsidian-charted-roots/issues/316)): New citation entity type for per-citation page references and quality assessments. GEDCOM import generates citation notes from `SOUR` blocks with `PAGE`/`QUAY`. GEDCOM and Gramps exports write citation metadata back as `PAGE`/`QUAY` sub-tags. "Add citation" command and modal for manual citation creation. Citations section in the Entity Profile View showing citations grouped by source with fact labels, page references, and color-coded quality badges. New `citationsFolder` setting (default: `Charted Roots/Citations`).
+
+### Fixed
+
+- **GEDCOM export: place wikilinks not resolved**: Person-level birth, death, burial, and family marriage/divorce places were exported with `[[]]` brackets instead of plain text.
+- **GEDCOM export: place hierarchy order reversed**: Hierarchical places were exported top-down (country, region, locality) instead of GEDCOM's most-specific-first order.
+- **GEDCOM export: no source references on person-level events**: Birth, death, and burial events written from person frontmatter had no `SOUR` sub-tags. Now writes source references with `PAGE` and `QUAY` from citation notes.
+- **Gramps export not wired into export wizard**: The Gramps format was listed as an option but had no handler, showing "not yet supported" on export.
+- **Gramps export: duplicate events**: Birth, death, burial, and occupation events appeared twice — once from person-level data and once from event notes.
+- **Gramps export: place wikilinks not resolved**: Same bracket issue as GEDCOM export.
+- **Gramps export: duplicate places**: Place names from person frontmatter didn't match place graph names, creating duplicate entries.
+- **Gramps export: no source references on person-level events**: Same as GEDCOM — now writes `sourceref` elements with `spage` and `confidence` from citation notes.
+
+---
+
 ## [0.20.35] - 2026-03-26
 
 ### Fixed
