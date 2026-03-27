@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Family events on timelines** ([#323](https://github.com/banisterious/obsidian-charted-roots/issues/323)): Person timelines can now show children's births, spouse deaths, parent deaths, and sibling births. Controlled by four global toggles in Settings > Advanced (all off by default). Each entry links to the family member's note with age annotations. Use `familyEvents: none` in a code block to suppress on individual timelines.
+
+---
+
 ## [0.20.36] - 2026-03-27
 
 ### Added
