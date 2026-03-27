@@ -1,0 +1,60 @@
+0 HEAD
+1 SOUR TEST
+2 NAME Citation Metadata Test
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+1 SUBM @U1@
+0 @U1@ SUBM
+1 NAME Test
+
+0 @I1@ INDI
+1 NAME John /Smith/
+2 GIVN John
+2 SURN Smith
+1 SEX M
+1 BIRT
+2 DATE 1 JAN 1850
+2 PLAC Boston, Massachusetts
+2 SOUR @S1@
+3 PAGE p. 42, entry 15
+3 QUAY 3
+1 DEAT
+2 DATE 15 MAR 1920
+2 SOUR @S2@
+3 PAGE vol. 12, p. 87
+3 QUAY 2
+1 FAMS @F1@
+
+0 @I2@ INDI
+1 NAME Mary /Jones/
+2 GIVN Mary
+2 SURN Jones
+1 SEX F
+1 BIRT
+2 DATE 5 MAY 1855
+2 SOUR @S1@
+3 PAGE p. 42, entry 16
+3 QUAY 3
+1 FAMS @F1@
+
+0 @F1@ FAM
+1 HUSB @I1@
+1 WIFE @I2@
+1 MARR
+2 DATE 12 JUN 1875
+2 PLAC Springfield, Massachusetts
+2 SOUR @S1@
+3 PAGE p. 103, family 28
+3 QUAY 2
+
+0 @S1@ SOUR
+1 TITL 1850 Federal Census
+1 AUTH US Census Bureau
+
+0 @S2@ SOUR
+1 TITL Massachusetts Death Records
+1 AUTH Commonwealth of Massachusetts
+
+0 TRLR
