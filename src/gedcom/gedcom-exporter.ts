@@ -734,6 +734,7 @@ export class GedcomExporter {
 			if (person.birthPlace && (!privacyResult?.isProtected || privacyResult.showBirthPlace)) {
 				lines.push(...this.buildPlaceLines(person.birthPlace, 2));
 			}
+			lines.push(...this.buildCitationSourceLines(person.crId, 'birth', sourceIdMap, citationLookup));
 		}
 
 		// Death (always show - living persons won't have death data anyway)
@@ -751,6 +752,7 @@ export class GedcomExporter {
 			if (person.deathCause) {
 				lines.push(`2 CAUS ${person.deathCause}`);
 			}
+			lines.push(...this.buildCitationSourceLines(person.crId, 'death', sourceIdMap, citationLookup));
 		}
 
 		// Burial (#317)
@@ -765,6 +767,7 @@ export class GedcomExporter {
 			if (person.burialPlace) {
 				lines.push(...this.buildPlaceLines(person.burialPlace, 2));
 			}
+			lines.push(...this.buildCitationSourceLines(person.crId, 'burial', sourceIdMap, citationLookup));
 		}
 
 		// Occupation (hide for protected persons)
@@ -1628,6 +1631,37 @@ export class GedcomExporter {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Build SOUR lines with PAGE/QUAY from citation lookup for person-level events.
+	 * Scans the citation lookup for all entries matching this person + event type.
+	 */
+	private buildCitationSourceLines(
+		personCrId: string,
+		eventType: string,
+		sourceIdMap: Map<string, string>,
+		citationLookup?: Map<string, { page?: string; quality?: CitationQuality }>
+	): string[] {
+		if (!citationLookup) return [];
+
+		const lines: string[] = [];
+		// Scan all citation entries for this person + event type
+		for (const [key, citation] of citationLookup) {
+			if (!key.startsWith(`${personCrId}|${eventType}|`)) continue;
+			const sourceCrId = key.split('|')[2];
+			const sourceId = sourceIdMap.get(sourceCrId);
+			if (sourceId) {
+				lines.push(`2 SOUR @${sourceId}@`);
+				if (citation.page) {
+					lines.push(`3 PAGE ${citation.page}`);
+				}
+				if (citation.quality !== undefined) {
+					lines.push(`3 QUAY ${citation.quality}`);
+				}
+			}
+		}
+		return lines;
 	}
 
 	/**
