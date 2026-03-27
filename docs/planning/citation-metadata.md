@@ -2,7 +2,7 @@
 
 Planning document for citation-level metadata support.
 
-**Status:** ✅ Phase 1 complete | Phase 2-4 planned
+**Status:** ✅ Phase 1-2 complete | Phase 3-4 planned
 
 **Related:** [#316](https://github.com/banisterious/obsidian-charted-roots/issues/316), [#317](https://github.com/banisterious/obsidian-charted-roots/issues/317) (GEDCOM field coverage umbrella)
 
@@ -98,10 +98,16 @@ For each citation note linked to a person:
 - ✅ Add `citations` array to person notes on import
 - ✅ Test fixture: `tests/fixtures/gedcom/gedcom-sample-citation-metadata.ged`
 
-### Phase 2 — GEDCOM export
+### Phase 2 — GEDCOM export ✅
 
-- Update GEDCOM exporter to read citation notes and reconstruct `SOUR` blocks with `PAGE` and `QUAY`
-- Handle the mapping from `fact` property back to GEDCOM assertion tags
+- ✅ Load citation notes into lookup map keyed by `subjectCrId|eventType|sourceCrId`
+- ✅ Write `3 PAGE` and `3 QUAY` sub-tags under `2 SOUR` on event-level exports
+- ✅ Add SOUR with PAGE/QUAY to person-level BIRT/DEAT/BURI exports
+- ✅ Add `citationsFolder` to export options and export wizard
+- ✅ Map `fact` property back to GEDCOM assertion tags via `factToEventType()`
+- ✅ Exclude citation notes from family graph person cache
+- ✅ Resolve place wikilinks in person-level exports
+- ✅ Fix place hierarchy order (GEDCOM most-specific-first)
 
 ### Phase 3 — UI and commands
 
