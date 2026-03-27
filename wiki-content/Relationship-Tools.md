@@ -63,6 +63,17 @@ John Smith → Mary Smith (spouse) → Robert Jones (father) → Alice Jones
 
 This helps you understand the chain of relationships connecting two individuals.
 
+### Finding Multiple Relationships
+
+People can be related in more than one way — especially in endogamous families or when cousins marry. After viewing the primary (shortest) relationship, click **Find more relationships** to search for additional connections through different common ancestors.
+
+Each additional result shows:
+- The relationship description (e.g., "3rd cousin 1x removed")
+- The common ancestor through whom the relationship exists (e.g., "via John Smith")
+- Whether it's a blood or marriage connection
+
+The search uses a configurable maximum depth (Settings > Advanced > Relationship calculator, default 10 generations). Set to 0 for an exhaustive search with no limit — this may be slow on large vaults.
+
 ### Copy to Clipboard
 
 Click **Copy result** to copy the relationship description for use in notes or documentation.
