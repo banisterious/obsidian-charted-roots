@@ -490,7 +490,7 @@ ${families.xml}
 					eventLines.push(`      <dateval val="${this.escapeXml(this.formatDateForGramps(person.birthDate))}"/>`);
 				}
 				if (person.birthPlace) {
-					const placeHandle = this.getOrCreatePlace(person.birthPlace, context);
+					const placeHandle = this.getOrCreatePlace(extractWikilinkPath(person.birthPlace), context);
 					eventLines.push(`      <place hlink="${placeHandle}"/>`);
 				}
 				eventLines.push('    </event>');
@@ -508,22 +508,27 @@ ${families.xml}
 					eventLines.push(`      <dateval val="${this.escapeXml(this.formatDateForGramps(person.deathDate))}"/>`);
 				}
 				if (person.deathPlace) {
-					const placeHandle = this.getOrCreatePlace(person.deathPlace, context);
+					const placeHandle = this.getOrCreatePlace(extractWikilinkPath(person.deathPlace), context);
 					eventLines.push(`      <place hlink="${placeHandle}"/>`);
 				}
 				eventLines.push('    </event>');
 			}
 
 			// Burial event
-			if (person.burialPlace) {
+			if (person.burialDate || person.burialPlace) {
 				const eventHandle = `_e${this.generateHandle(context)}`;
 				const eventKey = `burial:${person.crId}`;
 				context.eventHandles.set(eventKey, eventHandle);
 
 				eventLines.push(`    <event handle="${eventHandle}" id="E${eventCounter++}">`);
 				eventLines.push('      <type>Burial</type>');
-				const placeHandle = this.getOrCreatePlace(person.burialPlace, context);
-				eventLines.push(`      <place hlink="${placeHandle}"/>`);
+				if (person.burialDate) {
+					eventLines.push(`      <dateval val="${this.escapeXml(this.formatDateForGramps(person.burialDate))}"/>`);
+				}
+				if (person.burialPlace) {
+					const placeHandle = this.getOrCreatePlace(extractWikilinkPath(person.burialPlace), context);
+					eventLines.push(`      <place hlink="${placeHandle}"/>`);
+				}
 				eventLines.push('    </event>');
 			}
 
@@ -540,8 +545,26 @@ ${families.xml}
 			}
 		}
 
-		// Add events from EventNote records
+		// Build a set of person-level event keys to skip duplicates from EventNote records
+		const personLevelEventKeys = new Set<string>();
+		for (const person of people) {
+			if (person.birthDate || person.birthPlace) personLevelEventKeys.add(`birth:${person.crId}`);
+			if (person.deathDate || person.deathPlace) personLevelEventKeys.add(`death:${person.crId}`);
+			if (person.burialDate || person.burialPlace) personLevelEventKeys.add(`burial:${person.crId}`);
+			if (person.occupation) personLevelEventKeys.add(`occupation:${person.crId}`);
+		}
+
+		// Add events from EventNote records (skip duplicates of person-level events)
 		for (const event of events) {
+			// Skip event notes that duplicate person-level data
+			if (event.person) {
+				const personLink = extractWikilinkPath(event.person);
+				const matchedPerson = people.find(p => p.name === personLink || p.file?.basename === personLink);
+				if (matchedPerson) {
+					const dupKey = `${event.eventType}:${matchedPerson.crId}`;
+					if (personLevelEventKeys.has(dupKey)) continue;
+				}
+			}
 			const eventHandle = `_e${this.generateHandle(context)}`;
 			const eventKey = `event:${event.crId}`;
 			context.eventHandles.set(eventKey, eventHandle);
