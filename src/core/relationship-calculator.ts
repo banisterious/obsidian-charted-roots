@@ -31,10 +31,19 @@ export interface RelationshipResult {
 	path: RelationshipStep[];
 	relationshipDescription: string;
 	commonAncestor?: PersonNode;
+	commonAncestors?: PersonNode[];
 	generationsUp: number;
 	generationsDown: number;
 	isDirectLine: boolean;
 	isBloodRelation: boolean;
+}
+
+/**
+ * Options for relationship calculation
+ */
+export interface RelationshipCalculatorOptions {
+	/** Maximum search depth in generations (0 = unlimited) */
+	maxDepth?: number;
 }
 
 /**
@@ -127,6 +136,7 @@ export class RelationshipCalculator {
 			path,
 			relationshipDescription: analysis.description,
 			commonAncestor: analysis.commonAncestor,
+			commonAncestors: analysis.commonAncestor ? [analysis.commonAncestor] : undefined,
 			generationsUp: analysis.generationsUp,
 			generationsDown: analysis.generationsDown,
 			isDirectLine: analysis.isDirectLine,
@@ -135,15 +145,78 @@ export class RelationshipCalculator {
 	}
 
 	/**
+	 * Find additional relationships beyond the primary (shortest) one.
+	 * Searches for paths through different common ancestors by excluding
+	 * previously found common ancestors from the search.
+	 */
+	findAdditionalRelationships(
+		personACrId: string,
+		personBCrId: string,
+		excludeAncestorCrIds: string[],
+		options?: RelationshipCalculatorOptions
+	): RelationshipResult[] {
+		this.familyGraph.ensureCacheLoaded();
+
+		const personA = this.familyGraph.getPersonByCrId(personACrId);
+		const personB = this.familyGraph.getPersonByCrId(personBCrId);
+		if (!personA || !personB) return [];
+
+		const results: RelationshipResult[] = [];
+		const excludeSet = new Set(excludeAncestorCrIds);
+		const maxDepth = options?.maxDepth || 0;
+		const maxResults = 10; // Safety limit
+
+		// Find paths excluding previously found common ancestors
+		for (let attempt = 0; attempt < maxResults; attempt++) {
+			const path = this.findPath(personA, personB, excludeSet, maxDepth);
+			if (!path || path.length === 0) break;
+
+			const analysis = this.analyzePath(path);
+			if (!analysis.commonAncestor) break;
+
+			// Skip if we already found this common ancestor
+			if (excludeSet.has(analysis.commonAncestor.crId)) break;
+
+			excludeSet.add(analysis.commonAncestor.crId);
+
+			results.push({
+				personA,
+				personB,
+				path,
+				relationshipDescription: analysis.description,
+				commonAncestor: analysis.commonAncestor,
+				commonAncestors: analysis.commonAncestor ? [analysis.commonAncestor] : undefined,
+				generationsUp: analysis.generationsUp,
+				generationsDown: analysis.generationsDown,
+				isDirectLine: analysis.isDirectLine,
+				isBloodRelation: analysis.isBloodRelation
+			});
+		}
+
+		return results;
+	}
+
+	/**
 	 * Find the shortest path between two people using BFS
 	 */
-	private findPath(personA: PersonNode, personB: PersonNode): RelationshipStep[] | null {
+	private findPath(
+		personA: PersonNode,
+		personB: PersonNode,
+		excludeNodes?: Set<string>,
+		maxDepth?: number
+	): RelationshipStep[] | null {
 		interface QueueItem {
 			person: PersonNode;
 			path: RelationshipStep[];
 		}
 
 		const visited = new Set<string>();
+		// Pre-populate visited with excluded nodes (for multi-path search)
+		if (excludeNodes) {
+			for (const crId of excludeNodes) {
+				visited.add(crId);
+			}
+		}
 		const queue: QueueItem[] = [{
 			person: personA,
 			path: [{ person: personA, relationship: 'start', direction: 'start' }]
@@ -154,10 +227,14 @@ export class RelationshipCalculator {
 		// Track exploration for debugging
 		let iterations = 0;
 		const maxIterations = 10000; // Safety limit
+		const depthLimit = maxDepth && maxDepth > 0 ? maxDepth : Infinity;
 
 		while (queue.length > 0 && iterations < maxIterations) {
 			iterations++;
 			const current = queue.shift()!;
+
+			// Skip if path exceeds depth limit
+			if (current.path.length > depthLimit * 2) continue;
 
 			// Check if we found the target
 			if (current.person.crId === personB.crId) {
