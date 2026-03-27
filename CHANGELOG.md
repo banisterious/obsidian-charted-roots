@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Family events on timelines** ([#323](https://github.com/banisterious/obsidian-charted-roots/issues/323)): Person timelines can now show children's births, spouse deaths, parent deaths, and sibling births. Controlled by four global toggles in Settings > Advanced (all off by default). Each entry links to the family member's note with age annotations. Use `familyEvents: none` in a code block to suppress on individual timelines.
 
+- **Calculate multiple relationships** ([#321](https://github.com/banisterious/obsidian-charted-roots/issues/321)): The relationship calculator now supports finding multiple relationship paths between two people. After the primary (shortest) result, click "Find more relationships" to search for additional paths through different common ancestors. Each result shows the relationship type, common ancestor name, and blood/marriage indicator. Configurable max search depth in Settings > Advanced (default 10 generations, 0 for unlimited).
+
 ---
 
 ## [0.20.36] - 2026-03-27
