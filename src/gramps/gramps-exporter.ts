@@ -1472,6 +1472,18 @@ ${families.xml}
 			return context.placeHandles.get(placeName)!;
 		}
 
+		// Try to match against place graph by looking up the place name
+		// This handles format differences (e.g., "Boston Massachusetts" vs "Boston, Massachusetts")
+		if (this.placeGraphService) {
+			const placeNode = this.placeGraphService.getPlaceByName(placeName);
+			if (placeNode && context.placeHandles.has(placeNode.name)) {
+				// Cache the mapping for future lookups
+				const handle = context.placeHandles.get(placeNode.name)!;
+				context.placeHandles.set(placeName, handle);
+				return handle;
+			}
+		}
+
 		// Check if we already created this additional place
 		if (context.additionalPlaces.has(placeName)) {
 			return context.additionalPlaces.get(placeName)!;
