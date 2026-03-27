@@ -90,6 +90,7 @@ interface ExportWizardFormData {
 	placesPath: string;
 	eventsPath: string;
 	sourcesPath: string;
+	citationsPath: string;
 
 	// Step 3: Options
 	includeSources: boolean;
@@ -212,6 +213,7 @@ export class ExportWizardModal extends Modal {
 			placesPath: this.plugin?.settings?.placesFolder || 'Places',
 			eventsPath: this.plugin?.settings?.eventsFolder || 'Events',
 			sourcesPath: this.plugin?.settings?.sourcesFolder || 'Sources',
+			citationsPath: this.plugin?.settings?.citationsFolder || 'Charted Roots/Citations',
 
 			// Step 3
 			includeSources: true,
@@ -442,6 +444,7 @@ export class ExportWizardModal extends Modal {
 			this.renderFolderRow(foldersGrid, 'Places folder', this.formData.placesPath, false);
 			this.renderFolderRow(foldersGrid, 'Events folder', this.formData.eventsPath, false);
 			this.renderFolderRow(foldersGrid, 'Sources folder', this.formData.sourcesPath, false);
+			this.renderFolderRow(foldersGrid, 'Citations folder', this.formData.citationsPath, false);
 		} else {
 			section.createEl('h4', { text: 'Custom folders', cls: 'crc-export-options-title crc-mt-3' });
 
@@ -461,6 +464,9 @@ export class ExportWizardModal extends Modal {
 			});
 			this.renderFolderRow(foldersGrid, 'Sources folder', this.formData.sourcesPath, true, (val) => {
 				this.formData.sourcesPath = val;
+			});
+			this.renderFolderRow(foldersGrid, 'Citations folder', this.formData.citationsPath, true, (val) => {
+				this.formData.citationsPath = val;
 			});
 		}
 	}
@@ -820,6 +826,7 @@ export class ExportWizardModal extends Modal {
 				// Build export options
 				const options: GedcomExportOptions = {
 					peopleFolder: this.formData.peoplePath,
+					citationsFolder: this.formData.citationsPath,
 					fileName: `export-${new Date().toISOString().split('T')[0]}`,
 					privacySettings
 				};

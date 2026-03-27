@@ -1497,6 +1497,7 @@ async function handleGedcomExport(
 			fileName: exportOptions.fileName,
 			sourceApp: 'Charted Roots',
 			sourceVersion: plugin.manifest.version,
+			citationsFolder: plugin.settings.citationsFolder,
 			privacySettings: {
 				enablePrivacyProtection: exportOptions.privacyOverride?.enablePrivacyProtection ?? plugin.settings.enablePrivacyProtection,
 				livingPersonAgeThreshold: plugin.settings.livingPersonAgeThreshold,
