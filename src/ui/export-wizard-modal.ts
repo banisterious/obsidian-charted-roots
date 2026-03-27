@@ -15,6 +15,7 @@ import { App, Modal, Notice, setIcon, TFolder, FuzzySuggestModal } from 'obsidia
 import type CanvasRootsPlugin from '../../main';
 import { GedcomExporter, type GedcomExportOptions, type GedcomExportResult } from '../gedcom/gedcom-exporter';
 import { GedcomXExporter, type GedcomXExportOptions, type GedcomXExportResult } from '../gedcomx/gedcomx-exporter';
+import { GrampsExporter, type GrampsExportOptions, type GrampsExportResult } from '../gramps/gramps-exporter';
 import { FolderFilterService } from '../core/folder-filter';
 import { pluralize } from '../utils/format-utils';
 import type { PrivacySettings, PrivateFieldSummary } from '../core/privacy-service';
@@ -901,6 +902,54 @@ export class ExportWizardModal extends Modal {
 
 					addLogEntry(`Exported ${result.personsExported} persons`, 'success');
 					addLogEntry(`Created ${result.relationshipsExported} relationships`, 'success');
+
+					setTimeout(() => {
+						this.formData.isExporting = false;
+						this.currentStep = 5;
+						this.renderCurrentStep();
+					}, 1500);
+				} else {
+					addLogEntry('Export failed!', 'error');
+					for (const error of result.errors) {
+						addLogEntry(error, 'error');
+					}
+					this.formData.isExporting = false;
+				}
+			} else if (this.formData.format === 'gramps') {
+				addLogEntry('Starting Gramps XML export...');
+				progressFill.setCssProps({ width: '20%' });
+
+				const exporter = new GrampsExporter(this.app, folderFilter);
+				exporter.setEventService(this.plugin.settings);
+				exporter.setSourceService(this.plugin.settings);
+				exporter.setPlaceGraphService(this.plugin.settings);
+
+				progressFill.setCssProps({ width: '40%' });
+				statusEl.textContent = 'Generating Gramps XML...';
+				addLogEntry('Generating Gramps XML...');
+
+				const options: GrampsExportOptions = {
+					peopleFolder: this.formData.peoplePath,
+					fileName: `export-${new Date().toISOString().split('T')[0]}`,
+					includeMedia: this.formData.includeMedia,
+					privacySettings
+				};
+
+				const result = exporter.exportToGramps(options);
+				this.formData.exportResult = result;
+
+				if (result.success && result.xmlContent) {
+					progressFill.setCssProps({ width: '100%' });
+					statusEl.textContent = 'Export complete!';
+
+					this.formData.gedcomContent = result.xmlContent;
+					this.formData.exportedCount = result.personsExported;
+					this.formData.outputFilePath = `${result.fileName}.gramps`;
+					this.formData.outputFileSize = new Blob([result.xmlContent]).size;
+
+					addLogEntry(`Exported ${result.personsExported} persons`, 'success');
+					addLogEntry(`Created ${result.familiesExported} families`, 'success');
+					addLogEntry(`Created ${result.eventsExported} events`, 'success');
 
 					setTimeout(() => {
 						this.formData.isExporting = false;
