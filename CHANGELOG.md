@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Record superlatives 120-year age cap** ([#327](https://github.com/banisterious/obsidian-charted-roots/issues/327)): The hardcoded 120-year maximum age in longevity analysis, record superlatives, and data quality checks is now removed when fictional dates are enabled (`enableFictionalDates` setting). Fictional characters with extended lifespans now appear correctly in statistics.
+
+---
+
 ## [0.20.38] - 2026-03-28
 
 ### Added
