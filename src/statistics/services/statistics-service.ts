@@ -510,6 +510,27 @@ export class StatisticsService {
 	}
 
 	/**
+	 * Get people with missing sex/gender designation
+	 */
+	getPeopleWithMissingSex(): Array<{ crId: string; name: string; file: TFile }> {
+		const people = this.getFamilyGraphService().getAllPeople();
+		const result: Array<{ crId: string; name: string; file: TFile }> = [];
+
+		for (const person of people) {
+			const sex = person.sex?.toLowerCase();
+			if (!sex) {
+				result.push({
+					crId: person.crId,
+					name: person.name ?? person.crId,
+					file: person.file
+				});
+			}
+		}
+
+		return result.sort((a, b) => a.name.localeCompare(b.name));
+	}
+
+	/**
 	 * Compute top surnames
 	 *
 	 * Uses extractSurnames() to support multiple naming conventions:

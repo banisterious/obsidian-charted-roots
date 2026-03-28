@@ -702,6 +702,53 @@
   border-left: none;
 }
 
+/* Missing sex/gender section */
+.cr-sv-missing-sex {
+  margin-top: var(--cr-spacing-md);
+  border-top: 1px solid var(--background-modifier-border);
+  padding-top: var(--cr-spacing-sm);
+}
+
+.cr-sv-missing-sex__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cr-sv-missing-sex__title {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+}
+
+.cr-sv-missing-sex__toggle {
+  font-size: var(--font-ui-smaller);
+  padding: 2px 8px;
+}
+
+.cr-sv-missing-sex__list {
+  margin-top: var(--cr-spacing-xs);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.cr-sv-missing-sex__row {
+  padding: var(--cr-spacing-xs) 0;
+  border-bottom: 1px solid var(--background-modifier-border-hover);
+}
+
+.cr-sv-missing-sex__row:last-child {
+  border-bottom: none;
+}
+
+.cr-sv-missing-sex__row a {
+  color: var(--text-accent);
+  text-decoration: none;
+}
+
+.cr-sv-missing-sex__row a:hover {
+  text-decoration: underline;
+}
+
 /* Source confidence content */
 .cr-sv-confidence-grid {
   display: grid;

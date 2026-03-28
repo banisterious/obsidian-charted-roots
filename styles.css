@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-03-28 15:17:25 UTC
+ * - Generated: 2026-03-28 23:23:58 UTC
  * - Components: 47 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -31071,7 +31071,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: STATISTICS.CSS
    ========================================================================== */
 
-/* Component Size: 1754 lines, 35.24 KB */
+/* Component Size: 1801 lines, 36.15 KB */
 
 /**
  * Statistics Tab & View Styles
@@ -31775,6 +31775,53 @@ body:has(.cr-media-linker) .suggestion-container {
 .cr-sv-gender-bar-segment.cr-sv-gender-unknown {
   background-color: var(--text-muted);
   border-left: none;
+}
+
+/* Missing sex/gender section */
+.cr-sv-missing-sex {
+  margin-top: var(--cr-spacing-md);
+  border-top: 1px solid var(--background-modifier-border);
+  padding-top: var(--cr-spacing-sm);
+}
+
+.cr-sv-missing-sex__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cr-sv-missing-sex__title {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+}
+
+.cr-sv-missing-sex__toggle {
+  font-size: var(--font-ui-smaller);
+  padding: 2px 8px;
+}
+
+.cr-sv-missing-sex__list {
+  margin-top: var(--cr-spacing-xs);
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.cr-sv-missing-sex__row {
+  padding: var(--cr-spacing-xs) 0;
+  border-bottom: 1px solid var(--background-modifier-border-hover);
+}
+
+.cr-sv-missing-sex__row:last-child {
+  border-bottom: none;
+}
+
+.cr-sv-missing-sex__row a {
+  color: var(--text-accent);
+  text-decoration: none;
+}
+
+.cr-sv-missing-sex__row a:hover {
+  text-decoration: underline;
 }
 
 /* Source confidence content */
@@ -39936,11 +39983,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-03-28 15:17:26 UTC
+ * Build completed: 2026-03-28 23:23:59 UTC
  * Components processed: 47
- * Total lines: 39490
- * Total size: 793.61 KB
- * Build duration: 0.97 seconds
+ * Total lines: 39537
+ * Total size: 794.52 KB
+ * Build duration: 1.16 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -39975,7 +40022,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - timeline-callouts.css: 321 lines, 10.68 KB
  * - organizations.css: 615 lines, 11.57 KB
  * - sources.css: 2832 lines, 57.42 KB
- * - statistics.css: 1754 lines, 35.24 KB
+ * - statistics.css: 1801 lines, 36.15 KB
  * - command-menu.css: 73 lines, 1.6 KB
  * - dashboard.css: 491 lines, 9.64 KB
  * - universe-wizard.css: 621 lines, 11.17 KB
