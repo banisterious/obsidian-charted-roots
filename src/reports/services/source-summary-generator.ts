@@ -13,6 +13,7 @@ import type {
 	SourceEntry,
 	ReportPerson
 } from '../types/report-types';
+import type { CitationNote } from '../../sources/types/citation-types';
 import { createConfiguredFamilyGraph } from '../../core/family-graph';
 import { nodeToReportPerson } from './report-utils';
 import { SourceService } from '../../sources/services/source-service';
@@ -73,6 +74,9 @@ export class SourceSummaryGenerator {
 		// Get fact coverage for this person
 		const coverage = evidenceService.getFactCoverage(options.personCrId);
 
+		// Load citation notes for this person
+		const citations = this.loadCitationsForSubject(options.personCrId);
+
 		// Collect all sources linked to this person
 		const sourcesByFactType: Record<string, SourceEntry[]> = {};
 		const unsourcedFacts: string[] = [];
@@ -112,6 +116,11 @@ export class SourceSummaryGenerator {
 								);
 							}
 
+							// Look up citation note for page/quality
+							const citation = citations.find(c =>
+								c.sourceCrId === sourceNote.crId && c.fact === fact.factKey
+							);
+
 							entries.push({
 								crId: sourceNote.crId,
 								title: sourceNote.title,
@@ -122,7 +131,9 @@ export class SourceSummaryGenerator {
 								sourceClassification: sourceNote.sourceClassification,
 								informationClassification: sourceNote.informationClassification,
 								evidenceClassification: sourceNote.evidenceClassification,
-								factTypes: [factLabel]
+								factTypes: [factLabel],
+								page: citation?.page,
+								citationQuality: citation?.quality
 							});
 						}
 					}
@@ -297,9 +308,12 @@ export class SourceSummaryGenerator {
 			lines.push('## Sources by fact');
 			lines.push('');
 
-			// Check if any source has Mills classification data
+			// Check if any source has Mills classification data or citation page refs
 			const hasMillsData = options.showQualityRatings && Object.values(sourcesByFactType).some(
 				entries => entries.some(e => e.sourceClassification || e.informationClassification || e.evidenceClassification)
+			);
+			const hasCitationData = Object.values(sourcesByFactType).some(
+				entries => entries.some(e => e.page || e.citationQuality !== undefined)
 			);
 
 			for (const factType of factTypes) {
@@ -308,30 +322,37 @@ export class SourceSummaryGenerator {
 				lines.push('');
 
 				if (hasMillsData) {
-					lines.push('| Source | Type | Quality | Source cls. | Information cls. | Evidence cls. |');
-					lines.push('|--------|------|---------|-------------|------------------|---------------|');
+					const pageCol = hasCitationData ? ' Page |' : '';
+					const pageSep = hasCitationData ? '------|' : '';
+					lines.push(`| Source | Type | Quality | Source cls. | Information cls. | Evidence cls. |${pageCol}`);
+					lines.push(`|--------|------|---------|-------------|------------------|---------------|${pageSep}`);
 				} else if (options.showQualityRatings) {
-					lines.push('| Source | Type | Quality |');
-					lines.push('|--------|------|---------|');
+					const pageCol = hasCitationData ? ' Page |' : '';
+					const pageSep = hasCitationData ? '------|' : '';
+					lines.push(`| Source | Type | Quality |${pageCol}`);
+					lines.push(`|--------|------|---------|${pageSep}`);
 				} else {
-					lines.push('| Source | Type |');
-					lines.push('|--------|------|');
+					const pageCol = hasCitationData ? ' Page |' : '';
+					const pageSep = hasCitationData ? '------|' : '';
+					lines.push(`| Source | Type |${pageCol}`);
+					lines.push(`|--------|------|${pageSep}`);
 				}
 
 				for (const entry of entries) {
 					const sourceLink = `[[${entry.title}]]`;
 					const type = entry.sourceType || '';
 					const quality = this.formatQuality(entry.quality);
+					const pageRef = hasCitationData ? ` ${entry.page || ''} |` : '';
 
 					if (hasMillsData) {
 						const sc = entry.sourceClassification ? SOURCE_CLASSIFICATION_LABELS[entry.sourceClassification].label : '';
 						const ic = entry.informationClassification ? INFORMATION_CLASSIFICATION_LABELS[entry.informationClassification].label : '';
 						const ec = entry.evidenceClassification ? EVIDENCE_CLASSIFICATION_LABELS[entry.evidenceClassification].label : '';
-						lines.push(`| ${sourceLink} | ${type} | ${quality} | ${sc} | ${ic} | ${ec} |`);
+						lines.push(`| ${sourceLink} | ${type} | ${quality} | ${sc} | ${ic} | ${ec} |${pageRef}`);
 					} else if (options.showQualityRatings) {
-						lines.push(`| ${sourceLink} | ${type} | ${quality} |`);
+						lines.push(`| ${sourceLink} | ${type} | ${quality} |${pageRef}`);
 					} else {
-						lines.push(`| ${sourceLink} | ${type} |`);
+						lines.push(`| ${sourceLink} | ${type} |${pageRef}`);
 					}
 				}
 				lines.push('');
@@ -418,5 +439,36 @@ export class SourceSummaryGenerator {
 	 */
 	private sanitizeFilename(filename: string): string {
 		return filename.replace(/[<>:"/\\|?*]/g, '-');
+	}
+
+	/**
+	 * Load citation notes for a subject from the citations folder
+	 */
+	private loadCitationsForSubject(subjectCrId: string): CitationNote[] {
+		const citations: CitationNote[] = [];
+		const folder = this.settings.citationsFolder || 'Charted Roots/Citations';
+
+		for (const file of this.app.vault.getMarkdownFiles()) {
+			if (!file.path.startsWith(folder)) continue;
+
+			const cache = this.app.metadataCache.getFileCache(file);
+			const fm = cache?.frontmatter;
+			if (!fm || fm.cr_type !== 'citation') continue;
+			if (fm.subject_id !== subjectCrId) continue;
+
+			citations.push({
+				filePath: file.path,
+				crId: fm.cr_id as string,
+				source: fm.source as string,
+				sourceCrId: fm.source_id as string | undefined,
+				subject: fm.subject as string,
+				subjectCrId: fm.subject_id as string | undefined,
+				fact: fm.fact as string,
+				page: fm.page as string | undefined,
+				quality: fm.quality as (0 | 1 | 2 | 3 | undefined)
+			});
+		}
+
+		return citations;
 	}
 }

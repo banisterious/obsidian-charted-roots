@@ -640,6 +640,10 @@ export interface SourceEntry {
 	evidenceClassification?: 'direct' | 'indirect' | 'negative';
 	/** Fact types this source supports */
 	factTypes: string[];
+	/** Citation page reference (from citation notes) */
+	page?: string;
+	/** Citation quality assessment 0-3 (from citation notes) */
+	citationQuality?: number;
 }
 
 /**
