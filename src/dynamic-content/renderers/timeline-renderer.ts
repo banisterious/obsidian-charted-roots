@@ -88,7 +88,8 @@ export class TimelineRenderer {
 		}
 
 		// Check for template-based rendering (Phase 4)
-		const templateParam = config.template as string | undefined;
+		const settings = this.service.getSettings();
+		const templateParam = (config.template as string | undefined) || settings.defaultTimelineTemplate;
 		if (templateParam) {
 			await this.renderWithTemplate(contentEl, entries, context, component, templateParam);
 			return;
@@ -485,7 +486,6 @@ export class TimelineRenderer {
 			});
 
 			// Render entries
-			const sectionConfig: DynamicBlockConfig = section.format ? { format: section.format } : {};
 			for (const entry of sectionEntries) {
 				let itemCls = 'cr-timeline__item';
 				if (entry.isContext) itemCls += ' cr-timeline__item--context';

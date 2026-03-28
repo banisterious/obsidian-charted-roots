@@ -428,6 +428,8 @@ export interface CanvasRootsSettings {
 	contextLifespanMargin: number;
 	/** Timeline layout mode: chronological, grouped, or personal-first */
 	timelineLayout: 'chronological' | 'grouped' | 'personal-first';
+	/** Default timeline template note (wikilink path) */
+	defaultTimelineTemplate: string;
 	// Timeline label customization
 	/** Label for birth events */
 	timelineBirthLabel: string;
@@ -846,6 +848,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	defaultTimelineContext: '',                // No default context note
 	contextLifespanMargin: 0,                 // 0 = no filtering (show all context events)
 	timelineLayout: 'chronological',          // Default: all events interleaved by date
+	defaultTimelineTemplate: '',              // No default template
 	timelineBirthLabel: 'Born',
 	timelineDeathLabel: 'Died',
 	timelineChildBirthLabel: 'Birth of {name}',
@@ -1878,6 +1881,17 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.timelineLayout)
 				.onChange(async (value) => {
 					this.plugin.settings.timelineLayout = value as 'chronological' | 'grouped' | 'personal-first';
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(advancedContent)
+			.setName('Default timeline template')
+			.setDesc('Note defining timeline sections with custom sort, include, and format. Can be overridden per block with template: [[Note]].')
+			.addText(text => text
+				.setPlaceholder('[[My Timeline Template]]')
+				.setValue(this.plugin.settings.defaultTimelineTemplate)
+				.onChange(async (value) => {
+					this.plugin.settings.defaultTimelineTemplate = value;
 					await this.plugin.saveSettings();
 				}));
 
