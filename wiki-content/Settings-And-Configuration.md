@@ -450,6 +450,21 @@ Custom event types can be added with:
 |---------|---------|-------------|
 | **Default timeline context** | *(empty)* | Note with historical events to overlay on all timelines (e.g., `[[World History]]`). Can be overridden per block with `context: [[Note]]` or suppressed with `context: none`. See [Dynamic Note Content](Dynamic-Note-Content#historical-context-overlay) for details. |
 | **Context lifespan margin** | `0` | Only show context events within this many years of the person's lifespan. `0` = show all (default). |
+| **Default layout** | `chronological` | How events are arranged: `chronological` (interleaved by date), `grouped` (sections for personal/family/context), or `personal-first`. See [Layout modes](Dynamic-Note-Content#timeline-layout-modes). |
+| **Default timeline template** | *(empty)* | Note defining timeline sections with custom sort, include, and format. See [Template notes](Dynamic-Note-Content#timeline-template-notes). |
+
+### Timeline Labels
+
+Override default labels for timeline events. Use `{name}` as a placeholder for the family member's name.
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| **Birth label** | `Born` | Label for the person's own birth event |
+| **Death label** | `Died` | Label for the person's own death event |
+| **Child birth label** | `Birth of {name}` | Label for children's birth events |
+| **Spouse death label** | `Death of {name}` | Label for spouse death events |
+| **Parent death label** | `Death of {name}` | Label for parent death events |
+| **Sibling birth label** | `Birth of {name}` | Label for sibling birth events |
 
 ### Family Events on Timelines
 

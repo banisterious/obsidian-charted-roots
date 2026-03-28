@@ -413,6 +413,19 @@ Citation notes provide per-citation metadata — linking a specific source to a 
 
 Citation notes are stored in the Citations folder (default: `Charted Roots/Citations`). This is configurable in Settings > Folders.
 
+### Syncing Citations and Sourced Fields
+
+Citation notes and `sourced_*` frontmatter fields can be synced in both directions:
+
+**From citations to sourced fields:**
+- "Sync sourced fields from citation notes (current note)" — reads citation notes for the current person and populates `sourced_*` properties
+- "Sync sourced fields from citation notes (all people)" — does the same for every person in the vault
+
+**From sourced fields to citations:**
+- "Generate citation notes from sourced fields (current note)" — creates citation notes from existing `sourced_*` data, deduplicating to avoid creating duplicates
+
+All three commands are available via the command palette. This provides a migration path for users with existing `sourced_*` fields who want to adopt citation notes, or for users who want to keep both systems in sync.
+
 ## Sources Bases Template
 
 Charted Roots includes a pre-configured Obsidian Bases template for managing sources in a spreadsheet-like interface.

@@ -16,6 +16,7 @@ Charted Roots provides a comprehensive statistics dashboard and report generatio
   - [Top Lists](#top-lists)
   - [Extended Statistics](#extended-statistics)
   - [Record Superlatives](#record-superlatives)
+  - [Citation Statistics](#citation-statistics)
 - [Reports](#reports)
   - [Report Types](#report-types)
   - [Generating Reports](#generating-reports)
@@ -171,6 +172,17 @@ Each category shows the top 3 entries as a card with:
 - Clickable person links (click to open, right-click for context menu, hover for preview)
 - Birth and death dates
 - The record value (e.g., "87 years", "12 children", "54 years married")
+
+### Citation Statistics
+
+The Citation Statistics section shows metrics about citation notes in your vault. Hidden when no citation notes exist.
+
+| Metric | Description |
+|--------|-------------|
+| **Total citations** | Number of citation notes in the vault |
+| **Citation coverage** | Percentage of sourced facts that have citation-level detail (page reference or quality assessment) |
+| **Quality distribution** | Breakdown of citation quality values: Primary (3), Secondary (2), Questionable (1), Unreliable (0) |
+| **Most cited sources** | Top 5 sources ranked by number of citation notes |
 
 ---
 

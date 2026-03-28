@@ -69,6 +69,9 @@ sort: chronological
 | `context` | `[[Note]]`, `none` | Historical context note to overlay (see below) |
 | `contextMargin` | number | Only show context events within N years of the person's lifespan (overrides global setting) |
 | `familyEvents` | `none` | Suppress family member events on this timeline (overrides global toggles) |
+| `layout` | `chronological`, `grouped`, `personal-first` | How events are arranged (see [Layout modes](#timeline-layout-modes)) |
+| `format` | format string | Custom display format with placeholders (see [Format strings](#timeline-format-strings)) |
+| `template` | `[[Note]]` | Reference a template note defining custom sections (see [Template notes](#timeline-template-notes)) |
 
 **Example with options:**
 
@@ -113,6 +116,75 @@ To suppress the default context on a specific block, use `context: none`.
 #### Age annotations
 
 When a person's birth date is known, all timeline events (including context events) display an age annotation showing the person's age at the time of the event. For example, a marriage in 1875 for someone born in 1850 would show "age 25".
+
+#### Timeline layout modes
+
+The `layout` parameter (or the global setting in Settings > Advanced > Timeline layout) controls how events are arranged:
+
+| Mode | Description |
+|------|-------------|
+| `chronological` (default) | All events interleaved by date |
+| `grouped` | Separate sections with dividers: Life events, Family events, Historical context |
+| `personal-first` | Personal events first (sorted), then family and context events chronologically |
+
+#### Timeline format strings
+
+The `format` parameter controls how each entry is rendered using placeholders:
+
+~~~markdown
+```charted-roots-timeline
+format: "{year} — {title} in {place}"
+```
+~~~
+
+**Available placeholders:**
+
+| Placeholder | Description | Example |
+|-------------|-------------|---------|
+| `{year}` | Year or date range | `1850` |
+| `{date}` | Full date | `1850-01-01` |
+| `{type}` | Event type label | `Birth` |
+| `{title}` | Event title/description | `Born` or `Birth of John` |
+| `{place}` | Place name (omitted if empty) | `Boston, MA` |
+| `{age}` | Age annotation (omitted if unknown) | `age 23` |
+
+When a placeholder's value is empty, it and surrounding literal text (like "in ") are automatically omitted.
+
+#### Timeline template notes
+
+For full control, reference a template note that defines custom sections with independent configuration:
+
+~~~markdown
+```charted-roots-timeline
+template: [[My Timeline Template]]
+```
+~~~
+
+**Template note format:**
+
+A template note uses `##` headings for sections, each with optional `sort:`, `include:`, and `format:` config lines:
+
+    ---
+    cr_type: timeline_template
+    ---
+
+    ## Life events
+    sort: chronological
+    include: birth, death, marriage, occupation
+    format: "{year} — {title} in {place}"
+
+    ## Family
+    sort: chronological
+    include: family
+    format: "{year} — {title}"
+
+    ## Historical context
+    sort: chronological
+    include: context
+
+**Include filter values:** Event types (`birth`, `death`, `marriage`, etc.) and categories (`personal`, `family`, `context`, `children_births`, `spouse_deaths`, `parent_deaths`, `sibling_births`).
+
+Set a global default template in Settings > Advanced > Default timeline template to apply it to all timelines without editing individual notes.
 
 ### Relationships Block
 

@@ -257,6 +257,7 @@ charted-roots/
 | `evidence-service.ts` | ✅ Complete | Fact-level source tracking, research coverage calculation, research gaps detection |
 | `citation-service.ts` | ✅ Complete | Citation generation in Chicago, Evidence Explained, MLA, Turabian formats |
 | `citation-note-service.ts` | ✅ Complete | Citation note CRUD — create, query by subject/source, batch creation for GEDCOM import |
+| `citation-sync-service.ts` | ✅ Complete | Bidirectional sync between citation notes and sourced_* frontmatter fields |
 | `proof-summary-service.ts` | ✅ Complete | Proof summary note CRUD, conflict detection, evidence linking |
 | **Types** | | |
 | `source-types.ts` | ✅ Complete | Source quality, fact keys, sourced facts interfaces |
