@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Missing sex/gender list in statistics** ([#326](https://github.com/banisterious/obsidian-charted-roots/issues/326)): The Sex & Gender Distribution section now includes a collapsible "People with missing sex/gender" list when unknown entries exist. Click "Show" to see clickable links to each person note for easy back-filling. Lazy-loaded on first expand.
+- **Expandable person lists per sex/gender category** ([#326](https://github.com/banisterious/obsidian-charted-roots/issues/326)): The Sex & Gender Distribution section now includes expandable person lists under each category (Male, Female, Other, Unknown). "Other" entries show the actual value entered by the user. "Unknown" is split into explicitly stated (`sex: unknown`) vs. not stated (missing property). Each entry is a clickable link to the person note. All lists lazy-loaded on first expand.
 
 ### Fixed
 
