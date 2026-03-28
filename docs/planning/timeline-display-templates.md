@@ -2,7 +2,7 @@
 
 Planning document for customizable timeline display templates.
 
-**Status:** Planning
+**Status:** ✅ Complete (all 4 phases)
 
 **Related:** [#325](https://github.com/banisterious/obsidian-charted-roots/issues/325), originated from [#323](https://github.com/banisterious/obsidian-charted-roots/issues/323) (@jeff962)
 

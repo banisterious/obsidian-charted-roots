@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Customizable timeline display templates** ([#325](https://github.com/banisterious/obsidian-charted-roots/issues/325)): Four new capabilities for controlling how timeline entries are displayed. **Layout modes**: `layout` parameter with `chronological` (default), `grouped` (sections for personal/family/context), and `personal-first` options. **Label customization**: six settings under Advanced > Timeline labels to override birth, death, and family event labels with `{name}` placeholder support. **Format strings**: per-block `format` parameter with `{year}`, `{title}`, `{place}`, `{age}` placeholders. **Template notes**: reference a markdown note via `template: [[Note]]` to define custom sections with independent sort, include, and format.
+
 ### Fixed
 
 - **Relationship calculator: ancestor couple grouping** ([#321](https://github.com/banisterious/obsidian-charted-roots/issues/321)): Common ancestors who are spouses are now grouped together (e.g., "via John Smith & Jane Doe") instead of appearing as separate results. Additional results now show their full relationship path. Fixed missing space before "via" in the ancestor label.
