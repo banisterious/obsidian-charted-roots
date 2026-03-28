@@ -46,7 +46,9 @@ export const SECTION_IDS = {
 	MARRIAGE_PATTERNS: 'marriage-patterns',
 	MIGRATION: 'migration',
 	SOURCE_COVERAGE_GEN: 'source-coverage-gen',
-	TIMELINE_DENSITY: 'timeline-density'
+	TIMELINE_DENSITY: 'timeline-density',
+	// Citation statistics
+	CITATIONS: 'citations'
 } as const;
 
 /**

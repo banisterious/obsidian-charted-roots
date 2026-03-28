@@ -2105,6 +2105,85 @@ export class StatisticsService {
 
 		return universes.sort((a, b) => a.name.localeCompare(b.name));
 	}
+
+	/**
+	 * Get citation statistics: coverage, quality distribution, most cited sources
+	 */
+	getCitationStatistics(): {
+		totalCitations: number;
+		citationCoverage: number;
+		qualityDistribution: Record<number, number>;
+		mostCitedSources: Array<{ name: string; count: number }>;
+	} {
+		const citationsFolder = this.settings.citationsFolder || 'Charted Roots/Citations';
+		const citations: Array<{ sourceName: string; quality?: number }> = [];
+
+		// Count sourced facts across all people
+		let totalSourcedFacts = 0;
+		let factsWithCitations = 0;
+
+		const sourceCountMap = new Map<string, number>();
+		const qualityDist: Record<number, number> = { 0: 0, 1: 0, 2: 0, 3: 0 };
+
+		for (const file of this.app.vault.getMarkdownFiles()) {
+			if (!file.path.startsWith(citationsFolder)) continue;
+
+			const cache = this.app.metadataCache.getFileCache(file);
+			const fm = cache?.frontmatter;
+			if (!fm || fm.cr_type !== 'citation') continue;
+
+			const sourceName = fm.source as string;
+			const quality = fm.quality as number | undefined;
+
+			if (sourceName) {
+				const name = sourceName.replace(/\[\[|\]\]/g, '');
+				sourceCountMap.set(name, (sourceCountMap.get(name) || 0) + 1);
+			}
+
+			if (quality !== undefined && quality in qualityDist) {
+				qualityDist[quality]++;
+			}
+
+			citations.push({ sourceName: sourceName || '', quality });
+		}
+
+		// Calculate coverage: % of sourced facts that have citation-level detail
+		const people = this.getFamilyGraphService().getAllPeople();
+		for (const person of people) {
+			const cache = this.app.metadataCache.getFileCache(person.file);
+			const fm = cache?.frontmatter;
+			if (!fm) continue;
+
+			// Count sourced_* properties with values
+			for (const key of Object.keys(fm)) {
+				if (key.startsWith('sourced_') && Array.isArray(fm[key]) && (fm[key] as string[]).length > 0) {
+					totalSourcedFacts++;
+				}
+			}
+
+			// Count citations for this person
+			if (Array.isArray(fm.citations) && fm.citations.length > 0) {
+				factsWithCitations++;
+			}
+		}
+
+		const coverage = totalSourcedFacts > 0
+			? Math.round((factsWithCitations / totalSourcedFacts) * 100)
+			: 0;
+
+		// Sort most cited
+		const mostCited = Array.from(sourceCountMap.entries())
+			.map(([name, count]) => ({ name, count }))
+			.sort((a, b) => b.count - a.count)
+			.slice(0, 10);
+
+		return {
+			totalCitations: citations.length,
+			citationCoverage: coverage,
+			qualityDistribution: qualityDist,
+			mostCitedSources: mostCited
+		};
+	}
 }
 
 /**

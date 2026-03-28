@@ -292,6 +292,11 @@ export class StatisticsView extends ItemView {
 			return this.buildRecordsContent();
 		});
 
+		// Citation statistics section
+		this.buildSection(sectionsContainer, SECTION_IDS.CITATIONS, 'Citation statistics', 'quote', () => {
+			return this.buildCitationStatsContent();
+		});
+
 		// === Extended Statistics (Phase 3) ===
 
 		// Longevity Analysis section
@@ -1294,6 +1299,62 @@ export class StatisticsView extends ItemView {
 	/**
 	 * Build record superlatives content
 	 */
+	private buildCitationStatsContent(): HTMLElement {
+		const container = createDiv({ cls: 'cr-sv-section-content' });
+
+		const stats = this.statisticsService.getCitationStatistics();
+
+		if (stats.totalCitations === 0) {
+			container.createDiv({
+				cls: 'cr-sv-empty-state',
+				text: 'No citation notes found. Import a GEDCOM with PAGE/QUAY data or use the "Add citation" command.'
+			});
+			return container;
+		}
+
+		// Summary cards
+		const summaryGrid = container.createDiv({ cls: 'cr-sv-records-grid' });
+
+		// Total citations card
+		const totalCard = summaryGrid.createDiv({ cls: 'cr-sv-record-card' });
+		totalCard.createDiv({ cls: 'cr-sv-record-card__header', text: 'Total citations' });
+		totalCard.createDiv({ cls: 'cr-sv-record-value', text: String(stats.totalCitations) });
+
+		// Coverage card
+		const coverageCard = summaryGrid.createDiv({ cls: 'cr-sv-record-card' });
+		coverageCard.createDiv({ cls: 'cr-sv-record-card__header', text: 'Citation coverage' });
+		coverageCard.createDiv({ cls: 'cr-sv-record-value', text: `${stats.citationCoverage}%` });
+		coverageCard.createDiv({ cls: 'cr-sv-record-card__desc', text: 'Sourced facts with citation-level detail' });
+
+		// Quality distribution card
+		const qualityCard = summaryGrid.createDiv({ cls: 'cr-sv-record-card' });
+		qualityCard.createDiv({ cls: 'cr-sv-record-card__header', text: 'Quality distribution' });
+		const qualityLabels = ['Unreliable', 'Questionable', 'Secondary', 'Primary'];
+		const qualityList = qualityCard.createDiv({ cls: 'cr-sv-stat-list' });
+		for (let q = 3; q >= 0; q--) {
+			const count = stats.qualityDistribution[q] || 0;
+			if (count > 0) {
+				const row = qualityList.createDiv({ cls: 'cr-sv-stat-row' });
+				row.createSpan({ text: `${q} — ${qualityLabels[q]}`, cls: 'cr-sv-stat-label' });
+				row.createSpan({ text: String(count), cls: 'cr-sv-stat-value' });
+			}
+		}
+
+		// Most cited sources card
+		if (stats.mostCitedSources.length > 0) {
+			const citedCard = summaryGrid.createDiv({ cls: 'cr-sv-record-card' });
+			citedCard.createDiv({ cls: 'cr-sv-record-card__header', text: 'Most cited sources' });
+			const citedList = citedCard.createDiv({ cls: 'cr-sv-stat-list' });
+			for (const source of stats.mostCitedSources.slice(0, 5)) {
+				const row = citedList.createDiv({ cls: 'cr-sv-stat-row' });
+				row.createSpan({ text: source.name, cls: 'cr-sv-stat-label' });
+				row.createSpan({ text: `${source.count} citations`, cls: 'cr-sv-stat-value' });
+			}
+		}
+
+		return container;
+	}
+
 	private buildRecordsContent(): HTMLElement {
 		const content = document.createElement('div');
 		content.addClass('cr-sv-records');
