@@ -298,13 +298,17 @@ export class RelationshipCalculatorModal extends Modal {
 	}
 
 	private renderAdditionalResults(container: HTMLElement): void {
+		// Group results where common ancestors are spouses (couples)
+		const grouped = this.groupByAncestorPairs(this.additionalResults);
+
 		const section = container.createDiv({ cls: 'cr-relcalc-additional' });
 		section.createDiv({
 			cls: 'cr-relcalc-additional__title',
-			text: `Additional relationships (${this.additionalResults.length})`
+			text: `Additional relationships (${grouped.length})`
 		});
 
-		for (const result of this.additionalResults) {
+		for (const group of grouped) {
+			const result = group.primaryResult;
 			const row = section.createDiv({ cls: 'cr-relcalc-additional__row' });
 
 			const icon = this.getRelationshipIcon(result);
@@ -315,10 +319,12 @@ export class RelationshipCalculatorModal extends Modal {
 				text: result.relationshipDescription
 			});
 
-			if (result.commonAncestor) {
+			// Show common ancestor(s) — grouped as couple if applicable
+			const ancestorNames = group.ancestorNames;
+			if (ancestorNames.length > 0) {
 				row.createSpan({
 					cls: 'cr-relcalc-additional__ancestor',
-					text: `via ${result.commonAncestor.name}`
+					text: ` via ${ancestorNames.join(' & ')}`
 				});
 			}
 
@@ -333,7 +339,80 @@ export class RelationshipCalculatorModal extends Modal {
 					text: 'by marriage'
 				});
 			}
+
+			// Path visualization for this result
+			if (result.path.length > 1) {
+				const pathSection = section.createDiv({ cls: 'cr-relcalc-path cr-relcalc-path--additional' });
+				const pathContainer = pathSection.createDiv({ cls: 'cr-relcalc-path__container' });
+
+				result.path.forEach((step, index) => {
+					const nodeEl = pathContainer.createDiv({ cls: 'cr-relcalc-path__node' });
+					nodeEl.createSpan({ cls: 'cr-relcalc-path__name', text: step.person.name });
+
+					if (index < result.path.length - 1) {
+						const nextStep = result.path[index + 1];
+						const arrowEl = pathContainer.createDiv({ cls: 'cr-relcalc-path__arrow' });
+						const dirIcon = this.getDirectionIcon(nextStep.direction);
+						arrowEl.appendChild(dirIcon);
+						arrowEl.createSpan({
+							cls: 'cr-relcalc-path__relation',
+							text: this.getRelationshipLabel(nextStep.relationship)
+						});
+					}
+				});
+			}
 		}
+	}
+
+	/**
+	 * Group additional results where common ancestors are spouses of each other.
+	 * Returns grouped entries with merged ancestor names.
+	 */
+	private groupByAncestorPairs(
+		results: RelationshipResult[]
+	): Array<{ primaryResult: RelationshipResult; ancestorNames: string[] }> {
+		const groups: Array<{ primaryResult: RelationshipResult; ancestorNames: string[]; ancestorCrIds: Set<string> }> = [];
+
+		for (const result of results) {
+			if (!result.commonAncestor) {
+				groups.push({ primaryResult: result, ancestorNames: [], ancestorCrIds: new Set() });
+				continue;
+			}
+
+			const ancestorCrId = result.commonAncestor.crId;
+
+			// Check if this ancestor is a spouse of an already-grouped ancestor
+			let merged = false;
+			for (const group of groups) {
+				if (group.primaryResult.relationshipDescription === result.relationshipDescription) {
+					// Same relationship type — check if ancestors are spouses
+					const existingAncestor = group.primaryResult.commonAncestor;
+					if (existingAncestor && this.areSpouses(existingAncestor, result.commonAncestor)) {
+						group.ancestorNames.push(result.commonAncestor.name);
+						group.ancestorCrIds.add(ancestorCrId);
+						merged = true;
+						break;
+					}
+				}
+			}
+
+			if (!merged) {
+				groups.push({
+					primaryResult: result,
+					ancestorNames: [result.commonAncestor.name],
+					ancestorCrIds: new Set([ancestorCrId])
+				});
+			}
+		}
+
+		return groups;
+	}
+
+	/**
+	 * Check if two people are spouses of each other
+	 */
+	private areSpouses(personA: PersonNode, personB: PersonNode): boolean {
+		return personA.spouseCrIds?.includes(personB.crId) || personB.spouseCrIds?.includes(personA.crId);
 	}
 
 	private findMoreRelationships(): void {
