@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Relationship calculator: ancestor couple grouping** ([#321](https://github.com/banisterious/obsidian-charted-roots/issues/321)): Common ancestors who are spouses are now grouped together (e.g., "via John Smith & Jane Doe") instead of appearing as separate results. Additional results now show their full relationship path. Fixed missing space before "via" in the ancestor label.
+
+---
+
 ## [0.20.37] - 2026-03-27
 
 ### Added
