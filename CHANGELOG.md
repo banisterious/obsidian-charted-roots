@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Relationship calculator: ancestor couple grouping** ([#321](https://github.com/banisterious/obsidian-charted-roots/issues/321)): Common ancestors who are spouses are now grouped together (e.g., "via John Smith & Jane Doe") instead of appearing as separate results. Additional results now show their full relationship path. Fixed missing space before "via" in the ancestor label.
+- **Timeline icons inconsistent with family events** ([#323](https://github.com/banisterious/obsidian-charted-roots/issues/323)): When family events are present on a timeline, personal events now always show their type icons for consistent visual alignment, regardless of the event icon mode setting.
 
 ---
 
