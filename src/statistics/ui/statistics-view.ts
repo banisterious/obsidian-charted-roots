@@ -831,43 +831,87 @@ export class StatisticsView extends ItemView {
 			unknownBar.style.width = `${(unknown / total) * 100}%`;
 		}
 
-		// Missing sex/gender list
-		if (unknown > 0) {
-			const missingSection = content.createDiv({ cls: 'cr-sv-missing-sex' });
+		// Expandable person lists per category
+		const listsSection = content.createDiv({ cls: 'cr-sv-gender-lists' });
+		let dataLoaded = false;
 
-			const missingHeader = missingSection.createDiv({ cls: 'cr-sv-missing-sex__header' });
-			missingHeader.createSpan({ text: `People with missing sex/gender (${unknown})`, cls: 'cr-sv-missing-sex__title' });
+		const categoryConfigs = [
+			{ key: 'male' as const, label: 'Male', count: male },
+			{ key: 'female' as const, label: 'Female', count: female },
+			{ key: 'other' as const, label: 'Other', count: other },
+			{ key: 'explicitUnknown' as const, label: 'Unknown (explicitly stated)', count: 0 },
+			{ key: 'notStated' as const, label: 'Not stated (missing)', count: unknown }
+		];
 
-			const toggleBtn = missingHeader.createEl('button', {
+		// We'll fill in explicitUnknown count after loading data
+		const listContainers: Array<{ key: string; listEl: HTMLElement; countEl: HTMLElement }> = [];
+
+		for (const cfg of categoryConfigs) {
+			if (cfg.count === 0 && cfg.key !== 'explicitUnknown') continue;
+
+			const section = listsSection.createDiv({ cls: 'cr-sv-missing-sex' });
+			const header = section.createDiv({ cls: 'cr-sv-missing-sex__header' });
+			const countEl = header.createSpan({
+				text: `${cfg.label} (${cfg.count})`,
+				cls: 'cr-sv-missing-sex__title'
+			});
+
+			const toggleBtn = header.createEl('button', {
 				cls: 'clickable-icon cr-sv-missing-sex__toggle',
 				attr: { 'aria-label': 'Toggle list' }
 			});
 			toggleBtn.textContent = 'Show';
 
-			const missingList = missingSection.createDiv({ cls: 'cr-sv-missing-sex__list cr-hidden' });
+			const listEl = section.createDiv({ cls: 'cr-sv-missing-sex__list cr-hidden' });
+			listContainers.push({ key: cfg.key, listEl, countEl });
 
 			toggleBtn.addEventListener('click', () => {
-				const isHidden = missingList.hasClass('cr-hidden');
-				missingList.toggleClass('cr-hidden', !isHidden);
+				const isHidden = listEl.hasClass('cr-hidden');
+				listEl.toggleClass('cr-hidden', !isHidden);
 				toggleBtn.textContent = isHidden ? 'Hide' : 'Show';
 
-				// Lazy-load the list on first expand
-				if (isHidden && missingList.childElementCount === 0) {
-					const people = this.statisticsService.getPeopleWithMissingSex();
-					for (const person of people) {
-						const row = missingList.createDiv({ cls: 'cr-sv-missing-sex__row' });
-						const link = row.createEl('a', {
-							cls: 'internal-link',
-							text: person.name,
-							attr: { 'data-href': person.file.path }
-						});
-						link.addEventListener('click', (e) => {
-							e.preventDefault();
-							void this.app.workspace.openLinkText(person.file.path, '', false);
-						});
+				// Lazy-load all lists on first expand of any category
+				if (isHidden && !dataLoaded) {
+					dataLoaded = true;
+					const data = this.statisticsService.getPeopleBySexCategory();
+
+					// Update explicitUnknown count in header
+					for (const lc of listContainers) {
+						if (lc.key === 'explicitUnknown') {
+							if (data.explicitUnknown.length === 0) {
+								lc.listEl.closest('.cr-sv-missing-sex')?.remove();
+								continue;
+							}
+							lc.countEl.textContent = `Unknown (explicitly stated) (${data.explicitUnknown.length})`;
+						}
 					}
-					if (people.length === 0) {
-						missingList.createDiv({ text: 'No people with missing sex/gender', cls: 'cr-sv-empty-state' });
+
+					const renderPeopleList = (el: HTMLElement, people: Array<{ name: string; file: TFile; value?: string }>) => {
+						for (const person of people) {
+							const row = el.createDiv({ cls: 'cr-sv-missing-sex__row' });
+							const link = row.createEl('a', {
+								cls: 'internal-link',
+								text: person.name,
+								attr: { 'data-href': person.file.path }
+							});
+							link.addEventListener('click', (e) => {
+								e.preventDefault();
+								void this.app.workspace.openLinkText(person.file.path, '', false);
+							});
+							if ('value' in person && person.value) {
+								row.createSpan({ text: ` (${person.value})`, cls: 'cr-sv-missing-sex__value' });
+							}
+						}
+						if (people.length === 0) {
+							el.createDiv({ text: 'None', cls: 'cr-sv-empty-state' });
+						}
+					};
+
+					for (const lc of listContainers) {
+						const key = lc.key as keyof typeof data;
+						if (key in data) {
+							renderPeopleList(lc.listEl, data[key] as Array<{ name: string; file: TFile; value?: string }>);
+						}
 					}
 				}
 			});

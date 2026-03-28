@@ -510,24 +510,51 @@ export class StatisticsService {
 	}
 
 	/**
-	 * Get people with missing sex/gender designation
+	 * Get people grouped by sex/gender category with details.
+	 * "Other" entries include the actual value. "Unknown" is split
+	 * into explicitly stated ("unknown") vs. not stated (empty).
 	 */
-	getPeopleWithMissingSex(): Array<{ crId: string; name: string; file: TFile }> {
+	getPeopleBySexCategory(): {
+		male: Array<{ name: string; file: TFile }>;
+		female: Array<{ name: string; file: TFile }>;
+		other: Array<{ name: string; file: TFile; value: string }>;
+		explicitUnknown: Array<{ name: string; file: TFile }>;
+		notStated: Array<{ name: string; file: TFile }>;
+	} {
 		const people = this.getFamilyGraphService().getAllPeople();
-		const result: Array<{ crId: string; name: string; file: TFile }> = [];
+		const result = {
+			male: [] as Array<{ name: string; file: TFile }>,
+			female: [] as Array<{ name: string; file: TFile }>,
+			other: [] as Array<{ name: string; file: TFile; value: string }>,
+			explicitUnknown: [] as Array<{ name: string; file: TFile }>,
+			notStated: [] as Array<{ name: string; file: TFile }>
+		};
 
 		for (const person of people) {
+			const entry = { name: person.name ?? person.crId, file: person.file };
 			const sex = person.sex?.toLowerCase();
+
 			if (!sex) {
-				result.push({
-					crId: person.crId,
-					name: person.name ?? person.crId,
-					file: person.file
-				});
+				result.notStated.push(entry);
+			} else if (sex === 'm' || sex === 'male') {
+				result.male.push(entry);
+			} else if (sex === 'f' || sex === 'female') {
+				result.female.push(entry);
+			} else if (sex === 'unknown' || sex === 'u') {
+				result.explicitUnknown.push(entry);
+			} else {
+				result.other.push({ ...entry, value: person.sex || sex });
 			}
 		}
 
-		return result.sort((a, b) => a.name.localeCompare(b.name));
+		const sortByName = <T extends { name: string }>(arr: T[]) => arr.sort((a, b) => a.name.localeCompare(b.name));
+		sortByName(result.male);
+		sortByName(result.female);
+		sortByName(result.other);
+		sortByName(result.explicitUnknown);
+		sortByName(result.notStated);
+
+		return result;
 	}
 
 	/**
