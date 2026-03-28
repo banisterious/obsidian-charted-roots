@@ -471,7 +471,9 @@ export class TimelineRenderer {
 	): Promise<void> {
 		const settings = this.service.getSettings();
 		const iconMode = settings.eventIconMode || 'text';
-		const showIcon = iconMode === 'icon' || iconMode === 'both';
+		// Always show icons when family events are present for consistent alignment
+		const hasFamilyEvents = entries.some(e => e.isFamilyEvent);
+		const showIcon = iconMode === 'icon' || iconMode === 'both' || hasFamilyEvents;
 
 		const list = contentEl.createEl('ul', { cls: 'cr-timeline__list' });
 
