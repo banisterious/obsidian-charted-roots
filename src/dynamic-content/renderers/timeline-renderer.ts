@@ -88,7 +88,7 @@ export class TimelineRenderer {
 		}
 
 		// Render timeline list
-		await this.renderTimelineList(contentEl, entries, context, component);
+		await this.renderTimelineList(contentEl, entries, context, component, config);
 	}
 
 	/**
@@ -299,6 +299,70 @@ export class TimelineRenderer {
 	 */
 	private applyLabel(template: string, name: string): string {
 		return template.replace(/\{name\}/g, name);
+	}
+
+	/**
+	 * Render a timeline entry using a format string.
+	 * Supported placeholders: {year}, {date}, {type}, {title}, {place}, {age}
+	 */
+	private renderFormattedEntry(
+		li: HTMLElement,
+		entry: TimelineEntry,
+		format: string,
+		context: DynamicBlockContext,
+		component: MarkdownRenderChild
+	): void {
+		// Build substitution values
+		const values: Record<string, string> = {
+			year: entry.year || entry.date || '?',
+			date: entry.date || entry.year || '?',
+			type: capitalize(entry.type),
+			title: entry.title,
+			place: entry.place || '',
+			age: entry.age !== undefined ? `age ${entry.age}` : ''
+		};
+
+		// Parse format string into segments
+		const segments = format.split(/(\{[a-z]+\})/g);
+
+		for (const segment of segments) {
+			const match = segment.match(/^\{([a-z]+)\}$/);
+			if (match) {
+				const key = match[1];
+				const value = values[key];
+				if (value) {
+					if (key === 'year') {
+						li.createSpan({ cls: 'cr-timeline__year', text: value });
+					} else if (key === 'age') {
+						li.createSpan({ cls: 'cr-timeline__age', text: value });
+					} else if (key === 'place' && entry.place) {
+						li.createSpan({ cls: 'cr-timeline__place', text: value });
+					} else if (key === 'title') {
+						const titleSpan = li.createSpan({ cls: 'cr-timeline__title' });
+						if (entry.eventFile) {
+							void MarkdownRenderer.render(
+								context.familyGraph['app'],
+								`[[${entry.eventFile}|${value}]]`,
+								titleSpan,
+								context.file.path,
+								component
+							);
+						} else {
+							titleSpan.textContent = value;
+						}
+					} else {
+						li.appendText(value);
+					}
+				}
+			} else if (segment) {
+				// Literal text — but skip "in " prefix if place is empty
+				if (segment.includes('{place}') && !entry.place) continue;
+				const cleaned = !entry.place ? segment.replace(/\s*in\s*$/, '') : segment;
+				if (cleaned) {
+					li.appendText(cleaned);
+				}
+			}
+		}
 	}
 
 	private gatherFamilyEvents(
@@ -514,7 +578,8 @@ export class TimelineRenderer {
 		contentEl: HTMLElement,
 		entries: TimelineEntry[],
 		context: DynamicBlockContext,
-		component: MarkdownRenderChild
+		component: MarkdownRenderChild,
+		config?: DynamicBlockConfig
 	): Promise<void> {
 		const settings = this.service.getSettings();
 		const iconMode = settings.eventIconMode || 'text';
@@ -536,6 +601,13 @@ export class TimelineRenderer {
 			if (entry.isContext) itemCls += ' cr-timeline__item--context';
 			if (entry.isFamilyEvent) itemCls += ' cr-timeline__item--family';
 			const li = list.createEl('li', { cls: itemCls });
+
+			// Format string rendering (Phase 3)
+			const formatStr = config?.format as string | undefined;
+			if (formatStr) {
+				this.renderFormattedEntry(li, entry, formatStr, context, component);
+				continue;
+			}
 
 			if (entry.isContext) {
 				// Context events get a landmark icon
