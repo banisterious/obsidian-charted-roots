@@ -26,6 +26,7 @@ import { getErrorMessage } from '../core/error-utils';
 import { AddRelationshipModal } from '../ui/add-relationship-modal';
 import { CommandMenuModal } from '../ui/command-menu-modal';
 import { AddCitationModal } from '../sources/ui/add-citation-modal';
+import { CitationSyncService } from '../sources/services/citation-sync-service';
 import { formatChangeDescription } from '../core/relationship-history';
 import {
 	promptAssignReferenceNumbers,
@@ -248,6 +249,69 @@ export function registerCommandsAndEvents(plugin: CanvasRootsPlugin): void {
 				new AddCitationModal(plugin.app, plugin, file, crId as string).open();
 			}
 			return true;
+		}
+	});
+
+	// Add command: Sync sourced fields from citations
+	plugin.addCommand({
+		id: 'sync-sourced-from-citations',
+		name: 'Sync sourced fields from citation notes (current note)',
+		checkCallback: (checking: boolean) => {
+			const file = plugin.app.workspace.getActiveFile();
+			if (!file) return false;
+
+			const cache = plugin.app.metadataCache.getFileCache(file);
+			const crId = cache?.frontmatter?.cr_id;
+			if (!crId) return false;
+
+			if (!checking) {
+				const syncService = new CitationSyncService(plugin);
+				void syncService.syncSourcedFieldsForPerson(file).then(count => {
+					new Notice(count > 0
+						? `Updated ${count} sourced field${count !== 1 ? 's' : ''}`
+						: 'No citation notes found for this person'
+					);
+				});
+			}
+			return true;
+		}
+	});
+
+	// Add command: Generate citations from sourced_* fields
+	plugin.addCommand({
+		id: 'generate-citations-from-sourced',
+		name: 'Generate citation notes from sourced fields (current note)',
+		checkCallback: (checking: boolean) => {
+			const file = plugin.app.workspace.getActiveFile();
+			if (!file) return false;
+
+			const cache = plugin.app.metadataCache.getFileCache(file);
+			const crId = cache?.frontmatter?.cr_id;
+			if (!crId) return false;
+
+			if (!checking) {
+				const syncService = new CitationSyncService(plugin);
+				void syncService.generateCitationsFromSourcedFields(file).then(count => {
+					new Notice(count > 0
+						? `Created ${count} citation note${count !== 1 ? 's' : ''}`
+						: 'No new citations to generate (all sourced facts already have citation notes)'
+					);
+				});
+			}
+			return true;
+		}
+	});
+
+	// Add command: Sync sourced fields vault-wide
+	plugin.addCommand({
+		id: 'sync-sourced-from-citations-vault',
+		name: 'Sync sourced fields from citation notes (all people)',
+		callback: () => {
+			const syncService = new CitationSyncService(plugin);
+			new Notice('Syncing sourced fields from citations...');
+			void syncService.syncSourcedFieldsVaultWide().then(result => {
+				new Notice(`Updated ${result.fieldsUpdated} fields across ${result.peopleUpdated} people`);
+			});
 		}
 	});
 
