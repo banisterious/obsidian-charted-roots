@@ -426,6 +426,8 @@ export interface CanvasRootsSettings {
 	defaultTimelineContext: string;
 	/** Lifespan margin for filtering context events (0 = no filtering) */
 	contextLifespanMargin: number;
+	/** Timeline layout mode: chronological, grouped, or personal-first */
+	timelineLayout: 'chronological' | 'grouped' | 'personal-first';
 	// Family events on timelines
 	/** Show children's births on timelines */
 	timelineShowChildrenBirths: boolean;
@@ -830,6 +832,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	// Dynamic content settings
 	defaultTimelineContext: '',                // No default context note
 	contextLifespanMargin: 0,                 // 0 = no filtering (show all context events)
+	timelineLayout: 'chronological',          // Default: all events interleaved by date
 	timelineShowChildrenBirths: false,        // Off by default
 	timelineShowSpouseDeaths: false,
 	timelineShowParentDeaths: false,
@@ -1841,6 +1844,22 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 						this.plugin.settings.relationshipMaxDepth = val;
 						await this.plugin.saveSettings();
 					}
+				}));
+
+		// --- Timeline layout subsection ---
+		advancedContent.createEl('h4', { text: 'Timeline layout', cls: 'cr-subsection-title' });
+
+		new Setting(advancedContent)
+			.setName('Default layout')
+			.setDesc('How events are arranged on timelines')
+			.addDropdown(dropdown => dropdown
+				.addOption('chronological', 'Chronological — all events interleaved by date')
+				.addOption('grouped', 'Grouped — personal, family, then historical')
+				.addOption('personal-first', 'Personal first — personal events, then others chronologically')
+				.setValue(this.plugin.settings.timelineLayout)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineLayout = value as 'chronological' | 'grouped' | 'personal-first';
+					await this.plugin.saveSettings();
 				}));
 
 		// --- Family events on timelines subsection ---

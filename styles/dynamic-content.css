@@ -195,6 +195,26 @@
   color: var(--text-accent);
 }
 
+/* Section dividers (grouped layout) */
+.cr-timeline__section-divider {
+  list-style: none;
+  padding: var(--cr-spacing-sm) 0 var(--cr-spacing-xs);
+  margin-top: var(--cr-spacing-sm);
+  border-bottom: 2px solid var(--background-modifier-border);
+}
+
+.cr-timeline__section-divider:first-child {
+  margin-top: 0;
+}
+
+.cr-timeline__section-title {
+  font-weight: var(--font-semibold);
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 /* ==========================================================================
    Relationships Block
    ========================================================================== */

@@ -36,6 +36,8 @@ export interface TimelineEntry {
 	isContext?: boolean;
 	/** Whether this is a family member's event (child birth, spouse death, etc.) */
 	isFamilyEvent?: boolean;
+	/** Whether this is a section divider (for grouped layout) */
+	isSectionDivider?: boolean;
 	/** Age of the person at the time of this event */
 	age?: number;
 }
@@ -186,15 +188,51 @@ export class TimelineRenderer {
 			entries.push(...contextEntries);
 		}
 
-		// Re-sort after merging
+		// Apply layout mode
+		const layout = (config.layout as string) || settings.timelineLayout || 'chronological';
 		const sortOrder = config.sort as string || 'chronological';
-		entries.sort((a, b) => {
+		const sortFn = (a: TimelineEntry, b: TimelineEntry) => {
 			const yearA = parseInt(a.year) || 0;
 			const yearB = parseInt(b.year) || 0;
 			return sortOrder === 'reverse' ? yearB - yearA : yearA - yearB;
-		});
+		};
 
-		return entries;
+		if (layout === 'grouped') {
+			// Partition into personal, family, context — each sorted internally
+			const personal = entries.filter(e => !e.isFamilyEvent && !e.isContext);
+			const family = entries.filter(e => e.isFamilyEvent);
+			const context = entries.filter(e => e.isContext);
+			personal.sort(sortFn);
+			family.sort(sortFn);
+			context.sort(sortFn);
+
+			// Add section markers
+			const result: TimelineEntry[] = [];
+			if (personal.length > 0) {
+				result.push({ date: '', year: '', type: 'section_divider', title: 'Life events', isSectionDivider: true });
+				result.push(...personal);
+			}
+			if (family.length > 0) {
+				result.push({ date: '', year: '', type: 'section_divider', title: 'Family events', isSectionDivider: true });
+				result.push(...family);
+			}
+			if (context.length > 0) {
+				result.push({ date: '', year: '', type: 'section_divider', title: 'Historical context', isSectionDivider: true });
+				result.push(...context);
+			}
+			return result;
+		} else if (layout === 'personal-first') {
+			// Personal events first (sorted), then everything else (sorted)
+			const personal = entries.filter(e => !e.isFamilyEvent && !e.isContext);
+			const others = entries.filter(e => e.isFamilyEvent || e.isContext);
+			personal.sort(sortFn);
+			others.sort(sortFn);
+			return [...personal, ...others];
+		} else {
+			// chronological — all interleaved
+			entries.sort(sortFn);
+			return entries;
+		}
 	}
 
 	/**
@@ -478,6 +516,13 @@ export class TimelineRenderer {
 		const list = contentEl.createEl('ul', { cls: 'cr-timeline__list' });
 
 		for (const entry of entries) {
+			// Section divider (grouped layout)
+			if (entry.isSectionDivider) {
+				const divider = list.createEl('li', { cls: 'cr-timeline__section-divider' });
+				divider.createSpan({ text: entry.title, cls: 'cr-timeline__section-title' });
+				continue;
+			}
+
 			let itemCls = 'cr-timeline__item';
 			if (entry.isContext) itemCls += ' cr-timeline__item--context';
 			if (entry.isFamilyEvent) itemCls += ' cr-timeline__item--family';
@@ -603,6 +648,12 @@ export class TimelineRenderer {
 		const lines: string[] = ['## Timeline', ''];
 
 		for (const entry of this.currentEntries) {
+			// Section divider
+			if (entry.isSectionDivider) {
+				lines.push(`### ${entry.title}`, '');
+				continue;
+			}
+
 			const yearDisplay = entry.year || entry.date || '?';
 			const ageStr = entry.age !== undefined ? ` (age ${entry.age})` : '';
 			const prefix = entry.isContext ? '🏛️ ' : entry.isFamilyEvent ? '👨‍👩‍👧 ' : '';
