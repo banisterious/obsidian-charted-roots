@@ -83,6 +83,14 @@ export class StatisticsService {
 	}
 
 	/**
+	 * Maximum plausible age for filtering. When fictional dates are enabled,
+	 * no upper limit is applied. Otherwise capped at 120 for data quality.
+	 */
+	private get maxAge(): number {
+		return this.settings.enableFictionalDates ? Infinity : 120;
+	}
+
+	/**
 	 * Get or create VaultStatsService
 	 */
 	private getVaultStatsService(): VaultStatsService {
@@ -388,8 +396,8 @@ export class StatisticsService {
 					if (birthYear > deathYear) {
 						dateInconsistencies++;
 					}
-					// Age over 120 (likely data error)
-					else if (deathYear - birthYear > 120) {
+					// Age over max (120 for real-world, unlimited for fictional)
+					else if (deathYear - birthYear > this.maxAge) {
 						dateInconsistencies++;
 					}
 				}
@@ -1008,8 +1016,8 @@ export class StatisticsService {
 				const deathYear = this.extractYear(person.deathDate);
 
 				if (birthYear !== null && deathYear !== null) {
-					// Birth after death or age over 120
-					if (birthYear > deathYear || (deathYear - birthYear) > 120) {
+					// Birth after death or age over max
+					if (birthYear > deathYear || (deathYear - birthYear) > this.maxAge) {
 						const file = this.getPersonFile(person);
 						if (file) {
 							matches.push({
@@ -1102,7 +1110,7 @@ export class StatisticsService {
 		// Calculate lifespans for people with both birth and death dates
 		for (const person of people) {
 			const age = this.calculateLifespan(person);
-			if (age !== null && age >= 0 && age <= 120) {
+			if (age !== null && age >= 0 && age <= this.maxAge) {
 				lifespans.push({
 					person,
 					age,
@@ -1736,7 +1744,7 @@ export class StatisticsService {
 
 		for (const person of people) {
 			const age = this.calculateLifespan(person);
-			if (age !== null && age >= 0 && age <= 120) {
+			if (age !== null && age >= 0 && age <= this.maxAge) {
 				withLifespan.push({ person, age });
 			}
 		}
@@ -1760,7 +1768,7 @@ export class StatisticsService {
 
 		for (const person of people) {
 			const age = this.calculateLifespan(person);
-			if (age !== null && age >= 1 && age <= 120) {
+			if (age !== null && age >= 1 && age <= this.maxAge) {
 				withLifespan.push({ person, age });
 			}
 		}
