@@ -87,6 +87,13 @@ export class TimelineRenderer {
 			return;
 		}
 
+		// Check for template-based rendering (Phase 4)
+		const templateParam = config.template as string | undefined;
+		if (templateParam) {
+			await this.renderWithTemplate(contentEl, entries, context, component, templateParam);
+			return;
+		}
+
 		// Render timeline list
 		await this.renderTimelineList(contentEl, entries, context, component, config);
 	}
@@ -361,6 +368,161 @@ export class TimelineRenderer {
 				if (cleaned) {
 					li.appendText(cleaned);
 				}
+			}
+		}
+	}
+
+	/**
+	 * Template section definition parsed from a template note
+	 */
+	private parseTemplateNote(content: string): Array<{ title: string; sort?: string; include?: string[]; format?: string }> {
+		const sections: Array<{ title: string; sort?: string; include?: string[]; format?: string }> = [];
+		let currentSection: { title: string; sort?: string; include?: string[]; format?: string } | null = null;
+
+		for (const line of content.split('\n')) {
+			const trimmed = line.trim();
+
+			// Section header (## Title)
+			const headerMatch = trimmed.match(/^##\s+(.+)$/);
+			if (headerMatch) {
+				if (currentSection) sections.push(currentSection);
+				currentSection = { title: headerMatch[1] };
+				continue;
+			}
+
+			if (!currentSection) continue;
+
+			// Key: value pairs
+			const kvMatch = trimmed.match(/^(\w+):\s*(.+)$/);
+			if (kvMatch) {
+				const [, key, value] = kvMatch;
+				if (key === 'sort') currentSection.sort = value.trim();
+				if (key === 'include') currentSection.include = value.split(',').map(s => s.trim());
+				if (key === 'format') currentSection.format = value.trim().replace(/^["']|["']$/g, '');
+			}
+		}
+
+		if (currentSection) sections.push(currentSection);
+		return sections;
+	}
+
+	/**
+	 * Render timeline entries using a template note
+	 */
+	private async renderWithTemplate(
+		contentEl: HTMLElement,
+		allEntries: TimelineEntry[],
+		context: DynamicBlockContext,
+		component: MarkdownRenderChild,
+		templateParam: string
+	): Promise<void> {
+		const app = this.service.getApp();
+		const templatePath = extractWikilinkPath(templateParam);
+		const templateFile = app.metadataCache.getFirstLinkpathDest(templatePath, context.file.path);
+
+		if (!(templateFile instanceof TFile)) {
+			contentEl.createDiv({
+				cls: 'cr-dynamic-block__empty',
+				text: `Template note not found: ${templatePath}`
+			});
+			return;
+		}
+
+		const templateContent = await app.vault.read(templateFile);
+		const sections = this.parseTemplateNote(templateContent);
+
+		if (sections.length === 0) {
+			contentEl.createDiv({
+				cls: 'cr-dynamic-block__empty',
+				text: 'No sections found in template note. Use ## headings to define sections.'
+			});
+			return;
+		}
+
+		// Category mapping for include filters
+		const categoryMap: Record<string, (e: TimelineEntry) => boolean> = {
+			'children_births': e => e.isFamilyEvent === true && e.type === 'family_birth' && e.title.startsWith(this.service.getSettings().timelineChildBirthLabel?.split('{')[0] || 'Birth of'),
+			'spouse_deaths': e => e.isFamilyEvent === true && e.type === 'family_death',
+			'parent_deaths': e => e.isFamilyEvent === true && e.type === 'family_death',
+			'sibling_births': e => e.isFamilyEvent === true && e.type === 'family_birth',
+			'context': e => e.isContext === true,
+			'family': e => e.isFamilyEvent === true,
+			'personal': e => !e.isFamilyEvent && !e.isContext
+		};
+
+		const list = contentEl.createEl('ul', { cls: 'cr-timeline__list' });
+
+		for (const section of sections) {
+			// Section divider
+			const divider = list.createEl('li', { cls: 'cr-timeline__section-divider' });
+			divider.createSpan({ text: section.title, cls: 'cr-timeline__section-title' });
+
+			// Filter entries for this section
+			let sectionEntries: TimelineEntry[];
+			if (section.include && section.include.length > 0) {
+				sectionEntries = allEntries.filter(entry => {
+					for (const inc of section.include!) {
+						// Check category filters
+						if (categoryMap[inc]) {
+							if (categoryMap[inc](entry)) return true;
+						}
+						// Check event type match
+						if (entry.type === inc) return true;
+					}
+					return false;
+				});
+			} else {
+				// No include filter — show all remaining entries
+				sectionEntries = [...allEntries];
+			}
+
+			// Sort
+			const sortOrder = section.sort || 'chronological';
+			sectionEntries.sort((a, b) => {
+				const yearA = parseInt(a.year) || 0;
+				const yearB = parseInt(b.year) || 0;
+				return sortOrder === 'reverse' ? yearB - yearA : yearA - yearB;
+			});
+
+			// Render entries
+			const sectionConfig: DynamicBlockConfig = section.format ? { format: section.format } : {};
+			for (const entry of sectionEntries) {
+				let itemCls = 'cr-timeline__item';
+				if (entry.isContext) itemCls += ' cr-timeline__item--context';
+				if (entry.isFamilyEvent) itemCls += ' cr-timeline__item--family';
+				const li = list.createEl('li', { cls: itemCls });
+
+				if (section.format) {
+					this.renderFormattedEntry(li, entry, section.format, context, component);
+				} else {
+					// Minimal default rendering
+					li.createSpan({ cls: 'cr-timeline__year', text: entry.year || '?' });
+					if (entry.age !== undefined) {
+						li.createSpan({ cls: 'cr-timeline__age', text: `age ${entry.age}` });
+					}
+					li.createSpan({ cls: 'cr-timeline__separator', text: ' — ' });
+					const titleSpan = li.createSpan({ cls: 'cr-timeline__title' });
+					if (entry.eventFile) {
+						await MarkdownRenderer.render(
+							context.familyGraph['app'],
+							`[[${entry.eventFile}|${entry.title}]]`,
+							titleSpan,
+							context.file.path,
+							component
+						);
+					} else {
+						titleSpan.textContent = entry.title;
+					}
+					if (entry.place) {
+						li.appendText('\u00A0');
+						li.createSpan({ cls: 'cr-timeline__place', text: `in ${entry.place}` });
+					}
+				}
+			}
+
+			if (sectionEntries.length === 0) {
+				const emptyLi = list.createEl('li', { cls: 'cr-timeline__item' });
+				emptyLi.createSpan({ cls: 'cr-timeline__title', text: 'No events' });
 			}
 		}
 	}
