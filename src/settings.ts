@@ -428,6 +428,19 @@ export interface CanvasRootsSettings {
 	contextLifespanMargin: number;
 	/** Timeline layout mode: chronological, grouped, or personal-first */
 	timelineLayout: 'chronological' | 'grouped' | 'personal-first';
+	// Timeline label customization
+	/** Label for birth events */
+	timelineBirthLabel: string;
+	/** Label for death events */
+	timelineDeathLabel: string;
+	/** Label for children's birth events ({name} placeholder) */
+	timelineChildBirthLabel: string;
+	/** Label for spouse death events ({name} placeholder) */
+	timelineSpouseDeathLabel: string;
+	/** Label for parent death events ({name} placeholder) */
+	timelineParentDeathLabel: string;
+	/** Label for sibling birth events ({name} placeholder) */
+	timelineSiblingBirthLabel: string;
 	// Family events on timelines
 	/** Show children's births on timelines */
 	timelineShowChildrenBirths: boolean;
@@ -833,6 +846,12 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	defaultTimelineContext: '',                // No default context note
 	contextLifespanMargin: 0,                 // 0 = no filtering (show all context events)
 	timelineLayout: 'chronological',          // Default: all events interleaved by date
+	timelineBirthLabel: 'Born',
+	timelineDeathLabel: 'Died',
+	timelineChildBirthLabel: 'Birth of {name}',
+	timelineSpouseDeathLabel: 'Death of {name}',
+	timelineParentDeathLabel: 'Death of {name}',
+	timelineSiblingBirthLabel: 'Birth of {name}',
 	timelineShowChildrenBirths: false,        // Off by default
 	timelineShowSpouseDeaths: false,
 	timelineShowParentDeaths: false,
@@ -1861,6 +1880,31 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					this.plugin.settings.timelineLayout = value as 'chronological' | 'grouped' | 'personal-first';
 					await this.plugin.saveSettings();
 				}));
+
+		// --- Timeline labels subsection ---
+		advancedContent.createEl('h4', { text: 'Timeline labels', cls: 'cr-subsection-title' });
+
+		const labelSettings: Array<{ key: keyof typeof this.plugin.settings; name: string; placeholder: string }> = [
+			{ key: 'timelineBirthLabel', name: 'Birth label', placeholder: 'Born' },
+			{ key: 'timelineDeathLabel', name: 'Death label', placeholder: 'Died' },
+			{ key: 'timelineChildBirthLabel', name: 'Child birth label', placeholder: 'Birth of {name}' },
+			{ key: 'timelineSpouseDeathLabel', name: 'Spouse death label', placeholder: 'Death of {name}' },
+			{ key: 'timelineParentDeathLabel', name: 'Parent death label', placeholder: 'Death of {name}' },
+			{ key: 'timelineSiblingBirthLabel', name: 'Sibling birth label', placeholder: 'Birth of {name}' },
+		];
+
+		for (const label of labelSettings) {
+			new Setting(advancedContent)
+				.setName(label.name)
+				.setDesc(`Use {name} for the person's name`)
+				.addText(text => text
+					.setPlaceholder(label.placeholder)
+					.setValue(this.plugin.settings[label.key] as string)
+					.onChange(async (value) => {
+						(this.plugin.settings as Record<string, unknown>)[label.key] = value || label.placeholder;
+						await this.plugin.saveSettings();
+					}));
+		}
 
 		// --- Family events on timelines subsection ---
 		advancedContent.createEl('h4', { text: 'Family events on timelines', cls: 'cr-subsection-title' });

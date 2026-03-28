@@ -294,6 +294,13 @@ export class TimelineRenderer {
 	 * Gather family events (children's births, spouse deaths, etc.)
 	 * based on settings toggles
 	 */
+	/**
+	 * Apply a label template, replacing {name} with the person's name
+	 */
+	private applyLabel(template: string, name: string): string {
+		return template.replace(/\{name\}/g, name);
+	}
+
 	private gatherFamilyEvents(
 		context: DynamicBlockContext,
 		birthYear: number
@@ -315,7 +322,7 @@ export class TimelineRenderer {
 						date: this.service.formatDate(child.birthDate),
 						year,
 						type: 'family_birth',
-						title: `Birth of ${child.name}`,
+						title: this.applyLabel(settings.timelineChildBirthLabel || 'Birth of {name}', child.name),
 						eventFile: child.file?.basename,
 						isFamilyEvent: true
 					};
@@ -338,7 +345,7 @@ export class TimelineRenderer {
 						date: this.service.formatDate(spouse.deathDate),
 						year,
 						type: 'family_death',
-						title: `Death of ${spouse.name}`,
+						title: this.applyLabel(settings.timelineSpouseDeathLabel || 'Death of {name}', spouse.name),
 						eventFile: spouse.file?.basename,
 						isFamilyEvent: true
 					};
@@ -367,7 +374,7 @@ export class TimelineRenderer {
 						date: this.service.formatDate(parent.deathDate),
 						year,
 						type: 'family_death',
-						title: `Death of ${parent.name}`,
+						title: this.applyLabel(settings.timelineParentDeathLabel || 'Death of {name}', parent.name),
 						eventFile: parent.file?.basename,
 						isFamilyEvent: true
 					};
@@ -404,7 +411,7 @@ export class TimelineRenderer {
 						date: this.service.formatDate(sibling.birthDate),
 						year,
 						type: 'family_birth',
-						title: `Birth of ${sibling.name}`,
+						title: this.applyLabel(settings.timelineSiblingBirthLabel || 'Birth of {name}', sibling.name),
 						eventFile: sibling.file?.basename,
 						isFamilyEvent: true
 					};
@@ -437,13 +444,15 @@ export class TimelineRenderer {
 			return include.includes(type);
 		};
 
+		const settings = this.service.getSettings();
+
 		// Add birth from person note
 		if (person?.birthDate && shouldInclude('birth')) {
 			entries.push({
 				date: this.service.formatDate(person.birthDate),
 				year: this.service.extractYear(person.birthDate),
 				type: 'birth',
-				title: 'Born',
+				title: settings.timelineBirthLabel || 'Born',
 				place: person.birthPlace ? this.service.stripWikilink(person.birthPlace) : undefined
 			});
 		}
@@ -472,7 +481,7 @@ export class TimelineRenderer {
 				date: this.service.formatDate(person.deathDate),
 				year: this.service.extractYear(person.deathDate),
 				type: 'death',
-				title: 'Died',
+				title: settings.timelineDeathLabel || 'Died',
 				place: person.deathPlace ? this.service.stripWikilink(person.deathPlace) : undefined
 			});
 		}
