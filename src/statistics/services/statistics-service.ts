@@ -501,6 +501,8 @@ export class StatisticsService {
 				distribution.male++;
 			} else if (sex === 'f' || sex === 'female') {
 				distribution.female++;
+			} else if (sex === 'u' || sex === 'unknown') {
+				distribution.unknown++;
 			} else {
 				distribution.other++;
 			}
