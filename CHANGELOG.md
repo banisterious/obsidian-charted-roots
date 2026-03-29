@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Gender distribution lists not loading and wrong Unknown count** ([#326](https://github.com/banisterious/obsidian-charted-roots/issues/326)): Expandable person lists under each sex/gender category were not populating on toggle. Replaced lazy-loading with upfront rendering. Also fixed `sex: unknown` (normalized to `U`) being counted as "Other" instead of "Unknown" in the distribution.
+
+---
+
 ## [0.20.39] - 2026-03-29
 
 ### Added
