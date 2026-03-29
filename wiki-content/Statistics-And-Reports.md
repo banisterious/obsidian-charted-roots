@@ -87,7 +87,7 @@ The Data Quality section identifies issues in your data. Click any issue to expa
 
 | Issue Type | Severity | Description |
 |------------|----------|-------------|
-| **Date inconsistencies** | Error | People with birth after death, or age over 120 years |
+| **Date inconsistencies** | Error | People with birth after death, or implausible age (over 120 years; disabled when fictional dates are enabled) |
 | **Missing birth dates** | Warning | People without birth date recorded |
 | **Missing death dates** | Warning | People with birth but no death (excluding living) |
 | **Orphaned people** | Warning | People with no relationships (no parents, spouse, or children) |
@@ -107,6 +107,10 @@ Displays the breakdown of sex/gender values in your person notes:
 
 - Male, Female, Other, Unknown counts with percentages
 - Visual bar chart showing distribution
+- **Expandable person lists** under each category — click "Show" to see clickable links to person notes:
+  - **Other** entries show the actual value entered (e.g., "non-binary")
+  - **Unknown** is split into "explicitly stated" (`sex: unknown`) and "not stated" (missing property) for easy back-filling
+  - Categories with zero entries are hidden
 
 ### Top Lists
 

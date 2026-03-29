@@ -131,6 +131,8 @@ The abbreviation matching is case-insensitive (`TA`, `ta`, `Ta` all work).
 
 Toggle **Enable fictional dates** to turn the feature on or off globally.
 
+When enabled, this also removes the 120-year age cap in the statistics dashboard — longevity analysis, record superlatives, and data quality checks will accept any lifespan. This allows fictional characters with extended lifespans (e.g., elves, vampires) to appear correctly in statistics.
+
 ### Show/Hide Built-in Systems
 
 Toggle **Show built-in systems** to include or exclude the preset calendars (Middle-earth, Westeros, Star Wars, Generic Fantasy).
