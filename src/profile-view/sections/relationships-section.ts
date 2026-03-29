@@ -143,9 +143,11 @@ function renderFamilySubsection(
 	}
 
 	// Children — skip IDs already covered by a custom relationship in the Other section
+	// Also skip IDs that appear in a more specific category (adopted, step, foster)
 	const childEntries: { label: string; crId: string }[] = [];
+	const adoptedSet = new Set(node.adoptedChildCrIds || []);
 	for (const id of node.childrenCrIds || []) {
-		if (!otherTargetCrIds.has(id)) {
+		if (!otherTargetCrIds.has(id) && !adoptedSet.has(id)) {
 			childEntries.push({ label: 'Child', crId: id });
 		}
 	}
