@@ -7,11 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.20.40] - 2026-03-29
+## [0.20.41] - 2026-03-30
 
 ### Fixed
 
-- **Gender distribution lists not loading and wrong Unknown count** ([#326](https://github.com/banisterious/obsidian-charted-roots/issues/326)): Expandable person lists under each sex/gender category were not populating on toggle. Replaced lazy-loading with upfront rendering. Also fixed `sex: unknown` (normalized to `U`) being counted as "Other" instead of "Unknown" in the distribution.
+- **Gender distribution and citation statistics sections not rendering** ([#326](https://github.com/banisterious/obsidian-charted-roots/issues/326)): The expandable person lists under each sex/gender category and the citation statistics section referenced an undefined service property, causing both sections to silently fail. Also fixed in v0.20.40: lazy-load timing, `sex: unknown` counted as "Other".
 - **Adopted children duplicated in Profile View** ([#328](https://github.com/banisterious/obsidian-charted-roots/issues/328)): Adopted children appeared as both "Child" and "Adopted child" in the Profile View relationships section. Now excludes adopted children from the biological children list.
 
 ---
