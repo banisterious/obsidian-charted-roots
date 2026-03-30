@@ -832,7 +832,13 @@ export class StatisticsView extends ItemView {
 		}
 
 		// Expandable person lists per category — load data upfront
-		const data = this.statisticsService.getPeopleBySexCategory();
+		let data: ReturnType<typeof this.service.getPeopleBySexCategory> | null = null;
+		try {
+			data = this.service.getPeopleBySexCategory();
+		} catch {
+			// Skip expandable lists if data loading fails
+		}
+		if (!data) return content;
 
 		const listsSection = content.createDiv({ cls: 'cr-sv-gender-lists' });
 
@@ -1351,7 +1357,7 @@ export class StatisticsView extends ItemView {
 	private buildCitationStatsContent(): HTMLElement {
 		const container = createDiv({ cls: 'cr-sv-section-content' });
 
-		const stats = this.statisticsService.getCitationStatistics();
+		const stats = this.service.getCitationStatistics();
 
 		if (stats.totalCitations === 0) {
 			container.createDiv({
