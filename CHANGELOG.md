@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Historical context events extra spacing** ([#330](https://github.com/banisterious/obsidian-charted-roots/issues/330)): Context events had extra left padding causing misalignment with personal and family events. Same fix as the family event padding from v0.20.42.
+
+---
+
 ## [0.20.42] - 2026-03-31
 
 ### Fixed
