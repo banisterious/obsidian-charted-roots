@@ -78,10 +78,11 @@ export class RelationshipManager {
 			return;
 		}
 
-		// Validate parent type matches sex
-		if (parentType === 'father' && parentSex === 'F') {
+		// Validate parent type matches sex (handle both raw and normalized values)
+		const normalizedParentSex = parentSex?.toLowerCase();
+		if (parentType === 'father' && (normalizedParentSex === 'f' || normalizedParentSex === 'female')) {
 			new Notice('Warning: selected person has sex: F but being added as father');
-		} else if (parentType === 'mother' && parentSex === 'M') {
+		} else if (parentType === 'mother' && (normalizedParentSex === 'm' || normalizedParentSex === 'male')) {
 			new Notice('Warning: selected person has sex: M but being added as mother');
 		}
 
@@ -161,8 +162,9 @@ export class RelationshipManager {
 			return;
 		}
 
-		// Determine parent type from sex
-		const parentType: 'father' | 'mother' = parentSex === 'F' ? 'mother' : 'father';
+		// Determine parent type from sex (handle both raw and normalized values)
+		const normalizedSex = parentSex?.toLowerCase();
+		const parentType: 'father' | 'mother' = (normalizedSex === 'f' || normalizedSex === 'female') ? 'mother' : 'father';
 
 		// Update child's frontmatter (dual storage: wikilink + ID)
 		await this.updateParentField(childFile, parentFile, parentCrId, parentName, parentType);
