@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Create child assigns wrong parent role** ([#329](https://github.com/banisterious/obsidian-charted-roots/issues/329)): When adding a child via context menu, the parent's sex value (`female`, `male`) wasn't matched correctly against the normalized form (`F`, `M`), causing a female parent to be assigned as father instead of mother. Now handles all formats (lowercase, full word, single letter).
 - **Orphaned children_id entries after deleting child notes**: `addToChildrenArray` now validates existing `children_id` entries against actual vault files before appending, removing stale IDs from deleted notes.
+- **Timeline spacing and alignment** ([#330](https://github.com/banisterious/obsidian-charted-roots/issues/330)): Entries without event type icons now render a placeholder for consistent alignment. Removed extra padding on family event items that caused misalignment with personal events.
+- **Timeline format string missing spaces and icons** ([#331](https://github.com/banisterious/obsidian-charted-roots/issues/331)): Format string values from YAML had surrounding quotes included, causing literal `"` in output. Spaces between placeholders collapsed due to adjacent block elements — now uses non-breaking spaces. Icons were missing on format string entries. Family events sorted after personal events instead of chronologically when no context note was configured.
 
 ---
 
