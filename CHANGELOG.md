@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Create child assigns wrong parent role** ([#329](https://github.com/banisterious/obsidian-charted-roots/issues/329)): When adding a child via context menu, the parent's sex value (`female`, `male`) wasn't matched correctly against the normalized form (`F`, `M`), causing a female parent to be assigned as father instead of mother. Now handles all formats (lowercase, full word, single letter).
+- **Orphaned children_id entries after deleting child notes**: `addToChildrenArray` now validates existing `children_id` entries against actual vault files before appending, removing stale IDs from deleted notes.
+
+---
+
 ## [0.20.41] - 2026-03-30
 
 ### Fixed
