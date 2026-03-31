@@ -210,6 +210,19 @@ export class RelationshipManager {
 	}
 
 	/**
+	 * Find a file by its cr_id property
+	 */
+	private findFileByCrId(crId: string): TFile | null {
+		for (const file of this.app.vault.getMarkdownFiles()) {
+			const cache = this.app.metadataCache.getFileCache(file);
+			if (cache?.frontmatter?.cr_id === crId) {
+				return file;
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Update father/mother fields in child's frontmatter (dual storage)
 	 * Writes both wikilink field (father/mother) and ID field (father_id/mother_id)
 	 * Uses processFrontMatter to safely modify without corrupting other fields
@@ -268,36 +281,53 @@ export class RelationshipManager {
 	): Promise<void> {
 		const wikilink = this.createSmartWikilink(childName, childFile);
 
+		// Build a set of valid cr_ids by checking which existing children_id entries
+		// resolve to actual files in the vault
+		const validCrIds = new Set<string>();
+		const cache = this.app.metadataCache.getFileCache(parentFile);
+		const existingIds = cache?.frontmatter?.children_id;
+		if (existingIds) {
+			const idArray = Array.isArray(existingIds) ? existingIds : [existingIds];
+			for (const id of idArray) {
+				// Check if this cr_id resolves to an existing file
+				if (this.findFileByCrId(id)) {
+					validCrIds.add(id);
+				}
+			}
+		}
+
 		try {
 			await this.app.fileManager.processFrontMatter(parentFile, (frontmatter) => {
-				// Update children_id array
-				const existingIds = frontmatter.children_id;
-				if (!existingIds) {
-					frontmatter.children_id = [childCrId];
-				} else if (Array.isArray(existingIds)) {
-					if (!existingIds.includes(childCrId)) {
-						existingIds.push(childCrId);
-					}
-				} else {
-					if (existingIds !== childCrId) {
-						frontmatter.children_id = [existingIds, childCrId];
-					}
+				// Rebuild children_id from valid entries + new child
+				const cleanIds = Array.from(validCrIds);
+				if (!cleanIds.includes(childCrId)) {
+					cleanIds.push(childCrId);
 				}
+				frontmatter.children_id = cleanIds.length === 1 ? cleanIds[0] : cleanIds;
 
-				// Update children wikilink array
+				// Rebuild children wikilinks to match valid IDs
+				const cleanLinks: string[] = [];
+				// Keep existing valid wikilinks
 				const existingLinks = frontmatter.children;
-				if (!existingLinks) {
-					frontmatter.children = [wikilink];
-				} else if (Array.isArray(existingLinks)) {
-					// Check if this wikilink already exists (by cr_id match above, we know it's new)
-					if (!existingLinks.includes(wikilink)) {
-						existingLinks.push(wikilink);
-					}
-				} else {
-					if (existingLinks !== wikilink) {
-						frontmatter.children = [existingLinks, wikilink];
+				if (existingLinks) {
+					const linkArray = Array.isArray(existingLinks) ? existingLinks : [existingLinks];
+					for (const link of linkArray) {
+						// Check if the linked file still exists
+						const linkPath = link.replace(/\[\[|\]\]/g, '').replace(/\|.*/, '');
+						const linkedFile = this.app.metadataCache.getFirstLinkpathDest(linkPath, parentFile.path);
+						if (linkedFile) {
+							const linkedCrId = this.app.metadataCache.getFileCache(linkedFile)?.frontmatter?.cr_id;
+							if (linkedCrId && validCrIds.has(linkedCrId)) {
+								cleanLinks.push(link);
+							}
+						}
 					}
 				}
+				// Add new child wikilink if not already present
+				if (!cleanLinks.includes(wikilink)) {
+					cleanLinks.push(wikilink);
+				}
+				frontmatter.children = cleanLinks.length === 1 ? cleanLinks[0] : cleanLinks;
 			});
 		} catch (error) {
 			logger.error('relationship-manager', 'Failed to add to children array', {
