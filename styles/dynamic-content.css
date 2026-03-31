@@ -191,6 +191,10 @@
   margin: var(--cr-spacing-xs) 0;
 }
 
+.cr-timeline__icon--placeholder {
+  visibility: hidden;
+}
+
 .cr-timeline__icon--family {
   color: var(--text-accent);
 }

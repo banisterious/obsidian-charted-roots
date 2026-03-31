@@ -363,11 +363,13 @@ export class TimelineRenderer {
 					}
 				}
 			} else if (segment) {
-				// Literal text — but skip "in " prefix if place is empty
-				if (segment.includes('{place}') && !entry.place) continue;
-				const cleaned = !entry.place ? segment.replace(/\s*in\s*$/, '') : segment;
-				if (cleaned) {
-					li.appendText(cleaned);
+				// Literal text — skip trailing "in " if place is empty
+				let text = segment;
+				if (!entry.place) {
+					text = text.replace(/\s+in\s*$/, '');
+				}
+				if (text) {
+					li.appendText(text);
 				}
 			}
 		}
@@ -788,13 +790,17 @@ export class TimelineRenderer {
 				);
 
 				// Icon (if icon mode is 'icon' or 'both')
-				if (showIcon && eventType) {
-					const iconSpan = li.createSpan({ cls: 'cr-timeline__icon' });
-					setIcon(iconSpan, eventType.icon as LucideIconName);
-					iconSpan.style.setProperty('color', eventType.color);
-					// Add tooltip for icon-only mode
-					if (iconMode === 'icon') {
-						iconSpan.setAttribute('title', eventType.name);
+				if (showIcon) {
+					if (eventType) {
+						const iconSpan = li.createSpan({ cls: 'cr-timeline__icon' });
+						setIcon(iconSpan, eventType.icon as LucideIconName);
+						iconSpan.style.setProperty('color', eventType.color);
+						if (iconMode === 'icon') {
+							iconSpan.setAttribute('title', eventType.name);
+						}
+					} else {
+						// Placeholder for alignment when no event type icon exists
+						li.createSpan({ cls: 'cr-timeline__icon cr-timeline__icon--placeholder' });
 					}
 				}
 			}
