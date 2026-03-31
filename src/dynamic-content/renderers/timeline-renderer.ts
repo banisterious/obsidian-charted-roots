@@ -162,38 +162,37 @@ export class TimelineRenderer {
 
 		// Resolve context note path
 		const contextParam = config.context as string | undefined;
-		if (contextParam === 'none') return entries;
-
 		const settings = this.service.getSettings();
-		const contextValue = contextParam || settings.defaultTimelineContext;
-		if (!contextValue) return entries;
+		const contextValue = (contextParam !== 'none') ? (contextParam || settings.defaultTimelineContext) : '';;
 
-		const contextPath = extractWikilinkPath(contextValue);
-		const contextEntries = await this.parseContextNote(contextPath, context, birthYear);
+		if (contextValue) {
+			const contextPath = extractWikilinkPath(contextValue);
+			const contextEntries = await this.parseContextNote(contextPath, context, birthYear);
 
-		// Filter context events by margin (0 = no filtering, default)
-		const margin = typeof config.contextMargin === 'number'
-			? config.contextMargin
-			: (settings.contextLifespanMargin ?? 0);
+			// Filter context events by margin (0 = no filtering, default)
+			const margin = typeof config.contextMargin === 'number'
+				? config.contextMargin
+				: (settings.contextLifespanMargin ?? 0);
 
-		if (margin > 0) {
-			const personYears = entries
-				.filter(e => !e.isContext)
-				.map(e => parseInt(e.year))
-				.filter(y => !isNaN(y));
-			if (personYears.length > 0) {
-				const minYear = Math.min(...personYears) - margin;
-				const maxYear = Math.max(...personYears) + margin;
-				const filtered = contextEntries.filter(e => {
-					const year = parseInt(e.year);
-					return !isNaN(year) && year >= minYear && year <= maxYear;
-				});
-				entries.push(...filtered);
+			if (margin > 0) {
+				const personYears = entries
+					.filter(e => !e.isContext)
+					.map(e => parseInt(e.year))
+					.filter(y => !isNaN(y));
+				if (personYears.length > 0) {
+					const minYear = Math.min(...personYears) - margin;
+					const maxYear = Math.max(...personYears) + margin;
+					const filtered = contextEntries.filter(e => {
+						const year = parseInt(e.year);
+						return !isNaN(year) && year >= minYear && year <= maxYear;
+					});
+					entries.push(...filtered);
+				} else {
+					entries.push(...contextEntries);
+				}
 			} else {
 				entries.push(...contextEntries);
 			}
-		} else {
-			entries.push(...contextEntries);
 		}
 
 		// Apply layout mode
@@ -320,6 +319,9 @@ export class TimelineRenderer {
 		context: DynamicBlockContext,
 		component: MarkdownRenderChild
 	): void {
+		// Strip surrounding quotes if present (YAML may include them)
+		const cleanFormat = format.replace(/^["']|["']$/g, '');
+
 		// Build substitution values
 		const values: Record<string, string> = {
 			year: entry.year || entry.date || '?',
@@ -331,7 +333,7 @@ export class TimelineRenderer {
 		};
 
 		// Parse format string into segments
-		const segments = format.split(/(\{[a-z]+\})/g);
+		const segments = cleanFormat.split(/(\{[a-z]+\})/g);
 
 		for (const segment of segments) {
 			const match = segment.match(/^\{([a-z]+)\}$/);
@@ -369,7 +371,10 @@ export class TimelineRenderer {
 					text = text.replace(/\s+in\s*$/, '');
 				}
 				if (text) {
-					li.appendText(text);
+					// Replace regular spaces with non-breaking spaces to prevent
+					// whitespace collapse from adjacent block-level elements
+					const nbspText = text.replace(/ /g, '\u00A0');
+					li.createSpan({ text: nbspText, cls: 'cr-timeline__literal' });
 				}
 			}
 		}
@@ -766,30 +771,20 @@ export class TimelineRenderer {
 			if (entry.isFamilyEvent) itemCls += ' cr-timeline__item--family';
 			const li = list.createEl('li', { cls: itemCls });
 
-			// Format string rendering (Phase 3)
-			const formatStr = config?.format as string | undefined;
-			if (formatStr) {
-				this.renderFormattedEntry(li, entry, formatStr, context, component);
-				continue;
-			}
-
+			// Render icons (applies to both standard and format string paths)
 			if (entry.isContext) {
-				// Context events get a landmark icon
 				const iconSpan = li.createSpan({ cls: 'cr-timeline__icon cr-timeline__icon--context' });
 				setIcon(iconSpan, 'landmark' as LucideIconName);
 			} else if (entry.isFamilyEvent) {
-				// Family events get a users icon
 				const iconSpan = li.createSpan({ cls: 'cr-timeline__icon cr-timeline__icon--family' });
 				setIcon(iconSpan, 'users' as LucideIconName);
 			} else {
-				// Get event type info for icon/color
 				const eventType = getEventType(
 					entry.type,
 					settings.customEventTypes || [],
 					settings.showBuiltInEventTypes !== false
 				);
 
-				// Icon (if icon mode is 'icon' or 'both')
 				if (showIcon) {
 					if (eventType) {
 						const iconSpan = li.createSpan({ cls: 'cr-timeline__icon' });
@@ -799,10 +794,16 @@ export class TimelineRenderer {
 							iconSpan.setAttribute('title', eventType.name);
 						}
 					} else {
-						// Placeholder for alignment when no event type icon exists
 						li.createSpan({ cls: 'cr-timeline__icon cr-timeline__icon--placeholder' });
 					}
 				}
+			}
+
+			// Format string rendering (Phase 3)
+			const formatStr = config?.format as string | undefined;
+			if (formatStr) {
+				this.renderFormattedEntry(li, entry, formatStr, context, component);
+				continue;
 			}
 
 			// Year/date

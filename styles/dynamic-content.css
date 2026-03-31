@@ -186,8 +186,6 @@
 .cr-timeline__item--family {
   background-color: rgba(var(--color-blue-rgb), 0.06);
   border-radius: var(--radius-s);
-  padding-left: var(--cr-spacing-xs);
-  padding-right: var(--cr-spacing-xs);
   margin: var(--cr-spacing-xs) 0;
 }
 
