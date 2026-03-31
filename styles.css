@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-03-31 16:54:58 UTC
+ * - Generated: 2026-03-31 20:14:53 UTC
  * - Components: 47 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -37624,7 +37624,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: DYNAMIC-CONTENT.CSS
    ========================================================================== */
 
-/* Component Size: 1168 lines, 25.26 KB */
+/* Component Size: 1166 lines, 25.19 KB */
 
 /**
  * Dynamic Content Styles
@@ -37792,8 +37792,6 @@ body:has(.cr-media-linker) .suggestion-container {
   opacity: 0.75;
   background-color: var(--background-secondary);
   border-radius: var(--radius-s);
-  padding-left: var(--cr-spacing-xs);
-  padding-right: var(--cr-spacing-xs);
   margin: var(--cr-spacing-xs) 0;
 }
 
@@ -39996,11 +39994,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-03-31 16:54:58 UTC
+ * Build completed: 2026-03-31 20:14:53 UTC
  * Components processed: 47
- * Total lines: 39550
- * Total size: 794.75 KB
- * Build duration: 0.33 seconds
+ * Total lines: 39548
+ * Total size: 794.67 KB
+ * Build duration: 0.34 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -40046,7 +40044,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - map-wizard.css: 606 lines, 12.68 KB
  * - preferences.css: 431 lines, 9.44 KB
  * - tree-output.css: 1548 lines, 30.41 KB
- * - dynamic-content.css: 1168 lines, 25.26 KB
+ * - dynamic-content.css: 1166 lines, 25.19 KB
  * - profile-view.css: 1023 lines, 22.8 KB
  * - migration-notice.css: 135 lines, 2.67 KB
  * - responsive.css: 9 lines, 0.13 KB

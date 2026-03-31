@@ -164,8 +164,6 @@
   opacity: 0.75;
   background-color: var(--background-secondary);
   border-radius: var(--radius-s);
-  padding-left: var(--cr-spacing-xs);
-  padding-right: var(--cr-spacing-xs);
   margin: var(--cr-spacing-xs) 0;
 }
 
