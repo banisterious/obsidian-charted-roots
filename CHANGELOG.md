@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Context lifespan margin includes family events in range** ([#332](https://github.com/banisterious/obsidian-charted-roots/issues/332)): The context lifespan margin calculated the year range from all events including family events (sibling births, spouse deaths, etc.), causing context events far outside the person's own lifespan to appear. Now uses only the person's own events to determine the range.
+
+---
+
 ## [0.20.43] - 2026-04-01
 
 ### Fixed
