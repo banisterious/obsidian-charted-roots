@@ -175,8 +175,9 @@ export class TimelineRenderer {
 				: (settings.contextLifespanMargin ?? 0);
 
 			if (margin > 0) {
+				// Use only the person's own events (not family or context) for margin range
 				const personYears = entries
-					.filter(e => !e.isContext)
+					.filter(e => !e.isContext && !e.isFamilyEvent)
 					.map(e => parseInt(e.year))
 					.filter(y => !isNaN(y));
 				if (personYears.length > 0) {
