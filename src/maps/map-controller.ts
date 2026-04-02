@@ -89,9 +89,9 @@ import { ImageMapManager } from './image-map-manager';
 
 const logger = getLogger('MapController');
 
-// OpenStreetMap tile URL
-const OSM_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-const OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+// Tile URLs — CartoDB Voyager (doesn't require referrer header, unlike tile.openstreetmap.org)
+const OSM_TILE_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+const OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
 /**
  * Controller for Leaflet map functionality
@@ -190,8 +190,16 @@ export class MapController {
 			zoomControl: true
 		});
 
-		// Add tile layer
-		this.tileLayer = L.tileLayer(OSM_TILE_URL, {
+		// Add tile layer with no-referrer policy to avoid OSM blocking
+		// (Obsidian's Electron sends app:// referrer which OSM rejects)
+		const TileLayerNoRef = L.TileLayer.extend({
+			createTile(coords: unknown, done: (err: Error | null, tile: HTMLImageElement) => void): HTMLImageElement {
+				const tile = L.TileLayer.prototype.createTile.call(this, coords, done) as HTMLImageElement;
+				tile.referrerPolicy = 'no-referrer';
+				return tile;
+			}
+		});
+		this.tileLayer = new TileLayerNoRef(OSM_TILE_URL, {
 			attribution: OSM_ATTRIBUTION,
 			maxZoom: 19
 		}).addTo(this.map);
@@ -309,7 +317,14 @@ export class MapController {
 	private initializeMiniMap(): void {
 		if (!this.map) return;
 
-		const miniMapTiles = L.tileLayer(OSM_TILE_URL, {
+		const MiniTileLayer = L.TileLayer.extend({
+			createTile(coords: unknown, done: (err: Error | null, tile: HTMLImageElement) => void): HTMLImageElement {
+				const tile = L.TileLayer.prototype.createTile.call(this, coords, done) as HTMLImageElement;
+				tile.referrerPolicy = 'no-referrer';
+				return tile;
+			}
+		});
+		const miniMapTiles = new MiniTileLayer(OSM_TILE_URL, {
 			attribution: '',
 			maxZoom: 13
 		});
