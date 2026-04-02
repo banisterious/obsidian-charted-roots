@@ -56,8 +56,15 @@ export function renderWorldMapPreview(
 		touchZoom: false
 	});
 
-	// Use OpenStreetMap tiles (or a simple tile layer)
-	L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	// Use OpenStreetMap tiles with no-referrer to avoid blocking in Electron (#333)
+	const TileLayerNoRef = L.TileLayer.extend({
+		createTile(coords: unknown, done: (err: Error | null, tile: HTMLImageElement) => void): HTMLImageElement {
+			const tile = L.TileLayer.prototype.createTile.call(this, coords, done) as HTMLImageElement;
+			tile.referrerPolicy = 'no-referrer';
+			return tile;
+		}
+	});
+	new TileLayerNoRef('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		noWrap: true
 	}).addTo(map);
 
