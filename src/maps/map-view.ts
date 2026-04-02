@@ -1244,6 +1244,31 @@ export class MapView extends ItemView {
 	// ============================================================================
 
 	/**
+	 * Enter journey mode for a specific person (called externally from context menu / profile view)
+	 */
+	enterJourneyModeForPerson(personId: string, personName: string): void {
+		this.journeyMode.enabled = true;
+		this.journeyMode.personId = personId;
+		this.journeyMode.personName = personName;
+		this.journeyMode.currentStep = 0;
+
+		// Highlight the journey button
+		const journeyBtn = this.toolbarEl?.querySelector('[aria-label="Journey mode"]') as HTMLButtonElement;
+		if (journeyBtn) journeyBtn.classList.add('cr-map-btn-active');
+
+		this.showJourneyPersonIndicator(personName);
+
+		// Enable journeys layer
+		if (!this.layers.journeys) {
+			this.layers.journeys = true;
+			this.mapController?.setLayerVisibility(this.layers);
+		}
+
+		// Apply filter after data loads (may need a short delay for initial render)
+		setTimeout(() => this.applyJourneyFilter(), 300);
+	}
+
+	/**
 	 * Toggle journey mode on/off. Opens person picker when enabling.
 	 */
 	private toggleJourneyMode(btn: HTMLButtonElement): void {

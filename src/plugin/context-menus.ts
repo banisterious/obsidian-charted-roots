@@ -1315,6 +1315,41 @@ export function registerContextMenus(plugin: CanvasRootsPlugin): void {
 											});
 									});
 
+									// Show journey on map
+									relationshipSubmenu.addItem((relItem) => {
+										relItem
+											.setTitle('Show journey on map')
+											.setIcon('route')
+											.onClick(() => {
+												const cache = plugin.app.metadataCache.getFileCache(file);
+												const crId = cache?.frontmatter?.cr_id;
+												const personName = cache?.frontmatter?.name || file.basename;
+												if (crId) {
+													// Open or reveal the map view
+													const leaves = plugin.app.workspace.getLeavesOfType('canvas-roots-map');
+													if (leaves.length > 0) {
+														plugin.app.workspace.revealLeaf(leaves[0]);
+														const mapView = leaves[0].view as import('../maps/map-view').MapView;
+														mapView.enterJourneyModeForPerson(crId, personName);
+													} else {
+														// Create a new map view
+														void plugin.app.workspace.getLeaf('tab').setViewState({
+															type: 'canvas-roots-map',
+															active: true
+														}).then(() => {
+															setTimeout(() => {
+																const newLeaves = plugin.app.workspace.getLeavesOfType('canvas-roots-map');
+																if (newLeaves.length > 0) {
+																	const mapView = newLeaves[0].view as import('../maps/map-view').MapView;
+																	mapView.enterJourneyModeForPerson(crId, personName);
+																}
+															}, 1000);
+														});
+													}
+												}
+											});
+									});
+
 									// Calculate relationship
 									relationshipSubmenu.addItem((relItem) => {
 										relItem
