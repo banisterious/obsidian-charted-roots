@@ -106,17 +106,20 @@ export class MapView extends ItemView {
 		currentStep: number;
 		isPlaying: boolean;
 		speed: number;
+		familyOverlay: boolean;
 	} = {
 		enabled: false,
 		personId: null,
 		personName: null,
 		currentStep: 0,
 		isPlaying: false,
-		speed: 2000
+		speed: 2000,
+		familyOverlay: false
 	};
 	private journeyPlaybackInterval: number | null = null;
 	private journeyControlsEl: HTMLElement | null = null;
 	private journeyPickerEl: HTMLElement | null = null;
+	private familyToggleEl: HTMLElement | null = null;
 
 	// Edit mode state
 	private editModeEnabled: boolean = false;
@@ -1326,6 +1329,7 @@ export class MapView extends ItemView {
 		this.journeyMode.personId = null;
 		this.journeyMode.personName = null;
 		this.journeyMode.currentStep = 0;
+		this.journeyMode.familyOverlay = false;
 
 		btn.classList.remove('cr-map-btn-active');
 
@@ -1339,6 +1343,12 @@ export class MapView extends ItemView {
 		if (this.journeyControlsEl) {
 			this.journeyControlsEl.remove();
 			this.journeyControlsEl = null;
+		}
+
+		// Remove family overlay toggle
+		if (this.familyToggleEl) {
+			this.familyToggleEl.remove();
+			this.familyToggleEl = null;
 		}
 
 		// Stop playback
@@ -1407,11 +1417,20 @@ export class MapView extends ItemView {
 			p.personId === personId
 		);
 
+		// Add family overlay paths if enabled
+		if (this.journeyMode.familyOverlay) {
+			const familyJourneys = this.buildFamilyJourneyPaths();
+			filteredJourneys.push(...familyJourneys);
+		}
+
 		this.mapController?.setFilteredData(filteredMarkers, filteredPaths, filteredJourneys);
 
 		// Build and show playback controls
-		if (filteredJourneys.length > 0 && filteredJourneys[0].waypoints.length > 1) {
-			this.buildJourneyPlaybackControls(filteredJourneys[0]);
+		if (filteredJourneys.length > 0) {
+			const primaryJourney = filteredJourneys.find(j => j.personId === personId);
+			if (primaryJourney && primaryJourney.waypoints.length > 1) {
+				this.buildJourneyPlaybackControls(primaryJourney);
+			}
 		}
 
 		// Fit bounds to this person's markers
@@ -1427,6 +1446,9 @@ export class MapView extends ItemView {
 				this.mapController['map'].fitBounds(bounds, { padding: [50, 50] });
 			}
 		}
+
+		// Show or hide family overlay toggle
+		this.updateFamilyOverlayToggle();
 	}
 
 	/**
@@ -1675,6 +1697,140 @@ export class MapView extends ItemView {
 		const row = container.createDiv({ cls: 'cr-journey-rich-popup__row' });
 		row.createSpan({ text: label, cls: 'cr-journey-rich-popup__label' });
 		row.createSpan({ text: value, cls: 'cr-journey-rich-popup__value' });
+	}
+
+	// ========================================================================
+	// Family Journey Overlay
+	// ========================================================================
+
+	/** Relationship colors for family overlay paths */
+	private static readonly FAMILY_COLORS: Record<string, string> = {
+		father: '#3b82f6',   // blue
+		mother: '#3b82f6',   // blue
+		parent: '#3b82f6',   // blue
+		spouse: '#ec4899',   // pink
+		child: '#10b981',    // emerald
+	};
+
+	/**
+	 * Show or update the family overlay toggle in the journey controls area
+	 */
+	private updateFamilyOverlayToggle(): void {
+		// Remove existing toggle
+		if (this.familyToggleEl) {
+			this.familyToggleEl.remove();
+			this.familyToggleEl = null;
+		}
+
+		if (!this.journeyMode.enabled || !this.journeyControlsEl) return;
+
+		// Create toggle button in the controls bar
+		this.familyToggleEl = this.journeyControlsEl.createEl('button', {
+			cls: 'cr-map-journey-btn cr-map-journey-family-toggle',
+			attr: { 'aria-label': 'Show family journeys' }
+		});
+		if (this.journeyMode.familyOverlay) {
+			this.familyToggleEl.classList.add('cr-map-btn-active');
+		}
+		setIcon(this.familyToggleEl, 'users');
+
+		this.familyToggleEl.addEventListener('click', () => {
+			this.journeyMode.familyOverlay = !this.journeyMode.familyOverlay;
+			this.familyToggleEl?.classList.toggle('cr-map-btn-active', this.journeyMode.familyOverlay);
+			this.reapplyJourneyFilter();
+		});
+	}
+
+	/**
+	 * Re-apply journey filter without rebuilding playback controls (used by family toggle)
+	 */
+	private reapplyJourneyFilter(): void {
+		if (!this.currentMapData || !this.journeyMode.personId) return;
+
+		const personId = this.journeyMode.personId;
+
+		const filteredMarkers = this.currentMapData.markers.filter(m =>
+			m.personId === personId
+		);
+
+		const filteredJourneys = this.currentMapData.journeyPaths?.filter(j =>
+			j.personId === personId
+		) || [];
+
+		const filteredPaths = this.currentMapData.paths.filter(p =>
+			p.personId === personId
+		);
+
+		if (this.journeyMode.familyOverlay) {
+			const familyJourneys = this.buildFamilyJourneyPaths();
+			filteredJourneys.push(...familyJourneys);
+		}
+
+		this.mapController?.setFilteredData(filteredMarkers, filteredPaths, filteredJourneys);
+	}
+
+	/**
+	 * Build journey paths for immediate family members with dimmed/colored styling
+	 */
+	private buildFamilyJourneyPaths(): JourneyPath[] {
+		if (!this.currentMapData?.journeyPaths || !this.journeyMode.personId) return [];
+
+		const familyIds = this.getImmediateFamilyIds();
+		if (familyIds.length === 0) return [];
+
+		const allJourneys = this.currentMapData.journeyPaths;
+		const familyJourneys: JourneyPath[] = [];
+
+		for (const { crId, relationship } of familyIds) {
+			const journey = allJourneys.find(j => j.personId === crId);
+			if (!journey || journey.waypoints.length < 2) continue;
+
+			familyJourneys.push({
+				...journey,
+				color: MapView.FAMILY_COLORS[relationship] || '#94a3b8',
+				weight: 1.5,
+				opacity: 0.4,
+				relationshipLabel: capitalize(relationship)
+			});
+		}
+
+		return familyJourneys;
+	}
+
+	/**
+	 * Get immediate family member cr_ids with their relationship type
+	 */
+	private getImmediateFamilyIds(): Array<{ crId: string; relationship: string }> {
+		if (!this.journeyMode.personId) return [];
+
+		const pluginWithServices = this.plugin as unknown as {
+			createFamilyGraphService: () => unknown;
+		};
+		if (!pluginWithServices.createFamilyGraphService) return [];
+
+		const familyGraph = pluginWithServices.createFamilyGraphService() as import('../core/family-graph').FamilyGraphService;
+		familyGraph.ensureCacheLoaded();
+
+		const person = familyGraph.getPersonByCrId(this.journeyMode.personId);
+		if (!person) return [];
+
+		const family: Array<{ crId: string; relationship: string }> = [];
+
+		if (person.fatherCrId) family.push({ crId: person.fatherCrId, relationship: 'father' });
+		if (person.motherCrId) family.push({ crId: person.motherCrId, relationship: 'mother' });
+		for (const parentId of person.parentCrIds) {
+			if (!family.some(f => f.crId === parentId)) {
+				family.push({ crId: parentId, relationship: 'parent' });
+			}
+		}
+		for (const spouseId of person.spouseCrIds) {
+			family.push({ crId: spouseId, relationship: 'spouse' });
+		}
+		for (const childId of person.childrenCrIds) {
+			family.push({ crId: childId, relationship: 'child' });
+		}
+
+		return family;
 	}
 
 	private toggleTimeSlider(): void {
@@ -2199,6 +2355,14 @@ export class MapView extends ItemView {
 				}
 			})
 		);
+
+		// Listen for family overlay "switch to journey" clicks
+		this.containerEl.addEventListener('cr-switch-journey', ((e: CustomEvent) => {
+			const { personId, personName } = e.detail as { personId: string; personName: string };
+			if (personId && personName) {
+				this.enterJourneyModeForPerson(personId, personName);
+			}
+		}) as EventListener);
 	}
 
 	/**

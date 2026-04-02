@@ -981,9 +981,9 @@ export class MapController {
 		});
 
 		const polyline = L.polyline(latlngs, {
-			color: this.settings.journeyPathColor,
-			weight: this.settings.journeyPathWeight,
-			opacity: 0.7,
+			color: journey.color || this.settings.journeyPathColor,
+			weight: journey.weight ?? this.settings.journeyPathWeight,
+			opacity: journey.opacity ?? 0.7,
 			dashArray: '5, 5'  // Dashed line to distinguish from migration paths
 		});
 
@@ -995,7 +995,7 @@ export class MapController {
 					offset: -5,
 					orientation: 'flip',
 					attributes: {
-						fill: this.settings.journeyPathColor,
+						fill: journey.color || this.settings.journeyPathColor,
 						'font-size': '11px',
 						'font-weight': '500'
 					}
@@ -1041,8 +1041,8 @@ export class MapController {
 							pixelSize: 8,
 							polygon: false,
 							pathOptions: {
-								color: this.settings.journeyPathColor,
-								weight: this.settings.journeyPathWeight
+								color: journey.color || this.settings.journeyPathColor,
+								weight: journey.weight ?? this.settings.journeyPathWeight
 							}
 						})
 					}
@@ -1062,10 +1062,14 @@ export class MapController {
 		const container = document.createElement('div');
 		container.className = 'cr-map-popup cr-journey-popup';
 
-		container.createEl('div', {
-			cls: 'cr-map-popup-name',
-			text: journey.personName
-		});
+		const nameEl = container.createEl('div', { cls: 'cr-map-popup-name' });
+		nameEl.textContent = journey.personName;
+		if (journey.relationshipLabel) {
+			nameEl.createEl('span', {
+				cls: 'cr-map-popup-relationship',
+				text: ` (${journey.relationshipLabel})`
+			});
+		}
 
 		// Show journey summary
 		const firstWp = journey.waypoints[0];
@@ -1118,6 +1122,20 @@ export class MapController {
 		openBtn.addEventListener('click', () => {
 			this.openNoteById(journey.personId);
 		});
+
+		// Switch-to-journey button for family overlay paths
+		if (journey.relationshipLabel) {
+			const switchBtn = container.createEl('button', {
+				cls: 'cr-map-popup-btn cr-map-popup-btn--switch',
+				text: `Switch to ${journey.personName}'s journey`
+			});
+			switchBtn.addEventListener('click', () => {
+				container.dispatchEvent(new CustomEvent('cr-switch-journey', {
+					detail: { personId: journey.personId, personName: journey.personName },
+					bubbles: true
+				}));
+			});
+		}
 
 		return container;
 	}

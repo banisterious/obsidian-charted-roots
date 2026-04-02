@@ -1471,6 +1471,29 @@ svg.leaflet-image-layer.leaflet-interactive path {
   max-width: 60%;
 }
 
+/* Family overlay toggle */
+.cr-map-journey-family-toggle {
+  margin-left: auto;
+}
+
+/* Relationship label in journey popup */
+.cr-map-popup-relationship {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  font-weight: var(--font-normal);
+}
+
+/* Switch-to-journey button */
+.cr-map-popup-btn--switch {
+  margin-top: var(--size-4-1);
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.cr-map-popup-btn--switch:hover {
+  background-color: var(--interactive-accent-hover);
+}
+
 /* --------------------------------------------------------------------------
    Search Control (leaflet-search)
    -------------------------------------------------------------------------- */

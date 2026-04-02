@@ -214,6 +214,14 @@ export interface JourneyPath {
 	collection?: string;
 	/** Universe for fictional places */
 	universe?: string;
+	/** Per-path color override (for family overlay) */
+	color?: string;
+	/** Per-path weight override (for family overlay) */
+	weight?: number;
+	/** Per-path opacity override (for family overlay) */
+	opacity?: number;
+	/** Relationship label (e.g., 'Father', 'Spouse') for family overlay */
+	relationshipLabel?: string;
 }
 
 // ============================================================================
