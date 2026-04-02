@@ -28,6 +28,8 @@ export interface ProfileSectionOptions {
 	contentRenderer?: (contentEl: HTMLElement) => void;
 	/** Called when section collapses — for cleanup (e.g., Leaflet map removal) */
 	onCollapse?: (contentEl: HTMLElement) => void;
+	/** Called when section expands — for re-initialization (e.g., Leaflet invalidateSize) */
+	onExpand?: (contentEl: HTMLElement) => void;
 }
 
 /**
@@ -116,6 +118,10 @@ export function renderProfileSection(
 			// Lazy render on first expand
 			if (options.contentRenderer && content.childElementCount === 0) {
 				options.contentRenderer(content);
+			}
+			// Notify on expand (for re-initialization like Leaflet invalidateSize)
+			if (options.onExpand) {
+				options.onExpand(content);
 			}
 		}
 		options.onToggle(options.sectionId, !isExpanded);

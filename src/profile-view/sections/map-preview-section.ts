@@ -72,7 +72,15 @@ export function renderMapPreviewSection(
 			});
 			map.setView([lat, lon], 12);
 
-			L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+			// Use no-referrer to avoid OSM blocking in Electron (#333)
+			const TileLayerNoRef = L.TileLayer.extend({
+				createTile(coords: unknown, done: (err: Error | null, tile: HTMLImageElement) => void): HTMLImageElement {
+					const tile = L.TileLayer.prototype.createTile.call(this, coords, done) as HTMLImageElement;
+					tile.referrerPolicy = 'no-referrer';
+					return tile;
+				}
+			});
+			new TileLayerNoRef('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 				maxZoom: 18
 			}).addTo(map);
 
@@ -106,7 +114,17 @@ export function renderMapPreviewSection(
 			});
 		},
 		onCollapse: () => {
-			cleanupMapPreview();
+			// Don't destroy map on collapse — just let it hide.
+			// Destroying causes blank map on re-expand since contentRenderer
+			// won't re-run (content div still has children).
+		},
+		onExpand: () => {
+			// Leaflet needs to recalculate size after container becomes visible
+			if (activePreviewMap) {
+				requestAnimationFrame(() => {
+					activePreviewMap?.invalidateSize();
+				});
+			}
 		}
 	});
 }
