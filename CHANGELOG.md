@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Map tiles blocked by OpenStreetMap** ([#333](https://github.com/banisterious/obsidian-charted-roots/issues/333)): Map tiles showed "Access blocked — Referer is required" errors due to Obsidian's Electron sending an `app://` referrer that OSM rejects. Tile image elements now set `referrerPolicy='no-referrer'` to prevent this. Also applied to Profile View map preview.
 - **Map preview blank after collapse/expand** ([#334](https://github.com/banisterious/obsidian-charted-roots/issues/334)): The embedded map in place profiles went blank when the Map section was collapsed and re-expanded. The Leaflet map was being destroyed on collapse; now it persists and calls `invalidateSize()` on re-expand.
+- **World map preview invalid tile requests** ([#335](https://github.com/banisterious/obsidian-charted-roots/issues/335)): The world map preview in the Maps tab requested tiles at negative x coordinates, causing 400 errors in the console. Added bounds constraint to limit tile requests to valid geographic coordinates.
 
 ---
 
