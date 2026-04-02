@@ -444,7 +444,12 @@ export class PlaceLookupService {
 			return results;
 
 		} catch (error) {
-			logger.warn('geonames-lookup-failed', `GeoNames lookup failed: ${error}`);
+			const errorMsg = String(error);
+			logger.warn('geonames-lookup-failed', `GeoNames lookup failed: ${errorMsg}`);
+			if (errorMsg.includes('401')) {
+				const { Notice } = require('obsidian');
+				new Notice('GeoNames lookup failed: invalid or inactive username. Check Settings > Places > GeoNames username.');
+			}
 			return [];
 		}
 	}
