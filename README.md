@@ -1,6 +1,6 @@
 # Charted Roots: Genealogical Family Tree Plugin for Obsidian
 
-[![Version](https://img.shields.io/badge/version-0.20.44-blue.svg)](https://github.com/banisterious/obsidian-charted-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md)
+[![Version](https://img.shields.io/badge/version-0.20.45-blue.svg)](https://github.com/banisterious/obsidian-charted-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md)
 
 **Charted Roots** brings professional genealogical tools to Obsidian. Import, organize, visualize, and share family histories and fictional worlds without leaving your vault. From GEDCOM imports to PDF reports, interactive charts to map views, manage your research with the power of linked Markdown notes. Built for genealogists, historians, writers, and worldbuilders.
 
@@ -52,7 +52,7 @@
 
 ### Geographic
 
-- [**Interactive map view**](https://github.com/banisterious/obsidian-charted-roots/wiki/Geographic-Features) with marker clustering, migration paths, heat maps, time slider animation, and geocoding lookup
+- [**Interactive map view**](https://github.com/banisterious/obsidian-charted-roots/wiki/Geographic-Features) with marker clustering, migration paths, heat maps, time slider animation, [journey mode](https://github.com/banisterious/obsidian-charted-roots/wiki/Geographic-Features#journey-mode), and geocoding lookup
 - [**Custom image maps**](https://github.com/banisterious/obsidian-charted-roots/wiki/Custom-Maps) for fictional worlds with pixel or geographic coordinate systems
 - Place hierarchies (city -> state -> country) with six categories (real, historical, disputed, legendary, mythological, fictional)
 
