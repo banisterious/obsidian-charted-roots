@@ -1262,6 +1262,50 @@ svg.leaflet-image-layer.leaflet-interactive path {
 }
 
 /* --------------------------------------------------------------------------
+   Journey Mode Person Indicator
+   -------------------------------------------------------------------------- */
+
+.cr-map-journey-person {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--background-secondary-alt);
+  border: 1px solid var(--interactive-accent);
+  border-radius: var(--radius-m);
+  padding: 4px 10px;
+  height: 28px;
+}
+
+.cr-map-journey-person__icon {
+  display: flex;
+  align-items: center;
+  color: var(--interactive-accent);
+}
+
+.cr-map-journey-person__icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.cr-map-journey-person__name {
+  font-size: var(--font-ui-small);
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.cr-map-journey-person__clear {
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1;
+  margin-left: 4px;
+}
+
+.cr-map-journey-person__clear:hover {
+  color: var(--text-normal);
+}
+
+/* --------------------------------------------------------------------------
    Search Control (leaflet-search)
    -------------------------------------------------------------------------- */
 

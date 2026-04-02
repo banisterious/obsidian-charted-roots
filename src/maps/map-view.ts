@@ -95,6 +95,26 @@ export class MapView extends ItemView {
 	private animationInterval: number | null = null;
 	private currentMapData: MapData | null = null;
 
+	// Journey mode state
+	private journeyMode: {
+		enabled: boolean;
+		personId: string | null;
+		personName: string | null;
+		currentStep: number;
+		isPlaying: boolean;
+		speed: number;
+	} = {
+		enabled: false,
+		personId: null,
+		personName: null,
+		currentStep: 0,
+		isPlaying: false,
+		speed: 2000
+	};
+	private journeyPlaybackInterval: number | null = null;
+	private journeyControlsEl: HTMLElement | null = null;
+	private journeyPickerEl: HTMLElement | null = null;
+
 	// Edit mode state
 	private editModeEnabled: boolean = false;
 	private movePlacesModeEnabled: boolean = false;  // Marker-only edit mode
@@ -351,6 +371,14 @@ export class MapView extends ItemView {
 		});
 		setIcon(splitBtn, 'git-compare');
 		splitBtn.addEventListener('click', (e) => this.showCompareMenu(e));
+
+		// Journey mode button
+		const journeyBtn = rightSection.createEl('button', {
+			cls: 'cr-map-btn cr-map-btn-icon',
+			attr: { 'aria-label': 'Journey mode' }
+		});
+		setIcon(journeyBtn, 'route');
+		journeyBtn.addEventListener('click', () => this.toggleJourneyMode(journeyBtn));
 
 		// Timeline toggle button
 		const timelineBtn = rightSection.createEl('button', {
@@ -1211,6 +1239,163 @@ export class MapView extends ItemView {
 	/**
 	 * Toggle time slider visibility
 	 */
+	// ============================================================================
+	// Journey Mode
+	// ============================================================================
+
+	/**
+	 * Toggle journey mode on/off. Opens person picker when enabling.
+	 */
+	private toggleJourneyMode(btn: HTMLButtonElement): void {
+		if (this.journeyMode.enabled) {
+			this.exitJourneyMode(btn);
+		} else {
+			this.enterJourneyMode(btn);
+		}
+	}
+
+	/**
+	 * Enter journey mode — open person picker to select a person
+	 */
+	private enterJourneyMode(btn: HTMLButtonElement): void {
+		// Disable time slider if active
+		if (this.timeSlider.enabled) {
+			this.timeSlider.enabled = false;
+			if (this.timeSliderContainerEl) {
+				this.timeSliderContainerEl.addClass('cr-hidden');
+			}
+		}
+
+		const { PersonPickerModal } = require('../ui/person-picker');
+		const picker = new PersonPickerModal(this.app, (person: { name: string; crId: string }) => {
+			this.journeyMode.enabled = true;
+			this.journeyMode.personId = person.crId;
+			this.journeyMode.personName = person.name;
+			this.journeyMode.currentStep = 0;
+
+			btn.classList.add('cr-map-btn-active');
+
+			// Show person indicator in toolbar
+			this.showJourneyPersonIndicator(person.name);
+
+			// Filter map to this person
+			this.applyJourneyFilter();
+
+			// Enable journeys layer if not already
+			if (!this.layers.journeys) {
+				this.layers.journeys = true;
+				this.mapController?.setLayerVisibility(this.layers);
+			}
+		});
+		picker.open();
+	}
+
+	/**
+	 * Exit journey mode — restore full map view
+	 */
+	private exitJourneyMode(btn: HTMLButtonElement): void {
+		this.journeyMode.enabled = false;
+		this.journeyMode.personId = null;
+		this.journeyMode.personName = null;
+		this.journeyMode.currentStep = 0;
+
+		btn.classList.remove('cr-map-btn-active');
+
+		// Remove person indicator
+		if (this.journeyPickerEl) {
+			this.journeyPickerEl.remove();
+			this.journeyPickerEl = null;
+		}
+
+		// Remove playback controls
+		if (this.journeyControlsEl) {
+			this.journeyControlsEl.remove();
+			this.journeyControlsEl = null;
+		}
+
+		// Stop playback
+		if (this.journeyPlaybackInterval) {
+			window.clearInterval(this.journeyPlaybackInterval);
+			this.journeyPlaybackInterval = null;
+		}
+
+		// Restore full data
+		void this.refreshData();
+	}
+
+	/**
+	 * Show the selected person's name in the toolbar
+	 */
+	private showJourneyPersonIndicator(name: string): void {
+		if (this.journeyPickerEl) {
+			this.journeyPickerEl.remove();
+		}
+
+		if (!this.toolbarEl) return;
+
+		const centerSection = this.toolbarEl.querySelector('.cr-map-toolbar-center');
+		if (!centerSection) return;
+
+		this.journeyPickerEl = centerSection.createDiv({ cls: 'cr-map-journey-person' });
+
+		const icon = this.journeyPickerEl.createSpan({ cls: 'cr-map-journey-person__icon' });
+		setIcon(icon, 'user');
+
+		this.journeyPickerEl.createSpan({
+			cls: 'cr-map-journey-person__name',
+			text: name
+		});
+
+		const clearBtn = this.journeyPickerEl.createSpan({
+			cls: 'cr-map-journey-person__clear',
+			text: '\u00D7'
+		});
+		clearBtn.addEventListener('click', () => {
+			const journeyBtn = this.toolbarEl?.querySelector('[aria-label="Journey mode"]') as HTMLButtonElement;
+			if (journeyBtn) this.exitJourneyMode(journeyBtn);
+		});
+	}
+
+	/**
+	 * Filter the map to show only the selected person's markers and journey path
+	 */
+	private applyJourneyFilter(): void {
+		if (!this.currentMapData || !this.journeyMode.personId) return;
+
+		const personId = this.journeyMode.personId;
+
+		// Filter markers to this person only
+		const filteredMarkers = this.currentMapData.markers.filter(m =>
+			m.personId === personId
+		);
+
+		// Filter journey paths to this person only
+		const filteredJourneys = this.currentMapData.journeyPaths?.filter(j =>
+			j.personId === personId
+		) || [];
+
+		// Filter migration paths to this person only
+		const filteredPaths = this.currentMapData.paths.filter(p =>
+			p.personId === personId
+		);
+
+		this.mapController?.setFilteredData(filteredMarkers, filteredPaths, filteredJourneys);
+
+		// Fit bounds to this person's markers
+		if (filteredMarkers.length > 0 && this.mapController?.['map']) {
+			const lats = filteredMarkers.map(m => m.lat).filter((l): l is number => l !== undefined);
+			const lngs = filteredMarkers.map(m => m.lng).filter((l): l is number => l !== undefined);
+			if (lats.length > 0 && lngs.length > 0) {
+				const L = require('leaflet');
+				const bounds = L.latLngBounds(
+					L.latLng(Math.min(...lats), Math.min(...lngs)),
+					L.latLng(Math.max(...lats), Math.max(...lngs))
+				);
+				this.mapController['map'].fitBounds(bounds, { padding: [50, 50] });
+			}
+		}
+	}
+
 	private toggleTimeSlider(): void {
 		this.timeSlider.enabled = !this.timeSlider.enabled;
 

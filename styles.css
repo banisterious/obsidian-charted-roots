@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-03-31 20:14:53 UTC
+ * - Generated: 2026-04-02 18:36:36 UTC
  * - Components: 47 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -23072,7 +23072,7 @@ settings:
    COMPONENT: MAP-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1998 lines, 40.75 KB */
+/* Component Size: 2042 lines, 41.67 KB */
 
 /* ==========================================================================
    Map View Styles
@@ -24335,6 +24335,50 @@ svg.leaflet-image-layer.leaflet-interactive path {
   background: var(--interactive-accent) !important;
   color: var(--text-on-accent) !important;
   border-color: var(--interactive-accent) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Journey Mode Person Indicator
+   -------------------------------------------------------------------------- */
+
+.cr-map-journey-person {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--background-secondary-alt);
+  border: 1px solid var(--interactive-accent);
+  border-radius: var(--radius-m);
+  padding: 4px 10px;
+  height: 28px;
+}
+
+.cr-map-journey-person__icon {
+  display: flex;
+  align-items: center;
+  color: var(--interactive-accent);
+}
+
+.cr-map-journey-person__icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.cr-map-journey-person__name {
+  font-size: var(--font-ui-small);
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.cr-map-journey-person__clear {
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 16px;
+  line-height: 1;
+  margin-left: 4px;
+}
+
+.cr-map-journey-person__clear:hover {
+  color: var(--text-normal);
 }
 
 /* --------------------------------------------------------------------------
@@ -39994,11 +40038,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-03-31 20:14:53 UTC
+ * Build completed: 2026-04-02 18:36:38 UTC
  * Components processed: 47
- * Total lines: 39548
- * Total size: 794.67 KB
- * Build duration: 0.34 seconds
+ * Total lines: 39592
+ * Total size: 795.59 KB
+ * Build duration: 1.22 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -40026,7 +40070,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - data-quality.css: 1446 lines, 28.73 KB
  * - relationships.css: 597 lines, 11.43 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB
- * - map-view.css: 1998 lines, 40.75 KB
+ * - map-view.css: 2042 lines, 41.67 KB
  * - leaflet-distortable.css: 368 lines, 7.73 KB
  * - date-systems.css: 287 lines, 5.31 KB
  * - events.css: 1515 lines, 30.67 KB
