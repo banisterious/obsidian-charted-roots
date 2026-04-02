@@ -1571,7 +1571,13 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 
 		new Setting(placesContent)
 			.setName('GeoNames username')
-			.setDesc('Optional. Enables GeoNames as an additional lookup source. Register free at geonames.org')
+			.setDesc(createFragment(f => {
+				f.appendText('Optional. Enables GeoNames as an additional lookup source. ');
+				f.createEl('a', { text: 'Register free', href: 'https://www.geonames.org/login' });
+				f.appendText(', then ');
+				f.createEl('a', { text: 'enable free web services', href: 'https://www.geonames.org/manageaccount' });
+				f.appendText(' on your account page (required for API access).');
+			}))
 			.addText(text => text
 				.setPlaceholder('your-username')
 				.setValue(this.plugin.settings.geonamesUsername)
