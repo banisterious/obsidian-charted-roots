@@ -14,6 +14,7 @@ The maps module (`src/maps/`) provides interactive geographic visualization usin
 - [Place Marker Context Menu](#place-marker-context-menu)
 - [Geocoding](#geocoding)
 - [Time Slider](#time-slider)
+- [Journey Mode](#journey-mode)
 
 ---
 
@@ -330,3 +331,71 @@ The map view includes a time slider for temporal filtering:
 - Filters for display without changing source
 - Animation loops through years with configurable speed
 - Live count updates during filtering
+
+## Journey Mode
+
+Journey mode isolates a single person's journey path on the map with animated playback, rich popups, and family overlay. Mutually exclusive with the time slider.
+
+### State
+
+All journey mode state lives in `MapView.journeyMode`:
+
+```typescript
+private journeyMode: {
+    enabled: boolean;
+    personId: string | null;
+    personName: string | null;
+    currentStep: number;
+    isPlaying: boolean;
+    speed: number;
+    familyOverlay: boolean;
+};
+```
+
+Additional DOM references: `journeyControlsEl`, `journeyPickerEl`, `familyToggleEl`, `journeyPlaybackInterval`.
+
+### Entry Points
+
+1. **Toolbar button** (`toggleJourneyMode`) — Opens `PersonPickerModal`, then calls `enterJourneyMode()`
+2. **External** (`enterJourneyModeForPerson(personId, personName)`) — Public method for context menu / profile view callers
+3. **Family switch** — Custom DOM event `cr-switch-journey` dispatched from `MapController` popup, handled in `MapView.registerEventHandlers()`
+
+### Data Flow
+
+```
+enterJourneyMode() / enterJourneyModeForPerson()
+  → showJourneyPersonIndicator()
+  → applyJourneyFilter()
+      → filters currentMapData.markers, journeyPaths, paths to personId
+      → if familyOverlay: buildFamilyJourneyPaths() appends family paths
+      → mapController.setFilteredData(markers, paths, journeyPaths)
+      → buildJourneyPlaybackControls(primaryJourney)
+      → updateFamilyOverlayToggle()
+```
+
+### Playback
+
+- `buildJourneyPlaybackControls()` creates the floating control bar
+- `journeyStep(direction)` increments/decrements `currentStep`
+- `toggleJourneyPlayback()` starts/stops a `setInterval` loop
+- `panToWaypoint()` calls `map.flyTo()` then opens a rich Leaflet popup after the animation
+- `updateJourneyDisplay()` updates progress bar, label, and counter
+
+### Rich Popups
+
+`buildRichWaypointPopup()` creates an HTML element showing:
+- Event type and step counter in header
+- Date, place, age (calculated from `birthYear`), duration at location (gap to next waypoint), description
+
+### Family Overlay
+
+- `getImmediateFamilyIds()` uses `FamilyGraphService` to find parents, spouses, children
+- `buildFamilyJourneyPaths()` finds their journey paths in `currentMapData` and applies per-path style overrides
+- `JourneyPath` type supports optional `color`, `weight`, `opacity`, `relationshipLabel` fields
+- `MapController.createJourneyPath()` uses per-path overrides when present, falling back to settings
+- Relationship colors: blue (parents), pink (spouses), emerald (children)
+- Family path popups include a "Switch to journey" button that dispatches `cr-switch-journey` custom event
+
+### Cleanup
+
+`exitJourneyMode()` resets all state, removes DOM elements, clears interval, and calls `refreshData()` to restore the full map view.

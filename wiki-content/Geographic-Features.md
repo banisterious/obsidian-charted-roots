@@ -11,6 +11,11 @@ Charted Roots provides comprehensive place-based features for tracking where peo
 - [Place Notes](#place-notes)
 - [Life Events Array](#life-events-array)
 - [Journey Paths (Route Visualization)](#journey-paths-route-visualization)
+- [Journey Mode](#journey-mode)
+  - [Entering Journey Mode](#entering-journey-mode)
+  - [Playback Controls](#playback-controls)
+  - [Rich Waypoint Popups](#rich-waypoint-popups)
+  - [Family Journey Overlay](#family-journey-overlay)
 - [Place Statistics](#place-statistics)
 - [Data Quality Card](#data-quality-card)
 - [Place Visualizations](#place-visualizations)
@@ -354,6 +359,74 @@ Journey paths show a person's complete movement through life by connecting all t
 - Visualize military service across locations
 - Show career progression through cities
 - Map pilgrimage or travel routes
+
+## Journey Mode
+
+Journey mode isolates a single person's geographic path on the map and provides animated step-through playback with rich popups and an optional family overlay. While journey paths (above) show all people's routes simultaneously, journey mode focuses on one person at a time for detailed exploration.
+
+### Entering Journey Mode
+
+There are two ways to enter journey mode:
+
+1. **From the map toolbar**: Click the **route** button (🔀) in the toolbar's right section. A person picker opens — select the person whose journey you want to explore.
+2. **From a person note**: Right-click a person note and choose **Charted Roots > Show journey on map** from the context menu. This opens (or focuses) the Map View with that person pre-selected.
+
+When journey mode activates:
+- All markers and paths not belonging to the selected person are hidden
+- The person's event markers and journey path are shown
+- The map fits bounds to the person's waypoints
+- The time slider is disabled (they are mutually exclusive)
+- The journeys layer is enabled automatically
+- A person indicator appears in the toolbar center showing the selected name
+
+**To exit journey mode**, click the **×** button on the person indicator, or click the route button again.
+
+### Playback Controls
+
+A floating control bar appears at the bottom of the map with:
+
+| Control | Description |
+|---------|-------------|
+| **⏮ Previous** | Jump to the previous waypoint |
+| **▶ Play / ⏸ Pause** | Auto-advance through waypoints; loops back to the start when it reaches the end |
+| **⏭ Next** | Jump to the next waypoint |
+| **Progress bar** | Visual indicator of current position in the journey |
+| **Waypoint label** | Shows the current event type and place name (e.g., "Birth in London") |
+| **Step counter** | Displays position (e.g., "3 / 7") |
+| **Speed selector** | Cycles through 0.25×, 0.5×, 1×, 1.5×, 2.5× playback speeds |
+
+On each step, the map pans and zooms to center on the current waypoint with a smooth fly animation, and a rich popup opens automatically.
+
+### Rich Waypoint Popups
+
+During playback, each waypoint displays a detailed popup with:
+
+| Field | Description |
+|-------|-------------|
+| **Event type** | The type of life event (e.g., Birth, Marriage, Residence) |
+| **Step counter** | Position in the journey (e.g., "3 of 7") |
+| **Date** | The event date, if available |
+| **Place** | The place name |
+| **Age** | Calculated from the person's birth year |
+| **Duration at location** | Time between this event and the next (e.g., "12 years") |
+| **Details** | Event description, if available |
+
+### Family Journey Overlay
+
+While in journey mode, you can toggle an overlay that shows the journey paths of immediate family members.
+
+**To enable**: Click the **👥 family** button (users icon) in the playback controls bar. Click it again to disable.
+
+When enabled, dimmed journey paths appear for the person's:
+- **Parents** — shown in blue
+- **Spouses** — shown in pink
+- **Children** — shown in emerald
+
+Family paths are rendered with reduced opacity and thinner lines to keep the primary person's journey prominent.
+
+**Clicking a family member's path** opens a popup showing their name, relationship, and a summary of their journey. The popup includes a **Switch to journey** button that switches focus to that family member, entering journey mode for them instead.
+
+> **Note:** Only family members who have journey paths (at least two geolocated events) appear in the overlay. Family members with no location data or only a single event are not shown.
 
 ## Place Statistics
 
