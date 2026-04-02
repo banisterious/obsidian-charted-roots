@@ -24,7 +24,9 @@ import type {
 	CustomMapConfig,
 	TimeSliderState,
 	MapData,
-	PersonLifeSpan
+	PersonLifeSpan,
+	JourneyPath,
+	JourneyWaypoint
 } from './types/map-types';
 
 const logger = getLogger('MapView');
@@ -1406,6 +1408,11 @@ export class MapView extends ItemView {
 
 		this.mapController?.setFilteredData(filteredMarkers, filteredPaths, filteredJourneys);
 
+		// Build and show playback controls
+		if (filteredJourneys.length > 0 && filteredJourneys[0].waypoints.length > 1) {
+			this.buildJourneyPlaybackControls(filteredJourneys[0]);
+		}
+
 		// Fit bounds to this person's markers
 		if (filteredMarkers.length > 0 && this.mapController?.['map']) {
 			const lats = filteredMarkers.map(m => m.lat).filter((l): l is number => l !== undefined);
@@ -1418,6 +1425,163 @@ export class MapView extends ItemView {
 				);
 				this.mapController['map'].fitBounds(bounds, { padding: [50, 50] });
 			}
+		}
+	}
+
+	/**
+	 * Build playback controls for stepping through journey waypoints
+	 */
+	private buildJourneyPlaybackControls(journey: JourneyPath): void {
+		if (this.journeyControlsEl) {
+			this.journeyControlsEl.remove();
+		}
+
+		const container = this.containerEl.querySelector('.cr-map-container') || this.containerEl;
+		this.journeyControlsEl = container.createDiv({ cls: 'cr-map-journey-controls' });
+
+		const waypoints = journey.waypoints;
+		const totalSteps = waypoints.length;
+
+		// Previous button
+		const prevBtn = this.journeyControlsEl.createEl('button', {
+			cls: 'cr-map-journey-btn',
+			attr: { 'aria-label': 'Previous waypoint' }
+		});
+		setIcon(prevBtn, 'skip-back');
+		prevBtn.addEventListener('click', () => this.journeyStep(-1, waypoints));
+
+		// Play/Pause button
+		const playBtn = this.journeyControlsEl.createEl('button', {
+			cls: 'cr-map-journey-btn cr-map-journey-btn--play',
+			attr: { 'aria-label': 'Play' }
+		});
+		setIcon(playBtn, 'play');
+		playBtn.addEventListener('click', () => this.toggleJourneyPlayback(playBtn, waypoints));
+
+		// Next button
+		const nextBtn = this.journeyControlsEl.createEl('button', {
+			cls: 'cr-map-journey-btn',
+			attr: { 'aria-label': 'Next waypoint' }
+		});
+		setIcon(nextBtn, 'skip-forward');
+		nextBtn.addEventListener('click', () => this.journeyStep(1, waypoints));
+
+		// Progress section
+		const progressEl = this.journeyControlsEl.createDiv({ cls: 'cr-map-journey-progress' });
+
+		const progressBar = progressEl.createDiv({ cls: 'cr-map-journey-progress-bar' });
+		const progressFill = progressBar.createDiv({ cls: 'cr-map-journey-progress-fill' });
+		progressFill.dataset.id = 'journey-progress-fill';
+
+		const labelEl = progressEl.createDiv({ cls: 'cr-map-journey-label' });
+		labelEl.dataset.id = 'journey-label';
+
+		// Counter
+		const counterEl = this.journeyControlsEl.createSpan({ cls: 'cr-map-journey-counter' });
+		counterEl.dataset.id = 'journey-counter';
+
+		// Speed selector
+		const speedBtn = this.journeyControlsEl.createEl('button', {
+			cls: 'cr-map-journey-speed',
+			text: '1x'
+		});
+		speedBtn.addEventListener('click', () => {
+			const speeds = [500, 1000, 2000, 3000, 5000];
+			const labels = ['0.25x', '0.5x', '1x', '1.5x', '2.5x'];
+			const currentIdx = speeds.indexOf(this.journeyMode.speed);
+			const nextIdx = (currentIdx + 1) % speeds.length;
+			this.journeyMode.speed = speeds[nextIdx];
+			speedBtn.textContent = labels[nextIdx];
+		});
+
+		// Show initial state
+		this.updateJourneyDisplay(waypoints);
+		this.panToWaypoint(waypoints[0]);
+	}
+
+	/**
+	 * Step forward or backward through journey waypoints
+	 */
+	private journeyStep(direction: number, waypoints: JourneyWaypoint[]): void {
+		const newStep = this.journeyMode.currentStep + direction;
+		if (newStep < 0 || newStep >= waypoints.length) return;
+
+		this.journeyMode.currentStep = newStep;
+		this.updateJourneyDisplay(waypoints);
+		this.panToWaypoint(waypoints[newStep]);
+	}
+
+	/**
+	 * Toggle play/pause for journey animation
+	 */
+	private toggleJourneyPlayback(btn: HTMLButtonElement, waypoints: JourneyWaypoint[]): void {
+		if (this.journeyMode.isPlaying) {
+			// Pause
+			this.journeyMode.isPlaying = false;
+			if (this.journeyPlaybackInterval) {
+				window.clearInterval(this.journeyPlaybackInterval);
+				this.journeyPlaybackInterval = null;
+			}
+			setIcon(btn, 'play');
+		} else {
+			// Play
+			this.journeyMode.isPlaying = true;
+			setIcon(btn, 'pause');
+
+			this.journeyPlaybackInterval = window.setInterval(() => {
+				const nextStep = this.journeyMode.currentStep + 1;
+				if (nextStep >= waypoints.length) {
+					// Loop back to start
+					this.journeyMode.currentStep = 0;
+				} else {
+					this.journeyMode.currentStep = nextStep;
+				}
+				this.updateJourneyDisplay(waypoints);
+				this.panToWaypoint(waypoints[this.journeyMode.currentStep]);
+			}, this.journeyMode.speed);
+		}
+	}
+
+	/**
+	 * Update the playback controls display for the current step
+	 */
+	private updateJourneyDisplay(waypoints: JourneyWaypoint[]): void {
+		if (!this.journeyControlsEl) return;
+
+		const step = this.journeyMode.currentStep;
+		const total = waypoints.length;
+		const waypoint = waypoints[step];
+
+		// Progress bar
+		const fill = this.journeyControlsEl.querySelector('[data-id="journey-progress-fill"]') as HTMLElement;
+		if (fill) {
+			fill.style.width = `${((step + 1) / total) * 100}%`;
+		}
+
+		// Label
+		const label = this.journeyControlsEl.querySelector('[data-id="journey-label"]') as HTMLElement;
+		if (label) {
+			const eventType = waypoint.eventType || 'Event';
+			const place = waypoint.name || '';
+			label.textContent = place ? `${eventType} in ${place}` : eventType;
+		}
+
+		// Counter
+		const counter = this.journeyControlsEl.querySelector('[data-id="journey-counter"]') as HTMLElement;
+		if (counter) {
+			counter.textContent = `${step + 1} / ${total}`;
+		}
+	}
+
+	/**
+	 * Pan and zoom the map to a specific waypoint
+	 */
+	private panToWaypoint(waypoint: JourneyWaypoint): void {
+		if (!this.mapController?.['map']) return;
+
+		const map = this.mapController['map'];
+		if (waypoint.lat !== undefined && waypoint.lng !== undefined) {
+			map.flyTo([waypoint.lat, waypoint.lng], 12, { duration: 1 });
 		}
 	}
 

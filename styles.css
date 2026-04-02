@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-04-02 18:36:36 UTC
+ * - Generated: 2026-04-02 18:44:26 UTC
  * - Components: 47 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -23072,7 +23072,7 @@ settings:
    COMPONENT: MAP-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 2042 lines, 41.67 KB */
+/* Component Size: 2146 lines, 43.8 KB */
 
 /* ==========================================================================
    Map View Styles
@@ -24379,6 +24379,110 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 .cr-map-journey-person__clear:hover {
   color: var(--text-normal);
+}
+
+/* --------------------------------------------------------------------------
+   Journey Playback Controls
+   -------------------------------------------------------------------------- */
+
+.cr-map-journey-controls {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-l);
+  padding: 8px 16px;
+  z-index: 1000;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.cr-map-journey-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-normal);
+  cursor: pointer;
+}
+
+.cr-map-journey-btn:hover {
+  background: var(--background-modifier-hover);
+}
+
+.cr-map-journey-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cr-map-journey-btn--play {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  width: 36px;
+  height: 36px;
+}
+
+.cr-map-journey-btn--play:hover {
+  background: var(--interactive-accent-hover);
+}
+
+.cr-map-journey-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 160px;
+}
+
+.cr-map-journey-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--background-modifier-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.cr-map-journey-progress-fill {
+  height: 100%;
+  background: var(--interactive-accent);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.cr-map-journey-label {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  margin-top: 4px;
+  white-space: nowrap;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cr-map-journey-counter {
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.cr-map-journey-speed {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  padding: 2px 6px;
+  cursor: pointer;
+}
+
+.cr-map-journey-speed:hover {
+  background: var(--background-modifier-hover);
 }
 
 /* --------------------------------------------------------------------------
@@ -40038,11 +40142,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-04-02 18:36:38 UTC
+ * Build completed: 2026-04-02 18:44:27 UTC
  * Components processed: 47
- * Total lines: 39592
- * Total size: 795.59 KB
- * Build duration: 1.22 seconds
+ * Total lines: 39696
+ * Total size: 797.72 KB
+ * Build duration: 0.88 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -40070,7 +40174,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - data-quality.css: 1446 lines, 28.73 KB
  * - relationships.css: 597 lines, 11.43 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB
- * - map-view.css: 2042 lines, 41.67 KB
+ * - map-view.css: 2146 lines, 43.8 KB
  * - leaflet-distortable.css: 368 lines, 7.73 KB
  * - date-systems.css: 287 lines, 5.31 KB
  * - events.css: 1515 lines, 30.67 KB

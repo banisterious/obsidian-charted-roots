@@ -1306,6 +1306,110 @@ svg.leaflet-image-layer.leaflet-interactive path {
 }
 
 /* --------------------------------------------------------------------------
+   Journey Playback Controls
+   -------------------------------------------------------------------------- */
+
+.cr-map-journey-controls {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-l);
+  padding: 8px 16px;
+  z-index: 1000;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.cr-map-journey-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-normal);
+  cursor: pointer;
+}
+
+.cr-map-journey-btn:hover {
+  background: var(--background-modifier-hover);
+}
+
+.cr-map-journey-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cr-map-journey-btn--play {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  width: 36px;
+  height: 36px;
+}
+
+.cr-map-journey-btn--play:hover {
+  background: var(--interactive-accent-hover);
+}
+
+.cr-map-journey-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 160px;
+}
+
+.cr-map-journey-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: var(--background-modifier-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.cr-map-journey-progress-fill {
+  height: 100%;
+  background: var(--interactive-accent);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.cr-map-journey-label {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  margin-top: 4px;
+  white-space: nowrap;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cr-map-journey-counter {
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.cr-map-journey-speed {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  padding: 2px 6px;
+  cursor: pointer;
+}
+
+.cr-map-journey-speed:hover {
+  background: var(--background-modifier-hover);
+}
+
+/* --------------------------------------------------------------------------
    Search Control (leaflet-search)
    -------------------------------------------------------------------------- */
 
