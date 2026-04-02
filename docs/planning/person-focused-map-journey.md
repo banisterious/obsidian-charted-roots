@@ -2,7 +2,7 @@
 
 Planning document for the person-focused map journey feature.
 
-**Status:** Planning
+**Status:** ✅ Phase 1-2 complete | Phase 3-4 planned
 
 **Related:** [#295](https://github.com/banisterious/obsidian-charted-roots/issues/295)
 
@@ -115,20 +115,30 @@ When enabled:
 
 ## Implementation phases
 
-### Phase 1 — Person filter and isolation
+### Phase 1 — Person filter and isolation ✅
 
-- Add person picker to map toolbar
-- When selected, filter markers and paths to this person only
-- Fit map bounds to person's waypoints
-- Clear button to restore full view
-- "Show journey on map" context menu and Profile View entry points
+- ✅ Journey mode button (route icon) in map toolbar right section
+- ✅ Person picker opens on click — select a person to enter journey mode
+- ✅ Filters markers, migration paths, and journey paths to selected person only
+- ✅ Fits map bounds to person's waypoints with padding
+- ✅ Person indicator in toolbar center with name and clear button
+- ✅ Clear button or re-click exits journey mode and restores full view
+- ✅ Disables time slider when entering journey mode (mutually exclusive)
+- ✅ Enables journeys layer automatically
+- ✅ "Show journey on map" context menu item on person notes (main Charted Roots submenu)
+- ✅ Public `enterJourneyModeForPerson()` method for external callers
 
-### Phase 2 — Animated step-through
+### Phase 2 — Animated step-through ✅
 
-- Playback controls UI (prev/play/next, progress bar, counter, speed)
-- Map pan/zoom to each waypoint on step
-- Highlight current waypoint marker
-- Auto-advance with configurable delay
+- ✅ Playback controls bar (bottom center, floating over map)
+- ✅ Previous / Play-Pause / Next buttons
+- ✅ Progress bar with fill animation
+- ✅ Waypoint label showing event type and place
+- ✅ Step counter (e.g., "3 / 7")
+- ✅ Speed selector cycling through 0.25x–2.5x
+- ✅ Map pans and zooms (flyTo) to each waypoint with 1s animation
+- ✅ Auto-play loops back to start when reaching end
+- ✅ Playback cleanup on exit journey mode
 
 ### Phase 3 — Rich waypoint popups
 
