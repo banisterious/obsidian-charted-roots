@@ -65,7 +65,8 @@ export function renderWorldMapPreview(
 		}
 	});
 	new TileLayerNoRef('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-		noWrap: true
+		noWrap: true,
+		bounds: L.latLngBounds(L.latLng(-85, -180), L.latLng(85, 180))
 	}).addTo(map);
 
 	// Add place markers if any
