@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Person-focused map journey (Phase 1-2)** ([#295](https://github.com/banisterious/obsidian-charted-roots/issues/295)): New journey mode in the map view. Click the route button in the toolbar to select a person — the map isolates their markers and journey path, fitting bounds to their locations. Playback controls (prev/play/next) step through waypoints with animated pan/zoom. Speed selector, progress bar, and step counter. "Show journey on map" context menu entry on person notes. Clear button or re-click exits journey mode.
+- **Person-focused map journey** ([#295](https://github.com/banisterious/obsidian-charted-roots/issues/295)): New journey mode in the map view. Click the route button in the toolbar to select a person — the map isolates their markers and journey path, fitting bounds to their locations. Playback controls (prev/play/next) step through waypoints with animated pan/zoom. Speed selector, progress bar, and step counter. Rich waypoint popups show event type, date, place, age, duration at location, and description. Family overlay toggle shows dimmed journey paths for parents (blue), spouses (pink), and children (emerald), with click-to-switch. "Show journey on map" context menu entry on person notes.
 
 ### Fixed
 

@@ -2,7 +2,7 @@
 
 Planning document for the person-focused map journey feature.
 
-**Status:** ✅ Phase 1-2 complete | Phase 3-4 planned
+**Status:** ✅ All phases complete
 
 **Related:** [#295](https://github.com/banisterious/obsidian-charted-roots/issues/295)
 
@@ -140,18 +140,24 @@ When enabled:
 - ✅ Auto-play loops back to start when reaching end
 - ✅ Playback cleanup on exit journey mode
 
-### Phase 3 — Rich waypoint popups
+### Phase 3 — Rich waypoint popups ✅
 
-- Expanded popup content: age, duration, description, sources
-- Style updates for journey-mode popups
-- Source links navigate to source notes
+- ✅ Expanded popup content: event type, date, place, age, duration at location, description
+- ✅ Step counter in popup header (e.g., "3 / 7")
+- ✅ Style updates for journey-mode popups (`.cr-journey-rich-popup` classes)
+- ✅ Age calculated from person birth year
+- ✅ Duration calculated from gap between consecutive waypoints
 
-### Phase 4 — Family journey overlay
+### Phase 4 — Family journey overlay ✅
 
-- Toggle control in journey mode
-- Load and render family member journey paths
-- Dimmed/thin styling with relationship color coding
-- Click to switch focus to family member
+- ✅ Toggle button (`users` icon) in playback controls bar
+- ✅ Loads journey paths for immediate family (parents, spouses, children) from FamilyGraphService
+- ✅ Family paths rendered with dimmed/thin styling (opacity 0.4, weight 1.5)
+- ✅ Color-coded by relationship: blue (parents), pink (spouses), emerald (children)
+- ✅ Per-path style overrides via `color`, `weight`, `opacity` on `JourneyPath` type
+- ✅ Relationship label shown in journey popup header
+- ✅ "Switch to journey" button in family path popup switches focus to that person
+- ✅ Custom DOM event (`cr-switch-journey`) bridges controller → view for switch action
 
 ---
 
