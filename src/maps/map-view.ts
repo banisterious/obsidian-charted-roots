@@ -8,6 +8,7 @@
 import { ItemView, WorkspaceLeaf, Menu, Notice, TFile, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { getLogger } from '../core/logging';
+import { capitalize } from '../utils/format-utils';
 import { MapController } from './map-controller';
 import { MapDataService } from './map-data-service';
 import { CreatePlaceModal } from '../ui/create-place-modal';
@@ -1448,7 +1449,7 @@ export class MapView extends ItemView {
 			attr: { 'aria-label': 'Previous waypoint' }
 		});
 		setIcon(prevBtn, 'skip-back');
-		prevBtn.addEventListener('click', () => this.journeyStep(-1, waypoints));
+		prevBtn.addEventListener('click', () => this.journeyStep(-1, waypoints, journey.birthYear));
 
 		// Play/Pause button
 		const playBtn = this.journeyControlsEl.createEl('button', {
@@ -1456,7 +1457,7 @@ export class MapView extends ItemView {
 			attr: { 'aria-label': 'Play' }
 		});
 		setIcon(playBtn, 'play');
-		playBtn.addEventListener('click', () => this.toggleJourneyPlayback(playBtn, waypoints));
+		playBtn.addEventListener('click', () => this.toggleJourneyPlayback(playBtn, waypoints, journey.birthYear));
 
 		// Next button
 		const nextBtn = this.journeyControlsEl.createEl('button', {
@@ -1464,7 +1465,7 @@ export class MapView extends ItemView {
 			attr: { 'aria-label': 'Next waypoint' }
 		});
 		setIcon(nextBtn, 'skip-forward');
-		nextBtn.addEventListener('click', () => this.journeyStep(1, waypoints));
+		nextBtn.addEventListener('click', () => this.journeyStep(1, waypoints, journey.birthYear));
 
 		// Progress section
 		const progressEl = this.journeyControlsEl.createDiv({ cls: 'cr-map-journey-progress' });
@@ -1496,25 +1497,25 @@ export class MapView extends ItemView {
 
 		// Show initial state
 		this.updateJourneyDisplay(waypoints);
-		this.panToWaypoint(waypoints[0]);
+		this.panToWaypoint(waypoints[0], waypoints, journey.birthYear);
 	}
 
 	/**
 	 * Step forward or backward through journey waypoints
 	 */
-	private journeyStep(direction: number, waypoints: JourneyWaypoint[]): void {
+	private journeyStep(direction: number, waypoints: JourneyWaypoint[], birthYear?: number): void {
 		const newStep = this.journeyMode.currentStep + direction;
 		if (newStep < 0 || newStep >= waypoints.length) return;
 
 		this.journeyMode.currentStep = newStep;
 		this.updateJourneyDisplay(waypoints);
-		this.panToWaypoint(waypoints[newStep]);
+		this.panToWaypoint(waypoints[newStep], waypoints, birthYear);
 	}
 
 	/**
 	 * Toggle play/pause for journey animation
 	 */
-	private toggleJourneyPlayback(btn: HTMLButtonElement, waypoints: JourneyWaypoint[]): void {
+	private toggleJourneyPlayback(btn: HTMLButtonElement, waypoints: JourneyWaypoint[], birthYear?: number): void {
 		if (this.journeyMode.isPlaying) {
 			// Pause
 			this.journeyMode.isPlaying = false;
@@ -1537,7 +1538,7 @@ export class MapView extends ItemView {
 					this.journeyMode.currentStep = nextStep;
 				}
 				this.updateJourneyDisplay(waypoints);
-				this.panToWaypoint(waypoints[this.journeyMode.currentStep]);
+				this.panToWaypoint(waypoints[this.journeyMode.currentStep], waypoints, birthYear);
 			}, this.journeyMode.speed);
 		}
 	}
@@ -1576,13 +1577,104 @@ export class MapView extends ItemView {
 	/**
 	 * Pan and zoom the map to a specific waypoint
 	 */
-	private panToWaypoint(waypoint: JourneyWaypoint): void {
+	private panToWaypoint(waypoint: JourneyWaypoint, allWaypoints?: JourneyWaypoint[], birthYear?: number): void {
 		if (!this.mapController?.['map']) return;
 
 		const map = this.mapController['map'];
 		if (waypoint.lat !== undefined && waypoint.lng !== undefined) {
 			map.flyTo([waypoint.lat, waypoint.lng], 12, { duration: 1 });
+
+			// Close any existing popup
+			map.closePopup();
+
+			// Open rich popup after fly animation
+			setTimeout(() => {
+				const L = require('leaflet');
+				const popupContent = this.buildRichWaypointPopup(waypoint, allWaypoints, birthYear);
+				L.popup({ maxWidth: 300, className: 'cr-journey-rich-popup' })
+					.setLatLng([waypoint.lat, waypoint.lng])
+					.setContent(popupContent)
+					.openOn(map);
+			}, 1100);
 		}
+	}
+
+	/**
+	 * Build rich waypoint popup content for journey mode
+	 */
+	private buildRichWaypointPopup(
+		waypoint: JourneyWaypoint,
+		allWaypoints?: JourneyWaypoint[],
+		birthYear?: number
+	): HTMLElement {
+		const container = document.createElement('div');
+		container.className = 'cr-journey-rich-popup-content';
+
+		// Header with event type
+		const header = container.createDiv({ cls: 'cr-journey-rich-popup__header' });
+		const eventLabel = capitalize(waypoint.eventType);
+		header.createSpan({ text: eventLabel, cls: 'cr-journey-rich-popup__type' });
+
+		if (allWaypoints) {
+			const stepIndex = allWaypoints.indexOf(waypoint);
+			if (stepIndex >= 0) {
+				header.createSpan({
+					text: `${stepIndex + 1} of ${allWaypoints.length}`,
+					cls: 'cr-journey-rich-popup__step'
+				});
+			}
+		}
+
+		// Body rows
+		const body = container.createDiv({ cls: 'cr-journey-rich-popup__body' });
+
+		// Date
+		if (waypoint.date) {
+			this.addPopupRow(body, 'Date', waypoint.date);
+		}
+
+		// Place
+		if (waypoint.name) {
+			this.addPopupRow(body, 'Place', waypoint.name);
+		}
+
+		// Age
+		if (birthYear && waypoint.year) {
+			const age = waypoint.year - birthYear;
+			if (age >= 0) {
+				this.addPopupRow(body, 'Age', `${age} years old`);
+			}
+		}
+
+		// Duration at location (time between this event and the next)
+		if (allWaypoints && waypoint.year) {
+			const stepIndex = allWaypoints.indexOf(waypoint);
+			if (stepIndex >= 0 && stepIndex < allWaypoints.length - 1) {
+				const nextWp = allWaypoints[stepIndex + 1];
+				if (nextWp.year) {
+					const duration = nextWp.year - waypoint.year;
+					if (duration > 0) {
+						this.addPopupRow(body, 'Duration at location', `${duration} year${duration !== 1 ? 's' : ''}`);
+					}
+				}
+			}
+		}
+
+		// Description
+		if (waypoint.description) {
+			this.addPopupRow(body, 'Details', waypoint.description);
+		}
+
+		return container;
+	}
+
+	/**
+	 * Add a label/value row to a popup
+	 */
+	private addPopupRow(container: HTMLElement, label: string, value: string): void {
+		const row = container.createDiv({ cls: 'cr-journey-rich-popup__row' });
+		row.createSpan({ text: label, cls: 'cr-journey-rich-popup__label' });
+		row.createSpan({ text: value, cls: 'cr-journey-rich-popup__value' });
 	}
 
 	private toggleTimeSlider(): void {

@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-04-02 18:44:26 UTC
+ * - Generated: 2026-04-02 20:50:09 UTC
  * - Components: 47 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -23072,7 +23072,7 @@ settings:
    COMPONENT: MAP-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 2146 lines, 43.8 KB */
+/* Component Size: 2208 lines, 45.1 KB */
 
 /* ==========================================================================
    Map View Styles
@@ -24483,6 +24483,68 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 .cr-map-journey-speed:hover {
   background: var(--background-modifier-hover);
+}
+
+/* --------------------------------------------------------------------------
+   Journey Rich Waypoint Popup
+   -------------------------------------------------------------------------- */
+
+.cr-journey-rich-popup .leaflet-popup-content-wrapper {
+  border-radius: var(--radius-m);
+  padding: 0;
+}
+
+.cr-journey-rich-popup .leaflet-popup-content {
+  margin: 0;
+}
+
+.cr-journey-rich-popup-content {
+  min-width: 220px;
+}
+
+.cr-journey-rich-popup__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--background-secondary-alt);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-journey-rich-popup__type {
+  font-weight: 600;
+  font-size: var(--font-ui-medium);
+}
+
+.cr-journey-rich-popup__step {
+  font-size: 11px;
+  color: var(--text-faint);
+  background: var(--background-primary);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.cr-journey-rich-popup__body {
+  padding: 8px 12px;
+}
+
+.cr-journey-rich-popup__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 3px 0;
+}
+
+.cr-journey-rich-popup__label {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+}
+
+.cr-journey-rich-popup__value {
+  font-size: var(--font-ui-small);
+  color: var(--text-normal);
+  text-align: right;
+  max-width: 60%;
 }
 
 /* --------------------------------------------------------------------------
@@ -40142,11 +40204,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-04-02 18:44:27 UTC
+ * Build completed: 2026-04-02 20:50:10 UTC
  * Components processed: 47
- * Total lines: 39696
- * Total size: 797.72 KB
- * Build duration: 0.88 seconds
+ * Total lines: 39758
+ * Total size: 799.02 KB
+ * Build duration: 0.96 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -40174,7 +40236,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - data-quality.css: 1446 lines, 28.73 KB
  * - relationships.css: 597 lines, 11.43 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB
- * - map-view.css: 2146 lines, 43.8 KB
+ * - map-view.css: 2208 lines, 45.1 KB
  * - leaflet-distortable.css: 368 lines, 7.73 KB
  * - date-systems.css: 287 lines, 5.31 KB
  * - events.css: 1515 lines, 30.67 KB

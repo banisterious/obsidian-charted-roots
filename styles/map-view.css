@@ -1410,6 +1410,68 @@ svg.leaflet-image-layer.leaflet-interactive path {
 }
 
 /* --------------------------------------------------------------------------
+   Journey Rich Waypoint Popup
+   -------------------------------------------------------------------------- */
+
+.cr-journey-rich-popup .leaflet-popup-content-wrapper {
+  border-radius: var(--radius-m);
+  padding: 0;
+}
+
+.cr-journey-rich-popup .leaflet-popup-content {
+  margin: 0;
+}
+
+.cr-journey-rich-popup-content {
+  min-width: 220px;
+}
+
+.cr-journey-rich-popup__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--background-secondary-alt);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-journey-rich-popup__type {
+  font-weight: 600;
+  font-size: var(--font-ui-medium);
+}
+
+.cr-journey-rich-popup__step {
+  font-size: 11px;
+  color: var(--text-faint);
+  background: var(--background-primary);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.cr-journey-rich-popup__body {
+  padding: 8px 12px;
+}
+
+.cr-journey-rich-popup__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 3px 0;
+}
+
+.cr-journey-rich-popup__label {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+}
+
+.cr-journey-rich-popup__value {
+  font-size: var(--font-ui-small);
+  color: var(--text-normal);
+  text-align: right;
+  max-width: 60%;
+}
+
+/* --------------------------------------------------------------------------
    Search Control (leaflet-search)
    -------------------------------------------------------------------------- */
 
