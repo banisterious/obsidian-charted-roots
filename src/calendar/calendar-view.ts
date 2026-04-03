@@ -49,7 +49,11 @@ export class CalendarView extends ItemView {
 	constructor(leaf: WorkspaceLeaf, plugin: CanvasRootsPlugin) {
 		super(leaf);
 		this.plugin = plugin;
-		this.dataService = new CalendarDataService(plugin.app, plugin.settings);
+		this.dataService = new CalendarDataService(
+			plugin.app,
+			plugin.settings,
+			(plugin as unknown as { getEventService: () => unknown }).getEventService?.() as import('../events/services/event-service').EventService | null
+		);
 
 		const now = new Date();
 		this.currentMonth = now.getMonth();

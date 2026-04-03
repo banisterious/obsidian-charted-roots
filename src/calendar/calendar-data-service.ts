@@ -11,6 +11,7 @@ import type { CalendarEvent, CalendarFilter } from './types/calendar-types';
 import { DEFAULT_EVENT_TYPES } from './types/calendar-types';
 import { FamilyGraphService } from '../core/family-graph';
 import { FolderFilterService } from '../core/folder-filter';
+import { EventService } from '../events/services/event-service';
 import { getLogger } from '../core/logging';
 
 const logger = getLogger('CalendarDataService');
@@ -18,10 +19,12 @@ const logger = getLogger('CalendarDataService');
 export class CalendarDataService {
 	private app: App;
 	private settings: CanvasRootsSettings;
+	private eventService: EventService | null;
 
-	constructor(app: App, settings: CanvasRootsSettings) {
+	constructor(app: App, settings: CanvasRootsSettings, eventService?: EventService | null) {
 		this.app = app;
 		this.settings = settings;
+		this.eventService = eventService ?? null;
 	}
 
 	/**
@@ -95,8 +98,71 @@ export class CalendarDataService {
 			}
 		}
 
+		// Gather from event notes (marriage, baptism, immigration, etc.)
+		if (this.eventService) {
+			const personBirthDeathIds = new Set(events.map(e => e.id));
+			const allEventNotes = this.eventService.getAllEvents();
+
+			for (const eventNote of allEventNotes) {
+				// Skip events without dates or with unknown precision
+				if (!eventNote.date || eventNote.datePrecision === 'unknown') continue;
+
+				// Skip event types not in the active filter
+				if (!activeTypes.includes(eventNote.eventType)) continue;
+
+				// Apply universe filter
+				if (filter?.universe && eventNote.universe !== filter.universe) continue;
+
+				const parsed = this.parseDate(eventNote.date);
+				if (!parsed) continue;
+
+				// Resolve person name from wikilink
+				const personWikilink = eventNote.person || '';
+				const personName = this.extractNameFromWikilink(personWikilink) || eventNote.title;
+
+				// Skip if this would duplicate a person-note birth/death
+				// (person notes are authoritative for birth/death)
+				if (eventNote.eventType === 'birth' || eventNote.eventType === 'death') {
+					continue;
+				}
+
+				// Resolve place from wikilink
+				const placeName = eventNote.place
+					? this.extractNameFromWikilink(eventNote.place)
+					: undefined;
+
+				events.push({
+					id: `event_${eventNote.crId}`,
+					personName,
+					personCrId: eventNote.crId,
+					eventType: eventNote.eventType,
+					date: eventNote.date,
+					month: parsed.month,
+					day: parsed.day,
+					year: parsed.year,
+					yearsAgo: currentYear - parsed.year,
+					placeName,
+					isApproximate: parsed.isApproximate,
+					source: 'event',
+					filePath: eventNote.filePath
+				});
+			}
+		}
+
 		logger.debug('get-events', `Collected ${events.length} calendar events`);
 		return events;
+	}
+
+	/**
+	 * Extract display name from a wikilink string like "[[John Smith]]" or "[[path/John Smith|Display Name]]"
+	 */
+	private extractNameFromWikilink(wikilink: string): string | undefined {
+		const match = wikilink.match(/^\[\[([^\]|]+)(?:\|([^\]]+))?\]\]$/);
+		if (!match) return undefined;
+		// Use display text if present, otherwise use link target's basename
+		if (match[2]) return match[2].trim();
+		const target = match[1].trim();
+		return target.split('/').pop() || target;
 	}
 
 	/**
