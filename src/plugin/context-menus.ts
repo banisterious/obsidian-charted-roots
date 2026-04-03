@@ -3162,6 +3162,19 @@ export function registerContextMenus(plugin: CanvasRootsPlugin): void {
 							else if (isSourcesFolder) {
 								submenu.addItem((subItem) => {
 									subItem
+										.setTitle('Create source')
+										.setIcon('file-plus')
+										.onClick(() => {
+											new CreateSourceModal(plugin.app, plugin, {
+												onSuccess: () => {}
+											}).open();
+										});
+								});
+
+								submenu.addSeparator();
+
+								submenu.addItem((subItem) => {
+									subItem
 										.setTitle('Add essential source properties')
 										.setIcon('archive')
 										.onClick(async () => {
@@ -3701,6 +3714,17 @@ export function registerContextMenus(plugin: CanvasRootsPlugin): void {
 
 						// === SOURCES FOLDER (MOBILE) ===
 						else if (isSourcesFolder) {
+							menu.addItem((item) => {
+								item
+									.setTitle('Charted Roots: Create source')
+									.setIcon('file-plus')
+									.onClick(() => {
+										new CreateSourceModal(plugin.app, plugin, {
+											onSuccess: () => {}
+										}).open();
+									});
+							});
+
 							menu.addItem((item) => {
 								item
 									.setTitle('Charted Roots: Add essential source properties')
