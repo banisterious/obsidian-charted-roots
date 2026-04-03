@@ -5,7 +5,7 @@
  * dates (birthdays, death anniversaries, marriages) across the vault.
  */
 
-import { ItemView, WorkspaceLeaf, setIcon } from 'obsidian';
+import { ItemView, WorkspaceLeaf, setIcon, Menu } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import type { CalendarEvent, CalendarViewState, CalendarFilter } from './types/calendar-types';
 import { DEFAULT_EVENT_TYPES, EVENT_TYPE_COLORS } from './types/calendar-types';
@@ -201,6 +201,14 @@ export class CalendarView extends ItemView {
 		});
 		todayBtn.addEventListener('click', () => this.goToToday());
 
+		// Filter button
+		const filterBtn = actions.createEl('button', {
+			cls: 'clickable-icon',
+			attr: { 'aria-label': 'Filter events' }
+		});
+		setIcon(filterBtn, 'filter');
+		filterBtn.addEventListener('click', (e) => this.showFilterMenu(e));
+
 		// Refresh button
 		const refreshBtn = actions.createEl('button', {
 			cls: 'clickable-icon',
@@ -208,6 +216,58 @@ export class CalendarView extends ItemView {
 		});
 		setIcon(refreshBtn, 'refresh-cw');
 		refreshBtn.addEventListener('click', () => this.renderCalendar());
+	}
+
+	// ── Filter Menu ─────────────────────────────────────────
+
+	private showFilterMenu(e: MouseEvent): void {
+		const menu = new Menu();
+
+		// Event type toggles
+		menu.addItem((item) => {
+			item.setTitle('Event types')
+				.setIsLabel(true);
+		});
+
+		const allEventTypes = ['birth', 'death', 'marriage', 'residence', 'occupation',
+			'education', 'military', 'immigration', 'religious', 'baptism', 'burial'];
+
+		for (const type of allEventTypes) {
+			const isActive = this.filter.eventTypes.includes(type);
+			menu.addItem((item) => {
+				item.setTitle(capitalize(type))
+					.setChecked(isActive)
+					.onClick(() => {
+						if (isActive) {
+							this.filter.eventTypes = this.filter.eventTypes.filter(t => t !== type);
+						} else {
+							this.filter.eventTypes.push(type);
+						}
+						this.renderCalendar();
+					});
+			});
+		}
+
+		menu.addSeparator();
+
+		// Living status
+		menu.addItem((item) => {
+			item.setTitle('Status')
+				.setIsLabel(true);
+		});
+
+		for (const status of ['all', 'living', 'deceased'] as const) {
+			menu.addItem((item) => {
+				item.setTitle(capitalize(status))
+					.setChecked(this.filter.livingStatus === status)
+					.onClick(() => {
+						this.filter.livingStatus = status;
+						this.renderCalendar();
+					});
+			});
+		}
+
+		menu.showAtMouseEvent(e);
 	}
 
 	// ── Grid ────────────────────────────────────────────────
