@@ -64,6 +64,8 @@ export interface CalendarViewState {
 	selectedDay: number | null;
 	/** Whether to show text labels in day cells */
 	showLabels: boolean;
+	/** Index signature for Obsidian view state compatibility */
+	[key: string]: unknown;
 }
 
 /**

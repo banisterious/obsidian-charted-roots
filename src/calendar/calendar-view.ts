@@ -39,6 +39,7 @@ export class CalendarView extends ItemView {
 
 	// Display options
 	private showLabels: boolean = false;
+	private stateRestored = false;
 
 	// UI elements
 	private headerEl: HTMLElement | null = null;
@@ -48,6 +49,8 @@ export class CalendarView extends ItemView {
 
 	// Auto-refresh
 	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+	private persistTimeout: ReturnType<typeof setTimeout> | null = null;
+	private initialRender = true;
 
 	constructor(leaf: WorkspaceLeaf, plugin: CanvasRootsPlugin) {
 		super(leaf);
@@ -77,13 +80,27 @@ export class CalendarView extends ItemView {
 
 	async onOpen(): Promise<void> {
 		logger.debug('view-open', 'Opening CalendarView');
+		this.restorePersistedState();
 		this.buildUI();
+		this.initialRender = true;
 		this.renderCalendar();
+		// Delay enabling persistence to avoid overwrites from Obsidian's setState lifecycle
+		setTimeout(() => { this.initialRender = false; }, 1000);
 		this.registerEventHandlers();
 	}
 
 	// eslint-disable-next-line @typescript-eslint/require-await -- ItemView requires async onClose
 	async onClose(): Promise<void> {
+		// Flush any pending persist
+		if (this.persistTimeout) {
+			clearTimeout(this.persistTimeout);
+		}
+		// Persist immediately on close
+		const state = this.getState();
+		const settings = this.plugin.settings as Record<string, unknown>;
+		settings.calendarViewState = state;
+		void this.plugin.saveSettings();
+
 		if (this.refreshTimeout) {
 			clearTimeout(this.refreshTimeout);
 		}
@@ -92,6 +109,28 @@ export class CalendarView extends ItemView {
 	// ========================================================================
 	// State persistence
 	// ========================================================================
+
+	private persistState(): void {
+		if (this.persistTimeout) clearTimeout(this.persistTimeout);
+		this.persistTimeout = setTimeout(() => {
+			const state = this.getState();
+			const settings = this.plugin.settings as Record<string, unknown>;
+			settings.calendarViewState = state;
+			void this.plugin.saveSettings();
+		}, 500);
+	}
+
+	private restorePersistedState(): void {
+		const settings = this.plugin.settings as Record<string, unknown>;
+		const state = settings.calendarViewState as Partial<CalendarViewState> | undefined;
+		if (state) {
+			if (state.month !== undefined) this.currentMonth = state.month;
+			if (state.year !== undefined) this.currentYear = state.year;
+			if (state.filter) this.filter = { ...this.filter, ...state.filter };
+			if (state.showLabels !== undefined) this.showLabels = state.showLabels;
+		}
+		this.stateRestored = true;
+	}
 
 	getState(): CalendarViewState {
 		return {
@@ -104,13 +143,21 @@ export class CalendarView extends ItemView {
 	}
 
 	async setState(state: Partial<CalendarViewState>): Promise<void> {
+		// Ignore Obsidian's setState if we already restored our own persisted state
+		// (Obsidian loads calendarViewState from settings and passes it here,
+		// but we handle restoration ourselves in onOpen to control timing)
+		if (this.stateRestored) return;
+
 		if (state.month !== undefined) this.currentMonth = state.month;
 		if (state.year !== undefined) this.currentYear = state.year;
 		if (state.filter) this.filter = { ...state.filter };
 		if (state.selectedDay !== undefined) this.selectedDay = state.selectedDay;
 		if (state.showLabels !== undefined) this.showLabels = state.showLabels;
-		this.renderCalendar();
-		await super.setState(state);
+
+		// Only re-render if UI is already built (setState can be called before onOpen)
+		if (this.headerEl) {
+			this.renderCalendar();
+		}
 	}
 
 	// ========================================================================
@@ -140,6 +187,10 @@ export class CalendarView extends ItemView {
 		this.renderGrid();
 		this.renderDetail();
 		this.renderImpreciseDates();
+		if (!this.initialRender) {
+			this.persistState();
+		}
+		this.initialRender = false;
 	}
 
 	// ── Header ──────────────────────────────────────────────
@@ -179,12 +230,12 @@ export class CalendarView extends ItemView {
 		const yearInput = nav.createEl('input', {
 			type: 'number',
 			cls: 'cr-calendar-year-input',
-			value: String(this.currentYear),
 			attr: { 'aria-label': 'Year' }
 		});
+		yearInput.value = String(this.currentYear);
 		yearInput.addEventListener('change', () => {
 			const year = parseInt(yearInput.value);
-			if (!isNaN(year) && year > 0 && year < 10000) {
+			if (!isNaN(year) && year > 0 && year < 10000 && year !== this.currentYear) {
 				this.currentYear = year;
 				this.selectedDay = null;
 				this.renderCalendar();
@@ -218,6 +269,7 @@ export class CalendarView extends ItemView {
 			this.showLabels = !this.showLabels;
 			labelsBtn.classList.toggle('is-active', this.showLabels);
 			this.renderGrid();
+			this.persistState();
 		});
 
 		// Filter button
