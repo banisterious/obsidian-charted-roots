@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Source note hierarchies** ([#337](https://github.com/banisterious/obsidian-charted-roots/issues/337)): New `source_parent` and `source_parent_id` properties for linking child source notes to a parent document (e.g., probate packets, record groups, multi-page census transcriptions). Parent source picker with autocomplete in the create/edit source modal.
+
 ### Fixed
 
 - **Heat map barely visible with sparse data** ([#336](https://github.com/banisterious/obsidian-charted-roots/issues/336)): Heat map intensity now scales inversely with point count — sparse datasets (≤5 birth/death markers) render at 3× intensity, medium datasets (≤20) at 2×. Also raised the maxZoom threshold from 10 to 15 so the heat layer stays visible when zoomed in.
