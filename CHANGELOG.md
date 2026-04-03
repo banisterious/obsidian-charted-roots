@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Source note hierarchies** ([#337](https://github.com/banisterious/obsidian-charted-roots/issues/337)): New `source_parent` and `source_parent_id` properties for linking child source notes to a parent document (e.g., probate packets, record groups, multi-page census transcriptions). Parent source picker with autocomplete in the create/edit source modal.
+- **"Create source" context menu** on the Sources folder for quick source note creation.
+
+### Changed
+
+- **Collapsible sections in modals** restyled from action-link appearance (blue plus icon) to section-header style (bordered container, chevron icon) for clearer affordance. Applied to create/edit source and create person modals.
 
 ### Fixed
 
