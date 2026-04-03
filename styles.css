@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-04-03 18:23:45 UTC
+ * - Generated: 2026-04-03 20:03:18 UTC
  * - Components: 47 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -39035,7 +39035,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: PROFILE-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1023 lines, 22.8 KB */
+/* Component Size: 1071 lines, 23.8 KB */
 
 /**
  * Entity Profile View Styles
@@ -40060,6 +40060,54 @@ body:has(.cr-media-linker) .suggestion-container {
   color: var(--text-error);
 }
 
+/* --------------------------------------------------------------------------
+   Source Hierarchy (#338)
+   -------------------------------------------------------------------------- */
+
+.cr-profile__source-hierarchy-item {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  padding: var(--size-2-2) 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-profile__source-hierarchy-item:last-child {
+  border-bottom: none;
+}
+
+.cr-profile__source-type-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2-1);
+  flex-shrink: 0;
+}
+
+.cr-profile__source-type-icon {
+  display: flex;
+  align-items: center;
+  width: 16px;
+  height: 16px;
+}
+
+.cr-profile__source-type-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.cr-profile__source-type-label {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.cr-profile__source-hierarchy-date {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  margin-left: auto;
+  white-space: nowrap;
+}
+
 
 /* End of profile-view.css */
 
@@ -40230,11 +40278,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-04-03 18:23:45 UTC
+ * Build completed: 2026-04-03 20:03:18 UTC
  * Components processed: 47
- * Total lines: 39784
- * Total size: 799.65 KB
- * Build duration: 0.35 seconds
+ * Total lines: 39832
+ * Total size: 800.65 KB
+ * Build duration: 0.34 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -40281,7 +40329,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - preferences.css: 431 lines, 9.44 KB
  * - tree-output.css: 1548 lines, 30.41 KB
  * - dynamic-content.css: 1166 lines, 25.19 KB
- * - profile-view.css: 1023 lines, 22.8 KB
+ * - profile-view.css: 1071 lines, 23.8 KB
  * - migration-notice.css: 135 lines, 2.67 KB
  * - responsive.css: 9 lines, 0.13 KB
  */

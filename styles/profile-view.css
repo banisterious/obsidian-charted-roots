@@ -1020,3 +1020,51 @@
   background-color: rgba(var(--color-red-rgb), 0.15);
   color: var(--text-error);
 }
+
+/* --------------------------------------------------------------------------
+   Source Hierarchy (#338)
+   -------------------------------------------------------------------------- */
+
+.cr-profile__source-hierarchy-item {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  padding: var(--size-2-2) 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-profile__source-hierarchy-item:last-child {
+  border-bottom: none;
+}
+
+.cr-profile__source-type-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2-1);
+  flex-shrink: 0;
+}
+
+.cr-profile__source-type-icon {
+  display: flex;
+  align-items: center;
+  width: 16px;
+  height: 16px;
+}
+
+.cr-profile__source-type-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.cr-profile__source-type-label {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.cr-profile__source-hierarchy-date {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  margin-left: auto;
+  white-space: nowrap;
+}
