@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-04-03 22:18:51 UTC
+ * - Generated: 2026-04-03 22:30:08 UTC
  * - Components: 48 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -40143,7 +40143,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: CALENDAR-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 260 lines, 5.99 KB */
+/* Component Size: 271 lines, 6.34 KB */
 
 /* --------------------------------------------------------------------------
    Calendar View (#299)
@@ -40181,16 +40181,27 @@ body:has(.cr-media-linker) .suggestion-container {
   height: 28px;
 }
 
-.cr-calendar-month-label {
-  font-size: var(--font-ui-large);
+.cr-calendar-month-select {
+  font-size: var(--font-ui-medium);
   font-weight: var(--font-semibold);
-  cursor: pointer;
-  min-width: 180px;
-  text-align: center;
+  padding: var(--size-2-1) var(--size-4-2);
 }
 
-.cr-calendar-month-label:hover {
-  color: var(--text-accent);
+.cr-calendar-year-input {
+  width: 72px;
+  font-size: var(--font-ui-medium);
+  font-weight: var(--font-semibold);
+  text-align: center;
+  padding: var(--size-2-1) var(--size-2-2);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-primary);
+  color: var(--text-normal);
+}
+
+.cr-calendar-year-input:focus {
+  border-color: var(--interactive-accent);
+  outline: none;
 }
 
 .cr-calendar-actions {
@@ -40575,11 +40586,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-04-03 22:18:51 UTC
+ * Build completed: 2026-04-03 22:30:08 UTC
  * Components processed: 48
- * Total lines: 40120
- * Total size: 807.23 KB
- * Build duration: 0.36 seconds
+ * Total lines: 40131
+ * Total size: 807.58 KB
+ * Build duration: 0.39 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -40627,7 +40638,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - tree-output.css: 1548 lines, 30.41 KB
  * - dynamic-content.css: 1166 lines, 25.19 KB
  * - profile-view.css: 1099 lines, 24.39 KB
- * - calendar-view.css: 260 lines, 5.99 KB
+ * - calendar-view.css: 271 lines, 6.34 KB
  * - migration-notice.css: 135 lines, 2.67 KB
  * - responsive.css: 9 lines, 0.13 KB
  */

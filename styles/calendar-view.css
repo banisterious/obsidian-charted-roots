@@ -34,16 +34,27 @@
   height: 28px;
 }
 
-.cr-calendar-month-label {
-  font-size: var(--font-ui-large);
+.cr-calendar-month-select {
+  font-size: var(--font-ui-medium);
   font-weight: var(--font-semibold);
-  cursor: pointer;
-  min-width: 180px;
-  text-align: center;
+  padding: var(--size-2-1) var(--size-4-2);
 }
 
-.cr-calendar-month-label:hover {
-  color: var(--text-accent);
+.cr-calendar-year-input {
+  width: 72px;
+  font-size: var(--font-ui-medium);
+  font-weight: var(--font-semibold);
+  text-align: center;
+  padding: var(--size-2-1) var(--size-2-2);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background: var(--background-primary);
+  color: var(--text-normal);
+}
+
+.cr-calendar-year-input:focus {
+  border-color: var(--interactive-accent);
+  outline: none;
 }
 
 .cr-calendar-actions {

@@ -148,12 +148,38 @@ export class CalendarView extends ItemView {
 		setIcon(prevBtn, 'chevron-left');
 		prevBtn.addEventListener('click', () => this.navigateMonth(-1));
 
-		// Month/year label
-		const label = nav.createSpan({
-			cls: 'cr-calendar-month-label',
-			text: `${MONTH_NAMES[this.currentMonth]} ${this.currentYear}`
+		// Month dropdown
+		const monthSelect = nav.createEl('select', {
+			cls: 'dropdown cr-calendar-month-select'
 		});
-		label.addEventListener('click', () => this.goToToday());
+		for (let i = 0; i < 12; i++) {
+			monthSelect.createEl('option', {
+				value: String(i),
+				text: MONTH_NAMES[i]
+			});
+		}
+		monthSelect.value = String(this.currentMonth);
+		monthSelect.addEventListener('change', () => {
+			this.currentMonth = parseInt(monthSelect.value);
+			this.selectedDay = null;
+			this.renderCalendar();
+		});
+
+		// Year input
+		const yearInput = nav.createEl('input', {
+			type: 'number',
+			cls: 'cr-calendar-year-input',
+			value: String(this.currentYear),
+			attr: { 'aria-label': 'Year' }
+		});
+		yearInput.addEventListener('change', () => {
+			const year = parseInt(yearInput.value);
+			if (!isNaN(year) && year > 0 && year < 10000) {
+				this.currentYear = year;
+				this.selectedDay = null;
+				this.renderCalendar();
+			}
+		});
 
 		// Next month
 		const nextBtn = nav.createEl('button', {
