@@ -2,7 +2,7 @@
 
 Planning document for source hierarchy display and navigation features.
 
-**Status:** Planning
+**Status:** ✅ Phases 1-4 complete | Phase 5 deferred
 
 **Related:** [#338](https://github.com/banisterious/obsidian-charted-roots/issues/338)
 

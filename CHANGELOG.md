@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Source note hierarchies** ([#337](https://github.com/banisterious/obsidian-charted-roots/issues/337)): New `source_parent` and `source_parent_id` properties for linking child source notes to a parent document (e.g., probate packets, record groups, multi-page census transcriptions). Parent source picker with autocomplete in the create/edit source modal.
+- **Source hierarchy display and navigation** ([#338](https://github.com/banisterious/obsidian-charted-roots/issues/338)): Source entity profiles show parent source, child documents, related documents (siblings), and a collapsible source tree visualization. Sources tab in Control Center adds hierarchy filters: "has parent," "no parent (top-level)," and "children of" a specific parent source.
 - **"Create source" context menu** on the Sources folder for quick source note creation.
 
 ### Changed

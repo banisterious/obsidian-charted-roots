@@ -56,6 +56,10 @@ Charted Roots provides tools for managing genealogical sources and evidence, hel
   - [The three axes](#the-three-axes)
   - [Example](#example)
   - [How it integrates](#how-it-integrates)
+- [Source Hierarchies](#source-hierarchies)
+  - [Setting up a hierarchy](#setting-up-a-hierarchy)
+  - [Viewing hierarchies](#viewing-hierarchies)
+  - [Filtering by hierarchy](#filtering-by-hierarchy)
 - [Further Reading](#further-reading)
 - [Related Pages](#related-pages)
 
@@ -759,6 +763,44 @@ When `information_classification` is set on a source, the evidence analysis syst
 The Source Summary and Sources by Role reports conditionally display classification columns when any source has Mills data.
 
 For detailed property documentation, see [Frontmatter Reference — Source Classification](Frontmatter-Reference#source-classification-mills-evidence-explained).
+
+## Source Hierarchies
+
+Multi-document record groups — such as probate packets, census pages, or multi-volume collections — can be modeled using parent-child relationships between source notes.
+
+### Setting up a hierarchy
+
+Add `source_parent` and `source_parent_id` to a child source note's frontmatter:
+
+```yaml
+---
+cr_type: source
+cr_id: appraisement-001
+title: "Hardwick Appraisement, April 1863"
+source_type: probate
+source_parent: "[[Hardwick Probate Packet]]"
+source_parent_id: hardwick-packet-001
+---
+```
+
+You can also set the parent source in the **Create source** or **Edit source** modal under **Additional details > Parent source**, which provides autocomplete from existing source notes.
+
+### Viewing hierarchies
+
+The **Entity Profile View** for source notes displays hierarchy information:
+
+- **Parent source** — On child source profiles, a link to the parent source appears at the top
+- **Child documents** — On parent source profiles, all child sources are listed with type badge, title, and date
+- **Related documents** — On child source profiles, sibling sources (other children of the same parent) are shown
+- **Source tree** — On parent source profiles, a collapsible tree visualization shows the full hierarchy
+
+### Filtering by hierarchy
+
+The **Sources tab** in Control Center includes hierarchy-aware filters:
+
+- **Has parent (child sources)** — Show only sources that have a parent
+- **No parent (top-level)** — Show only sources without a parent
+- **Children of [source]** — Show only children of a specific parent source
 
 ## Further Reading
 
