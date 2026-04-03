@@ -37,6 +37,9 @@ export class CalendarView extends ItemView {
 		livingStatus: 'all'
 	};
 
+	// Display options
+	private showLabels: boolean = false;
+
 	// UI elements
 	private headerEl: HTMLElement | null = null;
 	private gridEl: HTMLElement | null = null;
@@ -201,6 +204,19 @@ export class CalendarView extends ItemView {
 		});
 		todayBtn.addEventListener('click', () => this.goToToday());
 
+		// Labels toggle
+		const labelsBtn = actions.createEl('button', {
+			cls: 'clickable-icon',
+			attr: { 'aria-label': 'Show labels' }
+		});
+		setIcon(labelsBtn, 'tag');
+		if (this.showLabels) labelsBtn.classList.add('is-active');
+		labelsBtn.addEventListener('click', () => {
+			this.showLabels = !this.showLabels;
+			labelsBtn.classList.toggle('is-active', this.showLabels);
+			this.renderGrid();
+		});
+
 		// Filter button
 		const filterBtn = actions.createEl('button', {
 			cls: 'clickable-icon',
@@ -316,23 +332,44 @@ export class CalendarView extends ItemView {
 			// Day number
 			cell.createSpan({ cls: 'cr-calendar-day-number', text: String(day) });
 
-			// Event dots
+			// Event dots / labels
 			if (events.length > 0) {
 				cell.addClass('cr-calendar-cell--has-events');
-				const dotsEl = cell.createDiv({ cls: 'cr-calendar-dots' });
 
-				if (events.length <= 3) {
-					for (const event of events) {
-						const dot = dotsEl.createSpan({ cls: 'cr-calendar-dot' });
+				if (this.showLabels) {
+					const labelsEl = cell.createDiv({ cls: 'cr-calendar-labels' });
+					const maxLabels = 3;
+					const shown = events.slice(0, maxLabels);
+					for (const event of shown) {
+						const labelRow = labelsEl.createDiv({ cls: 'cr-calendar-label-row' });
+						const dot = labelRow.createSpan({ cls: 'cr-calendar-dot' });
 						const color = EVENT_TYPE_COLORS[event.eventType] || 'var(--text-muted)';
 						dot.style.backgroundColor = color;
+						labelRow.createSpan({
+							cls: 'cr-calendar-label-text',
+							text: event.personName
+						});
+					}
+					if (events.length > maxLabels) {
+						labelsEl.createSpan({
+							cls: 'cr-calendar-label-more',
+							text: `+${events.length - maxLabels} more`
+						});
 					}
 				} else {
-					// Show count badge for busy days
-					dotsEl.createSpan({
-						cls: 'cr-calendar-event-count',
-						text: String(events.length)
-					});
+					const dotsEl = cell.createDiv({ cls: 'cr-calendar-dots' });
+					if (events.length <= 3) {
+						for (const event of events) {
+							const dot = dotsEl.createSpan({ cls: 'cr-calendar-dot' });
+							const color = EVENT_TYPE_COLORS[event.eventType] || 'var(--text-muted)';
+							dot.style.backgroundColor = color;
+						}
+					} else {
+						dotsEl.createSpan({
+							cls: 'cr-calendar-event-count',
+							text: String(events.length)
+						});
+					}
 				}
 			}
 

@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-04-03 22:30:08 UTC
+ * - Generated: 2026-04-03 22:38:20 UTC
  * - Components: 48 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -40143,7 +40143,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: CALENDAR-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 271 lines, 6.34 KB */
+/* Component Size: 302 lines, 6.83 KB */
 
 /* --------------------------------------------------------------------------
    Calendar View (#299)
@@ -40304,6 +40304,37 @@ body:has(.cr-media-linker) .suggestion-container {
   height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
+}
+
+/* Labels mode */
+.cr-calendar-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: var(--size-2-1);
+  overflow: hidden;
+}
+
+.cr-calendar-label-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+}
+
+.cr-calendar-label-text {
+  font-size: 10px;
+  line-height: 1.2;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cr-calendar-label-more {
+  font-size: 9px;
+  color: var(--text-faint);
+  margin-top: 1px;
 }
 
 .cr-calendar-event-count {
@@ -40586,11 +40617,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-04-03 22:30:08 UTC
+ * Build completed: 2026-04-03 22:38:20 UTC
  * Components processed: 48
- * Total lines: 40131
- * Total size: 807.58 KB
- * Build duration: 0.39 seconds
+ * Total lines: 40162
+ * Total size: 808.07 KB
+ * Build duration: 0.37 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -40638,7 +40669,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - tree-output.css: 1548 lines, 30.41 KB
  * - dynamic-content.css: 1166 lines, 25.19 KB
  * - profile-view.css: 1099 lines, 24.39 KB
- * - calendar-view.css: 271 lines, 6.34 KB
+ * - calendar-view.css: 302 lines, 6.83 KB
  * - migration-notice.css: 135 lines, 2.67 KB
  * - responsive.css: 9 lines, 0.13 KB
  */

@@ -159,6 +159,37 @@
   flex-shrink: 0;
 }
 
+/* Labels mode */
+.cr-calendar-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: var(--size-2-1);
+  overflow: hidden;
+}
+
+.cr-calendar-label-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+}
+
+.cr-calendar-label-text {
+  font-size: 10px;
+  line-height: 1.2;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cr-calendar-label-more {
+  font-size: 9px;
+  color: var(--text-faint);
+  margin-top: 1px;
+}
+
 .cr-calendar-event-count {
   font-size: 10px;
   font-weight: var(--font-semibold);
