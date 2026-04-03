@@ -353,6 +353,12 @@ export interface SourceNote {
 	/** Mills evidence classification: how does the information relate to the question? */
 	evidenceClassification?: EvidenceClassification;
 
+	// Source hierarchy (#337)
+	/** Parent source wikilink (e.g., probate packet parent note) */
+	sourceParent?: string;
+	/** Parent source cr_id for reliable resolution */
+	sourceParentId?: string;
+
 	// Person roles (#219)
 	/** Subject(s) of the document */
 	principals?: string[];

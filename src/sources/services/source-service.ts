@@ -237,6 +237,9 @@ export class SourceService {
 		informationClassification?: InformationClassification;
 		evidenceClassification?: EvidenceClassification;
 		transcription?: string;
+		// Source hierarchy (#337)
+		sourceParent?: string;
+		sourceParentId?: string;
 		// Person roles (#219)
 		principals?: string[];
 		witnesses?: string[];
@@ -300,6 +303,14 @@ export class SourceService {
 		}
 		if (data.evidenceClassification) {
 			frontmatterLines.push(`evidence_classification: ${data.evidenceClassification}`);
+		}
+
+		// Source hierarchy (#337)
+		if (data.sourceParent) {
+			frontmatterLines.push(`source_parent: "${data.sourceParent.replace(/"/g, '\\"')}"`);
+		}
+		if (data.sourceParentId) {
+			frontmatterLines.push(`source_parent_id: ${data.sourceParentId}`);
 		}
 
 		// Person role arrays (#219)
@@ -382,6 +393,9 @@ export class SourceService {
 		informationClassification?: InformationClassification;
 		evidenceClassification?: EvidenceClassification;
 		media?: string[];
+		// Source hierarchy (#337)
+		sourceParent?: string;
+		sourceParentId?: string;
 		// Person roles (#219)
 		principals?: string[];
 		witnesses?: string[];
@@ -481,6 +495,18 @@ export class SourceService {
 				for (let i = 1; i < data.media.length; i++) {
 					frontmatter[`media_${i + 1}`] = data.media[i];
 				}
+			}
+
+			// Source hierarchy (#337)
+			if (data.sourceParent) {
+				frontmatter.source_parent = data.sourceParent;
+			} else {
+				delete frontmatter.source_parent;
+			}
+			if (data.sourceParentId) {
+				frontmatter.source_parent_id = data.sourceParentId;
+			} else {
+				delete frontmatter.source_parent_id;
 			}
 
 			// Handle person role arrays (#219)
@@ -625,6 +651,9 @@ export class SourceService {
 			sourceClassification,
 			informationClassification,
 			evidenceClassification,
+			// Source hierarchy (#337)
+			sourceParent: frontmatter.source_parent ? fmToString(frontmatter.source_parent) : undefined,
+			sourceParentId: frontmatter.source_parent_id ? fmToString(frontmatter.source_parent_id) : undefined,
 			// Person roles (#219)
 			...roleArrays
 		};

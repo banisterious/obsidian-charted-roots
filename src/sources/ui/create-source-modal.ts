@@ -58,6 +58,8 @@ interface SourceFormData {
 	transcription: string;
 	media: string[];
 	personRoles: PersonRoleEntry[];
+	sourceParent: string;
+	sourceParentId: string;
 }
 
 /** Supported media file extensions */
@@ -125,6 +127,39 @@ class LocationSuggest extends AbstractInputSuggest<string> {
 }
 
 /**
+ * Autocomplete suggest for source notes (#337)
+ */
+class SourceSuggest extends AbstractInputSuggest<SourceNote> {
+	private sources: SourceNote[];
+	private textComponent: TextComponent;
+	private onSelectSource: (source: SourceNote) => void;
+
+	constructor(app: App, textComponent: TextComponent, sources: SourceNote[], onSelectSource: (source: SourceNote) => void) {
+		super(app, textComponent.inputEl);
+		this.textComponent = textComponent;
+		this.sources = sources;
+		this.onSelectSource = onSelectSource;
+	}
+
+	getSuggestions(inputStr: string): SourceNote[] {
+		const lowerInput = inputStr.toLowerCase();
+		return this.sources.filter(s =>
+			s.title.toLowerCase().includes(lowerInput)
+		);
+	}
+
+	renderSuggestion(source: SourceNote, el: HTMLElement): void {
+		el.setText(source.title);
+	}
+
+	selectSuggestion(source: SourceNote): void {
+		this.textComponent.setValue(source.title);
+		this.onSelectSource(source);
+		this.close();
+	}
+}
+
+/**
  * Options for opening the source modal
  */
 export interface SourceModalOptions {
@@ -162,6 +197,10 @@ export class CreateSourceModal extends Modal {
 	private evidenceClassification: EvidenceClassification | '' = '';
 	private transcription: string = '';
 	private media: string[] = [];
+
+	// Source hierarchy (#337)
+	private sourceParent: string = '';
+	private sourceParentId: string = '';
 
 	// Person roles (#219)
 	private personRoles: PersonRoleEntry[] = [];
@@ -205,6 +244,10 @@ export class CreateSourceModal extends Modal {
 				this.informationClassification = source.informationClassification || '';
 				this.evidenceClassification = source.evidenceClassification || '';
 				this.media = [...source.media];
+
+				// Load source hierarchy (#337)
+				this.sourceParent = source.sourceParent || '';
+				this.sourceParentId = source.sourceParentId || '';
 
 				// Load existing person roles (#219)
 				this.loadPersonRolesFromSource(source);
@@ -604,6 +647,56 @@ export class CreateSourceModal extends Modal {
 				}
 			});
 
+		// Parent source (#337)
+		const allSources = sourceService.getAllSources();
+		// Exclude the current source (in edit mode) from the parent picker
+		const availableParents = this.editMode && this.editingFile
+			? allSources.filter(s => s.filePath !== this.editingFile!.path)
+			: allSources;
+
+		new Setting(fields)
+			.setName('Parent source')
+			.setDesc('Parent document (e.g., probate packet, record group)')
+			.addText(text => {
+				const displayValue = this.sourceParent
+					? this.sourceParent.replace(/^\[\[|\]\]$/g, '')
+					: '';
+				text.setPlaceholder('e.g., Hardwick Probate Packet')
+					.setValue(displayValue)
+					.onChange(value => {
+						if (!value.trim()) {
+							this.sourceParent = '';
+							this.sourceParentId = '';
+							return;
+						}
+						// Try to match to an existing source
+						const match = availableParents.find(s =>
+							s.title.toLowerCase() === value.trim().toLowerCase()
+						);
+						if (match) {
+							this.sourceParent = `[[${match.title}]]`;
+							this.sourceParentId = match.crId;
+						} else {
+							// Allow freeform wikilink
+							this.sourceParent = `[[${value.trim()}]]`;
+							this.sourceParentId = '';
+						}
+					});
+
+				if (availableParents.length > 0) {
+					new SourceSuggest(
+						this.app,
+						text,
+						availableParents,
+						(source) => {
+							this.sourceParent = `[[${source.title}]]`;
+							this.sourceParentId = source.crId;
+							text.setValue(source.title);
+						}
+					);
+				}
+			});
+
 		// Media files section
 		const mediaSetting = new Setting(fields)
 			.setName('Media files')
@@ -911,7 +1004,9 @@ export class CreateSourceModal extends Modal {
 			evidenceClassification: this.evidenceClassification,
 			transcription: this.transcription,
 			media: [...this.media],
-			personRoles: [...this.personRoles]
+			personRoles: [...this.personRoles],
+			sourceParent: this.sourceParent,
+			sourceParentId: this.sourceParentId
 		};
 	}
 
@@ -934,6 +1029,8 @@ export class CreateSourceModal extends Modal {
 		this.transcription = formData.transcription || '';
 		this.media = formData.media ? [...formData.media] : [];
 		this.personRoles = formData.personRoles ? [...formData.personRoles] : [];
+		this.sourceParent = formData.sourceParent || '';
+		this.sourceParentId = formData.sourceParentId || '';
 	}
 
 	/**
@@ -1050,6 +1147,9 @@ export class CreateSourceModal extends Modal {
 					informationClassification: this.informationClassification || undefined,
 					evidenceClassification: this.evidenceClassification || undefined,
 					media: this.media.length > 0 ? this.media : undefined,
+					// Source hierarchy (#337)
+					sourceParent: this.sourceParent.trim() || undefined,
+					sourceParentId: this.sourceParentId.trim() || undefined,
 					// Person roles (#219)
 					...roleArrays
 				});
@@ -1072,6 +1172,9 @@ export class CreateSourceModal extends Modal {
 					evidenceClassification: this.evidenceClassification || undefined,
 					media: this.media.length > 0 ? this.media : undefined,
 					transcription: this.transcription.trim() || undefined,
+					// Source hierarchy (#337)
+					sourceParent: this.sourceParent.trim() || undefined,
+					sourceParentId: this.sourceParentId.trim() || undefined,
 					// Person roles (#219)
 					...roleArrays
 				});

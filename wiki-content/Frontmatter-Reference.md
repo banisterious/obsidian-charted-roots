@@ -646,6 +646,17 @@ Charted Roots includes built-in source types organized by category. Custom types
 | `collection` | `string` | Record group or collection name | `"1900 United States Federal Census"` |
 | `location` | `string` | Geographic location of the record | `"New York, Kings County, Brooklyn"` |
 
+### Source Hierarchy
+
+Link a source note to a parent source to model multi-document record groups (e.g., probate packets, census pages within an enumeration district).
+
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `source_parent` | `string` | Wikilink to the parent source note | `"[[Hardwick Probate Packet]]"` |
+| `source_parent_id` | `string` | `cr_id` of the parent source (for reliable resolution) | `"src_abc123"` |
+
+Both properties follow the dual-storage pattern used elsewhere in Charted Roots. When both are present, `source_parent_id` is used for resolution and `source_parent` provides Obsidian graph/backlink visibility.
+
 ### Confidence Level
 
 | Property | Type | Description | Example |
