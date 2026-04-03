@@ -23,6 +23,7 @@
 ### Exploration
 - [Entity Profile View](Entity-Profile-View)
 - [Family Chart View](Family-Chart-View)
+- [Calendar View](Calendar-View)
 - [Geographic Features](Geographic-Features)
 - [Custom Maps](Custom-Maps)
 - [Relationship Tools](Relationship-Tools)
