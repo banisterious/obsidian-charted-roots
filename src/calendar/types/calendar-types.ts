@@ -62,6 +62,8 @@ export interface CalendarViewState {
 	filter: CalendarFilter;
 	/** Currently selected day (1-31), null if none */
 	selectedDay: number | null;
+	/** Whether to show text labels in day cells */
+	showLabels: boolean;
 }
 
 /**

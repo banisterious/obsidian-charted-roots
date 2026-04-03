@@ -98,7 +98,8 @@ export class CalendarView extends ItemView {
 			month: this.currentMonth,
 			year: this.currentYear,
 			filter: { ...this.filter },
-			selectedDay: this.selectedDay
+			selectedDay: this.selectedDay,
+			showLabels: this.showLabels
 		};
 	}
 
@@ -107,7 +108,9 @@ export class CalendarView extends ItemView {
 		if (state.year !== undefined) this.currentYear = state.year;
 		if (state.filter) this.filter = { ...state.filter };
 		if (state.selectedDay !== undefined) this.selectedDay = state.selectedDay;
+		if (state.showLabels !== undefined) this.showLabels = state.showLabels;
 		this.renderCalendar();
+		await super.setState(state);
 	}
 
 	// ========================================================================
