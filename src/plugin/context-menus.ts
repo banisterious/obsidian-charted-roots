@@ -1143,6 +1143,45 @@ export function registerContextMenus(plugin: CanvasRootsPlugin): void {
 										});
 								});
 
+								// Show on calendar
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Show on calendar')
+										.setIcon('calendar')
+										.onClick(() => {
+											const cache = plugin.app.metadataCache.getFileCache(file);
+											const birthDate = cache?.frontmatter?.birth_date || cache?.frontmatter?.birthDate;
+											// Parse year and month from birth date
+											let month = new Date().getMonth();
+											let year = new Date().getFullYear();
+											if (birthDate) {
+												const dateStr = String(birthDate);
+												const isoMatch = dateStr.match(/(\d{4})-(\d{1,2})/);
+												if (isoMatch) {
+													year = parseInt(isoMatch[1]);
+													month = parseInt(isoMatch[2]) - 1; // 0-indexed
+												}
+											}
+											const { VIEW_TYPE_CALENDAR } = require('../calendar/calendar-view');
+											const leaves = plugin.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR);
+											if (leaves.length > 0) {
+												plugin.app.workspace.revealLeaf(leaves[0]);
+												const calView = leaves[0].view as import('../calendar/calendar-view').CalendarView;
+												calView.navigateToDate(month, year);
+											} else {
+												void plugin.activateCalendarView().then(() => {
+													setTimeout(() => {
+														const newLeaves = plugin.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR);
+														if (newLeaves.length > 0) {
+															const calView = newLeaves[0].view as import('../calendar/calendar-view').CalendarView;
+															calView.navigateToDate(month, year);
+														}
+													}, 500);
+												});
+											}
+										});
+								});
+
 								// Relationships submenu (adding relationships, validation, calculation)
 								submenu.addItem((subItem) => {
 									const relationshipSubmenu: Menu = subItem
@@ -2214,6 +2253,43 @@ export function registerContextMenus(plugin: CanvasRootsPlugin): void {
 										.setIcon('id-card')
 										.onClick(async () => {
 											await plugin.activateProfileView(file);
+										});
+								});
+
+								// Show on calendar
+								submenu.addItem((subItem) => {
+									subItem
+										.setTitle('Show on calendar')
+										.setIcon('calendar')
+										.onClick(() => {
+											const eventDate = cache?.frontmatter?.date || cache?.frontmatter?.event_date;
+											let month = new Date().getMonth();
+											let year = new Date().getFullYear();
+											if (eventDate) {
+												const dateStr = String(eventDate);
+												const isoMatch = dateStr.match(/(\d{4})-(\d{1,2})/);
+												if (isoMatch) {
+													year = parseInt(isoMatch[1]);
+													month = parseInt(isoMatch[2]) - 1;
+												}
+											}
+											const { VIEW_TYPE_CALENDAR } = require('../calendar/calendar-view');
+											const leaves = plugin.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR);
+											if (leaves.length > 0) {
+												plugin.app.workspace.revealLeaf(leaves[0]);
+												const calView = leaves[0].view as import('../calendar/calendar-view').CalendarView;
+												calView.navigateToDate(month, year);
+											} else {
+												void plugin.activateCalendarView().then(() => {
+													setTimeout(() => {
+														const newLeaves = plugin.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR);
+														if (newLeaves.length > 0) {
+															const calView = newLeaves[0].view as import('../calendar/calendar-view').CalendarView;
+															calView.navigateToDate(month, year);
+														}
+													}, 500);
+												});
+											}
 										});
 								});
 

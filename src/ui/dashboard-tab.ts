@@ -304,6 +304,16 @@ function renderQuickActionsSection(
 				void plugin.activateMapView();
 			}
 		},
+		{
+			id: 'open-calendar',
+			label: 'Calendar',
+			icon: 'calendar',
+			description: 'View significant dates on a calendar',
+			action: () => {
+				closeModal();
+				void plugin.activateCalendarView();
+			}
+		},
 		// Row 3: Analysis & utilities
 		{
 			id: 'reports',

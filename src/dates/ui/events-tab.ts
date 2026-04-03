@@ -116,6 +116,16 @@ function renderEventNotesCard(
 				plugin.app.commands.executeCommandById('charted-roots:create-events-base-template');
 			}));
 
+	// Calendar view button
+	new Setting(content)
+		.setName('Open calendar view')
+		.setDesc('View significant dates on a monthly calendar')
+		.addButton(button => button
+			.setButtonText('Calendar')
+			.onClick(() => {
+				void plugin.activateCalendarView();
+			}));
+
 	// Templater templates button
 	new Setting(content)
 		.setName('Templater templates')

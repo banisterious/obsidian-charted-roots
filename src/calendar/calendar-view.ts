@@ -583,6 +583,16 @@ export class CalendarView extends ItemView {
 		this.renderCalendar();
 	}
 
+	/**
+	 * Navigate to a specific month and year (public, for external callers)
+	 */
+	navigateToDate(month: number, year: number): void {
+		this.currentMonth = month;
+		this.currentYear = year;
+		this.selectedDay = null;
+		this.renderCalendar();
+	}
+
 	// ── Event Handlers ──────────────────────────────────────
 
 	private registerEventHandlers(): void {
