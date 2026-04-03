@@ -9,6 +9,7 @@ Charted Roots adds context menu actions throughout Obsidian. Right-click on file
 - [Person Notes](#person-notes)
 - [Place Notes](#place-notes)
 - [Source Notes](#source-notes)
+- [Event Notes](#event-notes)
 - [Map Notes](#map-notes)
 - [Canvas Files](#canvas-files)
 - [Folders](#folders)
@@ -36,6 +37,8 @@ Right-click on any markdown file with a `cr_id` frontmatter property:
 | **Validate relationships** | Check for relationship inconsistencies |
 | **Find on canvas** | Locate this person on an open canvas |
 | **Open in map view** | Show this person's locations on the map |
+| **[Show journey on map](Geographic-Features#journey-mode)** | Enter journey mode on the map for this person |
+| **[Show on calendar](Calendar-View)** | Open the calendar at this person's birth month/year |
 | **Calculate relationship...** | Find how this person relates to another |
 | **Set group name** | Assign a custom name to this person's family group |
 | **Set collection** | Add this person to a collection |
@@ -86,6 +89,21 @@ Right-click on markdown files with `cr_type: source` in frontmatter:
 | **Add source roles block** | Insert a dynamic source roles block into the note |
 | **Link to existing event** | Search for and link this source to an existing event note |
 | **Add essential properties** | Add missing source or person properties |
+
+## Event Notes
+
+Right-click on markdown files with `cr_type: event` in frontmatter:
+
+| Action | Description |
+|--------|-------------|
+| **Edit event** | Open the event editing modal |
+| **[Open profile](Entity-Profile-View)** | Open the Entity Profile View for this event |
+| **[Show on calendar](Calendar-View)** | Open the calendar at this event's date |
+| **Media** | |
+| → Link media... | Attach an image or document to this event |
+| → Manage media... | View and manage linked media |
+| **Add essential event properties** | Add missing event properties |
+| **Add cr_id** | Add a unique identifier if missing |
 
 ## Map Notes
 

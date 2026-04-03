@@ -21,10 +21,13 @@ The Calendar View shows a monthly calendar grid of significant dates across your
 
 ## Opening the Calendar
 
-Open the Calendar View from the command palette:
+There are several ways to open the Calendar View:
 
-1. Press `Ctrl/Cmd + P` to open the command palette
-2. Search for **Charted Roots: Open calendar view**
+- **Command palette** — Press `Ctrl/Cmd + P` and search for **Charted Roots: Open calendar view**
+- **Control Center dashboard** — Click the **Calendar** tile in the quick actions grid
+- **Events tab** — In the Control Center Events tab, click the **Calendar** button in the Actions card
+- **Person context menu** — Right-click a person note → **Charted Roots > Show on calendar** (navigates to the person's birth month and year)
+- **Event context menu** — Right-click an event note → **Charted Roots > Show on calendar** (navigates to the event's date)
 
 The calendar opens as a workspace tab, like the Map View or Statistics View.
 
