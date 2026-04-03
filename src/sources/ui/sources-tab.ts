@@ -24,7 +24,7 @@ import { ExtractEventsModal } from '../../events/ui/extract-events-modal';
 /**
  * Filter options for sources list
  */
-export type SourceListFilter = 'all' | 'has_media' | 'no_media' | 'confidence_high' | 'confidence_medium' | 'confidence_low' | `type_${string}`;
+export type SourceListFilter = 'all' | 'has_media' | 'no_media' | 'confidence_high' | 'confidence_medium' | 'confidence_low' | 'has_parent' | 'no_parent' | `type_${string}` | `parent_${string}`;
 
 /**
  * Sort options for sources list
@@ -280,6 +280,22 @@ function renderSourcesListCard(
 		mediaGroup.createEl('option', { value: 'has_media', text: 'Has media' });
 		mediaGroup.createEl('option', { value: 'no_media', text: 'No media' });
 
+		// Hierarchy filters (#338)
+		const hierarchyGroup = filterSelect.createEl('optgroup', { attr: { label: 'By hierarchy' } });
+		hierarchyGroup.createEl('option', { value: 'has_parent', text: 'Has parent (child sources)' });
+		hierarchyGroup.createEl('option', { value: 'no_parent', text: 'No parent (top-level)' });
+
+		// Add parent-specific filters for sources that have children
+		const parentSources = allSources.filter(s =>
+			allSources.some(child => child.sourceParentId === s.crId)
+		);
+		if (parentSources.length > 0) {
+			const parentGroup = filterSelect.createEl('optgroup', { attr: { label: 'Children of' } });
+			for (const parent of parentSources) {
+				parentGroup.createEl('option', { value: `parent_${parent.crId}`, text: parent.title });
+			}
+		}
+
 		// Sort dropdown
 		const sortContainer = controls.createDiv({ cls: 'crc-filter-container' });
 		const sortSelect = sortContainer.createEl('select', { cls: 'dropdown crc-filter-select' });
@@ -309,11 +325,20 @@ function renderSourcesListCard(
 						return source.confidence === 'medium';
 					case 'confidence_low':
 						return source.confidence === 'low';
+					case 'has_parent':
+						return !!source.sourceParentId;
+					case 'no_parent':
+						return !source.sourceParentId;
 					default:
 						// Type-based filter (type_xxx)
 						if (currentFilter.startsWith('type_')) {
 							const typeId = currentFilter.replace('type_', '');
 							return source.sourceType === typeId;
+						}
+						// Parent-based filter (parent_xxx)
+						if (currentFilter.startsWith('parent_')) {
+							const parentId = currentFilter.replace('parent_', '');
+							return source.sourceParentId === parentId;
 						}
 						return true;
 				}
@@ -680,6 +705,21 @@ export function renderSourcesList(options: SourcesListOptions): void {
 	mediaGroup.createEl('option', { value: 'has_media', text: 'Has media' });
 	mediaGroup.createEl('option', { value: 'no_media', text: 'No media' });
 
+	// Hierarchy filters (#338)
+	const hierarchyGroup2 = filterSelect.createEl('optgroup', { attr: { label: 'By hierarchy' } });
+	hierarchyGroup2.createEl('option', { value: 'has_parent', text: 'Has parent (child sources)' });
+	hierarchyGroup2.createEl('option', { value: 'no_parent', text: 'No parent (top-level)' });
+
+	const parentSources2 = allSources.filter(s =>
+		allSources.some(child => child.sourceParentId === s.crId)
+	);
+	if (parentSources2.length > 0) {
+		const parentGroup2 = filterSelect.createEl('optgroup', { attr: { label: 'Children of' } });
+		for (const parent of parentSources2) {
+			parentGroup2.createEl('option', { value: `parent_${parent.crId}`, text: parent.title });
+		}
+	}
+
 	filterSelect.value = currentFilter;
 
 	// Sort dropdown
@@ -724,10 +764,18 @@ export function renderSourcesList(options: SourcesListOptions): void {
 					return source.confidence === 'medium';
 				case 'confidence_low':
 					return source.confidence === 'low';
+				case 'has_parent':
+					return !!source.sourceParentId;
+				case 'no_parent':
+					return !source.sourceParentId;
 				default:
 					if (currentFilter.startsWith('type_')) {
 						const typeId = currentFilter.replace('type_', '');
 						return source.sourceType === typeId;
+					}
+					if (currentFilter.startsWith('parent_')) {
+						const parentId = currentFilter.replace('parent_', '');
+						return source.sourceParentId === parentId;
 					}
 					return true;
 			}
