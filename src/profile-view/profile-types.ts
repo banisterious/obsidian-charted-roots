@@ -102,6 +102,12 @@ export interface SourceProfileData {
 	source: SourceNote;
 	referencedFacts: ReferencedFactGroup[];
 	media: MediaItem[];
+	/** Parent source note (if this is a child) */
+	parentSource?: SourceNote;
+	/** Child source notes (if this is a parent) */
+	childSources: SourceNote[];
+	/** Sibling source notes — same parent, excluding self */
+	siblingSources: SourceNote[];
 }
 
 export interface OrganizationProfileData {

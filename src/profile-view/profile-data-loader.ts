@@ -268,6 +268,26 @@ export class ProfileDataLoader {
 		// Media
 		const media = this.resolveMedia(source.media);
 
+		// Source hierarchy (#338)
+		const allSources = sourceService.getAllSources();
+
+		// Parent source
+		let parentSource: SourceNote | undefined;
+		if (source.sourceParentId) {
+			parentSource = allSources.find(s => s.crId === source.sourceParentId);
+		}
+
+		// Child sources
+		const childSources = allSources.filter(s => s.sourceParentId === crId);
+
+		// Sibling sources (same parent, excluding self)
+		let siblingSources: SourceNote[] = [];
+		if (source.sourceParentId) {
+			siblingSources = allSources.filter(s =>
+				s.sourceParentId === source.sourceParentId && s.crId !== crId
+			);
+		}
+
 		return {
 			entityType: 'source',
 			crId,
@@ -275,7 +295,10 @@ export class ProfileDataLoader {
 			file,
 			source,
 			referencedFacts,
-			media
+			media,
+			parentSource,
+			childSources,
+			siblingSources
 		};
 	}
 
