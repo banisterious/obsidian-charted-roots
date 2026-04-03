@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-04-02 20:59:57 UTC
+ * - Generated: 2026-04-03 18:23:45 UTC
  * - Components: 47 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -6417,7 +6417,7 @@ settings:
    COMPONENT: ENTITY-CREATE-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 1233 lines, 25.39 KB */
+/* Component Size: 1236 lines, 25.51 KB */
 
 /* ==========================================================================
    PERSON PICKER MODAL
@@ -7304,15 +7304,17 @@ settings:
   margin: var(--size-4-2) 0;
 }
 
-/* Expansion trigger link */
+/* Collapsed section header */
 .crc-inline-expand__trigger {
   display: flex;
   align-items: center;
-  gap: var(--size-2-3);
-  padding: var(--size-2-3) var(--size-4-1);
-  color: var(--text-accent);
+  justify-content: space-between;
+  padding: var(--size-2-3) var(--size-4-2);
+  color: var(--text-normal);
   cursor: pointer;
-  border-radius: var(--radius-s);
+  border-radius: var(--radius-m);
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
   transition: background-color 0.15s ease;
 }
 
@@ -7326,7 +7328,7 @@ settings:
   justify-content: center;
   width: 18px;
   height: 18px;
-  color: var(--text-accent);
+  color: var(--text-muted);
 }
 
 .crc-inline-expand__icon svg {
@@ -7336,7 +7338,8 @@ settings:
 
 .crc-inline-expand__text {
   font-size: var(--font-ui-small);
-  font-weight: 500;
+  font-weight: 600;
+  flex: 1;
 }
 
 /* Content container - hidden by default */
@@ -40227,11 +40230,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-04-02 20:59:57 UTC
+ * Build completed: 2026-04-03 18:23:45 UTC
  * Components processed: 47
- * Total lines: 39781
- * Total size: 799.53 KB
- * Build duration: 0.31 seconds
+ * Total lines: 39784
+ * Total size: 799.65 KB
+ * Build duration: 0.35 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -40240,7 +40243,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - layout.css: 22 lines, 0.25 KB
  * - settings.css: 131 lines, 3.53 KB
  * - control-center.css: 5747 lines, 107.88 KB
- * - entity-create-modals.css: 1233 lines, 25.39 KB
+ * - entity-create-modals.css: 1236 lines, 25.51 KB
  * - place-modals.css: 1400 lines, 26.96 KB
  * - media-modals.css: 1922 lines, 37.09 KB
  * - import-export-wizard.css: 2187 lines, 41.74 KB

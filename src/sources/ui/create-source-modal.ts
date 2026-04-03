@@ -466,8 +466,8 @@ export class CreateSourceModal extends Modal {
 		// Create expansion link (hidden when expanded)
 		const expandLink = wrapper.createDiv({ cls: 'crc-inline-expand__trigger' });
 		const linkIcon = expandLink.createSpan({ cls: 'crc-inline-expand__icon' });
-		setIcon(linkIcon, 'plus');
-		expandLink.createSpan({ text: 'Add source classification', cls: 'crc-inline-expand__text' });
+		expandLink.createSpan({ text: 'Source classification', cls: 'crc-inline-expand__text' });
+		setIcon(linkIcon, 'chevron-down');
 
 		// Create content container (hidden by default unless has data)
 		const content = wrapper.createDiv({ cls: 'crc-inline-expand__content' });
@@ -566,8 +566,8 @@ export class CreateSourceModal extends Modal {
 		// Create expansion link (hidden when expanded)
 		const expandLink = wrapper.createDiv({ cls: 'crc-inline-expand__trigger' });
 		const linkIcon = expandLink.createSpan({ cls: 'crc-inline-expand__icon' });
-		setIcon(linkIcon, 'plus');
-		expandLink.createSpan({ text: 'Add additional details', cls: 'crc-inline-expand__text' });
+		expandLink.createSpan({ text: 'Additional details', cls: 'crc-inline-expand__text' });
+		setIcon(linkIcon, 'chevron-down');
 
 		// Create content container (hidden by default unless has data)
 		const content = wrapper.createDiv({ cls: 'crc-inline-expand__content' });
@@ -749,8 +749,8 @@ export class CreateSourceModal extends Modal {
 		// Create expansion link (hidden when expanded)
 		const expandLink = wrapper.createDiv({ cls: 'crc-inline-expand__trigger' });
 		const linkIcon = expandLink.createSpan({ cls: 'crc-inline-expand__icon' });
-		setIcon(linkIcon, 'plus');
-		expandLink.createSpan({ text: 'Add person roles', cls: 'crc-inline-expand__text' });
+		expandLink.createSpan({ text: 'Person roles', cls: 'crc-inline-expand__text' });
+		setIcon(linkIcon, 'chevron-down');
 
 		// Create content container (hidden by default unless has data)
 		const content = wrapper.createDiv({ cls: 'crc-inline-expand__content' });

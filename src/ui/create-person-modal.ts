@@ -1504,8 +1504,8 @@ export class CreatePersonModal extends Modal {
 		// Create expansion link (hidden when expanded)
 		const expandLink = wrapper.createDiv({ cls: 'crc-inline-expand__trigger' });
 		const linkIcon = expandLink.createSpan({ cls: 'crc-inline-expand__icon' });
-		setIcon(linkIcon, 'plus');
-		expandLink.createSpan({ text: 'Add DNA information', cls: 'crc-inline-expand__text' });
+		expandLink.createSpan({ text: 'DNA information', cls: 'crc-inline-expand__text' });
+		setIcon(linkIcon, 'chevron-down');
 
 		// Create content container (hidden by default unless has data)
 		const content = wrapper.createDiv({ cls: 'crc-inline-expand__content' });
@@ -1634,8 +1634,8 @@ export class CreatePersonModal extends Modal {
 		// Create expansion link
 		const expandLink = wrapper.createDiv({ cls: 'crc-inline-expand__trigger' });
 		const linkIcon = expandLink.createSpan({ cls: 'crc-inline-expand__icon' });
-		setIcon(linkIcon, 'plus');
-		expandLink.createSpan({ text: 'Add step or adoptive parents', cls: 'crc-inline-expand__text' });
+		expandLink.createSpan({ text: 'Step or adoptive parents', cls: 'crc-inline-expand__text' });
+		setIcon(linkIcon, 'chevron-down');
 
 		// Create content container
 		const content = wrapper.createDiv({ cls: 'crc-inline-expand__content' });
@@ -1687,8 +1687,8 @@ export class CreatePersonModal extends Modal {
 		// Create expansion link
 		const expandLink = wrapper.createDiv({ cls: 'crc-inline-expand__trigger' });
 		const linkIcon = expandLink.createSpan({ cls: 'crc-inline-expand__icon' });
-		setIcon(linkIcon, 'plus');
-		expandLink.createSpan({ text: 'Add sources', cls: 'crc-inline-expand__text' });
+		expandLink.createSpan({ text: 'Sources', cls: 'crc-inline-expand__text' });
+		setIcon(linkIcon, 'chevron-down');
 
 		// Create content container
 		const content = wrapper.createDiv({ cls: 'crc-inline-expand__content' });
@@ -1731,8 +1731,8 @@ export class CreatePersonModal extends Modal {
 		// Create expansion link
 		const expandLink = wrapper.createDiv({ cls: 'crc-inline-expand__trigger' });
 		const linkIcon = expandLink.createSpan({ cls: 'crc-inline-expand__icon' });
-		setIcon(linkIcon, 'plus');
-		expandLink.createSpan({ text: 'Add fact-level source citations', cls: 'crc-inline-expand__text' });
+		expandLink.createSpan({ text: 'Fact-level source citations', cls: 'crc-inline-expand__text' });
+		setIcon(linkIcon, 'chevron-down');
 
 		// Create content container
 		const content = wrapper.createDiv({ cls: 'crc-inline-expand__content' });
