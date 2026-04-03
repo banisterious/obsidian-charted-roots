@@ -93,6 +93,7 @@ export class CreateEventModal extends Modal {
 			onUpdated?: (file: TFile) => void;
 			initialPerson?: { name: string; crId: string };
 			initialEventType?: string;
+			initialDate?: string;
 			// Edit mode options
 			editEvent?: EventNote;
 			editFile?: TFile;
@@ -143,6 +144,9 @@ export class CreateEventModal extends Modal {
 			}
 			if (options?.initialEventType) {
 				this.eventType = options.initialEventType;
+			}
+			if (options?.initialDate) {
+				this.date = options.initialDate;
 			}
 		}
 	}

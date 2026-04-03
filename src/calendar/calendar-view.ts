@@ -7,7 +7,7 @@
 
 import { ItemView, WorkspaceLeaf, setIcon, Menu } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
-import type { CalendarEvent, CalendarViewState, CalendarFilter } from './types/calendar-types';
+import type { CalendarEvent, CalendarFilter } from './types/calendar-types';
 import { DEFAULT_EVENT_TYPES, EVENT_TYPE_COLORS } from './types/calendar-types';
 import { CalendarDataService } from './calendar-data-service';
 import { capitalize } from '../utils/format-utils';
@@ -378,6 +378,29 @@ export class CalendarView extends ItemView {
 				this.selectedDay = this.selectedDay === day ? null : day;
 				this.renderGrid();
 				this.renderDetail();
+			});
+
+			// Right-click context menu
+			cell.addEventListener('contextmenu', (e) => {
+				e.preventDefault();
+				const dateStr = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+				const menu = new Menu();
+				menu.addItem((item) => {
+					item.setTitle(`Create event on ${MONTH_NAMES[this.currentMonth]} ${day}, ${this.currentYear}`)
+						.setIcon('calendar-plus')
+						.onClick(() => {
+							const eventService = (this.plugin as unknown as { getEventService: () => unknown }).getEventService?.() as import('../events/services/event-service').EventService | null;
+							if (eventService) {
+								const { CreateEventModal } = require('../events/ui/create-event-modal');
+								new CreateEventModal(this.app, eventService, this.plugin.settings, {
+									initialDate: dateStr,
+									plugin: this.plugin,
+									onCreated: () => this.renderCalendar()
+								}).open();
+							}
+						});
+				});
+				menu.showAtMouseEvent(e);
 			});
 		}
 	}
