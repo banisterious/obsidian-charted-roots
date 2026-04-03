@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-04-03 20:03:18 UTC
+ * - Generated: 2026-04-03 20:16:36 UTC
  * - Components: 47 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -39035,7 +39035,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: PROFILE-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1071 lines, 23.8 KB */
+/* Component Size: 1099 lines, 24.39 KB */
 
 /**
  * Entity Profile View Styles
@@ -40108,6 +40108,34 @@ body:has(.cr-media-linker) .suggestion-container {
   white-space: nowrap;
 }
 
+/* Source tree */
+.cr-profile__source-tree {
+  padding: var(--size-2-2) 0;
+}
+
+.cr-profile__source-tree-root {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  padding: var(--size-2-2) 0;
+  font-weight: var(--font-semibold);
+}
+
+.cr-profile__source-tree-current {
+  font-size: var(--font-ui-small);
+  color: var(--text-normal);
+}
+
+.cr-profile__source-tree-child {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  padding: var(--size-2-1) 0;
+  padding-left: var(--size-4-6);
+  border-left: 2px solid var(--background-modifier-border);
+  margin-left: var(--size-4-2);
+}
+
 
 /* End of profile-view.css */
 
@@ -40278,11 +40306,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-04-03 20:03:18 UTC
+ * Build completed: 2026-04-03 20:16:36 UTC
  * Components processed: 47
- * Total lines: 39832
- * Total size: 800.65 KB
- * Build duration: 0.34 seconds
+ * Total lines: 39860
+ * Total size: 801.23 KB
+ * Build duration: 0.33 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -40329,7 +40357,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - preferences.css: 431 lines, 9.44 KB
  * - tree-output.css: 1548 lines, 30.41 KB
  * - dynamic-content.css: 1166 lines, 25.19 KB
- * - profile-view.css: 1071 lines, 23.8 KB
+ * - profile-view.css: 1099 lines, 24.39 KB
  * - migration-notice.css: 135 lines, 2.67 KB
  * - responsive.css: 9 lines, 0.13 KB
  */

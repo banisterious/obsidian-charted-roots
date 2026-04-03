@@ -1068,3 +1068,31 @@
   margin-left: auto;
   white-space: nowrap;
 }
+
+/* Source tree */
+.cr-profile__source-tree {
+  padding: var(--size-2-2) 0;
+}
+
+.cr-profile__source-tree-root {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  padding: var(--size-2-2) 0;
+  font-weight: var(--font-semibold);
+}
+
+.cr-profile__source-tree-current {
+  font-size: var(--font-ui-small);
+  color: var(--text-normal);
+}
+
+.cr-profile__source-tree-child {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  padding: var(--size-2-1) 0;
+  padding-left: var(--size-4-6);
+  border-left: 2px solid var(--background-modifier-border);
+  margin-left: var(--size-4-2);
+}

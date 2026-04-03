@@ -31,7 +31,7 @@ import { renderDataQualitySection } from './sections/data-quality-section';
 import { renderMapPreviewSection, cleanupMapPreview } from './sections/map-preview-section';
 import { renderParticipantsSection } from './sections/participants-section';
 import { renderReferencedFactsSection } from './sections/referenced-facts-section';
-import { renderParentSourceSection, renderChildSourcesSection, renderSiblingSourcesSection } from './sections/source-hierarchy-section';
+import { renderParentSourceSection, renderChildSourcesSection, renderSiblingSourcesSection, renderSourceTreeSection } from './sections/source-hierarchy-section';
 import { renderMembersSection } from './sections/members-section';
 import { renderResearchSection } from './sections/research-section';
 import { renderProfileSection } from './sections/section-base';
@@ -535,9 +535,10 @@ export class ProfileView extends ItemView {
 			renderParentSourceSection(this.sectionsEl, data.parentSource, options);
 		}
 
-		// Child documents
+		// Child documents + source tree
 		if (data.childSources.length > 0) {
 			renderChildSourcesSection(this.sectionsEl, data.childSources, options);
+			renderSourceTreeSection(this.sectionsEl, data.source, data.childSources, options);
 		}
 
 		// Sibling sources (related documents with same parent)

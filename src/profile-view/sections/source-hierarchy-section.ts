@@ -112,6 +112,72 @@ export function renderSiblingSourcesSection(
 }
 
 /**
+ * Render a collapsible source tree showing parent → children hierarchy
+ */
+export function renderSourceTreeSection(
+	parent: HTMLElement,
+	rootSource: SourceNote,
+	childSources: SourceNote[],
+	options: SourceHierarchySectionOptions
+): void {
+	const total = childSources.length + 1;
+	const summary = `${total} document${total !== 1 ? 's' : ''} in hierarchy`;
+
+	const content = renderProfileSection(parent, {
+		sectionId: 'source-tree',
+		title: 'Source tree',
+		summary,
+		expanded: options.sectionStates['source-tree'] ?? false,
+		onToggle: options.onToggle,
+		icon: 'list-tree'
+	});
+	if (!content) return;
+
+	const tree = content.createDiv({ cls: 'cr-profile__source-tree' });
+
+	// Root node (this source)
+	const rootNode = tree.createDiv({ cls: 'cr-profile__source-tree-root' });
+	renderSourceTypeBadge(rootNode, rootSource.sourceType);
+	rootNode.createSpan({
+		text: rootSource.title,
+		cls: 'cr-profile__source-tree-current'
+	});
+	if (rootSource.date) {
+		rootNode.createSpan({
+			text: rootSource.date,
+			cls: 'cr-profile__source-hierarchy-date'
+		});
+	}
+
+	// Child nodes (indented)
+	for (const child of childSources) {
+		const childNode = tree.createDiv({ cls: 'cr-profile__source-tree-child' });
+
+		renderSourceTypeBadge(childNode, child.sourceType);
+
+		const link = childNode.createSpan({
+			text: child.title,
+			cls: 'cr-profile__entity-link'
+		});
+		link.addEventListener('click', () => {
+			options.onEntityLinkClick(
+				child.crId,
+				child.title,
+				'source',
+				child.filePath
+			);
+		});
+
+		if (child.date) {
+			childNode.createSpan({
+				text: child.date,
+				cls: 'cr-profile__source-hierarchy-date'
+			});
+		}
+	}
+}
+
+/**
  * Render a list of source notes with type badge, title, and date
  */
 function renderSourceList(
