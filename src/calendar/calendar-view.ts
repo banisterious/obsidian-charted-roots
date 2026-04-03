@@ -476,6 +476,26 @@ export class CalendarView extends ItemView {
 				this.scheduleRefresh();
 			})
 		);
+
+		// Keyboard navigation
+		this.registerDomEvent(this.contentEl, 'keydown', (e: KeyboardEvent) => {
+			// Don't intercept when typing in input fields
+			if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
+
+			if (e.key === 'ArrowLeft') {
+				e.preventDefault();
+				this.navigateMonth(-1);
+			} else if (e.key === 'ArrowRight') {
+				e.preventDefault();
+				this.navigateMonth(1);
+			} else if (e.key === 't' || e.key === 'T') {
+				e.preventDefault();
+				this.goToToday();
+			}
+		});
+
+		// Make content focusable for keyboard events
+		this.contentEl.tabIndex = 0;
 	}
 
 	private scheduleRefresh(): void {
