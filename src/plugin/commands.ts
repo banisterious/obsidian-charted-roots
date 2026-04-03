@@ -613,6 +613,15 @@ export function registerCommandsAndEvents(plugin: CanvasRootsPlugin): void {
 		}
 	});
 
+	// Add command: Open Calendar View
+	plugin.addCommand({
+		id: 'open-calendar-view',
+		name: 'Open calendar view',
+		callback: () => {
+			void plugin.activateCalendarView();
+		}
+	});
+
 	// Add command: Open New Map View (for side-by-side comparison)
 	plugin.addCommand({
 		id: 'open-new-map-view',

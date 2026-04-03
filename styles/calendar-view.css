@@ -1,0 +1,259 @@
+/* --------------------------------------------------------------------------
+   Calendar View (#299)
+   Monthly calendar grid showing birthdays, death anniversaries, and
+   marriage dates across the vault.
+   -------------------------------------------------------------------------- */
+
+.cr-calendar-view {
+  padding: var(--size-4-4);
+  overflow-y: auto;
+}
+
+/* --------------------------------------------------------------------------
+   Header / Navigation
+   -------------------------------------------------------------------------- */
+
+.cr-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--size-4-4);
+}
+
+.cr-calendar-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
+.cr-calendar-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}
+
+.cr-calendar-month-label {
+  font-size: var(--font-ui-large);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  min-width: 180px;
+  text-align: center;
+}
+
+.cr-calendar-month-label:hover {
+  color: var(--text-accent);
+}
+
+.cr-calendar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
+.cr-calendar-today-btn {
+  font-size: var(--font-ui-small);
+  padding: var(--size-2-2) var(--size-4-2);
+  border-radius: var(--radius-s);
+  background: var(--interactive-normal);
+  border: 1px solid var(--background-modifier-border);
+  cursor: pointer;
+}
+
+.cr-calendar-today-btn:hover {
+  background: var(--interactive-hover);
+}
+
+/* --------------------------------------------------------------------------
+   Calendar Grid
+   -------------------------------------------------------------------------- */
+
+.cr-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: var(--background-modifier-border);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  overflow: hidden;
+}
+
+.cr-calendar-day-header {
+  padding: var(--size-2-2) var(--size-2-1);
+  text-align: center;
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-semibold);
+  color: var(--text-muted);
+  background: var(--background-secondary);
+}
+
+.cr-calendar-cell {
+  min-height: 64px;
+  padding: var(--size-2-1);
+  background: var(--background-primary);
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  position: relative;
+}
+
+.cr-calendar-cell:hover {
+  background: var(--background-modifier-hover);
+}
+
+.cr-calendar-cell--empty {
+  background: var(--background-secondary);
+  cursor: default;
+}
+
+.cr-calendar-cell--empty:hover {
+  background: var(--background-secondary);
+}
+
+.cr-calendar-cell--today {
+  background: rgba(var(--color-accent-rgb, 79, 122, 243), 0.08);
+}
+
+.cr-calendar-cell--today .cr-calendar-day-number {
+  color: var(--text-accent);
+  font-weight: var(--font-bold);
+}
+
+.cr-calendar-cell--selected {
+  background: rgba(var(--color-accent-rgb, 79, 122, 243), 0.15);
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: -2px;
+}
+
+.cr-calendar-day-number {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Event Dots
+   -------------------------------------------------------------------------- */
+
+.cr-calendar-dots {
+  display: flex;
+  gap: 3px;
+  margin-top: var(--size-2-1);
+  flex-wrap: wrap;
+}
+
+.cr-calendar-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cr-calendar-event-count {
+  font-size: 10px;
+  font-weight: var(--font-semibold);
+  color: var(--text-on-accent);
+  background: var(--interactive-accent);
+  border-radius: var(--radius-s);
+  padding: 0 4px;
+  line-height: 16px;
+}
+
+/* --------------------------------------------------------------------------
+   Day Detail Panel
+   -------------------------------------------------------------------------- */
+
+.cr-calendar-detail {
+  margin-top: var(--size-4-4);
+}
+
+.cr-calendar-detail-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--size-2-3);
+  margin-bottom: var(--size-4-2);
+  border-bottom: 1px solid var(--background-modifier-border);
+  font-weight: var(--font-semibold);
+}
+
+.cr-calendar-detail-count {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  font-weight: var(--font-normal);
+}
+
+.cr-calendar-detail-empty {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  padding: var(--size-4-2) 0;
+}
+
+/* --------------------------------------------------------------------------
+   Event Rows (shared by detail panel and imprecise section)
+   -------------------------------------------------------------------------- */
+
+.cr-calendar-event-row {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  padding: var(--size-2-2) 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-calendar-event-row:last-child {
+  border-bottom: none;
+}
+
+.cr-calendar-event-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cr-calendar-event-name {
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  color: var(--text-accent);
+}
+
+.cr-calendar-event-name:hover {
+  text-decoration: underline;
+}
+
+.cr-calendar-event-type {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+}
+
+.cr-calendar-event-year {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.cr-calendar-event-place {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-faint);
+}
+
+/* --------------------------------------------------------------------------
+   Imprecise Dates Section
+   -------------------------------------------------------------------------- */
+
+.cr-calendar-imprecise {
+  margin-top: var(--size-4-4);
+}
+
+.cr-calendar-imprecise-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--size-2-3);
+  margin-bottom: var(--size-4-2);
+  border-bottom: 1px solid var(--background-modifier-border);
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-semibold);
+  color: var(--text-muted);
+}

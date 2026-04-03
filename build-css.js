@@ -71,6 +71,7 @@ const CONFIG = {
     'tree-output.css',   // Tree output two-panel layout
     'dynamic-content.css', // Dynamic content blocks (timeline, relationships)
     'profile-view.css',  // Entity profile dockable view
+    'calendar-view.css', // Calendar view (#299)
     'migration-notice.css', // Migration notice view (upgrade notifications)
     'responsive.css'     // Responsive breakpoints
   ],

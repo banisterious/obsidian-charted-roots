@@ -8,6 +8,7 @@ import { RelationshipHistoryModal } from './src/ui/relationship-history-modal';
 import { FamilyChartView, VIEW_TYPE_FAMILY_CHART } from './src/ui/views/family-chart-view';
 import { MapView, VIEW_TYPE_MAP } from './src/maps/map-view';
 import { StatisticsView, VIEW_TYPE_STATISTICS } from './src/statistics';
+import { CalendarView, VIEW_TYPE_CALENDAR } from './src/calendar/calendar-view';
 import { RelationshipsView, VIEW_TYPE_RELATIONSHIPS } from './src/relationships/ui/relationships-view';
 import { PeopleView, VIEW_TYPE_PEOPLE } from './src/ui/views/people-view';
 import { EventsView, VIEW_TYPE_EVENTS } from './src/dates/ui/events-view';
@@ -37,6 +38,7 @@ import {
 	activateFamilyChartView as _activateFamilyChartView,
 	activateMapView as _activateMapView,
 	activateStatisticsView as _activateStatisticsView,
+	activateCalendarView as _activateCalendarView,
 	activateRelationshipsView as _activateRelationshipsView,
 	activatePeopleView as _activatePeopleView,
 	activateEventsView as _activateEventsView,
@@ -381,6 +383,12 @@ export default class CanvasRootsPlugin extends Plugin {
 		this.registerView(
 			VIEW_TYPE_STATISTICS,
 			(leaf) => new StatisticsView(leaf, this)
+		);
+
+		// Register calendar view
+		this.registerView(
+			VIEW_TYPE_CALENDAR,
+			(leaf) => new CalendarView(leaf, this)
 		);
 
 		// Register relationships view
@@ -935,6 +943,7 @@ export default class CanvasRootsPlugin extends Plugin {
 		return _activateMapView(this, mapId, forceNew, splitDirection, focusCoordinates);
 	}
 	async activateStatisticsView(): Promise<void> { return _activateStatisticsView(this); }
+	async activateCalendarView(): Promise<void> { return _activateCalendarView(this); }
 	async activateRelationshipsView(): Promise<void> { return _activateRelationshipsView(this); }
 	async activatePeopleView(): Promise<void> { return _activatePeopleView(this); }
 	async activateEventsView(): Promise<void> { return _activateEventsView(this); }
