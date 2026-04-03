@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Calendar view** ([#299](https://github.com/banisterious/obsidian-charted-roots/issues/299)): New workspace view showing a monthly calendar grid of significant dates across the vault. Birth (blue), death (red), and marriage (yellow) dates displayed as color-coded dots with optional text labels. Month dropdown and year input for navigation to any date. Day click detail panel, imprecise dates section, event type and living/deceased filters, right-click to create events with pre-filled date, keyboard navigation (arrows, T for today), and state persistence across reloads.
+- **Calendar view** ([#299](https://github.com/banisterious/obsidian-charted-roots/issues/299)): New workspace view showing a monthly calendar grid of significant dates across the vault. Birth (blue), death (red), and marriage (yellow) dates displayed as color-coded dots with optional text labels. Month dropdown and year input for navigation to any date. Day click detail panel, imprecise dates section, event type and living/deceased filters, right-click to create events with pre-filled date, keyboard navigation (arrows, T for today), and state persistence across reloads. Accessible via command palette, Control Center dashboard tile, Events tab button, and "Show on calendar" context menus on person and event notes.
 
 ---
 
