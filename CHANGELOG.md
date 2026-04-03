@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Heat map barely visible with sparse data** ([#336](https://github.com/banisterious/obsidian-charted-roots/issues/336)): Heat map intensity now scales inversely with point count — sparse datasets (≤5 birth/death markers) render at 3× intensity, medium datasets (≤20) at 2×. Also raised the maxZoom threshold from 10 to 15 so the heat layer stays visible when zoomed in.
+
+---
+
 ## [0.20.45] - 2026-04-02
 
 ### Added
