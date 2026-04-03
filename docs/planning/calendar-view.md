@@ -2,7 +2,7 @@
 
 Planning document for the calendar view feature.
 
-**Status:** Planning
+**Status:** ✅ All phases complete
 
 **Related:** [#299](https://github.com/banisterious/obsidian-charted-roots/issues/299)
 
