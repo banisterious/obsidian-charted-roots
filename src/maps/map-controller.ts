@@ -1153,13 +1153,20 @@ export class MapController {
 		}
 
 		// Create heat data points using appropriate coordinates
-		const heatData: [number, number, number][] = markers
-			.filter(m => m.type === 'birth' || m.type === 'death')
+		const filteredMarkers = markers.filter(m => m.type === 'birth' || m.type === 'death');
+
+		// Scale intensity inversely with point count so sparse data is visible
+		const intensity = filteredMarkers.length <= 5 ? 3
+			: filteredMarkers.length <= 20 ? 2
+			: 1;
+
+
+		const heatData: [number, number, number][] = filteredMarkers
 			.map(m => {
 				if (this.currentCRS === 'pixel' && m.pixelX !== undefined && m.pixelY !== undefined) {
-					return [m.pixelY, m.pixelX, 1] as [number, number, number];
+					return [m.pixelY, m.pixelX, intensity] as [number, number, number];
 				}
-				return [m.lat, m.lng, 1] as [number, number, number];
+				return [m.lat, m.lng, intensity] as [number, number, number];
 			});
 
 		if (heatData.length === 0) return;
@@ -1172,7 +1179,7 @@ export class MapController {
 				this.heatLayer = LHeatLayer(heatData, {
 					radius: this.settings.heatMapRadius,
 					blur: this.settings.heatMapBlur,
-					maxZoom: 10
+					maxZoom: 15
 				});
 
 				// Only add if heat map layer is enabled
