@@ -1161,10 +1161,18 @@ export class MapController {
 			: 1;
 
 
+		// For pixel CRS, use the same coordinate transform as markers:
+		// Leaflet CRS.Simple uses [y, x] as [lat, lng]
 		const heatData: [number, number, number][] = filteredMarkers
+			.filter(m => {
+				if (this.currentCRS === 'pixel') {
+					return m.pixelX !== undefined && m.pixelY !== undefined;
+				}
+				return m.lat !== undefined && m.lng !== undefined;
+			})
 			.map(m => {
-				if (this.currentCRS === 'pixel' && m.pixelX !== undefined && m.pixelY !== undefined) {
-					return [m.pixelY, m.pixelX, intensity] as [number, number, number];
+				if (this.currentCRS === 'pixel') {
+					return [m.pixelY!, m.pixelX!, intensity] as [number, number, number];
 				}
 				return [m.lat, m.lng, intensity] as [number, number, number];
 			});
@@ -1176,15 +1184,31 @@ export class MapController {
 			// @ts-expect-error - leaflet.heat types not available
 			const LHeatLayer = L.heatLayer;
 			if (LHeatLayer) {
+				// For pixel maps, zoom levels are much lower (often 0-3),
+				// so maxZoom must be relative to the current map zoom.
+				// Radius and blur also need to be larger since pixel maps
+				// cover much more area per screen pixel.
+				const currentZoom = this.map?.getZoom() ?? 10;
+				const isPixel = this.currentCRS === 'pixel';
+				const maxZoom = isPixel ? currentZoom : 15;
+				const radius = isPixel ? 80 : this.settings.heatMapRadius;
+				const blur = isPixel ? 40 : this.settings.heatMapBlur;
+
 				this.heatLayer = LHeatLayer(heatData, {
-					radius: this.settings.heatMapRadius,
-					blur: this.settings.heatMapBlur,
-					maxZoom: 15
+					radius,
+					blur,
+					maxZoom,
+					minOpacity: isPixel ? 0.6 : 0.05,
+					max: isPixel ? 1.0 : undefined
 				});
 
 				// Only add if heat map layer is enabled
 				if (this.currentLayers.heatMap && this.heatLayer) {
 					this.heatLayer.addTo(this.map);
+					// On custom maps, bring heat layer above the image overlay
+					if (isPixel && this.heatLayer.getPane()) {
+						this.heatLayer.getPane()!.style.zIndex = '450';
+					}
 				}
 			}
 		} catch (e) {
