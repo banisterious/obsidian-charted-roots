@@ -9,6 +9,17 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.20.x](#v020x)
+  - [Calendar View](#calendar-view-v02047)
+  - [Source Note Hierarchies](#source-note-hierarchies-v02046)
+  - [Source Hierarchy Display](#source-hierarchy-display-v02046)
+  - [Person-Focused Map Journey](#person-focused-map-journey-v02045)
+  - [Customizable Timeline Display Templates](#customizable-timeline-display-templates-v02038)
+  - [Citation Integration](#citation-integration-v02038)
+  - [Family Events on Timelines](#family-events-on-timelines-v02037)
+  - [Calculate Multiple Relationships](#calculate-multiple-relationships-v02036)
+  - [Cross-Project Research Queries](#cross-project-research-queries-v02035)
+  - [Historical Context Overlay and Age Annotations](#historical-context-overlay-and-age-annotations-v02034)
+  - [Citation Metadata Support](#citation-metadata-support-v02034)
   - [Comprehensive GEDCOM Field Coverage](#comprehensive-gedcom-field-coverage-v02033)
   - [Book & Narrative Compilation](#book--narrative-compilation-v02026)
   - [Entity Profile View](#entity-profile-view-v02018)
@@ -116,6 +127,196 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.20.x
+
+### Calendar View (v0.20.47)
+
+A new workspace view showing a monthly calendar grid of significant dates across the vault — birthdays, death anniversaries, marriage dates, and other life events.
+
+**GitHub Issue:** [#299](https://github.com/banisterious/obsidian-charted-roots/issues/299)
+
+**Features:**
+- Monthly calendar grid with color-coded event dots (blue = birth, red = death, yellow = marriage)
+- Text labels toggle showing person names inside day cells
+- Month dropdown and year input for instant navigation to any date
+- Day click detail panel showing all events with person name, type, year, years ago, and place
+- Imprecise dates section ("This month, day unknown") for entries with month but no day
+- Event type and living/deceased filters via filter menu
+- Right-click day cells to create events with date pre-filled
+- Keyboard navigation (arrow keys for month, T for today)
+- State persistence across reloads (month, year, filters, label toggle)
+
+**Entry points:** Command palette, Control Center dashboard tile, Events tab button, person note context menu ("Show on calendar" → birth month/year), event note context menu ("Show on calendar" → event date).
+
+**Data sources:** Person notes (birth/death dates via FamilyGraphService) and event notes (marriage, baptism, immigration, etc. via EventService).
+
+**Documentation:** [Calendar View](Calendar-View)
+
+---
+
+### Source Note Hierarchies (v0.20.46)
+
+New `source_parent` and `source_parent_id` properties for linking child source notes to a parent document, enabling modeling of multi-document record groups like probate packets, census pages, and multi-volume collections.
+
+**GitHub Issue:** [#337](https://github.com/banisterious/obsidian-charted-roots/issues/337)
+
+**Features:**
+- `source_parent` (wikilink) and `source_parent_id` (cr_id) properties on source notes, following the existing dual-storage pattern
+- Parent source picker with autocomplete in the Create/Edit Source modal (under Additional details)
+- Parsing, reading, and writing in `SourceService`
+- Frontmatter Reference documentation updated
+
+**Use cases:** Probate packets (case-level parent + child documents), multi-page census transcriptions, record groups or multi-volume collections.
+
+**Documentation:** [Evidence & Sources — Source Hierarchies](Evidence-And-Sources#source-hierarchies), [Frontmatter Reference — Source Hierarchy](Frontmatter-Reference#source-hierarchy)
+
+---
+
+### Source Hierarchy Display (v0.20.46)
+
+Hierarchy-aware display features built on top of the `source_parent` relationship, adding navigation and filtering across related source notes.
+
+**GitHub Issue:** [#338](https://github.com/banisterious/obsidian-charted-roots/issues/338)
+
+**Profile view sections:**
+- **Parent source** — Link to the parent source at the top of child source profiles
+- **Child documents** — List of all child sources on parent profiles, with source type badge, title, and date
+- **Related documents** — Sibling sources (same parent, excluding self) on child profiles
+- **Source tree** — Collapsible tree visualization on parent profiles showing the full hierarchy with indented child nodes
+
+**Sources tab filtering:**
+- "Has parent (child sources)" — show only sources with a parent
+- "No parent (top-level)" — show only sources without a parent
+- "Children of [source]" — show children of a specific parent source
+
+---
+
+### Person-Focused Map Journey (v0.20.45)
+
+Journey mode in the Map View isolates a single person's geographic path and provides animated step-through playback with rich popups and family overlay.
+
+**GitHub Issue:** [#295](https://github.com/banisterious/obsidian-charted-roots/issues/295)
+
+**Phase 1 — Person filter and isolation:**
+- Route button in toolbar opens person picker to enter journey mode
+- Filters all markers and paths to the selected person
+- Fits map bounds to the person's waypoints
+- Person indicator in toolbar with clear button
+- "Show journey on map" context menu on person notes
+
+**Phase 2 — Animated step-through playback:**
+- Floating playback controls (prev/play/next) with smooth fly-to animation
+- Progress bar, waypoint label, step counter, speed selector (0.25×–2.5×)
+- Auto-loops back to start
+
+**Phase 3 — Rich waypoint popups:**
+- Each stop shows event type, date, place, age, duration at location, and description
+
+**Phase 4 — Family journey overlay:**
+- Toggle button shows dimmed journey paths for immediate family
+- Color-coded by relationship: blue (parents), pink (spouses), emerald (children)
+- Click a family path popup to switch focus to that person's journey
+
+**Documentation:** [Geographic Features — Journey Mode](Geographic-Features#journey-mode)
+
+---
+
+### Customizable Timeline Display Templates (v0.20.38)
+
+Four new capabilities for controlling how timeline entries are displayed in dynamic content blocks.
+
+**GitHub Issue:** [#325](https://github.com/banisterious/obsidian-charted-roots/issues/325)
+
+**Features:**
+- **Layout modes:** `layout` parameter with `chronological` (default), `grouped` (sections for personal/family/context), and `personal-first` options
+- **Label customization:** Six settings under Advanced > Timeline labels to override birth, death, and family event labels with `{name}` placeholder support
+- **Format strings:** Per-block `format` parameter with `{year}`, `{title}`, `{place}`, `{age}` placeholders
+- **Template notes:** Reference a markdown note via `template: [[Note]]` to define custom sections with independent sort, include, and format
+
+---
+
+### Citation Integration (v0.20.38)
+
+Bidirectional sync between citation notes and `sourced_*` fields, plus citation statistics in the dashboard.
+
+**GitHub Issue:** [#324](https://github.com/banisterious/obsidian-charted-roots/issues/324)
+
+**Features:**
+- Three new commands: sync sourced fields from citations (per-person and vault-wide), generate citation notes from existing sourced fields
+- Source summary report includes a Page column when citation notes have page references
+- New "Citation statistics" section in the statistics dashboard: total citations, coverage percentage, quality distribution, most cited sources
+
+---
+
+### Family Events on Timelines (v0.20.37)
+
+Person timelines can now show family members' life events for broader genealogical context.
+
+**GitHub Issue:** [#323](https://github.com/banisterious/obsidian-charted-roots/issues/323)
+
+**Features:**
+- Children's births, spouse deaths, parent deaths, and sibling births on person timelines
+- Controlled by four global toggles in Settings > Advanced (all off by default)
+- Each entry links to the family member's note with age annotations
+- Per-block suppression via `familyEvents: none`
+- Consistent icon rendering when family events are present
+
+---
+
+### Calculate Multiple Relationships (v0.20.36)
+
+The relationship calculator now finds multiple relationship paths between two people through different common ancestors.
+
+**GitHub Issue:** [#321](https://github.com/banisterious/obsidian-charted-roots/issues/321)
+
+**Features:**
+- After the primary (shortest) result, "Find more relationships" searches for additional paths
+- Each result shows relationship type, common ancestor name, and blood/marriage indicator
+- Ancestor couples who are spouses are grouped together (e.g., "via John Smith & Jane Doe")
+- Configurable max search depth in Settings > Advanced (default 10 generations, 0 for unlimited)
+
+---
+
+### Cross-Project Research Queries (v0.20.35)
+
+Two new ways to see all research activity for a person across research projects, journals, and reports.
+
+**GitHub Issue:** [#303](https://github.com/banisterious/obsidian-charted-roots/issues/303)
+
+**Features:**
+- "Research activity" section in person profiles aggregates IRNs, log entries, journals, reports, and projects referencing the person, grouped by project with date ranges and result indicators
+- "Find related research" command (also in the command menu) opens a modal with the same grouped view, with a person picker if no person note is active
+
+---
+
+### Historical Context Overlay and Age Annotations (v0.20.34)
+
+Timelines can now overlay historical events and display age annotations for richer genealogical context.
+
+**GitHub Issue:** [#296](https://github.com/banisterious/obsidian-charted-roots/issues/296)
+
+**Features:**
+- `context: [[Note]]` parameter in timeline code blocks references a note containing historical events
+- Context events rendered with muted styling and landmark icon
+- `defaultTimelineContext` setting applies a context note to all timelines globally
+- All timeline events display age annotations when the person's birth date is known
+
+---
+
+### Citation Metadata Support (v0.20.34)
+
+New citation entity type for per-citation page references and quality assessments, with full GEDCOM roundtrip support.
+
+**GitHub Issue:** [#316](https://github.com/banisterious/obsidian-charted-roots/issues/316)
+
+**Features:**
+- Citation notes with page references (`citation_page`) and quality assessments (`citation_quality`)
+- GEDCOM import generates citation notes from `SOUR` blocks with `PAGE`/`QUAY` sub-tags
+- GEDCOM and Gramps exports write citation metadata back as `PAGE`/`QUAY`
+- "Add citation" command and modal for manual creation
+- Citations section in Entity Profile View grouped by source with fact labels, page references, and color-coded quality badges
+- New `citationsFolder` setting (default: `Charted Roots/Citations`)
+
+---
 
 ### Comprehensive GEDCOM Field Coverage (v0.20.33)
 
