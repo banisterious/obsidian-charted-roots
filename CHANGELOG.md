@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Heat map not visible on custom pixel maps** ([#336](https://github.com/banisterious/obsidian-charted-roots/issues/336)): Heat layer was rendering behind the image overlay on custom maps. Fixed z-index ordering, zoom-relative maxZoom for pixel coordinate systems, and increased minimum opacity and intensity scaling for both map types.
 - **Stats page miscounting places without coordinates** ([#336](https://github.com/banisterious/obsidian-charted-roots/issues/336)): The "places without coordinates" check was looking for wrong property names and not recognizing pixel coordinates (`custom_coordinates_x`/`custom_coordinates_y`) on custom maps. Updated label to "Places without geographic or pixel coordinates."
+- **Custom map image squished when created via Universe Wizard** ([#340](https://github.com/banisterious/obsidian-charted-roots/issues/340)): The Universe Wizard defaulted to `coordinate_system: geographic` with fixed ±100 bounds, causing images to stretch. Now defaults to `pixel` coordinate system, loads actual image dimensions, and writes `image_width`/`image_height` to the map note.
 
 ---
 
