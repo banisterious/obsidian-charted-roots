@@ -68,6 +68,8 @@ interface MapFormData {
 	boundsSouth: number;
 	boundsEast: number;
 	boundsWest: number;
+	imageWidth: number;
+	imageHeight: number;
 }
 
 /**
@@ -142,11 +144,13 @@ export class UniverseWizardModal extends Modal {
 			enabled: false,
 			name: '',
 			imagePath: '',
-			coordinateSystem: 'geographic',
+			coordinateSystem: 'pixel',
 			boundsNorth: 100,
 			boundsSouth: -100,
 			boundsEast: 100,
-			boundsWest: -100
+			boundsWest: -100,
+			imageWidth: 0,
+			imageHeight: 0
 		};
 
 		this.schemaData = {
@@ -563,6 +567,7 @@ export class UniverseWizardModal extends Modal {
 			.setValue(this.mapData.imagePath)
 			.onChange(value => {
 				this.mapData.imagePath = value;
+				void this.loadImageDimensions(value);
 			}));
 
 		imagePathSetting.addButton(btn => {
@@ -597,9 +602,36 @@ export class UniverseWizardModal extends Modal {
 		// Create a simple file picker modal
 		const picker = new ImagePickerModal(this.app, imageFiles, (selectedPath) => {
 			this.mapData.imagePath = selectedPath;
+			void this.loadImageDimensions(selectedPath);
 			this.renderCurrentStep();
 		});
 		picker.open();
+	}
+
+	/**
+	 * Load image dimensions from the vault file
+	 */
+	private async loadImageDimensions(imagePath: string): Promise<void> {
+		if (!imagePath) return;
+
+		const file = this.app.vault.getAbstractFileByPath(imagePath);
+		if (!file || !(file instanceof TFile)) return;
+
+		try {
+			const resourcePath = this.app.vault.getResourcePath(file);
+			const img = new Image();
+			await new Promise<void>((resolve, reject) => {
+				img.onload = () => {
+					this.mapData.imageWidth = img.naturalWidth;
+					this.mapData.imageHeight = img.naturalHeight;
+					resolve();
+				};
+				img.onerror = reject;
+				img.src = resourcePath;
+			});
+		} catch {
+			// Ignore load errors
+		}
 	}
 
 	/**
@@ -1039,6 +1071,12 @@ export class UniverseWizardModal extends Modal {
 			frontmatterLines.push(`bounds_south: ${this.mapData.boundsSouth}`);
 			frontmatterLines.push(`bounds_east: ${this.mapData.boundsEast}`);
 			frontmatterLines.push(`bounds_west: ${this.mapData.boundsWest}`);
+		} else if (this.mapData.coordinateSystem === 'pixel') {
+			if (this.mapData.imageWidth > 0 && this.mapData.imageHeight > 0) {
+				frontmatterLines.push(`image_width: ${this.mapData.imageWidth}`);
+				frontmatterLines.push(`image_height: ${this.mapData.imageHeight}`);
+			}
+			frontmatterLines.push('default_zoom: 1');
 		}
 
 		frontmatterLines.push('---');
