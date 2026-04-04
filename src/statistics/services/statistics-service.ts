@@ -1119,11 +1119,16 @@ export class StatisticsService {
 
 			const fm = cache.frontmatter;
 			if (fm.cr_type === 'place' || cache.tags?.some(t => t.tag === '#place')) {
-				// Check for coordinates in various fields
-				const hasCoords = fm.coordinates || fm.coords ||
-					fm.latitude || fm.lat ||
-					fm.longitude || fm.long || fm.lng;
-				if (!hasCoords) {
+				// Check for geographic coordinates
+				const hasGeoCoords =
+					(fm.coordinates_lat !== undefined && fm.coordinates_long !== undefined) ||
+					(fm.coordinates && typeof fm.coordinates === 'object') ||
+					(fm.latitude !== undefined || fm.lat !== undefined) ||
+					(fm.longitude !== undefined || fm.long !== undefined || fm.lng !== undefined);
+				// Check for custom/pixel coordinates (custom maps)
+				const hasPixelCoords =
+					(fm.custom_coordinates_x !== undefined && fm.custom_coordinates_y !== undefined);
+				if (!hasGeoCoords && !hasPixelCoords) {
 					noCoords.push(file);
 				}
 			}

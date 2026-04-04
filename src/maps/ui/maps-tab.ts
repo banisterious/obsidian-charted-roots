@@ -749,7 +749,7 @@ function renderMapStatistics(
 
 	// Places without coordinates
 	const withoutCoords = stats.totalPlaces - stats.withCoordinates;
-	createStatItem(statsGrid, 'Without coordinates', withoutCoords.toString(), 'map-pin');
+	createStatItem(statsGrid, 'Without any coordinates', withoutCoords.toString(), 'map-pin');
 
 	// Universes
 	const universeCount = Object.keys(stats.byUniverse).length;

@@ -204,7 +204,7 @@ function renderQualityCard(
 		createAlert('alert-circle', 'Missing birth dates', quality.missingBirthDate, 'warning');
 		createAlert('link', 'Orphaned people (no relationships)', quality.orphanedPeople, 'warning');
 		createAlert('archive', 'Unsourced events', quality.unsourcedEvents, 'info');
-		createAlert('map-pin', 'Places without coordinates', quality.placesWithoutCoordinates, 'info');
+		createAlert('map-pin', 'Places without geographic or pixel coordinates', quality.placesWithoutCoordinates, 'info');
 
 		// Living people is informational, not an alert
 		if (quality.livingPeople > 0) {

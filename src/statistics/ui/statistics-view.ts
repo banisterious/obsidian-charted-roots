@@ -606,7 +606,7 @@ export class StatisticsView extends ItemView {
 			infoHeader.createSpan({ text: 'Neutral metrics', cls: 'cr-sv-quality-section-desc crc-text-muted' });
 
 			const infoAlerts = infoSection.createDiv({ cls: 'cr-sv-quality-alerts' });
-			createExpandableAlert(infoAlerts, 'map-pin', 'Places without coordinates', quality.placesWithoutCoordinates, 'info', 'placesWithoutCoordinates');
+			createExpandableAlert(infoAlerts, 'map-pin', 'Places without geographic or pixel coordinates', quality.placesWithoutCoordinates, 'info', 'placesWithoutCoordinates');
 		}
 
 		// Living people count (informational, not an issue)
