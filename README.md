@@ -1,6 +1,6 @@
 # Charted Roots: Genealogical Family Tree Plugin for Obsidian
 
-[![Version](https://img.shields.io/badge/version-0.20.45-blue.svg)](https://github.com/banisterious/obsidian-charted-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md)
+[![Version](https://img.shields.io/badge/version-0.20.47-blue.svg)](https://github.com/banisterious/obsidian-charted-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md)
 
 **Charted Roots** brings professional genealogical tools to Obsidian. Import, organize, visualize, and share family histories and fictional worlds without leaving your vault. From GEDCOM imports to PDF reports, interactive charts to map views, manage your research with the power of linked Markdown notes. Built for genealogists, historians, writers, and worldbuilders.
 
@@ -48,6 +48,7 @@
 - [**17 report types**](https://github.com/banisterious/obsidian-charted-roots/wiki/Statistics-And-Reports) — family group sheets, Ahnentafel, kinship, brick wall, gaps, timeline, and more — export as PDF, ODT, or markdown
 - [**Book builder**](https://github.com/banisterious/obsidian-charted-roots/wiki/Book-Builder) — compile reports, trees, and vault notes into a single PDF or ODT with cover page, TOC, bibliography, and name index
 - [**Statistics dashboard**](https://github.com/banisterious/obsidian-charted-roots/wiki/Statistics-And-Reports) with record superlatives, longevity analysis, family size patterns, migration flows, and data quality alerts
+- [**Calendar view**](https://github.com/banisterious/obsidian-charted-roots/wiki/Calendar-View) — monthly grid of birthdays, death anniversaries, and marriage dates with filtering, text labels, and date navigation
 - [**Evidence tracking**](https://github.com/banisterious/obsidian-charted-roots/wiki/Evidence-And-Sources) with GPS methodology — source quality classification, fact-level citations, proof summaries, conflict detection, citation generation, and [source hierarchies](https://github.com/banisterious/obsidian-charted-roots/wiki/Evidence-And-Sources#source-hierarchies) for multi-document record groups
 
 ### Geographic
