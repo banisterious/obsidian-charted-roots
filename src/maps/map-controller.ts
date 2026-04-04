@@ -1156,8 +1156,9 @@ export class MapController {
 		const filteredMarkers = markers.filter(m => m.type === 'birth' || m.type === 'death');
 
 		// Scale intensity inversely with point count so sparse data is visible
-		const intensity = filteredMarkers.length <= 5 ? 3
-			: filteredMarkers.length <= 20 ? 2
+		const intensity = filteredMarkers.length <= 10 ? 5
+			: filteredMarkers.length <= 30 ? 3
+			: filteredMarkers.length <= 100 ? 2
 			: 1;
 
 
@@ -1198,8 +1199,8 @@ export class MapController {
 					radius,
 					blur,
 					maxZoom,
-					minOpacity: isPixel ? 0.6 : 0.05,
-					max: isPixel ? 1.0 : undefined
+					minOpacity: isPixel ? 0.6 : 0.3,
+					max: 1.0
 				});
 
 				// Only add if heat map layer is enabled
