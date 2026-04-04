@@ -92,6 +92,7 @@ tests/fixtures/gedcom/*.gpkg
 tests/fixtures/gedcom/gramps-app-export-*
 tests/fixtures/gedcom/source-images/
 tests/fixtures/gedcom/linking-test-images/
+tests/fixtures/custom-maps/
 
 # Release packages
 canvas-roots-v*.zip
