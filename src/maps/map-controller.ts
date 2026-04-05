@@ -1156,9 +1156,8 @@ export class MapController {
 		const filteredMarkers = markers.filter(m => m.type === 'birth' || m.type === 'death');
 
 		// Scale intensity inversely with point count so sparse data is visible
-		const intensity = filteredMarkers.length <= 10 ? 5
-			: filteredMarkers.length <= 30 ? 3
-			: filteredMarkers.length <= 100 ? 2
+		const intensity = filteredMarkers.length <= 5 ? 3
+			: filteredMarkers.length <= 20 ? 2
 			: 1;
 
 
@@ -1192,14 +1191,14 @@ export class MapController {
 				const currentZoom = this.map?.getZoom() ?? 10;
 				const isPixel = this.currentCRS === 'pixel';
 				const maxZoom = isPixel ? currentZoom : 15;
-				const radius = isPixel ? 80 : this.settings.heatMapRadius;
-				const blur = isPixel ? 40 : this.settings.heatMapBlur;
+				const radius = isPixel ? 50 : this.settings.heatMapRadius;
+				const blur = isPixel ? 25 : this.settings.heatMapBlur;
 
 				this.heatLayer = LHeatLayer(heatData, {
 					radius,
 					blur,
 					maxZoom,
-					minOpacity: isPixel ? 0.6 : 0.3,
+					minOpacity: isPixel ? 0.3 : 0.2,
 					max: 1.0
 				});
 
