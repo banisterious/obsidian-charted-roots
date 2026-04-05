@@ -193,26 +193,5 @@ export function extractWikilinkName(wikilink: string): string {
 	return content.trim();
 }
 
-/**
- * Extract the file path from a wikilink
- * e.g., '[[John Smith]]' → 'John Smith'
- * e.g., '[[People/John Smith|John]]' → 'People/John Smith'
- */
-export function extractWikilinkPath(wikilink: string): string {
-	// Remove [[ and ]]
-	let content = wikilink.replace(/^\[\[/, '').replace(/\]\]$/, '');
-
-	// Remove display text (|alias)
-	if (content.includes('|')) {
-		content = content.split('|')[0];
-	}
-
-	return content.trim();
-}
-
-/**
- * Check if a string is a valid wikilink format
- */
-export function isWikilink(value: string): boolean {
-	return /^\[\[.+\]\]$/.test(value);
-}
+// Wikilink utilities re-exported from canonical location
+export { extractWikilinkPath, isWikilink } from '../../utils/wikilink-resolver';
