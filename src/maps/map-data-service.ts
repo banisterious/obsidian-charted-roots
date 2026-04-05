@@ -4,7 +4,7 @@
  * Prepares map data from person and place notes for visualization.
  */
 
-import { TFile } from 'obsidian';
+import { TFile, Notice } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { getLogger } from '../core/logging';
 import { ValueAliasService } from '../core/value-alias-service';
@@ -93,6 +93,9 @@ export class MapDataService {
 
 	// Cache for place data by name (for string-based references)
 	private placeByNameCache: Map<string, PlaceData> = new Map();
+
+	// Track whether the people folder mismatch warning has been shown (#342)
+	private peopleFolderWarningShown = false;
 
 	constructor(plugin: CanvasRootsPlugin) {
 		this.plugin = plugin;
@@ -317,6 +320,30 @@ export class MapDataService {
 		}
 
 		logger.debug('person-data', `Found ${people.length} people`);
+
+		// Warn if 0 people found but person notes exist outside the configured folder (#342)
+		if (people.length === 0 && peopleFolder && !this.peopleFolderWarningShown) {
+			let personNotesElsewhere = 0;
+			for (const file of files) {
+				if (file.path.startsWith(peopleFolder)) continue;
+				const cache = this.plugin.app.metadataCache.getFileCache(file);
+				if (!cache?.frontmatter) continue;
+				if (isPersonNote(cache.frontmatter, cache, this.plugin.settings.noteTypeDetection)) {
+					personNotesElsewhere++;
+					if (personNotesElsewhere >= 3) break; // Don't need exact count
+				}
+			}
+			if (personNotesElsewhere > 0) {
+				this.peopleFolderWarningShown = true;
+				logger.warn('person-data', `0 people found in "${peopleFolder}" but person notes exist in other folders. Check Settings > Folders > People folder.`);
+				new Notice(
+					`Map view found 0 people in the configured People folder ("${peopleFolder}"). ` +
+					`Person notes were detected in other folders. Check Settings > Folders to update the People folder path.`,
+					8000
+				);
+			}
+		}
+
 		return people;
 	}
 
