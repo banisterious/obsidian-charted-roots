@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **People folder mismatch warning** ([#342](https://github.com/banisterious/obsidian-charted-roots/issues/342)): When the map view finds 0 people in the configured People folder but detects person notes in other folders, a Notice guides the user to check Settings > Folders. Shown once per session.
+
 ### Fixed
 
 - **Heat map too intense on custom pixel maps** ([#336](https://github.com/banisterious/obsidian-charted-roots/issues/336)): Dialed back pixel map heat layer settings — reduced radius, blur, and minimum opacity for a more balanced appearance with larger datasets.
