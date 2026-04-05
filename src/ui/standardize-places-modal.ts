@@ -813,12 +813,12 @@ function findSimilarNames(
 	const similar: Array<{ name: string; count: number; linked: boolean }> = [];
 
 	// Normalize for comparison
-	const normalized = normalizePlaceName(name);
+	const normalized = normalizeForComparison(name);
 
 	for (const place of allNames) {
 		if (processed.has(place.name)) continue;
 
-		const otherNormalized = normalizePlaceName(place.name);
+		const otherNormalized = normalizeForComparison(place.name);
 
 		// Check various similarity criteria
 		if (
@@ -835,10 +835,8 @@ function findSimilarNames(
 	return similar;
 }
 
-/**
- * Normalize a place name for comparison
- */
-function normalizePlaceName(name: string): string {
+/** Normalize a name for fuzzy comparison (lowercase, strip punctuation) */
+function normalizeForComparison(name: string): string {
 	return name
 		.toLowerCase()
 		.replace(/[,.\-']/g, ' ')  // Replace punctuation with spaces
@@ -919,14 +917,14 @@ function isAbbreviationMatch(a: string, b: string): boolean {
 			// Try replacing full with abbrev in a, see if it matches b
 			if (aLower.includes(full)) {
 				const aSubstituted = aLower.replace(full, abbrev);
-				if (normalizePlaceName(aSubstituted) === normalizePlaceName(bLower)) {
+				if (normalizeForComparison(aSubstituted) === normalizeForComparison(bLower)) {
 					return true;
 				}
 			}
 			// Try replacing abbrev with full in a, see if it matches b
 			if (aLower.includes(abbrev)) {
 				const aSubstituted = aLower.replace(abbrev, full);
-				if (normalizePlaceName(aSubstituted) === normalizePlaceName(bLower)) {
+				if (normalizeForComparison(aSubstituted) === normalizeForComparison(bLower)) {
 					return true;
 				}
 			}
