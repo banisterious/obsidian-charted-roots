@@ -9,6 +9,7 @@ import type { FictionalDateSystem, ParsedFictionalDate, AgeCalculation } from '.
 import { FictionalDateParser } from '../parser/fictional-date-parser';
 import { DEFAULT_DATE_SYSTEMS } from '../constants/default-date-systems';
 import { getLogger } from '../../core/logging';
+import { formatDisplayDate as formatStandardDisplayDate } from '../utils/date-display';
 
 const logger = getLogger('DateService');
 
@@ -211,68 +212,8 @@ export class DateService {
 			return this.fictionalParser.format(parsed.fictional);
 		}
 
-		// Handle BET X AND Y ranges
-		const betMatch = trimmed.match(/^BET\s+(\d{4})\s+AND\s+(\d{4})$/i);
-		if (betMatch) {
-			return `${betMatch[1]}–${betMatch[2]}`;
-		}
-
-		// Handle qualifiers with year only
-		const qualifierYearMatch = trimmed.match(/^(ABT|BEF|AFT|CAL|EST)\s+(\d{4})$/i);
-		if (qualifierYearMatch) {
-			const qualifier = qualifierYearMatch[1].toUpperCase();
-			const year = qualifierYearMatch[2];
-			switch (qualifier) {
-				case 'ABT':
-				case 'CAL':
-				case 'EST':
-					return `c. ${year}`;
-				case 'BEF':
-					return `before ${year}`;
-				case 'AFT':
-					return `after ${year}`;
-			}
-		}
-
-		// Handle qualifiers with ISO partial date (e.g., ABT 1855-03)
-		const qualifierPartialMatch = trimmed.match(/^(ABT|BEF|AFT|CAL|EST)\s+(\d{4})-(\d{2})$/i);
-		if (qualifierPartialMatch) {
-			const qualifier = qualifierPartialMatch[1].toUpperCase();
-			const year = qualifierPartialMatch[2];
-			const month = this.monthNumberToName(qualifierPartialMatch[3]);
-			const formattedDate = `${month} ${year}`;
-			switch (qualifier) {
-				case 'ABT':
-				case 'CAL':
-				case 'EST':
-					return `c. ${formattedDate}`;
-				case 'BEF':
-					return `before ${formattedDate}`;
-				case 'AFT':
-					return `after ${formattedDate}`;
-			}
-		}
-
-		// Handle ISO partial dates (YYYY-MM) without qualifiers
-		const partialMatch = trimmed.match(/^(\d{4})-(\d{2})$/);
-		if (partialMatch) {
-			const year = partialMatch[1];
-			const month = this.monthNumberToName(partialMatch[2]);
-			return `${month} ${year}`;
-		}
-
-		// Return as-is for full ISO dates (YYYY-MM-DD) and year-only
-		return trimmed;
-	}
-
-	/**
-	 * Convert month number to abbreviated month name
-	 */
-	private monthNumberToName(monthNum: string): string {
-		const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-		                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-		const index = parseInt(monthNum, 10) - 1;
-		return months[index] ?? monthNum;
+		// Delegate standard date formatting to shared utility
+		return formatStandardDisplayDate(trimmed);
 	}
 
 	/**
