@@ -137,10 +137,10 @@ Two patterns in use:
 
 ## Implementation Plan
 
-### Phase 1 — Consolidate duplicate utilities
-- [ ] Wikilink extraction: remove duplicate, import canonical
-- [ ] Place normalization: replace private variants with canonical import
-- [ ] Date formatting: consolidate
+### Phase 1 — Consolidate duplicate utilities ✅
+- [x] Wikilink extraction: replaced duplicate in relationship-types.ts with re-export from canonical wikilink-resolver.ts
+- [x] Place normalization: renamed ambiguous `normalizePlaceName` in standardize-places-modal.ts to `normalizeForComparison` (audit found the variants serve different purposes — not true duplicates)
+- [x] Date formatting: DateService.formatDisplayDate() now delegates to standalone formatStandardDisplayDate() instead of duplicating GEDCOM qualifier parsing
 
 ### Phase 2 — Split context-menus.ts
 - [ ] Extract person note context menus
