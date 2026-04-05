@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Heat map too intense on custom pixel maps** ([#336](https://github.com/banisterious/obsidian-charted-roots/issues/336)): Dialed back pixel map heat layer settings — reduced radius, blur, and minimum opacity for a more balanced appearance with larger datasets.
+
+---
+
 ## [0.20.48] - 2026-04-04
 
 ### Fixed
