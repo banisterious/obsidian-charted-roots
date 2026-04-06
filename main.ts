@@ -22,7 +22,7 @@ import { FolderFilterService } from './src/core/folder-filter';
 import { TemplateFilterService } from './src/core/template-filter';
 import { PersonIndexService } from './src/core/person-index-service';
 import { PlaceGraphService } from './src/core/place-graph';
-import { EvidenceService, ProofSummaryService } from './src/sources';
+import { EvidenceService, ProofSummaryService, SourceService } from './src/sources';
 import { EventService } from './src/events/services/event-service';
 import { TimelineProcessor, RelationshipsProcessor, MediaProcessor, SourceRolesProcessor, TransfersProcessor, MembersProcessor, SourcesProcessor, ExtractionsProcessor, NegativeFindingsProcessor, ResearchTimelineProcessor } from './src/dynamic-content';
 import { RecentFilesService, RecentEntityType } from './src/core/recent-files-service';
@@ -91,6 +91,7 @@ export default class CanvasRootsPlugin extends Plugin {
 	private templateFilter: TemplateFilterService | null = null;
 	public personIndex: PersonIndexService | null = null;
 	private eventService: EventService | null = null;
+	private sourceService: SourceService | null = null;
 	private recentFilesService: RecentFilesService | null = null;
 	private mediaService: MediaService | null = null;
 	private webClipperService: WebClipperService | null = null;
@@ -169,6 +170,16 @@ export default class CanvasRootsPlugin extends Plugin {
 	 */
 	getEventService(): EventService | null {
 		return this.eventService;
+	}
+
+	/**
+	 * Get the Source service (singleton)
+	 */
+	getSourceService(): SourceService {
+		if (!this.sourceService) {
+			this.sourceService = new SourceService(this.app, this.settings);
+		}
+		return this.sourceService;
 	}
 
 	/**
