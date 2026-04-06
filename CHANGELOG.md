@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **"Add essential properties" and "Add cr_id" context menu actions not working** ([#344](https://github.com/banisterious/obsidian-charted-roots/issues/344)): After the context menu refactoring in v0.20.50, 32 helper functions (addEssentialPersonProperties, addCrId, etc.) were no longer in scope for the builder functions. Added explicit imports.
+
+---
+
 ## [0.20.50] - 2026-04-05
 
 ### Added
