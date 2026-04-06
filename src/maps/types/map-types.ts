@@ -572,6 +572,8 @@ export interface MapSettings {
 	heatMapBlur: number;
 	/** Heat map point radius */
 	heatMapRadius: number;
+	/** Heat map intensity level */
+	heatMapIntensity: 'low' | 'medium' | 'high';
 
 	/** Folder for custom map images */
 	customMapsFolder: string;
@@ -618,6 +620,7 @@ export const DEFAULT_MAP_SETTINGS: MapSettings = {
 	showJourneyLabels: true,
 	heatMapBlur: 15,
 	heatMapRadius: 25,
+	heatMapIntensity: 'medium' as const,
 	customMapsFolder: 'Charted Roots/Places/Maps'
 };
 

@@ -550,6 +550,22 @@ export class MapView extends ItemView {
 				});
 		});
 
+		// Heat map intensity options
+		if (this.layers.heatMap) {
+			const currentIntensity = this.plugin.settings.heatMapIntensity || 'medium';
+			for (const level of ['low', 'medium', 'high'] as const) {
+				menu.addItem((item) => {
+					item.setTitle(`  ${level.charAt(0).toUpperCase() + level.slice(1)} intensity`)
+						.setChecked(currentIntensity === level)
+						.onClick(async () => {
+							this.plugin.settings.heatMapIntensity = level;
+							await this.plugin.saveSettings();
+							void this.refreshData();
+						});
+				});
+			}
+		}
+
 		menu.addSeparator();
 
 		menu.addItem((item) => {
@@ -2432,6 +2448,7 @@ export class MapView extends ItemView {
 			// Heat map settings
 			heatMapBlur: 15,
 			heatMapRadius: 25,
+			heatMapIntensity: this.plugin.settings.heatMapIntensity || 'medium',
 			// Custom maps folder
 			customMapsFolder: this.plugin.settings.mapsFolder || 'Charted Roots/Places/Maps',
 			// Event display settings (from main plugin settings)

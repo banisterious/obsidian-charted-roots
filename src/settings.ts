@@ -306,6 +306,8 @@ export interface CanvasRootsSettings {
 	// Place lookup settings (#218)
 	/** GeoNames username for API access (free registration at geonames.org) */
 	geonamesUsername: string;
+	/** Heat map intensity level for the map view */
+	heatMapIntensity: 'low' | 'medium' | 'high';
 	// Custom relationship types
 	customRelationshipTypes: RelationshipTypeDefinition[];
 	showBuiltInRelationshipTypes: boolean;
@@ -748,6 +750,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	enableDMSCoordinates: false,             // Opt-in: accept DMS coordinate format
 	// Place lookup settings (#218)
 	geonamesUsername: '',                    // GeoNames username (required for GeoNames API)
+	heatMapIntensity: 'medium' as const,    // Heat map intensity: low, medium, high
 	// Custom relationship types
 	customRelationshipTypes: [],   // User-defined relationship types (built-ins are always available)
 	showBuiltInRelationshipTypes: true,  // Whether to show built-in types in UI
@@ -1583,6 +1586,20 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.geonamesUsername)
 				.onChange(async (value) => {
 					this.plugin.settings.geonamesUsername = value.trim();
+					await this.plugin.saveSettings();
+				}));
+
+		// Heat map intensity
+		new Setting(placesContent)
+			.setName('Heat map intensity')
+			.setDesc('Controls the brightness and radius of the heat map overlay in map view')
+			.addDropdown(dropdown => dropdown
+				.addOption('low', 'Low')
+				.addOption('medium', 'Medium')
+				.addOption('high', 'High')
+				.setValue(this.plugin.settings.heatMapIntensity)
+				.onChange(async (value) => {
+					this.plugin.settings.heatMapIntensity = value as 'low' | 'medium' | 'high';
 					await this.plugin.saveSettings();
 				}));
 

@@ -1155,14 +1155,7 @@ export class MapController {
 		// Create heat data points using appropriate coordinates
 		const filteredMarkers = markers.filter(m => m.type === 'birth' || m.type === 'death');
 
-		// Scale intensity inversely with point count so sparse data is visible
-		const intensity = filteredMarkers.length <= 5 ? 3
-			: filteredMarkers.length <= 20 ? 2
-			: 1;
-
-
-		// For pixel CRS, use the same coordinate transform as markers:
-		// Leaflet CRS.Simple uses [y, x] as [lat, lng]
+		// Use per-point intensity of 1 — let leaflet.heat handle relative density
 		const heatData: [number, number, number][] = filteredMarkers
 			.filter(m => {
 				if (this.currentCRS === 'pixel') {
@@ -1172,12 +1165,20 @@ export class MapController {
 			})
 			.map(m => {
 				if (this.currentCRS === 'pixel') {
-					return [m.pixelY!, m.pixelX!, intensity] as [number, number, number];
+					return [m.pixelY!, m.pixelX!, 1] as [number, number, number];
 				}
-				return [m.lat, m.lng, intensity] as [number, number, number];
+				return [m.lat, m.lng, 1] as [number, number, number];
 			});
 
 		if (heatData.length === 0) return;
+
+		// Intensity presets: radius, blur, minOpacity multipliers
+		const intensityLevel = this.settings.heatMapIntensity || 'medium';
+		const intensityConfig = {
+			low:    { radiusMul: 0.7, blurMul: 1.2, minOpacity: 0.1 },
+			medium: { radiusMul: 1.0, blurMul: 1.0, minOpacity: 0.2 },
+			high:   { radiusMul: 1.5, blurMul: 0.8, minOpacity: 0.4 },
+		}[intensityLevel];
 
 		// Try to create heat layer (may fail if library not loaded properly)
 		try {
@@ -1191,14 +1192,16 @@ export class MapController {
 				const currentZoom = this.map?.getZoom() ?? 10;
 				const isPixel = this.currentCRS === 'pixel';
 				const maxZoom = isPixel ? currentZoom : 15;
-				const radius = isPixel ? 50 : this.settings.heatMapRadius;
-				const blur = isPixel ? 25 : this.settings.heatMapBlur;
+				const baseRadius = isPixel ? 50 : this.settings.heatMapRadius;
+				const baseBlur = isPixel ? 25 : this.settings.heatMapBlur;
 
 				this.heatLayer = LHeatLayer(heatData, {
-					radius,
-					blur,
+					radius: Math.round(baseRadius * intensityConfig.radiusMul),
+					blur: Math.round(baseBlur * intensityConfig.blurMul),
 					maxZoom,
-					minOpacity: isPixel ? 0.3 : 0.2,
+					minOpacity: isPixel
+						? Math.min(intensityConfig.minOpacity + 0.1, 0.5)
+						: intensityConfig.minOpacity,
 					max: 1.0
 				});
 
