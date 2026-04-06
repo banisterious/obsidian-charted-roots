@@ -154,6 +154,25 @@ Two patterns in use:
 - [x] `registerContextMenus()` reduced from ~4,080 lines to ~150 lines of clean dispatch logic
 - Note: The builder functions remain in context-menus.ts (4,294 lines total). Could be split into separate files in a follow-up if needed, but readability is already substantially improved.
 
+### Phase 2b — Split context-menus.ts into separate files (optional follow-up)
+
+The 11 builder functions are now standalone but still live in `context-menus.ts` (4,294 lines). Further splitting into separate files would:
+- Reduce per-file line count from 4,294 to ~150 (dispatcher) + ~1,100 (person) + ~1,000 (folders) + smaller files
+- Make entity-specific menus independently navigable in the file tree
+- Reduce import overhead (each file imports only what it needs)
+
+Proposed structure:
+- [ ] `context-menus/index.ts` — `registerContextMenus()` dispatcher (~150 lines)
+- [ ] `context-menus/person-menus.ts` — `buildPersonContextMenu` (~1,120 lines)
+- [ ] `context-menus/folder-menus.ts` — `buildFolderContextMenu` (~1,040 lines)
+- [ ] `context-menus/place-menus.ts` — `buildPlaceContextMenu`
+- [ ] `context-menus/source-menus.ts` — `buildSourceContextMenu`
+- [ ] `context-menus/event-menus.ts` — `buildEventContextMenu`
+- [ ] `context-menus/canvas-menus.ts` — `buildCanvasContextMenu`
+- [ ] `context-menus/other-menus.ts` — schema, map, org, universe, plain MD builders
+
+Not urgent — readability is already substantially improved. Prioritize if merge conflicts become frequent.
+
 ### Phase 3 — Standardize service access
 - [ ] Add missing plugin methods (PlaceGraphService, SourceService)
 - [ ] Migrate direct `new` calls in high-traffic files
