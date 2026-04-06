@@ -1,8 +1,9 @@
-import { Notice, TFile, TFolder, Menu, Platform, Modal } from 'obsidian';
+import { Notice, TFile, TFolder, Menu, Platform, Modal, type CachedMetadata } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { RegenerateOptionsModal } from '../ui/regenerate-options-modal';
 import { TreeStatisticsModal } from '../ui/tree-statistics-modal';
 import { PersonPickerModal } from '../ui/person-picker';
+import type { RelationshipContext } from '../ui/quick-create-person-modal';
 import { FolderScanModal } from '../ui/folder-scan-modal';
 import { FolderStatisticsModal } from '../ui/folder-statistics-modal';
 import { getErrorMessage } from '../core/error-utils';
@@ -66,252 +67,7 @@ export function registerContextMenus(plugin: CanvasRootsPlugin): void {
 
 				// Canvas files: Regenerate canvas
 				if (file instanceof TFile && file.extension === 'canvas') {
-					menu.addSeparator();
-
-					// Check if this is a timeline canvas (async check for context menu)
-					const checkTimelineCanvas = async (): Promise<boolean> => {
-						try {
-							const content = await plugin.app.vault.read(file);
-							const data = JSON.parse(content);
-							return data.metadata?.frontmatter?.['canvas-roots']?.type === 'timeline-export';
-						} catch {
-							return false;
-						}
-					};
-
-					if (useSubmenu) {
-						menu.addItem((item) => {
-							const submenu: Menu = item
-								.setTitle('Charted Roots')
-								.setIcon('git-fork')
-								.setSubmenu();
-
-							submenu.addItem((subItem) => {
-								subItem
-									.setTitle('Regenerate canvas')
-									.setIcon('refresh-cw')
-									.onClick(async () => {
-										// Check if timeline or tree canvas
-										const isTimeline = await checkTimelineCanvas();
-										if (isTimeline) {
-											// Regenerate timeline
-											await regenerateTimelineCanvas(plugin, file);
-										} else {
-											// Open the canvas file first
-											const leaf = plugin.app.workspace.getLeaf(false);
-											await leaf.openFile(file);
-
-											// Give canvas a moment to load
-											await new Promise(resolve => setTimeout(resolve, 100));
-
-											// Show options modal
-											new RegenerateOptionsModal(plugin.app, plugin, file).open();
-										}
-									});
-							});
-
-							submenu.addItem((subItem) => {
-								subItem
-									.setTitle('Show tree statistics')
-									.setIcon('bar-chart')
-									.onClick(() => {
-										new TreeStatisticsModal(plugin.app, file).open();
-									});
-							});
-
-							submenu.addItem((subItem) => {
-								subItem
-									.setTitle('Customize canvas styles')
-									.setIcon('layout')
-									.onClick(async () => {
-										// Check if timeline or tree canvas
-										const isTimeline = await checkTimelineCanvas();
-										if (isTimeline) {
-											const { TimelineStyleModal } = await import('../events/ui/timeline-style-modal');
-											new TimelineStyleModal(plugin.app, plugin, file).open();
-										} else {
-											const { CanvasStyleModal } = await import('../ui/canvas-style-modal');
-											new CanvasStyleModal(plugin.app, plugin, file).open();
-										}
-									});
-							});
-
-							submenu.addItem((subItem) => {
-								subItem
-									.setTitle('Open in family chart')
-									.setIcon('git-fork')
-									.onClick(async () => {
-										await openCanvasInFamilyChart(plugin, file);
-									});
-							});
-
-							// Export submenu (Excalidraw + images)
-							submenu.addItem((subItem) => {
-								const exportSubmenu: Menu = subItem
-									.setTitle('Export')
-									.setIcon('share')
-									.setSubmenu();
-
-								exportSubmenu.addItem((expItem) => {
-									expItem
-										.setTitle('Export to Excalidraw')
-										.setIcon('pencil')
-										.onClick(async () => {
-											await exportCanvasToExcalidraw(plugin, file);
-										});
-								});
-
-								exportSubmenu.addSeparator();
-
-								exportSubmenu.addItem((expItem) => {
-									expItem
-										.setTitle('Export as PNG')
-										.setIcon('image')
-										.onClick(async () => {
-											await exportCanvasAsImage(plugin, file, 'png');
-										});
-								});
-
-								exportSubmenu.addItem((expItem) => {
-									expItem
-										.setTitle('Export as SVG')
-										.setIcon('file-code')
-										.onClick(async () => {
-											await exportCanvasAsImage(plugin, file, 'svg');
-										});
-								});
-
-								exportSubmenu.addItem((expItem) => {
-									expItem
-										.setTitle('Export as PDF')
-										.setIcon('file-text')
-										.onClick(async () => {
-											await exportCanvasAsImage(plugin, file, 'pdf');
-										});
-								});
-							});
-
-							submenu.addItem((subItem) => {
-								subItem
-									.setTitle('Split canvas wizard')
-									.setIcon('layers')
-									.onClick(() => {
-										new SplitWizardModal(plugin.app, plugin.settings, plugin.folderFilter ?? undefined).open();
-									});
-							});
-
-							submenu.addSeparator();
-
-							submenu.addItem((subItem) => {
-								subItem
-									.setTitle('More options...')
-									.setIcon('settings')
-									.onClick(() => {
-										const modal = new ControlCenterModal(plugin.app, plugin);
-										modal.openToTab('tree-generation');
-									});
-							});
-						});
-					} else {
-						// Mobile: flat menu with prefix
-						menu.addItem((item) => {
-							item
-								.setTitle('Charted Roots: Regenerate canvas')
-								.setIcon('refresh-cw')
-								.onClick(async () => {
-									// Check if timeline or tree canvas
-									const isTimeline = await checkTimelineCanvas();
-									if (isTimeline) {
-										await regenerateTimelineCanvas(plugin, file);
-									} else {
-										const leaf = plugin.app.workspace.getLeaf(false);
-										await leaf.openFile(file);
-										await new Promise(resolve => setTimeout(resolve, 100));
-										new RegenerateOptionsModal(plugin.app, plugin, file).open();
-									}
-								});
-						});
-
-						menu.addItem((item) => {
-							item
-								.setTitle('Charted Roots: Show tree statistics')
-								.setIcon('bar-chart')
-								.onClick(() => {
-									new TreeStatisticsModal(plugin.app, file).open();
-								});
-						});
-
-						menu.addItem((item) => {
-							item
-								.setTitle('Charted Roots: Customize canvas styles')
-								.setIcon('layout')
-								.onClick(async () => {
-									// Check if timeline or tree canvas
-									const isTimeline = await checkTimelineCanvas();
-									if (isTimeline) {
-										const { TimelineStyleModal } = await import('../events/ui/timeline-style-modal');
-										new TimelineStyleModal(plugin.app, plugin, file).open();
-									} else {
-										const { CanvasStyleModal } = await import('../ui/canvas-style-modal');
-										new CanvasStyleModal(plugin.app, plugin, file).open();
-									}
-								});
-						});
-
-						menu.addItem((item) => {
-							item
-								.setTitle('Charted Roots: Open in family chart')
-								.setIcon('git-fork')
-								.onClick(async () => {
-									await openCanvasInFamilyChart(plugin, file);
-								});
-						});
-
-						menu.addItem((item) => {
-							item
-								.setTitle('Charted Roots: Export to Excalidraw')
-								.setIcon('pencil')
-								.onClick(async () => {
-									await exportCanvasToExcalidraw(plugin, file);
-								});
-						});
-
-						menu.addItem((item) => {
-							item
-								.setTitle('Charted Roots: Export as PNG')
-								.setIcon('image')
-								.onClick(async () => {
-									await exportCanvasAsImage(plugin, file, 'png');
-								});
-						});
-
-						menu.addItem((item) => {
-							item
-								.setTitle('Charted Roots: Export as SVG')
-								.setIcon('file-code')
-								.onClick(async () => {
-									await exportCanvasAsImage(plugin, file, 'svg');
-								});
-						});
-
-						menu.addItem((item) => {
-							item
-								.setTitle('Charted Roots: Export as PDF')
-								.setIcon('file-text')
-								.onClick(async () => {
-									await exportCanvasAsImage(plugin, file, 'pdf');
-								});
-						});
-
-						menu.addItem((item) => {
-							item
-								.setTitle('Charted Roots: Split canvas wizard')
-								.setIcon('layers')
-								.onClick(() => {
-									new SplitWizardModal(plugin.app, plugin.settings, plugin.folderFilter ?? undefined).open();
-								});
-						});
-					}
+					buildCanvasContextMenu(menu, plugin, file, useSubmenu);
 				}
 
 				// Book definition files (.book.json)
@@ -1091,1119 +847,7 @@ export function registerContextMenus(plugin: CanvasRootsPlugin): void {
 					}
 					// Person notes with cr_id get full person options
 					else if (hasCrId && !isPlace && !isSource && !isEvent && !isUniverse && !isOrg) {
-						menu.addSeparator();
-
-						if (useSubmenu) {
-							menu.addItem((item) => {
-								const submenu: Menu = item
-									.setTitle('Charted Roots')
-									.setIcon('git-fork')
-									.setSubmenu();
-
-								// Edit person
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Edit person')
-										.setIcon('edit')
-										.onClick(() => {
-											plugin.openEditPersonModal(file);
-										});
-								});
-
-								// Show journey on map
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Show journey on map')
-										.setIcon('route')
-										.onClick(() => {
-											const cache = plugin.app.metadataCache.getFileCache(file);
-											const crId = cache?.frontmatter?.cr_id;
-											const personName = cache?.frontmatter?.name || file.basename;
-											if (crId) {
-												const leaves = plugin.app.workspace.getLeavesOfType('canvas-roots-map');
-												if (leaves.length > 0) {
-													plugin.app.workspace.revealLeaf(leaves[0]);
-													const mapView = leaves[0].view as import('../maps/map-view').MapView;
-													mapView.enterJourneyModeForPerson(crId, personName);
-												} else {
-													void plugin.app.workspace.getLeaf('tab').setViewState({
-														type: 'canvas-roots-map',
-														active: true
-													}).then(() => {
-														setTimeout(() => {
-															const newLeaves = plugin.app.workspace.getLeavesOfType('canvas-roots-map');
-															if (newLeaves.length > 0) {
-																const mapView = newLeaves[0].view as import('../maps/map-view').MapView;
-																mapView.enterJourneyModeForPerson(crId, personName);
-															}
-														}, 1000);
-													});
-												}
-											}
-										});
-								});
-
-								// Show on calendar
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Show on calendar')
-										.setIcon('calendar')
-										.onClick(() => {
-											const cache = plugin.app.metadataCache.getFileCache(file);
-											const birthDate = cache?.frontmatter?.birth_date || cache?.frontmatter?.birthDate;
-											// Parse year and month from birth date
-											let month = new Date().getMonth();
-											let year = new Date().getFullYear();
-											if (birthDate) {
-												const dateStr = String(birthDate);
-												const isoMatch = dateStr.match(/(\d{4})-(\d{1,2})/);
-												if (isoMatch) {
-													year = parseInt(isoMatch[1]);
-													month = parseInt(isoMatch[2]) - 1; // 0-indexed
-												}
-											}
-											const { VIEW_TYPE_CALENDAR } = require('../calendar/calendar-view');
-											const leaves = plugin.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR);
-											if (leaves.length > 0) {
-												plugin.app.workspace.revealLeaf(leaves[0]);
-												const calView = leaves[0].view as import('../calendar/calendar-view').CalendarView;
-												calView.navigateToDate(month, year);
-											} else {
-												void plugin.activateCalendarView().then(() => {
-													setTimeout(() => {
-														const newLeaves = plugin.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR);
-														if (newLeaves.length > 0) {
-															const calView = newLeaves[0].view as import('../calendar/calendar-view').CalendarView;
-															calView.navigateToDate(month, year);
-														}
-													}, 500);
-												});
-											}
-										});
-								});
-
-								// Relationships submenu (adding relationships, validation, calculation)
-								submenu.addItem((subItem) => {
-									const relationshipSubmenu: Menu = subItem
-										.setTitle('Relationships')
-										.setIcon('users')
-										.setSubmenu();
-
-									relationshipSubmenu.addItem((relItem) => {
-										relItem
-											.setTitle('Add father')
-											.setIcon('user')
-											.onClick(() => {
-												// Build context for inline creation
-												const cache = plugin.app.metadataCache.getFileCache(file);
-												const crId = cache?.frontmatter?.cr_id;
-												const directory = file.parent?.path || '';
-
-												const createContext: RelationshipContext = {
-													relationshipType: 'father',
-													suggestedSex: 'male',
-													parentCrId: crId,
-													directory: directory
-												};
-
-												const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
-													void (async () => {
-														const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
-														await relationshipMgr.addParentRelationship(
-															file,
-															selectedPerson.file,
-															'father',
-															selectedPerson.crId
-														);
-													})();
-												}, {
-													title: 'Select father',
-													createContext: createContext,
-													onCreateNew: () => {
-														// Callback signals inline creation support
-													},
-													plugin: plugin
-												});
-												picker.open();
-											});
-									});
-
-									relationshipSubmenu.addItem((relItem) => {
-										relItem
-											.setTitle('Add mother')
-											.setIcon('user')
-											.onClick(() => {
-												// Build context for inline creation
-												const cache = plugin.app.metadataCache.getFileCache(file);
-												const crId = cache?.frontmatter?.cr_id;
-												const directory = file.parent?.path || '';
-
-												const createContext: RelationshipContext = {
-													relationshipType: 'mother',
-													suggestedSex: 'female',
-													parentCrId: crId,
-													directory: directory
-												};
-
-												const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
-													void (async () => {
-														const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
-														await relationshipMgr.addParentRelationship(
-															file,
-															selectedPerson.file,
-															'mother',
-															selectedPerson.crId
-														);
-													})();
-												}, {
-													title: 'Select mother',
-													createContext: createContext,
-													onCreateNew: () => {
-														// Callback signals inline creation support
-													},
-													plugin: plugin
-												});
-												picker.open();
-											});
-									});
-
-									relationshipSubmenu.addItem((relItem) => {
-										relItem
-											.setTitle('Add spouse')
-											.setIcon('heart')
-											.onClick(() => {
-												// Build context for inline creation
-												const cache = plugin.app.metadataCache.getFileCache(file);
-												const crId = cache?.frontmatter?.cr_id;
-												const currentSex = cache?.frontmatter?.sex;
-												const directory = file.parent?.path || '';
-
-												// Suggest opposite sex if current person's sex is known
-												let suggestedSex: 'male' | 'female' | undefined;
-												if (currentSex === 'male' || currentSex === 'm') {
-													suggestedSex = 'female';
-												} else if (currentSex === 'female' || currentSex === 'f') {
-													suggestedSex = 'male';
-												}
-
-												const createContext: RelationshipContext = {
-													relationshipType: 'spouse',
-													suggestedSex: suggestedSex,
-													parentCrId: crId,
-													directory: directory
-												};
-
-												const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
-													void (async () => {
-														const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
-														await relationshipMgr.addSpouseRelationship(file, selectedPerson.file, selectedPerson.crId);
-													})();
-												}, {
-													title: 'Select spouse',
-													createContext: createContext,
-													onCreateNew: () => {
-														// Callback signals inline creation support
-													},
-													plugin: plugin
-												});
-												picker.open();
-											});
-									});
-
-									relationshipSubmenu.addItem((relItem) => {
-										relItem
-											.setTitle('Add child')
-											.setIcon('baby')
-											.onClick(() => {
-												// Build context for inline creation
-												const cache = plugin.app.metadataCache.getFileCache(file);
-												const crId = cache?.frontmatter?.cr_id;
-												const directory = file.parent?.path || '';
-
-												const createContext: RelationshipContext = {
-													relationshipType: 'child',
-													suggestedSex: undefined, // No sex suggestion for children
-													parentCrId: crId,
-													directory: directory
-												};
-
-												const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
-													void (async () => {
-														const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
-														await relationshipMgr.addChildRelationship(file, selectedPerson.file, selectedPerson.crId);
-													})();
-												}, {
-													title: 'Select child',
-													createContext: createContext,
-													onCreateNew: () => {
-														// Callback signals inline creation support
-													},
-													plugin: plugin
-												});
-												picker.open();
-											});
-									});
-
-									relationshipSubmenu.addSeparator();
-
-									relationshipSubmenu.addItem((relItem) => {
-										relItem
-											.setTitle('Add custom relationship...')
-											.setIcon('link-2')
-											.onClick(() => {
-												new AddRelationshipModal(plugin.app, plugin, file).open();
-											});
-									});
-
-									relationshipSubmenu.addItem((relItem) => {
-										relItem
-											.setTitle('Add organization membership...')
-											.setIcon('building')
-											.onClick(async () => {
-												const { AddMembershipModal } = await import('../organizations/ui/add-membership-modal');
-												new AddMembershipModal(plugin.app, plugin, file, () => {
-													new Notice('Membership added');
-												}).open();
-											});
-									});
-
-									relationshipSubmenu.addSeparator();
-
-									// Validate relationships
-									relationshipSubmenu.addItem((relItem) => {
-										relItem
-											.setTitle('Validate relationships')
-											.setIcon('shield-check')
-											.onClick(async () => {
-												const validator = new RelationshipValidator(plugin.app);
-												if (plugin.folderFilter) {
-													validator.setFolderFilter(plugin.folderFilter);
-												}
-												if (plugin.personIndex) {
-													validator.setPersonIndex(plugin.personIndex);
-												}
-												const result = await validator.validatePersonNote(file);
-												new ValidationResultsModal(plugin.app, result).open();
-											});
-									});
-
-									// Calculate relationship
-									relationshipSubmenu.addItem((relItem) => {
-										relItem
-											.setTitle('Calculate relationship...')
-											.setIcon('git-compare')
-											.onClick(() => {
-												const cache = plugin.app.metadataCache.getFileCache(file);
-												const crId = cache?.frontmatter?.cr_id;
-												const personName = cache?.frontmatter?.name || file.basename;
-												if (crId) {
-													const modal = new RelationshipCalculatorModal(plugin.app, plugin.settings);
-													modal.openWithPersonA({
-														name: personName,
-														crId: crId,
-														birthDate: cache?.frontmatter?.born,
-														deathDate: cache?.frontmatter?.died,
-														sex: cache?.frontmatter?.sex || cache?.frontmatter?.gender,
-														file: file
-													});
-												}
-											});
-									});
-								});
-
-								// Open in family chart
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Open in family chart')
-										.setIcon('git-fork')
-										.onClick(async () => {
-											const cache = plugin.app.metadataCache.getFileCache(file);
-											const crId = cache?.frontmatter?.cr_id;
-											if (crId) {
-												await plugin.activateFamilyChartView(crId);
-											} else {
-												new Notice('Could not find cr_id for this person note');
-											}
-										});
-								});
-
-								// Open profile
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Open profile')
-										.setIcon('id-card')
-										.onClick(async () => {
-											await plugin.activateProfileView(file);
-										});
-								});
-
-								// Generate visual tree (opens wizard with person pre-selected)
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Generate visual tree')
-										.setIcon('network')
-										.onClick(() => {
-											const modal = new ControlCenterModal(plugin.app, plugin);
-											modal.openWithPerson(file);
-										});
-								});
-
-								submenu.addSeparator();
-
-								// Events submenu
-								submenu.addItem((subItem) => {
-									const eventsSubmenu: Menu = subItem
-										.setTitle('Events')
-										.setIcon('calendar')
-										.setSubmenu();
-
-									eventsSubmenu.addItem((evItem) => {
-										evItem
-											.setTitle('Create event for this person')
-											.setIcon('calendar-plus')
-											.onClick(async () => {
-												const eventService = plugin.getEventService();
-												if (eventService) {
-													const cache = plugin.app.metadataCache.getFileCache(file);
-													const personName = cache?.frontmatter?.name || file.basename;
-													const crId = cache?.frontmatter?.cr_id;
-													const { CreateEventModal } = await import('../events/ui/create-event-modal');
-													new CreateEventModal(
-														plugin.app,
-														eventService,
-														plugin.settings,
-														{
-															initialPerson: { name: personName, crId: crId }
-														}
-													).open();
-												}
-											});
-									});
-
-									eventsSubmenu.addItem((evItem) => {
-										evItem
-											.setTitle('Link to existing event')
-											.setIcon('calendar-search')
-											.onClick(async () => {
-												const { EventPickerModal } = await import('../events/ui/event-picker-modal');
-												new EventPickerModal(plugin.app, plugin, {
-													onSelect: async (event) => {
-														const cache = plugin.app.metadataCache.getFileCache(file);
-														const personName = cache?.frontmatter?.name || file.basename;
-														await linkPersonToEvent(plugin, file, personName, event);
-													},
-													allowCreate: false
-												}).open();
-											});
-									});
-
-									eventsSubmenu.addItem((evItem) => {
-										evItem
-											.setTitle('Export timeline to Canvas')
-											.setIcon('layout')
-											.onClick(async () => {
-												await exportPersonTimelineFromFile(plugin, file, 'canvas');
-											});
-									});
-
-									eventsSubmenu.addItem((evItem) => {
-										evItem
-											.setTitle('Export timeline to Excalidraw')
-											.setIcon('pencil')
-											.onClick(async () => {
-												await exportPersonTimelineFromFile(plugin, file, 'excalidraw');
-											});
-									});
-								});
-
-								// Media submenu
-								submenu.addItem((subItem) => {
-									const mediaSubmenu: Menu = subItem
-										.setTitle('Media')
-										.setIcon('image')
-										.setSubmenu();
-
-									mediaSubmenu.addItem((mediaItem) => {
-										mediaItem
-											.setTitle('Link media...')
-											.setIcon('image-plus')
-											.onClick(() => {
-												const personName = cache?.frontmatter?.name || file.basename;
-												plugin.openLinkMediaModal(file, 'person', personName);
-											});
-									});
-
-									mediaSubmenu.addItem((mediaItem) => {
-										mediaItem
-											.setTitle('Manage media...')
-											.setIcon('settings')
-											.onClick(() => {
-												const personName = cache?.frontmatter?.name || file.basename;
-												openManageMediaModal(plugin, file, 'person', personName);
-											});
-									});
-								});
-
-								// Add source
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add source...')
-										.setIcon('archive')
-										.onClick(() => {
-											addSourceToPersonNote(plugin, file);
-										});
-								});
-
-								submenu.addSeparator();
-
-								// Mark as root person
-								submenu.addItem((subItem) => {
-									const cache = plugin.app.metadataCache.getFileCache(file);
-									const isRootPerson = cache?.frontmatter?.root_person === true;
-									subItem
-										.setTitle(isRootPerson ? 'Unmark as root person' : 'Mark as root person')
-										.setIcon('crown')
-										.onClick(async () => {
-											await toggleRootPerson(plugin, file);
-										});
-								});
-
-								// Reference numbering submenu
-								submenu.addItem((subItem) => {
-									const refNumberSubmenu: Menu = subItem
-										.setTitle('Assign reference numbers')
-										.setIcon('hash')
-										.setSubmenu();
-
-									refNumberSubmenu.addItem((numItem) => {
-										numItem
-											.setTitle('Ahnentafel (ancestors)')
-											.setIcon('arrow-up')
-											.onClick(async () => {
-												await assignReferenceNumbersFromPerson(plugin, file, 'ahnentafel');
-											});
-									});
-
-									refNumberSubmenu.addItem((numItem) => {
-										numItem
-											.setTitle("d'Aboville (descendants)")
-											.setIcon('arrow-down')
-											.onClick(async () => {
-												await assignReferenceNumbersFromPerson(plugin, file, 'daboville');
-											});
-									});
-
-									refNumberSubmenu.addItem((numItem) => {
-										numItem
-											.setTitle('Henry (descendants)')
-											.setIcon('arrow-down')
-											.onClick(async () => {
-												await assignReferenceNumbersFromPerson(plugin, file, 'henry');
-											});
-									});
-
-									refNumberSubmenu.addItem((numItem) => {
-										numItem
-											.setTitle('Generation (all relatives)')
-											.setIcon('users')
-											.onClick(async () => {
-												await assignReferenceNumbersFromPerson(plugin, file, 'generation');
-											});
-									});
-								});
-
-								// Lineage tracking submenu
-								submenu.addItem((subItem) => {
-									const lineageSubmenu: Menu = subItem
-										.setTitle('Assign lineage')
-										.setIcon('git-branch')
-										.setSubmenu();
-
-									lineageSubmenu.addItem((linItem) => {
-										linItem
-											.setTitle('All descendants')
-											.setIcon('users')
-											.onClick(async () => {
-												await assignLineageFromPerson(plugin, file, 'all');
-											});
-									});
-
-									lineageSubmenu.addItem((linItem) => {
-										linItem
-											.setTitle('Patrilineal (father\'s line)')
-											.setIcon('arrow-down')
-											.onClick(async () => {
-												await assignLineageFromPerson(plugin, file, 'patrilineal');
-											});
-									});
-
-									lineageSubmenu.addItem((linItem) => {
-										linItem
-											.setTitle('Matrilineal (mother\'s line)')
-											.setIcon('arrow-down')
-											.onClick(async () => {
-												await assignLineageFromPerson(plugin, file, 'matrilineal');
-											});
-									});
-								});
-
-								// More submenu - less commonly used actions
-								submenu.addItem((subItem) => {
-									const moreSubmenu: Menu = subItem
-										.setTitle('More')
-										.setIcon('more-horizontal')
-										.setSubmenu();
-
-									// Find on canvas
-									moreSubmenu.addItem((moreItem) => {
-										moreItem
-											.setTitle('Find on canvas')
-											.setIcon('search')
-											.onClick(() => {
-												const cache = plugin.app.metadataCache.getFileCache(file);
-												const crId = cache?.frontmatter?.cr_id;
-												const personName = cache?.frontmatter?.name || file.basename;
-												if (crId) {
-													new FindOnCanvasModal(plugin.app, personName, crId).open();
-												}
-											});
-									});
-
-									// Open in map view
-									moreSubmenu.addItem((moreItem) => {
-										moreItem
-											.setTitle('Open in map view')
-											.setIcon('map')
-											.onClick(async () => {
-												await plugin.activateMapView();
-											});
-									});
-
-									moreSubmenu.addSeparator();
-
-									// Set group name
-									moreSubmenu.addItem((moreItem) => {
-										moreItem
-											.setTitle('Set group name')
-											.setIcon('tag')
-											.onClick(async () => {
-												await promptSetCollectionName(plugin, file);
-											});
-									});
-
-									// Set collection
-									moreSubmenu.addItem((moreItem) => {
-										moreItem
-											.setTitle('Set collection')
-											.setIcon('folder')
-											.onClick(async () => {
-												await promptSetCollection(plugin, file);
-											});
-									});
-
-									// Insert dynamic blocks
-									moreSubmenu.addItem((moreItem) => {
-										moreItem
-											.setTitle('Insert dynamic blocks')
-											.setIcon('layout-template')
-											.onClick(async () => {
-												await plugin.insertDynamicBlocks([file]);
-											});
-									});
-
-									// Create place notes from references
-									moreSubmenu.addItem((moreItem) => {
-										moreItem
-											.setTitle('Create place notes...')
-											.setIcon('map-pin')
-											.onClick(async () => {
-												await showCreatePlaceNotesForPerson(plugin, file);
-											});
-									});
-
-									moreSubmenu.addSeparator();
-
-									// Validate against schemas
-									moreSubmenu.addItem((moreItem) => {
-										moreItem
-											.setTitle('Validate against schemas')
-											.setIcon('clipboard-check')
-											.onClick(async () => {
-												const schemaService = new SchemaService(plugin);
-												const validationService = new ValidationService(plugin, schemaService);
-
-												const results = await validationService.validatePerson(file);
-
-												if (results.length === 0) {
-													new Notice('No schemas apply to this person.');
-													return;
-												}
-
-												const errors = results.reduce((sum, r) => sum + r.errors.length, 0);
-												const warnings = results.reduce((sum, r) => sum + r.warnings.length, 0);
-
-												if (errors === 0 && warnings === 0) {
-													new Notice(`✓ Validated against ${results.length} schema${results.length > 1 ? 's' : ''} - all passed`);
-												} else {
-													new Notice(`Schema validation: ${errors} error${errors !== 1 ? 's' : ''}, ${warnings} warning${warnings !== 1 ? 's' : ''}`);
-													// Open schemas tab to show details
-													const modal = new ControlCenterModal(plugin.app, plugin);
-													modal.openToTab('schemas');
-												}
-											});
-									});
-
-									// Add essential properties submenu
-									moreSubmenu.addItem((moreItem) => {
-										const propsSubmenu: Menu = moreItem
-											.setTitle('Add essential properties')
-											.setIcon('file-plus')
-											.setSubmenu();
-
-										propsSubmenu.addItem((propItem) => {
-											propItem
-												.setTitle('Add essential person properties')
-												.setIcon('user')
-												.onClick(async () => {
-													await addEssentialPersonProperties(plugin, [file]);
-												});
-										});
-
-										propsSubmenu.addItem((propItem) => {
-											propItem
-												.setTitle('Add essential place properties')
-												.setIcon('map-pin')
-												.onClick(async () => {
-													await addEssentialPlaceProperties(plugin, [file]);
-												});
-										});
-
-										propsSubmenu.addItem((propItem) => {
-											propItem
-												.setTitle('Add essential source properties')
-												.setIcon('archive')
-												.onClick(async () => {
-													await addEssentialSourceProperties(plugin, [file]);
-												});
-										});
-
-										propsSubmenu.addItem((propItem) => {
-											propItem
-												.setTitle('Add essential universe properties')
-												.setIcon('globe')
-												.onClick(async () => {
-													await addEssentialUniverseProperties(plugin, [file]);
-												});
-										});
-									});
-
-									// Add cr_id only
-									moreSubmenu.addItem((moreItem) => {
-										moreItem
-											.setTitle('Add cr_id')
-											.setIcon('key')
-											.onClick(async () => {
-												await addCrId(plugin, [file]);
-											});
-									});
-								});
-							});
-						} else {
-							// Mobile: flat menu with prefix
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Generate visual tree')
-									.setIcon('git-fork')
-									.onClick(() => {
-										const modal = new ControlCenterModal(plugin.app, plugin);
-										modal.openWithPerson(file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Edit person')
-									.setIcon('edit')
-									.onClick(() => {
-										plugin.openEditPersonModal(file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Open profile')
-									.setIcon('id-card')
-									.onClick(async () => {
-										await plugin.activateProfileView(file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add parent')
-									.setIcon('user')
-									.onClick(() => {
-										const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
-											void (async () => {
-												const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
-												const parentType = await promptParentType(plugin);
-												if (parentType) {
-													await relationshipMgr.addParentRelationship(
-														file,
-														selectedPerson.file,
-														parentType,
-														selectedPerson.crId
-													);
-												}
-											})();
-										});
-										picker.open();
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add spouse')
-									.setIcon('heart')
-									.onClick(() => {
-										const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
-											void (async () => {
-												const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
-												await relationshipMgr.addSpouseRelationship(file, selectedPerson.file, selectedPerson.crId);
-											})();
-										});
-										picker.open();
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add child')
-									.setIcon('baby')
-									.onClick(() => {
-										const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
-											void (async () => {
-												const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
-												await relationshipMgr.addChildRelationship(file, selectedPerson.file, selectedPerson.crId);
-											})();
-										});
-										picker.open();
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Validate relationships')
-									.setIcon('shield-check')
-									.onClick(async () => {
-										const validator = new RelationshipValidator(plugin.app);
-										if (plugin.folderFilter) {
-											validator.setFolderFilter(plugin.folderFilter);
-										}
-										if (plugin.personIndex) {
-											validator.setPersonIndex(plugin.personIndex);
-										}
-										const result = await validator.validatePersonNote(file);
-										new ValidationResultsModal(plugin.app, result).open();
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Find on canvas')
-									.setIcon('search')
-									.onClick(() => {
-										const cache = plugin.app.metadataCache.getFileCache(file);
-										const crId = cache?.frontmatter?.cr_id;
-										const personName = cache?.frontmatter?.name || file.basename;
-										if (crId) {
-											new FindOnCanvasModal(plugin.app, personName, crId).open();
-										}
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Open in map view')
-									.setIcon('map')
-									.onClick(async () => {
-										await plugin.activateMapView();
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Open in family chart')
-									.setIcon('git-fork')
-									.onClick(async () => {
-										const cache = plugin.app.metadataCache.getFileCache(file);
-										const crId = cache?.frontmatter?.cr_id;
-										if (crId) {
-											await plugin.activateFamilyChartView(crId);
-										} else {
-											new Notice('Could not find cr_id for this person note');
-										}
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Calculate relationship...')
-									.setIcon('git-compare')
-									.onClick(() => {
-										const cache = plugin.app.metadataCache.getFileCache(file);
-										const crId = cache?.frontmatter?.cr_id;
-										const personName = cache?.frontmatter?.name || file.basename;
-										if (crId) {
-											const modal = new RelationshipCalculatorModal(plugin.app, plugin.settings);
-											modal.openWithPersonA({
-												name: personName,
-												crId: crId,
-												birthDate: cache?.frontmatter?.born,
-												deathDate: cache?.frontmatter?.died,
-												sex: cache?.frontmatter?.sex || cache?.frontmatter?.gender,
-												file: file
-											});
-										}
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Set group name')
-									.setIcon('tag')
-									.onClick(async () => {
-										await promptSetCollectionName(plugin, file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Set collection')
-									.setIcon('folder')
-									.onClick(async () => {
-										await promptSetCollection(plugin, file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add source...')
-									.setIcon('archive')
-									.onClick(() => {
-										addSourceToPersonNote(plugin, file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Link media...')
-									.setIcon('image-plus')
-									.onClick(() => {
-										const personName = cache?.frontmatter?.name || file.basename;
-										plugin.openLinkMediaModal(file, 'person', personName);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Manage media...')
-									.setIcon('settings')
-									.onClick(() => {
-										const personName = cache?.frontmatter?.name || file.basename;
-										openManageMediaModal(plugin, file, 'person', personName);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Insert dynamic blocks')
-									.setIcon('layout-template')
-									.onClick(async () => {
-										await plugin.insertDynamicBlocks([file]);
-									});
-							});
-
-							// Events actions (mobile - flat menu)
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Create event')
-									.setIcon('calendar-plus')
-									.onClick(async () => {
-										const eventService = plugin.getEventService();
-										if (eventService) {
-											const cache = plugin.app.metadataCache.getFileCache(file);
-											const personName = cache?.frontmatter?.name || file.basename;
-											const crId = cache?.frontmatter?.cr_id;
-											const { CreateEventModal } = await import('../events/ui/create-event-modal');
-											new CreateEventModal(
-												plugin.app,
-												eventService,
-												plugin.settings,
-												{
-													initialPerson: { name: personName, crId: crId }
-												}
-											).open();
-										}
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Link to existing event')
-									.setIcon('calendar-search')
-									.onClick(async () => {
-										const cache = plugin.app.metadataCache.getFileCache(file);
-										const personName = cache?.frontmatter?.name || file.basename;
-										const { EventPickerModal } = await import('../events/ui/event-picker-modal');
-										new EventPickerModal(plugin.app, plugin, {
-											onSelect: async (event) => {
-												await linkPersonToEvent(plugin, file, personName, event);
-											},
-											allowCreate: false
-										}).open();
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Export timeline to Canvas')
-									.setIcon('layout')
-									.onClick(async () => {
-										await exportPersonTimelineFromFile(plugin, file, 'canvas');
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Export timeline to Excalidraw')
-									.setIcon('pencil')
-									.onClick(async () => {
-										await exportPersonTimelineFromFile(plugin, file, 'excalidraw');
-									});
-							});
-
-							menu.addItem((item) => {
-								const cache = plugin.app.metadataCache.getFileCache(file);
-								const isRootPerson = cache?.frontmatter?.root_person === true;
-								item
-									.setTitle(isRootPerson ? 'Charted Roots: Unmark as root person' : 'Charted Roots: Mark as root person')
-									.setIcon('crown')
-									.onClick(async () => {
-										await toggleRootPerson(plugin, file);
-									});
-							});
-
-							// Reference numbering (mobile - flat menu)
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Assign Ahnentafel numbers')
-									.setIcon('hash')
-									.onClick(async () => {
-										await assignReferenceNumbersFromPerson(plugin, file, 'ahnentafel');
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle("Charted Roots: Assign d'Aboville numbers")
-									.setIcon('hash')
-									.onClick(async () => {
-										await assignReferenceNumbersFromPerson(plugin, file, 'daboville');
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Assign Henry numbers')
-									.setIcon('hash')
-									.onClick(async () => {
-										await assignReferenceNumbersFromPerson(plugin, file, 'henry');
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Assign generation numbers')
-									.setIcon('hash')
-									.onClick(async () => {
-										await assignReferenceNumbersFromPerson(plugin, file, 'generation');
-									});
-							});
-
-							// Lineage tracking (mobile - flat menu)
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Assign lineage (all)')
-									.setIcon('git-branch')
-									.onClick(async () => {
-										await assignLineageFromPerson(plugin, file, 'all');
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Assign lineage (patrilineal)')
-									.setIcon('git-branch')
-									.onClick(async () => {
-										await assignLineageFromPerson(plugin, file, 'patrilineal');
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Assign lineage (matrilineal)')
-									.setIcon('git-branch')
-									.onClick(async () => {
-										await assignLineageFromPerson(plugin, file, 'matrilineal');
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Create place notes...')
-									.setIcon('map-pin')
-									.onClick(async () => {
-										await showCreatePlaceNotesForPerson(plugin, file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential person properties')
-									.setIcon('user')
-									.onClick(async () => {
-										await addEssentialPersonProperties(plugin, [file]);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential place properties')
-									.setIcon('map-pin')
-									.onClick(async () => {
-										await addEssentialPlaceProperties(plugin, [file]);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential source properties')
-									.setIcon('archive')
-									.onClick(async () => {
-										await addEssentialSourceProperties(plugin, [file]);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add cr_id')
-									.setIcon('key')
-									.onClick(async () => {
-										await addCrId(plugin, [file]);
-									});
-							});
-						}
+						buildPersonContextMenu(menu, plugin, file, cache, useSubmenu);
 					}
 					// Event notes with cr_id get event-specific options
 					else if (hasCrId && isEvent) {
@@ -2943,1040 +1587,7 @@ export function registerContextMenus(plugin: CanvasRootsPlugin): void {
 
 				// Folders: Type-specific context menus
 				if (file instanceof TFolder) {
-					menu.addSeparator();
-
-					// Determine folder type
-					const isPeopleFolder = file.path === plugin.settings.peopleFolder;
-					const isPlacesFolder = file.path === plugin.settings.placesFolder;
-					const isUniversesFolder = file.path === plugin.settings.universesFolder;
-					const isSourcesFolder = file.path === plugin.settings.sourcesFolder;
-					const isEventsFolder = file.path === plugin.settings.eventsFolder;
-					const isOrganizationsFolder = file.path === plugin.settings.organizationsFolder;
-					const isNotesFolder = file.path === plugin.settings.notesFolder;
-
-					// Check for subfolders within People folder (for Create person action)
-					const isPeopleSubfolder = !isPeopleFolder &&
-						plugin.settings.peopleFolder &&
-						file.path.startsWith(plugin.settings.peopleFolder + '/');
-
-					// Check for subfolders within Places folder (for Create place action)
-					const isPlacesSubfolder = !isPlacesFolder &&
-						plugin.settings.placesFolder &&
-						file.path.startsWith(plugin.settings.placesFolder + '/');
-
-					// Helper to get files in folder
-					const getFilesInFolder = () => plugin.app.vault.getMarkdownFiles()
-						.filter(f => f.path.startsWith(file.path + '/'));
-
-					if (useSubmenu) {
-						menu.addItem((item) => {
-							const submenu: Menu = item
-								.setTitle('Charted Roots')
-								.setIcon('git-fork')
-								.setSubmenu();
-
-							// === PEOPLE FOLDER ===
-							if (isPeopleFolder) {
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Create person')
-										.setIcon('user-plus')
-										.onClick(() => {
-											const modal = new CreatePersonModal(plugin.app, {
-												directory: file.path,
-												familyGraph: plugin.createFamilyGraphService(),
-												propertyAliases: plugin.settings.propertyAliases,
-												placeGraph: plugin.createPlaceGraphService(),
-												settings: plugin.settings,
-												plugin: plugin
-											});
-											modal.open();
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Create family')
-										.setIcon('users')
-										.onClick(() => {
-											void import('../ui/family-creation-wizard').then(({ FamilyCreationWizardModal }) => {
-												new FamilyCreationWizardModal(plugin.app, plugin, file.path).open();
-											});
-										});
-								});
-
-								submenu.addSeparator();
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Import GEDCOM')
-										.setIcon('upload')
-										.onClick(() => {
-											const modal = new ControlCenterModal(plugin.app, plugin);
-											modal.openToTab('gedcom');
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Export GEDCOM')
-										.setIcon('download')
-										.onClick(() => {
-											const modal = new ControlCenterModal(plugin.app, plugin);
-											modal.openToTab('gedcom');
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Scan for relationship issues')
-										.setIcon('shield-alert')
-										.onClick(() => {
-											new FolderScanModal(plugin.app, file, plugin.personIndex ?? undefined).open();
-										});
-								});
-
-								submenu.addSeparator();
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add essential person properties')
-										.setIcon('user')
-										.onClick(async () => {
-											await addEssentialPersonProperties(plugin, getFilesInFolder());
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add cr_id')
-										.setIcon('key')
-										.onClick(async () => {
-											await addCrId(plugin, getFilesInFolder());
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Insert dynamic blocks')
-										.setIcon('layout-template')
-										.onClick(async () => {
-											await plugin.insertDynamicBlocks(getFilesInFolder());
-										});
-								});
-
-								submenu.addSeparator();
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('New people base from template')
-										.setIcon('table')
-										.onClick(async () => {
-											await plugin.createBaseTemplate(file);
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Generate all trees')
-										.setIcon('git-fork')
-										.onClick(async () => {
-											await plugin.generateAllTrees();
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Show folder statistics')
-										.setIcon('bar-chart-2')
-										.onClick(() => {
-											showFolderStatistics(plugin, file);
-										});
-								});
-							}
-
-							// === PEOPLE SUBFOLDER ===
-							// Show "Create person" for subfolders within People folder
-							else if (isPeopleSubfolder) {
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Create person')
-										.setIcon('user-plus')
-										.onClick(() => {
-											const modal = new CreatePersonModal(plugin.app, {
-												directory: file.path,
-												familyGraph: plugin.createFamilyGraphService(),
-												propertyAliases: plugin.settings.propertyAliases,
-												placeGraph: plugin.createPlaceGraphService(),
-												settings: plugin.settings,
-												plugin: plugin
-											});
-											modal.open();
-										});
-								});
-							}
-
-							// === PLACES SUBFOLDER ===
-							// Show "Create place" for subfolders within Places folder
-							else if (isPlacesSubfolder) {
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Create place')
-										.setIcon('map-pin-plus')
-										.onClick(() => {
-											new CreatePlaceModal(plugin.app, {
-												directory: file.path,
-												familyGraph: plugin.createFamilyGraphService(),
-												placeGraph: plugin.createPlaceGraphService(),
-												settings: plugin.settings,
-												plugin: plugin
-											}).open();
-										});
-								});
-							}
-
-							// === PLACES FOLDER ===
-							else if (isPlacesFolder) {
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Create place')
-										.setIcon('map-pin-plus')
-										.onClick(() => {
-											new CreatePlaceModal(plugin.app, {
-												directory: file.path,
-												familyGraph: plugin.createFamilyGraphService(),
-												placeGraph: plugin.createPlaceGraphService(),
-												settings: plugin.settings,
-												plugin: plugin
-											}).open();
-										});
-								});
-
-								submenu.addSeparator();
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add essential place properties')
-										.setIcon('map-pin')
-										.onClick(async () => {
-											await addEssentialPlaceProperties(plugin, getFilesInFolder());
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add cr_id')
-										.setIcon('key')
-										.onClick(async () => {
-											await addCrId(plugin, getFilesInFolder());
-										});
-								});
-
-								submenu.addSeparator();
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('New places base from template')
-										.setIcon('table')
-										.onClick(async () => {
-											await plugin.createPlacesBaseTemplate(file);
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Show folder statistics')
-										.setIcon('bar-chart-2')
-										.onClick(() => {
-											showFolderStatistics(plugin, file);
-										});
-								});
-							}
-
-							// === UNIVERSES FOLDER ===
-							else if (isUniversesFolder) {
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add essential universe properties')
-										.setIcon('globe')
-										.onClick(async () => {
-											await addEssentialUniverseProperties(plugin, getFilesInFolder());
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add cr_id')
-										.setIcon('key')
-										.onClick(async () => {
-											await addCrId(plugin, getFilesInFolder());
-										});
-								});
-
-								submenu.addSeparator();
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('New universes base from template')
-										.setIcon('table')
-										.onClick(async () => {
-											await plugin.createUniversesBaseTemplate(file);
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Show folder statistics')
-										.setIcon('bar-chart-2')
-										.onClick(() => {
-											showFolderStatistics(plugin, file);
-										});
-								});
-							}
-
-							// === SOURCES FOLDER ===
-							else if (isSourcesFolder) {
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Create source')
-										.setIcon('file-plus')
-										.onClick(() => {
-											new CreateSourceModal(plugin.app, plugin, {
-												onSuccess: () => {}
-											}).open();
-										});
-								});
-
-								submenu.addSeparator();
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add essential source properties')
-										.setIcon('archive')
-										.onClick(async () => {
-											await addEssentialSourceProperties(plugin, getFilesInFolder());
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add cr_id')
-										.setIcon('key')
-										.onClick(async () => {
-											await addCrId(plugin, getFilesInFolder());
-										});
-								});
-
-								submenu.addSeparator();
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('New sources base from template')
-										.setIcon('table')
-										.onClick(async () => {
-											await plugin.createSourcesBaseTemplate(file);
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Show folder statistics')
-										.setIcon('bar-chart-2')
-										.onClick(() => {
-											showFolderStatistics(plugin, file);
-										});
-								});
-							}
-
-							// === EVENTS FOLDER ===
-							else if (isEventsFolder) {
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Create event')
-										.setIcon('calendar-plus')
-										.onClick(() => {
-											const eventService = plugin.getEventService();
-											if (eventService) {
-												new CreateEventModal(plugin.app, eventService, plugin.settings, {
-													plugin: plugin
-												}).open();
-											}
-										});
-								});
-
-								submenu.addSeparator();
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add essential event properties')
-										.setIcon('calendar')
-										.onClick(async () => {
-											await addEssentialEventProperties(plugin, getFilesInFolder());
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add cr_id')
-										.setIcon('key')
-										.onClick(async () => {
-											await addCrId(plugin, getFilesInFolder());
-										});
-								});
-
-								submenu.addSeparator();
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('New events base from template')
-										.setIcon('table')
-										.onClick(async () => {
-											await plugin.createEventsBaseTemplate(file);
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Show folder statistics')
-										.setIcon('bar-chart-2')
-										.onClick(() => {
-											showFolderStatistics(plugin, file);
-										});
-								});
-							}
-
-							// === ORGANIZATIONS FOLDER ===
-							else if (isOrganizationsFolder) {
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add cr_id')
-										.setIcon('key')
-										.onClick(async () => {
-											await addCrId(plugin, getFilesInFolder());
-										});
-								});
-
-								submenu.addSeparator();
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('New organizations base from template')
-										.setIcon('table')
-										.onClick(async () => {
-											await plugin.createOrganizationsBaseTemplate(file);
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Show folder statistics')
-										.setIcon('bar-chart-2')
-										.onClick(() => {
-											showFolderStatistics(plugin, file);
-										});
-								});
-							}
-
-							// === NOTES FOLDER (Phase 4 Gramps Notes) ===
-							else if (isNotesFolder) {
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('New Charted Roots note')
-										.setIcon('file-plus')
-										.onClick(async () => {
-											const { CreateNoteModal } = await import('../ui/create-note-modal');
-											new CreateNoteModal(plugin.app, plugin).open();
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add cr_id')
-										.setIcon('key')
-										.onClick(async () => {
-											await addCrId(plugin, getFilesInFolder());
-										});
-								});
-
-								submenu.addSeparator();
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('New notes base from template')
-										.setIcon('table')
-										.onClick(async () => {
-											await plugin.createNotesBaseTemplate(file);
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Show folder statistics')
-										.setIcon('bar-chart-2')
-										.onClick(() => {
-											showFolderStatistics(plugin, file);
-										});
-								});
-							}
-
-							// === GENERIC/UNCONFIGURED FOLDER ===
-							else {
-								// Set as folder type options
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Set as people folder')
-										.setIcon('users')
-										.onClick(async () => {
-											plugin.settings.peopleFolder = file.path;
-											await plugin.saveSettings();
-											new Notice(`People folder set to: ${file.path}`);
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Set as places folder')
-										.setIcon('map-pin')
-										.onClick(async () => {
-											plugin.settings.placesFolder = file.path;
-											await plugin.saveSettings();
-											new Notice(`Places folder set to: ${file.path}`);
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Set as universes folder')
-										.setIcon('globe')
-										.onClick(async () => {
-											plugin.settings.universesFolder = file.path;
-											await plugin.saveSettings();
-											new Notice(`Universes folder set to: ${file.path}`);
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Set as sources folder')
-										.setIcon('archive')
-										.onClick(async () => {
-											plugin.settings.sourcesFolder = file.path;
-											await plugin.saveSettings();
-											new Notice(`Sources folder set to: ${file.path}`);
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Set as events folder')
-										.setIcon('calendar')
-										.onClick(async () => {
-											plugin.settings.eventsFolder = file.path;
-											await plugin.saveSettings();
-											new Notice(`Events folder set to: ${file.path}`);
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Set as organizations folder')
-										.setIcon('building')
-										.onClick(async () => {
-											plugin.settings.organizationsFolder = file.path;
-											await plugin.saveSettings();
-											new Notice(`Organizations folder set to: ${file.path}`);
-										});
-								});
-
-								submenu.addSeparator();
-
-								// Add essential properties submenu
-								submenu.addItem((subItem) => {
-									const propsSubmenu: Menu = subItem
-										.setTitle('Add essential properties')
-										.setIcon('file-plus')
-										.setSubmenu();
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Person properties')
-											.setIcon('user')
-											.onClick(async () => {
-												await addEssentialPersonProperties(plugin, getFilesInFolder());
-											});
-									});
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Place properties')
-											.setIcon('map-pin')
-											.onClick(async () => {
-												await addEssentialPlaceProperties(plugin, getFilesInFolder());
-											});
-									});
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Universe properties')
-											.setIcon('globe')
-											.onClick(async () => {
-												await addEssentialUniverseProperties(plugin, getFilesInFolder());
-											});
-									});
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Source properties')
-											.setIcon('archive')
-											.onClick(async () => {
-												await addEssentialSourceProperties(plugin, getFilesInFolder());
-											});
-									});
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Event properties')
-											.setIcon('calendar')
-											.onClick(async () => {
-												await addEssentialEventProperties(plugin, getFilesInFolder());
-											});
-									});
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Map properties')
-											.setIcon('map')
-											.onClick(async () => {
-												await addEssentialMapProperties(plugin, getFilesInFolder());
-											});
-									});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add cr_id')
-										.setIcon('key')
-										.onClick(async () => {
-											await addCrId(plugin, getFilesInFolder());
-										});
-								});
-
-								submenu.addSeparator();
-
-								// Bases submenu
-								submenu.addItem((subItem) => {
-									const basesSubmenu: Menu = subItem
-										.setTitle('New base from template')
-										.setIcon('table')
-										.setSubmenu();
-
-									basesSubmenu.addItem((baseItem) => {
-										baseItem
-											.setTitle('People base')
-											.setIcon('users')
-											.onClick(async () => {
-												await plugin.createBaseTemplate(file);
-											});
-									});
-
-									basesSubmenu.addItem((baseItem) => {
-										baseItem
-											.setTitle('Places base')
-											.setIcon('map-pin')
-											.onClick(async () => {
-												await plugin.createPlacesBaseTemplate(file);
-											});
-									});
-
-									basesSubmenu.addItem((baseItem) => {
-										baseItem
-											.setTitle('Universes base')
-											.setIcon('globe')
-											.onClick(async () => {
-												await plugin.createUniversesBaseTemplate(file);
-											});
-									});
-
-									basesSubmenu.addItem((baseItem) => {
-										baseItem
-											.setTitle('Sources base')
-											.setIcon('archive')
-											.onClick(async () => {
-												await plugin.createSourcesBaseTemplate(file);
-											});
-									});
-
-									basesSubmenu.addItem((baseItem) => {
-										baseItem
-											.setTitle('Events base')
-											.setIcon('calendar')
-											.onClick(async () => {
-												await plugin.createEventsBaseTemplate(file);
-											});
-									});
-
-									basesSubmenu.addItem((baseItem) => {
-										baseItem
-											.setTitle('Organizations base')
-											.setIcon('building')
-											.onClick(async () => {
-												await plugin.createOrganizationsBaseTemplate(file);
-											});
-									});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Show folder statistics')
-										.setIcon('bar-chart-2')
-										.onClick(() => {
-											showFolderStatistics(plugin, file);
-										});
-								});
-							}
-						});
-					} else {
-						// Mobile: flat menu with prefix - type-specific actions
-
-						// === PEOPLE FOLDER (MOBILE) ===
-						if (isPeopleFolder) {
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Create person')
-									.setIcon('user-plus')
-									.onClick(() => {
-										const modal = new CreatePersonModal(plugin.app, {
-											directory: file.path,
-											familyGraph: plugin.createFamilyGraphService(),
-											propertyAliases: plugin.settings.propertyAliases,
-											placeGraph: plugin.createPlaceGraphService(),
-											settings: plugin.settings,
-											plugin: plugin
-										});
-										modal.open();
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Create family')
-									.setIcon('users')
-									.onClick(() => {
-										void import('../ui/family-creation-wizard').then(({ FamilyCreationWizardModal }) => {
-											new FamilyCreationWizardModal(plugin.app, plugin, file.path).open();
-										});
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Import GEDCOM')
-									.setIcon('upload')
-									.onClick(() => {
-										const modal = new ControlCenterModal(plugin.app, plugin);
-										modal.openToTab('gedcom');
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Export GEDCOM')
-									.setIcon('download')
-									.onClick(() => {
-										const modal = new ControlCenterModal(plugin.app, plugin);
-										modal.openToTab('gedcom');
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Scan for relationship issues')
-									.setIcon('shield-alert')
-									.onClick(() => {
-										new FolderScanModal(plugin.app, file, plugin.personIndex ?? undefined).open();
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential person properties')
-									.setIcon('user')
-									.onClick(async () => {
-										await addEssentialPersonProperties(plugin, getFilesInFolder());
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Insert dynamic blocks')
-									.setIcon('layout-template')
-									.onClick(async () => {
-										await plugin.insertDynamicBlocks(getFilesInFolder());
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Generate all trees')
-									.setIcon('git-fork')
-									.onClick(async () => {
-										await plugin.generateAllTrees();
-									});
-							});
-						}
-
-						// === PEOPLE SUBFOLDER (MOBILE) ===
-						// Show "Create person" for subfolders within People folder
-						else if (isPeopleSubfolder) {
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Create person')
-									.setIcon('user-plus')
-									.onClick(() => {
-										const modal = new CreatePersonModal(plugin.app, {
-											directory: file.path,
-											familyGraph: plugin.createFamilyGraphService(),
-											propertyAliases: plugin.settings.propertyAliases,
-											placeGraph: plugin.createPlaceGraphService(),
-											settings: plugin.settings,
-											plugin: plugin
-										});
-										modal.open();
-									});
-							});
-						}
-
-						// === PLACES FOLDER (MOBILE) ===
-						else if (isPlacesFolder) {
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential place properties')
-									.setIcon('map-pin')
-									.onClick(async () => {
-										await addEssentialPlaceProperties(plugin, getFilesInFolder());
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: New places base')
-									.setIcon('table')
-									.onClick(async () => {
-										await plugin.createPlacesBaseTemplate(file);
-									});
-							});
-						}
-
-						// === UNIVERSES FOLDER (MOBILE) ===
-						else if (isUniversesFolder) {
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential universe properties')
-									.setIcon('globe')
-									.onClick(async () => {
-										await addEssentialUniverseProperties(plugin, getFilesInFolder());
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: New universes base')
-									.setIcon('table')
-									.onClick(async () => {
-										await plugin.createUniversesBaseTemplate(file);
-									});
-							});
-						}
-
-						// === SOURCES FOLDER (MOBILE) ===
-						else if (isSourcesFolder) {
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Create source')
-									.setIcon('file-plus')
-									.onClick(() => {
-										new CreateSourceModal(plugin.app, plugin, {
-											onSuccess: () => {}
-										}).open();
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential source properties')
-									.setIcon('archive')
-									.onClick(async () => {
-										await addEssentialSourceProperties(plugin, getFilesInFolder());
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: New sources base')
-									.setIcon('table')
-									.onClick(async () => {
-										await plugin.createSourcesBaseTemplate(file);
-									});
-							});
-						}
-
-						// === EVENTS FOLDER (MOBILE) ===
-						else if (isEventsFolder) {
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Create event')
-									.setIcon('calendar-plus')
-									.onClick(() => {
-										const eventService = plugin.getEventService();
-										if (eventService) {
-											new CreateEventModal(plugin.app, eventService, plugin.settings, {
-												plugin: plugin
-											}).open();
-										}
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential event properties')
-									.setIcon('calendar')
-									.onClick(async () => {
-										await addEssentialEventProperties(plugin, getFilesInFolder());
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: New events base')
-									.setIcon('table')
-									.onClick(async () => {
-										await plugin.createEventsBaseTemplate(file);
-									});
-							});
-						}
-
-						// === ORGANIZATIONS FOLDER (MOBILE) ===
-						else if (isOrganizationsFolder) {
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: New organizations base')
-									.setIcon('table')
-									.onClick(async () => {
-										await plugin.createOrganizationsBaseTemplate(file);
-									});
-							});
-						}
-
-						// === NOTES FOLDER (MOBILE - Phase 4 Gramps Notes) ===
-						else if (isNotesFolder) {
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: New note')
-									.setIcon('file-plus')
-									.onClick(async () => {
-										const { CreateNoteModal } = await import('../ui/create-note-modal');
-										new CreateNoteModal(plugin.app, plugin).open();
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: New notes base')
-									.setIcon('table')
-									.onClick(async () => {
-										await plugin.createNotesBaseTemplate(file);
-									});
-							});
-						}
-
-						// === GENERIC FOLDER (MOBILE) ===
-						else {
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Set as people folder')
-									.setIcon('users')
-									.onClick(async () => {
-										plugin.settings.peopleFolder = file.path;
-										await plugin.saveSettings();
-										new Notice(`People folder set to: ${file.path}`);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Set as places folder')
-									.setIcon('map-pin')
-									.onClick(async () => {
-										plugin.settings.placesFolder = file.path;
-										await plugin.saveSettings();
-										new Notice(`Places folder set to: ${file.path}`);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Set as universes folder')
-									.setIcon('globe')
-									.onClick(async () => {
-										plugin.settings.universesFolder = file.path;
-										await plugin.saveSettings();
-										new Notice(`Universes folder set to: ${file.path}`);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Set as sources folder')
-									.setIcon('archive')
-									.onClick(async () => {
-										plugin.settings.sourcesFolder = file.path;
-										await plugin.saveSettings();
-										new Notice(`Sources folder set to: ${file.path}`);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Set as events folder')
-									.setIcon('calendar')
-									.onClick(async () => {
-										plugin.settings.eventsFolder = file.path;
-										await plugin.saveSettings();
-										new Notice(`Events folder set to: ${file.path}`);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Set as organizations folder')
-									.setIcon('building')
-									.onClick(async () => {
-										plugin.settings.organizationsFolder = file.path;
-										await plugin.saveSettings();
-										new Notice(`Organizations folder set to: ${file.path}`);
-									});
-							});
-						}
-
-						// Common actions for all folders (mobile)
-						menu.addItem((item) => {
-							item
-								.setTitle('Charted Roots: Add cr_id')
-								.setIcon('key')
-								.onClick(async () => {
-									await addCrId(plugin, getFilesInFolder());
-								});
-						});
-
-						menu.addItem((item) => {
-							item
-								.setTitle('Charted Roots: Show folder statistics')
-								.setIcon('bar-chart-2')
-								.onClick(() => {
-									showFolderStatistics(plugin, file);
-								});
-						});
-					}
+					buildFolderContextMenu(menu, plugin, file, useSubmenu);
 				}
 			})
 		);
@@ -4137,6 +1748,2437 @@ export function registerContextMenus(plugin: CanvasRootsPlugin): void {
 					}
 			})
 	);
+}
+
+/**
+ * Build context menu items for canvas files (.canvas).
+ * Handles both desktop (submenu) and mobile (flat) variants.
+ */
+function buildCanvasContextMenu(
+	menu: Menu,
+	plugin: CanvasRootsPlugin,
+	file: TFile,
+	useSubmenu: boolean
+): void {
+	menu.addSeparator();
+
+	// Check if this is a timeline canvas (async check for context menu)
+	const checkTimelineCanvas = async (): Promise<boolean> => {
+		try {
+			const content = await plugin.app.vault.read(file);
+			const data = JSON.parse(content);
+			return data.metadata?.frontmatter?.['canvas-roots']?.type === 'timeline-export';
+		} catch {
+			return false;
+		}
+	};
+
+	if (useSubmenu) {
+		menu.addItem((item) => {
+			const submenu: Menu = item
+				.setTitle('Charted Roots')
+				.setIcon('git-fork')
+				.setSubmenu();
+
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Regenerate canvas')
+					.setIcon('refresh-cw')
+					.onClick(async () => {
+						// Check if timeline or tree canvas
+						const isTimeline = await checkTimelineCanvas();
+						if (isTimeline) {
+							// Regenerate timeline
+							await regenerateTimelineCanvas(plugin, file);
+						} else {
+							// Open the canvas file first
+							const leaf = plugin.app.workspace.getLeaf(false);
+							await leaf.openFile(file);
+
+							// Give canvas a moment to load
+							await new Promise(resolve => setTimeout(resolve, 100));
+
+							// Show options modal
+							new RegenerateOptionsModal(plugin.app, plugin, file).open();
+						}
+					});
+			});
+
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Show tree statistics')
+					.setIcon('bar-chart')
+					.onClick(() => {
+						new TreeStatisticsModal(plugin.app, file).open();
+					});
+			});
+
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Customize canvas styles')
+					.setIcon('layout')
+					.onClick(async () => {
+						// Check if timeline or tree canvas
+						const isTimeline = await checkTimelineCanvas();
+						if (isTimeline) {
+							const { TimelineStyleModal } = await import('../events/ui/timeline-style-modal');
+							new TimelineStyleModal(plugin.app, plugin, file).open();
+						} else {
+							const { CanvasStyleModal } = await import('../ui/canvas-style-modal');
+							new CanvasStyleModal(plugin.app, plugin, file).open();
+						}
+					});
+			});
+
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Open in family chart')
+					.setIcon('git-fork')
+					.onClick(async () => {
+						await openCanvasInFamilyChart(plugin, file);
+					});
+			});
+
+			// Export submenu (Excalidraw + images)
+			submenu.addItem((subItem) => {
+				const exportSubmenu: Menu = subItem
+					.setTitle('Export')
+					.setIcon('share')
+					.setSubmenu();
+
+				exportSubmenu.addItem((expItem) => {
+					expItem
+						.setTitle('Export to Excalidraw')
+						.setIcon('pencil')
+						.onClick(async () => {
+							await exportCanvasToExcalidraw(plugin, file);
+						});
+				});
+
+				exportSubmenu.addSeparator();
+
+				exportSubmenu.addItem((expItem) => {
+					expItem
+						.setTitle('Export as PNG')
+						.setIcon('image')
+						.onClick(async () => {
+							await exportCanvasAsImage(plugin, file, 'png');
+						});
+				});
+
+				exportSubmenu.addItem((expItem) => {
+					expItem
+						.setTitle('Export as SVG')
+						.setIcon('file-code')
+						.onClick(async () => {
+							await exportCanvasAsImage(plugin, file, 'svg');
+						});
+				});
+
+				exportSubmenu.addItem((expItem) => {
+					expItem
+						.setTitle('Export as PDF')
+						.setIcon('file-text')
+						.onClick(async () => {
+							await exportCanvasAsImage(plugin, file, 'pdf');
+						});
+				});
+			});
+
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Split canvas wizard')
+					.setIcon('layers')
+					.onClick(() => {
+						new SplitWizardModal(plugin.app, plugin.settings, plugin.folderFilter ?? undefined).open();
+					});
+			});
+
+			submenu.addSeparator();
+
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('More options...')
+					.setIcon('settings')
+					.onClick(() => {
+						const modal = new ControlCenterModal(plugin.app, plugin);
+						modal.openToTab('tree-generation');
+					});
+			});
+		});
+	} else {
+		// Mobile: flat menu with prefix
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Regenerate canvas')
+				.setIcon('refresh-cw')
+				.onClick(async () => {
+					// Check if timeline or tree canvas
+					const isTimeline = await checkTimelineCanvas();
+					if (isTimeline) {
+						await regenerateTimelineCanvas(plugin, file);
+					} else {
+						const leaf = plugin.app.workspace.getLeaf(false);
+						await leaf.openFile(file);
+						await new Promise(resolve => setTimeout(resolve, 100));
+						new RegenerateOptionsModal(plugin.app, plugin, file).open();
+					}
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Show tree statistics')
+				.setIcon('bar-chart')
+				.onClick(() => {
+					new TreeStatisticsModal(plugin.app, file).open();
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Customize canvas styles')
+				.setIcon('layout')
+				.onClick(async () => {
+					// Check if timeline or tree canvas
+					const isTimeline = await checkTimelineCanvas();
+					if (isTimeline) {
+						const { TimelineStyleModal } = await import('../events/ui/timeline-style-modal');
+						new TimelineStyleModal(plugin.app, plugin, file).open();
+					} else {
+						const { CanvasStyleModal } = await import('../ui/canvas-style-modal');
+						new CanvasStyleModal(plugin.app, plugin, file).open();
+					}
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Open in family chart')
+				.setIcon('git-fork')
+				.onClick(async () => {
+					await openCanvasInFamilyChart(plugin, file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Export to Excalidraw')
+				.setIcon('pencil')
+				.onClick(async () => {
+					await exportCanvasToExcalidraw(plugin, file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Export as PNG')
+				.setIcon('image')
+				.onClick(async () => {
+					await exportCanvasAsImage(plugin, file, 'png');
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Export as SVG')
+				.setIcon('file-code')
+				.onClick(async () => {
+					await exportCanvasAsImage(plugin, file, 'svg');
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Export as PDF')
+				.setIcon('file-text')
+				.onClick(async () => {
+					await exportCanvasAsImage(plugin, file, 'pdf');
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Split canvas wizard')
+				.setIcon('layers')
+				.onClick(() => {
+					new SplitWizardModal(plugin.app, plugin.settings, plugin.folderFilter ?? undefined).open();
+				});
+		});
+	}
+}
+
+/**
+ * Build context menu items for person notes with cr_id.
+ * Handles both desktop (submenu) and mobile (flat) variants.
+ */
+function buildPersonContextMenu(
+	menu: Menu,
+	plugin: CanvasRootsPlugin,
+	file: TFile,
+	cache: CachedMetadata | null,
+	useSubmenu: boolean
+): void {
+	menu.addSeparator();
+
+	if (useSubmenu) {
+		menu.addItem((item) => {
+			const submenu: Menu = item
+				.setTitle('Charted Roots')
+				.setIcon('git-fork')
+				.setSubmenu();
+
+			// Edit person
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Edit person')
+					.setIcon('edit')
+					.onClick(() => {
+						plugin.openEditPersonModal(file);
+					});
+			});
+
+			// Show journey on map
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Show journey on map')
+					.setIcon('route')
+					.onClick(() => {
+						const cache = plugin.app.metadataCache.getFileCache(file);
+						const crId = cache?.frontmatter?.cr_id;
+						const personName = cache?.frontmatter?.name || file.basename;
+						if (crId) {
+							const leaves = plugin.app.workspace.getLeavesOfType('canvas-roots-map');
+							if (leaves.length > 0) {
+								plugin.app.workspace.revealLeaf(leaves[0]);
+								const mapView = leaves[0].view as import('../maps/map-view').MapView;
+								mapView.enterJourneyModeForPerson(crId, personName);
+							} else {
+								void plugin.app.workspace.getLeaf('tab').setViewState({
+									type: 'canvas-roots-map',
+									active: true
+								}).then(() => {
+									setTimeout(() => {
+										const newLeaves = plugin.app.workspace.getLeavesOfType('canvas-roots-map');
+										if (newLeaves.length > 0) {
+											const mapView = newLeaves[0].view as import('../maps/map-view').MapView;
+											mapView.enterJourneyModeForPerson(crId, personName);
+										}
+									}, 1000);
+								});
+							}
+						}
+					});
+			});
+
+			// Show on calendar
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Show on calendar')
+					.setIcon('calendar')
+					.onClick(() => {
+						const cache = plugin.app.metadataCache.getFileCache(file);
+						const birthDate = cache?.frontmatter?.birth_date || cache?.frontmatter?.birthDate;
+						// Parse year and month from birth date
+						let month = new Date().getMonth();
+						let year = new Date().getFullYear();
+						if (birthDate) {
+							const dateStr = String(birthDate);
+							const isoMatch = dateStr.match(/(\d{4})-(\d{1,2})/);
+							if (isoMatch) {
+								year = parseInt(isoMatch[1]);
+								month = parseInt(isoMatch[2]) - 1; // 0-indexed
+							}
+						}
+						const { VIEW_TYPE_CALENDAR } = require('../calendar/calendar-view');
+						const leaves = plugin.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR);
+						if (leaves.length > 0) {
+							plugin.app.workspace.revealLeaf(leaves[0]);
+							const calView = leaves[0].view as import('../calendar/calendar-view').CalendarView;
+							calView.navigateToDate(month, year);
+						} else {
+							void plugin.activateCalendarView().then(() => {
+								setTimeout(() => {
+									const newLeaves = plugin.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR);
+									if (newLeaves.length > 0) {
+										const calView = newLeaves[0].view as import('../calendar/calendar-view').CalendarView;
+										calView.navigateToDate(month, year);
+									}
+								}, 500);
+							});
+						}
+					});
+			});
+
+			// Relationships submenu (adding relationships, validation, calculation)
+			submenu.addItem((subItem) => {
+				const relationshipSubmenu: Menu = subItem
+					.setTitle('Relationships')
+					.setIcon('users')
+					.setSubmenu();
+
+				relationshipSubmenu.addItem((relItem) => {
+					relItem
+						.setTitle('Add father')
+						.setIcon('user')
+						.onClick(() => {
+							// Build context for inline creation
+							const cache = plugin.app.metadataCache.getFileCache(file);
+							const crId = cache?.frontmatter?.cr_id;
+							const directory = file.parent?.path || '';
+
+							const createContext: RelationshipContext = {
+								relationshipType: 'father',
+								suggestedSex: 'male',
+								parentCrId: crId,
+								directory: directory
+							};
+
+							const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
+								void (async () => {
+									const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
+									await relationshipMgr.addParentRelationship(
+										file,
+										selectedPerson.file,
+										'father',
+										selectedPerson.crId
+									);
+								})();
+							}, {
+								title: 'Select father',
+								createContext: createContext,
+								onCreateNew: () => {
+									// Callback signals inline creation support
+								},
+								plugin: plugin
+							});
+							picker.open();
+						});
+				});
+
+				relationshipSubmenu.addItem((relItem) => {
+					relItem
+						.setTitle('Add mother')
+						.setIcon('user')
+						.onClick(() => {
+							// Build context for inline creation
+							const cache = plugin.app.metadataCache.getFileCache(file);
+							const crId = cache?.frontmatter?.cr_id;
+							const directory = file.parent?.path || '';
+
+							const createContext: RelationshipContext = {
+								relationshipType: 'mother',
+								suggestedSex: 'female',
+								parentCrId: crId,
+								directory: directory
+							};
+
+							const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
+								void (async () => {
+									const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
+									await relationshipMgr.addParentRelationship(
+										file,
+										selectedPerson.file,
+										'mother',
+										selectedPerson.crId
+									);
+								})();
+							}, {
+								title: 'Select mother',
+								createContext: createContext,
+								onCreateNew: () => {
+									// Callback signals inline creation support
+								},
+								plugin: plugin
+							});
+							picker.open();
+						});
+				});
+
+				relationshipSubmenu.addItem((relItem) => {
+					relItem
+						.setTitle('Add spouse')
+						.setIcon('heart')
+						.onClick(() => {
+							// Build context for inline creation
+							const cache = plugin.app.metadataCache.getFileCache(file);
+							const crId = cache?.frontmatter?.cr_id;
+							const currentSex = cache?.frontmatter?.sex;
+							const directory = file.parent?.path || '';
+
+							// Suggest opposite sex if current person's sex is known
+							let suggestedSex: 'male' | 'female' | undefined;
+							if (currentSex === 'male' || currentSex === 'm') {
+								suggestedSex = 'female';
+							} else if (currentSex === 'female' || currentSex === 'f') {
+								suggestedSex = 'male';
+							}
+
+							const createContext: RelationshipContext = {
+								relationshipType: 'spouse',
+								suggestedSex: suggestedSex,
+								parentCrId: crId,
+								directory: directory
+							};
+
+							const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
+								void (async () => {
+									const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
+									await relationshipMgr.addSpouseRelationship(file, selectedPerson.file, selectedPerson.crId);
+								})();
+							}, {
+								title: 'Select spouse',
+								createContext: createContext,
+								onCreateNew: () => {
+									// Callback signals inline creation support
+								},
+								plugin: plugin
+							});
+							picker.open();
+						});
+				});
+
+				relationshipSubmenu.addItem((relItem) => {
+					relItem
+						.setTitle('Add child')
+						.setIcon('baby')
+						.onClick(() => {
+							// Build context for inline creation
+							const cache = plugin.app.metadataCache.getFileCache(file);
+							const crId = cache?.frontmatter?.cr_id;
+							const directory = file.parent?.path || '';
+
+							const createContext: RelationshipContext = {
+								relationshipType: 'child',
+								suggestedSex: undefined, // No sex suggestion for children
+								parentCrId: crId,
+								directory: directory
+							};
+
+							const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
+								void (async () => {
+									const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
+									await relationshipMgr.addChildRelationship(file, selectedPerson.file, selectedPerson.crId);
+								})();
+							}, {
+								title: 'Select child',
+								createContext: createContext,
+								onCreateNew: () => {
+									// Callback signals inline creation support
+								},
+								plugin: plugin
+							});
+							picker.open();
+						});
+				});
+
+				relationshipSubmenu.addSeparator();
+
+				relationshipSubmenu.addItem((relItem) => {
+					relItem
+						.setTitle('Add custom relationship...')
+						.setIcon('link-2')
+						.onClick(() => {
+							new AddRelationshipModal(plugin.app, plugin, file).open();
+						});
+				});
+
+				relationshipSubmenu.addItem((relItem) => {
+					relItem
+						.setTitle('Add organization membership...')
+						.setIcon('building')
+						.onClick(async () => {
+							const { AddMembershipModal } = await import('../organizations/ui/add-membership-modal');
+							new AddMembershipModal(plugin.app, plugin, file, () => {
+								new Notice('Membership added');
+							}).open();
+						});
+				});
+
+				relationshipSubmenu.addSeparator();
+
+				// Validate relationships
+				relationshipSubmenu.addItem((relItem) => {
+					relItem
+						.setTitle('Validate relationships')
+						.setIcon('shield-check')
+						.onClick(async () => {
+							const validator = new RelationshipValidator(plugin.app);
+							if (plugin.folderFilter) {
+								validator.setFolderFilter(plugin.folderFilter);
+							}
+							if (plugin.personIndex) {
+								validator.setPersonIndex(plugin.personIndex);
+							}
+							const result = await validator.validatePersonNote(file);
+							new ValidationResultsModal(plugin.app, result).open();
+						});
+				});
+
+				// Calculate relationship
+				relationshipSubmenu.addItem((relItem) => {
+					relItem
+						.setTitle('Calculate relationship...')
+						.setIcon('git-compare')
+						.onClick(() => {
+							const cache = plugin.app.metadataCache.getFileCache(file);
+							const crId = cache?.frontmatter?.cr_id;
+							const personName = cache?.frontmatter?.name || file.basename;
+							if (crId) {
+								const modal = new RelationshipCalculatorModal(plugin.app, plugin.settings);
+								modal.openWithPersonA({
+									name: personName,
+									crId: crId,
+									birthDate: cache?.frontmatter?.born,
+									deathDate: cache?.frontmatter?.died,
+									sex: cache?.frontmatter?.sex || cache?.frontmatter?.gender,
+									file: file
+								});
+							}
+						});
+				});
+			});
+
+			// Open in family chart
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Open in family chart')
+					.setIcon('git-fork')
+					.onClick(async () => {
+						const cache = plugin.app.metadataCache.getFileCache(file);
+						const crId = cache?.frontmatter?.cr_id;
+						if (crId) {
+							await plugin.activateFamilyChartView(crId);
+						} else {
+							new Notice('Could not find cr_id for this person note');
+						}
+					});
+			});
+
+			// Open profile
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Open profile')
+					.setIcon('id-card')
+					.onClick(async () => {
+						await plugin.activateProfileView(file);
+					});
+			});
+
+			// Generate visual tree (opens wizard with person pre-selected)
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Generate visual tree')
+					.setIcon('network')
+					.onClick(() => {
+						const modal = new ControlCenterModal(plugin.app, plugin);
+						modal.openWithPerson(file);
+					});
+			});
+
+			submenu.addSeparator();
+
+			// Events submenu
+			submenu.addItem((subItem) => {
+				const eventsSubmenu: Menu = subItem
+					.setTitle('Events')
+					.setIcon('calendar')
+					.setSubmenu();
+
+				eventsSubmenu.addItem((evItem) => {
+					evItem
+						.setTitle('Create event for this person')
+						.setIcon('calendar-plus')
+						.onClick(async () => {
+							const eventService = plugin.getEventService();
+							if (eventService) {
+								const cache = plugin.app.metadataCache.getFileCache(file);
+								const personName = cache?.frontmatter?.name || file.basename;
+								const crId = cache?.frontmatter?.cr_id;
+								const { CreateEventModal } = await import('../events/ui/create-event-modal');
+								new CreateEventModal(
+									plugin.app,
+									eventService,
+									plugin.settings,
+									{
+										initialPerson: { name: personName, crId: crId }
+									}
+								).open();
+							}
+						});
+				});
+
+				eventsSubmenu.addItem((evItem) => {
+					evItem
+						.setTitle('Link to existing event')
+						.setIcon('calendar-search')
+						.onClick(async () => {
+							const { EventPickerModal } = await import('../events/ui/event-picker-modal');
+							new EventPickerModal(plugin.app, plugin, {
+								onSelect: async (event) => {
+									const cache = plugin.app.metadataCache.getFileCache(file);
+									const personName = cache?.frontmatter?.name || file.basename;
+									await linkPersonToEvent(plugin, file, personName, event);
+								},
+								allowCreate: false
+							}).open();
+						});
+				});
+
+				eventsSubmenu.addItem((evItem) => {
+					evItem
+						.setTitle('Export timeline to Canvas')
+						.setIcon('layout')
+						.onClick(async () => {
+							await exportPersonTimelineFromFile(plugin, file, 'canvas');
+						});
+				});
+
+				eventsSubmenu.addItem((evItem) => {
+					evItem
+						.setTitle('Export timeline to Excalidraw')
+						.setIcon('pencil')
+						.onClick(async () => {
+							await exportPersonTimelineFromFile(plugin, file, 'excalidraw');
+						});
+				});
+			});
+
+			// Media submenu
+			submenu.addItem((subItem) => {
+				const mediaSubmenu: Menu = subItem
+					.setTitle('Media')
+					.setIcon('image')
+					.setSubmenu();
+
+				mediaSubmenu.addItem((mediaItem) => {
+					mediaItem
+						.setTitle('Link media...')
+						.setIcon('image-plus')
+						.onClick(() => {
+							const personName = cache?.frontmatter?.name || file.basename;
+							plugin.openLinkMediaModal(file, 'person', personName);
+						});
+				});
+
+				mediaSubmenu.addItem((mediaItem) => {
+					mediaItem
+						.setTitle('Manage media...')
+						.setIcon('settings')
+						.onClick(() => {
+							const personName = cache?.frontmatter?.name || file.basename;
+							openManageMediaModal(plugin, file, 'person', personName);
+						});
+				});
+			});
+
+			// Add source
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Add source...')
+					.setIcon('archive')
+					.onClick(() => {
+						addSourceToPersonNote(plugin, file);
+					});
+			});
+
+			submenu.addSeparator();
+
+			// Mark as root person
+			submenu.addItem((subItem) => {
+				const cache = plugin.app.metadataCache.getFileCache(file);
+				const isRootPerson = cache?.frontmatter?.root_person === true;
+				subItem
+					.setTitle(isRootPerson ? 'Unmark as root person' : 'Mark as root person')
+					.setIcon('crown')
+					.onClick(async () => {
+						await toggleRootPerson(plugin, file);
+					});
+			});
+
+			// Reference numbering submenu
+			submenu.addItem((subItem) => {
+				const refNumberSubmenu: Menu = subItem
+					.setTitle('Assign reference numbers')
+					.setIcon('hash')
+					.setSubmenu();
+
+				refNumberSubmenu.addItem((numItem) => {
+					numItem
+						.setTitle('Ahnentafel (ancestors)')
+						.setIcon('arrow-up')
+						.onClick(async () => {
+							await assignReferenceNumbersFromPerson(plugin, file, 'ahnentafel');
+						});
+				});
+
+				refNumberSubmenu.addItem((numItem) => {
+					numItem
+						.setTitle("d'Aboville (descendants)")
+						.setIcon('arrow-down')
+						.onClick(async () => {
+							await assignReferenceNumbersFromPerson(plugin, file, 'daboville');
+						});
+				});
+
+				refNumberSubmenu.addItem((numItem) => {
+					numItem
+						.setTitle('Henry (descendants)')
+						.setIcon('arrow-down')
+						.onClick(async () => {
+							await assignReferenceNumbersFromPerson(plugin, file, 'henry');
+						});
+				});
+
+				refNumberSubmenu.addItem((numItem) => {
+					numItem
+						.setTitle('Generation (all relatives)')
+						.setIcon('users')
+						.onClick(async () => {
+							await assignReferenceNumbersFromPerson(plugin, file, 'generation');
+						});
+				});
+			});
+
+			// Lineage tracking submenu
+			submenu.addItem((subItem) => {
+				const lineageSubmenu: Menu = subItem
+					.setTitle('Assign lineage')
+					.setIcon('git-branch')
+					.setSubmenu();
+
+				lineageSubmenu.addItem((linItem) => {
+					linItem
+						.setTitle('All descendants')
+						.setIcon('users')
+						.onClick(async () => {
+							await assignLineageFromPerson(plugin, file, 'all');
+						});
+				});
+
+				lineageSubmenu.addItem((linItem) => {
+					linItem
+						.setTitle('Patrilineal (father\'s line)')
+						.setIcon('arrow-down')
+						.onClick(async () => {
+							await assignLineageFromPerson(plugin, file, 'patrilineal');
+						});
+				});
+
+				lineageSubmenu.addItem((linItem) => {
+					linItem
+						.setTitle('Matrilineal (mother\'s line)')
+						.setIcon('arrow-down')
+						.onClick(async () => {
+							await assignLineageFromPerson(plugin, file, 'matrilineal');
+						});
+				});
+			});
+
+			// More submenu - less commonly used actions
+			submenu.addItem((subItem) => {
+				const moreSubmenu: Menu = subItem
+					.setTitle('More')
+					.setIcon('more-horizontal')
+					.setSubmenu();
+
+				// Find on canvas
+				moreSubmenu.addItem((moreItem) => {
+					moreItem
+						.setTitle('Find on canvas')
+						.setIcon('search')
+						.onClick(() => {
+							const cache = plugin.app.metadataCache.getFileCache(file);
+							const crId = cache?.frontmatter?.cr_id;
+							const personName = cache?.frontmatter?.name || file.basename;
+							if (crId) {
+								new FindOnCanvasModal(plugin.app, personName, crId).open();
+							}
+						});
+				});
+
+				// Open in map view
+				moreSubmenu.addItem((moreItem) => {
+					moreItem
+						.setTitle('Open in map view')
+						.setIcon('map')
+						.onClick(async () => {
+							await plugin.activateMapView();
+						});
+				});
+
+				moreSubmenu.addSeparator();
+
+				// Set group name
+				moreSubmenu.addItem((moreItem) => {
+					moreItem
+						.setTitle('Set group name')
+						.setIcon('tag')
+						.onClick(async () => {
+							await promptSetCollectionName(plugin, file);
+						});
+				});
+
+				// Set collection
+				moreSubmenu.addItem((moreItem) => {
+					moreItem
+						.setTitle('Set collection')
+						.setIcon('folder')
+						.onClick(async () => {
+							await promptSetCollection(plugin, file);
+						});
+				});
+
+				// Insert dynamic blocks
+				moreSubmenu.addItem((moreItem) => {
+					moreItem
+						.setTitle('Insert dynamic blocks')
+						.setIcon('layout-template')
+						.onClick(async () => {
+							await plugin.insertDynamicBlocks([file]);
+						});
+				});
+
+				// Create place notes from references
+				moreSubmenu.addItem((moreItem) => {
+					moreItem
+						.setTitle('Create place notes...')
+						.setIcon('map-pin')
+						.onClick(async () => {
+							await showCreatePlaceNotesForPerson(plugin, file);
+						});
+				});
+
+				moreSubmenu.addSeparator();
+
+				// Validate against schemas
+				moreSubmenu.addItem((moreItem) => {
+					moreItem
+						.setTitle('Validate against schemas')
+						.setIcon('clipboard-check')
+						.onClick(async () => {
+							const schemaService = new SchemaService(plugin);
+							const validationService = new ValidationService(plugin, schemaService);
+
+							const results = await validationService.validatePerson(file);
+
+							if (results.length === 0) {
+								new Notice('No schemas apply to this person.');
+								return;
+							}
+
+							const errors = results.reduce((sum, r) => sum + r.errors.length, 0);
+							const warnings = results.reduce((sum, r) => sum + r.warnings.length, 0);
+
+							if (errors === 0 && warnings === 0) {
+								new Notice(`✓ Validated against ${results.length} schema${results.length > 1 ? 's' : ''} - all passed`);
+							} else {
+								new Notice(`Schema validation: ${errors} error${errors !== 1 ? 's' : ''}, ${warnings} warning${warnings !== 1 ? 's' : ''}`);
+								// Open schemas tab to show details
+								const modal = new ControlCenterModal(plugin.app, plugin);
+								modal.openToTab('schemas');
+							}
+						});
+				});
+
+				// Add essential properties submenu
+				moreSubmenu.addItem((moreItem) => {
+					const propsSubmenu: Menu = moreItem
+						.setTitle('Add essential properties')
+						.setIcon('file-plus')
+						.setSubmenu();
+
+					propsSubmenu.addItem((propItem) => {
+						propItem
+							.setTitle('Add essential person properties')
+							.setIcon('user')
+							.onClick(async () => {
+								await addEssentialPersonProperties(plugin, [file]);
+							});
+					});
+
+					propsSubmenu.addItem((propItem) => {
+						propItem
+							.setTitle('Add essential place properties')
+							.setIcon('map-pin')
+							.onClick(async () => {
+								await addEssentialPlaceProperties(plugin, [file]);
+							});
+					});
+
+					propsSubmenu.addItem((propItem) => {
+						propItem
+							.setTitle('Add essential source properties')
+							.setIcon('archive')
+							.onClick(async () => {
+								await addEssentialSourceProperties(plugin, [file]);
+							});
+					});
+
+					propsSubmenu.addItem((propItem) => {
+						propItem
+							.setTitle('Add essential universe properties')
+							.setIcon('globe')
+							.onClick(async () => {
+								await addEssentialUniverseProperties(plugin, [file]);
+							});
+					});
+				});
+
+				// Add cr_id only
+				moreSubmenu.addItem((moreItem) => {
+					moreItem
+						.setTitle('Add cr_id')
+						.setIcon('key')
+						.onClick(async () => {
+							await addCrId(plugin, [file]);
+						});
+				});
+			});
+		});
+	} else {
+		// Mobile: flat menu with prefix
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Generate visual tree')
+				.setIcon('git-fork')
+				.onClick(() => {
+					const modal = new ControlCenterModal(plugin.app, plugin);
+					modal.openWithPerson(file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Edit person')
+				.setIcon('edit')
+				.onClick(() => {
+					plugin.openEditPersonModal(file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Open profile')
+				.setIcon('id-card')
+				.onClick(async () => {
+					await plugin.activateProfileView(file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add parent')
+				.setIcon('user')
+				.onClick(() => {
+					const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
+						void (async () => {
+							const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
+							const parentType = await promptParentType(plugin);
+							if (parentType) {
+								await relationshipMgr.addParentRelationship(
+									file,
+									selectedPerson.file,
+									parentType,
+									selectedPerson.crId
+								);
+							}
+						})();
+					});
+					picker.open();
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add spouse')
+				.setIcon('heart')
+				.onClick(() => {
+					const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
+						void (async () => {
+							const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
+							await relationshipMgr.addSpouseRelationship(file, selectedPerson.file, selectedPerson.crId);
+						})();
+					});
+					picker.open();
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add child')
+				.setIcon('baby')
+				.onClick(() => {
+					const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
+						void (async () => {
+							const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
+							await relationshipMgr.addChildRelationship(file, selectedPerson.file, selectedPerson.crId);
+						})();
+					});
+					picker.open();
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Validate relationships')
+				.setIcon('shield-check')
+				.onClick(async () => {
+					const validator = new RelationshipValidator(plugin.app);
+					if (plugin.folderFilter) {
+						validator.setFolderFilter(plugin.folderFilter);
+					}
+					if (plugin.personIndex) {
+						validator.setPersonIndex(plugin.personIndex);
+					}
+					const result = await validator.validatePersonNote(file);
+					new ValidationResultsModal(plugin.app, result).open();
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Find on canvas')
+				.setIcon('search')
+				.onClick(() => {
+					const cache = plugin.app.metadataCache.getFileCache(file);
+					const crId = cache?.frontmatter?.cr_id;
+					const personName = cache?.frontmatter?.name || file.basename;
+					if (crId) {
+						new FindOnCanvasModal(plugin.app, personName, crId).open();
+					}
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Open in map view')
+				.setIcon('map')
+				.onClick(async () => {
+					await plugin.activateMapView();
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Open in family chart')
+				.setIcon('git-fork')
+				.onClick(async () => {
+					const cache = plugin.app.metadataCache.getFileCache(file);
+					const crId = cache?.frontmatter?.cr_id;
+					if (crId) {
+						await plugin.activateFamilyChartView(crId);
+					} else {
+						new Notice('Could not find cr_id for this person note');
+					}
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Calculate relationship...')
+				.setIcon('git-compare')
+				.onClick(() => {
+					const cache = plugin.app.metadataCache.getFileCache(file);
+					const crId = cache?.frontmatter?.cr_id;
+					const personName = cache?.frontmatter?.name || file.basename;
+					if (crId) {
+						const modal = new RelationshipCalculatorModal(plugin.app, plugin.settings);
+						modal.openWithPersonA({
+							name: personName,
+							crId: crId,
+							birthDate: cache?.frontmatter?.born,
+							deathDate: cache?.frontmatter?.died,
+							sex: cache?.frontmatter?.sex || cache?.frontmatter?.gender,
+							file: file
+						});
+					}
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Set group name')
+				.setIcon('tag')
+				.onClick(async () => {
+					await promptSetCollectionName(plugin, file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Set collection')
+				.setIcon('folder')
+				.onClick(async () => {
+					await promptSetCollection(plugin, file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add source...')
+				.setIcon('archive')
+				.onClick(() => {
+					addSourceToPersonNote(plugin, file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Link media...')
+				.setIcon('image-plus')
+				.onClick(() => {
+					const personName = cache?.frontmatter?.name || file.basename;
+					plugin.openLinkMediaModal(file, 'person', personName);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Manage media...')
+				.setIcon('settings')
+				.onClick(() => {
+					const personName = cache?.frontmatter?.name || file.basename;
+					openManageMediaModal(plugin, file, 'person', personName);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Insert dynamic blocks')
+				.setIcon('layout-template')
+				.onClick(async () => {
+					await plugin.insertDynamicBlocks([file]);
+				});
+		});
+
+		// Events actions (mobile - flat menu)
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Create event')
+				.setIcon('calendar-plus')
+				.onClick(async () => {
+					const eventService = plugin.getEventService();
+					if (eventService) {
+						const cache = plugin.app.metadataCache.getFileCache(file);
+						const personName = cache?.frontmatter?.name || file.basename;
+						const crId = cache?.frontmatter?.cr_id;
+						const { CreateEventModal } = await import('../events/ui/create-event-modal');
+						new CreateEventModal(
+							plugin.app,
+							eventService,
+							plugin.settings,
+							{
+								initialPerson: { name: personName, crId: crId }
+							}
+						).open();
+					}
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Link to existing event')
+				.setIcon('calendar-search')
+				.onClick(async () => {
+					const cache = plugin.app.metadataCache.getFileCache(file);
+					const personName = cache?.frontmatter?.name || file.basename;
+					const { EventPickerModal } = await import('../events/ui/event-picker-modal');
+					new EventPickerModal(plugin.app, plugin, {
+						onSelect: async (event) => {
+							await linkPersonToEvent(plugin, file, personName, event);
+						},
+						allowCreate: false
+					}).open();
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Export timeline to Canvas')
+				.setIcon('layout')
+				.onClick(async () => {
+					await exportPersonTimelineFromFile(plugin, file, 'canvas');
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Export timeline to Excalidraw')
+				.setIcon('pencil')
+				.onClick(async () => {
+					await exportPersonTimelineFromFile(plugin, file, 'excalidraw');
+				});
+		});
+
+		menu.addItem((item) => {
+			const cache = plugin.app.metadataCache.getFileCache(file);
+			const isRootPerson = cache?.frontmatter?.root_person === true;
+			item
+				.setTitle(isRootPerson ? 'Charted Roots: Unmark as root person' : 'Charted Roots: Mark as root person')
+				.setIcon('crown')
+				.onClick(async () => {
+					await toggleRootPerson(plugin, file);
+				});
+		});
+
+		// Reference numbering (mobile - flat menu)
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Assign Ahnentafel numbers')
+				.setIcon('hash')
+				.onClick(async () => {
+					await assignReferenceNumbersFromPerson(plugin, file, 'ahnentafel');
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle("Charted Roots: Assign d'Aboville numbers")
+				.setIcon('hash')
+				.onClick(async () => {
+					await assignReferenceNumbersFromPerson(plugin, file, 'daboville');
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Assign Henry numbers')
+				.setIcon('hash')
+				.onClick(async () => {
+					await assignReferenceNumbersFromPerson(plugin, file, 'henry');
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Assign generation numbers')
+				.setIcon('hash')
+				.onClick(async () => {
+					await assignReferenceNumbersFromPerson(plugin, file, 'generation');
+				});
+		});
+
+		// Lineage tracking (mobile - flat menu)
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Assign lineage (all)')
+				.setIcon('git-branch')
+				.onClick(async () => {
+					await assignLineageFromPerson(plugin, file, 'all');
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Assign lineage (patrilineal)')
+				.setIcon('git-branch')
+				.onClick(async () => {
+					await assignLineageFromPerson(plugin, file, 'patrilineal');
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Assign lineage (matrilineal)')
+				.setIcon('git-branch')
+				.onClick(async () => {
+					await assignLineageFromPerson(plugin, file, 'matrilineal');
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Create place notes...')
+				.setIcon('map-pin')
+				.onClick(async () => {
+					await showCreatePlaceNotesForPerson(plugin, file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add essential person properties')
+				.setIcon('user')
+				.onClick(async () => {
+					await addEssentialPersonProperties(plugin, [file]);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add essential place properties')
+				.setIcon('map-pin')
+				.onClick(async () => {
+					await addEssentialPlaceProperties(plugin, [file]);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add essential source properties')
+				.setIcon('archive')
+				.onClick(async () => {
+					await addEssentialSourceProperties(plugin, [file]);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add cr_id')
+				.setIcon('key')
+				.onClick(async () => {
+					await addCrId(plugin, [file]);
+				});
+		});
+	}
+}
+
+/**
+ * Build context menu items for folders.
+ * Handles both desktop (submenu) and mobile (flat) variants,
+ * with different options depending on the folder type.
+ */
+function buildFolderContextMenu(
+	menu: Menu,
+	plugin: CanvasRootsPlugin,
+	file: TFolder,
+	useSubmenu: boolean
+): void {
+	menu.addSeparator();
+
+	// Determine folder type
+	const isPeopleFolder = file.path === plugin.settings.peopleFolder;
+	const isPlacesFolder = file.path === plugin.settings.placesFolder;
+	const isUniversesFolder = file.path === plugin.settings.universesFolder;
+	const isSourcesFolder = file.path === plugin.settings.sourcesFolder;
+	const isEventsFolder = file.path === plugin.settings.eventsFolder;
+	const isOrganizationsFolder = file.path === plugin.settings.organizationsFolder;
+	const isNotesFolder = file.path === plugin.settings.notesFolder;
+
+	// Check for subfolders within People folder (for Create person action)
+	const isPeopleSubfolder = !isPeopleFolder &&
+		plugin.settings.peopleFolder &&
+		file.path.startsWith(plugin.settings.peopleFolder + '/');
+
+	// Check for subfolders within Places folder (for Create place action)
+	const isPlacesSubfolder = !isPlacesFolder &&
+		plugin.settings.placesFolder &&
+		file.path.startsWith(plugin.settings.placesFolder + '/');
+
+	// Helper to get files in folder
+	const getFilesInFolder = () => plugin.app.vault.getMarkdownFiles()
+		.filter(f => f.path.startsWith(file.path + '/'));
+
+	if (useSubmenu) {
+		menu.addItem((item) => {
+			const submenu: Menu = item
+				.setTitle('Charted Roots')
+				.setIcon('git-fork')
+				.setSubmenu();
+
+			// === PEOPLE FOLDER ===
+			if (isPeopleFolder) {
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Create person')
+						.setIcon('user-plus')
+						.onClick(() => {
+							const modal = new CreatePersonModal(plugin.app, {
+								directory: file.path,
+								familyGraph: plugin.createFamilyGraphService(),
+								propertyAliases: plugin.settings.propertyAliases,
+								placeGraph: plugin.createPlaceGraphService(),
+								settings: plugin.settings,
+								plugin: plugin
+							});
+							modal.open();
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Create family')
+						.setIcon('users')
+						.onClick(() => {
+							void import('../ui/family-creation-wizard').then(({ FamilyCreationWizardModal }) => {
+								new FamilyCreationWizardModal(plugin.app, plugin, file.path).open();
+							});
+						});
+				});
+
+				submenu.addSeparator();
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Import GEDCOM')
+						.setIcon('upload')
+						.onClick(() => {
+							const modal = new ControlCenterModal(plugin.app, plugin);
+							modal.openToTab('gedcom');
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Export GEDCOM')
+						.setIcon('download')
+						.onClick(() => {
+							const modal = new ControlCenterModal(plugin.app, plugin);
+							modal.openToTab('gedcom');
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Scan for relationship issues')
+						.setIcon('shield-alert')
+						.onClick(() => {
+							new FolderScanModal(plugin.app, file, plugin.personIndex ?? undefined).open();
+						});
+				});
+
+				submenu.addSeparator();
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Add essential person properties')
+						.setIcon('user')
+						.onClick(async () => {
+							await addEssentialPersonProperties(plugin, getFilesInFolder());
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Add cr_id')
+						.setIcon('key')
+						.onClick(async () => {
+							await addCrId(plugin, getFilesInFolder());
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Insert dynamic blocks')
+						.setIcon('layout-template')
+						.onClick(async () => {
+							await plugin.insertDynamicBlocks(getFilesInFolder());
+						});
+				});
+
+				submenu.addSeparator();
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('New people base from template')
+						.setIcon('table')
+						.onClick(async () => {
+							await plugin.createBaseTemplate(file);
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Generate all trees')
+						.setIcon('git-fork')
+						.onClick(async () => {
+							await plugin.generateAllTrees();
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Show folder statistics')
+						.setIcon('bar-chart-2')
+						.onClick(() => {
+							showFolderStatistics(plugin, file);
+						});
+				});
+			}
+
+			// === PEOPLE SUBFOLDER ===
+			// Show "Create person" for subfolders within People folder
+			else if (isPeopleSubfolder) {
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Create person')
+						.setIcon('user-plus')
+						.onClick(() => {
+							const modal = new CreatePersonModal(plugin.app, {
+								directory: file.path,
+								familyGraph: plugin.createFamilyGraphService(),
+								propertyAliases: plugin.settings.propertyAliases,
+								placeGraph: plugin.createPlaceGraphService(),
+								settings: plugin.settings,
+								plugin: plugin
+							});
+							modal.open();
+						});
+				});
+			}
+
+			// === PLACES SUBFOLDER ===
+			// Show "Create place" for subfolders within Places folder
+			else if (isPlacesSubfolder) {
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Create place')
+						.setIcon('map-pin-plus')
+						.onClick(() => {
+							new CreatePlaceModal(plugin.app, {
+								directory: file.path,
+								familyGraph: plugin.createFamilyGraphService(),
+								placeGraph: plugin.createPlaceGraphService(),
+								settings: plugin.settings,
+								plugin: plugin
+							}).open();
+						});
+				});
+			}
+
+			// === PLACES FOLDER ===
+			else if (isPlacesFolder) {
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Create place')
+						.setIcon('map-pin-plus')
+						.onClick(() => {
+							new CreatePlaceModal(plugin.app, {
+								directory: file.path,
+								familyGraph: plugin.createFamilyGraphService(),
+								placeGraph: plugin.createPlaceGraphService(),
+								settings: plugin.settings,
+								plugin: plugin
+							}).open();
+						});
+				});
+
+				submenu.addSeparator();
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Add essential place properties')
+						.setIcon('map-pin')
+						.onClick(async () => {
+							await addEssentialPlaceProperties(plugin, getFilesInFolder());
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Add cr_id')
+						.setIcon('key')
+						.onClick(async () => {
+							await addCrId(plugin, getFilesInFolder());
+						});
+				});
+
+				submenu.addSeparator();
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('New places base from template')
+						.setIcon('table')
+						.onClick(async () => {
+							await plugin.createPlacesBaseTemplate(file);
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Show folder statistics')
+						.setIcon('bar-chart-2')
+						.onClick(() => {
+							showFolderStatistics(plugin, file);
+						});
+				});
+			}
+
+			// === UNIVERSES FOLDER ===
+			else if (isUniversesFolder) {
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Add essential universe properties')
+						.setIcon('globe')
+						.onClick(async () => {
+							await addEssentialUniverseProperties(plugin, getFilesInFolder());
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Add cr_id')
+						.setIcon('key')
+						.onClick(async () => {
+							await addCrId(plugin, getFilesInFolder());
+						});
+				});
+
+				submenu.addSeparator();
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('New universes base from template')
+						.setIcon('table')
+						.onClick(async () => {
+							await plugin.createUniversesBaseTemplate(file);
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Show folder statistics')
+						.setIcon('bar-chart-2')
+						.onClick(() => {
+							showFolderStatistics(plugin, file);
+						});
+				});
+			}
+
+			// === SOURCES FOLDER ===
+			else if (isSourcesFolder) {
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Create source')
+						.setIcon('file-plus')
+						.onClick(() => {
+							new CreateSourceModal(plugin.app, plugin, {
+								onSuccess: () => {}
+							}).open();
+						});
+				});
+
+				submenu.addSeparator();
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Add essential source properties')
+						.setIcon('archive')
+						.onClick(async () => {
+							await addEssentialSourceProperties(plugin, getFilesInFolder());
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Add cr_id')
+						.setIcon('key')
+						.onClick(async () => {
+							await addCrId(plugin, getFilesInFolder());
+						});
+				});
+
+				submenu.addSeparator();
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('New sources base from template')
+						.setIcon('table')
+						.onClick(async () => {
+							await plugin.createSourcesBaseTemplate(file);
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Show folder statistics')
+						.setIcon('bar-chart-2')
+						.onClick(() => {
+							showFolderStatistics(plugin, file);
+						});
+				});
+			}
+
+			// === EVENTS FOLDER ===
+			else if (isEventsFolder) {
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Create event')
+						.setIcon('calendar-plus')
+						.onClick(() => {
+							const eventService = plugin.getEventService();
+							if (eventService) {
+								new CreateEventModal(plugin.app, eventService, plugin.settings, {
+									plugin: plugin
+								}).open();
+							}
+						});
+				});
+
+				submenu.addSeparator();
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Add essential event properties')
+						.setIcon('calendar')
+						.onClick(async () => {
+							await addEssentialEventProperties(plugin, getFilesInFolder());
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Add cr_id')
+						.setIcon('key')
+						.onClick(async () => {
+							await addCrId(plugin, getFilesInFolder());
+						});
+				});
+
+				submenu.addSeparator();
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('New events base from template')
+						.setIcon('table')
+						.onClick(async () => {
+							await plugin.createEventsBaseTemplate(file);
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Show folder statistics')
+						.setIcon('bar-chart-2')
+						.onClick(() => {
+							showFolderStatistics(plugin, file);
+						});
+				});
+			}
+
+			// === ORGANIZATIONS FOLDER ===
+			else if (isOrganizationsFolder) {
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Add cr_id')
+						.setIcon('key')
+						.onClick(async () => {
+							await addCrId(plugin, getFilesInFolder());
+						});
+				});
+
+				submenu.addSeparator();
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('New organizations base from template')
+						.setIcon('table')
+						.onClick(async () => {
+							await plugin.createOrganizationsBaseTemplate(file);
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Show folder statistics')
+						.setIcon('bar-chart-2')
+						.onClick(() => {
+							showFolderStatistics(plugin, file);
+						});
+				});
+			}
+
+			// === NOTES FOLDER (Phase 4 Gramps Notes) ===
+			else if (isNotesFolder) {
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('New Charted Roots note')
+						.setIcon('file-plus')
+						.onClick(async () => {
+							const { CreateNoteModal } = await import('../ui/create-note-modal');
+							new CreateNoteModal(plugin.app, plugin).open();
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Add cr_id')
+						.setIcon('key')
+						.onClick(async () => {
+							await addCrId(plugin, getFilesInFolder());
+						});
+				});
+
+				submenu.addSeparator();
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('New notes base from template')
+						.setIcon('table')
+						.onClick(async () => {
+							await plugin.createNotesBaseTemplate(file);
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Show folder statistics')
+						.setIcon('bar-chart-2')
+						.onClick(() => {
+							showFolderStatistics(plugin, file);
+						});
+				});
+			}
+
+			// === GENERIC/UNCONFIGURED FOLDER ===
+			else {
+				// Set as folder type options
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Set as people folder')
+						.setIcon('users')
+						.onClick(async () => {
+							plugin.settings.peopleFolder = file.path;
+							await plugin.saveSettings();
+							new Notice(`People folder set to: ${file.path}`);
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Set as places folder')
+						.setIcon('map-pin')
+						.onClick(async () => {
+							plugin.settings.placesFolder = file.path;
+							await plugin.saveSettings();
+							new Notice(`Places folder set to: ${file.path}`);
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Set as universes folder')
+						.setIcon('globe')
+						.onClick(async () => {
+							plugin.settings.universesFolder = file.path;
+							await plugin.saveSettings();
+							new Notice(`Universes folder set to: ${file.path}`);
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Set as sources folder')
+						.setIcon('archive')
+						.onClick(async () => {
+							plugin.settings.sourcesFolder = file.path;
+							await plugin.saveSettings();
+							new Notice(`Sources folder set to: ${file.path}`);
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Set as events folder')
+						.setIcon('calendar')
+						.onClick(async () => {
+							plugin.settings.eventsFolder = file.path;
+							await plugin.saveSettings();
+							new Notice(`Events folder set to: ${file.path}`);
+						});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Set as organizations folder')
+						.setIcon('building')
+						.onClick(async () => {
+							plugin.settings.organizationsFolder = file.path;
+							await plugin.saveSettings();
+							new Notice(`Organizations folder set to: ${file.path}`);
+						});
+				});
+
+				submenu.addSeparator();
+
+				// Add essential properties submenu
+				submenu.addItem((subItem) => {
+					const propsSubmenu: Menu = subItem
+						.setTitle('Add essential properties')
+						.setIcon('file-plus')
+						.setSubmenu();
+
+					propsSubmenu.addItem((propItem) => {
+						propItem
+							.setTitle('Person properties')
+							.setIcon('user')
+							.onClick(async () => {
+								await addEssentialPersonProperties(plugin, getFilesInFolder());
+							});
+					});
+
+					propsSubmenu.addItem((propItem) => {
+						propItem
+							.setTitle('Place properties')
+							.setIcon('map-pin')
+							.onClick(async () => {
+								await addEssentialPlaceProperties(plugin, getFilesInFolder());
+							});
+					});
+
+					propsSubmenu.addItem((propItem) => {
+						propItem
+							.setTitle('Universe properties')
+							.setIcon('globe')
+							.onClick(async () => {
+								await addEssentialUniverseProperties(plugin, getFilesInFolder());
+							});
+					});
+
+					propsSubmenu.addItem((propItem) => {
+						propItem
+							.setTitle('Source properties')
+							.setIcon('archive')
+							.onClick(async () => {
+								await addEssentialSourceProperties(plugin, getFilesInFolder());
+							});
+					});
+
+					propsSubmenu.addItem((propItem) => {
+						propItem
+							.setTitle('Event properties')
+							.setIcon('calendar')
+							.onClick(async () => {
+								await addEssentialEventProperties(plugin, getFilesInFolder());
+							});
+					});
+
+					propsSubmenu.addItem((propItem) => {
+						propItem
+							.setTitle('Map properties')
+							.setIcon('map')
+							.onClick(async () => {
+								await addEssentialMapProperties(plugin, getFilesInFolder());
+							});
+					});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Add cr_id')
+						.setIcon('key')
+						.onClick(async () => {
+							await addCrId(plugin, getFilesInFolder());
+						});
+				});
+
+				submenu.addSeparator();
+
+				// Bases submenu
+				submenu.addItem((subItem) => {
+					const basesSubmenu: Menu = subItem
+						.setTitle('New base from template')
+						.setIcon('table')
+						.setSubmenu();
+
+					basesSubmenu.addItem((baseItem) => {
+						baseItem
+							.setTitle('People base')
+							.setIcon('users')
+							.onClick(async () => {
+								await plugin.createBaseTemplate(file);
+							});
+					});
+
+					basesSubmenu.addItem((baseItem) => {
+						baseItem
+							.setTitle('Places base')
+							.setIcon('map-pin')
+							.onClick(async () => {
+								await plugin.createPlacesBaseTemplate(file);
+							});
+					});
+
+					basesSubmenu.addItem((baseItem) => {
+						baseItem
+							.setTitle('Universes base')
+							.setIcon('globe')
+							.onClick(async () => {
+								await plugin.createUniversesBaseTemplate(file);
+							});
+					});
+
+					basesSubmenu.addItem((baseItem) => {
+						baseItem
+							.setTitle('Sources base')
+							.setIcon('archive')
+							.onClick(async () => {
+								await plugin.createSourcesBaseTemplate(file);
+							});
+					});
+
+					basesSubmenu.addItem((baseItem) => {
+						baseItem
+							.setTitle('Events base')
+							.setIcon('calendar')
+							.onClick(async () => {
+								await plugin.createEventsBaseTemplate(file);
+							});
+					});
+
+					basesSubmenu.addItem((baseItem) => {
+						baseItem
+							.setTitle('Organizations base')
+							.setIcon('building')
+							.onClick(async () => {
+								await plugin.createOrganizationsBaseTemplate(file);
+							});
+					});
+				});
+
+				submenu.addItem((subItem) => {
+					subItem
+						.setTitle('Show folder statistics')
+						.setIcon('bar-chart-2')
+						.onClick(() => {
+							showFolderStatistics(plugin, file);
+						});
+				});
+			}
+		});
+	} else {
+		// Mobile: flat menu with prefix - type-specific actions
+
+		// === PEOPLE FOLDER (MOBILE) ===
+		if (isPeopleFolder) {
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Create person')
+					.setIcon('user-plus')
+					.onClick(() => {
+						const modal = new CreatePersonModal(plugin.app, {
+							directory: file.path,
+							familyGraph: plugin.createFamilyGraphService(),
+							propertyAliases: plugin.settings.propertyAliases,
+							placeGraph: plugin.createPlaceGraphService(),
+							settings: plugin.settings,
+							plugin: plugin
+						});
+						modal.open();
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Create family')
+					.setIcon('users')
+					.onClick(() => {
+						void import('../ui/family-creation-wizard').then(({ FamilyCreationWizardModal }) => {
+							new FamilyCreationWizardModal(plugin.app, plugin, file.path).open();
+						});
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Import GEDCOM')
+					.setIcon('upload')
+					.onClick(() => {
+						const modal = new ControlCenterModal(plugin.app, plugin);
+						modal.openToTab('gedcom');
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Export GEDCOM')
+					.setIcon('download')
+					.onClick(() => {
+						const modal = new ControlCenterModal(plugin.app, plugin);
+						modal.openToTab('gedcom');
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Scan for relationship issues')
+					.setIcon('shield-alert')
+					.onClick(() => {
+						new FolderScanModal(plugin.app, file, plugin.personIndex ?? undefined).open();
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Add essential person properties')
+					.setIcon('user')
+					.onClick(async () => {
+						await addEssentialPersonProperties(plugin, getFilesInFolder());
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Insert dynamic blocks')
+					.setIcon('layout-template')
+					.onClick(async () => {
+						await plugin.insertDynamicBlocks(getFilesInFolder());
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Generate all trees')
+					.setIcon('git-fork')
+					.onClick(async () => {
+						await plugin.generateAllTrees();
+					});
+			});
+		}
+
+		// === PEOPLE SUBFOLDER (MOBILE) ===
+		// Show "Create person" for subfolders within People folder
+		else if (isPeopleSubfolder) {
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Create person')
+					.setIcon('user-plus')
+					.onClick(() => {
+						const modal = new CreatePersonModal(plugin.app, {
+							directory: file.path,
+							familyGraph: plugin.createFamilyGraphService(),
+							propertyAliases: plugin.settings.propertyAliases,
+							placeGraph: plugin.createPlaceGraphService(),
+							settings: plugin.settings,
+							plugin: plugin
+						});
+						modal.open();
+					});
+			});
+		}
+
+		// === PLACES FOLDER (MOBILE) ===
+		else if (isPlacesFolder) {
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Add essential place properties')
+					.setIcon('map-pin')
+					.onClick(async () => {
+						await addEssentialPlaceProperties(plugin, getFilesInFolder());
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: New places base')
+					.setIcon('table')
+					.onClick(async () => {
+						await plugin.createPlacesBaseTemplate(file);
+					});
+			});
+		}
+
+		// === UNIVERSES FOLDER (MOBILE) ===
+		else if (isUniversesFolder) {
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Add essential universe properties')
+					.setIcon('globe')
+					.onClick(async () => {
+						await addEssentialUniverseProperties(plugin, getFilesInFolder());
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: New universes base')
+					.setIcon('table')
+					.onClick(async () => {
+						await plugin.createUniversesBaseTemplate(file);
+					});
+			});
+		}
+
+		// === SOURCES FOLDER (MOBILE) ===
+		else if (isSourcesFolder) {
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Create source')
+					.setIcon('file-plus')
+					.onClick(() => {
+						new CreateSourceModal(plugin.app, plugin, {
+							onSuccess: () => {}
+						}).open();
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Add essential source properties')
+					.setIcon('archive')
+					.onClick(async () => {
+						await addEssentialSourceProperties(plugin, getFilesInFolder());
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: New sources base')
+					.setIcon('table')
+					.onClick(async () => {
+						await plugin.createSourcesBaseTemplate(file);
+					});
+			});
+		}
+
+		// === EVENTS FOLDER (MOBILE) ===
+		else if (isEventsFolder) {
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Create event')
+					.setIcon('calendar-plus')
+					.onClick(() => {
+						const eventService = plugin.getEventService();
+						if (eventService) {
+							new CreateEventModal(plugin.app, eventService, plugin.settings, {
+								plugin: plugin
+							}).open();
+						}
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Add essential event properties')
+					.setIcon('calendar')
+					.onClick(async () => {
+						await addEssentialEventProperties(plugin, getFilesInFolder());
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: New events base')
+					.setIcon('table')
+					.onClick(async () => {
+						await plugin.createEventsBaseTemplate(file);
+					});
+			});
+		}
+
+		// === ORGANIZATIONS FOLDER (MOBILE) ===
+		else if (isOrganizationsFolder) {
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: New organizations base')
+					.setIcon('table')
+					.onClick(async () => {
+						await plugin.createOrganizationsBaseTemplate(file);
+					});
+			});
+		}
+
+		// === NOTES FOLDER (MOBILE - Phase 4 Gramps Notes) ===
+		else if (isNotesFolder) {
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: New note')
+					.setIcon('file-plus')
+					.onClick(async () => {
+						const { CreateNoteModal } = await import('../ui/create-note-modal');
+						new CreateNoteModal(plugin.app, plugin).open();
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: New notes base')
+					.setIcon('table')
+					.onClick(async () => {
+						await plugin.createNotesBaseTemplate(file);
+					});
+			});
+		}
+
+		// === GENERIC FOLDER (MOBILE) ===
+		else {
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Set as people folder')
+					.setIcon('users')
+					.onClick(async () => {
+						plugin.settings.peopleFolder = file.path;
+						await plugin.saveSettings();
+						new Notice(`People folder set to: ${file.path}`);
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Set as places folder')
+					.setIcon('map-pin')
+					.onClick(async () => {
+						plugin.settings.placesFolder = file.path;
+						await plugin.saveSettings();
+						new Notice(`Places folder set to: ${file.path}`);
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Set as universes folder')
+					.setIcon('globe')
+					.onClick(async () => {
+						plugin.settings.universesFolder = file.path;
+						await plugin.saveSettings();
+						new Notice(`Universes folder set to: ${file.path}`);
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Set as sources folder')
+					.setIcon('archive')
+					.onClick(async () => {
+						plugin.settings.sourcesFolder = file.path;
+						await plugin.saveSettings();
+						new Notice(`Sources folder set to: ${file.path}`);
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Set as events folder')
+					.setIcon('calendar')
+					.onClick(async () => {
+						plugin.settings.eventsFolder = file.path;
+						await plugin.saveSettings();
+						new Notice(`Events folder set to: ${file.path}`);
+					});
+			});
+
+			menu.addItem((item) => {
+				item
+					.setTitle('Charted Roots: Set as organizations folder')
+					.setIcon('building')
+					.onClick(async () => {
+						plugin.settings.organizationsFolder = file.path;
+						await plugin.saveSettings();
+						new Notice(`Organizations folder set to: ${file.path}`);
+					});
+			});
+		}
+
+		// Common actions for all folders (mobile)
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add cr_id')
+				.setIcon('key')
+				.onClick(async () => {
+					await addCrId(plugin, getFilesInFolder());
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Show folder statistics')
+				.setIcon('bar-chart-2')
+				.onClick(() => {
+					showFolderStatistics(plugin, file);
+				});
+		});
+	}
 }
 
 export * from './context-menu-helpers';
