@@ -35,10 +35,10 @@ export class ProofSummaryService {
 	private proofCache: Map<string, ProofSummaryNote> = new Map();
 	private cacheValid = false;
 
-	constructor(app: App, settings: CanvasRootsSettings) {
+	constructor(app: App, settings: CanvasRootsSettings, sourceService?: SourceService) {
 		this.app = app;
 		this.settings = settings;
-		this.sourceService = new SourceService(app, settings);
+		this.sourceService = sourceService ?? new SourceService(app, settings);
 	}
 
 	/**

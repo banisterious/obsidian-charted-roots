@@ -42,10 +42,12 @@ const logger = getLogger('SourceSummaryGenerator');
 export class SourceSummaryGenerator {
 	private app: App;
 	private settings: CanvasRootsSettings;
+	private sourceService: SourceService;
 
-	constructor(app: App, settings: CanvasRootsSettings) {
+	constructor(app: App, settings: CanvasRootsSettings, sourceService?: SourceService) {
 		this.app = app;
 		this.settings = settings;
+		this.sourceService = sourceService ?? new SourceService(app, settings);
 	}
 
 	/**
@@ -60,8 +62,8 @@ export class SourceSummaryGenerator {
 		// Initialize services
 		const familyGraph = createConfiguredFamilyGraph(this.app, this.settings);
 
-		const sourceService = new SourceService(this.app, this.settings);
-		const evidenceService = new EvidenceService(this.app, this.settings);
+		const sourceService = this.sourceService;
+		const evidenceService = new EvidenceService(this.app, this.settings, sourceService);
 
 		// Get the person
 		const personNode = familyGraph.getPersonByCrId(options.personCrId);

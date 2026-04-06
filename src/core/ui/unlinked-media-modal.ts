@@ -25,7 +25,6 @@ import { FamilyGraphService } from '../family-graph';
 import { PlaceGraphService } from '../place-graph';
 import { EventService } from '../../events/services/event-service';
 import { OrganizationService } from '../../organizations/services/organization-service';
-import { SourceService } from '../../sources/services/source-service';
 import { FolderFilterService } from '../folder-filter';
 
 /**
@@ -160,7 +159,7 @@ export class UnlinkedMediaModal extends Modal {
 		}
 
 		// Sources
-		const sourceService = new SourceService(this.app, this.plugin.settings);
+		const sourceService = this.plugin.getSourceService();
 		for (const source of sourceService.getAllSources()) {
 			if (source.media && source.media.length > 0) {
 				for (const ref of source.media) {

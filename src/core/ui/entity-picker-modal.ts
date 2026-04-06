@@ -24,7 +24,7 @@ import { EventService } from '../../events/services/event-service';
 import type { EventNote } from '../../events/types/event-types';
 import { OrganizationService } from '../../organizations/services/organization-service';
 import { getOrganizationType } from '../../organizations/constants/organization-type-defaults';
-import { SourceService } from '../../sources/services/source-service';
+
 
 /**
  * Sort options for person list
@@ -363,7 +363,7 @@ export class EntityPickerModal extends Modal {
 	 * Load all sources
 	 */
 	private loadSources(): void {
-		const sourceService = new SourceService(this.app, this.plugin.settings);
+		const sourceService = this.plugin.getSourceService();
 
 		const sources = sourceService.getAllSources();
 

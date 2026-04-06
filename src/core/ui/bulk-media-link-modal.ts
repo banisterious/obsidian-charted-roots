@@ -24,7 +24,7 @@ import { EventService } from '../../events/services/event-service';
 import type { EventNote } from '../../events/types/event-types';
 import { OrganizationService } from '../../organizations/services/organization-service';
 import { getOrganizationType } from '../../organizations/constants/organization-type-defaults';
-import { SourceService } from '../../sources/services/source-service';
+
 
 /**
  * Entity item for display in the modal
@@ -314,7 +314,7 @@ export class BulkMediaLinkModal extends Modal {
 	 * Load sources without media
 	 */
 	private loadSources(): void {
-		const sourceService = new SourceService(this.app, this.plugin.settings);
+		const sourceService = this.plugin.getSourceService();
 
 		const sources = sourceService.getAllSources();
 		const sourcesWithoutMedia = sources.filter(s => s.media.length === 0);

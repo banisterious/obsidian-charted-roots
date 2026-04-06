@@ -22,7 +22,6 @@ import type { PrivacySettings, PrivateFieldSummary } from '../core/privacy-servi
 import { scanForPrivateFields } from '../core/privacy-service';
 import { FamilyGraphService, type PersonNode } from '../core/family-graph';
 import { PlaceGraphService } from '../core/place-graph';
-import { SourceService } from '../sources/services/source-service';
 import { EventService } from '../events/services/event-service';
 import type { CanvasRootsSettings } from '../settings';
 import { PrivateFieldsWarningModal, type PrivateFieldsDecision } from './private-fields-warning-modal';
@@ -672,7 +671,7 @@ export class ExportWizardModal extends Modal {
 			const allPlaces = placeService.getAllPlaces();
 
 			// Use SourceService to count sources
-			const sourceService = new SourceService(this.app, settings as CanvasRootsSettings);
+			const sourceService = this.plugin.getSourceService();
 			const allSources = sourceService.getAllSources();
 
 			// Use EventService to count events
@@ -817,7 +816,7 @@ export class ExportWizardModal extends Modal {
 
 				// Set up services
 				exporter.setEventService(this.plugin.settings);
-				exporter.setSourceService(this.plugin.settings);
+				exporter.setSourceService(this.plugin.getSourceService());
 				exporter.setPlaceGraphService(this.plugin.settings);
 
 				progressFill.setCssProps({ width: '40%' });
@@ -875,7 +874,7 @@ export class ExportWizardModal extends Modal {
 
 				const exporter = new GedcomXExporter(this.app, folderFilter);
 				exporter.setEventService(this.plugin.settings);
-				exporter.setSourceService(this.plugin.settings);
+				exporter.setSourceService(this.plugin.getSourceService());
 				exporter.setPlaceGraphService(this.plugin.settings);
 
 				progressFill.setCssProps({ width: '40%' });
@@ -921,7 +920,7 @@ export class ExportWizardModal extends Modal {
 
 				const exporter = new GrampsExporter(this.app, folderFilter);
 				exporter.setEventService(this.plugin.settings);
-				exporter.setSourceService(this.plugin.settings);
+				exporter.setSourceService(this.plugin.getSourceService());
 				exporter.setPlaceGraphService(this.plugin.settings);
 
 				progressFill.setCssProps({ width: '40%' });

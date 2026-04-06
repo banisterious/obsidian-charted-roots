@@ -146,8 +146,10 @@ export class GedcomExporter {
 	/**
 	 * Set source service for loading source notes
 	 */
-	setSourceService(settings: CanvasRootsSettings): void {
-		this.sourceService = new SourceService(this.app, settings);
+	setSourceService(settingsOrService: CanvasRootsSettings | SourceService): void {
+		this.sourceService = settingsOrService instanceof SourceService
+			? settingsOrService
+			: new SourceService(this.app, settingsOrService);
 	}
 
 	/**

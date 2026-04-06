@@ -58,10 +58,12 @@ function getFileTypeCategory(ext: string): string {
 export class MediaInventoryGenerator {
 	private app: App;
 	private settings: CanvasRootsSettings;
+	private sourceService: SourceService;
 
-	constructor(app: App, settings: CanvasRootsSettings) {
+	constructor(app: App, settings: CanvasRootsSettings, sourceService?: SourceService) {
 		this.app = app;
 		this.settings = settings;
+		this.sourceService = sourceService ?? new SourceService(app, settings);
 	}
 
 	/**
@@ -73,7 +75,7 @@ export class MediaInventoryGenerator {
 		const warnings: string[] = [];
 
 		// Initialize source service
-		const sourceService = new SourceService(this.app, this.settings);
+		const sourceService = this.sourceService;
 
 		// Get all media files in vault
 		const allFiles = this.app.vault.getFiles();

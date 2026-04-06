@@ -23,7 +23,6 @@ import { FamilyGraphService } from '../family-graph';
 import { PlaceGraphService } from '../place-graph';
 import { EventService } from '../../events/services/event-service';
 import { OrganizationService } from '../../organizations/services/organization-service';
-import { SourceService } from '../../sources/services/source-service';
 import { FolderFilterService } from '../folder-filter';
 
 /**
@@ -162,7 +161,7 @@ export class MediaManagerModal extends Modal {
 		}
 
 		// Sources
-		const sourceService = new SourceService(this.app, this.plugin.settings);
+		const sourceService = this.plugin.getSourceService();
 		const sources = sourceService.getAllSources();
 		let sourcesToReview = 0;
 		for (const source of sources) {

@@ -19,7 +19,6 @@ import { ModalStatePersistence, renderResumePromptBanner } from './modal-state-p
 import { ResearchLevel, RESEARCH_LEVELS } from '../types/frontmatter';
 import { SourcePickerModal } from '../sources/ui/source-picker-modal';
 import { CreateSourceModal } from '../sources/ui/create-source-modal';
-import { SourceService } from '../sources/services/source-service';
 import type { EventNote } from '../events/types/event-types';
 import { getEventType } from '../events/types/event-types';
 import { EventPickerModal } from '../events/ui/event-picker-modal';
@@ -1879,7 +1878,7 @@ export class CreatePersonModal extends Modal {
 			}
 
 			// Get source service for type lookup
-			const sourceService = this.plugin ? new SourceService(this.app, this.plugin.settings) : null;
+			const sourceService = this.plugin ? this.plugin.getSourceService() : null;
 
 			for (let i = 0; i < this.sourcesField.crIds.length; i++) {
 				const crId = this.sourcesField.crIds[i];
@@ -1974,7 +1973,7 @@ export class CreatePersonModal extends Modal {
 				onSuccess: (file) => {
 					// After creating, get the source and add it to the list
 					if (file) {
-						const sourceService = new SourceService(this.app, this.plugin!.settings);
+						const sourceService = this.plugin!.getSourceService();
 						const source = sourceService.getSourceByPath(file.path);
 						if (source) {
 							// Check if already added (shouldn't happen but safety check)
