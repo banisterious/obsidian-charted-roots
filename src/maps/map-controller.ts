@@ -1183,8 +1183,8 @@ export class MapController {
 		const intensityLevel = this.settings.heatMapIntensity || 'medium';
 		const intensityConfig = {
 			low:    { radiusMul: 0.5, blurMul: 1.5, minOpacity: 0.05 },
-			medium: { radiusMul: 1.0, blurMul: 1.0, minOpacity: 0.2 },
-			high:   { radiusMul: 2.0, blurMul: 0.5, minOpacity: 0.5 },
+			medium: { radiusMul: 0.8, blurMul: 1.0, minOpacity: 0.1 },
+			high:   { radiusMul: 1.2, blurMul: 0.7, minOpacity: 0.25 },
 		}[intensityLevel];
 
 		// Try to create heat layer (may fail if library not loaded properly)
