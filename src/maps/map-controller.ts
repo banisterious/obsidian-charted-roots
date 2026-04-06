@@ -175,6 +175,13 @@ export class MapController {
 	}
 
 	/**
+	 * Update settings (e.g., when heat map intensity changes)
+	 */
+	updateSettings(settings: Partial<MapSettings>): void {
+		Object.assign(this.settings, settings);
+	}
+
+	/**
 	 * Initialize the Leaflet map
 	 */
 	async initialize(): Promise<void> {
@@ -1175,9 +1182,9 @@ export class MapController {
 		// Intensity presets: radius, blur, minOpacity multipliers
 		const intensityLevel = this.settings.heatMapIntensity || 'medium';
 		const intensityConfig = {
-			low:    { radiusMul: 0.7, blurMul: 1.2, minOpacity: 0.1 },
+			low:    { radiusMul: 0.5, blurMul: 1.5, minOpacity: 0.05 },
 			medium: { radiusMul: 1.0, blurMul: 1.0, minOpacity: 0.2 },
-			high:   { radiusMul: 1.5, blurMul: 0.8, minOpacity: 0.4 },
+			high:   { radiusMul: 2.0, blurMul: 0.5, minOpacity: 0.5 },
 		}[intensityLevel];
 
 		// Try to create heat layer (may fail if library not loaded properly)

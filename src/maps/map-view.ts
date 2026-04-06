@@ -560,6 +560,7 @@ export class MapView extends ItemView {
 						.onClick(async () => {
 							this.plugin.settings.heatMapIntensity = level;
 							await this.plugin.saveSettings();
+							this.mapController?.updateSettings({ heatMapIntensity: level });
 							void this.refreshData();
 						});
 				});
