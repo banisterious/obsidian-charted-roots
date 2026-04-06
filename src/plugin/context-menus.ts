@@ -1,5 +1,20 @@
 import { Notice, TFile, TFolder, Menu, Platform, Modal, type CachedMetadata } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
+import {
+	addCrId, addEssentialEventProperties, addEssentialMapProperties,
+	addEssentialPersonProperties, addEssentialPlaceProperties,
+	addEssentialSourceProperties, addEssentialUniverseProperties,
+	addSourceToPersonNote, assignLineageFromPerson,
+	assignReferenceNumbersFromPerson, confirmDeleteEvent,
+	confirmDeleteUniverse, exportCanvasAsImage, exportCanvasToExcalidraw,
+	exportPersonTimelineFromFile, geocodeSinglePlace, insertMembersBlock,
+	insertSourceRolesBlock, linkPersonToEvent, linkSourceToEvent,
+	openCanvasInFamilyChart, openCitationGenerator, openEditSourceModal,
+	openEditUniverseModal, openManageMediaModal, promptParentType,
+	promptSetCollection, promptSetCollectionName,
+	regenerateTimelineCanvas, showCreatePlaceNotesForPerson,
+	showFolderStatistics, toggleRootPerson
+} from './context-menu-helpers';
 import { RegenerateOptionsModal } from '../ui/regenerate-options-modal';
 import { TreeStatisticsModal } from '../ui/tree-statistics-modal';
 import { PersonPickerModal } from '../ui/person-picker';
