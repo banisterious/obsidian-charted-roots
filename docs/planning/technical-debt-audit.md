@@ -142,13 +142,17 @@ Two patterns in use:
 - [x] Place normalization: renamed ambiguous `normalizePlaceName` in standardize-places-modal.ts to `normalizeForComparison` (audit found the variants serve different purposes — not true duplicates)
 - [x] Date formatting: DateService.formatDisplayDate() now delegates to standalone formatStandardDisplayDate() instead of duplicating GEDCOM qualifier parsing
 
-### Phase 2 — Split context-menus.ts
-- [ ] Extract person note context menus
-- [ ] Extract place note context menus
-- [ ] Extract source note context menus
-- [ ] Extract event note context menus
-- [ ] Extract folder context menus
-- [ ] Extract canvas/map context menus
+### Phase 2 — Split context-menus.ts ✅
+- [x] Extracted 30+ helper functions (1,691 lines) into `context-menu-helpers.ts`
+- [x] Extracted 11 entity-specific menu builders into standalone functions:
+  - `buildCanvasContextMenu` (canvas files)
+  - `buildPersonContextMenu` (person notes — 1,120 lines, largest section)
+  - `buildFolderContextMenu` (folder menus — 1,040 lines)
+  - `buildSchemaContextMenu`, `buildMapContextMenu`, `buildPlaceContextMenu`
+  - `buildSourceContextMenu`, `buildEventContextMenu`, `buildOrganizationContextMenu`
+  - `buildPlainMarkdownContextMenu`, `buildUniverseContextMenu`
+- [x] `registerContextMenus()` reduced from ~4,080 lines to ~150 lines of clean dispatch logic
+- Note: The builder functions remain in context-menus.ts (4,294 lines total). Could be split into separate files in a follow-up if needed, but readability is already substantially improved.
 
 ### Phase 3 — Standardize service access
 - [ ] Add missing plugin methods (PlaceGraphService, SourceService)
