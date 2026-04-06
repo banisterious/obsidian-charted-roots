@@ -173,9 +173,17 @@ Proposed structure:
 
 Not urgent — readability is already substantially improved. Prioritize if merge conflicts become frequent.
 
-### Phase 3 — Standardize service access
-- [ ] Add missing plugin methods (PlaceGraphService, SourceService)
-- [ ] Migrate direct `new` calls in high-traffic files
+### Phase 3 — Standardize service access (partially complete)
+- [x] Added `getSourceService()` to plugin class (lazy-initialized singleton)
+- [x] Migrated 22 of 31 direct `new SourceService()` calls to `plugin.getSourceService()`
+  - 14 UI/processor files: replaced with `plugin.getSourceService()` directly
+  - 7 UI files (create-person-modal, export-wizard, media modals): replaced with `this.plugin.getSourceService()`
+  - 9 service/exporter/report files: added optional `sourceService?` constructor parameter with `?? new SourceService()` fallback
+- [ ] Migrate 33 direct `new FamilyGraphService()` calls to `plugin.createFamilyGraphService()`
+  - Direct calls manually repeat `setFolderFilter`, `setPropertyAliases`, `setValueAliases` setup
+  - Plugin method handles all setup automatically — migrating prevents missed setter bugs
+  - PlaceGraphService has same issue: 35 direct calls vs 23 via plugin method
+- Note: `createPlaceGraphService()` already exists on the plugin (audit incorrectly reported it as missing)
 
 ### Phase 4 — Split remaining large files (as needed)
 - [ ] create-person-modal.ts — extract form sections
