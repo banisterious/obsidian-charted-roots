@@ -574,6 +574,12 @@ export interface MapSettings {
 	heatMapRadius: number;
 	/** Heat map intensity level */
 	heatMapIntensity: 'low' | 'medium' | 'high';
+	/** Customizable heat map intensity presets */
+	heatMapPresets: {
+		low: { radius: number; blur: number; opacity: number };
+		medium: { radius: number; blur: number; opacity: number };
+		high: { radius: number; blur: number; opacity: number };
+	};
 
 	/** Folder for custom map images */
 	customMapsFolder: string;
@@ -621,6 +627,11 @@ export const DEFAULT_MAP_SETTINGS: MapSettings = {
 	heatMapBlur: 15,
 	heatMapRadius: 25,
 	heatMapIntensity: 'medium' as const,
+	heatMapPresets: {
+		low: { radius: 0.55, blur: 1.2, opacity: 0.1 },
+		medium: { radius: 0.7, blur: 1.0, opacity: 0.12 },
+		high: { radius: 0.9, blur: 0.7, opacity: 0.18 },
+	},
 	customMapsFolder: 'Charted Roots/Places/Maps'
 };
 

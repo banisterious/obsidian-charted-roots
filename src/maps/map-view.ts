@@ -541,6 +541,8 @@ export class MapView extends ItemView {
 				});
 		});
 
+		menu.addSeparator();
+
 		menu.addItem((item) => {
 			item.setTitle('Heat map')
 				.setChecked(this.layers.heatMap)
@@ -2450,6 +2452,11 @@ export class MapView extends ItemView {
 			heatMapBlur: 15,
 			heatMapRadius: 25,
 			heatMapIntensity: this.plugin.settings.heatMapIntensity || 'medium',
+			heatMapPresets: this.plugin.settings.heatMapPresets || {
+				low: { radius: 0.55, blur: 1.2, opacity: 0.1 },
+				medium: { radius: 0.7, blur: 1.0, opacity: 0.12 },
+				high: { radius: 0.9, blur: 0.7, opacity: 0.18 },
+			},
 			// Custom maps folder
 			customMapsFolder: this.plugin.settings.mapsFolder || 'Charted Roots/Places/Maps',
 			// Event display settings (from main plugin settings)

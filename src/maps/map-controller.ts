@@ -1179,13 +1179,15 @@ export class MapController {
 
 		if (heatData.length === 0) return;
 
-		// Intensity presets: radius, blur, minOpacity multipliers
+		// Intensity presets from settings (customizable by user)
 		const intensityLevel = this.settings.heatMapIntensity || 'medium';
+		const presets = this.settings.heatMapPresets;
+		const preset = presets[intensityLevel];
 		const intensityConfig = {
-			low:    { radiusMul: 0.5, blurMul: 1.5, minOpacity: 0.05 },
-			medium: { radiusMul: 0.8, blurMul: 1.0, minOpacity: 0.1 },
-			high:   { radiusMul: 1.2, blurMul: 0.7, minOpacity: 0.25 },
-		}[intensityLevel];
+			radiusMul: preset.radius,
+			blurMul: preset.blur,
+			minOpacity: preset.opacity
+		};
 
 		// Try to create heat layer (may fail if library not loaded properly)
 		try {
@@ -1196,9 +1198,11 @@ export class MapController {
 				// so maxZoom must be relative to the current map zoom.
 				// Radius and blur also need to be larger since pixel maps
 				// cover much more area per screen pixel.
-				const currentZoom = this.map?.getZoom() ?? 10;
 				const isPixel = this.currentCRS === 'pixel';
-				const maxZoom = isPixel ? currentZoom : 15;
+				const currentZoom = this.map?.getZoom() ?? 2;
+				const maxZoom = isPixel
+					? currentZoom + 1
+					: 15;
 				const baseRadius = isPixel ? 50 : this.settings.heatMapRadius;
 				const baseBlur = isPixel ? 25 : this.settings.heatMapBlur;
 
@@ -1207,7 +1211,7 @@ export class MapController {
 					blur: Math.round(baseBlur * intensityConfig.blurMul),
 					maxZoom,
 					minOpacity: isPixel
-						? Math.min(intensityConfig.minOpacity + 0.1, 0.5)
+						? Math.min(intensityConfig.minOpacity + 0.05, 0.3)
 						: intensityConfig.minOpacity,
 					max: 1.0
 				});

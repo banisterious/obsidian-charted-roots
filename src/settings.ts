@@ -308,6 +308,12 @@ export interface CanvasRootsSettings {
 	geonamesUsername: string;
 	/** Heat map intensity level for the map view */
 	heatMapIntensity: 'low' | 'medium' | 'high';
+	/** Customizable heat map intensity presets (radius multiplier, blur multiplier, minimum opacity) */
+	heatMapPresets: {
+		low: { radius: number; blur: number; opacity: number };
+		medium: { radius: number; blur: number; opacity: number };
+		high: { radius: number; blur: number; opacity: number };
+	};
 	// Custom relationship types
 	customRelationshipTypes: RelationshipTypeDefinition[];
 	showBuiltInRelationshipTypes: boolean;
@@ -751,6 +757,11 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	// Place lookup settings (#218)
 	geonamesUsername: '',                    // GeoNames username (required for GeoNames API)
 	heatMapIntensity: 'medium' as const,    // Heat map intensity: low, medium, high
+	heatMapPresets: {
+		low: { radius: 0.55, blur: 1.2, opacity: 0.1 },
+		medium: { radius: 0.7, blur: 1.0, opacity: 0.12 },
+		high: { radius: 0.9, blur: 0.7, opacity: 0.18 },
+	},
 	// Custom relationship types
 	customRelationshipTypes: [],   // User-defined relationship types (built-ins are always available)
 	showBuiltInRelationshipTypes: true,  // Whether to show built-in types in UI
@@ -1592,7 +1603,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		// Heat map intensity
 		new Setting(placesContent)
 			.setName('Heat map intensity')
-			.setDesc('Controls the brightness and radius of the heat map overlay in map view')
+			.setDesc('Controls the brightness and radius of the heat map overlay in map view. Also adjustable in the map Layers menu.')
 			.addDropdown(dropdown => dropdown
 				.addOption('low', 'Low')
 				.addOption('medium', 'Medium')
@@ -1602,6 +1613,45 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					this.plugin.settings.heatMapIntensity = value as 'low' | 'medium' | 'high';
 					await this.plugin.saveSettings();
 				}));
+
+		// Heat map preset customization
+		const presets = this.plugin.settings.heatMapPresets;
+		for (const level of ['low', 'medium', 'high'] as const) {
+			const preset = presets[level];
+			new Setting(placesContent)
+				.setName(`${level.charAt(0).toUpperCase() + level.slice(1)} preset`)
+				.setDesc(`Radius: ${preset.radius}, Blur: ${preset.blur}, Opacity: ${preset.opacity}`)
+				.addText(text => text
+					.setPlaceholder('radius')
+					.setValue(String(preset.radius))
+					.onChange(async (value) => {
+						const num = parseFloat(value);
+						if (!isNaN(num) && num > 0 && num <= 5) {
+							this.plugin.settings.heatMapPresets[level].radius = num;
+							await this.plugin.saveSettings();
+						}
+					}))
+				.addText(text => text
+					.setPlaceholder('blur')
+					.setValue(String(preset.blur))
+					.onChange(async (value) => {
+						const num = parseFloat(value);
+						if (!isNaN(num) && num > 0 && num <= 5) {
+							this.plugin.settings.heatMapPresets[level].blur = num;
+							await this.plugin.saveSettings();
+						}
+					}))
+				.addText(text => text
+					.setPlaceholder('opacity')
+					.setValue(String(preset.opacity))
+					.onChange(async (value) => {
+						const num = parseFloat(value);
+						if (!isNaN(num) && num >= 0 && num <= 1) {
+							this.plugin.settings.heatMapPresets[level].opacity = num;
+							await this.plugin.saveSettings();
+						}
+					}));
+		}
 
 		// Info note about place lookup
 		const lookupNote = placesContent.createDiv({ cls: 'cr-info-box cr-info-box--muted' });
