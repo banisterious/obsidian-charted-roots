@@ -11,7 +11,7 @@ import type { LineageType } from '../core/lineage-tracking';
 import { TreePreviewRenderer } from '../ui/tree-preview';
 import { extractWikilinkPath } from '../utils/wikilink-resolver';
 import { GeocodingService } from '../maps/services/geocoding-service';
-import { SourcePickerModal, SourceService, CreateSourceModal, CitationGeneratorModal } from '../sources';
+import { SourcePickerModal, CreateSourceModal, CitationGeneratorModal } from '../sources';
 import { UniverseService, EditUniverseModal } from '../universes';
 import { MediaManageModal } from '../core/ui/media-manage-modal';
 import { getLogger } from '../core/logging';
@@ -462,7 +462,7 @@ export function openEditSourceModal(plugin: CanvasRootsPlugin, file: TFile): voi
 	}
 
 	// Get source from service
-	const sourceService = new SourceService(plugin.app, plugin.settings);
+	const sourceService = plugin.getSourceService();
 	const source = sourceService.getSourceByPath(file.path);
 
 	if (!source) {
@@ -491,7 +491,7 @@ export function openCitationGenerator(plugin: CanvasRootsPlugin, file: TFile): v
 	}
 
 	// Get source from service
-	const sourceService = new SourceService(plugin.app, plugin.settings);
+	const sourceService = plugin.getSourceService();
 	const source = sourceService.getSourceByPath(file.path);
 
 	if (!source) {

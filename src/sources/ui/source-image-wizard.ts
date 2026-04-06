@@ -9,7 +9,6 @@
 import { App, Modal, Notice, Setting, TFile, TFolder, TextComponent, AbstractInputSuggest } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import { createLucideIcon } from '../../ui/lucide-icons';
-import { SourceService } from '../services/source-service';
 import {
 	parseFilename,
 	detectMultiPartGroups,
@@ -101,7 +100,6 @@ interface ImportResult {
  */
 export class SourceImageWizardModal extends Modal {
 	private plugin: CanvasRootsPlugin;
-	private sourceService: SourceService;
 
 	// Wizard state
 	private currentStep: WizardStep = 'select';
@@ -132,7 +130,6 @@ export class SourceImageWizardModal extends Modal {
 	constructor(app: App, plugin: CanvasRootsPlugin) {
 		super(app);
 		this.plugin = plugin;
-		this.sourceService = new SourceService(app, plugin.settings);
 		this.sourceNotesFolder = plugin.settings.sourcesFolder || 'Charted Roots/Sources';
 	}
 

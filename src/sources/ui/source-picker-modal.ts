@@ -7,7 +7,6 @@
 
 import { App, Modal, TFile } from 'obsidian';
 import { createLucideIcon } from '../../ui/lucide-icons';
-import { SourceService } from '../services/source-service';
 import { CreateSourceModal } from './create-source-modal';
 import type { SourceNote } from '../types/source-types';
 import { getSourceType } from '../types/source-types';
@@ -88,7 +87,7 @@ export class SourcePickerModal extends Modal {
 	 * Load all source notes from the vault
 	 */
 	private loadSources(): void {
-		const sourceService = new SourceService(this.app, this.plugin.settings);
+		const sourceService = this.plugin.getSourceService();
 		let sources = sourceService.getAllSources();
 
 		// Filter out excluded sources if specified
@@ -170,7 +169,7 @@ export class SourcePickerModal extends Modal {
 					onSuccess: (file) => {
 						// After creating, get the source and call onSelect
 						if (file) {
-							const sourceService = new SourceService(this.app, this.plugin.settings);
+							const sourceService = this.plugin.getSourceService();
 							const source = sourceService.getSourceByPath(file.path);
 							if (source) {
 								void this.options.onSelect(source);

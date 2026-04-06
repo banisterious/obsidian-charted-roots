@@ -19,7 +19,6 @@ import {
 	EVIDENCE_CLASSIFICATION_LABELS,
 	type PersonRoleProperty
 } from '../types/source-types';
-import { SourceService } from '../services/source-service';
 import { ModalStatePersistence, renderResumePromptBanner } from '../../ui/modal-state-persistence';
 import { PersonPickerModal, type PersonInfo } from '../../ui/person-picker';
 import { FamilyGraphService } from '../../core/family-graph';
@@ -625,7 +624,7 @@ export class CreateSourceModal extends Modal {
 				.onChange(value => this.collection = value));
 
 		// Location (with autocomplete from existing locations)
-		const sourceService = new SourceService(this.app, this.plugin.settings);
+		const sourceService = this.plugin.getSourceService();
 		const existingLocations = sourceService.getUniqueLocations();
 
 		new Setting(fields)
@@ -1126,7 +1125,7 @@ export class CreateSourceModal extends Modal {
 		}
 
 		try {
-			const sourceService = new SourceService(this.app, this.plugin.settings);
+			const sourceService = this.plugin.getSourceService();
 
 			// Convert person roles to frontmatter format
 			const roleArrays = this.personRolesToFrontmatter();

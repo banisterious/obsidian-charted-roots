@@ -9,7 +9,7 @@
 import { App, Modal, Notice, Setting, TFile, TFolder, TextComponent, AbstractInputSuggest, debounce } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import { createLucideIcon } from '../../ui/lucide-icons';
-import { SourceService } from '../services/source-service';
+import type { SourceService } from '../services/source-service';
 import { isImageFile, shouldFilterFile, parseFilename } from '../services/image-filename-parser';
 import type { SourceNote } from '../types/source-types';
 
@@ -134,7 +134,7 @@ export class SourceMediaLinkerModal extends Modal {
 	constructor(app: App, plugin: CanvasRootsPlugin) {
 		super(app);
 		this.plugin = plugin;
-		this.sourceService = new SourceService(app, plugin.settings);
+		this.sourceService = this.plugin.getSourceService();
 
 		// Initialize folder source mode based on whether media folders are configured
 		const configuredFolders = this.getConfiguredMediaFolders();

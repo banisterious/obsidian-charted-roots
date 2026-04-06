@@ -8,8 +8,8 @@
 import { setIcon, TFile, Menu, Setting } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { LucideIconName } from '../../ui/lucide-icons';
+import type { SourceService } from '../services/source-service';
 import { createLucideIcon } from '../../ui/lucide-icons';
-import { SourceService } from '../services/source-service';
 import { CreateSourceModal } from './create-source-modal';
 import { SourceImageWizardModal } from './source-image-wizard';
 import { SourceMediaLinkerModal } from './source-media-linker';
@@ -56,7 +56,7 @@ export function renderSourcesTab(
 	createCard: (options: { title: string; icon?: LucideIconName }) => HTMLElement,
 	showTab: (tabId: string) => void
 ): void {
-	const sourceService = new SourceService(plugin.app, plugin.settings);
+	const sourceService = plugin.getSourceService();
 
 	// Sources List card (with Create button toolbar)
 	renderSourcesListCard(container, plugin, sourceService, createCard, showTab);
@@ -648,7 +648,7 @@ function addSourcesDockButton(card: HTMLElement, plugin: CanvasRootsPlugin): voi
 export function renderSourcesList(options: SourcesListOptions): void {
 	const { container, plugin, onStateChange } = options;
 
-	const sourceService = new SourceService(plugin.app, plugin.settings);
+	const sourceService = plugin.getSourceService();
 
 	// Loading indicator
 	container.empty();

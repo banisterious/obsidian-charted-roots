@@ -7,7 +7,6 @@
 
 import { App, TFile, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
-import { SourceService } from '../services/source-service';
 import type { SourceNote } from '../types/source-types';
 import { getSourceType } from '../types/source-types';
 import { openGalleryLightbox, type LightboxItem } from '../../ui/media-lightbox-modal';
@@ -65,7 +64,7 @@ export function renderMediaGallery(
 	});
 	const content = card.querySelector('.crc-card__content') as HTMLElement;
 
-	const sourceService = new SourceService(plugin.app, plugin.settings);
+	const sourceService = plugin.getSourceService();
 	const sources = sourceService.getAllSources();
 	const sourcesWithMedia = sources.filter(s => s.media.length > 0);
 

@@ -16,7 +16,7 @@ import { MarkdownPostProcessorContext, MarkdownRenderChild, TFile } from 'obsidi
 import type CanvasRootsPlugin from '../../../main';
 import { DynamicContentService, renderBlockError } from '../services/dynamic-content-service';
 import { SourceRolesRenderer, type SourceRolesContext } from '../renderers/source-roles-renderer';
-import { SourceService } from '../../sources/services/source-service';
+import type { SourceService } from '../../sources/services/source-service';
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
 import { isSourceNote } from '../../utils/note-type-detection';
 
@@ -51,7 +51,7 @@ export class SourceRolesProcessor {
 			ctx.addChild(component);
 
 			// Determine which source note to use
-			const sourceService = new SourceService(this.plugin.app, this.plugin.settings);
+			const sourceService = this.plugin.getSourceService();
 			const context = await this.resolveSourceContext(config, ctx, sourceService);
 
 			if (!context) {

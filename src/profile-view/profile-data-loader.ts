@@ -23,7 +23,6 @@ import { MembershipService } from '../organizations/services/membership-service'
 import { OrganizationService } from '../organizations/services/organization-service';
 import { EvidenceService } from '../sources/services/evidence-service';
 import { ProofSummaryService } from '../sources/services/proof-summary-service';
-import { SourceService } from '../sources/services/source-service';
 import { SOURCED_PROPERTY_NAMES, SOURCED_PROPERTY_TO_FACT_KEY } from '../sources/types/source-types';
 import type { SourcedPropertyName } from '../sources/types/source-types';
 import { getLogger } from '../core/logging';
@@ -255,7 +254,7 @@ export class ProfileDataLoader {
 		const name = (fm.name as string) || (fm.title as string) || file.basename;
 
 		// Source note
-		const sourceService = new SourceService(app, settings);
+		const sourceService = this.plugin.getSourceService();
 		const source = sourceService.getSourceById(crId);
 		if (!source) {
 			logger.warn('loadSource', `SourceNote not found for ${crId}`);

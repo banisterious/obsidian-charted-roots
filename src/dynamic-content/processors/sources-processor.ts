@@ -16,7 +16,7 @@ import { MarkdownPostProcessorContext, MarkdownRenderChild, TFile } from 'obsidi
 import type CanvasRootsPlugin from '../../../main';
 import { DynamicContentService, renderBlockError } from '../services/dynamic-content-service';
 import { SourcesRenderer, type SourceTableRow } from '../renderers/sources-renderer';
-import { SourceService } from '../../sources/services/source-service';
+import type { SourceService } from '../../sources/services/source-service';
 import type { SourceNote, FactKey } from '../../sources/types/source-types';
 import { SOURCED_PROPERTY_NAMES, SOURCED_PROPERTY_TO_FACT_KEY, FACT_KEY_LABELS } from '../../sources/types/source-types';
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
@@ -55,7 +55,7 @@ export class SourcesProcessor {
 			ctx.addChild(component);
 
 			// Gather sources and render
-			const sourceService = new SourceService(this.plugin.app, this.plugin.settings);
+			const sourceService = this.plugin.getSourceService();
 			const rows = this.gatherSources(context.file, sourceService);
 
 			// Initial render
