@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Layers menu reorganized**: "All places" moved above the heat map section. Data layers (markers, paths, places) grouped together, with heat map as a visual overlay section at the bottom.
 
+### Fixed
+
+- **Birth markers hidden under death markers** ([#343](https://github.com/banisterious/obsidian-charted-roots/issues/343)): Birth and death markers at the same location overlapped in separate cluster groups, hiding one and showing an incorrect count. All event marker types now share a single cluster group so overlapping markers combine into one cluster with the correct total count. Cluster icon color reflects the dominant event type.
+
 ---
 
 ## [0.20.49] - 2026-04-04

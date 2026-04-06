@@ -105,13 +105,8 @@ export class MapController {
 	private map: L.Map | null = null;
 	private tileLayer: L.TileLayer | null = null;
 
-	// Layer groups for different marker types
-	private birthClusterGroup: L.MarkerClusterGroup | null = null;
-	private deathClusterGroup: L.MarkerClusterGroup | null = null;
-	private marriageClusterGroup: L.MarkerClusterGroup | null = null;
-	private burialClusterGroup: L.MarkerClusterGroup | null = null;
-	// Single cluster group for all additional event types (residence, occupation, etc.)
-	private eventsClusterGroup: L.MarkerClusterGroup | null = null;
+	// Unified cluster group for all event markers (birth, death, marriage, etc.)
+	private eventClusterGroup: L.MarkerClusterGroup | null = null;
 	// Cluster group for standalone place markers (not tied to person events)
 	private placesClusterGroup: L.MarkerClusterGroup | null = null;
 	private pathLayer: L.LayerGroup | null = null;
@@ -245,41 +240,13 @@ export class MapController {
 			disableClusteringAtZoom: 15
 		};
 
-		// Birth markers (green)
-		this.birthClusterGroup = createMarkerClusterGroup({
+		// Unified event cluster group — all marker types in one group so
+		// overlapping birth/death markers at the same location cluster together (#343)
+		this.eventClusterGroup = createMarkerClusterGroup({
 			...clusterOptions,
-			iconCreateFunction: (cluster) => this.createClusterIcon(cluster, this.settings.birthMarkerColor)
+			iconCreateFunction: (cluster) => this.createMixedClusterIcon(cluster)
 		});
-		this.birthClusterGroup.addTo(this.map);
-
-		// Death markers (red)
-		this.deathClusterGroup = createMarkerClusterGroup({
-			...clusterOptions,
-			iconCreateFunction: (cluster) => this.createClusterIcon(cluster, this.settings.deathMarkerColor)
-		});
-		this.deathClusterGroup.addTo(this.map);
-
-		// Marriage markers (purple)
-		this.marriageClusterGroup = createMarkerClusterGroup({
-			...clusterOptions,
-			iconCreateFunction: (cluster) => this.createClusterIcon(cluster, this.settings.marriageMarkerColor)
-		});
-		this.marriageClusterGroup.addTo(this.map);
-
-		// Burial markers (gray)
-		this.burialClusterGroup = createMarkerClusterGroup({
-			...clusterOptions,
-			iconCreateFunction: (cluster) => this.createClusterIcon(cluster, this.settings.burialMarkerColor)
-		});
-		this.burialClusterGroup.addTo(this.map);
-
-		// Events cluster group (for additional life events: residence, occupation, etc.)
-		// Uses a neutral color for the cluster since individual markers have their own colors
-		this.eventsClusterGroup = createMarkerClusterGroup({
-			...clusterOptions,
-			iconCreateFunction: (cluster) => this.createClusterIcon(cluster, this.settings.residenceMarkerColor)
-		});
-		this.eventsClusterGroup.addTo(this.map);
+		this.eventClusterGroup.addTo(this.map);
 
 		// Places cluster group (for standalone places not tied to person events)
 		// Uses a distinct color (teal) to differentiate from event markers
@@ -302,6 +269,32 @@ export class MapController {
 			className: 'cr-cluster-icon',
 			iconSize: L.point(size, size)
 		});
+	}
+
+	/**
+	 * Create a cluster icon colored by the dominant marker type in the cluster
+	 */
+	private createMixedClusterIcon(cluster: L.MarkerCluster): L.DivIcon {
+		const markers = cluster.getAllChildMarkers() as CRMarker[];
+		const typeCounts: Record<string, number> = {};
+
+		for (const m of markers) {
+			const type = m.crData?.type || 'custom';
+			typeCounts[type] = (typeCounts[type] || 0) + 1;
+		}
+
+		// Use the color of the most frequent marker type
+		let dominantType = 'birth';
+		let maxCount = 0;
+		for (const [type, count] of Object.entries(typeCounts)) {
+			if (count > maxCount) {
+				maxCount = count;
+				dominantType = type;
+			}
+		}
+
+		const color = this.getMarkerColorForType(dominantType as import('./types/map-types').MarkerType);
+		return this.createClusterIcon(cluster, color);
 	}
 
 	/**
@@ -412,25 +405,8 @@ export class MapController {
 		searchLayer.clearLayers();
 
 		// Add all visible markers to search layer
-		// We create invisible markers with the place name as a property
-		if (this.birthClusterGroup) {
-			this.birthClusterGroup.eachLayer((layer) => {
-				const marker = layer as CRMarker;
-				if (marker.crData) {
-					const searchMarker = L.marker([marker.crData.lat, marker.crData.lng], {
-						opacity: 0,
-						icon: L.divIcon({ className: 'cr-search-marker', iconSize: [1, 1] }),
-						// @ts-expect-error - custom property for search
-						placeName: marker.crData.placeName
-					}) as CRMarker;
-					searchMarker.crData = marker.crData;
-					searchLayer.addLayer(searchMarker);
-				}
-			});
-		}
-
-		if (this.deathClusterGroup) {
-			this.deathClusterGroup.eachLayer((layer) => {
+		if (this.eventClusterGroup) {
+			this.eventClusterGroup.eachLayer((layer) => {
 				const marker = layer as CRMarker;
 				if (marker.crData) {
 					const searchMarker = L.marker([marker.crData.lat, marker.crData.lng], {
@@ -495,11 +471,7 @@ export class MapController {
 	 */
 	private renderMarkers(markers: MapMarker[]): void {
 		// Clear existing markers
-		this.birthClusterGroup?.clearLayers();
-		this.deathClusterGroup?.clearLayers();
-		this.marriageClusterGroup?.clearLayers();
-		this.burialClusterGroup?.clearLayers();
-		this.eventsClusterGroup?.clearLayers();
+		this.eventClusterGroup?.clearLayers();
 
 		for (const marker of markers) {
 			// Check if this marker type is visible before creating it
@@ -508,33 +480,7 @@ export class MapController {
 			}
 
 			const leafletMarker = this.createMarker(marker);
-
-			switch (marker.type) {
-				case 'birth':
-					this.birthClusterGroup?.addLayer(leafletMarker);
-					break;
-				case 'death':
-					this.deathClusterGroup?.addLayer(leafletMarker);
-					break;
-				case 'marriage':
-					this.marriageClusterGroup?.addLayer(leafletMarker);
-					break;
-				case 'burial':
-					this.burialClusterGroup?.addLayer(leafletMarker);
-					break;
-				// Additional life events go to eventsClusterGroup
-				case 'residence':
-				case 'occupation':
-				case 'education':
-				case 'military':
-				case 'immigration':
-				case 'baptism':
-				case 'confirmation':
-				case 'ordination':
-				case 'custom':
-					this.eventsClusterGroup?.addLayer(leafletMarker);
-					break;
-			}
+			this.eventClusterGroup?.addLayer(leafletMarker);
 		}
 
 		logger.debug('render-markers', `Rendered ${markers.length} markers`);
@@ -1238,57 +1184,9 @@ export class MapController {
 
 		this.currentLayers = layers;
 
-		// Birth markers
-		if (this.birthClusterGroup) {
-			if (layers.births && !this.map.hasLayer(this.birthClusterGroup)) {
-				this.map.addLayer(this.birthClusterGroup);
-			} else if (!layers.births && this.map.hasLayer(this.birthClusterGroup)) {
-				this.map.removeLayer(this.birthClusterGroup);
-			}
-		}
-
-		// Death markers
-		if (this.deathClusterGroup) {
-			if (layers.deaths && !this.map.hasLayer(this.deathClusterGroup)) {
-				this.map.addLayer(this.deathClusterGroup);
-			} else if (!layers.deaths && this.map.hasLayer(this.deathClusterGroup)) {
-				this.map.removeLayer(this.deathClusterGroup);
-			}
-		}
-
-		// Marriage markers
-		if (this.marriageClusterGroup) {
-			if (layers.marriages && !this.map.hasLayer(this.marriageClusterGroup)) {
-				this.map.addLayer(this.marriageClusterGroup);
-			} else if (!layers.marriages && this.map.hasLayer(this.marriageClusterGroup)) {
-				this.map.removeLayer(this.marriageClusterGroup);
-			}
-		}
-
-		// Burial markers
-		if (this.burialClusterGroup) {
-			if (layers.burials && !this.map.hasLayer(this.burialClusterGroup)) {
-				this.map.addLayer(this.burialClusterGroup);
-			} else if (!layers.burials && this.map.hasLayer(this.burialClusterGroup)) {
-				this.map.removeLayer(this.burialClusterGroup);
-			}
-		}
-
-		// Events cluster group (residence, occupation, etc.)
-		// Show if any event type is enabled
-		const anyEventsEnabled = layers.residences || layers.occupations ||
-			layers.educations || layers.military || layers.immigrations ||
-			layers.religious || layers.custom;
-		if (this.eventsClusterGroup) {
-			if (anyEventsEnabled && !this.map.hasLayer(this.eventsClusterGroup)) {
-				this.map.addLayer(this.eventsClusterGroup);
-			} else if (!anyEventsEnabled && this.map.hasLayer(this.eventsClusterGroup)) {
-				this.map.removeLayer(this.eventsClusterGroup);
-			}
-		}
-
-		// Re-render markers to filter by visibility settings
-		// This ensures individual event types are correctly filtered
+		// Re-render event markers with updated visibility filters
+		// All event types share a single cluster group (#343),
+		// so we re-render to add/remove individual markers
 		if (this.currentData) {
 			this.renderMarkers(this.currentData.markers);
 		}
@@ -1439,11 +1337,7 @@ export class MapController {
 		const savedLayers = { ...this.currentLayers };
 
 		// Clean up existing map layers
-		this.birthClusterGroup?.clearLayers();
-		this.deathClusterGroup?.clearLayers();
-		this.marriageClusterGroup?.clearLayers();
-		this.burialClusterGroup?.clearLayers();
-		this.eventsClusterGroup?.clearLayers();
+		this.eventClusterGroup?.clearLayers();
 		this.pathLayer?.clearLayers();
 		this.journeyLayer?.clearLayers();
 
@@ -1475,11 +1369,7 @@ export class MapController {
 		// Destroy the old map
 		this.map?.remove();
 		this.map = null;
-		this.birthClusterGroup = null;
-		this.deathClusterGroup = null;
-		this.marriageClusterGroup = null;
-		this.burialClusterGroup = null;
-		this.eventsClusterGroup = null;
+		this.eventClusterGroup = null;
 		this.pathLayer = null;
 		this.journeyLayer = null;
 		this.fullscreenControl = null;
@@ -2280,11 +2170,7 @@ export class MapController {
 	destroy(): void {
 		logger.debug('destroy', 'Destroying map controller');
 
-		this.birthClusterGroup?.clearLayers();
-		this.deathClusterGroup?.clearLayers();
-		this.marriageClusterGroup?.clearLayers();
-		this.burialClusterGroup?.clearLayers();
-		this.eventsClusterGroup?.clearLayers();
+		this.eventClusterGroup?.clearLayers();
 		this.pathLayer?.clearLayers();
 		this.journeyLayer?.clearLayers();
 
