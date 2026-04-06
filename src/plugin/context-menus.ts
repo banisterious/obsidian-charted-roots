@@ -150,700 +150,20 @@ export function registerContextMenus(plugin: CanvasRootsPlugin): void {
 
 					// Schema notes get schema-specific options
 					if (isSchema) {
-						menu.addSeparator();
-
-						const schemaName = fm?.name || file.basename;
-
-						if (useSubmenu) {
-							menu.addItem((item) => {
-								const submenu: Menu = item
-									.setTitle('Charted Roots')
-									.setIcon('clipboard-check')
-									.setSubmenu();
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Edit schema')
-										.setIcon('edit')
-										.onClick(() => {
-											const modal = new ControlCenterModal(plugin.app, plugin);
-											modal.openToTab('schemas');
-											// Note: The actual editing would require passing the schema to the modal
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Validate matching notes')
-										.setIcon('play')
-										.onClick(async () => {
-											const schemaService = new SchemaService(plugin);
-											const validationService = new ValidationService(plugin, schemaService);
-
-											new Notice(`Validating notes against "${schemaName}"...`);
-
-											try {
-												const results = await validationService.validateVault();
-												// Filter results to only this schema
-												const schemaCrId = cache?.frontmatter?.cr_id;
-												const schemaResults = results.filter(r => r.schemaCrId === schemaCrId);
-
-												if (schemaResults.length === 0) {
-													new Notice(`No notes match schema "${schemaName}"`);
-												} else {
-													const errors = schemaResults.filter(r => !r.isValid).length;
-													new Notice(`Validated ${schemaResults.length} notes: ${schemaResults.length - errors} passed, ${errors} failed`);
-												}
-											} catch (error) {
-												new Notice(`Validation failed: ${getErrorMessage(error)}`);
-											}
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Open schemas tab')
-										.setIcon('external-link')
-										.onClick(() => {
-											const modal = new ControlCenterModal(plugin.app, plugin);
-											modal.openToTab('schemas');
-										});
-								});
-							});
-						} else {
-							// Mobile: flat menu for schema notes
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Open schemas tab')
-									.setIcon('clipboard-check')
-									.onClick(() => {
-										const modal = new ControlCenterModal(plugin.app, plugin);
-										modal.openToTab('schemas');
-									});
-							});
-						}
+						buildSchemaContextMenu(menu, plugin, file, fm, cache, useSubmenu);
 					}
 					// Map notes get map-specific options (open map view with this map selected)
 					// Also show for files in maps folder that aren't yet typed as map
 					else if (isMap || isInMapsFolder) {
-						menu.addSeparator();
-
-						const mapId = fm?.map_id;
-						const mapName = fm?.name || file.basename;
-
-						if (useSubmenu) {
-							menu.addItem((item) => {
-								const submenu: Menu = item
-									.setTitle('Charted Roots')
-									.setIcon('map')
-									.setSubmenu();
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle(`Open "${mapName}" in map view`)
-										.setIcon('map')
-										.onClick(async () => {
-											await plugin.activateMapView(mapId);
-										});
-								});
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Edit map')
-										.setIcon('edit')
-										.onClick(async () => {
-											const { CreateMapModal } = await import('../ui/create-map-modal');
-											new CreateMapModal(plugin.app, {
-												editFile: file,
-												editFrontmatter: fm || {},
-												propertyAliases: plugin.settings.propertyAliases
-											}).open();
-										});
-								});
-
-								submenu.addSeparator();
-
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add essential map properties')
-										.setIcon('globe')
-										.onClick(async () => {
-											await addEssentialMapProperties(plugin, [file]);
-										});
-								});
-
-								// Add cr_id only
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add cr_id')
-										.setIcon('key')
-										.onClick(async () => {
-											await addCrId(plugin, [file]);
-										});
-								});
-							});
-						} else {
-							// Mobile: flat menu for map notes
-							menu.addItem((item) => {
-								item
-									.setTitle(`Charted Roots: Open "${mapName}" in map view`)
-									.setIcon('map')
-									.onClick(async () => {
-										await plugin.activateMapView(mapId);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Edit map')
-									.setIcon('edit')
-									.onClick(async () => {
-										const { CreateMapModal } = await import('../ui/create-map-modal');
-										new CreateMapModal(plugin.app, {
-											editFile: file,
-											editFrontmatter: fm || {},
-											propertyAliases: plugin.settings.propertyAliases
-										}).open();
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential map properties')
-									.setIcon('globe')
-									.onClick(async () => {
-										await addEssentialMapProperties(plugin, [file]);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add cr_id')
-									.setIcon('key')
-									.onClick(async () => {
-										await addCrId(plugin, [file]);
-									});
-							});
-						}
+						buildMapContextMenu(menu, plugin, file, fm, useSubmenu);
 					}
 					// Place notes with cr_id get place-specific options
 					else if (hasCrId && isPlace) {
-						menu.addSeparator();
-
-						if (useSubmenu) {
-							menu.addItem((item) => {
-								const submenu: Menu = item
-									.setTitle('Charted Roots')
-									.setIcon('map-pin')
-									.setSubmenu();
-
-								// Set collection
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Set collection')
-										.setIcon('folder')
-										.onClick(async () => {
-											await promptSetCollection(plugin, file);
-										});
-								});
-
-								// Open in map view (zoom to place coordinates if available)
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Open in map view')
-										.setIcon('map')
-										.onClick(async () => {
-											// Extract coordinates from frontmatter if available
-											let focusCoordinates: { lat: number; lng: number; zoom?: number } | undefined;
-											if (fm?.coordinates_lat !== undefined && fm?.coordinates_long !== undefined) {
-												focusCoordinates = {
-													lat: Number(fm.coordinates_lat),
-													lng: Number(fm.coordinates_long),
-													zoom: 12
-												};
-											} else if (fm?.coordinates && typeof fm.coordinates === 'object') {
-												// Legacy nested format
-												if (fm.coordinates.lat !== undefined && fm.coordinates.long !== undefined) {
-													focusCoordinates = {
-														lat: Number(fm.coordinates.lat),
-														lng: Number(fm.coordinates.long),
-														zoom: 12
-													};
-												}
-											}
-											await plugin.activateMapView(undefined, false, undefined, focusCoordinates);
-										});
-								});
-
-								// Edit place
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Edit place')
-										.setIcon('edit')
-										.onClick(() => {
-											plugin.openEditPlaceModal(file);
-										});
-								});
-
-								// Geocode place
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Geocode place')
-										.setIcon('map-pin')
-										.onClick(async () => {
-											await geocodeSinglePlace(plugin, file);
-										});
-								});
-
-								// Open profile
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Open profile')
-										.setIcon('id-card')
-										.onClick(async () => {
-											await plugin.activateProfileView(file);
-										});
-								});
-
-								// Media submenu
-								submenu.addItem((subItem) => {
-									const mediaSubmenu: Menu = subItem
-										.setTitle('Media')
-										.setIcon('image')
-										.setSubmenu();
-
-									mediaSubmenu.addItem((mediaItem) => {
-										mediaItem
-											.setTitle('Link media...')
-											.setIcon('image-plus')
-											.onClick(() => {
-												const placeName = fm?.name || file.basename;
-												plugin.openLinkMediaModal(file, 'place', placeName);
-											});
-									});
-
-									mediaSubmenu.addItem((mediaItem) => {
-										mediaItem
-											.setTitle('Manage media...')
-											.setIcon('settings')
-											.onClick(() => {
-												const placeName = fm?.name || file.basename;
-												openManageMediaModal(plugin, file, 'place', placeName);
-											});
-									});
-								});
-
-								submenu.addSeparator();
-
-								// Add essential properties submenu
-								submenu.addItem((subItem) => {
-									const propsSubmenu: Menu = subItem
-										.setTitle('Add essential properties')
-										.setIcon('file-plus')
-										.setSubmenu();
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Add essential person properties')
-											.setIcon('user')
-											.onClick(async () => {
-												await addEssentialPersonProperties(plugin, [file]);
-											});
-									});
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Add essential place properties')
-											.setIcon('map-pin')
-											.onClick(async () => {
-												await addEssentialPlaceProperties(plugin, [file]);
-											});
-									});
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Add essential source properties')
-											.setIcon('archive')
-											.onClick(async () => {
-												await addEssentialSourceProperties(plugin, [file]);
-											});
-									});
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Add essential universe properties')
-											.setIcon('globe')
-											.onClick(async () => {
-												await addEssentialUniverseProperties(plugin, [file]);
-											});
-									});
-								});
-
-								// Add cr_id only
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add cr_id')
-										.setIcon('key')
-										.onClick(async () => {
-											await addCrId(plugin, [file]);
-										});
-								});
-							});
-						} else {
-							// Mobile: flat menu for place notes
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Set collection')
-									.setIcon('folder')
-									.onClick(async () => {
-										await promptSetCollection(plugin, file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Open in map view')
-									.setIcon('map')
-									.onClick(async () => {
-										// Extract coordinates from frontmatter if available
-										let focusCoordinates: { lat: number; lng: number; zoom?: number } | undefined;
-										if (fm?.coordinates_lat !== undefined && fm?.coordinates_long !== undefined) {
-											focusCoordinates = {
-												lat: Number(fm.coordinates_lat),
-												lng: Number(fm.coordinates_long),
-												zoom: 12
-											};
-										} else if (fm?.coordinates && typeof fm.coordinates === 'object') {
-											// Legacy nested format
-											if (fm.coordinates.lat !== undefined && fm.coordinates.long !== undefined) {
-												focusCoordinates = {
-													lat: Number(fm.coordinates.lat),
-													lng: Number(fm.coordinates.long),
-													zoom: 12
-												};
-											}
-										}
-										await plugin.activateMapView(undefined, false, undefined, focusCoordinates);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Edit place')
-									.setIcon('edit')
-									.onClick(() => {
-										plugin.openEditPlaceModal(file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Open profile')
-									.setIcon('id-card')
-									.onClick(async () => {
-										await plugin.activateProfileView(file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Geocode place')
-									.setIcon('map-pin')
-									.onClick(async () => {
-										await geocodeSinglePlace(plugin, file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Link media...')
-									.setIcon('image-plus')
-									.onClick(() => {
-										const placeName = fm?.name || file.basename;
-										plugin.openLinkMediaModal(file, 'place', placeName);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Manage media...')
-									.setIcon('settings')
-									.onClick(() => {
-										const placeName = fm?.name || file.basename;
-										openManageMediaModal(plugin, file, 'place', placeName);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential person properties')
-									.setIcon('user')
-									.onClick(async () => {
-										await addEssentialPersonProperties(plugin, [file]);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential place properties')
-									.setIcon('map-pin')
-									.onClick(async () => {
-										await addEssentialPlaceProperties(plugin, [file]);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential source properties')
-									.setIcon('archive')
-									.onClick(async () => {
-										await addEssentialSourceProperties(plugin, [file]);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add cr_id')
-									.setIcon('key')
-									.onClick(async () => {
-										await addCrId(plugin, [file]);
-									});
-							});
-						}
+						buildPlaceContextMenu(menu, plugin, file, fm, useSubmenu);
 					}
 					// Source notes with cr_id get source-specific options
 					else if (hasCrId && isSource) {
-						menu.addSeparator();
-
-						if (useSubmenu) {
-							menu.addItem((item) => {
-								const submenu: Menu = item
-									.setTitle('Charted Roots')
-									.setIcon('archive')
-									.setSubmenu();
-
-								// Edit source
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Edit source')
-										.setIcon('edit')
-										.onClick(() => {
-											openEditSourceModal(plugin, file);
-										});
-								});
-
-								// Generate citation
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Generate citation')
-										.setIcon('quote')
-										.onClick(() => {
-											openCitationGenerator(plugin, file);
-										});
-								});
-
-								// Open in Sources tab
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Open sources tab')
-										.setIcon('archive')
-										.onClick(() => {
-											const modal = new ControlCenterModal(plugin.app, plugin);
-											modal.openToTab('sources');
-										});
-								});
-
-								// Open profile
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Open profile')
-										.setIcon('id-card')
-										.onClick(async () => {
-											await plugin.activateProfileView(file);
-										});
-								});
-
-								// Add source roles block (#219)
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add source roles block')
-										.setIcon('users')
-										.onClick(async () => {
-											await insertSourceRolesBlock(plugin, file);
-										});
-								});
-
-								// Link to existing event
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Link to existing event')
-										.setIcon('calendar-search')
-										.onClick(async () => {
-											const { EventPickerModal } = await import('../events/ui/event-picker-modal');
-											new EventPickerModal(plugin.app, plugin, {
-												onSelect: async (event) => {
-													await linkSourceToEvent(plugin, file, event);
-												},
-												allowCreate: false
-											}).open();
-										});
-								});
-
-								submenu.addSeparator();
-
-								// Add essential properties submenu
-								submenu.addItem((subItem) => {
-									const propsSubmenu: Menu = subItem
-										.setTitle('Add essential properties')
-										.setIcon('file-plus')
-										.setSubmenu();
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Add essential person properties')
-											.setIcon('user')
-											.onClick(async () => {
-												await addEssentialPersonProperties(plugin, [file]);
-											});
-									});
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Add essential place properties')
-											.setIcon('map-pin')
-											.onClick(async () => {
-												await addEssentialPlaceProperties(plugin, [file]);
-											});
-									});
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Add essential source properties')
-											.setIcon('archive')
-											.onClick(async () => {
-												await addEssentialSourceProperties(plugin, [file]);
-											});
-									});
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Add essential universe properties')
-											.setIcon('globe')
-											.onClick(async () => {
-												await addEssentialUniverseProperties(plugin, [file]);
-											});
-									});
-								});
-
-								// Add cr_id only
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add cr_id')
-										.setIcon('key')
-										.onClick(async () => {
-											await addCrId(plugin, [file]);
-										});
-								});
-							});
-						} else {
-							// Mobile: flat menu for source notes
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Edit source')
-									.setIcon('edit')
-									.onClick(() => {
-										openEditSourceModal(plugin, file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Generate citation')
-									.setIcon('quote')
-									.onClick(() => {
-										openCitationGenerator(plugin, file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Open sources tab')
-									.setIcon('archive')
-									.onClick(() => {
-										const modal = new ControlCenterModal(plugin.app, plugin);
-										modal.openToTab('sources');
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Open profile')
-									.setIcon('id-card')
-									.onClick(async () => {
-										await plugin.activateProfileView(file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add source roles block')
-									.setIcon('users')
-									.onClick(async () => {
-										await insertSourceRolesBlock(plugin, file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Link to existing event')
-									.setIcon('calendar-search')
-									.onClick(async () => {
-										const { EventPickerModal } = await import('../events/ui/event-picker-modal');
-										new EventPickerModal(plugin.app, plugin, {
-											onSelect: async (event) => {
-												await linkSourceToEvent(plugin, file, event);
-											},
-											allowCreate: false
-										}).open();
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential person properties')
-									.setIcon('user')
-									.onClick(async () => {
-										await addEssentialPersonProperties(plugin, [file]);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential place properties')
-									.setIcon('map-pin')
-									.onClick(async () => {
-										await addEssentialPlaceProperties(plugin, [file]);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential source properties')
-									.setIcon('archive')
-									.onClick(async () => {
-										await addEssentialSourceProperties(plugin, [file]);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add cr_id')
-									.setIcon('key')
-									.onClick(async () => {
-										await addCrId(plugin, [file]);
-									});
-							});
-						}
+						buildSourceContextMenu(menu, plugin, file, useSubmenu);
 					}
 					// Person notes with cr_id get full person options
 					else if (hasCrId && !isPlace && !isSource && !isEvent && !isUniverse && !isOrg) {
@@ -851,719 +171,19 @@ export function registerContextMenus(plugin: CanvasRootsPlugin): void {
 					}
 					// Event notes with cr_id get event-specific options
 					else if (hasCrId && isEvent) {
-						menu.addSeparator();
-
-						if (useSubmenu) {
-							menu.addItem((item) => {
-								const submenu: Menu = item
-									.setTitle('Charted Roots')
-									.setIcon('calendar')
-									.setSubmenu();
-
-								// Open event
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Open event')
-										.setIcon('file')
-										.onClick(() => {
-											void plugin.app.workspace.getLeaf(false).openFile(file);
-										});
-								});
-
-								// Open in new tab
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Open in new tab')
-										.setIcon('file-plus')
-										.onClick(() => {
-											void plugin.app.workspace.getLeaf('tab').openFile(file);
-										});
-								});
-
-								// Edit event
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Edit event')
-										.setIcon('edit')
-										.onClick(() => {
-											plugin.openEditEventModal(file);
-										});
-								});
-
-								// Open profile
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Open profile')
-										.setIcon('id-card')
-										.onClick(async () => {
-											await plugin.activateProfileView(file);
-										});
-								});
-
-								// Show on calendar
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Show on calendar')
-										.setIcon('calendar')
-										.onClick(() => {
-											const eventDate = cache?.frontmatter?.date || cache?.frontmatter?.event_date;
-											let month = new Date().getMonth();
-											let year = new Date().getFullYear();
-											if (eventDate) {
-												const dateStr = String(eventDate);
-												const isoMatch = dateStr.match(/(\d{4})-(\d{1,2})/);
-												if (isoMatch) {
-													year = parseInt(isoMatch[1]);
-													month = parseInt(isoMatch[2]) - 1;
-												}
-											}
-											const { VIEW_TYPE_CALENDAR } = require('../calendar/calendar-view');
-											const leaves = plugin.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR);
-											if (leaves.length > 0) {
-												plugin.app.workspace.revealLeaf(leaves[0]);
-												const calView = leaves[0].view as import('../calendar/calendar-view').CalendarView;
-												calView.navigateToDate(month, year);
-											} else {
-												void plugin.activateCalendarView().then(() => {
-													setTimeout(() => {
-														const newLeaves = plugin.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR);
-														if (newLeaves.length > 0) {
-															const calView = newLeaves[0].view as import('../calendar/calendar-view').CalendarView;
-															calView.navigateToDate(month, year);
-														}
-													}, 500);
-												});
-											}
-										});
-								});
-
-								// Media submenu
-								submenu.addItem((subItem) => {
-									const mediaSubmenu: Menu = subItem
-										.setTitle('Media')
-										.setIcon('image')
-										.setSubmenu();
-
-									mediaSubmenu.addItem((mediaItem) => {
-										mediaItem
-											.setTitle('Link media...')
-											.setIcon('image-plus')
-											.onClick(() => {
-												const eventTitle = cache?.frontmatter?.title || file.basename;
-												plugin.openLinkMediaModal(file, 'event', eventTitle);
-											});
-									});
-
-									mediaSubmenu.addItem((mediaItem) => {
-										mediaItem
-											.setTitle('Manage media...')
-											.setIcon('settings')
-											.onClick(() => {
-												const eventTitle = cache?.frontmatter?.title || file.basename;
-												openManageMediaModal(plugin, file, 'event', eventTitle);
-											});
-									});
-								});
-
-								submenu.addSeparator();
-
-								// Add essential event properties
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add essential event properties')
-										.setIcon('file-plus')
-										.onClick(async () => {
-											await addEssentialEventProperties(plugin, [file]);
-										});
-								});
-
-								// Add cr_id only
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add cr_id')
-										.setIcon('key')
-										.onClick(async () => {
-											await addCrId(plugin, [file]);
-										});
-								});
-
-								submenu.addSeparator();
-
-								// Delete event
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Delete event')
-										.setIcon('trash')
-										.onClick(async () => {
-											const eventTitle = cache?.frontmatter?.title || file.basename;
-											const confirmed = await confirmDeleteEvent(plugin, eventTitle);
-											if (confirmed) {
-												await plugin.app.fileManager.trashFile(file);
-												new Notice(`Deleted event: ${eventTitle}`);
-											}
-										});
-								});
-							});
-						} else {
-							// Mobile: flat menu
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Open event')
-									.setIcon('file')
-									.onClick(() => {
-										void plugin.app.workspace.getLeaf(false).openFile(file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Open in new tab')
-									.setIcon('file-plus')
-									.onClick(() => {
-										void plugin.app.workspace.getLeaf('tab').openFile(file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Edit event')
-									.setIcon('edit')
-									.onClick(() => {
-										plugin.openEditEventModal(file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Open profile')
-									.setIcon('id-card')
-									.onClick(async () => {
-										await plugin.activateProfileView(file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Link media...')
-									.setIcon('image-plus')
-									.onClick(() => {
-										const eventTitle = cache?.frontmatter?.title || file.basename;
-										plugin.openLinkMediaModal(file, 'event', eventTitle);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Manage media...')
-									.setIcon('settings')
-									.onClick(() => {
-										const eventTitle = cache?.frontmatter?.title || file.basename;
-										openManageMediaModal(plugin, file, 'event', eventTitle);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential event properties')
-									.setIcon('file-plus')
-									.onClick(async () => {
-										await addEssentialEventProperties(plugin, [file]);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add cr_id')
-									.setIcon('key')
-									.onClick(async () => {
-										await addCrId(plugin, [file]);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Delete event')
-									.setIcon('trash')
-									.onClick(async () => {
-										const eventTitle = cache?.frontmatter?.title || file.basename;
-										const confirmed = await confirmDeleteEvent(plugin, eventTitle);
-										if (confirmed) {
-											await plugin.app.fileManager.trashFile(file);
-											new Notice(`Deleted event: ${eventTitle}`);
-										}
-									});
-							});
-						}
+						buildEventContextMenu(menu, plugin, file, cache, useSubmenu);
 					}
 					// Organization notes with cr_id get organization-specific options
 					else if (hasCrId && isOrg) {
-						menu.addSeparator();
-
-						if (useSubmenu) {
-							menu.addItem((item) => {
-								const submenu: Menu = item
-									.setTitle('Charted Roots')
-									.setIcon('building')
-									.setSubmenu();
-
-								// Edit organization
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Edit organization')
-										.setIcon('edit')
-										.onClick(async () => {
-											const { CreateOrganizationModal } = await import('../organizations/ui/create-organization-modal');
-											const { createOrganizationService } = await import('../organizations/services/organization-service');
-											const orgService = createOrganizationService(plugin);
-											const org = orgService.getOrganizationByFile(file);
-											if (org) {
-												new CreateOrganizationModal(plugin.app, plugin, {
-													onSuccess: () => {},
-													editOrg: org,
-													editFile: file
-												}).open();
-											} else {
-												new Notice('Could not load organization');
-											}
-										});
-								});
-
-								// Manage members
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Manage members...')
-										.setIcon('users')
-										.onClick(async () => {
-											const { ManageOrganizationMembersModal } = await import('../organizations/ui/manage-members-modal');
-											const { createOrganizationService } = await import('../organizations/services/organization-service');
-											const { createMembershipService } = await import('../organizations/services/membership-service');
-											const orgService = createOrganizationService(plugin);
-											const membershipService = createMembershipService(plugin, orgService);
-											const org = orgService.getOrganizationByFile(file);
-											if (org) {
-												new ManageOrganizationMembersModal(plugin.app, plugin, {
-													organization: org,
-													organizationService: orgService,
-													membershipService: membershipService
-												}).open();
-											} else {
-												new Notice('Could not load organization');
-											}
-										});
-								});
-
-								// Insert members block (#268)
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Insert members block')
-										.setIcon('layout-template')
-										.onClick(async () => {
-											await insertMembersBlock(plugin, file);
-										});
-								});
-
-								// Open in Organizations tab
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Open in Organizations tab')
-										.setIcon('table')
-										.onClick(() => {
-											const modal = new ControlCenterModal(plugin.app, plugin);
-											modal.openToTab('organizations');
-										});
-								});
-
-								// Open profile
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Open profile')
-										.setIcon('id-card')
-										.onClick(async () => {
-											await plugin.activateProfileView(file);
-										});
-								});
-							});
-						} else {
-							// Mobile: flat menu
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Edit organization')
-									.setIcon('edit')
-									.onClick(async () => {
-										const { CreateOrganizationModal } = await import('../organizations/ui/create-organization-modal');
-										const { createOrganizationService } = await import('../organizations/services/organization-service');
-										const orgService = createOrganizationService(plugin);
-										const org = orgService.getOrganizationByFile(file);
-										if (org) {
-											new CreateOrganizationModal(plugin.app, plugin, {
-												onSuccess: () => {},
-												editOrg: org,
-												editFile: file
-											}).open();
-										} else {
-											new Notice('Could not load organization');
-										}
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Manage members...')
-									.setIcon('users')
-									.onClick(async () => {
-										const { ManageOrganizationMembersModal } = await import('../organizations/ui/manage-members-modal');
-										const { createOrganizationService } = await import('../organizations/services/organization-service');
-										const { createMembershipService } = await import('../organizations/services/membership-service');
-										const orgService = createOrganizationService(plugin);
-										const membershipService = createMembershipService(plugin, orgService);
-										const org = orgService.getOrganizationByFile(file);
-										if (org) {
-											new ManageOrganizationMembersModal(plugin.app, plugin, {
-												organization: org,
-												organizationService: orgService,
-												membershipService: membershipService
-											}).open();
-										} else {
-											new Notice('Could not load organization');
-										}
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Insert members block')
-									.setIcon('layout-template')
-									.onClick(async () => {
-										await insertMembersBlock(plugin, file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Open in Organizations tab')
-									.setIcon('table')
-									.onClick(() => {
-										const modal = new ControlCenterModal(plugin.app, plugin);
-										modal.openToTab('organizations');
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Open profile')
-									.setIcon('id-card')
-									.onClick(async () => {
-										await plugin.activateProfileView(file);
-									});
-							});
-						}
+						buildOrganizationContextMenu(menu, plugin, file, useSubmenu);
 					}
 					// Notes without cr_id still get "Add essential properties" option
 					else if (!hasCrId) {
-						menu.addSeparator();
-
-						if (useSubmenu) {
-							menu.addItem((item) => {
-								const submenu: Menu = item
-									.setTitle('Charted Roots')
-									.setIcon('git-fork')
-									.setSubmenu();
-
-								// Add essential properties submenu
-								submenu.addItem((subItem) => {
-									const propsSubmenu: Menu = subItem
-										.setTitle('Add essential properties')
-										.setIcon('file-plus')
-										.setSubmenu();
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Add essential person properties')
-											.setIcon('user')
-											.onClick(async () => {
-												await addEssentialPersonProperties(plugin, [file]);
-											});
-									});
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Add essential place properties')
-											.setIcon('map-pin')
-											.onClick(async () => {
-												await addEssentialPlaceProperties(plugin, [file]);
-											});
-									});
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Add essential source properties')
-											.setIcon('archive')
-											.onClick(async () => {
-												await addEssentialSourceProperties(plugin, [file]);
-											});
-									});
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Add essential event properties')
-											.setIcon('calendar')
-											.onClick(async () => {
-												await addEssentialEventProperties(plugin, [file]);
-											});
-									});
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Add essential universe properties')
-											.setIcon('globe')
-											.onClick(async () => {
-												await addEssentialUniverseProperties(plugin, [file]);
-											});
-									});
-								});
-
-								// Add cr_id only
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add cr_id')
-										.setIcon('key')
-										.onClick(async () => {
-											await addCrId(plugin, [file]);
-										});
-								});
-							});
-						} else {
-							// Mobile: flat menu
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential person properties')
-									.setIcon('user')
-									.onClick(async () => {
-										await addEssentialPersonProperties(plugin, [file]);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential place properties')
-									.setIcon('map-pin')
-									.onClick(async () => {
-										await addEssentialPlaceProperties(plugin, [file]);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential source properties')
-									.setIcon('archive')
-									.onClick(async () => {
-										await addEssentialSourceProperties(plugin, [file]);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential event properties')
-									.setIcon('calendar')
-									.onClick(async () => {
-										await addEssentialEventProperties(plugin, [file]);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential universe properties')
-									.setIcon('globe')
-									.onClick(async () => {
-										await addEssentialUniverseProperties(plugin, [file]);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add cr_id')
-									.setIcon('key')
-									.onClick(async () => {
-										await addCrId(plugin, [file]);
-									});
-							});
-						}
+						buildPlainMarkdownContextMenu(menu, plugin, file, useSubmenu);
 					}
 					// Universe notes with cr_id get universe-specific options
 					else if (hasCrId && isUniverse) {
-						menu.addSeparator();
-
-						if (useSubmenu) {
-							menu.addItem((item) => {
-								const submenu: Menu = item
-									.setTitle('Charted Roots')
-									.setIcon('globe')
-									.setSubmenu();
-
-								// Open universe note
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Open universe')
-										.setIcon('file')
-										.onClick(() => {
-											void plugin.app.workspace.getLeaf(false).openFile(file);
-										});
-								});
-
-								// Open universes tab
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Open universes tab')
-										.setIcon('external-link')
-										.onClick(() => {
-											const modal = new ControlCenterModal(plugin.app, plugin);
-											modal.openToTab('universes');
-										});
-								});
-
-								// Edit universe
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Edit universe')
-										.setIcon('edit')
-										.onClick(() => {
-											openEditUniverseModal(plugin, file);
-										});
-								});
-
-								// Delete universe
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Delete universe')
-										.setIcon('trash')
-										.onClick(async () => {
-											const universeName = cache?.frontmatter?.name || file.basename;
-											const confirmed = await confirmDeleteUniverse(plugin, universeName);
-											if (confirmed) {
-												await plugin.app.fileManager.trashFile(file);
-												new Notice(`Deleted universe: ${universeName}`);
-											}
-										});
-								});
-
-								submenu.addSeparator();
-
-								// Add essential properties submenu
-								submenu.addItem((subItem) => {
-									const propsSubmenu: Menu = subItem
-										.setTitle('Add essential properties')
-										.setIcon('file-plus')
-										.setSubmenu();
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Add essential universe properties')
-											.setIcon('globe')
-											.onClick(async () => {
-												await addEssentialUniverseProperties(plugin, [file]);
-											});
-									});
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Add essential person properties')
-											.setIcon('user')
-											.onClick(async () => {
-												await addEssentialPersonProperties(plugin, [file]);
-											});
-									});
-
-									propsSubmenu.addItem((propItem) => {
-										propItem
-											.setTitle('Add essential place properties')
-											.setIcon('map-pin')
-											.onClick(async () => {
-												await addEssentialPlaceProperties(plugin, [file]);
-											});
-									});
-								});
-
-								// Add cr_id only
-								submenu.addItem((subItem) => {
-									subItem
-										.setTitle('Add cr_id')
-										.setIcon('key')
-										.onClick(async () => {
-											await addCrId(plugin, [file]);
-										});
-								});
-							});
-						} else {
-							// Mobile: flat menu for universe notes
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Open universes tab')
-									.setIcon('globe')
-									.onClick(() => {
-										const modal = new ControlCenterModal(plugin.app, plugin);
-										modal.openToTab('universes');
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Edit universe')
-									.setIcon('edit')
-									.onClick(() => {
-										openEditUniverseModal(plugin, file);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Delete universe')
-									.setIcon('trash')
-									.onClick(async () => {
-										const universeName = cache?.frontmatter?.name || file.basename;
-										const confirmed = await confirmDeleteUniverse(plugin, universeName);
-										if (confirmed) {
-											await plugin.app.fileManager.trashFile(file);
-											new Notice(`Deleted universe: ${universeName}`);
-										}
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential universe properties')
-									.setIcon('globe')
-									.onClick(async () => {
-										await addEssentialUniverseProperties(plugin, [file]);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential person properties')
-									.setIcon('user')
-									.onClick(async () => {
-										await addEssentialPersonProperties(plugin, [file]);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add essential place properties')
-									.setIcon('map-pin')
-									.onClick(async () => {
-										await addEssentialPlaceProperties(plugin, [file]);
-									});
-							});
-
-							menu.addItem((item) => {
-								item
-									.setTitle('Charted Roots: Add cr_id')
-									.setIcon('key')
-									.onClick(async () => {
-										await addCrId(plugin, [file]);
-									});
-							});
-						}
+						buildUniverseContextMenu(menu, plugin, file, cache, useSubmenu);
 					}
 				}
 
@@ -4176,6 +2796,1495 @@ function buildFolderContextMenu(
 				.setIcon('bar-chart-2')
 				.onClick(() => {
 					showFolderStatistics(plugin, file);
+				});
+		});
+	}
+}
+
+/**
+ * Build context menu items for schema notes.
+ * Handles both desktop (submenu) and mobile (flat) variants.
+ */
+function buildSchemaContextMenu(
+	menu: Menu,
+	plugin: CanvasRootsPlugin,
+	file: TFile,
+	fm: Record<string, unknown> | undefined,
+	cache: CachedMetadata | null,
+	useSubmenu: boolean
+): void {
+	menu.addSeparator();
+
+	const schemaName = fm?.name || file.basename;
+
+	if (useSubmenu) {
+		menu.addItem((item) => {
+			const submenu: Menu = item
+				.setTitle('Charted Roots')
+				.setIcon('clipboard-check')
+				.setSubmenu();
+
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Edit schema')
+					.setIcon('edit')
+					.onClick(() => {
+						const modal = new ControlCenterModal(plugin.app, plugin);
+						modal.openToTab('schemas');
+					});
+			});
+
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Validate matching notes')
+					.setIcon('play')
+					.onClick(async () => {
+						const schemaService = new SchemaService(plugin);
+						const validationService = new ValidationService(plugin, schemaService);
+
+						new Notice(`Validating notes against "${schemaName}"...`);
+
+						try {
+							const results = await validationService.validateVault();
+							const schemaCrId = cache?.frontmatter?.cr_id;
+							const schemaResults = results.filter(r => r.schemaCrId === schemaCrId);
+
+							if (schemaResults.length === 0) {
+								new Notice(`No notes match schema "${schemaName}"`);
+							} else {
+								const errors = schemaResults.filter(r => !r.isValid).length;
+								new Notice(`Validated ${schemaResults.length} notes: ${schemaResults.length - errors} passed, ${errors} failed`);
+							}
+						} catch (error) {
+							new Notice(`Validation failed: ${getErrorMessage(error)}`);
+						}
+					});
+			});
+
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Open schemas tab')
+					.setIcon('external-link')
+					.onClick(() => {
+						const modal = new ControlCenterModal(plugin.app, plugin);
+						modal.openToTab('schemas');
+					});
+			});
+		});
+	} else {
+		// Mobile: flat menu for schema notes
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Open schemas tab')
+				.setIcon('clipboard-check')
+				.onClick(() => {
+					const modal = new ControlCenterModal(plugin.app, plugin);
+					modal.openToTab('schemas');
+				});
+		});
+	}
+}
+
+/**
+ * Build context menu items for map notes.
+ * Handles both desktop (submenu) and mobile (flat) variants.
+ */
+function buildMapContextMenu(
+	menu: Menu,
+	plugin: CanvasRootsPlugin,
+	file: TFile,
+	fm: Record<string, unknown> | undefined,
+	useSubmenu: boolean
+): void {
+	menu.addSeparator();
+
+	const mapId = fm?.map_id;
+	const mapName = fm?.name || file.basename;
+
+	if (useSubmenu) {
+		menu.addItem((item) => {
+			const submenu: Menu = item
+				.setTitle('Charted Roots')
+				.setIcon('map')
+				.setSubmenu();
+
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle(`Open "${mapName}" in map view`)
+					.setIcon('map')
+					.onClick(async () => {
+						await plugin.activateMapView(mapId);
+					});
+			});
+
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Edit map')
+					.setIcon('edit')
+					.onClick(async () => {
+						const { CreateMapModal } = await import('../ui/create-map-modal');
+						new CreateMapModal(plugin.app, {
+							editFile: file,
+							editFrontmatter: fm || {},
+							propertyAliases: plugin.settings.propertyAliases
+						}).open();
+					});
+			});
+
+			submenu.addSeparator();
+
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Add essential map properties')
+					.setIcon('globe')
+					.onClick(async () => {
+						await addEssentialMapProperties(plugin, [file]);
+					});
+			});
+
+			// Add cr_id only
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Add cr_id')
+					.setIcon('key')
+					.onClick(async () => {
+						await addCrId(plugin, [file]);
+					});
+			});
+		});
+	} else {
+		// Mobile: flat menu for map notes
+		menu.addItem((item) => {
+			item
+				.setTitle(`Charted Roots: Open "${mapName}" in map view`)
+				.setIcon('map')
+				.onClick(async () => {
+					await plugin.activateMapView(mapId);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Edit map')
+				.setIcon('edit')
+				.onClick(async () => {
+					const { CreateMapModal } = await import('../ui/create-map-modal');
+					new CreateMapModal(plugin.app, {
+						editFile: file,
+						editFrontmatter: fm || {},
+						propertyAliases: plugin.settings.propertyAliases
+					}).open();
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add essential map properties')
+				.setIcon('globe')
+				.onClick(async () => {
+					await addEssentialMapProperties(plugin, [file]);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add cr_id')
+				.setIcon('key')
+				.onClick(async () => {
+					await addCrId(plugin, [file]);
+				});
+		});
+	}
+}
+
+/**
+ * Build context menu items for place notes with cr_id.
+ * Handles both desktop (submenu) and mobile (flat) variants.
+ */
+function buildPlaceContextMenu(
+	menu: Menu,
+	plugin: CanvasRootsPlugin,
+	file: TFile,
+	fm: Record<string, unknown> | undefined,
+	useSubmenu: boolean
+): void {
+	menu.addSeparator();
+
+	if (useSubmenu) {
+		menu.addItem((item) => {
+			const submenu: Menu = item
+				.setTitle('Charted Roots')
+				.setIcon('map-pin')
+				.setSubmenu();
+
+			// Set collection
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Set collection')
+					.setIcon('folder')
+					.onClick(async () => {
+						await promptSetCollection(plugin, file);
+					});
+			});
+
+			// Open in map view (zoom to place coordinates if available)
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Open in map view')
+					.setIcon('map')
+					.onClick(async () => {
+						// Extract coordinates from frontmatter if available
+						let focusCoordinates: { lat: number; lng: number; zoom?: number } | undefined;
+						if (fm?.coordinates_lat !== undefined && fm?.coordinates_long !== undefined) {
+							focusCoordinates = {
+								lat: Number(fm.coordinates_lat),
+								lng: Number(fm.coordinates_long),
+								zoom: 12
+							};
+						} else if (fm?.coordinates && typeof fm.coordinates === 'object') {
+							// Legacy nested format
+							if ((fm.coordinates as Record<string, unknown>).lat !== undefined && (fm.coordinates as Record<string, unknown>).long !== undefined) {
+								focusCoordinates = {
+									lat: Number((fm.coordinates as Record<string, unknown>).lat),
+									lng: Number((fm.coordinates as Record<string, unknown>).long),
+									zoom: 12
+								};
+							}
+						}
+						await plugin.activateMapView(undefined, false, undefined, focusCoordinates);
+					});
+			});
+
+			// Edit place
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Edit place')
+					.setIcon('edit')
+					.onClick(() => {
+						plugin.openEditPlaceModal(file);
+					});
+			});
+
+			// Geocode place
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Geocode place')
+					.setIcon('map-pin')
+					.onClick(async () => {
+						await geocodeSinglePlace(plugin, file);
+					});
+			});
+
+			// Open profile
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Open profile')
+					.setIcon('id-card')
+					.onClick(async () => {
+						await plugin.activateProfileView(file);
+					});
+			});
+
+			// Media submenu
+			submenu.addItem((subItem) => {
+				const mediaSubmenu: Menu = subItem
+					.setTitle('Media')
+					.setIcon('image')
+					.setSubmenu();
+
+				mediaSubmenu.addItem((mediaItem) => {
+					mediaItem
+						.setTitle('Link media...')
+						.setIcon('image-plus')
+						.onClick(() => {
+							const placeName = fm?.name || file.basename;
+							plugin.openLinkMediaModal(file, 'place', String(placeName));
+						});
+				});
+
+				mediaSubmenu.addItem((mediaItem) => {
+					mediaItem
+						.setTitle('Manage media...')
+						.setIcon('settings')
+						.onClick(() => {
+							const placeName = fm?.name || file.basename;
+							openManageMediaModal(plugin, file, 'place', String(placeName));
+						});
+				});
+			});
+
+			submenu.addSeparator();
+
+			// Add essential properties submenu
+			submenu.addItem((subItem) => {
+				const propsSubmenu: Menu = subItem
+					.setTitle('Add essential properties')
+					.setIcon('file-plus')
+					.setSubmenu();
+
+				propsSubmenu.addItem((propItem) => {
+					propItem
+						.setTitle('Add essential person properties')
+						.setIcon('user')
+						.onClick(async () => {
+							await addEssentialPersonProperties(plugin, [file]);
+						});
+				});
+
+				propsSubmenu.addItem((propItem) => {
+					propItem
+						.setTitle('Add essential place properties')
+						.setIcon('map-pin')
+						.onClick(async () => {
+							await addEssentialPlaceProperties(plugin, [file]);
+						});
+				});
+
+				propsSubmenu.addItem((propItem) => {
+					propItem
+						.setTitle('Add essential source properties')
+						.setIcon('archive')
+						.onClick(async () => {
+							await addEssentialSourceProperties(plugin, [file]);
+						});
+				});
+
+				propsSubmenu.addItem((propItem) => {
+					propItem
+						.setTitle('Add essential universe properties')
+						.setIcon('globe')
+						.onClick(async () => {
+							await addEssentialUniverseProperties(plugin, [file]);
+						});
+				});
+			});
+
+			// Add cr_id only
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Add cr_id')
+					.setIcon('key')
+					.onClick(async () => {
+						await addCrId(plugin, [file]);
+					});
+			});
+		});
+	} else {
+		// Mobile: flat menu for place notes
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Set collection')
+				.setIcon('folder')
+				.onClick(async () => {
+					await promptSetCollection(plugin, file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Open in map view')
+				.setIcon('map')
+				.onClick(async () => {
+					// Extract coordinates from frontmatter if available
+					let focusCoordinates: { lat: number; lng: number; zoom?: number } | undefined;
+					if (fm?.coordinates_lat !== undefined && fm?.coordinates_long !== undefined) {
+						focusCoordinates = {
+							lat: Number(fm.coordinates_lat),
+							lng: Number(fm.coordinates_long),
+							zoom: 12
+						};
+					} else if (fm?.coordinates && typeof fm.coordinates === 'object') {
+						// Legacy nested format
+						if ((fm.coordinates as Record<string, unknown>).lat !== undefined && (fm.coordinates as Record<string, unknown>).long !== undefined) {
+							focusCoordinates = {
+								lat: Number((fm.coordinates as Record<string, unknown>).lat),
+								lng: Number((fm.coordinates as Record<string, unknown>).long),
+								zoom: 12
+							};
+						}
+					}
+					await plugin.activateMapView(undefined, false, undefined, focusCoordinates);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Edit place')
+				.setIcon('edit')
+				.onClick(() => {
+					plugin.openEditPlaceModal(file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Open profile')
+				.setIcon('id-card')
+				.onClick(async () => {
+					await plugin.activateProfileView(file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Geocode place')
+				.setIcon('map-pin')
+				.onClick(async () => {
+					await geocodeSinglePlace(plugin, file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Link media...')
+				.setIcon('image-plus')
+				.onClick(() => {
+					const placeName = fm?.name || file.basename;
+					plugin.openLinkMediaModal(file, 'place', String(placeName));
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Manage media...')
+				.setIcon('settings')
+				.onClick(() => {
+					const placeName = fm?.name || file.basename;
+					openManageMediaModal(plugin, file, 'place', String(placeName));
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add essential person properties')
+				.setIcon('user')
+				.onClick(async () => {
+					await addEssentialPersonProperties(plugin, [file]);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add essential place properties')
+				.setIcon('map-pin')
+				.onClick(async () => {
+					await addEssentialPlaceProperties(plugin, [file]);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add essential source properties')
+				.setIcon('archive')
+				.onClick(async () => {
+					await addEssentialSourceProperties(plugin, [file]);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add cr_id')
+				.setIcon('key')
+				.onClick(async () => {
+					await addCrId(plugin, [file]);
+				});
+		});
+	}
+}
+
+/**
+ * Build context menu items for source notes with cr_id.
+ * Handles both desktop (submenu) and mobile (flat) variants.
+ */
+function buildSourceContextMenu(
+	menu: Menu,
+	plugin: CanvasRootsPlugin,
+	file: TFile,
+	useSubmenu: boolean
+): void {
+	menu.addSeparator();
+
+	if (useSubmenu) {
+		menu.addItem((item) => {
+			const submenu: Menu = item
+				.setTitle('Charted Roots')
+				.setIcon('archive')
+				.setSubmenu();
+
+			// Edit source
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Edit source')
+					.setIcon('edit')
+					.onClick(() => {
+						openEditSourceModal(plugin, file);
+					});
+			});
+
+			// Generate citation
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Generate citation')
+					.setIcon('quote')
+					.onClick(() => {
+						openCitationGenerator(plugin, file);
+					});
+			});
+
+			// Open in Sources tab
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Open sources tab')
+					.setIcon('archive')
+					.onClick(() => {
+						const modal = new ControlCenterModal(plugin.app, plugin);
+						modal.openToTab('sources');
+					});
+			});
+
+			// Open profile
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Open profile')
+					.setIcon('id-card')
+					.onClick(async () => {
+						await plugin.activateProfileView(file);
+					});
+			});
+
+			// Add source roles block (#219)
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Add source roles block')
+					.setIcon('users')
+					.onClick(async () => {
+						await insertSourceRolesBlock(plugin, file);
+					});
+			});
+
+			// Link to existing event
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Link to existing event')
+					.setIcon('calendar-search')
+					.onClick(async () => {
+						const { EventPickerModal } = await import('../events/ui/event-picker-modal');
+						new EventPickerModal(plugin.app, plugin, {
+							onSelect: async (event) => {
+								await linkSourceToEvent(plugin, file, event);
+							},
+							allowCreate: false
+						}).open();
+					});
+			});
+
+			submenu.addSeparator();
+
+			// Add essential properties submenu
+			submenu.addItem((subItem) => {
+				const propsSubmenu: Menu = subItem
+					.setTitle('Add essential properties')
+					.setIcon('file-plus')
+					.setSubmenu();
+
+				propsSubmenu.addItem((propItem) => {
+					propItem
+						.setTitle('Add essential person properties')
+						.setIcon('user')
+						.onClick(async () => {
+							await addEssentialPersonProperties(plugin, [file]);
+						});
+				});
+
+				propsSubmenu.addItem((propItem) => {
+					propItem
+						.setTitle('Add essential place properties')
+						.setIcon('map-pin')
+						.onClick(async () => {
+							await addEssentialPlaceProperties(plugin, [file]);
+						});
+				});
+
+				propsSubmenu.addItem((propItem) => {
+					propItem
+						.setTitle('Add essential source properties')
+						.setIcon('archive')
+						.onClick(async () => {
+							await addEssentialSourceProperties(plugin, [file]);
+						});
+				});
+
+				propsSubmenu.addItem((propItem) => {
+					propItem
+						.setTitle('Add essential universe properties')
+						.setIcon('globe')
+						.onClick(async () => {
+							await addEssentialUniverseProperties(plugin, [file]);
+						});
+				});
+			});
+
+			// Add cr_id only
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Add cr_id')
+					.setIcon('key')
+					.onClick(async () => {
+						await addCrId(plugin, [file]);
+					});
+			});
+		});
+	} else {
+		// Mobile: flat menu for source notes
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Edit source')
+				.setIcon('edit')
+				.onClick(() => {
+					openEditSourceModal(plugin, file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Generate citation')
+				.setIcon('quote')
+				.onClick(() => {
+					openCitationGenerator(plugin, file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Open sources tab')
+				.setIcon('archive')
+				.onClick(() => {
+					const modal = new ControlCenterModal(plugin.app, plugin);
+					modal.openToTab('sources');
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Open profile')
+				.setIcon('id-card')
+				.onClick(async () => {
+					await plugin.activateProfileView(file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add source roles block')
+				.setIcon('users')
+				.onClick(async () => {
+					await insertSourceRolesBlock(plugin, file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Link to existing event')
+				.setIcon('calendar-search')
+				.onClick(async () => {
+					const { EventPickerModal } = await import('../events/ui/event-picker-modal');
+					new EventPickerModal(plugin.app, plugin, {
+						onSelect: async (event) => {
+							await linkSourceToEvent(plugin, file, event);
+						},
+						allowCreate: false
+					}).open();
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add essential person properties')
+				.setIcon('user')
+				.onClick(async () => {
+					await addEssentialPersonProperties(plugin, [file]);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add essential place properties')
+				.setIcon('map-pin')
+				.onClick(async () => {
+					await addEssentialPlaceProperties(plugin, [file]);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add essential source properties')
+				.setIcon('archive')
+				.onClick(async () => {
+					await addEssentialSourceProperties(plugin, [file]);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add cr_id')
+				.setIcon('key')
+				.onClick(async () => {
+					await addCrId(plugin, [file]);
+				});
+		});
+	}
+}
+
+/**
+ * Build context menu items for event notes with cr_id.
+ * Handles both desktop (submenu) and mobile (flat) variants.
+ */
+function buildEventContextMenu(
+	menu: Menu,
+	plugin: CanvasRootsPlugin,
+	file: TFile,
+	cache: CachedMetadata | null,
+	useSubmenu: boolean
+): void {
+	menu.addSeparator();
+
+	if (useSubmenu) {
+		menu.addItem((item) => {
+			const submenu: Menu = item
+				.setTitle('Charted Roots')
+				.setIcon('calendar')
+				.setSubmenu();
+
+			// Open event
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Open event')
+					.setIcon('file')
+					.onClick(() => {
+						void plugin.app.workspace.getLeaf(false).openFile(file);
+					});
+			});
+
+			// Open in new tab
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Open in new tab')
+					.setIcon('file-plus')
+					.onClick(() => {
+						void plugin.app.workspace.getLeaf('tab').openFile(file);
+					});
+			});
+
+			// Edit event
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Edit event')
+					.setIcon('edit')
+					.onClick(() => {
+						plugin.openEditEventModal(file);
+					});
+			});
+
+			// Open profile
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Open profile')
+					.setIcon('id-card')
+					.onClick(async () => {
+						await plugin.activateProfileView(file);
+					});
+			});
+
+			// Show on calendar
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Show on calendar')
+					.setIcon('calendar')
+					.onClick(() => {
+						const eventDate = cache?.frontmatter?.date || cache?.frontmatter?.event_date;
+						let month = new Date().getMonth();
+						let year = new Date().getFullYear();
+						if (eventDate) {
+							const dateStr = String(eventDate);
+							const isoMatch = dateStr.match(/(\d{4})-(\d{1,2})/);
+							if (isoMatch) {
+								year = parseInt(isoMatch[1]);
+								month = parseInt(isoMatch[2]) - 1;
+							}
+						}
+						const { VIEW_TYPE_CALENDAR } = require('../calendar/calendar-view');
+						const leaves = plugin.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR);
+						if (leaves.length > 0) {
+							plugin.app.workspace.revealLeaf(leaves[0]);
+							const calView = leaves[0].view as import('../calendar/calendar-view').CalendarView;
+							calView.navigateToDate(month, year);
+						} else {
+							void plugin.activateCalendarView().then(() => {
+								setTimeout(() => {
+									const newLeaves = plugin.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR);
+									if (newLeaves.length > 0) {
+										const calView = newLeaves[0].view as import('../calendar/calendar-view').CalendarView;
+										calView.navigateToDate(month, year);
+									}
+								}, 500);
+							});
+						}
+					});
+			});
+
+			// Media submenu
+			submenu.addItem((subItem) => {
+				const mediaSubmenu: Menu = subItem
+					.setTitle('Media')
+					.setIcon('image')
+					.setSubmenu();
+
+				mediaSubmenu.addItem((mediaItem) => {
+					mediaItem
+						.setTitle('Link media...')
+						.setIcon('image-plus')
+						.onClick(() => {
+							const eventTitle = cache?.frontmatter?.title || file.basename;
+							plugin.openLinkMediaModal(file, 'event', eventTitle);
+						});
+				});
+
+				mediaSubmenu.addItem((mediaItem) => {
+					mediaItem
+						.setTitle('Manage media...')
+						.setIcon('settings')
+						.onClick(() => {
+							const eventTitle = cache?.frontmatter?.title || file.basename;
+							openManageMediaModal(plugin, file, 'event', eventTitle);
+						});
+				});
+			});
+
+			submenu.addSeparator();
+
+			// Add essential event properties
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Add essential event properties')
+					.setIcon('file-plus')
+					.onClick(async () => {
+						await addEssentialEventProperties(plugin, [file]);
+					});
+			});
+
+			// Add cr_id only
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Add cr_id')
+					.setIcon('key')
+					.onClick(async () => {
+						await addCrId(plugin, [file]);
+					});
+			});
+
+			submenu.addSeparator();
+
+			// Delete event
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Delete event')
+					.setIcon('trash')
+					.onClick(async () => {
+						const eventTitle = cache?.frontmatter?.title || file.basename;
+						const confirmed = await confirmDeleteEvent(plugin, eventTitle);
+						if (confirmed) {
+							await plugin.app.fileManager.trashFile(file);
+							new Notice(`Deleted event: ${eventTitle}`);
+						}
+					});
+			});
+		});
+	} else {
+		// Mobile: flat menu
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Open event')
+				.setIcon('file')
+				.onClick(() => {
+					void plugin.app.workspace.getLeaf(false).openFile(file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Open in new tab')
+				.setIcon('file-plus')
+				.onClick(() => {
+					void plugin.app.workspace.getLeaf('tab').openFile(file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Edit event')
+				.setIcon('edit')
+				.onClick(() => {
+					plugin.openEditEventModal(file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Open profile')
+				.setIcon('id-card')
+				.onClick(async () => {
+					await plugin.activateProfileView(file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Link media...')
+				.setIcon('image-plus')
+				.onClick(() => {
+					const eventTitle = cache?.frontmatter?.title || file.basename;
+					plugin.openLinkMediaModal(file, 'event', eventTitle);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Manage media...')
+				.setIcon('settings')
+				.onClick(() => {
+					const eventTitle = cache?.frontmatter?.title || file.basename;
+					openManageMediaModal(plugin, file, 'event', eventTitle);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add essential event properties')
+				.setIcon('file-plus')
+				.onClick(async () => {
+					await addEssentialEventProperties(plugin, [file]);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add cr_id')
+				.setIcon('key')
+				.onClick(async () => {
+					await addCrId(plugin, [file]);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Delete event')
+				.setIcon('trash')
+				.onClick(async () => {
+					const eventTitle = cache?.frontmatter?.title || file.basename;
+					const confirmed = await confirmDeleteEvent(plugin, eventTitle);
+					if (confirmed) {
+						await plugin.app.fileManager.trashFile(file);
+						new Notice(`Deleted event: ${eventTitle}`);
+					}
+				});
+		});
+	}
+}
+
+/**
+ * Build context menu items for organization notes with cr_id.
+ * Handles both desktop (submenu) and mobile (flat) variants.
+ */
+function buildOrganizationContextMenu(
+	menu: Menu,
+	plugin: CanvasRootsPlugin,
+	file: TFile,
+	useSubmenu: boolean
+): void {
+	menu.addSeparator();
+
+	if (useSubmenu) {
+		menu.addItem((item) => {
+			const submenu: Menu = item
+				.setTitle('Charted Roots')
+				.setIcon('building')
+				.setSubmenu();
+
+			// Edit organization
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Edit organization')
+					.setIcon('edit')
+					.onClick(async () => {
+						const { CreateOrganizationModal } = await import('../organizations/ui/create-organization-modal');
+						const { createOrganizationService } = await import('../organizations/services/organization-service');
+						const orgService = createOrganizationService(plugin);
+						const org = orgService.getOrganizationByFile(file);
+						if (org) {
+							new CreateOrganizationModal(plugin.app, plugin, {
+								onSuccess: () => {},
+								editOrg: org,
+								editFile: file
+							}).open();
+						} else {
+							new Notice('Could not load organization');
+						}
+					});
+			});
+
+			// Manage members
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Manage members...')
+					.setIcon('users')
+					.onClick(async () => {
+						const { ManageOrganizationMembersModal } = await import('../organizations/ui/manage-members-modal');
+						const { createOrganizationService } = await import('../organizations/services/organization-service');
+						const { createMembershipService } = await import('../organizations/services/membership-service');
+						const orgService = createOrganizationService(plugin);
+						const membershipService = createMembershipService(plugin, orgService);
+						const org = orgService.getOrganizationByFile(file);
+						if (org) {
+							new ManageOrganizationMembersModal(plugin.app, plugin, {
+								organization: org,
+								organizationService: orgService,
+								membershipService: membershipService
+							}).open();
+						} else {
+							new Notice('Could not load organization');
+						}
+					});
+			});
+
+			// Insert members block (#268)
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Insert members block')
+					.setIcon('layout-template')
+					.onClick(async () => {
+						await insertMembersBlock(plugin, file);
+					});
+			});
+
+			// Open in Organizations tab
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Open in Organizations tab')
+					.setIcon('table')
+					.onClick(() => {
+						const modal = new ControlCenterModal(plugin.app, plugin);
+						modal.openToTab('organizations');
+					});
+			});
+
+			// Open profile
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Open profile')
+					.setIcon('id-card')
+					.onClick(async () => {
+						await plugin.activateProfileView(file);
+					});
+			});
+		});
+	} else {
+		// Mobile: flat menu
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Edit organization')
+				.setIcon('edit')
+				.onClick(async () => {
+					const { CreateOrganizationModal } = await import('../organizations/ui/create-organization-modal');
+					const { createOrganizationService } = await import('../organizations/services/organization-service');
+					const orgService = createOrganizationService(plugin);
+					const org = orgService.getOrganizationByFile(file);
+					if (org) {
+						new CreateOrganizationModal(plugin.app, plugin, {
+							onSuccess: () => {},
+							editOrg: org,
+							editFile: file
+						}).open();
+					} else {
+						new Notice('Could not load organization');
+					}
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Manage members...')
+				.setIcon('users')
+				.onClick(async () => {
+					const { ManageOrganizationMembersModal } = await import('../organizations/ui/manage-members-modal');
+					const { createOrganizationService } = await import('../organizations/services/organization-service');
+					const { createMembershipService } = await import('../organizations/services/membership-service');
+					const orgService = createOrganizationService(plugin);
+					const membershipService = createMembershipService(plugin, orgService);
+					const org = orgService.getOrganizationByFile(file);
+					if (org) {
+						new ManageOrganizationMembersModal(plugin.app, plugin, {
+							organization: org,
+							organizationService: orgService,
+							membershipService: membershipService
+						}).open();
+					} else {
+						new Notice('Could not load organization');
+					}
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Insert members block')
+				.setIcon('layout-template')
+				.onClick(async () => {
+					await insertMembersBlock(plugin, file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Open in Organizations tab')
+				.setIcon('table')
+				.onClick(() => {
+					const modal = new ControlCenterModal(plugin.app, plugin);
+					modal.openToTab('organizations');
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Open profile')
+				.setIcon('id-card')
+				.onClick(async () => {
+					await plugin.activateProfileView(file);
+				});
+		});
+	}
+}
+
+/**
+ * Build context menu items for plain markdown notes without cr_id.
+ * Offers options to add essential properties and cr_id.
+ * Handles both desktop (submenu) and mobile (flat) variants.
+ */
+function buildPlainMarkdownContextMenu(
+	menu: Menu,
+	plugin: CanvasRootsPlugin,
+	file: TFile,
+	useSubmenu: boolean
+): void {
+	menu.addSeparator();
+
+	if (useSubmenu) {
+		menu.addItem((item) => {
+			const submenu: Menu = item
+				.setTitle('Charted Roots')
+				.setIcon('git-fork')
+				.setSubmenu();
+
+			// Add essential properties submenu
+			submenu.addItem((subItem) => {
+				const propsSubmenu: Menu = subItem
+					.setTitle('Add essential properties')
+					.setIcon('file-plus')
+					.setSubmenu();
+
+				propsSubmenu.addItem((propItem) => {
+					propItem
+						.setTitle('Add essential person properties')
+						.setIcon('user')
+						.onClick(async () => {
+							await addEssentialPersonProperties(plugin, [file]);
+						});
+				});
+
+				propsSubmenu.addItem((propItem) => {
+					propItem
+						.setTitle('Add essential place properties')
+						.setIcon('map-pin')
+						.onClick(async () => {
+							await addEssentialPlaceProperties(plugin, [file]);
+						});
+				});
+
+				propsSubmenu.addItem((propItem) => {
+					propItem
+						.setTitle('Add essential source properties')
+						.setIcon('archive')
+						.onClick(async () => {
+							await addEssentialSourceProperties(plugin, [file]);
+						});
+				});
+
+				propsSubmenu.addItem((propItem) => {
+					propItem
+						.setTitle('Add essential event properties')
+						.setIcon('calendar')
+						.onClick(async () => {
+							await addEssentialEventProperties(plugin, [file]);
+						});
+				});
+
+				propsSubmenu.addItem((propItem) => {
+					propItem
+						.setTitle('Add essential universe properties')
+						.setIcon('globe')
+						.onClick(async () => {
+							await addEssentialUniverseProperties(plugin, [file]);
+						});
+				});
+			});
+
+			// Add cr_id only
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Add cr_id')
+					.setIcon('key')
+					.onClick(async () => {
+						await addCrId(plugin, [file]);
+					});
+			});
+		});
+	} else {
+		// Mobile: flat menu
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add essential person properties')
+				.setIcon('user')
+				.onClick(async () => {
+					await addEssentialPersonProperties(plugin, [file]);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add essential place properties')
+				.setIcon('map-pin')
+				.onClick(async () => {
+					await addEssentialPlaceProperties(plugin, [file]);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add essential source properties')
+				.setIcon('archive')
+				.onClick(async () => {
+					await addEssentialSourceProperties(plugin, [file]);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add essential event properties')
+				.setIcon('calendar')
+				.onClick(async () => {
+					await addEssentialEventProperties(plugin, [file]);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add essential universe properties')
+				.setIcon('globe')
+				.onClick(async () => {
+					await addEssentialUniverseProperties(plugin, [file]);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add cr_id')
+				.setIcon('key')
+				.onClick(async () => {
+					await addCrId(plugin, [file]);
+				});
+		});
+	}
+}
+
+/**
+ * Build context menu items for universe notes with cr_id.
+ * Handles both desktop (submenu) and mobile (flat) variants.
+ */
+function buildUniverseContextMenu(
+	menu: Menu,
+	plugin: CanvasRootsPlugin,
+	file: TFile,
+	cache: CachedMetadata | null,
+	useSubmenu: boolean
+): void {
+	menu.addSeparator();
+
+	if (useSubmenu) {
+		menu.addItem((item) => {
+			const submenu: Menu = item
+				.setTitle('Charted Roots')
+				.setIcon('globe')
+				.setSubmenu();
+
+			// Open universe note
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Open universe')
+					.setIcon('file')
+					.onClick(() => {
+						void plugin.app.workspace.getLeaf(false).openFile(file);
+					});
+			});
+
+			// Open universes tab
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Open universes tab')
+					.setIcon('external-link')
+					.onClick(() => {
+						const modal = new ControlCenterModal(plugin.app, plugin);
+						modal.openToTab('universes');
+					});
+			});
+
+			// Edit universe
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Edit universe')
+					.setIcon('edit')
+					.onClick(() => {
+						openEditUniverseModal(plugin, file);
+					});
+			});
+
+			// Delete universe
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Delete universe')
+					.setIcon('trash')
+					.onClick(async () => {
+						const universeName = cache?.frontmatter?.name || file.basename;
+						const confirmed = await confirmDeleteUniverse(plugin, universeName);
+						if (confirmed) {
+							await plugin.app.fileManager.trashFile(file);
+							new Notice(`Deleted universe: ${universeName}`);
+						}
+					});
+			});
+
+			submenu.addSeparator();
+
+			// Add essential properties submenu
+			submenu.addItem((subItem) => {
+				const propsSubmenu: Menu = subItem
+					.setTitle('Add essential properties')
+					.setIcon('file-plus')
+					.setSubmenu();
+
+				propsSubmenu.addItem((propItem) => {
+					propItem
+						.setTitle('Add essential universe properties')
+						.setIcon('globe')
+						.onClick(async () => {
+							await addEssentialUniverseProperties(plugin, [file]);
+						});
+				});
+
+				propsSubmenu.addItem((propItem) => {
+					propItem
+						.setTitle('Add essential person properties')
+						.setIcon('user')
+						.onClick(async () => {
+							await addEssentialPersonProperties(plugin, [file]);
+						});
+				});
+
+				propsSubmenu.addItem((propItem) => {
+					propItem
+						.setTitle('Add essential place properties')
+						.setIcon('map-pin')
+						.onClick(async () => {
+							await addEssentialPlaceProperties(plugin, [file]);
+						});
+				});
+			});
+
+			// Add cr_id only
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Add cr_id')
+					.setIcon('key')
+					.onClick(async () => {
+						await addCrId(plugin, [file]);
+					});
+			});
+		});
+	} else {
+		// Mobile: flat menu for universe notes
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Open universes tab')
+				.setIcon('globe')
+				.onClick(() => {
+					const modal = new ControlCenterModal(plugin.app, plugin);
+					modal.openToTab('universes');
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Edit universe')
+				.setIcon('edit')
+				.onClick(() => {
+					openEditUniverseModal(plugin, file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Delete universe')
+				.setIcon('trash')
+				.onClick(async () => {
+					const universeName = cache?.frontmatter?.name || file.basename;
+					const confirmed = await confirmDeleteUniverse(plugin, universeName);
+					if (confirmed) {
+						await plugin.app.fileManager.trashFile(file);
+						new Notice(`Deleted universe: ${universeName}`);
+					}
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add essential universe properties')
+				.setIcon('globe')
+				.onClick(async () => {
+					await addEssentialUniverseProperties(plugin, [file]);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add essential person properties')
+				.setIcon('user')
+				.onClick(async () => {
+					await addEssentialPersonProperties(plugin, [file]);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add essential place properties')
+				.setIcon('map-pin')
+				.onClick(async () => {
+					await addEssentialPlaceProperties(plugin, [file]);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Add cr_id')
+				.setIcon('key')
+				.onClick(async () => {
+					await addCrId(plugin, [file]);
 				});
 		});
 	}
