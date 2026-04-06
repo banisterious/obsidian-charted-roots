@@ -541,6 +541,15 @@ export class MapView extends ItemView {
 				});
 		});
 
+		menu.addItem((item) => {
+			item.setTitle('All places')
+				.setChecked(this.layers.places)
+				.onClick(() => {
+					this.layers.places = !this.layers.places;
+					this.mapController?.setLayerVisibility(this.layers);
+				});
+		});
+
 		menu.addSeparator();
 
 		menu.addItem((item) => {
@@ -568,17 +577,6 @@ export class MapView extends ItemView {
 				});
 			}
 		}
-
-		menu.addSeparator();
-
-		menu.addItem((item) => {
-			item.setTitle('All places')
-				.setChecked(this.layers.places)
-				.onClick(() => {
-					this.layers.places = !this.layers.places;
-					this.mapController?.setLayerVisibility(this.layers);
-				});
-		});
 
 		menu.showAtMouseEvent(e);
 	}
