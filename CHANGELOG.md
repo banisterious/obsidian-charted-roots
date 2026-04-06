@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Heat map intensity toggle and customizable presets** ([#336](https://github.com/banisterious/obsidian-charted-roots/issues/336)): The map Layers menu now has a dedicated heat map section with low/medium/high intensity options. Default intensity configurable in Settings > Places. Each preset's radius, blur, and opacity values are fully customizable in Settings for fine-tuning. Per-point intensity scaling removed in favor of leaflet.heat's native relative density algorithm.
+
+### Changed
+
+- **Layers menu reorganized**: "All places" moved above the heat map section. Data layers (markers, paths, places) grouped together, with heat map as a visual overlay section at the bottom.
+
+---
+
 ## [0.20.49] - 2026-04-04
 
 ### Added
