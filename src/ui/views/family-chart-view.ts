@@ -1508,8 +1508,12 @@ export class FamilyChartView extends ItemView {
 		const lastName = d.data.data['last name'] || '';
 		const name = `${firstName} ${lastName}`.trim() || 'Unknown';
 
-		// Build label with optional dates
+		// Build label with optional alt name and dates
 		const parts = [name];
+		const altName = d.data.data['alt name'] as string;
+		if (altName) {
+			parts.push(altName);
+		}
 		if (this.showBirthDates && d.data.data.birthday) {
 			parts.push(d.data.data.birthday);
 		}
