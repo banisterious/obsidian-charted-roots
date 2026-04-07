@@ -1318,6 +1318,7 @@ export class FamilyChartView extends ItemView {
 				birthday: person.birthDate,
 				deathday: person.deathDate,
 				avatar,
+				'alt name': person.altName || '',
 			},
 			rels: {
 				parents,
@@ -4400,8 +4401,8 @@ export class FamilyChartView extends ItemView {
 	 * Build display fields array based on current name and date options (#90)
 	 * Each inner array is a line, with fields joined by space
 	 */
-	private buildDisplayFields(): string[][] {
-		const displayFields: string[][] = [];
+	private buildDisplayFields(): (string[] | ((data: Record<string, unknown>) => string))[] {
+		const displayFields: (string[] | ((data: Record<string, unknown>) => string))[] = [];
 
 		// Name display: split mode puts given/surname on separate lines
 		if (this.nameDisplayMode === 'split') {
@@ -4409,6 +4410,11 @@ export class FamilyChartView extends ItemView {
 			displayFields.push(['last name']);
 		} else {
 			displayFields.push(['first name', 'last name']);
+		}
+
+		// Alt name: only add if any person in the chart has one (#346)
+		if (this.hasAltNames()) {
+			displayFields.push((data: Record<string, unknown>) => (data['alt name'] as string) || '');
 		}
 
 		// Add dates
@@ -4425,12 +4431,20 @@ export class FamilyChartView extends ItemView {
 	}
 
 	/**
+	 * Check if any person in the current chart data has an alt_name
+	 */
+	private hasAltNames(): boolean {
+		return this.chartData.some(p => !!(p.data['alt name']));
+	}
+
+	/**
 	 * Calculate total content lines for card height calculation (#90)
 	 */
 	private calculateContentLines(): number {
 		const nameLines = this.nameDisplayMode === 'split' ? 2 : 1;
+		const altNameLine = this.hasAltNames() ? 1 : 0;
 		const dateLines = (this.showBirthDates ? 1 : 0) + (this.showDeathDates ? 1 : 0);
-		return nameLines + dateLines;
+		return nameLines + altNameLine + dateLines;
 	}
 
 	/**
