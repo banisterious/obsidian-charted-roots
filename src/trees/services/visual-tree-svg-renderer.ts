@@ -421,6 +421,11 @@ export class VisualTreeSvgRenderer {
 	): string[] {
 		const lines: string[] = [node.person.name];
 
+		// Alt name (#348)
+		if (node.person.altName) {
+			lines.push(node.person.altName);
+		}
+
 		if (nodeContent === 'name-dates' || nodeContent === 'name-dates-places') {
 			// Format dates more compactly
 			if (node.person.birthDate) {

@@ -123,6 +123,7 @@ type RelationshipType = 'parent-child' | 'spouse' | 'unknown';
  */
 interface PersonDetails {
 	name: string;
+	altName?: string;
 	birthDate?: string;
 	deathDate?: string;
 	birthPlace?: string;
@@ -408,6 +409,7 @@ export class ExcalidrawExporter {
 
 			return {
 				name,
+				altName: fm.alt_name ? String(fm.alt_name) : undefined,
 				birthDate: this.formatDate(birthDate),
 				deathDate: this.formatDate(deathDate),
 				birthPlace,
@@ -613,6 +615,11 @@ export class ExcalidrawExporter {
 		// Name (wiki link is set separately via element's link property)
 		// Strip any wiki link syntax from the name
 		lines.push(this.stripWikiLinks(details.name));
+
+		// Alt name (#348)
+		if (details.altName) {
+			lines.push(details.altName);
+		}
 
 		// Date line (only for name-dates or name-dates-places)
 		if (contentLevel !== 'name' && (details.birthDate || details.deathDate)) {
