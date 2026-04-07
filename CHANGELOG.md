@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Alt name in Entity Profile View** ([#349](https://github.com/banisterious/obsidian-charted-roots/issues/349)): `alt_name` now displays below the main name in the profile header with muted styling.
+- **Alt name in map view popups** ([#347](https://github.com/banisterious/obsidian-charted-roots/issues/347)): `alt_name` now displays below the person name in map marker popups (birth, death, marriage, burial, and event markers).
+- **Alt name on tree chart nodes** ([#348](https://github.com/banisterious/obsidian-charted-roots/issues/348)): `alt_name` now displays as an additional text line on SVG tree chart nodes and Excalidraw export nodes.
+
+---
+
 ## [0.20.52] - 2026-04-07
 
 ### Added
