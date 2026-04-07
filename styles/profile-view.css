@@ -780,6 +780,12 @@
   max-width: 200px;
 }
 
+.cr-profile__header-alt-name {
+  font-size: var(--font-ui-medium);
+  color: var(--text-muted);
+  margin-top: var(--size-2-1);
+}
+
 .cr-profile__header-name .cr-profile__edit-input {
   font-size: var(--font-ui-large);
   font-weight: var(--font-semibold);

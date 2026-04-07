@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-04-03 23:14:44 UTC
+ * - Generated: 2026-04-07 23:38:42 UTC
  * - Components: 48 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -39035,7 +39035,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: PROFILE-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1099 lines, 24.39 KB */
+/* Component Size: 1105 lines, 24.52 KB */
 
 /**
  * Entity Profile View Styles
@@ -39817,6 +39817,12 @@ body:has(.cr-media-linker) .suggestion-container {
 .cr-profile__edit-input {
   min-width: 60px;
   max-width: 200px;
+}
+
+.cr-profile__header-alt-name {
+  font-size: var(--font-ui-medium);
+  color: var(--text-muted);
+  margin-top: var(--size-2-1);
 }
 
 .cr-profile__header-name .cr-profile__edit-input {
@@ -40617,11 +40623,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-04-03 23:14:44 UTC
+ * Build completed: 2026-04-07 23:38:43 UTC
  * Components processed: 48
- * Total lines: 40162
- * Total size: 808.07 KB
- * Build duration: 0.36 seconds
+ * Total lines: 40168
+ * Total size: 808.19 KB
+ * Build duration: 0.95 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -40668,7 +40674,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - preferences.css: 431 lines, 9.44 KB
  * - tree-output.css: 1548 lines, 30.41 KB
  * - dynamic-content.css: 1166 lines, 25.19 KB
- * - profile-view.css: 1099 lines, 24.39 KB
+ * - profile-view.css: 1105 lines, 24.52 KB
  * - calendar-view.css: 302 lines, 6.83 KB
  * - migration-notice.css: 135 lines, 2.67 KB
  * - responsive.css: 9 lines, 0.13 KB

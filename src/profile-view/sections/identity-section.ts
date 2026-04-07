@@ -121,6 +121,14 @@ function renderEntityName(
 	} else {
 		container.createEl('h2', { text: data.name, cls: 'cr-profile__header-name' });
 	}
+
+	// Alt name (#349)
+	if (data.entityType === 'person' && data.node.altName) {
+		container.createDiv({
+			text: data.node.altName,
+			cls: 'cr-profile__header-alt-name'
+		});
+	}
 }
 
 // ────────────────────────────────────────────────────────────
