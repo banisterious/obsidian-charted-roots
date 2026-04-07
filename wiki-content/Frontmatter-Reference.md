@@ -160,6 +160,7 @@ erDiagram
 |----------|------|-------------|---------|
 | `name` | `string` | Display name of the person | `"John Robert Smith"` |
 | `nickname` | `string` | Informal name, pet name, or alternate identity | `"Jack"`, `"The Colonel"` |
+| `alt_name` | `string` | Alternate name for multilingual display (shown as second line on Family Chart cards) | `"张三"`, `"Johann Müller"` |
 | `born` | `string` | Birth date (YYYY, YYYY-MM, YYYY-MM-DD, or with GEDCOM qualifiers like `ABT`, `BEF`, `AFT`) | `"1888-05-15"`, `"ABT 1888"` |
 | `died` | `string` | Death date (YYYY, YYYY-MM, YYYY-MM-DD, or with GEDCOM qualifiers) | `"1952-08-20"`, `"BEF 1953"` |
 | `birth_place` | `string` | Location of birth | `"London, England"` |
@@ -1113,7 +1114,7 @@ All person note properties can be aliased:
 
 | Category | Properties |
 |----------|------------|
-| Identity | `name`, `cr_id`, `sex`, `gender`, `gender_identity`, `pronouns`, `nickname`, `maiden_name` |
+| Identity | `name`, `cr_id`, `sex`, `gender`, `gender_identity`, `pronouns`, `nickname`, `alt_name`, `maiden_name` |
 | Dates | `born`, `died` |
 | Places | `birth_place`, `death_place` |
 | Relationships | `father`, `father_id`, `mother`, `mother_id`, `spouse`, `spouse_id`, `children`, `children_id` |
