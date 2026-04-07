@@ -111,6 +111,7 @@ export interface PersonNode {
 	nameSuffix?: string;         // Name suffix (NSFX: "Jr.", "III")
 	surnamePrefix?: string;      // Surname prefix (SPFX: "von", "de la")
 	nickname?: string;           // Nickname (NICK)
+	altName?: string;            // Alternate name for multilingual display (#346)
 
 	// GEDCOM attributes (#317)
 	burialDate?: string;         // Burial date (BURI.DATE)
@@ -1639,6 +1640,7 @@ export class FamilyGraphService {
 		const nameSuffix = this.resolveProperty<string>(fm, 'name_suffix');
 		const surnamePrefix = this.resolveProperty<string>(fm, 'surname_prefix');
 		const nickname = this.resolveProperty<string>(fm, 'nickname');
+		const altName = this.resolveProperty<string>(fm, 'alt_name');
 
 		// GEDCOM attributes (#317)
 		const burialDate = this.resolveProperty<string>(fm, 'burial_date');
@@ -1728,6 +1730,7 @@ export class FamilyGraphService {
 			nameSuffix,
 			surnamePrefix,
 			nickname,
+			altName,
 			// GEDCOM attributes (#317)
 			burialDate,
 			deathCause,
