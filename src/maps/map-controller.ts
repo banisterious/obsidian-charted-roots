@@ -684,6 +684,14 @@ export class MapController {
 			text: data.personName
 		});
 
+		// Alt name (#347)
+		if (data.altName) {
+			container.createEl('div', {
+				cls: 'cr-map-popup-alt-name',
+				text: data.altName
+			});
+		}
+
 		// Get event type info and icon mode
 		const iconMode = this.settings.eventIconMode || 'text';
 		const showIcon = iconMode === 'icon' || iconMode === 'both';

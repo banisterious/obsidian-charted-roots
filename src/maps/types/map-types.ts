@@ -96,6 +96,8 @@ export interface MapMarker {
 	dateTo?: string;
 	/** End year extracted from dateTo (for filtering) */
 	yearTo?: number;
+	/** Alternate name for multilingual display (#347) */
+	altName?: string;
 }
 
 /**

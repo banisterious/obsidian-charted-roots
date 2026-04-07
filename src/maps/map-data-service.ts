@@ -78,6 +78,8 @@ interface PersonData {
 	burialPlace?: string;
 	burialPlaceId?: string;
 	collection?: string;
+	/** Alternate name for multilingual display (#347) */
+	altName?: string;
 	/** Life events from the events array */
 	events?: LifeEvent[];
 }
@@ -313,6 +315,7 @@ export class MapDataService {
 				burialPlace: this.extractPlaceString(fm.burial_place),
 				burialPlaceId: fm.burial_place_id,
 				collection: fm.collection,
+				altName: fm.alt_name ? fmToString(fm.alt_name) : undefined,
 				events: this.parseEventsArray(fm.events)
 			};
 
@@ -525,7 +528,8 @@ export class MapDataService {
 			year,
 			collection: person.collection,
 			universe: place.universe,
-			placeCategory: place.category
+			placeCategory: place.category,
+			altName: person.altName
 		};
 	}
 
@@ -572,7 +576,8 @@ export class MapDataService {
 			description: event.description,
 			collection: person.collection,
 			universe: place.universe,
-			placeCategory: place.category
+			placeCategory: place.category,
+			altName: person.altName
 		};
 	}
 
