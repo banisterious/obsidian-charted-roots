@@ -315,6 +315,7 @@ function personNoteToFamilyChart(person: PersonNode): FamilyChartPerson {
             gender: mapGender(person.sex),
             birthday: person.born,
             deathday: person.died,
+            'alt name': person.altName || '',
         },
         rels: {
             father: person.fatherId,

@@ -4464,7 +4464,7 @@ export class FamilyChartView extends ItemView {
 				// Height: ~15px per line + padding
 				return {
 					w: 180,
-					h: 35 + (lines - 1) * 15,
+					h: 35 + (lines - 1) * 15 + (0),
 					text_x: 10,
 					text_y: 12,
 					img_w: 0,
@@ -4478,7 +4478,7 @@ export class FamilyChartView extends ItemView {
 				// Height: 35px base + 15px per extra line
 				return {
 					w: 120,
-					h: 35 + (lines - 1) * 15,
+					h: 35 + (lines - 1) * 15 + (0),
 					text_x: 5,
 					text_y: 10,
 					img_w: 0,
