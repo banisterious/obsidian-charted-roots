@@ -487,6 +487,11 @@ export class FamilyChartView extends ItemView {
 		// Last name
 		this.createInfoField(fieldsSection, 'Last name', personData.data['last name'] || '');
 
+		// Alt name (#346)
+		if (personData.data['alt name']) {
+			this.createInfoField(fieldsSection, 'Alt name', personData.data['alt name'] as string);
+		}
+
 		// Birth date
 		this.createInfoField(fieldsSection, 'Birth date', personData.data.birthday || '');
 
@@ -4401,8 +4406,8 @@ export class FamilyChartView extends ItemView {
 	 * Build display fields array based on current name and date options (#90)
 	 * Each inner array is a line, with fields joined by space
 	 */
-	private buildDisplayFields(): (string[] | ((data: Record<string, unknown>) => string))[] {
-		const displayFields: (string[] | ((data: Record<string, unknown>) => string))[] = [];
+	private buildDisplayFields(): string[][] {
+		const displayFields: string[][] = [];
 
 		// Name display: split mode puts given/surname on separate lines
 		if (this.nameDisplayMode === 'split') {
@@ -4414,7 +4419,7 @@ export class FamilyChartView extends ItemView {
 
 		// Alt name: only add if any person in the chart has one (#346)
 		if (this.hasAltNames()) {
-			displayFields.push((data: Record<string, unknown>) => (data['alt name'] as string) || '');
+			displayFields.push(['alt name']);
 		}
 
 		// Add dates
