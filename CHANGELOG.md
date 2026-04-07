@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Alt name display on Family Chart cards** ([#346](https://github.com/banisterious/obsidian-charted-roots/issues/346)): New `alt_name` frontmatter property for person notes, displayed as a second line below the main name on Family Chart View cards and in the Person details panel. Designed for multilingual genealogy (e.g., Chinese + romanized names). Card height auto-adjusts when any person has an alt name.
+
+---
+
 ## [0.20.51] - 2026-04-06
 
 ### Fixed
