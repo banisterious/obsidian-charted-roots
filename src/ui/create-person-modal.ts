@@ -26,97 +26,18 @@ import { splitAndTrim } from '../utils/format-utils';
 import { CreateEventModal } from '../events/ui/create-event-modal';
 import { getSourceType, FACT_KEYS, FACT_KEY_LABELS, FACT_KEY_TO_SOURCED_PROPERTY, SOURCED_PROPERTY_NAMES } from '../sources/types/source-types';
 import type { FactKey, SourcedPropertyName } from '../sources/types/source-types';
-
-/**
- * Relationship field data
- */
-interface RelationshipField {
-	crId?: string;
-	name?: string;
-}
-
-/**
- * Multi-relationship field data (for children)
- */
-interface MultiRelationshipField {
-	crIds: string[];
-	names: string[];
-}
-
-/**
- * Marriage status options
- */
-type MarriageStatus = 'current' | 'divorced' | 'widowed' | 'separated' | 'annulled';
-
-/**
- * Spouse with marriage metadata for enhanced spouse tracking (#204)
- */
-interface SpouseWithMetadata {
-	crId: string;
-	name: string;
-	marriageDate?: string;
-	marriageLocation?: string;
-	marriageLocationCrId?: string;
-	marriageStatus?: MarriageStatus;
-	divorceDate?: string;
-}
-
-/**
- * Multi-relationship field data with per-spouse metadata
- */
-interface SpousesFieldData {
-	spouses: SpouseWithMetadata[];
-}
-
-/**
- * Form data structure for persistence
- */
-interface PersonFormData {
-	name?: string;
-	sex?: string;
-	pronouns?: string[];
-	birthDate?: string;
-	deathDate?: string;
-	occupation?: string;
-	researchLevel?: ResearchLevel;
-	collection?: string;
-	universe?: string;
-	directory?: string;
-	includeDynamicBlocks?: boolean;
-	// Relationship fields
-	fatherCrId?: string;
-	fatherName?: string;
-	motherCrId?: string;
-	motherName?: string;
-	// Spouses (multi-relationship with optional metadata)
-	spouseCrIds?: string[];
-	spouseNames?: string[];
-	spouseMetadata?: SpouseWithMetadata[];
-	stepfatherCrId?: string;
-	stepfatherName?: string;
-	stepmotherCrId?: string;
-	stepmotherName?: string;
-	adoptiveFatherCrId?: string;
-	adoptiveFatherName?: string;
-	adoptiveMotherCrId?: string;
-	adoptiveMotherName?: string;
-	// Gender-neutral parents (multi-relationship)
-	parentCrIds?: string[];
-	parentNames?: string[];
-	// Children fields
-	childCrIds?: string[];
-	childNames?: string[];
-	// Place fields
-	birthPlaceCrId?: string;
-	birthPlaceName?: string;
-	deathPlaceCrId?: string;
-	deathPlaceName?: string;
-	// Sources fields
-	sourceCrIds?: string[];
-	sourceNames?: string[];
-	// Fact-level source tracking
-	sourcedFacts?: Record<string, string[]>;
-}
+import {
+	getContrastColor,
+	matchesPersonReference,
+} from './create-person-types';
+import type {
+	RelationshipField,
+	MultiRelationshipField,
+	MarriageStatus,
+	SpouseWithMetadata,
+	SpousesFieldData,
+	PersonFormData,
+} from './create-person-types';
 
 /**
  * Modal for creating or editing person notes
@@ -1907,7 +1828,7 @@ export class CreatePersonModal extends Modal {
 							typeBadge.setText(typeDef.name);
 							if (typeDef.color) {
 								typeBadge.style.setProperty('background-color', typeDef.color);
-								typeBadge.style.setProperty('color', this.getContrastColor(typeDef.color));
+								typeBadge.style.setProperty('color', getContrastColor(typeDef.color));
 							}
 						} else {
 							typeBadge.setText(source.sourceType);
@@ -2057,7 +1978,7 @@ export class CreatePersonModal extends Modal {
 						typeBadge.setText(typeDef.name);
 						if (typeDef.color) {
 							typeBadge.style.setProperty('background-color', typeDef.color);
-							typeBadge.style.setProperty('color', this.getContrastColor(typeDef.color));
+							typeBadge.style.setProperty('color', getContrastColor(typeDef.color));
 						}
 					} else {
 						typeBadge.setText(event.eventType);
@@ -2257,14 +2178,14 @@ export class CreatePersonModal extends Modal {
 		return allEvents.filter(event => {
 			// Check singular person property
 			if (event.person) {
-				const personMatch = this.matchesPersonReference(event.person, personName, personCrId);
+				const personMatch = matchesPersonReference(event.person, personName, personCrId);
 				if (personMatch) return true;
 			}
 
 			// Check plural persons property
 			if (event.persons && event.persons.length > 0) {
 				for (const p of event.persons) {
-					if (this.matchesPersonReference(p, personName, personCrId)) {
+					if (matchesPersonReference(p, personName, personCrId)) {
 						return true;
 					}
 				}
@@ -2274,38 +2195,9 @@ export class CreatePersonModal extends Modal {
 		});
 	}
 
-	/**
-	 * Check if a person reference (wikilink) matches the current person
-	 */
-	private matchesPersonReference(reference: string, personName: string | undefined, personCrId: string | undefined): boolean {
-		// Extract name from wikilink: [[Name]] or "[[Name]]"
-		const match = reference.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/);
-		const refName = match ? match[1] : reference;
+	// matchesPersonReference is imported from create-person-types.ts
 
-		// Match by name
-		if (personName && refName.toLowerCase() === personName.toLowerCase()) {
-			return true;
-		}
-
-		// Match by cr_id if present in reference (less common but possible)
-		if (personCrId && reference.includes(personCrId)) {
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Get contrasting text color for a background color
-	 */
-	private getContrastColor(hexColor: string): string {
-		const hex = hexColor.replace('#', '');
-		const r = parseInt(hex.substring(0, 2), 16);
-		const g = parseInt(hex.substring(2, 4), 16);
-		const b = parseInt(hex.substring(4, 6), 16);
-		const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-		return luminance > 0.5 ? '#000000' : '#ffffff';
-	}
+	// getContrastColor is imported from create-person-types.ts
 
 	/**
 	 * Create single spouse field for create mode (simplified UX)
