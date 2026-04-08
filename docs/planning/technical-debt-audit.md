@@ -190,8 +190,8 @@ Not urgent — readability is already substantially improved. Prioritize if merg
 - [ ] family-chart-view.ts — extract services
 - [ ] cleanup-wizard-modal.ts — extract step renderers
 
-### Phase 5 — Minor cleanup
-- [ ] Convert `@ts-ignore` to `@ts-expect-error`
-- [ ] Review `as any` and non-justified suppressions
-- [ ] File issues for actionable TODOs
-- [ ] Remove unused exports
+### Phase 5 — Minor cleanup ✅
+- [x] Convert `@ts-ignore` to `@ts-expect-error` — no `@ts-ignore` found in codebase (already clean)
+- [x] Review `as any` — replaced 1 instance in relationship-service.ts with `Record<string, unknown>`. Remaining `as any` is in excalidraw-automate.d.ts (type definition comment, acceptable)
+- [x] File issues for actionable TODOs — no TODO comments found in codebase (already cleaned up)
+- [x] Remove unused exports — removed `formatDecimal` from coordinate-converter.ts
