@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.20.x](#v020x)
+  - [Alt Name Display](#alt-name-display-v02052v02053)
   - [Calendar View](#calendar-view-v02047)
   - [Source Note Hierarchies](#source-note-hierarchies-v02046)
   - [Source Hierarchy Display](#source-hierarchy-display-v02046)
@@ -127,6 +128,25 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.20.x
+
+### Alt Name Display (v0.20.52–v0.20.53)
+
+New `alt_name` frontmatter property for person notes, designed for multilingual genealogy where both native script and romanized names need to be visible at a glance.
+
+**GitHub Issues:** [#346](https://github.com/banisterious/obsidian-charted-roots/issues/346), [#347](https://github.com/banisterious/obsidian-charted-roots/issues/347), [#348](https://github.com/banisterious/obsidian-charted-roots/issues/348), [#349](https://github.com/banisterious/obsidian-charted-roots/issues/349)
+
+**Where alt name displays:**
+- Family Chart View cards (below main name, with auto-adjusting card height)
+- Family Chart Person details panel
+- Entity Profile View header (muted styling)
+- Map view marker popups (birth, death, marriage, burial, event markers)
+- SVG visual tree chart nodes (all layout algorithms)
+- Excalidraw export nodes
+- Circle card style (Family Chart)
+
+**Documentation:** [Frontmatter Reference — alt_name](Frontmatter-Reference#basic-information), [Data Entry — Alternate Name](Data-Entry#alternate-name-alt_name)
+
+---
 
 ### Calendar View (v0.20.47)
 

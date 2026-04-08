@@ -132,6 +132,21 @@ Children are stored using two array properties:
 
 The Edit Modal header displays the person's nickname (if set) alongside their formal name, making it easy to identify people with informal names.
 
+### Alternate Name (`alt_name`)
+
+For multilingual genealogy, the `alt_name` property displays an alternate name (e.g., native script alongside romanized form) across all views:
+
+```yaml
+alt_name: 张三
+```
+
+When set, the alternate name appears:
+- Below the main name on **Family Chart View** cards
+- In the **Person details** panel of the Family Chart
+- Below the person name in **map view** marker popups
+- In the **Entity Profile View** header
+- On **visual tree chart** nodes (SVG and Excalidraw export)
+
 ---
 
 ## Quick Start: Adding Properties via Context Menu
