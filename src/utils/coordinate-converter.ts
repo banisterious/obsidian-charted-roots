@@ -234,14 +234,6 @@ export function parseLongitude(input: string): number | null {
 /**
  * Format a decimal degrees value as a string.
  *
- * @param value The decimal degrees value
- * @param precision Number of decimal places (default: 6)
- * @returns Formatted string
- */
-export function formatDecimal(value: number, precision = 6): string {
-	return value.toFixed(precision);
-}
-
 /**
  * Check if a string appears to be in DMS format.
  * Useful for determining whether to show conversion preview.
