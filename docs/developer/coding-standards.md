@@ -1331,19 +1331,37 @@ DynamicContentService.renderBlockError(el, 'Could not find person note');
 DynamicContentService.renderBlockLoading(el, 'Loading timeline...');
 ```
 
-### Graph Factory (src/core/family-graph.ts)
+### Service Access Patterns
+
+When plugin access is available, always use the plugin's factory/getter methods instead of constructing services directly. These methods handle all configuration (folder filters, property aliases, value aliases, settings) automatically.
 
 ```typescript
-// ✅ CORRECT — use the plugin's factory method
-const graphService = this.plugin.createFamilyGraphService();
+// ✅ CORRECT — use plugin factory/getter methods
+const familyGraph = this.plugin.createFamilyGraphService();
+const placeGraph = this.plugin.createPlaceGraphService();
+const sourceService = this.plugin.getSourceService();
 
 // ❌ WRONG — constructing and configuring manually
-const graphService = new FamilyGraphService(this.app);
-graphService.setFolderFilter(/* ... */);
-// ... duplicated configuration
+const familyGraph = new FamilyGraphService(this.app);
+familyGraph.setFolderFilter(new FolderFilterService(this.plugin.settings));
+familyGraph.setPropertyAliases(this.plugin.settings.propertyAliases);
+// ... duplicated configuration that may miss required setup steps
 ```
 
-The factory method applies folder filters, template filters, and current settings automatically. Used by 12+ report generators and UI components.
+| Service | Plugin method | Pattern | Notes |
+|---------|--------------|---------|-------|
+| `FamilyGraphService` | `createFamilyGraphService()` | Factory (new instance each call) | Sets folder filter, property/value aliases, settings, person index |
+| `PlaceGraphService` | `createPlaceGraphService()` | Factory (new instance each call) | Sets folder filter, settings, value aliases |
+| `SourceService` | `getSourceService()` | Lazy singleton | Created on first call, reused thereafter |
+| `EventService` | `getEventService()` | Singleton (created in onload) | Returns null if not yet initialized |
+
+For service-layer code without plugin access (exporters, report generators), accept an optional service parameter with a fallback:
+
+```typescript
+constructor(app: App, settings: Settings, sourceService?: SourceService) {
+    this.sourceService = sourceService ?? new SourceService(app, settings);
+}
+```
 
 ---
 

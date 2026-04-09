@@ -253,6 +253,8 @@ src/maps/ui/
 
 **Service initialization:**
 
+> **Note:** When plugin access is available, prefer `plugin.createFamilyGraphService()` and `plugin.createPlaceGraphService()` over manual construction. See [Coding Standards — Service Access Patterns](../coding-standards.md#service-access-patterns).
+
 ```typescript
 constructor(
   private app: App,
