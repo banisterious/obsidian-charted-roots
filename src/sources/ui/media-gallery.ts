@@ -10,6 +10,7 @@ import type CanvasRootsPlugin from '../../../main';
 import type { SourceNote } from '../types/source-types';
 import { getSourceType } from '../types/source-types';
 import { openGalleryLightbox, type LightboxItem } from '../../ui/media-lightbox-modal';
+import { PdfThumbnailService } from '../../core/pdf-thumbnail-service';
 
 /**
  * Supported image extensions for thumbnails
@@ -322,8 +323,22 @@ function renderMediaThumbnail(
 			openMediaLightbox(plugin, item, allItems);
 		});
 	} else if (item.type === 'document') {
-		// Render document placeholder
-		renderPlaceholder(thumbnail, 'file-text');
+		// PDF thumbnail (#350)
+		if (item.file && item.file.extension === 'pdf') {
+			renderPlaceholder(thumbnail, 'file-text'); // Placeholder while loading
+			const pdfService = new PdfThumbnailService(plugin.app);
+			void pdfService.getThumbnail(item.file).then(dataUrl => {
+				if (dataUrl) {
+					thumbnail.empty();
+					thumbnail.createEl('img', {
+						cls: 'cr-media-thumbnail-image',
+						attr: { src: dataUrl, alt: item.displayName, loading: 'lazy' }
+					});
+				}
+			});
+		} else {
+			renderPlaceholder(thumbnail, 'file-text');
+		}
 
 		// Click to open file
 		if (item.file) {
