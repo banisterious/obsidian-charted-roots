@@ -234,8 +234,9 @@ Charted Roots supports a variety of media file types:
 
 **Notes:**
 - Images display as thumbnails in galleries and on Family Chart cards
-- Non-image files display with type-specific placeholder icons
-- PDFs can be opened directly in Obsidian
+- **PDFs display a first-page thumbnail preview** in the media block, Sources tab gallery, and Entity Profile View media section. The thumbnail is generated using Obsidian's built-in PDF.js and cached in memory for fast subsequent renders.
+- Non-image, non-PDF files display with type-specific placeholder icons
+- Clicking a PDF thumbnail opens it in Obsidian's PDF viewer (compatible with PDF++)
 
 ---
 

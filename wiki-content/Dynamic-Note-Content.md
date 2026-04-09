@@ -241,7 +241,8 @@ size: medium
 **What it displays:**
 - All media files linked via the `media` frontmatter property
 - Image thumbnails in a responsive grid
-- Document placeholders for non-image files (PDFs, etc.)
+- PDF first-page thumbnail previews (generated via Obsidian's built-in PDF.js)
+- Document placeholders for other non-image files
 - First item highlighted as the "thumbnail" (used for Family Chart avatars)
 
 **Configuration options:**

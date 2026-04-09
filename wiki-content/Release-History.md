@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.20.x](#v020x)
+  - [PDF Previews in Media](#pdf-previews-in-media-v02054)
   - [Alt Name Display](#alt-name-display-v02052v02053)
   - [Calendar View](#calendar-view-v02047)
   - [Source Note Hierarchies](#source-note-hierarchies-v02046)
@@ -128,6 +129,28 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.20.x
+
+### PDF Previews in Media (v0.20.54)
+
+PDFs attached to person and source notes now show a first-page thumbnail preview instead of a generic file icon.
+
+**GitHub Issue:** [#350](https://github.com/banisterious/obsidian-charted-roots/issues/350)
+
+**Where PDF thumbnails display:**
+- `charted-roots-media` dynamic block in reading view
+- Sources tab media gallery in Control Center
+- Entity Profile View media section
+
+**Implementation:**
+- Uses Obsidian's built-in `loadPdfJs()` API (no bundled dependencies)
+- Thumbnails rendered at 200×280px from the first page
+- In-memory cache for fast subsequent renders
+- Async generation with placeholder fallback
+- Click behavior unchanged (opens in Obsidian's PDF viewer, compatible with PDF++)
+
+**Documentation:** [Media Management](Media-Management#supported-file-types), [Dynamic Note Content — Media Block](Dynamic-Note-Content#media-block)
+
+---
 
 ### Alt Name Display (v0.20.52–v0.20.53)
 
