@@ -11,6 +11,7 @@ import type { DynamicBlockContext, DynamicBlockConfig } from '../services/dynami
 import type { DynamicContentService } from '../services/dynamic-content-service';
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
 import { openGalleryLightbox, type LightboxItem } from '../../ui/media-lightbox-modal';
+import { PdfThumbnailService } from '../../core/pdf-thumbnail-service';
 
 /**
  * Media item extracted from frontmatter
@@ -52,10 +53,12 @@ export class MediaRenderer {
 	private gridElement: HTMLElement | null = null;
 	private draggedItem: HTMLElement | null = null;
 	private draggedIndex: number = -1;
+	private pdfThumbnailService: PdfThumbnailService;
 
 	constructor(plugin: CanvasRootsPlugin, service: DynamicContentService) {
 		this.plugin = plugin;
 		this.service = service;
+		this.pdfThumbnailService = new PdfThumbnailService(plugin.app);
 	}
 
 	/**
@@ -427,6 +430,43 @@ export class MediaRenderer {
 				badge.setAttribute('aria-label', 'This image is used as the thumbnail');
 			}
 
+		} else if (item.extension === 'pdf' && item.file) {
+			// Render PDF thumbnail (#350)
+			itemEl.addClass('cr-media__item--pdf');
+
+			// Show placeholder while thumbnail generates
+			const placeholderEl = itemEl.createDiv({ cls: 'cr-media__doc-icon' });
+			setIcon(placeholderEl, 'file-text');
+
+			const nameEl = itemEl.createDiv({ cls: 'cr-media__doc-name' });
+			nameEl.textContent = item.file.basename || 'PDF';
+
+			// Generate thumbnail asynchronously
+			void this.pdfThumbnailService.getThumbnail(item.file).then(dataUrl => {
+				if (dataUrl) {
+					placeholderEl.remove();
+					nameEl.remove();
+					const img = itemEl.createEl('img', {
+						cls: 'cr-media__pdf-thumb',
+						attr: {
+							src: dataUrl,
+							alt: item.file?.basename || 'PDF preview',
+							loading: 'lazy'
+						}
+					});
+					img.addEventListener('error', () => {
+						img.remove();
+						const fallback = itemEl.createDiv({ cls: 'cr-media__doc-icon' });
+						setIcon(fallback, 'file-text');
+					});
+				}
+			});
+
+			// Click opens PDF in Obsidian viewer
+			const clickEvent = this.isEditable ? 'dblclick' : 'click';
+			itemEl.addEventListener(clickEvent, () => {
+				void this.plugin.app.workspace.openLinkText(item.path, '', false);
+			});
 		} else {
 			// Render document placeholder
 			itemEl.addClass('cr-media__item--doc');
