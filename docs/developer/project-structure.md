@@ -42,7 +42,8 @@ charted-roots/
 │   │   ├── base-templates.ts      # Base template creators (9 functions)
 │   │   ├── bulk-operations.ts     # Bulk operation commands (11 operations)
 │   │   ├── commands.ts            # Command registration and event handlers
-│   │   └── context-menus.ts       # File context menu implementation
+│   │   ├── context-menus.ts       # File context menu dispatcher + entity builders
+│   │   └── context-menu-helpers.ts # Exported helper functions for context menus
 │   ├── core/                  # Core business logic
 │   │   ├── bidirectional-linker.ts   # Automatic relationship sync
 │   │   ├── canvas-generator.ts       # Canvas JSON generation
@@ -524,6 +525,7 @@ charted-roots/
 | `validation-results-modal.ts` | ✅ Complete | Display validation results for relationship data |
 | `add-relationship-modal.ts` | ✅ Complete | Modal for adding parent/spouse/child relationships |
 | `create-person-modal.ts` | ✅ Complete | Modal for creating new person notes |
+| `create-person-types.ts` | ✅ Complete | Types and utilities extracted from create-person-modal |
 | `duplicate-detection-modal.ts` | ✅ Complete | Duplicate person detection and merge wizard |
 | `merge-wizard-modal.ts` | ✅ Complete | Guided merge workflow for duplicate records |
 | `split-wizard-modal.ts` | ✅ Complete | Split incorrectly merged person records |
@@ -537,6 +539,7 @@ charted-roots/
 | `export-wizard-modal.ts` | ✅ Complete | Unified export wizard |
 | `import-export-hub-modal.ts` | ✅ Complete | Import/export hub with format selection |
 | `cleanup-wizard-modal.ts` | ✅ Complete | Post-import cleanup operations |
+| `cleanup-wizard-types.ts` | ✅ Complete | Types, step configs, and utilities extracted from cleanup wizard |
 | `staging-management-modal.ts` | ✅ Complete | Manage web clipper staging area |
 | `create-place-modal.ts` | ✅ Complete | Modal for creating place notes |
 | `create-note-modal.ts` | ✅ Complete | Modal for creating generic notes |
@@ -548,6 +551,7 @@ charted-roots/
 | `command-menu-modal.ts` | ✅ Complete | Searchable categorized command launcher |
 | **Dockable Views** | | |
 | `views/family-chart-view.ts` | ✅ Complete | Interactive family chart (family-chart library) |
+| `views/family-chart-export.ts` | ✅ Complete | Export functionality (PNG, SVG, PDF, ODT) extracted from chart view |
 | `views/map-view.ts` | ✅ Complete | Leaflet map view with markers |
 | **Shared** | | |
 | `shared/card-component.ts` | ✅ Complete | Reusable card UI component |
