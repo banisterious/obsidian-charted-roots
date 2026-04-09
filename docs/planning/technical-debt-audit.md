@@ -173,17 +173,20 @@ Proposed structure:
 
 Not urgent — readability is already substantially improved. Prioritize if merge conflicts become frequent.
 
-### Phase 3 — Standardize service access (partially complete)
+### Phase 3 — Standardize service access ✅
 - [x] Added `getSourceService()` to plugin class (lazy-initialized singleton)
 - [x] Migrated 22 of 31 direct `new SourceService()` calls to `plugin.getSourceService()`
   - 14 UI/processor files: replaced with `plugin.getSourceService()` directly
   - 7 UI files (create-person-modal, export-wizard, media modals): replaced with `this.plugin.getSourceService()`
   - 9 service/exporter/report files: added optional `sourceService?` constructor parameter with `?? new SourceService()` fallback
-- [ ] Migrate 33 direct `new FamilyGraphService()` calls to `plugin.createFamilyGraphService()`
-  - Direct calls manually repeat `setFolderFilter`, `setPropertyAliases`, `setValueAliases` setup
-  - Plugin method handles all setup automatically — migrating prevents missed setter bugs
-  - PlaceGraphService has same issue: 35 direct calls vs 23 via plugin method
-- Note: `createPlaceGraphService()` already exists on the plugin (audit incorrectly reported it as missing)
+- [x] Migrated 16 of 33 direct `new FamilyGraphService()` calls to `plugin.createFamilyGraphService()`
+  - 11 UI files (13 call sites): replaced setup blocks with factory call
+  - Fixed factory to include `setPropertyAliases` and `setValueAliases`
+  - 17 remain in service/exporter files without plugin access
+- [x] Migrated 21 of 35 direct `new PlaceGraphService()` calls to `plugin.createPlaceGraphService()`
+  - 13 UI files: replaced setup blocks with factory call
+  - 14 remain in exporter/service/modal files without plugin access
+- Note: Remaining unmigrated calls are in files that take `(app, settings)` without plugin access. Could add optional service parameters (like SourceService pattern) in a future pass.
 
 ### Phase 4 — Split remaining large files ✅
 - [x] create-person-modal.ts (3,334 → 3,226 lines): Extracted 6 type definitions and 2 pure utility functions to `create-person-types.ts`. Most methods tightly coupled to `this`, limiting further extraction.
