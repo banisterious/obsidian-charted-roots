@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **PDF previews in media blocks** ([#350](https://github.com/banisterious/obsidian-charted-roots/issues/350)): PDFs in the `charted-roots-media` dynamic block, Sources tab media gallery, and Entity Profile View media section now show a first-page thumbnail preview instead of a generic file icon. Uses Obsidian's built-in PDF.js with in-memory caching.
+
+---
+
 ## [0.20.53] - 2026-04-07
 
 ### Added
