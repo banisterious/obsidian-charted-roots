@@ -185,10 +185,10 @@ Not urgent — readability is already substantially improved. Prioritize if merg
   - PlaceGraphService has same issue: 35 direct calls vs 23 via plugin method
 - Note: `createPlaceGraphService()` already exists on the plugin (audit incorrectly reported it as missing)
 
-### Phase 4 — Split remaining large files (as needed)
-- [ ] create-person-modal.ts — extract form sections
-- [ ] family-chart-view.ts — extract services
-- [ ] cleanup-wizard-modal.ts — extract step renderers
+### Phase 4 — Split remaining large files ✅
+- [x] create-person-modal.ts (3,334 → 3,226 lines): Extracted 6 type definitions and 2 pure utility functions to `create-person-types.ts`. Most methods tightly coupled to `this`, limiting further extraction.
+- [x] family-chart-view.ts (5,366 → 3,668 lines): Extracted all export functionality (1,700 lines) to `family-chart-export.ts` using context-based delegation pattern. Export functions receive `FamilyChartExportContext` instead of `this`.
+- [x] cleanup-wizard-modal.ts (4,211 → 3,849 lines): Extracted 6 types, 3 constants (including 14 step configs), and 8 pure utility functions to `cleanup-wizard-types.ts`.
 
 ### Phase 5 — Minor cleanup ✅
 - [x] Convert `@ts-ignore` to `@ts-expect-error` — no `@ts-ignore` found in codebase (already clean)
