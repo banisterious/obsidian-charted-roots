@@ -134,12 +134,16 @@ export class PlacePickerModal extends Modal {
 		this.allPlaces = [];
 
 		// Always create a fresh PlaceGraphService to ensure we get current data
-		const graphService = new PlaceGraphService(this.app);
-		if (this.folderFilter) {
-			graphService.setFolderFilter(this.folderFilter);
-		}
-		if (this.settings) {
-			graphService.setSettings(this.settings);
+		const graphService = this.plugin
+			? this.plugin.createPlaceGraphService()
+			: new PlaceGraphService(this.app);
+		if (!this.plugin) {
+			if (this.folderFilter) {
+				graphService.setFolderFilter(this.folderFilter);
+			}
+			if (this.settings) {
+				graphService.setSettings(this.settings);
+			}
 		}
 		graphService.reloadCache(); // Force fresh load
 

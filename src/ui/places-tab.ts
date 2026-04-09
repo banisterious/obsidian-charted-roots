@@ -68,7 +68,7 @@ export function renderPlacesTab(
 				new CreatePlaceModal(plugin.app, {
 					directory: plugin.settings.placesFolder || '',
 					familyGraph: plugin.createFamilyGraphService(),
-					placeGraph: new PlaceGraphService(plugin.app),
+					placeGraph: plugin.createPlaceGraphService(),
 					settings: plugin.settings,
 					plugin,
 					onCreated: () => showTab('places')
@@ -182,9 +182,7 @@ function loadDataQualityCard(
 	});
 	navInfo.appendText('.');
 
-	const placeService = new PlaceGraphService(plugin.app);
-	placeService.setSettings(plugin.settings);
-	placeService.setValueAliases(plugin.settings.valueAliases);
+	const placeService = plugin.createPlaceGraphService();
 	placeService.reloadCache();
 
 	const stats = placeService.calculateStatistics();
@@ -339,9 +337,7 @@ function loadDataQualityCard(
 			batchAction: {
 				label: 'Bulk geocode all',
 				onClick: () => {
-					const placeGraph = new PlaceGraphService(plugin.app);
-					placeGraph.setSettings(plugin.settings);
-					placeGraph.setValueAliases(plugin.settings.valueAliases);
+					const placeGraph = plugin.createPlaceGraphService();
 					placeGraph.reloadCache();
 					new BulkGeocodeModal(plugin.app, placeGraph, {
 						onComplete: () => showTab('places')
@@ -362,9 +358,7 @@ function loadDataQualityCard(
 			action: {
 				label: 'Enrich hierarchy',
 				onClick: () => {
-					const placeGraph = new PlaceGraphService(plugin.app);
-					placeGraph.setSettings(plugin.settings);
-					placeGraph.setValueAliases(plugin.settings.valueAliases);
+					const placeGraph = plugin.createPlaceGraphService();
 					placeGraph.reloadCache();
 					new EnrichPlaceHierarchyModal(plugin.app, placeGraph, {
 						directory: plugin.settings.placesFolder || '',
@@ -727,9 +721,7 @@ function openPlaceForEditing(
 function loadPlaceStatistics(container: HTMLElement, plugin: CanvasRootsPlugin): void {
 	container.empty();
 
-	const placeService = new PlaceGraphService(plugin.app);
-	placeService.setSettings(plugin.settings);
-	placeService.setValueAliases(plugin.settings.valueAliases);
+	const placeService = plugin.createPlaceGraphService();
 	placeService.reloadCache();
 
 	const stats = placeService.calculateStatistics();
@@ -913,9 +905,7 @@ function loadPlaceList(
 ): void {
 	container.empty();
 
-	const placeService = new PlaceGraphService(plugin.app);
-	placeService.setSettings(plugin.settings);
-	placeService.setValueAliases(plugin.settings.valueAliases);
+	const placeService = plugin.createPlaceGraphService();
 	placeService.reloadCache();
 
 	const allPlaces = placeService.getAllPlaces();
@@ -1343,9 +1333,7 @@ function formatPlaceCategoryName(category: PlaceCategory): string {
  * Show modal to create missing place notes
  */
 function showCreateMissingPlacesModal(plugin: CanvasRootsPlugin, showTab: (tabId: string) => void): void {
-	const placeService = new PlaceGraphService(plugin.app);
-	placeService.setSettings(plugin.settings);
-	placeService.setValueAliases(plugin.settings.valueAliases);
+	const placeService = plugin.createPlaceGraphService();
 	placeService.reloadCache();
 
 	const references = placeService.getReferencedPlaces();
@@ -1392,7 +1380,7 @@ function showQuickCreatePlaceModal(
 		directory: plugin.settings.placesFolder || '',
 		initialName: placeName,
 		familyGraph: plugin.createFamilyGraphService(),
-		placeGraph: new PlaceGraphService(plugin.app),
+		placeGraph: plugin.createPlaceGraphService(),
 		settings: plugin.settings,
 		plugin,
 		onCreated: () => {
@@ -1774,9 +1762,7 @@ function addPlacesDockButton(card: HTMLElement, plugin: CanvasRootsPlugin): void
 export function renderPlacesList(options: PlacesListOptions): void {
 	const { container, plugin, onStateChange } = options;
 
-	const placeService = new PlaceGraphService(plugin.app);
-	placeService.setSettings(plugin.settings);
-	placeService.setValueAliases(plugin.settings.valueAliases);
+	const placeService = plugin.createPlaceGraphService();
 	placeService.reloadCache();
 
 	const allPlaces = placeService.getAllPlaces();

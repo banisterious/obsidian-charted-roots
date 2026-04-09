@@ -18,8 +18,6 @@ import type CanvasRootsPlugin from '../../../main';
 import { MediaService, type MediaEntityType } from '../media-service';
 import { BulkMediaLinkProgressModal } from './bulk-media-link-progress-modal';
 import { type PersonNode } from '../family-graph';
-import { PlaceGraphService } from '../place-graph';
-import { FolderFilterService } from '../folder-filter';
 import { EventService } from '../../events/services/event-service';
 import type { EventNote } from '../../events/types/event-types';
 import { OrganizationService } from '../../organizations/services/organization-service';
@@ -310,10 +308,7 @@ export class EntityPickerModal extends Modal {
 	 * Load all places
 	 */
 	private loadPlaces(): void {
-		const folderFilter = new FolderFilterService(this.plugin.settings);
-		const placeGraph = new PlaceGraphService(this.app);
-		placeGraph.setSettings(this.plugin.settings);
-		placeGraph.setFolderFilter(folderFilter);
+		const placeGraph = this.plugin.createPlaceGraphService();
 
 		const places = placeGraph.getAllPlaces();
 

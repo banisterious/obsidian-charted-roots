@@ -1078,7 +1078,7 @@ export class ControlCenterModal extends Modal {
 			directory: this.plugin.settings.placesFolder || '',
 			initialName: placeName,
 			familyGraph: this.plugin.createFamilyGraphService(),
-			placeGraph: new PlaceGraphService(this.app),
+			placeGraph: this.plugin.createPlaceGraphService(),
 			settings: this.plugin.settings,
 			plugin: this.plugin,
 			onCreated: () => {

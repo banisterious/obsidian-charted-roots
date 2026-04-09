@@ -19,7 +19,6 @@ import { MediaManagerModal } from '../core/ui/media-manager-modal';
 import { ImportExportHubModal } from './import-export-hub-modal';
 import { FamilyCreationWizardModal } from './family-creation-wizard';
 import { CommandMenuModal } from './command-menu-modal';
-import { PlaceGraphService } from '../core/place-graph';
 import { EventService } from '../events/services/event-service';
 import { StagingService } from '../core/staging-service';
 import type { RecentFileEntry } from '../settings';
@@ -216,7 +215,7 @@ function renderQuickActionsSection(
 		new CreatePlaceModal(app, {
 			directory: plugin.settings.placesFolder || 'Charted Roots/Places',
 			familyGraph: plugin.createFamilyGraphService(),
-			placeGraph: new PlaceGraphService(app),
+			placeGraph: plugin.createPlaceGraphService(),
 			settings: plugin.settings,
 			plugin,
 			onCreated: (file) => {
@@ -746,12 +745,7 @@ function openPlaceInMapView(
 	app: App
 ): void {
 	// Load place data to get coordinates
-	const placeGraph = new PlaceGraphService(app);
-	const folderFilter = plugin.getFolderFilter();
-	if (folderFilter) {
-		placeGraph.setFolderFilter(folderFilter);
-	}
-	placeGraph.setSettings(plugin.settings);
+	const placeGraph = plugin.createPlaceGraphService();
 
 	const allPlaces = placeGraph.getAllPlaces();
 	const place = allPlaces.find(p => p.filePath === placePath);

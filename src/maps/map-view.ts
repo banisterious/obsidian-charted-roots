@@ -16,7 +16,6 @@ import { PlacePickerModal, SelectedPlaceInfo } from '../ui/place-picker';
 import { UniverseSyncModal } from './ui/universe-sync-modal';
 import { GeocodingService } from './services/geocoding-service';
 import { PlaceCategory, UNIVERSE_CATEGORIES } from '../models/place';
-import { FolderFilterService } from '../core/folder-filter';
 import { PlaceGraphService } from '../core/place-graph';
 import type {
 	MapFilters,
@@ -714,10 +713,7 @@ export class MapView extends ItemView {
 	 * Open PlacePickerModal to select an existing place and update its coordinates
 	 */
 	private linkExistingPlaceToCoordinates(coords: { lat: number; lng: number; pixelX?: number; pixelY?: number }): void {
-		// Create services directly
-		const folderFilter = new FolderFilterService(this.plugin.settings);
-		const placeGraph = new PlaceGraphService(this.app);
-		placeGraph.setFolderFilter(folderFilter);
+		const placeGraph = this.plugin.createPlaceGraphService();
 
 		const isPixelMap = coords.pixelX !== undefined && coords.pixelY !== undefined;
 

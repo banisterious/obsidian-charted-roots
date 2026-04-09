@@ -794,8 +794,7 @@ export function renderMapsTab(options: MapsTabOptions): void {
 	const mapViewContent = mapViewCard.querySelector('.crc-card__content') as HTMLElement;
 
 	// Get place data for the map preview and statistics
-	const placeService = new PlaceGraphService(app);
-	placeService.setValueAliases(plugin.settings.valueAliases);
+	const placeService = plugin.createPlaceGraphService();
 	placeService.reloadCache();
 	const places = placeService.getAllPlaces();
 	const stats = placeService.calculateStatistics();

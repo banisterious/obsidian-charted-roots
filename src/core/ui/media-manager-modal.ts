@@ -19,10 +19,8 @@ import { SourceMediaLinkerModal } from '../../sources/ui/source-media-linker';
 import { MediaUploadModal } from './media-upload-modal';
 import { MediaPickerModal } from './media-picker-modal';
 import { EntityPickerModal } from './entity-picker-modal';
-import { PlaceGraphService } from '../place-graph';
 import { EventService } from '../../events/services/event-service';
 import { OrganizationService } from '../../organizations/services/organization-service';
-import { FolderFilterService } from '../folder-filter';
 
 /**
  * All supported media extensions
@@ -126,9 +124,7 @@ export class MediaManagerModal extends Modal {
 		}
 
 		// Places
-		const placeGraph = new PlaceGraphService(this.app);
-		placeGraph.setSettings(this.plugin.settings);
-		placeGraph.setFolderFilter(new FolderFilterService(this.plugin.settings));
+		const placeGraph = this.plugin.createPlaceGraphService();
 		const places = placeGraph.getAllPlaces();
 		for (const place of places) {
 			if (place.media && place.media.length > 0) {

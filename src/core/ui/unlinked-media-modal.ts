@@ -21,10 +21,8 @@ import {
 	PDF_EXTENSIONS,
 	DOCUMENT_EXTENSIONS
 } from '../media-service';
-import { PlaceGraphService } from '../place-graph';
 import { EventService } from '../../events/services/event-service';
 import { OrganizationService } from '../../organizations/services/organization-service';
-import { FolderFilterService } from '../folder-filter';
 
 /**
  * All supported media extensions
@@ -129,9 +127,7 @@ export class UnlinkedMediaModal extends Modal {
 		}
 
 		// Places
-		const placeGraph = new PlaceGraphService(this.app);
-		placeGraph.setSettings(this.plugin.settings);
-		placeGraph.setFolderFilter(new FolderFilterService(this.plugin.settings));
+		const placeGraph = this.plugin.createPlaceGraphService();
 
 		for (const place of placeGraph.getAllPlaces()) {
 			if (place.media && place.media.length > 0) {

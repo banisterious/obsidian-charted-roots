@@ -15,7 +15,6 @@ import { FamilyGraphService } from '../core/family-graph';
 import { FolderFilterService } from '../core/folder-filter';
 import { DataQualityService } from '../core/data-quality';
 import type { DataQualityReport, DataQualityIssue, IssueSeverity, IssueCategory } from '../core/data-quality';
-import { PlaceGraphService } from '../core/place-graph';
 import { EventService } from '../events/services/event-service';
 import { PlaceGeneratorModal } from '../enhancement/ui/place-generator-modal';
 import { FlattenNestedPropertiesModal } from './flatten-nested-properties-modal';
@@ -346,8 +345,7 @@ export function renderDataQualityTab(options: DataQualityTabOptions): void {
 			.setButtonText('Open')
 			.setCta()
 			.onClick(() => {
-				const placeGraph = new PlaceGraphService(app);
-				new PlaceGeneratorModal(app, plugin.settings, {}, placeGraph).open();
+				new PlaceGeneratorModal(app, plugin.settings, {}, plugin.createPlaceGraphService()).open();
 			})
 		);
 
@@ -474,7 +472,7 @@ function renderResearchNeededSection(container: HTMLElement, options: DataQualit
 
 	// Query places
 	// PlaceNode has filePath (string) rather than file (TFile), so resolve it
-	const placeGraph = new PlaceGraphService(app);
+	const placeGraph = plugin.createPlaceGraphService();
 	const allPlaces = placeGraph.getAllPlaces();
 	for (const place of allPlaces) {
 		const placeFile = app.vault.getAbstractFileByPath(place.filePath);
