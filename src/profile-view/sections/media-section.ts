@@ -9,6 +9,7 @@ import type { App } from 'obsidian';
 import type { MediaItem } from '../../core/media-service';
 import type { SectionToggleFn, SectionState } from '../profile-types';
 import { renderProfileSection } from './section-base';
+import { PdfThumbnailService } from '../../core/pdf-thumbnail-service';
 
 interface MediaSectionOptions {
 	sectionStates: SectionState;
@@ -53,6 +54,19 @@ export function renderMediaSection(
 			img.addEventListener('error', () => {
 				img.remove();
 				cell.createSpan({ text: item.displayName, cls: 'cr-profile__media-fallback' });
+			});
+		} else if (item.file && item.file.extension === 'pdf') {
+			// PDF thumbnail (#350)
+			const placeholder = cell.createSpan({ text: item.displayName, cls: 'cr-profile__media-filename' });
+			const pdfService = new PdfThumbnailService(options.app);
+			void pdfService.getThumbnail(item.file).then(dataUrl => {
+				if (dataUrl) {
+					placeholder.remove();
+					cell.createEl('img', {
+						cls: 'cr-profile__media-thumb',
+						attr: { src: dataUrl, alt: item.displayName, loading: 'lazy' }
+					});
+				}
 			});
 		} else {
 			cell.createSpan({ text: item.displayName, cls: 'cr-profile__media-filename' });
