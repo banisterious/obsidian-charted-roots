@@ -1129,11 +1129,8 @@ function runDataQualityAnalysis(
 	loadingEl.createSpan({ text: 'Analyzing data quality...' });
 
 	// Create service and run analysis
-	const familyGraph = new FamilyGraphService(app);
+	const familyGraph = plugin.createFamilyGraphService();
 	const folderFilter = new FolderFilterService(plugin.settings);
-	familyGraph.setFolderFilter(folderFilter);
-	familyGraph.setPropertyAliases(plugin.settings.propertyAliases);
-	familyGraph.setValueAliases(plugin.settings.valueAliases);
 
 	const dataQualityService = new DataQualityService(
 		app,
@@ -1528,11 +1525,8 @@ export function renderDataQualityDashboard(options: DataQualityDashboardOptions)
 	const loadingEl = resultsContainer.createDiv({ cls: 'crc-loading' });
 	loadingEl.createSpan({ text: 'Analyzing data quality...' });
 
-	const familyGraph = new FamilyGraphService(app);
+	const familyGraph = plugin.createFamilyGraphService();
 	const folderFilter = new FolderFilterService(plugin.settings);
-	familyGraph.setFolderFilter(folderFilter);
-	familyGraph.setPropertyAliases(plugin.settings.propertyAliases);
-	familyGraph.setValueAliases(plugin.settings.valueAliases);
 
 	const dataQualityService = new DataQualityService(
 		app,
@@ -1727,11 +1721,8 @@ async function previewBatchOperation(
 	const { plugin, app } = options;
 
 	// Create service
-	const familyGraph = new FamilyGraphService(app);
+	const familyGraph = plugin.createFamilyGraphService();
 	const folderFilter = new FolderFilterService(plugin.settings);
-	familyGraph.setFolderFilter(folderFilter);
-	familyGraph.setPropertyAliases(plugin.settings.propertyAliases);
-	familyGraph.setValueAliases(plugin.settings.valueAliases);
 
 	const dataQualityService = new DataQualityService(
 		app,
@@ -1771,11 +1762,8 @@ async function runBatchOperation(
 	const { plugin, app } = options;
 
 	// Create service
-	const familyGraph = new FamilyGraphService(app);
+	const familyGraph = plugin.createFamilyGraphService();
 	const folderFilter = new FolderFilterService(plugin.settings);
-	familyGraph.setFolderFilter(folderFilter);
-	familyGraph.setPropertyAliases(plugin.settings.propertyAliases);
-	familyGraph.setValueAliases(plugin.settings.valueAliases);
 
 	const dataQualityService = new DataQualityService(
 		app,

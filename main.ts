@@ -226,6 +226,8 @@ export default class CanvasRootsPlugin extends Plugin {
 		}
 		// Set settings for note type detection
 		graphService.setSettings(this.settings);
+		graphService.setPropertyAliases(this.settings.propertyAliases);
+		graphService.setValueAliases(this.settings.valueAliases);
 
 		// Populate research coverage and conflict counts when fact-level tracking is enabled
 		if (this.settings.trackFactSourcing) {

@@ -19,7 +19,6 @@ import { SourceMediaLinkerModal } from '../../sources/ui/source-media-linker';
 import { MediaUploadModal } from './media-upload-modal';
 import { MediaPickerModal } from './media-picker-modal';
 import { EntityPickerModal } from './entity-picker-modal';
-import { FamilyGraphService } from '../family-graph';
 import { PlaceGraphService } from '../place-graph';
 import { EventService } from '../../events/services/event-service';
 import { OrganizationService } from '../../organizations/services/organization-service';
@@ -96,11 +95,7 @@ export class MediaManagerModal extends Modal {
 		const linkedPaths = new Set<string>();
 
 		// People
-		const folderFilter = new FolderFilterService(this.plugin.settings);
-		const familyGraph = new FamilyGraphService(this.app);
-		familyGraph.setFolderFilter(folderFilter);
-		familyGraph.setPropertyAliases(this.plugin.settings.propertyAliases);
-		familyGraph.setValueAliases(this.plugin.settings.valueAliases);
+		const familyGraph = this.plugin.createFamilyGraphService();
 		familyGraph.ensureCacheLoaded();
 		const people = familyGraph.getAllPeople();
 		let entitiesWithoutMedia = 0;
@@ -133,7 +128,7 @@ export class MediaManagerModal extends Modal {
 		// Places
 		const placeGraph = new PlaceGraphService(this.app);
 		placeGraph.setSettings(this.plugin.settings);
-		placeGraph.setFolderFilter(folderFilter);
+		placeGraph.setFolderFilter(new FolderFilterService(this.plugin.settings));
 		const places = placeGraph.getAllPlaces();
 		for (const place of places) {
 			if (place.media && place.media.length > 0) {

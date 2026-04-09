@@ -231,10 +231,7 @@ export class UnifiedTreeWizardModal extends Modal {
 		this.options = options ?? {};
 
 		// Initialize services
-		this.graphService = new FamilyGraphService(plugin.app);
-		this.graphService.setSettings(plugin.settings);
-		this.graphService.setPropertyAliases(plugin.settings.propertyAliases);
-		this.graphService.setValueAliases(plugin.settings.valueAliases);
+		this.graphService = plugin.createFamilyGraphService();
 
 		this.visualTreeService = new VisualTreeService(plugin.app, this.graphService);
 		this.pdfRenderer = new PdfReportRenderer();

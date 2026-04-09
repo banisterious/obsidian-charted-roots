@@ -21,8 +21,6 @@ import {
 } from '../types/source-types';
 import { ModalStatePersistence, renderResumePromptBanner } from '../../ui/modal-state-persistence';
 import { PersonPickerModal, type PersonInfo } from '../../ui/person-picker';
-import { FamilyGraphService } from '../../core/family-graph';
-import { FolderFilterService } from '../../core/folder-filter';
 
 /**
  * Person role entry for the modal
@@ -266,11 +264,7 @@ export class CreateSourceModal extends Modal {
 	 */
 	private loadPersonRolesFromSource(source: SourceNote): void {
 		// Build a map of cr_id to person name for resolution
-		const folderFilter = new FolderFilterService(this.plugin.settings);
-		const familyGraph = new FamilyGraphService(this.app);
-		familyGraph.setFolderFilter(folderFilter);
-		familyGraph.setPropertyAliases(this.plugin.settings.propertyAliases);
-		familyGraph.setValueAliases(this.plugin.settings.valueAliases);
+		const familyGraph = this.plugin.createFamilyGraphService();
 		familyGraph.ensureCacheLoaded();
 
 		const peopleMap = new Map<string, string>();
@@ -807,11 +801,7 @@ export class CreateSourceModal extends Modal {
 	 */
 	private openAddPersonRoleModal(): void {
 		// Get family graph for person picker
-		const folderFilter = new FolderFilterService(this.plugin.settings);
-		const familyGraph = new FamilyGraphService(this.app);
-		familyGraph.setFolderFilter(folderFilter);
-		familyGraph.setPropertyAliases(this.plugin.settings.propertyAliases);
-		familyGraph.setValueAliases(this.plugin.settings.valueAliases);
+		const familyGraph = this.plugin.createFamilyGraphService();
 		familyGraph.ensureCacheLoaded();
 
 		// Open person picker with correct signature: (app, onSelect, options?)

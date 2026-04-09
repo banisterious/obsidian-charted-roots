@@ -250,14 +250,10 @@ export class ExportOptionsBuilder {
 		// Update function
 		const updateStatsPreview = async (): Promise<void> => {
 			// Import services
-			const { FamilyGraphService } = await import('../core/family-graph');
 			const { PrivacyService } = await import('../core/privacy-service');
 
 			// Setup graph service
-			const graphService = new FamilyGraphService(this.app);
-			graphService.setFolderFilter(new (await import('../core/folder-filter')).FolderFilterService(this.settings));
-			graphService.setPropertyAliases(this.settings.propertyAliases);
-			graphService.setValueAliases(this.settings.valueAliases);
+			const graphService = this.plugin.createFamilyGraphService();
 			await graphService.reloadCache();
 
 			// Determine effective privacy settings

@@ -17,7 +17,6 @@ import { ReferenceNumberingService } from '../core/reference-numbering';
 import type { NumberingSystem } from '../core/reference-numbering';
 import { LineageTrackingService } from '../core/lineage-tracking';
 import type { LineageType } from '../core/lineage-tracking';
-import { FamilyGraphService } from '../core/family-graph';
 import { EventService } from '../events/services/event-service';
 import { CanvasGenerator } from '../core/canvas-generator';
 import { ExcalidrawExporter } from '../excalidraw/excalidraw-exporter';
@@ -92,7 +91,7 @@ export function openEditPlaceModal(plugin: CanvasRootsPlugin, file: TFile): void
 	}
 
 	// Get family graph for collection options
-	const familyGraph = new FamilyGraphService(plugin.app);
+	const familyGraph = plugin.createFamilyGraphService();
 	void familyGraph.reloadCache();
 
 	// Open the modal in edit mode

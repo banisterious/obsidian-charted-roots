@@ -17,7 +17,7 @@ import { pluralize } from '../../utils/format-utils';
 import type CanvasRootsPlugin from '../../../main';
 import { MediaService, type MediaEntityType } from '../media-service';
 import { BulkMediaLinkProgressModal } from './bulk-media-link-progress-modal';
-import { FamilyGraphService, type PersonNode } from '../family-graph';
+import { type PersonNode } from '../family-graph';
 import { PlaceGraphService } from '../place-graph';
 import { FolderFilterService } from '../folder-filter';
 import { EventService } from '../../events/services/event-service';
@@ -267,11 +267,7 @@ export class EntityPickerModal extends Modal {
 	 * Load all people
 	 */
 	private loadPeople(): void {
-		const folderFilter = new FolderFilterService(this.plugin.settings);
-		const familyGraph = new FamilyGraphService(this.app);
-		familyGraph.setFolderFilter(folderFilter);
-		familyGraph.setPropertyAliases(this.plugin.settings.propertyAliases);
-		familyGraph.setValueAliases(this.plugin.settings.valueAliases);
+		const familyGraph = this.plugin.createFamilyGraphService();
 		familyGraph.ensureCacheLoaded();
 
 		const people = familyGraph.getAllPeople();

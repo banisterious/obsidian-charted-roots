@@ -16,7 +16,6 @@ import {
 	MediaService,
 	MediaType
 } from '../media-service';
-import { FamilyGraphService } from '../family-graph';
 import { PlaceGraphService } from '../place-graph';
 import { EventService } from '../../events/services/event-service';
 import { OrganizationService } from '../../organizations/services/organization-service';
@@ -88,13 +87,9 @@ export class MediaGalleryModal extends Modal {
 	 */
 	private loadAllMedia(): void {
 		this.allItems = [];
-		const folderFilter = new FolderFilterService(this.plugin.settings);
 
 		// People
-		const familyGraph = new FamilyGraphService(this.app);
-		familyGraph.setFolderFilter(folderFilter);
-		familyGraph.setPropertyAliases(this.plugin.settings.propertyAliases);
-		familyGraph.setValueAliases(this.plugin.settings.valueAliases);
+		const familyGraph = this.plugin.createFamilyGraphService();
 		familyGraph.ensureCacheLoaded();
 
 		const allPeople = familyGraph.getAllPeople();
@@ -142,7 +137,7 @@ export class MediaGalleryModal extends Modal {
 		// Places
 		const placeGraph = new PlaceGraphService(this.app);
 		placeGraph.setSettings(this.plugin.settings);
-		placeGraph.setFolderFilter(folderFilter);
+		placeGraph.setFolderFilter(new FolderFilterService(this.plugin.settings));
 
 		for (const place of placeGraph.getAllPlaces()) {
 			if (place.media && place.media.length > 0) {

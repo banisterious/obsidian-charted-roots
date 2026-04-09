@@ -19,7 +19,6 @@ import { MediaManagerModal } from '../core/ui/media-manager-modal';
 import { ImportExportHubModal } from './import-export-hub-modal';
 import { FamilyCreationWizardModal } from './family-creation-wizard';
 import { CommandMenuModal } from './command-menu-modal';
-import { FamilyGraphService } from '../core/family-graph';
 import { PlaceGraphService } from '../core/place-graph';
 import { EventService } from '../events/services/event-service';
 import { StagingService } from '../core/staging-service';
@@ -162,7 +161,7 @@ function renderQuickActionsSection(
 	// Helper to open create person modal
 	const openCreatePerson = () => {
 		closeModal();
-		const familyGraph = new FamilyGraphService(app);
+		const familyGraph = plugin.createFamilyGraphService();
 
 		new CreatePersonModal(app, {
 			directory: plugin.settings.peopleFolder || '',
