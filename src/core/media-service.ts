@@ -46,6 +46,14 @@ export type MediaEntityType = 'person' | 'event' | 'place' | 'organization' | 's
 /**
  * Resolved media item with file information
  */
+/** Crop region for an image (#354) */
+export interface MediaCrop {
+	x: number;
+	y: number;
+	w: number;
+	h: number;
+}
+
 export interface MediaItem {
 	/** Original media reference from frontmatter (wikilink or path) */
 	mediaRef: string;
@@ -57,6 +65,8 @@ export interface MediaItem {
 	displayName: string;
 	/** File extension (lowercase, with dot) */
 	extension: string;
+	/** Crop region for this image (#354) */
+	crop?: MediaCrop;
 }
 
 /**
@@ -215,6 +225,56 @@ export class MediaService {
 	 */
 	resolveMediaItems(mediaRefs: string[]): MediaItem[] {
 		return mediaRefs.map(ref => this.resolveMediaItem(ref));
+	}
+
+	/**
+	 * Resolve media items with crop data from frontmatter (#354)
+	 */
+	resolveMediaItemsWithCrops(frontmatter: Record<string, unknown>): MediaItem[] {
+		const mediaRefs = this.parseMediaProperty(frontmatter);
+		const items = this.resolveMediaItems(mediaRefs);
+
+		// Parse media_crop array if present
+		const crops = this.parseMediaCrops(frontmatter);
+		if (crops.size > 0) {
+			for (const item of items) {
+				if (item.file) {
+					const crop = crops.get(item.file.name) || crops.get(item.displayName);
+					if (crop) {
+						item.crop = crop;
+					}
+				}
+			}
+		}
+
+		return items;
+	}
+
+	/**
+	 * Parse media_crop array from frontmatter (#354)
+	 * Returns a map of image filename → crop region
+	 */
+	parseMediaCrops(frontmatter: Record<string, unknown>): Map<string, MediaCrop> {
+		const crops = new Map<string, MediaCrop>();
+		const rawCrops = frontmatter.media_crop;
+
+		if (!Array.isArray(rawCrops)) return crops;
+
+		for (const entry of rawCrops) {
+			if (typeof entry !== 'object' || !entry) continue;
+			const obj = entry as Record<string, unknown>;
+			const image = obj.image as string;
+			const x = typeof obj.x === 'number' ? obj.x : undefined;
+			const y = typeof obj.y === 'number' ? obj.y : undefined;
+			const w = typeof obj.w === 'number' ? obj.w : undefined;
+			const h = typeof obj.h === 'number' ? obj.h : undefined;
+
+			if (image && x !== undefined && y !== undefined && w !== undefined && h !== undefined) {
+				crops.set(image, { x, y, w, h });
+			}
+		}
+
+		return crops;
 	}
 
 	/**
