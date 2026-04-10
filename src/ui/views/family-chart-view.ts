@@ -1435,7 +1435,7 @@ export class FamilyChartView extends ItemView {
 				}
 
 				if (cropForThumb) {
-					// Async crop — update cache and refresh chart when done
+					// Async crop — update cache for next render
 					const { getCroppedImageUrl } = require('../../core/crop-renderer');
 					// Set uncropped URL as placeholder until crop resolves
 					this.avatarUrlCache.set(person.crId, this.app.vault.getResourcePath(thumbnailFile));
@@ -1444,8 +1444,13 @@ export class FamilyChartView extends ItemView {
 					).then((croppedUrl: string | null) => {
 						if (croppedUrl) {
 							this.avatarUrlCache.set(person.crId, croppedUrl);
-							// Refresh chart to show cropped avatars
-							void this.refreshChart();
+							// Update any visible card images with the cropped URL
+							const cardImgs = this.chartContainerEl?.querySelectorAll(`img[src]`) as NodeListOf<HTMLImageElement> | undefined;
+							cardImgs?.forEach(img => {
+								if (img.src.includes(thumbnailFile.name) || img.src === this.app.vault.getResourcePath(thumbnailFile)) {
+									img.src = croppedUrl;
+								}
+							});
 						}
 					});
 				} else {
