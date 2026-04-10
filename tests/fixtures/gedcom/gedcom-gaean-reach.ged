@@ -11,12 +11,14 @@
 1 CHAR UTF-8
 1 NOTE Sample GEDCOM for worldbuilders based on Jack Vance's The Demon Princes / Gaean Reach.
 2 CONT Characters and relationships are approximate/fictional for demonstration purposes.
+2 CONT Dates use the "GR" prefix for the Gaean Reach fictional date system.
 0 @SUBM1@ SUBM
 1 NAME Charted Roots Demo
 0 @I1@ INDI
 1 NAME Kirth /Gersen/
 1 SEX M
 1 BIRT
+2 DATE GR 1492
 2 PLAC Mount Pleasant, Alphanor, Gaean Reach
 1 OCCU Adventurer
 1 NOTE Protagonist of the Demon Princes series. Dedicated his life to hunting the five Demon Princes who destroyed his home.
@@ -27,8 +29,10 @@
 1 NAME Donn /Gersen/
 1 SEX M
 1 BIRT
+2 DATE GR 1440
 2 PLAC Mount Pleasant, Alphanor, Gaean Reach
 1 DEAT
+2 DATE GR 1530
 2 PLAC Mount Pleasant, Alphanor, Gaean Reach
 1 NOTE Kirth's grandfather, who raised and trained him after the Mount Pleasant massacre.
 1 FAMS @F1@
@@ -36,8 +40,10 @@
 1 NAME Elsa /Gersen/
 1 SEX F
 1 BIRT
+2 DATE GR 1445
 2 PLAC Alphanor, Gaean Reach
 1 DEAT
+2 DATE GR 1500
 2 PLAC Mount Pleasant, Alphanor, Gaean Reach
 1 NOTE Kirth's grandmother, wife of Donn. Killed in the Mount Pleasant raid.
 1 FAMS @F1@
@@ -45,8 +51,10 @@
 1 NAME Howard Alan /Treesong/
 1 SEX M
 1 BIRT
+2 DATE GR 1475
 2 PLAC Beyond, Gaean Reach
 1 DEAT
+2 DATE GR 1525
 2 PLAC Donn, Gaean Reach
 1 OCCU Criminal Mastermind
 1 NOTE The fifth and most enigmatic of the Demon Princes. Master of disguise and manipulation.
@@ -54,8 +62,10 @@
 1 NAME Attel /Malagate/
 1 SEX M
 1 BIRT
+2 DATE GR 1460
 2 PLAC Beyond, Gaean Reach
 1 DEAT
+2 DATE GR 1510
 2 PLAC Smade's Planet, Gaean Reach
 1 OCCU Slave Trader
 1 NOTE The first Demon Prince, known as "Malagate the Woe." Dealt in slavery across the Beyond.
@@ -63,8 +73,10 @@
 1 NAME Kokor /Hekkus/
 1 SEX M
 1 BIRT
+2 DATE GR 1465
 2 PLAC Thamber, Gaean Reach
 1 DEAT
+2 DATE GR 1515
 2 PLAC Thamber, Gaean Reach
 1 OCCU Tyrant
 1 NOTE The second Demon Prince, known as "The Killing Machine." Ruled Thamber as an eccentric despot.
@@ -72,8 +84,10 @@
 1 NAME Viole /Falushe/
 1 SEX M
 1 BIRT
+2 DATE GR 1470
 2 PLAC Beyond, Gaean Reach
 1 DEAT
+2 DATE GR 1518
 2 PLAC Sarkovy, Gaean Reach
 1 OCCU Criminal
 1 NOTE The third Demon Prince. Created the Palace of Love on Sarkovy.
@@ -81,8 +95,10 @@
 1 NAME Lens /Larque/
 1 SEX M
 1 BIRT
+2 DATE GR 1468
 2 PLAC Beyond, Gaean Reach
 1 DEAT
+2 DATE GR 1520
 2 PLAC Dar Sai, Gaean Reach
 1 OCCU Criminal
 1 NOTE The fourth Demon Prince. Operated the slave trade on Dar Sai.
@@ -90,6 +106,7 @@
 1 NAME Alusz /Iphigenia/
 1 SEX F
 1 BIRT
+2 DATE GR 1495
 2 PLAC Krokinole, Gaean Reach
 1 NOTE Love interest of Kirth Gersen in The Star King.
 1 FAMS @F4@
@@ -97,18 +114,21 @@
 1 NAME Pallis /Atwrode/
 1 SEX F
 1 BIRT
+2 DATE GR 1497
 2 PLAC Methlen, Gaean Reach
 1 NOTE Associated with Kirth Gersen during the events of The Killing Machine.
 0 @I11@ INDI
 1 NAME Drusilla /of Thamber/
 1 SEX F
 1 BIRT
+2 DATE GR 1490
 2 PLAC Thamber, Gaean Reach
 1 NOTE Noblewoman of Thamber encountered during Gersen's pursuit of Kokor Hekkus.
 0 @I12@ INDI
 1 NAME Kirdy /Wook/
 1 SEX M
 1 BIRT
+2 DATE GR 1498
 2 PLAC Cadwal, Gaean Reach
 1 OCCU IPCC Agent
 1 NOTE Fellow agent who became compromised during the events of Night Lamp. From the Wook family of Cadwal.
@@ -117,6 +137,7 @@
 1 NAME Wayness /Tamm/
 1 SEX F
 1 BIRT
+2 DATE GR 1500
 2 PLAC Cadwal, Gaean Reach
 1 NOTE Heroine of Ecce and Old Earth, conservator of the Cadwal charter.
 1 FAMC @F3@
@@ -124,6 +145,7 @@
 1 NAME Scharde /Tamm/
 1 SEX M
 1 BIRT
+2 DATE GR 1470
 2 PLAC Cadwal, Gaean Reach
 1 OCCU Conservator
 1 NOTE Father of Wayness, conservator at Araminta Station on Cadwal.
@@ -132,6 +154,7 @@
 1 NAME Marya /Tamm/
 1 SEX F
 1 BIRT
+2 DATE GR 1475
 2 PLAC Cadwal, Gaean Reach
 1 NOTE Mother of Wayness Tamm.
 1 FAMS @F3@
@@ -139,6 +162,7 @@
 1 NAME Jerdian /Wook/
 1 SEX M
 1 BIRT
+2 DATE GR 1465
 2 PLAC Cadwal, Gaean Reach
 1 OCCU Administrator
 1 NOTE Patriarch of the Wook family at Araminta Station.
@@ -147,6 +171,7 @@
 1 NAME Nesta /Wook/
 1 SEX F
 1 BIRT
+2 DATE GR 1470
 2 PLAC Cadwal, Gaean Reach
 1 NOTE Mother of Kirdy Wook.
 1 FAMS @F2@
@@ -154,6 +179,7 @@
 1 NAME Alice /Gersen/
 1 SEX F
 1 BIRT
+2 DATE GR 1500
 2 PLAC Alphanor, Gaean Reach
 1 NOTE Kirth Gersen's second companion.
 1 FAMS @F5@
@@ -161,18 +187,33 @@
 1 HUSB @I2@
 1 WIFE @I3@
 1 CHIL @I1@
+1 MARR
+2 DATE GR 1462
+2 PLAC Alphanor, Gaean Reach
 0 @F2@ FAM
 1 HUSB @I16@
 1 WIFE @I17@
 1 CHIL @I12@
+1 MARR
+2 DATE GR 1490
+2 PLAC Cadwal, Gaean Reach
 0 @F3@ FAM
 1 HUSB @I14@
 1 WIFE @I15@
 1 CHIL @I13@
+1 MARR
+2 DATE GR 1495
+2 PLAC Cadwal, Gaean Reach
 0 @F4@ FAM
 1 HUSB @I1@
 1 WIFE @I9@
+1 MARR
+2 DATE GR 1513
+2 PLAC Krokinole, Gaean Reach
 0 @F5@ FAM
 1 HUSB @I1@
 1 WIFE @I18@
+1 MARR
+2 DATE GR 1522
+2 PLAC Alphanor, Gaean Reach
 0 TRLR
