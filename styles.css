@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-04-10 14:34:15 UTC
+ * - Generated: 2026-04-10 20:10:00 UTC
  * - Components: 48 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -9071,7 +9071,7 @@ settings:
    COMPONENT: MEDIA-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 1922 lines, 37.09 KB */
+/* Component Size: 1987 lines, 38.41 KB */
 
 /* ==========================================================================
    Media Picker Modal
@@ -10993,6 +10993,71 @@ settings:
 .cr-folder-suggestion-icon svg {
   width: 16px;
   height: 16px;
+}
+
+/* --------------------------------------------------------------------------
+   Crop Region Modal (#354)
+   -------------------------------------------------------------------------- */
+
+.cr-crop-modal {
+  padding: var(--size-4-4);
+}
+
+.cr-crop-modal__desc {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  margin-bottom: var(--size-4-3);
+}
+
+.cr-crop-modal__canvas-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--size-4-3);
+  background: var(--background-secondary);
+  border-radius: var(--radius-m);
+  padding: var(--size-4-2);
+}
+
+.cr-crop-modal__canvas {
+  cursor: crosshair;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.cr-crop-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--size-4-4);
+}
+
+.cr-crop-modal__preview {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
+.cr-crop-modal__preview-label {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+}
+
+.cr-crop-modal__preview-img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.cr-crop-modal__buttons {
+  display: flex;
+  gap: var(--size-4-2);
+}
+
+.cr-crop-modal__error {
+  color: var(--text-error);
+  text-align: center;
+  padding: var(--size-4-4);
 }
 
 
@@ -40685,11 +40750,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-04-10 14:34:15 UTC
+ * Build completed: 2026-04-10 20:10:01 UTC
  * Components processed: 48
- * Total lines: 40230
- * Total size: 809.33 KB
- * Build duration: 0.81 seconds
+ * Total lines: 40295
+ * Total size: 810.64 KB
+ * Build duration: 0.92 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -40700,7 +40765,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - control-center.css: 5747 lines, 107.88 KB
  * - entity-create-modals.css: 1236 lines, 25.51 KB
  * - place-modals.css: 1400 lines, 26.96 KB
- * - media-modals.css: 1922 lines, 37.09 KB
+ * - media-modals.css: 1987 lines, 38.41 KB
  * - import-export-wizard.css: 2187 lines, 41.74 KB
  * - staging-manager.css: 555 lines, 11.4 KB
  * - cleanup-wizard.css: 2197 lines, 41.1 KB

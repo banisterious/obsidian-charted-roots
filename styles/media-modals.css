@@ -1919,3 +1919,68 @@
   width: 16px;
   height: 16px;
 }
+
+/* --------------------------------------------------------------------------
+   Crop Region Modal (#354)
+   -------------------------------------------------------------------------- */
+
+.cr-crop-modal {
+  padding: var(--size-4-4);
+}
+
+.cr-crop-modal__desc {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  margin-bottom: var(--size-4-3);
+}
+
+.cr-crop-modal__canvas-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--size-4-3);
+  background: var(--background-secondary);
+  border-radius: var(--radius-m);
+  padding: var(--size-4-2);
+}
+
+.cr-crop-modal__canvas {
+  cursor: crosshair;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.cr-crop-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--size-4-4);
+}
+
+.cr-crop-modal__preview {
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+}
+
+.cr-crop-modal__preview-label {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+}
+
+.cr-crop-modal__preview-img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.cr-crop-modal__buttons {
+  display: flex;
+  gap: var(--size-4-2);
+}
+
+.cr-crop-modal__error {
+  color: var(--text-error);
+  text-align: center;
+  padding: var(--size-4-4);
+}
