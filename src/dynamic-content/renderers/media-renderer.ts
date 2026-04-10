@@ -12,6 +12,8 @@ import type { DynamicContentService } from '../services/dynamic-content-service'
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
 import { openGalleryLightbox, type LightboxItem } from '../../ui/media-lightbox-modal';
 import { PdfThumbnailService } from '../../core/pdf-thumbnail-service';
+import { type MediaCrop } from '../../core/media-service';
+import { applyCropToImage } from '../../core/crop-renderer';
 
 /**
  * Media item extracted from frontmatter
@@ -29,6 +31,8 @@ export interface MediaItem {
 	isImage: boolean;
 	/** Whether this is the first item (thumbnail) */
 	isThumbnail: boolean;
+	/** Crop region for this image (#354) */
+	crop?: MediaCrop;
 }
 
 /**
@@ -133,6 +137,21 @@ export class MediaRenderer {
 		// Parse filter option
 		const filter = this.parseFilter(config.filter);
 
+		// Parse media_crop array (#354)
+		const cropMap = new Map<string, MediaCrop>();
+		if (Array.isArray(frontmatter.media_crop)) {
+			for (const entry of frontmatter.media_crop) {
+				if (typeof entry === 'object' && entry) {
+					const obj = entry as Record<string, unknown>;
+					const image = obj.image as string;
+					if (image && typeof obj.x === 'number' && typeof obj.y === 'number' &&
+						typeof obj.w === 'number' && typeof obj.h === 'number') {
+						cropMap.set(image, { x: obj.x, y: obj.y, w: obj.w, h: obj.h });
+					}
+				}
+			}
+		}
+
 		// Convert to MediaItem objects
 		const items: MediaItem[] = [];
 
@@ -141,6 +160,14 @@ export class MediaRenderer {
 			const item = this.parseMediaLink(link, i === 0);
 
 			if (!item) continue;
+
+			// Attach crop if defined (#354)
+			if (item.file) {
+				const crop = cropMap.get(item.file.name) || cropMap.get(item.file.basename + '.' + item.file.extension);
+				if (crop) {
+					item.crop = crop;
+				}
+			}
 
 			// Apply filter
 			if (filter === 'images' && !item.isImage) continue;
@@ -368,6 +395,11 @@ export class MediaRenderer {
 			// Get resource path for the image
 			const resourcePath = this.plugin.app.vault.getResourcePath(item.file);
 			img.src = resourcePath;
+
+			// Apply crop region if defined (#354)
+			if (item.crop && item.file) {
+				void applyCropToImage(this.plugin.app, img, item.file, item.crop);
+			}
 
 			// Add click handler to open in lightbox
 			// Using lightbox keeps the note in reading mode (fixes issue #232)
