@@ -288,6 +288,7 @@ Beyond core life events (birth, death, marriage, burial), you can track addition
 | `military` | Brown | Military service locations |
 | `immigration` | Cyan | Border crossings, ports of entry |
 | `baptism` | Light Purple | Baptism locations |
+| `burial` | Gray | Burial/interment locations |
 | `confirmation` | Light Purple | Confirmation ceremonies |
 | `ordination` | Light Purple | Religious ordinations |
 | `custom` | Pink | Any other life event |

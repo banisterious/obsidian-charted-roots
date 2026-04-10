@@ -375,7 +375,7 @@ export class MapDataService {
 			// Valid types for the events array (excluding birth/death/marriage which have dedicated fields)
 			const validTypes: EventType[] = [
 				'residence', 'occupation', 'education', 'military',
-				'immigration', 'baptism', 'confirmation', 'ordination', 'custom'
+				'immigration', 'baptism', 'burial', 'confirmation', 'ordination', 'custom'
 			];
 			if (!validTypes.includes(resolvedEventType)) continue;
 
