@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Phase 3:** Relationships (+ Add button opens AddRelationshipModal with full bidirectional sync)
   - **Phase 4:** Research level (dropdown, 0-6), collection (text input), sources (+ Link source button)
 
+### Fixed
+
+- **Burial event type not working in events array** ([#355](https://github.com/banisterious/obsidian-charted-roots/issues/355)): `burial` was excluded from the valid event types for the person-level `events` array, preventing burial locations from appearing as map markers when defined inline. Now supported alongside baptism, residence, and other event types.
+
 ---
 
 ## [0.20.54] - 2026-04-07
