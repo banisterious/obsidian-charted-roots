@@ -1417,8 +1417,39 @@ export class FamilyChartView extends ItemView {
 			// Resolve and cache the avatar URL
 			const thumbnailFile = mediaService.getFirstThumbnailFile(person.media);
 			if (thumbnailFile) {
-				const avatarUrl = this.app.vault.getResourcePath(thumbnailFile);
-				this.avatarUrlCache.set(person.crId, avatarUrl);
+				// Check for crop region (#354)
+				const cache = this.app.metadataCache.getFileCache(person.file);
+				const crops = cache?.frontmatter?.media_crop;
+				let cropForThumb: import('../../core/media-service').MediaCrop | undefined;
+				if (Array.isArray(crops)) {
+					for (const entry of crops) {
+						if (typeof entry === 'object' && entry &&
+							(entry as Record<string, unknown>).image === thumbnailFile.name) {
+							const obj = entry as Record<string, unknown>;
+							if (typeof obj.x === 'number' && typeof obj.y === 'number' &&
+								typeof obj.w === 'number' && typeof obj.h === 'number') {
+								cropForThumb = { x: obj.x, y: obj.y, w: obj.w, h: obj.h };
+							}
+						}
+					}
+				}
+
+				if (cropForThumb) {
+					// Async crop — will update cache when done
+					const { getCroppedImageUrl } = require('../../core/crop-renderer');
+					void (getCroppedImageUrl as (app: unknown, file: unknown, crop: unknown) => Promise<string | null>)(
+						this.app, thumbnailFile, cropForThumb
+					).then((croppedUrl: string | null) => {
+						if (croppedUrl) {
+							this.avatarUrlCache.set(person.crId, croppedUrl);
+						}
+					});
+					// Set uncropped URL as placeholder until crop resolves
+					this.avatarUrlCache.set(person.crId, this.app.vault.getResourcePath(thumbnailFile));
+				} else {
+					const avatarUrl = this.app.vault.getResourcePath(thumbnailFile);
+					this.avatarUrlCache.set(person.crId, avatarUrl);
+				}
 				newlyResolved++;
 			}
 		}
