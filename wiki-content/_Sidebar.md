@@ -5,6 +5,7 @@
 ### Getting Started
 - [Installation & Setup](Getting-Started)
 - [Control Center](Control-Center)
+- [Data Model](Data-Model)
 - [Data Entry](Data-Entry)
 - [Import & Export](Import-Export)
 - [Web Clipper Integration](Web-Clipper-Integration)

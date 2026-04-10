@@ -139,6 +139,7 @@ Adapt Charted Roots to your existing data structure and terminology.
 ### Getting Started
 - [Getting Started](Getting-Started) - Installation and first steps
 - [Control Center](Control-Center) - Your central hub for all operations
+- [Data Model](Data-Model) - Entity types, relationships, and data flow
 - [Data Entry](Data-Entry) - Creating and structuring person notes
 - [Import & Export](Import-Export) - GEDCOM and other formats
 
