@@ -10,6 +10,7 @@ import type { MediaItem } from '../../core/media-service';
 import type { SectionToggleFn, SectionState } from '../profile-types';
 import { renderProfileSection } from './section-base';
 import { PdfThumbnailService } from '../../core/pdf-thumbnail-service';
+import { applyCropToImage } from '../../core/crop-renderer';
 
 interface MediaSectionOptions {
 	sectionStates: SectionState;
@@ -51,6 +52,10 @@ export function renderMediaSection(
 					loading: 'lazy'
 				}
 			});
+			// Apply crop region if defined (#354)
+			if (item.crop && item.file) {
+				void applyCropToImage(options.app, img, item.file, item.crop);
+			}
 			img.addEventListener('error', () => {
 				img.remove();
 				cell.createSpan({ text: item.displayName, cls: 'cr-profile__media-fallback' });

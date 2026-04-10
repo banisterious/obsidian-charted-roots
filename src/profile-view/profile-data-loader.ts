@@ -137,8 +137,8 @@ export class ProfileDataLoader {
 		proofService.setPersonIndex(this.plugin.personIndex);
 		const proofSummaries = proofService.getProofsForPerson(crId);
 
-		// Media
-		const media = this.resolveMedia(node.media);
+		// Media (with crop data from frontmatter #354)
+		const media = this.resolveMedia(node.media, fm as Record<string, unknown>);
 
 		// Needs research
 		const needsResearch = this.parseStringArray(fm.needs_research);
@@ -434,11 +434,26 @@ export class ProfileDataLoader {
 		return 'born' in fm || 'died' in fm || 'father' in fm || 'mother' in fm;
 	}
 
-	private resolveMedia(mediaRefs: string[] | undefined): MediaItem[] {
+	private resolveMedia(mediaRefs: string[] | undefined, frontmatter?: Record<string, unknown>): MediaItem[] {
 		if (!mediaRefs || mediaRefs.length === 0) return [];
 
 		const mediaService = this.plugin.getMediaService();
 		if (!mediaService) return [];
+
+		// Parse crop data if frontmatter provided (#354)
+		const cropMap = new Map<string, import('../core/media-service').MediaCrop>();
+		if (frontmatter && Array.isArray(frontmatter.media_crop)) {
+			for (const entry of frontmatter.media_crop) {
+				if (typeof entry === 'object' && entry) {
+					const obj = entry as Record<string, unknown>;
+					const image = obj.image as string;
+					if (image && typeof obj.x === 'number' && typeof obj.y === 'number' &&
+						typeof obj.w === 'number' && typeof obj.h === 'number') {
+						cropMap.set(image, { x: obj.x, y: obj.y, w: obj.w, h: obj.h });
+					}
+				}
+			}
+		}
 
 		const items: MediaItem[] = [];
 
@@ -448,12 +463,14 @@ export class ProfileDataLoader {
 			if (file) {
 				const ext = file.extension.toLowerCase();
 				const type = mediaService.getMediaType(ext);
+				const crop = cropMap.get(file.name) || cropMap.get(file.basename + '.' + file.extension);
 				items.push({
 					mediaRef: ref,
 					file,
 					type,
 					displayName: file.basename,
-					extension: ext
+					extension: ext,
+					crop
 				});
 			}
 		}
