@@ -740,6 +740,9 @@ export class FamilyChartView extends ItemView {
 		this.infoPanelEditData = {
 			firstName: personData.data['first name'] || '',
 			lastName: personData.data['last name'] || '',
+			altName: (personData.data['alt name'] as string) || '',
+			pronouns: (personData.data['pronouns'] as string) || '',
+			occupation: (personData.data['occupation'] as string) || '',
 			birthDate: personData.data.birthday || '',
 			deathDate: personData.data.deathday || '',
 			gender: (personData.data.gender as 'M' | 'F' | 'X' | 'U' | '') || ''
