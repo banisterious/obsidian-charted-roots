@@ -1,6 +1,6 @@
 # Family Chart Info Panel Enhancement
 
-- **Status:** Planning
+- **Status:** ✅ Phase 1 complete | Phases 2-4 planned
 - **Created:** 2026-01-10
 - **Updated:** 2026-04-07
 - **Origin:** User feedback from jeff962 in [Discussion #147](https://github.com/banisterious/obsidian-charted-roots/discussions/147), related to "Family Chart as Primary Interaction Hub"
@@ -99,11 +99,12 @@ These patterns can be adapted for the info panel context.
 
 ## Phases
 
-### Phase 1: Simple Fields
-- Add alt name text field (extends existing view-mode display)
-- Add pronouns text field
-- Add occupation text field
-- Test save/load
+### Phase 1: Simple Fields ✅
+- [x] Add alt name text field (extends existing view-mode display)
+- [x] Add pronouns text field
+- [x] Add occupation text field
+- [x] Test save/load
+- [x] Also passes pronouns and occupation through chart data for view mode display
 
 ### Phase 2: Places
 - Add birth place with PlacePickerModal

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Family Chart info panel: alt name, pronouns, occupation** ([#351](https://github.com/banisterious/obsidian-charted-roots/issues/351)): Phase 1 of the info panel expansion. Three new editable fields in the Person details panel — alt name, pronouns, and occupation. Displayed in view mode when populated, editable in edit mode with save to frontmatter.
+
+---
+
 ## [0.20.54] - 2026-04-07
 
 ### Added
