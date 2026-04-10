@@ -145,7 +145,7 @@ export class FamilyChartView extends ItemView {
 	private infoPanelActionsEl: HTMLElement | null = null;
 	private selectedPersonId: string | null = null;
 	private infoPanelEditMode: boolean = false;
-	private infoPanelEditData: { firstName: string; lastName: string; birthDate: string; deathDate: string; gender: 'M' | 'F' | 'X' | 'U' | '' } | null = null;
+	private infoPanelEditData: { firstName: string; lastName: string; altName: string; pronouns: string; occupation: string; birthDate: string; deathDate: string; gender: 'M' | 'F' | 'X' | 'U' | '' } | null = null;
 
 	// Sync state (prevent infinite loops during sync)
 	private isSyncing: boolean = false;
@@ -470,6 +470,16 @@ export class FamilyChartView extends ItemView {
 			this.createInfoField(fieldsSection, 'Alt name', personData.data['alt name'] as string);
 		}
 
+		// Pronouns (#351)
+		if (personData.data['pronouns']) {
+			this.createInfoField(fieldsSection, 'Pronouns', personData.data['pronouns'] as string);
+		}
+
+		// Occupation (#351)
+		if (personData.data['occupation']) {
+			this.createInfoField(fieldsSection, 'Occupation', personData.data['occupation'] as string);
+		}
+
 		// Birth date
 		this.createInfoField(fieldsSection, 'Birth date', personData.data.birthday || '');
 
@@ -527,6 +537,9 @@ export class FamilyChartView extends ItemView {
 			this.infoPanelEditData = {
 				firstName: personData.data['first name'] || '',
 				lastName: personData.data['last name'] || '',
+				altName: (personData.data['alt name'] as string) || '',
+				pronouns: (personData.data['pronouns'] as string) || '',
+				occupation: (personData.data['occupation'] as string) || '',
 				birthDate: personData.data.birthday || '',
 				deathDate: personData.data.deathday || '',
 				gender: (personData.data.gender as 'M' | 'F' | 'X' | 'U' | '') || ''
@@ -545,6 +558,21 @@ export class FamilyChartView extends ItemView {
 		this.createInfoFieldInput(fieldsSection, 'Last name', this.infoPanelEditData.lastName, (value) => {
 			if (this.infoPanelEditData) this.infoPanelEditData.lastName = value;
 		});
+
+		// Alt name input (#351)
+		this.createInfoFieldInput(fieldsSection, 'Alt name', this.infoPanelEditData.altName, (value) => {
+			if (this.infoPanelEditData) this.infoPanelEditData.altName = value;
+		}, 'e.g., 张三');
+
+		// Pronouns input (#351)
+		this.createInfoFieldInput(fieldsSection, 'Pronouns', this.infoPanelEditData.pronouns, (value) => {
+			if (this.infoPanelEditData) this.infoPanelEditData.pronouns = value;
+		}, 'e.g., she/her');
+
+		// Occupation input (#351)
+		this.createInfoFieldInput(fieldsSection, 'Occupation', this.infoPanelEditData.occupation, (value) => {
+			if (this.infoPanelEditData) this.infoPanelEditData.occupation = value;
+		}, 'e.g., Farmer');
 
 		// Birth date input
 		this.createInfoFieldInput(fieldsSection, 'Birth date', this.infoPanelEditData.birthDate, (value) => {
@@ -745,6 +773,9 @@ export class FamilyChartView extends ItemView {
 			data: {
 				'first name': this.infoPanelEditData.firstName,
 				'last name': this.infoPanelEditData.lastName,
+				'alt name': this.infoPanelEditData.altName,
+				'pronouns': this.infoPanelEditData.pronouns,
+				'occupation': this.infoPanelEditData.occupation,
 				'birthday': this.infoPanelEditData.birthDate,
 				'deathday': this.infoPanelEditData.deathDate,
 				'gender': this.infoPanelEditData.gender
@@ -759,6 +790,9 @@ export class FamilyChartView extends ItemView {
 		if (personIndex >= 0) {
 			this.chartData[personIndex].data['first name'] = this.infoPanelEditData.firstName;
 			this.chartData[personIndex].data['last name'] = this.infoPanelEditData.lastName;
+			this.chartData[personIndex].data['alt name'] = this.infoPanelEditData.altName;
+			this.chartData[personIndex].data['pronouns'] = this.infoPanelEditData.pronouns;
+			this.chartData[personIndex].data['occupation'] = this.infoPanelEditData.occupation;
 			this.chartData[personIndex].data.birthday = this.infoPanelEditData.birthDate;
 			this.chartData[personIndex].data.deathday = this.infoPanelEditData.deathDate;
 			if (this.infoPanelEditData.gender === 'M' || this.infoPanelEditData.gender === 'F' || this.infoPanelEditData.gender === 'X' || this.infoPanelEditData.gender === 'U') {
@@ -1302,6 +1336,8 @@ export class FamilyChartView extends ItemView {
 				deathday: person.deathDate,
 				avatar,
 				'alt name': person.altName || '',
+				'pronouns': Array.isArray(person.pronouns) ? person.pronouns.join(', ') : (person.pronouns || ''),
+				'occupation': person.occupation || '',
 			},
 			rels: {
 				parents,
@@ -3272,6 +3308,34 @@ export class FamilyChartView extends ItemView {
 					}
 					continue;
 				}
+
+				// Update alt_name (#351)
+				if (key === 'alt_name') {
+					const altName = datum.data['alt name'] as string;
+					if (altName) {
+						updatedLines.push(`alt_name: ${altName}`);
+					}
+					// Remove property if cleared
+					continue;
+				}
+
+				// Update pronouns (#351)
+				if (key === 'pronouns') {
+					const pronouns = datum.data['pronouns'] as string;
+					if (pronouns) {
+						updatedLines.push(`pronouns: ${pronouns}`);
+					}
+					continue;
+				}
+
+				// Update occupation (#351)
+				if (key === 'occupation') {
+					const occupation = datum.data['occupation'] as string;
+					if (occupation) {
+						updatedLines.push(`occupation: "${occupation}"`);
+					}
+					continue;
+				}
 			}
 
 			// Keep other lines unchanged
@@ -3291,6 +3355,22 @@ export class FamilyChartView extends ItemView {
 		const deathDate = datum.data['deathday'] as string;
 		if (!processedKeys.has('death_date') && deathDate) {
 			updatedLines.push(`death_date: "${deathDate}"`);
+		}
+
+		// Add new properties if they don't exist (#351)
+		const altName = datum.data['alt name'] as string;
+		if (!processedKeys.has('alt_name') && altName) {
+			updatedLines.push(`alt_name: ${altName}`);
+		}
+
+		const pronouns = datum.data['pronouns'] as string;
+		if (!processedKeys.has('pronouns') && pronouns) {
+			updatedLines.push(`pronouns: ${pronouns}`);
+		}
+
+		const occupation = datum.data['occupation'] as string;
+		if (!processedKeys.has('occupation') && occupation) {
+			updatedLines.push(`occupation: "${occupation}"`);
 		}
 
 		return updatedLines.join('\n');
