@@ -43,6 +43,9 @@ Expand the info panel to support all fields available in the Create/Edit Person 
 |-------|------|----------------|
 | Father | Picker | PersonPickerModal integration |
 | Mother | Picker | PersonPickerModal integration |
+| Step-parents | Multi-picker | PersonPickerModal, multi-value UI |
+| Adoptive parents | Multi-picker | PersonPickerModal, multi-value UI |
+| Gender-neutral parents | Multi-picker | PersonPickerModal, multi-value UI (for worldbuilders) |
 | Spouses | Multi-picker | PersonPickerModal, multi-value UI |
 | Children | Multi-picker | PersonPickerModal, multi-value UI |
 
@@ -110,6 +113,9 @@ These patterns can be adapted for the info panel context.
 ### Phase 3: Relationships
 - Add father picker
 - Add mother picker
+- Add step-parents multi-picker
+- Add adoptive parents multi-picker
+- Add gender-neutral parents multi-picker
 - Add spouses multi-picker
 - Add children multi-picker
 - Test bidirectional relationship sync
@@ -120,12 +126,12 @@ These patterns can be adapted for the info panel context.
 - Add collection field
 - Test save/load
 
-## Open Questions
+## Decisions
 
-1. **Step/adoptive parents** — Should the info panel support step-parents and adoptive parents in Phase 3, or limit to biological father/mother?
-2. **Relationship editing safety** — Editing relationships from the chart panel triggers the bidirectional linker. Should we add a confirmation dialog before saving relationship changes, or is the existing linker behavior sufficient?
-3. **Panel width** — More fields may require a wider panel on desktop. Should the panel width be adjustable, or should fields use a compact layout?
-4. **Undo support** — The current edit mode has no undo. Should Cancel discard all changes (current behavior), or should we track individual field changes?
+1. **Step/adoptive parents** — Yes. Support step-parents, adoptive parents, and gender-neutral parents (for worldbuilders) in Phase 3.
+2. **Relationship editing safety** — No confirmation dialog. Bidirectional linker handles sync automatically. The full Edit Person modal doesn't have one either, and Obsidian's Ctrl+Z provides a safety net.
+3. **Panel width** — Start with compact layout, evaluate during testing. Make adjustable if needed.
+4. **Undo support** — Cancel discards all changes (current behavior). No individual field tracking — the panel should stay lightweight.
 
 ## Success Criteria
 
