@@ -11,7 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Family Chart info panel: alt name, pronouns, occupation** ([#351](https://github.com/banisterious/obsidian-charted-roots/issues/351)): Phase 1 of the info panel expansion. Three new editable fields in the Person details panel — alt name, pronouns, and occupation. Displayed in view mode when populated, editable in edit mode with save to frontmatter.
+- **Family Chart info panel expansion** ([#351](https://github.com/banisterious/obsidian-charted-roots/issues/351)): The Person details panel now supports editing all major person fields:
+  - **Phase 1:** Alt name, pronouns, occupation (text inputs)
+  - **Phase 2:** Birth place, death place (PlacePickerModal with Pick/Clear buttons)
+  - **Phase 3:** Relationships (+ Add button opens AddRelationshipModal with full bidirectional sync)
+  - **Phase 4:** Research level (dropdown, 0-6), collection (text input), sources (+ Link source button)
 
 ---
 

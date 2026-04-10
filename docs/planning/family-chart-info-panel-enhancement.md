@@ -1,6 +1,6 @@
 # Family Chart Info Panel Enhancement
 
-- **Status:** ✅ Phase 1 complete | Phases 2-4 planned
+- **Status:** ✅ All phases complete
 - **Created:** 2026-01-10
 - **Updated:** 2026-04-07
 - **Origin:** User feedback from jeff962 in [Discussion #147](https://github.com/banisterious/obsidian-charted-roots/discussions/147), related to "Family Chart as Primary Interaction Hub"
@@ -106,26 +106,26 @@ These patterns can be adapted for the info panel context.
 - [x] Test save/load
 - [x] Also passes pronouns and occupation through chart data for view mode display
 
-### Phase 2: Places
-- Add birth place with PlacePickerModal
-- Add death place with PlacePickerModal
-- Test save/load
+### Phase 2: Places ✅
+- [x] Add birth place with PlacePickerModal (Pick/Clear buttons)
+- [x] Add death place with PlacePickerModal
+- [x] View mode displays place names (wikilink brackets stripped)
+- [x] Save writes wikilinks to frontmatter
 
-### Phase 3: Relationships
-- Add father picker
-- Add mother picker
-- Add step-parents multi-picker
-- Add adoptive parents multi-picker
-- Add gender-neutral parents multi-picker
-- Add spouses multi-picker
-- Add children multi-picker
-- Test bidirectional relationship sync
+### Phase 3: Relationships ✅
+- [x] "+ Add" button in relationships section header (edit mode)
+- [x] Opens existing AddRelationshipModal which handles all relationship types:
+  - Father, mother, step-parents, adoptive parents, gender-neutral parents
+  - Spouses, children, custom relationship types
+- [x] Full bidirectional sync via proven modal code
+- [x] Chart refreshes after modal closes
 
-### Phase 4: Sources & Metadata
-- Add sources multi-picker
-- Add research level dropdown
-- Add collection field
-- Test save/load
+### Phase 4: Sources & Metadata ✅
+- [x] Research level dropdown (0-6 with descriptive labels)
+- [x] Collection text input
+- [x] "+ Link source" button using existing addSourceToPersonNote helper
+- [x] View mode displays research level and collection when set
+- [x] Save writes to frontmatter
 
 ## Decisions
 
