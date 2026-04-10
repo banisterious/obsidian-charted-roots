@@ -14,6 +14,7 @@ import { FamilyGraphService, PersonNode } from '../../core/family-graph';
 import type { ColorScheme, FamilyChartColors } from '../../settings';
 import { getLogger } from '../../core/logging';
 import { PersonPickerModal } from '../person-picker';
+import { PlacePickerModal, type SelectedPlaceInfo } from '../place-picker';
 import { FamilyChartExportWizard } from './family-chart-export-wizard';
 import { DeletePersonConfirmModal, FamilyChartStyleModal } from './family-chart-view-modals';
 import type { ProgressCallback } from './family-chart-export-progress-modal';
@@ -145,7 +146,7 @@ export class FamilyChartView extends ItemView {
 	private infoPanelActionsEl: HTMLElement | null = null;
 	private selectedPersonId: string | null = null;
 	private infoPanelEditMode: boolean = false;
-	private infoPanelEditData: { firstName: string; lastName: string; altName: string; pronouns: string; occupation: string; birthDate: string; deathDate: string; gender: 'M' | 'F' | 'X' | 'U' | '' } | null = null;
+	private infoPanelEditData: { firstName: string; lastName: string; altName: string; pronouns: string; occupation: string; birthPlace: string; deathPlace: string; birthDate: string; deathDate: string; gender: 'M' | 'F' | 'X' | 'U' | '' } | null = null;
 
 	// Sync state (prevent infinite loops during sync)
 	private isSyncing: boolean = false;
@@ -486,6 +487,18 @@ export class FamilyChartView extends ItemView {
 		// Death date
 		this.createInfoField(fieldsSection, 'Death date', personData.data.deathday || '');
 
+		// Birth place (#351)
+		if (personData.data['birth place']) {
+			const placeDisplay = (personData.data['birth place'] as string).replace(/^\[\[|\]\]$/g, '').split('|').pop() || '';
+			this.createInfoField(fieldsSection, 'Birth place', placeDisplay);
+		}
+
+		// Death place (#351)
+		if (personData.data['death place']) {
+			const placeDisplay = (personData.data['death place'] as string).replace(/^\[\[|\]\]$/g, '').split('|').pop() || '';
+			this.createInfoField(fieldsSection, 'Death place', placeDisplay);
+		}
+
 		// Sex
 		const sexDisplay = personData.data.gender === 'M' ? 'Male' : personData.data.gender === 'F' ? 'Female' : personData.data.gender === 'X' ? 'Non-binary' : personData.data.gender === 'U' ? 'Unknown' : '';
 		this.createInfoField(fieldsSection, 'Sex', sexDisplay);
@@ -540,6 +553,8 @@ export class FamilyChartView extends ItemView {
 				altName: (personData.data['alt name'] as string) || '',
 				pronouns: (personData.data['pronouns'] as string) || '',
 				occupation: (personData.data['occupation'] as string) || '',
+				birthPlace: (personData.data['birth place'] as string) || '',
+				deathPlace: (personData.data['death place'] as string) || '',
 				birthDate: personData.data.birthday || '',
 				deathDate: personData.data.deathday || '',
 				gender: (personData.data.gender as 'M' | 'F' | 'X' | 'U' | '') || ''
@@ -573,6 +588,16 @@ export class FamilyChartView extends ItemView {
 		this.createInfoFieldInput(fieldsSection, 'Occupation', this.infoPanelEditData.occupation, (value) => {
 			if (this.infoPanelEditData) this.infoPanelEditData.occupation = value;
 		}, 'e.g., Farmer');
+
+		// Birth place picker (#351)
+		this.createPlacePickerField(fieldsSection, 'Birth place', this.infoPanelEditData.birthPlace, (value) => {
+			if (this.infoPanelEditData) this.infoPanelEditData.birthPlace = value;
+		});
+
+		// Death place picker (#351)
+		this.createPlacePickerField(fieldsSection, 'Death place', this.infoPanelEditData.deathPlace, (value) => {
+			if (this.infoPanelEditData) this.infoPanelEditData.deathPlace = value;
+		});
 
 		// Birth date input
 		this.createInfoFieldInput(fieldsSection, 'Birth date', this.infoPanelEditData.birthDate, (value) => {
@@ -663,6 +688,55 @@ export class FamilyChartView extends ItemView {
 	}
 
 	/**
+	 * Create a place picker field with display text and Pick/Clear buttons
+	 */
+	private createPlacePickerField(container: HTMLElement, label: string, value: string, onChange: (value: string) => void): void {
+		const field = container.createDiv({ cls: 'cr-fcv-info-field' });
+		field.createDiv({ cls: 'cr-fcv-info-field-label', text: label });
+
+		const row = field.createDiv({ cls: 'cr-fcv-info-field-picker' });
+
+		const displayName = value ? value.replace(/^\[\[|\]\]$/g, '').split('|').pop() || '' : '';
+		const displayEl = row.createSpan({
+			cls: 'cr-fcv-info-field-picker-value',
+			text: displayName || 'Not set'
+		});
+		if (!displayName) displayEl.addClass('empty');
+
+		const pickBtn = row.createEl('button', {
+			text: 'Pick',
+			cls: 'cr-fcv-info-field-picker-btn'
+		});
+		pickBtn.addEventListener('click', () => {
+			const placeGraph = this.plugin.createPlaceGraphService();
+			placeGraph.reloadCache();
+			new PlacePickerModal(this.app, (place: SelectedPlaceInfo) => {
+				const wikilink = `[[${place.name}]]`;
+				onChange(wikilink);
+				displayEl.textContent = place.name;
+				displayEl.removeClass('empty');
+			}, {
+				placeGraph,
+				settings: this.plugin.settings
+			}).open();
+		});
+
+		if (value) {
+			const clearBtn = row.createEl('button', {
+				text: '×',
+				cls: 'cr-fcv-info-field-picker-clear',
+				attr: { 'aria-label': 'Clear' }
+			});
+			clearBtn.addEventListener('click', () => {
+				onChange('');
+				displayEl.textContent = 'Not set';
+				displayEl.addClass('empty');
+				clearBtn.remove();
+			});
+		}
+	}
+
+	/**
 	 * Render the relationships section
 	 */
 	private renderRelationshipsSection(personData: FamilyChartPerson): void {
@@ -743,6 +817,8 @@ export class FamilyChartView extends ItemView {
 			altName: (personData.data['alt name'] as string) || '',
 			pronouns: (personData.data['pronouns'] as string) || '',
 			occupation: (personData.data['occupation'] as string) || '',
+			birthPlace: (personData.data['birth place'] as string) || '',
+			deathPlace: (personData.data['death place'] as string) || '',
 			birthDate: personData.data.birthday || '',
 			deathDate: personData.data.deathday || '',
 			gender: (personData.data.gender as 'M' | 'F' | 'X' | 'U' | '') || ''
@@ -779,6 +855,8 @@ export class FamilyChartView extends ItemView {
 				'alt name': this.infoPanelEditData.altName,
 				'pronouns': this.infoPanelEditData.pronouns,
 				'occupation': this.infoPanelEditData.occupation,
+				'birth place': this.infoPanelEditData.birthPlace,
+				'death place': this.infoPanelEditData.deathPlace,
 				'birthday': this.infoPanelEditData.birthDate,
 				'deathday': this.infoPanelEditData.deathDate,
 				'gender': this.infoPanelEditData.gender
@@ -796,6 +874,8 @@ export class FamilyChartView extends ItemView {
 			this.chartData[personIndex].data['alt name'] = this.infoPanelEditData.altName;
 			this.chartData[personIndex].data['pronouns'] = this.infoPanelEditData.pronouns;
 			this.chartData[personIndex].data['occupation'] = this.infoPanelEditData.occupation;
+			this.chartData[personIndex].data['birth place'] = this.infoPanelEditData.birthPlace;
+			this.chartData[personIndex].data['death place'] = this.infoPanelEditData.deathPlace;
 			this.chartData[personIndex].data.birthday = this.infoPanelEditData.birthDate;
 			this.chartData[personIndex].data.deathday = this.infoPanelEditData.deathDate;
 			if (this.infoPanelEditData.gender === 'M' || this.infoPanelEditData.gender === 'F' || this.infoPanelEditData.gender === 'X' || this.infoPanelEditData.gender === 'U') {
@@ -1341,6 +1421,8 @@ export class FamilyChartView extends ItemView {
 				'alt name': person.altName || '',
 				'pronouns': Array.isArray(person.pronouns) ? person.pronouns.join(', ') : (person.pronouns || ''),
 				'occupation': person.occupation || '',
+				'birth place': person.birthPlace || '',
+				'death place': person.deathPlace || '',
 			},
 			rels: {
 				parents,
@@ -3339,6 +3421,24 @@ export class FamilyChartView extends ItemView {
 					}
 					continue;
 				}
+
+				// Update birth_place (#351)
+				if (key === 'birth_place') {
+					const birthPlace = datum.data['birth place'] as string;
+					if (birthPlace) {
+						updatedLines.push(`birth_place: "${birthPlace}"`);
+					}
+					continue;
+				}
+
+				// Update death_place (#351)
+				if (key === 'death_place') {
+					const deathPlace = datum.data['death place'] as string;
+					if (deathPlace) {
+						updatedLines.push(`death_place: "${deathPlace}"`);
+					}
+					continue;
+				}
 			}
 
 			// Keep other lines unchanged
@@ -3374,6 +3474,16 @@ export class FamilyChartView extends ItemView {
 		const occupation = datum.data['occupation'] as string;
 		if (!processedKeys.has('occupation') && occupation) {
 			updatedLines.push(`occupation: "${occupation}"`);
+		}
+
+		const birthPlace = datum.data['birth place'] as string;
+		if (!processedKeys.has('birth_place') && birthPlace) {
+			updatedLines.push(`birth_place: "${birthPlace}"`);
+		}
+
+		const deathPlace = datum.data['death place'] as string;
+		if (!processedKeys.has('death_place') && deathPlace) {
+			updatedLines.push(`death_place: "${deathPlace}"`);
 		}
 
 		return updatedLines.join('\n');

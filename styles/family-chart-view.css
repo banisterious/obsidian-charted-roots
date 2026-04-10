@@ -947,6 +947,36 @@
   box-shadow: 0 0 0 2px var(--background-modifier-border-focus);
 }
 
+/* Place picker field (#351) */
+.cr-fcv-info-field-picker {
+  display: flex;
+  align-items: center;
+  gap: var(--size-2-2);
+}
+
+.cr-fcv-info-field-picker-value {
+  flex: 1;
+  font-size: var(--font-ui-small);
+  color: var(--text-normal);
+}
+
+.cr-fcv-info-field-picker-value.empty {
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+.cr-fcv-info-field-picker-btn {
+  font-size: var(--font-ui-smaller);
+  padding: 2px 8px;
+}
+
+.cr-fcv-info-field-picker-clear {
+  font-size: var(--font-ui-small);
+  padding: 2px 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
 /* ============================================================
  * Info Panel Relationships Section
  * ============================================================ */
