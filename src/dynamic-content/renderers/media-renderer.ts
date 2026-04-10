@@ -14,6 +14,7 @@ import { openGalleryLightbox, type LightboxItem } from '../../ui/media-lightbox-
 import { PdfThumbnailService } from '../../core/pdf-thumbnail-service';
 import { type MediaCrop } from '../../core/media-service';
 import { applyCropToImage } from '../../core/crop-renderer';
+import { CropRegionModal, type CropRegionResult } from '../../core/ui/crop-region-modal';
 
 /**
  * Media item extracted from frontmatter
@@ -453,6 +454,40 @@ export class MediaRenderer {
 						});
 				});
 
+				// Set crop region for images (#354)
+				if (item.isImage && item.file && this.currentContext) {
+					menu.addSeparator();
+					menu.addItem((menuItem) => {
+						menuItem
+							.setTitle(item.crop ? 'Edit crop region' : 'Set crop region')
+							.setIcon('crop')
+							.onClick(() => {
+								if (!item.file || !this.currentContext) return;
+								new CropRegionModal(
+									this.plugin.app,
+									item.file,
+									this.currentContext.file,
+									(result: CropRegionResult) => {
+										this.saveCropToFrontmatter(result);
+									},
+									item.crop
+								).open();
+							});
+					});
+
+					if (item.crop) {
+						menu.addItem((menuItem) => {
+							menuItem
+								.setTitle('Remove crop')
+								.setIcon('x')
+								.onClick(() => {
+									if (!item.file || !this.currentContext) return;
+									this.removeCropFromFrontmatter(item.file.name);
+								});
+						});
+					}
+				}
+
 				menu.showAtMouseEvent(e);
 			});
 
@@ -732,6 +767,51 @@ export class MediaRenderer {
 	/**
 	 * Get Lucide icon name for document type
 	 */
+	/**
+	 * Save crop region to the entity note's frontmatter (#354)
+	 */
+	private saveCropToFrontmatter(result: CropRegionResult): void {
+		if (!this.currentContext) return;
+
+		void this.plugin.app.fileManager.processFrontMatter(this.currentContext.file, (fm) => {
+			const crops = Array.isArray(fm.media_crop) ? [...fm.media_crop] : [];
+
+			// Remove existing crop for this image
+			const filtered = crops.filter((c: Record<string, unknown>) => c.image !== result.image);
+
+			// Add new crop
+			filtered.push({
+				image: result.image,
+				x: result.crop.x,
+				y: result.crop.y,
+				w: result.crop.w,
+				h: result.crop.h
+			});
+
+			fm.media_crop = filtered;
+		});
+	}
+
+	/**
+	 * Remove crop region from the entity note's frontmatter (#354)
+	 */
+	private removeCropFromFrontmatter(imageName: string): void {
+		if (!this.currentContext) return;
+
+		void this.plugin.app.fileManager.processFrontMatter(this.currentContext.file, (fm) => {
+			if (!Array.isArray(fm.media_crop)) return;
+
+			fm.media_crop = fm.media_crop.filter((c: Record<string, unknown>) => c.image !== imageName);
+
+			// Remove property entirely if empty
+			if (fm.media_crop.length === 0) {
+				delete fm.media_crop;
+			}
+		});
+
+		new Notice('Crop region removed');
+	}
+
 	private getDocumentIconName(extension: string): string {
 		// PDF files use file-text icon
 		if (extension === 'pdf') {
