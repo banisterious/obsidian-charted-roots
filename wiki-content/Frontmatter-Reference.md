@@ -165,6 +165,8 @@ erDiagram
 | `died` | `string` | Death date (YYYY, YYYY-MM, YYYY-MM-DD, or with GEDCOM qualifiers) | `"1952-08-20"`, `"BEF 1953"` |
 | `birth_place` | `string` | Location of birth | `"London, England"` |
 | `death_place` | `string` | Location of death | `"New York, USA"` |
+| `marriage_place` | `string` | Location of marriage (used by map view for markers) | `"[[St. Mary's Church]]"` |
+| `marriage_date` | `string` | Date of marriage (used by map view) | `"1910-06-15"` |
 | `sex` | `string` | Biological sex (for GEDCOM, historical records) | `"male"`, `"female"`, `"nonbinary"`, `"unknown"` |
 | `gender` | `string` | Gender (backwards compatibility - prefer `sex` or `gender_identity`) | `"Male"`, `"Female"` |
 | `gender_identity` | `string` | Gender identity (distinct from biological sex) | `"male"`, `"female"`, `"nonbinary"`, `"genderfluid"` |
