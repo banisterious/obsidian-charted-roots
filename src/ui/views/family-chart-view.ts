@@ -15,6 +15,7 @@ import type { ColorScheme, FamilyChartColors } from '../../settings';
 import { getLogger } from '../../core/logging';
 import { PersonPickerModal } from '../person-picker';
 import { PlacePickerModal, type SelectedPlaceInfo } from '../place-picker';
+import { AddRelationshipModal } from '../add-relationship-modal';
 import { FamilyChartExportWizard } from './family-chart-export-wizard';
 import { DeletePersonConfirmModal, FamilyChartStyleModal } from './family-chart-view-modals';
 import type { ProgressCallback } from './family-chart-export-progress-modal';
@@ -743,7 +744,20 @@ export class FamilyChartView extends ItemView {
 		if (!this.infoPanelContentEl) return;
 
 		const relSection = this.infoPanelContentEl.createDiv({ cls: 'cr-fcv-info-panel-relationships' });
-		relSection.createEl('h4', { text: 'Relationships' });
+
+		const headerRow = relSection.createDiv({ cls: 'cr-fcv-relationship-header' });
+		headerRow.createEl('h4', { text: 'Relationships' });
+
+		// Add relationship button in edit mode (#351)
+		if (this.infoPanelEditMode && this.selectedPersonId) {
+			const addBtn = headerRow.createEl('button', {
+				text: '+ Add',
+				cls: 'cr-fcv-relationship-add-btn'
+			});
+			addBtn.addEventListener('click', () => {
+				this.openAddRelationshipFromPanel();
+			});
+		}
 
 		// Parents
 		if (personData.rels.parents.length > 0) {
@@ -764,6 +778,38 @@ export class FamilyChartView extends ItemView {
 		if (personData.rels.parents.length === 0 && personData.rels.spouses.length === 0 && personData.rels.children.length === 0) {
 			relSection.createEl('p', { text: 'No relationships recorded', cls: 'cr-fcv-info-panel-no-rels' });
 		}
+	}
+
+	/**
+	 * Open the Add Relationship modal for the selected person (#351)
+	 */
+	private openAddRelationshipFromPanel(): void {
+		if (!this.selectedPersonId) return;
+
+		// Find the file for this person
+		const files = this.app.vault.getMarkdownFiles();
+		let targetFile: TFile | null = null;
+		for (const file of files) {
+			const cache = this.app.metadataCache.getFileCache(file);
+			if (cache?.frontmatter?.cr_id === this.selectedPersonId) {
+				targetFile = file;
+				break;
+			}
+		}
+
+		if (!targetFile) {
+			new Notice('Could not find person note');
+			return;
+		}
+
+		const modal = new AddRelationshipModal(this.app, this.plugin, targetFile);
+		modal.onClose = () => {
+			// Refresh chart after relationship is added
+			void this.refreshChart(true).then(() => {
+				this.renderInfoPanelContent();
+			});
+		};
+		modal.open();
 	}
 
 	/**

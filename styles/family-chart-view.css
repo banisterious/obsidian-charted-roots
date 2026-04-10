@@ -994,6 +994,17 @@
   margin: 0 0 var(--size-4-2) 0;
 }
 
+.cr-fcv-relationship-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cr-fcv-relationship-add-btn {
+  font-size: var(--font-ui-smaller);
+  padding: 2px 8px;
+}
+
 .cr-fcv-relationship-group {
   margin-bottom: var(--size-4-3);
 }
