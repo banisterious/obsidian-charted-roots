@@ -147,7 +147,7 @@ export class FamilyChartView extends ItemView {
 	private infoPanelActionsEl: HTMLElement | null = null;
 	private selectedPersonId: string | null = null;
 	private infoPanelEditMode: boolean = false;
-	private infoPanelEditData: { firstName: string; lastName: string; altName: string; pronouns: string; occupation: string; birthPlace: string; deathPlace: string; birthDate: string; deathDate: string; gender: 'M' | 'F' | 'X' | 'U' | '' } | null = null;
+	private infoPanelEditData: { firstName: string; lastName: string; altName: string; pronouns: string; occupation: string; birthPlace: string; deathPlace: string; birthDate: string; deathDate: string; gender: 'M' | 'F' | 'X' | 'U' | ''; researchLevel: string; collection: string } | null = null;
 
 	// Sync state (prevent infinite loops during sync)
 	private isSyncing: boolean = false;
@@ -504,6 +504,20 @@ export class FamilyChartView extends ItemView {
 		const sexDisplay = personData.data.gender === 'M' ? 'Male' : personData.data.gender === 'F' ? 'Female' : personData.data.gender === 'X' ? 'Non-binary' : personData.data.gender === 'U' ? 'Unknown' : '';
 		this.createInfoField(fieldsSection, 'Sex', sexDisplay);
 
+		// Research level (#351)
+		const researchLevel = personData.data['research level'];
+		if (researchLevel !== undefined && researchLevel !== '') {
+			const levelNames = ['Unresearched', 'Initial', 'Moderate', 'Thorough', 'Comprehensive', 'Exhaustive', 'Published'];
+			const levelNum = typeof researchLevel === 'number' ? researchLevel : parseInt(String(researchLevel));
+			const levelDisplay = !isNaN(levelNum) && levelNum >= 0 && levelNum <= 6 ? `${levelNum} — ${levelNames[levelNum]}` : String(researchLevel);
+			this.createInfoField(fieldsSection, 'Research level', levelDisplay);
+		}
+
+		// Collection (#351)
+		if (personData.data['collection']) {
+			this.createInfoField(fieldsSection, 'Collection', personData.data['collection'] as string);
+		}
+
 		// Relationships section
 		this.renderRelationshipsSection(personData);
 
@@ -558,7 +572,9 @@ export class FamilyChartView extends ItemView {
 				deathPlace: (personData.data['death place'] as string) || '',
 				birthDate: personData.data.birthday || '',
 				deathDate: personData.data.deathday || '',
-				gender: (personData.data.gender as 'M' | 'F' | 'X' | 'U' | '') || ''
+				gender: (personData.data.gender as 'M' | 'F' | 'X' | 'U' | '') || '',
+				researchLevel: String(personData.data['research level'] ?? ''),
+				collection: (personData.data['collection'] as string) || ''
 			};
 		}
 
@@ -632,7 +648,49 @@ export class FamilyChartView extends ItemView {
 			}
 		});
 
-		// Relationships section (read-only in edit mode for now)
+		// Research level dropdown (#351)
+		const rlField = fieldsSection.createDiv({ cls: 'cr-fcv-info-field' });
+		rlField.createDiv({ cls: 'cr-fcv-info-field-label', text: 'Research level' });
+		const rlSelect = rlField.createEl('select', { cls: 'cr-fcv-info-field-select dropdown' });
+		const rlOptions = [
+			{ value: '', label: 'Not set' },
+			{ value: '0', label: '0 — Unresearched' },
+			{ value: '1', label: '1 — Initial' },
+			{ value: '2', label: '2 — Moderate' },
+			{ value: '3', label: '3 — Thorough' },
+			{ value: '4', label: '4 — Comprehensive' },
+			{ value: '5', label: '5 — Exhaustive' },
+			{ value: '6', label: '6 — Published' }
+		];
+		for (const opt of rlOptions) {
+			const optionEl = rlSelect.createEl('option', { value: opt.value, text: opt.label });
+			if (this.infoPanelEditData.researchLevel === opt.value) {
+				optionEl.selected = true;
+			}
+		}
+		rlSelect.addEventListener('change', () => {
+			if (this.infoPanelEditData) {
+				this.infoPanelEditData.researchLevel = rlSelect.value;
+			}
+		});
+
+		// Collection input (#351)
+		this.createInfoFieldInput(fieldsSection, 'Collection', this.infoPanelEditData.collection, (value) => {
+			if (this.infoPanelEditData) this.infoPanelEditData.collection = value;
+		}, 'e.g., Smith Family');
+
+		// Link source button (#351)
+		const sourceField = fieldsSection.createDiv({ cls: 'cr-fcv-info-field' });
+		sourceField.createDiv({ cls: 'cr-fcv-info-field-label', text: 'Sources' });
+		const linkSourceBtn = sourceField.createEl('button', {
+			text: '+ Link source',
+			cls: 'cr-fcv-info-field-picker-btn'
+		});
+		linkSourceBtn.addEventListener('click', () => {
+			this.linkSourceFromPanel();
+		});
+
+		// Relationships section
 		this.renderRelationshipsSection(personData);
 
 		// Actions - Edit mode (buttons right-aligned)
@@ -781,6 +839,31 @@ export class FamilyChartView extends ItemView {
 	}
 
 	/**
+	 * Link a source to the selected person (#351)
+	 */
+	private linkSourceFromPanel(): void {
+		if (!this.selectedPersonId) return;
+
+		const files = this.app.vault.getMarkdownFiles();
+		let targetFile: TFile | null = null;
+		for (const file of files) {
+			const cache = this.app.metadataCache.getFileCache(file);
+			if (cache?.frontmatter?.cr_id === this.selectedPersonId) {
+				targetFile = file;
+				break;
+			}
+		}
+
+		if (!targetFile) {
+			new Notice('Could not find person note');
+			return;
+		}
+
+		const { addSourceToPersonNote } = require('../../plugin/context-menu-helpers');
+		addSourceToPersonNote(this.plugin, targetFile);
+	}
+
+	/**
 	 * Open the Add Relationship modal for the selected person (#351)
 	 */
 	private openAddRelationshipFromPanel(): void {
@@ -867,7 +950,9 @@ export class FamilyChartView extends ItemView {
 			deathPlace: (personData.data['death place'] as string) || '',
 			birthDate: personData.data.birthday || '',
 			deathDate: personData.data.deathday || '',
-			gender: (personData.data.gender as 'M' | 'F' | 'X' | 'U' | '') || ''
+			gender: (personData.data.gender as 'M' | 'F' | 'X' | 'U' | '') || '',
+			researchLevel: String(personData.data['research level'] ?? ''),
+			collection: (personData.data['collection'] as string) || ''
 		};
 		this.renderInfoPanelContent();
 	}
@@ -905,7 +990,9 @@ export class FamilyChartView extends ItemView {
 				'death place': this.infoPanelEditData.deathPlace,
 				'birthday': this.infoPanelEditData.birthDate,
 				'deathday': this.infoPanelEditData.deathDate,
-				'gender': this.infoPanelEditData.gender
+				'gender': this.infoPanelEditData.gender,
+				'research level': this.infoPanelEditData.researchLevel,
+				'collection': this.infoPanelEditData.collection
 			}
 		};
 
@@ -922,6 +1009,8 @@ export class FamilyChartView extends ItemView {
 			this.chartData[personIndex].data['occupation'] = this.infoPanelEditData.occupation;
 			this.chartData[personIndex].data['birth place'] = this.infoPanelEditData.birthPlace;
 			this.chartData[personIndex].data['death place'] = this.infoPanelEditData.deathPlace;
+			this.chartData[personIndex].data['research level'] = this.infoPanelEditData.researchLevel ? parseInt(this.infoPanelEditData.researchLevel) : '';
+			this.chartData[personIndex].data['collection'] = this.infoPanelEditData.collection;
 			this.chartData[personIndex].data.birthday = this.infoPanelEditData.birthDate;
 			this.chartData[personIndex].data.deathday = this.infoPanelEditData.deathDate;
 			if (this.infoPanelEditData.gender === 'M' || this.infoPanelEditData.gender === 'F' || this.infoPanelEditData.gender === 'X' || this.infoPanelEditData.gender === 'U') {
@@ -1469,6 +1558,8 @@ export class FamilyChartView extends ItemView {
 				'occupation': person.occupation || '',
 				'birth place': person.birthPlace || '',
 				'death place': person.deathPlace || '',
+				'research level': person.researchLevel ?? '',
+				'collection': person.collectionName || '',
 			},
 			rels: {
 				parents,
@@ -3485,6 +3576,24 @@ export class FamilyChartView extends ItemView {
 					}
 					continue;
 				}
+
+				// Update research_level (#351)
+				if (key === 'research_level') {
+					const rl = datum.data['research level'] as string;
+					if (rl) {
+						updatedLines.push(`research_level: ${rl}`);
+					}
+					continue;
+				}
+
+				// Update collection (#351)
+				if (key === 'collection') {
+					const coll = datum.data['collection'] as string;
+					if (coll) {
+						updatedLines.push(`collection: "${coll}"`);
+					}
+					continue;
+				}
 			}
 
 			// Keep other lines unchanged
@@ -3530,6 +3639,16 @@ export class FamilyChartView extends ItemView {
 		const deathPlace = datum.data['death place'] as string;
 		if (!processedKeys.has('death_place') && deathPlace) {
 			updatedLines.push(`death_place: "${deathPlace}"`);
+		}
+
+		const researchLevel = datum.data['research level'] as string;
+		if (!processedKeys.has('research_level') && researchLevel) {
+			updatedLines.push(`research_level: ${researchLevel}`);
+		}
+
+		const collection = datum.data['collection'] as string;
+		if (!processedKeys.has('collection') && collection) {
+			updatedLines.push(`collection: "${collection}"`);
 		}
 
 		return updatedLines.join('\n');
