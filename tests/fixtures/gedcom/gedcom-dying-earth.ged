@@ -1,0 +1,132 @@
+0 HEAD
+1 SOUR Charted Roots
+2 VERS 1.0
+2 NAME The Dying Earth Sample
+1 DEST ANY
+1 DATE 07 APR 2026
+1 SUBM @SUBM1@
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+1 NOTE Sample GEDCOM for worldbuilders based on Jack Vance's The Dying Earth.
+2 CONT Characters and relationships are approximate/fictional for demonstration purposes.
+0 @SUBM1@ SUBM
+1 NAME Charted Roots Demo
+0 @I1@ INDI
+1 NAME Cugel /the Clever/
+1 SEX M
+1 BIRT
+2 PLAC Almery, The Dying Earth
+1 OCCU Adventurer
+1 NOTE A resourceful rogue and wanderer across the dying world.
+1 FAMS @F1@
+0 @I2@ INDI
+1 NAME Derwe /Coreme/
+1 SEX F
+1 BIRT
+2 PLAC Sfere, The Dying Earth
+1 NOTE Noblewoman encountered by Cugel during his travels.
+1 FAMS @F1@
+0 @I3@ INDI
+1 NAME Iucounu /the Laughing Magician/
+1 SEX M
+1 BIRT
+2 PLAC Pergolo, The Dying Earth
+1 OCCU Magician
+1 NOTE Powerful sorcerer who dispatched Cugel on his first journey.
+0 @I4@ INDI
+1 NAME Liane /the Wayfarer/
+1 SEX M
+1 BIRT
+2 PLAC Kaiin, The Dying Earth
+1 DEAT
+2 PLAC Kaiin, The Dying Earth
+1 OCCU Wanderer
+1 NOTE A vain young man who sought Lith's golden tapestry.
+0 @I5@ INDI
+1 NAME Lith /of the Swamp/
+1 SEX F
+1 BIRT
+2 PLAC Dying Earth
+1 NOTE A beautiful woman dwelling near a dark swamp.
+0 @I6@ INDI
+1 NAME Turjan /of Miir/
+1 SEX M
+1 BIRT
+2 PLAC Miir, The Dying Earth
+1 OCCU Magician
+1 NOTE A magician who grew vat-beings in his castle at Miir.
+1 FAMS @F2@
+0 @I7@ INDI
+1 NAME T'sais /of Miir/
+1 SEX F
+1 BIRT
+2 PLAC Miir, The Dying Earth
+1 NOTE A vat-born woman created by Pandelume, twin to T'sain.
+0 @I8@ INDI
+1 NAME T'sain /of Miir/
+1 SEX F
+1 BIRT
+2 PLAC Miir, The Dying Earth
+1 NOTE Vat-born twin of T'sais, created by Pandelume.
+1 FAMS @F2@
+0 @I9@ INDI
+1 NAME Pandelume /of Embelyon/
+1 SEX M
+1 BIRT
+2 PLAC Embelyon, The Dying Earth
+1 OCCU Magician
+1 NOTE The greatest living magician, dwelling in the alternate realm of Embelyon.
+0 @I10@ INDI
+1 NAME Mazirian /the Magician/
+1 SEX M
+1 BIRT
+2 PLAC Dying Earth
+1 DEAT
+2 PLAC Dying Earth
+1 OCCU Magician
+1 NOTE A sorcerer who pursued T'sain through his enchanted gardens.
+0 @I11@ INDI
+1 NAME Guyal /of Sfere/
+1 SEX M
+1 BIRT
+2 PLAC Sfere, The Dying Earth
+1 OCCU Scholar
+1 NOTE A young man consumed by curiosity, seeking the Museum of Man.
+1 FAMS @F3@
+0 @I12@ INDI
+1 NAME Shierl /of Sfere/
+1 SEX F
+1 BIRT
+2 PLAC Sfere, The Dying Earth
+1 NOTE Companion of Guyal on his journey to the Museum of Man.
+1 FAMS @F3@
+0 @I13@ INDI
+1 NAME Firx /the Demon/
+1 SEX M
+1 NOTE A small demon attached to Cugel by Iucounu as a compulsion.
+0 @I14@ INDI
+1 NAME Kandive /the Golden/
+1 SEX M
+1 BIRT
+2 PLAC Kaiin, The Dying Earth
+1 OCCU Ruler
+1 NOTE Ruler of Kaiin, known for his golden palace.
+0 @I15@ INDI
+1 NAME Ludowik /of Ampridatvir/
+1 SEX M
+1 BIRT
+2 PLAC Ampridatvir, The Dying Earth
+1 OCCU Scholar
+1 NOTE Scholar encountered during travels in the dying world.
+0 @F1@ FAM
+1 HUSB @I1@
+1 WIFE @I2@
+0 @F2@ FAM
+1 HUSB @I6@
+1 WIFE @I8@
+0 @F3@ FAM
+1 HUSB @I11@
+1 WIFE @I12@
+0 TRLR

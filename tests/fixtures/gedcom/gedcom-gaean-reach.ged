@@ -1,0 +1,178 @@
+0 HEAD
+1 SOUR Charted Roots
+2 VERS 1.0
+2 NAME The Gaean Reach Sample
+1 DEST ANY
+1 DATE 07 APR 2026
+1 SUBM @SUBM1@
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+1 NOTE Sample GEDCOM for worldbuilders based on Jack Vance's The Demon Princes / Gaean Reach.
+2 CONT Characters and relationships are approximate/fictional for demonstration purposes.
+0 @SUBM1@ SUBM
+1 NAME Charted Roots Demo
+0 @I1@ INDI
+1 NAME Kirth /Gersen/
+1 SEX M
+1 BIRT
+2 PLAC Mount Pleasant, Alphanor, Gaean Reach
+1 OCCU Adventurer
+1 NOTE Protagonist of the Demon Princes series. Dedicated his life to hunting the five Demon Princes who destroyed his home.
+1 FAMC @F1@
+1 FAMS @F4@
+1 FAMS @F5@
+0 @I2@ INDI
+1 NAME Donn /Gersen/
+1 SEX M
+1 BIRT
+2 PLAC Mount Pleasant, Alphanor, Gaean Reach
+1 DEAT
+2 PLAC Mount Pleasant, Alphanor, Gaean Reach
+1 NOTE Kirth's grandfather, who raised and trained him after the Mount Pleasant massacre.
+1 FAMS @F1@
+0 @I3@ INDI
+1 NAME Elsa /Gersen/
+1 SEX F
+1 BIRT
+2 PLAC Alphanor, Gaean Reach
+1 DEAT
+2 PLAC Mount Pleasant, Alphanor, Gaean Reach
+1 NOTE Kirth's grandmother, wife of Donn. Killed in the Mount Pleasant raid.
+1 FAMS @F1@
+0 @I4@ INDI
+1 NAME Howard Alan /Treesong/
+1 SEX M
+1 BIRT
+2 PLAC Beyond, Gaean Reach
+1 DEAT
+2 PLAC Donn, Gaean Reach
+1 OCCU Criminal Mastermind
+1 NOTE The fifth and most enigmatic of the Demon Princes. Master of disguise and manipulation.
+0 @I5@ INDI
+1 NAME Attel /Malagate/
+1 SEX M
+1 BIRT
+2 PLAC Beyond, Gaean Reach
+1 DEAT
+2 PLAC Smade's Planet, Gaean Reach
+1 OCCU Slave Trader
+1 NOTE The first Demon Prince, known as "Malagate the Woe." Dealt in slavery across the Beyond.
+0 @I6@ INDI
+1 NAME Kokor /Hekkus/
+1 SEX M
+1 BIRT
+2 PLAC Thamber, Gaean Reach
+1 DEAT
+2 PLAC Thamber, Gaean Reach
+1 OCCU Tyrant
+1 NOTE The second Demon Prince, known as "The Killing Machine." Ruled Thamber as an eccentric despot.
+0 @I7@ INDI
+1 NAME Viole /Falushe/
+1 SEX M
+1 BIRT
+2 PLAC Beyond, Gaean Reach
+1 DEAT
+2 PLAC Sarkovy, Gaean Reach
+1 OCCU Criminal
+1 NOTE The third Demon Prince. Created the Palace of Love on Sarkovy.
+0 @I8@ INDI
+1 NAME Lens /Larque/
+1 SEX M
+1 BIRT
+2 PLAC Beyond, Gaean Reach
+1 DEAT
+2 PLAC Dar Sai, Gaean Reach
+1 OCCU Criminal
+1 NOTE The fourth Demon Prince. Operated the slave trade on Dar Sai.
+0 @I9@ INDI
+1 NAME Alusz /Iphigenia/
+1 SEX F
+1 BIRT
+2 PLAC Krokinole, Gaean Reach
+1 NOTE Love interest of Kirth Gersen in The Star King.
+1 FAMS @F4@
+0 @I10@ INDI
+1 NAME Pallis /Atwrode/
+1 SEX F
+1 BIRT
+2 PLAC Methlen, Gaean Reach
+1 NOTE Associated with Kirth Gersen during the events of The Killing Machine.
+0 @I11@ INDI
+1 NAME Drusilla /of Thamber/
+1 SEX F
+1 BIRT
+2 PLAC Thamber, Gaean Reach
+1 NOTE Noblewoman of Thamber encountered during Gersen's pursuit of Kokor Hekkus.
+0 @I12@ INDI
+1 NAME Kirdy /Wook/
+1 SEX M
+1 BIRT
+2 PLAC Cadwal, Gaean Reach
+1 OCCU IPCC Agent
+1 NOTE Fellow agent who became compromised during the events of Night Lamp. From the Wook family of Cadwal.
+1 FAMC @F2@
+0 @I13@ INDI
+1 NAME Wayness /Tamm/
+1 SEX F
+1 BIRT
+2 PLAC Cadwal, Gaean Reach
+1 NOTE Heroine of Ecce and Old Earth, conservator of the Cadwal charter.
+1 FAMC @F3@
+0 @I14@ INDI
+1 NAME Scharde /Tamm/
+1 SEX M
+1 BIRT
+2 PLAC Cadwal, Gaean Reach
+1 OCCU Conservator
+1 NOTE Father of Wayness, conservator at Araminta Station on Cadwal.
+1 FAMS @F3@
+0 @I15@ INDI
+1 NAME Marya /Tamm/
+1 SEX F
+1 BIRT
+2 PLAC Cadwal, Gaean Reach
+1 NOTE Mother of Wayness Tamm.
+1 FAMS @F3@
+0 @I16@ INDI
+1 NAME Jerdian /Wook/
+1 SEX M
+1 BIRT
+2 PLAC Cadwal, Gaean Reach
+1 OCCU Administrator
+1 NOTE Patriarch of the Wook family at Araminta Station.
+1 FAMS @F2@
+0 @I17@ INDI
+1 NAME Nesta /Wook/
+1 SEX F
+1 BIRT
+2 PLAC Cadwal, Gaean Reach
+1 NOTE Mother of Kirdy Wook.
+1 FAMS @F2@
+0 @I18@ INDI
+1 NAME Alice /Gersen/
+1 SEX F
+1 BIRT
+2 PLAC Alphanor, Gaean Reach
+1 NOTE Kirth Gersen's second companion.
+1 FAMS @F5@
+0 @F1@ FAM
+1 HUSB @I2@
+1 WIFE @I3@
+1 CHIL @I1@
+0 @F2@ FAM
+1 HUSB @I16@
+1 WIFE @I17@
+1 CHIL @I12@
+0 @F3@ FAM
+1 HUSB @I14@
+1 WIFE @I15@
+1 CHIL @I13@
+0 @F4@ FAM
+1 HUSB @I1@
+1 WIFE @I9@
+0 @F5@ FAM
+1 HUSB @I1@
+1 WIFE @I18@
+0 TRLR
