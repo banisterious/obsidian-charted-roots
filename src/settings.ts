@@ -1449,9 +1449,10 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				}));
 
 		// Fictional date systems (#358)
-		const fictionalDetails = datesContent.createEl('details', { cls: 'cr-settings-subsection' });
+		const fictionalDetails = datesContent.createEl('details', { cls: 'cr-settings-section' });
 		const fictionalSummary = fictionalDetails.createEl('summary');
 		fictionalSummary.createSpan({ text: 'Fictional date systems' });
+		fictionalSummary.createSpan({ cls: 'cr-section-desc', text: 'Custom calendars for worldbuilding' });
 		const fictionalContent = fictionalDetails.createDiv({ cls: 'cr-section-content' });
 
 		renderDateSystemsSettings(fictionalContent, this.plugin);
