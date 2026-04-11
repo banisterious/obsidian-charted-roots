@@ -404,9 +404,13 @@
 }
 
 .cr-profile__media-thumb {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 60px;
   aspect-ratio: 1;
+  object-fit: cover;
   border-radius: var(--radius-s);
-  overflow: hidden;
   border: 1px solid var(--background-modifier-border);
   transition: border-color 100ms ease-in-out;
 }
@@ -414,12 +418,6 @@
 .cr-profile__media-thumb:hover,
 .cr-profile__media-cell:hover .cr-profile__media-thumb {
   border-color: var(--text-accent);
-}
-
-.cr-profile__media-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 .cr-profile__media-fallback {

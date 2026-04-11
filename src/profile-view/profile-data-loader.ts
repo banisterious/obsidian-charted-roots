@@ -461,7 +461,7 @@ export class ProfileDataLoader {
 			const name = ref.replace(/^\[\[/, '').replace(/\]\]$/, '').replace(/\|.*$/, '');
 			const file = this.plugin.app.metadataCache.getFirstLinkpathDest(name, '');
 			if (file) {
-				const ext = file.extension.toLowerCase();
+				const ext = '.' + file.extension.toLowerCase();
 				const type = mediaService.getMediaType(ext);
 				const crop = cropMap.get(file.name) || cropMap.get(file.basename + '.' + file.extension);
 				items.push({
