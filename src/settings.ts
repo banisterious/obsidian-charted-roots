@@ -3,6 +3,7 @@ import CanvasRootsPlugin from '../main';
 import type { LogLevel } from './core/logging';
 import type { RelationshipTypeDefinition } from './relationships';
 import type { FictionalDateSystem } from './dates';
+import { renderDateSystemsSettings } from './dates/ui/date-systems-card';
 import type { OrganizationTypeDefinition } from './organizations';
 import type { SourceTypeDefinition, CitationFormat, SourceCategoryDefinition } from './sources/types/source-types';
 import type { EventTypeDefinition, EventCategoryDefinition } from './events/types/event-types';
@@ -1446,6 +1447,14 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					this.plugin.settings.requireLeadingZeros = value;
 					await this.plugin.saveSettings();
 				}));
+
+		// Fictional date systems (#358)
+		const fictionalDetails = datesContent.createEl('details', { cls: 'cr-settings-subsection' });
+		const fictionalSummary = fictionalDetails.createEl('summary');
+		fictionalSummary.createSpan({ text: 'Fictional date systems' });
+		const fictionalContent = fictionalDetails.createDiv({ cls: 'cr-section-content' });
+
+		renderDateSystemsSettings(fictionalContent, this.plugin);
 	}
 
 	private renderSexSection(containerEl: HTMLElement): void {

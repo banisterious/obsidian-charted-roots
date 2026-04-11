@@ -139,6 +139,96 @@ export function createDateSystemsCard(
 }
 
 /**
+ * Render fictional date systems management into a settings container (#358)
+ * Used by Settings > Dates & validation section.
+ */
+export function renderDateSystemsSettings(
+	container: HTMLElement,
+	plugin: CanvasRootsPlugin
+): void {
+	// Enable/disable toggle
+	new Setting(container)
+		.setName('Enable fictional dates')
+		.setDesc('Parse and display fictional calendar dates (e.g., "TA 2941", "DE 1200")')
+		.addToggle(toggle => toggle
+			.setValue(plugin.settings.enableFictionalDates)
+			.onChange(async (value) => {
+				plugin.settings.enableFictionalDates = value;
+				await plugin.saveSettings();
+				refreshContent();
+			}));
+
+	const conditionalContainer = container.createDiv();
+
+	const refreshContent = () => {
+		conditionalContainer.empty();
+		if (!plugin.settings.enableFictionalDates) return;
+
+		new Setting(conditionalContainer)
+			.setName('Show built-in systems')
+			.setDesc('Include preset calendars (Middle-earth, Westeros, Star Wars)')
+			.addToggle(toggle => toggle
+				.setValue(plugin.settings.showBuiltInDateSystems)
+				.onChange(async (value) => {
+					plugin.settings.showBuiltInDateSystems = value;
+					await plugin.saveSettings();
+					refreshList();
+				}));
+
+		const listContainer = conditionalContainer.createDiv({ cls: 'cr-date-systems-list' });
+		const refreshList = () => void renderDateSystemsList(listContainer, plugin, null as unknown as (options: { title: string; icon?: LucideIconName }) => HTMLElement);
+
+		// Custom systems list
+		const customSystems = plugin.settings.fictionalDateSystems;
+		if (customSystems.length > 0) {
+			for (const system of customSystems) {
+				new Setting(conditionalContainer)
+					.setName(system.name)
+					.setDesc(`Prefix: ${system.eras?.[0]?.prefix || '(none)'} · ${system.eras?.length || 0} era(s)`)
+					.addButton(btn => btn
+						.setButtonText('Edit')
+						.onClick(() => {
+							new DateSystemModal(plugin.app, plugin, system, async (updated) => {
+								const idx = plugin.settings.fictionalDateSystems.indexOf(system);
+								if (idx >= 0) {
+									plugin.settings.fictionalDateSystems[idx] = updated;
+									await plugin.saveSettings();
+									refreshContent();
+								}
+							}).open();
+						}))
+					.addButton(btn => btn
+						.setButtonText('Delete')
+						.onClick(async () => {
+							plugin.settings.fictionalDateSystems = plugin.settings.fictionalDateSystems.filter(s => s !== system);
+							await plugin.saveSettings();
+							refreshContent();
+							new Notice(`Removed date system: ${system.name}`);
+						}));
+			}
+		}
+
+		// Add button
+		new Setting(conditionalContainer)
+			.setName('Add date system')
+			.setDesc('Create a new fictional calendar system')
+			.addButton(button => button
+				.setButtonText('Add')
+				.setCta()
+				.onClick(() => {
+					new DateSystemModal(plugin.app, plugin, null, async (system) => {
+						plugin.settings.fictionalDateSystems.push(system);
+						await plugin.saveSettings();
+						refreshContent();
+						new Notice(`Added date system: ${system.name}`);
+					}).open();
+				}));
+	};
+
+	refreshContent();
+}
+
+/**
  * Get all active date systems (built-in + Calendarium + custom)
  * Async version that properly initializes the Calendarium bridge
  */
