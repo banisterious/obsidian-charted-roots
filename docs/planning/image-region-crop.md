@@ -2,7 +2,7 @@
 
 Planning document for image region selection / crop thumbnails.
 
-**Status:** Planning
+**Status:** ✅ Phases 1-2 complete | Phase 3 (Gramps import) planned
 
 **Related:** [#354](https://github.com/banisterious/obsidian-charted-roots/issues/354)
 
@@ -62,21 +62,23 @@ When rendering a media item:
 
 ## Implementation Phases
 
-### Phase 1 — Crop data model and rendering
+### Phase 1 — Crop data model and rendering ✅
 
-- [ ] Parse `media_crop` from frontmatter in `MediaService`
-- [ ] Apply crop when rendering thumbnails in `charted-roots-media` block
-- [ ] Apply crop when rendering Family Chart avatars
-- [ ] Apply crop in Entity Profile View media section
-- [ ] Apply crop in Sources tab media gallery
+- [x] `MediaCrop` interface and optional `crop` field on `MediaItem`
+- [x] `resolveMediaItemsWithCrops()` and `parseMediaCrops()` in `MediaService`
+- [x] `CropRenderer` — canvas-based crop to data URL with in-memory cache
+- [x] Apply crop in `charted-roots-media` dynamic block
+- [x] Apply crop in Family Chart avatars (async with await before chart build)
+- [x] Apply crop in Entity Profile View header avatar
+- [x] Apply crop in Entity Profile View media section
+- [x] Crop data flows through profile data loader via frontmatter parameter
 
-### Phase 2 — Crop selection UI
+### Phase 2 — Crop selection UI ✅
 
-- [ ] Create `CropRegionModal` with canvas-based rectangle drawing
-- [ ] Load image, overlay draggable/resizable rectangle
-- [ ] Preview the cropped result
-- [ ] Save crop coordinates to frontmatter via `processFrontMatter`
-- [ ] "Set crop region" context menu / button on media items
+- [x] `CropRegionModal` — canvas with draggable/resizable rectangle, darkened overlay, live preview
+- [x] Right-click context menu on media block images: "Set crop region" / "Edit crop region" / "Remove crop"
+- [x] Save crop coordinates to frontmatter via `processFrontMatter`
+- [x] Remove crop cleans up `media_crop` property (deletes if empty)
 
 ### Phase 3 — Gramps import (future)
 

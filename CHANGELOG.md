@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Phase 2:** Birth place, death place (PlacePickerModal with Pick/Clear buttons)
   - **Phase 3:** Relationships (+ Add button opens AddRelationshipModal with full bidirectional sync)
   - **Phase 4:** Research level (dropdown, 0-6), collection (text input), sources (+ Link source button)
+- **Image region crop for thumbnails** ([#354](https://github.com/banisterious/obsidian-charted-roots/issues/354)): New `media_crop` frontmatter property to define a rectangular crop region on any image. Cropped thumbnails displayed in the media block, Family Chart avatars, and Entity Profile View header. Visual crop selection modal with draggable/resizable rectangle, live preview, and save to frontmatter. Right-click any image in the media block to set, edit, or remove a crop region.
 
 ### Fixed
 
