@@ -123,9 +123,10 @@ The abbreviation matching is case-insensitive (`TA`, `ta`, `Ta` all work).
 
 ### Accessing Settings
 
-1. Open the Control Center (command palette: "Open Control Center")
-2. Navigate to the **Events** tab
-3. Find the **Fictional date systems** card
+1. Open **Settings > Charted Roots > Dates & validation**
+2. Expand the **Fictional date systems** section
+
+Alternatively, from the Control Center Events tab, click the **Fictional date systems** button in the Actions card to navigate directly to Settings.
 
 ### Enable/Disable Fictional Dates
 
@@ -151,7 +152,7 @@ The built-in systems are displayed in a table showing:
 
 ### Add a New System
 
-1. Click **Add date system** in the Fictional date systems card
+1. Click **Add** in the Fictional date systems section of Settings
 2. Fill in the system details:
    - **Name**: Display name (e.g., "My World Calendar")
    - **ID**: Auto-generated from name, or customize
@@ -274,7 +275,7 @@ Charted Roots integrates with the [Calendarium](https://github.com/javalent/cale
 
 Once enabled, imported calendars appear in:
 
-- **Date Systems card** (Control Center → Events tab): Listed under "From Calendarium" section
+- **Settings > Dates & validation > Fictional date systems**: Listed alongside built-in and custom systems
 - **Create Event modal**: Available in the Date system dropdown when creating events
 - **Date parsing**: Era abbreviations from Calendarium calendars work in date fields
 

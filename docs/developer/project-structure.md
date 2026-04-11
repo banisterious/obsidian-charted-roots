@@ -371,7 +371,7 @@ charted-roots/
 | **Constants** | | |
 | `default-date-systems.ts` | ✅ Complete | Built-in date system definitions |
 | **UI Components** | | |
-| `date-systems-card.ts` | ✅ Complete | Date systems configuration card |
+| `date-systems-card.ts` | ✅ Complete | Date systems configuration (Settings + Control Center) |
 | `events-tab.ts` | ✅ Complete | Events tab with date system support |
 
 ### Schemas Module (src/schemas/)

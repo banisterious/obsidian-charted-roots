@@ -97,7 +97,7 @@ The Control Center navigation is organized into groups:
 | Tab | Purpose |
 |-----|---------|
 | **People** | Browse, search, and manage person notes |
-| **Events** | Date systems and temporal data |
+| **Events** | Event management, calendar, and temporal data |
 | **Places** | Geographic locations and place statistics |
 | **Sources** | Evidence and source documentation |
 | **Organizations** | Organization notes and membership tracking |

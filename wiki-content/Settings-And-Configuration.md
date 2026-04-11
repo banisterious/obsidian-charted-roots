@@ -392,15 +392,16 @@ Settings for working with fictional genealogies (fantasy worlds, historical fict
 
 ### Fictional Date Systems
 
+Located in **Settings > Dates & validation > Fictional date systems**.
+
 | Setting | Default | Description |
 |---------|---------|-------------|
 | **Enable fictional dates** | On | Parse and display fictional date formats |
-| **Show built-in date systems** | On | Show Middle-earth, Westeros, etc. |
+| **Show built-in date systems** | On | Show Middle-earth, Westeros, Star Wars presets |
 
-Built-in systems include:
-- Middle-earth (Ages of Middle-earth)
-- Westeros (AC/BC - After/Before Conquest)
-- Custom systems can be added
+When enabled, built-in systems are displayed in a table with Name, Eras, and Universe columns. Custom systems can be added, edited, and deleted from the same section. Also accessible from the Control Center Events tab via the "Fictional date systems" button.
+
+See [Fictional Date Systems](Fictional-Date-Systems) for full documentation.
 
 ### Organization Types
 
@@ -525,7 +526,7 @@ If the [Calendarium](https://github.com/javalent/calendarium) plugin is installe
 - **Read-only (import calendars)**: Import calendar definitions from Calendarium
 
 When enabled, Calendarium calendars appear in:
-- The Date Systems card under "From Calendarium"
+- The Fictional date systems section in Settings > Dates & validation
 - The Date system dropdown in the Create Event modal
 
 See [Fictional Date Systems - Calendarium Integration](Fictional-Date-Systems#calendarium-integration) for details.
