@@ -164,6 +164,7 @@ export function renderDateSystemsSettings(
 		conditionalContainer.empty();
 		if (!plugin.settings.enableFictionalDates) return;
 
+		// Built-in systems subsection
 		new Setting(conditionalContainer)
 			.setName('Show built-in systems')
 			.setDesc('Include preset calendars (Middle-earth, Westeros, Star Wars)')
@@ -172,15 +173,40 @@ export function renderDateSystemsSettings(
 				.onChange(async (value) => {
 					plugin.settings.showBuiltInDateSystems = value;
 					await plugin.saveSettings();
-					refreshList();
+					refreshContent();
 				}));
 
-		const listContainer = conditionalContainer.createDiv({ cls: 'cr-date-systems-list' });
-		const refreshList = () => void renderDateSystemsList(listContainer, plugin, null as unknown as (options: { title: string; icon?: LucideIconName }) => HTMLElement);
+		if (plugin.settings.showBuiltInDateSystems && DEFAULT_DATE_SYSTEMS.length > 0) {
+			const builtInTable = conditionalContainer.createEl('table', { cls: 'cr-date-systems-table' });
+			const thead = builtInTable.createEl('thead');
+			const headerRow = thead.createEl('tr');
+			headerRow.createEl('th', { text: 'Name' });
+			headerRow.createEl('th', { text: 'Eras' });
+			headerRow.createEl('th', { text: 'Universe' });
+			headerRow.createEl('th', { text: '', cls: 'cr-date-systems-table__actions' });
+
+			const tbody = builtInTable.createEl('tbody');
+			for (const system of DEFAULT_DATE_SYSTEMS) {
+				const row = tbody.createEl('tr');
+				row.createEl('td', { text: system.name });
+				row.createEl('td', { text: system.eras.map(e => e.abbrev).join(', ') });
+				row.createEl('td', { text: system.universe || '—' });
+				const actionsCell = row.createEl('td', { cls: 'cr-date-systems-table__actions' });
+				const viewBtn = actionsCell.createEl('button', {
+					cls: 'cr-btn-icon',
+					attr: { 'aria-label': 'View details' }
+				});
+				setIcon(viewBtn, 'eye');
+				viewBtn.addEventListener('click', () => {
+					new DateSystemModal(plugin.app, plugin, system, async () => {}, true).open();
+				});
+			}
+		}
 
 		// Custom systems list
 		const customSystems = plugin.settings.fictionalDateSystems;
 		if (customSystems.length > 0) {
+			conditionalContainer.createEl('h4', { text: 'Custom systems', cls: 'cr-subsection-heading' });
 			for (const system of customSystems) {
 				new Setting(conditionalContainer)
 					.setName(system.name)
