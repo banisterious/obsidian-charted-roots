@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Phase 3:** Relationships (+ Add button opens AddRelationshipModal with full bidirectional sync)
   - **Phase 4:** Research level (dropdown, 0-6), collection (text input), sources (+ Link source button)
 - **Image region crop for thumbnails** ([#354](https://github.com/banisterious/obsidian-charted-roots/issues/354)): New `media_crop` frontmatter property to define a rectangular crop region on any image. Cropped thumbnails displayed in the media block, Family Chart avatars, and Entity Profile View header. Visual crop selection modal with draggable/resizable rectangle, live preview, and save to frontmatter. Right-click any image in the media block to set, edit, or remove a crop region.
+- **Settings tile on Control Center dashboard** ([#357](https://github.com/banisterious/obsidian-charted-roots/issues/357)): New tile in the Utilities row that opens Obsidian Settings directly to the Charted Roots configuration page.
+- **Fictional date systems in Settings** ([#358](https://github.com/banisterious/obsidian-charted-roots/issues/358)): Fictional date systems management (enable/disable, built-in systems toggle, add/edit/delete custom systems) now available in Settings > Dates & validation, in addition to the existing Control Center Events tab location.
 
 ### Fixed
 
