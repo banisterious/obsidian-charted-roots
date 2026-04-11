@@ -52,6 +52,8 @@ export interface MediaCrop {
 	y: number;
 	w: number;
 	h: number;
+	/** If true, x/y/w/h are percentages (0-100) instead of pixels. Used by Gramps import. */
+	percent?: boolean;
 }
 
 export interface MediaItem {
@@ -270,7 +272,8 @@ export class MediaService {
 			const h = typeof obj.h === 'number' ? obj.h : undefined;
 
 			if (image && x !== undefined && y !== undefined && w !== undefined && h !== undefined) {
-				crops.set(image, { x, y, w, h });
+				const percent = obj.percent === true;
+				crops.set(image, { x, y, w, h, percent });
 			}
 		}
 

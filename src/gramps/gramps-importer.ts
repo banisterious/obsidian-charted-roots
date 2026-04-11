@@ -676,14 +676,28 @@ export class GrampsImporter {
 			? (placeNameToWikilink.get(person.deathPlace) || person.deathPlace)
 			: undefined;
 
-		// Resolve media references to wikilinks
+		// Resolve media references to wikilinks and crop regions (#354)
 		const resolvedMedia: string[] = [];
+		const mediaCrops: Array<{ image: string; x: number; y: number; w: number; h: number; percent: boolean }> = [];
 		if (person.mediaRefs && person.mediaRefs.length > 0 && mediaHandleToPath) {
 			for (const ref of person.mediaRefs) {
 				const vaultPath = mediaHandleToPath.get(ref);
 				if (vaultPath) {
 					const filename = vaultPath.split('/').pop() || vaultPath;
 					resolvedMedia.push(`"[[${filename}]]"`);
+
+					// Check for crop region from Gramps
+					const region = person.mediaRegions?.get(ref);
+					if (region) {
+						mediaCrops.push({
+							image: filename,
+							x: region.corner1_x,
+							y: region.corner1_y,
+							w: region.corner2_x - region.corner1_x,
+							h: region.corner2_y - region.corner1_y,
+							percent: true
+						});
+					}
 				}
 			}
 		}
@@ -844,6 +858,20 @@ export class GrampsImporter {
 			includeDynamicBlocks: options.includeDynamicBlocks,
 			dynamicBlockTypes: options.dynamicBlockTypes
 		});
+
+		// Write media crop regions if any (#354)
+		if (mediaCrops.length > 0) {
+			await this.app.fileManager.processFrontMatter(file, (fm) => {
+				fm.media_crop = mediaCrops.map(c => ({
+					image: c.image,
+					x: c.x,
+					y: c.y,
+					w: c.w,
+					h: c.h,
+					percent: c.percent
+				}));
+			});
+		}
 
 		return { crId, notePath: file.path };
 	}

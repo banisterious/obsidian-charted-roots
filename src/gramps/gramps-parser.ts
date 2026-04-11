@@ -64,6 +64,8 @@ export interface ParsedGrampsPerson {
 	marriages: Map<string, { date?: string; place?: string }>;
 	// Media references
 	mediaRefs: string[];
+	// Media crop regions — map of media handle → percentage-based region (#354)
+	mediaRegions: Map<string, { corner1_x: number; corner1_y: number; corner2_x: number; corner2_y: number }>;
 	// Note references
 	noteRefs: string[];
 	// Custom attributes (e.g., Research Level)
@@ -650,6 +652,7 @@ export class GrampsParser {
 			childof: [],
 			parentin: [],
 			mediaRefs: [],
+			mediaRegions: new Map(),
 			attributes: [],
 			noteRefs: [],
 			tagRefs: []
@@ -689,11 +692,26 @@ export class GrampsParser {
 			}
 		});
 
-		// Parse media references
+		// Parse media references (with optional region data #354)
 		el.querySelectorAll('objref').forEach(refEl => {
 			const hlink = refEl.getAttribute('hlink');
 			if (hlink) {
 				person.mediaRefs.push(hlink);
+
+				// Check for region element (Gramps crop data)
+				const regionEl = refEl.querySelector('region');
+				if (regionEl) {
+					const c1x = parseFloat(regionEl.getAttribute('corner1_x') || '');
+					const c1y = parseFloat(regionEl.getAttribute('corner1_y') || '');
+					const c2x = parseFloat(regionEl.getAttribute('corner2_x') || '');
+					const c2y = parseFloat(regionEl.getAttribute('corner2_y') || '');
+					if (!isNaN(c1x) && !isNaN(c1y) && !isNaN(c2x) && !isNaN(c2y)) {
+						person.mediaRegions.set(hlink, {
+							corner1_x: c1x, corner1_y: c1y,
+							corner2_x: c2x, corner2_y: c2y
+						});
+					}
+				}
 			}
 		});
 
@@ -1314,6 +1332,7 @@ export class GrampsParser {
 			spouseRefs: [],
 			marriages: new Map(),
 			mediaRefs: person.mediaRefs || [],
+			mediaRegions: person.mediaRegions || new Map(),
 			noteRefs: person.noteRefs || [],
 			attributes,
 			tags: []

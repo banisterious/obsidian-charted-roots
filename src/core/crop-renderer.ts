@@ -43,9 +43,18 @@ export async function getCroppedImageUrl(
 			img.crossOrigin = 'anonymous';
 			img.onload = () => {
 				try {
+					// Convert percentage-based crops to pixel values
+					let cx = crop.x, cy = crop.y, cw = crop.w, ch = crop.h;
+					if (crop.percent) {
+						cx = Math.round(img.naturalWidth * crop.x / 100);
+						cy = Math.round(img.naturalHeight * crop.y / 100);
+						cw = Math.round(img.naturalWidth * crop.w / 100);
+						ch = Math.round(img.naturalHeight * crop.h / 100);
+					}
+
 					const canvas = document.createElement('canvas');
-					canvas.width = crop.w;
-					canvas.height = crop.h;
+					canvas.width = cw;
+					canvas.height = ch;
 
 					const ctx = canvas.getContext('2d');
 					if (!ctx) {
@@ -53,7 +62,7 @@ export async function getCroppedImageUrl(
 						return;
 					}
 
-					ctx.drawImage(img, crop.x, crop.y, crop.w, crop.h, 0, 0, crop.w, crop.h);
+					ctx.drawImage(img, cx, cy, cw, ch, 0, 0, cw, ch);
 					const dataUrl = canvas.toDataURL('image/png');
 
 					cropCache.set(key, dataUrl);
