@@ -9,7 +9,6 @@ import { App, Menu, Modal, Notice, Setting, TFile, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { LucideIconName } from '../../ui/lucide-icons';
 import { createLucideIcon } from '../../ui/lucide-icons';
-import { createDateSystemsCard } from './date-systems-card';
 import { CreateEventModal } from '../../events/ui/create-event-modal';
 import type { EventNote } from '../../events/types/event-types';
 import { getEventType, getAllEventTypes } from '../../events/types/event-types';
@@ -59,14 +58,6 @@ export function renderEventsTab(
 		container.empty();
 		renderEventsTab(container, plugin, createCard, showTab);
 	});
-
-	// Date Systems card (moved from Canvas Settings)
-	const dateSystemsCard = createDateSystemsCard(
-		container,
-		plugin,
-		createCard
-	);
-	container.appendChild(dateSystemsCard);
 
 	// Statistics card
 	renderStatisticsCard(container, plugin, createCard);
@@ -124,6 +115,24 @@ function renderEventNotesCard(
 			.setButtonText('Calendar')
 			.onClick(() => {
 				void plugin.activateCalendarView();
+			}));
+
+	// Fictional date systems button (#358)
+	new Setting(content)
+		.setName('Fictional date systems')
+		.setDesc('Manage custom calendars for worldbuilding')
+		.addButton(button => button
+			.setButtonText('Open settings')
+			.onClick(() => {
+				// @ts-expect-error - Obsidian internal API
+				plugin.app.setting.open();
+				// @ts-expect-error - Obsidian internal API
+				plugin.app.setting.openTabById('charted-roots');
+				// Delay to allow settings tab to render, then expand the dates section
+				setTimeout(() => {
+					const datesSection = document.querySelector('.cr-settings-section[data-section-name="dates"]') as HTMLDetailsElement;
+					if (datesSection) datesSection.open = true;
+				}, 200);
 			}));
 
 	// Templater templates button
