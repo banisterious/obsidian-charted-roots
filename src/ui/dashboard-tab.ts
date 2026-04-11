@@ -363,6 +363,19 @@ function renderQuickActionsSection(
 				closeModal();
 				new CommandMenuModal(app).open();
 			}
+		},
+		{
+			id: 'settings',
+			label: 'Settings',
+			icon: 'settings',
+			description: 'Open Charted Roots plugin settings',
+			action: () => {
+				closeModal();
+				// @ts-expect-error - Obsidian internal API for opening settings
+				app.setting.open();
+				// @ts-expect-error - Obsidian internal API for navigating to plugin tab
+				app.setting.openTabById('charted-roots');
+			}
 		}
 	];
 
