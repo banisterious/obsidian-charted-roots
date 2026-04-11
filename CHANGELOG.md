@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - **Burial event type not working in events array** ([#355](https://github.com/banisterious/obsidian-charted-roots/issues/355)): `burial` was excluded from the valid event types for the person-level `events` array, preventing burial locations from appearing as map markers when defined inline. Now supported alongside baptism, residence, and other event types.
+- **Entity Profile View media thumbnails blank** ([#356](https://github.com/banisterious/obsidian-charted-roots/issues/356)): Image thumbnails in the profile view media section were always blank. `TFile.extension` returns `"png"` without a dot, but `getMediaType()` expected `".png"` — all media was mistyped as `'other'` instead of `'image'`.
 
 ---
 
