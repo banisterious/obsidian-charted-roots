@@ -1078,7 +1078,7 @@ export class FamilyChartView extends ItemView {
 	/**
 	 * Initialize the family-chart instance
 	 */
-	private initializeChart(): void {
+	private async initializeChart(): Promise<void> {
 		if (!this.chartContainerEl) return;
 
 		logger.debug('chart-init', 'Initializing chart', { rootPersonId: this.rootPersonId, cardStyle: this.cardStyle });
@@ -1089,8 +1089,8 @@ export class FamilyChartView extends ItemView {
 		// Clear container
 		this.chartContainerEl.empty();
 
-		// Load family data
-		this.loadChartData();
+		// Load family data (async for crop resolution)
+		await this.loadChartData();
 
 		if (this.chartData.length === 0) {
 			this.showEmptyState();
@@ -1347,7 +1347,7 @@ export class FamilyChartView extends ItemView {
 	/**
 	 * Load and transform data from person notes to family-chart format
 	 */
-	private loadChartData(): void {
+	private async loadChartData(): Promise<void> {
 		const startTime = performance.now();
 
 		// Ensure cache is loaded first
@@ -1368,7 +1368,7 @@ export class FamilyChartView extends ItemView {
 		// Pre-resolve avatar URLs for people not already cached
 		// This allows the cache to persist across chart re-initializations
 		if (this.showAvatars) {
-			this.preResolveAvatars(people);
+			await this.preResolveAvatars(people);
 		}
 		const avatarResolveTime = performance.now();
 
@@ -1395,7 +1395,7 @@ export class FamilyChartView extends ItemView {
 	 * Only resolves URLs not already in the cache, making subsequent
 	 * chart initializations faster (e.g., when toggling avatars).
 	 */
-	private preResolveAvatars(people: PersonNode[]): void {
+	private async preResolveAvatars(people: PersonNode[]): Promise<void> {
 		const mediaService = this.plugin.getMediaService();
 		if (!mediaService) return;
 
@@ -1435,24 +1435,17 @@ export class FamilyChartView extends ItemView {
 				}
 
 				if (cropForThumb) {
-					// Async crop — update cache for next render
+					// Await crop generation so the cropped URL is in cache before chart renders
 					const { getCroppedImageUrl } = require('../../core/crop-renderer');
-					// Set uncropped URL as placeholder until crop resolves
-					this.avatarUrlCache.set(person.crId, this.app.vault.getResourcePath(thumbnailFile));
-					void (getCroppedImageUrl as (app: unknown, file: unknown, crop: unknown) => Promise<string | null>)(
+					const croppedUrl = await (getCroppedImageUrl as (app: unknown, file: unknown, crop: unknown) => Promise<string | null>)(
 						this.app, thumbnailFile, cropForThumb
-					).then((croppedUrl: string | null) => {
-						if (croppedUrl) {
-							this.avatarUrlCache.set(person.crId, croppedUrl);
-							// Update any visible card images with the cropped URL
-							const cardImgs = this.chartContainerEl?.querySelectorAll(`img[src]`) as NodeListOf<HTMLImageElement> | undefined;
-							cardImgs?.forEach(img => {
-								if (img.src.includes(thumbnailFile.name) || img.src === this.app.vault.getResourcePath(thumbnailFile)) {
-									img.src = croppedUrl;
-								}
-							});
-						}
-					});
+					);
+					if (croppedUrl) {
+						this.avatarUrlCache.set(person.crId, croppedUrl);
+					} else {
+						// Fallback to uncropped
+						this.avatarUrlCache.set(person.crId, this.app.vault.getResourcePath(thumbnailFile));
+					}
 				} else {
 					const avatarUrl = this.app.vault.getResourcePath(thumbnailFile);
 					this.avatarUrlCache.set(person.crId, avatarUrl);
