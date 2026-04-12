@@ -163,10 +163,10 @@ export class UniverseMapsProcessor {
 			});
 		}
 
-		// Count places with coordinates for each map's universe
-		const placeCount = this.countPlacesWithCoordinates(universeName, universeCrId);
+		// Count places with coordinates per map
+		const placeCounts = this.countPlacesPerMap(universeName, universeCrId, maps.map(m => m.mapId).filter(Boolean) as string[]);
 		for (const map of maps) {
-			map.placeCount = placeCount;
+			map.placeCount = map.mapId ? (placeCounts.get(map.mapId) ?? 0) : 0;
 		}
 
 		maps.sort((a, b) => a.name.localeCompare(b.name));
@@ -174,10 +174,16 @@ export class UniverseMapsProcessor {
 	}
 
 	/**
-	 * Count place notes with coordinates belonging to a universe
+	 * Count place notes with coordinates per map.
+	 * Places specify which map(s) they belong to via the `maps` or `map_id` field.
+	 * Places without a maps field are counted under all maps in their universe.
 	 */
-	private countPlacesWithCoordinates(universeName: string, universeCrId: string): number {
-		let count = 0;
+	private countPlacesPerMap(universeName: string, universeCrId: string, mapIds: string[]): Map<string, number> {
+		const counts = new Map<string, number>();
+		for (const id of mapIds) {
+			counts.set(id, 0);
+		}
+
 		const files = this.plugin.app.vault.getMarkdownFiles();
 		const lowerName = universeName.toLowerCase();
 
@@ -197,12 +203,31 @@ export class UniverseMapsProcessor {
 			const hasGeo = fm.coordinates_lat != null && fm.coordinates_long != null;
 			const hasPixel = fm.custom_coordinates_x != null && fm.custom_coordinates_y != null;
 			const hasPixelAlt = fm.pixel_x != null && fm.pixel_y != null;
+			if (!hasGeo && !hasPixel && !hasPixelAlt) continue;
 
-			if (hasGeo || hasPixel || hasPixelAlt) {
-				count++;
+			// Determine which map(s) this place belongs to
+			let placeMaps: string[] | null = null;
+			if (Array.isArray(fm.maps)) {
+				placeMaps = fm.maps.map((m: unknown) => String(m)).filter((m: string) => m.length > 0);
+			} else if (fm.map_id) {
+				placeMaps = [String(fm.map_id)];
+			}
+
+			if (placeMaps && placeMaps.length > 0) {
+				// Place specifies its map(s) — count only for those
+				for (const mapId of placeMaps) {
+					if (counts.has(mapId)) {
+						counts.set(mapId, (counts.get(mapId) ?? 0) + 1);
+					}
+				}
+			} else {
+				// Place has no map restriction — count for all maps in the universe
+				for (const mapId of mapIds) {
+					counts.set(mapId, (counts.get(mapId) ?? 0) + 1);
+				}
 			}
 		}
 
-		return count;
+		return counts;
 	}
 }
