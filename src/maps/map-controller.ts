@@ -612,6 +612,19 @@ export class MapController {
 			this.openNoteById(data.placeId);
 		});
 
+		// Linked map drill-down button (#361)
+		if (data.linkedMap) {
+			const mapConfig = this.imageMapManager.getMapConfig(data.linkedMap);
+			const mapName = mapConfig?.name || data.linkedMap;
+			const openMapBtn = btnContainer.createEl('button', {
+				cls: 'cr-map-popup-btn cr-map-popup-btn--secondary',
+				text: `Open ${mapName} ↗`
+			});
+			openMapBtn.addEventListener('click', () => {
+				void this.setActiveMap(data.linkedMap!);
+			});
+		}
+
 		return container;
 	}
 

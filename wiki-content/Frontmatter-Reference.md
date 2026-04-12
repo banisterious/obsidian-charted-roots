@@ -568,6 +568,15 @@ historical_names:
 
 The `collection` property allows places to be grouped with related person notes. For example, a "Smith Family" collection could include both the Smith family members and the places associated with them.
 
+### Map Association
+
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `maps` | `string[]` | Map IDs this place belongs to (restricts marker to specific maps) | `["the-dying-earth"]` |
+| `linked_map` | `string` | Map ID for drill-down navigation (shows "Open map" button in marker popup) | `"river-scaum"` |
+
+See [Custom Maps — Linked Maps](Custom-Maps#linked-maps-drill-down-navigation) for usage details.
+
 ### Ownership
 
 For tracking property ownership (useful for plantation research, estate records):

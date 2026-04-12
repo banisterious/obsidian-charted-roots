@@ -58,6 +58,8 @@ interface PlaceData {
 	maps?: string[];
 	/** Single map ID shorthand (normalized to maps array internally) */
 	mapId?: string;
+	/** Linked map ID for drill-down navigation (#361) */
+	linkedMap?: string;
 }
 
 /**
@@ -262,7 +264,8 @@ export class MapDataService {
 				universe: fm.universe ? fmToString(fm.universe) : undefined,
 				parentPlace: this.extractLinkTarget(fm.parent_place) || undefined,
 				maps,
-				mapId
+				mapId,
+				linkedMap: fm.linked_map ? fmToString(fm.linked_map) : undefined
 			};
 
 			if (placeData.crId) {
@@ -475,7 +478,8 @@ export class MapDataService {
 				pixelX: place.pixelX,
 				pixelY: place.pixelY,
 				category: place.category,
-				universe: place.universe
+				universe: place.universe,
+				linkedMap: place.linkedMap
 			});
 		}
 

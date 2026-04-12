@@ -120,6 +120,10 @@ export interface PlaceMarker {
 	category?: string;
 	/** Universe for fictional places */
 	universe?: string;
+	/** Linked map ID for drill-down navigation (#361) */
+	linkedMap?: string;
+	/** Display name of the linked map */
+	linkedMapName?: string;
 }
 
 /**

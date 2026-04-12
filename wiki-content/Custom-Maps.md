@@ -18,6 +18,7 @@ Charted Roots allows you to create custom map images for fictional worlds, histo
 - [Map Actions](#map-actions)
 - [Coordinate Systems](#coordinate-systems)
   - [Adding Places to Pixel-Based Maps](#adding-places-to-pixel-based-maps)
+- [Linked Maps (Drill-Down Navigation)](#linked-maps-drill-down-navigation)
 - [Frontmatter Reference](#frontmatter-reference)
 
 ---
@@ -356,6 +357,44 @@ To determine the pixel coordinates for a location on your map image:
 4. The origin (0, 0) is at the top-left corner of the image
 
 **Tip:** If your image editor shows coordinates from the bottom-left, subtract the Y value from the image height to convert to top-left origin.
+
+---
+
+## Linked Maps (Drill-Down Navigation)
+
+You can link related maps together so that clicking a place marker on one map navigates to another. This is useful for multi-scale maps — for example, a continental overview map with a detailed regional map for a specific area.
+
+### Setting Up a Linked Map
+
+1. Create both maps (e.g., "The Dying Earth" continent map and "River Scaum" regional map)
+2. Create a place note at the location where the maps connect (e.g., "Scaum")
+3. Place the marker on the parent map with coordinates
+4. Add `linked_map` to the place note's frontmatter, using the `map_id` of the target map:
+
+```yaml
+---
+cr_type: place
+name: Scaum
+universe: The Dying Earth
+custom_coordinates_x: 5200
+custom_coordinates_y: 2400
+maps:
+  - the-dying-earth
+linked_map: river-scaum-and-its-major-tributaries
+---
+```
+
+### How It Works
+
+- When you click the place marker on the parent map, the popup shows an additional button: **"Open River Scaum and its Major Tributaries ↗"**
+- Clicking the button switches the Map View to the linked map
+- The regular "Open place" button still works to open the place note
+
+### Tips
+
+- The `linked_map` value must match the `map_id` field on the target map note
+- Use the `maps` array on the place note to ensure the marker only appears on the relevant parent map
+- You can link maps in both directions — add `linked_map` on a place in the child map pointing back to the parent map's `map_id`
 
 ---
 
