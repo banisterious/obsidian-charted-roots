@@ -59,6 +59,7 @@ interface MapConfig {
 	name: string;
 	mapId: string;
 	universe: string;
+	parentMap: string;
 	coordinateSystem: CoordinateSystem;
 	// Geographic bounds (for geographic mode)
 	boundsNorth?: number;
@@ -108,6 +109,7 @@ export class CreateMapWizardModal extends Modal {
 			name: '',
 			mapId: '',
 			universe: '',
+			parentMap: '',
 			coordinateSystem: 'pixel', // Default to pixel for fantasy maps
 			defaultZoom: 1,
 			minZoom: 0,
@@ -537,6 +539,24 @@ export class CreateMapWizardModal extends Modal {
 			});
 		}
 
+		// Parent map (optional, for nested maps #361)
+		const existingMaps = this.getExistingMaps();
+		if (existingMaps.length > 0) {
+			new Setting(form)
+				.setName('Parent map')
+				.setDesc('Nest this map under another map (optional, enables breadcrumb navigation)')
+				.addDropdown(dropdown => {
+					dropdown.addOption('', 'None');
+					for (const map of existingMaps) {
+						dropdown.addOption(map.id, map.name);
+					}
+					dropdown.setValue(this.mapConfig.parentMap)
+						.onChange(value => {
+							this.mapConfig.parentMap = value;
+						});
+				});
+		}
+
 		// Coordinate system
 		new Setting(form)
 			.setName('Coordinate system')
@@ -703,6 +723,26 @@ export class CreateMapWizardModal extends Modal {
 		}
 
 		return Array.from(universes).sort();
+	}
+
+	/**
+	 * Get existing custom maps for the parent map dropdown (#361)
+	 */
+	private getExistingMaps(): Array<{ id: string; name: string }> {
+		const maps: Array<{ id: string; name: string }> = [];
+		const files = this.app.vault.getMarkdownFiles();
+
+		for (const file of files) {
+			const cache = this.app.metadataCache.getFileCache(file);
+			const fm = cache?.frontmatter;
+			if (!fm) continue;
+			const crType = fm.cr_type || fm.type;
+			if (crType === 'map' && fm.map_id && fm.name) {
+				maps.push({ id: fm.map_id, name: fm.name });
+			}
+		}
+
+		return maps.sort((a, b) => a.name.localeCompare(b.name));
 	}
 
 	// ========================================
@@ -1220,6 +1260,10 @@ export class CreateMapWizardModal extends Modal {
 
 		if (this.mapConfig.universe) {
 			lines.push(`universe: ${this.mapConfig.universe}`);
+		}
+
+		if (this.mapConfig.parentMap) {
+			lines.push(`parent_map: ${this.mapConfig.parentMap}`);
 		}
 
 		if (this.mapConfig.coordinateSystem === 'geographic') {
