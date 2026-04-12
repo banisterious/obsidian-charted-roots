@@ -1,0 +1,106 @@
+/* ==========================================================================
+   UNIVERSE ENTITIES DYNAMIC BLOCK (#359)
+   ========================================================================== */
+
+.cr-universe-entities {
+  font-size: var(--font-ui-small);
+}
+
+/* Section headings */
+
+.cr-universe-entities__heading {
+  margin: 16px 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  font-size: var(--font-ui-small);
+  font-weight: var(--font-semibold);
+  color: var(--text-normal);
+}
+
+.cr-universe-entities__section:first-child .cr-universe-entities__heading {
+  margin-top: 4px;
+}
+
+/* Tables */
+
+.cr-universe-entities__table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+}
+
+.cr-universe-entities__table th {
+  text-align: left;
+  padding: 4px 8px;
+  font-size: var(--font-ui-smaller);
+  font-weight: var(--font-semibold);
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-universe-entities__table td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--background-modifier-border-hover);
+  vertical-align: top;
+}
+
+.cr-universe-entities__table tr:last-child td {
+  border-bottom: none;
+}
+
+.cr-universe-entities__table tr:hover td {
+  background: var(--background-modifier-hover);
+}
+
+/* Cell types */
+
+.cr-universe-entities__date {
+  white-space: nowrap;
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+.cr-universe-entities__meta {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
+
+/* Wikilinks */
+
+.cr-universe-entities__link p {
+  margin: 0;
+  display: inline;
+}
+
+/* Event type badges */
+
+.cr-universe-entities__badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: var(--cr-radius-xs, 4px);
+  font-size: 10px;
+  font-weight: var(--font-semibold);
+  text-transform: capitalize;
+  background: var(--background-modifier-hover);
+  color: var(--text-muted);
+}
+
+.cr-universe-entities__badge--birth {
+  background: var(--background-modifier-success);
+  color: var(--text-on-accent);
+}
+
+.cr-universe-entities__badge--death {
+  background: var(--background-modifier-error);
+  color: var(--text-on-accent);
+}
+
+.cr-universe-entities__badge--marriage {
+  background: var(--color-yellow);
+  color: var(--text-normal);
+}
+
+.cr-universe-entities__badge--occupation {
+  background: var(--background-modifier-hover);
+  color: var(--text-muted);
+}

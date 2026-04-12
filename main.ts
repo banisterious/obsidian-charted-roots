@@ -24,7 +24,7 @@ import { PersonIndexService } from './src/core/person-index-service';
 import { PlaceGraphService } from './src/core/place-graph';
 import { EvidenceService, ProofSummaryService, SourceService } from './src/sources';
 import { EventService } from './src/events/services/event-service';
-import { TimelineProcessor, RelationshipsProcessor, MediaProcessor, SourceRolesProcessor, TransfersProcessor, MembersProcessor, SourcesProcessor, ExtractionsProcessor, NegativeFindingsProcessor, ResearchTimelineProcessor } from './src/dynamic-content';
+import { TimelineProcessor, RelationshipsProcessor, MediaProcessor, SourceRolesProcessor, TransfersProcessor, MembersProcessor, SourcesProcessor, ExtractionsProcessor, NegativeFindingsProcessor, ResearchTimelineProcessor, UniverseEntitiesProcessor } from './src/dynamic-content';
 import { RecentFilesService, RecentEntityType } from './src/core/recent-files-service';
 import { registerCustomIcons } from './src/ui/lucide-icons';
 import { MediaService } from './src/core/media-service';
@@ -570,6 +570,31 @@ export default class CanvasRootsPlugin extends Plugin {
 		this.registerMarkdownCodeBlockProcessor(
 			'charted-roots-research-timeline',
 			(source, el, ctx) => researchTimelineProcessor.process(source, el, ctx)
+		);
+
+		// Universe entity blocks (#359) — list entities belonging to a universe
+		const universePeopleProcessor = new UniverseEntitiesProcessor(this, 'people');
+		this.registerMarkdownCodeBlockProcessor(
+			'charted-roots-universe-people',
+			(source, el, ctx) => universePeopleProcessor.process(source, el, ctx)
+		);
+
+		const universePlacesProcessor = new UniverseEntitiesProcessor(this, 'places');
+		this.registerMarkdownCodeBlockProcessor(
+			'charted-roots-universe-places',
+			(source, el, ctx) => universePlacesProcessor.process(source, el, ctx)
+		);
+
+		const universeEventsProcessor = new UniverseEntitiesProcessor(this, 'events');
+		this.registerMarkdownCodeBlockProcessor(
+			'charted-roots-universe-events',
+			(source, el, ctx) => universeEventsProcessor.process(source, el, ctx)
+		);
+
+		const universeOrgsProcessor = new UniverseEntitiesProcessor(this, 'organizations');
+		this.registerMarkdownCodeBlockProcessor(
+			'charted-roots-universe-organizations',
+			(source, el, ctx) => universeOrgsProcessor.process(source, el, ctx)
 		);
 	}
 

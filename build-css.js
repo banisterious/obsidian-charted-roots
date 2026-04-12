@@ -63,6 +63,7 @@ const CONFIG = {
     'dashboard.css',     // Dashboard tab (Control Center home)
     'universe-wizard.css', // Universe setup wizard modal
     'universes.css',     // Universes tab and dockable view
+    'universe-entities.css', // Universe entity dynamic blocks (#359)
     'collections.css',   // Collections tab and dockable view
     'data-quality-view.css', // Data quality dockable view
     'family-wizard.css', // Family creation wizard modal

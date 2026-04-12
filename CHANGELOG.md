@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Book Builder link in Report Wizard**: The report type selection step now includes a link to the Book Builder, making it discoverable from the Report Wizard in addition to the command palette.
+- **Universe entity dynamic blocks** ([#359](https://github.com/banisterious/obsidian-charted-roots/issues/359)): Four new dynamic content blocks for universe notes that automatically list all entities belonging to that universe:
+  - `charted-roots-universe-people` — table with name, born, died, occupation
+  - `charted-roots-universe-places` — table with name and place type
+  - `charted-roots-universe-events` — table with event name, date, type badge, and place
+  - `charted-roots-universe-organizations` — table with name and type
+  - All entries are clickable wikilinks. Supports `sort` (name/date/type) and `limit` parameters. Auto-refreshes when vault data changes.
 
 ---
 

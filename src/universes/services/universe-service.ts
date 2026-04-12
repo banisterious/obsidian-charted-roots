@@ -526,6 +526,82 @@ export class UniverseService {
 	}
 
 	/**
+	 * Get entities belonging to a universe, grouped by type.
+	 * Returns file references with basic frontmatter data for rendering.
+	 */
+	getEntitiesForUniverse(crIdOrName: string): UniverseEntities {
+		const result: UniverseEntities = {
+			people: [],
+			places: [],
+			events: [],
+			organizations: []
+		};
+
+		const files = this.app.vault.getMarkdownFiles();
+		const lowerValue = crIdOrName.toLowerCase();
+
+		for (const file of files) {
+			const cache = this.app.metadataCache.getFileCache(file);
+			const fm = cache?.frontmatter;
+			if (!fm?.universe) continue;
+
+			const universeValue = String(fm.universe).toLowerCase();
+			if (universeValue !== lowerValue && universeValue !== crIdOrName) continue;
+
+			const crType = fm.cr_type || fm.type;
+			const entry: UniverseEntityEntry = {
+				name: fm.name || file.basename,
+				file,
+				crType: crType || 'unknown'
+			};
+
+			switch (crType) {
+				case 'person':
+					entry.born = fm.born ? String(fm.born) : undefined;
+					entry.died = fm.died ? String(fm.died) : undefined;
+					entry.occupation = fm.occupation ? String(fm.occupation) : undefined;
+					entry.sex = fm.sex ? String(fm.sex) : undefined;
+					result.people.push(entry);
+					break;
+				case 'place':
+					entry.placeType = fm.place_type ? String(fm.place_type) : undefined;
+					result.places.push(entry);
+					break;
+				case 'event': {
+					entry.eventType = fm.event_type ? String(fm.event_type) : undefined;
+					entry.date = fm.date ? String(fm.date) : undefined;
+					// Collect person names from the persons array
+					if (Array.isArray(fm.persons)) {
+						entry.persons = fm.persons.map((p: string) => {
+							const match = p.match(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/);
+							return match ? (match[2] || match[1].split('/').pop() || p) : p;
+						});
+					}
+					const placeFm = fm.place ? String(fm.place) : undefined;
+					if (placeFm) {
+						const match = placeFm.match(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/);
+						entry.placeName = match ? (match[2] || match[1].split('/').pop() || placeFm) : placeFm;
+					}
+					result.events.push(entry);
+					break;
+				}
+				case 'organization':
+					entry.orgType = fm.org_type ? String(fm.org_type) : undefined;
+					result.organizations.push(entry);
+					break;
+			}
+		}
+
+		// Sort each group
+		result.people.sort((a, b) => a.name.localeCompare(b.name));
+		result.places.sort((a, b) => a.name.localeCompare(b.name));
+		result.events.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+		result.organizations.sort((a, b) => a.name.localeCompare(b.name));
+
+		return result;
+	}
+
+	/**
 	 * Get universes with entity counts
 	 */
 	getUniversesWithCounts(): UniverseWithCounts[] {

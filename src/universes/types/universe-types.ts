@@ -135,6 +135,48 @@ export interface OrphanUniverse {
 }
 
 /**
+ * A single entity belonging to a universe
+ */
+export interface UniverseEntityEntry {
+	/** Display name */
+	name: string;
+	/** The source file */
+	file: TFile;
+	/** Entity type (person, place, event, organization) */
+	crType: string;
+	/** Person: birth date */
+	born?: string;
+	/** Person: death date */
+	died?: string;
+	/** Person: occupation */
+	occupation?: string;
+	/** Person: sex */
+	sex?: string;
+	/** Place: place type */
+	placeType?: string;
+	/** Event: event type */
+	eventType?: string;
+	/** Event: date */
+	date?: string;
+	/** Event: persons involved (display names) */
+	persons?: string[];
+	/** Event: place name */
+	placeName?: string;
+	/** Organization: organization type */
+	orgType?: string;
+}
+
+/**
+ * Entities belonging to a universe, grouped by type
+ */
+export interface UniverseEntities {
+	people: UniverseEntityEntry[];
+	places: UniverseEntityEntry[];
+	events: UniverseEntityEntry[];
+	organizations: UniverseEntityEntry[];
+}
+
+/**
  * Statistics about universes in the vault
  */
 export interface UniverseStats {

@@ -37,3 +37,6 @@ export { NegativeFindingsRenderer } from './renderers/negative-findings-renderer
 
 export { ResearchTimelineProcessor } from './processors/research-timeline-processor';
 export { ResearchTimelineRenderer } from './renderers/research-timeline-renderer';
+
+export { UniverseEntitiesProcessor } from './processors/universe-entities-processor';
+export { UniverseEntitiesRenderer } from './renderers/universe-entities-renderer';
