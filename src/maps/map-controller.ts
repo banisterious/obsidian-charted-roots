@@ -84,7 +84,7 @@ import type {
 	CRPolyline,
 	CustomMapConfig
 } from './types/map-types';
-import { getMarkerColor, isMarkerTypeVisible } from './types/map-types';
+import { getMarkerColor, isMarkerTypeVisible, type CustomMapConfig } from './types/map-types';
 import { ImageMapManager } from './image-map-manager';
 
 const logger = getLogger('MapController');
@@ -112,6 +112,7 @@ export class MapController {
 	private pathLayer: L.LayerGroup | null = null;
 	private journeyLayer: L.LayerGroup | null = null;
 	private heatLayer: L.Layer | null = null;
+	private childMapOverlayLayer: L.LayerGroup | null = null;
 
 	// Controls
 	private fullscreenControl: L.Control | null = null;
@@ -214,6 +215,9 @@ export class MapController {
 
 		// Initialize journey layer (all life events connected chronologically)
 		this.journeyLayer = L.layerGroup();  // Not added by default
+
+		// Initialize child map overlay layer (#361 Phase 3)
+		this.childMapOverlayLayer = L.layerGroup().addTo(this.map);
 
 		// Add fullscreen control
 		this.initializeFullscreen();
@@ -1200,6 +1204,67 @@ export class MapController {
 	/**
 	 * Set layer visibility
 	 */
+	/**
+	 * Render clickable overlay regions for child maps on the parent map (#361 Phase 3)
+	 */
+	renderChildMapOverlays(mapId: string): void {
+		if (!this.childMapOverlayLayer || !this.map) return;
+		this.childMapOverlayLayer.clearLayers();
+
+		if (mapId === 'openstreetmap') return;
+
+		const children = this.imageMapManager.getChildMapsWithRegions(mapId);
+		if (children.length === 0) return;
+
+		for (const { config } of children) {
+			const region = config.parentRegion!;
+
+			// For pixel CRS: [y, x] format (Leaflet CRS.Simple)
+			const bounds = this.currentCRS === 'pixel'
+				? L.latLngBounds(
+					L.latLng(region.y + region.h, region.x),           // SW: bottom-left
+					L.latLng(region.y, region.x + region.w)            // NE: top-right
+				)
+				: L.latLngBounds(
+					L.latLng(region.y, region.x),                      // SW
+					L.latLng(region.y + region.h, region.x + region.w) // NE
+				);
+
+			const rect = L.rectangle(bounds, {
+				color: '#4a90d9',
+				weight: 2,
+				opacity: 0.7,
+				fillColor: '#4a90d9',
+				fillOpacity: 0.1,
+				dashArray: '6, 4',
+				className: 'cr-map-child-overlay'
+			});
+
+			// Tooltip with child map name
+			rect.bindTooltip(config.name, {
+				sticky: true,
+				className: 'cr-map-child-overlay-tooltip'
+			});
+
+			// Click to navigate to child map
+			rect.on('click', () => {
+				void this.setActiveMap(config.id);
+			});
+
+			// Hover effects
+			rect.on('mouseover', () => {
+				rect.setStyle({ fillOpacity: 0.25, weight: 3 });
+			});
+			rect.on('mouseout', () => {
+				rect.setStyle({ fillOpacity: 0.1, weight: 2 });
+			});
+
+			this.childMapOverlayLayer.addLayer(rect);
+		}
+
+		logger.debug('child-overlays', `Rendered ${children.length} child map overlays on ${mapId}`);
+	}
+
 	setLayerVisibility(layers: LayerVisibility): void {
 		if (!this.map) return;
 
@@ -1339,6 +1404,9 @@ export class MapController {
 
 		this.activeMapId = mapId;
 
+		// Render child map overlay regions (#361 Phase 3)
+		this.renderChildMapOverlays(mapId);
+
 		// Notify listeners of the map change
 		if (this.onMapChangeCallback) {
 			const universe = mapId === 'openstreetmap' ? null : this.imageMapManager.getMapUniverse(mapId);
@@ -1366,6 +1434,9 @@ export class MapController {
 			this.map.removeLayer(this.heatLayer);
 			this.heatLayer = null;
 		}
+
+		this.childMapOverlayLayer?.clearLayers();
+		this.childMapOverlayLayer = null;
 
 		if (this.currentImageOverlay && this.map) {
 			this.map.removeLayer(this.currentImageOverlay);
@@ -1482,6 +1553,9 @@ export class MapController {
 		}
 		this.setLayerVisibility(savedLayers);
 
+		// Render child map overlay regions (#361 Phase 3)
+		this.renderChildMapOverlays(mapId);
+
 		// Notify listeners
 		if (this.onMapChangeCallback) {
 			const universe = mapId === 'openstreetmap' ? null : this.imageMapManager.getMapUniverse(mapId);
@@ -1536,6 +1610,20 @@ export class MapController {
 			return null;
 		}
 		return this.imageMapManager.getMapUniverse(this.activeMapId);
+	}
+
+	/**
+	 * Get the parent map ID for the given map (#361)
+	 */
+	getParentMapId(mapId: string): string | undefined {
+		return this.imageMapManager.getParentMapId(mapId);
+	}
+
+	/**
+	 * Get the map configuration for a given map ID (#361)
+	 */
+	getMapConfig(mapId: string): CustomMapConfig | undefined {
+		return this.imageMapManager.getMapConfig(mapId);
 	}
 
 	/**
