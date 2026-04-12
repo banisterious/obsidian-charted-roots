@@ -24,7 +24,7 @@ import { PersonIndexService } from './src/core/person-index-service';
 import { PlaceGraphService } from './src/core/place-graph';
 import { EvidenceService, ProofSummaryService, SourceService } from './src/sources';
 import { EventService } from './src/events/services/event-service';
-import { TimelineProcessor, RelationshipsProcessor, MediaProcessor, SourceRolesProcessor, TransfersProcessor, MembersProcessor, SourcesProcessor, ExtractionsProcessor, NegativeFindingsProcessor, ResearchTimelineProcessor, UniverseEntitiesProcessor } from './src/dynamic-content';
+import { TimelineProcessor, RelationshipsProcessor, MediaProcessor, SourceRolesProcessor, TransfersProcessor, MembersProcessor, SourcesProcessor, ExtractionsProcessor, NegativeFindingsProcessor, ResearchTimelineProcessor, UniverseEntitiesProcessor, UniverseMapsProcessor } from './src/dynamic-content';
 import { RecentFilesService, RecentEntityType } from './src/core/recent-files-service';
 import { registerCustomIcons } from './src/ui/lucide-icons';
 import { MediaService } from './src/core/media-service';
@@ -595,6 +595,13 @@ export default class CanvasRootsPlugin extends Plugin {
 		this.registerMarkdownCodeBlockProcessor(
 			'charted-roots-universe-organizations',
 			(source, el, ctx) => universeOrgsProcessor.process(source, el, ctx)
+		);
+
+		// Universe maps block (#360) — clickable map thumbnails
+		const universeMapsProcessor = new UniverseMapsProcessor(this);
+		this.registerMarkdownCodeBlockProcessor(
+			'charted-roots-universe-maps',
+			(source, el, ctx) => universeMapsProcessor.process(source, el, ctx)
 		);
 	}
 

@@ -427,13 +427,22 @@ Universe notes support dynamic content blocks that automatically list all entiti
 | `charted-roots-universe-places` | Name, place type | Name |
 | `charted-roots-universe-events` | Event name, date, type, place | Date |
 | `charted-roots-universe-organizations` | Name, organization type | Name |
+| `charted-roots-universe-maps` | Clickable map image thumbnails | Name |
 
 ### Parameters
+
+#### Entity blocks (people, places, events, organizations)
 
 | Parameter | Values | Default | Description |
 |-----------|--------|---------|-------------|
 | `sort` | `name`, `date`, `type` | `name` | Sort order for entries |
 | `limit` | Any number | Show all | Maximum entries to display |
+
+#### Map block
+
+| Parameter | Values | Default | Description |
+|-----------|--------|---------|-------------|
+| `size` | `small`, `medium`, `large` | `medium` | Thumbnail size |
 
 ### Example
 
@@ -449,12 +458,19 @@ Add this to show events in chronological order:
     sort: date
     ```
 
+Add this to show clickable map thumbnails:
+
+    ```charted-roots-universe-maps
+    size: medium
+    ```
+
 ### Behavior
 
 - Entities are matched by the `universe` frontmatter field on person, place, event, and organization notes
 - All entries render as clickable wikilinks that navigate to the entity note
 - Tables auto-refresh when vault metadata changes
 - Fictional date prefixes (e.g., `DE 1169`, `GR 1492`) display as-is from the frontmatter
+- Map thumbnails show the map's base image; clicking opens the map in Map View
 
 ---
 

@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `charted-roots-universe-events` — table with event name, date, type badge, and place
   - `charted-roots-universe-organizations` — table with name and type
   - All entries are clickable wikilinks. Supports `sort` (name/date/type) and `limit` parameters. Auto-refreshes when vault data changes.
+- **Universe map thumbnails** ([#360](https://github.com/banisterious/obsidian-charted-roots/issues/360)): New `charted-roots-universe-maps` dynamic block renders clickable map image thumbnails for custom maps belonging to a universe. Click a thumbnail to open it in Map View. Supports `size` parameter (small/medium/large).
 
 ---
 
