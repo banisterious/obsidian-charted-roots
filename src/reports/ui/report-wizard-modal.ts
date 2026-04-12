@@ -606,6 +606,21 @@ export class ReportWizardModal extends Modal {
 			const descEl = container.createDiv({ cls: 'cr-report-dropdown-desc' });
 			descEl.createSpan({ text: reportMeta.description });
 		}
+
+		// Book Builder link
+		const bookBuilderRow = container.createDiv({ cls: 'cr-report-book-builder-link' });
+		const bookIcon = createLucideIcon('book-open', 16);
+		bookBuilderRow.appendChild(bookIcon);
+		const bookLink = bookBuilderRow.createEl('a', {
+			text: 'Compile multiple reports into a book',
+			href: '#'
+		});
+		bookLink.addEventListener('click', async (e) => {
+			e.preventDefault();
+			this.close();
+			const { BookBuilderModal } = await import('../../book/ui/book-builder-modal');
+			new BookBuilderModal(this.plugin).open();
+		});
 	}
 
 	/**

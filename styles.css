@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-04-11 03:22:19 UTC
+ * - Generated: 2026-04-12 02:36:33 UTC
  * - Components: 48 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -19151,7 +19151,7 @@ settings:
    COMPONENT: REPORT-WIZARD.CSS
    ========================================================================== */
 
-/* Component Size: 888 lines, 19.53 KB */
+/* Component Size: 908 lines, 19.88 KB */
 
 /* ==========================================================================
    REPORT WIZARD
@@ -19400,6 +19400,26 @@ settings:
   font-size: 11px;
   color: var(--text-muted);
   line-height: 1.4;
+}
+
+.cr-report-book-builder-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 8px 0;
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+}
+
+.cr-report-book-builder-link a {
+  color: var(--text-accent);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.cr-report-book-builder-link a:hover {
+  text-decoration: underline;
 }
 
 /* ==========================================================================
@@ -40748,11 +40768,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-04-11 03:22:19 UTC
+ * Build completed: 2026-04-12 02:36:33 UTC
  * Components processed: 48
- * Total lines: 40293
- * Total size: 810.63 KB
- * Build duration: 0.34 seconds
+ * Total lines: 40313
+ * Total size: 810.99 KB
+ * Build duration: 0.31 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -40775,7 +40795,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - relationship-calculator.css: 302 lines, 5.27 KB
  * - family-chart-view.css: 1332 lines, 31.36 KB
  * - family-chart-export.css: 699 lines, 14.78 KB
- * - report-wizard.css: 888 lines, 19.53 KB
+ * - report-wizard.css: 908 lines, 19.88 KB
  * - book-builder.css: 371 lines, 7.29 KB
  * - data-quality.css: 1446 lines, 28.73 KB
  * - relationships.css: 597 lines, 11.43 KB

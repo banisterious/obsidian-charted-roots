@@ -247,6 +247,26 @@
   line-height: 1.4;
 }
 
+.cr-report-book-builder-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 8px 0;
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+}
+
+.cr-report-book-builder-link a {
+  color: var(--text-accent);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.cr-report-book-builder-link a:hover {
+  text-decoration: underline;
+}
+
 /* ==========================================================================
    CATEGORY TILES
    ========================================================================== */

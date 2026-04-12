@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Book Builder link in Report Wizard**: The report type selection step now includes a link to the Book Builder, making it discoverable from the Report Wizard in addition to the command palette.
+
+---
+
 ## [0.20.55] - 2026-04-10
 
 ### Added
