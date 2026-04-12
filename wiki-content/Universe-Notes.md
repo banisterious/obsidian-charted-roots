@@ -17,6 +17,7 @@ Universe Notes allow you to manage fictional worlds as first-class entities. Ins
 - [Context Menu Actions](#context-menu-actions)
 - [Linking Entities to Universes](#linking-entities-to-universes)
 - [Best Practices](#best-practices)
+- [Dynamic Content Blocks](#dynamic-content-blocks)
 - [Integration with Other Features](#integration-with-other-features)
 
 ---
@@ -411,6 +412,49 @@ This ensures entities in your universe use the correct date system and map.
 ### Add Descriptive Metadata
 
 Fill in the description, author, and genre fields to make your universes easier to identify and organize.
+
+---
+
+## Dynamic Content Blocks
+
+Universe notes support dynamic content blocks that automatically list all entities belonging to the universe. Place these code blocks in your universe note to create live, auto-updating tables.
+
+### Available Blocks
+
+| Block | Content | Default Sort |
+|-------|---------|-------------|
+| `charted-roots-universe-people` | Name, born, died, occupation | Name |
+| `charted-roots-universe-places` | Name, place type | Name |
+| `charted-roots-universe-events` | Event name, date, type, place | Date |
+| `charted-roots-universe-organizations` | Name, organization type | Name |
+
+### Parameters
+
+| Parameter | Values | Default | Description |
+|-----------|--------|---------|-------------|
+| `sort` | `name`, `date`, `type` | `name` | Sort order for entries |
+| `limit` | Any number | Show all | Maximum entries to display |
+
+### Example
+
+Add this to a universe note to list all characters with their dates:
+
+    ```charted-roots-universe-people
+    sort: name
+    ```
+
+Add this to show events in chronological order:
+
+    ```charted-roots-universe-events
+    sort: date
+    ```
+
+### Behavior
+
+- Entities are matched by the `universe` frontmatter field on person, place, event, and organization notes
+- All entries render as clickable wikilinks that navigate to the entity note
+- Tables auto-refresh when vault metadata changes
+- Fictional date prefixes (e.g., `DE 1169`, `GR 1492`) display as-is from the frontmatter
 
 ---
 

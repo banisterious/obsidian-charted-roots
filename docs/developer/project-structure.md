@@ -141,8 +141,8 @@ charted-roots/
 │   │   ├── services/              # Generation, PDF/ODT rendering
 │   │   └── ui/                    # Book builder modal
 │   ├── dynamic-content/       # Live content rendering
-│   │   ├── processors/           # Code block processors (10 blocks)
-│   │   ├── renderers/            # Content renderers (10 renderers)
+│   │   ├── processors/           # Code block processors (14 blocks)
+│   │   ├── renderers/            # Content renderers (14 renderers)
 │   │   └── services/             # Dynamic content service
 │   ├── excalidraw/            # Excalidraw export
 │   │   └── excalidraw-exporter.ts # Export to Excalidraw format
@@ -479,6 +479,7 @@ charted-roots/
 | `extractions-processor.ts` | ✅ Complete | `charted-roots-extractions` code block |
 | `negative-findings-processor.ts` | ✅ Complete | `charted-roots-negative-findings` code block |
 | `research-timeline-processor.ts` | ✅ Complete | `charted-roots-research-timeline` code block |
+| `universe-entities-processor.ts` | ✅ Complete | `charted-roots-universe-people`, `-places`, `-events`, `-organizations` code blocks |
 | **Renderers** | | |
 | `timeline-renderer.ts` | ✅ Complete | Timeline content renderer |
 | `relationships-renderer.ts` | ✅ Complete | Relationships content renderer |
@@ -490,6 +491,7 @@ charted-roots/
 | `extractions-renderer.ts` | ✅ Complete | Source extractions renderer |
 | `negative-findings-renderer.ts` | ✅ Complete | Negative findings table renderer |
 | `research-timeline-renderer.ts` | ✅ Complete | Research timeline renderer (table, heatmap, timeline views) |
+| `universe-entities-renderer.ts` | ✅ Complete | Universe entity tables (people, places, events, organizations) |
 
 ### Book Module (src/book/)
 
