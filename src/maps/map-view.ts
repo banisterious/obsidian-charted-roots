@@ -673,7 +673,9 @@ export class MapView extends ItemView {
 	 */
 	private createPlaceAtCoordinates(coords: { lat: number; lng: number; pixelX?: number; pixelY?: number }): void {
 		// Get universe from the current map (null for real world)
-		const universe = this.mapController?.getActiveMapUniverse() ?? undefined;
+		// Resolve cr_id to display name since entity notes store by name
+		const rawUniverse = this.mapController?.getActiveMapUniverse() ?? null;
+		const universe = this.resolveUniverseFilterValue(rawUniverse) ?? undefined;
 		const isPixelMap = coords.pixelX !== undefined && coords.pixelY !== undefined;
 		// Get current map ID for auto-populating maps field (#153)
 		const currentMapId = this.mapController?.getActiveMapId();
@@ -798,7 +800,9 @@ export class MapView extends ItemView {
 
 	private async handleUniverseSync(selectedPlace: SelectedPlaceInfo): Promise<boolean> {
 		// Get the map's universe (null for OpenStreetMap)
-		const mapUniverse = this.mapController?.getActiveMapUniverse();
+		// Resolve cr_id to display name since entity notes store by name
+		const rawMapUniverse = this.mapController?.getActiveMapUniverse();
+		const mapUniverse = this.resolveUniverseFilterValue(rawMapUniverse ?? null);
 
 		// Skip universe sync if map has no universe (OpenStreetMap/real world)
 		if (!mapUniverse) {
