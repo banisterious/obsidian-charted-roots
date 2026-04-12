@@ -389,7 +389,19 @@ export class ImageMapManager {
 			minZoom: typeof fm.min_zoom === 'number' ? fm.min_zoom : (coordinateSystem === 'pixel' ? -2 : undefined),
 			maxZoom: typeof fm.max_zoom === 'number' ? fm.max_zoom : (coordinateSystem === 'pixel' ? 4 : undefined),
 			corners,
-			sourcePath: file.path
+			sourcePath: file.path,
+			parentMap: fm.parent_map ? fmToString(fm.parent_map) : undefined,
+			parentRegion: (
+				typeof fm.parent_region_x === 'number' &&
+				typeof fm.parent_region_y === 'number' &&
+				typeof fm.parent_region_w === 'number' &&
+				typeof fm.parent_region_h === 'number'
+			) ? {
+				x: fm.parent_region_x,
+				y: fm.parent_region_y,
+				w: fm.parent_region_w,
+				h: fm.parent_region_h
+			} : undefined
 		};
 	}
 
@@ -573,6 +585,27 @@ export class ImageMapManager {
 	getMapUniverse(mapId: string): string | null {
 		const config = this.mapConfigs.get(mapId);
 		return config?.universe ?? null;
+	}
+
+	/**
+	 * Get the parent map ID for a custom map (#361)
+	 */
+	getParentMapId(mapId: string): string | undefined {
+		const config = this.mapConfigs.get(mapId);
+		return config?.parentMap;
+	}
+
+	/**
+	 * Get child maps that have parentRegion defined (#361 Phase 3)
+	 */
+	getChildMapsWithRegions(parentMapId: string): Array<{ config: import('./types/map-types').CustomMapConfig }> {
+		const children: Array<{ config: import('./types/map-types').CustomMapConfig }> = [];
+		for (const config of this.mapConfigs.values()) {
+			if (config.parentMap === parentMapId && config.parentRegion) {
+				children.push({ config });
+			}
+		}
+		return children;
 	}
 
 	/**

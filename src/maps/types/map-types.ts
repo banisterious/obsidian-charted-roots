@@ -291,6 +291,10 @@ export interface CustomMapConfig {
 	corners?: ImageCorners;
 	/** Path to the source file for saving corner updates */
 	sourcePath?: string;
+	/** Parent map ID for drill-down hierarchy (#361) */
+	parentMap?: string;
+	/** Region on the parent map where this child map sits (#361 Phase 3) */
+	parentRegion?: { x: number; y: number; w: number; h: number };
 }
 
 // ============================================================================
