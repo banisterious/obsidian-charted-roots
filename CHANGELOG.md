@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Place markers not showing on custom maps**: When a custom map's `universe` field stored the universe cr_id (e.g., `universe-the-dying-earth-mnkte9t5`) instead of the display name, the universe filter failed to match entity notes which store the name (e.g., `The Dying Earth`). The filter now resolves cr_ids to names before comparing.
 - **Create place on custom map writes universe cr_id instead of name**: "Create place here" and "Link existing place" on custom maps wrote the universe cr_id to the new place's frontmatter instead of the display name, causing the marker not to appear until manually corrected.
 - **Link existing place crashes on custom maps**: Right-clicking a custom map and selecting "Link existing place here" threw a `ReferenceError` because `folderFilter` was referenced but never declared.
+- **Universe dropdown in map wizard shows cr_ids**: The universe dropdown in the Create custom map wizard listed both universe names and cr_ids. Now prioritizes universe note names and skips map notes that store cr_ids.
+- **Universe map thumbnails show same place count for all maps**: Place counts were computed per-universe and shared across all map thumbnails. Now counts per-map using the `maps` field on place notes.
 
 ---
 
