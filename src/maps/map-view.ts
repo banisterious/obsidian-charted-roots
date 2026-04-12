@@ -769,6 +769,33 @@ export class MapView extends ItemView {
 	 *
 	 * @returns true if the operation should proceed, false if cancelled
 	 */
+
+	/**
+	 * Resolve a universe filter value to its display name.
+	 * Map configs may store the universe cr_id, but entity notes store the name.
+	 * This looks up the universe note by cr_id and returns the name for filtering.
+	 */
+	private resolveUniverseFilterValue(universe: string | null): string | null {
+		if (!universe) return null;
+
+		// Check if this is already a name (not a cr_id pattern)
+		// Universe cr_ids typically contain hyphens and random chars like "universe-the-dying-earth-mnkte9t5"
+		// Try to find a universe note with this cr_id
+		const files = this.app.vault.getMarkdownFiles();
+		for (const file of files) {
+			const cache = this.app.metadataCache.getFileCache(file);
+			const fm = cache?.frontmatter;
+			if (!fm) continue;
+			const crType = fm.cr_type || fm.type;
+			if (crType === 'universe' && fm.cr_id === universe) {
+				return fm.name || universe;
+			}
+		}
+
+		// Not found as cr_id, assume it's already a name
+		return universe;
+	}
+
 	private async handleUniverseSync(selectedPlace: SelectedPlaceInfo): Promise<boolean> {
 		// Get the map's universe (null for OpenStreetMap)
 		const mapUniverse = this.mapController?.getActiveMapUniverse();
@@ -2093,7 +2120,9 @@ export class MapView extends ItemView {
 			// Register map change callback to filter by universe/mapId and sync dropdown
 			this.mapController.onMapChange((mapId, universe) => {
 				// Update filters for universe and per-map filtering
-				this.filters.universe = universe ?? undefined;
+				// Universe value from map config may be a cr_id — resolve to name
+				// since entity notes store universe by name
+				this.filters.universe = this.resolveUniverseFilterValue(universe) ?? undefined;
 				this.filters.mapId = mapId;
 
 				// Sync dropdown
