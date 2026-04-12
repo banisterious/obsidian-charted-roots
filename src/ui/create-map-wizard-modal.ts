@@ -679,12 +679,27 @@ export class CreateMapWizardModal extends Modal {
 		const universes = new Set<string>();
 		const files = this.app.vault.getMarkdownFiles();
 
+		// Collect universe note names (the canonical display names)
 		for (const file of files) {
 			const cache = this.app.metadataCache.getFileCache(file);
-			const universe = cache?.frontmatter?.universe;
-			if (universe && typeof universe === 'string') {
-				universes.add(universe);
+			const fm = cache?.frontmatter;
+			if (!fm) continue;
+			const crType = fm.cr_type || fm.type;
+			if (crType === 'universe' && fm.name) {
+				universes.add(fm.name);
 			}
+		}
+
+		// Also collect universe references from entity notes (for cases where
+		// a universe string is used without a universe note)
+		for (const file of files) {
+			const cache = this.app.metadataCache.getFileCache(file);
+			const fm = cache?.frontmatter;
+			if (!fm?.universe || typeof fm.universe !== 'string') continue;
+			const crType = fm.cr_type || fm.type;
+			// Skip map notes — they may store cr_ids instead of names
+			if (crType === 'map') continue;
+			universes.add(fm.universe);
 		}
 
 		return Array.from(universes).sort();
