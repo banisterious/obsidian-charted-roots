@@ -120,12 +120,14 @@ export class UniverseMapsProcessor {
 		filePath: string;
 		imagePath?: string;
 		mapId?: string;
+		placeCount?: number;
 	}> {
 		const maps: Array<{
 			name: string;
 			filePath: string;
 			imagePath?: string;
 			mapId?: string;
+			placeCount?: number;
 		}> = [];
 
 		const files = this.plugin.app.vault.getMarkdownFiles();
@@ -161,7 +163,46 @@ export class UniverseMapsProcessor {
 			});
 		}
 
+		// Count places with coordinates for each map's universe
+		const placeCount = this.countPlacesWithCoordinates(universeName, universeCrId);
+		for (const map of maps) {
+			map.placeCount = placeCount;
+		}
+
 		maps.sort((a, b) => a.name.localeCompare(b.name));
 		return maps;
+	}
+
+	/**
+	 * Count place notes with coordinates belonging to a universe
+	 */
+	private countPlacesWithCoordinates(universeName: string, universeCrId: string): number {
+		let count = 0;
+		const files = this.plugin.app.vault.getMarkdownFiles();
+		const lowerName = universeName.toLowerCase();
+
+		for (const file of files) {
+			const cache = this.plugin.app.metadataCache.getFileCache(file);
+			const fm = cache?.frontmatter;
+			if (!fm) continue;
+
+			const crType = fm.cr_type || fm.type;
+			if (crType !== 'place') continue;
+			if (!fm.universe) continue;
+
+			const universeValue = String(fm.universe).toLowerCase();
+			if (universeValue !== lowerName && universeValue !== universeCrId) continue;
+
+			// Check for coordinates (geographic or pixel)
+			const hasGeo = fm.coordinates_lat != null && fm.coordinates_long != null;
+			const hasPixel = fm.custom_coordinates_x != null && fm.custom_coordinates_y != null;
+			const hasPixelAlt = fm.pixel_x != null && fm.pixel_y != null;
+
+			if (hasGeo || hasPixel || hasPixelAlt) {
+				count++;
+			}
+		}
+
+		return count;
 	}
 }

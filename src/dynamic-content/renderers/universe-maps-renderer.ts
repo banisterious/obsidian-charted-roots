@@ -19,6 +19,7 @@ export interface UniverseMapEntry {
 	filePath: string;
 	imagePath?: string;
 	mapId?: string;
+	placeCount?: number;
 }
 
 /**
@@ -97,6 +98,12 @@ export class UniverseMapsRenderer {
 				}
 			} else {
 				this.renderPlaceholder(thumbnail);
+			}
+
+			// Place count badge
+			if (map.placeCount !== undefined && map.placeCount > 0) {
+				const badge = thumbnail.createDiv({ cls: 'cr-universe-maps__badge' });
+				badge.setText(`${map.placeCount} place${map.placeCount !== 1 ? 's' : ''}`);
 			}
 
 			// Caption overlay

@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-04-12 18:14:10 UTC
+ * - Generated: 2026-04-12 19:06:50 UTC
  * - Components: 49 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -34522,7 +34522,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: UNIVERSE-ENTITIES.CSS
    ========================================================================== */
 
-/* Component Size: 174 lines, 3.84 KB */
+/* Component Size: 187 lines, 4.15 KB */
 
 /* ==========================================================================
    UNIVERSE ENTITIES DYNAMIC BLOCK (#359)
@@ -34684,6 +34684,19 @@ body:has(.cr-media-linker) .suggestion-container {
   width: 100%;
   height: 100%;
   color: var(--text-muted);
+}
+
+.cr-universe-maps__badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: var(--cr-radius-xs, 4px);
+  font-size: 11px;
+  font-weight: var(--font-semibold);
+  color: var(--text-normal);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .cr-universe-maps__caption {
@@ -40951,11 +40964,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-04-12 18:14:10 UTC
+ * Build completed: 2026-04-12 19:06:50 UTC
  * Components processed: 49
- * Total lines: 40487
- * Total size: 814.83 KB
- * Build duration: 0.35 seconds
+ * Total lines: 40500
+ * Total size: 815.13 KB
+ * Build duration: 0.37 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -40995,7 +41008,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - dashboard.css: 491 lines, 9.64 KB
  * - universe-wizard.css: 621 lines, 11.17 KB
  * - universes.css: 41 lines, 0.73 KB
- * - universe-entities.css: 174 lines, 3.84 KB
+ * - universe-entities.css: 187 lines, 4.15 KB
  * - collections.css: 41 lines, 0.73 KB
  * - data-quality-view.css: 47 lines, 0.89 KB
  * - family-wizard.css: 743 lines, 15.63 KB

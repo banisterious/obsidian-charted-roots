@@ -18,11 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `charted-roots-universe-events` — table with event name, date, type badge, and place
   - `charted-roots-universe-organizations` — table with name and type
   - All entries are clickable wikilinks. Supports `sort` (name/date/type) and `limit` parameters. Auto-refreshes when vault data changes.
-- **Universe map thumbnails** ([#360](https://github.com/banisterious/obsidian-charted-roots/issues/360)): New `charted-roots-universe-maps` dynamic block renders clickable map image thumbnails for custom maps belonging to a universe. Click a thumbnail to open it in Map View. Supports `size` parameter (small/medium/large).
+- **Universe map thumbnails** ([#360](https://github.com/banisterious/obsidian-charted-roots/issues/360)): New `charted-roots-universe-maps` dynamic block renders clickable map image thumbnails for custom maps belonging to a universe. Click a thumbnail to open it in Map View. Shows place count badge. Supports `size` parameter (small/medium/large).
 
 ### Fixed
 
 - **Place markers not showing on custom maps**: When a custom map's `universe` field stored the universe cr_id (e.g., `universe-the-dying-earth-mnkte9t5`) instead of the display name, the universe filter failed to match entity notes which store the name (e.g., `The Dying Earth`). The filter now resolves cr_ids to names before comparing.
+- **Create place on custom map writes universe cr_id instead of name**: "Create place here" and "Link existing place" on custom maps wrote the universe cr_id to the new place's frontmatter instead of the display name, causing the marker not to appear until manually corrected.
 - **Link existing place crashes on custom maps**: Right-clicking a custom map and selecting "Link existing place here" threw a `ReferenceError` because `folderFilter` was referenced but never declared.
 
 ---
