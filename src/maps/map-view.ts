@@ -754,7 +754,6 @@ export class MapView extends ItemView {
 				}
 			},
 			{
-				folderFilter,
 				placeGraph,
 				settings: this.plugin.settings,
 				plugin: this.plugin
