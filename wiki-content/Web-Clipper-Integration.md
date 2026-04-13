@@ -7,9 +7,10 @@ Capture genealogical data from web sources directly into your Charted Roots vaul
 ## Table of Contents
 
 - [Overview](#overview)
+- [Ready-to-Use Templates](#ready-to-use-templates)
 - [Setup](#setup)
-- [Creating Templates](#creating-templates)
 - [Workflow](#workflow)
+- [Creating Custom Templates](#creating-custom-templates)
 - [Community Templates](#community-templates)
 - [Troubleshooting](#troubleshooting)
 
@@ -42,6 +43,45 @@ Web Clipper is ideal for capturing:
 
 ---
 
+## Ready-to-Use Templates
+
+Charted Roots provides curated, tested Web Clipper templates that work out of the box. Download, import into Web Clipper, and start clipping.
+
+### Available Templates
+
+| Template | Source | Method | AI Required? |
+|----------|--------|--------|-------------|
+| **Find a Grave — Person** | findagrave.com | CSS selectors | No |
+| **Find a Grave — Person (LLM)** | findagrave.com | AI extraction | Yes |
+| **Obituary — Generic** | Any obituary site | AI extraction | Yes |
+| **FamilySearch — Person** | familysearch.org | AI extraction | Yes |
+| **Wikipedia — Biography (LLM)** | wikipedia.org | AI extraction | Yes |
+| **Wikipedia — Biography (Basic)** | wikipedia.org | CSS selectors | No |
+| **Wikidata — Place (LLM)** | wikidata.org | AI extraction | Yes |
+
+### Quick Start
+
+1. Download template `.json` files from [docs/clipper-templates/](https://github.com/banisterious/obsidian-charted-roots/tree/main/docs/clipper-templates)
+2. Open the Web Clipper browser extension settings
+3. Click **Import** and select the downloaded template
+4. Navigate to a supported site (e.g., Find a Grave) — the template auto-triggers
+5. Click the Web Clipper icon → clip the page
+6. The clipped note appears in your staging folder, ready for review and promotion
+
+Templates auto-trigger on matching URLs (Find a Grave, FamilySearch, Wikidata) or can be manually selected (Obituary, Wikipedia).
+
+### Place Templates
+
+The **Wikidata — Place (LLM)** template extracts structured geographic place data:
+- Auto-triggers on Wikidata Q-pages (`wikidata.org/wiki/Q*`)
+- Extracts coordinates, place type, administrative hierarchy, and alternate names
+- Works with Charted Roots' staging promotion workflow
+- Automatically assigns `cr_id` and routes to Places folder on promotion
+
+See the [detailed template documentation](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/clipper-templates/CLIPPER-TEMPLATES.md) for setup instructions, fields extracted, and usage examples for each template.
+
+---
+
 ## Setup
 
 ### 1. Install Obsidian Web Clipper
@@ -70,7 +110,7 @@ In Obsidian:
 
 ---
 
-## Creating Templates
+## Creating Custom Templates
 
 ### Clipper Metadata Properties
 
@@ -211,40 +251,7 @@ Check GitHub Discussions for templates shared by other users. Look for:
 
 ### Official Templates
 
-Charted Roots provides curated, tested templates in the `docs/clipper-templates/` directory of the GitHub repository.
-
-**Available Templates:**
-- **Find a Grave - Person** (CSS selectors, no AI required)
-- **Find a Grave - Person (LLM)** (Enhanced with AI extraction)
-- **Obituary - Generic** (AI-powered, works on any obituary site)
-- **FamilySearch - Person** (AI-powered, handles all record types)
-- **Wikipedia - Biography (LLM)** (AI-powered, structured biographical extraction)
-- **Wikipedia - Biography (Basic)** (CSS selectors, no AI required)
-- **Wikidata - Place (LLM)** (AI-powered, geographic place data extraction)
-
-**How to Use:**
-1. Download template `.json` files from [docs/clipper-templates/](https://github.com/banisterious/obsidian-charted-roots/tree/main/docs/clipper-templates)
-2. Open Web Clipper extension settings
-3. Click **Import** and select the downloaded template
-4. Templates auto-trigger on matching URLs (Find a Grave, FamilySearch) or can be manually selected (Obituary)
-
-See the [template documentation](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/clipper-templates/CLIPPER-TEMPLATES.md) for detailed documentation on each template, including:
-- Prerequisites and setup
-- Fields extracted
-- AI requirements
-- Usage examples
-
-Community template sharing is still encouraged! Share your custom templates in [GitHub Discussions](https://github.com/banisterious/obsidian-charted-roots/discussions).
-
-### Place Templates
-
-Charted Roots now includes a **Wikidata - Place (LLM)** template for extracting structured geographic place data. This template:
-- Auto-triggers on Wikidata Q-pages (`wikidata.org/wiki/Q*`)
-- Extracts coordinates, place type, administrative hierarchy, and alternate names
-- Works seamlessly with Charted Roots' staging promotion workflow
-- Automatically assigns `cr_id` and routes to Places folder on promotion
-
-See the [template documentation](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/clipper-templates/CLIPPER-TEMPLATES.md#wikidata---place-llm) for setup instructions and extracted fields.
+See [Ready-to-Use Templates](#ready-to-use-templates) above for the full list of curated templates provided by Charted Roots.
 
 ### Potential Future Place Templates
 
