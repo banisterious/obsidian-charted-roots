@@ -231,6 +231,18 @@ function renderSourcesListCard(
 				new TemplateSnippetsModal(plugin.app, 'source', plugin.settings.propertyAliases).open();
 			}));
 
+	// Web Clipper info box (#364)
+	const clipperNote = content.createDiv({ cls: 'cr-info-box cr-info-box--muted' });
+	const clipperIcon = clipperNote.createSpan({ cls: 'cr-info-box-icon' });
+	setIcon(clipperIcon, 'globe');
+	const clipperText = clipperNote.createSpan();
+	clipperText.appendText('Capture sources from the web using ');
+	clipperText.createEl('a', {
+		text: 'Web Clipper templates',
+		href: 'https://github.com/banisterious/obsidian-charted-roots/wiki/Web-Clipper-Integration#ready-to-use-templates'
+	});
+	clipperText.appendText(' (Find a Grave, FamilySearch, obituaries, and more).');
+
 	const allSources = sourceService.getAllSources();
 
 	if (allSources.length === 0) {
