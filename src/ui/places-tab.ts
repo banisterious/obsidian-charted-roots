@@ -93,6 +93,18 @@ export function renderPlacesTab(
 				plugin.app.commands.executeCommandById('charted-roots:create-places-base-template');
 			}));
 
+	// Web Clipper info box (#364)
+	const clipperNote = actionsContent.createDiv({ cls: 'cr-info-box cr-info-box--muted' });
+	const clipperIcon = clipperNote.createSpan({ cls: 'cr-info-box-icon' });
+	setIcon(clipperIcon, 'globe');
+	const clipperText = clipperNote.createSpan();
+	clipperText.appendText('Import places from the web using ');
+	clipperText.createEl('a', {
+		text: 'Web Clipper templates',
+		href: 'https://github.com/banisterious/obsidian-charted-roots/wiki/Web-Clipper-Integration#ready-to-use-templates'
+	});
+	clipperText.appendText(' (Wikidata, Find a Grave, and more).');
+
 	container.appendChild(actionsCard);
 
 	// 2. Data Quality Card (unified issues + actions)
