@@ -360,6 +360,8 @@ export interface LayerVisibility {
 	heatMap: boolean;
 	/** Show all places (not just those with person events) */
 	places: boolean;
+	/** Show child map markers and overlay regions (#362) */
+	childMaps: boolean;
 }
 
 /**

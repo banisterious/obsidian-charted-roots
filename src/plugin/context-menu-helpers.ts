@@ -1689,3 +1689,98 @@ export async function openCanvasInFamilyChart(plugin: CanvasRootsPlugin, file: T
 		new Notice('Failed to read canvas file');
 	}
 }
+
+/**
+ * Open the region drawing modal for a child map note (#362)
+ * Finds the parent map config from frontmatter, then opens the modal
+ * to draw/edit the region, saving results back to the child map's frontmatter.
+ */
+export async function openRegionDrawingForMap(
+	plugin: CanvasRootsPlugin,
+	file: TFile,
+	fm: Record<string, unknown> | undefined
+): Promise<void> {
+	const parentMapId = fm?.parent_map;
+	if (!parentMapId) {
+		new Notice('This map has no parent map configured');
+		return;
+	}
+
+	// Find the parent map's config from frontmatter
+	const files = plugin.app.vault.getMarkdownFiles();
+	let parentConfig: import('../maps/types/map-types').CustomMapConfig | null = null;
+
+	for (const f of files) {
+		const cache = plugin.app.metadataCache.getFileCache(f);
+		const parentFm = cache?.frontmatter;
+		if (!parentFm) continue;
+		const crType = parentFm.cr_type || parentFm.type;
+		if (crType !== 'map') continue;
+
+		// Handle wikilink-parsed parent_map values
+		let pmId = String(parentMapId);
+		if (Array.isArray(parentMapId)) {
+			const flat = parentMapId.flat();
+			if (flat.length === 1) pmId = String(flat[0]);
+		}
+
+		if (parentFm.map_id !== pmId) continue;
+
+		const coordSystem = parentFm.coordinate_system === 'geographic' ? 'geographic' : 'pixel';
+		const imgW = typeof parentFm.image_width === 'number' ? parentFm.image_width : 1000;
+		const imgH = typeof parentFm.image_height === 'number' ? parentFm.image_height : 1000;
+
+		parentConfig = {
+			id: parentFm.map_id,
+			name: parentFm.name || String(pmId),
+			universe: parentFm.universe || '',
+			imagePath: parentFm.image || '',
+			coordinateSystem: coordSystem,
+			bounds: coordSystem === 'pixel'
+				? { topLeft: { x: 0, y: imgH }, bottomRight: { x: imgW, y: 0 } }
+				: {
+					topLeft: { x: parentFm.bounds_west ?? -100, y: parentFm.bounds_north ?? 100 },
+					bottomRight: { x: parentFm.bounds_east ?? 100, y: parentFm.bounds_south ?? -100 }
+				},
+			imageDimensions: { width: imgW, height: imgH },
+			sourcePath: f.path
+		};
+		break;
+	}
+
+	if (!parentConfig) {
+		new Notice('Could not find parent map configuration');
+		return;
+	}
+
+	const existingRegion = (
+		typeof fm?.parent_region_x === 'number' &&
+		typeof fm?.parent_region_y === 'number' &&
+		typeof fm?.parent_region_w === 'number' &&
+		typeof fm?.parent_region_h === 'number'
+	) ? {
+		x: fm.parent_region_x as number,
+		y: fm.parent_region_y as number,
+		w: fm.parent_region_w as number,
+		h: fm.parent_region_h as number
+	} : undefined;
+
+	const childName = (fm?.name as string) || file.basename;
+
+	const { RegionDrawingModal } = await import('../maps/ui/region-drawing-modal');
+	new RegionDrawingModal(
+		plugin.app,
+		parentConfig,
+		childName,
+		(result) => {
+			// Save the region to the child map's frontmatter
+			plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+				frontmatter.parent_region_x = result.x;
+				frontmatter.parent_region_y = result.y;
+				frontmatter.parent_region_w = result.w;
+				frontmatter.parent_region_h = result.h;
+			});
+		},
+		existingRegion
+	).open();
+}

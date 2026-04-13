@@ -17,6 +17,7 @@ import { getLogger } from '../core/logging';
 import { generateCrId } from '../core/uuid';
 import { toWikilink, extractWikilinkPath } from '../utils/wikilink-resolver';
 import { ModalStatePersistence, renderResumePromptBanner } from './modal-state-persistence';
+import { RegionDrawingModal } from '../maps/ui/region-drawing-modal';
 
 const logger = getLogger('CreateMapWizard');
 
@@ -60,6 +61,7 @@ interface MapConfig {
 	mapId: string;
 	universe: string;
 	parentMap: string;
+	parentRegion?: { x: number; y: number; w: number; h: number };
 	coordinateSystem: CoordinateSystem;
 	// Geographic bounds (for geographic mode)
 	boundsNorth?: number;
@@ -553,8 +555,41 @@ export class CreateMapWizardModal extends Modal {
 					dropdown.setValue(this.mapConfig.parentMap)
 						.onChange(value => {
 							this.mapConfig.parentMap = value;
+							// Clear region if parent map changed
+							if (!value) {
+								this.mapConfig.parentRegion = undefined;
+							}
+							this.render();
 						});
 				});
+
+			// Draw region button (only when parent map is selected) (#362)
+			if (this.mapConfig.parentMap) {
+				const regionSetting = new Setting(form)
+					.setName('Parent region')
+					.setDesc(this.mapConfig.parentRegion
+						? `Region: x=${this.mapConfig.parentRegion.x}, y=${this.mapConfig.parentRegion.y}, w=${this.mapConfig.parentRegion.w}, h=${this.mapConfig.parentRegion.h}`
+						: 'Draw the region on the parent map where this child map sits (optional)');
+
+				regionSetting.addButton(button => {
+					button
+						.setButtonText(this.mapConfig.parentRegion ? 'Edit region' : 'Draw region')
+						.onClick(() => {
+							this.openRegionDrawingModal();
+						});
+				});
+
+				if (this.mapConfig.parentRegion) {
+					regionSetting.addButton(button => {
+						button
+							.setButtonText('Clear')
+							.onClick(() => {
+								this.mapConfig.parentRegion = undefined;
+								this.render();
+							});
+					});
+				}
+			}
 		}
 
 		// Coordinate system
@@ -728,6 +763,68 @@ export class CreateMapWizardModal extends Modal {
 	/**
 	 * Get existing custom maps for the parent map dropdown (#361)
 	 */
+	/**
+	 * Open the region drawing modal for the selected parent map (#362)
+	 */
+	private openRegionDrawingModal(): void {
+		const parentMapId = this.mapConfig.parentMap;
+		if (!parentMapId) return;
+
+		// Find the parent map's config from frontmatter
+		const parentConfig = this.getMapConfigFromFrontmatter(parentMapId);
+		if (!parentConfig) {
+			new Notice('Could not find parent map configuration');
+			return;
+		}
+
+		const childName = this.mapConfig.name || 'New map';
+		new RegionDrawingModal(
+			this.app,
+			parentConfig,
+			childName,
+			(result) => {
+				this.mapConfig.parentRegion = result;
+				this.render();
+			},
+			this.mapConfig.parentRegion
+		).open();
+	}
+
+	/**
+	 * Build a minimal CustomMapConfig from a map note's frontmatter (#362)
+	 */
+	private getMapConfigFromFrontmatter(mapId: string): import('../maps/types/map-types').CustomMapConfig | null {
+		const files = this.app.vault.getMarkdownFiles();
+		for (const file of files) {
+			const cache = this.app.metadataCache.getFileCache(file);
+			const fm = cache?.frontmatter;
+			if (!fm) continue;
+			const crType = fm.cr_type || fm.type;
+			if (crType !== 'map' || fm.map_id !== mapId) continue;
+
+			const coordSystem = fm.coordinate_system === 'geographic' ? 'geographic' : 'pixel';
+			const imgW = typeof fm.image_width === 'number' ? fm.image_width : 1000;
+			const imgH = typeof fm.image_height === 'number' ? fm.image_height : 1000;
+
+			return {
+				id: fm.map_id,
+				name: fm.name || mapId,
+				universe: fm.universe || '',
+				imagePath: fm.image || '',
+				coordinateSystem: coordSystem,
+				bounds: coordSystem === 'pixel'
+					? { topLeft: { x: 0, y: imgH }, bottomRight: { x: imgW, y: 0 } }
+					: {
+						topLeft: { x: fm.bounds_west ?? -100, y: fm.bounds_north ?? 100 },
+						bottomRight: { x: fm.bounds_east ?? 100, y: fm.bounds_south ?? -100 }
+					},
+				imageDimensions: { width: imgW, height: imgH },
+				sourcePath: file.path
+			};
+		}
+		return null;
+	}
+
 	private getExistingMaps(): Array<{ id: string; name: string }> {
 		const maps: Array<{ id: string; name: string }> = [];
 		const files = this.app.vault.getMarkdownFiles();
@@ -1264,6 +1361,12 @@ export class CreateMapWizardModal extends Modal {
 
 		if (this.mapConfig.parentMap) {
 			lines.push(`parent_map: ${this.mapConfig.parentMap}`);
+			if (this.mapConfig.parentRegion) {
+				lines.push(`parent_region_x: ${this.mapConfig.parentRegion.x}`);
+				lines.push(`parent_region_y: ${this.mapConfig.parentRegion.y}`);
+				lines.push(`parent_region_w: ${this.mapConfig.parentRegion.w}`);
+				lines.push(`parent_region_h: ${this.mapConfig.parentRegion.h}`);
+			}
 		}
 
 		if (this.mapConfig.coordinateSystem === 'geographic') {

@@ -63,7 +63,7 @@ function createMarkerClusterGroup(options?: L.MarkerClusterGroupOptions): L.Mark
 	throw new Error('leaflet.markercluster is not properly loaded');
 }
 
-import { setIcon } from 'obsidian';
+import { setIcon, TFile, Notice } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { getLogger } from '../core/logging';
 import { capitalize } from '../utils/format-utils';
@@ -128,6 +128,17 @@ export class MapController {
 	private editModeEnabled: boolean = false;
 	// Whether image alignment editing is active (vs just marker dragging)
 	private imageAlignmentModeEnabled: boolean = false;
+
+	// Region edit mode (#362) — interactive rectangle editing on the map
+	private regionEditActive: boolean = false;
+	private regionEditRect: L.Rectangle | null = null;
+	private regionEditHandles: L.CircleMarker[] = [];
+	private regionEditConfig: CustomMapConfig | null = null;
+	private regionEditOriginalBounds: L.LatLngBounds | null = null;
+	private regionEditToolbar: HTMLElement | null = null;
+	private regionEditDragging: boolean = false;
+	private regionEditDragStart: L.LatLng | null = null;
+	private regionEditBoundsH: number = 0;
 
 	// Current data
 	private currentData: MapData | null = null;
@@ -1212,57 +1223,511 @@ export class MapController {
 		this.childMapOverlayLayer.clearLayers();
 
 		if (mapId === 'openstreetmap') return;
+		if (!this.currentLayers.childMaps) return;
 
-		const children = this.imageMapManager.getChildMapsWithRegions(mapId);
-		if (children.length === 0) return;
+		// Find ALL child maps (with or without parent_region)
+		const allChildren = this.imageMapManager.getAllChildMaps(mapId);
+		if (allChildren.length === 0) return;
 
-		for (const { config } of children) {
-			const region = config.parentRegion!;
+		// Get parent map's bounds height for Y-axis flipping in pixel CRS.
+		// Region coordinates are stored in bounds space (Y=0 at top),
+		// but Leaflet Simple CRS has Y=0 at bottom, so we need to flip.
+		const parentConfig = this.imageMapManager.getMapConfig(mapId);
+		const boundsH = parentConfig
+			? Math.abs(parentConfig.bounds.topLeft.y - parentConfig.bounds.bottomRight.y)
+			: 0;
 
-			// For pixel CRS: [y, x] format (Leaflet CRS.Simple)
-			const bounds = this.currentCRS === 'pixel'
-				? L.latLngBounds(
-					L.latLng(region.y + region.h, region.x),           // SW: bottom-left
-					L.latLng(region.y, region.x + region.w)            // NE: top-right
-				)
-				: L.latLngBounds(
-					L.latLng(region.y, region.x),                      // SW
-					L.latLng(region.y + region.h, region.x + region.w) // NE
-				);
+		for (const config of allChildren) {
+			const region = config.parentRegion;
 
-			const rect = L.rectangle(bounds, {
-				color: '#4a90d9',
-				weight: 2,
-				opacity: 0.7,
-				fillColor: '#4a90d9',
-				fillOpacity: 0.1,
-				dashArray: '6, 4',
-				className: 'cr-map-child-overlay'
+			// Render overlay rectangle if region is defined
+			if (region) {
+				let bounds: L.LatLngBounds;
+				if (this.currentCRS === 'pixel' && boundsH > 0) {
+					// Flip Y: image y=0 is top, Leaflet lat=0 is bottom
+					const leafletTop = boundsH - region.y;
+					const leafletBottom = boundsH - (region.y + region.h);
+					bounds = L.latLngBounds(
+						L.latLng(leafletBottom, region.x),
+						L.latLng(leafletTop, region.x + region.w)
+					);
+				} else {
+					bounds = L.latLngBounds(
+						L.latLng(region.y, region.x),
+						L.latLng(region.y + region.h, region.x + region.w)
+					);
+				}
+
+				const rect = L.rectangle(bounds, {
+					color: '#4a90d9',
+					weight: 2,
+					opacity: 0.7,
+					fillColor: '#4a90d9',
+					fillOpacity: 0.1,
+					dashArray: '6, 4',
+					className: 'cr-map-child-overlay',
+					pane: 'overlayPane' // Renders below markers
+				});
+
+				rect.bindTooltip(config.name, {
+					sticky: true,
+					className: 'cr-map-child-overlay-tooltip'
+				});
+
+				rect.on('click', () => {
+					void this.setActiveMap(config.id);
+				});
+
+				rect.on('mouseover', () => {
+					rect.setStyle({ fillOpacity: 0.25, weight: 3 });
+				});
+				rect.on('mouseout', () => {
+					rect.setStyle({ fillOpacity: 0.1, weight: 2 });
+				});
+
+				this.childMapOverlayLayer.addLayer(rect);
+			}
+
+			// Render child map marker
+			const markerPos = this.getChildMapMarkerPosition(config, boundsH);
+			const markerIcon = L.divIcon({
+				html: `<div class="cr-child-map-marker"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg></div>`,
+				className: 'cr-child-map-marker-icon',
+				iconSize: L.point(28, 28),
+				iconAnchor: L.point(14, 14)
 			});
 
-			// Tooltip with child map name
-			rect.bindTooltip(config.name, {
-				sticky: true,
-				className: 'cr-map-child-overlay-tooltip'
-			});
+			const marker = L.marker(markerPos, { icon: markerIcon });
 
-			// Click to navigate to child map
-			rect.on('click', () => {
+			// Popup with map name, open button, and region edit button
+			const popupContent = document.createElement('div');
+			popupContent.className = 'cr-map-popup';
+			popupContent.createEl('div', { cls: 'cr-map-popup-name', text: config.name });
+			popupContent.createEl('div', { cls: 'cr-map-popup-type', text: 'Child map' });
+			const btnContainer = popupContent.createDiv({ cls: 'cr-map-popup-buttons' });
+			const openBtn = btnContainer.createEl('button', { cls: 'cr-map-popup-btn', text: 'Open map' });
+			openBtn.addEventListener('click', () => {
 				void this.setActiveMap(config.id);
 			});
-
-			// Hover effects
-			rect.on('mouseover', () => {
-				rect.setStyle({ fillOpacity: 0.25, weight: 3 });
+			const regionBtn = btnContainer.createEl('button', {
+				cls: 'cr-map-popup-btn cr-map-popup-btn--secondary',
+				text: config.parentRegion ? 'Edit region' : 'Draw region'
 			});
-			rect.on('mouseout', () => {
-				rect.setStyle({ fillOpacity: 0.1, weight: 2 });
+			regionBtn.addEventListener('click', () => {
+				this.map?.closePopup();
+				this.enterRegionEditMode(config);
 			});
 
-			this.childMapOverlayLayer.addLayer(rect);
+			marker.bindPopup(popupContent);
+			this.childMapOverlayLayer.addLayer(marker);
 		}
 
-		logger.debug('child-overlays', `Rendered ${children.length} child map overlays on ${mapId}`);
+		logger.debug('child-overlays', `Rendered ${allChildren.length} child map overlays/markers on ${mapId}`);
+	}
+
+	/**
+	 * Get the marker position for a child map (#362)
+	 */
+	private getChildMapMarkerPosition(config: import('./types/map-types').CustomMapConfig, boundsHeight: number): L.LatLngExpression {
+		if (config.parentRegion) {
+			const r = config.parentRegion;
+			const cx = r.x + r.w / 2;
+			const cy = r.y + r.h / 2;
+			if (this.currentCRS === 'pixel' && boundsHeight > 0) {
+				// Flip Y: bounds y=0 is top, Leaflet lat=0 is bottom
+				return [boundsHeight - cy, cx];
+			}
+			return [cy, cx];
+		}
+		// Fallback: center of the parent map
+		const center = this.map?.getCenter();
+		return center ? [center.lat, center.lng] : [0, 0];
+	}
+
+	// ========================================================================
+	// Region Edit Mode (#362)
+	// Interactive rectangle editing directly on the Leaflet map
+	// ========================================================================
+
+	/**
+	 * Enter region edit mode for a child map.
+	 * Creates an editable rectangle on the parent map that can be dragged and resized.
+	 */
+	enterRegionEditMode(childConfig: CustomMapConfig): void {
+		if (!this.map || this.regionEditActive) return;
+
+		this.regionEditActive = true;
+		this.regionEditConfig = childConfig;
+
+		const parentConfig = this.imageMapManager.getMapConfig(this.activeMapId);
+		this.regionEditBoundsH = parentConfig
+			? Math.abs(parentConfig.bounds.topLeft.y - parentConfig.bounds.bottomRight.y)
+			: 0;
+
+		// Calculate initial rectangle bounds
+		let bounds: L.LatLngBounds;
+		if (childConfig.parentRegion) {
+			bounds = this.regionToBounds(childConfig.parentRegion);
+		} else {
+			// Default: rectangle at center of current view, ~25% of viewport
+			const mapBounds = this.map.getBounds();
+			const center = this.map.getCenter();
+			const latSpan = (mapBounds.getNorth() - mapBounds.getSouth()) * 0.25;
+			const lngSpan = (mapBounds.getEast() - mapBounds.getWest()) * 0.25;
+			bounds = L.latLngBounds(
+				[center.lat - latSpan / 2, center.lng - lngSpan / 2],
+				[center.lat + latSpan / 2, center.lng + lngSpan / 2]
+			);
+		}
+
+		this.regionEditOriginalBounds = bounds;
+
+		// Hide the normal child map overlays while editing
+		if (this.childMapOverlayLayer && this.map.hasLayer(this.childMapOverlayLayer)) {
+			this.map.removeLayer(this.childMapOverlayLayer);
+		}
+
+		// Create the editable rectangle
+		this.regionEditRect = L.rectangle(bounds, {
+			color: '#4a90d9',
+			weight: 2,
+			opacity: 0.9,
+			fillColor: '#4a90d9',
+			fillOpacity: 0.15,
+			dashArray: '6, 4',
+			interactive: true
+		}).addTo(this.map);
+
+		// Create resize handles at corners
+		this.createRegionEditHandles();
+
+		// Setup drag behavior on the rectangle
+		this.setupRegionEditDrag();
+
+		// Create the floating toolbar
+		this.createRegionEditToolbar(childConfig.name);
+
+		// Disable map dragging when interacting with the rectangle
+		logger.debug('region-edit', `Entered region edit mode for "${childConfig.name}"`);
+	}
+
+	/**
+	 * Exit region edit mode without saving
+	 */
+	exitRegionEditMode(): void {
+		if (!this.map) return;
+
+		// Remove rectangle
+		if (this.regionEditRect) {
+			this.map.removeLayer(this.regionEditRect);
+			this.regionEditRect = null;
+		}
+
+		// Remove handles
+		for (const handle of this.regionEditHandles) {
+			this.map.removeLayer(handle);
+		}
+		this.regionEditHandles = [];
+
+		// Remove toolbar
+		if (this.regionEditToolbar) {
+			this.regionEditToolbar.remove();
+			this.regionEditToolbar = null;
+		}
+
+		this.regionEditActive = false;
+		this.regionEditConfig = null;
+		this.regionEditOriginalBounds = null;
+		this.regionEditDragging = false;
+		this.regionEditDragStart = null;
+
+		// Re-show child map overlays
+		if (this.childMapOverlayLayer && this.currentLayers.childMaps) {
+			this.childMapOverlayLayer.addTo(this.map);
+			this.renderChildMapOverlays(this.activeMapId);
+		}
+
+		logger.debug('region-edit', 'Exited region edit mode');
+	}
+
+	/**
+	 * Save the current region edit and exit
+	 */
+	private async saveRegionEdit(): Promise<void> {
+		if (!this.regionEditRect || !this.regionEditConfig) return;
+
+		const bounds = this.regionEditRect.getBounds();
+		const region = this.boundsToRegion(bounds);
+
+		// Find the child map's file
+		const sourcePath = this.regionEditConfig.sourcePath;
+		if (!sourcePath) {
+			new Notice('Cannot save: child map file path not found');
+			this.exitRegionEditMode();
+			return;
+		}
+
+		const file = this.plugin.app.vault.getAbstractFileByPath(sourcePath);
+		if (!(file instanceof TFile)) {
+			new Notice('Cannot save: child map file not found');
+			this.exitRegionEditMode();
+			return;
+		}
+
+		// Save to frontmatter
+		await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
+			fm.parent_region_x = region.x;
+			fm.parent_region_y = region.y;
+			fm.parent_region_w = region.w;
+			fm.parent_region_h = region.h;
+		});
+
+		const childName = this.regionEditConfig.name;
+
+		// Reload map configs BEFORE exiting edit mode so the re-render picks up the new region
+		await this.imageMapManager.loadMapConfigs();
+
+		new Notice(`Region saved for "${childName}"`);
+		this.exitRegionEditMode();
+	}
+
+	/**
+	 * Convert bounds-space region coords to Leaflet bounds
+	 */
+	private regionToBounds(region: { x: number; y: number; w: number; h: number }): L.LatLngBounds {
+		if (this.currentCRS === 'pixel' && this.regionEditBoundsH > 0) {
+			const leafletTop = this.regionEditBoundsH - region.y;
+			const leafletBottom = this.regionEditBoundsH - (region.y + region.h);
+			return L.latLngBounds(
+				L.latLng(leafletBottom, region.x),
+				L.latLng(leafletTop, region.x + region.w)
+			);
+		}
+		return L.latLngBounds(
+			L.latLng(region.y, region.x),
+			L.latLng(region.y + region.h, region.x + region.w)
+		);
+	}
+
+	/**
+	 * Convert Leaflet bounds back to bounds-space region coords
+	 */
+	private boundsToRegion(bounds: L.LatLngBounds): { x: number; y: number; w: number; h: number } {
+		const sw = bounds.getSouthWest();
+		const ne = bounds.getNorthEast();
+
+		if (this.currentCRS === 'pixel' && this.regionEditBoundsH > 0) {
+			// Flip Y back: Leaflet lat → bounds-space y (Y=0 at top)
+			const y = this.regionEditBoundsH - ne.lat;
+			const h = ne.lat - sw.lat;
+			return {
+				x: Math.round(sw.lng),
+				y: Math.round(y),
+				w: Math.round(ne.lng - sw.lng),
+				h: Math.round(h)
+			};
+		}
+		return {
+			x: Math.round(sw.lng),
+			y: Math.round(sw.lat),
+			w: Math.round(ne.lng - sw.lng),
+			h: Math.round(ne.lat - sw.lat)
+		};
+	}
+
+	/**
+	 * Create draggable corner handles for the region edit rectangle
+	 */
+	private createRegionEditHandles(): void {
+		if (!this.map || !this.regionEditRect) return;
+
+		const bounds = this.regionEditRect.getBounds();
+		const corners = [
+			{ pos: bounds.getSouthWest(), cursor: 'nesw-resize', idx: 0 },
+			{ pos: bounds.getNorthWest(), cursor: 'nwse-resize', idx: 1 },
+			{ pos: bounds.getNorthEast(), cursor: 'nesw-resize', idx: 2 },
+			{ pos: bounds.getSouthEast(), cursor: 'nwse-resize', idx: 3 }
+		];
+
+		for (const corner of corners) {
+			const handle = L.circleMarker(corner.pos, {
+				radius: 6,
+				color: '#ffffff',
+				fillColor: '#4a90d9',
+				fillOpacity: 1,
+				weight: 2,
+				className: `cr-region-handle cr-region-handle--${corner.cursor}`
+			}).addTo(this.map);
+
+			this.setupHandleDrag(handle, corner.idx);
+			this.regionEditHandles.push(handle);
+		}
+	}
+
+	/**
+	 * Update handle positions to match current rectangle bounds
+	 */
+	private updateRegionEditHandles(): void {
+		if (!this.regionEditRect || this.regionEditHandles.length !== 4) return;
+
+		const bounds = this.regionEditRect.getBounds();
+		const positions = [
+			bounds.getSouthWest(),
+			bounds.getNorthWest(),
+			bounds.getNorthEast(),
+			bounds.getSouthEast()
+		];
+
+		for (let i = 0; i < 4; i++) {
+			this.regionEditHandles[i].setLatLng(positions[i]);
+		}
+	}
+
+	/**
+	 * Setup drag behavior for a corner resize handle
+	 * idx: 0=SW, 1=NW, 2=NE, 3=SE
+	 */
+	private setupHandleDrag(handle: L.CircleMarker, idx: number): void {
+		if (!this.map) return;
+
+		let dragging = false;
+		const map = this.map;
+
+		const onMouseDown = (e: L.LeafletMouseEvent) => {
+			dragging = true;
+			map.dragging.disable();
+			L.DomEvent.stopPropagation(e.originalEvent);
+		};
+
+		const onMouseMove = (e: L.LeafletMouseEvent) => {
+			if (!dragging || !this.regionEditRect) return;
+
+			const latlng = e.latlng;
+			const bounds = this.regionEditRect.getBounds();
+			const sw = bounds.getSouthWest();
+			const ne = bounds.getNorthEast();
+
+			let newBounds: L.LatLngBounds;
+			const minSize = 10; // Minimum size in map units
+
+			switch (idx) {
+				case 0: // SW
+					newBounds = L.latLngBounds(
+						L.latLng(Math.min(latlng.lat, ne.lat - minSize), Math.min(latlng.lng, ne.lng - minSize)),
+						ne
+					);
+					break;
+				case 1: // NW
+					newBounds = L.latLngBounds(
+						L.latLng(sw.lat, Math.min(latlng.lng, ne.lng - minSize)),
+						L.latLng(Math.max(latlng.lat, sw.lat + minSize), ne.lng)
+					);
+					break;
+				case 2: // NE
+					newBounds = L.latLngBounds(
+						sw,
+						L.latLng(Math.max(latlng.lat, sw.lat + minSize), Math.max(latlng.lng, sw.lng + minSize))
+					);
+					break;
+				case 3: // SE
+					newBounds = L.latLngBounds(
+						L.latLng(Math.min(latlng.lat, ne.lat - minSize), sw.lng),
+						L.latLng(ne.lat, Math.max(latlng.lng, sw.lng + minSize))
+					);
+					break;
+				default:
+					return;
+			}
+
+			this.regionEditRect.setBounds(newBounds);
+			this.updateRegionEditHandles();
+		};
+
+		const onMouseUp = () => {
+			if (!dragging) return;
+			dragging = false;
+			map.dragging.enable();
+		};
+
+		handle.on('mousedown', onMouseDown);
+		map.on('mousemove', onMouseMove);
+		map.on('mouseup', onMouseUp);
+	}
+
+	/**
+	 * Setup drag behavior on the rectangle body (move the whole region)
+	 */
+	private setupRegionEditDrag(): void {
+		if (!this.map || !this.regionEditRect) return;
+
+		const map = this.map;
+		const rect = this.regionEditRect;
+
+		rect.on('mousedown', (e: L.LeafletMouseEvent) => {
+			this.regionEditDragging = true;
+			this.regionEditDragStart = e.latlng;
+			map.dragging.disable();
+			L.DomEvent.stopPropagation(e.originalEvent);
+		});
+
+		map.on('mousemove', (e: L.LeafletMouseEvent) => {
+			if (!this.regionEditDragging || !this.regionEditDragStart || !this.regionEditRect) return;
+
+			const latDiff = e.latlng.lat - this.regionEditDragStart.lat;
+			const lngDiff = e.latlng.lng - this.regionEditDragStart.lng;
+
+			const bounds = this.regionEditRect.getBounds();
+			const newBounds = L.latLngBounds(
+				L.latLng(bounds.getSouth() + latDiff, bounds.getWest() + lngDiff),
+				L.latLng(bounds.getNorth() + latDiff, bounds.getEast() + lngDiff)
+			);
+
+			this.regionEditRect.setBounds(newBounds);
+			this.updateRegionEditHandles();
+			this.regionEditDragStart = e.latlng;
+		});
+
+		map.on('mouseup', () => {
+			if (this.regionEditDragging) {
+				this.regionEditDragging = false;
+				this.regionEditDragStart = null;
+				map.dragging.enable();
+			}
+		});
+	}
+
+	/**
+	 * Create the floating save/cancel toolbar for region editing
+	 */
+	private createRegionEditToolbar(childMapName: string): void {
+		const toolbar = document.createElement('div');
+		toolbar.className = 'cr-region-edit-toolbar';
+
+		const label = toolbar.createEl('span', {
+			cls: 'cr-region-edit-toolbar__label',
+			text: `Editing region for "${childMapName}"`
+		});
+
+		const btnGroup = toolbar.createDiv({ cls: 'cr-region-edit-toolbar__buttons' });
+
+		const cancelBtn = btnGroup.createEl('button', {
+			cls: 'cr-region-edit-toolbar__btn',
+			text: 'Cancel'
+		});
+		cancelBtn.addEventListener('click', () => {
+			this.exitRegionEditMode();
+		});
+
+		const saveBtn = btnGroup.createEl('button', {
+			cls: 'cr-region-edit-toolbar__btn cr-region-edit-toolbar__btn--save',
+			text: 'Save region'
+		});
+		saveBtn.addEventListener('click', () => {
+			void this.saveRegionEdit();
+		});
+
+		this.container.appendChild(toolbar);
+		this.regionEditToolbar = toolbar;
 	}
 
 	setLayerVisibility(layers: LayerVisibility): void {
@@ -1310,6 +1775,19 @@ export class MapController {
 				this.map.addLayer(this.placesClusterGroup);
 			} else if (!layers.places && this.map.hasLayer(this.placesClusterGroup)) {
 				this.map.removeLayer(this.placesClusterGroup);
+			}
+		}
+
+		// Child map overlays (#362)
+		if (this.childMapOverlayLayer) {
+			if (layers.childMaps && !this.map.hasLayer(this.childMapOverlayLayer)) {
+				this.map.addLayer(this.childMapOverlayLayer);
+			} else if (!layers.childMaps && this.map.hasLayer(this.childMapOverlayLayer)) {
+				this.map.removeLayer(this.childMapOverlayLayer);
+			}
+			// Re-render overlays when toggling on (in case map changed)
+			if (layers.childMaps && this.activeMapId) {
+				this.renderChildMapOverlays(this.activeMapId);
 			}
 		}
 	}
@@ -1433,6 +1911,11 @@ export class MapController {
 		if (this.heatLayer && this.map) {
 			this.map.removeLayer(this.heatLayer);
 			this.heatLayer = null;
+		}
+
+		// Exit region edit mode if active
+		if (this.regionEditActive) {
+			this.exitRegionEditMode();
 		}
 
 		this.childMapOverlayLayer?.clearLayers();

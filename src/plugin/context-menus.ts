@@ -12,8 +12,8 @@ import {
 	openCanvasInFamilyChart, openCitationGenerator, openEditSourceModal,
 	openEditUniverseModal, openManageMediaModal, promptParentType,
 	promptSetCollection, promptSetCollectionName,
-	regenerateTimelineCanvas, showCreatePlaceNotesForPerson,
-	showFolderStatistics, toggleRootPerson
+	openRegionDrawingForMap, regenerateTimelineCanvas,
+	showCreatePlaceNotesForPerson, showFolderStatistics, toggleRootPerson
 } from './context-menu-helpers';
 import { RegenerateOptionsModal } from '../ui/regenerate-options-modal';
 import { TreeStatisticsModal } from '../ui/tree-statistics-modal';
@@ -2946,6 +2946,19 @@ function buildMapContextMenu(
 					});
 			});
 
+			// Draw/edit parent region (#362) — only shown for child maps
+			if (fm?.parent_map) {
+				submenu.addItem((subItem) => {
+					const hasRegion = typeof fm?.parent_region_x === 'number';
+					subItem
+						.setTitle(hasRegion ? 'Edit parent region' : 'Draw parent region')
+						.setIcon('square-dashed')
+						.onClick(async () => {
+							await openRegionDrawingForMap(plugin, file, fm);
+						});
+				});
+			}
+
 			submenu.addSeparator();
 
 			submenu.addItem((subItem) => {
@@ -2991,6 +3004,19 @@ function buildMapContextMenu(
 					}).open();
 				});
 		});
+
+		// Draw/edit parent region (#362) — only shown for child maps
+		if (fm?.parent_map) {
+			menu.addItem((item) => {
+				const hasRegion = typeof fm?.parent_region_x === 'number';
+				item
+					.setTitle(`Charted Roots: ${hasRegion ? 'Edit parent region' : 'Draw parent region'}`)
+					.setIcon('square-dashed')
+					.onClick(async () => {
+						await openRegionDrawingForMap(plugin, file, fm);
+					});
+			});
+		}
 
 		menu.addItem((item) => {
 			item

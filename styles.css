@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-04-12 19:42:43 UTC
+ * - Generated: 2026-04-13 04:15:02 UTC
  * - Components: 49 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -23201,7 +23201,7 @@ settings:
    COMPONENT: MAP-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 2237 lines, 45.73 KB */
+/* Component Size: 2430 lines, 50.19 KB */
 
 /* ==========================================================================
    Map View Styles
@@ -24087,6 +24087,36 @@ svg.leaflet-image-layer.leaflet-interactive path {
   color: var(--text-normal);
   font-size: var(--font-small);
   min-width: 120px;
+}
+
+/* Breadcrumb navigation (#361) */
+
+.cr-map-breadcrumb {
+  display: flex;
+  align-items: center;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  padding: 0 var(--cr-spacing-xs);
+}
+
+.cr-map-breadcrumb__link {
+  color: var(--text-accent);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.cr-map-breadcrumb__link:hover {
+  text-decoration: underline;
+}
+
+.cr-map-breadcrumb__separator {
+  color: var(--text-faint);
+  margin: 0 2px;
+}
+
+.cr-map-breadcrumb__current {
+  color: var(--text-normal);
+  font-weight: var(--font-semibold);
 }
 
 /* Input fields */
@@ -25438,6 +25468,169 @@ input[type="text"]::-webkit-input-placeholder {
 
 .cr-universe-sync-buttons .setting-item-control {
   gap: var(--size-4-2);
+}
+
+/* --------------------------------------------------------------------------
+   Child Map Markers (#362)
+   Map icon markers for child maps displayed on parent maps.
+   -------------------------------------------------------------------------- */
+
+.cr-child-map-marker-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.cr-child-map-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-s);
+  background-color: var(--background-primary);
+  border: 2px solid #d4a017;
+  color: #d4a017;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cr-child-map-marker:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  background-color: #d4a017;
+  color: var(--background-primary);
+}
+
+.cr-child-map-marker svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* --------------------------------------------------------------------------
+   Region Drawing Modal (#362)
+   Visual rectangle drawing on parent map image for defining child map regions.
+   -------------------------------------------------------------------------- */
+
+.cr-region-drawing-modal {
+  padding: var(--size-4-4);
+}
+
+.cr-region-drawing-modal__desc {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  margin-bottom: var(--size-4-3);
+}
+
+.cr-region-drawing-modal__canvas-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--size-4-3);
+  background: var(--background-secondary);
+  border-radius: var(--radius-m);
+  padding: var(--size-4-2);
+}
+
+.cr-region-drawing-modal__canvas {
+  cursor: crosshair;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.cr-region-drawing-modal__coords {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  font-family: var(--font-monospace);
+  text-align: center;
+  margin-bottom: var(--size-4-3);
+}
+
+.cr-region-drawing-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cr-region-drawing-modal__buttons {
+  display: flex;
+  gap: var(--size-4-2);
+}
+
+.cr-region-drawing-modal__error {
+  color: var(--text-error);
+  text-align: center;
+  padding: var(--size-4-4);
+}
+
+/* --------------------------------------------------------------------------
+   Region Edit Mode (#362)
+   Floating toolbar and interactive handles for on-map region editing.
+   -------------------------------------------------------------------------- */
+
+.cr-region-edit-toolbar {
+  position: absolute;
+  top: var(--size-4-3);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-3);
+  padding: var(--size-4-2) var(--size-4-3);
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  font-size: var(--font-ui-small);
+}
+
+.cr-region-edit-toolbar__label {
+  color: var(--text-normal);
+  white-space: nowrap;
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cr-region-edit-toolbar__buttons {
+  display: flex;
+  gap: var(--size-4-2);
+}
+
+.cr-region-edit-toolbar__btn {
+  padding: var(--size-4-1) var(--size-4-3);
+  border-radius: var(--radius-s);
+  font-size: var(--font-ui-small);
+  cursor: pointer;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+  color: var(--text-normal);
+}
+
+.cr-region-edit-toolbar__btn:hover {
+  background: var(--background-modifier-hover);
+}
+
+.cr-region-edit-toolbar__btn--save {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+}
+
+.cr-region-edit-toolbar__btn--save:hover {
+  background: var(--interactive-accent-hover);
+}
+
+/* Handle cursors */
+.cr-region-handle {
+  cursor: pointer;
+}
+
+.cr-region-handle--nesw-resize {
+  cursor: nesw-resize;
+}
+
+.cr-region-handle--nwse-resize {
+  cursor: nwse-resize;
 }
 
 
@@ -40964,11 +41157,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-04-12 19:42:43 UTC
+ * Build completed: 2026-04-13 04:15:02 UTC
  * Components processed: 49
- * Total lines: 40500
- * Total size: 815.13 KB
- * Build duration: 0.33 seconds
+ * Total lines: 40693
+ * Total size: 819.59 KB
+ * Build duration: 0.31 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -40996,7 +41189,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - data-quality.css: 1446 lines, 28.73 KB
  * - relationships.css: 597 lines, 11.43 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB
- * - map-view.css: 2237 lines, 45.73 KB
+ * - map-view.css: 2430 lines, 50.19 KB
  * - leaflet-distortable.css: 368 lines, 7.73 KB
  * - date-systems.css: 287 lines, 5.31 KB
  * - events.css: 1515 lines, 30.67 KB

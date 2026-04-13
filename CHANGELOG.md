@@ -23,6 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `charted-roots-universe-organizations` — table with name and type
   - All entries are clickable wikilinks. Supports `sort` (name/date/type) and `limit` parameters. Auto-refreshes when vault data changes.
 - **Universe map thumbnails** ([#360](https://github.com/banisterious/obsidian-charted-roots/issues/360)): New `charted-roots-universe-maps` dynamic block renders clickable map image thumbnails for custom maps belonging to a universe. Click a thumbnail to open it in Map View. Shows place count badge. Supports `size` parameter (small/medium/large).
+- **Child map markers and region editing** ([#362](https://github.com/banisterious/obsidian-charted-roots/issues/362)): Visual tools for managing child map regions on parent maps:
+  - Gold map-icon markers on parent maps for every child map, with popup showing "Open map" and "Edit/Draw region" buttons
+  - On-map region editing: drag the rectangle to reposition, drag corner handles to resize, floating save/cancel toolbar — all at full map zoom for precision
+  - Region drawing modal in the Map Creation Wizard for setting the region during map creation
+  - "Draw/Edit parent region" context menu item on child map notes
+  - "Child maps" layer toggle in the Layers menu
 
 ### Fixed
 

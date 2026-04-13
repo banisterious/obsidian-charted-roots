@@ -60,6 +60,7 @@ export class MapView extends ItemView {
 	private mapContainerEl: HTMLElement | null = null;
 	private statusBarEl: HTMLElement | null = null;
 	private mapSelectEl: HTMLSelectElement | null = null;
+	private breadcrumbEl: HTMLElement | null = null;
 	private timeSliderContainerEl: HTMLElement | null = null;
 
 	// View state
@@ -83,7 +84,8 @@ export class MapView extends ItemView {
 		paths: true,
 		journeys: false,
 		heatMap: false,
-		places: false
+		places: false,
+		childMaps: true
 	};
 
 	// Time slider state
@@ -293,6 +295,10 @@ export class MapView extends ItemView {
 			// The map change callback will handle filtering and data refresh
 			void this.mapController?.setActiveMap(mapId);
 		});
+
+		// Breadcrumb for parent map navigation (#361)
+		this.breadcrumbEl = leftSection.createDiv({ cls: 'cr-map-breadcrumb' });
+		this.breadcrumbEl.hide();
 
 		// Layers dropdown
 		const layersBtn = leftSection.createEl('button', {
@@ -549,6 +555,15 @@ export class MapView extends ItemView {
 				});
 		});
 
+		menu.addItem((item) => {
+			item.setTitle('Child maps')
+				.setChecked(this.layers.childMaps)
+				.onClick(() => {
+					this.layers.childMaps = !this.layers.childMaps;
+					this.mapController?.setLayerVisibility(this.layers);
+				});
+		});
+
 		menu.addSeparator();
 
 		menu.addItem((item) => {
@@ -777,6 +792,53 @@ export class MapView extends ItemView {
 	 * Map configs may store the universe cr_id, but entity notes store the name.
 	 * This looks up the universe note by cr_id and returns the name for filtering.
 	 */
+	/**
+	 * Update the breadcrumb navigation based on the active map's parent hierarchy (#361)
+	 */
+	private updateBreadcrumb(mapId: string): void {
+		if (!this.breadcrumbEl) return;
+		this.breadcrumbEl.empty();
+
+		if (mapId === 'openstreetmap') {
+			this.breadcrumbEl.hide();
+			return;
+		}
+
+		const parentMapId = this.mapController?.getParentMapId(mapId);
+		if (!parentMapId) {
+			this.breadcrumbEl.hide();
+			return;
+		}
+
+		const parentConfig = this.mapController?.getMapConfig(parentMapId);
+		if (!parentConfig) {
+			this.breadcrumbEl.hide();
+			return;
+		}
+
+		this.breadcrumbEl.show();
+
+		// Parent map link
+		const parentLink = this.breadcrumbEl.createEl('a', {
+			cls: 'cr-map-breadcrumb__link',
+			text: parentConfig.name
+		});
+		parentLink.addEventListener('click', (e) => {
+			e.preventDefault();
+			void this.mapController?.setActiveMap(parentMapId);
+		});
+
+		// Separator
+		this.breadcrumbEl.createSpan({ cls: 'cr-map-breadcrumb__separator', text: ' → ' });
+
+		// Current map (not a link)
+		const currentConfig = this.mapController?.getMapConfig(mapId);
+		this.breadcrumbEl.createSpan({
+			cls: 'cr-map-breadcrumb__current',
+			text: currentConfig?.name || mapId
+		});
+	}
+
 	private resolveUniverseFilterValue(universe: string | null): string | null {
 		if (!universe) return null;
 
@@ -2133,6 +2195,9 @@ export class MapView extends ItemView {
 				if (this.mapSelectEl) {
 					this.mapSelectEl.value = mapId;
 				}
+
+				// Update breadcrumb navigation (#361)
+				this.updateBreadcrumb(mapId);
 
 				// Enable/disable edit buttons based on map type
 				const canEdit = this.mapController?.canEnableEditMode() ?? false;

@@ -609,6 +609,20 @@ export class ImageMapManager {
 	}
 
 	/**
+	 * Get ALL child maps for a given parent map (#362)
+	 * Returns configs where parentMap matches, with or without parentRegion
+	 */
+	getAllChildMaps(parentMapId: string): CustomMapConfig[] {
+		const children: CustomMapConfig[] = [];
+		for (const config of this.mapConfigs.values()) {
+			if (config.parentMap === parentMapId) {
+				children.push(config);
+			}
+		}
+		return children;
+	}
+
+	/**
 	 * Check if a map has distortable corners configured
 	 */
 	hasDistortableCorners(mapId: string): boolean {
