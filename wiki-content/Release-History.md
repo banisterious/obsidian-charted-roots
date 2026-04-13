@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.20.x](#v020x)
+  - [Child Map Markers and Region Editing](#child-map-markers-and-region-editing-v02056)
   - [Linked Map Drill-Down Navigation](#linked-map-drill-down-navigation-v02056)
   - [PDF Previews in Media](#pdf-previews-in-media-v02054)
   - [Alt Name Display](#alt-name-display-v02052v02053)
@@ -130,6 +131,34 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.20.x
+
+### Child Map Markers and Region Editing (v0.20.56)
+
+Visual tools for managing child map regions on parent maps.
+
+**GitHub Issue:** [#362](https://github.com/banisterious/obsidian-charted-roots/issues/362)
+
+**Child map markers:**
+- Gold map-icon markers appear on parent maps for every child map that has `parent_map` set
+- Positioned at the center of `parent_region` if defined, or at the parent map center as fallback
+- Popup shows child map name with "Open map" and "Edit/Draw region" buttons
+- Dedicated layer with "Child maps" toggle in the Layers menu
+
+**On-map region editing:**
+- Click a child map marker → "Edit region" (or "Draw region" for maps without a region)
+- Draggable dashed blue rectangle with four corner resize handles
+- Floating save/cancel toolbar at the top of the map
+- Works at any zoom level for precision positioning
+- Saves `parent_region_x/y/w/h` to the child map's frontmatter immediately
+
+**Region drawing modal:**
+- "Draw region" button in Map Creation Wizard Step 2 when a parent map is selected
+- Canvas-based drawing on the parent map image with drag, resize, and coordinate readout
+- Also available via right-click context menu on child map notes ("Draw/Edit parent region")
+
+**Documentation:** [Custom Maps — Child Map Markers](Custom-Maps#child-map-markers), [Custom Maps — Editing Regions](Custom-Maps#editing-regions-on-the-map)
+
+---
 
 ### Linked Map Drill-Down Navigation (v0.20.56)
 

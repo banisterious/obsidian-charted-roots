@@ -434,6 +434,36 @@ When the parent map is viewed, child maps with overlay regions are rendered as c
 - `parent_region_x`, `parent_region_y` — top-left corner position in the parent map's coordinate system
 - `parent_region_w`, `parent_region_h` — width and height of the region
 
+### Child Map Markers
+
+Every child map with `parent_map` set gets a gold map-icon marker on the parent map, regardless of whether `parent_region` coordinates are defined. This ensures child maps are always discoverable.
+
+- Markers are positioned at the center of the `parent_region` if defined, or at the parent map center as a fallback
+- Clicking a marker opens a popup with the child map name, an **Open map** button, and an **Edit region** (or **Draw region**) button
+- Use the **Child maps** toggle in the Layers menu to show or hide all child map markers and overlay rectangles
+
+| Configuration | What appears on parent map |
+|---|---|
+| `parent_map` only | Gold marker at map center + breadcrumb |
+| `parent_map` + `parent_region` | Gold marker + overlay rectangle + breadcrumb |
+| `parent_map` + `parent_region` + `linked_map` on place | Place marker + gold marker + overlay rectangle + breadcrumb |
+
+### Editing Regions on the Map
+
+The most precise way to define a child map's region is directly on the parent map:
+
+1. Open the parent map in Map View
+2. Zoom and pan to where the child map should sit
+3. Click a child map marker to open its popup
+4. Click **Edit region** (or **Draw region** if no region exists yet)
+5. A dashed blue rectangle appears with four corner handles:
+   - **Drag the rectangle** to reposition it
+   - **Drag any corner handle** to resize it
+6. A floating toolbar at the top shows the child map name with **Save** and **Cancel** buttons
+7. Click **Save region** to write the coordinates to the child map's frontmatter
+
+You can also set the region during map creation using the **Draw region** button in the Map Creation Wizard (Step 2), or via the right-click context menu on a child map note (**Draw/Edit parent region**).
+
 ---
 
 ## Frontmatter Reference
