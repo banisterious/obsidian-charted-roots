@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.20.x](#v020x)
+  - [Linked Map Drill-Down Navigation](#linked-map-drill-down-navigation-v02056)
   - [PDF Previews in Media](#pdf-previews-in-media-v02054)
   - [Alt Name Display](#alt-name-display-v02052v02053)
   - [Calendar View](#calendar-view-v02047)
@@ -129,6 +130,30 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.20.x
+
+### Linked Map Drill-Down Navigation (v0.20.56)
+
+Full drill-down navigation between custom maps for multi-scale worldbuilding.
+
+**GitHub Issue:** [#361](https://github.com/banisterious/obsidian-charted-roots/issues/361)
+
+**Phase 1 — Place-level linking:**
+- `linked_map` property on place notes enables drill-down from one map to another
+- Clicking a place marker shows an "Open [map name]" button in the popup
+
+**Phase 2 — Map hierarchy and breadcrumbs:**
+- `parent_map` property on child map notes establishes parent-child relationships
+- Breadcrumb navigation in the Map View toolbar (e.g., "The Dying Earth → River Scaum")
+- "Parent map" dropdown in the Map Creation Wizard
+
+**Phase 3 — Visual overlay regions:**
+- `parent_region_x/y/w/h` properties on child map notes define where the child sits on the parent
+- Clickable dashed blue rectangles rendered on the parent map
+- Hover shows child map name tooltip, click drills down to the child map
+
+**Documentation:** [Custom Maps — Linked Maps](Custom-Maps#linked-maps-drill-down-navigation), [Frontmatter Reference — Map Hierarchy](Frontmatter-Reference#map-hierarchy)
+
+---
 
 ### PDF Previews in Media (v0.20.54)
 

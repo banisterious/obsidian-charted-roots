@@ -971,6 +971,18 @@ For maps where coordinates match pixel positions:
 | `min_zoom` | `number` | Minimum zoom level | `-2` |
 | `max_zoom` | `number` | Maximum zoom level | `4` |
 
+### Map Hierarchy
+
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `parent_map` | `string` | `map_id` of the parent map (enables breadcrumb navigation) | `"the-dying-earth"` |
+| `parent_region_x` | `number` | X offset of overlay region on parent map (pixels) | `4700` |
+| `parent_region_y` | `number` | Y offset of overlay region on parent map (pixels) | `1300` |
+| `parent_region_w` | `number` | Width of overlay region on parent map (pixels) | `1500` |
+| `parent_region_h` | `number` | Height of overlay region on parent map (pixels) | `1200` |
+
+When `parent_map` is set, a breadcrumb appears in the Map View toolbar. When `parent_region_*` values are also set, a clickable overlay rectangle is rendered on the parent map showing where this child map sits.
+
 ### Distortable Image Corners (Advanced)
 
 For interactive image alignment and georeferencing, you can define corner positions. When corners are set, the map enters "distortable mode" where you can drag, rotate, scale, and distort the image to align it with your coordinate system.

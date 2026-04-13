@@ -396,6 +396,44 @@ linked_map: river-scaum-and-its-major-tributaries
 - Use the `maps` array on the place note to ensure the marker only appears on the relevant parent map
 - You can link maps in both directions — add `linked_map` on a place in the child map pointing back to the parent map's `map_id`
 
+### Map Hierarchy and Breadcrumbs
+
+You can establish parent-child relationships between maps using the `parent_map` property on the child map note:
+
+```yaml
+---
+cr_type: map
+map_id: river-scaum-and-its-major-tributaries
+name: River Scaum and its Major Tributaries
+parent_map: the-dying-earth
+---
+```
+
+When viewing a child map, a breadcrumb appears in the toolbar: **The Dying Earth → River Scaum and its Major Tributaries**. Clicking the parent name navigates back to the parent map.
+
+The Map Creation Wizard includes a "Parent map" dropdown in Step 2 to set this automatically.
+
+### Overlay Regions
+
+Child maps can define where they sit on the parent map using region coordinates:
+
+```yaml
+---
+cr_type: map
+map_id: river-scaum-and-its-major-tributaries
+parent_map: the-dying-earth
+parent_region_x: 4700
+parent_region_y: 1300
+parent_region_w: 1500
+parent_region_h: 1200
+---
+```
+
+When the parent map is viewed, child maps with overlay regions are rendered as clickable dashed blue rectangles. Hovering shows the child map name as a tooltip, and clicking drills down to the child map.
+
+- `parent_region_x`, `parent_region_y` — top-left corner position in the parent map's coordinate system
+- `parent_region_w`, `parent_region_h` — width and height of the region
+
 ---
 
 ## Frontmatter Reference
@@ -434,6 +472,13 @@ corner_sw_lat: -45.8
 corner_sw_lng: -98.1
 corner_se_lat: -44.2
 corner_se_lng: -55.7
+
+# Optional: map hierarchy (#361)
+parent_map: parent-map-id         # map_id of the parent map
+parent_region_x: 4700             # Overlay region on parent map
+parent_region_y: 1300
+parent_region_w: 1500
+parent_region_h: 1200
 ---
 
 # My Custom Map
