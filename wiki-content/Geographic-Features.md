@@ -715,6 +715,10 @@ For place notes that already exist but lack coordinates:
 
 **Note:** Geocoding is rate-limited. For bulk lookups, use the Bulk Geocode tool in Control Center > Maps tab.
 
+### Web Clipper integration
+
+You can also create place notes by clipping web pages from genealogy sites. The [Web Clipper Integration](Web-Clipper-Integration) page includes ready-to-use templates for importing places from FindAGrave, FamilySearch, Wikipedia, and other sources directly into your vault.
+
 ## Custom Place Types
 
 Beyond the built-in types (city, state, country, etc.), you can use custom types:
