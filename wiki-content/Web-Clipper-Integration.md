@@ -20,7 +20,7 @@ Capture genealogical data from web sources directly into your Charted Roots vaul
 
 ### What is Web Clipper Integration?
 
-Charted Roots integrates with [Obsidian Web Clipper](https://help.obsidian.md/Clipper), the official browser extension for capturing web content. This integration streamlines the process of collecting genealogical data from online sources.
+Charted Roots integrates with [Obsidian Web Clipper](https://obsidian.md/help/web-clipper), the official browser extension for capturing web content. This integration streamlines the process of collecting genealogical data from online sources.
 
 ### When to Use It
 
