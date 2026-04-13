@@ -604,6 +604,18 @@ export function renderPeopleTab(options: PeopleTabOptions): void {
 				new MediaManagerModal(app, plugin).open();
 			}));
 
+	// Web Clipper info box (#364)
+	const clipperNote = actionsContent.createDiv({ cls: 'cr-info-box cr-info-box--muted' });
+	const clipperIcon = clipperNote.createSpan({ cls: 'cr-info-box-icon' });
+	setIcon(clipperIcon, 'globe');
+	const clipperText = clipperNote.createSpan();
+	clipperText.appendText('Import people from the web using ');
+	clipperText.createEl('a', {
+		text: 'Web Clipper templates',
+		href: 'https://github.com/banisterious/obsidian-charted-roots/wiki/Web-Clipper-Integration#ready-to-use-templates'
+	});
+	clipperText.appendText(' (FamilySearch, Wikipedia biographies, and more).');
+
 	container.appendChild(actionsCard);
 
 	// Batch Operations Card
