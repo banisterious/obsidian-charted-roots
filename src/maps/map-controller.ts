@@ -1536,6 +1536,7 @@ export class MapController {
 		this.initializeClusterGroups();
 		this.pathLayer = L.layerGroup().addTo(this.map);
 		this.journeyLayer = L.layerGroup();  // Not added by default
+		this.childMapOverlayLayer = L.layerGroup().addTo(this.map);
 
 		// Reinitialize controls
 		this.initializeFullscreen();

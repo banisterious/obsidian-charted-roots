@@ -12,7 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Book Builder link in Report Wizard**: The report type selection step now includes a link to the Book Builder, making it discoverable from the Report Wizard in addition to the command palette.
-- **Linked map drill-down navigation** ([#361](https://github.com/banisterious/obsidian-charted-roots/issues/361), Phase 1): Add `linked_map` frontmatter field to place notes to enable drill-down navigation between custom maps. Clicking a place marker on a map shows an "Open [map name]" button in the popup that switches to the linked map.
+- **Linked map drill-down navigation** ([#361](https://github.com/banisterious/obsidian-charted-roots/issues/361)): Full drill-down navigation between custom maps:
+  - **Phase 1:** `linked_map` on place notes — clicking a place marker shows an "Open [map name]" button in the popup
+  - **Phase 2:** `parent_map` on map notes — breadcrumb navigation in the toolbar (e.g., "The Dying Earth → River Scaum"). Parent map dropdown in Map Creation Wizard.
+  - **Phase 3:** `parent_region_x/y/w/h` on child map notes — clickable overlay rectangles on the parent map showing where child maps sit. Dashed blue border, tooltip on hover, click to drill down. Visual region drawing tracked in [#362](https://github.com/banisterious/obsidian-charted-roots/issues/362).
 - **Universe entity dynamic blocks** ([#359](https://github.com/banisterious/obsidian-charted-roots/issues/359)): Four new dynamic content blocks for universe notes that automatically list all entities belonging to that universe:
   - `charted-roots-universe-people` — table with name, born, died, occupation
   - `charted-roots-universe-places` — table with name and place type
