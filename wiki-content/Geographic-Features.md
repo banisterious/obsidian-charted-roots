@@ -21,7 +21,7 @@ Charted Roots provides comprehensive place-based features for tracking where peo
 - [Place Visualizations](#place-visualizations)
 - [Merge Duplicate Places](#merge-duplicate-places)
 - [Place-Based Tree Filtering](#place-based-tree-filtering)
-- [Geocoding Lookup](#geocoding-lookup)
+- [Place Lookup](#place-lookup)
 - [Custom Place Types](#custom-place-types)
 - [Using Obsidian Maps Alongside Charted Roots](#using-obsidian-maps-alongside-canvas-roots)
 - [Settings](#settings)
@@ -670,17 +670,50 @@ Filter tree generation by geographic data:
    - Enter a place name to match
 4. Generate tree with only people matching the place criteria
 
-## Geocoding Lookup
+## Place Lookup
 
-For real, historical, or disputed places, look up coordinates automatically:
+Create fully-populated place notes from external databases in seconds. The Place Lookup tool searches multiple providers simultaneously and returns coordinates, place type, and hierarchy.
 
-1. Create or edit a place note
-2. Click **Look up coordinates** button
-3. Charted Roots queries Nominatim (OpenStreetMap geocoding)
-4. Review and accept the suggested coordinates
-5. Parent place is included in the query for better accuracy
+### Providers
 
-**Note:** Geocoding is rate-limited. For bulk lookups, space requests appropriately.
+| Provider | What it returns | Configuration |
+|----------|----------------|---------------|
+| **Wikidata** | Coordinates, place type, hierarchy, alternate names | Always available |
+| **OpenStreetMap (Nominatim)** | Coordinates, address components, place type | Always available |
+| **GeoNames** | Coordinates, place type, hierarchy, population | Requires free account — configure username in Settings > Places |
+
+### How to use
+
+**From the command palette:**
+1. Press `Ctrl/Cmd + P` → search for **Charted Roots: Look up place**
+2. Type a place name (e.g., "Edinburgh, Scotland")
+3. Review results from all providers — each shows coordinates, type, and source
+4. Select a result → opens the Create Place modal with fields pre-populated
+5. Review and save
+
+**From the Create Place modal:**
+1. Open the Create Place modal (from Control Center, context menu, or command palette)
+2. Click the **Look up place** button in the modal header
+3. Search and select a result — coordinates, place type, and hierarchy auto-populate the form
+
+### What gets populated
+
+When you select a lookup result, the following fields are filled automatically:
+
+- `coordinates_lat` / `coordinates_long` — geographic coordinates
+- `place_type` — city, state, country, etc. (inferred from provider data)
+- `parent_place` — parent location in the hierarchy (if available)
+- `place_category` — real, historical, etc.
+
+### Geocoding existing places
+
+For place notes that already exist but lack coordinates:
+
+1. Right-click a place note → **Charted Roots > Geocode**
+2. Charted Roots queries Nominatim using the place name and parent place for accuracy
+3. Review and accept the suggested coordinates
+
+**Note:** Geocoding is rate-limited. For bulk lookups, use the Bulk Geocode tool in Control Center > Maps tab.
 
 ## Custom Place Types
 
