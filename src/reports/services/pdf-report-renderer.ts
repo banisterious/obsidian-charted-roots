@@ -805,8 +805,20 @@ export class PdfReportRenderer {
 			]));
 		}
 
-		// Marriage section (placeholder - would need marriage data from result)
-		// TODO: Add marriage data to FamilyGroupSheetResult if available
+		// Marriage section (#370)
+		if (result.marriages && result.marriages.length > 0) {
+			for (const marriage of result.marriages) {
+				const spouseName = result.spouses.find(s => s.crId === marriage.spouseCrId)?.name;
+				const label = result.marriages.length > 1 && spouseName
+					? `Marriage to ${spouseName}`
+					: 'Marriage';
+				content.push(this.buildSectionHeader(label));
+				content.push(this.buildKeyValueTable([
+					{ label: 'Date', value: marriage.date || '' },
+					{ label: 'Place', value: this.stripWikilinks(marriage.place) }
+				]));
+			}
+		}
 
 		// Children section
 		if (result.children.length > 0) {

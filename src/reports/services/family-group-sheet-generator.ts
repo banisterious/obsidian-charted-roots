@@ -54,18 +54,30 @@ export class FamilyGroupSheetGenerator {
 				warnings: [],
 				primaryPerson: { crId: '', name: 'Unknown', filePath: '' },
 				spouses: [],
+				marriages: [],
 				children: []
 			};
 		}
 
 		const primaryPerson = nodeToReportPerson(primaryNode);
 
-		// Get spouses
+		// Get spouses and marriage data (#370)
 		const spouses: ReportPerson[] = [];
+		const marriages: import('../types/report-types').ReportMarriage[] = [];
 		for (const spouseCrId of primaryNode.spouseCrIds) {
 			const spouseNode = familyGraph.getPersonByCrId(spouseCrId);
 			if (spouseNode) {
 				spouses.push(nodeToReportPerson(spouseNode));
+
+				// Extract marriage data from spouse relationships
+				const spouseRel = primaryNode.spouses?.find(s => s.personId === spouseCrId);
+				if (spouseRel && (spouseRel.marriageDate || spouseRel.marriageLocation)) {
+					marriages.push({
+						spouseCrId,
+						date: spouseRel.marriageDate,
+						place: spouseRel.marriageLocation?.replace(/^\[\[|\]\]$/g, '')
+					});
+				}
 			} else {
 				warnings.push(`Spouse not found: ${spouseCrId}`);
 			}
@@ -107,6 +119,7 @@ export class FamilyGroupSheetGenerator {
 			spouses,
 			spouseParents,
 			children,
+			marriages,
 			options,
 			sourcesSet
 		);
@@ -128,6 +141,7 @@ export class FamilyGroupSheetGenerator {
 			warnings,
 			primaryPerson,
 			spouses,
+			marriages,
 			children
 		};
 	}
@@ -167,6 +181,7 @@ export class FamilyGroupSheetGenerator {
 		spouses: ReportPerson[],
 		spouseParents: Array<{ father?: ReportPerson; mother?: ReportPerson }>,
 		children: ReportPerson[],
+		marriages: import('../types/report-types').ReportMarriage[],
 		options: FamilyGroupSheetOptions,
 		sourcesSet: Set<string>
 	): string {
@@ -200,12 +215,18 @@ export class FamilyGroupSheetGenerator {
 			lines.push('');
 		}
 
-		// Marriage section (if we have spouse relationship data)
-		if (options.includeEvents && spouses.length > 0) {
-			lines.push('## Marriage');
-			lines.push('- **Date:** (marriage date not yet extracted)');
-			lines.push('- **Place:** (marriage place not yet extracted)');
-			lines.push('');
+		// Marriage section (#370)
+		if (options.includeEvents && marriages.length > 0) {
+			for (const marriage of marriages) {
+				const spouseName = spouses.find(s => s.crId === marriage.spouseCrId)?.name;
+				const label = marriages.length > 1 && spouseName
+					? `## Marriage to [[${spouseName}]]`
+					: '## Marriage';
+				lines.push(label);
+				lines.push(`- **Date:** ${marriage.date ?? 'Unknown'}`);
+				lines.push(`- **Place:** ${marriage.place ? `[[${marriage.place}]]` : 'Unknown'}`);
+				lines.push('');
+			}
 		}
 
 		// Children section

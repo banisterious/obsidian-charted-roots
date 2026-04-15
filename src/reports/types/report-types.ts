@@ -490,11 +490,20 @@ export interface ReportResult {
 /**
  * Family Group Sheet result
  */
+/** Marriage data for Family Group Sheet (#370) */
+export interface ReportMarriage {
+	spouseCrId: string;
+	date?: string;
+	place?: string;
+}
+
 export interface FamilyGroupSheetResult extends ReportResult {
 	/** Primary person */
 	primaryPerson: ReportPerson;
 	/** Spouse(s) */
 	spouses: ReportPerson[];
+	/** Marriage data per spouse (#370) */
+	marriages: ReportMarriage[];
 	/** Children */
 	children: ReportPerson[];
 }
