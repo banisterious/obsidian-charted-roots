@@ -44,18 +44,18 @@ These are all planned/deferred features, not bugs. Track as issues if they becom
 
 | File | TODO | Category |
 |------|------|----------|
-| `src/core/family-graph.ts:2038` | Look up target's sex for step-parent assignment | Enhancement |
-| `src/events/ui/create-event-modal.ts:303` | Add multiple person picker support | Enhancement |
-| `src/schemas/ui/schemas-tab.ts:358` | Implement targeted validation | Enhancement |
-| `src/organizations/services/organization-service.ts:212` | Calculate membership stats | Enhancement |
-| `src/places/services/place-lookup-service.ts:534` | Implement OAuth 2.0 flow (Phase 3) | Future phase |
-| `src/places/services/place-lookup-service.ts:547` | Research GOV API (Phase 3) | Future phase |
-| `src/reports/ui/report-wizard-modal.ts:1125` | Implement universe picker | Enhancement |
-| `src/reports/ui/report-wizard-modal.ts:1129` | Implement collection picker | Enhancement |
-| `src/maps/map-view.ts:2514` | Add full map settings to plugin settings | Enhancement |
-| `src/reports/services/pdf-report-renderer.ts:809` | Add marriage data to FamilyGroupSheet | Enhancement |
-| `src/reports/services/timeline-generator.ts:401` | Expand place hierarchy for child places | Enhancement |
-| `src/ui/staging-management-modal.ts:611` | Open CrossImportReviewModal | Future phase |
+| `src/core/family-graph.ts:2038` | Look up target's sex for step-parent assignment | [#365](https://github.com/banisterious/obsidian-charted-roots/issues/365) |
+| `src/events/ui/create-event-modal.ts:303` | Add multiple person picker support | [#366](https://github.com/banisterious/obsidian-charted-roots/issues/366) |
+| `src/schemas/ui/schemas-tab.ts:358` | Implement targeted validation | [#367](https://github.com/banisterious/obsidian-charted-roots/issues/367) |
+| `src/organizations/services/organization-service.ts:212` | Calculate membership stats | [#368](https://github.com/banisterious/obsidian-charted-roots/issues/368) |
+| `src/places/services/place-lookup-service.ts:534` | Implement OAuth 2.0 flow (Phase 3) | Deferred |
+| `src/places/services/place-lookup-service.ts:547` | Research GOV API (Phase 3) | Deferred |
+| `src/reports/ui/report-wizard-modal.ts:1125` | Implement universe picker | [#369](https://github.com/banisterious/obsidian-charted-roots/issues/369) |
+| `src/reports/ui/report-wizard-modal.ts:1129` | Implement collection picker | [#369](https://github.com/banisterious/obsidian-charted-roots/issues/369) |
+| `src/maps/map-view.ts:2514` | Add full map settings to plugin settings | Deferred |
+| `src/reports/services/pdf-report-renderer.ts:809` | Add marriage data to FamilyGroupSheet | [#370](https://github.com/banisterious/obsidian-charted-roots/issues/370) |
+| `src/reports/services/timeline-generator.ts:401` | Expand place hierarchy for child places | Deferred |
+| `src/ui/staging-management-modal.ts:611` | Open CrossImportReviewModal | Deferred |
 
 ---
 
