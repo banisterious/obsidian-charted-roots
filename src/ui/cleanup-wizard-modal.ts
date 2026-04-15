@@ -32,7 +32,7 @@ import {
 import { FolderFilterService } from '../core/folder-filter';
 import { getLogger } from '../core/logging';
 import type { CleanupWizardPersistedState } from '../settings';
-import { findPlaceNameVariants, findDuplicatePlaceNotes, mergeDuplicatePlaces, type PlaceVariantMatch, type PlaceDuplicateGroup } from './standardize-place-variants-modal';
+import { findPlaceNameVariants, findDuplicatePlacesByFullName, mergeDuplicatePlaces, type PlaceVariantMatch, type PlaceDuplicateGroup } from './standardize-place-variants-modal';
 import { GeocodingService, type GeocodingResult } from '../maps/services/geocoding-service';
 import { PlaceGraphService } from '../core/place-graph';
 import { createPlaceNote, updatePlaceNote, type PlaceData } from '../core/place-note-writer';
@@ -1910,7 +1910,7 @@ export class CleanupWizardModal extends Modal {
 
 		if (this.placeVariantMatches.length === 0 && this.state.preScanComplete) {
 			// No variants found - check for duplicates instead
-			this.placeDuplicateGroups = findDuplicatePlaceNotes(this.app);
+			this.placeDuplicateGroups = findDuplicatePlacesByFullName(this.app);
 			if (this.placeDuplicateGroups.length > 0) {
 				this.showDeduplicationStep = true;
 				this.renderPlaceDeduplicationStep(container, stepState);
@@ -2103,7 +2103,7 @@ export class CleanupWizardModal extends Modal {
 		}
 
 		// Check for duplicates after variant standardization
-		this.placeDuplicateGroups = findDuplicatePlaceNotes(this.app);
+		this.placeDuplicateGroups = findDuplicatePlacesByFullName(this.app);
 		if (this.placeDuplicateGroups.length > 0) {
 			// Show deduplication step instead of marking complete
 			this.showDeduplicationStep = true;

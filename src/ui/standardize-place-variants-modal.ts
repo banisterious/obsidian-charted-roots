@@ -523,7 +523,7 @@ export interface PlaceDuplicateGroup {
  * Find duplicate Place notes (notes with the same full_name)
  * This should be run AFTER variant standardization to catch newly-created duplicates
  */
-export function findDuplicatePlaceNotes(app: App): PlaceDuplicateGroup[] {
+export function findDuplicatePlacesByFullName(app: App): PlaceDuplicateGroup[] {
 	const files = app.vault.getMarkdownFiles();
 
 	// Group Place notes by their full_name
