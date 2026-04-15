@@ -2,7 +2,7 @@
 
 Results from the April 2026 full codebase scan.
 
-**Status:** In progress
+**Status:** ✅ Complete
 
 ---
 
@@ -62,6 +62,6 @@ These are all planned/deferred features, not bugs. Track as issues if they becom
 ## Implementation Plan
 
 - [x] Create planning doc
-- [ ] Consolidate `formatCanvasJson()` duplicates
-- [ ] Consolidate `getContrastColor()` duplicates
-- [ ] Rename `findDuplicatePlaceNotes()` for clarity
+- [x] Consolidate `formatCanvasJson()` — removed 2 duplicates (trees-tab, bulk-operations), canonical in canvas-utils.ts
+- [x] Consolidate `getContrastColor()` — removed 8 duplicates across tab/manager files, canonical in create-person-types.ts. One additional private method copy in organization-type-editor-modal remains.
+- [x] Rename `findDuplicatePlaceNotes()` → `findDuplicatePlacesByFullName()` in standardize-place-variants-modal to disambiguate from merge-duplicate-places-modal version
