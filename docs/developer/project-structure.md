@@ -237,6 +237,7 @@ charted-roots/
 | `folder-filter.ts` | ✅ Complete | Configurable folder filtering for plugin scope |
 | `media-service.ts` | ✅ Complete | Media file association and management |
 | `pdf-thumbnail-service.ts` | ✅ Complete | PDF first-page thumbnail generation using loadPdfJs() |
+| `crop-renderer.ts` | ✅ Complete | Canvas-based image crop rendering with in-memory cache |
 | `media-association.ts` | ✅ Complete | Links media files to entity notes |
 | `merge-service.ts` | ✅ Complete | Merges duplicate person records |
 | `note-writer.ts` | ✅ Complete | Generic note writing (GEDCOM notes, research notes) |

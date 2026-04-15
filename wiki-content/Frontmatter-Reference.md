@@ -761,6 +761,32 @@ media:
   - "[[census-1900-smith-p2.jpg]]"
 ```
 
+### Image Crop Regions
+
+Define crop regions for images to display specific portions (e.g., a face from a group photo). The crop is applied when rendering thumbnails in the media block, Family Chart avatars, and Entity Profile View.
+
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `media_crop` | `array` | Array of crop region definitions | See below |
+| `media_crop[].image` | `string` | Filename matching a media item | `"group-photo.jpg"` |
+| `media_crop[].x` | `number` | X offset (pixels from left) | `100` |
+| `media_crop[].y` | `number` | Y offset (pixels from top) | `50` |
+| `media_crop[].w` | `number` | Width of crop region (pixels) | `200` |
+| `media_crop[].h` | `number` | Height of crop region (pixels) | `250` |
+
+```yaml
+media:
+  - "[[group-photo.jpg]]"
+media_crop:
+  - image: group-photo.jpg
+    x: 100
+    y: 50
+    w: 200
+    h: 250
+```
+
+To set a crop visually, right-click an image in the `charted-roots-media` block and select **Set crop region**.
+
 ### Citation Override
 
 | Property | Type | Description | Example |

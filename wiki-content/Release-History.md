@@ -11,6 +11,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 - [v0.20.x](#v020x)
   - [Child Map Markers and Region Editing](#child-map-markers-and-region-editing-v02056)
   - [Linked Map Drill-Down Navigation](#linked-map-drill-down-navigation-v02056)
+  - [Image Region Crop](#image-region-crop-v02055)
   - [PDF Previews in Media](#pdf-previews-in-media-v02054)
   - [Alt Name Display](#alt-name-display-v02052v02053)
   - [Calendar View](#calendar-view-v02047)
@@ -181,6 +182,34 @@ Full drill-down navigation between custom maps for multi-scale worldbuilding.
 - Hover shows child map name tooltip, click drills down to the child map
 
 **Documentation:** [Custom Maps — Linked Maps](Custom-Maps#linked-maps-drill-down-navigation), [Frontmatter Reference — Map Hierarchy](Frontmatter-Reference#map-hierarchy)
+
+---
+
+### Image Region Crop (v0.20.55)
+
+Select a region of an image (e.g., a face in a group photo) to use as the thumbnail on person cards, media blocks, and profile views.
+
+**GitHub Issue:** [#354](https://github.com/banisterious/obsidian-charted-roots/issues/354)
+
+**Features:**
+- **`media_crop` frontmatter property** — Stores crop coordinates (x, y, w, h) per image per note
+- **Crop selection modal** — Canvas-based UI with draggable/resizable rectangle, darkened overlay, and live preview
+- **Right-click menu** — "Set crop region" / "Edit crop region" / "Remove crop" on any image in the media block
+- **Applied everywhere** — Media block thumbnails, Family Chart avatars, Entity Profile View
+
+**Data model (Option B — separate property, backward compatible):**
+```yaml
+media:
+  - "[[group-photo.jpg]]"
+media_crop:
+  - image: group-photo.jpg
+    x: 100
+    y: 50
+    w: 200
+    h: 250
+```
+
+**Documentation:** [Frontmatter Reference — Image Crop Regions](Frontmatter-Reference#image-crop-regions), [Media Management](Media-Management#supported-file-types)
 
 ---
 
