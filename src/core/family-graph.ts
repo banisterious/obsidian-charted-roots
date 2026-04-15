@@ -2033,13 +2033,22 @@ export class FamilyGraphService {
 				}
 				break;
 
-			case 'stepparent':
-				// Step-parent - for now add to stepfather by default
-				// TODO: Look up target's sex to assign to stepfatherCrIds or stepmotherCrIds
-				if (!result.stepfatherCrIds.includes(targetCrId)) {
-					result.stepfatherCrIds.push(targetCrId);
+			case 'stepparent': {
+				// Look up target's sex to assign to the correct step-parent array (#365)
+				const stepPerson = this.personCache.get(targetCrId);
+				const stepSex = stepPerson?.sex?.toLowerCase();
+				if (stepSex === 'f' || stepSex === 'female') {
+					if (!result.stepmotherCrIds.includes(targetCrId)) {
+						result.stepmotherCrIds.push(targetCrId);
+					}
+				} else {
+					// Default to stepfather for male, unknown, or unspecified
+					if (!result.stepfatherCrIds.includes(targetCrId)) {
+						result.stepfatherCrIds.push(targetCrId);
+					}
 				}
 				break;
+			}
 
 			case 'adoptive_parent':
 			case 'foster_parent':
