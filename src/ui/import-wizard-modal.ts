@@ -955,19 +955,12 @@ export class ImportWizardModal extends Modal {
 
 				// Use async parseContent which handles preprocessing and parsing in one pass
 				// This avoids processing the file twice (once for analyze, once for parse)
-				console.log('[ImportWizard] Starting parseContentAsync...');
 				const parseResult = await this.importer.parseContentAsync(content);
-				console.log('[ImportWizard] parseContentAsync result: valid=' + parseResult.valid +
-					', hasData=' + !!parseResult.data +
-					', dataSize=' + parseResult.data?.individuals?.size +
-					', errors=' + JSON.stringify(parseResult.errors) +
-					', warningCount=' + parseResult.warnings?.length);
 				this.formData.parseErrors = parseResult.errors;
 				this.formData.parseWarnings = parseResult.warnings;
 
 				if (parseResult.valid && parseResult.data) {
 					this.formData.parsedData = parseResult.data;
-					console.log('[ImportWizard] parsedData set with', parseResult.data.individuals.size, 'individuals');
 
 					// Compute preview counts from parsed data
 					const data = parseResult.data;
@@ -1154,12 +1147,6 @@ export class ImportWizardModal extends Modal {
 					};
 
 					// Run import
-					console.log('[ImportWizard] Starting import with:', {
-						hasFileContent: !!this.formData.fileContent,
-						fileContentLength: this.formData.fileContent?.length,
-						hasParsedData: !!this.formData.parsedData,
-						parsedDataSize: this.formData.parsedData?.individuals?.size
-					});
 					const result = await this.importer.importFile(
 						this.formData.fileContent,
 						options,
