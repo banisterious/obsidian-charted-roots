@@ -147,6 +147,71 @@ export class ValidationService {
 	}
 
 	/**
+	 * Validate only notes matching a specific schema (#367)
+	 */
+	async validateForSchema(
+		schema: SchemaNote,
+		onProgress?: (progress: ValidationProgress) => void
+	): Promise<ValidationResult[]> {
+		const results: ValidationResult[] = [];
+		const allFiles = this.plugin.app.vault.getMarkdownFiles();
+		const noteTypeSettings = this.plugin.settings.noteTypeDetection;
+
+		// Find person notes that match this schema
+		onProgress?.({ phase: 'scanning', current: 0, total: allFiles.length });
+
+		const matchingFiles: TFile[] = [];
+		for (let i = 0; i < allFiles.length; i++) {
+			const file = allFiles[i];
+			const cache = this.plugin.app.metadataCache.getFileCache(file);
+
+			if (cache?.frontmatter && isPersonNote(cache.frontmatter, cache, noteTypeSettings)) {
+				const schemas = await this.schemaService.getSchemasForPerson(file);
+				if (schemas.some(s => s.cr_id === schema.cr_id)) {
+					matchingFiles.push(file);
+				}
+			}
+
+			if (i % 100 === 0) {
+				onProgress?.({ phase: 'scanning', current: i, total: allFiles.length });
+				await new Promise(resolve => setTimeout(resolve, 0));
+			}
+		}
+
+		// Validate matching notes against this schema only
+		for (let i = 0; i < matchingFiles.length; i++) {
+			const file = matchingFiles[i];
+			onProgress?.({
+				phase: 'validating',
+				current: i + 1,
+				total: matchingFiles.length,
+				currentFile: file.basename
+			});
+
+			const cache = this.plugin.app.metadataCache.getFileCache(file);
+			if (cache?.frontmatter) {
+				const fm = cache.frontmatter;
+				const personName = (fm.name as string) || file.basename;
+				results.push(this.validateAgainstSchema(file.path, personName, fm, schema));
+			}
+
+			if (i % 10 === 0) {
+				await new Promise(resolve => setTimeout(resolve, 0));
+			}
+		}
+
+		onProgress?.({ phase: 'complete', current: matchingFiles.length, total: matchingFiles.length });
+
+		logger.info('validate-for-schema', 'Targeted validation complete', {
+			schemaName: schema.name,
+			matchingNotes: matchingFiles.length,
+			errors: results.filter(r => !r.isValid).length
+		});
+
+		return results;
+	}
+
+	/**
 	 * Get a summary of validation results
 	 */
 	getSummary(results: ValidationResult[]): ValidationSummary {

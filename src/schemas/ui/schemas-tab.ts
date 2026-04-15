@@ -148,7 +148,7 @@ export async function renderSchemasTab(options: SchemasTabOptions): Promise<void
 			.onClick(() => {
 				new CreateSchemaModal(app, plugin, {
 					onCreated: () => {
-						void loadSchemasGallery(app, plugin, schemaService, schemasGridContainer, closeModal);
+						void loadSchemasGallery(app, plugin, schemaService, validationService, schemasGridContainer, closeModal);
 					}
 				}).open();
 			}));
@@ -176,7 +176,7 @@ export async function renderSchemasTab(options: SchemasTabOptions): Promise<void
 	container.appendChild(schemasCard);
 
 	// Load schemas asynchronously
-	void loadSchemasGallery(app, plugin, schemaService, schemasGridContainer, closeModal);
+	void loadSchemasGallery(app, plugin, schemaService, validationService, schemasGridContainer, closeModal);
 
 	// Card 3: Recent Violations
 	if (lastValidationResults.length > 0) {
@@ -212,6 +212,7 @@ async function loadSchemasGallery(
 	app: App,
 	plugin: CanvasRootsPlugin,
 	schemaService: SchemaService,
+	validationService: ValidationService,
 	container: HTMLElement,
 	closeModal: () => void
 ): Promise<void> {
@@ -276,7 +277,7 @@ async function loadSchemasGallery(
 			new CreateSchemaModal(app, plugin, {
 				editSchema: schema,
 				onUpdated: () => {
-					void loadSchemasGallery(app, plugin, schemaService, container, closeModal);
+					void loadSchemasGallery(app, plugin, schemaService, validationService, container, closeModal);
 				}
 			}).open();
 		});
@@ -288,7 +289,7 @@ async function loadSchemasGallery(
 		});
 		setLucideIcon(moreBtn, 'more-vertical', 14);
 		moreBtn.addEventListener('click', (e) => {
-			showSchemaContextMenu(app, plugin, schema, schemaService, container, closeModal, e);
+			showSchemaContextMenu(app, plugin, schema, schemaService, validationService, container, closeModal, e);
 		});
 
 		// Click to open note
@@ -329,6 +330,7 @@ function showSchemaContextMenu(
 	plugin: CanvasRootsPlugin,
 	schema: SchemaNote,
 	schemaService: SchemaService,
+	validationService: ValidationService,
 	galleryContainer: HTMLElement,
 	closeModal: () => void,
 	event: MouseEvent
@@ -343,7 +345,7 @@ function showSchemaContextMenu(
 				new CreateSchemaModal(app, plugin, {
 					editSchema: schema,
 					onUpdated: () => {
-						void loadSchemasGallery(app, plugin, schemaService, galleryContainer, closeModal);
+						void loadSchemasGallery(app, plugin, schemaService, validationService, galleryContainer, closeModal);
 					}
 				}).open();
 			});
@@ -353,9 +355,33 @@ function showSchemaContextMenu(
 		item
 			.setTitle('Validate matching notes')
 			.setIcon('play')
-			.onClick(() => {
-				new Notice(`Validating notes matching schema: ${schema.name}...`);
-				// TODO: Implement targeted validation
+			.onClick(async () => {
+				const progressModal = new SchemaValidationProgressModal(app);
+				progressModal.open();
+
+				try {
+					const results = await validationService.validateForSchema(
+						schema,
+						(progress) => progressModal.updateProgress(progress)
+					);
+					const summary = validationService.getSummary(results);
+
+					// Update module-level state so violations tab shows results
+					lastValidationResults = results;
+					lastValidationSummary = summary;
+
+					progressModal.markComplete(summary);
+
+					const errorCount = summary.totalErrors;
+					if (errorCount === 0) {
+						new Notice(`Schema "${schema.name}": no violations found.`);
+					} else {
+						new Notice(`Schema "${schema.name}": ${errorCount} ${pluralize(errorCount, 'error')} found.`);
+					}
+				} catch (error) {
+					progressModal.close();
+					new Notice('Validation failed: ' + getErrorMessage(error));
+				}
 			});
 	});
 
@@ -367,7 +393,7 @@ function showSchemaContextMenu(
 				try {
 					await schemaService.duplicateSchema(schema.cr_id);
 					new Notice(`Schema duplicated: ${schema.name} (Copy)`);
-					void loadSchemasGallery(app, plugin, schemaService, galleryContainer, closeModal);
+					void loadSchemasGallery(app, plugin, schemaService, validationService, galleryContainer, closeModal);
 				} catch (error) {
 					new Notice('Failed to duplicate schema: ' + getErrorMessage(error));
 				}
@@ -414,7 +440,7 @@ function showSchemaContextMenu(
 					try {
 						await schemaService.deleteSchema(schema.cr_id);
 						new Notice(`Schema deleted: ${schema.name}`);
-						void loadSchemasGallery(app, plugin, schemaService, galleryContainer, closeModal);
+						void loadSchemasGallery(app, plugin, schemaService, validationService, galleryContainer, closeModal);
 					} catch (error) {
 						new Notice('Failed to delete schema: ' + getErrorMessage(error));
 					}
@@ -509,7 +535,7 @@ function importSchemaFromJson(
 			await schemaService.importSchemaFromJson(json);
 			new Notice('Schema imported successfully');
 			modal.close();
-			void loadSchemasGallery(app, plugin, schemaService, galleryContainer, closeModal);
+			void loadSchemasGallery(app, plugin, schemaService, validationService, galleryContainer, closeModal);
 		} catch (error) {
 			new Notice('Failed to import schema: ' + getErrorMessage(error));
 		}
