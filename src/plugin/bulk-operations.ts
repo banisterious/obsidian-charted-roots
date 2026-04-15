@@ -19,6 +19,7 @@ import { LineageTrackingService } from '../core/lineage-tracking';
 import type { LineageType } from '../core/lineage-tracking';
 import { EventService } from '../events/services/event-service';
 import { CanvasGenerator } from '../core/canvas-generator';
+import { formatCanvasJson } from '../core/canvas-utils';
 import { ExcalidrawExporter } from '../excalidraw/excalidraw-exporter';
 import { getErrorMessage } from '../core/error-utils';
 import { isPlaceNote, isSourceNote, isEventNote, isPersonNote, isOrganizationNote } from '../utils/note-type-detection';
@@ -717,51 +718,6 @@ export async function regenerateCanvas(plugin: CanvasRootsPlugin, canvasFile: TF
 		new Notice('Failed to regenerate canvas. Check console for details.');
 	}
 }
-
-/**
- * Format canvas JSON to match Obsidian's exact format
- * Uses tabs for structure and compact objects on single lines
- */
-export function formatCanvasJson(data: unknown): string {
-	const canvasData = data as {
-		nodes: Array<Record<string, unknown>>;
-		edges: Array<Record<string, unknown>>;
-		metadata?: Record<string, unknown>;
-	};
-
-	const lines: string[] = [];
-	lines.push('{');
-
-	// Nodes array
-	lines.push('\t"nodes":[');
-	canvasData.nodes.forEach((node, i) => {
-		const isLast = i === canvasData.nodes.length - 1;
-		const nodeStr = JSON.stringify(node);
-		lines.push(`\t\t${nodeStr}${isLast ? '' : ','}`);
-	});
-	lines.push('\t],');
-
-	// Edges array
-	lines.push('\t"edges":[');
-	canvasData.edges.forEach((edge, i) => {
-		const isLast = i === canvasData.edges.length - 1;
-		const edgeStr = JSON.stringify(edge);
-		lines.push(`\t\t${edgeStr}${isLast ? '' : ','}`);
-	});
-	lines.push('\t],');
-
-	// Metadata
-	lines.push('\t"metadata":{');
-	lines.push('\t\t"version":"1.0-1.0",');
-	const frontmatter = canvasData.metadata?.frontmatter || {};
-	lines.push(`\t\t"frontmatter":${JSON.stringify(frontmatter)}`);
-	lines.push('\t}');
-
-	lines.push('}');
-
-	return lines.join('\n');
-}
-
 export function createPersonNote(plugin: CanvasRootsPlugin) {
 	const familyGraph = plugin.createFamilyGraphService();
 

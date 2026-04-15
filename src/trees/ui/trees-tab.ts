@@ -13,7 +13,7 @@ import type { LucideIconName } from '../../ui/lucide-icons';
 import { createLucideIcon } from '../../ui/lucide-icons';
 import { CanvasGenerator, CanvasData, CanvasGenerationOptions } from '../../core/canvas-generator';
 import type { TreeOptions } from '../../core/family-graph';
-import { ensureFolderExists } from '../../core/canvas-utils';
+import { ensureFolderExists, formatCanvasJson } from '../../core/canvas-utils';
 import { getErrorMessage } from '../../core/error-utils';
 import { getLogger } from '../../core/logging';
 import { GedcomImporterV2 } from '../../gedcom/gedcom-importer-v2';
@@ -75,66 +75,6 @@ export function renderTreesTab(options: TreesTabOptions): void {
 	showTreeGenerationTab(options);
 }
 
-/**
- * Format canvas data to match Obsidian's exact JSON format.
- *
- * Obsidian canvases use a specific format:
- * - Tabs for indentation
- * - Objects within arrays are compact (single line, no spaces after colons/commas)
- * - Top-level structure is indented with newlines
- *
- * Exported so that other modules (e.g. Collections tab, openAndGenerateAllTrees)
- * can reuse the same formatting logic.
- */
-export function formatCanvasJson(data: CanvasData): string {
-	// Helper to safely stringify handling circular references
-	const safeStringify = (obj: unknown): string => {
-		const seen = new WeakSet();
-		return JSON.stringify(obj, (_key, value) => {
-			if (typeof value === 'object' && value !== null) {
-				if (seen.has(value)) {
-					return '[Circular]';
-				}
-				seen.add(value);
-			}
-			return value;
-		});
-	};
-
-	const lines: string[] = [];
-	lines.push('{');
-
-	// Format nodes array
-	lines.push('\t"nodes":[');
-	data.nodes.forEach((node, index) => {
-		const compact = safeStringify(node);
-		const suffix = index < data.nodes.length - 1 ? ',' : '';
-		lines.push(`\t\t${compact}${suffix}`);
-	});
-	lines.push('\t],');
-
-	// Format edges array
-	lines.push('\t"edges":[');
-	data.edges.forEach((edge, index) => {
-		const compact = safeStringify(edge);
-		const suffix = index < data.edges.length - 1 ? ',' : '';
-		lines.push(`\t\t${compact}${suffix}`);
-	});
-	lines.push('\t],');
-
-	// Format metadata
-	lines.push('\t"metadata":{');
-	if (data.metadata?.version) {
-		lines.push(`\t\t"version":"${data.metadata.version}",`);
-	}
-	const frontmatter = data.metadata?.frontmatter || {};
-	lines.push(`\t\t"frontmatter":${safeStringify(frontmatter)}`);
-	lines.push('\t}');
-
-	lines.push('}');
-
-	return lines.join('\n');
-}
 
 // ---------------------------------------------------------------------------
 // Tab renderer

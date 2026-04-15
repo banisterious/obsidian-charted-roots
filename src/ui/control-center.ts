@@ -60,7 +60,8 @@ import {
 } from '../sources';
 import { renderUniversesTab } from '../universes/ui/universes-tab';
 import { UnifiedTreeWizardModal } from '../trees/ui/unified-tree-wizard-modal';
-import { renderTreesTab, formatCanvasJson } from '../trees/ui/trees-tab';
+import { renderTreesTab } from '../trees/ui/trees-tab';
+import { formatCanvasJson } from '../core/canvas-utils';
 
 const logger = getLogger('ControlCenter');
 
