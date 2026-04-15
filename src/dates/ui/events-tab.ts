@@ -9,6 +9,7 @@ import { App, Menu, Modal, Notice, Setting, TFile, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { LucideIconName } from '../../ui/lucide-icons';
 import { createLucideIcon } from '../../ui/lucide-icons';
+import { getContrastColor } from '../../ui/create-person-types';
 import { CreateEventModal } from '../../events/ui/create-event-modal';
 import type { EventNote } from '../../events/types/event-types';
 import { getEventType, getAllEventTypes } from '../../events/types/event-types';
@@ -1440,18 +1441,6 @@ async function handleMarkdownExport(
 		exportBtn.appendChild(icon);
 		exportBtn.appendText(' Export to Markdown');
 	}
-}
-
-/**
- * Get contrasting text color for a background
- */
-function getContrastColor(hexColor: string): string {
-	const hex = hexColor.replace('#', '');
-	const r = parseInt(hex.substring(0, 2), 16);
-	const g = parseInt(hex.substring(2, 4), 16);
-	const b = parseInt(hex.substring(4, 6), 16);
-	const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-	return luminance > 0.5 ? '#000000' : '#ffffff';
 }
 
 /**

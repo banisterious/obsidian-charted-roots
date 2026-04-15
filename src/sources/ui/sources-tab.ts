@@ -8,6 +8,7 @@
 import { setIcon, TFile, Menu, Setting } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { LucideIconName } from '../../ui/lucide-icons';
+import { getContrastColor } from '../../ui/create-person-types';
 import type { SourceService } from '../services/source-service';
 import { createLucideIcon } from '../../ui/lucide-icons';
 import { CreateSourceModal } from './create-source-modal';
@@ -616,18 +617,6 @@ function renderSourceRow(
 			})();
 		}
 	});
-}
-
-/**
- * Get contrasting text color for a background
- */
-function getContrastColor(hexColor: string): string {
-	const hex = hexColor.replace('#', '');
-	const r = parseInt(hex.substring(0, 2), 16);
-	const g = parseInt(hex.substring(2, 4), 16);
-	const b = parseInt(hex.substring(4, 6), 16);
-	const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-	return luminance > 0.5 ? '#000000' : '#ffffff';
 }
 
 function addSourcesDockButton(card: HTMLElement, plugin: CanvasRootsPlugin): void {

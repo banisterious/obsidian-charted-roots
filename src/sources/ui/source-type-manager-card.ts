@@ -8,6 +8,7 @@
 import { Notice, Modal, Setting } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { LucideIconName } from '../../ui/lucide-icons';
+import { getContrastColor } from '../../ui/create-person-types';
 import { setLucideIcon } from '../../ui/lucide-icons';
 import {
 	BUILT_IN_SOURCE_TYPES,
@@ -393,18 +394,6 @@ function confirmDeleteType(
 	});
 
 	modal.open();
-}
-
-/**
- * Get contrasting text color for a background
- */
-function getContrastColor(hexColor: string): string {
-	const hex = hexColor.replace('#', '');
-	const r = parseInt(hex.substring(0, 2), 16);
-	const g = parseInt(hex.substring(2, 4), 16);
-	const b = parseInt(hex.substring(4, 6), 16);
-	const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-	return luminance > 0.5 ? '#000000' : '#ffffff';
 }
 
 /**
