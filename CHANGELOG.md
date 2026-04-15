@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Web Clipper discoverability in Control Center** ([#364](https://github.com/banisterious/obsidian-charted-roots/issues/364)): Info boxes in the Places, Sources, and People tabs link directly to the Web Clipper wiki templates, with relevant examples for each entity type (e.g., Wikidata for Places, FamilySearch/Wikipedia for People).
 
+### Fixed
+
+- **Step-parent assignment ignores target sex** ([#365](https://github.com/banisterious/obsidian-charted-roots/issues/365)): Step-parent relationships from the `relationships` array were always assigned to `stepfatherCrIds` regardless of the target person's sex. Now checks the person's `sex` property and assigns to `stepmotherCrIds` for female step-parents.
+
 ---
 
 ## [0.20.56] - 2026-04-12
