@@ -37,6 +37,7 @@ interface EventFormData {
 	datePrecision: DatePrecision;
 	person: string;
 	personCrId: string;
+	additionalPersons: { name: string; crId: string }[];
 	place: string;
 	confidence: EventConfidence;
 	description: string;
@@ -128,6 +129,13 @@ export class CreateEventModal extends Modal {
 			// Check persons array first (new format), then fall back to person (legacy)
 			const primaryPerson = event.persons?.[0] || event.person || '';
 			this.person = primaryPerson.replace(/^\[\[/, '').replace(/\]\]$/, '');
+			// Load additional persons (index 1+)
+			if (event.persons && event.persons.length > 1) {
+				this.persons = event.persons.slice(1).map(p => {
+					const name = p.replace(/^\[\[/, '').replace(/\]\]$/, '');
+					return { name, crId: '' };
+				});
+			}
 			this.place = event.place?.replace(/^\[\[/, '').replace(/\]\]$/, '') || '';
 			this.confidence = event.confidence;
 			this.description = event.description || '';
@@ -299,8 +307,9 @@ export class CreateEventModal extends Modal {
 		// Primary person
 		this.createPersonField(peopleSection, 'Primary person', 'The main person this event is about');
 
-		// Additional people (for marriages, group events, etc.)
-		// TODO: Add multiple person picker support
+		// Additional people (for marriages, group events, etc.) (#366)
+		const additionalPeopleContainer = peopleSection.createDiv({ cls: 'crc-additional-people' });
+		this.renderAdditionalPeople(additionalPeopleContainer);
 
 		// Place
 		this.createPlaceField(form, 'Place', 'Where did this event occur?');
@@ -446,6 +455,7 @@ export class CreateEventModal extends Modal {
 			datePrecision: this.datePrecision,
 			person: this.person,
 			personCrId: this.personCrId,
+			additionalPersons: [...this.persons],
 			place: this.place,
 			confidence: this.confidence,
 			description: this.description,
@@ -468,6 +478,7 @@ export class CreateEventModal extends Modal {
 		this.datePrecision = formData.datePrecision || 'exact';
 		this.person = formData.person || '';
 		this.personCrId = formData.personCrId || '';
+		this.persons = formData.additionalPersons || [];
 		this.place = formData.place || '';
 		this.confidence = formData.confidence || 'medium';
 		this.description = formData.description || '';
@@ -611,6 +622,63 @@ export class CreateEventModal extends Modal {
 	}
 
 	/**
+	 * Render the additional people list with add/remove support (#366)
+	 */
+	private renderAdditionalPeople(container: HTMLElement): void {
+		container.empty();
+
+		// Show existing additional people
+		for (let i = 0; i < this.persons.length; i++) {
+			const person = this.persons[i];
+			const setting = new Setting(container)
+				.setName(person.name)
+				.setDesc('Additional person');
+
+			setting.addButton(btn => {
+				btn.buttonEl.empty();
+				btn.buttonEl.addClass('crc-btn', 'crc-btn--secondary');
+				const icon = createLucideIcon('x', 16);
+				btn.buttonEl.appendChild(icon);
+				btn.buttonEl.appendText(' Remove');
+				btn.onClick(() => {
+					this.persons.splice(i, 1);
+					this.renderAdditionalPeople(container);
+				});
+			});
+		}
+
+		// Add person button
+		new Setting(container)
+			.addButton(btn => {
+				btn.buttonEl.empty();
+				btn.buttonEl.addClass('crc-btn', 'crc-btn--secondary');
+				const icon = createLucideIcon('user-plus', 16);
+				btn.buttonEl.appendChild(icon);
+				btn.buttonEl.appendText(' Add person');
+				btn.onClick(() => {
+					const directory = this.settings.peopleFolder || '';
+					const createContext: RelationshipContext = {
+						relationshipType: 'event_person',
+						suggestedSex: undefined,
+						parentCrId: undefined,
+						directory: directory
+					};
+
+					const picker = new PersonPickerModal(this.app, (person: PersonInfo) => {
+						this.persons.push({ name: person.name, crId: person.crId });
+						this.renderAdditionalPeople(container);
+					}, {
+						title: 'Select additional person',
+						createContext: createContext,
+						onCreateNew: () => {},
+						plugin: this.plugin
+					});
+					picker.open();
+				});
+			});
+	}
+
+	/**
 	 * Create a place picker field
 	 */
 	private createPlaceField(container: HTMLElement, label: string, description: string): void {
@@ -700,8 +768,15 @@ export class CreateEventModal extends Modal {
 			if (this.dateEnd.trim()) {
 				data.dateEnd = this.dateEnd.trim();
 			}
-			if (this.person.trim()) {
-				data.person = this.person.trim();
+			if (this.person.trim() || this.persons.length > 0) {
+				const allPersons: string[] = [];
+				if (this.person.trim()) {
+					allPersons.push(this.person.trim());
+				}
+				for (const p of this.persons) {
+					allPersons.push(p.name);
+				}
+				data.persons = allPersons;
 			}
 			if (this.place.trim()) {
 				data.place = this.place.trim();
@@ -792,8 +867,15 @@ export class CreateEventModal extends Modal {
 				}
 
 				// Always use persons array for consistency (matches EventService pattern)
-				if (this.person.trim()) {
-					frontmatter.persons = [`[[${this.person.trim()}]]`];
+				if (this.person.trim() || this.persons.length > 0) {
+					const allPersons: string[] = [];
+					if (this.person.trim()) {
+						allPersons.push(`[[${this.person.trim()}]]`);
+					}
+					for (const p of this.persons) {
+						allPersons.push(`[[${p.name}]]`);
+					}
+					frontmatter.persons = allPersons;
 				} else {
 					delete frontmatter.persons;
 				}
