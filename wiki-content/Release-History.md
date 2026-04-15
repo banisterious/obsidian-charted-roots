@@ -11,6 +11,8 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 - [v0.20.x](#v020x)
   - [Child Map Markers and Region Editing](#child-map-markers-and-region-editing-v02056)
   - [Linked Map Drill-Down Navigation](#linked-map-drill-down-navigation-v02056)
+  - [Universe Entity Dynamic Blocks](#universe-entity-dynamic-blocks-v02056)
+  - [Universe Map Thumbnails](#universe-map-thumbnails-v02056)
   - [Image Region Crop](#image-region-crop-v02055)
   - [PDF Previews in Media](#pdf-previews-in-media-v02054)
   - [Alt Name Display](#alt-name-display-v02052v02053)
@@ -182,6 +184,35 @@ Full drill-down navigation between custom maps for multi-scale worldbuilding.
 - Hover shows child map name tooltip, click drills down to the child map
 
 **Documentation:** [Custom Maps — Linked Maps](Custom-Maps#linked-maps-drill-down-navigation), [Frontmatter Reference — Map Hierarchy](Frontmatter-Reference#map-hierarchy)
+
+---
+
+### Universe Entity Dynamic Blocks (v0.20.56)
+
+Four new dynamic content blocks for universe notes that automatically list all entities belonging to that universe.
+
+**GitHub Issue:** [#359](https://github.com/banisterious/obsidian-charted-roots/issues/359)
+
+**Blocks:**
+- `charted-roots-universe-people` — table with name, born, died, occupation
+- `charted-roots-universe-places` — table with name and place type
+- `charted-roots-universe-events` — table with event name, date, type badge, and place
+- `charted-roots-universe-organizations` — table with name and type
+
+All entries are clickable wikilinks. Supports `sort` (name/date/type) and `limit` parameters. Auto-refreshes when vault data changes.
+
+---
+
+### Universe Map Thumbnails (v0.20.56)
+
+New `charted-roots-universe-maps` dynamic block renders clickable map image thumbnails for custom maps belonging to a universe.
+
+**GitHub Issue:** [#360](https://github.com/banisterious/obsidian-charted-roots/issues/360)
+
+**Features:**
+- Click a thumbnail to open it in Map View
+- Shows place count badge per map
+- Supports `size` parameter (small/medium/large)
 
 ---
 
