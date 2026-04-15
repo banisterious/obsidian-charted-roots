@@ -313,6 +313,7 @@ charted-roots/
 | `world-map-preview.ts` | ✅ Complete | Embedded map preview in Control Center |
 | `enrich-place-hierarchy-modal.ts` | ✅ Complete | Modal for enriching place hierarchies |
 | `bulk-geocode-modal.ts` | ✅ Complete | Bulk geocoding operations modal |
+| `region-drawing-modal.ts` | ✅ Complete | Canvas-based region drawing for child map placement |
 
 ### Places Module (src/places/)
 
