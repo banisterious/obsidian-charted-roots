@@ -17,6 +17,7 @@ import { isValidOrganizationType, getOrganizationType } from '../constants/organ
 import { getLogger } from '../../core/logging';
 import { parseMediaRefs } from '../../core/media-service';
 import { isOrganizationNote } from '../../utils/note-type-detection';
+import type { MembershipService } from './membership-service';
 
 const logger = getLogger('OrganizationService');
 
@@ -197,7 +198,7 @@ export class OrganizationService {
 	/**
 	 * Get organization statistics
 	 */
-	getStats(): OrganizationStats {
+	getStats(membershipService?: MembershipService): OrganizationStats {
 		this.ensureCacheLoaded();
 		const orgs = Array.from(this.organizationCache.values());
 
@@ -209,13 +210,32 @@ export class OrganizationService {
 			byType[typeId] = (byType[typeId] || 0) + 1;
 		}
 
-		// TODO: Calculate membership stats from MembershipService
+		// Calculate membership stats (#368)
+		let peopleWithMemberships = 0;
+		let totalMemberships = 0;
+		let emptyOrganizations = orgs.length;
+
+		if (membershipService) {
+			const membershipStats = membershipService.getMembershipStats();
+			peopleWithMemberships = membershipStats.peopleWithMemberships;
+			totalMemberships = membershipStats.totalMemberships;
+
+			// Count orgs with at least one member
+			emptyOrganizations = 0;
+			for (const org of orgs) {
+				const members = membershipService.getOrganizationMembers(org.crId);
+				if (members.length === 0) {
+					emptyOrganizations++;
+				}
+			}
+		}
+
 		return {
 			total: orgs.length,
 			byType,
-			peopleWithMemberships: 0,
-			totalMemberships: 0,
-			emptyOrganizations: orgs.length // Will be updated when memberships are loaded
+			peopleWithMemberships,
+			totalMemberships,
+			emptyOrganizations
 		};
 	}
 

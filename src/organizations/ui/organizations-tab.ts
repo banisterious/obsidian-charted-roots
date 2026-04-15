@@ -512,8 +512,7 @@ function renderOrganizationStatsCard(
 	});
 	const content = card.querySelector('.crc-card__content') as HTMLElement;
 
-	const stats = orgService.getStats();
-	const membershipStats = membershipService.getMembershipStats();
+	const stats = orgService.getStats(membershipService);
 
 	// Summary stats
 	const statsGrid = content.createDiv({ cls: 'cr-stats-grid' });
@@ -525,8 +524,9 @@ function renderOrganizationStatsCard(
 	};
 
 	createStatItem('Organizations', stats.total);
-	createStatItem('People with memberships', membershipStats.peopleWithMemberships);
-	createStatItem('Total memberships', membershipStats.totalMemberships);
+	createStatItem('People with memberships', stats.peopleWithMemberships);
+	createStatItem('Total memberships', stats.totalMemberships);
+	createStatItem('Empty organizations', stats.emptyOrganizations);
 
 	// Breakdown by type
 	if (stats.total > 0) {

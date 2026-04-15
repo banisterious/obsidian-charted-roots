@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Marriage data in Family Group Sheet** ([#370](https://github.com/banisterious/obsidian-charted-roots/issues/370)): Family Group Sheet reports now include marriage date and place extracted from spouse relationship data, in both markdown and PDF output. Multiple marriages are supported with per-spouse sections.
 - **Multiple person picker in event modal** ([#366](https://github.com/banisterious/obsidian-charted-roots/issues/366)): The create/edit event modal now supports adding multiple people to an event (e.g., marriages, group events). Additional persons are saved to the `persons` frontmatter array and persisted across modal state restoration.
 - **Targeted schema validation** ([#367](https://github.com/banisterious/obsidian-charted-roots/issues/367)): The "Validate matching notes" context menu action on schemas now runs validation against only notes matching that schema, with progress modal and result summary.
+- **Organization membership statistics** ([#368](https://github.com/banisterious/obsidian-charted-roots/issues/368)): The Organizations statistics card now shows real membership counts (people with memberships, total memberships, empty organizations) instead of placeholder zeros.
 
 ### Fixed
 
