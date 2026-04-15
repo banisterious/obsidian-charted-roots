@@ -11,12 +11,13 @@
  * Design inspired by FamilyChartExportWizard for consistency.
  */
 
-import { Modal, Notice, setIcon } from 'obsidian';
+import { Modal, Notice, setIcon, FuzzySuggestModal } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import { createLucideIcon, setLucideIcon, LucideIconName } from '../../ui/lucide-icons';
 import type { PersonInfo } from '../../ui/person-picker';
 import { PlacePickerModal, SelectedPlaceInfo } from '../../ui/place-picker';
 import { isPersonNote } from '../../utils/note-type-detection';
+import { UniverseService } from '../../universes/services/universe-service';
 
 /**
  * Sort options for person list
@@ -1122,12 +1123,10 @@ export class ReportWizardModal extends Modal {
 				await this.openPlacePicker();
 				break;
 			case 'universe':
-				// TODO: Implement universe picker
-				new Notice('Universe picker not yet implemented');
+				await this.openUniversePicker();
 				break;
 			case 'collection':
-				// TODO: Implement collection picker
-				new Notice('Collection picker not yet implemented');
+				await this.openCollectionPicker();
 				break;
 		}
 	}
@@ -1153,6 +1152,77 @@ export class ReportWizardModal extends Modal {
 				}
 			);
 			picker.open();
+		});
+	}
+
+	/**
+	 * Open universe picker modal (#369)
+	 */
+	private async openUniversePicker(): Promise<void> {
+		const universeService = new UniverseService(this.plugin);
+		const universes = universeService.getAllUniverses();
+
+		if (universes.length === 0) {
+			new Notice('No universes found. Create a universe first.');
+			return;
+		}
+
+		return new Promise((resolve) => {
+			const modal = new UniversePickerModal(
+				this.app,
+				universes.map(u => ({ crId: u.crId, name: u.name })),
+				(selected) => {
+					this.formData.subject = {
+						universeCrId: selected.crId,
+						universeName: selected.name
+					};
+					this.updateFilename();
+					this.renderCurrentStep();
+					resolve();
+				}
+			);
+			modal.open();
+		});
+	}
+
+	/**
+	 * Open collection picker modal (#369)
+	 */
+	private async openCollectionPicker(): Promise<void> {
+		// Gather unique collection names from person notes
+		const collections = new Set<string>();
+		const noteTypeSettings = this.plugin.settings.noteTypeDetection;
+
+		for (const file of this.app.vault.getMarkdownFiles()) {
+			const cache = this.app.metadataCache.getFileCache(file);
+			if (cache?.frontmatter && isPersonNote(cache.frontmatter, cache, noteTypeSettings)) {
+				const collection = cache.frontmatter.collection as string | undefined;
+				if (collection) {
+					collections.add(collection);
+				}
+			}
+		}
+
+		if (collections.size === 0) {
+			new Notice('No collections found. Set a collection on person notes first.');
+			return;
+		}
+
+		return new Promise((resolve) => {
+			const modal = new CollectionPickerModal(
+				this.app,
+				Array.from(collections).sort(),
+				(selected) => {
+					this.formData.subject = {
+						collectionId: selected,
+						collectionName: selected
+					};
+					this.updateFilename();
+					this.renderCurrentStep();
+					resolve();
+				}
+			);
+			modal.open();
 		});
 	}
 
@@ -2960,5 +3030,67 @@ class ResearchReportPickerModal extends Modal {
 	onClose(): void {
 		const { contentEl } = this;
 		contentEl.empty();
+	}
+}
+
+/**
+ * Simple fuzzy picker for universes (#369)
+ */
+class UniversePickerModal extends FuzzySuggestModal<{ crId: string; name: string }> {
+	private items: { crId: string; name: string }[];
+	private onChoose: (item: { crId: string; name: string }) => void;
+
+	constructor(
+		app: import('obsidian').App,
+		items: { crId: string; name: string }[],
+		onChoose: (item: { crId: string; name: string }) => void
+	) {
+		super(app);
+		this.items = items;
+		this.onChoose = onChoose;
+		this.setPlaceholder('Select a universe');
+	}
+
+	getItems(): { crId: string; name: string }[] {
+		return this.items;
+	}
+
+	getItemText(item: { crId: string; name: string }): string {
+		return item.name;
+	}
+
+	onChooseItem(item: { crId: string; name: string }): void {
+		this.onChoose(item);
+	}
+}
+
+/**
+ * Simple fuzzy picker for collections (#369)
+ */
+class CollectionPickerModal extends FuzzySuggestModal<string> {
+	private items: string[];
+	private onChoose: (item: string) => void;
+
+	constructor(
+		app: import('obsidian').App,
+		items: string[],
+		onChoose: (item: string) => void
+	) {
+		super(app);
+		this.items = items;
+		this.onChoose = onChoose;
+		this.setPlaceholder('Select a collection');
+	}
+
+	getItems(): string[] {
+		return this.items;
+	}
+
+	getItemText(item: string): string {
+		return item;
+	}
+
+	onChooseItem(item: string): void {
+		this.onChoose(item);
 	}
 }
