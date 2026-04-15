@@ -192,7 +192,7 @@ The Citation Statistics section shows metrics about citation notes in your vault
 
 ## Reports
 
-Generate formatted reports from your data. Reports are organized into categories for easy discovery.
+Generate formatted reports from your data. Reports are organized into categories for easy discovery. Reports that target a specific universe or collection provide fuzzy-search picker modals for selection.
 
 ### Report Categories
 

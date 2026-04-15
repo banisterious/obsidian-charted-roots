@@ -18,6 +18,7 @@ Charted Roots can render live, computed content directly within notes using spec
   - [Extractions Block](#extractions-block)
   - [Negative Findings Block](#negative-findings-block)
   - [Research Timeline Block](#research-timeline-block)
+  - [Universe Entity Blocks](#universe-entity-blocks)
 - [Rendered Output](#rendered-output)
 - [Freeze to Markdown](#freeze-to-markdown)
 - [Inserting Blocks](#inserting-blocks)
@@ -616,6 +617,29 @@ view: timeline
 | `title` | string | Custom header text |
 
 **Data sources:** Gathers entries from both `research_log_entry` frontmatter and `research_journal` markdown entries. Re-renders live when vault metadata changes. The table view supports freeze-to-markdown.
+
+### Universe Entity Blocks
+
+Four blocks for universe notes that automatically list all entities belonging to that universe. Place these in a universe note.
+
+**`charted-roots-universe-people`** — Table of people with name, born, died, occupation:
+
+~~~markdown
+```charted-roots-universe-people
+sort: name
+limit: 50
+```
+~~~
+
+**`charted-roots-universe-places`** — Table of places with name and place type.
+
+**`charted-roots-universe-events`** — Table of events with name, date, type badge, and place.
+
+**`charted-roots-universe-organizations`** — Table of organizations with name and type.
+
+**`charted-roots-universe-maps`** — Clickable map image thumbnails for custom maps. Shows place count badge. Supports `size` parameter (small/medium/large).
+
+All entries are clickable wikilinks. Supports `sort` (name/date/type) and `limit` parameters. Auto-refreshes when vault data changes.
 
 ## Rendered Output
 

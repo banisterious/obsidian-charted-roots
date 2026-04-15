@@ -48,6 +48,7 @@ Event notes are structured markdown files that document individual life events. 
 1. Go to **Control Center > Events tab**
 2. Click **"+ Create event note"**
 3. Complete the form fields
+4. For multi-person events (marriages, group events), click **"+ Add person"** to add additional participants
 
 **Linking a person or source to an existing event:**
 

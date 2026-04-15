@@ -335,7 +335,7 @@ Within constraint expressions, you can access any frontmatter property directly 
 
 **Schema notes:**
 - Right-click → Charted Roots → **Edit schema**
-- Right-click → Charted Roots → **Validate matching notes**
+- Right-click → Charted Roots → **Validate matching notes** — Runs validation against only notes matching this schema's target type, with a progress modal and result summary
 - Right-click → Charted Roots → **Open schemas tab**
 
 ---
