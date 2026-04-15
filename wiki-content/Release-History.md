@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.20.x](#v020x)
+  - [v0.20.57 Feature Round-Up](#v02057-feature-round-up-v02057)
   - [Child Map Markers and Region Editing](#child-map-markers-and-region-editing-v02056)
   - [Linked Map Drill-Down Navigation](#linked-map-drill-down-navigation-v02056)
   - [Universe Entity Dynamic Blocks](#universe-entity-dynamic-blocks-v02056)
@@ -134,6 +135,42 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.20.x
+
+### v0.20.57 Feature Round-Up (v0.20.57)
+
+A collection of enhancements addressing TODO items and community feedback.
+
+**Multiple person picker in event modal** ([#366](https://github.com/banisterious/obsidian-charted-roots/issues/366)):
+- The create/edit event modal now supports adding multiple people to an event (e.g., marriages, group events)
+- Additional persons saved to the `persons` frontmatter array
+- Persisted across modal state restoration
+
+**Marriage data in Family Group Sheet** ([#370](https://github.com/banisterious/obsidian-charted-roots/issues/370)):
+- Family Group Sheet reports now include marriage date and place
+- Extracted from spouse relationship data (indexed `spouse1_marriage_date` etc.)
+- Both markdown and PDF output updated. Multiple marriages supported.
+
+**Targeted schema validation** ([#367](https://github.com/banisterious/obsidian-charted-roots/issues/367)):
+- "Validate matching notes" context menu action on schemas runs validation against only notes matching that schema
+- Progress modal and result summary
+
+**Organization membership statistics** ([#368](https://github.com/banisterious/obsidian-charted-roots/issues/368)):
+- Organizations statistics card now shows real membership counts
+- People with memberships, total memberships, empty organizations
+
+**Universe and collection pickers in Report Wizard** ([#369](https://github.com/banisterious/obsidian-charted-roots/issues/369)):
+- Report types targeting a universe or collection now have fuzzy-search picker modals
+- Replaces "not yet implemented" notices
+
+**Web Clipper discoverability** ([#364](https://github.com/banisterious/obsidian-charted-roots/issues/364)):
+- Info boxes in the Places, Sources, and People tabs link to Web Clipper wiki templates
+- Relevant examples per entity type (Wikidata for Places, FamilySearch for People)
+
+**Fix: Step-parent assignment** ([#365](https://github.com/banisterious/obsidian-charted-roots/issues/365)):
+- Step-parent relationships from the `relationships` array now check the target person's sex
+- Female step-parents correctly assigned to `stepmotherCrIds` instead of always `stepfatherCrIds`
+
+---
 
 ### Child Map Markers and Region Editing (v0.20.56)
 
