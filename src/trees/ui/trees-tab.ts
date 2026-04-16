@@ -265,6 +265,28 @@ function showTreeGenerationTab(options: TreesTabOptions): void {
 		modal.open();
 	});
 
+	// === Report Wizard Card (#372) ===
+	const wizardCard = container.createDiv({ cls: 'crc-tree-card' });
+	const wizardHeader = wizardCard.createDiv({ cls: 'crc-tree-card__header crc-tree-card__header--simple' });
+	wizardHeader.appendChild(createLucideIcon('wand', 18));
+	wizardHeader.createSpan({ text: 'Report wizard', cls: 'crc-tree-card__title' });
+
+	const wizardContent = wizardCard.createDiv({ cls: 'crc-tree-card__content' });
+	const wizardDesc = wizardContent.createDiv({ cls: 'crc-text-muted crc-mb-2' });
+	wizardDesc.setText('Step-by-step wizard to generate any report type with options.');
+
+	const wizardActions = wizardContent.createDiv({ cls: 'cr-sv-report-card-actions' });
+	const wizardBtn = wizardActions.createEl('button', {
+		cls: 'mod-cta',
+		text: 'Open report wizard'
+	});
+
+	wizardBtn.addEventListener('click', () => {
+		void import('../../reports/ui/report-wizard-modal').then(({ ReportWizardModal }) => {
+			new ReportWizardModal(plugin).open();
+		});
+	});
+
 	// === Reports Card ===
 	const reportsCard = container.createDiv({ cls: 'crc-tree-card' });
 	const reportsHeader = reportsCard.createDiv({ cls: 'crc-tree-card__header crc-tree-card__header--simple' });
