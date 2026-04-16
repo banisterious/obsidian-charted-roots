@@ -39,6 +39,7 @@ Right-click on any markdown file with a `cr_id` frontmatter property:
 | **Open in map view** | Show this person's locations on the map |
 | **[Show journey on map](Geographic-Features#journey-mode)** | Enter journey mode on the map for this person |
 | **[Show on calendar](Calendar-View)** | Open the calendar at this person's birth month/year |
+| **[Generate report](Statistics-And-Reports#generating-reports)** | Open the Report Wizard with this person pre-selected |
 | **Calculate relationship...** | Find how this person relates to another |
 | **Set group name** | Assign a custom name to this person's family group |
 | **Set collection** | Add this person to a collection |

@@ -360,11 +360,20 @@ The Unconnected People Finder identifies people not linked to a selected person'
 
 ### Generating Reports
 
-1. Open the Statistics Dashboard
-2. Scroll to the "Reports" section
-3. Click "Generate" on your desired report type
-4. Configure options in the modal:
-   - Select root person (for person-based reports)
+There are several ways to access report generation:
+
+- **Command palette** — Press `Ctrl/Cmd + P` and search for **Charted Roots: Open report wizard**
+- **Control Center dashboard** — Click the **Reports Wizard** tile
+- **Trees & Reports tab** — Click **Open report wizard** (next to Book Builder)
+- **Person context menu** — Right-click a person note → **Charted Roots > Generate report** (pre-selects the person)
+- **Individual report cards** — In Trees & Reports, click **Generate** on a specific report type
+
+**Using the Report Wizard:**
+
+1. Select a report category (person, family, place, or source)
+2. Choose the specific report type
+3. Select the subject (person, place, etc.)
+4. Configure options:
    - Set maximum generations
    - Choose what details to include
    - Select output method (new note or clipboard)
