@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Report Wizard entry points** ([#372](https://github.com/banisterious/obsidian-charted-roots/issues/372)): The Report Wizard is now accessible from three new locations: command palette ("Open report wizard"), Trees & Reports tab (new card between Book Builder and Reports), and person note context menu ("Generate report" with person pre-selected).
+
+---
+
 ## [0.20.57] - 2026-04-15
 
 ### Added
