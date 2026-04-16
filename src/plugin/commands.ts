@@ -622,6 +622,17 @@ export function registerCommandsAndEvents(plugin: CanvasRootsPlugin): void {
 		}
 	});
 
+	// Add command: Open Report Wizard (#372)
+	plugin.addCommand({
+		id: 'open-report-wizard',
+		name: 'Open report wizard',
+		callback: () => {
+			void import('../reports/ui/report-wizard-modal').then(({ ReportWizardModal }) => {
+				new ReportWizardModal(plugin).open();
+			});
+		}
+	});
+
 	// Add command: Open New Map View (for side-by-side comparison)
 	plugin.addCommand({
 		id: 'open-new-map-view',
