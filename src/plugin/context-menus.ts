@@ -745,6 +745,23 @@ function buildPersonContextMenu(
 					});
 			});
 
+			// Generate report (#372)
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Generate report')
+					.setIcon('file-text')
+					.onClick(() => {
+						const cache = plugin.app.metadataCache.getFileCache(file);
+						const crId = cache?.frontmatter?.cr_id;
+						const personName = cache?.frontmatter?.name || file.basename;
+						if (crId) {
+							void import('../reports/ui/report-wizard-modal').then(({ ReportWizardModal }) => {
+								new ReportWizardModal(plugin, { personCrId: crId, personName }).open();
+							});
+						}
+					});
+			});
+
 			// Relationships submenu (adding relationships, validation, calculation)
 			submenu.addItem((subItem) => {
 				const relationshipSubmenu: Menu = subItem
