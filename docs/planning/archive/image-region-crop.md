@@ -2,7 +2,7 @@
 
 Planning document for image region selection / crop thumbnails.
 
-**Status:** ✅ Phases 1-2 complete | Phase 3 (Gramps import) planned
+**Status:** ✅ All phases complete
 
 **Related:** [#354](https://github.com/banisterious/obsidian-charted-roots/issues/354)
 
@@ -80,11 +80,12 @@ When rendering a media item:
 - [x] Save crop coordinates to frontmatter via `processFrontMatter`
 - [x] Remove crop cleans up `media_crop` property (deletes if empty)
 
-### Phase 3 — Gramps import (future)
+### Phase 3 — Gramps import
 
-- [ ] Parse region data from Gramps XML in `.gpkg` files
-- [ ] Map Gramps region coordinates to `media_crop` format
-- [ ] Write crop data during import
+- [x] Parse `<region>` elements from Gramps `<objref>` XML with percentage-based corner coordinates
+- [x] Convert Gramps corner format (corner1_x/y, corner2_x/y) to CR's x/y/w/h format
+- [x] Write `media_crop` with `percent: true` flag during import
+- [x] `CropRenderer` handles percentage → pixel conversion at render time using actual image dimensions
 
 ---
 
