@@ -2,62 +2,26 @@
 
 ## Current Setup
 
-The project uses ESLint v8 with TypeScript ESLint for code linting.
+The project uses **ESLint v9** with flat config (`eslint.config.mjs`), `@typescript-eslint` v8, and the Obsidian-specific plugin `eslint-plugin-obsidianmd`.
 
 ### Configuration File
-- [.eslintrc.json](../.eslintrc.json) - Standard TypeScript ESLint configuration
+
+- [`eslint.config.mjs`](../../eslint.config.mjs) — flat-config TypeScript + Obsidian ESLint configuration.
 
 ### Available Commands
-- `npm run lint` - Check code for linting errors
-- `npm run lint:fix` - Automatically fix linting errors where possible
 
-## Obsidian ESLint Plugin Status
+- `npm run lint` — check code for linting errors
+- `npm run lint:fix` — automatically fix where possible
 
-The `eslint-plugin-obsidianmd` package is installed but **not currently active** in the configuration.
+## Obsidian ESLint Plugin
 
-### Why?
-The Obsidian ESLint plugin is ESM-only and requires ESLint v9+ with flat config (`eslint.config.mjs`). However, our current `@typescript-eslint` packages (v6.x) only support ESLint v7-8.
+The `eslint-plugin-obsidianmd` plugin is **active**. It enforces Obsidian-specific best practices that catch common anti-patterns in plugin development — forbidden DOM elements, direct style assignments, memory-leaking view references, TFile/TFolder casts, `navigator`-based OS detection, and more.
 
-### Future Upgrade Path
+For the full list of active rules and what each one enforces, see [coding-standards.md § 4 → ESLint Plugin Enforcement](coding-standards.md#eslint-plugin-enforcement-eslint-plugin-obsidianmd).
 
-When upgrading in the future:
-
-1. Upgrade TypeScript ESLint packages to v8.x:
-   ```bash
-   npm install --save-dev @typescript-eslint/eslint-plugin@^8.0.0 @typescript-eslint/parser@^8.0.0
-   ```
-
-2. Upgrade ESLint to v9:
-   ```bash
-   npm install --save-dev eslint@^9.0.0
-   ```
-
-3. Convert `.eslintrc.json` to `eslint.config.mjs` with flat config format:
-   ```javascript
-   import tsparser from "@typescript-eslint/parser";
-   import obsidianmd from "eslint-plugin-obsidianmd";
-
-   export default [
-     ...obsidianmd.configs.recommended,
-     {
-       files: ["**/*.ts"],
-       languageOptions: {
-         parser: tsparser,
-         parserOptions: { project: "./tsconfig.json" },
-       },
-     },
-   ];
-   ```
-
-### Obsidian-Specific Best Practices (Manual)
-
-Until the plugin is active, follow these Obsidian best practices manually:
-
-1. **Never use `workspace.getActiveViewOfType(null)`** - Use `workspace.getActiveFile()` instead
-2. **Use `app.fileManager.trashFile()` or `app.vault.trash()`** instead of `app.vault.delete()`
-3. **Avoid direct DOM manipulation** - Use Obsidian's API methods
-4. **Test in both desktop and mobile** if `isDesktopOnly: false` in manifest
+Rules are documented in the `coding-standards.md` file (rather than duplicated here) so there's a single source of truth when the rule set changes.
 
 ## References
-- [Obsidian ESLint Plugin](https://github.com/obsidianmd/eslint-plugin)
-- [ESLint v9 Migration Guide](https://eslint.org/docs/latest/use/configure/migration-guide)
+
+- [Obsidian ESLint Plugin on GitHub](https://github.com/obsidianmd/eslint-plugin)
+- [ESLint Flat Config documentation](https://eslint.org/docs/latest/use/configure/configuration-files)
