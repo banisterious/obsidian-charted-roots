@@ -1119,7 +1119,8 @@ export class ExportWizardModal extends Modal {
 				cls: 'crc-btn crc-btn--primary',
 				text: 'Export'
 			});
-			exportBtn.addEventListener('click', async () => {
+			exportBtn.addEventListener('click', () => {
+				void (async () => {
 				// Check for private fields and show warning if any exist
 				if (this.formData.privateFieldsSummary.length > 0 &&
 					this.formData.privateFieldsDecision === null) {
@@ -1138,6 +1139,7 @@ export class ExportWizardModal extends Modal {
 
 				this.currentStep = 4;
 				this.renderCurrentStep();
+				})();
 			});
 		} else if (this.currentStep === 5) {
 			// Step 5 (Complete): Show Export Another and Done buttons

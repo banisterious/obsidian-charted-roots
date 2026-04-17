@@ -686,12 +686,14 @@ function renderStagingSection(
 		text: 'Review'
 	});
 
-	manageBtn.addEventListener('click', async () => {
+	manageBtn.addEventListener('click', () => {
 		closeModal();
 		// Reset unread count when opening
 		webClipperService?.resetUnreadCount();
-		const { StagingManagementModal } = await import('./staging-management-modal');
-		new StagingManagementModal(app, plugin).open();
+		void (async () => {
+			const { StagingManagementModal } = await import('./staging-management-modal');
+			new StagingManagementModal(app, plugin).open();
+		})();
 	});
 }
 

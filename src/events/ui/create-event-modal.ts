@@ -982,13 +982,15 @@ export class CreateEventModal extends Modal {
 		fragment.createEl('br');
 		const btn = fragment.createEl('button', { text: `Set ${field} to ${dateValue}` });
 		btn.style.marginTop = '8px';
-		btn.addEventListener('click', async () => {
-			const updateData: Partial<PersonData> = this.eventType === 'birth'
-				? { birthDate: dateValue }
-				: { deathDate: dateValue };
-			await updatePersonNote(this.app, personFile, updateData);
-			new Notice(`Updated ${field} for ${personName}`);
-			notice.hide();
+		btn.addEventListener('click', () => {
+			void (async () => {
+				const updateData: Partial<PersonData> = this.eventType === 'birth'
+					? { birthDate: dateValue }
+					: { deathDate: dateValue };
+				await updatePersonNote(this.app, personFile, updateData);
+				new Notice(`Updated ${field} for ${personName}`);
+				notice.hide();
+			})();
 		});
 
 		const notice = new Notice(fragment, 10000);

@@ -262,14 +262,16 @@ export class ManageOrganizationMembersModal extends Modal {
 			cls: 'cr-btn cr-btn--primary cr-btn--small'
 		});
 		saveBtn.textContent = 'Save';
-		saveBtn.addEventListener('click', async () => {
-			await this.saveMemberEdit(member, {
-				role: roleInput.value.trim() || undefined,
-				from: fromInput.value.trim() || undefined,
-				to: toInput.value.trim() || undefined
-			});
-			this.editingMemberIndex = null;
-			this.renderMembersList();
+		saveBtn.addEventListener('click', () => {
+			void (async () => {
+				await this.saveMemberEdit(member, {
+					role: roleInput.value.trim() || undefined,
+					from: fromInput.value.trim() || undefined,
+					to: toInput.value.trim() || undefined
+				});
+				this.editingMemberIndex = null;
+				this.renderMembersList();
+			})();
 		});
 
 		const cancelBtn = actions.createEl('button', {
@@ -385,8 +387,8 @@ export class ManageOrganizationMembersModal extends Modal {
 			{
 				title: 'Select members to add',
 				excludeCrIds: existingMemberIds,
-				onSelect: async (selectedPeople) => {
-					await this.addSelectedMembers(selectedPeople);
+				onSelect: (selectedPeople) => {
+					void this.addSelectedMembers(selectedPeople);
 				}
 			}
 		);

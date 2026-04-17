@@ -566,7 +566,7 @@ export class StagingManagementModal extends Modal {
 		});
 		setIcon(checkAllBtn, 'search');
 		checkAllBtn.createSpan({ text: 'Check all duplicates' });
-		checkAllBtn.addEventListener('click', () => this.handleCheckDuplicates());
+		checkAllBtn.addEventListener('click', () => { void this.handleCheckDuplicates(); });
 
 		// Promote all
 		const promoteAllBtn = buttonRow.createEl('button', {
@@ -574,7 +574,7 @@ export class StagingManagementModal extends Modal {
 		});
 		setIcon(promoteAllBtn, 'arrow-up-right');
 		promoteAllBtn.createSpan({ text: 'Promote all' });
-		promoteAllBtn.addEventListener('click', () => this.handlePromoteAll(stats.totalEntities));
+		promoteAllBtn.addEventListener('click', () => { void this.handlePromoteAll(stats.totalEntities); });
 
 		// Delete all
 		const deleteAllBtn = buttonRow.createEl('button', {
@@ -582,7 +582,7 @@ export class StagingManagementModal extends Modal {
 		});
 		setIcon(deleteAllBtn, 'trash-2');
 		deleteAllBtn.createSpan({ text: 'Delete all' });
-		deleteAllBtn.addEventListener('click', () => this.handleDeleteAll(stats.totalEntities));
+		deleteAllBtn.addEventListener('click', () => { void this.handleDeleteAll(stats.totalEntities); });
 	}
 
 	/**

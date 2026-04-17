@@ -1658,8 +1658,8 @@ export class CreatePlaceModal extends Modal {
 				// Only prompt if the target folder is different
 				if (targetFolder !== currentFolder) {
 					// Show move prompt modal
-					this.showMovePrompt(targetFolder, async (shouldMove) => {
-						await this.completeUpdate(shouldMove ? targetFolder : undefined);
+					this.showMovePrompt(targetFolder, (shouldMove) => {
+						void this.completeUpdate(shouldMove ? targetFolder : undefined);
 					});
 					return;
 				}

@@ -616,11 +616,13 @@ export class ReportWizardModal extends Modal {
 			text: 'Compile multiple reports into a book',
 			href: '#'
 		});
-		bookLink.addEventListener('click', async (e) => {
+		bookLink.addEventListener('click', (e) => {
 			e.preventDefault();
 			this.close();
-			const { BookBuilderModal } = await import('../../book/ui/book-builder-modal');
-			new BookBuilderModal(this.plugin).open();
+			void (async () => {
+				const { BookBuilderModal } = await import('../../book/ui/book-builder-modal');
+				new BookBuilderModal(this.plugin).open();
+			})();
 		});
 	}
 

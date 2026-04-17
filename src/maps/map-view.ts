@@ -736,39 +736,41 @@ export class MapView extends ItemView {
 
 		const picker = new PlacePickerModal(
 			this.app,
-			async (selectedPlace: SelectedPlaceInfo) => {
-				// Check universe sync before updating coordinates
-				const shouldProceed = await this.handleUniverseSync(selectedPlace);
-				if (!shouldProceed) {
-					return; // User cancelled
-				}
-
-				// Update the place's coordinates
-				const geocodingService = new GeocodingService(this.app);
-
-				try {
-					if (isPixelMap) {
-						// For pixel maps, update custom_coordinates instead
-						await this.app.fileManager.processFrontMatter(selectedPlace.file, (frontmatter) => {
-							frontmatter.custom_coordinates_x = coords.pixelX;
-							frontmatter.custom_coordinates_y = coords.pixelY;
-						});
-					} else {
-						// For geographic maps, update lat/long
-						await geocodingService.updatePlaceCoordinates(selectedPlace.file, {
-							lat: coords.lat,
-							long: coords.lng
-						});
+			(selectedPlace: SelectedPlaceInfo) => {
+				void (async () => {
+					// Check universe sync before updating coordinates
+					const shouldProceed = await this.handleUniverseSync(selectedPlace);
+					if (!shouldProceed) {
+						return; // User cancelled
 					}
 
-					new Notice(`Updated coordinates for "${selectedPlace.name}"`);
+					// Update the place's coordinates
+					const geocodingService = new GeocodingService(this.app);
 
-					// Refresh the map to show the updated marker
-					void this.refreshData(true);
-				} catch (error) {
-					logger.error('link-place-failed', `Failed to update coordinates: ${error}`);
-					new Notice(`Failed to update coordinates: ${error instanceof Error ? error.message : 'Unknown error'}`);
-				}
+					try {
+						if (isPixelMap) {
+							// For pixel maps, update custom_coordinates instead
+							await this.app.fileManager.processFrontMatter(selectedPlace.file, (frontmatter) => {
+								frontmatter.custom_coordinates_x = coords.pixelX;
+								frontmatter.custom_coordinates_y = coords.pixelY;
+							});
+						} else {
+							// For geographic maps, update lat/long
+							await geocodingService.updatePlaceCoordinates(selectedPlace.file, {
+								lat: coords.lat,
+								long: coords.lng
+							});
+						}
+
+						new Notice(`Updated coordinates for "${selectedPlace.name}"`);
+
+						// Refresh the map to show the updated marker
+						void this.refreshData(true);
+					} catch (error) {
+						logger.error('link-place-failed', `Failed to update coordinates: ${error}`);
+						new Notice(`Failed to update coordinates: ${error instanceof Error ? error.message : 'Unknown error'}`);
+					}
+				})();
 			},
 			{
 				placeGraph,

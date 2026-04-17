@@ -123,7 +123,7 @@ export class OrganizePlacesModal extends Modal {
 			text: `Move ${this.selectedPlaces.size} place${this.selectedPlaces.size !== 1 ? 's' : ''}`,
 			cls: 'crc-btn crc-btn--primary crc-ml-2'
 		});
-		moveBtn.addEventListener('click', () => this.moveSelectedPlaces());
+		moveBtn.addEventListener('click', () => { void this.moveSelectedPlaces(); });
 
 		// Store reference to update button text
 		this.moveButton = moveBtn;
