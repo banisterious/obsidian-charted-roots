@@ -119,7 +119,7 @@ Tools for novelists and world-builders working with fictional genealogies.
 
 - **Fictional date systems** - Custom calendars and eras (Middle-earth, Westeros, or your own)
 - **Organization notes** - Noble houses, guilds, corporations, military units
-- **Custom relationships** - Godparent, guardian, mentor, apprentice, and more
+- **[Custom relationships](Custom-Relationships)** - 25+ built-in non-family types across 6 categories, including liege/vassal, ally/rival, mentor/disciple, godparent, witness, neighbor, and more. Also useful for genealogical FAN (Friends, Associates, Neighbors) research.
 - **Universe filtering** - Separate real and fictional data
 
 [Explore world-building features](World-Building)

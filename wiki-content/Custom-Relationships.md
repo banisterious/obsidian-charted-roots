@@ -8,6 +8,7 @@ Custom relationships allow you to define and track non-family connections betwee
 
 - [Overview](#overview)
 - [Built-in Relationship Types](#built-in-relationship-types)
+- [When to Use Non-Family Relationships](#when-to-use-non-family-relationships)
 - [Adding Custom Relationships](#adding-custom-relationships)
 - [Frontmatter Format](#frontmatter-format)
 - [Control Center - Relationships Tab](#control-center---relationships-tab)
@@ -38,40 +39,82 @@ To avoid confusion, Charted Roots uses distinct terms:
 
 ## Built-in Relationship Types
 
-Charted Roots includes 12 pre-defined relationship types across 4 categories:
+Charted Roots ships with **25 built-in non-family relationship types across 6 categories**, covering common genealogical needs and extending to worldbuilding, historical fiction, and social-network research scenarios.
 
-### Legal/Guardianship
+Core family links (spouse, parent, child, sibling) are handled by dedicated frontmatter fields — see [Essential Properties](Essential-Properties) — and don't need to be added as custom relationships.
 
-| Type | Inverse | Color |
-|------|---------|-------|
-| Guardian | Ward | Teal |
-| Ward | Guardian | Teal |
-| Adoptive Parent | Adopted Child | Teal |
-| Adopted Child | Adoptive Parent | Teal |
-| Foster Parent | Foster Child | Teal |
-| Foster Child | Foster Parent | Teal |
+### Legal / Guardianship
 
-### Religious/Spiritual
+| Type | Inverse | Color | Line |
+|------|---------|-------|------|
+| Guardian | Ward | Teal | Solid |
+| Step-parent | Step-child | Teal | Dashed |
+| Adoptive parent | Adopted child | Cyan | Dotted |
+| Foster parent | Foster child | Sky | Solid |
 
-| Type | Inverse | Color |
-|------|---------|-------|
-| Godparent | Godchild | Blue |
-| Godchild | Godparent | Blue |
-| Mentor | Disciple | Purple |
-| Disciple | Mentor | Purple |
+### Religious / Spiritual
+
+| Type | Inverse | Color | Line |
+|------|---------|-------|------|
+| Godparent | Godchild | Blue | Solid |
+| Mentor | Disciple | Purple | Solid |
 
 ### Professional
 
-| Type | Inverse | Color |
-|------|---------|-------|
-| Master | Apprentice | Orange |
-| Apprentice | Master | Orange |
+| Type | Inverse | Color | Line |
+|------|---------|-------|------|
+| Master | Apprentice | Orange | Solid |
+| Employer | Employee | Orange | Solid |
 
 ### Social
 
-| Type | Inverse | Color |
-|------|---------|-------|
-| Witness | (symmetric) | Gray |
+| Type | Inverse | Color | Line |
+|------|---------|-------|------|
+| Witness | *(one-way)* | Gray | Dashed |
+| Neighbor | *(symmetric)* | Gray | Dashed |
+| Companion | *(symmetric)* | Green | Solid |
+| Betrothed | *(symmetric)* | Pink | Dashed |
+
+### Feudal / World-building
+
+For political and social hierarchies in historical fiction or worldbuilding universes:
+
+| Type | Inverse | Color | Line |
+|------|---------|-------|------|
+| Liege lord | Vassal | Gold | Solid |
+| Ally | *(symmetric)* | Emerald | Dashed |
+| Rival | *(symmetric)* | Red | Dashed |
+
+### DNA / Genetic
+
+Opt-in — requires the `enableDnaTracking` setting:
+
+| Type | Inverse | Color | Line |
+|------|---------|-------|------|
+| DNA match | *(symmetric)* | Purple | Dashed |
+
+DNA match is a statistical/biological relationship, not a genealogical one — it's kept separate so the genealogical data model stays clean.
+
+---
+
+## When to Use Non-Family Relationships
+
+These types are easy to overlook if you only use Charted Roots for traditional genealogy. A few use cases worth considering:
+
+**Genealogical research (FAN networks)**
+- Mark witnesses on wills, baptisms, and marriages — these often reveal friend/family networks that weren't otherwise documented
+- Track neighbors across census records to surface FAN (Friends, Associates, Neighbors) clusters for focused research
+- Document mentor/apprentice relationships from trade apprenticeship records
+
+**Historical fiction and worldbuilding**
+- Track liege/vassal hierarchies in a fictional nobility or a real historical court
+- Model shifting alliances and rivalries across generations of a dynasty
+- Follow master/apprentice chains through a magical or craft tradition
+- Represent betrothals that didn't result in marriages (useful for dynastic-politics stories)
+
+**Collaborative and household tracking**
+- Guardian/ward and foster/adoptive relationships for orphan networks and non-biological parenting
+- Companions and household members for documenting who lived or traveled together, especially for historical or ecclesiastical research
 
 ---
 
