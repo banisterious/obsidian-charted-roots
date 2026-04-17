@@ -89,6 +89,8 @@ interface FamilyChartViewState {
 	showSingleParentEmptyCard?: boolean;
 	sortChildrenByBirthDate?: boolean;
 	sortSpousesByMarriageDate?: boolean;
+	// As-of date filter (#376) — ISO YYYY-MM-DD. null/undefined = show all.
+	asOfDate?: string | null;
 	hidePrivateLiving?: boolean;
 	// Card style
 	cardStyle?: CardStyle;
@@ -130,6 +132,8 @@ export class FamilyChartView extends ItemView {
 	private sortChildrenByBirthDate: boolean = false;
 	private sortSpousesByMarriageDate: boolean = false;
 	private hidePrivateLiving: boolean = false;
+	// As-of date filter (#376); null = show all
+	private asOfDate: string | null = null;
 	// Card style: rectangle (default SVG), circle (HTML circular), compact (text-only), mini (smaller)
 	private cardStyle: CardStyle = 'rectangle';
 	// Name display mode: full (single line) or split (given/surname on separate lines) (#90)
@@ -183,10 +187,10 @@ export class FamilyChartView extends ItemView {
 	// Avatar URL cache - maps crId to resolved avatar URL
 	// Persists across chart re-initializations to avoid repeated file lookups
 	private avatarUrlCache: Map<string, string> = new Map();
-	// Marriage date lookup for the sort-spouses-by-marriage-date toggle (#375).
-	// Keyed by personId → spouseId → marriageDate (undefined if unknown).
+	// Spouse relationship lookup for sort-by-marriage-date (#375) and
+	// as-of date filtering (#376). Keyed by personId → spouseId → {dates}.
 	// Populated in two directions: whichever side declared the relationship.
-	private spouseMarriageDates: Map<string, Map<string, string | undefined>> = new Map();
+	private spouseRelationshipData: Map<string, Map<string, { marriageDate?: string; divorceDate?: string }>> = new Map();
 
 	constructor(leaf: WorkspaceLeaf, plugin: CanvasRootsPlugin) {
 		super(leaf);
@@ -1215,11 +1219,11 @@ export class FamilyChartView extends ItemView {
 			// Apply sort spouses by marriage date (#375)
 			if (this.sortSpousesByMarriageDate) {
 				this.f3Chart.setSortSpousesFunction((d) => {
-					const dateMap = this.spouseMarriageDates.get(d.id);
-					if (!dateMap || !d.rels.spouses) return;
+					const relMap = this.spouseRelationshipData.get(d.id);
+					if (!relMap || !d.rels.spouses) return;
 					d.rels.spouses.sort((a, b) => {
-						const dateA = dateMap.get(a);
-						const dateB = dateMap.get(b);
+						const dateA = relMap.get(a)?.marriageDate;
+						const dateB = relMap.get(b)?.marriageDate;
 						// Spouses without a marriage date fall to the end;
 						// among dated spouses, earlier marriages sort first.
 						if (!dateA && !dateB) return 0;
@@ -1230,12 +1234,17 @@ export class FamilyChartView extends ItemView {
 				});
 			}
 
-			// Apply privacy filter for living persons
-			if (this.hidePrivateLiving) {
+			// Apply combined privacy/as-of filter (#376). A card is marked private
+			// (hidden via opacity) if EITHER filter says so:
+			//   - hidePrivateLiving: person has no death date (considered living)
+			//   - asOfDate: person's birth date is after the selected date (not yet born)
+			if (this.hidePrivateLiving || this.asOfDate) {
+				const asOfDate = this.asOfDate;
 				this.f3Chart.setPrivateCardsConfig({
 					condition: (d) => {
-						// Consider a person "living" if they have no death date
-						return !d.data?.deathday;
+						if (this.hidePrivateLiving && !d.data?.deathday) return true;
+						if (asOfDate && this.isNotYetBornAt(d.data?.birthday, asOfDate)) return true;
+						return false;
 					}
 				});
 			}
@@ -1388,9 +1397,9 @@ export class FamilyChartView extends ItemView {
 	private async loadChartData(): Promise<void> {
 		const startTime = performance.now();
 
-		// Reset spouse marriage date lookup so stale dates from a previous load
-		// don't leak into the new dataset (#375).
-		this.spouseMarriageDates.clear();
+		// Reset spouse relationship lookup so stale data from a previous load
+		// doesn't leak into the new dataset (#375, #376).
+		this.spouseRelationshipData.clear();
 
 		// Ensure cache is loaded first
 		this.familyGraphService.ensureCacheLoaded();
@@ -1572,14 +1581,23 @@ export class FamilyChartView extends ItemView {
 		// Filter spouses to only valid IDs
 		const spouses = (person.spouseCrIds || []).filter(id => validIds.has(id));
 
-		// Record marriage dates for the sort-spouses-by-marriage-date toggle (#375).
-		// Populate in both directions so either side of the relationship can sort.
+		// Record spouse relationship metadata for sort (#375) and as-of filter (#376).
+		// Populate in both directions so either side of the relationship can use it.
 		if (person.spouses) {
 			for (const rel of person.spouses) {
 				if (!rel.personId) continue;
-				this.registerMarriageDate(person.crId, rel.personId, rel.marriageDate);
+				this.registerSpouseRelationship(person.crId, rel.personId, {
+					marriageDate: rel.marriageDate,
+					divorceDate: rel.divorceDate,
+				});
 			}
 		}
+
+		// Apply as-of date filter to marriage lines (#376): omit spouses whose
+		// marriage was not active on the selected date.
+		const filteredSpouses = this.asOfDate
+			? spouses.filter(spouseId => this.isMarriageActiveAt(person.crId, spouseId, this.asOfDate!))
+			: spouses;
 
 		// Filter children to only valid IDs AND only those who reference this person as a parent
 		// family-chart requires strict bidirectional relationships: if parent lists child,
@@ -1649,7 +1667,7 @@ export class FamilyChartView extends ItemView {
 			},
 			rels: {
 				parents,
-				spouses,
+				spouses: filteredSpouses,
 				children,
 			}
 		};
@@ -3002,19 +3020,74 @@ export class FamilyChartView extends ItemView {
 	}
 
 	/**
-	 * Record a marriage date between two people for the spouse-sort toggle (#375).
-	 * Populates both directions so either side of the relationship can sort.
-	 * If the same pair gets reported twice (e.g. both notes declare it), the
-	 * first date wins to avoid losing data if one side has a date and the
-	 * other is blank.
+	 * Record a spouse relationship's metadata (marriage/divorce dates) between
+	 * two people for the spouse-sort toggle (#375) and as-of filter (#376).
+	 * Populates both directions so either side of the relationship can use it.
+	 * If the same pair gets reported twice, the first entry wins so a populated
+	 * entry isn't overwritten by a blank one from the other side.
 	 */
-	private registerMarriageDate(a: string, b: string, date: string | undefined): void {
-		if (!this.spouseMarriageDates.has(a)) this.spouseMarriageDates.set(a, new Map());
-		if (!this.spouseMarriageDates.has(b)) this.spouseMarriageDates.set(b, new Map());
-		const aMap = this.spouseMarriageDates.get(a)!;
-		const bMap = this.spouseMarriageDates.get(b)!;
-		if (!aMap.has(b)) aMap.set(b, date);
-		if (!bMap.has(a)) bMap.set(a, date);
+	private registerSpouseRelationship(a: string, b: string, data: { marriageDate?: string; divorceDate?: string }): void {
+		if (!this.spouseRelationshipData.has(a)) this.spouseRelationshipData.set(a, new Map());
+		if (!this.spouseRelationshipData.has(b)) this.spouseRelationshipData.set(b, new Map());
+		const aMap = this.spouseRelationshipData.get(a)!;
+		const bMap = this.spouseRelationshipData.get(b)!;
+		if (!aMap.has(b)) aMap.set(b, data);
+		if (!bMap.has(a)) bMap.set(a, data);
+	}
+
+	// ============ As-of date helpers (#376) ============
+
+	/**
+	 * Compare two date strings. Returns negative if a < b, positive if a > b, 0 if equal.
+	 * Both dates are compared as ISO strings when both look like ISO (gives day-level
+	 * precision); otherwise falls back to year-level comparison for fuzzy/qualified
+	 * dates ("ABT 1850", etc). Returns 0 when either side can't be parsed.
+	 */
+	private compareDateStrings(a: string, b: string): number {
+		// Fast path for ISO-shaped dates (YYYY, YYYY-MM, or YYYY-MM-DD)
+		const isoShape = /^\d{4}(-\d{2}(-\d{2})?)?$/;
+		if (isoShape.test(a) && isoShape.test(b)) {
+			return a.localeCompare(b);
+		}
+		// Fall back to year-level comparison for approximate/qualified dates
+		const yearA = this.extractYearForComparison(a);
+		const yearB = this.extractYearForComparison(b);
+		if (yearA == null || yearB == null) return 0;
+		return yearA - yearB;
+	}
+
+	/** Extract a year from a date string, handling ISO, bare-year, and qualified ("ABT 1850") formats. */
+	private extractYearForComparison(dateStr: string): number | null {
+		if (!dateStr) return null;
+		const match = dateStr.match(/\d{4}/);
+		return match ? parseInt(match[0], 10) : null;
+	}
+
+	/** True if the person was not yet born at `asOfDate`. (#376) */
+	private isNotYetBornAt(birthDate: string | undefined, asOfDate: string): boolean {
+		if (!birthDate) return false; // no birth date → can't say they weren't born
+		return this.compareDateStrings(birthDate, asOfDate) > 0;
+	}
+
+	/** True if the person was already deceased at `asOfDate`. (#376) */
+	private isDeceasedAt(deathDate: string | undefined, asOfDate: string): boolean {
+		if (!deathDate) return false;
+		return this.compareDateStrings(deathDate, asOfDate) < 0;
+	}
+
+	/**
+	 * True if the marriage between persons a and b was active at `asOfDate`. (#376)
+	 * A marriage is considered active when its marriageDate ≤ asOfDate AND
+	 * either there's no divorceDate or divorceDate > asOfDate.
+	 * If no marriage metadata exists for the pair, returns true (conservative:
+	 * don't hide relationships we don't have dates for).
+	 */
+	private isMarriageActiveAt(a: string, b: string, asOfDate: string): boolean {
+		const data = this.spouseRelationshipData.get(a)?.get(b);
+		if (!data) return true;
+		if (data.marriageDate && this.compareDateStrings(data.marriageDate, asOfDate) > 0) return false;
+		if (data.divorceDate && this.compareDateStrings(data.divorceDate, asOfDate) <= 0) return false;
+		return true;
 	}
 
 	/**
