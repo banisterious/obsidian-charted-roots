@@ -78,9 +78,20 @@ Access via the layout settings button (gear icon). Horizontal (node) spacing con
 
 Switching card style automatically picks a matching default spacing. If you pick a preset that would be smaller than the current card style's minimum, spacing is clamped to prevent cards from overlapping — switch to a smaller card style first for a genuinely tighter tree.
 
-### Date Display
+### Card Field Toggles
 
-Toggle birth/death dates on person cards via the layout settings menu.
+The display settings menu (eye icon in the toolbar) controls which person fields appear on each in-tree card. Cards grow vertically to fit whatever you enable:
+
+- **Show birth dates** / **Show death dates** — from the `born` / `died` properties
+- **Split given/surname** — renders name on two lines instead of one
+- **Show nickname** — from the `nickname` property
+- **Show title** — from the `title` property (nobility, honorific, rank)
+- **Show pronouns** — from the `pronouns` property
+- **Show occupation** — from the `occupation` property
+- **Show religion** — from the `religion` property
+- **Show caste** — from the `caste` property
+
+Toggles persist across Obsidian restarts. Turning on a field for which some people have no value will show a blank line on those cards; turn the toggle off to tighten the layout again.
 
 ### Kinship Labels
 
