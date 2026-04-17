@@ -2,7 +2,7 @@
 
 Plan for triaging the real lint output that was hidden by a broken `npm run lint` script.
 
-**Status:** 🟡 In progress — Tier 0 complete; Tier 1+ scoping decisions pending
+**Status:** 🟡 In progress — Tier 0 complete; Tier 1 partially complete (errors resolved, warnings remain)
 
 **Root cause context:** `node_modules/.bin/eslint` was a zero-byte file (likely caused by WSL symlink-creation failing during `npm install --no-bin-links` at some point). The `npm run lint` script resolved to the empty binary and exited 0 silently. Fixed in commit [77848f14](#) by switching the lint/lint:fix scripts to direct `node` invocation. See `package.json` scripts.
 
@@ -14,6 +14,7 @@ Taken immediately after the `npm run lint` fix.
 
 - **Total problems (initial):** 1173 (1142 errors, 31 warnings), 161 files
 - **After Tier 0:** 1041 (1010 errors, 31 warnings)
+- **After Tier 1 error batch:** 999 (968 errors, 31 warnings) — resolved `no-floating-promises` (29), `no-misused-promises` (12), `await-thenable` (1)
 - **Exit status:** 1
 
 ---
@@ -60,11 +61,11 @@ Goal: eliminate noise that doesn't reflect real issues so the remaining signal i
 
 These rules catch runtime problems. Fix them regardless.
 
-- [ ] **`@typescript-eslint/no-floating-promises` (29)** — unawaited promises. Each is a potential unhandled rejection or race condition. Per-site: add `await`, add `void`, or handle rejection.
-- [ ] **`@typescript-eslint/no-misused-promises` (12)** — e.g., passing async functions where sync is expected. Each is a potential bug.
-- [ ] **`@typescript-eslint/no-base-to-string` (23)** — implicit `.toString()` on objects that give `[object Object]`. Each is a user-facing display bug.
-- [ ] **`@typescript-eslint/await-thenable` (1)** — `await` on a non-Promise.
-- [ ] **`@typescript-eslint/no-deprecated` (8)** — Obsidian API migrations. Each needs a per-site check for what the deprecation says.
+- [x] **`@typescript-eslint/no-floating-promises` (29)** ✅ — resolved by prefixing fire-and-forget async calls with `void`. Biggest concentration (17) was `this.initializeChart()` in family chart view toggle handlers.
+- [x] **`@typescript-eslint/no-misused-promises` (12)** ✅ — resolved by replacing async callbacks with sync wrappers that kick off a void IIFE, or `() => { void this.method(); }` for one-liners.
+- [x] **`@typescript-eslint/await-thenable` (1)** ✅ — `await imageMapManager.loadMapConfigs()` was awaiting a sync method; dropped the await.
+- [ ] **`@typescript-eslint/no-base-to-string` (23, warnings)** — implicit `.toString()` on objects. Many are `frontmatter['field'] || ''` patterns where the field could be an object; fix is explicit type-narrowing or `String(x)` with a guard.
+- [ ] **`@typescript-eslint/no-deprecated` (8, warnings)** — Obsidian API migrations and one internal `MembershipData` deprecation. Each needs a per-site check for what the deprecation suggests.
 - [ ] **`no-undef` in actual TS files (20)** — real type-resolution issues: missing imports or types not picked up by ESLint's parser. Examples: `CalendarViewState`, `SourceNote`, `UniverseEntities`, `getErrorMessage`, `createDiv`, `createFragment`, `Menu`. Per-site investigation required.
 
 **Expected effort:** 1-2 focused sessions. These are worth serious attention because they're actual bugs.
