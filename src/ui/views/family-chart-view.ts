@@ -88,6 +88,7 @@ interface FamilyChartViewState {
 	showSiblingsOfMain?: boolean;
 	showSingleParentEmptyCard?: boolean;
 	sortChildrenByBirthDate?: boolean;
+	sortSpousesByMarriageDate?: boolean;
 	hidePrivateLiving?: boolean;
 	// Card style
 	cardStyle?: CardStyle;
@@ -127,6 +128,7 @@ export class FamilyChartView extends ItemView {
 	private showSiblingsOfMain: boolean = true;
 	private showSingleParentEmptyCard: boolean = false;
 	private sortChildrenByBirthDate: boolean = false;
+	private sortSpousesByMarriageDate: boolean = false;
 	private hidePrivateLiving: boolean = false;
 	// Card style: rectangle (default SVG), circle (HTML circular), compact (text-only), mini (smaller)
 	private cardStyle: CardStyle = 'rectangle';
@@ -181,6 +183,10 @@ export class FamilyChartView extends ItemView {
 	// Avatar URL cache - maps crId to resolved avatar URL
 	// Persists across chart re-initializations to avoid repeated file lookups
 	private avatarUrlCache: Map<string, string> = new Map();
+	// Marriage date lookup for the sort-spouses-by-marriage-date toggle (#375).
+	// Keyed by personId → spouseId → marriageDate (undefined if unknown).
+	// Populated in two directions: whichever side declared the relationship.
+	private spouseMarriageDates: Map<string, Map<string, string | undefined>> = new Map();
 
 	constructor(leaf: WorkspaceLeaf, plugin: CanvasRootsPlugin) {
 		super(leaf);
@@ -1206,6 +1212,24 @@ export class FamilyChartView extends ItemView {
 				});
 			}
 
+			// Apply sort spouses by marriage date (#375)
+			if (this.sortSpousesByMarriageDate) {
+				this.f3Chart.setSortSpousesFunction((d) => {
+					const dateMap = this.spouseMarriageDates.get(d.id);
+					if (!dateMap || !d.rels.spouses) return;
+					d.rels.spouses.sort((a, b) => {
+						const dateA = dateMap.get(a);
+						const dateB = dateMap.get(b);
+						// Spouses without a marriage date fall to the end;
+						// among dated spouses, earlier marriages sort first.
+						if (!dateA && !dateB) return 0;
+						if (!dateA) return 1;
+						if (!dateB) return -1;
+						return dateA.localeCompare(dateB);
+					});
+				});
+			}
+
 			// Apply privacy filter for living persons
 			if (this.hidePrivateLiving) {
 				this.f3Chart.setPrivateCardsConfig({
@@ -1363,6 +1387,10 @@ export class FamilyChartView extends ItemView {
 	 */
 	private async loadChartData(): Promise<void> {
 		const startTime = performance.now();
+
+		// Reset spouse marriage date lookup so stale dates from a previous load
+		// don't leak into the new dataset (#375).
+		this.spouseMarriageDates.clear();
 
 		// Ensure cache is loaded first
 		this.familyGraphService.ensureCacheLoaded();
@@ -1543,6 +1571,15 @@ export class FamilyChartView extends ItemView {
 
 		// Filter spouses to only valid IDs
 		const spouses = (person.spouseCrIds || []).filter(id => validIds.has(id));
+
+		// Record marriage dates for the sort-spouses-by-marriage-date toggle (#375).
+		// Populate in both directions so either side of the relationship can sort.
+		if (person.spouses) {
+			for (const rel of person.spouses) {
+				if (!rel.personId) continue;
+				this.registerMarriageDate(person.crId, rel.personId, rel.marriageDate);
+			}
+		}
 
 		// Filter children to only valid IDs AND only those who reference this person as a parent
 		// family-chart requires strict bidirectional relationships: if parent lists child,
@@ -2338,6 +2375,11 @@ export class FamilyChartView extends ItemView {
 		});
 
 		menu.addItem((item) => {
+			item.setTitle(`${this.sortSpousesByMarriageDate ? '✓ ' : ''}Sort spouses by marriage date`)
+				.onClick(() => this.toggleSortSpousesByMarriageDate());
+		});
+
+		menu.addItem((item) => {
 			item.setTitle(`${this.hidePrivateLiving ? '✓ ' : ''}Hide living persons`)
 				.onClick(() => this.toggleHidePrivateLiving());
 		});
@@ -2943,6 +2985,39 @@ export class FamilyChartView extends ItemView {
 	}
 
 	/**
+	 * Toggle sort spouses by marriage date (#375)
+	 */
+	private toggleSortSpousesByMarriageDate(): void {
+		this.sortSpousesByMarriageDate = !this.sortSpousesByMarriageDate;
+
+		// Re-initialize chart so the sort function is wired (or unwired) on the
+		// family-chart store. Disabling the toggle mid-session leaves the
+		// previous sort function in place until the next initializeChart.
+		if (this.f3Chart && this.rootPersonId) {
+			this.initializeChart();
+		}
+
+		new Notice(`Sort spouses by marriage date ${this.sortSpousesByMarriageDate ? 'enabled' : 'disabled'}`);
+		this.app.workspace.requestSaveLayout();
+	}
+
+	/**
+	 * Record a marriage date between two people for the spouse-sort toggle (#375).
+	 * Populates both directions so either side of the relationship can sort.
+	 * If the same pair gets reported twice (e.g. both notes declare it), the
+	 * first date wins to avoid losing data if one side has a date and the
+	 * other is blank.
+	 */
+	private registerMarriageDate(a: string, b: string, date: string | undefined): void {
+		if (!this.spouseMarriageDates.has(a)) this.spouseMarriageDates.set(a, new Map());
+		if (!this.spouseMarriageDates.has(b)) this.spouseMarriageDates.set(b, new Map());
+		const aMap = this.spouseMarriageDates.get(a)!;
+		const bMap = this.spouseMarriageDates.get(b)!;
+		if (!aMap.has(b)) aMap.set(b, date);
+		if (!bMap.has(a)) bMap.set(a, date);
+	}
+
+	/**
 	 * Toggle hide private/living persons
 	 */
 	private toggleHidePrivateLiving(): void {
@@ -3412,11 +3487,25 @@ export class FamilyChartView extends ItemView {
 	 * The family-chart library uses node_separation as a center-to-center
 	 * distance, so a spacing smaller than the card's width produces overlap.
 	 * This floor keeps at least a small edge-to-edge gap regardless of which
-	 * preset the user picks.
+	 * preset the user picks. Card width can grow with enabled content
+	 * toggles (rectangle style adds 10px per extra line), so this value
+	 * depends on the current display state.
 	 */
 	private getMinimumNodeSpacing(style: CardStyle): number {
 		const cardWidth = this.getCardDimensions(style).w;
 		return cardWidth + 20;
+	}
+
+	/**
+	 * Minimum safe level (Y) spacing for the current card style and content
+	 *
+	 * As with X spacing, the family-chart library uses level_separation as a
+	 * center-to-center distance. Enabling more card field toggles (#374)
+	 * grows cards vertically, so the minimum safe spacing grows too.
+	 */
+	private getMinimumLevelSpacing(style: CardStyle): number {
+		const cardHeight = this.getCardDimensions(style).h;
+		return cardHeight + 20;
 	}
 
 	/**
@@ -3453,6 +3542,20 @@ export class FamilyChartView extends ItemView {
 			this.f3Card.setCardDim(this.getCardDimensions(this.cardStyle));
 		}
 
+		// Toggling content fields (#374) can grow the card vertically past
+		// the current level spacing, or horizontally past the current node
+		// spacing. Re-clamp both so cards never overlap after a toggle.
+		const minNodeSpacing = this.getMinimumNodeSpacing(this.cardStyle);
+		if (this.nodeSpacing < minNodeSpacing) {
+			this.nodeSpacing = minNodeSpacing;
+			this.f3Chart.setCardXSpacing(this.nodeSpacing);
+		}
+		const minLevelSpacing = this.getMinimumLevelSpacing(this.cardStyle);
+		if (this.levelSpacing < minLevelSpacing) {
+			this.levelSpacing = minLevelSpacing;
+			this.f3Chart.setCardYSpacing(this.levelSpacing);
+		}
+
 		// Note: Kinship label clearing/re-rendering is handled by setBeforeUpdate/setAfterUpdate callbacks (#195)
 		this.f3Chart.updateTree({});
 	}
@@ -3483,14 +3586,24 @@ export class FamilyChartView extends ItemView {
 
 	/**
 	 * Set level (vertical) spacing and refresh
+	 *
+	 * Clamped to `getMinimumLevelSpacing()` for the current card style and
+	 * content so a user-picked preset can't collapse generations into each
+	 * other (#374).
 	 */
 	private setLevelSpacing(spacing: number): void {
-		this.levelSpacing = spacing;
+		const minSpacing = this.getMinimumLevelSpacing(this.cardStyle);
+		const clamped = Math.max(spacing, minSpacing);
+		this.levelSpacing = clamped;
 		if (this.f3Chart) {
 			// Note: Kinship label clearing/re-rendering is handled by setBeforeUpdate/setAfterUpdate callbacks (#195)
-			this.f3Chart.setCardYSpacing(spacing);
+			this.f3Chart.setCardYSpacing(clamped);
 			this.f3Chart.updateTree({});
-			new Notice(`Level spacing set to ${spacing}px`);
+			if (clamped !== spacing) {
+				new Notice(`Level spacing clamped to ${clamped}px to fit the current card height. Toggle off some fields or pick a smaller card style to go tighter.`);
+			} else {
+				new Notice(`Level spacing set to ${clamped}px`);
+			}
 		}
 		// Trigger Obsidian to save view state
 		this.app.workspace.requestSaveLayout();
@@ -4102,6 +4215,7 @@ export class FamilyChartView extends ItemView {
 			showSiblingsOfMain: this.showSiblingsOfMain,
 			showSingleParentEmptyCard: this.showSingleParentEmptyCard,
 			sortChildrenByBirthDate: this.sortChildrenByBirthDate,
+			sortSpousesByMarriageDate: this.sortSpousesByMarriageDate,
 			hidePrivateLiving: this.hidePrivateLiving,
 			cardStyle: this.cardStyle,
 			nameDisplayMode: this.nameDisplayMode,
@@ -4165,6 +4279,9 @@ export class FamilyChartView extends ItemView {
 		if (state.sortChildrenByBirthDate !== undefined) {
 			this.sortChildrenByBirthDate = state.sortChildrenByBirthDate;
 		}
+		if (state.sortSpousesByMarriageDate !== undefined) {
+			this.sortSpousesByMarriageDate = state.sortSpousesByMarriageDate;
+		}
 		if (state.hidePrivateLiving !== undefined) {
 			this.hidePrivateLiving = state.hidePrivateLiving;
 		}
@@ -4194,9 +4311,11 @@ export class FamilyChartView extends ItemView {
 			this.showPronouns = state.showPronouns;
 		}
 
-		// Clamp restored spacing to the minimum safe value for the restored
-		// card style, in case a stale state would cause card overlap (#373).
+		// Clamp restored spacing to the minimum safe values for the restored
+		// card style and display toggles, in case a stale state would cause
+		// card overlap (#373, #374).
 		this.nodeSpacing = Math.max(this.nodeSpacing, this.getMinimumNodeSpacing(this.cardStyle));
+		this.levelSpacing = Math.max(this.levelSpacing, this.getMinimumLevelSpacing(this.cardStyle));
 
 		// Re-initialize chart if the view is already open (chartContainerEl exists)
 		// If called before onOpen(), the state is just stored and onOpen() will use it
