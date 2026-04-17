@@ -93,6 +93,13 @@ interface FamilyChartViewState {
 	cardStyle?: CardStyle;
 	// Name display mode (#90)
 	nameDisplayMode?: NameDisplayMode;
+	// Built-in descriptive field toggles (#374)
+	showTitle?: boolean;
+	showOccupation?: boolean;
+	showNickname?: boolean;
+	showReligion?: boolean;
+	showCaste?: boolean;
+	showPronouns?: boolean;
 	[key: string]: unknown;  // Index signature for Record<string, unknown> compatibility
 }
 
@@ -125,6 +132,13 @@ export class FamilyChartView extends ItemView {
 	private cardStyle: CardStyle = 'rectangle';
 	// Name display mode: full (single line) or split (given/surname on separate lines) (#90)
 	private nameDisplayMode: NameDisplayMode = 'full';
+	// Built-in descriptive field toggles on the in-tree card (#374)
+	private showTitle: boolean = false;
+	private showOccupation: boolean = false;
+	private showNickname: boolean = false;
+	private showReligion: boolean = false;
+	private showCaste: boolean = false;
+	private showPronouns: boolean = false;
 
 	// family-chart instances
 	private f3Chart: ReturnType<typeof f3.createChart> | null = null;
@@ -1587,6 +1601,10 @@ export class FamilyChartView extends ItemView {
 				'alt name': person.altName || '',
 				'pronouns': Array.isArray(person.pronouns) ? person.pronouns.join(', ') : (person.pronouns || ''),
 				'occupation': person.occupation || '',
+				'title': person.title || '',
+				'nickname': person.nickname || '',
+				'religion': person.religion || '',
+				'caste': person.caste || '',
 				'birth place': person.birthPlace || '',
 				'death place': person.deathPlace || '',
 				'research level': person.researchLevel ?? '',
@@ -2255,6 +2273,32 @@ export class FamilyChartView extends ItemView {
 				.onClick(() => this.toggleNameDisplayMode());
 		});
 
+		// Built-in descriptive field toggles (#374)
+		menu.addItem((item) => {
+			item.setTitle(`${this.showNickname ? '✓ ' : ''}Show nickname`)
+				.onClick(() => this.toggleNickname());
+		});
+		menu.addItem((item) => {
+			item.setTitle(`${this.showTitle ? '✓ ' : ''}Show title`)
+				.onClick(() => this.toggleTitle());
+		});
+		menu.addItem((item) => {
+			item.setTitle(`${this.showPronouns ? '✓ ' : ''}Show pronouns`)
+				.onClick(() => this.togglePronouns());
+		});
+		menu.addItem((item) => {
+			item.setTitle(`${this.showOccupation ? '✓ ' : ''}Show occupation`)
+				.onClick(() => this.toggleOccupation());
+		});
+		menu.addItem((item) => {
+			item.setTitle(`${this.showReligion ? '✓ ' : ''}Show religion`)
+				.onClick(() => this.toggleReligion());
+		});
+		menu.addItem((item) => {
+			item.setTitle(`${this.showCaste ? '✓ ' : ''}Show caste`)
+				.onClick(() => this.toggleCaste());
+		});
+
 		menu.addSeparator();
 
 		menu.addItem((item) => {
@@ -2673,6 +2717,51 @@ export class FamilyChartView extends ItemView {
 		this.showDeathDates = !this.showDeathDates;
 		this.updateCardDisplay();
 		new Notice(`Death dates ${this.showDeathDates ? 'shown' : 'hidden'}`);
+	}
+
+	/**
+	 * Toggle built-in descriptive field display on the in-tree card (#374)
+	 */
+	private toggleTitle(): void {
+		this.showTitle = !this.showTitle;
+		this.updateCardDisplay();
+		new Notice(`Title ${this.showTitle ? 'shown' : 'hidden'}`);
+		this.app.workspace.requestSaveLayout();
+	}
+
+	private toggleOccupation(): void {
+		this.showOccupation = !this.showOccupation;
+		this.updateCardDisplay();
+		new Notice(`Occupation ${this.showOccupation ? 'shown' : 'hidden'}`);
+		this.app.workspace.requestSaveLayout();
+	}
+
+	private toggleNickname(): void {
+		this.showNickname = !this.showNickname;
+		this.updateCardDisplay();
+		new Notice(`Nickname ${this.showNickname ? 'shown' : 'hidden'}`);
+		this.app.workspace.requestSaveLayout();
+	}
+
+	private toggleReligion(): void {
+		this.showReligion = !this.showReligion;
+		this.updateCardDisplay();
+		new Notice(`Religion ${this.showReligion ? 'shown' : 'hidden'}`);
+		this.app.workspace.requestSaveLayout();
+	}
+
+	private toggleCaste(): void {
+		this.showCaste = !this.showCaste;
+		this.updateCardDisplay();
+		new Notice(`Caste ${this.showCaste ? 'shown' : 'hidden'}`);
+		this.app.workspace.requestSaveLayout();
+	}
+
+	private togglePronouns(): void {
+		this.showPronouns = !this.showPronouns;
+		this.updateCardDisplay();
+		new Notice(`Pronouns ${this.showPronouns ? 'shown' : 'hidden'}`);
+		this.app.workspace.requestSaveLayout();
 	}
 
 	/**
@@ -3185,6 +3274,11 @@ export class FamilyChartView extends ItemView {
 			displayFields.push(['alt name']);
 		}
 
+		// Identity-leaning descriptive fields (#374)
+		if (this.showNickname) displayFields.push(['nickname']);
+		if (this.showTitle) displayFields.push(['title']);
+		if (this.showPronouns) displayFields.push(['pronouns']);
+
 		// Add dates
 		if (this.showBirthDates && this.showDeathDates) {
 			displayFields.push(['birthday']);
@@ -3194,6 +3288,11 @@ export class FamilyChartView extends ItemView {
 		} else if (this.showDeathDates) {
 			displayFields.push(['deathday']);
 		}
+
+		// Descriptive fields that are usually longer / secondary (#374)
+		if (this.showOccupation) displayFields.push(['occupation']);
+		if (this.showReligion) displayFields.push(['religion']);
+		if (this.showCaste) displayFields.push(['caste']);
 
 		return displayFields;
 	}
@@ -3212,7 +3311,15 @@ export class FamilyChartView extends ItemView {
 		const nameLines = this.nameDisplayMode === 'split' ? 2 : 1;
 		const altNameLine = this.hasAltNames() ? 1 : 0;
 		const dateLines = (this.showBirthDates ? 1 : 0) + (this.showDeathDates ? 1 : 0);
-		return nameLines + altNameLine + dateLines;
+		// Built-in descriptive field toggles (#374)
+		const descriptiveLines =
+			(this.showTitle ? 1 : 0) +
+			(this.showOccupation ? 1 : 0) +
+			(this.showNickname ? 1 : 0) +
+			(this.showReligion ? 1 : 0) +
+			(this.showCaste ? 1 : 0) +
+			(this.showPronouns ? 1 : 0);
+		return nameLines + altNameLine + dateLines + descriptiveLines;
 	}
 
 	/**
@@ -3998,6 +4105,12 @@ export class FamilyChartView extends ItemView {
 			hidePrivateLiving: this.hidePrivateLiving,
 			cardStyle: this.cardStyle,
 			nameDisplayMode: this.nameDisplayMode,
+			showTitle: this.showTitle,
+			showOccupation: this.showOccupation,
+			showNickname: this.showNickname,
+			showReligion: this.showReligion,
+			showCaste: this.showCaste,
+			showPronouns: this.showPronouns,
 		};
 	}
 
@@ -4061,6 +4174,24 @@ export class FamilyChartView extends ItemView {
 		}
 		if (state.nameDisplayMode !== undefined) {
 			this.nameDisplayMode = state.nameDisplayMode;
+		}
+		if (state.showTitle !== undefined) {
+			this.showTitle = state.showTitle;
+		}
+		if (state.showOccupation !== undefined) {
+			this.showOccupation = state.showOccupation;
+		}
+		if (state.showNickname !== undefined) {
+			this.showNickname = state.showNickname;
+		}
+		if (state.showReligion !== undefined) {
+			this.showReligion = state.showReligion;
+		}
+		if (state.showCaste !== undefined) {
+			this.showCaste = state.showCaste;
+		}
+		if (state.showPronouns !== undefined) {
+			this.showPronouns = state.showPronouns;
 		}
 
 		// Clamp restored spacing to the minimum safe value for the restored
