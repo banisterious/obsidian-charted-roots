@@ -69,10 +69,14 @@ Access via the color scheme dropdown in the toolbar:
 
 ### Layout Spacing
 
-Access via the layout settings button (gear icon):
-- **Compact**: 200px horizontal spacing (best for large trees)
-- **Normal**: 250px horizontal spacing (default)
-- **Spacious**: 350px horizontal spacing (best for readability)
+Access via the layout settings button (gear icon). Horizontal (node) spacing controls the distance between sibling cards:
+
+- **Tight**: 140px (matches the Mini card style)
+- **Compact**: 200px (matches the Compact card style)
+- **Normal**: 250px (matches the Rectangle card style, default)
+- **Spacious**: 350px (maximum readability)
+
+Switching card style automatically picks a matching default spacing. If you pick a preset that would be smaller than the current card style's minimum, spacing is clamped to prevent cards from overlapping — switch to a smaller card style first for a genuinely tighter tree.
 
 ### Date Display
 
@@ -94,13 +98,15 @@ Choose from 4 card styles to match your visualization needs. Access via the **St
 
 | Style | Description | Best For |
 |-------|-------------|----------|
-| **Rectangle** | Default cards with avatar thumbnails and full details (name, dates) | General use, detailed views |
+| **Rectangle** | 200px-wide cards with avatar thumbnails and full details (name, dates) | General use, detailed views |
 | **Circle** | Circular avatar cards with name labels below | Photo-centric trees, visual appeal |
-| **Compact** | Text-only cards without avatars | Large trees, structure focus |
-| **Mini** | Smaller name-only cards | High-level overviews, navigation |
+| **Compact** | 180px-wide cards with optional small avatar (35×35) | Large trees, structure focus |
+| **Mini** | 120px-wide cards with optional tiny avatar (25×25) | High-level overviews, navigation |
 
 **Features:**
 - Card style persists across Obsidian restarts
+- Switching card style automatically sets a matching horizontal spacing default (can still be overridden from the layout menu)
+- Compact and Mini render a small avatar when the **Show avatars** toggle is enabled; hide them for pure text-only cards
 - All styles support the "Open note" button (smaller on Mini)
 - All styles work with PNG/PDF export
 - Circle style uses circular avatar cropping with gender-colored backgrounds
