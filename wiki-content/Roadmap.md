@@ -141,7 +141,7 @@ Export features discussed in #145 are tracked separately:
 
 **Priority:** 💡 Low — Unified timeline experience for fictional worldbuilders
 
-**Status:** ✅ Phase 1 complete (v0.12.0) | ✅ Phase 2 complete (v0.15.2) | Phases 3-4 planned
+**Status:** ✅ Phase 1 complete (v0.12.0) | ✅ Phase 2 complete (v0.15.2) | Phases 3-4 planned — [soliciting input from users of both plugins](https://github.com/banisterious/obsidian-charted-roots/discussions/385)
 
 **Summary:** Integration with the [Calendarium](https://plugins.javalent.com/calendarium) plugin to share calendar definitions, eliminating duplicate configuration for worldbuilders. Designed to be invisible to users who don't need it—settings default to off, and no UI changes appear unless Calendarium is installed.
 
