@@ -998,6 +998,15 @@ The following rules are active in `eslint.config.mjs`:
 | `obsidianmd/prefer-file-manager-trash-file` *(warn)* | Using `Vault.trash()`/`Vault.delete()` — prefer `FileManager.trashFile()` so the user's "move to trash" preference is respected |
 | `obsidianmd/regex-lookbehind` | Regex lookbehinds — not supported on some iOS versions |
 | `obsidianmd/sample-names` | Sample plugin class names (`MyPlugin`, `MyPluginSettingTab`) left unchanged |
+| `obsidianmd/editor-drop-paste` | Anti-patterns in editor drag/drop/paste handlers |
+| `obsidianmd/no-unsupported-api` | Use of Obsidian APIs newer than the manifest's `minAppVersion` (respects `requireApiVersion`) |
+| `obsidianmd/prefer-active-doc` | Older patterns for accessing the active document — prefer the newer active-doc accessors |
+| `obsidianmd/prefer-active-window-timers` | Raw `setTimeout`/`setInterval` — prefer `activeWindow.setTimeout` etc. for correct mobile behavior |
+| `obsidianmd/prefer-instanceof` | Type casts where `instanceof` would work — narrower cousin of `no-tfile-tfolder-cast` |
+| `obsidianmd/object-assign` | `Object.assign(a, b)` with two arguments — prefer spread (`{ ...a, ...b }`) |
+| `obsidianmd/prefer-abstract-input-suggest` | Hand-rolled `TextInputSuggest` implementations — prefer Obsidian's built-in `AbstractInputSuggest` |
+| `obsidianmd/validate-license` | Structural problems in the project's `LICENSE` file |
+| `obsidianmd/validate-manifest` | Structural problems in `manifest.json` (missing fields, bad types, etc.) |
 
 #### Command rules
 

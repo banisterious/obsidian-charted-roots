@@ -86,6 +86,17 @@ export default [
 			"obsidianmd/prefer-file-manager-trash-file": "warn",
 			"obsidianmd/regex-lookbehind": "error",
 			"obsidianmd/sample-names": "error",
+			// Added in 0.2.x
+			"obsidianmd/editor-drop-paste": "error",
+			"obsidianmd/no-unsupported-api": "error",
+			"obsidianmd/prefer-active-doc": "error",
+			"obsidianmd/prefer-active-window-timers": "error",
+			"obsidianmd/prefer-instanceof": "error",
+			// Previously unenabled from 0.1.9
+			"obsidianmd/object-assign": "error",
+			"obsidianmd/prefer-abstract-input-suggest": "error",
+			"obsidianmd/validate-license": "error",
+			"obsidianmd/validate-manifest": "error",
 			"obsidianmd/ui/sentence-case": ["error", {
 				enforceCamelCaseLower: true,
 				// Note: providing brands/acronyms REPLACES defaults, so we include needed defaults
