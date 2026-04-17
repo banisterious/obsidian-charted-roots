@@ -93,6 +93,15 @@ The display settings menu (eye icon in the toolbar) controls which person fields
 
 Toggles persist across Obsidian restarts. Turning on a field for which some people have no value will show a blank line on those cards; turn the toggle off to tighten the layout again.
 
+### Sort Options
+
+The display settings menu also controls the left-to-right order of children and spouses within a family unit:
+
+- **Sort children by birth date** — children render oldest-first (left) to youngest (right). Children without a birth date fall to the end.
+- **Sort spouses by marriage date** — spouses render first-married (left) to most-recently-married (right). Useful for serial remarriages or polygamous families where the frontmatter order doesn't reflect chronology. Spouses without a marriage date fall to the end. Marriage dates come from the spouse-relationship metadata (e.g. `spouse1_marriage_date`).
+
+Both toggles are off by default (frontmatter order is used).
+
 ### Kinship Labels
 
 Toggle relationship labels on connecting lines to show how people are related:
