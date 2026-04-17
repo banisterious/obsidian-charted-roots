@@ -1019,7 +1019,7 @@ export function registerCommandsAndEvents(plugin: CanvasRootsPlugin): void {
 			if (!file || !file.path.endsWith('.book.json')) return false;
 			if (checking) return true;
 
-			(async () => {
+			void (async () => {
 				try {
 					const content = await plugin.app.vault.read(file);
 					const definition = JSON.parse(content);

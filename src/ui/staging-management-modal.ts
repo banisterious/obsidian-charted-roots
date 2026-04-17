@@ -430,7 +430,7 @@ export class StagingManagementModal extends Modal {
 		checkBtn.createSpan({ text: 'Check duplicates' });
 		checkBtn.addEventListener('click', (e) => {
 			e.stopPropagation();
-			this.handleCheckDuplicates(subfolder.path);
+			void this.handleCheckDuplicates(subfolder.path);
 		});
 
 		// Promote button
@@ -442,7 +442,7 @@ export class StagingManagementModal extends Modal {
 		promoteBtn.createSpan({ text: 'Promote' });
 		promoteBtn.addEventListener('click', (e) => {
 			e.stopPropagation();
-			this.handlePromoteSubfolder(subfolder);
+			void this.handlePromoteSubfolder(subfolder);
 		});
 
 		// Delete button
@@ -453,7 +453,7 @@ export class StagingManagementModal extends Modal {
 		setIcon(deleteBtn, 'trash-2');
 		deleteBtn.addEventListener('click', (e) => {
 			e.stopPropagation();
-			this.handleDeleteSubfolder(subfolder);
+			void this.handleDeleteSubfolder(subfolder);
 		});
 
 		// Expandable file list
@@ -522,7 +522,7 @@ export class StagingManagementModal extends Modal {
 
 			// Click to open file
 			const openFile = () => {
-				this.app.workspace.openLinkText(file.path, '', true);
+				void this.app.workspace.openLinkText(file.path, '', true);
 			};
 			fileRow.addEventListener('click', openFile);
 			fileRow.addEventListener('keydown', (e) => {

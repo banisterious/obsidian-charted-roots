@@ -77,7 +77,7 @@ export class RegionDrawingModal extends Modal {
 		const canvasContainer = contentEl.createDiv({ cls: 'cr-region-drawing-modal__canvas-container' });
 
 		// Load and display the parent map image
-		this.loadImage(canvasContainer);
+		void this.loadImage(canvasContainer);
 
 		// Coordinate display
 		this.coordDisplay = contentEl.createDiv({ cls: 'cr-region-drawing-modal__coords' });

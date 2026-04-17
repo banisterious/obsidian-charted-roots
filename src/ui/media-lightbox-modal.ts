@@ -182,7 +182,7 @@ export class MediaLightboxModal extends Modal {
 				if (view instanceof MarkdownView) {
 					const currentState = view.getState();
 					if (currentState.mode !== 'preview') {
-						view.setState({ ...currentState, mode: 'preview' }, { history: false });
+						void view.setState({ ...currentState, mode: 'preview' }, { history: false });
 					}
 				}
 			}, 0);

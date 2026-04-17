@@ -685,7 +685,7 @@ function buildPersonContextMenu(
 						if (crId) {
 							const leaves = plugin.app.workspace.getLeavesOfType('canvas-roots-map');
 							if (leaves.length > 0) {
-								plugin.app.workspace.revealLeaf(leaves[0]);
+								void plugin.app.workspace.revealLeaf(leaves[0]);
 								const mapView = leaves[0].view as import('../maps/map-view').MapView;
 								mapView.enterJourneyModeForPerson(crId, personName);
 							} else {
@@ -728,7 +728,7 @@ function buildPersonContextMenu(
 						const { VIEW_TYPE_CALENDAR } = require('../calendar/calendar-view');
 						const leaves = plugin.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR);
 						if (leaves.length > 0) {
-							plugin.app.workspace.revealLeaf(leaves[0]);
+							void plugin.app.workspace.revealLeaf(leaves[0]);
 							const calView = leaves[0].view as import('../calendar/calendar-view').CalendarView;
 							calView.navigateToDate(month, year);
 						} else {
@@ -3673,7 +3673,7 @@ function buildEventContextMenu(
 						const { VIEW_TYPE_CALENDAR } = require('../calendar/calendar-view');
 						const leaves = plugin.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR);
 						if (leaves.length > 0) {
-							plugin.app.workspace.revealLeaf(leaves[0]);
+							void plugin.app.workspace.revealLeaf(leaves[0]);
 							const calView = leaves[0].view as import('../calendar/calendar-view').CalendarView;
 							calView.navigateToDate(month, year);
 						} else {

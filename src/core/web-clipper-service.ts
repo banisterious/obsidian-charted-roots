@@ -32,7 +32,7 @@ export class WebClipperService {
 		// Register file creation handler
 		this.fileCreateRef = this.app.vault.on('create', (file) => {
 			if (file instanceof TFile && file.extension === 'md') {
-				this.handleFileCreated(file);
+				void this.handleFileCreated(file);
 			}
 		});
 

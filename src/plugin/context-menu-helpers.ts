@@ -1774,7 +1774,7 @@ export async function openRegionDrawingForMap(
 		childName,
 		(result) => {
 			// Save the region to the child map's frontmatter
-			plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
+			void plugin.app.fileManager.processFrontMatter(file, (frontmatter) => {
 				frontmatter.parent_region_x = result.x;
 				frontmatter.parent_region_y = result.y;
 				frontmatter.parent_region_w = result.w;

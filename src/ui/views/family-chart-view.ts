@@ -219,14 +219,14 @@ export class FamilyChartView extends ItemView {
 
 		// Initialize chart if we have state
 		if (this.rootPersonId) {
-			this.initializeChart();
+			void this.initializeChart();
 		} else {
 			// Check for a marked root person before showing empty state
 			const familyGraph = this.plugin.createFamilyGraphService();
 			const { rootPerson } = familyGraph.getMarkedRootPerson();
 			if (rootPerson) {
 				this.rootPersonId = rootPerson.crId;
-				this.initializeChart();
+				void this.initializeChart();
 			} else {
 				this.showEmptyState();
 			}
@@ -1980,10 +1980,10 @@ export class FamilyChartView extends ItemView {
 		if (rootPerson) {
 			// A root person is marked - use them
 			this.rootPersonId = rootPerson.crId;
-			this.initializeChart();
+			void this.initializeChart();
 		} else if (this.rootPersonId) {
 			// No marked root, but we have a current selection - keep it
-			this.initializeChart();
+			void this.initializeChart();
 		} else {
 			// No marked root and no current selection
 			this.showEmptyState();
@@ -2861,7 +2861,7 @@ export class FamilyChartView extends ItemView {
 		this.nameDisplayMode = this.nameDisplayMode === 'full' ? 'split' : 'full';
 		// Need to re-initialize chart to re-transform person data with new name extraction
 		if (this.f3Chart && this.rootPersonId) {
-			this.initializeChart();
+			void this.initializeChart();
 		}
 		new Notice(`Name display: ${this.nameDisplayMode === 'split' ? 'given/surname on separate lines' : 'full name on single line'}`);
 		// Trigger Obsidian to save view state
@@ -2935,7 +2935,7 @@ export class FamilyChartView extends ItemView {
 		this.showAvatars = !this.showAvatars;
 		// Need to re-initialize chart to re-transform person data with/without avatars
 		if (this.f3Chart && this.rootPersonId) {
-			this.initializeChart();
+			void this.initializeChart();
 		}
 		new Notice(`Avatars ${this.showAvatars ? 'shown' : 'hidden'}`);
 	}
@@ -2950,7 +2950,7 @@ export class FamilyChartView extends ItemView {
 
 		// Re-initialize chart with new orientation
 		if (this.f3Chart && this.rootPersonId) {
-			this.initializeChart();
+			void this.initializeChart();
 		}
 
 		new Notice(`Tree orientation: ${horizontal ? 'horizontal' : 'vertical'}`);
@@ -2966,7 +2966,7 @@ export class FamilyChartView extends ItemView {
 
 		// Re-initialize chart with new depth
 		if (this.f3Chart && this.rootPersonId) {
-			this.initializeChart();
+			void this.initializeChart();
 		}
 
 		const label = depth === null ? 'unlimited' : `${depth} ${pluralize(depth, 'generation')}`;
@@ -2983,7 +2983,7 @@ export class FamilyChartView extends ItemView {
 
 		// Re-initialize chart with new depth
 		if (this.f3Chart && this.rootPersonId) {
-			this.initializeChart();
+			void this.initializeChart();
 		}
 
 		const label = depth === null ? 'unlimited' : `${depth} ${pluralize(depth, 'generation')}`;
@@ -2998,7 +2998,7 @@ export class FamilyChartView extends ItemView {
 
 		// Re-initialize chart with new setting
 		if (this.f3Chart && this.rootPersonId) {
-			this.initializeChart();
+			void this.initializeChart();
 		}
 
 		new Notice(`Siblings of root person ${this.showSiblingsOfMain ? 'shown' : 'hidden'}`);
@@ -3012,7 +3012,7 @@ export class FamilyChartView extends ItemView {
 
 		// Re-initialize chart with new setting
 		if (this.f3Chart && this.rootPersonId) {
-			this.initializeChart();
+			void this.initializeChart();
 		}
 
 		new Notice(`Unknown parent placeholders ${this.showSingleParentEmptyCard ? 'shown' : 'hidden'}`);
@@ -3026,7 +3026,7 @@ export class FamilyChartView extends ItemView {
 
 		// Re-initialize chart with new setting
 		if (this.f3Chart && this.rootPersonId) {
-			this.initializeChart();
+			void this.initializeChart();
 		}
 
 		new Notice(`Sort children by birth date ${this.sortChildrenByBirthDate ? 'enabled' : 'disabled'}`);
@@ -3042,7 +3042,7 @@ export class FamilyChartView extends ItemView {
 		// family-chart store. Disabling the toggle mid-session leaves the
 		// previous sort function in place until the next initializeChart.
 		if (this.f3Chart && this.rootPersonId) {
-			this.initializeChart();
+			void this.initializeChart();
 		}
 
 		new Notice(`Sort spouses by marriage date ${this.sortSpousesByMarriageDate ? 'enabled' : 'disabled'}`);
@@ -3075,7 +3075,7 @@ export class FamilyChartView extends ItemView {
 		if (this.asOfDate === normalized) return;
 		this.asOfDate = normalized;
 		if (this.f3Chart && this.rootPersonId) {
-			this.initializeChart();
+			void this.initializeChart();
 		}
 		new Notice(normalized ? `As-of date: ${normalized}` : 'As-of date cleared');
 		this.app.workspace.requestSaveLayout();
@@ -3144,7 +3144,7 @@ export class FamilyChartView extends ItemView {
 
 		// Re-initialize chart with new setting
 		if (this.f3Chart && this.rootPersonId) {
-			this.initializeChart();
+			void this.initializeChart();
 		}
 
 		new Notice(`Living persons ${this.hidePrivateLiving ? 'hidden' : 'shown'}`);
@@ -4444,7 +4444,7 @@ export class FamilyChartView extends ItemView {
 		// If called before onOpen(), the state is just stored and onOpen() will use it
 		if (this.chartContainerEl) {
 			if (this.rootPersonId) {
-				this.initializeChart();
+				void this.initializeChart();
 			} else {
 				this.showEmptyState();
 			}
@@ -4494,6 +4494,6 @@ export class FamilyChartView extends ItemView {
 	 */
 	setRootPerson(crId: string): void {
 		this.rootPersonId = crId;
-		this.initializeChart();
+		void this.initializeChart();
 	}
 }
