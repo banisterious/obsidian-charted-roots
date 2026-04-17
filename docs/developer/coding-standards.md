@@ -975,6 +975,81 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 }
 ```
 
+### ESLint Plugin Enforcement (eslint-plugin-obsidianmd)
+
+The project uses [eslint-plugin-obsidianmd](https://github.com/obsidianmd/eslint-plugin) to enforce Obsidian-specific best practices automatically. These rules catch common anti-patterns that wouldn't be flagged by standard TypeScript linting.
+
+The following rules are active in `eslint.config.mjs`:
+
+#### Core rules
+
+| Rule | What it catches |
+|------|-----------------|
+| `obsidianmd/no-forbidden-elements` | Attaching forbidden elements to the DOM |
+| `obsidianmd/no-static-styles-assignment` | Setting `.style.*` directly on DOM elements — use CSS classes instead |
+| `obsidianmd/vault/iterate` | Iterating all files to find one by path — use `getAbstractFileByPath()` |
+| `obsidianmd/detach-leaves` | Detaching leaves in `onunload` (Obsidian handles this) |
+| `obsidianmd/hardcoded-config-path` | Hard-coded `.obsidian/` paths |
+| `obsidianmd/no-plugin-as-component` | Passing the plugin instance as a `Component` to `MarkdownRenderer.render` — causes memory leaks |
+| `obsidianmd/no-sample-code` | Unmodified sample-plugin boilerplate remaining in the codebase |
+| `obsidianmd/no-tfile-tfolder-cast` | Casting to `TFile`/`TFolder` — use `instanceof` checks instead |
+| `obsidianmd/no-view-references-in-plugin` | Storing view references on the plugin instance — causes memory leaks |
+| `obsidianmd/platform` | Using the `navigator` API for OS detection — use Obsidian's `Platform` helper |
+| `obsidianmd/prefer-file-manager-trash-file` *(warn)* | Using `Vault.trash()`/`Vault.delete()` — prefer `FileManager.trashFile()` so the user's "move to trash" preference is respected |
+| `obsidianmd/regex-lookbehind` | Regex lookbehinds — not supported on some iOS versions |
+| `obsidianmd/sample-names` | Sample plugin class names (`MyPlugin`, `MyPluginSettingTab`) left unchanged |
+
+#### Command rules
+
+| Rule | What it catches |
+|------|-----------------|
+| `obsidianmd/commands/no-command-in-command-id` | The word "command" in a command ID |
+| `obsidianmd/commands/no-command-in-command-name` | The word "command" in a command name |
+| `obsidianmd/commands/no-default-hotkeys` | Providing default hotkeys (hotkeys should be user-configured) |
+| `obsidianmd/commands/no-plugin-id-in-command-id` | The plugin ID inside a command ID |
+| `obsidianmd/commands/no-plugin-name-in-command-name` | The plugin name inside a command name |
+
+#### Settings-tab rules
+
+| Rule | What it catches |
+|------|-----------------|
+| `obsidianmd/settings-tab/no-manual-html-headings` | `<h1>`/`<h2>`/etc. for settings headings — use `new Setting().setHeading()` (see § 5.4) |
+| `obsidianmd/settings-tab/no-problematic-settings-headings` | Anti-patterns in settings headings (Title Case, plugin name in heading, etc.) |
+
+#### UI rules
+
+| Rule | What it catches |
+|------|-----------------|
+| `obsidianmd/ui/sentence-case` | UI strings not in sentence case. See § 5.1 for the general requirement and the false-positive guidance immediately below for project-specific exceptions |
+
+#### Handling `ui/sentence-case` false positives
+
+The `obsidianmd/ui/sentence-case` rule produces many false positives in this codebase. When reviewing warnings:
+
+**Always skip (false positives):**
+
+- HTML element names (`th`, `td`, `li`, `div`, etc.)
+- ARIA attributes (`aria-label`, `aria-describedby`)
+- Code identifiers and CSS class names
+- Separator characters (`, `, ` | `)
+- Example/placeholder text (e.g., `e.g., John Smith`)
+- Navigation symbols (`←`, `→`)
+
+**Usually skip (intentional Title Case):**
+
+- Entity type names when used as labels: `Create Events base`, `People folder`, `Places base`
+- Button labels referencing UI elements: `Click Link to select`
+- Proper nouns not in the brands list
+
+**Review and potentially fix:**
+
+- Generic title-cased phrases that should be sentence case: `Event Timeline` → `Event timeline`
+- Product references: use `Obsidian canvas` (the feature) not `Obsidian Canvas` (Canvas is not a product name)
+
+**To add recurring false positives permanently:** Edit `eslint.config.mjs` and add terms to the `brands` or `acronyms` arrays in the sentence-case rule config. These arrays REPLACE defaults, so essential defaults are already included.
+
+**Other rules:** the structural rules (everything above `ui/sentence-case` in the tables) catch real anti-patterns. The fix is almost always to refactor rather than disable the rule.
+
 ---
 
 ## 5. Obsidian UI Guidelines
