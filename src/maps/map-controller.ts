@@ -1485,7 +1485,7 @@ export class MapController {
 		const childName = this.regionEditConfig.name;
 
 		// Reload map configs BEFORE exiting edit mode so the re-render picks up the new region
-		await this.imageMapManager.loadMapConfigs();
+		this.imageMapManager.loadMapConfigs();
 
 		new Notice(`Region saved for "${childName}"`);
 		this.exitRegionEditMode();
