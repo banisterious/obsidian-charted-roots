@@ -17,8 +17,11 @@ export default [
 			"docs/**",
 			"external/**",
 			"build-css.js",
+			"build-fonts.js",
+			"patch-family-chart.js",
 			"gedcom-testing/**",
 			"mockups/**",
+			"tests/fixtures/**",
 		],
 	},
 
