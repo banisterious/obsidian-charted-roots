@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Report Wizard entry points** ([#372](https://github.com/banisterious/obsidian-charted-roots/issues/372)): The Report Wizard is now accessible from three new locations: command palette ("Open report wizard"), Trees & Reports tab (new card between Book Builder and Reports), and person note context menu ("Generate report" with person pre-selected).
 
+### Fixed
+
+- **Family chart card spacing decoupled from card width** ([#373](https://github.com/banisterious/obsidian-charted-roots/issues/373)): Compact and mini card styles used to look visually identical to rectangle because horizontal sibling spacing was fixed regardless of card width. Each style now carries a matching default spacing (rectangle 250px, compact 200px, mini 140px), with a new Tight (140px) preset in the spacing menu. Spacing is clamped to `card_width + 20px` minimum so a preset can't collapse cards into each other. Compact and mini styles also respect the Show avatars toggle (previously they force-hid avatars regardless of the setting).
+
 ---
 
 ## [0.20.57] - 2026-04-15
