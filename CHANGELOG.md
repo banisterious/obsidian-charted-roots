@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Report Wizard entry points** ([#372](https://github.com/banisterious/obsidian-charted-roots/issues/372)): The Report Wizard is now accessible from three new locations: command palette ("Open report wizard"), Trees & Reports tab (new card between Book Builder and Reports), and person note context menu ("Generate report" with person pre-selected).
 - **Additional in-tree card field toggles** ([#374](https://github.com/banisterious/obsidian-charted-roots/issues/374)): The Family Chart display menu now includes six new toggles — Show title, Show occupation, Show nickname, Show religion, Show caste, Show pronouns — so users can surface built-in person fields on the in-tree card without having to click into the info panel. Card height automatically grows to fit enabled lines, and all card styles (rectangle, compact, mini) adjust accordingly.
+- **Sort spouses by marriage date** ([#375](https://github.com/banisterious/obsidian-charted-roots/issues/375)): New Family Chart display toggle renders spouses left-to-right in ascending order of `marriageDate` from each spouse relationship. Useful for serial remarriages and polygamous families where the frontmatter order doesn't reflect chronology. Spouses without a marriage date fall to the end; mirrors the existing "sort children by birth date" pattern.
 
 ### Fixed
 
