@@ -13,6 +13,11 @@ This document outlines planned features for Charted Roots. For completed feature
 - [Future Considerations](#future-considerations)
   - [Universe Batch Operations](#universe-batch-operations)
   - [Import Wizard Filename Parser Enhancements](#import-wizard-filename-parser-enhancements)
+  - [Configurable Family Chart Card Dimensions](#configurable-family-chart-card-dimensions)
+  - [Structural Filters for the Family Chart](#structural-filters-for-the-family-chart)
+  - [Cross-Spouse Interleaved Child Sort](#cross-spouse-interleaved-child-sort)
+  - [Time-Varying Relationships](#time-varying-relationships)
+  - [Dated / Time-Varying Property Values](#dated--time-varying-property-values)
   - [Accessibility](#accessibility)
 - [Contributing](#contributing)
 
@@ -150,6 +155,57 @@ This pattern is already documented as a [recommended naming convention](Evidence
 - Better handling of enslaved ancestor research where context matters
 
 **Note:** Charted Roots intentionally avoids dictating naming conventions—this would be an opt-in enhancement for users who follow the ED/page pattern.
+
+### Configurable Family Chart Card Dimensions
+
+Independent width/height controls for family chart in-tree cards, beyond the current four built-in styles (rectangle/circle/compact/mini). Useful for very wide or very vertical trees where the default sizing trades off poorly.
+
+**Note:** Reassess after [#373](https://github.com/banisterious/obsidian-charted-roots/issues/373) (couple node spacing to card width) ships — that fix may remove the underlying pain and obviate the need for separate dimension settings.
+
+**Source:** Discussion [#371](https://github.com/banisterious/obsidian-charted-roots/discussions/371).
+
+### Structural Filters for the Family Chart
+
+Filter or highlight family chart nodes based on structural/relational criteria rather than just property values. Examples:
+
+- Nth child of a family (e.g. "all second sons")
+- Mth-generation descendants of a selected person
+- People within N degrees of a selected person
+- People linked by a specific relationship type to a selected person
+
+Deliberately avoids building a general graph-query engine. Better scoped as a small set of predefined structural filters covering common worldbuilding and genealogy use cases.
+
+**Related:** Builds on [#379](https://github.com/banisterious/obsidian-charted-roots/issues/379) (property-value highlight).
+
+**Source:** Discussion [#371](https://github.com/banisterious/obsidian-charted-roots/discussions/371).
+
+### Cross-Spouse Interleaved Child Sort
+
+When a person has multiple spouses, sort children strictly by birth date across all mothers, rather than the current per-mother grouping. Accepts overlapping parent-child lines as a tradeoff.
+
+**Considerations:**
+
+- Requires changes to the family-chart layout engine.
+- May reduce readability for users outside the original author — line crossings are precisely why per-mother grouping is the dominant family tree convention.
+- Worth confirming this is a hard requirement rather than a preference before committing to the design effort.
+
+**Source:** Discussion [#371](https://github.com/banisterious/obsidian-charted-roots/discussions/371) (polygamous family modeling).
+
+### Time-Varying Relationships
+
+Relationships with effective date ranges that can flip over time — e.g. friendship transitioning to rivalry on a specific date. Evaluated against a selected "as-of" date from [#376](https://github.com/banisterious/obsidian-charted-roots/issues/376).
+
+Partial substrate already exists: custom relationships carry `from`/`to` fields. This work extends that pattern so the relationship evaluation engine can resolve a person's active relationship set for any given date.
+
+**Source:** Discussion [#371](https://github.com/banisterious/obsidian-charted-roots/discussions/371).
+
+### Dated / Time-Varying Property Values
+
+Property values that change over time (e.g. rank = A in 1650, B in 1680). Requires a new data model for dated property values, UI for entering timeline entries on a property, and rendering logic that resolves values against a selected "as-of" date.
+
+The most transformative feature for worldbuilding use cases, and the largest data-model change on the roadmap. Not viable until [#377](https://github.com/banisterious/obsidian-charted-roots/issues/377) (custom property definitions) lands.
+
+**Source:** Discussion [#371](https://github.com/banisterious/obsidian-charted-roots/discussions/371).
 
 ### Accessibility
 
