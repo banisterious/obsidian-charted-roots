@@ -9,6 +9,7 @@ This document outlines planned features for Charted Roots. For completed feature
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
   - [GPS Research Workflow Integration](#gps-research-workflow-integration) 📋 Medium ✅ Phase 3 mostly complete
+  - [Interactive Timeline View](#interactive-timeline-view) 📋 Medium 📝 Planning
   - [Calendarium Integration](#calendarium-integration) 💡 Low
 - [Future Considerations](#future-considerations)
   - [Universe Batch Operations](#universe-batch-operations)
@@ -106,6 +107,33 @@ Export features discussed in #145 are tracked separately:
 - [Research Workflow](Research-Workflow) — Usage documentation
 - [Research Workflow Integration Planning](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/research-workflow-integration.md) — Full specifications for Phases 2-3
 - Community contributors: @ANYroots (IRN structure, GPS methodology), @wilbry (lightweight approach, unified design)
+
+---
+
+### Interactive Timeline View
+
+**Priority:** 📋 Medium — Completes the timeline gap alongside the existing calendar view and static codeblock timelines
+
+**Status:** 📝 Planning — see [Interactive Timeline View planning doc](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/interactive-timeline-view.md)
+
+**GitHub Issue:** [#384](https://github.com/banisterious/obsidian-charted-roots/issues/384)
+
+**Summary:** A new dockable workspace view that plots vault events on a horizontal time axis the user can pan and zoom. Events are color-coded by type, clickable to open their note, and groupable into swimlanes (by person, place, or universe) for worldbuilding and multi-generation genealogy. Fills the "pan/zoom interactive timeline" gap — today the plugin has a calendar view (monthly grid) and static codeblock timelines, but no axis-based interactive surface.
+
+**Design approach:**
+- Built on [vis-timeline](https://visjs.github.io/vis-timeline/) (~200KB, BSD-2 license). Handles pan/zoom, multi-scale date axis rendering, and hit-testing — genuinely hard problems we don't need to re-solve.
+- Conceptual model borrowed from [chronos-timeline-md](https://github.com/clairefro/chronos-timeline-md) (events / periods / points / markers / swimlanes), but the chronos library itself is not bundled — we write our own adapter from the plugin's `EventNote` data directly to vis-timeline, skipping the markdown DSL round-trip.
+
+**Phased delivery:**
+
+| Phase | Scope | Status |
+|-------|-------|--------|
+| Phase 1 — MVP | Dockable view, flat axis with all events plotted, click to open note, toolbar with search/fit/refresh, date-precision handling (approximate / year-only / undated) | Planned |
+| Phase 2 — Grouping & Periods | Swimlane modes (flat / by person / by place / by universe); person lifespans and organization active ranges as background periods | Planned |
+| Phase 3 — Filters & Polish | Event type / universe / folder / date-range filters; "today" axis marker; keyboard shortcuts; empty states | Planned |
+| Phase 4 — Integration & Export | "Open in timeline" links from Events tab and profile view; PNG / markdown export; saved view presets | Planned |
+
+**Out of scope (v1):** Drag-to-edit, a `charted-roots-interactive-timeline` codeblock, native fictional-calendar axis rendering (Calendarium mapping is a separate future consideration). See the [planning doc](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/interactive-timeline-view.md) for the full decisions table.
 
 ---
 
