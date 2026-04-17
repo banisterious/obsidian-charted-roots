@@ -2,7 +2,7 @@
 
 Planning document for addressing technical debt identified in the April 2026 codebase audit.
 
-**Status:** In progress
+**Status:** ✅ Complete (all phases shipped)
 
 **Codebase stats:** 386 TypeScript source files, ~237,000 lines of code
 
