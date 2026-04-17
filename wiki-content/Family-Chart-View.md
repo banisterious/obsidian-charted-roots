@@ -102,6 +102,24 @@ The display settings menu also controls the left-to-right order of children and 
 
 Both toggles are off by default (frontmatter order is used).
 
+### As-of Date Filter
+
+Show the family as it existed on a specific date. Useful for both genealogy ("what did my family look like in 1870?") and worldbuilding (tracking character states through a timeline).
+
+To use it, set a date in the **Time** group on the toolbar (native date picker). The chart updates to reflect that moment in time:
+
+- **People born after the selected date** are hidden, so the tree shows only people who existed by then.
+- **People who died before the selected date** stay visible but are rendered with a dashed border and reduced opacity, so the family structure remains intact and you can see ancestry at a glance.
+- **Marriage lines** are shown only when the marriage was active on the selected date (after the marriage date and before any divorce date). A person's multiple marriages appear or disappear depending on which were current.
+
+Click the **X** button next to the date field to clear the filter. The selected date persists across Obsidian restarts.
+
+**Date handling notes:**
+
+- Exact ISO dates (`YYYY-MM-DD`) are compared at day-level precision.
+- Approximate dates (`ABT 1850`, `BEF 1900`, etc.) fall back to year-level comparison — appropriate for genealogy data where day precision usually isn't known.
+- Custom non-family relationships (liege/vassal, ally/rival, etc.) are not filtered by date yet — support for that lands alongside [#386](https://github.com/banisterious/obsidian-charted-roots/issues/386).
+
 ### Kinship Labels
 
 Toggle relationship labels on connecting lines to show how people are related:
