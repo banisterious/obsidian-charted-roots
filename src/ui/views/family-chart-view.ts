@@ -377,7 +377,6 @@ export class FamilyChartView extends ItemView {
 			attr: {
 				type: 'date',
 				'aria-label': 'As-of date (show family as it existed on this date)',
-				title: 'As-of date — show family as it existed on this date',
 			},
 		});
 		if (this.asOfDate) asOfInput.value = this.asOfDate;
