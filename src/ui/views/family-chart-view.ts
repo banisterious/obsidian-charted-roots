@@ -2186,6 +2186,10 @@ export class FamilyChartView extends ItemView {
 		});
 
 		menu.addItem((item) => {
+			item.setTitle(`${this.nodeSpacing === 140 ? '✓ ' : ''}Tight (140px)`)
+				.onClick(() => this.setNodeSpacing(140));
+		});
+		menu.addItem((item) => {
 			item.setTitle(`${this.nodeSpacing === 200 ? '✓ ' : ''}Compact (200px)`)
 				.onClick(() => this.setNodeSpacing(200));
 		});
@@ -2459,6 +2463,10 @@ export class FamilyChartView extends ItemView {
 		if (this.cardStyle === style) return;
 		logger.debug('set-card-style', 'Changing card style', { from: this.cardStyle, to: style });
 		this.cardStyle = style;
+		// Reset horizontal spacing to the new style's default so the tree density
+		// actually reflects the chosen style (#373). Users who want a different
+		// spacing can still override via the spacing menu.
+		this.nodeSpacing = this.getDefaultNodeSpacing(style);
 		this.updateContainerStyleClass();
 		void this.refreshChart();
 		// Trigger Obsidian to save view state
@@ -3214,12 +3222,24 @@ export class FamilyChartView extends ItemView {
 		const lines = this.calculateContentLines();
 
 		switch (style) {
-			case 'compact':
-				// Text-only cards, no avatars
-				// Height: ~15px per line + padding
+			case 'compact': {
+				// Compact cards; optionally show a small avatar when enabled (#373)
+				if (this.showAvatars) {
+					const imgSize = 35;
+					return {
+						w: 180,
+						h: Math.max(imgSize + 10, 35 + (lines - 1) * 15),
+						text_x: imgSize + 10,
+						text_y: 12,
+						img_w: imgSize,
+						img_h: imgSize,
+						img_x: 5,
+						img_y: 5
+					};
+				}
 				return {
 					w: 180,
-					h: 35 + (lines - 1) * 15 + (0),
+					h: 35 + (lines - 1) * 15,
 					text_x: 10,
 					text_y: 12,
 					img_w: 0,
@@ -3227,13 +3247,26 @@ export class FamilyChartView extends ItemView {
 					img_x: 0,
 					img_y: 0
 				};
+			}
 
-			case 'mini':
-				// Mini cards - allow split name but keep compact
-				// Height: 35px base + 15px per extra line
+			case 'mini': {
+				// Mini cards; optionally show a small avatar when enabled (#373)
+				if (this.showAvatars) {
+					const imgSize = 25;
+					return {
+						w: 120,
+						h: Math.max(imgSize + 10, 35 + (lines - 1) * 15),
+						text_x: imgSize + 7,
+						text_y: 10,
+						img_w: imgSize,
+						img_h: imgSize,
+						img_x: 3,
+						img_y: 5
+					};
+				}
 				return {
 					w: 120,
-					h: 35 + (lines - 1) * 15 + (0),
+					h: 35 + (lines - 1) * 15,
 					text_x: 5,
 					text_y: 10,
 					img_w: 0,
@@ -3241,9 +3274,10 @@ export class FamilyChartView extends ItemView {
 					img_x: 0,
 					img_y: 0
 				};
+			}
 
 			case 'rectangle':
-			default:
+			default: {
 				// Default: SVG cards with square avatars
 				// Base: 2 lines = 70px, each additional line adds 20px
 				// Avatar scales with card height
@@ -3261,6 +3295,38 @@ export class FamilyChartView extends ItemView {
 					img_x: 5,
 					img_y: 5
 				};
+			}
+		}
+	}
+
+	/**
+	 * Minimum safe node spacing for the current card style (#373)
+	 *
+	 * The family-chart library uses node_separation as a center-to-center
+	 * distance, so a spacing smaller than the card's width produces overlap.
+	 * This floor keeps at least a small edge-to-edge gap regardless of which
+	 * preset the user picks.
+	 */
+	private getMinimumNodeSpacing(style: CardStyle): number {
+		const cardWidth = this.getCardDimensions(style).w;
+		return cardWidth + 20;
+	}
+
+	/**
+	 * Default node spacing per card style (#373)
+	 *
+	 * Each style's default is chosen to leave a consistent edge-to-edge gap
+	 * between siblings: spacing = card width + ~20px. This keeps compact and
+	 * mini visibly tighter than rectangle rather than all three sharing the
+	 * same 250px lane. Users can still override via the spacing menu.
+	 */
+	private getDefaultNodeSpacing(style: CardStyle): number {
+		switch (style) {
+			case 'compact': return 200;
+			case 'mini': return 140;
+			case 'circle':
+			case 'rectangle':
+			default: return 250;
 		}
 	}
 
@@ -3286,14 +3352,23 @@ export class FamilyChartView extends ItemView {
 
 	/**
 	 * Set node (horizontal) spacing and refresh
+	 *
+	 * Clamped to `getMinimumNodeSpacing()` for the current card style so a
+	 * user-picked preset can't collapse cards into each other (#373).
 	 */
 	private setNodeSpacing(spacing: number): void {
-		this.nodeSpacing = spacing;
+		const minSpacing = this.getMinimumNodeSpacing(this.cardStyle);
+		const clamped = Math.max(spacing, minSpacing);
+		this.nodeSpacing = clamped;
 		if (this.f3Chart) {
 			// Note: Kinship label clearing/re-rendering is handled by setBeforeUpdate/setAfterUpdate callbacks (#195)
-			this.f3Chart.setCardXSpacing(spacing);
+			this.f3Chart.setCardXSpacing(clamped);
 			this.f3Chart.updateTree({});
-			new Notice(`Node spacing set to ${spacing}px`);
+			if (clamped !== spacing) {
+				new Notice(`Spacing clamped to ${clamped}px; ${this.cardStyle} cards need at least that to avoid overlap. Pick a smaller card style for a tighter tree.`);
+			} else {
+				new Notice(`Node spacing set to ${clamped}px`);
+			}
 		}
 		// Trigger Obsidian to save view state
 		this.app.workspace.requestSaveLayout();
@@ -3987,6 +4062,10 @@ export class FamilyChartView extends ItemView {
 		if (state.nameDisplayMode !== undefined) {
 			this.nameDisplayMode = state.nameDisplayMode;
 		}
+
+		// Clamp restored spacing to the minimum safe value for the restored
+		// card style, in case a stale state would cause card overlap (#373).
+		this.nodeSpacing = Math.max(this.nodeSpacing, this.getMinimumNodeSpacing(this.cardStyle));
 
 		// Re-initialize chart if the view is already open (chartContainerEl exists)
 		// If called before onOpen(), the state is just stored and onOpen() will use it
