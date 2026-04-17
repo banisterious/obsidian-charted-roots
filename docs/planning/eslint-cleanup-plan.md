@@ -2,7 +2,7 @@
 
 Plan for triaging the real lint output that was hidden by a broken `npm run lint` script.
 
-**Status:** 📝 Planning — awaiting scoping decisions
+**Status:** 🟡 In progress — Tier 0 complete; Tier 1+ scoping decisions pending
 
 **Root cause context:** `node_modules/.bin/eslint` was a zero-byte file (likely caused by WSL symlink-creation failing during `npm install --no-bin-links` at some point). The `npm run lint` script resolved to the empty binary and exited 0 silently. Fixed in commit [77848f14](#) by switching the lint/lint:fix scripts to direct `node` invocation. See `package.json` scripts.
 
@@ -12,8 +12,8 @@ Plan for triaging the real lint output that was hidden by a broken `npm run lint
 
 Taken immediately after the `npm run lint` fix.
 
-- **Total problems:** 1173 (1142 errors, 31 warnings)
-- **Files affected:** 161 out of ~386 TypeScript files (~42%)
+- **Total problems (initial):** 1173 (1142 errors, 31 warnings), 161 files
+- **After Tier 0:** 1041 (1010 errors, 31 warnings)
 - **Exit status:** 1
 
 ---
@@ -47,15 +47,14 @@ Taken immediately after the `npm run lint` fix.
 
 ## Proposed Triage Tiers
 
-### Tier 0 — Infrastructure (first, cheapest, biggest noise reduction)
+### Tier 0 — Infrastructure (first, cheapest, biggest noise reduction) ✅
 
 Goal: eliminate noise that doesn't reflect real issues so the remaining signal is clear.
 
-- [ ] **Exclude or Node-scope non-TS build scripts.** `build-fonts.js` and `patch-family-chart.js` flood `no-undef` with `require`, `console`, `process`, `__dirname`. Either add them to `ignores` (they're not linted-worthy anyway) or give them a Node-globals block in `eslint.config.mjs`. Likely removes ~60-80 of the 131 `no-undef` hits.
-- [ ] **Review the duplicate `no-unused-vars` stock rule.** We already disable it and use `@typescript-eslint/no-unused-vars`. The stock rule is still firing in non-TS contexts — likely the same root cause as above.
-- [ ] **Re-run lint, update baseline counts.**
+- [x] **Excluded non-TS build and test-fixture scripts.** Added `build-fonts.js`, `patch-family-chart.js`, and `tests/fixtures/**` to the `ignores` list in `eslint.config.mjs` (matching the existing treatment of `build-css.js`). These are Node scripts that produced `no-undef` noise for `require`, `__dirname`, `console`, `process`, etc.
+- [x] **Duplicate stock `no-unused-vars` hits gone.** Those 21 hits were all in the now-excluded non-TS files. The TypeScript variant remains active for `src/` and `main.ts`.
 
-**Expected impact:** ~150 problems removed; remaining ~1020 are genuine signal.
+**Actual impact:** 1173 → 1041 problems (-132). `no-undef` dropped from 131 to 20; stock `no-unused-vars` from 21 to 0. The remaining 20 `no-undef` hits are real type-resolution issues in `src/*.ts` — moved to Tier 1.
 
 ### Tier 1 — Correctness (real bugs)
 
@@ -66,7 +65,7 @@ These rules catch runtime problems. Fix them regardless.
 - [ ] **`@typescript-eslint/no-base-to-string` (23)** — implicit `.toString()` on objects that give `[object Object]`. Each is a user-facing display bug.
 - [ ] **`@typescript-eslint/await-thenable` (1)** — `await` on a non-Promise.
 - [ ] **`@typescript-eslint/no-deprecated` (8)** — Obsidian API migrations. Each needs a per-site check for what the deprecation says.
-- [ ] **`no-undef` in actual TS files** (the residue after Tier 0, possibly ~50).
+- [ ] **`no-undef` in actual TS files (20)** — real type-resolution issues: missing imports or types not picked up by ESLint's parser. Examples: `CalendarViewState`, `SourceNote`, `UniverseEntities`, `getErrorMessage`, `createDiv`, `createFragment`, `Menu`. Per-site investigation required.
 
 **Expected effort:** 1-2 focused sessions. These are worth serious attention because they're actual bugs.
 
