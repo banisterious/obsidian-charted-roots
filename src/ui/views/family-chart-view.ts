@@ -370,6 +370,30 @@ export class FamilyChartView extends ItemView {
 		setIcon(depthBtn, 'git-branch');
 		depthBtn.addEventListener('click', (e) => this.showDepthMenu(e));
 
+		// As-of date filter (#376) — "Time" group with date picker and clear button
+		const timeGroup = rightControls.createDiv({ cls: 'cr-fcv-control-group cr-fcv-time-group' });
+		const asOfInput = timeGroup.createEl('input', {
+			cls: 'cr-fcv-as-of-date',
+			attr: {
+				type: 'date',
+				'aria-label': 'As-of date (show family as it existed on this date)',
+				title: 'As-of date — show family as it existed on this date',
+			},
+		});
+		if (this.asOfDate) asOfInput.value = this.asOfDate;
+		asOfInput.addEventListener('change', () => {
+			this.setAsOfDate(asOfInput.value || null);
+		});
+		const asOfClearBtn = timeGroup.createEl('button', {
+			cls: 'cr-fcv-btn cr-fcv-as-of-clear clickable-icon',
+			attr: { 'aria-label': 'Clear as-of date' },
+		});
+		setIcon(asOfClearBtn, 'x');
+		asOfClearBtn.addEventListener('click', () => {
+			asOfInput.value = '';
+			this.setAsOfDate(null);
+		});
+
 		// Export button
 		const exportBtn = rightControls.createEl('button', {
 			cls: 'cr-fcv-btn clickable-icon',
@@ -1707,7 +1731,7 @@ export class FamilyChartView extends ItemView {
 	 * Called with `this` bound to the view instance via bind() in createOpenNoteButtonCallback.
 	 * The card element is found via d3.select using the person ID from the data parameter.
 	 */
-	private addOpenNoteButton(this: FamilyChartView, d: { data: { id: string; data?: { gender?: string } } }): void {
+	private addOpenNoteButton(this: FamilyChartView, d: { data: { id: string; data?: { gender?: string; deathday?: string } } }): void {
 		const personId = d.data.id;
 		// Find the card container element using d3's data binding
 		const cardSelection = d3.selectAll<SVGGElement, { data: { id: string } }>('.card_cont')
@@ -1723,6 +1747,13 @@ export class FamilyChartView extends ItemView {
 			cardG.classed('card-genderless', false);
 			cardG.classed(gender === 'X' ? 'card-nonbinary' : 'card-genderless', true);
 		}
+
+		// Mark cards whose person was deceased by the selected as-of date (#376).
+		// The person stays visible (structure is preserved) but rendered in a
+		// "historical" style (dashed border, reduced opacity) defined in CSS.
+		const cardG = d3.select(cardEl).select('.card');
+		const deceased = !!(this.asOfDate && this.isDeceasedAt(d.data.data?.deathday, this.asOfDate));
+		cardG.classed('cr-card-deceased', deceased);
 
 		// Check if button already exists (prevents duplicates on re-render)
 		if (d3.select(cardEl).select('.cr-open-note-btn').size() > 0) return;
@@ -3035,6 +3066,22 @@ export class FamilyChartView extends ItemView {
 		if (!bMap.has(a)) bMap.set(a, data);
 	}
 
+	/**
+	 * Set the as-of date filter (#376). Null clears the filter.
+	 * Re-initializes the chart so the combined privacy/as-of predicate, spouse-line
+	 * filtering, and deceased styling all pick up the new value.
+	 */
+	private setAsOfDate(date: string | null): void {
+		const normalized = date || null;
+		if (this.asOfDate === normalized) return;
+		this.asOfDate = normalized;
+		if (this.f3Chart && this.rootPersonId) {
+			this.initializeChart();
+		}
+		new Notice(normalized ? `As-of date: ${normalized}` : 'As-of date cleared');
+		this.app.workspace.requestSaveLayout();
+	}
+
 	// ============ As-of date helpers (#376) ============
 
 	/**
@@ -4289,6 +4336,7 @@ export class FamilyChartView extends ItemView {
 			showSingleParentEmptyCard: this.showSingleParentEmptyCard,
 			sortChildrenByBirthDate: this.sortChildrenByBirthDate,
 			sortSpousesByMarriageDate: this.sortSpousesByMarriageDate,
+			asOfDate: this.asOfDate,
 			hidePrivateLiving: this.hidePrivateLiving,
 			cardStyle: this.cardStyle,
 			nameDisplayMode: this.nameDisplayMode,
@@ -4354,6 +4402,9 @@ export class FamilyChartView extends ItemView {
 		}
 		if (state.sortSpousesByMarriageDate !== undefined) {
 			this.sortSpousesByMarriageDate = state.sortSpousesByMarriageDate;
+		}
+		if (state.asOfDate !== undefined) {
+			this.asOfDate = state.asOfDate;
 		}
 		if (state.hidePrivateLiving !== undefined) {
 			this.hidePrivateLiving = state.hidePrivateLiving;

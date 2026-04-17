@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-04-17 19:38:02 UTC
+ * - Generated: 2026-04-17 19:39:59 UTC
  * - Components: 49 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -17102,7 +17102,7 @@ settings:
    COMPONENT: FAMILY-CHART-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1332 lines, 31.36 KB */
+/* Component Size: 1362 lines, 32.17 KB */
 
 /**
  * Family Chart View Styles
@@ -17226,6 +17226,24 @@ settings:
   min-width: 40px;
   text-align: center;
   user-select: none;
+}
+
+/* As-of date filter (#376) */
+.cr-fcv-time-group {
+  border-left: 1px solid var(--background-modifier-border);
+  padding-left: var(--size-4-2);
+  margin-left: var(--size-4-1);
+  gap: var(--size-4-1);
+}
+
+.cr-fcv-as-of-date {
+  font-size: var(--font-ui-smaller);
+  padding: 2px 6px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  min-width: 140px;
 }
 
 /* Toggle button active state */
@@ -17369,6 +17387,18 @@ settings:
 .cr-fcv-chart-container.f3 .card-genderless .card-body-rect,
 .cr-fcv-chart-container.f3 .card-genderless .text-overflow-mask {
   fill: var(--genderless-color);
+}
+
+/* Deceased-by-as-of-date styling (#376). Person stays visible so family
+   structure is preserved, but rendered as "historical" — dashed border
+   and reduced opacity. */
+.cr-fcv-chart-container.f3 .cr-card-deceased {
+  opacity: 0.7;
+}
+
+.cr-fcv-chart-container.f3 .cr-card-deceased .card-body-rect {
+  stroke-dasharray: 5, 3;
+  stroke-width: 1.5;
 }
 
 /* Card add button */
@@ -41157,11 +41187,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-04-17 19:38:02 UTC
+ * Build completed: 2026-04-17 19:40:00 UTC
  * Components processed: 49
- * Total lines: 40693
- * Total size: 819.59 KB
- * Build duration: 0.32 seconds
+ * Total lines: 40723
+ * Total size: 820.4 KB
+ * Build duration: 0.36 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -41182,7 +41212,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - find-on-canvas.css: 275 lines, 5.13 KB
  * - folder-scan.css: 155 lines, 2.6 KB
  * - relationship-calculator.css: 302 lines, 5.27 KB
- * - family-chart-view.css: 1332 lines, 31.36 KB
+ * - family-chart-view.css: 1362 lines, 32.17 KB
  * - family-chart-export.css: 699 lines, 14.78 KB
  * - report-wizard.css: 908 lines, 19.88 KB
  * - book-builder.css: 371 lines, 7.29 KB
