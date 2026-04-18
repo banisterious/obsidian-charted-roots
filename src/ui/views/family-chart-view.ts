@@ -3586,19 +3586,23 @@ export class FamilyChartView extends ItemView {
 	private getCardPositions(): Map<string, { x: number; y: number }> {
 		const positions = new Map<string, { x: number; y: number }>();
 
-		// Use D3 to get card positions with their bound data
-		d3.selectAll<SVGGElement, { data: { id: string } }>('.card_cont')
+		// Use D3 to get card positions with their bound data. SVG cards expose
+		// translate() via the `transform` attribute (no units); HTML cards (used
+		// by the circle card style) expose it via `style.transform` in px units.
+		d3.selectAll<Element, { data: { id: string } }>('.card_cont')
 			.each(function(nodeData) {
 				if (!nodeData?.data?.id) return;
 
 				const personId = nodeData.data.id;
 
-				// Get transform from the card container
-				const transform = this.getAttribute('transform');
+				// Try SVG attribute first, then fall back to CSS style
+				const transform = this.getAttribute('transform')
+					|| (this as HTMLElement).style?.transform
+					|| '';
 				if (!transform) return;
 
-				// Parse translate(x, y) from transform
-				const match = transform.match(/translate\(\s*([^,]+),\s*([^)]+)\)/);
+				// Matches "translate(x, y)" or "translate(xpx, ypx)"
+				const match = transform.match(/translate\(\s*([-\d.]+)(?:px)?\s*,\s*([-\d.]+)(?:px)?\s*\)/);
 				if (!match) return;
 
 				const x = parseFloat(match[1]);
