@@ -2,7 +2,7 @@
 
 Plan for triaging the real lint output that was hidden by a broken `npm run lint` script.
 
-**Status:** 🟡 In progress — Tier 0 complete; Tier 1 complete
+**Status:** 🟡 In progress — Tier 0, Tier 1, and Tier 2 complete; Tier 3 partial (quick wins done); Tier 4 pending
 
 **Root cause context:** `node_modules/.bin/eslint` was a zero-byte file (likely caused by WSL symlink-creation failing during `npm install --no-bin-links` at some point). The `npm run lint` script resolved to the empty binary and exited 0 silently. Fixed in commit [77848f14](#) by switching the lint/lint:fix scripts to direct `node` invocation. See `package.json` scripts.
 
@@ -19,6 +19,7 @@ Taken immediately after the `npm run lint` fix.
 - **After Tier 1 warnings complete:** 954 (948 errors, 6 warnings) — `no-base-to-string` (23) + `no-deprecated` (2 of 8) resolved
 - **After Tier 1 complete:** 948 (948 errors, 0 warnings) — MembershipData renamed to MembershipRecord; all Tier 1 items resolved
 - **After Tier 2/3 quick wins:** 896 (896 errors, 0 warnings) — lint:fix cleared autofixable rules (24 + 19); remaining small groups (useless-escape, case-declarations, prefer-const, tfile-cast, command-naming, redeclare, this-alias) resolved manually
+- **After Tier 2 complete:** 873 (873 errors, 0 warnings) — `no-static-styles-assignment` (23) resolved via `el.show()`/`el.hide()` for display toggles, CSS class additions for style values, toggleClass for cursor states, one targeted eslint-disable for a Leaflet-generated DOM element
 - **Exit status:** 1 (sentence-case errors — Tier 4 — still trip non-zero exit)
 
 ---
