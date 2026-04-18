@@ -2,7 +2,7 @@
 
 Plan for triaging the real lint output that was hidden by a broken `npm run lint` script.
 
-**Status:** 🟡 In progress — Tier 0, Tier 1, and Tier 2 complete; Tier 3 partial (quick wins done); Tier 4 pending
+**Status:** 🟡 In progress — Tier 0, Tier 1, Tier 2, and Tier 3 complete; only Tier 4 (sentence-case) remains
 
 **Root cause context:** `node_modules/.bin/eslint` was a zero-byte file (likely caused by WSL symlink-creation failing during `npm install --no-bin-links` at some point). The `npm run lint` script resolved to the empty binary and exited 0 silently. Fixed in commit [77848f14](#) by switching the lint/lint:fix scripts to direct `node` invocation. See `package.json` scripts.
 
@@ -82,10 +82,10 @@ These rules catch runtime problems. Fix them regardless.
 
 Real problems flagged by `obsidianmd/*` — not immediate correctness bugs, but architecturally significant.
 
-- [ ] **`obsidianmd/settings-tab/no-manual-html-headings` (24)** — settings should use `.setHeading()`. Per-site fix in the settings tab(s).
-- [ ] **`obsidianmd/no-static-styles-assignment` (23)** — `.style.X = Y` should be CSS classes. Each fix may require a small CSS addition.
-- [ ] **`obsidianmd/no-tfile-tfolder-cast` (1)** — replace cast with `instanceof` check.
-- [ ] **`obsidianmd/commands/no-command-in-command-name/id` (2)** — remove the word "command" from command names/IDs.
+- [x] **`obsidianmd/settings-tab/no-manual-html-headings` (24)** ✅ — cleared via `lint:fix` during Tier 2/3 quick-win batch.
+- [x] **`obsidianmd/no-static-styles-assignment` (23)** ✅ — resolved via `el.show()`/`el.hide()` for display toggles, CSS class additions for style values, `toggleClass` for cursor states, one targeted eslint-disable for a Leaflet-generated DOM element.
+- [x] **`obsidianmd/no-tfile-tfolder-cast` (1)** ✅ — replaced cast with `instanceof` check.
+- [x] **`obsidianmd/commands/no-command-in-command-name/id` (2)** ✅ — removed "command" from command names/IDs.
 
 **Expected effort:** 1 session for the 3 small rules; 24 + 23 settings-tab/styles-assignment cases need per-site judgment.
 
@@ -96,7 +96,7 @@ Not bugs, but reduce maintenance drag.
 - [x] **`@typescript-eslint/no-unused-vars` (129)** ✅ — dead imports removed (~97 across 40 files), unused locals/parameters trimmed, dead helpers prefixed with `_` for future revival.
 - [x] **`@typescript-eslint/no-unnecessary-type-assertion` (19)** ✅ — cleared incidentally during Tier 2 (no items remained by time Tier 3 began).
 - [x] **`@typescript-eslint/require-await` (11)** ✅ — ItemView lifecycle methods + one MarkdownPostProcessor + two Phase 3 stubs kept async via targeted eslint-disable; 6 private/internal methods converted to sync.
-- [ ] **`prefer-const` (4)**, **`no-useless-escape` (3)**, **`no-case-declarations` (2)**, **`no-redeclare` (1)** — trivial. Batch-fix with `lint:fix` where supported.
+- [x] **`prefer-const` (4)**, **`no-useless-escape` (3)**, **`no-case-declarations` (2)**, **`no-redeclare` (1)** ✅ — cleared via `lint:fix` during Tier 2/3 quick-win batch.
 
 **Expected effort:** Half a session for trivial; 1-2 sessions for unused-vars if done thoughtfully.
 
