@@ -2409,8 +2409,17 @@ export class FamilyChartView extends ItemView {
 				.onClick(() => this.toggleCaste());
 		});
 
+		// Show avatars belongs with the other card-content toggles above, not
+		// with the overlay toggles that follow.
+		menu.addItem((item) => {
+			item.setTitle(`${this.showAvatars ? '✓ ' : ''}Show avatars`)
+				.setIcon('image')
+				.onClick(() => this.toggleAvatars());
+		});
+
 		menu.addSeparator();
 
+		// Overlays / annotations drawn on top of cards and links
 		menu.addItem((item) => {
 			item.setTitle(`${this.showKinshipLabels ? '✓ ' : ''}Show kinship labels`)
 				.setIcon('tag')
@@ -2443,17 +2452,14 @@ export class FamilyChartView extends ItemView {
 			}
 		}
 
+		menu.addSeparator();
+
+		// Highlighting — changes which cards are emphasized (its own block)
 		menu.addItem((item) => {
 			const active = this.hasActiveHighlights();
 			item.setTitle(`${active ? '✓ ' : ''}Highlight groups...`)
 				.setIcon('highlighter')
 				.onClick(() => this.openHighlightGroupsModal());
-		});
-
-		menu.addItem((item) => {
-			item.setTitle(`${this.showAvatars ? '✓ ' : ''}Show avatars`)
-				.setIcon('image')
-				.onClick(() => this.toggleAvatars());
 		});
 
 		menu.addSeparator();
