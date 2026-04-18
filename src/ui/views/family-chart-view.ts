@@ -3465,10 +3465,17 @@ export class FamilyChartView extends ItemView {
 			});
 		}
 
-		// Append inside .view so lines follow the pan/zoom transform
+		// Insert overlay before links_view so family links paint on top of the
+		// overlay. This prevents the overlay from occluding spouse/parent lines
+		// when three or more relationships stack on the same pair (#386).
 		const viewGroup = svg.querySelector('.view');
 		if (viewGroup) {
-			viewGroup.appendChild(overlayGroup);
+			const linksView = viewGroup.querySelector('.links_view');
+			if (linksView) {
+				viewGroup.insertBefore(overlayGroup, linksView);
+			} else {
+				viewGroup.appendChild(overlayGroup);
+			}
 		} else {
 			svg.appendChild(overlayGroup);
 		}
