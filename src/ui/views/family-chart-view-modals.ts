@@ -346,6 +346,8 @@ export interface HighlightGroupsModalCallbacks {
 export class HighlightGroupsModal extends Modal {
 	private callbacks: HighlightGroupsModalCallbacks;
 	private groups: HighlightGroup[];
+	private listEl?: HTMLElement;
+	private clearBtn?: HTMLButtonElement;
 
 	constructor(app: App, callbacks: HighlightGroupsModalCallbacks) {
 		super(app);
@@ -364,30 +366,30 @@ export class HighlightGroupsModal extends Modal {
 			cls: 'cr-highlight-groups-modal__desc'
 		});
 
-		this.renderGroupsList();
+		// Build stable containers once; only re-render their contents on changes
+		this.listEl = contentEl.createDiv({ cls: 'cr-highlight-groups-list' });
 		this.renderFooter();
+		this.refreshGroupsList();
 	}
 
 	onClose(): void {
 		this.contentEl.empty();
 	}
 
-	private renderGroupsList(): void {
-		const existing = this.contentEl.querySelector('.cr-highlight-groups-list');
-		if (existing) existing.remove();
-
-		const listEl = this.contentEl.createDiv({ cls: 'cr-highlight-groups-list' });
+	private refreshGroupsList(): void {
+		if (!this.listEl) return;
+		this.listEl.empty();
 
 		if (this.groups.length === 0) {
-			listEl.createEl('p', {
+			this.listEl.createEl('p', {
 				text: 'No highlight groups yet. Click "Add group" to create one.',
 				cls: 'cr-highlight-groups-list__empty'
 			});
 		} else {
-			this.groups.forEach((group, index) => this.renderGroupRow(listEl, group, index));
+			this.groups.forEach((group, index) => this.renderGroupRow(this.listEl!, group, index));
 		}
 
-		const actionsEl = listEl.createDiv({ cls: 'cr-highlight-groups-list__actions' });
+		const actionsEl = this.listEl.createDiv({ cls: 'cr-highlight-groups-list__actions' });
 
 		const addBtn = actionsEl.createEl('button', { text: 'Add group' });
 		addBtn.disabled = this.groups.length >= MAX_HIGHLIGHT_GROUPS;
@@ -396,16 +398,16 @@ export class HighlightGroupsModal extends Modal {
 		}
 		addBtn.addEventListener('click', () => {
 			this.groups.push(this.makeNewGroup());
-			this.renderGroupsList();
+			this.refreshGroupsList();
+			this.updateClearButton();
 		});
 
-		if (this.groups.length > 0) {
-			const clearBtn = actionsEl.createEl('button', { text: 'Clear all', cls: 'mod-warning' });
-			clearBtn.addEventListener('click', () => {
-				this.groups = [];
-				this.renderGroupsList();
-			});
-		}
+		this.updateClearButton();
+	}
+
+	private updateClearButton(): void {
+		if (!this.clearBtn) return;
+		this.clearBtn.style.display = this.groups.length > 0 ? '' : 'none';
 	}
 
 	private renderGroupRow(container: HTMLElement, group: HighlightGroup, index: number): void {
@@ -443,7 +445,7 @@ export class HighlightGroupsModal extends Modal {
 				dd.setValue(group.color);
 				dd.onChange(value => {
 					group.color = value as HighlightColor;
-					this.renderGroupsList();
+					this.refreshGroupsList();
 				});
 			});
 
@@ -461,17 +463,30 @@ export class HighlightGroupsModal extends Modal {
 		const deleteBtn = controlsEl.createEl('button', { text: 'Delete', cls: 'mod-warning' });
 		deleteBtn.addEventListener('click', () => {
 			this.groups.splice(index, 1);
-			this.renderGroupsList();
+			this.refreshGroupsList();
+			this.updateClearButton();
 		});
 	}
 
 	private renderFooter(): void {
 		const footerEl = this.contentEl.createDiv({ cls: 'cr-highlight-groups-modal__footer' });
 
-		const cancelBtn = footerEl.createEl('button', { text: 'Cancel' });
+		// Left-side destructive action
+		const leftEl = footerEl.createDiv({ cls: 'cr-highlight-groups-modal__footer-left' });
+		this.clearBtn = leftEl.createEl('button', { text: 'Clear all', cls: 'mod-warning' });
+		this.clearBtn.addEventListener('click', () => {
+			this.groups = [];
+			this.refreshGroupsList();
+			this.updateClearButton();
+		});
+
+		// Right-side primary actions
+		const rightEl = footerEl.createDiv({ cls: 'cr-highlight-groups-modal__footer-right' });
+
+		const cancelBtn = rightEl.createEl('button', { text: 'Cancel' });
 		cancelBtn.addEventListener('click', () => this.close());
 
-		const saveBtn = footerEl.createEl('button', { text: 'Save', cls: 'mod-cta' });
+		const saveBtn = rightEl.createEl('button', { text: 'Save', cls: 'mod-cta' });
 		saveBtn.addEventListener('click', () => {
 			const invalid = this.groups.find(g => g.enabled && g.value.trim() === '');
 			if (invalid) {

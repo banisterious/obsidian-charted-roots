@@ -1448,9 +1448,16 @@
 
 .cr-highlight-groups-modal__footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   gap: 0.5em;
   margin-top: 1.5em;
   padding-top: 1em;
   border-top: 1px solid var(--background-modifier-border);
+}
+
+.cr-highlight-groups-modal__footer-left,
+.cr-highlight-groups-modal__footer-right {
+  display: flex;
+  gap: 0.5em;
 }
