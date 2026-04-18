@@ -103,9 +103,9 @@ export function renderWorldMapPreview(
 	hint.setText('Click to open map');
 
 	// Add click overlay (transparent div to capture clicks)
+	// (CSS on .cr-world-map-click-overlay sets pointer-events: auto to guarantee
+	// the overlay receives clicks even when sibling Leaflet layers opt out.)
 	const clickOverlay = mapContainer.createDiv({ cls: 'cr-world-map-click-overlay' });
-	// Ensure overlay captures pointer events
-	clickOverlay.style.pointerEvents = 'auto';
 
 	// Make entire container clickable - add handler to both overlay and container
 	clickOverlay.addEventListener('click', onClick);

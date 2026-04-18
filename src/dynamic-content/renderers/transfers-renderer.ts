@@ -206,7 +206,6 @@ export class TransfersRenderer {
 			const iconName = TRANSFER_TYPE_ICONS[entry.transferType] || 'arrow-right-left';
 			const iconSpan = li.createSpan({ cls: 'cr-transfers__icon' });
 			setIcon(iconSpan, iconName);
-			iconSpan.style.setProperty('color', '#f97316'); // Orange color for transfers
 
 			// Year/date
 			const yearSpan = li.createSpan({ cls: 'cr-transfers__year' });

@@ -558,7 +558,7 @@ export function renderCollectionsList(options: CollectionsListOptions): void {
 	});
 	if (currentSearch) searchInput.value = currentSearch;
 	// Hide search for "all" mode (just shows a count)
-	if (currentMode === 'all') searchInput.style.display = 'none';
+	if (currentMode === 'all') searchInput.hide();
 
 	// List container
 	const listContainer = container.createDiv({ cls: 'crc-person-list' });
@@ -569,7 +569,7 @@ export function renderCollectionsList(options: CollectionsListOptions): void {
 
 		if (currentMode === 'all') {
 			// All people — just show count
-			searchInput.style.display = 'none';
+			searchInput.hide();
 			graphService.getTotalPeopleCount();
 			const allPeople = graphService.getAllPeople();
 
@@ -580,7 +580,7 @@ export function renderCollectionsList(options: CollectionsListOptions): void {
 
 		} else if (currentMode === 'families') {
 			// Detected families — paginated table
-			searchInput.style.display = '';
+			searchInput.show();
 			searchInput.placeholder = 'Search families...';
 
 			const components = graphService.findAllFamilyComponents();
@@ -643,7 +643,7 @@ export function renderCollectionsList(options: CollectionsListOptions): void {
 
 		} else if (currentMode === 'collections') {
 			// User collections — simple list
-			searchInput.style.display = '';
+			searchInput.show();
 			searchInput.placeholder = 'Search collections...';
 
 			const collections = graphService.getUserCollections();

@@ -633,11 +633,11 @@ export class ProfileView extends ItemView {
 		this.breadcrumbEl.empty();
 
 		if (this.breadcrumbs.length <= 1) {
-			this.breadcrumbEl.style.display = 'none';
+			this.breadcrumbEl.hide();
 			return;
 		}
 
-		this.breadcrumbEl.style.display = 'flex';
+		this.breadcrumbEl.show();
 
 		this.breadcrumbs.forEach((entry, i) => {
 			if (i > 0) {

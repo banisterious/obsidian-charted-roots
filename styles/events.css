@@ -1512,3 +1512,8 @@
 .crc-timeline-row--browse {
   cursor: default;
 }
+
+/* Date-action button in Notice fragment offered by create-event modal */
+.cr-create-event__date-action-btn {
+  margin-top: 8px;
+}

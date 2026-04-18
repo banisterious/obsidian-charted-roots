@@ -1201,8 +1201,12 @@ export class MapController {
 				// Only add if heat map layer is enabled
 				if (this.currentLayers.heatMap && this.heatLayer) {
 					this.heatLayer.addTo(this.map);
-					// On custom maps, bring heat layer above the image overlay
+					// On custom maps, bring heat layer above the image overlay.
+					// The heat-map pane is a Leaflet-generated DOM element; there's no
+					// class-based hook for setting its z-index, so this direct style
+					// assignment is appropriate.
 					if (isPixel && this.heatLayer.getPane()) {
+						// eslint-disable-next-line obsidianmd/no-static-styles-assignment -- Leaflet-generated pane element has no targetable class
 						this.heatLayer.getPane()!.style.zIndex = '450';
 					}
 				}

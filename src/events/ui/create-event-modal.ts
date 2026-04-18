@@ -980,8 +980,7 @@ export class CreateEventModal extends Modal {
 			: `Copy ${this.eventType} date to ${personName}?`;
 		fragment.appendText(message);
 		fragment.createEl('br');
-		const btn = fragment.createEl('button', { text: `Set ${field} to ${dateValue}` });
-		btn.style.marginTop = '8px';
+		const btn = fragment.createEl('button', { cls: 'cr-create-event__date-action-btn', text: `Set ${field} to ${dateValue}` });
 		btn.addEventListener('click', () => {
 			void (async () => {
 				const updateData: Partial<PersonData> = this.eventType === 'birth'

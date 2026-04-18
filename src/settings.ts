@@ -2587,7 +2587,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 
 			// Arrow (hidden initially)
 			const arrow = addRow.createSpan({ cls: 'cr-category-folder-rule-arrow', text: '→' });
-			arrow.style.display = 'none';
+			arrow.hide();
 
 			// Folder input (hidden initially)
 			const folderInput = addRow.createEl('input', {
@@ -2597,21 +2597,21 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					placeholder: 'Subfolder path'
 				}
 			});
-			folderInput.style.display = 'none';
+			folderInput.hide();
 
 			// Show folder input when category is selected
 			categorySelect.addEventListener('change', () => {
 				const selectedCategory = categorySelect.value as PlaceCategory;
 				if (selectedCategory) {
-					arrow.style.display = '';
-					folderInput.style.display = '';
+					arrow.show();
+					folderInput.show();
 					// Set placeholder to default folder name
 					const label = PLACE_CATEGORY_LABELS[selectedCategory as keyof typeof PLACE_CATEGORY_LABELS] || selectedCategory;
 					folderInput.placeholder = label;
 					folderInput.focus();
 				} else {
-					arrow.style.display = 'none';
-					folderInput.style.display = 'none';
+					arrow.hide();
+					folderInput.hide();
 				}
 			});
 

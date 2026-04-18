@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-04-18 02:38:18 UTC
+ * - Generated: 2026-04-18 12:43:42 UTC
  * - Components: 49 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -23231,7 +23231,7 @@ settings:
    COMPONENT: MAP-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 2430 lines, 50.19 KB */
+/* Component Size: 2444 lines, 50.49 KB */
 
 /* ==========================================================================
    Map View Styles
@@ -25412,6 +25412,7 @@ input[type="text"]::-webkit-input-placeholder {
   bottom: 0;
   z-index: 1000;
   cursor: pointer;
+  pointer-events: auto;
 }
 
 /* Circle markers styling */
@@ -25559,6 +25560,19 @@ input[type="text"]::-webkit-input-placeholder {
   background: var(--background-secondary);
   border-radius: var(--radius-m);
   padding: var(--size-4-2);
+}
+
+/* Region-drawing canvas cursor states (driven by mouse position) */
+.cr-region-drawing-modal__canvas--cursor-resize {
+  cursor: nwse-resize;
+}
+
+.cr-region-drawing-modal__canvas--cursor-move {
+  cursor: move;
+}
+
+.cr-region-drawing-modal__canvas--cursor-crosshair {
+  cursor: crosshair;
 }
 
 .cr-region-drawing-modal__canvas {
@@ -26343,7 +26357,7 @@ input[type="text"]::-webkit-input-placeholder {
    COMPONENT: EVENTS.CSS
    ========================================================================== */
 
-/* Component Size: 1515 lines, 30.67 KB */
+/* Component Size: 1520 lines, 30.8 KB */
 
 /**
  * Events Styles
@@ -27858,6 +27872,11 @@ input[type="text"]::-webkit-input-placeholder {
 
 .crc-timeline-row--browse {
   cursor: default;
+}
+
+/* Date-action button in Notice fragment offered by create-event modal */
+.cr-create-event__date-action-btn {
+  margin-top: 8px;
 }
 
 
@@ -38411,7 +38430,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: DYNAMIC-CONTENT.CSS
    ========================================================================== */
 
-/* Component Size: 1181 lines, 25.45 KB */
+/* Component Size: 1186 lines, 25.55 KB */
 
 /**
  * Dynamic Content Styles
@@ -39588,6 +39607,11 @@ body:has(.cr-media-linker) .suggestion-container {
 /* ==========================================================================
    Theme Compatibility
    ========================================================================== */
+
+/* Transfers block — orange icon for transfer entries */
+.cr-transfers__icon {
+  color: #f97316;
+}
 
 /* stylelint-disable-next-line selector-class-pattern -- Targets Obsidian's .theme-dark class */
 .theme-dark .cr-dynamic-block {
@@ -41187,11 +41211,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-04-18 02:38:19 UTC
+ * Build completed: 2026-04-18 12:43:43 UTC
  * Components processed: 49
- * Total lines: 40723
- * Total size: 820.4 KB
- * Build duration: 1.02 seconds
+ * Total lines: 40747
+ * Total size: 820.93 KB
+ * Build duration: 1.12 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -41219,10 +41243,10 @@ body:has(.cr-media-linker) .suggestion-container {
  * - data-quality.css: 1446 lines, 28.73 KB
  * - relationships.css: 597 lines, 11.43 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB
- * - map-view.css: 2430 lines, 50.19 KB
+ * - map-view.css: 2444 lines, 50.49 KB
  * - leaflet-distortable.css: 368 lines, 7.73 KB
  * - date-systems.css: 287 lines, 5.31 KB
- * - events.css: 1515 lines, 30.67 KB
+ * - events.css: 1520 lines, 30.8 KB
  * - timeline-callouts.css: 321 lines, 10.68 KB
  * - organizations.css: 615 lines, 11.57 KB
  * - sources.css: 2832 lines, 57.42 KB
@@ -41238,7 +41262,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - map-wizard.css: 606 lines, 12.68 KB
  * - preferences.css: 431 lines, 9.44 KB
  * - tree-output.css: 1548 lines, 30.41 KB
- * - dynamic-content.css: 1181 lines, 25.45 KB
+ * - dynamic-content.css: 1186 lines, 25.55 KB
  * - profile-view.css: 1103 lines, 24.5 KB
  * - calendar-view.css: 302 lines, 6.83 KB
  * - migration-notice.css: 135 lines, 2.67 KB

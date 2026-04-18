@@ -1058,7 +1058,7 @@ export class BookBuilderModal extends Modal {
 		container.createEl('hr', { cls: 'cr-report-separator' });
 		const progressSection = container.createDiv({ cls: 'cr-book-progress-section' });
 		progressSection.id = 'book-progress-section';
-		progressSection.style.display = 'none';
+		progressSection.hide();
 
 		progressSection.createEl('h3', { text: 'Generating...', cls: 'cr-report-section-title' });
 
@@ -1156,7 +1156,7 @@ export class BookBuilderModal extends Modal {
 
 		// Show progress
 		const progressSection = document.getElementById('book-progress-section');
-		if (progressSection) progressSection.style.display = 'block';
+		if (progressSection) progressSection.show();
 
 		const definition = this.buildDefinition();
 

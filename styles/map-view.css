@@ -2177,6 +2177,7 @@ input[type="text"]::-webkit-input-placeholder {
   bottom: 0;
   z-index: 1000;
   cursor: pointer;
+  pointer-events: auto;
 }
 
 /* Circle markers styling */
@@ -2324,6 +2325,19 @@ input[type="text"]::-webkit-input-placeholder {
   background: var(--background-secondary);
   border-radius: var(--radius-m);
   padding: var(--size-4-2);
+}
+
+/* Region-drawing canvas cursor states (driven by mouse position) */
+.cr-region-drawing-modal__canvas--cursor-resize {
+  cursor: nwse-resize;
+}
+
+.cr-region-drawing-modal__canvas--cursor-move {
+  cursor: move;
+}
+
+.cr-region-drawing-modal__canvas--cursor-crosshair {
+  cursor: crosshair;
 }
 
 .cr-region-drawing-modal__canvas {

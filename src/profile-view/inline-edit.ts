@@ -86,7 +86,7 @@ function enterEditMode(
 	onNotify: InlineEditNotifyFn
 ): void {
 	wrapper.addClass('cr-profile__editable--editing');
-	displayEl.style.display = 'none';
+	displayEl.hide();
 
 	const inputEl = createInputElement(wrapper, config);
 	let saving = false;
@@ -185,7 +185,7 @@ function exitEditMode(
 ): void {
 	wrapper.removeClass('cr-profile__editable--editing');
 	inputEl.remove();
-	displayEl.style.display = '';
+	displayEl.show();
 	if (activeEdit?.property === wrapper.dataset.property) {
 		activeEdit = null;
 	}

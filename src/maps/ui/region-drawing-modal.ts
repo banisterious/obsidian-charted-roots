@@ -268,13 +268,11 @@ export class RegionDrawingModal extends Modal {
 		const handleSize = 15 / this.scale;
 		const cr = this.regionRect;
 
-		if (Math.abs(mx - (cr.x + cr.w)) < handleSize && Math.abs(my - (cr.y + cr.h)) < handleSize) {
-			this.canvas.style.cursor = 'nwse-resize';
-		} else if (mx >= cr.x && mx <= cr.x + cr.w && my >= cr.y && my <= cr.y + cr.h) {
-			this.canvas.style.cursor = 'move';
-		} else {
-			this.canvas.style.cursor = 'crosshair';
-		}
+		const isResize = Math.abs(mx - (cr.x + cr.w)) < handleSize && Math.abs(my - (cr.y + cr.h)) < handleSize;
+		const isMove = !isResize && mx >= cr.x && mx <= cr.x + cr.w && my >= cr.y && my <= cr.y + cr.h;
+		this.canvas.toggleClass('cr-region-drawing-modal__canvas--cursor-resize', isResize);
+		this.canvas.toggleClass('cr-region-drawing-modal__canvas--cursor-move', isMove);
+		this.canvas.toggleClass('cr-region-drawing-modal__canvas--cursor-crosshair', !isResize && !isMove);
 	}
 
 	private clampRegionRect(): void {

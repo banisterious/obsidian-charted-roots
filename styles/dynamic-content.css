@@ -1174,6 +1174,11 @@
    Theme Compatibility
    ========================================================================== */
 
+/* Transfers block — orange icon for transfer entries */
+.cr-transfers__icon {
+  color: #f97316;
+}
+
 /* stylelint-disable-next-line selector-class-pattern -- Targets Obsidian's .theme-dark class */
 .theme-dark .cr-dynamic-block {
   background: var(--background-secondary);
