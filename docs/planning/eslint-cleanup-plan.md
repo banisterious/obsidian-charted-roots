@@ -18,6 +18,7 @@ Taken immediately after the `npm run lint` fix.
 - **After Tier 1 errors complete:** 979 (948 errors, 31 warnings) — `no-undef` (20) resolved; all remaining items are warnings
 - **After Tier 1 warnings complete:** 954 (948 errors, 6 warnings) — `no-base-to-string` (23) + `no-deprecated` (2 of 8) resolved
 - **After Tier 1 complete:** 948 (948 errors, 0 warnings) — MembershipData renamed to MembershipRecord; all Tier 1 items resolved
+- **After Tier 2/3 quick wins:** 896 (896 errors, 0 warnings) — lint:fix cleared autofixable rules (24 + 19); remaining small groups (useless-escape, case-declarations, prefer-const, tfile-cast, command-naming, redeclare, this-alias) resolved manually
 - **Exit status:** 1 (sentence-case errors — Tier 4 — still trip non-zero exit)
 
 ---
