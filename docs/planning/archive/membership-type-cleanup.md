@@ -2,7 +2,7 @@
 
 Plan for resolving the 6 `@typescript-eslint/no-deprecated` warnings tied to the `MembershipData` interface, left over from an incomplete data-model migration.
 
-**Status:** 📝 Planning — awaiting decision on the two options below
+**Status:** ✅ Complete — Option A executed, renamed to `MembershipRecord`
 
 **Related:**
 - [eslint-cleanup-plan.md](eslint-cleanup-plan.md) — Tier 1 parent plan; this item was flagged as deferred migration work

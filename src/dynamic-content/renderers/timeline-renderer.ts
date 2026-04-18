@@ -789,7 +789,7 @@ export class TimelineRenderer {
 				if (showIcon) {
 					if (eventType) {
 						const iconSpan = li.createSpan({ cls: 'cr-timeline__icon' });
-						setIcon(iconSpan, eventType.icon as LucideIconName);
+						setIcon(iconSpan, eventType.icon);
 						iconSpan.style.setProperty('color', eventType.color);
 						if (iconMode === 'icon') {
 							iconSpan.setAttribute('title', eventType.name);

@@ -1514,7 +1514,6 @@ export class FamilyCreationWizardModal extends Modal {
 		// Get central person info
 		let centralCrId: string;
 		let centralName: string;
-		let centralLinkName: string;
 		let centralSex: string;
 		let centralFile: TFile | undefined;
 
@@ -1533,7 +1532,7 @@ export class FamilyCreationWizardModal extends Modal {
 		}
 
 		// Build file-aware link name for the central person
-		centralLinkName = centralFile && centralFile.basename !== centralName
+		const centralLinkName = centralFile && centralFile.basename !== centralName
 			? `[[${centralFile.basename}|${centralName}]]`
 			: centralName;
 

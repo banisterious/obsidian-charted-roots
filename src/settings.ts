@@ -955,7 +955,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		folderExplanation.appendText('These folders determine where new notes are created. Charted Roots identifies notes by their properties (cr_type), not their location—your notes can live anywhere in your vault.');
 
 		// --- Entity folders subsection ---
-		foldersContent.createEl('h4', { text: 'Entity folders', cls: 'cr-subsection-title' });
+		new Setting(foldersContent).setName("Entity folders").setHeading();
 
 		this.createFolderSetting(foldersContent, 'People folder', 'Default folder for person notes', 'Charted Roots/People',
 			() => this.plugin.settings.peopleFolder, (v) => { this.plugin.settings.peopleFolder = v; });
@@ -979,7 +979,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 			() => this.plugin.settings.universesFolder, (v) => { this.plugin.settings.universesFolder = v; });
 
 		// --- Output folders subsection ---
-		foldersContent.createEl('h4', { text: 'Output folders', cls: 'cr-subsection-title' });
+		new Setting(foldersContent).setName("Output folders").setHeading();
 
 		this.createFolderSetting(foldersContent, 'Canvases folder', 'Default folder for generated canvas files', 'Charted Roots/Canvases',
 			() => this.plugin.settings.canvasesFolder, (v) => { this.plugin.settings.canvasesFolder = v; });
@@ -997,7 +997,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 			() => this.plugin.settings.basesFolder, (v) => { this.plugin.settings.basesFolder = v; });
 
 		// --- Media folder filtering subsection ---
-		foldersContent.createEl('h4', { text: 'Media folder filtering', cls: 'cr-subsection-title' });
+		new Setting(foldersContent).setName("Media folder filtering").setHeading();
 
 		foldersContent.createEl('p', {
 			cls: 'setting-item-description',
@@ -1027,7 +1027,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		});
 
 		// --- System folders subsection ---
-		foldersContent.createEl('h4', { text: 'System folders', cls: 'cr-subsection-title' });
+		new Setting(foldersContent).setName("System folders").setHeading();
 
 		this.createFolderSetting(foldersContent, 'Schemas folder', 'Default folder for validation schemas', 'Charted Roots/Schemas',
 			() => this.plugin.settings.schemasFolder, (v) => { this.plugin.settings.schemasFolder = v; });
@@ -1227,7 +1227,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		canvasInfo.appendText('Changes apply to new tree generations. To update existing canvases, right-click the canvas file and select "Re-layout family tree".');
 
 		// --- Node dimensions subsection ---
-		canvasContent.createEl('h4', { text: 'Node dimensions', cls: 'cr-subsection-title' });
+		new Setting(canvasContent).setName("Node dimensions").setHeading();
 
 		new Setting(canvasContent)
 			.setName('Node width')
@@ -1254,7 +1254,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				}));
 
 		// --- Spacing subsection ---
-		canvasContent.createEl('h4', { text: 'Spacing', cls: 'cr-subsection-title' });
+		new Setting(canvasContent).setName("Spacing").setHeading();
 
 		new Setting(canvasContent)
 			.setName('Horizontal spacing')
@@ -1281,7 +1281,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				}));
 
 		// --- Colors & styling subsection ---
-		canvasContent.createEl('h4', { text: 'Colors & styling', cls: 'cr-subsection-title' });
+		new Setting(canvasContent).setName("Colors & styling").setHeading();
 
 		new Setting(canvasContent)
 			.setName('Color scheme')
@@ -1312,7 +1312,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				}));
 
 		// --- Arrow styles subsection ---
-		canvasContent.createEl('h4', { text: 'Arrow styles', cls: 'cr-subsection-title' });
+		new Setting(canvasContent).setName("Arrow styles").setHeading();
 
 		new Setting(canvasContent)
 			.setName('Parent → child arrows')
@@ -1341,7 +1341,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				}));
 
 		// --- Spouse edges subsection ---
-		canvasContent.createEl('h4', { text: getSpouseCompoundLabel(this.plugin.settings, 'edges'), cls: 'cr-subsection-title' });
+		new Setting(canvasContent).setName("").setHeading();
 
 		new Setting(canvasContent)
 			.setName(`Show ${getSpouseCompoundLabel(this.plugin.settings, 'edges').toLowerCase()}`)
@@ -1368,7 +1368,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				}));
 
 		// --- Event display subsection ---
-		canvasContent.createEl('h4', { text: 'Event display', cls: 'cr-subsection-title' });
+		new Setting(canvasContent).setName("Event display").setHeading();
 
 		new Setting(canvasContent)
 			.setName('Event type display')
@@ -1553,7 +1553,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 
 		// Show category folder overrides section if enabled
 		if (this.plugin.settings.useCategorySubfolders) {
-			placesContent.createEl('h4', { text: 'Category folder overrides', cls: 'cr-subsection-title' });
+			new Setting(placesContent).setName("Category folder overrides").setHeading();
 
 			placesContent.createEl('p', {
 				cls: 'setting-item-description',
@@ -1591,7 +1591,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				}));
 
 		// --- Place lookup subsection (#218) ---
-		placesContent.createEl('h4', { text: 'Place lookup', cls: 'cr-subsection-title' });
+		new Setting(placesContent).setName("Place lookup").setHeading();
 
 		new Setting(placesContent)
 			.setName('GeoNames username')
@@ -1700,7 +1700,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		aliasExplanation.appendText('Use your own property names and values—Charted Roots will recognize them without rewriting your files.');
 
 		// --- Property aliases subsection ---
-		aliasesContent.createEl('h4', { text: 'Property aliases', cls: 'cr-subsection-title' });
+		new Setting(aliasesContent).setName("Property aliases").setHeading();
 
 		// Person properties
 		this.renderPropertyAliasSection(aliasesContent, 'Person properties', PERSON_PROPERTY_METADATA, propertyAliasService);
@@ -1715,7 +1715,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		this.renderPropertyAliasSection(aliasesContent, 'Source properties', SOURCE_PROPERTY_METADATA, propertyAliasService);
 
 		// --- Value aliases subsection ---
-		aliasesContent.createEl('h4', { text: 'Value aliases', cls: 'cr-subsection-title' });
+		new Setting(aliasesContent).setName("Value aliases").setHeading();
 
 		const valueAliasExplanation = aliasesContent.createDiv({ cls: 'setting-item-description cr-info-box cr-info-box--muted' });
 		valueAliasExplanation.appendText('Map your custom values to Charted Roots canonical values. For example, map "nameday" to "birth" event type.');
@@ -1745,7 +1745,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		const advancedContent = advancedDetails.createDiv({ cls: 'cr-section-content' });
 
 		// --- Folder filtering subsection ---
-		advancedContent.createEl('h4', { text: 'Folder filtering', cls: 'cr-subsection-title' });
+		new Setting(advancedContent).setName("Folder filtering").setHeading();
 
 		new Setting(advancedContent)
 			.setName('Filter mode')
@@ -1795,7 +1795,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				}));
 
 		// --- Template detection subsection ---
-		advancedContent.createEl('h4', { text: 'Template detection', cls: 'cr-subsection-title' });
+		new Setting(advancedContent).setName("Template detection").setHeading();
 
 		new Setting(advancedContent)
 			.setName('Auto-detect template folders')
@@ -1824,7 +1824,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				}));
 
 		// --- Research tools subsection ---
-		advancedContent.createEl('h4', { text: 'Research tools', cls: 'cr-subsection-title' });
+		new Setting(advancedContent).setName("Research tools").setHeading();
 
 		new Setting(advancedContent)
 			.setName('Enable fact-level source tracking')
@@ -1864,7 +1864,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		}
 
 		// --- DNA tracking subsection ---
-		advancedContent.createEl('h4', { text: 'DNA tracking', cls: 'cr-subsection-title' });
+		new Setting(advancedContent).setName("DNA tracking").setHeading();
 
 		new Setting(advancedContent)
 			.setName('Enable DNA match tracking')
@@ -1885,7 +1885,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		}
 
 		// --- Integrations subsection ---
-		advancedContent.createEl('h4', { text: 'Integrations', cls: 'cr-subsection-title' });
+		new Setting(advancedContent).setName("Integrations").setHeading();
 
 		new Setting(advancedContent)
 			.setName('Calendarium integration')
@@ -1935,7 +1935,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				}));
 
 		// --- Relationship calculator subsection ---
-		advancedContent.createEl('h4', { text: 'Relationship calculator', cls: 'cr-subsection-title' });
+		new Setting(advancedContent).setName("Relationship calculator").setHeading();
 
 		new Setting(advancedContent)
 			.setName('Max search depth')
@@ -1952,7 +1952,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				}));
 
 		// --- Timeline layout subsection ---
-		advancedContent.createEl('h4', { text: 'Timeline layout', cls: 'cr-subsection-title' });
+		new Setting(advancedContent).setName("Timeline layout").setHeading();
 
 		new Setting(advancedContent)
 			.setName('Default layout')
@@ -1979,7 +1979,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				}));
 
 		// --- Timeline labels subsection ---
-		advancedContent.createEl('h4', { text: 'Timeline labels', cls: 'cr-subsection-title' });
+		new Setting(advancedContent).setName("Timeline labels").setHeading();
 
 		const labelSettings: Array<{ key: keyof typeof this.plugin.settings; name: string; placeholder: string }> = [
 			{ key: 'timelineBirthLabel', name: 'Birth label', placeholder: 'Born' },
@@ -2004,7 +2004,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		}
 
 		// --- Family events on timelines subsection ---
-		advancedContent.createEl('h4', { text: 'Family events on timelines', cls: 'cr-subsection-title' });
+		new Setting(advancedContent).setName("Family events on timelines").setHeading();
 
 		new Setting(advancedContent)
 			.setName('Show children\'s births')
@@ -2047,7 +2047,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				}));
 
 		// --- Logging subsection ---
-		advancedContent.createEl('h4', { text: 'Logging', cls: 'cr-subsection-title' });
+		new Setting(advancedContent).setName("Logging").setHeading();
 
 		new Setting(advancedContent)
 			.setName('Log level')
@@ -2581,7 +2581,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 			const categorySelect = addRow.createEl('select', { cls: 'cr-category-folder-rule-select' });
 			categorySelect.createEl('option', { value: '', text: 'Add override...' });
 			for (const cat of availableCategories) {
-				const label = PLACE_CATEGORY_LABELS[cat as keyof typeof PLACE_CATEGORY_LABELS] || cat;
+				const label = PLACE_CATEGORY_LABELS[cat] || cat;
 				categorySelect.createEl('option', { value: cat, text: label });
 			}
 

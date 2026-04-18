@@ -436,7 +436,7 @@ export function isResearchNote(
 	settings?: NoteTypeDetectionSettings | null
 ): boolean {
 	const noteType = detectNoteType(frontmatter, cache, settings);
-	return noteType !== null && RESEARCH_NOTE_TYPES.includes(noteType as typeof RESEARCH_NOTE_TYPES[number]);
+	return noteType !== null && RESEARCH_NOTE_TYPES.includes(noteType);
 }
 
 /**

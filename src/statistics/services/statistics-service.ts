@@ -2045,7 +2045,7 @@ export class StatisticsService {
 			const isPrivate = fm.private === true;
 
 			switch (crType) {
-				case 'research_project':
+				case 'research_project': {
 					projectCount++;
 					if (isPrivate) privateCount++;
 					const projectStatus = (fm.status as string) || 'open';
@@ -2053,7 +2053,8 @@ export class StatisticsService {
 						projectsByStatus[projectStatus as keyof typeof projectsByStatus]++;
 					}
 					break;
-				case 'research_report':
+				}
+				case 'research_report': {
 					reportCount++;
 					if (isPrivate) privateCount++;
 					const reportStatus = (fm.status as string) || 'draft';
@@ -2061,6 +2062,7 @@ export class StatisticsService {
 						reportsByStatus[reportStatus as keyof typeof reportsByStatus]++;
 					}
 					break;
+				}
 				case 'individual_research_note':
 					irnCount++;
 					if (isPrivate) privateCount++;

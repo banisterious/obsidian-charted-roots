@@ -89,8 +89,8 @@ export class BookGenerationService {
 		const chapterResults: ChapterGenerationResult[] = [];
 		const errors: string[] = [];
 		const warnings: string[] = [];
-		let totalPeople = 0;
-		let totalSources = 0;
+		const totalPeople = 0;
+		const totalSources = 0;
 
 		logger.info('generateBook', `Generating book: ${definition.metadata.title}`, {
 			chapterCount: definition.chapters.length,

@@ -87,7 +87,7 @@ export function renderCitationsSection(
 
 			// Quality badge
 			if (citation.quality !== undefined) {
-				const qualityLabel = CITATION_QUALITY_LABELS[citation.quality as CitationQuality] || `Q${citation.quality}`;
+				const qualityLabel = CITATION_QUALITY_LABELS[citation.quality] || `Q${citation.quality}`;
 				const badge = row.createSpan({
 					text: qualityLabel,
 					cls: 'cr-profile__citation-quality'

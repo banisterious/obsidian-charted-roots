@@ -138,7 +138,7 @@ export class ProfileDataLoader {
 		const proofSummaries = proofService.getProofsForPerson(crId);
 
 		// Media (with crop data from frontmatter #354)
-		const media = this.resolveMedia(node.media, fm as Record<string, unknown>);
+		const media = this.resolveMedia(node.media, fm);
 
 		// Needs research
 		const needsResearch = this.parseStringArray(fm.needs_research);
@@ -385,7 +385,7 @@ export class ProfileDataLoader {
 				const links = Array.isArray(propValue) ? propValue : [propValue];
 				for (const link of links) {
 					if (typeof link === 'string' && this.matchesSource(link, sourceBasename)) {
-						const factKey = SOURCED_PROPERTY_TO_FACT_KEY[propName as SourcedPropertyName];
+						const factKey = SOURCED_PROPERTY_TO_FACT_KEY[propName];
 						const factValue = fm[factKey] !== undefined ? String(fm[factKey]) : '';
 						facts.push({ factKey, factValue });
 						break;

@@ -275,7 +275,7 @@ export class SourcesByRoleGenerator {
 			const entries = entriesByRole[prop];
 			if (!entries || entries.length === 0) continue;
 
-			lines.push(`### ${PERSON_ROLE_LABELS[prop as PersonRoleProperty]}`);
+			lines.push(`### ${PERSON_ROLE_LABELS[prop]}`);
 			lines.push('');
 
 			this.generateSourceTable(lines, entries, options);

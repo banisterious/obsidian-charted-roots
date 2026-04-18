@@ -2788,7 +2788,7 @@ export class PdfReportRenderer {
 
 		// Process bold and italic
 		const segments: Content[] = [];
-		let remaining = withFootnotes as string;
+		const remaining = withFootnotes;
 
 		// Pattern for **bold**, *italic*, ***bold italic***
 		const pattern = /(\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|\*(.+?)\*)/g;

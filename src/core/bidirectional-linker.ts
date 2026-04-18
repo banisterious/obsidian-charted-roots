@@ -515,7 +515,7 @@ export class BidirectionalLinker {
 		// Extract dna_match property - may come from index signature with broader type
 		const dnaMatchValue = frontmatter['dna_match'];
 		const dnaMatchSnapshot = (typeof dnaMatchValue === 'string' || Array.isArray(dnaMatchValue))
-			? dnaMatchValue as string | string[]
+			? dnaMatchValue
 			: undefined;
 
 		const snapshot: RelationshipSnapshot = {

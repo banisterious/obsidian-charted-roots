@@ -1499,7 +1499,7 @@ export async function updatePersonNote(
 function formatFilename(name: string, format: FilenameFormat): string {
 	// First sanitize illegal filesystem characters and problematic wikilink characters
 	const sanitized = name
-		.replace(/[\\/:*?"<>|()\[\]{}]/g, '')
+		.replace(/[\\/:*?"<>|()[\]{}]/g, '')
 		.trim();
 
 	// Fallback to 'Unknown' if sanitization results in empty string

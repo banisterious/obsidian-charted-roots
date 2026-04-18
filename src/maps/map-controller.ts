@@ -84,7 +84,7 @@ import type {
 	CRPolyline,
 	CustomMapConfig
 } from './types/map-types';
-import { getMarkerColor, isMarkerTypeVisible, type CustomMapConfig } from './types/map-types';
+import { getMarkerColor, isMarkerTypeVisible } from './types/map-types';
 import { ImageMapManager } from './image-map-manager';
 
 const logger = getLogger('MapController');
@@ -740,7 +740,7 @@ export class MapController {
 			const iconSpan = typeRow.createEl('span', {
 				cls: 'cr-map-popup-type-icon'
 			});
-			setIcon(iconSpan, eventType.icon as LucideIconName);
+			setIcon(iconSpan, eventType.icon);
 			// Use event type color for map popup icons (per design decisions)
 			iconSpan.style.setProperty('color', eventType.color);
 		}

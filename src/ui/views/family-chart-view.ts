@@ -620,7 +620,7 @@ export class FamilyChartView extends ItemView {
 				deathPlace: (personData.data['death place'] as string) || '',
 				birthDate: personData.data.birthday || '',
 				deathDate: personData.data.deathday || '',
-				gender: (personData.data.gender as 'M' | 'F' | 'X' | 'U' | '') || '',
+				gender: (personData.data.gender) || '',
 				researchLevel: String((personData.data['research level'] as string | number | undefined) ?? ''),
 				collection: (personData.data['collection'] as string) || ''
 			};
@@ -998,7 +998,7 @@ export class FamilyChartView extends ItemView {
 			deathPlace: (personData.data['death place'] as string) || '',
 			birthDate: personData.data.birthday || '',
 			deathDate: personData.data.deathday || '',
-			gender: (personData.data.gender as 'M' | 'F' | 'X' | 'U' | '') || '',
+			gender: (personData.data.gender) || '',
 			researchLevel: String((personData.data['research level'] as string | number | undefined) ?? ''),
 			collection: (personData.data['collection'] as string) || ''
 		};
@@ -3321,10 +3321,9 @@ export class FamilyChartView extends ItemView {
 				if (!nodeData?.data?.id) return;
 
 				const personId = nodeData.data.id;
-				const cardEl = this as SVGGElement;
 
 				// Get transform from the card container
-				const transform = cardEl.getAttribute('transform');
+				const transform = this.getAttribute('transform');
 				if (!transform) return;
 
 				// Parse translate(x, y) from transform

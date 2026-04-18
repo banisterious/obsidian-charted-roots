@@ -248,9 +248,9 @@ export class MembersRenderer {
 		if (!raw) return undefined;
 		// parseValue may return a string[] (comma-separated) or a single string
 		const roles = Array.isArray(raw)
-			? (raw as string[]).map(r => r.trim()).filter(r => r.length > 0)
+			? (raw).map(r => r.trim()).filter(r => r.length > 0)
 			: typeof raw === 'string'
-				? splitAndTrim(raw as string)
+				? splitAndTrim(raw)
 				: [];
 		return roles.length > 0 ? roles : undefined;
 	}

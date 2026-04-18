@@ -1781,7 +1781,8 @@ export class CreatePlaceModal extends Modal {
 			await this.app.fileManager.renameFile(file, newPath);
 
 			// Return the file at the new location
-			return this.app.vault.getAbstractFileByPath(newPath) as TFile;
+			const movedFile = this.app.vault.getAbstractFileByPath(newPath);
+			return movedFile instanceof TFile ? movedFile : null;
 		} catch (error) {
 			console.error('Failed to move file:', error);
 			new Notice(`Failed to move file: ${error instanceof Error ? error.message : 'Unknown error'}`);

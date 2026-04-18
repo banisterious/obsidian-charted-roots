@@ -30,7 +30,7 @@
  * - Accented characters - valid in names like "Jos\u00e9"
  * - Hyphens (-) - valid in names like "Mary-Jane"
  */
-export const WIKILINK_UNSAFE_CHARS = /[\\:*?"<>|()\[\]{}]/g;
+export const WIKILINK_UNSAFE_CHARS = /[\\:*?"<>|()[\]{}]/g;
 
 /**
  * Sanitize a name for use in filenames and wikilinks.

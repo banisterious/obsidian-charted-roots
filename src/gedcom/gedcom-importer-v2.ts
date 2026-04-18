@@ -2092,7 +2092,7 @@ export class GedcomImporterV2 {
 	 */
 	private sanitizeName(name: string): string {
 		const sanitized = name
-			.replace(/[\\/:*?"<>|()\[\]{}]/g, '')
+			.replace(/[\\/:*?"<>|()[\]{}]/g, '')
 			.trim();
 		return sanitized || 'Unknown';
 	}

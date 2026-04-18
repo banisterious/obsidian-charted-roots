@@ -1759,10 +1759,10 @@ export async function openRegionDrawingForMap(
 		typeof fm?.parent_region_w === 'number' &&
 		typeof fm?.parent_region_h === 'number'
 	) ? {
-		x: fm.parent_region_x as number,
-		y: fm.parent_region_y as number,
-		w: fm.parent_region_w as number,
-		h: fm.parent_region_h as number
+		x: fm.parent_region_x,
+		y: fm.parent_region_y,
+		w: fm.parent_region_w,
+		h: fm.parent_region_h
 	} : undefined;
 
 	const childName = (fm?.name as string) || file.basename;
