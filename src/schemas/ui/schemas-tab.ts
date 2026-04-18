@@ -160,7 +160,7 @@ export async function renderSchemasTab(options: SchemasTabOptions): Promise<void
 		.addButton(button => button
 			.setButtonText('Import')
 			.onClick(() => {
-				importSchemaFromJson(app, plugin, schemaService, schemasGridContainer, closeModal);
+				importSchemaFromJson(app, plugin, schemaService, validationService, schemasGridContainer, closeModal);
 			}));
 
 	// Gallery section
@@ -498,6 +498,7 @@ function importSchemaFromJson(
 	app: App,
 	plugin: CanvasRootsPlugin,
 	schemaService: SchemaService,
+	validationService: ValidationService,
 	galleryContainer: HTMLElement,
 	closeModal: () => void
 ): void {

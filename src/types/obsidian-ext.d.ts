@@ -14,7 +14,7 @@ declare module 'obsidian' {
 		 * @returns A Menu object that can have items added to it
 		 * @public
 		 */
-		setSubmenu(): Menu;
+		setSubmenu(): import('obsidian').Menu;
 	}
 
 	interface App {

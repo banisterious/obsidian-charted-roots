@@ -13,6 +13,8 @@ import type {
 	UniverseStatus,
 	UniverseStats,
 	UniverseEntityCounts,
+	UniverseEntities,
+	UniverseEntityEntry,
 	UniverseWithCounts,
 	UniverseValidationResult,
 	OrphanUniverse,

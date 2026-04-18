@@ -803,6 +803,7 @@ export class CreateSourceModal extends Modal {
 		// Get family graph for person picker
 		const familyGraph = this.plugin.createFamilyGraphService();
 		familyGraph.ensureCacheLoaded();
+		const folderFilter = this.plugin.getFolderFilter();
 
 		// Open person picker with correct signature: (app, onSelect, options?)
 		new PersonPickerModal(
@@ -812,7 +813,7 @@ export class CreateSourceModal extends Modal {
 				this.showRoleSelectionForPerson(person);
 			},
 			{
-				folderFilter,
+				folderFilter: folderFilter ?? undefined,
 				familyGraph,
 				plugin: this.plugin
 			}

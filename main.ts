@@ -1,6 +1,8 @@
 import { Plugin, Notice, TFile, TFolder, EventRef, WorkspaceLeaf, ObsidianProtocolData } from 'obsidian';
 import { CanvasRootsSettings, DEFAULT_SETTINGS, CanvasRootsSettingTab } from './src/settings';
 import { LoggerFactory, getLogger } from './src/core/logging';
+import { getErrorMessage } from './src/core/error-utils';
+import type { NumberingSystem } from './src/core/reference-numbering';
 import { FamilyGraphService } from './src/core/family-graph';
 import { BidirectionalLinker } from './src/core/bidirectional-linker';
 import { RelationshipHistoryService, RelationshipHistoryData, formatChangeDescription } from './src/core/relationship-history';

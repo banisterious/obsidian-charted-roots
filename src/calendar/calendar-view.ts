@@ -7,7 +7,7 @@
 
 import { ItemView, WorkspaceLeaf, setIcon, Menu } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
-import type { CalendarEvent, CalendarFilter } from './types/calendar-types';
+import type { CalendarEvent, CalendarFilter, CalendarViewState } from './types/calendar-types';
 import { DEFAULT_EVENT_TYPES, EVENT_TYPE_COLORS } from './types/calendar-types';
 import { CalendarDataService } from './calendar-data-service';
 import { capitalize } from '../utils/format-utils';

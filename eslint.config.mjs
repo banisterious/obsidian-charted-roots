@@ -38,6 +38,11 @@ export default [
 			globals: {
 				...globals.browser,
 				...globals.node,
+				// Obsidian adds these to the global scope at runtime
+				createDiv: 'readonly',
+				createEl: 'readonly',
+				createSpan: 'readonly',
+				createFragment: 'readonly',
 			},
 		},
 		plugins: {

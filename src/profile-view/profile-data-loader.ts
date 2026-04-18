@@ -24,7 +24,7 @@ import { OrganizationService } from '../organizations/services/organization-serv
 import { EvidenceService } from '../sources/services/evidence-service';
 import { ProofSummaryService } from '../sources/services/proof-summary-service';
 import { SOURCED_PROPERTY_NAMES, SOURCED_PROPERTY_TO_FACT_KEY } from '../sources/types/source-types';
-import type { SourcedPropertyName } from '../sources/types/source-types';
+import type { SourcedPropertyName, SourceNote } from '../sources/types/source-types';
 import { getLogger } from '../core/logging';
 
 const logger = getLogger('ProfileDataLoader');

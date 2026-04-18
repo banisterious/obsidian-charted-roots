@@ -11,6 +11,7 @@ import { FamilyGraphService } from '../core/family-graph';
 import { FolderFilterService } from '../core/folder-filter';
 import { DataQualityService } from '../core/data-quality';
 import type { BidirectionalInconsistency, ImpossibleDateIssue } from '../core/data-quality';
+import { getErrorMessage } from '../core/error-utils';
 import { AddPersonTypePreviewModal } from './add-person-type-modal';
 import { pluralize } from '../utils/format-utils';
 import {
