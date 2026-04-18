@@ -1394,7 +1394,7 @@ function renderPersonTableRow(
 	person: PersonListItem,
 	options: PeopleTabOptions
 ): void {
-	const { app, plugin } = options;
+	const { app, plugin, invalidateCaches, showTab } = options;
 	const row = tbody.createEl('tr', { cls: 'crc-person-table__row' });
 
 	// Name cell
