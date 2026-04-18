@@ -57,7 +57,7 @@ export class GedcomParserV2 {
 	 * Convert GEDCOM date to ISO format (delegates to v1 parser)
 	 */
 	static gedcomDateToISO(gedcomDate: string): string | undefined {
-		return GedcomParser.gedcomDateToISO(gedcomDate);
+		return GedcomParser.normalizeGedcomDate(gedcomDate);
 	}
 
 	/**

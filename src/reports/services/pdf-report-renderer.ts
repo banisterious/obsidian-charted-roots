@@ -2748,6 +2748,8 @@ export class PdfReportRenderer {
 					i++;
 				}
 				content.push({
+					// pdfmake's `text` accepts Content[] — join with newlines by flattening.
+					// eslint-disable-next-line @typescript-eslint/no-base-to-string -- processInlineFormatting returns pdfmake Content which may be string or object; joining is the existing pattern.
 					text: quoteLines.map(ql => this.processInlineFormatting(ql)).join('\n'),
 					italics: true,
 					color: COLORS.secondaryText,

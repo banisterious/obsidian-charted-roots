@@ -2847,7 +2847,7 @@ function buildSchemaContextMenu(
 ): void {
 	menu.addSeparator();
 
-	const schemaName = fm?.name || file.basename;
+	const schemaName = typeof fm?.name === 'string' ? fm.name : file.basename;
 
 	if (useSubmenu) {
 		menu.addItem((item) => {
@@ -2931,7 +2931,7 @@ function buildMapContextMenu(
 	menu.addSeparator();
 
 	const mapId = fm?.map_id;
-	const mapName = fm?.name || file.basename;
+	const mapName = typeof fm?.name === 'string' ? fm.name : file.basename;
 
 	if (useSubmenu) {
 		menu.addItem((item) => {
@@ -3155,7 +3155,7 @@ function buildPlaceContextMenu(
 						.setTitle('Link media...')
 						.setIcon('image-plus')
 						.onClick(() => {
-							const placeName = fm?.name || file.basename;
+							const placeName = typeof fm?.name === 'string' ? fm.name : file.basename;
 							plugin.openLinkMediaModal(file, 'place', String(placeName));
 						});
 				});
@@ -3165,7 +3165,7 @@ function buildPlaceContextMenu(
 						.setTitle('Manage media...')
 						.setIcon('settings')
 						.onClick(() => {
-							const placeName = fm?.name || file.basename;
+							const placeName = typeof fm?.name === 'string' ? fm.name : file.basename;
 							openManageMediaModal(plugin, file, 'place', String(placeName));
 						});
 				});
@@ -3297,7 +3297,7 @@ function buildPlaceContextMenu(
 				.setTitle('Charted Roots: Link media...')
 				.setIcon('image-plus')
 				.onClick(() => {
-					const placeName = fm?.name || file.basename;
+					const placeName = typeof fm?.name === 'string' ? fm.name : file.basename;
 					plugin.openLinkMediaModal(file, 'place', String(placeName));
 				});
 		});
@@ -3307,7 +3307,7 @@ function buildPlaceContextMenu(
 				.setTitle('Charted Roots: Manage media...')
 				.setIcon('settings')
 				.onClick(() => {
-					const placeName = fm?.name || file.basename;
+					const placeName = typeof fm?.name === 'string' ? fm.name : file.basename;
 					openManageMediaModal(plugin, file, 'place', String(placeName));
 				});
 		});

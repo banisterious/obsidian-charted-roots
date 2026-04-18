@@ -49,12 +49,9 @@ export class MediaLightboxModal extends Modal {
 	 * Save the current leaf so we can restore its state on close
 	 */
 	private saveViewState(): void {
-		const activeLeaf = this.app.workspace.activeLeaf;
-		if (activeLeaf) {
-			const view = activeLeaf.view;
-			if (view instanceof MarkdownView) {
-				this.savedLeaf = activeLeaf;
-			}
+		const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+		if (view) {
+			this.savedLeaf = view.leaf;
 		}
 	}
 

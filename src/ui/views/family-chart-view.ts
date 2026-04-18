@@ -552,10 +552,11 @@ export class FamilyChartView extends ItemView {
 		this.createInfoField(fieldsSection, 'Sex', sexDisplay);
 
 		// Research level (#351)
-		const researchLevel = personData.data['research level'];
-		if (researchLevel !== undefined && researchLevel !== '') {
+		const researchLevelRaw = personData.data['research level'];
+		const researchLevel: string | number = typeof researchLevelRaw === 'number' || typeof researchLevelRaw === 'string' ? researchLevelRaw : '';
+		if (researchLevel !== '') {
 			const levelNames = ['Unresearched', 'Initial', 'Moderate', 'Thorough', 'Comprehensive', 'Exhaustive', 'Published'];
-			const levelNum = typeof researchLevel === 'number' ? researchLevel : parseInt(String(researchLevel));
+			const levelNum = typeof researchLevel === 'number' ? researchLevel : parseInt(researchLevel);
 			const levelDisplay = !isNaN(levelNum) && levelNum >= 0 && levelNum <= 6 ? `${levelNum} — ${levelNames[levelNum]}` : String(researchLevel);
 			this.createInfoField(fieldsSection, 'Research level', levelDisplay);
 		}
@@ -620,7 +621,7 @@ export class FamilyChartView extends ItemView {
 				birthDate: personData.data.birthday || '',
 				deathDate: personData.data.deathday || '',
 				gender: (personData.data.gender as 'M' | 'F' | 'X' | 'U' | '') || '',
-				researchLevel: String(personData.data['research level'] ?? ''),
+				researchLevel: String((personData.data['research level'] as string | number | undefined) ?? ''),
 				collection: (personData.data['collection'] as string) || ''
 			};
 		}
@@ -998,7 +999,7 @@ export class FamilyChartView extends ItemView {
 			birthDate: personData.data.birthday || '',
 			deathDate: personData.data.deathday || '',
 			gender: (personData.data.gender as 'M' | 'F' | 'X' | 'U' | '') || '',
-			researchLevel: String(personData.data['research level'] ?? ''),
+			researchLevel: String((personData.data['research level'] as string | number | undefined) ?? ''),
 			collection: (personData.data['collection'] as string) || ''
 		};
 		this.renderInfoPanelContent();

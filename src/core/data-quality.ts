@@ -2400,17 +2400,19 @@ export class DataQualityService {
 			const keysToRemove: string[] = [];
 
 			// Check for legacy nested 'memberships' array
+			const asString = (v: unknown): string => typeof v === 'string' ? v : '';
+
 			if (Array.isArray(fm['memberships']) && fm['memberships'].length > 0) {
 				for (const m of fm['memberships']) {
 					if (typeof m === 'object' && m !== null) {
 						const membership = m as Record<string, unknown>;
 						if (membership['org']) {
-							orgs.push(String(membership['org'] || ''));
-							orgIds.push(String(membership['org_id'] || ''));
-							roles.push(String(membership['role'] || ''));
-							fromDates.push(String(membership['from'] || ''));
-							toDates.push(String(membership['to'] || ''));
-							notes.push(String(membership['notes'] || ''));
+							orgs.push(asString(membership['org']));
+							orgIds.push(asString(membership['org_id']));
+							roles.push(asString(membership['role']));
+							fromDates.push(asString(membership['from']));
+							toDates.push(asString(membership['to']));
+							notes.push(asString(membership['notes']));
 						}
 					}
 				}
@@ -2419,9 +2421,9 @@ export class DataQualityService {
 
 			// Check for simple house/organization format (only if no nested format found)
 			if (orgs.length === 0 && (fm['house'] || fm['organization'])) {
-				const orgLink = String(fm['house'] || fm['organization'] || '');
-				const orgId = String(fm['house_id'] || fm['organization_id'] || '');
-				const role = String(fm['role'] || '');
+				const orgLink = asString(fm['house']) || asString(fm['organization']);
+				const orgId = asString(fm['house_id']) || asString(fm['organization_id']);
+				const role = asString(fm['role']);
 
 				orgs.push(orgLink);
 				orgIds.push(orgId);

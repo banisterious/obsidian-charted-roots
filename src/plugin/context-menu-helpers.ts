@@ -1718,10 +1718,10 @@ export async function openRegionDrawingForMap(
 		if (crType !== 'map') continue;
 
 		// Handle wikilink-parsed parent_map values
-		let pmId = String(parentMapId);
+		let pmId = typeof parentMapId === 'string' ? parentMapId : '';
 		if (Array.isArray(parentMapId)) {
 			const flat = parentMapId.flat();
-			if (flat.length === 1) pmId = String(flat[0]);
+			if (flat.length === 1 && typeof flat[0] === 'string') pmId = flat[0];
 		}
 
 		if (parentFm.map_id !== pmId) continue;
