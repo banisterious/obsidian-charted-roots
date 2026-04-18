@@ -1366,35 +1366,37 @@
  * non-matching cards are dimmed when any group is active.
  * ------------------------------------------------------------ */
 
+/* Family-chart library sets inline `opacity: 1` on card_cont during animation;
+ * we need !important to override inline styles from CSS. */
 .cr-fcv-chart-container.cr-hl-active .card_cont.cr-hl-dim {
-  opacity: 0.3;
+  opacity: 0.3 !important;
   transition: opacity 0.2s ease;
 }
 
 .cr-fcv-chart-container .card_cont.cr-hl-match {
-  transition: opacity 0.2s ease, filter 0.2s ease;
+  transition: filter 0.2s ease;
 }
 
 /* Per-color glow via drop-shadow on the card container. Stacked shadows give
  * a more visible outline effect. Works for both SVG cards (rectangle / compact
  * / mini) and HTML cards (circle) because CSS filters apply to both. */
 .cr-fcv-chart-container .card_cont.cr-hl-match--gold {
-  filter: drop-shadow(0 0 3px #d4a017) drop-shadow(0 0 8px #d4a017);
+  filter: drop-shadow(0 0 4px #d4a017) drop-shadow(0 0 10px #d4a017) drop-shadow(0 0 16px #d4a017);
 }
 .cr-fcv-chart-container .card_cont.cr-hl-match--blue {
-  filter: drop-shadow(0 0 3px #3b82f6) drop-shadow(0 0 8px #3b82f6);
+  filter: drop-shadow(0 0 4px #3b82f6) drop-shadow(0 0 10px #3b82f6) drop-shadow(0 0 16px #3b82f6);
 }
 .cr-fcv-chart-container .card_cont.cr-hl-match--green {
-  filter: drop-shadow(0 0 3px #22c55e) drop-shadow(0 0 8px #22c55e);
+  filter: drop-shadow(0 0 4px #22c55e) drop-shadow(0 0 10px #22c55e) drop-shadow(0 0 16px #22c55e);
 }
 .cr-fcv-chart-container .card_cont.cr-hl-match--purple {
-  filter: drop-shadow(0 0 3px #a855f7) drop-shadow(0 0 8px #a855f7);
+  filter: drop-shadow(0 0 4px #a855f7) drop-shadow(0 0 10px #a855f7) drop-shadow(0 0 16px #a855f7);
 }
 .cr-fcv-chart-container .card_cont.cr-hl-match--red {
-  filter: drop-shadow(0 0 3px #ef4444) drop-shadow(0 0 8px #ef4444);
+  filter: drop-shadow(0 0 4px #ef4444) drop-shadow(0 0 10px #ef4444) drop-shadow(0 0 16px #ef4444);
 }
 .cr-fcv-chart-container .card_cont.cr-hl-match--teal {
-  filter: drop-shadow(0 0 3px #14b8a6) drop-shadow(0 0 8px #14b8a6);
+  filter: drop-shadow(0 0 4px #14b8a6) drop-shadow(0 0 10px #14b8a6) drop-shadow(0 0 16px #14b8a6);
 }
 
 /* Modal layout */

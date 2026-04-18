@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-04-18 22:00:49 UTC
+ * - Generated: 2026-04-18 22:17:55 UTC
  * - Components: 49 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -17102,7 +17102,7 @@ settings:
    COMPONENT: FAMILY-CHART-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1464 lines, 34.83 KB */
+/* Component Size: 1466 lines, 35.14 KB */
 
 /**
  * Family Chart View Styles
@@ -18472,35 +18472,37 @@ settings:
  * non-matching cards are dimmed when any group is active.
  * ------------------------------------------------------------ */
 
+/* Family-chart library sets inline `opacity: 1` on card_cont during animation;
+ * we need !important to override inline styles from CSS. */
 .cr-fcv-chart-container.cr-hl-active .card_cont.cr-hl-dim {
-  opacity: 0.3;
+  opacity: 0.3 !important;
   transition: opacity 0.2s ease;
 }
 
 .cr-fcv-chart-container .card_cont.cr-hl-match {
-  transition: opacity 0.2s ease, filter 0.2s ease;
+  transition: filter 0.2s ease;
 }
 
 /* Per-color glow via drop-shadow on the card container. Stacked shadows give
  * a more visible outline effect. Works for both SVG cards (rectangle / compact
  * / mini) and HTML cards (circle) because CSS filters apply to both. */
 .cr-fcv-chart-container .card_cont.cr-hl-match--gold {
-  filter: drop-shadow(0 0 3px #d4a017) drop-shadow(0 0 8px #d4a017);
+  filter: drop-shadow(0 0 4px #d4a017) drop-shadow(0 0 10px #d4a017) drop-shadow(0 0 16px #d4a017);
 }
 .cr-fcv-chart-container .card_cont.cr-hl-match--blue {
-  filter: drop-shadow(0 0 3px #3b82f6) drop-shadow(0 0 8px #3b82f6);
+  filter: drop-shadow(0 0 4px #3b82f6) drop-shadow(0 0 10px #3b82f6) drop-shadow(0 0 16px #3b82f6);
 }
 .cr-fcv-chart-container .card_cont.cr-hl-match--green {
-  filter: drop-shadow(0 0 3px #22c55e) drop-shadow(0 0 8px #22c55e);
+  filter: drop-shadow(0 0 4px #22c55e) drop-shadow(0 0 10px #22c55e) drop-shadow(0 0 16px #22c55e);
 }
 .cr-fcv-chart-container .card_cont.cr-hl-match--purple {
-  filter: drop-shadow(0 0 3px #a855f7) drop-shadow(0 0 8px #a855f7);
+  filter: drop-shadow(0 0 4px #a855f7) drop-shadow(0 0 10px #a855f7) drop-shadow(0 0 16px #a855f7);
 }
 .cr-fcv-chart-container .card_cont.cr-hl-match--red {
-  filter: drop-shadow(0 0 3px #ef4444) drop-shadow(0 0 8px #ef4444);
+  filter: drop-shadow(0 0 4px #ef4444) drop-shadow(0 0 10px #ef4444) drop-shadow(0 0 16px #ef4444);
 }
 .cr-fcv-chart-container .card_cont.cr-hl-match--teal {
-  filter: drop-shadow(0 0 3px #14b8a6) drop-shadow(0 0 8px #14b8a6);
+  filter: drop-shadow(0 0 4px #14b8a6) drop-shadow(0 0 10px #14b8a6) drop-shadow(0 0 16px #14b8a6);
 }
 
 /* Modal layout */
@@ -41313,11 +41315,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-04-18 22:00:50 UTC
+ * Build completed: 2026-04-18 22:17:56 UTC
  * Components processed: 49
- * Total lines: 40849
- * Total size: 823.6 KB
- * Build duration: 0.96 seconds
+ * Total lines: 40851
+ * Total size: 823.91 KB
+ * Build duration: 0.36 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -41338,7 +41340,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - find-on-canvas.css: 275 lines, 5.13 KB
  * - folder-scan.css: 155 lines, 2.6 KB
  * - relationship-calculator.css: 302 lines, 5.27 KB
- * - family-chart-view.css: 1464 lines, 34.83 KB
+ * - family-chart-view.css: 1466 lines, 35.14 KB
  * - family-chart-export.css: 699 lines, 14.78 KB
  * - report-wizard.css: 908 lines, 19.88 KB
  * - book-builder.css: 371 lines, 7.29 KB

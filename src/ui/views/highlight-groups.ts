@@ -80,14 +80,37 @@ export function getHighlightFieldValue(person: PersonNode, field: HighlightField
 }
 
 /**
+ * Normalize a value for matching, handling field-specific canonical forms.
+ * PersonNode.sex is stored as the canonical "M"/"F"/"X"/"U" (via resolveGender),
+ * so the user's input ("male", "man") also needs to map to canonical form for
+ * comparison. Other fields (occupation, religion, etc.) are free-text and don't
+ * need this treatment.
+ */
+function normalizeForField(value: string, field: HighlightField): string {
+	const v = value.trim().toLowerCase();
+	if (field === 'sex') {
+		const sexAliases: Record<string, string> = {
+			'm': 'm', 'male': 'm', 'man': 'm', 'boy': 'm',
+			'f': 'f', 'female': 'f', 'woman': 'f', 'girl': 'f',
+			'x': 'x', 'nonbinary': 'x', 'non-binary': 'x', 'nb': 'x', 'enby': 'x', 'other': 'x',
+			'u': 'u', 'unknown': 'u', 'unspecified': 'u', '': 'u'
+		};
+		return sexAliases[v] ?? v;
+	}
+	return v;
+}
+
+/**
  * True when the person's value for this group's field matches the group's target value
- * (case-insensitive exact match).
+ * (case-insensitive exact match, with field-specific canonical normalization).
  */
 export function personMatchesGroup(person: PersonNode, group: HighlightGroup): boolean {
 	if (!group.enabled) return false;
 	const personValue = getHighlightFieldValue(person, group.field);
 	if (personValue === null) return false;
-	return personValue === group.value.trim().toLowerCase();
+	const personNormalized = normalizeForField(personValue, group.field);
+	const groupNormalized = normalizeForField(group.value, group.field);
+	return personNormalized === groupNormalized;
 }
 
 /**
