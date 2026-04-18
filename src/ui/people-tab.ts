@@ -1143,7 +1143,7 @@ function updateConflictCardCount(container: HTMLElement, tbody: HTMLElement): vo
  * Load person list into container
  */
 function loadPersonList(container: HTMLElement, options: PeopleTabOptions): void {
-	const { app, plugin, invalidateCaches, showTab } = options;
+	const { app, plugin } = options;
 	container.empty();
 
 	const familyGraph = plugin.createFamilyGraphService();
@@ -1394,7 +1394,7 @@ function renderPersonTableRow(
 	person: PersonListItem,
 	options: PeopleTabOptions
 ): void {
-	const { app, plugin, invalidateCaches, showTab } = options;
+	const { app, plugin } = options;
 	const row = tbody.createEl('tr', { cls: 'crc-person-table__row' });
 
 	// Name cell
@@ -2087,7 +2087,7 @@ async function exportPersonTimeline(
 /**
  * Render a timeline badge for a person list item
  */
-function renderPersonTimelineBadge(
+function _renderPersonTimelineBadge(
 	item: HTMLElement,
 	mainRow: HTMLElement,
 	file: TFile,
@@ -2157,7 +2157,7 @@ function renderPersonTimelineBadge(
 /**
  * Render a family timeline badge for a person list item
  */
-function renderFamilyTimelineBadge(
+function _renderFamilyTimelineBadge(
 	item: HTMLElement,
 	mainRow: HTMLElement,
 	file: TFile,
@@ -2226,7 +2226,7 @@ function renderFamilyTimelineBadge(
 /**
  * Render a research coverage badge for a person list item
  */
-function renderPersonResearchCoverageBadge(
+function _renderPersonResearchCoverageBadge(
 	item: HTMLElement,
 	mainRow: HTMLElement,
 	file: TFile,
@@ -2702,7 +2702,7 @@ function addSourceCitationForFact(personFilePath: string, factKey: FactKey, opti
 /**
  * Create a person note
  */
-async function createPersonNoteAction(
+async function _createPersonNoteAction(
 	name: string,
 	birthDate: string,
 	deathDate: string,
@@ -2781,7 +2781,7 @@ async function createPersonNoteAction(
 /**
  * Create a relationship field with person picker
  */
-function createRelationshipField(
+function _createRelationshipField(
 	container: HTMLElement,
 	label: string,
 	placeholder: string,
@@ -2856,7 +2856,7 @@ function updateHelpText(helpEl: HTMLElement, fieldData: RelationshipField): void
 /**
  * Setup unlink functionality for a relationship field
  */
-function setupUnlinkButton(
+function _setupUnlinkButton(
 	input: HTMLInputElement,
 	button: HTMLButtonElement,
 	fieldData: RelationshipField,
@@ -2881,7 +2881,7 @@ function setupUnlinkButton(
 /**
  * Extract person info from file (for inline person browser)
  */
-function extractPersonInfoFromFile(file: TFile, options: PeopleTabOptions): PersonInfo | null {
+function _extractPersonInfoFromFile(file: TFile, options: PeopleTabOptions): PersonInfo | null {
 	const { app, plugin } = options;
 	const cache = app.metadataCache.getFileCache(file);
 	if (!cache?.frontmatter) return null;
@@ -2915,7 +2915,7 @@ function extractPersonInfoFromFile(file: TFile, options: PeopleTabOptions): Pers
 /**
  * Clear all relationship fields (data and UI)
  */
-function clearRelationshipFields(): void {
+function _clearRelationshipFields(): void {
 	// Clear data
 	fatherField = { name: '' };
 	motherField = { name: '' };
@@ -2968,7 +2968,7 @@ function clearRelationshipFields(): void {
 /**
  * Sync bidirectional relationships for all person notes after GEDCOM import
  */
-async function syncImportedRelationships(options: PeopleTabOptions): Promise<void> {
+async function _syncImportedRelationships(options: PeopleTabOptions): Promise<void> {
 	const { app, plugin } = options;
 	const peopleFolder = plugin.settings.peopleFolder || '';
 	const folder = app.vault.getAbstractFileByPath(peopleFolder);

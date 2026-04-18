@@ -5,7 +5,7 @@
  * exploration and editing of family trees.
  */
 
-import { ItemView, WorkspaceLeaf, Menu, TFile, Notice, setIcon, Modal, App } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Menu, TFile, Notice, setIcon } from 'obsidian';
 import f3, { TreeDatum } from 'family-chart';
 import * as d3 from 'd3';
 

@@ -10,8 +10,7 @@ import type CanvasRootsPlugin from '../../../main';
 import type {
 	MembershipRecord,
 	PersonMembership,
-	OrganizationInfo,
-	FlatMembershipProperties
+	OrganizationInfo
 } from '../types/organization-types';
 import { OrganizationService } from './organization-service';
 import { getLogger } from '../../core/logging';

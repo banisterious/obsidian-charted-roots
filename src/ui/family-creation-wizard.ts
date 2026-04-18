@@ -23,7 +23,7 @@ import { createLucideIcon } from './lucide-icons';
 import { PersonPickerModal, PersonInfo } from './person-picker';
 import { getLogger } from '../core/logging';
 import { ModalStatePersistence, renderResumePromptBanner } from './modal-state-persistence';
-import { getSpouseLabel, getAddSpouseLabel } from '../utils/terminology';
+import { getSpouseLabel } from '../utils/terminology';
 
 const logger = getLogger('FamilyCreationWizard');
 

@@ -12,7 +12,7 @@
  * so no file migration is needed for those.
  */
 
-import { App, Notice, TFile } from 'obsidian';
+import { App, Notice } from 'obsidian';
 import { pluralize } from '../utils/format-utils';
 import { getLogger } from '../core/logging';
 

@@ -91,7 +91,7 @@ export class TemplateFilterService {
 			if (templatesPlugin?.enabled && templatesPlugin?.instance?.options?.folder) {
 				return templatesPlugin.instance.options.folder;
 			}
-		} catch (e) {
+		} catch {
 			logger.debug('getCoreTemplatesFolder', 'Could not access core Templates plugin settings');
 		}
 		return null;
@@ -109,7 +109,7 @@ export class TemplateFilterService {
 			if (templater?.settings?.templates_folder) {
 				return templater.settings.templates_folder;
 			}
-		} catch (e) {
+		} catch {
 			logger.debug('getTemplaterFolder', 'Could not access Templater plugin settings');
 		}
 		return null;
@@ -127,7 +127,7 @@ export class TemplateFilterService {
 			if (quickAdd?.settings?.templateFolderPath) {
 				return quickAdd.settings.templateFolderPath;
 			}
-		} catch (e) {
+		} catch {
 			logger.debug('getQuickAddFolder', 'Could not access QuickAdd plugin settings');
 		}
 		return null;

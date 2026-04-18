@@ -27,13 +27,6 @@ export interface CoordinateParseResult {
 type CardinalDirection = 'N' | 'S' | 'E' | 'W';
 
 /**
- * Check if a character is a direction indicator
- */
-function isDirectionChar(char: string): char is CardinalDirection {
-	return ['N', 'S', 'E', 'W'].includes(char.toUpperCase());
-}
-
-/**
  * Get the sign multiplier for a direction
  * South and West are negative
  */

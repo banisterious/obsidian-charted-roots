@@ -12,7 +12,6 @@ import {
 	PERSON_ROLE_PROPERTIES,
 	PERSON_ROLE_LABELS,
 	parsePersonRoleEntries,
-	hasPersonRoles,
 	type PersonRoleProperty,
 	type ParsedPersonRole
 } from '../../sources/types/source-types';

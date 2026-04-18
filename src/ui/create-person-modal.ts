@@ -1737,7 +1737,6 @@ export class CreatePersonModal extends Modal {
 		setIcon(addBtn, 'plus');
 		addBtn.addEventListener('click', () => {
 			if (!this.plugin) return;
-			const existingNames = this.sourcedFactsFields[propName] || [];
 			new SourcePickerModal(this.app, this.plugin, {
 				onSelect: (source) => {
 					const basename = source.filePath.replace(/\.md$/, '').split('/').pop() || source.title;

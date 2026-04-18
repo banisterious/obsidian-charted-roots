@@ -16,7 +16,6 @@ import { PlacePickerModal, SelectedPlaceInfo } from '../ui/place-picker';
 import { UniverseSyncModal } from './ui/universe-sync-modal';
 import { GeocodingService } from './services/geocoding-service';
 import { PlaceCategory, UNIVERSE_CATEGORIES } from '../models/place';
-import { PlaceGraphService } from '../core/place-graph';
 import type {
 	MapFilters,
 	LayerVisibility,
@@ -1570,7 +1569,6 @@ export class MapView extends ItemView {
 		this.journeyControlsEl = container.createDiv({ cls: 'cr-map-journey-controls' });
 
 		const waypoints = journey.waypoints;
-		const totalSteps = waypoints.length;
 
 		// Previous button
 		const prevBtn = this.journeyControlsEl.createEl('button', {

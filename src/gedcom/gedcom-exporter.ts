@@ -21,7 +21,7 @@ import type { PlaceNode } from '../models/place';
 import type { CanvasRootsSettings } from '../settings';
 import { RelationshipService } from '../relationships';
 import { extractWikilinkPath } from '../utils/wikilink-resolver';
-import type { CitationNote, CitationQuality } from '../sources/types/citation-types';
+import type { CitationQuality } from '../sources/types/citation-types';
 
 const logger = getLogger('GedcomExporter');
 

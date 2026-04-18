@@ -11,7 +11,7 @@ import type { App } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { LucideIconName } from '../../ui/lucide-icons';
 import { createLucideIcon } from '../../ui/lucide-icons';
-import { CanvasGenerator, CanvasData, CanvasGenerationOptions } from '../../core/canvas-generator';
+import { CanvasGenerator, CanvasGenerationOptions } from '../../core/canvas-generator';
 import type { TreeOptions } from '../../core/family-graph';
 import { ensureFolderExists, formatCanvasJson } from '../../core/canvas-utils';
 import { getErrorMessage } from '../../core/error-utils';
@@ -87,7 +87,7 @@ export function renderTreesTab(options: TreesTabOptions): void {
  * and canvas layout / styling cards.
  */
 function showTreeGenerationTab(options: TreesTabOptions): void {
-	const { container, plugin, app, showTab, closeModal, openCanvasTree,
+	const { container, plugin, showTab, openCanvasTree,
 		showRecentTreeContextMenu, openAndGenerateAllTrees, formatTimeAgo, createCard } = options;
 
 	// Get data
@@ -392,7 +392,7 @@ function showTreeGenerationTab(options: TreesTabOptions): void {
  * the Unified Tree Wizard Modal handles generation instead. It is retained
  * here as part of the extraction for potential future use.
  */
-async function handleTreeGeneration(
+async function _handleTreeGeneration(
 	app: App,
 	plugin: CanvasRootsPlugin,
 	closeModal: () => void,
@@ -645,7 +645,7 @@ async function handleTreeGeneration(
 /**
  * Show GEDCOM analysis before import (v2)
  */
-async function showGedcomAnalysis(
+async function _showGedcomAnalysis(
 	app: App,
 	plugin: CanvasRootsPlugin,
 	showTab: (tabId: string) => void,
@@ -1369,7 +1369,7 @@ function selectRootPersonForNumbering(
 /**
  * Handle GEDCOM file export
  */
-async function handleGedcomExport(
+async function _handleGedcomExport(
 	app: App,
 	plugin: CanvasRootsPlugin,
 	exportOptions: {

@@ -7,7 +7,6 @@
 
 import { App, Notice, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
-import { FamilyGraphService } from '../core/family-graph';
 import { FolderFilterService } from '../core/folder-filter';
 import { DataQualityService } from '../core/data-quality';
 import type { BidirectionalInconsistency, ImpossibleDateIssue } from '../core/data-quality';

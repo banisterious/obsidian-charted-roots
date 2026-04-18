@@ -43,20 +43,16 @@ import { SourcedFactsMigrationService, type LegacySourcedFactsNote } from '../so
 import { LifeEventsMigrationService, type LegacyEventsNote } from '../events/services/life-events-migration-service';
 import { pluralize } from '../utils/format-utils';
 import {
-	type StepType,
-	type StepStatus,
 	type WizardStepConfig,
 	type StepState,
 	type CleanupWizardState,
 	type HierarchyEnrichmentResult,
 	STATE_EXPIRY_MS,
-	OSM_TYPE_MAP,
 	WIZARD_STEPS,
 	formatTimeAgo,
 	parseHierarchyFromAddress,
 	findPlaceByName,
 	inferPlaceType,
-	stripWikilink,
 	containsPlaceVariant,
 	replacePlaceVariant,
 	getPersistedStateStats

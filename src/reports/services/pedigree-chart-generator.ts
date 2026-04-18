@@ -149,8 +149,6 @@ export class PedigreeChartGenerator {
 	 * Build the ASCII tree representation
 	 */
 	private buildTree(ancestors: Map<number, ReportPerson>, options: PedigreeChartOptions): string {
-		const lines: string[] = [];
-
 		// We'll build the tree generation by generation, right to left
 		// (oldest ancestors on the right, subject on the left)
 

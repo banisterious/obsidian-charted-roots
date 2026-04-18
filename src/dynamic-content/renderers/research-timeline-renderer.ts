@@ -387,12 +387,9 @@ export class ResearchTimelineRenderer {
 
 		const current = new Date(startDate);
 		let weekEl: HTMLElement | null = null;
-		let weekIndex = -1;
-
 		while (current <= endDate) {
 			const dayOfWeek = current.getDay();
 			if (dayOfWeek === 0) {
-				weekIndex++;
 				weekEl = grid.createDiv({ cls: 'cr-research-timeline__heatmap-week' });
 			}
 
@@ -405,7 +402,7 @@ export class ResearchTimelineRenderer {
 				level = Math.min(4, Math.ceil((count / maxCount) * 4));
 			}
 
-			const cell = weekEl!.createDiv({
+			weekEl!.createDiv({
 				cls: `cr-research-timeline__heatmap-cell cr-research-timeline__heatmap-cell--level-${level}`,
 				attr: {
 					'aria-label': `${dateStr}: ${count} ${count === 1 ? 'activity' : 'activities'}`,

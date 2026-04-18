@@ -7,7 +7,7 @@
  */
 
 import { type App, TFile, setIcon } from 'obsidian';
-import type { MediaService, MediaCrop } from '../../core/media-service';
+import type { MediaService } from '../../core/media-service';
 import { applyCropToImage } from '../../core/crop-renderer';
 import type {
 	ProfileEntityData,

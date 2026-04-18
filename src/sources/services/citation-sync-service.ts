@@ -6,10 +6,10 @@
  * - Reverse: generate citation notes from existing sourced_* fields
  */
 
-import { App, TFile, Notice } from 'obsidian';
+import { App, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import { CitationNoteService } from './citation-note-service';
-import type { CitationData, CitationNote } from '../types/citation-types';
+import type { CitationData } from '../types/citation-types';
 import { SOURCED_PROPERTY_NAMES, type SourcedPropertyName } from '../types/source-types';
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
 import { getLogger } from '../../core/logging';

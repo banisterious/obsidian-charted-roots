@@ -7,7 +7,7 @@
 
 import { App, Modal, Notice, Setting, TFile, TFolder } from 'obsidian';
 import type { CanvasRootsSettings } from '../settings';
-import { FamilyGraphService, type FamilyTree, type PersonNode } from '../core/family-graph';
+import { FamilyGraphService, type FamilyTree } from '../core/family-graph';
 import { FolderFilterService } from '../core/folder-filter';
 import { extractSurnames, extractAllSurnames, matchesSurname } from '../utils/name-utils';
 import { capitalize } from '../utils/format-utils';
@@ -849,7 +849,6 @@ export class SplitWizardModal extends Modal {
 			for (const surname of personSurnames) {
 				// Normalize case for counting
 				const normalized = surname.toLowerCase();
-				const displayName = capitalize(surname);
 
 				// Track with normalized key but preserve display casing
 				const existing = surnames.get(normalized);

@@ -398,7 +398,7 @@ export class PlaceLookupModal extends Modal {
 		setIcon(badgeIcon, sourceInfo.icon);
 		sourceBadge.createSpan({ text: sourceInfo.name });
 
-		const confidenceBadge = cardHeader.createSpan({
+		cardHeader.createSpan({
 			cls: `cr-lookup-confidence-badge ${this.getConfidenceClass(result.confidence)}`,
 			text: `${Math.round(result.confidence * 100)}%`
 		});

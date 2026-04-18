@@ -11,7 +11,7 @@ import type {
 	GapsReportResult,
 	ReportPerson
 } from '../types/report-types';
-import { FamilyGraphService, createConfiguredFamilyGraph, PersonNode } from '../../core/family-graph';
+import { createConfiguredFamilyGraph, PersonNode } from '../../core/family-graph';
 import { nodeToReportPerson } from './report-utils';
 import { getLogger } from '../../core/logging';
 

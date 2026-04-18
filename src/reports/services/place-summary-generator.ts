@@ -13,7 +13,7 @@ import type {
 	TimelineEntry,
 	ReportPerson
 } from '../types/report-types';
-import { FamilyGraphService, createConfiguredFamilyGraph } from '../../core/family-graph';
+import { createConfiguredFamilyGraph } from '../../core/family-graph';
 import { PlaceGraphService } from '../../core/place-graph';
 import { FolderFilterService } from '../../core/folder-filter';
 import { EventService } from '../../events/services/event-service';

@@ -68,7 +68,6 @@ import type CanvasRootsPlugin from '../../main';
 import { getLogger } from '../core/logging';
 import { capitalize } from '../utils/format-utils';
 import { getEventType } from '../events/types/event-types';
-import type { LucideIconName } from '../ui/lucide-icons';
 import type {
 	MapData,
 	MapMarker,
@@ -1707,7 +1706,7 @@ export class MapController {
 		const toolbar = document.createElement('div');
 		toolbar.className = 'cr-region-edit-toolbar';
 
-		const label = toolbar.createEl('span', {
+		toolbar.createEl('span', {
 			cls: 'cr-region-edit-toolbar__label',
 			text: `Editing region for "${childMapName}"`
 		});

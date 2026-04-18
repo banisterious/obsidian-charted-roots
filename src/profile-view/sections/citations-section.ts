@@ -9,7 +9,7 @@ import type { App } from 'obsidian';
 import type { SectionToggleFn, EntityLinkClickFn, SectionState } from '../profile-types';
 import { renderProfileSection } from './section-base';
 import type { CitationNote } from '../../sources/types/citation-types';
-import { CITATION_QUALITY_LABELS, type CitationQuality } from '../../sources/types/citation-types';
+import { CITATION_QUALITY_LABELS } from '../../sources/types/citation-types';
 
 interface CitationsSectionOptions {
 	sectionStates: SectionState;

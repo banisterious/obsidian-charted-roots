@@ -8,7 +8,7 @@
  * - Delete staging data
  */
 
-import { App, Modal, Notice, setIcon, TFile } from 'obsidian';
+import { App, Modal, Notice, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import {
 	StagingService,

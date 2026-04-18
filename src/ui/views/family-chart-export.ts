@@ -871,7 +871,7 @@ export function showExportMenu(ctx: FamilyChartExportContext, e: MouseEvent): vo
  * Inline computed styles into SVG elements for export
  * This is necessary because CSS styles are not included when serializing SVG
  */
-function inlineStyles(source: Element, target: Element): void {
+function _inlineStyles(source: Element, target: Element): void {
 	const computedStyle = window.getComputedStyle(source);
 
 	// Copy relevant style properties
@@ -914,7 +914,7 @@ function inlineStyles(source: Element, target: Element): void {
 	const sourceChildren = Array.from(source.children);
 	const targetChildren = Array.from(target.children);
 	for (let i = 0; i < sourceChildren.length && i < targetChildren.length; i++) {
-		inlineStyles(sourceChildren[i], targetChildren[i]);
+		_inlineStyles(sourceChildren[i], targetChildren[i]);
 	}
 }
 

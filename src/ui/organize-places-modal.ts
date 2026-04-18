@@ -207,7 +207,7 @@ export class OrganizePlacesModal extends Modal {
 			});
 
 			// Place name
-			const nameCell = row.createEl('td', { text: mp.place.name });
+			row.createEl('td', { text: mp.place.name });
 
 			// Category badge
 			const categoryCell = row.createEl('td');

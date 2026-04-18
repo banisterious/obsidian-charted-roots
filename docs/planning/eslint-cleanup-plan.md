@@ -21,6 +21,7 @@ Taken immediately after the `npm run lint` fix.
 - **After Tier 2/3 quick wins:** 896 (896 errors, 0 warnings) — lint:fix cleared autofixable rules (24 + 19); remaining small groups (useless-escape, case-declarations, prefer-const, tfile-cast, command-naming, redeclare, this-alias) resolved manually
 - **After Tier 2 complete:** 873 (873 errors, 0 warnings) — `no-static-styles-assignment` (23) resolved via `el.show()`/`el.hide()` for display toggles, CSS class additions for style values, toggleClass for cursor states, one targeted eslint-disable for a Leaflet-generated DOM element
 - **After Tier 3 require-await:** 862 (862 errors, 0 warnings) — `require-await` (11) resolved. ItemView `onOpen`/`setState` and one MarkdownPostProcessor `process` kept async with targeted eslint-disable; Phase 3 stubs (`lookupFamilySearch`, `lookupGOV`) kept async with eslint-disable; remaining 6 methods converted to sync (callers updated to drop `await`/`void`)
+- **After Tier 3 no-unused-vars:** 735 (735 errors, 0 warnings) — `no-unused-vars` (129) resolved. `context-menus.ts` and `control-center.ts` shed ~57 unused imports each from prior feature extractions; remaining items were one-off unused imports (~40), unused locals / parameters (~20), and unused helper functions (~12) prefixed with `_` where the code could plausibly be revived (people-tab badges, trees-tab analyzers, family-chart-export `inlineStyles`).
 - **Exit status:** 1 (sentence-case errors — Tier 4 — still trip non-zero exit)
 
 ---
@@ -92,8 +93,8 @@ Real problems flagged by `obsidianmd/*` — not immediate correctness bugs, but 
 
 Not bugs, but reduce maintenance drag.
 
-- [ ] **`@typescript-eslint/no-unused-vars` (125)** — per-site audit: prefix with `_`, remove entirely, or actually use.
-- [ ] **`@typescript-eslint/no-unnecessary-type-assertion` (19)** — strip unnecessary casts.
+- [x] **`@typescript-eslint/no-unused-vars` (129)** ✅ — dead imports removed (~97 across 40 files), unused locals/parameters trimmed, dead helpers prefixed with `_` for future revival.
+- [x] **`@typescript-eslint/no-unnecessary-type-assertion` (19)** ✅ — cleared incidentally during Tier 2 (no items remained by time Tier 3 began).
 - [x] **`@typescript-eslint/require-await` (11)** ✅ — ItemView lifecycle methods + one MarkdownPostProcessor + two Phase 3 stubs kept async via targeted eslint-disable; 6 private/internal methods converted to sync.
 - [ ] **`prefer-const` (4)**, **`no-useless-escape` (3)**, **`no-case-declarations` (2)**, **`no-redeclare` (1)** — trivial. Batch-fix with `lint:fix` where supported.
 

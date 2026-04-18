@@ -66,16 +66,7 @@ interface PdfMakeInstance {
 	fonts: TFontDictionary;
 }
 
-/**
- * Type for the vfs_fonts module with multiple possible export shapes.
- * Different bundler configurations export the vfs differently.
- */
-interface VfsFontsModule {
-	pdfMake?: { vfs: { [file: string]: string } };
-	default?: { pdfMake?: { vfs: { [file: string]: string } } };
-	vfs?: { [file: string]: string };
-}
-import { parseFootnotes, replaceFootnoteMarkers } from '../utils/footnote-parser';
+import { parseFootnotes } from '../utils/footnote-parser';
 import type {
 	FamilyGroupSheetResult,
 	IndividualSummaryResult,

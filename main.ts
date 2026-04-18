@@ -35,7 +35,7 @@ import { ProfileView, VIEW_TYPE_ENTITY_PROFILE } from './src/profile-view/profil
 import { WebClipperService } from './src/core/web-clipper-service';
 import { PluginRenameMigrationService, showMigrationNotice } from './src/migration/plugin-rename-migration-service';
 
-import { registerContextMenus, promptLineageName } from './src/plugin/context-menus';
+import { registerContextMenus } from './src/plugin/context-menus';
 import {
 	activateFamilyChartView as _activateFamilyChartView,
 	activateMapView as _activateMapView,

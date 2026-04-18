@@ -13,8 +13,6 @@ import {
 } from '../../reports/services/pdf-report-renderer';
 import type {
 	BookDefinition,
-	BookOutputOptions,
-	BookMetadata,
 	ChapterGenerationResult,
 	BibliographyEntry,
 	NameIndexEntry,

@@ -11,10 +11,9 @@ import type {
 	SourcesByRoleOptions,
 	SourcesByRoleResult,
 	SourceRoleEntry,
-	SourceEntry,
 	ReportPerson
 } from '../types/report-types';
-import { FamilyGraphService, createConfiguredFamilyGraph, PersonNode } from '../../core/family-graph';
+import { createConfiguredFamilyGraph, PersonNode } from '../../core/family-graph';
 import { nodeToReportPerson } from './report-utils';
 import { SourceService } from '../../sources/services/source-service';
 import {
@@ -24,8 +23,7 @@ import {
 	getSourceQuality,
 	SOURCE_CLASSIFICATION_LABELS,
 	INFORMATION_CLASSIFICATION_LABELS,
-	EVIDENCE_CLASSIFICATION_LABELS,
-	type PersonRoleProperty
+	EVIDENCE_CLASSIFICATION_LABELS
 } from '../../sources/types/source-types';
 
 import { getLogger } from '../../core/logging';

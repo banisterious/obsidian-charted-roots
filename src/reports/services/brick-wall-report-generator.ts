@@ -382,10 +382,6 @@ export class BrickWallReportGenerator {
 
 		for (let gen = 2; gen <= Math.min(options.maxGenerations, summary.maxGeneration + 1); gen++) {
 			const expected = Math.pow(2, gen - 1);
-			const found = brickWalls.filter(bw => bw.generation === gen).length;
-			// Count ancestors at this generation (those who have at least one parent)
-			// We approximate by subtracting brick walls from the expected
-			const genBrickWalls = brickWalls.filter(bw => bw.generation === gen).length;
 			const genAncestors = this.countAncestorsAtGeneration(brickWalls, gen, expected);
 			const percent = Math.round((genAncestors / expected) * 100);
 			lines.push(`| ${gen} | ${this.getGenerationLabel(gen)} | ${genAncestors} | ${expected} | ${percent}% |`);
@@ -471,8 +467,6 @@ export class BrickWallReportGenerator {
 		generation: number,
 		expected: number
 	): number {
-		// Count brick walls AT this generation (these are people we know about but can't go further)
-		const knownBrickWalls = brickWalls.filter(bw => bw.generation === generation && bw.person.crId !== '');
 		// Count unknown placeholders at this generation
 		const unknownSlots = brickWalls.filter(bw => bw.generation === generation && bw.person.crId === '');
 		// The number of ancestors at this generation is the expected minus the unknown slots

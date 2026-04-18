@@ -15,7 +15,7 @@ import { App, Modal, Notice, setIcon, TFolder, FuzzySuggestModal } from 'obsidia
 import type CanvasRootsPlugin from '../../main';
 import { GedcomExporter, type GedcomExportOptions, type GedcomExportResult } from '../gedcom/gedcom-exporter';
 import { GedcomXExporter, type GedcomXExportOptions, type GedcomXExportResult } from '../gedcomx/gedcomx-exporter';
-import { GrampsExporter, type GrampsExportOptions, type GrampsExportResult } from '../gramps/gramps-exporter';
+import { GrampsExporter, type GrampsExportOptions } from '../gramps/gramps-exporter';
 import { FolderFilterService } from '../core/folder-filter';
 import { pluralize } from '../utils/format-utils';
 import type { PrivacySettings, PrivateFieldSummary } from '../core/privacy-service';

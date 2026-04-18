@@ -13,7 +13,7 @@ import { createLucideIcon } from '../../ui/lucide-icons';
 import { OrganizationService } from '../services/organization-service';
 import { MembershipService } from '../services/membership-service';
 import type { OrganizationInfo } from '../types/organization-types';
-import { getOrganizationType, DEFAULT_ORGANIZATION_TYPES, getAllOrganizationTypes } from '../constants/organization-type-defaults';
+import { getOrganizationType, getAllOrganizationTypes } from '../constants/organization-type-defaults';
 import { CreateOrganizationModal } from './create-organization-modal';
 import { ManageOrganizationMembersModal } from './manage-members-modal';
 import { TemplateSnippetsModal } from '../../ui/template-snippets-modal';

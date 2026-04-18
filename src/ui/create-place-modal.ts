@@ -13,7 +13,6 @@ import { PlaceGraphService } from '../core/place-graph';
 import { getDefaultPlaceCategory, getPlaceFolderForCategory, CanvasRootsSettings } from '../settings';
 import { GeocodingService } from '../maps/services/geocoding-service';
 import { ImageMapManager } from '../maps/image-map-manager';
-import type { CustomMapConfig } from '../maps/types/map-types';
 import type CanvasRootsPlugin from '../../main';
 import { capitalize, splitAndTrim } from '../utils/format-utils';
 import { ModalStatePersistence, renderResumePromptBanner } from './modal-state-persistence';
@@ -989,7 +988,7 @@ export class CreatePlaceModal extends Modal {
 		this.mapsSectionEl = form.createDiv({ cls: 'crc-maps-section' });
 
 		if (this.availableMaps.length > 0) {
-			const mapsSetting = new Setting(this.mapsSectionEl)
+			new Setting(this.mapsSectionEl)
 				.setName('Restrict to maps')
 				.setDesc('Only show this place on selected maps (leave empty for all maps)');
 

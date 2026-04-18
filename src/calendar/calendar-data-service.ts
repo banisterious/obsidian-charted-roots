@@ -100,7 +100,6 @@ export class CalendarDataService {
 
 		// Gather from event notes (marriage, baptism, immigration, etc.)
 		if (this.eventService) {
-			const personBirthDeathIds = new Set(events.map(e => e.id));
 			const allEventNotes = this.eventService.getAllEvents();
 
 			for (const eventNote of allEventNotes) {
