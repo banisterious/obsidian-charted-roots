@@ -2,7 +2,7 @@
 
 Plan for triaging the real lint output that was hidden by a broken `npm run lint` script.
 
-**Status:** 🟡 In progress — Tier 0 complete; Tier 1 complete (except 6 MembershipData warnings flagged as a separate migration task)
+**Status:** 🟡 In progress — Tier 0 complete; Tier 1 complete
 
 **Root cause context:** `node_modules/.bin/eslint` was a zero-byte file (likely caused by WSL symlink-creation failing during `npm install --no-bin-links` at some point). The `npm run lint` script resolved to the empty binary and exited 0 silently. Fixed in commit [77848f14](#) by switching the lint/lint:fix scripts to direct `node` invocation. See `package.json` scripts.
 
@@ -17,6 +17,7 @@ Taken immediately after the `npm run lint` fix.
 - **After first Tier 1 batch:** 999 (968 errors, 31 warnings) — `no-floating-promises` (29), `no-misused-promises` (12), `await-thenable` (1)
 - **After Tier 1 errors complete:** 979 (948 errors, 31 warnings) — `no-undef` (20) resolved; all remaining items are warnings
 - **After Tier 1 warnings complete:** 954 (948 errors, 6 warnings) — `no-base-to-string` (23) + `no-deprecated` (2 of 8) resolved
+- **After Tier 1 complete:** 948 (948 errors, 0 warnings) — MembershipData renamed to MembershipRecord; all Tier 1 items resolved
 - **Exit status:** 1 (sentence-case errors — Tier 4 — still trip non-zero exit)
 
 ---
@@ -68,7 +69,7 @@ These rules catch runtime problems. Fix them regardless.
 - [x] **`@typescript-eslint/await-thenable` (1)** ✅ — `await imageMapManager.loadMapConfigs()` was awaiting a sync method; dropped the await.
 - [x] **`@typescript-eslint/no-base-to-string` (23, warnings)** ✅ — resolved via explicit typeof narrowing (e.g., `typeof fm?.name === 'string' ? fm.name : file.basename`), an `asString()` helper for the data-quality membership-reading loop, and type assertions on `personData.data['research level']` reads in family-chart-view.
 - [x] **`@typescript-eslint/no-deprecated` — 2 of 8** ✅ — `gedcomDateToISO` wrapper updated to call `normalizeGedcomDate`; media-lightbox-modal replaced `workspace.activeLeaf` with `getActiveViewOfType(MarkdownView)`.
-- [ ] **`@typescript-eslint/no-deprecated` — 6 MembershipData warnings** — a real internal-schema migration (moving from `MembershipData` interface to flat parallel arrays `membership_orgs`, `membership_org_ids`, etc.). Touches 5 call sites + the export. Deferred as a separate planning item; too large for a lint pass.
+- [x] **`@typescript-eslint/no-deprecated` — 6 MembershipData warnings** ✅ — resolved by renaming `MembershipData` → `MembershipRecord` and dropping the `@deprecated` tag (the on-disk migration had already shipped; the type was a misnamed in-memory API object). See [membership-type-cleanup.md](membership-type-cleanup.md).
 - [x] **`no-undef` in actual TS files (20)** ✅ — resolved. Mix of missing type imports (`CalendarViewState`, `SourceNote`, `UniverseEntities`/`UniverseEntityEntry`, `NumberingSystem`), missing utility imports (`getErrorMessage` x6), a missing function parameter (`validationService`), a missing local variable lookup (`folderFilter` via `plugin.getFolderFilter()`), Obsidian runtime globals added to ESLint config (`createDiv`, `createFragment`, `createEl`, `createSpan`), and a qualified type reference in a module-augmentation declaration file (`Menu` → `import('obsidian').Menu`).
 
 **Expected effort:** 1-2 focused sessions. These are worth serious attention because they're actual bugs.
