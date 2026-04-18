@@ -3434,8 +3434,13 @@ export class FamilyChartView extends ItemView {
 				// Unit perpendicular vector (rotate 90° CCW)
 				const px = -dy / len;
 				const py = dx / len;
-				// Center stack around 0: for N entries, offsets are (index - (N-1)/2) * STACK_OFFSET_PX
-				const offsetIndex = index - (entries.length - 1) / 2;
+				// Center stack around 0 with a half-step shift for odd counts so
+				// no line lands on the midpoint where a family link might sit
+				// (marriage, parent-child). Even counts are already symmetric
+				// around 0 and don't coincide with the midpoint.
+				const N = entries.length;
+				const halfShift = N % 2 === 1 ? 0.5 : 0;
+				const offsetIndex = index - (N - 1) / 2 + halfShift;
 				const offset = offsetIndex * STACK_OFFSET_PX;
 				const ox = px * offset;
 				const oy = py * offset;
