@@ -102,10 +102,15 @@ export interface OrganizationFrontmatter {
 }
 
 /**
- * Membership data as stored in person frontmatter (legacy nested format)
- * @deprecated Use flat parallel arrays instead (membership_orgs, membership_org_ids, etc.)
+ * In-memory shape of a single membership record.
+ *
+ * This is the convenient object form used when constructing a membership in
+ * the UI modals and passing it to `MembershipService`. It is also the shape
+ * of legacy nested `memberships` arrays still readable from older vault
+ * files (the on-disk format migrated to flat parallel arrays; see
+ * `membership_orgs`, `membership_org_ids`, etc. below).
  */
-export interface MembershipData {
+export interface MembershipRecord {
 	/** Wikilink to organization note */
 	org: string;
 	/** Organization cr_id for robust linking */

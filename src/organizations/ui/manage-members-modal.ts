@@ -9,7 +9,7 @@
 
 import { App, Modal, Notice, Setting, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
-import type { OrganizationInfo, PersonMembership, MembershipData } from '../types/organization-types';
+import type { OrganizationInfo, PersonMembership, MembershipRecord } from '../types/organization-types';
 import { MembershipService } from '../services/membership-service';
 import { OrganizationService } from '../services/organization-service';
 import { createLucideIcon } from '../../ui/lucide-icons';
@@ -296,7 +296,7 @@ export class ManageOrganizationMembersModal extends Modal {
 			// First remove the old membership, then add the updated one
 			await this.membershipService.removeMembership(member.personFile, this.organization.crId);
 
-			const newMembership: MembershipData = {
+			const newMembership: MembershipRecord = {
 				org: `[[${this.organization.name}]]`,
 				org_id: this.organization.crId,
 				role: updates.role,
@@ -404,7 +404,7 @@ export class ManageOrganizationMembersModal extends Modal {
 
 		for (const person of people) {
 			try {
-				const membership: MembershipData = {
+				const membership: MembershipRecord = {
 					org: `[[${this.organization.name}]]`,
 					org_id: this.organization.crId
 				};

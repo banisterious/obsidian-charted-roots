@@ -8,7 +8,7 @@
 import { App, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type {
-	MembershipData,
+	MembershipRecord,
 	PersonMembership,
 	OrganizationInfo,
 	FlatMembershipProperties
@@ -188,7 +188,7 @@ export class MembershipService {
 	/**
 	 * Add a membership to a person's note using flat parallel arrays
 	 */
-	async addMembership(personFile: TFile, membership: MembershipData): Promise<void> {
+	async addMembership(personFile: TFile, membership: MembershipRecord): Promise<void> {
 		await this.app.fileManager.processFrontMatter(personFile, (frontmatter) => {
 			// Get existing flat arrays or initialize empty
 			const orgs: string[] = Array.isArray(frontmatter.membership_orgs) ? [...frontmatter.membership_orgs] : [];
@@ -274,7 +274,7 @@ export class MembershipService {
 			// Check legacy nested memberships array
 			if (Array.isArray(frontmatter.memberships)) {
 				const filteredMemberships = frontmatter.memberships.filter(
-					(m: MembershipData) => m.org_id !== orgCrId
+					(m: MembershipRecord) => m.org_id !== orgCrId
 				);
 
 				if (filteredMemberships.length !== frontmatter.memberships.length) {

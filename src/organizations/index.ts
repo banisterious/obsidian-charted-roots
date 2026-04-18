@@ -12,7 +12,7 @@ export type {
 	OrganizationCategoryDefinition,
 	OrganizationInfo,
 	OrganizationFrontmatter,
-	MembershipData,
+	MembershipRecord,
 	PersonMembership,
 	OrganizationWithMembers,
 	OrganizationHierarchyNode,

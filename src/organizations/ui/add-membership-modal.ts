@@ -6,7 +6,7 @@
 
 import { App, Modal, Setting, Notice, TFile, type TextComponent } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
-import type { MembershipData, OrganizationInfo } from '../types/organization-types';
+import type { MembershipRecord, OrganizationInfo } from '../types/organization-types';
 import { OrganizationService } from '../services/organization-service';
 import { MembershipService } from '../services/membership-service';
 import { RoleSuggest } from './role-suggest';
@@ -166,7 +166,7 @@ export class AddMembershipModal extends Modal {
 			return;
 		}
 
-		const membership: MembershipData = {
+		const membership: MembershipRecord = {
 			org: `[[${this.selectedOrg.file.basename}]]`,
 			org_id: this.selectedOrg.crId
 		};
