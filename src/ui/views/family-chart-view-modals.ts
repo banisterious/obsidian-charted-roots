@@ -4,9 +4,17 @@
  * Extracted from family-chart-view.ts to keep that file focused on chart logic.
  */
 
-import { App, Modal, Notice } from 'obsidian';
+import { App, Modal, Notice, Setting } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { FamilyChartColors } from '../../settings';
+import {
+	type HighlightGroup,
+	type HighlightField,
+	type HighlightColor,
+	HIGHLIGHT_FIELDS,
+	HIGHLIGHT_COLORS,
+	MAX_HIGHLIGHT_GROUPS
+} from './highlight-groups';
 
 export type FamilyChartThemePresets = Record<string, { name: string; colors: FamilyChartColors }>;
 
@@ -319,5 +327,171 @@ export class FamilyChartStyleModal extends Modal {
 
 	onClose(): void {
 		this.contentEl.empty();
+	}
+}
+
+// ─── Highlight Groups Modal (#379) ──────────────────────────────────
+
+export interface HighlightGroupsModalCallbacks {
+	getGroups(): HighlightGroup[];
+	saveGroups(groups: HighlightGroup[]): void;
+}
+
+/**
+ * Modal for managing family-chart highlight groups.
+ * Users can add up to MAX_HIGHLIGHT_GROUPS groups, each with a field, value,
+ * color, and enabled flag. The modal operates on a working copy and commits
+ * on save; no changes are persisted until the user clicks Save.
+ */
+export class HighlightGroupsModal extends Modal {
+	private callbacks: HighlightGroupsModalCallbacks;
+	private groups: HighlightGroup[];
+
+	constructor(app: App, callbacks: HighlightGroupsModalCallbacks) {
+		super(app);
+		this.callbacks = callbacks;
+		// Clone so we can cancel cleanly
+		this.groups = callbacks.getGroups().map(g => ({ ...g }));
+	}
+
+	onOpen(): void {
+		const { contentEl, titleEl } = this;
+		this.modalEl.addClass('cr-highlight-groups-modal');
+		titleEl.setText('Highlight groups');
+
+		contentEl.createEl('p', {
+			text: 'Highlight family chart cards by a property value. Non-matching cards are dimmed. Up to three groups can be active at once; when a card matches multiple groups, the first group in the list wins.',
+			cls: 'cr-highlight-groups-modal__desc'
+		});
+
+		this.renderGroupsList();
+		this.renderFooter();
+	}
+
+	onClose(): void {
+		this.contentEl.empty();
+	}
+
+	private renderGroupsList(): void {
+		const existing = this.contentEl.querySelector('.cr-highlight-groups-list');
+		if (existing) existing.remove();
+
+		const listEl = this.contentEl.createDiv({ cls: 'cr-highlight-groups-list' });
+
+		if (this.groups.length === 0) {
+			listEl.createEl('p', {
+				text: 'No highlight groups yet. Click "Add group" to create one.',
+				cls: 'cr-highlight-groups-list__empty'
+			});
+		} else {
+			this.groups.forEach((group, index) => this.renderGroupRow(listEl, group, index));
+		}
+
+		const actionsEl = listEl.createDiv({ cls: 'cr-highlight-groups-list__actions' });
+
+		const addBtn = actionsEl.createEl('button', { text: 'Add group' });
+		addBtn.disabled = this.groups.length >= MAX_HIGHLIGHT_GROUPS;
+		if (addBtn.disabled) {
+			addBtn.setAttr('title', `Limit of ${MAX_HIGHLIGHT_GROUPS} groups reached`);
+		}
+		addBtn.addEventListener('click', () => {
+			this.groups.push(this.makeNewGroup());
+			this.renderGroupsList();
+		});
+
+		if (this.groups.length > 0) {
+			const clearBtn = actionsEl.createEl('button', { text: 'Clear all', cls: 'mod-warning' });
+			clearBtn.addEventListener('click', () => {
+				this.groups = [];
+				this.renderGroupsList();
+			});
+		}
+	}
+
+	private renderGroupRow(container: HTMLElement, group: HighlightGroup, index: number): void {
+		const rowEl = container.createDiv({ cls: 'cr-highlight-group-row' });
+
+		const swatch = rowEl.createDiv({ cls: 'cr-highlight-group-row__swatch' });
+		const swatchColor = HIGHLIGHT_COLORS.find(c => c.value === group.color)?.hex ?? '#999';
+		swatch.style.setProperty('background-color', swatchColor);
+
+		new Setting(rowEl)
+			.setName('Field')
+			.addDropdown(dd => {
+				for (const f of HIGHLIGHT_FIELDS) dd.addOption(f.value, f.label);
+				dd.setValue(group.field);
+				dd.onChange(value => {
+					group.field = value as HighlightField;
+				});
+			});
+
+		new Setting(rowEl)
+			.setName('Value')
+			.setDesc('Exact match (case-insensitive)')
+			.addText(text => {
+				text.setValue(group.value);
+				text.setPlaceholder('e.g. Magician');
+				text.onChange(value => {
+					group.value = value;
+				});
+			});
+
+		new Setting(rowEl)
+			.setName('Color')
+			.addDropdown(dd => {
+				for (const c of HIGHLIGHT_COLORS) dd.addOption(c.value, c.label);
+				dd.setValue(group.color);
+				dd.onChange(value => {
+					group.color = value as HighlightColor;
+					this.renderGroupsList();
+				});
+			});
+
+		const controlsEl = rowEl.createDiv({ cls: 'cr-highlight-group-row__controls' });
+
+		new Setting(controlsEl)
+			.setName('Enabled')
+			.addToggle(tg => {
+				tg.setValue(group.enabled);
+				tg.onChange(value => {
+					group.enabled = value;
+				});
+			});
+
+		const deleteBtn = controlsEl.createEl('button', { text: 'Delete', cls: 'mod-warning' });
+		deleteBtn.addEventListener('click', () => {
+			this.groups.splice(index, 1);
+			this.renderGroupsList();
+		});
+	}
+
+	private renderFooter(): void {
+		const footerEl = this.contentEl.createDiv({ cls: 'cr-highlight-groups-modal__footer' });
+
+		const cancelBtn = footerEl.createEl('button', { text: 'Cancel' });
+		cancelBtn.addEventListener('click', () => this.close());
+
+		const saveBtn = footerEl.createEl('button', { text: 'Save', cls: 'mod-cta' });
+		saveBtn.addEventListener('click', () => {
+			const invalid = this.groups.find(g => g.enabled && g.value.trim() === '');
+			if (invalid) {
+				new Notice('Enabled groups must have a value');
+				return;
+			}
+			this.callbacks.saveGroups(this.groups);
+			this.close();
+		});
+	}
+
+	private makeNewGroup(): HighlightGroup {
+		const usedColors = new Set(this.groups.map(g => g.color));
+		const nextColor = HIGHLIGHT_COLORS.find(c => !usedColors.has(c.value))?.value ?? 'gold';
+		return {
+			id: `hg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+			field: 'occupation',
+			value: '',
+			color: nextColor,
+			enabled: true
+		};
 	}
 }

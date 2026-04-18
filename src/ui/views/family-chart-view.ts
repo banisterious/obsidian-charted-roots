@@ -20,7 +20,12 @@ import { getAllRelationshipTypesWithCustomizations } from '../../relationships/c
 import { RelationshipService } from '../../relationships/services/relationship-service';
 import type { ParsedRelationship, RelationshipTypeDefinition } from '../../relationships/types/relationship-types';
 import { FamilyChartExportWizard } from './family-chart-export-wizard';
-import { DeletePersonConfirmModal, FamilyChartStyleModal } from './family-chart-view-modals';
+import { DeletePersonConfirmModal, FamilyChartStyleModal, HighlightGroupsModal } from './family-chart-view-modals';
+import {
+	type HighlightGroup,
+	HIGHLIGHT_COLORS,
+	firstMatchingGroup
+} from './highlight-groups';
 import type { ProgressCallback } from './family-chart-export-progress-modal';
 import {
 	exportWithOptions as doExportWithOptions,
@@ -63,6 +68,7 @@ interface FamilyChartPerson {
  */
 type CardStyle = 'rectangle' | 'circle' | 'compact' | 'mini';
 
+
 /**
  * Name display mode options for Family Chart
  * - 'full': Display full name on single line (default)
@@ -84,6 +90,7 @@ interface FamilyChartViewState {
 	showKinshipLabels?: boolean;
 	showCustomRelationships?: boolean;
 	customRelationshipTypeVisibility?: Record<string, boolean>;
+	highlightGroups?: HighlightGroup[];
 	showAvatars?: boolean;
 	isHorizontal?: boolean;
 	// Tree depth limits
@@ -129,6 +136,8 @@ export class FamilyChartView extends ItemView {
 	// Custom relationships overlay (#386); master toggle + per-type visibility
 	private showCustomRelationships: boolean = false;
 	private customRelationshipTypeVisibility: Record<string, boolean> = {};
+	// Highlight groups (#379); up to MAX_HIGHLIGHT_GROUPS active at once
+	private highlightGroups: HighlightGroup[] = [];
 	private showAvatars: boolean = true; // Show person avatar thumbnails on cards
 	private isHorizontal: boolean = false; // Tree orientation: false = vertical (top-to-bottom), true = horizontal (left-to-right)
 	// Tree depth limits (null = unlimited)
@@ -1218,10 +1227,11 @@ export class FamilyChartView extends ItemView {
 					this.clearKinshipLabelsForUpdate();
 					this.clearRelationshipOverlayForUpdate();
 				})
-				// Re-render overlays after tree animation completes (#195, #386)
+				// Re-render overlays after tree animation completes (#195, #386, #379)
 				.setAfterUpdate(() => {
 					this.scheduleKinshipLabelRerender();
 					this.scheduleRelationshipOverlayRerender();
+					this.scheduleHighlightRerender();
 				});
 
 			// Apply tree orientation
@@ -2434,6 +2444,13 @@ export class FamilyChartView extends ItemView {
 		}
 
 		menu.addItem((item) => {
+			const active = this.hasActiveHighlights();
+			item.setTitle(`${active ? '✓ ' : ''}Highlight groups...`)
+				.setIcon('highlighter')
+				.onClick(() => this.openHighlightGroupsModal());
+		});
+
+		menu.addItem((item) => {
 			item.setTitle(`${this.showAvatars ? '✓ ' : ''}Show avatars`)
 				.setIcon('image')
 				.onClick(() => this.toggleAvatars());
@@ -3591,6 +3608,79 @@ export class FamilyChartView extends ItemView {
 		this.renderRelationshipOverlay();
 	}
 
+	// ─── Highlight Groups (#379) ───────────────────────────────────────
+
+	/**
+	 * Open the Highlight Groups modal.
+	 */
+	private openHighlightGroupsModal(): void {
+		new HighlightGroupsModal(this.app, {
+			getGroups: () => this.highlightGroups,
+			saveGroups: (groups) => {
+				this.highlightGroups = groups;
+				this.app.workspace.requestSaveLayout();
+				this.applyHighlightClasses();
+			}
+		}).open();
+	}
+
+	/**
+	 * Schedule re-application of highlight classes after tree animation.
+	 */
+	private scheduleHighlightRerender(): void {
+		if (this.hasActiveHighlights()) {
+			setTimeout(() => this.applyHighlightClasses(), 1500);
+		}
+	}
+
+	private hasActiveHighlights(): boolean {
+		return this.highlightGroups.some(g => g.enabled && g.value.trim() !== '');
+	}
+
+	/**
+	 * Apply per-card CSS classes for the highlight feature.
+	 * Each card gets either cr-hl-match--{color} (if it matches a group) or
+	 * cr-hl-dim (if any group is active and this card doesn't match).
+	 * When no groups are active, all classes are removed.
+	 */
+	private applyHighlightClasses(): void {
+		if (!this.chartContainerEl) return;
+
+		const active = this.hasActiveHighlights();
+		this.chartContainerEl.toggleClass('cr-hl-active', active);
+
+		// Build a lookup: crId → PersonNode (for field values)
+		const personMap = new Map<string, PersonNode>();
+		for (const p of this.familyGraphService.getAllPeople()) {
+			personMap.set(p.crId, p);
+		}
+		const groups = this.highlightGroups;
+
+		d3.selectAll<Element, { data: { id: string } }>('.card_cont')
+			.each(function(nodeData) {
+				// Strip all previous highlight classes
+				this.classList.remove('cr-hl-dim', 'cr-hl-match');
+				for (const c of HIGHLIGHT_COLORS) {
+					this.classList.remove(`cr-hl-match--${c.value}`);
+				}
+
+				if (!active) return;
+
+				const personId = nodeData?.data?.id;
+				if (!personId) return;
+				const person = personMap.get(personId);
+				if (!person) return;
+
+				const match = firstMatchingGroup(person, groups);
+				if (match) {
+					this.classList.add('cr-hl-match');
+					this.classList.add(`cr-hl-match--${match.color}`);
+				} else {
+					this.classList.add('cr-hl-dim');
+				}
+			});
+	}
+
 	/**
 	 * Get card center positions by person ID
 	 * Used to identify which people are connected by spouse links
@@ -4616,6 +4706,7 @@ export class FamilyChartView extends ItemView {
 			showKinshipLabels: this.showKinshipLabels,
 			showCustomRelationships: this.showCustomRelationships,
 			customRelationshipTypeVisibility: this.customRelationshipTypeVisibility,
+			highlightGroups: this.highlightGroups,
 			showAvatars: this.showAvatars,
 			isHorizontal: this.isHorizontal,
 			ancestryDepth: this.ancestryDepth,
@@ -4672,6 +4763,9 @@ export class FamilyChartView extends ItemView {
 		}
 		if (state.customRelationshipTypeVisibility !== undefined) {
 			this.customRelationshipTypeVisibility = state.customRelationshipTypeVisibility;
+		}
+		if (state.highlightGroups !== undefined) {
+			this.highlightGroups = state.highlightGroups;
 		}
 		if (state.showAvatars !== undefined) {
 			this.showAvatars = state.showAvatars;

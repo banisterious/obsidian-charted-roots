@@ -1359,3 +1359,98 @@
 .cr-fcv-chart-container.card-style-mini .open-note-btn {
   display: none;
 }
+
+/* ------------------------------------------------------------
+ * Highlight groups (#379)
+ * Cards matching an active highlight group get a colored outline;
+ * non-matching cards are dimmed when any group is active.
+ * ------------------------------------------------------------ */
+
+.cr-fcv-chart-container.cr-hl-active .card_cont.cr-hl-dim {
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}
+
+.cr-fcv-chart-container .card_cont.cr-hl-match {
+  transition: opacity 0.2s ease, filter 0.2s ease;
+}
+
+/* Per-color glow via drop-shadow on the card container. Stacked shadows give
+ * a more visible outline effect. Works for both SVG cards (rectangle / compact
+ * / mini) and HTML cards (circle) because CSS filters apply to both. */
+.cr-fcv-chart-container .card_cont.cr-hl-match--gold {
+  filter: drop-shadow(0 0 3px #d4a017) drop-shadow(0 0 8px #d4a017);
+}
+.cr-fcv-chart-container .card_cont.cr-hl-match--blue {
+  filter: drop-shadow(0 0 3px #3b82f6) drop-shadow(0 0 8px #3b82f6);
+}
+.cr-fcv-chart-container .card_cont.cr-hl-match--green {
+  filter: drop-shadow(0 0 3px #22c55e) drop-shadow(0 0 8px #22c55e);
+}
+.cr-fcv-chart-container .card_cont.cr-hl-match--purple {
+  filter: drop-shadow(0 0 3px #a855f7) drop-shadow(0 0 8px #a855f7);
+}
+.cr-fcv-chart-container .card_cont.cr-hl-match--red {
+  filter: drop-shadow(0 0 3px #ef4444) drop-shadow(0 0 8px #ef4444);
+}
+.cr-fcv-chart-container .card_cont.cr-hl-match--teal {
+  filter: drop-shadow(0 0 3px #14b8a6) drop-shadow(0 0 8px #14b8a6);
+}
+
+/* Modal layout */
+.cr-highlight-groups-modal {
+  max-width: 640px;
+}
+
+.cr-highlight-groups-modal__desc {
+  color: var(--text-muted);
+  margin-bottom: 1em;
+  font-size: 0.9em;
+}
+
+.cr-highlight-groups-list__empty {
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 1em 0;
+}
+
+.cr-highlight-groups-list__actions {
+  display: flex;
+  gap: 0.5em;
+  margin-top: 1em;
+}
+
+.cr-highlight-group-row {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 0.5em 1em;
+  margin-bottom: 0.75em;
+  position: relative;
+}
+
+.cr-highlight-group-row__swatch {
+  position: absolute;
+  top: 0.5em;
+  right: 0.5em;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.cr-highlight-group-row__controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: 0.5em;
+}
+
+.cr-highlight-groups-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5em;
+  margin-top: 1.5em;
+  padding-top: 1em;
+  border-top: 1px solid var(--background-modifier-border);
+}
