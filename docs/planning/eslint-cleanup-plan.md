@@ -2,7 +2,7 @@
 
 Plan for triaging the real lint output that was hidden by a broken `npm run lint` script.
 
-**Status:** 🟡 In progress — Tier 0 complete; Tier 1 partially complete (errors resolved, warnings remain)
+**Status:** 🟡 In progress — Tier 0 complete; Tier 1 errors complete; Tier 1 warnings pending
 
 **Root cause context:** `node_modules/.bin/eslint` was a zero-byte file (likely caused by WSL symlink-creation failing during `npm install --no-bin-links` at some point). The `npm run lint` script resolved to the empty binary and exited 0 silently. Fixed in commit [77848f14](#) by switching the lint/lint:fix scripts to direct `node` invocation. See `package.json` scripts.
 
@@ -14,8 +14,9 @@ Taken immediately after the `npm run lint` fix.
 
 - **Total problems (initial):** 1173 (1142 errors, 31 warnings), 161 files
 - **After Tier 0:** 1041 (1010 errors, 31 warnings)
-- **After Tier 1 error batch:** 999 (968 errors, 31 warnings) — resolved `no-floating-promises` (29), `no-misused-promises` (12), `await-thenable` (1)
-- **Exit status:** 1
+- **After first Tier 1 batch:** 999 (968 errors, 31 warnings) — `no-floating-promises` (29), `no-misused-promises` (12), `await-thenable` (1)
+- **After Tier 1 errors complete:** 979 (948 errors, 31 warnings) — `no-undef` (20) resolved; all remaining items are warnings
+- **Exit status:** 1 (warnings still trip non-zero exit)
 
 ---
 
@@ -66,7 +67,7 @@ These rules catch runtime problems. Fix them regardless.
 - [x] **`@typescript-eslint/await-thenable` (1)** ✅ — `await imageMapManager.loadMapConfigs()` was awaiting a sync method; dropped the await.
 - [ ] **`@typescript-eslint/no-base-to-string` (23, warnings)** — implicit `.toString()` on objects. Many are `frontmatter['field'] || ''` patterns where the field could be an object; fix is explicit type-narrowing or `String(x)` with a guard.
 - [ ] **`@typescript-eslint/no-deprecated` (8, warnings)** — Obsidian API migrations and one internal `MembershipData` deprecation. Each needs a per-site check for what the deprecation suggests.
-- [ ] **`no-undef` in actual TS files (20)** — real type-resolution issues: missing imports or types not picked up by ESLint's parser. Examples: `CalendarViewState`, `SourceNote`, `UniverseEntities`, `getErrorMessage`, `createDiv`, `createFragment`, `Menu`. Per-site investigation required.
+- [x] **`no-undef` in actual TS files (20)** ✅ — resolved. Mix of missing type imports (`CalendarViewState`, `SourceNote`, `UniverseEntities`/`UniverseEntityEntry`, `NumberingSystem`), missing utility imports (`getErrorMessage` x6), a missing function parameter (`validationService`), a missing local variable lookup (`folderFilter` via `plugin.getFolderFilter()`), Obsidian runtime globals added to ESLint config (`createDiv`, `createFragment`, `createEl`, `createSpan`), and a qualified type reference in a module-augmentation declaration file (`Menu` → `import('obsidian').Menu`).
 
 **Expected effort:** 1-2 focused sessions. These are worth serious attention because they're actual bugs.
 
