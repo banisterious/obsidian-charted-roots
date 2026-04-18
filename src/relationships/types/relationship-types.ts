@@ -82,6 +82,12 @@ export interface RelationshipTypeDefinition {
 	 */
 	familyGraphMapping?: FamilyGraphMapping;
 	/**
+	 * Whether this relationship type is drawn as an overlay line on the family chart view.
+	 * Decoupled from includeOnFamilyTree: a type can be tree-only, overlay-only, or both.
+	 * Default: false (opt-in).
+	 */
+	includeOnFamilyChartOverlay?: boolean;
+	/**
 	 * Setting that must be enabled for this relationship type to appear.
 	 * Used for opt-in features like DNA tracking.
 	 */

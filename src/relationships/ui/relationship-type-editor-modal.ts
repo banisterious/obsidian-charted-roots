@@ -82,6 +82,7 @@ export class RelationshipTypeEditorModal extends Modal {
 	private symmetric: boolean = false;
 	private includeOnFamilyTree: boolean = false;
 	private familyGraphMapping: FamilyGraphMapping | '' = '';
+	private includeOnFamilyChartOverlay: boolean = false;
 
 	constructor(app: App, plugin: CanvasRootsPlugin, options: RelationshipTypeEditorModalOptions) {
 		super(app);
@@ -102,6 +103,7 @@ export class RelationshipTypeEditorModal extends Modal {
 			this.symmetric = options.editType.symmetric;
 			this.includeOnFamilyTree = options.editType.includeOnFamilyTree || false;
 			this.familyGraphMapping = options.editType.familyGraphMapping || '';
+			this.includeOnFamilyChartOverlay = options.editType.includeOnFamilyChartOverlay || false;
 		} else if (options.customizeBuiltIn) {
 			// Customizing a built-in type
 			this.customizeMode = true;
@@ -116,11 +118,15 @@ export class RelationshipTypeEditorModal extends Modal {
 				this.description = existing.description ?? options.customizeBuiltIn.description ?? '';
 				this.color = existing.color ?? options.customizeBuiltIn.color;
 				this.lineStyle = existing.lineStyle ?? options.customizeBuiltIn.lineStyle;
+				this.includeOnFamilyChartOverlay = existing.includeOnFamilyChartOverlay
+					?? options.customizeBuiltIn.includeOnFamilyChartOverlay
+					?? false;
 			} else {
 				this.name = options.customizeBuiltIn.name;
 				this.description = options.customizeBuiltIn.description || '';
 				this.color = options.customizeBuiltIn.color;
 				this.lineStyle = options.customizeBuiltIn.lineStyle;
+				this.includeOnFamilyChartOverlay = options.customizeBuiltIn.includeOnFamilyChartOverlay || false;
 			}
 			// These can't be customized for built-ins
 			this.category = options.customizeBuiltIn.category;
@@ -309,6 +315,18 @@ export class RelationshipTypeEditorModal extends Modal {
 			}
 		}
 
+		// Family Chart Overlay section (available for both user types and built-in customizations)
+		contentEl.createEl('h3', { text: 'Family chart overlay', cls: 'crc-section-heading' });
+
+		new Setting(contentEl)
+			.setName('Render on family chart as overlay line')
+			.setDesc('Draw this relationship type as a styled line between the two people it connects, on top of the family tree. Decoupled from tree-structure integration — a type can be tree-only, overlay-only, or both.')
+			.addToggle(toggle => toggle
+				.setValue(this.includeOnFamilyChartOverlay)
+				.onChange(value => {
+					this.includeOnFamilyChartOverlay = value;
+				}));
+
 		// Color picker
 		const colorSetting = new Setting(contentEl)
 			.setName('Color')
@@ -418,6 +436,9 @@ export class RelationshipTypeEditorModal extends Modal {
 		if (this.description !== (builtIn.description || '')) customization.description = this.description.trim();
 		if (this.color !== builtIn.color) customization.color = this.color;
 		if (this.lineStyle !== builtIn.lineStyle) customization.lineStyle = this.lineStyle;
+		if (this.includeOnFamilyChartOverlay !== (builtIn.includeOnFamilyChartOverlay || false)) {
+			customization.includeOnFamilyChartOverlay = this.includeOnFamilyChartOverlay;
+		}
 
 		if (Object.keys(customization).length > 0) {
 			this.plugin.settings.relationshipTypeCustomizations[this.id] = customization;
@@ -446,7 +467,8 @@ export class RelationshipTypeEditorModal extends Modal {
 				symmetric: this.symmetric,
 				builtIn: false,
 				includeOnFamilyTree: this.includeOnFamilyTree || undefined,
-				familyGraphMapping: this.familyGraphMapping || undefined
+				familyGraphMapping: this.familyGraphMapping || undefined,
+				includeOnFamilyChartOverlay: this.includeOnFamilyChartOverlay || undefined
 			};
 		}
 
@@ -476,7 +498,8 @@ export class RelationshipTypeEditorModal extends Modal {
 			symmetric: this.symmetric,
 			builtIn: false,
 			includeOnFamilyTree: this.includeOnFamilyTree || undefined,
-			familyGraphMapping: this.familyGraphMapping || undefined
+			familyGraphMapping: this.familyGraphMapping || undefined,
+			includeOnFamilyChartOverlay: this.includeOnFamilyChartOverlay || undefined
 		};
 
 		existingTypes.push(typeDef);
