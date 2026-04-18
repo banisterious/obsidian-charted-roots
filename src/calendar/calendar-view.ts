@@ -78,6 +78,7 @@ export class CalendarView extends ItemView {
 		return 'calendar';
 	}
 
+	// eslint-disable-next-line @typescript-eslint/require-await -- ItemView requires async onOpen
 	async onOpen(): Promise<void> {
 		logger.debug('view-open', 'Opening CalendarView');
 		this.restorePersistedState();
@@ -142,6 +143,7 @@ export class CalendarView extends ItemView {
 		};
 	}
 
+	// eslint-disable-next-line @typescript-eslint/require-await -- ItemView.setState signature returns Promise<void>
 	async setState(state: Partial<CalendarViewState>): Promise<void> {
 		// Ignore Obsidian's setState if we already restored our own persisted state
 		// (Obsidian loads calendarViewState from settings and passes it here,

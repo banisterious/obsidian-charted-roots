@@ -430,7 +430,7 @@ export class StagingManagementModal extends Modal {
 		checkBtn.createSpan({ text: 'Check duplicates' });
 		checkBtn.addEventListener('click', (e) => {
 			e.stopPropagation();
-			void this.handleCheckDuplicates(subfolder.path);
+			this.handleCheckDuplicates(subfolder.path);
 		});
 
 		// Promote button
@@ -566,7 +566,7 @@ export class StagingManagementModal extends Modal {
 		});
 		setIcon(checkAllBtn, 'search');
 		checkAllBtn.createSpan({ text: 'Check all duplicates' });
-		checkAllBtn.addEventListener('click', () => { void this.handleCheckDuplicates(); });
+		checkAllBtn.addEventListener('click', () => { this.handleCheckDuplicates(); });
 
 		// Promote all
 		const promoteAllBtn = buttonRow.createEl('button', {
@@ -588,7 +588,7 @@ export class StagingManagementModal extends Modal {
 	/**
 	 * Handle check duplicates action
 	 */
-	private async handleCheckDuplicates(subfolderPath?: string): Promise<void> {
+	private handleCheckDuplicates(subfolderPath?: string): void {
 		// Initialize cross-import service if needed
 		if (!this.crossImportService) {
 			const folderFilter = new FolderFilterService(this.plugin.settings);

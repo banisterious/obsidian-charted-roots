@@ -52,7 +52,7 @@ export class SourceRolesProcessor {
 
 			// Determine which source note to use
 			const sourceService = this.plugin.getSourceService();
-			const context = await this.resolveSourceContext(config, ctx, sourceService);
+			const context = this.resolveSourceContext(config, ctx, sourceService);
 
 			if (!context) {
 				renderBlockError(el, 'Could not find source note. Specify a source with `source: "[[Source Name]]"` or use this block in a source note.');
@@ -67,7 +67,7 @@ export class SourceRolesProcessor {
 				if (changedFile.path === context.sourcePath) {
 					// Invalidate source cache and re-resolve
 					sourceService.invalidateCache();
-					const freshContext = await this.resolveSourceContext(config, ctx, sourceService);
+					const freshContext = this.resolveSourceContext(config, ctx, sourceService);
 
 					if (freshContext) {
 						// Clear and re-render
@@ -90,11 +90,11 @@ export class SourceRolesProcessor {
 	/**
 	 * Resolve the source context from config or current file
 	 */
-	private async resolveSourceContext(
+	private resolveSourceContext(
 		config: Record<string, unknown>,
 		ctx: MarkdownPostProcessorContext,
 		sourceService: SourceService
-	): Promise<SourceRolesContext | null> {
+	): SourceRolesContext | null {
 		const app = this.plugin.app;
 
 		// Check if source is specified in config

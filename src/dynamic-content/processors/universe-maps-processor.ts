@@ -33,6 +33,7 @@ export class UniverseMapsProcessor {
 	/**
 	 * Process a charted-roots-universe-maps code block
 	 */
+	// eslint-disable-next-line @typescript-eslint/require-await -- MarkdownPostProcessor signature allows Promise<void>; keeping async for parity with other processors
 	async process(
 		source: string,
 		el: HTMLElement,
@@ -50,10 +51,10 @@ export class UniverseMapsProcessor {
 				return;
 			}
 
-			await this.renderer.render(el, context, config, component);
+			this.renderer.render(el, context, config, component);
 
 			// Re-render when map notes change
-			const metadataHandler = async (changedFile: TFile) => {
+			const metadataHandler = (changedFile: TFile) => {
 				const cache = this.plugin.app.metadataCache.getFileCache(changedFile);
 				const fm = cache?.frontmatter;
 				if (changedFile.path === context.universeFile.path ||
@@ -61,7 +62,7 @@ export class UniverseMapsProcessor {
 					const freshContext = this.resolveUniverseContext(ctx);
 					if (freshContext) {
 						el.empty();
-						await this.renderer.render(el, freshContext, config, component);
+						this.renderer.render(el, freshContext, config, component);
 					}
 				}
 			};

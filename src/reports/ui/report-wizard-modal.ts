@@ -715,14 +715,14 @@ export class ReportWizardModal extends Modal {
 		pickerButton.insertBefore(icon, pickerButton.firstChild);
 
 		pickerButton.addEventListener('click', () => {
-			void this.openResearchReportPicker();
+			this.openResearchReportPicker();
 		});
 	}
 
 	/**
 	 * Open research report note picker modal
 	 */
-	private async openResearchReportPicker(): Promise<void> {
+	private openResearchReportPicker(): void {
 		// Find all notes with cr_type: research_report
 		const researchReports: { path: string; name: string }[] = [];
 

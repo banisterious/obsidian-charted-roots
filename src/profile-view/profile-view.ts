@@ -167,7 +167,7 @@ export class ProfileView extends ItemView {
 			if (file) {
 				const entityType = this.detectEntityType(file);
 				if (entityType) {
-					void this.loadAndRenderEntity(file, entityType);
+					this.loadAndRenderEntity(file, entityType);
 					return;
 				}
 			}
@@ -189,7 +189,7 @@ export class ProfileView extends ItemView {
 		const entityType = this.detectEntityType(file);
 		if (entityType) {
 			this.breadcrumbs = [];
-			void this.loadAndRenderEntity(file, entityType);
+			this.loadAndRenderEntity(file, entityType);
 		}
 	}
 
@@ -236,7 +236,7 @@ export class ProfileView extends ItemView {
 		// New entity — reset breadcrumbs and load
 		this.breadcrumbs = [];
 		this.staleIndicator = false;
-		void this.loadAndRenderEntity(file, entityType);
+		this.loadAndRenderEntity(file, entityType);
 	}
 
 	private scheduleRefresh(): void {
@@ -250,7 +250,7 @@ export class ProfileView extends ItemView {
 				if (file) {
 					const entityType = this.detectEntityType(file);
 					if (entityType) {
-						void this.loadAndRenderEntity(file, entityType);
+						this.loadAndRenderEntity(file, entityType);
 					}
 				}
 			}
@@ -280,7 +280,7 @@ export class ProfileView extends ItemView {
 
 	// ── Load and render ─────────────────────────────────────
 
-	private async loadAndRenderEntity(file: TFile, entityType: ProfileEntityType): Promise<void> {
+	private loadAndRenderEntity(file: TFile, entityType: ProfileEntityType): void {
 		const cache = this.app.metadataCache.getFileCache(file);
 		const crId = cache?.frontmatter?.cr_id as string | undefined;
 		if (!crId) return;
@@ -300,7 +300,7 @@ export class ProfileView extends ItemView {
 		this.leaf.updateHeader();
 
 		// Load data
-		const data = await this.dataLoader.loadEntity(file, entityType);
+		const data = this.dataLoader.loadEntity(file, entityType);
 		if (!data) {
 			this.renderErrorState('Could not load entity data.');
 			return;
@@ -386,7 +386,7 @@ export class ProfileView extends ItemView {
 				this.breadcrumbs.push({ crId, name, entityType, filePath });
 				const file = this.app.vault.getFileByPath(filePath);
 				if (file) {
-					void this.loadAndRenderEntity(file, entityType);
+					this.loadAndRenderEntity(file, entityType);
 				}
 			}
 		};
@@ -658,7 +658,7 @@ export class ProfileView extends ItemView {
 					this.breadcrumbs = this.breadcrumbs.slice(0, i + 1);
 					const file = this.app.vault.getFileByPath(entry.filePath);
 					if (file) {
-						void this.loadAndRenderEntity(file, entry.entityType);
+						this.loadAndRenderEntity(file, entry.entityType);
 					}
 				});
 			}

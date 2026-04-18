@@ -47,7 +47,7 @@ export class ProfileDataLoader {
 	}
 
 	/** Load entity data. Returns cached result if same crId. */
-	async loadEntity(file: TFile, entityType: ProfileEntityType): Promise<ProfileEntityData | null> {
+	loadEntity(file: TFile, entityType: ProfileEntityType): ProfileEntityData | null {
 		const app = this.plugin.app;
 		const cache = app.metadataCache.getFileCache(file);
 		const fm = cache?.frontmatter;

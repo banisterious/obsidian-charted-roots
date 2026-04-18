@@ -35,7 +35,7 @@ export class FindRelatedResearchModal extends Modal {
 		this.personBasename = personBasename;
 	}
 
-	async onOpen(): Promise<void> {
+	onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
 		this.modalEl.addClass('cr-find-research-modal');

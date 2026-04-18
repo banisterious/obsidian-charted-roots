@@ -35,7 +35,7 @@ export class CitationNoteService {
 		);
 
 		// Deduplicate filename if needed
-		const finalPath = await this.getUniqueFilePath(folder.path, filename);
+		const finalPath = this.getUniqueFilePath(folder.path, filename);
 
 		// Build frontmatter
 		const lines: string[] = [
@@ -193,7 +193,7 @@ export class CitationNoteService {
 	/**
 	 * Get a unique file path, appending a number if the file already exists
 	 */
-	private async getUniqueFilePath(folder: string, basename: string): Promise<string> {
+	private getUniqueFilePath(folder: string, basename: string): string {
 		let path = normalizePath(`${folder}/${basename}.md`);
 		let counter = 1;
 		while (this.app.vault.getAbstractFileByPath(path)) {

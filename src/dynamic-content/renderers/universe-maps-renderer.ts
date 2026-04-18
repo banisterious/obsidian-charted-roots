@@ -48,12 +48,12 @@ export class UniverseMapsRenderer {
 	/**
 	 * Render the universe maps block
 	 */
-	async render(
+	render(
 		el: HTMLElement,
 		context: UniverseMapsContext,
 		config: DynamicBlockConfig,
 		component: MarkdownRenderChild
-	): Promise<void> {
+	): void {
 		const container = el.createDiv({ cls: 'cr-dynamic-block cr-universe-maps' });
 
 		if (context.maps.length === 0) {
