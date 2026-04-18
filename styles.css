@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-04-18 22:33:39 UTC
+ * - Generated: 2026-04-18 23:12:01 UTC
  * - Components: 49 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -26479,7 +26479,7 @@ input[type="text"]::-webkit-input-placeholder {
    COMPONENT: EVENTS.CSS
    ========================================================================== */
 
-/* Component Size: 1520 lines, 30.8 KB */
+/* Component Size: 1521 lines, 30.88 KB */
 
 /**
  * Events Styles
@@ -27229,10 +27229,11 @@ input[type="text"]::-webkit-input-placeholder {
   height: 12px;
 }
 
-/* Family Timeline Badge (on person list items) */
+/* Family Timeline Badge (on person list items) — no background by default,
+ * green icon/text. Hover and active states fill with green for emphasis. */
 .crc-person-list-badge--family-timeline {
-  background-color: var(--background-modifier-success);
-  color: var(--text-success);
+  background-color: transparent;
+  color: var(--color-green);
 }
 
 .crc-person-list-badge--family-timeline:hover {
@@ -41333,11 +41334,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-04-18 22:33:40 UTC
+ * Build completed: 2026-04-18 23:12:02 UTC
  * Components processed: 49
- * Total lines: 40869
- * Total size: 824.83 KB
- * Build duration: 0.97 seconds
+ * Total lines: 40870
+ * Total size: 824.91 KB
+ * Build duration: 0.32 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -41368,7 +41369,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - map-view.css: 2444 lines, 50.49 KB
  * - leaflet-distortable.css: 368 lines, 7.73 KB
  * - date-systems.css: 287 lines, 5.31 KB
- * - events.css: 1520 lines, 30.8 KB
+ * - events.css: 1521 lines, 30.88 KB
  * - timeline-callouts.css: 321 lines, 10.68 KB
  * - organizations.css: 615 lines, 11.57 KB
  * - sources.css: 2832 lines, 57.42 KB

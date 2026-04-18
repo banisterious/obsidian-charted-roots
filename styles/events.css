@@ -746,10 +746,11 @@
   height: 12px;
 }
 
-/* Family Timeline Badge (on person list items) */
+/* Family Timeline Badge (on person list items) — no background by default,
+ * green icon/text. Hover and active states fill with green for emphasis. */
 .crc-person-list-badge--family-timeline {
-  background-color: var(--background-modifier-success);
-  color: var(--text-success);
+  background-color: transparent;
+  color: var(--color-green);
 }
 
 .crc-person-list-badge--family-timeline:hover {

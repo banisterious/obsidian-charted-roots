@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Custom relationships overlay on family chart** ([#386](https://github.com/banisterious/obsidian-charted-roots/issues/386)): Custom non-family relationships (liege/vassal, ally/rival, master/apprentice, godparent, etc.) can now render as styled overlay lines on the family chart. Each relationship type has a new **Render on family chart as overlay line** toggle in the relationship-type editor modal, decoupled from the existing tree-structure integration — a type can be tree-only, overlay-only, or both. The Display menu gains a **Show custom relationships** master toggle plus per-type toggles when multiple overlay-enabled types exist. Lines are styled by the type's color and line style, stack with a perpendicular offset when the same pair has multiple overlay relationships, dedupe symmetric pairs, and respect the as-of date filter from [#376](https://github.com/banisterious/obsidian-charted-roots/issues/376). Hover a line for a tooltip showing source, relationship type, target, and date range.
+- **Highlight family chart nodes by property value** ([#379](https://github.com/banisterious/obsidian-charted-roots/issues/379)): New **Highlight groups...** entry in the Display menu opens a modal for defining up to three concurrent highlight groups. Each group pairs a person property (sex, occupation, title, religion, caste, nationality, universe, collection) with a value and a palette color; matching cards render with a colored glow while non-matching cards dim to 30% opacity. Twelve palette colors available (gold, orange, red, pink, purple, indigo, blue, cyan, teal, green, lime, brown). Sex-field matching handles common aliases ("male" / "man" / "M"). Custom property support is gated on [#377](https://github.com/banisterious/obsidian-charted-roots/issues/377); built-in fields only in v1.
+- **Family timeline badge on People tab** (completes promise from v0.10.0): Person rows in the Control Center People tab now show a second badge with a users icon when the family unit (person + spouses + children) has events. Click to open a modal showing the family timeline — events aggregated across the family, color-coded by member, sorted chronologically. The underlying rendering helpers shipped in v0.10.0 and the wiki has documented this since, but the call site that puts the badge in the UI was never added. Now it is.
+
 ---
 
 ## [0.20.58] - 2026-04-17

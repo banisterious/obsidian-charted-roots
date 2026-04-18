@@ -66,6 +66,7 @@ export interface PeopleTabOptions {
 	closeModal: () => void;
 	showQuickCreatePlaceModal: (placeName: string) => void;
 	showPersonTimelineModal: (file: TFile, name: string, eventService: EventService) => void;
+	showFamilyTimelineModal: (file: TFile, name: string, eventService: EventService, familyGraph: FamilyGraphService) => void;
 	getCachedFamilyGraph: () => FamilyGraphService;
 	getCachedPlaceGraph: () => PlaceGraphService;
 	getCachedUniverses: () => string[];
@@ -1440,7 +1441,7 @@ function renderPersonTableRow(
 	// Actions cell (timeline badge + unlinked places badge + open note button)
 	const actionsCell = row.createEl('td', { cls: 'crc-person-table__td crc-person-table__td--actions' });
 
-	// Timeline badge
+	// Timeline badge (person's own events)
 	const eventService = plugin.getEventService();
 	if (eventService) {
 		const personLink = `[[${person.file.basename}]]`;
@@ -1464,6 +1465,30 @@ function renderPersonTableRow(
 			timelineBadge.addEventListener('click', (e) => {
 				e.stopPropagation();
 				options.showPersonTimelineModal(person.file, person.name, eventService);
+			});
+		}
+
+		// Family timeline badge (events for person + spouses + children).
+		// Only shown when the family unit has members with events beyond just the person.
+		const familyGraph = plugin.createFamilyGraphService();
+		familyGraph.ensureCacheLoaded();
+		const familySummary = getFamilyTimelineSummary(person.file, eventService, familyGraph);
+		if (familySummary.memberCount > 1 && familySummary.totalEvents > 0) {
+			const familyBadge = actionsCell.createEl('span', {
+				cls: 'crc-person-list-badge crc-person-list-badge--family-timeline',
+				attr: {
+					title: familySummary.dateRange
+						? `Family: ${familySummary.totalEvents} events, ${familySummary.memberCount} members (${familySummary.dateRange})`
+						: `Family: ${familySummary.totalEvents} events, ${familySummary.memberCount} members`
+				}
+			});
+			const usersIcon = createLucideIcon('users', 12);
+			familyBadge.appendChild(usersIcon);
+			familyBadge.appendText(familySummary.totalEvents.toString());
+
+			familyBadge.addEventListener('click', (e) => {
+				e.stopPropagation();
+				options.showFamilyTimelineModal(person.file, person.name, eventService, familyGraph);
 			});
 		}
 	}

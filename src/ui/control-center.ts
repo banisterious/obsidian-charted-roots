@@ -35,6 +35,7 @@ import { renderRelationshipsTab } from '../relationships';
 import { renderEventsTab } from '../dates';
 import { renderOrganizationsTab } from '../organizations';
 import { renderPersonTimeline } from '../events/ui/person-timeline';
+import { renderFamilyTimeline } from '../events/ui/family-timeline';
 import { EventService } from '../events/services/event-service';
 import { renderDashboardTab } from './dashboard-tab';
 import { renderPlacesTab } from './places-tab';
@@ -962,6 +963,7 @@ export class ControlCenterModal extends Modal {
 			closeModal: () => this.close(),
 			showQuickCreatePlaceModal: (name) => this.showQuickCreatePlaceModal(name),
 			showPersonTimelineModal: (file, name, eventService) => this.showPersonTimelineModal(file, name, eventService),
+			showFamilyTimelineModal: (file, name, eventService, familyGraph) => this.showFamilyTimelineModal(file, name, eventService, familyGraph),
 			getCachedFamilyGraph: () => this.getCachedFamilyGraph(),
 			getCachedPlaceGraph: () => this.getCachedPlaceGraph(),
 			getCachedUniverses: () => this.getCachedUniverses(),
@@ -1087,6 +1089,42 @@ export class ControlCenterModal extends Modal {
 			this.app,
 			this.plugin.settings,
 			eventService,
+			{
+				showEmptyState: true,
+				onEventClick: (event) => {
+					modal.close();
+					void this.app.workspace.getLeaf(false).openFile(event.file);
+				}
+			}
+		);
+
+		modal.open();
+	}
+
+	/**
+	 * Show the family timeline (events for person + spouses + children) in a modal.
+	 * Parallel to showPersonTimelineModal, shipped as part of wiring up the
+	 * long-dormant Family Timeline View from v0.10.0.
+	 */
+	private showFamilyTimelineModal(
+		personFile: TFile,
+		personName: string,
+		eventService: EventService,
+		familyGraph: FamilyGraphService
+	): void {
+		const modal = new Modal(this.app);
+		modal.titleEl.setText(`Family timeline: ${personName}`);
+		modal.modalEl.addClass('crc-family-timeline-modal');
+
+		const content = modal.contentEl.createDiv({ cls: 'crc-family-timeline-modal__content' });
+
+		renderFamilyTimeline(
+			content,
+			personFile,
+			this.app,
+			this.plugin.settings,
+			eventService,
+			familyGraph,
 			{
 				showEmptyState: true,
 				onEventClick: (event) => {
