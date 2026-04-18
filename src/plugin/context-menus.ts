@@ -1,4 +1,4 @@
-import { Notice, TFile, TFolder, Menu, Platform, Modal, type CachedMetadata } from 'obsidian';
+import { Notice, TFile, TFolder, Menu, Platform, type CachedMetadata } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import {
 	addCrId, addEssentialEventProperties, addEssentialMapProperties,
@@ -20,26 +20,11 @@ import { TreeStatisticsModal } from '../ui/tree-statistics-modal';
 import { PersonPickerModal } from '../ui/person-picker';
 import type { RelationshipContext } from '../ui/quick-create-person-modal';
 import { FolderScanModal } from '../ui/folder-scan-modal';
-import { FolderStatisticsModal } from '../ui/folder-statistics-modal';
 import { getErrorMessage } from '../core/error-utils';
-import { ExcalidrawExporter } from '../excalidraw/excalidraw-exporter';
-import { generateCrId } from '../core/uuid';
-import { ReferenceNumberingService } from '../core/reference-numbering';
-import type { NumberingSystem } from '../core/reference-numbering';
-import { LineageTrackingService } from '../core/lineage-tracking';
-import type { LineageType } from '../core/lineage-tracking';
-import { FamilyGraphService } from '../core/family-graph';
-import { TreePreviewRenderer } from '../ui/tree-preview';
-import { isPlaceNote, isSourceNote, isEventNote, isMapNote, isSchemaNote, isUniverseNote, isPersonNote, isOrganizationNote } from '../utils/note-type-detection';
-import { extractWikilinkPath } from '../utils/wikilink-resolver';
-import { GeocodingService } from '../maps/services/geocoding-service';
-import { SourcePickerModal, SourceService, CreateSourceModal, CitationGeneratorModal } from '../sources';
-import { EventService } from '../events/services/event-service';
+import { isPlaceNote, isSourceNote, isEventNote, isMapNote, isSchemaNote, isUniverseNote, isOrganizationNote } from '../utils/note-type-detection';
+import { CreateSourceModal } from '../sources';
 import { CreateEventModal } from '../events/ui/create-event-modal';
-import { UniverseService, EditUniverseModal, UniverseWizardModal } from '../universes';
-import { MediaManageModal } from '../core/ui/media-manage-modal';
 import { CreatePlaceModal } from '../ui/create-place-modal';
-import { PlaceLookupModal } from '../places/ui/place-lookup-modal';
 import { CreatePersonModal } from '../ui/create-person-modal';
 import { AddRelationshipModal } from '../ui/add-relationship-modal';
 import { RelationshipManager } from '../core/relationship-manager';
@@ -47,23 +32,9 @@ import { RelationshipCalculatorModal } from '../ui/relationship-calculator-modal
 import { SchemaService, ValidationService } from '../schemas';
 import { CreateMapWizardModal } from '../ui/create-map-wizard-modal';
 import { SplitWizardModal } from '../ui/split-wizard-modal';
-import { AddResearchQuestionModal } from '../ui/add-research-question-modal';
-import { CleanupWizardModal } from '../ui/cleanup-wizard-modal';
-import { CanvasStyleModal } from '../ui/canvas-style-modal';
 import { ControlCenterModal } from '../ui/control-center';
-import { CreateMapModal } from '../ui/create-map-modal';
-import { CreateMissingPlacesModal } from '../ui/create-missing-places-modal';
-import { CreateNoteModal } from '../ui/create-note-modal';
 import { FindOnCanvasModal } from '../ui/find-on-canvas-modal';
 import { ValidationResultsModal } from '../ui/validation-results-modal';
-import { CreateOrganizationModal } from '../organizations/ui/create-organization-modal';
-import { AddMembershipModal } from '../organizations/ui/add-membership-modal';
-import { ManageOrganizationMembersModal } from '../organizations/ui/manage-members-modal';
-import { EventPickerModal } from '../events/ui/event-picker-modal';
-import { TimelineCanvasExporter } from '../events/services/timeline-canvas-exporter';
-import { TimelineStyleModal } from '../events/ui/timeline-style-modal';
-import { BookBuilderModal } from '../book/ui/book-builder-modal';
-import { BookGenerationService } from '../book/services/book-generation-service';
 import { RelationshipValidator } from '../core/relationship-validator';
 import { getLogger } from '../core/logging';
 

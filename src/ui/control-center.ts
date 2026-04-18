@@ -1,4 +1,4 @@
-import { App, Menu, MenuItem, Modal, Notice, Platform, TFile, TFolder, setIcon, normalizePath } from 'obsidian';
+import { App, Menu, Modal, Notice, Platform, TFile, setIcon, normalizePath } from 'obsidian';
 import CanvasRootsPlugin from '../../main';
 import { TAB_CONFIGS, NAV_GROUPS, TOOL_CONFIGS, createLucideIcon, setLucideIcon, LucideIconName } from './lucide-icons';
 import { ensureFolderExists } from '../core/canvas-utils';
@@ -7,7 +7,6 @@ import { CanvasGenerator } from '../core/canvas-generator';
 import { getLogger } from '../core/logging';
 import { getErrorMessage } from '../core/error-utils';
 import { pluralize } from '../utils/format-utils';
-import { SchemaValidationProgressModal } from './schema-validation-progress-modal';
 import type { RecentTreeInfo } from '../settings';
 import { ConfirmationModal } from './data-quality-modals';
 import { renderDataQualityTab } from './data-quality-tab';
@@ -28,17 +27,7 @@ import {
 } from './data-quality-batch-ops';
 import { PlaceGraphService } from '../core/place-graph';
 import { CreatePlaceModal } from './create-place-modal';
-import { MigrationDiagramModal } from './migration-diagram-modal';
-import { PlaceNetworkModal } from './place-network-modal';
 import { TemplateSnippetsModal } from './template-snippets-modal';
-import { CreateMapModal } from './create-map-modal';
-import { CreateMapWizardModal } from './create-map-wizard-modal';
-import { resolvePathToFile } from '../utils/wikilink-resolver';
-import { renderWorldMapPreview } from '../maps/ui/world-map-preview';
-import { BulkGeocodeModal } from '../maps/ui/bulk-geocode-modal';
-import { CreateSchemaModal } from './create-schema-modal';
-import { SchemaService, ValidationService } from '../schemas';
-import type { SchemaNote, ValidationResult, ValidationSummary } from '../schemas';
 import { renderSchemasTab } from '../schemas/ui/schemas-tab';
 import { renderCollectionsTab } from './collections-tab';
 import { renderMapsTab } from '../maps/ui/maps-tab';
@@ -47,13 +36,9 @@ import { renderEventsTab } from '../dates';
 import { renderOrganizationsTab } from '../organizations';
 import { renderPersonTimeline } from '../events/ui/person-timeline';
 import { EventService } from '../events/services/event-service';
-import { renderPlaceTimelineCard } from '../events/ui/place-timeline';
 import { renderDashboardTab } from './dashboard-tab';
 import { renderPlacesTab } from './places-tab';
 import { renderPeopleTab } from './people-tab';
-import { FlattenNestedPropertiesModal } from './flatten-nested-properties-modal';
-import { PlaceGeneratorModal } from '../enhancement/ui/place-generator-modal';
-import { BulkMediaLinkModal } from '../core/ui/bulk-media-link-modal';
 import { MediaManagerModal } from '../core/ui/media-manager-modal';
 import {
 	renderSourcesTab
@@ -64,16 +49,6 @@ import { renderTreesTab } from '../trees/ui/trees-tab';
 import { formatCanvasJson } from '../core/canvas-utils';
 
 const logger = getLogger('ControlCenter');
-
-/**
- * Safely convert frontmatter/data value to string
- */
-function toSafeString(value: unknown): string {
-	if (value === undefined || value === null) return '';
-	if (typeof value === 'object' && value !== null) return JSON.stringify(value);
-	// At this point, value is a primitive
-	return String(value as string | number | boolean | bigint | symbol);
-}
 
 /**
  * Charted Roots Control Center Modal
