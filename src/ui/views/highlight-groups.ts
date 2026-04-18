@@ -32,7 +32,9 @@ export type HighlightField =
 	| 'universe'
 	| 'group_name';
 
-export type HighlightColor = 'gold' | 'blue' | 'green' | 'purple' | 'red' | 'teal';
+export type HighlightColor =
+	| 'gold' | 'blue' | 'green' | 'purple' | 'red' | 'teal'
+	| 'orange' | 'pink' | 'cyan' | 'indigo' | 'lime' | 'brown';
 
 export const HIGHLIGHT_FIELDS: { value: HighlightField; label: string }[] = [
 	{ value: 'sex', label: 'Sex' },
@@ -47,11 +49,17 @@ export const HIGHLIGHT_FIELDS: { value: HighlightField; label: string }[] = [
 
 export const HIGHLIGHT_COLORS: { value: HighlightColor; label: string; hex: string }[] = [
 	{ value: 'gold', label: 'Gold', hex: '#d4a017' },
-	{ value: 'blue', label: 'Blue', hex: '#3b82f6' },
-	{ value: 'green', label: 'Green', hex: '#22c55e' },
-	{ value: 'purple', label: 'Purple', hex: '#a855f7' },
+	{ value: 'orange', label: 'Orange', hex: '#f97316' },
 	{ value: 'red', label: 'Red', hex: '#ef4444' },
-	{ value: 'teal', label: 'Teal', hex: '#14b8a6' }
+	{ value: 'pink', label: 'Pink', hex: '#ec4899' },
+	{ value: 'purple', label: 'Purple', hex: '#a855f7' },
+	{ value: 'indigo', label: 'Indigo', hex: '#6366f1' },
+	{ value: 'blue', label: 'Blue', hex: '#3b82f6' },
+	{ value: 'cyan', label: 'Cyan', hex: '#06b6d4' },
+	{ value: 'teal', label: 'Teal', hex: '#14b8a6' },
+	{ value: 'green', label: 'Green', hex: '#22c55e' },
+	{ value: 'lime', label: 'Lime', hex: '#84cc16' },
+	{ value: 'brown', label: 'Brown', hex: '#a16207' }
 ];
 
 export const MAX_HIGHLIGHT_GROUPS = 3;

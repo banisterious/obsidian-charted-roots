@@ -1383,20 +1383,38 @@
 .cr-fcv-chart-container .card_cont.cr-hl-match--gold {
   filter: drop-shadow(0 0 4px #d4a017) drop-shadow(0 0 10px #d4a017) drop-shadow(0 0 16px #d4a017);
 }
-.cr-fcv-chart-container .card_cont.cr-hl-match--blue {
-  filter: drop-shadow(0 0 4px #3b82f6) drop-shadow(0 0 10px #3b82f6) drop-shadow(0 0 16px #3b82f6);
-}
-.cr-fcv-chart-container .card_cont.cr-hl-match--green {
-  filter: drop-shadow(0 0 4px #22c55e) drop-shadow(0 0 10px #22c55e) drop-shadow(0 0 16px #22c55e);
-}
-.cr-fcv-chart-container .card_cont.cr-hl-match--purple {
-  filter: drop-shadow(0 0 4px #a855f7) drop-shadow(0 0 10px #a855f7) drop-shadow(0 0 16px #a855f7);
+.cr-fcv-chart-container .card_cont.cr-hl-match--orange {
+  filter: drop-shadow(0 0 4px #f97316) drop-shadow(0 0 10px #f97316) drop-shadow(0 0 16px #f97316);
 }
 .cr-fcv-chart-container .card_cont.cr-hl-match--red {
   filter: drop-shadow(0 0 4px #ef4444) drop-shadow(0 0 10px #ef4444) drop-shadow(0 0 16px #ef4444);
 }
+.cr-fcv-chart-container .card_cont.cr-hl-match--pink {
+  filter: drop-shadow(0 0 4px #ec4899) drop-shadow(0 0 10px #ec4899) drop-shadow(0 0 16px #ec4899);
+}
+.cr-fcv-chart-container .card_cont.cr-hl-match--purple {
+  filter: drop-shadow(0 0 4px #a855f7) drop-shadow(0 0 10px #a855f7) drop-shadow(0 0 16px #a855f7);
+}
+.cr-fcv-chart-container .card_cont.cr-hl-match--indigo {
+  filter: drop-shadow(0 0 4px #6366f1) drop-shadow(0 0 10px #6366f1) drop-shadow(0 0 16px #6366f1);
+}
+.cr-fcv-chart-container .card_cont.cr-hl-match--blue {
+  filter: drop-shadow(0 0 4px #3b82f6) drop-shadow(0 0 10px #3b82f6) drop-shadow(0 0 16px #3b82f6);
+}
+.cr-fcv-chart-container .card_cont.cr-hl-match--cyan {
+  filter: drop-shadow(0 0 4px #06b6d4) drop-shadow(0 0 10px #06b6d4) drop-shadow(0 0 16px #06b6d4);
+}
 .cr-fcv-chart-container .card_cont.cr-hl-match--teal {
   filter: drop-shadow(0 0 4px #14b8a6) drop-shadow(0 0 10px #14b8a6) drop-shadow(0 0 16px #14b8a6);
+}
+.cr-fcv-chart-container .card_cont.cr-hl-match--green {
+  filter: drop-shadow(0 0 4px #22c55e) drop-shadow(0 0 10px #22c55e) drop-shadow(0 0 16px #22c55e);
+}
+.cr-fcv-chart-container .card_cont.cr-hl-match--lime {
+  filter: drop-shadow(0 0 4px #84cc16) drop-shadow(0 0 10px #84cc16) drop-shadow(0 0 16px #84cc16);
+}
+.cr-fcv-chart-container .card_cont.cr-hl-match--brown {
+  filter: drop-shadow(0 0 4px #a16207) drop-shadow(0 0 10px #a16207) drop-shadow(0 0 16px #a16207);
 }
 
 /* Modal layout */
