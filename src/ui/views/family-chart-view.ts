@@ -16,6 +16,9 @@ import { getLogger } from '../../core/logging';
 import { PersonPickerModal } from '../person-picker';
 import { PlacePickerModal, type SelectedPlaceInfo } from '../place-picker';
 import { AddRelationshipModal } from '../add-relationship-modal';
+import { getAllRelationshipTypesWithCustomizations } from '../../relationships/constants/default-relationship-types';
+import { RelationshipService } from '../../relationships/services/relationship-service';
+import type { ParsedRelationship, RelationshipTypeDefinition } from '../../relationships/types/relationship-types';
 import { FamilyChartExportWizard } from './family-chart-export-wizard';
 import { DeletePersonConfirmModal, FamilyChartStyleModal } from './family-chart-view-modals';
 import type { ProgressCallback } from './family-chart-export-progress-modal';
@@ -79,6 +82,8 @@ interface FamilyChartViewState {
 	showBirthDates?: boolean;
 	showDeathDates?: boolean;
 	showKinshipLabels?: boolean;
+	showCustomRelationships?: boolean;
+	customRelationshipTypeVisibility?: Record<string, boolean>;
 	showAvatars?: boolean;
 	isHorizontal?: boolean;
 	// Tree depth limits
@@ -121,6 +126,9 @@ export class FamilyChartView extends ItemView {
 	private showBirthDates: boolean = true;
 	private showDeathDates: boolean = false;
 	private showKinshipLabels: boolean = false;
+	// Custom relationships overlay (#386); master toggle + per-type visibility
+	private showCustomRelationships: boolean = false;
+	private customRelationshipTypeVisibility: Record<string, boolean> = {};
 	private showAvatars: boolean = true; // Show person avatar thumbnails on cards
 	private isHorizontal: boolean = false; // Tree orientation: false = vertical (top-to-bottom), true = horizontal (left-to-right)
 	// Tree depth limits (null = unlimited)
@@ -1204,11 +1212,17 @@ export class FamilyChartView extends ItemView {
 				.setTransitionTime(800)
 				.setCardXSpacing(this.nodeSpacing)
 				.setCardYSpacing(this.levelSpacing)
-				// Clear kinship labels before any tree update to prevent stale labels (#195)
+				// Clear overlays before any tree update to prevent stale rendering (#195, #386)
 				// This handles all update sources: mini-tree buttons, navigation, spacing changes, etc.
-				.setBeforeUpdate(() => this.clearKinshipLabelsForUpdate())
-				// Re-render kinship labels after tree animation completes (#195)
-				.setAfterUpdate(() => this.scheduleKinshipLabelRerender());
+				.setBeforeUpdate(() => {
+					this.clearKinshipLabelsForUpdate();
+					this.clearRelationshipOverlayForUpdate();
+				})
+				// Re-render overlays after tree animation completes (#195, #386)
+				.setAfterUpdate(() => {
+					this.scheduleKinshipLabelRerender();
+					this.scheduleRelationshipOverlayRerender();
+				});
 
 			// Apply tree orientation
 			if (this.isHorizontal) {
@@ -2394,6 +2408,32 @@ export class FamilyChartView extends ItemView {
 		});
 
 		menu.addItem((item) => {
+			item.setTitle(`${this.showCustomRelationships ? '✓ ' : ''}Show custom relationships`)
+				.setIcon('waypoints')
+				.onClick(() => this.toggleCustomRelationships());
+		});
+
+		// Per-type overlay toggles (shown when master toggle is on and >1 type exists)
+		if (this.showCustomRelationships) {
+			const overlayTypes = getAllRelationshipTypesWithCustomizations(
+				this.plugin.settings.customRelationshipTypes || [],
+				true,
+				this.plugin.settings.relationshipTypeCustomizations,
+				[]
+			).filter(t => t.includeOnFamilyChartOverlay);
+
+			if (overlayTypes.length > 1) {
+				for (const type of overlayTypes) {
+					const visible = this.customRelationshipTypeVisibility[type.id] !== false;
+					menu.addItem((item) => {
+						item.setTitle(`    ${visible ? '✓ ' : ''}${type.name}`)
+							.onClick(() => this.toggleCustomRelationshipType(type.id));
+					});
+				}
+			}
+		}
+
+		menu.addItem((item) => {
 			item.setTitle(`${this.showAvatars ? '✓ ' : ''}Show avatars`)
 				.setIcon('image')
 				.onClick(() => this.toggleAvatars());
@@ -3306,6 +3346,237 @@ export class FamilyChartView extends ItemView {
 			svg.appendChild(labelsGroup);
 			logger.debug('kinship-labels', 'Appended labels to SVG root (no .view group)');
 		}
+	}
+
+	// ─── Custom Relationships Overlay (#386) ────────────────────────────
+
+	/**
+	 * Clear the custom-relationships overlay before a tree update.
+	 * Called by setBeforeUpdate to prevent stale lines during animation.
+	 */
+	private clearRelationshipOverlayForUpdate(): void {
+		if (this.showCustomRelationships && this.chartContainerEl) {
+			const existing = this.chartContainerEl.querySelectorAll('.cr-relationship-overlay');
+			existing.forEach(el => el.remove());
+		}
+	}
+
+	/**
+	 * Schedule overlay re-render after tree animation completes.
+	 * Uses the same ~1500ms delay as kinship labels so positions are stable.
+	 */
+	private scheduleRelationshipOverlayRerender(): void {
+		if (this.showCustomRelationships) {
+			setTimeout(() => this.renderRelationshipOverlay(), 1500);
+		}
+	}
+
+	/**
+	 * Render custom relationships as overlay lines on the family chart.
+	 * Pulls relationships for each visible card, filters to types flagged for
+	 * overlay rendering and enabled per-type, applies the as-of date filter,
+	 * and draws a styled line between each pair of card centers.
+	 */
+	private renderRelationshipOverlay(): void {
+		if (!this.chartContainerEl) return;
+
+		// Remove existing overlay group(s)
+		const existing = this.chartContainerEl.querySelectorAll('.cr-relationship-overlay');
+		existing.forEach(el => el.remove());
+
+		if (!this.showCustomRelationships) return;
+
+		const svg = this.chartContainerEl.querySelector('svg.main_svg');
+		if (!svg) return;
+
+		// Build a set of overlay-eligible type ids and a lookup to their definitions
+		const overlayTypes = this.getOverlayRelationshipTypes();
+		if (overlayTypes.size === 0) return;
+
+		// Card positions for every currently-rendered person
+		const cardPositions = this.getCardPositions();
+		if (cardPositions.size === 0) return;
+
+		// Collect qualifying relationships (deduped for symmetric pairs)
+		const relationships = this.collectOverlayRelationships(cardPositions, overlayTypes);
+		if (relationships.length === 0) return;
+
+		// Group by canonical endpoint pair for multi-edge stacking
+		const byPair = new Map<string, Array<{ rel: ParsedRelationship; type: RelationshipTypeDefinition }>>();
+		for (const entry of relationships) {
+			const { rel } = entry;
+			const pairKey = [rel.sourceCrId, rel.targetCrId].sort().join('|');
+			const existing = byPair.get(pairKey);
+			if (existing) {
+				existing.push(entry);
+			} else {
+				byPair.set(pairKey, [entry]);
+			}
+		}
+
+		// Create the overlay group
+		const overlayGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+		overlayGroup.setAttribute('class', 'cr-relationship-overlay');
+
+		// Draw lines
+		const STACK_OFFSET_PX = 8;
+		for (const [, entries] of byPair) {
+			entries.forEach((entry, index) => {
+				const { rel, type } = entry;
+				const from = cardPositions.get(rel.sourceCrId);
+				const to = cardPositions.get(rel.targetCrId);
+				if (!from || !to) return;
+
+				// Perpendicular offset for stacking when multiple relationships share a pair
+				const dx = to.x - from.x;
+				const dy = to.y - from.y;
+				const len = Math.sqrt(dx * dx + dy * dy) || 1;
+				// Unit perpendicular vector (rotate 90° CCW)
+				const px = -dy / len;
+				const py = dx / len;
+				// Center stack around 0: for N entries, offsets are (index - (N-1)/2) * STACK_OFFSET_PX
+				const offsetIndex = index - (entries.length - 1) / 2;
+				const offset = offsetIndex * STACK_OFFSET_PX;
+				const ox = px * offset;
+				const oy = py * offset;
+
+				const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+				line.setAttribute('x1', String(from.x + ox));
+				line.setAttribute('y1', String(from.y + oy));
+				line.setAttribute('x2', String(to.x + ox));
+				line.setAttribute('y2', String(to.y + oy));
+				line.setAttribute('stroke', type.color);
+				line.setAttribute('stroke-width', '2');
+				line.setAttribute('fill', 'none');
+				if (type.lineStyle === 'dashed') {
+					line.setAttribute('stroke-dasharray', '8,4');
+				} else if (type.lineStyle === 'dotted') {
+					line.setAttribute('stroke-dasharray', '2,3');
+				}
+				// Tooltip with relationship details
+				const tooltip = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+				const dateRange = this.formatRelationshipDateRange(rel);
+				tooltip.textContent = dateRange
+					? `${rel.sourceName} — ${type.name} — ${rel.targetName} (${dateRange})`
+					: `${rel.sourceName} — ${type.name} — ${rel.targetName}`;
+				line.appendChild(tooltip);
+				line.setAttribute('class', `cr-relationship-overlay-line cr-relationship-overlay-line--${type.id}`);
+				overlayGroup.appendChild(line);
+			});
+		}
+
+		// Append inside .view so lines follow the pan/zoom transform
+		const viewGroup = svg.querySelector('.view');
+		if (viewGroup) {
+			viewGroup.appendChild(overlayGroup);
+		} else {
+			svg.appendChild(overlayGroup);
+		}
+	}
+
+	/**
+	 * Return a map of relationship type ids → RelationshipTypeDefinition for types
+	 * that should render as overlay lines (master toggle + per-type visibility).
+	 */
+	private getOverlayRelationshipTypes(): Map<string, RelationshipTypeDefinition> {
+		const out = new Map<string, RelationshipTypeDefinition>();
+		const allTypes = getAllRelationshipTypesWithCustomizations(
+			this.plugin.settings.customRelationshipTypes || [],
+			true,
+			this.plugin.settings.relationshipTypeCustomizations,
+			[]
+		);
+		for (const type of allTypes) {
+			if (!type.includeOnFamilyChartOverlay) continue;
+			// Per-type visibility defaults to true when the master toggle is on;
+			// explicit false entries disable that specific type
+			if (this.customRelationshipTypeVisibility[type.id] === false) continue;
+			out.set(type.id, type);
+		}
+		return out;
+	}
+
+	/**
+	 * Gather the relationships to draw: iterate visible cards, pull each person's
+	 * relationships, filter by overlay types, as-of date, and dedupe symmetric pairs.
+	 */
+	private collectOverlayRelationships(
+		cardPositions: Map<string, { x: number; y: number }>,
+		overlayTypes: Map<string, RelationshipTypeDefinition>
+	): Array<{ rel: ParsedRelationship; type: RelationshipTypeDefinition }> {
+		const service = new RelationshipService(this.plugin);
+		const seen = new Set<string>();
+		const out: Array<{ rel: ParsedRelationship; type: RelationshipTypeDefinition }> = [];
+
+		for (const crId of cardPositions.keys()) {
+			const rels = service.getRelationshipsForPerson(crId);
+			for (const rel of rels) {
+				const type = overlayTypes.get(rel.type.id);
+				if (!type) continue;
+				// Require both endpoints to be in the current visible tree
+				if (!cardPositions.has(rel.sourceCrId) || !cardPositions.has(rel.targetCrId)) continue;
+				// As-of date filter: skip relationships whose from/to range excludes the selected date
+				if (!this.relationshipActiveAtAsOfDate(rel)) continue;
+				// Dedupe: canonicalize by sorted crId pair + type id
+				const pairKey = [rel.sourceCrId, rel.targetCrId].sort().join('|');
+				const dedupeKey = `${pairKey}|${type.id}`;
+				if (seen.has(dedupeKey)) continue;
+				seen.add(dedupeKey);
+				out.push({ rel, type });
+			}
+		}
+
+		return out;
+	}
+
+	/**
+	 * Check whether a relationship's date range contains the current as-of date.
+	 * If no as-of date is set, returns true. If the relationship has no date range,
+	 * also returns true (relationship is treated as always-active).
+	 */
+	private relationshipActiveAtAsOfDate(rel: ParsedRelationship): boolean {
+		if (!this.asOfDate) return true;
+		if (rel.from && this.compareDateStrings(rel.from, this.asOfDate) > 0) return false;
+		if (rel.to && this.compareDateStrings(rel.to, this.asOfDate) < 0) return false;
+		return true;
+	}
+
+	/**
+	 * Format a relationship's date range for tooltip display.
+	 */
+	private formatRelationshipDateRange(rel: ParsedRelationship): string {
+		if (!rel.from && !rel.to) return '';
+		if (rel.from && rel.to) return `${rel.from} – ${rel.to}`;
+		if (rel.from) return `from ${rel.from}`;
+		return `until ${rel.to}`;
+	}
+
+	/**
+	 * Toggle the master "Show custom relationships" overlay.
+	 */
+	private toggleCustomRelationships(): void {
+		this.showCustomRelationships = !this.showCustomRelationships;
+		this.app.workspace.requestSaveLayout();
+		if (this.showCustomRelationships) {
+			this.renderRelationshipOverlay();
+		} else {
+			this.clearRelationshipOverlayForUpdate();
+		}
+		new Notice(`Custom relationships ${this.showCustomRelationships ? 'shown' : 'hidden'}`);
+	}
+
+	/**
+	 * Toggle visibility of a specific relationship type in the overlay.
+	 */
+	private toggleCustomRelationshipType(typeId: string): void {
+		// Default is visible (true); toggle sets false / back to true
+		const current = this.customRelationshipTypeVisibility[typeId] !== false;
+		this.customRelationshipTypeVisibility = {
+			...this.customRelationshipTypeVisibility,
+			[typeId]: !current
+		};
+		this.app.workspace.requestSaveLayout();
+		this.renderRelationshipOverlay();
 	}
 
 	/**
@@ -4327,6 +4598,8 @@ export class FamilyChartView extends ItemView {
 			showBirthDates: this.showBirthDates,
 			showDeathDates: this.showDeathDates,
 			showKinshipLabels: this.showKinshipLabels,
+			showCustomRelationships: this.showCustomRelationships,
+			customRelationshipTypeVisibility: this.customRelationshipTypeVisibility,
 			showAvatars: this.showAvatars,
 			isHorizontal: this.isHorizontal,
 			ancestryDepth: this.ancestryDepth,
@@ -4377,6 +4650,12 @@ export class FamilyChartView extends ItemView {
 		}
 		if (state.showKinshipLabels !== undefined) {
 			this.showKinshipLabels = state.showKinshipLabels;
+		}
+		if (state.showCustomRelationships !== undefined) {
+			this.showCustomRelationships = state.showCustomRelationships;
+		}
+		if (state.customRelationshipTypeVisibility !== undefined) {
+			this.customRelationshipTypeVisibility = state.customRelationshipTypeVisibility;
 		}
 		if (state.showAvatars !== undefined) {
 			this.showAvatars = state.showAvatars;
