@@ -174,6 +174,7 @@ erDiagram
 | `occupation` | `string` | Primary occupation | `"Farmer"` |
 | `burial_date` | `string` | Burial date | `"1920-11-25"` |
 | `burial_place` | `string` | Location of burial | `"Waldfriedhof Cemetery, Munich"` |
+| `adoption_date` | `string` | Adoption date for adoptees (renders as "Adopted" on person timeline block) | `"1920-05-15"`, `"ABT 1920"` |
 | `death_cause` | `string` | Cause of death | `"Heart failure"` |
 | `research_level` | `number` | Research progress level (0-6) | `3` |
 
@@ -236,12 +237,43 @@ Tracks research progress toward GPS-compliant documentation, based on Yvette Hoi
 
 Charted Roots supports dual storage: wikilinks for Obsidian graph visibility, plus `_id` fields for reliable programmatic resolution.
 
+**Biological parents:**
+
 | Property | Type | Description | Example |
 |----------|------|-------------|---------|
 | `father` | `string` | Wikilink to father's note | `"[[John Smith Sr]]"` |
 | `father_id` | `string` | Father's `cr_id` | `"f1234567-..."` |
 | `mother` | `string` | Wikilink to mother's note | `"[[Mary Jones]]"` |
 | `mother_id` | `string` | Mother's `cr_id` | `"m7654321-..."` |
+| `parents` | `string` or `string[]` | Gender-neutral parent wikilinks (opt-in via Settings → Enable inclusive parents) | `"[[Alex Smith]]"` |
+| `parents_id` | `string` or `string[]` | Gender-neutral parent `cr_id`s | `["f1234567-..."]` |
+
+**Adoptive parents:**
+
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `adoptive_father` | `string` | Wikilink to adoptive father's note | `"[[Uncle Bob]]"` |
+| `adoptive_father_id` | `string` | Adoptive father's `cr_id` | `"f8765432-..."` |
+| `adoptive_mother` | `string` | Wikilink to adoptive mother's note | `"[[Aunt Carol]]"` |
+| `adoptive_mother_id` | `string` | Adoptive mother's `cr_id` | `"m2345678-..."` |
+| `adoptive_parent` | `string` or `string[]` | Gender-neutral adoptive parent wikilink(s) — fallback when the matching gender-specific slot is occupied (e.g., two adoptive fathers) or when sex is unspecified | `"[[Guardian Name]]"` |
+| `adoptive_parent_id` | `string` or `string[]` | Gender-neutral adoptive parent `cr_id`(s) | `["f8765432-..."]` |
+
+**Step-parents:**
+
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `stepfather` | `string` or `string[]` | Wikilink(s) to stepfather's note | `"[[George Smith]]"` |
+| `stepfather_id` | `string` or `string[]` | Stepfather's `cr_id`(s) | `["s1234567-..."]` |
+| `stepmother` | `string` or `string[]` | Wikilink(s) to stepmother's note | `"[[Jane Doe]]"` |
+| `stepmother_id` | `string` or `string[]` | Stepmother's `cr_id`(s) | `["s7654321-..."]` |
+
+**Adopted children (reverse side — on the adoptive parent's note):**
+
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `adopted_child` | `string` or `string[]` | Wikilink(s) to adopted child's note | `"[[Adopted Kid Name]]"` |
+| `adopted_child_id` | `string` or `string[]` | Adopted child's `cr_id`(s) | `["c1234567-..."]` |
 
 #### Wikilink Format for Duplicate Names
 

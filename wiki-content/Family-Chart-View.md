@@ -130,6 +130,52 @@ Toggle relationship labels on connecting lines to show how people are related:
 
 This helps clarify relationship types at a glance, especially useful when presenting or reviewing complex family structures.
 
+### Custom Relationships Overlay
+
+Render non-family custom relationships (liege/vassal, ally/rival, mentor/disciple, godparent, and other custom types) as styled overlay lines on top of the tree.
+
+**Enabling:**
+
+1. First, enable the **Family chart overlay** toggle on the relationship types you want visible — Control Center → Relationships → edit a type → "Render on family chart as overlay line" (see [Custom Relationships](Custom-Relationships#family-chart-overlay))
+2. In the Family Chart **Display** menu, toggle **Show custom relationships** on
+3. When multiple overlay-enabled types exist, each gets its own per-type toggle indented under the master toggle
+
+**Rendering behavior:**
+
+- Lines use the type's configured color and line style
+- Same-pair multiple relationships stack with a perpendicular offset so each line stays visible
+- Symmetric types draw one line per pair; asymmetric types draw a directed line
+- The as-of date filter applies — relationships with `from`/`to` date ranges outside the selected date are hidden
+- Hover a line for a tooltip with source, relationship type, target, and date range
+
+The overlay is independent of family-tree structure. A type can be tree-only (affects layout, no overlay), overlay-only (no layout impact, rendered as an overlay line), or both.
+
+### Highlight Groups
+
+Spotlight cards matching a property value while dimming the rest — useful for pattern-finding in large trees (e.g., "who are all the Magicians?", "which people belong to this faction?", "which descendants have the highest research level?").
+
+**Enabling:**
+
+1. In the Family Chart **Display** menu, click **Highlight groups...**
+2. In the modal, click **Add group** — configure up to 3 concurrent groups
+3. For each group, pick:
+   - **Field** — Sex, Occupation, Title, Religion, Caste, Nationality, Universe, or Collection
+   - **Value** — exact match (case-insensitive)
+   - **Color** — one of 12 palette colors (gold, orange, red, pink, purple, indigo, blue, cyan, teal, green, lime, brown)
+4. Toggle **Enabled** per group if you want to keep a group configured but temporarily off
+5. Click **Save**
+
+**Rendering behavior:**
+
+- Matching cards render with a **colored glow** in the group's color
+- Non-matching cards (when any group is active) dim to **30% opacity**, keeping structure visible
+- When a card matches multiple groups, the first group in the list wins for the glow color
+- Groups persist across view reloads via the view's state
+
+**Clearing:** Open the modal and click **Clear all**, or delete individual groups.
+
+**Field value matching** is case-insensitive and handles common sex aliases ("male" / "man" / "M" all match the canonical "M"). Built-in fields only in v1; custom property support arrives once [#377](https://github.com/banisterious/obsidian-charted-roots/issues/377) ships.
+
 ### Card Styles
 
 Choose from 4 card styles to match your visualization needs. Access via the **Style** menu → **Card Style** submenu.

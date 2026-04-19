@@ -210,6 +210,32 @@ Each event shows:
 | ⚠️ warning | No sources linked |
 | Faded node | Low confidence event |
 
+### Inline events from frontmatter
+
+In addition to Event Notes, the person timeline block (`charted-roots-timeline` code block) derives several timeline entries directly from the person's frontmatter — no separate event note required:
+
+| Source field | Timeline entry | Always on? |
+|---|---|---|
+| `born` | Born | Yes |
+| `died` | Died | Yes |
+| `adoption_date` | Adopted | Yes |
+| `spouse1_marriage_date` (any indexed spouse) | Marriage to [[Spouse]] | Yes |
+| `spouse1_divorce_date` (any indexed spouse) | Divorce from [[Spouse]] | Toggled — see **Show divorces** setting |
+
+### Family-member events from frontmatter
+
+Events belonging to relatives can also surface on a person's timeline, toggled individually in **Settings → Advanced → Family events on timelines**:
+
+| Toggle | Sources |
+|---|---|
+| **Show children's births** | `born` on each child note |
+| **Show spouse deaths** | `died` on each spouse note |
+| **Show parent deaths** | `died` on father / mother / adoptive parent / step-parent notes |
+| **Show sibling births** | `born` on each sibling note — where "sibling" is anyone sharing a parent *or* anyone declared via the built-in `sibling` relationship type |
+| **Show divorces** | `spouseN_divorce_date` on the person's own note (governs divorces only; marriages always render) |
+
+All toggles default off except **Show divorces** (on by default).
+
 ## Family Timeline View
 
 The Family Timeline shows aggregated events for an entire family unit: the focal person, their spouses, and their children.

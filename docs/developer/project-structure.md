@@ -559,6 +559,8 @@ charted-roots/
 | **Dockable Views** | | |
 | `views/family-chart-view.ts` | ✅ Complete | Interactive family chart (family-chart library) |
 | `views/family-chart-export.ts` | ✅ Complete | Export functionality (PNG, SVG, PDF, ODT) extracted from chart view |
+| `views/family-chart-view-modals.ts` | ✅ Complete | Modals owned by family chart (delete confirm, style, highlight groups) |
+| `views/highlight-groups.ts` | ✅ Complete | Highlight-group types, palette, and matcher helpers for family chart (#379) |
 | `views/map-view.ts` | ✅ Complete | Leaflet map view with markers |
 | **Shared** | | |
 | `shared/card-component.ts` | ✅ Complete | Reusable card UI component |

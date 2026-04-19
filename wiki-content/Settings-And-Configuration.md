@@ -469,16 +469,19 @@ Override default labels for timeline events. Use `{name}` as a placeholder for t
 
 ### Family Events on Timelines
 
-Show significant life events of family members on person timelines. All off by default.
+Show significant life events of family members on person timelines. Most default off; **Show divorces** defaults on.
 
 | Setting | Default | Description |
 |---------|---------|-------------|
 | **Show children's births** | Off | Display "Birth of [[Child Name]]" entries |
 | **Show spouse deaths** | Off | Display "Death of [[Spouse Name]]" entries |
 | **Show parent deaths** | Off | Display "Death of [[Parent Name]]" entries |
-| **Show sibling births** | Off | Display "Birth of [[Sibling Name]]" entries |
+| **Show sibling births** | Off | Display "Birth of [[Sibling Name]]" entries. Siblings are derived from shared parents **or** anyone declared via the built-in `sibling` relationship type. |
+| **Show divorces** | On | Display "Divorce from [[Spouse Name]]" entries. Marriages always render when present; this toggle governs divorces only. |
 
 Each entry links to the family member's note and shows age annotations. Use `familyEvents: none` in an individual timeline code block to suppress family events on that specific timeline.
+
+> **Note:** The subject's own life events — `born`, `died`, `adoption_date`, and marriages — always render on the timeline when present. No toggle is needed.
 
 ### Relationship Calculator
 

@@ -229,6 +229,44 @@ Custom relationships can be rendered as colored edges on canvas trees:
 
 ---
 
+## Family Chart Overlay
+
+Custom relationships can also render as **styled overlay lines on the interactive Family Chart**, independently of whether they participate in tree structure. This is decoupled from the tree-structure integration described in [Data Model](Data-Model) — a relationship type can be tree-only, overlay-only, or both.
+
+### Enabling overlay rendering per type
+
+In the Relationship Type editor modal (Control Center → Relationships → edit a type), the **Family chart overlay** section has a toggle:
+
+- **Render on family chart as overlay line** — when enabled, this type draws as a styled line between the two people it connects on the Family Chart view, using the type's color and line style.
+
+### Display toggles on the Family Chart
+
+Once one or more types have the overlay flag enabled, open the Family Chart view's **Display** menu:
+
+- **Show custom relationships** — master toggle that enables/disables the entire overlay layer
+- **Per-type toggles** — when multiple overlay-enabled types exist, each appears as its own toggle indented under the master toggle, letting you focus on specific categories
+
+### How overlay lines render
+
+- Line color matches the relationship type's configured color
+- Line style matches the type's configured style (solid / dashed / dotted)
+- **Multiple relationships on the same pair** stack with a perpendicular offset so they don't overlap — useful when two people have, e.g., both `ally` and `mentor` between them
+- **Symmetric types** (`ally`, `friend`, etc.) render one line per pair, not two
+- **Asymmetric types** (`mentor` → `disciple`, `captor` → `prisoner`) render one line in the declared direction
+- **As-of date filter** (from the Family Chart toolbar): relationships with `from`/`to` date ranges are skipped when the selected date is outside the range
+
+### Hover tooltip
+
+Hovering a line shows a tooltip with: source name, relationship type, target name, and date range if present.
+
+### Use cases
+
+- **Worldbuilding** — Political allegiances, liege/vassal relationships, rivalries, magical bonds, vampire sire/childer lineages rendered alongside biological kinship
+- **Genealogy** — FAN-network relationships (friends, associates, neighbors), godparent/godchild, master/apprentice, witness relationships
+- **Research** — Any non-family connection that helps contextualize a person's social or professional network
+
+---
+
 ## Commands and Context Menu
 
 ### Commands
