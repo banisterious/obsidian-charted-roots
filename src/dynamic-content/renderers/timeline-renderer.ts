@@ -682,6 +682,14 @@ export class TimelineRenderer {
 		// Adopted children's BIRTHS are rendered separately via the
 		// timelineShowAdoptedChildrenBirths toggle, independent from
 		// "Show children's births" (which covers biological only).
+		// Track birth-event emissions by child crId so we don't emit the same
+		// child's birth twice when they appear in both biological and adoptive
+		// arrays (possible when user's data dual-parents an adopted child).
+		const emittedBirthChildCrIds = new Set<string>();
+		if (settings.timelineShowChildrenBirths && person.childrenCrIds) {
+			for (const childCrId of person.childrenCrIds) emittedBirthChildCrIds.add(childCrId);
+		}
+
 		for (const adoptedChildCrId of person.adoptedChildCrIds) {
 			const adoptedChild = graph.getPersonByCrId(adoptedChildCrId);
 			if (!adoptedChild) continue;
@@ -703,7 +711,9 @@ export class TimelineRenderer {
 				entries.push(entry);
 			}
 
-			if (settings.timelineShowAdoptedChildrenBirths && adoptedChild.birthDate) {
+			if (settings.timelineShowAdoptedChildrenBirths &&
+				adoptedChild.birthDate &&
+				!emittedBirthChildCrIds.has(adoptedChildCrId)) {
 				const year = this.service.extractYear(adoptedChild.birthDate);
 				const entry: TimelineEntry = {
 					date: this.service.formatDate(adoptedChild.birthDate),
@@ -718,6 +728,7 @@ export class TimelineRenderer {
 					entry.age = entryYear - birthYear;
 				}
 				entries.push(entry);
+				emittedBirthChildCrIds.add(adoptedChildCrId);
 			}
 		}
 
