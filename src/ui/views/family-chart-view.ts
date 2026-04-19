@@ -3715,11 +3715,15 @@ export class FamilyChartView extends ItemView {
 	 */
 	private getCardPositions(): Map<string, { x: number; y: number }> {
 		const positions = new Map<string, { x: number; y: number }>();
+		if (!this.chartContainerEl) return positions;
 
-		// Use D3 to get card positions with their bound data. SVG cards expose
-		// translate() via the `transform` attribute (no units); HTML cards (used
-		// by the circle card style) expose it via `style.transform` in px units.
-		d3.selectAll<Element, { data: { id: string } }>('.card_cont')
+		// Scope to the current chart's container — otherwise d3.selectAll matches
+		// card_cont elements from other open family chart tabs or stale hidden
+		// charts, producing wrong coordinates for a crId when positions.set
+		// overwrites with the last-matched duplicate (#386).
+		// SVG cards expose translate() via the `transform` attribute (no units);
+		// HTML cards (circle card style) expose it via `style.transform` in px units.
+		d3.select(this.chartContainerEl).selectAll<Element, { data: { id: string } }>('.card_cont')
 			.each(function(nodeData) {
 				if (!nodeData?.data?.id) return;
 
