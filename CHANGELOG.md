@@ -9,10 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
-
-- **Adopted child's birth no longer duplicated when also listed as a biological child** ([#396](https://github.com/banisterious/obsidian-charted-roots/issues/396) follow-up): If a person is referenced in both `adopted_child_id` and `children_id` on the same parent, the timeline used to emit two birth entries when both "Show children's births" and "Show adopted children's births" were enabled — one from each toggle's iteration path. The adopted-children pass now skips births already emitted by the biological pass; adoption events themselves still render (they're distinct from births).
-
 ---
 
 ## [0.20.61] - 2026-04-19
@@ -24,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Adopted child's birth no longer duplicated when also listed as a biological child** ([#396](https://github.com/banisterious/obsidian-charted-roots/issues/396) follow-up): If a person is referenced in both `adopted_child_id` and `children_id` on the same parent, the timeline used to emit two birth entries when both "Show children's births" and "Show adopted children's births" were enabled — one from each toggle's iteration path. The adopted-children pass now skips births already emitted by the biological pass; adoption events themselves still render (they're distinct from births).
 - **Marriage and divorce timeline entries no longer render as raw text** ([#399](https://github.com/banisterious/obsidian-charted-roots/issues/399)): The initial v0.20.60 implementation embedded `[[Spouse]]` inside the title string, producing nested wikilinks that Obsidian's markdown parser couldn't resolve. Titles now use plain text for the spouse name with the link provided separately, matching how existing family-event entries are constructed.
 - **Custom relationships overlay — four follow-up fixes from community testing** ([#386](https://github.com/banisterious/obsidian-charted-roots/issues/386)):
   - **Wider hover target for tooltips.** The 2px stroke required pixel-precise cursor placement to trigger the tooltip. A transparent 14px hit line now sits behind each visible line, making hover reliable without thickening the visible stroke.
