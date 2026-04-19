@@ -674,6 +674,53 @@ export class TimelineRenderer {
 			}
 		}
 
+		// Adopted children: adoption events on the adoptive parent's timeline
+		// (#396 follow-up per doctorwodka's observation). Adoption is a shared
+		// life event — appears on both adoptee's timeline (as "Adopted") and on
+		// each adoptive parent's timeline (as "Adopted [[Child]]"). Always on,
+		// no toggle — matches the marriage-on-both-sides pattern.
+		// Adopted children's BIRTHS are rendered separately via the
+		// timelineShowAdoptedChildrenBirths toggle, independent from
+		// "Show children's births" (which covers biological only).
+		for (const adoptedChildCrId of person.adoptedChildCrIds) {
+			const adoptedChild = graph.getPersonByCrId(adoptedChildCrId);
+			if (!adoptedChild) continue;
+
+			if (adoptedChild.adoptionDate) {
+				const year = this.service.extractYear(adoptedChild.adoptionDate);
+				const entry: TimelineEntry = {
+					date: this.service.formatDate(adoptedChild.adoptionDate),
+					year,
+					type: 'adoption',
+					title: this.applyLabel('Adopted {name}', adoptedChild.name),
+					eventFile: adoptedChild.file?.basename,
+					isFamilyEvent: true
+				};
+				const entryYear = parseInt(year);
+				if (!isNaN(birthYear) && !isNaN(entryYear) && entryYear >= birthYear) {
+					entry.age = entryYear - birthYear;
+				}
+				entries.push(entry);
+			}
+
+			if (settings.timelineShowAdoptedChildrenBirths && adoptedChild.birthDate) {
+				const year = this.service.extractYear(adoptedChild.birthDate);
+				const entry: TimelineEntry = {
+					date: this.service.formatDate(adoptedChild.birthDate),
+					year,
+					type: 'family_birth',
+					title: this.applyLabel(settings.timelineChildBirthLabel || 'Birth of {name}', adoptedChild.name),
+					eventFile: adoptedChild.file?.basename,
+					isFamilyEvent: true
+				};
+				const entryYear = parseInt(year);
+				if (!isNaN(birthYear) && !isNaN(entryYear) && entryYear >= birthYear) {
+					entry.age = entryYear - birthYear;
+				}
+				entries.push(entry);
+			}
+		}
+
 		return entries;
 	}
 

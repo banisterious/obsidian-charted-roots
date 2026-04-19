@@ -463,6 +463,8 @@ export interface CanvasRootsSettings {
 	timelineShowSiblingBirths: boolean;
 	/** Show divorces on timelines (#399) */
 	timelineShowDivorces: boolean;
+	/** Show adopted children's births on adoptive parents' timelines (#396 follow-up) */
+	timelineShowAdoptedChildrenBirths: boolean;
 	/** Callout type for frozen media galleries (info, note, etc.) */
 	frozenGalleryCalloutType: string;
 	// Cleanup wizard state (for resuming interrupted wizards)
@@ -877,6 +879,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	timelineShowParentDeaths: false,
 	timelineShowSiblingBirths: false,
 	timelineShowDivorces: true,                // Default on — the subject's own event; toggle lets users hide if preferred (#399)
+	timelineShowAdoptedChildrenBirths: false,  // Opt-in: separate toggle from biological children's births (#396)
 	frozenGalleryCalloutType: 'info',          // Callout type for frozen media galleries
 	// Inclusive parent relationships (opt-in feature)
 	enableInclusiveParents: false,             // Default: OFF - users opt-in to gender-neutral parents
@@ -2046,6 +2049,16 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.timelineShowSiblingBirths)
 				.onChange(async (value) => {
 					this.plugin.settings.timelineShowSiblingBirths = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(advancedContent)
+			.setName('Show adopted children\'s births')
+			.setDesc('Display birth events of adopted children on the adoptive parent\'s timeline. Independent of "Show children\'s births" (which covers biological children only). Adoption dates themselves always render on both parent\'s and adoptee\'s timelines.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowAdoptedChildrenBirths)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowAdoptedChildrenBirths = value;
 					await this.plugin.saveSettings();
 				}));
 

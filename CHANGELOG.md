@@ -9,9 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.20.61] - 2026-04-19
+
 ### Fixed
 
 - **Marriage and divorce timeline entries no longer render as raw text** ([#399](https://github.com/banisterious/obsidian-charted-roots/issues/399)): The initial v0.20.60 implementation embedded `[[Spouse]]` inside the title string, producing nested wikilinks that Obsidian's markdown parser couldn't resolve. Titles now use plain text for the spouse name with the link provided separately, matching how existing family-event entries are constructed.
+- **Custom relationships overlay — four follow-up fixes from community testing** ([#386](https://github.com/banisterious/obsidian-charted-roots/issues/386)):
+  - **Wider hover target for tooltips.** The 2px stroke required pixel-precise cursor placement to trigger the tooltip. A transparent 14px hit line now sits behind each visible line, making hover reliable without thickening the visible stroke.
+  - **Built-in relationship types honor the overlay flag.** Enabling "Render on family chart as overlay line" on a built-in type (e.g., Master/Apprentice) was saving correctly but silently dropped on read — the customization-merge function wasn't propagating the new flag. Built-in types now render as overlay lines when the flag is on.
+  - **Inverse-type pairs no longer double up visually.** When two relationship types are inverses of each other (sire/childer, mentor/disciple, captor/prisoner) and both are overlay-enabled, each side of a declared pair used to produce its own line at identical coordinates. The overlapping strokes reinforced, making dotted look like dashed and dashed look like solid. The dedupe pass now canonicalizes to the alphabetically-earlier type id so the pair collapses to a single line.
+  - **Card-position lookup scoped to the current chart.** `d3.selectAll('.card_cont')` previously searched the entire document, so stale or hidden cards from other family chart tabs contributed to the position map — potentially drawing overlay lines from wrong coordinates. The selector is now scoped to the current chart container.
 
 ---
 
