@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Marriage and divorce timeline entries no longer render as raw text** ([#399](https://github.com/banisterious/obsidian-charted-roots/issues/399)): The initial v0.20.60 implementation embedded `[[Spouse]]` inside the title string, producing nested wikilinks that Obsidian's markdown parser couldn't resolve. Titles now use plain text for the spouse name with the link provided separately, matching how existing family-event entries are constructed.
+
 ---
 
 ## [0.20.60] - 2026-04-19
