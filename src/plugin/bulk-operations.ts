@@ -157,6 +157,30 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 		return match ? match[1] : value;
 	};
 
+	// Create graph services early so we can fall back to name-to-crId
+	// resolution for relationship fields whose `_id` frontmatter key is
+	// missing while the corresponding wikilink field is populated (#403).
+	// Without this fallback the modal loads those fields empty and the
+	// save path clears both the wikilink and ID from frontmatter.
+	const familyGraph = plugin.createFamilyGraphService();
+	const placeGraph = plugin.createPlaceGraphService();
+
+	// Resolve a wikilinked name to a person crId via the family graph.
+	// Handles `[[Name|Alias]]` by stripping the alias before lookup.
+	// Only resolves when exactly one person matches the name — ambiguous
+	// matches are logged and skipped so we don't silently pick the wrong
+	// person when two vault notes share a name.
+	const resolveNameToCrId = (name: string): string | undefined => {
+		const stripped = name.split('|')[0].trim();
+		if (!stripped) return undefined;
+		const matches = familyGraph.getAllPeople().filter(p => p.name === stripped);
+		if (matches.length === 1) return matches[0].crId;
+		if (matches.length > 1) {
+			logger.warn('edit-person-modal', `Ambiguous wikilink "${stripped}" resolves to ${matches.length} persons; skipping auto-resolution`);
+		}
+		return undefined;
+	};
+
 	// Extract spouse names/IDs - check for indexed format first (#204)
 	const spouseNames: string[] = [];
 	const spouseIds: string[] = [];
@@ -170,7 +194,12 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 		if (spouseLink || spouseId) {
 			hasIndexedSpouses = true;
 			const name = extractName(String(spouseLink || ''));
-			const crId = String(spouseId || '');
+			let crId = String(spouseId || '');
+
+			// Fallback: resolve wikilink name to crId when spouseN_id missing (#403)
+			if (!crId && name) {
+				crId = resolveNameToCrId(name) || '';
+			}
 
 			if (name) spouseNames.push(name);
 			if (crId) spouseIds.push(crId);
@@ -202,6 +231,13 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 				spouseIds.push(String(id));
 			}
 		}
+		// Fallback: resolve wikilink names when spouse_id missing (#403)
+		if (spouseIds.length === 0 && spouseNames.length > 0) {
+			for (const name of spouseNames) {
+				const id = resolveNameToCrId(name);
+				if (id) spouseIds.push(id);
+			}
+		}
 	}
 
 	// Extract children names/IDs
@@ -218,6 +254,13 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 		const ids = Array.isArray(fm.children_id) ? fm.children_id : [fm.children_id];
 		for (const id of ids) {
 			childIds.push(String(id));
+		}
+	}
+	// Fallback: resolve wikilink names when children_id missing (#403)
+	if (childIds.length === 0 && childNames.length > 0) {
+		for (const name of childNames) {
+			const id = resolveNameToCrId(name);
+			if (id) childIds.push(id);
 		}
 	}
 
@@ -272,10 +315,23 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 			parentIds.push(String(id));
 		}
 	}
+	// Fallback: resolve wikilink names when parents_id missing (#403)
+	if (parentIds.length === 0 && parentNames.length > 0) {
+		for (const name of parentNames) {
+			const id = resolveNameToCrId(name);
+			if (id) parentIds.push(id);
+		}
+	}
 
-	// Use factory methods to get properly configured graph services
-	const familyGraph = plugin.createFamilyGraphService();
-	const placeGraph = plugin.createPlaceGraphService();
+	// Resolve singleton parent/adoptive-parent IDs with wikilink fallback (#403)
+	const fatherName = extractName(fm.father);
+	const fatherId = fm.father_id ?? (fatherName ? resolveNameToCrId(fatherName) : undefined);
+	const motherName = extractName(fm.mother);
+	const motherId = fm.mother_id ?? (motherName ? resolveNameToCrId(motherName) : undefined);
+	const adoptiveFatherName = extractName(fm.adoptive_father);
+	const adoptiveFatherId = fm.adoptive_father_id ?? (adoptiveFatherName ? resolveNameToCrId(adoptiveFatherName) : undefined);
+	const adoptiveMotherName = extractName(fm.adoptive_mother);
+	const adoptiveMotherId = fm.adoptive_mother_id ?? (adoptiveMotherName ? resolveNameToCrId(adoptiveMotherName) : undefined);
 
 	// Merge universes from both places and people
 	const placeUniverses = placeGraph.getAllUniverses();
@@ -307,14 +363,14 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 			deathPlaceName: extractName(fm.death_place),
 			occupation: fm.occupation,
 			researchLevel: typeof fm.research_level === 'number' ? fm.research_level : undefined,
-			fatherId: fm.father_id,
-			fatherName: extractName(fm.father),
-			motherId: fm.mother_id,
-			motherName: extractName(fm.mother),
-			adoptiveFatherId: fm.adoptive_father_id,
-			adoptiveFatherName: extractName(fm.adoptive_father),
-			adoptiveMotherId: fm.adoptive_mother_id,
-			adoptiveMotherName: extractName(fm.adoptive_mother),
+			fatherId: fatherId,
+			fatherName: fatherName,
+			motherId: motherId,
+			motherName: motherName,
+			adoptiveFatherId: adoptiveFatherId,
+			adoptiveFatherName: adoptiveFatherName,
+			adoptiveMotherId: adoptiveMotherId,
+			adoptiveMotherName: adoptiveMotherName,
 			spouseIds: spouseIds.length > 0 ? spouseIds : undefined,
 			spouseNames: spouseNames.length > 0 ? spouseNames : undefined,
 			spouseMetadata: spouseMetadata.length > 0 ? spouseMetadata : undefined,
