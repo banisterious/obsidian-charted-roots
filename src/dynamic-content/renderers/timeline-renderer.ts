@@ -546,9 +546,14 @@ export class TimelineRenderer {
 		const entries: TimelineEntry[] = [];
 		const graph = context.familyGraph;
 
-		// Children's births
+		// Children's births (biological only — adopted children are handled
+		// separately by the adopted-children block below, gated on
+		// timelineShowAdoptedChildrenBirths). Anyone in both childrenCrIds and
+		// adoptedChildCrIds is skipped here so the two toggles stay independent.
 		if (settings.timelineShowChildrenBirths && person.childrenCrIds) {
+			const adoptedSet = new Set(person.adoptedChildCrIds || []);
 			for (const childCrId of person.childrenCrIds) {
+				if (adoptedSet.has(childCrId)) continue;
 				const child = graph.getPersonByCrId(childCrId);
 				if (child?.birthDate) {
 					const year = this.service.extractYear(child.birthDate);
@@ -679,21 +684,13 @@ export class TimelineRenderer {
 		}
 
 		// Adopted children: adoption events on the adoptive parent's timeline
-		// (#396 follow-up per doctorwodka's observation). Adoption is a shared
-		// life event — appears on both adoptee's timeline (as "Adopted") and on
-		// each adoptive parent's timeline (as "Adopted [[Child]]"). Always on,
-		// no toggle — matches the marriage-on-both-sides pattern.
-		// Adopted children's BIRTHS are rendered separately via the
-		// timelineShowAdoptedChildrenBirths toggle, independent from
-		// "Show children's births" (which covers biological only).
-		// Track birth-event emissions by child crId so we don't emit the same
-		// child's birth twice when they appear in both biological and adoptive
-		// arrays (possible when user's data dual-parents an adopted child).
-		const emittedBirthChildCrIds = new Set<string>();
-		if (settings.timelineShowChildrenBirths && person.childrenCrIds) {
-			for (const childCrId of person.childrenCrIds) emittedBirthChildCrIds.add(childCrId);
-		}
-
+		// (#396). Adoption is a shared life event — appears on both adoptee's
+		// timeline (as "Adopted") and on each adoptive parent's timeline (as
+		// "Adopted [[Child]]"). Always on, no toggle — matches the marriage-
+		// on-both-sides pattern. Adopted children's BIRTHS are gated on
+		// timelineShowAdoptedChildrenBirths, independent from the biological
+		// "Show children's births" toggle (which filters out anyone also in
+		// adoptedChildCrIds, so no dedupe is needed here).
 		for (const adoptedChildCrId of person.adoptedChildCrIds) {
 			const adoptedChild = graph.getPersonByCrId(adoptedChildCrId);
 			if (!adoptedChild) continue;
@@ -715,9 +712,7 @@ export class TimelineRenderer {
 				entries.push(entry);
 			}
 
-			if (settings.timelineShowAdoptedChildrenBirths &&
-				adoptedChild.birthDate &&
-				!emittedBirthChildCrIds.has(adoptedChildCrId)) {
+			if (settings.timelineShowAdoptedChildrenBirths && adoptedChild.birthDate) {
 				const year = this.service.extractYear(adoptedChild.birthDate);
 				const entry: TimelineEntry = {
 					date: this.service.formatDate(adoptedChild.birthDate),
@@ -732,7 +727,6 @@ export class TimelineRenderer {
 					entry.age = entryYear - birthYear;
 				}
 				entries.push(entry);
-				emittedBirthChildCrIds.add(adoptedChildCrId);
 			}
 		}
 

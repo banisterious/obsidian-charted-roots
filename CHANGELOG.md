@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **"Show children's births" toggle now correctly excludes adopted children** ([#396](https://github.com/banisterious/obsidian-charted-roots/issues/396) follow-up): The v0.20.61 dedupe covered the "both toggles on" case but missed the case where a dual-listed adopted child still appeared when only the biological "Show children's births" toggle was enabled. The biological-children pass now filters out anyone also in `adopted_child_id`, making the two toggles fully independent as documented — adopted children's births only surface via the "Show adopted children's births" toggle, regardless of whether they're also listed in `children_id`. The dedupe guard added in v0.20.61 is no longer needed and has been removed.
+
 ---
 
 ## [0.20.61] - 2026-04-19
