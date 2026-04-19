@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Adopted child's birth no longer duplicated when also listed as a biological child** ([#396](https://github.com/banisterious/obsidian-charted-roots/issues/396) follow-up): If a person is referenced in both `adopted_child_id` and `children_id` on the same parent, the timeline used to emit two birth entries when both "Show children's births" and "Show adopted children's births" were enabled — one from each toggle's iteration path. The adopted-children pass now skips births already emitted by the biological pass; adoption events themselves still render (they're distinct from births).
+
 ---
 
 ## [0.20.61] - 2026-04-19
