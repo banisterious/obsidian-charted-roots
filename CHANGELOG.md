@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`adoption_date` frontmatter property for adoptees** ([#396](https://github.com/banisterious/obsidian-charted-roots/issues/396)): New recognized person property — parsed into `PersonNode.adoptionDate`, written by `createPersonNote` and `updatePersonNote`, and rendered as an "Adopted" entry on the person timeline block. Always on when the field is set; no toggle (matches the pattern for `born` / `died`). Create/Edit Person modal UI for entering the field is a natural follow-up; users can set the frontmatter field directly in the meantime.
+- **Marriages and divorces on the person timeline block** ([#399](https://github.com/banisterious/obsidian-charted-roots/issues/399)): Spouse-relationship metadata (`spouse1_marriage_date`, `spouse1_divorce_date`, `spouse1_marriage_location`, etc.) is now surfaced on the inline timeline. Each marriage emits a "Marriage to [[Spouse]]" entry; each divorce emits "Divorce from [[Spouse]]." Both default on — they're the subject's own life events and sit alongside `born` / `died` / adoption.
+- **Manually-declared siblings on timeline** ([#398](https://github.com/banisterious/obsidian-charted-roots/issues/398)): The "Show sibling births" setting now also surfaces siblings declared via the built-in `sibling` relationship type, not just siblings derived from shared parents. Covers worldbuilder cases where parents aren't modeled as notes but sibling pairs are defined explicitly. Symmetric inference via RelationshipService picks up siblings who declared us on their own note.
+
 ### Fixed
 
 - **Adoptive parents no longer duplicated on child's relationships block** ([#392](https://github.com/banisterious/obsidian-charted-roots/issues/392)): Follow-on to the initial #392 fix in v0.20.59. When an adoptive parent's note listed the child via `adopted_child`, the reverse-inference pass pushed that parent into the child's gender-neutral `adoptive_parent_ids` array without checking whether the parent was already set in the gender-specific `adoptive_father_id` / `adoptive_mother_id`. The child's relationships block then rendered each parent twice — once as "Adoptive father" / "Adoptive mother," once as "Adoptive parent." The gender-neutral array is a fallback, not a universal list; inference now skips when the parent is already in a gender-specific slot.
