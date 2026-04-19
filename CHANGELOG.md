@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.20.60] - 2026-04-19
+
 ### Added
 
 - **`adoption_date` frontmatter property for adoptees** ([#396](https://github.com/banisterious/obsidian-charted-roots/issues/396)): New recognized person property — parsed into `PersonNode.adoptionDate`, written by `createPersonNote` and `updatePersonNote`, and rendered as an "Adopted" entry on the person timeline block. Always on when the field is set; no toggle (matches the pattern for `born` / `died`). Create/Edit Person modal UI for entering the field is a natural follow-up; users can set the frontmatter field directly in the meantime.
