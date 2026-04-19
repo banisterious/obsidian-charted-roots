@@ -721,6 +721,48 @@ export class TimelineRenderer {
 			});
 		}
 
+		// Add marriages and divorces from spouse relationship metadata (#399).
+		// These are the subject's own life events; always on when data is present,
+		// no toggle needed. Matches born/died/adoption handling.
+		if (person?.spouses && shouldInclude('marriage')) {
+			const birthYearForAge = person.birthDate ? parseInt(this.service.extractYear(person.birthDate)) : NaN;
+			for (const spouse of person.spouses) {
+				const spouseNode = context.familyGraph.getPersonByCrId(spouse.personId);
+				const spouseName = spouseNode?.name || spouse.personLink || spouse.personId;
+
+				if (spouse.marriageDate) {
+					const entry: TimelineEntry = {
+						date: this.service.formatDate(spouse.marriageDate),
+						year: this.service.extractYear(spouse.marriageDate),
+						type: 'marriage',
+						title: `Marriage to [[${spouseName}]]`,
+						place: spouse.marriageLocation ? this.service.stripWikilink(spouse.marriageLocation) : undefined,
+						eventFile: spouseNode?.file?.basename
+					};
+					const entryYear = parseInt(entry.year);
+					if (!isNaN(birthYearForAge) && !isNaN(entryYear) && entryYear >= birthYearForAge) {
+						entry.age = entryYear - birthYearForAge;
+					}
+					entries.push(entry);
+				}
+
+				if (spouse.divorceDate) {
+					const entry: TimelineEntry = {
+						date: this.service.formatDate(spouse.divorceDate),
+						year: this.service.extractYear(spouse.divorceDate),
+						type: 'divorce',
+						title: `Divorce from [[${spouseName}]]`,
+						eventFile: spouseNode?.file?.basename
+					};
+					const entryYear = parseInt(entry.year);
+					if (!isNaN(birthYearForAge) && !isNaN(entryYear) && entryYear >= birthYearForAge) {
+						entry.age = entryYear - birthYearForAge;
+					}
+					entries.push(entry);
+				}
+			}
+		}
+
 		// Add death from person note
 		if (person?.deathDate && shouldInclude('death')) {
 			entries.push({
