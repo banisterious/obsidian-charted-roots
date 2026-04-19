@@ -2108,38 +2108,46 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 			.addButton(button => button
 				.setButtonText('Export')
 				.onClick(async () => {
-					const { LoggerFactory, obfuscateLogs } = await import('./core/logging');
-					const logs = LoggerFactory.getLogs();
+					try {
+						const { LoggerFactory, obfuscateLogs } = await import('./core/logging');
+						const logs = LoggerFactory.getLogs();
 
-					if (logs.length === 0) {
-						new Notice('No logs to export');
-						return;
+						if (logs.length === 0) {
+							new Notice('No logs to export');
+							return;
+						}
+
+						const logsToExport = this.plugin.settings.obfuscateLogExports
+							? obfuscateLogs(logs)
+							: logs;
+
+						const lines = logsToExport.map(entry => {
+							const timestamp = entry.timestamp.toISOString();
+							const level = entry.level.toUpperCase().padEnd(5);
+							const dataStr = entry.data ? ` | ${JSON.stringify(entry.data)}` : '';
+							return `[${timestamp}] ${level} [${entry.component}/${entry.category}] ${entry.message}${dataStr}`;
+						});
+						const content = lines.join('\n');
+
+						const folder = this.plugin.settings.logExportPath || '.charted-roots/logs';
+						const filename = `charted-roots-${new Date().toISOString().replace(/[:.]/g, '-')}.log`;
+						const folderPath = normalizePath(folder);
+						const fullPath = normalizePath(`${folderPath}/${filename}`);
+
+						// Use the adapter for filesystem checks — the metadata cache
+						// can lag behind on hidden folders like `.charted-roots/logs`,
+						// causing getAbstractFileByPath to return null after a
+						// previous export already created the folder (#402).
+						if (!(await this.app.vault.adapter.exists(folderPath))) {
+							await this.app.vault.createFolder(folderPath);
+						}
+
+						await this.app.vault.create(fullPath, content);
+						new Notice(`Exported ${logs.length} log entries to ${fullPath}`);
+					} catch (error) {
+						const message = error instanceof Error ? error.message : String(error);
+						new Notice(`Failed to export logs: ${message}`);
 					}
-
-					const logsToExport = this.plugin.settings.obfuscateLogExports
-						? obfuscateLogs(logs)
-						: logs;
-
-					const lines = logsToExport.map(entry => {
-						const timestamp = entry.timestamp.toISOString();
-						const level = entry.level.toUpperCase().padEnd(5);
-						const dataStr = entry.data ? ` | ${JSON.stringify(entry.data)}` : '';
-						return `[${timestamp}] ${level} [${entry.component}/${entry.category}] ${entry.message}${dataStr}`;
-					});
-					const content = lines.join('\n');
-
-					const folder = this.plugin.settings.logExportPath || '.charted-roots/logs';
-					const filename = `charted-roots-${new Date().toISOString().replace(/[:.]/g, '-')}.log`;
-					const fullPath = normalizePath(`${folder}/${filename}`);
-
-					const folderPath = normalizePath(folder);
-					const existingFolder = this.app.vault.getAbstractFileByPath(folderPath);
-					if (!existingFolder) {
-						await this.app.vault.createFolder(folderPath);
-					}
-
-					await this.app.vault.create(fullPath, content);
-					new Notice(`Exported ${logs.length} log entries to ${fullPath}`);
 				}));
 	}
 
