@@ -12,6 +12,7 @@ import type CanvasRootsPlugin from '../../../main';
 import type { FamilyGraphService, PersonNode } from '../../core/family-graph';
 import type { EventService } from '../../events/services/event-service';
 import type { EventNote } from '../../events/types/event-types';
+import { RelationshipService } from '../../relationships/services/relationship-service';
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
 import { splitAndTrim } from '../../utils/format-utils';
 
@@ -63,6 +64,14 @@ export class DynamicContentService {
 	 */
 	getApp() {
 		return this.plugin.app;
+	}
+
+	/**
+	 * Construct a RelationshipService instance. Used by renderers that need
+	 * to query non-tree-structure relationships (e.g. manual siblings).
+	 */
+	createRelationshipService(): RelationshipService {
+		return new RelationshipService(this.plugin);
 	}
 
 	/**

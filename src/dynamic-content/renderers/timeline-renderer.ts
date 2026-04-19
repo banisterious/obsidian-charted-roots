@@ -637,6 +637,22 @@ export class TimelineRenderer {
 				}
 			}
 
+			// Also include siblings declared manually via the built-in `sibling`
+			// relationship type (#398). Covers the worldbuilder case where parents
+			// aren't modeled as notes but sibling pairs are still defined explicitly.
+			const relService = this.service.createRelationshipService();
+			for (const rel of relService.getRelationshipsForPerson(person.crId)) {
+				if (rel.type.id === 'sibling' && rel.targetCrId !== person.crId) {
+					siblingCrIds.add(rel.targetCrId);
+				}
+			}
+			// Symmetric: also catch siblings who declared us as a sibling on their note
+			for (const rel of relService.getInverseRelationships(person.crId)) {
+				if (rel.type.id === 'sibling' && rel.targetCrId !== person.crId) {
+					siblingCrIds.add(rel.targetCrId);
+				}
+			}
+
 			for (const siblingCrId of siblingCrIds) {
 				const sibling = graph.getPersonByCrId(siblingCrId);
 				if (sibling?.birthDate) {
