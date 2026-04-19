@@ -6,8 +6,8 @@ Currently, security updates are provided for the latest release version only.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.19.x  | :white_check_mark: |
-| < 0.19  | :x:                |
+| 0.20.x  | :white_check_mark: |
+| < 0.20  | :x:                |
 
 ## Data Privacy and Personally Identifiable Information (PII)
 
@@ -159,7 +159,7 @@ Charted Roots handles **highly sensitive personally identifiable information (PI
 If you discover a security vulnerability in Charted Roots, please report it by:
 
 1. **DO NOT** open a public GitHub issue for security vulnerabilities
-2. Email the maintainer directly at: [Check GitHub profile or package.json]
+2. Use [GitHub's Private Vulnerability Reporting](https://github.com/banisterious/obsidian-charted-roots/security/advisories/new) to submit a confidential report
 3. Include:
    - Description of the vulnerability
    - Steps to reproduce
@@ -312,7 +312,6 @@ Charted Roots helps users discover privacy features:
 
 Additional planned improvements:
 
-- **Interactive family chart privacy**: Apply privacy protection to the family chart view
 - **Report privacy**: Apply privacy protection to markdown/ODT/PDF reports
 - **Runtime canvas obfuscation**: Temporary display mode toggle for screenshots/presentations
 - Optional encryption for cr_id values
