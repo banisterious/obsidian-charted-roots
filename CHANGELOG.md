@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.20.59] - 2026-04-18
+
 ### Added
 
 - **Custom relationships overlay on family chart** ([#386](https://github.com/banisterious/obsidian-charted-roots/issues/386)): Custom non-family relationships (liege/vassal, ally/rival, master/apprentice, godparent, etc.) can now render as styled overlay lines on the family chart. Each relationship type has a new **Render on family chart as overlay line** toggle in the relationship-type editor modal, decoupled from the existing tree-structure integration — a type can be tree-only, overlay-only, or both. The Display menu gains a **Show custom relationships** master toggle plus per-type toggles when multiple overlay-enabled types exist. Lines are styled by the type's color and line style, stack with a perpendicular offset when the same pair has multiple overlay relationships, dedupe symmetric pairs, and respect the as-of date filter from [#376](https://github.com/banisterious/obsidian-charted-roots/issues/376). Hover a line for a tooltip showing source, relationship type, target, and date range.
