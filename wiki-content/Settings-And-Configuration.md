@@ -473,7 +473,8 @@ Show significant life events of family members on person timelines. Most default
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| **Show children's births** | Off | Display "Birth of [[Child Name]]" entries |
+| **Show children's births** | Off | Display "Birth of [[Child Name]]" entries for biological children |
+| **Show adopted children's births** | Off | Display "Birth of [[Child Name]]" entries for adopted children. Independent of "Show children's births" — lets you control biological and adopted child visibility separately. |
 | **Show spouse deaths** | Off | Display "Death of [[Spouse Name]]" entries |
 | **Show parent deaths** | Off | Display "Death of [[Parent Name]]" entries |
 | **Show sibling births** | Off | Display "Birth of [[Sibling Name]]" entries. Siblings are derived from shared parents **or** anyone declared via the built-in `sibling` relationship type. |
@@ -481,7 +482,7 @@ Show significant life events of family members on person timelines. Most default
 
 Each entry links to the family member's note and shows age annotations. Use `familyEvents: none` in an individual timeline code block to suppress family events on that specific timeline.
 
-> **Note:** The subject's own life events — `born`, `died`, `adoption_date`, and marriages — always render on the timeline when present. No toggle is needed.
+> **Note:** The subject's own life events — `born`, `died`, `adoption_date`, and marriages — always render on the timeline when present. No toggle is needed. Adoption events also appear on the adoptive parent's timeline as "Adopted [[Child]]" when the adopted child has `adoption_date` set — this is always on since adoption is a shared life event.
 
 ### Relationship Calculator
 

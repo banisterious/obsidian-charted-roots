@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.20.61] - 2026-04-19
 
+### Added
+
+- **Adoption events on adoptive parents' timelines** ([#396](https://github.com/banisterious/obsidian-charted-roots/issues/396) follow-up): When an adopted child has `adoption_date` set, the adoptive parent's timeline now renders an "Adopted [[Child]]" entry on that date. Adoption is a shared life event — it appears on both the adoptee's and the adoptive parents' timelines, matching the marriage-on-both-sides pattern. Always on, no toggle.
+- **"Show adopted children's births" toggle** (new, under Settings -> Advanced -> Family events on timelines): Independent of the existing "Show children's births" toggle (which covers biological children only). Default off. When enabled, adopted children's birth dates render on the adoptive parent's timeline as family events. Explicit opt-in keeps biological and adoptive child visibility as separate controls.
+
 ### Fixed
 
 - **Marriage and divorce timeline entries no longer render as raw text** ([#399](https://github.com/banisterious/obsidian-charted-roots/issues/399)): The initial v0.20.60 implementation embedded `[[Spouse]]` inside the title string, producing nested wikilinks that Obsidian's markdown parser couldn't resolve. Titles now use plain text for the spouse name with the link provided separately, matching how existing family-event entries are constructed.

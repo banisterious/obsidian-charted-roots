@@ -218,9 +218,12 @@ In addition to Event Notes, the person timeline block (`charted-roots-timeline` 
 |---|---|---|
 | `born` | Born | Yes |
 | `died` | Died | Yes |
-| `adoption_date` | Adopted | Yes |
+| `adoption_date` (adoptee's note) | Adopted | Yes |
+| `adoption_date` (on an adoptive parent's adopted child) | Adopted [[Child]] | Yes |
 | `spouse1_marriage_date` (any indexed spouse) | Marriage to [[Spouse]] | Yes |
 | `spouse1_divorce_date` (any indexed spouse) | Divorce from [[Spouse]] | Toggled — see **Show divorces** setting |
+
+Adoption is a shared life event — it renders on both the adoptee's and the adoptive parents' timelines, matching the way marriages render on both spouses.
 
 ### Family-member events from frontmatter
 
@@ -228,7 +231,8 @@ Events belonging to relatives can also surface on a person's timeline, toggled i
 
 | Toggle | Sources |
 |---|---|
-| **Show children's births** | `born` on each child note |
+| **Show children's births** | `born` on each biological child note |
+| **Show adopted children's births** | `born` on each adopted child note (independent from "Show children's births") |
 | **Show spouse deaths** | `died` on each spouse note |
 | **Show parent deaths** | `died` on father / mother / adoptive parent / step-parent notes |
 | **Show sibling births** | `born` on each sibling note — where "sibling" is anyone sharing a parent *or* anyone declared via the built-in `sibling` relationship type |
