@@ -709,6 +709,18 @@ export class TimelineRenderer {
 			});
 		}
 
+		// Add adoption from person note (#396)
+		// Adoption is the subject's own life event; always on when the field is set,
+		// no toggle needed. Parallels born/died handling.
+		if (person?.adoptionDate && shouldInclude('adoption')) {
+			entries.push({
+				date: this.service.formatDate(person.adoptionDate),
+				year: this.service.extractYear(person.adoptionDate),
+				type: 'adoption',
+				title: 'Adopted'
+			});
+		}
+
 		// Add death from person note
 		if (person?.deathDate && shouldInclude('death')) {
 			entries.push({

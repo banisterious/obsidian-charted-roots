@@ -115,6 +115,7 @@ export interface PersonNode {
 
 	// GEDCOM attributes (#317)
 	burialDate?: string;         // Burial date (BURI.DATE)
+	adoptionDate?: string;       // Adoption date (ADOP.DATE) — for the adoptee (#396)
 	deathCause?: string;         // Cause of death (DEAT.CAUS)
 	title?: string;              // Title/nobility (TITL)
 	religion?: string;           // Religion (RELI)
@@ -1650,6 +1651,7 @@ export class FamilyGraphService {
 
 		// GEDCOM attributes (#317)
 		const burialDate = this.resolveProperty<string>(fm, 'burial_date');
+		const adoptionDate = this.resolveProperty<string>(fm, 'adoption_date');
 		const deathCause = this.resolveProperty<string>(fm, 'death_cause');
 		const personTitle = this.resolveProperty<string>(fm, 'title');
 		const religion = this.resolveProperty<string>(fm, 'religion');
@@ -1739,6 +1741,7 @@ export class FamilyGraphService {
 			altName,
 			// GEDCOM attributes (#317)
 			burialDate,
+			adoptionDate,
 			deathCause,
 			title: personTitle,
 			religion,

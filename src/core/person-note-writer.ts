@@ -166,6 +166,7 @@ export interface PersonData {
 	// GEDCOM attributes (#317)
 	burialDate?: string;         // Burial date (BURI.DATE)
 	burialPlace?: string;        // Burial place (BURI.PLAC)
+	adoptionDate?: string;       // Adoption date — for the adoptee (#396)
 	deathCause?: string;         // Cause of death (DEAT.CAUS)
 	title?: string;              // Title/nobility (TITL)
 	religion?: string;           // Religion (RELI)
@@ -325,6 +326,9 @@ export async function createPersonNote(
 	}
 	if (person.burialPlace) {
 		frontmatter[prop('burial_place')] = person.burialPlace;
+	}
+	if (person.adoptionDate) {
+		frontmatter[prop('adoption_date')] = person.adoptionDate;
 	}
 	if (person.deathCause) {
 		frontmatter[prop('death_cause')] = person.deathCause;
@@ -1202,6 +1206,14 @@ export async function updatePersonNote(
 				frontmatter.occupation = person.occupation;
 			} else {
 				delete frontmatter.occupation;
+			}
+		}
+		// Adoption date — for the adoptee (#396)
+		if (person.adoptionDate !== undefined) {
+			if (person.adoptionDate) {
+				frontmatter.adoption_date = person.adoptionDate;
+			} else {
+				delete frontmatter.adoption_date;
 			}
 		}
 		if (person.researchLevel !== undefined) {
