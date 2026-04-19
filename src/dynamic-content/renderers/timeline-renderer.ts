@@ -623,7 +623,11 @@ export class TimelineRenderer {
 
 		// Sibling births
 		if (settings.timelineShowSiblingBirths) {
-			const parentCrIds = [person.fatherCrId, person.motherCrId].filter(Boolean) as string[];
+			const parentCrIds = [
+				person.fatherCrId,
+				person.motherCrId,
+				...(person.parentCrIds || [])
+			].filter(Boolean) as string[];
 			const siblingCrIds = new Set<string>();
 
 			for (const parentCrId of parentCrIds) {
