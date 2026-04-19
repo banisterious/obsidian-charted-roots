@@ -483,7 +483,11 @@ export function getAllRelationshipTypesWithCustomizations(
 					name: customization.name ?? type.name,
 					description: customization.description ?? type.description,
 					color: customization.color ?? type.color,
-					lineStyle: customization.lineStyle ?? type.lineStyle
+					lineStyle: customization.lineStyle ?? type.lineStyle,
+					// Overlay flag must be overlayable on built-in types — without this
+					// the flag a user enables via the editor modal is silently dropped
+					// and the built-in type never renders as an overlay (#386)
+					includeOnFamilyChartOverlay: customization.includeOnFamilyChartOverlay ?? type.includeOnFamilyChartOverlay
 				});
 			} else {
 				types.push(type);
