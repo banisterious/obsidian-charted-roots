@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Adoptive parents no longer duplicated on child's relationships block** ([#392](https://github.com/banisterious/obsidian-charted-roots/issues/392)): Follow-on to the initial #392 fix in v0.20.59. When an adoptive parent's note listed the child via `adopted_child`, the reverse-inference pass pushed that parent into the child's gender-neutral `adoptive_parent_ids` array without checking whether the parent was already set in the gender-specific `adoptive_father_id` / `adoptive_mother_id`. The child's relationships block then rendered each parent twice — once as "Adoptive father" / "Adoptive mother," once as "Adoptive parent." The gender-neutral array is a fallback, not a universal list; inference now skips when the parent is already in a gender-specific slot.
+
 ---
 
 ## [0.20.59] - 2026-04-18
