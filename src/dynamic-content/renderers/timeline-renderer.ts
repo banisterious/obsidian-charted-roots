@@ -751,7 +751,7 @@ export class TimelineRenderer {
 						date: this.service.formatDate(spouse.marriageDate),
 						year: this.service.extractYear(spouse.marriageDate),
 						type: 'marriage',
-						title: `Marriage to [[${spouseName}]]`,
+						title: `Marriage to ${spouseName}`,
 						place: spouse.marriageLocation ? this.service.stripWikilink(spouse.marriageLocation) : undefined,
 						eventFile: spouseNode?.file?.basename
 					};
@@ -767,7 +767,7 @@ export class TimelineRenderer {
 						date: this.service.formatDate(spouse.divorceDate),
 						year: this.service.extractYear(spouse.divorceDate),
 						type: 'divorce',
-						title: `Divorce from [[${spouseName}]]`,
+						title: `Divorce from ${spouseName}`,
 						eventFile: spouseNode?.file?.basename
 					};
 					const entryYear = parseInt(entry.year);
