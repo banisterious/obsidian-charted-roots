@@ -2050,10 +2050,36 @@ export class FamilyGraphService {
 				break;
 			}
 
-			case 'adoptive_parent':
+			case 'adoptive_parent': {
+				// Look up target's sex to assign to the correct adoptive parent field (#391).
+				// Gender-specific fields are singular, so fall back to the gender-neutral
+				// array when the matching slot is already occupied (e.g., two fathers).
+				const adoptivePerson = this.personCache.get(targetCrId);
+				const adoptiveSex = adoptivePerson?.sex?.toLowerCase();
+				if (adoptiveSex === 'f' || adoptiveSex === 'female') {
+					if (!result.adoptiveMotherCrId) {
+						result.adoptiveMotherCrId = targetCrId;
+					} else if (!result.adoptiveParentCrIds.includes(targetCrId)) {
+						result.adoptiveParentCrIds.push(targetCrId);
+					}
+				} else if (adoptiveSex === 'm' || adoptiveSex === 'male') {
+					if (!result.adoptiveFatherCrId) {
+						result.adoptiveFatherCrId = targetCrId;
+					} else if (!result.adoptiveParentCrIds.includes(targetCrId)) {
+						result.adoptiveParentCrIds.push(targetCrId);
+					}
+				} else {
+					// Unknown / non-binary / unspecified → gender-neutral array
+					if (!result.adoptiveParentCrIds.includes(targetCrId)) {
+						result.adoptiveParentCrIds.push(targetCrId);
+					}
+				}
+				break;
+			}
+
 			case 'foster_parent':
 			case 'guardian':
-				// All these "parent-like" relationships map to adoptiveParentCrIds
+				// Other "parent-like" relationships map to adoptiveParentCrIds
 				// (gender-neutral array that gets included in ancestor trees)
 				if (!result.adoptiveParentCrIds.includes(targetCrId)) {
 					result.adoptiveParentCrIds.push(targetCrId);

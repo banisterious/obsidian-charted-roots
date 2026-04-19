@@ -196,9 +196,14 @@ export class AddRelationshipModal extends Modal {
 				} else if (mapping === 'child' && this.selectedType.id === 'child') {
 					// Only biological child uses addChildRelationship
 					await mgr.addChildRelationship(this.sourceFile, this.selectedTarget.file, targetCrId);
+				} else if (this.selectedType.id === 'adoptive_parent') {
+					// Adoptive parents: write to gender-specific singular field based on
+					// target's sex (#391). Falls back to the gender-neutral array when the
+					// matching slot is already occupied (e.g., two fathers).
+					await this.writeAdoptiveParentProperties(targetCrId, targetCache?.frontmatter?.sex as string | undefined);
 				} else {
-					// Other family mappings (guardian, stepparent, adoptive_parent,
-					// adopted_child, step_child, foster_child, ward, etc.)
+					// Other family mappings (guardian, stepparent, adopted_child,
+					// step_child, foster_child, ward, etc.)
 					// Use the generic relationship property write
 					await this.writeRelationshipProperties(targetCrId);
 				}
@@ -218,6 +223,54 @@ export class AddRelationshipModal extends Modal {
 			const msg = error instanceof Error ? error.message : 'Unknown error';
 			new Notice(`Failed to add relationship: ${msg}`);
 		}
+	}
+
+	/**
+	 * Write an adoptive-parent relationship to the gender-specific singular field
+	 * (`adoptive_father_id` or `adoptive_mother_id`) based on the target's sex.
+	 * Falls back to the gender-neutral `adoptive_parent_ids` array when the
+	 * matching slot is already occupied (same-sex adoptive parents).
+	 */
+	private async writeAdoptiveParentProperties(targetCrId: string, targetSex: string | undefined): Promise<void> {
+		if (!this.selectedTarget) return;
+		const targetWikilink = `[[${this.selectedTarget.file.basename}]]`;
+		const sex = targetSex?.toLowerCase();
+		const isFemale = sex === 'f' || sex === 'female';
+		const isMale = sex === 'm' || sex === 'male';
+
+		await this.app.fileManager.processFrontMatter(this.sourceFile, (frontmatter) => {
+			// Check if relationship already exists in any adoptive field
+			const existingIds: string[] = [
+				frontmatter.adoptive_father_id,
+				frontmatter.adoptive_mother_id,
+				...this.normalizeToArray(frontmatter.adoptive_parent_ids)
+			].filter((v): v is string => typeof v === 'string' && v.length > 0);
+			if (existingIds.includes(targetCrId)) {
+				throw new Error('This relationship already exists');
+			}
+
+			if (isFemale) {
+				if (!frontmatter.adoptive_mother_id) {
+					frontmatter.adoptive_mother = targetWikilink;
+					frontmatter.adoptive_mother_id = targetCrId;
+					return;
+				}
+			} else if (isMale) {
+				if (!frontmatter.adoptive_father_id) {
+					frontmatter.adoptive_father = targetWikilink;
+					frontmatter.adoptive_father_id = targetCrId;
+					return;
+				}
+			}
+
+			// Fall through to the gender-neutral array (unknown sex OR matching slot already taken)
+			const existingParents = this.normalizeToArray(frontmatter.adoptive_parents);
+			const existingParentIds = this.normalizeToArray(frontmatter.adoptive_parent_ids);
+			existingParents.push(targetWikilink);
+			existingParentIds.push(targetCrId);
+			frontmatter.adoptive_parents = existingParents.length === 1 ? existingParents[0] : existingParents;
+			frontmatter.adoptive_parent_ids = existingParentIds.length === 1 ? existingParentIds[0] : existingParentIds;
+		});
 	}
 
 	/**

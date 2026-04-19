@@ -133,7 +133,7 @@ export class RelationshipsRenderer {
 			return include.includes(type);
 		};
 
-		// Parents
+		// Parents — biological, gender-neutral, adoptive, and step
 		if (shouldInclude('parents')) {
 			if (person.fatherCrId) {
 				const father = familyGraph.getPersonByCrId(person.fatherCrId);
@@ -152,6 +152,38 @@ export class RelationshipsRenderer {
 				const parent = familyGraph.getPersonByCrId(parentCrId);
 				if (parent) {
 					groups.parents.push(this.personToEntry(parent, 'Parent'));
+				}
+			}
+			// Adoptive parents (#392)
+			if (person.adoptiveFatherCrId) {
+				const adoptiveFather = familyGraph.getPersonByCrId(person.adoptiveFatherCrId);
+				if (adoptiveFather) {
+					groups.parents.push(this.personToEntry(adoptiveFather, 'Adoptive father'));
+				}
+			}
+			if (person.adoptiveMotherCrId) {
+				const adoptiveMother = familyGraph.getPersonByCrId(person.adoptiveMotherCrId);
+				if (adoptiveMother) {
+					groups.parents.push(this.personToEntry(adoptiveMother, 'Adoptive mother'));
+				}
+			}
+			for (const adoptiveParentCrId of person.adoptiveParentCrIds) {
+				const adoptiveParent = familyGraph.getPersonByCrId(adoptiveParentCrId);
+				if (adoptiveParent) {
+					groups.parents.push(this.personToEntry(adoptiveParent, 'Adoptive parent'));
+				}
+			}
+			// Step-parents
+			for (const stepfatherCrId of person.stepfatherCrIds) {
+				const stepfather = familyGraph.getPersonByCrId(stepfatherCrId);
+				if (stepfather) {
+					groups.parents.push(this.personToEntry(stepfather, 'Stepfather'));
+				}
+			}
+			for (const stepmotherCrId of person.stepmotherCrIds) {
+				const stepmother = familyGraph.getPersonByCrId(stepmotherCrId);
+				if (stepmother) {
+					groups.parents.push(this.personToEntry(stepmother, 'Stepmother'));
 				}
 			}
 		}

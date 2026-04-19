@@ -1379,6 +1379,38 @@ export async function updatePersonNote(
 			}
 		}
 
+		// Handle adoptive father relationship (#390)
+		if (person.adoptiveFatherCrId !== undefined || person.adoptiveFatherName !== undefined) {
+			if (person.adoptiveFatherCrId && person.adoptiveFatherName) {
+				frontmatter.adoptive_father = `${createSmartWikilink(person.adoptiveFatherName, app)}`;
+				frontmatter.adoptive_father_id = person.adoptiveFatherCrId;
+			} else if (person.adoptiveFatherCrId) {
+				frontmatter.adoptive_father_id = person.adoptiveFatherCrId;
+			} else if (person.adoptiveFatherName) {
+				frontmatter.adoptive_father = `${createSmartWikilink(person.adoptiveFatherName, app)}`;
+			} else {
+				// Clear adoptive father
+				delete frontmatter.adoptive_father;
+				delete frontmatter.adoptive_father_id;
+			}
+		}
+
+		// Handle adoptive mother relationship (#390)
+		if (person.adoptiveMotherCrId !== undefined || person.adoptiveMotherName !== undefined) {
+			if (person.adoptiveMotherCrId && person.adoptiveMotherName) {
+				frontmatter.adoptive_mother = `${createSmartWikilink(person.adoptiveMotherName, app)}`;
+				frontmatter.adoptive_mother_id = person.adoptiveMotherCrId;
+			} else if (person.adoptiveMotherCrId) {
+				frontmatter.adoptive_mother_id = person.adoptiveMotherCrId;
+			} else if (person.adoptiveMotherName) {
+				frontmatter.adoptive_mother = `${createSmartWikilink(person.adoptiveMotherName, app)}`;
+			} else {
+				// Clear adoptive mother
+				delete frontmatter.adoptive_mother;
+				delete frontmatter.adoptive_mother_id;
+			}
+		}
+
 		// Handle spouse relationships - use indexed format with metadata when available (#204)
 		if (person.spouseCrId !== undefined || person.spouseName !== undefined || person.spouseMetadata !== undefined) {
 			// Check if any spouse has metadata
