@@ -3568,9 +3568,15 @@ export class FamilyChartView extends ItemView {
 				if (!cardPositions.has(rel.sourceCrId) || !cardPositions.has(rel.targetCrId)) continue;
 				// As-of date filter: skip relationships whose from/to range excludes the selected date
 				if (!this.relationshipActiveAtAsOfDate(rel)) continue;
-				// Dedupe: canonicalize by sorted crId pair + type id
+				// Dedupe: canonicalize by sorted crId pair + canonical type id.
+				// For inverse-type pairs that are both overlay-enabled (e.g. sire/childer,
+				// mentor/disciple), use the alphabetically-first of the pair so both sides
+				// collapse to a single line rather than rendering stacked identical strokes.
 				const pairKey = [rel.sourceCrId, rel.targetCrId].sort().join('|');
-				const dedupeKey = `${pairKey}|${type.id}`;
+				const canonicalTypeId = type.inverse && overlayTypes.has(type.inverse)
+					? [type.id, type.inverse].sort()[0]
+					: type.id;
+				const dedupeKey = `${pairKey}|${canonicalTypeId}`;
 				if (seen.has(dedupeKey)) continue;
 				seen.add(dedupeKey);
 				out.push({ rel, type });
