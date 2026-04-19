@@ -3385,13 +3385,66 @@ export class FamilyChartView extends ItemView {
 	}
 
 	/**
-	 * Schedule overlay re-render after tree animation completes.
-	 * Uses the same ~1500ms delay as kinship labels so positions are stable.
+	 * Schedule overlay re-render once the chart's card positions are stable.
+	 *
+	 * f3 chart uses *staggered* entrance delays on initial render
+	 * (`calculateDelay` in the library), so deeper cards finish animating
+	 * much later than a fixed timer can reliably anticipate. A hard-coded
+	 * 1500ms timer previously captured mid-animation transforms on larger
+	 * trees, producing overlay lines drawn from wrong coordinates (#386).
+	 *
+	 * Instead, poll card transforms on successive animation frames and
+	 * render once the positions stop changing for several frames in a row.
+	 * Small trees stabilize quickly; large trees wait through the stagger.
 	 */
 	private scheduleRelationshipOverlayRerender(): void {
-		if (this.showCustomRelationships) {
-			setTimeout(() => this.renderRelationshipOverlay(), 1500);
+		if (!this.showCustomRelationships) return;
+		this.waitForCardPositionStability(() => this.renderRelationshipOverlay());
+	}
+
+	/**
+	 * Call `callback` once card positions are stable across several
+	 * animation frames, or after a hard timeout as a safety backstop.
+	 */
+	private waitForCardPositionStability(callback: () => void): void {
+		const REQUIRED_STABLE_FRAMES = 3;
+		const MAX_ATTEMPTS = 240; // ~4 seconds at 60fps
+		let lastPositions = new Map<string, { x: number; y: number }>();
+		let stableFrames = 0;
+		let attempts = 0;
+
+		const tick = () => {
+			attempts++;
+			const current = this.getCardPositions();
+			if (current.size > 0 && this.cardPositionsEqual(current, lastPositions)) {
+				if (++stableFrames >= REQUIRED_STABLE_FRAMES) {
+					callback();
+					return;
+				}
+			} else {
+				stableFrames = 0;
+			}
+			lastPositions = current;
+			if (attempts < MAX_ATTEMPTS) {
+				requestAnimationFrame(tick);
+			} else {
+				callback();
+			}
+		};
+
+		requestAnimationFrame(tick);
+	}
+
+	private cardPositionsEqual(
+		a: Map<string, { x: number; y: number }>,
+		b: Map<string, { x: number; y: number }>
+	): boolean {
+		if (a.size !== b.size) return false;
+		for (const [id, posA] of a) {
+			const posB = b.get(id);
+			if (!posB || posB.x !== posA.x || posB.y !== posA.y) return false;
 		}
+		return true;
 	}
 
 	/**
