@@ -221,9 +221,11 @@ The Relationships tab in Control Center provides comprehensive relationship mana
 
 Custom relationships can be rendered as colored edges on canvas trees:
 
-- Each relationship type defines an **edge color**
-- Edges use **dashed or dotted line styles** to distinguish from family links
+- Each relationship type defines an **edge color** — renders in both vanilla Obsidian Canvas and [Advanced Canvas](https://github.com/Developer-Mike/obsidian-advanced-canvas)
+- Relationship types can also specify **dashed or dotted line styles** — but these only render when the **Advanced Canvas** plugin is installed. Vanilla Obsidian Canvas ignores edge style attributes and renders all edges as solid lines. Colors display correctly regardless.
 - Enable/disable custom relationship edges in tree generation settings
+
+> **Tip:** Install the Advanced Canvas community plugin if you want distinguishing line styles (dashed, dotted) on canvas trees. Without it, different relationship types remain distinguishable by color and label.
 
 ---
 

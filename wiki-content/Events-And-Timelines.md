@@ -219,7 +219,7 @@ The Family Timeline shows aggregated events for an entire family unit: the focal
 1. Go to **Control Center > People tab**
 2. Find a person in the list
 3. Look for the **users badge** (shows total family events) next to the calendar badge
-4. Click the users badge to expand the family timeline
+4. Click the users badge to open the family timeline in a modal
 
 The users badge only appears for people who have spouses or children with events.
 
