@@ -853,17 +853,43 @@ export class CreateEventModal extends Modal {
 				frontmatter.date_precision = this.datePrecision;
 				frontmatter.confidence = this.confidence;
 
-				// Handle optional fields - set or remove
+				// Handle optional fields - set or remove.
+				// #393: when Calendarium fc-date is present on the file, the in-memory
+				// event.date was populated from fc-date (by EventService). Writing that
+				// value back to `date` would clobber a real-world `date` the user had
+				// set alongside fc-date. Prefer writing to fc-date when present so both
+				// fields are preserved.
+				const hasFcDate = frontmatter['fc-date'] !== undefined || frontmatter['fc-start'] !== undefined;
+				const hasFcEnd = frontmatter['fc-end'] !== undefined;
+
 				if (this.date.trim()) {
-					frontmatter.date = this.date.trim();
+					if (hasFcDate) {
+						frontmatter['fc-date'] = this.date.trim();
+						// Don't touch `date` — it holds an independent real-world value
+					} else {
+						frontmatter.date = this.date.trim();
+					}
 				} else {
-					delete frontmatter.date;
+					if (hasFcDate) {
+						delete frontmatter['fc-date'];
+						delete frontmatter['fc-start'];
+					} else {
+						delete frontmatter.date;
+					}
 				}
 
 				if (this.dateEnd.trim()) {
-					frontmatter.date_end = this.dateEnd.trim();
+					if (hasFcEnd) {
+						frontmatter['fc-end'] = this.dateEnd.trim();
+					} else {
+						frontmatter.date_end = this.dateEnd.trim();
+					}
 				} else {
-					delete frontmatter.date_end;
+					if (hasFcEnd) {
+						delete frontmatter['fc-end'];
+					} else {
+						delete frontmatter.date_end;
+					}
 				}
 
 				// Always use persons array for consistency (matches EventService pattern)
