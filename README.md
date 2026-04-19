@@ -6,9 +6,10 @@
 
 ## Demo
 
-[![Charted Roots Demo](https://img.youtube.com/vi/elQfn1fk1VQ/maxresdefault.jpg)](https://youtu.be/elQfn1fk1VQ)
-
-**Watch:** Import GEDCOM -> Generate family tree -> Interactive family chart -> Geolocate places → Map view
+| Quick tour (~2 min) | Full feature tour (~15 min) |
+|:-------------------:|:---------------------------:|
+| [![Quick tour](https://img.youtube.com/vi/elQfn1fk1VQ/maxresdefault.jpg)](https://youtu.be/elQfn1fk1VQ) | [![Full feature tour](docs/images/charted-roots-person-note.png)](https://www.youtube.com/watch?v=GnOHrG_nVvY) |
+| Import GEDCOM → family tree → interactive chart → map view | Dynamic notes, highlight groups, custom-relationship overlay, maps, reports, worldbuilding |
 
 ---
 
