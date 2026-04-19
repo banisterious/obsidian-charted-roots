@@ -1264,10 +1264,16 @@ export class FamilyGraphService {
 			);
 
 			// Build reverse adoptive parent relationships from adopted_child declarations
-			// If this person has adopted_child: X, then X should have this person as adoptive parent
+			// If this person has adopted_child: X, then X should have this person as adoptive parent.
+			// Skip if this person is already in the child's gender-specific field — otherwise
+			// the child would show the parent twice (once as "Adoptive father/mother", once as
+			// "Adoptive parent"). The gender-neutral array is a fallback, not a universal list.
 			for (const adoptedChildId of person.adoptedChildCrIds) {
 				const adoptedChild = this.personCache.get(adoptedChildId);
-				if (adoptedChild && !adoptedChild.adoptiveParentCrIds.includes(crId)) {
+				if (adoptedChild &&
+					adoptedChild.adoptiveFatherCrId !== crId &&
+					adoptedChild.adoptiveMotherCrId !== crId &&
+					!adoptedChild.adoptiveParentCrIds.includes(crId)) {
 					adoptedChild.adoptiveParentCrIds.push(crId);
 				}
 			}
