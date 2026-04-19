@@ -461,6 +461,8 @@ export interface CanvasRootsSettings {
 	timelineShowParentDeaths: boolean;
 	/** Show siblings' births on timelines */
 	timelineShowSiblingBirths: boolean;
+	/** Show divorces on timelines (#399) */
+	timelineShowDivorces: boolean;
 	/** Callout type for frozen media galleries (info, note, etc.) */
 	frozenGalleryCalloutType: string;
 	// Cleanup wizard state (for resuming interrupted wizards)
@@ -874,6 +876,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	timelineShowSpouseDeaths: false,
 	timelineShowParentDeaths: false,
 	timelineShowSiblingBirths: false,
+	timelineShowDivorces: true,                // Default on — the subject's own event; toggle lets users hide if preferred (#399)
 	frozenGalleryCalloutType: 'info',          // Callout type for frozen media galleries
 	// Inclusive parent relationships (opt-in feature)
 	enableInclusiveParents: false,             // Default: OFF - users opt-in to gender-neutral parents
@@ -2043,6 +2046,16 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.timelineShowSiblingBirths)
 				.onChange(async (value) => {
 					this.plugin.settings.timelineShowSiblingBirths = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(advancedContent)
+			.setName('Show divorces')
+			.setDesc('Display divorce events on the person\'s timeline. Marriages always render when present; this toggle governs divorces only.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowDivorces)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowDivorces = value;
 					await this.plugin.saveSettings();
 				}));
 

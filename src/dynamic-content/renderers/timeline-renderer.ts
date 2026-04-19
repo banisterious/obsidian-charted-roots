@@ -762,7 +762,7 @@ export class TimelineRenderer {
 					entries.push(entry);
 				}
 
-				if (spouse.divorceDate) {
+				if (spouse.divorceDate && settings.timelineShowDivorces) {
 					const entry: TimelineEntry = {
 						date: this.service.formatDate(spouse.divorceDate),
 						year: this.service.extractYear(spouse.divorceDate),
