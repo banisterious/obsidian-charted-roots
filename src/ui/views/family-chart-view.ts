@@ -3468,6 +3468,26 @@ export class FamilyChartView extends ItemView {
 				const ox = px * offset;
 				const oy = py * offset;
 
+				// Invisible wider "hit line" makes hover-to-tooltip easier without
+				// thickening the visible line. Paired with a visible thin line on top.
+				const hitLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+				hitLine.setAttribute('x1', String(from.x + ox));
+				hitLine.setAttribute('y1', String(from.y + oy));
+				hitLine.setAttribute('x2', String(to.x + ox));
+				hitLine.setAttribute('y2', String(to.y + oy));
+				hitLine.setAttribute('stroke', 'transparent');
+				hitLine.setAttribute('stroke-width', '14');
+				hitLine.setAttribute('fill', 'none');
+				hitLine.setAttribute('class', 'cr-relationship-overlay-hitline');
+				// Tooltip hangs on the hit line so hover works across the wider area
+				const tooltip = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+				const dateRange = this.formatRelationshipDateRange(rel);
+				tooltip.textContent = dateRange
+					? `${rel.sourceName} — ${type.name} — ${rel.targetName} (${dateRange})`
+					: `${rel.sourceName} — ${type.name} — ${rel.targetName}`;
+				hitLine.appendChild(tooltip);
+				overlayGroup.appendChild(hitLine);
+
 				const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
 				line.setAttribute('x1', String(from.x + ox));
 				line.setAttribute('y1', String(from.y + oy));
@@ -3476,18 +3496,14 @@ export class FamilyChartView extends ItemView {
 				line.setAttribute('stroke', type.color);
 				line.setAttribute('stroke-width', '2');
 				line.setAttribute('fill', 'none');
+				// Visible line defers pointer events to the hit line below so the
+				// wider hit target is always the hover target
+				line.setAttribute('pointer-events', 'none');
 				if (type.lineStyle === 'dashed') {
 					line.setAttribute('stroke-dasharray', '8,4');
 				} else if (type.lineStyle === 'dotted') {
 					line.setAttribute('stroke-dasharray', '2,3');
 				}
-				// Tooltip with relationship details
-				const tooltip = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-				const dateRange = this.formatRelationshipDateRange(rel);
-				tooltip.textContent = dateRange
-					? `${rel.sourceName} — ${type.name} — ${rel.targetName} (${dateRange})`
-					: `${rel.sourceName} — ${type.name} — ${rel.targetName}`;
-				line.appendChild(tooltip);
 				line.setAttribute('class', `cr-relationship-overlay-line cr-relationship-overlay-line--${type.id}`);
 				overlayGroup.appendChild(line);
 			});
