@@ -43,7 +43,7 @@ const logger = getLogger('FamilyChartView');
 // overlay's color / dash pattern instead of drawing a separate arc, so the
 // viewer sees one expressive line rather than two parallel ones (#404).
 const STRUCTURAL_COUNTERPART_TYPES = new Set<string>([
-	'adopted_parent', 'adopted_child',
+	'adoptive_parent', 'adopted_child',
 	'step_parent', 'step_child',
 	'foster_parent', 'foster_child'
 ]);
