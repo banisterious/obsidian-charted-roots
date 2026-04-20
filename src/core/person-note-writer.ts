@@ -1120,18 +1120,283 @@ export async function addParentToChild(
 	}
 }
 
+// Helpers for collecting a set of crIds from a spouse-related frontmatter.
+// Handles both the indexed format (spouse1, spouse2, ...) and the legacy array
+// (spouse_id). Returned Set is deduped and stringified.
+function collectSpouseIds(fm: Record<string, unknown> | undefined): Set<string> {
+	const ids = new Set<string>();
+	if (!fm) return ids;
+	for (let i = 1; i <= 10; i++) {
+		const id = fm[`spouse${i}_id`];
+		if (id) ids.add(String(id));
+	}
+	const legacy = fm.spouse_id;
+	if (legacy !== undefined && legacy !== null) {
+		if (Array.isArray(legacy)) {
+			for (const id of legacy) ids.add(String(id));
+		} else {
+			ids.add(String(legacy));
+		}
+	}
+	return ids;
+}
+
+function collectIdsFromField(fm: Record<string, unknown> | undefined, key: string): Set<string> {
+	const ids = new Set<string>();
+	if (!fm) return ids;
+	const raw = fm[key];
+	if (raw === undefined || raw === null) return ids;
+	if (Array.isArray(raw)) {
+		for (const id of raw) ids.add(String(id));
+	} else {
+		ids.add(String(raw));
+	}
+	return ids;
+}
+
+/**
+ * Remove `childCrId` from the parent's `children` / `children_id` arrays.
+ * No-op if the child isn't currently linked, so this is safe to call
+ * repeatedly and cycle-safe via `skipReverseUnlink`.
+ */
+export async function removeChildFromParent(
+	app: App,
+	parentCrId: string,
+	childCrId: string,
+	directory: string
+): Promise<void> {
+	const parentFile = findPersonByCrId(app, parentCrId, directory);
+	if (!parentFile) return;
+	const cache = app.metadataCache.getFileCache(parentFile);
+	const existingIds = cache?.frontmatter?.children_id;
+	const existingNames = cache?.frontmatter?.children;
+	const idArray = existingIds === undefined || existingIds === null
+		? []
+		: (Array.isArray(existingIds) ? [...existingIds] : [existingIds]).map(String);
+	const nameArray = existingNames === undefined || existingNames === null
+		? []
+		: (Array.isArray(existingNames) ? [...existingNames] : [existingNames]).map(String);
+	const idx = idArray.indexOf(childCrId);
+	if (idx === -1) return;
+	idArray.splice(idx, 1);
+	if (idx < nameArray.length) nameArray.splice(idx, 1);
+	logger.debug('reverse-unlink', `Removing child ${childCrId} from parent ${parentCrId}`);
+	await updatePersonNote(app, parentFile, {
+		childCrId: idArray,
+		childName: nameArray
+	}, { skipReverseUnlink: true });
+}
+
+/**
+ * Remove `childCrId` from the adoptive parent's `adopted_child` arrays.
+ */
+export async function removeAdoptedChildFromParent(
+	app: App,
+	parentCrId: string,
+	childCrId: string,
+	directory: string
+): Promise<void> {
+	const parentFile = findPersonByCrId(app, parentCrId, directory);
+	if (!parentFile) return;
+	await app.fileManager.processFrontMatter(parentFile, (fm) => {
+		const existingIds = fm.adopted_child_id;
+		const existingNames = fm.adopted_child;
+		const idArray = existingIds === undefined || existingIds === null
+			? []
+			: (Array.isArray(existingIds) ? [...existingIds] : [existingIds]).map(String);
+		const nameArray = existingNames === undefined || existingNames === null
+			? []
+			: (Array.isArray(existingNames) ? [...existingNames] : [existingNames]).map(String);
+		const idx = idArray.indexOf(childCrId);
+		if (idx === -1) return;
+		idArray.splice(idx, 1);
+		if (idx < nameArray.length) nameArray.splice(idx, 1);
+		if (idArray.length === 0) {
+			delete fm.adopted_child;
+			delete fm.adopted_child_id;
+		} else {
+			fm.adopted_child_id = idArray.length === 1 ? idArray[0] : idArray;
+			fm.adopted_child = nameArray.length === 1 ? nameArray[0] : nameArray;
+		}
+		logger.debug('reverse-unlink', `Removed adopted child ${childCrId} from parent ${parentCrId}`);
+	});
+}
+
+/**
+ * Remove `thisPersonCrId` from a former spouse's spouse arrays, handling
+ * both indexed (`spouseN` / `spouseN_id` + marriage metadata) and legacy
+ * array (`spouse` / `spouse_id`) formats.
+ */
+export async function removeSpouseLink(
+	app: App,
+	formerSpouseCrId: string,
+	thisPersonCrId: string,
+	directory: string
+): Promise<void> {
+	const spouseFile = findPersonByCrId(app, formerSpouseCrId, directory);
+	if (!spouseFile) return;
+	const cache = app.metadataCache.getFileCache(spouseFile);
+	const fm = cache?.frontmatter;
+	if (!fm) return;
+
+	// Indexed format
+	let foundIndexed = false;
+	for (let i = 1; i <= 10; i++) {
+		if (fm[`spouse${i}_id`] && String(fm[`spouse${i}_id`]) === thisPersonCrId) {
+			foundIndexed = true;
+			break;
+		}
+	}
+	if (foundIndexed) {
+		const surviving: SpouseMetadata[] = [];
+		for (let i = 1; i <= 10; i++) {
+			const id = fm[`spouse${i}_id`];
+			if (!id) continue;
+			if (String(id) === thisPersonCrId) continue;
+			const linkRaw = fm[`spouse${i}`];
+			const name = extractWikilinkName(linkRaw) || String(id);
+			surviving.push({
+				crId: String(id),
+				name,
+				marriageDate: fm[`spouse${i}_marriage_date`] as string | undefined,
+				marriageLocation: fm[`spouse${i}_marriage_location`] as string | undefined,
+				marriageStatus: fm[`spouse${i}_marriage_status`] as SpouseMetadata['marriageStatus'],
+				divorceDate: fm[`spouse${i}_divorce_date`] as string | undefined
+			});
+		}
+		logger.debug('reverse-unlink', `Removing spouse ${thisPersonCrId} from ${formerSpouseCrId} (indexed)`);
+		await updatePersonNote(app, spouseFile, {
+			spouseCrId: surviving.map(s => s.crId),
+			spouseName: surviving.map(s => s.name),
+			spouseMetadata: surviving
+		}, { skipReverseUnlink: true });
+		return;
+	}
+
+	// Legacy array format
+	const existingIds = fm.spouse_id;
+	const existingNames = fm.spouse;
+	const idArray = existingIds === undefined || existingIds === null
+		? []
+		: (Array.isArray(existingIds) ? [...existingIds] : [existingIds]).map(String);
+	const nameArray = existingNames === undefined || existingNames === null
+		? []
+		: (Array.isArray(existingNames) ? [...existingNames] : [existingNames]).map((n: unknown) => extractWikilinkName(n) || String(n));
+	const idx = idArray.indexOf(thisPersonCrId);
+	if (idx === -1) return;
+	idArray.splice(idx, 1);
+	if (idx < nameArray.length) nameArray.splice(idx, 1);
+	logger.debug('reverse-unlink', `Removing spouse ${thisPersonCrId} from ${formerSpouseCrId} (legacy)`);
+	await updatePersonNote(app, spouseFile, {
+		spouseCrId: idArray,
+		spouseName: nameArray
+	}, { skipReverseUnlink: true });
+}
+
+/**
+ * Extract the plain-text name from a wikilink value (`[[Name]]` or `[[Name|Alias]]`).
+ * Returns `undefined` for missing/empty values. Used by reverse-unlink helpers.
+ */
+function extractWikilinkName(value: unknown): string | undefined {
+	if (value === undefined || value === null) return undefined;
+	const str = String(value);
+	if (!str) return undefined;
+	const match = str.match(/\[\[([^\]]+)\]\]/);
+	const inner = match ? match[1] : str;
+	return inner.split('|')[0].trim();
+}
+
+/**
+ * Clear any reference to `formerParentCrId` from the child's parent-like
+ * fields (father / mother / adoptive / gender-neutral parents).
+ */
+export async function removeParentFromChild(
+	app: App,
+	childCrId: string,
+	formerParentCrId: string,
+	directory: string
+): Promise<void> {
+	const childFile = findPersonByCrId(app, childCrId, directory);
+	if (!childFile) return;
+	await app.fileManager.processFrontMatter(childFile, (fm) => {
+		let changed = false;
+		if (fm.father_id && String(fm.father_id) === formerParentCrId) {
+			delete fm.father;
+			delete fm.father_id;
+			changed = true;
+		}
+		if (fm.mother_id && String(fm.mother_id) === formerParentCrId) {
+			delete fm.mother;
+			delete fm.mother_id;
+			changed = true;
+		}
+		if (fm.adoptive_father_id && String(fm.adoptive_father_id) === formerParentCrId) {
+			delete fm.adoptive_father;
+			delete fm.adoptive_father_id;
+			changed = true;
+		}
+		if (fm.adoptive_mother_id && String(fm.adoptive_mother_id) === formerParentCrId) {
+			delete fm.adoptive_mother;
+			delete fm.adoptive_mother_id;
+			changed = true;
+		}
+		if (fm.parents_id) {
+			const ids = Array.isArray(fm.parents_id) ? [...fm.parents_id] : [fm.parents_id];
+			const names = Array.isArray(fm.parents)
+				? [...fm.parents]
+				: fm.parents ? [fm.parents] : [];
+			const idx = ids.map(String).indexOf(formerParentCrId);
+			if (idx !== -1) {
+				ids.splice(idx, 1);
+				if (idx < names.length) names.splice(idx, 1);
+				if (ids.length === 0) {
+					delete fm.parents;
+					delete fm.parents_id;
+				} else {
+					fm.parents_id = ids.length === 1 ? ids[0] : ids;
+					fm.parents = names.length === 1 ? names[0] : names;
+				}
+				changed = true;
+			}
+		}
+		if (changed) {
+			logger.debug('reverse-unlink', `Removed parent ${formerParentCrId} from child ${childCrId}`);
+		}
+	});
+}
+
 /**
  * Update an existing person note's frontmatter
  *
  * @param app - Obsidian app instance
  * @param file - The file to update
  * @param person - Person data to update
+ * @param options - Optional flags. Set `skipReverseUnlink: true` when called
+ *   from one of the reverse-unlink helpers to prevent cascading recursion
+ *   through the other side of the relationship (#405).
  */
 export async function updatePersonNote(
 	app: App,
 	file: TFile,
-	person: Partial<PersonData>
+	person: Partial<PersonData>,
+	options?: { skipReverseUnlink?: boolean }
 ): Promise<void> {
+	const skipReverseUnlink = options?.skipReverseUnlink === true;
+
+	// Capture before-state so we can reverse-unlink relationships the caller
+	// is clearing (#405). Must be read before processFrontMatter mutates the
+	// file.
+	const beforeCache = app.metadataCache.getFileCache(file);
+	const beforeFm = beforeCache?.frontmatter as Record<string, unknown> | undefined;
+	const thisCrId = beforeFm?.cr_id ? String(beforeFm.cr_id) : undefined;
+	const directory = file.parent?.path || '';
+	const beforeFatherId = beforeFm?.father_id ? String(beforeFm.father_id) : undefined;
+	const beforeMotherId = beforeFm?.mother_id ? String(beforeFm.mother_id) : undefined;
+	const beforeAdoptiveFatherId = beforeFm?.adoptive_father_id ? String(beforeFm.adoptive_father_id) : undefined;
+	const beforeAdoptiveMotherId = beforeFm?.adoptive_mother_id ? String(beforeFm.adoptive_mother_id) : undefined;
+	const beforeSpouseIds = collectSpouseIds(beforeFm);
+	const beforeChildIds = collectIdsFromField(beforeFm, 'children_id');
+
 	await app.fileManager.processFrontMatter(file, (frontmatter) => {
 		// Update basic fields if provided
 		if (person.name !== undefined) frontmatter.name = person.name;
@@ -1531,6 +1796,59 @@ export async function updatePersonNote(
 
 		logger.debug('update-person', `Updated frontmatter for ${file.path}`);
 	});
+
+	// Reverse-unlink pass: when the caller has cleared a relationship field,
+	// propagate the clear to the other side's note so the link doesn't dangle
+	// and get resurrected by reverse-inference (#405). Skipped entirely when
+	// `skipReverseUnlink` is set (the reverse-unlink helpers themselves call
+	// updatePersonNote with that flag to terminate the cascade).
+	if (!skipReverseUnlink && thisCrId) {
+		// Parent singletons (father, mother, adoptive father/mother) cleared on
+		// this child-side note → remove this person from the parent's children
+		// (or adopted_child) list on the parent's note.
+		if (beforeFatherId && person.fatherCrId === '' && !person.fatherName) {
+			await removeChildFromParent(app, beforeFatherId, thisCrId, directory);
+		}
+		if (beforeMotherId && person.motherCrId === '' && !person.motherName) {
+			await removeChildFromParent(app, beforeMotherId, thisCrId, directory);
+		}
+		if (beforeAdoptiveFatherId && person.adoptiveFatherCrId === '' && !person.adoptiveFatherName) {
+			await removeAdoptedChildFromParent(app, beforeAdoptiveFatherId, thisCrId, directory);
+		}
+		if (beforeAdoptiveMotherId && person.adoptiveMotherCrId === '' && !person.adoptiveMotherName) {
+			await removeAdoptedChildFromParent(app, beforeAdoptiveMotherId, thisCrId, directory);
+		}
+
+		// Spouses: any spouse present before that isn't present now → unlink.
+		if (person.spouseCrId !== undefined || person.spouseMetadata !== undefined) {
+			const afterIds = new Set<string>();
+			if (person.spouseMetadata) {
+				for (const s of person.spouseMetadata) if (s.crId) afterIds.add(s.crId);
+			}
+			if (person.spouseCrId) {
+				for (const id of person.spouseCrId) if (id) afterIds.add(id);
+			}
+			for (const formerId of beforeSpouseIds) {
+				if (!afterIds.has(formerId)) {
+					await removeSpouseLink(app, formerId, thisCrId, directory);
+				}
+			}
+		}
+
+		// Children: any child present before that isn't present now → clear
+		// this person from that child's parent fields.
+		if (person.childCrId !== undefined) {
+			const afterIds = new Set<string>();
+			if (person.childCrId) {
+				for (const id of person.childCrId) if (id) afterIds.add(id);
+			}
+			for (const formerId of beforeChildIds) {
+				if (!afterIds.has(formerId)) {
+					await removeParentFromChild(app, formerId, thisCrId, directory);
+				}
+			}
+		}
+	}
 }
 
 /**

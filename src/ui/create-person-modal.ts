@@ -2986,14 +2986,16 @@ export class CreatePersonModal extends Modal {
 				dnaNotes: this.personData.dnaNotes
 			};
 
-			// Add father relationship
+			// Add father relationship. Use '' (not undefined) for "cleared" so
+			// updatePersonNote's clear path actually fires — undefined reads as
+			// "untouched" through its outer `!== undefined` guard (#405, same
+			// class as #322's date/occupation fix).
 			if (this.fatherField.crId || this.fatherField.name) {
 				data.fatherCrId = this.fatherField.crId;
 				data.fatherName = this.fatherField.name;
 			} else {
-				// Explicitly clear father if unlinked
-				data.fatherCrId = undefined;
-				data.fatherName = undefined;
+				data.fatherCrId = '';
+				data.fatherName = '';
 			}
 
 			// Add mother relationship
@@ -3001,9 +3003,8 @@ export class CreatePersonModal extends Modal {
 				data.motherCrId = this.motherField.crId;
 				data.motherName = this.motherField.name;
 			} else {
-				// Explicitly clear mother if unlinked
-				data.motherCrId = undefined;
-				data.motherName = undefined;
+				data.motherCrId = '';
+				data.motherName = '';
 			}
 
 			// Add spouse relationships (with metadata for #204)
@@ -3036,13 +3037,13 @@ export class CreatePersonModal extends Modal {
 				data.stepmotherName = [];
 			}
 
-			// Add adoptive father relationship
+			// Add adoptive father relationship ('' clears, see father comment above)
 			if (this.adoptiveFatherField.crId || this.adoptiveFatherField.name) {
 				data.adoptiveFatherCrId = this.adoptiveFatherField.crId;
 				data.adoptiveFatherName = this.adoptiveFatherField.name;
 			} else {
-				data.adoptiveFatherCrId = undefined;
-				data.adoptiveFatherName = undefined;
+				data.adoptiveFatherCrId = '';
+				data.adoptiveFatherName = '';
 			}
 
 			// Add adoptive mother relationship
@@ -3050,8 +3051,8 @@ export class CreatePersonModal extends Modal {
 				data.adoptiveMotherCrId = this.adoptiveMotherField.crId;
 				data.adoptiveMotherName = this.adoptiveMotherField.name;
 			} else {
-				data.adoptiveMotherCrId = undefined;
-				data.adoptiveMotherName = undefined;
+				data.adoptiveMotherCrId = '';
+				data.adoptiveMotherName = '';
 			}
 
 			// Add gender-neutral parents
