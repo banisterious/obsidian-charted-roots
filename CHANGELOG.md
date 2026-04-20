@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.20.62] - 2026-04-20
+
 ### Changed
 
 - **Custom relationship overlay rendering overhaul** ([#404](https://github.com/banisterious/obsidian-charted-roots/issues/404)): Two coordinated changes, driven by community-testing feedback from @doctorwodka that straight overlay lines on larger trees cut diagonally through cards and could appear to trace along existing parent-child paths.
