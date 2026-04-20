@@ -3627,6 +3627,18 @@ export class FamilyChartView extends ItemView {
 		const linksView = svg.querySelector('.links_view');
 		if (!linksView) return false;
 		const { rel, type } = entry;
+
+		// f3 chart renders a person twice when they appear in multiple family
+		// contexts (e.g., an adopted child who is also a spouse-parent elsewhere).
+		// The structural link then connects to the duplicate card at a position
+		// different from the primary visible card — restyling that link paints
+		// a colored line heading to an off-layout position, not the visible
+		// counterpart. Skip the restyle in that case and let the caller fall
+		// through to arc rendering, which anchors on the primary card positions.
+		if (this.countCardsForCrId(rel.sourceCrId) > 1 || this.countCardsForCrId(rel.targetCrId) > 1) {
+			return false;
+		}
+
 		// f3 chart structural links carry source/target that may be a single
 		// tree node OR an array of parent nodes (progeny-side links), with
 		// each node exposing the person crId at `.data.id`. Extract both
@@ -3662,19 +3674,42 @@ export class FamilyChartView extends ItemView {
 				linkEl.removeAttribute('stroke-dasharray');
 			}
 
-			// Replace any existing <title> so the tooltip reflects the current relationship
-			const existingTitle = linkEl.querySelector(':scope > title');
-			if (existingTitle) existingTitle.remove();
-			const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-			const dateRange = this.formatRelationshipDateRange(rel);
-			title.textContent = dateRange
-				? `${rel.sourceName} — ${type.name} — ${rel.targetName} (${dateRange})`
-				: `${rel.sourceName} — ${type.name} — ${rel.targetName}`;
-			linkEl.appendChild(title);
+			// Wider transparent hit path on top of the now-thin-colored structural
+			// link, so hover-for-tooltip works without pixel-precise cursor
+			// placement — mirrors the pattern v0.20.61 added for overlay arcs.
+			const tooltipText = this.formatOverlayTooltip(rel, type);
+			const hitPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+			hitPath.setAttribute('d', linkEl.getAttribute('d') || '');
+			hitPath.setAttribute('stroke', 'transparent');
+			hitPath.setAttribute('stroke-width', '14');
+			hitPath.setAttribute('fill', 'none');
+			hitPath.setAttribute('class', 'cr-structural-link-overlay-hitline');
+			const hitTitle = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+			hitTitle.textContent = tooltipText;
+			hitPath.appendChild(hitTitle);
+			linkEl.parentNode?.insertBefore(hitPath, linkEl.nextSibling);
 
 			return true;
 		}
 		return false;
+	}
+
+	/** Count rendered `.card_cont` elements matching a given crId. */
+	private countCardsForCrId(crId: string): number {
+		if (!this.chartContainerEl) return 0;
+		return Array.from(
+			this.chartContainerEl.querySelectorAll<Element>('.card_cont')
+		).filter(
+			el => (el as Element & { __data__?: { data?: { id?: string } } }).__data__?.data?.id === crId
+		).length;
+	}
+
+	/** Build the tooltip string for an overlay relationship. */
+	private formatOverlayTooltip(rel: ParsedRelationship, type: RelationshipTypeDefinition): string {
+		const dateRange = this.formatRelationshipDateRange(rel);
+		return dateRange
+			? `${rel.sourceName} — ${type.name} — ${rel.targetName} (${dateRange})`
+			: `${rel.sourceName} — ${type.name} — ${rel.targetName}`;
 	}
 
 	/**
@@ -3696,6 +3731,10 @@ export class FamilyChartView extends ItemView {
 			const title = el.querySelector(':scope > title');
 			if (title) title.remove();
 		});
+		// Also remove the widened hit paths we added alongside each restyled link.
+		this.chartContainerEl
+			.querySelectorAll('.cr-structural-link-overlay-hitline')
+			.forEach(el => el.remove());
 	}
 
 	/**
