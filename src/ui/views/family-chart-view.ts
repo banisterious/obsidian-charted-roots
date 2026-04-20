@@ -3627,17 +3627,28 @@ export class FamilyChartView extends ItemView {
 		const linksView = svg.querySelector('.links_view');
 		if (!linksView) return false;
 		const { rel, type } = entry;
+		// f3 chart structural links carry source/target that may be a single
+		// tree node OR an array of parent nodes (progeny-side links), with
+		// each node exposing the person crId at `.data.id`. Extract both
+		// shapes so we can match either side of the relationship.
+		const extractIds = (endpoint: unknown): string[] => {
+			if (!endpoint) return [];
+			const arr = Array.isArray(endpoint) ? endpoint : [endpoint];
+			return arr
+				.map(n => (n as { data?: { id?: string } })?.data?.id)
+				.filter((id): id is string => typeof id === 'string' && id.length > 0);
+		};
 		const linkEls = linksView.querySelectorAll<SVGPathElement>('path.link');
 		for (const linkEl of Array.from(linkEls)) {
 			const datum = d3.select(linkEl).datum() as
-				| { source?: { data?: { id?: string } }; target?: { data?: { id?: string } } }
+				| { source?: unknown; target?: unknown }
 				| undefined;
-			const sourceId = datum?.source?.data?.id;
-			const targetId = datum?.target?.data?.id;
-			if (!sourceId || !targetId) continue;
+			const sourceIds = extractIds(datum?.source);
+			const targetIds = extractIds(datum?.target);
+			if (sourceIds.length === 0 || targetIds.length === 0) continue;
 			const matches =
-				(sourceId === rel.sourceCrId && targetId === rel.targetCrId) ||
-				(sourceId === rel.targetCrId && targetId === rel.sourceCrId);
+				(sourceIds.includes(rel.sourceCrId) && targetIds.includes(rel.targetCrId)) ||
+				(sourceIds.includes(rel.targetCrId) && targetIds.includes(rel.sourceCrId));
 			if (!matches) continue;
 
 			linkEl.classList.add('cr-structural-link-overlay');
