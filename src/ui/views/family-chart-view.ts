@@ -3451,7 +3451,11 @@ export class FamilyChartView extends ItemView {
 	 * Render custom relationships as overlay lines on the family chart.
 	 * Pulls relationships for each visible card, filters to types flagged for
 	 * overlay rendering and enabled per-type, applies the as-of date filter,
-	 * and draws a styled line between each pair of card centers.
+	 * and draws a styled curve between each pair of card centers. Curves arc
+	 * below the straight chord so overlay relationships read distinctly from
+	 * the tree's perpendicular structural links (#404). Curvature also avoids
+	 * the ambiguity that would arise if a straight route between distant
+	 * relatives happened to trace along existing parent-child lines.
 	 */
 	private renderRelationshipOverlay(): void {
 		if (!this.chartContainerEl) return;
@@ -3521,44 +3525,53 @@ export class FamilyChartView extends ItemView {
 				const ox = px * offset;
 				const oy = py * offset;
 
-				// Invisible wider "hit line" makes hover-to-tooltip easier without
-				// thickening the visible line. Paired with a visible thin line on top.
-				const hitLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-				hitLine.setAttribute('x1', String(from.x + ox));
-				hitLine.setAttribute('y1', String(from.y + oy));
-				hitLine.setAttribute('x2', String(to.x + ox));
-				hitLine.setAttribute('y2', String(to.y + oy));
-				hitLine.setAttribute('stroke', 'transparent');
-				hitLine.setAttribute('stroke-width', '14');
-				hitLine.setAttribute('fill', 'none');
-				hitLine.setAttribute('class', 'cr-relationship-overlay-hitline');
-				// Tooltip hangs on the hit line so hover works across the wider area
+				// Build a quadratic bezier that arcs below the straight chord.
+				// Sag scales with chord length so short and long spans both
+				// read as clearly-curved, with floor/ceiling to keep extremes
+				// sensible.
+				const x1 = from.x + ox;
+				const y1 = from.y + oy;
+				const x2 = to.x + ox;
+				const y2 = to.y + oy;
+				const mx = (x1 + x2) / 2;
+				const my = (y1 + y2) / 2;
+				const sag = Math.min(120, Math.max(40, len / 3));
+				const cx = mx;
+				const cy = my + sag;
+				const pathD = `M ${x1},${y1} Q ${cx},${cy} ${x2},${y2}`;
+
+				// Invisible wider "hit path" makes hover-to-tooltip easier
+				// without thickening the visible curve.
+				const hitPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+				hitPath.setAttribute('d', pathD);
+				hitPath.setAttribute('stroke', 'transparent');
+				hitPath.setAttribute('stroke-width', '14');
+				hitPath.setAttribute('fill', 'none');
+				hitPath.setAttribute('class', 'cr-relationship-overlay-hitline');
+				// Tooltip hangs on the hit path so hover works across the wider area
 				const tooltip = document.createElementNS('http://www.w3.org/2000/svg', 'title');
 				const dateRange = this.formatRelationshipDateRange(rel);
 				tooltip.textContent = dateRange
 					? `${rel.sourceName} — ${type.name} — ${rel.targetName} (${dateRange})`
 					: `${rel.sourceName} — ${type.name} — ${rel.targetName}`;
-				hitLine.appendChild(tooltip);
-				overlayGroup.appendChild(hitLine);
+				hitPath.appendChild(tooltip);
+				overlayGroup.appendChild(hitPath);
 
-				const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-				line.setAttribute('x1', String(from.x + ox));
-				line.setAttribute('y1', String(from.y + oy));
-				line.setAttribute('x2', String(to.x + ox));
-				line.setAttribute('y2', String(to.y + oy));
-				line.setAttribute('stroke', type.color);
-				line.setAttribute('stroke-width', '2');
-				line.setAttribute('fill', 'none');
-				// Visible line defers pointer events to the hit line below so the
-				// wider hit target is always the hover target
-				line.setAttribute('pointer-events', 'none');
+				const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+				path.setAttribute('d', pathD);
+				path.setAttribute('stroke', type.color);
+				path.setAttribute('stroke-width', '2');
+				path.setAttribute('fill', 'none');
+				// Visible path defers pointer events to the hit path so the
+				// wider hit target is always the hover target.
+				path.setAttribute('pointer-events', 'none');
 				if (type.lineStyle === 'dashed') {
-					line.setAttribute('stroke-dasharray', '8,4');
+					path.setAttribute('stroke-dasharray', '8,4');
 				} else if (type.lineStyle === 'dotted') {
-					line.setAttribute('stroke-dasharray', '2,3');
+					path.setAttribute('stroke-dasharray', '2,3');
 				}
-				line.setAttribute('class', `cr-relationship-overlay-line cr-relationship-overlay-line--${type.id}`);
-				overlayGroup.appendChild(line);
+				path.setAttribute('class', `cr-relationship-overlay-line cr-relationship-overlay-line--${type.id}`);
+				overlayGroup.appendChild(path);
 			});
 		}
 
