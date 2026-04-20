@@ -2,11 +2,11 @@
 
 Planning document for source hierarchy display and navigation features.
 
-**Status:** ✅ Phases 1-4 complete | Phase 5 deferred
+**Status:** ✅ Phases 1-4 complete | Phase 5 scoped, ready to implement (2026-04-20)
 
-**Related:** [#338](https://github.com/banisterious/obsidian-charted-roots/issues/338)
+**Related:** [#338](https://github.com/banisterious/obsidian-charted-roots/issues/338) (Phases 1-4), [#339](https://github.com/banisterious/obsidian-charted-roots/issues/339) (Phase 5)
 
-**Depends on:** [#337](https://github.com/banisterious/obsidian-charted-roots/issues/337) (source_parent / source_parent_id) — ✅ Implemented
+**Depends on:** [#337](https://github.com/banisterious/obsidian-charted-roots/issues/337) (source_parent / source_parent_id) — ✅ Implemented. Phase 5 also benefits from [#407](https://github.com/banisterious/obsidian-charted-roots/issues/407) (FS source clipper templates) to populate `repositoryUrl` for the citation generator's FS-variant heuristic.
 
 ---
 
@@ -113,16 +113,104 @@ Collapsible tree view in the parent source's profile showing the full hierarchy.
 - `src/profile-view/sections/source-hierarchy-section.ts` — tree rendering mode
 - `styles/profile-view.css` — tree indentation styles
 
-### Phase 5 — Report integration
+### Phase 5 — Report integration (#339)
 
-Reports that reference sources can optionally group by parent/children.
+Reports that reference sources understand parent-child relationships. Citation generation references the parent source where applicable. Exports preserve the hierarchy where the target format allows it.
 
-**Enhancements:**
-- Source-related reports can group child sources under their parent
-- Citation generation can reference the parent source for context
-- Export formats (GEDCOM, CSV) can include parent-child relationships
+Scoped from [discussion #275](https://github.com/banisterious/obsidian-charted-roots/discussions/275) (@ANYroots probate packet use case) and captured in [#339](https://github.com/banisterious/obsidian-charted-roots/issues/339). Design decisions below reflect that conversation.
 
-**This phase is lower priority** and can be scoped once the display features are in use and real-world feedback is available.
+#### 5.1 — Source Summary report: group under parent
+
+**Default display mode:** child sources grouped under their parent. Matches how multi-document record groups (probate packets, court case files, multi-page census entries) actually function.
+
+**Flat-list mode:** available as an option (display toggle on the report) for specific use cases that want flat ordering.
+
+**Implementation:**
+- `src/reports/services/source-summary-generator.ts` — group by `sourceParentId`, render parent header + child list; emit flat list when `flat: true` option is set
+- Parent sources without children render as standalone entries
+- Orphan children (parent missing from vault) render under an "Unresolved parent" group with a warning badge
+
+#### 5.2 — Citation generator: reference the parent
+
+Auto-generate structural pieces only; leave contextual commentary to user-authored fields.
+
+**Template fields:**
+
+| Piece | Source | Auto-generate? |
+|---|---|---|
+| Child document name + date | Child note frontmatter | Yes |
+| Parent case identifier | Parent note frontmatter | Yes |
+| Page range / locator within parent | `source_detail` (free-text — see 5.4) | Yes (when set) |
+| Jurisdictional / contextual commentary | Free-text note body or `notes` field | No — user-authored |
+
+**Example output** (Evidence Explained format, child source with `source_parent` set, direct-PDF access):
+
+> York District, South Carolina, Court of Ordinary, Estate Files, William H. Hardwick estate, petition for administration, filed 4 March 1863; PDF, York County, South Carolina, Probate Court, County Clerk's Office, file identifier "1863es4602009," pp. 62-63.
+
+**Layer 1 / Layer 2 redundancy rule** (@ANYroots correction, 2026-04-19):
+
+The access layer (Layer 2) shouldn't be a blind concatenation after Layer 1. When Layer 1's jurisdiction/court naming matches the current custodian, Layer 2 should drop the redundant pieces. When Layer 1 uses historical names that differ from the current custodian (e.g., "York District" vs "York County," or "Court of Ordinary" vs "Probate Court"), the full access layer stays so the reader can reconcile the name changes.
+
+**Implementation approach for the redundancy rule:**
+- Compare jurisdiction + court fields between the child note's Layer 1 (historical / document-era naming stored on the child) and the parent note's Layer 2 (current custodian naming stored on the parent).
+- If case-insensitive token comparison matches, suppress the redundant tokens in the Layer 2 output.
+- If tokens differ (e.g., District ↔ County, Ordinary ↔ Probate), emit the full Layer 2 as-is.
+- String normalization: lowercase, strip punctuation, trim, optionally stem common abbreviations (St./Saint, etc.).
+
+**Parent-alone citation** (when the packet is cited as a whole): Layer 2 drops the custodian entirely because Layer 1 already establishes it.
+
+> York County, South Carolina, Probate Court, Estate Files, William H. Hardwick, 1863; PDF, file identifier "1863es4602009," County Clerk's Office, York.
+
+**FamilySearch variant** — second template for sources accessed via online image collections:
+
+When `repositoryUrl` contains `familysearch.org`, the generator switches to the FS access-layer form instead of the direct-PDF form. FS form uses a browse-path narrative with image number, date accessed, and source-of-source attribution:
+
+> "South Carolina, Probate Records, Files and Loose Papers, 1732–1964," browsable images, *FamilySearch* (https://www.familysearch.org/en/search/collection/1911928 : accessed 19 April 2026) > Browse all images > York > Probate Court, Estate records > 1774–1960 > Files 2007–2128 > image 407 of 697, case no. 49, file no. 2009, estate of William H. Hardwick, petition for administration, filed 4 March 1863; citing South Carolina county courthouses and South Carolina Department of Archives and History, Columbia.
+
+**Data-capture path for FS variant:** source notes clipped via the templates proposed in [#407](https://github.com/banisterious/obsidian-charted-roots/issues/407) will always have `repositoryUrl` populated with a FS URL, so the heuristic fires reliably. Users can also populate the field manually.
+
+**Implementation:**
+- `src/sources/services/citation-service.ts` — add `generateEvidenceExplainedFamilySearchCitation()` as a sibling to `generateEvidenceExplainedCitation()`
+- Router check: if `source.repositoryUrl?.includes('familysearch.org')`, call the FS variant; otherwise fall through to the standard EE generator
+- `citation_override` continues to bypass both paths when set (preserves user authority)
+
+#### 5.3 — Page-range / locator field: reuse `source_detail`
+
+**Decision (2026-04-20):** Reuse `source_detail` as a free-text container for locator information. Users write `"pp. 62-63"` / `"folio 4r"` / `"entry 42 of 108"` / `"image 407 of 697"` per the source's conventions.
+
+**Rejected alternatives:** dedicated `source_pages` or `source_page_range` fields. Different source types have genuinely different locator conventions, and a page-based field name would imply a convention that isn't universal.
+
+**No schema change** — `source_detail` already exists. Citation generator reads it as-is and appends to the citation output (location TBD within the structural template — likely after the document-name + date but before the attribution tail).
+
+#### 5.4 — GEDCOM / CSV exports: conservative default
+
+**Decision:** Include `source_parent_id` as a reference to the parent note when a parent exists; skip otherwise.
+
+**GEDCOM:** No native concept of source hierarchies. Write the parent reference as a custom `NOTE` under the `SOUR` record, or a custom sub-tag, clearly marked as a Charted Roots extension. Document the tag in `docs/developer/gedcom-reference.md`.
+
+**CSV:** Add a `source_parent` column in the sources CSV export. Value is the parent's title (or crId if titles aren't unique enough).
+
+#### 5.5 — Deferred: Sources by Role report
+
+Filter / grouping behavior with hierarchy on the Sources by Role report is deferred until real-world feedback surfaces specific needs. Not in scope for the initial Phase 5 implementation.
+
+#### Files to modify
+
+- `src/reports/services/source-summary-generator.ts` — hierarchy-aware grouping with flat-list option
+- `src/sources/services/citation-service.ts` — Layer 1/Layer 2 redundancy compression, FS variant router, `generateEvidenceExplainedFamilySearchCitation()`
+- `src/gedcom/gedcom-exporter.ts` — emit `source_parent_id` as custom NOTE or sub-tag
+- `src/csv/csv-exporter.ts` — add `source_parent` column
+- `docs/developer/gedcom-reference.md` — document the custom parent-ref tag
+
+#### Testing plan
+
+- Source Summary with a parent source that has 3+ children — verify grouping and ordering
+- Source Summary with a child source whose parent is missing from the vault — verify "Unresolved parent" group
+- Citation generation on a child source with direct-PDF `repositoryUrl` — verify Layer 2 compresses when naming matches, stays full when it differs
+- Citation generation on a child source with FS `repositoryUrl` — verify FS variant fires
+- `citation_override` set on a child source — verify override wins in both variants
+- GEDCOM round-trip with source hierarchy — verify parent reference survives export+import
+- CSV export — verify `source_parent` column appears and values resolve correctly
 
 ---
 
