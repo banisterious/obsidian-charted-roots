@@ -38,6 +38,16 @@ import { pluralize } from '../../utils/format-utils';
 
 const logger = getLogger('FamilyChartView');
 
+// Overlay types that map directly onto a structural parent-child link in the
+// tree. When enabled, we restyle the existing structural link with the
+// overlay's color / dash pattern instead of drawing a separate arc, so the
+// viewer sees one expressive line rather than two parallel ones (#404).
+const STRUCTURAL_COUNTERPART_TYPES = new Set<string>([
+	'adopted_parent', 'adopted_child',
+	'step_parent', 'step_child',
+	'foster_parent', 'foster_child'
+]);
+
 export const VIEW_TYPE_FAMILY_CHART = 'canvas-roots-family-chart';
 
 /**
@@ -3464,6 +3474,10 @@ export class FamilyChartView extends ItemView {
 		const existing = this.chartContainerEl.querySelectorAll('.cr-relationship-overlay');
 		existing.forEach(el => el.remove());
 
+		// Revert any structural-link restyling from a previous pass — we'll
+		// re-apply below if the current state still calls for it (#404).
+		this.revertStructuralLinkRestyling();
+
 		if (!this.showCustomRelationships) return;
 
 		const svg = this.chartContainerEl.querySelector('svg.main_svg');
@@ -3501,7 +3515,15 @@ export class FamilyChartView extends ItemView {
 		// Draw lines
 		const STACK_OFFSET_PX = 8;
 		for (const [, entries] of byPair) {
-			entries.forEach((entry, index) => {
+			// If any entry's type maps to a structural parent-child link and
+			// we can locate that link in the chart, restyle the link and
+			// drop that entry from the arc-drawing pass (#404).
+			const structuralEntry = entries.find(e => STRUCTURAL_COUNTERPART_TYPES.has(e.type.id));
+			const arcEntries = structuralEntry && this.tryRestyleStructuralLink(svg, structuralEntry)
+				? entries.filter(e => e !== structuralEntry)
+				: entries;
+
+			arcEntries.forEach((entry, index) => {
 				const { rel, type } = entry;
 				const from = cardPositions.get(rel.sourceCrId);
 				const to = cardPositions.get(rel.targetCrId);
@@ -3518,7 +3540,7 @@ export class FamilyChartView extends ItemView {
 				// no line lands on the midpoint where a family link might sit
 				// (marriage, parent-child). Even counts are already symmetric
 				// around 0 and don't coincide with the midpoint.
-				const N = entries.length;
+				const N = arcEntries.length;
 				const halfShift = N % 2 === 1 ? 0.5 : 0;
 				const offsetIndex = index - (N - 1) / 2 + halfShift;
 				const offset = offsetIndex * STACK_OFFSET_PX;
@@ -3589,6 +3611,80 @@ export class FamilyChartView extends ItemView {
 		} else {
 			svg.appendChild(overlayGroup);
 		}
+	}
+
+	/**
+	 * For an overlay relationship whose type maps onto a structural parent-child
+	 * link (adopted / step / foster), try to find that link in the current chart
+	 * and restyle it with the overlay's color + dash pattern. Returns true if a
+	 * link was found and styled — the caller should then skip the arc-drawing
+	 * pass for this entry (#404).
+	 */
+	private tryRestyleStructuralLink(
+		svg: Element,
+		entry: { rel: ParsedRelationship; type: RelationshipTypeDefinition }
+	): boolean {
+		const linksView = svg.querySelector('.links_view');
+		if (!linksView) return false;
+		const { rel, type } = entry;
+		const linkEls = linksView.querySelectorAll<SVGPathElement>('path.link');
+		for (const linkEl of Array.from(linkEls)) {
+			const datum = d3.select(linkEl).datum() as
+				| { source?: { data?: { id?: string } }; target?: { data?: { id?: string } } }
+				| undefined;
+			const sourceId = datum?.source?.data?.id;
+			const targetId = datum?.target?.data?.id;
+			if (!sourceId || !targetId) continue;
+			const matches =
+				(sourceId === rel.sourceCrId && targetId === rel.targetCrId) ||
+				(sourceId === rel.targetCrId && targetId === rel.sourceCrId);
+			if (!matches) continue;
+
+			linkEl.classList.add('cr-structural-link-overlay');
+			linkEl.classList.add(`cr-structural-link-overlay--${type.id}`);
+			linkEl.setAttribute('stroke', type.color);
+			if (type.lineStyle === 'dashed') {
+				linkEl.setAttribute('stroke-dasharray', '8,4');
+			} else if (type.lineStyle === 'dotted') {
+				linkEl.setAttribute('stroke-dasharray', '2,3');
+			} else {
+				linkEl.removeAttribute('stroke-dasharray');
+			}
+
+			// Replace any existing <title> so the tooltip reflects the current relationship
+			const existingTitle = linkEl.querySelector(':scope > title');
+			if (existingTitle) existingTitle.remove();
+			const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+			const dateRange = this.formatRelationshipDateRange(rel);
+			title.textContent = dateRange
+				? `${rel.sourceName} — ${type.name} — ${rel.targetName} (${dateRange})`
+				: `${rel.sourceName} — ${type.name} — ${rel.targetName}`;
+			linkEl.appendChild(title);
+
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Undo any structural-link restyling applied by a prior overlay pass so
+	 * the links return to their default appearance. Called at the top of
+	 * renderRelationshipOverlay before re-applying.
+	 */
+	private revertStructuralLinkRestyling(): void {
+		if (!this.chartContainerEl) return;
+		const restyled = this.chartContainerEl.querySelectorAll<SVGPathElement>('.cr-structural-link-overlay');
+		restyled.forEach(el => {
+			el.removeAttribute('stroke');
+			el.removeAttribute('stroke-dasharray');
+			for (const cls of Array.from(el.classList)) {
+				if (cls === 'cr-structural-link-overlay' || cls.startsWith('cr-structural-link-overlay--')) {
+					el.classList.remove(cls);
+				}
+			}
+			const title = el.querySelector(':scope > title');
+			if (title) title.remove();
+		});
 	}
 
 	/**
