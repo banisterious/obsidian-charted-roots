@@ -248,16 +248,23 @@ Once one or more types have the overlay flag enabled, open the Family Chart view
 
 ### How overlay lines render
 
-- Line color matches the relationship type's configured color
+Overlay rendering picks between two visual treatments based on the relationship type:
+
+- **Purely non-family types** (`ally`, `mentor`, `sire`, `liege`, `godparent`, etc.) render as **curves that arc below the chord between the two cards.** The sag scales with chord length, so short and long spans both read as clearly-curved. Curvature signals "this is not a family line," independent of where the endpoints sit in the tree.
+- **Adopted / step / foster types** (which map onto a structural parent-child link) **restyle the existing parent-child line** with the overlay's color and dash pattern when that link is visible and uncomplicated — no separate line is drawn. When the pair has a duplicate card (f3 chart renders some people twice when they appear in multiple family contexts) or the structural link isn't in the current view, rendering falls back to the arc.
+
+Common properties regardless of treatment:
+
+- Color matches the relationship type's configured color
 - Line style matches the type's configured style (solid / dashed / dotted)
-- **Multiple relationships on the same pair** stack with a perpendicular offset so they don't overlap — useful when two people have, e.g., both `ally` and `mentor` between them
+- **Multiple relationships on the same pair (arc rendering)** stack with a perpendicular offset so they don't overlap — useful when two people have, e.g., both `ally` and `mentor` between them
 - **Symmetric types** (`ally`, `friend`, etc.) render one line per pair, not two
 - **Asymmetric types** (`mentor` → `disciple`, `captor` → `prisoner`) render one line in the declared direction
 - **As-of date filter** (from the Family Chart toolbar): relationships with `from`/`to` date ranges are skipped when the selected date is outside the range
 
 ### Hover tooltip
 
-Hovering a line shows a tooltip with: source name, relationship type, target name, and date range if present.
+Hovering a line (either an arc or a restyled structural link) shows a tooltip with: source name, relationship type, target name, and date range if present. A widened transparent hit target sits over each line so hover-for-tooltip works without pixel-precise cursor placement.
 
 ### Use cases
 

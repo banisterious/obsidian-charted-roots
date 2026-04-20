@@ -142,11 +142,13 @@ Render non-family custom relationships (liege/vassal, ally/rival, mentor/discipl
 
 **Rendering behavior:**
 
-- Lines use the type's configured color and line style
-- Same-pair multiple relationships stack with a perpendicular offset so each line stays visible
-- Symmetric types draw one line per pair; asymmetric types draw a directed line
-- The as-of date filter applies — relationships with `from`/`to` date ranges outside the selected date are hidden
-- Hover a line for a tooltip with source, relationship type, target, and date range
+- Non-family overlays (ally, mentor, sire, liege, etc.) render as curves that arc below the chord between the two cards, visually distinct from the tree's structural links.
+- Adopted / step / foster overlays restyle the existing parent-child line with the overlay's color and dash pattern when that link is visible — no separate line is drawn. When the structural link isn't in the current view, rendering falls back to the arc.
+- Lines use the type's configured color and line style.
+- Same-pair multiple arc relationships stack with a perpendicular offset so each stays visible.
+- Symmetric types draw one line per pair; asymmetric types draw a directed line.
+- The as-of date filter applies — relationships with `from`/`to` date ranges outside the selected date are hidden.
+- Hover a line for a tooltip with source, relationship type, target, and date range.
 
 The overlay is independent of family-tree structure. A type can be tree-only (affects layout, no overlay), overlay-only (no layout impact, rendered as an overlay line), or both.
 
