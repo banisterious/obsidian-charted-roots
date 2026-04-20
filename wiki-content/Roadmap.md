@@ -9,8 +9,10 @@ This document outlines planned features for Charted Roots. For completed feature
 - [Completed Features](#completed-features)
 - [Planned Features](#planned-features)
   - [GPS Research Workflow Integration](#gps-research-workflow-integration) 📋 Medium ✅ Phase 3 mostly complete
-  - [Interactive Timeline View](#interactive-timeline-view) 📋 Medium 📝 Planning
-  - [Calendarium Integration](#calendarium-integration) 💡 Low
+  - [Timelines and Calendars](#timelines-and-calendars) 📋 Medium
+    - [Interactive Timeline View](#interactive-timeline-view) 📋 Medium 📝 Planning
+    - [Calendarium Integration](#calendarium-integration) 💡 Low
+    - [Single-Person Inline Life Events](#single-person-inline-life-events) 📋 Medium
 - [Future Considerations](#future-considerations)
   - [Universe Batch Operations](#universe-batch-operations)
   - [Import Wizard Filename Parser Enhancements](#import-wizard-filename-parser-enhancements)
@@ -110,7 +112,13 @@ Export features discussed in #145 are tracked separately:
 
 ---
 
-### Interactive Timeline View
+### Timelines and Calendars
+
+Three related directions for how Charted Roots handles time — an interactive pan/zoom timeline view, integration with the Calendarium plugin for worldbuilders using fictional calendars, and an inline life-events family that lets users surface discrete per-person events on the timeline block without creating separate event notes. Each is scoped, prioritized, and staged independently; they're grouped here because they share the "rendering and handling time in the vault" theme.
+
+---
+
+#### Interactive Timeline View
 
 **Priority:** 📋 Medium — Completes the timeline gap alongside the existing calendar view and static codeblock timelines
 
@@ -137,7 +145,7 @@ Export features discussed in #145 are tracked separately:
 
 ---
 
-### Calendarium Integration
+#### Calendarium Integration
 
 **Priority:** 💡 Low — Unified timeline experience for fictional worldbuilders
 
@@ -152,6 +160,28 @@ Export features discussed in #145 are tracked separately:
 - **Phase 4:** Cross-calendar date translation
 
 See [Fictional Date Systems - Calendarium Integration](Fictional-Date-Systems#calendarium-integration) for usage documentation and [Calendarium Integration Planning Document](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/archive/calendarium-integration.md) for implementation details.
+
+---
+
+#### Single-Person Inline Life Events
+
+**Priority:** 📋 Medium — Reduces event-note overhead for discrete, single-person life moments
+
+**Status:** 📝 In scoping — see tracking issue [#409](https://github.com/banisterious/obsidian-charted-roots/issues/409) for the candidate list; each ships as its own small FR when prioritized.
+
+**Summary:** Render discrete single-person life events directly on the `charted-roots-timeline` block, derived from frontmatter fields on the person note — without requiring a separate event note. Extends the existing inline pattern (birth, death, adoption, marriage, divorce) to a broader set of one-person-one-date-one-place moments.
+
+**Motivation:** Surfaced in [discussion #385](https://github.com/banisterious/obsidian-charted-roots/discussions/385). @doctorwodka noted that creating separate event notes for every discrete life moment (burial, knighting, transformation, etc.) bloats vault size without adding analytic value — the event is captured fine as a frontmatter date, but today only a handful of events actually *render* on the timeline. The goal is parity between "field recognized in frontmatter" and "field surfaces on the timeline" for single-person events.
+
+**Candidates being tracked:**
+
+- **Burial** — existing `burial_date` / `burial_place` fields, already parsed. Implementation-ready: [#408](https://github.com/banisterious/obsidian-charted-roots/issues/408).
+- **Transformation / turning** — new field set. High-signal for worldbuilders modeling undead, lycanthropy, or ascension (separate from `died`, which many users reserve for permanent destruction).
+- **Coming of age / initiation, knighting / ennoblement, oath-taking, ordination / consecration, exile / banishment** — worldbuilder-oriented events with clear "one person, one date, one place" shape. Each requires a schema decision (field naming, whether a place field pairs with the date) that gets made at sub-FR time rather than upfront.
+
+**Shipping approach:** Incremental per event. Each candidate graduates from the tracking FR's checkbox list to its own small FR when prioritized, following the pattern established by adoption ([#396](https://github.com/banisterious/obsidian-charted-roots/issues/396)), marriage/divorce ([#399](https://github.com/banisterious/obsidian-charted-roots/issues/399)), and burial ([#408](https://github.com/banisterious/obsidian-charted-roots/issues/408)). No "big bang" release — the feature accrues one event at a time, driven by community-feedback priority.
+
+**Out of scope for now:** User-defined custom single-person event types — @doctorwodka floated the idea during #385, but the overlap with existing event notes needs more community input before designing. Left as a discussion topic, to revisit if demand materializes.
 
 ---
 
