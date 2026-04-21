@@ -23,10 +23,10 @@ import { formatCanvasJson } from '../core/canvas-utils';
 import { ExcalidrawExporter } from '../excalidraw/excalidraw-exporter';
 import { getErrorMessage } from '../core/error-utils';
 import { isPlaceNote, isSourceNote, isEventNote, isPersonNote, isOrganizationNote } from '../utils/note-type-detection';
-import type { SpouseMetadata } from '../core/person-note-writer';
 import { SOURCED_PROPERTY_NAMES } from '../sources/types/source-types';
 import { promptLineageName } from './context-menus';
 import { getLogger } from '../core/logging';
+import { extractName, loadRelationships } from './relationship-loader';
 
 const logger = getLogger('bulk-operations');
 
@@ -149,124 +149,27 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 		return;
 	}
 
-	// Extract relationship names from wikilinks
-	const extractName = (value: string | undefined): string | undefined => {
-		if (!value) return undefined;
-		// Handle wikilink format: [[Name]] or "[[Name]]"
-		const match = value.match(/\[\[([^\]]+)\]\]/);
-		return match ? match[1] : value;
-	};
-
-	// Create graph services early so we can fall back to name-to-crId
-	// resolution for relationship fields whose `_id` frontmatter key is
-	// missing while the corresponding wikilink field is populated (#403).
-	// Without this fallback the modal loads those fields empty and the
-	// save path clears both the wikilink and ID from frontmatter.
+	// Create graph services for name-to-crId resolution during relationship
+	// load, plus the universe merge below. The loader handles fallback
+	// resolution for relationships whose `_id` frontmatter key is missing
+	// while the wikilink field is populated (#403, #410).
 	const familyGraph = plugin.createFamilyGraphService();
 	const placeGraph = plugin.createPlaceGraphService();
 
-	// Resolve a wikilinked name to a person crId via the family graph.
-	// Handles `[[Name|Alias]]` by stripping the alias before lookup.
-	// Matches against both the person's `name` frontmatter field and the
-	// note's basename, since a wikilink target is a basename and may
-	// differ from the stored `name` (#410).
-	// Only resolves when exactly one person matches — ambiguous matches
-	// are logged and skipped so we don't silently pick the wrong person
-	// when two vault notes share a name.
-	const resolveNameToCrId = (name: string): string | undefined => {
-		const stripped = name.split('|')[0].trim();
-		if (!stripped) return undefined;
-		const matches = familyGraph.getAllPeople().filter(p =>
-			p.name === stripped || p.file.basename === stripped
-		);
-		if (matches.length === 1) return matches[0].crId;
-		if (matches.length > 1) {
-			logger.warn('edit-person-modal', `Ambiguous wikilink "${stripped}" resolves to ${matches.length} persons; skipping auto-resolution`);
-		}
-		return undefined;
-	};
-
-	// Extract spouse names/IDs - check for indexed format first (#204)
-	const spouseNames: string[] = [];
-	const spouseIds: string[] = [];
-	const spouseMetadata: SpouseMetadata[] = [];
-
-	// Check for indexed spouse format (spouse1, spouse1_id, spouse1_marriage_date, etc.)
-	let hasIndexedSpouses = false;
-	for (let i = 1; i <= 10; i++) {
-		const spouseLink = fm[`spouse${i}`];
-		const spouseId = fm[`spouse${i}_id`];
-		if (spouseLink || spouseId) {
-			hasIndexedSpouses = true;
-			const name = extractName(String(spouseLink || ''));
-			let crId = String(spouseId || '');
-
-			// Fallback: resolve wikilink name to crId when spouseN_id missing (#403)
-			if (!crId && name) {
-				crId = resolveNameToCrId(name) || '';
-			}
-
-			if (name) spouseNames.push(name);
-			if (crId) spouseIds.push(crId);
-
-			// Build metadata object
-			spouseMetadata.push({
-				crId: crId || '',
-				name: name || crId || `Spouse ${i}`,
-				marriageDate: fm[`spouse${i}_marriage_date`] as string | undefined,
-				marriageLocation: fm[`spouse${i}_marriage_location`] as string | undefined,
-				marriageStatus: fm[`spouse${i}_marriage_status`] as SpouseMetadata['marriageStatus'],
-				divorceDate: fm[`spouse${i}_divorce_date`] as string | undefined
-			});
-		}
-	}
-
-	// Fall back to legacy array format if no indexed spouses found
-	if (!hasIndexedSpouses) {
-		// Walk wikilinks paired by index with spouse_id; resolve each entry
-		// independently so mixed-ID states (some entries have IDs, some don't)
-		// don't silently drop the ones without IDs at save (#410).
-		// Entries we can't resolve are still preserved (id stays empty) so
-		// the wikilink survives the round trip — the writer emits the name
-		// unconditionally and next open retries resolution.
-		const rawSpouseLinks = fm.spouse
-			? (Array.isArray(fm.spouse) ? fm.spouse : [fm.spouse])
-			: [];
-		const rawSpouseIds = fm.spouse_id
-			? (Array.isArray(fm.spouse_id) ? fm.spouse_id : [fm.spouse_id])
-			: [];
-		for (let i = 0; i < rawSpouseLinks.length; i++) {
-			const name = extractName(String(rawSpouseLinks[i]));
-			if (!name) continue;
-			const directId = rawSpouseIds[i] ? String(rawSpouseIds[i]) : '';
-			const id = directId || resolveNameToCrId(name) || '';
-			spouseNames.push(name);
-			spouseIds.push(id);
-		}
-	}
-
-	// Extract children names/IDs — per-entry fallback keeps arrays aligned
-	// and prevents mixed-ID states from silently dropping entries. Entries
-	// we can't resolve are preserved with an empty id so the wikilink
-	// survives the round trip (#410).
-	const childNames: string[] = [];
-	const childIds: string[] = [];
-	{
-		const rawChildLinks = fm.children
-			? (Array.isArray(fm.children) ? fm.children : [fm.children])
-			: [];
-		const rawChildIds = fm.children_id
-			? (Array.isArray(fm.children_id) ? fm.children_id : [fm.children_id])
-			: [];
-		for (let i = 0; i < rawChildLinks.length; i++) {
-			const name = extractName(String(rawChildLinks[i]));
-			if (!name) continue;
-			const directId = rawChildIds[i] ? String(rawChildIds[i]) : '';
-			const id = directId || resolveNameToCrId(name) || '';
-			childNames.push(name);
-			childIds.push(id);
-		}
-	}
+	// Load all relationship fields (indexed + legacy spouse, children,
+	// parents, singleton father/mother/adoptive) in one pass.
+	const relationships = loadRelationships(fm, familyGraph, (name, count) => {
+		logger.warn('edit-person-modal', `Ambiguous wikilink "${name}" resolves to ${count} persons; skipping auto-resolution`);
+	});
+	const {
+		spouseNames, spouseIds, spouseMetadata,
+		childNames, childIds,
+		parentNames, parentIds,
+		fatherName, fatherId,
+		motherName, motherId,
+		adoptiveFatherName, adoptiveFatherId,
+		adoptiveMotherName, adoptiveMotherId
+	} = relationships;
 
 	// Extract sources names/IDs
 	const sourceNames: string[] = [];
@@ -302,39 +205,6 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 			}
 		}
 	}
-
-	// Extract gender-neutral parents names/IDs — per-entry fallback keeps
-	// arrays aligned and prevents mixed-ID states from silently dropping
-	// entries. Entries we can't resolve are preserved with an empty id so
-	// the wikilink survives the round trip (#410).
-	const parentNames: string[] = [];
-	const parentIds: string[] = [];
-	{
-		const rawParentLinks = fm.parents
-			? (Array.isArray(fm.parents) ? fm.parents : [fm.parents])
-			: [];
-		const rawParentIds = fm.parents_id
-			? (Array.isArray(fm.parents_id) ? fm.parents_id : [fm.parents_id])
-			: [];
-		for (let i = 0; i < rawParentLinks.length; i++) {
-			const name = extractName(String(rawParentLinks[i]));
-			if (!name) continue;
-			const directId = rawParentIds[i] ? String(rawParentIds[i]) : '';
-			const id = directId || resolveNameToCrId(name) || '';
-			parentNames.push(name);
-			parentIds.push(id);
-		}
-	}
-
-	// Resolve singleton parent/adoptive-parent IDs with wikilink fallback (#403)
-	const fatherName = extractName(fm.father);
-	const fatherId = fm.father_id ?? (fatherName ? resolveNameToCrId(fatherName) : undefined);
-	const motherName = extractName(fm.mother);
-	const motherId = fm.mother_id ?? (motherName ? resolveNameToCrId(motherName) : undefined);
-	const adoptiveFatherName = extractName(fm.adoptive_father);
-	const adoptiveFatherId = fm.adoptive_father_id ?? (adoptiveFatherName ? resolveNameToCrId(adoptiveFatherName) : undefined);
-	const adoptiveMotherName = extractName(fm.adoptive_mother);
-	const adoptiveMotherId = fm.adoptive_mother_id ?? (adoptiveMotherName ? resolveNameToCrId(adoptiveMotherName) : undefined);
 
 	// Merge universes from both places and people
 	const placeUniverses = placeGraph.getAllUniverses();
