@@ -4,6 +4,9 @@ All notable changes to Charted Roots will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+For Charted Roots' plugin-specific versioning rules (what counts as breaking,
+when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
+[VERSIONING.md](VERSIONING.md).
 
 ---
 
