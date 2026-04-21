@@ -167,13 +167,18 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 
 	// Resolve a wikilinked name to a person crId via the family graph.
 	// Handles `[[Name|Alias]]` by stripping the alias before lookup.
-	// Only resolves when exactly one person matches the name — ambiguous
-	// matches are logged and skipped so we don't silently pick the wrong
-	// person when two vault notes share a name.
+	// Matches against both the person's `name` frontmatter field and the
+	// note's basename, since a wikilink target is a basename and may
+	// differ from the stored `name` (#410).
+	// Only resolves when exactly one person matches — ambiguous matches
+	// are logged and skipped so we don't silently pick the wrong person
+	// when two vault notes share a name.
 	const resolveNameToCrId = (name: string): string | undefined => {
 		const stripped = name.split('|')[0].trim();
 		if (!stripped) return undefined;
-		const matches = familyGraph.getAllPeople().filter(p => p.name === stripped);
+		const matches = familyGraph.getAllPeople().filter(p =>
+			p.name === stripped || p.file.basename === stripped
+		);
 		if (matches.length === 1) return matches[0].crId;
 		if (matches.length > 1) {
 			logger.warn('edit-person-modal', `Ambiguous wikilink "${stripped}" resolves to ${matches.length} persons; skipping auto-resolution`);
@@ -218,49 +223,47 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 
 	// Fall back to legacy array format if no indexed spouses found
 	if (!hasIndexedSpouses) {
-		if (fm.spouse) {
-			const spouses = Array.isArray(fm.spouse) ? fm.spouse : [fm.spouse];
-			for (const s of spouses) {
-				const name = extractName(String(s));
-				if (name) spouseNames.push(name);
-			}
-		}
-		if (fm.spouse_id) {
-			const ids = Array.isArray(fm.spouse_id) ? fm.spouse_id : [fm.spouse_id];
-			for (const id of ids) {
-				spouseIds.push(String(id));
-			}
-		}
-		// Fallback: resolve wikilink names when spouse_id missing (#403)
-		if (spouseIds.length === 0 && spouseNames.length > 0) {
-			for (const name of spouseNames) {
-				const id = resolveNameToCrId(name);
-				if (id) spouseIds.push(id);
+		// Walk wikilinks paired by index with spouse_id; resolve each entry
+		// independently so mixed-ID states (some entries have IDs, some don't)
+		// don't silently drop the ones without IDs at save (#410).
+		const rawSpouseLinks = fm.spouse
+			? (Array.isArray(fm.spouse) ? fm.spouse : [fm.spouse])
+			: [];
+		const rawSpouseIds = fm.spouse_id
+			? (Array.isArray(fm.spouse_id) ? fm.spouse_id : [fm.spouse_id])
+			: [];
+		for (let i = 0; i < rawSpouseLinks.length; i++) {
+			const name = extractName(String(rawSpouseLinks[i]));
+			if (!name) continue;
+			const directId = rawSpouseIds[i] ? String(rawSpouseIds[i]) : '';
+			const id = directId || resolveNameToCrId(name) || '';
+			if (id) {
+				spouseNames.push(name);
+				spouseIds.push(id);
 			}
 		}
 	}
 
-	// Extract children names/IDs
+	// Extract children names/IDs — per-entry fallback keeps arrays aligned
+	// and prevents mixed-ID states from silently dropping entries (#410)
 	const childNames: string[] = [];
 	const childIds: string[] = [];
-	if (fm.children) {
-		const children = Array.isArray(fm.children) ? fm.children : [fm.children];
-		for (const c of children) {
-			const name = extractName(String(c));
-			if (name) childNames.push(name);
-		}
-	}
-	if (fm.children_id) {
-		const ids = Array.isArray(fm.children_id) ? fm.children_id : [fm.children_id];
-		for (const id of ids) {
-			childIds.push(String(id));
-		}
-	}
-	// Fallback: resolve wikilink names when children_id missing (#403)
-	if (childIds.length === 0 && childNames.length > 0) {
-		for (const name of childNames) {
-			const id = resolveNameToCrId(name);
-			if (id) childIds.push(id);
+	{
+		const rawChildLinks = fm.children
+			? (Array.isArray(fm.children) ? fm.children : [fm.children])
+			: [];
+		const rawChildIds = fm.children_id
+			? (Array.isArray(fm.children_id) ? fm.children_id : [fm.children_id])
+			: [];
+		for (let i = 0; i < rawChildLinks.length; i++) {
+			const name = extractName(String(rawChildLinks[i]));
+			if (!name) continue;
+			const directId = rawChildIds[i] ? String(rawChildIds[i]) : '';
+			const id = directId || resolveNameToCrId(name) || '';
+			if (id) {
+				childNames.push(name);
+				childIds.push(id);
+			}
 		}
 	}
 
@@ -299,27 +302,27 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 		}
 	}
 
-	// Extract gender-neutral parents names/IDs
+	// Extract gender-neutral parents names/IDs — per-entry fallback keeps
+	// arrays aligned and prevents mixed-ID states from silently dropping
+	// entries (#410)
 	const parentNames: string[] = [];
 	const parentIds: string[] = [];
-	if (fm.parents) {
-		const parents = Array.isArray(fm.parents) ? fm.parents : [fm.parents];
-		for (const p of parents) {
-			const name = extractName(String(p));
-			if (name) parentNames.push(name);
-		}
-	}
-	if (fm.parents_id) {
-		const ids = Array.isArray(fm.parents_id) ? fm.parents_id : [fm.parents_id];
-		for (const id of ids) {
-			parentIds.push(String(id));
-		}
-	}
-	// Fallback: resolve wikilink names when parents_id missing (#403)
-	if (parentIds.length === 0 && parentNames.length > 0) {
-		for (const name of parentNames) {
-			const id = resolveNameToCrId(name);
-			if (id) parentIds.push(id);
+	{
+		const rawParentLinks = fm.parents
+			? (Array.isArray(fm.parents) ? fm.parents : [fm.parents])
+			: [];
+		const rawParentIds = fm.parents_id
+			? (Array.isArray(fm.parents_id) ? fm.parents_id : [fm.parents_id])
+			: [];
+		for (let i = 0; i < rawParentLinks.length; i++) {
+			const name = extractName(String(rawParentLinks[i]));
+			if (!name) continue;
+			const directId = rawParentIds[i] ? String(rawParentIds[i]) : '';
+			const id = directId || resolveNameToCrId(name) || '';
+			if (id) {
+				parentNames.push(name);
+				parentIds.push(id);
+			}
 		}
 	}
 

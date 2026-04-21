@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Edit Person modal no longer drops relationships when IDs are partial or a wikilink's basename differs from the person's `name`** ([#410](https://github.com/banisterious/obsidian-charted-roots/issues/410)): The v0.20.62 fix for [#403](https://github.com/banisterious/obsidian-charted-roots/issues/403) closed the all-wikilinks-no-IDs case but left two sibling gaps on the load path for legacy `spouse` / `children` / `parents` array frontmatter. First, the name-based fallback resolver compared only against each person's `name` frontmatter field, so a wikilink like `[[some-basename|Display Name]]` whose target note had a different `name` value silently failed to resolve — the entry then dropped at save. The resolver now also matches against the note's basename, covering both conventions. Second, the array-field fallback was gated on `ids.length === 0`, so if even one entry had an `_id`, none of the others got resolved — mixed-ID states lost entries on save. The fallback is now per-entry, walking wikilinks paired by index with `*_id` and resolving each independently. Scope: `spouse`/`spouse_id`, `children`/`children_id`, `parents`/`parents_id` in legacy array format. Singleton parent fields and indexed `spouseN` format were already per-entry and unaffected. A follow-up change is planned to preserve pre-existing wikilink entries that resolution still can't match (truly orphaned links), as defense-in-depth against any future resolver gap.
+
 ---
 
 ## [0.20.62] - 2026-04-20
