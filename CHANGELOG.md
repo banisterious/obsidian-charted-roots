@@ -10,7 +10,7 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ---
 
-## [Unreleased]
+## [0.21.0] - 2026-04-21
 
 ### Fixed
 
