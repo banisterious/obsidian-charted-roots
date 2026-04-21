@@ -226,6 +226,9 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 		// Walk wikilinks paired by index with spouse_id; resolve each entry
 		// independently so mixed-ID states (some entries have IDs, some don't)
 		// don't silently drop the ones without IDs at save (#410).
+		// Entries we can't resolve are still preserved (id stays empty) so
+		// the wikilink survives the round trip — the writer emits the name
+		// unconditionally and next open retries resolution.
 		const rawSpouseLinks = fm.spouse
 			? (Array.isArray(fm.spouse) ? fm.spouse : [fm.spouse])
 			: [];
@@ -237,15 +240,15 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 			if (!name) continue;
 			const directId = rawSpouseIds[i] ? String(rawSpouseIds[i]) : '';
 			const id = directId || resolveNameToCrId(name) || '';
-			if (id) {
-				spouseNames.push(name);
-				spouseIds.push(id);
-			}
+			spouseNames.push(name);
+			spouseIds.push(id);
 		}
 	}
 
 	// Extract children names/IDs — per-entry fallback keeps arrays aligned
-	// and prevents mixed-ID states from silently dropping entries (#410)
+	// and prevents mixed-ID states from silently dropping entries. Entries
+	// we can't resolve are preserved with an empty id so the wikilink
+	// survives the round trip (#410).
 	const childNames: string[] = [];
 	const childIds: string[] = [];
 	{
@@ -260,10 +263,8 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 			if (!name) continue;
 			const directId = rawChildIds[i] ? String(rawChildIds[i]) : '';
 			const id = directId || resolveNameToCrId(name) || '';
-			if (id) {
-				childNames.push(name);
-				childIds.push(id);
-			}
+			childNames.push(name);
+			childIds.push(id);
 		}
 	}
 
@@ -304,7 +305,8 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 
 	// Extract gender-neutral parents names/IDs — per-entry fallback keeps
 	// arrays aligned and prevents mixed-ID states from silently dropping
-	// entries (#410)
+	// entries. Entries we can't resolve are preserved with an empty id so
+	// the wikilink survives the round trip (#410).
 	const parentNames: string[] = [];
 	const parentIds: string[] = [];
 	{
@@ -319,10 +321,8 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 			if (!name) continue;
 			const directId = rawParentIds[i] ? String(rawParentIds[i]) : '';
 			const id = directId || resolveNameToCrId(name) || '';
-			if (id) {
-				parentNames.push(name);
-				parentIds.push(id);
-			}
+			parentNames.push(name);
+			parentIds.push(id);
 		}
 	}
 

@@ -644,12 +644,23 @@ export async function createPersonNote(
 	// Gender-neutral parent relationship(s) (dual storage)
 	if (person.parentCrId && person.parentCrId.length > 0) {
 		if (person.parentName && person.parentName.length === person.parentCrId.length) {
+			// Preserve alignment when some entries are unresolved; drop
+			// parents_id entirely if every entry is empty (#410)
+			const hasAnyResolvedId = person.parentCrId.some(id => id);
 			if (person.parentName.length === 1) {
 				frontmatter[prop('parents')] = `"${createSmartWikilink(person.parentName[0], app)}"`;
-				frontmatter[prop('parents_id')] = person.parentCrId[0];
+				if (hasAnyResolvedId) {
+					frontmatter[prop('parents_id')] = person.parentCrId[0];
+				} else {
+					delete frontmatter[prop('parents_id')];
+				}
 			} else {
 				frontmatter[prop('parents')] = person.parentName.map(p => `"${createSmartWikilink(p, app)}"`);
-				frontmatter[prop('parents_id')] = person.parentCrId;
+				if (hasAnyResolvedId) {
+					frontmatter[prop('parents_id')] = person.parentCrId;
+				} else {
+					delete frontmatter[prop('parents_id')];
+				}
 			}
 			logger.debug('parents', `Added (dual): wikilinks=${JSON.stringify(person.parentName)}, ids=${JSON.stringify(person.parentCrId)}`);
 		} else {
@@ -1745,9 +1756,18 @@ export async function updatePersonNote(
 					frontmatter.spouse = person.spouseName.length === 1
 						? `${createSmartWikilink(person.spouseName[0], app)}`
 						: person.spouseName.map(s => createSmartWikilink(s, app));
-					frontmatter.spouse_id = person.spouseCrId.length === 1
-						? person.spouseCrId[0]
-						: person.spouseCrId;
+					// Unresolved entries carry an empty crId; keep them in the
+					// array at matching indexes to preserve alignment with the
+					// spouse wikilink array. If every entry is empty, drop
+					// spouse_id entirely rather than writing all blanks (#410).
+					const hasAnyResolvedId = person.spouseCrId.some(id => id);
+					if (hasAnyResolvedId) {
+						frontmatter.spouse_id = person.spouseCrId.length === 1
+							? person.spouseCrId[0]
+							: person.spouseCrId;
+					} else {
+						delete frontmatter.spouse_id;
+					}
 				} else {
 					// Mismatched arrays - only write IDs, clear potentially corrupt spouse field
 					delete frontmatter.spouse;
@@ -1771,9 +1791,16 @@ export async function updatePersonNote(
 					frontmatter.children = person.childName.length === 1
 						? `${createSmartWikilink(person.childName[0], app)}`
 						: person.childName.map(c => createSmartWikilink(c, app));
-					frontmatter.children_id = person.childCrId.length === 1
-						? person.childCrId[0]
-						: person.childCrId;
+					// Preserve alignment when some entries are unresolved;
+					// drop children_id entirely if every entry is empty (#410)
+					const hasAnyResolvedId = person.childCrId.some(id => id);
+					if (hasAnyResolvedId) {
+						frontmatter.children_id = person.childCrId.length === 1
+							? person.childCrId[0]
+							: person.childCrId;
+					} else {
+						delete frontmatter.children_id;
+					}
 				} else {
 					// Mismatched arrays - only write IDs, clear potentially corrupt children field
 					delete frontmatter.children;
