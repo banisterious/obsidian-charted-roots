@@ -114,6 +114,7 @@ export class CreatePersonModal extends Modal {
 				sex?: string;
 				gender?: string; // Kept for backwards compatibility
 				pronouns?: string | string[];
+				nickname?: string;
 				// Name components (#174, #192)
 				givenName?: string;
 				surnames?: string[];
@@ -207,6 +208,7 @@ export class CreatePersonModal extends Modal {
 				personType: ep.personType,
 				sex: ep.sex || ep.gender, // sex preferred, gender for backwards compatibility
 				pronouns: Array.isArray(ep.pronouns) ? ep.pronouns : ep.pronouns ? [ep.pronouns] : undefined,
+				nickname: ep.nickname,
 				// Name components (#174, #192)
 				givenName: ep.givenName,
 				surnames: ep.surnames,
@@ -2974,6 +2976,7 @@ export class CreatePersonModal extends Modal {
 				deathDate: this.personData.deathDate ?? '',
 				sex: this.personData.sex ?? '',
 				pronouns: this.personData.pronouns ?? [],
+				nickname: this.personData.nickname ?? '',
 				cr_living: this.personData.cr_living,
 				occupation: this.personData.occupation ?? '',
 				researchLevel: this.personData.researchLevel,

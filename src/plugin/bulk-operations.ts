@@ -220,6 +220,7 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 			personType: fm.personType,
 			gender: fm.gender || fm.sex,
 			pronouns: fm.pronouns,
+			nickname: fm.nickname,
 			// Name components (#174, #192)
 			givenName: fm.given_name,
 			surnames: Array.isArray(fm.surnames) ? fm.surnames : (fm.surnames ? [fm.surnames] : undefined),
