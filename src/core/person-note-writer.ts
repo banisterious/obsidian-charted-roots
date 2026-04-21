@@ -8,6 +8,7 @@ import { generateCrId } from './uuid';
 import { getLogger } from './logging';
 import type { ResearchLevel } from '../types/frontmatter';
 import { SOURCED_PROPERTY_NAMES } from '../sources/types/source-types';
+import { computeRelationshipArrayPatch, applyRelationshipArrayPatch } from './relationship-emit';
 
 const logger = getLogger('PersonNoteWriter');
 
@@ -1751,29 +1752,17 @@ export async function updatePersonNote(
 				delete frontmatter.spouses;
 				logger.debug('update-spouse', `Set indexed: ${person.spouseMetadata.length} spouses with metadata`);
 			} else if (person.spouseCrId && person.spouseCrId.length > 0) {
-				// Legacy array format (no metadata)
-				if (person.spouseName && person.spouseName.length === person.spouseCrId.length) {
-					frontmatter.spouse = person.spouseName.length === 1
-						? `${createSmartWikilink(person.spouseName[0], app)}`
-						: person.spouseName.map(s => createSmartWikilink(s, app));
-					// Unresolved entries carry an empty crId; keep them in the
-					// array at matching indexes to preserve alignment with the
-					// spouse wikilink array. If every entry is empty, drop
-					// spouse_id entirely rather than writing all blanks (#410).
-					const hasAnyResolvedId = person.spouseCrId.some(id => id);
-					if (hasAnyResolvedId) {
-						frontmatter.spouse_id = person.spouseCrId.length === 1
-							? person.spouseCrId[0]
-							: person.spouseCrId;
-					} else {
-						delete frontmatter.spouse_id;
-					}
-				} else {
-					// Mismatched arrays - only write IDs, clear potentially corrupt spouse field
-					delete frontmatter.spouse;
-					frontmatter.spouse_id = person.spouseCrId.length === 1
-						? person.spouseCrId[0]
-						: person.spouseCrId;
+				// Legacy array format (no metadata). The align/prune logic —
+				// including #410 Option 2's empty-slot preservation and all-
+				// empty pruning — lives in computeRelationshipArrayPatch so
+				// it can be unit-tested without the writer's runtime deps.
+				const patch = computeRelationshipArrayPatch(
+					person.spouseName,
+					person.spouseCrId,
+					(name) => createSmartWikilink(name, app)
+				);
+				applyRelationshipArrayPatch(frontmatter, 'spouse', 'spouse_id', patch);
+				if (patch.mismatched) {
 					logger.warn('update-spouse', `Mismatched spouse arrays: ${person.spouseCrId.length} IDs, ${person.spouseName?.length ?? 0} names. Cleared spouse field.`);
 				}
 			} else {
@@ -1787,26 +1776,15 @@ export async function updatePersonNote(
 		// Handle children relationships (use 'children' plural to match 'children_id')
 		if (person.childCrId !== undefined || person.childName !== undefined) {
 			if (person.childCrId && person.childCrId.length > 0) {
-				if (person.childName && person.childName.length === person.childCrId.length) {
-					frontmatter.children = person.childName.length === 1
-						? `${createSmartWikilink(person.childName[0], app)}`
-						: person.childName.map(c => createSmartWikilink(c, app));
-					// Preserve alignment when some entries are unresolved;
-					// drop children_id entirely if every entry is empty (#410)
-					const hasAnyResolvedId = person.childCrId.some(id => id);
-					if (hasAnyResolvedId) {
-						frontmatter.children_id = person.childCrId.length === 1
-							? person.childCrId[0]
-							: person.childCrId;
-					} else {
-						delete frontmatter.children_id;
-					}
-				} else {
-					// Mismatched arrays - only write IDs, clear potentially corrupt children field
-					delete frontmatter.children;
-					frontmatter.children_id = person.childCrId.length === 1
-						? person.childCrId[0]
-						: person.childCrId;
+				// Same align/prune logic as the spouse block above — see
+				// computeRelationshipArrayPatch for the full contract.
+				const patch = computeRelationshipArrayPatch(
+					person.childName,
+					person.childCrId,
+					(name) => createSmartWikilink(name, app)
+				);
+				applyRelationshipArrayPatch(frontmatter, 'children', 'children_id', patch);
+				if (patch.mismatched) {
 					logger.warn('update-children', `Mismatched children arrays: ${person.childCrId.length} IDs, ${person.childName?.length ?? 0} names. Cleared children field.`);
 				}
 				// Remove legacy 'child' property if present
