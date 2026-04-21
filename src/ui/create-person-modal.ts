@@ -2961,29 +2961,34 @@ export class CreatePersonModal extends Modal {
 		}
 
 		try {
-			// Build person data with relationships
+			// Build person data with relationships.
+			// String fields use `?? ''` so clearing an optional field through
+			// the modal actually clears the frontmatter value — `undefined` is
+			// read by the writer's outer guard as "untouched" and silently
+			// no-ops the clear (#406, same class as #322 and #405). Array
+			// fields use `?? []` for the same reason (pronouns).
 			const data: Partial<PersonData> = {
 				name: this.personData.name,
-				personType: this.personData.personType,
+				personType: this.personData.personType ?? '',
 				birthDate: this.personData.birthDate ?? '',
 				deathDate: this.personData.deathDate ?? '',
-				sex: this.personData.sex,
-				pronouns: this.personData.pronouns,
+				sex: this.personData.sex ?? '',
+				pronouns: this.personData.pronouns ?? [],
 				cr_living: this.personData.cr_living,
 				occupation: this.personData.occupation ?? '',
 				researchLevel: this.personData.researchLevel,
 				// Name components (#174, #192)
-				givenName: this.personData.givenName,
+				givenName: this.personData.givenName ?? '',
 				surnames: this.personData.surnames,
-				maidenName: this.personData.maidenName,
+				maidenName: this.personData.maidenName ?? '',
 				marriedNames: this.personData.marriedNames,
 				// DNA tracking fields
 				dnaSharedCm: this.personData.dnaSharedCm,
-				dnaTestingCompany: this.personData.dnaTestingCompany,
-				dnaKitId: this.personData.dnaKitId,
-				dnaMatchType: this.personData.dnaMatchType,
+				dnaTestingCompany: this.personData.dnaTestingCompany ?? '',
+				dnaKitId: this.personData.dnaKitId ?? '',
+				dnaMatchType: this.personData.dnaMatchType ?? '',
 				dnaEndogamyFlag: this.personData.dnaEndogamyFlag,
-				dnaNotes: this.personData.dnaNotes
+				dnaNotes: this.personData.dnaNotes ?? ''
 			};
 
 			// Add father relationship. Use '' (not undefined) for "cleared" so
@@ -3112,9 +3117,10 @@ export class CreatePersonModal extends Modal {
 			}
 			data.sourcedFacts = sourcedFacts;
 
-			// Add collection and universe
-			data.collection = this.getCollectionValue();
-			data.universe = this.getUniverseValue();
+			// Add collection and universe — `?? ''` so clearing via the "(None)"
+			// dropdown option actually clears the frontmatter (#406).
+			data.collection = this.getCollectionValue() ?? '';
+			data.universe = this.getUniverseValue() ?? '';
 
 			await updatePersonNote(this.app, this.editingFile, data);
 
