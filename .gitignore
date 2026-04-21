@@ -81,6 +81,10 @@ docs/user-feedback/
 deploy.sh
 dev-deploy.sh
 
+# In-repo development vault (fictional data; lives alongside the code for
+# tight dev-loop iteration via dev-deploy.sh)
+/dev-vault/
+
 # Generated log files
 canvas-roots-logs-*.json
 
