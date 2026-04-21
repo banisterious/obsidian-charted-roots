@@ -1524,14 +1524,16 @@ export class CreatePersonModal extends Modal {
 					this.personData.dnaMatchType = value || undefined;
 				}));
 
-		// Endogamy Flag
+		// Endogamy Flag — pass the boolean through directly; `value || undefined`
+		// would convert a toggled-off `false` to `undefined`, which the writer's
+		// `!== undefined` guard then reads as "untouched" (#413).
 		new Setting(fields)
 			.setName('Endogamy flag')
 			.setDesc('Mark if match may be affected by endogamy (inflated cM values)')
 			.addToggle(toggle => toggle
 				.setValue(this.personData.dnaEndogamyFlag || false)
 				.onChange(value => {
-					this.personData.dnaEndogamyFlag = value || undefined;
+					this.personData.dnaEndogamyFlag = value;
 				}));
 
 		// DNA Notes
