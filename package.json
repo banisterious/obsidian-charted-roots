@@ -5,7 +5,8 @@
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
-		"build": "npm run build:fonts && tsc -noEmit -skipLibCheck && node esbuild.config.mjs production && npm run build:css -- --no-fail-on-lint",
+		"build": "npm run build:fonts && node esbuild.config.mjs production && npm run build:css -- --no-fail-on-lint",
+		"type-check": "node ./node_modules/typescript/bin/tsc -noEmit -skipLibCheck",
 		"build:fonts": "node build-fonts.js",
 		"build:css": "node build-css.js",
 		"build:css:watch": "node build-css.js --watch",
