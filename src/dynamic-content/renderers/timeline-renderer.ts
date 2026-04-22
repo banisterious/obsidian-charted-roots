@@ -846,6 +846,20 @@ export class TimelineRenderer {
 			});
 		}
 
+		// Add burial from person note (#408). Mirrors the death emission
+		// pattern: fixed "Buried" title plus stripped burial_place rendered
+		// as "in X" by the timeline renderer. Age is filled in by
+		// buildTimelineEntriesWithContext downstream.
+		if (person?.burialDate && shouldInclude('burial')) {
+			entries.push({
+				date: this.service.formatDate(person.burialDate),
+				year: this.service.extractYear(person.burialDate),
+				type: 'burial',
+				title: 'Buried',
+				place: person.burialPlace ? this.service.stripWikilink(person.burialPlace) : undefined
+			});
+		}
+
 		// Sort entries by date
 		const sortOrder = config.sort as string || 'chronological';
 		entries.sort((a, b) => {

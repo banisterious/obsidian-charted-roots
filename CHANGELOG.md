@@ -10,6 +10,14 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **Burial now renders on the person timeline block** ([#408](https://github.com/banisterious/obsidian-charted-roots/issues/408)): `burial_date` and `burial_place` are already established person-note properties (recognized by the GEDCOM importer/exporter, map markers, and cleanup tooling), but the inline `charted-roots-timeline` block was the one place they didn't surface. Burial is now emitted alongside birth, death, adoption, and marriage, matching death's rendering pattern — fixed `"Buried"` label plus `"in {place}"` suffix when `burial_place` is set, with age computed from the person's `born` field. No new schema, no toggle; the field is either set or it isn't. Honors the timeline block's `include: [...]` filter, so users who restrict their timeline to specific event types can include or exclude burial explicitly.
+
+---
+
 ## [0.21.0] - 2026-04-21
 
 ### Fixed
