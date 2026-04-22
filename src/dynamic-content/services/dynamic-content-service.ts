@@ -304,10 +304,14 @@ export class DynamicContentService {
 	 * Format a date for display
 	 * Converts ISO dates and GEDCOM qualifiers to a more readable format
 	 */
-	formatDate(dateStr: string | undefined): string {
-		if (!dateStr) return '';
+	formatDate(dateStr: string | number | undefined | null): string {
+		if (dateStr === undefined || dateStr === null || dateStr === '') return '';
 
-		const trimmed = dateStr.trim();
+		// Coerce to string so callers can pass YAML-parsed values directly.
+		// Obsidian parses bare-year frontmatter like `died: 1893` as Number,
+		// and calling `.trim()` / `.match()` on a number throws (#416).
+		const value = typeof dateStr === 'string' ? dateStr : String(dateStr);
+		const trimmed = value.trim();
 		const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
 			'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -383,35 +387,40 @@ export class DynamicContentService {
 	 * Handles: ISO format (-0011, 0014), BCE/AD suffix (11 BCE, 14 AD), plain years
 	 * Returns the year as a string, with negative sign for BCE dates
 	 */
-	extractYear(dateStr: string | undefined): string {
-		if (!dateStr) return '';
+	extractYear(dateStr: string | number | undefined | null): string {
+		if (dateStr === undefined || dateStr === null || dateStr === '') return '';
+
+		// Coerce to string so callers can pass YAML-parsed values directly.
+		// A bare-year frontmatter value like `died: 1893` is a Number at
+		// runtime; calling `.match()` on a number throws (#416).
+		const value = typeof dateStr === 'string' ? dateStr : String(dateStr);
 
 		// Check for BCE/BC suffix (e.g., "11 BCE", "39 BC")
-		const bceMatch = dateStr.match(/(\d+)\s*(?:BCE|BC)\b/i);
+		const bceMatch = value.match(/(\d+)\s*(?:BCE|BC)\b/i);
 		if (bceMatch) {
 			return `-${bceMatch[1]}`;
 		}
 
 		// Check for ISO format with negative year (e.g., "-0011-01-15")
-		const negativeIsoMatch = dateStr.match(/^-(\d+)/);
+		const negativeIsoMatch = value.match(/^-(\d+)/);
 		if (negativeIsoMatch) {
 			return `-${parseInt(negativeIsoMatch[1], 10)}`;
 		}
 
 		// Check for AD/CE suffix (e.g., "14 AD", "100 CE") - return positive
-		const adMatch = dateStr.match(/(\d+)\s*(?:AD|CE)\b/i);
+		const adMatch = value.match(/(\d+)\s*(?:AD|CE)\b/i);
 		if (adMatch) {
 			return adMatch[1];
 		}
 
 		// Standard positive year (4 digits)
-		const yearMatch = dateStr.match(/\b(\d{4})\b/);
+		const yearMatch = value.match(/\b(\d{4})\b/);
 		if (yearMatch) {
 			return yearMatch[1];
 		}
 
 		// Fallback: any digits
-		const anyDigits = dateStr.match(/(\d+)/);
+		const anyDigits = value.match(/(\d+)/);
 		return anyDigits ? anyDigits[1] : '';
 	}
 

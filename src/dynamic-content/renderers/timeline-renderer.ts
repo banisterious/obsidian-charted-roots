@@ -849,19 +849,13 @@ export class TimelineRenderer {
 		// Add burial from person note (#408). Mirrors the death emission
 		// pattern: fixed "Buried" title plus stripped burial_place rendered
 		// as "in X" by the timeline renderer. Age is filled in by
-		// buildTimelineEntriesWithContext downstream.
-		//
-		// Coerce burialDate to string because Obsidian's Properties panel
-		// treats a bare year like `burial_date: 1893` as a Number type,
-		// and YAML parses it as an integer. The service's date helpers
-		// expect strings and call `.match()` on the input, which throws
-		// on numbers. born/died usually have punctuation (slashes or
-		// hyphens) that force string parsing, so they don't hit this.
+		// buildTimelineEntriesWithContext downstream. (Bare-year input like
+		// `burial_date: 1893` is handled by the service's date helpers
+		// thanks to #416.)
 		if (person?.burialDate && shouldInclude('burial')) {
-			const burialDateStr = String(person.burialDate);
 			entries.push({
-				date: this.service.formatDate(burialDateStr),
-				year: this.service.extractYear(burialDateStr),
+				date: this.service.formatDate(person.burialDate),
+				year: this.service.extractYear(person.burialDate),
 				type: 'burial',
 				title: 'Buried',
 				place: person.burialPlace ? this.service.stripWikilink(person.burialPlace) : undefined

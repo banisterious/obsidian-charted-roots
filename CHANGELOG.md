@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **Timeline no longer crashes with a red error bar when a date field is a bare numeric year** ([#416](https://github.com/banisterious/obsidian-charted-roots/issues/416)): Obsidian's Properties panel treats an unquoted year like `died: 1893` as a Number-typed field, and YAML parses it as an integer rather than a string. The service's `formatDate` and `extractYear` helpers call `.trim()` / `.match()` on the input, which throws `TypeError` on numbers — the timeline-renderer surfaced this as Obsidian's red code-block error. The helpers now accept `string | number | undefined | null` and coerce at entry, so any date frontmatter value (including the bare-year case from the Properties panel) passes through safely. Surfaced during #408 burial-timeline testing; affects every date field in the timeline emission path (`born`, `died`, `adoption_date`, `marriage_date`, `divorce_date`, `burial_date`, and event-note dates).
+
 ### Added
 
 - **Burial now renders on the person timeline block** ([#408](https://github.com/banisterious/obsidian-charted-roots/issues/408)): `burial_date` and `burial_place` are already established person-note properties (recognized by the GEDCOM importer/exporter, map markers, and cleanup tooling), but the inline `charted-roots-timeline` block was the one place they didn't surface. Burial is now emitted alongside birth, death, adoption, and marriage, matching death's rendering pattern — fixed `"Buried"` label plus `"in {place}"` suffix when `burial_place` is set, with age computed from the person's `born` field. No new schema, no toggle; the field is either set or it isn't. Honors the timeline block's `include: [...]` filter, so users who restrict their timeline to specific event types can include or exclude burial explicitly.
