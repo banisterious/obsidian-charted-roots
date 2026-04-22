@@ -38,7 +38,7 @@ function logLegacyFormatWarning(count: number): void {
 /**
  * Inline event from the legacy events array
  */
-interface InlineEvent {
+export interface InlineEvent {
 	event_type: EventType;
 	place?: string;
 	date_from?: string | number;
@@ -128,6 +128,52 @@ const EVENT_TYPE_NAMES: Record<EventType, string> = {
 };
 
 /**
+ * Pure helper: format an event date value (number or string) to its
+ * display-string representation. Numbers are assumed to be year-only and
+ * stringified directly; strings pass through unchanged. Null / undefined
+ * input returns undefined.
+ *
+ * Exported so title generation and test coverage don't need an instance
+ * of the migration service (1.0 testing gate for migrations).
+ */
+export function formatEventDate(value: string | number | undefined | null): string | undefined {
+	if (value === undefined || value === null) return undefined;
+	if (typeof value === 'number') {
+		return String(value);
+	}
+	return String(value);
+}
+
+/**
+ * Pure helper: generate an event-note title from a person name and an
+ * inline event. If the event has a parseable start date, the year is
+ * included in the title (e.g. "Alice - Baptism 1850"). Otherwise the
+ * title omits the year (e.g. "Alice - Baptism").
+ */
+export function generateEventTitle(personName: string, event: InlineEvent): string {
+	const typeName = EVENT_TYPE_NAMES[event.event_type] || 'Event';
+	const dateStr = formatEventDate(event.date_from);
+	if (dateStr) {
+		const year = dateStr.substring(0, 4);
+		return `${personName} - ${typeName} ${year}`;
+	}
+	return `${personName} - ${typeName}`;
+}
+
+/**
+ * Pure helper: convert a title string into a URL-safe filename slug.
+ * Lowercases, replaces non-alphanumeric runs with single hyphens, trims
+ * leading/trailing hyphens, and caps the result at 100 characters.
+ */
+export function slugifyTitle(title: string): string {
+	return title
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '')
+		.substring(0, 100);
+}
+
+/**
  * Service for migrating inline events to event note files
  */
 export class LifeEventsMigrationService {
@@ -207,11 +253,11 @@ export class LifeEventsMigrationService {
 		return notes.map(note => {
 			const events: EventMigrationPreview[] = note.events.map(event => {
 				return {
-					title: this.generateEventTitle(note.personName, event),
+					title: generateEventTitle(note.personName, event),
 					eventType: event.event_type,
 					place: event.place,
-					dateFrom: this.formatDate(event.date_from),
-					dateTo: this.formatDate(event.date_to),
+					dateFrom: formatEventDate(event.date_from),
+					dateTo: formatEventDate(event.date_to),
 					description: event.description
 				};
 			});
@@ -348,15 +394,15 @@ export class LifeEventsMigrationService {
 		folder: string
 	): Promise<TFile> {
 		const crId = generateCrId();
-		const title = this.generateEventTitle(personName, event);
-		const fileName = this.slugify(title) + '.md';
+		const title = generateEventTitle(personName, event);
+		const fileName = slugifyTitle(title) + '.md';
 		const filePath = normalizePath(`${folder}/${fileName}`);
 
 		// Handle duplicate filenames by appending a number
 		let finalPath = filePath;
 		let counter = 1;
 		while (this.app.vault.getAbstractFileByPath(finalPath)) {
-			const baseName = this.slugify(title);
+			const baseName = slugifyTitle(title);
 			finalPath = normalizePath(`${folder}/${baseName}-${counter}.md`);
 			counter++;
 		}
@@ -374,12 +420,12 @@ export class LifeEventsMigrationService {
 		];
 
 		// Add date if present
-		const dateFrom = this.formatDate(event.date_from);
+		const dateFrom = formatEventDate(event.date_from);
 		if (dateFrom) {
 			frontmatterLines.push(`date: "${dateFrom}"`);
 		}
 
-		const dateTo = this.formatDate(event.date_to);
+		const dateTo = formatEventDate(event.date_to);
 		if (dateTo) {
 			frontmatterLines.push(`date_end: "${dateTo}"`);
 		}
@@ -411,46 +457,9 @@ export class LifeEventsMigrationService {
 		return file;
 	}
 
-	/**
-	 * Generate a title for an event note
-	 */
-	private generateEventTitle(personName: string, event: InlineEvent): string {
-		const typeName = EVENT_TYPE_NAMES[event.event_type] || 'Event';
-		const dateStr = this.formatDate(event.date_from);
-
-		if (dateStr) {
-			// Extract year for the title
-			const year = dateStr.substring(0, 4);
-			return `${personName} - ${typeName} ${year}`;
-		}
-
-		return `${personName} - ${typeName}`;
-	}
-
-	/**
-	 * Format a date value to string
-	 */
-	private formatDate(value: string | number | undefined): string | undefined {
-		if (value === undefined || value === null) return undefined;
-
-		if (typeof value === 'number') {
-			// Assume year only
-			return String(value);
-		}
-
-		return String(value);
-	}
-
-	/**
-	 * Convert a title to a URL-safe filename
-	 */
-	private slugify(title: string): string {
-		return title
-			.toLowerCase()
-			.replace(/[^a-z0-9]+/g, '-')
-			.replace(/^-+|-+$/g, '')
-			.substring(0, 100); // Limit length
-	}
+	// generateEventTitle / formatEventDate / slugifyTitle have been promoted
+	// to module-level pure helpers (see top of file). The class delegates to
+	// those so tests can exercise the title / date / slug logic directly.
 
 	/**
 	 * Ensure a folder exists, creating it if necessary

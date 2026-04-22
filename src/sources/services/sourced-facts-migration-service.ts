@@ -21,6 +21,51 @@ import {
 
 const logger = getLogger('SourcedFactsMigration');
 
+/**
+ * Pure transformation: map a legacy `sourced_facts` nested object into
+ * the new flat `sourced_*` properties. Returns one entry per fact key
+ * with a non-empty sources array. Only the fact keys listed in the
+ * `factKeys` argument are included (callers pre-filter to avoid writing
+ * empty properties). The returned arrays are fresh copies — no shared
+ * references with the input.
+ *
+ * Exported so the migration logic can be unit-tested without the
+ * Obsidian runtime (1.0 testing gate for migrations).
+ */
+export function transformSourcedFactsToFlatProperties(
+	sourcedFacts: SourcedFacts,
+	factKeys: FactKey[]
+): Record<string, string[]> {
+	const result: Record<string, string[]> = {};
+	for (const factKey of factKeys) {
+		const entry = sourcedFacts[factKey];
+		if (entry && Array.isArray(entry.sources) && entry.sources.length > 0) {
+			const propName = FACT_KEY_TO_SOURCED_PROPERTY[factKey];
+			result[propName] = [...entry.sources];
+		}
+	}
+	return result;
+}
+
+/**
+ * Pure helper: concatenate two source-citation arrays, preserving the
+ * order of `existing` first and skipping any entries already present.
+ * Used to merge newly-migrated flat properties with values the user may
+ * already have added manually.
+ */
+export function mergeSourcesWithoutDuplicates(
+	existing: string[],
+	incoming: string[]
+): string[] {
+	const merged = [...existing];
+	for (const source of incoming) {
+		if (!merged.includes(source)) {
+			merged.push(source);
+		}
+	}
+	return merged;
+}
+
 /** Track if legacy format warning has been shown (only warn once per session) */
 let legacyWarningShown = false;
 
@@ -197,31 +242,24 @@ export class SourcedFactsMigrationService {
 			try {
 				// Use Obsidian's processFrontMatter for safe YAML handling
 				await this.app.fileManager.processFrontMatter(note.file, (frontmatter) => {
-					// Create flat properties from sourced_facts
-					for (const factKey of note.factKeys) {
-						const entry = note.sourcedFacts[factKey];
-						if (entry && entry.sources && entry.sources.length > 0) {
-							const propName = FACT_KEY_TO_SOURCED_PROPERTY[factKey];
+					const flatProperties = transformSourcedFactsToFlatProperties(
+						note.sourcedFacts,
+						note.factKeys
+					);
 
-							// Check if flat property already exists
-							const existingSources = frontmatter[propName];
-							if (existingSources && Array.isArray(existingSources) && existingSources.length > 0) {
-								// Merge without duplicates
-								const merged = [...existingSources];
-								for (const source of entry.sources) {
-									if (!merged.includes(source)) {
-										merged.push(source);
-									}
-								}
-								frontmatter[propName] = merged;
-							} else {
-								// Create new flat property
-								frontmatter[propName] = [...entry.sources];
-							}
-
-							result.factPropertiesMigrated++;
-							result.sourceCitationsMigrated += entry.sources.length;
+					for (const [propName, incomingSources] of Object.entries(flatProperties)) {
+						const existingSources = frontmatter[propName];
+						if (Array.isArray(existingSources) && existingSources.length > 0) {
+							frontmatter[propName] = mergeSourcesWithoutDuplicates(
+								existingSources as string[],
+								incomingSources
+							);
+						} else {
+							frontmatter[propName] = incomingSources;
 						}
+
+						result.factPropertiesMigrated++;
+						result.sourceCitationsMigrated += incomingSources.length;
 					}
 
 					// Remove the old sourced_facts property

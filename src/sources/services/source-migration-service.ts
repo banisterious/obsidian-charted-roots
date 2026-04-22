@@ -16,6 +16,36 @@ import { isPersonNote, isEventNote } from '../../utils/note-type-detection';
 
 const logger = getLogger('SourceMigration');
 
+/**
+ * Pure helper: merge two source-citation arrays into one, preserving the
+ * order of `existingSources` first and deduplicating subsequent entries.
+ * Callers pass the legacy indexed sources (`source`, `source_2`, ...) as
+ * `indexedSources` and any pre-existing `sources` array as `existingSources`.
+ *
+ * Exported so the merge logic can be unit-tested without the Obsidian
+ * runtime (1.0 testing gate for migrations).
+ */
+export function mergeIndexedSourcesToArray(
+	indexedSources: string[],
+	existingSources: string[]
+): string[] {
+	const seen = new Set<string>();
+	const merged: string[] = [];
+	for (const src of existingSources) {
+		if (!seen.has(src)) {
+			seen.add(src);
+			merged.push(src);
+		}
+	}
+	for (const src of indexedSources) {
+		if (!seen.has(src)) {
+			seen.add(src);
+			merged.push(src);
+		}
+	}
+	return merged;
+}
+
 /** Track if legacy format warning has been shown (only warn once per session) */
 let legacyWarningShown = false;
 
@@ -174,23 +204,13 @@ export class SourceMigrationService {
 				removedProperties.push(`source_${i}`);
 			}
 
-			// Merge existing sources array with indexed sources (deduplicated)
-			const allSources = new Set<string>();
-
-			// Add existing sources first (preserve order)
-			for (const src of note.existingSources) {
-				allSources.add(src);
-			}
-
-			// Add indexed sources
-			for (const src of note.indexedSources) {
-				allSources.add(src);
-			}
-
 			previews.push({
 				file: note.file,
 				removedProperties,
-				newSourcesArray: Array.from(allSources),
+				newSourcesArray: mergeIndexedSourcesToArray(
+					note.indexedSources,
+					note.existingSources
+				),
 				isMerge: note.hasSourcesArray
 			});
 		}
