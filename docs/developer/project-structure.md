@@ -195,6 +195,11 @@ charted-roots/
 │   ├── Roadmap.md             # Feature roadmap
 │   ├── Data-Quality.md        # Data quality documentation
 │   └── ...                    # Additional wiki pages
+├── tests/                     # Vitest regression suite (see Design Decisions: Vitest discipline)
+│   ├── mocks/                 # Minimal Obsidian-API stubs for tests that need TFile-like shapes
+│   ├── fixtures/              # Test fixtures for parser / loader suites
+│   └── *.test.ts              # One suite per pure-helper module
+├── vitest.config.ts           # Vitest configuration
 ├── manifest.json              # Obsidian plugin metadata
 ├── package.json               # NPM configuration
 ├── tsconfig.json              # TypeScript configuration

@@ -4,12 +4,61 @@ This document records architectural decisions (ADRs) for Charted Roots.
 
 ## Table of Contents
 
+- [Vitest Regression-Test Discipline](#vitest-regression-test-discipline-2026-04-21)
 - [PDF Library and Font Strategy](#pdf-library-and-font-strategy-2025-12-19)
 - [Smart Hybrid Collections Architecture](#smart-hybrid-collections-architecture-2025-11-22)
 - [Interactive Tree Preview](#interactive-tree-preview-2025-11-24)
 - [Switch to family-chart Library](#switch-to-family-chart-library-2025-11-20)
 - [Layout Engine Extraction](#layout-engine-extraction-2025-11-20)
 - [Canvas-Only Mode Removal](#canvas-only-mode-removal-2025-11-20)
+
+---
+
+## Vitest Regression-Test Discipline (2026-04-21)
+
+**Decision:** Adopt Vitest as the regression-test harness and treat test coverage of volatile code paths as a 1.0 release gate. Every bug fix that touches a volatile code path — relationship loading and emission, migration services, cross-note bidirectional writes, date parsing — lands with regression tests that exercise the fix's pure-helper core.
+
+**Context:**
+
+Community testing surfaced a sequence of real data-loss bugs in relationship handling ([#403](https://github.com/banisterious/obsidian-charted-roots/issues/403), [#405](https://github.com/banisterious/obsidian-charted-roots/issues/405), [#410](https://github.com/banisterious/obsidian-charted-roots/issues/410)). Each fix shipped without tests at first. Within weeks, related bugs in the same code area surfaced ([#410](https://github.com/banisterious/obsidian-charted-roots/issues/410) followed by [#420](https://github.com/banisterious/obsidian-charted-roots/issues/420), the cross-note spouse-format corruption), which would have been caught by a regression harness.
+
+The plugin also accumulated migration services (sourced facts, source arrays, life events, event person, normalize children) whose pure transformation logic was trapped inside I/O-bound service classes, making it impossible to test the transformation in isolation without mocking the entire Obsidian runtime.
+
+**Decision points:**
+
+- **Vitest over Jest.** Lighter, faster, and matches the harness already used by the sibling Draft Bench plugin.
+- **WSL constraint: `--no-bin-links` on install.** Windows-mounted filesystems can't create symlinks, so `node_modules/.bin` entries are unusable. Scripts invoke `node ./node_modules/vitest/vitest.mjs` directly.
+- **`tests/` directory, not co-located `*.test.ts`.** Matches Draft Bench's convention. Co-located tests would be slightly better for noticing untested modules but the cost of moving them isn't worth it.
+- **Mock Obsidian types only where needed.** Most tests exercise pure helpers that take plain data; no vault / file / cache mocks required. A minimal `tests/mocks/obsidian.ts` handles the small number of tests that need `TFile`-like shapes.
+- **Pure-helper extraction as a precondition to testing.** Before writing tests for a bug fix, extract the transformation core out of the I/O-bound class into a standalone module. The module takes plain data in, returns plain data out, and is trivially testable. The class keeps the I/O orchestration.
+
+**Coverage as of 0.22.0 (189 tests across 10 suites):**
+
+| Suite | Tests | Covers |
+|---|---|---|
+| `smoke.test.ts` | 2 | Build / import sanity |
+| `relationship-loader.test.ts` | 31 | Edit Person load path; wikilink resolution; basename fallback (#410) |
+| `relationship-emit.test.ts` | 16 | Writer-side preservation of unresolvable wikilinks (#410 Option 2) |
+| `relationship-property-writer.test.ts` | 16 | Custom-relationship flat-property add + duplicate detection (#419) |
+| `sibling-walker.test.ts` | 16 | Biological + adoptive sibling derivation (#417) |
+| `event-identity.test.ts` | 23 | Migration dedup identity keys (#414) |
+| `spouse-format-detector.test.ts` | 16 | Target-format-aware bidi spouse writes (#420) |
+| `migration-helpers.test.ts` | 35 | Migration-service pure helpers: sourced facts, sources, life events titles / slugs / dates |
+| `date-helpers.test.ts` | 25 | `formatDate` / `extractYear` numeric-YAML coercion (#416) |
+| `date-display.test.ts` | 9 | `formatDisplayDate` numeric-YAML coercion (same class as #416) |
+
+**Pattern to follow for future fixes:**
+
+1. Read the bug carefully. Identify the data transformation at the center of the fix.
+2. Extract that transformation into a new module under `src/{area}/{name}.ts` that takes plain inputs and returns plain outputs. Export any internal helpers the tests need to exercise directly.
+3. Refactor the call site in the I/O-bound class to delegate to the helper.
+4. Write `tests/{name}.test.ts` with test cases covering the bug scenario, the adjacent edge cases, and any prior invariants you want to fence.
+5. Run `npm test` — both the new suite and the full run should be green.
+
+**Related:**
+
+- [VERSIONING.md](https://github.com/banisterious/obsidian-charted-roots/blob/main/VERSIONING.md) — the 1.0 criteria name regression coverage explicitly.
+- [docs/planning/vitest-expansion-plan.md](#) — internal planning doc (gitignored) with the full per-module target list and phase plan.
 
 ---
 

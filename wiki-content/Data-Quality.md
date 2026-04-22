@@ -38,33 +38,39 @@ After importing a GEDCOM file (especially a "messy" one with data quality issues
 The Cleanup Wizard provides a guided, step-by-step workflow that walks you through all data quality operations in the correct order. It's the recommended approach for post-import cleanup.
 
 **Wizard Features:**
-- **10 sequential steps** covering all cleanup operations
+- **14 sequential steps** covering cleanup, normalization, and migration operations
 - **Progress tracking** with completed/pending status for each step
 - **Session persistence** — your progress is saved, so you can close the wizard and resume later
 - **Preview before apply** — each operation shows what will change before making modifications
 - **Skip/reset options** — skip steps that don't apply or reset to re-run a step
+- **Mixed execution modes** — review-only, batch (applied automatically), and interactive (you approve each change)
 
 **Wizard Steps:**
 
-| Step | Operation | Description |
-|------|-----------|-------------|
-| 1 | Migrate Legacy Type | Convert `type` to `cr_type` property |
-| 2 | Flatten Nested Properties | Convert nested frontmatter to flat properties |
-| 3 | Normalize Date Formats | Standardize dates to YYYY-MM-DD format |
-| 4 | Normalize Sex Values | Normalize to GEDCOM-standard M/F/X/U |
-| 5 | Fix Bidirectional Relationships | Ensure parent-child and spouse links are reciprocated |
-| 6 | Migrate Source Arrays | Convert `source`, `source_2`, `source_3` to `sources: []` |
-| 7 | Clear Orphan References | Remove references to non-existent people |
-| 8 | Standardize Place Names | Unify spelling variations |
-| 9 | Geocode Places | Look up coordinates for map display |
-| 10 | Enrich Place Hierarchy | Add `contained_by` relationships |
+| Step | Operation | Mode | Description |
+|------|-----------|------|-------------|
+| 1 | Quality Report | Review | Surface current data quality issues so you can decide which later steps apply |
+| 2 | Bidirectional Relationships | Batch | Ensure parent-child and spouse links are reciprocated |
+| 3 | Date Formats | Batch | Normalize dates to ISO 8601 (YYYY-MM-DD) |
+| 4 | Gender Values | Batch | Normalize gender/sex values to GEDCOM-standard M/F/X/U |
+| 5 | Orphan References | Batch | Clear dangling `father_id` / `mother_id` / etc. links to missing notes |
+| 6 | Source Migration | Batch | Convert indexed source properties (`source`, `source_2`) to a `sources: []` array |
+| 7 | Place Variants | Interactive | Standardize spelling variations of place names |
+| 8 | Bulk Geocode | Interactive | Look up and add coordinates to places for map display |
+| 9 | Place Hierarchy | Interactive | Build `contained_by` containment chains between places |
+| 10 | Flatten Properties | Batch | Convert nested frontmatter to flat properties |
+| 11 | Event Person Migration | Batch | Convert legacy `person` field on event notes to the `persons` array |
+| 12 | Evidence Tracking Migration | Batch | Convert nested `sourced_facts` object to flat `{field}_sources` properties |
+| 13 | Life Events Migration | Batch | Convert inline `events:` arrays on person notes to separate `cr_type: event` files |
+| 14 | Normalize Children Property | Batch | Rename legacy `child` field to `children` on person notes |
 
 **Tips:**
-- Run the Quality Report first to understand the scope of issues
+- Run the Quality Report (step 1) first to understand the scope of issues — it's review-only and won't change anything
 - Steps can be skipped if they don't apply to your data
-- The wizard remembers which steps you've completed
+- The wizard remembers which steps you've completed across sessions
+- Interactive steps (7, 8, 9) pause for your approval on each candidate; batch steps apply changes to all matching records at once
 
-**Migration steps are rerun-safe.** The wizard also includes later migration operations beyond the ten listed above — currently a Life Events Migration (converts inline `events:` arrays on person notes to separate `cr_type: event` files), a Sourced Facts Migration, and a Source Arrays Migration. Each is designed to be idempotent: re-running the Life Events Migration on a person whose events were already converted reuses the existing event notes (matched by persons, event type, and date) instead of creating duplicates, and the post-migration notice reports `(reused N existing events)` alongside the created count.
+**Migration steps are rerun-safe.** The migration operations (steps 11, 12, 13, 14) are designed to be idempotent. The Life Events Migration in particular scans for existing event notes and reuses any whose `(persons, event_type, date)` tuple matches the inline event being migrated — so re-running on a person whose events were already converted won't create duplicates. The post-migration notice reports `(reused N existing events)` alongside the created count when any reuse happened.
 
 ---
 
