@@ -1,0 +1,62 @@
+{
+	"schemaVersion": "0.1.0",
+	"name": "FamilySearch - Source (LLM)",
+	"behavior": "create",
+	"noteNameFormat": "FamilySearch - {{selector:h1}}",
+	"path": "",
+	"noteContentFormat": "# {{selector:h1}}\n\n**Repository:** FamilySearch\n**Image:** {{selector:input[aria-label=\"Enter Image number\"]@value}} of {{selector:input[aria-label=\"Enter Image number\"]@max}}\n**Accessed:** {{date}}\n\n{{#if \"citation attribution\"}}**Citation attribution:** {{\"citation attribution\"}}\n\n{{/if}}## Source\n\n{{url}}",
+	"properties": [
+		{
+			"name": "clip_source_type",
+			"value": "familysearch_source",
+			"type": "text"
+		},
+		{
+			"name": "clipped_from",
+			"value": "{{url}}",
+			"type": "text"
+		},
+		{
+			"name": "clipped_date",
+			"value": "{{date}}",
+			"type": "text"
+		},
+		{
+			"name": "note_type",
+			"value": "source",
+			"type": "text"
+		},
+		{
+			"name": "repository",
+			"value": "FamilySearch",
+			"type": "text"
+		},
+		{
+			"name": "repositoryUrl",
+			"value": "{{url}}",
+			"type": "text"
+		},
+		{
+			"name": "date_accessed",
+			"value": "{{date}}",
+			"type": "text"
+		},
+		{
+			"name": "collection",
+			"value": "{{selector:h1}}",
+			"type": "text"
+		},
+		{
+			"name": "source_detail",
+			"value": "image {{selector:input[aria-label=\"Enter Image number\"]@value}} of {{selector:input[aria-label=\"Enter Image number\"]@max}}",
+			"type": "text"
+		},
+		{
+			"name": "citation_attribution",
+			"value": "{{\"citation attribution\"}}",
+			"type": "text"
+		}
+	],
+	"triggers": ["familysearch.org/ark:"],
+	"context": "Extract citation information from this FamilySearch page. Page URL: {{url}}. Page content: {{content}}.\n\nReturn ONLY the requested data with NO explanatory text or prefixes. If a field is not found or not applicable, return an empty string.\n\nCitation attribution (the attribution or citation tail that follows the collection title, typically beginning with 'citing' and naming the originating repository or source custodian — e.g., 'citing South Carolina county courthouses, original records at Department of Archives and History, Columbia.'; return only the 'citing ...' tail, no quotes, no extra punctuation)"
+}

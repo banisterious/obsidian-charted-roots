@@ -152,6 +152,60 @@ AI-powered template that extracts biographical information from any FamilySearch
 
 ---
 
+### FamilySearch - Source
+**File:** `familysearch-source.json`
+**URL Pattern:** `familysearch.org/ark:`
+**Auto-triggers:** Yes
+
+CSS-selector template that creates a Charted Roots **source note** when clipping from a FamilySearch image viewer. Extracts collection title and image counter without needing AI, so it runs instantly and at zero cost.
+
+**Extracts:**
+- Collection title (via `h1` text content)
+- Image counter as `image N of M` (via stable `aria-label="Enter Image number"` input's `value` and `max` attributes)
+- Repository (static: "FamilySearch")
+- Repository URL (`{{url}}`)
+- Date accessed
+
+**Requirements:**
+- No Interpreter needed
+- Works on indexed-record image viewers; browse-only collections have a different viewer chrome and may miss the image counter (use the LLM variant if that matters, or fill in manually)
+
+**Charted Roots Properties:**
+- `clip_source_type`: "familysearch_source"
+- `clipped_from`: Page URL
+- `clipped_date`: Date clipped
+- `note_type`: "source"
+- `repository`: "FamilySearch"
+- `repositoryUrl`: Page URL
+- `date_accessed`: Date clipped
+- `collection`: Collection title
+- `source_detail`: Image counter string
+
+**Why this matters:** Source notes clipped with this template populate `repositoryUrl` automatically, which the citation generator uses as a heuristic to switch to FamilySearch-flavored citation formatting. Source-side prerequisite for [#339](https://github.com/banisterious/obsidian-charted-roots/issues/339).
+
+---
+
+### FamilySearch - Source (LLM)
+**File:** `familysearch-source-llm.json`
+**URL Pattern:** `familysearch.org/ark:`
+**Auto-triggers:** Yes
+
+Enhanced version of FamilySearch - Source that additionally captures `citation_attribution` via AI — the "citing South Carolina county courthouses …" tail that follows the collection title in Evidence Explained-style citations and isn't accessible via CSS selectors.
+
+**Extracts everything FamilySearch - Source extracts, plus:**
+- Citation attribution (via AI, from the page's description / metadata area)
+
+**Requirements:**
+- Interpreter must be enabled
+- Recommended model: Claude Sonnet 4.5 or equivalent
+
+**Charted Roots Properties (same as FamilySearch - Source plus):**
+- `citation_attribution`: The "citing ..." attribution tail
+
+**When to use which variant:** If you mostly clip indexed records and don't need the attribution tail, the CSS variant is faster and free. If your source-citation workflow depends on the attribution tail or you clip from browse-only collections where selectors are less reliable, use the LLM variant.
+
+---
+
 ### Wikipedia - Biography (LLM)
 **File:** `wikipedia-biography-llm.json`
 **URL Pattern:** `wikipedia.org/wiki/`

@@ -1,0 +1,56 @@
+{
+	"schemaVersion": "0.1.0",
+	"name": "FamilySearch - Source",
+	"behavior": "create",
+	"noteNameFormat": "FamilySearch - {{selector:h1}}",
+	"path": "",
+	"noteContentFormat": "# {{selector:h1}}\n\n**Repository:** FamilySearch\n**Image:** {{selector:input[aria-label=\"Enter Image number\"]@value}} of {{selector:input[aria-label=\"Enter Image number\"]@max}}\n**Accessed:** {{date}}\n\n## Source\n\n{{url}}",
+	"properties": [
+		{
+			"name": "clip_source_type",
+			"value": "familysearch_source",
+			"type": "text"
+		},
+		{
+			"name": "clipped_from",
+			"value": "{{url}}",
+			"type": "text"
+		},
+		{
+			"name": "clipped_date",
+			"value": "{{date}}",
+			"type": "text"
+		},
+		{
+			"name": "note_type",
+			"value": "source",
+			"type": "text"
+		},
+		{
+			"name": "repository",
+			"value": "FamilySearch",
+			"type": "text"
+		},
+		{
+			"name": "repositoryUrl",
+			"value": "{{url}}",
+			"type": "text"
+		},
+		{
+			"name": "date_accessed",
+			"value": "{{date}}",
+			"type": "text"
+		},
+		{
+			"name": "collection",
+			"value": "{{selector:h1}}",
+			"type": "text"
+		},
+		{
+			"name": "source_detail",
+			"value": "image {{selector:input[aria-label=\"Enter Image number\"]@value}} of {{selector:input[aria-label=\"Enter Image number\"]@max}}",
+			"type": "text"
+		}
+	],
+	"triggers": ["familysearch.org/ark:"]
+}
