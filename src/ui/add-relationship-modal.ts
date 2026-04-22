@@ -8,6 +8,7 @@ import { PersonPickerModal, PersonInfo } from './person-picker';
 import { RelationshipContext } from './quick-create-person-modal';
 import { RelationshipService } from '../relationships';
 import type { RelationshipTypeDefinition } from '../relationships';
+import { addFlatRelationship } from '../relationships/relationship-property-writer';
 import type CanvasRootsPlugin from '../../main';
 import { capitalize } from '../utils/format-utils';
 import { RelationshipManager } from '../core/relationship-manager';
@@ -283,19 +284,45 @@ export class AddRelationshipModal extends Modal {
 		const targetWikilink = `[[${this.selectedTarget.file.basename}]]`;
 
 		await this.app.fileManager.processFrontMatter(this.sourceFile, (frontmatter) => {
-			const existingTargets = this.normalizeToArray(frontmatter[typeId]);
-			const existingIds = this.normalizeToArray(frontmatter[`${typeId}_id`]);
-
-			if (existingIds.includes(targetCrId)) {
+			const result = addFlatRelationship(frontmatter, typeId, targetWikilink, targetCrId);
+			if (result === 'duplicate') {
 				throw new Error('This relationship already exists');
 			}
-
-			existingTargets.push(targetWikilink);
-			existingIds.push(targetCrId);
-
-			frontmatter[typeId] = existingTargets.length === 1 ? existingTargets[0] : existingTargets;
-			frontmatter[`${typeId}_id`] = existingIds.length === 1 ? existingIds[0] : existingIds;
 		});
+
+		if (this.selectedType.symmetric) {
+			await this.writeReciprocalRelationshipProperties(typeId);
+		}
+	}
+
+	/**
+	 * Mirror a symmetric custom relationship onto the target's note so that
+	 * adding A -twin-> B automatically creates B -twin-> A (#419).
+	 *
+	 * Idempotent: silently no-ops when the target already lists the source
+	 * (e.g., a user adding the same symmetric link from both sides).
+	 * The source write has already committed by the time this runs; a
+	 * failure here surfaces a partial-success notice so the user knows to
+	 * fix the target by hand rather than assuming the whole save failed.
+	 */
+	private async writeReciprocalRelationshipProperties(typeId: string): Promise<void> {
+		if (!this.selectedTarget) return;
+
+		const sourceCache = this.app.metadataCache.getFileCache(this.sourceFile);
+		const sourceCrId = sourceCache?.frontmatter?.cr_id;
+		if (typeof sourceCrId !== 'string' || sourceCrId.length === 0) return;
+
+		const sourceWikilink = `[[${this.sourceFile.basename}]]`;
+		const targetFile = this.selectedTarget.file;
+
+		try {
+			await this.app.fileManager.processFrontMatter(targetFile, (frontmatter) => {
+				addFlatRelationship(frontmatter, typeId, sourceWikilink, sourceCrId);
+			});
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : 'Unknown error';
+			new Notice(`Added on ${this.sourceFile.basename}, but failed to mirror on ${targetFile.basename}: ${msg}`);
+		}
 	}
 
 	/**
