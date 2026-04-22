@@ -6,7 +6,12 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
 	'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 /**
- * Format a date for user-friendly display, prettifying GEDCOM qualifiers
+ * Format a date for user-friendly display, prettifying GEDCOM qualifiers.
+ *
+ * Accepts `string | number | undefined | null` and coerces at entry so
+ * bare-year YAML values (e.g., `born: 1878`, which Obsidian's Properties
+ * panel writes as a Number) don't crash the downstream `.trim()` call.
+ * Same-class fix as #416 for the dynamic-content date helpers.
  *
  * Converts:
  * - ABT 1878 → "c. 1878"
@@ -18,10 +23,10 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
  * - Partial dates (1855-03) → "Mar 1855"
  * - Full ISO dates (1855-03-15) → "15 Mar 1855"
  */
-export function formatDisplayDate(dateStr: string | undefined): string {
-	if (!dateStr) return '';
+export function formatDisplayDate(dateStr: string | number | undefined | null): string {
+	if (dateStr === undefined || dateStr === null || dateStr === '') return '';
 
-	const trimmed = dateStr.trim();
+	const trimmed = String(dateStr).trim();
 
 	// Handle BET X AND Y ranges → "X–Y"
 	const betMatch = trimmed.match(/^BET\s+(\d{4})\s+AND\s+(\d{4})$/i);
