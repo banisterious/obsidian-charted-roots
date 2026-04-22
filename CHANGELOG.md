@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+---
+
+## [0.22.0] - 2026-04-22
+
 ### Fixed
 
 - **Person picker no longer crashes when a person note has a bare-year date field**: The picker's card renderer calls `formatDisplayDate` on `born` / `died` values, and Obsidian's Properties panel treats an unquoted year like `born: 1800` as a Number — YAML then parses it as an integer. The previous `.trim()` call threw `TypeError` on non-string input, making the picker unusable for any person with numeric date frontmatter. `formatDisplayDate` now accepts `string | number | undefined | null` and coerces at entry. Same class of bug as [#416](https://github.com/banisterious/obsidian-charted-roots/issues/416); no user-facing issue was filed since the fix is a one-liner of the same shape.
