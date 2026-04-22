@@ -3,6 +3,7 @@ import { getLogger } from './logging';
 import { getErrorMessage } from './error-utils';
 import { PersonFrontmatter } from '../types/frontmatter';
 import { FolderFilterService } from './folder-filter';
+import { detectSpouseTargetFormat } from './spouse-format-detector';
 
 const logger = getLogger('BidirectionalLinker');
 
@@ -293,7 +294,7 @@ export class BidirectionalLinker {
 
 			// Sync all discovered spouse relationships
 			for (const spouse of spousesToSync) {
-				await this.syncSpouse(spouse.link, personFile, personName, personCrId, spouse.index);
+				await this.syncSpouse(spouse.link, personFile, personName, personCrId);
 			}
 
 			// Sync children relationships (child → parent direction)
@@ -662,8 +663,7 @@ export class BidirectionalLinker {
 		spouseLink: unknown,
 		personFile: TFile,
 		personName: string,
-		personCrId: string,
-		spouseIndex?: number
+		personCrId: string
 	): Promise<void> {
 		const spouseFile = this.resolveLink(spouseLink, personFile);
 		if (!spouseFile) {
@@ -767,16 +767,15 @@ export class BidirectionalLinker {
 			return;
 		}
 
-		// Add person to spouse's spouse fields
-		// Use indexed format if the source used indexed format, otherwise use simple format
-		if (spouseIndex !== undefined) {
-			// Find next available index in spouse's file
-			let nextIndex = 1;
-			while (spouseFm[`spouse${nextIndex}`] || spouseFm[`spouse${nextIndex}_id`]) {
-				nextIndex++;
-			}
+		// Add person to spouse's spouse fields. Preserve the TARGET's
+		// existing frontmatter format — writing flat `spouse:` onto a
+		// target using indexed `spouseN:` produces duplicate YAML keys
+		// and silently wipes the indexed list (#420 Gap B). The
+		// source's format is no longer used to drive this decision.
+		const targetFormat = detectSpouseTargetFormat(spouseFm as Record<string, unknown>);
 
-			// Add indexed spouse properties
+		if (targetFormat.format === 'indexed') {
+			const nextIndex = targetFormat.nextIndex;
 			await this.setField(spouseFile, `spouse${nextIndex}`, personLinkText);
 			await this.setField(spouseFile, `spouse${nextIndex}_id`, personCrId);
 
@@ -788,27 +787,23 @@ export class BidirectionalLinker {
 				crId: personCrId
 			});
 		} else {
-			// Use simple spouse/spouse_id format
+			// Flat format: preserve scalar-vs-array convention on append.
 			if (spouseLinksArray.length === 0) {
-				// First spouse - set as single value
 				await this.setField(spouseFile, 'spouse', personLinkText);
 				await this.setField(spouseFile, 'spouse_id', personCrId);
 			} else if (spouseLinksArray.length === 1) {
-				// Second spouse - convert to array
 				await this.setField(spouseFile, 'spouse', [spouseLinksArray[0], personLinkText]);
-				// Handle spouse_id similarly
 				if (spouseIdsArray.length === 1) {
 					await this.setField(spouseFile, 'spouse_id', [spouseIdsArray[0], personCrId]);
 				} else {
 					await this.setField(spouseFile, 'spouse_id', personCrId);
 				}
 			} else {
-				// Multiple spouses - add to array
 				await this.addToArrayField(spouseFile, 'spouse', personLinkText);
 				await this.addToArrayField(spouseFile, 'spouse_id', personCrId);
 			}
 
-			logger.info('bidirectional-linking', 'Added spouse bidirectional link (simple format)', {
+			logger.info('bidirectional-linking', 'Added spouse bidirectional link (flat format)', {
 				spouseFile: spouseFile.path,
 				personFile: personFile.path,
 				wikilink: personLinkText,

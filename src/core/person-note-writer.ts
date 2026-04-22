@@ -9,6 +9,7 @@ import { getLogger } from './logging';
 import type { ResearchLevel } from '../types/frontmatter';
 import { SOURCED_PROPERTY_NAMES } from '../sources/types/source-types';
 import { computeRelationshipArrayPatch, applyRelationshipArrayPatch } from './relationship-emit';
+import { detectSpouseTargetFormat } from './spouse-format-detector';
 
 const logger = getLogger('PersonNoteWriter');
 
@@ -921,37 +922,64 @@ export async function addBidirectionalSpouseLink(
 
 	// Get existing spouse data
 	const cache = app.metadataCache.getFileCache(spouseFile);
-	const existingSpouseIds = cache?.frontmatter?.spouse_id;
-	const existingSpouseNames = cache?.frontmatter?.spouse;
+	const fm = (cache?.frontmatter ?? {}) as Record<string, unknown>;
 
-	// Normalize to arrays
-	let spouseIds: string[] = [];
-	let spouseNames: string[] = [];
-
-	if (existingSpouseIds) {
-		spouseIds = Array.isArray(existingSpouseIds) ? [...existingSpouseIds] : [existingSpouseIds];
+	// Short-circuit if already linked in either format. Checking both
+	// flat and indexed spouse_id keys prevents double-adds when this
+	// function runs alongside the bidi linker's own cache-driven sync.
+	const flatIds = fm.spouse_id;
+	const flatIdsArray = Array.isArray(flatIds)
+		? flatIds
+		: (typeof flatIds === 'string' && flatIds.length > 0 ? [flatIds] : []);
+	if (flatIdsArray.includes(newSpouseCrId)) {
+		logger.debug('bidirectional-spouse', `Spouse ${newSpouseCrId} already linked (flat) in ${spouseFile.path}`);
+		return;
 	}
-	if (existingSpouseNames) {
-		spouseNames = Array.isArray(existingSpouseNames) ? [...existingSpouseNames] : [existingSpouseNames];
+	for (let i = 1; i <= 10; i++) {
+		if (fm[`spouse${i}_id`] === newSpouseCrId) {
+			logger.debug('bidirectional-spouse', `Spouse ${newSpouseCrId} already linked (indexed slot ${i}) in ${spouseFile.path}`);
+			return;
+		}
 	}
 
-	// Add new spouse if not already present
-	if (!spouseIds.includes(newSpouseCrId)) {
-		spouseIds.push(newSpouseCrId);
-		spouseNames.push(newSpouseName);
+	// Detect the target's existing frontmatter format. When the target
+	// uses indexed `spouseN:` slots we MUST NOT route through
+	// updatePersonNote with flat spouse arrays — updatePersonNote clears
+	// spouse1..spouse10 before writing the flat form, which silently
+	// wipes the target's indexed spouse list (#420 Gap B).
+	const targetFormat = detectSpouseTargetFormat(fm);
 
-		logger.debug('bidirectional-spouse', `Updating spouse arrays: ids=${JSON.stringify(spouseIds)}, names=${JSON.stringify(spouseNames)}`);
-
-		// Use updatePersonNote to properly handle dual storage
-		await updatePersonNote(app, spouseFile, {
-			spouseCrId: spouseIds,
-			spouseName: spouseNames
+	if (targetFormat.format === 'indexed') {
+		const nextIndex = targetFormat.nextIndex;
+		const wikilink = `[[${newSpouseName}]]`;
+		await app.fileManager.processFrontMatter(spouseFile, (frontmatter) => {
+			frontmatter[`spouse${nextIndex}`] = wikilink;
+			frontmatter[`spouse${nextIndex}_id`] = newSpouseCrId;
 		});
-
-		logger.info('bidirectional-spouse', `Updated spouse link in ${spouseFile.path}`);
-	} else {
-		logger.debug('bidirectional-spouse', `Spouse ${newSpouseCrId} already linked in ${spouseFile.path}`);
+		logger.info('bidirectional-spouse', `Added indexed spouse link in ${spouseFile.path}`, {
+			slot: nextIndex,
+			crId: newSpouseCrId
+		});
+		return;
 	}
+
+	// Flat format: preserve the original array-based append path. This
+	// relies on updatePersonNote's flat-spouse writer, which is the
+	// correct behavior when the target has no indexed slots.
+	const existingSpouseNames = fm.spouse;
+	const spouseIds: string[] = [...flatIdsArray];
+	const spouseNames: string[] = Array.isArray(existingSpouseNames)
+		? [...existingSpouseNames]
+		: (typeof existingSpouseNames === 'string' && existingSpouseNames.length > 0 ? [existingSpouseNames] : []);
+	spouseIds.push(newSpouseCrId);
+	spouseNames.push(newSpouseName);
+
+	logger.debug('bidirectional-spouse', `Updating flat spouse arrays: ids=${JSON.stringify(spouseIds)}, names=${JSON.stringify(spouseNames)}`);
+	await updatePersonNote(app, spouseFile, {
+		spouseCrId: spouseIds,
+		spouseName: spouseNames
+	});
+	logger.info('bidirectional-spouse', `Updated flat spouse link in ${spouseFile.path}`);
 }
 
 /**
