@@ -7,7 +7,8 @@
 
 import { MarkdownRenderer, MarkdownRenderChild } from 'obsidian';
 import type { DynamicBlockContext, DynamicBlockConfig, DynamicContentService } from '../services/dynamic-content-service';
-import type { PersonNode, FamilyGraphService } from '../../core/family-graph';
+import type { PersonNode } from '../../core/family-graph';
+import { findAdoptiveSiblingCrIds, findBiologicalSiblingCrIds } from '../sibling-walker';
 
 /**
  * Relationship entry for rendering
@@ -210,11 +211,24 @@ export class RelationshipsRenderer {
 
 		// Siblings (computed from shared parents)
 		if (shouldInclude('siblings')) {
-			const siblingCrIds = this.findSiblings(person, familyGraph);
-			for (const siblingCrId of siblingCrIds) {
-				const sibling = familyGraph.getPersonByCrId(siblingCrId);
+			const getPerson = (crId: string) => familyGraph.getPersonByCrId(crId);
+			const biologicalIds = findBiologicalSiblingCrIds(person, getPerson);
+			const biologicalSet = new Set(biologicalIds);
+			for (const siblingCrId of biologicalIds) {
+				const sibling = getPerson(siblingCrId);
 				if (sibling) {
 					groups.siblings.push(this.personToEntry(sibling));
+				}
+			}
+			// Adoptive siblings (#417): other children of this person's
+			// adoptive parents. Deduped against the biological set so a
+			// person showing on both edges isn't listed twice.
+			const adoptiveIds = findAdoptiveSiblingCrIds(person, getPerson);
+			for (const siblingCrId of adoptiveIds) {
+				if (biologicalSet.has(siblingCrId)) continue;
+				const sibling = getPerson(siblingCrId);
+				if (sibling) {
+					groups.siblings.push(this.personToEntry(sibling, 'Adoptive sibling'));
 				}
 			}
 		}
@@ -244,51 +258,6 @@ export class RelationshipsRenderer {
 		}
 
 		return entry;
-	}
-
-	/**
-	 * Find siblings of a person (people who share at least one parent)
-	 */
-	private findSiblings(person: PersonNode, familyGraph: FamilyGraphService): string[] {
-		const siblings = new Set<string>();
-
-		// Get all children of the father
-		if (person.fatherCrId) {
-			const father = familyGraph.getPersonByCrId(person.fatherCrId);
-			if (father) {
-				for (const childCrId of father.childrenCrIds) {
-					if (childCrId !== person.crId) {
-						siblings.add(childCrId);
-					}
-				}
-			}
-		}
-
-		// Get all children of the mother
-		if (person.motherCrId) {
-			const mother = familyGraph.getPersonByCrId(person.motherCrId);
-			if (mother) {
-				for (const childCrId of mother.childrenCrIds) {
-					if (childCrId !== person.crId) {
-						siblings.add(childCrId);
-					}
-				}
-			}
-		}
-
-		// Get all children of gender-neutral parents
-		for (const parentCrId of person.parentCrIds) {
-			const parent = familyGraph.getPersonByCrId(parentCrId);
-			if (parent) {
-				for (const childCrId of parent.childrenCrIds) {
-					if (childCrId !== person.crId) {
-						siblings.add(childCrId);
-					}
-				}
-			}
-		}
-
-		return Array.from(siblings);
 	}
 
 	/**
