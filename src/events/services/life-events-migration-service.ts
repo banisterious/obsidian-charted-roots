@@ -15,6 +15,10 @@ import { getLogger } from '../../core/logging';
 import { isPersonNote } from '../../utils/note-type-detection';
 import { generateCrId } from '../../core/uuid';
 import type { EventType } from '../../maps/types/map-types';
+import {
+	computeEventIdentity,
+	extractEventIdentityFromFrontmatter
+} from '../event-identity';
 
 const logger = getLogger('LifeEventsMigration');
 
@@ -110,6 +114,16 @@ export interface LifeEventsMigrationResult {
 	eventNotesCreated: number;
 	/** Paths of created event notes */
 	createdEventPaths: string[];
+	/**
+	 * Total event notes reused instead of created. Matches happen when
+	 * an existing `cr_type: event` note in the vault already encodes the
+	 * same `(persons, event_type, date)` tuple as an inline event about
+	 * to be migrated, so the migration links to it rather than minting
+	 * a duplicate file (#414).
+	 */
+	eventNotesReused: number;
+	/** Paths of event notes that were reused via semantic-identity match (#414) */
+	reusedEventPaths: string[];
 }
 
 /**
@@ -284,13 +298,24 @@ export class LifeEventsMigrationService {
 			skipped: 0,
 			errors: [],
 			eventNotesCreated: 0,
-			createdEventPaths: []
+			createdEventPaths: [],
+			eventNotesReused: 0,
+			reusedEventPaths: []
 		};
 
 		const eventsFolder = this.settings.eventsFolder || 'Charted Roots/Events';
 
 		// Ensure events folder exists
 		await this.ensureFolderExists(eventsFolder);
+
+		// Build a semantic-identity map of existing event notes so a
+		// re-run of the migration (or a run that overlaps with an earlier
+		// partial migration) reuses existing notes instead of creating
+		// duplicates (#414). The map is seeded with anything currently
+		// on disk and updated as we create new notes during this run, so
+		// two inline events within the same run that hash to the same
+		// identity also collapse to a single note.
+		const identityMap = this.buildExistingEventIdentityMap();
 
 		for (let i = 0; i < notes.length; i++) {
 			const note = notes[i];
@@ -302,18 +327,33 @@ export class LifeEventsMigrationService {
 			try {
 				const createdEventLinks: string[] = [];
 
-				// Create event notes for each inline event
+				// Create or reuse an event note for each inline event
 				for (const event of note.events) {
-					const eventFile = await this.createEventNote(
-						note.personName,
-						note.personCrId,
-						event,
-						eventsFolder
-					);
+					const identity = computeEventIdentity({
+						persons: [note.personName],
+						eventType: event.event_type,
+						date: event.date_from
+					});
+
+					const existing = identity ? identityMap.get(identity) : undefined;
+					let eventFile: TFile;
+					if (existing) {
+						eventFile = existing;
+						result.eventNotesReused++;
+						result.reusedEventPaths.push(existing.path);
+					} else {
+						eventFile = await this.createEventNote(
+							note.personName,
+							note.personCrId,
+							event,
+							eventsFolder
+						);
+						result.eventNotesCreated++;
+						result.createdEventPaths.push(eventFile.path);
+						if (identity) identityMap.set(identity, eventFile);
+					}
 
 					createdEventLinks.push(`[[${eventFile.basename}]]`);
-					result.eventNotesCreated++;
-					result.createdEventPaths.push(eventFile.path);
 				}
 
 				// Update person note: add life_events, remove events
@@ -383,6 +423,33 @@ export class LifeEventsMigrationService {
 	}
 
 	// ============ Private Methods ============
+
+	/**
+	 * Scan the vault for existing `cr_type: event` notes and build a map
+	 * from canonical `(persons, event_type, date)` identity → TFile.
+	 * Used by `migrateToEventNotes` to dedup against previously-created
+	 * event notes (#414). Notes whose frontmatter can't be resolved to a
+	 * valid identity (missing persons or event_type) are skipped. If two
+	 * existing notes happen to share an identity, the first one wins —
+	 * this is a pre-existing-duplicates situation the user can clean up
+	 * separately; the migration just picks a stable representative.
+	 */
+	private buildExistingEventIdentityMap(): Map<string, TFile> {
+		const map = new Map<string, TFile>();
+		const files = this.app.vault.getMarkdownFiles();
+		for (const file of files) {
+			const cache = this.app.metadataCache.getFileCache(file);
+			if (!cache?.frontmatter) continue;
+			const fm = cache.frontmatter as Record<string, unknown>;
+			if (fm.cr_type !== 'event') continue;
+			const identity = extractEventIdentityFromFrontmatter(fm);
+			if (identity === null) continue;
+			if (!map.has(identity)) {
+				map.set(identity, file);
+			}
+		}
+		return map;
+	}
 
 	/**
 	 * Create an event note for an inline event

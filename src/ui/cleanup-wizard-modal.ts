@@ -3427,7 +3427,11 @@ export class CleanupWizardModal extends Modal {
 					this.plugin.settings.nestedPropertiesMigration.eventsComplete = true;
 					await this.plugin.saveSettings();
 					// Custom notice for life events to show how many notes were created
-					new Notice(`Created ${migrationResult.eventNotesCreated} event notes from ${migrationResult.modified} person notes`);
+					// (plus any reused via #414 semantic-identity dedup, when applicable)
+					const reusedSuffix = migrationResult.eventNotesReused > 0
+						? ` (reused ${migrationResult.eventNotesReused} existing event${migrationResult.eventNotesReused === 1 ? '' : 's'})`
+						: '';
+					new Notice(`Created ${migrationResult.eventNotesCreated} event notes from ${migrationResult.modified} person notes${reusedSuffix}`);
 					break;
 				}
 				case 'child-to-children': {
