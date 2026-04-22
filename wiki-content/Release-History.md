@@ -8,6 +8,10 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 
 ## Table of Contents
 
+- [v0.22.x](#v022x)
+  - [v0.22.0 Stability Release](#v0220-stability-release-v0220)
+- [v0.21.x](#v021x)
+  - [v0.21.0 Edit Person Round-Up](#v0210-edit-person-round-up-v0210)
 - [v0.20.x](#v020x)
   - [v0.20.57 Feature Round-Up](#v02057-feature-round-up-v02057)
   - [Child Map Markers and Region Editing](#child-map-markers-and-region-editing-v02056)
@@ -131,6 +135,68 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
   - [Maps Tab](#maps-tab-v062)
   - [Geographic Features](#geographic-features-v060)
   - [Import/Export Enhancements](#importexport-enhancements-v060)
+
+---
+
+## v0.22.x
+
+### v0.22.0 Stability Release (v0.22.0)
+
+The first release after 0.21.0 on the path to 1.0. Addresses a critical data-loss bug surfaced during 1.0-gate testing, four lower-severity bugs, and one feature addition. The 3-week BRAT stability window resets to this release.
+
+**Fix: Cross-note spouse writes preserve indexed format** ([#420](https://github.com/banisterious/obsidian-charted-roots/issues/420)):
+- Adding a spouse from a different note could previously downgrade the target's indexed `spouseN:` format to flat `spouse:` keys, silently wiping the target's other spouses. Silent data loss on any cross-note spouse write to a multi-spouse person.
+- Both bidirectional write paths (the linker's `syncSpouse` and the `addBidirectionalSpouseLink` helper used by Create / Edit Person) now inspect the target's existing format and append to indexed slots when present.
+- Mixed states (residue flat keys alongside indexed slots from earlier bad writes) route to indexed so prior corruption doesn't compound.
+
+**Fix: Life Events Migration idempotent on re-run** ([#414](https://github.com/banisterious/obsidian-charted-roots/issues/414)):
+- Running the Cleanup Wizard's Life Events Migration twice on the same person note used to mint a duplicate event note each time because collision-avoidance only deduped by filename.
+- Migration now scans for existing `cr_type: event` notes before creating new ones and reuses any with a matching `(persons, event_type, date)` tuple.
+- Strict date matching: `"1850"` and `"1850-01-01"` are different identities, so user refinements aren't silently merged.
+- Cleanup Wizard notice reports `(reused N existing events)` alongside the created count.
+
+**Fix: Timeline no longer crashes on bare-year numeric dates** ([#416](https://github.com/banisterious/obsidian-charted-roots/issues/416)):
+- Obsidian's Properties panel writes `died: 1893` (unquoted) as a Number. The timeline's date helpers called `.trim()` on the input and threw `TypeError`, surfacing as Obsidian's red code-block error.
+- Helpers now accept `string | number | undefined | null` and coerce at entry. Same-class fix applied to `formatDisplayDate` so the person picker also handles numeric-YAML date fields without crashing.
+
+**Fix: Dynamic relationships block surfaces adoptive siblings in `extended` / `all` modes** ([#417](https://github.com/banisterious/obsidian-charted-roots/issues/417)):
+- The block's sibling derivation only walked biological parent edges, so adoptive siblings (other children of adoptive parents) never appeared — even in extended / all modes.
+- Adoptive parent edges are now walked alongside biological ones. Results are labeled `Adoptive sibling:` to distinguish them, matching the existing `Adoptive father` / `Adoptive mother` label pattern.
+- Deduped against the biological set, so a person present on both edges lists once, unlabeled.
+
+**Fix: Symmetric custom relationships auto-propagate** ([#419](https://github.com/banisterious/obsidian-charted-roots/issues/419)):
+- Adding a symmetric custom relationship (e.g., "twin") from person A to person B used to leave B's note untouched. Built-in symmetric types (spouse, biological sibling) already reciprocated via the bidirectional linker; custom types didn't.
+- The Add Relationship modal now mirrors the entry onto the target when the type's `symmetric` flag is set.
+- Idempotent: re-adding the same symmetric link from either side is a silent no-op.
+
+**Added: Burial renders on the person timeline** ([#408](https://github.com/banisterious/obsidian-charted-roots/issues/408)):
+- `burial_date` and `burial_place` were already recognized by the GEDCOM importer/exporter, map markers, and cleanup tooling — but the `charted-roots-timeline` block was the one place they didn't surface.
+- Burial is now emitted alongside birth, death, adoption, and marriage with a `"Buried"` label, `"in {place}"` suffix when `burial_place` is set, and age computed from `born`.
+- Honors the timeline block's `include: [...]` filter.
+
+**Testing gate:** Vitest suite grew from 109 to 189 tests. New pure-helper modules: sibling walker, relationship property writer, event identity, spouse format detector, date-display coercion. Every 0.22.0 fix in a volatile code path landed with regression tests.
+
+---
+
+## v0.21.x
+
+### v0.21.0 Edit Person Round-Up (v0.21.0)
+
+Stability release focused on four Edit Person modal round-trip bugs. No feature work.
+
+**Fix: Relationships not dropped when IDs are partial or wikilink basenames differ from `name`** ([#410](https://github.com/banisterious/obsidian-charted-roots/issues/410)):
+- The v0.20.62 fix for [#403](https://github.com/banisterious/obsidian-charted-roots/issues/403) closed the all-wikilinks-no-IDs case but left sibling gaps. The name-based fallback resolver now also matches on the note's basename; the array-field fallback runs per-entry instead of all-or-nothing. Unresolvable wikilinks are preserved through the round trip rather than dropped.
+
+**Fix: Clearing Universe and ten other optional fields now actually clears frontmatter** ([#406](https://github.com/banisterious/obsidian-charted-roots/issues/406)):
+- Fields affected: `universe`, `collection`, `personType`, `sex`, `givenName`, `maidenName`, `pronouns`, `dnaTestingCompany`, `dnaKitId`, `dnaMatchType`, `dnaNotes`. All use the established `?? ''` (or `?? []`) pattern so the writer's clear path actually fires.
+
+**Fix: Nickname field round-trips on edit** ([#412](https://github.com/banisterious/obsidian-charted-roots/issues/412)):
+- Three gaps in the path (load, type, save) all closed. Nickname now behaves like every other optional string field, including clearing via empty input.
+
+**Fix: Endogamy flag toggle-off persists** ([#413](https://github.com/banisterious/obsidian-charted-roots/issues/413)):
+- The onChange handler's `value || undefined` idiom converted a toggled-off `false` to `undefined`, which the writer read as "untouched." Fixed by passing the boolean through directly.
+
+**Testing infrastructure:** Vitest test harness added with 31 regression tests for the relationship load path. New [VERSIONING.md](https://github.com/banisterious/obsidian-charted-roots/blob/main/VERSIONING.md) documents plugin-specific SemVer rules and 1.0 criteria.
 
 ---
 

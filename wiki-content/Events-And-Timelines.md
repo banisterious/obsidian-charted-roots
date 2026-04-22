@@ -218,12 +218,15 @@ In addition to Event Notes, the person timeline block (`charted-roots-timeline` 
 |---|---|---|
 | `born` | Born | Yes |
 | `died` | Died | Yes |
+| `burial_date` | Buried (with `in [[place]]` suffix when `burial_place` is set) | Yes |
 | `adoption_date` (adoptee's note) | Adopted | Yes |
 | `adoption_date` (on an adoptive parent's adopted child) | Adopted [[Child]] | Yes |
 | `spouse1_marriage_date` (any indexed spouse) | Marriage to [[Spouse]] | Yes |
 | `spouse1_divorce_date` (any indexed spouse) | Divorce from [[Spouse]] | Toggled — see **Show divorces** setting |
 
 Adoption is a shared life event — it renders on both the adoptee's and the adoptive parents' timelines, matching the way marriages render on both spouses.
+
+Burial renders alongside death when `burial_date` is set, so a person's timeline can show both the death entry and a separate burial entry on a later date. The timeline block's `include: [...]` filter honors burial — restrict your timeline to a subset of event types and burial is included or excluded accordingly.
 
 ### Family-member events from frontmatter
 

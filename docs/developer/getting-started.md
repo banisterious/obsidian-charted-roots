@@ -25,18 +25,23 @@ npm install
 ### Build Commands
 
 - `npm run dev` - Start development mode with watch (builds to local main.js)
-- `npm run build` - Production build with type checking
+- `npm run build` - Production build (fonts + esbuild + CSS; no type check — run `type-check` separately when needed)
+- `npm run type-check` - Standalone `tsc -noEmit -skipLibCheck` pass. Currently surfaces ~149 pre-existing errors that are a separate cleanup backlog; run on-demand rather than on every build.
+- `npm test` - Run the Vitest regression suite once (189 tests covering relationship load / write / migration helpers / sibling walker / event identity / spouse format / date helpers)
+- `npm run test:watch` - Vitest in watch mode for iterative development
 - `npm run lint` - Check TypeScript code for linting errors
 - `npm run lint:fix` - Auto-fix TypeScript linting errors
 - `npm run lint:css` - Check CSS for linting errors
 - `npm run lint:css:fix` - Auto-fix CSS linting errors
 - `npm run format:css` - Format CSS with Prettier
 
-**Before committing code**, always run linting to ensure compliance with coding standards:
+**Before committing code**, always run linting and the test suite:
 
 ```bash
-npm run lint && npm run lint:css
+npm run lint && npm run lint:css && npm test
 ```
+
+Bug fixes that touch volatile code paths (relationship handling, migrations, cross-note writes, date parsing) should land with regression tests — see the existing `tests/` files for the pure-helper extraction pattern.
 
 See [Coding Standards](coding-standards.md) for detailed style guidelines.
 

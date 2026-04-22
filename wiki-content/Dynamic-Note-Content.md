@@ -198,10 +198,10 @@ type: immediate
 ~~~
 
 **What it displays:**
-- Parents (father, mother)
+- Parents (father, mother, adoptive father, adoptive mother, step-parents)
 - Spouse(s)
 - Children
-- Siblings (when using `type: extended` or `type: all`)
+- Siblings (when using `type: extended` or `type: all`) — biological siblings share a parent with the focal person; adoptive siblings (other children of the focal person's adoptive parents) appear under the same Siblings heading with an `Adoptive sibling:` label, matching the labeling convention used for adoptive parents
 
 Each person is shown as a wikilink with their birth-death years.
 

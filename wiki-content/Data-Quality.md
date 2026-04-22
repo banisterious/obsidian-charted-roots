@@ -64,6 +64,8 @@ The Cleanup Wizard provides a guided, step-by-step workflow that walks you throu
 - Steps can be skipped if they don't apply to your data
 - The wizard remembers which steps you've completed
 
+**Migration steps are rerun-safe.** The wizard also includes later migration operations beyond the ten listed above — currently a Life Events Migration (converts inline `events:` arrays on person notes to separate `cr_type: event` files), a Sourced Facts Migration, and a Source Arrays Migration. Each is designed to be idempotent: re-running the Life Events Migration on a person whose events were already converted reuses the existing event notes (matched by persons, event type, and date) instead of creating duplicates, and the post-migration notice reports `(reused N existing events)` alongside the created count.
+
 ---
 
 ### Manual Cleanup Steps
