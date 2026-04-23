@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/banisterious/obsidian-charted-roots/main/docs/assets/branding/charted-roots-oxblood-on-cream.svg" width="280" alt="Charted Roots">
+</p>
+
 # Welcome to Charted Roots
 
 **Research, document, and visualize lineages in Obsidian—whether historical or fictional.**

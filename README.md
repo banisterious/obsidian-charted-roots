@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/branding/charted-roots-oxblood-on-cream.svg" width="280" alt="Charted Roots">
+</p>
+
 # Charted Roots: Genealogical Family Tree Plugin for Obsidian
 
 [![Version](https://img.shields.io/badge/version-0.22.2-blue.svg)](https://github.com/banisterious/obsidian-charted-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md)

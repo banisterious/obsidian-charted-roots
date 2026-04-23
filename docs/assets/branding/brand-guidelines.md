@@ -151,8 +151,8 @@ font-family: 'Literata', Georgia, 'Times New Roman', serif;
 
 | Surface | Asset | Notes |
 |---------|-------|-------|
-| GitHub README (top banner) | Primary SVG or 1024 PNG | Centered. 240–320 px display width. |
-| GitHub Wiki Home | Primary SVG or 1024 PNG | Top of page. Similar treatment to README banner. |
+| GitHub README (top banner) | Primary SVG or 1024 PNG | Centered. 280 px display width. **Deployed 2026-04-23.** |
+| GitHub Wiki Home | Primary SVG or 1024 PNG | Top of page. Same treatment as README banner (280 px seal, centered, absolute asset URL). **Deployed 2026-04-23.** |
 | GitHub repo social preview | `charted-roots-social-card.png` | Settings → General → Social preview. PNG only. |
 | Obsidian plugin listing | Primary SVG or 1024 PNG | At whatever size the listing accepts. |
 | Documentation site | Primary or alternate SVG | Context-dependent; navy when surrounding material is cool-toned. |
