@@ -79,7 +79,7 @@ When sync is enabled, relationship changes made anywhere (Bases, frontmatter edi
 
 ## Collections & Groups
 
-Charted Roots provides two complementary ways to organize people in your vault.
+Charted Roots provides two complementary ways to organize your vault. **Group Names** are auto-detected family groups based on biological and marital relationships between people. **Collections** are user-defined groupings that you apply to person or place notes — they appear wherever you use them and can span both entity types.
 
 ### Group Names (Auto-Detected Families)
 
@@ -114,17 +114,17 @@ By default, groups are named "Family 1", "Family 2", etc. You can customize thes
 Collections let you create custom groupings independent of biological relationships. Use these for:
 - Organizing by lineage (e.g., "Paternal Line", "Maternal Line")
 - Grouping by generation (e.g., "First Generation", "My Generation")
-- World-building categories (e.g., "House Stark", "The Council")
+- World-building categories spanning people and locations (e.g., "House Stark" can include both the family members and the castles / lands associated with them)
 - Any other organizational scheme that makes sense for your research
 
 **Creating Collections:**
 
 1. **Via Context Menu:**
-   - Right-click any person note
-   - Select "Add to collection"
+   - Right-click any person or place note
+   - Select "Set collection"
    - Enter or select a collection name
 
-2. **Via YAML Frontmatter:**
+2. **Via YAML Frontmatter:** add a `collection` property to any person or place note.
    ```yaml
    ---
    collection: "Paternal Line"
@@ -133,7 +133,7 @@ Collections let you create custom groupings independent of biological relationsh
 
 3. **Via Obsidian Bases:**
    - Edit the `collection` property directly in table views
-   - Bulk assign collections to multiple people at once
+   - Bulk assign collections to multiple notes at once (works for both person and place entity types)
 
 ### Browsing Collections & Groups
 
