@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 750 200" role="img">
+  <title>Charted Roots horizontal lockup</title>
+  <desc>Horizontal Charted Roots lockup for website headers and nav bars. Simplified mark (outer ring and tree) on the left, "Charted Roots" wordmark in Literata on the right, in oxblood.</desc>
+  <style>
+    @font-face {
+      font-family: 'Literata';
+      font-style: normal;
+      font-weight: 600;
+      font-display: swap;
+      src: url('https://cdn.jsdelivr.net/npm/@fontsource/literata@5/files/literata-latin-600-normal.woff2') format('woff2');
+    }
+  </style>
+
+  <g transform="translate(100 100)">
+    <circle cx="0" cy="0" r="85" fill="none" stroke="#6B1F1F" stroke-width="5"/>
+
+    <line x1="0" y1="-60" x2="0" y2="30" stroke="#6B1F1F" stroke-width="4" stroke-linecap="round"/>
+
+    <line x1="0" y1="-40" x2="-25" y2="-55" stroke="#6B1F1F" stroke-width="3" stroke-linecap="round"/>
+    <line x1="0" y1="-40" x2="25" y2="-55" stroke="#6B1F1F" stroke-width="3" stroke-linecap="round"/>
+    <line x1="0" y1="-20" x2="-28" y2="-32" stroke="#6B1F1F" stroke-width="3" stroke-linecap="round"/>
+    <line x1="0" y1="-20" x2="28" y2="-32" stroke="#6B1F1F" stroke-width="3" stroke-linecap="round"/>
+
+    <line x1="0" y1="30" x2="-20" y2="55" stroke="#6B1F1F" stroke-width="3" stroke-linecap="round"/>
+    <line x1="0" y1="30" x2="20" y2="55" stroke="#6B1F1F" stroke-width="3" stroke-linecap="round"/>
+    <line x1="0" y1="30" x2="0" y2="60" stroke="#6B1F1F" stroke-width="3" stroke-linecap="round"/>
+
+    <circle cx="0" cy="-60" r="4" fill="#6B1F1F"/>
+    <circle cx="-25" cy="-55" r="3" fill="#6B1F1F"/>
+    <circle cx="25" cy="-55" r="3" fill="#6B1F1F"/>
+    <circle cx="-28" cy="-32" r="3" fill="#6B1F1F"/>
+    <circle cx="28" cy="-32" r="3" fill="#6B1F1F"/>
+  </g>
+
+  <line x1="215" y1="60" x2="215" y2="140" stroke="#6B1F1F" stroke-width="1" opacity="0.3"/>
+
+  <text x="240" y="125" font-family="Literata, Georgia, serif" font-size="60" font-weight="600" fill="#6B1F1F" letter-spacing="0.5">Charted Roots</text>
+</svg>

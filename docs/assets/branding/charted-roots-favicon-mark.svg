@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img">
+  <title>Charted Roots favicon mark</title>
+  <desc>Simplified Charted Roots mark for favicon-scale rendering. Outer ring and central tree only, with no inscription, no inner ring, no horizon, and no contour lines. Strokes are thickened so the mark remains legible at 32 pixels and below.</desc>
+  <g transform="translate(100 100)">
+    <circle cx="0" cy="0" r="85" fill="none" stroke="#6B1F1F" stroke-width="5"/>
+
+    <line x1="0" y1="-60" x2="0" y2="30" stroke="#6B1F1F" stroke-width="4" stroke-linecap="round"/>
+
+    <line x1="0" y1="-40" x2="-25" y2="-55" stroke="#6B1F1F" stroke-width="3" stroke-linecap="round"/>
+    <line x1="0" y1="-40" x2="25" y2="-55" stroke="#6B1F1F" stroke-width="3" stroke-linecap="round"/>
+    <line x1="0" y1="-20" x2="-28" y2="-32" stroke="#6B1F1F" stroke-width="3" stroke-linecap="round"/>
+    <line x1="0" y1="-20" x2="28" y2="-32" stroke="#6B1F1F" stroke-width="3" stroke-linecap="round"/>
+
+    <line x1="0" y1="30" x2="-20" y2="55" stroke="#6B1F1F" stroke-width="3" stroke-linecap="round"/>
+    <line x1="0" y1="30" x2="20" y2="55" stroke="#6B1F1F" stroke-width="3" stroke-linecap="round"/>
+    <line x1="0" y1="30" x2="0" y2="60" stroke="#6B1F1F" stroke-width="3" stroke-linecap="round"/>
+
+    <circle cx="0" cy="-60" r="4" fill="#6B1F1F"/>
+    <circle cx="-25" cy="-55" r="3" fill="#6B1F1F"/>
+    <circle cx="25" cy="-55" r="3" fill="#6B1F1F"/>
+    <circle cx="-28" cy="-32" r="3" fill="#6B1F1F"/>
+    <circle cx="28" cy="-32" r="3" fill="#6B1F1F"/>
+  </g>
+</svg>

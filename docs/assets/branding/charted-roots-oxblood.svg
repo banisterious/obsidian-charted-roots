@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img">
+  <title>Charted Roots</title>
+  <desc>The Charted Roots seal in oxblood on a transparent background. For use on cream, beige, or light-warm surfaces.</desc>
+  <style>
+    @font-face {
+      font-family: 'Literata';
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+      src: url('https://cdn.jsdelivr.net/npm/@fontsource/literata@5/files/literata-latin-400-normal.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'Literata';
+      font-style: normal;
+      font-weight: 500;
+      font-display: swap;
+      src: url('https://cdn.jsdelivr.net/npm/@fontsource/literata@5/files/literata-latin-500-normal.woff2') format('woff2');
+    }
+  </style>
+  <defs>
+    <path id="arc-t" d="M -72 0 A 72 72 0 0 1 72 0" fill="none"/>
+    <path id="arc-b" d="M -77 0 A 77 77 0 0 0 77 0" fill="none"/>
+  </defs>
+  <g transform="translate(100 100)">
+    <circle cx="0" cy="0" r="85" fill="none" stroke="#6B1F1F" stroke-width="1.75"/>
+    <circle cx="0" cy="0" r="64" fill="none" stroke="#6B1F1F" stroke-width="0.85"/>
+    <circle cx="74" cy="0" r="2" fill="#6B1F1F"/>
+    <circle cx="-74" cy="0" r="2" fill="#6B1F1F"/>
+    <path d="M -58 10 Q 0 0 58 10" fill="none" stroke="#6B1F1F" stroke-width="1.1"/>
+    <path d="M -50 22 Q 0 16 50 22" fill="none" stroke="#6B1F1F" stroke-width="0.85"/>
+    <path d="M -45 35 Q 0 30 45 35" fill="none" stroke="#6B1F1F" stroke-width="0.85"/>
+    <path d="M -40 48 Q 0 44 40 48" fill="none" stroke="#6B1F1F" stroke-width="0.85"/>
+    <line x1="0" y1="-40" x2="0" y2="8" stroke="#6B1F1F" stroke-width="1.4"/>
+    <line x1="0" y1="-22" x2="-13" y2="-30" stroke="#6B1F1F" stroke-width="1.1"/>
+    <line x1="0" y1="-22" x2="13" y2="-30" stroke="#6B1F1F" stroke-width="1.1"/>
+    <line x1="0" y1="-8" x2="-16" y2="-14" stroke="#6B1F1F" stroke-width="1.1"/>
+    <line x1="0" y1="-8" x2="16" y2="-14" stroke="#6B1F1F" stroke-width="1.1"/>
+    <line x1="0" y1="8" x2="-12" y2="45" stroke="#6B1F1F" stroke-width="1.1"/>
+    <line x1="0" y1="8" x2="12" y2="45" stroke="#6B1F1F" stroke-width="1.1"/>
+    <line x1="0" y1="8" x2="0" y2="50" stroke="#6B1F1F" stroke-width="1.1"/>
+    <line x1="-12" y1="45" x2="-17" y2="52" stroke="#6B1F1F" stroke-width="0.85"/>
+    <line x1="12" y1="45" x2="17" y2="52" stroke="#6B1F1F" stroke-width="0.85"/>
+    <circle cx="0" cy="-42" r="2.1" fill="#6B1F1F"/>
+    <circle cx="-14" cy="-32" r="1.5" fill="#6B1F1F"/>
+    <circle cx="14" cy="-32" r="1.5" fill="#6B1F1F"/>
+    <circle cx="-17" cy="-16" r="1.5" fill="#6B1F1F"/>
+    <circle cx="17" cy="-16" r="1.5" fill="#6B1F1F"/>
+    <text font-family="Literata, Georgia, serif" font-size="11" font-weight="500" fill="#6B1F1F" letter-spacing="2.5">
+      <textPath href="#arc-t" startOffset="50%" text-anchor="middle">CHARTED ROOTS</textPath>
+    </text>
+    <text font-family="Literata, Georgia, serif" font-size="11" font-weight="400" fill="#6B1F1F" letter-spacing="2">
+      <textPath href="#arc-b" startOffset="50%" text-anchor="middle">FOR OBSIDIAN</textPath>
+    </text>
+  </g>
+</svg>
