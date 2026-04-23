@@ -14,6 +14,7 @@ import { ensureFolderExists } from '../core/canvas-utils';
 import { getErrorMessage } from '../core/error-utils';
 import { pluralize } from '../utils/format-utils';
 import type { PersonNode } from '../core/family-graph';
+import { aggregateCollections, type AggregatedCollection } from '../core/collections-aggregator';
 
 export type CollectionBrowseMode = 'all' | 'families' | 'collections';
 
@@ -33,6 +34,43 @@ export interface CollectionsTabOptions {
 	showTab: (tabId: string) => void;
 	closeModal: () => void;
 	formatCanvasJson: (data: CanvasData) => string;
+}
+
+/**
+ * Load cross-entity collections (persons + places) via the two graph services.
+ * Used by both the Control Center modal tab and the dockable Collections view
+ * so a collection created in either Create Place or Edit Person shows up in
+ * the list regardless of which entity type defines it (#426).
+ */
+function loadAggregatedCollections(plugin: CanvasRootsPlugin): AggregatedCollection[] {
+	const familyGraph = plugin.createFamilyGraphService();
+	const placeGraph = plugin.createPlaceGraphService();
+
+	const personCollections = familyGraph
+		.getUserCollections()
+		.map(c => ({ name: c.name, count: c.size }));
+	const placeCollections = Object.entries(placeGraph.calculateStatistics().byCollection).map(
+		([name, count]) => ({ name, count })
+	);
+
+	return aggregateCollections(personCollections, placeCollections);
+}
+
+/**
+ * Format the contextual badge text for a cross-entity collection. Shows
+ * "X people" / "X places" when one side is empty, and "X people, Y places"
+ * when both are present, so the badge always honestly reflects who lives
+ * in the collection (#426).
+ */
+function formatCollectionBadge(collection: AggregatedCollection): string {
+	const personPart = collection.personCount > 0
+		? `${collection.personCount} ${pluralize(collection.personCount, 'person', 'people')}`
+		: '';
+	const placePart = collection.placeCount > 0
+		? `${collection.placeCount} ${pluralize(collection.placeCount, 'place')}`
+		: '';
+	if (personPart && placePart) return `${personPart}, ${placePart}`;
+	return personPart || placePart;
 }
 
 export function renderCollectionsTab(options: CollectionsTabOptions): void {
@@ -232,8 +270,8 @@ function updateCollectionsList(
 		container.appendChild(listCard);
 
 	} else if (mode === 'collections') {
-		// Show user collections
-		const collections = graphService.getUserCollections();
+		// Cross-entity user collections (persons + places) — #426.
+		const collections = loadAggregatedCollections(plugin);
 
 		const listCard = createCard({
 			title: `My collections (${collections.length})`,
@@ -247,7 +285,7 @@ function updateCollectionsList(
 		if (collections.length === 0) {
 			listContent.createEl('p', {
 				cls: 'crc-text--muted',
-				text: 'No collections yet. Right-click a person note and select "Set collection" to create one.'
+				text: 'No collections yet. Right-click a person or place note and select "Set collection" to create one.'
 			});
 		} else {
 			collections.forEach(collection => {
@@ -257,7 +295,7 @@ function updateCollectionsList(
 				collectionHeader.createEl('strong', { text: `${collection.name} ` }); // Added space after name
 				collectionHeader.createEl('span', {
 					cls: 'crc-badge',
-					text: `${collection.size} ${pluralize(collection.size, 'person', 'people')}`
+					text: formatCollectionBadge(collection)
 				});
 			});
 		}
@@ -642,11 +680,11 @@ export function renderCollectionsList(options: CollectionsListOptions): void {
 			}
 
 		} else if (currentMode === 'collections') {
-			// User collections — simple list
+			// Cross-entity user collections (persons + places) — #426.
 			searchInput.show();
 			searchInput.placeholder = 'Search collections...';
 
-			const collections = graphService.getUserCollections();
+			const collections = loadAggregatedCollections(plugin);
 
 			// Filter by search query
 			let filtered = collections;
@@ -661,7 +699,7 @@ export function renderCollectionsList(options: CollectionsListOptions): void {
 					cls: 'crc-text--muted',
 					text: query
 						? 'No matching collections found.'
-						: 'No collections yet. Right-click a person note and select "Set collection" to create one.'
+						: 'No collections yet. Right-click a person or place note and select "Set collection" to create one.'
 				});
 				return;
 			}
@@ -673,7 +711,7 @@ export function renderCollectionsList(options: CollectionsListOptions): void {
 				collectionHeader.createEl('strong', { text: `${collection.name} ` });
 				collectionHeader.createEl('span', {
 					cls: 'crc-badge',
-					text: `${collection.size} ${pluralize(collection.size, 'person', 'people')}`
+					text: formatCollectionBadge(collection)
 				});
 			});
 

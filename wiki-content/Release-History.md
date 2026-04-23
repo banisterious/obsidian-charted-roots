@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.3 Fix: Cross-Entity Collections Aggregation](#v0223-fix-cross-entity-collections-aggregation-v0223)
   - [v0.22.2 Hotfix: IDs-Only Relationship Arrays](#v0222-hotfix-ids-only-relationship-arrays-v0222)
   - [v0.22.1 Hotfix: Spouse Format Migration](#v0221-hotfix-spouse-format-migration-v0221)
   - [v0.22.0 Stability Release](#v0220-stability-release-v0220)
@@ -141,6 +142,26 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.3 Fix: Cross-Entity Collections Aggregation (v0.22.3)
+
+Medium-priority UX bug — no data loss, stability window not reset. Creating a Collection through the Create Place modal wrote the value to the place note's frontmatter correctly, but the Collection was invisible to the Edit Person modal's Collection dropdown, the Control Center's Collections tab, and the dockable Collections sidebar. The reverse direction worked fine: Collections created via Edit Person appeared in Create Place's dropdown, because Create Place already aggregated from both person and place notes. The asymmetry lived in `FamilyGraphService.getUserCollections()` — it scanned person notes only, and three UI surfaces relied on it as their sole source of truth.
+
+**Fix: Cross-entity aggregator + three UI surface updates** ([#426](https://github.com/banisterious/obsidian-charted-roots/issues/426)):
+- New pure helper at `src/core/collections-aggregator.ts` merges person-side and place-side collection counts into a unified `{ name, personCount, placeCount, totalCount }` list, sorted by totalCount desc then name asc.
+- Edit Person's `loadExistingCollections` now uses the aggregator so place-created Collections appear in the dropdown.
+- Control Center's Collections tab and dockable Collections sidebar both use the aggregator. Badge rendering is contextual: "X people" / "X places" / "X people, Y places" depending on membership. Empty-state text updated to mention both entity types.
+- `FamilyGraphService.getUserCollections()` is unchanged — it stays person-focused for the Canvas Collection Overview (person-first family+collection composition) and Collection Analytics (person-centric metrics). Those two surfaces are intentionally out of scope.
+
+**Testing:** 13 new regression tests for the aggregator covering person-only, place-only, mixed membership, tie-breaking (totalCount desc, then alphabetical), duplicate-name collapse, empty-string name defense, and zero-count row dropping. Suite grows from 222 to 235 tests.
+
+**Reporter:** @DigitalDreamn (second bug report this week).
+
+**Stability-window impact:** no reset — #426 is a medium-priority UX bug, not critical data-loss. Window continues from 0.22.2's start: 2026-04-23 → ~2026-05-14.
+
+**Related post-1.0 FR** (to file separately): standalone Collection creation. Collections are currently purely membership-derived (no Collection-as-entity), so the only way to create one is to commit to a person or place that will live in it. Consistent with Obsidian's tag convention, but worth considering a dedicated Create-Collection entry point post-1.0.
+
+---
 
 ### v0.22.2 Hotfix: IDs-Only Relationship Arrays (v0.22.2)
 

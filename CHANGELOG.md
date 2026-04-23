@@ -14,6 +14,14 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ---
 
+## [0.22.3] - 2026-04-23
+
+### Fixed
+
+- **Collections created via Create Place now surface in the Edit Person dropdown and Control Center** ([#426](https://github.com/banisterious/obsidian-charted-roots/issues/426)): Creating a Collection through the Create Place modal wrote the value to the place note's frontmatter as expected, but the Collection was invisible everywhere else — Edit Person's Collection dropdown didn't list it, and the Control Center's Collections view (both the modal tab and the dockable sidebar) also didn't show it. The reverse direction worked fine: Collections created via Edit Person appeared in Create Place's dropdown. The asymmetry came from `FamilyGraphService.getUserCollections()` scanning person notes only — and three UI surfaces relied on that aggregator as their sole source of truth. The fix extracts a new pure helper (`src/core/collections-aggregator.ts`) that merges person-side and place-side collection counts into a unified `{ name, personCount, placeCount, totalCount }` list, and the three UI surfaces now call through it. The Control Center badge renders contextually ("5 people", "3 places", or "5 people, 3 places" for mixed collections), empty-state text updated to mention both entity types. `FamilyGraphService.getUserCollections()` itself is unchanged — it stays person-focused for the Canvas Collection Overview and Collection Analytics, which are intentionally person-only. 13 new regression tests in `tests/collections-aggregator.test.ts` cover the merge logic (person-only, place-only, mixed, tie-breaking, duplicate collapse, empty input, zero-count dropping). Suite grows from 222 to 235 tests. Medium-priority UX bug; no data loss, so the stability window does not reset. Reported by @DigitalDreamn.
+
+---
+
 ## [0.22.2] - 2026-04-23
 
 ### Fixed

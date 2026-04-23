@@ -9,6 +9,7 @@ import { RelationshipManager } from '../core/relationship-manager';
 import { createLucideIcon } from './lucide-icons';
 import { FamilyGraphService } from '../core/family-graph';
 import { PlaceGraphService } from '../core/place-graph';
+import { aggregateCollections } from '../core/collections-aggregator';
 import { PersonPickerModal, PersonInfo } from './person-picker';
 import { PlacePickerModal, SelectedPlaceInfo } from './place-picker';
 import { RelationshipContext } from './quick-create-person-modal';
@@ -313,20 +314,25 @@ export class CreatePersonModal extends Modal {
 	}
 
 	/**
-	 * Load existing collections from person notes
+	 * Load existing collections from person and place notes (#426 — Collections
+	 * are cross-entity; the dropdown needs to surface names defined on either
+	 * entity type so a collection first created via the Create Place modal
+	 * shows up here too).
 	 */
 	private loadExistingCollections(): void {
-		const collections = new Set<string>();
+		const personCollections = this.familyGraph
+			? this.familyGraph.getUserCollections().map(c => ({ name: c.name, count: c.size }))
+			: [];
+		const placeCollections = this.placeGraph
+			? Object.entries(this.placeGraph.calculateStatistics().byCollection).map(
+				([name, count]) => ({ name, count })
+			)
+			: [];
 
-		if (this.familyGraph) {
-			const userCollections = this.familyGraph.getUserCollections();
-			for (const coll of userCollections) {
-				collections.add(coll.name);
-			}
-		}
+		const aggregated = aggregateCollections(personCollections, placeCollections);
 
-		// Sort alphabetically
-		this.existingCollections = Array.from(collections).sort((a, b) =>
+		// Dropdown wants names only, alphabetised for easy scanning.
+		this.existingCollections = aggregated.map(c => c.name).sort((a, b) =>
 			a.toLowerCase().localeCompare(b.toLowerCase())
 		);
 	}
