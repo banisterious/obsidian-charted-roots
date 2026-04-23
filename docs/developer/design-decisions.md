@@ -172,6 +172,36 @@ export class PdfReportRenderer {
 
 **Related:** See [PDF Report Export Planning Document](../planning/pdf-report-export.md) for full implementation plan.
 
+### Addendum (2026-04-23): Font bundling drift + re-affirmation of dual-library choice
+
+Since the original decision shipped, the pdfmake font strategy has evolved away from "standard PDF fonts only." The implementation now bundles Roboto and DejaVu Sans Mono via [build-fonts.js](../../build-fonts.js), which extracts only the needed TTF variants into `vfs_fonts_all.ts` at build time.
+
+**Why the drift:** Pedigree-chart reports render ASCII tree connectors (`├── └── │` — Unicode box-drawing characters) that require a font with comprehensive Unicode coverage. Helvetica and the standard PDF fonts rendered these as blank spaces. Switching pdfmake's default to Roboto (bundled) for body text and DejaVu Sans Mono (bundled) for monospace sections solved the rendering gap. This drift was accepted because (a) Unicode coverage is a report-quality requirement, not a nice-to-have, and (b) the bundled extract is ~465 KB, not the ~2.4 MB of the default `vfs_fonts.js`.
+
+**Updated bundle-size reality:**
+
+| Component | Size | Loading |
+|-----------|------|---------|
+| jsPDF (chart export) | ~229 KB | Static import (always loaded) |
+| pdfmake core | ~400-500 KB | Dynamic import (loads on first PDF export) |
+| Bundled fonts (Roboto + DejaVu Sans Mono) | ~465 KB | Embedded in plugin bundle |
+| **Initial bundle impact** | ~694 KB | jsPDF + fonts (pdfmake stays lazy) |
+| **Runtime (first PDF export)** | +~400-500 KB | pdfmake core, cached for session |
+
+**Re-affirmation of the dual-library choice given the new numbers:**
+
+With fonts now contributing ~465 KB to the initial bundle, the "why not consolidate on jsPDF to save pdfmake's ~400-500 KB" question deserves a fresh answer:
+
+1. **pdfmake's ~400-500 KB is lazy-loaded, not initial.** Users who never export a report PDF never pay that cost. The initial-bundle comparison is really "jsPDF + fonts (~694 KB)" vs "jsPDF only (~229 KB)" — the fonts are for pdfmake but they'd still need to live somewhere if pdfmake is kept at all.
+
+2. **Consolidating on jsPDF would require reimplementing pdfmake's features.** Automatic pagination, flowing tables with per-page headers, declarative table-of-contents, footnote placement, named styles — jsPDF is a low-level imperative drawing API. Re-creating these in jsPDF is months of work for PDF-features that users already have.
+
+3. **Consolidating on pdfmake would degrade chart output.** pdfmake requires declared page sizes, which forces image resampling for embedded charts. The Family Chart export's jsPDF path uses dynamic page sizing matched to chart dimensions at 1:1 scale — no resampling, crisp output. This was already evaluated as Option D in the original ADR and rejected; the font drift doesn't change that math.
+
+4. **The capability split is honest.** pdfmake for text-structured documents (reports, books), jsPDF for image-based visuals (charts). Different tools, different jobs. Trying to merge the two would mean sacrificing quality on one side to save ~229 KB on the other.
+
+**Decision stands:** dual-library is still correct. The font bundling is a worthwhile trade for Unicode report rendering. Any future consolidation pressure should revisit Options A–D from the original ADR with current numbers rather than assuming "just use jsPDF" is free.
+
 ---
 
 ## Smart Hybrid Collections Architecture (2025-11-22)

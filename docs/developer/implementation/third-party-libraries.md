@@ -78,8 +78,9 @@ const docDefinition: TDocumentDefinitions = {
 ```
 
 **Notes:**
-- Dynamic import keeps initial bundle size smaller
-- VFS fonts are embedded in the bundle (adds ~1MB)
+- Dynamic import keeps initial bundle size smaller — pdfmake core (~400-500 KB) loads on first PDF export, not plugin startup
+- Custom VFS font bundle via `build-fonts.js`: Roboto (body) + DejaVu Sans Mono (for Unicode box-drawing characters in pedigree reports). Total ~465 KB — much smaller than the default `vfs_fonts.js` (~2.4 MB of embedded Roboto variants)
+- Font strategy diverged from the original ADR (which chose standard PDF fonts). Reason: Unicode box-drawing characters rendered blank with Helvetica. See [2026-04-23 addendum in design-decisions.md](../design-decisions.md#addendum-2026-04-23-font-bundling-drift--re-affirmation-of-dual-library-choice)
 - Types from `@types/pdfmake` (dev dependency)
 
 ---
@@ -251,11 +252,60 @@ map.addLayer(markers);
 
 ## jsPDF
 
-**Purpose:** Additional PDF generation support.
+**Purpose:** Canvas-based PDF export for the Family Chart view. Handles image-rendered output where pdfmake's declarative model would introduce image-resampling artifacts.
 
 **Version:** ^3.0.4
 
-**Notes:** Currently installed but pdfmake handles primary PDF generation. May be used for specific PDF features or as a fallback.
+**Location:** `src/ui/views/family-chart-export.ts` (primary), with minor fallback usage in `src/ui/tree-preview.ts`.
+
+**Usage pattern:**
+
+```typescript
+import { jsPDF } from 'jspdf';
+
+// Create a PDF with page dimensions matched to chart content (no resampling)
+const pdf = new jsPDF({
+  orientation: 'landscape',
+  unit: 'pt',
+  format: [pageWidth, pageHeight]
+});
+
+// Register bundled Roboto fonts for cover-page typography
+registerRobotoFonts(pdf, fonts);
+
+// Render SVG family chart to high-res canvas, embed as PNG at 1:1 scale
+const canvas = await renderSvgToCanvas(svgElement, { scale: 2 });
+const pngDataUrl = canvas.toDataURL('image/png');
+pdf.addImage(pngDataUrl, 'PNG', 0, 0, pageWidth, pageHeight);
+
+// Optional cover page with title / subtitle typography
+addPdfCoverPage(pdf, title, subtitle, options);
+
+pdf.save(filename);
+```
+
+**Key capabilities used:**
+
+| Capability | Purpose |
+|------------|---------|
+| Custom page sizing | Page dimensions matched to chart content — avoids resampling artifacts |
+| Canvas-to-PDF embedding | `addImage()` accepts PNG data URLs from the SVG-to-Canvas pipeline |
+| Font registration via VFS | Roboto family registered for cover-page text rendering |
+| Manual text placement | Cover page title / subtitle drawn at exact coordinates |
+| Multi-page documents | Cover page + chart pages in a single export |
+
+**SVG → Canvas → PNG → PDF pipeline:**
+
+The Family Chart is an interactive SVG. For PDF export, it's rendered to a Canvas at 2× scale (for high DPI), converted to a PNG data URL, and embedded in the PDF at its logical size. This preserves visual fidelity — lines stay crisp, text stays sharp, and there's no resampling degradation that a fixed-page-size approach would introduce.
+
+**Why both jsPDF and pdfmake are bundled:**
+
+pdfmake handles text-structured documents (reports, books) with declarative layout, automatic pagination, and complex tables. jsPDF handles image-based visual exports (charts) with dynamic page sizing and pixel-perfect placement. Consolidating on either library would sacrifice quality on the other side of the split:
+
+- Consolidating on jsPDF would require reimplementing pdfmake's auto-pagination, flowing tables, TOC generation, and footnote placement.
+- Consolidating on pdfmake would force fixed page sizes for chart export, introducing image resampling artifacts.
+
+See [PDF Library and Font Strategy](../design-decisions.md#pdf-library-and-font-strategy-2025-12-19) in design-decisions.md for the full ADR, including options considered, bundle-size impact, and the 2026-04-23 addendum on font-bundling and dual-library re-affirmation.
 
 ---
 
@@ -345,11 +395,15 @@ const blob = await zip.generateAsync({ type: 'blob' });
 
 | Library | Approximate Size | Loading |
 |---------|------------------|---------|
-| pdfmake + fonts | ~1.5 MB | Dynamic import |
+| pdfmake core | ~400-500 KB | Dynamic import (first PDF report export) |
+| Bundled fonts (Roboto + DejaVu Sans Mono) | ~465 KB | Static, via `vfs_fonts_all.ts` from `build-fonts.js` |
+| jsPDF | ~229 KB | Static import (Family Chart export) |
 | Leaflet + plugins | ~500 KB | Dynamic import |
 | family-chart | ~200 KB | Static import |
 | D3 | ~300 KB | Static import |
 | JSZip | ~90 KB | Static import |
+
+**PDF libraries — why both:** Charted Roots bundles pdfmake and jsPDF for complementary roles. pdfmake handles text-structured documents (reports, books) with declarative layout; jsPDF handles image-based visual exports (Family Chart) with dynamic page sizing. Full rationale and bundle-size analysis in [PDF Library and Font Strategy](../design-decisions.md#pdf-library-and-font-strategy-2025-12-19).
 
 **Type definitions (devDependencies):**
 - `@types/leaflet`
