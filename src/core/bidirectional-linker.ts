@@ -3,7 +3,7 @@ import { getLogger } from './logging';
 import { getErrorMessage } from './error-utils';
 import { PersonFrontmatter } from '../types/frontmatter';
 import { FolderFilterService } from './folder-filter';
-import { detectSpouseTargetFormat } from './spouse-format-detector';
+import { detectSpouseTargetFormat, isSpouseInFrontmatter } from './spouse-format-detector';
 
 const logger = getLogger('BidirectionalLinker');
 
@@ -410,25 +410,32 @@ export class BidirectionalLinker {
 			}
 		}
 
-		// Check for deleted spouse relationships (simple format)
+		// Check for deleted spouse relationships.
+		// Guarded against format-migration false positives (#423): a spouse
+		// that disappears from flat `spouse` but reappears under an indexed
+		// `spouseN` slot (or vice versa) is a format upgrade, not a real
+		// deletion. Without this guard the linker fires a phantom removal
+		// cascade that wipes spouse data on both sides of the relationship.
+		const currentFm = currentFrontmatter as unknown as Record<string, unknown>;
+
+		// Flat-format deletion check.
 		const previousSpouses = this.extractSpouseLinks(previousSnapshot.spouse);
 		const currentSpouses = this.extractSpouseLinks(currentFrontmatter.spouse);
-
 		for (const previousSpouse of previousSpouses) {
-			if (!currentSpouses.includes(previousSpouse)) {
-				await this.removeSpouseLink(previousSpouse, personFile, personName, personCrId);
-			}
+			if (currentSpouses.includes(previousSpouse)) continue;
+			if (isSpouseInFrontmatter(currentFm, previousSpouse)) continue;
+			await this.removeSpouseLink(previousSpouse, personFile, personName, personCrId);
 		}
 
-		// Check for deleted indexed spouse relationships
-		for (let i = 1; i <= 10; i++) { // Check up to spouse10
+		// Indexed-format deletion check.
+		for (let i = 1; i <= 10; i++) {
 			const key = `spouse${i}` as keyof RelationshipSnapshot;
 			const previousSpouse = previousSnapshot[key];
 			const currentSpouse = currentFrontmatter[key];
-
-			if (previousSpouse && typeof previousSpouse === 'string' && !currentSpouse) {
-				await this.removeSpouseLink(previousSpouse, personFile, personName, personCrId);
-			}
+			if (!previousSpouse || typeof previousSpouse !== 'string') continue;
+			if (currentSpouse) continue;
+			if (isSpouseInFrontmatter(currentFm, previousSpouse)) continue;
+			await this.removeSpouseLink(previousSpouse, personFile, personName, personCrId);
 		}
 
 		// Check for deleted children relationships
@@ -1456,13 +1463,17 @@ export class BidirectionalLinker {
 			const idKey = `spouse${i}_id`;
 
 			if (spouseCache.frontmatter[idKey] === personCrId) {
-				// Remove this indexed spouse entry
+				// Remove this indexed spouse entry along with all companion
+				// metadata fields. Keep in sync with person-note-writer.ts's
+				// indexed-spouse clear (lines ~1742) — every `spouse{N}_*`
+				// field needs to be removed, or orphan residue survives the
+				// unlink (#423 Gap B).
 				await this.removeField(spouseFile, key);
 				await this.removeField(spouseFile, idKey);
-
-				// Also remove associated marriage metadata if present
 				await this.removeField(spouseFile, `${key}_marriage_date`);
 				await this.removeField(spouseFile, `${key}_marriage_location`);
+				await this.removeField(spouseFile, `${key}_marriage_location_id`);
+				await this.removeField(spouseFile, `${key}_marriage_status`);
 				await this.removeField(spouseFile, `${key}_divorce_date`);
 
 				logger.info('bidirectional-linking', 'Removed indexed spouse bidirectional link (deletion sync)', {

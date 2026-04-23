@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.1 Hotfix: Spouse Format Migration](#v0221-hotfix-spouse-format-migration-v0221)
   - [v0.22.0 Stability Release](#v0220-stability-release-v0220)
 - [v0.21.x](#v021x)
   - [v0.21.0 Edit Person Round-Up](#v0210-edit-person-round-up-v0210)
@@ -139,6 +140,27 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.1 Hotfix: Spouse Format Migration (v0.22.1)
+
+Critical data-loss regression introduced by 0.22.0's #420 fix. Editing an existing spouse to add marriage date / location / status upgraded the spouse field from flat `spouse:` to indexed `spouse1:` format, which the bidirectional linker misread as "spouse removed" — firing a phantom-deletion cascade that wiped spouse data on both sides.
+
+**Fix: Format-migration detection in `syncDeletions`** ([#423](https://github.com/banisterious/obsidian-charted-roots/issues/423)):
+- New `isSpouseInFrontmatter` pure helper scans every possible spouse location (flat + all `spouse{N}` slots) before the deletion detector fires `removeSpouseLink`.
+- If the disappeared wikilink appears anywhere else in the current frontmatter, it's a format migration, not a deletion. Cascade is skipped.
+- Protects both the flat → indexed upgrade (common when adding marriage metadata) and the indexed → flat downgrade (less common but same guarantee).
+
+**Fix: Complete metadata cleanup in `removeSpouseLink`** ([#423](https://github.com/banisterious/obsidian-charted-roots/issues/423)):
+- Previous cleanup removed `spouse{N}`, `spouse{N}_id`, `spouse{N}_marriage_date`, `spouse{N}_marriage_location`, `spouse{N}_divorce_date` — but not `spouse{N}_marriage_location_id` or `spouse{N}_marriage_status`, leaving orphaned metadata when a legitimate unlink occurred.
+- Cleanup is now complete, in parity with the existing `person-note-writer.ts` clear at line ~1742.
+
+**Testing:** 20 new regression tests for `isSpouseInFrontmatter` covering flat / indexed / mixed-state / format-migration / null-value / object-shape inputs. Suite grew from 189 to 209 tests.
+
+**Reporter:** @doctorwodka (clean YAML-based repro on #420).
+
+**Stability-window impact:** critical data-loss regression triggers the window reset per VERSIONING.md. The 3-week BRAT stability window re-starts from this release; new end-date ~2026-05-14.
+
+---
 
 ### v0.22.0 Stability Release (v0.22.0)
 

@@ -84,3 +84,55 @@ function hasValue(value: unknown): boolean {
 	if (Array.isArray(value)) return value.length > 0;
 	return true;
 }
+
+/**
+ * Check whether a target wikilink is still present as a spouse in the
+ * frontmatter, regardless of format (flat scalar, flat array, or any
+ * indexed `spouseN:` slot).
+ *
+ * Used by the bidi linker's deletion detector to distinguish real spouse
+ * removals from format migrations. A flat → indexed upgrade (or indexed
+ * → flat downgrade) disappears from the "previous" location but the
+ * same wikilink shows up in the "current" opposing location. Without
+ * this check, the linker fires a phantom deletion cascade that wipes
+ * both sides of the relationship (#423).
+ *
+ * Comparison is exact string match — the caller is expected to pass the
+ * wikilink in whatever form it appeared in the snapshot; this helper
+ * scans the current frontmatter for that exact string in every possible
+ * spouse location.
+ */
+export function isSpouseInFrontmatter(
+	frontmatter: Record<string, unknown>,
+	wikilink: string
+): boolean {
+	if (!wikilink) return false;
+
+	// Flat `spouse` — may be scalar, array, or object-with-link-property.
+	if (matchesSpouseValue(frontmatter.spouse, wikilink)) return true;
+
+	// Indexed `spouseN` slots.
+	for (let i = 1; i <= MAX_SPOUSE_INDEX; i++) {
+		if (matchesSpouseValue(frontmatter[`spouse${i}`], wikilink)) return true;
+	}
+
+	return false;
+}
+
+/**
+ * Compare a single spouse-field value against a wikilink, handling the
+ * scalar / array / object-with-link shapes the frontmatter can take.
+ */
+function matchesSpouseValue(value: unknown, wikilink: string): boolean {
+	if (value === undefined || value === null || value === '') return false;
+	if (typeof value === 'string') return value === wikilink;
+	if (Array.isArray(value)) {
+		return value.some(item => typeof item === 'string' && item === wikilink);
+	}
+	// Object shape: { link: "[[X]]" } or similar — unlikely but cover it.
+	if (typeof value === 'object' && value !== null) {
+		const maybeLink = (value as Record<string, unknown>).link;
+		return typeof maybeLink === 'string' && maybeLink === wikilink;
+	}
+	return false;
+}

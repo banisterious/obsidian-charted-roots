@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { detectSpouseTargetFormat } from '../src/core/spouse-format-detector';
+import { detectSpouseTargetFormat, isSpouseInFrontmatter } from '../src/core/spouse-format-detector';
 
 /**
  * Regression coverage for #420 Gap B — the bidirectional linker must
@@ -153,6 +153,183 @@ describe('detectSpouseTargetFormat', () => {
 				format: 'indexed',
 				nextIndex: 11
 			});
+		});
+	});
+});
+
+/**
+ * Regression coverage for #423 — the bidirectional linker must recognize
+ * when a spouse wikilink has simply moved between flat and indexed
+ * format on the same note, rather than being removed entirely. Without
+ * this check, a phantom-deletion cascade wipes spouse data on both
+ * sides of the relationship whenever a user edits a spouse entry in a
+ * way that migrates format (e.g., adding marriage metadata, which
+ * upgrades flat `spouse:` to indexed `spouse1:`).
+ */
+describe('isSpouseInFrontmatter', () => {
+	describe('empty frontmatter', () => {
+		it('empty frontmatter returns false', () => {
+			expect(isSpouseInFrontmatter({}, '[[Alice]]')).toBe(false);
+		});
+
+		it('empty wikilink returns false', () => {
+			expect(isSpouseInFrontmatter({ spouse: '[[Alice]]' }, '')).toBe(false);
+		});
+	});
+
+	describe('flat format', () => {
+		it('scalar spouse field matching wikilink returns true', () => {
+			expect(isSpouseInFrontmatter(
+				{ spouse: '[[Alice]]' },
+				'[[Alice]]'
+			)).toBe(true);
+		});
+
+		it('scalar spouse field not matching returns false', () => {
+			expect(isSpouseInFrontmatter(
+				{ spouse: '[[Bob]]' },
+				'[[Alice]]'
+			)).toBe(false);
+		});
+
+		it('array spouse field with match returns true', () => {
+			expect(isSpouseInFrontmatter(
+				{ spouse: ['[[Alice]]', '[[Bob]]'] },
+				'[[Alice]]'
+			)).toBe(true);
+		});
+
+		it('array spouse field without match returns false', () => {
+			expect(isSpouseInFrontmatter(
+				{ spouse: ['[[Bob]]', '[[Carol]]'] },
+				'[[Alice]]'
+			)).toBe(false);
+		});
+	});
+
+	describe('indexed format', () => {
+		it('spouse1 matching returns true', () => {
+			expect(isSpouseInFrontmatter(
+				{ spouse1: '[[Alice]]', spouse1_id: 'cr_alice' },
+				'[[Alice]]'
+			)).toBe(true);
+		});
+
+		it('spouse5 matching returns true (tests full range probe)', () => {
+			expect(isSpouseInFrontmatter(
+				{ spouse5: '[[Alice]]' },
+				'[[Alice]]'
+			)).toBe(true);
+		});
+
+		it('spouse10 matching returns true (boundary)', () => {
+			expect(isSpouseInFrontmatter(
+				{ spouse10: '[[Alice]]' },
+				'[[Alice]]'
+			)).toBe(true);
+		});
+
+		it('none of the indexed slots match returns false', () => {
+			expect(isSpouseInFrontmatter(
+				{ spouse1: '[[Bob]]', spouse2: '[[Carol]]' },
+				'[[Alice]]'
+			)).toBe(false);
+		});
+	});
+
+	describe('format migration scenarios (#423)', () => {
+		it('flat → indexed: previous flat wikilink now under spouse1 → still present', () => {
+			// User edited a person to add marriage metadata, upgrading their
+			// spouse from flat to indexed. The deletion detector must NOT
+			// fire — the spouse is still there, just in a different location.
+			expect(isSpouseInFrontmatter(
+				{
+					spouse1: '[[Urgan]]',
+					spouse1_id: 'lyr-164-uqp-488',
+					spouse1_marriage_date: 'DE ~1269'
+				},
+				'[[Urgan]]'
+			)).toBe(true);
+		});
+
+		it('indexed → flat: previous spouse1 wikilink now under spouse → still present', () => {
+			// Inverse case: user removes marriage metadata from an indexed
+			// spouse, collapsing back to flat format. Same guarantee needed.
+			expect(isSpouseInFrontmatter(
+				{ spouse: '[[Urgan]]', spouse_id: 'lyr-164-uqp-488' },
+				'[[Urgan]]'
+			)).toBe(true);
+		});
+
+		it('genuine removal: wikilink absent from all locations → false', () => {
+			// The legitimate deletion case. Cascade SHOULD fire here.
+			expect(isSpouseInFrontmatter(
+				{
+					name: 'Person 2',
+					spouse1: '[[Someone Else]]'
+				},
+				'[[Urgan]]'
+			)).toBe(false);
+		});
+
+		it('mixed state: flat residue + indexed slots, match on indexed → true', () => {
+			expect(isSpouseInFrontmatter(
+				{
+					spouse1: '[[Alice]]',
+					spouse2: '[[Bob]]',
+					spouse: '[[Carol]]'
+				},
+				'[[Bob]]'
+			)).toBe(true);
+		});
+
+		it('mixed state: flat residue + indexed slots, match on flat → true', () => {
+			expect(isSpouseInFrontmatter(
+				{
+					spouse1: '[[Alice]]',
+					spouse: '[[Bob]]'
+				},
+				'[[Bob]]'
+			)).toBe(true);
+		});
+	});
+
+	describe('null / empty values', () => {
+		it('spouse field set to empty string returns false', () => {
+			expect(isSpouseInFrontmatter(
+				{ spouse: '' },
+				'[[Alice]]'
+			)).toBe(false);
+		});
+
+		it('spouse field set to null returns false', () => {
+			expect(isSpouseInFrontmatter(
+				{ spouse: null },
+				'[[Alice]]'
+			)).toBe(false);
+		});
+
+		it('spouse field set to empty array returns false', () => {
+			expect(isSpouseInFrontmatter(
+				{ spouse: [] },
+				'[[Alice]]'
+			)).toBe(false);
+		});
+	});
+
+	describe('object-shaped value (legacy edge)', () => {
+		it('object with matching link property returns true', () => {
+			expect(isSpouseInFrontmatter(
+				{ spouse: { link: '[[Alice]]' } },
+				'[[Alice]]'
+			)).toBe(true);
+		});
+
+		it('object without link property returns false', () => {
+			expect(isSpouseInFrontmatter(
+				{ spouse: { name: 'Alice' } },
+				'[[Alice]]'
+			)).toBe(false);
 		});
 	});
 });

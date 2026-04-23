@@ -14,6 +14,14 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ---
 
+## [0.22.1] - 2026-04-23
+
+### Fixed
+
+- **Editing a spouse to add marriage metadata no longer wipes spouse data on both sides** ([#423](https://github.com/banisterious/obsidian-charted-roots/issues/423)): Adding marriage date / location / status to an existing spouse relationship in Edit Person caused the frontmatter to upgrade from flat `spouse:` to indexed `spouse1:` format, which the bidirectional linker's deletion detector misread as "the spouse was removed" — firing a phantom-deletion cascade that wiped spouse fields on both notes, leaving only orphaned `spouse1_marriage_location_id` and `spouse1_marriage_status` residue. Silent data loss on any format-migrating edit. Two compounding bugs in `src/core/bidirectional-linker.ts`: (1) `syncDeletions` now cross-checks every disappearing spouse against the current frontmatter in all possible locations (flat `spouse`, any `spouse{N}` slot) via a new `isSpouseInFrontmatter` pure helper before treating the disappearance as a deletion, so format migrations don't trigger the cascade; (2) `removeSpouseLink`'s cleanup now removes all five `spouse{N}_*` metadata fields (`_marriage_date`, `_marriage_location`, `_marriage_location_id`, `_marriage_status`, `_divorce_date`) in parity with the existing `person-note-writer.ts` clear, so no orphan residue survives a legitimate unlink. The new helper has 20 regression tests covering flat / indexed / mixed / format-migration / empty-value / object-shape inputs. A critical data-loss regression introduced by the 0.22.0 fix for #420; per VERSIONING.md, the 3-week stability window resets from this release. Reported by @doctorwodka.
+
+---
+
 ## [0.22.0] - 2026-04-22
 
 ### Fixed
