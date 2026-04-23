@@ -14,7 +14,7 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ---
 
-## [0.22.2] - 2026-04-24
+## [0.22.2] - 2026-04-23
 
 ### Fixed
 

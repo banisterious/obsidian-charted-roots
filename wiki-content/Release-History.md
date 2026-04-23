@@ -156,7 +156,7 @@ Critical data-loss bug, distinct from 0.22.0's spouse-format issues. Opening Edi
 
 **Reporter:** @DigitalDreamn (Benjymn Wilkin frontmatter — 5 children_id entries, no children wikilink array, save wiped the block).
 
-**Stability-window impact:** critical data-loss bug triggers the window reset per VERSIONING.md. The 3-week BRAT stability window re-starts from this release; new end-date ~2026-05-15.
+**Stability-window impact:** critical data-loss bug triggers the window reset per VERSIONING.md. The 3-week BRAT stability window re-starts from this release; new end-date ~2026-05-14.
 
 ---
 
