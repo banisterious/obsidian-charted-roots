@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.2 Hotfix: IDs-Only Relationship Arrays](#v0222-hotfix-ids-only-relationship-arrays-v0222)
   - [v0.22.1 Hotfix: Spouse Format Migration](#v0221-hotfix-spouse-format-migration-v0221)
   - [v0.22.0 Stability Release](#v0220-stability-release-v0220)
 - [v0.21.x](#v021x)
@@ -140,6 +141,24 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.2 Hotfix: IDs-Only Relationship Arrays (v0.22.2)
+
+Critical data-loss bug, distinct from 0.22.0's spouse-format issues. Opening Edit Person on a note whose frontmatter had `children_id` (or `spouse_id` / `parents_id`) without the paired `children:` / `spouse:` / `parents:` wikilink array showed an empty relationships section, and saving wiped the `*_id` block entirely. The inverse shape of [#410](https://github.com/banisterious/obsidian-charted-roots/issues/410) — that fix covered wikilinks-without-IDs, but when the wikilink key was entirely absent the loader exited before ever looking at the IDs.
+
+**Fix: Symmetric IDs-only fallback in the relationship loader** ([#415](https://github.com/banisterious/obsidian-charted-roots/issues/415)):
+- New `resolveCrIdToName` helper is the inverse of the existing `resolveNameToCrId` — takes a `cr_id` and returns the stored display name by looking up the person in the graph.
+- `loadAlignedArray` now falls back to walking the `*_id` array when the wikilink key is genuinely absent (null / undefined). An explicitly empty `children: []` is still treated as an intentional empty list and skips the fallback — prevents phantom resurrection of stale IDs on a note that was cleared deliberately.
+- On save, the writer emits both arrays, healing the frontmatter to the full dual-storage shape.
+- Orphan IDs (present in `*_id` but pointing to a deleted / missing person note) are preserved round-trip with the ID string itself as a visible placeholder name. Produces `[[id-str]]` in the wikilink array — ugly-but-visible, so the user can find and fix it rather than silent drop or `[[]]` corruption.
+
+**Testing:** 13 new regression tests — 4 for the new `resolveCrIdToName` resolver and 9 for the IDs-only fallback path (children / spouse / parents coverage, scalar vs. array coercion, orphan-ID handling, explicit-`[]` discrimination, falsy-entry skipping, dormancy when both arrays present). Suite grew from 209 to 222 tests.
+
+**Reporter:** @DigitalDreamn (Benjymn Wilkin frontmatter — 5 children_id entries, no children wikilink array, save wiped the block).
+
+**Stability-window impact:** critical data-loss bug triggers the window reset per VERSIONING.md. The 3-week BRAT stability window re-starts from this release; new end-date ~2026-05-15.
+
+---
 
 ### v0.22.1 Hotfix: Spouse Format Migration (v0.22.1)
 

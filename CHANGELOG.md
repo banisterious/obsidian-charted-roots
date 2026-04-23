@@ -14,6 +14,14 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ---
 
+## [0.22.2] - 2026-04-24
+
+### Fixed
+
+- **Edit Person modal no longer wipes IDs-only relationship arrays on save** ([#415](https://github.com/banisterious/obsidian-charted-roots/issues/415)): Opening Edit Person on a note whose frontmatter carried `children_id` (or `spouse_id` / `parents_id`) with no paired `children:` / `spouse:` / `parents:` wikilink array showed an empty relationships section, and saving with no changes wiped the `*_id` block — silent data loss on any note in this shape. The inverse of [#410](https://github.com/banisterious/obsidian-charted-roots/issues/410), which covered wikilinks-without-IDs; the #410 fix walked the wikilink array and would exit immediately when the wikilink key was absent, leaving the IDs unread. The load path now falls back to walking the `*_id` array when the wikilink key is genuinely absent (explicitly empty `[]` is still treated as an intentional empty list), resolving each ID back to a display name via a new `resolveCrIdToName` helper so the modal renders the relationships correctly. On save, the writer emits both arrays, healing the frontmatter to the full dual-storage shape. Orphan IDs that don't match any person in the vault are preserved round-trip with the ID string itself as a visible placeholder name (producing `[[id-str]]` in the wikilink array) rather than a silent drop or an empty `[[]]` corruption. 13 new regression tests in `relationship-loader.test.ts` cover the direct resolver, IDs-only fallback for children / spouse / parents, orphan IDs, explicit-empty-array discrimination, and the wikilink-first path staying dormant when both arrays are present. Critical data-loss bug; per VERSIONING.md, the 3-week stability window resets from this release. Reported by @DigitalDreamn.
+
+---
+
 ## [0.22.1] - 2026-04-23
 
 ### Fixed

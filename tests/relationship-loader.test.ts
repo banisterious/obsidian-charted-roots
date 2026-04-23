@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
 	extractName,
 	loadRelationships,
+	resolveCrIdToName,
 	resolveNameToCrId,
 	type PersonLookupPool
 } from '../src/plugin/relationship-loader';
@@ -14,6 +15,10 @@ import {
  *   Gap B: legacy array fallback was all-or-nothing, losing unresolved
  *          entries in mixed-ID states.
  *   Gap C: unresolvable wikilinks were dropped entirely at save.
+ *
+ * #415 extends this with IDs-only fallback — frontmatter that carries
+ * `*_id` arrays with no paired wikilink array used to load as empty
+ * (then save wiped the id array). The inverse of Gap B.
  */
 
 function pool(
@@ -80,6 +85,129 @@ describe('resolveNameToCrId — Gap A (basename-aware lookup)', () => {
 		]);
 		expect(resolveNameToCrId('Alice', people, onAmbiguous)).toBeUndefined();
 		expect(onAmbiguous).toHaveBeenCalledWith('Alice', 2);
+	});
+});
+
+describe('resolveCrIdToName — #415 inverse resolver', () => {
+	const alice = { crId: 'alice-id', name: 'Alice', basename: 'alice' };
+	const bob = { crId: 'bob-id', name: 'Bob Jones', basename: 'bob-jones' };
+
+	it('resolves a known crId to the stored name', () => {
+		expect(resolveCrIdToName('alice-id', pool([alice, bob]))).toBe('Alice');
+	});
+
+	it('returns undefined for an unknown crId', () => {
+		expect(resolveCrIdToName('ghost-id', pool([alice, bob]))).toBeUndefined();
+	});
+
+	it('returns undefined for empty input', () => {
+		expect(resolveCrIdToName('', pool([alice]))).toBeUndefined();
+	});
+
+	it('trims whitespace before lookup', () => {
+		expect(resolveCrIdToName('  alice-id  ', pool([alice]))).toBe('Alice');
+	});
+});
+
+describe('loadRelationships — IDs-only fallback (#415)', () => {
+	const child1 = { crId: 'child1-id', name: 'Child One', basename: 'child-one' };
+	const child2 = { crId: 'child2-id', name: 'Child Two', basename: 'child-two' };
+	const child3 = { crId: 'child3-id', name: 'Child Three', basename: 'child-three' };
+
+	it('children_id only, no children wikilink → populated from graph', () => {
+		// DigitalDreamn's Benjymn repro: 5 children_id entries, no `children:` array.
+		// Pre-fix: both arrays empty, save wiped children_id. Post-fix: names are
+		// resolved from the graph and save heals the frontmatter.
+		const r = loadRelationships(
+			{ children_id: ['child1-id', 'child2-id', 'child3-id'] },
+			pool([child1, child2, child3])
+		);
+		expect(r.childNames).toEqual(['Child One', 'Child Two', 'Child Three']);
+		expect(r.childIds).toEqual(['child1-id', 'child2-id', 'child3-id']);
+	});
+
+	it('children_id scalar (single id) coerces to array and resolves', () => {
+		const r = loadRelationships(
+			{ children_id: 'child1-id' },
+			pool([child1])
+		);
+		expect(r.childNames).toEqual(['Child One']);
+		expect(r.childIds).toEqual(['child1-id']);
+	});
+
+	it('spouse_id only, no spouse wikilink → populated from graph', () => {
+		const wife = { crId: 'wife-id', name: 'Wife One', basename: 'wife-one' };
+		const r = loadRelationships(
+			{ spouse_id: ['wife-id'] },
+			pool([wife])
+		);
+		expect(r.spouseNames).toEqual(['Wife One']);
+		expect(r.spouseIds).toEqual(['wife-id']);
+	});
+
+	it('parents_id only, no parents wikilink → populated from graph', () => {
+		const parent = { crId: 'p-id', name: 'Parent', basename: 'parent' };
+		const r = loadRelationships(
+			{ parents_id: ['p-id'] },
+			pool([parent])
+		);
+		expect(r.parentNames).toEqual(['Parent']);
+		expect(r.parentIds).toEqual(['p-id']);
+	});
+
+	it('IDs-only with orphan id (not in graph) → uses id as placeholder name', () => {
+		// Pragmatic edge-case behavior: preserving the id is more important than
+		// a pristine wikilink. The placeholder surfaces the orphan to the user
+		// for cleanup rather than silently dropping it or writing `[[]]`.
+		const r = loadRelationships(
+			{ children_id: ['child1-id', 'orphan-id'] },
+			pool([child1])
+		);
+		expect(r.childNames).toEqual(['Child One', 'orphan-id']);
+		expect(r.childIds).toEqual(['child1-id', 'orphan-id']);
+	});
+
+	it('empty children_id → no entries (does not invent phantoms)', () => {
+		const r = loadRelationships(
+			{ children_id: [] },
+			pool([child1])
+		);
+		expect(r.childNames).toEqual([]);
+		expect(r.childIds).toEqual([]);
+	});
+
+	it('children_id with falsy entries are skipped', () => {
+		const r = loadRelationships(
+			{ children_id: ['child1-id', '', null, 'child2-id'] as unknown as string[] },
+			pool([child1, child2])
+		);
+		expect(r.childNames).toEqual(['Child One', 'Child Two']);
+		expect(r.childIds).toEqual(['child1-id', 'child2-id']);
+	});
+
+	it('wikilink array present (even empty) → does not trigger IDs-only fallback', () => {
+		// Guard against double-processing: if `children` is present as an empty
+		// array, the wikilink walk runs (and produces nothing), and the IDs-only
+		// path stays dormant. Avoids producing phantom names for an explicitly
+		// empty children list on a note whose children_id was left stale.
+		const r = loadRelationships(
+			{ children: [], children_id: ['child1-id'] },
+			pool([child1])
+		);
+		expect(r.childNames).toEqual([]);
+		expect(r.childIds).toEqual([]);
+	});
+
+	it('both arrays present → normal wikilink-first path, fallback stays dormant', () => {
+		const r = loadRelationships(
+			{
+				children: ['[[Child One]]', '[[Child Two]]'],
+				children_id: ['child1-id', 'child2-id']
+			},
+			pool([child1, child2])
+		);
+		expect(r.childNames).toEqual(['Child One', 'Child Two']);
+		expect(r.childIds).toEqual(['child1-id', 'child2-id']);
 	});
 });
 

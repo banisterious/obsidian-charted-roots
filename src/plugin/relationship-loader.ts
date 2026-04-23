@@ -94,6 +94,23 @@ export function resolveNameToCrId(
 }
 
 /**
+ * Inverse of `resolveNameToCrId`: resolve a crId back to a display name via
+ * the lookup pool. Used by the IDs-only fallback path in `loadAlignedArray`
+ * (#415) when frontmatter carries `*_id` arrays without the paired wikilink
+ * array. Returns `undefined` if no person has that crId; cr_id uniqueness
+ * means no ambiguity case.
+ */
+export function resolveCrIdToName(
+	crId: string,
+	pool: PersonLookupPool
+): string | undefined {
+	const stripped = crId.trim();
+	if (!stripped) return undefined;
+	const match = pool.getAllPeople().find(p => p.crId === stripped);
+	return match?.name;
+}
+
+/**
  * Load all relationship fields from a person's frontmatter.
  */
 export function loadRelationships(
@@ -102,6 +119,7 @@ export function loadRelationships(
 	onAmbiguous?: (name: string, matchCount: number) => void
 ): LoadedRelationships {
 	const resolve = (name: string) => resolveNameToCrId(name, pool, onAmbiguous);
+	const resolveId = (crId: string) => resolveCrIdToName(crId, pool);
 
 	// Spouses — indexed format (spouse1, spouse1_id, spouse1_marriage_date, ...)
 	const spouseNames: string[] = [];
@@ -137,18 +155,18 @@ export function loadRelationships(
 
 	// Spouses — legacy array format (fallback when no indexed spouses)
 	if (!hasIndexedSpouses) {
-		loadAlignedArray(fm.spouse, fm.spouse_id, resolve, spouseNames, spouseIds);
+		loadAlignedArray(fm.spouse, fm.spouse_id, resolve, resolveId, spouseNames, spouseIds);
 	}
 
 	// Children
 	const childNames: string[] = [];
 	const childIds: string[] = [];
-	loadAlignedArray(fm.children, fm.children_id, resolve, childNames, childIds);
+	loadAlignedArray(fm.children, fm.children_id, resolve, resolveId, childNames, childIds);
 
 	// Gender-neutral parents
 	const parentNames: string[] = [];
 	const parentIds: string[] = [];
-	loadAlignedArray(fm.parents, fm.parents_id, resolve, parentNames, parentIds);
+	loadAlignedArray(fm.parents, fm.parents_id, resolve, resolveId, parentNames, parentIds);
 
 	// Singleton parent / adoptive-parent fields with wikilink fallback (#403)
 	const fatherName = extractName(fm.father);
@@ -191,26 +209,51 @@ export function loadRelationships(
  * entries are preserved with an empty id so the wikilink survives the
  * round trip (#410).
  *
+ * When the wikilink array is entirely absent but the id array has entries,
+ * the id array drives the walk instead and names are resolved from the
+ * lookup pool (#415). Unresolved ids are preserved with an empty name so
+ * the id survives the round trip. This is the inverse of #410's fallback.
+ *
  * Mutates `outNames` and `outIds` in place for simpler call sites.
  */
 function loadAlignedArray(
 	rawLinks: unknown,
 	rawIds: unknown,
 	resolve: (name: string) => string | undefined,
+	resolveId: (crId: string) => string | undefined,
 	outNames: string[],
 	outIds: string[]
 ): void {
-	const linkArr = rawLinks
+	// Explicitly-present `[]` is treated as an intentional empty list and
+	// skips the IDs-only fallback. Only null/undefined (field absent, the
+	// shape #415 bugs on) drops us into the inverse path.
+	const linkArrayPresent = rawLinks !== undefined && rawLinks !== null;
+	const linkArr = linkArrayPresent
 		? (Array.isArray(rawLinks) ? rawLinks : [rawLinks])
 		: [];
 	const idArr = rawIds
 		? (Array.isArray(rawIds) ? rawIds : [rawIds])
 		: [];
-	for (let i = 0; i < linkArr.length; i++) {
-		const name = extractName(linkArr[i]);
-		if (!name) continue;
-		const directId = idArr[i] ? String(idArr[i]) : '';
-		const id = directId || resolve(name) || '';
+	if (linkArrayPresent) {
+		for (let i = 0; i < linkArr.length; i++) {
+			const name = extractName(linkArr[i]);
+			if (!name) continue;
+			const directId = idArr[i] ? String(idArr[i]) : '';
+			const id = directId || resolve(name) || '';
+			outNames.push(name);
+			outIds.push(id);
+		}
+		return;
+	}
+	// IDs-only fallback (#415): wikilink array absent but ids present. Resolve
+	// each id to a name via the graph; on miss (orphan id pointing to a
+	// deleted person note), fall back to the id string itself as a visible
+	// placeholder so the save path emits `[[id-str]]` rather than an empty
+	// `[[]]` wikilink — preserves the id round-trip for broken-data cases.
+	for (let i = 0; i < idArr.length; i++) {
+		const id = idArr[i] ? String(idArr[i]) : '';
+		if (!id) continue;
+		const name = resolveId(id) || id;
 		outNames.push(name);
 		outIds.push(id);
 	}
