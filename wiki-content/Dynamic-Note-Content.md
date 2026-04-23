@@ -215,9 +215,11 @@ Each person is shown as a wikilink with their birth-death years.
 | `title` | string | Custom header text (default: "Family") |
 
 **Relationship types:**
-- `immediate`: Parents, spouse, children (no siblings)
-- `extended`: Adds siblings
-- `all`: All relationships including extended family
+- `immediate`: Parents (biological, adoptive, step-), spouse(s), children. No siblings.
+- `extended`: Everything in `immediate`, plus siblings — biological (derived from shared parents) and adoptive (derived from shared adoptive parents, labeled `Adoptive sibling:`).
+- `all`: Everything in `extended`, plus custom-typed relationships declared in the person's `relationships` frontmatter array (mentor, godparent, ally, etc.).
+
+2nd-degree kinship — aunts, uncles, cousins, grandparents, grandchildren — is not currently derived in any mode; see [#424](https://github.com/banisterious/obsidian-charted-roots/issues/424) for the tracked enhancement.
 
 **Example with options:**
 
