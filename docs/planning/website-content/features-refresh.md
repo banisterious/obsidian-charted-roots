@@ -1,7 +1,7 @@
 # Features Page Refresh — draft
 
 **Target page:** `/features/_index.md` on chartedroots.com
-**Status:** 🔶 In progress — draft complete, awaiting review.
+**Status:** 🚀 Ported to chartedroots.com 2026-04-24. Rebuilt `/features/` page under the track-based Option C structure.
 **Source material:** current live page, [CHANGELOG.md](../../../CHANGELOG.md), [wiki-content/Release-History.md](../../../wiki-content/Release-History.md), feature docs in [docs/](../../../docs/).
 
 ---

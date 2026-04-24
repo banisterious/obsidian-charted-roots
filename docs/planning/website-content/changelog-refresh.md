@@ -1,7 +1,7 @@
 # Changelog Page Refresh — draft
 
 **Target page:** `/changelog/_index.md` on chartedroots.com
-**Status:** 🔶 In progress — 0.22.x cluster fully drafted as shape sample; 0.20.x and 0.21.x pending approval of the shape.
+**Status:** 🚀 Ported to chartedroots.com 2026-04-24. All four clusters (0.22.x, 0.21.x, 0.20.x, 0.19.x forward) live on `/changelog/`.
 **Source material:** [CHANGELOG.md](../../../CHANGELOG.md), [wiki-content/Release-History.md](../../../wiki-content/Release-History.md).
 
 ---

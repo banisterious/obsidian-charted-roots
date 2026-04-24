@@ -103,8 +103,8 @@ Before marking a draft ready to port, run through the draft once with this list:
 
 | Draft | Phase | Status | Target page |
 |---|---|---|---|
-| [changelog-refresh.md](website-content/changelog-refresh.md) | 1 | 📝 Pending | `/changelog/_index.md` |
-| [features-refresh.md](website-content/features-refresh.md) | 1 | 📝 Pending | `/features/_index.md` |
+| [changelog-refresh.md](website-content/changelog-refresh.md) | 1 | 🚀 Ported 2026-04-24 | `/changelog/_index.md` |
+| [features-refresh.md](website-content/features-refresh.md) | 1 | 🚀 Ported 2026-04-24 | `/features/_index.md` |
 | [landing-refresh.md](website-content/landing-refresh.md) | 2 | 📝 Pending | `/_index.md` |
 | [whats-new-in-1-0.md](website-content/whats-new-in-1-0.md) | 2 | 📝 Pending (post-1.0) | `/1-0/_index.md` (new) |
 | [media-plan.md](website-content/media-plan.md) | 1 (video) / 3 (static + motion) | 🚀 Video Phase 1 shipped 2026-04-24; static + motion pending | `/gallery/_index.md` (new) + inline embeds |
