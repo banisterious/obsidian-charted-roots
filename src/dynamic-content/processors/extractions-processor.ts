@@ -46,6 +46,7 @@ export class ExtractionsProcessor {
 		try {
 			const config = this.service.parseConfig(source);
 			const context = this.service.buildContext(ctx);
+			if (!context) return;
 
 			const component = new MarkdownRenderChild(el);
 			ctx.addChild(component);

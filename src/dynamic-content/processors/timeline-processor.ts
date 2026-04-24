@@ -46,6 +46,7 @@ export class TimelineProcessor {
 
 			// Build context (resolves file, cr_id, person)
 			const context = this.service.buildContext(ctx);
+			if (!context) return;
 
 			// Create a MarkdownRenderChild for proper cleanup of rendered markdown
 			const component = new MarkdownRenderChild(el);
@@ -61,6 +62,7 @@ export class TimelineProcessor {
 					if (changedFile.path === context.file.path) {
 						// Re-build context to get fresh data
 						const freshContext = this.service.buildContext(ctx);
+						if (!freshContext) return;
 						// Clear and re-render
 						el.empty();
 						if (freshContext.crId) {
@@ -100,6 +102,7 @@ export class TimelineProcessor {
 				// Re-render if the person's own file changed
 				if (changedFile.path === context.file.path) {
 					const freshContext = this.service.buildContext(ctx);
+					if (!freshContext) return;
 					el.empty();
 					await this.renderer.render(el, freshContext, config, component);
 					return;
@@ -108,6 +111,7 @@ export class TimelineProcessor {
 				// Re-render if the context note changed
 				if (contextFile && changedFile.path === contextFile.path) {
 					const freshContext = this.service.buildContext(ctx);
+					if (!freshContext) return;
 					el.empty();
 					await this.renderer.render(el, freshContext, config, component);
 					return;
@@ -116,6 +120,7 @@ export class TimelineProcessor {
 				// Also re-render if an event note changed (it might reference this person)
 				if (eventsFolder && changedFile.path.startsWith(eventsFolder)) {
 					const freshContext = this.service.buildContext(ctx);
+					if (!freshContext) return;
 					el.empty();
 					await this.renderer.render(el, freshContext, config, component);
 				}
@@ -132,6 +137,7 @@ export class TimelineProcessor {
 					// Small delay to allow metadata cache to process the new file
 					setTimeout(() => {
 						const freshContext = this.service.buildContext(ctx);
+						if (!freshContext) return;
 						el.empty();
 						void this.renderer.render(el, freshContext, config, component);
 					}, 100);

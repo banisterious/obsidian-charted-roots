@@ -44,6 +44,7 @@ export class RelationshipsProcessor {
 
 			// Build context (resolves file, cr_id, person)
 			const context = this.service.buildContext(ctx);
+			if (!context) return;
 
 			// Create a MarkdownRenderChild for proper cleanup of rendered markdown
 			const component = new MarkdownRenderChild(el);
@@ -59,6 +60,7 @@ export class RelationshipsProcessor {
 					if (changedFile.path === context.file.path) {
 						// Re-build context to get fresh data
 						const freshContext = this.service.buildContext(ctx);
+						if (!freshContext) return;
 						// Clear and re-render
 						el.empty();
 						if (freshContext.crId && freshContext.person) {
@@ -85,6 +87,7 @@ export class RelationshipsProcessor {
 				if (changedFile.path === context.file.path) {
 					// Re-build context to get fresh data
 					const freshContext = this.service.buildContext(ctx);
+					if (!freshContext) return;
 					// Clear and re-render
 					el.empty();
 					await this.renderer.render(el, freshContext, config, component);

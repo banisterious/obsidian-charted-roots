@@ -49,6 +49,7 @@ export class SourcesProcessor {
 
 			// Build context (resolves file, cr_id, person)
 			const context = this.service.buildContext(ctx);
+			if (!context) return;
 
 			// Create a MarkdownRenderChild for proper cleanup
 			const component = new MarkdownRenderChild(el);

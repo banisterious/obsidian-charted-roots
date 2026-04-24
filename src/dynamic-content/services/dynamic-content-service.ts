@@ -15,6 +15,9 @@ import type { EventNote } from '../../events/types/event-types';
 import { RelationshipService } from '../../relationships/services/relationship-service';
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
 import { splitAndTrim } from '../../utils/format-utils';
+import { getLogger } from '../../core/logging';
+
+const logger = getLogger('DynamicContentService');
 
 /** Block type for freeze operations */
 export type DynamicBlockType = 'charted-roots-timeline' | 'charted-roots-relationships' | 'charted-roots-media' | 'charted-roots-source-roles' | 'charted-roots-transfers' | 'charted-roots-members' | 'charted-roots-sources' | 'charted-roots-extractions' | 'charted-roots-negative-findings' | 'charted-roots-research-timeline';
@@ -163,16 +166,19 @@ export class DynamicContentService {
 	}
 
 	/**
-	 * Build context for rendering a dynamic block
-	 * Resolves the current file, cr_id, and person node
+	 * Build context for rendering a dynamic block.
+	 * Returns null when the source file can't be resolved (e.g. the container note
+	 * was renamed or deleted while a registered metadata handler still fires for
+	 * the old path). Callers should skip the render in that case.
 	 */
-	buildContext(ctx: MarkdownPostProcessorContext): DynamicBlockContext {
+	buildContext(ctx: MarkdownPostProcessorContext): DynamicBlockContext | null {
 		const app = this.plugin.app;
 
 		// Get the file from the source path
 		const file = app.vault.getAbstractFileByPath(ctx.sourcePath);
 		if (!(file instanceof TFile)) {
-			throw new Error(`Could not find file: ${ctx.sourcePath}`);
+			logger.warn('buildContext', `Source file not found, skipping render: ${ctx.sourcePath}`);
+			return null;
 		}
 
 		// Create family graph service - force reload to get fresh data

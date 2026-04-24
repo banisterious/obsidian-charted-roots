@@ -44,6 +44,7 @@ export class TransfersProcessor {
 
 			// Build context (resolves file, cr_id, person)
 			const context = this.service.buildContext(ctx);
+			if (!context) return;
 
 			// Create a MarkdownRenderChild for proper cleanup of rendered markdown
 			const component = new MarkdownRenderChild(el);
@@ -59,6 +60,7 @@ export class TransfersProcessor {
 					if (changedFile.path === context.file.path) {
 						// Re-build context to get fresh data
 						const freshContext = this.service.buildContext(ctx);
+						if (!freshContext) return;
 						// Clear and re-render
 						el.empty();
 						if (freshContext.crId) {
@@ -87,6 +89,7 @@ export class TransfersProcessor {
 				if (changedFile.path === context.file.path) {
 					// Re-build context to get fresh data
 					const freshContext = this.service.buildContext(ctx);
+					if (!freshContext) return;
 					// Clear and re-render
 					el.empty();
 					await this.renderer.render(el, freshContext, config, component);
@@ -97,6 +100,7 @@ export class TransfersProcessor {
 				if (eventsFolder && changedFile.path.startsWith(eventsFolder)) {
 					// Re-build context to get fresh data (this will reload events)
 					const freshContext = this.service.buildContext(ctx);
+					if (!freshContext) return;
 					// Clear and re-render
 					el.empty();
 					await this.renderer.render(el, freshContext, config, component);
@@ -114,6 +118,7 @@ export class TransfersProcessor {
 					// Small delay to allow metadata cache to process the new file
 					setTimeout(() => {
 						const freshContext = this.service.buildContext(ctx);
+						if (!freshContext) return;
 						el.empty();
 						void this.renderer.render(el, freshContext, config, component);
 					}, 100);
