@@ -101,7 +101,7 @@ Before marking a draft ready to port, run through the draft once with this list:
 | [features-refresh.md](website-content/features-refresh.md) | 1 | 📝 Pending | `/features/_index.md` |
 | [landing-refresh.md](website-content/landing-refresh.md) | 2 | 📝 Pending | `/_index.md` |
 | [whats-new-in-1-0.md](website-content/whats-new-in-1-0.md) | 2 | 📝 Pending (post-1.0) | `/1-0/_index.md` (new) |
-| [screenshots-gallery.md](website-content/screenshots-gallery.md) | 3 | 📋 Stub | `/gallery/_index.md` (new) |
+| [media-plan.md](website-content/media-plan.md) | 1 (video Phase 1) / 3 (static + motion) | 📋 Stub, with actionable video plan | `/gallery/_index.md` (new) + inline embeds |
 | [world-builder-track.md](website-content/world-builder-track.md) | 3 | 📋 Stub | `/worldbuilding/_index.md` (new) |
 | [research-track.md](website-content/research-track.md) | 3 | 📋 Stub | `/research/_index.md` (new) |
 | [faq.md](website-content/faq.md) | 3 | 📋 Stub | `/faq/_index.md` (new) |
@@ -130,7 +130,7 @@ Goal: coincide with 1.0 shipping.
 
 Only tackled after Phases 1–2 land and the 1.0 dust settles.
 
-5. **Screenshots gallery.** Visual tour. Requires a screenshot capture pass.
+5. **Media gallery.** Unified plan for static screenshots, motion loops (GIFs / WebM), and video. Part of it is Phase 1 (surface the two existing README-linked YouTube videos with chapter deep-links into research / worldbuilding / features); the static and motion portions are Phase 3 and require capture sessions.
 6. **World-builder track page.** Dedicated narrative for the fictional-universes workflow. Links out to specific features (universes, custom calendars, image maps).
 7. **Research track page.** Dedicated narrative for the evidence-and-sources workflow. Topic-focused (sources, citations, GPS workflow, data quality), not audience-gated. Parallels the worldbuilding page as a deep capability-area dive.
 8. **FAQ.** Common questions. May pull from GitHub Discussions themes.
