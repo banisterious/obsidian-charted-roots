@@ -14,6 +14,22 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ---
 
+## [0.22.5] - 2026-04-24
+
+### Fixed
+
+- **Map popup ages and durations are correct for fictional calendars** ([#434](https://github.com/banisterious/obsidian-charted-roots/issues/434)): On the geographic map, the rich popup that appears for each person-journey waypoint computed age-at-event and duration-at-location as plain numeric subtractions of extracted years. That silently produced the wrong answer whenever a fictional calendar was in play — eras that count down (BBY), era transitions (BBY → ABY), and any universe whose dating system the plugin already understood were all ignored. The popup now defers to `DateService.calculateAge` with the person's universe passed in, so fictional birth/death/marriage dates resolve through the same parser the Event modal already uses; real-world journeys keep the existing numeric-subtraction behavior as a fallback. Surfaced as part of [#428](https://github.com/banisterious/obsidian-charted-roots/issues/428) triage.
+- **Data-quality validator stops flagging valid fictional dates** ([#433](https://github.com/banisterious/obsidian-charted-roots/issues/433)): `isStandardDateFormat` recognized only real-world numeric shapes (`YYYY-MM-DD`, `YYYY-MM`, `YYYY`), so dates like `22 BBY` or `ABY 1042` on persons in a fictional-calendar universe were flagged as `NON_STANDARD_DATE` and the "Fix all" bulk-normalize path tried to rewrite them toward `YYYY-MM-DD`. Both methods now accept an optional universe argument and defer to the date service — a string that parses successfully as a fictional date is treated as a recognized format and left alone. All six callers across the format-issue surfacer and the preview / normalize paths pass the person's universe through. Surfaced as part of [#428](https://github.com/banisterious/obsidian-charted-roots/issues/428) triage.
+- **Dynamic content blocks no longer flood the console on stale file references** ([#431](https://github.com/banisterious/obsidian-charted-roots/issues/431)): `DynamicContentService.buildContext` threw `Could not find file: …` whenever `app.vault.getAbstractFileByPath` returned null for `ctx.sourcePath`. In practice this fired every time a registered metadata handler ticked for a container note that had been renamed or deleted before Obsidian cleaned up the `MarkdownRenderChild`; the surrounding try/catch only wraps the initial render, so the exception inside the async metadata/create handlers went uncaught and spammed DevTools on every metadata tick. `buildContext` now returns `null` with a warn log, matching the skip-and-warn pattern `BidirectionalLinker` already uses; every caller — initial renders plus the various re-render closures across media, timeline, relationships, sources, transfers, and extractions processors — bails out cleanly when the context can't be built. Surfaced during [#429](https://github.com/banisterious/obsidian-charted-roots/issues/429) triage.
+
+### Changed
+
+- **Internal:** `DateService` is now instantiated on the plugin and refreshed inside `saveSettings` so consumers see the current fictional-date configuration (previously defined and exported but never constructed). Groundwork for [#432](https://github.com/banisterious/obsidian-charted-roots/issues/432) / [#433](https://github.com/banisterious/obsidian-charted-roots/issues/433) / [#434](https://github.com/banisterious/obsidian-charted-roots/issues/434).
+
+Three non-data-loss fixes; per VERSIONING.md, the 3-week stability window does **not** reset from this release — it continues running from 0.22.4 (2026-04-23 → ~2026-05-14).
+
+---
+
 ## [0.22.4] - 2026-04-23
 
 ### Fixed

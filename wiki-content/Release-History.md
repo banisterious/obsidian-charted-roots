@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.5 Fix: Fictional-Calendar Gaps and Dynamic-Content Noise](#v0225-fix-fictional-calendar-gaps-and-dynamic-content-noise-v0225)
   - [v0.22.4 Hotfix: Step-Parent Save Path](#v0224-hotfix-step-parent-save-path-v0224)
   - [v0.22.3 Fix: Cross-Entity Collections Aggregation](#v0223-fix-cross-entity-collections-aggregation-v0223)
   - [v0.22.2 Hotfix: IDs-Only Relationship Arrays](#v0222-hotfix-ids-only-relationship-arrays-v0222)
@@ -143,6 +144,32 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.5 Fix: Fictional-Calendar Gaps and Dynamic-Content Noise (v0.22.5)
+
+Three non-data-loss fixes surfaced during triage of @DigitalDreamn's Star Wars universe setup ([#428](https://github.com/banisterious/obsidian-charted-roots/discussions/428)) and #429 investigation. The trace revealed that `DateService` — the central entry point for standard + fictional date parsing — existed as an exported class but was never instantiated on the plugin, so every consumer that might have used it was either silently degrading to numeric-year logic or flagging fictional dates as invalid. This release wires the service up and brings three surfaces into the fold.
+
+**Groundwork: Wire `DateService` onto the plugin.** Instantiated alongside the other long-lived services in `onload()` and refreshed inside `saveSettings()` so consumers always see the current fictional-date configuration. Groundwork for [#432](https://github.com/banisterious/obsidian-charted-roots/issues/432), and a prerequisite for both #434 and #433. Exposed via `plugin.getDateService()`.
+
+**Fix: Map popup age and duration respect fictional calendars** ([#434](https://github.com/banisterious/obsidian-charted-roots/issues/434)):
+- `src/maps/types/map-types.ts` — added `birthDate?: string` to `JourneyPath` so the raw input is preserved alongside the extracted `birthYear`.
+- `src/maps/map-data-service.ts` — populated `birthDate` when assembling journey paths.
+- `src/maps/map-view.ts` — threaded the whole `JourneyPath` through `journeyStep` / `toggleJourneyPlayback` / `panToWaypoint` / `buildRichWaypointPopup` (replacing the bare `birthYear?: number` param), and swapped the numeric-subtraction age and duration calculations for `DateService.calculateAge(birthDate, waypointDate, universe)` with a numeric fallback when the service isn't available.
+
+**Fix: Data-quality validator accepts fictional dates** ([#433](https://github.com/banisterious/obsidian-charted-roots/issues/433)):
+- `src/core/data-quality.ts` — `isStandardDateFormat` and `normalizeDateString` now take an optional `universe` argument and defer to `DateService.parseDate` when the real-world regex gates fail; a string that parses as fictional counts as recognized. All six callers (two in `checkDataFormat`, two in the `Fix all` normalizer, two in the preview path) pass the person's universe through. `NON_STANDARD_DATE` no longer fires for `22 BBY`-style inputs on persons scoped to a universe with an active fictional calendar, and the bulk-normalize path stops trying to rewrite them toward `YYYY-MM-DD`.
+
+**Fix: Dynamic-content processors skip cleanly when the source file is missing** ([#431](https://github.com/banisterious/obsidian-charted-roots/issues/431)):
+- `src/dynamic-content/services/dynamic-content-service.ts` — `buildContext` now returns `null` with a warn log instead of throwing `Could not find file: …` when `app.vault.getAbstractFileByPath` can't resolve `ctx.sourcePath`. Matches the skip-and-warn pattern `BidirectionalLinker` already uses.
+- All 18 callsites across `media-processor`, `timeline-processor`, `relationships-processor`, `sources-processor`, `transfers-processor`, and `extractions-processor` — initial renders and every re-render closure inside `metadataCache.on('changed')` and `vault.on('create')` handlers — now bail out cleanly when the context can't be built. Fixes a DevTools console flood triggered on every metadata tick whenever a container note was renamed or deleted before Obsidian cleaned up the `MarkdownRenderChild`.
+
+**Testing:** No new unit tests this release; changes are behavior-threading and null-guard additions that existing suites cover. Suite remains at 241 tests. Verified manually against the #428 repro (Galactic Standard Calendar behavior on a `universe-star-wars-<suffix>` universe) and the #431 repro (rename a frontmatter-linked note with a dynamic block open).
+
+**Reporter:** @DigitalDreamn for the underlying discussion and repros that surfaced all three gaps.
+
+**Stability-window impact:** no reset — three non-data-loss fixes. Window continues from 0.22.4's start: 2026-04-23 → ~2026-05-14.
+
+---
 
 ### v0.22.4 Hotfix: Step-Parent Save Path (v0.22.4)
 
