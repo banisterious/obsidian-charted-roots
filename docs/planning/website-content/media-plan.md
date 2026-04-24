@@ -79,6 +79,8 @@ YouTube for all video. Standard embed. No self-hosting overhead, no bandwidth co
 
 ### Phase 1 port brief
 
+**Status: ✅ Shipped 2026-04-24.** Video embeds live on landing and features pages.
+
 For the separate session working against `/mnt/s/Projects/websites/chartedroots.com`. Everything below is ready to port without any new authoring work here.
 
 **Target repo:** `/mnt/s/Projects/websites/chartedroots.com` (Hugo + Blowfish theme, GitHub Pages via Actions).
