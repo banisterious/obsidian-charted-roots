@@ -168,7 +168,9 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 		fatherName, fatherId,
 		motherName, motherId,
 		adoptiveFatherName, adoptiveFatherId,
-		adoptiveMotherName, adoptiveMotherId
+		adoptiveMotherName, adoptiveMotherId,
+		stepfatherName, stepfatherId,
+		stepmotherName, stepmotherId
 	} = relationships;
 
 	// Extract sources names/IDs
@@ -245,6 +247,10 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 			adoptiveFatherName: adoptiveFatherName,
 			adoptiveMotherId: adoptiveMotherId,
 			adoptiveMotherName: adoptiveMotherName,
+			stepfatherId: stepfatherId,
+			stepfatherName: stepfatherName,
+			stepmotherId: stepmotherId,
+			stepmotherName: stepmotherName,
 			spouseIds: spouseIds.length > 0 ? spouseIds : undefined,
 			spouseNames: spouseNames.length > 0 ? spouseNames : undefined,
 			spouseMetadata: spouseMetadata.length > 0 ? spouseMetadata : undefined,

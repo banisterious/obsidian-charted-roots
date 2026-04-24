@@ -14,6 +14,14 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ---
 
+## [0.22.4] - 2026-04-23
+
+### Fixed
+
+- **Setting a step-parent in Edit Person now actually persists** ([#429](https://github.com/banisterious/obsidian-charted-roots/issues/429)): Opening Edit Person on an existing person note, linking a step-father or step-mother, and saving appeared to succeed (no error, success notice shown) — but the step-parent fields were silently dropped from the payload, never reaching the file. A three-way asymmetry between the create and edit paths: the Edit Person modal's save payload did emit `stepfatherCrId` / `stepmotherCrId` fields, and `createPersonNote` handled them correctly, but `updatePersonNote` (the edit-path writer) had no step-parent branch at all — it silently discarded the fields. The load path was also incomplete: `loadRelationships` extracted adoptive-parent singletons but not step-parent singletons, so existing `stepfather` / `stepmother` values in frontmatter never round-tripped into the modal on open. Fix closes both gaps: `relationship-loader.ts` extracts step-parent singletons with the same wikilink-fallback pattern used for adoptive parents, `bulk-operations.ts` plumbs them through `editPersonData`, and `updatePersonNote` gains step-father / step-mother write branches mirroring the adjacent adoptive-parent pattern (with clear-on-unlink support). 6 new regression tests in `relationship-loader.test.ts` cover the load side (no data, explicit IDs, wikilink fallback, basename fallback, stepmother parity, coexistence with adoptive parents). Suite grows from 235 to 241 tests. Critical data-loss bug; per VERSIONING.md, the 3-week stability window resets from this release. Reported by @DigitalDreamn, who also observed Universe and Collection fields being cleared during the same broken save — we could not reproduce that wipe in a post-fix clean environment, and code-tracing found no path from normal step-parent save to unrelated-field clearing, so the observation is most likely a user-state-dependent interaction (unintentional dropdown click triggering the `__custom__` onChange path). If the wipe recurs post-0.22.4, we'll reopen investigation with a new reproducer.
+
+---
+
 ## [0.22.3] - 2026-04-23
 
 ### Fixed

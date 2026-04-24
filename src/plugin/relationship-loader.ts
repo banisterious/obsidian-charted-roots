@@ -54,6 +54,10 @@ export interface LoadedRelationships {
 	adoptiveFatherId: string | undefined;
 	adoptiveMotherName: string | undefined;
 	adoptiveMotherId: string | undefined;
+	stepfatherName: string | undefined;
+	stepfatherId: string | undefined;
+	stepmotherName: string | undefined;
+	stepmotherId: string | undefined;
 }
 
 /**
@@ -181,6 +185,15 @@ export function loadRelationships(
 	const adoptiveMotherName = extractName(fm.adoptive_mother);
 	const adoptiveMotherId = (fm.adoptive_mother_id as string | undefined)
 		?? (adoptiveMotherName ? resolve(adoptiveMotherName) : undefined);
+	// Step-parent singletons (#429) — same wikilink-fallback shape as adoptive.
+	// Edit Person modal's step-parent UI stores one linked person per slot
+	// (arrays on the write side, but only length 0 or 1 in practice).
+	const stepfatherName = extractName(fm.stepfather);
+	const stepfatherId = (fm.stepfather_id as string | undefined)
+		?? (stepfatherName ? resolve(stepfatherName) : undefined);
+	const stepmotherName = extractName(fm.stepmother);
+	const stepmotherId = (fm.stepmother_id as string | undefined)
+		?? (stepmotherName ? resolve(stepmotherName) : undefined);
 
 	return {
 		spouseNames,
@@ -198,7 +211,11 @@ export function loadRelationships(
 		adoptiveFatherName,
 		adoptiveFatherId,
 		adoptiveMotherName,
-		adoptiveMotherId
+		adoptiveMotherId,
+		stepfatherName,
+		stepfatherId,
+		stepmotherName,
+		stepmotherId
 	};
 }
 

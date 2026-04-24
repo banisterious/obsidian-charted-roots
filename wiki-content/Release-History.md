@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.4 Hotfix: Step-Parent Save Path](#v0224-hotfix-step-parent-save-path-v0224)
   - [v0.22.3 Fix: Cross-Entity Collections Aggregation](#v0223-fix-cross-entity-collections-aggregation-v0223)
   - [v0.22.2 Hotfix: IDs-Only Relationship Arrays](#v0222-hotfix-ids-only-relationship-arrays-v0222)
   - [v0.22.1 Hotfix: Spouse Format Migration](#v0221-hotfix-spouse-format-migration-v0221)
@@ -142,6 +143,25 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.4 Hotfix: Step-Parent Save Path (v0.22.4)
+
+Critical data-loss regression. Opening Edit Person on an existing person note, linking a step-father or step-mother, and hitting Save showed a success notice, but the step-parent fields were silently dropped — never written to the file. A classic create/edit asymmetry: the modal's save payload emitted the fields, `createPersonNote` handled them correctly, but `updatePersonNote` had no step-parent branch. The load path was also incomplete, so existing step-parent values in frontmatter never round-tripped into the modal on open.
+
+**Fix: Close the three-way step-parent gap** ([#429](https://github.com/banisterious/obsidian-charted-roots/issues/429)):
+- `src/plugin/relationship-loader.ts` — extended `LoadedRelationships` with `stepfatherName/Id` and `stepmotherName/Id` singletons; added extraction with the same wikilink-fallback pattern used for adoptive parents (supports explicit `stepfather_id`, falls back to name-resolution, falls back to basename match).
+- `src/plugin/bulk-operations.ts` — destructured the new step-parent fields from the loader and added them to the `editPersonData` passed to the Edit Person modal.
+- `src/core/person-note-writer.ts` — added step-father and step-mother write branches to `updatePersonNote`, mirroring the adjacent adoptive-parent pattern. Handles array inputs (as `createPersonNote` does), supports the single-slot case the modal actually uses (length 1), and clears frontmatter correctly when the user unlinks.
+
+**Track B (Universe / Collection wipe) — not reproduced:** Reporter also observed existing Universe and Collection fields being cleared during the same broken save. We could not reproduce this in a clean post-fix environment (fixture with `universe: Star Wars` + `collection: Test 429 Collection` pre-set, step-mother linked, saved — both fields preserved). Code-tracing the Universe / Collection dropdown logic found no path from normal step-parent save to unrelated-field clearing. Most likely explanation: user-state-dependent interaction (an unintentional click on the Universe or Collection dropdown triggering the `__custom__` onChange path, which sets the closure value to `undefined` and saves as an empty string, which the writer treats as a clear). If the wipe recurs post-0.22.4, we'll reopen with a new reproducer.
+
+**Testing:** 6 new regression tests in `relationship-loader.test.ts` covering the step-parent load path (no data, explicit IDs, wikilink fallback, basename fallback, stepmother parity, coexistence with adoptive parents). Suite grows from 235 to 241 tests.
+
+**Reporter:** @DigitalDreamn (fifth bug surfaced this week, three of which were critical data-loss).
+
+**Stability-window impact:** critical data-loss regression triggers the window reset per VERSIONING.md. The 3-week BRAT stability window re-starts from this release; new end-date ~2026-05-14.
+
+---
 
 ### v0.22.3 Fix: Cross-Entity Collections Aggregation (v0.22.3)
 

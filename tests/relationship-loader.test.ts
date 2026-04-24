@@ -432,3 +432,68 @@ describe('loadRelationships — singleton father/mother/adoptive', () => {
 		expect(r.adoptiveMotherId).toBe('am-id');
 	});
 });
+
+describe('loadRelationships — step-parent singletons (#429)', () => {
+	const stepDad = { crId: 'step-dad-id', name: 'Step Dad', basename: 'step-dad' };
+	const stepMom = { crId: 'step-mom-id', name: 'Step Mom', basename: 'step-mom' };
+
+	it('no step-parent data → both undefined', () => {
+		const r = loadRelationships({}, pool([]));
+		expect(r.stepfatherName).toBeUndefined();
+		expect(r.stepfatherId).toBeUndefined();
+		expect(r.stepmotherName).toBeUndefined();
+		expect(r.stepmotherId).toBeUndefined();
+	});
+
+	it('uses stepfather_id directly when present', () => {
+		const r = loadRelationships(
+			{ stepfather: '[[Step Dad]]', stepfather_id: 'explicit-step-dad-id' },
+			pool([stepDad])
+		);
+		expect(r.stepfatherName).toBe('Step Dad');
+		expect(r.stepfatherId).toBe('explicit-step-dad-id');
+	});
+
+	it('falls back to name resolution when stepfather_id missing', () => {
+		const r = loadRelationships(
+			{ stepfather: '[[Step Dad]]' },
+			pool([stepDad])
+		);
+		expect(r.stepfatherId).toBe('step-dad-id');
+	});
+
+	it('falls back by basename when stepfather wikilink stem differs from `name`', () => {
+		const r = loadRelationships(
+			{ stepfather: '[[step-dad]]' },
+			pool([stepDad])
+		);
+		expect(r.stepfatherId).toBe('step-dad-id');
+	});
+
+	it('stepmother follows the same pattern as stepfather', () => {
+		const r = loadRelationships(
+			{ stepmother: '[[Step Mom]]' },
+			pool([stepMom])
+		);
+		expect(r.stepmotherName).toBe('Step Mom');
+		expect(r.stepmotherId).toBe('step-mom-id');
+	});
+
+	it('step-parent + adoptive-parent coexist without interfering', () => {
+		// Regression guard: the #429 fix added step-parent alongside the
+		// existing adoptive-parent extraction. Loading a note that sets both
+		// must populate both without losing either.
+		const afath = { crId: 'af-id', name: 'AFather', basename: 'afather' };
+		const r = loadRelationships(
+			{
+				stepfather: '[[Step Dad]]',
+				stepfather_id: 'step-dad-id',
+				adoptive_father: '[[AFather]]',
+				adoptive_father_id: 'af-id'
+			},
+			pool([stepDad, afath])
+		);
+		expect(r.stepfatherId).toBe('step-dad-id');
+		expect(r.adoptiveFatherId).toBe('af-id');
+	});
+});

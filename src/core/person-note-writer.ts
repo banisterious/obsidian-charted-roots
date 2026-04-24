@@ -1728,6 +1728,49 @@ export async function updatePersonNote(
 			}
 		}
 
+		// Handle step-father relationship (#429). PersonData sends arrays
+		// because createPersonNote supports multi-step parents, but the Edit
+		// Person modal's step-parent UI is single-slot, so arrays are always
+		// length 0 (cleared) or 1 (one linked person) in the edit path.
+		if (person.stepfatherCrId !== undefined || person.stepfatherName !== undefined) {
+			const ids = person.stepfatherCrId;
+			const names = person.stepfatherName;
+			if (ids && ids.length > 0 && names && names.length === ids.length) {
+				if (ids.length === 1) {
+					frontmatter.stepfather = createSmartWikilink(names[0], app);
+					frontmatter.stepfather_id = ids[0];
+				} else {
+					frontmatter.stepfather = names.map(n => createSmartWikilink(n, app));
+					frontmatter.stepfather_id = ids;
+				}
+			} else {
+				// Clear step-father (user unlinked or mismatched arrays)
+				delete frontmatter.stepfather;
+				delete frontmatter.stepfather_id;
+			}
+		}
+
+		// Handle step-mother relationship (#429). Same contract as step-father
+		// above — arrays on the payload, but the modal's single-slot UI means
+		// the array length is 0 or 1 in practice.
+		if (person.stepmotherCrId !== undefined || person.stepmotherName !== undefined) {
+			const ids = person.stepmotherCrId;
+			const names = person.stepmotherName;
+			if (ids && ids.length > 0 && names && names.length === ids.length) {
+				if (ids.length === 1) {
+					frontmatter.stepmother = createSmartWikilink(names[0], app);
+					frontmatter.stepmother_id = ids[0];
+				} else {
+					frontmatter.stepmother = names.map(n => createSmartWikilink(n, app));
+					frontmatter.stepmother_id = ids;
+				}
+			} else {
+				// Clear step-mother (user unlinked or mismatched arrays)
+				delete frontmatter.stepmother;
+				delete frontmatter.stepmother_id;
+			}
+		}
+
 		// Handle spouse relationships - use indexed format with metadata when available (#204)
 		if (person.spouseCrId !== undefined || person.spouseName !== undefined || person.spouseMetadata !== undefined) {
 			// Check if any spouse has metadata
