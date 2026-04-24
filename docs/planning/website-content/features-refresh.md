@@ -180,15 +180,7 @@ A dockable profile panel that auto-syncs to the active note and displays related
 
 ### Statistics Dashboard
 
-A workspace view with vault-wide metrics.
-
-- Entity counts and completeness metrics
-- Gender distribution and date ranges
-- Top Lists: surnames, locations, occupations, sources (each with drill-down)
-- Extended statistics: longevity, family size, marriage patterns, migration flows, timeline density
-- Research section: research entity counts and status breakdowns
-- Citation statistics: coverage percentage, quality distribution, most cited sources
-- Organization membership statistics
+A dockable view surfacing vault-wide analytics. See [Statistics and reports](#statistics-and-reports) below for the full list of what the dashboard shows, how drill-downs work, and how the numbers feed into reports.
 
 [Read more: Statistics and Reports →](https://github.com/banisterious/obsidian-charted-roots/wiki/Statistics-And-Reports)
 
@@ -481,7 +473,24 @@ Comprehensive round-trip import and export with UUID preservation.
 
 ## Statistics and reports
 
-Analytics and report generation for sharing your research.
+Analytics, compiled reports, and the book builder for sharing research.
+
+### Statistics Dashboard
+
+The dashboard (a dockable workspace view) surfaces vault-wide metrics and analytics.
+
+- Entity counts and completeness metrics
+- Gender distribution and date ranges
+- Top Lists: surnames, locations, occupations, sources (each with drill-down)
+- Longevity analysis, family size patterns, marriage patterns, migration flows, timeline density
+- Citation statistics: coverage percentage, quality distribution, most cited sources
+- Research statistics: entity counts and status breakdowns across projects, reports, IRNs, journals, and log entries
+- Organization membership statistics
+
+### Data Quality Analysis
+
+- Severity-coded alerts across issue types
+- Drill-down lists for issue resolution
 
 ### Report Types (17+)
 
@@ -497,13 +506,13 @@ Export as PDF, ODT, or Markdown:
 - Gaps reports
 - Register reports
 - Source summaries (with citation page columns)
+- Sources by role
 - Timeline reports
 - Place summaries
 - Media inventories
 - Universe overviews
 - Collection overviews
 - Research reports
-- Organization reports
 
 ### Book Builder
 
@@ -517,22 +526,6 @@ A book builder that compiles multiple reports, visual trees, and user-written va
 - Auto-generated name index sorted by last name with alphabetical grouping
 - Chapter numbering (numeric or Roman numeral)
 - Output as PDF or ODT
-
-### Extended Statistics
-
-- Longevity analysis
-- Family size patterns
-- Marriage patterns
-- Migration flows
-- Timeline density
-- Citation coverage and quality distribution
-- Research entity counts and status breakdowns
-- Organization membership counts
-
-### Data Quality Analysis
-
-- Severity-coded alerts across issue types
-- Drill-down lists for issue resolution
 
 [Read more: Statistics and Reports →](https://github.com/banisterious/obsidian-charted-roots/wiki/Statistics-And-Reports)
 
@@ -559,9 +552,11 @@ Designed to work with the Obsidian ecosystem and adjacent tools.
 
 ## Open questions
 
-1. **Dynamic content blocks section length.** Currently ~20 bullets across 9 block types. Could split into genealogy-focused vs. research-focused, or trim to the top 4-5 most visible (timeline, relationships, media, sources). Current depth feels appropriate given the capability.
-2. **Statistics Dashboard placement.** Listed as a workspace view subsection and also referenced in "Statistics and reports." The two treatments are complementary (view-as-interface vs. analytics-as-capability) but could be consolidated if they feel redundant.
-3. **Custom Image Maps duplication.** Covered under Geographic features (Workspace views) and referenced again under World Building. Current approach points the Worldbuilding mention back to the Geographic features subsection to avoid duplicate content. Feels right but flagging.
-4. **Family Creation Wizard placement.** Listed under Data entry and management. Could also fit under Relationships and lineage since it's relationship-heavy. Kept where it is since "creating a family" is primarily a data-entry workflow.
-5. **Report types list accuracy.** 17+ types listed; I added "Research reports" and "Organization reports" to the list based on feature assumptions. Worth a sanity check during port — if either isn't a real report type, drop.
-6. **Wiki link coverage.** 11 "Read more" links at section boundaries. Landing and changelog don't need wiki links (per orchestration convention); features does. DNA tracking doesn't have a dedicated wiki page (checked `wiki-content/`) so its section has no wiki link — could add a link to `Advanced-Features` if appropriate.
+All six resolved 2026-04-24:
+
+1. ~~**Dynamic content blocks section length.**~~ **Resolved: kept current depth.** Nine block types with one-line descriptions each. Trimming would lose meaningful coverage of blocks that do real work.
+2. ~~**Statistics Dashboard placement.**~~ **Resolved: consolidated.** Workspace views > Statistics Dashboard is a short pointer to Statistics and reports, where all analytics detail lives. Previous duplication is gone.
+3. ~~**Custom Image Maps duplication.**~~ **Resolved: kept as-is.** Full treatment under Workspace views > Geographic features; cross-reference from World Building.
+4. ~~**Family Creation Wizard placement.**~~ **Resolved: kept under Data entry and management.** Creating a family is a data-entry workflow primarily.
+5. ~~**Report types list accuracy.**~~ **Resolved via code check.** `research-report-export` exists in `src/reports/types/report-types.ts` → "Research reports" is real. "Organization reports" does not exist → dropped. "Sources by role" (`sources-by-role`) was missing from the list → added. Final list has 17 user-facing categories (matches the "17+" framing).
+6. ~~**Wiki link coverage for DNA tracking.**~~ **Resolved: no wiki link.** The DNA tracking section is complete and self-contained. No dedicated DNA wiki page exists (`wiki-content/Advanced-Features.md` covers other advanced features). Wiki coverage is pending future wiki work; not a website blocker.
