@@ -32,14 +32,51 @@ Hand-off format: the website session reads files from `/mnt/s/Projects/obsidian-
 
 Applies to all drafts in this directory.
 
-- **Voice:** Match the existing site — plain-spoken, technically specific, no marketing fluff. "17+ report types" is fine; "revolutionary genealogical experience" is not.
-- **Audience:** Two tracks, both served by the same copy when possible — traditional genealogists (family history, evidence, GEDCOM) and world-builders (fictional universes, custom calendars, narrative compilation). Avoid framing that implies one audience is primary.
-- **Depth:** Moderate — headline features get 2–4 sentences; supporting capabilities get a short bullet or are grouped.
+- **Voice:** Match the existing site. Plain-spoken, technically specific, no marketing fluff. "17+ report types" is fine. "Revolutionary genealogical experience" is not.
+- **Audience:** Two tracks, both served by the same copy when possible. Traditional genealogists (family history, evidence, GEDCOM) and world-builders (fictional universes, custom calendars, narrative compilation). Avoid framing that implies one audience is primary.
+- **Depth:** Moderate. Headline features get 2–4 sentences. Supporting capabilities get a short bullet or are grouped.
 - **Curation:** On the changelog, skip small bug fixes and polish unless they illustrate a larger theme. Pick the 5–7 things a reader actually cares about per version cluster.
 - **Links:** Use absolute GitHub URLs for issues (`https://github.com/banisterious/obsidian-charted-roots/issues/123`) and releases. Relative internal links stay relative (`/features/`).
-- **Tense & voice:** Past tense for "what shipped," present tense for "what it does." Active voice.
-- **Screenshots:** Placeholder `![TODO screenshot: description]` markers in drafts; real images added during port when available.
-- **Version references:** `v0.22.5` style with the `v`; no "version 0.22.5".
+- **Tense:** Past tense for "what shipped," present tense for "what it does." Active voice.
+- **Screenshots:** Placeholder `![TODO screenshot: description]` markers in drafts. Real images added during port when available.
+- **Version references:** `v0.22.5` style with the `v`. Not "version 0.22.5".
+
+### Keeping the voice human
+
+Patterns to avoid, in rough order of how much they leak "machine-drafted":
+
+- **Em-dashes.** Overused in generated prose. Budget: 0–1 per paragraph, zero preferred. Use a period, a comma, or parentheses.
+- **Rule-of-three triads.** "Careful, deliberate, and methodical." Pick one adjective and move on.
+- **End-of-paragraph wrap-up sentences.** Phrases like "Together these close the book on X" or "This sets the stage for Y." Stop when the point is made.
+- **"Whether you're X or Y" audience-bridging.** The existing landing page uses one instance. Don't compound it.
+- **Marketing adjectives.** "Seamless," "comprehensive," "robust," "streamlined," "elevate," "professional-grade." If the feature is good, let it speak for itself.
+- **Over-parallel symmetry.** "Previously X. Now Y. Previously A. Now B." Real prose is more ragged.
+- **Semicolons joining related clauses.** "The validator did X; it now does Y." Split into two sentences.
+- **Stacked parenthetical explainers.** One per paragraph, max.
+- **Smart openers.** "Notably," "Importantly," "Crucially," "Worth noting." Drop most of them; trust the reader.
+- **LLM vocabulary.** "Delve," "tapestry," "landscape," "realm," "journey" (in the metaphorical sense), "at its core," "in essence," "think of it as."
+
+### No AI / Claude / LLM references in shipped content
+
+Nothing in these drafts, the ported pages, the commit messages, or any other committed artifact should reference AI, Claude, LLMs, assistants, or drafting tools. This applies to CHANGELOG, wiki content, docs, planning files, and everything else under source control — with two exceptions:
+
+1. **Feature content that documents an AI-powered capability is fine.** `docs/clipper-templates/` describes LLM-powered web clipper templates including model recommendations. That's documentation of a real feature, not authorship attribution.
+2. **Internal-only files.** `CLAUDE.md`, `.session-restore.md` (gitignored), and auto-memory files are exempt.
+
+Quick pre-commit grep to catch slips: `grep -niE "\b(claude|anthropic|llm|ai-(assisted|generated)|co-authored-by|chatgpt|copilot)\b" <file>` then visually scan the matches.
+
+### Self-edit checklist (before hand-off)
+
+Before marking a draft ready to port, run through the draft once with this list:
+
+- [ ] Em-dash count under 1 per paragraph on average?
+- [ ] No triads? (Ctrl-F "and" — look for three-item adjective lists.)
+- [ ] No wrap-up coda at paragraph ends?
+- [ ] No stacked parentheticals?
+- [ ] No marketing adjectives from the banned list?
+- [ ] No AI references anywhere?
+- [ ] Links use absolute URLs for GitHub, relative for internal?
+- [ ] Version references use `v0.X.Y` format?
 
 ---
 
@@ -94,7 +131,7 @@ For whoever is drafting, including future me:
 - **[CHANGELOG.md](../../CHANGELOG.md)** — authoritative release log with per-version fix/feature narrative.
 - **[wiki-content/Release-History.md](../../wiki-content/Release-History.md)** — deeper per-release write-ups, especially for 0.22.x hotfixes. Good raw material for spotlight paragraphs.
 - **[docs/](../../docs/)** — architecture, developer, and user-facing docs. Feature descriptions often have a canonical phrasing here worth reusing.
-- **[CLAUDE.md](../../CLAUDE.md)** — project conventions (e.g., sentence case for UI text) that should also apply to site copy.
+- **Project conventions** — sentence-case UI text, naming conventions, and other standards documented in [docs/developer/coding-standards.md](../../docs/developer/coding-standards.md). The conventions that apply to in-plugin copy generally apply to site copy too.
 - **[docs/assets/branding/](../../docs/assets/branding/)** — brand guide, seal, social cards. The "Where the logo appears" table tracks deployment status across surfaces.
 - **[.session-restore.md](../../.session-restore.md)** — gitignored; current state snapshot including version, stability-window status, recent work.
 
