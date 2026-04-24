@@ -77,6 +77,75 @@ One-off release demos only. Not a tutorial series, not a regular-cadence channel
 
 YouTube for all video. Standard embed. No self-hosting overhead, no bandwidth cost, captions available. The trade-offs (YouTube-branded player, possible ad placement) are acceptable for the small total video footprint.
 
+### Phase 1 port brief
+
+For the separate session working against `/mnt/s/Projects/websites/chartedroots.com`. Everything below is ready to port without any new authoring work here.
+
+**Target repo:** `/mnt/s/Projects/websites/chartedroots.com` (Hugo + Blowfish theme, GitHub Pages via Actions).
+
+**Files to change:** `content/_index.md` (landing) and `content/features/_index.md` (features).
+
+**Landing page change** — add a "See it in action" section after the "Why Charted Roots?" block and before "Key Features". Use Blowfish's YouTube shortcode if available (`{{< youtube id="elQfn1fk1VQ" >}}`) or a plain iframe embed.
+
+Suggested section copy (no voice-tell scrubbing needed, it's brief and factual):
+
+```markdown
+## See it in action
+
+A two-minute overview of the core workflow: import a GEDCOM, generate a family tree, explore the chart, and open the map view.
+
+{{< youtube id="elQfn1fk1VQ" >}}
+
+Longer feature tour (~14 minutes, chaptered) on the [features page](/features/).
+```
+
+**Features page change** — add the full tour embed at the top of the page body, above the existing "Charted Roots provides a complete genealogical toolkit…" intro. Suggested:
+
+```markdown
+{{< youtube id="GnOHrG_nVvY" >}}
+
+*~14-minute chaptered walkthrough. Jump to a chapter using the YouTube chapter markers, or use the links below.*
+```
+
+Below that, a Jump-to-chapter list (optional, can be added inline where each feature section lives). Chapter timestamps to use:
+
+| Chapter | Timestamp (seconds) | Feature area |
+|---|---|---|
+| 1. Importing Data | 10 | GEDCOM / Gramps |
+| 2. Person Notes & Dynamic Blocks | 71 | Dynamic content |
+| 3. Interactive Family Chart | 105 | Family chart |
+| 4. Maps & Journey Mode | 215 | Maps |
+| 5. Calendar View | 289 | Calendar |
+| 6. Creating a Family | 355 | Wizards |
+| 7. Evidence & Sources | 407 | Sources |
+| 8. Reports & Book Builder | 463 | Reports |
+| 9. Statistics Dashboard | 523 | Statistics |
+| 10. Place Lookup | 560 | Places |
+| 11. Bases Integration | 606 | Bases |
+| 12. World-Building | 652 | Worldbuilding |
+
+Deep-link format: `https://www.youtube.com/watch?v=GnOHrG_nVvY&t=<seconds>s` — e.g., Chapter 7 is `&t=407s`. In markdown: `[▶ Jump to Evidence & Sources chapter](https://www.youtube.com/watch?v=GnOHrG_nVvY&t=407s)`.
+
+**Blowfish-specific checks during port:**
+
+- Confirm the theme exposes a `youtube` shortcode. If not, use a plain iframe with `loading="lazy"` and the standard YouTube embed URL (`https://www.youtube.com/embed/VIDEO_ID?start=SECONDS`).
+- Test dark mode rendering; YouTube thumbnails can wash out on some themes.
+- Run `hugo server -D` locally before deploying.
+
+**Commit message for the website repo** (keep the no-AI-attribution rule):
+
+```
+content: Add video embeds to landing and features pages
+
+Landing gets the 2-minute quick tour as a new "See it in action"
+section. Features gets the 14-minute chaptered tour at the top with
+a note about using chapter markers to jump to specific capabilities.
+Videos existed on YouTube and were already linked from the README;
+this surfaces them on the site.
+```
+
+**Not in this port** (comes later, once content drafts catch up): chapter deep-links embedded inside individual feature-section paragraphs, track-page video embeds (research-track and worldbuilding-track pages don't exist yet).
+
 ---
 
 ## Motion loops (GIF / WebM / MP4)
