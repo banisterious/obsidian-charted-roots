@@ -41,6 +41,19 @@ Applies to all drafts in this directory.
 - **Screenshots:** Placeholder `![TODO screenshot: description]` markers in drafts. Real images added during port when available.
 - **Version references:** `v0.22.5` style with the `v`. Not "version 0.22.5".
 
+### Linking to wiki documentation
+
+Deep pages (research-track, worldbuilding-track, features-refresh) link out to the authoritative wiki as "Read more" affordances at section boundaries, not inline. Narrative stays on the website; reference lives on the wiki. Landing, changelog, and FAQ generally don't need deep wiki links since they're already shallow-to-mid depth.
+
+- **Pattern:** end-of-section link with an arrow, not inline mid-paragraph.
+
+  ```
+  [Read more: Evidence and sources →](https://github.com/banisterious/obsidian-charted-roots/wiki/Evidence-And-Sources)
+  ```
+
+- **URL format:** `https://github.com/banisterious/obsidian-charted-roots/wiki/<Page-Name>`. Wiki page names use title case with hyphens between words (e.g., `Web-Clipper-Integration`). The `wiki-content/` folder in this repo is the authoritative list of page names.
+- **Maintenance:** wiki page renames will break these links. Worth a periodic audit, or a link-check step on the website's CI later.
+
 ### Keeping the voice human
 
 Patterns to avoid, in rough order of how much they leak "machine-drafted":

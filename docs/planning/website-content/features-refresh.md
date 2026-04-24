@@ -43,6 +43,7 @@ Capability areas present on the live page today (placeholder — confirm during 
 - **Interactive Family Chart** — needs edits for recent improvements.
 - **Structured Role Lists for Organizations** (#274).
 - **Mills Source Classification** (#276).
+- **Web Clipper integration and templates** — shipped across 0.18.x / 0.20.x. Purpose-built templates for genealogical sources (Find a Grave person, FamilySearch source, Wikipedia biography, Wikidata place) with CSS and LLM variants. Likely deserves its own section on the features page, plus a dedicated treatment in [research-track.md](research-track.md). Source reference at [docs/clipper-templates/CLIPPER-TEMPLATES.md](../../clipper-templates/CLIPPER-TEMPLATES.md).
 
 ---
 
