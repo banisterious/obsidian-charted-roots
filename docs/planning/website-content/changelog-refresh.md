@@ -36,6 +36,8 @@ Six releases across this cluster. Four same-day hotfixes (0.22.1 through 0.22.4)
 
 Collections defined on a place note are now visible in the Edit Person dropdown, the Control Center Collections tab, and the dockable Collections sidebar. Before 0.22.3 those surfaces only read from a person-focused aggregator, so a place-only Collection appeared to vanish. The aggregator was rewritten to merge person and place counts, and the UI shows membership badges like "5 people, 3 places" where the split matters.
 
+[More in Features →](/features/#collections)
+
 ### Step-parent persistence ([#429](https://github.com/banisterious/obsidian-charted-roots/issues/429))
 
 Setting a step-father or step-mother in Edit Person now writes to the file. Before 0.22.4, three separate gaps in the edit path caused the save to silently drop the step-parent fields: the frontmatter loader never extracted them, the plumbing between loader and modal didn't carry them, and the writer had no branch to persist them. Each gap existed in a path where adoptive parents already worked correctly. The fix copies that pattern into all three places. Six new regression tests cover the load side.
@@ -48,9 +50,13 @@ Edit Person handles notes whose frontmatter carries `children_id` / `spouse_id` 
 
 Dates like `22 BBY` or `ABY 1042` stop getting flagged as non-standard for persons in a fictional-calendar universe. The validator used to accept only real-world formats (`YYYY-MM-DD`, `YYYY-MM`, `YYYY`). It now consults the fictional date parser first, so anything that resolves through a registered era abbreviation is recognized.
 
+[More in Features →](/features/#data-quality-tools)
+
 ### Map popup ages respect fictional calendars ([#434](https://github.com/banisterious/obsidian-charted-roots/issues/434))
 
 Ages and durations in map waypoint popups now match the fictional calendar for universe-scoped entities. The code used to do plain numeric year subtraction, which falls apart for descending eras like BBY and fails outright on era boundaries like BBY-to-ABY. The popup now calls into the date service with the person's universe as context.
+
+[More in Features →](/features/#geographic-features)
 
 ### Spouse format migration hardening ([#423](https://github.com/banisterious/obsidian-charted-roots/issues/423), [#420](https://github.com/banisterious/obsidian-charted-roots/issues/420), [#417](https://github.com/banisterious/obsidian-charted-roots/issues/417))
 
@@ -88,29 +94,43 @@ The 0.20.x cluster ran several months and landed the bulk of the worldbuilding t
 
 A dockable view that auto-syncs to the active note and displays all related data for any entity type (Person, Place, Event, Source, Organization) in collapsible sections. Replaces the tab-hopping that deep research used to require. Phase 1 shipped read-only in v0.20.18; later phases added inline editing on identity fields, lazy rendering of section content, keyboard navigation, and an embedded map preview for place profiles.
 
+[More in Features →](/features/#entity-profile-view)
+
 ### Book and Narrative Compilation ([#294](https://github.com/banisterious/obsidian-charted-roots/issues/294))
 
 A book builder that compiles generated reports, visual trees, and user-written vault notes into a single sequenced document. Output is PDF or ODT with a cover page, table of contents, and optional name index. Three preset templates (Family history book, Research compilation, Blank) derive chapter structure from the family graph. Book definitions save as `.book.json` files, so a book can be regenerated as the underlying vault data changes. Shipped in v0.20.26.
+
+[More in Features →](/features/#book-builder)
 
 ### Evidence and sources matured across the cluster
 
 Mills-aligned source classification ([#276](https://github.com/banisterious/obsidian-charted-roots/issues/276), v0.20.17) added three optional axes drawn from Elizabeth Shown Mills' *Evidence Explained*: source type, information type, and evidence type. Citation metadata support ([#316](https://github.com/banisterious/obsidian-charted-roots/issues/316), v0.20.34) introduced citation as a first-class entity with page references and quality assessments, with full GEDCOM roundtrip. Citation integration ([#324](https://github.com/banisterious/obsidian-charted-roots/issues/324), v0.20.38) wired bidirectional sync between citation notes and `sourced_*` fields. Source hierarchies ([#337](https://github.com/banisterious/obsidian-charted-roots/issues/337), [#338](https://github.com/banisterious/obsidian-charted-roots/issues/338), v0.20.46) added `source_parent` and `source_parent_id` properties so multi-document record groups like probate packets, census pages, and multi-volume collections can be modeled as linked parent-child structures.
 
+[More in Features →](/features/#evidence-and-sources)
+
 ### Comprehensive GEDCOM field coverage ([#317](https://github.com/banisterious/obsidian-charted-roots/issues/317))
 
 v0.20.33 closed most of the roundtrip fidelity gaps with full import and export support for 16+ additional GEDCOM 5.5.1 fields: name components (NPFX, NSFX, SPFX, NICK), person attributes (TITL, RELI, NATI, IDNO, PROP, CAST, NCHI, NMR, SSN), burial date and place, death cause, and age-at-event. FROM / TO date ranges now parse and export alongside the existing BET / AND format. Fixes on the export side eliminated duplicate BIRT / DEAT / BURI records and moved family events onto FAM records where they belong.
+
+[More in Features →](/features/#import-and-export)
 
 ### Calendar View ([#299](https://github.com/banisterious/obsidian-charted-roots/issues/299))
 
 v0.20.47 added a workspace view with a monthly calendar grid of significant dates across the vault: birthdays, death anniversaries, marriage dates, and other life events. Color-coded event dots per day, a text-label toggle for person names, a day detail panel with events and years-ago, filters by event type or living status. An "imprecise dates" section catches entries with a month but no day. Right-click a day cell to create an event pre-filled with that date.
 
+[More in Features →](/features/#calendar-view)
+
 ### Map evolution
 
 Three distinct map capabilities landed during the cluster. Person-focused map journey ([#295](https://github.com/banisterious/obsidian-charted-roots/issues/295), v0.20.45) isolated a single person's geographic path with animated step-through playback, rich waypoint popups, and a family-journey overlay color-coded by relationship. Child map markers with on-map region editing ([#362](https://github.com/banisterious/obsidian-charted-roots/issues/362), v0.20.56) put draggable markers on parent maps for every child map, with an inline overlay that saves `parent_region_x/y/w/h` back to frontmatter. Linked map drill-down navigation ([#361](https://github.com/banisterious/obsidian-charted-roots/issues/361), v0.20.56) added `linked_map` and `parent_map` properties for multi-scale worldbuilding, with breadcrumb navigation between maps.
 
+[More in Features →](/features/#geographic-features)
+
 ### Universe tooling ([#359](https://github.com/banisterious/obsidian-charted-roots/issues/359), [#360](https://github.com/banisterious/obsidian-charted-roots/issues/360))
 
 Universe notes picked up auto-generated content blocks in v0.20.56. `charted-roots-universe-people`, `-places`, `-events`, and `-organizations` render tables of every entity scoped to the current universe, with sorting and limits. A companion `charted-roots-universe-maps` block renders clickable thumbnail grids for every custom map belonging to the universe. All blocks refresh automatically when vault data changes.
+
+[More in Features →](/features/#world-building)
 
 ### Feature round-up release (v0.20.57)
 
@@ -128,13 +148,19 @@ The 0.19.x cluster continued after the v0.19.0 rename from Canvas Roots. Headlin
 
 v0.19.11 introduced five GPS-aligned research entity types: `research_project`, `research_report`, `individual_research_note`, `research_journal`, and `research_log_entry`. Each has its own status tracking: projects use open / in-progress / on-hold / completed, reports use draft / review / final / published. A new research section in the Statistics view surfaces entity counts and status breakdowns. Tag detection recognizes `#irn` shorthand for individual research notes. This subsystem was the scaffolding the 0.20.x sources and citations work built on top of.
 
+[More in Features →](/features/#research-workflow)
+
 ### Organizations, roles, and inheritance (v0.19.16)
 
 Three related capabilities shipped in v0.19.16. Organization Member Management added first-class membership modeling with roles and date ranges. Person Roles in Sources extended the same role-linking pattern to source notes, so informants, enumerators, clerks, and other source-side roles can be tracked as structured data. Inheritance & Succession Tracking added `inherited_from` and `successor` properties for title, estate, and office succession.
 
+[More in Features →](/features/#organizations)
+
 ### DNA Match Tracking ([#126](https://github.com/banisterious/obsidian-charted-roots/issues/126))
 
 v0.19.9 added opt-in DNA match tracking for genetic genealogists, off by default. When enabled, person notes can be flagged as a DNA Match and tracked with shared cM, testing company, kit ID, match type (BKM / BMM / confirmed / unconfirmed), endogamy flag, and notes. A `dna_match` relationship type handles bidirectional linking. Scope is intentionally narrow: track key matches, not full chromosome analysis. Tools like DNAPainter handle that better and this feature is designed to live alongside them.
+
+[More in Features →](/features/#dna-tracking)
 
 **Full cluster:** [v0.19.2](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.19.2) through [v0.19.17](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.19.17).
 
@@ -142,8 +168,25 @@ v0.19.9 added opt-in DNA match tracking for genetic genealogists, off by default
 
 ## Open questions for this draft
 
-1. **Scope bound** — do we catch up from 0.19.2 onward (matches where the live page stops), or go back further and re-do 0.19.x too? Current plan: forward from 0.19.2.
-2. **Per-cluster vs per-release** — are cluster spotlights the right shape, or would per-release summaries be preferable? The 0.22.x section above is the shape sample; if that feels off, easy to flip.
-3. **Release-tag links** — currently linking `/releases/tag/0.22.0` etc. Worth checking those URLs resolve correctly (release tags have no `v` prefix in the repo).
-4. **Length budget** — any target? Current 0.22.x section is ~450 words. 0.20.x would likely be 800–1200 at the same density given the cluster size.
-5. **Cross-links to features page** — worth linking changelog spotlights to their corresponding features-page section? E.g., "[Collections](/features/#collections)" from the #426 spotlight. Adds value but ties the two pages together more tightly.
+1. ~~**Scope bound** — do we catch up from 0.19.2 onward (matches where the live page stops), or go back further and re-do 0.19.x too?~~ **Resolved 2026-04-24: v0.19.2 forward, as originally planned.** Pre-v0.19.2 content was user-approved at the time; retroactive rewriting adds no user value.
+2. ~~**Cross-links to features page** — worth linking changelog spotlights to their corresponding features-page section?~~ **Resolved 2026-04-24: yes.** Pattern added under "Linking changelog spotlights to the features page" in the orchestration doc's style conventions; cross-links added to applicable spotlights below. Anchors assume Hugo default slugging from whatever headings features-refresh drafting ultimately uses.
+3. **Per-cluster vs per-release** — are cluster spotlights the right shape, or would per-release summaries be preferable? The 0.22.x section above is the shape sample. User approved on 2026-04-24.
+4. **Release-tag links** — currently linking `/releases/tag/0.22.0` etc. Worth checking those URLs resolve correctly (release tags have no `v` prefix in the repo).
+5. **Length budget** — current total content body is approximately 1650 words across four clusters. Reasonable for a catch-up page spanning ~25 releases.
+
+## Anchor list referenced by cross-links
+
+These anchors are assumed to exist on `/features/` once features-refresh.md drafting lands. During features drafting, write section headings that generate these anchors (Hugo default: lowercase, spaces become hyphens, `&` dropped). Anchors called out here:
+
+- `#entity-profile-view`
+- `#book-builder`
+- `#evidence-and-sources`
+- `#import-and-export`
+- `#calendar-view`
+- `#geographic-features`
+- `#world-building`
+- `#collections`
+- `#data-quality-tools`
+- `#organizations`
+- `#dna-tracking`
+- `#research-workflow`

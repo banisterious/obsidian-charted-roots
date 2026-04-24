@@ -41,6 +41,22 @@ Applies to all drafts in this directory.
 - **Screenshots:** Placeholder `![TODO screenshot: description]` markers in drafts. Real images added during port when available.
 - **Version references:** `v0.22.5` style with the `v`. Not "version 0.22.5".
 
+### Linking changelog spotlights to the features page
+
+Changelog spotlights that describe a feature still on the site (as opposed to a bug fix or internal plumbing change) should end with a short "More in Features" link to the corresponding section of `/features/`. Skip the link when:
+
+- the spotlight is a bug fix or stability improvement rather than a new capability
+- the feature isn't covered on the features page
+- the spotlight already links out to a track page (`/research/`, `/worldbuilding/`) that covers it more thoroughly
+
+**Pattern:** last line of the spotlight, short arrow link.
+
+```
+[More in Features →](/features/#entity-profile-view)
+```
+
+**Anchor format:** Hugo's default — lowercase heading text, spaces become hyphens, `&` and other punctuation dropped. The features-refresh draft should write headings that generate the anchors the changelog spotlights reference. When features-refresh drafting starts, cross-check the anchor list in [changelog-refresh.md](website-content/changelog-refresh.md) against the headings it uses.
+
 ### Linking to wiki documentation
 
 Deep pages (research-track, worldbuilding-track, features-refresh) link out to the authoritative wiki as "Read more" affordances at section boundaries, not inline. Narrative stays on the website; reference lives on the wiki. Landing, changelog, and FAQ generally don't need deep wiki links since they're already shallow-to-mid depth.
