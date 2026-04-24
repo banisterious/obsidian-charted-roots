@@ -1,7 +1,7 @@
-# Media Plan — stub
+# Media Plan — draft
 
-**Target pages:** `/gallery/_index.md` (new) plus inline embeds across landing, features, research, worldbuilding, and per-release pages.
-**Status:** 📋 Stub — Phase 3 for new capture work; video section has a Phase 1 component that can ship immediately since the videos already exist.
+**Target placement:** Inline embeds on landing, features, research-track, worldbuilding-track, and per-release pages. No dedicated gallery page.
+**Status:** 🔶 In progress — video Phase 1 shipped 2026-04-24 (embeds live). Static screenshots and motion loops deferred until a capture session is scheduled. Approach and playbook below.
 
 ---
 
@@ -199,7 +199,7 @@ If motion loops get produced, rank: canvas tree generation first (strongest wow 
 
 ### Worldbuilding
 
-- **Universe and fictional calendar** — a universe note with a linked custom calendar, plus an event in that universe showing a BBY/ABY date rendering correctly in the timeline. Anchors the worldbuilder side of the gallery.
+- **Universe and fictional calendar** — a universe note with a linked custom calendar, plus an event in that universe showing a BBY/ABY date rendering correctly in the timeline. Anchors the worldbuilder coverage across the site.
 - **Custom image maps** — a fictional-world map with waypoints, separate from the real-world interactive-map shot so each audience sees their use case represented.
 
 ### Data entry and organization
@@ -210,22 +210,132 @@ If motion loops get produced, rank: canvas tree generation first (strongest wow 
 
 ---
 
-## Notes for capture session
+## Capture session playbook
 
-- Capture on both light and dark themes if layout supports it; otherwise pick the one the landing hero uses. The existing video tour uses dark mode; matching that in static + motion keeps the site visually coherent.
-- Consistent window size and zoom across screenshots.
-- Include a sample vault's worth of data so screenshots look populated, not empty.
-- At least one end-to-end workflow composite is worth the extra effort. Strongest candidate: web clip → source note → attribution on a person note. Shows the research loop in three shots.
-- Include at least one pair showing the same feature for genealogy vs. worldbuilding to reinforce the two-audience framing. The Canvas Tree section is a natural spot (real family + fictional family).
-- For the worldbuilding shots, use a recognizable-enough fictional universe that readers catch the reference without distraction. Star Wars works if the plugin's built-in Galactic Standard Calendar is used; otherwise an original-but-simple universe is fine. The existing video tour uses Dying Earth and Gaean Reach fixtures, which could be reused for coherence.
-- Motion loops should reuse the static shots' framing where possible. If the canvas tree generation loop starts from a tree that looks like the Canvas Tree static shot, the eye recognizes the continuity. Plan static and motion for the same feature in one sitting.
+When a capture session is scheduled, this is the end-to-end plan. Written so it can be picked up months from now without re-reading the whole file.
+
+### Approach and effort
+
+**Approach A: full dedicated capture.** Not hybrid, not minimal. Aim for roughly 25–35 static screenshots plus 8 motion loops, covering every bullet in the "Static screenshots" and "Motion loops" sections above.
+
+**Realistic effort: 5–8 hours of focused work.** Breaks down roughly as:
+- ~10 minutes per screenshot (set up vault state, capture, crop, name, optimize) times 25–35 shots = 4–6 hours
+- ~15 minutes per motion loop (setup, record, trim, convert, optimize) times 8 loops = 2 hours
+- Plus 30–60 minutes for file organization, renaming, and site-wide embed placement
+
+Plan a dedicated session. This isn't a lunch-break task.
+
+### Prerequisites
+
+Before starting:
+
+- **Fixtures ready.** The existing demo-video fixtures cover everything:
+  - Real-world: `gedcom-sample-medium-full.ged` (60 people, 23 families, 91 places).
+  - Worldbuilding: `gedcom-dying-earth.ged` (15 characters) and `gedcom-gaean-reach.ged` (18 characters).
+  - Use these for consistency with the video tour, so readers who've seen the video recognize the data.
+- **Obsidian appearance settings locked.** Dark mode, Obsidian zoom at 110–120% for readability, close unused panels and sidebars, disable system and Obsidian notifications. Same as the video-capture checklist.
+- **Window size consistent.** 1920×1080 is the video standard; matching it for stills keeps everything visually coherent.
+- **Recording tool ready.** ScreenToGif or OBS for motion. Any OS screenshot tool works for stills; consistency matters more than the specific tool.
+
+### Capture order (priority within the full session)
+
+Capture high-leverage content first so partial completion still produces a useful set. Within each tier, order is flexible.
+
+**Tier 1: motion loops with the most impact per second.**
+
+1. Canvas tree generation (select root, click generate, tree lays out)
+2. Highlight Groups on the family chart (add a group, cards dim and glow)
+3. Time-slider scrubbing on the map (decades sweep through)
+
+**Tier 2: static shots that showcase the most visually distinctive recent features.**
+
+4. Entity Profile View — one shot per entity type (person, place, event, source, organization)
+5. Custom Relationships Overlay — family chart with overlay lines active
+6. Book Builder — one shot of a compiled PDF page
+
+**Tier 3: the rest of the motion loop candidates.**
+
+7. Journey playback (short version)
+8. Family chart relationship edit (drag-to-edit with bidirectional sync)
+9. Merge wizard conflict resolution
+10. Web Clipper click-to-source (two-app composite)
+11. Custom Relationships Overlay toggle (motion version)
+
+**Tier 4: remaining static coverage.**
+
+12. Canvas Tree layouts (Standard, Compact, Timeline, Hourglass, multi-generation)
+13. Family Chart View color schemes (gender, generation, collection, monochrome)
+14. Calendar View (real-world and fictional side by side)
+15. Interactive map (migration paths, heat map, custom image map)
+16. Web Clipper capture flow (two-shot composite)
+17. Source hierarchy display
+18. Attribution on entities (sourced_* in profile view)
+19. Data quality tools (merge wizard or cleanup wizard)
+20. Reports (pedigree, family group sheet, source summary)
+21. Universe and fictional calendar
+22. Custom image map (fictional-world focus)
+23. Edit Person modal (with universe dropdown populated)
+24. Control Center tabs (Collections, Sources, Places, Events)
+
+**Tier 5: end-to-end workflow composite.**
+
+25. Web clip → source note → attribution on a person note (three-shot composite). Plan this as a single sitting so the chain stays visually coherent.
+
+If a session runs short, stop at a tier boundary rather than leaving Tier N half-done. Tier 1 alone is about an hour and ships the content the site is most visibly missing.
+
+### Style consistency
+
+- **Match the existing video tour's visual style** (dark mode, Obsidian zoom 110–120%, no spurious UI chrome).
+- **Use the same fixture for the same feature across media types.** The canvas tree generation motion loop should start from a tree that looks like the Canvas Tree static shot, so the eye recognizes the continuity.
+- **Include at least one genealogy-vs-worldbuilding pair.** The Canvas Tree layouts section is a natural spot: one real-family tree and one fictional-family tree, same layout, side by side. Reinforces the two-audience framing without extra prose.
+- **For worldbuilding shots**, use a recognizable-enough fictional universe that readers catch the reference without distraction. The existing video tour uses Dying Earth and Gaean Reach fixtures, which should be reused for coherence.
+- **Web Clipper shots should avoid AI-specific framing.** Prefer the CSS-variant template over the LLM variant for the screenshot unless the feature specifically benefits from showing structured extraction. Keeps the site's visible surface focused on the capture-to-source workflow.
+
+### File organization
+
+**Location:**
+
+- **Website repo** (`assets/img/` in `/mnt/s/Projects/websites/chartedroots.com/`): optimized, site-ready versions. Blowfish's asset pipeline processes these for responsive sizing and format conversion.
+- **Plugin repo** (`docs/images/raw/`): raw captures at full resolution. Serves as the archival source. If site assets ever need to be regenerated at different sizes, the originals live here.
+
+**Naming convention:** `cr-<feature>-<variant>.<ext>`
+
+Examples:
+
+- `cr-canvas-tree-standard.png`
+- `cr-canvas-tree-compact.png`
+- `cr-canvas-tree-timeline.png`
+- `cr-canvas-tree-hourglass.png`
+- `cr-family-chart-highlight-groups.webm`
+- `cr-custom-relationships-overlay.png`
+- `cr-entity-profile-person.png`
+- `cr-entity-profile-place.png`
+- `cr-calendar-view-realworld.png`
+- `cr-calendar-view-fictional.png`
+- `cr-book-builder-output.png`
+- `cr-map-time-slider.webm`
+
+Scannable prefix (`cr-`), feature name, variant where relevant. Lowercase, hyphens between words, no underscores.
+
+**Format:**
+
+- **Static**: PNG for UI shots (crisp text). JPEG only for photographic content if any is ever needed.
+- **Motion**: WebM preferred (smallest files, modern-browser autoplay). MP4 fallback if a target can't play WebM. GIF only for sub-3-second micro-loops where the size difference is negligible.
+- **Size targets**: 500 KB or less per static screenshot after optimization; 5 MB or less per motion loop. Run through an optimizer (ImageOptim, squoosh.app, or equivalent) before committing to the website repo.
+
+**Embedding:** place the file in `assets/img/` on the website repo, reference from markdown as `![Alt text](/img/cr-feature-variant.png)` or via Blowfish's image shortcode if it handles responsive sizing better. Motion loops use a plain `<video>` tag with `autoplay muted loop playsinline` attributes, or an equivalent Blowfish shortcode if one exists.
+
+### After the session
+
+1. Batch-optimize files locally (ImageOptim / squoosh / ffmpeg for WebM).
+2. Commit raw captures to the plugin repo's `docs/images/raw/` as a separate commit from the website port.
+3. Commit optimized versions to the website repo's `assets/img/`.
+4. Add inline embeds to features, research-track, worldbuilding-track, and landing pages where each visual fits the narrative.
+5. Update this document to mark the capture as ✅ Complete with the date.
 
 ---
 
-## Open questions
+## Deferred decisions
 
-1. **Gallery page or embed-everywhere.** A dedicated `/gallery/` page is cleaner discovery but splits attention. Alternative: scatter screenshots through the feature and track pages, skip the gallery entirely. Lean: dedicated gallery as a visual index, with a few hero screenshots also embedded in landing and features for discoverability.
-2. **Video embed vs. thumbnail link.** Auto-embedding multiple videos on a page is heavy; thumbnail-only with click-to-play is faster but loses visibility. Probably hybrid: hero video auto-embeds, secondary chapter deep-links are thumbnail-and-link.
-3. **Deep-link format for chapters.** `&t=Xs` in the URL jumps to the chapter on click. For inline embeds, the `<iframe>` `start` parameter does the same. Pick one and be consistent.
-4. **When to recapture the full feature tour again.** The existing production workflow already re-captures per major release. Website link should always point to the most recent; if a chapter timestamp shifts, the per-chapter deep-links need updating. Worth noting as recurring maintenance.
-5. **Motion loop hosting.** GitHub Pages handles small files fine; heavier WebM might push toward self-hosting on the website's static assets. Revisit when loops actually exist.
+- **Per-page Open Graph images.** Once screenshots exist, hero shots for research-track and worldbuilding-track make good page-specific OG images (more distinctive on social shares than the site-wide card). Revisit after capture.
+- **Any gallery page later.** Decided against for now. If reader-facing demand for a visual index emerges post-launch (Discussions, feedback), a simple `/screenshots/` page can be added later referencing already-embedded assets without re-capturing anything.
