@@ -176,7 +176,7 @@ export class PdfReportRenderer {
 
 Since the original decision shipped, the pdfmake font strategy has evolved away from "standard PDF fonts only." The implementation now bundles Roboto and DejaVu Sans Mono via [build-fonts.js](../../build-fonts.js), which extracts only the needed TTF variants into `vfs_fonts_all.ts` at build time.
 
-**Why the drift:** Pedigree-chart reports render ASCII tree connectors (`├── └── │` — Unicode box-drawing characters) that require a font with comprehensive Unicode coverage. Helvetica and the standard PDF fonts rendered these as blank spaces. Switching pdfmake's default to Roboto (bundled) for body text and DejaVu Sans Mono (bundled) for monospace sections solved the rendering gap. This drift was accepted because (a) Unicode coverage is a report-quality requirement, not a nice-to-have, and (b) the bundled extract is ~465 KB, not the ~2.4 MB of the default `vfs_fonts.js`.
+**Why the drift:** Pedigree-chart reports render ASCII tree connectors (`├── └── │` — Unicode box-drawing characters) that require a font with comprehensive Unicode coverage. Helvetica and the standard PDF fonts rendered these as blank spaces. Switching pdfmake's default to Roboto (bundled) for body text and DejaVu Sans Mono (bundled) for monospace sections solved the rendering gap. This drift was accepted because Unicode coverage in pedigree reports is a report-quality requirement, not a nice-to-have. The bundled extract is meaningfully larger than the original "zero embedding" plan, however — see numbers below.
 
 **Updated bundle-size reality:**
 
@@ -184,15 +184,17 @@ Since the original decision shipped, the pdfmake font strategy has evolved away 
 |-----------|------|---------|
 | jsPDF (chart export) | ~229 KB | Static import (always loaded) |
 | pdfmake core | ~400-500 KB | Dynamic import (loads on first PDF export) |
-| Bundled fonts (Roboto + DejaVu Sans Mono) | ~465 KB | Embedded in plugin bundle |
-| **Initial bundle impact** | ~694 KB | jsPDF + fonts (pdfmake stays lazy) |
+| Bundled fonts (Roboto + DejaVu Sans Mono) | ~1.2 MB raw / ~1.55 MB base64-embedded | Embedded in plugin bundle via `vfs_fonts_all.ts` |
+| **Initial bundle impact** | ~1.78 MB | jsPDF + base64-embedded fonts (pdfmake stays lazy) |
 | **Runtime (first PDF export)** | +~400-500 KB | pdfmake core, cached for session |
+
+The font number is canonical: `build-fonts.js` reports total raw font data of 1186.4 KB across the four Roboto variants (extracted from pdfmake's `vfs_fonts.js`) and two DejaVu Sans Mono variants. Base64 encoding into `vfs_fonts_all.ts` inflates that to ~1.55 MB on disk, which is what ships in the plugin bundle. For comparison, pdfmake's default `vfs_fonts.js` is ~830 KB (Roboto-only); our extract is ~1.9× larger because of the DejaVu Sans Mono addition, not smaller as the prior version of this addendum claimed.
 
 **Re-affirmation of the dual-library choice given the new numbers:**
 
-With fonts now contributing ~465 KB to the initial bundle, the "why not consolidate on jsPDF to save pdfmake's ~400-500 KB" question deserves a fresh answer:
+With fonts contributing ~1.55 MB to the initial bundle, the "why not consolidate on jsPDF to save pdfmake's ~400-500 KB" question deserves a fresh answer:
 
-1. **pdfmake's ~400-500 KB is lazy-loaded, not initial.** Users who never export a report PDF never pay that cost. The initial-bundle comparison is really "jsPDF + fonts (~694 KB)" vs "jsPDF only (~229 KB)" — the fonts are for pdfmake but they'd still need to live somewhere if pdfmake is kept at all.
+1. **pdfmake's ~400-500 KB is lazy-loaded, not initial.** Users who never export a report PDF never pay that cost. The initial-bundle comparison is really "jsPDF + fonts (~1.78 MB)" vs "jsPDF only (~229 KB)" — the fonts are for pdfmake but they'd still need to live somewhere if pdfmake is kept at all.
 
 2. **Consolidating on jsPDF would require reimplementing pdfmake's features.** Automatic pagination, flowing tables with per-page headers, declarative table-of-contents, footnote placement, named styles — jsPDF is a low-level imperative drawing API. Re-creating these in jsPDF is months of work for PDF-features that users already have.
 

@@ -79,7 +79,7 @@ const docDefinition: TDocumentDefinitions = {
 
 **Notes:**
 - Dynamic import keeps initial bundle size smaller — pdfmake core (~400-500 KB) loads on first PDF export, not plugin startup
-- Custom VFS font bundle via `build-fonts.js`: Roboto (body) + DejaVu Sans Mono (for Unicode box-drawing characters in pedigree reports). Total ~465 KB — much smaller than the default `vfs_fonts.js` (~2.4 MB of embedded Roboto variants)
+- Custom VFS font bundle via `build-fonts.js`: Roboto (body) + DejaVu Sans Mono (for Unicode box-drawing characters in pedigree reports). Total ~1.2 MB raw font data across six TTF variants (4 Roboto + 2 DejaVu Sans Mono), bundled as base64 into `vfs_fonts_all.ts` at ~1.55 MB on disk — larger than pdfmake's default `vfs_fonts.js` (~830 KB, Roboto-only) because DejaVu Sans Mono is added on top
 - Font strategy diverged from the original ADR (which chose standard PDF fonts). Reason: Unicode box-drawing characters rendered blank with Helvetica. See [2026-04-23 addendum in design-decisions.md](../design-decisions.md#addendum-2026-04-23-font-bundling-drift--re-affirmation-of-dual-library-choice)
 - Types from `@types/pdfmake` (dev dependency)
 
@@ -396,7 +396,7 @@ const blob = await zip.generateAsync({ type: 'blob' });
 | Library | Approximate Size | Loading |
 |---------|------------------|---------|
 | pdfmake core | ~400-500 KB | Dynamic import (first PDF report export) |
-| Bundled fonts (Roboto + DejaVu Sans Mono) | ~465 KB | Static, via `vfs_fonts_all.ts` from `build-fonts.js` |
+| Bundled fonts (Roboto + DejaVu Sans Mono) | ~1.55 MB base64-embedded (~1.2 MB raw) | Static, via `vfs_fonts_all.ts` from `build-fonts.js` |
 | jsPDF | ~229 KB | Static import (Family Chart export) |
 | Leaflet + plugins | ~500 KB | Dynamic import |
 | family-chart | ~200 KB | Static import |
