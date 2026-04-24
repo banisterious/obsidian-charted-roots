@@ -20,7 +20,7 @@ Dedicated page for the world-building audience — writers, game-masters, fictio
 5. **Book & Narrative Compilation** — compiling a universe's notes into a narrative export.
 6. **Entity Profile Views** — especially useful for worldbuilders building out deep fictional biographies.
 7. **Example workflow** — a short worked example ("Build a Star Wars family history in 15 minutes") or screenshots of a sample universe.
-8. **Related genealogy features that work for fiction too** — a sidebar or callout reinforcing that GEDCOM export, the sources subsystem, and canvas trees all work the same whether the data is factual or fictional.
+8. **Related research features that work for fiction too.** A sidebar or callout noting that GEDCOM export, the sources subsystem, and canvas trees all work the same whether the data is factual or fictional. Link to [research-track.md](research-track.md) for the evidence workflow deep dive.
 
 ---
 

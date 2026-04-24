@@ -90,6 +90,7 @@ Before marking a draft ready to port, run through the draft once with this list:
 | [whats-new-in-1-0.md](website-content/whats-new-in-1-0.md) | 2 | 📝 Pending (post-1.0) | `/1-0/_index.md` (new) |
 | [screenshots-gallery.md](website-content/screenshots-gallery.md) | 3 | 📋 Stub | `/gallery/_index.md` (new) |
 | [world-builder-track.md](website-content/world-builder-track.md) | 3 | 📋 Stub | `/worldbuilding/_index.md` (new) |
+| [research-track.md](website-content/research-track.md) | 3 | 📋 Stub | `/research/_index.md` (new) |
 | [faq.md](website-content/faq.md) | 3 | 📋 Stub | `/faq/_index.md` (new) |
 
 **Status key:** 📝 Pending = not started · 🔶 In progress · ✅ Drafted, awaiting review · 🚀 Ported · 📋 Stub = outline only, no content yet.
@@ -116,11 +117,12 @@ Goal: coincide with 1.0 shipping.
 
 Only tackled after Phases 1–2 land and the 1.0 dust settles.
 
-5. **Screenshots gallery** — visual tour. Requires screenshot capture pass.
-6. **World-builder track page** — dedicated narrative for the fictional-universes audience; links out to specific features (universes, custom calendars, image maps).
-7. **FAQ** — common questions; may pull from GitHub Discussions themes.
+5. **Screenshots gallery.** Visual tour. Requires a screenshot capture pass.
+6. **World-builder track page.** Dedicated narrative for the fictional-universes workflow. Links out to specific features (universes, custom calendars, image maps).
+7. **Research track page.** Dedicated narrative for the evidence-and-sources workflow. Topic-focused (sources, citations, GPS workflow, data quality), not audience-gated. Parallels the worldbuilding page as a deep capability-area dive.
+8. **FAQ.** Common questions. May pull from GitHub Discussions themes.
 
-Additional ideas welcome; these are the ones I'd queue first.
+Additional ideas welcome. These are the ones I'd queue first.
 
 ---
 
