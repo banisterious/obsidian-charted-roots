@@ -26,6 +26,7 @@ import { PersonIndexService } from './src/core/person-index-service';
 import { PlaceGraphService } from './src/core/place-graph';
 import { EvidenceService, ProofSummaryService, SourceService } from './src/sources';
 import { EventService } from './src/events/services/event-service';
+import { DateService, createDateService } from './src/dates';
 import { TimelineProcessor, RelationshipsProcessor, MediaProcessor, SourceRolesProcessor, TransfersProcessor, MembersProcessor, SourcesProcessor, ExtractionsProcessor, NegativeFindingsProcessor, ResearchTimelineProcessor, UniverseEntitiesProcessor, UniverseMapsProcessor } from './src/dynamic-content';
 import { RecentFilesService, RecentEntityType } from './src/core/recent-files-service';
 import { registerCustomIcons } from './src/ui/lucide-icons';
@@ -97,6 +98,7 @@ export default class CanvasRootsPlugin extends Plugin {
 	private recentFilesService: RecentFilesService | null = null;
 	private mediaService: MediaService | null = null;
 	private webClipperService: WebClipperService | null = null;
+	private dateService: DateService | null = null;
 
 	/**
 	 * Flag to temporarily disable bidirectional sync during bulk operations (e.g., import)
@@ -203,6 +205,13 @@ export default class CanvasRootsPlugin extends Plugin {
 	 */
 	getMediaService(): MediaService | null {
 		return this.mediaService;
+	}
+
+	/**
+	 * Get the date service for parsing standard and fictional dates.
+	 */
+	getDateService(): DateService | null {
+		return this.dateService;
 	}
 
 	/**
@@ -332,6 +341,13 @@ export default class CanvasRootsPlugin extends Plugin {
 		// Initialize Web Clipper service
 		this.webClipperService = new WebClipperService(this.app, this.settings);
 		this.webClipperService.startWatching();
+
+		// Initialize date service (standard + fictional parsing with universe context)
+		this.dateService = createDateService({
+			enableFictionalDates: this.settings.enableFictionalDates,
+			showBuiltInDateSystems: this.settings.showBuiltInDateSystems,
+			fictionalDateSystems: this.settings.fictionalDateSystems
+		});
 
 		// Run migration for property rename (collection_name -> group_name)
 		await this.migrateCollectionNameToGroupName();
@@ -822,6 +838,15 @@ export default class CanvasRootsPlugin extends Plugin {
 		if (this.bidirectionalLinker) {
 			this.bidirectionalLinker.setEnableInclusiveParents(this.settings.enableInclusiveParents);
 			this.bidirectionalLinker.setEnableDnaTracking(this.settings.enableDnaTracking);
+		}
+
+		// Update date service with current fictional-date settings
+		if (this.dateService) {
+			this.dateService.updateSettings({
+				enableFictionalDates: this.settings.enableFictionalDates,
+				showBuiltInDateSystems: this.settings.showBuiltInDateSystems,
+				fictionalDateSystems: this.settings.fictionalDateSystems
+			});
 		}
 	}
 
