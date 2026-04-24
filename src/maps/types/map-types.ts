@@ -214,6 +214,8 @@ export interface JourneyPath {
 	waypoints: JourneyWaypoint[];
 	/** Birth year for filtering */
 	birthYear?: number;
+	/** Raw birth date string (preserves fictional-era context for age calculation) */
+	birthDate?: string;
 	/** Death year for filtering */
 	deathYear?: number;
 	/** Collection the person belongs to */

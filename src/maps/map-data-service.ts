@@ -937,6 +937,7 @@ export class MapDataService {
 						personName: person.name,
 						waypoints: uniqueWaypoints,
 						birthYear,
+						birthDate: person.born !== undefined ? String(person.born) : undefined,
 						deathYear,
 						collection: person.collection,
 						universe: pathUniverse

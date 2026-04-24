@@ -1576,7 +1576,7 @@ export class MapView extends ItemView {
 			attr: { 'aria-label': 'Previous waypoint' }
 		});
 		setIcon(prevBtn, 'skip-back');
-		prevBtn.addEventListener('click', () => this.journeyStep(-1, waypoints, journey.birthYear));
+		prevBtn.addEventListener('click', () => this.journeyStep(-1, waypoints, journey));
 
 		// Play/Pause button
 		const playBtn = this.journeyControlsEl.createEl('button', {
@@ -1584,7 +1584,7 @@ export class MapView extends ItemView {
 			attr: { 'aria-label': 'Play' }
 		});
 		setIcon(playBtn, 'play');
-		playBtn.addEventListener('click', () => this.toggleJourneyPlayback(playBtn, waypoints, journey.birthYear));
+		playBtn.addEventListener('click', () => this.toggleJourneyPlayback(playBtn, waypoints, journey));
 
 		// Next button
 		const nextBtn = this.journeyControlsEl.createEl('button', {
@@ -1592,7 +1592,7 @@ export class MapView extends ItemView {
 			attr: { 'aria-label': 'Next waypoint' }
 		});
 		setIcon(nextBtn, 'skip-forward');
-		nextBtn.addEventListener('click', () => this.journeyStep(1, waypoints, journey.birthYear));
+		nextBtn.addEventListener('click', () => this.journeyStep(1, waypoints, journey));
 
 		// Progress section
 		const progressEl = this.journeyControlsEl.createDiv({ cls: 'cr-map-journey-progress' });
@@ -1624,25 +1624,25 @@ export class MapView extends ItemView {
 
 		// Show initial state
 		this.updateJourneyDisplay(waypoints);
-		this.panToWaypoint(waypoints[0], waypoints, journey.birthYear);
+		this.panToWaypoint(waypoints[0], waypoints, journey);
 	}
 
 	/**
 	 * Step forward or backward through journey waypoints
 	 */
-	private journeyStep(direction: number, waypoints: JourneyWaypoint[], birthYear?: number): void {
+	private journeyStep(direction: number, waypoints: JourneyWaypoint[], journey?: JourneyPath): void {
 		const newStep = this.journeyMode.currentStep + direction;
 		if (newStep < 0 || newStep >= waypoints.length) return;
 
 		this.journeyMode.currentStep = newStep;
 		this.updateJourneyDisplay(waypoints);
-		this.panToWaypoint(waypoints[newStep], waypoints, birthYear);
+		this.panToWaypoint(waypoints[newStep], waypoints, journey);
 	}
 
 	/**
 	 * Toggle play/pause for journey animation
 	 */
-	private toggleJourneyPlayback(btn: HTMLButtonElement, waypoints: JourneyWaypoint[], birthYear?: number): void {
+	private toggleJourneyPlayback(btn: HTMLButtonElement, waypoints: JourneyWaypoint[], journey?: JourneyPath): void {
 		if (this.journeyMode.isPlaying) {
 			// Pause
 			this.journeyMode.isPlaying = false;
@@ -1665,7 +1665,7 @@ export class MapView extends ItemView {
 					this.journeyMode.currentStep = nextStep;
 				}
 				this.updateJourneyDisplay(waypoints);
-				this.panToWaypoint(waypoints[this.journeyMode.currentStep], waypoints, birthYear);
+				this.panToWaypoint(waypoints[this.journeyMode.currentStep], waypoints, journey);
 			}, this.journeyMode.speed);
 		}
 	}
@@ -1704,7 +1704,7 @@ export class MapView extends ItemView {
 	/**
 	 * Pan and zoom the map to a specific waypoint
 	 */
-	private panToWaypoint(waypoint: JourneyWaypoint, allWaypoints?: JourneyWaypoint[], birthYear?: number): void {
+	private panToWaypoint(waypoint: JourneyWaypoint, allWaypoints?: JourneyWaypoint[], journey?: JourneyPath): void {
 		if (!this.mapController?.['map']) return;
 
 		const map = this.mapController['map'];
@@ -1717,7 +1717,7 @@ export class MapView extends ItemView {
 			// Open rich popup after fly animation
 			setTimeout(() => {
 				const L = require('leaflet');
-				const popupContent = this.buildRichWaypointPopup(waypoint, allWaypoints, birthYear);
+				const popupContent = this.buildRichWaypointPopup(waypoint, allWaypoints, journey);
 				L.popup({ maxWidth: 300, className: 'cr-journey-rich-popup' })
 					.setLatLng([waypoint.lat, waypoint.lng])
 					.setContent(popupContent)
@@ -1732,7 +1732,7 @@ export class MapView extends ItemView {
 	private buildRichWaypointPopup(
 		waypoint: JourneyWaypoint,
 		allWaypoints?: JourneyWaypoint[],
-		birthYear?: number
+		journey?: JourneyPath
 	): HTMLElement {
 		const container = document.createElement('div');
 		container.className = 'cr-journey-rich-popup-content';
@@ -1765,24 +1765,25 @@ export class MapView extends ItemView {
 			this.addPopupRow(body, 'Place', waypoint.name);
 		}
 
-		// Age
-		if (birthYear && waypoint.year) {
-			const age = waypoint.year - birthYear;
-			if (age >= 0) {
-				this.addPopupRow(body, 'Age', `${age} years old`);
-			}
+		// Age — use DateService so fictional calendars (eras counting down, era-crossing) are handled correctly
+		const dateService = this.plugin.getDateService();
+		const age = dateService && journey?.birthDate && waypoint.date
+			? dateService.calculateAge(journey.birthDate, waypoint.date, journey.universe)?.years
+			: (journey?.birthYear && waypoint.year ? waypoint.year - journey.birthYear : undefined);
+		if (age !== undefined && age >= 0) {
+			this.addPopupRow(body, 'Age', `${age} years old`);
 		}
 
-		// Duration at location (time between this event and the next)
-		if (allWaypoints && waypoint.year) {
+		// Duration at location (time between this event and the next) — same treatment
+		if (allWaypoints) {
 			const stepIndex = allWaypoints.indexOf(waypoint);
 			if (stepIndex >= 0 && stepIndex < allWaypoints.length - 1) {
 				const nextWp = allWaypoints[stepIndex + 1];
-				if (nextWp.year) {
-					const duration = nextWp.year - waypoint.year;
-					if (duration > 0) {
-						this.addPopupRow(body, 'Duration at location', `${duration} year${duration !== 1 ? 's' : ''}`);
-					}
+				const duration = dateService && waypoint.date && nextWp.date
+					? dateService.calculateAge(waypoint.date, nextWp.date, journey?.universe)?.years
+					: (waypoint.year && nextWp.year ? nextWp.year - waypoint.year : undefined);
+				if (duration !== undefined && duration > 0) {
+					this.addPopupRow(body, 'Duration at location', `${duration} year${duration !== 1 ? 's' : ''}`);
 				}
 			}
 		}
