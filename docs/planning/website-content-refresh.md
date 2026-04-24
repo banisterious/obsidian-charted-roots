@@ -70,12 +70,12 @@ Deep pages (research-track, worldbuilding-track, features-refresh) link out to t
 - **URL format:** `https://github.com/banisterious/obsidian-charted-roots/wiki/<Page-Name>`. Wiki page names use title case with hyphens between words (e.g., `Web-Clipper-Integration`). The `wiki-content/` folder in this repo is the authoritative list of page names.
 - **Maintenance:** wiki page renames will break these links. Worth a periodic audit, or a link-check step on the website's CI later.
 
-### Keeping the voice human
+### Voice preferences
 
-Patterns to avoid, in rough order of how much they leak "machine-drafted":
+Specific patterns to avoid in copy that'll ship on the site:
 
-- **Em-dashes.** Overused in generated prose. Budget: 0–1 per paragraph, zero preferred. Use a period, a comma, or parentheses.
-- **Rule-of-three triads.** "Careful, deliberate, and methodical." Pick one adjective and move on.
+- **Em-dashes.** Budget: 0–1 per paragraph, zero preferred. Use a period, a comma, or parentheses instead.
+- **Rule-of-three adjective triads.** "Careful, deliberate, and methodical." Pick one adjective and move on.
 - **End-of-paragraph wrap-up sentences.** Phrases like "Together these close the book on X" or "This sets the stage for Y." Stop when the point is made.
 - **"Whether you're X or Y" audience-bridging.** The existing landing page uses one instance. Don't compound it.
 - **Marketing adjectives.** "Seamless," "comprehensive," "robust," "streamlined," "elevate," "professional-grade." If the feature is good, let it speak for itself.
@@ -83,27 +83,17 @@ Patterns to avoid, in rough order of how much they leak "machine-drafted":
 - **Semicolons joining related clauses.** "The validator did X; it now does Y." Split into two sentences.
 - **Stacked parenthetical explainers.** One per paragraph, max.
 - **Smart openers.** "Notably," "Importantly," "Crucially," "Worth noting." Drop most of them; trust the reader.
-- **LLM vocabulary.** "Delve," "tapestry," "landscape," "realm," "journey" (in the metaphorical sense), "at its core," "in essence," "think of it as."
-
-### No AI / Claude / LLM references in shipped content
-
-Nothing in these drafts, the ported pages, the commit messages, or any other committed artifact should reference AI, Claude, LLMs, assistants, or drafting tools. This applies to CHANGELOG, wiki content, docs, planning files, and everything else under source control — with two exceptions:
-
-1. **Feature content that documents an AI-powered capability is fine.** `docs/clipper-templates/` describes LLM-powered web clipper templates including model recommendations. That's documentation of a real feature, not authorship attribution.
-2. **Internal-only files.** `CLAUDE.md`, `.session-restore.md` (gitignored), and auto-memory files are exempt.
-
-Quick pre-commit grep to catch slips: `grep -niE "\b(claude|anthropic|llm|ai-(assisted|generated)|co-authored-by|chatgpt|copilot)\b" <file>` then visually scan the matches.
+- **Overused vocabulary.** "Delve," "tapestry," "landscape," "realm," "journey" (in the metaphorical sense), "at its core," "in essence," "think of it as."
 
 ### Self-edit checklist (before hand-off)
 
 Before marking a draft ready to port, run through the draft once with this list:
 
 - [ ] Em-dash count under 1 per paragraph on average?
-- [ ] No triads? (Ctrl-F "and" — look for three-item adjective lists.)
+- [ ] No adjective triads? (Ctrl-F "and" — look for three-item adjective lists.)
 - [ ] No wrap-up coda at paragraph ends?
 - [ ] No stacked parentheticals?
-- [ ] No marketing adjectives from the banned list?
-- [ ] No AI references anywhere?
+- [ ] No marketing adjectives from the list above?
 - [ ] Links use absolute URLs for GitHub, relative for internal?
 - [ ] Version references use `v0.X.Y` format?
 
@@ -117,7 +107,7 @@ Before marking a draft ready to port, run through the draft once with this list:
 | [features-refresh.md](website-content/features-refresh.md) | 1 | 📝 Pending | `/features/_index.md` |
 | [landing-refresh.md](website-content/landing-refresh.md) | 2 | 📝 Pending | `/_index.md` |
 | [whats-new-in-1-0.md](website-content/whats-new-in-1-0.md) | 2 | 📝 Pending (post-1.0) | `/1-0/_index.md` (new) |
-| [media-plan.md](website-content/media-plan.md) | 1 (video Phase 1) / 3 (static + motion) | 📋 Stub, with actionable video plan | `/gallery/_index.md` (new) + inline embeds |
+| [media-plan.md](website-content/media-plan.md) | 1 (video) / 3 (static + motion) | 🚀 Video Phase 1 shipped 2026-04-24; static + motion pending | `/gallery/_index.md` (new) + inline embeds |
 | [world-builder-track.md](website-content/world-builder-track.md) | 3 | 📋 Stub | `/worldbuilding/_index.md` (new) |
 | [research-track.md](website-content/research-track.md) | 3 | 📋 Stub | `/research/_index.md` (new) |
 | [faq.md](website-content/faq.md) | 3 | 📋 Stub | `/faq/_index.md` (new) |
