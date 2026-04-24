@@ -676,7 +676,7 @@ export class DataQualityService {
 				: typeof rawDied === 'string' ? rawDied : undefined;
 
 		// Non-standard date format for birth
-		if (birthDate && !this.isStandardDateFormat(birthDate)) {
+		if (birthDate && !this.isStandardDateFormat(birthDate, person.universe)) {
 			issues.push({
 				code: 'NON_STANDARD_DATE',
 				message: `Birth date "${birthDate}" is not in standard format (YYYY-MM-DD or YYYY)`,
@@ -688,7 +688,7 @@ export class DataQualityService {
 		}
 
 		// Non-standard date format for death
-		if (deathDate && !this.isStandardDateFormat(deathDate)) {
+		if (deathDate && !this.isStandardDateFormat(deathDate, person.universe)) {
 			issues.push({
 				code: 'NON_STANDARD_DATE',
 				message: `Death date "${deathDate}" is not in standard format (YYYY-MM-DD or YYYY)`,
@@ -1247,9 +1247,11 @@ export class DataQualityService {
 	}
 
 	/**
-	 * Check if a date is in standard format
+	 * Check if a date is in a recognized format — either a standard real-world
+	 * format or (when the entity is scoped to a universe with an active fictional
+	 * calendar) a fictional date that the date service can parse.
 	 */
-	private isStandardDateFormat(dateStr: unknown): boolean {
+	private isStandardDateFormat(dateStr: unknown, universe?: string): boolean {
 		// Handle non-string values
 		if (typeof dateStr === 'number') {
 			// A plain year number is considered standard
@@ -1264,6 +1266,13 @@ export class DataQualityService {
 		if (/^\d{4}-\d{2}$/.test(dateStr)) return true;
 		// YYYY
 		if (/^\d{4}$/.test(dateStr)) return true;
+
+		// Fall back to the date service to check fictional formats (BBY/ABY, etc.)
+		const dateService = this.plugin?.getDateService();
+		if (dateService) {
+			const parsed = dateService.parseDate(dateStr, universe);
+			if (parsed?.type === 'fictional') return true;
+		}
 		return false;
 	}
 
@@ -1408,8 +1417,8 @@ export class DataQualityService {
 					? String(rawBorn)
 					: typeof rawBorn === 'string' ? rawBorn : undefined;
 
-			if (birthDate && !this.isStandardDateFormat(birthDate)) {
-				const normalized = this.normalizeDateString(birthDate);
+			if (birthDate && !this.isStandardDateFormat(birthDate, person.universe)) {
+				const normalized = this.normalizeDateString(birthDate, person.universe);
 				if (normalized && normalized !== birthDate) {
 					// Update the 'born' field (canonical name used in frontmatter)
 					updates['born'] = normalized;
@@ -1425,8 +1434,8 @@ export class DataQualityService {
 					? String(rawDied)
 					: typeof rawDied === 'string' ? rawDied : undefined;
 
-			if (deathDate && !this.isStandardDateFormat(deathDate)) {
-				const normalized = this.normalizeDateString(deathDate);
+			if (deathDate && !this.isStandardDateFormat(deathDate, person.universe)) {
+				const normalized = this.normalizeDateString(deathDate, person.universe);
 				if (normalized && normalized !== deathDate) {
 					// Update the 'died' field (canonical name used in frontmatter)
 					updates['died'] = normalized;
@@ -2504,8 +2513,8 @@ export class DataQualityService {
 
 		for (const person of people) {
 			// Check dates
-			if (person.birthDate && !this.isStandardDateFormat(person.birthDate)) {
-				const normalized = this.normalizeDateString(person.birthDate);
+			if (person.birthDate && !this.isStandardDateFormat(person.birthDate, person.universe)) {
+				const normalized = this.normalizeDateString(person.birthDate, person.universe);
 				if (normalized) {
 					preview.dateNormalization.push({
 						person,
@@ -2515,8 +2524,8 @@ export class DataQualityService {
 					});
 				}
 			}
-			if (person.deathDate && !this.isStandardDateFormat(person.deathDate)) {
-				const normalized = this.normalizeDateString(person.deathDate);
+			if (person.deathDate && !this.isStandardDateFormat(person.deathDate, person.universe)) {
+				const normalized = this.normalizeDateString(person.deathDate, person.universe);
 				if (normalized) {
 					preview.dateNormalization.push({
 						person,
@@ -2761,9 +2770,9 @@ export class DataQualityService {
 	/**
 	 * Normalize a date string to YYYY-MM-DD format
 	 */
-	private normalizeDateString(dateStr: string): string | null {
-		// Already standard format
-		if (this.isStandardDateFormat(dateStr)) {
+	private normalizeDateString(dateStr: string, universe?: string): string | null {
+		// Already in a recognized format (standard or fictional) — leave it alone
+		if (this.isStandardDateFormat(dateStr, universe)) {
 			return dateStr;
 		}
 
