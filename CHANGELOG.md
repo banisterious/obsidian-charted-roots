@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **Date-inconsistency checks respect fictional eras** ([#437](https://github.com/banisterious/obsidian-charted-roots/issues/437)): `checkDateInconsistencies` in the data-quality service used a local `parseYear` helper that pulled the first four-digit number out of a date string and ignored era context, so for descending calendars (BBY) a coherent lifespan like `1045 BBY` → `1042 BBY` (three years) read as a reversed comparison and tripped `DEATH_BEFORE_BIRTH`. `parseYear` now defers to `DateService.parseDate` when the entity is scoped to a universe, returning the canonical signed year (negative for descending eras, positive for ascending) so cross-era arithmetic stays coherent across `DEATH_BEFORE_BIRTH`, `UNREASONABLE_AGE`, `BORN_BEFORE_PARENT`, `PARENT_TOO_YOUNG`, `PARENT_TOO_OLD`, and `BORN_AFTER_PARENT_DEATH`. `FUTURE_BIRTH` and `FUTURE_DEATH` no longer fire on fictional dates at all, because they only have meaning against the real-world current year. Real-world comparisons are unchanged. Sibling fix to [#433](https://github.com/banisterious/obsidian-charted-roots/issues/433) and [#434](https://github.com/banisterious/obsidian-charted-roots/issues/434), built on the `DateService` plumbing that landed in v0.22.5.
+
 ---
 
 ## [0.22.5] - 2026-04-24

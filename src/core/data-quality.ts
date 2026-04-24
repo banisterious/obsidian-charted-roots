@@ -318,8 +318,11 @@ export class DataQualityService {
 	): DataQualityIssue[] {
 		const issues: DataQualityIssue[] = [];
 
-		const birthYear = this.parseYear(person.birthDate);
-		const deathYear = this.parseYear(person.deathDate);
+		const birthYear = this.parseYear(person.birthDate, person.universe);
+		const deathYear = this.parseYear(person.deathDate, person.universe);
+		const personIsFictional =
+			this.isFictionalDate(person.birthDate, person.universe) ||
+			this.isFictionalDate(person.deathDate, person.universe);
 
 		// Death before birth
 		if (birthYear && deathYear && deathYear < birthYear) {
@@ -345,9 +348,10 @@ export class DataQualityService {
 			});
 		}
 
-		// Future birth date
+		// Future birth/death checks compare against the real-world current year, so
+		// they don't apply to persons whose dates resolve in a fictional calendar.
 		const currentYear = new Date().getFullYear();
-		if (birthYear && birthYear > currentYear) {
+		if (!personIsFictional && birthYear && birthYear > currentYear) {
 			issues.push({
 				code: 'FUTURE_BIRTH',
 				message: `Birth year (${birthYear}) is in the future`,
@@ -358,8 +362,7 @@ export class DataQualityService {
 			});
 		}
 
-		// Future death date
-		if (deathYear && deathYear > currentYear) {
+		if (!personIsFictional && deathYear && deathYear > currentYear) {
 			issues.push({
 				code: 'FUTURE_DEATH',
 				message: `Death year (${deathYear}) is in the future`,
@@ -374,7 +377,7 @@ export class DataQualityService {
 		if (person.fatherCrId && birthYear) {
 			const father = peopleMap.get(person.fatherCrId);
 			if (father) {
-				const fatherBirthYear = this.parseYear(father.birthDate);
+				const fatherBirthYear = this.parseYear(father.birthDate, father.universe);
 				if (fatherBirthYear && birthYear <= fatherBirthYear) {
 					issues.push({
 						code: 'BORN_BEFORE_PARENT',
@@ -416,7 +419,7 @@ export class DataQualityService {
 		if (person.motherCrId && birthYear) {
 			const mother = peopleMap.get(person.motherCrId);
 			if (mother) {
-				const motherBirthYear = this.parseYear(mother.birthDate);
+				const motherBirthYear = this.parseYear(mother.birthDate, mother.universe);
 				if (motherBirthYear && birthYear <= motherBirthYear) {
 					issues.push({
 						code: 'BORN_BEFORE_PARENT',
@@ -453,7 +456,7 @@ export class DataQualityService {
 					});
 				}
 				// Born after mother's death
-				const motherDeathYear = this.parseYear(mother.deathDate);
+				const motherDeathYear = this.parseYear(mother.deathDate, mother.universe);
 				if (motherDeathYear && birthYear > motherDeathYear) {
 					issues.push({
 						code: 'BORN_AFTER_PARENT_DEATH',
@@ -1206,9 +1209,12 @@ export class DataQualityService {
 	}
 
 	/**
-	 * Parse a year from a date string
+	 * Parse a year from a date string. When `universe` is provided and the
+	 * DateService resolves the date as fictional, returns the canonical year
+	 * (signed: negative for descending eras like BBY, positive for ascending
+	 * like ABY) so cross-era arithmetic stays coherent.
 	 */
-	private parseYear(dateStr?: unknown): number | null {
+	private parseYear(dateStr?: unknown, universe?: string): number | null {
 		if (!dateStr) return null;
 
 		// Handle number directly (e.g., year as number)
@@ -1220,15 +1226,22 @@ export class DataQualityService {
 		let str: string;
 		if (typeof dateStr === 'string') {
 			str = dateStr;
-		} else if (typeof dateStr === 'number') {
-			// Handle numeric dates (e.g., born: 1845)
-			str = String(dateStr);
 		} else if (dateStr instanceof Date) {
 			// Handle Date objects
 			str = dateStr.toISOString().split('T')[0];
 		} else {
 			// Unknown type - can't extract year
 			return null;
+		}
+
+		// Prefer DateService for canonical-year semantics when the universe
+		// scopes a fictional calendar. Falls through for real-world dates.
+		const dateService = this.plugin?.getDateService();
+		if (dateService) {
+			const parsed = dateService.parseDate(str, universe);
+			if (parsed?.type === 'fictional' && parsed.year !== null) {
+				return parsed.year;
+			}
 		}
 
 		// Try YYYY-MM-DD format
@@ -1244,6 +1257,18 @@ export class DataQualityService {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Whether a date resolves as fictional under the given universe. Used to
+	 * gate real-world-only checks (FUTURE_BIRTH / FUTURE_DEATH) off when the
+	 * person lives on a fictional calendar.
+	 */
+	private isFictionalDate(dateStr: unknown, universe?: string): boolean {
+		if (!universe || typeof dateStr !== 'string') return false;
+		const dateService = this.plugin?.getDateService();
+		if (!dateService) return false;
+		return dateService.parseDate(dateStr, universe)?.type === 'fictional';
 	}
 
 	/**
