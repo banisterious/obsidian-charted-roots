@@ -111,3 +111,8 @@ docs/developer/pr-reviews/
 # Sample/demo files (for local testing only)
 docs/samples/
 .claude/
+
+# Raw motion captures (large; optimized versions live in the website repo)
+# Static raw captures (.png) stay tracked as archival source.
+docs/images/raw/*.webm
+docs/images/raw/*.mp4
