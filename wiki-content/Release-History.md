@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.6 Fix: Fictional-Era Coverage Round-Up](#v0226-fix-fictional-era-coverage-round-up-v0226)
   - [v0.22.5 Fix: Fictional-Calendar Gaps and Dynamic-Content Noise](#v0225-fix-fictional-calendar-gaps-and-dynamic-content-noise-v0225)
   - [v0.22.4 Hotfix: Step-Parent Save Path](#v0224-hotfix-step-parent-save-path-v0224)
   - [v0.22.3 Fix: Cross-Entity Collections Aggregation](#v0223-fix-cross-entity-collections-aggregation-v0223)
@@ -144,6 +145,28 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.6 Fix: Fictional-Era Coverage Round-Up (v0.22.6)
+
+Three non-data-loss fixes that all share the same DateService-bypass root cause first surfaced in v0.22.5's #433 / #434 cluster. Two of the three were filed during v0.22.5 testing and reflection (#437, #438); the third was filed and fixed off DigitalDreamn's verification follow-up on #434, where a screenshot revealed a *fourth* surface where the same naive year-subtraction pattern lived (#439). Pattern of the cluster: when a feature was scaffolded for real-world dates and a fictional-calendar surface was added later, the surface inherited the wrong arithmetic.
+
+**Fix: Date-inconsistency checks respect fictional eras** ([#437](https://github.com/banisterious/obsidian-charted-roots/issues/437)):
+- `src/core/data-quality.ts` — `parseYear` now accepts an optional `universe` and defers to `DateService.parseDate` first, returning the canonical signed year (negative for descending eras like BBY, positive for ABY). Cross-era arithmetic stays coherent across all six date-inconsistency check codes (`DEATH_BEFORE_BIRTH`, `UNREASONABLE_AGE`, `BORN_BEFORE_PARENT`, `PARENT_TOO_YOUNG`, `PARENT_TOO_OLD`, `BORN_AFTER_PARENT_DEATH`). New `isFictionalDate` helper gates `FUTURE_BIRTH` / `FUTURE_DEATH` (the only checks that compare against the real-world current year) — they're now skipped when the person's dates resolve as fictional. Real-world comparisons unchanged.
+
+**Fix: Map journey surfaces life events from `cr_type: event` notes** ([#438](https://github.com/banisterious/obsidian-charted-roots/issues/438)):
+- `src/maps/map-data-service.ts` — `getPersonData` now also calls `EventService.getEventsForPerson` for each person and normalizes the returned `EventNote`s into the same `LifeEvent` shape the journey already understands. The two sources are merged with a dedup key (`event_type | place(unwrapped) | date_from`); inline entries win on conflict. Birth / death / marriage / divorce stay filtered out so dedicated-field waypoints aren't doubled. New `coerceDateValue` helper normalizes YAML `Date` objects (unquoted ISO dates like `date_from: 1905-04-05`) into ISO strings so the chronological sort doesn't drop them. For dev-vault-style schemas (which use external event notes), journeys previously collapsed down to whatever the dedicated frontmatter milestones supported — often two or three waypoints across an entire life.
+
+**Fix: Timeline dynamic block respects fictional eras when annotating ages** ([#439](https://github.com/banisterious/obsidian-charted-roots/issues/439)):
+- `src/dynamic-content/services/dynamic-content-service.ts` — added `getDateService()` accessor on the service so renderers can reach the plugin's date service without a direct plugin reference.
+- `src/dynamic-content/renderers/timeline-renderer.ts` — new `computeEventAge(birthDate, eventDate, universe)` helper that defers to `DateService.calculateAge` and falls back to naive year subtraction only for real-world dates or when DateService isn't available. The helper checks `AgeCalculation.error` so it doesn't fall through to the naive path after the fictional parser has already flagged the dates as reversed. Replaced eight call sites: the person's own events, `parseContextNote`, six entry-builders inside `gatherFamilyEvents` (children's births, spouse / parent deaths, sibling births, adoptions, adopted children's births), and the marriage / divorce paths in `buildTimelineEntries`. Also dropped the `birthYear: number` parameter from `gatherFamilyEvents` and `parseContextNote` since they now read `birthDate` and `universe` from the context's person object directly.
+
+**Testing:** 38 new tests across three files. `tests/data-quality-fictional-dates.test.ts` (10 tests) covers BBY-span coherence, parent-child ordering across descending eras, and FUTURE-check skipping for #437. `tests/map-data-service-life-events.test.ts` (13 tests) covers merge / dedup / wikilink-vs-raw normalization / date coercion for #438. `tests/timeline-renderer-age.test.ts` (15 tests) covers BBY span ages (the actual Cliegg Lars numbers), era crossings, real-world dates, fallback when DateService is unavailable, and missing/invalid inputs for #439. Suite total: 279 tests.
+
+**Reporter:** @DigitalDreamn for the verification follow-up on #434 that surfaced #439's screenshot.
+
+**Stability-window impact:** no reset — three non-data-loss fixes. Window continues from 0.22.4's start: 2026-04-23 → ~2026-05-14.
+
+---
 
 ### v0.22.5 Fix: Fictional-Calendar Gaps and Dynamic-Content Noise (v0.22.5)
 

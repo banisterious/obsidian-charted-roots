@@ -12,6 +12,12 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+---
+
+## [0.22.6] - 2026-04-25
+
+Three non-data-loss fixes — all in the same DateService-bypass class first surfaced in v0.22.5 (#433, #434). Sixth release in three days. Stability window does **not** reset; continues from 0.22.4 (2026-04-23 → ~2026-05-14).
+
 ### Fixed
 
 - **Timeline dynamic block respects fictional eras when annotating ages** ([#439](https://github.com/banisterious/obsidian-charted-roots/issues/439)): The `charted-roots-timeline` block on a person note in a fictional-calendar universe was showing the BBY year for each event but no age annotation alongside it — even though the Born line correctly displayed "age 0," exposing the inconsistency. `TimelineRenderer` calculated age via naive integer subtraction (`entryYear - birthYear`) with an `entryYear >= birthYear` guard that's inverted for descending eras: for Cliegg Lars born 82 BBY, marriage at 26 BBY produced `26 >= 82` (false) so no age rendered. The same broken pattern existed in eight call sites across the renderer (own events, family events, context-note events, marriages, divorces, adoptions). All eight now route through a new `computeEventAge` helper that defers to `DateService.calculateAge` with the person's universe — handles BBY descending, ABY ascending, and BBY → ABY era crossings — and falls back to naive year subtraction only for real-world dates or when DateService isn't available. Sibling fix to [#433](https://github.com/banisterious/obsidian-charted-roots/issues/433), [#434](https://github.com/banisterious/obsidian-charted-roots/issues/434), and [#437](https://github.com/banisterious/obsidian-charted-roots/issues/437) — same DateService-bypass class, fourth surface where it surfaced.
