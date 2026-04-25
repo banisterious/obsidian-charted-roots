@@ -4,7 +4,7 @@
 	"behavior": "create",
 	"noteNameFormat": "Wikipedia - {{title}}",
 	"path": "",
-	"noteContentFormat": "# {{title}}\n\n## Infobox Data\n\n{{selectorHtml:.infobox}}\n\n## Article Summary\n\n{{content}}\n\n## Image\n\n{{image}}\n\n## Source\n\nWikipedia: {{url}}\nClipped: {{date}}",
+	"noteContentFormat": "# {{title}}\n\n## Infobox Data\n\n{{selectorHtml:.infobox|replace:'=\"//':'=\"https://'}}\n\n## Article Summary\n\n{{content}}\n\n## Image\n\n{{image}}\n\n## Source\n\nWikipedia: {{url}}\nClipped: {{date}}",
 	"properties": [
 		{
 			"name": "clip_source_type",
