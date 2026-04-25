@@ -341,9 +341,11 @@ Scannable prefix (`cr-`), feature name, variant where relevant. Lowercase, hyphe
 
 ---
 
-## Phase 1 motion deployment — ✅ shipped 2026-04-25
+## Motion captures deployed
 
-Five WebM motion captures live on the features page:
+Running log of motion files live on the chartedroots.com features page. New deploys append below; legacy `Phase 1 motion deployment` was the original batch test run on 2026-04-25.
+
+**Phase 1 batch (2026-04-25):**
 
 - ✅ `cr-canvas-tree-generation.webm` — Canvas tree generation section
 - ✅ `cr-family-chart-relationship-edit.webm` — Interactive Family Chart View subsection
@@ -351,7 +353,11 @@ Five WebM motion captures live on the features page:
 - ✅ `cr-interactive-map-journey.webm` — Geographic features → Journey Mode subsection
 - ✅ `cr-merge-wizard-conflict-res.webm` — Data Quality Tools subsection
 
-Total payload: ~8.7 MB across all five (journey capture is the dominant ~4.5 MB). All five autoplay-on-visit on first load — see "Bandwidth" under Future below for the deferred follow-up.
+Phase 1 total payload: ~8.7 MB on the features page. All five autoplay-on-visit on first load — see "Bandwidth" under Future below for the deferred follow-up.
+
+**Pending deploys:**
+
+- ⏳ `cr-web-clipper-to-bio.webm` — Evidence and sources → Web Clipper integration subsection. Captured 2026-04-25; awaiting the website session to land it. Demonstrates the Wikipedia Biography (Basic) template clipping a biography page (Charles Fort) and the resulting source note appearing in the Obsidian Staging folder. After deploy, the bandwidth count above grows to ~6 captures total.
 
 ---
 

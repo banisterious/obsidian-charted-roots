@@ -350,7 +350,7 @@ Purpose-built Obsidian Web Clipper templates for the genealogical web. Clipped p
 
 - **Find a Grave Person**: CSS and AI-assisted variants for memorial pages
 - **FamilySearch Source**: CSS and AI-assisted variants for indexed records and browse-only collections
-- **Wikipedia Biography**: AI-assisted variant for structured biographical extraction
+- **Wikipedia Biography**: CSS and AI-assisted variants for biographical extraction
 - **Wikidata Place**: AI-assisted variant for place entities with coordinates
 - Works with the standard Obsidian Web Clipper plugin (no custom browser extension)
 
