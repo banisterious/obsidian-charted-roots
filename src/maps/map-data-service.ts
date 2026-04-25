@@ -303,6 +303,10 @@ export class MapDataService {
 			// Skip non-person notes (uses flexible detection)
 			if (!isPersonNote(fm, cache, this.plugin.settings.noteTypeDetection)) continue;
 
+			const inlineEvents = this.parseEventsArray(fm.events);
+			const externalEvents = this.loadExternalEventsForPerson(file);
+			const mergedEvents = this.mergeAndDedupeLifeEvents(inlineEvents, externalEvents);
+
 			const personData: PersonData = {
 				crId: fm.cr_id,
 				name: fmToString(fm.name, file.basename),
@@ -319,7 +323,7 @@ export class MapDataService {
 				burialPlaceId: fm.burial_place_id,
 				collection: fm.collection,
 				altName: fm.alt_name ? fmToString(fm.alt_name) : undefined,
-				events: this.parseEventsArray(fm.events)
+				events: mergedEvents
 			};
 
 			people.push(personData);
@@ -354,7 +358,18 @@ export class MapDataService {
 	}
 
 	/**
-	 * Parse the events array from frontmatter
+	 * Event types valid for the journey/marker LifeEvent shape. Excludes
+	 * birth / death / marriage / divorce — those are handled by dedicated
+	 * frontmatter fields on the person note (born, died, marriage_date)
+	 * and adding them again would create duplicate waypoints.
+	 */
+	private static readonly LIFE_EVENT_TYPES: ReadonlyArray<EventType> = [
+		'residence', 'occupation', 'education', 'military',
+		'immigration', 'baptism', 'burial', 'confirmation', 'ordination', 'custom'
+	];
+
+	/**
+	 * Parse the inline events array from a person's frontmatter.
 	 */
 	private parseEventsArray(events: unknown): LifeEvent[] | undefined {
 		if (!Array.isArray(events)) return undefined;
@@ -375,23 +390,103 @@ export class MapDataService {
 			// Resolve event type using value aliases (unknown types become 'custom')
 			const resolvedEventType = valueAliasService.resolve('eventType', rawEventType) as EventType;
 
-			// Valid types for the events array (excluding birth/death/marriage which have dedicated fields)
-			const validTypes: EventType[] = [
-				'residence', 'occupation', 'education', 'military',
-				'immigration', 'baptism', 'burial', 'confirmation', 'ordination', 'custom'
-			];
-			if (!validTypes.includes(resolvedEventType)) continue;
+			if (!MapDataService.LIFE_EVENT_TYPES.includes(resolvedEventType)) continue;
 
 			parsed.push({
 				event_type: resolvedEventType,
 				place: place,
-				date_from: (typeof eventObj.date_from === 'string' || typeof eventObj.date_from === 'number') ? eventObj.date_from : undefined,
-				date_to: (typeof eventObj.date_to === 'string' || typeof eventObj.date_to === 'number') ? eventObj.date_to : undefined,
+				date_from: this.coerceDateValue(eventObj.date_from),
+				date_to: this.coerceDateValue(eventObj.date_to),
 				description: eventObj.description as string | undefined
 			});
 		}
 
 		return parsed.length > 0 ? parsed : undefined;
+	}
+
+	/**
+	 * Load life events from `cr_type: event` notes that reference this person
+	 * via their `person` (singular) or `persons` (array) field. Mirrors the
+	 * inline-events shape so both schemas feed the same downstream code.
+	 *
+	 * `EventService.getEventsForPerson` already filters principal-only types
+	 * (birth/death/baptism/funeral) so participants don't see events that
+	 * aren't their own; the additional LIFE_EVENT_TYPES filter here strips
+	 * birth/death/marriage entirely since those are surfaced via dedicated
+	 * frontmatter fields.
+	 */
+	private loadExternalEventsForPerson(personFile: TFile): LifeEvent[] | undefined {
+		const eventService = this.plugin.getEventService?.();
+		if (!eventService) return undefined;
+
+		const personLink = `[[${personFile.basename}]]`;
+		const externalEvents = eventService.getEventsForPerson(personLink);
+		if (externalEvents.length === 0) return undefined;
+
+		const valueAliasService = new ValueAliasService(this.plugin);
+		const result: LifeEvent[] = [];
+
+		for (const event of externalEvents) {
+			if (!event.place || !event.eventType) continue;
+
+			const resolvedEventType = valueAliasService.resolve('eventType', event.eventType) as EventType;
+			if (!MapDataService.LIFE_EVENT_TYPES.includes(resolvedEventType)) continue;
+
+			result.push({
+				event_type: resolvedEventType,
+				place: event.place,
+				date_from: this.coerceDateValue(event.date),
+				date_to: this.coerceDateValue(event.dateEnd),
+				description: event.description
+			});
+		}
+
+		return result.length > 0 ? result : undefined;
+	}
+
+	/**
+	 * Merge inline and external life events, deduping by composite key
+	 * (event_type | place | date_from). Inline entries take precedence —
+	 * if a person has the same logical event recorded both ways, the inline
+	 * version wins (it's typically the authored shape on the person note).
+	 */
+	private mergeAndDedupeLifeEvents(
+		inline?: LifeEvent[],
+		external?: LifeEvent[]
+	): LifeEvent[] | undefined {
+		if (!inline && !external) return undefined;
+
+		const merged: LifeEvent[] = [];
+		const seen = new Set<string>();
+		const keyOf = (e: LifeEvent): string =>
+			`${e.event_type}|${this.extractPlaceString(e.place) ?? e.place}|${e.date_from ?? ''}`;
+
+		for (const list of [inline, external]) {
+			if (!list) continue;
+			for (const event of list) {
+				const key = keyOf(event);
+				if (seen.has(key)) continue;
+				seen.add(key);
+				merged.push(event);
+			}
+		}
+
+		return merged.length > 0 ? merged : undefined;
+	}
+
+	/**
+	 * Coerce a frontmatter or EventNote date value into the string|number
+	 * shape LifeEvent expects. YAML parsers commonly hand back a `Date`
+	 * object for unquoted ISO dates (e.g. `date_from: 1905-04-05`); we
+	 * normalize those to ISO strings so the journey's chronological sort
+	 * doesn't drop them.
+	 */
+	private coerceDateValue(value: unknown): string | number | undefined {
+		if (typeof value === 'string' || typeof value === 'number') return value;
+		if (value instanceof Date && !isNaN(value.getTime())) {
+			return value.toISOString().split('T')[0];
+		}
+		return undefined;
 	}
 
 	/**
