@@ -56,6 +56,51 @@ export class TimelineRenderer {
 	}
 
 	/**
+	 * Compute event age via DateService when available, falling back to
+	 * naive year subtraction. Returns undefined when neither path produces
+	 * a value.
+	 *
+	 * The naive `entryYear - birthYear` form (with `entryYear >= birthYear`
+	 * guard) breaks for descending fictional eras like BBY, where years
+	 * count down — `26 BBY >= 82 BBY` evaluates as `26 >= 82` (false), so
+	 * age is never assigned. DateService.calculateAge handles canonical-year
+	 * semantics across both directions. Same fix shape as #434 / #437.
+	 */
+	private computeEventAge(
+		birthDate: string | undefined,
+		eventDate: string | undefined,
+		universe: string | undefined
+	): number | undefined {
+		if (!birthDate || !eventDate) return undefined;
+
+		const dateService = this.service.getDateService();
+		if (dateService) {
+			const age = dateService.calculateAge(birthDate, eventDate, universe);
+			if (age !== null) {
+				// DateService resolved the calculation. The fictional parser
+				// returns `Math.abs(years)` with an `error` field set when the
+				// dates are reversed (event predates birth) — treat that as
+				// "no age to render" rather than falling through to the naive
+				// fallback, which would produce the wrong answer for
+				// descending fictional eras.
+				if (age.error) return undefined;
+				return age.years >= 0 ? age.years : undefined;
+			}
+		}
+
+		// Fallback only when DateService returned null (couldn't parse either
+		// date) or wasn't available. Covers real-world ISO dates, plain years,
+		// and unrecognized fictional formats.
+		const birthYear = parseInt(this.service.extractYear(birthDate));
+		const eventYear = parseInt(this.service.extractYear(eventDate));
+		if (!isNaN(birthYear) && !isNaN(eventYear) && eventYear >= birthYear) {
+			return eventYear - birthYear;
+		}
+
+		return undefined;
+	}
+
+	/**
 	 * Render the timeline block
 	 */
 	async render(
@@ -140,15 +185,16 @@ export class TimelineRenderer {
 	): Promise<TimelineEntry[]> {
 		const entries = this.buildTimelineEntries(context, config);
 
-		// Add age annotations to person events
-		const birthYear = context.person?.birthDate
-			? parseInt(this.service.extractYear(context.person.birthDate))
-			: NaN;
-		if (!isNaN(birthYear)) {
+		// Add age annotations to person events. Uses DateService when available
+		// so descending fictional eras (BBY) and era crossings resolve correctly;
+		// falls back to naive year subtraction for real-world dates.
+		const birthDate = context.person?.birthDate;
+		const universe = context.person?.universe;
+		if (birthDate) {
 			for (const entry of entries) {
-				const entryYear = parseInt(entry.year);
-				if (!isNaN(entryYear) && entryYear >= birthYear) {
-					entry.age = entryYear - birthYear;
+				const age = this.computeEventAge(birthDate, entry.date || entry.year, universe);
+				if (age !== undefined) {
+					entry.age = age;
 				}
 			}
 		}
@@ -156,7 +202,7 @@ export class TimelineRenderer {
 		// Add family events if enabled (and not suppressed by per-block override)
 		const familyEventsParam = config.familyEvents as string | undefined;
 		if (familyEventsParam !== 'none' && context.person) {
-			const familyEntries = this.gatherFamilyEvents(context, birthYear);
+			const familyEntries = this.gatherFamilyEvents(context);
 			entries.push(...familyEntries);
 		}
 
@@ -167,7 +213,7 @@ export class TimelineRenderer {
 
 		if (contextValue) {
 			const contextPath = extractWikilinkPath(contextValue);
-			const contextEntries = await this.parseContextNote(contextPath, context, birthYear);
+			const contextEntries = await this.parseContextNote(contextPath, context);
 
 			// Filter context events by margin (0 = no filtering, default)
 			const margin = typeof config.contextMargin === 'number'
@@ -252,8 +298,7 @@ export class TimelineRenderer {
 	 */
 	private async parseContextNote(
 		notePath: string,
-		context: DynamicBlockContext,
-		birthYear: number
+		context: DynamicBlockContext
 	): Promise<TimelineEntry[]> {
 		const app = this.service.getApp();
 		const file = app.metadataCache.getFirstLinkpathDest(notePath, context.file.path);
@@ -265,6 +310,9 @@ export class TimelineRenderer {
 		// Match lines with date prefix: bullet optional
 		// Formats: "- 1861-1865: Event", "1914: Event", "* 1929-10-29: Event"
 		const lineRegex = /^(?:[-*]\s+)?(\d{4}(?:-\d{2}(?:-\d{2})?)?)\s*(?:[-–]\s*(\d{4}(?:-\d{2}(?:-\d{2})?)?))?:\s*(.+)$/;
+
+		const birthDate = context.person?.birthDate;
+		const universe = context.person?.universe;
 
 		for (const line of content.split('\n')) {
 			const match = line.trim().match(lineRegex);
@@ -287,9 +335,9 @@ export class TimelineRenderer {
 			};
 
 			// Add age annotation for context events too
-			const entryYear = parseInt(year);
-			if (!isNaN(birthYear) && !isNaN(entryYear) && entryYear >= birthYear) {
-				entry.age = entryYear - birthYear;
+			const age = this.computeEventAge(birthDate, startDate, universe);
+			if (age !== undefined) {
+				entry.age = age;
 			}
 
 			entries.push(entry);
@@ -536,8 +584,7 @@ export class TimelineRenderer {
 	}
 
 	private gatherFamilyEvents(
-		context: DynamicBlockContext,
-		birthYear: number
+		context: DynamicBlockContext
 	): TimelineEntry[] {
 		const settings = this.service.getSettings();
 		const person = context.person;
@@ -545,6 +592,8 @@ export class TimelineRenderer {
 
 		const entries: TimelineEntry[] = [];
 		const graph = context.familyGraph;
+		const birthDate = person.birthDate;
+		const universe = person.universe;
 
 		// Children's births (biological only — adopted children are handled
 		// separately by the adopted-children block below, gated on
@@ -565,10 +614,8 @@ export class TimelineRenderer {
 						eventFile: child.file?.basename,
 						isFamilyEvent: true
 					};
-					const entryYear = parseInt(year);
-					if (!isNaN(birthYear) && !isNaN(entryYear) && entryYear >= birthYear) {
-						entry.age = entryYear - birthYear;
-					}
+					const age = this.computeEventAge(birthDate, child.birthDate, universe);
+					if (age !== undefined) entry.age = age;
 					entries.push(entry);
 				}
 			}
@@ -588,10 +635,8 @@ export class TimelineRenderer {
 						eventFile: spouse.file?.basename,
 						isFamilyEvent: true
 					};
-					const entryYear = parseInt(year);
-					if (!isNaN(birthYear) && !isNaN(entryYear) && entryYear >= birthYear) {
-						entry.age = entryYear - birthYear;
-					}
+					const age = this.computeEventAge(birthDate, spouse.deathDate, universe);
+					if (age !== undefined) entry.age = age;
 					entries.push(entry);
 				}
 			}
@@ -617,10 +662,8 @@ export class TimelineRenderer {
 						eventFile: parent.file?.basename,
 						isFamilyEvent: true
 					};
-					const entryYear = parseInt(year);
-					if (!isNaN(birthYear) && !isNaN(entryYear) && entryYear >= birthYear) {
-						entry.age = entryYear - birthYear;
-					}
+					const age = this.computeEventAge(birthDate, parent.deathDate, universe);
+					if (age !== undefined) entry.age = age;
 					entries.push(entry);
 				}
 			}
@@ -674,10 +717,8 @@ export class TimelineRenderer {
 						eventFile: sibling.file?.basename,
 						isFamilyEvent: true
 					};
-					const entryYear = parseInt(year);
-					if (!isNaN(birthYear) && !isNaN(entryYear) && entryYear >= birthYear) {
-						entry.age = entryYear - birthYear;
-					}
+					const age = this.computeEventAge(birthDate, sibling.birthDate, universe);
+					if (age !== undefined) entry.age = age;
 					entries.push(entry);
 				}
 			}
@@ -705,10 +746,8 @@ export class TimelineRenderer {
 					eventFile: adoptedChild.file?.basename,
 					isFamilyEvent: true
 				};
-				const entryYear = parseInt(year);
-				if (!isNaN(birthYear) && !isNaN(entryYear) && entryYear >= birthYear) {
-					entry.age = entryYear - birthYear;
-				}
+				const age = this.computeEventAge(birthDate, adoptedChild.adoptionDate, universe);
+				if (age !== undefined) entry.age = age;
 				entries.push(entry);
 			}
 
@@ -722,10 +761,8 @@ export class TimelineRenderer {
 					eventFile: adoptedChild.file?.basename,
 					isFamilyEvent: true
 				};
-				const entryYear = parseInt(year);
-				if (!isNaN(birthYear) && !isNaN(entryYear) && entryYear >= birthYear) {
-					entry.age = entryYear - birthYear;
-				}
+				const age = this.computeEventAge(birthDate, adoptedChild.birthDate, universe);
+				if (age !== undefined) entry.age = age;
 				entries.push(entry);
 			}
 		}
@@ -797,7 +834,8 @@ export class TimelineRenderer {
 		// These are the subject's own life events; always on when data is present,
 		// no toggle needed. Matches born/died/adoption handling.
 		if (person?.spouses && shouldInclude('marriage')) {
-			const birthYearForAge = person.birthDate ? parseInt(this.service.extractYear(person.birthDate)) : NaN;
+			const birthDate = person.birthDate;
+			const universe = person.universe;
 			for (const spouse of person.spouses) {
 				const spouseNode = context.familyGraph.getPersonByCrId(spouse.personId);
 				const spouseName = spouseNode?.name || spouse.personLink || spouse.personId;
@@ -811,10 +849,8 @@ export class TimelineRenderer {
 						place: spouse.marriageLocation ? this.service.stripWikilink(spouse.marriageLocation) : undefined,
 						eventFile: spouseNode?.file?.basename
 					};
-					const entryYear = parseInt(entry.year);
-					if (!isNaN(birthYearForAge) && !isNaN(entryYear) && entryYear >= birthYearForAge) {
-						entry.age = entryYear - birthYearForAge;
-					}
+					const age = this.computeEventAge(birthDate, spouse.marriageDate, universe);
+					if (age !== undefined) entry.age = age;
 					entries.push(entry);
 				}
 
@@ -826,10 +862,8 @@ export class TimelineRenderer {
 						title: `Divorce from ${spouseName}`,
 						eventFile: spouseNode?.file?.basename
 					};
-					const entryYear = parseInt(entry.year);
-					if (!isNaN(birthYearForAge) && !isNaN(entryYear) && entryYear >= birthYearForAge) {
-						entry.age = entryYear - birthYearForAge;
-					}
+					const age = this.computeEventAge(birthDate, spouse.divorceDate, universe);
+					if (age !== undefined) entry.age = age;
 					entries.push(entry);
 				}
 			}

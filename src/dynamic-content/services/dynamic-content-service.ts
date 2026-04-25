@@ -70,6 +70,15 @@ export class DynamicContentService {
 	}
 
 	/**
+	 * Get the DateService instance (may be null if the plugin hasn't
+	 * finished onload). Used by renderers that need era-aware date
+	 * arithmetic (e.g., age calculations across descending fictional eras).
+	 */
+	getDateService() {
+		return this.plugin.getDateService?.() ?? null;
+	}
+
+	/**
 	 * Construct a RelationshipService instance. Used by renderers that need
 	 * to query non-tree-structure relationships (e.g. manual siblings).
 	 */
