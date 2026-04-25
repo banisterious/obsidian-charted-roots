@@ -368,6 +368,9 @@ export class CrossImportDetectionService {
 			adoptiveMotherCrId: this.extractCrId(fm.adoptive_mother),
 			adoptiveParentCrIds: this.extractCrIds(fm.adoptive_parent),
 			adoptedChildCrIds: this.extractCrIds(fm.adopted_child),
+			// Derived in family-graph second pass; cross-import doesn't need
+			// the inverse here, but the field must exist on the constructed node.
+			stepchildrenCrIds: [],
 			parentCrIds: this.extractCrIds(fm.parents),
 			spouseCrIds: this.extractCrIds(fm.spouse),
 			childrenCrIds: this.extractCrIds(fm.children),

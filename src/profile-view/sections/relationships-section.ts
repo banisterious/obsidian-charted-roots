@@ -142,18 +142,25 @@ function renderFamilySubsection(
 		}
 	}
 
-	// Children — skip IDs already covered by a custom relationship in the Other section
-	// Also skip IDs that appear in a more specific category (adopted, step, foster)
+	// Children — skip IDs already covered by a custom relationship in the Other section.
+	// A child can appear in multiple arrays (biological + step, biological + adopted);
+	// label by the most specific marker, with adopted/step taking precedence over plain
+	// "Child" so the relationship type isn't lost (#443).
 	const childEntries: { label: string; crId: string }[] = [];
 	const adoptedSet = new Set(node.adoptedChildCrIds || []);
+	const stepchildSet = new Set(node.stepchildrenCrIds || []);
 	for (const id of node.childrenCrIds || []) {
-		if (!otherTargetCrIds.has(id) && !adoptedSet.has(id)) {
-			childEntries.push({ label: 'Child', crId: id });
-		}
+		if (otherTargetCrIds.has(id) || adoptedSet.has(id) || stepchildSet.has(id)) continue;
+		childEntries.push({ label: 'Child', crId: id });
 	}
 	for (const id of node.adoptedChildCrIds || []) {
 		if (!otherTargetCrIds.has(id)) {
 			childEntries.push({ label: 'Adopted child', crId: id });
+		}
+	}
+	for (const id of node.stepchildrenCrIds || []) {
+		if (!otherTargetCrIds.has(id)) {
+			childEntries.push({ label: 'Stepchild', crId: id });
 		}
 	}
 	if (childEntries.length > 0) {

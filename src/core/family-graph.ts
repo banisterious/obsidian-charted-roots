@@ -56,6 +56,12 @@ export interface PersonNode {
 	// Adopted children (from parent's perspective - used to infer reverse relationship)
 	adoptedChildCrIds: string[];
 
+	// Stepchildren (from parent's perspective — derived during graph build by
+	// inverting `stepfatherCrIds` / `stepmotherCrIds` on the children. Powers
+	// stepchild filtering on stepparent timelines (#441) and stepchild
+	// labeling in the profile relationships section (#443).
+	stepchildrenCrIds: string[];
+
 	// Gender-neutral parent relationships (opt-in via settings)
 	parentCrIds: string[];
 
@@ -1299,6 +1305,21 @@ export class FamilyGraphService {
 					adoptiveParent.adoptedChildCrIds.push(crId);
 				}
 			}
+
+			// Reverse step-parent relationships: if this person has stepfather
+			// or stepmother X, then X has this person as a stepchild (#441 / #443).
+			for (const stepfatherCrId of person.stepfatherCrIds) {
+				const stepfather = this.personCache.get(stepfatherCrId);
+				if (stepfather && !stepfather.stepchildrenCrIds.includes(crId)) {
+					stepfather.stepchildrenCrIds.push(crId);
+				}
+			}
+			for (const stepmotherCrId of person.stepmotherCrIds) {
+				const stepmother = this.personCache.get(stepmotherCrId);
+				if (stepmother && !stepmother.stepchildrenCrIds.includes(crId)) {
+					stepmother.stepchildrenCrIds.push(crId);
+				}
+			}
 		}
 
 		// Third pass: count source backlinks for each person
@@ -1711,6 +1732,8 @@ export class FamilyGraphService {
 			adoptiveParentCrIds,
 			// Adopted children (from parent's perspective)
 			adoptedChildCrIds,
+			// Stepchildren — populated by reverse-walk in the second pass below
+			stepchildrenCrIds: [],
 			// Gender-neutral parents
 			parentCrIds,
 			// Custom relationship type tracking for edge styling

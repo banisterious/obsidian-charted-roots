@@ -3118,6 +3118,7 @@ export class CanvasSplitService {
 						? person.motherCrId : undefined,
 					stepfatherCrIds: person.stepfatherCrIds.filter(id => includedCrIds.has(id)),
 					stepmotherCrIds: person.stepmotherCrIds.filter(id => includedCrIds.has(id)),
+					stepchildrenCrIds: person.stepchildrenCrIds.filter(id => includedCrIds.has(id)),
 					adoptiveFatherCrId: person.adoptiveFatherCrId && includedCrIds.has(person.adoptiveFatherCrId)
 						? person.adoptiveFatherCrId : undefined,
 					adoptiveMotherCrId: person.adoptiveMotherCrId && includedCrIds.has(person.adoptiveMotherCrId)

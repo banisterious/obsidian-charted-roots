@@ -597,12 +597,18 @@ export class TimelineRenderer {
 
 		// Children's births (biological only — adopted children are handled
 		// separately by the adopted-children block below, gated on
-		// timelineShowAdoptedChildrenBirths). Anyone in both childrenCrIds and
-		// adoptedChildCrIds is skipped here so the two toggles stay independent.
+		// timelineShowAdoptedChildrenBirths; stepchildren are excluded entirely,
+		// because the principal-of-the-birth-event was the biological parent
+		// alone, and a stepparent wasn't around for the birth (#441). Anyone
+		// in both childrenCrIds and adoptedChildCrIds, or in stepchildrenCrIds,
+		// is skipped here so the toggles stay independent and stepkids' births
+		// don't leak onto stepparents' timelines.
 		if (settings.timelineShowChildrenBirths && person.childrenCrIds) {
 			const adoptedSet = new Set(person.adoptedChildCrIds || []);
+			const stepchildSet = new Set(person.stepchildrenCrIds || []);
 			for (const childCrId of person.childrenCrIds) {
 				if (adoptedSet.has(childCrId)) continue;
+				if (stepchildSet.has(childCrId)) continue;
 				const child = graph.getPersonByCrId(childCrId);
 				if (child?.birthDate) {
 					const year = this.service.extractYear(child.birthDate);
