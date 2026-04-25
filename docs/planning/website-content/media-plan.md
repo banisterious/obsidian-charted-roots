@@ -295,7 +295,7 @@ If a session runs short, stop at a tier boundary rather than leaving Tier N half
 
 **Location:**
 
-- **Website repo** (`assets/img/` in `/mnt/s/Projects/websites/chartedroots.com/`): optimized, site-ready versions. Blowfish's asset pipeline processes these for responsive sizing and format conversion.
+- **Website repo** (`static/img/` in `/mnt/s/Projects/websites/chartedroots.com/`): optimized, site-ready versions. Use `static/` (not `assets/`) for binary files referenced from raw-HTML embeds in markdown — Hugo doesn't auto-publish `assets/` files unless they're processed via `resources.Get` in a template, and raw `<video>` / `<img>` tags in markdown bypass that pipeline. `assets/` is reserved for things that go through Hugo Pipes (resize, fingerprint, etc.). Discovered during the Phase 1 deploy test run (2026-04-25).
 - **Plugin repo** (`docs/images/raw/`): raw captures at full resolution. Serves as the archival source. If site assets ever need to be regenerated at different sizes, the originals live here.
 
 **Naming convention:** `cr-<feature>-<variant>.<ext>`
@@ -323,15 +323,35 @@ Scannable prefix (`cr-`), feature name, variant where relevant. Lowercase, hyphe
 - **Motion**: WebM preferred (smallest files, modern-browser autoplay). MP4 fallback if a target can't play WebM. GIF only for sub-3-second micro-loops where the size difference is negligible.
 - **Size targets**: 500 KB or less per static screenshot after optimization; 5 MB or less per motion loop. Run through an optimizer (ImageOptim, squoosh.app, or equivalent) before committing to the website repo.
 
-**Embedding:** place the file in `assets/img/` on the website repo, reference from markdown as `![Alt text](/img/cr-feature-variant.png)` or via Blowfish's image shortcode if it handles responsive sizing better. Motion loops use a plain `<video>` tag with `autoplay muted loop playsinline` attributes, or an equivalent Blowfish shortcode if one exists.
+**Embedding:** place the file in `static/img/` on the website repo, reference from markdown as `![Alt text](/img/cr-feature-variant.png)` or via Blowfish's image shortcode if it handles responsive sizing better. Motion loops use a plain `<video>` tag — Blowfish's `{{< video >}}` shortcode exists but defaults to `controls=true` and lacks `aria-label` support, so raw HTML is the cleaner path until a project-level `{{< motion >}}` shortcode is added (see "Future" section below). Pattern:
+
+```html
+<video autoplay muted loop playsinline preload="metadata" src="/img/cr-feature-variant.webm" aria-label="<short factual description>"></video>
+```
+
+`markup.goldmark.renderer.unsafe = true` is already set in `hugo.toml`, so raw HTML in markdown passes through untouched. CSS scoping for these embeds is keyed to `article video` so it only affects content-area videos, not anything Blowfish might render in chrome.
 
 ### After the session
 
 1. Batch-optimize files locally (ImageOptim / squoosh / ffmpeg for WebM).
 2. Commit raw captures to the plugin repo's `docs/images/raw/` as a separate commit from the website port.
-3. Commit optimized versions to the website repo's `assets/img/`.
+3. Commit optimized versions to the website repo's `static/img/`.
 4. Add inline embeds to features, research-track, worldbuilding-track, and landing pages where each visual fits the narrative.
 5. Update this document to mark the capture as ✅ Complete with the date.
+
+---
+
+## Phase 1 motion deployment — ✅ shipped 2026-04-25
+
+Five WebM motion captures live on the features page:
+
+- ✅ `cr-canvas-tree-generation.webm` — Canvas tree generation section
+- ✅ `cr-family-chart-relationship-edit.webm` — Interactive Family Chart View subsection
+- ✅ `cr-interactive-map-time.webm` — Geographic features → Interactive Map View subsection
+- ✅ `cr-interactive-map-journey.webm` — Geographic features → Journey Mode subsection
+- ✅ `cr-merge-wizard-conflict-res.webm` — Data Quality Tools subsection
+
+Total payload: ~8.7 MB across all five (journey capture is the dominant ~4.5 MB). All five autoplay-on-visit on first load — see "Bandwidth" under Future below for the deferred follow-up.
 
 ---
 
@@ -339,3 +359,12 @@ Scannable prefix (`cr-`), feature name, variant where relevant. Lowercase, hyphe
 
 - **Per-page Open Graph images.** Once screenshots exist, hero shots for research-track and worldbuilding-track make good page-specific OG images (more distinctive on social shares than the site-wide card). Revisit after capture.
 - **Any gallery page later.** Decided against for now. If reader-facing demand for a visual index emerges post-launch (Discussions, feedback), a simple `/screenshots/` page can be added later referencing already-embedded assets without re-capturing anything.
+
+---
+
+## Future
+
+Surfaced during the Phase 1 deploy run (2026-04-25); not blockers, captured here so they don't get lost.
+
+- **Project-level `{{< motion >}}` shortcode.** A wrapper around the autoplay/muted/loop/aria-label pattern would be cleaner than per-page raw HTML once the motion library grows past ~5-10 files. Blowfish's built-in `{{< video >}}` shortcode is full-featured but defaults to `controls=true` and lacks `aria-label` support — raw HTML is the better current path. A small project-level shortcode that matches the documented embed pattern would consolidate the markup.
+- **Bandwidth on the features page.** With autoplay enabled, browsers fetch the full file regardless of `preload="metadata"`. Five loops at 8.7 MB total all download on first visit to `/features/`, and that grows as the motion library does. `IntersectionObserver`-based "play-when-visible" (loading metadata only until the video scrolls into view) would cap the on-page-load weight regardless of how many videos eventually live there. Worth doing if total page weight crosses ~15-20 MB or if visitor analytics flag a metered-connection concern.
