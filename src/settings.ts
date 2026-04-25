@@ -875,7 +875,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	timelineParentDeathLabel: 'Death of {name}',
 	timelineSiblingBirthLabel: 'Birth of {name}',
 	timelineShowChildrenBirths: false,        // Off by default
-	timelineShowSpouseDeaths: false,
+	timelineShowSpouseDeaths: true,           // Default on — major life event for the survivor; toggle lets users hide (#447)
 	timelineShowParentDeaths: false,
 	timelineShowSiblingBirths: false,
 	timelineShowDivorces: true,                // Default on — the subject's own event; toggle lets users hide if preferred (#399)

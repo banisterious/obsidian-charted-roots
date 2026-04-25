@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Changed
+
+- **Spouse death events now appear on the surviving spouse's timeline by default** ([#447](https://github.com/banisterious/obsidian-charted-roots/issues/447)): Flipped `timelineShowSpouseDeaths` from `false` to `true` so widow/widower context surfaces on the timeline dynamic block without requiring users to discover the setting. A spouse's death is a major life event for the survivor; previously the only place it surfaced automatically was the Properties panel. The setting toggle is unchanged — users who'd prefer to hide spouse deaths can still opt out from Settings → Charted Roots → Timeline. Existing users who haven't customized the setting will start seeing spouse deaths appear on surviving spouses' timelines after upgrading.
+
 ### Fixed
 
 - **Map journey mode explains why playback isn't available instead of failing silently** ([#445](https://github.com/banisterious/obsidian-charted-roots/issues/445)): Entering journey mode for a person who didn't have at least 2 places with valid coordinates left the marker filter applied and the toolbar chip showing — but no playback panel appeared at the bottom of the map, with no Notice or message explaining why. `MapDataService.buildJourneyPaths` only includes a person when they have ≥ 2 unique resolvable waypoints, so persons with one resolvable place (or none) were silently skipped by `applyJourneyFilter`. `MapView` now renders an inline placeholder where the playback panel would have appeared, naming the person and stating that they need at least 2 places with valid coordinates. The placeholder reuses the same teardown path as the playback controls, so exiting journey mode clears it cleanly. Surfaced during [#434](https://github.com/banisterious/obsidian-charted-roots/issues/434) verification.
