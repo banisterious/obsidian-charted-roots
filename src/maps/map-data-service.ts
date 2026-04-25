@@ -23,6 +23,7 @@ import type {
 	LifeEvent,
 	EventType
 } from './types/map-types';
+import { journeyWaypointDedupKey } from './types/map-types';
 import { isPlaceNote, isPersonNote } from '../utils/note-type-detection';
 
 const logger = getLogger('MapDataService');
@@ -1015,12 +1016,16 @@ export class MapDataService {
 
 			// Need at least 2 waypoints to make a journey path
 			if (waypoints.length >= 2) {
-				// Remove consecutive duplicate locations (same lat/lng)
+				// Remove consecutive duplicate locations. Use a coord-system-
+				// aware dedup key so pixel-coord places (which default lat/lng
+				// to 0) don't all collapse onto a single waypoint (#448).
 				const uniqueWaypoints: JourneyWaypoint[] = [];
+				let prevKey = '';
 				for (const wp of waypoints) {
-					const prev = uniqueWaypoints[uniqueWaypoints.length - 1];
-					if (!prev || wp.lat !== prev.lat || wp.lng !== prev.lng) {
+					const key = journeyWaypointDedupKey(wp);
+					if (key !== prevKey) {
 						uniqueWaypoints.push(wp);
+						prevKey = key;
 					}
 				}
 

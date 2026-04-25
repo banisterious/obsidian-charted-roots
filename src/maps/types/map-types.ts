@@ -696,6 +696,29 @@ export function formatPopupDateRange(date: string | undefined, dateTo: string | 
 }
 
 /**
+ * Build a dedup key for a journey waypoint that's robust across coordinate
+ * systems (#448). The journey-path builder dedupes consecutive duplicate
+ * locations, but the original lat/lng-only comparison collapsed every
+ * pixel-coord place onto `(0, 0)` (because pixel-system waypoints default
+ * `lat` and `lng` to `0`), preventing journey paths from ever building on
+ * custom image maps.
+ *
+ * Order of preference:
+ *   1. `placeId` — most durable, immune to coordinate drift on the place note.
+ *   2. A composite of both coord systems — `lat,lng|pixelX,pixelY` — so
+ *      neither system collides with another place that happens to have the
+ *      other system's defaults at zero.
+ */
+export function journeyWaypointDedupKey(waypoint: { placeId?: string; lat?: number; lng?: number; pixelX?: number; pixelY?: number }): string {
+	if (waypoint.placeId) return `id:${waypoint.placeId}`;
+	const lat = waypoint.lat ?? '';
+	const lng = waypoint.lng ?? '';
+	const pixelX = waypoint.pixelX ?? '';
+	const pixelY = waypoint.pixelY ?? '';
+	return `coords:${lat},${lng}|${pixelX},${pixelY}`;
+}
+
+/**
  * Check if a marker type is visible based on layer settings
  */
 export function isMarkerTypeVisible(type: MarkerType, layers: LayerVisibility): boolean {
