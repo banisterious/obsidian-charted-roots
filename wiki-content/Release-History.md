@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.7 Round-Up: Map UX, Stepchild Handling, and Universe-Calendar Linking](#v0227-round-up-map-ux-stepchild-handling-and-universe-calendar-linking-v0227)
   - [v0.22.6 Fix: Fictional-Era Coverage Round-Up](#v0226-fix-fictional-era-coverage-round-up-v0226)
   - [v0.22.5 Fix: Fictional-Calendar Gaps and Dynamic-Content Noise](#v0225-fix-fictional-calendar-gaps-and-dynamic-content-noise-v0225)
   - [v0.22.4 Hotfix: Step-Parent Save Path](#v0224-hotfix-step-parent-save-path-v0224)
@@ -145,6 +146,59 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.7 Round-Up: Map UX, Stepchild Handling, and Universe-Calendar Linking (v0.22.7)
+
+Seven changes shipped in one bundle, six of them follow-ups from @DigitalDreamn's testing on her Star Wars / Lars-family vault. Three came from the post-#434 reply chain after she walked through the marker popup, fullscreen control, and journey-mode UX (#444, #445, #446). Three more fell out of the #439 timeline-fix verification when stepchildren and orphaned cr_ids surfaced in the same screenshots (#441, #442, #443). Plus the #432 Phase 1 universe-calendar wiring landed (the contract decision recorded earlier in the v0.22.5 cluster), and `timelineShowSpouseDeaths` flipped on by default (#447) so widow/widower context surfaces without setting discovery.
+
+All seven are non-data-loss. Stability window continues unchanged from 0.22.4 (2026-04-23 → ~2026-05-14).
+
+**Feature: Universe → default calendar wiring** ([#432](https://github.com/banisterious/obsidian-charted-roots/issues/432) Phase 1):
+- `src/universes/ui/universe-wizard.ts` — wizard step 2 now offers a three-way picker (None / Built-in / Custom) replacing the binary "create custom calendar?" toggle. Built-in mode shows a dropdown of `DEFAULT_DATE_SYSTEMS`. When the universe name slug-matches a built-in's `universe` field, that built-in is preselected (Star Wars → Galactic Standard, Middle-earth → Middle-earth Calendar, "Star Wars Legends" via slug-superset).
+- `src/universes/ui/edit-universe-modal.ts` — new Calendar field listing built-ins plus user-defined custom calendars from settings, with `(unset)` clearing the link. Calendars no longer in the available list show as "(missing)" so users don't silently lose values.
+- `src/universes/ui/universes-tab.ts` — entity-counts cell on each row now has a "Default: <name>" sub-line when `default_calendar` is set.
+- `src/universes/ui/calendar-suggest.ts` — extracted `universeNameToSlug` and `suggestBuiltinForUniverseName` into their own module so unit tests can exercise the slug-match logic without pulling `Modal` in via the wizard's main file.
+- Layered contract per [docs/planning/universe-calendar-linking.md](https://github.com/banisterious/obsidian-charted-roots/blob/main/docs/planning/universe-calendar-linking.md): `universe.default_calendar` is the explicit pointer, the parser is unchanged and continues to use global era-abbreviation matching at parse time. Existing universes with no `default_calendar` continue to behave as before — no migration. Phase 2 (parser-side reading, bare-year inference) deferred to a separate issue.
+
+**Change: Spouse-deaths-on-timeline default flipped to `true`** ([#447](https://github.com/banisterious/obsidian-charted-roots/issues/447)):
+- `src/settings.ts` — `DEFAULT_SETTINGS.timelineShowSpouseDeaths` flipped from `false` to `true`. Existing users who haven't customized the setting will start seeing spouse deaths appear on surviving spouses' timelines after upgrading. Toggle remains in place for opt-out. Filed off DigitalDreamn's observation that the only place "widowed" status surfaced automatically was the Properties panel.
+
+**Fix: Person-delete cleanup for orphaned cr_ids** ([#442](https://github.com/banisterious/obsidian-charted-roots/issues/442)):
+- `src/core/person-delete-cleanup.ts` (new) — `planFrontmatterCleanup` rules engine over a single note's frontmatter, `cleanupPersonReferencesAfterDelete` walks the vault and applies the plan via `fileManager.processFrontMatter`, `getDeletedPersonCrId` recovers the cr_id from `metadataCache`'s `prevCache` callback argument.
+- `main.ts` — registers a `metadataCache.on('deleted')` handler that gates on person-note-only and removes the deleted cr_id from canonical scalar fields (`father_id`, `mother_id`, `adoptive_*_id`), array fields (`parents_id`, `step*_id`, `adoptive_parent_id`, `adopted_child_id`, `partners_id`, `children_id`, `stepchild_id`), the polymorphic `spouse_id` (string or array), and indexed-spouse slots (`spouse1_id`, `spouse2_id`, ...). Honors property aliases.
+- Existing vault-wide orphans from prior deletes still go through the data-quality "Remove orphaned cr_id references" tool — that path is untouched.
+
+**Fix: Stepchildren on stepparent timelines and in profile pane** ([#441](https://github.com/banisterious/obsidian-charted-roots/issues/441), [#443](https://github.com/banisterious/obsidian-charted-roots/issues/443)):
+- `src/core/family-graph.ts` — PersonNode gains `stepchildrenCrIds: string[]`, populated in the second pass by inverting each child's `stepfatherCrIds` / `stepmotherCrIds`. Mirrors the existing `adoptedChildCrIds` reverse-walk pattern.
+- `src/core/cross-import-detection.ts` and `src/core/canvas-split.ts` — initialize and filter the new field at the construction sites that build PersonNodes.
+- `src/dynamic-content/renderers/timeline-renderer.ts` — `gatherFamilyEvents` skips any childCrId in `stepchildrenCrIds` from the children-births block. Adopted-children handling unchanged.
+- `src/profile-view/sections/relationships-section.ts` — Children block de-duplicates by labeling adopted and step children with their specific category and falling back to "Child" only when neither marker applies. A child validly in both biological and step arrays now renders as "Stepchild" (specificity wins).
+
+**Fix: Map marker popup ages and date ranges** ([#444](https://github.com/banisterious/obsidian-charted-roots/issues/444)):
+- `src/maps/types/map-types.ts` — `MapMarker` gains `birthDate?: string`, plus a new `formatPopupDateRange` helper that renders `from – to` for true durations and collapses identical / single-sided cases.
+- `src/maps/map-data-service.ts` — both `createMarkerFromPlace` and `createMarkerFromEvent` populate `birthDate` from `person.born`, mirroring the JourneyPath shape from #434.
+- `src/maps/map-controller.ts` — `createPopupContent` formats the date row through `formatPopupDateRange` and appends `(age N)` for non-birth events when `DateService.calculateAge` resolves a non-negative age. Same `age.error` guard pattern as #439 to skip descending-era false positives. Birth events suppress the age annotation since age 0 is redundant alongside the birth date itself.
+- Sibling fix to #434 — same fix shape on a separate code path; fifth surface in the DateService-bypass cluster alongside #433, #437, #439.
+
+**Fix: Map journey mode explains why playback isn't available** ([#445](https://github.com/banisterious/obsidian-charted-roots/issues/445)):
+- `src/maps/map-view.ts` — `applyJourneyFilter` now renders an inline placeholder where the playback panel would have appeared when the selected person has fewer than 2 unique resolvable waypoints. The placeholder names the person and states what's needed; reuses `journeyControlsEl` so existing teardown clears it cleanly.
+- `styles/map-view.css` — `.cr-map-journey-controls--empty` and `.cr-map-journey-empty-message` modifiers for the placeholder variant.
+
+**Fix: Map fullscreen control tooltip** ([#446](https://github.com/banisterious/obsidian-charted-roots/issues/446)):
+- `src/maps/map-controller.ts` — `initializeFullscreen` now passes `title` to `leaflet-fullscreen` as `{ 'false': 'Enter fullscreen', 'true': 'Exit fullscreen' }` (the option shape the plugin actually expects). The previous flat-string form caused `options.title['false']` to evaluate to `undefined`, which got rendered verbatim as the tooltip.
+
+**Testing:** 51 new tests across five files for a suite total of 330 (was 279 at the start of this cycle).
+- `tests/map-marker-popup-data.test.ts` (12 tests) — `formatPopupDateRange` and `MapMarker.birthDate` population for #444.
+- `tests/universe-calendar-suggest.test.ts` (12 tests) — `universeNameToSlug` and `suggestBuiltinForUniverseName` for #432 Phase 1.
+- `tests/timeline-stepchildren.test.ts` (4 tests) — stepchild filtering on the timeline gathering path for #441.
+- `tests/person-delete-cleanup.test.ts` (23 tests) — scalar / array / polymorphic / indexed-spouse / property-alias / non-person handling for #442.
+- No new tests for #443, #445, #446, #447 — DOM rendering / settings-default flips / config-shape changes that don't have a fence-able pure surface, but the data-model changes that power them are covered by #441 and #444 tests.
+
+**Reporters:** @DigitalDreamn for #441, #442, #443, #444, #445, #446 (the entire vault-testing chain off #434 and #439 verification).
+
+**Stability-window impact:** no reset — all seven changes are non-data-loss. Window continues from 0.22.4's start: 2026-04-23 → ~2026-05-14.
+
+---
 
 ### v0.22.6 Fix: Fictional-Era Coverage Round-Up (v0.22.6)
 
