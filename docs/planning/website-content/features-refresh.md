@@ -268,13 +268,13 @@ Tools for computing, visualizing, and customizing how people connect.
 
 ### Custom Relationships
 
-- Extensible relationship types beyond family (godparent, guardian, mentor, apprentice, sire, rival, nemesis)
-- Symmetric inverse handling (A is mentor of B; B is protégé of A)
+- 25 built-in non-family relationship types across legal, religious, professional, social, feudal, and DNA categories (godparent, guardian, mentor, apprentice, ally, rival, witness, etc.) — plus full support for defining your own (sire, nemesis, sworn rival, or anything else your story needs)
+- Symmetric types (`neighbor`, `ally`, `companion`) auto-propagate to both people; asymmetric pairs (`mentor` → `disciple`, `godparent` → `godchild`) maintain a clear directionality
 - Colored canvas edges and family-chart overlay rendering per type
 
 ### Step and Adoptive Parents
 
-- Dedicated fields with distinct line styles on canvas trees (dashed for adoptive, dotted for step)
+- Dedicated fields with distinct line styles on canvas trees (dotted for adoptive, dashed for step)
 - Adoptive siblings render in the relationships dynamic block
 - Step-parent relationships persist round-trip through the Edit Person modal
 
