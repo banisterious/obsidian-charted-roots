@@ -5,6 +5,7 @@ import { getErrorMessage } from './src/core/error-utils';
 import type { NumberingSystem } from './src/core/reference-numbering';
 import { FamilyGraphService } from './src/core/family-graph';
 import { BidirectionalLinker } from './src/core/bidirectional-linker';
+import { cleanupPersonReferencesAfterDelete, getDeletedPersonCrId } from './src/core/person-delete-cleanup';
 import { RelationshipHistoryService, RelationshipHistoryData, formatChangeDescription } from './src/core/relationship-history';
 import { RelationshipHistoryModal } from './src/ui/relationship-history-modal';
 import { FamilyChartView, VIEW_TYPE_FAMILY_CHART } from './src/ui/views/family-chart-view';
@@ -88,6 +89,7 @@ const logger = getLogger('CanvasRootsPlugin');
 export default class CanvasRootsPlugin extends Plugin {
 	settings: CanvasRootsSettings;
 	private fileModifyEventRef: EventRef | null = null;
+	private fileDeleteEventRef: EventRef | null = null;
 	public bidirectionalLinker: BidirectionalLinker | null = null;
 	private relationshipHistory: RelationshipHistoryService | null = null;
 	private folderFilter: FolderFilterService | null = null;
@@ -382,6 +384,10 @@ export default class CanvasRootsPlugin extends Plugin {
 
 		// Register file modification handler for bidirectional sync
 		this.registerFileModificationHandler();
+
+		// Register file delete handler so deleted persons' cr_ids are removed
+		// from referencing notes' relationship `*_id` arrays (#442).
+		this.registerFileDeleteHandler();
 
 		// Initialize bidirectional relationship snapshots
 		// This enables deletion detection from the first edit after plugin load
@@ -795,12 +801,54 @@ export default class CanvasRootsPlugin extends Plugin {
 		}
 	}
 
+	/**
+	 * Register a metadataCache `deleted` handler that removes a deleted
+	 * person's cr_id from all `*_id` relationship fields on other person
+	 * notes (#442). Obsidian rewrites wikilinks on delete; the cr_id
+	 * arrays were left orphaned, leaving downstream consumers (timeline,
+	 * family chart, exports) trying to resolve dead references.
+	 */
+	registerFileDeleteHandler() {
+		if (this.fileDeleteEventRef) {
+			this.app.metadataCache.offref(this.fileDeleteEventRef);
+			this.fileDeleteEventRef = null;
+		}
+
+		this.fileDeleteEventRef = this.app.metadataCache.on('deleted', (file, prevCache) => {
+			if (this._syncDisabled) return;
+			if (file.extension !== 'md') return;
+
+			const deletedCrId = getDeletedPersonCrId(prevCache);
+			if (!deletedCrId) return;
+
+			const aliases = this.settings.propertyAliases || {};
+			void cleanupPersonReferencesAfterDelete(this.app, deletedCrId, aliases)
+				.then(result => {
+					if (result.filesUpdated > 0) {
+						logger.info('person-delete-cleanup',
+							`Removed ${deletedCrId} from ${result.filesUpdated} note(s) after delete`,
+							{ deletedCrId, filesUpdated: result.filesUpdated, deletedFile: file.path });
+					}
+				})
+				.catch(error => {
+					logger.error('person-delete-cleanup',
+						'Failed to clean up cr_id references after person delete',
+						{ deletedCrId, error: getErrorMessage(error) });
+				});
+		});
+
+		this.registerEvent(this.fileDeleteEventRef);
+	}
+
 	onunload() {
 		console.debug('Unloading Charted Roots plugin');
 
 		// Clean up event handlers
 		if (this.fileModifyEventRef) {
 			this.app.metadataCache.offref(this.fileModifyEventRef);
+		}
+		if (this.fileDeleteEventRef) {
+			this.app.metadataCache.offref(this.fileDeleteEventRef);
 		}
 
 		// Cleanup PersonIndexService
