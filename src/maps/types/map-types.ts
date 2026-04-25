@@ -98,6 +98,8 @@ export interface MapMarker {
 	yearTo?: number;
 	/** Alternate name for multilingual display (#347) */
 	altName?: string;
+	/** Raw birth date string (preserves fictional-era context for popup age annotation) (#444) */
+	birthDate?: string;
 }
 
 /**
@@ -681,6 +683,16 @@ export function getMarkerColor(type: MarkerType, settings: MapSettings): string 
 		default:
 			return settings.residenceMarkerColor; // fallback
 	}
+}
+
+/**
+ * Format a marker's date for popup display. Renders a duration as `from – to`
+ * when both dates are present, otherwise whichever single date is set. Returns
+ * undefined when neither side is set.
+ */
+export function formatPopupDateRange(date: string | undefined, dateTo: string | undefined): string | undefined {
+	if (date && dateTo && date !== dateTo) return `${date} – ${dateTo}`;
+	return date ?? dateTo;
 }
 
 /**

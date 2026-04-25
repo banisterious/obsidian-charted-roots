@@ -83,7 +83,7 @@ import type {
 	CRPolyline,
 	CustomMapConfig
 } from './types/map-types';
-import { getMarkerColor, isMarkerTypeVisible } from './types/map-types';
+import { getMarkerColor, isMarkerTypeVisible, formatPopupDateRange } from './types/map-types';
 import { ImageMapManager } from './image-map-manager';
 
 const logger = getLogger('MapController');
@@ -744,16 +744,30 @@ export class MapController {
 			iconSpan.style.setProperty('color', eventType.color);
 		}
 
-		const dateText = data.date ? `: ${data.date}` : '';
+		// Format the date row: render duration ranges as `from – to` and append
+		// `(age N)` for non-birth events when birth-date data resolves a non-negative
+		// age via DateService (handles fictional eras the same way the journey-mode
+		// rich popup does — see #434 / #439). Birth events suppress the age
+		// annotation since age 0 is redundant alongside the birth date itself.
+		const dateRange = formatPopupDateRange(data.date, data.dateTo);
+		let ageSuffix = '';
+		if (data.type !== 'birth' && data.birthDate && data.date) {
+			const dateService = this.plugin.getDateService();
+			const age = dateService?.calculateAge(data.birthDate, data.date, data.universe);
+			if (age && !age.error && age.years >= 0) {
+				ageSuffix = ` (age ${age.years})`;
+			}
+		}
+		const dateText = dateRange ? `: ${dateRange}${ageSuffix}` : '';
 		if (showText) {
 			const typeLabel = capitalize(data.type);
 			typeRow.createEl('span', {
 				text: `${typeLabel}${dateText}`
 			});
-		} else if (data.date) {
-			// Icon-only mode: still show the date
+		} else if (dateRange) {
+			// Icon-only mode: still show the date (with range and age, when applicable)
 			typeRow.createEl('span', {
-				text: data.date
+				text: `${dateRange}${ageSuffix}`
 			});
 		}
 

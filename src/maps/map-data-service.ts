@@ -628,7 +628,8 @@ export class MapDataService {
 			collection: person.collection,
 			universe: place.universe,
 			placeCategory: place.category,
-			altName: person.altName
+			altName: person.altName,
+			birthDate: person.born !== undefined ? String(person.born) : undefined
 		};
 	}
 
@@ -676,7 +677,8 @@ export class MapDataService {
 			collection: person.collection,
 			universe: place.universe,
 			placeCategory: place.category,
-			altName: person.altName
+			altName: person.altName,
+			birthDate: person.born !== undefined ? String(person.born) : undefined
 		};
 	}
 
