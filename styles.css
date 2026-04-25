@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-04-24 03:09:55 UTC
+ * - Generated: 2026-04-25 14:34:31 UTC
  * - Components: 49 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -16033,14 +16033,18 @@ settings:
    COMPONENT: DUPLICATE-DETECTION.CSS
    ========================================================================== */
 
-/* Component Size: 163 lines, 2.82 KB */
+/* Component Size: 167 lines, 3.06 KB */
 
 /**
  * Duplicate Detection Modal Styles
  */
 
 .cr-duplicate-modal {
-  min-width: 600px;
+  /* Raise Obsidian's default modal cap so the side-by-side person
+   * comparison rows have room. Don't use `min-width` — that overrides
+   * the framework's max-width on narrow viewports and pushes content
+   * past the right edge. */
+  --dialog-max-width: 600px;
 }
 
 .cr-duplicate-options {
@@ -41334,11 +41338,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-04-24 03:09:55 UTC
+ * Build completed: 2026-04-25 14:34:32 UTC
  * Components processed: 49
- * Total lines: 40870
- * Total size: 824.91 KB
- * Build duration: 0.34 seconds
+ * Total lines: 40874
+ * Total size: 825.15 KB
+ * Build duration: 0.33 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -41353,7 +41357,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - import-export-wizard.css: 2187 lines, 41.74 KB
  * - staging-manager.css: 555 lines, 11.4 KB
  * - cleanup-wizard.css: 2197 lines, 41.1 KB
- * - duplicate-detection.css: 163 lines, 2.82 KB
+ * - duplicate-detection.css: 167 lines, 3.06 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
  * - validation.css: 79 lines, 1.46 KB
  * - find-on-canvas.css: 275 lines, 5.13 KB

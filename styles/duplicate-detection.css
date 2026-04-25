@@ -3,7 +3,11 @@
  */
 
 .cr-duplicate-modal {
-  min-width: 600px;
+  /* Raise Obsidian's default modal cap so the side-by-side person
+   * comparison rows have room. Don't use `min-width` — that overrides
+   * the framework's max-width on narrow viewports and pushes content
+   * past the right edge. */
+  --dialog-max-width: 600px;
 }
 
 .cr-duplicate-options {
