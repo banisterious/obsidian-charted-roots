@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **Wikipedia clipper template renders infobox photos correctly in Obsidian** ([#440](https://github.com/banisterious/obsidian-charted-roots/issues/440)): The `wikipedia-biography-basic.json` clipper template preserved infobox HTML with protocol-relative image URLs (`<img src="//upload.wikimedia.org/...">`). Browsers resolve protocol-relative URLs via the page's protocol, but Obsidian's `app://` renderer can't follow them — infobox photos rendered as broken-image icons in reading mode. Added a `replace` filter to the `selectorHtml:.infobox` extraction that rewrites `="//` to `="https://` so the preserved HTML carries valid absolute URLs. Re-import the template in Web Clipper to pick up the fix; not part of a versioned plugin release since clipper templates ship via `docs/clipper-templates/`.
+
 ---
 
 ## [0.22.6] - 2026-04-25
