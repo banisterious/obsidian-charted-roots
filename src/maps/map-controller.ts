@@ -320,8 +320,12 @@ export class MapController {
 		// @ts-expect-error - leaflet-fullscreen types not available
 		this.fullscreenControl = L.control.fullscreen({
 			position: 'topleft',
-			title: 'Enter fullscreen',
-			titleCancel: 'Exit fullscreen'
+			// leaflet-fullscreen reads `options.title[isFullscreen]`; passing a
+			// flat string yields `undefined` as the tooltip text (#446).
+			title: {
+				'false': 'Enter fullscreen',
+				'true': 'Exit fullscreen'
+			}
 		}).addTo(this.map);
 	}
 
