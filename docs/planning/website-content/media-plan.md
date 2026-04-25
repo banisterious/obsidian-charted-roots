@@ -359,6 +359,10 @@ Phase 1 total payload: ~8.7 MB on the features page. All five autoplay-on-visit 
 
 - ✅ `cr-web-clipper-to-bio.webm` — Evidence and sources → Web Clipper integration subsection. Demonstrates the Wikipedia Biography (Basic) template clipping a biography page (Charles Fort) and the resulting source note appearing in the Obsidian Staging folder. ~1.05 MB; brings the features page motion total to ~9.75 MB across 6 captures — still well under the ~15-20 MB threshold where `IntersectionObserver` lazy-play would become a priority.
 
+**Pending deploys:**
+
+- ⏳ `cr-family-chart-highlight-groups.webm` — Workspace views → Interactive Family Chart View subsection. Captured 2026-04-25; ~639 KB. Demonstrates adding two highlight groups (Collection = blood, then Collection = married_in) on the Family Chart View and watching cards dim and glow as the matching subsets light up in different colors. After deploy, the features page total grows to ~10.4 MB across 7 captures.
+
 ---
 
 ## Deferred decisions
