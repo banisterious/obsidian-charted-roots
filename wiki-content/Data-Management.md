@@ -38,6 +38,7 @@ When bidirectional sync is **enabled** (default), relationship changes automatic
 - **Spouse ↔ Spouse**: Adding `spouse` creates reciprocal spouse link in both notes (both simple and indexed formats)
 - **Indexed Spouses**: Full support for `spouse1`, `spouse2`, etc. with corresponding `spouse1_id`, `spouse2_id`
 - **Deletions**: Removing a relationship automatically removes the reciprocal link
+- **Person-note deletions**: When you delete an entire person note from the vault, Charted Roots automatically removes the deleted person's `cr_id` from every relationship `*_id` array on other notes (`father_id`, `mother_id`, `parents_id`, `step*_id`, `adoptive_*_id`, `adopted_child_id`, `partners_id`, `children_id`, `stepchild_id`, indexed `spouseN_id`). Symmetric with Obsidian's built-in wikilink cleanup, so neither side leaves orphan references behind. Existing vault-wide orphans from deletions that predate this feature can still be cleaned via the data-quality "Remove orphaned cr_id references" tool.
 - **Marriage Metadata**: Indexed spouse deletion also cleans up associated marriage dates, locations, and divorce dates
 
 ### Sync Triggers

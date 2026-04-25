@@ -149,6 +149,7 @@ Render non-family custom relationships (liege/vassal, ally/rival, mentor/discipl
 - Symmetric types draw one line per pair; asymmetric types draw a directed line.
 - The as-of date filter applies — relationships with `from`/`to` date ranges outside the selected date are hidden.
 - Hover a line for a tooltip with source, relationship type, target, and date range.
+- Overlay arcs paint **on top** of the structural family-link layer in the typical case so they're never hidden by parent-child or spouse lines. When a single endpoint pair has three or more overlay arcs stacked on it, the layer order automatically flips so the structural family link stays visible underneath the stack — preserves the structural-line-visibility guarantee for heavy overlays.
 
 The overlay is independent of family-tree structure. A type can be tree-only (affects layout, no overlay), overlay-only (no layout impact, rendered as an overlay line), or both.
 

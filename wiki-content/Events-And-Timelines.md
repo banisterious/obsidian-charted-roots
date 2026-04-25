@@ -241,7 +241,9 @@ Events belonging to relatives can also surface on a person's timeline, toggled i
 | **Show sibling births** | `born` on each sibling note — where "sibling" is anyone sharing a parent *or* anyone declared via the built-in `sibling` relationship type |
 | **Show divorces** | `spouseN_divorce_date` on the person's own note (governs divorces only; marriages always render) |
 
-All toggles default off except **Show divorces** (on by default).
+All toggles default off except **Show divorces** and **Show spouse deaths**, both on by default. A spouse's death is a major life event for the survivor, so it surfaces on the timeline without setting discovery; users who'd prefer to hide spouse deaths can opt out from Settings → Charted Roots → Timeline.
+
+Stepchildren are excluded from the children-births block: their births appear only on biological parents' timelines, not on the stepparents'.
 
 ## Family Timeline View
 

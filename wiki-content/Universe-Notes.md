@@ -59,7 +59,7 @@ There are several entry points to create a new universe:
 
 The wizard guides you through creating:
 - The universe note with metadata
-- An optional custom calendar (date system)
+- An optional default calendar — choose **None**, a **Built-in calendar** (Galactic Standard, Middle-earth, Westeros, Generic Fantasy Ages), or a **Custom calendar** you define inline. When the universe name slug-matches a built-in's universe field (e.g., "Star Wars" → Galactic Standard, "Middle-earth" → Middle-earth Calendar), that built-in is preselected and you only need to confirm the choice.
 - An optional custom map
 - An optional validation schema scoped to the universe
 

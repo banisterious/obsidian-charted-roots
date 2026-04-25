@@ -77,6 +77,14 @@ The Map View toolbar uses compact icon-only buttons with tooltips. Hover over an
 | **Pencil** | Enter edit mode for custom map alignment (custom maps only) |
 | **Refresh** | Reload data from vault |
 
+### Marker Popups
+
+Click any marker on the map to open a popup with the person's name, the event type and date, and the place name. For non-birth events on people whose `born` field is set, the popup also appends the person's age at the time of the event (e.g., `Death: 1875-04-12 (age 67)` or `Death: 22 BBY (age 50)` on fictional-era universes). Birth events suppress the age annotation since age 0 is redundant alongside the birth date.
+
+For events with both a `date_from` and `date_to` (residence, occupation, military service, etc.), the popup renders the full duration as `from – to` rather than dropping the end date.
+
+Age calculation defers to the same `DateService` path the journey-mode rich popup uses, so fictional eras (BBY/ABY descending and ascending, era crossings) work identically across both popup variants.
+
 ### Place Marker Interactions
 
 Place markers on custom maps support direct manipulation:
@@ -381,6 +389,12 @@ When journey mode activates:
 - A person indicator appears in the toolbar center showing the selected name
 
 **To exit journey mode**, click the **×** button on the person indicator, or click the route button again.
+
+### When the Playback Panel Doesn't Appear
+
+Journey playback is only built when the selected person has at least **two unique places with valid coordinates**. Coordinates can be either geographic (`lat` / `lng`) on real-world maps or pixel (`pixel_x` / `pixel_y` or `custom_coordinates_x` / `custom_coordinates_y`) on custom image maps — both systems produce journey paths.
+
+If the selected person has fewer than two resolvable waypoints, an inline placeholder appears at the bottom of the map naming the person and stating that they need at least two places with valid coordinates. The marker filter and toolbar chip still apply; only the playback panel is replaced. Add a `birth_place` / `death_place` / event-place wikilink that points at a place note with coordinates and the panel will render on the next refresh.
 
 ### Playback Controls
 
