@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-04-25 14:34:31 UTC
+ * - Generated: 2026-04-25 20:49:31 UTC
  * - Components: 49 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -23357,7 +23357,7 @@ settings:
    COMPONENT: MAP-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 2444 lines, 50.49 KB */
+/* Component Size: 2456 lines, 50.71 KB */
 
 /* ==========================================================================
    Map View Styles
@@ -24720,6 +24720,18 @@ svg.leaflet-image-layer.leaflet-interactive path {
   padding: 8px 16px;
   z-index: 1000;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.cr-map-journey-controls--empty {
+  padding: 12px 20px;
+  max-width: 360px;
+}
+
+.cr-map-journey-empty-message {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  text-align: center;
+  line-height: 1.4;
 }
 
 .cr-map-journey-btn {
@@ -41338,11 +41350,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-04-25 14:34:32 UTC
+ * Build completed: 2026-04-25 20:49:32 UTC
  * Components processed: 49
- * Total lines: 40874
- * Total size: 825.15 KB
- * Build duration: 0.33 seconds
+ * Total lines: 40886
+ * Total size: 825.37 KB
+ * Build duration: 0.32 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -41370,7 +41382,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - data-quality.css: 1446 lines, 28.73 KB
  * - relationships.css: 597 lines, 11.43 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB
- * - map-view.css: 2444 lines, 50.49 KB
+ * - map-view.css: 2456 lines, 50.71 KB
  * - leaflet-distortable.css: 368 lines, 7.73 KB
  * - date-systems.css: 287 lines, 5.31 KB
  * - events.css: 1521 lines, 30.88 KB

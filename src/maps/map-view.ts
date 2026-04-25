@@ -1531,12 +1531,17 @@ export class MapView extends ItemView {
 
 		this.mapController?.setFilteredData(filteredMarkers, filteredPaths, filteredJourneys);
 
-		// Build and show playback controls
-		if (filteredJourneys.length > 0) {
-			const primaryJourney = filteredJourneys.find(j => j.personId === personId);
-			if (primaryJourney && primaryJourney.waypoints.length > 1) {
-				this.buildJourneyPlaybackControls(primaryJourney);
-			}
+		// Build playback controls when the selected person has a buildable
+		// journey path; otherwise surface an inline placeholder explaining
+		// why the panel can't render (#445). buildJourneyPaths only includes
+		// a person in journeyPaths when they have ≥ 2 unique waypoints with
+		// resolvable coordinates, so an empty `filteredJourneys` is the
+		// signal to show the placeholder.
+		const primaryJourney = filteredJourneys.find(j => j.personId === personId);
+		if (primaryJourney && primaryJourney.waypoints.length > 1) {
+			this.buildJourneyPlaybackControls(primaryJourney);
+		} else {
+			this.buildJourneyEmptyPlaceholder(this.journeyMode.personName ?? '');
 		}
 
 		// Fit bounds to this person's markers
@@ -1625,6 +1630,29 @@ export class MapView extends ItemView {
 		// Show initial state
 		this.updateJourneyDisplay(waypoints);
 		this.panToWaypoint(waypoints[0], waypoints, journey);
+	}
+
+	/**
+	 * Render a placeholder where the playback panel would normally appear
+	 * when the selected person has fewer than 2 unique resolvable waypoints
+	 * (#445). Reuses `journeyControlsEl` so existing teardown in
+	 * `exitJourneyMode` and `buildJourneyPlaybackControls` removes it cleanly.
+	 */
+	private buildJourneyEmptyPlaceholder(personName: string): void {
+		if (this.journeyControlsEl) {
+			this.journeyControlsEl.remove();
+		}
+
+		const container = this.containerEl.querySelector('.cr-map-container') || this.containerEl;
+		this.journeyControlsEl = container.createDiv({
+			cls: 'cr-map-journey-controls cr-map-journey-controls--empty'
+		});
+
+		const subject = personName ? `${personName} needs` : 'This person needs';
+		this.journeyControlsEl.createDiv({
+			cls: 'cr-map-journey-empty-message',
+			text: `${subject} at least 2 places with valid coordinates to build a journey path.`
+		});
 	}
 
 	/**

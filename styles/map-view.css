@@ -1361,6 +1361,18 @@ svg.leaflet-image-layer.leaflet-interactive path {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
+.cr-map-journey-controls--empty {
+  padding: 12px 20px;
+  max-width: 360px;
+}
+
+.cr-map-journey-empty-message {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  text-align: center;
+  line-height: 1.4;
+}
+
 .cr-map-journey-btn {
   display: flex;
   align-items: center;
