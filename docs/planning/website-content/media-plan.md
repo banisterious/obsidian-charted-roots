@@ -323,6 +323,17 @@ Scannable prefix (`cr-`), feature name, variant where relevant. Lowercase, hyphe
 - **Motion**: WebM preferred (smallest files, modern-browser autoplay). MP4 fallback if a target can't play WebM. GIF only for sub-3-second micro-loops where the size difference is negligible.
 - **Size targets**: 500 KB or less per static screenshot after optimization; 5 MB or less per motion loop. Run through an optimizer (ImageOptim, squoosh.app, or equivalent) before committing to the website repo.
 
+**Static capture conventions:**
+
+- **Capture resolution.** 1920×1080 source. Full Obsidian window with default sidebar widths so feature shots all look like they came from the same setup.
+- **Display width.** Optimize at the natural width up to ~1280px; embeds rely on CSS `max-width: 100%` for responsive scaling. Don't hand-resize below 1280 — browsers downscale crisply, but can't recover detail you've already thrown away.
+- **Theme.** Default Obsidian dark theme across all captures. Consistency across the set matters more than which theme; mixing themes makes the set look inconsistent.
+- **Window chrome.** Keep the left ribbon and one folder pane visible for whole-feature shots — users need visual anchors to know what they're looking at. Crop tight (modal-only or panel-only) for detail shots where the surrounding context isn't part of the feature.
+- **Annotations.** No in-image arrows, callouts, or text overlays. Captions and prose around the embed carry the explanation. Keeps captures durable if UI shifts.
+- **PNG optimization.** `oxipng` or `pngquant` lossless first; quantize to 256 colors only if the lossless pass doesn't hit 500 KB. Most UI-only captures clear the cap losslessly.
+- **WebP alternative.** Optional for the rare shot where lossless PNG won't fit. Name `cr-<feature>.webp`; embed the same way as PNG.
+- **Fixture data only.** Use the dev-vault fixture (Andersons, Schmidts, Star Wars, etc.). Never capture from a personal vault — easy to leak names, dates, or places without noticing.
+
 **Embedding:** place the file in `static/img/` on the website repo, reference from markdown as `![Alt text](/img/cr-feature-variant.png)` or via Blowfish's image shortcode if it handles responsive sizing better. Motion loops use a plain `<video>` tag — Blowfish's `{{< video >}}` shortcode exists but defaults to `controls=true` and lacks `aria-label` support, so raw HTML is the cleaner path until a project-level `{{< motion >}}` shortcode is added (see "Future" section below). Pattern:
 
 ```html
