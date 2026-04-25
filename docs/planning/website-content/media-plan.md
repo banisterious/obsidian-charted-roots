@@ -355,9 +355,9 @@ Running log of motion files live on the chartedroots.com features page. New depl
 
 Phase 1 total payload: ~8.7 MB on the features page. All five autoplay-on-visit on first load — see "Bandwidth" under Future below for the deferred follow-up.
 
-**Pending deploys:**
+**Continuation deploys (2026-04-25):**
 
-- ⏳ `cr-web-clipper-to-bio.webm` — Evidence and sources → Web Clipper integration subsection. Captured 2026-04-25; awaiting the website session to land it. Demonstrates the Wikipedia Biography (Basic) template clipping a biography page (Charles Fort) and the resulting source note appearing in the Obsidian Staging folder. After deploy, the bandwidth count above grows to ~6 captures total.
+- ✅ `cr-web-clipper-to-bio.webm` — Evidence and sources → Web Clipper integration subsection. Demonstrates the Wikipedia Biography (Basic) template clipping a biography page (Charles Fort) and the resulting source note appearing in the Obsidian Staging folder. ~1.05 MB; brings the features page motion total to ~9.75 MB across 6 captures — still well under the ~15-20 MB threshold where `IntersectionObserver` lazy-play would become a priority.
 
 ---
 
