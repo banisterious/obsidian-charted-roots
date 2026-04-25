@@ -71,6 +71,8 @@ export interface CreateUniverseData {
 	status?: UniverseStatus;
 	/** Explicit cr_id (used when creating from orphan references) */
 	crId?: string;
+	/** Default calendar id (built-in id or custom calendar id) */
+	defaultCalendar?: string;
 }
 
 /**

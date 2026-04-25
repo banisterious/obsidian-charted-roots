@@ -223,6 +223,9 @@ export class UniverseService {
 		}
 
 		frontmatterLines.push(`status: ${data.status || 'active'}`);
+		if (data.defaultCalendar) {
+			frontmatterLines.push(`default_calendar: "${data.defaultCalendar}"`);
+		}
 		frontmatterLines.push(`created: ${new Date().toISOString().split('T')[0]}`);
 
 		frontmatterLines.push('---');

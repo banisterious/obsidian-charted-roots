@@ -8,6 +8,8 @@ import type CanvasRootsPlugin from '../../../main';
 import { createLucideIcon } from '../../ui/lucide-icons';
 import type { UniverseInfo, UniverseStatus } from '../types/universe-types';
 import { UniverseService } from '../services/universe-service';
+import { DEFAULT_DATE_SYSTEMS } from '../../dates/constants/default-date-systems';
+import type { FictionalDateSystem } from '../../dates/types/date-types';
 
 /** Available status options */
 const STATUS_OPTIONS: Record<UniverseStatus, string> = {
@@ -46,6 +48,7 @@ export class EditUniverseModal extends Modal {
 	private author: string;
 	private genre: string;
 	private status: UniverseStatus;
+	private defaultCalendar: string;
 
 	constructor(
 		app: App,
@@ -69,6 +72,7 @@ export class EditUniverseModal extends Modal {
 		this.author = this.universe.author || '';
 		this.genre = this.universe.genre || '';
 		this.status = this.universe.status;
+		this.defaultCalendar = this.universe.defaultCalendar || '';
 	}
 
 	onOpen() {
@@ -152,6 +156,29 @@ export class EditUniverseModal extends Modal {
 				});
 			});
 
+		// Calendar — default calendar pointer for this universe (#432 Phase 1).
+		// Lists built-ins and user-defined custom calendar systems; '(unset)'
+		// removes the link.
+		new Setting(form)
+			.setName('Calendar')
+			.setDesc('Default calendar for fictional dates in this universe')
+			.addDropdown(dropdown => {
+				dropdown.addOption('', '(unset)');
+				for (const sys of this.collectAvailableCalendars()) {
+					dropdown.addOption(sys.id, sys.builtIn ? `${sys.name} (built-in)` : sys.name);
+				}
+				// Preserve the current value even if the system is no longer
+				// in the list (e.g., a custom calendar was removed) so the
+				// user can deliberately clear it rather than silently lose it.
+				if (this.defaultCalendar && !this.collectAvailableCalendars().some(s => s.id === this.defaultCalendar)) {
+					dropdown.addOption(this.defaultCalendar, `${this.defaultCalendar} (missing)`);
+				}
+				dropdown.setValue(this.defaultCalendar);
+				dropdown.onChange(value => {
+					this.defaultCalendar = value;
+				});
+			});
+
 		// Info section
 		const info = form.createDiv({ cls: 'crc-modal-info' });
 		info.createEl('p', {
@@ -203,7 +230,10 @@ export class EditUniverseModal extends Modal {
 				description: this.description.trim() || undefined,
 				author: this.author.trim() || undefined,
 				genre: this.genre || undefined,
-				status: this.status
+				status: this.status,
+				// Empty string clears the field; undefined would preserve it,
+				// so use empty-string sentinel to support the (unset) option.
+				defaultCalendar: this.defaultCalendar
 			});
 
 			this.close();
@@ -211,6 +241,24 @@ export class EditUniverseModal extends Modal {
 		} catch (error) {
 			new Notice(`Failed to update universe: ${error instanceof Error ? error.message : 'Unknown error'}`);
 		}
+	}
+
+	/**
+	 * Calendars available to link to this universe: all built-ins, plus any
+	 * user-defined fictional calendar systems from plugin settings (#432).
+	 */
+	private collectAvailableCalendars(): FictionalDateSystem[] {
+		const customs = this.plugin.settings.fictionalDateSystems || [];
+		// Customs overlay built-ins by id; built-ins surface first so users
+		// see the canonical list before their own additions.
+		const seen = new Set<string>();
+		const result: FictionalDateSystem[] = [];
+		for (const sys of [...DEFAULT_DATE_SYSTEMS, ...customs]) {
+			if (seen.has(sys.id)) continue;
+			seen.add(sys.id);
+			result.push(sys);
+		}
+		return result;
 	}
 
 	onClose() {

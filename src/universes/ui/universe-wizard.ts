@@ -10,7 +10,12 @@ import type CanvasRootsPlugin from '../../../main';
 import { UniverseService } from '../services/universe-service';
 import type { UniverseStatus, CreateUniverseData } from '../types/universe-types';
 import type { FictionalDateSystem, FictionalEra } from '../../dates/types/date-types';
+import { DEFAULT_DATE_SYSTEMS } from '../../dates/constants/default-date-systems';
+import { suggestBuiltinForUniverseName } from './calendar-suggest';
 import { createLucideIcon, setLucideIcon } from '../../ui/lucide-icons';
+
+/** Mode of calendar setup chosen on wizard step 2 (#432) */
+type CalendarMode = 'none' | 'builtin' | 'custom';
 
 /**
  * Wizard step identifiers
@@ -47,10 +52,17 @@ interface UniverseFormData {
 }
 
 /**
- * Form data for calendar step
+ * Form data for calendar step. `mode` selects between no calendar link,
+ * a built-in calendar id pointer, and a custom calendar definition.
  */
 interface CalendarFormData {
-	enabled: boolean;
+	mode: CalendarMode;
+	/** Built-in calendar id (set when mode === 'builtin') */
+	builtinId: string;
+	/** Whether the user has manually changed the built-in selection;
+	 * suppresses the slug-match preselect from overriding a deliberate pick. */
+	builtinManuallySet: boolean;
+	/** Custom calendar fields (used when mode === 'custom') */
 	name: string;
 	eras: FictionalEra[];
 	defaultEra: string;
@@ -134,7 +146,9 @@ export class UniverseWizardModal extends Modal {
 		};
 
 		this.calendarData = {
-			enabled: false,
+			mode: 'none',
+			builtinId: '',
+			builtinManuallySet: false,
 			name: '',
 			eras: [],
 			defaultEra: ''
@@ -368,33 +382,56 @@ export class UniverseWizardModal extends Modal {
 	}
 
 	/**
-	 * Render Step 2: Custom calendar
+	 * Render Step 2: Calendar setup. Three modes — `none` (no link),
+	 * `builtin` (point at a built-in like Galactic Standard), or
+	 * `custom` (define a new calendar). Built-in mode preselects a system
+	 * whose `universe` field matches the universe name's slug (#432).
 	 */
 	private renderCalendarStep(container: HTMLElement): void {
 		container.createEl('p', {
-			text: `Would you like a custom calendar for ${this.universeData.name || 'this universe'}?`,
+			text: `Link a calendar to ${this.universeData.name || 'this universe'}?`,
 			cls: 'cr-wizard-step-desc'
 		});
 
 		container.createEl('p', {
-			text: 'Custom calendars let you use fictional dates like "Third Age 3019" instead of real-world dates.',
+			text: 'Calendars let you use fictional dates like "22 BBY" or "Third Age 3019" alongside real-world dates.',
 			cls: 'cr-wizard-step-hint'
 		});
 
+		// Slug-match preselect: if the user hasn't manually set a built-in,
+		// suggest one based on the universe name. Re-runs each render so the
+		// suggestion updates when the user edits step 1's name field.
+		if (!this.calendarData.builtinManuallySet) {
+			const suggested = suggestBuiltinForUniverseName(this.universeData.name);
+			if (suggested) {
+				this.calendarData.builtinId = suggested.id;
+			} else if (this.calendarData.mode !== 'builtin') {
+				this.calendarData.builtinId = '';
+			}
+		}
+
 		const form = container.createDiv({ cls: 'cr-wizard-form' });
 
-		// Enable toggle
+		// Mode picker — three radio options
 		new Setting(form)
-			.setName('Create custom calendar')
-			.setDesc('Set up a fictional date system for this universe')
-			.addToggle(toggle => toggle
-				.setValue(this.calendarData.enabled)
+			.setName('Calendar')
+			.setDesc('Choose how this universe handles dates')
+			.addDropdown(dropdown => dropdown
+				.addOption('none', 'None — no calendar link')
+				.addOption('builtin', 'Built-in calendar')
+				.addOption('custom', 'Custom calendar')
+				.setValue(this.calendarData.mode)
 				.onChange(value => {
-					this.calendarData.enabled = value;
+					this.calendarData.mode = value as CalendarMode;
 					this.renderCurrentStep();
 				}));
 
-		if (!this.calendarData.enabled) {
+		if (this.calendarData.mode === 'builtin') {
+			this.renderBuiltinCalendarPicker(form);
+			return;
+		}
+
+		if (this.calendarData.mode !== 'custom') {
 			return;
 		}
 
@@ -434,6 +471,43 @@ export class UniverseWizardModal extends Modal {
 			});
 			this.renderEras(erasContainer);
 		});
+	}
+
+	/**
+	 * Render the built-in calendar picker (used when mode === 'builtin').
+	 * Shows a dropdown of `DEFAULT_DATE_SYSTEMS` plus a description of the
+	 * currently selected calendar's eras for confirmation.
+	 */
+	private renderBuiltinCalendarPicker(form: HTMLElement): void {
+		const dropdown = new Setting(form)
+			.setName('Built-in calendar')
+			.setDesc('Pick a built-in calendar system for this universe');
+
+		dropdown.addDropdown(dd => {
+			if (!this.calendarData.builtinId) {
+				dd.addOption('', 'Select a calendar...');
+			}
+			for (const sys of DEFAULT_DATE_SYSTEMS) {
+				dd.addOption(sys.id, sys.name);
+			}
+			dd.setValue(this.calendarData.builtinId);
+			dd.onChange(value => {
+				this.calendarData.builtinId = value;
+				this.calendarData.builtinManuallySet = true;
+				this.renderCurrentStep();
+			});
+		});
+
+		const selected = DEFAULT_DATE_SYSTEMS.find(s => s.id === this.calendarData.builtinId);
+		if (selected) {
+			const eraSummary = selected.eras
+				.map(e => e.abbrev ? `${e.name} (${e.abbrev})` : e.name)
+				.join(', ');
+			form.createEl('p', {
+				text: `Eras: ${eraSummary}`,
+				cls: 'cr-wizard-hint'
+			});
+		}
 	}
 
 	/**
@@ -774,14 +848,20 @@ export class UniverseWizardModal extends Modal {
 		const calendarHeader = calendarCard.createDiv({ cls: 'cr-wizard-summary-header' });
 		calendarHeader.appendChild(createLucideIcon('calendar', 18));
 		calendarHeader.createSpan({ text: 'Calendar' });
-		if (this.calendarData.enabled) {
-			calendarCard.createDiv({ cls: 'cr-wizard-summary-item', text: `Name: ${this.calendarData.name}` });
+		if (this.calendarData.mode === 'builtin') {
+			const sys = DEFAULT_DATE_SYSTEMS.find(s => s.id === this.calendarData.builtinId);
+			calendarCard.createDiv({
+				cls: 'cr-wizard-summary-item',
+				text: `Built-in: ${sys?.name ?? this.calendarData.builtinId}`
+			});
+		} else if (this.calendarData.mode === 'custom') {
+			calendarCard.createDiv({ cls: 'cr-wizard-summary-item', text: `Custom: ${this.calendarData.name}` });
 			const erasText = this.calendarData.eras.map(e => e.abbrev || e.name).filter(Boolean).join(', ');
 			if (erasText) {
 				calendarCard.createDiv({ cls: 'cr-wizard-summary-item', text: `Eras: ${erasText}` });
 			}
 		} else {
-			calendarCard.createDiv({ cls: 'cr-wizard-summary-item cr-wizard-summary-item--skipped', text: 'Skipped' });
+			calendarCard.createDiv({ cls: 'cr-wizard-summary-item cr-wizard-summary-item--skipped', text: 'No calendar' });
 		}
 
 		// Map
@@ -884,7 +964,7 @@ export class UniverseWizardModal extends Modal {
 		if (skip) {
 			switch (step.id) {
 				case 'calendar':
-					this.calendarData.enabled = false;
+					this.calendarData.mode = 'none';
 					break;
 				case 'map':
 					this.mapData.enabled = false;
@@ -935,7 +1015,12 @@ export class UniverseWizardModal extends Modal {
 			}
 
 			case 'calendar':
-				if (this.calendarData.enabled) {
+				if (this.calendarData.mode === 'builtin') {
+					if (!this.calendarData.builtinId) {
+						new Notice('Please select a built-in calendar');
+						return false;
+					}
+				} else if (this.calendarData.mode === 'custom') {
 					if (!this.calendarData.name.trim()) {
 						new Notice('Please enter a calendar name');
 						return false;
@@ -976,13 +1061,28 @@ export class UniverseWizardModal extends Modal {
 	 */
 	private async createUniverse(): Promise<void> {
 		try {
+			// Resolve the calendar id we'll write into the universe note's
+			// `default_calendar` field. Built-in mode points at the built-in's
+			// id directly; custom mode pre-computes the same slug the
+			// settings-side calendar create will use, so the two stay in sync
+			// without a second write pass after creation (#432).
+			const customCalendarId = this.calendarData.mode === 'custom'
+				? this.calendarData.name.toLowerCase().replace(/[^a-z0-9]+/g, '_')
+				: '';
+			const defaultCalendarId = this.calendarData.mode === 'builtin'
+				? this.calendarData.builtinId
+				: this.calendarData.mode === 'custom'
+					? customCalendarId
+					: undefined;
+
 			// Create universe note
 			const universeData: CreateUniverseData = {
 				name: this.universeData.name,
 				description: this.universeData.description || undefined,
 				author: this.universeData.author || undefined,
 				genre: this.universeData.genre || undefined,
-				status: this.universeData.status
+				status: this.universeData.status,
+				defaultCalendar: defaultCalendarId || undefined
 			};
 
 			const universeFile = await this.universeService.createUniverse(universeData);
@@ -998,8 +1098,9 @@ export class UniverseWizardModal extends Modal {
 				throw new Error('Failed to get universe cr_id from created file');
 			}
 
-			// Create calendar if enabled
-			if (this.calendarData.enabled) {
+			// Create custom calendar if chosen (built-in mode requires no
+			// calendar artifact — only the universe-side pointer).
+			if (this.calendarData.mode === 'custom') {
 				await this.createCalendar(universeCrId);
 			}
 

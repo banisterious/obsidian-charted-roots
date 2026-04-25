@@ -13,6 +13,20 @@ import { UniverseService } from '../services/universe-service';
 import { UniverseWizardModal } from './universe-wizard';
 import { EditUniverseModal } from './edit-universe-modal';
 import type { UniverseInfo, UniverseEntityCounts } from '../types';
+import { DEFAULT_DATE_SYSTEMS } from '../../dates/constants/default-date-systems';
+
+/**
+ * Resolve a calendar id (built-in or custom) to its display name. Returns
+ * the id verbatim when nothing matches so the user still sees something
+ * actionable rather than an empty cell (#432 Phase 1).
+ */
+function resolveCalendarName(plugin: CanvasRootsPlugin, calendarId: string): string {
+	const builtin = DEFAULT_DATE_SYSTEMS.find(s => s.id === calendarId);
+	if (builtin) return builtin.name;
+	const customs = plugin.settings.fictionalDateSystems || [];
+	const custom = customs.find(s => s.id === calendarId);
+	return custom ? custom.name : calendarId;
+}
 import { getLogger } from '../../core/logging';
 import { getErrorMessage } from '../../core/error-utils';
 import { confirmDeleteUniverse } from '../../plugin/context-menus';
@@ -445,6 +459,15 @@ function renderUniverseTableRow(
 		entitiesCell.setText('\u2014');
 	}
 
+	// Default-calendar sub-line in the entities cell when set (#432 Phase 1)
+	if (universe.defaultCalendar) {
+		entitiesCell.createEl('br');
+		entitiesCell.createSpan({
+			text: `Default: ${resolveCalendarName(plugin, universe.defaultCalendar)}`,
+			cls: 'crc-text--muted crc-text--small'
+		});
+	}
+
 	// Actions cell
 	const actionsCell = row.createEl('td', { cls: 'crc-person-table__td crc-person-table__td--actions' });
 
@@ -706,7 +729,7 @@ export function renderUniversesList(options: UniversesListOptions): void {
 
 		const visible = filtered.slice(0, displayLimit);
 		for (const universe of visible) {
-			renderBrowseUniverseRow(tbody, universe, app);
+			renderBrowseUniverseRow(tbody, universe, app, plugin);
 		}
 
 		// Load more button
@@ -754,7 +777,8 @@ export function renderUniversesList(options: UniversesListOptions): void {
 function renderBrowseUniverseRow(
 	tbody: HTMLElement,
 	universe: UniverseInfo & { counts: UniverseEntityCounts; totalEntities: number },
-	app: CanvasRootsPlugin['app']
+	app: CanvasRootsPlugin['app'],
+	plugin: CanvasRootsPlugin
 ): void {
 	const row = tbody.createEl('tr', { cls: 'crc-person-table__row cr-universe-row--browse' });
 
@@ -789,6 +813,15 @@ function renderBrowseUniverseRow(
 		entitiesCell.setText(countParts.join(', '));
 	} else {
 		entitiesCell.setText('\u2014');
+	}
+
+	// Default-calendar sub-line in the entities cell when set (#432 Phase 1)
+	if (universe.defaultCalendar) {
+		entitiesCell.createEl('br');
+		entitiesCell.createSpan({
+			text: `Default: ${resolveCalendarName(plugin, universe.defaultCalendar)}`,
+			cls: 'crc-text--muted crc-text--small'
+		});
 	}
 
 	// Actions cell
