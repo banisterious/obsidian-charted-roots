@@ -202,7 +202,9 @@ The Relationships tab in Control Center provides comprehensive relationship mana
 - **Inverse column** showing the inverse relationship (if any)
 - **Source column** indicating built-in or custom types
 - **Toggle** to show/hide built-in types
-- **Add type** button (for creating custom types - coming soon)
+- **Create** button — opens the Relationship Type editor for defining a new custom type with your own name, color, line style, category, and family-chart-overlay flag
+- **Add category** button — define a new category to group your custom types under
+- **Edit / delete** actions on each type's row — customize built-in types or modify your own
 
 ### Custom Relationships Card
 
@@ -309,8 +311,8 @@ Document when and where the relationship was established. This context is valuab
 ### Consider Inverses
 
 Some relationships should be added to both people:
-- If John is Jane's godparent, you should also add that Jane is John's godchild
-- Currently this must be done manually (automatic inverse creation coming soon)
+- **Symmetric types** (`neighbor`, `ally`, `companion`, etc.) auto-propagate — adding the relationship from one side writes the reciprocal entry on the target's note automatically
+- **Asymmetric types** with an inverse (`godparent` → `godchild`, `mentor` → `disciple`) currently need to be added manually on the inverse side if you want both ends represented
 
 ### Separate from Family Links
 
@@ -322,7 +324,5 @@ Don't use custom relationships for connections that are already handled by famil
 
 ## Coming Soon
 
-- **Create custom relationship types** with your own colors and categories
-- **Edit and delete** custom types
-- **Automatic inverse relationship creation**
-- **Bulk relationship management**
+- **Automatic asymmetric inverse creation** — adding John as Jane's godparent would also write Jane as John's godchild. (Symmetric types like `neighbor` and `ally` already auto-propagate.)
+- **Bulk relationship management** — multi-select and batch operations on the Custom Relationships card
