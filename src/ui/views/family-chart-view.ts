@@ -21,6 +21,7 @@ import { RelationshipService } from '../../relationships/services/relationship-s
 import type { ParsedRelationship, RelationshipTypeDefinition } from '../../relationships/types/relationship-types';
 import { FamilyChartExportWizard } from './family-chart-export-wizard';
 import { DeletePersonConfirmModal, FamilyChartStyleModal, HighlightGroupsModal } from './family-chart-view-modals';
+import { shouldPaintOverlayUnderLinks } from './family-chart-overlay-z';
 import {
 	type HighlightGroup,
 	HIGHLIGHT_COLORS,
@@ -3512,6 +3513,14 @@ export class FamilyChartView extends ItemView {
 		const overlayGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 		overlayGroup.setAttribute('class', 'cr-relationship-overlay');
 
+		// Track the deepest arc stack on any single endpoint pair (after
+		// structural-counterpart restyling drops entries that restyle the
+		// structural link in place). Drives the z-order decision below: paint
+		// UNDER family links only when stacking is heavy enough to threaten
+		// occluding the structural line; paint ON TOP otherwise so non-stacked
+		// arcs aren't themselves hidden by the family-link layer (#450).
+		let maxArcStackDepth = 0;
+
 		// Draw lines
 		const STACK_OFFSET_PX = 8;
 		for (const [, entries] of byPair) {
@@ -3522,6 +3531,10 @@ export class FamilyChartView extends ItemView {
 			const arcEntries = structuralEntry && this.tryRestyleStructuralLink(svg, structuralEntry)
 				? entries.filter(e => e !== structuralEntry)
 				: entries;
+
+			if (arcEntries.length > maxArcStackDepth) {
+				maxArcStackDepth = arcEntries.length;
+			}
 
 			arcEntries.forEach((entry, index) => {
 				const { rel, type } = entry;
@@ -3597,13 +3610,15 @@ export class FamilyChartView extends ItemView {
 			});
 		}
 
-		// Insert overlay before links_view so family links paint on top of the
-		// overlay. This prevents the overlay from occluding spouse/parent lines
-		// when three or more relationships stack on the same pair (#386).
+		// Z-order: paint UNDER `links_view` only when the heaviest arc stack
+		// threatens to occlude a structural family line (the original #386
+		// concern). Otherwise paint ON TOP so non-stacked arcs aren't
+		// themselves hidden by the family-link layer (#450).
+		const paintUnderLinks = shouldPaintOverlayUnderLinks(maxArcStackDepth);
 		const viewGroup = svg.querySelector('.view');
 		if (viewGroup) {
 			const linksView = viewGroup.querySelector('.links_view');
-			if (linksView) {
+			if (linksView && paintUnderLinks) {
 				viewGroup.insertBefore(overlayGroup, linksView);
 			} else {
 				viewGroup.appendChild(overlayGroup);
