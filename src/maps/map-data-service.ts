@@ -1173,28 +1173,38 @@ export class MapDataService {
 	}
 
 	/**
-	 * Extract year from a date string or number
+	 * Extract year from a date string or number.
+	 *
+	 * Defers to DateService.parseDate first so fictional-era timestamps
+	 * (e.g., `82 BBY`, `200 ABY`, `TA 2941`) resolve to their canonical
+	 * signed year. Falls back to a 4-digit regex / numeric range for
+	 * compat when DateService isn't available.
 	 */
-	private extractYear(dateStr?: string | number): number | undefined {
-		if (!dateStr) return undefined;
+	private extractYear(dateStr?: string | number, universe?: string): number | undefined {
+		if (dateStr === undefined || dateStr === null || dateStr === '') return undefined;
 
-		// If it's already a number, assume it's a year
+		const dateService = this.plugin.getDateService?.();
+		if (dateService) {
+			const asString = typeof dateStr === 'number' ? String(dateStr) : dateStr;
+			const parsed = dateService.parseDate(asString, universe);
+			if (parsed && parsed.year !== null) {
+				return parsed.year;
+			}
+		}
+
+		// Fallback for legacy code paths when DateService isn't initialized.
 		if (typeof dateStr === 'number') {
-			// Validate it's a reasonable year (4 digits)
 			if (dateStr >= 1000 && dateStr <= 9999) {
 				return Math.floor(dateStr);
 			}
 			return undefined;
 		}
 
-		// Convert to string for regex matching
 		const dateString = String(dateStr);
 
-		// Try ISO format (YYYY-MM-DD)
 		const isoMatch = dateString.match(/^(\d{4})/);
 		if (isoMatch) return parseInt(isoMatch[1]);
 
-		// Try other common formats
 		const yearMatch = dateString.match(/\b(\d{4})\b/);
 		if (yearMatch) return parseInt(yearMatch[1]);
 
