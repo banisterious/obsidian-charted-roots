@@ -1300,7 +1300,7 @@ export class StatisticsService {
 					if (birthYear !== null) {
 						const firstMarriageYear = Math.min(...marriageDates);
 						const marriageAge = firstMarriageYear - birthYear;
-						if (marriageAge >= 10 && marriageAge <= 80) {
+						if (marriageAge >= 10 && marriageAge <= this.maxAge) {
 							marriageAges.push({
 								age: marriageAge,
 								sex: person.sex?.toLowerCase() ?? null
@@ -1977,7 +1977,7 @@ export class StatisticsService {
 				}
 
 				const duration = endYear - marriageYear;
-				if (duration > 0 && duration <= 80) {
+				if (duration > 0 && duration <= this.maxAge) {
 					// Find spouse name
 					const spouseNode = people.find(p => p.crId === spouse.personId);
 					const spouseName = spouseNode ? spouseNode.name : spouse.personId;
