@@ -630,7 +630,7 @@ export const DEFAULT_MAP_SETTINGS: MapSettings = {
 	militaryMarkerColor: '#78716c',   // brown/stone
 	immigrationMarkerColor: '#06b6d4', // cyan
 	religiousMarkerColor: '#c084fc',  // light purple
-	customMarkerColor: '#ec4899',     // pink
+	customMarkerColor: '#eab308',     // yellow (distinct from death-red cluster, #465)
 
 	showMigrationPaths: true,
 	pathColor: '#6366f1',  // indigo
