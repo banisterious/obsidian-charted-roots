@@ -7,6 +7,7 @@
 
 import type { App, TFile } from 'obsidian';
 import type { CanvasRootsSettings } from '../../settings';
+import type CanvasRootsPlugin from '../../../main';
 import { VaultStatsService } from '../../core/vault-stats';
 import { FamilyGraphService, type PersonNode } from '../../core/family-graph';
 import { extractSurnames } from '../../utils/name-utils';
@@ -64,6 +65,7 @@ import { DEFAULT_TOP_LIST_LIMIT, CACHE_DEBOUNCE_MS, getGenerationLabel } from '.
 export class StatisticsService {
 	private app: App;
 	private settings: CanvasRootsSettings;
+	private plugin?: CanvasRootsPlugin;
 	private cache: StatisticsCache;
 	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -72,9 +74,10 @@ export class StatisticsService {
 	private familyGraphService: FamilyGraphService | null = null;
 	private organizationService: OrganizationService | null = null;
 
-	constructor(app: App, settings: CanvasRootsSettings) {
+	constructor(app: App, settings: CanvasRootsSettings, plugin?: CanvasRootsPlugin) {
 		this.app = app;
 		this.settings = settings;
+		this.plugin = plugin;
 		this.cache = {
 			data: null,
 			lastUpdated: 0,
@@ -389,8 +392,8 @@ export class StatisticsService {
 		let dateInconsistencies = 0;
 		for (const person of people) {
 			if (person.birthDate && person.deathDate) {
-				const birthYear = this.extractYear(person.birthDate);
-				const deathYear = this.extractYear(person.deathDate);
+				const birthYear = this.extractYear(person.birthDate, person.universe);
+				const deathYear = this.extractYear(person.deathDate, person.universe);
 				if (birthYear !== null && deathYear !== null) {
 					// Birth after death
 					if (birthYear > deathYear) {
@@ -1543,10 +1546,27 @@ export class StatisticsService {
 	}
 
 	/**
-	 * Extract year from a date string (supports various formats)
+	 * Extract year from a date string (supports various formats).
+	 *
+	 * Defers to `DateService.parseDate` first when a fictional calendar is
+	 * configured, so descending eras (BBY, etc.) return the canonical signed
+	 * year rather than the unsigned digit run. Without that, naive `birthYear
+	 * > deathYear` comparisons false-positive on coherent BBY lifespans
+	 * (`1045 BBY` parses as 1045, `1042 BBY` parses as 1042, and the regex
+	 * order makes the death look earlier than the birth). Mirrors the
+	 * data-quality.ts `parseYear` fix from #437 and the map-data-service.ts
+	 * fix from #454.
 	 */
-	private extractYear(dateStr: string | undefined): number | null {
+	private extractYear(dateStr: string | undefined, universe?: string): number | null {
 		if (!dateStr || typeof dateStr !== 'string') return null;
+
+		const dateService = this.plugin?.getDateService?.();
+		if (dateService) {
+			const parsed = dateService.parseDate(dateStr, universe);
+			if (parsed?.type === 'fictional' && parsed.year !== null) {
+				return parsed.year;
+			}
+		}
 
 		// Try negative year first (e.g., "-1000", "-500")
 		const negMatch = dateStr.match(/^-(\d+)/);
@@ -2254,6 +2274,6 @@ export class StatisticsService {
 /**
  * Factory function to create a StatisticsService
  */
-export function createStatisticsService(app: App, settings: CanvasRootsSettings): StatisticsService {
-	return new StatisticsService(app, settings);
+export function createStatisticsService(app: App, settings: CanvasRootsSettings, plugin?: CanvasRootsPlugin): StatisticsService {
+	return new StatisticsService(app, settings, plugin);
 }

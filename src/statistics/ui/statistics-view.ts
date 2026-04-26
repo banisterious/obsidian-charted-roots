@@ -63,7 +63,7 @@ export class StatisticsView extends ItemView {
 
 	// eslint-disable-next-line @typescript-eslint/require-await -- ItemView.onOpen requires async signature
 	async onOpen(): Promise<void> {
-		this.service = new StatisticsService(this.plugin.app, this.plugin.settings);
+		this.service = new StatisticsService(this.plugin.app, this.plugin.settings, this.plugin);
 		this.stats = this.service.getAllStatistics();
 
 		this.buildUI();

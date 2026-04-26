@@ -25,7 +25,7 @@ export function renderStatisticsTab(
 	showTab: (tabId: string) => void,
 	closeModal?: () => void
 ): void {
-	const service = new StatisticsService(plugin.app, plugin.settings);
+	const service = new StatisticsService(plugin.app, plugin.settings, plugin);
 	const stats = service.getAllStatistics();
 
 	// Actions card (at top for discoverability)
