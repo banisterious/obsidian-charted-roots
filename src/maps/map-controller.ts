@@ -697,6 +697,26 @@ export class MapController {
 	}
 
 	/**
+	 * Whether a path's text label should be flipped 180° to read upright.
+	 * Computed in screen-space (after CRS projection) so the decision works
+	 * for both geographic maps and `CRS.Simple` image maps. Without this,
+	 * leaflet-textpath's `'flip'` mode picks based on latlng coords directly,
+	 * which yields inconsistent results on diagonal lines and on `CRS.Simple`
+	 * where coordinate orientation differs from screen orientation. (#472)
+	 */
+	private shouldFlipPathLabel(polyline: L.Polyline): boolean {
+		if (!this.map) return false;
+		const latlngs = polyline.getLatLngs() as L.LatLng[];
+		if (latlngs.length < 2) return false;
+
+		const start = this.map.latLngToLayerPoint(latlngs[0]);
+		const end = this.map.latLngToLayerPoint(latlngs[latlngs.length - 1]);
+
+		// Path goes leftward in screen-space → flip so text reads left-to-right.
+		return end.x < start.x;
+	}
+
+	/**
 	 * Get marker color based on type
 	 */
 	private getMarkerColorForType(type: MapMarker['type']): string {
@@ -912,7 +932,9 @@ export class MapController {
 				polyline.setText(data.personName, {
 					center: true,
 					offset: -5, // Position above the line
-					orientation: 'flip', // Ensure text reads left-to-right
+					// Decide flip in screen-space so labels read upright on
+					// CRS.Simple image maps too, not just geographic maps (#472).
+					orientation: this.shouldFlipPathLabel(polyline) ? 'flip' : 'auto',
 					attributes: {
 						fill: this.settings.pathColor,
 						'font-size': '11px',
@@ -1004,7 +1026,9 @@ export class MapController {
 				polyline.setText(journey.personName, {
 					center: true,
 					offset: -5,
-					orientation: 'flip',
+					// Decide flip in screen-space so labels read upright on
+					// CRS.Simple image maps too, not just geographic maps (#472).
+					orientation: this.shouldFlipPathLabel(polyline) ? 'flip' : 'auto',
 					attributes: {
 						fill: journey.color || this.settings.journeyPathColor,
 						'font-size': '11px',
