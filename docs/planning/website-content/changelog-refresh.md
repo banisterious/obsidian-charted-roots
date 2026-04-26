@@ -1,7 +1,7 @@
 # Changelog Page Refresh — draft
 
 **Target page:** `/changelog/_index.md` on chartedroots.com
-**Status:** 🚀 Ported to chartedroots.com 2026-04-24. All four clusters (0.22.x, 0.21.x, 0.20.x, 0.19.x forward) live on `/changelog/`.
+**Status:** 🚀 Ported to chartedroots.com 2026-04-24, refreshed 2026-04-25 with v0.22.6 + v0.22.7 spotlights and the post-release follow-ups merged on `main` (#448, #450). All four clusters (0.22.x, 0.21.x, 0.20.x, 0.19.x forward) live on `/changelog/`.
 **Source material:** [CHANGELOG.md](../../../CHANGELOG.md), [wiki-content/Release-History.md](../../../wiki-content/Release-History.md).
 
 ---
@@ -30,7 +30,55 @@ For the full per-release log, see [GitHub Releases](https://github.com/banisteri
 
 ## v0.22.x: Stability run before 1.0
 
-Six releases across this cluster. Four same-day hotfixes (0.22.1 through 0.22.4) closed critical data-loss bugs surfaced by community testing. 0.22.5 finished out the cluster with three smaller fixes from a fictional-calendar investigation. Regression tests grew from 189 to 241 across the six releases.
+Eight releases across this cluster, with two more (#448 and #450) merged on `main` for whatever ships next. Four same-day hotfixes (0.22.1 through 0.22.4) closed critical data-loss bugs surfaced by community testing. 0.22.5 through 0.22.7 brought the fictional-calendar work into shape and landed Phase 1 of the universe → calendar link. Regression tests grew from 189 to 330 across the eight releases.
+
+### Universe → calendar wiring ([#432](https://github.com/banisterious/obsidian-charted-roots/issues/432) Phase 1)
+
+The Universe wizard's step 2 now offers a three-way calendar picker (None, Built-in, Custom) replacing the earlier binary "create custom calendar?" toggle. When the universe name slug-matches a built-in calendar's universe field, that built-in is preselected — a "Star Wars" universe auto-selects Galactic Standard, "Middle-earth" auto-selects Middle-earth Calendar, and so on. The Edit Universe modal gains a matching Calendar field, and the Universes tab shows the linked default calendar as a sub-line under entity counts. Phase 2 (parser-side reading of the link, bare-year inference) is deferred to a separate issue.
+
+[More in Features →](/features/#world-building)
+
+### Spouse deaths now appear on timelines by default ([#447](https://github.com/banisterious/obsidian-charted-roots/issues/447))
+
+`timelineShowSpouseDeaths` flipped from `false` to `true`, so widow / widower context surfaces on the timeline dynamic block without users having to discover the setting first. The toggle is unchanged — anyone who'd rather hide spouse deaths can still opt out from Settings → Charted Roots → Timeline.
+
+[More in Features →](/features/#dynamic-content-blocks)
+
+### Person-delete cleans up orphan cr_ids ([#442](https://github.com/banisterious/obsidian-charted-roots/issues/442))
+
+When a person note is removed, Charted Roots now scans every other person note's `*_id` fields and removes the deleted cr_id from any matches. Previously Obsidian rewrote the wikilink references but left the parallel `*_id` arrays carrying orphaned strings, which downstream code (timeline gathering, family chart, exports) would silently mishandle. Covers all canonical fields and user-aliased equivalents. Existing vault-wide orphans from prior deletes can still be cleaned via the existing data-quality "Remove orphaned cr_id references" tool.
+
+[More in Features →](/features/#data-quality-tools)
+
+### Stepchildren on stepparent timelines and in the profile view ([#441](https://github.com/banisterious/obsidian-charted-roots/issues/441), [#443](https://github.com/banisterious/obsidian-charted-roots/issues/443))
+
+Stepchildren's birth events no longer appear on stepparents' timelines. Vault data commonly lists both biological and step children in `childrenCrIds`, so Cliegg Lars's timeline used to show "Birth of Anakin Skywalker" even though Cliegg married Anakin's mother after Anakin was born. The family-graph now derives `stepchildrenCrIds` on each parent by inverting the children's `stepfatherCrIds` / `stepmotherCrIds`, and the timeline's children-births block skips any id present in the new array. The Entity Profile View's Children block uses the same data to label stepchildren and adopted children with their specific category instead of the generic "Child" fallback.
+
+[More in Features →](/features/#entity-profile-view)
+
+### Map popups show ages and full date ranges ([#444](https://github.com/banisterious/obsidian-charted-roots/issues/444))
+
+Marker popups on the geographic map now append `(age N)` for non-birth events and render full `from – to` ranges for events with a `date_to`. For Shmi Skywalker Lars dying at 22 BBY, the popup now reads `Death: 22 BBY (age 50)`. For a residence at Ator from 64 BBY to 22 BBY, it shows the full duration instead of just the start date. Birth events suppress the redundant age 0 annotation. Sibling fix to v0.22.5's #434 on a different code path (static markers vs. journey waypoints).
+
+[More in Features →](/features/#geographic-features)
+
+### Map journey mode says why playback isn't available ([#445](https://github.com/banisterious/obsidian-charted-roots/issues/445))
+
+Entering journey mode for a person with fewer than two resolvable waypoints used to leave the marker filter applied with no explanation, no playback panel, and no notice. The map now renders an inline placeholder where the playback panel would have appeared, naming the person and stating that they need at least 2 places with valid coordinates. Reuses the same teardown path as the playback controls so exiting journey mode clears it cleanly.
+
+[More in Features →](/features/#geographic-features)
+
+### Post-release follow-ups on `main`
+
+Two fixes merged after v0.22.7 shipped, queued for the next versioned release but already available via BRAT. Custom-image-map journey paths now build correctly for pixel-coord places ([#448](https://github.com/banisterious/obsidian-charted-roots/issues/448)) — previously the path-builder dedupped to one waypoint per person on pixel-coord maps. The Custom Relationships Overlay's arc rendering paints on top of family links by default and flips layering when stacks reach 3+ to keep dense areas readable ([#450](https://github.com/banisterious/obsidian-charted-roots/issues/450)).
+
+[More in Features →](/features/#geographic-features)
+
+### Fictional-era support extended across data quality, journey, and timeline ([#437](https://github.com/banisterious/obsidian-charted-roots/issues/437), [#438](https://github.com/banisterious/obsidian-charted-roots/issues/438), [#439](https://github.com/banisterious/obsidian-charted-roots/issues/439))
+
+Three sibling fixes in v0.22.6 building on v0.22.5's `DateService` plumbing. Date-inconsistency checks (`DEATH_BEFORE_BIRTH`, `UNREASONABLE_AGE`, etc.) now respect descending eras like BBY and stop firing FUTURE_BIRTH / FUTURE_DEATH on fictional dates. Map journey playback merges life events from `cr_type: event` notes alongside the inline `events:` array, fixing journeys that previously collapsed to two or three waypoints in event-note-style schemas. The timeline dynamic block routes age computation through `DateService.calculateAge` across all eight call sites, fixing missing age annotations on BBY-spanning lifespans.
+
+[More in Features →](/features/#data-quality-tools)
 
 ### Cross-entity Collections ([#426](https://github.com/banisterious/obsidian-charted-roots/issues/426))
 
@@ -62,7 +110,7 @@ Ages and durations in map waypoint popups now match the fictional calendar for u
 
 Three lingering issues from the 0.21 spouse-format migration are fixed. The phantom-deletion cascade that could fire during a migration no longer triggers. Cross-note indexed-spouse corruption on older notes is corrected on next load. Adoptive siblings render correctly in the relationships dynamic block.
 
-**Full cluster:** [0.22.0](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.0) · [0.22.1](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.1) · [0.22.2](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.2) · [0.22.3](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.3) · [0.22.4](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.4) · [0.22.5](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.5)
+**Full cluster:** [0.22.0](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.0) · [0.22.1](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.1) · [0.22.2](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.2) · [0.22.3](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.3) · [0.22.4](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.4) · [0.22.5](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.5) · [0.22.6](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.6) · [0.22.7](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.7)
 
 ---
 
