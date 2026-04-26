@@ -14,6 +14,14 @@
   max-width: 180px;
 }
 
+/* Text inputs render at a consistent width across all rows regardless of
+   description length. Without this, rows with long descriptions (Universe,
+   Parent place) had narrower inputs than rows with short descriptions
+   (Name, Aliases, Collection). (#459) */
+.crc-create-place-modal .setting-item-control input[type="text"] {
+  width: 220px;
+}
+
 /* Header action button (e.g., "Look up place") */
 .crc-create-place-modal .crc-header-action {
   display: flex;

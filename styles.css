@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-04-25 20:49:31 UTC
+ * - Generated: 2026-04-26 12:39:48 UTC
  * - Components: 49 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -7662,7 +7662,7 @@ settings:
    COMPONENT: PLACE-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 1400 lines, 26.96 KB */
+/* Component Size: 1408 lines, 27.3 KB */
 
 /* ==========================================================================
    CREATE PLACE MODAL
@@ -7678,6 +7678,14 @@ settings:
 /* Constrain dropdown widths to prevent horizontal overflow */
 .crc-create-place-modal .setting-item-control select {
   max-width: 180px;
+}
+
+/* Text inputs render at a consistent width across all rows regardless of
+   description length. Without this, rows with long descriptions (Universe,
+   Parent place) had narrower inputs than rows with short descriptions
+   (Name, Aliases, Collection). (#459) */
+.crc-create-place-modal .setting-item-control input[type="text"] {
+  width: 220px;
 }
 
 /* Header action button (e.g., "Look up place") */
@@ -41350,11 +41358,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-04-25 20:49:32 UTC
+ * Build completed: 2026-04-26 12:39:49 UTC
  * Components processed: 49
- * Total lines: 40886
- * Total size: 825.37 KB
- * Build duration: 0.32 seconds
+ * Total lines: 40894
+ * Total size: 825.71 KB
+ * Build duration: 1.11 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -41364,7 +41372,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - settings.css: 131 lines, 3.53 KB
  * - control-center.css: 5747 lines, 107.88 KB
  * - entity-create-modals.css: 1236 lines, 25.51 KB
- * - place-modals.css: 1400 lines, 26.96 KB
+ * - place-modals.css: 1408 lines, 27.3 KB
  * - media-modals.css: 1987 lines, 38.41 KB
  * - import-export-wizard.css: 2187 lines, 41.74 KB
  * - staging-manager.css: 555 lines, 11.4 KB
