@@ -128,6 +128,34 @@ export class TimelineRenderer {
 	}
 
 	/**
+	 * Whether a relative-event date falls before the focal person's birth,
+	 * i.e., outside the front edge of their reality window. Used to filter
+	 * sibling births where an older sibling's birth would otherwise appear
+	 * before the focal person's own birth on their timeline (#469).
+	 *
+	 * Returns false (event allowed) when the focal person has no birth
+	 * date, or when either date can't be resolved — only filters when we
+	 * have unambiguous evidence the event happened before the focal person
+	 * was born. Same-year events are allowed (intra-year ordering unknown).
+	 */
+	private isEventBeforeFocalBirth(
+		focalBirthDate: string | undefined,
+		eventDate: string | undefined,
+		universe: string | undefined
+	): boolean {
+		if (!focalBirthDate || !eventDate) return false;
+
+		const dateService = this.service.getDateService();
+		if (!dateService) return false;
+
+		const focalYear = dateService.getCanonicalYear(focalBirthDate, universe);
+		const eventYear = dateService.getCanonicalYear(eventDate, universe);
+		if (focalYear === null || eventYear === null) return false;
+
+		return eventYear < focalYear;
+	}
+
+	/**
 	 * Render the timeline block
 	 */
 	async render(
@@ -759,6 +787,12 @@ export class TimelineRenderer {
 			for (const siblingCrId of siblingCrIds) {
 				const sibling = graph.getPersonByCrId(siblingCrId);
 				if (sibling?.birthDate) {
+					// Skip siblings whose birth predates the focal person's birth.
+					// Older siblings exist genealogically but their birth events
+					// fall outside the front edge of the focal person's reality
+					// window — putting them on the focal timeline produces
+					// out-of-order entries that read as bugs (#469).
+					if (this.isEventBeforeFocalBirth(birthDate, sibling.birthDate, universe)) continue;
 					const year = this.service.extractYear(sibling.birthDate);
 					const entry: TimelineEntry = {
 						date: this.service.formatDate(sibling.birthDate),

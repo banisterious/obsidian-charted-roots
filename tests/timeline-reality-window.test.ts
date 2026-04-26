@@ -3,8 +3,8 @@ import { TimelineRenderer } from '../src/dynamic-content/renderers/timeline-rend
 import { createDateService, type DateService } from '../src/dates/services/date-service';
 
 /**
- * #456 + #457 — focal-person reality-window guard on timeline relative-event
- * surfaces.
+ * #456 + #457 + #469 — focal-person reality-window guard on timeline
+ * relative-event surfaces.
  *
  * #456: step-siblings' births appearing on each other's timelines (older
  *       step-sibling's birth appears before the focal person's own birth).
@@ -15,6 +15,11 @@ import { createDateService, type DateService } from '../src/dates/services/date-
  *       the survivor pre-deceased the spouse. Audit covers parent deaths
  *       too. Fix: a focal-person reality-window guard that skips events
  *       whose date falls after the focal person's death.
+ *
+ * #469: full sibling's birth appearing on the focal person's timeline
+ *       BEFORE the focal person's own birth (older sibling). Fix:
+ *       symmetric reality-window guard `isEventBeforeFocalBirth` applied
+ *       to the sibling-births block.
  */
 
 interface MinimalRelative {
@@ -336,5 +341,127 @@ describe('TimelineRenderer.gatherFamilyEvents — focal-death reality window (#4
 		const entries = privates(renderer).gatherFamilyEvents(buildContext(focal, relatives));
 
 		expect(entries.map(e => e.title)).toContain('Death of Mother');
+	});
+});
+
+describe('TimelineRenderer.gatherFamilyEvents — focal-birth reality window (#469)', () => {
+	let renderer: TimelineRenderer;
+
+	beforeEach(() => {
+		({ renderer } = makeRenderer());
+	});
+
+	it("excludes an older sibling's birth that predates the focal person's birth (BBY)", () => {
+		// Setup: Padme Naberrie born 46 BBY. Sola, her older sister, born
+		// 50 BBY. On Padme's timeline, Sola's birth shouldn't appear since
+		// it predates Padme's own birth.
+		const padme: MinimalPerson = {
+			crId: 'padme',
+			name: 'Padme Naberrie',
+			birthDate: '46 BBY',
+			universe: 'star-wars',
+			motherCrId: 'jobal',
+			childrenCrIds: [],
+			stepchildrenCrIds: [],
+			adoptedChildCrIds: [],
+			spouseCrIds: [],
+			parentCrIds: [],
+		};
+		const relatives: MinimalRelative[] = [
+			{
+				crId: 'jobal',
+				name: 'Jobal Naberrie',
+				childrenCrIds: ['padme', 'sola'],
+				stepchildrenCrIds: [],
+			},
+			{ crId: 'sola', name: 'Sola Naberrie', birthDate: '50 BBY', file: { basename: 'Sola Naberrie' } },
+		];
+
+		const entries = privates(renderer).gatherFamilyEvents(buildContext(padme, relatives));
+
+		expect(entries.map(e => e.title)).not.toContain('Birth of Sola Naberrie');
+	});
+
+	it("excludes an older sibling's birth that predates the focal person's birth (real-world)", () => {
+		const focal: MinimalPerson = {
+			crId: 'focal',
+			name: 'Younger Sibling',
+			birthDate: '1905',
+			motherCrId: 'mother',
+			childrenCrIds: [],
+			stepchildrenCrIds: [],
+			adoptedChildCrIds: [],
+			spouseCrIds: [],
+			parentCrIds: [],
+		};
+		const relatives: MinimalRelative[] = [
+			{
+				crId: 'mother',
+				name: 'Mother',
+				childrenCrIds: ['focal', 'older'],
+				stepchildrenCrIds: [],
+			},
+			{ crId: 'older', name: 'Older Sibling', birthDate: '1900', file: { basename: 'Older Sibling' } },
+		];
+
+		const entries = privates(renderer).gatherFamilyEvents(buildContext(focal, relatives));
+
+		expect(entries.map(e => e.title)).not.toContain('Birth of Older Sibling');
+	});
+
+	it("includes a younger sibling's birth that occurs after the focal person's birth", () => {
+		const focal: MinimalPerson = {
+			crId: 'focal',
+			name: 'Older Sibling',
+			birthDate: '1900',
+			motherCrId: 'mother',
+			childrenCrIds: [],
+			stepchildrenCrIds: [],
+			adoptedChildCrIds: [],
+			spouseCrIds: [],
+			parentCrIds: [],
+		};
+		const relatives: MinimalRelative[] = [
+			{
+				crId: 'mother',
+				name: 'Mother',
+				childrenCrIds: ['focal', 'younger'],
+				stepchildrenCrIds: [],
+			},
+			{ crId: 'younger', name: 'Younger Sibling', birthDate: '1905', file: { basename: 'Younger Sibling' } },
+		];
+
+		const entries = privates(renderer).gatherFamilyEvents(buildContext(focal, relatives));
+
+		expect(entries.map(e => e.title)).toContain('Birth of Younger Sibling');
+	});
+
+	it('includes a same-year sibling birth (intra-year ordering unknown)', () => {
+		// Twins or close-births where the year matches: allow through; the
+		// reality-window guard fires only on unambiguous before-focal-birth.
+		const focal: MinimalPerson = {
+			crId: 'focal',
+			name: 'Twin A',
+			birthDate: '1900',
+			motherCrId: 'mother',
+			childrenCrIds: [],
+			stepchildrenCrIds: [],
+			adoptedChildCrIds: [],
+			spouseCrIds: [],
+			parentCrIds: [],
+		};
+		const relatives: MinimalRelative[] = [
+			{
+				crId: 'mother',
+				name: 'Mother',
+				childrenCrIds: ['focal', 'twin'],
+				stepchildrenCrIds: [],
+			},
+			{ crId: 'twin', name: 'Twin B', birthDate: '1900', file: { basename: 'Twin B' } },
+		];
+
+		const entries = privates(renderer).gatherFamilyEvents(buildContext(focal, relatives));
+
+		expect(entries.map(e => e.title)).toContain('Birth of Twin B');
 	});
 });
