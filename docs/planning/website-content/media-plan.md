@@ -414,6 +414,15 @@ Running log of static files live on the chartedroots.com features page. Mirrors 
 
 `oxipng -o 4` lossless pass on each PNG before deploy yielded 20–27% reductions across the set. Total deployed payload: ~1.21 MB across five files (down from ~1.6 MB pre-optimization). All five sit comfortably under the 500 KB-per-static cap. Implemented as raw HTML `<figure>` for the hero and a `.cr-grid-2` CSS grid wrapping four captioned figures; mobile breakpoint at 700px collapses the grid to a single column. Existing `cr-canvas-tree-generation.webm` motion loop preserved between the bullets and the new layout grid.
 
+**Family Chart view (2026-04-26):**
+
+- ✅ `cr-family-chart-live.png` (193 KB) — Interactive Family Chart View section, hero above the bullet list. William Anderson selected with the Person Details panel open.
+- ✅ `cr-family-chart-gender.png` (158 KB) — 2-up palette pair below the bullets (left), captioned "Default gender coloring".
+- ✅ `cr-family-chart-theme-earth-tones.png` (158 KB) — 2-up palette pair below the bullets (right), captioned "Earth tones theme preset".
+- ✅ `cr-family-chart-highlight-groups.png` (206 KB) — Captioned still ("Two highlight groups active") between the `cr-family-chart-relationship-edit.webm` and `cr-family-chart-highlight-groups.webm` motion embeds. Acts as the freeze-frame counterpart to the highlight-groups motion.
+
+`oxipng -o 4` yielded 21–28% reductions across the four files. Total deployed payload: ~715 KB (down from ~958 KB pre-optimization). All four under the 500 KB-per-static cap. Reused the `.cr-grid-2` CSS class from the Canvas tree port — no new CSS needed. Section order after the port: lead → hero → bullets → 2-up palette grid → relationship-edit motion → highlight-groups still → highlight-groups motion → wiki link.
+
 ---
 
 ## Deferred decisions
