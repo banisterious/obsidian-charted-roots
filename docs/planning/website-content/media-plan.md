@@ -400,6 +400,15 @@ Anderson family fixture across all four; same root (William Anderson) and same z
 
 The original media-plan entry mentioned color schemes (gender / generation / collection / monochrome). After investigating the live view's rendering path, those four schemes apply only to the Canvas tree generator and PDF/report exports — the live Family Chart View is hardcoded to gender coloring. Entry reframed accordingly. Canvas Tree color schemes remain on the to-capture list as a separate four-shot set.
 
+**Canvas Tree color schemes (2026-04-26):**
+
+- ✅ `cr-canvas-tree-color-sex.png` (~312 KB) — Canvas tree generation section, color-scheme grid (Sex). Default coloring: distinct color for male and female cards.
+- ✅ `cr-canvas-tree-color-generation.png` (~311 KB) — Color-scheme grid (Generation). Color bands per generation level — visually distinct row colors top-to-bottom.
+- ✅ `cr-canvas-tree-color-collection.png` (~302 KB) — Color-scheme grid (Collection). Per-collection coloring; the Anderson fixture is mostly `blood` with a small `married_in` cluster, so the visible differentiation is subtle (most cards in one color with a small patch in another). Captures the feature accurately even if the demo data doesn't show off variety strongly. Worth a caption nuance on the website to set expectation that the per-collection colors scale with how varied the user's collections are.
+- ✅ `cr-canvas-tree-color-monochrome.png` (~302 KB) — Color-scheme grid (Monochrome). All cards in one neutral color; print-friendly variant.
+
+Anderson family fixture, William Anderson root, Standard layout, same canvas viewport across all four for visual coherence. Total ~1.2 MB pre-optimization; all four under the 500 KB-per-static cap losslessly. Placement intent: a **second 2×2 grid** in the Canvas tree generation section on the website features page, below the existing layouts grid. Top grid varies layout (Standard / Compact / Timeline / Hourglass); bottom grid varies color scheme (Sex / Generation / Collection / Monochrome). Captioned "Color schemes" or similar.
+
 ## Static captures deployed
 
 Running log of static files live on the chartedroots.com features page. Mirrors the "Motion captures deployed" pattern; new deploys append below.
