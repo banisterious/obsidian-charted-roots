@@ -1104,8 +1104,21 @@ export class PlaceGraphService {
 		// Must be a place note (uses flexible detection)
 		if (!isPlaceNote(fm, cache, this.settings?.noteTypeDetection)) return null;
 
-		// Must have cr_id
-		if (!fm.cr_id) return null;
+		// Must have cr_id. Note shapes that pass the place-detection check but
+		// lack a cr_id are silently excluded from the cache, so by-name lookups
+		// (`getPlaceByName`) and downstream consumers (Create Place modal's
+		// parent dropdown, map markers, references) can't see them. The
+		// diagnostic warning below makes the exclusion discoverable from the
+		// dev console; a future data-quality wizard check should surface and
+		// offer to fix this state, see #471.
+		if (!fm.cr_id) {
+			logger.warn(
+				'extractPlaceNode',
+				'Place-shaped note skipped — missing cr_id; will not appear in place graph or by-name lookups',
+				{ filePath: file.path, fileName: file.basename }
+			);
+			return null;
+		}
 
 		// Extract category using value alias resolution (default to 'real')
 		const category: PlaceCategory = this.resolvePlaceCategory(fm.place_category);
