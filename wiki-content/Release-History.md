@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.8 Round-Up: Map, Timeline, Statistics, and Modal Polish](#v0228-round-up-map-timeline-statistics-and-modal-polish-v0228)
   - [v0.22.7 Round-Up: Map UX, Stepchild Handling, and Universe-Calendar Linking](#v0227-round-up-map-ux-stepchild-handling-and-universe-calendar-linking-v0227)
   - [v0.22.6 Fix: Fictional-Era Coverage Round-Up](#v0226-fix-fictional-era-coverage-round-up-v0226)
   - [v0.22.5 Fix: Fictional-Calendar Gaps and Dynamic-Content Noise](#v0225-fix-fictional-calendar-gaps-and-dynamic-content-noise-v0225)
@@ -146,6 +147,77 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.8 Round-Up: Map, Timeline, Statistics, and Modal Polish (v0.22.8)
+
+Nine fixes addressing eleven issues — biggest 0.22.x patch, all non-data-loss. Driven mostly by @DigitalDreamn's continued vault testing on the Lars / Star Wars fixture (eight of eleven), with @doctorwodka contributing the marriage-statistics report (first contribution). Pattern of the cluster: every fix is a parallel surface or write-path gap that a previous round-up partially closed. The DateService-bypass cluster claimed two more sites (#454 map year extraction, #437 follow-up Statistics Dashboard counter) — count is now seven distinct subsystems where era-naive year extraction silently broke fictional dates. Create/edit asymmetry pattern surfaced again in the Place modal (#463). Marker color and popup label gaps fell out of #438's verification.
+
+All eleven changes are non-data-loss. Stability window continues unchanged from 0.22.4 (2026-04-23 → ~2026-05-14).
+
+**Fix: Statistics Dashboard date-inconsistency counter respects fictional eras** ([#437](https://github.com/banisterious/obsidian-charted-roots/issues/437) follow-up):
+- `src/statistics/services/statistics-service.ts` — `extractYear` now defers to `DateService.parseDate` first when a fictional calendar resolves the input. Constructor takes an optional `plugin` ref to reach the date service; both production callers (`statistics-tab.ts`, `statistics-view.ts`) updated to pass it. Falls through to the existing regex for real-world dates.
+- The 0.22.6 fix routed `data-quality.ts`'s `parseYear` through `DateService` for fictional-era awareness, but this Statistics Dashboard surface is a separate code path with its own `extractYear` regex. For BBY descending eras, the digit-run got read as a positive number (`1045 BBY` → 1045) and the naive `birthYear > deathYear` check fired on coherent lifespans. Same fix shape as #437 / #454; seventh DateService-bypass site surfaced and fixed since the cluster started.
+
+**Fix: Map year extraction respects fictional eras** ([#454](https://github.com/banisterious/obsidian-charted-roots/issues/454)):
+- `src/maps/map-data-service.ts` — `MapDataService.extractYear` previously required a 4-digit numeric year, so fictional-era timestamps under 1000 like `82 BBY` / `41 BBY` parsed as `undefined`. Broke chronological sort on fictional-era timelines, dropped events from year-range filters, and downstream contributed to the "no journey path built" symptom on fictional-calendar maps before [#448](https://github.com/banisterious/obsidian-charted-roots/issues/448) was identified as the actual root cause. `extractYear` now defers to `DateService.parseDate` first, picking up the canonical signed year (negative for descending eras) so existing numeric comparisons stay coherent. Falls back to the legacy 4-digit regex when DateService isn't available.
+- Sixth DateService-bypass surface (alongside #433, #434, #437, #439, #444); paired with #437 follow-up above to bring the count to seven.
+
+**Fix: Marriage statistics respect the fictional-dates age cap** ([#458](https://github.com/banisterious/obsidian-charted-roots/issues/458)):
+- `src/statistics/services/statistics-service.ts` — two marriage-stat surfaces had a hardcoded `<= 80` upper bound that bypassed the `maxAge` getter the rest of the engine uses. With `enableFictionalDates` on, `maxAge` returns `Infinity` to admit long-lived characters; the hardcoded `80` silently dropped marriages over that threshold. `getMarriagePatternAnalysis` (age at first marriage) and `computeLongestMarriages` (marriage duration) now both defer to `this.maxAge`. Real-world cap widens 80 → 120 to match the lifespan cap used elsewhere.
+- New test file `tests/statistics-marriage-age-cap.test.ts` (6 tests) covers the cap behavior across both surfaces and fictional/real-world modes.
+
+**Fix: Map journey paths build correctly for pixel-coord places** ([#448](https://github.com/banisterious/obsidian-charted-roots/issues/448)):
+- `src/maps/map-data-service.ts` — `buildJourneyPaths` previously deduped consecutive waypoints by comparing `lat` and `lng` only. On custom image maps, every pixel-coord place uses `pixel_x` / `pixel_y` and defaults `lat` / `lng` to `0`, so all pixel-coord waypoints shared `(0, 0)` and the dedup collapsed all of them into a single entry. The "≥ 2 unique waypoints" check then failed silently, and journey playback was unavailable for fictional-map vaults regardless of how many places were authored.
+- `src/maps/types/map-types.ts` — new `journeyWaypointDedupKey` helper prefers `placeId` when available and falls back to a composite of both coordinate systems so pixel-coord and geographic places no longer collide on each other's defaults.
+- Was the actual root cause of "no play button on Cliegg Lars" through the entire #434 thread. The #445 placeholder correctly diagnosed "no journey built" but the underlying cause was dedup collapse, not insufficient input.
+
+**Fix: Custom-relationships overlay arcs paint on top of family-link layer in the typical case** ([#450](https://github.com/banisterious/obsidian-charted-roots/issues/450)):
+- `src/family-tree/family-chart-view.ts` — the original "always paint under family links" decision from [#386](https://github.com/banisterious/obsidian-charted-roots/issues/386) was meant to protect structural lines from being occluded by heavy overlay stacks (3+ arcs on a single endpoint pair). But it also hid the typical case where only one or two non-stacked arcs exist — overlay arcs disappeared behind family links instead of layering over them. Renderer now paints the overlay group ON TOP of `links_view` by default and falls back to the original "under" behavior only when at least one endpoint pair has 3+ overlay arcs stacked on it (preserves the [#386](https://github.com/banisterious/obsidian-charted-roots/issues/386) heavy-stack guarantee).
+- New `shouldPaintOverlayUnderLinks(maxArcStackDepth)` helper in `src/family-tree/family-chart-overlay-z.ts` returns `true` only when depth ≥ 3.
+- Surfaced during a Custom Relationships Overlay motion-capture demo setup; the visual problem made the demo not worth recording until the z-order was fixed.
+
+**Fix: Timeline filters relative events outside the focal person's reality window** ([#456](https://github.com/banisterious/obsidian-charted-roots/issues/456), [#457](https://github.com/banisterious/obsidian-charted-roots/issues/457)):
+- `src/dynamic-content/renderers/timeline-renderer.ts` — two related leaks where the timeline surfaced events that didn't fit the focal person's lived experience. **Step-siblings' births** appeared on each other's timelines because the sibling-iteration walked each parent's `childrenCrIds` without distinguishing biological from step-children — Anakin's timeline showed Owen's birth even though they share only a stepparent ([#456](https://github.com/banisterious/obsidian-charted-roots/issues/456)). **Spouse deaths** surfaced on the survivor's timeline even when the survivor pre-deceased the spouse — Shmi's timeline showed Cliegg's death even though Shmi died first ([#457](https://github.com/banisterious/obsidian-charted-roots/issues/457)).
+- Paired fix: step-sibling filter mirroring the [#441](https://github.com/banisterious/obsidian-charted-roots/issues/441) stepchild treatment (skip any id present in any parent's `stepchildrenCrIds` from the sibling-births iteration), plus a new `isEventAfterFocalDeath` helper using `DateService.getCanonicalYear` so fictional descending eras (BBY) compare correctly. Audit covered parent deaths in the same pass — those now also skip when the parent died after the focal person did. Same-year events allowed (intra-year ordering unknown). No death date on focal person allows everything (current behavior for living persons).
+- New test file `tests/timeline-reality-window.test.ts` (8 tests) covers the step-sibling filter and the focal-death guards across spouse and parent surfaces.
+
+**Fix: Person-delete cleanup now sweeps the `step_child_id` field on stepparents' notes** ([#442](https://github.com/banisterious/obsidian-charted-roots/issues/442) follow-up):
+- `src/core/person-delete-cleanup.ts` — the cleanup planner shipped in 0.22.7 listed `stepchild_id` (no underscore) in its scan list, but the bidirectional-linker — the only code that writes the stepchild→stepparent reverse-link onto a stepparent's frontmatter — uses `step_child_id` (underscore between `step` and `child`). Two parallel hardcoded lists never matched, so deleting a person who was a stepchild on someone else's note left their cr_id stranded in the stepparent's `step_child_id` array even though every other relationship array got cleaned. Renamed the entry to `step_child_id` so the cleanup matches the field the rest of the plugin actually writes; the dropped `stepchild_id` form was a phantom, never written by anything.
+
+**Fix: Create Place modal recognizes parents created earlier in the same session and writes their cr_id** ([#463](https://github.com/banisterious/obsidian-charted-roots/issues/463), [#464](https://github.com/banisterious/obsidian-charted-roots/issues/464)):
+- `src/ui/create-place-modal.ts` — two bundled bugs sharing a stale `placeGraph` cache root cause. `PlaceGraphService.ensureCacheLoaded` only loads when the cache is empty, so newly-created place notes weren't visible to subsequent Create Place modal invocations in the same session. Symptoms: typing an existing parent's name produced a spurious "<parent> doesn't exist" auto-create prompt ([#464](https://github.com/banisterious/obsidian-charted-roots/issues/464)); saving anyway wrote only the `parent_place` wikilink without the companion `parent_place_id`, leaving a dual-storage half-write that only resolved after a subsequent Edit + Save round trip ([#463](https://github.com/banisterious/obsidian-charted-roots/issues/463)).
+- Two-part fix: (1) refresh the cache when the modal opens so the dropdown sees the current vault state; (2) in `checkForMissingParent`, when a typed parent name matches an existing place via `getPlaceByName`, populate `parentPlaceId` and `parentPlace` from the resolved node and clear `pendingParentPlace` before the auto-create branch fires.
+- Same class as the create/edit asymmetry meta-pattern called out in [#411](https://github.com/banisterious/obsidian-charted-roots/discussions/411): the Edit modal's load+save round trip eventually resolves `parent_place_id` correctly via the place graph, but the Create write-path skipped the companion field write.
+
+**Fix: Map popups for custom (`cr_type: event`) markers surface the original event type** ([#466](https://github.com/banisterious/obsidian-charted-roots/issues/466)):
+- `src/maps/types/map-types.ts` — `LifeEvent` and `MapMarker` both gain `customLabel?: string`. Carries the raw user-authored event type (or event-note title) when the resolved `MarkerType` collapses to `custom`.
+- `src/maps/map-data-service.ts` — `parseEventsArray` (inline events on the person's frontmatter) and `loadExternalEventsForPerson` (external `cr_type: event` notes) populate `customLabel` from the raw `event_type` or the `EventNote.title` when the resolved type is `custom`. Marker construction threads the field through.
+- `src/maps/map-controller.ts` — `createPopupContent` uses `customLabel` (capitalized) as the popup type label when `data.type === 'custom'` and a label is available; falls back to the literal `Custom:` only when neither raw event_type nor title exists. Built-in event-type popups (birth, death, marriage, etc.) are unchanged.
+- New test file `tests/map-popup-custom-label.test.ts` (3 tests) fences the customLabel propagation.
+
+**Fix: Custom event marker color is now visually distinct from death event markers** ([#465](https://github.com/banisterious/obsidian-charted-roots/issues/465)):
+- `src/maps/types/map-types.ts` and `src/maps/map-view.ts` — both hardcoded defaults for `customMarkerColor` changed from pink (`#ec4899`) to yellow (`#eab308`). Pink sat too close to death red (`#ef4444`) on dense maps, making custom event markers hard to distinguish from death markers when scanning.
+- Map color settings aren't user-persisted yet (per the TODO in `getMapSettings`), so this applies on next plugin load with no migration needed.
+
+**Fix: Create Place modal text inputs render at consistent widths** ([#459](https://github.com/banisterious/obsidian-charted-roots/issues/459)):
+- `styles/place-modals.css` — text inputs in the Create Place modal now render at a fixed 220px width regardless of description length. Without this, rows with long descriptions (Universe, Parent place) had narrower inputs than rows with short descriptions (Name, Aliases, Collection) because the existing `flex-shrink: 0` rule on `.setting-item-info` meant the description column couldn't yield space back to the control column.
+
+**Fix: Wikipedia clipper template renders infobox photos correctly in Obsidian** ([#440](https://github.com/banisterious/obsidian-charted-roots/issues/440)):
+- `docs/clipper-templates/wikipedia-biography-basic.json` — protocol-relative image URLs (`<img src="//upload.wikimedia.org/...">`) preserved in the infobox HTML can't be resolved by Obsidian's `app://` renderer, so infobox photos rendered as broken-image icons in reading mode. Added a `replace` filter to the `selectorHtml:.infobox` extraction that rewrites `="//` to `="https://` so the preserved HTML carries valid absolute URLs.
+- Re-import the template in Web Clipper to pick up the fix; not part of a versioned plugin release since clipper templates ship via `docs/clipper-templates/`.
+
+**Testing:** 33 new tests across five files for a suite total of 376 (was 343 at start of this cycle).
+- `tests/map-data-service-extract-year.test.ts` (10 tests) — fictional-era support and the legacy regex fallback for #454.
+- `tests/statistics-marriage-age-cap.test.ts` (6 tests) — marriage age and longest-marriages caps for #458.
+- `tests/timeline-reality-window.test.ts` (8 tests) — step-sibling filter and focal-death guards for #456 / #457.
+- `tests/map-popup-custom-label.test.ts` (3 tests) — customLabel propagation for #466.
+- `tests/statistics-extract-year-fictional.test.ts` (6 tests) — DateService routing for #437 follow-up.
+
+**Reporters:** @DigitalDreamn for #437 follow-up, #442 follow-up, #448, #450 (overlay observation), #454, #456, #457, #459, #463 + #464, #465, #466 (eight of eleven, all from continued Lars / Star Wars vault testing). @doctorwodka for #458 (first contribution).
+
+**Stability-window impact:** no reset — all eleven changes are non-data-loss. Window continues from 0.22.4's start: 2026-04-23 → ~2026-05-14.
+
+---
 
 ### v0.22.7 Round-Up: Map UX, Stepchild Handling, and Universe-Calendar Linking (v0.22.7)
 
