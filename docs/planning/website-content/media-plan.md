@@ -388,6 +388,20 @@ Running log of static screenshots captured and tracked in the plugin repo at ful
 
 Anderson family fixture for the four layouts (matching the `cr-canvas-tree-generation.webm` motion loop already shipped). Royal-families-in-Europe GEDCOM imported into a throwaway vault for the multi-generational hero so the dev-vault's curated demo fixtures stayed intact. Total ~1.6 MB pre-optimization; all five already under the 500 KB-per-static cap. Placement intent: hero shot above the bullet list in the Canvas tree generation section, four layouts as a 2×2 grid below the bullet list.
 
+## Static captures deployed
+
+Running log of static files live on the chartedroots.com features page. Mirrors the "Motion captures deployed" pattern; new deploys append below.
+
+**Canvas tree layouts (2026-04-25):**
+
+- ✅ `cr-canvas-tree-multi-generational.png` (287 KB) — Canvas tree generation section, hero above the bullet list.
+- ✅ `cr-canvas-tree-standard.png` (222 KB) — Canvas tree generation section, layout grid (Standard).
+- ✅ `cr-canvas-tree-compact.png` (229 KB) — Canvas tree generation section, layout grid (Compact).
+- ✅ `cr-canvas-tree-timeline.png` (260 KB) — Canvas tree generation section, layout grid (Timeline).
+- ✅ `cr-canvas-tree-hourglass.png` (212 KB) — Canvas tree generation section, layout grid (Hourglass).
+
+`oxipng -o 4` lossless pass on each PNG before deploy yielded 20–27% reductions across the set. Total deployed payload: ~1.21 MB across five files (down from ~1.6 MB pre-optimization). All five sit comfortably under the 500 KB-per-static cap. Implemented as raw HTML `<figure>` for the hero and a `.cr-grid-2` CSS grid wrapping four captioned figures; mobile breakpoint at 700px collapses the grid to a single column. Existing `cr-canvas-tree-generation.webm` motion loop preserved between the bullets and the new layout grid.
+
 ---
 
 ## Deferred decisions
