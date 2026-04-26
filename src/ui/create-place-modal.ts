@@ -251,6 +251,12 @@ export class CreatePlaceModal extends Modal {
 			}
 		}
 
+		// Refresh the place cache so newly-created places (parents created
+		// earlier in the same session) are visible to both the dropdown and
+		// the by-name lookup that suppresses the auto-create prompt. Without
+		// this, `ensureCacheLoaded` is a no-op once the cache is non-empty
+		// and stale entries hide places that exist on disk (#463, #464).
+		this.placeGraph?.reloadCache();
 		// Gather existing collections from both person notes and place notes
 		this.loadExistingCollections();
 		// Build parent place options for dropdown
@@ -1583,11 +1589,18 @@ export class CreatePlaceModal extends Modal {
 			return undefined;
 		}
 
-		// Check if this place already exists
+		// Check if this place already exists. If it does, resolve the typed
+		// name to its cr_id so the write path emits both `parent_place` and
+		// `parent_place_id` rather than only the wikilink (#463). Same lookup
+		// also suppresses the spurious "doesn't exist" auto-create prompt
+		// when the parent does exist (#464).
 		if (this.placeGraph) {
 			const existingPlace = this.placeGraph.getPlaceByName(parentName);
 			if (existingPlace) {
-				return undefined; // Parent already exists
+				this.placeData.parentPlaceId = existingPlace.id;
+				this.placeData.parentPlace = existingPlace.name;
+				this.pendingParentPlace = undefined;
+				return undefined;
 			}
 		}
 
