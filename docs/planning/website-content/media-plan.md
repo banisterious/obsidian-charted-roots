@@ -374,6 +374,22 @@ Phase 1 total payload: ~8.7 MB on the features page. All five autoplay-on-visit 
 
 ---
 
+## Static captures completed
+
+Running log of static screenshots captured and tracked in the plugin repo at full resolution. Captured here = ready for the website session to optimize (oxipng / pngquant) and deploy to `static/img/` on chartedroots.com.
+
+**Canvas tree layouts (2026-04-25):**
+
+- ✅ `cr-canvas-tree-standard.png` (~305 KB) — Canvas tree generation section, layout grid (Standard).
+- ✅ `cr-canvas-tree-compact.png` (~311 KB) — Canvas tree generation section, layout grid (Compact).
+- ✅ `cr-canvas-tree-timeline.png` (~355 KB) — Canvas tree generation section, layout grid (Timeline).
+- ✅ `cr-canvas-tree-hourglass.png` (~293 KB) — Canvas tree generation section, layout grid (Hourglass).
+- ✅ `cr-canvas-tree-multi-generational.png` (~360 KB) — Canvas tree generation section, hero shot above the bullet list.
+
+Anderson family fixture for the four layouts (matching the `cr-canvas-tree-generation.webm` motion loop already shipped). Royal-families-in-Europe GEDCOM imported into a throwaway vault for the multi-generational hero so the dev-vault's curated demo fixtures stayed intact. Total ~1.6 MB pre-optimization; all five already under the 500 KB-per-static cap. Placement intent: hero shot above the bullet list in the Canvas tree generation section, four layouts as a 2×2 grid below the bullet list.
+
+---
+
 ## Deferred decisions
 
 - **Per-page Open Graph images.** Once screenshots exist, hero shots for research-track and worldbuilding-track make good page-specific OG images (more distinctive on social shares than the site-wide card). Revisit after capture.
