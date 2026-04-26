@@ -432,6 +432,15 @@ Running log of static files live on the chartedroots.com features page. Mirrors 
 
 `oxipng -o 4` yielded 21–28% reductions across the four files. Total deployed payload: ~715 KB (down from ~958 KB pre-optimization). All four under the 500 KB-per-static cap. Reused the `.cr-grid-2` CSS class from the Canvas tree port — no new CSS needed. Section order after the port: lead → hero → bullets → 2-up palette grid → relationship-edit motion → highlight-groups still → highlight-groups motion → wiki link.
 
+**Canvas Tree color schemes (2026-04-26):**
+
+- ✅ `cr-canvas-tree-color-sex.png` (222 KB) — Canvas tree generation section, color-scheme grid (Sex). Default coloring.
+- ✅ `cr-canvas-tree-color-generation.png` (220 KB) — Color-scheme grid (Generation). Color bands per generation level.
+- ✅ `cr-canvas-tree-color-collection.png` (214 KB) — Color-scheme grid (Collection). Per-collection coloring; subtle on the Anderson fixture by design.
+- ✅ `cr-canvas-tree-color-monochrome.png` (213 KB) — Color-scheme grid (Monochrome). Print-friendly variant.
+
+`oxipng -o 4` yielded a consistent ~27% reduction across the four files. Total deployed payload: ~870 KB (down from ~1.23 MB pre-optimization). All four under the 500 KB-per-static cap. Placed as a second `.cr-grid-2` 2×2 grid below the existing layouts grid in the Canvas tree generation section. One-line italic bridge above the new grid frames the relationship to the layouts grid above ("Color schemes layer on top of layouts; any layout above pairs with any scheme below"). Short caveat paragraph below the grid sets expectation for the Collection shot — the Anderson fixture has limited collection variety, so the per-collection differentiation is subtle here; vaults that span maternal/paternal lines, immigration cohorts, or household groups see richer color variety. Caveat sits below the grid rather than as an extended figcaption, preserving 1-word caption parallelism with the layouts grid above. Section order after the port: lead → hero → bullets → motion → layouts grid → color-schemes grid → wiki link. Features page combined motion + static lifts to ~13.2 MB.
+
 ---
 
 ## Deferred decisions
