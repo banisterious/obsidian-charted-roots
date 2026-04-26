@@ -1736,8 +1736,26 @@ export class MapView extends ItemView {
 		if (!this.mapController?.['map']) return;
 
 		const map = this.mapController['map'];
-		if (waypoint.lat !== undefined && waypoint.lng !== undefined) {
-			map.flyTo([waypoint.lat, waypoint.lng], 12, { duration: 1 });
+
+		// Resolve the waypoint's location to a LatLng tuple appropriate for the
+		// current CRS. On `CRS.Simple` image maps, lat/lng default to 0 for
+		// pixel-coord places, so a naive `[lat, lng]` flyTo lands at the
+		// bottom-left corner. Use `[pixelY, pixelX]` when on pixel CRS — same
+		// shape as the migration- and journey-path build paths (#474, sibling
+		// fix to #448).
+		const isPixelCRS = this.mapController.getCurrentCRS() === 'pixel';
+		const hasPixel = waypoint.pixelX !== undefined && waypoint.pixelY !== undefined;
+		const hasLatLng = waypoint.lat !== undefined && waypoint.lng !== undefined;
+
+		let target: [number, number] | null = null;
+		if (isPixelCRS && hasPixel) {
+			target = [waypoint.pixelY!, waypoint.pixelX!];
+		} else if (hasLatLng) {
+			target = [waypoint.lat!, waypoint.lng!];
+		}
+
+		if (target) {
+			map.flyTo(target, 12, { duration: 1 });
 
 			// Close any existing popup
 			map.closePopup();
@@ -1747,7 +1765,7 @@ export class MapView extends ItemView {
 				const L = require('leaflet');
 				const popupContent = this.buildRichWaypointPopup(waypoint, allWaypoints, journey);
 				L.popup({ maxWidth: 300, className: 'cr-journey-rich-popup' })
-					.setLatLng([waypoint.lat, waypoint.lng])
+					.setLatLng(target!)
 					.setContent(popupContent)
 					.openOn(map);
 			}, 1100);
