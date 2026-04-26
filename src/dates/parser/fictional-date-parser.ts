@@ -183,6 +183,26 @@ export class FictionalDateParser {
 	}
 
 	/**
+	 * Find the first system whose `universe` field matches the given universe
+	 * name via slug-aware comparison ("Star Wars" → matches `star-wars`, with
+	 * prefix / superset support so fan-canon naming like "Star Wars Legends"
+	 * still resolves to Galactic Standard). Mirrors the slug logic used by
+	 * `suggestBuiltinForUniverseName` in `src/universes/ui/calendar-suggest.ts`.
+	 */
+	public findSystemForUniverse(universe: string): FictionalDateSystem | undefined {
+		const trimmed = universe.trim();
+		if (!trimmed) return undefined;
+		const slug = trimmed.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+		if (!slug) return undefined;
+		return this.systems.find(sys => {
+			if (!sys.universe) return false;
+			const sysSlug = sys.universe.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+			if (!sysSlug) return false;
+			return sysSlug === slug || slug.includes(sysSlug) || sysSlug.includes(slug);
+		});
+	}
+
+	/**
 	 * Convert an era year to a canonical year for comparison
 	 *
 	 * The canonical year is an absolute position on the timeline,

@@ -235,6 +235,42 @@ export class DateService {
 	}
 
 	/**
+	 * Format a canonical year as an era-formatted display string given a
+	 * universe context. Inverse of `parseDate(...).year`. Used by surfaces
+	 * that hold canonical years numerically but render them to users —
+	 * e.g., the map time slider's labels for fictional-era universes (#453).
+	 *
+	 * Falls back to `String(year)` when no fictional parser is configured,
+	 * no universe is supplied, no system matches, or no era's range
+	 * covers the canonical year — so real-world dates and unconfigured
+	 * fictional universes both render unchanged.
+	 */
+	formatCanonicalYear(year: number, universe?: string): string {
+		if (!this.fictionalParser || !universe) {
+			return String(year);
+		}
+
+		const system = this.fictionalParser.findSystemForUniverse(universe);
+		if (!system) {
+			return String(year);
+		}
+
+		// Walk eras in declared order; pick the first whose era-relative
+		// year is non-negative. For backward-direction eras (e.g., BBY),
+		// eraYear = epoch - canonical. For forward, eraYear = canonical -
+		// epoch.
+		for (const era of system.eras) {
+			const direction = era.direction || 'forward';
+			const eraYear = direction === 'backward' ? era.epoch - year : year - era.epoch;
+			if (eraYear >= 0) {
+				return `${eraYear} ${era.abbrev}`;
+			}
+		}
+
+		return String(year);
+	}
+
+	/**
 	 * Extract year from a standard date string
 	 * Supports various formats including approximate dates
 	 */

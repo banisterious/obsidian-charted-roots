@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **Map time slider derives its year range from the data and renders era-formatted labels** ([#453](https://github.com/banisterious/obsidian-charted-roots/issues/453)): The map's "who was alive at year X" time slider had hardcoded `min='1800'` / `max='2000'` slider attributes and label text, which made the feature unusable for fictional-era universes (Star Wars BBY/ABY, Middle-earth TA/SA, etc.) — the slider was locked to a real-world span that didn't intersect the data. Two parts fixed: (1) the slider's min/max attrs are now derived from `MapData.yearRange` (which already computes correctly via the [#454](https://github.com/banisterious/obsidian-charted-roots/issues/454) fix, returning canonical signed years for fictional eras); (2) a new `DateService.formatCanonicalYear(year, universe)` helper inverts canonical years back to era-formatted strings ("82 BBY", "5 ABY") for slider min/max labels and the current-year display. Real-world dates and unconfigured universes fall back to `String(year)` cleanly. **Eighth and final DateService-bypass cluster site closed** since the cluster started in 0.22.5. Reported by @DigitalDreamn during [#434](https://github.com/banisterious/obsidian-charted-roots/issues/434) verification.
+
 ## [0.22.8] - 2026-04-26
 
 Nine fixes addressing eleven issues — biggest patch yet, all non-data-loss. Continues the post-0.22.4 stability window without resetting it. Driven primarily by @DigitalDreamn's continued vault testing on the Lars / Star Wars fixture; @doctorwodka contributed the marriage-stats report.

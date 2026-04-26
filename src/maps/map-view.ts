@@ -2015,8 +2015,16 @@ export class MapView extends ItemView {
 			}
 		}
 
-		if (minLabel) minLabel.textContent = String(yearRange.min);
-		if (maxLabel) maxLabel.textContent = String(yearRange.max);
+		// Format min/max labels via DateService when a universe filter is
+		// active, so fictional-era ranges render as "82 BBY" / "5 ABY"
+		// rather than canonical signed integers (#453).
+		const dateService = this.plugin.getDateService?.();
+		const universe = this.filters.universe;
+		const formatYear = (year: number): string =>
+			dateService ? dateService.formatCanonicalYear(year, universe) : String(year);
+
+		if (minLabel) minLabel.textContent = formatYear(yearRange.min);
+		if (maxLabel) maxLabel.textContent = formatYear(yearRange.max);
 
 		this.updateTimeSliderDisplay();
 	}
@@ -2032,7 +2040,14 @@ export class MapView extends ItemView {
 		const countDisplay = this.timeSliderContainerEl.querySelector('.cr-map-time-count');
 
 		if (yearValue) {
-			yearValue.textContent = String(this.timeSlider.currentYear);
+			// Format via DateService when a universe filter is active so
+			// fictional eras render correctly (e.g., "82 BBY") rather than
+			// the canonical signed integer (#453).
+			const dateService = this.plugin.getDateService?.();
+			const universe = this.filters.universe;
+			yearValue.textContent = dateService
+				? dateService.formatCanonicalYear(this.timeSlider.currentYear, universe)
+				: String(this.timeSlider.currentYear);
 		}
 
 		// Calculate people alive/born
