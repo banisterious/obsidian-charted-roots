@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.8] - 2026-04-26
+
+Nine fixes addressing eleven issues — biggest patch yet, all non-data-loss. Continues the post-0.22.4 stability window without resetting it. Driven primarily by @DigitalDreamn's continued vault testing on the Lars / Star Wars fixture; @doctorwodka contributed the marriage-stats report.
+
 ### Fixed
 
 - **Statistics Dashboard date-inconsistency counter respects fictional eras** ([#437](https://github.com/banisterious/obsidian-charted-roots/issues/437) follow-up): The 0.22.6 fix routed `data-quality.ts`'s `parseYear` through `DateService` for fictional-era awareness, but the **Statistics Dashboard** has a parallel "Date inconsistencies" counter inside `StatisticsService` that uses its own `extractYear` regex with no era-awareness. Result: for BBY-style descending eras the digit-run got read as a positive number (`1045 BBY` → 1045, `1042 BBY` → 1042) and the naive `birthYear > deathYear` check fired even though the lifespan is coherent. `StatisticsService.extractYear` now defers to `DateService.parseDate` first so fictional dates resolve to their canonical signed year (negative for descending eras), matching the data-quality and map-data-service fix shapes from [#437](https://github.com/banisterious/obsidian-charted-roots/issues/437) and [#454](https://github.com/banisterious/obsidian-charted-roots/issues/454). Real-world dates fall through to the existing regex unchanged. Reported by @DigitalDreamn — the red error bar persisted on her vault after 0.22.7 because this surface is a separate code path from the original [#437](https://github.com/banisterious/obsidian-charted-roots/issues/437) fix.
