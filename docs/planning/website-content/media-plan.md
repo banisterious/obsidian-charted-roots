@@ -183,8 +183,9 @@ If motion loops get produced, rank: canvas tree generation first (strongest wow 
 
 ### Visualization
 
-- **Canvas Tree** — Standard, Compact, Timeline, Hourglass layouts, plus a multi-generation tree.
-- **Family Chart view** — live exploration, color schemes (gender / generation / collection / monochrome).
+- **Canvas Tree layouts** — Standard, Compact, Timeline, Hourglass, plus a multi-generation tree.
+- **Canvas Tree color schemes** — Sex, Generation, Collection, Monochrome variants on the same root + layout. The four `nodeColorScheme` options apply to the Canvas tree generator (and PDF/report exports), not to the live Family Chart View — the in-view chart is hardcoded to gender coloring. Plan to capture as a separate set of four shots so the website Canvas tree generation section can carry both axes (layout + scheme) on the same fixture.
+- **Family Chart view** — live exploration with the Person Details panel open; default gender coloring (the only scheme the live view renders); optionally a different theme preset (Classic vs Muted / Vibrant / etc., picked via the palette icon) to show theme-color variety; optionally a still of the Highlight Groups feature mid-effect to complement the existing `cr-family-chart-highlight-groups.webm` motion capture.
 - **Interactive map** — migration paths, heat maps, time-slider animation.
 - **Entity Profile View** — one screenshot per entity type (person, place, event, source, organization).
 - **Calendar View** — real-world and fictional calendar side by side.
