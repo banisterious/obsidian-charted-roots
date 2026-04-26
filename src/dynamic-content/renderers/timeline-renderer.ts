@@ -101,6 +101,33 @@ export class TimelineRenderer {
 	}
 
 	/**
+	 * Whether a relative-event date falls after the focal person's death,
+	 * i.e., outside their reality window. Used to filter spouse / parent
+	 * deaths and similar relative-event surfaces (#457).
+	 *
+	 * Returns false (event allowed) when the focal person has no death
+	 * date, or when either date can't be resolved — only filters when we
+	 * have unambiguous evidence the event happened after the focal person
+	 * died. Same-year events are allowed (intra-year ordering unknown).
+	 */
+	private isEventAfterFocalDeath(
+		focalDeathDate: string | undefined,
+		eventDate: string | undefined,
+		universe: string | undefined
+	): boolean {
+		if (!focalDeathDate || !eventDate) return false;
+
+		const dateService = this.service.getDateService();
+		if (!dateService) return false;
+
+		const focalYear = dateService.getCanonicalYear(focalDeathDate, universe);
+		const eventYear = dateService.getCanonicalYear(eventDate, universe);
+		if (focalYear === null || eventYear === null) return false;
+
+		return eventYear > focalYear;
+	}
+
+	/**
 	 * Render the timeline block
 	 */
 	async render(
@@ -627,11 +654,14 @@ export class TimelineRenderer {
 			}
 		}
 
-		// Spouse deaths
+		// Spouse deaths. Skip events that happened after the focal person
+		// died — those aren't part of the focal person's lived experience
+		// (#457).
 		if (settings.timelineShowSpouseDeaths && person.spouseCrIds) {
 			for (const spouseCrId of person.spouseCrIds) {
 				const spouse = graph.getPersonByCrId(spouseCrId);
 				if (spouse?.deathDate) {
+					if (this.isEventAfterFocalDeath(person.deathDate, spouse.deathDate, universe)) continue;
 					const year = this.service.extractYear(spouse.deathDate);
 					const entry: TimelineEntry = {
 						date: this.service.formatDate(spouse.deathDate),
@@ -659,6 +689,7 @@ export class TimelineRenderer {
 			for (const parentCrId of parentCrIds) {
 				const parent = graph.getPersonByCrId(parentCrId);
 				if (parent?.deathDate) {
+					if (this.isEventAfterFocalDeath(person.deathDate, parent.deathDate, universe)) continue;
 					const year = this.service.extractYear(parent.deathDate);
 					const entry: TimelineEntry = {
 						date: this.service.formatDate(parent.deathDate),
@@ -675,7 +706,11 @@ export class TimelineRenderer {
 			}
 		}
 
-		// Sibling births
+		// Sibling births. Skip step-siblings — children who share a step-
+		// parent (or are listed alongside us in a parent's children array
+		// while actually being step-children there) shouldn't surface as
+		// siblings on the focal person's timeline (#456). Mirrors the
+		// stepchild filter from #441.
 		if (settings.timelineShowSiblingBirths) {
 			const parentCrIds = [
 				person.fatherCrId,
@@ -684,11 +719,21 @@ export class TimelineRenderer {
 			].filter(Boolean) as string[];
 			const siblingCrIds = new Set<string>();
 
+			const stepSiblingCrIds = new Set<string>();
+			for (const parentCrId of parentCrIds) {
+				const parent = graph.getPersonByCrId(parentCrId);
+				if (parent?.stepchildrenCrIds) {
+					for (const stepChildCrId of parent.stepchildrenCrIds) {
+						stepSiblingCrIds.add(stepChildCrId);
+					}
+				}
+			}
+
 			for (const parentCrId of parentCrIds) {
 				const parent = graph.getPersonByCrId(parentCrId);
 				if (parent?.childrenCrIds) {
 					for (const childCrId of parent.childrenCrIds) {
-						if (childCrId !== person.crId) {
+						if (childCrId !== person.crId && !stepSiblingCrIds.has(childCrId)) {
 							siblingCrIds.add(childCrId);
 						}
 					}
