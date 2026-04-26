@@ -389,6 +389,17 @@ Running log of static screenshots captured and tracked in the plugin repo at ful
 
 Anderson family fixture for the four layouts (matching the `cr-canvas-tree-generation.webm` motion loop already shipped). Royal-families-in-Europe GEDCOM imported into a throwaway vault for the multi-generational hero so the dev-vault's curated demo fixtures stayed intact. Total ~1.6 MB pre-optimization; all five already under the 500 KB-per-static cap. Placement intent: hero shot above the bullet list in the Canvas tree generation section, four layouts as a 2×2 grid below the bullet list.
 
+**Family Chart view (2026-04-26):**
+
+- ✅ `cr-family-chart-live.png` (~272 KB) — Interactive Family Chart View section, hero shot. William Anderson selected; Person Details panel open on the right showing first name / last name / alt name / pronouns / birth+death dates and places / sex / collection / spouses / children. Shows the chart "in use" rather than at rest.
+- ✅ `cr-family-chart-gender.png` (~209 KB) — Default coloring (the only scheme the live view renders). Same root, same zoom; no panel. Pairs visually with the theme variant for "same data, different palette."
+- ✅ `cr-family-chart-theme-earth-tones.png` (~209 KB) — Theme preset variant via the palette icon. Greens for male / reds for female, replacing the default teal / pink palette. Demonstrates the Theme menu's color-value variation.
+- ✅ `cr-family-chart-highlight-groups.png` (~268 KB) — Highlight Groups feature mid-effect. Two groups active (matches the `cr-family-chart-highlight-groups.webm` motion capture's Collection = blood + Collection = married_in setup). Most cards dimmed; matching cards glow with each group's accent color. Static counterpart to the motion file.
+
+Anderson family fixture across all four; same root (William Anderson) and same zoom level for visual coherence. Total ~960 KB pre-optimization; all four under the 500 KB-per-static cap losslessly. Placement intent: hero shot above the bullet list in the Interactive Family Chart View section; default gender + theme variant as a 2-up pair below the bullet list; highlight-groups still alongside or just above the existing `cr-family-chart-highlight-groups.webm` motion embed.
+
+The original media-plan entry mentioned color schemes (gender / generation / collection / monochrome). After investigating the live view's rendering path, those four schemes apply only to the Canvas tree generator and PDF/report exports — the live Family Chart View is hardcoded to gender coloring. Entry reframed accordingly. Canvas Tree color schemes remain on the to-capture list as a separate four-shot set.
+
 ## Static captures deployed
 
 Running log of static files live on the chartedroots.com features page. Mirrors the "Motion captures deployed" pattern; new deploys append below.
