@@ -398,7 +398,8 @@ export class MapDataService {
 				place: place,
 				date_from: this.coerceDateValue(eventObj.date_from),
 				date_to: this.coerceDateValue(eventObj.date_to),
-				description: eventObj.description as string | undefined
+				description: eventObj.description as string | undefined,
+				customLabel: resolvedEventType === 'custom' && rawEventType ? rawEventType : undefined
 			});
 		}
 
@@ -438,7 +439,8 @@ export class MapDataService {
 				place: event.place,
 				date_from: this.coerceDateValue(event.date),
 				date_to: this.coerceDateValue(event.dateEnd),
-				description: event.description
+				description: event.description,
+				customLabel: resolvedEventType === 'custom' ? (event.eventType || event.title) : undefined
 			});
 		}
 
@@ -679,7 +681,8 @@ export class MapDataService {
 			universe: place.universe,
 			placeCategory: place.category,
 			altName: person.altName,
-			birthDate: person.born !== undefined ? String(person.born) : undefined
+			birthDate: person.born !== undefined ? String(person.born) : undefined,
+			customLabel: event.customLabel
 		};
 	}
 

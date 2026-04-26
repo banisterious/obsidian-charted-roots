@@ -56,6 +56,13 @@ export interface LifeEvent {
 	date_to?: string | number;
 	/** Brief description */
 	description?: string;
+	/**
+	 * Display label preserved when the raw event type doesn't match a built-in
+	 * `MarkerType` and gets resolved to `custom`. Lets the map popup render
+	 * `<originalType>:` (e.g., `Backstory:`) instead of the generic `Custom:`
+	 * label that loses category information (#466).
+	 */
+	customLabel?: string;
 }
 
 /**
@@ -100,6 +107,13 @@ export interface MapMarker {
 	altName?: string;
 	/** Raw birth date string (preserves fictional-era context for popup age annotation) (#444) */
 	birthDate?: string;
+	/**
+	 * Display label preserved when the raw event type doesn't match a built-in
+	 * `MarkerType` and gets resolved to `custom`. Used by the popup to render
+	 * `<originalType>:` (e.g., `Backstory:`) instead of the generic `Custom:`
+	 * label that loses category information (#466).
+	 */
+	customLabel?: string;
 }
 
 /**

@@ -764,7 +764,12 @@ export class MapController {
 		}
 		const dateText = dateRange ? `: ${dateRange}${ageSuffix}` : '';
 		if (showText) {
-			const typeLabel = capitalize(data.type);
+			// For `custom`-resolved events, surface the original raw event type
+			// (or event-note title) instead of the generic `Custom:` label so
+			// the popup carries category context (#466).
+			const typeLabel = data.type === 'custom' && data.customLabel
+				? capitalize(data.customLabel)
+				: capitalize(data.type);
 			typeRow.createEl('span', {
 				text: `${typeLabel}${dateText}`
 			});
