@@ -38,7 +38,7 @@ const ARRAY_PERSON_ID_FIELDS = [
 	'adopted_child_id',
 	'partners_id',
 	'children_id',
-	'stepchild_id'
+	'step_child_id'
 ] as const;
 
 /**

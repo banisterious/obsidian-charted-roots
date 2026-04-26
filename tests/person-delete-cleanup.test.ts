@@ -55,11 +55,11 @@ describe('planFrontmatterCleanup (#442)', () => {
 	});
 
 	describe('array *_id fields', () => {
-		it('removes the deleted cr_id from stepchild_id (the bug DigitalDreamn reported)', () => {
-			const fm = { stepchild_id: ['person-owen-1', DELETED_CR_ID] };
+		it('removes the deleted cr_id from step_child_id (the bug DigitalDreamn reported)', () => {
+			const fm = { step_child_id: ['person-owen-1', DELETED_CR_ID] };
 			const mutations = planFrontmatterCleanup(fm, DELETED_CR_ID);
 			expect(mutations).toEqual([
-				{ field: 'stepchild_id', before: ['person-owen-1', DELETED_CR_ID], after: ['person-owen-1'] }
+				{ field: 'step_child_id', before: ['person-owen-1', DELETED_CR_ID], after: ['person-owen-1'] }
 			]);
 		});
 
@@ -77,7 +77,7 @@ describe('planFrontmatterCleanup (#442)', () => {
 				adopted_child_id: ['person-d', DELETED_CR_ID],
 				partners_id: ['person-e'],
 				children_id: [DELETED_CR_ID],
-				stepchild_id: [DELETED_CR_ID, 'person-f']
+				step_child_id: [DELETED_CR_ID, 'person-f']
 			};
 
 			const mutations = planFrontmatterCleanup(fm, DELETED_CR_ID);
@@ -88,7 +88,7 @@ describe('planFrontmatterCleanup (#442)', () => {
 				'adoptive_parent_id',
 				'children_id',
 				'parents_id',
-				'stepchild_id',
+				'step_child_id',
 				'stepfather_id'
 			]);
 			// stepmother_id and partners_id should not be in the mutation list
