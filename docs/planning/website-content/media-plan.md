@@ -482,6 +482,15 @@ Combined motion + static features-page payload after this batch is ~16.5 MB raw,
 
 `oxipng -o 4` lossless pass on both files yielded 20–21% reductions; both well under the 500 KB cap (164 KB and 178 KB on-site, ~342 KB total). Reused the `.cr-grid-2` class — no new CSS. Closes the visualization-track captures called out in the media-plan queue. Custom Relationships Overlay motion capture is the only remaining queued visualization item.
 
+**Web Clipper capture flow (2026-04-27):**
+
+- ✅ `cr-web-clipper-modal.webp` (184 KB) — Workspace Views → Evidence and sources → Web Clipper integration, 2-up grid (left). Browser-side clip action on a Find a Grave page (Charles Hoy Fort, public-domain figure) with the `findagrave-person` template extracting structured fields into the clipper modal's preview.
+- ✅ `cr-web-clipper-staging-note.png` (193 KB) — 2-up grid (right). Obsidian-side resulting note in the `Charted Roots/Staging/` folder; properties expanded showing 10 frontmatter fields preserved from the clip; body rendered with Vital Information section.
+
+First two-app composite in the capture program. Pairs the trigger (browser) with the result (Obsidian Staging) to answer "why this over a plain browser bookmark?" The complementary `cr-web-clipper-to-bio.webm` motion (Wikipedia variant, deployed 2026-04-25) sits above this grid in the same subsection — together they show the Wikipedia variant in motion plus the Find a Grave variant as before/after composite. Caveat sentence appended below the grid framing the staged-vs-plugin-source-note distinction (the staged note is intentionally NOT a `cr_type:source` note; it's a structured-capture candidate awaiting user import).
+
+Mixed PNG / WebP path on this batch. Modal shot was 881 KB raw; `oxipng -o 4` left it at 777 KB (12% reduction, still over cap), fell through to `cwebp -q 85` for 79% reduction down to 184 KB. Staging-note shot was 267 KB raw; `oxipng -o 4` got it to 193 KB (28% reduction, comfortably under cap), shipped as PNG. Total batch payload: ~377 KB across two files. Reused the `.cr-grid-2` class — no new CSS.
+
 ---
 
 ## Deferred decisions
