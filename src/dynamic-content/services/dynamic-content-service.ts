@@ -422,6 +422,16 @@ export class DynamicContentService {
 			return `-${parseInt(negativeIsoMatch[1], 10)}`;
 		}
 
+		// Generic standalone negative number (e.g., "DE -5740", "Year -5740"):
+		// digits preceded by a standalone minus sign that isn't part of an ISO
+		// date separator like "1942-08-15". The `(?:^|[^0-9])` disambiguator
+		// ensures we don't match the hyphen between year and month in ISO
+		// dates (where the hyphen is preceded by a digit). (#476)
+		const negativeStandaloneMatch = value.match(/(?:^|[^0-9])-(\d+)\b/);
+		if (negativeStandaloneMatch) {
+			return `-${negativeStandaloneMatch[1]}`;
+		}
+
 		// Check for AD/CE suffix (e.g., "14 AD", "100 CE") - return positive
 		const adMatch = value.match(/(\d+)\s*(?:AD|CE)\b/i);
 		if (adMatch) {

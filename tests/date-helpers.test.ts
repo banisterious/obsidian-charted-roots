@@ -58,6 +58,31 @@ describe('extractYear', () => {
 		});
 	});
 
+	describe('standalone negative years (#476)', () => {
+		it('custom-era prefix with negative year preserves the sign', () => {
+			expect(svc.extractYear('DE -5740')).toBe('-5740');
+		});
+
+		it('negative year embedded in a sentence preserves the sign', () => {
+			expect(svc.extractYear('Year -1234 of the Reign')).toBe('-1234');
+		});
+
+		it('negative year that is also short (3 digits) preserves the sign', () => {
+			// Won't match the 4-digit standard branch; standalone-negative
+			// branch should catch it.
+			expect(svc.extractYear('Cycle -42')).toBe('-42');
+		});
+
+		it('ISO date with month/day separator stays positive', () => {
+			// Hyphen between digits is an ISO separator, not a sign.
+			expect(svc.extractYear('1942-08-15')).toBe('1942');
+		});
+
+		it('compound word with hyphen between digit and word is not negative', () => {
+			expect(svc.extractYear('5-year-old')).toBe('5');
+		});
+	});
+
 	describe('empty-ish inputs', () => {
 		it.each([undefined, null, ''])('returns empty string for %s', (v) => {
 			expect(svc.extractYear(v)).toBe('');
