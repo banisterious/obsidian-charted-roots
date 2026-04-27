@@ -2,10 +2,11 @@
    CREATE PLACE MODAL
    ========================================================================== */
 
-/* Fix for setting items with multiple controls (dropdown + text input) */
-/* Prevent the info section from being truncated when controls take up space */
+/* The info column may shrink (long descriptions wrap to multiple lines) so
+   the control column always has room within the modal width, but never
+   below 120px so the description text stays legible. The fixed input width
+   below keeps row-to-row alignment consistent regardless. (#459) */
 .crc-create-place-modal .setting-item-info {
-  flex-shrink: 0;
   min-width: 120px;
 }
 
@@ -74,7 +75,10 @@
   flex: 1;
 }
 
-.crc-coord-inputs input[type="text"] {
+/* Coord inputs fill their control area (matches the section's own flex
+   layout). Selector specificity matches the 220px rule above so source
+   order tilts this rule to win. (#459 follow-up) */
+.crc-coord-inputs .setting-item-control input[type="text"] {
   width: 100%;
 }
 

@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **Create / Edit Place modal CSS overflow and coord-input width** ([#459](https://github.com/banisterious/obsidian-charted-roots/issues/459) follow-up): Two CSS issues left over from the 0.22.8 fix. (1) The `flex-shrink: 0` rule on `.crc-create-place-modal .setting-item-info` made the info column refuse to yield space when descriptions were long, so on narrower viewports the description text held its full natural width and pushed the 220px control column past the modal's right edge — inputs disappeared under the scroll bar. Dropped `flex-shrink: 0` so the info column shrinks (descriptions wrap to multiple lines on narrow modals) while keeping `min-width: 120px` for readability. (2) The 220px input-width rule was cascading into the Latitude/Longitude inputs in the coord-inputs section, which have their own `width: 100%` rule but were losing on specificity. Bumped the coord rule to `.crc-coord-inputs .setting-item-control input[type="text"]` so the rules tie on specificity and source order tilts the coord rule to win — Lat/Long inputs now fill their respective halves of the row again. Reported by @DigitalDreamn.
+
 ## [0.22.9] - 2026-04-26
 
 Five fixes — all non-data-loss, all targeted, mostly map and timeline polish on top of 0.22.8. Continues the post-0.22.4 stability window without resetting it. Closes the **DateService-bypass cluster** that ran across 0.22.5 / 0.22.6 / 0.22.7 / 0.22.8 (eight subsystems total, all era-aware now), adds a third surface to the **reality-window cluster** (sibling-births before focal birth), and wraps up the **pixel-coord coverage gaps** opened by [#448](https://github.com/banisterious/obsidian-charted-roots/issues/448). Driven primarily by @DigitalDreamn's continued vault testing on the Lars / Star Wars fixture.
