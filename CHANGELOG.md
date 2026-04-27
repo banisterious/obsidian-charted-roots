@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.9] - 2026-04-26
+
+Five fixes — all non-data-loss, all targeted, mostly map and timeline polish on top of 0.22.8. Continues the post-0.22.4 stability window without resetting it. Closes the **DateService-bypass cluster** that ran across 0.22.5 / 0.22.6 / 0.22.7 / 0.22.8 (eight subsystems total, all era-aware now), adds a third surface to the **reality-window cluster** (sibling-births before focal birth), and wraps up the **pixel-coord coverage gaps** opened by [#448](https://github.com/banisterious/obsidian-charted-roots/issues/448). Driven primarily by @DigitalDreamn's continued vault testing on the Lars / Star Wars fixture.
+
 ### Fixed
 
 - **Journey-mode camera flies to pixel-coord waypoints on CRS.Simple image maps** ([#474](https://github.com/banisterious/obsidian-charted-roots/issues/474)): `panToWaypoint` only consulted `waypoint.lat` / `waypoint.lng` for the camera fly-to and rich-popup placement. Pixel-coord places default lat/lng to `0` (per the journey waypoint construction), so the camera flew to `(0, 0)` — bottom-left corner of `CRS.Simple` — and the popup opened there too, even though the popup *content* correctly named the right place. Now uses `[pixelY, pixelX]` when on pixel CRS and the waypoint has pixel coords; falls back to `[lat, lng]` for geographic maps. Same coord-system-aware pattern as [#448](https://github.com/banisterious/obsidian-charted-roots/issues/448) (which fixed the journey-path *build* path; this fixes the camera-follow path). Reported by @DigitalDreamn during [#434](https://github.com/banisterious/obsidian-charted-roots/issues/434) verification, after #448 unblocked pixel-coord journeys and made the camera-mismatch newly visible.
