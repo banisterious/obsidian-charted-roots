@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.9 Round-Up: Map Polish, Sibling Reality Windows, and Cluster Closure](#v0229-round-up-map-polish-sibling-reality-windows-and-cluster-closure-v0229)
   - [v0.22.8 Round-Up: Map, Timeline, Statistics, and Modal Polish](#v0228-round-up-map-timeline-statistics-and-modal-polish-v0228)
   - [v0.22.7 Round-Up: Map UX, Stepchild Handling, and Universe-Calendar Linking](#v0227-round-up-map-ux-stepchild-handling-and-universe-calendar-linking-v0227)
   - [v0.22.6 Fix: Fictional-Era Coverage Round-Up](#v0226-fix-fictional-era-coverage-round-up-v0226)
@@ -147,6 +148,50 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.9 Round-Up: Map Polish, Sibling Reality Windows, and Cluster Closure (v0.22.9)
+
+Five fixes — all non-data-loss, mostly map and timeline polish on top of 0.22.8. Closes the **DateService-bypass cluster** that ran across 0.22.5 / 0.22.6 / 0.22.7 / 0.22.8 / 0.22.9 (eight subsystems total, all era-aware now); adds a third site to the **reality-window cluster** (sibling-births before focal birth); and wraps up the **pixel-coord coverage gaps** opened by [#448](https://github.com/banisterious/obsidian-charted-roots/issues/448) (build-path), with [#472](https://github.com/banisterious/obsidian-charted-roots/issues/472) (label flip) and [#474](https://github.com/banisterious/obsidian-charted-roots/issues/474) (camera fly-to) closing the follow path. Driven primarily by @DigitalDreamn's continued vault testing on the Lars / Star Wars fixture (four of five fixes); the fifth surfaced from her [#464](https://github.com/banisterious/obsidian-charted-roots/issues/464) investigation thread.
+
+All five changes are non-data-loss. Stability window continues unchanged from 0.22.4 (2026-04-23 → ~2026-05-14).
+
+**Fix: Map time slider derives its year range from data and renders era-formatted labels** ([#453](https://github.com/banisterious/obsidian-charted-roots/issues/453)):
+- `src/maps/map-view.ts` — slider min/max attrs now derive from `MapData.yearRange` (which already returns canonical signed years for fictional eras via [#454](https://github.com/banisterious/obsidian-charted-roots/issues/454)). Previously hardcoded to `1800` / `2000`, making the feature unusable on fictional-era universes — the slider's range never intersected the data.
+- `src/dates/services/date-service.ts` — new `formatCanonicalYear(year, universe?)` helper inverts canonical years back to era-formatted strings ("82 BBY", "5 ABY") for slider min/max labels and the current-year display. Real-world dates and unconfigured universes fall back to `String(year)`.
+- **Eighth and final site of the DateService-bypass cluster** that ran across 0.22.5 → 0.22.9 (data-quality validator, map popup ages, data-quality date inconsistencies, timeline ages, map marker popups, map year extraction, statistics dashboard, and now the time slider).
+- New test file `tests/date-service-format-canonical-year.test.ts` (10 tests) covers era-formatted inversion across BBY / ABY / TA / SA, real-world fallback, and the universe-unconfigured path.
+
+**Fix: Older siblings' births no longer appear before the focal person's birth on their timeline** ([#469](https://github.com/banisterious/obsidian-charted-roots/issues/469)):
+- `src/dynamic-content/renderers/timeline-renderer.ts` — the sibling-births block in `gatherFamilyEvents` had no reality-window guard for events predating the focal person's birth. An older sibling's birth would render as the first entry on the focal person's own timeline — Padmé Naberrie's timeline showed her older sister Sola's birth (50 BBY) above Padmé's own birth (46 BBY), exposing the inconsistency.
+- New `isEventBeforeFocalBirth(focalBirthDate, eventDate, universe)` helper symmetric to [#457](https://github.com/banisterious/obsidian-charted-roots/issues/457)'s `isEventAfterFocalDeath`. Same-year siblings (twins, close births) still surface — the guard fires only on unambiguous before-focal-birth via `DateService.getCanonicalYear`, so fictional descending eras (BBY) compare correctly. No focal birth date allows everything (current behavior for unknown-birth focal persons).
+- **Third site of the reality-window cluster** alongside [#456](https://github.com/banisterious/obsidian-charted-roots/issues/456) (step-sibling filter) and [#457](https://github.com/banisterious/obsidian-charted-roots/issues/457) (after-focal-death guard for spouse + parent surfaces). The pattern across all three: same `gatherFamilyEvents` block, two symmetric helpers (`isEventBeforeFocalBirth` / `isEventAfterFocalDeath`).
+- Added 4 tests to `tests/timeline-reality-window.test.ts` mirroring the existing #457 suite (signed-year arithmetic, same-year admit, no-birth admit-all).
+
+**Fix: Map path labels read consistently upright across CRS.Simple image maps and diagonal lines** ([#472](https://github.com/banisterious/obsidian-charted-roots/issues/472)):
+- `src/maps/map-controller.ts` — leaflet-textpath's `'flip'` orientation mode picks rotation directly from latlng coordinates, which produces inconsistent results on diagonal lines and on `CRS.Simple` image maps where coordinate orientation differs from screen orientation. Some labels rendered upright, others upside-down on the same map.
+- New `shouldFlipPathLabel(polyline)` helper computes the path's overall direction in screen-space (after CRS projection via `latLngToLayerPoint`) and chooses `'flip'` or `'auto'` accordingly. Both migration-path and journey-path label callsites now use it. The pre-existing leaflet-textpath flip remains a fallback for the unlikely case where the map ref isn't yet wired.
+- Pixel-coord coverage closure (alongside [#448](https://github.com/banisterious/obsidian-charted-roots/issues/448) journey-path build dedup and #474 camera fly-to below). Surfaced once #448 unblocked pixel-coord journey rendering and made the label feature visible for the first time on @DigitalDreamn's Star Wars galaxy fixture.
+
+**Fix: Journey-mode camera flies to pixel-coord waypoints on CRS.Simple image maps** ([#474](https://github.com/banisterious/obsidian-charted-roots/issues/474)):
+- `src/maps/map-view.ts` — `panToWaypoint` only consulted `waypoint.lat` / `waypoint.lng` for the camera fly-to and rich-popup placement. Pixel-coord places default lat/lng to `0` (per the journey waypoint construction), so the camera flew to `(0, 0)` — bottom-left corner of `CRS.Simple` — and the popup opened there too, even though the popup *content* correctly named the right place.
+- Now uses `[pixelY, pixelX]` when on pixel CRS and the waypoint has pixel coords; falls back to `[lat, lng]` for geographic maps. Same coord-system-aware pattern as [#448](https://github.com/banisterious/obsidian-charted-roots/issues/448), which fixed the journey-path *build* path; this fixes the camera-*follow* path. Pixel-coord coverage closure round-three.
+- Reported by @DigitalDreamn during [#434](https://github.com/banisterious/obsidian-charted-roots/issues/434) verification, after #448 unblocked pixel-coord journeys and made the camera-mismatch newly visible. Manually verified against her vault; no new tests since Leaflet map mocking is out of scope for the current harness.
+
+**Fix: Place notes silently excluded from the place graph now log a warning** ([#471](https://github.com/banisterious/obsidian-charted-roots/issues/471)):
+- `src/core/place-graph.ts` — `PlaceGraphService.extractPlaceNode` early-returns when a place-shaped note lacks a `cr_id`, so such notes never enter `placeCache`. By-name lookups (`getPlaceByName`), Create Place modal's parent dropdown, map markers, and downstream consumers can't see them. The exclusion was completely silent — no log, no UI surface, no data-quality flag.
+- Added a `warn`-level log on the skip with the file path so the exclusion is now discoverable from the dev console. A follow-up data-quality wizard check that surfaces and offers to fix missing-`cr_id` places is queued for a later cycle.
+- Surfaced during the [#464](https://github.com/banisterious/obsidian-charted-roots/issues/464) investigation as one of the candidate root causes for "by-name lookup returned undefined for a place that exists in the vault" — Coruscant in @DigitalDreamn's vault was created via the Organizations flow on April 8th and may not have generated a place-side `cr_id` at that time.
+
+**Testing:** 14 new tests across two files, suite total 390 (was 376 at start of this cycle).
+- `tests/date-service-format-canonical-year.test.ts` (10 tests) — era-formatted label inversion for #453.
+- `tests/timeline-reality-window.test.ts` (+4 tests) — before-focal-birth guard for #469 (added to the existing file).
+- #471 / #472 / #474 — manually verified by reporter; Leaflet map mocking and console-spy harnesses out of scope for the current vitest setup.
+
+**Reporters:** @DigitalDreamn for #453, #469, #472, #474 (four of five, all from continued Lars / Star Wars vault testing); the #471 diagnostic surfaced from her #464 investigation thread.
+
+**Stability-window impact:** no reset — all five changes are non-data-loss. Window continues from 0.22.4's start: 2026-04-23 → ~2026-05-14.
+
+---
 
 ### v0.22.8 Round-Up: Map, Timeline, Statistics, and Modal Polish (v0.22.8)
 

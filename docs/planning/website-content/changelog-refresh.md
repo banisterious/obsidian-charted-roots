@@ -1,7 +1,7 @@
 # Changelog Page Refresh — draft
 
 **Target page:** `/changelog/_index.md` on chartedroots.com
-**Status:** 🚀 Ported to chartedroots.com 2026-04-24, refreshed 2026-04-25 with v0.22.6 + v0.22.7 spotlights, refreshed 2026-04-26 with v0.22.8 spotlights (#448 and #450 reframed from post-release into the 0.22.8 release; #442 follow-up added as inline addendum). All four clusters (0.22.x, 0.21.x, 0.20.x, 0.19.x forward) live on `/changelog/`.
+**Status:** 🚀 Ported to chartedroots.com 2026-04-24, refreshed 2026-04-25 with v0.22.6 + v0.22.7 spotlights, refreshed 2026-04-26 with v0.22.8 spotlights (#448 and #450 reframed from post-release into the 0.22.8 release; #442 follow-up added as inline addendum). v0.22.9 spotlights added 2026-04-26 (evening) — pending port. All four clusters (0.22.x, 0.21.x, 0.20.x, 0.19.x forward) live on `/changelog/`.
 **Source material:** [CHANGELOG.md](../../../CHANGELOG.md), [wiki-content/Release-History.md](../../../wiki-content/Release-History.md).
 
 ---
@@ -30,7 +30,31 @@ For the full per-release log, see [GitHub Releases](https://github.com/banisteri
 
 ## v0.22.x: Stability run before 1.0
 
-Nine releases across this cluster. Four same-day hotfixes (0.22.1 through 0.22.4) closed critical data-loss bugs surfaced by community testing. 0.22.5 through 0.22.8 brought the fictional-calendar work into shape, landed Phase 1 of the universe → calendar link, and closed seven distinct surfaces where era-naive year extraction silently broke fictional dates. Regression tests grew from 189 to 376 across the nine releases.
+Ten releases across this cluster. Four same-day hotfixes (0.22.1 through 0.22.4) closed critical data-loss bugs surfaced by community testing. 0.22.5 through 0.22.9 brought the fictional-calendar work into shape, landed Phase 1 of the universe → calendar link, and closed eight distinct surfaces where era-naive year extraction silently broke fictional dates. Regression tests grew from 189 to 390 across the ten releases.
+
+### Map time slider becomes era-aware (and closes the DateService cluster) ([#453](https://github.com/banisterious/obsidian-charted-roots/issues/453))
+
+The map view's "who was alive at year X" time slider was hardcoded to a 1800–2000 real-world span, so on fictional-era universes (Star Wars BBY/ABY, Middle-earth TA/SA, etc.) the slider's range never intersected the data and the feature was effectively unusable. The slider now derives its min/max from the map's computed year range and renders labels via a new `formatCanonicalYear` helper that inverts canonical years back to era strings ("82 BBY", "5 ABY"). Real-world dates fall back to the plain numeric label. **Eighth and final site of the DateService-bypass cluster** that ran across 0.22.5 → 0.22.9 — every era-naive year-extraction subsystem flagged during the cluster is now era-aware.
+
+[More in Features →](/features/#geographic-features)
+
+### Pixel-coord coverage gaps close: path labels and journey camera ([#472](https://github.com/banisterious/obsidian-charted-roots/issues/472), [#474](https://github.com/banisterious/obsidian-charted-roots/issues/474))
+
+Two map-rendering follow-ups to v0.22.7's pixel-coord journey-build fix (#448), both surfaced once the build path was unblocked and the rendering paths became visible for the first time on fictional-map vaults. Path labels (place names rendered along migration paths) flipped inconsistently — some upright, some upside-down on the same map — because leaflet-textpath's flip mode picks rotation directly from latlng coordinates, which behaves unevenly on diagonal lines and on `CRS.Simple` image maps. Path direction is now computed in screen-space after CRS projection before deciding flip-vs-auto (#472). And in journey playback, the camera fly-to and rich popup were landing at the bottom-left corner of image-based maps because the code path was lat/lng-only and pixel-coord places default lat/lng to `0`. Both now use `[pixelY, pixelX]` when on pixel CRS (#474). With #448 / #472 / #474 closed, journey playback works end-to-end on custom image maps.
+
+[More in Features →](/features/#geographic-features)
+
+### Older siblings' births no longer appear before the focal person's birth ([#469](https://github.com/banisterious/obsidian-charted-roots/issues/469))
+
+The sibling-births block on a person's timeline had no reality-window guard for events predating the focal person's birth. An older sibling's birth would render as the first entry on the focal person's own timeline — Padmé Naberrie's timeline showed her older sister Sola's birth (50 BBY) above Padmé's own birth (46 BBY). A new symmetric guard mirrors the v0.22.8 after-focal-death guard: events before the focal person's birth are filtered, but same-year siblings (twins, close births) still surface — the guard fires only on unambiguous before-focal-birth via canonical-year comparison, so fictional descending eras compare correctly. Third site of the reality-window cluster alongside step-siblings (#456) and after-focal-death (#457).
+
+[More in Features →](/features/#dynamic-content-blocks)
+
+### Place graph silent-skip becomes a discoverable warning ([#471](https://github.com/banisterious/obsidian-charted-roots/issues/471))
+
+Place-shaped notes that lack a `cr_id` are excluded from the place graph, which means by-name lookups, modal dropdowns, and map markers can't see them. The exclusion was completely silent — no console log, no UI surface, no data-quality flag — making the failure mode hard to diagnose. A `warn`-level log on the skip with the file path now makes the exclusion discoverable from the dev console. A follow-up data-quality wizard check that surfaces and offers to fix missing-`cr_id` places is queued for a later cycle. Surfaced from the #464 investigation as one of the candidate root causes for "by-name lookup returned undefined for a place that exists in the vault."
+
+[More in Features →](/features/#geographic-features)
 
 ### Statistics Dashboard date-inconsistency counter respects fictional eras ([#437](https://github.com/banisterious/obsidian-charted-roots/issues/437) follow-up)
 
