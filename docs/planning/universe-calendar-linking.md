@@ -100,8 +100,9 @@ When `universe` is passed to `DateService.parseDate(dateStr, universe)`:
 1. Resolve the universe's `default_calendar` (lookup via universe service).
 2. If a default calendar exists and its `id`/`cr_id` matches a system in `FictionalDateParser.systems`, prefer that system when the parsed abbreviation matches one of its eras.
 3. **Bare-year inference (further sub-decision):** if `dateStr` is a bare year (`1042`) and the universe has a `default_calendar` with a `defaultEra`, treat as `1042 <defaultEra.abbrev>`. Behind a settings toggle? Always on? Open question.
+4. **Calendar `current_year` field for fictional "now" ([#473](https://github.com/banisterious/obsidian-charted-roots/issues/473)):** custom calendars gain an optional `current_year` frontmatter field. When a statistic or DateService consumer needs a fictional "now" (e.g., ongoing-marriage durations, living-person ages with no death date), Phase 2 reads `current_year` off the universe's linked calendar. Cascade: explicit `current_year` → use it; absent → fall back to latest-known-event year across the universe (option 3 in #473); both unavailable → skip the calculation. Real-world calendars unchanged (continue to use `new Date().getFullYear()`). Refinement endorsed by @doctorwodka in [#473 discussion](https://github.com/banisterious/obsidian-charted-roots/issues/473) — putting the field on the calendar rather than each universe note avoids per-universe friction and rides the existing `default_calendar` link without additional plumbing on the universe side.
 
-Phase 2 is a separate issue — intentionally not bundled here, because it has its own design surface (ambiguity rules, opt-in vs. always-on, interaction with real-world dates on fictional-universe entities).
+Phase 2 is a separate issue — intentionally not bundled here, because it has its own design surface (ambiguity rules, opt-in vs. always-on, interaction with real-world dates on fictional-universe entities, fictional-`now` cascade for statistics surfaces).
 
 ---
 
