@@ -441,6 +441,18 @@ Running log of static files live on the chartedroots.com features page. Mirrors 
 
 `oxipng -o 4` yielded a consistent ~27% reduction across the four files. Total deployed payload: ~870 KB (down from ~1.23 MB pre-optimization). All four under the 500 KB-per-static cap. Placed as a second `.cr-grid-2` 2×2 grid below the existing layouts grid in the Canvas tree generation section. One-line italic bridge above the new grid frames the relationship to the layouts grid above ("Color schemes layer on top of layouts; any layout above pairs with any scheme below"). Short caveat paragraph below the grid sets expectation for the Collection shot — the Anderson fixture has limited collection variety, so the per-collection differentiation is subtle here; vaults that span maternal/paternal lines, immigration cohorts, or household groups see richer color variety. Caveat sits below the grid rather than as an extended figcaption, preserving 1-word caption parallelism with the layouts grid above. Section order after the port: lead → hero → bullets → motion → layouts grid → color-schemes grid → wiki link. Features page combined motion + static lifts to ~13.2 MB.
 
+**Interactive Map (2026-04-26):**
+
+- ✅ `cr-map-migration-paths.webp` (120 KB) — Interactive Map View, hero above bullets. William Anderson focal-mode arc from Boston → Miami with rich birth marker popup.
+- ✅ `cr-map-heat.webp` (111 KB) — Interactive Map View, 2-up grid below time-slider motion (left). Continental zoom showing density across the US east.
+- ✅ `cr-map-marker-popup.png` (240 KB) — Interactive Map View, 2-up grid (right). Tight crop on the standard marker popup demonstrating the date-range + age annotation.
+- ✅ `cr-map-journey-playback.webp` (215 KB) — Journey Mode, 2-up grid (left). Rich waypoint popup mid-playback at William's Philadelphia occupation.
+- ✅ `cr-map-family-journey-overlay.webp` (115 KB) — Journey Mode, 2-up grid (right). William focal + family-overlay toggle on; spouse and children paths color-coded.
+- ✅ `cr-map-custom-image.webp` (336 KB) — Custom Image Maps, 2-up grid (left). The Dying Earth fixture, hand-drawn fantasy basemap.
+- ✅ `cr-map-drilldown-breadcrumbs.webp` (392 KB) — Custom Image Maps, 2-up grid (right). River Scaum child map with breadcrumb back to parent.
+
+Mixed PNG / WebP path on this batch. `oxipng -o 4` was run first on all three brief-flagged PNG candidates (migration-paths, heat, marker-popup); only marker-popup landed under the 500 KB cap (244 KB → 240 KB) and shipped as PNG. Migration-paths and heat fell through to `cwebp -q 85` after exceeding the cap (654 KB and 570 KB respectively). The remaining four files (journey-playback, family-overlay, custom-image, drilldown-breadcrumbs) went through `cwebp -q 85` directly per the brief's WebP-path designation; all four landed comfortably under cap with 84–88% reduction from source PNGs. Total deployed payload: ~1.5 MB across seven files (down from ~9.1 MB pre-optimization). Reused the `.cr-grid-2` CSS class — no new CSS. Features page combined motion + static lifts from ~13.2 MB to ~14.7 MB. **Lazy-play decision: path (a) — shipped now, IntersectionObserver-based lazy-play is the firm gate before any further capture deploy** (Entity Profile is queued at 5 shots, Calendar at 2; either would push the page over the 15 MB threshold without lazy-play in place).
+
 ---
 
 ## Deferred decisions
