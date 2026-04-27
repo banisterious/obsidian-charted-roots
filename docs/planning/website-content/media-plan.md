@@ -375,6 +375,8 @@ Phase 1 total payload: ~8.7 MB on the features page. All five autoplay-on-visit 
 
 - ✅ `cr-family-chart-highlight-groups.webm` — Workspace views → Interactive Family Chart View subsection. ~639 KB. Demonstrates adding two highlight groups (Collection = blood, then Collection = married_in) on the Family Chart View and watching cards dim and glow as the matching subsets light up in different colors. Brings the features page motion total to ~10.4 MB across 7 captures.
 
+- ✅ `cr-custom-relationships-overlay.webm` — Custom Relationships section (2026-04-27). 293 KB on-site, 299 KB raw — smallest motion file in the deployed set. Demonstrates the post-#450 paint-on-top behavior: overlay arcs draw on top of the biological tree by default. Anderson family fixture with William Anderson + three custom relationship types active (Mentor → Daniel Cooper, Best friend → David Martinez, Business partner → James Johnson); toggle action shows the overlay layering. Originally queued in the 2026-04-25 Phase 1 motion candidates list and deferred until #450 shipped + a real-world testing pass confirmed the visual reads cleanly; both preconditions met. Closes the visualization-track motion captures from the v1 media-plan queue. Eighth motion file in the deployed set.
+
 ---
 
 ## Static captures completed
