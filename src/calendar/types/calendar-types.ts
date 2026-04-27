@@ -56,8 +56,10 @@ export interface CalendarFilter {
 export interface CalendarViewState {
 	/** Currently displayed month (0-11) */
 	month: number;
-	/** Currently displayed year */
+	/** Currently displayed year (canonical signed year — negative for descending eras like BBY/BC) */
 	year: number;
+	/** Universe context for era-formatted year display, detected from era-suffixed year input. Drives `formatCanonicalYear`. (#480) */
+	yearUniverse?: string | null;
 	/** Active filters */
 	filter: CalendarFilter;
 	/** Currently selected day (1-31), null if none */

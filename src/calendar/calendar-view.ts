@@ -30,7 +30,8 @@ export class CalendarView extends ItemView {
 
 	// View state
 	private currentMonth: number; // 0-11
-	private currentYear: number;
+	private currentYear: number; // canonical signed year (negative for descending eras like BBY/BC)
+	private currentYearUniverse: string | null = null; // detected from era-suffixed input; drives display formatting via formatCanonicalYear (#480)
 	private selectedDay: number | null = null;
 	private filter: CalendarFilter = {
 		eventTypes: [...DEFAULT_EVENT_TYPES],
@@ -127,6 +128,7 @@ export class CalendarView extends ItemView {
 		if (state) {
 			if (state.month !== undefined) this.currentMonth = state.month;
 			if (state.year !== undefined) this.currentYear = state.year;
+			if (state.yearUniverse !== undefined) this.currentYearUniverse = state.yearUniverse;
 			if (state.filter) this.filter = { ...this.filter, ...state.filter };
 			if (state.showLabels !== undefined) this.showLabels = state.showLabels;
 		}
@@ -137,6 +139,7 @@ export class CalendarView extends ItemView {
 		return {
 			month: this.currentMonth,
 			year: this.currentYear,
+			yearUniverse: this.currentYearUniverse,
 			filter: { ...this.filter },
 			selectedDay: this.selectedDay,
 			showLabels: this.showLabels
@@ -152,6 +155,7 @@ export class CalendarView extends ItemView {
 
 		if (state.month !== undefined) this.currentMonth = state.month;
 		if (state.year !== undefined) this.currentYear = state.year;
+		if (state.yearUniverse !== undefined) this.currentYearUniverse = state.yearUniverse;
 		if (state.filter) this.filter = { ...state.filter };
 		if (state.selectedDay !== undefined) this.selectedDay = state.selectedDay;
 		if (state.showLabels !== undefined) this.showLabels = state.showLabels;
@@ -228,19 +232,46 @@ export class CalendarView extends ItemView {
 			this.renderCalendar();
 		});
 
-		// Year input
+		// Year input — text-typed so era-suffixed strings ("82 BBY", "1499 ABY",
+		// "5 ABY", "30 AC") are accepted alongside plain integers and ISO dates.
+		// Round-trip via DateService so the displayed value carries the era
+		// abbreviation when the input parses as fictional. (#480)
 		const yearInput = nav.createEl('input', {
-			type: 'number',
+			type: 'text',
 			cls: 'cr-calendar-year-input',
-			attr: { 'aria-label': 'Year' }
+			attr: { 'aria-label': 'Year (accepts plain numbers or era-suffixed input like "82 BBY")' }
 		});
-		yearInput.value = String(this.currentYear);
+		yearInput.value = this.formatCurrentYear();
 		yearInput.addEventListener('change', () => {
-			const year = parseInt(yearInput.value);
-			if (!isNaN(year) && year > 0 && year < 10000 && year !== this.currentYear) {
-				this.currentYear = year;
+			const trimmed = yearInput.value.trim();
+			if (!trimmed) {
+				yearInput.value = this.formatCurrentYear();
+				return;
+			}
+			const dateService = this.plugin.getDateService();
+			const parsed = dateService?.parseDate(trimmed);
+			if (parsed && parsed.year !== null) {
+				if (parsed.year === this.currentYear) return;
+				this.currentYear = parsed.year;
+				this.currentYearUniverse = parsed.type === 'fictional' && parsed.fictional
+					? parsed.fictional.system.universe ?? null
+					: null;
 				this.selectedDay = null;
 				this.renderCalendar();
+				return;
+			}
+			// Fallback: bare integer (covers DateService-unavailable case + any
+			// shape parseDate didn't recognize). Negative years allowed.
+			const year = parseInt(trimmed, 10);
+			if (!isNaN(year) && year !== this.currentYear) {
+				this.currentYear = year;
+				this.currentYearUniverse = null;
+				this.selectedDay = null;
+				this.renderCalendar();
+			} else {
+				// Reject silently — restore the current display so the input doesn't
+				// leave the user's unparseable text in place.
+				yearInput.value = this.formatCurrentYear();
 			}
 		});
 
@@ -581,8 +612,24 @@ export class CalendarView extends ItemView {
 		const now = new Date();
 		this.currentMonth = now.getMonth();
 		this.currentYear = now.getFullYear();
+		this.currentYearUniverse = null; // today is real-world; clear any prior era context
 		this.selectedDay = now.getDate();
 		this.renderCalendar();
+	}
+
+	/**
+	 * Format `this.currentYear` for display in the year input, applying the
+	 * tracked era universe (if any) so era-suffixed input round-trips through
+	 * navigation. Falls back to plain numeric output when no universe context
+	 * is set or DateService isn't available. (#480)
+	 */
+	private formatCurrentYear(): string {
+		const dateService = this.plugin.getDateService();
+		if (!dateService) return String(this.currentYear);
+		return dateService.formatCanonicalYear(
+			this.currentYear,
+			this.currentYearUniverse ?? undefined
+		);
 	}
 
 	/**
