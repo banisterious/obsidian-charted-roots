@@ -706,14 +706,35 @@ export class MapController {
 	 */
 	private shouldFlipPathLabel(polyline: L.Polyline): boolean {
 		if (!this.map) return false;
-		const latlngs = polyline.getLatLngs() as L.LatLng[];
+		// `getLatLngs()` returns `LatLng[]` for simple polylines but `LatLng[][]`
+		// for multi-polylines. Defensively flatten so the helper doesn't trip on
+		// nested arrays.
+		const raw = polyline.getLatLngs() as L.LatLng[] | L.LatLng[][];
+		const latlngs = (Array.isArray(raw[0]) ? raw[0] : raw) as L.LatLng[];
 		if (latlngs.length < 2) return false;
 
-		const start = this.map.latLngToLayerPoint(latlngs[0]);
-		const end = this.map.latLngToLayerPoint(latlngs[latlngs.length - 1]);
+		// Use the longest segment's screen-space direction rather than the
+		// start-to-end chord. For multi-waypoint paths, the chord can disagree
+		// with the segment where the label actually renders — leaflet-textpath
+		// places labels along the path itself, not along the chord. Falls back
+		// to chord behavior naturally for 2-point paths since the only segment
+		// is the chord. (#472 follow-up)
+		let longestStart = this.map.latLngToLayerPoint(latlngs[0]);
+		let longestEnd = this.map.latLngToLayerPoint(latlngs[1]);
+		let longestLen = longestStart.distanceTo(longestEnd);
+		for (let i = 1; i < latlngs.length - 1; i++) {
+			const s = this.map.latLngToLayerPoint(latlngs[i]);
+			const e = this.map.latLngToLayerPoint(latlngs[i + 1]);
+			const len = s.distanceTo(e);
+			if (len > longestLen) {
+				longestStart = s;
+				longestEnd = e;
+				longestLen = len;
+			}
+		}
 
-		// Path goes leftward in screen-space → flip so text reads left-to-right.
-		return end.x < start.x;
+		// Segment goes leftward in screen-space → flip so text reads left-to-right.
+		return longestEnd.x < longestStart.x;
 	}
 
 	/**
