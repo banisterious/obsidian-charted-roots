@@ -697,44 +697,91 @@ export class MapController {
 	}
 
 	/**
-	 * Whether a path's text label should be flipped 180° to read upright.
-	 * Computed in screen-space (after CRS projection) so the decision works
-	 * for both geographic maps and `CRS.Simple` image maps. Without this,
-	 * leaflet-textpath's `'flip'` mode picks based on latlng coords directly,
-	 * which yields inconsistent results on diagonal lines and on `CRS.Simple`
-	 * where coordinate orientation differs from screen orientation. (#472)
+	 * Find the longest segment of a polyline measured in screen-space (after
+	 * CRS projection). Returns the segment's start/end LatLngs along with their
+	 * screen-space points so callers can both rebuild a sub-polyline along that
+	 * segment and inspect its direction. Returns null if the map isn't ready or
+	 * the polyline has fewer than two points.
 	 */
-	private shouldFlipPathLabel(polyline: L.Polyline): boolean {
-		if (!this.map) return false;
+	private findLongestScreenSegment(polyline: L.Polyline): {
+		start: L.LatLng;
+		end: L.LatLng;
+		screenStart: L.Point;
+		screenEnd: L.Point;
+	} | null {
+		if (!this.map) return null;
 		// `getLatLngs()` returns `LatLng[]` for simple polylines but `LatLng[][]`
 		// for multi-polylines. Defensively flatten so the helper doesn't trip on
 		// nested arrays.
 		const raw = polyline.getLatLngs() as L.LatLng[] | L.LatLng[][];
 		const latlngs = (Array.isArray(raw[0]) ? raw[0] : raw) as L.LatLng[];
-		if (latlngs.length < 2) return false;
+		if (latlngs.length < 2) return null;
 
-		// Use the longest segment's screen-space direction rather than the
-		// start-to-end chord. For multi-waypoint paths, the chord can disagree
-		// with the segment where the label actually renders — leaflet-textpath
-		// places labels along the path itself, not along the chord. Falls back
-		// to chord behavior naturally for 2-point paths since the only segment
-		// is the chord. (#472 follow-up)
-		let longestStart = this.map.latLngToLayerPoint(latlngs[0]);
-		let longestEnd = this.map.latLngToLayerPoint(latlngs[1]);
-		let longestLen = longestStart.distanceTo(longestEnd);
+		let bestStart = latlngs[0];
+		let bestEnd = latlngs[1];
+		let bestScreenStart = this.map.latLngToLayerPoint(latlngs[0]);
+		let bestScreenEnd = this.map.latLngToLayerPoint(latlngs[1]);
+		let bestLen = bestScreenStart.distanceTo(bestScreenEnd);
 		for (let i = 1; i < latlngs.length - 1; i++) {
-			const s = this.map.latLngToLayerPoint(latlngs[i]);
-			const e = this.map.latLngToLayerPoint(latlngs[i + 1]);
-			const len = s.distanceTo(e);
-			if (len > longestLen) {
-				longestStart = s;
-				longestEnd = e;
-				longestLen = len;
+			const sp = this.map.latLngToLayerPoint(latlngs[i]);
+			const ep = this.map.latLngToLayerPoint(latlngs[i + 1]);
+			const len = sp.distanceTo(ep);
+			if (len > bestLen) {
+				bestStart = latlngs[i];
+				bestEnd = latlngs[i + 1];
+				bestScreenStart = sp;
+				bestScreenEnd = ep;
+				bestLen = len;
 			}
 		}
 
-		// Segment goes leftward in screen-space → flip so text reads left-to-right.
-		return longestEnd.x < longestStart.x;
+		return { start: bestStart, end: bestEnd, screenStart: bestScreenStart, screenEnd: bestScreenEnd };
+	}
+
+	/**
+	 * Build an invisible "label-host" polyline that covers only the longest
+	 * screen-space segment of a source polyline, then call `setText` on the
+	 * host. leaflet-textpath repeats the label along multi-segment paths and
+	 * applies a single global rotation, so a multi-waypoint path that bends in
+	 * different directions will always have at least one segment rendering the
+	 * label upside-down — no per-polyline flip decision can fix that. Hosting
+	 * the label on a single chosen segment side-steps the issue entirely:
+	 * leaflet-textpath only has one segment to render along, the flip decision
+	 * (leftward in screen-space → flip 180°) is correct for that segment, and
+	 * the visible polyline keeps its full multi-waypoint shape. The host has
+	 * `opacity: 0` and `weight: 0` so the line itself is invisible; only the
+	 * text remains. Returns the host so the caller can add it to the same
+	 * layer group as the visible polyline (cleanup follows naturally). (#472
+	 * follow-up; supersedes earlier longest-segment-as-flip-heuristic in
+	 * 0.22.10's `2b4b3160`.) Per #477, `orientation` is omitted when no flip
+	 * is needed so leaflet-textpath skips the rotation block entirely.
+	 */
+	private createPathLabelHost(
+		sourcePolyline: L.Polyline,
+		text: string,
+		attributes: Record<string, string>
+	): L.Polyline | null {
+		const seg = this.findLongestScreenSegment(sourcePolyline);
+		if (!seg) return null;
+
+		const host = L.polyline([seg.start, seg.end], {
+			opacity: 0,
+			weight: 0,
+			interactive: false
+		});
+
+		const flipOpts = seg.screenEnd.x < seg.screenStart.x
+			? { orientation: 'flip' as const }
+			: {};
+
+		host.setText(text, {
+			center: true,
+			offset: -5,
+			...flipOpts,
+			attributes
+		});
+
+		return host;
 	}
 
 	/**
@@ -947,31 +994,20 @@ export class MapController {
 			logger.warn('polyline-decorator', 'Could not add arrow decoration to path', { error: e });
 		}
 
-		// Add text label along the path (person name)
+		// Add text label along the path (person name) via a label-host polyline
+		// that covers only the longest screen-space segment. See
+		// `createPathLabelHost` for why we don't `setText` on the visible polyline
+		// directly. (#472 follow-up; #477 'auto' fix preserved by host helper.)
 		if (this.settings.showPathLabels) {
 			try {
-				// leaflet-textpath only recognizes 'flip' (180°), 'perpendicular'
-				// (90°), or a numeric rotation; anything else is passed through to
-				// the SVG transform attribute literally. We previously sent 'auto'
-				// for the no-flip branch, which produced transform="rotate(auto ...)"
-				// — invalid SVG, console-error per render (#477). Now we omit the
-				// orientation key entirely when no flip is needed; leaflet-textpath
-				// then skips the rotation block and the text follows the path
-				// naturally (the behavior we'd assumed 'auto' provided). #472's
-				// screen-space flip decision is unchanged.
-				const flipOpts = this.shouldFlipPathLabel(polyline)
-					? { orientation: 'flip' as const }
-					: {};
-				polyline.setText(data.personName, {
-					center: true,
-					offset: -5, // Position above the line
-					...flipOpts,
-					attributes: {
-						fill: this.settings.pathColor,
-						'font-size': '11px',
-						'font-weight': '500'
-					}
+				const labelHost = this.createPathLabelHost(polyline, data.personName, {
+					fill: this.settings.pathColor,
+					'font-size': '11px',
+					'font-weight': '500'
 				});
+				if (labelHost) {
+					this.pathLayer?.addLayer(labelHost);
+				}
 			} catch (e) {
 				logger.warn('textpath', 'Could not add text label to path', { error: e });
 			}
@@ -1051,23 +1087,19 @@ export class MapController {
 			dashArray: '5, 5'  // Dashed line to distinguish from migration paths
 		});
 
-		// Add text label along the path (person name)
+		// Add text label along the path (person name) via a label-host polyline
+		// that covers only the longest screen-space segment. See
+		// `createPathLabelHost` for the rationale. (#472 follow-up.)
 		if (this.settings.showJourneyLabels) {
 			try {
-				// See migration-path callsite above for why we omit 'auto' (#477).
-				const flipOpts = this.shouldFlipPathLabel(polyline)
-					? { orientation: 'flip' as const }
-					: {};
-				polyline.setText(journey.personName, {
-					center: true,
-					offset: -5,
-					...flipOpts,
-					attributes: {
-						fill: journey.color || this.settings.journeyPathColor,
-						'font-size': '11px',
-						'font-weight': '500'
-					}
+				const labelHost = this.createPathLabelHost(polyline, journey.personName, {
+					fill: journey.color || this.settings.journeyPathColor,
+					'font-size': '11px',
+					'font-weight': '500'
 				});
+				if (labelHost) {
+					this.journeyLayer?.addLayer(labelHost);
+				}
 			} catch (e) {
 				logger.warn('textpath-journey', 'Could not add text label to journey path', { error: e });
 			}
