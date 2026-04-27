@@ -1,7 +1,7 @@
 # Changelog Page Refresh — draft
 
 **Target page:** `/changelog/_index.md` on chartedroots.com
-**Status:** 🚀 Ported to chartedroots.com 2026-04-24, refreshed 2026-04-25 with v0.22.6 + v0.22.7 spotlights, refreshed 2026-04-26 with v0.22.8 spotlights (#448 and #450 reframed from post-release into the 0.22.8 release; #442 follow-up added as inline addendum). v0.22.9 spotlights added 2026-04-26 (evening) — pending port. All four clusters (0.22.x, 0.21.x, 0.20.x, 0.19.x forward) live on `/changelog/`.
+**Status:** 🚀 Ported to chartedroots.com 2026-04-24, refreshed 2026-04-25 with v0.22.6 + v0.22.7 spotlights, refreshed 2026-04-26 with v0.22.8 spotlights (#448 and #450 reframed from post-release into the 0.22.8 release; #442 follow-up added as inline addendum), refreshed 2026-04-26 (evening) with v0.22.9 spotlights (era-aware time slider closing the DateService cluster at eight sites; pixel-coord rendering follow-ups; older-sibling reality-window; place-graph diagnostic). All four clusters (0.22.x, 0.21.x, 0.20.x, 0.19.x forward) live on `/changelog/`.
 **Source material:** [CHANGELOG.md](../../../CHANGELOG.md), [wiki-content/Release-History.md](../../../wiki-content/Release-History.md).
 
 ---
@@ -176,7 +176,7 @@ Ages and durations in map waypoint popups now match the fictional calendar for u
 
 Three lingering issues from the 0.21 spouse-format migration are fixed. The phantom-deletion cascade that could fire during a migration no longer triggers. Cross-note indexed-spouse corruption on older notes is corrected on next load. Adoptive siblings render correctly in the relationships dynamic block.
 
-**Full cluster:** [0.22.0](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.0) · [0.22.1](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.1) · [0.22.2](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.2) · [0.22.3](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.3) · [0.22.4](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.4) · [0.22.5](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.5) · [0.22.6](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.6) · [0.22.7](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.7) · [0.22.8](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.8)
+**Full cluster:** [0.22.0](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.0) · [0.22.1](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.1) · [0.22.2](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.2) · [0.22.3](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.3) · [0.22.4](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.4) · [0.22.5](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.5) · [0.22.6](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.6) · [0.22.7](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.7) · [0.22.8](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.8) · [0.22.9](https://github.com/banisterious/obsidian-charted-roots/releases/tag/0.22.9)
 
 ---
 
