@@ -950,12 +950,22 @@ export class MapController {
 		// Add text label along the path (person name)
 		if (this.settings.showPathLabels) {
 			try {
+				// leaflet-textpath only recognizes 'flip' (180°), 'perpendicular'
+				// (90°), or a numeric rotation; anything else is passed through to
+				// the SVG transform attribute literally. We previously sent 'auto'
+				// for the no-flip branch, which produced transform="rotate(auto ...)"
+				// — invalid SVG, console-error per render (#477). Now we omit the
+				// orientation key entirely when no flip is needed; leaflet-textpath
+				// then skips the rotation block and the text follows the path
+				// naturally (the behavior we'd assumed 'auto' provided). #472's
+				// screen-space flip decision is unchanged.
+				const flipOpts = this.shouldFlipPathLabel(polyline)
+					? { orientation: 'flip' as const }
+					: {};
 				polyline.setText(data.personName, {
 					center: true,
 					offset: -5, // Position above the line
-					// Decide flip in screen-space so labels read upright on
-					// CRS.Simple image maps too, not just geographic maps (#472).
-					orientation: this.shouldFlipPathLabel(polyline) ? 'flip' : 'auto',
+					...flipOpts,
 					attributes: {
 						fill: this.settings.pathColor,
 						'font-size': '11px',
@@ -1044,12 +1054,14 @@ export class MapController {
 		// Add text label along the path (person name)
 		if (this.settings.showJourneyLabels) {
 			try {
+				// See migration-path callsite above for why we omit 'auto' (#477).
+				const flipOpts = this.shouldFlipPathLabel(polyline)
+					? { orientation: 'flip' as const }
+					: {};
 				polyline.setText(journey.personName, {
 					center: true,
 					offset: -5,
-					// Decide flip in screen-space so labels read upright on
-					// CRS.Simple image maps too, not just geographic maps (#472).
-					orientation: this.shouldFlipPathLabel(polyline) ? 'flip' : 'auto',
+					...flipOpts,
 					attributes: {
 						fill: journey.color || this.settings.journeyPathColor,
 						'font-size': '11px',
