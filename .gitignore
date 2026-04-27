@@ -116,7 +116,7 @@ docs/developer/pr-reviews/
 docs/samples/
 .claude/
 
-# Raw motion captures (large; optimized versions live in the website repo)
-# Static raw captures (.png) stay tracked as archival source.
-docs/images/raw/*.webm
-docs/images/raw/*.mp4
+# docs/images/raw/ is the project media library — both static (.png) and
+# motion (.webm / .mp4) captures are tracked. Optimized variants for the
+# website live separately in chartedroots.com's static/img/. Wiki pages,
+# in-repo docs, and future surfaces can reference the raw assets directly.
