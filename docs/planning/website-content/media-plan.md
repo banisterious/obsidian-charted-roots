@@ -473,6 +473,13 @@ The seven existing motion embeds were migrated via a mechanical find-replace on 
 
 Combined motion + static features-page payload after this batch is ~16.5 MB raw, but the prior commit's lazy-play rollout means first-load weight is now bounded by HTML + CSS + JS + statics regardless of the motion library size. Calendar View (2 shots) and the Custom Relationships Overlay motion capture are now unblocked.
 
+**Calendar View (2026-04-27):**
+
+- ✅ `cr-calendar-view-realworld.png` (164 KB) — Workspace Views → Calendar View, 2-up grid (left). Anderson family fixture at June 1928. Multiple event-type dots visible (yellow marriages, blue births); day-click detail panel open on William + Margaret's marriage.
+- ✅ `cr-calendar-view-fictional.png` (178 KB) — 2-up grid (right). Gaean Reach fixture at April 1499. Day-click detail panel open on April 8 showing Mount Pleasant Massacre context (Donn Gersen + Elsa Gersen deaths plus Helen Henderson's birth via anniversary aggregation).
+
+`oxipng -o 4` lossless pass on both files yielded 20–21% reductions; both well under the 500 KB cap (164 KB and 178 KB on-site, ~342 KB total). Reused the `.cr-grid-2` class — no new CSS. Closes the visualization-track captures called out in the media-plan queue. Custom Relationships Overlay motion capture is the only remaining queued visualization item.
+
 ---
 
 ## Deferred decisions
