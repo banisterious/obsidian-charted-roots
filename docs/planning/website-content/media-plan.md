@@ -335,11 +335,13 @@ Scannable prefix (`cr-`), feature name, variant where relevant. Lowercase, hyphe
 - **WebP alternative.** Optional for the rare shot where lossless PNG won't fit. Name `cr-<feature>.webp`; embed the same way as PNG.
 - **Fixture data only.** Use the dev-vault fixture (Andersons, Schmidts, Star Wars, etc.). Never capture from a personal vault — easy to leak names, dates, or places without noticing.
 
-**Embedding:** place the file in `static/img/` on the website repo, reference from markdown as `![Alt text](/img/cr-feature-variant.png)` or via Blowfish's image shortcode if it handles responsive sizing better. Motion loops use a plain `<video>` tag — Blowfish's `{{< video >}}` shortcode exists but defaults to `controls=true` and lacks `aria-label` support, so raw HTML is the cleaner path until a project-level `{{< motion >}}` shortcode is added (see "Future" section below). Pattern:
+**Embedding:** place the file in `static/img/` on the website repo, reference from markdown as `![Alt text](/img/cr-feature-variant.png)` or via Blowfish's image shortcode if it handles responsive sizing better. Motion loops use a plain `<video>` tag with the lazy-play attributes shipped 2026-04-27 — Blowfish's `{{< video >}}` shortcode exists but defaults to `controls=true` and lacks `aria-label` support, so raw HTML is the cleaner path until a project-level `{{< motion >}}` shortcode is added (see "Future" section below). Canonical pattern:
 
 ```html
-<video autoplay muted loop playsinline preload="metadata" src="/img/cr-feature-variant.webm" aria-label="<short factual description>"></video>
+<video muted loop playsinline preload="none" data-cr-lazy-src="/img/cr-feature-variant.webm" aria-label="<short factual description>"></video>
 ```
+
+The `data-cr-lazy-src` attribute is consumed by `/static/js/cr-lazy-video.js`, an `IntersectionObserver` script wired into every page via `layouts/partials/extend-head.html`. When a `<video>` scrolls within ~200px of the viewport, the observer swaps `data-cr-lazy-src` into `src`, sets `autoplay = true`, and calls `.load()` — visible behavior identical to the previous autoplay-on-load pattern, but no full-file fetch happens before the user scrolls into range. Browsers without `IntersectionObserver` support fall back to eagerly loading every video on page load, matching pre-migration behavior.
 
 `markup.goldmark.renderer.unsafe = true` is already set in `hugo.toml`, so raw HTML in markdown passes through untouched. CSS scoping for these embeds is keyed to `article video` so it only affects content-area videos, not anything Blowfish might render in chrome.
 
@@ -452,6 +454,24 @@ Running log of static files live on the chartedroots.com features page. Mirrors 
 - ✅ `cr-map-drilldown-breadcrumbs.webp` (392 KB) — Custom Image Maps, 2-up grid (right). River Scaum child map with breadcrumb back to parent.
 
 Mixed PNG / WebP path on this batch. `oxipng -o 4` was run first on all three brief-flagged PNG candidates (migration-paths, heat, marker-popup); only marker-popup landed under the 500 KB cap (244 KB → 240 KB) and shipped as PNG. Migration-paths and heat fell through to `cwebp -q 85` after exceeding the cap (654 KB and 570 KB respectively). The remaining four files (journey-playback, family-overlay, custom-image, drilldown-breadcrumbs) went through `cwebp -q 85` directly per the brief's WebP-path designation; all four landed comfortably under cap with 84–88% reduction from source PNGs. Total deployed payload: ~1.5 MB across seven files (down from ~9.1 MB pre-optimization). Reused the `.cr-grid-2` CSS class — no new CSS. Features page combined motion + static lifts from ~13.2 MB to ~14.7 MB. **Lazy-play decision: path (a) — shipped now, IntersectionObserver-based lazy-play is the firm gate before any further capture deploy** (Entity Profile is queued at 5 shots, Calendar at 2; either would push the page over the 15 MB threshold without lazy-play in place).
+
+**Site infrastructure: lazy-play `IntersectionObserver` (2026-04-27):**
+
+Migrated the canonical motion-embed pattern (above) and all existing motion embeds on `/features/` to deferred-load via `IntersectionObserver`. First-load page weight on the features page no longer scales with the motion library — videos fetch only when scrolled within ~200px of the viewport, then autoplay as soon as enough buffer is available. Project-level observer script in `static/js/cr-lazy-video.js`, wired through `layouts/partials/extend-head.html` (Blowfish's project hook for head injections). Graceful fallback for browsers without `IntersectionObserver` support: every video loads eagerly, matching pre-migration behavior. One-shot observer (`unobserve` after first intersect) so re-scrolling doesn't re-fetch.
+
+The seven existing motion embeds were migrated via a mechanical find-replace on the prefix; `cr-canvas-tree-generation.webm`, `cr-family-chart-relationship-edit.webm`, `cr-family-chart-highlight-groups.webm`, `cr-interactive-map-time.webm`, `cr-interactive-map-journey.webm`, `cr-merge-wizard-conflict-res.webm`, `cr-web-clipper-to-bio.webm` all carry the new `data-cr-lazy-src` shape. Unblocks the Entity Profile capture batch and the queued Calendar View / Custom Relationships Overlay batches.
+
+**Entity Profile View (2026-04-27):**
+
+- ✅ `cr-entity-profile-person.png` (426 KB) — Workspace Views → Entity Profile View, hero above the bullet list. William Anderson with relationships and events sections populated.
+- ✅ `cr-entity-profile-place.png` (468 KB) — 2x2 grid below the bullets (top-left). Atlanta Fulton County with map preview, events at location, and the seeded sources section.
+- ✅ `cr-entity-profile-event.png` (226 KB) — 2x2 grid (top-right). Marriage of William Anderson and Margaret O'Brien with participants populated.
+- ✅ `cr-entity-profile-source.png` (258 KB) — 2x2 grid (bottom-left). 1950 US Federal Census with referenced facts grouped by entity.
+- ✅ `cr-entity-profile-organization.png` (272 KB) — 2x2 grid (bottom-right). Inter-World Police Coordinating Company (Gaean Reach fixture) with members, events, and sources sections; demonstrates the worldbuilding angle inside an otherwise Andersons-fixture batch.
+
+`oxipng -o 4` yielded 18–30% reductions across the five files; all five landed under the 500 KB cap losslessly, no fallthrough to `pngquant` or `cwebp`. Total deployed payload: ~1.65 MB across five files (down from ~2.20 MB pre-optimization). Reused the `.cr-grid-2` CSS class for the 2x2 grid below the hero — no new CSS. Statics ship as plain `<img>` per the prior decision; lazy-play applies to videos only since images cache well already.
+
+Combined motion + static features-page payload after this batch is ~16.5 MB raw, but the prior commit's lazy-play rollout means first-load weight is now bounded by HTML + CSS + JS + statics regardless of the motion library size. Calendar View (2 shots) and the Custom Relationships Overlay motion capture are now unblocked.
 
 ---
 
