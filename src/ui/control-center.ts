@@ -26,6 +26,7 @@ import {
 	validateDates
 } from './data-quality-batch-ops';
 import { PlaceGraphService } from '../core/place-graph';
+import { UniverseService } from '../universes/services/universe-service';
 import { CreatePlaceModal } from './create-place-modal';
 import { TemplateSnippetsModal } from './template-snippets-modal';
 import { renderSchemasTab } from '../schemas/ui/schemas-tab';
@@ -119,15 +120,35 @@ export class ControlCenterModal extends Modal {
 
 	/**
 	 * Get cached universe list, computing it once if needed.
-	 * This merges universes from both places and people.
+	 *
+	 * Merges three sources so the dropdown reflects the full set of universes
+	 * the user has defined or referenced:
+	 *
+	 * 1. Universe notes in the universes folder (`UniverseService`) — the
+	 *    authoritative source. Includes universes the user has just created
+	 *    or renamed but whose new name no person/place file references yet.
+	 * 2. Distinct `universe:` field values across person notes.
+	 * 3. Distinct `universe:` field values across place notes.
+	 *
+	 * Sources 2 and 3 keep working for vaults that reference universes
+	 * informally (no Universe note created), and they cover the legacy case
+	 * where a Universe note's name diverges from a referencing note's
+	 * `universe:` value (the rename hasn't cascaded through yet — see #488
+	 * Part 2). Source 1 is the fix that prevents a freshly-renamed universe
+	 * from being absent from the Edit Person dropdown. (#488 Part 1)
 	 */
 	private getCachedUniverses(): string[] {
 		if (!this.cachedUniverses) {
 			const placeGraph = this.getCachedPlaceGraph();
 			const familyGraph = this.getCachedFamilyGraph();
+			const universeService = new UniverseService(this.plugin);
+
 			const placeUniverses = placeGraph.getAllUniverses();
 			const personUniverses = familyGraph.getAllUniverses();
+			const universeNoteNames = universeService.getAllUniverses().map(u => u.name);
+
 			this.cachedUniverses = [...new Set([
+				...universeNoteNames,
 				...placeUniverses,
 				...personUniverses
 			])].sort();
