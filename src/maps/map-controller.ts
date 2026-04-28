@@ -110,6 +110,20 @@ export class MapController {
 	private placesClusterGroup: L.MarkerClusterGroup | null = null;
 	private pathLayer: L.LayerGroup | null = null;
 	private journeyLayer: L.LayerGroup | null = null;
+
+	// Path-label registry (#482). Each entry tracks a visible polyline that
+	// wants to display a text label and the layer it lives on, plus the
+	// invisible host polyline that hosts the label (or null when the chosen
+	// segment is too short for the text at the current zoom). Re-evaluated
+	// on `zoomend` so labels reappear / disappear as the map zooms.
+	private pathLabelEntries: Array<{
+		sourcePolyline: L.Polyline;
+		text: string;
+		attributes: Record<string, string>;
+		layer: L.LayerGroup;
+		host: L.Polyline | null;
+	}> = [];
+	private zoomEndDebounceHandle: number | null = null;
 	private heatLayer: L.Layer | null = null;
 	private childMapOverlayLayer: L.LayerGroup | null = null;
 
@@ -225,6 +239,22 @@ export class MapController {
 
 		// Initialize journey layer (all life events connected chronologically)
 		this.journeyLayer = L.layerGroup();  // Not added by default
+
+		// Re-evaluate path labels on zoom changes so labels disappear when
+		// the chosen segment is too short to fit the text and reappear when
+		// the user zooms back in. Debounced so continuous zoom (mouse wheel,
+		// pinch) doesn't thrash the registry. (#482)
+		this.map.on('zoomend', () => {
+			if (this.zoomEndDebounceHandle !== null) {
+				window.clearTimeout(this.zoomEndDebounceHandle);
+			}
+			this.zoomEndDebounceHandle = window.setTimeout(() => {
+				for (const entry of this.pathLabelEntries) {
+					this.evaluatePathLabel(entry);
+				}
+				this.zoomEndDebounceHandle = null;
+			}, 120);
+		});
 
 		// Initialize child map overlay layer (#361 Phase 3)
 		this.childMapOverlayLayer = L.layerGroup().addTo(this.map);
@@ -739,49 +769,91 @@ export class MapController {
 	}
 
 	/**
-	 * Build an invisible "label-host" polyline that covers only the longest
-	 * screen-space segment of a source polyline, then call `setText` on the
-	 * host. leaflet-textpath repeats the label along multi-segment paths and
-	 * applies a single global rotation, so a multi-waypoint path that bends in
-	 * different directions will always have at least one segment rendering the
-	 * label upside-down — no per-polyline flip decision can fix that. Hosting
-	 * the label on a single chosen segment side-steps the issue entirely:
-	 * leaflet-textpath only has one segment to render along, the flip decision
-	 * (leftward in screen-space → flip 180°) is correct for that segment, and
-	 * the visible polyline keeps its full multi-waypoint shape. The host has
-	 * `opacity: 0` and `weight: 0` so the line itself is invisible; only the
-	 * text remains. Returns the host so the caller can add it to the same
-	 * layer group as the visible polyline (cleanup follows naturally). (#472
-	 * follow-up; supersedes earlier longest-segment-as-flip-heuristic in
-	 * 0.22.10's `2b4b3160`.) Per #477, `orientation` is omitted when no flip
-	 * is needed so leaflet-textpath skips the rotation block entirely.
+	 * Estimate the rendered pixel-width of a text label at a given font-size.
+	 * Approximation: `text.length * fontSize * 0.6` for typical sans-serif
+	 * fonts. Slightly conservative (overestimates a hair) so labels start
+	 * disappearing a touch before they actually overflow the segment. Used
+	 * by `evaluatePathLabel` to decide whether the chosen segment can fit
+	 * the label at the current zoom. (#482)
 	 */
-	private createPathLabelHost(
+	private estimateTextWidth(text: string, fontSize: string | undefined): number {
+		const px = fontSize ? parseFloat(fontSize) : 11;
+		const safePx = Number.isFinite(px) && px > 0 ? px : 11;
+		return text.length * safePx * 0.6;
+	}
+
+	/**
+	 * Decide whether a registered path label should be visible at the current
+	 * zoom and add / remove its host polyline accordingly. Re-runs on
+	 * `zoomend` so labels reappear when the user zooms in and disappear when
+	 * the segment becomes too short to fit the text without overflowing.
+	 * (#482)
+	 */
+	private evaluatePathLabel(entry: typeof this.pathLabelEntries[number]): void {
+		const seg = this.findLongestScreenSegment(entry.sourcePolyline);
+		const textWidth = this.estimateTextWidth(entry.text, entry.attributes['font-size']);
+		const segmentLength = seg ? seg.screenStart.distanceTo(seg.screenEnd) : 0;
+		const shouldShow = seg !== null && segmentLength >= textWidth;
+
+		if (shouldShow && !entry.host) {
+			// Newly fits — create + add the host.
+			const host = L.polyline([seg!.start, seg!.end], {
+				opacity: 0,
+				weight: 0,
+				interactive: false
+			});
+			const flipOpts = seg!.screenEnd.x < seg!.screenStart.x
+				? { orientation: 'flip' as const }
+				: {};
+			host.setText(entry.text, {
+				center: true,
+				offset: -5,
+				...flipOpts,
+				attributes: entry.attributes
+			});
+			entry.layer.addLayer(host);
+			entry.host = host;
+		} else if (!shouldShow && entry.host) {
+			// No longer fits — remove the host so the label doesn't overflow.
+			entry.layer.removeLayer(entry.host);
+			entry.host = null;
+		}
+	}
+
+	/**
+	 * Register a text label that should ride along the longest screen-space
+	 * segment of a source polyline. The label rides on a separate invisible
+	 * "label-host" polyline rather than being attached directly to the source
+	 * — leaflet-textpath repeats labels along multi-segment paths and applies
+	 * a single global rotation, so any path that bends in different directions
+	 * has at least one segment rendering the label upside-down (#472). Hosting
+	 * the label on a single chosen segment side-steps the orientation issue
+	 * entirely.
+	 *
+	 * The host polyline is created on demand by `evaluatePathLabel`, which
+	 * also handles zoom-aware suppression: when the chosen segment is too
+	 * short for the rendered text at the current zoom, the host isn't
+	 * created (or is removed if present), so the text doesn't overflow past
+	 * the path endpoints (#482). Re-evaluated on `zoomend`.
+	 *
+	 * Per #477, `orientation` is omitted when no flip is needed so
+	 * leaflet-textpath skips its rotation block entirely.
+	 */
+	private addPathLabel(
 		sourcePolyline: L.Polyline,
 		text: string,
-		attributes: Record<string, string>
-	): L.Polyline | null {
-		const seg = this.findLongestScreenSegment(sourcePolyline);
-		if (!seg) return null;
-
-		const host = L.polyline([seg.start, seg.end], {
-			opacity: 0,
-			weight: 0,
-			interactive: false
-		});
-
-		const flipOpts = seg.screenEnd.x < seg.screenStart.x
-			? { orientation: 'flip' as const }
-			: {};
-
-		host.setText(text, {
-			center: true,
-			offset: -5,
-			...flipOpts,
-			attributes
-		});
-
-		return host;
+		attributes: Record<string, string>,
+		layer: L.LayerGroup
+	): void {
+		const entry = {
+			sourcePolyline,
+			text,
+			attributes,
+			layer,
+			host: null as L.Polyline | null
+		};
+		this.pathLabelEntries.push(entry);
+		this.evaluatePathLabel(entry);
 	}
 
 	/**
@@ -924,6 +996,9 @@ export class MapController {
 		if (!this.pathLayer) return;
 
 		this.pathLayer.clearLayers();
+		// Drop label registry entries for the cleared layer so we don't leak
+		// stale source-polyline references on re-render. (#482)
+		this.pathLabelEntries = this.pathLabelEntries.filter(e => e.layer !== this.pathLayer);
 
 		for (const path of paths) {
 			const polyline = this.createPath(path);
@@ -995,19 +1070,17 @@ export class MapController {
 		}
 
 		// Add text label along the path (person name) via a label-host polyline
-		// that covers only the longest screen-space segment. See
-		// `createPathLabelHost` for why we don't `setText` on the visible polyline
-		// directly. (#472 follow-up; #477 'auto' fix preserved by host helper.)
-		if (this.settings.showPathLabels) {
+		// that covers only the longest screen-space segment. See `addPathLabel`
+		// for why we don't `setText` on the visible polyline directly (#472)
+		// and how zoom-aware suppression handles the segment-too-short case
+		// at low zoom (#482).
+		if (this.settings.showPathLabels && this.pathLayer) {
 			try {
-				const labelHost = this.createPathLabelHost(polyline, data.personName, {
+				this.addPathLabel(polyline, data.personName, {
 					fill: this.settings.pathColor,
 					'font-size': '11px',
 					'font-weight': '500'
-				});
-				if (labelHost) {
-					this.pathLayer?.addLayer(labelHost);
-				}
+				}, this.pathLayer);
 			} catch (e) {
 				logger.warn('textpath', 'Could not add text label to path', { error: e });
 			}
@@ -1053,6 +1126,9 @@ export class MapController {
 		if (!this.journeyLayer) return;
 
 		this.journeyLayer.clearLayers();
+		// Drop label registry entries for the cleared layer so we don't leak
+		// stale source-polyline references on re-render. (#482)
+		this.pathLabelEntries = this.pathLabelEntries.filter(e => e.layer !== this.journeyLayer);
 
 		for (const journey of journeyPaths) {
 			// Need at least 2 waypoints to draw a path
@@ -1088,18 +1164,15 @@ export class MapController {
 		});
 
 		// Add text label along the path (person name) via a label-host polyline
-		// that covers only the longest screen-space segment. See
-		// `createPathLabelHost` for the rationale. (#472 follow-up.)
-		if (this.settings.showJourneyLabels) {
+		// that covers only the longest screen-space segment. See `addPathLabel`
+		// for the rationale (#472, #482).
+		if (this.settings.showJourneyLabels && this.journeyLayer) {
 			try {
-				const labelHost = this.createPathLabelHost(polyline, journey.personName, {
+				this.addPathLabel(polyline, journey.personName, {
 					fill: journey.color || this.settings.journeyPathColor,
 					'font-size': '11px',
 					'font-weight': '500'
-				});
-				if (labelHost) {
-					this.journeyLayer?.addLayer(labelHost);
-				}
+				}, this.journeyLayer);
 			} catch (e) {
 				logger.warn('textpath-journey', 'Could not add text label to journey path', { error: e });
 			}
@@ -2062,6 +2135,13 @@ export class MapController {
 		this.eventClusterGroup = null;
 		this.pathLayer = null;
 		this.journeyLayer = null;
+		// Drop the label registry entirely — its source-polyline references
+		// belonged to the destroyed map and the zoom debounce handle is dead.
+		this.pathLabelEntries = [];
+		if (this.zoomEndDebounceHandle !== null) {
+			window.clearTimeout(this.zoomEndDebounceHandle);
+			this.zoomEndDebounceHandle = null;
+		}
 		this.fullscreenControl = null;
 		this.miniMap = null;
 		this.searchControl = null;
