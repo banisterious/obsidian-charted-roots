@@ -14,7 +14,7 @@ import { PersonIndexService } from './person-index-service';
 import type { CanvasRootsSettings, ValueAliasSettings } from '../settings';
 import { CANONICAL_GENDERS, BUILTIN_SYNONYMS } from './value-alias-service';
 import { parseMediaRefs } from './media-service';
-import { isSourceNote, isEventNote, isPlaceNote, isOrganizationNote, isProofSummaryNote, isUniverseNote, isCitationNote } from '../utils/note-type-detection';
+import { isSourceNote, isEventNote, isPlaceNote, isOrganizationNote, isProofSummaryNote, isUniverseNote, isCitationNote, isPersonNote } from '../utils/note-type-detection';
 import type { RawRelationship, FamilyGraphMapping } from '../relationships/types/relationship-types';
 import { getRelationshipType, getAllRelationshipTypesWithCustomizations } from '../relationships/constants/default-relationship-types';
 
@@ -1445,6 +1445,18 @@ export class FamilyGraphService {
 		}
 		if (isCitationNote(fm, cache, noteTypeSettings)) {
 			return { isCitation: true };
+		}
+
+		// Inclusion check: the exclusion list above only screens out note types
+		// the plugin knows about. User-defined custom `cr_type` values
+		// (`hex`, `faction`, anything not in our type catalog) would otherwise
+		// fall through and get coerced into a person — which is how custom
+		// notes ended up in the Person notes view (#489). `isPersonNote`
+		// returns false for any note with an explicit non-person `cr_type`,
+		// while preserving the legacy "cr_id with no cr_type → treat as
+		// person" behavior for older vaults.
+		if (!isPersonNote(fm, cache, noteTypeSettings)) {
+			return null;
 		}
 
 		// Extract name (from frontmatter or filename) with alias support
