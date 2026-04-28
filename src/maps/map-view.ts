@@ -1544,15 +1544,30 @@ export class MapView extends ItemView {
 			this.buildJourneyEmptyPlaceholder(this.journeyMode.personName ?? '');
 		}
 
-		// Fit bounds to this person's markers
+		// Fit bounds to this person's markers. Resolve each marker's coords
+		// against the current CRS — pixel-coord places default `lat`/`lng` to
+		// 0, so on a `CRS.Simple` image map a naive lat/lng fit collapses
+		// around (0, 0) (the bottom-left corner) and the camera frames the
+		// corner briefly before `panToWaypoint` flies to the first waypoint.
+		// Same class of bug as #448 (journey-path build dedup) and #474
+		// (camera fly-to / popup placement); third site in that cluster. (#485)
 		if (filteredMarkers.length > 0 && this.mapController?.['map']) {
-			const lats = filteredMarkers.map(m => m.lat).filter((l): l is number => l !== undefined);
-			const lngs = filteredMarkers.map(m => m.lng).filter((l): l is number => l !== undefined);
-			if (lats.length > 0 && lngs.length > 0) {
+			const isPixelCRS = this.mapController.getCurrentCRS() === 'pixel';
+			const points: [number, number][] = [];
+			for (const m of filteredMarkers) {
+				if (isPixelCRS && m.pixelX !== undefined && m.pixelY !== undefined) {
+					points.push([m.pixelY, m.pixelX]);
+				} else if (m.lat !== undefined && m.lng !== undefined) {
+					points.push([m.lat, m.lng]);
+				}
+			}
+			if (points.length > 0) {
 				const L = require('leaflet');
+				const ys = points.map(p => p[0]);
+				const xs = points.map(p => p[1]);
 				const bounds = L.latLngBounds(
-					L.latLng(Math.min(...lats), Math.min(...lngs)),
-					L.latLng(Math.max(...lats), Math.max(...lngs))
+					L.latLng(Math.min(...ys), Math.min(...xs)),
+					L.latLng(Math.max(...ys), Math.max(...xs))
 				);
 				this.mapController['map'].fitBounds(bounds, { padding: [50, 50] });
 			}
