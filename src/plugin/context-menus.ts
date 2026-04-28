@@ -1,4 +1,5 @@
-import { Notice, TFile, TFolder, Menu, Platform, type CachedMetadata } from 'obsidian';
+import { App, FuzzySuggestModal, Notice, TFile, TFolder, Menu, Platform, type CachedMetadata } from 'obsidian';
+import type { OrganizationInfo } from '../organizations/types/organization-types';
 import type CanvasRootsPlugin from '../../main';
 import {
 	addCrId, addEssentialEventProperties, addEssentialMapProperties,
@@ -39,6 +40,79 @@ import { RelationshipValidator } from '../core/relationship-validator';
 import { getLogger } from '../core/logging';
 
 const logger = getLogger('context-menus');
+
+/**
+ * Open ManageOrganizationMembersModal for a person, handling the 0 / 1 /
+ * multiple memberships cases (#490). When the person belongs to a single
+ * organization the modal opens directly; when they belong to multiple, a
+ * fuzzy picker scoped to their orgs lets the user pick which to manage.
+ */
+async function openManageMembershipsForPerson(plugin: CanvasRootsPlugin, file: TFile): Promise<void> {
+	const cache = plugin.app.metadataCache.getFileCache(file);
+	const personCrId = cache?.frontmatter?.cr_id as string | undefined;
+	if (!personCrId) {
+		new Notice('Person has no cr_id; cannot resolve memberships');
+		return;
+	}
+
+	const { ManageOrganizationMembersModal } = await import('../organizations/ui/manage-members-modal');
+	const { createOrganizationService } = await import('../organizations/services/organization-service');
+	const { createMembershipService } = await import('../organizations/services/membership-service');
+	const orgService = createOrganizationService(plugin);
+	const membershipService = createMembershipService(plugin, orgService);
+	const memberships = membershipService.getPersonMemberships(personCrId);
+
+	const orgs = memberships
+		.map(m => m.org)
+		.filter((org): org is OrganizationInfo => !!org);
+
+	if (orgs.length === 0) {
+		new Notice('This person has no organization memberships to manage');
+		return;
+	}
+
+	const openForOrg = (org: OrganizationInfo): void => {
+		new ManageOrganizationMembersModal(plugin.app, plugin, {
+			organization: org,
+			organizationService: orgService,
+			membershipService: membershipService
+		}).open();
+	};
+
+	if (orgs.length === 1) {
+		openForOrg(orgs[0]);
+		return;
+	}
+
+	new OrgPickerSuggest(plugin.app, orgs, openForOrg).open();
+}
+
+/**
+ * Fuzzy picker for choosing among a person's organizations when they
+ * belong to more than one (#490).
+ */
+class OrgPickerSuggest extends FuzzySuggestModal<OrganizationInfo> {
+	constructor(
+		app: App,
+		private readonly orgs: OrganizationInfo[],
+		private readonly onPick: (org: OrganizationInfo) => void
+	) {
+		super(app);
+		this.setPlaceholder('Pick an organization to manage members');
+	}
+
+	getItems(): OrganizationInfo[] {
+		return this.orgs;
+	}
+
+	getItemText(org: OrganizationInfo): string {
+		return org.name;
+	}
+
+	onChooseItem(org: OrganizationInfo): void {
+		this.onPick(org);
+	}
+}
 
 /**
  * Register all context menu handlers for the plugin.
@@ -733,6 +807,16 @@ function buildPersonContextMenu(
 					});
 			});
 
+			// Manage memberships (#490) - person-side affordance for ManageOrganizationMembersModal
+			submenu.addItem((subItem) => {
+				subItem
+					.setTitle('Manage memberships...')
+					.setIcon('users')
+					.onClick(() => {
+						void openManageMembershipsForPerson(plugin, file);
+					});
+			});
+
 			// Relationships submenu (adding relationships, validation, calculation)
 			submenu.addItem((subItem) => {
 				const relationshipSubmenu: Menu = subItem
@@ -1386,6 +1470,15 @@ function buildPersonContextMenu(
 				.setIcon('id-card')
 				.onClick(async () => {
 					await plugin.activateProfileView(file);
+				});
+		});
+
+		menu.addItem((item) => {
+			item
+				.setTitle('Charted Roots: Manage memberships...')
+				.setIcon('users')
+				.onClick(() => {
+					void openManageMembershipsForPerson(plugin, file);
 				});
 		});
 
