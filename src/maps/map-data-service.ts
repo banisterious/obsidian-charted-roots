@@ -983,7 +983,8 @@ export class MapDataService {
 			// Add burial waypoint (after death)
 			const burialPlace = this.resolvePlace(person.burialPlaceId, person.burialPlace);
 			if (burialPlace && this.hasValidCoordinates(burialPlace)) {
-				if (!filters.universe || burialPlace.universe === filters.universe) {
+				if ((!filters.universe || burialPlace.universe === filters.universe) &&
+					this.isPlaceVisibleOnMap(burialPlace, filters)) {
 					// Use death date for burial if no separate date
 					const burialYear = this.extractYear(person.died);
 					waypoints.push({
