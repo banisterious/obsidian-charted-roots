@@ -1010,6 +1010,8 @@ export interface ReportMetadata {
 	requiresPerson: boolean;
 	/** Type of entity required (person, place, universe, collection) */
 	entityType?: 'person' | 'place' | 'universe' | 'collection';
+	/** Hidden from user-facing pickers (e.g., catalog entry exists but renderer is incomplete) */
+	hidden?: boolean;
 }
 
 /**
@@ -1219,7 +1221,8 @@ export const REPORT_METADATA: Record<ReportType, ReportMetadata> = {
 		icon: 'cr-fan-chart',
 		category: 'visual-trees',
 		requiresPerson: true,
-		entityType: 'person'
+		entityType: 'person',
+		hidden: true
 	}
 };
 
@@ -1257,5 +1260,5 @@ export const REPORT_CATEGORY_METADATA: Record<ReportCategory, { name: string; de
  * Get reports by category
  */
 export function getReportsByCategory(category: ReportCategory): ReportMetadata[] {
-	return Object.values(REPORT_METADATA).filter(r => r.category === category);
+	return Object.values(REPORT_METADATA).filter(r => r.category === category && !r.hidden);
 }

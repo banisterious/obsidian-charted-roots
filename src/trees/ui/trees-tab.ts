@@ -350,6 +350,7 @@ function showTreeGenerationTab(options: TreesTabOptions): void {
 	// Create a card for each visual tree report
 	for (const [type, metadata] of Object.entries(REPORT_METADATA)) {
 		if (metadata.category !== 'visual-trees') continue;
+		if (metadata.hidden) continue;
 
 		const vtCard = visualTreesGrid.createDiv({ cls: 'cr-sv-report-card' });
 
