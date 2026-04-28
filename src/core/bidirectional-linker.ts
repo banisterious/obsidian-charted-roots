@@ -8,6 +8,20 @@ import { detectSpouseTargetFormat, isSpouseInFrontmatter } from './spouse-format
 const logger = getLogger('BidirectionalLinker');
 
 /**
+ * Marriage-detail companion fields associated with an indexed spouse slot.
+ * Mirrored bidirectionally so both partners' notes carry the same facts
+ * about the marriage they share (#481). Field set is kept in sync with the
+ * deletion-side enumeration in `removeSpouseFromTarget` (~line 1473).
+ */
+interface MarriageDetails {
+	marriageDate?: string;
+	marriageLocation?: string | string[];
+	marriageLocationId?: string;
+	marriageStatus?: string;
+	divorceDate?: string;
+}
+
+/**
  * Snapshot of relationship fields for deletion detection
  */
 interface RelationshipSnapshot {
@@ -292,9 +306,15 @@ export class BidirectionalLinker {
 				}
 			}
 
-			// Sync all discovered spouse relationships
+			// Sync all discovered spouse relationships. When the source uses
+			// the indexed format, also extract its marriage-detail companion
+			// fields for that slot so syncSpouse can mirror them onto the
+			// target (#481).
 			for (const spouse of spousesToSync) {
-				await this.syncSpouse(spouse.link, personFile, personName, personCrId);
+				const marriageDetails = spouse.index !== undefined
+					? this.extractMarriageDetails(frontmatter, spouse.index)
+					: undefined;
+				await this.syncSpouse(spouse.link, personFile, personName, personCrId, marriageDetails);
 			}
 
 			// Sync children relationships (child → parent direction)
@@ -666,11 +686,108 @@ export class BidirectionalLinker {
 	 * @param personCrId Person's cr_id
 	 * @param spouseIndex Optional index for indexed spouse properties (spouse1, spouse2, etc.)
 	 */
+	/**
+	 * Read the marriage-detail companion fields for an indexed spouse slot
+	 * on the source frontmatter. Returns `undefined` if no detail field is
+	 * set, so callers can short-circuit. Used to mirror marriage facts onto
+	 * the partner's note (#481).
+	 */
+	private extractMarriageDetails(
+		frontmatter: PersonFrontmatter,
+		sourceIndex: number
+	): MarriageDetails | undefined {
+		const fm = frontmatter as Record<string, unknown>;
+		const prefix = `spouse${sourceIndex}_`;
+		const date = fm[`${prefix}marriage_date`];
+		const location = fm[`${prefix}marriage_location`];
+		const locationId = fm[`${prefix}marriage_location_id`];
+		const status = fm[`${prefix}marriage_status`];
+		const divorceDate = fm[`${prefix}divorce_date`];
+
+		if (
+			date === undefined && location === undefined && locationId === undefined &&
+			status === undefined && divorceDate === undefined
+		) {
+			return undefined;
+		}
+
+		return {
+			marriageDate: typeof date === 'string' ? date : undefined,
+			marriageLocation: typeof location === 'string' || Array.isArray(location)
+				? location as string | string[]
+				: undefined,
+			marriageLocationId: typeof locationId === 'string' ? locationId : undefined,
+			marriageStatus: typeof status === 'string' ? status : undefined,
+			divorceDate: typeof divorceDate === 'string' ? divorceDate : undefined
+		};
+	}
+
+	/**
+	 * Find the indexed spouse slot on `targetFm` that points at `personCrId`,
+	 * checking the `_id` companion fields first and falling back to wikilink
+	 * scanning. Used to locate the existing slot when mirroring marriage
+	 * details on update (#481).
+	 */
+	private findExistingSpouseIndex(
+		targetFm: Record<string, unknown>,
+		personCrId: string,
+		personName: string,
+		personBasename: string
+	): number | null {
+		// Prefer cr_id match (most reliable)
+		for (const key of Object.keys(targetFm)) {
+			const match = key.match(/^spouse(\d+)_id$/);
+			if (match && targetFm[key] === personCrId) {
+				return parseInt(match[1]);
+			}
+		}
+		// Fallback: wikilink match for slots that haven't gotten an _id yet
+		for (const key of Object.keys(targetFm)) {
+			const match = key.match(/^spouse(\d+)$/);
+			if (!match) continue;
+			const linkText = typeof targetFm[key] === 'string' ? targetFm[key] : String(targetFm[key]);
+			if (linkText.includes(personName) || linkText.includes(personBasename)) {
+				return parseInt(match[1]);
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Mirror the source's marriage-detail fields onto a target spouse slot.
+	 * Only writes fields that are SET on the source (undefined source fields
+	 * are left alone on the target so independently-set values aren't
+	 * accidentally cleared) (#481).
+	 */
+	private async writeMarriageDetailsToTarget(
+		spouseFile: TFile,
+		targetIndex: number,
+		details: MarriageDetails
+	): Promise<void> {
+		const prefix = `spouse${targetIndex}_`;
+		if (details.marriageDate !== undefined) {
+			await this.setField(spouseFile, `${prefix}marriage_date`, details.marriageDate);
+		}
+		if (details.marriageLocation !== undefined) {
+			await this.setField(spouseFile, `${prefix}marriage_location`, details.marriageLocation);
+		}
+		if (details.marriageLocationId !== undefined) {
+			await this.setField(spouseFile, `${prefix}marriage_location_id`, details.marriageLocationId);
+		}
+		if (details.marriageStatus !== undefined) {
+			await this.setField(spouseFile, `${prefix}marriage_status`, details.marriageStatus);
+		}
+		if (details.divorceDate !== undefined) {
+			await this.setField(spouseFile, `${prefix}divorce_date`, details.divorceDate);
+		}
+	}
+
 	private async syncSpouse(
 		spouseLink: unknown,
 		personFile: TFile,
 		personName: string,
-		personCrId: string
+		personCrId: string,
+		marriageDetails?: MarriageDetails
 	): Promise<void> {
 		const spouseFile = this.resolveLink(spouseLink, personFile);
 		if (!spouseFile) {
@@ -766,55 +883,86 @@ export class BidirectionalLinker {
 			}
 		}
 
+		// Determine which target slot will hold (or already holds) the link
+		// to source. Marriage details are mirrored into this same slot below
+		// (#481), so both new-link and already-linked code paths converge on
+		// a single `targetIndex` value.
+		let targetIndex: number | null = null;
+
 		if (alreadyLinked) {
+			// Find the existing slot so marriage-detail updates can still
+			// propagate on subsequent edits.
+			targetIndex = this.findExistingSpouseIndex(
+				spouseFm as Record<string, unknown>,
+				personCrId,
+				personName,
+				personFile.basename
+			);
 			logger.debug('bidirectional-linking', 'Spouse already linked', {
 				spouseFile: spouseFile.path,
-				personFile: personFile.path
-			});
-			return;
-		}
-
-		// Add person to spouse's spouse fields. Preserve the TARGET's
-		// existing frontmatter format — writing flat `spouse:` onto a
-		// target using indexed `spouseN:` produces duplicate YAML keys
-		// and silently wipes the indexed list (#420 Gap B). The
-		// source's format is no longer used to drive this decision.
-		const targetFormat = detectSpouseTargetFormat(spouseFm as Record<string, unknown>);
-
-		if (targetFormat.format === 'indexed') {
-			const nextIndex = targetFormat.nextIndex;
-			await this.setField(spouseFile, `spouse${nextIndex}`, personLinkText);
-			await this.setField(spouseFile, `spouse${nextIndex}_id`, personCrId);
-
-			logger.info('bidirectional-linking', 'Added indexed spouse bidirectional link', {
-				spouseFile: spouseFile.path,
 				personFile: personFile.path,
-				index: nextIndex,
-				wikilink: personLinkText,
-				crId: personCrId
+				targetIndex
 			});
 		} else {
-			// Flat format: preserve scalar-vs-array convention on append.
-			if (spouseLinksArray.length === 0) {
-				await this.setField(spouseFile, 'spouse', personLinkText);
-				await this.setField(spouseFile, 'spouse_id', personCrId);
-			} else if (spouseLinksArray.length === 1) {
-				await this.setField(spouseFile, 'spouse', [spouseLinksArray[0], personLinkText]);
-				if (spouseIdsArray.length === 1) {
-					await this.setField(spouseFile, 'spouse_id', [spouseIdsArray[0], personCrId]);
-				} else {
-					await this.setField(spouseFile, 'spouse_id', personCrId);
-				}
-			} else {
-				await this.addToArrayField(spouseFile, 'spouse', personLinkText);
-				await this.addToArrayField(spouseFile, 'spouse_id', personCrId);
-			}
+			// Add person to spouse's spouse fields. Preserve the TARGET's
+			// existing frontmatter format — writing flat `spouse:` onto a
+			// target using indexed `spouseN:` produces duplicate YAML keys
+			// and silently wipes the indexed list (#420 Gap B). The
+			// source's format is no longer used to drive this decision.
+			const targetFormat = detectSpouseTargetFormat(spouseFm as Record<string, unknown>);
 
-			logger.info('bidirectional-linking', 'Added spouse bidirectional link (flat format)', {
+			if (targetFormat.format === 'indexed') {
+				targetIndex = targetFormat.nextIndex;
+				await this.setField(spouseFile, `spouse${targetIndex}`, personLinkText);
+				await this.setField(spouseFile, `spouse${targetIndex}_id`, personCrId);
+
+				logger.info('bidirectional-linking', 'Added indexed spouse bidirectional link', {
+					spouseFile: spouseFile.path,
+					personFile: personFile.path,
+					index: targetIndex,
+					wikilink: personLinkText,
+					crId: personCrId
+				});
+			} else {
+				// Flat format: preserve scalar-vs-array convention on append.
+				// Flat format does not carry marriage-detail companion fields,
+				// so `targetIndex` stays null and the mirror step below skips.
+				if (spouseLinksArray.length === 0) {
+					await this.setField(spouseFile, 'spouse', personLinkText);
+					await this.setField(spouseFile, 'spouse_id', personCrId);
+				} else if (spouseLinksArray.length === 1) {
+					await this.setField(spouseFile, 'spouse', [spouseLinksArray[0], personLinkText]);
+					if (spouseIdsArray.length === 1) {
+						await this.setField(spouseFile, 'spouse_id', [spouseIdsArray[0], personCrId]);
+					} else {
+						await this.setField(spouseFile, 'spouse_id', personCrId);
+					}
+				} else {
+					await this.addToArrayField(spouseFile, 'spouse', personLinkText);
+					await this.addToArrayField(spouseFile, 'spouse_id', personCrId);
+				}
+
+				logger.info('bidirectional-linking', 'Added spouse bidirectional link (flat format)', {
+					spouseFile: spouseFile.path,
+					personFile: personFile.path,
+					wikilink: personLinkText,
+					crId: personCrId
+				});
+			}
+		}
+
+		// Mirror marriage detail companion fields onto the target's matching
+		// indexed slot when the source provided them. Runs for both new and
+		// already-linked targets, so subsequent edits to marriage details on
+		// either side propagate to the partner (#481). Skipped when the
+		// target uses flat format (no companion fields exist there).
+		if (marriageDetails && targetIndex !== null) {
+			await this.writeMarriageDetailsToTarget(spouseFile, targetIndex, marriageDetails);
+			logger.info('bidirectional-linking', 'Mirrored marriage details to spouse', {
 				spouseFile: spouseFile.path,
 				personFile: personFile.path,
-				wikilink: personLinkText,
-				crId: personCrId
+				targetIndex,
+				details: marriageDetails
 			});
 		}
 	}
