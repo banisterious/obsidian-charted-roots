@@ -1770,7 +1770,14 @@ export class MapView extends ItemView {
 		}
 
 		if (target) {
-			map.flyTo(target, 12, { duration: 1 });
+			// Preserve the user's current zoom level when stepping between
+			// waypoints. The hardcoded zoom 12 was causing a jolting zoom-in on
+			// every step regardless of how the user had framed the journey:
+			// fitBounds frames the path at an appropriate scale on entry
+			// (#485), so step-to-step pans should respect that framing rather
+			// than overriding it. The user can manually zoom before / during
+			// playback to whatever level they prefer; we just pan.
+			map.flyTo(target, map.getZoom(), { duration: 1 });
 
 			// Close any existing popup
 			map.closePopup();

@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Changed
+
+- **Journey playback preserves the user's zoom level between steps.** Each step previously called `flyTo(target, 12, { duration: 1 })` — a hardcoded zoom level that yanked the camera down to zoom 12 on every step regardless of how the user had framed the journey. On a wide journey (e.g. continental), this produced a jolting zoom-in between each waypoint. The step now passes `map.getZoom()` instead, so the user's framing — set by `fitBounds` on entry to journey mode and adjustable via manual zoom mid-playback — is respected throughout playback.
+
 ### Fixed
 
 - **Map path labels hide instead of overflowing when zoomed out** ([#482](https://github.com/banisterious/obsidian-charted-roots/issues/482)): At minimum zoom, polylines collapsed to small pixel regions but leaflet-textpath kept rendering the full label text along them, so the text overflowed past the path endpoints — visible as a label "teleporting" to empty space alongside the canvas. The 0.22.11 label-host change addressed the multi-segment iteration problem (#472) but not this segment-too-short problem; @doctorwodka's 0.22.11 retest confirmed the symptom unchanged. Fix adds zoom-aware suppression: each path-label registration now estimates the rendered text pixel-width (`text.length × font-size × 0.6` — a conservative approximation that hides labels a touch before they actually overflow), compares to the chosen segment's screen-space length at the current zoom, and skips creating the host polyline when the segment can't fit the text. A new `pathLabelEntries` registry tracks every label so a debounced `zoomend` listener can re-evaluate visibility as the user zooms in or out — labels reappear when the segment grows enough to fit them. Geographic and pixel-CRS maps both benefit. Reported by @doctorwodka.
