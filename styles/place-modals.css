@@ -58,6 +58,10 @@
 .crc-coord-inputs {
   display: flex;
   gap: 16px;
+  /* Force the X/Y settings to align on a shared vertical center so the
+     labels and inputs sit on the same baseline regardless of internal
+     setting-item layout differences. (#496) */
+  align-items: center;
 }
 
 .crc-coord-inputs .setting-item {

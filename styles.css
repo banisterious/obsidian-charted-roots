@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-04-27 12:48:44 UTC
+ * - Generated: 2026-04-28 22:32:43 UTC
  * - Components: 49 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -7662,7 +7662,7 @@ settings:
    COMPONENT: PLACE-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 1412 lines, 27.63 KB */
+/* Component Size: 1416 lines, 27.84 KB */
 
 /* ==========================================================================
    CREATE PLACE MODAL
@@ -7724,6 +7724,10 @@ settings:
 .crc-coord-inputs {
   display: flex;
   gap: 16px;
+  /* Force the X/Y settings to align on a shared vertical center so the
+     labels and inputs sit on the same baseline regardless of internal
+     setting-item layout differences. (#496) */
+  align-items: center;
 }
 
 .crc-coord-inputs .setting-item {
@@ -41362,11 +41366,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-04-27 12:48:44 UTC
+ * Build completed: 2026-04-28 22:32:44 UTC
  * Components processed: 49
- * Total lines: 40898
- * Total size: 826.04 KB
- * Build duration: 0.36 seconds
+ * Total lines: 40902
+ * Total size: 826.25 KB
+ * Build duration: 0.34 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -41376,7 +41380,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - settings.css: 131 lines, 3.53 KB
  * - control-center.css: 5747 lines, 107.88 KB
  * - entity-create-modals.css: 1236 lines, 25.51 KB
- * - place-modals.css: 1412 lines, 27.63 KB
+ * - place-modals.css: 1416 lines, 27.84 KB
  * - media-modals.css: 1987 lines, 38.41 KB
  * - import-export-wizard.css: 2187 lines, 41.74 KB
  * - staging-manager.css: 555 lines, 11.4 KB
