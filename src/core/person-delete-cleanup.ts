@@ -1,16 +1,25 @@
 /**
  * Person Delete Cleanup (#442)
  *
- * When a person note is deleted, Obsidian's wikilink-rewriting handles the
- * `father:` / `mother:` / `spouse:` / etc. wikilink fields on referencing
- * notes — but it does NOT touch the parallel `*_id` arrays that store
- * cr_ids as plain strings. This module scans all person notes and removes
- * the deleted person's cr_id from those `*_id` fields, restoring symmetry
- * with Obsidian's native wikilink cleanup.
+ * When a person note is deleted, this module sweeps two parallel sets of
+ * fields on referencing person notes:
+ *
+ * 1. `*_id` fields (e.g. `father_id`, `children_id`) — the canonical cr_id
+ *    arrays / scalars. Obsidian doesn't touch these because they're plain
+ *    strings, not wikilinks.
+ *
+ * 2. Wikilink fields (e.g. `father`, `children`) — the human-readable
+ *    `[[Person Name]]` arrays / scalars. The original 0.22.7 fix delegated
+ *    these to Obsidian's native wikilink cleanup, but Obsidian only rewrites
+ *    wikilinks on rename — on delete it leaves them in place as broken
+ *    placeholder links. Without this sweep the deleted name lingers in the
+ *    properties pane and a subsequent save can re-inject empty-string IDs
+ *    into the parallel `*_id` array (#478).
  *
  * Triggered from `metadataCache.on('deleted')` in main.ts; the previous
- * frontmatter cache is read to recover the deleted file's cr_id and to
- * gate cleanup to person notes only.
+ * frontmatter cache is read to recover the deleted file's cr_id, and the
+ * deleted file's basename is passed through so wikilink targets can be
+ * matched.
  */
 
 import type { App, TFile } from 'obsidian';
@@ -55,6 +64,61 @@ const POLYMORPHIC_PERSON_ID_FIELDS = ['spouse_id'] as const;
 const INDEXED_SPOUSE_ID_PATTERN = /^spouse\d+_id$/;
 
 /**
+ * Wikilink-bearing counterparts to the `*_id` field lists above. Each
+ * canonical name here mirrors a name in the corresponding `*_ID_FIELDS`
+ * constant with `_id` stripped, so the two sets stay in lockstep as new
+ * relationship types are added.
+ */
+const SCALAR_PERSON_WIKILINK_FIELDS = [
+	'father',
+	'mother',
+	'adoptive_father',
+	'adoptive_mother'
+] as const;
+
+const ARRAY_PERSON_WIKILINK_FIELDS = [
+	'parents',
+	'stepfather',
+	'stepmother',
+	'adoptive_parent',
+	'adopted_child',
+	'partners',
+	'children',
+	'step_child'
+] as const;
+
+const POLYMORPHIC_PERSON_WIKILINK_FIELDS = ['spouse'] as const;
+
+const INDEXED_SPOUSE_WIKILINK_PATTERN = /^spouse\d+$/;
+
+/**
+ * Extract the link target (basename, lowercased) from a wikilink string.
+ * Handles plain `[[Name]]`, path-prefixed `[[folder/Name]]`, display-aliased
+ * `[[Name|Alias]]`, heading refs `[[Name#Heading]]`, and block refs
+ * `[[Name^block-id]]`. Returns null when the value isn't a wikilink.
+ */
+function extractWikilinkBasename(value: unknown): string | null {
+	if (typeof value !== 'string') return null;
+	const match = value.match(/^\s*\[\[([^\]]+)\]\]\s*$/);
+	if (!match) return null;
+	let target = match[1].split('|')[0].split('#')[0].split('^')[0];
+	const lastSlash = target.lastIndexOf('/');
+	if (lastSlash >= 0) target = target.slice(lastSlash + 1);
+	if (target.endsWith('.md')) target = target.slice(0, -3);
+	return target.trim().toLowerCase();
+}
+
+/**
+ * Whether a frontmatter value is a wikilink that resolves to the deleted
+ * person's basename. Comparison is case-insensitive to match Obsidian's
+ * own wikilink resolution.
+ */
+function wikilinkMatchesBasename(value: unknown, deletedBasename: string): boolean {
+	const target = extractWikilinkBasename(value);
+	return target !== null && target === deletedBasename.toLowerCase();
+}
+
+/**
  * Resolve a canonical property name to its actual frontmatter key, honoring
  * the user's property aliases.
  */
@@ -88,7 +152,11 @@ export interface DeleteCleanupResult {
 
 /**
  * Plan the frontmatter mutations needed on a single note's frontmatter to
- * remove every reference to `deletedCrId` from the canonical *_id fields.
+ * remove every reference to a deleted person from the canonical relationship
+ * fields. The `*_id` sweep runs whenever `deletedCrId` is provided; the
+ * parallel wikilink-field sweep additionally runs when `deletedBasename` is
+ * provided (it's optional for backward compatibility with callers that only
+ * have the cr_id).
  *
  * Returns the list of mutations (one per affected field) without applying
  * them. Pure function over the frontmatter object so unit tests can fence
@@ -97,15 +165,26 @@ export interface DeleteCleanupResult {
 export function planFrontmatterCleanup(
 	fm: Record<string, unknown>,
 	deletedCrId: string,
-	aliases: Record<string, string> = {}
+	aliases: Record<string, string> = {},
+	deletedBasename?: string
 ): Array<{ field: string; before: unknown; after: unknown | undefined }> {
 	const mutations: Array<{ field: string; before: unknown; after: unknown | undefined }> = [];
 
-	const removeFromArray = (key: string, value: unknown): void => {
-		if (!Array.isArray(value)) return;
-		const filtered = value.filter(v => v !== deletedCrId);
-		if (filtered.length !== value.length) {
-			mutations.push({ field: key, before: value, after: filtered });
+	// All relationship-array fields are de-facto polymorphic: YAML serializers
+	// (and the plugin's own writer) emit a scalar string when the array has a
+	// single element and an array when it has more. Treating these as
+	// array-only would miss the very common single-relationship case
+	// (e.g. `children_id: "qoq-993-gnz-860"` for an only child). So we accept
+	// both shapes everywhere — array-form filters in place, scalar-form clears
+	// the key entirely if it matches.
+	const removeFromArrayOrScalar = (key: string, value: unknown): void => {
+		if (Array.isArray(value)) {
+			const filtered = value.filter(v => v !== deletedCrId);
+			if (filtered.length !== value.length) {
+				mutations.push({ field: key, before: value, after: filtered });
+			}
+		} else if (typeof value === 'string' && value === deletedCrId) {
+			mutations.push({ field: key, before: value, after: undefined });
 		}
 	};
 
@@ -124,17 +203,12 @@ export function planFrontmatterCleanup(
 
 	for (const canonical of ARRAY_PERSON_ID_FIELDS) {
 		const key = resolveWriteProperty(canonical, aliases);
-		removeFromArray(key, fm[key]);
+		removeFromArrayOrScalar(key, fm[key]);
 	}
 
 	for (const canonical of POLYMORPHIC_PERSON_ID_FIELDS) {
 		const key = resolveWriteProperty(canonical, aliases);
-		const value = fm[key];
-		if (Array.isArray(value)) {
-			removeFromArray(key, value);
-		} else {
-			clearIfMatchScalar(key, value);
-		}
+		removeFromArrayOrScalar(key, fm[key]);
 	}
 
 	// Indexed spouse slots — `spouse1_id`, `spouse2_id`, ... — match by pattern
@@ -144,20 +218,72 @@ export function planFrontmatterCleanup(
 		clearIfMatchScalar(key, fm[key]);
 	}
 
+	// Parallel wikilink sweep (#442 follow-up). Obsidian leaves broken
+	// `[[deleted]]` links in frontmatter on delete, so we sweep the
+	// wikilink-bearing relationship fields the same way we sweep their
+	// `*_id` counterparts. Gated on basename so callers that only have
+	// the cr_id (legacy / tests) still work.
+	if (deletedBasename) {
+		// Same scalar-or-array polymorphism as the `_id` sweep above. The
+		// plugin's writer serializes single-relationship wikilinks as scalars
+		// (`children: "[[Sirkkel Yelar]]"`) rather than single-element arrays,
+		// so handling array-only would miss every only-child / only-step-child
+		// case.
+		const removeWikilinkFromArrayOrScalar = (key: string, value: unknown): void => {
+			if (Array.isArray(value)) {
+				const filtered = value.filter(v => !wikilinkMatchesBasename(v, deletedBasename));
+				if (filtered.length !== value.length) {
+					mutations.push({ field: key, before: value, after: filtered });
+				}
+			} else if (wikilinkMatchesBasename(value, deletedBasename)) {
+				mutations.push({ field: key, before: value, after: undefined });
+			}
+		};
+
+		const clearIfMatchScalarWikilink = (key: string, value: unknown): void => {
+			if (wikilinkMatchesBasename(value, deletedBasename)) {
+				mutations.push({ field: key, before: value, after: undefined });
+			}
+		};
+
+		for (const canonical of SCALAR_PERSON_WIKILINK_FIELDS) {
+			const key = resolveWriteProperty(canonical, aliases);
+			clearIfMatchScalarWikilink(key, fm[key]);
+		}
+
+		for (const canonical of ARRAY_PERSON_WIKILINK_FIELDS) {
+			const key = resolveWriteProperty(canonical, aliases);
+			removeWikilinkFromArrayOrScalar(key, fm[key]);
+		}
+
+		for (const canonical of POLYMORPHIC_PERSON_WIKILINK_FIELDS) {
+			const key = resolveWriteProperty(canonical, aliases);
+			removeWikilinkFromArrayOrScalar(key, fm[key]);
+		}
+
+		for (const key of Object.keys(fm)) {
+			if (!INDEXED_SPOUSE_WIKILINK_PATTERN.test(key)) continue;
+			clearIfMatchScalarWikilink(key, fm[key]);
+		}
+	}
+
 	return mutations;
 }
 
 /**
  * Walk every markdown file in the vault, identify person notes, and remove
- * `deletedCrId` from all relevant `*_id` fields. Returns counts and the
- * per-file mutation log.
+ * references to the deleted person from all relevant `*_id` fields and
+ * (when `deletedBasename` is provided) parallel wikilink fields. Returns
+ * counts and the per-file mutation log.
  *
- * Uses `app.fileManager.processFrontMatter` for safe YAML round-trip.
+ * Uses `app.fileManager.processFrontMatter` for safe YAML round-trip on
+ * each affected file.
  */
 export async function cleanupPersonReferencesAfterDelete(
 	app: App,
 	deletedCrId: string,
-	aliases: Record<string, string> = {}
+	aliases: Record<string, string> = {},
+	deletedBasename?: string
 ): Promise<DeleteCleanupResult> {
 	const result: DeleteCleanupResult = { filesUpdated: 0, changes: [] };
 
@@ -174,7 +300,7 @@ export async function cleanupPersonReferencesAfterDelete(
 		const fm = cache?.frontmatter as Record<string, unknown> | undefined;
 		if (!fm) continue;
 
-		const mutations = planFrontmatterCleanup(fm, deletedCrId, aliases);
+		const mutations = planFrontmatterCleanup(fm, deletedCrId, aliases, deletedBasename);
 		if (mutations.length === 0) continue;
 
 		await app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {

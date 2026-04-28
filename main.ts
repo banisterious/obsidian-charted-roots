@@ -822,7 +822,7 @@ export default class CanvasRootsPlugin extends Plugin {
 			if (!deletedCrId) return;
 
 			const aliases = this.settings.propertyAliases || {};
-			void cleanupPersonReferencesAfterDelete(this.app, deletedCrId, aliases)
+			void cleanupPersonReferencesAfterDelete(this.app, deletedCrId, aliases, file.basename)
 				.then(result => {
 					if (result.filesUpdated > 0) {
 						logger.info('person-delete-cleanup',
