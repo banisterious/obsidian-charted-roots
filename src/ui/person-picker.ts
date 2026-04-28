@@ -1,6 +1,10 @@
 import { App, Modal, TFile } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 import { FamilyGraphService, PersonNode } from '../core/family-graph';
+import {
+	mergeFamilyComponentsByCollectionName,
+	type FamilyComponent
+} from '../core/family-component-merge';
 import { FolderFilterService } from '../core/folder-filter';
 import { isPersonNote } from '../utils/note-type-detection';
 import { formatPronouns } from '../utils/format-utils';
@@ -82,6 +86,7 @@ interface FilterOptions {
 	sex: 'all' | 'M' | 'F';
 }
 
+
 /**
  * Options for customizing the person picker modal
  */
@@ -123,7 +128,7 @@ export class PersonPickerModal extends Modal {
 		hasBirthDate: 'all',
 		sex: 'all'
 	};
-	private familyComponents: Array<{ representative: PersonNode; size: number; people: PersonNode[] }> = [];
+	private familyComponents: FamilyComponent[] = [];
 	private componentMap: Map<string, number> = new Map(); // Maps cr_id to component index
 	private activeComponentIndex: number | null = null; // null = show all, number = show specific component
 	private tabsContainer?: HTMLElement;
@@ -283,7 +288,12 @@ export class PersonPickerModal extends Modal {
 					graphService.setFolderFilter(this.folderFilter);
 				}
 			}
-			this.familyComponents = graphService.findAllFamilyComponents();
+			// Merge components that share a `collectionName` so user-named
+			// groups spanning unrelated characters appear as a single tab
+			// rather than N "Family X" entries (#491).
+			this.familyComponents = mergeFamilyComponentsByCollectionName(
+				graphService.findAllFamilyComponents()
+			);
 
 			// Build component map (cr_id -> component index)
 			this.componentMap.clear();
@@ -636,7 +646,10 @@ export class PersonPickerModal extends Modal {
 			}
 
 			const tabLabel = tab.createSpan({ cls: 'crc-picker-sidebar-tab__label' });
-			tabLabel.setText(`Family ${index + 1}`);
+			// Use the user's collection name when every member shares one
+			// (or when the merge step combined multiple components under a
+			// shared name). Falls back to the generic ordinal label otherwise. (#491)
+			tabLabel.setText(component.collectionName ?? `Family ${index + 1}`);
 
 			const tabBadge = tab.createSpan({ cls: 'crc-picker-sidebar-tab__badge' });
 			tabBadge.setText(component.size.toString());
