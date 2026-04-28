@@ -33,6 +33,14 @@ const logger = getLogger('MapView');
 export const VIEW_TYPE_MAP = 'canvas-roots-map';
 
 /**
+ * Time (ms) reserved for the camera fly-to animation between journey waypoints,
+ * after which the rich popup is opened. The total step interval during playback
+ * is `JOURNEY_FLY_MS + journeyMode.dwellMs` so the user always gets the full
+ * configured dwell time to read the popup before the next step fires (#486).
+ */
+const JOURNEY_FLY_MS = 1100;
+
+/**
  * View state that gets persisted
  */
 interface MapViewState {
@@ -105,7 +113,8 @@ export class MapView extends ItemView {
 		personName: string | null;
 		currentStep: number;
 		isPlaying: boolean;
-		speed: number;
+		/** How long the rich popup stays visible per step before the next step fires (#486). */
+		dwellMs: number;
 		familyOverlay: boolean;
 	} = {
 		enabled: false,
@@ -113,7 +122,7 @@ export class MapView extends ItemView {
 		personName: null,
 		currentStep: 0,
 		isPlaying: false,
-		speed: 2000,
+		dwellMs: 4000,
 		familyOverlay: false
 	};
 	private journeyPlaybackInterval: number | null = null;
@@ -1628,18 +1637,23 @@ export class MapView extends ItemView {
 		const counterEl = this.journeyControlsEl.createSpan({ cls: 'cr-map-journey-counter' });
 		counterEl.dataset.id = 'journey-counter';
 
-		// Speed selector
-		const speedBtn = this.journeyControlsEl.createEl('button', {
+		// Dwell-time selector. Class name preserved for CSS continuity even
+		// though the semantics flipped from "step-duration speed" to
+		// "popup-dwell time" in #486.
+		const dwellLevels = [2000, 4000, 6000, 10000];
+		const dwellLabels = ['2s', '4s', '6s', '10s'];
+		const currentDwellIdx = Math.max(0, dwellLevels.indexOf(this.journeyMode.dwellMs));
+		const dwellBtn = this.journeyControlsEl.createEl('button', {
 			cls: 'cr-map-journey-speed',
-			text: '1x'
+			text: dwellLabels[currentDwellIdx]
 		});
-		speedBtn.addEventListener('click', () => {
-			const speeds = [500, 1000, 2000, 3000, 5000];
-			const labels = ['0.25x', '0.5x', '1x', '1.5x', '2.5x'];
-			const currentIdx = speeds.indexOf(this.journeyMode.speed);
-			const nextIdx = (currentIdx + 1) % speeds.length;
-			this.journeyMode.speed = speeds[nextIdx];
-			speedBtn.textContent = labels[nextIdx];
+		dwellBtn.setAttribute('aria-label', 'Popup dwell time per step');
+		dwellBtn.setAttribute('title', 'Popup dwell time per step (click to cycle)');
+		dwellBtn.addEventListener('click', () => {
+			const idx = dwellLevels.indexOf(this.journeyMode.dwellMs);
+			const nextIdx = (idx + 1) % dwellLevels.length;
+			this.journeyMode.dwellMs = dwellLevels[nextIdx];
+			dwellBtn.textContent = dwellLabels[nextIdx];
 		});
 
 		// Show initial state
@@ -1699,6 +1713,8 @@ export class MapView extends ItemView {
 			this.journeyMode.isPlaying = true;
 			setIcon(btn, 'pause');
 
+			// Total step interval = fly time + configured dwell, so the user always
+			// gets the full dwell to read the popup regardless of fly duration (#486).
 			this.journeyPlaybackInterval = window.setInterval(() => {
 				const nextStep = this.journeyMode.currentStep + 1;
 				if (nextStep >= waypoints.length) {
@@ -1709,7 +1725,7 @@ export class MapView extends ItemView {
 				}
 				this.updateJourneyDisplay(waypoints);
 				this.panToWaypoint(waypoints[this.journeyMode.currentStep], waypoints, journey);
-			}, this.journeyMode.speed);
+			}, JOURNEY_FLY_MS + this.journeyMode.dwellMs);
 		}
 	}
 
@@ -1790,7 +1806,7 @@ export class MapView extends ItemView {
 					.setLatLng(target!)
 					.setContent(popupContent)
 					.openOn(map);
-			}, 1100);
+			}, JOURNEY_FLY_MS);
 		}
 	}
 
