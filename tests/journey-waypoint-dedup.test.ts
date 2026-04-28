@@ -77,6 +77,47 @@ describe('journeyWaypointDedupKey (#448)', () => {
 		});
 	});
 
+	describe('event-type differentiation (#487)', () => {
+		it('keeps death and custom event distinct when they share a place', () => {
+			// #487 — When a custom event without a date sat at the same place
+			// as the death (sorted to the end of life events, immediately before
+			// death which always sorts last), the place-only dedup collapsed
+			// them onto a single waypoint, silently dropping the death popup.
+			const customEventAtTatooine = { placeId: 'place-tatooine', eventType: 'custom' };
+			const deathAtTatooine = { placeId: 'place-tatooine', eventType: 'death' };
+			expect(journeyWaypointDedupKey(customEventAtTatooine))
+				.not.toBe(journeyWaypointDedupKey(deathAtTatooine));
+		});
+
+		it('still collapses two same-type events at the same place (preserves #448 intent)', () => {
+			// Three residences at the same address should still produce one
+			// waypoint, not three. The dedup is intended to suppress trivial
+			// repetition; only cross-event-type collisions need to be split.
+			const residenceA = { placeId: 'place-smith-st', eventType: 'residence' };
+			const residenceB = { placeId: 'place-smith-st', eventType: 'residence' };
+			expect(journeyWaypointDedupKey(residenceA))
+				.toBe(journeyWaypointDedupKey(residenceB));
+		});
+
+		it('treats undefined eventType consistently across both sides', () => {
+			// Older callers may pass waypoints without eventType; the function
+			// must remain self-consistent for those cases.
+			const a = { placeId: 'place-x' };
+			const b = { placeId: 'place-x' };
+			expect(journeyWaypointDedupKey(a)).toBe(journeyWaypointDedupKey(b));
+		});
+
+		it('distinguishes an undated custom event from a death at the same coord-fallback place', () => {
+			// Same scenario as the Cliegg case but on a coord-fallback path
+			// (no placeId). Both keys share the coord composite; only event
+			// type differentiates them.
+			const customAtCoord = { lat: 0, lng: 0, pixelX: 1700, pixelY: 1500, eventType: 'custom' };
+			const deathAtCoord = { lat: 0, lng: 0, pixelX: 1700, pixelY: 1500, eventType: 'death' };
+			expect(journeyWaypointDedupKey(customAtCoord))
+				.not.toBe(journeyWaypointDedupKey(deathAtCoord));
+		});
+	});
+
 	describe('regression: prevents the original lat/lng-only collapse', () => {
 		it('Cliegg Lars\'s 5-place pixel-coord journey produces 5 distinct keys', () => {
 			// The actual reproduction shape from #434 / #448. All five places

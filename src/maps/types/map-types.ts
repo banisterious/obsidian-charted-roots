@@ -720,19 +720,24 @@ export function formatPopupDateRange(date: string | undefined, dateTo: string | 
  * `lat` and `lng` to `0`), preventing journey paths from ever building on
  * custom image maps.
  *
- * Order of preference:
+ * The key is composed of place + event type. Place keying preference:
  *   1. `placeId` — most durable, immune to coordinate drift on the place note.
  *   2. A composite of both coord systems — `lat,lng|pixelX,pixelY` — so
  *      neither system collides with another place that happens to have the
  *      other system's defaults at zero.
+ *
+ * Event type is folded into the key so that distinct event types at the same
+ * place produce distinct waypoints (#487). Without this, a death and a custom
+ * event at the same location collapsed onto a single waypoint — silently
+ * dropping the death popup whenever a custom event sorted ahead of it. Same-
+ * place-same-type still collapses (multiple residences at one address remain
+ * a single waypoint), preserving the original #448 dedup behavior.
  */
-export function journeyWaypointDedupKey(waypoint: { placeId?: string; lat?: number; lng?: number; pixelX?: number; pixelY?: number }): string {
-	if (waypoint.placeId) return `id:${waypoint.placeId}`;
-	const lat = waypoint.lat ?? '';
-	const lng = waypoint.lng ?? '';
-	const pixelX = waypoint.pixelX ?? '';
-	const pixelY = waypoint.pixelY ?? '';
-	return `coords:${lat},${lng}|${pixelX},${pixelY}`;
+export function journeyWaypointDedupKey(waypoint: { placeId?: string; lat?: number; lng?: number; pixelX?: number; pixelY?: number; eventType?: string }): string {
+	const place = waypoint.placeId
+		? `id:${waypoint.placeId}`
+		: `coords:${waypoint.lat ?? ''},${waypoint.lng ?? ''}|${waypoint.pixelX ?? ''},${waypoint.pixelY ?? ''}`;
+	return `${place}|type:${waypoint.eventType ?? ''}`;
 }
 
 /**
