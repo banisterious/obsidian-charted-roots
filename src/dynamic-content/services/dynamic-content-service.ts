@@ -422,12 +422,18 @@ export class DynamicContentService {
 			return `-${parseInt(negativeIsoMatch[1], 10)}`;
 		}
 
-		// Generic standalone negative number (e.g., "DE -5740", "Year -5740"):
-		// digits preceded by a standalone minus sign that isn't part of an ISO
-		// date separator like "1942-08-15". The `(?:^|[^0-9])` disambiguator
-		// ensures we don't match the hyphen between year and month in ISO
-		// dates (where the hyphen is preceded by a digit). (#476)
-		const negativeStandaloneMatch = value.match(/(?:^|[^0-9])-(\d+)\b/);
+		// Generic standalone negative number (e.g., "DE -5740", "Year -5740",
+		// "DE -5740ish"): digits preceded by a standalone minus sign that
+		// isn't part of an ISO date separator like "1942-08-15". The leading
+		// `(?:^|[^0-9])` disambiguator ensures we don't match the hyphen
+		// between year and month in ISO dates (where the hyphen is preceded
+		// by a digit). The trailing lookahead `(?=$|[^0-9])` ensures the
+		// digits end at a non-digit (or end of string) — using `\b` here
+		// would fail when the user appends a letter suffix like "ish",
+		// because both the trailing digit and the leading suffix letter are
+		// word chars and no word boundary fires between them. (#476;
+		// #476 follow-up extends to suffixed forms.)
+		const negativeStandaloneMatch = value.match(/(?:^|[^0-9])-(\d+)(?=$|[^0-9])/);
 		if (negativeStandaloneMatch) {
 			return `-${negativeStandaloneMatch[1]}`;
 		}

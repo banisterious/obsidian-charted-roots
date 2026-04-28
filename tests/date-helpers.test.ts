@@ -81,6 +81,26 @@ describe('extractYear', () => {
 		it('compound word with hyphen between digit and word is not negative', () => {
 			expect(svc.extractYear('5-year-old')).toBe('5');
 		});
+
+		// #476 follow-up: doctorwodka's verification on 0.22.10 showed that the
+		// standalone-negative regex's trailing `\b` failed when the user appended
+		// a letter suffix like "ish" — both the trailing digit and the suffix
+		// letter are word chars, so no word boundary fires between them. Switched
+		// to a `(?=$|[^0-9])` lookahead so the digits can end against any
+		// non-digit (or end of string) without requiring a true word boundary.
+		it('preserves negative sign when digits are followed by a letter suffix (e.g., "ish")', () => {
+			expect(svc.extractYear('DE -5740ish')).toBe('-5740');
+		});
+
+		it('preserves negative sign when followed by punctuation', () => {
+			expect(svc.extractYear('DE -5740.')).toBe('-5740');
+		});
+
+		it('does not over-match when negative digits are immediately followed by more digits', () => {
+			// "DE -57402" should match `-57402` as a single number (the `\d+` is
+			// greedy), NOT split into `-5740` + `2`.
+			expect(svc.extractYear('DE -57402')).toBe('-57402');
+		});
 	});
 
 	describe('empty-ish inputs', () => {

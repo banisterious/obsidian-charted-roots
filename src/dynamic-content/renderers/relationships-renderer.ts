@@ -247,8 +247,8 @@ export class RelationshipsRenderer {
 
 		// Add dates if available
 		if (person.birthDate || person.deathDate) {
-			const birth = person.birthDate ? this.extractYear(person.birthDate) : '?';
-			const death = person.deathDate ? this.extractYear(person.deathDate) : '';
+			const birth = person.birthDate ? this.service.extractYear(person.birthDate) : '?';
+			const death = person.deathDate ? this.service.extractYear(person.deathDate) : '';
 			entry.dates = death ? `(${birth}–${death})` : `(b. ${birth})`;
 		}
 
@@ -258,14 +258,6 @@ export class RelationshipsRenderer {
 		}
 
 		return entry;
-	}
-
-	/**
-	 * Extract year from a date string
-	 */
-	private extractYear(dateStr: string): string {
-		const yearMatch = dateStr.match(/\b(\d{4})\b/);
-		return yearMatch ? yearMatch[1] : dateStr;
 	}
 
 	/**
