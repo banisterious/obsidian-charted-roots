@@ -2623,6 +2623,7 @@ export class MapView extends ItemView {
 			journeyPathColor: '#8b5cf6', // violet
 			journeyPathWeight: 2,
 			showJourneyLabels: true,
+			pathLabelStroke: this.plugin.settings.pathLabelStroke || 'none',
 			// Heat map settings
 			heatMapBlur: 15,
 			heatMapRadius: 25,

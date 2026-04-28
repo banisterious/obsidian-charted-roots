@@ -315,6 +315,8 @@ export interface CanvasRootsSettings {
 		medium: { radius: number; blur: number; opacity: number };
 		high: { radius: number; blur: number; opacity: number };
 	};
+	/** Outline color around map path labels for legibility on colorful or dark backgrounds */
+	pathLabelStroke: 'none' | 'white' | 'black';
 	// Custom relationship types
 	customRelationshipTypes: RelationshipTypeDefinition[];
 	showBuiltInRelationshipTypes: boolean;
@@ -767,6 +769,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 		medium: { radius: 0.7, blur: 1.0, opacity: 0.12 },
 		high: { radius: 0.9, blur: 0.7, opacity: 0.18 },
 	},
+	pathLabelStroke: 'none' as const,        // Map path label outline (none / white / black)
 	// Custom relationship types
 	customRelationshipTypes: [],   // User-defined relationship types (built-ins are always available)
 	showBuiltInRelationshipTypes: true,  // Whether to show built-in types in UI
@@ -1668,6 +1671,20 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 						}
 					}));
 		}
+
+		// Map path label outline (#483)
+		new Setting(placesContent)
+			.setName('Map path label outline')
+			.setDesc('Add a contrasting outline around path labels for legibility on colorful or dark backgrounds.')
+			.addDropdown(dropdown => dropdown
+				.addOption('none', 'None')
+				.addOption('white', 'White outline')
+				.addOption('black', 'Black outline')
+				.setValue(this.plugin.settings.pathLabelStroke)
+				.onChange(async (value) => {
+					this.plugin.settings.pathLabelStroke = value as 'none' | 'white' | 'black';
+					await this.plugin.saveSettings();
+				}));
 
 		// Info note about place lookup
 		const lookupNote = placesContent.createDiv({ cls: 'cr-info-box cr-info-box--muted' });

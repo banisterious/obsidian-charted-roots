@@ -845,10 +845,22 @@ export class MapController {
 		attributes: Record<string, string>,
 		layer: L.LayerGroup
 	): void {
+		// Apply contrasting outline for legibility on colorful / dark backgrounds (#483).
+		// `paint-order: stroke fill` paints the stroke behind the fill so the outline
+		// surrounds the glyph instead of fattening it from the inside.
+		const finalAttributes = { ...attributes };
+		const stroke = this.settings.pathLabelStroke;
+		if (stroke && stroke !== 'none') {
+			finalAttributes['paint-order'] = 'stroke fill';
+			finalAttributes['stroke'] = stroke;
+			finalAttributes['stroke-width'] = '2';
+			finalAttributes['stroke-linejoin'] = 'round';
+		}
+
 		const entry = {
 			sourcePolyline,
 			text,
-			attributes,
+			attributes: finalAttributes,
 			layer,
 			host: null as L.Polyline | null
 		};

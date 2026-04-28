@@ -597,6 +597,8 @@ export interface MapSettings {
 	journeyPathWeight: number;
 	/** Show person name labels on journey paths */
 	showJourneyLabels: boolean;
+	/** Outline color around path labels for legibility on colorful or dark backgrounds (#483) */
+	pathLabelStroke: 'none' | 'white' | 'black';
 
 	/** Heat map blur radius */
 	heatMapBlur: number;
@@ -654,6 +656,7 @@ export const DEFAULT_MAP_SETTINGS: MapSettings = {
 	journeyPathColor: '#8b5cf6',  // violet (distinct from migration paths)
 	journeyPathWeight: 2,
 	showJourneyLabels: true,
+	pathLabelStroke: 'none',
 	heatMapBlur: 15,
 	heatMapRadius: 25,
 	heatMapIntensity: 'medium' as const,

@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Added
+
+- **Map path label outline setting for legibility on colorful or dark backgrounds** ([#483](https://github.com/banisterious/obsidian-charted-roots/issues/483)): Path labels (person names rendered along migration and journey paths) previously rendered with no contrasting outline, making them hard to read on busy fictional or colorful image-map backgrounds. Adds a new dropdown setting in the Places section: `Map path label outline` with three options — `None` (default, preserves existing behavior), `White outline`, `Black outline`. When enabled, each label's SVG `<text>` element gains `paint-order: stroke fill` plus a 2px stroke in the chosen color, producing a halo effect around the glyphs without changing the path color itself. Applies uniformly to migration paths and journey paths via the shared `addPathLabel` helper. Reported by @doctorwodka.
+
 ### Changed
 
 - **Journey playback preserves the user's zoom level between steps.** Each step previously called `flyTo(target, 12, { duration: 1 })` — a hardcoded zoom level that yanked the camera down to zoom 12 on every step regardless of how the user had framed the journey. On a wide journey (e.g. continental), this produced a jolting zoom-in between each waypoint. The step now passes `map.getZoom()` instead, so the user's framing — set by `fitBounds` on entry to journey mode and adjustable via manual zoom mid-playback — is respected throughout playback.
