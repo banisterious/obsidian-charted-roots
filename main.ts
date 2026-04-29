@@ -35,6 +35,7 @@ import { MediaService } from './src/core/media-service';
 import { MigrationNoticeView, VIEW_TYPE_MIGRATION_NOTICE } from './src/ui/views/migration-notice-view';
 import { ProfileView, VIEW_TYPE_ENTITY_PROFILE } from './src/profile-view/profile-view';
 import { WebClipperService } from './src/core/web-clipper-service';
+import { UniverseService } from './src/universes/services/universe-service';
 import { PluginRenameMigrationService, showMigrationNotice } from './src/migration/plugin-rename-migration-service';
 
 import { registerContextMenus } from './src/plugin/context-menus';
@@ -90,6 +91,7 @@ export default class CanvasRootsPlugin extends Plugin {
 	settings: CanvasRootsSettings;
 	private fileModifyEventRef: EventRef | null = null;
 	private fileDeleteEventRef: EventRef | null = null;
+	private universeRenameEventRef: EventRef | null = null;
 	public bidirectionalLinker: BidirectionalLinker | null = null;
 	private relationshipHistory: RelationshipHistoryService | null = null;
 	private folderFilter: FolderFilterService | null = null;
@@ -388,6 +390,11 @@ export default class CanvasRootsPlugin extends Plugin {
 		// Register file delete handler so deleted persons' cr_ids are removed
 		// from referencing notes' relationship `*_id` arrays (#442).
 		this.registerFileDeleteHandler();
+
+		// Register Universe-note rename handler so `universe:` references on
+		// people / places / events / organizations cascade when a Universe
+		// note is renamed (#488 Part 2).
+		this.registerUniverseRenameHandler();
 
 		// Initialize bidirectional relationship snapshots
 		// This enables deletion detection from the first edit after plugin load
@@ -840,6 +847,64 @@ export default class CanvasRootsPlugin extends Plugin {
 		this.registerEvent(this.fileDeleteEventRef);
 	}
 
+	/**
+	 * Register a vault `rename` handler that cascades Universe-note rename
+	 * across `universe:` references on people / places / events / organizations
+	 * (#488 Part 2). Obsidian's native wikilink rewrite handles `[[Name]]`
+	 * references automatically; this handler covers the plain-string case
+	 * that the wikilink rewrite doesn't touch.
+	 */
+	registerUniverseRenameHandler() {
+		if (this.universeRenameEventRef) {
+			this.app.vault.offref(this.universeRenameEventRef);
+			this.universeRenameEventRef = null;
+		}
+
+		this.universeRenameEventRef = this.app.vault.on('rename', async (file, oldPath) => {
+			if (this._syncDisabled) return;
+			if (!(file instanceof TFile) || file.extension !== 'md') return;
+
+			const oldBasename = oldPath.split('/').pop()?.replace(/\.md$/, '') ?? '';
+			const newBasename = file.basename;
+			if (!oldBasename || oldBasename === newBasename) return;
+
+			// The metadata cache is mid-update during the rename event so
+			// `getFileCache` returns null, and `metadataCache.on('changed')`
+			// doesn't fire for content-unchanged renames either. Read the
+			// file directly to detect `cr_type` — `cachedRead` serves the
+			// in-memory copy without round-tripping the cache (#488 Part 2).
+			let crType: string | undefined;
+			try {
+				const content = await this.app.vault.cachedRead(file);
+				const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+				if (fmMatch) {
+					const typeMatch = fmMatch[1].match(/^cr_type:\s*["']?([^"'\s]+)/m);
+					crType = typeMatch?.[1];
+				}
+			} catch (error) {
+				logger.warn('universe-rename-cascade',
+					'Failed to read renamed file', { path: file.path, error: getErrorMessage(error) });
+				return;
+			}
+			if (crType !== 'universe') return;
+
+			const universeService = new UniverseService(this);
+			void universeService.cascadeUniverseRename(oldBasename, newBasename)
+				.then(updateCount => {
+					if (updateCount > 0) {
+						new Notice(`Updated universe references on ${updateCount} note${updateCount === 1 ? '' : 's'}`);
+					}
+				})
+				.catch(error => {
+					logger.error('universe-rename-cascade',
+						'Failed to cascade Universe rename across referencing notes',
+						{ oldBasename, newBasename, error: getErrorMessage(error) });
+				});
+		});
+
+		this.registerEvent(this.universeRenameEventRef);
+	}
+
 	onunload() {
 		console.debug('Unloading Charted Roots plugin');
 
@@ -849,6 +914,9 @@ export default class CanvasRootsPlugin extends Plugin {
 		}
 		if (this.fileDeleteEventRef) {
 			this.app.metadataCache.offref(this.fileDeleteEventRef);
+		}
+		if (this.universeRenameEventRef) {
+			this.app.vault.offref(this.universeRenameEventRef);
 		}
 
 		// Cleanup PersonIndexService

@@ -131,6 +131,73 @@ export class UniverseService {
 	}
 
 	/**
+	 * Cascade a Universe note's rename across referencing entity notes (#488 Part 2).
+	 *
+	 * When a Universe note's basename changes (e.g. `Star Wars` → `Star Wars (AU)`),
+	 * `universe:` frontmatter fields on people / places / events / organizations
+	 * that referenced the old basename as a plain string are still pointing at
+	 * the old name and won't resolve. This method sweeps those references and
+	 * rewrites them to the new basename.
+	 *
+	 * Scope:
+	 * - Only updates plain-string `universe:` values that match `oldBasename`
+	 *   exactly (case-sensitive). Wikilink-syntax values (`[[Old Name]]`) are
+	 *   left alone because Obsidian's native wikilink-rewrite handles those on
+	 *   rename. cr_id-based or slug-based references are stable identifiers
+	 *   that don't track the basename and shouldn't be touched.
+	 * - Touches notes with `cr_type` of person, place, event, or organization.
+	 *
+	 * Returns the number of files updated. Caller is responsible for any UI
+	 * surfacing (e.g. a `Notice`) and for re-loading the universe cache so the
+	 * dropdown picks up the new state.
+	 */
+	async cascadeUniverseRename(oldBasename: string, newBasename: string): Promise<number> {
+		const REFERENCING_TYPES: ReadonlyArray<string> = [
+			'person', 'place', 'event', 'organization'
+		];
+		let updateCount = 0;
+
+		for (const file of this.app.vault.getMarkdownFiles()) {
+			const cache = this.app.metadataCache.getFileCache(file);
+			if (!cache?.frontmatter) continue;
+
+			const crType = cache.frontmatter.cr_type;
+			if (typeof crType !== 'string' || !REFERENCING_TYPES.includes(crType)) continue;
+
+			const universe = cache.frontmatter.universe;
+			if (typeof universe !== 'string') continue;
+			if (universe !== oldBasename) continue;
+
+			try {
+				await this.app.fileManager.processFrontMatter(file, (fm) => {
+					fm.universe = newBasename;
+				});
+				updateCount++;
+			} catch (error) {
+				logger.error('cascadeUniverseRename', 'Failed to update universe reference', {
+					file: file.path,
+					oldBasename,
+					newBasename,
+					error
+				});
+			}
+		}
+
+		if (updateCount > 0) {
+			// Bust the cache so the dropdown and other consumers pick up the
+			// new state. The renamed Universe note's own cache entry is
+			// invalidated by Obsidian's rename event; this reload also brings
+			// the referencing-note view back in sync.
+			this.reloadCache();
+			logger.info('cascadeUniverseRename',
+				`Updated universe references on ${updateCount} note(s)`,
+				{ oldBasename, newBasename, updateCount });
+		}
+
+		return updateCount;
+	}
+
+	/**
 	 * Validate a universe reference
 	 * Returns validation result with universe info or suggestions for near-matches
 	 */
