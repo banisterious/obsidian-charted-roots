@@ -27,6 +27,7 @@ import type {
 	JourneyPath,
 	JourneyWaypoint
 } from './types/map-types';
+import { getJourneyWaypointEventLabel } from './types/map-types';
 
 const logger = getLogger('MapView');
 
@@ -1748,7 +1749,7 @@ export class MapView extends ItemView {
 		// Label
 		const label = this.journeyControlsEl.querySelector('[data-id="journey-label"]') as HTMLElement;
 		if (label) {
-			const eventType = waypoint.eventType || 'Event';
+			const eventType = getJourneyWaypointEventLabel(waypoint) || 'Event';
 			const place = waypoint.name || '';
 			label.textContent = place ? `${eventType} in ${place}` : eventType;
 		}
@@ -1823,7 +1824,7 @@ export class MapView extends ItemView {
 
 		// Header with event type
 		const header = container.createDiv({ cls: 'cr-journey-rich-popup__header' });
-		const eventLabel = capitalize(waypoint.eventType);
+		const eventLabel = capitalize(getJourneyWaypointEventLabel(waypoint));
 		header.createSpan({ text: eventLabel, cls: 'cr-journey-rich-popup__type' });
 
 		if (allWaypoints) {

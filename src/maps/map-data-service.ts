@@ -951,7 +951,8 @@ export class MapDataService {
 								year,
 								dateTo: event.date_to !== undefined ? String(event.date_to) : undefined,
 								yearTo,
-								description: event.description
+								description: event.description,
+								customLabel: event.customLabel
 							});
 							if (!pathUniverse) pathUniverse = place.universe;
 						}

@@ -216,6 +216,13 @@ export interface JourneyWaypoint {
 	yearTo?: number;
 	/** Description of the event */
 	description?: string;
+	/**
+	 * Display label preserved when the raw event type doesn't match a built-in
+	 * `MarkerType` and gets resolved to `custom`. Lets the popup header and the
+	 * journey-control label render the original type (e.g., `Backstory`) instead
+	 * of the generic `Custom` (#499; sibling to the marker-side fix in #466).
+	 */
+	customLabel?: string;
 }
 
 /**
@@ -738,6 +745,22 @@ export function journeyWaypointDedupKey(waypoint: { placeId?: string; lat?: numb
 		? `id:${waypoint.placeId}`
 		: `coords:${waypoint.lat ?? ''},${waypoint.lng ?? ''}|${waypoint.pixelX ?? ''},${waypoint.pixelY ?? ''}`;
 	return `${place}|type:${waypoint.eventType ?? ''}`;
+}
+
+/**
+ * Resolve the display label for a journey waypoint's event type. Custom
+ * waypoints with a preserved `customLabel` (e.g., `Backstory`) render that
+ * label rather than the generic `Custom` fallback. Built-in waypoint types
+ * always use the canonical `eventType`. (#499; sibling to #466's marker-side
+ * fix.)
+ */
+export function getJourneyWaypointEventLabel(
+	waypoint: Pick<JourneyWaypoint, 'eventType' | 'customLabel'>
+): string {
+	if (waypoint.eventType === 'custom' && waypoint.customLabel) {
+		return waypoint.customLabel;
+	}
+	return waypoint.eventType;
 }
 
 /**
