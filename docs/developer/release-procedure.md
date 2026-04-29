@@ -1,6 +1,6 @@
 # Release Procedure
 
-Mechanical checklist for cutting a Charted Roots patch or minor release. Pairs with [VERSIONING.md](../../VERSIONING.md) (policy) and [CHANGELOG.md](../../CHANGELOG.md) (per-release log). Maintained because the same drift gotcha recurred across 0.22.9 and 0.22.10 — the canonical pattern is documented here so it doesn't recur a third time.
+Mechanical checklist for cutting a Charted Roots patch or minor release. Pairs with [VERSIONING.md](../../VERSIONING.md) (policy) and [CHANGELOG.md](../../CHANGELOG.md) (per-release log). Maintained because the same drift gotcha recurred across 0.22.9 and 0.22.10 — the canonical pattern is documented here so it doesn't recur a third time. **Validated:** 0.22.11 and 0.22.12 both shipped without tag drift after this procedure landed.
 
 ---
 
