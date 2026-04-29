@@ -754,6 +754,71 @@ export class BidirectionalLinker {
 	}
 
 	/**
+	 * Promote a target's single flat-format spouse entry to indexed format
+	 * so marriage details can be mirrored into a properly-namespaced slot
+	 * (#481 follow-up). The initial #481 fix only mirrored marriage details
+	 * when the target already used indexed format; partners that originally
+	 * paired up before any marriage details existed kept the legacy flat
+	 * `spouse:` / `spouse_id:` shape, and the mirror short-circuited.
+	 *
+	 * Promotion only fires when the target has EXACTLY ONE flat spouse
+	 * whose `spouse_id` matches `personCrId`. Multi-spouse flat targets
+	 * are left alone to avoid partial-migration awkwardness — the writer's
+	 * own indexed-promotion path handles the multi-flat case when the user
+	 * adds details on the partner side. Returns the new indexed slot (1)
+	 * on success, or `null` when the shape doesn't qualify.
+	 */
+	private async promoteFlatSpouseToIndexed(
+		spouseFile: TFile,
+		spouseFm: Record<string, unknown>,
+		personCrId: string,
+		personLinkText: string
+	): Promise<number | null> {
+		const flatSpouseLinks = spouseFm.spouse
+			? (Array.isArray(spouseFm.spouse) ? spouseFm.spouse : [spouseFm.spouse])
+			: [];
+		const flatSpouseIds = spouseFm.spouse_id
+			? (Array.isArray(spouseFm.spouse_id) ? spouseFm.spouse_id : [spouseFm.spouse_id])
+			: [];
+
+		if (flatSpouseLinks.length !== 1 || flatSpouseIds.length !== 1) {
+			return null;
+		}
+		if (flatSpouseIds[0] !== personCrId) {
+			return null;
+		}
+
+		// All four field changes in a single atomic processFrontMatter call.
+		// Sequential setField/removeField calls each fire metadataCache.changed,
+		// which re-triggers the linker for this file mid-promotion. After the
+		// removeFields run but before the setFields complete, the snapshot
+		// diff sees the flat `spouse:` key disappeared with no replacement
+		// in the indexed slots yet — `isSpouseInFrontmatter` returns false,
+		// the format-migration guard fails, and a phantom deletion cascade
+		// wipes the spouse link on the source's note too. Doing it atomically
+		// means the cache only fires once, with the final correct state.
+		try {
+			await this.app.fileManager.processFrontMatter(spouseFile, (fm) => {
+				delete fm.spouse;
+				delete fm.spouse_id;
+				fm.spouse1 = personLinkText;
+				fm.spouse1_id = personCrId;
+			});
+		} catch (error) {
+			logger.error('bidirectional-linking',
+				'Failed to promote flat spouse to indexed format',
+				{ file: spouseFile.path, personCrId, error: getErrorMessage(error) });
+			return null;
+		}
+
+		logger.info('bidirectional-linking',
+			'Promoted single flat spouse to indexed format for marriage-detail mirror',
+			{ spouseFile: spouseFile.path, personCrId });
+
+		return 1;
+	}
+
+	/**
 	 * Mirror the source's marriage-detail fields onto a target spouse slot.
 	 * Only writes fields that are SET on the source (undefined source fields
 	 * are left alone on the target so independently-set values aren't
@@ -898,6 +963,21 @@ export class BidirectionalLinker {
 				personName,
 				personFile.basename
 			);
+
+			// If the target uses legacy flat format (`spouse:` / `spouse_id:`),
+			// findExistingSpouseIndex returns null because there's no indexed
+			// slot to find. When marriage details need to be mirrored, promote
+			// the flat entry to indexed so we have a `spouseN_*` namespace to
+			// write the companion fields into (#481 follow-up).
+			if (targetIndex === null && marriageDetails) {
+				targetIndex = await this.promoteFlatSpouseToIndexed(
+					spouseFile,
+					spouseFm as Record<string, unknown>,
+					personCrId,
+					personLinkText
+				);
+			}
+
 			logger.debug('bidirectional-linking', 'Spouse already linked', {
 				spouseFile: spouseFile.path,
 				personFile: personFile.path,
