@@ -408,7 +408,7 @@ A floating control bar appears at the bottom of the map with:
 | **Progress bar** | Visual indicator of current position in the journey |
 | **Waypoint label** | Shows the current event type and place name (e.g., "Birth in London") |
 | **Step counter** | Displays position (e.g., "3 / 7") |
-| **Speed selector** | Cycles through 0.25×, 0.5×, 1×, 1.5×, 2.5× playback speeds |
+| **Dwell-time selector** | Cycles through 2s / 4s / 6s / 10s — controls how long the popup stays visible per step before the next step fires (default 4s). Total step interval is the configured dwell plus a constant ~1.1s camera fly. |
 
 On each step, the map pans and zooms to center on the current waypoint with a smooth fly animation, and a rich popup opens automatically.
 

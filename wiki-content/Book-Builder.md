@@ -78,7 +78,7 @@ Add chapters of four types:
 | Type | Description | Configuration |
 |------|-------------|---------------|
 | **Report** | Any of the plugin's report types (Ahnentafel, Family Group Sheet, etc.) | Report type, subject person, report-specific options |
-| **Visual tree** | Pedigree, descendant, hourglass, or fan chart | Chart type, root person, max generations |
+| **Visual tree** | Pedigree, descendant, or hourglass | Chart type, root person, max generations |
 | **Vault note** | Any markdown note from your vault | File picker to select the note |
 | **Section divider** | A title page or separator between sections | Title, optional subtitle |
 

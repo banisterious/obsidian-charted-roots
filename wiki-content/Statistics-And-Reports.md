@@ -203,7 +203,7 @@ Generate formatted reports from your data. Reports are organized into categories
 | **Timeline** | Timeline Report |
 | **Geographic** | Place Summary |
 | **Summary** | Universe Overview, Collection Overview |
-| **Visual Trees** | Pedigree Tree PDF, Descendant Tree PDF, Hourglass Tree PDF, Fan Chart PDF |
+| **Visual Trees** | Pedigree Tree PDF, Descendant Tree PDF, Hourglass Tree PDF |
 
 ### Visual Tree Reports
 
@@ -214,7 +214,6 @@ Generate printable PDF tree diagrams with positioned boxes and connecting lines.
 | **Pedigree Tree PDF** | Graphical ancestor tree with root at bottom, ancestors branching upward |
 | **Descendant Tree PDF** | Graphical descendant tree with root at top, descendants branching downward |
 | **Hourglass Tree PDF** | Both ancestors above and descendants below the root person |
-| **Fan Chart PDF** | Semicircular pedigree with ancestors in radiating arcs |
 
 Clicking any Visual Tree report opens the unified tree wizard, which guides you through:
 1. Selecting a root person

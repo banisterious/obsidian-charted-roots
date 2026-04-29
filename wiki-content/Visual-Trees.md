@@ -47,7 +47,7 @@ All formats share the same person selection and tree type steps, then branch int
 **From Statistics Dashboard:**
 1. Open Statistics Dashboard
 2. Scroll to **Visual Trees** section
-3. Click any tree type (Pedigree, Descendant, Hourglass, Fan Chart)
+3. Click any tree type (Pedigree, Descendant, Hourglass)
 
 **From Context Menu:**
 1. Right-click on a person note
@@ -77,7 +77,6 @@ Select the type of tree to generate:
 | **Full Tree** | Hourglass | Both ancestors and descendants from root |
 | **Ancestors** | Pedigree | Parents, grandparents, etc. (upward) |
 | **Descendants** | Downward tree | Children, grandchildren, etc. (downward) |
-| **Fan Chart** | Semicircle | Semicircular ancestor display (PDF only) |
 
 Configure generation limits:
 - **Ancestor generations**: How many generations up (parents, grandparents, etc.)
@@ -177,14 +176,6 @@ Inverted pedigree showing only descendants:
 - Root person at the top
 - Children, grandchildren branching downward
 - Can show multiple children per generation
-
-### Fan Chart (PDF only)
-
-Semicircular ancestor display:
-- Root person at center-bottom
-- Ancestors arranged in concentric arcs
-- Each generation occupies a ring
-- Compact visualization for many generations
 
 ---
 
