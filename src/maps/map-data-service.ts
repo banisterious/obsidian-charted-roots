@@ -56,6 +56,8 @@ interface PlaceData {
 	category?: string;
 	universe?: string;
 	parentPlace?: string;
+	/** cr_id of the parent place (preferred over name for chain walks; #494) */
+	parentPlaceId?: string;
 	/** Map IDs this place is restricted to (if undefined, shows on all maps in universe) */
 	maps?: string[];
 	/** Single map ID shorthand (normalized to maps array internally) */
@@ -265,6 +267,7 @@ export class MapDataService {
 				category: fm.place_category ? fmToString(fm.place_category) : undefined,
 				universe: fm.universe ? fmToString(fm.universe) : undefined,
 				parentPlace: this.extractLinkTarget(fm.parent_place) || undefined,
+				parentPlaceId: fm.parent_place_id ? fmToString(fm.parent_place_id) : undefined,
 				maps,
 				mapId,
 				linkedMap: fm.linked_map ? fmToString(fm.linked_map) : undefined
@@ -1121,7 +1124,7 @@ export class MapDataService {
 		// Try by ID first
 		if (placeId) {
 			const place = this.placeCache.get(placeId);
-			if (place) return place;
+			if (place) return this.applyCoordinateFallback(place);
 		}
 
 		// Try by name (extract from wikilink if needed)
@@ -1131,17 +1134,58 @@ export class MapDataService {
 
 			// Search in cache
 			const place = this.placeByNameCache.get(searchName);
-			if (place) return place;
+			if (place) return this.applyCoordinateFallback(place);
 
 			// Try partial match (city name without country, etc.)
 			for (const [name, data] of this.placeByNameCache) {
 				if (name.includes(searchName) || searchName.includes(name)) {
-					return data;
+					return this.applyCoordinateFallback(data);
 				}
 			}
 		}
 
 		return null;
+	}
+
+	/**
+	 * Walk up the `parent_place` chain when the resolved place has no
+	 * coordinates of its own, so events at child places (e.g., `Lars Homestead`
+	 * with `parent_place: [[Tatooine]]` and no own pixel coords) still render
+	 * at the nearest ancestor that does have coords. Returns a synthetic
+	 * `PlaceData` carrying the child's identity (`name`, `crId`, `category`,
+	 * `universe`) with the ancestor's positioning fields (`lat` / `lng` /
+	 * `pixelX` / `pixelY` / `mapId` / `maps`). When the chain finds no
+	 * ancestor with coords, returns the original place as-is — downstream
+	 * `hasValidCoordinates` checks then drop it as before. (#494)
+	 */
+	private applyCoordinateFallback(place: PlaceData): PlaceData {
+		if (this.hasValidCoordinates(place)) return place;
+
+		const visited = new Set<string>();
+		let current: PlaceData | undefined = place;
+		while (current && (current.parentPlaceId || current.parentPlace)) {
+			const parent: PlaceData | undefined = current.parentPlaceId
+				? this.placeCache.get(current.parentPlaceId)
+				: current.parentPlace
+					? this.placeByNameCache.get(current.parentPlace.toLowerCase())
+					: undefined;
+			if (!parent || visited.has(parent.crId)) break;
+			visited.add(parent.crId);
+			if (this.hasValidCoordinates(parent)) {
+				return {
+					...place,
+					lat: parent.lat,
+					lng: parent.lng,
+					pixelX: parent.pixelX,
+					pixelY: parent.pixelY,
+					mapId: parent.mapId,
+					maps: parent.maps,
+				};
+			}
+			current = parent;
+		}
+
+		return place;
 	}
 
 	/**
