@@ -67,6 +67,18 @@ interface PlaceData {
 }
 
 /**
+ * One marriage record on a person. Sourced from indexed `spouseN_marriage_*`
+ * frontmatter slots, or from legacy flat `marriage_*` fields as a single-entry
+ * fallback. Each entry is independently rendered as a marriage waypoint /
+ * marker so multi-spouse people surface every union on the map. (#498)
+ */
+interface Marriage {
+	place?: string;
+	placeId?: string;
+	date?: string | number;
+}
+
+/**
  * Person note data extracted from frontmatter
  */
 interface PersonData {
@@ -78,9 +90,13 @@ interface PersonData {
 	birthPlaceId?: string;
 	deathPlace?: string;
 	deathPlaceId?: string;
-	marriagePlace?: string;
-	marriagePlaceId?: string;
-	marriageDate?: string | number; // Can be year-only number or date string
+	/**
+	 * All marriages for this person. Loaded from indexed `spouseN_marriage_*`
+	 * slots when the person uses the indexed-spouse format (multi-spouse
+	 * support); falls back to a single legacy flat `marriage_*` entry
+	 * otherwise. (#498)
+	 */
+	marriages?: Marriage[];
 	burialPlace?: string;
 	burialPlaceId?: string;
 	collection?: string;
@@ -321,9 +337,7 @@ export class MapDataService {
 				birthPlaceId: fm.birth_place_id,
 				deathPlace: this.extractPlaceString(fm.death_place),
 				deathPlaceId: fm.death_place_id,
-				marriagePlace: this.extractPlaceString(fm.marriage_place),
-				marriagePlaceId: fm.marriage_place_id,
-				marriageDate: fm.marriage_date,
+				marriages: this.loadMarriages(fm),
 				burialPlace: this.extractPlaceString(fm.burial_place),
 				burialPlaceId: fm.burial_place_id,
 				collection: fm.collection,
@@ -498,6 +512,39 @@ export class MapDataService {
 	}
 
 	/**
+	 * Load marriages from indexed `spouseN_marriage_*` slots when present,
+	 * with a single legacy flat `marriage_*` entry as fallback. Skips empty
+	 * slots (no place AND no date). Multi-spouse people surface every union
+	 * with a marriage place; single-spouse / legacy data still produces one
+	 * entry from the flat fields. (#498)
+	 */
+	private loadMarriages(fm: Record<string, unknown>): Marriage[] | undefined {
+		const result: Marriage[] = [];
+
+		// Indexed format first — check spouse1..spouse10 for marriage metadata.
+		for (let i = 1; i <= 10; i++) {
+			const place = this.extractPlaceString(fm[`spouse${i}_marriage_location`]);
+			const placeId = fm[`spouse${i}_marriage_location_id`] as string | undefined;
+			const date = fm[`spouse${i}_marriage_date`] as string | number | undefined;
+			if (place || placeId || date !== undefined) {
+				result.push({ place, placeId, date });
+			}
+		}
+
+		if (result.length > 0) return result;
+
+		// Legacy flat fields as a single-entry fallback.
+		const flatPlace = this.extractPlaceString(fm.marriage_place);
+		const flatPlaceId = fm.marriage_place_id as string | undefined;
+		const flatDate = fm.marriage_date as string | number | undefined;
+		if (flatPlace || flatPlaceId || flatDate !== undefined) {
+			return [{ place: flatPlace, placeId: flatPlaceId, date: flatDate }];
+		}
+
+		return undefined;
+	}
+
+	/**
 	 * Build markers from person data
 	 */
 	private buildMarkers(people: PersonData[], filters: MapFilters): MapMarker[] {
@@ -521,11 +568,16 @@ export class MapDataService {
 			);
 			if (deathMarker) markers.push(deathMarker);
 
-			// Marriage marker
-			const marriageMarker = this.createMarkerFromPlace(
-				person, 'marriage', person.marriagePlaceId, person.marriagePlace, person.marriageDate, filters
-			);
-			if (marriageMarker) markers.push(marriageMarker);
+			// Marriage markers (one per indexed-spouse slot; falls back to a
+			// single legacy flat entry for non-multi-spouse data) (#498)
+			if (person.marriages) {
+				for (const marriage of person.marriages) {
+					const marker = this.createMarkerFromPlace(
+						person, 'marriage', marriage.placeId, marriage.place, marriage.date, filters
+					);
+					if (marker) markers.push(marker);
+				}
+			}
 
 			// Burial marker
 			const burialMarker = this.createMarkerFromPlace(
@@ -969,12 +1021,17 @@ export class MapDataService {
 				}
 			}
 
-			// Add marriage waypoint (if has date for chronological ordering)
-			const marriagePlace = this.resolvePlace(person.marriagePlaceId, person.marriagePlace);
-			if (marriagePlace && this.hasValidCoordinates(marriagePlace) && person.marriageDate) {
-				if ((!filters.universe || marriagePlace.universe === filters.universe) &&
-					this.isPlaceVisibleOnMap(marriagePlace, filters)) {
-					const marriageYear = this.extractYear(person.marriageDate);
+			// Add marriage waypoints — iterates indexed-spouse slots so
+			// multi-spouse people surface every union, not just the first
+			// or whatever's in the legacy flat marriage_* fields. (#498)
+			if (person.marriages) {
+				for (const marriage of person.marriages) {
+					const marriagePlace = this.resolvePlace(marriage.placeId, marriage.place);
+					if (!marriagePlace || !this.hasValidCoordinates(marriagePlace)) continue;
+					if (filters.universe && marriagePlace.universe !== filters.universe) continue;
+					if (!this.isPlaceVisibleOnMap(marriagePlace, filters)) continue;
+
+					const marriageYear = marriage.date !== undefined ? this.extractYear(marriage.date) : undefined;
 					waypoints.push({
 						lat: marriagePlace.lat ?? 0,
 						lng: marriagePlace.lng ?? 0,
@@ -983,7 +1040,7 @@ export class MapDataService {
 						name: marriagePlace.name,
 						placeId: marriagePlace.crId,
 						eventType: 'marriage',
-						date: person.marriageDate !== undefined ? String(person.marriageDate) : undefined,
+						date: marriage.date !== undefined ? String(marriage.date) : undefined,
 						year: marriageYear
 					});
 					if (!pathUniverse) pathUniverse = marriagePlace.universe;
