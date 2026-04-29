@@ -110,6 +110,8 @@ By default, groups are named "Family 1", "Family 2", etc. You can customize thes
 
 **Note:** The `group_name` property sets the display name for the entire connected family group. If multiple people in the same group have different names, the most common one is used.
 
+**In the Person Picker:** the Family groups sidebar uses each component's `collectionName` for the tab label when every member of that component shares one (otherwise it falls back to `Family 1` / `Family 2` etc.). Components that share the same `collectionName` across disjoint graph regions — for example a "player_group_alpha" group spanning unrelated characters — are merged into a single tab in the picker rather than appearing as separate "Family N" entries. To get an unrelated set of people to merge, give every member the same `group_name` value.
+
 ### Collections (User-Defined Organization)
 
 Collections let you create custom groupings independent of biological relationships. Use these for:

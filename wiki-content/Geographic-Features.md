@@ -369,6 +369,18 @@ Journey paths show a person's complete movement through life by connecting all t
 - Show career progression through cities
 - Map pilgrimage or travel routes
 
+### Path label legibility
+
+Person-name labels render along migration and journey path lines. On colorful or dark image-map backgrounds the default colored text can be hard to read. The **Map path label outline** setting (in plugin settings → Place Settings) adds a contrasting halo around each label:
+
+| Outline | When to use |
+|---------|-------------|
+| **None** (default) | OSM tiles or other neutral basemaps where the colored text reads cleanly |
+| **White outline** | Dark or richly-colored backgrounds where a white halo lifts the text off the map |
+| **Black outline** | Light or pastel backgrounds where a dark halo provides contrast |
+
+The outline applies uniformly to migration paths and journey paths. Setting changes take effect on the next map render — close and reopen the map view (or toggle a path layer off/on) for the change to apply to in-flight maps.
+
 ## Journey Mode
 
 Journey mode isolates a single person's geographic path on the map and provides animated step-through playback with rich popups and an optional family overlay. While journey paths (above) show all people's routes simultaneously, journey mode focuses on one person at a time for detailed exploration.

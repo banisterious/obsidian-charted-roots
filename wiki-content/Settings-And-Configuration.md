@@ -497,6 +497,7 @@ Each entry links to the family member's note and shows age annotations. Use `fam
 | Setting | Default | Description |
 |---------|---------|-------------|
 | **Default place category** | `real` | Default category for new places |
+| **Map path label outline** | `None` | Adds a contrasting outline around path labels (person names rendered along migration and journey paths) for legibility on colorful or dark backgrounds. Choices: `None`, `White outline`, `Black outline`. The outline is a 2px SVG `paint-order: stroke fill` halo applied to the label glyphs. See [Geographic Features → Path label legibility](Geographic-Features#path-label-legibility) for visual context. |
 
 Place categories: `real`, `historical`, `disputed`, `legendary`, `mythological`, `fictional`
 

@@ -140,7 +140,7 @@ memberships:
 #### Via Context Menu
 
 1. Right-click a person note in the file explorer
-2. Select **Charted Roots** → **Add organization membership...**
+2. Select **Charted Roots** → **Add relationship...** → **Add organization membership...**
 3. Select the organization and fill in details
 
 #### Via Add Relationship Modal
@@ -150,6 +150,14 @@ The Add Membership modal provides:
 - Role field with clickable role chips below the input showing the organization's defined roles (click a chip to fill the input). Freeform entry is also supported for roles not in the predefined list.
 - From/To date fields (support fictional date formats)
 - Notes field for additional context
+
+### Editing or Removing Memberships
+
+The full member-management modal (the same one reachable from the organization side via right-click on the org note → **Manage members...**) is also reachable from the person side:
+
+1. Right-click a person note
+2. Select **Charted Roots** → **Manage memberships...**
+3. If the person belongs to a single organization, the modal opens directly scoped to that org. If they belong to multiple, a picker lets you choose which to manage. From there you can add new members, edit existing memberships' role / dates / notes, or remove memberships.
 
 ## Organizations Tab
 

@@ -34,6 +34,8 @@ Right-click on any markdown file with a `cr_id` frontmatter property:
 | → Add parent | Add a father or mother relationship |
 | → Add spouse | Add a spouse relationship |
 | → Add child | Add a child relationship |
+| → Add custom relationship | Add a [custom relationship type](Custom-Relationships) (mentor, business partner, etc.) |
+| → Add organization membership | Add this person as a member of an [organization](Organization-Notes) with role and dates |
 | **Validate relationships** | Check for relationship inconsistencies |
 | **Find on canvas** | Locate this person on an open canvas |
 | **Open in map view** | Show this person's locations on the map |
@@ -41,6 +43,7 @@ Right-click on any markdown file with a `cr_id` frontmatter property:
 | **[Show on calendar](Calendar-View)** | Open the calendar at this person's birth month/year |
 | **[Generate report](Statistics-And-Reports#generating-reports)** | Open the Report Wizard with this person pre-selected |
 | **Calculate relationship...** | Find how this person relates to another |
+| **[Manage memberships...](Organization-Notes#person-memberships)** | Open the organization-member management modal for one of this person's organizations. If they belong to a single organization the modal opens directly; if multiple, a picker lets you choose which organization to manage. |
 | **Set group name** | Assign a custom name to this person's family group |
 | **Set collection** | Add this person to a collection |
 | **Add source...** | Add a source citation to this person |
