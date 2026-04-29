@@ -9,6 +9,10 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.13 Round-Up: Map Coverage — Multi-Spouse, Multi-Participant, and Hierarchical Places](#v02213-round-up-map-coverage--multi-spouse-multi-participant-and-hierarchical-places-v02213)
+  - [v0.22.12 Round-Up: Marriage Symmetry, Universe Rename Cascade, and Map UX Polish](#v02212-round-up-marriage-symmetry-universe-rename-cascade-and-map-ux-polish-v02212)
+  - [v0.22.11 Round-Up: Path Label Architecture, Person-Delete Hardening, and Universe Dropdown](#v02211-round-up-path-label-architecture-person-delete-hardening-and-universe-dropdown-v02211)
+  - [v0.22.10 Round-Up: Negative Years, Modal Polish, Calendar Era Input, and Auto Regression](#v02210-round-up-negative-years-modal-polish-calendar-era-input-and-auto-regression-v02210)
   - [v0.22.9 Round-Up: Map Polish, Sibling Reality Windows, and Cluster Closure](#v0229-round-up-map-polish-sibling-reality-windows-and-cluster-closure-v0229)
   - [v0.22.8 Round-Up: Map, Timeline, Statistics, and Modal Polish](#v0228-round-up-map-timeline-statistics-and-modal-polish-v0228)
   - [v0.22.7 Round-Up: Map UX, Stepchild Handling, and Universe-Calendar Linking](#v0227-round-up-map-ux-stepchild-handling-and-universe-calendar-linking-v0227)
@@ -148,6 +152,52 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.13 Round-Up: Map Coverage — Multi-Spouse, Multi-Participant, and Hierarchical Places (v0.22.13)
+
+Six fixes, all map-adjacent. Most-impactful is the **map-coverage cluster** — three classes of map data that were silently invisible now render correctly: multi-spouse marriages on a multi-spouse person's journey ([#498](https://github.com/banisterious/obsidian-charted-roots/issues/498)), multi-participant events that previously stacked one marker per participant ([#493](https://github.com/banisterious/obsidian-charted-roots/issues/493)), and child-place events on vaults without a zoomed-in child map ([#494](https://github.com/banisterious/obsidian-charted-roots/issues/494)). Plus a journey-popup label fix that completes the [#466](https://github.com/banisterious/obsidian-charted-roots/issues/466) custom-label work across the second render path ([#499](https://github.com/banisterious/obsidian-charted-roots/issues/499)), and two follow-ups to 0.22.12: a sturdier compound-row layout for the Place modal coordinate inputs ([#496](https://github.com/banisterious/obsidian-charted-roots/issues/496) follow-up) and a flat-format spouse promotion that lets the marriage-detail mirror work even when the partner's note hasn't been migrated to indexed shape yet ([#481](https://github.com/banisterious/obsidian-charted-roots/issues/481) follow-up).
+
+Driven heavily by @DigitalDreamn's continuing testing on the Star Wars / Lars-family vault: her [#487](https://github.com/banisterious/obsidian-charted-roots/issues/487) verification surfaced the missing-marriages observation that became #498 and the "custom" journey popup label that became #499; her Lars Homestead frontmatter clinched the diagnosis on #494; her Bail / Breha Organa repro drove the #481 follow-up. @doctorwodka also closed out #491 verification (both halves verified — tab labels and the merge step). All six changes are non-data-loss; stability window continues unchanged from 0.22.4.
+
+**Fix: Map journey mode reads every marriage on multi-spouse people** ([#498](https://github.com/banisterious/obsidian-charted-roots/issues/498)):
+- `src/maps/map-data-service.ts` — marriage waypoints and markers were sourced from a single set of legacy flat `marriage_place` / `marriage_place_id` / `marriage_date` frontmatter fields. People with multiple spouses (whose data is written to indexed `spouseN_marriage_*` slots after #481's bidirectional linker improvements) had no flat fields populated, so journeys silently dropped every marriage. `PersonData.marriages` becomes an array; new `loadMarriages` helper reads indexed slots `spouse1_marriage_*` through `spouse10_marriage_*` (matching the writer's iteration bound), falls back to a single legacy flat entry, and skips empty slots.
+- `buildMarkers` and `buildJourneyPaths` iterate the array, emitting one waypoint / marker per populated slot. Drops the `&& person.marriageDate` requirement so dateless marriages still surface (sorting to the end of the life-event run, like death and burial already do). 10 new tests in `tests/marriage-loader.test.ts`. Surfaced by @DigitalDreamn during #487 verification — Cliegg Lars's death popup came back via the dedup fix, but neither of his two marriages appeared as waypoints.
+
+**Fix: Multi-participant events render one combined marker instead of one per participant** ([#493](https://github.com/banisterious/obsidian-charted-roots/issues/493)):
+- `src/maps/map-data-service.ts` + `src/maps/types/map-types.ts` — a `cr_type: event` note referenced by multiple people (e.g., a wedding with bride + groom, a battle with multiple combatants) produced one map marker per participant stacked at the same location. `buildMarkers` iterates per-person and `EventService.getEventsForPerson` surfaces the same external event for each participant, so each per-person pass contributed its own marker.
+- Threads the event note's `cr_id` through `LifeEvent` and `MapMarker` (set only for external `cr_type: event` notes — inline events stay per-person, never dedup), then a new `dedupeEventMarkers` pass after marker collection groups by `eventCrId`, keeps one marker per group with the event note's `person` field as primary, and lists all participants in the popup. 8 new tests in `tests/event-marker-dedup.test.ts`. Reported by @DigitalDreamn during #487 testing.
+
+**Fix: Events at child places render via inherited parent coordinates instead of disappearing** ([#494](https://github.com/banisterious/obsidian-charted-roots/issues/494)):
+- `src/maps/map-data-service.ts` — when a person's `birth_place` / `death_place` / event location pointed at a child place (e.g., `Lars Homestead` with `parent_place: [[Tatooine]]`) that had no own pixel or geographic coordinates, the marker dropped silently because `hasValidCoordinates` returned false on the child. The map's place resolution now walks up the `parent_place` / `parent_place_id` chain when the resolved place has no own coords, inheriting positioning fields (`lat` / `lng` / `pixelX` / `pixelY` / `mapId` / `maps`) from the nearest ancestor that does.
+- Popup and click-through keep the child's identity (`Lars Homestead` shows in the popup, opening the child's note); the marker visually appears at the parent's location — appropriate when the parent is the most-zoomed map level the user has set up. Same shape covers the real-world equivalent (a Stockholm event on a vault where Stockholm has no coords but Sweden does). Adds `parentPlaceId` to the place cache and an `applyCoordinateFallback` step inside `resolvePlace`. 7 new tests in `tests/place-coordinate-fallback.test.ts`. The forward-looking question of what happens once a child has its own coords on a *child* map (and you're viewing the parent map) is tracked separately as [#500](https://github.com/banisterious/obsidian-charted-roots/issues/500).
+
+**Fix: Journey mode popup and play-control label show the original event type for custom events** ([#499](https://github.com/banisterious/obsidian-charted-roots/issues/499)):
+- `src/maps/types/map-types.ts` + `src/maps/map-view.ts` — custom event types rendered as the literal string `Custom` in the journey-mode rich popup and play-control label, instead of preserving the original type (e.g., `Backstory`). Sibling to [#466](https://github.com/banisterious/obsidian-charted-roots/issues/466), which fixed the same UX gap on static map markers via `customLabel` on `MapMarker`; the journey-mode rendering path was missed at the time.
+- `JourneyWaypoint` now carries `customLabel`, `buildJourneyPaths` propagates it from the source `LifeEvent`, and a new `getJourneyWaypointEventLabel` helper resolves the display label (preferring `customLabel` for `custom` waypoints, falling back to canonical `eventType` otherwise) so both render sites stay in sync. 5 new tests in `tests/journey-waypoint-display-label.test.ts`. Reported by @DigitalDreamn during #487 verification.
+
+**Fix: Pixel coordinates X / Y (and Latitude / Longitude) render as a single compound row** ([#496](https://github.com/banisterious/obsidian-charted-roots/issues/496) follow-up):
+- `src/ui/create-place-modal.ts` + `styles/place-modals.css` — the 0.22.12 fix tried to keep X / Y inline via `align-items: center` on a flex container of two adjacent setting-items, but @DigitalDreamn reported the rows still looked misaligned. DevTools inspection showed an Obsidian default `:first-child` / `:last-child` rule applying asymmetric padding (`0 0 16px` on X, `16px 0 0` on Y), pushing X content to the top of its box and Y content to the bottom. Specificity bumps couldn't reliably defeat the Obsidian default.
+- Reworked the layout so X and Y (and the Latitude / Longitude pair under the same UI surface) live inside a single Setting's control area as plain inputs with inline labels — one setting-item, no adjacent-sibling padding asymmetry, side-by-side layout preserved. The Look up button stacks below the lat/long inputs via `flex-direction: column` on the controlEl. Pixel inputs render at 100px each via a `--pixel` modifier; geographic inputs at 140px via `--geo` to accommodate signed decimals and DMS strings.
+
+**Fix: Marriage detail mirror also works when the partner's note uses legacy flat spouse format** ([#481](https://github.com/banisterious/obsidian-charted-roots/issues/481) follow-up):
+- `src/core/bidirectional-linker.ts` — the 0.22.12 fix mirrored marriage details correctly when both partners' notes used the indexed `spouseN:` format, but missed the case where the partner was still on the legacy flat `spouse:` / `spouse_id:` shape. Couples that paired up before any marriage details existed kept the flat shape on both sides; setting marriage details on one side promoted that note to indexed via the writer's existing path, but the linker's mirror step bailed because `findExistingSpouseIndex` only scanned indexed slots.
+- New `promoteFlatSpouseToIndexed` helper — when the target uses single-spouse flat format and the source has marriage details to mirror, the promotion atomically rewrites the target's `spouse:` / `spouse_id:` to `spouse1:` / `spouse1_id:` so the existing mirror code has a `spouseN_*` namespace to write the companion fields into. The atomic single-`processFrontMatter` write avoids a phantom-deletion cascade that sequential writes would have triggered. Reported by @DigitalDreamn in her Bail / Breha Organa scenario; reproduced locally on a dev-vault couple matching the same shape.
+
+**Testing:** 30 new tests, suite total 466 (was 436 at start of this cycle).
+- `tests/marriage-loader.test.ts` (10 tests) — indexed-slot reading, legacy fallback, partial fields, wikilink unwrap, indexed-wins precedence for #498.
+- `tests/event-marker-dedup.test.ts` (8 tests) — pass-through, single participant, dedup, primary selection, fallback, multi-event, mixed inline+external for #493.
+- `tests/place-coordinate-fallback.test.ts` (7 tests) — own-coords pass-through, parent-by-id / parent-by-name inheritance, grandparent walk, no-ancestor fallback, identity preservation, cycle protection for #494.
+- `tests/journey-waypoint-display-label.test.ts` (5 tests) — customLabel preservation, fallback paths, built-in type ignoring stray customLabel for #499.
+
+**Reporters:** @DigitalDreamn for #498, #494, #499, #481 follow-up, and continued #487 diagnostic isolation; @doctorwodka closed out #491 verification (tab labels + merge step) and confirmed #496 visual misalignment.
+
+**Issues filed during this cycle (post-1.0 / deferred):**
+- [#497](https://github.com/banisterious/obsidian-charted-roots/issues/497) — `group_name` vs `collection` discoverability gap on the Person picker; tracked separately from the post-1.0 Collections rework.
+- [#500](https://github.com/banisterious/obsidian-charted-roots/issues/500) — hierarchical-maps fallback when a child has its own coords on a child map but the user is viewing the parent map; tied to the post-1.0 hierarchical-maps UX work.
+
+**Stability-window impact:** no reset — all six changes are non-data-loss. Window continues from 0.22.4's start: 2026-04-23 → ~2026-05-14. Ninth patch (0.22.5 / 0.22.6 / 0.22.7 / 0.22.8 / 0.22.9 / 0.22.10 / 0.22.11 / 0.22.12 / 0.22.13) without a window reset.
+
+---
 
 ### v0.22.12 Round-Up: Marriage Symmetry, Universe Rename Cascade, and Map UX Polish (v0.22.12)
 
