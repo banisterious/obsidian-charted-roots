@@ -2,9 +2,9 @@
 
 Planning document for rendering custom (non-family) relationships — liege/vassal, ally/rival, master/apprentice, mentor/disciple, godparent, betrothed, etc. — as styled overlay lines on the interactive family chart.
 
-**Status:** 📝 Draft
+**Status:** ✅ Phases 1–2 shipped (#386, with the paint-on-top z-order refinement in #450 and the v0.22.10 verification pass). 🔶 Phases 3–4 (line labels, routing / clutter handling) remain gated on real-world testing per the original plan; no decision yet on whether they're needed.
 
-**Related:** [#386](https://github.com/banisterious/obsidian-charted-roots/issues/386)
+**Related:** [#386](https://github.com/banisterious/obsidian-charted-roots/issues/386), [#450](https://github.com/banisterious/obsidian-charted-roots/issues/450)
 
 **Composes with:** [#376](https://github.com/banisterious/obsidian-charted-roots/issues/376) (as-of date filter, already shipped in v0.20.58)
 

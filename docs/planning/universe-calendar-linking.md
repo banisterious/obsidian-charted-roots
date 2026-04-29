@@ -2,7 +2,7 @@
 
 Planning document for wiring the universe → calendar relationship end-to-end. The `default_calendar` field already exists on the Universe type ([universe-types.ts:35](../../src/universes/types/universe-types.ts#L35)) but no consumer reads it, and the wizard / Edit Universe modal have no way to set it. This doc decides the contract and scopes the work to ship it.
 
-**Status:** ✅ Phase 1 implemented (2026-04-25) — wizard, Edit Universe modal, and Universes tab default-calendar surface all wired; parser-side Phase 2 deferred to a separate issue.
+**Status:** ✅ Phase 1 implemented (2026-04-25) — wizard, Edit Universe modal, and Universes tab default-calendar surface all wired. ✅ Universe rename cascade across referencing entity notes shipped 2026-04-28 in v0.22.12 (#488 Part 2). 🔶 Parser-side Phase 2 (era-aware year extraction, calendar-level `current_year`, bare-year inference) still deferred to a separate issue and remains post-1.0.
 
 **Related:**
 - [#432](https://github.com/banisterious/obsidian-charted-roots/issues/432) — tracking issue (this doc)

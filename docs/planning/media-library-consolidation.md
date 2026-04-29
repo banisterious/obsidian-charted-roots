@@ -1,6 +1,6 @@
 # Media Library Consolidation
 
-**Status:** 📋 Planned. Execution deferred until the website capture program is complete.
+**Status:** 📋 Planned. **Trigger condition met as of 2026-04-28** — research-track media captures (Source hierarchy, Attribution, Cleanup wizard, Reports gallery) committed in `b37fca7c`; visualization-track and Web Clipper already deployed. Phase 1 + Phase 2 are eligible to start whenever convenient.
 **Authored:** 2026-04-27.
 **Trigger:** Begin Phase 1 once every legacy `docs/images/` file either has a modern replacement available in `docs/images/raw/` or has been re-captured as part of an ongoing capture session. Pragmatic shorthand: "after the website captures are all complete" (Calendar View, Custom Relationships Overlay motion capture, plus the small re-capture work this plan introduces for legacy README content).
 **Out of scope today:** No file moves yet. This is a written plan; the per-phase commits land later.
