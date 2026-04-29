@@ -18,8 +18,11 @@
 /* Text inputs render at a consistent width across all rows regardless of
    description length. Without this, rows with long descriptions (Universe,
    Parent place) had narrower inputs than rows with short descriptions
-   (Name, Aliases, Collection). (#459) */
-.crc-create-place-modal .setting-item-control input[type="text"] {
+   (Name, Aliases, Collection). (#459) The :not(.crc-coord-pair-input)
+   exclusion lets the compound coord row override width via its own
+   modifier rules; otherwise this selector's element-tier specificity beat
+   the coord-pair modifier rules even when source order favored them. */
+.crc-create-place-modal .setting-item-control input[type="text"]:not(.crc-coord-pair-input) {
   width: 220px;
 }
 
@@ -43,47 +46,49 @@
   border-top: 1px solid var(--background-modifier-border);
 }
 
-.crc-coord-header .setting-item-info {
-  flex: 1;
-}
-
-.crc-coord-header .setting-item-control {
-  flex-shrink: 0;
-}
-
 .crc-coord-lookup-btn {
   font-size: var(--font-ui-small);
 }
 
-.crc-coord-inputs {
+/* X / Y (and Lat / Long) live in a single Setting's control area as a
+   compound row. Avoids the adjacent-setting-items padding asymmetry that
+   came from Obsidian's :first-child / :last-child defaults when X and Y
+   were two separate setting-items in a flex container. (#496 follow-up) */
+.crc-coord-pair-row .setting-item-control {
   display: flex;
-  gap: 16px;
-  /* Force the X/Y settings to align on a shared vertical center so the
-     labels and inputs sit on the same baseline regardless of internal
-     setting-item layout differences. (#496) */
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.crc-coord-pair-inputs {
+  display: flex;
+  gap: 12px;
   align-items: center;
 }
 
-.crc-coord-inputs .setting-item {
-  flex: 1;
-  border: none;
-  padding: 4px 0;
+.crc-coord-pair {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.crc-coord-inputs .setting-item-info {
-  flex: 0 0 auto;
-  min-width: 70px;
+.crc-coord-pair-label {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
 }
 
-.crc-coord-inputs .setting-item-control {
-  flex: 1;
+/* Specificity matches the modal-wide 220px input rule above; later in
+   source order so these win. Pixel coords are integers so they stay
+   compact; geographic coords need more room for signed decimals like
+   "-122.4194056" or DMS strings like "33°51'08\"N". */
+.crc-create-place-modal .crc-coord-pair-input--pixel[type="text"] {
+  width: 100px;
 }
 
-/* Coord inputs fill their control area (matches the section's own flex
-   layout). Selector specificity matches the 220px rule above so source
-   order tilts this rule to win. (#459 follow-up) */
-.crc-coord-inputs .setting-item-control input[type="text"] {
-  width: 100%;
+.crc-create-place-modal .crc-coord-pair-input--geo[type="text"] {
+  width: 140px;
 }
 
 /* ==========================================================================

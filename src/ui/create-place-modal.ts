@@ -863,16 +863,60 @@ export class CreatePlaceModal extends Modal {
 			!this.prefilledCoordinates.isPixelMap &&
 			this.prefilledCoordinates.lat !== undefined;
 
-		const coordHeader = new Setting(this.coordSectionEl)
+		const dmsEnabled = this.settings?.enableDMSCoordinates ?? false;
+
+		const coordSetting = new Setting(this.coordSectionEl)
 			.setName('Coordinates')
 			.setDesc(hasPrefilledGeoCoords
 				? 'Coordinates from map click (read-only)'
 				: 'Real-world coordinates (for real, historical, disputed places)');
-		coordHeader.settingEl.addClass('crc-coord-header');
+		coordSetting.settingEl.addClass('crc-coord-pair-row');
 
-		// Add geocoding lookup button to header (only if not prefilled)
+		const coordPair = coordSetting.controlEl.createDiv({ cls: 'crc-coord-pair-inputs' });
+
+		// Latitude
+		const latPair = coordPair.createDiv({ cls: 'crc-coord-pair' });
+		latPair.createEl('label', { text: 'Lat', cls: 'crc-coord-pair-label' });
+		this.latInputEl = latPair.createEl('input', {
+			type: 'text',
+			placeholder: dmsEnabled ? "33.8522 or 33°51'08\"N" : '-90 to 90',
+			cls: 'crc-coord-pair-input crc-coord-pair-input--geo',
+			attr: { 'aria-label': 'Latitude' },
+		});
+		this.latInputEl.addEventListener('input', () => {
+			this.updateCoordinates('lat', this.latInputEl!.value);
+		});
+		if (this.placeData.coordinates?.lat !== undefined) {
+			this.latInputEl.value = this.placeData.coordinates.lat.toString();
+		}
+		if (hasPrefilledGeoCoords) {
+			this.latInputEl.readOnly = true;
+			this.latInputEl.addClass('crc-coord-readonly');
+		}
+
+		// Longitude
+		const longPair = coordPair.createDiv({ cls: 'crc-coord-pair' });
+		longPair.createEl('label', { text: 'Long', cls: 'crc-coord-pair-label' });
+		this.longInputEl = longPair.createEl('input', {
+			type: 'text',
+			placeholder: dmsEnabled ? "83.6183 or 83°37'06\"W" : '-180 to 180',
+			cls: 'crc-coord-pair-input crc-coord-pair-input--geo',
+			attr: { 'aria-label': 'Longitude' },
+		});
+		this.longInputEl.addEventListener('input', () => {
+			this.updateCoordinates('long', this.longInputEl!.value);
+		});
+		if (this.placeData.coordinates?.long !== undefined) {
+			this.longInputEl.value = this.placeData.coordinates.long.toString();
+		}
+		if (hasPrefilledGeoCoords) {
+			this.longInputEl.readOnly = true;
+			this.longInputEl.addClass('crc-coord-readonly');
+		}
+
+		// Geocoding lookup button (only if not prefilled)
 		if (!hasPrefilledGeoCoords) {
-			coordHeader.addButton(btn => {
+			coordSetting.addButton(btn => {
 				btn.setButtonText('Look up')
 					.setTooltip('Look up coordinates by place name (uses OpenStreetMap)')
 					.onClick(() => {
@@ -882,109 +926,60 @@ export class CreatePlaceModal extends Modal {
 			});
 		}
 
-		const coordInputs = this.coordSectionEl.createDiv({ cls: 'crc-coord-inputs' });
-
-		// Check if DMS format is enabled
-		const dmsEnabled = this.settings?.enableDMSCoordinates ?? false;
-
-		// Latitude
-		const latSetting = new Setting(coordInputs)
-			.setName('Latitude')
-			.addText(text => {
-				this.latInputEl = text.inputEl;
-				text.setPlaceholder(dmsEnabled ? "33.8522 or 33°51'08\"N" : '-90 to 90')
-					.onChange(value => {
-						this.updateCoordinates('lat', value);
-					});
-				// Set initial value if editing or prefilled
-				if (this.placeData.coordinates?.lat !== undefined) {
-					text.setValue(this.placeData.coordinates.lat.toString());
-				}
-				// Make read-only if prefilled from map
-				if (hasPrefilledGeoCoords) {
-					text.inputEl.readOnly = true;
-					text.inputEl.addClass('crc-coord-readonly');
-				}
-			});
-		latSetting.settingEl.addClass('crc-coord-input');
-
-		// Longitude
-		const longSetting = new Setting(coordInputs)
-			.setName('Longitude')
-			.addText(text => {
-				this.longInputEl = text.inputEl;
-				text.setPlaceholder(dmsEnabled ? "83.6183 or 83°37'06\"W" : '-180 to 180')
-					.onChange(value => {
-						this.updateCoordinates('long', value);
-					});
-				// Set initial value if editing or prefilled
-				if (this.placeData.coordinates?.long !== undefined) {
-					text.setValue(this.placeData.coordinates.long.toString());
-				}
-				// Make read-only if prefilled from map
-				if (hasPrefilledGeoCoords) {
-					text.inputEl.readOnly = true;
-					text.inputEl.addClass('crc-coord-readonly');
-				}
-			});
-		longSetting.settingEl.addClass('crc-coord-input');
-
 		// Pixel coordinates section (for fictional/mythological places on pixel-based maps)
 		this.pixelCoordSectionEl = form.createDiv({ cls: 'crc-coord-section' });
 
 		// Check if pixel coordinates are prefilled from map
 		const hasPrefilledPixelCoords = this.prefilledCoordinates?.isPixelMap;
 
-		const pixelCoordHeader = new Setting(this.pixelCoordSectionEl)
+		const pixelCoordSetting = new Setting(this.pixelCoordSectionEl)
 			.setName('Pixel coordinates')
 			.setDesc(hasPrefilledPixelCoords
 				? 'Coordinates from map click (read-only)'
 				: 'For places on pixel-based custom maps (e.g., fantasy worlds)');
-		pixelCoordHeader.settingEl.addClass('crc-coord-header');
+		pixelCoordSetting.settingEl.addClass('crc-coord-pair-row');
 
-		const pixelCoordInputs = this.pixelCoordSectionEl.createDiv({ cls: 'crc-coord-inputs' });
+		const pixelPair = pixelCoordSetting.controlEl.createDiv({ cls: 'crc-coord-pair-inputs' });
 
 		// Pixel X
-		const pixelXSetting = new Setting(pixelCoordInputs)
-			.setName('X')
-			.addText(text => {
-				this.pixelXInputEl = text.inputEl;
-				text.setPlaceholder('0')
-					.onChange(value => {
-						this.updatePixelCoordinates('x', value);
-					});
-				// Set initial value if editing or prefilled
-				if (this.placeData.customCoordinates?.x !== undefined) {
-					text.setValue(this.placeData.customCoordinates.x.toString());
-				}
-				// Make read-only if prefilled from map
-				if (hasPrefilledPixelCoords) {
-					text.inputEl.readOnly = true;
-					text.inputEl.addClass('crc-coord-readonly');
-				}
-			});
-		pixelXSetting.settingEl.addClass('crc-coord-input');
+		const xPair = pixelPair.createDiv({ cls: 'crc-coord-pair' });
+		xPair.createEl('label', { text: 'X', cls: 'crc-coord-pair-label' });
+		this.pixelXInputEl = xPair.createEl('input', {
+			type: 'text',
+			placeholder: '0',
+			cls: 'crc-coord-pair-input crc-coord-pair-input--pixel',
+			attr: { 'aria-label': 'Pixel X coordinate' },
+		});
+		this.pixelXInputEl.addEventListener('input', () => {
+			this.updatePixelCoordinates('x', this.pixelXInputEl!.value);
+		});
+		if (this.placeData.customCoordinates?.x !== undefined) {
+			this.pixelXInputEl.value = this.placeData.customCoordinates.x.toString();
+		}
+		if (hasPrefilledPixelCoords) {
+			this.pixelXInputEl.readOnly = true;
+			this.pixelXInputEl.addClass('crc-coord-readonly');
+		}
 
 		// Pixel Y
-		const pixelYSetting = new Setting(pixelCoordInputs)
-			.setName('Y')
-			.addText(text => {
-				this.pixelYInputEl = text.inputEl;
-				text.setPlaceholder('0')
-					.onChange(value => {
-						this.updatePixelCoordinates('y', value);
-					});
-				// Set initial value if editing or prefilled
-				if (this.placeData.customCoordinates?.y !== undefined) {
-					text.setValue(this.placeData.customCoordinates.y.toString());
-				}
-				// Make read-only if prefilled from map
-				if (hasPrefilledPixelCoords) {
-					text.inputEl.readOnly = true;
-					text.inputEl.addClass('crc-coord-readonly');
-				}
-			});
-		pixelYSetting.settingEl.addClass('crc-coord-input');
+		const yPair = pixelPair.createDiv({ cls: 'crc-coord-pair' });
+		yPair.createEl('label', { text: 'Y', cls: 'crc-coord-pair-label' });
+		this.pixelYInputEl = yPair.createEl('input', {
+			type: 'text',
+			placeholder: '0',
+			cls: 'crc-coord-pair-input crc-coord-pair-input--pixel',
+			attr: { 'aria-label': 'Pixel Y coordinate' },
+		});
+		this.pixelYInputEl.addEventListener('input', () => {
+			this.updatePixelCoordinates('y', this.pixelYInputEl!.value);
+		});
+		if (this.placeData.customCoordinates?.y !== undefined) {
+			this.pixelYInputEl.value = this.placeData.customCoordinates.y.toString();
+		}
+		if (hasPrefilledPixelCoords) {
+			this.pixelYInputEl.readOnly = true;
+			this.pixelYInputEl.addClass('crc-coord-readonly');
+		}
 
 		// Show/hide coordinates based on category
 		this.updateCoordinatesVisibility();
