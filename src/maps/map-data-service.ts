@@ -21,7 +21,8 @@ import type {
 	MarkerType,
 	PersonLifeSpan,
 	LifeEvent,
-	EventType
+	EventType,
+	EventParticipant
 } from './types/map-types';
 import { journeyWaypointDedupKey } from './types/map-types';
 import { isPlaceNote, isPersonNote } from '../utils/note-type-detection';
@@ -440,7 +441,8 @@ export class MapDataService {
 				date_from: this.coerceDateValue(event.date),
 				date_to: this.coerceDateValue(event.dateEnd),
 				description: event.description,
-				customLabel: resolvedEventType === 'custom' ? (event.eventType || event.title) : undefined
+				customLabel: resolvedEventType === 'custom' ? (event.eventType || event.title) : undefined,
+				eventCrId: event.crId
 			});
 		}
 
@@ -537,7 +539,62 @@ export class MapDataService {
 			}
 		}
 
-		return markers;
+		return this.dedupeEventMarkers(markers);
+	}
+
+	/**
+	 * Multi-participant event dedup (#493). Markers built per-person from a
+	 * shared `cr_type: event` note (multiple persons listed via `person` /
+	 * `persons`) collapse into a single combined marker — one location, one
+	 * popup, all participants listed inside. Inline events (no `eventCrId`)
+	 * are local to a single person and pass through unchanged.
+	 *
+	 * Primary participant (the event note's `person` field) is preserved as
+	 * the marker's `personId` / `personName` for click-throughs and as the
+	 * `isPrimary: true` entry in `participants`. Falls back to the first
+	 * marker in iteration order if the event note can't be looked up or has
+	 * no primary set.
+	 */
+	private dedupeEventMarkers(markers: MapMarker[]): MapMarker[] {
+		const eventService = this.plugin.getEventService?.();
+		const result: MapMarker[] = [];
+		const groups = new Map<string, MapMarker[]>();
+
+		for (const marker of markers) {
+			if (marker.eventCrId) {
+				const group = groups.get(marker.eventCrId) ?? [];
+				group.push(marker);
+				groups.set(marker.eventCrId, group);
+			} else {
+				result.push(marker);
+			}
+		}
+
+		for (const [crId, group] of groups) {
+			if (group.length === 1) {
+				result.push(group[0]);
+				continue;
+			}
+
+			const eventNote = eventService?.getEventById(crId);
+			const primaryName = eventNote?.person ? this.extractLinkTarget(eventNote.person) : null;
+			const matchPrimary = (m: MapMarker): boolean =>
+				primaryName !== null && m.personName.toLowerCase() === primaryName.toLowerCase();
+
+			const primaryMarker = group.find(matchPrimary) ?? group[0];
+			const participants: EventParticipant[] = group.map(m => ({
+				personId: m.personId,
+				personName: m.personName,
+				isPrimary: matchPrimary(m),
+			}));
+
+			result.push({
+				...primaryMarker,
+				participants,
+			});
+		}
+
+		return result;
 	}
 
 	/**
@@ -682,7 +739,8 @@ export class MapDataService {
 			placeCategory: place.category,
 			altName: person.altName,
 			birthDate: person.born !== undefined ? String(person.born) : undefined,
-			customLabel: event.customLabel
+			customLabel: event.customLabel,
+			eventCrId: event.eventCrId
 		};
 	}
 

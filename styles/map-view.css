@@ -1049,6 +1049,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
   margin-bottom: var(--cr-spacing-xs);
 }
 
+.cr-map-popup-participants {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+  margin-bottom: var(--cr-spacing-xs);
+}
+
 .cr-map-popup-type,
 .cr-map-popup-place,
 .cr-map-popup-migration,

@@ -63,6 +63,27 @@ export interface LifeEvent {
 	 * label that loses category information (#466).
 	 */
 	customLabel?: string;
+	/**
+	 * Source event note's `cr_id` when this LifeEvent was loaded from a
+	 * `cr_type: event` note (vs an inline frontmatter `events:` array entry).
+	 * Used by the marker pipeline to dedup multi-participant events back into
+	 * a single combined marker (#493). Inline events have no `cr_id` and
+	 * never dedup across participants.
+	 */
+	eventCrId?: string;
+}
+
+/**
+ * One participant on a multi-participant event marker (#493). Populated when
+ * the marker pipeline merges per-person markers that share an `eventCrId`.
+ */
+export interface EventParticipant {
+	/** cr_id of the person */
+	personId: string;
+	/** Display name of the person */
+	personName: string;
+	/** True when this person is the event note's `person` (primary) field */
+	isPrimary: boolean;
 }
 
 /**
@@ -114,6 +135,20 @@ export interface MapMarker {
 	 * label that loses category information (#466).
 	 */
 	customLabel?: string;
+	/**
+	 * Source event note's `cr_id` when this marker was created from a
+	 * `cr_type: event` note. Drives the multi-participant dedup pass — markers
+	 * sharing an `eventCrId` collapse to a single combined marker with all
+	 * participants listed in the popup (#493).
+	 */
+	eventCrId?: string;
+	/**
+	 * All participants on this marker when it represents a multi-participant
+	 * event (set by the dedup pass when two or more per-person markers shared
+	 * an `eventCrId`). Single-participant or inline-event markers leave this
+	 * undefined and render only `personName` (#493).
+	 */
+	participants?: EventParticipant[];
 }
 
 /**

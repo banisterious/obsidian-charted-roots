@@ -895,6 +895,26 @@ export class MapController {
 			});
 		}
 
+		// Multi-participant event — list co-participants beneath the primary
+		// name so the popup reflects all attendees rather than rendering one
+		// stacked marker per participant (#493).
+		if (data.participants && data.participants.length > 1) {
+			const others = data.participants.filter(p => p.personName !== data.personName);
+			if (others.length > 0) {
+				const list = container.createEl('div', { cls: 'cr-map-popup-participants' });
+				list.createEl('span', {
+					text: 'with ',
+					cls: 'cr-map-popup-participants-prefix'
+				});
+				others.forEach((p, idx) => {
+					list.createEl('span', { text: p.personName, cls: 'cr-map-popup-participant' });
+					if (idx < others.length - 1) {
+						list.createEl('span', { text: ', ' });
+					}
+				});
+			}
+		}
+
 		// Get event type info and icon mode
 		const iconMode = this.settings.eventIconMode || 'text';
 		const showIcon = iconMode === 'icon' || iconMode === 'both';
