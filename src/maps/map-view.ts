@@ -1849,6 +1849,20 @@ export class MapView extends ItemView {
 			this.addPopupRow(body, 'Age', `${age} years old`);
 		}
 
+		// Partner's age — paired with the focal person's age on marriage
+		// waypoints when the spouse note has a resolvable birth date. Same
+		// DateService path so fictional calendars round-trip correctly. (#504)
+		if (waypoint.eventType === 'marriage' && waypoint.spouseBirthDate && waypoint.date && dateService) {
+			const partnerAge = dateService.calculateAge(
+				waypoint.spouseBirthDate,
+				waypoint.date,
+				journey?.universe
+			)?.years;
+			if (partnerAge !== undefined && partnerAge >= 0) {
+				this.addPopupRow(body, "Partner's age", `${partnerAge} years old`);
+			}
+		}
+
 		// Duration at location (time between this event and the next) — same treatment
 		if (allWaypoints) {
 			const stepIndex = allWaypoints.indexOf(waypoint);

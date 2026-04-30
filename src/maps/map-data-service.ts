@@ -1071,6 +1071,13 @@ export class MapDataService {
 	private buildJourneyPaths(people: PersonData[], filters: MapFilters): JourneyPath[] {
 		const journeyPaths: JourneyPath[] = [];
 
+		// Spouse lookup so marriage waypoints can carry the partner's birth
+		// date for popup age-pairing (#504). Built from the same `people`
+		// array used to build the journey paths, so it's already filtered to
+		// what the map view sees.
+		const peopleById = new Map<string, PersonData>();
+		for (const p of people) peopleById.set(p.crId, p);
+
 		for (const person of people) {
 			// Apply collection filter
 			if (filters.collection && person.collection !== filters.collection) {
@@ -1113,6 +1120,8 @@ export class MapDataService {
 					if (!this.isPlaceVisibleOnMap(marriagePlace, filters)) continue;
 
 					const marriageYear = marriage.date !== undefined ? this.extractYear(marriage.date) : undefined;
+					const spouse = marriage.spouseId ? peopleById.get(marriage.spouseId) : undefined;
+					const spouseBirthDate = spouse?.born !== undefined ? String(spouse.born) : undefined;
 					waypoints.push({
 						lat: marriagePlace.lat ?? 0,
 						lng: marriagePlace.lng ?? 0,
@@ -1123,7 +1132,8 @@ export class MapDataService {
 						eventType: 'marriage',
 						date: marriage.date !== undefined ? String(marriage.date) : undefined,
 						year: marriageYear,
-						spouseName: marriage.spouseName
+						spouseName: marriage.spouseName,
+						spouseBirthDate,
 					});
 					if (!pathUniverse) pathUniverse = marriagePlace.universe;
 				}

@@ -277,6 +277,16 @@ export interface JourneyWaypoint {
 	 * on `eventType === 'marriage'` waypoints. (#501)
 	 */
 	spouseName?: string;
+	/**
+	 * Partner's birth date string on a marriage waypoint. Resolved from the
+	 * spouse note via `spouseId` during journey-path construction. Lets the
+	 * popup compute the partner's age at the marriage alongside the focal
+	 * person's, so the relationship context isn't one-sided ("John, 27,
+	 * married Jane, 24" vs. just "John, 27"). Only set on
+	 * `eventType === 'marriage'` waypoints when the spouse is resolvable
+	 * and has a `born` value. (#504)
+	 */
+	spouseBirthDate?: string;
 }
 
 /**
