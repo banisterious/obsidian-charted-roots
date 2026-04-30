@@ -22,6 +22,7 @@ import type {
 } from '../types/universe-types';
 import { getLogger } from '../../core/logging';
 import { isUniverseNote } from '../../utils/note-type-detection';
+import { sanitizeName } from '../../utils/name-sanitization';
 
 const logger = getLogger('UniverseService');
 
@@ -412,6 +413,32 @@ export class UniverseService {
 		].join('\n');
 
 		await this.app.vault.modify(file, newContent);
+
+		// Rename the file when the user changed the name (#488 Part 3). The
+		// Part 2 cascade is keyed on `vault.on('rename')`; without renaming
+		// the file here, changing the universe via Edit Universe modal would
+		// only update the frontmatter `name` property and never propagate to
+		// entities' `universe:` references. Renaming triggers the cascade
+		// automatically (and lets Obsidian rewrite any [[oldName]] wikilinks
+		// to [[newName]] for free).
+		if (data.name) {
+			const sanitized = sanitizeName(data.name);
+			if (sanitized && sanitized !== file.basename) {
+				const parentPath = file.parent?.path ?? '';
+				const newPath = parentPath
+					? `${parentPath}/${sanitized}.md`
+					: `${sanitized}.md`;
+				try {
+					await this.app.fileManager.renameFile(file, newPath);
+				} catch (error) {
+					logger.error(
+						'updateUniverse',
+						`Renamed universe note failed; frontmatter saved but basename out of sync: ${error instanceof Error ? error.message : String(error)}`
+					);
+					new Notice(`Universe saved, but file rename failed — entities may not pick up the new name`);
+				}
+			}
+		}
 
 		// Reload cache
 		this.reloadCache();

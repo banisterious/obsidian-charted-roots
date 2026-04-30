@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **Edit Universe modal renames the file when the name property changes** ([#488](https://github.com/banisterious/obsidian-charted-roots/issues/488) Part 3): The 0.22.12 cascade (Part 2) is keyed on `vault.on('rename')` — it walks all entities and rewrites `universe:` plain-string references when a universe note's basename changes. But `UniverseService.updateUniverse` only wrote the new `name` value to the frontmatter and never renamed the file, so the cascade only fired when users renamed the universe FILE directly (drag, F2, wikilink rename). Most users naturally edit the name via the Edit Universe modal, which left the file basename unchanged and entities still pointing at the old name. `updateUniverse` now sanitizes the new name (via the existing `sanitizeName` helper) and calls `app.fileManager.renameFile` when the sanitized name differs from the current basename. The cascade fires automatically off the rename event, and Obsidian's native wikilink-rewrite handles `[[oldName]]` → `[[newName]]` updates for free. Reported by @DigitalDreamn.
+
 ### Added
 
 - **Cleanup Wizard step: add cr_id to place notes** ([#502](https://github.com/banisterious/obsidian-charted-roots/issues/502)): Place notes lacking `cr_id` are silently excluded from the place graph cache by `PlaceGraphService.extractPlaceNode`, so by-name lookups, the Create Place modal's parent dropdown, and map markers can't see them. [#471](https://github.com/banisterious/obsidian-charted-roots/issues/471) shipped Layer 1 (a `warn`-level dev-console log on the skip); this is Layer 2 — a fixable batch step in the Post-Import Cleanup Wizard. Detects place-shaped notes via the same `isPlaceNote` detection used elsewhere, lists them in the preview, and applies a generated `cr_id` to each via `processFrontMatter` (defensive: skips notes that already have one in case state changed mid-run). Layer 3 (silent auto-heal during cache build) was discussed but rejected — the wizard route keeps schema issues visible to the user.
