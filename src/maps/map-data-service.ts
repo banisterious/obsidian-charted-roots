@@ -71,11 +71,17 @@ interface PlaceData {
  * frontmatter slots, or from legacy flat `marriage_*` fields as a single-entry
  * fallback. Each entry is independently rendered as a marriage waypoint /
  * marker so multi-spouse people surface every union on the map. (#498)
+ *
+ * `spouseId` / `spouseName` capture the partner's identity so the marker
+ * pipeline can dedup pair-symmetric marriage records (Owen→Beru and
+ * Beru→Owen → one marker) and the popup can name the partner. (#501)
  */
 interface Marriage {
 	place?: string;
 	placeId?: string;
 	date?: string | number;
+	spouseId?: string;
+	spouseName?: string;
 }
 
 /**
@@ -526,8 +532,10 @@ export class MapDataService {
 			const place = this.extractPlaceString(fm[`spouse${i}_marriage_location`]);
 			const placeId = fm[`spouse${i}_marriage_location_id`] as string | undefined;
 			const date = fm[`spouse${i}_marriage_date`] as string | number | undefined;
+			const spouseId = fm[`spouse${i}_id`] as string | undefined;
+			const spouseName = this.extractLinkTarget(fm[`spouse${i}`]) ?? undefined;
 			if (place || placeId || date !== undefined) {
-				result.push({ place, placeId, date });
+				result.push({ place, placeId, date, spouseId, spouseName });
 			}
 		}
 
@@ -537,8 +545,20 @@ export class MapDataService {
 		const flatPlace = this.extractPlaceString(fm.marriage_place);
 		const flatPlaceId = fm.marriage_place_id as string | undefined;
 		const flatDate = fm.marriage_date as string | number | undefined;
+		const flatSpouseId = (fm.spouse_id as string | undefined)
+			?? (Array.isArray(fm.spouse_id) ? (fm.spouse_id[0] as string | undefined) : undefined);
+		const flatSpouseRaw = fm.spouse;
+		const flatSpouseName = this.extractLinkTarget(
+			Array.isArray(flatSpouseRaw) ? flatSpouseRaw[0] : flatSpouseRaw
+		) ?? undefined;
 		if (flatPlace || flatPlaceId || flatDate !== undefined) {
-			return [{ place: flatPlace, placeId: flatPlaceId, date: flatDate }];
+			return [{
+				place: flatPlace,
+				placeId: flatPlaceId,
+				date: flatDate,
+				spouseId: flatSpouseId,
+				spouseName: flatSpouseName,
+			}];
 		}
 
 		return undefined;
@@ -569,13 +589,19 @@ export class MapDataService {
 			if (deathMarker) markers.push(deathMarker);
 
 			// Marriage markers (one per indexed-spouse slot; falls back to a
-			// single legacy flat entry for non-multi-spouse data) (#498)
+			// single legacy flat entry for non-multi-spouse data) (#498).
+			// `spouseId` / `spouseName` carry the partner identity so the
+			// dedup pass can collapse pair-symmetric markers (#501).
 			if (person.marriages) {
 				for (const marriage of person.marriages) {
 					const marker = this.createMarkerFromPlace(
 						person, 'marriage', marriage.placeId, marriage.place, marriage.date, filters
 					);
-					if (marker) markers.push(marker);
+					if (marker) {
+						marker.spouseId = marriage.spouseId;
+						marker.spouseName = marriage.spouseName;
+						markers.push(marker);
+					}
 				}
 			}
 
@@ -594,7 +620,7 @@ export class MapDataService {
 			}
 		}
 
-		return this.dedupeEventMarkers(markers);
+		return this.dedupeMarriageMarkers(this.dedupeEventMarkers(markers));
 	}
 
 	/**
@@ -610,6 +636,61 @@ export class MapDataService {
 	 * marker in iteration order if the event note can't be looked up or has
 	 * no primary set.
 	 */
+	/**
+	 * Marriage-marker dedup (#501). A marriage between two spouses produces
+	 * one marker per spouse from `loadMarriages` — Owen's `spouse1_marriage_*`
+	 * → marker for Owen at the place; Beru's `spouse1_marriage_*` → marker
+	 * for Beru at the same place. The two represent the same logical marriage
+	 * but neither carries an `eventCrId`, so the #493 event-cr_id dedup pass
+	 * doesn't catch them.
+	 *
+	 * Groups marriage markers by a sorted-pair key (sorted person+spouse cr_ids,
+	 * place id, date) so Owen→Beru and Beru→Owen produce the same key. Builds a
+	 * `participants` list naming both spouses; the existing popup rendering
+	 * surfaces the partner via the `with <name>` line.
+	 *
+	 * Markers without a resolvable `spouseId` (legacy flat data without
+	 * `spouse_id` populated) pass through unchanged — they look like one-sided
+	 * marriages to the dedup, which is the correct fallback behavior.
+	 */
+	private dedupeMarriageMarkers(markers: MapMarker[]): MapMarker[] {
+		const result: MapMarker[] = [];
+		const groups = new Map<string, MapMarker[]>();
+
+		for (const marker of markers) {
+			if (marker.type === 'marriage' && marker.spouseId) {
+				const sortedPair = [marker.personId, marker.spouseId].sort().join('|');
+				const key = `${sortedPair}|${marker.placeId ?? ''}|${marker.date ?? ''}`;
+				const group = groups.get(key) ?? [];
+				group.push(marker);
+				groups.set(key, group);
+			} else {
+				result.push(marker);
+			}
+		}
+
+		for (const [, group] of groups) {
+			if (group.length === 1) {
+				result.push(group[0]);
+				continue;
+			}
+
+			const primary = group[0];
+			const partner = group.find(m => m.personId !== primary.personId) ?? group[1];
+			const participants: EventParticipant[] = [
+				{ personId: primary.personId, personName: primary.personName, isPrimary: true },
+				{ personId: partner.personId, personName: partner.personName, isPrimary: false },
+			];
+
+			result.push({
+				...primary,
+				participants,
+			});
+		}
+
+		return result;
+	}
+
 	private dedupeEventMarkers(markers: MapMarker[]): MapMarker[] {
 		const eventService = this.plugin.getEventService?.();
 		const result: MapMarker[] = [];
@@ -1041,7 +1122,8 @@ export class MapDataService {
 						placeId: marriagePlace.crId,
 						eventType: 'marriage',
 						date: marriage.date !== undefined ? String(marriage.date) : undefined,
-						year: marriageYear
+						year: marriageYear,
+						spouseName: marriage.spouseName
 					});
 					if (!pathUniverse) pathUniverse = marriagePlace.universe;
 				}

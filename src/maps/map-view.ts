@@ -1850,6 +1850,12 @@ export class MapView extends ItemView {
 			this.addPopupRow(body, 'Place', waypoint.name);
 		}
 
+		// Partner — surfaced for marriage waypoints so a journey carries the
+		// relationship context (#501).
+		if (waypoint.eventType === 'marriage' && waypoint.spouseName) {
+			this.addPopupRow(body, 'Partner', waypoint.spouseName);
+		}
+
 		// Age — use DateService so fictional calendars (eras counting down, era-crossing) are handled correctly
 		const dateService = this.plugin.getDateService();
 		const age = dateService && journey?.birthDate && waypoint.date

@@ -149,6 +149,18 @@ export interface MapMarker {
 	 * undefined and render only `personName` (#493).
 	 */
 	participants?: EventParticipant[];
+	/**
+	 * Partner's `cr_id` on a marriage marker. Drives the pair-symmetric dedup
+	 * that collapses Owen→Beru and Beru→Owen markers into a single combined
+	 * marker. Only set on `type === 'marriage'` markers. (#501)
+	 */
+	spouseId?: string;
+	/**
+	 * Partner's display name on a marriage marker. Used to populate the
+	 * `participants` list during the marriage dedup pass and to surface
+	 * partner identity in popups. (#501)
+	 */
+	spouseName?: string;
 }
 
 /**
@@ -258,6 +270,13 @@ export interface JourneyWaypoint {
 	 * of the generic `Custom` (#499; sibling to the marker-side fix in #466).
 	 */
 	customLabel?: string;
+	/**
+	 * Partner's display name on a marriage waypoint. Lets the journey-mode
+	 * rich popup name the partner (`with <spouseName>`) so a person's journey
+	 * carries the relationship context, not just the place + date. Only set
+	 * on `eventType === 'marriage'` waypoints. (#501)
+	 */
+	spouseName?: string;
 }
 
 /**
