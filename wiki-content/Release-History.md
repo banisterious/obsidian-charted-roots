@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.14 Round-Up: Universe Rename Closure, Marriage Marker Pairing, and a Cleanup Wizard Step](#v02214-round-up-universe-rename-closure-marriage-marker-pairing-and-a-cleanup-wizard-step-v02214)
   - [v0.22.13 Round-Up: Map Coverage — Multi-Spouse, Multi-Participant, and Hierarchical Places](#v02213-round-up-map-coverage--multi-spouse-multi-participant-and-hierarchical-places-v02213)
   - [v0.22.12 Round-Up: Marriage Symmetry, Universe Rename Cascade, and Map UX Polish](#v02212-round-up-marriage-symmetry-universe-rename-cascade-and-map-ux-polish-v02212)
   - [v0.22.11 Round-Up: Path Label Architecture, Person-Delete Hardening, and Universe Dropdown](#v02211-round-up-path-label-architecture-person-delete-hardening-and-universe-dropdown-v02211)
@@ -152,6 +153,40 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.14 Round-Up: Universe Rename Closure, Marriage Marker Pairing, and a Cleanup Wizard Step (v0.22.14)
+
+Three fixes plus one Cleanup Wizard step. Closes the **Universe rename direction end-to-end** ([#488](https://github.com/banisterious/obsidian-charted-roots/issues/488) Part 3, the third part of a three-part arc): the Edit Universe modal now actually renames the file when the name property changes, which triggers the existing 0.22.12 Part 2 cascade automatically. Collapses **pair-symmetric marriage markers** into a single combined marker with both partner names in the popup ([#501](https://github.com/banisterious/obsidian-charted-roots/issues/501) — sibling to [#493](https://github.com/banisterious/obsidian-charted-roots/issues/493)'s `cr_type: event` dedup, but for marriages, which live as frontmatter on each spouse's note rather than as event notes). And adds a **Cleanup Wizard step** ([#502](https://github.com/banisterious/obsidian-charted-roots/issues/502), Layer 2 of the original [#471](https://github.com/banisterious/obsidian-charted-roots/issues/471) plan) that surfaces place notes lacking `cr_id` and offers a "Generate cr_id" fix so they re-enter the place graph.
+
+Driven by @DigitalDreamn's verification of the 0.22.13 cycle: her Edit Universe testing surfaced the missing rename trigger that became #488 Part 3, and her #493 / #498 verification observations seeded #501. All four changes are non-data-loss; stability window continues unchanged from 0.22.4. Tenth patch in the run without a reset.
+
+**Fix: Edit Universe modal renames the file when the name property changes** ([#488](https://github.com/banisterious/obsidian-charted-roots/issues/488) Part 3):
+- `src/universes/services/universe-service.ts` — the 0.22.12 Part 2 cascade walks all entities and rewrites `universe:` plain-string references when a universe note's basename changes, but it's keyed on `vault.on('rename')`. `UniverseService.updateUniverse` was only writing the new `name` to the frontmatter; the file basename stayed the same. The cascade only fired when users renamed the universe FILE directly (drag, F2, wikilink rename). Editing via the Edit Universe modal — the natural path — left entities pointing at the old name. The dropdown showing both old and new names was a side effect of `getCachedUniverses` combining distinct `universe:` values from people / places (still the old name) with universe-note names (new name).
+- `updateUniverse` now sanitizes the new name (via the existing `sanitizeName` helper) and calls `app.fileManager.renameFile` when the sanitized name differs from the current basename. The cascade fires automatically off the rename event, and Obsidian's native wikilink-rewrite handles `[[oldName]]` → `[[newName]]` updates for free. Reported by @DigitalDreamn after testing 0.22.13's Part 2 cascade — verified end-to-end on a dev-vault rename of "The Dying Earth" before commit.
+- The three-part arc closes here: Part 1 (0.22.11, `d461b3f2`) made the Edit Person Universe dropdown source from the universes folder; Part 2 (0.22.12, `452bcffd`) added the rename cascade for plain-string `universe:` references; Part 3 (0.22.14) makes the Edit Universe modal trigger that cascade naturally instead of requiring users to know to rename the file directly.
+
+**Fix: Marriages between two spouses render as one combined marker with both partner names** ([#501](https://github.com/banisterious/obsidian-charted-roots/issues/501)):
+- `src/maps/map-data-service.ts` + `src/maps/types/map-types.ts` — a marriage produced one map marker per spouse (Owen's `spouse1_marriage_*` slot rendered a marker for Owen at Tatooine; Beru's `spouse1_marriage_*` slot rendered a separate marker for Beru at the same place). Neither popup named the partner. [#493](https://github.com/banisterious/obsidian-charted-roots/issues/493)'s `eventCrId`-based dedup didn't catch this because marriages live on each spouse's frontmatter rather than as `cr_type: event` notes.
+- `loadMarriages` now reads `spouseN` and `spouseN_id` alongside the existing marriage fields, attaches `spouseId` / `spouseName` to the resulting `MapMarker`. A new `dedupeMarriageMarkers` pass (running after the event-cr_id dedup) groups by sorted-pair + place + date so Owen→Beru and Beru→Owen markers collapse into one. Both spouses appear in the surviving marker's `participants` list, so the existing popup rendering surfaces "Owen Lars / with Beru Whitesun" naturally.
+- Journey-mode rich popup also gains a `Partner` row for marriage waypoints (covering @DigitalDreamn's "indicate to who" suggestion from [#498](https://github.com/banisterious/obsidian-charted-roots/issues/498) verification). 8 new tests in `tests/marriage-marker-dedup.test.ts`.
+
+**Added: Cleanup Wizard step — add cr_id to place notes** ([#502](https://github.com/banisterious/obsidian-charted-roots/issues/502)):
+- `src/ui/cleanup-wizard-types.ts` + `src/ui/cleanup-wizard-modal.ts` — new step 15 in the Post-Import Cleanup Wizard. Detects place-shaped notes via the canonical `isPlaceNote` detection, lists them in the preview, and applies a generated `cr_id` to each via `processFrontMatter` (defensive: skips notes that already have one in case state changed mid-run). Mirrors the step 14 child-to-children pattern.
+- Layer 2 of the original [#471](https://github.com/banisterious/obsidian-charted-roots/issues/471) three-layer plan. Layer 1 (the `warn`-level dev-console log) shipped in 0.22.9. Layer 3 (silent auto-heal during cache build) was discussed but rejected — keeping schema issues visible via the wizard preserves user awareness.
+
+**Test: Fence FamilyGraphService.extractPersonNode non-person rejection** ([#489](https://github.com/banisterious/obsidian-charted-roots/issues/489) follow-up):
+- `tests/family-graph-extract-person.test.ts` — 6 tests fencing the inclusion check that #489 added in 0.22.11. Custom `cr_type` values ("hex" / "faction") return null instead of falling through and being coerced into people; existing place / person / legacy cr_id-no-cr_type / missing-cr_id paths preserve their behavior. The fix shipped without dedicated test coverage; this fences the regression class so future refactors can't quietly break it.
+
+**Testing:** 6 new tests, suite total 480 (was 466 at start of cycle; +14 across this and the closing #489 fence).
+- `tests/marriage-marker-dedup.test.ts` (8 tests, #501) — pass-through non-marriage, single-marriage pass-through, sorted-pair collapse, legacy-no-spouseId pass-through, two unrelated couples kept separate, same couple different dates, same couple different places, multi-spouse with shared-partner-only-some-marriages.
+- `tests/family-graph-extract-person.test.ts` (6 tests, #489 follow-up) — custom non-person cr_type rejection, place sentinel preservation, person extraction, legacy-no-cr_type fallback, missing-cr_id null.
+- #488 Part 3 / #502 — manually verified by reporter / developer; integration-test mocking burden is high for marginal fence value.
+
+**Reporters:** @DigitalDreamn for #488 Part 3 verification report + #501 surface from #493 / #498 testing.
+
+**Stability-window impact:** no reset — all four changes are non-data-loss. Window continues from 0.22.4's start: 2026-04-23 → ~2026-05-14. Tenth patch (0.22.5 / 0.22.6 / 0.22.7 / 0.22.8 / 0.22.9 / 0.22.10 / 0.22.11 / 0.22.12 / 0.22.13 / 0.22.14) without a window reset. About two weeks of soak left.
+
+---
 
 ### v0.22.13 Round-Up: Map Coverage — Multi-Spouse, Multi-Participant, and Hierarchical Places (v0.22.13)
 
