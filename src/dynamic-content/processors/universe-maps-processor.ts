@@ -101,8 +101,17 @@ export class UniverseMapsProcessor {
 			return null;
 		}
 
-		// Find map notes for this universe
-		const maps = this.getCustomMapsForUniverse(name, crId);
+		// Match referencing notes against any of the universe's aliases
+		// (basename / name / cr_id). Cascade writes the basename and the
+		// dropdown writes the name, so a single key would miss either side
+		// after rename when sanitization strips chars from the basename
+		// (#503).
+		const aliases = new Set<string>();
+		aliases.add(currentFile.basename.toLowerCase());
+		aliases.add(name.toLowerCase());
+		aliases.add(crId.toLowerCase());
+
+		const maps = this.getCustomMapsForUniverse(aliases);
 
 		return {
 			universeName: name,
@@ -116,7 +125,7 @@ export class UniverseMapsProcessor {
 	/**
 	 * Get custom map notes belonging to a universe
 	 */
-	private getCustomMapsForUniverse(universeName: string, universeCrId: string): Array<{
+	private getCustomMapsForUniverse(universeAliases: Set<string>): Array<{
 		name: string;
 		filePath: string;
 		imagePath?: string;
@@ -132,7 +141,6 @@ export class UniverseMapsProcessor {
 		}> = [];
 
 		const files = this.plugin.app.vault.getMarkdownFiles();
-		const lowerName = universeName.toLowerCase();
 
 		for (const file of files) {
 			const cache = this.plugin.app.metadataCache.getFileCache(file);
@@ -142,7 +150,7 @@ export class UniverseMapsProcessor {
 			if (!fm.universe) continue;
 
 			const universeValue = String(fm.universe).toLowerCase();
-			if (universeValue !== lowerName && universeValue !== universeCrId) continue;
+			if (!universeAliases.has(universeValue)) continue;
 
 			// Parse image path (handle wikilink YAML arrays)
 			const rawImage = fm.image || fm.image_path || fm.imagePath;
@@ -165,7 +173,7 @@ export class UniverseMapsProcessor {
 		}
 
 		// Count places with coordinates per map
-		const placeCounts = this.countPlacesPerMap(universeName, universeCrId, maps.map(m => m.mapId).filter(Boolean) as string[]);
+		const placeCounts = this.countPlacesPerMap(universeAliases, maps.map(m => m.mapId).filter(Boolean) as string[]);
 		for (const map of maps) {
 			map.placeCount = map.mapId ? (placeCounts.get(map.mapId) ?? 0) : 0;
 		}
@@ -179,14 +187,13 @@ export class UniverseMapsProcessor {
 	 * Places specify which map(s) they belong to via the `maps` or `map_id` field.
 	 * Places without a maps field are counted under all maps in their universe.
 	 */
-	private countPlacesPerMap(universeName: string, universeCrId: string, mapIds: string[]): Map<string, number> {
+	private countPlacesPerMap(universeAliases: Set<string>, mapIds: string[]): Map<string, number> {
 		const counts = new Map<string, number>();
 		for (const id of mapIds) {
 			counts.set(id, 0);
 		}
 
 		const files = this.plugin.app.vault.getMarkdownFiles();
-		const lowerName = universeName.toLowerCase();
 
 		for (const file of files) {
 			const cache = this.plugin.app.metadataCache.getFileCache(file);
@@ -198,7 +205,7 @@ export class UniverseMapsProcessor {
 			if (!fm.universe) continue;
 
 			const universeValue = String(fm.universe).toLowerCase();
-			if (universeValue !== lowerName && universeValue !== universeCrId) continue;
+			if (!universeAliases.has(universeValue)) continue;
 
 			// Check for coordinates (geographic or pixel)
 			const hasGeo = fm.coordinates_lat != null && fm.coordinates_long != null;

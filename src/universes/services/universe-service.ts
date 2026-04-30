@@ -628,10 +628,41 @@ export class UniverseService {
 	}
 
 	/**
+	 * Get entities belonging to a universe identified by file, matching against
+	 * any of the universe note's aliases (basename, frontmatter `name`, or
+	 * `cr_id`). Resilient to the cascade-write-by-basename vs. dropdown-write-
+	 * by-name divergence that surfaces after the universe is renamed and the
+	 * sanitized basename diverges from the typed name (#503).
+	 */
+	getEntitiesForUniverseFile(file: TFile): UniverseEntities {
+		const cache = this.app.metadataCache.getFileCache(file);
+		const fm = cache?.frontmatter;
+
+		const aliases = new Set<string>();
+		aliases.add(file.basename.toLowerCase());
+		if (typeof fm?.name === 'string') aliases.add(fm.name.toLowerCase());
+		if (typeof fm?.cr_id === 'string') aliases.add(fm.cr_id.toLowerCase());
+
+		return this.collectEntities((universeValue) => aliases.has(universeValue));
+	}
+
+	/**
 	 * Get entities belonging to a universe, grouped by type.
 	 * Returns file references with basic frontmatter data for rendering.
 	 */
 	getEntitiesForUniverse(crIdOrName: string): UniverseEntities {
+		const lowerValue = crIdOrName.toLowerCase();
+		return this.collectEntities((universeValue) =>
+			universeValue === lowerValue || universeValue === crIdOrName
+		);
+	}
+
+	/**
+	 * Walk markdown files and group entities by type for any whose `universe:`
+	 * field passes the supplied matcher (called with the lowercased value).
+	 * Shared by the string-keyed and file-keyed lookup variants.
+	 */
+	private collectEntities(matches: (lowerUniverseValue: string) => boolean): UniverseEntities {
 		const result: UniverseEntities = {
 			people: [],
 			places: [],
@@ -639,16 +670,13 @@ export class UniverseService {
 			organizations: []
 		};
 
-		const files = this.app.vault.getMarkdownFiles();
-		const lowerValue = crIdOrName.toLowerCase();
-
-		for (const file of files) {
+		for (const file of this.app.vault.getMarkdownFiles()) {
 			const cache = this.app.metadataCache.getFileCache(file);
 			const fm = cache?.frontmatter;
 			if (!fm?.universe) continue;
 
 			const universeValue = String(fm.universe).toLowerCase();
-			if (universeValue !== lowerValue && universeValue !== crIdOrName) continue;
+			if (!matches(universeValue)) continue;
 
 			const crType = fm.cr_type || fm.type;
 			const entry: UniverseEntityEntry = {
@@ -672,7 +700,6 @@ export class UniverseService {
 				case 'event': {
 					entry.eventType = fm.event_type ? String(fm.event_type) : undefined;
 					entry.date = fm.date ? String(fm.date) : undefined;
-					// Collect person names from the persons array
 					if (Array.isArray(fm.persons)) {
 						entry.persons = fm.persons.map((p: string) => {
 							const match = p.match(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/);
@@ -694,7 +721,6 @@ export class UniverseService {
 			}
 		}
 
-		// Sort each group
 		result.people.sort((a, b) => a.name.localeCompare(b.name));
 		result.places.sort((a, b) => a.name.localeCompare(b.name));
 		result.events.sort((a, b) => (a.date || '').localeCompare(b.date || ''));

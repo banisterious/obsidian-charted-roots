@@ -73,13 +73,17 @@ export class UniverseEntitiesProcessor {
 
 			// Register for metadata changes to re-render
 			const metadataHandler = async (changedFile: TFile) => {
-				// Re-render if any file changes (entities may have been added/removed)
 				const cache = this.plugin.app.metadataCache.getFileCache(changedFile);
 				const fm = cache?.frontmatter;
 
-				// Only re-render if the changed file references this universe or is the universe note itself
+				// Re-render if the changed file is the universe note itself, or
+				// if its `universe:` field references this universe by any of
+				// the aliases the lookup honors (basename / name / cr_id) — the
+				// cascade writes basename and the dropdown writes name, so a
+				// single comparison key would miss either side after rename
+				// (#503).
 				if (changedFile.path === context.universeFile.path ||
-					(fm?.universe && String(fm.universe).toLowerCase() === context.universeName.toLowerCase())) {
+					(fm?.universe && context.universeAliases.has(String(fm.universe).toLowerCase()))) {
 					const freshContext = this.resolveUniverseContext(ctx);
 					if (freshContext) {
 						el.empty();
@@ -124,13 +128,21 @@ export class UniverseEntitiesProcessor {
 			return null;
 		}
 
-		// Get entities for this universe
+		// Get entities for this universe. Match by file (basename / name /
+		// cr_id) so the lookup survives universe rename when the typed name
+		// has chars stripped by sanitization (#503).
 		const universeService = new UniverseService(this.plugin);
-		const entities = universeService.getEntitiesForUniverse(name);
+		const entities = universeService.getEntitiesForUniverseFile(currentFile);
+
+		const aliases = new Set<string>();
+		aliases.add(currentFile.basename.toLowerCase());
+		aliases.add(name.toLowerCase());
+		aliases.add(crId.toLowerCase());
 
 		return {
 			universeName: name,
 			universeCrId: crId,
+			universeAliases: aliases,
 			entities,
 			universeFile: currentFile,
 			app

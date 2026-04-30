@@ -17,6 +17,13 @@ export interface UniverseEntitiesContext {
 	universeName: string;
 	/** Universe cr_id */
 	universeCrId: string;
+	/**
+	 * Lowercased identifier set for the universe — file basename, frontmatter
+	 * `name`, and `cr_id`. Used by the cache-change handler so a referencing
+	 * note's `universe:` value matches whether it was written by the dropdown
+	 * (name) or rewritten by the rename cascade (basename) (#503).
+	 */
+	universeAliases: Set<string>;
 	/** Entities grouped by type */
 	entities: UniverseEntities;
 	/** The universe note file */
