@@ -146,7 +146,10 @@ export class UniverseService {
 	 *   left alone because Obsidian's native wikilink-rewrite handles those on
 	 *   rename. cr_id-based or slug-based references are stable identifiers
 	 *   that don't track the basename and shouldn't be touched.
-	 * - Touches notes with `cr_type` of person, place, event, or organization.
+	 * - Touches notes with `cr_type` of person, place, event, organization,
+	 *   or map. Map notes carry a `universe:` field that scopes which markers
+	 *   render on them; without inclusion the map keeps pointing at the old
+	 *   universe and its filter no longer matches the cascaded entities (#503).
 	 *
 	 * Returns the number of files updated. Caller is responsible for any UI
 	 * surfacing (e.g. a `Notice`) and for re-loading the universe cache so the
@@ -154,7 +157,7 @@ export class UniverseService {
 	 */
 	async cascadeUniverseRename(oldBasename: string, newBasename: string): Promise<number> {
 		const REFERENCING_TYPES: ReadonlyArray<string> = [
-			'person', 'place', 'event', 'organization'
+			'person', 'place', 'event', 'organization', 'map'
 		];
 		let updateCount = 0;
 
