@@ -264,6 +264,18 @@ export const WIZARD_STEPS: WizardStepConfig[] = [
 		detectMethod: 'detectLegacyChildProperty',
 		applyMethod: 'migrateChildToChildren',
 		dependencies: []
+	},
+	{
+		id: 'place-cr-id',
+		number: 15,
+		title: 'Add cr_id to place notes',
+		shortTitle: 'Place IDs',
+		description: 'Generate cr_id for place notes that lack one. Without cr_id, places are silently excluded from the place graph and don’t appear in by-name lookups, the parent dropdown, or map markers.',
+		type: 'batch',
+		service: 'inline',
+		detectMethod: 'detectPlacesWithoutCrId',
+		applyMethod: 'addCrIdToPlaces',
+		dependencies: []
 	}
 ];
 

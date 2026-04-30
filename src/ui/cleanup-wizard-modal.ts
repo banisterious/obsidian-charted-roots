@@ -1,7 +1,7 @@
 /**
  * Post-Import Cleanup Wizard Modal
  *
- * A 14-step wizard for post-import data cleanup operations.
+ * A 15-step wizard for post-import data cleanup operations.
  *
  * Step 1: Quality Report — Review data quality issues (review-only)
  * Step 2: Bidirectional Relationships — Fix parent-child link consistency (batch)
@@ -17,6 +17,7 @@
  * Step 12: Evidence Tracking Migration — Convert sourced_facts to flat properties (batch)
  * Step 13: Life Events Migration — Convert inline events to event notes (batch)
  * Step 14: Normalize Children Property — Rename child to children (batch)
+ * Step 15: Add cr_id to Place Notes — Generate cr_id for missing-id places (batch, #502)
  */
 
 import { App, Modal, Notice, setIcon, TFile } from 'obsidian';
@@ -42,6 +43,8 @@ import { EventPersonMigrationService, type LegacyPersonEventNote } from '../even
 import { SourcedFactsMigrationService, type LegacySourcedFactsNote } from '../sources/services/sourced-facts-migration-service';
 import { LifeEventsMigrationService, type LegacyEventsNote } from '../events/services/life-events-migration-service';
 import { pluralize } from '../utils/format-utils';
+import { isPlaceNote } from '../utils/note-type-detection';
+import { generateCrId } from '../core/uuid';
 import {
 	type WizardStepConfig,
 	type StepState,
@@ -114,6 +117,9 @@ export class CleanupWizardModal extends Modal {
 
 	// Child→children migration state (Step 14)
 	private legacyChildNotes: TFile[] = [];
+
+	// Place cr_id state (Step 15, #502)
+	private placesWithoutCrIdNotes: TFile[] = [];
 
 	// Step completion tracking for dependency checks
 	private stepCompletion: Record<string, { completed: boolean; completedAt: number; issuesFixed: number }> = {};
@@ -1182,6 +1188,9 @@ export class CleanupWizardModal extends Modal {
 				break;
 			case 'child-to-children':
 				this.renderChildToChildrenPreview(container);
+				break;
+			case 'place-cr-id':
+				this.renderPlaceCrIdPreview(container);
 				break;
 			default:
 				// Fallback for unimplemented previews
@@ -3443,6 +3452,15 @@ export class CleanupWizardModal extends Modal {
 					};
 					break;
 				}
+				case 'place-cr-id': {
+					const migrationResult = await this.addCrIdToPlaces(onProgress);
+					result = {
+						processed: migrationResult.processed,
+						modified: migrationResult.modified,
+						errors: migrationResult.errors
+					};
+					break;
+				}
 				default:
 					// Placeholder for unimplemented methods
 					await new Promise(resolve => setTimeout(resolve, 500));
@@ -3690,6 +3708,11 @@ export class CleanupWizardModal extends Modal {
 			this.state.steps[14].issueCount = this.legacyChildNotes.length;
 			logger.debug('runPreScan', `Step 14 (Children): ${this.legacyChildNotes.length} notes with legacy child property`);
 
+			// Step 15: Place cr_id (place notes missing cr_id, #502)
+			this.placesWithoutCrIdNotes = this.detectPlacesWithoutCrId();
+			this.state.steps[15].issueCount = this.placesWithoutCrIdNotes.length;
+			logger.debug('runPreScan', `Step 15 (Place IDs): ${this.placesWithoutCrIdNotes.length} place notes missing cr_id`);
+
 			this.state.preScanComplete = true;
 			logger.info('runPreScan', 'Pre-scan complete');
 		} catch (error) {
@@ -3844,6 +3867,123 @@ export class CleanupWizardModal extends Modal {
 		}
 
 		logger.info('migrateChildToChildren', `Migration complete`, result);
+		return result;
+	}
+
+	/**
+	 * Detect place-shaped notes that lack a `cr_id` field (Step 15, #502).
+	 *
+	 * Place notes without `cr_id` get silently excluded from the place graph
+	 * cache by `PlaceGraphService.extractPlaceNode`, which means by-name
+	 * lookups, the Create Place modal's parent dropdown, and map markers
+	 * can't see them. This step surfaces them as a fixable batch.
+	 */
+	private detectPlacesWithoutCrId(): TFile[] {
+		const files: TFile[] = [];
+		const settings = this.plugin.settings.noteTypeDetection;
+		for (const file of this.app.vault.getMarkdownFiles()) {
+			const cache = this.app.metadataCache.getFileCache(file);
+			if (!cache?.frontmatter) continue;
+
+			const fm = cache.frontmatter as Record<string, unknown>;
+
+			if (!isPlaceNote(fm, cache, settings)) continue;
+			if (fm.cr_id) continue;
+
+			files.push(file);
+		}
+		return files;
+	}
+
+	/**
+	 * Render preview for the place-cr_id step (Step 15, #502).
+	 */
+	private renderPlaceCrIdPreview(container: HTMLElement): void {
+		if (this.placesWithoutCrIdNotes.length === 0) return;
+
+		const preview = container.createDiv({ cls: 'crc-cleanup-preview' });
+		const summary = preview.createDiv({ cls: 'crc-cleanup-preview-summary' });
+		summary.textContent = `${this.placesWithoutCrIdNotes.length} place ${pluralize(this.placesWithoutCrIdNotes.length, 'note')} will be updated:`;
+
+		const hint = preview.createDiv({ cls: 'crc-cleanup-preview-hint' });
+		hint.textContent = 'A generated cr_id will be added to each place note so it appears in the place graph and downstream features.';
+
+		const list = preview.createDiv({ cls: 'crc-cleanup-preview-list' });
+
+		const maxDisplay = 15;
+		const displayItems = this.placesWithoutCrIdNotes.slice(0, maxDisplay);
+		const remaining = this.placesWithoutCrIdNotes.length - maxDisplay;
+
+		for (const file of displayItems) {
+			const row = list.createDiv({ cls: 'crc-cleanup-preview-row crc-cleanup-preview-row--clickable' });
+
+			const iconEl = row.createDiv({ cls: 'crc-cleanup-preview-icon' });
+			setIcon(iconEl, 'map-pin');
+
+			const content = row.createDiv({ cls: 'crc-cleanup-preview-content' });
+
+			const fileName = content.createSpan({ cls: 'crc-cleanup-preview-person' });
+			fileName.textContent = file.basename;
+
+			const desc = content.createSpan({ cls: 'crc-cleanup-preview-desc' });
+			desc.textContent = ': add cr_id';
+
+			row.addEventListener('click', () => {
+				this.close();
+				void this.app.workspace.openLinkText(file.path, '', false);
+			});
+		}
+
+		if (remaining > 0) {
+			const more = list.createDiv({ cls: 'crc-cleanup-preview-more' });
+			more.textContent = `…and ${remaining} more`;
+		}
+	}
+
+	/**
+	 * Generate cr_id for place notes missing one (Step 15, #502).
+	 *
+	 * Defensive: skips any note that already has cr_id by the time
+	 * `processFrontMatter` runs (in case state changed between detection
+	 * and apply). Existing values are never overwritten.
+	 */
+	private async addCrIdToPlaces(
+		onProgress?: (current: number, total: number, currentFile?: string) => void
+	): Promise<{ processed: number; modified: number; errors: Array<{ file: string; error: string }> }> {
+		const result = {
+			processed: 0,
+			modified: 0,
+			errors: [] as Array<{ file: string; error: string }>
+		};
+
+		for (let i = 0; i < this.placesWithoutCrIdNotes.length; i++) {
+			const file = this.placesWithoutCrIdNotes[i];
+			onProgress?.(i + 1, this.placesWithoutCrIdNotes.length, file.basename);
+
+			result.processed++;
+
+			try {
+				let wrote = false;
+				await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
+					if (!frontmatter.cr_id) {
+						frontmatter.cr_id = generateCrId();
+						wrote = true;
+					}
+				});
+
+				if (wrote) {
+					result.modified++;
+					logger.debug('addCrIdToPlaces', `Added cr_id to ${file.path}`);
+				}
+			} catch (error) {
+				result.errors.push({
+					file: file.path,
+					error: error instanceof Error ? error.message : String(error)
+				});
+			}
+		}
+
+		logger.info('addCrIdToPlaces', 'Place cr_id generation complete', result);
 		return result;
 	}
 }
