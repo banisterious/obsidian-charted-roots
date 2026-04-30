@@ -10,6 +10,7 @@ import type CanvasRootsPlugin from '../../main';
 import { getLogger } from '../core/logging';
 import { capitalize } from '../utils/format-utils';
 import { MapController } from './map-controller';
+import { resolveUniverseFilterValue } from './resolve-universe-filter';
 import { MapDataService } from './map-data-service';
 import { CreatePlaceModal } from '../ui/create-place-modal';
 import { PlacePickerModal, SelectedPlaceInfo } from '../ui/place-picker';
@@ -851,24 +852,7 @@ export class MapView extends ItemView {
 	}
 
 	private resolveUniverseFilterValue(universe: string | null): string | null {
-		if (!universe) return null;
-
-		// Check if this is already a name (not a cr_id pattern)
-		// Universe cr_ids typically contain hyphens and random chars like "universe-the-dying-earth-mnkte9t5"
-		// Try to find a universe note with this cr_id
-		const files = this.app.vault.getMarkdownFiles();
-		for (const file of files) {
-			const cache = this.app.metadataCache.getFileCache(file);
-			const fm = cache?.frontmatter;
-			if (!fm) continue;
-			const crType = fm.cr_type || fm.type;
-			if (crType === 'universe' && fm.cr_id === universe) {
-				return fm.name || universe;
-			}
-		}
-
-		// Not found as cr_id, assume it's already a name
-		return universe;
+		return resolveUniverseFilterValue(this.app, universe);
 	}
 
 	private async handleUniverseSync(selectedPlace: SelectedPlaceInfo): Promise<boolean> {
@@ -2568,6 +2552,7 @@ export class MapView extends ItemView {
 				// Only refresh if a person or place note changed
 				if (this.isRelevantFile(file.path)) {
 					logger.debug('metadata-changed', `Refreshing map due to change in ${file.path}`);
+					this.syncMapConfigOnChange(file);
 					void this.refreshData();
 				}
 			})
@@ -2580,6 +2565,25 @@ export class MapView extends ItemView {
 				this.enterJourneyModeForPerson(personId, personName);
 			}
 		}) as EventListener);
+	}
+
+	/**
+	 * Reload the controller's in-memory map-config cache and re-sync the
+	 * universe filter when a map note's frontmatter changes. Without this,
+	 * an Edit Map save (or a universe-rename cascade rewriting the map's
+	 * `universe:` field) leaves `getActiveMapUniverse()` returning the stale
+	 * value, so `refreshData` re-queries with the wrong filter and markers
+	 * disappear (#503).
+	 */
+	private syncMapConfigOnChange(file: TFile): void {
+		if (!this.mapController) return;
+		const cache = this.plugin.app.metadataCache.getFileCache(file);
+		const crType = cache?.frontmatter?.cr_type;
+		if (crType !== 'map') return;
+
+		this.mapController.reloadMapConfigs();
+		const refreshed = this.mapController.getActiveMapUniverse();
+		this.filters.universe = this.resolveUniverseFilterValue(refreshed) ?? undefined;
 	}
 
 	/**

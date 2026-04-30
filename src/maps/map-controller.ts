@@ -2299,6 +2299,16 @@ export class MapController {
 	}
 
 	/**
+	 * Reload the in-memory map-config cache from disk. Needed when an Edit
+	 * Map save (or a universe-rename cascade) writes a map note's frontmatter
+	 * after the controller has already loaded its configs — without a reload
+	 * `getActiveMapUniverse()` keeps returning the stale value (#503).
+	 */
+	reloadMapConfigs(): void {
+		this.imageMapManager.loadMapConfigs();
+	}
+
+	/**
 	 * Get custom maps for a specific universe
 	 */
 	getCustomMapsForUniverse(universe: string): CustomMapConfig[] {
