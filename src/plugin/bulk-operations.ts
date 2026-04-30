@@ -27,6 +27,8 @@ import { SOURCED_PROPERTY_NAMES } from '../sources/types/source-types';
 import { promptLineageName } from './context-menus';
 import { getLogger } from '../core/logging';
 import { extractName, loadRelationships } from './relationship-loader';
+import { UniverseService } from '../universes/services/universe-service';
+import { mergeUniverseList } from '../universes/services/merged-universe-list';
 
 const logger = getLogger('bulk-operations');
 
@@ -208,10 +210,19 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 		}
 	}
 
-	// Merge universes from both places and people
-	const placeUniverses = placeGraph.getAllUniverses();
-	const personUniverses = familyGraph.getAllUniverses();
-	const allUniverses = [...new Set([...placeUniverses, ...personUniverses])].sort();
+	// Merge universes from three sources via the shared helper so the Edit
+	// Person dropdown always reflects every universe the user has defined or
+	// referenced. The earlier two-source merge here dropped the universe
+	// note's typed `name` after a rename when sanitization stripped chars
+	// from the basename — e.g. `Star Wars (AU)` typed name vanished while
+	// the cascaded `Star Wars AU` basename was the only option offered
+	// (#505).
+	const universeService = new UniverseService(plugin);
+	const allUniverses = mergeUniverseList({
+		universeNoteNames: universeService.getAllUniverses().map(u => u.name),
+		personUniverses: familyGraph.getAllUniverses(),
+		placeUniverses: placeGraph.getAllUniverses(),
+	});
 
 	// Open the modal in edit mode
 	new CreatePersonModal(plugin.app, {
