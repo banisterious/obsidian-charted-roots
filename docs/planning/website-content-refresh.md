@@ -2,7 +2,7 @@
 
 Planning and orchestration for a multi-phase refresh of [chartedroots.com](https://chartedroots.com). Drafts live alongside this doc in [website-content/](website-content/); a separate session handles the Hugo port and deploy against `S:\Projects\websites\chartedroots.com`.
 
-**Status:** 🟡 In progress. Phase 1 (changelog + features catch-up) shipped 2026-04-24 with ongoing per-release refreshes through v0.22.14. Phase 2 (landing + What's New in 1.0) deferred to coincide with 1.0 launch. Phase 3 drafts in progress (faq, research-track, world-builder-track all 🔶 awaiting review); media-plan v1 capture program complete (2026-05-01).
+**Status:** 🟡 In progress. Phase 1 (changelog + features catch-up) shipped 2026-04-24 with ongoing per-release refreshes through v0.22.17. Phase 2 (landing + What's New in 1.0) deferred to coincide with 1.0 launch. Phase 3 drafts in progress (faq, research-track, world-builder-track all 🔶 awaiting review; guides plan 📋 drafted with 38-guide enumeration); media-plan v1 capture program complete (2026-05-01).
 
 ---
 
@@ -111,6 +111,7 @@ Before marking a draft ready to port, run through the draft once with this list:
 | [world-builder-track.md](website-content/world-builder-track.md) | 3 | 🔶 Draft complete, awaiting review | `/worldbuilding/_index.md` (new) |
 | [research-track.md](website-content/research-track.md) | 3 | 🔶 Draft complete, awaiting review | `/research/_index.md` (new) |
 | [faq.md](website-content/faq.md) | 3 | 🔶 Draft complete, awaiting review | `/faq/_index.md` (new) |
+| [guides-plan.md](website-content/guides-plan.md) | 3 | 📋 Plan drafted; 38 guides enumerated across two tracks (P0 / P1 / P2) | `/guides/_index.md` (new) + per-guide pages under `/guides/research/` and `/guides/worldbuilding/` |
 
 **Status key:** 📝 Pending = not started · 🔶 In progress · ✅ Drafted, awaiting review · 🚀 Ported · 📋 Stub = outline only, no content yet.
 
@@ -140,6 +141,7 @@ Only tackled after Phases 1–2 land and the 1.0 dust settles.
 6. **World-builder track page.** Dedicated narrative for the fictional-universes workflow. Links out to specific features (universes, custom calendars, image maps).
 7. **Research track page.** Dedicated narrative for the evidence-and-sources workflow. Topic-focused (sources, citations, GPS workflow, data quality), not audience-gated. Parallels the worldbuilding page as a deep capability-area dive.
 8. **FAQ.** Common questions. May pull from GitHub Discussions themes.
+9. **Guides.** Recipe-style how-tos at `/guides/`, split by track (research / worldbuilding). Comprehensive plan in [website-content/guides-plan.md](website-content/guides-plan.md): 38 guides enumerated, prioritized into P0 (9, ships with or after 1.0), P1 (15), P2 (14). Fills the workflow-oriented gap between the wiki (reference) and the features page (breadth showcase) — answers "how do I do X?" for goals that span multiple features.
 
 Additional ideas welcome. These are the ones I'd queue first.
 
