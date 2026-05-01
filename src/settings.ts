@@ -812,8 +812,8 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	hiddenSourceCategories: [],   // Hidden/deleted built-in source categories
 	// Source indicators on tree nodes
 	showSourceIndicators: false,   // Default OFF - users opt-in to this feature
-	// Evidence visualization settings (Research tools - opt-in for advanced users)
-	trackFactSourcing: false,      // Default OFF - opt-in feature for researchers
+	// Evidence visualization settings (Research tools)
+	trackFactSourcing: true,       // Default ON (#511) - surfaces the Edit Person fact-level citations section without requiring users to hunt for the toggle
 	factCoverageThreshold: 6,      // Number of facts for 100% coverage calculation
 	showResearchGapsInStatus: true, // Show research gap summary when tracking is enabled
 	// Property aliases for custom frontmatter names
@@ -934,6 +934,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		this.renderDatesSection(containerEl);
 		this.renderSexSection(containerEl);
 		this.renderPlacesSection(containerEl);
+		this.renderResearchSection(containerEl);
 		this.renderAliasesSection(containerEl);
 		this.renderAdvancedSection(containerEl);
 
@@ -1703,6 +1704,83 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		});
 	}
 
+	private renderResearchSection(containerEl: HTMLElement): void {
+		// ═══════════════════════════════════════════════════════════════════════
+		// SECTION: RESEARCH (#511)
+		// Specialist features for evidence-based genealogy and DNA-driven
+		// discovery. Promoted from Advanced → Research tools / DNA tracking
+		// in v0.22.17 so the per-fact source-tracking surface is discoverable
+		// without hunting through Advanced.
+		// ═══════════════════════════════════════════════════════════════════════
+		const researchDetails = containerEl.createEl('details', { cls: 'cr-settings-section' });
+		researchDetails.dataset.sectionName = 'research';
+		const researchSummary = researchDetails.createEl('summary');
+		researchSummary.createSpan({ text: 'Research' });
+		researchSummary.createSpan({ cls: 'cr-section-desc', text: 'Evidence-based genealogy and DNA workflows' });
+		const researchContent = researchDetails.createDiv({ cls: 'cr-section-content' });
+
+		// --- Research tools subsection ---
+		new Setting(researchContent).setName("Research tools").setHeading();
+
+		new Setting(researchContent)
+			.setName('Enable fact-level source tracking')
+			.setDesc('Track which specific facts have source citations')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.trackFactSourcing)
+				.onChange(async (value) => {
+					this.plugin.settings.trackFactSourcing = value;
+					await this.plugin.saveSettings();
+					this.display();
+				}));
+
+		if (this.plugin.settings.trackFactSourcing) {
+			new Setting(researchContent)
+				.setName('Fact coverage threshold')
+				.setDesc('Number of key facts for 100% coverage calculation')
+				.addText(text => text
+					.setPlaceholder('6')
+					.setValue(String(this.plugin.settings.factCoverageThreshold))
+					.onChange(async (value) => {
+						const numValue = parseInt(value);
+						if (!isNaN(numValue) && numValue > 0 && numValue <= 10) {
+							this.plugin.settings.factCoverageThreshold = numValue;
+							await this.plugin.saveSettings();
+						}
+					}));
+
+			new Setting(researchContent)
+				.setName('Show research gaps in status tab')
+				.setDesc('Display summary of unsourced facts in control center')
+				.addToggle(toggle => toggle
+					.setValue(this.plugin.settings.showResearchGapsInStatus)
+					.onChange(async (value) => {
+						this.plugin.settings.showResearchGapsInStatus = value;
+						await this.plugin.saveSettings();
+					}));
+		}
+
+		// --- DNA tracking subsection ---
+		new Setting(researchContent).setName("DNA tracking").setHeading();
+
+		new Setting(researchContent)
+			.setName('Enable DNA match tracking')
+			.setDesc('Show DNA-related fields and options for genetic genealogy workflows')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.enableDnaTracking)
+				.onChange(async (value) => {
+					this.plugin.settings.enableDnaTracking = value;
+					await this.plugin.saveSettings();
+					this.display();
+				}));
+
+		if (this.plugin.settings.enableDnaTracking) {
+			researchContent.createEl('p', {
+				cls: 'setting-item-description',
+				text: 'When enabled: "DNA Match" person type available in Create Person, DNA fields shown in Edit Person modal, DNA Match relationship type available.'
+			});
+		}
+	}
+
 	private renderAliasesSection(containerEl: HTMLElement): void {
 		// ═══════════════════════════════════════════════════════════════════════
 		// SECTION 8: PROPERTY & VALUE ALIASES
@@ -1845,67 +1923,6 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					this.plugin.settings.templateFolders = folderList;
 					await this.plugin.saveSettings();
 				}));
-
-		// --- Research tools subsection ---
-		new Setting(advancedContent).setName("Research tools").setHeading();
-
-		new Setting(advancedContent)
-			.setName('Enable fact-level source tracking')
-			.setDesc('Track which specific facts have source citations')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.trackFactSourcing)
-				.onChange(async (value) => {
-					this.plugin.settings.trackFactSourcing = value;
-					await this.plugin.saveSettings();
-					this.display();
-				}));
-
-		if (this.plugin.settings.trackFactSourcing) {
-			new Setting(advancedContent)
-				.setName('Fact coverage threshold')
-				.setDesc('Number of key facts for 100% coverage calculation')
-				.addText(text => text
-					.setPlaceholder('6')
-					.setValue(String(this.plugin.settings.factCoverageThreshold))
-					.onChange(async (value) => {
-						const numValue = parseInt(value);
-						if (!isNaN(numValue) && numValue > 0 && numValue <= 10) {
-							this.plugin.settings.factCoverageThreshold = numValue;
-							await this.plugin.saveSettings();
-						}
-					}));
-
-			new Setting(advancedContent)
-				.setName('Show research gaps in status tab')
-				.setDesc('Display summary of unsourced facts in control center')
-				.addToggle(toggle => toggle
-					.setValue(this.plugin.settings.showResearchGapsInStatus)
-					.onChange(async (value) => {
-						this.plugin.settings.showResearchGapsInStatus = value;
-						await this.plugin.saveSettings();
-					}));
-		}
-
-		// --- DNA tracking subsection ---
-		new Setting(advancedContent).setName("DNA tracking").setHeading();
-
-		new Setting(advancedContent)
-			.setName('Enable DNA match tracking')
-			.setDesc('Show DNA-related fields and options for genetic genealogy workflows')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.enableDnaTracking)
-				.onChange(async (value) => {
-					this.plugin.settings.enableDnaTracking = value;
-					await this.plugin.saveSettings();
-					this.display();
-				}));
-
-		if (this.plugin.settings.enableDnaTracking) {
-			advancedContent.createEl('p', {
-				cls: 'setting-item-description',
-				text: 'When enabled: "DNA Match" person type available in Create Person, DNA fields shown in Edit Person modal, DNA Match relationship type available.'
-			});
-		}
 
 		// --- Integrations subsection ---
 		new Setting(advancedContent).setName("Integrations").setHeading();
