@@ -2067,7 +2067,8 @@ export class CreatePersonModal extends Modal {
 				{
 					initialPerson: {
 						name: this.personData.name || '',
-						crId: this.personData.crId || ''
+						crId: this.personData.crId || '',
+						basename: this.editingFile?.basename
 					},
 					onCreated: () => {
 						// Refresh the event list after creation
