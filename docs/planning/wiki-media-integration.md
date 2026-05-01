@@ -52,7 +52,7 @@ Proposed embeds. `🎬` marks motion loops; `📸` marks static stills. "Anchor"
 | [Custom-Maps](../../wiki-content/Custom-Maps.md) | 📸 `cr-map-custom-image.png` | 📸 `cr-map-drilldown-breadcrumbs.png` | Both shots tell the parent / child story; legitimate two-shot case. |
 | [Calendar-View](../../wiki-content/Calendar-View.md) | 📸 `cr-calendar-view-realworld.png` | 📸 `cr-calendar-view-fictional.png` | Dual-mode feature; both shots earn their slot. |
 | [Custom-Relationships](../../wiki-content/Custom-Relationships.md) | 🎬 `cr-custom-relationships-overlay.gif` (from `.webm`) | — | Toggle behavior is the point; motion-only. |
-| [Relationship-Tools](../../wiki-content/Relationship-Tools.md) | — | — | Skip; consider a future calculator capture per `media-library-consolidation` Phase 3. |
+| [Relationship-Tools](../../wiki-content/Relationship-Tools.md) | — | — | Skip; consider a future calculator capture if a capture session ever covers it. |
 | [Entity-Profile-View](../../wiki-content/Entity-Profile-View.md) | 📸 `cr-entity-profile-person.png` | — | One representative; the other four entity-type shots stay website-only. |
 | [Web-Clipper-Integration](../../wiki-content/Web-Clipper-Integration.md) | 🎬 `cr-web-clipper-to-bio.gif` (from `.webm`) | 📸 `cr-web-clipper-modal.png` | Motion for the click-to-source action; still for the modal detail. |
 | [Evidence-And-Sources](../../wiki-content/Evidence-And-Sources.md) | 📸 `cr-entity-attribution.png` | 📸 `cr-source-hierarchy.png` | Two-direction story (per-fact + parent-child sources). |
@@ -196,5 +196,5 @@ Audit found all five legacy images in `wiki-content/images/` were unreferenced f
 
 ## Related work
 
-- [media-library-consolidation.md](media-library-consolidation.md) — the parent cleanup plan; wiki integration is additive on top of the consolidated library, not a replacement for the README / website work.
+- [archive/media-library-consolidation.md](archive/media-library-consolidation.md) — the parent cleanup plan (archived ✅ Complete 2026-05-01); wiki integration was additive on top of the consolidated library, not a replacement for the README / website work.
 - [website-content/media-plan.md](website-content/media-plan.md) — capture conventions and the deployment log; this plan adopts the same naming / fixture / sizing conventions but relaxes the strictest optimization rules since the wiki has different bandwidth dynamics.
