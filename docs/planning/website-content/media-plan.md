@@ -288,38 +288,6 @@ If a session runs short, stop at a tier boundary rather than leaving Tier N half
 
 Step-by-step plans for the captures still TBD as of 2026-04-30. Use the checkboxes to track progress within a session. Each plan assumes the global prerequisites above (dark mode, 110–120% zoom, 1920×1080 window, fixtures loaded). Post-capture steps are common to all five plans; they're listed once at the end rather than repeated.
 
-#### A. Book Builder compiled output (Tier 2, item 6)
-
-**Target:** `cr-book-builder-output.png` — placement intent: Book Builder subsection on `/features/`.
-**Fixture:** Andersons (real-world coherence with the existing genealogy captures); fall back to Royal Families if a multi-generation narrative reads better in the chosen output style.
-**Note:** No `.book.json` exists in dev-vault yet — the fixture has to be created during the session.
-
-- [x] Open Andersons fixture vault.
-- [x] Open Book Builder modal via Control Center → Book Builder tab (or command palette).
-- [x] Define a small book scoped to ~3–5 generations starting at William Anderson; pick a narrative style that reads well as a single page (default narrative style is fine for a first capture).
-- [x] Save the book definition (`.book.json` lands in the configured books folder).
-- [x] Trigger generation; wait for the compiled output (PDF or markdown depending on the chosen pipeline).
-- [x] Open the compiled output in Obsidian's PDF viewer (or in the editor for markdown output).
-- [x] Frame the capture on a representative page: opening narrative paragraph + a generation transition visible in the same viewport, so the reader sees both prose and structure.
-- [x] Capture full Obsidian window (left ribbon + folder pane visible per the playbook's whole-feature convention).
-- [x] Save raw at 1920×1080 to `docs/images/raw/cr-book-builder-output.png`.
-
-#### B. Universe overview (Tier 4, item 21)
-
-**Target:** `cr-universe-overview.png` — placement intent: Worldbuilding section on `/features/`, anchoring the worldbuilder coverage.
-**Fixture:** Dying Earth (the simpler of the two worldbuilder fixtures; fictional dates render as `DE NNNN`).
-
-Originally scoped as "Universe and fictional calendar" with the universe→calendar `default_calendar:` link visible in frontmatter as a load-bearing element. After capture, it became clear the rich data tables (People + Events with `DE NNNN` dates rendering across both) carry the worldbuilding claim more concretely than a Properties-block link would. Filename and framing simplified to "universe overview"; the calendar relationship is communicated implicitly by the date format. **Website copy preceding the embed will need a revision** so the prose matches what the visual actually shows (worldbuilding overview / universe-scoped people + events with fictional dates) rather than the original frame (universe note with linked custom calendar visible).
-
-- [x] Open Dying Earth fixture vault.
-- [x] Open `The Dying Earth.md` universe note.
-- [x] Verify the `charted-roots-universe-people` and `charted-roots-universe-events` blocks populate (28 events with `universe: The Dying Earth` set, 17 people — both well-seeded after the 0.22.15 alias-aware lookup fix).
-- [x] Two-pane split of the same universe note: left pane scrolled to the People (17) section, right pane scrolled to the Events (28) section. Both blocks render `DE NNNN` dates in their respective columns, making the fictional calendar's effect visible across two surfaces in one shot. The Marriage of Cugel and Derwe entry visible in the right pane gives narrative continuity with #501's verification fixtures.
-- [x] Capture full Obsidian window.
-- [x] Save raw to `docs/images/raw/cr-universe-overview.png` (432 KB; well under 500 KB cap, oxipng pass at deploy time will land it ~340 KB).
-
-**Deferred:** if a future capture session wants to make the universe→calendar linkage explicit, a small follow-on shot of the universe note's frontmatter Properties block expanded with `default_calendar:` visible would pair with this one. Not blocking; this single composite ships standalone.
-
 #### C. Edit Person modal (Tier 4, item 23)
 
 **Target:** `cr-edit-person-modal.png` — placement intent: Data entry and organization section on `/features/`.
@@ -632,6 +600,13 @@ Captured on a throwaway vault with the Royal Families in Europe GEDCOM imported 
 Three-shot gallery covers graphical + tabular + textual report-output modes for visual variety per the brief. A 4th `cr-report-fan-chart.png` capture was attempted but the `fan-chart-pdf` renderer falls through to an ancestor pedigree tree (registered in the catalog UI but with no fan-specific layout downstream — filed as #492); fan chart dropped from the gallery. Source summary pairs cleanly with `cr-entity-attribution.png`: same fact-attribution data, two surfaces (interactive workspace view + portable PDF). Gallery sits in the Statistics and reports → Report Types (17+) subsection on the features page, hosted by a new `.cr-grid-3` CSS class (sibling to `.cr-grid-2`, same 700px collapse breakpoint).
 
 Research-track batch totals: `oxipng -o 4` on all six raws yielded ~22% mean reduction (1.80 MB → 1.41 MB). All files landed under the 500 KB cap on the lossless pass — no WebP fallthrough needed for any shot in the batch (Attribution was the only candidate; came in at 416 KB). Total on-site payload across the six new statics: ~1.41 MB. New CSS shipped: `.cr-grid-3`.
+
+**Book Builder + Universe overview (2026-04-30):**
+
+- ✅ `cr-book-builder-output.png` (176 KB) — Statistics and reports → Book Builder, single-shot figure between the bullet list and the wiki link. Page 2 of an Anderson Family History book — the Table of Contents page enumerating the eight bundled report types (Pedigree chart, Descendant chart, Ancestors, Individual summary, Family groups, Family group sheet, Ahnentafel, Register report). Folder pane shows the Reports folder populated with PDF outputs alongside the assembled book.
+- ✅ `cr-universe-overview.png` (323 KB) — World Building, single-shot figure as section hero between the intro paragraph and the Universe Notes H3. Two-pane split of the Dying Earth universe note: People (17) on the left, Events (28) on the right; both blocks render `DE NNNN` dates demonstrating the universe's linked calendar. Marriage of Cugel and Derwe visible in the right pane (continuity with #501 verification fixtures).
+
+`oxipng -o 4` lossless pass on both files yielded 25.4% reduction across the pair (654 KB → 487 KB). Both well under the 500 KB cap; no WebP fallthrough. Reused the existing `<figure class="cr-figure">` pattern with `loading="lazy"` for both stills. Worldbuilding section intro extended by one sentence to frame the visual ("A universe note pulls together every person, place, event, and organization scoped to that world — auto-generated tables that respect the universe's linked calendar so dates render in its own era") so the figure has narrative context — replaces the originally-scoped "universe note with linked custom calendar visible in frontmatter" framing per Plan B's revision note. Deploy is also paired with the 2026-04-30 changelog port (v0.22.15 + v0.22.16 spotlights) but ships in a separate commit.
 
 ---
 
