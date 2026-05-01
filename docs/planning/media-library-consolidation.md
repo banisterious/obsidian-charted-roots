@@ -1,9 +1,8 @@
 # Media Library Consolidation
 
-**Status:** 📋 Planned. **Trigger condition met as of 2026-04-28** — research-track media captures (Source hierarchy, Attribution, Cleanup wizard, Reports gallery) committed in `b37fca7c`; visualization-track and Web Clipper already deployed. Phase 1 + Phase 2 are eligible to start whenever convenient.
+**Status:** 🔶 In progress. **Phase 2 shipped 2026-05-01** via the README curation refresh (commit `e7bc00a6`) — seven legacy README captures retired, six replacements drawn from the modern `raw/` library. The curation pass also obviated three of the four Phase 3 re-captures (Control Center Dashboard, Control Center Maps, person-note Demo thumbnail) by dropping them from the README entirely. Phase 1 (buy-me-a-coffee relocation) and a reduced Phase 3 (Statistics — wiki-only) still pending.
 **Authored:** 2026-04-27.
-**Trigger:** Begin Phase 1 once every legacy `docs/images/` file either has a modern replacement available in `docs/images/raw/` or has been re-captured as part of an ongoing capture session. Pragmatic shorthand: "after the website captures are all complete" (Calendar View, Custom Relationships Overlay motion capture, plus the small re-capture work this plan introduces for legacy README content).
-**Out of scope today:** No file moves yet. This is a written plan; the per-phase commits land later.
+**Trigger:** Originally "after the website captures are all complete." Met 2026-04-28; first commit landed 2026-05-01.
 
 ---
 
@@ -45,18 +44,18 @@ done
 
 ## File-by-file disposition
 
-| Legacy file | Bucket | Modern replacement | Phase |
-|---|---|---|---|
-| `buy-me-a-coffee.png` | Branding badge (not a feature capture) | Moved as-is to `docs/assets/branding/buy-me-a-coffee.png` | Phase 1 |
-| `charted-roots-family-chart-view.png` | Already superseded | `cr-family-chart-live.png` (already in `raw/`) | Phase 2 |
-| `charted-roots-interactive-map-view.png` | Already superseded | `cr-map-migration-paths.png` (already in `raw/`) | Phase 2 |
-| `family-tree-canvas.png` | Already superseded | `cr-canvas-tree-multi-generational.png` (already in `raw/`) | Phase 2 |
-| `charted-roots-control-center-dashboard-tab.png` | Needs re-capture | `cr-control-center-dashboard.png` (TBD) | Phase 3 |
-| `charted-roots-control-center-maps-tab.png` | Needs re-capture | `cr-control-center-maps.png` (TBD) | Phase 3 |
-| `charted-roots-person-note.png` | Needs evaluation | Either reuse `cr-entity-profile-person.png` or fresh `cr-person-note.png` capture | Phase 3 |
-| `charted-roots-statistics-view.png` | Needs re-capture | `cr-statistics-view.png` (TBD) | Phase 3 |
+| Legacy file | Disposition | Status |
+|---|---|---|
+| `buy-me-a-coffee.png` | Move to `docs/assets/branding/` | Phase 1 — pending |
+| `charted-roots-family-chart-view.png` | Removed; README points at `cr-family-chart-live.png` | ✅ Done 2026-05-01 |
+| `charted-roots-interactive-map-view.png` | Removed; README points at `cr-map-migration-paths.png` | ✅ Done 2026-05-01 |
+| `family-tree-canvas.png` | Removed; README points at `cr-canvas-tree-multi-generational.png` | ✅ Done 2026-05-01 |
+| `charted-roots-control-center-dashboard-tab.png` | Removed; dropped from README curation (Tier 3) — replaced by `cr-control-center-collections.png` slot | ✅ Done 2026-05-01 |
+| `charted-roots-control-center-maps-tab.png` | Removed; dropped from README curation entirely (duplicated the geographic map cell) | ✅ Done 2026-05-01 |
+| `charted-roots-person-note.png` | Removed; Demo section's full-tour thumbnail switched to YouTube auto-thumb | ✅ Done 2026-05-01 |
+| `charted-roots-statistics-view.png` | Removed from README; future wiki use ([Statistics-And-Reports.md](../../wiki-content/Statistics-And-Reports.md)) still wants a fresh `cr-statistics-view.png` per [wiki-media-integration.md](wiki-media-integration.md) | Wiki-only — pending |
 
-Three already-superseded shots can retire as soon as Phase 2 ships; four require new captures and ride future capture sessions.
+The Tier 3 curation pass collapsed three of the four originally-Phase-3 re-captures by dropping those features from the README entirely. The remaining Phase 3 work is a single capture for wiki use.
 
 ---
 
@@ -73,37 +72,28 @@ Three already-superseded shots can retire as soon as Phase 2 ships; four require
 
 **Risk:** Negligible. One file, one reference.
 
-### Phase 2 — Pointer swaps for already-superseded shots
+### Phase 2 — Pointer swaps for already-superseded shots ✅ Complete (2026-05-01)
 
-**Scope:** Three legacy shots have direct modern replacements already in `raw/`. Update the three README references to point at the modern files; delete the legacy.
+Originally scoped as three pointer swaps. Shipped as a broader Tier 3 curation refresh (commit `e7bc00a6`) that retired all seven legacy README captures in one pass:
 
-**Steps:**
-1. Edit `README.md`:
-   - `docs/images/charted-roots-family-chart-view.png` → `docs/images/raw/cr-family-chart-live.png`
-   - `docs/images/charted-roots-interactive-map-view.png` → `docs/images/raw/cr-map-migration-paths.png`
-   - `docs/images/family-tree-canvas.png` → `docs/images/raw/cr-canvas-tree-multi-generational.png`
-2. `git rm` the three legacy files
-3. Single commit: `docs(media): Retire three superseded README captures`
+- Three already-superseded shots swapped to `raw/` modern equivalents (Family Chart, Map view, Canvas tree).
+- Three Phase-3-bucketed shots dropped from the README curation entirely (Control Center Dashboard tab, Control Center Maps tab, Statistics — see Phase 3 for what's left).
+- Demo section's full-tour thumbnail switched from the legacy person-note shot to the YouTube auto-thumbnail, matching the Quick tour cell's format.
+- Curation also added two new slots not previously represented in the README's Screenshots grid: Worldbuilding (`cr-universe-overview.png`) and Evidence & sources (`cr-entity-attribution.png`).
 
-**Risk:** Low. Modern shots are higher-quality; visual replacement should read as an upgrade. Worth a `gh pr preview` or local README render to confirm modern shots render at acceptable proportions in the README's specific layout context (e.g., centered hero, table cell, etc.) — README shots sometimes have framing constraints that the modern captures don't share.
+Net effect: README's Screenshots section refreshed end-to-end; the originally-anticipated "render at acceptable proportions" risk did not materialize.
 
-### Phase 3 — Per-feature re-capture replacements
+### Phase 3 — Per-feature re-capture replacements (reduced)
 
-**Scope:** Four legacy shots require new captures. Each rides a future capture session that covers the relevant feature.
+Originally scoped as four re-captures. The Tier 3 curation pass collapsed three of them by dropping those features from the README entirely (Control Center Dashboard, Control Center Maps, person-note Demo thumbnail). The remaining one is wiki-only:
 
-| Feature | Capture target | Replaces |
+| Feature | Capture target | For |
 |---|---|---|
-| Statistics View | `cr-statistics-view.png` (single shot) | `charted-roots-statistics-view.png` |
-| Control Center — Dashboard tab | `cr-control-center-dashboard.png` | `charted-roots-control-center-dashboard-tab.png` |
-| Control Center — Maps tab | `cr-control-center-maps.png` | `charted-roots-control-center-maps-tab.png` |
-| Person note (reading view) | TBD: either `cr-person-note.png` fresh capture or repoint to `cr-entity-profile-person.png` | `charted-roots-person-note.png` |
+| Statistics View | `cr-statistics-view.png` (single shot) | [wiki-content/Statistics-And-Reports.md](../../wiki-content/Statistics-And-Reports.md) per [wiki-media-integration.md](wiki-media-integration.md) |
 
-**Approach per shot:**
-1. Capture using the standard conventions (1920×1080, dark theme, Anderson fixture, etc. — see [website-content/media-plan.md](website-content/media-plan.md) Static format conventions).
-2. Land in `docs/images/raw/` with the modern filename (commit alongside the capture session per the media-library convention).
-3. In the same or a follow-up commit, update the README reference and `git rm` the legacy file.
+**Approach:** Capture using the standard conventions (1920×1080, dark theme, Anderson fixture, etc. — see [website-content/media-plan.md](website-content/media-plan.md)). Land in `docs/images/raw/` with the modern filename. Use during the wiki-media-integration Phase 1 (visualization track).
 
-These shots also fit naturally into eventual website captures (Statistics View especially — it's been on the media-plan's pending Visualization list since the start). Doing the README replacement at the same time piggybacks on the capture work without adding a separate session.
+No README change involved — this is purely future wiki work.
 
 ### Phase 4 — Final cleanup
 
@@ -138,8 +128,8 @@ Phase 4 happens whenever Phase 3 is fully complete and the structural decision f
 ## Acceptance criteria
 
 - [ ] Phase 1: `buy-me-a-coffee.png` lives at `docs/assets/branding/`; `docs/images/buy-me-a-coffee.png` no longer exists; README renders correctly.
-- [ ] Phase 2: Three already-superseded files removed from `docs/images/`; README points at modern `raw/` files; README renders at least as well as before.
-- [ ] Phase 3 (gated on per-feature captures): Four re-captured files in `raw/`; README references swapped; legacy versions deleted.
+- [x] Phase 2: All seven legacy README captures retired; README points at modern `raw/` files for the curated grid + uses YouTube auto-thumb for the Demo full-tour thumbnail. (2026-05-01, commit `e7bc00a6`)
+- [ ] Phase 3 (reduced — wiki-only): `cr-statistics-view.png` captured to `raw/` for wiki use.
 - [ ] Phase 4 (post-Phase 3): structural decision documented — either `docs/images/raw/` retained or collapsed to `docs/images/`.
 - [ ] No remaining references to legacy filenames anywhere in the repo (audit via the same `git grep` pattern in the Reference audit section).
 
@@ -147,8 +137,8 @@ Phase 4 happens whenever Phase 3 is fully complete and the structural decision f
 
 ## Open questions
 
-1. **Person note shot framing.** The README's `charted-roots-person-note.png` shows a person note's reading view. The modern `cr-entity-profile-person.png` shows the same note PLUS the Profile View pane on the right. Are these interchangeable for the README's purpose, or does the README want a cleaner reading-view-only shot? Decide during Phase 3.
-2. **Modern shot proportions in README context.** The README's image layout may have specific framing constraints (e.g., wide hero shots vs. centered medium-width captures). Modern captures from `raw/` are 1920×1080 sources optimized to ~1280px display width. May read differently in the README's layout. Verify during Phase 2 visual check.
+1. ~~**Person note shot framing.**~~ Resolved 2026-05-01 — Demo section's full-tour thumbnail now uses the YouTube auto-thumbnail, eliminating the need for a person-note still in the README. The wiki integration plan handles `cr-entity-profile-person.png` placement on its own terms.
+2. ~~**Modern shot proportions in README context.**~~ Resolved 2026-05-01 — modern `raw/` shots render acceptably in GitHub's README table-cell layout. No proportion-related issues observed in the curation refresh.
 3. **Whether to re-frame `docs/images/` itself.** Option (b) of Phase 4 (collapsing `raw/` up one level) is structurally cleaner but requires coordinated reference updates across `wiki-content/`, internal docs, the website's `static/img/` layout, and any external links to GitHub raw URLs. The cost may exceed the benefit. Revisit when the file set is final.
 
 ---
