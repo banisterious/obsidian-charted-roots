@@ -23,7 +23,7 @@ import { BidirectionalLinker } from '../core/bidirectional-linker';
 import { CreatePersonModal } from './create-person-modal';
 import { TemplateSnippetsModal } from './template-snippets-modal';
 import { MediaManagerModal } from '../core/ui/media-manager-modal';
-import { createPersonNote, PersonData, SpouseMetadata } from '../core/person-note-writer';
+import { createPersonNote, PersonData, SpouseMetadata, extractSourcedFactsFromFrontmatter } from '../core/person-note-writer';
 import { getLogger } from '../core/logging';
 import { getErrorMessage } from '../core/error-utils';
 import { renderPersonTimeline, createTimelineSummary } from '../events/ui/person-timeline';
@@ -1728,7 +1728,11 @@ function renderPersonTableRow(
 				dnaKitId: fm.dna_kit_id,
 				dnaMatchType: fm.dna_match_type,
 				dnaEndogamyFlag: typeof fm.dna_endogamy_flag === 'boolean' ? fm.dna_endogamy_flag : undefined,
-				dnaNotes: fm.dna_notes
+				dnaNotes: fm.dna_notes,
+				// Fact-level source attributions (#512). Without this, every
+				// Save round-trip would wipe sourced_* frontmatter properties
+				// because the modal save path always writes sourcedFacts.
+				sourcedFacts: extractSourcedFactsFromFrontmatter(fm as Record<string, unknown>)
 			},
 			familyGraph,
 			placeGraph,

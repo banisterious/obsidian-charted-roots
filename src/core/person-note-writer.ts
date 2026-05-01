@@ -68,6 +68,51 @@ function createSmartWikilink(name: string, app: App): string {
 }
 
 /**
+ * Extract `sourced_*` frontmatter properties into the structured shape the
+ * Edit Person modal expects (a Record keyed by sourced property name, values
+ * are arrays of source basenames).
+ *
+ * Each `sourced_<fact>` property in frontmatter is an array of wikilinks (or
+ * a single wikilink string for legacy data); this helper strips the wikilink
+ * brackets and any pipe-aliases, leaving just the basename so the modal can
+ * round-trip it through its chip UI.
+ *
+ * Returns undefined when no `sourced_*` properties are present, so callers
+ * can leave editPersonData.sourcedFacts unset in that case.
+ *
+ * Closes the data-loss bug (#512) where Edit Person callers built
+ * editPersonData manually and never populated `sourcedFacts` from the file's
+ * frontmatter, causing every Save round-trip to wipe `sourced_*` properties.
+ */
+export function extractSourcedFactsFromFrontmatter(
+	fm: Record<string, unknown>
+): Record<string, string[]> | undefined {
+	const result: Record<string, string[]> = {};
+	let found = false;
+	for (const prop of SOURCED_PROPERTY_NAMES) {
+		const value = fm[prop];
+		if (value === undefined || value === null) continue;
+		const list = Array.isArray(value) ? value : [value];
+		const basenames: string[] = [];
+		for (const item of list) {
+			if (typeof item !== 'string') continue;
+			const trimmed = item.trim();
+			if (!trimmed) continue;
+			// Match [[basename]] or [[basename|alias]] — keep the basename
+			// portion (left of the pipe). For bare strings without brackets,
+			// pass through unchanged.
+			const match = trimmed.match(/^\[\[([^\]|]+)(?:\|[^\]]+)?\]\]$/);
+			basenames.push(match ? match[1].trim() : trimmed);
+		}
+		if (basenames.length > 0) {
+			result[prop] = basenames;
+			found = true;
+		}
+	}
+	return found ? result : undefined;
+}
+
+/**
  * Per-spouse marriage metadata for indexed spouse format (#204)
  */
 export interface SpouseMetadata {

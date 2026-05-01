@@ -23,7 +23,7 @@ import { formatCanvasJson } from '../core/canvas-utils';
 import { ExcalidrawExporter } from '../excalidraw/excalidraw-exporter';
 import { getErrorMessage } from '../core/error-utils';
 import { isPlaceNote, isSourceNote, isEventNote, isPersonNote, isOrganizationNote } from '../utils/note-type-detection';
-import { SOURCED_PROPERTY_NAMES } from '../sources/types/source-types';
+import { extractSourcedFactsFromFrontmatter } from '../core/person-note-writer';
 import { promptLineageName } from './context-menus';
 import { getLogger } from '../core/logging';
 import { extractName, loadRelationships } from './relationship-loader';
@@ -192,23 +192,10 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 		}
 	}
 
-	// Extract sourced facts (fact-level source tracking)
-	const sourcedFacts: Record<string, string[]> = {};
-	for (const prop of SOURCED_PROPERTY_NAMES) {
-		const raw = fm[prop];
-		if (raw) {
-			const arr = Array.isArray(raw) ? raw : [raw];
-			const names = arr
-				.map((v: unknown) => {
-					const match = String(v).match(/\[\[([^\]]+)\]\]/);
-					return match ? match[1] : String(v);
-				})
-				.filter((n: string) => n.length > 0);
-			if (names.length > 0) {
-				sourcedFacts[prop] = names;
-			}
-		}
-	}
+	// Extract fact-level source attributions (#512). The helper handles
+	// pipe-aliased wikilinks correctly — the previous inline regex passed
+	// "basename|alias" through with the pipe intact.
+	const sourcedFacts = extractSourcedFactsFromFrontmatter(fm as Record<string, unknown>);
 
 	// Merge universes from three sources via the shared helper so the Edit
 	// Person dropdown always reflects every universe the user has defined or
@@ -280,8 +267,9 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 			dnaMatchType: fm.dna_match_type,
 			dnaEndogamyFlag: typeof fm.dna_endogamy_flag === 'boolean' ? fm.dna_endogamy_flag : undefined,
 			dnaNotes: fm.dna_notes,
-			// Fact-level source tracking
-			sourcedFacts: Object.keys(sourcedFacts).length > 0 ? sourcedFacts : undefined
+			// Fact-level source attributions (#512). Helper returns undefined
+			// when no sourced_* properties are present.
+			sourcedFacts
 		},
 		familyGraph,
 		placeGraph,
