@@ -284,6 +284,119 @@ Capture high-leverage content first so partial completion still produces a usefu
 
 If a session runs short, stop at a tier boundary rather than leaving Tier N half-done. Tier 1 alone is about an hour and ships the content the site is most visibly missing.
 
+### Remaining captures — action plans
+
+Step-by-step plans for the captures still TBD as of 2026-04-30. Use the checkboxes to track progress within a session. Each plan assumes the global prerequisites above (dark mode, 110–120% zoom, 1920×1080 window, fixtures loaded). Post-capture steps are common to all five plans; they're listed once at the end rather than repeated.
+
+#### A. Book Builder compiled output (Tier 2, item 6)
+
+**Target:** `cr-book-builder-output.png` — placement intent: Book Builder subsection on `/features/`.
+**Fixture:** Andersons (real-world coherence with the existing genealogy captures); fall back to Royal Families if a multi-generation narrative reads better in the chosen output style.
+**Note:** No `.book.json` exists in dev-vault yet — the fixture has to be created during the session.
+
+- [ ] Open Andersons fixture vault.
+- [ ] Open Book Builder modal via Control Center → Book Builder tab (or command palette).
+- [ ] Define a small book scoped to ~3–5 generations starting at William Anderson; pick a narrative style that reads well as a single page (default narrative style is fine for a first capture).
+- [ ] Save the book definition (`.book.json` lands in the configured books folder).
+- [ ] Trigger generation; wait for the compiled output (PDF or markdown depending on the chosen pipeline).
+- [ ] Open the compiled output in Obsidian's PDF viewer (or in the editor for markdown output).
+- [ ] Frame the capture on a representative page: opening narrative paragraph + a generation transition visible in the same viewport, so the reader sees both prose and structure.
+- [ ] Capture full Obsidian window (left ribbon + folder pane visible per the playbook's whole-feature convention).
+- [ ] Save raw at 1920×1080 to `docs/images/raw/cr-book-builder-output.png`.
+
+#### B. Universe and fictional calendar (Tier 4, item 21)
+
+**Target:** `cr-universe-fictional-calendar.png` — placement intent: Worldbuilding section on `/features/`, anchoring the worldbuilder coverage.
+**Fixture:** Dying Earth (the simpler of the two worldbuilder fixtures; fictional dates render as `DE NNNN`).
+
+- [ ] Open Dying Earth fixture vault.
+- [ ] Open `The Dying Earth.md` universe note.
+- [ ] Verify the universe's `default_calendar:` frontmatter property points at a Dying Earth calendar note; if not, link one (the calendar note already exists in the fixture).
+- [ ] Verify at least one event in the universe has a `DE NNNN`-formatted date and a date system pointing to the Dying Earth calendar.
+- [ ] Decide the framing: single-pane (universe note open with the calendar link visible in frontmatter, plus a timeline embed below showing a fictional-dated event) or two-pane (universe note left, event timeline right). The single-pane composite is easier to caption.
+- [ ] If single-pane: ensure the universe note's body has a timeline code block (`charted-roots-timeline` or equivalent) rendering an event with a `DE NNNN` date so the fictional calendar's effect is visible in one shot.
+- [ ] If two-pane: open the universe note in the main editor, an event in the second pane, with both visible.
+- [ ] Capture full Obsidian window.
+- [ ] Save raw to `docs/images/raw/cr-universe-fictional-calendar.png`.
+
+#### C. Edit Person modal (Tier 4, item 23)
+
+**Target:** `cr-edit-person-modal.png` — placement intent: Data entry and organization section on `/features/`.
+**Fixture:** Dying Earth — populates the universe dropdown with a fictional value, which is the visual differentiator the brief asks for ("with universe dropdown populated"). Andersons works too if the worldbuilding angle is already covered nearby.
+
+- [ ] Open Dying Earth fixture vault.
+- [ ] Open a person note that has rich relationships, dates, and at least one source attached (Cugel the Clever has marriages + birth date + sources after the recent fixture work).
+- [ ] Right-click the person → Charted Roots → Edit person.
+- [ ] Verify all populated regions render: relationships section (parents / spouses / children), dates section, sources section.
+- [ ] Scroll to the Universe dropdown; confirm it shows `The Dying Earth` (post-#505 fix this should now reflect the universe note's typed name even if a rename has happened).
+- [ ] Frame the capture so relationships + dates + sources + universe dropdown are all visible in one viewport. If the modal is too tall, prioritize the relationships block + universe dropdown over the description / notes fields.
+- [ ] Capture the modal-only region (tight crop per the playbook's modal convention) — left ribbon and folder pane can be cropped out to keep visual focus.
+- [ ] Save raw to `docs/images/raw/cr-edit-person-modal.png`.
+
+#### D. Control Center tabs (Tier 4, item 24)
+
+**Targets:** `cr-control-center-collections.png`, `cr-control-center-sources.png`, `cr-control-center-places.png`, `cr-control-center-events.png` — placement intent: Data entry and organization section, 2×2 grid (reuse `.cr-grid-2` × 2 rows or introduce `.cr-grid-2x2`).
+**Fixture:** Andersons — has the most populated cross-tab data (collections like `blood` / `married_in`, sources from the seeded citations work, places from the imported GEDCOM, events including the `cr-entity-profile-event.png` marriage).
+
+- [ ] Open Andersons fixture vault.
+- [ ] Open Control Center via command palette or ribbon icon.
+
+For each of Collections / Sources / Places / Events:
+
+- [ ] Switch to the tab.
+- [ ] Verify the tab is in browse / list mode (not a sub-modal flow). Default landing state is fine.
+- [ ] Confirm the visible row count is meaningful — at least 5 rows so the list shape reads, ideally 8–12 to convey realistic vault size without scrolling. Adjust filters if needed to surface representative content.
+- [ ] Frame the capture on the modal pane (tab strip + content area visible). Crop out the rest of the Obsidian window since Control Center is a self-contained modal surface.
+- [ ] Capture and save to `docs/images/raw/cr-control-center-<tab>.png`.
+
+Style note: keep the same Control Center modal width and tab strip position across all four shots so the 2×2 grid reads as a series rather than four loose stills.
+
+#### E. Tier 5 end-to-end composite (item 25)
+
+**Targets:** `cr-workflow-clip.png`, `cr-workflow-source-note.png`, `cr-workflow-attribution.png` — placement intent: standalone three-shot row in the Research workflow / Evidence and sources subsection. Three-shot composite told as a left-to-right narrative.
+**Fixture:** Andersons (consistent with the existing Web Clipper / Source hierarchy / Attribution captures). Public-domain biography target: any Find a Grave or Wikipedia page that fits the genealogy use case (Charles Hoy Fort already used in `cr-web-clipper-to-bio.webm`).
+
+This composite intentionally ports captures #16 / #17 / #18 from earlier tiers into a single sitting so the visual chain is internally coherent. The three individual captures already exist (`cr-web-clipper-modal.webp`, sources work in `cr-source-hierarchy.png`, attribution in `cr-entity-attribution.png`), but the composite needs them captured *as a single workflow*: same browser tab → same staged note → same person note. Tier 5 is the "do this in one sitting" step.
+
+**Stage 1 — Browser-side clip:**
+
+- [ ] Open the chosen biography page in the browser.
+- [ ] Click the Obsidian Web Clipper extension; select the Find a Grave Person template.
+- [ ] Confirm the clipper preview pane shows structured fields (name, dates, places, sources).
+- [ ] Capture the browser window with the clipper modal expanded over it; full screen including the page underneath so the reader sees both surfaces.
+- [ ] Save raw to `docs/images/raw/cr-workflow-clip.png`.
+- [ ] Click "Save" in the clipper to push the structured note to the Obsidian Staging folder.
+
+**Stage 2 — Source note in vault:**
+
+- [ ] Switch to Obsidian; open `Charted Roots/Staging/<just-clipped-note>.md`.
+- [ ] Verify the frontmatter properties expanded — name, birth date, death date, places, sources URLs from the clip.
+- [ ] Convert the staging note to a `cr_type: source` note (use the cleanup wizard's source-promotion step or manually add `cr_type: source` to the frontmatter).
+- [ ] Confirm the note now renders in the Source hierarchy view with the clipped fields preserved.
+- [ ] Capture the Obsidian window with the converted source note open + frontmatter properties expanded.
+- [ ] Save raw to `docs/images/raw/cr-workflow-source-note.png`.
+
+**Stage 3 — Attribution on the person note:**
+
+- [ ] Open the person note that the clipped source documents (or create one matching the cited individual).
+- [ ] Use the per-fact attribution UI (Edit Person → relationships / dates → attach source) to wire the clipped source to one or more facts on the person note.
+- [ ] Open the person's Entity Profile View; verify the Citations section shows the clipped source grouping at least one fact, and the Data quality section reflects the new attribution.
+- [ ] Capture the Entity Profile View with Citations + Data quality both visible in the viewport (similar framing to `cr-entity-attribution.png` but with the freshly-clipped source).
+- [ ] Save raw to `docs/images/raw/cr-workflow-attribution.png`.
+
+#### Common post-capture steps
+
+Apply to every capture above. Mark off as the file moves through the pipeline.
+
+- [ ] Run `oxipng -o 4` on the raw PNG.
+- [ ] If the optimized PNG is over 500 KB, fall through to `cwebp -q 85` and ship as `.webp`.
+- [ ] Verify final size sits under the 500 KB-per-static cap.
+- [ ] Place the optimized version in the website repo at `static/img/cr-<feature>.<ext>`.
+- [ ] Add the inline embed to the appropriate features-page section (raw `<img>` tag or `.cr-grid-2` figure block per the file organization conventions above).
+- [ ] If the embed needs a caption, draft one in 3–8 words that names what the reader is looking at without restating prose around it.
+- [ ] Update this document: move the capture from the action-plan section above to the "Static captures deployed" log below, with the date and on-site file size.
+- [ ] Commit the raw to the plugin repo (`docs/images/raw/`) as a separate commit from the website port.
+
 ### Style consistency
 
 - **Match the existing video tour's visual style** (dark mode, Obsidian zoom 110–120%, no spurious UI chrome).
