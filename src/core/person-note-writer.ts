@@ -68,6 +68,35 @@ function createSmartWikilink(name: string, app: App): string {
 }
 
 /**
+ * Coerce a `spouse{N}_marriage_location` frontmatter value back to its canonical
+ * string form. The writer previously wrapped its `createSmartWikilink(...)` output
+ * in extra JS-string quotes, which `processFrontMatter` round-tripped into a
+ * nested YAML block-list (`[["Basename"]]`) for unrecognized link fields. This
+ * helper normalizes that shape so consumers receive a string regardless of which
+ * historical write path produced the value. (#513)
+ *
+ * Accepts:
+ *   `"[[Basename]]"`           → returned as-is
+ *   `"Basename"`               → returned as-is
+ *   `[["Basename"]]`           → reshaped to `"[[Basename]]"`
+ *   undefined / null / other   → undefined
+ */
+export function normalizeMarriageLocation(value: unknown): string | undefined {
+	if (value === undefined || value === null) return undefined;
+	if (typeof value === 'string') return value || undefined;
+	if (
+		Array.isArray(value) &&
+		value.length === 1 &&
+		Array.isArray(value[0]) &&
+		value[0].length === 1 &&
+		typeof value[0][0] === 'string'
+	) {
+		return `[[${value[0][0]}]]`;
+	}
+	return undefined;
+}
+
+/**
  * Extract `sourced_*` frontmatter properties into the structured shape the
  * Edit Person modal expects (a Record keyed by sourced property name, values
  * are arrays of source basenames).
@@ -550,7 +579,10 @@ export async function createPersonNote(
 			}
 			if (spouse.marriageLocation) {
 				if (spouse.marriageLocationCrId) {
-					frontmatter[prop(`spouse${idx}_marriage_location`)] = `"${createSmartWikilink(spouse.marriageLocation, app)}"`;
+					// Drop the previously-wrapped `"${...}"` JS-string quotes — they made
+					// processFrontMatter round-trip the value into the nested-array block-list
+					// shape `[["Basename"]]`. (#513)
+					frontmatter[prop(`spouse${idx}_marriage_location`)] = createSmartWikilink(spouse.marriageLocation, app);
 					frontmatter[prop(`spouse${idx}_marriage_location_id`)] = spouse.marriageLocationCrId;
 				} else {
 					frontmatter[prop(`spouse${idx}_marriage_location`)] = spouse.marriageLocation;
@@ -1344,7 +1376,7 @@ export async function removeSpouseLink(
 				crId: String(id),
 				name,
 				marriageDate: fm[`spouse${i}_marriage_date`] as string | undefined,
-				marriageLocation: fm[`spouse${i}_marriage_location`] as string | undefined,
+				marriageLocation: normalizeMarriageLocation(fm[`spouse${i}_marriage_location`]),
 				marriageStatus: fm[`spouse${i}_marriage_status`] as SpouseMetadata['marriageStatus'],
 				divorceDate: fm[`spouse${i}_divorce_date`] as string | undefined
 			});

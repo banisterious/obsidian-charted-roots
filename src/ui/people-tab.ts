@@ -23,7 +23,7 @@ import { BidirectionalLinker } from '../core/bidirectional-linker';
 import { CreatePersonModal } from './create-person-modal';
 import { TemplateSnippetsModal } from './template-snippets-modal';
 import { MediaManagerModal } from '../core/ui/media-manager-modal';
-import { createPersonNote, PersonData, SpouseMetadata, extractSourcedFactsFromFrontmatter } from '../core/person-note-writer';
+import { createPersonNote, PersonData, SpouseMetadata, extractSourcedFactsFromFrontmatter, normalizeMarriageLocation } from '../core/person-note-writer';
 import { getLogger } from '../core/logging';
 import { getErrorMessage } from '../core/error-utils';
 import { renderPersonTimeline, createTimelineSummary } from '../events/ui/person-timeline';
@@ -1609,7 +1609,7 @@ function renderPersonTableRow(
 					crId: crId || '',
 					name: name || crId || `Spouse ${i}`,
 					marriageDate: fm[`spouse${i}_marriage_date`] as string | undefined,
-					marriageLocation: fm[`spouse${i}_marriage_location`] as string | undefined,
+					marriageLocation: normalizeMarriageLocation(fm[`spouse${i}_marriage_location`]),
 					marriageStatus: fm[`spouse${i}_marriage_status`] as SpouseMetadata['marriageStatus'],
 					divorceDate: fm[`spouse${i}_divorce_date`] as string | undefined
 				});
