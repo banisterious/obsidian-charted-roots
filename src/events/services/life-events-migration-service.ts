@@ -13,6 +13,7 @@ import { App, TFile, TFolder, normalizePath } from 'obsidian';
 import type { CanvasRootsSettings } from '../../settings';
 import { getLogger } from '../../core/logging';
 import { isPersonNote } from '../../utils/note-type-detection';
+import { sanitizeFilename } from '../../utils/name-sanitization';
 import { generateCrId } from '../../core/uuid';
 import type { EventType } from '../../maps/types/map-types';
 import {
@@ -172,19 +173,6 @@ export function generateEventTitle(personName: string, event: InlineEvent): stri
 		return `${personName} - ${typeName} ${year}`;
 	}
 	return `${personName} - ${typeName}`;
-}
-
-/**
- * Pure helper: convert a title string into a URL-safe filename slug.
- * Lowercases, replaces non-alphanumeric runs with single hyphens, trims
- * leading/trailing hyphens, and caps the result at 100 characters.
- */
-export function slugifyTitle(title: string): string {
-	return title
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, '-')
-		.replace(/^-+|-+$/g, '')
-		.substring(0, 100);
 }
 
 /**
@@ -462,14 +450,14 @@ export class LifeEventsMigrationService {
 	): Promise<TFile> {
 		const crId = generateCrId();
 		const title = generateEventTitle(personName, event);
-		const fileName = slugifyTitle(title) + '.md';
+		const fileName = sanitizeFilename(title) + '.md';
 		const filePath = normalizePath(`${folder}/${fileName}`);
 
 		// Handle duplicate filenames by appending a number
 		let finalPath = filePath;
 		let counter = 1;
 		while (this.app.vault.getAbstractFileByPath(finalPath)) {
-			const baseName = slugifyTitle(title);
+			const baseName = sanitizeFilename(title);
 			finalPath = normalizePath(`${folder}/${baseName}-${counter}.md`);
 			counter++;
 		}
@@ -524,9 +512,9 @@ export class LifeEventsMigrationService {
 		return file;
 	}
 
-	// generateEventTitle / formatEventDate / slugifyTitle have been promoted
-	// to module-level pure helpers (see top of file). The class delegates to
-	// those so tests can exercise the title / date / slug logic directly.
+	// generateEventTitle / formatEventDate are promoted to module-level pure
+	// helpers (see top of file). Filename generation now goes through the
+	// shared `sanitizeFilename` from utils/name-sanitization (#509).
 
 	/**
 	 * Ensure a folder exists, creating it if necessary

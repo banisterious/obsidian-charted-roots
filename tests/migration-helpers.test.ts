@@ -7,7 +7,6 @@ import { mergeIndexedSourcesToArray } from '../src/sources/services/source-migra
 import {
 	formatEventDate,
 	generateEventTitle,
-	slugifyTitle,
 	type InlineEvent
 } from '../src/events/services/life-events-migration-service';
 
@@ -194,29 +193,6 @@ describe('generateEventTitle (life-events migration)', () => {
 	});
 });
 
-describe('slugifyTitle (life-events migration)', () => {
-	it('lowercases the input', () => {
-		expect(slugifyTitle('Alice Baptism')).toBe('alice-baptism');
-	});
-
-	it('replaces non-alphanumeric runs with a single hyphen', () => {
-		expect(slugifyTitle('Alice   Baptism!!!')).toBe('alice-baptism');
-	});
-
-	it('strips leading and trailing hyphens', () => {
-		expect(slugifyTitle('  Alice  ')).toBe('alice');
-	});
-
-	it('handles unicode and punctuation by stripping them to hyphens', () => {
-		expect(slugifyTitle("Alice's Baptism - 1850")).toBe('alice-s-baptism-1850');
-	});
-
-	it('caps length at 100 characters', () => {
-		const longTitle = 'a'.repeat(150);
-		expect(slugifyTitle(longTitle)).toHaveLength(100);
-	});
-
-	it('empty-ish input produces empty string (no leading/trailing hyphens)', () => {
-		expect(slugifyTitle('!!!')).toBe('');
-	});
-});
+// `slugifyTitle` removed in #509 — life-events-migration filename
+// generation now goes through `sanitizeFilename` from utils/name-sanitization.
+// See `tests/sanitize-filename.test.ts` for fences on the new helper.

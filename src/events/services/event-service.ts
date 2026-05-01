@@ -18,6 +18,7 @@ import {
 	getEventType
 } from '../types/event-types';
 import { generateCrId } from '../../core/uuid';
+import { sanitizeFilename } from '../../utils/name-sanitization';
 import { isEventNote } from '../../utils/note-type-detection';
 import { getCalendariumBridge } from '../../integrations/calendarium-bridge';
 
@@ -543,8 +544,10 @@ export class EventService {
 
 		const content = frontmatterLines.join('\n') + body;
 
-		// Create file
-		const fileName = this.slugify(data.title) + '.md';
+		// Create file. Filename preserves the user's typing (case + accents +
+		// punctuation Obsidian permits) — see #509. Was previously slugified
+		// to `birth-of-padm-naberrie.md`-style ASCII-only forms.
+		const fileName = sanitizeFilename(data.title) + '.md';
 		const folder = this.settings.eventsFolder || 'Charted Roots/Events';
 		const filePath = normalizePath(`${folder}/${fileName}`);
 
@@ -873,17 +876,6 @@ export class EventService {
 		} else if (!(folder instanceof TFolder)) {
 			throw new Error(`Path exists but is not a folder: ${normalizedPath}`);
 		}
-	}
-
-	/**
-	 * Convert a title to a URL-safe filename
-	 */
-	private slugify(title: string): string {
-		return title
-			.toLowerCase()
-			.replace(/[^a-z0-9]+/g, '-')
-			.replace(/^-+|-+$/g, '')
-			.substring(0, 100); // Limit length
 	}
 
 	/**

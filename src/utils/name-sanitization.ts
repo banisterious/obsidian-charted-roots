@@ -61,6 +61,29 @@ export function sanitizeName(name: string): string {
 }
 
 /**
+ * Sanitize a title for use as a filename basename (without extension).
+ *
+ * Wraps `sanitizeName` with a length cap. Preserves accented characters,
+ * casing, apostrophes, hyphens, and spaces — strips only the chars that
+ * are filesystem-illegal or break wikilink parsing. The previous slug-style
+ * generators in event / source / proof-summary services used an aggressive
+ * `[^a-z0-9]+ → -` regex that destroyed accented characters and casing,
+ * producing `birth-of-padm-naberrie.md` from `Birth of Padmé Naberrie`
+ * (#509). This helper keeps the user-facing typing intact.
+ *
+ * @example
+ * sanitizeFilename('Birth of Padmé Naberrie')   // 'Birth of Padmé Naberrie'
+ * sanitizeFilename("O'Brien's Wedding")         // "O'Brien's Wedding"
+ * sanitizeFilename('Susan "Sue" Marriage')      // 'Susan Sue Marriage'
+ * sanitizeFilename('a'.repeat(150))             // 100-char string
+ * sanitizeFilename('!!!')                       // '!!!' (preserved — punctuation isn't unsafe here)
+ * sanitizeFilename('')                          // 'Unknown'
+ */
+export function sanitizeFilename(title: string, maxLength = 100): string {
+	return sanitizeName(title).substring(0, maxLength);
+}
+
+/**
  * Check if a name contains characters that would be removed by sanitization.
  *
  * Useful for determining whether alias format is needed in wikilinks.

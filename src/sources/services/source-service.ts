@@ -23,6 +23,7 @@ import {
 import { getSourceTemplate, applyTemplatePlaceholders } from '../types/source-templates';
 import { generateCrId } from '../../core/uuid';
 import { isSourceNote } from '../../utils/note-type-detection';
+import { sanitizeFilename } from '../../utils/name-sanitization';
 
 /**
  * Safely convert frontmatter value to string
@@ -358,8 +359,8 @@ export class SourceService {
 
 		const content = frontmatterLines.join('\n') + body;
 
-		// Create file
-		const fileName = this.slugify(data.title) + '.md';
+		// Create file. Filename preserves user typing (#509).
+		const fileName = sanitizeFilename(data.title) + '.md';
 		const folder = this.settings.sourcesFolder;
 		const filePath = normalizePath(`${folder}/${fileName}`);
 
@@ -717,14 +718,4 @@ export class SourceService {
 		}
 	}
 
-	/**
-	 * Convert a title to a URL-safe filename
-	 */
-	private slugify(title: string): string {
-		return title
-			.toLowerCase()
-			.replace(/[^a-z0-9]+/g, '-')
-			.replace(/^-+|-+$/g, '')
-			.substring(0, 100); // Limit length
-	}
 }

@@ -23,6 +23,7 @@ import { FACT_KEYS, getEffectiveInformationQuality } from '../types/source-types
 import { SourceService } from './source-service';
 import { generateCrId } from '../../core/uuid';
 import { isProofSummaryNote } from '../../utils/note-type-detection';
+import { sanitizeFilename } from '../../utils/name-sanitization';
 
 /**
  * Service for managing proof summary notes
@@ -314,8 +315,8 @@ export class ProofSummaryService {
 		const body = this.getProofSummaryTemplate(data.title, data.factType);
 		const content = frontmatterLines.join('\n') + '\n\n' + body;
 
-		// Create file
-		const fileName = this.slugify(data.title) + '.md';
+		// Create file. Filename preserves user typing (#509).
+		const fileName = sanitizeFilename(data.title) + '.md';
 		const folder = this.getProofsFolder();
 		const filePath = normalizePath(`${folder}/${fileName}`);
 
@@ -516,17 +517,6 @@ export class ProofSummaryService {
 		} else if (!(folder instanceof TFolder)) {
 			throw new Error(`Path exists but is not a folder: ${normalizedPath}`);
 		}
-	}
-
-	/**
-	 * Convert title to URL-safe filename
-	 */
-	private slugify(title: string): string {
-		return title
-			.toLowerCase()
-			.replace(/[^a-z0-9]+/g, '-')
-			.replace(/^-+|-+$/g, '')
-			.substring(0, 100);
 	}
 
 	/**
