@@ -18,7 +18,8 @@ import {
 	DATE_PRECISION_LABELS,
 	CONFIDENCE_LABELS,
 	getCategoryName,
-	getEventTypesByCategory
+	getEventTypesByCategory,
+	isNarrativeEventType
 } from '../types/event-types';
 import { DEFAULT_DATE_SYSTEMS } from '../../dates/constants/default-date-systems';
 import { getCalendariumBridge } from '../../integrations/calendarium-bridge';
@@ -84,6 +85,13 @@ export class CreateEventModal extends Modal {
 	private persistence?: ModalStatePersistence<EventFormData>;
 	private savedSuccessfully = false;
 	private resumeBanner?: HTMLElement;
+
+	// Reactive section refs so the event-type dropdown's onChange can show/
+	// hide narrative-only fields (#507 follow-up). Without this, picking a
+	// narrative type from the dropdown after opening the modal didn't reveal
+	// the Worldbuilding section — visibility was decided once at form-build
+	// time from the initial `eventType` and never re-evaluated.
+	private worldSectionEl: HTMLElement | null = null;
 
 	constructor(
 		app: App,
@@ -368,24 +376,27 @@ export class CreateEventModal extends Modal {
 					this.universe = value;
 				}));
 
-		// Worldbuilder section (for narrative events) — `isCanonical`
-		// remains gated since canon/non-canon is a narrative storytelling
-		// concept, not applicable to vital records or life events.
-		const narrativeTypes = ['anecdote', 'lore_event', 'plot_point', 'flashback', 'foreshadowing', 'backstory', 'climax', 'resolution'];
-		if (narrativeTypes.includes(this.eventType)) {
-			const worldSection = form.createDiv({ cls: 'crc-event-world-section' });
-			worldSection.createEl('h4', { text: 'Worldbuilding options', cls: 'crc-section-header' });
+		// Worldbuilder section — `isCanonical` is gated on narrative event
+		// types (canon/non-canon is a storytelling concept, not applicable
+		// to vital records or life events). Always rendered into the DOM but
+		// hidden when the event type isn't narrative; the event-type
+		// dropdown's onChange toggles visibility so picking a narrative type
+		// after opening the modal reveals the section without requiring a
+		// save+reopen (#507 follow-up).
+		const worldSection = form.createDiv({ cls: 'crc-event-world-section' });
+		worldSection.createEl('h4', { text: 'Worldbuilding options', cls: 'crc-section-header' });
 
-			// Is canonical
-			new Setting(worldSection)
-				.setName('Canonical event')
-				.setDesc('Mark this as authoritative truth in your world')
-				.addToggle(toggle => toggle
-					.setValue(this.isCanonical)
-					.onChange(value => {
-						this.isCanonical = value;
-					}));
-		}
+		new Setting(worldSection)
+			.setName('Canonical event')
+			.setDesc('Mark this as authoritative truth in your world')
+			.addToggle(toggle => toggle
+				.setValue(this.isCanonical)
+				.onChange(value => {
+					this.isCanonical = value;
+				}));
+
+		this.worldSectionEl = worldSection;
+		this.applyWorldSectionVisibility();
 
 		// Transfer section (for transfer events)
 		if (this.eventType === 'transfer') {
@@ -542,9 +553,23 @@ export class CreateEventModal extends Modal {
 						dropdown.setValue(this.eventType);
 					} else {
 						this.eventType = value;
+						this.applyWorldSectionVisibility();
 					}
 				});
 			});
+	}
+
+	/**
+	 * Show or hide the Worldbuilding section based on whether the current
+	 * event type is narrative. Called both during initial form-build and
+	 * from the event-type dropdown's onChange so the section reactively
+	 * appears when the user picks a narrative type without needing to save
+	 * and reopen the modal (#507 follow-up).
+	 */
+	private applyWorldSectionVisibility(): void {
+		if (!this.worldSectionEl) return;
+		const visible = isNarrativeEventType(this.eventType);
+		this.worldSectionEl.toggleClass('cr-hidden', !visible);
 	}
 
 	/**

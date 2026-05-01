@@ -88,6 +88,17 @@ export const NARRATIVE_EVENT_TYPES = [
 ] as const;
 
 /**
+ * Whether an event type surfaces storytelling-only fields (currently the
+ * `Canonical event` toggle in the Edit Event modal's Worldbuilding section).
+ * The dropdown's onChange uses this to reactively show/hide the section so
+ * picking a narrative type after opening the modal reveals the toggle
+ * without requiring a save+reopen (#507 follow-up).
+ */
+export function isNarrativeEventType(type: string): boolean {
+	return (NARRATIVE_EVENT_TYPES as ReadonlyArray<string>).includes(type);
+}
+
+/**
  * All built-in event types
  */
 export const BUILT_IN_EVENT_TYPES = [
