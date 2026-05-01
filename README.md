@@ -4,7 +4,7 @@
 
 # Charted Roots: Genealogical Family Tree Plugin for Obsidian
 
-[![Version](https://img.shields.io/badge/version-0.22.16-blue.svg)](https://github.com/banisterious/obsidian-charted-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md)
+[![Version](https://img.shields.io/badge/version-0.22.16-blue.svg)](https://github.com/banisterious/obsidian-charted-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md) [![Website](https://img.shields.io/badge/website-chartedroots.com-purple.svg)](https://chartedroots.com)
 
 **Charted Roots** brings professional genealogical tools to Obsidian. Import, organize, visualize, and share family histories and fictional worlds without leaving your vault. From GEDCOM imports to PDF reports, interactive charts to map views, manage your research with the power of linked Markdown notes. Built for genealogists, historians, writers, and worldbuilders.
 
@@ -12,24 +12,24 @@
 
 | Quick tour (~2 min) | Full feature tour (~15 min) |
 |:-------------------:|:---------------------------:|
-| [![Quick tour](https://img.youtube.com/vi/elQfn1fk1VQ/maxresdefault.jpg)](https://youtu.be/elQfn1fk1VQ) | [![Full feature tour](docs/images/charted-roots-person-note.png)](https://www.youtube.com/watch?v=GnOHrG_nVvY) |
+| [![Quick tour](https://img.youtube.com/vi/elQfn1fk1VQ/maxresdefault.jpg)](https://youtu.be/elQfn1fk1VQ) | [![Full feature tour](https://img.youtube.com/vi/GnOHrG_nVvY/maxresdefault.jpg)](https://www.youtube.com/watch?v=GnOHrG_nVvY) |
 | Import GEDCOM → family tree → interactive chart → map view | Dynamic notes, highlight groups, custom-relationship overlay, maps, reports, worldbuilding |
 
 ---
 
 ## Screenshots
 
-| Interactive Family Chart | Geographic Map View |
-|:------------------------:|:-------------------:|
-| ![Family Chart](docs/images/charted-roots-family-chart-view.png) | ![Map View](docs/images/charted-roots-interactive-map-view.png) |
+| Interactive Family Chart | Canvas Trees |
+|:------------------------:|:------------:|
+| ![Family Chart](docs/images/raw/cr-family-chart-live.png) | ![Canvas Tree](docs/images/raw/cr-canvas-tree-multi-generational.png) |
 
-| Canvas Trees | Control Center |
-|:------------:|:--------------:|
-| ![Canvas Tree](docs/images/family-tree-canvas.png) | ![Control Center](docs/images/charted-roots-control-center-dashboard-tab.png) |
+| Geographic Map View | Worldbuilding & Universes |
+|:-------------------:|:-------------------------:|
+| ![Map View](docs/images/raw/cr-map-migration-paths.png) | ![Universe Overview](docs/images/raw/cr-universe-overview.png) |
 
-| Statistics Dashboard | Maps & Custom Maps |
-|:--------------------:|:------------------:|
-| ![Statistics](docs/images/charted-roots-statistics-view.png) | ![Maps Tab](docs/images/charted-roots-control-center-maps-tab.png) |
+| Evidence & Sources | Control Center |
+|:------------------:|:--------------:|
+| ![Attribution](docs/images/raw/cr-entity-attribution.png) | ![Control Center](docs/images/raw/cr-control-center-collections.png) |
 
 ---
 
@@ -158,7 +158,8 @@ Copy `main.js`, `styles.css`, and `manifest.json` to your vault's plugins folder
 
 ## Documentation
 
-📖 **[Full documentation on the Wiki](https://github.com/banisterious/obsidian-charted-roots/wiki)**
+🌐 **[Website](https://chartedroots.com)** — feature tour, guides, changelog
+📖 **[Wiki](https://github.com/banisterious/obsidian-charted-roots/wiki)** — full reference docs
 
 **Getting started:** [Installation](https://github.com/banisterious/obsidian-charted-roots/wiki/Getting-Started) · [Data entry](https://github.com/banisterious/obsidian-charted-roots/wiki/Data-Entry) · [FAQ](https://github.com/banisterious/obsidian-charted-roots/wiki/FAQ) · [Troubleshooting](https://github.com/banisterious/obsidian-charted-roots/wiki/Troubleshooting)
 
