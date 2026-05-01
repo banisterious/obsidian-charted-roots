@@ -293,33 +293,31 @@ Step-by-step plans for the captures still TBD as of 2026-04-30. Use the checkbox
 **Targets:** `cr-workflow-clip.png`, `cr-workflow-source-note.png`, `cr-workflow-attribution.png` — placement intent: standalone three-shot row in the Research workflow / Evidence and sources subsection. Three-shot composite told as a left-to-right narrative.
 **Fixture:** Andersons (consistent with the existing Web Clipper / Source hierarchy / Attribution captures). Public-domain biography target: any Find a Grave or Wikipedia page that fits the genealogy use case (Charles Hoy Fort already used in `cr-web-clipper-to-bio.webm`).
 
-This composite intentionally ports captures #16 / #17 / #18 from earlier tiers into a single sitting so the visual chain is internally coherent. The three individual captures already exist (`cr-web-clipper-modal.webp`, sources work in `cr-source-hierarchy.png`, attribution in `cr-entity-attribution.png`), but the composite needs them captured *as a single workflow*: same browser tab → same staged note → same person note. Tier 5 is the "do this in one sitting" step.
+Captured 2026-05-01 as a single sitting using the Charles Hoy Fort Find a Grave fixture (public-domain figure, Memorial ID 3079). Person note + 6-place chain (state / 2 counties / 2 cities / cemetery) seeded for the workflow before capture; source note clipped via the `findagrave-person` template and converted to `cr_type: source` with `cr_id: fag-307-fwn-832`; per-fact attribution wired via Path B (4 Citation notes in `Charted Roots/Citations/` plus `sourced_*` properties on the person note).
+
+Note: Stage 3's "use the per-fact attribution UI" step doesn't reflect a real UI affordance — Edit Person currently doesn't have a per-fact attach-source surface. Path B (Citation notes + `sourced_*` frontmatter properties) is the actual mechanism. FR filed as #511 to add the missing UI.
 
 **Stage 1 — Browser-side clip:**
 
-- [ ] Open the chosen biography page in the browser.
-- [ ] Click the Obsidian Web Clipper extension; select the Find a Grave Person template.
-- [ ] Confirm the clipper preview pane shows structured fields (name, dates, places, sources).
-- [ ] Capture the browser window with the clipper modal expanded over it; full screen including the page underneath so the reader sees both surfaces.
-- [ ] Save raw to `docs/images/raw/cr-workflow-clip.png`.
-- [ ] Click "Save" in the clipper to push the structured note to the Obsidian Staging folder.
+- [x] Open Find a Grave page for Charles Hoy Fort (Memorial ID 3079) in the browser.
+- [x] Open Web Clipper, select `findagrave-person` template.
+- [x] Clipper preview pane populated with structured fields (name, birth_date, birth_place, death_date, death_place, burial_place + Vital Information body section).
+- [x] Capture browser window with clipper modal expanded on the right showing the schema mapping, "Charted Roots/Staging" target, and "Add to Obsidian" button.
+- [x] Save raw to `docs/images/raw/cr-workflow-clip.png` (891 KB raw — **over 500 KB cap; needs `cwebp -q 85` fallthrough at deploy time, ship as `cr-workflow-clip.webp`**, expected ~150-170 KB based on prior similar conversions).
 
 **Stage 2 — Source note in vault:**
 
-- [ ] Switch to Obsidian; open `Charted Roots/Staging/<just-clipped-note>.md`.
-- [ ] Verify the frontmatter properties expanded — name, birth date, death date, places, sources URLs from the clip.
-- [ ] Convert the staging note to a `cr_type: source` note (use the cleanup wizard's source-promotion step or manually add `cr_type: source` to the frontmatter).
-- [ ] Confirm the note now renders in the Source hierarchy view with the clipped fields preserved.
-- [ ] Capture the Obsidian window with the converted source note open + frontmatter properties expanded.
-- [ ] Save raw to `docs/images/raw/cr-workflow-source-note.png`.
+- [x] Source note arrived in `Charted Roots/Sources/Charles Hoy Fort Famous memorial.md` after clipper save.
+- [x] Verified frontmatter properties — 12 fields: cr_type / cr_id / clip_source_type / clipped_from / clipped_date / note_type / name / birth_date / birth_place / death_date / death_place / burial_place. Body has H2 "Vital Information" section with the same data.
+- [x] Capture Obsidian window with the source note open + properties block fully expanded. Folder pane on left shows Sources folder expanded with the new file highlighted alongside 13 existing sources for fixture context.
+- [x] Save raw to `docs/images/raw/cr-workflow-source-note.png` (326 KB raw → ~265 KB after `oxipng -o 4`, ships as PNG).
 
 **Stage 3 — Attribution on the person note:**
 
-- [ ] Open the person note that the clipped source documents (or create one matching the cited individual).
-- [ ] Use the per-fact attribution UI (Edit Person → relationships / dates → attach source) to wire the clipped source to one or more facts on the person note.
-- [ ] Open the person's Entity Profile View; verify the Citations section shows the clipped source grouping at least one fact, and the Data quality section reflects the new attribution.
-- [ ] Capture the Entity Profile View with Citations + Data quality both visible in the viewport (similar framing to `cr-entity-attribution.png` but with the freshly-clipped source).
-- [ ] Save raw to `docs/images/raw/cr-workflow-attribution.png`.
+- [x] Person note seeded at `Charted Roots/People/Charles Hoy Fort.md` with vitals + place wikilinks resolving to the 6-place chain.
+- [x] Path B attribution wired — 4 Citation notes created in `Charted Roots/Citations/` (one per attributable fact: birth_date / birth_place / death_date / death_place), plus `sourced_*` frontmatter properties on the person note.
+- [x] Capture two-pane: center pane shows the person note's Properties block with all `sourced_*` properties visible; right pane shows the Entity Profile View with Citations section (4 entries each tagged `Memorial ID 3079`, `Secondary evidence`), Sources section binding the source to the person, Media section with the imported photo, Data quality section showing "Sources coverage: 40% (4/10 facts)" with per-fact weakness indicators.
+- [x] Save raw to `docs/images/raw/cr-workflow-attribution.png` (396 KB raw → ~320 KB after `oxipng -o 4`, ships as PNG).
 
 #### Common post-capture steps
 
