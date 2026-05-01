@@ -304,20 +304,21 @@ Step-by-step plans for the captures still TBD as of 2026-04-30. Use the checkbox
 - [x] Capture full Obsidian window (left ribbon + folder pane visible per the playbook's whole-feature convention).
 - [x] Save raw at 1920×1080 to `docs/images/raw/cr-book-builder-output.png`.
 
-#### B. Universe and fictional calendar (Tier 4, item 21)
+#### B. Universe overview (Tier 4, item 21)
 
-**Target:** `cr-universe-fictional-calendar.png` — placement intent: Worldbuilding section on `/features/`, anchoring the worldbuilder coverage.
+**Target:** `cr-universe-overview.png` — placement intent: Worldbuilding section on `/features/`, anchoring the worldbuilder coverage.
 **Fixture:** Dying Earth (the simpler of the two worldbuilder fixtures; fictional dates render as `DE NNNN`).
 
-- [ ] Open Dying Earth fixture vault.
-- [ ] Open `The Dying Earth.md` universe note.
-- [ ] Verify the universe's `default_calendar:` frontmatter property points at a Dying Earth calendar note; if not, link one (the calendar note already exists in the fixture).
-- [ ] Verify at least one event in the universe has a `DE NNNN`-formatted date and a date system pointing to the Dying Earth calendar.
-- [ ] Decide the framing: single-pane (universe note open with the calendar link visible in frontmatter, plus a timeline embed below showing a fictional-dated event) or two-pane (universe note left, event timeline right). The single-pane composite is easier to caption.
-- [ ] If single-pane: ensure the universe note's body has a timeline code block (`charted-roots-timeline` or equivalent) rendering an event with a `DE NNNN` date so the fictional calendar's effect is visible in one shot.
-- [ ] If two-pane: open the universe note in the main editor, an event in the second pane, with both visible.
-- [ ] Capture full Obsidian window.
-- [ ] Save raw to `docs/images/raw/cr-universe-fictional-calendar.png`.
+Originally scoped as "Universe and fictional calendar" with the universe→calendar `default_calendar:` link visible in frontmatter as a load-bearing element. After capture, it became clear the rich data tables (People + Events with `DE NNNN` dates rendering across both) carry the worldbuilding claim more concretely than a Properties-block link would. Filename and framing simplified to "universe overview"; the calendar relationship is communicated implicitly by the date format. **Website copy preceding the embed will need a revision** so the prose matches what the visual actually shows (worldbuilding overview / universe-scoped people + events with fictional dates) rather than the original frame (universe note with linked custom calendar visible).
+
+- [x] Open Dying Earth fixture vault.
+- [x] Open `The Dying Earth.md` universe note.
+- [x] Verify the `charted-roots-universe-people` and `charted-roots-universe-events` blocks populate (28 events with `universe: The Dying Earth` set, 17 people — both well-seeded after the 0.22.15 alias-aware lookup fix).
+- [x] Two-pane split of the same universe note: left pane scrolled to the People (17) section, right pane scrolled to the Events (28) section. Both blocks render `DE NNNN` dates in their respective columns, making the fictional calendar's effect visible across two surfaces in one shot. The Marriage of Cugel and Derwe entry visible in the right pane gives narrative continuity with #501's verification fixtures.
+- [x] Capture full Obsidian window.
+- [x] Save raw to `docs/images/raw/cr-universe-overview.png` (432 KB; well under 500 KB cap, oxipng pass at deploy time will land it ~340 KB).
+
+**Deferred:** if a future capture session wants to make the universe→calendar linkage explicit, a small follow-on shot of the universe note's frontmatter Properties block expanded with `default_calendar:` visible would pair with this one. Not blocking; this single composite ships standalone.
 
 #### C. Edit Person modal (Tier 4, item 23)
 
