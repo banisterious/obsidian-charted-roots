@@ -1,6 +1,6 @@
 # Media Library Consolidation
 
-**Status:** 🔶 In progress. **Phase 2 shipped 2026-05-01** via the README curation refresh (commit `e7bc00a6`) — seven legacy README captures retired, six replacements drawn from the modern `raw/` library. The curation pass also obviated three of the four Phase 3 re-captures (Control Center Dashboard, Control Center Maps, person-note Demo thumbnail) by dropping them from the README entirely. Phase 1 (buy-me-a-coffee relocation) and a reduced Phase 3 (Statistics — wiki-only) still pending.
+**Status:** 🔶 In progress. **Phases 1 + 2 shipped 2026-05-01.** The README curation refresh (commit `e7bc00a6`) retired seven legacy README captures and obviated three of the four originally-Phase-3 re-captures by dropping those features from the README. The buy-me-a-coffee relocation (commit `b7154df0`) closed Phase 1. Reduced Phase 3 (Statistics — wiki-only) and Phase 4 (structural decision) remain.
 **Authored:** 2026-04-27.
 **Trigger:** Originally "after the website captures are all complete." Met 2026-04-28; first commit landed 2026-05-01.
 
@@ -61,16 +61,9 @@ The Tier 3 curation pass collapsed three of the four originally-Phase-3 re-captu
 
 ## Phases
 
-### Phase 1 — Branding relocation
+### Phase 1 — Branding relocation ✅ Complete (2026-05-01, commit `b7154df0`)
 
-**Scope:** `buy-me-a-coffee.png` doesn't belong in `images/` at all. It's a sponsor badge, not a feature capture. The brand kit already lives under `docs/assets/branding/`; the badge belongs there too.
-
-**Steps:**
-1. `git mv docs/images/buy-me-a-coffee.png docs/assets/branding/buy-me-a-coffee.png`
-2. Update `README.md` reference to the new path
-3. Single commit: `chore: Relocate buy-me-a-coffee badge to docs/assets/branding/`
-
-**Risk:** Negligible. One file, one reference.
+`buy-me-a-coffee.png` moved from `docs/images/` to `docs/assets/branding/`; README reference updated. As a side effect, `docs/images/` now contains only `raw/` — feeding into the Phase 4 structural decision.
 
 ### Phase 2 — Pointer swaps for already-superseded shots ✅ Complete (2026-05-01)
 
@@ -127,7 +120,7 @@ Phase 4 happens whenever Phase 3 is fully complete and the structural decision f
 
 ## Acceptance criteria
 
-- [ ] Phase 1: `buy-me-a-coffee.png` lives at `docs/assets/branding/`; `docs/images/buy-me-a-coffee.png` no longer exists; README renders correctly.
+- [x] Phase 1: `buy-me-a-coffee.png` lives at `docs/assets/branding/`; `docs/images/buy-me-a-coffee.png` no longer exists; README renders correctly. (2026-05-01, commit `b7154df0`)
 - [x] Phase 2: All seven legacy README captures retired; README points at modern `raw/` files for the curated grid + uses YouTube auto-thumb for the Demo full-tour thumbnail. (2026-05-01, commit `e7bc00a6`)
 - [ ] Phase 3 (reduced — wiki-only): `cr-statistics-view.png` captured to `raw/` for wiki use.
 - [ ] Phase 4 (post-Phase 3): structural decision documented — either `docs/images/raw/` retained or collapsed to `docs/images/`.
