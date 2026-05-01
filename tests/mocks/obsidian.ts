@@ -282,6 +282,16 @@ export class App {
 	}
 }
 
+/**
+ * Normalize a path: collapse repeated slashes, strip leading/trailing slashes.
+ * Mirrors the production behavior closely enough for path construction tests;
+ * real Obsidian also handles platform-specific separators which we don't need
+ * here.
+ */
+export function normalizePath(path: string): string {
+	return path.replace(/\/+/g, '/').replace(/^\/+|\/+$/g, '');
+}
+
 // Simple frontmatter parser/serializer for the mock. Real Obsidian uses a more
 // sophisticated YAML handler; this is enough for unit-test round-trips.
 function parseFrontMatter(content: string): {
