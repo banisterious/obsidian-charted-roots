@@ -2,6 +2,10 @@
 
 The Book Builder lets you compile reports, visual trees, vault notes, and section dividers into a single PDF or ODT document — a complete family history book or research compilation.
 
+![Book Builder output: Anderson Family History TOC page enumerating eight bundled report types](images/cr-book-builder-output.png)
+
+*Table of contents page of an assembled book showing the bundled report types.*
+
 ---
 
 ## Table of Contents

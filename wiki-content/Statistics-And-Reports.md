@@ -2,6 +2,10 @@
 
 Charted Roots provides a comprehensive statistics dashboard and report generation system to help you understand your data and generate formatted genealogical reports.
 
+![Pedigree tree report PDF for Queen Victoria, four generations with sex-coded boxes and avatar circles](images/cr-report-pedigree-tree.png)
+
+*One example output (Pedigree Tree) of the 17+ report types; export to PDF, ODT, or markdown.*
+
 ---
 
 ## Table of Contents

@@ -2,6 +2,8 @@
 
 The Interactive Family Chart View is a persistent, interactive visualization panel for exploring and editing family trees in real-time. Unlike the static canvas exports, it provides a dynamic, explorable interface powered by the [family-chart](https://github.com/donatso/family-chart) library.
 
+![Interactive Family Chart View with William Anderson selected and the Person Details panel open](images/cr-family-chart-live.png)
+
 ---
 
 ## Table of Contents
@@ -154,6 +156,10 @@ Render non-family custom relationships (liege/vassal, ally/rival, mentor/discipl
 The overlay is independent of family-tree structure. A type can be tree-only (affects layout, no overlay), overlay-only (no layout impact, rendered as an overlay line), or both.
 
 ### Highlight Groups
+
+![Highlight Groups in motion: two groups active, matching cards glow while non-matching cards dim](images/cr-family-chart-highlight-groups.gif)
+
+*Two highlight groups active (Collection = blood, Collection = married_in); matching cards glow while non-matching cards dim to 30% opacity.*
 
 Spotlight cards matching a property value while dimming the rest — useful for pattern-finding in large trees (e.g., "who are all the Magicians?", "which people belong to this faction?", "which descendants have the highest research level?").
 

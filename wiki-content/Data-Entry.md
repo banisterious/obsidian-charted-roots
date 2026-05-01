@@ -104,6 +104,10 @@ The Family Creation Wizard is a 5-step guided workflow for creating interconnect
 
 ## Edit Modal Enhancements
 
+![Edit Person modal with events list, family relationships, and spouse data populated](images/cr-edit-person-modal.png)
+
+*Cugel the Clever (Dying Earth fixture) with four life events, parents, and spouse with marriage date populated.*
+
 The Edit Modal (opened by right-clicking a person note → Edit) includes features for managing relationships.
 
 ### Inline Person Creation

@@ -2,6 +2,10 @@
 
 Universe Notes allow you to manage fictional worlds as first-class entities. Instead of using plain strings for the `universe` field, you can create dedicated universe notes that serve as a canonical registry for your fictional worlds (Middle-earth, Westeros, your own custom settings).
 
+![Dying Earth universe note showing People and Events tables auto-rendered alongside the linked custom calendar](images/cr-universe-overview.png)
+
+*Two-pane split of a universe note: People (17) on the left, Events (28) on the right; both tables render dates in the universe's `DE NNNN` calendar.*
+
 ---
 
 ## Table of Contents

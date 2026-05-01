@@ -29,6 +29,10 @@ Data quality tools are available in two contexts:
 
 ## Post-Import Cleanup Workflow
 
+![Post-Import Cleanup Wizard: 14-step tile grid with diagnostic counts per step](images/cr-cleanup-wizard.png)
+
+*Pre-scan state on a Royal Families fixture; counts show what each step will fix.*
+
 After importing a GEDCOM file (especially a "messy" one with data quality issues), use the **Cleanup Wizard** to guide you through the recommended sequence of fixes.
 
 ### Using the Cleanup Wizard (Recommended)

@@ -2,6 +2,12 @@
 
 The Calendar View shows a monthly calendar grid of significant dates across your vault — birthdays, death anniversaries, marriage dates, and other life events. Use it to see "what happened this month in my family's history."
 
+![Calendar View on the Anderson real-world fixture with a day-detail panel open](images/cr-calendar-view-realworld.png)
+
+![Calendar View on a Gaean Reach fictional fixture, showing an event from a custom calendar era](images/cr-calendar-view-fictional.png)
+
+*Top: real-world Anderson family fixture in June 1928. Bottom: Gaean Reach fictional fixture in April 1499.*
+
 ---
 
 ## Table of Contents

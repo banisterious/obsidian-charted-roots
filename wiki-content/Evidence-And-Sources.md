@@ -2,6 +2,12 @@
 
 Charted Roots provides tools for managing genealogical sources and evidence, helping you document your research with proper citations and track which ancestors are well-documented.
 
+![Per-fact source attribution on a person profile, with citations grouped by source and a data-quality coverage summary](images/cr-entity-attribution.png)
+
+![Source hierarchy display: a Probate Packet parent source with its child documents listed and a source tree](images/cr-source-hierarchy.png)
+
+*Top: per-fact attribution with primary / secondary evidence badges. Bottom: parent → child source hierarchy for a multi-document record group.*
+
 ---
 
 ## Table of Contents

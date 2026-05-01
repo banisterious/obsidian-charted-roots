@@ -2,6 +2,8 @@
 
 Charted Roots allows you to create custom map images for fictional worlds, historical maps, or any other specialized geographic visualization. This page covers the complete workflow from creation to alignment.
 
+![Custom image map for the Dying Earth fantasy fixture, hand-drawn basemap with place markers](images/cr-map-custom-image.png)
+
 ---
 
 ## Table of Contents
@@ -361,6 +363,10 @@ To determine the pixel coordinates for a location on your map image:
 ---
 
 ## Linked Maps (Drill-Down Navigation)
+
+![Drill-down child map with breadcrumb navigation back to the parent map](images/cr-map-drilldown-breadcrumbs.png)
+
+*River Scaum child map with a breadcrumb back to the parent Dying Earth continent map.*
 
 You can link related maps together so that clicking a place marker on one map navigates to another. This is useful for multi-scale maps — for example, a continental overview map with a detailed regional map for a specific area.
 

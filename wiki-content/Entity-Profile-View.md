@@ -2,6 +2,10 @@
 
 The Entity Profile View is a dockable sidebar panel that gives you a comprehensive, focused view of any entity (person, place, event, source, or organization). It automatically syncs to whichever note you're viewing, showing all related data in collapsible sections — no more jumping between tabs to see a person's events, sources, and relationships.
 
+![Entity Profile View showing a person profile with relationships and events sections expanded](images/cr-entity-profile-person.png)
+
+*Person profile shown; place, event, source, and organization profiles share the same dockable surface with entity-specific section content.*
+
 ---
 
 ## Table of Contents

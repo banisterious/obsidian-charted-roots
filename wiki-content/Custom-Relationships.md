@@ -235,6 +235,10 @@ Custom relationships can be rendered as colored edges on canvas trees:
 
 ## Family Chart Overlay
 
+![Custom relationships overlay toggling on, drawing styled arcs on top of the biological tree](images/cr-custom-relationships-overlay.gif)
+
+*Toggling the overlay reveals styled arcs (Mentor, Best friend, Business partner) drawn on top of the biological tree.*
+
 Custom relationships can also render as **styled overlay lines on the interactive Family Chart**, independently of whether they participate in tree structure. This is decoupled from the tree-structure integration described in [Data Model](Data-Model) — a relationship type can be tree-only, overlay-only, or both.
 
 ### Enabling overlay rendering per type

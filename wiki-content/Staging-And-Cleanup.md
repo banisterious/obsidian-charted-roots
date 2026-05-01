@@ -216,6 +216,10 @@ This ensures your production data stays clean while you work on imports.
 
 ## Merging Duplicate Records
 
+![Merge Wizard resolving a field-level conflict between two duplicate records](images/cr-merge-wizard-conflict-res.gif)
+
+*Field-level conflict resolution: accept one side or the other, or take a custom value, and watch the merged record update in real time.*
+
 When you find duplicate person records—either through duplicate detection or cross-import review—the Merge Wizard helps you combine them with field-level control.
 
 ### Accessing the Merge Wizard

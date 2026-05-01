@@ -2,6 +2,8 @@
 
 Generate visual family tree diagrams in multiple formats: interactive Canvas files, hand-drawn Excalidraw diagrams, printable PDFs, or editable ODT documents.
 
+![Multi-generational canvas tree generated from a Royal Families fixture](images/cr-canvas-tree-multi-generational.png)
+
 ---
 
 ## Table of Contents
@@ -180,6 +182,10 @@ Inverted pedigree showing only descendants:
 ---
 
 ## Canvas Layout Algorithms
+
+![Canvas tree generation in motion: layout algorithm assembles cards as the wizard runs](images/cr-canvas-tree-generation.gif)
+
+*Tree generation runs the chosen layout algorithm; cards lay out from the root outward.*
 
 When generating canvas output, choose a layout algorithm:
 

@@ -2,6 +2,8 @@
 
 Charted Roots provides comprehensive place-based features for tracking where people were born, died, married, and lived. These features support both real-world genealogy and world-building with fictional places.
 
+![Migration paths between cities on the interactive map view](images/cr-map-migration-paths.png)
+
 ---
 
 ## Table of Contents
@@ -127,6 +129,10 @@ Control which elements appear on the map:
 4. Toggle heat map layer
 
 ### Time Slider Animation
+
+![Time slider scrubbing across decades; markers appear and disappear as the year advances](images/cr-interactive-map-time.gif)
+
+*Drag or play the time slider; place markers appear when relevant lifespans overlap the selected year.*
 
 Visualize "who was alive when?" across your family tree:
 

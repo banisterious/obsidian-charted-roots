@@ -1,9 +1,8 @@
 # Wiki Media Integration
 
-**Status:** 📋 Planned. Not started.
+**Status:** 🔶 In progress. **Phases 1, 2, and 3 shipped 2026-05-01** — embeds added across all 18 mapped wiki pages in a single batch after a Family-Chart-View pilot validated the rendering pattern. Embed convention shifted from `<video>` (sanitizer-stripped) to `.webm` → `.gif` conversion + plain image markdown. Phase 4 (legacy cleanup) optional and pending.
 **Authored:** 2026-05-01.
-**Trigger:** Begin once Phase 2 of [media-library-consolidation.md](media-library-consolidation.md) ships (legacy `docs/images/` files removed; README points at modern `docs/images/cr-*.png` shots). Wiki integration is additive; doing it after the legacy-cleanup pass keeps the asset library coherent.
-**Out of scope today:** No commits yet. This is a written plan; per-phase commits land later.
+**Trigger:** Met same day media-library-consolidation Phases 1-2 shipped.
 
 ---
 
@@ -46,20 +45,20 @@ Proposed embeds. `🎬` marks motion loops; `📸` marks static stills. "Anchor"
 
 | Wiki page | Anchor | Supporting | Notes |
 |---|---|---|---|
-| [Family-Chart-View](../../wiki-content/Family-Chart-View.md) | 📸 `cr-family-chart-live.png` | 🎬 `cr-family-chart-highlight-groups.webm` | Static hero + motion for the highlight groups feature (hard to convey in stills). |
-| [Visual-Trees](../../wiki-content/Visual-Trees.md) | 🎬 `cr-canvas-tree-generation.webm` | 📸 `cr-canvas-tree-multi-generational.png` | Generation motion is the page's most useful asset; static hero supports. |
+| [Family-Chart-View](../../wiki-content/Family-Chart-View.md) | 📸 `cr-family-chart-live.png` | 🎬 `cr-family-chart-highlight-groups.gif` (from `.webm`) | Static hero + motion for the highlight groups feature (hard to convey in stills). |
+| [Visual-Trees](../../wiki-content/Visual-Trees.md) | 🎬 `cr-canvas-tree-generation.gif` (from `.webm`) | 📸 `cr-canvas-tree-multi-generational.png` | Generation motion is the page's most useful asset; static hero supports. |
 | [Tree-Preview](../../wiki-content/Tree-Preview.md) | — | — | Skip; conceptual / settings-oriented page. |
-| [Geographic-Features](../../wiki-content/Geographic-Features.md) | 📸 `cr-map-migration-paths.png` | 🎬 `cr-interactive-map-time.webm` | Static for the at-rest map; motion for the time-slider. |
+| [Geographic-Features](../../wiki-content/Geographic-Features.md) | 📸 `cr-map-migration-paths.png` | 🎬 `cr-interactive-map-time.gif` (from `.webm`) | Static for the at-rest map; motion for the time-slider. |
 | [Custom-Maps](../../wiki-content/Custom-Maps.md) | 📸 `cr-map-custom-image.png` | 📸 `cr-map-drilldown-breadcrumbs.png` | Both shots tell the parent / child story; legitimate two-shot case. |
 | [Calendar-View](../../wiki-content/Calendar-View.md) | 📸 `cr-calendar-view-realworld.png` | 📸 `cr-calendar-view-fictional.png` | Dual-mode feature; both shots earn their slot. |
-| [Custom-Relationships](../../wiki-content/Custom-Relationships.md) | 🎬 `cr-custom-relationships-overlay.webm` | — | Toggle behavior is the point; motion-only. |
+| [Custom-Relationships](../../wiki-content/Custom-Relationships.md) | 🎬 `cr-custom-relationships-overlay.gif` (from `.webm`) | — | Toggle behavior is the point; motion-only. |
 | [Relationship-Tools](../../wiki-content/Relationship-Tools.md) | — | — | Skip; consider a future calculator capture per `media-library-consolidation` Phase 3. |
 | [Entity-Profile-View](../../wiki-content/Entity-Profile-View.md) | 📸 `cr-entity-profile-person.png` | — | One representative; the other four entity-type shots stay website-only. |
-| [Web-Clipper-Integration](../../wiki-content/Web-Clipper-Integration.md) | 🎬 `cr-web-clipper-to-bio.webm` | 📸 `cr-web-clipper-modal.png` | Motion for the click-to-source action; still for the modal detail. |
+| [Web-Clipper-Integration](../../wiki-content/Web-Clipper-Integration.md) | 🎬 `cr-web-clipper-to-bio.gif` (from `.webm`) | 📸 `cr-web-clipper-modal.png` | Motion for the click-to-source action; still for the modal detail. |
 | [Evidence-And-Sources](../../wiki-content/Evidence-And-Sources.md) | 📸 `cr-entity-attribution.png` | 📸 `cr-source-hierarchy.png` | Two-direction story (per-fact + parent-child sources). |
 | [Research-Workflow](../../wiki-content/Research-Workflow.md) | 📸 `cr-workflow-attribution.png` | — | The website's Tier 5 composite is too marketing-flavored; one shot from it (the attribution endpoint) lands cleanly here. |
-| [Staging-And-Cleanup](../../wiki-content/Staging-And-Cleanup.md) | 📸 `cr-cleanup-wizard.png` | — | Pre-scan tile grid; clear at a glance. |
-| [Data-Quality](../../wiki-content/Data-Quality.md) | 🎬 `cr-merge-wizard-conflict-res.webm` | — | Motion shows the resolve-side step the prose can't fully convey. |
+| [Staging-And-Cleanup](../../wiki-content/Staging-And-Cleanup.md) | 🎬 `cr-merge-wizard-conflict-res.gif` (from `.webm`) | — | Merge Wizard is documented on this page; motion shows the resolve step. |
+| [Data-Quality](../../wiki-content/Data-Quality.md) | 📸 `cr-cleanup-wizard.png` | — | Post-Import Cleanup Wizard tile grid; documented under this page's Cleanup Workflow. |
 | [Statistics-And-Reports](../../wiki-content/Statistics-And-Reports.md) | 📸 `cr-report-pedigree-tree.png` | — | One report style is enough for the wiki; the website carries the gallery. |
 | [Book-Builder](../../wiki-content/Book-Builder.md) | 📸 `cr-book-builder-output.png` | — | TOC page reads as inventory of what the feature produces. |
 | [Control-Center](../../wiki-content/Control-Center.md) | 📸 `cr-control-center-collections.png` | — | One tab is enough; the four-tab grid is a website framing. |
@@ -87,15 +86,23 @@ GitHub wiki rendering is GFM with a few platform quirks. Less flexible than Hugo
 
 Alt text matters more on the wiki than on the website, since the wiki audience is more likely to be navigating with a screen reader or with images disabled. Aim for 8-15 words that describe the feature state, not just the filename.
 
-**Motion loops** — plain `<video>` tag with controls. GitHub wiki strips custom JavaScript, so the website's lazy-play `IntersectionObserver` pattern doesn't apply. Use `controls` so the reader can scrub:
+**Motion loops** — convert the `.webm` source to a `.gif` first, then embed as a plain image. GitHub wiki's HTML sanitizer (Gollum) strips `<video>` tags entirely, and the linked-`.webm`-as-poster fallback fails too (raw GitHub URLs serve `.webm` with `Content-Disposition: attachment`, forcing a download instead of inline play). GIFs render natively as `<img>` tags, autoplay reliably across browsers, and bypass the sanitizer.
 
-```html
-<video controls muted loop playsinline width="800">
-  <source src="images/cr-canvas-tree-generation.webm" type="video/webm">
-</video>
+Conversion via ffmpeg (two-pass palette for quality at small file size):
+
+```bash
+ffmpeg -y -i docs/images/cr-feature.webm \
+  -vf "fps=15,scale=800:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5" \
+  wiki-content/images/cr-feature.gif
 ```
 
-`muted` + `loop` + `playsinline` keep the loop UX consistent. `width="800"` keeps motion files from rendering at full source resolution on wide monitors. No `aria-label` (GitHub strips it from `<video>`); use a caption paragraph immediately below if context is needed.
+Embed (plain image markdown — same as stills):
+
+```markdown
+![Alt describing the motion in 8-15 words](images/cr-feature.gif)
+```
+
+GIFs are 3-5× the size of the `.webm` source. For the v1 capture set, this lands in the ~300 KB to ~2 MB range per file — acceptable since the wiki loads pages individually (no all-on-one-page bandwidth concern that motivated WebM on the website). Source `.webm` files stay in `docs/images/` only; they're not duplicated into `wiki-content/images/` because GitHub doesn't render them anyway.
 
 **Captions** — single italic line below the embed when needed:
 
@@ -177,11 +184,11 @@ Filename stability matters here: changing a `cr-feature.png` filename in the fut
 
 ## Acceptance criteria
 
-- [ ] Phase 1: Six visualization-track wiki pages have embeds; rendered cleanly on the live wiki.
-- [ ] Phase 2: Seven research-track wiki pages have embeds.
-- [ ] Phase 3: Five workspace + worldbuilding wiki pages have embeds.
+- [x] Phase 1: Six visualization-track wiki pages have embeds; rendered cleanly on the live wiki. (2026-05-01)
+- [x] Phase 2: Seven research-track wiki pages have embeds. (2026-05-01)
+- [x] Phase 3: Five workspace + worldbuilding wiki pages have embeds. (2026-05-01)
 - [ ] Phase 4 (optional): Legacy `wiki-content/images/` files audited; unreferenced superseded shots removed.
-- [ ] All embeds use the conventions in this doc (alt text 8-15 words; `<video controls>` for motion; no custom CSS classes).
+- [x] All embeds use the conventions in this doc (alt text 8-15 words; `.webm` → `.gif` conversion for motion, embedded as plain image markdown; no custom CSS classes).
 - [ ] No broken image references on any wiki page (audit by walking the live wiki post-Phase-3).
 
 ---

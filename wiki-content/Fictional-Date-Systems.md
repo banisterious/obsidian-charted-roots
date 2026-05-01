@@ -2,6 +2,10 @@
 
 Fictional Date Systems allow you to define custom calendars and eras for world-building, historical fiction, and alternate history research. This enables proper date handling for universes like Middle-earth (Third Age, Fourth Age), Westeros (years since Aegon's Conquest), or your own custom fictional worlds.
 
+![Calendar View on a Gaean Reach fictional fixture, showing an event from a custom calendar era](images/cr-calendar-view-fictional.png)
+
+*Calendar View rendering a fictional date system in practice: events appear with their universe-specific date format.*
+
 ---
 
 ## Table of Contents

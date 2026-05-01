@@ -2,6 +2,10 @@
 
 The Control Center is Charted Roots' central hub for all plugin operations. Access it via the command palette (`Ctrl/Cmd+P` → "Charted Roots: Open Control Center") or the ribbon icon.
 
+![Control Center Collections tab showing analytics row, data completeness, and detected families table](images/cr-control-center-collections.png)
+
+*Collections tab shown; the Control Center has additional tabs for Sources, Places, Events, Universes, and other entity surfaces.*
+
 ---
 
 ## Table of Contents

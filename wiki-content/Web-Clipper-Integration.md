@@ -2,6 +2,8 @@
 
 Capture genealogical data from web sources directly into your Charted Roots vault using Obsidian Web Clipper.
 
+![Obsidian Web Clipper modal extracting structured fields from a Find a Grave memorial page](images/cr-web-clipper-modal.png)
+
 ---
 
 ## Table of Contents
@@ -186,6 +188,10 @@ Based on community testing:
 ## Workflow
 
 ### 1. Clipping Content
+
+![Web Clipper click-to-source flow: clicking the extension produces a structured source note in the vault](images/cr-web-clipper-to-bio.gif)
+
+*Wikipedia biography variant: clicking the extension extracts the page; the resulting source note appears in the Obsidian Staging folder.*
 
 1. Navigate to a web page with genealogical data
 2. Click the Obsidian Web Clipper browser extension icon

@@ -2,6 +2,10 @@
 
 Charted Roots supports GPS-aligned research workflow features, enabling genealogists to manage research projects, reports, and individual research notes within their vault.
 
+![Charles Hoy Fort person profile with four sourced facts, citations grouped by source, and 40% data-quality coverage](images/cr-workflow-attribution.png)
+
+*Endpoint of the clip → source → attribute workflow: a person profile shows the facts that have been documented and which sources cite them.*
+
 ---
 
 ## Table of Contents
