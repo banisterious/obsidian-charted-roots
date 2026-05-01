@@ -291,34 +291,38 @@ Step-by-step plans for the captures still TBD as of 2026-04-30. Use the checkbox
 #### C. Edit Person modal (Tier 4, item 23)
 
 **Target:** `cr-edit-person-modal.png` — placement intent: Data entry and organization section on `/features/`.
-**Fixture:** Dying Earth — populates the universe dropdown with a fictional value, which is the visual differentiator the brief asks for ("with universe dropdown populated"). Andersons works too if the worldbuilding angle is already covered nearby.
+**Fixture:** Dying Earth — Cugel the Clever (rich events list with `DE NNNN` fictional dates + marriage with Derwe Coreme).
 
-- [ ] Open Dying Earth fixture vault.
-- [ ] Open a person note that has rich relationships, dates, and at least one source attached (Cugel the Clever has marriages + birth date + sources after the recent fixture work).
-- [ ] Right-click the person → Charted Roots → Edit person.
-- [ ] Verify all populated regions render: relationships section (parents / spouses / children), dates section, sources section.
-- [ ] Scroll to the Universe dropdown; confirm it shows `The Dying Earth` (post-#505 fix this should now reflect the universe note's typed name even if a rename has happened).
-- [ ] Frame the capture so relationships + dates + sources + universe dropdown are all visible in one viewport. If the modal is too tall, prioritize the relationships block + universe dropdown over the description / notes fields.
-- [ ] Capture the modal-only region (tight crop per the playbook's modal convention) — left ribbon and folder pane can be cropped out to keep visual focus.
-- [ ] Save raw to `docs/images/raw/cr-edit-person-modal.png`.
+Originally framed around showing the post-#505 Universe dropdown populated as the load-bearing element. The actual capture frames the modal-overview surface instead — Events / Family relationships / Spouses sections all visible, Universe field below the visible viewport. Trade-off: rich-overview > universe-dropdown-focused-scroll for the website's "what does Edit Person look like?" payoff. The post-#505 dropdown content is technical correctness rather than visual story; the events-list + relationships sections are the more legible feature surfaces. Filename arrived as `cr-edit-person-modal.png.png` (duplicate extension); rename to `cr-edit-person-modal.png` before deploy.
+
+- [x] Open Dying Earth fixture vault.
+- [x] Open Cugel the Clever (marriages + birth date + sources).
+- [x] Right-click → Charted Roots → Edit person.
+- [x] Modal-overview framing — Events section (4 entries with `DE 1169 / 1185 / 1198 / 1205` dates), Family relationships (Father / Mother empty, Spouses populated with Derwe Coreme + marriage date `DE 1205`), `+ Add spouse` affordance visible. Save / Cancel buttons in viewport.
+- [x] Capture full Obsidian window (folder pane on left visible, modal centered).
+- [x] Save raw to `docs/images/raw/cr-edit-person-modal.png` (292 KB raw; oxipng pass at deploy time will land it ~235 KB). **Rename from `cr-edit-person-modal.png.png` before deploy.**
 
 #### D. Control Center tabs (Tier 4, item 24)
 
 **Targets:** `cr-control-center-collections.png`, `cr-control-center-sources.png`, `cr-control-center-places.png`, `cr-control-center-events.png` — placement intent: Data entry and organization section, 2×2 grid (reuse `.cr-grid-2` × 2 rows or introduce `.cr-grid-2x2`).
-**Fixture:** Andersons — has the most populated cross-tab data (collections like `blood` / `married_in`, sources from the seeded citations work, places from the imported GEDCOM, events including the `cr-entity-profile-event.png` marriage).
+**Fixture:** Andersons + worldbuilder fixtures combined — gives 101 people / 29 collections / 6574-year date range across real + fictional, which reads as more meaningful vault size than Andersons alone.
 
-- [ ] Open Andersons fixture vault.
-- [ ] Open Control Center via command palette or ribbon icon.
+All four tabs captured with consistent modal width and tab-strip position. Places needed a fixture-hygiene re-capture (first pass had Dying Earth / Gaean Reach places miscategorized as `Real`, plus an Atlanta coords typo); both fixed and re-shot.
 
-For each of Collections / Sources / Places / Events:
+**Per-tab outcomes:**
 
-- [ ] Switch to the tab.
-- [ ] Verify the tab is in browse / list mode (not a sub-modal flow). Default landing state is fine.
-- [ ] Confirm the visible row count is meaningful — at least 5 rows so the list shape reads, ideally 8–12 to convey realistic vault size without scrolling. Adjust filters if needed to surface representative content.
-- [ ] Frame the capture on the modal pane (tab strip + content area visible). Crop out the rest of the Obsidian window since Control Center is a self-contained modal surface.
-- [ ] Capture and save to `docs/images/raw/cr-control-center-<tab>.png`.
+- [x] **Collections** (`cr-control-center-collections.png`, 347 KB → ~280 KB) — Analytics row (101 Total people / 29 Collections / 4 Avg size / 0 Bridge people), Data completeness bars (Birth 77% / Death 28% / Sex 100%), Collection highlights (Largest blood 46 / range 1428–8002 / 6574 years), Detected families table starting. Sells "Control Center is a vault overview surface."
+- [x] **Sources** (`cr-control-center-sources.png`, 397 KB → ~320 KB) — Tabular source-type view with multiple type badges visible (Vital Record / Church Record / legal / Immigration / Military). #338 Probate Packet sources (Estate Inventory / Last Will / Letters of Administration) all present for continuity with `cr-source-hierarchy.png`.
+- [x] **Places** (`cr-control-center-places.png`, 390 KB → ~310 KB) — Re-captured 2026-05-01 after fixture cleanup. Fictional places (Almery / Alphanor / Ampridatvir / Araminta Station / Asromirel / Beyond) now correctly categorized as `Fictional` with universe annotations under each name (`Almery / The Dying Earth`, etc.) — bonus visual depth, immediately tells the reader which world a place belongs to. Atlanta coordinates corrected from `-64.8631` to `-84.0…`. Capture scrolled to focus on the Place notes table; the "Normalize place name formatting" cleanup affordance from the first capture is no longer in the viewport (acceptable trade-off, table reads more cleanly).
+- [x] **Events** (`cr-control-center-events.png`, 403 KB → ~325 KB) — Chronological timeline view: 1499 Mount Pleasant Massacre (Gaean Reach catastrophe) → 1500 Kirth Gersen IPCC Induction → 1855–65 Alice Texteuse events → 1865 William Anderson birth. Six event types visible across viewport. Data Quality Insights section ("15 timeline gaps detected") visible at bottom — frames the tab as analysis, not just a list.
 
-Style note: keep the same Control Center modal width and tab strip position across all four shots so the 2×2 grid reads as a series rather than four loose stills.
+**Style consistency check:** all four shots use the same Control Center modal width and tab-strip position, so the 2×2 grid reads as a series rather than four loose stills. Folder pane visible in all four for vault-context anchor. Light theme across the set.
+
+**Known minor fixture issues** (not blocking deploy):
+- Sources: "Demon Princes Series" appears twice in the visible rows (fixture duplicate).
+- Events: one Alice Texteuse row labeled "Occupation 1855" but its date column shows 1865 — title/date mismatch in the fixture.
+
+Both are cosmetic. Worth a future fixture pass; not load-bearing for the website embed.
 
 #### E. Tier 5 end-to-end composite (item 25)
 
