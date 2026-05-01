@@ -897,7 +897,11 @@ export class MapController {
 
 		// Multi-participant event — list co-participants beneath the primary
 		// name so the popup reflects all attendees rather than rendering one
-		// stacked marker per participant (#493).
+		// stacked marker per participant (#493). For marriage markers, the
+		// partner's age at the marriage is appended to their entry when the
+		// spouse note has a resolvable birth date — paralleling the
+		// journey-mode partner-age treatment from #504, on the static-popup
+		// surface (#508).
 		if (data.participants && data.participants.length > 1) {
 			const others = data.participants.filter(p => p.personName !== data.personName);
 			if (others.length > 0) {
@@ -906,8 +910,25 @@ export class MapController {
 					text: 'with ',
 					cls: 'cr-map-popup-participants-prefix'
 				});
+				const dateService = this.plugin.getDateService();
 				others.forEach((p, idx) => {
-					list.createEl('span', { text: p.personName, cls: 'cr-map-popup-participant' });
+					let entryText = p.personName;
+					if (
+						data.type === 'marriage' &&
+						data.spouseBirthDate &&
+						data.date &&
+						p.personName === data.spouseName
+					) {
+						const age = dateService?.calculateAge(
+							data.spouseBirthDate,
+							data.date,
+							data.universe
+						);
+						if (age && !age.error && age.years >= 0) {
+							entryText = `${p.personName} (age ${age.years})`;
+						}
+					}
+					list.createEl('span', { text: entryText, cls: 'cr-map-popup-participant' });
 					if (idx < others.length - 1) {
 						list.createEl('span', { text: ', ' });
 					}

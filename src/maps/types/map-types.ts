@@ -161,6 +161,15 @@ export interface MapMarker {
 	 * partner identity in popups. (#501)
 	 */
 	spouseName?: string;
+	/**
+	 * Partner's birth date string on a marriage marker. Resolved from the
+	 * spouse note via `spouseId` during marker construction. Lets the
+	 * static popup compute the partner's age at the marriage alongside the
+	 * focal person's, paralleling the journey-mode treatment from #504.
+	 * Only set on `type === 'marriage'` markers when the spouse is
+	 * resolvable and has a `born` value. (#508)
+	 */
+	spouseBirthDate?: string;
 }
 
 /**

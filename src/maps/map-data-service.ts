@@ -570,6 +570,12 @@ export class MapDataService {
 	private buildMarkers(people: PersonData[], filters: MapFilters): MapMarker[] {
 		const markers: MapMarker[] = [];
 
+		// Spouse lookup so marriage markers can carry the partner's birth
+		// date for static-popup age-pairing (#508). Same shape as the
+		// `peopleById` map `buildJourneyPaths` builds for journey waypoints.
+		const peopleById = new Map<string, PersonData>();
+		for (const p of people) peopleById.set(p.crId, p);
+
 		for (const person of people) {
 			// Apply collection filter
 			if (filters.collection && person.collection !== filters.collection) {
@@ -600,6 +606,10 @@ export class MapDataService {
 					if (marker) {
 						marker.spouseId = marriage.spouseId;
 						marker.spouseName = marriage.spouseName;
+						const spouse = marriage.spouseId ? peopleById.get(marriage.spouseId) : undefined;
+						if (spouse?.born !== undefined) {
+							marker.spouseBirthDate = String(spouse.born);
+						}
 						markers.push(marker);
 					}
 				}
