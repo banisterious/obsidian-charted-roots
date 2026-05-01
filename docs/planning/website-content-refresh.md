@@ -2,7 +2,7 @@
 
 Planning and orchestration for a multi-phase refresh of [chartedroots.com](https://chartedroots.com). Drafts live alongside this doc in [website-content/](website-content/); a separate session handles the Hugo port and deploy against `S:\Projects\websites\chartedroots.com`.
 
-**Status:** 🔶 Scaffolding (2026-04-24) — structure in place, drafts pending.
+**Status:** 🟡 In progress. Phase 1 (changelog + features catch-up) shipped 2026-04-24 with ongoing per-release refreshes through v0.22.14. Phase 2 (landing + What's New in 1.0) deferred to coincide with 1.0 launch. Phase 3 drafts in progress (faq, research-track, world-builder-track all 🔶 awaiting review); media-plan v1 capture program complete (2026-05-01).
 
 ---
 
@@ -103,14 +103,14 @@ Before marking a draft ready to port, run through the draft once with this list:
 
 | Draft | Phase | Status | Target page |
 |---|---|---|---|
-| [changelog-refresh.md](website-content/changelog-refresh.md) | 1 | 🚀 Ported 2026-04-24 | `/changelog/_index.md` |
-| [features-refresh.md](website-content/features-refresh.md) | 1 | 🚀 Ported 2026-04-24 | `/features/_index.md` |
+| [changelog-refresh.md](website-content/changelog-refresh.md) | 1 | 🚀 Ported + refreshed through v0.22.14 (ongoing) | `/changelog/_index.md` |
+| [features-refresh.md](website-content/features-refresh.md) | 1 | 🚀 Ported + refreshed (ongoing per-release updates) | `/features/_index.md` |
 | [landing-refresh.md](website-content/landing-refresh.md) | 2 | 📝 Pending | `/_index.md` |
 | [whats-new-in-1-0.md](website-content/whats-new-in-1-0.md) | 2 | 📝 Pending (post-1.0) | `/1-0/_index.md` (new) |
-| [media-plan.md](website-content/media-plan.md) | 1 (video) / 3 (static + motion) | 🚀 Video Phase 1 shipped 2026-04-24; static + motion pending | `/gallery/_index.md` (new) + inline embeds |
-| [world-builder-track.md](website-content/world-builder-track.md) | 3 | 📋 Stub | `/worldbuilding/_index.md` (new) |
-| [research-track.md](website-content/research-track.md) | 3 | 📋 Stub | `/research/_index.md` (new) |
-| [faq.md](website-content/faq.md) | 3 | 📋 Stub | `/faq/_index.md` (new) |
+| [media-plan.md](website-content/media-plan.md) | 1 (video) / 3 (static + motion) | ✅ v1 capture program complete 2026-05-01 — video Phase 1 + ~35 stills + 8 motion captures live; living playbook + deployment log retained | inline embeds on landing / features / track pages |
+| [world-builder-track.md](website-content/world-builder-track.md) | 3 | 🔶 Draft complete, awaiting review | `/worldbuilding/_index.md` (new) |
+| [research-track.md](website-content/research-track.md) | 3 | 🔶 Draft complete, awaiting review | `/research/_index.md` (new) |
+| [faq.md](website-content/faq.md) | 3 | 🔶 Draft complete, awaiting review | `/faq/_index.md` (new) |
 
 **Status key:** 📝 Pending = not started · 🔶 In progress · ✅ Drafted, awaiting review · 🚀 Ported · 📋 Stub = outline only, no content yet.
 
