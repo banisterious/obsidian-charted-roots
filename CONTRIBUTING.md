@@ -39,7 +39,7 @@ This project follows a code of conduct to ensure a welcoming and inclusive envir
 
 Before contributing, familiarize yourself with:
 
-1. **Project Goals**: Read [README.md](README.md) and [docs/canvas-roots-initial-spec.md](docs/canvas-roots-initial-spec.md)
+1. **Project Goals**: Read [README.md](README.md)
 2. **Documentation Style**: Review [docs/assets/templates/documentation-style-guide.md](docs/assets/templates/documentation-style-guide.md)
 3. **Security Considerations**: Read [SECURITY.md](SECURITY.md) - this plugin handles sensitive PII
 4. **Development Guide**: See [docs/development.md](docs/development.md)
@@ -74,23 +74,7 @@ Before contributing, familiarize yourself with:
 
 ## Project Structure
 
-```
-canvas-roots/
-├── src/                    # Source code
-│   ├── models/            # Data models
-│   ├── canvas/            # Canvas manipulation
-│   ├── layout/            # D3 layout algorithms
-│   ├── utils/             # Utilities
-│   ├── gedcom/            # GEDCOM import/export
-│   └── settings.ts        # Plugin settings
-├── styles/                # CSS components
-├── docs/                  # Documentation
-│   ├── assets/           # Documentation assets
-│   └── developer/        # Developer docs
-├── main.ts               # Plugin entry point
-├── manifest.json         # Plugin metadata
-└── package.json          # Dependencies and scripts
-```
+See [docs/developer/project-structure.md](docs/developer/project-structure.md) for the canonical directory layout and module map. It covers the `src/` modules (sources, events, maps, places, organizations, relationships, dates, schemas, statistics, reports, universes, trees, dynamic content, UI), command registration, context menus, and Control Center tabs.
 
 ## Development Workflow
 

@@ -37,8 +37,8 @@
 
 ### Visualize
 
-- [**Interactive family chart**](https://github.com/banisterious/obsidian-charted-roots/wiki/Interactive-Family-Chart) with pan/zoom, direct relationship editing, bidirectional sync, multiple color schemes, and export to PNG, SVG, PDF, or ODT
-- [**Canvas trees**](https://github.com/banisterious/obsidian-charted-roots/wiki/Canvas-Trees) with 4 layout algorithms (Standard, Compact, Timeline, Hourglass), multi-family detection, and PNG/SVG/PDF export
+- [**Interactive family chart**](https://github.com/banisterious/obsidian-charted-roots/wiki/Family-Chart-View) with pan/zoom, direct relationship editing, bidirectional sync, multiple color schemes, and export to PNG, SVG, PDF, or ODT
+- [**Canvas trees**](https://github.com/banisterious/obsidian-charted-roots/wiki/Visual-Trees) with 4 layout algorithms (Standard, Compact, Timeline, Hourglass), multi-family detection, and PNG/SVG/PDF export
 - [**Visual tree charts**](https://github.com/banisterious/obsidian-charted-roots/wiki/Statistics-And-Reports) — printable pedigree, descendant, hourglass, and fan charts as PDF, Canvas, Excalidraw, or ODT
 - [**Entity profile view**](https://github.com/banisterious/obsidian-charted-roots/wiki/Entity-Profile-View) — auto-syncing sidebar with collapsible sections for all five entity types (person, place, event, source, organization)
 
@@ -141,7 +141,7 @@ See the [Wiki](https://github.com/banisterious/obsidian-charted-roots/wiki) for 
 ### Manual Installation
 
 1. Download from [Releases](https://github.com/banisterious/obsidian-charted-roots/releases)
-2. Extract to `<vault>/.obsidian/plugins/canvas-roots/`
+2. Extract to `<vault>/.obsidian/plugins/charted-roots/`
 3. Reload Obsidian and enable the plugin
 
 ### From Source
@@ -162,7 +162,7 @@ Copy `main.js`, `styles.css`, and `manifest.json` to your vault's plugins folder
 
 **Getting started:** [Installation](https://github.com/banisterious/obsidian-charted-roots/wiki/Getting-Started) · [Data entry](https://github.com/banisterious/obsidian-charted-roots/wiki/Data-Entry) · [FAQ](https://github.com/banisterious/obsidian-charted-roots/wiki/FAQ) · [Troubleshooting](https://github.com/banisterious/obsidian-charted-roots/wiki/Troubleshooting)
 
-**Core features:** [Canvas trees](https://github.com/banisterious/obsidian-charted-roots/wiki/Canvas-Trees) · [Family chart](https://github.com/banisterious/obsidian-charted-roots/wiki/Interactive-Family-Chart) · [Import & export](https://github.com/banisterious/obsidian-charted-roots/wiki/Import-Export) · [Maps](https://github.com/banisterious/obsidian-charted-roots/wiki/Geographic-Features) · [Reports](https://github.com/banisterious/obsidian-charted-roots/wiki/Statistics-And-Reports) · [Evidence & sources](https://github.com/banisterious/obsidian-charted-roots/wiki/Evidence-And-Sources)
+**Core features:** [Canvas trees](https://github.com/banisterious/obsidian-charted-roots/wiki/Visual-Trees) · [Family chart](https://github.com/banisterious/obsidian-charted-roots/wiki/Family-Chart-View) · [Import & export](https://github.com/banisterious/obsidian-charted-roots/wiki/Import-Export) · [Maps](https://github.com/banisterious/obsidian-charted-roots/wiki/Geographic-Features) · [Reports](https://github.com/banisterious/obsidian-charted-roots/wiki/Statistics-And-Reports) · [Evidence & sources](https://github.com/banisterious/obsidian-charted-roots/wiki/Evidence-And-Sources)
 
 **Worldbuilding:** [Universe notes](https://github.com/banisterious/obsidian-charted-roots/wiki/Universe-Notes) · [Organizations](https://github.com/banisterious/obsidian-charted-roots/wiki/Organization-Notes) · [Fictional dates](https://github.com/banisterious/obsidian-charted-roots/wiki/Fictional-Date-Systems)
 
