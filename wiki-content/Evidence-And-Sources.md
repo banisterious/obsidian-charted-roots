@@ -326,8 +326,8 @@ When enabled, person notes display a coverage score (e.g., "3/10 facts sourced")
 
 ### Enabling Fact-Level Tracking
 
-1. Go to **Settings > Charted Roots > Advanced > Research tools**
-2. Enable **"Enable fact-level source tracking"**
+1. Go to **Settings > Charted Roots > Research > Research tools**
+2. Enable **"Enable fact-level source tracking"** (defaults to on as of v0.22.17)
 
 ### Adding Sourced Facts
 
@@ -372,7 +372,7 @@ There are 10 fact types you can track:
 
 Not every person will have all 10 facts applicable (e.g., an ancestor who never married won't have marriage facts). The **fact coverage threshold** setting controls how many sourced facts count as "100% coverage."
 
-- Go to **Settings > Charted Roots > Advanced > Research tools > Fact coverage threshold**
+- Go to **Settings > Charted Roots > Research > Research tools > Fact coverage threshold**
 - Default: **6** — sourcing 6 of the 10 facts gives 100% coverage
 - Adjust based on your research goals
 

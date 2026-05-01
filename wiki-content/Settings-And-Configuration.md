@@ -333,11 +333,11 @@ Privacy display format options:
 
 ## Research Tools (Optional)
 
-Found under **Advanced > Research tools** in the settings panel. Advanced tools for genealogical research, aligned with the Genealogical Proof Standard.
+Found under **Research > Research tools** in the settings panel (moved out of Advanced in v0.22.17). Tools for evidence-based genealogical research, aligned with the Genealogical Proof Standard.
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| **Enable fact-level source tracking** | Off | Track which facts have source citations |
+| **Enable fact-level source tracking** | On | Track which facts have source citations |
 | **Fact coverage threshold** | `6` | Number of key facts for 100% coverage |
 | **Show research gaps in status** | On | Display unsourced facts summary |
 
