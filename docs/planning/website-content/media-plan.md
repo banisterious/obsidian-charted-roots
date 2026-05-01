@@ -294,15 +294,15 @@ Step-by-step plans for the captures still TBD as of 2026-04-30. Use the checkbox
 **Fixture:** Andersons (real-world coherence with the existing genealogy captures); fall back to Royal Families if a multi-generation narrative reads better in the chosen output style.
 **Note:** No `.book.json` exists in dev-vault yet — the fixture has to be created during the session.
 
-- [ ] Open Andersons fixture vault.
-- [ ] Open Book Builder modal via Control Center → Book Builder tab (or command palette).
-- [ ] Define a small book scoped to ~3–5 generations starting at William Anderson; pick a narrative style that reads well as a single page (default narrative style is fine for a first capture).
-- [ ] Save the book definition (`.book.json` lands in the configured books folder).
-- [ ] Trigger generation; wait for the compiled output (PDF or markdown depending on the chosen pipeline).
-- [ ] Open the compiled output in Obsidian's PDF viewer (or in the editor for markdown output).
-- [ ] Frame the capture on a representative page: opening narrative paragraph + a generation transition visible in the same viewport, so the reader sees both prose and structure.
-- [ ] Capture full Obsidian window (left ribbon + folder pane visible per the playbook's whole-feature convention).
-- [ ] Save raw at 1920×1080 to `docs/images/raw/cr-book-builder-output.png`.
+- [x] Open Andersons fixture vault.
+- [x] Open Book Builder modal via Control Center → Book Builder tab (or command palette).
+- [x] Define a small book scoped to ~3–5 generations starting at William Anderson; pick a narrative style that reads well as a single page (default narrative style is fine for a first capture).
+- [x] Save the book definition (`.book.json` lands in the configured books folder).
+- [x] Trigger generation; wait for the compiled output (PDF or markdown depending on the chosen pipeline).
+- [x] Open the compiled output in Obsidian's PDF viewer (or in the editor for markdown output).
+- [x] Frame the capture on a representative page: opening narrative paragraph + a generation transition visible in the same viewport, so the reader sees both prose and structure.
+- [x] Capture full Obsidian window (left ribbon + folder pane visible per the playbook's whole-feature convention).
+- [x] Save raw at 1920×1080 to `docs/images/raw/cr-book-builder-output.png`.
 
 #### B. Universe and fictional calendar (Tier 4, item 21)
 
