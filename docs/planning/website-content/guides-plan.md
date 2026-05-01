@@ -35,9 +35,12 @@ The plugin has been out long enough to have a real user base, so the guides need
 
 **Discoverability:**
 
-- The site nav gets a `/guides/` entry alongside `/features/` and `/changelog/`.
-- The track pages (research-track, worldbuilder-track) link out to their respective guides indexes.
+- The site nav drops "Documentation" as a standalone top-level item and gains a **"Docs ▾" dropdown** containing — in this order — **Guides**, Documentation, FAQ, Changelog. Guides goes at the top of the dropdown because for most readers it's the more actionable entry point ("I want to do X" beats "let me read the reference"). Documentation sits second for users who know what they're looking for. FAQ and Changelog round out the dropdown as reference-y items that don't need top-level real estate.
+- After the consolidation, the visible nav reduces to: Features · Research · Worldbuilding · Docs ▾ · GitHub icon · Search icon. Three top-level destinations, one dropdown, two icons.
+- The track pages (research-track, worldbuilder-track) link out to their respective guides indexes via prominent in-page CTAs, separate from the nav.
 - Individual feature sections on `/features/` link to relevant guides at the bottom (e.g., "Family Chart View" features section links to "Generate a printable family tree").
+
+**Adjacent nav work** (out of scope for the guides plan itself, but blocks the Docs-dropdown landing cleanly at typical desktop widths): the chartedroots.com Blowfish theme currently renders both a logo image and the site title text in the brand area, producing a visible "Charted Roots Charted Roots" duplicate that consumes ~12 chars of horizontal space. Pick one — recommended: keep the logo, drop the duplicated title text. Frees enough room for the Docs dropdown to fit without crowding. To be addressed during the website session that scaffolds `/guides/`.
 
 **Index page shape (curated start-here, with track headers):**
 
