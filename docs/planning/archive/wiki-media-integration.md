@@ -11,7 +11,7 @@
 The website (`chartedroots.com`) and the README cover the v1 capture program. The wiki at `obsidian-charted-roots.wiki` does not. Today:
 
 - Five legacy images in `wiki-content/images/` (`buy-me-a-coffee.png`, `family-tree-canvas.png`, `obsidian-canvas-tree-plugin.png`, `relationship-calculator.png`, `tree-output-ui.png`) — branding + early-development screenshots, predate the `cr-` naming convention.
-- Three wiki pages reference images, all as illustrative `![[file.jpg]]` syntax inside code blocks demonstrating dynamic-content patterns ([Dynamic-Note-Content](../../wiki-content/Dynamic-Note-Content.md), [Media-Management](../../wiki-content/Media-Management.md), [Release-History](../../wiki-content/Release-History.md)). None of them are feature screenshots.
+- Three wiki pages reference images, all as illustrative `![[file.jpg]]` syntax inside code blocks demonstrating dynamic-content patterns ([Dynamic-Note-Content](../../../wiki-content/Dynamic-Note-Content.md), [Media-Management](../../../wiki-content/Media-Management.md), [Release-History](../../../wiki-content/Release-History.md)). None of them are feature screenshots.
 
 Result: the wiki is text-only across roughly 40 feature pages, while ~50 modern captures sit ready in `docs/images/`. Many wiki pages would benefit from a single representative capture or a short motion loop where the feature is hard to describe in prose alone (journey playback, highlight groups, custom-relationship overlay).
 
@@ -45,26 +45,26 @@ Proposed embeds. `🎬` marks motion loops; `📸` marks static stills. "Anchor"
 
 | Wiki page | Anchor | Supporting | Notes |
 |---|---|---|---|
-| [Family-Chart-View](../../wiki-content/Family-Chart-View.md) | 📸 `cr-family-chart-live.png` | 🎬 `cr-family-chart-highlight-groups.gif` (from `.webm`) | Static hero + motion for the highlight groups feature (hard to convey in stills). |
-| [Visual-Trees](../../wiki-content/Visual-Trees.md) | 🎬 `cr-canvas-tree-generation.gif` (from `.webm`) | 📸 `cr-canvas-tree-multi-generational.png` | Generation motion is the page's most useful asset; static hero supports. |
-| [Tree-Preview](../../wiki-content/Tree-Preview.md) | — | — | Skip; conceptual / settings-oriented page. |
-| [Geographic-Features](../../wiki-content/Geographic-Features.md) | 📸 `cr-map-migration-paths.png` | 🎬 `cr-interactive-map-time.gif` (from `.webm`) | Static for the at-rest map; motion for the time-slider. |
-| [Custom-Maps](../../wiki-content/Custom-Maps.md) | 📸 `cr-map-custom-image.png` | 📸 `cr-map-drilldown-breadcrumbs.png` | Both shots tell the parent / child story; legitimate two-shot case. |
-| [Calendar-View](../../wiki-content/Calendar-View.md) | 📸 `cr-calendar-view-realworld.png` | 📸 `cr-calendar-view-fictional.png` | Dual-mode feature; both shots earn their slot. |
-| [Custom-Relationships](../../wiki-content/Custom-Relationships.md) | 🎬 `cr-custom-relationships-overlay.gif` (from `.webm`) | — | Toggle behavior is the point; motion-only. |
-| [Relationship-Tools](../../wiki-content/Relationship-Tools.md) | — | — | Skip; consider a future calculator capture if a capture session ever covers it. |
-| [Entity-Profile-View](../../wiki-content/Entity-Profile-View.md) | 📸 `cr-entity-profile-person.png` | — | One representative; the other four entity-type shots stay website-only. |
-| [Web-Clipper-Integration](../../wiki-content/Web-Clipper-Integration.md) | 🎬 `cr-web-clipper-to-bio.gif` (from `.webm`) | 📸 `cr-web-clipper-modal.png` | Motion for the click-to-source action; still for the modal detail. |
-| [Evidence-And-Sources](../../wiki-content/Evidence-And-Sources.md) | 📸 `cr-entity-attribution.png` | 📸 `cr-source-hierarchy.png` | Two-direction story (per-fact + parent-child sources). |
-| [Research-Workflow](../../wiki-content/Research-Workflow.md) | 📸 `cr-workflow-attribution.png` | — | The website's Tier 5 composite is too marketing-flavored; one shot from it (the attribution endpoint) lands cleanly here. |
-| [Staging-And-Cleanup](../../wiki-content/Staging-And-Cleanup.md) | 🎬 `cr-merge-wizard-conflict-res.gif` (from `.webm`) | — | Merge Wizard is documented on this page; motion shows the resolve step. |
-| [Data-Quality](../../wiki-content/Data-Quality.md) | 📸 `cr-cleanup-wizard.png` | — | Post-Import Cleanup Wizard tile grid; documented under this page's Cleanup Workflow. |
-| [Statistics-And-Reports](../../wiki-content/Statistics-And-Reports.md) | 📸 `cr-statistics-view.png` | 📸 `cr-report-pedigree-tree.png` | Two-subsystem page; section-anchored embeds (Statistics dashboard at `## Statistics Dashboard`, Reports gallery shot at `## Reports`). |
-| [Book-Builder](../../wiki-content/Book-Builder.md) | 📸 `cr-book-builder-output.png` | — | TOC page reads as inventory of what the feature produces. |
-| [Control-Center](../../wiki-content/Control-Center.md) | 📸 `cr-control-center-collections.png` | — | One tab is enough; the four-tab grid is a website framing. |
-| [Data-Entry](../../wiki-content/Data-Entry.md) | 📸 `cr-edit-person-modal.png` | — | Anchors the modal-driven entry workflow. |
-| [Universe-Notes](../../wiki-content/Universe-Notes.md) | 📸 `cr-universe-overview.png` | — | Two-pane split conveys the feature directly. |
-| [Fictional-Date-Systems](../../wiki-content/Fictional-Date-Systems.md) | 📸 `cr-calendar-view-fictional.png` | — | Reuses the calendar shot at this page since fictional dates are most visible there. |
+| [Family-Chart-View](../../../wiki-content/Family-Chart-View.md) | 📸 `cr-family-chart-live.png` | 🎬 `cr-family-chart-highlight-groups.gif` (from `.webm`) | Static hero + motion for the highlight groups feature (hard to convey in stills). |
+| [Visual-Trees](../../../wiki-content/Visual-Trees.md) | 🎬 `cr-canvas-tree-generation.gif` (from `.webm`) | 📸 `cr-canvas-tree-multi-generational.png` | Generation motion is the page's most useful asset; static hero supports. |
+| [Tree-Preview](../../../wiki-content/Tree-Preview.md) | — | — | Skip; conceptual / settings-oriented page. |
+| [Geographic-Features](../../../wiki-content/Geographic-Features.md) | 📸 `cr-map-migration-paths.png` | 🎬 `cr-interactive-map-time.gif` (from `.webm`) | Static for the at-rest map; motion for the time-slider. |
+| [Custom-Maps](../../../wiki-content/Custom-Maps.md) | 📸 `cr-map-custom-image.png` | 📸 `cr-map-drilldown-breadcrumbs.png` | Both shots tell the parent / child story; legitimate two-shot case. |
+| [Calendar-View](../../../wiki-content/Calendar-View.md) | 📸 `cr-calendar-view-realworld.png` | 📸 `cr-calendar-view-fictional.png` | Dual-mode feature; both shots earn their slot. |
+| [Custom-Relationships](../../../wiki-content/Custom-Relationships.md) | 🎬 `cr-custom-relationships-overlay.gif` (from `.webm`) | — | Toggle behavior is the point; motion-only. |
+| [Relationship-Tools](../../../wiki-content/Relationship-Tools.md) | — | — | Skip; consider a future calculator capture if a capture session ever covers it. |
+| [Entity-Profile-View](../../../wiki-content/Entity-Profile-View.md) | 📸 `cr-entity-profile-person.png` | — | One representative; the other four entity-type shots stay website-only. |
+| [Web-Clipper-Integration](../../../wiki-content/Web-Clipper-Integration.md) | 🎬 `cr-web-clipper-to-bio.gif` (from `.webm`) | 📸 `cr-web-clipper-modal.png` | Motion for the click-to-source action; still for the modal detail. |
+| [Evidence-And-Sources](../../../wiki-content/Evidence-And-Sources.md) | 📸 `cr-entity-attribution.png` | 📸 `cr-source-hierarchy.png` | Two-direction story (per-fact + parent-child sources). |
+| [Research-Workflow](../../../wiki-content/Research-Workflow.md) | 📸 `cr-workflow-attribution.png` | — | The website's Tier 5 composite is too marketing-flavored; one shot from it (the attribution endpoint) lands cleanly here. |
+| [Staging-And-Cleanup](../../../wiki-content/Staging-And-Cleanup.md) | 🎬 `cr-merge-wizard-conflict-res.gif` (from `.webm`) | — | Merge Wizard is documented on this page; motion shows the resolve step. |
+| [Data-Quality](../../../wiki-content/Data-Quality.md) | 📸 `cr-cleanup-wizard.png` | — | Post-Import Cleanup Wizard tile grid; documented under this page's Cleanup Workflow. |
+| [Statistics-And-Reports](../../../wiki-content/Statistics-And-Reports.md) | 📸 `cr-statistics-view.png` | 📸 `cr-report-pedigree-tree.png` | Two-subsystem page; section-anchored embeds (Statistics dashboard at `## Statistics Dashboard`, Reports gallery shot at `## Reports`). |
+| [Book-Builder](../../../wiki-content/Book-Builder.md) | 📸 `cr-book-builder-output.png` | — | TOC page reads as inventory of what the feature produces. |
+| [Control-Center](../../../wiki-content/Control-Center.md) | 📸 `cr-control-center-collections.png` | — | One tab is enough; the four-tab grid is a website framing. |
+| [Data-Entry](../../../wiki-content/Data-Entry.md) | 📸 `cr-edit-person-modal.png` | — | Anchors the modal-driven entry workflow. |
+| [Universe-Notes](../../../wiki-content/Universe-Notes.md) | 📸 `cr-universe-overview.png` | — | Two-pane split conveys the feature directly. |
+| [Fictional-Date-Systems](../../../wiki-content/Fictional-Date-Systems.md) | 📸 `cr-calendar-view-fictional.png` | — | Reuses the calendar shot at this page since fictional dates are most visible there. |
 
 **Pages explicitly skipped** (reference / conceptual / settings-oriented; adding visuals would be decorative):
 
@@ -196,5 +196,5 @@ Audit found all five legacy images in `wiki-content/images/` were unreferenced f
 
 ## Related work
 
-- [archive/media-library-consolidation.md](archive/media-library-consolidation.md) — the parent cleanup plan (archived ✅ Complete 2026-05-01); wiki integration was additive on top of the consolidated library, not a replacement for the README / website work.
-- [website-content/media-plan.md](website-content/media-plan.md) — capture conventions and the deployment log; this plan adopts the same naming / fixture / sizing conventions but relaxes the strictest optimization rules since the wiki has different bandwidth dynamics.
+- [media-library-consolidation.md](media-library-consolidation.md) — the parent cleanup plan (archived ✅ Complete 2026-05-01); wiki integration was additive on top of the consolidated library, not a replacement for the README / website work.
+- [website-content/media-plan.md](../website-content/media-plan.md) — capture conventions and the deployment log; this plan adopts the same naming / fixture / sizing conventions but relaxes the strictest optimization rules since the wiki has different bandwidth dynamics.

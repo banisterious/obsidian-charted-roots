@@ -1,6 +1,6 @@
 # Media Library Consolidation
 
-**Status:** ✅ Complete (2026-05-01). All structural consolidation work shipped: Phase 1 (buy-me-a-coffee branding relocation), Phase 2 (README curation refresh — seven legacy captures retired, six modern replacements), Phase 4 (`docs/images/raw/` collapsed to `docs/images/`). The originally-scoped Phase 3 was largely obviated by the Tier 3 README curation; one residual non-blocking item — capturing `cr-statistics-view.png` for the Statistics-And-Reports wiki page — survives as a small future addition tracked in [wiki-media-integration.md](../wiki-media-integration.md)'s mapping table, not a structural-cleanup task.
+**Status:** ✅ Complete (2026-05-01). All structural consolidation work shipped: Phase 1 (buy-me-a-coffee branding relocation), Phase 2 (README curation refresh — seven legacy captures retired, six modern replacements), Phase 4 (`docs/images/raw/` collapsed to `docs/images/`). The originally-scoped Phase 3 was largely obviated by the Tier 3 README curation; one residual non-blocking item — capturing `cr-statistics-view.png` for the Statistics-And-Reports wiki page — survives as a small future addition tracked in [wiki-media-integration.md](wiki-media-integration.md)'s mapping table, not a structural-cleanup task.
 **Authored:** 2026-04-27.
 **Trigger:** Originally "after the website captures are all complete." Met 2026-04-28; first commit landed 2026-05-01.
 
@@ -53,7 +53,7 @@ done
 | `charted-roots-control-center-dashboard-tab.png` | Removed; dropped from README curation (Tier 3) — replaced by `cr-control-center-collections.png` slot | ✅ Done 2026-05-01 |
 | `charted-roots-control-center-maps-tab.png` | Removed; dropped from README curation entirely (duplicated the geographic map cell) | ✅ Done 2026-05-01 |
 | `charted-roots-person-note.png` | Removed; Demo section's full-tour thumbnail switched to YouTube auto-thumb | ✅ Done 2026-05-01 |
-| `charted-roots-statistics-view.png` | Removed from README; future wiki use ([Statistics-And-Reports.md](../../../wiki-content/Statistics-And-Reports.md)) still wants a fresh `cr-statistics-view.png` per [wiki-media-integration.md](../wiki-media-integration.md) | Wiki-only — pending |
+| `charted-roots-statistics-view.png` | Removed from README; future wiki use ([Statistics-And-Reports.md](../../../wiki-content/Statistics-And-Reports.md)) still wants a fresh `cr-statistics-view.png` per [wiki-media-integration.md](wiki-media-integration.md) | Wiki-only — pending |
 
 The Tier 3 curation pass collapsed three of the four originally-Phase-3 re-captures by dropping those features from the README entirely. The remaining Phase 3 work is a single capture for wiki use.
 
@@ -82,7 +82,7 @@ Originally scoped as four re-captures. The Tier 3 curation pass collapsed three 
 
 | Feature | Capture target | For |
 |---|---|---|
-| Statistics View | `cr-statistics-view.png` (single shot) | [wiki-content/Statistics-And-Reports.md](../../../wiki-content/Statistics-And-Reports.md) per [wiki-media-integration.md](../wiki-media-integration.md) |
+| Statistics View | `cr-statistics-view.png` (single shot) | [wiki-content/Statistics-And-Reports.md](../../../wiki-content/Statistics-And-Reports.md) per [wiki-media-integration.md](wiki-media-integration.md) |
 
 **Approach:** Capture using the standard conventions (1920×1080, dark theme, Anderson fixture, etc. — see [website-content/media-plan.md](../website-content/media-plan.md)). Land in `docs/images/` with the modern filename. Use during the wiki-media-integration Phase 1 (visualization track).
 
