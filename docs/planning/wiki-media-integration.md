@@ -1,6 +1,6 @@
 # Wiki Media Integration
 
-**Status:** 🔶 In progress. **Phases 1, 2, and 3 shipped 2026-05-01** — embeds added across all 18 mapped wiki pages in a single batch after a Family-Chart-View pilot validated the rendering pattern. Embed convention shifted from `<video>` (sanitizer-stripped) to `.webm` → `.gif` conversion + plain image markdown. Phase 4 (legacy cleanup) optional and pending.
+**Status:** ✅ Complete (2026-05-01). All four phases shipped: 18 wiki pages got feature embeds (Phases 1–3) and the five legacy unreferenced images in `wiki-content/images/` were removed (Phase 4). Embed convention shifted from `<video>` (sanitizer-stripped) to `.webm` → `.gif` conversion + plain image markdown.
 **Authored:** 2026-05-01.
 **Trigger:** Met same day media-library-consolidation Phases 1-2 shipped.
 
@@ -168,17 +168,9 @@ Filename stability matters here: changing a `cr-feature.png` filename in the fut
 
 **Risk:** Low.
 
-### Phase 4 — Legacy cleanup (optional)
+### Phase 4 — Legacy cleanup ✅ Complete (2026-05-01)
 
-**Scope:** The five legacy images in `wiki-content/images/` (`family-tree-canvas.png` is the most clearly superseded by `cr-canvas-tree-multi-generational.png`; the others — `obsidian-canvas-tree-plugin.png`, `relationship-calculator.png`, `tree-output-ui.png` — are early-development screenshots not directly mapped to current captures).
-
-**Steps:**
-1. Audit which legacy images are still referenced from any wiki page (re-run `git grep` per the consolidation doc's pattern).
-2. For each unreferenced legacy image: `git rm`.
-3. For each referenced legacy image: replace the reference with a modern capture if one fits, or schedule a re-capture per `media-library-consolidation.md` Phase 3 if not.
-4. `buy-me-a-coffee.png` stays — branding, not a feature capture.
-
-**Risk:** Low if the audit is thorough. Skipping this phase is acceptable; legacy images don't actively harm anything.
+Audit found all five legacy images in `wiki-content/images/` were unreferenced from any wiki page — including `buy-me-a-coffee.png`, which the plan originally marked as "stays" on the assumption it might be referenced. The wiki has no Support page; the README's badge already points at `docs/assets/branding/buy-me-a-coffee.png`, so the wiki copy was orphaned. All five removed via `git rm`.
 
 ---
 
@@ -187,7 +179,7 @@ Filename stability matters here: changing a `cr-feature.png` filename in the fut
 - [x] Phase 1: Six visualization-track wiki pages have embeds; rendered cleanly on the live wiki. (2026-05-01)
 - [x] Phase 2: Seven research-track wiki pages have embeds. (2026-05-01)
 - [x] Phase 3: Five workspace + worldbuilding wiki pages have embeds. (2026-05-01)
-- [ ] Phase 4 (optional): Legacy `wiki-content/images/` files audited; unreferenced superseded shots removed.
+- [x] Phase 4: Legacy `wiki-content/images/` files audited; all five (including `buy-me-a-coffee.png`) were unreferenced and removed. (2026-05-01)
 - [x] All embeds use the conventions in this doc (alt text 8-15 words; `.webm` → `.gif` conversion for motion, embedded as plain image markdown; no custom CSS classes).
 - [ ] No broken image references on any wiki page (audit by walking the live wiki post-Phase-3).
 
