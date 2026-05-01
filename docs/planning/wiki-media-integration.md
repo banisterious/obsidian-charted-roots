@@ -2,7 +2,7 @@
 
 **Status:** 📋 Planned. Not started.
 **Authored:** 2026-05-01.
-**Trigger:** Begin once Phase 2 of [media-library-consolidation.md](media-library-consolidation.md) ships (legacy `docs/images/` files removed, README points at modern `raw/` shots). Wiki integration is additive; doing it after the legacy-cleanup pass keeps the asset library coherent.
+**Trigger:** Begin once Phase 2 of [media-library-consolidation.md](media-library-consolidation.md) ships (legacy `docs/images/` files removed; README points at modern `docs/images/cr-*.png` shots). Wiki integration is additive; doing it after the legacy-cleanup pass keeps the asset library coherent.
 **Out of scope today:** No commits yet. This is a written plan; per-phase commits land later.
 
 ---
@@ -14,7 +14,7 @@ The website (`chartedroots.com`) and the README cover the v1 capture program. Th
 - Five legacy images in `wiki-content/images/` (`buy-me-a-coffee.png`, `family-tree-canvas.png`, `obsidian-canvas-tree-plugin.png`, `relationship-calculator.png`, `tree-output-ui.png`) — branding + early-development screenshots, predate the `cr-` naming convention.
 - Three wiki pages reference images, all as illustrative `![[file.jpg]]` syntax inside code blocks demonstrating dynamic-content patterns ([Dynamic-Note-Content](../../wiki-content/Dynamic-Note-Content.md), [Media-Management](../../wiki-content/Media-Management.md), [Release-History](../../wiki-content/Release-History.md)). None of them are feature screenshots.
 
-Result: the wiki is text-only across roughly 40 feature pages, while ~50 modern captures sit ready in `docs/images/raw/`. Many wiki pages would benefit from a single representative capture or a short motion loop where the feature is hard to describe in prose alone (journey playback, highlight groups, custom-relationship overlay).
+Result: the wiki is text-only across roughly 40 feature pages, while ~50 modern captures sit ready in `docs/images/`. Many wiki pages would benefit from a single representative capture or a short motion loop where the feature is hard to describe in prose alone (journey playback, highlight groups, custom-relationship overlay).
 
 Goal: embed a curated subset of the v1 capture library across feature wiki pages, with restraint — the wiki audience is reading docs, not browsing visuals. One hero per page, one or two motion loops where they add material clarity, no galleries.
 
@@ -107,7 +107,7 @@ Alt text matters more on the wiki than on the website, since the wiki audience i
 
 Captions are optional; use them when the embed needs disambiguation (which fixture, which mode, which feature variant). Skip when the surrounding prose already names the visual.
 
-**Sizing** — no aggressive optimization required. GitHub wiki serves images at native size with CSS max-width handling responsive scaling. The website's 500 KB-per-static cap was about features-page payload; the wiki has different bandwidth dynamics (per-page reads, no all-on-one-page concern). Captures from `docs/images/raw/` can ship as-is in most cases. Re-optimize only if a specific shot is over ~1 MB.
+**Sizing** — no aggressive optimization required. GitHub wiki serves images at native size with CSS max-width handling responsive scaling. The website's 500 KB-per-static cap was about features-page payload; the wiki has different bandwidth dynamics (per-page reads, no all-on-one-page concern). Captures from `docs/images/` can ship as-is in most cases. Re-optimize only if a specific shot is over ~1 MB.
 
 **No `.cr-grid-2` / `.cr-grid-3`** — the wiki has no custom CSS. Multi-shot embeds (Custom Maps, Calendar View, Evidence and Sources) sit as two sequential `![]()` lines with one blank line between, rendering as stacked images.
 
@@ -115,11 +115,11 @@ Captions are optional; use them when the embed needs disambiguation (which fixtu
 
 ## File transfer
 
-The wiki is a separate repo (`obsidian-charted-roots.wiki`) cloned alongside the plugin repo. Image transfer is one-directional: copy from `docs/images/raw/` (plugin repo) to `wiki-content/images/` then sync to the wiki repo's `images/` directory.
+The wiki is a separate repo (`obsidian-charted-roots.wiki`) cloned alongside the plugin repo. Image transfer is one-directional: copy from `docs/images/` (plugin repo) to `wiki-content/images/` then sync to the wiki repo's `images/` directory.
 
 ```bash
 # From plugin repo root, for each capture in the mapping table:
-cp docs/images/raw/cr-<feature>.png wiki-content/images/
+cp docs/images/cr-<feature>.png wiki-content/images/
 # Then sync wiki-content/ → obsidian-charted-roots.wiki/ per the existing wiki-sync workflow.
 ```
 
@@ -136,7 +136,7 @@ Filename stability matters here: changing a `cr-feature.png` filename in the fut
 **Why first:** Visualization captures are the most well-tested in the deployed website context, and these pages currently have the largest visual gap (text-heavy on features that are inherently visual).
 
 **Steps:**
-1. Copy the relevant captures from `docs/images/raw/` to `wiki-content/images/`.
+1. Copy the relevant captures from `docs/images/` to `wiki-content/images/`.
 2. Edit the six wiki pages to add the embeds at the top of the most relevant section (typically the page's primary feature description, not the introduction).
 3. Sync `wiki-content/` to the wiki repo.
 4. Verify rendering on at least one motion embed (motion is the highest-risk for wiki rendering oddities).

@@ -295,7 +295,7 @@ Reusable checklist for any future single-shot or multi-shot capture session. Eac
 - [ ] Add the inline embed to the appropriate features-page section (raw `<img>` tag or `.cr-grid-2` figure block per the file organization conventions above).
 - [ ] If the embed needs a caption, draft one in 3–8 words that names what the reader is looking at without restating prose around it.
 - [ ] Update the deployment log below ("Static captures deployed") with the date and on-site file size.
-- [ ] Commit the raw to the plugin repo (`docs/images/raw/`) as a separate commit from the website port.
+- [ ] Commit the raw to the plugin repo (`docs/images/`) as a separate commit from the website port.
 
 ### Style consistency
 
@@ -310,7 +310,7 @@ Reusable checklist for any future single-shot or multi-shot capture session. Eac
 **Location:**
 
 - **Website repo** (`static/img/` in `/mnt/s/Projects/websites/chartedroots.com/`): optimized, site-ready versions. Use `static/` (not `assets/`) for binary files referenced from raw-HTML embeds in markdown — Hugo doesn't auto-publish `assets/` files unless they're processed via `resources.Get` in a template, and raw `<video>` / `<img>` tags in markdown bypass that pipeline. `assets/` is reserved for things that go through Hugo Pipes (resize, fingerprint, etc.). Discovered during the Phase 1 deploy test run (2026-04-25).
-- **Plugin repo** (`docs/images/raw/`): raw captures at full resolution. Serves as the archival source. If site assets ever need to be regenerated at different sizes, the originals live here.
+- **Plugin repo** (`docs/images/`): raw captures at full resolution. Serves as the archival source. If site assets ever need to be regenerated at different sizes, the originals live here.
 
 **Naming convention:** `cr-<feature>-<variant>.<ext>`
 
@@ -361,7 +361,7 @@ The `data-cr-lazy-src` attribute is consumed by `/static/js/cr-lazy-video.js`, a
 ### After the session
 
 1. Batch-optimize files locally (ImageOptim / squoosh / ffmpeg for WebM).
-2. Commit raw captures to the plugin repo's `docs/images/raw/` as a separate commit from the website port.
+2. Commit raw captures to the plugin repo's `docs/images/` as a separate commit from the website port.
 3. Commit optimized versions to the website repo's `static/img/`.
 4. Add inline embeds to features, research-track, worldbuilding-track, and landing pages where each visual fits the narrative.
 5. Update this document to mark the capture as ✅ Complete with the date.

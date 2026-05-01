@@ -117,7 +117,7 @@ docs/developer/pr-reviews/
 docs/samples/
 .claude/
 
-# docs/images/raw/ is the project media library — both static (.png) and
+# docs/images/ is the project media library — both static (.png) and
 # motion (.webm / .mp4) captures are tracked. Optimized variants for the
 # website live separately in chartedroots.com's static/img/. Wiki pages,
-# in-repo docs, and future surfaces can reference the raw assets directly.
+# in-repo docs, and future surfaces can reference these assets directly.

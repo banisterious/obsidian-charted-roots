@@ -21,15 +21,15 @@
 
 | Interactive Family Chart | Canvas Trees |
 |:------------------------:|:------------:|
-| ![Family Chart](docs/images/raw/cr-family-chart-live.png) | ![Canvas Tree](docs/images/raw/cr-canvas-tree-multi-generational.png) |
+| ![Family Chart](docs/images/cr-family-chart-live.png) | ![Canvas Tree](docs/images/cr-canvas-tree-multi-generational.png) |
 
 | Geographic Map View | Worldbuilding & Universes |
 |:-------------------:|:-------------------------:|
-| ![Map View](docs/images/raw/cr-map-migration-paths.png) | ![Universe Overview](docs/images/raw/cr-universe-overview.png) |
+| ![Map View](docs/images/cr-map-migration-paths.png) | ![Universe Overview](docs/images/cr-universe-overview.png) |
 
 | Evidence & Sources | Control Center |
 |:------------------:|:--------------:|
-| ![Attribution](docs/images/raw/cr-entity-attribution.png) | ![Control Center](docs/images/raw/cr-control-center-collections.png) |
+| ![Attribution](docs/images/cr-entity-attribution.png) | ![Control Center](docs/images/cr-control-center-collections.png) |
 
 ---
 
