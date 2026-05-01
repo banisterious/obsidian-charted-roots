@@ -288,37 +288,6 @@ If a session runs short, stop at a tier boundary rather than leaving Tier N half
 
 Step-by-step plans for the captures still TBD as of 2026-04-30. Use the checkboxes to track progress within a session. Each plan assumes the global prerequisites above (dark mode, 110–120% zoom, 1920×1080 window, fixtures loaded). Post-capture steps are common to all five plans; they're listed once at the end rather than repeated.
 
-#### E. Tier 5 end-to-end composite (item 25)
-
-**Targets:** `cr-workflow-clip.png`, `cr-workflow-source-note.png`, `cr-workflow-attribution.png` — placement intent: standalone three-shot row in the Research workflow / Evidence and sources subsection. Three-shot composite told as a left-to-right narrative.
-**Fixture:** Andersons (consistent with the existing Web Clipper / Source hierarchy / Attribution captures). Public-domain biography target: any Find a Grave or Wikipedia page that fits the genealogy use case (Charles Hoy Fort already used in `cr-web-clipper-to-bio.webm`).
-
-Captured 2026-05-01 as a single sitting using the Charles Hoy Fort Find a Grave fixture (public-domain figure, Memorial ID 3079). Person note + 6-place chain (state / 2 counties / 2 cities / cemetery) seeded for the workflow before capture; source note clipped via the `findagrave-person` template and converted to `cr_type: source` with `cr_id: fag-307-fwn-832`; per-fact attribution wired via Path B (4 Citation notes in `Charted Roots/Citations/` plus `sourced_*` properties on the person note).
-
-Note: Stage 3's "use the per-fact attribution UI" step doesn't reflect a real UI affordance — Edit Person currently doesn't have a per-fact attach-source surface. Path B (Citation notes + `sourced_*` frontmatter properties) is the actual mechanism. FR filed as #511 to add the missing UI.
-
-**Stage 1 — Browser-side clip:**
-
-- [x] Open Find a Grave page for Charles Hoy Fort (Memorial ID 3079) in the browser.
-- [x] Open Web Clipper, select `findagrave-person` template.
-- [x] Clipper preview pane populated with structured fields (name, birth_date, birth_place, death_date, death_place, burial_place + Vital Information body section).
-- [x] Capture browser window with clipper modal expanded on the right showing the schema mapping, "Charted Roots/Staging" target, and "Add to Obsidian" button.
-- [x] Save raw to `docs/images/raw/cr-workflow-clip.png` (891 KB raw — **over 500 KB cap; needs `cwebp -q 85` fallthrough at deploy time, ship as `cr-workflow-clip.webp`**, expected ~150-170 KB based on prior similar conversions).
-
-**Stage 2 — Source note in vault:**
-
-- [x] Source note arrived in `Charted Roots/Sources/Charles Hoy Fort Famous memorial.md` after clipper save.
-- [x] Verified frontmatter properties — 12 fields: cr_type / cr_id / clip_source_type / clipped_from / clipped_date / note_type / name / birth_date / birth_place / death_date / death_place / burial_place. Body has H2 "Vital Information" section with the same data.
-- [x] Capture Obsidian window with the source note open + properties block fully expanded. Folder pane on left shows Sources folder expanded with the new file highlighted alongside 13 existing sources for fixture context.
-- [x] Save raw to `docs/images/raw/cr-workflow-source-note.png` (326 KB raw → ~265 KB after `oxipng -o 4`, ships as PNG).
-
-**Stage 3 — Attribution on the person note:**
-
-- [x] Person note seeded at `Charted Roots/People/Charles Hoy Fort.md` with vitals + place wikilinks resolving to the 6-place chain.
-- [x] Path B attribution wired — 4 Citation notes created in `Charted Roots/Citations/` (one per attributable fact: birth_date / birth_place / death_date / death_place), plus `sourced_*` frontmatter properties on the person note.
-- [x] Capture two-pane: center pane shows the person note's Properties block with all `sourced_*` properties visible; right pane shows the Entity Profile View with Citations section (4 entries each tagged `Memorial ID 3079`, `Secondary evidence`), Sources section binding the source to the person, Media section with the imported photo, Data quality section showing "Sources coverage: 40% (4/10 facts)" with per-fact weakness indicators.
-- [x] Save raw to `docs/images/raw/cr-workflow-attribution.png` (396 KB raw → ~320 KB after `oxipng -o 4`, ships as PNG).
-
 #### Common post-capture steps
 
 Apply to every capture above. Mark off as the file moves through the pipeline.
@@ -539,6 +508,8 @@ First two-app composite in the capture program. Pairs the trigger (browser) with
 
 Mixed PNG / WebP path on this batch. Modal shot was 881 KB raw; `oxipng -o 4` left it at 777 KB (12% reduction, still over cap), fell through to `cwebp -q 85` for 79% reduction down to 184 KB. Staging-note shot was 267 KB raw; `oxipng -o 4` got it to 193 KB (28% reduction, comfortably under cap), shipped as PNG. Total batch payload: ~377 KB across two files. Reused the `.cr-grid-2` class — no new CSS.
 
+**Retired 2026-05-01:** the 2-up grid was replaced on the features page by the Tier 5 end-to-end composite (`cr-workflow-clip.webp` + `cr-workflow-source-note.png` + `cr-workflow-attribution.png`), which adds the per-fact attribution stage and uses a single coherent Charles Hoy Fort fixture across all three shots. Asset files remain in `static/img/` but are no longer referenced from any page.
+
 **Source hierarchy display (2026-04-28):**
 
 - ✅ `cr-source-hierarchy.png` (308 KB) — Evidence and sources, single-shot figure. Probate Packet for Charles Henderson (1988) parent source profile in the Entity Profile View. Both `Child documents` (3 rows: Letters of Administration / Estate Inventory / Last Will and Testament, each with date + legal source-type badge) and `Source tree` sections expanded so the parent → indented-children structure reads in one glance.
@@ -583,6 +554,14 @@ Research-track batch totals: `oxipng -o 4` on all six raws yielded ~22% mean red
 - ✅ `cr-control-center-events.png` (300 KB) — Control Center grid (bottom-right). Chronological timeline spanning 1499 (Mount Pleasant Massacre) → 1500 (IPCC Induction) → 1855–65 (Alice Texteuse events) → 1865 (William Anderson birth) with six event types across the viewport. Data Quality Insights section ("15 timeline gaps detected") visible at bottom.
 
 `oxipng -o 4` on all five raws yielded ~20% mean reduction (1.75 MB → 1.46 MB). All five comfortably under the 500 KB cap; no WebP fallthrough. Reused `.cr-grid-2` for the 2×2 (same shape Entity Profile uses for its 2×2 batch — overflowing 4 children to two rows under the existing `repeat(2, 1fr)` layout) — no new CSS needed. Two new H3 subsections under Data entry and management: `### Edit Person` covers the per-person modal surface as a single shot; `### Control Center` covers the workspace-wide tab strip via the 4-tab composite. Source-file rename caveat from Plan C (`cr-edit-person-modal.png.png` → `cr-edit-person-modal.png`) was already resolved at the source side before this session, so the optimize → copy path was unmodified.
+
+**Tier 5 end-to-end workflow composite (2026-05-01):**
+
+- ✅ `cr-workflow-clip.webp` (179 KB) — Evidence and sources → Web Clipper integration, 3-up grid (left). Browser-side Web Clipper modal mid-clip on the Charles Hoy Fort Find a Grave memorial page (Memorial ID 3079, public-domain figure); page shows vital data (birth / death / burial), modal preview shows the `findagrave-person` template's structured property extraction with target `Charted Roots/Staging`. Captioned `1. Clip from browser`.
+- ✅ `cr-workflow-source-note.png` (220 KB) — 3-up grid (middle). Obsidian-side post-import source note with all 12 frontmatter fields visible (cr_type / cr_id `fag-307-fwn-832` / clip_source_type / clipped_from / clipped_date / note_type / name / birth_date / birth_place / death_date / death_place / burial_place); body H2 "Vital Information" populated; folder pane shows the Sources folder with the new file highlighted alongside 13 existing sources. Captioned `2. Source note in vault`.
+- ✅ `cr-workflow-attribution.png` (293 KB) — 3-up grid (right). Two-pane composite of the Charles Hoy Fort person note: properties block with four `sourced_*` properties pointing at the new source; Entity Profile View on the right with Citations (4 entries each tagged `Memorial ID 3079`, `Secondary evidence`), Sources, Media (with photo), and Data quality showing `40% (4/10 facts)` coverage. Captioned `3. Attribution on person profile`.
+
+Mixed optimization path: clip went over the PNG cap raw (891 KB) so `cwebp -q 85` directly to `.webp` at 179 KB (79.9% reduction); source-note + attribution shipped as PNG via `oxipng -o 4` at 220 KB and 293 KB respectively (~30% mean reduction). Total deployed payload: ~692 KB across three files. Reused `.cr-grid-3` (originally added with the Reports gallery) — no new CSS. Replaces the 2026-04-27 Web Clipper 2-up on the live page (see retirement note on that entry above); orphaned files (`cr-web-clipper-modal.webp`, `cr-web-clipper-staging-note.png`) remain in `static/img/` for now per the brief's "files can stay; remove from the page only" guidance. Section copy revised — drops the previously-flagged inaccuracy ("clipped pages land as source notes...") in favor of an explicit chain framing ("threads sources from capture to attribution: clip a record, get a structured source note, attribute it to specific facts") that matches what the visual actually walks through. Stage-3 caveat from Plan E (no per-fact attach-source UI yet — Path B uses Citation notes + `sourced_*` frontmatter properties; FR filed as #511) is implementation detail; not surfaced on the website page since the visible result is identical.
 
 ---
 
