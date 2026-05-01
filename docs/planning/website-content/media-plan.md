@@ -1,7 +1,7 @@
 # Media Plan — draft
 
 **Target placement:** Inline embeds on landing, features, research-track, worldbuilding-track, and per-release pages. No dedicated gallery page.
-**Status:** 🔶 In progress — video Phase 1 shipped 2026-04-24 (embeds live). Static screenshots and motion loops deferred until a capture session is scheduled. Approach and playbook below.
+**Status:** ✅ v1 capture program complete (2026-05-01) — video Phase 1 live since 2026-04-24, motion library (8 captures) and static library (~35 shots across visualization / research / worldbuilding / data-entry tracks) all deployed to chartedroots.com. Phase 2 video (1.0 launch demo) deferred to the 1.0 release. Forward items tracked under Deferred decisions and Future below; the per-capture playbook in this doc remains the reference for future sessions.
 
 ---
 
@@ -284,13 +284,9 @@ Capture high-leverage content first so partial completion still produces a usefu
 
 If a session runs short, stop at a tier boundary rather than leaving Tier N half-done. Tier 1 alone is about an hour and ships the content the site is most visibly missing.
 
-### Remaining captures — action plans
+### Per-capture pipeline checklist
 
-Step-by-step plans for the captures still TBD as of 2026-04-30. Use the checkboxes to track progress within a session. Each plan assumes the global prerequisites above (dark mode, 110–120% zoom, 1920×1080 window, fixtures loaded). Post-capture steps are common to all five plans; they're listed once at the end rather than repeated.
-
-#### Common post-capture steps
-
-Apply to every capture above. Mark off as the file moves through the pipeline.
+Reusable checklist for any future single-shot or multi-shot capture session. Each item is a stage in the pipeline from raw capture to deployed asset. The global prerequisites above (dark mode, 110–120% zoom, 1920×1080 window, fixtures loaded) apply at the start.
 
 - [ ] Run `oxipng -o 4` on the raw PNG.
 - [ ] If the optimized PNG is over 500 KB, fall through to `cwebp -q 85` and ship as `.webp`.
@@ -298,7 +294,7 @@ Apply to every capture above. Mark off as the file moves through the pipeline.
 - [ ] Place the optimized version in the website repo at `static/img/cr-<feature>.<ext>`.
 - [ ] Add the inline embed to the appropriate features-page section (raw `<img>` tag or `.cr-grid-2` figure block per the file organization conventions above).
 - [ ] If the embed needs a caption, draft one in 3–8 words that names what the reader is looking at without restating prose around it.
-- [ ] Update this document: move the capture from the action-plan section above to the "Static captures deployed" log below, with the date and on-site file size.
+- [ ] Update the deployment log below ("Static captures deployed") with the date and on-site file size.
 - [ ] Commit the raw to the plugin repo (`docs/images/raw/`) as a separate commit from the website port.
 
 ### Style consistency
@@ -508,7 +504,7 @@ First two-app composite in the capture program. Pairs the trigger (browser) with
 
 Mixed PNG / WebP path on this batch. Modal shot was 881 KB raw; `oxipng -o 4` left it at 777 KB (12% reduction, still over cap), fell through to `cwebp -q 85` for 79% reduction down to 184 KB. Staging-note shot was 267 KB raw; `oxipng -o 4` got it to 193 KB (28% reduction, comfortably under cap), shipped as PNG. Total batch payload: ~377 KB across two files. Reused the `.cr-grid-2` class — no new CSS.
 
-**Retired 2026-05-01:** the 2-up grid was replaced on the features page by the Tier 5 end-to-end composite (`cr-workflow-clip.webp` + `cr-workflow-source-note.png` + `cr-workflow-attribution.png`), which adds the per-fact attribution stage and uses a single coherent Charles Hoy Fort fixture across all three shots. Asset files remain in `static/img/` but are no longer referenced from any page.
+**Retired 2026-05-01:** the 2-up grid was replaced on the features page by the Tier 5 end-to-end composite (`cr-workflow-clip.webp` + `cr-workflow-source-note.png` + `cr-workflow-attribution.png`), which adds the per-fact attribution stage and uses a single coherent Charles Hoy Fort fixture across all three shots. Asset files remain in `static/img/` but are no longer referenced from any page. **Cleanup:** remove from `static/img/` during the next website-deploy session that touches the features page, after a quick check for any external links (e.g. earlier blog post embeds) that might still reference them.
 
 **Source hierarchy display (2026-04-28):**
 
