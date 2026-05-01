@@ -2,10 +2,6 @@
 
 Charted Roots provides a comprehensive statistics dashboard and report generation system to help you understand your data and generate formatted genealogical reports.
 
-![Pedigree tree report PDF for Queen Victoria, four generations with sex-coded boxes and avatar circles](images/cr-report-pedigree-tree.png)
-
-*One example output (Pedigree Tree) of the 17+ report types; export to PDF, ODT, or markdown.*
-
 ---
 
 ## Table of Contents
@@ -42,6 +38,8 @@ The system uses a shared data layer ensuring consistency between dashboard metri
 ---
 
 ## Statistics Dashboard
+
+![Statistics dashboard showing entity overview, data completeness, gender distribution, and top lists](images/cr-statistics-view.png)
 
 The Statistics Dashboard is a full-featured workspace view that provides detailed insights into your vault data.
 
@@ -195,6 +193,10 @@ The Citation Statistics section shows metrics about citation notes in your vault
 ---
 
 ## Reports
+
+![Pedigree tree report PDF for Queen Victoria, four generations with sex-coded boxes and avatar circles](images/cr-report-pedigree-tree.png)
+
+*Pedigree Tree is one example of the 17+ report types; export to PDF, ODT, or markdown.*
 
 Generate formatted reports from your data. Reports are organized into categories for easy discovery. Reports that target a specific universe or collection provide fuzzy-search picker modals for selection.
 

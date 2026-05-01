@@ -59,7 +59,7 @@ Proposed embeds. `🎬` marks motion loops; `📸` marks static stills. "Anchor"
 | [Research-Workflow](../../wiki-content/Research-Workflow.md) | 📸 `cr-workflow-attribution.png` | — | The website's Tier 5 composite is too marketing-flavored; one shot from it (the attribution endpoint) lands cleanly here. |
 | [Staging-And-Cleanup](../../wiki-content/Staging-And-Cleanup.md) | 🎬 `cr-merge-wizard-conflict-res.gif` (from `.webm`) | — | Merge Wizard is documented on this page; motion shows the resolve step. |
 | [Data-Quality](../../wiki-content/Data-Quality.md) | 📸 `cr-cleanup-wizard.png` | — | Post-Import Cleanup Wizard tile grid; documented under this page's Cleanup Workflow. |
-| [Statistics-And-Reports](../../wiki-content/Statistics-And-Reports.md) | 📸 `cr-report-pedigree-tree.png` | — | One report style is enough for the wiki; the website carries the gallery. |
+| [Statistics-And-Reports](../../wiki-content/Statistics-And-Reports.md) | 📸 `cr-statistics-view.png` | 📸 `cr-report-pedigree-tree.png` | Two-subsystem page; section-anchored embeds (Statistics dashboard at `## Statistics Dashboard`, Reports gallery shot at `## Reports`). |
 | [Book-Builder](../../wiki-content/Book-Builder.md) | 📸 `cr-book-builder-output.png` | — | TOC page reads as inventory of what the feature produces. |
 | [Control-Center](../../wiki-content/Control-Center.md) | 📸 `cr-control-center-collections.png` | — | One tab is enough; the four-tab grid is a website framing. |
 | [Data-Entry](../../wiki-content/Data-Entry.md) | 📸 `cr-edit-person-modal.png` | — | Anchors the modal-driven entry workflow. |
