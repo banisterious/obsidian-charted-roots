@@ -353,7 +353,24 @@ export class CreateEventModal extends Modal {
 					});
 			});
 
-		// Worldbuilder section (for narrative events)
+		// Universe — always available regardless of event type. Universe is
+		// a vault-wide scoping property, not a narrative concept; gating it
+		// on narrative types meant Vital and Life events (births, marriages,
+		// residences, immigrations) had no way to set their universe via
+		// this modal (#507).
+		new Setting(form)
+			.setName('Universe')
+			.setDesc('Fictional universe this event belongs to')
+			.addText(text => text
+				.setPlaceholder('e.g., Middle-earth')
+				.setValue(this.universe)
+				.onChange(value => {
+					this.universe = value;
+				}));
+
+		// Worldbuilder section (for narrative events) — `isCanonical`
+		// remains gated since canon/non-canon is a narrative storytelling
+		// concept, not applicable to vital records or life events.
 		const narrativeTypes = ['anecdote', 'lore_event', 'plot_point', 'flashback', 'foreshadowing', 'backstory', 'climax', 'resolution'];
 		if (narrativeTypes.includes(this.eventType)) {
 			const worldSection = form.createDiv({ cls: 'crc-event-world-section' });
@@ -367,17 +384,6 @@ export class CreateEventModal extends Modal {
 					.setValue(this.isCanonical)
 					.onChange(value => {
 						this.isCanonical = value;
-					}));
-
-			// Universe
-			new Setting(worldSection)
-				.setName('Universe')
-				.setDesc('Fictional universe this event belongs to')
-				.addText(text => text
-					.setPlaceholder('e.g., Middle-earth')
-					.setValue(this.universe)
-					.onChange(value => {
-						this.universe = value;
 					}));
 		}
 
