@@ -183,7 +183,7 @@ Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 If you find this plugin useful, please consider supporting its development!
 
-<a href="https://www.buymeacoffee.com/banisterious" target="_blank"><img src="docs/images/buy-me-a-coffee.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+<a href="https://www.buymeacoffee.com/banisterious" target="_blank"><img src="docs/assets/branding/buy-me-a-coffee.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
 ---
 
