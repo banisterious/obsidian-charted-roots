@@ -288,42 +288,6 @@ If a session runs short, stop at a tier boundary rather than leaving Tier N half
 
 Step-by-step plans for the captures still TBD as of 2026-04-30. Use the checkboxes to track progress within a session. Each plan assumes the global prerequisites above (dark mode, 110–120% zoom, 1920×1080 window, fixtures loaded). Post-capture steps are common to all five plans; they're listed once at the end rather than repeated.
 
-#### C. Edit Person modal (Tier 4, item 23)
-
-**Target:** `cr-edit-person-modal.png` — placement intent: Data entry and organization section on `/features/`.
-**Fixture:** Dying Earth — Cugel the Clever (rich events list with `DE NNNN` fictional dates + marriage with Derwe Coreme).
-
-Originally framed around showing the post-#505 Universe dropdown populated as the load-bearing element. The actual capture frames the modal-overview surface instead — Events / Family relationships / Spouses sections all visible, Universe field below the visible viewport. Trade-off: rich-overview > universe-dropdown-focused-scroll for the website's "what does Edit Person look like?" payoff. The post-#505 dropdown content is technical correctness rather than visual story; the events-list + relationships sections are the more legible feature surfaces. Filename arrived as `cr-edit-person-modal.png.png` (duplicate extension); rename to `cr-edit-person-modal.png` before deploy.
-
-- [x] Open Dying Earth fixture vault.
-- [x] Open Cugel the Clever (marriages + birth date + sources).
-- [x] Right-click → Charted Roots → Edit person.
-- [x] Modal-overview framing — Events section (4 entries with `DE 1169 / 1185 / 1198 / 1205` dates), Family relationships (Father / Mother empty, Spouses populated with Derwe Coreme + marriage date `DE 1205`), `+ Add spouse` affordance visible. Save / Cancel buttons in viewport.
-- [x] Capture full Obsidian window (folder pane on left visible, modal centered).
-- [x] Save raw to `docs/images/raw/cr-edit-person-modal.png` (292 KB raw; oxipng pass at deploy time will land it ~235 KB). **Rename from `cr-edit-person-modal.png.png` before deploy.**
-
-#### D. Control Center tabs (Tier 4, item 24)
-
-**Targets:** `cr-control-center-collections.png`, `cr-control-center-sources.png`, `cr-control-center-places.png`, `cr-control-center-events.png` — placement intent: Data entry and organization section, 2×2 grid (reuse `.cr-grid-2` × 2 rows or introduce `.cr-grid-2x2`).
-**Fixture:** Andersons + worldbuilder fixtures combined — gives 101 people / 29 collections / 6574-year date range across real + fictional, which reads as more meaningful vault size than Andersons alone.
-
-All four tabs captured with consistent modal width and tab-strip position. Places needed a fixture-hygiene re-capture (first pass had Dying Earth / Gaean Reach places miscategorized as `Real`, plus an Atlanta coords typo); both fixed and re-shot.
-
-**Per-tab outcomes:**
-
-- [x] **Collections** (`cr-control-center-collections.png`, 347 KB → ~280 KB) — Analytics row (101 Total people / 29 Collections / 4 Avg size / 0 Bridge people), Data completeness bars (Birth 77% / Death 28% / Sex 100%), Collection highlights (Largest blood 46 / range 1428–8002 / 6574 years), Detected families table starting. Sells "Control Center is a vault overview surface."
-- [x] **Sources** (`cr-control-center-sources.png`, 397 KB → ~320 KB) — Tabular source-type view with multiple type badges visible (Vital Record / Church Record / legal / Immigration / Military). #338 Probate Packet sources (Estate Inventory / Last Will / Letters of Administration) all present for continuity with `cr-source-hierarchy.png`.
-- [x] **Places** (`cr-control-center-places.png`, 390 KB → ~310 KB) — Re-captured 2026-05-01 after fixture cleanup. Fictional places (Almery / Alphanor / Ampridatvir / Araminta Station / Asromirel / Beyond) now correctly categorized as `Fictional` with universe annotations under each name (`Almery / The Dying Earth`, etc.) — bonus visual depth, immediately tells the reader which world a place belongs to. Atlanta coordinates corrected from `-64.8631` to `-84.0…`. Capture scrolled to focus on the Place notes table; the "Normalize place name formatting" cleanup affordance from the first capture is no longer in the viewport (acceptable trade-off, table reads more cleanly).
-- [x] **Events** (`cr-control-center-events.png`, 403 KB → ~325 KB) — Chronological timeline view: 1499 Mount Pleasant Massacre (Gaean Reach catastrophe) → 1500 Kirth Gersen IPCC Induction → 1855–65 Alice Texteuse events → 1865 William Anderson birth. Six event types visible across viewport. Data Quality Insights section ("15 timeline gaps detected") visible at bottom — frames the tab as analysis, not just a list.
-
-**Style consistency check:** all four shots use the same Control Center modal width and tab-strip position, so the 2×2 grid reads as a series rather than four loose stills. Folder pane visible in all four for vault-context anchor. Light theme across the set.
-
-**Known minor fixture issues** (not blocking deploy):
-- Sources: "Demon Princes Series" appears twice in the visible rows (fixture duplicate).
-- Events: one Alice Texteuse row labeled "Occupation 1855" but its date column shows 1865 — title/date mismatch in the fixture.
-
-Both are cosmetic. Worth a future fixture pass; not load-bearing for the website embed.
-
 #### E. Tier 5 end-to-end composite (item 25)
 
 **Targets:** `cr-workflow-clip.png`, `cr-workflow-source-note.png`, `cr-workflow-attribution.png` — placement intent: standalone three-shot row in the Research workflow / Evidence and sources subsection. Three-shot composite told as a left-to-right narrative.
@@ -611,6 +575,16 @@ Research-track batch totals: `oxipng -o 4` on all six raws yielded ~22% mean red
 - ✅ `cr-universe-overview.png` (323 KB) — World Building, single-shot figure as section hero between the intro paragraph and the Universe Notes H3. Two-pane split of the Dying Earth universe note: People (17) on the left, Events (28) on the right; both blocks render `DE NNNN` dates demonstrating the universe's linked calendar. Marriage of Cugel and Derwe visible in the right pane (continuity with #501 verification fixtures).
 
 `oxipng -o 4` lossless pass on both files yielded 25.4% reduction across the pair (654 KB → 487 KB). Both well under the 500 KB cap; no WebP fallthrough. Reused the existing `<figure class="cr-figure">` pattern with `loading="lazy"` for both stills. Worldbuilding section intro extended by one sentence to frame the visual ("A universe note pulls together every person, place, event, and organization scoped to that world — auto-generated tables that respect the universe's linked calendar so dates render in its own era") so the figure has narrative context — replaces the originally-scoped "universe note with linked custom calendar visible in frontmatter" framing per Plan B's revision note. Deploy is also paired with the 2026-04-30 changelog port (v0.22.15 + v0.22.16 spotlights) but ships in a separate commit.
+
+**Edit Person modal + Control Center 4-tab grid (2026-05-01):**
+
+- ✅ `cr-edit-person-modal.png` (222 KB) — Data entry and management → new `### Edit Person` H3, single-shot figure below the bullet list. Cugel the Clever (Dying Earth fixture) Edit Person modal showing the events list with four `DE NNNN` entries (residence, marriage, occupation, birth), Family relationships block with empty Father / Mother link affordances, Spouses populated with Derwe Coreme + marriage date `DE 1205`, and Save / Cancel buttons in viewport. Folder pane visible on the left.
+- ✅ `cr-control-center-collections.png` (280 KB) — Data entry and management → new `### Control Center` H3, 2×2 grid (top-left). Analytics row (101 / 29 / 4 / 0), Data completeness bars (77% / 28% / 100%), Collection highlights (largest blood 46 spanning 6574 years), Detected families table starting.
+- ✅ `cr-control-center-sources.png` (320 KB) — Control Center grid (top-right). Tabular source library with type badges (Vital Record / Church Record / legal / Immigration / Military) and the #338 Probate Packet sources (Estate Inventory / Last Will / Letters of Administration) for continuity with `cr-source-hierarchy.png`.
+- ✅ `cr-control-center-places.png` (317 KB) — Control Center grid (bottom-left). Fictional places (Almery / Alphanor / Ampridatvir / Araminta Station / Asromirel / Beyond) categorized as `Fictional` with universe annotations under each name (`Almery / The Dying Earth`, etc.); real places (Arizona / Atlanta / Austin / Baltimore) with categories, types, coordinates, and people counts.
+- ✅ `cr-control-center-events.png` (300 KB) — Control Center grid (bottom-right). Chronological timeline spanning 1499 (Mount Pleasant Massacre) → 1500 (IPCC Induction) → 1855–65 (Alice Texteuse events) → 1865 (William Anderson birth) with six event types across the viewport. Data Quality Insights section ("15 timeline gaps detected") visible at bottom.
+
+`oxipng -o 4` on all five raws yielded ~20% mean reduction (1.75 MB → 1.46 MB). All five comfortably under the 500 KB cap; no WebP fallthrough. Reused `.cr-grid-2` for the 2×2 (same shape Entity Profile uses for its 2×2 batch — overflowing 4 children to two rows under the existing `repeat(2, 1fr)` layout) — no new CSS needed. Two new H3 subsections under Data entry and management: `### Edit Person` covers the per-person modal surface as a single shot; `### Control Center` covers the workspace-wide tab strip via the 4-tab composite. Source-file rename caveat from Plan C (`cr-edit-person-modal.png.png` → `cr-edit-person-modal.png`) was already resolved at the source side before this session, so the optimize → copy path was unmodified.
 
 ---
 
