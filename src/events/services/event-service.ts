@@ -84,11 +84,17 @@ function fmToStringArray(value: unknown): string[] {
 /**
  * Format a wikilink - ensure it has [[ ]] brackets
  * If the input is already a wikilink, return as-is
+ * When `basename` is provided and differs from `value`, emits the disambiguated
+ * `[[basename|value]]` form so the link resolves to the intended file even when
+ * multiple notes share the same display name (#510).
  */
-function formatWikilink(value: string): string {
+export function formatWikilink(value: string, basename?: string): string {
 	const trimmed = value.trim();
 	if (trimmed.startsWith('[[') && trimmed.endsWith(']]')) {
 		return trimmed;
+	}
+	if (basename && basename !== trimmed) {
+		return `[[${basename}|${trimmed}]]`;
 	}
 	return `[[${trimmed}]]`;
 }
@@ -99,8 +105,18 @@ function formatWikilink(value: string): string {
  * @param name The display name
  * @param file The file to link to (optional, if available)
  * @param app The Obsidian app instance for file resolution
+ * @param basename Explicit file basename (preferred over file/metadataCache lookups when provided).
+ *   Resolves the #510 ambiguity case where two notes share the same `name` property: callers
+ *   that captured a TFile from a picker can pass `file.basename` here so the resulting wikilink
+ *   targets the correct file via the [[basename|name]] form.
  */
-function createSmartWikilink(name: string, file: TFile | null, app: App): string {
+export function createSmartWikilink(name: string, file: TFile | null, app: App, basename?: string): string {
+	// Explicit basename trumps everything — the caller knows which file they picked.
+	if (basename) {
+		if (basename === name) return `[[${name}]]`;
+		return `[[${basename}|${name}]]`;
+	}
+
 	// If file is provided and basename differs from name, use alias format
 	if (file && file.basename !== name) {
 		return `[[${file.basename}|${name}]]`;
@@ -469,18 +485,22 @@ export class EventService {
 		// Always use persons array for consistency
 		// If data.person is provided (legacy), convert to persons array
 		const allPersons = data.persons?.slice() || [];
+		const allPersonsBasenames = data.personsBasenames?.slice() || [];
 		if (data.person && !allPersons.includes(data.person)) {
 			allPersons.unshift(data.person);
+			allPersonsBasenames.unshift(data.personBasename ?? '');
 		}
 		if (allPersons.length > 0) {
-			const formattedPersons = allPersons.map(p => createSmartWikilink(p, null, this.app));
+			const formattedPersons = allPersons.map((p, i) =>
+				createSmartWikilink(p, null, this.app, allPersonsBasenames[i] || undefined)
+			);
 			frontmatterLines.push(`${prop('persons')}:`);
 			for (const p of formattedPersons) {
 				frontmatterLines.push(`  - "${p}"`);
 			}
 		}
 		if (data.place) {
-			frontmatterLines.push(`${prop('place')}: "${createSmartWikilink(data.place, null, this.app)}"`);
+			frontmatterLines.push(`${prop('place')}: "${createSmartWikilink(data.place, null, this.app, data.placeBasename)}"`);
 		}
 		if (data.sources && data.sources.length > 0) {
 			const formattedSources = data.sources.map(s => createSmartWikilink(s, null, this.app));
@@ -598,11 +618,15 @@ export class EventService {
 			// If data.person is provided (legacy), convert to persons array
 			if (data.person !== undefined || data.persons !== undefined) {
 				const allPersons = data.persons?.slice() || [];
+				const allPersonsBasenames = data.personsBasenames?.slice() || [];
 				if (data.person && !allPersons.includes(data.person)) {
 					allPersons.unshift(data.person);
+					allPersonsBasenames.unshift(data.personBasename ?? '');
 				}
 				if (allPersons.length > 0) {
-					frontmatter.persons = allPersons.map(p => formatWikilink(p));
+					frontmatter.persons = allPersons.map((p, i) =>
+						formatWikilink(p, allPersonsBasenames[i] || undefined)
+					);
 				} else {
 					delete frontmatter.persons;
 				}
@@ -611,7 +635,7 @@ export class EventService {
 			}
 			if (data.place !== undefined) {
 				if (data.place) {
-					frontmatter.place = formatWikilink(data.place);
+					frontmatter.place = formatWikilink(data.place, data.placeBasename);
 				} else {
 					delete frontmatter.place;
 				}

@@ -28,6 +28,40 @@ import { ModalStatePersistence, renderResumePromptBanner } from '../../ui/modal-
 import { updatePersonNote, findPersonByCrId, type PersonData } from '../../core/person-note-writer';
 
 /**
+ * Parse a wikilink string into its display name and (optional) basename target.
+ * Used in edit mode to round-trip [[basename|name]] forms without losing the
+ * basename component, which would otherwise leak into the text input as
+ * "basename|name". (#510)
+ */
+function parseWikilink(value: string): { name: string; basename?: string } {
+	const trimmed = value.trim();
+	const match = trimmed.match(/^\[\[([^\]|]+)(?:\|([^\]]+))?\]\]$/);
+	if (!match) return { name: trimmed };
+	const [, leftPart, rightPart] = match;
+	if (rightPart) {
+		return { basename: leftPart, name: rightPart };
+	}
+	return { name: leftPart };
+}
+
+/**
+ * Build a wikilink string with optional basename disambiguation.
+ * Mirrors the helper in event-service.ts so the modal's processFrontMatter
+ * edit path produces the same [[basename|name]] form as the service's
+ * createEvent path.
+ */
+function buildWikilink(name: string, basename?: string): string {
+	const trimmed = name.trim();
+	if (trimmed.startsWith('[[') && trimmed.endsWith(']]')) {
+		return trimmed;
+	}
+	if (basename && basename !== trimmed) {
+		return `[[${basename}|${trimmed}]]`;
+	}
+	return `[[${trimmed}]]`;
+}
+
+/**
  * Form data structure for persistence
  */
 interface EventFormData {
@@ -38,8 +72,10 @@ interface EventFormData {
 	datePrecision: DatePrecision;
 	person: string;
 	personCrId: string;
-	additionalPersons: { name: string; crId: string }[];
+	personBasename: string;
+	additionalPersons: { name: string; crId: string; basename?: string }[];
 	place: string;
+	placeBasename: string;
 	confidence: EventConfidence;
 	description: string;
 	isCanonical: boolean;
@@ -70,8 +106,10 @@ export class CreateEventModal extends Modal {
 	private datePrecision: DatePrecision = 'exact';
 	private person = '';
 	private personCrId = '';
-	private persons: { name: string; crId: string }[] = [];
+	private personBasename = '';
+	private persons: { name: string; crId: string; basename?: string }[] = [];
 	private place = '';
+	private placeBasename = '';
 	private confidence: EventConfidence = 'medium';
 	private description = '';
 	private isCanonical = false;
@@ -136,15 +174,19 @@ export class CreateEventModal extends Modal {
 			this.datePrecision = event.datePrecision;
 			// Check persons array first (new format), then fall back to person (legacy)
 			const primaryPerson = event.persons?.[0] || event.person || '';
-			this.person = primaryPerson.replace(/^\[\[/, '').replace(/\]\]$/, '');
+			const primaryParsed = parseWikilink(primaryPerson);
+			this.person = primaryParsed.name;
+			this.personBasename = primaryParsed.basename ?? '';
 			// Load additional persons (index 1+)
 			if (event.persons && event.persons.length > 1) {
 				this.persons = event.persons.slice(1).map(p => {
-					const name = p.replace(/^\[\[/, '').replace(/\]\]$/, '');
-					return { name, crId: '' };
+					const parsed = parseWikilink(p);
+					return { name: parsed.name, crId: '', basename: parsed.basename };
 				});
 			}
-			this.place = event.place?.replace(/^\[\[/, '').replace(/\]\]$/, '') || '';
+			const placeParsed = event.place ? parseWikilink(event.place) : { name: '', basename: undefined };
+			this.place = placeParsed.name;
+			this.placeBasename = placeParsed.basename ?? '';
 			this.confidence = event.confidence;
 			this.description = event.description || '';
 			this.isCanonical = event.isCanonical || false;
@@ -472,8 +514,10 @@ export class CreateEventModal extends Modal {
 			datePrecision: this.datePrecision,
 			person: this.person,
 			personCrId: this.personCrId,
+			personBasename: this.personBasename,
 			additionalPersons: [...this.persons],
 			place: this.place,
+			placeBasename: this.placeBasename,
 			confidence: this.confidence,
 			description: this.description,
 			isCanonical: this.isCanonical,
@@ -495,8 +539,10 @@ export class CreateEventModal extends Modal {
 		this.datePrecision = formData.datePrecision || 'exact';
 		this.person = formData.person || '';
 		this.personCrId = formData.personCrId || '';
+		this.personBasename = formData.personBasename || '';
 		this.persons = formData.additionalPersons || [];
 		this.place = formData.place || '';
+		this.placeBasename = formData.placeBasename || '';
 		this.confidence = formData.confidence || 'medium';
 		this.description = formData.description || '';
 		this.isCanonical = formData.isCanonical || false;
@@ -616,6 +662,7 @@ export class CreateEventModal extends Modal {
 					// Unlink
 					this.person = '';
 					this.personCrId = '';
+					this.personBasename = '';
 					inputEl.value = '';
 					inputEl.removeClass('crc-input--linked');
 					setting.setDesc(description);
@@ -634,6 +681,7 @@ export class CreateEventModal extends Modal {
 					const picker = new PersonPickerModal(this.app, (person: PersonInfo) => {
 						this.person = person.name;
 						this.personCrId = person.crId;
+						this.personBasename = person.file?.basename ?? '';
 						inputEl.value = person.name;
 						inputEl.addClass('crc-input--linked');
 						setting.setDesc(`Linked to: ${person.name}`);
@@ -696,7 +744,7 @@ export class CreateEventModal extends Modal {
 					};
 
 					const picker = new PersonPickerModal(this.app, (person: PersonInfo) => {
-						this.persons.push({ name: person.name, crId: person.crId });
+						this.persons.push({ name: person.name, crId: person.crId, basename: person.file?.basename });
 						this.renderAdditionalPeople(container);
 					}, {
 						title: 'Select additional person',
@@ -752,6 +800,7 @@ export class CreateEventModal extends Modal {
 				if (this.place) {
 					// Unlink
 					this.place = '';
+					this.placeBasename = '';
 					inputEl.value = '';
 					inputEl.removeClass('crc-input--linked');
 					setting.setDesc(description);
@@ -760,6 +809,7 @@ export class CreateEventModal extends Modal {
 					// Open place picker
 					const picker = new PlacePickerModal(this.app, (place: SelectedPlaceInfo) => {
 						this.place = place.name;
+						this.placeBasename = place.file?.basename ?? '';
 						inputEl.value = place.name;
 						inputEl.addClass('crc-input--linked');
 						setting.setDesc(`Linked to: ${place.name}`);
@@ -801,16 +851,23 @@ export class CreateEventModal extends Modal {
 			}
 			if (this.person.trim() || this.persons.length > 0) {
 				const allPersons: string[] = [];
+				const allBasenames: string[] = [];
 				if (this.person.trim()) {
 					allPersons.push(this.person.trim());
+					allBasenames.push(this.personBasename || '');
 				}
 				for (const p of this.persons) {
 					allPersons.push(p.name);
+					allBasenames.push(p.basename || '');
 				}
 				data.persons = allPersons;
+				data.personsBasenames = allBasenames;
 			}
 			if (this.place.trim()) {
 				data.place = this.place.trim();
+				if (this.placeBasename) {
+					data.placeBasename = this.placeBasename;
+				}
 			}
 			if (this.description.trim()) {
 				data.description = this.description.trim();
@@ -927,10 +984,10 @@ export class CreateEventModal extends Modal {
 				if (this.person.trim() || this.persons.length > 0) {
 					const allPersons: string[] = [];
 					if (this.person.trim()) {
-						allPersons.push(`[[${this.person.trim()}]]`);
+						allPersons.push(buildWikilink(this.person.trim(), this.personBasename || undefined));
 					}
 					for (const p of this.persons) {
-						allPersons.push(`[[${p.name}]]`);
+						allPersons.push(buildWikilink(p.name, p.basename));
 					}
 					frontmatter.persons = allPersons;
 				} else {
@@ -940,8 +997,7 @@ export class CreateEventModal extends Modal {
 				delete frontmatter.person;
 
 				if (this.place.trim()) {
-					const placeValue = this.place.trim().startsWith('[[') ? this.place.trim() : `[[${this.place.trim()}]]`;
-					frontmatter.place = placeValue;
+					frontmatter.place = buildWikilink(this.place.trim(), this.placeBasename || undefined);
 				} else {
 					delete frontmatter.place;
 				}

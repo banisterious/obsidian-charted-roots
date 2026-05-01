@@ -442,7 +442,13 @@ export interface CreateEventData {
 	datePrecision: DatePrecision;
 	person?: string;
 	persons?: string[];
+	/** File basename for the legacy `person` field (#510). When provided, the wikilink uses the [[basename|name]] form. */
+	personBasename?: string;
+	/** File basenames parallel to `persons[]` (#510). Indices align with `persons`; entries may be empty strings when basename is unknown. */
+	personsBasenames?: string[];
 	place?: string;
+	/** File basename for `place` (#510). */
+	placeBasename?: string;
 	sources?: string[];
 	confidence?: EventConfidence;
 	description?: string;
