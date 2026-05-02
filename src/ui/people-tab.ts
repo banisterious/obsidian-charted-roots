@@ -39,7 +39,6 @@ import {
 	FACT_KEY_TO_SOURCED_PROPERTY,
 	SourcePickerModal,
 	SOURCE_QUALITY_LABELS,
-	ProofSummaryService,
 	CreateProofModal,
 	PROOF_STATUS_LABELS,
 	PROOF_CONFIDENCE_LABELS
@@ -2413,10 +2412,7 @@ function renderFactCoverageDetails(container: HTMLElement, coverage: PersonResea
  */
 function renderProofSummariesSection(container: HTMLElement, coverage: PersonResearchCoverage, options: PeopleTabOptions): void {
 	const { app, plugin, showTab } = options;
-	const proofService = new ProofSummaryService(app, plugin.settings);
-	if (plugin.personIndex) {
-		proofService.setPersonIndex(plugin.personIndex);
-	}
+	const proofService = plugin.getProofSummaryService();
 	const proofs = proofService.getProofsForPerson(coverage.personCrId);
 
 	// Section container

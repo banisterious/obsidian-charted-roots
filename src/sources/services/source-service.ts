@@ -4,7 +4,7 @@
  * Handles CRUD operations for source notes and source-related queries.
  */
 
-import { App, TFile, TFolder, normalizePath } from 'obsidian';
+import { App, Plugin, TFile, TFolder, normalizePath } from 'obsidian';
 import type { CanvasRootsSettings } from '../../settings';
 import {
 	SourceNote,
@@ -76,6 +76,48 @@ export class SourceService {
 	invalidateCache(): void {
 		this.cacheValid = false;
 		this.sourceCache.clear();
+	}
+
+	/**
+	 * Subscribe to vault and metadata-cache events so the cache stays in
+	 * sync with file changes that happen outside the service's own write
+	 * methods. See `EventService.setupVaultListeners` for the underlying
+	 * race (#519) — same pattern, same fix.
+	 */
+	setupVaultListeners(plugin: Plugin): void {
+		plugin.registerEvent(
+			this.app.metadataCache.on('changed', (file, _data, cache) => {
+				const isSource = cache?.frontmatter?.cr_type === 'source';
+				if (isSource || this.cacheContainsFile(file.path)) {
+					this.invalidateCache();
+				}
+			})
+		);
+		plugin.registerEvent(
+			this.app.vault.on('delete', (file) => {
+				if (file instanceof TFile && this.cacheContainsFile(file.path)) {
+					this.invalidateCache();
+				}
+			})
+		);
+		plugin.registerEvent(
+			this.app.vault.on('rename', (file, oldPath) => {
+				if (
+					file instanceof TFile &&
+					(this.cacheContainsFile(oldPath) || this.cacheContainsFile(file.path))
+				) {
+					this.invalidateCache();
+				}
+			})
+		);
+	}
+
+	private cacheContainsFile(filePath: string): boolean {
+		if (!this.cacheValid) return false;
+		for (const source of this.sourceCache.values()) {
+			if (source.filePath === filePath) return true;
+		}
+		return false;
 	}
 
 	/**

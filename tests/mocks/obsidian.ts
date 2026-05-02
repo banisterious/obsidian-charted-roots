@@ -55,11 +55,16 @@ export interface CachedMetadata {
 export type VaultEventName = 'modify' | 'delete' | 'rename';
 
 /**
- * Opaque handle returned by `Vault.on()`. Used with `offref()` to
- * remove the listener.
+ * Metadata-cache event names supported by the mock.
+ */
+export type MetadataCacheEventName = 'changed' | 'resolve' | 'resolved';
+
+/**
+ * Opaque handle returned by `Vault.on()` / `MetadataCache.on()`. Used
+ * with `offref()` to remove the listener.
  */
 export interface EventRef {
-	event: VaultEventName;
+	event: VaultEventName | MetadataCacheEventName;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	callback: (...args: any[]) => void;
 }
@@ -199,6 +204,7 @@ export class Vault {
 
 export class MetadataCache {
 	private cache = new Map<string, CachedMetadata>();
+	private listeners = new Map<MetadataCacheEventName, Set<EventRef>>();
 
 	getFileCache(file: TFile): CachedMetadata | null {
 		return this.cache.get(file.path) ?? null;
@@ -221,6 +227,55 @@ export class MetadataCache {
 			this.cache.set(newPath, entry);
 			this.cache.delete(oldPath);
 		}
+	}
+
+	on(
+		event: 'changed',
+		callback: (file: TFile, data: string, cache: CachedMetadata) => void
+	): EventRef;
+	on(event: 'resolve', callback: (file: TFile) => void): EventRef;
+	on(event: 'resolved', callback: () => void): EventRef;
+	on(
+		event: MetadataCacheEventName,
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		callback: (...args: any[]) => void
+	): EventRef {
+		const ref: EventRef = { event, callback };
+		let set = this.listeners.get(event);
+		if (!set) {
+			set = new Set();
+			this.listeners.set(event, set);
+		}
+		set.add(ref);
+		return ref;
+	}
+
+	offref(ref: EventRef): void {
+		const set = this.listeners.get(ref.event as MetadataCacheEventName);
+		set?.delete(ref);
+	}
+
+	// Test helper: fire a metadata-cache event manually.
+	_fire(event: 'changed', file: TFile, data?: string, cache?: CachedMetadata): void;
+	_fire(event: 'resolve', file: TFile): void;
+	_fire(event: 'resolved'): void;
+	_fire(event: MetadataCacheEventName, ...args: unknown[]): void {
+		const set = this.listeners.get(event);
+		if (!set) return;
+		// For 'changed', pass file/data/cache; for 'resolve', file; for 'resolved', nothing.
+		// Default the cache argument to the current entry if not provided.
+		const augmented = [...args];
+		if (event === 'changed' && augmented.length === 1) {
+			const file = augmented[0] as TFile;
+			augmented.push('', this.cache.get(file.path) ?? { frontmatter: undefined });
+		}
+		for (const ref of set) {
+			ref.callback(...augmented);
+		}
+	}
+
+	_listenerCount(event: MetadataCacheEventName): number {
+		return this.listeners.get(event)?.size ?? 0;
 	}
 }
 
@@ -279,6 +334,30 @@ export class App {
 		this.metadataCache = new MetadataCache();
 		this.fileManager = new FileManager(this.vault, this.metadataCache);
 		this.vault._attachMetadataCache(this.metadataCache);
+	}
+}
+
+/**
+ * Minimal Plugin mock. Just enough surface for services that need to
+ * call `plugin.registerEvent()` to wire up vault / metadata-cache
+ * listeners. Tracks registered EventRefs so tests can assert listener
+ * cleanup without reaching into Obsidian internals.
+ */
+export class Plugin {
+	app: App;
+	private registeredEvents: EventRef[] = [];
+
+	constructor(app: App) {
+		this.app = app;
+	}
+
+	registerEvent(ref: EventRef): EventRef {
+		this.registeredEvents.push(ref);
+		return ref;
+	}
+
+	_registeredEventCount(): number {
+		return this.registeredEvents.length;
 	}
 }
 

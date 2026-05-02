@@ -7,7 +7,7 @@
  * Proof summaries follow the Genealogical Proof Standard (GPS) methodology.
  */
 
-import { App, TFile, TFolder, normalizePath } from 'obsidian';
+import { App, Plugin, TFile, TFolder, normalizePath } from 'obsidian';
 import type { CanvasRootsSettings } from '../../settings';
 import type { PersonIndexService } from '../../core/person-index-service';
 import type {
@@ -64,6 +64,48 @@ export class ProofSummaryService {
 	invalidateCache(): void {
 		this.cacheValid = false;
 		this.proofCache.clear();
+	}
+
+	/**
+	 * Subscribe to vault and metadata-cache events so the cache stays in
+	 * sync with file changes that happen outside the service's own write
+	 * methods. See `EventService.setupVaultListeners` for the underlying
+	 * race (#519).
+	 */
+	setupVaultListeners(plugin: Plugin): void {
+		plugin.registerEvent(
+			this.app.metadataCache.on('changed', (file, _data, cache) => {
+				const isProof = cache?.frontmatter?.cr_type === 'proof_summary';
+				if (isProof || this.cacheContainsFile(file.path)) {
+					this.invalidateCache();
+				}
+			})
+		);
+		plugin.registerEvent(
+			this.app.vault.on('delete', (file) => {
+				if (file instanceof TFile && this.cacheContainsFile(file.path)) {
+					this.invalidateCache();
+				}
+			})
+		);
+		plugin.registerEvent(
+			this.app.vault.on('rename', (file, oldPath) => {
+				if (
+					file instanceof TFile &&
+					(this.cacheContainsFile(oldPath) || this.cacheContainsFile(file.path))
+				) {
+					this.invalidateCache();
+				}
+			})
+		);
+	}
+
+	private cacheContainsFile(filePath: string): boolean {
+		if (!this.cacheValid) return false;
+		for (const proof of this.proofCache.values()) {
+			if (proof.filePath === filePath) return true;
+		}
+		return false;
 	}
 
 	// ============ Query Methods ============

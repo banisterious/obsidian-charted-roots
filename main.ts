@@ -99,6 +99,7 @@ export default class CanvasRootsPlugin extends Plugin {
 	public personIndex: PersonIndexService | null = null;
 	private eventService: EventService | null = null;
 	private sourceService: SourceService | null = null;
+	private proofSummaryService: ProofSummaryService | null = null;
 	private recentFilesService: RecentFilesService | null = null;
 	private mediaService: MediaService | null = null;
 	private webClipperService: WebClipperService | null = null;
@@ -186,8 +187,26 @@ export default class CanvasRootsPlugin extends Plugin {
 	getSourceService(): SourceService {
 		if (!this.sourceService) {
 			this.sourceService = new SourceService(this.app, this.settings);
+			this.sourceService.setupVaultListeners(this);
 		}
 		return this.sourceService;
+	}
+
+	/**
+	 * Get the Proof Summary service (singleton). Hoisted to a singleton
+	 * (#519) so the metadata-cache listeners stay attached for the
+	 * plugin lifetime; previously each consumer constructed its own
+	 * instance and any one of them could observe the cache race.
+	 */
+	getProofSummaryService(): ProofSummaryService {
+		if (!this.proofSummaryService) {
+			this.proofSummaryService = new ProofSummaryService(this.app, this.settings);
+			if (this.personIndex) {
+				this.proofSummaryService.setPersonIndex(this.personIndex);
+			}
+			this.proofSummaryService.setupVaultListeners(this);
+		}
+		return this.proofSummaryService;
 	}
 
 	/**
@@ -273,10 +292,7 @@ export default class CanvasRootsPlugin extends Plugin {
 	 * Counts proof summaries with status 'conflicted' or evidence with 'conflicts' support
 	 */
 	private populateConflictCounts(graphService: FamilyGraphService): void {
-		const proofService = new ProofSummaryService(this.app, this.settings);
-		if (this.personIndex) {
-			proofService.setPersonIndex(this.personIndex);
-		}
+		const proofService = this.getProofSummaryService();
 		const people = graphService.getAllPeople();
 
 		for (const person of people) {
@@ -335,6 +351,7 @@ export default class CanvasRootsPlugin extends Plugin {
 
 		// Initialize event service
 		this.eventService = new EventService(this.app, this.settings);
+		this.eventService.setupVaultListeners(this);
 
 		// Initialize recent files service
 		this.recentFilesService = new RecentFilesService(this);

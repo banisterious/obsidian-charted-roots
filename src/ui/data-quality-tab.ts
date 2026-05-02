@@ -26,7 +26,6 @@ import {
 	EvidenceService,
 	FACT_KEY_LABELS,
 	FACT_KEYS,
-	ProofSummaryService,
 	CreateProofModal
 } from '../sources';
 import type {
@@ -730,10 +729,7 @@ function renderResearchGapsSection(container: HTMLElement, options: DataQualityT
 function renderSourceConflictsSection(container: HTMLElement, options: DataQualityTabOptions): void {
 	const { plugin, app } = options;
 
-	const proofService = new ProofSummaryService(app, plugin.settings);
-	if (plugin.personIndex) {
-		proofService.setPersonIndex(plugin.personIndex);
-	}
+	const proofService = plugin.getProofSummaryService();
 	const conflictedProofs = proofService.getProofsByStatus('conflicted');
 
 	// Create card for Source Conflicts
@@ -1474,10 +1470,7 @@ export function renderDataQualityDashboard(options: DataQualityDashboardOptions)
 		const conflictsSection = container.createDiv({ cls: 'cr-dqv-section' });
 		conflictsSection.createEl('h3', { text: 'Source conflicts', cls: 'cr-dqv-section-title' });
 
-		const proofService = new ProofSummaryService(app, plugin.settings);
-		if (plugin.personIndex) {
-			proofService.setPersonIndex(plugin.personIndex);
-		}
+		const proofService = plugin.getProofSummaryService();
 		const conflictedProofs = proofService.getProofsByStatus('conflicted');
 		const allProofs = proofService.getAllProofs();
 

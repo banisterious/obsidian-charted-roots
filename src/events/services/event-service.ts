@@ -4,7 +4,7 @@
  * Handles CRUD operations for event notes and event-related queries.
  */
 
-import { App, TFile, TFolder, normalizePath } from 'obsidian';
+import { App, Plugin, TFile, TFolder, normalizePath } from 'obsidian';
 import type { CanvasRootsSettings } from '../../settings';
 import {
 	EventNote,
@@ -162,6 +162,60 @@ export class EventService {
 	invalidateCache(): void {
 		this.cacheValid = false;
 		this.eventCache.clear();
+	}
+
+	/**
+	 * Subscribe to vault and metadata-cache events so the cache stays in
+	 * sync with file changes that happen outside the service's own write
+	 * methods. Call once per plugin lifetime, after construction.
+	 *
+	 * Fixes #519: a freshly-created event file would be silently skipped
+	 * by `loadEventCache()` if Obsidian's metadata cache hadn't yet
+	 * indexed it when the first read happened. The cache then marked
+	 * itself valid without the new event, and stayed poisoned until
+	 * something else invalidated it. Subscribing to `metadataCache.on
+	 * ('changed')` ensures we re-clear once Obsidian catches up.
+	 */
+	setupVaultListeners(plugin: Plugin): void {
+		plugin.registerEvent(
+			this.app.metadataCache.on('changed', (file, _data, cache) => {
+				const isEvent = cache?.frontmatter?.cr_type === 'event';
+				if (isEvent || this.cacheContainsFile(file.path)) {
+					this.invalidateCache();
+				}
+			})
+		);
+		plugin.registerEvent(
+			this.app.vault.on('delete', (file) => {
+				if (file instanceof TFile && this.cacheContainsFile(file.path)) {
+					this.invalidateCache();
+				}
+			})
+		);
+		plugin.registerEvent(
+			this.app.vault.on('rename', (file, oldPath) => {
+				if (
+					file instanceof TFile &&
+					(this.cacheContainsFile(oldPath) || this.cacheContainsFile(file.path))
+				) {
+					this.invalidateCache();
+				}
+			})
+		);
+	}
+
+	/**
+	 * Check whether the given file path appears in the current cache.
+	 * Used so cache eviction triggers even when a previously-cached
+	 * file's `cr_type` has just been removed (and so wouldn't pass the
+	 * `isEvent` check on its `changed` event).
+	 */
+	private cacheContainsFile(filePath: string): boolean {
+		if (!this.cacheValid) return false;
+		for (const event of this.eventCache.values()) {
+			if (event.filePath === filePath) return true;
+		}
+		return false;
 	}
 
 	/**

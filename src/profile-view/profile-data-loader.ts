@@ -22,7 +22,6 @@ import { RelationshipService } from '../relationships';
 import { MembershipService } from '../organizations/services/membership-service';
 import { OrganizationService } from '../organizations/services/organization-service';
 import { EvidenceService } from '../sources/services/evidence-service';
-import { ProofSummaryService } from '../sources/services/proof-summary-service';
 import { SOURCED_PROPERTY_NAMES, SOURCED_PROPERTY_TO_FACT_KEY } from '../sources/types/source-types';
 import type { SourceNote } from '../sources/types/source-types';
 import { getLogger } from '../core/logging';
@@ -133,8 +132,7 @@ export class ProfileDataLoader {
 		const researchCoverage = evidenceService.getFactCoverage(crId);
 
 		// Proof summaries
-		const proofService = new ProofSummaryService(app, settings);
-		proofService.setPersonIndex(this.plugin.personIndex);
+		const proofService = this.plugin.getProofSummaryService();
 		const proofSummaries = proofService.getProofsForPerson(crId);
 
 		// Media (with crop data from frontmatter #354)
