@@ -1,7 +1,7 @@
 # Guides — Plan
 
 **Target placement:** New top-level `/guides/` section on chartedroots.com, with `/guides/research/` and `/guides/worldbuilding/` subsections matching the existing track pages. Each guide is a single recipe-style workflow article.
-**Status:** 🟢 Phase 1 (P0) shipped 2026-05-01 — 9 guides live at chartedroots.com/guides/. Phase 2 (P1) pending; Phase 3 (P2) opportunistic.
+**Status:** 🟡 Phase 1 (P0) complete; Phase 2 (P1) in progress — 10 of 20 P1 shipped 2026-05-02. Phase 3 (P2) opportunistic.
 
 ---
 
@@ -142,17 +142,17 @@ Comprehensive list. Tier indicates ship priority (P0 ships first, P2 fills out t
 | `set-up-source-tracking` | I want to set up per-fact source citations | ✅ 2026-05-01 |
 | `generate-printable-family-tree` | I want to generate a printable family tree | ✅ 2026-05-01 |
 | `find-and-merge-duplicates` | I want to find and merge duplicate persons | ✅ 2026-05-01 |
-| `clip-a-source-from-the-web` | I want to capture a source from a website | P1 |
+| `clip-a-source-from-the-web` | I want to capture a source from a website | ✅ 2026-05-02 |
 | `attach-one-source-to-multiple-people` | I want to attach one source (e.g., a census record) to multiple people | P1 |
-| `migrate-from-family-tree-maker` | I want to migrate from Family Tree Maker | P1 |
-| `migrate-from-ancestry` | I want to migrate from Ancestry | P1 |
-| `migrate-from-rootsmagic` | I want to migrate from RootsMagic | P1 |
-| `migrate-from-gramps` | I want to migrate from Gramps (with media) | P1 |
+| `migrate-from-family-tree-maker` | I want to migrate from Family Tree Maker | ✅ 2026-05-02 |
+| `migrate-from-ancestry` | I want to migrate from Ancestry | ✅ 2026-05-02 |
+| `migrate-from-rootsmagic` | I want to migrate from RootsMagic | ✅ 2026-05-02 |
+| `migrate-from-gramps` | I want to migrate from Gramps (with media) | ✅ 2026-05-02 |
 | `map-an-ancestor-life` | I want to map an ancestor's life | P1 |
 | `generate-family-group-sheet` | I want to generate a family group sheet | P1 |
 | `assemble-family-history-book` | I want to assemble a family history book | P1 |
-| `add-new-family-member` | I want to add a new family member (e.g., a new baby) | P1 |
-| `delete-and-clean-up-references` | I want to delete a person and clean up references | P1 |
+| `add-new-family-member` | I want to add a new family member (e.g., a new baby) | ✅ 2026-05-02 |
+| `delete-and-clean-up-references` | I want to delete a person and clean up references | ✅ 2026-05-02 |
 | `generate-family-reunion-report` | I want to generate a family reunion report | P1 |
 | `onboard-non-technical-relative` | I want to help a non-technical family member get started | P1 |
 | `use-bases-for-data-analysis` | I want to filter and analyze my data with Bases | P1 |
@@ -180,9 +180,9 @@ Comprehensive list. Tier indicates ship priority (P0 ships first, P2 fills out t
 | `set-up-custom-calendar` | I want to set up a custom calendar with eras | ✅ 2026-05-01 |
 | `build-fictional-family-tree` | I want to build a family tree for fictional characters | ✅ 2026-05-01 |
 | `create-custom-image-map` | I want to create a custom map of my fictional world | ✅ 2026-05-01 |
-| `use-built-in-calendar` | I want to use a built-in calendar (Middle-earth / Westeros / Star Wars) | P1 |
-| `link-drilldown-maps` | I want to link drilldown maps for regions | P1 |
-| `align-hand-drawn-map` | I want to align a hand-drawn map to coordinates | P1 |
+| `use-built-in-calendar` | I want to use a built-in calendar (Middle-earth / Westeros / Star Wars) | ✅ 2026-05-02 |
+| `link-drilldown-maps` | I want to link drilldown maps for regions | ✅ 2026-05-02 |
+| `align-hand-drawn-map` | I want to align a hand-drawn map to coordinates | ✅ 2026-05-02 |
 | `build-noble-house-with-succession` | I want to build a noble house with succession over generations | P1 |
 | `track-narrative-events` | I want to track narrative events alongside vital ones | P1 |
 | `compile-worldbuilding-bible` | I want to compile a worldbuilding bible from my notes | P1 |
@@ -211,9 +211,9 @@ Nine P0 guides live at chartedroots.com/guides/. Established the `/guides/` sect
 
 **Estimated effort:** ~9 hours of focused authoring (1 hour per guide on average, including screenshot capture for guides where one is load-bearing). Plus site-config work for the new section, nav entry, and index pages.
 
-### Phase 2 — P1 fills (target: 1-2 months post-1.0)
+### Phase 2 — P1 fills 🟡 In progress (10 of 20 shipped 2026-05-02)
 
-Ship the fifteen P1 guides over a longer arc. Migration guides especially benefit from spacing so each can incorporate user feedback from earlier ones.
+Half of the P1 batch shipped: the four placeholder-closers from P0 cross-refs (clip-a-source-from-the-web, use-built-in-calendar, align-hand-drawn-map, link-drilldown-maps), the four migration guides (FTM, Ancestry, RootsMagic, Gramps), and two operational guides from the Community-Use-Cases additions (add-new-family-member, delete-and-clean-up-references). Remaining 10 ship over a longer arc.
 
 **Why this tier:** The migration guides serve users coming from competing tools (a real adoption channel). Web Clipper, source attribution, and family-history-book guides cover the depth of the research workflow. On the worldbuilding side, built-in calendars and drilldown maps cover the "I'm using this for a specific universe" use case.
 
