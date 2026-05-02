@@ -171,6 +171,11 @@ Comprehensive list. Tier indicates ship priority (P0 ships first, P2 fills out t
 | `analyze-fan-clusters` | I want to analyze FAN clusters to break through a brick wall | P2 |
 | `research-historical-figure` | I want to research a historical figure | P2 |
 | `document-local-cemetery` | I want to document a local cemetery | P2 |
+| `name-women-and-placeholder-surnames` | I want to track married women and placeholder surnames consistently | P2 |
+| `organize-multi-document-source-collections` | I want to organize a multi-document source collection | P2 |
+| `cite-jurisdictions-that-changed-over-time` | I want to construct citations for jurisdictions that have changed names | P2 |
+| `modernize-legacy-genealogy-data` | I want to modernize inherited (pre-GPS) genealogy data | P2 |
+| `transcribe-sources-with-ai-assistance` | I want to use AI assistance to transcribe and extract source data | P2 |
 
 ### Worldbuilding track
 
@@ -194,10 +199,12 @@ Comprehensive list. Tier indicates ship priority (P0 ships first, P2 fills out t
 
 **P0 totals:** 5 research + 4 worldbuilding = 9 guides.
 **P1 totals:** 14 research + 6 worldbuilding = 20 guides.
-**P2 totals:** 15 research + 5 worldbuilding = 20 guides.
-**Grand total:** 49 guides if the catalog ships in full.
+**P2 totals:** 20 research + 5 worldbuilding = 25 guides.
+**Grand total:** 54 guides if the catalog ships in full.
 
 The P1 / P2 expansion incorporates community use cases sourced from `wiki-content/Community-Use-Cases.md`. New entries cover operational needs (add new family member, delete and clean up, family reunion report), supporter onboarding, Bases analysis, specialized research methodologies (Beyond Kin, one-name studies, FAN clusters), the historian persona (researching figures, cemeteries), and creative-project character management (collapses the novel + TTRPG cases into one guide with variations).
+
+A second P2 expansion came from synthesizing GitHub threads from active power users (see `p2-guides-user-research-digest.md`). Five additional research-track guides cover naming conventions for married/placeholder surnames, multi-document source collections, citation construction across jurisdiction renames, modernizing inherited pre-GPS data, and AI-assisted source transcription. All five are research-heavy in source evidence; worldbuilding-track P2 expansion would need a different research source.
 
 ---
 
