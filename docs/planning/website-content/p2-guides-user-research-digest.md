@@ -137,12 +137,12 @@ Concrete things to verify, file, or decide separately from drafting the P2 guide
 - [x] **239-vs-24-notes Research Gaps confusion (Discussion #48)** — ✅ Already fixed via #54 "[Bug] Research Gaps Showing Inflated Unsourced Facts Count" (closed, released). Fix scopes the count to "only count unsourced facts for people actively using GPS tracking." The gaps guide can document current correct behavior without needing to address the historical confusion.
 - [ ] **Negative-findings parsing (#305)** — confirm `charted-roots-negative-findings` block is shipped and works on wilbry's documented log format. Verification pending.
 
-### ⚠️ Deferred FRs from #193 — promised but never filed
+### Deferred FRs from #193 — filed 2026-05-02
 
-When #193 closed, two follow-up FRs were promised and ANYroots was invited to file them. They never were. Both are genuinely open work:
+When #193 closed, two follow-up FRs were promised but never created. Filed as fresh issues:
 
-- [ ] **Beyond Kin name exclusion** — option to exclude certain naming patterns (e.g., `Susan~`, `Unknown`) from name normalization. Directly impacts the Beyond Kin guide; without this fix the guide has to document the workaround rather than the desired behavior. **Worth filing as a fresh FR.**
-- [ ] **Merge duplicate place modal UX** — collapse groups after merge/ignore action. Relevant to the already-shipped `find-and-merge-duplicates` guide. **Worth filing as a fresh FR.**
+- [x] **Beyond Kin name exclusion** — filed as **#517** (`enhancement`, `data-quality`, `low-priority`, `post-1.0`). Until this ships, the Beyond Kin guide documents the workaround (folder-scoped normalization disable) rather than the supported feature.
+- [x] **Merge duplicate place modal UX** — filed as **#518** (`enhancement`, `data-quality`, `low-priority`, `post-1.0`). Existing find-and-merge-duplicates guide remains accurate; the friction it introduces gets resolved when the modal collapse-after-action lands.
 
 ### Catalog expansion candidates (5 additional guides to consider)
 
