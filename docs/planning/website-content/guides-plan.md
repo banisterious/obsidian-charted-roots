@@ -164,15 +164,15 @@ Comprehensive list. Tier indicates ship priority (P0 ships first, P2 fills out t
 | `generate-kinship-report` | I want to generate a kinship report between two people | P2 |
 | `share-tree-with-non-obsidian-relative` | I want to share a family tree with a non-Obsidian relative | P2 |
 | `track-dna-matches` | I want to track DNA matches and identify cousin relationships | P2 |
-| `identify-research-gaps` | I want to identify which facts in my tree need more research | P2 |
+| `identify-research-gaps` | I want to identify which facts in my tree need more research | P2 — drafted 2026-05-02 |
 | `set-up-staging-workflow` | I want to set up a staging workflow for messy imports | P2 |
 | `research-enslaved-ancestors` | I want to research enslaved ancestors (Beyond Kin methodology) | ✅ 2026-05-02 |
 | `conduct-one-name-study` | I want to conduct a one-name study | P2 |
 | `analyze-fan-clusters` | I want to analyze FAN clusters to break through a brick wall | ✅ 2026-05-02 |
 | `research-historical-figure` | I want to research a historical figure | P2 |
 | `document-local-cemetery` | I want to document a local cemetery | P2 |
-| `name-women-and-placeholder-surnames` | I want to track married women and placeholder surnames consistently | P2 |
-| `organize-multi-document-source-collections` | I want to organize a multi-document source collection | P2 |
+| `name-women-and-placeholder-surnames` | I want to track married women and placeholder surnames consistently | P2 — drafted 2026-05-02 |
+| `organize-multi-document-source-collections` | I want to organize a multi-document source collection | P2 — drafted 2026-05-02 |
 | `cite-jurisdictions-that-changed-over-time` | I want to construct citations for jurisdictions that have changed names | P2 |
 | `modernize-legacy-genealogy-data` | I want to modernize inherited (pre-GPS) genealogy data | P2 |
 | `transcribe-sources-with-ai-assistance` | I want to use AI assistance to transcribe and extract source data | P2 |
@@ -228,7 +228,9 @@ All 20 P1 guides live. Highlights: four placeholder-closers from P0 cross-refs, 
 
 Write P2 guides as user reports surface specific friction. No firm deadline; some may never need writing if user behavior shows the workflow isn't surfacing as a need.
 
-**First batch shipped 2026-05-02:** The five best-supported P2 methodology guides — `research-enslaved-ancestors`, `analyze-fan-clusters`, `write-a-proof-summary`, `handle-conflicting-evidence`, `track-research-progress` — drafted from the user-research digest and ported to chartedroots.com under a new "Methodology" section in `/guides/research/`. 34 guides live total. All five share the same evidence base (ANYroots and wilbry threads) and cross-link tightly with each other; two pending cross-link targets (`organize-multi-document-source-collections`, `identify-research-gaps`) will resolve as those P2 guides ship.
+**First batch shipped 2026-05-02:** The five best-supported P2 methodology guides — `research-enslaved-ancestors`, `analyze-fan-clusters`, `write-a-proof-summary`, `handle-conflicting-evidence`, `track-research-progress` — drafted from the user-research digest and ported to chartedroots.com under a new "Methodology" section in `/guides/research/`. 34 guides live total. All five share the same evidence base (ANYroots and wilbry threads) and cross-link tightly with each other.
+
+**Second batch drafted 2026-05-02 (pending port):** Three additional P2 research-track guides — `identify-research-gaps`, `organize-multi-document-source-collections`, `name-women-and-placeholder-surnames` — drafted from the digest's catalog-expansion candidates. The first two close the dangling cross-link targets from the first batch. Once ported, the live total reaches **37**.
 
 ---
 
