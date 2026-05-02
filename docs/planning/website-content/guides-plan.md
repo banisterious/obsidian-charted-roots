@@ -156,9 +156,9 @@ Comprehensive list. Tier indicates ship priority (P0 ships first, P2 fills out t
 | `generate-family-reunion-report` | I want to generate a family reunion report | ✅ 2026-05-02 |
 | `onboard-non-technical-relative` | I want to help a non-technical family member get started | ✅ 2026-05-02 |
 | `use-bases-for-data-analysis` | I want to filter and analyze my data with Bases | ✅ 2026-05-02 |
-| `track-research-progress` | I want to track research progress on a long-term project | P2 |
-| `write-a-proof-summary` | I want to write a proof summary for a contested fact | P2 |
-| `handle-conflicting-evidence` | I want to handle conflicting evidence between two sources | P2 |
+| `track-research-progress` | I want to track research progress on a long-term project | P2 — draft 2026-05-02 |
+| `write-a-proof-summary` | I want to write a proof summary for a contested fact | P2 — draft 2026-05-02 |
+| `handle-conflicting-evidence` | I want to handle conflicting evidence between two sources | P2 — draft 2026-05-02 |
 | `compare-migration-paths-across-siblings` | I want to compare migration paths across siblings | P2 |
 | `print-wall-sized-pedigree` | I want to print a wall-sized pedigree | P2 |
 | `generate-kinship-report` | I want to generate a kinship report between two people | P2 |
@@ -166,9 +166,9 @@ Comprehensive list. Tier indicates ship priority (P0 ships first, P2 fills out t
 | `track-dna-matches` | I want to track DNA matches and identify cousin relationships | P2 |
 | `identify-research-gaps` | I want to identify which facts in my tree need more research | P2 |
 | `set-up-staging-workflow` | I want to set up a staging workflow for messy imports | P2 |
-| `research-enslaved-ancestors` | I want to research enslaved ancestors (Beyond Kin methodology) | P2 |
+| `research-enslaved-ancestors` | I want to research enslaved ancestors (Beyond Kin methodology) | P2 — draft 2026-05-02 |
 | `conduct-one-name-study` | I want to conduct a one-name study | P2 |
-| `analyze-fan-clusters` | I want to analyze FAN clusters to break through a brick wall | P2 |
+| `analyze-fan-clusters` | I want to analyze FAN clusters to break through a brick wall | P2 — draft 2026-05-02 |
 | `research-historical-figure` | I want to research a historical figure | P2 |
 | `document-local-cemetery` | I want to document a local cemetery | P2 |
 | `name-women-and-placeholder-surnames` | I want to track married women and placeholder surnames consistently | P2 |
@@ -227,6 +227,8 @@ All 20 P1 guides live. Highlights: four placeholder-closers from P0 cross-refs, 
 ### Phase 3 — P2 catalog (target: opportunistic)
 
 Write P2 guides as user reports surface specific friction. No firm deadline; some may never need writing if user behavior shows the workflow isn't surfacing as a need.
+
+**First batch drafted 2026-05-02:** The five best-supported P2 methodology guides — `research-enslaved-ancestors`, `analyze-fan-clusters`, `write-a-proof-summary`, `handle-conflicting-evidence`, `track-research-progress` — were drafted from the user-research digest. All five share the same evidence base (ANYroots and wilbry threads) and cross-link tightly with each other. Drafts live in `docs/planning/website-content/guides/research/`; awaiting a website port batch to ship to chartedroots.com.
 
 ---
 
