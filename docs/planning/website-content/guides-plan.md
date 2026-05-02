@@ -1,7 +1,7 @@
 # Guides — Plan
 
 **Target placement:** New top-level `/guides/` section on chartedroots.com, with `/guides/research/` and `/guides/worldbuilding/` subsections matching the existing track pages. Each guide is a single recipe-style workflow article.
-**Status:** 📋 Planned. Not started. Comprehensive enumeration below; phasing in tiers so P0 can ship in a defined window without the catalog feeling thin.
+**Status:** 🟢 Phase 1 (P0) shipped 2026-05-01 — 9 guides live at chartedroots.com/guides/. Phase 2 (P1) pending; Phase 3 (P2) opportunistic.
 
 ---
 
@@ -137,11 +137,11 @@ Comprehensive list. Tier indicates ship priority (P0 ships first, P2 fills out t
 
 | Slug | Title | Tier |
 |---|---|---|
-| `import-gedcom-and-cleanup` | I want to import a GEDCOM file and clean up the result | P0 |
-| `add-first-person-manually` | I want to add my first person from scratch | P0 |
-| `set-up-source-tracking` | I want to set up per-fact source citations | P0 |
-| `generate-printable-family-tree` | I want to generate a printable family tree | P0 |
-| `find-and-merge-duplicates` | I want to find and merge duplicate persons | P0 |
+| `import-gedcom-and-cleanup` | I want to import a GEDCOM file and clean up the result | ✅ 2026-05-01 |
+| `add-first-person-manually` | I want to add my first person from scratch | ✅ 2026-05-01 |
+| `set-up-source-tracking` | I want to set up per-fact source citations | ✅ 2026-05-01 |
+| `generate-printable-family-tree` | I want to generate a printable family tree | ✅ 2026-05-01 |
+| `find-and-merge-duplicates` | I want to find and merge duplicate persons | ✅ 2026-05-01 |
 | `clip-a-source-from-the-web` | I want to capture a source from a website | P1 |
 | `attach-one-source-to-multiple-people` | I want to attach one source (e.g., a census record) to multiple people | P1 |
 | `migrate-from-family-tree-maker` | I want to migrate from Family Tree Maker | P1 |
@@ -166,10 +166,10 @@ Comprehensive list. Tier indicates ship priority (P0 ships first, P2 fills out t
 
 | Slug | Title | Tier |
 |---|---|---|
-| `create-fictional-universe` | I want to create a fictional universe | P0 |
-| `set-up-custom-calendar` | I want to set up a custom calendar with eras | P0 |
-| `build-fictional-family-tree` | I want to build a family tree for fictional characters | P0 |
-| `create-custom-image-map` | I want to create a custom map of my fictional world | P0 |
+| `create-fictional-universe` | I want to create a fictional universe | ✅ 2026-05-01 |
+| `set-up-custom-calendar` | I want to set up a custom calendar with eras | ✅ 2026-05-01 |
+| `build-fictional-family-tree` | I want to build a family tree for fictional characters | ✅ 2026-05-01 |
+| `create-custom-image-map` | I want to create a custom map of my fictional world | ✅ 2026-05-01 |
 | `use-built-in-calendar` | I want to use a built-in calendar (Middle-earth / Westeros / Star Wars) | P1 |
 | `link-drilldown-maps` | I want to link drilldown maps for regions | P1 |
 | `align-hand-drawn-map` | I want to align a hand-drawn map to coordinates | P1 |
@@ -190,9 +190,9 @@ Comprehensive list. Tier indicates ship priority (P0 ships first, P2 fills out t
 
 ## Phase plan
 
-### Phase 1 — P0 launch (target: alongside or shortly after 1.0)
+### Phase 1 — P0 launch ✅ Shipped 2026-05-01
 
-Ship the nine P0 guides as a launch batch. Establishes the `/guides/` section, validates the recipe template against real workflows, and gives 1.0 a discoverability win for new users.
+Nine P0 guides live at chartedroots.com/guides/. Established the `/guides/` section with both research and worldbuilding tracks populated, validated the recipe template across nine real workflows, and surfaced one defect during authoring (Merge Wizard CSS, fixed in #514).
 
 **Why these nine:** the workflows that 80%+ of new users hit in their first week. Import + cleanup is the single most common first action; "add a person from scratch" covers the alternative starting path; source tracking + duplicate merging cover the most-asked "how do I" questions about evidence; "generate a printable tree" is the wow-moment people share. On the worldbuilding side, universe + calendar + tree + custom map are the four pillars of the worldbuilder workflow.
 
