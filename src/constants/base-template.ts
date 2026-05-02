@@ -79,7 +79,7 @@ export function generatePeopleBaseTemplate(aliasesOrOptions: PropertyAliases | P
   - note.${surnames}
   - note.${father}
   - note.${mother}
-  - note.${spouse}
+  - formula.spouses_all
   - note.${children}
   - formula.birth_display
   - formula.death_display
@@ -103,6 +103,7 @@ formulas:
   age: 'if(${born}.isEmpty(), "Unknown", if(${died}.isEmpty() && (now() - ${born}).years.floor() < ${maxLivingAge}, (now() - ${born}).years.floor() + " years", if(${born} && !${died}.isEmpty(), (${died} - ${born}).years.floor() + " years", "Unknown")))'
   birth_display: 'if(${born}, ${born}.format("YYYY-MM-DD"), "")'
   death_display: 'if(${died}, ${died}.format("YYYY-MM-DD"), "")'
+  spouses_all: '[note.${spouse}, note.spouse1, note.spouse2, note.spouse3, note.spouse4, note.spouse5].flat().filter(!value.isEmpty())'
 properties:
   ${cr_id}:
     displayName: ID
@@ -116,7 +117,7 @@ properties:
     displayName: Father
   note.${mother}:
     displayName: Mother
-  note.${spouse}:
+  formula.spouses_all:
     displayName: Spouse(s)
   note.${children}:
     displayName: Children
@@ -171,7 +172,7 @@ views:
       - file.name
       - ${father}
       - ${mother}
-      - ${spouse}
+      - formula.spouses_all
       - ${children}
     summaries:
       ${born}: Earliest
@@ -272,7 +273,7 @@ views:
       and:
         - '!${cr_id}.isEmpty()'
         - '!${children}.isEmpty()'
-        - '${spouse}.isEmpty()'
+        - 'formula.spouses_all.isEmpty()'
     order:
       - file.name
     summaries:
@@ -282,7 +283,7 @@ views:
     filters:
       and:
         - '!${cr_id}.isEmpty()'
-        - '!${spouse}.isEmpty()'
+        - '!formula.spouses_all.isEmpty()'
         - '${children}.isEmpty()'
     order:
       - file.name
@@ -291,7 +292,7 @@ views:
     filters:
       and:
         - '!${cr_id}.isEmpty()'
-        - '!${spouse}.isEmpty()'
+        - 'formula.spouses_all.length > 1'
     order:
       - file.name
   - type: table
