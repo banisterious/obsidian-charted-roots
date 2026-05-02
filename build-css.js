@@ -39,6 +39,7 @@ const CONFIG = {
     'staging-manager.css', // Staging management modal
     'cleanup-wizard.css', // Cleanup wizard modal (all steps)
     'duplicate-detection.css', // Duplicate detection modal
+    'merge-wizard.css',  // Merge wizard modal (companion to duplicate-detection)
     'tree-statistics.css', // Tree statistics modal
     'validation.css',    // Validation results modal
     'find-on-canvas.css', // Find on canvas modal

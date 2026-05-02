@@ -1,0 +1,276 @@
+/**
+ * Merge Wizard Modal Styles
+ *
+ * Styles the side-by-side comparison wizard for merging duplicate person
+ * records, plus its preview modal. Companion to duplicate-detection.css —
+ * the detection modal opens this wizard when the user confirms a pair.
+ *
+ * Component classes are produced by src/ui/merge-wizard-modal.ts.
+ */
+
+/* ==========================================================================
+   MODAL SIZING
+   ========================================================================== */
+
+.cr-merge-wizard {
+  /* Wider than default to fit the 4-column comparison table without
+   * letting longer values wrap into illegibility. */
+  --dialog-max-width: 760px;
+}
+
+/* ==========================================================================
+   HEADER
+   ========================================================================== */
+
+.cr-merge-header {
+  margin-bottom: var(--size-4-4);
+  padding-bottom: var(--size-4-3);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-merge-header__desc {
+  margin: 0 0 var(--size-4-2);
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.cr-merge-files {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--size-4-3);
+  font-size: var(--font-ui-small);
+}
+
+.cr-merge-files__staging,
+.cr-merge-files__main {
+  padding: var(--size-2-2) var(--size-4-2);
+  background: var(--background-secondary);
+  border-radius: var(--radius-s);
+  color: var(--text-normal);
+}
+
+/* ==========================================================================
+   COMPARISON TABLE
+   ========================================================================== */
+
+.cr-merge-table {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: var(--size-4-4);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  overflow: hidden;
+}
+
+.cr-merge-row {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.9fr) 1fr 1fr minmax(96px, 0.7fr);
+  gap: var(--size-4-2);
+  align-items: center;
+  padding: var(--size-4-2) var(--size-4-3);
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.cr-merge-row:last-child {
+  border-bottom: none;
+}
+
+.cr-merge-row--header {
+  background: var(--background-secondary);
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cr-merge-row--different {
+  background: rgb(var(--color-yellow-rgb) / 5%);
+}
+
+.cr-merge-cell {
+  font-size: var(--font-ui-small);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.cr-merge-cell--field {
+  font-weight: 500;
+  color: var(--text-normal);
+}
+
+.cr-merge-cell--staging,
+.cr-merge-cell--main {
+  color: var(--text-normal);
+}
+
+.cr-merge-cell--choice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cr-merge-empty {
+  color: var(--text-faint);
+  font-style: italic;
+}
+
+.cr-merge-same {
+  color: var(--color-green);
+  font-weight: 600;
+}
+
+.cr-merge-select {
+  width: 100%;
+  padding: var(--size-2-1) var(--size-2-2);
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  color: var(--text-normal);
+  font-size: var(--font-ui-smaller);
+  cursor: pointer;
+}
+
+.cr-merge-select:focus {
+  border-color: var(--interactive-accent);
+  outline: none;
+}
+
+/* ==========================================================================
+   INFO SECTION
+   ========================================================================== */
+
+.cr-merge-info {
+  margin-bottom: var(--size-4-4);
+  padding: var(--size-4-3);
+  background: var(--background-secondary);
+  border-radius: var(--radius-m);
+}
+
+.cr-merge-info__title {
+  margin: 0 0 var(--size-4-2);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  font-weight: 600;
+}
+
+.cr-merge-info__list {
+  margin: 0;
+  padding-left: var(--size-4-4);
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.cr-merge-info__list li {
+  margin-bottom: var(--size-2-2);
+}
+
+.cr-merge-info__list li:last-child {
+  margin-bottom: 0;
+}
+
+/* ==========================================================================
+   ACTION BUTTONS
+   ========================================================================== */
+
+.cr-merge-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--size-4-2);
+}
+
+.cr-merge-btn {
+  padding: var(--size-2-2) var(--size-4-3);
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  cursor: pointer;
+}
+
+.cr-merge-btn:hover {
+  background: var(--background-modifier-hover);
+}
+
+.cr-merge-btn--secondary {
+  background: var(--background-primary);
+  color: var(--text-normal);
+}
+
+/* `mod-cta` is Obsidian's built-in primary-button class — already styled
+ * by the framework, so the Merge button needs no further rules. */
+
+/* ==========================================================================
+   PREVIEW MODAL
+   ========================================================================== */
+
+.cr-merge-preview {
+  --dialog-max-width: 520px;
+}
+
+.cr-merge-preview__desc {
+  margin: 0 0 var(--size-4-3);
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.cr-merge-preview__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-2);
+  margin-bottom: var(--size-4-4);
+  padding: var(--size-4-3);
+  background: var(--background-secondary);
+  border-radius: var(--radius-m);
+}
+
+.cr-merge-preview__row {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.4fr) 1fr;
+  gap: var(--size-4-2);
+  font-size: var(--font-ui-small);
+}
+
+.cr-merge-preview__label {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.cr-merge-preview__value {
+  color: var(--text-normal);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 700px) {
+  .cr-merge-wizard {
+    --dialog-max-width: 100%;
+  }
+
+  .cr-merge-files {
+    grid-template-columns: 1fr;
+  }
+
+  /* On narrow viewports, drop to two columns: field label spans the full
+   * row, both record values share the next row, and the choice control
+   * spans the full final row. Keeps the wizard usable on phones. */
+  .cr-merge-row {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--size-4-1);
+  }
+
+  .cr-merge-cell--field {
+    grid-column: 1 / -1;
+    padding-bottom: var(--size-2-1);
+    border-bottom: 1px solid var(--background-modifier-border);
+  }
+
+  .cr-merge-cell--choice {
+    grid-column: 1 / -1;
+  }
+}
