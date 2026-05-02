@@ -151,6 +151,11 @@ Comprehensive list. Tier indicates ship priority (P0 ships first, P2 fills out t
 | `map-an-ancestor-life` | I want to map an ancestor's life | P1 |
 | `generate-family-group-sheet` | I want to generate a family group sheet | P1 |
 | `assemble-family-history-book` | I want to assemble a family history book | P1 |
+| `add-new-family-member` | I want to add a new family member (e.g., a new baby) | P1 |
+| `delete-and-clean-up-references` | I want to delete a person and clean up references | P1 |
+| `generate-family-reunion-report` | I want to generate a family reunion report | P1 |
+| `onboard-non-technical-relative` | I want to help a non-technical family member get started | P1 |
+| `use-bases-for-data-analysis` | I want to filter and analyze my data with Bases | P1 |
 | `track-research-progress` | I want to track research progress on a long-term project | P2 |
 | `write-a-proof-summary` | I want to write a proof summary for a contested fact | P2 |
 | `handle-conflicting-evidence` | I want to handle conflicting evidence between two sources | P2 |
@@ -161,6 +166,11 @@ Comprehensive list. Tier indicates ship priority (P0 ships first, P2 fills out t
 | `track-dna-matches` | I want to track DNA matches and identify cousin relationships | P2 |
 | `identify-research-gaps` | I want to identify which facts in my tree need more research | P2 |
 | `set-up-staging-workflow` | I want to set up a staging workflow for messy imports | P2 |
+| `research-enslaved-ancestors` | I want to research enslaved ancestors (Beyond Kin methodology) | P2 |
+| `conduct-one-name-study` | I want to conduct a one-name study | P2 |
+| `analyze-fan-clusters` | I want to analyze FAN clusters to break through a brick wall | P2 |
+| `research-historical-figure` | I want to research a historical figure | P2 |
+| `document-local-cemetery` | I want to document a local cemetery | P2 |
 
 ### Worldbuilding track
 
@@ -180,11 +190,14 @@ Comprehensive list. Tier indicates ship priority (P0 ships first, P2 fills out t
 | `generate-timeline-of-events` | I want to generate a calendar-spanning timeline of events | P2 |
 | `cross-genre-historical-fiction` | I want to track historical fiction (real + fictional people) | P2 |
 | `share-universe-bible-with-collaborators` | I want to share my worldbuilding bible with collaborators | P2 |
+| `manage-characters-for-creative-project` | I want to manage characters for a creative project (novel or TTRPG) | P2 |
 
 **P0 totals:** 5 research + 4 worldbuilding = 9 guides.
-**P1 totals:** 9 research + 6 worldbuilding = 15 guides.
-**P2 totals:** 10 research + 4 worldbuilding = 14 guides.
-**Grand total:** 38 guides if the catalog ships in full.
+**P1 totals:** 14 research + 6 worldbuilding = 20 guides.
+**P2 totals:** 15 research + 5 worldbuilding = 20 guides.
+**Grand total:** 49 guides if the catalog ships in full.
+
+The P1 / P2 expansion incorporates community use cases sourced from `wiki-content/Community-Use-Cases.md`. New entries cover operational needs (add new family member, delete and clean up, family reunion report), supporter onboarding, Bases analysis, specialized research methodologies (Beyond Kin, one-name studies, FAN clusters), the historian persona (researching figures, cemeteries), and creative-project character management (collapses the novel + TTRPG cases into one guide with variations).
 
 ---
 
