@@ -135,7 +135,7 @@ Concrete things to verify, file, or decide separately from drafting the P2 guide
 
 - [x] **Hoitink `research_level` property** — ✅ Fully shipped: 0-6 scale matching Hoitink's Six Levels, "not assessed" = unset (distinct from level 0). Used across reports, family chart view, GEDCOM exporter, person-note-writer, family-graph, brick-wall report. Documented in Frontmatter Reference wiki at line 179. P2 progress-tracking guide can reference current behavior without caveats.
 - [x] **239-vs-24-notes Research Gaps confusion (Discussion #48)** — ✅ Already fixed via #54 "[Bug] Research Gaps Showing Inflated Unsourced Facts Count" (closed, released). Fix scopes the count to "only count unsourced facts for people actively using GPS tracking." The gaps guide can document current correct behavior without needing to address the historical confusion.
-- [ ] **Negative-findings parsing (#305)** — confirm `charted-roots-negative-findings` block is shipped and works on wilbry's documented log format. Verification pending.
+- [x] **Negative-findings parsing (#305)** — ✅ Fully shipped: `charted-roots-negative-findings` block scans three sources (`research_log_entry` frontmatter, `research_journal` markdown, and `research_report` `## Research Log` sections — the third path was added by #305 itself). Wiki documented at `Dynamic-Note-Content.md` and `Research-Workflow.md`. P2 progress-tracking guide can reference both the block syntax and wilbry's "report as living log" format as supported parsing.
 
 ### Deferred FRs from #193 — filed 2026-05-02
 
