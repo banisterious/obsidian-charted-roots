@@ -2,15 +2,25 @@
 title: "I want to handle conflicting evidence between two sources"
 description: Reconcile contradictory sources using Mills' three-axis classification — source, information, evidence — and capture the resolution as a proof summary so the reasoning survives.
 track: research
-difficulty: advanced
-time_estimate: ~30+ min per conflict
-last_reviewed: 2026-05-02
+difficulty: medium
+time_estimate: ~10 min to understand the framework; 30+ min to apply to a specific conflict
+last_reviewed: 2026-05-03
 relevant_releases: 0.22.17
 ---
 
 # I want to handle conflicting evidence between two sources
 
-Use this when two sources tell you different things about the same fact — two census records giving different birth years, a death certificate and a tombstone disagreeing on a date, a family Bible contradicting a baptism record. Per the Genealogical Proof Standard, conflicts must be *resolved*, not ignored. By the end of this guide, you'll have classified each source on Mills' three independent axes (source / information / evidence), weighed them on actual analytical merit rather than vibes, and captured the resolution as a proof summary that any later reviewer (including future you) can follow.
+Use this when two sources tell you different things about the same fact — two census records giving different birth years, a tombstone contradicting a death certificate, a family Bible against a baptism record. Per the Genealogical Proof Standard, conflicts must be *resolved*, not ignored. This guide walks through Mills' three-axis framework for doing that, and how to capture the resolution as a proof summary that holds up to review.
+
+## At a glance: five patterns for reconciling conflicts
+
+- **Direct beats indirect** — a birth certificate outweighs a census age implying a year
+- **Primary beats secondary** — the person who was there outweighs the one reporting later
+- **Original beats derivative** — the original document outweighs a transcription of it
+- **Contemporary beats retrospective** — created at the time beats created from memory
+- **Negative evidence narrows the field** — a meaningful absence is real evidence too
+
+The rest of this guide walks through how to identify which axis applies to a specific conflict and how to capture the resolution.
 
 ## What you'll need
 
@@ -123,3 +133,4 @@ Control Center → Data Quality tab → **Source conflicts** card displays a cou
 - Pairs intentionally with `write-a-proof-summary` using the same William Anderson birth-year fixture. Cross-link is bidirectional.
 - The three-axis framing is the load-bearing piece. ANYroots and wilbry both think in those terms; users coming from a one-axis (`source_quality` only) mental model need this guide to upgrade.
 - Step 6 is precise about what the Data Quality "Source conflicts" card actually counts — proof summaries with status `conflicted` and at least one `conflicts` evidence item — to avoid false expectation that it auto-detects conflicts from raw source notes.
+- **2026-05-03 light edit pass** in response to GA scroll-depth data showing 0% read-through (5 viewers, 0 hit 90% scroll). Three changes applied: lede compressed (~80 → ~60 words), new "At a glance" section hoists the five reconciliation patterns above What you'll need (so skim-readers get the load-bearing takeaway without committing to the whole guide), and frontmatter framing softened (`difficulty: advanced` → `medium`, `time_estimate` split into "10 min to understand / 30+ min to apply"). The patterns also still appear with full explanations in step 4 — duplication is intentional (top is cheat sheet, step 4 is reasoning).
