@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.18] - 2026-05-03
+
+Four rendering / consistency fixes. Two were surfaced while authoring the new chartedroots.com [/guides/](https://chartedroots.com/guides/) section: the Merge Wizard component creates ~20 distinct `cr-merge-*` classes but had no CSS file defining any of them ([#514](https://github.com/banisterious/obsidian-charted-roots/issues/514)), and the People base's Spouse(s) column was empty for users following the recommended indexed-spouse pattern ([#516](https://github.com/banisterious/obsidian-charted-roots/issues/516)). The other two are a metadata-cache race that left newly-created notes invisible to the Entity Profile pane until something else invalidated the cache ([#519](https://github.com/banisterious/obsidian-charted-roots/issues/519)), and raw `[[wikilink]]` syntax leaking into PDF/ODT output from Book Builder report chapters ([#522](https://github.com/banisterious/obsidian-charted-roots/issues/522)). All non-data-loss; stability window stays anchored to 0.22.17 (one patch in). 589 tests passing across 49 suites. Reporter: @DigitalDreamn for [#519](https://github.com/banisterious/obsidian-charted-roots/issues/519); @banisterious for the rest.
+
 ### Fixed
 
 - **Merge Wizard renders as the intended 4-column comparison table** ([#514](https://github.com/banisterious/obsidian-charted-roots/issues/514)): The Merge Wizard component created ~20 distinct `cr-merge-*` class names but no CSS file ever defined any of them — layout fell back to default block flow, stacking each field / value / value / dropdown vertically instead of as a side-by-side comparison. New `styles/merge-wizard.css` wires up the side-by-side grid the component was always built to use, plus styling for the conflict dropdowns and the preview panel. While in there: the People base's "Multiple marriages" view filter was checking `!isEmpty(spouses_all)` ("has at least one"), corrected to `length > 1` ("actually multiple"). Surfaced while authoring the [find-and-merge-duplicates guide](https://chartedroots.com/guides/research/find-and-merge-duplicates/).
