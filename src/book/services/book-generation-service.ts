@@ -29,43 +29,9 @@ import type {
 	NameIndexEntry,
 } from '../types/book-types';
 import { getLogger } from '../../core/logging';
+import { sanitizeVaultNoteMarkdown } from './sanitize-markdown';
 
 const logger = getLogger('BookGenerationService');
-
-/**
- * Strip YAML frontmatter from markdown content.
- */
-function stripFrontmatter(content: string): string {
-	const match = content.match(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/);
-	if (match) {
-		return content.slice(match[0].length);
-	}
-	return content;
-}
-
-/**
- * Strip wikilinks, keeping display text or link target.
- */
-function stripWikilinks(content: string): string {
-	return content.replace(/\[\[([^\]|]+)(\|([^\]]+))?\]\]/g, (_match, target, _pipe, alias) => alias || target);
-}
-
-/**
- * Strip charted-roots dynamic code blocks that won't render in a document.
- */
-function stripDynamicBlocks(content: string): string {
-	return content.replace(/```charted-roots-[\s\S]*?```/g, '');
-}
-
-/**
- * Sanitize vault note markdown for document rendering.
- */
-function sanitizeVaultNoteMarkdown(rawContent: string): string {
-	let content = stripFrontmatter(rawContent);
-	content = stripWikilinks(content);
-	content = stripDynamicBlocks(content);
-	return content.trim();
-}
 
 export class BookGenerationService {
 	private app: App;
@@ -279,12 +245,20 @@ export class BookGenerationService {
 			};
 		}
 
+		// Sanitize report markdown for static export (#522): report
+		// generators emit raw [[wikilink]] syntax intended for in-vault
+		// rendering, which leaks as literal text into PDF/ODT output.
+		// Same sanitization the vault-note path already uses.
+		const sanitizedMarkdown = result.content
+			? sanitizeVaultNoteMarkdown(result.content)
+			: result.content;
+
 		return {
 			chapterId: chapter.id,
 			chapterTitle: chapter.title,
 			chapterType: chapter.type,
 			success: true,
-			markdown: result.content,
+			markdown: sanitizedMarkdown,
 			warnings: result.warnings,
 		};
 	}
