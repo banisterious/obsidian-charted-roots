@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.18 Round-Up: Profile-Pane Cache Race and Three Rendering Fixes](#v02218-round-up-profile-pane-cache-race-and-three-rendering-fixes-v02218)
   - [v0.22.17 Round-Up: Edit Person Hardening and a Citation Surface Promotion](#v02217-round-up-edit-person-hardening-and-a-citation-surface-promotion-v02217)
   - [v0.22.16 Round-Up: Modal Polish, Marriage Popup Parity, and Filename Casing](#v02216-round-up-modal-polish-marriage-popup-parity-and-filename-casing-v02216)
   - [v0.22.15 Round-Up: Universe Rename Cascade Coverage and Marriage Popup Partner Age](#v02215-round-up-universe-rename-cascade-coverage-and-marriage-popup-partner-age-v02215)
@@ -156,6 +157,41 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.18 Round-Up: Profile-Pane Cache Race and Three Rendering Fixes (v0.22.18)
+
+Four fixes refining rendering and state-sync across the Merge Wizard, the Bases People base, the Entity Profile pane, and Book Builder report output. **The Merge Wizard** had no CSS file at all — the component creates ~20 distinct `cr-merge-*` class names that never had a matching style, so layout fell back to default block flow ([#514](https://github.com/banisterious/obsidian-charted-roots/issues/514)). **The People base's Spouse(s) column** was empty for users following the recommended indexed-spouse pattern (`spouse1`, `spouse2`, etc.) because the column mapped directly to `note.spouse` only ([#516](https://github.com/banisterious/obsidian-charted-roots/issues/516)). **The Entity Profile pane** showed "Could not load entity data" for newly-created notes until the user navigated away and back — a metadata-cache race in `EventService`, `SourceService`, and `ProofSummaryService` ([#519](https://github.com/banisterious/obsidian-charted-roots/issues/519)). And **Book Builder report chapters** leaked raw `[[wikilink]]` syntax into PDF/ODT output because the report path skipped the sanitizer the vault-note path already used ([#522](https://github.com/banisterious/obsidian-charted-roots/issues/522)).
+
+Two of the four (#514 and #516) surfaced while authoring the new chartedroots.com [/guides/](https://chartedroots.com/guides/) section — guide-authoring as a bug-discovery channel turned out to be valuable for hitting workflows the maintainer doesn't otherwise exercise daily. #519 was reported by @DigitalDreamn after creating a new event note and seeing the profile pane fail to update; the same audit pattern revealed identical race conditions in `SourceService` and `ProofSummaryService` that hadn't been reported but were waiting to fire. **Stability window stays anchored to 0.22.17** (one patch in since the 2026-05-01 anchor reset). All four fixes non-data-loss.
+
+**Fix: Merge Wizard renders as the intended 4-column comparison table** ([#514](https://github.com/banisterious/obsidian-charted-roots/issues/514)):
+- `styles/merge-wizard.css` (new, 276 lines) + `build-css.js` — the Merge Wizard component creates ~20 distinct `cr-merge-*` class names but no CSS file ever defined any of them. Layout fell back to default block flow — each field/value/value/dropdown stacked vertically instead of laying out as the intended 4-column side-by-side comparison. Includes a responsive breakpoint at 700px that collapses the four-column grid into a stacked layout for narrow viewports.
+- `src/constants/base-template.ts` — while in there, the People base's "Multiple marriages" view filter was checking `!isEmpty(spouses_all)` ("has at least one"), corrected to `length > 1` ("actually multiple"). Surfaced while authoring the [find-and-merge-duplicates guide](https://chartedroots.com/guides/research/find-and-merge-duplicates/).
+
+**Fix: People base's Spouse(s) column shows all spouses for users following the indexed-spouse pattern** ([#516](https://github.com/banisterious/obsidian-charted-roots/issues/516)):
+- `src/constants/base-template.ts` — the column mapped directly to `note.spouse` only, so vaults using the recommended indexed pattern (`spouse1`, `spouse2`, etc.) saw an empty column even when multiple spouses were recorded. New `spouses_all` formula aggregates the flat `spouse` plus `spouse1` through `spouse5` and filters empties: `[note.spouse, note.spouse1, ...spouse5].flat().filter(!value.isEmpty())`. Both single-spouse and multi-marriage households render correctly. Existing user vaults need to recreate their `people.base` to pick up the new template. Surfaced while authoring the [use-bases-for-data-analysis guide](https://chartedroots.com/guides/research/use-bases-for-data-analysis/).
+
+**Fix: Entity Profile pane stops showing "Could not load entity data" for newly-created entities** ([#519](https://github.com/banisterious/obsidian-charted-roots/issues/519)):
+- `src/events/services/event-service.ts` + `src/sources/services/source-service.ts` + `src/sources/services/proof-summary-service.ts` — each service loaded its cache lazily and invalidated on writes, but didn't react to Obsidian indexing the new file later. After `createEvent` (or `createSource`, or `createProof`), a read between the write and Obsidian's metadata catch-up silently skipped the new file (`app.metadataCache.getFileCache(newFile)?.frontmatter` returns `undefined` until indexing completes) and marked the cache valid without it. The cache stayed poisoned until something external invalidated. Each service now has a `setupVaultListeners(plugin)` method that subscribes to `metadataCache.on('changed')` plus vault `delete` / `rename`, invalidating when a relevant `cr_type` file moves through the index.
+- `main.ts` — `ProofSummaryService` hoisted to a singleton via a new `getProofSummaryService()` getter (was previously constructed per-render at 5 sites — singleton needed so the metadata-cache listeners persist for the plugin lifetime). Five consumer sites updated to use the getter: `src/profile-view/profile-data-loader.ts`, `src/ui/data-quality-tab.ts` (×2), `src/ui/people-tab.ts`, `src/sources/ui/create-proof-modal.ts`, plus `populateConflictCounts` in `main.ts` itself.
+- `tests/mocks/obsidian.ts` — extended with `MetadataCache.on('changed' / 'resolve' / 'resolved')` event support and a minimal `Plugin` class with `registerEvent()` so the regression tests can exercise the listener path. 15 new tests across `tests/event-service-cache-race.test.ts`, `tests/source-service-cache-race.test.ts`, `tests/proof-summary-service-cache-race.test.ts` — the race repro, delete handling, rename handling, cross-type isolation, listener-count assertion. Reported by @DigitalDreamn.
+
+**Fix: Report chapters in Book Builder no longer leak raw `[[wikilink]]` syntax into PDF/ODT output** ([#522](https://github.com/banisterious/obsidian-charted-roots/issues/522)):
+- `src/book/services/book-generation-service.ts` — `BookGenerationService` already sanitized vault-note chapter content through a `sanitizeVaultNoteMarkdown` helper that strips wikilinks, frontmatter, and dynamic blocks, but the report chapter path stored the report generator's markdown into the chapter directly with no sanitization. Report generators (`FamilyGroupSheetGenerator`, `IndividualSummaryGenerator`, `SourceSummaryGenerator`, `SourcesByRoleGenerator`) emit raw `[[Name]]` syntax intentionally for in-vault rendering, which the static export renderer then displayed as literal text. `generateReportChapter` now applies the same sanitizer.
+- `src/book/services/sanitize-markdown.ts` (new) — helpers extracted from `book-generation-service.ts` into a standalone module with no app imports, so the regression tests can fence the sanitizer's contract without dragging in the Obsidian `Modal` class transitively. The standalone-PDF report path was unaffected because `pdf-report-renderer.ts` had its own `stripWikilinks` method and called it at render time.
+- 7 new tests in `tests/book-sanitize-report-markdown.test.ts` — simple wikilinks, piped wikilinks, table-cell wikilinks, multi-link lines, non-wikilink bracket safety, frontmatter stripping, dynamic-block stripping. Realistic Family Group Sheet shaped input.
+
+**Testing:** 22 new tests, suite total 589 (was 567 at start of cycle), 49 suites.
+- `tests/event-service-cache-race.test.ts` (5 tests, #519) — race repro after `createEvent` (cache reloads once `metadataCache.on('changed')` fires for the new file), delete invalidates, rename invalidates, non-event file changes don't invalidate, three event listeners registered on the plugin.
+- `tests/source-service-cache-race.test.ts` (5 tests, #519) — same shape against `SourceService.createSource`.
+- `tests/proof-summary-service-cache-race.test.ts` (5 tests, #519) — same shape against `ProofSummaryService.createProof`.
+- `tests/book-sanitize-report-markdown.test.ts` (7 tests, #522) — sanitizer contract against realistic report-shaped markdown.
+
+**Reporters:** @DigitalDreamn for [#519](https://github.com/banisterious/obsidian-charted-roots/issues/519) (with detailed reproduction + console capture that made the metadata-cache trace fast). @banisterious for the other three, two surfaced while authoring the new /guides/ section.
+
+**Stability-window impact:** no reset — all four changes are non-data-loss. Window continues from 0.22.17's anchor: 2026-05-01 → ~2026-05-22. First patch in since the reset.
+
+---
 
 ### v0.22.17 Round-Up: Edit Person Hardening and a Citation Surface Promotion (v0.22.17)
 
