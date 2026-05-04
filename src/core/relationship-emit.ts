@@ -48,12 +48,12 @@ export interface RelationshipArrayPatch {
 export function computeRelationshipArrayPatch(
 	names: string[] | undefined,
 	ids: string[],
-	wikilinker: (name: string) => string
+	wikilinker: (name: string, id?: string) => string
 ): RelationshipArrayPatch {
 	if (names && names.length === ids.length) {
 		const nameValue = names.length === 1
-			? wikilinker(names[0])
-			: names.map(wikilinker);
+			? wikilinker(names[0], ids[0])
+			: names.map((name, i) => wikilinker(name, ids[i]));
 
 		const hasAnyResolvedId = ids.some(id => id);
 		const idValue = hasAnyResolvedId

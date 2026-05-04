@@ -138,12 +138,12 @@ export async function createPlaceNote(
 
 	// Parent place (dual storage)
 	if (place.parentPlaceId && place.parentPlace) {
-		frontmatter[prop('parent_place')] = createSmartWikilink(place.parentPlace, app);
+		frontmatter[prop('parent_place')] = createSmartWikilink(place.parentPlace, app, place.parentPlaceId);
 		frontmatter.parent_place_id = place.parentPlaceId;
 	} else if (place.parentPlaceId) {
 		frontmatter.parent_place_id = place.parentPlaceId;
 	} else if (place.parentPlace) {
-		frontmatter[prop('parent_place')] = createSmartWikilink(place.parentPlace, app);
+		frontmatter[prop('parent_place')] = createSmartWikilink(place.parentPlace, app, place.parentPlaceId);
 	}
 
 	// Coordinates (only for real/historical/disputed places) - flat properties
@@ -303,7 +303,7 @@ export async function updatePlaceNote(
 			}
 		}
 		if (updates.parentPlace !== undefined) {
-			frontmatter.parent_place = createWikilink(updates.parentPlace, app);
+			frontmatter.parent_place = createWikilink(updates.parentPlace, app, updates.parentPlaceId);
 		}
 		if (updates.parentPlaceId !== undefined) {
 			frontmatter.parent_place_id = updates.parentPlaceId;
@@ -491,13 +491,25 @@ function isCoordinatesApplicable(category?: PlaceCategory): boolean {
  * @param name The display name
  * @param app The Obsidian app instance for file resolution
  */
-function createSmartWikilink(name: string, app: App): string {
+function createSmartWikilink(name: string, app: App, crId?: string): string {
 	// If already a wikilink, quote and return as-is
 	if (name.startsWith('[[') && name.endsWith(']]')) {
 		return `"${name}"`;
 	}
 
-	// Try to resolve the name to a file
+	// Preferred path: when caller provides cr_id, look up the file by cr_id
+	// to derive the basename directly. Mirrors person-note-writer's #524 fix.
+	if (crId) {
+		const fileById = findFileByCrId(app, crId);
+		if (fileById) {
+			if (fileById.basename !== name) {
+				return `"[[${fileById.basename}|${name}]]"`;
+			}
+			return `"[[${name}]]"`;
+		}
+	}
+
+	// Fallback: try to resolve the name to a file
 	const resolvedFile = app.metadataCache.getFirstLinkpathDest(name, '');
 	if (resolvedFile && resolvedFile.basename !== name) {
 		return `"[[${resolvedFile.basename}|${name}]]"`;
@@ -508,11 +520,35 @@ function createSmartWikilink(name: string, app: App): string {
 }
 
 /**
+ * Resolve any cr_type note by its cr_id. Used to disambiguate wikilinks
+ * when a note's `name` frontmatter differs from its filename (#524).
+ */
+function findFileByCrId(app: App, crId: string): TFile | null {
+	for (const file of app.vault.getMarkdownFiles()) {
+		const cache = app.metadataCache.getFileCache(file);
+		if (cache?.frontmatter?.cr_id === crId) {
+			return file;
+		}
+	}
+	return null;
+}
+
+/**
  * Create a wikilink for use with processFrontMatter (no YAML quoting)
  */
-function createWikilink(name: string, app: App): string {
+function createWikilink(name: string, app: App, crId?: string): string {
 	if (name.startsWith('[[') && name.endsWith(']]')) {
 		return name;
+	}
+
+	if (crId) {
+		const fileById = findFileByCrId(app, crId);
+		if (fileById) {
+			if (fileById.basename !== name) {
+				return `[[${fileById.basename}|${name}]]`;
+			}
+			return `[[${name}]]`;
+		}
 	}
 
 	const resolvedFile = app.metadataCache.getFirstLinkpathDest(name, '');

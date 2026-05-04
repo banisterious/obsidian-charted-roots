@@ -205,9 +205,29 @@ export class Vault {
 export class MetadataCache {
 	private cache = new Map<string, CachedMetadata>();
 	private listeners = new Map<MetadataCacheEventName, Set<EventRef>>();
+	private vaultRef: Vault | null = null;
 
 	getFileCache(file: TFile): CachedMetadata | null {
 		return this.cache.get(file.path) ?? null;
+	}
+
+	/**
+	 * Resolve a linkpath to a file by basename (Obsidian's link resolver).
+	 * The mock attaches the vault during App construction so we can search
+	 * across all markdown files. Returns the first file whose basename
+	 * matches `linkpath`. `_sourcePath` is ignored (Obsidian uses it for
+	 * relative-link resolution; the mock doesn't model that).
+	 */
+	getFirstLinkpathDest(linkpath: string, _sourcePath: string): TFile | null {
+		if (!this.vaultRef) return null;
+		for (const file of this.vaultRef.getMarkdownFiles()) {
+			if (file.basename === linkpath) return file;
+		}
+		return null;
+	}
+
+	_attachVault(vault: Vault): void {
+		this.vaultRef = vault;
 	}
 
 	// Internal: update the cache when a file's frontmatter changes.
@@ -334,6 +354,7 @@ export class App {
 		this.metadataCache = new MetadataCache();
 		this.fileManager = new FileManager(this.vault, this.metadataCache);
 		this.vault._attachMetadataCache(this.metadataCache);
+		this.metadataCache._attachVault(this.vault);
 	}
 }
 

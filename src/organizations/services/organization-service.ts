@@ -40,13 +40,27 @@ function getWriteProperty(canonical: string, aliases: Record<string, string>): s
  * @param name The display name
  * @param app The Obsidian app instance for file resolution
  */
-function createSmartWikilink(name: string, app: App): string {
+function createSmartWikilink(name: string, app: App, crId?: string): string {
 	// If already a wikilink, return as-is
 	if (name.startsWith('[[') && name.endsWith(']]')) {
 		return name;
 	}
 
-	// Try to resolve the name to a file
+	// Preferred path: when caller provides cr_id, look up the file by cr_id
+	// to derive the basename directly. Mirrors person-note-writer's #524 fix.
+	// Org-side call sites don't carry cr_id today; signature kept consistent
+	// with the other writers so a future picker plumbing pass can use it.
+	if (crId) {
+		const fileById = findFileByCrId(app, crId);
+		if (fileById) {
+			if (fileById.basename !== name) {
+				return `[[${fileById.basename}|${name}]]`;
+			}
+			return `[[${name}]]`;
+		}
+	}
+
+	// Fallback: try to resolve the name to a file
 	const resolvedFile = app.metadataCache.getFirstLinkpathDest(name, '');
 	if (resolvedFile && resolvedFile.basename !== name) {
 		return `[[${resolvedFile.basename}|${name}]]`;
@@ -54,6 +68,20 @@ function createSmartWikilink(name: string, app: App): string {
 
 	// Standard format
 	return `[[${name}]]`;
+}
+
+/**
+ * Resolve any cr_type note by its cr_id. Used to disambiguate wikilinks
+ * when a note's `name` frontmatter differs from its filename (#524).
+ */
+function findFileByCrId(app: App, crId: string): TFile | null {
+	for (const file of app.vault.getMarkdownFiles()) {
+		const cache = app.metadataCache.getFileCache(file);
+		if (cache?.frontmatter?.cr_id === crId) {
+			return file;
+		}
+	}
+	return null;
 }
 
 /**

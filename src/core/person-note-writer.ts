@@ -46,7 +46,7 @@ function stripWikilink(text: string): string {
  * @param name The display name (can already be a wikilink)
  * @param app The Obsidian app instance for file resolution
  */
-function createSmartWikilink(name: string, app: App): string {
+export function createSmartWikilink(name: string, app: App, crId?: string): string {
 	// If already formatted as a complete wikilink, return as-is
 	// This allows callers to pass pre-constructed [[basename|display]] links
 	// that bypass name-based resolution (avoids wrong-file resolution on duplicates)
@@ -57,7 +57,23 @@ function createSmartWikilink(name: string, app: App): string {
 	// Strip existing brackets if present
 	const cleanName = stripWikilink(name);
 
-	// Try to resolve the name to a file
+	// Preferred path: when caller provides cr_id, look up the file by cr_id
+	// to derive the basename directly. This is the only reliable disambiguator
+	// when a person's `name` differs from their filename (#524). The fallback
+	// `getFirstLinkpathDest(cleanName)` below relies on `cleanName` matching
+	// some file's basename, which silently fails when name and filename diverge.
+	if (crId) {
+		const fileById = findFileByCrId(app, crId);
+		if (fileById) {
+			if (fileById.basename !== cleanName) {
+				return `[[${fileById.basename}|${cleanName}]]`;
+			}
+			return `[[${cleanName}]]`;
+		}
+		// Fall through to name-based lookup if cr_id doesn't resolve
+	}
+
+	// Fallback: try to resolve the name to a file via Obsidian's link resolver
 	const resolvedFile = app.metadataCache.getFirstLinkpathDest(cleanName, '');
 	if (resolvedFile && resolvedFile.basename !== cleanName) {
 		return `[[${resolvedFile.basename}|${cleanName}]]`;
@@ -65,6 +81,20 @@ function createSmartWikilink(name: string, app: App): string {
 
 	// Standard format
 	return `[[${cleanName}]]`;
+}
+
+/**
+ * Resolve any cr_type note by its cr_id. Used to disambiguate wikilinks
+ * when a note's `name` frontmatter differs from its filename (#524).
+ */
+function findFileByCrId(app: App, crId: string): TFile | null {
+	for (const file of app.vault.getMarkdownFiles()) {
+		const cache = app.metadataCache.getFileCache(file);
+		if (cache?.frontmatter?.cr_id === crId) {
+			return file;
+		}
+	}
+	return null;
 }
 
 /**
@@ -349,7 +379,7 @@ export async function createPersonNote(
 
 	// Birth place (dual storage: wikilink + ID for reliable resolution)
 	if (person.birthPlaceCrId && person.birthPlaceName) {
-		frontmatter[prop('birth_place')] = `"${createSmartWikilink(person.birthPlaceName, app)}"`;
+		frontmatter[prop('birth_place')] = `"${createSmartWikilink(person.birthPlaceName, app, person.birthPlaceCrId)}"`;
 		frontmatter[prop('birth_place_id')] = person.birthPlaceCrId;
 		logger.debug('birthPlace', `Added (dual): wikilink=${person.birthPlaceName}, id=${person.birthPlaceCrId}`);
 	} else if (person.birthPlace) {
@@ -360,7 +390,7 @@ export async function createPersonNote(
 
 	// Death place (dual storage: wikilink + ID for reliable resolution)
 	if (person.deathPlaceCrId && person.deathPlaceName) {
-		frontmatter[prop('death_place')] = `"${createSmartWikilink(person.deathPlaceName, app)}"`;
+		frontmatter[prop('death_place')] = `"${createSmartWikilink(person.deathPlaceName, app, person.deathPlaceCrId)}"`;
 		frontmatter[prop('death_place_id')] = person.deathPlaceCrId;
 		logger.debug('deathPlace', `Added (dual): wikilink=${person.deathPlaceName}, id=${person.deathPlaceCrId}`);
 	} else if (person.deathPlace) {
@@ -474,7 +504,7 @@ export async function createPersonNote(
 
 	// Sources (dual storage: wikilinks + _id array)
 	if (person.sourceCrIds && person.sourceCrIds.length > 0 && person.sourceNames && person.sourceNames.length > 0) {
-		frontmatter[prop('sources')] = person.sourceNames.map(name => `"${createSmartWikilink(name, app)}"`);
+		frontmatter[prop('sources')] = person.sourceNames.map((name, i) => `"${createSmartWikilink(name, app, person.sourceCrIds?.[i])}"`);
 		frontmatter[prop('sources_id')] = person.sourceCrIds;
 		logger.debug('sources', `Added ${person.sourceCrIds.length} sources`);
 	}
@@ -530,7 +560,7 @@ export async function createPersonNote(
 
 	// Father relationship (dual storage)
 	if (person.fatherCrId && person.fatherName) {
-		frontmatter[prop('father')] = `"${createSmartWikilink(person.fatherName, app)}"`;
+		frontmatter[prop('father')] = `"${createSmartWikilink(person.fatherName, app, person.fatherCrId)}"`;
 		frontmatter[prop('father_id')] = person.fatherCrId;
 		logger.debug('father', `Added (dual): wikilink=${person.fatherName}, id=${person.fatherCrId}`);
 	} else if (person.fatherCrId) {
@@ -545,7 +575,7 @@ export async function createPersonNote(
 
 	// Mother relationship (dual storage)
 	if (person.motherCrId && person.motherName) {
-		frontmatter[prop('mother')] = `"${createSmartWikilink(person.motherName, app)}"`;
+		frontmatter[prop('mother')] = `"${createSmartWikilink(person.motherName, app, person.motherCrId)}"`;
 		frontmatter[prop('mother_id')] = person.motherCrId;
 		logger.debug('mother', `Added (dual): wikilink=${person.motherName}, id=${person.motherCrId}`);
 	} else if (person.motherCrId) {
@@ -570,7 +600,7 @@ export async function createPersonNote(
 			const idx = i + 1; // 1-indexed
 
 			// Write spouse link and ID
-			frontmatter[prop(`spouse${idx}`)] = `"${createSmartWikilink(spouse.name, app)}"`;
+			frontmatter[prop(`spouse${idx}`)] = `"${createSmartWikilink(spouse.name, app, spouse.crId)}"`;
 			frontmatter[prop(`spouse${idx}_id`)] = spouse.crId;
 
 			// Write optional metadata fields
@@ -582,7 +612,7 @@ export async function createPersonNote(
 					// Drop the previously-wrapped `"${...}"` JS-string quotes — they made
 					// processFrontMatter round-trip the value into the nested-array block-list
 					// shape `[["Basename"]]`. (#513)
-					frontmatter[prop(`spouse${idx}_marriage_location`)] = createSmartWikilink(spouse.marriageLocation, app);
+					frontmatter[prop(`spouse${idx}_marriage_location`)] = createSmartWikilink(spouse.marriageLocation, app, spouse.marriageLocationCrId);
 					frontmatter[prop(`spouse${idx}_marriage_location_id`)] = spouse.marriageLocationCrId;
 				} else {
 					frontmatter[prop(`spouse${idx}_marriage_location`)] = spouse.marriageLocation;
@@ -601,10 +631,10 @@ export async function createPersonNote(
 		if (person.spouseName && person.spouseName.length === person.spouseCrId.length) {
 			// Dual storage with both names and IDs
 			if (person.spouseName.length === 1) {
-				frontmatter[prop('spouse')] = `"${createSmartWikilink(person.spouseName[0], app)}"`;
+				frontmatter[prop('spouse')] = `"${createSmartWikilink(person.spouseName[0], app, person.spouseCrId?.[0])}"`;
 				frontmatter[prop('spouse_id')] = person.spouseCrId[0];
 			} else {
-				frontmatter[prop('spouse')] = person.spouseName.map(s => `"${createSmartWikilink(s, app)}"`);
+				frontmatter[prop('spouse')] = person.spouseName.map((s, i) => `"${createSmartWikilink(s, app, person.spouseCrId?.[i])}"`);
 				frontmatter[prop('spouse_id')] = person.spouseCrId;
 			}
 			logger.debug('spouse', `Added (dual): wikilinks=${JSON.stringify(person.spouseName)}, ids=${JSON.stringify(person.spouseCrId)}`);
@@ -633,10 +663,10 @@ export async function createPersonNote(
 		if (person.childName && person.childName.length === person.childCrId.length) {
 			// Dual storage with both names and IDs
 			if (person.childName.length === 1) {
-				frontmatter[prop('children')] = `"${createSmartWikilink(person.childName[0], app)}"`;
+				frontmatter[prop('children')] = `"${createSmartWikilink(person.childName[0], app, person.childCrId?.[0])}"`;
 				frontmatter[prop('children_id')] = person.childCrId[0];
 			} else {
-				frontmatter[prop('children')] = person.childName.map(c => `"${createSmartWikilink(c, app)}"`);
+				frontmatter[prop('children')] = person.childName.map((c, i) => `"${createSmartWikilink(c, app, person.childCrId?.[i])}"`);
 				frontmatter[prop('children_id')] = [...person.childCrId]; // Make a copy to avoid reference issues
 			}
 			logger.debug('children', `Added (dual): wikilinks=${JSON.stringify(person.childName)}, ids=${JSON.stringify(person.childCrId)}`);
@@ -658,10 +688,10 @@ export async function createPersonNote(
 	if (person.stepfatherCrId && person.stepfatherCrId.length > 0) {
 		if (person.stepfatherName && person.stepfatherName.length === person.stepfatherCrId.length) {
 			if (person.stepfatherName.length === 1) {
-				frontmatter[prop('stepfather')] = `"${createSmartWikilink(person.stepfatherName[0], app)}"`;
+				frontmatter[prop('stepfather')] = `"${createSmartWikilink(person.stepfatherName[0], app, person.stepfatherCrId?.[0])}"`;
 				frontmatter[prop('stepfather_id')] = person.stepfatherCrId[0];
 			} else {
-				frontmatter[prop('stepfather')] = person.stepfatherName.map(s => `"${createSmartWikilink(s, app)}"`);
+				frontmatter[prop('stepfather')] = person.stepfatherName.map((s, i) => `"${createSmartWikilink(s, app, person.stepfatherCrId?.[i])}"`);
 				frontmatter[prop('stepfather_id')] = person.stepfatherCrId;
 			}
 			logger.debug('stepfather', `Added (dual): wikilinks=${JSON.stringify(person.stepfatherName)}, ids=${JSON.stringify(person.stepfatherCrId)}`);
@@ -679,10 +709,10 @@ export async function createPersonNote(
 	if (person.stepmotherCrId && person.stepmotherCrId.length > 0) {
 		if (person.stepmotherName && person.stepmotherName.length === person.stepmotherCrId.length) {
 			if (person.stepmotherName.length === 1) {
-				frontmatter[prop('stepmother')] = `"${createSmartWikilink(person.stepmotherName[0], app)}"`;
+				frontmatter[prop('stepmother')] = `"${createSmartWikilink(person.stepmotherName[0], app, person.stepmotherCrId?.[0])}"`;
 				frontmatter[prop('stepmother_id')] = person.stepmotherCrId[0];
 			} else {
-				frontmatter[prop('stepmother')] = person.stepmotherName.map(s => `"${createSmartWikilink(s, app)}"`);
+				frontmatter[prop('stepmother')] = person.stepmotherName.map((s, i) => `"${createSmartWikilink(s, app, person.stepmotherCrId?.[i])}"`);
 				frontmatter[prop('stepmother_id')] = person.stepmotherCrId;
 			}
 			logger.debug('stepmother', `Added (dual): wikilinks=${JSON.stringify(person.stepmotherName)}, ids=${JSON.stringify(person.stepmotherCrId)}`);
@@ -699,7 +729,7 @@ export async function createPersonNote(
 	// Adoptive father relationship (dual storage)
 	if (person.adoptiveFatherCrId) {
 		if (person.adoptiveFatherName) {
-			frontmatter[prop('adoptive_father')] = `"${createSmartWikilink(person.adoptiveFatherName, app)}"`;
+			frontmatter[prop('adoptive_father')] = `"${createSmartWikilink(person.adoptiveFatherName, app, person.adoptiveFatherCrId)}"`;
 			frontmatter[prop('adoptive_father_id')] = person.adoptiveFatherCrId;
 			logger.debug('adoptive_father', `Added (dual): wikilink=${person.adoptiveFatherName}, id=${person.adoptiveFatherCrId}`);
 		} else {
@@ -711,7 +741,7 @@ export async function createPersonNote(
 	// Adoptive mother relationship (dual storage)
 	if (person.adoptiveMotherCrId) {
 		if (person.adoptiveMotherName) {
-			frontmatter[prop('adoptive_mother')] = `"${createSmartWikilink(person.adoptiveMotherName, app)}"`;
+			frontmatter[prop('adoptive_mother')] = `"${createSmartWikilink(person.adoptiveMotherName, app, person.adoptiveMotherCrId)}"`;
 			frontmatter[prop('adoptive_mother_id')] = person.adoptiveMotherCrId;
 			logger.debug('adoptive_mother', `Added (dual): wikilink=${person.adoptiveMotherName}, id=${person.adoptiveMotherCrId}`);
 		} else {
@@ -727,14 +757,14 @@ export async function createPersonNote(
 			// parents_id entirely if every entry is empty (#410)
 			const hasAnyResolvedId = person.parentCrId.some(id => id);
 			if (person.parentName.length === 1) {
-				frontmatter[prop('parents')] = `"${createSmartWikilink(person.parentName[0], app)}"`;
+				frontmatter[prop('parents')] = `"${createSmartWikilink(person.parentName[0], app, person.parentCrId?.[0])}"`;
 				if (hasAnyResolvedId) {
 					frontmatter[prop('parents_id')] = person.parentCrId[0];
 				} else {
 					delete frontmatter[prop('parents_id')];
 				}
 			} else {
-				frontmatter[prop('parents')] = person.parentName.map(p => `"${createSmartWikilink(p, app)}"`);
+				frontmatter[prop('parents')] = person.parentName.map((p, i) => `"${createSmartWikilink(p, app, person.parentCrId?.[i])}"`);
 				if (hasAnyResolvedId) {
 					frontmatter[prop('parents_id')] = person.parentCrId;
 				} else {
@@ -1658,10 +1688,10 @@ export async function updatePersonNote(
 		// Handle birth place (dual storage: wikilink + ID)
 		if (person.birthPlaceCrId !== undefined || person.birthPlaceName !== undefined) {
 			if (person.birthPlaceCrId && person.birthPlaceName) {
-				frontmatter.birth_place = `${createSmartWikilink(person.birthPlaceName, app)}`;
+				frontmatter.birth_place = `${createSmartWikilink(person.birthPlaceName, app, person.birthPlaceCrId)}`;
 				frontmatter.birth_place_id = person.birthPlaceCrId;
 			} else if (person.birthPlaceName) {
-				frontmatter.birth_place = `${createSmartWikilink(person.birthPlaceName, app)}`;
+				frontmatter.birth_place = `${createSmartWikilink(person.birthPlaceName, app, person.birthPlaceCrId)}`;
 				delete frontmatter.birth_place_id;
 			} else {
 				// Clear birth place
@@ -1680,10 +1710,10 @@ export async function updatePersonNote(
 		// Handle death place (dual storage: wikilink + ID)
 		if (person.deathPlaceCrId !== undefined || person.deathPlaceName !== undefined) {
 			if (person.deathPlaceCrId && person.deathPlaceName) {
-				frontmatter.death_place = `${createSmartWikilink(person.deathPlaceName, app)}`;
+				frontmatter.death_place = `${createSmartWikilink(person.deathPlaceName, app, person.deathPlaceCrId)}`;
 				frontmatter.death_place_id = person.deathPlaceCrId;
 			} else if (person.deathPlaceName) {
-				frontmatter.death_place = `${createSmartWikilink(person.deathPlaceName, app)}`;
+				frontmatter.death_place = `${createSmartWikilink(person.deathPlaceName, app, person.deathPlaceCrId)}`;
 				delete frontmatter.death_place_id;
 			} else {
 				// Clear death place
@@ -1720,7 +1750,7 @@ export async function updatePersonNote(
 		// Handle sources (dual storage: wikilinks + _id array)
 		if (person.sourceCrIds !== undefined || person.sourceNames !== undefined) {
 			if (person.sourceCrIds && person.sourceCrIds.length > 0 && person.sourceNames && person.sourceNames.length > 0) {
-				frontmatter.sources = person.sourceNames.map(name => `${createSmartWikilink(name, app)}`);
+				frontmatter.sources = person.sourceNames.map((name, i) => `${createSmartWikilink(name, app, person.sourceCrIds?.[i])}`);
 				frontmatter.sources_id = person.sourceCrIds;
 			} else {
 				// Clear sources
@@ -1744,12 +1774,12 @@ export async function updatePersonNote(
 		// Handle father relationship
 		if (person.fatherCrId !== undefined || person.fatherName !== undefined) {
 			if (person.fatherCrId && person.fatherName) {
-				frontmatter.father = `${createSmartWikilink(person.fatherName, app)}`;
+				frontmatter.father = `${createSmartWikilink(person.fatherName, app, person.fatherCrId)}`;
 				frontmatter.father_id = person.fatherCrId;
 			} else if (person.fatherCrId) {
 				frontmatter.father_id = person.fatherCrId;
 			} else if (person.fatherName) {
-				frontmatter.father = `${createSmartWikilink(person.fatherName, app)}`;
+				frontmatter.father = `${createSmartWikilink(person.fatherName, app, person.fatherCrId)}`;
 			} else {
 				// Clear father
 				delete frontmatter.father;
@@ -1760,12 +1790,12 @@ export async function updatePersonNote(
 		// Handle mother relationship
 		if (person.motherCrId !== undefined || person.motherName !== undefined) {
 			if (person.motherCrId && person.motherName) {
-				frontmatter.mother = `${createSmartWikilink(person.motherName, app)}`;
+				frontmatter.mother = `${createSmartWikilink(person.motherName, app, person.motherCrId)}`;
 				frontmatter.mother_id = person.motherCrId;
 			} else if (person.motherCrId) {
 				frontmatter.mother_id = person.motherCrId;
 			} else if (person.motherName) {
-				frontmatter.mother = `${createSmartWikilink(person.motherName, app)}`;
+				frontmatter.mother = `${createSmartWikilink(person.motherName, app, person.motherCrId)}`;
 			} else {
 				// Clear mother
 				delete frontmatter.mother;
@@ -1776,12 +1806,12 @@ export async function updatePersonNote(
 		// Handle adoptive father relationship (#390)
 		if (person.adoptiveFatherCrId !== undefined || person.adoptiveFatherName !== undefined) {
 			if (person.adoptiveFatherCrId && person.adoptiveFatherName) {
-				frontmatter.adoptive_father = `${createSmartWikilink(person.adoptiveFatherName, app)}`;
+				frontmatter.adoptive_father = `${createSmartWikilink(person.adoptiveFatherName, app, person.adoptiveFatherCrId)}`;
 				frontmatter.adoptive_father_id = person.adoptiveFatherCrId;
 			} else if (person.adoptiveFatherCrId) {
 				frontmatter.adoptive_father_id = person.adoptiveFatherCrId;
 			} else if (person.adoptiveFatherName) {
-				frontmatter.adoptive_father = `${createSmartWikilink(person.adoptiveFatherName, app)}`;
+				frontmatter.adoptive_father = `${createSmartWikilink(person.adoptiveFatherName, app, person.adoptiveFatherCrId)}`;
 			} else {
 				// Clear adoptive father
 				delete frontmatter.adoptive_father;
@@ -1792,12 +1822,12 @@ export async function updatePersonNote(
 		// Handle adoptive mother relationship (#390)
 		if (person.adoptiveMotherCrId !== undefined || person.adoptiveMotherName !== undefined) {
 			if (person.adoptiveMotherCrId && person.adoptiveMotherName) {
-				frontmatter.adoptive_mother = `${createSmartWikilink(person.adoptiveMotherName, app)}`;
+				frontmatter.adoptive_mother = `${createSmartWikilink(person.adoptiveMotherName, app, person.adoptiveMotherCrId)}`;
 				frontmatter.adoptive_mother_id = person.adoptiveMotherCrId;
 			} else if (person.adoptiveMotherCrId) {
 				frontmatter.adoptive_mother_id = person.adoptiveMotherCrId;
 			} else if (person.adoptiveMotherName) {
-				frontmatter.adoptive_mother = `${createSmartWikilink(person.adoptiveMotherName, app)}`;
+				frontmatter.adoptive_mother = `${createSmartWikilink(person.adoptiveMotherName, app, person.adoptiveMotherCrId)}`;
 			} else {
 				// Clear adoptive mother
 				delete frontmatter.adoptive_mother;
@@ -1814,10 +1844,10 @@ export async function updatePersonNote(
 			const names = person.stepfatherName;
 			if (ids && ids.length > 0 && names && names.length === ids.length) {
 				if (ids.length === 1) {
-					frontmatter.stepfather = createSmartWikilink(names[0], app);
+					frontmatter.stepfather = createSmartWikilink(names[0], app, ids[0]);
 					frontmatter.stepfather_id = ids[0];
 				} else {
-					frontmatter.stepfather = names.map(n => createSmartWikilink(n, app));
+					frontmatter.stepfather = names.map((n, i) => createSmartWikilink(n, app, ids[i]));
 					frontmatter.stepfather_id = ids;
 				}
 			} else {
@@ -1835,10 +1865,10 @@ export async function updatePersonNote(
 			const names = person.stepmotherName;
 			if (ids && ids.length > 0 && names && names.length === ids.length) {
 				if (ids.length === 1) {
-					frontmatter.stepmother = createSmartWikilink(names[0], app);
+					frontmatter.stepmother = createSmartWikilink(names[0], app, ids[0]);
 					frontmatter.stepmother_id = ids[0];
 				} else {
-					frontmatter.stepmother = names.map(n => createSmartWikilink(n, app));
+					frontmatter.stepmother = names.map((n, i) => createSmartWikilink(n, app, ids[i]));
 					frontmatter.stepmother_id = ids;
 				}
 			} else {
@@ -1872,7 +1902,7 @@ export async function updatePersonNote(
 					const spouse = person.spouseMetadata[i];
 					const idx = i + 1;
 
-					frontmatter[`spouse${idx}`] = createSmartWikilink(spouse.name, app);
+					frontmatter[`spouse${idx}`] = createSmartWikilink(spouse.name, app, spouse.crId);
 					frontmatter[`spouse${idx}_id`] = spouse.crId;
 
 					if (spouse.marriageDate) {
@@ -1880,7 +1910,7 @@ export async function updatePersonNote(
 					}
 					if (spouse.marriageLocation) {
 						if (spouse.marriageLocationCrId) {
-							frontmatter[`spouse${idx}_marriage_location`] = createSmartWikilink(spouse.marriageLocation, app);
+							frontmatter[`spouse${idx}_marriage_location`] = createSmartWikilink(spouse.marriageLocation, app, spouse.marriageLocationCrId);
 							frontmatter[`spouse${idx}_marriage_location_id`] = spouse.marriageLocationCrId;
 						} else {
 							frontmatter[`spouse${idx}_marriage_location`] = spouse.marriageLocation;
@@ -1907,7 +1937,7 @@ export async function updatePersonNote(
 				const patch = computeRelationshipArrayPatch(
 					person.spouseName,
 					person.spouseCrId,
-					(name) => createSmartWikilink(name, app)
+					(name, id) => createSmartWikilink(name, app, id)
 				);
 				applyRelationshipArrayPatch(frontmatter, 'spouse', 'spouse_id', patch);
 				if (patch.mismatched) {
@@ -1929,7 +1959,7 @@ export async function updatePersonNote(
 				const patch = computeRelationshipArrayPatch(
 					person.childName,
 					person.childCrId,
-					(name) => createSmartWikilink(name, app)
+					(name, id) => createSmartWikilink(name, app, id)
 				);
 				applyRelationshipArrayPatch(frontmatter, 'children', 'children_id', patch);
 				if (patch.mismatched) {

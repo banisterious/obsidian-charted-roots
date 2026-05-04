@@ -162,6 +162,53 @@ describe('computeRelationshipArrayPatch', () => {
 			expect(patch.mismatched).toBe(true);
 		});
 	});
+
+	describe('wikilinker receives id alongside name (#524)', () => {
+		// The wikilinker callback signature now accepts an optional `id`
+		// argument so person-note-writer can disambiguate wikilinks via
+		// cr_id lookup when a note's `name` differs from its filename.
+		// Pre-#524 the wikilinker only received the name and had to guess
+		// the file from it via Obsidian's metadata cache, which failed
+		// silently when name and basename diverged.
+		it('passes the corresponding id to the wikilinker for each name', () => {
+			const linker = vi.fn((name: string, id?: string) => `[[${name}|${id ?? '?'}]]`);
+			computeRelationshipArrayPatch(
+				['Alice', 'Bob', 'Carol'],
+				['alice-id', 'bob-id', 'carol-id'],
+				linker
+			);
+			expect(linker.mock.calls).toEqual([
+				['Alice', 'alice-id'],
+				['Bob', 'bob-id'],
+				['Carol', 'carol-id'],
+			]);
+		});
+
+		it('passes the single id when length === 1 (scalar encoding)', () => {
+			const linker = vi.fn((name: string, id?: string) => `[[${name}|${id ?? '?'}]]`);
+			computeRelationshipArrayPatch(['Alice'], ['alice-id'], linker);
+			expect(linker).toHaveBeenCalledWith('Alice', 'alice-id');
+		});
+
+		it('passes empty-string id when the slot is unresolved', () => {
+			const linker = vi.fn((name: string, id?: string) => `[[${name}|${id ?? '?'}]]`);
+			computeRelationshipArrayPatch(['Ghost'], [''], linker);
+			// Single-entry path passes ids[0] which is '' (preserving #410 Option 2).
+			expect(linker).toHaveBeenCalledWith('Ghost', '');
+		});
+
+		it('legacy wikilinker that ignores the id arg still works', () => {
+			// Existing call sites pre-#524 used `(name) => ...` and shouldn't
+			// break when the function now also receives id.
+			const linker = (name: string) => `[[${name}]]`;
+			const patch = computeRelationshipArrayPatch(
+				['Alice', 'Bob'],
+				['alice-id', 'bob-id'],
+				linker
+			);
+			expect(patch.name).toEqual(['[[Alice]]', '[[Bob]]']);
+		});
+	});
 });
 
 describe('applyRelationshipArrayPatch', () => {
