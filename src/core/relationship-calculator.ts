@@ -18,9 +18,18 @@ const logger = getLogger('RelationshipCalculator');
  */
 export interface RelationshipStep {
 	person: PersonNode;
-	relationship: 'father' | 'mother' | 'spouse' | 'child' | 'start';
+	relationship:
+		| 'father' | 'mother' | 'spouse' | 'child' | 'start'
+		| 'stepfather' | 'stepmother' | 'stepchild'
+		| 'adoptive_father' | 'adoptive_mother' | 'adopted_child';
 	direction: 'up' | 'down' | 'lateral' | 'start';
 }
+
+/**
+ * Whether the relationship path goes through bio, step, or adoptive edges.
+ * `step` wins over `adoptive` when both kinds appear on the same path.
+ */
+export type RelationshipPathKind = 'bio' | 'step' | 'adoptive';
 
 /**
  * Result of a relationship calculation
@@ -36,6 +45,7 @@ export interface RelationshipResult {
 	generationsDown: number;
 	isDirectLine: boolean;
 	isBloodRelation: boolean;
+	pathKind: RelationshipPathKind;
 }
 
 /**
@@ -93,7 +103,8 @@ export class RelationshipCalculator {
 				generationsUp: 0,
 				generationsDown: 0,
 				isDirectLine: true,
-				isBloodRelation: true
+				isBloodRelation: true,
+				pathKind: 'bio'
 			};
 		}
 
@@ -118,7 +129,8 @@ export class RelationshipCalculator {
 				generationsUp: 0,
 				generationsDown: 0,
 				isDirectLine: false,
-				isBloodRelation: false
+				isBloodRelation: false,
+				pathKind: 'bio'
 			};
 		}
 
@@ -140,7 +152,8 @@ export class RelationshipCalculator {
 			generationsUp: analysis.generationsUp,
 			generationsDown: analysis.generationsDown,
 			isDirectLine: analysis.isDirectLine,
-			isBloodRelation: analysis.isBloodRelation
+			isBloodRelation: analysis.isBloodRelation,
+			pathKind: analysis.pathKind
 		};
 	}
 
@@ -189,7 +202,8 @@ export class RelationshipCalculator {
 				generationsUp: analysis.generationsUp,
 				generationsDown: analysis.generationsDown,
 				isDirectLine: analysis.isDirectLine,
-				isBloodRelation: analysis.isBloodRelation
+				isBloodRelation: analysis.isBloodRelation,
+				pathKind: analysis.pathKind
 			});
 		}
 
@@ -300,6 +314,65 @@ export class RelationshipCalculator {
 				}
 			}
 
+			// Explore step-parents (going up) — #525/#526
+			for (const stepfatherCrId of current.person.stepfatherCrIds) {
+				const stepfather = this.familyGraph.getPersonByCrId(stepfatherCrId);
+				if (stepfather && !visited.has(stepfather.crId)) {
+					visited.add(stepfather.crId);
+					queue.push({
+						person: stepfather,
+						path: [...current.path, { person: stepfather, relationship: 'stepfather', direction: 'up' }]
+					});
+				}
+			}
+
+			for (const stepmotherCrId of current.person.stepmotherCrIds) {
+				const stepmother = this.familyGraph.getPersonByCrId(stepmotherCrId);
+				if (stepmother && !visited.has(stepmother.crId)) {
+					visited.add(stepmother.crId);
+					queue.push({
+						person: stepmother,
+						path: [...current.path, { person: stepmother, relationship: 'stepmother', direction: 'up' }]
+					});
+				}
+			}
+
+			// Explore adoptive parents (going up) — #525
+			if (current.person.adoptiveFatherCrId) {
+				const adoptiveFather = this.familyGraph.getPersonByCrId(current.person.adoptiveFatherCrId);
+				if (adoptiveFather && !visited.has(adoptiveFather.crId)) {
+					visited.add(adoptiveFather.crId);
+					queue.push({
+						person: adoptiveFather,
+						path: [...current.path, { person: adoptiveFather, relationship: 'adoptive_father', direction: 'up' }]
+					});
+				}
+			}
+
+			if (current.person.adoptiveMotherCrId) {
+				const adoptiveMother = this.familyGraph.getPersonByCrId(current.person.adoptiveMotherCrId);
+				if (adoptiveMother && !visited.has(adoptiveMother.crId)) {
+					visited.add(adoptiveMother.crId);
+					queue.push({
+						person: adoptiveMother,
+						path: [...current.path, { person: adoptiveMother, relationship: 'adoptive_mother', direction: 'up' }]
+					});
+				}
+			}
+
+			for (const adoptiveParentCrId of current.person.adoptiveParentCrIds) {
+				const adoptiveParent = this.familyGraph.getPersonByCrId(adoptiveParentCrId);
+				if (adoptiveParent && !visited.has(adoptiveParent.crId)) {
+					visited.add(adoptiveParent.crId);
+					queue.push({
+						person: adoptiveParent,
+						// Gender-neutral; use 'adoptive_father' as the type for consistency
+						// (matches the bio-side parentCrIds → 'father' convention).
+						path: [...current.path, { person: adoptiveParent, relationship: 'adoptive_father', direction: 'up' }]
+					});
+				}
+			}
+
 			// Explore children (going down)
 			for (const childCrId of current.person.childrenCrIds) {
 				const child = this.familyGraph.getPersonByCrId(childCrId);
@@ -308,6 +381,30 @@ export class RelationshipCalculator {
 					queue.push({
 						person: child,
 						path: [...current.path, { person: child, relationship: 'child', direction: 'down' }]
+					});
+				}
+			}
+
+			// Explore stepchildren (going down) — #526
+			for (const stepchildCrId of current.person.stepchildrenCrIds) {
+				const stepchild = this.familyGraph.getPersonByCrId(stepchildCrId);
+				if (stepchild && !visited.has(stepchild.crId)) {
+					visited.add(stepchild.crId);
+					queue.push({
+						person: stepchild,
+						path: [...current.path, { person: stepchild, relationship: 'stepchild', direction: 'down' }]
+					});
+				}
+			}
+
+			// Explore adopted children (going down) — #525
+			for (const adoptedChildCrId of current.person.adoptedChildCrIds) {
+				const adoptedChild = this.familyGraph.getPersonByCrId(adoptedChildCrId);
+				if (adoptedChild && !visited.has(adoptedChild.crId)) {
+					visited.add(adoptedChild.crId);
+					queue.push({
+						person: adoptedChild,
+						path: [...current.path, { person: adoptedChild, relationship: 'adopted_child', direction: 'down' }]
 					});
 				}
 			}
@@ -350,11 +447,14 @@ export class RelationshipCalculator {
 		generationsDown: number;
 		isDirectLine: boolean;
 		isBloodRelation: boolean;
+		pathKind: RelationshipPathKind;
 	} {
 		// Count generations up and down, track spouse connections
 		let generationsUp = 0;
 		let generationsDown = 0;
 		let hasSpouseConnection = false;
+		let hasStepEdge = false;
+		let hasAdoptiveEdge = false;
 		let commonAncestorIndex = -1;
 
 		// Find where the path changes direction (common ancestor)
@@ -380,6 +480,12 @@ export class RelationshipCalculator {
 			} else if (step.direction === 'lateral') {
 				hasSpouseConnection = true;
 			}
+
+			if (step.relationship === 'stepfather' || step.relationship === 'stepmother' || step.relationship === 'stepchild') {
+				hasStepEdge = true;
+			} else if (step.relationship === 'adoptive_father' || step.relationship === 'adoptive_mother' || step.relationship === 'adopted_child') {
+				hasAdoptiveEdge = true;
+			}
 		}
 
 		// If we only went up, the common ancestor is the last person
@@ -389,13 +495,15 @@ export class RelationshipCalculator {
 
 		const commonAncestor = commonAncestorIndex >= 0 ? path[commonAncestorIndex].person : undefined;
 		const isDirectLine = generationsUp === 0 || generationsDown === 0;
-		const isBloodRelation = !hasSpouseConnection;
+		const pathKind: RelationshipPathKind = hasStepEdge ? 'step' : hasAdoptiveEdge ? 'adoptive' : 'bio';
+		const isBloodRelation = !hasSpouseConnection && pathKind === 'bio';
 
 		// Generate description
 		const description = this.generateRelationshipDescription(
 			generationsUp,
 			generationsDown,
 			hasSpouseConnection,
+			pathKind,
 			path
 		);
 
@@ -405,7 +513,8 @@ export class RelationshipCalculator {
 			generationsUp,
 			generationsDown,
 			isDirectLine,
-			isBloodRelation
+			isBloodRelation,
+			pathKind
 		};
 	}
 
@@ -416,55 +525,18 @@ export class RelationshipCalculator {
 		generationsUp: number,
 		generationsDown: number,
 		hasSpouseConnection: boolean,
+		pathKind: RelationshipPathKind,
 		path: RelationshipStep[]
 	): string {
-		// Direct spouse relationship
-		if (generationsUp === 0 && generationsDown === 0 && hasSpouseConnection) {
-			return 'Spouse';
-		}
-
-		// Direct line ancestors
-		if (generationsUp > 0 && generationsDown === 0 && !hasSpouseConnection) {
-			return this.getAncestorTerm(generationsUp);
-		}
-
-		// Direct line descendants
-		if (generationsUp === 0 && generationsDown > 0 && !hasSpouseConnection) {
-			return this.getDescendantTerm(generationsDown, path);
-		}
-
-		// Siblings (same parents)
-		if (generationsUp === 1 && generationsDown === 1 && !hasSpouseConnection) {
-			return 'Sibling';
-		}
-
-		// Aunts/Uncles and Nieces/Nephews
-		if (generationsUp === 1 && generationsDown === 2 && !hasSpouseConnection) {
-			return 'Niece/Nephew';
-		}
-		if (generationsUp === 2 && generationsDown === 1 && !hasSpouseConnection) {
-			return 'Aunt/Uncle';
-		}
-
-		// Cousins
-		if (generationsUp > 1 && generationsDown > 1 && !hasSpouseConnection) {
-			return this.getCousinTerm(generationsUp, generationsDown);
-		}
-
-		// Great aunts/uncles and grand nieces/nephews
-		if (generationsUp > 1 && generationsDown === 1 && !hasSpouseConnection) {
-			const greats = generationsUp - 2;
-			const prefix = greats > 0 ? 'Great-'.repeat(greats) : '';
-			return `${prefix}Grand Aunt/Uncle`;
-		}
-		if (generationsUp === 1 && generationsDown > 2 && !hasSpouseConnection) {
-			const greats = generationsDown - 2;
-			const prefix = greats > 0 ? 'Great-'.repeat(greats) : '';
-			return `${prefix}Grand Niece/Nephew`;
-		}
-
-		// In-laws (spouse connections with generational differences)
+		// In-laws (spouse-connected paths) keep their existing labels regardless
+		// of pathKind — the BFS prefers shorter step/adoptive paths over
+		// spouse-traversal paths when the data records explicit step/adoptive
+		// edges, so a spouse-connected path here means we genuinely don't have
+		// a step/adoptive edge to surface.
 		if (hasSpouseConnection) {
+			if (generationsUp === 0 && generationsDown === 0) {
+				return 'Spouse';
+			}
 			if (generationsUp === 1 && generationsDown === 0) {
 				return 'Parent-in-law';
 			}
@@ -477,8 +549,89 @@ export class RelationshipCalculator {
 			return 'Related by marriage';
 		}
 
+		const baseTerm = this.getBaseRelationshipTerm(generationsUp, generationsDown, path);
+
+		if (pathKind === 'step') {
+			return this.applyStepPrefix(baseTerm);
+		}
+		if (pathKind === 'adoptive') {
+			return this.applyAdoptivePrefix(baseTerm);
+		}
+		return baseTerm;
+	}
+
+	/**
+	 * Get the bio relationship term for a given (up, down) generational pair.
+	 * Step/adoptive prefixes are applied separately by the caller.
+	 */
+	private getBaseRelationshipTerm(
+		generationsUp: number,
+		generationsDown: number,
+		path: RelationshipStep[]
+	): string {
+		// Direct line ancestors
+		if (generationsUp > 0 && generationsDown === 0) {
+			return this.getAncestorTerm(generationsUp);
+		}
+
+		// Direct line descendants
+		if (generationsUp === 0 && generationsDown > 0) {
+			return this.getDescendantTerm(generationsDown, path);
+		}
+
+		// Siblings (same parents)
+		if (generationsUp === 1 && generationsDown === 1) {
+			return 'Sibling';
+		}
+
+		// Aunts/Uncles and Nieces/Nephews
+		if (generationsUp === 1 && generationsDown === 2) {
+			return 'Niece/Nephew';
+		}
+		if (generationsUp === 2 && generationsDown === 1) {
+			return 'Aunt/Uncle';
+		}
+
+		// Cousins
+		if (generationsUp > 1 && generationsDown > 1) {
+			return this.getCousinTerm(generationsUp, generationsDown);
+		}
+
+		// Great aunts/uncles and grand nieces/nephews
+		if (generationsUp > 1 && generationsDown === 1) {
+			const greats = generationsUp - 2;
+			const prefix = greats > 0 ? 'Great-'.repeat(greats) : '';
+			return `${prefix}Grand Aunt/Uncle`;
+		}
+		if (generationsUp === 1 && generationsDown > 2) {
+			const greats = generationsDown - 2;
+			const prefix = greats > 0 ? 'Great-'.repeat(greats) : '';
+			return `${prefix}Grand Niece/Nephew`;
+		}
+
 		// Fallback for complex relationships
 		return `Related (${generationsUp} gen. up, ${generationsDown} gen. down)`;
+	}
+
+	/**
+	 * Apply the "step" prefix to a base relationship term.
+	 * Closed compounds for Parent / Child / Sibling; hyphen prefix elsewhere.
+	 */
+	private applyStepPrefix(baseTerm: string): string {
+		if (baseTerm === 'Parent') return 'Stepparent';
+		if (baseTerm === 'Child') return 'Stepchild';
+		if (baseTerm === 'Sibling') return 'Stepsibling';
+		// Hyphen prefix with lowercase tail (matches "Sibling-in-law" style).
+		return `Step-${baseTerm.toLowerCase()}`;
+	}
+
+	/**
+	 * Apply the "adoptive" prefix to a base relationship term.
+	 * "Adopted" for the direct child case; "Adoptive" elsewhere.
+	 */
+	private applyAdoptivePrefix(baseTerm: string): string {
+		if (baseTerm === 'Child') return 'Adopted child';
+		return `Adoptive ${baseTerm.toLowerCase()}`;
 	}
 
 	/**

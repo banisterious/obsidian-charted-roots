@@ -519,6 +519,18 @@ export class RelationshipCalculatorModal extends Modal {
 				return 'Spouse';
 			case 'child':
 				return 'Child';
+			case 'stepfather':
+				return 'Stepfather';
+			case 'stepmother':
+				return 'Stepmother';
+			case 'stepchild':
+				return 'Stepchild';
+			case 'adoptive_father':
+				return 'Adoptive father';
+			case 'adoptive_mother':
+				return 'Adoptive mother';
+			case 'adopted_child':
+				return 'Adopted child';
 			default:
 				return '';
 		}
