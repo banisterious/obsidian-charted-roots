@@ -5,7 +5,7 @@
  * birth/death locations and migration patterns.
  */
 
-import { ItemView, WorkspaceLeaf, Menu, Notice, TFile, setIcon } from 'obsidian';
+import { ItemView, WorkspaceLeaf, Menu, Notice, Platform, TFile, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { getLogger } from '../core/logging';
 import { capitalize } from '../utils/format-utils';
@@ -261,6 +261,14 @@ export class MapView extends ItemView {
 		const container = this.contentEl;
 		container.empty();
 		container.addClass('cr-map-view');
+
+		// Phone-specific layout: wrap the toolbar's filter row onto its own
+		// line so the controls don't clip off the right edge (#528). Scoped
+		// to phones (not iPad) since tablets in landscape have room for the
+		// inline horizontal layout.
+		if (Platform.isPhone) {
+			container.addClass('cr-map-view-phone');
+		}
 
 		// Create toolbar
 		this.toolbarEl = container.createDiv({ cls: 'cr-map-toolbar' });

@@ -1733,6 +1733,24 @@ svg.leaflet-image-layer.leaflet-interactive path {
   }
 }
 
+/* Phone-specific fallback (#528) — the viewport media query above doesn't
+   fire reliably on Obsidian Mobile, so the same wrap rules are applied
+   class-based via `Platform.isPhone` in map-view.ts. iPad is excluded so
+   the inline horizontal layout still applies on tablet-sized leaves. */
+.cr-map-view-phone .cr-map-toolbar-center {
+  order: 3;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.cr-map-view-phone .cr-map-select {
+  min-width: 100px;
+}
+
+.cr-map-view-phone .cr-map-input {
+  width: 60px;
+}
+
 /* --------------------------------------------------------------------------
    Leaflet.DistortableImage Styles
    Styles for the image alignment/georeferencing tool.
