@@ -268,6 +268,7 @@ Tools for computing, visualizing, and customizing how people connect.
 ### Relationship Calculator
 
 - Find connections between any two people using proper genealogical terminology (e.g., "2nd cousin once removed")
+- Step and adoptive paths resolve symmetrically with their own labels — **Stepparent**, **Stepchild**, **Stepsibling**, **Adoptive parent**, **Adopted child**, **Adoptive sibling**, plus multi-hop variants (Step-grandparent, Adoptive grandparent, Step-aunt/uncle, Adoptive cousin) — and any path crossing a step or adoptive edge is correctly flagged `Blood relation: No`
 - Multiple-relationship mode for people who are related through more than one path
 - Relationship history with timestamps and one-click undo
 
