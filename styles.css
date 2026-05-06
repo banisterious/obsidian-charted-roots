@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-05 21:53:21 UTC
+ * - Generated: 2026-05-06 00:19:05 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -23664,7 +23664,7 @@ settings:
    COMPONENT: MAP-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 2480 lines, 51.34 KB */
+/* Component Size: 2486 lines, 51.73 KB */
 
 /* ==========================================================================
    Map View Styles
@@ -25379,7 +25379,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
   .cr-map-toolbar-center {
     order: 3;
-    width: 100%;
+    /* `flex: 0 0 100%` (not `width: 100%`) is required because the base
+       `flex: 1` on this element sets `flex-basis: 0`, which overrides
+       `width` in flex layout calculations. Result of the bare `width: 100%`
+       is a computed-styles 100% but a rendered ~75px against the right
+       edge, with content stacking vertically (#528). */
+    flex: 0 0 100%;
     justify-content: flex-start;
   }
 
@@ -25401,13 +25406,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
   }
 }
 
-/* Phone-specific fallback (#528) — the viewport media query above doesn't
-   fire reliably on Obsidian Mobile, so the same wrap rules are applied
-   class-based via `Platform.isPhone` in map-view.ts. iPad is excluded so
-   the inline horizontal layout still applies on tablet-sized leaves. */
+/* Phone-specific layout (#528) — apply the same wrap rules as the 768px
+   media query, class-based via `Platform.isPhone` in map-view.ts. iPad
+   is excluded so the inline horizontal layout still applies on tablet-
+   sized leaves. `flex: 0 0 100%` is required (not `width: 100%`) — see
+   the comment in the media query above. */
 .cr-map-view-phone .cr-map-toolbar-center {
   order: 3;
-  width: 100%;
+  flex: 0 0 100%;
   justify-content: flex-start;
 }
 
@@ -41681,11 +41687,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-05 21:53:24 UTC
+ * Build completed: 2026-05-06 00:19:05 UTC
  * Components processed: 50
- * Total lines: 41208
- * Total size: 833.93 KB
- * Build duration: 3.25 seconds
+ * Total lines: 41214
+ * Total size: 834.32 KB
+ * Build duration: 0.36 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -41714,7 +41720,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - data-quality.css: 1446 lines, 28.73 KB
  * - relationships.css: 597 lines, 11.43 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB
- * - map-view.css: 2480 lines, 51.34 KB
+ * - map-view.css: 2486 lines, 51.73 KB
  * - leaflet-distortable.css: 368 lines, 7.73 KB
  * - date-systems.css: 287 lines, 5.31 KB
  * - events.css: 1521 lines, 30.88 KB

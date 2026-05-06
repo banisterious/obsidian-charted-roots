@@ -1711,7 +1711,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
   .cr-map-toolbar-center {
     order: 3;
-    width: 100%;
+    /* `flex: 0 0 100%` (not `width: 100%`) is required because the base
+       `flex: 1` on this element sets `flex-basis: 0`, which overrides
+       `width` in flex layout calculations. Result of the bare `width: 100%`
+       is a computed-styles 100% but a rendered ~75px against the right
+       edge, with content stacking vertically (#528). */
+    flex: 0 0 100%;
     justify-content: flex-start;
   }
 
@@ -1733,13 +1738,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
   }
 }
 
-/* Phone-specific fallback (#528) — the viewport media query above doesn't
-   fire reliably on Obsidian Mobile, so the same wrap rules are applied
-   class-based via `Platform.isPhone` in map-view.ts. iPad is excluded so
-   the inline horizontal layout still applies on tablet-sized leaves. */
+/* Phone-specific layout (#528) — apply the same wrap rules as the 768px
+   media query, class-based via `Platform.isPhone` in map-view.ts. iPad
+   is excluded so the inline horizontal layout still applies on tablet-
+   sized leaves. `flex: 0 0 100%` is required (not `width: 100%`) — see
+   the comment in the media query above. */
 .cr-map-view-phone .cr-map-toolbar-center {
   order: 3;
-  width: 100%;
+  flex: 0 0 100%;
   justify-content: flex-start;
 }
 
