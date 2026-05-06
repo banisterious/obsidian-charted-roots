@@ -196,7 +196,11 @@ function renderOtherSubsection(
 		});
 
 		for (const rel of rels) {
-			const row = catEl.createDiv({ cls: 'cr-profile__rel-row' });
+			// Wrap each relationship in an item container so the notes line
+			// can sit directly beneath the row without breaking flex layout.
+			const item = catEl.createDiv({ cls: 'cr-profile__rel-item' });
+
+			const row = item.createDiv({ cls: 'cr-profile__rel-row' });
 			row.createSpan({
 				text: rel.type?.name || rel.type?.id || 'Related',
 				cls: 'cr-profile__rel-type-label'
@@ -221,6 +225,14 @@ function renderOtherSubsection(
 			if (rel.from || rel.to) {
 				const dates = rel.from && rel.to ? `${rel.from} – ${rel.to}` : rel.from || `– ${rel.to}`;
 				row.createSpan({ text: dates, cls: 'cr-profile__rel-dates' });
+			}
+
+			// Per-relationship notes (#530). Rendered on its own line below the row.
+			if (rel.notes && rel.notes.trim()) {
+				item.createDiv({
+					text: rel.notes,
+					cls: 'cr-profile__rel-notes'
+				});
 			}
 		}
 	}

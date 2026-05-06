@@ -179,3 +179,107 @@ describe('addFlatRelationship', () => {
 		});
 	});
 });
+
+/**
+ * Coverage for #530 — the Add Relationship modal's "Notes (optional)" input
+ * was being captured into a private field but never persisted to frontmatter
+ * (silently discarded when the modal closed). Fix uses a parallel
+ * `<type>_notes` flat array, index-aligned with the existing `<type>` and
+ * `<type>_id` arrays. This matches the existing `<type>_from` / `<type>_to`
+ * convention already read by `parseFlatRelationships` and respects the
+ * project's flat-YAML-only preference.
+ */
+describe('addFlatRelationship — notes (#530)', () => {
+	it('writes a scalar note alongside a single new relationship', () => {
+		const fm: Record<string, unknown> = {};
+
+		addFlatRelationship(fm, 'godparent', '[[Alice]]', 'cr_alice', { notes: 'Confirmed in 1990' });
+
+		expect(fm.godparent).toBe('[[Alice]]');
+		expect(fm.godparent_id).toBe('cr_alice');
+		expect(fm.godparent_notes).toBe('Confirmed in 1990');
+	});
+
+	it('does NOT write a notes key when no note is provided and none exists yet', () => {
+		const fm: Record<string, unknown> = {};
+
+		addFlatRelationship(fm, 'godparent', '[[Alice]]', 'cr_alice');
+
+		expect(fm.godparent).toBe('[[Alice]]');
+		expect('godparent_notes' in fm).toBe(false);
+	});
+
+	it('trims whitespace around the note', () => {
+		const fm: Record<string, unknown> = {};
+
+		addFlatRelationship(fm, 'godparent', '[[Alice]]', 'cr_alice', { notes: '  Confirmed in 1990  ' });
+
+		expect(fm.godparent_notes).toBe('Confirmed in 1990');
+	});
+
+	it('treats a whitespace-only note as no note', () => {
+		const fm: Record<string, unknown> = {};
+
+		addFlatRelationship(fm, 'godparent', '[[Alice]]', 'cr_alice', { notes: '   ' });
+
+		expect('godparent_notes' in fm).toBe(false);
+	});
+
+	it('pads earlier note slots with empty strings when adding a note to a later target', () => {
+		// Existing: two godparents, no notes recorded yet.
+		const fm: Record<string, unknown> = {
+			godparent: ['[[Alice]]', '[[Bob]]'],
+			godparent_id: ['cr_alice', 'cr_bob']
+		};
+
+		addFlatRelationship(fm, 'godparent', '[[Carol]]', 'cr_carol', { notes: 'Carol confirmed in 2010' });
+
+		// Targets/ids extended.
+		expect(fm.godparent).toEqual(['[[Alice]]', '[[Bob]]', '[[Carol]]']);
+		expect(fm.godparent_id).toEqual(['cr_alice', 'cr_bob', 'cr_carol']);
+		// Notes array padded so Carol's note lands at index 2 (matching her target index).
+		expect(fm.godparent_notes).toEqual(['', '', 'Carol confirmed in 2010']);
+	});
+
+	it('preserves earlier notes when adding a later note', () => {
+		// Existing: one godparent with a note.
+		const fm: Record<string, unknown> = {
+			godparent: '[[Alice]]',
+			godparent_id: 'cr_alice',
+			godparent_notes: 'Alice note'
+		};
+
+		addFlatRelationship(fm, 'godparent', '[[Bob]]', 'cr_bob', { notes: 'Bob note' });
+
+		expect(fm.godparent).toEqual(['[[Alice]]', '[[Bob]]']);
+		expect(fm.godparent_notes).toEqual(['Alice note', 'Bob note']);
+	});
+
+	it('extends the notes array with empty string when adding a target with no note (alignment)', () => {
+		// Existing godparent has a note; adding a second godparent without one.
+		// The notes key must extend to keep index alignment with the targets.
+		const fm: Record<string, unknown> = {
+			godparent: '[[Alice]]',
+			godparent_id: 'cr_alice',
+			godparent_notes: 'Alice note'
+		};
+
+		addFlatRelationship(fm, 'godparent', '[[Bob]]', 'cr_bob');
+
+		expect(fm.godparent).toEqual(['[[Alice]]', '[[Bob]]']);
+		expect(fm.godparent_notes).toEqual(['Alice note', '']);
+	});
+
+	it('returns "duplicate" without modifying notes when the cr_id already exists', () => {
+		const fm: Record<string, unknown> = {
+			godparent: '[[Alice]]',
+			godparent_id: 'cr_alice',
+			godparent_notes: 'original'
+		};
+
+		const result = addFlatRelationship(fm, 'godparent', '[[Alice]]', 'cr_alice', { notes: 'overwrite attempt' });
+
+		expect(result).toBe('duplicate');
+		expect(fm.godparent_notes).toBe('original');
+	});
+});

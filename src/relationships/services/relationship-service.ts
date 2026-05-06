@@ -502,6 +502,7 @@ export class RelationshipService {
 			const targetIds = this.normalizeToArray(fm[`${typeId}_id`]);
 			const fromDates = this.normalizeToArray(fm[`${typeId}_from`]);
 			const toDates = this.normalizeToArray(fm[`${typeId}_to`]);
+			const notes = this.normalizeToArray(fm[`${typeId}_notes`]);
 
 			for (let i = 0; i < targets.length; i++) {
 				const target = targets[i];
@@ -536,6 +537,11 @@ export class RelationshipService {
 					}
 				}
 
+				const noteValue = notes[i];
+				const note = typeof noteValue === 'string' && noteValue.length > 0
+					? noteValue
+					: undefined;
+
 				parsed.push({
 					type: typeDef,
 					sourceCrId,
@@ -546,6 +552,7 @@ export class RelationshipService {
 					targetFilePath,
 					from: fromDates[i] as string | undefined,
 					to: toDates[i] as string | undefined,
+					notes: note,
 					isInferred: false
 				});
 			}

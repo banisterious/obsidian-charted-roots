@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-06 12:42:51 UTC
+ * - Generated: 2026-05-06 18:06:51 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -40101,7 +40101,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: PROFILE-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1103 lines, 24.5 KB */
+/* Component Size: 1120 lines, 25.04 KB */
 
 /**
  * Entity Profile View Styles
@@ -40430,6 +40430,23 @@ body:has(.cr-media-linker) .suggestion-container {
 .cr-profile__rel-dates {
   font-size: var(--font-ui-smaller);
   color: var(--text-faint);
+}
+
+/* Per-relationship notes (#530). Rendered on its own line below the row,
+   indented to the start of the link column for visual association. */
+.cr-profile__rel-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.cr-profile__rel-notes {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  font-style: italic;
+  /* Match the .cr-profile__rel-type-label min-width + gap so the note aligns
+     with the link column rather than the type-label column. */
+  padding-left: calc(60px + var(--size-4-2));
+  padding-bottom: var(--size-4-1);
 }
 
 /* ==========================================================================
@@ -41687,11 +41704,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-06 12:42:51 UTC
+ * Build completed: 2026-05-06 18:06:52 UTC
  * Components processed: 50
- * Total lines: 41214
- * Total size: 834.32 KB
- * Build duration: 0.38 seconds
+ * Total lines: 41231
+ * Total size: 834.86 KB
+ * Build duration: 1.04 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -41740,7 +41757,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - preferences.css: 431 lines, 9.44 KB
  * - tree-output.css: 1548 lines, 30.41 KB
  * - dynamic-content.css: 1186 lines, 25.55 KB
- * - profile-view.css: 1103 lines, 24.5 KB
+ * - profile-view.css: 1120 lines, 25.04 KB
  * - calendar-view.css: 302 lines, 6.83 KB
  * - migration-notice.css: 135 lines, 2.67 KB
  * - responsive.css: 9 lines, 0.13 KB

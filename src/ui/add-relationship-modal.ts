@@ -282,9 +282,10 @@ export class AddRelationshipModal extends Modal {
 
 		const typeId = this.selectedType.id;
 		const targetWikilink = `[[${this.selectedTarget.file.basename}]]`;
+		const notes = this.notes.trim() || undefined;
 
 		await this.app.fileManager.processFrontMatter(this.sourceFile, (frontmatter) => {
-			const result = addFlatRelationship(frontmatter, typeId, targetWikilink, targetCrId);
+			const result = addFlatRelationship(frontmatter, typeId, targetWikilink, targetCrId, { notes });
 			if (result === 'duplicate') {
 				throw new Error('This relationship already exists');
 			}
@@ -315,9 +316,11 @@ export class AddRelationshipModal extends Modal {
 		const sourceWikilink = `[[${this.sourceFile.basename}]]`;
 		const targetFile = this.selectedTarget.file;
 
+		const notes = this.notes.trim() || undefined;
+
 		try {
 			await this.app.fileManager.processFrontMatter(targetFile, (frontmatter) => {
-				addFlatRelationship(frontmatter, typeId, sourceWikilink, sourceCrId);
+				addFlatRelationship(frontmatter, typeId, sourceWikilink, sourceCrId, { notes });
 			});
 		} catch (err) {
 			const msg = err instanceof Error ? err.message : 'Unknown error';

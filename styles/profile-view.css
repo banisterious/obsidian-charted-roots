@@ -327,6 +327,23 @@
   color: var(--text-faint);
 }
 
+/* Per-relationship notes (#530). Rendered on its own line below the row,
+   indented to the start of the link column for visual association. */
+.cr-profile__rel-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.cr-profile__rel-notes {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  font-style: italic;
+  /* Match the .cr-profile__rel-type-label min-width + gap so the note aligns
+     with the link column rather than the type-label column. */
+  padding-left: calc(60px + var(--size-4-2));
+  padding-bottom: var(--size-4-1);
+}
+
 /* ==========================================================================
    Events Section
    ========================================================================== */
