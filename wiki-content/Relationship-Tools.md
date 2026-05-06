@@ -53,15 +53,28 @@ The Relationship Calculator uses BFS (breadth-first search) pathfinding to find 
 - Sibling-in-law
 - Other in-law connections
 
+**Step and Adoptive Relationships:**
+- Stepparent, Stepchild, Stepsibling
+- Adoptive parent, Adopted child, Adoptive sibling
+- Multi-hop variants: Step-grandparent, Adoptive grandparent, Step-aunt/uncle, Adoptive cousin, etc.
+
+For step and adoptive paths, the result also flags **Blood relation: No** — any path that crosses a step or adoptive edge is treated as non-blood, even if the rest of the path is bio. A stepchild who shares a parent with a bio child reads as "Stepsibling" rather than "Sibling."
+
 ### Relationship Path
 
-The calculator displays the complete path showing how two people are connected:
+The calculator displays the complete path showing how two people are connected. Bio path:
 
 ```
 John Smith → Mary Smith (spouse) → Robert Jones (father) → Alice Jones
 ```
 
-This helps you understand the chain of relationships connecting two individuals.
+Step path:
+
+```
+Anakin Skywalker → Cliegg Lars (stepfather)
+```
+
+Each step in the path is tagged with the actual edge type traversed (`father`, `mother`, `spouse`, `child`, `stepfather`, `stepmother`, `stepchild`, `adoptive_father`, `adoptive_mother`, `adopted_child`), so the path itself shows whether a connection is bio, step, or adoptive at a glance.
 
 ### Finding Multiple Relationships
 

@@ -336,6 +336,42 @@ spouses:
 
 > **Deprecation Note:** The `child` property (singular) is deprecated as of v0.18.11. Use `children` (plural) for consistency with `children_id`. Charted Roots still reads both properties for backward compatibility, but new notes should use `children`. Use the Cleanup Wizard (Step 14) to migrate existing notes.
 
+### Custom and Non-Bio Relationships
+
+For relationship types beyond the bio family fields (e.g. `step_parent`, `adoptive_parent`, `step_child`, `adopted_child`, `godparent`, `mentor`, `guardian`, etc., plus any user-defined types), Charted Roots writes flat properties keyed on the relationship type id, with optional metadata in parallel arrays.
+
+For a relationship type with id `<type>`, the recognized properties are:
+
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `<type>` | `string` or `string[]` | Wikilink(s) to the target person note(s) | `"[[Jane Doe]]"` or `["[[Jane Doe]]", "[[Sarah Lee]]"]` |
+| `<type>_id` | `string` or `string[]` | `cr_id`(s) of the target(s); paired by index with `<type>` | `"person-jane-doe"` or `["person-jane-doe", "person-sarah-lee"]` |
+| `<type>_notes` | `string` or `string[]` | Optional per-target notes; paired by index with `<type>`. Empty strings pad slots that have no note. | `"Confirmed in 1990"` or `["Confirmed in 1990", ""]` |
+| `<type>_from` | `string` or `string[]` | Optional start date(s); paired by index with `<type>` | `"1985"` |
+| `<type>_to` | `string` or `string[]` | Optional end date(s); paired by index with `<type>` | `"1990"` |
+
+The `<type>_notes`, `<type>_from`, and `<type>_to` parallel arrays are written by the Add Custom Relationship modal (the "Notes (optional)" textarea drives `<type>_notes`) and read by the Entity Profile relationships section, where notes display on their own line beneath each row. The plugin pads parallel arrays with empty strings so indices stay aligned with the primary `<type>` array — important when some targets have notes and others don't.
+
+**Example — godparent with one note and one without:**
+
+```yaml
+godparent: ["[[Jane Doe]]", "[[Sarah Lee]]"]
+godparent_id: ["person-jane-doe", "person-sarah-lee"]
+godparent_notes: ["Confirmed in 1990", ""]
+```
+
+**Example — single mentor with start/end dates and a note:**
+
+```yaml
+mentor: "[[Robert Brown]]"
+mentor_id: "person-robert-brown"
+mentor_from: "1985"
+mentor_to: "1990"
+mentor_notes: "Trained me in cabinetmaking"
+```
+
+> **Legacy nested-array format:** Earlier wiki versions documented a `relationships:` nested-array shape for these relationships. That format is still **read** by the plugin for backward compatibility, but new entries from the Add Custom Relationship modal use the flat format above. See [Custom Relationships](Custom-Relationships#legacy-nested-array-format) for details.
+
 ### Charted Roots Metadata
 
 | Property | Type | Description | Example |

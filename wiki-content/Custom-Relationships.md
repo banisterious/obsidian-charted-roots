@@ -141,22 +141,31 @@ These types are easy to overlook if you only use Charted Roots for traditional g
 
 ### Manual Frontmatter
 
-Add a `relationships` array to the person note frontmatter:
+Charted Roots writes custom relationships as **flat frontmatter properties**, one set per relationship type. For each type, the plugin writes a primary key (e.g. `godparent`) holding the wikilink(s), plus a paired `_id` key holding the `cr_id`(s) for robust tracking. Optional metadata (notes, dates) lives on parallel `_notes` / `_from` / `_to` arrays index-aligned with the primary array.
+
+This keeps frontmatter flat — no nested objects — for compatibility with Obsidian's frontmatter editor, Bases, Dataview, and other tooling.
 
 ```yaml
 ---
 name: John Smith
 cr_id: person-john-smith
-relationships:
-  - type: godparent
-    target: "[[Jane Doe]]"
-    target_id: person-jane-doe
-    notes: "Became godparent at baptism in 1920"
-  - type: mentor
-    target: "[[Robert Brown]]"
-    target_id: person-robert-brown
+godparent: "[[Jane Doe]]"
+godparent_id: person-jane-doe
+godparent_notes: "Became godparent at baptism in 1920"
+mentor: "[[Robert Brown]]"
+mentor_id: person-robert-brown
 ---
 ```
+
+For multiple targets of the same type, the values become arrays:
+
+```yaml
+godparent: ["[[Jane Doe]]", "[[Sarah Lee]]"]
+godparent_id: [person-jane-doe, person-sarah-lee]
+godparent_notes: ["Became godparent at baptism in 1920", "Confirmed in 1925"]
+```
+
+The `_notes` (and `_from` / `_to`) arrays are padded with empty strings for entries without metadata, so the indices stay aligned with the targets array.
 
 ---
 
@@ -164,28 +173,47 @@ relationships:
 
 ### Relationship Properties
 
-| Property | Required | Description |
-|----------|----------|-------------|
-| `type` | Yes | The relationship type ID (e.g., `godparent`, `guardian`, `mentor`) |
-| `target` | Yes | Wikilink to the target person note |
-| `target_id` | Yes | The `cr_id` of the target person (for robust tracking) |
-| `notes` | No | Optional notes about the relationship |
+For a relationship type with id `<type>`, Charted Roots reads/writes:
+
+| Property | Required | Type | Description |
+|----------|----------|------|-------------|
+| `<type>` | Yes | `string` or `string[]` | Wikilink(s) to the target person note(s) |
+| `<type>_id` | Yes | `string` or `string[]` | `cr_id`(s) of the target(s) — paired with the primary array index |
+| `<type>_notes` | No | `string` or `string[]` | Optional per-target notes — paired with the primary array index |
+| `<type>_from` | No | `string` or `string[]` | Optional start date(s) of the relationship — paired with the primary array index |
+| `<type>_to` | No | `string` or `string[]` | Optional end date(s) of the relationship — paired with the primary array index |
+
+Always include `<type>_id` for robust linking. Even if notes are renamed, the `cr_id` reference ensures the relationship remains valid.
 
 ### Example
 
 ```yaml
+godparent: ["[[Jane Doe]]", "[[Sarah Lee]]"]
+godparent_id: [person-jane-doe, person-sarah-lee]
+godparent_notes: ["Became godparent at baptism in 1920", ""]
+godparent_from: ["1920", ""]
+
+mentor: "[[Robert Brown]]"
+mentor_id: person-robert-brown
+
+witness: "[[Mary Johnson]]"
+witness_id: person-mary-johnson
+witness_notes: "Witnessed marriage ceremony"
+```
+
+In this example, Jane Doe is a godparent with both a note and a start date; Sarah Lee is a godparent without metadata (note empty, date empty); Robert is a mentor without any metadata (no `_notes` / `_from` / `_to` keys at all when there's nothing to record); Mary is a witness with a note.
+
+### Legacy nested-array format
+
+Earlier versions of the wiki documented a nested `relationships:` array shape. That format is still **read** by the plugin for backward compatibility, but Charted Roots no longer writes it — new entries from the Add Custom Relationship modal use the flat format above. If you have existing data in the legacy shape, it will continue to work unchanged; you don't need to migrate.
+
+```yaml
+# Legacy shape — still readable, no longer written
 relationships:
   - type: godparent
     target: "[[Jane Doe]]"
     target_id: person-jane-doe
     notes: "Became godparent at baptism in 1920"
-  - type: mentor
-    target: "[[Robert Brown]]"
-    target_id: person-robert-brown
-  - type: witness
-    target: "[[Mary Johnson]]"
-    target_id: person-mary-johnson
-    notes: "Witnessed marriage ceremony"
 ```
 
 ---
@@ -300,9 +328,9 @@ Right-click on a person note:
 
 ## Best Practices
 
-### Use target_id
+### Use the paired `_id` property
 
-Always include the `target_id` for robust linking. Even if notes are renamed, the `cr_id` reference ensures the relationship remains valid.
+Always include the `<type>_id` property alongside the `<type>` wikilink. Even if notes are renamed, the `cr_id` reference ensures the relationship remains valid. The Add Custom Relationship modal does this automatically; for hand-written frontmatter, write both keys together.
 
 ### Be Consistent
 
