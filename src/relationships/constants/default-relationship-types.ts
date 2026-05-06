@@ -133,7 +133,7 @@ export const DEFAULT_RELATIONSHIP_TYPES: RelationshipTypeDefinition[] = [
 		symmetric: false,
 		builtIn: true,
 		includeOnFamilyTree: true,
-		familyGraphMapping: 'child'
+		familyGraphMapping: 'stepchild'
 	},
 	{
 		id: 'adoptive_parent',
@@ -157,7 +157,7 @@ export const DEFAULT_RELATIONSHIP_TYPES: RelationshipTypeDefinition[] = [
 		symmetric: false,
 		builtIn: true,
 		includeOnFamilyTree: true,
-		familyGraphMapping: 'child'
+		familyGraphMapping: 'adopted_child'
 	},
 	{
 		id: 'foster_parent',

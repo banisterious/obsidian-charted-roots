@@ -1504,10 +1504,16 @@ export class FamilyGraphService {
 		const adoptiveParentValue = this.resolveProperty<string | string[]>(fm, 'adoptive_parent');
 		const adoptiveParentCrIds = this.extractCrIdsFromField(adoptiveParentIdValue, adoptiveParentValue);
 
-		// Parse adopted children (from parent's perspective)
+		// Parse adopted children (from parent's perspective). `let` (not `const`)
+		// because the relationships-array merge below may add entries.
 		const adoptedChildIdValue = this.resolveProperty<string | string[]>(fm, 'adopted_child_id');
 		const adoptedChildValue = this.resolveProperty<string | string[]>(fm, 'adopted_child');
 		const adoptedChildCrIds = this.extractCrIdsFromField(adoptedChildIdValue, adoptedChildValue);
+
+		// Stepchildren start empty here; populated by the reverse-walk in the
+		// second pass of `loadPersonCache` AND by the relationships-array merge below
+		// when a parent's frontmatter has a `step_child` array directly.
+		const stepchildrenCrIds: string[] = [];
 
 		// Parse relationships array for family-relevant types
 		// This supplements direct properties (stepfather, adoptive_father, etc.)
@@ -1629,6 +1635,22 @@ export class FamilyGraphService {
 				childrenCrIds.push(childId);
 			}
 		}
+		// Merge step/adoptive children from custom-relationship-array entries.
+		// These previously misrouted into childrenCrIds (#525/#526 follow-up):
+		// step_child / adopted_child relationship types had familyGraphMapping: 'child',
+		// so a parent's `adopted_child:` array would be parsed as bio children. Now they
+		// land on the dedicated arrays so the relationship calculator's BFS finds the
+		// correct edge type going down (parent → adopted/step child).
+		for (const stepchildId of relationshipsFromArray.stepchildrenCrIds) {
+			if (!stepchildrenCrIds.includes(stepchildId)) {
+				stepchildrenCrIds.push(stepchildId);
+			}
+		}
+		for (const adoptedChildId of relationshipsFromArray.adoptedChildCrIds) {
+			if (!adoptedChildCrIds.includes(adoptedChildId)) {
+				adoptedChildCrIds.push(adoptedChildId);
+			}
+		}
 
 		// Note: Frontmatter uses 'born'/'died' properties, mapped to birthDate/deathDate internally
 		// Convert Date objects to ISO strings if necessary (Obsidian parses YAML dates as Date objects)
@@ -1744,8 +1766,10 @@ export class FamilyGraphService {
 			adoptiveParentCrIds,
 			// Adopted children (from parent's perspective)
 			adoptedChildCrIds,
-			// Stepchildren — populated by reverse-walk in the second pass below
-			stepchildrenCrIds: [],
+			// Stepchildren — populated by reverse-walk in the second pass of
+			// `loadPersonCache` and pre-populated above from any parent-side
+			// step_child relationships-array entries.
+			stepchildrenCrIds,
 			// Gender-neutral parents
 			parentCrIds,
 			// Custom relationship type tracking for edge styling
@@ -1983,6 +2007,8 @@ export class FamilyGraphService {
 		adoptiveParentCrIds: string[];
 		spouseCrIds: string[];
 		childrenCrIds: string[];
+		stepchildrenCrIds: string[];
+		adoptedChildCrIds: string[];
 		/** Maps parent cr_id to custom relationship type ID for styling */
 		parentRelationshipTypes: Map<string, string>;
 		/** Maps spouse cr_id to custom relationship type ID for styling */
@@ -1995,6 +2021,8 @@ export class FamilyGraphService {
 			adoptiveParentCrIds: [] as string[],
 			spouseCrIds: [] as string[],
 			childrenCrIds: [] as string[],
+			stepchildrenCrIds: [] as string[],
+			adoptedChildCrIds: [] as string[],
 			parentRelationshipTypes: new Map<string, string>(),
 			spouseRelationshipTypes: new Map<string, string>()
 		};
@@ -2061,6 +2089,8 @@ export class FamilyGraphService {
 			adoptiveParentCrIds: string[];
 			spouseCrIds: string[];
 			childrenCrIds: string[];
+			stepchildrenCrIds: string[];
+			adoptedChildCrIds: string[];
 			parentRelationshipTypes: Map<string, string>;
 			spouseRelationshipTypes: Map<string, string>;
 		},
@@ -2141,6 +2171,18 @@ export class FamilyGraphService {
 			case 'child':
 				if (!result.childrenCrIds.includes(targetCrId)) {
 					result.childrenCrIds.push(targetCrId);
+				}
+				break;
+
+			case 'stepchild':
+				if (!result.stepchildrenCrIds.includes(targetCrId)) {
+					result.stepchildrenCrIds.push(targetCrId);
+				}
+				break;
+
+			case 'adopted_child':
+				if (!result.adoptedChildCrIds.includes(targetCrId)) {
+					result.adoptedChildCrIds.push(targetCrId);
 				}
 				break;
 

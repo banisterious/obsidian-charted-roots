@@ -47,7 +47,9 @@ export type FamilyGraphMapping =
 	| 'foster_parent'   // Maps to fosterParentCrIds (future)
 	| 'guardian'        // Maps to guardianCrIds (future)
 	| 'spouse'          // Maps to spouseCrIds
-	| 'child';          // Maps to childrenCrIds
+	| 'child'           // Maps to childrenCrIds (bio child)
+	| 'stepchild'       // Maps to stepchildrenCrIds
+	| 'adopted_child';  // Maps to adoptedChildCrIds
 
 /**
  * Definition of a relationship type
