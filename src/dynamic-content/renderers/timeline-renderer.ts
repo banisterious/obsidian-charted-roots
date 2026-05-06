@@ -740,10 +740,17 @@ export class TimelineRenderer {
 		// siblings on the focal person's timeline (#456). Mirrors the
 		// stepchild filter from #441.
 		if (settings.timelineShowSiblingBirths) {
+			// Walk both biological and adoptive parents — adopted children
+			// land in the adoptive parent's `adoptedChildCrIds`, not
+			// `childrenCrIds`, so the bio-parent walk alone misses anyone
+			// adopted into the household and vice versa (#531).
 			const parentCrIds = [
 				person.fatherCrId,
 				person.motherCrId,
-				...(person.parentCrIds || [])
+				...(person.parentCrIds || []),
+				person.adoptiveFatherCrId,
+				person.adoptiveMotherCrId,
+				...(person.adoptiveParentCrIds || [])
 			].filter(Boolean) as string[];
 			const siblingCrIds = new Set<string>();
 
@@ -759,10 +766,18 @@ export class TimelineRenderer {
 
 			for (const parentCrId of parentCrIds) {
 				const parent = graph.getPersonByCrId(parentCrId);
-				if (parent?.childrenCrIds) {
+				if (!parent) continue;
+				if (parent.childrenCrIds) {
 					for (const childCrId of parent.childrenCrIds) {
 						if (childCrId !== person.crId && !stepSiblingCrIds.has(childCrId)) {
 							siblingCrIds.add(childCrId);
+						}
+					}
+				}
+				if (parent.adoptedChildCrIds) {
+					for (const adoptedChildCrId of parent.adoptedChildCrIds) {
+						if (adoptedChildCrId !== person.crId && !stepSiblingCrIds.has(adoptedChildCrId)) {
+							siblingCrIds.add(adoptedChildCrId);
 						}
 					}
 				}

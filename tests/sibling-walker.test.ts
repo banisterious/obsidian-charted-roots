@@ -2,16 +2,20 @@ import { describe, expect, it } from 'vitest';
 import {
 	findAdoptiveSiblingCrIds,
 	findBiologicalSiblingCrIds,
+	gatherAdoptedSiblingsFromParents,
 	gatherSiblingsFromParents
 } from '../src/dynamic-content/sibling-walker';
 import type { PersonNode } from '../src/core/family-graph';
 
 /**
  * Regression coverage for #417 — the dynamic relationships block's
- * sibling walker now traverses adoptive parent edges in addition to
- * biological ones. The helpers are pure (I/O lives in the `getPerson`
- * callback), so the tests fence their behavior directly without an
- * Obsidian vault or a live family graph.
+ * sibling walker traverses adoptive parent edges in addition to
+ * biological ones — and #531, which extended the adoptive walk to read
+ * the dedicated `adoptedChildCrIds` array on each parent (after #525/#526
+ * routed adopted children there instead of the parent's `childrenCrIds`).
+ * The helpers are pure (I/O lives in the `getPerson` callback), so the
+ * tests fence their behavior directly without an Obsidian vault or a
+ * live family graph.
  */
 
 /**
@@ -33,6 +37,8 @@ function makePerson(overrides: Partial<PersonNode> & { crId: string }): PersonNo
 		adoptiveParentCrIds: overrides.adoptiveParentCrIds ?? [],
 		spouseCrIds: overrides.spouseCrIds ?? [],
 		childrenCrIds: overrides.childrenCrIds ?? [],
+		adoptedChildCrIds: overrides.adoptedChildCrIds ?? [],
+		stepchildrenCrIds: overrides.stepchildrenCrIds ?? [],
 		birthDate: overrides.birthDate,
 		deathDate: overrides.deathDate
 	} as PersonNode;
@@ -121,12 +127,33 @@ describe('findBiologicalSiblingCrIds', () => {
 	});
 });
 
+describe('gatherAdoptedSiblingsFromParents', () => {
+	it('returns each parent\'s adopted children, excluding self', () => {
+		const dad = makePerson({ crId: 'dad', adoptedChildCrIds: ['me', 'alice', 'bob'] });
+		const result = gatherAdoptedSiblingsFromParents(['dad'], 'me', makeLookup([dad]));
+		expect(result.sort()).toEqual(['alice', 'bob']);
+	});
+
+	it('deduplicates across multiple parents with overlapping adopted children', () => {
+		const dad = makePerson({ crId: 'dad', adoptedChildCrIds: ['alice', 'bob'] });
+		const mom = makePerson({ crId: 'mom', adoptedChildCrIds: ['alice', 'carol'] });
+		const result = gatherAdoptedSiblingsFromParents(['dad', 'mom'], 'me', makeLookup([dad, mom]));
+		expect(result.sort()).toEqual(['alice', 'bob', 'carol']);
+	});
+
+	it('returns empty when parent has no adopted children', () => {
+		const dad = makePerson({ crId: 'dad', childrenCrIds: ['me', 'alice'] });
+		const result = gatherAdoptedSiblingsFromParents(['dad'], 'me', makeLookup([dad]));
+		expect(result).toEqual([]);
+	});
+});
+
 describe('findAdoptiveSiblingCrIds', () => {
-	it('walks adoptiveFatherCrId (#417)', () => {
+	it('walks adoptive parents\' biological children — self adopted, sibling bio (#417)', () => {
 		const me = makePerson({ crId: 'me', adoptiveFatherCrId: 'adoptive-dad' });
 		const adoptiveDad = makePerson({
 			crId: 'adoptive-dad',
-			childrenCrIds: ['me', 'alice', 'bob']
+			childrenCrIds: ['alice', 'bob']
 		});
 		const result = findAdoptiveSiblingCrIds(me, makeLookup([me, adoptiveDad]));
 		expect(result.sort()).toEqual(['alice', 'bob']);
@@ -136,7 +163,7 @@ describe('findAdoptiveSiblingCrIds', () => {
 		const me = makePerson({ crId: 'me', adoptiveMotherCrId: 'adoptive-mom' });
 		const adoptiveMom = makePerson({
 			crId: 'adoptive-mom',
-			childrenCrIds: ['me', 'carol']
+			childrenCrIds: ['carol']
 		});
 		const result = findAdoptiveSiblingCrIds(me, makeLookup([me, adoptiveMom]));
 		expect(result).toEqual(['carol']);
@@ -144,40 +171,90 @@ describe('findAdoptiveSiblingCrIds', () => {
 
 	it('walks gender-neutral adoptiveParentCrIds', () => {
 		const me = makePerson({ crId: 'me', adoptiveParentCrIds: ['ap1', 'ap2'] });
-		const ap1 = makePerson({ crId: 'ap1', childrenCrIds: ['me', 'dan'] });
-		const ap2 = makePerson({ crId: 'ap2', childrenCrIds: ['me', 'eve'] });
+		const ap1 = makePerson({ crId: 'ap1', childrenCrIds: ['dan'] });
+		const ap2 = makePerson({ crId: 'ap2', childrenCrIds: ['eve'] });
 		const result = findAdoptiveSiblingCrIds(me, makeLookup([me, ap1, ap2]));
 		expect(result.sort()).toEqual(['dan', 'eve']);
 	});
 
-	it('does NOT walk biological parent edges', () => {
+	it('walks bio parents\' adoptedChildCrIds — self bio, sibling adopted (#531)', () => {
+		// DigitalDreamn's reported scenario: bio child of the Wilkins should
+		// see Galen (adopted into the same household) as an adoptive sibling.
+		const bioKid = makePerson({ crId: 'bio-kid', fatherCrId: 'wilkin-dad' });
+		const wilkinDad = makePerson({
+			crId: 'wilkin-dad',
+			childrenCrIds: ['bio-kid'],
+			adoptedChildCrIds: ['galen']
+		});
+		const result = findAdoptiveSiblingCrIds(bioKid, makeLookup([bioKid, wilkinDad]));
+		expect(result).toEqual(['galen']);
+	});
+
+	it('walks adoptive parents\' adoptedChildCrIds — both adopted siblings see each other (#531)', () => {
+		const galen = makePerson({ crId: 'galen', adoptiveFatherCrId: 'adoptive-dad' });
+		const adoptiveDad = makePerson({
+			crId: 'adoptive-dad',
+			adoptedChildCrIds: ['galen', 'darren']
+		});
+		const result = findAdoptiveSiblingCrIds(galen, makeLookup([galen, adoptiveDad]));
+		expect(result).toEqual(['darren']);
+	});
+
+	it('merges all three sources and dedupes (#531)', () => {
+		// Self is adopted into one household and bio in another — adoptive
+		// siblings come from both sides.
+		const me = makePerson({
+			crId: 'me',
+			fatherCrId: 'bio-dad',
+			adoptiveFatherCrId: 'adoptive-dad'
+		});
+		const bioDad = makePerson({
+			crId: 'bio-dad',
+			childrenCrIds: ['me', 'bio-sib'],
+			adoptedChildCrIds: ['adopted-into-bio']
+		});
+		const adoptiveDad = makePerson({
+			crId: 'adoptive-dad',
+			childrenCrIds: ['adoptive-bio-sib'],
+			adoptedChildCrIds: ['me', 'co-adopted']
+		});
+		const result = findAdoptiveSiblingCrIds(me, makeLookup([me, bioDad, adoptiveDad]));
+		// Bio sib of bioDad is NOT an adoptive sibling — only adopted-into-bio,
+		// the bio child of adoptive-dad, and the co-adopted sibling are.
+		expect(result.sort()).toEqual(['adopted-into-bio', 'adoptive-bio-sib', 'co-adopted']);
+	});
+
+	it('does NOT walk biological parent edges for bio siblings', () => {
 		const me = makePerson({
 			crId: 'me',
 			fatherCrId: 'bio-dad',
 			adoptiveFatherCrId: 'adoptive-dad'
 		});
 		const bioDad = makePerson({ crId: 'bio-dad', childrenCrIds: ['me', 'alice'] });
-		const adoptiveDad = makePerson({ crId: 'adoptive-dad', childrenCrIds: ['me', 'carol'] });
+		const adoptiveDad = makePerson({ crId: 'adoptive-dad', childrenCrIds: ['carol'] });
 		const result = findAdoptiveSiblingCrIds(me, makeLookup([me, bioDad, adoptiveDad]));
 		expect(result).toEqual(['carol']);
 	});
 
-	it('returns empty when no adoptive parents are set', () => {
+	it('returns empty when no parents have adopted children and self is not adopted', () => {
 		const me = makePerson({ crId: 'me', fatherCrId: 'dad' });
-		const result = findAdoptiveSiblingCrIds(me, makeLookup([me]));
+		const dad = makePerson({ crId: 'dad', childrenCrIds: ['me', 'alice'] });
+		const result = findAdoptiveSiblingCrIds(me, makeLookup([me, dad]));
 		expect(result).toEqual([]);
 	});
 
-	it('Galen case: adoptive parent with existing biological children', () => {
-		// DigitalDreamn's reported scenario: Galen has adoptive parent A who
-		// already has biological children B, C. B and C should surface as
-		// Galen's adoptive siblings.
-		const galen = makePerson({ crId: 'galen', adoptiveFatherCrId: 'adoptive-a' });
-		const adoptiveA = makePerson({
-			crId: 'adoptive-a',
-			childrenCrIds: ['b', 'c', 'galen']
+	it('Galen case (post-#525/#526): adopted child sees adoptive parent\'s bio kids', () => {
+		// Galen is adopted by the Wilkins; their bio kids surface as his
+		// adoptive siblings via adoptive-parent's childrenCrIds. After the
+		// #525/#526 fix, Galen lives in adoptedChildCrIds — never in the
+		// parent's childrenCrIds — so the parent-side mirror is checked too.
+		const galen = makePerson({ crId: 'galen', adoptiveFatherCrId: 'wilkin-dad' });
+		const wilkinDad = makePerson({
+			crId: 'wilkin-dad',
+			childrenCrIds: ['twin-a', 'twin-b'],
+			adoptedChildCrIds: ['galen']
 		});
-		const result = findAdoptiveSiblingCrIds(galen, makeLookup([galen, adoptiveA]));
-		expect(result.sort()).toEqual(['b', 'c']);
+		const result = findAdoptiveSiblingCrIds(galen, makeLookup([galen, wilkinDad]));
+		expect(result.sort()).toEqual(['twin-a', 'twin-b']);
 	});
 });
