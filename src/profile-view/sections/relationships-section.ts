@@ -22,6 +22,21 @@ export function isOtherRelationship(rel: ParsedRelationship): boolean {
 	return true;
 }
 
+/**
+ * Test whether a relationship is a family-category custom type that needs to
+ * be rendered inside the Family subsection (#533). Built-in family types that
+ * already have a `familyGraphMapping` are excluded — they're surfaced via the
+ * PersonNode-derived rows (Father / Mother / Spouse / etc.) and would
+ * otherwise duplicate. The remaining set is custom user-defined types like
+ * `twin`, plus any built-in family types without a graph mapping that the
+ * Family subsection wouldn't otherwise know about.
+ */
+export function isFamilyCustomRelationship(rel: ParsedRelationship): boolean {
+	if ((rel.type?.category || 'other') !== 'family') return false;
+	if (rel.type?.builtIn && rel.type?.familyGraphMapping) return false;
+	return true;
+}
+
 interface RelationshipsSectionOptions {
 	sectionStates: SectionState;
 	onToggle: SectionToggleFn;
@@ -46,6 +61,14 @@ export function renderRelationshipsSection(
 		[...data.relationships, ...data.inverseRelationships].filter(isOtherRelationship)
 	);
 
+	// Family-category custom types (#533): types like `twin` that the user
+	// filed under the Family category. Excluded from Other by category, and
+	// not picked up by the Family subsection's PersonNode-derived rendering,
+	// so they need to be threaded into the Family subsection explicitly.
+	const familyCustoms = deduplicateRelationships(
+		[...data.relationships, ...data.inverseRelationships].filter(isFamilyCustomRelationship)
+	);
+
 	// Build set of crIds covered by custom Other relationships so the Family section
 	// can suppress generic entries for them (e.g., skip "Parent" when "Sire" covers it)
 	const otherTargetCrIds = new Set<string>();
@@ -55,8 +78,9 @@ export function renderRelationshipsSection(
 		}
 	}
 
-	// Adjust family count: subtract entries that will be suppressed in favor of custom Other relationships
-	const adjustedFamilyCount = options.familyCount - otherTargetCrIds.size;
+	// Adjust family count: subtract entries that will be suppressed in favor of custom Other relationships,
+	// then add the family-category customs we'll render inline.
+	const adjustedFamilyCount = options.familyCount - otherTargetCrIds.size + familyCustoms.length;
 	const totalCount = adjustedFamilyCount + allOther.length;
 	const summaryParts: string[] = [];
 	if (adjustedFamilyCount > 0) summaryParts.push(`${adjustedFamilyCount} family`);
@@ -76,7 +100,7 @@ export function renderRelationshipsSection(
 
 	// Family subsection (always expanded)
 	if (adjustedFamilyCount > 0) {
-		renderFamilySubsection(content, data, options, otherTargetCrIds);
+		renderFamilySubsection(content, data, options, otherTargetCrIds, familyCustoms);
 	}
 
 	if (allOther.length > 0) {
@@ -88,7 +112,8 @@ function renderFamilySubsection(
 	container: HTMLElement,
 	data: PersonProfileData,
 	options: RelationshipsSectionOptions,
-	otherTargetCrIds: Set<string>
+	otherTargetCrIds: Set<string>,
+	familyCustoms: ParsedRelationship[]
 ): void {
 	const familyEl = container.createDiv({ cls: 'cr-profile__relationships-family' });
 	const node = data.node;
@@ -165,6 +190,72 @@ function renderFamilySubsection(
 	}
 	if (childEntries.length > 0) {
 		renderRelGroup(familyEl, 'Children', childEntries, options);
+	}
+
+	// Family-category custom relationships (#533): grouped by type name
+	// (preserves first-seen order so the display follows declaration order).
+	if (familyCustoms.length > 0) {
+		const byType = new Map<string, ParsedRelationship[]>();
+		for (const rel of familyCustoms) {
+			const typeKey = rel.type?.name || rel.type?.id || 'Related';
+			if (!byType.has(typeKey)) byType.set(typeKey, []);
+			byType.get(typeKey)!.push(rel);
+		}
+		for (const [typeName, rels] of byType) {
+			renderFamilyCustomGroup(familyEl, typeName, rels, options);
+		}
+	}
+}
+
+/**
+ * Render a family-category custom relationship group inside the Family
+ * subsection (#533). Mirrors the row + notes layout from the Other
+ * subsection (each entry wrapped in `cr-profile__rel-item` so notes can
+ * sit beneath the row), and uses the type name for both the group title
+ * and the row label so the section reads consistently with the Other
+ * subsection's category groupings.
+ */
+function renderFamilyCustomGroup(
+	container: HTMLElement,
+	typeName: string,
+	rels: ParsedRelationship[],
+	options: RelationshipsSectionOptions
+): void {
+	const group = container.createDiv({ cls: 'cr-profile__rel-group' });
+	group.createSpan({ text: typeName, cls: 'cr-profile__rel-group-title' });
+
+	for (const rel of rels) {
+		const item = group.createDiv({ cls: 'cr-profile__rel-item' });
+		const row = item.createDiv({ cls: 'cr-profile__rel-row' });
+		row.createSpan({ text: typeName, cls: 'cr-profile__rel-type-label' });
+
+		const link = row.createSpan({
+			text: rel.targetName,
+			cls: 'cr-profile__entity-link'
+		});
+
+		if (rel.targetCrId && rel.targetFilePath) {
+			link.addEventListener('click', () => {
+				options.onEntityLinkClick(
+					rel.targetCrId!,
+					rel.targetName,
+					'person',
+					rel.targetFilePath!
+				);
+			});
+		}
+
+		if (rel.from || rel.to) {
+			const dates = rel.from && rel.to ? `${rel.from} – ${rel.to}` : rel.from || `– ${rel.to}`;
+			row.createSpan({ text: dates, cls: 'cr-profile__rel-dates' });
+		}
+
+		if (rel.notes && rel.notes.trim()) {
+			item.createDiv({
+				text: rel.notes,
+				cls: 'cr-profile__rel-notes'
+			});
+		}
 	}
 }
 
