@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Added
+
+- **The Person Profile View now shows organization memberships** ([#536](https://github.com/banisterious/obsidian-charted-roots/issues/536)): A new "Memberships" section appears between Relationships and Events on a person's profile when they have at least one organization membership (hidden otherwise). Each row shows the role label, organization link (clickable for entity navigation), date range, a "Current" badge for ongoing memberships, and per-membership notes on a separate line beneath in italic muted text — mirroring the layout of the Other Relationships subsection. Closes the long-standing inverse direction: the Organization Profile View has shown members for a while, but the Person Profile didn't show what organizations they belonged to. Reported by @doctorwodka.
+
 ### Changed
 
 - **The Organization Profile View's Members section now groups members by role and sorts within each group** ([#535](https://github.com/banisterious/obsidian-charted-roots/issues/535)): Previously the section rendered as a flat list with `member` array order — readable for small orgs but hard to parse once role distinctions mattered. Members now appear under uppercase role headings (e.g. `FOUNDER`, `BISHOP`) with members sorted by name within each group, and the "MEMBERS" heading covering anyone with no explicit role. Order rules match the existing dynamic Members block (`charted-roots-members`): the org's declared `roles` list pins a sequence at the top, remaining named roles fall through alphabetically, and the no-role group is always last. The shared logic now lives in a single helper (`groupMembersByRole`) consumed by both the dynamic block and the profile section so the two surfaces stay in sync. Reported by @doctorwodka. 10 new tests in `tests/group-members-by-role.test.ts`.

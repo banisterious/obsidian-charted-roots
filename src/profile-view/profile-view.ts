@@ -23,6 +23,7 @@ import type {
 import { ProfileDataLoader } from './profile-data-loader';
 import { renderIdentityHeader } from './sections/identity-section';
 import { renderRelationshipsSection, isOtherRelationship } from './sections/relationships-section';
+import { renderMembershipsSection } from './sections/memberships-section';
 import { renderEventsSection } from './sections/events-section';
 import { renderSourcesSection } from './sections/sources-section';
 import { renderCitationsSection } from './sections/citations-section';
@@ -434,6 +435,8 @@ export class ProfileView extends ItemView {
 			familyCount,
 			otherCount
 		});
+
+		renderMembershipsSection(this.sectionsEl, data.memberships, options);
 
 		renderEventsSection(this.sectionsEl, data.events, {
 			...options,
