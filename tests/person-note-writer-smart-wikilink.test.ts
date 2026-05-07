@@ -120,3 +120,117 @@ describe('createSmartWikilink — cr_id-based file resolution (#524)', () => {
 		expect(fixed).toBe('[[Susan Smith|Susan Anderson]]');
 	});
 });
+
+/**
+ * #537 regression: cascade saves used to accumulate `|alias` segments on
+ * existing wikilinks until they became unparseable, at which point the
+ * bidirectional linker treated the slot as broken and silently dropped the
+ * reference. The chain:
+ *   1. First write (legitimate, basename≠name): produces [[basename|alias]].
+ *   2. Loader's `extractName` regex preserves the pipe — by design, since the
+ *      downstream resolver splits on `|` to get the basename stem.
+ *   3. Next write fed `basename|alias` to `createSmartWikilink`. With no
+ *      bracket-prefix early-return and no pipe handling, the helper compared
+ *      the file's basename against the *piped* input, found them different,
+ *      and wrapped with another pipe: [[basename|basename|alias]].
+ *   4. Repeat → [[basename|basename|basename|alias]] → unparseable → dropped.
+ *
+ * The fix collapses `basename|alias` stem form to the trailing alias before
+ * the basename comparison, making the helper idempotent under round-trip and
+ * self-healing for already-corrupted vaults.
+ */
+describe('createSmartWikilink — pipe-stem idempotency (#537)', () => {
+	it('is idempotent when fed its own [[basename|alias]] output via extractName-style stem', () => {
+		const app = new App();
+		seedPerson(app, {
+			path: 'People/mildred-barrow.md',
+			basename: 'mildred-barrow',
+			name: 'Mildred Barrow',
+			crId: 'person-mildred',
+		});
+
+		const first = createSmartWikilink('Mildred Barrow', app, 'person-mildred');
+		expect(first).toBe('[[mildred-barrow|Mildred Barrow]]');
+
+		// Loader's extractName on `[[mildred-barrow|Mildred Barrow]]` returns
+		// the stem `mildred-barrow|Mildred Barrow`. The next write must not
+		// add another pipe.
+		const second = createSmartWikilink('mildred-barrow|Mildred Barrow', app, 'person-mildred');
+		expect(second).toBe('[[mildred-barrow|Mildred Barrow]]');
+
+		// Third pass — still stable.
+		const third = createSmartWikilink('mildred-barrow|Mildred Barrow', app, 'person-mildred');
+		expect(third).toBe('[[mildred-barrow|Mildred Barrow]]');
+	});
+
+	it('self-heals existing accumulated triple-pipe corruption', () => {
+		const app = new App();
+		seedPerson(app, {
+			path: 'People/Errol Naberrie.md',
+			basename: 'Errol Naberrie',
+			name: 'Errol Naberrie',
+			crId: 'person-errol',
+		});
+
+		// Vault state has been corrupted by previous cascades into the
+		// triple-pipe form. The next save (loader strips brackets via
+		// extractName) feeds the inner segments back as a piped stem.
+		const stem = 'Errol Naberrie|Errol Naberrie|Errol Naberrie';
+		const result = createSmartWikilink(stem, app, 'person-errol');
+
+		// Heals back to the canonical bare form because basename === alias.
+		expect(result).toBe('[[Errol Naberrie]]');
+	});
+
+	it('self-heals triple-pipe corruption when basename differs from name', () => {
+		const app = new App();
+		seedPerson(app, {
+			path: 'People/mildred-barrow.md',
+			basename: 'mildred-barrow',
+			name: 'Mildred Barrow',
+			crId: 'person-mildred',
+		});
+
+		// After several cascade passes the wikilink had become
+		// [[mildred-barrow|mildred-barrow|Mildred Barrow]]; loader extracts
+		// the inner content as a piped stem.
+		const stem = 'mildred-barrow|mildred-barrow|Mildred Barrow';
+		const result = createSmartWikilink(stem, app, 'person-mildred');
+
+		// Heals to the canonical aliased form.
+		expect(result).toBe('[[mildred-barrow|Mildred Barrow]]');
+	});
+
+	it('preserves the bare [[name]] form across repeated saves when basename matches', () => {
+		const app = new App();
+		seedPerson(app, {
+			path: 'People/Errol Naberrie.md',
+			basename: 'Errol Naberrie',
+			name: 'Errol Naberrie',
+			crId: 'person-errol',
+		});
+
+		const first = createSmartWikilink('Errol Naberrie', app, 'person-errol');
+		expect(first).toBe('[[Errol Naberrie]]');
+
+		// extractName on `[[Errol Naberrie]]` returns `Errol Naberrie` — no
+		// pipe, no stem-collapse needed.
+		const second = createSmartWikilink('Errol Naberrie', app, 'person-errol');
+		expect(second).toBe('[[Errol Naberrie]]');
+	});
+
+	it('handles trailing whitespace inside the alias stem without re-piping', () => {
+		const app = new App();
+		seedPerson(app, {
+			path: 'People/mildred-barrow.md',
+			basename: 'mildred-barrow',
+			name: 'Mildred Barrow',
+			crId: 'person-mildred',
+		});
+
+		// Defensive: a stray space after the alias shouldn't trip basename
+		// comparison.
+		const result = createSmartWikilink('mildred-barrow|Mildred Barrow ', app, 'person-mildred');
+		expect(result).toBe('[[mildred-barrow|Mildred Barrow]]');
+	});
+});

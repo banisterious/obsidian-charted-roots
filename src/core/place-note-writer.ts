@@ -497,26 +497,32 @@ function createSmartWikilink(name: string, app: App, crId?: string): string {
 		return `"${name}"`;
 	}
 
+	// Idempotency: collapse `basename|alias` stem form to the alias so repeated
+	// saves don't accumulate `|alias` segments (#537).
+	const displayName = name.includes('|')
+		? name.split('|').pop()!.trim() || name
+		: name;
+
 	// Preferred path: when caller provides cr_id, look up the file by cr_id
 	// to derive the basename directly. Mirrors person-note-writer's #524 fix.
 	if (crId) {
 		const fileById = findFileByCrId(app, crId);
 		if (fileById) {
-			if (fileById.basename !== name) {
-				return `"[[${fileById.basename}|${name}]]"`;
+			if (fileById.basename !== displayName) {
+				return `"[[${fileById.basename}|${displayName}]]"`;
 			}
-			return `"[[${name}]]"`;
+			return `"[[${displayName}]]"`;
 		}
 	}
 
 	// Fallback: try to resolve the name to a file
-	const resolvedFile = app.metadataCache.getFirstLinkpathDest(name, '');
-	if (resolvedFile && resolvedFile.basename !== name) {
-		return `"[[${resolvedFile.basename}|${name}]]"`;
+	const resolvedFile = app.metadataCache.getFirstLinkpathDest(displayName, '');
+	if (resolvedFile && resolvedFile.basename !== displayName) {
+		return `"[[${resolvedFile.basename}|${displayName}]]"`;
 	}
 
 	// Standard format
-	return `"[[${name}]]"`;
+	return `"[[${displayName}]]"`;
 }
 
 /**
@@ -541,22 +547,27 @@ function createWikilink(name: string, app: App, crId?: string): string {
 		return name;
 	}
 
+	// Idempotency on `basename|alias` stem form (#537).
+	const displayName = name.includes('|')
+		? name.split('|').pop()!.trim() || name
+		: name;
+
 	if (crId) {
 		const fileById = findFileByCrId(app, crId);
 		if (fileById) {
-			if (fileById.basename !== name) {
-				return `[[${fileById.basename}|${name}]]`;
+			if (fileById.basename !== displayName) {
+				return `[[${fileById.basename}|${displayName}]]`;
 			}
-			return `[[${name}]]`;
+			return `[[${displayName}]]`;
 		}
 	}
 
-	const resolvedFile = app.metadataCache.getFirstLinkpathDest(name, '');
-	if (resolvedFile && resolvedFile.basename !== name) {
-		return `[[${resolvedFile.basename}|${name}]]`;
+	const resolvedFile = app.metadataCache.getFirstLinkpathDest(displayName, '');
+	if (resolvedFile && resolvedFile.basename !== displayName) {
+		return `[[${resolvedFile.basename}|${displayName}]]`;
 	}
 
-	return `[[${name}]]`;
+	return `[[${displayName}]]`;
 }
 
 /**

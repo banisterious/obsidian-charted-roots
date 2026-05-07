@@ -57,30 +57,39 @@ export function createSmartWikilink(name: string, app: App, crId?: string): stri
 	// Strip existing brackets if present
 	const cleanName = stripWikilink(name);
 
+	// Idempotency: when `name` arrives in `basename|alias` stem form (the loader's
+	// `extractName` deliberately preserves the pipe so the resolver downstream can
+	// split on it), use the trailing alias segment as the canonical display name.
+	// Without this, repeated saves accumulate `|alias` segments until the wikilink
+	// becomes unparseable and the bidirectional linker silently drops it (#537).
+	const displayName = cleanName.includes('|')
+		? cleanName.split('|').pop()!.trim() || cleanName
+		: cleanName;
+
 	// Preferred path: when caller provides cr_id, look up the file by cr_id
 	// to derive the basename directly. This is the only reliable disambiguator
 	// when a person's `name` differs from their filename (#524). The fallback
-	// `getFirstLinkpathDest(cleanName)` below relies on `cleanName` matching
+	// `getFirstLinkpathDest(displayName)` below relies on `displayName` matching
 	// some file's basename, which silently fails when name and filename diverge.
 	if (crId) {
 		const fileById = findFileByCrId(app, crId);
 		if (fileById) {
-			if (fileById.basename !== cleanName) {
-				return `[[${fileById.basename}|${cleanName}]]`;
+			if (fileById.basename !== displayName) {
+				return `[[${fileById.basename}|${displayName}]]`;
 			}
-			return `[[${cleanName}]]`;
+			return `[[${displayName}]]`;
 		}
 		// Fall through to name-based lookup if cr_id doesn't resolve
 	}
 
 	// Fallback: try to resolve the name to a file via Obsidian's link resolver
-	const resolvedFile = app.metadataCache.getFirstLinkpathDest(cleanName, '');
-	if (resolvedFile && resolvedFile.basename !== cleanName) {
-		return `[[${resolvedFile.basename}|${cleanName}]]`;
+	const resolvedFile = app.metadataCache.getFirstLinkpathDest(displayName, '');
+	if (resolvedFile && resolvedFile.basename !== displayName) {
+		return `[[${resolvedFile.basename}|${displayName}]]`;
 	}
 
 	// Standard format
-	return `[[${cleanName}]]`;
+	return `[[${displayName}]]`;
 }
 
 /**
