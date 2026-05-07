@@ -46,7 +46,7 @@ A new "Memberships" section appears between Relationships and Events on a person
 
 Previously the Members section in the Organization Profile View rendered as a flat list with `member` array order — readable for small orgs but hard to parse once role distinctions mattered. Members now appear under uppercase role headings (`FOUNDER`, `BISHOP`, etc.) with members sorted by name within each group, and a "MEMBERS" heading covering anyone with no explicit role. Order rules match the dynamic Members block: the org's declared `roles` list pins a sequence at the top, remaining named roles fall through alphabetically, and the no-role group is always last. The grouping logic now lives in a shared helper consumed by both the dynamic block and the profile section, so the two surfaces stay consistent. Reported by @doctorwodka.
 
-[More in Organization Notes →](/features/#organization-notes)
+[More in Organizations →](/features/#organizations)
 
 ### Per-image captions in the dynamic media gallery ([#523](https://github.com/banisterious/obsidian-charted-roots/issues/523))
 
