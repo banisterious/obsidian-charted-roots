@@ -4,128 +4,83 @@ import type { App } from 'obsidian';
 import type { CanvasRootsSettings } from '../src/core/settings';
 
 /**
- * Coverage for `parseMediaCaptions` (#523). The parser is pure — only
- * reads `frontmatter.media_captions` and produces a Map keyed by image
- * filename. Tests fence the behavior directly without an Obsidian
- * vault or actual settings, since the method doesn't touch either.
+ * Coverage for `parseMediaCaptions` (#523). Captions live in a flat
+ * parallel string array, index-aligned with `media:` (mirroring the
+ * `<type>_notes` pattern from #530). Parser is pure — only reads
+ * `frontmatter.media_captions`. Tests fence the behavior directly
+ * without an Obsidian vault or actual settings.
  */
 
 const service = new MediaService({} as App, {} as CanvasRootsSettings);
 
 describe('MediaService.parseMediaCaptions', () => {
-	it('returns an empty map when media_captions is absent', () => {
+	it('returns an empty array when media_captions is absent', () => {
 		const result = service.parseMediaCaptions({});
-		expect(result.size).toBe(0);
+		expect(result).toEqual([]);
 	});
 
-	it('returns an empty map when media_captions is not an array', () => {
+	it('returns an empty array when media_captions is not an array', () => {
 		const result = service.parseMediaCaptions({ media_captions: 'not-an-array' });
-		expect(result.size).toBe(0);
+		expect(result).toEqual([]);
 	});
 
-	it('parses a single { image, caption } entry into the map', () => {
+	it('parses a single-string array', () => {
+		const fm = { media_captions: ['Wedding day, June 1925'] };
+		const result = service.parseMediaCaptions(fm);
+		expect(result).toEqual(['Wedding day, June 1925']);
+	});
+
+	it('parses multiple strings preserving order and indices', () => {
 		const fm = {
 			media_captions: [
-				{ image: 'wedding-1925.jpg', caption: 'Wedding day, June 1925' }
+				'First',
+				'Second',
+				'Third'
 			]
 		};
 		const result = service.parseMediaCaptions(fm);
-		expect(result.size).toBe(1);
-		expect(result.get('wedding-1925.jpg')).toBe('Wedding day, June 1925');
+		expect(result).toEqual(['First', 'Second', 'Third']);
 	});
 
-	it('parses multiple entries, keyed by filename', () => {
+	it('preserves empty-string slots so callers can correlate by index', () => {
+		// Index-aligned with `media:` — the second image has no caption,
+		// the others do. Empty string is the padding sentinel.
 		const fm = {
-			media_captions: [
-				{ image: 'a.jpg', caption: 'First' },
-				{ image: 'b.jpg', caption: 'Second' },
-				{ image: 'c.jpg', caption: 'Third' }
-			]
+			media_captions: ['First', '', 'Third']
 		};
 		const result = service.parseMediaCaptions(fm);
-		expect(result.size).toBe(3);
-		expect(result.get('a.jpg')).toBe('First');
-		expect(result.get('b.jpg')).toBe('Second');
-		expect(result.get('c.jpg')).toBe('Third');
+		expect(result).toEqual(['First', '', 'Third']);
 	});
 
-	it('skips entries with empty caption strings', () => {
+	it('coerces non-string array entries to empty strings', () => {
 		const fm = {
-			media_captions: [
-				{ image: 'a.jpg', caption: 'Real caption' },
-				{ image: 'b.jpg', caption: '' },
-				{ image: 'c.jpg', caption: '   ' }
-			]
+			media_captions: ['First', 42, null, 'Fourth', true]
 		};
 		const result = service.parseMediaCaptions(fm);
-		expect(result.size).toBe(1);
-		expect(result.get('a.jpg')).toBe('Real caption');
-		expect(result.has('b.jpg')).toBe(false);
-		expect(result.has('c.jpg')).toBe(false);
-	});
-
-	it('skips entries missing the image filename', () => {
-		const fm = {
-			media_captions: [
-				{ caption: 'Orphaned caption' },
-				{ image: '', caption: 'Empty image key' },
-				{ image: 'a.jpg', caption: 'Valid' }
-			]
-		};
-		const result = service.parseMediaCaptions(fm);
-		expect(result.size).toBe(1);
-		expect(result.get('a.jpg')).toBe('Valid');
-	});
-
-	it('skips non-string caption values', () => {
-		const fm = {
-			media_captions: [
-				{ image: 'a.jpg', caption: 42 },
-				{ image: 'b.jpg', caption: null },
-				{ image: 'c.jpg', caption: true },
-				{ image: 'd.jpg', caption: 'Valid' }
-			]
-		};
-		const result = service.parseMediaCaptions(fm);
-		expect(result.size).toBe(1);
-		expect(result.get('d.jpg')).toBe('Valid');
-	});
-
-	it('skips non-object array entries', () => {
-		const fm = {
-			media_captions: [
-				'a string',
-				null,
-				42,
-				{ image: 'a.jpg', caption: 'Valid' }
-			]
-		};
-		const result = service.parseMediaCaptions(fm);
-		expect(result.size).toBe(1);
-		expect(result.get('a.jpg')).toBe('Valid');
+		expect(result).toEqual(['First', '', '', 'Fourth', '']);
 	});
 
 	it('preserves caption text including punctuation and Unicode', () => {
 		const fm = {
 			media_captions: [
-				{ image: 'a.jpg', caption: 'Wedding — June 1925, Aix-en-Provence' },
-				{ image: 'b.jpg', caption: 'お祝い 1975' }
+				'Wedding — June 1925, Aix-en-Provence',
+				'お祝い 1975'
 			]
 		};
 		const result = service.parseMediaCaptions(fm);
-		expect(result.get('a.jpg')).toBe('Wedding — June 1925, Aix-en-Provence');
-		expect(result.get('b.jpg')).toBe('お祝い 1975');
+		expect(result).toEqual([
+			'Wedding — June 1925, Aix-en-Provence',
+			'お祝い 1975'
+		]);
 	});
 
-	it('does not trim leading/trailing whitespace from non-empty captions', () => {
-		// We treat all-whitespace as empty (skipped above), but preserve
-		// internal padding when the user deliberately included it.
+	it('does not trim whitespace on individual entries', () => {
+		// Render-time logic decides whether to display whitespace-only
+		// captions; the parser stays faithful to what the user wrote.
 		const fm = {
-			media_captions: [
-				{ image: 'a.jpg', caption: '  with leading spaces' }
-			]
+			media_captions: ['  with leading spaces', '   ']
 		};
 		const result = service.parseMediaCaptions(fm);
-		expect(result.get('a.jpg')).toBe('  with leading spaces');
+		expect(result).toEqual(['  with leading spaces', '   ']);
 	});
 });

@@ -156,8 +156,9 @@ export class MediaRenderer {
 			}
 		}
 
-		// Parse media_captions array (#523) — keyed by filename, mirroring media_crop.
-		const captionMap = this.plugin.getMediaService()?.parseMediaCaptions(frontmatter) ?? new Map<string, string>();
+		// Parse media_captions (#523) — flat parallel array, index-aligned
+		// with `media:` so each caption corresponds to the same-index entry.
+		const captions = this.plugin.getMediaService()?.parseMediaCaptions(frontmatter) ?? [];
 
 		// Convert to MediaItem objects
 		const items: MediaItem[] = [];
@@ -174,11 +175,12 @@ export class MediaRenderer {
 				if (crop) {
 					item.crop = crop;
 				}
-				// Attach caption if defined (#523)
-				const caption = captionMap.get(item.file.name) || captionMap.get(item.file.basename + '.' + item.file.extension);
-				if (caption) {
-					item.caption = caption;
-				}
+			}
+
+			// Attach caption if defined (#523) — index-aligned with `media:`.
+			const caption = captions[i];
+			if (caption && caption.trim().length > 0) {
+				item.caption = caption;
 			}
 
 			// Apply filter
@@ -678,9 +680,10 @@ export class MediaRenderer {
 		// Visually reorder DOM elements
 		this.updateGridOrder();
 
-		// Update frontmatter
+		// Update frontmatter — reshuffle media + media_captions in lockstep
+		// since captions are index-aligned with the media array (#523).
 		const newMediaRefs = this.currentItems.map(item => item.wikilink);
-		await this.updateMediaFrontmatter(this.currentContext.file, newMediaRefs);
+		await this.updateMediaFrontmatter(this.currentContext.file, newMediaRefs, fromIndex, toIndex);
 
 		new Notice('Media order updated');
 	}
@@ -777,14 +780,41 @@ export class MediaRenderer {
 	}
 
 	/**
-	 * Update the media frontmatter property with new order
+	 * Update the media frontmatter property with new order. When called
+	 * from a drag-reorder, reshuffles `media_captions` in lockstep so
+	 * the index-aligned captions follow their images (#523).
 	 */
-	private async updateMediaFrontmatter(file: TFile, mediaRefs: string[]): Promise<void> {
+	private async updateMediaFrontmatter(
+		file: TFile,
+		mediaRefs: string[],
+		fromIndex?: number,
+		toIndex?: number
+	): Promise<void> {
 		await this.plugin.app.fileManager.processFrontMatter(file, (fm) => {
 			if (mediaRefs.length > 0) {
 				fm.media = mediaRefs;
 			} else {
 				delete fm.media;
+			}
+
+			if (fromIndex === undefined || toIndex === undefined) return;
+			if (!Array.isArray(fm.media_captions)) return;
+
+			const captions = fm.media_captions.map((v: unknown) => (typeof v === 'string' ? v : ''));
+			// Pad to cover both indices before splicing, so we don't lose
+			// alignment when captions is shorter than the media array.
+			const maxIndex = Math.max(fromIndex, toIndex);
+			while (captions.length <= maxIndex) captions.push('');
+			const [moved] = captions.splice(fromIndex, 1);
+			captions.splice(toIndex, 0, moved);
+
+			while (captions.length > 0 && captions[captions.length - 1] === '') {
+				captions.pop();
+			}
+			if (captions.length === 0) {
+				delete fm.media_captions;
+			} else {
+				fm.media_captions = captions;
 			}
 		});
 	}
@@ -866,9 +896,10 @@ export class MediaRenderer {
 
 	/**
 	 * Save (or update) a per-image caption to the entity note's frontmatter
-	 * (#523). Mirrors `saveCropToFrontmatter` — keyed by image filename so
-	 * captions survive reordering of the primary `media:` array. An empty
-	 * caption is treated as a removal request.
+	 * (#523). Captions live in a flat `media_captions` parallel array
+	 * index-aligned with the `media:` array (matching the `<type>_notes`
+	 * pattern from #530). The slot for `imageName` is located by matching
+	 * each `media:` wikilink's basename. Empty caption = remove.
 	 */
 	private saveCaptionToFrontmatter(result: CaptionResult): void {
 		if (!this.currentContext) return;
@@ -879,13 +910,14 @@ export class MediaRenderer {
 		}
 
 		void this.plugin.app.fileManager.processFrontMatter(this.currentContext.file, (fm) => {
-			const captions = Array.isArray(fm.media_captions) ? [...fm.media_captions] : [];
+			const targetIndex = this.findMediaIndex(fm, result.image);
+			if (targetIndex < 0) return;
 
-			// Replace any existing entry for this image, then append the new one.
-			const filtered = captions.filter((c: Record<string, unknown>) => c.image !== result.image);
-			filtered.push({ image: result.image, caption: result.caption });
+			const captions = this.normalizeCaptionsArray(fm.media_captions);
+			while (captions.length <= targetIndex) captions.push('');
+			captions[targetIndex] = result.caption;
 
-			fm.media_captions = filtered;
+			this.assignCaptions(fm, captions);
 		});
 	}
 
@@ -896,16 +928,57 @@ export class MediaRenderer {
 		if (!this.currentContext) return;
 
 		void this.plugin.app.fileManager.processFrontMatter(this.currentContext.file, (fm) => {
-			if (!Array.isArray(fm.media_captions)) return;
+			const targetIndex = this.findMediaIndex(fm, imageName);
+			if (targetIndex < 0) return;
 
-			fm.media_captions = fm.media_captions.filter((c: Record<string, unknown>) => c.image !== imageName);
-
-			if (fm.media_captions.length === 0) {
-				delete fm.media_captions;
-			}
+			const captions = this.normalizeCaptionsArray(fm.media_captions);
+			if (targetIndex >= captions.length) return;
+			captions[targetIndex] = '';
+			this.assignCaptions(fm, captions);
 		});
 
 		new Notice('Caption removed');
+	}
+
+	/**
+	 * Locate the index of a media item by filename within `fm.media`.
+	 * Compares against the basename of each wikilink target so paths and
+	 * aliases don't trip the match. Returns -1 if not found.
+	 */
+	private findMediaIndex(fm: Record<string, unknown>, imageName: string): number {
+		const mediaRefs = Array.isArray(fm.media) ? fm.media : (fm.media ? [fm.media] : []);
+		for (let i = 0; i < mediaRefs.length; i++) {
+			const raw = mediaRefs[i];
+			const refStr = typeof raw === 'string' ? raw : (raw && typeof raw === 'object' && 'link' in raw ? `[[${(raw as { link: string }).link}]]` : '');
+			const match = refStr.match(/^\[\[(.*?)(?:\|.*?)?\]\]$/);
+			if (!match) continue;
+			const target = match[1];
+			const basename = target.split('/').pop() || target;
+			if (basename === imageName) return i;
+		}
+		return -1;
+	}
+
+	/** Coerce the existing media_captions value into a string[] for in-place edits. */
+	private normalizeCaptionsArray(raw: unknown): string[] {
+		if (!Array.isArray(raw)) return [];
+		return raw.map(v => (typeof v === 'string' ? v : ''));
+	}
+
+	/**
+	 * Persist the captions array onto frontmatter, trimming trailing
+	 * empty slots so the YAML stays compact, and removing the property
+	 * entirely when no captions remain.
+	 */
+	private assignCaptions(fm: Record<string, unknown>, captions: string[]): void {
+		while (captions.length > 0 && captions[captions.length - 1] === '') {
+			captions.pop();
+		}
+		if (captions.length === 0) {
+			delete fm.media_captions;
+		} else {
+			fm.media_captions = captions;
+		}
 	}
 
 	private getDocumentIconName(extension: string): string {

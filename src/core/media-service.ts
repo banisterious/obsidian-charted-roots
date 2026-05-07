@@ -255,30 +255,17 @@ export class MediaService {
 	}
 
 	/**
-	 * Parse media_captions array from frontmatter (#523).
-	 * Returns a map of image filename → caption text.
+	 * Parse media_captions from frontmatter (#523).
 	 *
-	 * Mirrors the `media_crop` shape — a list of `{ image, caption }`
-	 * objects keyed by filename so captions survive reordering of the
-	 * primary `media:` array. Empty / missing captions are skipped.
+	 * Captions live in a flat parallel string array, index-aligned with
+	 * the `media:` array (matching the `<type>_notes` pattern from #530).
+	 * Empty / missing slots are returned as empty strings so the caller
+	 * can correlate by index.
 	 */
-	parseMediaCaptions(frontmatter: Record<string, unknown>): Map<string, string> {
-		const captions = new Map<string, string>();
-		const rawCaptions = frontmatter.media_captions;
-
-		if (!Array.isArray(rawCaptions)) return captions;
-
-		for (const entry of rawCaptions) {
-			if (typeof entry !== 'object' || !entry) continue;
-			const obj = entry as Record<string, unknown>;
-			const image = obj.image as string;
-			const caption = obj.caption;
-			if (image && typeof caption === 'string' && caption.trim().length > 0) {
-				captions.set(image, caption);
-			}
-		}
-
-		return captions;
+	parseMediaCaptions(frontmatter: Record<string, unknown>): string[] {
+		const raw = frontmatter.media_captions;
+		if (!Array.isArray(raw)) return [];
+		return raw.map(v => (typeof v === 'string' ? v : ''));
 	}
 
 	/**
