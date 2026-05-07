@@ -560,7 +560,7 @@ export class ProfileView extends ItemView {
 	): void {
 		if (!this.sectionsEl) return;
 
-		renderMembersSection(this.sectionsEl, data.members, options);
+		renderMembersSection(this.sectionsEl, data.members, data.org, options);
 
 		renderEventsSection(this.sectionsEl, data.events, {
 			...options,

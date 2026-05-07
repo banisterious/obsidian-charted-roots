@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Changed
+
+- **The Organization Profile View's Members section now groups members by role and sorts within each group** ([#535](https://github.com/banisterious/obsidian-charted-roots/issues/535)): Previously the section rendered as a flat list with `member` array order — readable for small orgs but hard to parse once role distinctions mattered. Members now appear under uppercase role headings (e.g. `FOUNDER`, `BISHOP`) with members sorted by name within each group, and the "MEMBERS" heading covering anyone with no explicit role. Order rules match the existing dynamic Members block (`charted-roots-members`): the org's declared `roles` list pins a sequence at the top, remaining named roles fall through alphabetically, and the no-role group is always last. The shared logic now lives in a single helper (`groupMembersByRole`) consumed by both the dynamic block and the profile section so the two surfaces stay in sync. Reported by @doctorwodka. 10 new tests in `tests/group-members-by-role.test.ts`.
+
 ### Fixed
 
 - **Children in the Dynamic Relationship Block are now sorted by birth date** ([#532](https://github.com/banisterious/obsidian-charted-roots/issues/532) follow-up): The 0.22.21 sort applied to siblings only — the Children section still iterated `childrenCrIds`, then `adoptedChildCrIds`, then `stepchildrenCrIds` in array order, leaving adopted and step children appended at the end of the list regardless of birth date. @DigitalDreamn caught this during 0.22.21 verification: Galen (adopted) sat below his younger bio siblings on his adoptive parents' page, and Ben's family showed Ben + elder brother out of order on dad's view because dad's `children:` frontmatter array was unsorted. Bio + adopted + step children are now merged and sorted using the same universe-aware `sortByBirthDate` helper (#532) that handles the siblings section, so the Children list reads chronologically regardless of frontmatter order or relationship-type source. Reported by @DigitalDreamn.

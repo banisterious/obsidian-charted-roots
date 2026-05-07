@@ -9,6 +9,7 @@
 import { MarkdownRenderer, MarkdownRenderChild, App, TFile } from 'obsidian';
 import type { DynamicBlockConfig, DynamicContentService } from '../services/dynamic-content-service';
 import type { OrganizationInfo, PersonMembership } from '../../organizations/types/organization-types';
+import { groupMembersByRole, NO_ROLE_HEADING } from '../../organizations/utils/group-members-by-role';
 import { splitAndTrim } from '../../utils/format-utils';
 
 /**
@@ -36,9 +37,6 @@ export interface MembersContext {
 	/** App instance for rendering */
 	app: App;
 }
-
-/** Default heading for the no-role group */
-const NO_ROLE_HEADING = 'Members';
 
 /**
  * Renders organization members content into an HTML element
@@ -95,7 +93,7 @@ export class MembersRenderer {
 			if (!roleOrder && context.organization.roles && context.organization.roles.length > 0) {
 				roleOrder = context.organization.roles;
 			}
-			const groups = this.groupByRole(entries, roleOrder);
+			const groups = groupMembersByRole(entries, roleOrder);
 			await this.renderSections(contentEl, groups, context, component);
 		} else {
 			// Flat list — single group under the title
@@ -187,57 +185,6 @@ export class MembersRenderer {
 		});
 
 		return entries;
-	}
-
-	/**
-	 * Group entries by role.
-	 * If roleOrder is provided, those roles appear first in that sequence;
-	 * remaining named roles follow alphabetically; no-role group is last.
-	 */
-	private groupByRole(entries: MemberEntry[], roleOrder?: string[]): Map<string, MemberEntry[]> {
-		const roleMap = new Map<string, MemberEntry[]>();
-
-		for (const entry of entries) {
-			const role = entry.role || NO_ROLE_HEADING;
-			const group = roleMap.get(role) || [];
-			group.push(entry);
-			roleMap.set(role, group);
-		}
-
-		// Build ordered key list
-		const sorted = new Map<string, MemberEntry[]>();
-
-		if (roleOrder && roleOrder.length > 0) {
-			// Pinned roles first, in the specified order
-			const pinned = new Set(roleOrder);
-			for (const role of roleOrder) {
-				if (roleMap.has(role)) {
-					sorted.set(role, roleMap.get(role)!);
-				}
-			}
-			// Remaining named roles alphabetically
-			const remaining = Array.from(roleMap.keys())
-				.filter(k => k !== NO_ROLE_HEADING && !pinned.has(k))
-				.sort((a, b) => a.localeCompare(b));
-			for (const key of remaining) {
-				sorted.set(key, roleMap.get(key)!);
-			}
-		} else {
-			// Default: named roles alphabetically
-			const named = Array.from(roleMap.keys())
-				.filter(k => k !== NO_ROLE_HEADING)
-				.sort((a, b) => a.localeCompare(b));
-			for (const key of named) {
-				sorted.set(key, roleMap.get(key)!);
-			}
-		}
-
-		// No-role group always last
-		if (roleMap.has(NO_ROLE_HEADING)) {
-			sorted.set(NO_ROLE_HEADING, roleMap.get(NO_ROLE_HEADING)!);
-		}
-
-		return sorted;
 	}
 
 	/**
@@ -352,7 +299,7 @@ export class MembersRenderer {
 			roleOrder = this.currentContext.organization.roles;
 		}
 		const groups = groupBy === 'role'
-			? this.groupByRole(this.currentEntries, roleOrder)
+			? groupMembersByRole(this.currentEntries, roleOrder)
 			: new Map<string, MemberEntry[]>([[NO_ROLE_HEADING, this.currentEntries]]);
 
 		for (const [heading, entries] of groups) {
