@@ -199,28 +199,38 @@ export class RelationshipsRenderer {
 			}
 		}
 
-		// Children — biological, adopted, step. Mirrors the parents section
-		// pattern (#531 follow-up); each non-bio source labels its entries
-		// to match the corresponding parent label ("Adoptive father" /
-		// "Adopted child", "Stepfather" / "Stepchild", etc.).
+		// Children — biological, adopted, step. Each non-bio source labels
+		// its entries to match the corresponding parent label ("Adoptive
+		// father" / "Adopted child", "Stepfather" / "Stepchild") so the
+		// relationship type is never lost on the parent's side. All three
+		// sources are merged and sorted by birth date (oldest first) using
+		// the same universe-aware comparator the siblings section uses
+		// (#532), so adopted and step children appear in chronological
+		// order alongside bio children rather than appended at the end of
+		// the list.
 		if (shouldInclude('children')) {
+			const items: { person: PersonNode; label?: string }[] = [];
 			for (const childCrId of person.childrenCrIds) {
 				const child = familyGraph.getPersonByCrId(childCrId);
 				if (child) {
-					groups.children.push(this.personToEntry(child));
+					items.push({ person: child });
 				}
 			}
 			for (const adoptedChildCrId of person.adoptedChildCrIds) {
 				const adoptedChild = familyGraph.getPersonByCrId(adoptedChildCrId);
 				if (adoptedChild) {
-					groups.children.push(this.personToEntry(adoptedChild, 'Adopted child'));
+					items.push({ person: adoptedChild, label: 'Adopted child' });
 				}
 			}
 			for (const stepchildCrId of person.stepchildrenCrIds) {
 				const stepchild = familyGraph.getPersonByCrId(stepchildCrId);
 				if (stepchild) {
-					groups.children.push(this.personToEntry(stepchild, 'Stepchild'));
+					items.push({ person: stepchild, label: 'Stepchild' });
 				}
+			}
+			this.sortByBirthDate(items, context.person?.universe);
+			for (const item of items) {
+				groups.children.push(this.personToEntry(item.person, item.label));
 			}
 		}
 
