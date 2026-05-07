@@ -200,7 +200,7 @@ type: immediate
 **What it displays:**
 - Parents (father, mother, adoptive father, adoptive mother, step-parents)
 - Spouse(s)
-- Children — biological children, adopted children (`Adopted child:` label), and stepchildren (`Stepchild:` label), matching the labeling convention used for adoptive / step parents
+- Children — biological children, adopted children (`Adopted child:` label), and stepchildren (`Stepchild:` label), matching the labeling convention used for adoptive / step parents. Bio + adopted + step children are merged and **sorted by birth date** using the same universe-aware comparator as siblings, so the Children list reads chronologically regardless of frontmatter order or relationship-type source.
 - Siblings (when using `type: extended` or `type: all`) — biological siblings share a parent with the focal person; adoptive siblings appear with an `Adoptive sibling:` label and cover three sources: bio kids of the focal's adoptive parents, anyone adopted into the focal's biological-parent household, and other adopted children of the focal's adoptive parents (so the relationship surfaces symmetrically regardless of which side is bio and which is adopted). Bio + adoptive siblings are merged and **sorted by birth date** using the universe's calendar, oldest first — descending fictional eras (e.g. Star Wars BBY) sort correctly alongside Gregorian dates, and persons without a parseable birth date sink to the end while preserving relative order.
 
 Each person is shown as a wikilink with their birth-death years.
@@ -276,6 +276,14 @@ When `editable: true` is set:
 - First item becomes the thumbnail (shown on Family Chart nodes)
 - Frontmatter is updated automatically when you drop
 - Gallery has a dashed border to indicate edit mode
+
+**Per-image captions:**
+
+Each thumbnail can carry a short caption — useful for the deep-archive use case where many photos per person each benefit from a brief label like "1978 - Jon Aged 3" rather than a single long-form description in the note body. Captions render beneath the thumbnail in muted text, single-line truncated with full text on hover.
+
+- Right-click any thumbnail for **Set caption** / **Edit caption** / **Remove caption** options, mirroring the existing crop-region affordance.
+- Captions persist as a flat `media_captions` parallel string array on the entity note's frontmatter, index-aligned with the `media:` array — same shape as the `<type>_notes` pattern from custom relationships. Empty / missing slots are padded with empty strings to keep indices aligned, and the array reshuffles in lockstep when you drag to reorder media in editable mode.
+- Frozen-gallery output (the `❄️` button) preserves captions by injecting them into the wikilink alias slot (`![[wedding-1925.jpg|Wedding day, June 1925]]`), so the static markdown stays self-contained after the block is replaced.
 
 ### Source Roles Block
 
@@ -371,7 +379,7 @@ title: Ownership history
 
 ### Members Block
 
-The `charted-roots-members` block displays the members of an organization, grouped by role. Place this block in an organization note to see all persons who are members.
+The `charted-roots-members` block displays the members of an organization, grouped by role. Place this block in an organization note to see all persons who are members. The [Org Profile View → Members section](Entity-Profile-View#organization-profiles) follows the same role-grouping rules and shares a single grouping helper, so the two surfaces stay consistent.
 
 ~~~markdown
 ```charted-roots-members

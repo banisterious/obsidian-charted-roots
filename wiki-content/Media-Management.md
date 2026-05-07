@@ -159,6 +159,10 @@ editable: true
 - First item becomes the thumbnail (shown on Family Chart nodes)
 - Frontmatter updates automatically when you drop
 
+**Per-image captions:**
+
+Right-click any thumbnail for **Set caption** / **Edit caption** / **Remove caption** options. Captions render beneath the thumbnail in muted text and persist as a flat `media_captions` parallel string array index-aligned with `media:`. Captions ride through reorders and through the freeze-to-callout export (injected as the wikilink alias). See [Dynamic Note Content → Media Block](Dynamic-Note-Content#media-block) for the full caption documentation.
+
 **Inserting the block:**
 
 1. **During import**: Enable "Include dynamic content blocks" in GEDCOM or Gramps import

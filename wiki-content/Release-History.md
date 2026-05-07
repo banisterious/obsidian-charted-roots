@@ -9,6 +9,8 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.23 Hotfix: Marriage-Detail Symmetric Write](#v02223-hotfix-marriage-detail-symmetric-write-v02223)
+  - [v0.22.22 Round-Up: Wikilink Cascade Self-Heal, Profile View Symmetry, and Media Captions](#v02222-round-up-wikilink-cascade-self-heal-profile-view-symmetry-and-media-captions-v02222)
   - [v0.22.21 Round-Up: Dynamic Block Display Paths and Profile View Family-Custom Routing](#v02221-round-up-dynamic-block-display-paths-and-profile-view-family-custom-routing-v02221)
   - [v0.22.20 Round-Up: Mobile Pre-Release Verification and Two Follow-Up Fixes from v0.22.19](#v02220-round-up-mobile-pre-release-verification-and-two-follow-up-fixes-from-v02219-v02220)
   - [v0.22.19 Round-Up: Wikilink cr_id Disambiguation and Relationship Calculator BFS Expansion](#v02219-round-up-wikilink-cr_id-disambiguation-and-relationship-calculator-bfs-expansion-v02219)
@@ -160,6 +162,71 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.23 Hotfix: Marriage-Detail Symmetric Write (v0.22.23)
+
+A focused single-fix follow-up to v0.22.22, shipped same day. Linking a new spouse via Edit Person and adding marriage details (date / location / status / divorce date) in the same save was writing the indexed `spouseN_*` companion fields to the editing person's frontmatter but leaving the spouse's frontmatter with only the flat `spouse:` link — no marriage details mirrored across. Reported by @DigitalDreamn while debugging the broader cascade behavior that became #537.
+
+**Fix: Marriage details now write symmetrically when linking a new spouse via Edit Person** ([#534](https://github.com/banisterious/obsidian-charted-roots/issues/534)):
+- The bidirectional linker's `syncSpouse` ([src/core/bidirectional-linker.ts:850](https://github.com/banisterious/obsidian-charted-roots/blob/main/src/core/bidirectional-linker.ts#L850)) correctly preserved the target's existing format on a new link (per [#420](https://github.com/banisterious/obsidian-charted-roots/issues/420) Gap B's fix from v0.22.0). But for a target with no existing spouse data, `detectSpouseTargetFormat` picked flat, the helper wrote a flat `spouse:` entry, and `targetIndex` stayed null. The marriage-detail mirror step at line 1039 (`if (marriageDetails && targetIndex !== null)`) then short-circuited — flat format genuinely doesn't have a `spouseN_*` companion-field namespace, so the original author treated this as by-design.
+- The fix forces indexed format on the target whenever the source provides marriage details, regardless of the target's current shape: empty targets get `spouse1` + `spouse1_id` + `spouse1_marriage_*`, and targets with existing flat data for OTHER spouses get a new indexed slot alongside the flat data (mixed flat + indexed state, which `detectSpouseTargetFormat` already handles by recognizing 'indexed' on the next sync).
+- New `findNextOpenSpouseSlot` helper extracted to `src/core/spouse-format-detector.ts` — exposes the next open `spouseN` slot uniformly so the linker can pick a slot regardless of whether the detector picked flat or indexed.
+- 10 new tests in `tests/spouse-format-detector.test.ts` covering empty / flat-only / gap-filling / partial-id / all-full slot allocation. Existing `promoteFlatSpouseToIndexed` path for the alreadyLinked-with-same-spouse case is unchanged.
+
+**Testing:** Suite total **661** (was 651 at v0.22.22), 54 suites.
+
+**Reporters:** @DigitalDreamn.
+
+**Stability-window impact:** no reset — [#534](https://github.com/banisterious/obsidian-charted-roots/issues/534) is `medium-priority`, not critical/data-loss. Window remains anchored to v0.22.22 (2026-05-07 → ~2026-05-28).
+
+---
+
+### v0.22.22 Round-Up: Wikilink Cascade Self-Heal, Profile View Symmetry, and Media Captions (v0.22.22)
+
+Five items, one of them resetting the stability window. The headline is a `critical` + `data-loss` + `regression` fix — a wikilink alias-accumulation cascade where repeated saves added another `|alias` segment to existing wikilinks until they became unparseable, at which point the bidirectional linker treated the slot as broken and silently dropped it, propagating the loss outward through related notes (children scrubbed from parents, parents scrubbed from kids). The bug was a regression introduced in v0.22.17's [#510](https://github.com/banisterious/obsidian-charted-roots/issues/510) work (the `createSmartWikilink` helper was added) and broadened in v0.22.19's [#524](https://github.com/banisterious/obsidian-charted-roots/issues/524) extension (cr_id-based file lookup) — exactly the case the soak window's "no critical/data-loss filed during the window" gate is designed to catch. The fix is **idempotent under loader→writer round-trip and self-healing for already-corrupted vaults**: triple-pipe entries collapse back to canonical form on the next save through Edit Person, no manual repair needed.
+
+Around #537, four enhancements rode along: a Person Profile Memberships section mirroring the Org Profile's Members section in the inverse direction, an Org Profile Members grouping/sorting refactor backed by a shared helper, per-image captions in the dynamic media gallery block, and a follow-up to v0.22.21's birth-date sort that extends to the Children section.
+
+**Fix: Cascade saves no longer accumulate `|alias` segments on existing wikilinks until the entry is silently dropped** ([#537](https://github.com/banisterious/obsidian-charted-roots/issues/537), `critical` + `data-loss` + `regression`):
+- `createSmartWikilink` was non-idempotent under the loader's stem form. The loader's `extractName` ([src/plugin/relationship-loader.ts:67](https://github.com/banisterious/obsidian-charted-roots/blob/main/src/plugin/relationship-loader.ts#L67)) deliberately preserves the inner content of `[[basename|alias]]` — including the pipe — so the resolver downstream can split on `|` to find the basename stem. Existing test at `tests/relationship-loader.test.ts:46-49` codifies this contract.
+- The writer side then fed `'mildred-barrow|Mildred Barrow'` (or similar) into `createSmartWikilink`. Without recognizing the pipe, it compared the file's actual basename against the *piped* input, found them different, and wrapped with another pipe → `[[mildred-barrow|mildred-barrow|Mildred Barrow]]`. Each loader→writer round-trip added one segment. After 3+ pipes, the bidirectional linker couldn't parse the wikilink, treated the slot as broken, and removed it on the next pass.
+- The accumulation pattern existed in any vault containing a person whose `name` differs from their filename basename. @DigitalDreamn's vault hit it on every save because of a duplicate-file state (a recovered original alongside a renamed current file, both carrying the same `cr_id`) which made `findFileByCrId` return ambiguous winners that triggered the basename-vs-alias path continuously, instead of needing a name-vs-basename person to seed it.
+- Surfaced during diagnostic work that preceded [#534](https://github.com/banisterious/obsidian-charted-roots/issues/534). Once the corruption pattern was documented (Save 1: `[[Errol Naberrie]]` → Save 2: `[[Errol Naberrie|Errol Naberrie]]` → Save 3: `[[Errol Naberrie|Errol Naberrie|Errol Naberrie]]` → Save 4: entry removed), the trace through `extractName` → `createSmartWikilink` was direct.
+- Fix: collapse `basename|alias` stem input to the trailing alias before the basename comparison, making the helper idempotent under round-trip. Already-corrupted vaults self-heal on the next save: triple-pipe entries collapse back to canonical `[[basename|alias]]` or bare `[[name]]` form. Same fix applied to all four sibling copies of the helper (`person-note-writer.ts`, `place-note-writer.ts`, `organization-service.ts`, `relationship-manager.ts`).
+- 5 new tests in `tests/person-note-writer-smart-wikilink.test.ts` covering idempotency, triple-pipe self-heal in both basename-matches and basename-differs scenarios, and trailing-whitespace robustness.
+
+**Feature: Person Profile Memberships section** ([#536](https://github.com/banisterious/obsidian-charted-roots/issues/536)):
+- New section between Relationships and Events on a person's profile when they have at least one organization membership (hidden otherwise). Mirrors the Org Profile View's Members section in the inverse direction — closes a long-standing UX symmetry gap where the org view showed members but the person view didn't show what organizations they belonged to.
+- Each row shows the role label, organization link (clickable for entity navigation), date range, a "Current" badge for ongoing memberships, and per-membership notes on a separate line beneath in italic muted text — mirroring the layout of the Other Relationships subsection from v0.22.20's [#530](https://github.com/banisterious/obsidian-charted-roots/issues/530). Briefcase icon on the section header. Wired into `src/profile-view/profile-view.ts` between the Relationships and Events section calls; new `src/profile-view/sections/memberships-section.ts`.
+- Reported by @doctorwodka.
+
+**Refactor: Org Profile Members section grouped + sorted by role** ([#535](https://github.com/banisterious/obsidian-charted-roots/issues/535)):
+- Previously the section rendered as a flat list with `member` array order — readable for small orgs but hard to parse once role distinctions mattered. Members now appear under uppercase role headings (e.g. `FOUNDER`, `BISHOP`) with members sorted by name within each group, and a generic "MEMBERS" heading covering anyone with no explicit role.
+- Order rules match the existing dynamic Members block (`charted-roots-members`): the org's declared `roles` list pins a sequence at the top, remaining named roles fall through alphabetically, and the no-role group is always last.
+- Shared logic extracted to `src/organizations/utils/group-members-by-role.ts` — pure helper consumed by both the dynamic Members block and the Org Profile section, so the two surfaces stay in sync. New abstraction worth remembering when extending member-display surfaces.
+- 10 new tests in `tests/group-members-by-role.test.ts`. Reported by @doctorwodka.
+
+**Feature: Per-image captions in the dynamic media gallery block** ([#523](https://github.com/banisterious/obsidian-charted-roots/issues/523)):
+- Each thumbnail in the `charted-roots-media` block can now carry a short caption — useful for the deep-archive use case where many photos per person each benefit from a brief label like "1978 - Jon Aged 3" rather than a single long-form description in the note body.
+- Captions render beneath the thumbnail in muted text, single-line truncated with full text on hover. Right-click any thumbnail for **Set caption** / **Edit caption** / **Remove caption** options, mirroring the existing crop-region affordance.
+- Storage: flat `media_captions` parallel string array on the entity note's frontmatter, index-aligned with the `media:` array — same shape as the `<type>_notes` pattern from v0.22.20's [#530](https://github.com/banisterious/obsidian-charted-roots/issues/530), respecting the project's flat-YAML preference. Empty / missing slots are padded with empty strings to keep indices aligned, and the array reshuffles in lockstep when the user drags to reorder media.
+- Frozen-gallery output (`❄️` button) preserves captions by injecting them into the wikilink alias slot (`![[wedding-1925.jpg|Wedding day, June 1925]]`), so the static markdown stays self-contained after the block is replaced.
+- New `src/core/ui/caption-modal.ts` — single-text-input dialog parallel to `CropRegionModal`, reusable for any future per-image-metadata affordances. 8 new tests in `tests/media-captions.test.ts`. Reported by @xBlack-Dogx via discussion [#521](https://github.com/banisterious/obsidian-charted-roots/discussions/521).
+
+**Fix: Children in the Dynamic Relationship Block now sorted by birth date** ([#532](https://github.com/banisterious/obsidian-charted-roots/issues/532) follow-up):
+- The v0.22.21 sort applied to siblings only. The Children section in `src/dynamic-content/renderers/relationships-renderer.ts` still iterated `childrenCrIds`, then `adoptedChildCrIds`, then `stepchildrenCrIds` in array order, leaving adopted and step children appended at the end of the list regardless of birth date.
+- Bio + adopted + step children are now merged and sorted using the same universe-aware `sortByBirthDate` helper that handles the siblings section, so the Children list reads chronologically regardless of frontmatter order or relationship-type source.
+- Caught during v0.22.21 verification on Galen's adoptive parents' page (Galen sat below his younger bio siblings). Reported by @DigitalDreamn.
+
+**Verification:** all five items verified in the dev-vault before pushing. The #537 self-heal was confirmed by repeatedly saving Edit Person on a person with name ≠ filename basename — the wikilink stays canonical under round-trip rather than accumulating pipes.
+
+**Testing:** **651** tests passing across **54** suites (was 628 at v0.22.21). Delta: +10 in `tests/group-members-by-role.test.ts` (#535), +8 in `tests/media-captions.test.ts` (#523), +5 in `tests/person-note-writer-smart-wikilink.test.ts` (#537).
+
+**Reporters:** @DigitalDreamn (#532 follow-up + #537), @doctorwodka (#535 + #536), @xBlack-Dogx (#523).
+
+**Stability-window impact:** **window reset.** [#537](https://github.com/banisterious/obsidian-charted-roots/issues/537)'s `critical` + `data-loss` + `regression` flag triggers the gate per [VERSIONING.md](https://github.com/banisterious/obsidian-charted-roots/blob/main/VERSIONING.md#when-100-ships) ("three weeks of BRAT testing with no new critical or data-loss issues filed"). New anchor: v0.22.22; new soak window 2026-05-07 → ~2026-05-28. The regression originated in v0.22.17 / v0.22.19 work — a window-internal regression, exactly the case the gate is designed to catch.
+
+---
 
 ### v0.22.21 Round-Up: Dynamic Block Display Paths and Profile View Family-Custom Routing (v0.22.21)
 

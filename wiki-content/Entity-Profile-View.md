@@ -112,6 +112,7 @@ Section expand/collapse states are remembered across sessions and between entiti
 | Section | What it shows |
 |---------|---------------|
 | **Relationships** | Family members (parents, spouses, children, siblings) and other relationships (godparents, witnesses, mentors, etc.) |
+| **Memberships** | Organizations this person belongs to, with role, date range, current/former status, and per-membership notes. Hidden when no memberships exist |
 | **Events** | Timeline of events associated with this person |
 | **Sources** | Sources cited in the person note |
 | **Citations** | Citation notes grouped by source, with fact labels, page references, and quality badges. Hidden when no citations exist. See [Citation Notes](Evidence-And-Sources#citation-notes) |
@@ -120,8 +121,10 @@ Section expand/collapse states are remembered across sessions and between entiti
 | **Research Activity** | Cross-project research entries (IRNs, log entries, journals, reports) grouped by project |
 
 The Relationships section is split into two subsections:
-- **Family** (expanded by default): Biological parents, step/adoptive/foster parents, spouses with marriage dates, children, siblings. Populated from the PersonNode's family graph properties. Children entries are labeled by their most specific relationship type — biological children render as **Child**, adopted children as **Adopted child**, and stepchildren as **Stepchild** — so the relationship type is never lost on the parent's side. Sibling discovery walks both `childrenCrIds` and `adoptedChildCrIds` on each shared parent, so adopted siblings surface on the bio-side household pages and bio-and-adopted siblings see each other consistently. Custom relationship types filed under the **Family** category (e.g. a user-defined `twin`) render here too, grouped by type name and appended after the bio Children group, with their per-relationship `<type>_notes` displayed beneath each row in italic muted text — matching the Other Relationships layout. See [Custom Relationships → Display in the Profile View](Custom-Relationships#display-in-the-profile-view) for the routing rules.
+- **Family** (expanded by default): Biological parents, step/adoptive/foster parents, spouses with marriage dates, children, siblings. Populated from the PersonNode's family graph properties. Children entries are labeled by their most specific relationship type — biological children render as **Child**, adopted children as **Adopted child**, and stepchildren as **Stepchild** — so the relationship type is never lost on the parent's side. Bio + adopted + step children intermix chronologically by birth date (universe-aware sort, descending fictional eras handled correctly). Sibling discovery walks both `childrenCrIds` and `adoptedChildCrIds` on each shared parent, so adopted siblings surface on the bio-side household pages and bio-and-adopted siblings see each other consistently. Custom relationship types filed under the **Family** category (e.g. a user-defined `twin`) render here too, grouped by type name and appended after the bio Children group, with their per-relationship `<type>_notes` displayed beneath each row in italic muted text — matching the Other Relationships layout. See [Custom Relationships → Display in the Profile View](Custom-Relationships#display-in-the-profile-view) for the routing rules.
 - **Other** (collapsed by default, hidden if empty): Religious, professional, social, legal, and other relationship types. Excludes relationships already shown in Family (those with a `familyGraphMapping`). When both sides of a relationship are defined (A→B and B→A), duplicates are automatically removed. **Per-relationship notes** (set via the Notes field in the Add Custom Relationship modal, or written directly to a `<type>_notes` parallel array in frontmatter — see [Custom Relationships](Custom-Relationships#manual-frontmatter)) display on their own line beneath each row that has one, in italic muted text indented to align with the link column.
+
+The **Memberships** section (hidden when the person has no organization memberships) appears between Relationships and Events. Each row shows the role label, organization link (clickable for entity navigation), date range, a "Current" badge for ongoing memberships, and per-membership notes on a separate line beneath in italic muted text — mirroring the layout of the Other Relationships subsection. Memberships are read from `org_membership_*` arrays on the person note (see [Organization Notes → Membership Properties](Organization-Notes#membership-properties)).
 
 The **Research Activity** section (collapsed by default, hidden if no research exists) scans the vault for all research entities that reference this person — IRNs by `subject`, log entries by `subject`/`person`, and journals/reports/projects by wikilink. Entries are grouped by research project with counts, date ranges, type badges, and result indicators. This surfaces cross-project research connections without leaving the profile. See also the [Find related research](Research-Workflow#find-related-research) command for an on-demand modal with the same view.
 
@@ -157,10 +160,12 @@ The Referenced Facts section answers the question: "What claims does this source
 
 | Section | What it shows |
 |---------|---------------|
-| **Members** | People linked to this organization, with roles, dates, and current/former status |
+| **Members** | People linked to this organization, grouped by role (uppercase headings) and sorted by name within each group |
 | **Events** | Events associated with the organization |
 | **Sources** | Sources referencing the organization |
 | **Media** | Linked photos and documents |
+
+The Members section follows the same role-grouping rules as the dynamic [Members Block](Dynamic-Note-Content#members-block): the org's declared `roles` list pins a sequence at the top, remaining named roles fall through alphabetically, and the no-role group (heading "MEMBERS") is always last. Each row shows the member link, date range, current/former status, and per-membership notes when present. Both the Profile View section and the dynamic block share a single `groupMembersByRole` helper so the two surfaces stay consistent.
 
 ---
 
