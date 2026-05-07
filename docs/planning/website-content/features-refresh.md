@@ -179,6 +179,9 @@ A dockable profile panel that auto-syncs to the active note and displays related
 - Lazy rendering and keyboard navigation on section headers (WAI-ARIA accordion)
 - Embedded Leaflet map preview for place profiles
 - Children block labels stepchildren and adopted children with their specific category, falling back to "Child" only when neither marker applies
+- Sibling rendering walks both biological and adopted children of each shared parent, so adopted siblings surface on bio-side household pages and bio-and-adopted siblings see each other consistently
+- Custom relationship types filed under the **Family** category (e.g. a user-defined `twin`) render inline in the Family subsection alongside Father / Mother / Spouse / Child rows, grouped by type name
+- Per-relationship notes (set via the Notes field in the Add Custom Relationship modal, or written directly to a `<type>_notes` parallel array in frontmatter) display on their own line beneath each row that has one, in italic muted text indented to align with the link column
 
 [Read more: Entity Profile View →](https://github.com/banisterious/obsidian-charted-roots/wiki/Entity-Profile-View)
 
@@ -194,8 +197,8 @@ A dockable view surfacing vault-wide analytics. See [Statistics and reports](#st
 
 Live-rendered blocks that show computed data inside entity notes when viewed in reading mode.
 
-- **Timeline block**: chronologically ordered events for a person or family, with configurable layout modes (chronological, grouped by personal / family / context, personal-first) and customizable formatting. Spouse death events appear on surviving spouses' timelines by default, and stepchildren's births stay on biological-parent timelines without bleeding into stepparent timelines.
-- **Relationships block**: family connections as clickable links with optional family-events inclusion
+- **Timeline block**: chronologically ordered events for a person or family, with configurable layout modes (chronological, grouped by personal / family / context, personal-first) and customizable formatting. Spouse death events appear on surviving spouses' timelines by default, and stepchildren's births stay on biological-parent timelines without bleeding into stepparent timelines. Sibling-birth events derive from any shared parent — biological or adoptive — so adopted siblings' births surface on bio-side household pages and vice versa, with the existing reality-window filter still hiding any sibling whose birth predates the focal person's.
+- **Relationships block**: family connections as clickable links with optional family-events inclusion. Children section labels biological, adopted, and stepchildren distinctly. Siblings (in `extended` and `all` modes) merge biological and adoptive sources and sort by birth date — descending fictional eras (e.g. Star Wars BBY) order oldest-first the same as Gregorian dates, since the comparator works on a canonical-year scale rather than raw numeric values.
 - **Media block**: photos and PDFs attached to the note, with first-page PDF thumbnail previews and image-crop regions for face thumbnails
 - **Sources block**: sources referenced by the entity, grouped with citation metadata and quality badges
 - **Transfers block**: transfer events (migration, relocation, emigration) with date and place
@@ -278,11 +281,13 @@ Tools for computing, visualizing, and customizing how people connect.
 - Symmetric types (`neighbor`, `ally`, `companion`) auto-propagate to both people; asymmetric pairs (`mentor` → `disciple`, `godparent` → `godchild`) maintain a clear directionality
 - Colored canvas edges and family-chart overlay rendering per type
 - Overlay arcs paint on top of family links by default; layering flips when stacks reach 3+ to keep dense areas readable
+- Per-relationship notes capture context for each link (e.g. "Confirmed in 1990", "Apprenticed under both masters") via the Notes field on the Add Custom Relationship modal, persisted as parallel `<type>_notes` arrays in frontmatter alongside `<type>` and `<type>_id`, and displayed in the Entity Profile beneath each row that has one
+- Custom types filed under the **Family** category render in the Profile view's Family subsection alongside bio family rows (e.g. a user-defined `twin` appears under TWIN inside the Family pane), not in Other Relationships
 
 ### Step and Adoptive Parents
 
 - Dedicated fields with distinct line styles on canvas trees (dotted for adoptive, dashed for step)
-- Adoptive siblings render in the relationships dynamic block
+- Adopted children and adoptive siblings surface consistently across the Dynamic Relationship Block, the Dynamic Timeline Block, and the Profile view's Family subsection — bio-side household pages see adopted siblings, adoptive parents see adopted children, and the relationship is symmetric regardless of which side of the household the focal person sits on
 - Step-parent relationships persist round-trip through the Edit Person modal
 
 ### Lineage Tracking
