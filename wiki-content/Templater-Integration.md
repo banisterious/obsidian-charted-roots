@@ -114,13 +114,13 @@ group_name: ""
 
 ## Family
 
-```canvas-roots-relationships
+```charted-roots-relationships
 type: immediate
 ```
 
 ## Timeline
 
-```canvas-roots-timeline
+```charted-roots-timeline
 sort: chronological
 ```
 ~~~

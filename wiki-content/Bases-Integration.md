@@ -8,7 +8,7 @@ Charted Roots is designed to work seamlessly with [Obsidian Bases](https://help.
 
 - [Overview](#overview)
 - [Available Base Templates](#available-base-templates)
-- [Why Use Bases with Charted Roots?](#why-use-bases-with-canvas-roots)
+- [Why Use Bases with Charted Roots?](#why-use-bases-with-charted-roots)
 - [Quick Start](#quick-start)
 - [Property Reference](#property-reference)
 - [Example Views](#example-views)
@@ -20,7 +20,7 @@ Charted Roots is designed to work seamlessly with [Obsidian Bases](https://help.
 - [Organizations Base Template](#organizations-base-template)
 - [Sources Base Template](#sources-base-template)
 - [Troubleshooting](#troubleshooting)
-- [Integration with Charted Roots Workflow](#integration-with-canvas-roots-workflow)
+- [Integration with Charted Roots Workflow](#integration-with-charted-roots-workflow)
 - [Map View for Bases](#map-view-for-bases)
 - [Additional Resources](#additional-resources)
 
@@ -444,7 +444,7 @@ The Places template provides **14 predefined views** for managing geographic loc
 The Places template includes a clickable map link formula:
 
 ```yaml
-map_link: 'if(coordinates_lat, link("obsidian://canvas-roots-map?lat=" + coordinates_lat + "&lng=" + coordinates_long + "&zoom=12", "📌"), "")'
+map_link: 'if(coordinates_lat, link("obsidian://charted-roots-map?lat=" + coordinates_lat + "&lng=" + coordinates_long + "&zoom=12", "📌"), "")'
 ```
 
 Clicking the 📌 icon opens Charted Roots' map view centered on that location.
@@ -789,7 +789,7 @@ year_only: 'if(source_date, source_date.year, "")'
 | | Marker clustering |
 | | Custom image maps (fictional/historical) |
 
-For detailed comparison and coordinated workflows, see [Geographic Features → Using Obsidian Maps Alongside Charted Roots](Geographic-Features#using-obsidian-maps-alongside-canvas-roots).
+For detailed comparison and coordinated workflows, see [Geographic Features → Using Obsidian Maps Alongside Charted Roots](Geographic-Features#using-obsidian-maps-alongside-charted-roots).
 
 ## Additional Resources
 

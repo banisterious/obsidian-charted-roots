@@ -36,7 +36,7 @@ Charted Roots transforms structured genealogical data in your Markdown notes int
 ### Manual Installation
 
 1. Download the latest release from [GitHub Releases](https://github.com/banisterious/obsidian-charted-roots/releases)
-2. Extract `main.js`, `manifest.json`, and `styles.css` to your vault's `.obsidian/plugins/canvas-roots/` folder
+2. Extract `main.js`, `manifest.json`, and `styles.css` to your vault's `.obsidian/plugins/charted-roots/` folder
 3. Reload Obsidian and enable the plugin
 
 ## Basic Workflow

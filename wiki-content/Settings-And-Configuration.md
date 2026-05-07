@@ -362,7 +362,7 @@ Configure console logging and log exports.
 | Setting | Default | Description |
 |---------|---------|-------------|
 | **Log level** | `debug` | Verbosity of console logging |
-| **Log export folder** | `.canvas-roots/logs` | Folder for exported log files |
+| **Log export folder** | `.charted-roots/logs` | Folder for exported log files |
 | **Obfuscate log exports** | On | Replace PII with placeholders in exports |
 
 Log levels (from most to least verbose):

@@ -59,7 +59,7 @@ If a person note has a `media` property, the first media item is displayed as a 
 - The first item in a media array: `media: ["[[portrait.jpg]]", "[[other.jpg]]"]`
 - Media linked during Gramps Package (`.gpkg`) import
 
-Use the `canvas-roots-media` block with `editable: true` in person notes to drag-and-reorder media items—the first item becomes the thumbnail.
+Use the `charted-roots-media` block with `editable: true` in person notes to drag-and-reorder media items—the first item becomes the thumbnail.
 
 ### Color Schemes
 

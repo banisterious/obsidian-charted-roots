@@ -242,7 +242,7 @@ Without these, they'll likely abandon the tool due to frustration.
 
 - [Getting Started from Ancestry or FamilySearch](#getting-started-from-ancestry-or-familysearch) — Importing existing data
 - [Building a Family Tree from Scratch](#building-a-family-tree-from-scratch) — Creating people and relationships
-- [FAQ: Is Charted Roots right for me?](FAQ#is-canvas-roots-right-for-me-do-i-need-to-be-technical) — Self-assessment for technical comfort
+- [FAQ: Is Charted Roots right for me?](FAQ#is-charted-roots-right-for-me-do-i-need-to-be-technical) — Self-assessment for technical comfort
 
 ---
 

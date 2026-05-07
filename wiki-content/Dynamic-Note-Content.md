@@ -41,10 +41,10 @@ Dynamic content blocks solve the problem of person notes containing only static 
 
 ### Timeline Block
 
-The `canvas-roots-timeline` block shows a chronological list of events for a person.
+The `charted-roots-timeline` block shows a chronological list of events for a person.
 
 ~~~markdown
-```canvas-roots-timeline
+```charted-roots-timeline
 sort: chronological
 ```
 ~~~
@@ -77,7 +77,7 @@ sort: chronological
 **Example with options:**
 
 ~~~markdown
-```canvas-roots-timeline
+```charted-roots-timeline
 sort: reverse
 exclude: residence, occupation
 limit: 10
@@ -189,10 +189,10 @@ Set a global default template in Settings > Advanced > Default timeline template
 
 ### Relationships Block
 
-The `canvas-roots-relationships` block displays family members with clickable links.
+The `charted-roots-relationships` block displays family members with clickable links.
 
 ~~~markdown
-```canvas-roots-relationships
+```charted-roots-relationships
 type: immediate
 ```
 ~~~
@@ -224,7 +224,7 @@ Each person is shown as a wikilink with their birth-death years.
 **Example with options:**
 
 ~~~markdown
-```canvas-roots-relationships
+```charted-roots-relationships
 type: extended
 title: Family Tree
 ```
@@ -232,10 +232,10 @@ title: Family Tree
 
 ### Media Block
 
-The `canvas-roots-media` block displays a gallery of media files linked to the person.
+The `charted-roots-media` block displays a gallery of media files linked to the person.
 
 ~~~markdown
-```canvas-roots-media
+```charted-roots-media
 columns: 3
 size: medium
 ```
@@ -260,7 +260,7 @@ size: medium
 **Example with options:**
 
 ~~~markdown
-```canvas-roots-media
+```charted-roots-media
 columns: 4
 size: large
 editable: true
@@ -685,7 +685,7 @@ Click the ❄️ freeze button to convert a live block to static markdown. This 
 **Before freezing:**
 
 ~~~markdown
-```canvas-roots-timeline
+```charted-roots-timeline
 sort: chronological
 ```
 ~~~
@@ -755,10 +755,10 @@ Use the command palette (`Ctrl/Cmd + P`):
 Type the code block syntax directly in any person note:
 
 ~~~markdown
-```canvas-roots-timeline
+```charted-roots-timeline
 ```
 
-```canvas-roots-relationships
+```charted-roots-relationships
 ```
 ~~~
 

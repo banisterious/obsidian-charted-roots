@@ -25,7 +25,7 @@ Charted Roots provides comprehensive place-based features for tracking where peo
 - [Place-Based Tree Filtering](#place-based-tree-filtering)
 - [Place Lookup](#place-lookup)
 - [Custom Place Types](#custom-place-types)
-- [Using Obsidian Maps Alongside Charted Roots](#using-obsidian-maps-alongside-canvas-roots)
+- [Using Obsidian Maps Alongside Charted Roots](#using-obsidian-maps-alongside-charted-roots)
 - [Settings](#settings)
   - [Category-Based Organization](#category-based-organization)
 

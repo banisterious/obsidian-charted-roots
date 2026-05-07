@@ -135,10 +135,10 @@ This is a multi-step wizard specifically for linking media to sources:
 
 ## Dynamic Media Gallery
 
-Display media in person notes using the `canvas-roots-media` code block:
+Display media in person notes using the `charted-roots-media` code block:
 
 ~~~markdown
-```canvas-roots-media
+```charted-roots-media
 columns: 3
 size: medium
 editable: true

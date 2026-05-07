@@ -228,10 +228,10 @@ See [Media Management](Media-Management) for detailed documentation.
 
 ### How do I display media in person notes?
 
-Use the dynamic `canvas-roots-media` code block:
+Use the dynamic `charted-roots-media` code block:
 
 ~~~markdown
-```canvas-roots-media
+```charted-roots-media
 columns: 3
 editable: true
 ```

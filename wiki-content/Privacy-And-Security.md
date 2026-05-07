@@ -42,7 +42,7 @@ Charted Roots creates and manages several types of files:
 | Place notes | Your configured folder | Location names, coordinates |
 | Organization notes | Your configured folder | Org names, types, memberships |
 | Canvas files | Your choice | Visual layouts, node references |
-| Plugin settings | `.obsidian/plugins/canvas-roots/` | Configuration only (no personal data) |
+| Plugin settings | `.obsidian/plugins/charted-roots/` | Configuration only (no personal data) |
 
 ## Privacy Protection for Living Persons
 
@@ -205,7 +205,7 @@ By default, log exports automatically replace personal information with placehol
 
 1. Open **Settings** → **Charted Roots** → **Logging**
 2. Click **Export** to save logs to your vault
-3. Logs are saved to the configured log folder (default: `.canvas-roots/logs`)
+3. Logs are saved to the configured log folder (default: `.charted-roots/logs`)
 4. If obfuscation is enabled, personal data is replaced before saving
 
 ### When to Disable Obfuscation
