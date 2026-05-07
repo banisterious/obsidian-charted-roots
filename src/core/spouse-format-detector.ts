@@ -75,6 +75,32 @@ export function detectSpouseTargetFormat(
 }
 
 /**
+ * Return the lowest open `spouseN` slot in the target's frontmatter, or
+ * `MAX_SPOUSE_INDEX + 1` if every slot is already filled. "Open" matches
+ * `detectSpouseTargetFormat`'s definition: a slot is used when either
+ * `spouseN` or `spouseN_id` carries a non-empty value.
+ *
+ * Used by the bidirectional linker when it needs to write to an indexed
+ * slot regardless of the target's current format — specifically when the
+ * source provides marriage details and the target needs a `spouseN_*`
+ * namespace to receive the companion fields (#534). `detectSpouseTargetFormat`
+ * exposes `nextIndex` only on the indexed-format branch; this helper
+ * exposes the same value uniformly.
+ */
+export function findNextOpenSpouseSlot(
+	frontmatter: Record<string, unknown>
+): number {
+	for (let i = 1; i <= MAX_SPOUSE_INDEX; i++) {
+		const wikilinkValue = frontmatter[`spouse${i}`];
+		const idValue = frontmatter[`spouse${i}_id`];
+		if (!hasValue(wikilinkValue) && !hasValue(idValue)) {
+			return i;
+		}
+	}
+	return MAX_SPOUSE_INDEX + 1;
+}
+
+/**
  * Treat null / undefined / empty-string / empty-array values as "slot
  * not used." Matches the existing bidi-linker's field-presence checks.
  */

@@ -3,7 +3,7 @@ import { getLogger } from './logging';
 import { getErrorMessage } from './error-utils';
 import { PersonFrontmatter } from '../types/frontmatter';
 import { FolderFilterService } from './folder-filter';
-import { detectSpouseTargetFormat, isSpouseInFrontmatter } from './spouse-format-detector';
+import { detectSpouseTargetFormat, findNextOpenSpouseSlot, isSpouseInFrontmatter } from './spouse-format-detector';
 
 const logger = getLogger('BidirectionalLinker');
 
@@ -991,8 +991,20 @@ export class BidirectionalLinker {
 			// source's format is no longer used to drive this decision.
 			const targetFormat = detectSpouseTargetFormat(spouseFm as Record<string, unknown>);
 
-			if (targetFormat.format === 'indexed') {
-				targetIndex = targetFormat.nextIndex;
+			// When the source provides marriage details, the target MUST land
+			// in indexed format so the `spouseN_*` companion-field namespace
+			// exists to receive them. Without this, the mirror step below
+			// short-circuits on `targetIndex === null` and the marriage data
+			// is silently dropped (#534). Existing flat data on the target is
+			// preserved alongside the new indexed slot — `detectSpouseTargetFormat`
+			// recognizes mixed state as 'indexed' on the next sync, and a
+			// future migration helper can normalize at convenience.
+			const forceIndexed = marriageDetails !== undefined;
+
+			if (targetFormat.format === 'indexed' || forceIndexed) {
+				targetIndex = targetFormat.format === 'indexed'
+					? targetFormat.nextIndex
+					: findNextOpenSpouseSlot(spouseFm as Record<string, unknown>);
 				await this.setField(spouseFile, `spouse${targetIndex}`, personLinkText);
 				await this.setField(spouseFile, `spouse${targetIndex}_id`, personCrId);
 
@@ -1001,12 +1013,14 @@ export class BidirectionalLinker {
 					personFile: personFile.path,
 					index: targetIndex,
 					wikilink: personLinkText,
-					crId: personCrId
+					crId: personCrId,
+					forcedIndexedForMarriageDetails: forceIndexed && targetFormat.format !== 'indexed'
 				});
 			} else {
-				// Flat format: preserve scalar-vs-array convention on append.
-				// Flat format does not carry marriage-detail companion fields,
-				// so `targetIndex` stays null and the mirror step below skips.
+				// Flat format with no marriage details to mirror — preserve
+				// scalar-vs-array convention on append. `targetIndex` stays
+				// null and the mirror step below skips (correctly, since the
+				// source has nothing to mirror).
 				if (spouseLinksArray.length === 0) {
 					await this.setField(spouseFile, 'spouse', personLinkText);
 					await this.setField(spouseFile, 'spouse_id', personCrId);

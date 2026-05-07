@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { detectSpouseTargetFormat, isSpouseInFrontmatter } from '../src/core/spouse-format-detector';
+import {
+	detectSpouseTargetFormat,
+	findNextOpenSpouseSlot,
+	isSpouseInFrontmatter
+} from '../src/core/spouse-format-detector';
 
 /**
  * Regression coverage for #420 Gap B — the bidirectional linker must
@@ -154,6 +158,87 @@ describe('detectSpouseTargetFormat', () => {
 				nextIndex: 11
 			});
 		});
+	});
+});
+
+/**
+ * Regression coverage for #534 — when the source provides marriage
+ * details, the bidirectional linker must land the target in indexed
+ * format so the `spouseN_*` companion-field namespace exists to
+ * receive them. `findNextOpenSpouseSlot` exposes the next open slot
+ * uniformly regardless of whether the target detector reports flat or
+ * indexed, so the linker can pick a slot in either case.
+ */
+describe('findNextOpenSpouseSlot', () => {
+	it('empty frontmatter → slot 1', () => {
+		expect(findNextOpenSpouseSlot({})).toBe(1);
+	});
+
+	it('flat spouse data only → slot 1 (indexed namespace is untouched)', () => {
+		expect(findNextOpenSpouseSlot({
+			spouse: '[[Alice]]',
+			spouse_id: 'cr_alice'
+		})).toBe(1);
+	});
+
+	it('spouse1 used → slot 2', () => {
+		expect(findNextOpenSpouseSlot({
+			spouse1: '[[Alice]]',
+			spouse1_id: 'cr_alice'
+		})).toBe(2);
+	});
+
+	it('spouse1 + spouse2 used → slot 3', () => {
+		expect(findNextOpenSpouseSlot({
+			spouse1: '[[Alice]]',
+			spouse1_id: 'cr_alice',
+			spouse2: '[[Bob]]',
+			spouse2_id: 'cr_bob'
+		})).toBe(3);
+	});
+
+	it('spouse1 + spouse3 (gap at 2) → slot 2 fills gap', () => {
+		expect(findNextOpenSpouseSlot({
+			spouse1: '[[Alice]]',
+			spouse1_id: 'cr_alice',
+			spouse3: '[[Carol]]',
+			spouse3_id: 'cr_carol'
+		})).toBe(2);
+	});
+
+	it('spouse2 only (no spouse1) → slot 1', () => {
+		expect(findNextOpenSpouseSlot({
+			spouse2: '[[Bob]]',
+			spouse2_id: 'cr_bob'
+		})).toBe(1);
+	});
+
+	it('partial slot — wikilink set, id missing → counts as used', () => {
+		expect(findNextOpenSpouseSlot({
+			spouse1: '[[Alice]]'
+		})).toBe(2);
+	});
+
+	it('partial slot — id set, wikilink missing → counts as used', () => {
+		expect(findNextOpenSpouseSlot({
+			spouse1_id: 'cr_alice'
+		})).toBe(2);
+	});
+
+	it('empty-value slots (empty string / null) → slot 1', () => {
+		expect(findNextOpenSpouseSlot({
+			spouse1: '',
+			spouse1_id: null
+		})).toBe(1);
+	});
+
+	it('all ten slots full → returns 11 (past max)', () => {
+		const fm: Record<string, unknown> = {};
+		for (let i = 1; i <= 10; i++) {
+			fm[`spouse${i}`] = `[[Person${i}]]`;
+			fm[`spouse${i}_id`] = `cr_${i}`;
+		}
+		expect(findNextOpenSpouseSlot(fm)).toBe(11);
 	});
 });
 
