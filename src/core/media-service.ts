@@ -69,6 +69,8 @@ export interface MediaItem {
 	extension: string;
 	/** Crop region for this image (#354) */
 	crop?: MediaCrop;
+	/** Caption for this image (#523) — short label rendered beneath the thumbnail */
+	caption?: string;
 }
 
 /**
@@ -250,6 +252,33 @@ export class MediaService {
 		}
 
 		return items;
+	}
+
+	/**
+	 * Parse media_captions array from frontmatter (#523).
+	 * Returns a map of image filename → caption text.
+	 *
+	 * Mirrors the `media_crop` shape — a list of `{ image, caption }`
+	 * objects keyed by filename so captions survive reordering of the
+	 * primary `media:` array. Empty / missing captions are skipped.
+	 */
+	parseMediaCaptions(frontmatter: Record<string, unknown>): Map<string, string> {
+		const captions = new Map<string, string>();
+		const rawCaptions = frontmatter.media_captions;
+
+		if (!Array.isArray(rawCaptions)) return captions;
+
+		for (const entry of rawCaptions) {
+			if (typeof entry !== 'object' || !entry) continue;
+			const obj = entry as Record<string, unknown>;
+			const image = obj.image as string;
+			const caption = obj.caption;
+			if (image && typeof caption === 'string' && caption.trim().length > 0) {
+				captions.set(image, caption);
+			}
+		}
+
+		return captions;
 	}
 
 	/**

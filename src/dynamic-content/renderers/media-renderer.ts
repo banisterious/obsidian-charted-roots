@@ -15,6 +15,7 @@ import { PdfThumbnailService } from '../../core/pdf-thumbnail-service';
 import { type MediaCrop } from '../../core/media-service';
 import { applyCropToImage } from '../../core/crop-renderer';
 import { CropRegionModal, type CropRegionResult } from '../../core/ui/crop-region-modal';
+import { CaptionModal, type CaptionResult } from '../../core/ui/caption-modal';
 
 /**
  * Media item extracted from frontmatter
@@ -34,6 +35,8 @@ export interface MediaItem {
 	isThumbnail: boolean;
 	/** Crop region for this image (#354) */
 	crop?: MediaCrop;
+	/** Caption for this image (#523) — short label rendered beneath the thumbnail */
+	caption?: string;
 }
 
 /**
@@ -153,6 +156,9 @@ export class MediaRenderer {
 			}
 		}
 
+		// Parse media_captions array (#523) — keyed by filename, mirroring media_crop.
+		const captionMap = this.plugin.getMediaService()?.parseMediaCaptions(frontmatter) ?? new Map<string, string>();
+
 		// Convert to MediaItem objects
 		const items: MediaItem[] = [];
 
@@ -167,6 +173,11 @@ export class MediaRenderer {
 				const crop = cropMap.get(item.file.name) || cropMap.get(item.file.basename + '.' + item.file.extension);
 				if (crop) {
 					item.crop = crop;
+				}
+				// Attach caption if defined (#523)
+				const caption = captionMap.get(item.file.name) || captionMap.get(item.file.basename + '.' + item.file.extension);
+				if (caption) {
+					item.caption = caption;
 				}
 			}
 
@@ -486,6 +497,37 @@ export class MediaRenderer {
 								});
 						});
 					}
+
+					// Set / edit / remove caption (#523) — mirrors the crop affordance.
+					menu.addSeparator();
+					menu.addItem((menuItem) => {
+						menuItem
+							.setTitle(item.caption ? 'Edit caption' : 'Set caption')
+							.setIcon('text-cursor-input')
+							.onClick(() => {
+								if (!item.file || !this.currentContext) return;
+								new CaptionModal(
+									this.plugin.app,
+									item.file,
+									item.caption,
+									(result: CaptionResult) => {
+										this.saveCaptionToFrontmatter(result);
+									}
+								).open();
+							});
+					});
+
+					if (item.caption) {
+						menu.addItem((menuItem) => {
+							menuItem
+								.setTitle('Remove caption')
+								.setIcon('x')
+								.onClick(() => {
+									if (!item.file || !this.currentContext) return;
+									this.removeCaptionFromFrontmatter(item.file.name);
+								});
+						});
+					}
 				}
 
 				menu.showAtMouseEvent(e);
@@ -552,6 +594,16 @@ export class MediaRenderer {
 					void this.plugin.app.workspace.openLinkText(item.path, '', false);
 				}
 			});
+		}
+
+		// Render per-image caption beneath the thumbnail (#523).
+		// Single-line truncated; full text on hover via the title attribute.
+		if (item.caption) {
+			const captionEl = itemEl.createDiv({
+				cls: 'cr-media__caption',
+				text: item.caption
+			});
+			setTooltip(captionEl, item.caption);
 		}
 	}
 
@@ -812,6 +864,50 @@ export class MediaRenderer {
 		new Notice('Crop region removed');
 	}
 
+	/**
+	 * Save (or update) a per-image caption to the entity note's frontmatter
+	 * (#523). Mirrors `saveCropToFrontmatter` — keyed by image filename so
+	 * captions survive reordering of the primary `media:` array. An empty
+	 * caption is treated as a removal request.
+	 */
+	private saveCaptionToFrontmatter(result: CaptionResult): void {
+		if (!this.currentContext) return;
+
+		if (!result.caption) {
+			this.removeCaptionFromFrontmatter(result.image);
+			return;
+		}
+
+		void this.plugin.app.fileManager.processFrontMatter(this.currentContext.file, (fm) => {
+			const captions = Array.isArray(fm.media_captions) ? [...fm.media_captions] : [];
+
+			// Replace any existing entry for this image, then append the new one.
+			const filtered = captions.filter((c: Record<string, unknown>) => c.image !== result.image);
+			filtered.push({ image: result.image, caption: result.caption });
+
+			fm.media_captions = filtered;
+		});
+	}
+
+	/**
+	 * Remove a per-image caption from the entity note's frontmatter (#523).
+	 */
+	private removeCaptionFromFrontmatter(imageName: string): void {
+		if (!this.currentContext) return;
+
+		void this.plugin.app.fileManager.processFrontMatter(this.currentContext.file, (fm) => {
+			if (!Array.isArray(fm.media_captions)) return;
+
+			fm.media_captions = fm.media_captions.filter((c: Record<string, unknown>) => c.image !== imageName);
+
+			if (fm.media_captions.length === 0) {
+				delete fm.media_captions;
+			}
+		});
+
+		new Notice('Caption removed');
+	}
+
 	private getDocumentIconName(extension: string): string {
 		// PDF files use file-text icon
 		if (extension === 'pdf') {
@@ -854,16 +950,38 @@ export class MediaRenderer {
 	}
 
 	/**
-	 * Generate frozen markdown representation using callout syntax
+	 * Generate frozen markdown representation using callout syntax.
+	 * When an item has a per-image caption (#523), it's preserved by
+	 * inserting it as the wikilink's display-text alias so the frozen
+	 * output stays self-contained — the gallery block's caption metadata
+	 * is no longer consulted once the block is frozen.
 	 */
 	private generateFrozenMarkdown(): string {
 		const calloutType = this.plugin.settings.frozenGalleryCalloutType || 'info';
 		const lines: string[] = [`> [!${calloutType}|cr-frozen-gallery]`];
 
 		for (const item of this.currentItems) {
-			lines.push(`> !${item.wikilink}`);
+			const wikilink = item.caption
+				? this.injectAliasIntoWikilink(item.wikilink, item.caption)
+				: item.wikilink;
+			lines.push(`> !${wikilink}`);
 		}
 
 		return lines.join('\n');
+	}
+
+	/**
+	 * Insert (or replace) the display-text alias on a wikilink so the
+	 * caption surfaces as the alt text in the frozen markdown output.
+	 * Falls back to the original wikilink if the input doesn't match
+	 * the expected `[[target]]` / `[[target|alias]]` shape.
+	 */
+	private injectAliasIntoWikilink(wikilink: string, caption: string): string {
+		const match = wikilink.match(/^\[\[([^\]]+)\]\]$/);
+		if (!match) return wikilink;
+		const inner = match[1];
+		const target = inner.split('|')[0];
+		const safeCaption = caption.replace(/\|/g, ' ').replace(/\]\]/g, ']');
+		return `[[${target}|${safeCaption}]]`;
 	}
 }

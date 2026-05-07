@@ -435,6 +435,18 @@
   z-index: 2;
 }
 
+/* Per-image caption (#523) — single-line truncated, full text on hover. */
+.cr-media__caption {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  padding: 4px 6px 6px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
 /* Image thumbnails */
 .cr-media__image {
   width: 100%;

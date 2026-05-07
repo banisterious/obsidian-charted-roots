@@ -1984,3 +1984,27 @@
   text-align: center;
   padding: var(--size-4-4);
 }
+
+/* --------------------------------------------------------------------------
+   Caption Modal (#523) — single-field text input for setting a per-image
+   caption. Shape mirrors the crop modal (header + filename subtitle +
+   setting field + button row).
+   -------------------------------------------------------------------------- */
+
+.cr-caption-modal {
+  padding: var(--size-4-4);
+}
+
+.cr-caption-modal__filename {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  margin-bottom: var(--size-4-3);
+  font-family: var(--font-monospace);
+}
+
+.cr-caption-modal__buttons {
+  display: flex;
+  gap: var(--size-4-2);
+  justify-content: flex-end;
+  margin-top: var(--size-4-3);
+}

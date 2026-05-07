@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-07 02:01:42 UTC
+ * - Generated: 2026-05-07 16:30:40 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -9092,7 +9092,7 @@ settings:
    COMPONENT: MEDIA-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 1987 lines, 38.41 KB */
+/* Component Size: 2011 lines, 39.08 KB */
 
 /* ==========================================================================
    Media Picker Modal
@@ -11079,6 +11079,30 @@ settings:
   color: var(--text-error);
   text-align: center;
   padding: var(--size-4-4);
+}
+
+/* --------------------------------------------------------------------------
+   Caption Modal (#523) — single-field text input for setting a per-image
+   caption. Shape mirrors the crop modal (header + filename subtitle +
+   setting field + button row).
+   -------------------------------------------------------------------------- */
+
+.cr-caption-modal {
+  padding: var(--size-4-4);
+}
+
+.cr-caption-modal__filename {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  margin-bottom: var(--size-4-3);
+  font-family: var(--font-monospace);
+}
+
+.cr-caption-modal__buttons {
+  display: flex;
+  gap: var(--size-4-2);
+  justify-content: flex-end;
+  margin-top: var(--size-4-3);
 }
 
 
@@ -38906,7 +38930,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: DYNAMIC-CONTENT.CSS
    ========================================================================== */
 
-/* Component Size: 1186 lines, 25.55 KB */
+/* Component Size: 1198 lines, 25.85 KB */
 
 /**
  * Dynamic Content Styles
@@ -39343,6 +39367,18 @@ body:has(.cr-media-linker) .suggestion-container {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   z-index: 2;
+}
+
+/* Per-image caption (#523) — single-line truncated, full text on hover. */
+.cr-media__caption {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  padding: 4px 6px 6px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 /* Image thumbnails */
@@ -41704,11 +41740,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-07 02:01:43 UTC
+ * Build completed: 2026-05-07 16:30:41 UTC
  * Components processed: 50
- * Total lines: 41231
- * Total size: 834.86 KB
- * Build duration: 1.01 seconds
+ * Total lines: 41267
+ * Total size: 835.83 KB
+ * Build duration: 0.8 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -41719,7 +41755,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - control-center.css: 5747 lines, 107.88 KB
  * - entity-create-modals.css: 1236 lines, 25.51 KB
  * - place-modals.css: 1421 lines, 28.35 KB
- * - media-modals.css: 1987 lines, 38.41 KB
+ * - media-modals.css: 2011 lines, 39.08 KB
  * - import-export-wizard.css: 2187 lines, 41.74 KB
  * - staging-manager.css: 555 lines, 11.4 KB
  * - cleanup-wizard.css: 2197 lines, 41.1 KB
@@ -41756,7 +41792,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - map-wizard.css: 606 lines, 12.68 KB
  * - preferences.css: 431 lines, 9.44 KB
  * - tree-output.css: 1548 lines, 30.41 KB
- * - dynamic-content.css: 1186 lines, 25.55 KB
+ * - dynamic-content.css: 1198 lines, 25.85 KB
  * - profile-view.css: 1120 lines, 25.04 KB
  * - calendar-view.css: 302 lines, 6.83 KB
  * - migration-notice.css: 135 lines, 2.67 KB
