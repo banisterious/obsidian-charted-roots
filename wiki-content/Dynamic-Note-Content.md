@@ -53,7 +53,7 @@ sort: chronological
 - Birth and death dates from the person's frontmatter
 - All event notes linked to this person
 - Age annotations on each event (when birth date is known)
-- Family member events — children's births, spouse deaths, parent deaths, sibling births (when enabled in Settings > Advanced > [Family events on timelines](Settings-And-Configuration#family-events-on-timelines))
+- Family member events — children's births (biological + adopted), spouse deaths, parent deaths, sibling births (biological + adopted, derived from any shared parent — bio or adoptive — using both `childrenCrIds` and `adoptedChildCrIds` on each parent so adopted siblings surface on bio-side household pages and vice versa). Toggled in Settings > Advanced > [Family events on timelines](Settings-And-Configuration#family-events-on-timelines)
 - Historical context events from an overlay note (when configured)
 - Year, event type, and place for each entry
 - Clickable wikilinks to event and place notes
@@ -200,8 +200,8 @@ type: immediate
 **What it displays:**
 - Parents (father, mother, adoptive father, adoptive mother, step-parents)
 - Spouse(s)
-- Children
-- Siblings (when using `type: extended` or `type: all`) — biological siblings share a parent with the focal person; adoptive siblings (other children of the focal person's adoptive parents) appear under the same Siblings heading with an `Adoptive sibling:` label, matching the labeling convention used for adoptive parents
+- Children — biological children, adopted children (`Adopted child:` label), and stepchildren (`Stepchild:` label), matching the labeling convention used for adoptive / step parents
+- Siblings (when using `type: extended` or `type: all`) — biological siblings share a parent with the focal person; adoptive siblings appear with an `Adoptive sibling:` label and cover three sources: bio kids of the focal's adoptive parents, anyone adopted into the focal's biological-parent household, and other adopted children of the focal's adoptive parents (so the relationship surfaces symmetrically regardless of which side is bio and which is adopted). Bio + adoptive siblings are merged and **sorted by birth date** using the universe's calendar, oldest first — descending fictional eras (e.g. Star Wars BBY) sort correctly alongside Gregorian dates, and persons without a parseable birth date sink to the end while preserving relative order.
 
 Each person is shown as a wikilink with their birth-death years.
 

@@ -11,6 +11,7 @@ Custom relationships allow you to define and track non-family connections betwee
 - [When to Use Non-Family Relationships](#when-to-use-non-family-relationships)
 - [Adding Custom Relationships](#adding-custom-relationships)
 - [Frontmatter Format](#frontmatter-format)
+- [Display in the Profile View](#display-in-the-profile-view)
 - [Control Center - Relationships Tab](#control-center---relationships-tab)
 - [Canvas Edge Rendering](#canvas-edge-rendering)
 - [Commands and Context Menu](#commands-and-context-menu)
@@ -215,6 +216,17 @@ relationships:
     target_id: person-jane-doe
     notes: "Became godparent at baptism in 1920"
 ```
+
+---
+
+## Display in the Profile View
+
+The [Entity Profile View](Entity-Profile-View) splits a person's relationships into two subsections — **Family** and **Other**. Where a custom-typed relationship lands depends on its **category**:
+
+- **Non-family categories** (`legal`, `religious`, `professional`, `social`, `feudal`, `dna`, or any custom category you've defined) render in the **Other** subsection, grouped by category. Each row shows the type name as a label, then the target person's link, then any per-relationship `<type>_notes` in italic muted text indented to align with the link column.
+- **Family-category custom types** (e.g. a user-defined `twin`, or anything else you've filed under `family`) render **inline in the Family subsection** alongside Father / Mother / Spouse / Child rows, grouped by type name. Each row shows the type name as a label, the target person's link, and any per-relationship notes beneath. The relationship still has to declare a target; only the rendering surface differs.
+
+Built-in family fields (`father`, `mother`, `spouse`, `children`, etc.) are not custom relationships — they're stored in dedicated frontmatter properties and rendered from the family graph, not from the `<type>` parallel arrays. Custom types with a `familyGraphMapping` (like a custom `sire` mapping to `parent`) are an intermediate case: they appear in the Other subsection with their custom name (e.g. "Sire") instead of the generic "Parent" label, and the Family subsection suppresses the duplicate generic entry on that crId.
 
 ---
 

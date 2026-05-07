@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.21 Round-Up: Dynamic Block Display Paths and Profile View Family-Custom Routing](#v02221-round-up-dynamic-block-display-paths-and-profile-view-family-custom-routing-v02221)
   - [v0.22.20 Round-Up: Mobile Pre-Release Verification and Two Follow-Up Fixes from v0.22.19](#v02220-round-up-mobile-pre-release-verification-and-two-follow-up-fixes-from-v02219-v02220)
   - [v0.22.19 Round-Up: Wikilink cr_id Disambiguation and Relationship Calculator BFS Expansion](#v02219-round-up-wikilink-cr_id-disambiguation-and-relationship-calculator-bfs-expansion-v02219)
   - [v0.22.18 Round-Up: Profile-Pane Cache Race and Three Rendering Fixes](#v02218-round-up-profile-pane-cache-race-and-three-rendering-fixes-v02218)
@@ -159,6 +160,40 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.21 Round-Up: Dynamic Block Display Paths and Profile View Family-Custom Routing (v0.22.21)
+
+Three bug fixes — all surfaced by the same reporter (@DigitalDreamn) while verifying v0.22.20, all tracing back to display paths that hadn't been updated for the data-shape change v0.22.20's [#525](https://github.com/banisterious/obsidian-charted-roots/issues/525) / [#526](https://github.com/banisterious/obsidian-charted-roots/issues/526) follow-up made: adopted children moved out of each parent's `childrenCrIds` and into the dedicated `adoptedChildCrIds` array, which fixed the Relationship Calculator's blood-relation labeling but left three rendering paths reading the wrong array. The v0.22.21 cycle taught those paths about `adoptedChildCrIds`, plus closed two unrelated display gaps that were exposed during the same verification pass: the Dynamic Relationship Block had never sorted siblings by birth date (pure YAML-order display, easy to miss when the array happened to be in birth order), and custom relationship types filed under the "Family" category fell into a routing dead zone in the Profile view (excluded from Other by category, never picked up by the bio-only Family subsection rendering).
+
+**Fix: Adopted siblings now appear in the Dynamic Relationship Block and Dynamic Timeline Block on biological siblings' pages** ([#531](https://github.com/banisterious/obsidian-charted-roots/issues/531)):
+- Direct cascade from v0.22.20's [#525](https://github.com/banisterious/obsidian-charted-roots/issues/525) / [#526](https://github.com/banisterious/obsidian-charted-roots/issues/526) follow-up. The dynamic Relationship Block's sibling walker (`findAdoptiveSiblingCrIds` in `src/dynamic-content/sibling-walker.ts`) and the Timeline Block's sibling-births collection in `src/dynamic-content/renderers/timeline-renderer.ts` both still read only from `childrenCrIds`, so adopted children silently dropped off bio-side household pages once they no longer lived in that array. From the adopted child's own page, the link still worked (the walk runs from the adopted child's adoptive parents and lands on the parents' bio kids in `childrenCrIds`), which produced an asymmetry: Galen sees his adoptive siblings, but those siblings don't see him.
+- `src/dynamic-content/sibling-walker.ts` — added `gatherAdoptedSiblingsFromParents` helper. `findAdoptiveSiblingCrIds` now merges three sources: bio parents' `adoptedChildCrIds` (anyone adopted into self's bio household), adoptive parents' `childrenCrIds` (bio kids of adoptive parents — already worked), and adoptive parents' `adoptedChildCrIds` minus self (other adopted siblings).
+- `src/dynamic-content/renderers/timeline-renderer.ts` — sibling-births walk extended to include adoptive parents and to gather from both `childrenCrIds` and `adoptedChildCrIds`. Step-sibling exclusion ([#456](https://github.com/banisterious/obsidian-charted-roots/issues/456)) preserved across the new sources.
+- 6 new tests added to `tests/sibling-walker.test.ts` covering each of the three adoptive-sibling sources plus a merged-and-deduped scenario; the prior "Galen case" test was reshaped to match the post-#525/#526 family-graph data shape.
+
+**Fix: Adopted children now appear under the Children section of the Dynamic Relationship Block on the adoptive parent's page** ([#531](https://github.com/banisterious/obsidian-charted-roots/issues/531) follow-up):
+- Same root-cause shape as the sibling fix, surfaced by @DigitalDreamn during verification of the original [#531](https://github.com/banisterious/obsidian-charted-roots/issues/531) patch. The Children section in `src/dynamic-content/renderers/relationships-renderer.ts` iterated only `childrenCrIds`, which post-#525/#526 contains bio kids only, so adoptive parents saw an empty or partial Children list.
+- Children section now also iterates `adoptedChildCrIds` and `stepchildrenCrIds`, with each non-bio source labeled "Adopted child" / "Stepchild" — mirroring the existing parents-side labels ("Adoptive father" / "Stepfather"). Same pattern used by the Profile view's Family subsection (#443).
+
+**Fix: Siblings in the Dynamic Relationship Block are now sorted by birth date** ([#532](https://github.com/banisterious/obsidian-charted-roots/issues/532)):
+- The block iterated each parent's `childrenCrIds` and pushed siblings in array order, with no sort step — display order followed whatever order children were listed in the parent's frontmatter `children:` array. Most families happened to appear correctly because users tend to list kids in birth order, but the moment a sibling was added later (or rearranged), the display would diverge from birth order while everywhere else looked fine. @DigitalDreamn caught this on her Wilkin family where Ben was listed before A in the parent's `children:` array, so every sibling's view of that family showed Ben (b. 54 BBY) before A (b. 56 BBY) — wrong direction in the Star Wars descending-era convention.
+- `src/dynamic-content/renderers/relationships-renderer.ts` — added a `sortByBirthDate` private method that uses `dateService.getCanonicalYear(birthDate, universe)` for the comparison. Canonical-year normalization handles both Gregorian (ascending) and descending fictional eras (BBY, etc.) on the same scale, so oldest-first ordering reads correctly regardless of universe calendar. Persons without a parseable birth date sink to the end while preserving relative order; ties on the same year preserve original order (stable sort via decorate-sort-undecorate).
+- Sort applies to bio + adoptive siblings merged together — adoptive entries get the "Adoptive sibling" label, bio entries are unlabeled, but both intermix in birth order rather than being grouped by source. Children-section sort was deliberately left as YAML-order for now (the bug report was about siblings only); can be added in a follow-up if requested.
+
+**Fix: Custom relationship types filed under the Family category now render in the Profile view** ([#533](https://github.com/banisterious/obsidian-charted-roots/issues/533)):
+- A custom type configured with `category: family` and no `familyGraphMapping` (e.g. a user-defined `twin`) was silently dropped from the Profile pane. The data persisted to frontmatter correctly (#530 fix verified), but `isOtherRelationship` short-circuited any `category === 'family'` row out of the Other subsection while the Family subsection only knew about PersonNode-derived bio fields (Father / Mother / Spouse / Child / etc.) and had no path to surface custom-typed family rows. Surfaced by @DigitalDreamn during verification of the #530 notes-display work — `vessari_master` (non-family category) rendered correctly with its note, `twin` (Family category) didn't render at all.
+- `src/profile-view/sections/relationships-section.ts` — added `isFamilyCustomRelationship` helper (`category === 'family'` AND not built-in-with-mapping) and a `renderFamilyCustomGroup` function that mirrors the Other-row layout (each entry wrapped in `cr-profile__rel-item` so per-relationship notes from #530 sit beneath the row). `renderRelationshipsSection` now computes `familyCustoms` and threads them into `renderFamilySubsection`, which appends them after the bio Children group, grouped by type name. The relationship count includes family-customs so the section unhides when the only relationships are custom-typed.
+- No CSS changes — the `cr-profile__rel-notes` class added in v0.22.20 already styles the notes line correctly.
+
+**Verification (dev-vault Person A-G fixtures, plus a `twin` relationship added between Person A and Person F):** all three fixes verified in the dev-vault before pushing. Person G (bio child of Person B) now sees Person A and Person F as adoptive siblings. Person A and Person F now see each other as twins via the Family subsection's new TWIN group, with the per-relationship note "Person A is the elder twin of Person F" rendered in italic beneath the row.
+
+**Testing:** 6 new tests in `tests/sibling-walker.test.ts`. Suite total 628 (was 622 at start of cycle), 52 suites.
+
+**Reporters:** @DigitalDreamn for all three issues.
+
+**Stability-window impact:** no reset — all three changes are non-data-loss. Window continues from 0.22.17's anchor: 2026-05-01 → ~2026-05-22. Four patches in.
+
+---
 
 ### v0.22.20 Round-Up: Mobile Pre-Release Verification and Two Follow-Up Fixes from v0.22.19 (v0.22.20)
 
