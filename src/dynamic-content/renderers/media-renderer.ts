@@ -385,20 +385,26 @@ export class MediaRenderer {
 		itemEl.dataset.index = String(index);
 		itemEl.dataset.wikilink = item.wikilink;
 
+		// Inner wrapper that owns the fixed-aspect-ratio thumbnail surface
+		// (#523). Captions render as a sibling of this wrapper, beneath
+		// the square image, without being clipped by the aspect-ratio /
+		// overflow:hidden constraints.
+		const thumbEl = itemEl.createDiv({ cls: 'cr-media__thumb' });
+
 		// Add drag handle when editable
 		if (this.isEditable) {
 			itemEl.setAttribute('draggable', 'true');
 			this.setupDragEvents(itemEl, index);
 
 			// Add drag handle indicator using Lucide grip-vertical icon
-			const handle = itemEl.createDiv({ cls: 'cr-media__drag-handle' });
+			const handle = thumbEl.createDiv({ cls: 'cr-media__drag-handle' });
 			setIcon(handle, 'grip-vertical');
 			setTooltip(handle, 'Drag to reorder');
 		}
 
 		if (item.isImage && item.file) {
 			// Render image thumbnail
-			const img = itemEl.createEl('img', {
+			const img = thumbEl.createEl('img', {
 				cls: 'cr-media__image',
 				attr: {
 					alt: item.file.basename,
@@ -537,7 +543,7 @@ export class MediaRenderer {
 
 			// Add thumbnail badge if applicable
 			if (item.isThumbnail) {
-				const badge = itemEl.createDiv({ cls: 'cr-media__badge', text: 'Thumbnail' });
+				const badge = thumbEl.createDiv({ cls: 'cr-media__badge', text: 'Thumbnail' });
 				badge.setAttribute('aria-label', 'This image is used as the thumbnail');
 			}
 
@@ -546,10 +552,10 @@ export class MediaRenderer {
 			itemEl.addClass('cr-media__item--pdf');
 
 			// Show placeholder while thumbnail generates
-			const placeholderEl = itemEl.createDiv({ cls: 'cr-media__doc-icon' });
+			const placeholderEl = thumbEl.createDiv({ cls: 'cr-media__doc-icon' });
 			setIcon(placeholderEl, 'file-text');
 
-			const nameEl = itemEl.createDiv({ cls: 'cr-media__doc-name' });
+			const nameEl = thumbEl.createDiv({ cls: 'cr-media__doc-name' });
 			nameEl.textContent = item.file.basename || 'PDF';
 
 			// Generate thumbnail asynchronously
@@ -557,7 +563,7 @@ export class MediaRenderer {
 				if (dataUrl) {
 					placeholderEl.remove();
 					nameEl.remove();
-					const img = itemEl.createEl('img', {
+					const img = thumbEl.createEl('img', {
 						cls: 'cr-media__pdf-thumb',
 						attr: {
 							src: dataUrl,
@@ -567,7 +573,7 @@ export class MediaRenderer {
 					});
 					img.addEventListener('error', () => {
 						img.remove();
-						const fallback = itemEl.createDiv({ cls: 'cr-media__doc-icon' });
+						const fallback = thumbEl.createDiv({ cls: 'cr-media__doc-icon' });
 						setIcon(fallback, 'file-text');
 					});
 				}
@@ -582,10 +588,10 @@ export class MediaRenderer {
 			// Render document placeholder
 			itemEl.addClass('cr-media__item--doc');
 
-			const iconEl = itemEl.createDiv({ cls: 'cr-media__doc-icon' });
+			const iconEl = thumbEl.createDiv({ cls: 'cr-media__doc-icon' });
 			setIcon(iconEl, this.getDocumentIconName(item.extension));
 
-			const nameEl = itemEl.createDiv({ cls: 'cr-media__doc-name' });
+			const nameEl = thumbEl.createDiv({ cls: 'cr-media__doc-name' });
 			nameEl.textContent = item.file?.basename || item.path.split('/').pop() || 'Document';
 
 			// Add click handler to open document

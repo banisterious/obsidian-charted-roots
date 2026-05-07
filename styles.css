@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-07 16:46:04 UTC
+ * - Generated: 2026-05-07 16:55:34 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -38930,7 +38930,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: DYNAMIC-CONTENT.CSS
    ========================================================================== */
 
-/* Component Size: 1198 lines, 25.85 KB */
+/* Component Size: 1214 lines, 26.67 KB */
 
 /**
  * Dynamic Content Styles
@@ -39311,18 +39311,19 @@ body:has(.cr-media-linker) .suggestion-container {
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
 }
 
-/* Size variants */
-.cr-media__grid--small .cr-media__item {
+/* Size variants — aspect-ratio constrains the inner thumb, not the
+   outer item, so captions can sit beneath without being clipped (#523). */
+.cr-media__grid--small .cr-media__thumb {
   aspect-ratio: 1;
   min-height: 60px;
 }
 
-.cr-media__grid--medium .cr-media__item {
+.cr-media__grid--medium .cr-media__thumb {
   aspect-ratio: 1;
   min-height: 100px;
 }
 
-.cr-media__grid--large .cr-media__item {
+.cr-media__grid--large .cr-media__thumb {
   aspect-ratio: 1;
   min-height: 150px;
 }
@@ -39331,13 +39332,24 @@ body:has(.cr-media-linker) .suggestion-container {
 .cr-media__item {
   position: relative;
   border-radius: var(--cr-radius-sm);
-  overflow: hidden;
   cursor: pointer;
   border: 2px solid transparent;
   background: var(--background-secondary);
+  display: flex;
+  flex-direction: column;
   transition:
     border-color 0.15s ease,
     transform 0.15s ease;
+}
+
+/* Inner thumbnail wrapper — owns the aspect-ratio + overflow:hidden so
+   the image fills a square and captions fall outside that square (#523).
+   Position-relative so absolutely-positioned children (badge, drag
+   handle) anchor here rather than at the outer item. */
+.cr-media__thumb {
+  position: relative;
+  overflow: hidden;
+  border-radius: inherit;
 }
 
 .cr-media__item:hover {
@@ -39369,7 +39381,9 @@ body:has(.cr-media-linker) .suggestion-container {
   z-index: 2;
 }
 
-/* Per-image caption (#523) — single-line truncated, full text on hover. */
+/* Per-image caption (#523) — sits beneath the square thumbnail as its
+   own row inside the gallery item. Single-line truncated with ellipsis
+   on overflow; full text on hover via the title tooltip. */
 .cr-media__caption {
   font-size: var(--font-ui-smaller);
   color: var(--text-muted);
@@ -39388,8 +39402,10 @@ body:has(.cr-media-linker) .suggestion-container {
   object-fit: cover;
 }
 
-/* PDF thumbnails (#350) */
-.cr-media__item--pdf {
+/* PDF thumbnails (#350). Center the placeholder/name on the inner
+   thumb so they sit correctly while a thumbnail generates (#523 caption
+   refactor moved these icons into .cr-media__thumb). */
+.cr-media__item--pdf .cr-media__thumb {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -39404,7 +39420,7 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 /* Document placeholders */
-.cr-media__item--doc {
+.cr-media__item--doc .cr-media__thumb {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -41740,11 +41756,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-07 16:46:05 UTC
+ * Build completed: 2026-05-07 16:55:34 UTC
  * Components processed: 50
- * Total lines: 41267
- * Total size: 835.83 KB
- * Build duration: 0.93 seconds
+ * Total lines: 41283
+ * Total size: 836.66 KB
+ * Build duration: 0.81 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -41792,7 +41808,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - map-wizard.css: 606 lines, 12.68 KB
  * - preferences.css: 431 lines, 9.44 KB
  * - tree-output.css: 1548 lines, 30.41 KB
- * - dynamic-content.css: 1198 lines, 25.85 KB
+ * - dynamic-content.css: 1214 lines, 26.67 KB
  * - profile-view.css: 1120 lines, 25.04 KB
  * - calendar-view.css: 302 lines, 6.83 KB
  * - migration-notice.css: 135 lines, 2.67 KB

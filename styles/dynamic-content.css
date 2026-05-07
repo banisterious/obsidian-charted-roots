@@ -377,18 +377,19 @@
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
 }
 
-/* Size variants */
-.cr-media__grid--small .cr-media__item {
+/* Size variants — aspect-ratio constrains the inner thumb, not the
+   outer item, so captions can sit beneath without being clipped (#523). */
+.cr-media__grid--small .cr-media__thumb {
   aspect-ratio: 1;
   min-height: 60px;
 }
 
-.cr-media__grid--medium .cr-media__item {
+.cr-media__grid--medium .cr-media__thumb {
   aspect-ratio: 1;
   min-height: 100px;
 }
 
-.cr-media__grid--large .cr-media__item {
+.cr-media__grid--large .cr-media__thumb {
   aspect-ratio: 1;
   min-height: 150px;
 }
@@ -397,13 +398,24 @@
 .cr-media__item {
   position: relative;
   border-radius: var(--cr-radius-sm);
-  overflow: hidden;
   cursor: pointer;
   border: 2px solid transparent;
   background: var(--background-secondary);
+  display: flex;
+  flex-direction: column;
   transition:
     border-color 0.15s ease,
     transform 0.15s ease;
+}
+
+/* Inner thumbnail wrapper — owns the aspect-ratio + overflow:hidden so
+   the image fills a square and captions fall outside that square (#523).
+   Position-relative so absolutely-positioned children (badge, drag
+   handle) anchor here rather than at the outer item. */
+.cr-media__thumb {
+  position: relative;
+  overflow: hidden;
+  border-radius: inherit;
 }
 
 .cr-media__item:hover {
@@ -435,7 +447,9 @@
   z-index: 2;
 }
 
-/* Per-image caption (#523) — single-line truncated, full text on hover. */
+/* Per-image caption (#523) — sits beneath the square thumbnail as its
+   own row inside the gallery item. Single-line truncated with ellipsis
+   on overflow; full text on hover via the title tooltip. */
 .cr-media__caption {
   font-size: var(--font-ui-smaller);
   color: var(--text-muted);
@@ -454,8 +468,10 @@
   object-fit: cover;
 }
 
-/* PDF thumbnails (#350) */
-.cr-media__item--pdf {
+/* PDF thumbnails (#350). Center the placeholder/name on the inner
+   thumb so they sit correctly while a thumbnail generates (#523 caption
+   refactor moved these icons into .cr-media__thumb). */
+.cr-media__item--pdf .cr-media__thumb {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -470,7 +486,7 @@
 }
 
 /* Document placeholders */
-.cr-media__item--doc {
+.cr-media__item--doc .cr-media__thumb {
   display: flex;
   flex-direction: column;
   align-items: center;
