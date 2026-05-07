@@ -199,41 +199,95 @@ export class RelationshipsRenderer {
 			}
 		}
 
-		// Children
-		if (shouldInclude('children') && person.childrenCrIds.length > 0) {
+		// Children — biological, adopted, step. Mirrors the parents section
+		// pattern (#531 follow-up); each non-bio source labels its entries
+		// to match the corresponding parent label ("Adoptive father" /
+		// "Adopted child", "Stepfather" / "Stepchild", etc.).
+		if (shouldInclude('children')) {
 			for (const childCrId of person.childrenCrIds) {
 				const child = familyGraph.getPersonByCrId(childCrId);
 				if (child) {
 					groups.children.push(this.personToEntry(child));
 				}
 			}
+			for (const adoptedChildCrId of person.adoptedChildCrIds) {
+				const adoptedChild = familyGraph.getPersonByCrId(adoptedChildCrId);
+				if (adoptedChild) {
+					groups.children.push(this.personToEntry(adoptedChild, 'Adopted child'));
+				}
+			}
+			for (const stepchildCrId of person.stepchildrenCrIds) {
+				const stepchild = familyGraph.getPersonByCrId(stepchildCrId);
+				if (stepchild) {
+					groups.children.push(this.personToEntry(stepchild, 'Stepchild'));
+				}
+			}
 		}
 
-		// Siblings (computed from shared parents)
+		// Siblings (computed from shared parents). Bio and adoptive sources
+		// are merged then sorted by birth date so the display follows
+		// chronological age order rather than the parent's frontmatter
+		// `children:` array order (#532). Adoptive siblings (#417) get the
+		// "Adoptive sibling" label and are deduped against the biological
+		// set so a person showing on both edges isn't listed twice.
 		if (shouldInclude('siblings')) {
 			const getPerson = (crId: string) => familyGraph.getPersonByCrId(crId);
 			const biologicalIds = findBiologicalSiblingCrIds(person, getPerson);
 			const biologicalSet = new Set(biologicalIds);
+			const items: { person: PersonNode; isAdoptive: boolean }[] = [];
 			for (const siblingCrId of biologicalIds) {
 				const sibling = getPerson(siblingCrId);
 				if (sibling) {
-					groups.siblings.push(this.personToEntry(sibling));
+					items.push({ person: sibling, isAdoptive: false });
 				}
 			}
-			// Adoptive siblings (#417): other children of this person's
-			// adoptive parents. Deduped against the biological set so a
-			// person showing on both edges isn't listed twice.
 			const adoptiveIds = findAdoptiveSiblingCrIds(person, getPerson);
 			for (const siblingCrId of adoptiveIds) {
 				if (biologicalSet.has(siblingCrId)) continue;
 				const sibling = getPerson(siblingCrId);
 				if (sibling) {
-					groups.siblings.push(this.personToEntry(sibling, 'Adoptive sibling'));
+					items.push({ person: sibling, isAdoptive: true });
 				}
+			}
+			this.sortByBirthDate(items, context.person?.universe);
+			for (const item of items) {
+				groups.siblings.push(
+					this.personToEntry(item.person, item.isAdoptive ? 'Adoptive sibling' : undefined)
+				);
 			}
 		}
 
 		return groups;
+	}
+
+	/**
+	 * Stable sort persons by birth date (oldest first), in place. Uses the
+	 * universe-aware canonical-year comparison from `dateService` so that
+	 * descending fictional eras (e.g. Star Wars BBY) order correctly
+	 * alongside Gregorian dates. Persons without a parseable birth date
+	 * sink to the end while preserving their relative order. Falls back to
+	 * a no-op when the date service isn't available.
+	 */
+	private sortByBirthDate(
+		items: { person: PersonNode; [key: string]: unknown }[],
+		universe: string | undefined
+	): void {
+		const dateService = this.service.getDateService();
+		if (!dateService) return;
+		const yearOf = (p: PersonNode): number | null =>
+			p.birthDate ? dateService.getCanonicalYear(p.birthDate, universe) : null;
+		// Decorate-sort-undecorate to keep the sort stable across engines.
+		const decorated = items.map((item, index) => ({ item, index, year: yearOf(item.person) }));
+		decorated.sort((a, b) => {
+			if (a.year === null && b.year === null) return a.index - b.index;
+			if (a.year === null) return 1;
+			if (b.year === null) return -1;
+			if (a.year !== b.year) return a.year - b.year;
+			return a.index - b.index;
+		});
+		for (let i = 0; i < decorated.length; i++) {
+			items[i] = decorated[i].item;
+		}
 	}
 
 	/**
