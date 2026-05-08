@@ -215,6 +215,12 @@ export class MembershipService {
 		});
 
 		logger.info('addMembership', `Added membership to ${personFile.basename}`);
+
+		// Mirror the change back to the org's `members` / `members_id`
+		// frontmatter so Bases queries against the org see current state (#541).
+		// Person-side flows used to skip this; only the org-side Manage Members
+		// modal triggered the sync.
+		await this.syncMembersToOrgIfResolvable(membership.org_id);
 	}
 
 	/**
@@ -226,6 +232,9 @@ export class MembershipService {
 	 * - Simple single membership (house/organization)
 	 */
 	async removeMembership(personFile: TFile, orgCrId: string): Promise<void> {
+		// Capture whether the person actually had the membership before
+		// processFrontMatter strips it, so we know whether to fire the sync
+		// (we don't want to sync on a no-op removal).
 		await this.app.fileManager.processFrontMatter(personFile, (frontmatter) => {
 			// Check flat parallel arrays first (new format)
 			if (Array.isArray(frontmatter.membership_org_ids)) {
@@ -297,6 +306,25 @@ export class MembershipService {
 				logger.info('removeMembership', `Removed simple membership from ${personFile.basename}`);
 			}
 		});
+
+		// Mirror the removal back to the org's `members` / `members_id`
+		// frontmatter (#541).
+		await this.syncMembersToOrgIfResolvable(orgCrId);
+	}
+
+	/**
+	 * Best-effort sync to the org's frontmatter. Used by the person-side
+	 * membership flows (#541) so adding or removing a membership from
+	 * Edit Person → Add Membership / Remove Membership propagates to the
+	 * org's `members` / `members_id` arrays. Skips silently when the
+	 * org_id doesn't resolve to an organization note (org may have been
+	 * deleted, or the cr_id is malformed).
+	 */
+	private async syncMembersToOrgIfResolvable(orgCrId: string | undefined): Promise<void> {
+		if (!orgCrId) return;
+		const org = this.organizationService.getOrganization(orgCrId);
+		if (!org) return;
+		await this.syncMembersToOrg(org.file, orgCrId);
 	}
 
 	/**
