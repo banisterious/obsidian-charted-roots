@@ -8,7 +8,20 @@
 import { MarkdownRenderer, MarkdownRenderChild } from 'obsidian';
 import type { DynamicBlockContext, DynamicBlockConfig, DynamicContentService } from '../services/dynamic-content-service';
 import type { PersonNode } from '../../core/family-graph';
+import type { ParsedRelationship } from '../../relationships/types/relationship-types';
 import { findAdoptiveSiblingCrIds, findBiologicalSiblingCrIds } from '../sibling-walker';
+
+/**
+ * True when a parsed relationship is custom-typed and NOT already covered by
+ * the family-graph rendering (parents / spouse / children / siblings).
+ * Mirrors the `isOtherRelationship` predicate from the Profile View's
+ * relationships section so the two surfaces classify the same way.
+ */
+function isOtherTypedRelationship(rel: ParsedRelationship): boolean {
+	if ((rel.type?.category || 'other') === 'family') return false;
+	if (rel.type?.builtIn && rel.type?.includeOnFamilyTree && rel.type?.familyGraphMapping) return false;
+	return true;
+}
 
 /**
  * Relationship entry for rendering
@@ -20,13 +33,19 @@ interface RelationshipEntry {
 }
 
 /**
- * Grouped relationships for display
+ * Grouped relationships for display.
+ *
+ * `customByType` holds non-family-mapped relationships from the person's
+ * `relationships` array, keyed by relationship type name (mentor / godparent
+ * / etc.) — only populated when `type: all` (#539). Rendered as one section
+ * per type after the bio Siblings section.
  */
 interface RelationshipGroups {
 	parents: RelationshipEntry[];
 	spouse: RelationshipEntry[];
 	children: RelationshipEntry[];
 	siblings: RelationshipEntry[];
+	customByType: Map<string, RelationshipEntry[]>;
 }
 
 /**
@@ -71,7 +90,8 @@ export class RelationshipsRenderer {
 		const isEmpty = groups.parents.length === 0 &&
 			groups.spouse.length === 0 &&
 			groups.children.length === 0 &&
-			groups.siblings.length === 0;
+			groups.siblings.length === 0 &&
+			groups.customByType.size === 0;
 
 		if (isEmpty) {
 			contentEl.createDiv({
@@ -120,7 +140,8 @@ export class RelationshipsRenderer {
 			parents: [],
 			spouse: [],
 			children: [],
-			siblings: []
+			siblings: [],
+			customByType: new Map()
 		};
 
 		if (!person) {
@@ -267,6 +288,39 @@ export class RelationshipsRenderer {
 			}
 		}
 
+		// Custom-typed relationships from the person's `relationships` array
+		// (#539). Only fetched when `type: all` per the wiki contract:
+		// "all: Everything in extended, plus custom-typed relationships
+		// declared in the person's relationships frontmatter array (mentor,
+		// godparent, ally, etc.)". Filters to non-family-mapped types so
+		// built-in relationships already shown in Family / Spouse / Child
+		// don't double up. Symmetric / inverse-defined relationships on the
+		// other side of an edge are picked up via `getInverseRelationships`.
+		const displayType = (config.type as string) || 'immediate';
+		if (displayType === 'all') {
+			const relService = this.service.createRelationshipService();
+			const seen = new Set<string>();
+			const collect = (rel: ParsedRelationship): void => {
+				if (!isOtherTypedRelationship(rel)) return;
+				if (!rel.targetCrId) return;
+				const key = `${rel.type?.id || ''}|${rel.targetCrId}`;
+				if (seen.has(key)) return;
+				seen.add(key);
+				const targetPerson = familyGraph.getPersonByCrId(rel.targetCrId);
+				if (!targetPerson) return;
+				const typeName = rel.type?.name || rel.type?.id || 'Related';
+				const list = groups.customByType.get(typeName) ?? [];
+				list.push(this.personToEntry(targetPerson));
+				groups.customByType.set(typeName, list);
+			};
+			for (const rel of relService.getRelationshipsForPerson(person.crId)) {
+				collect(rel);
+			}
+			for (const rel of relService.getInverseRelationships(person.crId)) {
+				collect(rel);
+			}
+		}
+
 		return groups;
 	}
 
@@ -334,8 +388,10 @@ export class RelationshipsRenderer {
 		config: DynamicBlockConfig,
 		component: MarkdownRenderChild
 	): Promise<void> {
-		// Define section order and labels
-		const sections: { key: keyof RelationshipGroups; label: string }[] = [
+		// Define section order and labels for the family-graph-derived sections.
+		// Custom-typed relationship groups (#539, `type: all` only) render after
+		// these and are iterated separately from `groups.customByType` below.
+		const sections: { key: 'parents' | 'spouse' | 'children' | 'siblings'; label: string }[] = [
 			{ key: 'parents', label: 'Parents' },
 			{ key: 'spouse', label: 'Spouse' },
 			{ key: 'children', label: 'Children' },
@@ -355,6 +411,14 @@ export class RelationshipsRenderer {
 			}
 
 			await this.renderSection(contentEl, section.label, entries, context, component);
+		}
+
+		// Custom-typed relationships (`type: all` only). One section per type,
+		// preserving the Map's insertion order so the display follows the
+		// declaration order in the person's `relationships` array.
+		for (const [typeName, entries] of groups.customByType) {
+			if (entries.length === 0) continue;
+			await this.renderSection(contentEl, typeName, entries, context, component);
 		}
 	}
 
@@ -429,8 +493,9 @@ export class RelationshipsRenderer {
 
 		const lines: string[] = ['## Family', ''];
 
-		// Define section order and labels
-		const sections: { key: keyof RelationshipGroups; label: string }[] = [
+		// Define section order and labels for the family-graph-derived groups.
+		// Custom-typed groups (#539, `type: all` only) follow these.
+		const sections: { key: 'parents' | 'spouse' | 'children' | 'siblings'; label: string }[] = [
 			{ key: 'parents', label: 'Parents' },
 			{ key: 'spouse', label: 'Spouse' },
 			{ key: 'children', label: 'Children' },
@@ -440,39 +505,37 @@ export class RelationshipsRenderer {
 		// Check config for display type
 		const displayType = this.currentConfig.type as string || 'immediate';
 
-		for (const section of sections) {
-			const entries = this.currentGroups[section.key];
-			if (entries.length === 0) continue;
-
-			// Skip siblings in 'immediate' type
-			if (displayType === 'immediate' && section.key === 'siblings') {
-				continue;
-			}
-
-			lines.push(`### ${section.label}`);
+		const renderEntries = (label: string, entries: RelationshipEntry[]): void => {
+			if (entries.length === 0) return;
+			lines.push(`### ${label}`);
 			lines.push('');
-
 			for (const entry of entries) {
 				let line = '- ';
-
-				// Add wikilink if we have a file path
 				if (entry.filePath) {
 					const basename = entry.filePath.replace(/\.md$/, '').split('/').pop() || entry.name;
-					// Use alias format if basename differs from name (duplicate handling)
 					line += basename !== entry.name ? `[[${basename}|${entry.name}]]` : `[[${basename}]]`;
 				} else {
 					line += entry.name;
 				}
-
-				// Add dates
 				if (entry.dates) {
 					line += ` ${entry.dates}`;
 				}
-
 				lines.push(line);
 			}
-
 			lines.push('');
+		};
+
+		for (const section of sections) {
+			// Skip siblings in 'immediate' type
+			if (displayType === 'immediate' && section.key === 'siblings') {
+				continue;
+			}
+			renderEntries(section.label, this.currentGroups[section.key]);
+		}
+
+		// Custom-typed sections (`type: all` only).
+		for (const [typeName, entries] of this.currentGroups.customByType) {
+			renderEntries(typeName, entries);
 		}
 
 		return lines.join('\n').trim();
