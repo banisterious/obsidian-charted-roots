@@ -234,3 +234,124 @@ describe('createSmartWikilink — pipe-stem idempotency (#537)', () => {
 		expect(result).toBe('[[mildred-barrow|Mildred Barrow]]');
 	});
 });
+
+/**
+ * #538 regression: when the loader's `extractName` receives a path-form
+ * wikilink — `[[Charted Roots/People/Errol Naberrie]]` — it returns the
+ * inner content verbatim ("Charted Roots/People/Errol Naberrie") with no
+ * pipe. Pre-fix, the writer treated the path string as the display name,
+ * compared it against the cr_id-resolved basename, and produced the
+ * inverted form `[[Errol Naberrie|Charted Roots/People/Errol Naberrie]]` —
+ * basename in the target slot, path in the alias slot. Subsequent saves
+ * preserved the path because the #537 stem-collapse only handled `|`
+ * separators, not `/`.
+ *
+ * The fix adds a slash-strip step after the pipe-strip so path-form input
+ * collapses to its trailing segment (the basename), regardless of whether
+ * the path arrived bare or in the alias-position of a piped stem.
+ */
+describe('createSmartWikilink — path-form input idempotency (#538)', () => {
+	it('collapses bare path-form input to the basename', () => {
+		const app = new App();
+		seedPerson(app, {
+			path: 'Charted Roots/People/Errol Naberrie.md',
+			basename: 'Errol Naberrie',
+			name: 'Errol Naberrie',
+			crId: 'person-errol',
+		});
+
+		// The loader's extractName on `[[Charted Roots/People/Errol Naberrie]]`
+		// returns the inner content verbatim with no pipe.
+		const stem = 'Charted Roots/People/Errol Naberrie';
+		const result = createSmartWikilink(stem, app, 'person-errol');
+
+		// Should heal to canonical basename form.
+		expect(result).toBe('[[Errol Naberrie]]');
+	});
+
+	it('collapses inverted alias-form (basename | path) to canonical basename', () => {
+		const app = new App();
+		seedPerson(app, {
+			path: 'Charted Roots/People/Errol Naberrie.md',
+			basename: 'Errol Naberrie',
+			name: 'Errol Naberrie',
+			crId: 'person-errol',
+		});
+
+		// The bug-state shape: basename in target slot, path in alias slot.
+		// Loader returns `Errol Naberrie|Charted Roots/People/Errol Naberrie`;
+		// pipe-strip yields the path; slash-strip yields the basename.
+		const stem = 'Errol Naberrie|Charted Roots/People/Errol Naberrie';
+		const result = createSmartWikilink(stem, app, 'person-errol');
+
+		expect(result).toBe('[[Errol Naberrie]]');
+	});
+
+	it('collapses path-form input when basename differs from name', () => {
+		const app = new App();
+		seedPerson(app, {
+			path: 'Charted Roots/People/mildred-barrow.md',
+			basename: 'mildred-barrow',
+			name: 'Mildred Barrow',
+			crId: 'person-mildred',
+		});
+
+		// Path-form input where the path's last segment is the basename.
+		const stem = 'Charted Roots/People/mildred-barrow';
+		const result = createSmartWikilink(stem, app, 'person-mildred');
+
+		// basename === slash-collapsed result, so canonical bare form.
+		expect(result).toBe('[[mildred-barrow]]');
+	});
+
+	it('preserves an explicit non-path alias when there is no slash', () => {
+		const app = new App();
+		seedPerson(app, {
+			path: 'People/mildred-barrow.md',
+			basename: 'mildred-barrow',
+			name: 'Mildred Barrow',
+			crId: 'person-mildred',
+		});
+
+		// Standard `basename|displayName` stem with no path. Slash-strip is
+		// a no-op (no slash); pipe-strip yields the alias.
+		const stem = 'mildred-barrow|Mildred Barrow';
+		const result = createSmartWikilink(stem, app, 'person-mildred');
+
+		expect(result).toBe('[[mildred-barrow|Mildred Barrow]]');
+	});
+
+	it('handles deeply nested paths', () => {
+		const app = new App();
+		seedPerson(app, {
+			path: 'Charted Roots/People/Sub/Folder/Errol Naberrie.md',
+			basename: 'Errol Naberrie',
+			name: 'Errol Naberrie',
+			crId: 'person-errol',
+		});
+
+		const stem = 'Charted Roots/People/Sub/Folder/Errol Naberrie';
+		const result = createSmartWikilink(stem, app, 'person-errol');
+
+		expect(result).toBe('[[Errol Naberrie]]');
+	});
+
+	it('idempotent: feeding back its own canonical output stays canonical', () => {
+		const app = new App();
+		seedPerson(app, {
+			path: 'Charted Roots/People/Errol Naberrie.md',
+			basename: 'Errol Naberrie',
+			name: 'Errol Naberrie',
+			crId: 'person-errol',
+		});
+
+		// First pass: path-form input → canonical bare.
+		const first = createSmartWikilink('Charted Roots/People/Errol Naberrie', app, 'person-errol');
+		expect(first).toBe('[[Errol Naberrie]]');
+
+		// Second pass: feed back. extractName on `[[Errol Naberrie]]` returns
+		// `Errol Naberrie` — no slash, no pipe, no transformation.
+		const second = createSmartWikilink('Errol Naberrie', app, 'person-errol');
+		expect(second).toBe('[[Errol Naberrie]]');
+	});
+});

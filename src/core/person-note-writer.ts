@@ -57,14 +57,22 @@ export function createSmartWikilink(name: string, app: App, crId?: string): stri
 	// Strip existing brackets if present
 	const cleanName = stripWikilink(name);
 
-	// Idempotency: when `name` arrives in `basename|alias` stem form (the loader's
-	// `extractName` deliberately preserves the pipe so the resolver downstream can
-	// split on it), use the trailing alias segment as the canonical display name.
-	// Without this, repeated saves accumulate `|alias` segments until the wikilink
-	// becomes unparseable and the bidirectional linker silently drops it (#537).
-	const displayName = cleanName.includes('|')
+	// Idempotency under loader→writer round-trip:
+	//   - `basename|alias` stem form: pipe-split, take trailing segment as display (#537).
+	//   - `path/to/file` form (with or without pipe-alias): slash-split, take trailing
+	//     segment as basename (#538). Surfaces when the loader receives a path-form
+	//     wikilink — `[[Charted Roots/People/Errol Naberrie]]` — extractName returns
+	//     the inner content verbatim, the writer would otherwise produce the inverted
+	//     `[[Errol Naberrie|Charted Roots/People/Errol Naberrie]]` form on next save.
+	// Apply pipe-strip first (so a `basename|path/to/file` input lands on the alias
+	// segment), then slash-strip (so a path in either position collapses to its
+	// last segment). Fall back to original cleanName on empty trailing segments.
+	const afterPipe = cleanName.includes('|')
 		? cleanName.split('|').pop()!.trim() || cleanName
 		: cleanName;
+	const displayName = afterPipe.includes('/')
+		? afterPipe.split('/').pop()!.trim() || afterPipe
+		: afterPipe;
 
 	// Preferred path: when caller provides cr_id, look up the file by cr_id
 	// to derive the basename directly. This is the only reliable disambiguator

@@ -497,11 +497,14 @@ function createSmartWikilink(name: string, app: App, crId?: string): string {
 		return `"${name}"`;
 	}
 
-	// Idempotency: collapse `basename|alias` stem form to the alias so repeated
-	// saves don't accumulate `|alias` segments (#537).
-	const displayName = name.includes('|')
+	// Idempotency: collapse `basename|alias` stem form (#537) and `path/to/file`
+	// form (#538) so repeated saves don't accumulate aliases or preserve paths.
+	const afterPipe = name.includes('|')
 		? name.split('|').pop()!.trim() || name
 		: name;
+	const displayName = afterPipe.includes('/')
+		? afterPipe.split('/').pop()!.trim() || afterPipe
+		: afterPipe;
 
 	// Preferred path: when caller provides cr_id, look up the file by cr_id
 	// to derive the basename directly. Mirrors person-note-writer's #524 fix.
@@ -547,10 +550,13 @@ function createWikilink(name: string, app: App, crId?: string): string {
 		return name;
 	}
 
-	// Idempotency on `basename|alias` stem form (#537).
-	const displayName = name.includes('|')
+	// Idempotency on `basename|alias` stem (#537) and `path/to/file` form (#538).
+	const afterPipe = name.includes('|')
 		? name.split('|').pop()!.trim() || name
 		: name;
+	const displayName = afterPipe.includes('/')
+		? afterPipe.split('/').pop()!.trim() || afterPipe
+		: afterPipe;
 
 	if (crId) {
 		const fileById = findFileByCrId(app, crId);

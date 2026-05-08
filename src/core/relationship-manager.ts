@@ -262,11 +262,14 @@ export class RelationshipManager {
 	 * Uses [[basename|name]] format when basename differs from name
 	 */
 	private createSmartWikilink(name: string, file: TFile): string {
-		// Idempotency: collapse `basename|alias` stem form to the alias so
-		// repeated calls don't accumulate `|alias` segments (#537).
-		const displayName = name.includes('|')
+		// Idempotency: collapse `basename|alias` stem (#537) and `path/to/file`
+		// form (#538) so repeated calls don't accumulate aliases or preserve paths.
+		const afterPipe = name.includes('|')
 			? name.split('|').pop()!.trim() || name
 			: name;
+		const displayName = afterPipe.includes('/')
+			? afterPipe.split('/').pop()!.trim() || afterPipe
+			: afterPipe;
 		if (file.basename !== displayName) {
 			return `[[${file.basename}|${displayName}]]`;
 		}
