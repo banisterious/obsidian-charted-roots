@@ -10,6 +10,7 @@ import type { ResearchLevel } from '../types/frontmatter';
 import { SOURCED_PROPERTY_NAMES } from '../sources/types/source-types';
 import { computeRelationshipArrayPatch, applyRelationshipArrayPatch } from './relationship-emit';
 import { detectSpouseTargetFormat } from './spouse-format-detector';
+import { getCanonicalLinktext } from '../utils/wikilink-resolver';
 
 const logger = getLogger('PersonNoteWriter');
 
@@ -82,18 +83,26 @@ export function createSmartWikilink(name: string, app: App, crId?: string): stri
 	if (crId) {
 		const fileById = findFileByCrId(app, crId);
 		if (fileById) {
-			if (fileById.basename !== displayName) {
-				return `[[${fileById.basename}|${displayName}]]`;
+			// Use the canonical linktext (basename when unique, full path when
+			// the basename is shared with another vault file) so Obsidian's
+			// link resolver lands on this specific file (#540).
+			const target = getCanonicalLinktext(app, fileById);
+			if (target !== displayName) {
+				return `[[${target}|${displayName}]]`;
 			}
-			return `[[${displayName}]]`;
+			return `[[${target}]]`;
 		}
 		// Fall through to name-based lookup if cr_id doesn't resolve
 	}
 
 	// Fallback: try to resolve the name to a file via Obsidian's link resolver
 	const resolvedFile = app.metadataCache.getFirstLinkpathDest(displayName, '');
-	if (resolvedFile && resolvedFile.basename !== displayName) {
-		return `[[${resolvedFile.basename}|${displayName}]]`;
+	if (resolvedFile) {
+		const target = getCanonicalLinktext(app, resolvedFile);
+		if (target !== displayName) {
+			return `[[${target}|${displayName}]]`;
+		}
+		return `[[${target}]]`;
 	}
 
 	// Standard format

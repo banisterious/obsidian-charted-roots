@@ -71,6 +71,33 @@ export function toWikilink(path: string): string {
 }
 
 /**
+ * Return the canonical wikilink target for a file: the bare basename when
+ * unique in the vault, or the full path (without `.md`) when basename is
+ * ambiguous with another file.
+ *
+ * Plugin writers that emit `[[basename]]` rely on Obsidian's link resolver
+ * picking the right file, but the resolver has no way to know the plugin
+ * intended the cr_id-resolved file specifically — when two files share a
+ * basename (e.g., a plugin-managed person note plus an unrelated note with
+ * the same name elsewhere in the vault), the resolver picks one based on
+ * its own heuristics and can land on the wrong target. Emitting the path
+ * form forces an unambiguous resolution (#540).
+ */
+export function getCanonicalLinktext(app: App, file: TFile): string {
+	let count = 0;
+	for (const f of app.vault.getMarkdownFiles()) {
+		if (f.basename === file.basename) {
+			count++;
+			if (count > 1) {
+				// Path form, with `.md` extension stripped.
+				return file.path.replace(/\.md$/, '');
+			}
+		}
+	}
+	return file.basename;
+}
+
+/**
  * Resolve a path (possibly a wikilink) to a TFile
  *
  * @param app - Obsidian App instance

@@ -2,6 +2,7 @@ import { App, TFile, Notice } from 'obsidian';
 import { RelationshipHistoryService, RelationshipChangeType } from './relationship-history';
 import { getLogger } from './logging';
 import { getErrorMessage } from './error-utils';
+import { getCanonicalLinktext } from '../utils/wikilink-resolver';
 
 const logger = getLogger('RelationshipManager');
 
@@ -270,10 +271,12 @@ export class RelationshipManager {
 		const displayName = afterPipe.includes('/')
 			? afterPipe.split('/').pop()!.trim() || afterPipe
 			: afterPipe;
-		if (file.basename !== displayName) {
-			return `[[${file.basename}|${displayName}]]`;
+		// Path-form when basename is ambiguous in the vault (#540).
+		const target = getCanonicalLinktext(this.app, file);
+		if (target !== displayName) {
+			return `[[${target}|${displayName}]]`;
 		}
-		return `[[${displayName}]]`;
+		return `[[${target}]]`;
 	}
 
 	/**

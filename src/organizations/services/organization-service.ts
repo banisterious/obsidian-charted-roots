@@ -17,6 +17,7 @@ import { isValidOrganizationType, getOrganizationType } from '../constants/organ
 import { getLogger } from '../../core/logging';
 import { parseMediaRefs } from '../../core/media-service';
 import { isOrganizationNote } from '../../utils/note-type-detection';
+import { getCanonicalLinktext } from '../../utils/wikilink-resolver';
 import type { MembershipService } from './membership-service';
 
 const logger = getLogger('OrganizationService');
@@ -62,17 +63,23 @@ function createSmartWikilink(name: string, app: App, crId?: string): string {
 	if (crId) {
 		const fileById = findFileByCrId(app, crId);
 		if (fileById) {
-			if (fileById.basename !== displayName) {
-				return `[[${fileById.basename}|${displayName}]]`;
+			// Path-form when basename is ambiguous in the vault (#540).
+			const target = getCanonicalLinktext(app, fileById);
+			if (target !== displayName) {
+				return `[[${target}|${displayName}]]`;
 			}
-			return `[[${displayName}]]`;
+			return `[[${target}]]`;
 		}
 	}
 
 	// Fallback: try to resolve the name to a file
 	const resolvedFile = app.metadataCache.getFirstLinkpathDest(displayName, '');
-	if (resolvedFile && resolvedFile.basename !== displayName) {
-		return `[[${resolvedFile.basename}|${displayName}]]`;
+	if (resolvedFile) {
+		const target = getCanonicalLinktext(app, resolvedFile);
+		if (target !== displayName) {
+			return `[[${target}|${displayName}]]`;
+		}
+		return `[[${target}]]`;
 	}
 
 	// Standard format

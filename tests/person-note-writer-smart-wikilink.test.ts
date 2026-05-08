@@ -355,3 +355,110 @@ describe('createSmartWikilink — path-form input idempotency (#538)', () => {
 		expect(second).toBe('[[Errol Naberrie]]');
 	});
 });
+
+/**
+ * #540 regression: when two files in the vault share the same basename
+ * (e.g., a plugin-managed person note `Charted Roots/People/Plo Koon.md`
+ * AND an unrelated note `Story Arcs/Plo Koon.md`), the plugin's writer
+ * was emitting `[[Plo Koon]]` and trusting Obsidian's link resolver to
+ * find the right file. The resolver picks one based on its own heuristics
+ * without regard to which one the plugin intended, so the link could
+ * land on the wrong file — visible as cross-folder links in Obsidian's
+ * Graph view, and as silent rewiring of the wikilink to point at the
+ * non-CR sibling on subsequent saves.
+ *
+ * The fix uses `getCanonicalLinktext` to detect basename ambiguity at
+ * write time and emit the path-form wikilink (`[[Charted Roots/People/Plo Koon|Plo Koon]]`)
+ * to force unambiguous resolution.
+ */
+describe('createSmartWikilink — basename ambiguity disambiguation (#540)', () => {
+	it('emits path-form when basename is shared with another vault file', () => {
+		const app = new App();
+		// CR-managed person note.
+		seedPerson(app, {
+			path: 'Charted Roots/People/Plo Koon.md',
+			basename: 'Plo Koon',
+			name: 'Plo Koon',
+			crId: 'person-plo-koon',
+		});
+		// Unrelated note outside CR sharing the same basename.
+		const otherFile = new TFile({
+			path: 'Story Arcs/Plo Koon.md',
+			basename: 'Plo Koon',
+			extension: 'md',
+		});
+		app.vault._addFile(otherFile);
+
+		// Caller passes the basename + cr_id of the CR-managed note.
+		const result = createSmartWikilink('Plo Koon', app, 'person-plo-koon');
+
+		// Without #540, returns `[[Plo Koon]]` — ambiguous, resolves to whichever
+		// file Obsidian's heuristic picks.
+		// With #540, returns the path-form target with the basename as alias —
+		// disambiguates at the resolver level while keeping the display clean.
+		expect(result).toBe('[[Charted Roots/People/Plo Koon|Plo Koon]]');
+	});
+
+	it('emits bare basename when the basename is unique in the vault', () => {
+		const app = new App();
+		seedPerson(app, {
+			path: 'Charted Roots/People/Errol Naberrie.md',
+			basename: 'Errol Naberrie',
+			name: 'Errol Naberrie',
+			crId: 'person-errol',
+		});
+
+		const result = createSmartWikilink('Errol Naberrie', app, 'person-errol');
+
+		// No ambiguity; canonical bare basename form.
+		expect(result).toBe('[[Errol Naberrie]]');
+	});
+
+	it('emits path-form aliased when basename ambiguous AND name differs from basename', () => {
+		const app = new App();
+		seedPerson(app, {
+			path: 'Charted Roots/People/mildred-barrow.md',
+			basename: 'mildred-barrow',
+			name: 'Mildred Barrow',
+			crId: 'person-mildred',
+		});
+		const otherFile = new TFile({
+			path: 'Notes/mildred-barrow.md',
+			basename: 'mildred-barrow',
+			extension: 'md',
+		});
+		app.vault._addFile(otherFile);
+
+		const result = createSmartWikilink('Mildred Barrow', app, 'person-mildred');
+
+		// Path-form target, name as alias.
+		expect(result).toBe('[[Charted Roots/People/mildred-barrow|Mildred Barrow]]');
+	});
+
+	it('idempotent across saves once disambiguated', () => {
+		const app = new App();
+		seedPerson(app, {
+			path: 'Charted Roots/People/Plo Koon.md',
+			basename: 'Plo Koon',
+			name: 'Plo Koon',
+			crId: 'person-plo-koon',
+		});
+		const otherFile = new TFile({
+			path: 'Story Arcs/Plo Koon.md',
+			basename: 'Plo Koon',
+			extension: 'md',
+		});
+		app.vault._addFile(otherFile);
+
+		// First write: produces the path-form target with basename alias.
+		const first = createSmartWikilink('Plo Koon', app, 'person-plo-koon');
+		expect(first).toBe('[[Charted Roots/People/Plo Koon|Plo Koon]]');
+
+		// Loader's extractName on `[[Charted Roots/People/Plo Koon|Plo Koon]]`
+		// returns `Charted Roots/People/Plo Koon|Plo Koon` — pipe-strip yields
+		// the alias `Plo Koon`, slash-strip is a no-op (no slash). The writer
+		// then re-disambiguates because basename ambiguity is still present.
+		const second = createSmartWikilink('Charted Roots/People/Plo Koon|Plo Koon', app, 'person-plo-koon');
+		expect(second).toBe('[[Charted Roots/People/Plo Koon|Plo Koon]]');
+	});
+});
