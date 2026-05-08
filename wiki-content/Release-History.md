@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.24 Round-Up: Wikilink Writer Hardening, Custom Relationships in All-Mode, and Org Membership Sync](#v02224-round-up-wikilink-writer-hardening-custom-relationships-in-all-mode-and-org-membership-sync-v02224)
   - [v0.22.23 Hotfix: Marriage-Detail Symmetric Write](#v02223-hotfix-marriage-detail-symmetric-write-v02223)
   - [v0.22.22 Round-Up: Wikilink Cascade Self-Heal, Profile View Symmetry, and Media Captions](#v02222-round-up-wikilink-cascade-self-heal-profile-view-symmetry-and-media-captions-v02222)
   - [v0.22.21 Round-Up: Dynamic Block Display Paths and Profile View Family-Custom Routing](#v02221-round-up-dynamic-block-display-paths-and-profile-view-family-custom-routing-v02221)
@@ -162,6 +163,42 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.24 Round-Up: Wikilink Writer Hardening, Custom Relationships in All-Mode, and Org Membership Sync (v0.22.24)
+
+A four-fix batch closing relationship-correctness gaps surfaced during @DigitalDreamn's verification sweep of the v0.22.22 [#537](https://github.com/banisterious/obsidian-charted-roots/issues/537) fix. Two fixes extend the v0.22.22 wikilink-writer self-heal pattern to additional input shapes; one closes a renderer gap where the Dynamic Relationship Block's `type: all` mode wasn't honoring its wiki contract; one closes a bidirectional-sync gap where person-side membership changes left the org's frontmatter stale.
+
+**Fix: File paths in wikilink alias slot now self-heal on save** ([#538](https://github.com/banisterious/obsidian-charted-roots/issues/538)):
+- Some on-disk wikilinks in person-note frontmatter had a file path in the alias slot — e.g., `[[Errol Naberrie|Charted Roots/People/Errol Naberrie]]` instead of the canonical `[[Errol Naberrie]]`. Saving via Edit Person didn't clean them up because the v0.22.22 [#537](https://github.com/banisterious/obsidian-charted-roots/issues/537) self-heal only handled pipe-stem accumulation (`[[X|X|X]]` → `[[X]]`), not path-form input.
+- The path-form residue typically arose from periods when a vault contained duplicate-basename files outside the plugin's folder structure: Obsidian's link resolver writes path-disambiguated wikilinks when a basename is ambiguous, those path forms got captured into other notes' frontmatter, and the loader→writer round-trip then preserved the path in the alias slot indefinitely.
+- The fix extends the existing stem-collapse logic with a slash-strip step in `createSmartWikilink` (`src/core/person-note-writer.ts:65-71`): after the pipe-strip, any remaining path collapses to its trailing segment (the basename). Affected vaults self-heal on the next Edit Person save, just like #537.
+- Same fix applied to all four sibling copies of the helper (person / place / organization / relationship-manager). 6 new tests in `tests/person-note-writer-smart-wikilink.test.ts` covering bare path-form, inverted alias-form, deeply-nested paths, and round-trip idempotency.
+
+**Fix: Wikilink writer disambiguates when basename is shared with another vault file** ([#540](https://github.com/banisterious/obsidian-charted-roots/issues/540)):
+- When the plugin emitted `[[basename]]` for a relationship target, Obsidian's link resolver picked a winner without regard to which folder the plugin intended. In vaults containing duplicate basenames — e.g., a plugin-managed person note `Charted Roots/People/Plo Koon.md` AND an unrelated note `Story Arcs/Plo Koon.md` — the resolver could land on the non-CR sibling, producing cross-folder Graph view connections, click-through navigation to the wrong note, and silent rewiring of the wikilink to point at the non-CR file on subsequent saves.
+- @DigitalDreamn caught this in her vault by routinely checking Obsidian's Graph view to verify connections — the "grabby" behavior on her newly-created Charted Roots Plo Koon file linking out to her original story-arc Plo Koon was the symptom that surfaced the gap.
+- The fix uses a new `getCanonicalLinktext` helper in `src/utils/wikilink-resolver.ts` that detects basename ambiguity at write time. When the cr_id-resolved file's basename collides with another vault file, the writer emits the path-form target with the basename as alias (`[[Charted Roots/People/Plo Koon|Plo Koon]]`) so the resolver lands unambiguously on the intended file while the display text stays clean.
+- Same fix applied to all four sibling copies. 4 new tests in `tests/person-note-writer-smart-wikilink.test.ts` covering ambiguous + unique cases, name-vs-basename divergence under ambiguity, and round-trip idempotency once disambiguated.
+
+**Fix: Dynamic Relationship Block's `type: all` mode now displays custom-typed relationships** ([#539](https://github.com/banisterious/obsidian-charted-roots/issues/539)):
+- The wiki contract for `type: all` was "everything in extended, plus custom-typed relationships declared in the person's relationships frontmatter array (mentor, godparent, ally, etc.)." In practice the renderer ignored the custom-relationships array entirely — only the family-graph-derived sections (parents, spouse, children, siblings) ever rendered, regardless of mode.
+- @DigitalDreamn caught it by configuring Plo Koon as Ahsoka's mentor (using the pre-built `mentor` custom type) and observing he didn't appear in the dynamic block at all — only Ahsoka's parents showed up.
+- The fix in `src/dynamic-content/renderers/relationships-renderer.ts` fetches the person's relationships via `RelationshipService.getRelationshipsForPerson` plus `getInverseRelationships` (so symmetric / inverse-defined edges from the partner's note are picked up), filters to non-family-mapped types using the same `isOtherTypedRelationship` predicate the Profile View's Other subsection uses, deduplicates symmetric pairs by `type.id + targetCrId`, and groups entries by relationship type name. Each custom type renders as its own section after Siblings, preserving declaration order.
+- Family-graph-derived sections are unchanged. The same predicate is shared with the Profile View's Other subsection so the two surfaces stay consistent.
+
+**Fix: Adding a membership from Edit Person now syncs to the organization's `members` frontmatter** ([#541](https://github.com/banisterious/obsidian-charted-roots/issues/541)):
+- The membership service's `syncMembersToOrg` (which keeps an organization's `members` / `members_id` frontmatter in sync with the person-side `org_membership_*` properties of its members) was only triggered from the org-side "Manage Members" modal. Adding or removing a membership through the Person's Edit Person → Add Membership flow updated the person's frontmatter but didn't propagate the change back to the org.
+- Mostly invisible because the Org Profile View's Members section and the dynamic Members block both assemble member lists by scanning person notes, so the new member appeared correctly in those views — the discrepancy surfaced only in Obsidian Bases queries that read the org's own frontmatter directly.
+- The fix calls a new `syncMembersToOrgIfResolvable` helper at the end of both `addMembership` and `removeMembership`, which best-effort resolves the org's TFile from the cr_id and triggers the existing sync. Skips silently when the org_id doesn't resolve.
+- Reported by @DigitalDreamn while debugging the wikilink-grabby behavior in #538 follow-up — she noticed a newly-added member appeared in the dynamic block + profile pane but not in the org's frontmatter.
+
+**Testing:** Suite total **671** (was 661 at v0.22.23), 54 suites. +10 new tests across #538 (6) and #540 (4). #539 and #541 verified visually in dev-vault per the codebase convention for renderer + service-with-I/O changes.
+
+**Reporters:** @DigitalDreamn for all four.
+
+**Stability-window impact:** no reset — all four fixes are `medium-priority` or `low-priority`, none reset the gate. Window remains anchored to v0.22.22 (2026-05-07 → ~2026-05-28).
+
+---
 
 ### v0.22.23 Hotfix: Marriage-Detail Symmetric Write (v0.22.23)
 
