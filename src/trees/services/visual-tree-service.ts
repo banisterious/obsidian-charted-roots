@@ -1129,11 +1129,13 @@ export class VisualTreeService {
 
 			result.push({ person, generation });
 
-			// Add children
-			for (const childCrId of person.childrenCrIds) {
-				if (familyTree.nodes.has(childCrId) && !visited.has(childCrId)) {
+			// Walk descendants (#546) — bio-only by current convention.
+			// Visual tree printable layouts trace biological lineage; flipping
+			// to 'all' would be a deliberate genealogy-domain decision.
+			for (const { person: child } of this.familyGraphService.getQueryService().getChildren(person, { include: 'bio' })) {
+				if (familyTree.nodes.has(child.crId) && !visited.has(child.crId)) {
 					queue.push({
-						crId: childCrId,
+						crId: child.crId,
 						generation: generation + 1
 					});
 				}

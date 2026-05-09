@@ -133,13 +133,11 @@ export class DescendantChartGenerator {
 			spouses
 		});
 
-		// Get children sorted by birth date
+		// Get children — bio only (descendant charts trace biological
+		// lineage; #546). Sorted by birth date below.
 		const children: PersonNode[] = [];
-		for (const childCrId of node.childrenCrIds) {
-			const childNode = familyGraph.getPersonByCrId(childCrId);
-			if (childNode) {
-				children.push(childNode);
-			}
+		for (const { person: childNode } of familyGraph.getQueryService().getChildren(node, { include: 'bio' })) {
+			children.push(childNode);
 		}
 
 		// Sort by birth date

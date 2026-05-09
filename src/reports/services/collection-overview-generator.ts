@@ -219,10 +219,12 @@ export class CollectionOverviewGenerator {
 		const person = familyGraph.getPersonByCrId(crId);
 		if (!person) return 1;
 
+		// Bio-only descent for depth measurement — collections track
+		// blood-relation generations; #546 makes the choice explicit.
 		let maxChildDepth = 0;
-		for (const childId of person.childrenCrIds) {
-			if (memberIds.has(childId)) {
-				const childDepth = this.measureDescendantDepth(childId, memberIds, familyGraph, visited);
+		for (const { person: child } of familyGraph.getQueryService().getChildren(person, { include: 'bio' })) {
+			if (memberIds.has(child.crId)) {
+				const childDepth = this.measureDescendantDepth(child.crId, memberIds, familyGraph, visited);
 				if (childDepth > maxChildDepth) {
 					maxChildDepth = childDepth;
 				}
@@ -285,9 +287,10 @@ export class CollectionOverviewGenerator {
 
 			const person = familyGraph.getPersonByCrId(crId);
 			if (person) {
-				for (const childId of person.childrenCrIds) {
-					if (memberIds.has(childId) && !personGenerations.has(childId)) {
-						queue.push({ crId: childId, gen: gen + 1 });
+				// Bio-only generation walk for collection-overview analytics (#546).
+				for (const { person: child } of familyGraph.getQueryService().getChildren(person, { include: 'bio' })) {
+					if (memberIds.has(child.crId) && !personGenerations.has(child.crId)) {
+						queue.push({ crId: child.crId, gen: gen + 1 });
 					}
 				}
 			}

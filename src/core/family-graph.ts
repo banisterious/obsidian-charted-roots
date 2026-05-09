@@ -260,9 +260,16 @@ export class FamilyGraphService {
 	 * Lazily-instantiated relationship-query service. Captures `this` so
 	 * the closure resolves `personCache` at call time — `loadPersonCache`
 	 * mutates the same Map via `clear()`/`set()`, never reassigns it, so
-	 * the lookup stays valid across reload cycles. Tracking issue: #546.
+	 * the lookup stays valid across reload cycles.
+	 *
+	 * Public API for consumer migrations under #546: report generators,
+	 * canvas/visual-tree services, profile views, and dynamic blocks
+	 * route their relationship walks through this service rather than
+	 * reading PersonNode arrays directly. Each call site declares which
+	 * variants it walks via the `include` option, making the choice
+	 * explicit and surfacing latent bio-only-by-omission gaps.
 	 */
-	private getQueryService(): RelationshipQueryService {
+	getQueryService(): RelationshipQueryService {
 		if (!this._queryService) {
 			this._queryService = new RelationshipQueryService(crId => this.personCache.get(crId));
 		}

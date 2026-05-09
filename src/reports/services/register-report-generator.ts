@@ -144,16 +144,15 @@ export class RegisterReportGenerator {
 			}
 		}
 
-		// Get children and determine which continue the line
+		// Get children — bio only (Register reports follow the NEHGS
+		// numbered-descent convention which traces biological lineage).
+		// #546: include flag makes the bio-only-ness explicit at the call site.
 		const children: Array<{ person: ReportPerson; registerNumber?: string; node: PersonNode }> = [];
-		for (const childCrId of node.childrenCrIds) {
-			const childNode = familyGraph.getPersonByCrId(childCrId);
-			if (childNode) {
-				children.push({
-					person: nodeToReportPerson(childNode),
-					node: childNode
-				});
-			}
+		for (const { person: childNode } of familyGraph.getQueryService().getChildren(node, { include: 'bio' })) {
+			children.push({
+				person: nodeToReportPerson(childNode),
+				node: childNode
+			});
 		}
 
 		// Sort children by birth date if available

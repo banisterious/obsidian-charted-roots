@@ -83,22 +83,21 @@ export class FamilyGroupSheetGenerator {
 			}
 		}
 
-		// Get children
+		// Get children — bio only (Family Group Sheets traditionally show
+		// the biological children of a couple; #546). Adopted/step children
+		// would shift this away from the canonical genealogy form.
 		const children: ReportPerson[] = [];
 		if (options.includeChildren) {
-			for (const childCrId of primaryNode.childrenCrIds) {
-				const childNode = familyGraph.getPersonByCrId(childCrId);
-				if (childNode) {
-					const childPerson = nodeToReportPerson(childNode);
-					// Add spouse info for child if available
-					if (childNode.spouseCrIds.length > 0) {
-						const firstSpouse = familyGraph.getPersonByCrId(childNode.spouseCrIds[0]);
-						if (firstSpouse) {
-							(childPerson as ReportPerson & { spouseName?: string }).spouseName = firstSpouse.name;
-						}
+			for (const { person: childNode } of familyGraph.getQueryService().getChildren(primaryNode, { include: 'bio' })) {
+				const childPerson = nodeToReportPerson(childNode);
+				// Add spouse info for child if available
+				if (childNode.spouseCrIds.length > 0) {
+					const firstSpouse = familyGraph.getPersonByCrId(childNode.spouseCrIds[0]);
+					if (firstSpouse) {
+						(childPerson as ReportPerson & { spouseName?: string }).spouseName = firstSpouse.name;
 					}
-					children.push(childPerson);
 				}
+				children.push(childPerson);
 			}
 		}
 

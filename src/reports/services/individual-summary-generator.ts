@@ -140,10 +140,11 @@ export class IndividualSummaryGenerator {
 			if (spouse) family.spouses.push(nodeToReportPerson(spouse));
 		}
 
-		// Children
-		for (const childCrId of node.childrenCrIds) {
-			const child = familyGraph.getPersonByCrId(childCrId);
-			if (child) family.children.push(nodeToReportPerson(child));
+		// Children — bio only by current convention (#546). Flipping to 'all'
+		// would surface adopted/step children in individual summaries; that's
+		// a deliberate genealogy-domain decision and lives in a follow-up.
+		for (const { person: child } of familyGraph.getQueryService().getChildren(node, { include: 'bio' })) {
+			family.children.push(nodeToReportPerson(child));
 		}
 
 		return family;
