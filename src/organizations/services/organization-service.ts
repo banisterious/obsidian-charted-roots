@@ -41,7 +41,7 @@ function getWriteProperty(canonical: string, aliases: Record<string, string>): s
  * @param name The display name
  * @param app The Obsidian app instance for file resolution
  */
-function createSmartWikilink(name: string, app: App, crId?: string): string {
+export function createSmartWikilink(name: string, app: App, crId?: string): string {
 	// If already a wikilink, return as-is
 	if (name.startsWith('[[') && name.endsWith(']]')) {
 		return name;

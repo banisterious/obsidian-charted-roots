@@ -12,7 +12,7 @@ import type {
 	PersonMembership,
 	OrganizationInfo
 } from '../types/organization-types';
-import { OrganizationService } from './organization-service';
+import { OrganizationService, createSmartWikilink } from './organization-service';
 import { getLogger } from '../../core/logging';
 
 const logger = getLogger('MembershipService');
@@ -197,13 +197,29 @@ export class MembershipService {
 			const toDates: string[] = Array.isArray(frontmatter.membership_to_dates) ? [...frontmatter.membership_to_dates] : [];
 			const notes: string[] = Array.isArray(frontmatter.membership_notes) ? [...frontmatter.membership_notes] : [];
 
-			// Add new membership to each array
-			orgs.push(membership.org);
+			// Add new membership to each array, routing the org wikilink
+			// through createSmartWikilink so it carries the same input-shape
+			// normalization (#537/#538) and basename-ambiguity disambiguation
+			// (#540) as every other relationship-field write (#542).
+			orgs.push(createSmartWikilink(membership.org, this.app, membership.org_id));
 			orgIds.push(membership.org_id || '');
 			roles.push(membership.role || '');
 			fromDates.push(membership.from || '');
 			toDates.push(membership.to || '');
 			notes.push(membership.notes || '');
+
+			// Full-array rewrite pass: normalize every existing entry through
+			// the same helper so historical residue (path-form, pipe-stem,
+			// pre-canonical disambiguation) heals on every save instead of
+			// only when the specific entry happens to be touched (#542). The
+			// normalize-on-write flow alone wouldn't reach existing entries
+			// because the membership flow is otherwise diff-based.
+			for (let i = 0; i < orgs.length; i++) {
+				const id = orgIds[i];
+				if (typeof orgs[i] === 'string' && id) {
+					orgs[i] = createSmartWikilink(orgs[i], this.app, id);
+				}
+			}
 
 			// Update all flat arrays
 			frontmatter.membership_orgs = orgs;
@@ -273,6 +289,16 @@ export class MembershipService {
 						delete frontmatter.membership_to_dates;
 						delete frontmatter.membership_notes;
 					} else {
+						// Full-array rewrite pass for surviving entries so
+						// historical residue heals alongside the targeted
+						// removal (#542). Same shape as the addMembership
+						// pass.
+						for (let i = 0; i < orgs.length; i++) {
+							const id = newOrgIds[i];
+							if (typeof orgs[i] === 'string' && id) {
+								orgs[i] = createSmartWikilink(orgs[i], this.app, id);
+							}
+						}
 						frontmatter.membership_orgs = orgs;
 						frontmatter.membership_org_ids = newOrgIds;
 						frontmatter.membership_roles = roles;
