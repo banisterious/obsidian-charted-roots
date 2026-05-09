@@ -26,6 +26,7 @@ import { getPlaceFolderForCategory } from '../settings';
 import { CANONICAL_PLACE_CATEGORIES, type CanonicalPlaceCategory } from './value-alias-service';
 import { parseMediaRefs } from './media-service';
 import { isPlaceNote, isPersonNote } from '../utils/note-type-detection';
+import { waitForCacheRefresh } from '../utils/cache-utils';
 
 const logger = getLogger('PlaceGraph');
 
@@ -131,9 +132,24 @@ export class PlaceGraphService {
 	}
 
 	/**
-	 * Force reload the place cache
+	 * Force reload the place cache.
+	 *
+	 * `processFrontMatter` and `vault.create` write the file synchronously,
+	 * but Obsidian's metadata cache catches up asynchronously via the file
+	 * watcher. A `loadPlaceCache()` call between those two points reads
+	 * stale data for the just-touched files. Callers that just performed
+	 * writes should pass the modified TFiles so this method awaits each
+	 * file's `metadataCache.changed` event before rebuilding (#547).
+	 *
+	 * Refresh-driven callers (e.g., responding to a tab switch or external
+	 * change) can omit `modifiedFiles` to skip the wait.
 	 */
-	reloadCache(): void {
+	async reloadCache(modifiedFiles?: TFile[]): Promise<void> {
+		if (modifiedFiles && modifiedFiles.length > 0) {
+			await Promise.all(
+				modifiedFiles.map(file => waitForCacheRefresh(this.app, file))
+			);
+		}
 		this.loadPlaceCache();
 		this.loadPlaceReferences();
 	}

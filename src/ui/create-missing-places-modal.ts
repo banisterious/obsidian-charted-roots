@@ -280,6 +280,7 @@ export class CreateMissingPlacesModal extends Modal {
 			const errors: string[] = [];
 			// Track both original and created names for auto-linking
 			const createdPlaceMappings: Array<{ original: string; created: string }> = [];
+			const createdFiles: TFile[] = [];
 
 			for (const originalName of this.selectedPlaces) {
 				// Find the place entry to get the normalized name
@@ -300,7 +301,7 @@ export class CreateMissingPlacesModal extends Modal {
 					// Use the name we're creating (normalized if enabled) for parent lookup
 					const parentInfo = this.findParentPlace(nameToCreate);
 
-					await createPlaceNote(this.app, {
+					const newFile = await createPlaceNote(this.app, {
 						name: nameToCreate,
 						aliases,
 						parentPlace: parentInfo?.name,
@@ -311,6 +312,7 @@ export class CreateMissingPlacesModal extends Modal {
 					});
 					created++;
 					createdPlaceMappings.push({ original: originalName, created: nameToCreate });
+					createdFiles.push(newFile);
 				} catch (error) {
 					errors.push(`${nameToCreate}: ${error instanceof Error ? error.message : 'Unknown error'}`);
 				}
@@ -321,7 +323,7 @@ export class CreateMissingPlacesModal extends Modal {
 			if (this.autoLinkEnabled && this.placeGraph && createdPlaceMappings.length > 0) {
 				// Pass the original names for matching references
 				const originalNames = createdPlaceMappings.map(m => m.original);
-				linkedCount = await this.autoLinkPersonNotes(originalNames);
+				linkedCount = await this.autoLinkPersonNotes(originalNames, createdFiles);
 			}
 
 			if (errors.length > 0) {
@@ -350,11 +352,14 @@ export class CreateMissingPlacesModal extends Modal {
 	 * Auto-link person notes to newly created place notes
 	 * Updates frontmatter to convert plain text place names to wikilinks
 	 */
-	private async autoLinkPersonNotes(createdPlaces: string[]): Promise<number> {
+	private async autoLinkPersonNotes(createdPlaces: string[], createdFiles: TFile[]): Promise<number> {
 		if (!this.placeGraph) return 0;
 
-		// Reload the cache to get fresh references
-		this.placeGraph.reloadCache();
+		// Reload the cache to get fresh references. Pass the just-created
+		// place files so the reload waits for each metadataCache.changed
+		// event before rebuilding (#547) — otherwise the new places are
+		// silently dropped from the cache.
+		await this.placeGraph.reloadCache(createdFiles);
 		const allRefs = this.placeGraph.getPlaceReferences();
 
 		// Find unlinked references that match our created places

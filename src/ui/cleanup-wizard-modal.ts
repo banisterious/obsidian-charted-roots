@@ -3168,8 +3168,11 @@ export class CleanupWizardModal extends Modal {
 					if (newCrId) {
 						parentsCreated.push(name);
 
-						// Refresh the place graph to include the new place
-						placeGraph.reloadCache();
+						// Refresh the place graph to include the new place.
+						// Pass the new file so the reload waits for the
+						// metadata cache to index it before re-extracting
+						// (#547).
+						await placeGraph.reloadCache([file]);
 
 						existingPlace = placeGraph.getPlaceByCrId(newCrId);
 						childId = newCrId;
