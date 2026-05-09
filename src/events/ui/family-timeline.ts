@@ -458,10 +458,13 @@ export function getFamilyTimelineSummary(
 		return { totalEvents: 0, memberCount: 0, dateRange: '' };
 	}
 
-	// Count family members
+	// Count family members — bio + adopted + step children (#546). The
+	// member count drives both the badge gating and tooltip; iterating
+	// `childrenCrIds.length` alone undercounts blended families and
+	// could hide the badge entirely when all children are adopted/step.
 	let memberCount = 1; // Self
 	memberCount += focalPerson.spouseCrIds.length;
-	memberCount += focalPerson.childrenCrIds.length;
+	memberCount += familyGraph.getQueryService().getChildren(focalPerson, { include: 'all' }).length;
 
 	// Collect all events
 	const allEvents: EventNote[] = [];
