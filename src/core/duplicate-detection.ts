@@ -354,9 +354,17 @@ export class DuplicateDetectionService {
 			}
 		}
 
-		// Check shared children
-		for (const child1 of person1.childrenCrIds) {
-			if (person2.childrenCrIds.includes(child1)) {
+		// Check shared bio children — the strongest duplicate signal
+		// (#546). Adopted/step children are intentionally excluded:
+		// shared adoption could legitimately occur across non-duplicate
+		// records (e.g., a family unit's two parents each declaring the
+		// same adopted child).
+		const queryService = this.graphService.getQueryService();
+		const person2BioChildren = new Set(
+			queryService.getChildren(person2, { include: 'bio' }).map(c => c.person.crId)
+		);
+		for (const { person: child1 } of queryService.getChildren(person1, { include: 'bio' })) {
+			if (person2BioChildren.has(child1.crId)) {
 				overlap++;
 			}
 		}

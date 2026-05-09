@@ -128,10 +128,12 @@ export class LineageTrackingService {
 				pathFromRoot: path
 			});
 
-			// Queue children with appropriate lineage type tracking
-			for (const childCrId of person.childrenCrIds) {
-				const child = this.graphService.getPersonByCrId(childCrId);
-				if (child && !visited.has(child.crId)) {
+			// Queue children with appropriate lineage type tracking — bio
+			// only (#546). Patrilineal/matrilineal lineages by definition
+			// trace biological descent; the explicit `include: 'bio'`
+			// makes that the call site speaks for itself.
+			for (const { person: child } of this.graphService.getQueryService().getChildren(person, { include: 'bio' })) {
+				if (!visited.has(child.crId)) {
 					// Determine if this child comes through father or mother
 					const isFromFather = child.fatherCrId === person.crId;
 					const isFromMother = child.motherCrId === person.crId;
