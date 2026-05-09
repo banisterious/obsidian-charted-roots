@@ -206,6 +206,7 @@ export class MetadataCache {
 	private cache = new Map<string, CachedMetadata>();
 	private listeners = new Map<MetadataCacheEventName, Set<EventRef>>();
 	private vaultRef: Vault | null = null;
+	resolvedLinks: Record<string, Record<string, number>> = {};
 
 	getFileCache(file: TFile): CachedMetadata | null {
 		return this.cache.get(file.path) ?? null;
@@ -342,6 +343,126 @@ export class Notice {
 	constructor(message: string, _timeout?: number) {
 		this.message = message;
 	}
+}
+
+/**
+ * Minimal Modal stub. Modules that subclass Modal at module load time
+ * (e.g., settings UI cards declared at the top level of files imported
+ * via the settings transitive graph) need a base class to extend.
+ * Tests don't usually exercise the modal flow.
+ */
+export class Modal {
+	app: App;
+	contentEl: HTMLElement;
+	titleEl: HTMLElement;
+	constructor(app: App) {
+		this.app = app;
+		this.contentEl = {} as HTMLElement;
+		this.titleEl = {} as HTMLElement;
+	}
+	open(): void {
+		// no-op
+	}
+	close(): void {
+		// no-op
+	}
+	onOpen(): void {
+		// no-op
+	}
+	onClose(): void {
+		// no-op
+	}
+}
+
+/**
+ * Text component stub for settings UI subclasses that reference it.
+ */
+export class TextComponent {
+	inputEl: HTMLInputElement;
+	constructor() {
+		this.inputEl = {} as HTMLInputElement;
+	}
+	setValue(_value: string): this { return this; }
+	getValue(): string { return ''; }
+	setPlaceholder(_placeholder: string): this { return this; }
+	onChange(_cb: unknown): this { return this; }
+}
+
+/**
+ * AbstractInputSuggest stub. Subclassed by FolderSuggest in settings.ts.
+ * Generic parameter is preserved on the class signature; the body is empty.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export class AbstractInputSuggest<T> {
+	app: App;
+	textInputEl: HTMLInputElement;
+	constructor(app: App, textInputEl: HTMLInputElement) {
+		this.app = app;
+		this.textInputEl = textInputEl;
+	}
+	close(): void {
+		// no-op
+	}
+	getSuggestions(_query: string): T[] | Promise<T[]> {
+		return [] as T[];
+	}
+	renderSuggestion(_value: T, _el: HTMLElement): void {
+		// no-op
+	}
+	selectSuggestion(_value: T): void {
+		// no-op
+	}
+}
+
+export function setIcon(_el: HTMLElement, _iconName: string): void {
+	// no-op
+}
+
+/**
+ * Plugin settings tab stub. Subclassed by the main settings file so it
+ * needs to be present even though tests don't use it.
+ */
+export class PluginSettingTab {
+	app: App;
+	containerEl: HTMLElement;
+	constructor(app: App, _plugin: unknown) {
+		this.app = app;
+		this.containerEl = {} as HTMLElement;
+	}
+	display(): void {
+		// no-op
+	}
+	hide(): void {
+		// no-op
+	}
+}
+
+/**
+ * Setting builder stub. Same rationale as Modal — settings UI files
+ * may construct Settings at module load time.
+ */
+export class Setting {
+	containerEl: HTMLElement;
+	constructor(containerEl: HTMLElement) {
+		this.containerEl = containerEl;
+	}
+	setName(_name: string): this { return this; }
+	setDesc(_desc: string): this { return this; }
+	addText(_cb: unknown): this { return this; }
+	addToggle(_cb: unknown): this { return this; }
+	addDropdown(_cb: unknown): this { return this; }
+	addButton(_cb: unknown): this { return this; }
+	addExtraButton(_cb: unknown): this { return this; }
+	addTextArea(_cb: unknown): this { return this; }
+	addSlider(_cb: unknown): this { return this; }
+	addColorPicker(_cb: unknown): this { return this; }
+	addSearch(_cb: unknown): this { return this; }
+	addMomentFormat(_cb: unknown): this { return this; }
+	then(_cb: unknown): this { return this; }
+	setHeading(): this { return this; }
+	setClass(_cls: string): this { return this; }
+	setTooltip(_tooltip: string): this { return this; }
+	setDisabled(_disabled: boolean): this { return this; }
 }
 
 export class App {
