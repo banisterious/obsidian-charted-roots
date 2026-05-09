@@ -18,6 +18,7 @@ import { getLogger } from '../../core/logging';
 import { parseMediaRefs } from '../../core/media-service';
 import { isOrganizationNote } from '../../utils/note-type-detection';
 import { getCanonicalLinktext } from '../../utils/wikilink-resolver';
+import { waitForCacheRefresh } from '../../utils/cache-utils';
 import type { MembershipService } from './membership-service';
 
 const logger = getLogger('OrganizationService');
@@ -125,9 +126,22 @@ export class OrganizationService {
 	}
 
 	/**
-	 * Force reload the organization cache
+	 * Force reload the organization cache.
+	 *
+	 * `processFrontMatter` and `vault.create` write the file synchronously,
+	 * but Obsidian's metadata cache catches up asynchronously via the file
+	 * watcher. A `loadOrganizationCache()` call between those two points
+	 * reads stale data for the just-touched files. Callers that just
+	 * performed writes should pass the modified TFiles so this method
+	 * awaits each file's `metadataCache.changed` event before rebuilding
+	 * (#547).
 	 */
-	reloadCache(): void {
+	async reloadCache(modifiedFiles?: TFile[]): Promise<void> {
+		if (modifiedFiles && modifiedFiles.length > 0) {
+			await Promise.all(
+				modifiedFiles.map(file => waitForCacheRefresh(this.app, file))
+			);
+		}
 		this.loadOrganizationCache();
 	}
 
@@ -359,8 +373,11 @@ export class OrganizationService {
 		const filePath = folderPath ? `${folderPath}/${name}.md` : `${name}.md`;
 		const file = await this.app.vault.create(filePath, content);
 
-		// Reload cache
-		this.reloadCache();
+		// Reload cache. Pass the new file so the reload waits for the
+		// metadata cache to index it before re-extracting (#547) — without
+		// this, the new org is silently dropped from the cache until
+		// something else triggers a reload.
+		await this.reloadCache([file]);
 
 		new Notice(`Created organization: ${name}`);
 		return file;
@@ -448,8 +465,10 @@ export class OrganizationService {
 			}
 		});
 
-		// Reload cache
-		this.reloadCache();
+		// Reload cache. Pass the modified file so the reload waits for
+		// the metadata cache to reflect the just-written change (#547) —
+		// without this, the cached entry retains pre-edit state.
+		await this.reloadCache([file]);
 
 		new Notice(`Updated organization: ${data.name || cache.frontmatter.name}`);
 	}

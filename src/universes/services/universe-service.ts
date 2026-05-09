@@ -23,6 +23,7 @@ import type {
 import { getLogger } from '../../core/logging';
 import { isUniverseNote } from '../../utils/note-type-detection';
 import { sanitizeName } from '../../utils/name-sanitization';
+import { waitForCacheRefresh } from '../../utils/cache-utils';
 
 const logger = getLogger('UniverseService');
 
@@ -64,9 +65,22 @@ export class UniverseService {
 	}
 
 	/**
-	 * Force reload the universe cache
+	 * Force reload the universe cache.
+	 *
+	 * `processFrontMatter` and `vault.create` / `vault.modify` write the
+	 * file synchronously, but Obsidian's metadata cache catches up
+	 * asynchronously via the file watcher. A `loadUniverseCache()` call
+	 * between those two points reads stale data for the just-touched
+	 * files. Callers that just performed writes should pass the modified
+	 * TFiles so this method awaits each file's `metadataCache.changed`
+	 * event before rebuilding (#547).
 	 */
-	reloadCache(): void {
+	async reloadCache(modifiedFiles?: TFile[]): Promise<void> {
+		if (modifiedFiles && modifiedFiles.length > 0) {
+			await Promise.all(
+				modifiedFiles.map(file => waitForCacheRefresh(this.app, file))
+			);
+		}
 		this.loadUniverseCache();
 	}
 
@@ -160,6 +174,7 @@ export class UniverseService {
 			'person', 'place', 'event', 'organization', 'map'
 		];
 		let updateCount = 0;
+		const updatedFiles: TFile[] = [];
 
 		for (const file of this.app.vault.getMarkdownFiles()) {
 			const cache = this.app.metadataCache.getFileCache(file);
@@ -177,6 +192,7 @@ export class UniverseService {
 					fm.universe = newBasename;
 				});
 				updateCount++;
+				updatedFiles.push(file);
 			} catch (error) {
 				logger.error('cascadeUniverseRename', 'Failed to update universe reference', {
 					file: file.path,
@@ -191,8 +207,10 @@ export class UniverseService {
 			// Bust the cache so the dropdown and other consumers pick up the
 			// new state. The renamed Universe note's own cache entry is
 			// invalidated by Obsidian's rename event; this reload also brings
-			// the referencing-note view back in sync.
-			this.reloadCache();
+			// the referencing-note view back in sync. Pass the touched files
+			// so the reload waits for each metadataCache.changed event before
+			// rebuilding (#547).
+			await this.reloadCache(updatedFiles);
 			logger.info('cascadeUniverseRename',
 				`Updated universe references on ${updateCount} note(s)`,
 				{ oldBasename, newBasename, updateCount });
@@ -322,8 +340,11 @@ export class UniverseService {
 		const filePath = folder ? `${folder}/${data.name}.md` : `${data.name}.md`;
 		const file = await this.app.vault.create(filePath, content);
 
-		// Reload cache
-		this.reloadCache();
+		// Reload cache. Pass the new file so the reload waits for the
+		// metadata cache to index it before re-extracting (#547) — without
+		// this, the new universe is silently dropped from the cache until
+		// something else triggers a reload.
+		await this.reloadCache([file]);
 
 		new Notice(`Created universe: ${data.name}`);
 		return file;
@@ -443,8 +464,10 @@ export class UniverseService {
 			}
 		}
 
-		// Reload cache
-		this.reloadCache();
+		// Reload cache. Pass the modified file so the reload waits for the
+		// metadata cache to reflect the just-written change (#547) — without
+		// this, the cached entry retains pre-edit state.
+		await this.reloadCache([file]);
 
 		new Notice(`Updated universe: ${name}`);
 	}
