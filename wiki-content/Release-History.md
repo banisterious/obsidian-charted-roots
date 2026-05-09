@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.26 Round-Up: RelationshipQueryService and the Adopted/Step Children Coverage Sweep](#v02226-round-up-relationshipqueryservice-and-the-adoptedstep-children-coverage-sweep-v02226)
   - [v0.22.25 Round-Up: Modal Display Parsing, Membership Writer Cleanup, and Cache-Timing Follow-Up](#v02225-round-up-modal-display-parsing-membership-writer-cleanup-and-cache-timing-follow-up-v02225)
   - [v0.22.24 Round-Up: Wikilink Writer Hardening, Custom Relationships in All-Mode, and Org Membership Sync](#v02224-round-up-wikilink-writer-hardening-custom-relationships-in-all-mode-and-org-membership-sync-v02224)
   - [v0.22.23 Hotfix: Marriage-Detail Symmetric Write](#v02223-hotfix-marriage-detail-symmetric-write-v02223)
@@ -164,6 +165,44 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.26 Round-Up: RelationshipQueryService and the Adopted/Step Children Coverage Sweep (v0.22.26)
+
+A structural patch built around [#545](https://github.com/banisterious/obsidian-charted-roots/issues/545) (Canvas Family Tree silently dropping adopted children when generated from any ancestor of the adoptive parent) and the architectural pattern it surfaced. Five user-facing fixes ship behind one consolidation: a new `RelationshipQueryService` ([#546](https://github.com/banisterious/obsidian-charted-roots/issues/546)) that unifies how every consumer walks the family-relationship graph. Pre-#546, each renderer / report / exporter that needed children or parents reimplemented its own walk over `PersonNode` arrays — which meant new relationship types (adopted children in [#525](https://github.com/banisterious/obsidian-charted-roots/issues/525) / [#526](https://github.com/banisterious/obsidian-charted-roots/issues/526), gender-neutral parents earlier still) had to be threaded through every consumer independently, with gaps surfacing as user-reported bugs months later. Two of the shipped fixes (family-timeline silent drop, GEDCOM-X gender-neutral parent omission) were latent gaps the inventory surfaced — pre-#546 they'd have remained invisible until a user happened to hit the exact frontmatter configuration.
+
+**Fix: Canvas Family Tree now renders adopted children when generated from any ancestor of the adoptive parent** ([#545](https://github.com/banisterious/obsidian-charted-roots/issues/545)):
+- @DigitalDreamn reproduced the bug by generating Marie or Ben's Canvas Family Tree (or a tree from Marie's father — any ancestor of an adoptive parent) and finding that Galen Marek (her adopted child) and his bio parents never appeared. Same bug shape regardless of root.
+- Root cause was three-layered. `buildDescendantTree` in `src/core/family-graph.ts:967-980` was emitting an adoptive-parent edge but never adding the adopted child to the tree's `nodes` map. `buildFullTree` only walked `adoptedChildCrIds` from the child's side via the reverse `adoptive_X` field, so an adopted child unreachable through bio parents never entered the tree from the adoptive parent's full-tree mode either. Family-chart layout's fallback positioning loop in `src/core/family-chart-layout.ts:133-167` only checked `fatherCrId` / `motherCrId`, so even if an adopted child made it into the tree's nodes map, the layout engine couldn't position them when their bio parents weren't in the rendered subset.
+- The fix is three-part. `buildDescendantTree` now adds adopted children to the nodes map alongside the relationship edge; `buildFullTree` now walks `adoptedChildCrIds` and `stepchildrenCrIds` from the parent's side; family-chart layout's Strategy 3 fallback now considers `adoptiveFatherCrId`, `adoptiveMotherCrId`, `adoptiveParentCrIds`, `stepfatherCrIds`, and `stepmotherCrIds` in addition to bio parents.
+- 11 hand-crafted regression tests in `tests/family-graph-tree-builders.test.ts` cover both this and the step-parent edge fix below, with explicit golden-output assertions for the bug shapes (Galen-descendant, Galen-full-tree, Shmi/Owen step-ordering, Anakin/Cliegg working-case regression guard).
+
+**Fix: Step-parent edges now emit regardless of BFS visit order** ([#545](https://github.com/banisterious/obsidian-charted-roots/issues/545) thread):
+- In the same investigation, @DigitalDreamn flagged that Shmi (Anakin's bio mother, Owen's stepmother) wasn't connected to Owen via a step-parent line in Anakin's full Canvas tree, even though both Shmi declared `step_child: [[Owen]]` and Owen declared `stepmother: [[Shmi]]`. Anakin↔Cliegg worked but Shmi↔Owen didn't.
+- Root cause: `buildFullTree`'s step-parent and adoptive-parent branches used `!visited.has(stepX)` as a single guard for both cycle detection AND edge emission. When Shmi was reached via Anakin's bio-mother walk first (visited), then Owen's processing tried to emit the step-parent edge from Shmi to Owen, the visited check blocked the edge entirely. Anakin↔Cliegg worked only because Cliegg happened to be reached via Anakin's stepfather walk first — pure ordering luck.
+- The fix decouples edge emission from cycle-checking: edges emit unconditionally with a separate dedup against existing edges, while the visited set continues to gate whether the parent is queued for further BFS processing. Same decoupling applied to `buildAncestorTree`'s step-parent and adoptive-parent branches.
+
+**Fix: Family timelines now include adopted and step children** ([#546](https://github.com/banisterious/obsidian-charted-roots/issues/546) inventory):
+- The family-timeline view (badge in People Tab rows, modal in Control Center) was iterating `focalPerson.childrenCrIds` only — silently dropping adopted and step children from the focal person's family-member list. A focal person whose only children were adopted would see a family timeline showing just self and spouse, with no indication their adopted children had been omitted. Symmetric for the step-blended case.
+- Both the events-collection walk in `renderFamilyTimeline` and the legend-population walk in `getFamilyTimelineSummary` now route through `RelationshipQueryService.getChildren({ include: 'all' })`. The same fix corrects an undercount in the badge's displayed `memberCount` for blended families — `getFamilyTimelineSummary` was iterating `childrenCrIds.length` directly, so the People Tab badge tooltip ("Family: N events, M members") undercounted M by the number of non-bio children.
+
+**Fix: GEDCOM-X export now includes gender-neutral parent relationships** ([#546](https://github.com/banisterious/obsidian-charted-roots/issues/546) inventory):
+- The exporter walked `fatherCrId`, `motherCrId`, gender-specific `stepfather` / `stepmother` arrays, and gender-specific adoptive parents — but never `parentCrIds` (gender-neutral bio) or `adoptiveParentCrIds` (gender-neutral adoptive). Persons declaring their parents via `parents: [[X]]` rather than `father:` / `mother:` had their parent relationships silently omitted from GEDCOM-X output.
+- Consolidating the seven previous parent-walking branches in `gedcomx-exporter.ts` into one `getParents({ include: 'all' })` call closed both gaps as a side effect of the migration, with the `kind` discriminator on returned items driving the GEDCOM-X fact tag (`AdoptiveParent`, `StepParent`, or no fact for bio).
+
+**Architectural: `RelationshipQueryService` introduction** ([#546](https://github.com/banisterious/obsidian-charted-roots/issues/546)):
+- The new service in `src/core/relationship-query-service.ts` exposes `getChildren` / `getParents` / `getSiblings` / `getSpouses` / `walkDescendants` / `walkAncestors` with an explicit `include` parameter (`'all' | 'bio' | 'adopted' | 'step'` for children / siblings; `'all' | 'bio' | 'adoptive' | 'step'` for parents). No default — every caller declares the variants it wants, surfacing what was previously incidental about each call site. Returned items carry a `kind` discriminator (`'bio' | 'adopted' | 'step'` or `'bio' | 'adoptive' | 'step'`) so consumers can style by relationship type without re-deriving from source.
+- `walkDescendants` and `walkAncestors` stop at adopted/adoptive/step boundaries by default — preserves the existing convention that adopted children carry their own family line and shouldn't bleed into a strict descendant traversal. Consumers opt in via `followAdopted` / `followAdoptive` / `followStep` flags.
+- Fourteen consumer files migrated: `family-graph.ts`'s three tree-builders, family-chart-layout's fallback positioning, five report generators (individual-summary, register, descendant-chart, family-group-sheet, collection-overview), visual-tree-service's descendant walk, lineage-tracking, duplicate-detection, the dynamic-content relationships-renderer (children + siblings), relationship-calculator's BFS, gedcomx-exporter, family-timeline, and source-summary-generator.
+- The standalone `sibling-walker` helper module (added in #417 / extended in #525 / #526) retired entirely; its public API is fully covered by `getSiblings`. 35 service unit tests in `tests/relationship-query-service.test.ts` cover every API method, every `include` variant, and edge cases (orphans, cycles, dedupe, max-generations).
+- Some sites still pending migration (canvas-split, hourglass-layout, timeline-layout, reference-numbering, map-view, book-builder, parts of family-chart-view, parts of profile-view's relationships section, data-quality's orphan-reference detection) are tracked under #546's checklist for follow-up — none represent user-visible bugs, just architectural-consistency cleanup.
+
+**Testing:** Suite total **730** (was 706 at v0.22.25), 56 suites. +35 service unit tests, +11 tree-builder regression tests, –22 retired with the `sibling-walker` module. Net +24 across the migration.
+
+**Reporters:** @DigitalDreamn for [#545](https://github.com/banisterious/obsidian-charted-roots/issues/545) and the step-parent edge case, which surfaced the architectural pattern that drove the rest of this release.
+
+**Stability-window impact:** no reset — all five user-facing fixes are `bug` (medium-priority); none reset the gate. Window remains anchored to v0.22.22 (2026-05-07 → ~2026-05-28). Four patches in the new window now (v0.22.23/v0.22.24/v0.22.25/v0.22.26).
+
+---
 
 ### v0.22.25 Round-Up: Modal Display Parsing, Membership Writer Cleanup, and Cache-Timing Follow-Up (v0.22.25)
 
