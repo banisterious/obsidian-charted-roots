@@ -462,3 +462,144 @@ describe('createSmartWikilink — basename ambiguity disambiguation (#540)', () 
 		expect(second).toBe('[[Charted Roots/People/Plo Koon|Plo Koon]]');
 	});
 });
+
+/**
+ * Property-based / fuzz coverage for `createSmartWikilink`.
+ *
+ * Three writer-input-contract bugs surfaced in v0.22.22–v0.22.24
+ * ([#537](https://github.com/banisterious/obsidian-charted-roots/issues/537),
+ * [#538](https://github.com/banisterious/obsidian-charted-roots/issues/538),
+ * [#540](https://github.com/banisterious/obsidian-charted-roots/issues/540)),
+ * each one a different input shape the helper didn't handle correctly. Each
+ * fix added a new transformation step (pipe-strip → slash-strip → ambiguity
+ * disambiguation), and each one was reactive — the bug surfaced first, the
+ * test was added second.
+ *
+ * This suite exercises the writer against a corpus of every input shape
+ * we've seen in the wild plus the canonical clean cases, asserting two
+ * properties for each:
+ *
+ *   1. **Output is a parseable wikilink.** `^\[\[…\]\]$` shape.
+ *
+ *   2. **Round-trip idempotency.** Feeding the canonical output back
+ *      through the loader's `extractName`-style strip and into the writer
+ *      again yields the same canonical output: `f(L(f(x))) === f(x)`.
+ *      Where `L` mirrors the loader's behavior — strip `[[…]]` brackets,
+ *      preserve inner content. This is the property that pipe-accumulation
+ *      (#537) and path-residue (#538) both broke, and that the fixes
+ *      restore.
+ *
+ * When a new bug surfaces in this cluster, add the new input shape to
+ * the corpus. The test catches the next variant (and any regression of
+ * the existing ones) without adding a new describe block.
+ */
+describe('createSmartWikilink — property-based input-shape coverage', () => {
+	/**
+	 * Mirrors the loader's `extractName` behavior: strip `[[…]]` brackets
+	 * and return the inner content verbatim. Pre-formatted wikilinks
+	 * become bare strings; non-wikilink inputs pass through.
+	 */
+	const loaderViewOf = (wikilink: string): string => {
+		const match = wikilink.match(/^\[\[([^\]]+)\]\]$/);
+		return match ? match[1] : wikilink;
+	};
+
+	/** Default vault: a single CR person, basename matches name, unique. */
+	const seedUniqueVault = (app: App): void => {
+		seedPerson(app, {
+			path: 'Charted Roots/People/Errol Naberrie.md',
+			basename: 'Errol Naberrie',
+			name: 'Errol Naberrie',
+			crId: 'person-errol',
+		});
+	};
+
+	/** Vault with a duplicate-basename file outside the CR structure. */
+	const seedAmbiguousVault = (app: App): void => {
+		seedUniqueVault(app);
+		const duplicate = new TFile({
+			path: 'Story Arcs/Errol Naberrie.md',
+			basename: 'Errol Naberrie',
+			extension: 'md',
+		});
+		app.vault._addFile(duplicate);
+	};
+
+	/**
+	 * Corpus for unique-vault cases. The basename "Errol Naberrie" is the
+	 * only one in the vault, so the writer should always emit a bare-form
+	 * wikilink (no path disambiguation needed).
+	 */
+	const uniqueVaultCases: Array<{ label: string; input: string }> = [
+		// Canonical clean input shapes.
+		{ label: 'bare basename', input: 'Errol Naberrie' },
+		{ label: 'pre-formatted bracketed (returned as-is by design)', input: '[[Errol Naberrie]]' },
+
+		// Pipe-stem inputs — what extractName produces from `[[basename|alias]]`.
+		// Variants the writer needs to round-trip cleanly (#537).
+		{ label: 'pipe-stem self-aliased', input: 'Errol Naberrie|Errol Naberrie' },
+		{ label: 'pipe-accumulation double', input: 'Errol Naberrie|Errol Naberrie|Errol Naberrie' },
+
+		// Path-form inputs — what extractName produces from `[[path/to/file]]`
+		// or `[[path/to/file|alias]]`. Variants the writer needs to collapse
+		// to canonical form (#538).
+		{ label: 'bare path-form', input: 'Charted Roots/People/Errol Naberrie' },
+		{ label: 'path with explicit alias', input: 'Charted Roots/People/Errol Naberrie|Errol Naberrie' },
+		{ label: 'inverted alias residue (#538 bug shape)', input: 'Errol Naberrie|Charted Roots/People/Errol Naberrie' },
+		{ label: 'deeply nested path', input: 'Charted Roots/People/Sub/Folder/Errol Naberrie' },
+
+		// Compound corruption: pipe-accumulation AND path-form together.
+		{ label: 'path with triple-pipe accumulation', input: 'Errol Naberrie|Errol Naberrie|Charted Roots/People/Errol Naberrie' },
+	];
+
+	it.each(uniqueVaultCases)('unique vault: $label is parseable + idempotent', ({ input }) => {
+		const app = new App();
+		seedUniqueVault(app);
+
+		const first = createSmartWikilink(input, app, 'person-errol');
+
+		// Property 1: output is a parseable wikilink.
+		expect(first).toMatch(/^\[\[[^\]]+\]\]$/);
+
+		// Property 2: round-trip idempotency.
+		const second = createSmartWikilink(loaderViewOf(first), app, 'person-errol');
+		expect(second).toBe(first);
+	});
+
+	/**
+	 * Corpus for ambiguous-vault cases. The basename "Errol Naberrie"
+	 * collides with another vault file, so the writer should emit the
+	 * path-disambiguated form (`[[path|basename]]`) for every input shape
+	 * — except pre-formatted wikilinks, which the early-return bypasses
+	 * by design (#524 contract for callers that have already constructed
+	 * the wikilink they want).
+	 */
+	const ambiguousVaultCases: Array<{ label: string; input: string }> = [
+		{ label: 'bare basename → disambiguated', input: 'Errol Naberrie' },
+		{ label: 'pipe-stem self-aliased', input: 'Errol Naberrie|Errol Naberrie' },
+		{ label: 'pipe-accumulation triple', input: 'Errol Naberrie|Errol Naberrie|Errol Naberrie' },
+		{ label: 'bare path-form', input: 'Charted Roots/People/Errol Naberrie' },
+		{ label: 'path with explicit alias', input: 'Charted Roots/People/Errol Naberrie|Errol Naberrie' },
+		{ label: 'inverted alias residue', input: 'Errol Naberrie|Charted Roots/People/Errol Naberrie' },
+	];
+
+	it.each(ambiguousVaultCases)('ambiguous vault: $label is parseable + idempotent + path-disambiguated', ({ input }) => {
+		const app = new App();
+		seedAmbiguousVault(app);
+
+		const first = createSmartWikilink(input, app, 'person-errol');
+
+		// Property 1: output is a parseable wikilink.
+		expect(first).toMatch(/^\[\[[^\]]+\]\]$/);
+
+		// Property 3 (ambiguous-only): output contains the path so
+		// Obsidian's resolver can land unambiguously. The exact shape
+		// is `[[Charted Roots/People/Errol Naberrie|Errol Naberrie]]`
+		// per #540.
+		expect(first).toContain('Charted Roots/People/Errol Naberrie');
+
+		// Property 2: round-trip idempotency holds even with ambiguity.
+		const second = createSmartWikilink(loaderViewOf(first), app, 'person-errol');
+		expect(second).toBe(first);
+	});
+});
