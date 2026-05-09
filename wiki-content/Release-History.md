@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.25 Round-Up: Modal Display Parsing, Membership Writer Cleanup, and Cache-Timing Follow-Up](#v02225-round-up-modal-display-parsing-membership-writer-cleanup-and-cache-timing-follow-up-v02225)
   - [v0.22.24 Round-Up: Wikilink Writer Hardening, Custom Relationships in All-Mode, and Org Membership Sync](#v02224-round-up-wikilink-writer-hardening-custom-relationships-in-all-mode-and-org-membership-sync-v02224)
   - [v0.22.23 Hotfix: Marriage-Detail Symmetric Write](#v02223-hotfix-marriage-detail-symmetric-write-v02223)
   - [v0.22.22 Round-Up: Wikilink Cascade Self-Heal, Profile View Symmetry, and Media Captions](#v02222-round-up-wikilink-cascade-self-heal-profile-view-symmetry-and-media-captions-v02222)
@@ -163,6 +164,40 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.25 Round-Up: Modal Display Parsing, Membership Writer Cleanup, and Cache-Timing Follow-Up (v0.22.25)
+
+A focused three-fix patch closing the remaining loose ends from @DigitalDreamn's [#537](https://github.com/banisterious/obsidian-charted-roots/issues/537) verification cluster — surfaced and shipped same-day as v0.22.24. Each is a different symptom of the same theme: code paths that should have gone through the canonical writer/parser helpers but didn't, surfacing as inconsistencies between what users see and what's stored. Cycle also added a property-based fuzz test for `createSmartWikilink` between releases as defensive coverage so the next variant in the writer-input-contract cluster gets caught proactively rather than user-reported.
+
+**Fix: Edit Person modal now parses wikilinks for display in relationship and place fields** ([#543](https://github.com/banisterious/obsidian-charted-roots/issues/543)):
+- The "Linked to:" labels and read-only input fields in Edit Person were displaying the raw inner content of wikilinks — `Charted Roots/People/Errol Naberrie|Errol Naberrie` instead of just `Errol Naberrie` — for any relationship or place field whose underlying frontmatter stored a piped or path-form wikilink. Surfaced after [v0.22.24](#v02224-round-up-wikilink-writer-hardening-custom-relationships-in-all-mode-and-org-membership-sync-v02224)'s [#540](https://github.com/banisterious/obsidian-charted-roots/issues/540) path-disambiguation landed: the canonical `[[path|basename]]` form is correct on disk but the modal didn't parse it for display.
+- New `extractDisplayLabel` helper in `src/utils/wikilink-resolver.ts` mirrors the writer-side stem-collapse pattern — strip brackets, then collapse pipe-form (`basename|alias` → `alias`) and path-form (`path/to/file` → `file`). Applied at the relationship and place field display sites in `src/ui/create-person-modal.ts`.
+- Underlying `fieldData.name` stays raw so the writer's `createSmartWikilink` re-canonicalizes on save — display-layer fix only, no data-layer changes.
+- 20 new tests in `tests/extract-display-label.test.ts` covering bare strings, bracketed wikilinks, residue shapes from earlier bug eras (#537/#538), and round-trip idempotency.
+
+**Fix: Org wikilink writes from the membership flow now route through `createSmartWikilink`** ([#542](https://github.com/banisterious/obsidian-charted-roots/issues/542)):
+- `addMembership` in `src/organizations/services/membership-service.ts` was pushing `membership.org` into the `membership_orgs` array verbatim — bypassing the input-shape normalization (#537/#538) and basename-ambiguity disambiguation (#540) that every other relationship-field write got. Path-form residue from earlier duplicate-basename eras persisted indefinitely; new entries didn't disambiguate at write time even when basename collisions existed in the vault.
+- The fix routes the new entry through `createSmartWikilink` (now exported from `src/organizations/services/organization-service.ts` so the membership service can call it). Also adds a full-array rewrite pass on every save so existing entries normalize alongside the new one — historical residue heals on the next add or remove instead of waiting for that specific entry to be touched. Same pattern applied to `removeMembership` for the surviving entries.
+- Reported by @DigitalDreamn during her #538 verification sweep, where her organization frontmatter still showed `[[Charted Roots/Organizations/Vessari Order|Vessari Order]]` after the v0.22.24 self-heal cleaned up every other relationship field.
+
+**Fix: Org-side member sync now waits for the metadata cache to refresh before reading person notes** ([#541](https://github.com/banisterious/obsidian-charted-roots/issues/541) follow-up):
+- The v0.22.24 [#541](https://github.com/banisterious/obsidian-charted-roots/issues/541) fix triggered `syncMembersToOrg` from person-side `addMembership` / `removeMembership` paths, but the sync re-read the metadata cache to assemble the member list — and Obsidian's `processFrontMatter` updates the file synchronously while the cache update fires asynchronously via the file watcher event. Result: `syncMembersToOrg` ran on stale cache and wrote a member list "trailing one update behind" — adding person N propagated person N-1 to the org's frontmatter.
+- @DigitalDreamn caught this with a multi-Jedi test: adding Quinlon Vos to the Jedi Order wrote Obi-Wan to the org's frontmatter; adding Nejaa Halcyon next wrote Quinlon. Always trailing one update behind.
+- New `waitForCacheRefresh` helper in `MembershipService` listens for the next `metadataCache.changed` event for the modified file (with a 500ms timeout fallback), then triggers the sync. So the cache reflects the just-written change by the time the member list is assembled. Called from both `addMembership` and `removeMembership`.
+- Filed as a refinement under the existing #541 issue rather than a new filing, since the original fix's shape is correct — just needed the missing synchronization step.
+
+**Defensive infrastructure: Property-based fuzz test for `createSmartWikilink`**:
+- Three writer-input-contract bugs surfaced in v0.22.22 / v0.22.24 ([#537](https://github.com/banisterious/obsidian-charted-roots/issues/537), [#538](https://github.com/banisterious/obsidian-charted-roots/issues/538), [#540](https://github.com/banisterious/obsidian-charted-roots/issues/540)), each one a different input shape the helper didn't handle correctly. Each fix added a new transformation step (pipe-strip → slash-strip → ambiguity disambiguation), and each one was reactive — the bug surfaced first, the test was added second.
+- The fuzz suite (added between v0.22.24 and v0.22.25) exercises the writer against a corpus of every input shape we've seen in the wild plus the canonical clean cases, asserting parseable-output shape and round-trip idempotency: `f(loaderView(f(x))) === f(x)`. Tested under both unique-vault and ambiguous-vault setups (the latter for #540's path-form output assertion).
+- 15 new test cases. When the next variant surfaces, the fix flow becomes "add the new shape to the corpus + the existing test catches it" — the test file is now the de facto contract for the writer's input handling.
+
+**Testing:** Suite total **706** (was 671 at v0.22.24), 55 suites. +6 for #538, +4 for #540 (both at v0.22.24), +15 for the fuzz suite, +20 for `extractDisplayLabel`. #539 + #541/#542/#543 fixes were renderer / service-with-I/O / UI changes verified visually in dev-vault per the codebase convention.
+
+**Reporters:** @DigitalDreamn for all three.
+
+**Stability-window impact:** no reset — all three fixes are `low-priority` or refinements (#541-followup is shipped under the existing released-testing label). Window remains anchored to v0.22.22 (2026-05-07 → ~2026-05-28). Three patches in the new window now (v0.22.23/v0.22.24/v0.22.25).
+
+---
 
 ### v0.22.24 Round-Up: Wikilink Writer Hardening, Custom Relationships in All-Mode, and Org Membership Sync (v0.22.24)
 
