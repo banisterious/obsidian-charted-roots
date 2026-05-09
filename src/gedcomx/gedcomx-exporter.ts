@@ -612,111 +612,35 @@ export class GedcomXExporter {
 			const personId = crIdToGedcomXId.get(person.crId);
 			if (!personId) continue;
 
-			// Parent-child relationships (person is child)
-			if (person.fatherCrId) {
-				const fatherId = crIdToGedcomXId.get(person.fatherCrId);
-				if (fatherId) {
-					const key = `PC:${fatherId}:${personId}`;
-					if (!addedRelationships.has(key)) {
-						relationships.push({
-							id: `R${relationshipCounter++}`,
-							type: GEDCOMX_TYPES.PARENT_CHILD,
-							person1: { resource: `#${fatherId}` },
-							person2: { resource: `#${personId}` }
-						});
-						addedRelationships.add(key);
-					}
-				}
-			}
+			// Parent-child relationships (person is child) — bio + adoptive
+			// + step routed through the unified query service (#546). The
+			// previous manual walk missed gender-neutral `parentCrIds` and
+			// `adoptiveParentCrIds`; the service-driven loop closes that gap
+			// (a person with `parents: [[X]]` instead of `father:` + `mother:`
+			// will now appear in GEDCOM-X output).
+			for (const { person: parent, kind } of this.graphService.getQueryService().getParents(person, { include: 'all' })) {
+				const parentGedcomXId = crIdToGedcomXId.get(parent.crId);
+				if (!parentGedcomXId) continue;
 
-			if (person.motherCrId) {
-				const motherId = crIdToGedcomXId.get(person.motherCrId);
-				if (motherId) {
-					const key = `PC:${motherId}:${personId}`;
-					if (!addedRelationships.has(key)) {
-						relationships.push({
-							id: `R${relationshipCounter++}`,
-							type: GEDCOMX_TYPES.PARENT_CHILD,
-							person1: { resource: `#${motherId}` },
-							person2: { resource: `#${personId}` }
-						});
-						addedRelationships.add(key);
-					}
-				}
-			}
+				const keySuffix = kind === 'adoptive' ? ':adop'
+					: kind === 'step' ? ':step'
+					: '';
+				const key = `PC:${parentGedcomXId}:${personId}${keySuffix}`;
+				if (addedRelationships.has(key)) continue;
 
-			// Step-parent relationships (with StepParent lineage type fact)
-			if (person.stepfatherCrIds && person.stepfatherCrIds.length > 0) {
-				for (const stepfatherId of person.stepfatherCrIds) {
-					const stepfatherGedcomXId = crIdToGedcomXId.get(stepfatherId);
-					if (stepfatherGedcomXId) {
-						const key = `PC:${stepfatherGedcomXId}:${personId}:step`;
-						if (!addedRelationships.has(key)) {
-							relationships.push({
-								id: `R${relationshipCounter++}`,
-								type: GEDCOMX_TYPES.PARENT_CHILD,
-								person1: { resource: `#${stepfatherGedcomXId}` },
-								person2: { resource: `#${personId}` },
-								facts: [{ type: GEDCOMX_TYPES.STEP_PARENT }]
-							});
-							addedRelationships.add(key);
-						}
-					}
+				const relationship: GedcomXRelationship = {
+					id: `R${relationshipCounter++}`,
+					type: GEDCOMX_TYPES.PARENT_CHILD,
+					person1: { resource: `#${parentGedcomXId}` },
+					person2: { resource: `#${personId}` }
+				};
+				if (kind === 'adoptive') {
+					relationship.facts = [{ type: GEDCOMX_TYPES.ADOPTIVE_PARENT }];
+				} else if (kind === 'step') {
+					relationship.facts = [{ type: GEDCOMX_TYPES.STEP_PARENT }];
 				}
-			}
-
-			if (person.stepmotherCrIds && person.stepmotherCrIds.length > 0) {
-				for (const stepmotherId of person.stepmotherCrIds) {
-					const stepmotherGedcomXId = crIdToGedcomXId.get(stepmotherId);
-					if (stepmotherGedcomXId) {
-						const key = `PC:${stepmotherGedcomXId}:${personId}:step`;
-						if (!addedRelationships.has(key)) {
-							relationships.push({
-								id: `R${relationshipCounter++}`,
-								type: GEDCOMX_TYPES.PARENT_CHILD,
-								person1: { resource: `#${stepmotherGedcomXId}` },
-								person2: { resource: `#${personId}` },
-								facts: [{ type: GEDCOMX_TYPES.STEP_PARENT }]
-							});
-							addedRelationships.add(key);
-						}
-					}
-				}
-			}
-
-			// Adoptive parent relationships (with AdoptiveParent lineage type fact)
-			if (person.adoptiveFatherCrId) {
-				const adoptiveFatherId = crIdToGedcomXId.get(person.adoptiveFatherCrId);
-				if (adoptiveFatherId) {
-					const key = `PC:${adoptiveFatherId}:${personId}:adop`;
-					if (!addedRelationships.has(key)) {
-						relationships.push({
-							id: `R${relationshipCounter++}`,
-							type: GEDCOMX_TYPES.PARENT_CHILD,
-							person1: { resource: `#${adoptiveFatherId}` },
-							person2: { resource: `#${personId}` },
-							facts: [{ type: GEDCOMX_TYPES.ADOPTIVE_PARENT }]
-						});
-						addedRelationships.add(key);
-					}
-				}
-			}
-
-			if (person.adoptiveMotherCrId) {
-				const adoptiveMotherId = crIdToGedcomXId.get(person.adoptiveMotherCrId);
-				if (adoptiveMotherId) {
-					const key = `PC:${adoptiveMotherId}:${personId}:adop`;
-					if (!addedRelationships.has(key)) {
-						relationships.push({
-							id: `R${relationshipCounter++}`,
-							type: GEDCOMX_TYPES.PARENT_CHILD,
-							person1: { resource: `#${adoptiveMotherId}` },
-							person2: { resource: `#${personId}` },
-							facts: [{ type: GEDCOMX_TYPES.ADOPTIVE_PARENT }]
-						});
-						addedRelationships.add(key);
-					}
-				}
+				relationships.push(relationship);
+				addedRelationships.add(key);
 			}
 
 			// Couple relationships

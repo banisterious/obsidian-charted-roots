@@ -9,7 +9,6 @@ import { MarkdownRenderer, MarkdownRenderChild } from 'obsidian';
 import type { DynamicBlockContext, DynamicBlockConfig, DynamicContentService } from '../services/dynamic-content-service';
 import type { PersonNode } from '../../core/family-graph';
 import type { ParsedRelationship } from '../../relationships/types/relationship-types';
-import { findAdoptiveSiblingCrIds, findBiologicalSiblingCrIds } from '../sibling-walker';
 
 /**
  * True when a parsed relationship is custom-typed and NOT already covered by
@@ -222,32 +221,17 @@ export class RelationshipsRenderer {
 
 		// Children — biological, adopted, step. Each non-bio source labels
 		// its entries to match the corresponding parent label ("Adoptive
-		// father" / "Adopted child", "Stepfather" / "Stepchild") so the
-		// relationship type is never lost on the parent's side. All three
-		// sources are merged and sorted by birth date (oldest first) using
-		// the same universe-aware comparator the siblings section uses
-		// (#532), so adopted and step children appear in chronological
-		// order alongside bio children rather than appended at the end of
-		// the list.
+		// father" / "Adopted child", "Stepfather" / "Stepchild"). All three
+		// sources merged and sorted by birth date (oldest first) using the
+		// universe-aware comparator (#532); routed through the unified
+		// query service (#546) so kind-tagged results drive label selection.
 		if (shouldInclude('children')) {
 			const items: { person: PersonNode; label?: string }[] = [];
-			for (const childCrId of person.childrenCrIds) {
-				const child = familyGraph.getPersonByCrId(childCrId);
-				if (child) {
-					items.push({ person: child });
-				}
-			}
-			for (const adoptedChildCrId of person.adoptedChildCrIds) {
-				const adoptedChild = familyGraph.getPersonByCrId(adoptedChildCrId);
-				if (adoptedChild) {
-					items.push({ person: adoptedChild, label: 'Adopted child' });
-				}
-			}
-			for (const stepchildCrId of person.stepchildrenCrIds) {
-				const stepchild = familyGraph.getPersonByCrId(stepchildCrId);
-				if (stepchild) {
-					items.push({ person: stepchild, label: 'Stepchild' });
-				}
+			for (const { person: child, kind } of familyGraph.getQueryService().getChildren(person, { include: 'all' })) {
+				const label = kind === 'adopted' ? 'Adopted child'
+					: kind === 'step' ? 'Stepchild'
+					: undefined;
+				items.push({ person: child, label });
 			}
 			this.sortByBirthDate(items, context.person?.universe);
 			for (const item of items) {
@@ -255,30 +239,16 @@ export class RelationshipsRenderer {
 			}
 		}
 
-		// Siblings (computed from shared parents). Bio and adoptive sources
-		// are merged then sorted by birth date so the display follows
-		// chronological age order rather than the parent's frontmatter
-		// `children:` array order (#532). Adoptive siblings (#417) get the
-		// "Adoptive sibling" label and are deduped against the biological
-		// set so a person showing on both edges isn't listed twice.
+		// Siblings — bio + adoptive merged and sorted by birth date (#532).
+		// Adoptive siblings (#417) get the "Adoptive sibling" label; service
+		// dedupes within `getSiblings` so a person reachable via multiple
+		// parent edges appears once. Step siblings excluded to preserve
+		// current behavior — promoting them to display is a follow-up.
 		if (shouldInclude('siblings')) {
-			const getPerson = (crId: string) => familyGraph.getPersonByCrId(crId);
-			const biologicalIds = findBiologicalSiblingCrIds(person, getPerson);
-			const biologicalSet = new Set(biologicalIds);
 			const items: { person: PersonNode; isAdoptive: boolean }[] = [];
-			for (const siblingCrId of biologicalIds) {
-				const sibling = getPerson(siblingCrId);
-				if (sibling) {
-					items.push({ person: sibling, isAdoptive: false });
-				}
-			}
-			const adoptiveIds = findAdoptiveSiblingCrIds(person, getPerson);
-			for (const siblingCrId of adoptiveIds) {
-				if (biologicalSet.has(siblingCrId)) continue;
-				const sibling = getPerson(siblingCrId);
-				if (sibling) {
-					items.push({ person: sibling, isAdoptive: true });
-				}
+			for (const { person: sibling, kind } of familyGraph.getQueryService().getSiblings(person, { include: 'all' })) {
+				if (kind === 'step') continue;
+				items.push({ person: sibling, isAdoptive: kind === 'adopted' });
 			}
 			this.sortByBirthDate(items, context.person?.universe);
 			for (const item of items) {

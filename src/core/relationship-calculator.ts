@@ -373,40 +373,19 @@ export class RelationshipCalculator {
 				}
 			}
 
-			// Explore children (going down)
-			for (const childCrId of current.person.childrenCrIds) {
-				const child = this.familyGraph.getPersonByCrId(childCrId);
-				if (child && !visited.has(child.crId)) {
-					visited.add(child.crId);
-					queue.push({
-						person: child,
-						path: [...current.path, { person: child, relationship: 'child', direction: 'down' }]
-					});
-				}
-			}
-
-			// Explore stepchildren (going down) — #526
-			for (const stepchildCrId of current.person.stepchildrenCrIds) {
-				const stepchild = this.familyGraph.getPersonByCrId(stepchildCrId);
-				if (stepchild && !visited.has(stepchild.crId)) {
-					visited.add(stepchild.crId);
-					queue.push({
-						person: stepchild,
-						path: [...current.path, { person: stepchild, relationship: 'stepchild', direction: 'down' }]
-					});
-				}
-			}
-
-			// Explore adopted children (going down) — #525
-			for (const adoptedChildCrId of current.person.adoptedChildCrIds) {
-				const adoptedChild = this.familyGraph.getPersonByCrId(adoptedChildCrId);
-				if (adoptedChild && !visited.has(adoptedChild.crId)) {
-					visited.add(adoptedChild.crId);
-					queue.push({
-						person: adoptedChild,
-						path: [...current.path, { person: adoptedChild, relationship: 'adopted_child', direction: 'down' }]
-					});
-				}
+			// Explore children (going down) — bio + step + adopted via the
+			// unified query service (#546). Kind discriminator drives the
+			// path-segment relationship label (#525 / #526 retained).
+			for (const { person: child, kind } of this.familyGraph.getQueryService().getChildren(current.person, { include: 'all' })) {
+				if (visited.has(child.crId)) continue;
+				visited.add(child.crId);
+				const relationship = kind === 'adopted' ? 'adopted_child'
+					: kind === 'step' ? 'stepchild'
+					: 'child';
+				queue.push({
+					person: child,
+					path: [...current.path, { person: child, relationship, direction: 'down' }]
+				});
 			}
 
 			// Explore spouses (lateral)
