@@ -130,10 +130,28 @@ export class FamilyChartLayoutEngine {
 					}
 				}
 
-				// Strategy 3: If they have positioned parents, place next to siblings
-				const fatherPos = person.fatherCrId ? positions.find(p => p.crId === person.fatherCrId) : null;
-				const motherPos = person.motherCrId ? positions.find(p => p.crId === person.motherCrId) : null;
-				const parentPos = fatherPos || motherPos;
+				// Strategy 3: If they have positioned parents, place next to siblings.
+				// Considers bio, adoptive, AND step parents (#546) so an adopted
+				// child whose adoptive parent is in the tree gets positioned even
+				// when their bio parents aren't part of the rendered subset.
+				const findPositionedParent = (parentCrId: string | undefined) =>
+					parentCrId ? positions.find(p => p.crId === parentCrId) : null;
+				const fatherPos = findPositionedParent(person.fatherCrId);
+				const motherPos = findPositionedParent(person.motherCrId);
+				const adoptiveFatherPos = findPositionedParent(person.adoptiveFatherCrId);
+				const adoptiveMotherPos = findPositionedParent(person.adoptiveMotherCrId);
+				const adoptiveParentPos = person.adoptiveParentCrIds
+					.map(findPositionedParent)
+					.find((p): p is NonNullable<typeof p> => !!p) ?? null;
+				const stepfatherPos = person.stepfatherCrIds
+					.map(findPositionedParent)
+					.find((p): p is NonNullable<typeof p> => !!p) ?? null;
+				const stepmotherPos = person.stepmotherCrIds
+					.map(findPositionedParent)
+					.find((p): p is NonNullable<typeof p> => !!p) ?? null;
+				const parentPos = fatherPos || motherPos
+					|| adoptiveFatherPos || adoptiveMotherPos || adoptiveParentPos
+					|| stepfatherPos || stepmotherPos;
 
 				if (parentPos) {
 					// Find positioned siblings (same parents)
