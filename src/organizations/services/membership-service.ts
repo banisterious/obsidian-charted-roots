@@ -220,6 +220,13 @@ export class MembershipService {
 		// frontmatter so Bases queries against the org see current state (#541).
 		// Person-side flows used to skip this; only the org-side Manage Members
 		// modal triggered the sync.
+		//
+		// Wait for the metadata cache to reflect the just-written change before
+		// reading it back via syncMembersToOrg. Without this, the sync runs on
+		// stale cache and writes a member list that's "trailing one update
+		// behind" — adding person N propagates person N-1 to the org's
+		// frontmatter (#541 follow-up).
+		await this.waitForCacheRefresh(personFile);
 		await this.syncMembersToOrgIfResolvable(membership.org_id);
 	}
 
@@ -308,7 +315,9 @@ export class MembershipService {
 		});
 
 		// Mirror the removal back to the org's `members` / `members_id`
-		// frontmatter (#541).
+		// frontmatter (#541). Wait for cache refresh first — same race
+		// condition as the add path (#541 follow-up).
+		await this.waitForCacheRefresh(personFile);
 		await this.syncMembersToOrgIfResolvable(orgCrId);
 	}
 
@@ -325,6 +334,41 @@ export class MembershipService {
 		const org = this.organizationService.getOrganization(orgCrId);
 		if (!org) return;
 		await this.syncMembersToOrg(org.file, orgCrId);
+	}
+
+	/**
+	 * Wait for the metadata cache to reflect a just-written change to a
+	 * specific file. `processFrontMatter` writes the file synchronously,
+	 * but the metadata cache update fires asynchronously via the file
+	 * watcher event — so reading `getFileCache(file)` immediately after
+	 * `await processFrontMatter(file, ...)` returns can hand back stale
+	 * data. Subsequent code paths that re-read the cache (e.g.,
+	 * `getOrganizationMembers` → `getPersonMembershipsFromFile`) then act
+	 * on the pre-write state, producing the "trailing one update behind"
+	 * pattern (#541 follow-up).
+	 *
+	 * Listens for the next `metadataCache.changed` event for the target
+	 * file, with a timeout fallback so the sync proceeds if the event
+	 * doesn't fire within the window (e.g., when the cache was already
+	 * up to date by the time we registered the listener).
+	 */
+	private waitForCacheRefresh(file: TFile, timeoutMs = 500): Promise<void> {
+		return new Promise<void>(resolve => {
+			let settled = false;
+			const finish = (): void => {
+				if (settled) return;
+				settled = true;
+				this.app.metadataCache.offref(ref);
+				clearTimeout(timeoutId);
+				resolve();
+			};
+			const ref = this.app.metadataCache.on('changed', (changedFile) => {
+				if (changedFile.path === file.path) {
+					finish();
+				}
+			});
+			const timeoutId = setTimeout(finish, timeoutMs);
+		});
 	}
 
 	/**
