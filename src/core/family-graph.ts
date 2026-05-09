@@ -17,6 +17,7 @@ import { parseMediaRefs } from './media-service';
 import { isSourceNote, isEventNote, isPlaceNote, isOrganizationNote, isProofSummaryNote, isUniverseNote, isCitationNote, isPersonNote } from '../utils/note-type-detection';
 import type { RawRelationship, FamilyGraphMapping } from '../relationships/types/relationship-types';
 import { getRelationshipType, getAllRelationshipTypesWithCustomizations } from '../relationships/constants/default-relationship-types';
+import { RelationshipQueryService } from './relationship-query-service';
 
 const logger = getLogger('FamilyGraph');
 
@@ -248,10 +249,24 @@ export class FamilyGraphService {
 	private propertyAliases: Record<string, string> = {};
 	private valueAliases: ValueAliasSettings = { eventType: {}, sex: {}, gender_identity: {}, placeCategory: {}, noteType: {} };
 	private settings: CanvasRootsSettings | null = null;
+	private _queryService: RelationshipQueryService | null = null;
 
 	constructor(app: App) {
 		this.app = app;
 		this.personCache = new Map();
+	}
+
+	/**
+	 * Lazily-instantiated relationship-query service. Captures `this` so
+	 * the closure resolves `personCache` at call time — `loadPersonCache`
+	 * mutates the same Map via `clear()`/`set()`, never reassigns it, so
+	 * the lookup stays valid across reload cycles. Tracking issue: #546.
+	 */
+	private getQueryService(): RelationshipQueryService {
+		if (!this._queryService) {
+			this._queryService = new RelationshipQueryService(crId => this.personCache.get(crId));
+		}
+		return this._queryService;
 	}
 
 	/**
@@ -797,13 +812,23 @@ export class FamilyGraphService {
 			}
 		}
 
-		// Add step-parents if enabled (with distinct edge type)
+		// Step-parents — edge emission decoupled from node-presence check
+		// (#546): a step-parent already in the tree via a sibling's walk
+		// must still get THIS person's relationship edge emitted, not just
+		// be silently dropped. Step-parents still don't get their own
+		// ancestors walked (they're not blood relatives).
 		if (options.includeStepParents) {
 			// Step-fathers
 			for (const stepfatherCrId of node.stepfatherCrIds) {
 				const stepfather = this.personCache.get(stepfatherCrId);
-				if (stepfather && this.shouldIncludePerson(stepfather, options) && !nodes.has(stepfatherCrId)) {
+				if (!stepfather || !this.shouldIncludePerson(stepfather, options)) continue;
+				if (!nodes.has(stepfatherCrId)) {
 					nodes.set(stepfatherCrId, stepfather);
+				}
+				if (!edges.some(e =>
+					e.from === stepfatherCrId && e.to === node.crId &&
+					e.relationshipTypeId === 'step_parent'
+				)) {
 					edges.push({
 						from: stepfather.crId,
 						to: node.crId,
@@ -811,15 +836,20 @@ export class FamilyGraphService {
 						relationshipTypeId: 'step_parent',
 						relationshipLabel: 'Step-father'
 					});
-					// Don't recurse ancestors for step-parents (they're not blood relatives)
 				}
 			}
 
 			// Step-mothers
 			for (const stepmotherCrId of node.stepmotherCrIds) {
 				const stepmother = this.personCache.get(stepmotherCrId);
-				if (stepmother && this.shouldIncludePerson(stepmother, options) && !nodes.has(stepmotherCrId)) {
+				if (!stepmother || !this.shouldIncludePerson(stepmother, options)) continue;
+				if (!nodes.has(stepmotherCrId)) {
 					nodes.set(stepmotherCrId, stepmother);
+				}
+				if (!edges.some(e =>
+					e.from === stepmotherCrId && e.to === node.crId &&
+					e.relationshipTypeId === 'step_parent'
+				)) {
 					edges.push({
 						from: stepmother.crId,
 						to: node.crId,
@@ -827,50 +857,67 @@ export class FamilyGraphService {
 						relationshipTypeId: 'step_parent',
 						relationshipLabel: 'Step-mother'
 					});
-					// Don't recurse ancestors for step-parents (they're not blood relatives)
 				}
 			}
 		}
 
-		// Add adoptive parents if enabled (with distinct edge type)
+		// Adoptive parents — same edge/node decoupling as step-parents above.
 		if (options.includeAdoptiveParents) {
 			// Adoptive father (gender-specific)
 			if (node.adoptiveFatherCrId) {
 				const adoptiveFather = this.personCache.get(node.adoptiveFatherCrId);
-				if (adoptiveFather && this.shouldIncludePerson(adoptiveFather, options) && !nodes.has(node.adoptiveFatherCrId)) {
-					nodes.set(node.adoptiveFatherCrId, adoptiveFather);
-					edges.push({
-						from: adoptiveFather.crId,
-						to: node.crId,
-						type: 'relationship',
-						relationshipTypeId: 'adoptive_parent',
-						relationshipLabel: 'Adoptive father'
-					});
-					// Don't recurse ancestors for adoptive parents (they're not blood relatives)
+				if (adoptiveFather && this.shouldIncludePerson(adoptiveFather, options)) {
+					if (!nodes.has(node.adoptiveFatherCrId)) {
+						nodes.set(node.adoptiveFatherCrId, adoptiveFather);
+					}
+					if (!edges.some(e =>
+						e.from === node.adoptiveFatherCrId && e.to === node.crId &&
+						e.relationshipTypeId === 'adoptive_parent'
+					)) {
+						edges.push({
+							from: adoptiveFather.crId,
+							to: node.crId,
+							type: 'relationship',
+							relationshipTypeId: 'adoptive_parent',
+							relationshipLabel: 'Adoptive father'
+						});
+					}
 				}
 			}
 
 			// Adoptive mother (gender-specific)
 			if (node.adoptiveMotherCrId) {
 				const adoptiveMother = this.personCache.get(node.adoptiveMotherCrId);
-				if (adoptiveMother && this.shouldIncludePerson(adoptiveMother, options) && !nodes.has(node.adoptiveMotherCrId)) {
-					nodes.set(node.adoptiveMotherCrId, adoptiveMother);
-					edges.push({
-						from: adoptiveMother.crId,
-						to: node.crId,
-						type: 'relationship',
-						relationshipTypeId: 'adoptive_parent',
-						relationshipLabel: 'Adoptive mother'
-					});
-					// Don't recurse ancestors for adoptive parents (they're not blood relatives)
+				if (adoptiveMother && this.shouldIncludePerson(adoptiveMother, options)) {
+					if (!nodes.has(node.adoptiveMotherCrId)) {
+						nodes.set(node.adoptiveMotherCrId, adoptiveMother);
+					}
+					if (!edges.some(e =>
+						e.from === node.adoptiveMotherCrId && e.to === node.crId &&
+						e.relationshipTypeId === 'adoptive_parent'
+					)) {
+						edges.push({
+							from: adoptiveMother.crId,
+							to: node.crId,
+							type: 'relationship',
+							relationshipTypeId: 'adoptive_parent',
+							relationshipLabel: 'Adoptive mother'
+						});
+					}
 				}
 			}
 
 			// Gender-neutral adoptive parents
 			for (const adoptiveParentCrId of node.adoptiveParentCrIds) {
 				const adoptiveParent = this.personCache.get(adoptiveParentCrId);
-				if (adoptiveParent && this.shouldIncludePerson(adoptiveParent, options) && !nodes.has(adoptiveParentCrId)) {
+				if (!adoptiveParent || !this.shouldIncludePerson(adoptiveParent, options)) continue;
+				if (!nodes.has(adoptiveParentCrId)) {
 					nodes.set(adoptiveParentCrId, adoptiveParent);
+				}
+				if (!edges.some(e =>
+					e.from === adoptiveParentCrId && e.to === node.crId &&
+					e.relationshipTypeId === 'adoptive_parent'
+				)) {
 					edges.push({
 						from: adoptiveParent.crId,
 						to: node.crId,
@@ -878,7 +925,6 @@ export class FamilyGraphService {
 						relationshipTypeId: 'adoptive_parent',
 						relationshipLabel: 'Adoptive parent'
 					});
-					// Don't recurse ancestors for adoptive parents (they're not blood relatives)
 				}
 			}
 		}
@@ -955,27 +1001,44 @@ export class FamilyGraphService {
 			}
 		}
 
-		// Add children
-		for (const childCrId of node.childrenCrIds) {
-			const child = this.personCache.get(childCrId);
-			if (child && this.shouldIncludePerson(child, options)) {
+		// Children — route bio + adopted + step through the unified query
+		// service (#546) so a single canonical walk feeds the tree-builder.
+		// Bio recurses; adopted and step are added as nodes with a
+		// relationship edge but their own descendants are NOT recursed —
+		// preserves the long-standing intent that adopted children have
+		// their own family line and shouldn't bleed descendant trees of
+		// the adoptive parent. Bio takes precedence: a child appearing in
+		// both `childrenCrIds` and `adoptedChildCrIds` of the same parent
+		// renders via the bio edge, not duplicated as adoptive.
+		const queryService = this.getQueryService();
+		for (const { person: child, kind } of queryService.getChildren(node, { include: 'all' })) {
+			if (!this.shouldIncludePerson(child, options)) continue;
+
+			if (kind === 'bio') {
 				edges.push({ from: node.crId, to: child.crId, type: 'parent' });
 				this.buildDescendantTree(child, nodes, edges, options, currentGeneration + 1, visited);
+				continue;
 			}
-		}
 
-		// Add adopted children
-		for (const adoptedChildCrId of node.adoptedChildCrIds) {
-			const adoptedChild = this.personCache.get(adoptedChildCrId);
-			if (adoptedChild && this.shouldIncludePerson(adoptedChild, options) && !nodes.has(adoptedChildCrId)) {
+			// Adopted or step: skip if already added via bio (precedence)
+			if (nodes.has(child.crId)) continue;
+			nodes.set(child.crId, child);
+
+			const relationshipTypeId = kind === 'adopted' ? 'adoptive_parent' : 'step_parent';
+			const relationshipLabel = kind === 'adopted' ? 'Adopted child' : 'Stepchild';
+			const alreadyEmitted = edges.some(e =>
+				e.from === node.crId &&
+				e.to === child.crId &&
+				e.relationshipTypeId === relationshipTypeId
+			);
+			if (!alreadyEmitted) {
 				edges.push({
 					from: node.crId,
-					to: adoptedChild.crId,
+					to: child.crId,
 					type: 'relationship',
-					relationshipTypeId: 'adoptive_parent',
-					relationshipLabel: 'Adopted child'
+					relationshipTypeId,
+					relationshipLabel
 				});
-				// Don't recurse descendants for adopted children (they have their own family line)
 			}
 		}
 	}
@@ -1053,25 +1116,30 @@ export class FamilyGraphService {
 				}
 			}
 
-			// Step-parents (with distinct edge type, default enabled for full trees)
+			// Step-parents (with distinct edge type, default enabled for full trees).
+			// Edge emission is decoupled from the cycle-check (#546): a step-parent
+			// reached via a different BFS path first must still get its relationship
+			// edge emitted on this traversal — otherwise stepchild→stepparent edges
+			// silently disappear depending on visit order. The cycle-check only
+			// gates whether to queue the parent for further processing.
 			if (includeStepParents) {
 				// Step-fathers
 				for (const stepfatherCrId of currentPerson.stepfatherCrIds) {
 					const stepfather = this.personCache.get(stepfatherCrId);
-					if (stepfather && !visited.has(stepfatherCrId)) {
-						// Add relationship edge (avoid duplicates)
-						if (!edges.some(e =>
-							e.from === stepfatherCrId && e.to === currentCrId &&
-							e.relationshipTypeId === 'step_parent'
-						)) {
-							edges.push({
-								from: stepfatherCrId,
-								to: currentCrId,
-								type: 'relationship',
-								relationshipTypeId: 'step_parent',
-								relationshipLabel: 'Step-father'
-							});
-						}
+					if (!stepfather) continue;
+					if (!edges.some(e =>
+						e.from === stepfatherCrId && e.to === currentCrId &&
+						e.relationshipTypeId === 'step_parent'
+					)) {
+						edges.push({
+							from: stepfatherCrId,
+							to: currentCrId,
+							type: 'relationship',
+							relationshipTypeId: 'step_parent',
+							relationshipLabel: 'Step-father'
+						});
+					}
+					if (!visited.has(stepfatherCrId)) {
 						toProcess.push(stepfatherCrId);
 					}
 				}
@@ -1079,32 +1147,31 @@ export class FamilyGraphService {
 				// Step-mothers
 				for (const stepmotherCrId of currentPerson.stepmotherCrIds) {
 					const stepmother = this.personCache.get(stepmotherCrId);
-					if (stepmother && !visited.has(stepmotherCrId)) {
-						// Add relationship edge (avoid duplicates)
-						if (!edges.some(e =>
-							e.from === stepmotherCrId && e.to === currentCrId &&
-							e.relationshipTypeId === 'step_parent'
-						)) {
-							edges.push({
-								from: stepmotherCrId,
-								to: currentCrId,
-								type: 'relationship',
-								relationshipTypeId: 'step_parent',
-								relationshipLabel: 'Step-mother'
-							});
-						}
+					if (!stepmother) continue;
+					if (!edges.some(e =>
+						e.from === stepmotherCrId && e.to === currentCrId &&
+						e.relationshipTypeId === 'step_parent'
+					)) {
+						edges.push({
+							from: stepmotherCrId,
+							to: currentCrId,
+							type: 'relationship',
+							relationshipTypeId: 'step_parent',
+							relationshipLabel: 'Step-mother'
+						});
+					}
+					if (!visited.has(stepmotherCrId)) {
 						toProcess.push(stepmotherCrId);
 					}
 				}
 			}
 
-			// Adoptive parents (with distinct edge type, default enabled for full trees)
+			// Adoptive parents — same edge/cycle decoupling as step-parents above.
 			if (includeAdoptiveParents) {
 				// Adoptive father (gender-specific)
 				if (currentPerson.adoptiveFatherCrId) {
 					const adoptiveFather = this.personCache.get(currentPerson.adoptiveFatherCrId);
-					if (adoptiveFather && !visited.has(currentPerson.adoptiveFatherCrId)) {
-						// Add relationship edge (avoid duplicates)
+					if (adoptiveFather) {
 						if (!edges.some(e =>
 							e.from === currentPerson.adoptiveFatherCrId && e.to === currentCrId &&
 							e.relationshipTypeId === 'adoptive_parent'
@@ -1117,15 +1184,16 @@ export class FamilyGraphService {
 								relationshipLabel: 'Adoptive father'
 							});
 						}
-						toProcess.push(currentPerson.adoptiveFatherCrId);
+						if (!visited.has(currentPerson.adoptiveFatherCrId)) {
+							toProcess.push(currentPerson.adoptiveFatherCrId);
+						}
 					}
 				}
 
 				// Adoptive mother (gender-specific)
 				if (currentPerson.adoptiveMotherCrId) {
 					const adoptiveMother = this.personCache.get(currentPerson.adoptiveMotherCrId);
-					if (adoptiveMother && !visited.has(currentPerson.adoptiveMotherCrId)) {
-						// Add relationship edge (avoid duplicates)
+					if (adoptiveMother) {
 						if (!edges.some(e =>
 							e.from === currentPerson.adoptiveMotherCrId && e.to === currentCrId &&
 							e.relationshipTypeId === 'adoptive_parent'
@@ -1138,27 +1206,29 @@ export class FamilyGraphService {
 								relationshipLabel: 'Adoptive mother'
 							});
 						}
-						toProcess.push(currentPerson.adoptiveMotherCrId);
+						if (!visited.has(currentPerson.adoptiveMotherCrId)) {
+							toProcess.push(currentPerson.adoptiveMotherCrId);
+						}
 					}
 				}
 
 				// Gender-neutral adoptive parents
 				for (const adoptiveParentCrId of currentPerson.adoptiveParentCrIds) {
 					const adoptiveParent = this.personCache.get(adoptiveParentCrId);
-					if (adoptiveParent && !visited.has(adoptiveParentCrId)) {
-						// Add relationship edge (avoid duplicates)
-						if (!edges.some(e =>
-							e.from === adoptiveParentCrId && e.to === currentCrId &&
-							e.relationshipTypeId === 'adoptive_parent'
-						)) {
-							edges.push({
-								from: adoptiveParentCrId,
-								to: currentCrId,
-								type: 'relationship',
-								relationshipTypeId: 'adoptive_parent',
-								relationshipLabel: 'Adoptive parent'
-							});
-						}
+					if (!adoptiveParent) continue;
+					if (!edges.some(e =>
+						e.from === adoptiveParentCrId && e.to === currentCrId &&
+						e.relationshipTypeId === 'adoptive_parent'
+					)) {
+						edges.push({
+							from: adoptiveParentCrId,
+							to: currentCrId,
+							type: 'relationship',
+							relationshipTypeId: 'adoptive_parent',
+							relationshipLabel: 'Adoptive parent'
+						});
+					}
+					if (!visited.has(adoptiveParentCrId)) {
 						toProcess.push(adoptiveParentCrId);
 					}
 				}
@@ -1209,12 +1279,65 @@ export class FamilyGraphService {
 				}
 			}
 
-			// Children
+			// Children — bio. The dedicated `child` edge type is used for
+			// the BFS-side bookkeeping; canvas-generator filters these out
+			// in favor of the symmetric parent edge.
 			for (const childCrId of currentPerson.childrenCrIds) {
 				const child = this.personCache.get(childCrId);
 				if (child) {
 					edges.push({ from: currentCrId, to: childCrId, type: 'child' });
 					toProcess.push(childCrId);
+				}
+			}
+
+			// Adopted children — walked from the parent's side so an adopted
+			// child appears in the adoptive parent's full-tree even when not
+			// reachable via any other path (#545 / #546). Edge dedupes against
+			// the symmetric one that gets pushed when the child's own
+			// `adoptive_X` walk fires.
+			if (includeAdoptiveParents) {
+				for (const adoptedChildCrId of currentPerson.adoptedChildCrIds) {
+					const adoptedChild = this.personCache.get(adoptedChildCrId);
+					if (!adoptedChild) continue;
+					if (!edges.some(e =>
+						e.from === currentCrId && e.to === adoptedChildCrId &&
+						e.relationshipTypeId === 'adoptive_parent'
+					)) {
+						edges.push({
+							from: currentCrId,
+							to: adoptedChildCrId,
+							type: 'relationship',
+							relationshipTypeId: 'adoptive_parent',
+							relationshipLabel: 'Adopted child'
+						});
+					}
+					if (!visited.has(adoptedChildCrId)) {
+						toProcess.push(adoptedChildCrId);
+					}
+				}
+			}
+
+			// Stepchildren — symmetric with the step-parent walk above
+			// (the reverse-walk in `loadPersonCache` keeps these in sync).
+			if (includeStepParents) {
+				for (const stepchildCrId of currentPerson.stepchildrenCrIds) {
+					const stepchild = this.personCache.get(stepchildCrId);
+					if (!stepchild) continue;
+					if (!edges.some(e =>
+						e.from === currentCrId && e.to === stepchildCrId &&
+						e.relationshipTypeId === 'step_parent'
+					)) {
+						edges.push({
+							from: currentCrId,
+							to: stepchildCrId,
+							type: 'relationship',
+							relationshipTypeId: 'step_parent',
+							relationshipLabel: 'Stepchild'
+						});
+					}
+					if (!visited.has(stepchildCrId)) {
+						toProcess.push(stepchildCrId);
+					}
 				}
 			}
 		}
