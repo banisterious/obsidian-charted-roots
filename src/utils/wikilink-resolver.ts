@@ -60,6 +60,43 @@ export function extractWikilinkPath(value: string): string {
 }
 
 /**
+ * Extract the user-facing display label from a wikilink-shaped string.
+ *
+ * Strips `[[…]]` brackets if present, then collapses pipe-form
+ * (`basename|alias` → `alias`) and path-form (`path/to/file` →
+ * `file`) so the result is what a reader expects to see rendered:
+ * the alias when one exists, otherwise the bare basename.
+ *
+ * Mirrors the writer-side stem-collapse from `createSmartWikilink` so
+ * the Edit Person modal's "Linked to:" labels and read-only input fields
+ * surface clean names regardless of whether the underlying frontmatter
+ * stores `[[basename]]`, `[[basename|alias]]`, `[[path/to/file]]`, or
+ * `[[path/to/file|alias]]` (#543).
+ *
+ * Idempotent: feeding the output back through the helper returns the
+ * same string. Bare strings (without brackets) pass through their
+ * pipe/slash collapse unchanged.
+ */
+export function extractDisplayLabel(value: string | null | undefined): string {
+	if (!value) return '';
+	const trimmed = value.trim();
+	if (!trimmed) return '';
+	// Strip `[[…]]` if present (mirrors the loader's extractName).
+	const inner = trimmed
+		.replace(/^\[\[/, '')
+		.replace(/\]\]$/, '');
+	// Pipe-form: alias is the last segment.
+	const afterPipe = inner.includes('|')
+		? inner.split('|').pop()!.trim() || inner
+		: inner;
+	// Path-form: basename is the last segment.
+	const afterSlash = afterPipe.includes('/')
+		? afterPipe.split('/').pop()!.trim() || afterPipe
+		: afterPipe;
+	return afterSlash;
+}
+
+/**
  * Convert a path to wikilink format
  * If already a wikilink, returns as-is
  */

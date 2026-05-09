@@ -16,6 +16,7 @@ import { RelationshipContext } from './quick-create-person-modal';
 import type { CanvasRootsSettings } from '../settings';
 import type CanvasRootsPlugin from '../../main';
 import { getSpouseLabel, getAddSpouseLabel } from '../utils/terminology';
+import { extractDisplayLabel } from '../utils/wikilink-resolver';
 import { ModalStatePersistence, renderResumePromptBanner } from './modal-state-persistence';
 import { ResearchLevel, RESEARCH_LEVELS } from '../types/frontmatter';
 import { SourcePickerModal } from '../sources/ui/source-picker-modal';
@@ -938,9 +939,16 @@ export class CreatePersonModal extends Modal {
 		label: string,
 		fieldData: RelationshipField
 	): void {
+		// Display the user-facing display name in the modal — strip wikilink
+		// brackets, paths, and pipe-aliases from the underlying frontmatter
+		// value so users see "Errol Naberrie" rather than e.g. "Errol Naberrie|
+		// Charted Roots/People/Errol Naberrie" or path-form residue (#543).
+		// fieldData.name itself stays raw — the writer's createSmartWikilink
+		// re-canonicalizes on save.
+		const displayName = extractDisplayLabel(fieldData.name);
 		const setting = new Setting(container)
 			.setName(label)
-			.setDesc(fieldData.name ? `Linked to: ${fieldData.name}` : `Click "Link" to select ${label.toLowerCase()}`);
+			.setDesc(displayName ? `Linked to: ${displayName}` : `Click "Link" to select ${label.toLowerCase()}`);
 
 		// Text input (readonly, shows selected person name)
 		let inputEl: HTMLInputElement;
@@ -948,7 +956,7 @@ export class CreatePersonModal extends Modal {
 		setting.addText(text => {
 			inputEl = text.inputEl;
 			text.setPlaceholder(`Click "Link" to select ${label.toLowerCase()}`)
-				.setValue(fieldData.name || '');
+				.setValue(displayName);
 			text.inputEl.readOnly = true;
 			if (fieldData.name) {
 				text.inputEl.addClass('crc-input--linked');
@@ -1042,9 +1050,11 @@ export class CreatePersonModal extends Modal {
 		label: string,
 		fieldData: RelationshipField
 	): void {
+		// Same display-label parsing as relationship fields (#543).
+		const displayName = extractDisplayLabel(fieldData.name);
 		const setting = new Setting(container)
 			.setName(label)
-			.setDesc(fieldData.name ? `Linked to: ${fieldData.name}` : `Click "Link" to select ${label.toLowerCase()}`);
+			.setDesc(displayName ? `Linked to: ${displayName}` : `Click "Link" to select ${label.toLowerCase()}`);
 
 		// Text input (readonly, shows selected place name)
 		let inputEl: HTMLInputElement;
@@ -1052,7 +1062,7 @@ export class CreatePersonModal extends Modal {
 		setting.addText(text => {
 			inputEl = text.inputEl;
 			text.setPlaceholder(`Click "Link" to select ${label.toLowerCase()}`)
-				.setValue(fieldData.name || '');
+				.setValue(displayName);
 			text.inputEl.readOnly = true;
 			if (fieldData.name) {
 				text.inputEl.addClass('crc-input--linked');
