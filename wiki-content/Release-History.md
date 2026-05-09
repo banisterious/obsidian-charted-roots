@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.27 Round-Up: Cache-Race Audit and the End of the 2-Second Sleep](#v02227-round-up-cache-race-audit-and-the-end-of-the-2-second-sleep-v02227)
   - [v0.22.26 Round-Up: RelationshipQueryService and the Adopted/Step Children Coverage Sweep](#v02226-round-up-relationshipqueryservice-and-the-adoptedstep-children-coverage-sweep-v02226)
   - [v0.22.25 Round-Up: Modal Display Parsing, Membership Writer Cleanup, and Cache-Timing Follow-Up](#v02225-round-up-modal-display-parsing-membership-writer-cleanup-and-cache-timing-follow-up-v02225)
   - [v0.22.24 Round-Up: Wikilink Writer Hardening, Custom Relationships in All-Mode, and Org Membership Sync](#v02224-round-up-wikilink-writer-hardening-custom-relationships-in-all-mode-and-org-membership-sync-v02224)
@@ -165,6 +166,43 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.27 Round-Up: Cache-Race Audit and the End of the 2-Second Sleep (v0.22.27)
+
+A preventative patch built around the cache-race audit filed as [#547](https://github.com/banisterious/obsidian-charted-roots/issues/547). Four cache-holding services — `FamilyGraphService`, `PlaceGraphService`, `OrganizationService`, `UniverseService` — shared a write-then-read race where each service's `reloadCache()` ran before Obsidian's metadata cache caught up to the just-written change, silently dropping new entries from the cache or holding pre-edit state until something else triggered another reload. `FamilyGraphService` masked the symptom with a 2-second `setTimeout` band-aid in `reloadCache`; the other three had no mitigation at all. This patch routes each writer through a shared `waitForCacheRefresh` helper (originally introduced privately on `MembershipService` for the [#541](https://github.com/banisterious/obsidian-charted-roots/issues/541) cache-timing follow-up) that resolves on the next `metadataCache.changed` event for each modified file, with a 500ms timeout fallback. The 2-second sleep on family-graph reloads is gone — batch operations (data-quality cleanups, bidirectional fixes) now finish ~2 seconds faster per batch. No user-reported bugs closed; this was proactive prevention work during the v0.22.22-anchored stability window.
+
+**Helper extraction: `waitForCacheRefresh` promoted to a shared utility** ([#547](https://github.com/banisterious/obsidian-charted-roots/issues/547)):
+- The helper landed privately on `MembershipService` in v0.22.25 as the cache-timing follow-up to [#541](https://github.com/banisterious/obsidian-charted-roots/issues/541) (DigitalDreamn's multi-Jedi test surfaced the "trailing one update behind" pattern when person→org membership sync was reading stale cache between `processFrontMatter` and the org-side mirror write).
+- Hoisted to `src/utils/cache-utils.ts` so any service-layer code performing the write→read pattern can call it. Signature: `waitForCacheRefresh(app: App, file: TFile, timeoutMs = 500): Promise<void>`. Listens for the next `metadataCache.changed` event for the target file, with a timeout fallback so the caller proceeds if the event doesn't fire within the window (e.g., when the cache was already up to date by registration time, or when the write touched only file content the metadata cache doesn't track).
+- 4 unit tests in `tests/cache-utils.test.ts` cover resolution on the changed event, ignoring unrelated files, the timeout fallback, and listener cleanup after resolution.
+
+**Fix: `FamilyGraphService.reloadCache` 2-second sleep replaced with event-driven wait** ([#547](https://github.com/banisterious/obsidian-charted-roots/issues/547)):
+- The pre-fix code in `src/core/family-graph.ts:373-382` slept unconditionally for 2 seconds before re-reading the metadata cache. The comment named the race directly: *"After batch operations, files are modified but Obsidian's file watcher needs time to detect changes and update the metadata cache."* Fixed-delay shotgun — brittle on slow systems, wasted UX on fast ones, paid by every batch-op caller whether or not they'd recently written.
+- New signature: `reloadCache(modifiedFiles?: TFile[]): Promise<void>`. When `modifiedFiles` is provided, awaits each file's metadata-cache refresh via `Promise.all(files.map(f => waitForCacheRefresh(app, f)))` before rebuilding. When omitted, rebuilds immediately — refresh-driven flows (e.g., reloading before a read in places where no recent write occurred) skip the wait entirely, a strict UX improvement over the old 2-second tax.
+- Companion change: `BatchOperationResult` extended with `modifiedFiles: TFile[]`. Ten batch-operation methods in `DataQualityService` (date normalization, gender normalization, orphan-reference clearing, missing-ID repair, nested-property flattening, legacy-type migration, membership migration, bidirectional-inconsistency fix) now expose the list of files they touched. Consumers in `data-quality-tab.ts` and the seven flows in `data-quality-batch-ops.ts` thread this through to `familyGraph.reloadCache(modifiedFiles)`. Plus the parent-conflict resolution path in `people-tab.ts` (modifies child + claimant files) now passes its modified set explicitly.
+
+**Fix: `OrganizationService.reloadCache` and `UniverseService.reloadCache` now wait for cache refresh after writes** ([#547](https://github.com/banisterious/obsidian-charted-roots/issues/547)):
+- Pre-fix, both services performed `vault.create` / `processFrontMatter` and immediately called `reloadCache()` synchronously. The reload's `loadOrganizationCache()` / `loadUniverseCache()` walks every markdown file calling `metadataCache.getFileCache(file)` — for the just-written file, the cache could still be empty, silently dropping the new entry. User-visible symptom: a freshly created organization or universe could be missing from dropdowns and pickers until the next manual reload.
+- Both services now use `reloadCache(modifiedFiles?: TFile[])` with the same `Promise.all(waitForCacheRefresh)` shape as FamilyGraph. Three callers updated per service: `createOrganization` / `updateOrganization`; `createUniverse` / `updateUniverse` / `cascadeUniverseRename`. The cascade case is the most exposed — pre-fix, N `processFrontMatter` writes followed by a single `reloadCache()` could leave all N entries showing the old universe value in the cache; post-fix, the reload waits for each touched file's `metadataCache.changed` event.
+
+**Fix: `PlaceGraphService.reloadCache` signature change with three post-write callers updated** ([#547](https://github.com/banisterious/obsidian-charted-roots/issues/547)):
+- Same `reloadCache(modifiedFiles?)` async signature as the other three services. Of the ~15 caller sites across the codebase, three were post-write flows that needed the file list passed through:
+  - `create-missing-places-modal.ts`: the auto-link flow creates N place notes via `createPlaceNote` then reloads to pick them up for the place-reference-rewrite pass. Capturing the returned TFiles into a `createdFiles: TFile[]` array threads through to the reload.
+  - `cleanup-wizard-modal.ts:3168-3176`: the parent-place hierarchy creation loop creates a place, reads it back via `getPlaceByCrId(newCrId)`, and uses the returned node to seed the next iteration's parent. Pre-fix, the read could see an empty cache entry until Obsidian caught up.
+  - `enrich-place-hierarchy-modal.ts:629-641`: same shape as the cleanup-wizard parent-place loop.
+- The other ~12 caller sites are refresh-driven (fresh service → reload → read with no recent write) and continue to work without changes — they pass no `modifiedFiles` and skip the wait.
+
+**Architectural decision: external-edit invalidation deferred to 1.x** ([#547](https://github.com/banisterious/obsidian-charted-roots/issues/547) Out of Scope):
+- The cache-race audit had two halves. The shipped half (write→read race) had a clear, single-pattern fix. The deferred half (external-edit invalidation via per-service `metadataCache.changed` subscription, the shape that [#519](https://github.com/banisterious/obsidian-charted-roots/issues/519) applied to `EventService` / `SourceService` / `ProofSummaryService`) requires service-lifetime redesign because each of the four services in this audit is instantiated on-demand in many UI paths.
+- Attaching long-lived listeners means either hoisting to plugin-singletons (the path #519 took for `ProofSummaryService`) or threading lifecycle management (`registerEvent`, `offref` on disposal) through every consumer. That's a separate scoped change rather than a continuation of this audit. #547 stays open as the tracking surface.
+
+**Testing:** Suite total **739** (was 730 at v0.22.26), 58 suites. +4 helper unit tests in `tests/cache-utils.test.ts`, +5 integration tests in `tests/services-reload-cache-race.test.ts` (one per service plus one for the no-args refresh path on FamilyGraphService). Mock surface in `tests/mocks/obsidian.ts` extended with `Modal`, `Setting`, `PluginSettingTab`, `TextComponent`, `AbstractInputSuggest`, `setIcon` stubs plus a default empty `resolvedLinks` map — needed so service tests that transitively pull `settings.ts` can load in the test runtime.
+
+**Reporters:** N/A — preventative work.
+
+**Stability-window impact:** no reset — this is the fifth patch in the v0.22.22-anchored window (after v0.22.23, v0.22.24, v0.22.25, v0.22.26). All medium/low priority; none reset. Window remains anchored to v0.22.22 (2026-05-07 → ~2026-05-28).
+
+---
 
 ### v0.22.26 Round-Up: RelationshipQueryService and the Adopted/Step Children Coverage Sweep (v0.22.26)
 

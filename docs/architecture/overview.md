@@ -274,6 +274,12 @@ A read-only detail view (`src/profile-view/`) that auto-syncs with the active no
 | `renderBlockError(el, message)` | Standard error UI for code blocks |
 | `renderBlockLoading(el, message)` | Standard loading UI for code blocks |
 
+### Cache (src/utils/cache-utils.ts)
+
+| Function | Purpose |
+|----------|---------|
+| `waitForCacheRefresh(app, file, timeoutMs?)` | Wait for `metadataCache.changed` for a file before reading it back after a write. Used by the cache-holding services' `reloadCache(modifiedFiles?)` methods to bridge the gap between synchronous frontmatter writes and Obsidian's asynchronous metadata-cache catch-up. |
+
 ---
 
 ## CSS Build System

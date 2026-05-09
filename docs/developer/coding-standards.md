@@ -671,6 +671,26 @@ await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
 - Consistent YAML layout
 - Automatic error handling
 
+#### Wait for the Metadata Cache After Writing Frontmatter
+
+```typescript
+// ❌ WRONG - Reads stale cache; the metadata cache hasn't caught up yet
+await this.app.fileManager.processFrontMatter(file, (fm) => { fm.x = 'y'; });
+const cache = this.app.metadataCache.getFileCache(file);
+processBasedOn(cache?.frontmatter?.x);  // may be undefined or pre-write
+
+// ✅ CORRECT - Bridge the asynchronous catch-up window
+import { waitForCacheRefresh } from '../utils/cache-utils';
+await this.app.fileManager.processFrontMatter(file, (fm) => { fm.x = 'y'; });
+await waitForCacheRefresh(this.app, file);
+const cache = this.app.metadataCache.getFileCache(file);
+processBasedOn(cache?.frontmatter?.x);  // reflects the write
+```
+
+**Why:** `processFrontMatter` (and `vault.create` / `vault.modify`) writes the file synchronously, but Obsidian's metadata cache updates asynchronously via the file watcher event. Reading `getFileCache(file)` immediately after the write returns can hand back stale data. `waitForCacheRefresh` listens for the next `metadataCache.changed` event for the target file with a 500ms timeout fallback. See [Cache Utilities](#cache-utilities-srcutilscache-utilsts) for usage details.
+
+**Don't use a fixed `setTimeout` delay:** brittle on slow systems, wasted UX on fast ones. The event-driven wait resolves in tens of milliseconds typically.
+
 #### Prefer Vault API over Adapter API
 
 ```typescript
@@ -1405,6 +1425,28 @@ import { DynamicContentService } from '../services/dynamic-content-service';
 DynamicContentService.renderBlockError(el, 'Could not find person note');
 DynamicContentService.renderBlockLoading(el, 'Loading timeline...');
 ```
+
+### Cache Utilities (src/utils/cache-utils.ts)
+
+```typescript
+import { waitForCacheRefresh } from '../utils/cache-utils';
+
+// After processFrontMatter / vault.create / vault.modify, wait for the
+// metadata cache to reflect the just-written change before reading it back.
+await app.fileManager.processFrontMatter(file, (fm) => { fm.x = 'y'; });
+await waitForCacheRefresh(app, file);
+const fresh = app.metadataCache.getFileCache(file);  // reflects the write
+
+// Batch writes — wait for all touched files in parallel
+const modified: TFile[] = [];
+for (const file of files) {
+    await app.fileManager.processFrontMatter(file, /* ... */);
+    modified.push(file);
+}
+await Promise.all(modified.map(f => waitForCacheRefresh(app, f)));
+```
+
+Used by the cache-holding services (`FamilyGraphService`, `PlaceGraphService`, `OrganizationService`, `UniverseService`) inside their `reloadCache(modifiedFiles?)` methods. When you build a similar service or write a batch flow, prefer this helper to fixed-delay `setTimeout` waits — it resolves on the next `metadataCache.changed` event for the target file (typically tens of milliseconds) with a 500ms timeout fallback.
 
 ### Service Access Patterns
 
