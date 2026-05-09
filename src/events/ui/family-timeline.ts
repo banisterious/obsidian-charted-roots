@@ -199,19 +199,18 @@ export function renderFamilyTimeline(
 		}
 	}
 
-	// Add children
+	// Add children — bio + adopted + step (#546). Family timeline shows
+	// all family members; pre-#546 the bio-only walk silently dropped
+	// adopted/step children from the focal person's family timeline.
 	if (options?.showChildren !== false) {
-		for (const childCrId of focalPerson.childrenCrIds) {
-			const child = familyGraph.getPerson(childCrId);
-			if (child) {
-				const childEvents = eventService.getEventsForPerson(`[[${child.file.basename}]]`);
-				familyMembers.push({
-					person: child,
-					relationship: 'child',
-					events: childEvents,
-					color: getFamilyColor(colorIndex++)
-				});
-			}
+		for (const { person: child } of familyGraph.getQueryService().getChildren(focalPerson, { include: 'all' })) {
+			const childEvents = eventService.getEventsForPerson(`[[${child.file.basename}]]`);
+			familyMembers.push({
+				person: child,
+				relationship: 'child',
+				events: childEvents,
+				color: getFamilyColor(colorIndex++)
+			});
 		}
 	}
 
@@ -478,12 +477,9 @@ export function getFamilyTimelineSummary(
 		}
 	}
 
-	// Children
-	for (const childCrId of focalPerson.childrenCrIds) {
-		const child = familyGraph.getPerson(childCrId);
-		if (child) {
-			allEvents.push(...eventService.getEventsForPerson(`[[${child.file.basename}]]`));
-		}
+	// Children — bio + adopted + step (#546).
+	for (const { person: child } of familyGraph.getQueryService().getChildren(focalPerson, { include: 'all' })) {
+		allEvents.push(...eventService.getEventsForPerson(`[[${child.file.basename}]]`));
 	}
 
 	// Calculate date range

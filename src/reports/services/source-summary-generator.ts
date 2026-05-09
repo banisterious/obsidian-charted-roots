@@ -152,14 +152,15 @@ export class SourceSummaryGenerator {
 			warnings.push('No fact-level source tracking data found. Consider adding sourced_* properties.');
 		}
 
-		// Optionally include children's sources
+		// Optionally include children's sources — bio only (#546). Adopted
+		// and step children's source records typically attach to a different
+		// family unit, so this report intentionally walks bio descent.
 		if (options.includeChildrenSources) {
-			for (const childCrId of personNode.childrenCrIds) {
+			for (const { person: childNode } of familyGraph.getQueryService().getChildren(personNode, { include: 'bio' })) {
+				const childCrId = childNode.crId;
 				const childCoverage = evidenceService.getFactCoverage(childCrId);
 				if (childCoverage) {
-					// Add a note about child sources
-					const childNode = familyGraph.getPersonByCrId(childCrId);
-					const childName = childNode?.name || childCrId;
+					const childName = childNode.name || childCrId;
 
 					for (const fact of childCoverage.facts) {
 						if (fact.status !== 'unsourced') {
