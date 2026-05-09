@@ -14,7 +14,7 @@ import { createLucideIcon } from './lucide-icons';
 import { FamilyGraphService } from '../core/family-graph';
 import { FolderFilterService } from '../core/folder-filter';
 import { DataQualityService } from '../core/data-quality';
-import type { DataQualityReport, DataQualityIssue, IssueSeverity, IssueCategory } from '../core/data-quality';
+import type { DataQualityReport, DataQualityIssue, IssueSeverity, IssueCategory, BatchOperationResult } from '../core/data-quality';
 import { EventService } from '../events/services/event-service';
 import { PlaceGeneratorModal } from '../enhancement/ui/place-generator-modal';
 import { FlattenNestedPropertiesModal } from './flatten-nested-properties-modal';
@@ -1767,7 +1767,7 @@ async function runBatchOperation(
 		dataQualityService.setPersonIndex(plugin.personIndex);
 	}
 
-	let result: { processed: number; modified: number; errors: string[] };
+	let result: BatchOperationResult | undefined;
 	let operationName: string;
 
 	try {
@@ -1794,6 +1794,11 @@ async function runBatchOperation(
 				break;
 		}
 
+		if (!result) {
+			new Notice(`${operation}: unsupported operation`);
+			return;
+		}
+
 		// Show result
 		if (result.modified > 0) {
 			new Notice(`${operationName}: Modified ${result.modified} of ${result.processed} files`);
@@ -1806,8 +1811,10 @@ async function runBatchOperation(
 			console.error('Batch operation errors:', result.errors);
 		}
 
-		// Refresh the family graph cache
-		await familyGraph.reloadCache();
+		// Refresh the family graph cache. The reload awaits each modified
+		// file's metadata-cache refresh so reads after this point see the
+		// just-written state (#547).
+		await familyGraph.reloadCache(result.modifiedFiles);
 
 	} catch (error) {
 		new Notice(`${operation} failed: ${getErrorMessage(error)}`);

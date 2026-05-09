@@ -1420,6 +1420,7 @@ export class DataQualityService {
 		const results: BatchOperationResult = {
 			processed: 0,
 			modified: 0,
+			modifiedFiles: [],
 			errors: [],
 		};
 
@@ -1472,6 +1473,7 @@ export class DataQualityService {
 				try {
 					await this.updatePersonFrontmatter(person.file, updates);
 					results.modified++;
+					results.modifiedFiles.push(person.file);
 				} catch (error) {
 					results.errors.push({
 						file: person.file.path,
@@ -1503,13 +1505,14 @@ export class DataQualityService {
 		// If disabled, return early with no changes
 		if (mode === 'disabled') {
 			logger.info('normalize-sex', 'Sex value normalization is disabled');
-			return { processed: 0, modified: 0, errors: [] };
+			return { processed: 0, modified: 0, modifiedFiles: [], errors: [] };
 		}
 
 		const people = this.getPeopleForScope(options);
 		const results: BatchOperationResult = {
 			processed: 0,
 			modified: 0,
+			modifiedFiles: [],
 			errors: [],
 		};
 
@@ -1553,6 +1556,7 @@ export class DataQualityService {
 					try {
 						await this.updatePersonFrontmatter(person.file, { sex: normalizedValue });
 						results.modified++;
+						results.modifiedFiles.push(person.file);
 					} catch (error) {
 						results.errors.push({
 							file: person.file.path,
@@ -1577,6 +1581,7 @@ export class DataQualityService {
 		const results: BatchOperationResult = {
 			processed: 0,
 			modified: 0,
+			modifiedFiles: [],
 			errors: [],
 		};
 
@@ -1610,6 +1615,7 @@ export class DataQualityService {
 				try {
 					await this.updatePersonFrontmatter(person.file, updates);
 					results.modified++;
+					results.modifiedFiles.push(person.file);
 				} catch (error) {
 					results.errors.push({
 						file: person.file.path,
@@ -1632,6 +1638,7 @@ export class DataQualityService {
 		const results: BatchOperationResult = {
 			processed: 0,
 			modified: 0,
+			modifiedFiles: [],
 			errors: [],
 		};
 
@@ -1691,6 +1698,7 @@ export class DataQualityService {
 				});
 
 				results.modified++;
+				results.modifiedFiles.push(file);
 			} catch (error) {
 				results.errors.push({
 					file: filePath,
@@ -1715,6 +1723,7 @@ export class DataQualityService {
 		const results: BatchOperationResult = {
 			processed: 0,
 			modified: 0,
+			modifiedFiles: [],
 			errors: [],
 		};
 
@@ -1761,6 +1770,7 @@ export class DataQualityService {
 						Object.assign(frontmatter, flattenedUpdates);
 					});
 					results.modified++;
+					results.modifiedFiles.push(person.file);
 				} catch (error) {
 					results.errors.push({
 						file: person.file.path,
@@ -2044,6 +2054,7 @@ export class DataQualityService {
 		const results: BatchOperationResult = {
 			processed: 0,
 			modified: 0,
+			modifiedFiles: [],
 			errors: [],
 		};
 
@@ -2071,6 +2082,7 @@ export class DataQualityService {
 					const childName = issue.person.name || issue.person.file.basename;
 					await this.addToArrayField(issue.relatedPerson.file, 'children', `[[${childName}]]`);
 					results.modified++;
+					results.modifiedFiles.push(issue.relatedPerson.file);
 				} else if (issue.type === 'missing-parent-in-child') {
 					// Determine if this person should be father or mother based on sex
 					const sex = issue.person.sex;
@@ -2084,6 +2096,7 @@ export class DataQualityService {
 						[parentWikilinkField]: `[[${issue.person.name || issue.person.file.basename}]]`
 					});
 					results.modified++;
+					results.modifiedFiles.push(issue.relatedPerson.file);
 				} else if (issue.type === 'missing-spouse-in-spouse') {
 					// Add person to spouse's spouse_id array
 					await this.addToArrayField(issue.relatedPerson.file, 'spouse_id', issue.person.crId);
@@ -2091,6 +2104,7 @@ export class DataQualityService {
 					const personName = issue.person.name || issue.person.file.basename;
 					await this.addToArrayField(issue.relatedPerson.file, 'spouse', `[[${personName}]]`);
 					results.modified++;
+					results.modifiedFiles.push(issue.relatedPerson.file);
 				}
 			} catch (error) {
 				results.errors.push({
@@ -2327,6 +2341,7 @@ export class DataQualityService {
 		const results: BatchOperationResult = {
 			processed: 0,
 			modified: 0,
+			modifiedFiles: [],
 			errors: [],
 		};
 
@@ -2368,6 +2383,7 @@ export class DataQualityService {
 					delete frontmatter['type'];
 				});
 				results.modified++;
+				results.modifiedFiles.push(person.file);
 			} catch (error) {
 				results.errors.push({
 					file: person.file.path,
@@ -2402,6 +2418,7 @@ export class DataQualityService {
 		const results: BatchOperationResult = {
 			processed: 0,
 			modified: 0,
+			modifiedFiles: [],
 			errors: [],
 		};
 
@@ -2497,6 +2514,7 @@ export class DataQualityService {
 					}
 				});
 				results.modified++;
+				results.modifiedFiles.push(person.file);
 			} catch (error) {
 				results.errors.push({
 					file: person.file.path,
@@ -2915,6 +2933,7 @@ export class DataQualityService {
 export interface BatchOperationResult {
 	processed: number;
 	modified: number;
+	modifiedFiles: TFile[];
 	errors: Array<{ file: string; error: string }>;
 }
 

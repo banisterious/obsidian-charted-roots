@@ -1071,10 +1071,13 @@ async function resolveParentConflict(
 	// Suspend linker during changes
 	plugin.bidirectionalLinker?.suspend();
 
+	const modifiedFiles: TFile[] = [];
+
 	try {
 		if (resolution === 'keep1') {
 			// Keep claimant1: remove child from claimant2's children_id
 			await removeChildFromParent(claimant2.file, child.crId, app);
+			modifiedFiles.push(claimant2.file);
 			new Notice(`Removed ${child.name || child.file.basename} from ${claimant2.name || claimant2.file.basename}'s children`);
 		} else {
 			// Keep claimant2: update child's parent field and remove from claimant1's children_id
@@ -1083,12 +1086,13 @@ async function resolveParentConflict(
 				fm[parentWikilinkField] = `[[${claimant2.name || claimant2.file.basename}]]`;
 			});
 			await removeChildFromParent(claimant1.file, child.crId, app);
+			modifiedFiles.push(child.file, claimant1.file);
 			new Notice(`Changed ${child.name || child.file.basename}'s ${conflictType} to ${claimant2.name || claimant2.file.basename}`);
 		}
 
 		// Reload cache
 		const familyGraph = plugin.createFamilyGraphService();
-		await familyGraph.reloadCache();
+		await familyGraph.reloadCache(modifiedFiles);
 	} finally {
 		// Resume linker after a short delay
 		setTimeout(() => {

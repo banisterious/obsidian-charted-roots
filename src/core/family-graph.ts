@@ -18,6 +18,7 @@ import { isSourceNote, isEventNote, isPlaceNote, isOrganizationNote, isProofSumm
 import type { RawRelationship, FamilyGraphMapping } from '../relationships/types/relationship-types';
 import { getRelationshipType, getAllRelationshipTypesWithCustomizations } from '../relationships/constants/default-relationship-types';
 import { RelationshipQueryService } from './relationship-query-service';
+import { waitForCacheRefresh } from '../utils/cache-utils';
 
 const logger = getLogger('FamilyGraph');
 
@@ -367,16 +368,26 @@ export class FamilyGraphService {
 	}
 
 	/**
-	 * Force reload the person cache
-	 * Use when you know data has changed and need fresh data
+	 * Force reload the person cache.
+	 *
+	 * `processFrontMatter` writes the file synchronously, but Obsidian's
+	 * metadata cache catches up asynchronously via the file watcher. A
+	 * `loadPersonCache()` call between those two points reads stale data
+	 * for the just-touched files. Callers that just performed writes
+	 * should pass the modified TFiles so this method awaits each file's
+	 * `metadataCache.changed` event before rebuilding (#547).
+	 *
+	 * If `modifiedFiles` is omitted, the reload runs immediately — use
+	 * this for refresh-driven flows where no recent write has occurred.
 	 */
-	async reloadCache(): Promise<void> {
+	async reloadCache(modifiedFiles?: TFile[]): Promise<void> {
 		this.personCache.clear();
 
-		// Wait for Obsidian's metadata cache to finish processing file changes
-		// After batch operations, files are modified but Obsidian's file watcher
-		// needs time to detect changes and update the metadata cache
-		await new Promise(resolve => setTimeout(resolve, 2000));
+		if (modifiedFiles && modifiedFiles.length > 0) {
+			await Promise.all(
+				modifiedFiles.map(file => waitForCacheRefresh(this.app, file))
+			);
+		}
 
 		this.loadPersonCache();
 	}

@@ -127,6 +127,7 @@ export async function removeDuplicateRelationships(plugin: CanvasRootsPlugin, ap
 	const people = familyGraph.getAllPeople();
 
 	let modified = 0;
+	const modifiedFiles: TFile[] = [];
 	const errors: string[] = [];
 
 	for (const person of people) {
@@ -186,6 +187,7 @@ export async function removeDuplicateRelationships(plugin: CanvasRootsPlugin, ap
 
 			if (hasChanges) {
 				modified++;
+				modifiedFiles.push(person.file);
 			}
 		} catch (error) {
 			errors.push(`${person.file.path}: ${getErrorMessage(error)}`);
@@ -205,7 +207,7 @@ export async function removeDuplicateRelationships(plugin: CanvasRootsPlugin, ap
 	}
 
 	// Refresh the family graph cache
-	await familyGraph.reloadCache();
+	await familyGraph.reloadCache(modifiedFiles);
 
 	// Refresh the People tab
 	showTab('people');
@@ -381,6 +383,7 @@ export async function removePlaceholders(plugin: CanvasRootsPlugin, app: App, sh
 	const people = familyGraph.getAllPeople();
 
 	let modified = 0;
+	const modifiedFiles: TFile[] = [];
 	const errors: string[] = [];
 
 	// Common placeholder patterns (actual placeholder text, not empty values)
@@ -491,6 +494,7 @@ export async function removePlaceholders(plugin: CanvasRootsPlugin, app: App, sh
 
 			if (hasChanges) {
 				modified++;
+				modifiedFiles.push(person.file);
 			}
 		} catch (error) {
 			errors.push(`${person.file.path}: ${getErrorMessage(error)}`);
@@ -509,14 +513,9 @@ export async function removePlaceholders(plugin: CanvasRootsPlugin, app: App, sh
 		console.error('Remove placeholders errors:', errors);
 	}
 
-	// Wait for file system to sync before reloading
-	// Brief delay to ensure all file writes are complete
-	if (modified > 0) {
-		await new Promise(resolve => setTimeout(resolve, 500));
-	}
-
-	// Refresh the family graph cache
-	await familyGraph.reloadCache();
+	// Refresh the family graph cache. The reload awaits each modified
+	// file's metadata-cache refresh internally \u2014 no extra delay needed.
+	await familyGraph.reloadCache(modifiedFiles);
 
 	// Refresh the People tab
 	showTab('people');
@@ -570,6 +569,7 @@ export async function addPersonType(plugin: CanvasRootsPlugin, app: App, showTab
 	const people = familyGraph.getAllPeople();
 
 	let modified = 0;
+	const modifiedFiles: TFile[] = [];
 	const errors: string[] = [];
 
 	for (const person of people) {
@@ -590,6 +590,7 @@ export async function addPersonType(plugin: CanvasRootsPlugin, app: App, showTab
 
 			if (hasChanges) {
 				modified++;
+				modifiedFiles.push(person.file);
 			}
 		} catch (error) {
 			errors.push(`${person.file.path}: ${getErrorMessage(error)}`);
@@ -609,7 +610,7 @@ export async function addPersonType(plugin: CanvasRootsPlugin, app: App, showTab
 	}
 
 	// Refresh the family graph cache
-	await familyGraph.reloadCache();
+	await familyGraph.reloadCache(modifiedFiles);
 
 	// Refresh the People tab
 	showTab('people');
@@ -760,6 +761,7 @@ export async function normalizeNames(plugin: CanvasRootsPlugin, app: App, showTa
 	const people = familyGraph.getAllPeople();
 
 	let modified = 0;
+	const modifiedFiles: TFile[] = [];
 	const errors: string[] = [];
 
 	/**
@@ -874,6 +876,7 @@ export async function normalizeNames(plugin: CanvasRootsPlugin, app: App, showTa
 
 			if (hasChanges) {
 				modified++;
+				modifiedFiles.push(person.file);
 			}
 		} catch (error) {
 			errors.push(`${person.file.path}: ${getErrorMessage(error)}`);
@@ -893,7 +896,7 @@ export async function normalizeNames(plugin: CanvasRootsPlugin, app: App, showTa
 	}
 
 	// Refresh the family graph cache
-	await familyGraph.reloadCache();
+	await familyGraph.reloadCache(modifiedFiles);
 
 	// Refresh the People tab
 	showTab('people');
@@ -1012,6 +1015,7 @@ export async function removeOrphanedRefs(plugin: CanvasRootsPlugin, app: App, sh
 	familyGraph.ensureCacheLoaded();
 
 	let modified = 0;
+	const modifiedFiles: TFile[] = [];
 	const errors: Array<{ file: string; error: string }> = [];
 
 	new Notice('Removing orphaned cr_id references...');
@@ -1120,6 +1124,7 @@ export async function removeOrphanedRefs(plugin: CanvasRootsPlugin, app: App, sh
 
 			if (hasChanges) {
 				modified++;
+				modifiedFiles.push(file);
 			}
 		} catch (error) {
 			errors.push({
@@ -1141,7 +1146,7 @@ export async function removeOrphanedRefs(plugin: CanvasRootsPlugin, app: App, sh
 	}
 
 	// Refresh the family graph cache
-	await familyGraph.reloadCache();
+	await familyGraph.reloadCache(modifiedFiles);
 
 	// Refresh the People tab
 	showTab('people');

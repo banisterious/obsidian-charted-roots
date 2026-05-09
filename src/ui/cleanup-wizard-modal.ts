@@ -3391,6 +3391,7 @@ export class CleanupWizardModal extends Modal {
 					result = {
 						processed: migrationResult.processed,
 						modified: migrationResult.modified,
+						modifiedFiles: [],
 						errors: migrationResult.errors
 					};
 					break;
@@ -3401,6 +3402,7 @@ export class CleanupWizardModal extends Modal {
 					result = {
 						processed: migrationResult.processed,
 						modified: migrationResult.modified,
+						modifiedFiles: [],
 						errors: migrationResult.errors
 					};
 					break;
@@ -3411,6 +3413,7 @@ export class CleanupWizardModal extends Modal {
 					result = {
 						processed: migrationResult.processed,
 						modified: migrationResult.modified,
+						modifiedFiles: [],
 						errors: migrationResult.errors
 					};
 					// Mark the nestedPropertiesMigration as complete for sourced_facts
@@ -3427,6 +3430,7 @@ export class CleanupWizardModal extends Modal {
 					result = {
 						processed: migrationResult.processed,
 						modified: migrationResult.modified,
+						modifiedFiles: [],
 						errors: migrationResult.errors
 					};
 					// Mark the nestedPropertiesMigration as complete for events
@@ -3448,6 +3452,7 @@ export class CleanupWizardModal extends Modal {
 					result = {
 						processed: migrationResult.processed,
 						modified: migrationResult.modified,
+						modifiedFiles: [],
 						errors: migrationResult.errors
 					};
 					break;
@@ -3457,6 +3462,7 @@ export class CleanupWizardModal extends Modal {
 					result = {
 						processed: migrationResult.processed,
 						modified: migrationResult.modified,
+						modifiedFiles: [],
 						errors: migrationResult.errors
 					};
 					break;
