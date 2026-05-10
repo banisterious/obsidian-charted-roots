@@ -9,6 +9,7 @@ import type CanvasRootsPlugin from '../../../main';
 import type { OrganizationType, OrganizationInfo } from '../types/organization-types';
 import { getAllOrganizationTypes, getOrganizationType } from '../constants/organization-type-defaults';
 import { OrganizationService } from '../services/organization-service';
+import { extractDisplayLabel } from '../../utils/wikilink-resolver';
 import { ModalStatePersistence, renderResumePromptBanner } from '../../ui/modal-state-persistence';
 
 /**
@@ -226,13 +227,18 @@ export class CreateOrganizationModal extends Modal {
 		};
 		renderRolesEditor();
 
-		// Parent organization
+		// Parent organization. Strip wikilink brackets / paths / pipe-aliases
+		// for display so users see "Jedi Order" rather than
+		// "Charted Roots/Organizations/Jedi Order|Jedi Order" (#549). The
+		// underlying `this.parentOrg` is updated to the cleaned form on edit;
+		// `updateOrganization` re-canonicalizes via createSmartWikilink on
+		// save (idempotent when already canonical).
 		new Setting(contentEl)
 			.setName('Parent organization')
 			.setDesc('Optional parent in the hierarchy (wikilink)')
 			.addText(text => text
 				.setPlaceholder('[[Parent Org]]')
-				.setValue(this.parentOrg)
+				.setValue(extractDisplayLabel(this.parentOrg))
 				.onChange(value => this.parentOrg = value));
 
 		// Universe
@@ -266,13 +272,14 @@ export class CreateOrganizationModal extends Modal {
 				.setValue(this.motto)
 				.onChange(value => this.motto = value));
 
-		// Seat
+		// Seat. Same display-cleanup + writer-rewrap pattern as parent_org
+		// above (#549).
 		new Setting(detailsEl)
 			.setName('Seat')
 			.setDesc('Primary location (wikilink to place note)')
 			.addText(text => text
 				.setPlaceholder('[[Winterfell]]')
-				.setValue(this.seat)
+				.setValue(extractDisplayLabel(this.seat))
 				.onChange(value => this.seat = value));
 
 		// Folder (only in create mode)

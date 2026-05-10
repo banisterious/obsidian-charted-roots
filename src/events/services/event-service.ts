@@ -689,7 +689,12 @@ export class EventService {
 			}
 			if (data.place !== undefined) {
 				if (data.place) {
-					frontmatter.place = formatWikilink(data.place, data.placeBasename);
+					// createSmartWikilink (vs. formatWikilink) collapses
+					// pipe/path stems and re-resolves disambiguation, so
+					// edited values from the modal display layer get the
+					// canonical wikilink form on save (#549). Idempotent
+					// when input is already canonical.
+					frontmatter.place = createSmartWikilink(data.place, null, this.app, data.placeBasename);
 				} else {
 					delete frontmatter.place;
 				}
@@ -752,7 +757,10 @@ export class EventService {
 			}
 			if (data.timeline !== undefined) {
 				if (data.timeline) {
-					frontmatter.timeline = formatWikilink(data.timeline);
+					// createSmartWikilink for the same reason as place
+					// above — handles edited values from the modal
+					// display layer (#549).
+					frontmatter.timeline = createSmartWikilink(data.timeline, null, this.app);
 				} else {
 					delete frontmatter.timeline;
 				}

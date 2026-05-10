@@ -9,6 +9,7 @@ import { createLucideIcon } from '../../ui/lucide-icons';
 import { PersonPickerModal, PersonInfo } from '../../ui/person-picker';
 import { PlacePickerModal, SelectedPlaceInfo } from '../../ui/place-picker';
 import { RelationshipContext } from '../../ui/quick-create-person-modal';
+import { extractDisplayLabel } from '../../utils/wikilink-resolver';
 import { EventService } from '../services/event-service';
 import {
 	CreateEventData,
@@ -371,7 +372,7 @@ export class CreateEventModal extends Modal {
 			.setDesc('Parent timeline note (wikilink, optional)')
 			.addText(text => text
 				.setPlaceholder('e.g., [[Smith Family Timeline]]')
-				.setValue(this.timeline)
+				.setValue(extractDisplayLabel(this.timeline))
 				.onChange(value => {
 					this.timeline = value;
 				}));
@@ -762,9 +763,15 @@ export class CreateEventModal extends Modal {
 	 * Create a place picker field
 	 */
 	private createPlaceField(container: HTMLElement, label: string, description: string): void {
+		// Strip wikilink brackets / paths / pipe-aliases from the underlying
+		// value so users see "Kaelorin" rather than "[[Kaelorin]]" or
+		// "Charted Roots/Places/Kaelorin|Kaelorin" (#549). `this.place` itself
+		// stays raw — the writer re-canonicalizes on save.
+		const placeDisplay = extractDisplayLabel(this.place);
+
 		const setting = new Setting(container)
 			.setName(label)
-			.setDesc(this.place ? `Linked to: ${this.place}` : description);
+			.setDesc(placeDisplay ? `Linked to: ${placeDisplay}` : description);
 
 		// Text input (readonly, shows selected place name)
 		let inputEl: HTMLInputElement;
@@ -772,7 +779,7 @@ export class CreateEventModal extends Modal {
 		setting.addText(text => {
 			inputEl = text.inputEl;
 			text.setPlaceholder('Click "Link" to select place')
-				.setValue(this.place);
+				.setValue(placeDisplay);
 			text.inputEl.readOnly = true;
 			if (this.place) {
 				text.inputEl.addClass('crc-input--linked');

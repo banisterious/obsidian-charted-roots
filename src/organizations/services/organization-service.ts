@@ -418,7 +418,10 @@ export class OrganizationService {
 
 			if (data.parentOrg !== undefined) {
 				if (data.parentOrg) {
-					frontmatter.parent_org = data.parentOrg;
+					// createSmartWikilink wraps cleaned text into the
+					// canonical wikilink form and re-resolves disambiguation.
+					// Idempotent when input is already canonical (#549).
+					frontmatter.parent_org = createSmartWikilink(data.parentOrg, this.app);
 				} else {
 					delete frontmatter.parent_org;
 				}
@@ -450,7 +453,8 @@ export class OrganizationService {
 
 			if (data.seat !== undefined) {
 				if (data.seat) {
-					frontmatter.seat = data.seat;
+					// Same canonical-rewrap as parent_org above (#549).
+					frontmatter.seat = createSmartWikilink(data.seat, this.app);
 				} else {
 					delete frontmatter.seat;
 				}
