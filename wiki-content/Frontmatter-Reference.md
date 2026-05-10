@@ -1231,12 +1231,15 @@ All person note properties can be aliased:
 
 | Category | Properties |
 |----------|------------|
-| Identity | `name`, `cr_id`, `sex`, `gender`, `gender_identity`, `pronouns`, `nickname`, `alt_name`, `maiden_name` |
+| Identity | `name`, `cr_id`, `cr_type`, `sex`, `gender`, `gender_identity`, `pronouns`, `nickname`, `alt_name`, `maiden_name`, `given_name`, `surnames`, `married_names` |
 | Dates | `born`, `died` |
 | Places | `birth_place`, `death_place` |
-| Relationships | `father`, `father_id`, `mother`, `mother_id`, `spouse`, `spouse_id`, `children`, `children_id` |
-| Sources | `sources` |
-| Other | `occupation`, `religion`, `caste`, `universe`, `image`, `sourced_facts`, `relationships`, `research_level` |
+| Parents | `father`, `father_id`, `mother`, `mother_id`, `parents`, `parents_id`, `stepfather`, `stepfather_id`, `stepmother`, `stepmother_id`, `adoptive_father`, `adoptive_father_id`, `adoptive_mother`, `adoptive_mother_id` |
+| Spouses & children | `spouse`, `spouse_id`, `partners`, `partners_id`, `child`, `children_id` |
+| Sources & evidence | `sources`, `sourced_facts` |
+| Other | `occupation`, `religion`, `caste`, `universe`, `image`, `relationships` |
+| Historical records | `property_of`, `held_at`, `appraised_value` |
+| Import round-trip | `external_id`, `external_id_source` |
 
 ### Tips
 
