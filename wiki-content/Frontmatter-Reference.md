@@ -1236,7 +1236,7 @@ All person note properties can be aliased:
 | Places | `birth_place`, `death_place` |
 | Relationships | `father`, `father_id`, `mother`, `mother_id`, `spouse`, `spouse_id`, `children`, `children_id` |
 | Sources | `sources` |
-| Other | `occupation`, `universe`, `image`, `sourced_facts`, `relationships`, `research_level` |
+| Other | `occupation`, `religion`, `caste`, `universe`, `image`, `sourced_facts`, `relationships`, `research_level` |
 
 ### Tips
 

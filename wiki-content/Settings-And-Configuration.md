@@ -127,11 +127,11 @@ When you create a new People base template (Control Center → Advanced → Crea
 
 | Category | Properties |
 |----------|------------|
-| Identity | `name`, `cr_id`, `gender`, `nickname`, `maiden_name` |
+| Identity | `name`, `cr_id`, `gender`, `nickname`, `alt_name`, `maiden_name`, `pronouns` |
 | Dates | `born`, `died` |
 | Places | `birth_place`, `death_place` |
 | Relationships | `father`, `father_id`, `mother`, `mother_id`, `spouse`, `spouse_id`, `child`, `children_id` |
-| Other | `occupation`, `universe`, `image`, `sourced_facts`, `relationships` |
+| Other | `occupation`, `religion`, `caste`, `universe`, `image`, `sourced_facts`, `relationships` |
 
 ---
 
