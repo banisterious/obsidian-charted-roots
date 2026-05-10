@@ -352,6 +352,13 @@ export const PERSON_PROPERTY_METADATA: PropertyMetadata[] = [
 		commonAliases: ['alias', 'known_as', 'goes_by']
 	},
 	{
+		canonical: 'alt_name',
+		label: 'Alternate name',
+		description: 'Alternative or display name (e.g., stage name, transliteration)',
+		category: 'person',
+		commonAliases: ['also_known_as', 'aka', 'alternate_name', 'display_name']
+	},
+	{
 		canonical: 'maiden_name',
 		label: 'Maiden name',
 		description: 'Birth surname (before marriage)',
@@ -553,7 +560,14 @@ export const PERSON_PROPERTY_METADATA: PropertyMetadata[] = [
 		category: 'person',
 		commonAliases: ['child_ids', 'kid_ids']
 	},
-	// Other
+	// Descriptive fields (rendered on Family Chart cards and in info panels)
+	{
+		canonical: 'pronouns',
+		label: 'Pronouns',
+		description: 'Preferred pronouns (e.g., she/her, they/them)',
+		category: 'person',
+		commonAliases: []
+	},
 	{
 		canonical: 'occupation',
 		label: 'Occupation',
@@ -561,6 +575,21 @@ export const PERSON_PROPERTY_METADATA: PropertyMetadata[] = [
 		category: 'person',
 		commonAliases: ['job', 'profession', 'career', 'work']
 	},
+	{
+		canonical: 'religion',
+		label: 'Religion',
+		description: 'Religious affiliation',
+		category: 'person',
+		commonAliases: ['faith', 'denomination']
+	},
+	{
+		canonical: 'caste',
+		label: 'Caste',
+		description: 'Caste or social class',
+		category: 'person',
+		commonAliases: ['social_class']
+	},
+	// Other
 	{
 		canonical: 'universe',
 		label: 'Universe',
