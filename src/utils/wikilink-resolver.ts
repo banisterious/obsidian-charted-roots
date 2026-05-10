@@ -93,7 +93,10 @@ export function extractDisplayLabel(value: string | null | undefined): string {
 	const afterSlash = afterPipe.includes('/')
 		? afterPipe.split('/').pop()!.trim() || afterPipe
 		: afterPipe;
-	return afterSlash;
+	// Trim once more to handle whitespace inside otherwise-clean brackets
+	// (e.g., `[[ Errol Naberrie ]]` strips to ` Errol Naberrie ` after the
+	// bracket removal but neither pipe nor slash fired the inner trim).
+	return afterSlash.trim();
 }
 
 /**
