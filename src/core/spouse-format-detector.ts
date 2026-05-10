@@ -137,6 +137,11 @@ export function isSpouseInFrontmatter(
 	// Flat `spouse` — may be scalar, array, or object-with-link-property.
 	if (matchesSpouseValue(frontmatter.spouse, wikilink)) return true;
 
+	// `partners` alias for users who chose that term as their canonical (#556).
+	// Without this, the deletion-detection guard treats partners-using vaults
+	// as "spouse missing" and fires a phantom removal cascade on every save.
+	if (matchesSpouseValue(frontmatter.partners, wikilink)) return true;
+
 	// Indexed `spouseN` slots.
 	for (let i = 1; i <= MAX_SPOUSE_INDEX; i++) {
 		if (matchesSpouseValue(frontmatter[`spouse${i}`], wikilink)) return true;

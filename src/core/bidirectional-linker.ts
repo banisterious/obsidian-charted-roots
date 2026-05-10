@@ -283,11 +283,18 @@ export class BidirectionalLinker {
 			// Handle both simple spouse/spouse_id and indexed spouse1/spouse1_id format
 			const spousesToSync: Array<{link: unknown, index?: number}> = [];
 
-			// Check for simple spouse property
-			if (frontmatter.spouse) {
-				const spouses = Array.isArray(frontmatter.spouse)
-					? frontmatter.spouse
-					: [frontmatter.spouse];
+			// Check for simple spouse property, falling back to `partners` for
+			// users who prefer that term as their canonical (#556). The
+			// property-alias system registers `partners` as a spouse-equivalent
+			// and family-graph honors the alias for reads; without this
+			// fallback the bidi-linker would skip sync, marriage-detail
+			// mirroring, and format preservation for users who never authored
+			// a `spouse:` field. Mirror of the pattern in family-graph.ts.
+			const spouseSource = frontmatter.spouse ?? frontmatter.partners;
+			if (spouseSource) {
+				const spouses = Array.isArray(spouseSource)
+					? spouseSource
+					: [spouseSource];
 
 				for (const spouse of spouses) {
 					spousesToSync.push({ link: spouse });
@@ -438,9 +445,11 @@ export class BidirectionalLinker {
 		// cascade that wipes spouse data on both sides of the relationship.
 		const currentFm = currentFrontmatter as unknown as Record<string, unknown>;
 
-		// Flat-format deletion check.
+		// Flat-format deletion check. Honors the `partners` alias for users who
+		// chose that as their canonical name (#556) — same fallback the
+		// sync-side read uses above.
 		const previousSpouses = this.extractSpouseLinks(previousSnapshot.spouse);
-		const currentSpouses = this.extractSpouseLinks(currentFrontmatter.spouse);
+		const currentSpouses = this.extractSpouseLinks(currentFrontmatter.spouse ?? currentFrontmatter.partners);
 		for (const previousSpouse of previousSpouses) {
 			if (currentSpouses.includes(previousSpouse)) continue;
 			if (isSpouseInFrontmatter(currentFm, previousSpouse)) continue;
@@ -554,7 +563,11 @@ export class BidirectionalLinker {
 			stepfather: frontmatter.stepfather,
 			stepmother: frontmatter.stepmother,
 			parents: frontmatter.parents,
-			spouse: frontmatter.spouse,
+			// Fall back to `partners` for users who chose that alias as their
+			// canonical (#556). The snapshot field stays named `spouse` so the
+			// deletion-detection comparison reads from a single slot regardless
+			// of which canonical the user authored.
+			spouse: frontmatter.spouse ?? frontmatter.partners,
 			children: frontmatter.children,
 			child: childSnapshot,  // Capture child array for deletion detection
 			dna_match: dnaMatchSnapshot  // Capture DNA matches for deletion detection
@@ -894,9 +907,12 @@ export class BidirectionalLinker {
 		// Check if person is already linked (check both simple and indexed formats)
 		let alreadyLinked = false;
 
-		// Check simple spouse/spouse_id properties
-		const spouseLinks = spouseFm.spouse;
-		const spouseIds = spouseFm.spouse_id;
+		// Check simple spouse/spouse_id properties, with `partners`/`partners_id`
+		// fallback for users who authored that alias as their canonical (#556).
+		// Without the fallback the dedup misses existing partners entries and
+		// re-adds the same person on every save, producing duplicate links.
+		const spouseLinks = spouseFm.spouse ?? spouseFm.partners;
+		const spouseIds = spouseFm.spouse_id ?? spouseFm.partners_id;
 		const spouseLinksArray = spouseLinks
 			? Array.isArray(spouseLinks) ? spouseLinks : [spouseLinks]
 			: [];
@@ -1692,12 +1708,18 @@ export class BidirectionalLinker {
 			return;
 		}
 
-		// Remove from simple spouse/spouse_id arrays
-		// Try all possible formats: [[name]], [[basename]], [[basename|name]]
-		await this.removeFromArrayField(spouseFile, 'spouse', `[[${personName}]]`);
-		await this.removeFromArrayField(spouseFile, 'spouse', `[[${personFile.basename}]]`);
-		await this.removeFromArrayField(spouseFile, 'spouse', `[[${personFile.basename}|${personName}]]`);
+		// Remove from simple spouse/spouse_id arrays.
+		// Try all possible formats: [[name]], [[basename]], [[basename|name]].
+		// Also sweep the `partners`/`partners_id` alias (#556) so the unlink
+		// completes for targets who chose that canonical — no-op when the
+		// target uses `spouse`.
+		for (const field of ['spouse', 'partners'] as const) {
+			await this.removeFromArrayField(spouseFile, field, `[[${personName}]]`);
+			await this.removeFromArrayField(spouseFile, field, `[[${personFile.basename}]]`);
+			await this.removeFromArrayField(spouseFile, field, `[[${personFile.basename}|${personName}]]`);
+		}
 		await this.removeFromArrayField(spouseFile, 'spouse_id', personCrId);
+		await this.removeFromArrayField(spouseFile, 'partners_id', personCrId);
 
 		// Remove from indexed spouse properties (spouse1, spouse2, etc.)
 		for (let i = 1; i <= 10; i++) {

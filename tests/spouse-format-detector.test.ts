@@ -417,4 +417,39 @@ describe('isSpouseInFrontmatter', () => {
 			)).toBe(false);
 		});
 	});
+
+	// #556: users who chose `partners` as their canonical name for the
+	// spouse field (via the property-alias settings) need the deletion
+	// guard to find them in `partners` too. Without these cases the
+	// deletion-detection check returns false on every partners-using
+	// frontmatter and the bidi-linker fires a phantom removal cascade.
+	describe('partners alias (#556)', () => {
+		it('flat partners scalar matches', () => {
+			expect(isSpouseInFrontmatter(
+				{ partners: '[[Alice]]' },
+				'[[Alice]]'
+			)).toBe(true);
+		});
+
+		it('flat partners array contains match', () => {
+			expect(isSpouseInFrontmatter(
+				{ partners: ['[[Alice]]', '[[Bob]]'] },
+				'[[Bob]]'
+			)).toBe(true);
+		});
+
+		it('partners array without match returns false', () => {
+			expect(isSpouseInFrontmatter(
+				{ partners: ['[[Carol]]'] },
+				'[[Alice]]'
+			)).toBe(false);
+		});
+
+		it('partners + spouse both present, partners-only match still returns true', () => {
+			expect(isSpouseInFrontmatter(
+				{ spouse: '[[Carol]]', partners: '[[Alice]]' },
+				'[[Alice]]'
+			)).toBe(true);
+		});
+	});
 });
