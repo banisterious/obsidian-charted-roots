@@ -2365,12 +2365,19 @@ export class CreatePersonModal extends Modal {
 		const hasMetadata = !!(spouse.marriageDate || spouse.marriageLocation || spouse.marriageStatus || spouse.divorceDate);
 		const spouseItem = container.createDiv({ cls: 'crc-spouse-item' });
 
+		// Display the user-facing display name in the modal — strip wikilink
+		// brackets, paths, and pipe-aliases from the underlying value so users
+		// see "Rebecca Wilkin" rather than e.g.
+		// "Charted Roots/People/Rebecca Wilkin|Rebecca Wilkin" (#543 follow-up).
+		// `spouse.name` itself stays raw — the writer re-canonicalizes on save.
+		const displayName = extractDisplayLabel(spouse.name);
+
 		// Main row: name + actions
 		const mainRow = spouseItem.createDiv({ cls: 'crc-spouse-item__main' });
 
 		// Spouse name
 		const nameSpan = mainRow.createSpan({ cls: 'crc-spouse-item__name' });
-		nameSpan.setText(spouse.name);
+		nameSpan.setText(displayName);
 
 		// Action buttons container
 		const actions = mainRow.createDiv({ cls: 'crc-spouse-item__actions' });
@@ -2386,7 +2393,7 @@ export class CreatePersonModal extends Modal {
 		// Remove button
 		const removeBtn = actions.createEl('button', {
 			cls: 'crc-btn crc-btn--icon crc-btn--danger',
-			attr: { 'aria-label': `Remove ${spouse.name}` }
+			attr: { 'aria-label': `Remove ${displayName}` }
 		});
 		const removeIcon = createLucideIcon('x', 14);
 		removeBtn.appendChild(removeIcon);
@@ -2417,13 +2424,20 @@ export class CreatePersonModal extends Modal {
 			const locationSetting = new Setting(metadataContent)
 				.setName('Marriage location');
 
+			// Same display-label cleanup as the spouse name (#543 follow-up):
+			// strip brackets, paths, and pipe-aliases for display so users
+			// see "Kaelorin" rather than "[[Kaelorin]]" or
+			// "Charted Roots/Places/Kaelorin|Kaelorin". Underlying
+			// `spouse.marriageLocation` stays raw.
+			const locationDisplay = extractDisplayLabel(spouse.marriageLocation);
+
 			if (this.placeGraph) {
 				let locationInput: HTMLInputElement;
 				locationSetting.addText(text => {
 					locationInput = text.inputEl;
 					text
 						.setPlaceholder('Click link to select...')
-						.setValue(spouse.marriageLocation || '')
+						.setValue(locationDisplay)
 						.setDisabled(true);
 				});
 				locationSetting.addButton(button => {
@@ -2437,7 +2451,7 @@ export class CreatePersonModal extends Modal {
 							(place: SelectedPlaceInfo) => {
 								spouse.marriageLocation = place.name;
 								spouse.marriageLocationCrId = place.crId;
-								locationInput.value = place.name;
+								locationInput.value = extractDisplayLabel(place.name);
 							},
 							{
 								title: 'Select marriage location',
@@ -2449,6 +2463,10 @@ export class CreatePersonModal extends Modal {
 					});
 				});
 			} else {
+				// No placeGraph available — fall back to a free-text input.
+				// Show the raw value so any edit preserves the underlying
+				// wikilink shape (the readonly placeGraph path above strips
+				// for display only).
 				locationSetting.addText(text => text
 					.setPlaceholder('e.g., St. Mary\'s Church, London')
 					.setValue(spouse.marriageLocation || '')
