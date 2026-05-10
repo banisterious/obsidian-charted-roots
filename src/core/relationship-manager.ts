@@ -451,18 +451,20 @@ export class RelationshipManager {
 	}
 
 	/**
-	 * Check if frontmatter contains a reference to the given cr_id
+	 * Check if frontmatter contains a reference to the given cr_id.
+	 *
+	 * Scans every frontmatter key ending in `_id` rather than a hardcoded
+	 * list (#555). The previous static list missed indexed-spouse
+	 * (`spouseN_id`), `adopted_child_id`, `step_child_id`,
+	 * `adoptive_parent_id`, custom-relationship `<typeId>_id` arrays, and
+	 * any future relationship field added without a corresponding entry
+	 * here. The id-match comparison naturally skips non-person fields
+	 * (place / event / source ids won't match a renamed person's cr_id).
 	 */
 	private frontmatterContainsCrId(fm: Record<string, unknown>, crId: string): boolean {
-		const idFields = [
-			'father_id', 'mother_id',
-			'stepfather_id', 'stepmother_id',
-			'adoptive_father_id', 'adoptive_mother_id',
-			'parents_id', 'spouse_id', 'children_id'
-		];
-
-		for (const field of idFields) {
-			const value = fm[field];
+		for (const key of Object.keys(fm)) {
+			if (!key.endsWith('_id')) continue;
+			const value = fm[key];
 			if (!value) continue;
 
 			if (typeof value === 'string' && value === crId) {
@@ -477,7 +479,19 @@ export class RelationshipManager {
 	}
 
 	/**
-	 * Update wikilinks in a file's frontmatter
+	 * Update wikilinks in a file's frontmatter.
+	 *
+	 * Iterates every frontmatter key with a paired `<key>_id` field rather
+	 * than a hardcoded list (#555). Each wikilink-bearing field is rewritten
+	 * to canonical form when its paired `_id` matches the renamed person's
+	 * cr_id. This naturally covers indexed-spouse slots (`spouse1` +
+	 * `spouse1_id`), gender-neutral relationships (`adoptive_parent`,
+	 * `parents`), step/adopted-child arrays on parents' notes, and any
+	 * custom relationship type a user has configured — all of which the
+	 * previous static field list missed.
+	 *
+	 * The id-match guard ensures non-person paired fields (place / event /
+	 * source) are skipped: their `_id` values won't match a person's cr_id.
 	 */
 	private async updateWikilinksInFile(
 		file: TFile,
@@ -485,34 +499,28 @@ export class RelationshipManager {
 		newWikilink: string,
 		personCrId: string
 	): Promise<void> {
-		const wikiliinkFields = [
-			'father', 'mother',
-			'stepfather', 'stepmother',
-			'adoptive_father', 'adoptive_mother',
-			'parents', 'spouse', 'children'
-		];
-
 		try {
 			await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
-				for (const field of wikiliinkFields) {
+				for (const field of Object.keys(frontmatter)) {
+					// Skip the `_id` fields themselves — we drive iteration
+					// from the wikilink-bearing key and look up its `_id` pair.
+					if (field.endsWith('_id')) continue;
+
 					const value = frontmatter[field];
 					if (!value) continue;
+
+					const idField = `${field}_id`;
+					const idValue = frontmatter[idField];
+					if (idValue === undefined) continue;
 
 					if (typeof value === 'string') {
 						// Check if this wikilink matches any old form
 						if (oldWikilinks.some(old => value.includes(old.slice(2, -2)))) {
-							// Verify by checking the corresponding _id field
-							const idField = this.getIdFieldName(field);
-							const idValue = frontmatter[idField];
 							if (this.idMatches(idValue, personCrId)) {
 								frontmatter[field] = newWikilink;
 							}
 						}
 					} else if (Array.isArray(value)) {
-						// Update matching entries in array
-						const idField = this.getIdFieldName(field);
-						const idValue = frontmatter[idField];
-
 						for (let i = 0; i < value.length; i++) {
 							const entry = value[i];
 							if (typeof entry === 'string' && oldWikilinks.some(old => entry.includes(old.slice(2, -2)))) {
@@ -534,24 +542,6 @@ export class RelationshipManager {
 				error: getErrorMessage(error)
 			});
 		}
-	}
-
-	/**
-	 * Get the corresponding _id field name for a wikilink field
-	 */
-	private getIdFieldName(field: string): string {
-		const fieldMap: Record<string, string> = {
-			'father': 'father_id',
-			'mother': 'mother_id',
-			'stepfather': 'stepfather_id',
-			'stepmother': 'stepmother_id',
-			'adoptive_father': 'adoptive_father_id',
-			'adoptive_mother': 'adoptive_mother_id',
-			'parents': 'parents_id',
-			'spouse': 'spouse_id',
-			'children': 'children_id'
-		};
-		return fieldMap[field] || `${field}_id`;
 	}
 
 	/**
