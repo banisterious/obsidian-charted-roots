@@ -280,6 +280,13 @@ A read-only detail view (`src/profile-view/`) that auto-syncs with the active no
 |----------|---------|
 | `waitForCacheRefresh(app, file, timeoutMs?)` | Wait for `metadataCache.changed` for a file before reading it back after a write. Used by the cache-holding services' `reloadCache(modifiedFiles?)` methods to bridge the gap between synchronous frontmatter writes and Obsidian's asynchronous metadata-cache catch-up. |
 
+### Wikilink (src/utils/wikilink-resolver.ts)
+
+| Function | Purpose |
+|----------|---------|
+| `extractDisplayLabel(value)` | Strip `[[…]]` brackets, collapse pipe-form to the alias, and collapse path-form to the basename. Used by Edit Person / Edit Organization / Edit Event modal display sites so users see clean labels (`Errol Naberrie`) regardless of how the underlying frontmatter stores the wikilink (`[[path|alias]]` after #540 disambiguation). |
+| `getCanonicalLinktext(app, file)` | Return the canonical wikilink target for a file: the bare basename when unique in the vault, or the full path (without `.md`) when basename is ambiguous. Used by `createSmartWikilink` across all entity writers to decide whether to emit `[[basename]]` or the disambiguated `[[path|basename]]` form. |
+
 ---
 
 ## CSS Build System

@@ -432,20 +432,45 @@ father: "[[John Doe 1|John Doe]]"  # Points to "John Doe 1.md", displays as "Joh
 
 **Implementation pattern:**
 
+The conceptual core is "if the basename differs from the display name, use alias form." The current implementations layer several additional concerns on top — pre-formatted wikilink pass-through (writers can be called with already-canonical input idempotently), pipe/path stem collapse so repeated saves don't accumulate residue ([#537](https://github.com/banisterious/obsidian-charted-roots/issues/537), [#538](https://github.com/banisterious/obsidian-charted-roots/issues/538)), cr_id-based resolution for vault states where the displayed name differs from the basename ([#524](https://github.com/banisterious/obsidian-charted-roots/issues/524)), and basename-ambiguity disambiguation via path-form output ([#540](https://github.com/banisterious/obsidian-charted-roots/issues/540)).
+
+The shape of the most-featured variant (`createSmartWikilink` in `src/core/person-note-writer.ts`):
+
 ```typescript
-function createSmartWikilink(name: string, file: TFile | null, app: App): string {
-    if (file && file.basename !== name) {
-        return `[[${file.basename}|${name}]]`;
-    }
-    if (!file) {
-        const resolvedFile = app.metadataCache.getFirstLinkpathDest(name, '');
-        if (resolvedFile && resolvedFile.basename !== name) {
-            return `[[${resolvedFile.basename}|${name}]]`;
+function createSmartWikilink(name: string, app: App, crId?: string): string {
+    // Pre-formatted wikilinks pass through (idempotency).
+    if (name.startsWith('[[') && name.endsWith(']]')) return name;
+
+    // Collapse pipe-stem and path-form residue so repeated saves don't
+    // accumulate aliases (#537, #538).
+    const afterPipe = name.includes('|') ? name.split('|').pop()!.trim() || name : name;
+    const displayName = afterPipe.includes('/') ? afterPipe.split('/').pop()!.trim() || afterPipe : afterPipe;
+
+    // Preferred: cr_id-based resolution (#524).
+    if (crId) {
+        const fileById = findFileByCrId(app, crId);
+        if (fileById) {
+            const target = getCanonicalLinktext(app, fileById);
+            return target !== displayName ? `[[${target}|${displayName}]]` : `[[${target}]]`;
         }
     }
-    return `[[${name}]]`;
+
+    // Fallback: name-based resolution.
+    const resolvedFile = app.metadataCache.getFirstLinkpathDest(displayName, '');
+    if (resolvedFile) {
+        const target = getCanonicalLinktext(app, resolvedFile);
+        return target !== displayName ? `[[${target}|${displayName}]]` : `[[${target}]]`;
+    }
+
+    return `[[${displayName}]]`;
 }
 ```
+
+`getCanonicalLinktext(app, file)` returns `file.basename` when the basename is unique in the vault, or the full path (without `.md`) when ambiguous — emits the path form so Obsidian's resolver lands unambiguously on the intended file.
+
+The organization-side variant (`src/organizations/services/organization-service.ts`) is structurally identical. The event-side variant (`src/events/services/event-service.ts`) is simpler — it assumes its `name` argument is already a clean display name (callers strip wikilink decoration first via `parseWikilink` / `extractDisplayLabel`) and disambiguates via explicit `basename` / `file` parameters.
+
+Property-based fuzz coverage for all four variants lives in `tests/person-note-writer-smart-wikilink.test.ts`, `tests/organization-smart-wikilink.test.ts`, `tests/event-smart-wikilink.test.ts`, and `tests/get-canonical-linktext.test.ts` ([#548](https://github.com/banisterious/obsidian-charted-roots/issues/548)) — when a new input variant surfaces in the cluster, add it to the corpus and the existing assertions catch regressions.
 
 **Downstream parsing:**
 
