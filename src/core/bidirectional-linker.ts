@@ -347,6 +347,21 @@ export class BidirectionalLinker {
 				}
 			}
 
+			// Sync step children relationships (step_child on parent → stepfather/stepmother on child).
+			// Parallel to adopted_child handling (#554). Without this, adding
+			// `step_child: [[Child]]` on a parent's note left the child's
+			// stepfather/stepmother fields untouched — asymmetric with the
+			// reverse direction (stepfather/stepmother on child → step_child
+			// on parent), which has always worked via syncStepParentChild.
+			const stepChildLinks = frontmatter.step_child || [];
+			const stepChildArray = Array.isArray(stepChildLinks) ? stepChildLinks : [stepChildLinks];
+
+			for (const stepChildLink of stepChildArray) {
+				if (stepChildLink) {
+					await this.syncStepChildToParent(stepChildLink, personFile, personName, personCrId, personSex);
+				}
+			}
+
 			// Sync DNA match relationships (only when DNA tracking is enabled)
 			// DNA matches are symmetric: A↔B creates B↔A
 			if (this.enableDnaTracking) {
@@ -1399,6 +1414,113 @@ export class BidirectionalLinker {
 		logger.info('bidirectional-linking', 'Added adoptive parent to adopted child (dual storage)', {
 			childFile: childFile.path,
 			parentFile: parentFile.path,
+			wikilink: parentLinkText,
+			crId: parentCrId
+		});
+	}
+
+	/**
+	 * Sync step-child-to-parent relationship (#554).
+	 *
+	 * Parallel to syncAdoptedChildToParent: when a parent's note has
+	 * `step_child: [[Child]]`, write the parent back onto the child's
+	 * stepfather or stepmother array (chosen by parent's sex). The reverse
+	 * direction (stepfather/stepmother on child → step_child on parent)
+	 * has always been covered by syncStepParentChild; this closes the
+	 * symmetric gap that left step_child-driven authoring one-way.
+	 *
+	 * Skips silently when the parent's sex is unknown — step relationships
+	 * don't have a gender-neutral `step_parent` array to fall back to.
+	 */
+	private async syncStepChildToParent(
+		stepChildLink: unknown,
+		parentFile: TFile,
+		parentName: string,
+		parentCrId: string,
+		parentSex?: string
+	): Promise<void> {
+		const childFile = this.resolveLink(stepChildLink, parentFile);
+		if (!childFile) {
+			logger.warn('bidirectional-linking', 'Step child file not found', {
+				stepChildLink,
+				parentFile: parentFile.path
+			});
+			return;
+		}
+
+		const childCache = this.app.metadataCache.getFileCache(childFile);
+		if (!childCache?.frontmatter) {
+			logger.warn('bidirectional-linking', 'Step child has no frontmatter', {
+				childFile: childFile.path
+			});
+			return;
+		}
+
+		if (!childCache.frontmatter.cr_id) {
+			logger.debug('bidirectional-linking', 'Step child is not a person note (no cr_id), skipping', {
+				childFile: childFile.path
+			});
+			return;
+		}
+
+		// Determine which step-parent field to write based on parent's sex.
+		// No gender-neutral fallback — skip when sex isn't male/female.
+		let stepParentField: 'stepfather' | 'stepmother' | undefined;
+		let stepParentIdField: 'stepfather_id' | 'stepmother_id' | undefined;
+
+		if (parentSex === 'male') {
+			stepParentField = 'stepfather';
+			stepParentIdField = 'stepfather_id';
+		} else if (parentSex === 'female') {
+			stepParentField = 'stepmother';
+			stepParentIdField = 'stepmother_id';
+		} else {
+			logger.debug('bidirectional-linking', 'Step parent sex unknown, skipping step_child reverse sync', {
+				parentFile: parentFile.path,
+				childFile: childFile.path,
+				parentSex
+			});
+			return;
+		}
+
+		// Check if parent is already in child's step-parent arrays.
+		const existingLinks = childCache.frontmatter[stepParentField] || [];
+		const existingIds = childCache.frontmatter[stepParentIdField] || [];
+		const existingLinksArray = Array.isArray(existingLinks) ? existingLinks : [existingLinks];
+		const existingIdsArray = Array.isArray(existingIds) ? existingIds : [existingIds];
+
+		const parentLinkText = parentFile.basename !== parentName
+			? `[[${parentFile.basename}|${parentName}]]`
+			: `[[${parentName}]]`;
+
+		if (existingIdsArray.includes(parentCrId)) {
+			logger.debug('bidirectional-linking', 'Step parent already in step child (by cr_id)', {
+				childFile: childFile.path,
+				parentFile: parentFile.path,
+				stepParentField
+			});
+			return;
+		}
+
+		if (existingLinksArray.some(link => {
+			const text = typeof link === 'string' ? link : String(link);
+			return text.includes(parentName) || text.includes(parentFile.basename);
+		})) {
+			logger.debug('bidirectional-linking', 'Step parent already in step child (by wikilink)', {
+				childFile: childFile.path,
+				parentFile: parentFile.path,
+				stepParentField
+			});
+			return;
+		}
+
+		await this.addToArrayField(childFile, stepParentField, parentLinkText);
+		await this.addToArrayField(childFile, stepParentIdField, parentCrId);
+
+		logger.info('bidirectional-linking', 'Added step parent to step child (dual storage)', {
+			childFile: childFile.path,
+			parentFile: parentFile.path,
+			stepParentField,
 			wikilink: parentLinkText,
 			crId: parentCrId
 		});
