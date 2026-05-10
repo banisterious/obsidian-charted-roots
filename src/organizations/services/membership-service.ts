@@ -374,7 +374,14 @@ export class MembershipService {
 
 		await this.app.fileManager.processFrontMatter(orgFile, (frontmatter) => {
 			if (members.length > 0) {
-				frontmatter.members = members.map(m => `[[${m.personName}]]`);
+				// Route the member wikilink through createSmartWikilink so it
+				// carries the same input-shape normalization (#537/#538) and
+				// basename-ambiguity disambiguation (#540) as the person-side
+				// `membership_orgs` write (#552). Without this, two members
+				// sharing a basename collapse to indistinguishable `[[Name]]`
+				// entries and the org's properties pane resolves to whichever
+				// file Obsidian picks first.
+				frontmatter.members = members.map(m => createSmartWikilink(m.personName, this.app, m.personCrId));
 				frontmatter.members_id = members.map(m => m.personCrId);
 			} else {
 				delete frontmatter.members;
