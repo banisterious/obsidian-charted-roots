@@ -1267,6 +1267,15 @@ export class BidirectionalLinker {
 			return;
 		}
 
+		// Guard against self-referential links (person listed as their own adoptive parent) (#558)
+		if (adoptiveParentFile.path === childFile.path) {
+			logger.warn('bidirectional-linking', 'Self-referential adoptive-parent link detected, skipping', {
+				childFile: childFile.path,
+				adoptiveParentLink
+			});
+			return;
+		}
+
 		// Read adoptive parent's frontmatter
 		const adoptiveParentCache = this.app.metadataCache.getFileCache(adoptiveParentFile);
 		if (!adoptiveParentCache?.frontmatter) {
@@ -1347,6 +1356,15 @@ export class BidirectionalLinker {
 			logger.warn('bidirectional-linking', 'Adopted child file not found', {
 				adoptedChildLink,
 				parentFile: parentFile.path
+			});
+			return;
+		}
+
+		// Guard against self-referential links (person listed as their own adopted child) (#558)
+		if (childFile.path === parentFile.path) {
+			logger.warn('bidirectional-linking', 'Self-referential adopted-child link detected, skipping', {
+				parentFile: parentFile.path,
+				adoptedChildLink
 			});
 			return;
 		}
@@ -1444,6 +1462,15 @@ export class BidirectionalLinker {
 			logger.warn('bidirectional-linking', 'Step child file not found', {
 				stepChildLink,
 				parentFile: parentFile.path
+			});
+			return;
+		}
+
+		// Guard against self-referential links (person listed as their own step child) (#558)
+		if (childFile.path === parentFile.path) {
+			logger.warn('bidirectional-linking', 'Self-referential step-child link detected, skipping', {
+				parentFile: parentFile.path,
+				stepChildLink
 			});
 			return;
 		}
@@ -1548,6 +1575,15 @@ export class BidirectionalLinker {
 			logger.warn('bidirectional-linking', `${relationshipType} file not found`, {
 				stepParentLink,
 				childFile: childFile.path
+			});
+			return;
+		}
+
+		// Guard against self-referential links (person listed as their own step-parent) (#558)
+		if (stepParentFile.path === childFile.path) {
+			logger.warn('bidirectional-linking', 'Self-referential step-parent link detected, skipping', {
+				childFile: childFile.path,
+				stepParentLink
 			});
 			return;
 		}
@@ -1899,6 +1935,15 @@ export class BidirectionalLinker {
 			logger.warn('bidirectional-linking', 'DNA match file not found', {
 				matchLink,
 				personFile: personFile.path
+			});
+			return;
+		}
+
+		// Guard against self-referential links (person listed as their own DNA match) (#558)
+		if (matchFile.path === personFile.path) {
+			logger.warn('bidirectional-linking', 'Self-referential DNA-match link detected, skipping', {
+				personFile: personFile.path,
+				matchLink
 			});
 			return;
 		}
