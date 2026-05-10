@@ -1,7 +1,7 @@
 # Features Page Refresh — draft
 
 **Target page:** `/features/_index.md` on chartedroots.com
-**Status:** 🚀 Ported to chartedroots.com 2026-04-24, refreshed 2026-04-25 with v0.22.6 + v0.22.7 sentence-level updates (map popups + ages, journey-mode placeholder, pixel-coord journey paths, profile-view children labels, timeline spouse-deaths default + stepchild filter, person-delete cleanup, custom-relationships overlay z-order, universe-calendar wiring). Rebuilt `/features/` page under the track-based Option C structure.
+**Status:** 🚀 Ported to chartedroots.com 2026-04-24, refreshed 2026-04-25 with v0.22.6 + v0.22.7 sentence-level updates (map popups + ages, journey-mode placeholder, pixel-coord journey paths, profile-view children labels, timeline spouse-deaths default + stepchild filter, person-delete cleanup, custom-relationships overlay z-order, universe-calendar wiring). Rebuilt `/features/` page under the track-based Option C structure. **Reviewed 2026-05-10 for v0.22.29** — no feature-page bullets needed; the seven fixes (#551, #552, #553, #554, #555, #556, #558) all close coverage gaps in features already documented (property aliases, bidirectional sync, step-relationship sync) rather than adding new surface. Same pattern as v0.22.25–v0.22.28.
 **Source material:** current live page, [CHANGELOG.md](../../../CHANGELOG.md), [wiki-content/Release-History.md](../../../wiki-content/Release-History.md), feature docs in [docs/](../../../docs/).
 
 ---
