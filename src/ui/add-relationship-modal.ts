@@ -12,6 +12,8 @@ import { addFlatRelationship } from '../relationships/relationship-property-writ
 import type CanvasRootsPlugin from '../../main';
 import { capitalize } from '../utils/format-utils';
 import { RelationshipManager } from '../core/relationship-manager';
+import { createSmartWikilink } from '../core/person-note-writer';
+import { createSmartWikilink } from '../core/person-note-writer';
 
 /**
  * Modal for adding a custom relationship to a person note
@@ -281,7 +283,11 @@ export class AddRelationshipModal extends Modal {
 		if (!this.selectedType || !this.selectedTarget) return;
 
 		const typeId = this.selectedType.id;
-		const targetWikilink = `[[${this.selectedTarget.file.basename}]]`;
+		// Route through createSmartWikilink so the write carries canonical-form
+		// basename-ambiguity disambiguation (#540) instead of a raw `[[basename]]`
+		// that can resolve to the wrong file when two people share the same
+		// filename (#553). Matches the writer-side pattern from #549.
+		const targetWikilink = createSmartWikilink(this.selectedTarget.file.basename, this.app, targetCrId);
 		const notes = this.notes.trim() || undefined;
 
 		await this.app.fileManager.processFrontMatter(this.sourceFile, (frontmatter) => {
@@ -313,7 +319,8 @@ export class AddRelationshipModal extends Modal {
 		const sourceCrId = sourceCache?.frontmatter?.cr_id;
 		if (typeof sourceCrId !== 'string' || sourceCrId.length === 0) return;
 
-		const sourceWikilink = `[[${this.sourceFile.basename}]]`;
+		// Same canonical-form rewrap as the source-side write (#553).
+		const sourceWikilink = createSmartWikilink(this.sourceFile.basename, this.app, sourceCrId);
 		const targetFile = this.selectedTarget.file;
 
 		const notes = this.notes.trim() || undefined;
