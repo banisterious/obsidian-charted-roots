@@ -1,14 +1,7 @@
-import tsParser from "@typescript-eslint/parser";
-import tsPlugin from "@typescript-eslint/eslint-plugin";
 import obsidianmd from "eslint-plugin-obsidianmd";
-import js from "@eslint/js";
-import globals from "globals";
 
 export default [
-	// Base ESLint recommended rules
-	js.configs.recommended,
-
-	// Ignore patterns (must come early)
+	// Ignore patterns (must come early so they apply to all later configs)
 	{
 		ignores: [
 			"main.js",
@@ -22,81 +15,68 @@ export default [
 			"gedcom-testing/**",
 			"mockups/**",
 			"tests/fixtures/**",
+			"dev-vault/**",
+			"wiki-content/**",
+			"*.config.ts",
+			"vitest.config.ts",
 		],
 	},
 
-	// TypeScript files configuration
+	// TypeScript parser configuration for the recommended config's typed rules.
+	// The plugin's recommended config enables type-aware rules (no-deprecated,
+	// await-thenable, no-floating-promises, etc.) but doesn't know where the
+	// project's tsconfig lives — needs to be wired up at the consumer side.
 	{
-		files: ["main.ts", "src/**/*.ts"],
+		files: ["main.ts", "src/**/*.ts", "tests/**/*.ts"],
 		languageOptions: {
-			parser: tsParser,
 			parserOptions: {
-				project: "./tsconfig.json",
-				sourceType: "module",
-				ecmaVersion: 2022,
-			},
-			globals: {
-				...globals.browser,
-				...globals.node,
-				// Obsidian adds these to the global scope at runtime
-				createDiv: 'readonly',
-				createEl: 'readonly',
-				createSpan: 'readonly',
-				createFragment: 'readonly',
+				projectService: true,
+				tsconfigRootDir: import.meta.dirname,
 			},
 		},
-		plugins: {
-			"@typescript-eslint": tsPlugin,
-			"obsidianmd": obsidianmd,
-		},
+	},
+
+	// Plugin-recommended config bundle:
+	//   - TypeScript ESLint type-checked rules
+	//   - Full obsidianmd/* rule set (commands, settings-tab, vault, ui/sentence-case,
+	//     prefer-create-el, prefer-active-doc, validate-manifest, etc.)
+	//   - @microsoft/eslint-plugin-sdl (no-inner-html, no-document-write)
+	//   - eslint-plugin-no-unsanitized
+	//   - eslint-plugin-import (no-extraneous-dependencies)
+	//   - eslint-plugin-depend
+	//   - obsidianmd/rule-custom-message which wraps no-console with an Obsidian-specific message
+	...obsidianmd.configs.recommended,
+
+	// Project-specific overrides on top of the recommended config.
+	// Scoped to match the Obsidian plugin bot's actual blocking surface
+	// rather than the full recommended strictness — local lint is a
+	// pre-push check, not a stricter superset.
+	{
+		files: ["main.ts", "src/**/*.ts", "tests/**/*.ts"],
 		rules: {
-			// TypeScript ESLint rules
-			"no-unused-vars": "off",
-			"@typescript-eslint/no-unused-vars": [
-				"error",
-				{
-					args: "none",
-					argsIgnorePattern: "^_",
-					varsIgnorePattern: "^_",
-				},
-			],
-			"@typescript-eslint/ban-ts-comment": "off",
-			"no-prototype-builtins": "off",
-			"@typescript-eslint/no-empty-function": "off",
-			"@typescript-eslint/no-explicit-any": "error",
-			"@typescript-eslint/require-await": "error",
-			"@typescript-eslint/no-unnecessary-type-assertion": "error",
-			"@typescript-eslint/no-floating-promises": "error",
-			"@typescript-eslint/no-misused-promises": "error",
-			"@typescript-eslint/await-thenable": "error",
-			"@typescript-eslint/no-base-to-string": "warn",
-			"@typescript-eslint/no-this-alias": "error",
-			"@typescript-eslint/no-deprecated": "warn",
+			// Type-checked TS rules disabled: the plugin bot doesn't run
+			// these, and they flag legitimate any-from-Obsidian-API patterns
+			// throughout the codebase. Disabling them locally keeps `npm run
+			// lint` aligned with what actually blocks publishing.
+			"@typescript-eslint/no-unsafe-member-access": "off",
+			"@typescript-eslint/no-unsafe-argument": "off",
+			"@typescript-eslint/no-unsafe-assignment": "off",
+			"@typescript-eslint/no-unsafe-call": "off",
+			"@typescript-eslint/no-unsafe-return": "off",
 
-			// General ESLint rules
-			"no-console": ["error", { allow: ["warn", "error", "debug"] }],
-			"no-case-declarations": "error",
-			"no-constant-condition": "error",
-			"prefer-const": "error",
-			"no-var": "error",
+			// prefer-create-el, prefer-active-doc, prefer-active-window-timers:
+			// surface as visible suggestions rather than blocking errors —
+			// the bot doesn't enforce them at error level.
+			"obsidianmd/prefer-create-el": "warn",
+			"obsidianmd/prefer-active-doc": "warn",
+			"obsidianmd/prefer-active-window-timers": "warn",
 
-			// Obsidian-specific rules
-			"obsidianmd/no-forbidden-elements": "error",
-			"obsidianmd/no-static-styles-assignment": "error",
-			"obsidianmd/vault/iterate": "error",
-			"obsidianmd/detach-leaves": "error",
-			"obsidianmd/hardcoded-config-path": "error",
-			"obsidianmd/no-plugin-as-component": "error",
-			"obsidianmd/no-sample-code": "error",
-			"obsidianmd/no-tfile-tfolder-cast": "error",
-			"obsidianmd/no-view-references-in-plugin": "error",
-			"obsidianmd/platform": "error",
-			"obsidianmd/prefer-file-manager-trash-file": "warn",
-			"obsidianmd/regex-lookbehind": "error",
-			"obsidianmd/sample-names": "error",
+			// Sentence-case rule needs CR-specific brands and acronyms.
+			// Providing brands/acronyms REPLACES the defaults rather than
+			// merging — every default term the codebase relies on must be
+			// re-included here.
 			"obsidianmd/ui/sentence-case": ["error", {
 				enforceCamelCaseLower: true,
-				// Note: providing brands/acronyms REPLACES defaults, so we include needed defaults
 				brands: [
 					// From defaults (essential ones we use)
 					"iOS", "iPadOS", "macOS", "Windows", "Android", "Linux",
@@ -106,18 +86,27 @@ export default [
 					"JavaScript", "TypeScript", "Node.js",
 					"npm", "pnpm", "Yarn", "Git", "GitHub", "GitLab",
 					"VS Code", "Visual Studio Code",
-					// Canvas Roots specific
-					"Canvas Roots",
+					// Charted Roots specific
+					"Charted Roots",
+					"Control Center",
+					"Family Chart",
+					"Canvas Roots", // Pre-rename name, still appears in migration paths
 					"Calendarium",
 					"Templater",
 					"Dataview",
 					"Leaflet",
+					"Bases",
 					// Genealogy formats and software
 					"GEDCOM",
 					"GEDCOM X",
 					"GedcomX",
 					"Gramps",
 					"FamilySearch",
+					"Find a Grave",
+					"FindAGrave",
+					"Beyond Kin",
+					"Wikipedia",
+					"Wikidata",
 					// Fictional universes and eras
 					"Middle-earth",
 					"Westeros",
@@ -156,20 +145,18 @@ export default [
 					"SDK", "IDE", "CLI", "GUI", "REST",
 					"UI", "OK", "ID", "UUID", "GUID",
 					"DOM", "CDN", "FAQ", "AI", "ML",
-					// Canvas Roots specific
+					// Charted Roots specific
 					"TA", "SA", "FA",  // Middle-earth era abbreviations
+					"BBY", "ABY",      // Star Wars era abbreviations
 					"GEDCOM",
-					"PII",  // Personally Identifiable Information
-					"AC", "BC",  // Time period abbreviations (Westeros, historical)
+					"ODT",             // OpenDocument Text (export format)
+					"MD",              // Markdown
+					"BRAT",            // Obsidian Beta Reviewers Auto-update Tester
+					"PII",             // Personally Identifiable Information
+					"AC", "BC",        // Time period abbreviations (Westeros, historical)
+					"CR",              // Charted Roots short form
 				],
 			}],
-			"obsidianmd/commands/no-command-in-command-id": "error",
-			"obsidianmd/commands/no-command-in-command-name": "error",
-			"obsidianmd/commands/no-default-hotkeys": "error",
-			"obsidianmd/commands/no-plugin-id-in-command-id": "error",
-			"obsidianmd/commands/no-plugin-name-in-command-name": "error",
-			"obsidianmd/settings-tab/no-manual-html-headings": "error",
-			"obsidianmd/settings-tab/no-problematic-settings-headings": "error",
 		},
 	},
 ];

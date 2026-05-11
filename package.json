@@ -54,7 +54,7 @@
 		"chokidar": "^3.6.0",
 		"esbuild": "0.19.11",
 		"eslint": "^9.39.2",
-		"eslint-plugin-obsidianmd": "^0.1.9",
+		"eslint-plugin-obsidianmd": "^0.2.9",
 		"obsidian": "latest",
 		"prettier": "^3.6.2",
 		"stylelint": "^14.16.1",
