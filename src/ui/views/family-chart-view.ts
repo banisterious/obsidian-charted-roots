@@ -844,7 +844,7 @@ export class FamilyChartView extends ItemView {
 		});
 		pickBtn.addEventListener('click', () => {
 			const placeGraph = this.plugin.createPlaceGraphService();
-			placeGraph.reloadCache();
+			void placeGraph.reloadCache();
 			new PlacePickerModal(this.app, (place: SelectedPlaceInfo) => {
 				const wikilink = `[[${place.name}]]`;
 				onChange(wikilink);
@@ -1914,7 +1914,7 @@ export class FamilyChartView extends ItemView {
 		const lastName = d.data.data['last name'] || '';
 		const name = `${firstName} ${lastName}`.trim() || 'Unknown';
 
-		// Build label with optional alt name and dates
+		// Build label parts list (rendered as text nodes separated by <br> below)
 		const parts = [name];
 		const altName = d.data.data['alt name'] as string;
 		if (altName) {
@@ -1926,42 +1926,37 @@ export class FamilyChartView extends ItemView {
 		if (this.showDeathDates && d.data.data.deathday) {
 			parts.push(d.data.data.deathday);
 		}
-		const label = parts.join('<br>');
 
 		const avatar = d.data.data.avatar as string | undefined;
 
-		// Build card inner HTML based on whether avatar exists
-		let cardInner: string;
+		// Build the replacement card via DOM APIs (avoids XSS from user-supplied
+		// name/altName/avatar values that might contain HTML).
+		const newCard = createDiv({ cls: 'card' });
+		const inner = newCard.createDiv({
+			cls: (avatar ? 'card-image' : 'card-text') + ' ' + classList.join(' ')
+		});
 		if (avatar) {
-			cardInner = `
-			<div class="card-image ${classList.join(' ')}">
-				<img src="${avatar}">
-				<div class="card-label">${label}</div>
-			</div>
-			`;
+			const img = inner.createEl('img');
+			img.src = avatar;
+			const labelEl = inner.createDiv({ cls: 'card-label' });
+			parts.forEach((part, i) => {
+				if (i > 0) labelEl.createEl('br');
+				labelEl.appendText(part);
+			});
 		} else {
-			cardInner = `
-			<div class="card-text ${classList.join(' ')}">
-				${label}
-			</div>
-			`;
-		}
-
-		// Replace entire card HTML with properly centered structure
-		// Note: transform and pointer-events are set via CSS in .card-style-circle .card
-		card.outerHTML = `
-		<div class="card">
-			${cardInner}
-		</div>
-		`;
-
-		// Re-attach click handler to the new card element
-		const newCard = container.querySelector('.card');
-		if (newCard) {
-			newCard.addEventListener('click', (e: Event) => {
-				this.handleCardClick(e as MouseEvent, d);
+			parts.forEach((part, i) => {
+				if (i > 0) inner.createEl('br');
+				inner.appendText(part);
 			});
 		}
+
+		// Replace the card element in-place
+		card.replaceWith(newCard);
+
+		// Re-attach click handler to the new card element
+		newCard.addEventListener('click', (e: Event) => {
+			this.handleCardClick(e as MouseEvent, d);
+		});
 	}
 
 	/**
