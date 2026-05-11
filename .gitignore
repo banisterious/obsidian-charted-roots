@@ -74,6 +74,7 @@ ISSUES.md
 docs/planning/community-outreach-strategy.md
 docs/planning/codebase-audit-plan.md
 docs/planning/vitest-expansion-plan.md
+docs/planning/audit-implementation-plan.md
 
 # Handoff briefs — one-shot docs the website / parallel sessions consume
 # and discard. The deploy log in media-plan.md is the durable artifact.
