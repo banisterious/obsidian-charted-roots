@@ -362,7 +362,7 @@ export class HighlightGroupsModal extends Modal {
 		titleEl.setText('Highlight groups');
 
 		contentEl.createEl('p', {
-			text: 'Highlight family chart cards by a property value. Non-matching cards are dimmed. Up to three groups can be active at once; when a card matches multiple groups, the first group in the list wins.',
+			text: 'Highlight Family Chart cards by a property value. Non-matching cards are dimmed. Up to three groups can be active at once; when a card matches multiple groups, the first group in the list wins.',
 			cls: 'cr-highlight-groups-modal__desc'
 		});
 

@@ -1489,7 +1489,7 @@ function renderDateValidationCard(
 		.setDesc('Preferred date format standard for validation')
 		.addDropdown(dropdown => dropdown
 			.addOption('iso8601', 'ISO 8601 - strict YYYY-MM-DD format')
-			.addOption('gedcom', 'GEDCOM - DD MMM YYYY (e.g., 15 JAN 1920)')
+			.addOption('GEDCOM', 'GEDCOM - DD MMM YYYY (e.g., 15 JAN 1920)')
 			.addOption('flexible', 'Flexible - allows multiple formats')
 			.setValue(plugin.settings.dateFormatStandard)
 			.onChange(async (value) => {

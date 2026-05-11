@@ -244,9 +244,9 @@ export class CreateOrganizationModal extends Modal {
 		// Universe
 		new Setting(contentEl)
 			.setName('Universe')
-			.setDesc('Optional universe scope (e.g., westeros, middle-earth)')
+			.setDesc('Optional universe scope (e.g., Westeros, Middle-earth)')
 			.addText(text => text
-				.setPlaceholder('e.g., westeros')
+				.setPlaceholder('e.g., Westeros')
 				.setValue(this.universe)
 				.onChange(value => this.universe = value));
 

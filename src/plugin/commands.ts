@@ -596,7 +596,7 @@ export function registerCommandsAndEvents(plugin: CanvasRootsPlugin): void {
 	// If a person note is active, use it as the root; otherwise show picker/empty state
 	plugin.addCommand({
 		id: 'open-family-chart',
-		name: 'Open family chart',
+		name: 'Open Family Chart',
 		callback: () => {
 			// Try to get cr_id from active note if it's a person note
 			const activeFile = plugin.app.workspace.getActiveFile();
@@ -650,7 +650,7 @@ export function registerCommandsAndEvents(plugin: CanvasRootsPlugin): void {
 	// Add command: Open new Family Chart (always creates new tab)
 	plugin.addCommand({
 		id: 'open-new-family-chart',
-		name: 'Open new family chart',
+		name: 'Open new Family Chart',
 		callback: () => {
 			void plugin.activateFamilyChartView(undefined, true, true);
 		}
@@ -659,7 +659,7 @@ export function registerCommandsAndEvents(plugin: CanvasRootsPlugin): void {
 	// Add command: Open Family Chart for Current Note
 	plugin.addCommand({
 		id: 'open-family-chart-for-note',
-		name: 'Open current note in family chart',
+		name: 'Open current note in Family Chart',
 		checkCallback: (checking) => {
 			const activeFile = plugin.app.workspace.getActiveFile();
 			if (!activeFile || activeFile.extension !== 'md') {
@@ -893,7 +893,7 @@ export function registerCommandsAndEvents(plugin: CanvasRootsPlugin): void {
 			const activeFile = plugin.app.workspace.getActiveFile();
 
 			if (!activeFile || activeFile.extension !== 'md') {
-				new Notice('No active markdown file. Please open a person note first.');
+				new Notice('No active Markdown file. Please open a person note first.');
 				return;
 			}
 
@@ -916,7 +916,7 @@ export function registerCommandsAndEvents(plugin: CanvasRootsPlugin): void {
 			const activeFile = plugin.app.workspace.getActiveFile();
 
 			if (!activeFile || activeFile.extension !== 'md') {
-				new Notice('No active markdown file. Please open a person note first.');
+				new Notice('No active Markdown file. Please open a person note first.');
 				return;
 			}
 

@@ -816,7 +816,7 @@ async function _showGedcomAnalysis(
 		let includeDynamicBlocks = false;
 		new Setting(optionsSection)
 			.setName('Include dynamic content blocks')
-			.setDesc('Add timeline, family relationships, and media gallery blocks to person notes (can be frozen to static markdown later)')
+			.setDesc('Add timeline, family relationships, and media gallery blocks to person notes (can be frozen to static Markdown later)')
 			.addToggle(toggle => toggle
 				.setValue(includeDynamicBlocks)
 				.onChange(value => {

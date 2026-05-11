@@ -94,6 +94,7 @@ export default [
 					"Charted Roots",
 					"Control Center",
 					"Family Chart",
+					"Web Clipper", // Obsidian's official feature name
 					"Canvas Roots", // Pre-rename name, still appears in migration paths
 					"Calendarium",
 					"Templater",
@@ -111,6 +112,26 @@ export default [
 					"Beyond Kin",
 					"Wikipedia",
 					"Wikidata",
+					// DNA testing services
+					"AncestryDNA",
+					"23andMe",
+					"MyHeritage",
+					"Ancestry",
+					"Family Tree DNA",
+					// Sort direction indicators (kept all-caps by convention)
+					"A→Z",
+					"Z→A",
+					// Frontmatter keys referenced in UI text — preserved as literal
+					// lowercase form so users see the on-disk YAML key name.
+					"cr_id",
+					"cr_type",
+					"birth_place",
+					"blood_brother",
+					"burial_place",
+					"death_place",
+					"family_bible",
+					"secret_society",
+					"tax_record",
 					// Fictional universes and eras
 					"Middle-earth",
 					"Westeros",
@@ -159,6 +180,15 @@ export default [
 					"PII",             // Personally Identifiable Information
 					"AC", "BC",        // Time period abbreviations (Westeros, historical)
 					"CR",              // Charted Roots short form
+					"DNA",             // Used as standalone acronym throughout DNA features
+					// Date format placeholders (preserved as-is in UI)
+					"YYYY-MM-DD",
+					"DD MMM YYYY",
+					"DD MMM",
+					"MMM YYYY",
+					"YYYY",
+					"MMM",
+					"DD",
 				],
 			}],
 		},

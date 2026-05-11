@@ -597,7 +597,7 @@ class DateSystemModal extends Modal {
 			.setName('Universe')
 			.setDesc('Optional: scope this calendar to a specific universe')
 			.addText(text => text
-				.setPlaceholder('middle-earth')
+				.setPlaceholder('Middle-earth')
 				.setValue(this.formData.universe)
 				.setDisabled(this.viewOnly)
 				.onChange(value => {

@@ -316,10 +316,10 @@ export class RelationshipTypeEditorModal extends Modal {
 		}
 
 		// Family Chart Overlay section (available for both user types and built-in customizations)
-		contentEl.createEl('h3', { text: 'Family chart overlay', cls: 'crc-section-heading' });
+		contentEl.createEl('h3', { text: 'Family Chart overlay', cls: 'crc-section-heading' });
 
 		new Setting(contentEl)
-			.setName('Render on family chart as overlay line')
+			.setName('Render on Family Chart as overlay line')
 			.setDesc('Draw this relationship type as a styled line between the two people it connects, on top of the family tree. Decoupled from tree-structure integration — a type can be tree-only, overlay-only, or both.')
 			.addToggle(toggle => toggle
 				.setValue(this.includeOnFamilyChartOverlay)

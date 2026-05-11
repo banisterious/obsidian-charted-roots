@@ -221,7 +221,7 @@ export class CreateMapModal extends Modal {
 				: 'Unique identifier (auto-generated from name, or enter custom)')
 			.addText(text => {
 				this.mapIdInput = text.inputEl;
-				text.setPlaceholder('e.g., middle-earth')
+				text.setPlaceholder('e.g., Middle-earth')
 					.setValue(this.mapData.mapId)
 					.onChange(value => {
 						this.mapData.mapId = value;
@@ -242,7 +242,7 @@ export class CreateMapModal extends Modal {
 			.setName('Universe')
 			.setDesc('The fictional world or setting this map belongs to')
 			.addText(text => text
-				.setPlaceholder('e.g., tolkien, westeros, star-wars')
+				.setPlaceholder('e.g., tolkien, Westeros, star-wars')
 				.setValue(this.mapData.universe)
 				.onChange(value => {
 					this.mapData.universe = value;

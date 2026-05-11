@@ -231,7 +231,7 @@ export class FamilyChartView extends ItemView {
 	}
 
 	getDisplayText(): string {
-		return 'Family chart';
+		return 'Family Chart';
 	}
 
 	getIcon(): string {
@@ -1119,11 +1119,11 @@ export class FamilyChartView extends ItemView {
 		emptyState.createEl('h3', { text: 'No person selected' });
 
 		const instructions = emptyState.createDiv({ cls: 'cr-fcv-empty-state__instructions' });
-		instructions.createEl('p', { text: 'To view a family chart:' });
+		instructions.createEl('p', { text: 'To view a Family Chart:' });
 
 		const list = instructions.createEl('ul');
 		list.createEl('li', { text: 'Choose a person from the list below, or' });
-		list.createEl('li', { text: 'Open a person note (with cr_id property) and run "Open family chart"' });
+		list.createEl('li', { text: 'Open a person note (with cr_id property) and run "Open Family Chart"' });
 
 		const selectBtn = emptyState.createEl('button', {
 			text: 'Choose from list',

@@ -117,7 +117,7 @@ export class MembersRenderer {
 		// Freeze button
 		const freezeBtn = toolbar.createEl('button', {
 			cls: 'cr-dynamic-block__btn clickable-icon',
-			attr: { 'aria-label': 'Freeze to markdown' }
+			attr: { 'aria-label': 'Freeze to Markdown' }
 		});
 		freezeBtn.textContent = '❄️';
 		freezeBtn.addEventListener('click', () => {

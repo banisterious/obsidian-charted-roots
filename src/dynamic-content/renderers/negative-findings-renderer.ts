@@ -97,7 +97,7 @@ export class NegativeFindingsRenderer {
 		const toolbar = header.createDiv({ cls: 'cr-dynamic-block__toolbar' });
 		const freezeBtn = toolbar.createEl('button', {
 			cls: 'cr-dynamic-block__btn clickable-icon',
-			attr: { 'aria-label': 'Freeze to markdown' }
+			attr: { 'aria-label': 'Freeze to Markdown' }
 		});
 		freezeBtn.textContent = '\u2744\uFE0F';
 		freezeBtn.addEventListener('click', () => {

@@ -512,7 +512,7 @@ function buildCanvasContextMenu(
 
 			submenu.addItem((subItem) => {
 				subItem
-					.setTitle('Open in family chart')
+					.setTitle('Open in Family Chart')
 					.setIcon('git-fork')
 					.onClick(async () => {
 						await openCanvasInFamilyChart(plugin, file);
@@ -634,7 +634,7 @@ function buildCanvasContextMenu(
 
 		menu.addItem((item) => {
 			item
-				.setTitle('Charted Roots: Open in family chart')
+				.setTitle('Charted Roots: Open in Family Chart')
 				.setIcon('git-fork')
 				.onClick(async () => {
 					await openCanvasInFamilyChart(plugin, file);
@@ -1049,7 +1049,7 @@ function buildPersonContextMenu(
 			// Open in family chart
 			submenu.addItem((subItem) => {
 				subItem
-					.setTitle('Open in family chart')
+					.setTitle('Open in Family Chart')
 					.setIcon('git-fork')
 					.onClick(async () => {
 						const cache = plugin.app.metadataCache.getFileCache(file);
@@ -1577,7 +1577,7 @@ function buildPersonContextMenu(
 
 		menu.addItem((item) => {
 			item
-				.setTitle('Charted Roots: Open in family chart')
+				.setTitle('Charted Roots: Open in Family Chart')
 				.setIcon('git-fork')
 				.onClick(async () => {
 					const cache = plugin.app.metadataCache.getFileCache(file);

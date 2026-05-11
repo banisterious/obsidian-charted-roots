@@ -714,7 +714,7 @@ export class CreatePersonModal extends Modal {
 		} else {
 			let universeValue: string | undefined = this.personData.universe;
 			universeSetting.addText(text => text
-				.setPlaceholder('e.g., westeros, middle-earth')
+				.setPlaceholder('e.g., Westeros, Middle-earth')
 				.setValue(universeValue || '')
 				.onChange(value => {
 					universeValue = value || undefined;

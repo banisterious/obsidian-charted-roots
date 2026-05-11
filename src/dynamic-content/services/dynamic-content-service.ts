@@ -502,7 +502,7 @@ export class DynamicContentService {
 			}
 
 			await this.plugin.app.vault.modify(file, newContent);
-			new Notice('Block frozen to markdown');
+			new Notice('Block frozen to Markdown');
 			return true;
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
