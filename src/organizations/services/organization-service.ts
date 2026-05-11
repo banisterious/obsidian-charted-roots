@@ -18,6 +18,7 @@ import { getLogger } from '../../core/logging';
 import { parseMediaRefs } from '../../core/media-service';
 import { isOrganizationNote } from '../../utils/note-type-detection';
 import { getCanonicalLinktext } from '../../utils/wikilink-resolver';
+import { findCrNoteByCrId } from '../../utils/cr-id-resolver';
 import { waitForCacheRefresh } from '../../utils/cache-utils';
 import type { MembershipService } from './membership-service';
 
@@ -61,8 +62,10 @@ export function createSmartWikilink(name: string, app: App, crId?: string): stri
 	// to derive the basename directly. Mirrors person-note-writer's #524 fix.
 	// Org-side call sites don't carry cr_id today; signature kept consistent
 	// with the other writers so a future picker plumbing pass can use it.
+	// Filtered to `cr_type: organization` so a duplicate file outside CR's
+	// folder structure can't shadow the canonical org note (#559).
 	if (crId) {
-		const fileById = findFileByCrId(app, crId);
+		const fileById = findCrNoteByCrId(app, crId, 'organization');
 		if (fileById) {
 			// Path-form when basename is ambiguous in the vault (#540).
 			const target = getCanonicalLinktext(app, fileById);
@@ -85,20 +88,6 @@ export function createSmartWikilink(name: string, app: App, crId?: string): stri
 
 	// Standard format
 	return `[[${displayName}]]`;
-}
-
-/**
- * Resolve any cr_type note by its cr_id. Used to disambiguate wikilinks
- * when a note's `name` frontmatter differs from its filename (#524).
- */
-function findFileByCrId(app: App, crId: string): TFile | null {
-	for (const file of app.vault.getMarkdownFiles()) {
-		const cache = app.metadataCache.getFileCache(file);
-		if (cache?.frontmatter?.cr_id === crId) {
-			return file;
-		}
-	}
-	return null;
 }
 
 /**

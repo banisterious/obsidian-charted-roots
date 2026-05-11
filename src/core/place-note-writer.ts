@@ -16,6 +16,7 @@ import {
 } from '../models/place';
 import { isPlaceNote } from '../utils/note-type-detection';
 import { getCanonicalLinktext } from '../utils/wikilink-resolver';
+import { findCrNoteByCrId } from '../utils/cr-id-resolver';
 
 const logger = getLogger('PlaceNoteWriter');
 
@@ -509,8 +510,10 @@ function createSmartWikilink(name: string, app: App, crId?: string): string {
 
 	// Preferred path: when caller provides cr_id, look up the file by cr_id
 	// to derive the basename directly. Mirrors person-note-writer's #524 fix.
+	// Filtered to `cr_type: place` so a duplicate file outside CR's folder
+	// structure can't shadow the canonical place note (#559).
 	if (crId) {
-		const fileById = findFileByCrId(app, crId);
+		const fileById = findCrNoteByCrId(app, crId, 'place');
 		if (fileById) {
 			// Path-form when basename is ambiguous in the vault (#540).
 			const target = getCanonicalLinktext(app, fileById);
@@ -535,19 +538,6 @@ function createSmartWikilink(name: string, app: App, crId?: string): string {
 	return `"[[${displayName}]]"`;
 }
 
-/**
- * Resolve any cr_type note by its cr_id. Used to disambiguate wikilinks
- * when a note's `name` frontmatter differs from its filename (#524).
- */
-function findFileByCrId(app: App, crId: string): TFile | null {
-	for (const file of app.vault.getMarkdownFiles()) {
-		const cache = app.metadataCache.getFileCache(file);
-		if (cache?.frontmatter?.cr_id === crId) {
-			return file;
-		}
-	}
-	return null;
-}
 
 /**
  * Create a wikilink for use with processFrontMatter (no YAML quoting)

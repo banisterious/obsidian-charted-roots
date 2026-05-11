@@ -11,6 +11,7 @@ import { SOURCED_PROPERTY_NAMES } from '../sources/types/source-types';
 import { computeRelationshipArrayPatch, applyRelationshipArrayPatch } from './relationship-emit';
 import { detectSpouseTargetFormat } from './spouse-format-detector';
 import { getCanonicalLinktext } from '../utils/wikilink-resolver';
+import { findCrNoteByCrId } from '../utils/cr-id-resolver';
 
 const logger = getLogger('PersonNoteWriter');
 
@@ -80,8 +81,10 @@ export function createSmartWikilink(name: string, app: App, crId?: string): stri
 	// when a person's `name` differs from their filename (#524). The fallback
 	// `getFirstLinkpathDest(displayName)` below relies on `displayName` matching
 	// some file's basename, which silently fails when name and filename diverge.
+	// Filtered to `cr_type: person` so a duplicate file outside CR's folder
+	// structure can't shadow the canonical person note (#559).
 	if (crId) {
-		const fileById = findFileByCrId(app, crId);
+		const fileById = findCrNoteByCrId(app, crId, 'person');
 		if (fileById) {
 			// Use the canonical linktext (basename when unique, full path when
 			// the basename is shared with another vault file) so Obsidian's
@@ -109,19 +112,6 @@ export function createSmartWikilink(name: string, app: App, crId?: string): stri
 	return `[[${displayName}]]`;
 }
 
-/**
- * Resolve any cr_type note by its cr_id. Used to disambiguate wikilinks
- * when a note's `name` frontmatter differs from its filename (#524).
- */
-function findFileByCrId(app: App, crId: string): TFile | null {
-	for (const file of app.vault.getMarkdownFiles()) {
-		const cache = app.metadataCache.getFileCache(file);
-		if (cache?.frontmatter?.cr_id === crId) {
-			return file;
-		}
-	}
-	return null;
-}
 
 /**
  * Coerce a `spouse{N}_marriage_location` frontmatter value back to its canonical
