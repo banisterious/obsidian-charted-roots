@@ -1484,7 +1484,7 @@ export class StatisticsService {
 					const year = this.extractYear(dateStr);
 					if (year !== null) {
 						totalEvents++;
-						const decade = Math.floor(year / 10) * 10;
+						const decade = Math.trunc(year / 10) * 10 || 0;
 						decadeCount.set(decade, (decadeCount.get(decade) ?? 0) + 1);
 					}
 				}
@@ -1498,7 +1498,7 @@ export class StatisticsService {
 				const year = this.extractYear(person.birthDate);
 				if (year !== null) {
 					totalEvents++;
-					const decade = Math.floor(year / 10) * 10;
+					const decade = Math.trunc(year / 10) * 10 || 0;
 					decadeCount.set(decade, (decadeCount.get(decade) ?? 0) + 1);
 				}
 			}
@@ -1506,7 +1506,7 @@ export class StatisticsService {
 				const year = this.extractYear(person.deathDate);
 				if (year !== null) {
 					totalEvents++;
-					const decade = Math.floor(year / 10) * 10;
+					const decade = Math.trunc(year / 10) * 10 || 0;
 					decadeCount.set(decade, (decadeCount.get(decade) ?? 0) + 1);
 				}
 			}
@@ -1596,12 +1596,19 @@ export class StatisticsService {
 	}
 
 	/**
-	 * Extract decade from a date string
+	 * Extract decade from a date string.
+	 *
+	 * Uses Math.trunc rather than Math.floor so negative-year decades round
+	 * toward zero (-25 → -20s, not -30s — Math.floor rounds toward negative
+	 * infinity). Matches BCE/BBY-style conventions where the "-20s decade"
+	 * spans years -20 through -29. Years in (-10, 10) all bucket to "0s". (#560)
 	 */
 	private extractDecade(dateStr: string | undefined): number | null {
 		const year = this.extractYear(dateStr);
 		if (year === null) return null;
-		return Math.floor(year / 10) * 10;
+		// `|| 0` normalizes JavaScript's -0 (from `Math.trunc(-5/10) * 10`)
+		// to +0 so the "0s" label doesn't render as "-0s".
+		return Math.trunc(year / 10) * 10 || 0;
 	}
 
 	/**

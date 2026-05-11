@@ -497,7 +497,7 @@ export class TimelineGenerator {
 				case 'by_decade': {
 					const year = this.extractYear(entry.sortDate);
 					if (year) {
-						const decade = Math.floor(parseInt(year, 10) / 10) * 10;
+						const decade = Math.trunc(parseInt(year, 10) / 10) * 10 || 0;
 						key = `${decade}s`;
 					} else {
 						key = 'Unknown date';
