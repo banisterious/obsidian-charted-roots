@@ -556,7 +556,7 @@ function createWikilink(name: string, app: App, crId?: string): string {
 		: afterPipe;
 
 	if (crId) {
-		const fileById = findFileByCrId(app, crId);
+		const fileById = findCrNoteByCrId(app, crId, 'place');
 		if (fileById) {
 			// Path-form when basename is ambiguous in the vault (#540).
 			const target = getCanonicalLinktext(app, fileById);
