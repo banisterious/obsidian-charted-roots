@@ -1,10 +1,12 @@
 # ESLint Baseline Cleanup
 
-Plan for triaging the real lint output that was hidden by a broken `npm run lint` script.
+Plan for triaging the real lint output that was hidden by a broken `npm run lint` script, plus the 2026-05-11 re-baseline after the `eslint-plugin-obsidianmd` 0.1.9 → 0.2.9 upgrade.
 
-**Status:** 🟡 In progress — Tier 0, Tier 1, Tier 2, and Tier 3 complete; only Tier 4 (sentence-case) remains
+**Status:** 🟡 In progress — Tier 0 / 1 / 2 / 3 historical work shipped; 2026-05-11 upgrade re-baseline introduces new rules and resurfaces some previously-cleared categories. Tier 4 (sentence-case) still pending. **Next session: tackle the 2026-05-11 upgrade findings.**
 
-**Root cause context:** `node_modules/.bin/eslint` was a zero-byte file (likely caused by WSL symlink-creation failing during `npm install --no-bin-links` at some point). The `npm run lint` script resolved to the empty binary and exited 0 silently. Fixed in commit [77848f14](#) by switching the lint/lint:fix scripts to direct `node` invocation. See `package.json` scripts.
+**Root cause context (original):** `node_modules/.bin/eslint` was a zero-byte file (likely caused by WSL symlink-creation failing during `npm install --no-bin-links` at some point). The `npm run lint` script resolved to the empty binary and exited 0 silently. Fixed in commit [77848f14](#) by switching the lint/lint:fix scripts to direct `node` invocation.
+
+**2026-05-11 upgrade context:** `eslint-plugin-obsidianmd` upgraded 0.1.9 → 0.2.9 in commit `489d1eca`. The 0.2.x line adds many new rules and refines existing ones. Plugin config refactored to use the recommended preset (`obsidianmd.configs.recommended`) + CR-specific overrides — see commit message for full scope. Requires Node 20.11+; the project dev environment is now on 20.20.2 via nvm. The post-Tier-3 state was 733 sentence-case-only errors (all other tiers green); the upgrade reset the baseline because the recommended preset enables stricter typed rules and several brand-new rules.
 
 ---
 
@@ -50,6 +52,101 @@ Taken immediately after the `npm run lint` fix.
 | 18 | `obsidianmd/commands/no-command-in-command-id` | 1 | Obsidian anti-pattern |
 | 19 | `no-redeclare` | 1 | Trivial |
 | 20 | `@typescript-eslint/await-thenable` | 1 | Correctness |
+
+---
+
+## 2026-05-11 — 0.2.9 Upgrade Re-Baseline
+
+After upgrading `eslint-plugin-obsidianmd` 0.1.9 → 0.2.9 and refactoring the config to use the plugin's recommended preset, the lint surface is **1592 problems (653 errors, 939 warnings)** across the same codebase. Down from the pre-upgrade noise baseline of 8197, but up from the post-Tier-3 state of 733 (sentence-case only).
+
+Two distinct sources of new findings:
+
+1. **New rules introduced by 0.2.x** that didn't exist in 0.1.9.
+2. **Stricter detection in existing rules** — some categories cleared by previous tier work are showing hits again because the typed-rule infrastructure resolves more cases, or new code added since the last cleanup pass.
+
+### Current Rule Breakdown (2026-05-11, post-upgrade)
+
+**Errors (653):**
+
+| # | Rule | Count | Status | Category |
+|---|------|------:|--------|----------|
+| 1 | `obsidianmd/ui/sentence-case` | 577 | Carried over | UI text — mostly brand/acronym false positives, see Tier 4 |
+| 2 | `@typescript-eslint/no-floating-promises` | 26 | **Resurfaced** | Correctness — was 0 after Tier 1 |
+| 3 | `@typescript-eslint/no-base-to-string` | 11 | **Resurfaced** | Correctness — was 0 after Tier 1 |
+| 4 | `@typescript-eslint/no-unnecessary-type-assertion` | 6 | **Resurfaced** | Cleanup — was 0 after Tier 2/3 |
+| 5 | `@typescript-eslint/no-redundant-type-constituents` | 5 | **NEW (0.2.x)** | New typed-rule detection |
+| 6 | `obsidianmd/no-tfile-tfolder-cast` | 4 | **Resurfaced** | Obsidian anti-pattern — was 0 after Tier 2 |
+| 7 | `@typescript-eslint/restrict-template-expressions` | 4 | **NEW** | New typed-rule detection |
+| 8 | `obsidianmd/prefer-instanceof` | 3 | **NEW (0.2.x)** | Obsidian-specific — prefer `instanceof` over duck-typing |
+| 9 | `no-useless-escape` | 2 | **Resurfaced** | Trivial — was 0 after Tier 3 |
+| 10 | `depend/ban-dependencies` | 2 | **NEW (0.2.x)** | New rule from `eslint-plugin-depend` |
+| 11 | `no-unsanitized/property` | 1 | **NEW (0.2.x)** | New rule from `eslint-plugin-no-unsanitized` |
+| 12 | `no-undef` | 1 | **Resurfaced** | Scope |
+| 13 | `import/no-extraneous-dependencies` | 1 | **NEW (0.2.x)** | New rule from `eslint-plugin-import` |
+
+**Warnings (939):**
+
+| # | Rule | Count | Status | Severity demoted from `error`? |
+|---|------|------:|--------|---|
+| 1 | `obsidianmd/prefer-create-el` | 285 | **NEW (0.2.x)** | Yes — demoted to `warn` in CR config |
+| 2 | `obsidianmd/prefer-active-doc` | 163 | **NEW (0.2.x)** | Yes — demoted to `warn` |
+| 3 | `obsidianmd/prefer-active-window-timers` | 151 | **NEW (0.2.x)** | Yes — demoted to `warn` |
+| 4 | `@typescript-eslint/no-unused-vars` | 73 | **Resurfaced** | Recommended-preset sets it to `warn` (was `error` pre-upgrade); 73 new hits since Tier 3 |
+
+### New Rules to Decide On
+
+These rules didn't exist in the 0.1.9 baseline. CR config currently leaves them at their recommended-preset severity except where explicitly demoted in `eslint.config.mjs`. Decision points for the next session:
+
+- **`prefer-create-el` (285 warn)** — Obsidian-specific preference for `parent.createEl('div', {...})` over `parent.appendChild(document.createElement('div'))`. Real ergonomic improvement; non-trivial to mechanically fix because many sites use third-party libraries that return raw DOM elements. Could be deferred indefinitely or addressed file-by-file as those files get touched for other reasons.
+- **`prefer-active-doc` (163 warn)** — prefer `app.workspace.activeEditor.editor` / `getActiveViewOfType` over direct `document.activeElement` lookups. Same shape as `prefer-create-el` — real preference, non-trivial sweep.
+- **`prefer-active-window-timers` (151 warn)** — prefer `activeWindow.setTimeout` over global `setTimeout` to support Obsidian's pop-out window feature. Important for users with pop-out windows; could be a real correctness issue when timers fire on the wrong window.
+- **`prefer-instanceof` (3 err)** — small count, likely quick fixes.
+- **`no-redundant-type-constituents` (5 err)** — type-union simplifications; auto-fixable in some cases.
+- **`restrict-template-expressions` (4 err)** — disallows `${obj}` template interpolation when `obj`'s `.toString()` would yield `[object Object]`. Real signal.
+- **`depend/ban-dependencies` (2 err)** — checks for deprecated/abandoned dependencies; look at the specific dependencies flagged before deciding action.
+- **`no-unsanitized/property` (1 err)** — `innerHTML` / `outerHTML` writes without sanitization. Almost certainly a real signal worth fixing.
+- **`import/no-extraneous-dependencies` (1 err)** — single import not declared in `package.json` dependencies. Check the specific case.
+
+### Resurfaced Rules (was 0 after prior tier work)
+
+These were cleared by historical tier work but are showing hits again. Either new code added since, or stricter detection in the upgraded plugin.
+
+| Rule | Prior tier | Current count | Likely cause |
+|------|------------|--------------:|--------------|
+| `no-floating-promises` | Tier 1 (29 → 0) | 26 | Mix of new code + possibly stricter detection |
+| `no-base-to-string` | Tier 1 (23 → 0) | 11 | Likely new code calling `.toString()` on objects without explicit `String(x)` |
+| `no-unnecessary-type-assertion` | Tier 2/3 (19 → 0) | 6 | Likely new code with redundant `as X` |
+| `no-tfile-tfolder-cast` | Tier 2 (1 → 0) | 4 | New code with `as TFile` casts |
+| `no-unused-vars` | Tier 3 (129 → 0) | 73 | Accumulated through 0.22.x cycle work |
+| `no-useless-escape` | Tier 3 (3 → 0) | 2 | Trivial |
+| `no-undef` | Tier 1 (20 → 0) | 1 | Trivial |
+
+### Proposed Re-Baseline Triage
+
+Three batches for the next session (roughly in order of value-per-minute):
+
+**Batch A — Real-signal errors (~76, ~1-2 hrs total)**
+
+Everything in the Errors table above except sentence-case (577). Most are small per-site fixes. Order:
+
+1. Single-hit rules first (`no-unsanitized/property`, `import/no-extraneous-dependencies`, `no-undef`) — fastest signal.
+2. `no-redundant-type-constituents` (5) and `prefer-instanceof` (3) — likely auto-fixable or near-auto.
+3. `no-tfile-tfolder-cast` (4) and `restrict-template-expressions` (4) — small but per-site.
+4. `no-unnecessary-type-assertion` (6) — likely `lint:fix` covers most.
+5. `no-base-to-string` (11) and `no-useless-escape` (2) — per-site.
+6. `no-floating-promises` (26) — biggest single batch; same pattern as Tier 1's resolution (`void` prefix or `.catch()`).
+7. `depend/ban-dependencies` (2) — read the rule's report; might be a quick declarative fix.
+
+**Batch B — Tier 4 sentence-case (577, ~1 session)**
+
+Same approach as the original Tier 4 plan: bucket by file, look for repeated false-positive patterns (brands/acronyms missing from the config's list), bulk-fix via config additions or per-file disables. The 0.2.9 upgrade already cleaned up some of these via the broader default brand list — went from 733 (post-Tier-3) to 577. Worth re-running after Batch A clears in case some sentence-case overlaps real-signal fixes.
+
+**Batch C — New rules with high warning counts (defer / decide separately)**
+
+- `prefer-create-el` (285 warn) — defer or address opportunistically.
+- `prefer-active-doc` (163 warn) — same.
+- `prefer-active-window-timers` (151 warn) — worth a proper survey before deciding; pop-out-window users could hit real timer-on-wrong-window bugs.
+- `no-unused-vars` (73 warn) — sweep, same shape as the Tier 3 pass.
 
 ---
 
@@ -138,7 +235,7 @@ Proposed for this cleanup effort:
 
 - `archive/technical-debt-audit.md` — completed prior audit; some overlap in spirit, no overlap in findings
 - `archive/codebase-cleanup-scan.md` — completed prior scan; focused on duplicate code, doesn't cover lint hygiene
-- `CLAUDE.md` (user-local) — references `eslint.config.mjs` and `coding-standards.md` as authoritative; no direct mention of this cleanup
+- `docs/developer/coding-standards.md` — authoritative for the project's TS/CSS standards including sentence-case false-positive handling; referenced by the rule config in `eslint.config.mjs`
 
 ---
 
