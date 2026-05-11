@@ -1476,7 +1476,7 @@ export class ImportWizardModal extends Modal {
 					stats = await numberingService.assignGeneration(this.formData.rootPersonCrId);
 					break;
 				default:
-					throw new Error(`Unknown numbering system: ${system}`);
+					throw new Error(`Unknown numbering system: ${String(system)}`);
 			}
 
 			this.formData.numberingStats = stats;

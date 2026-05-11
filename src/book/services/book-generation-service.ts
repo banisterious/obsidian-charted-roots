@@ -192,7 +192,7 @@ export class BookGenerationService {
 						chapterTitle: chapter.title,
 						chapterType: chapter.type,
 						success: false,
-						error: `Unknown chapter type: ${chapter.type}`,
+						error: `Unknown chapter type: ${String(chapter.type)}`,
 						warnings: [],
 					};
 			}

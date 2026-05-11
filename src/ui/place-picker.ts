@@ -145,7 +145,7 @@ export class PlacePickerModal extends Modal {
 				graphService.setSettings(this.settings);
 			}
 		}
-		graphService.reloadCache(); // Force fresh load
+		void graphService.reloadCache(); // Force fresh load
 
 		const placeNodes = graphService.getAllPlaces();
 		for (const node of placeNodes) {

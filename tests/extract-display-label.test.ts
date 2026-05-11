@@ -137,7 +137,7 @@ describe('extractDisplayLabel', () => {
 		];
 
 		const assertProperties = (output: string, input: string | null | undefined): void => {
-			expect(output).not.toMatch(/[\[\]]/);
+			expect(output).not.toMatch(/[[\]]/);
 			expect(output).not.toContain('|');
 			expect(output).not.toContain('/');
 			expect(output).toBe(output.trim());

@@ -34,7 +34,8 @@ export interface CalendarEvent {
 	filePath: string;
 }
 
-export type CalendarEventType = 'birth' | 'death' | 'marriage' | string;
+// Known values: 'birth', 'death', 'marriage' — plus user-defined event types.
+export type CalendarEventType = string;
 
 /**
  * Filter state for the calendar view

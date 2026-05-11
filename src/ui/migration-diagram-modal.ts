@@ -49,7 +49,7 @@ export class MigrationDiagramModal extends Modal {
 	constructor(app: App) {
 		super(app);
 		this.placeService = new PlaceGraphService(app);
-		this.placeService.reloadCache();
+		void this.placeService.reloadCache();
 
 		// Get detailed migration data with years
 		this.allMigrations = this.placeService.getDetailedMigrations();

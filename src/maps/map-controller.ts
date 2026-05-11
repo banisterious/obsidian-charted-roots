@@ -797,12 +797,12 @@ export class MapController {
 
 		if (shouldShow && !entry.host) {
 			// Newly fits — create + add the host.
-			const host = L.polyline([seg!.start, seg!.end], {
+			const host = L.polyline([seg.start, seg.end], {
 				opacity: 0,
 				weight: 0,
 				interactive: false
 			});
-			const flipOpts = seg!.screenEnd.x < seg!.screenStart.x
+			const flipOpts = seg.screenEnd.x < seg.screenStart.x
 				? { orientation: 'flip' as const }
 				: {};
 			host.setText(entry.text, {

@@ -1035,7 +1035,7 @@ export class PlaceGeneratorModal extends Modal {
 		}
 
 		// Ensure cache is loaded
-		this.placeGraph.reloadCache();
+		void this.placeGraph.reloadCache();
 
 		const placeNode = this.placeGraph.getPlaceByCrId(noteInfo.crId);
 		if (!placeNode) {
@@ -1052,7 +1052,7 @@ export class PlaceGeneratorModal extends Modal {
 			settings: this.settings,
 			onUpdated: () => {
 				new Notice(`Updated: ${noteInfo.name}`);
-				this.placeGraph?.reloadCache();
+				void this.placeGraph?.reloadCache();
 			}
 		}).open();
 	}

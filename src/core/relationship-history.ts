@@ -515,7 +515,7 @@ export function formatChangeDescription(change: RelationshipChange): string {
 			return `Changed mother of ${source} from ${change.previousValue} to ${target}`;
 		default: {
 			const _exhaustiveCheck: never = change.type;
-			return `Unknown change: ${_exhaustiveCheck}`;
+			return `Unknown change: ${String(_exhaustiveCheck)}`;
 		}
 	}
 }

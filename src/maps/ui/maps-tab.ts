@@ -795,7 +795,7 @@ export function renderMapsTab(options: MapsTabOptions): void {
 
 	// Get place data for the map preview and statistics
 	const placeService = plugin.createPlaceGraphService();
-	placeService.reloadCache();
+	void placeService.reloadCache();
 	const places = placeService.getAllPlaces();
 	const stats = placeService.calculateStatistics();
 

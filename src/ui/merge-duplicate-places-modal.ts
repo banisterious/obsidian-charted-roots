@@ -1343,7 +1343,7 @@ export function findDuplicatePlaceNotes(app: App, options: FindDuplicatesOptions
 		placeService.setFolderFilter(options.folderFilter);
 	}
 
-	placeService.reloadCache();
+	void placeService.reloadCache();
 
 	const allPlaces = placeService.getAllPlaces();
 	const groups: DuplicatePlaceGroup[] = [];

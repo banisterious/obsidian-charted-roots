@@ -335,7 +335,7 @@ export class TimelineGenerator {
 				return this.generateMarkdownTable(dateRange, summary, entries, groupedEntries, options);
 
 			default:
-				logger.warn('generateContent', `Unknown format: ${format}, falling back to table`);
+				logger.warn('generateContent', `Unknown format: ${String(format)}, falling back to table`);
 				return this.generateMarkdownTable(dateRange, summary, entries, groupedEntries, options);
 		}
 	}

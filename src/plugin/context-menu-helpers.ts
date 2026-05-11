@@ -432,7 +432,7 @@ export async function geocodeSinglePlace(plugin: CanvasRootsPlugin, file: TFile)
 	let parentName: string | undefined;
 	if (fm.parent) {
 		const placeGraph = plugin.createPlaceGraphService();
-		placeGraph.reloadCache();
+		void placeGraph.reloadCache();
 		const parentPlace = placeGraph.getPlaceByCrId(fm.parent);
 		parentName = parentPlace?.name;
 	}
@@ -682,7 +682,7 @@ export async function showCreatePlaceNotesForPerson(plugin: CanvasRootsPlugin, f
 
 	// Check which places already have notes
 	const placeGraph = plugin.createPlaceGraphService();
-	placeGraph.reloadCache();
+	void placeGraph.reloadCache();
 
 	const missingPlaces: string[] = [];
 	for (const placeName of uniquePlaces) {

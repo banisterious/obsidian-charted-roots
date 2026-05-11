@@ -1,4 +1,5 @@
 import obsidianmd from "eslint-plugin-obsidianmd";
+import depend from "eslint-plugin-depend";
 
 export default [
 	// Ignore patterns (must come early so they apply to all later configs)
@@ -71,6 +72,9 @@ export default [
 			"obsidianmd/prefer-active-doc": "warn",
 			"obsidianmd/prefer-active-window-timers": "warn",
 
+			// Sentence-case rule applies to UI text; not relevant for test files.
+
+				// (test-file overrides follow this block.)
 			// Sentence-case rule needs CR-specific brands and acronyms.
 			// Providing brands/acronyms REPLACES the defaults rather than
 			// merging — every default term the codebase relies on must be
@@ -157,6 +161,28 @@ export default [
 					"CR",              // Charted Roots short form
 				],
 			}],
+		},
+	},
+
+	// Test files legitimately construct TFile-shaped stubs to fence
+	// behavior without mocking the entire vault. `instanceof TFile` is
+	// the right check in production code; tests don't have real TFile
+	// instances to check against.
+	{
+		files: ["tests/**/*.ts"],
+		rules: {
+			"obsidianmd/no-tfile-tfolder-cast": "off",
+		},
+	},
+
+	// depend/ban-dependencies flags chalk because newer v5+ is ESM-only
+	// and there are smaller alternatives. We use chalk v4 (CJS) only in
+	// build-css.js for build-time colored logging — replacing it would
+	// be churn with no shipped-bundle impact. Allowlisted here.
+	{
+		plugins: { depend },
+		rules: {
+			"depend/ban-dependencies": ["error", { allowed: ["chalk"] }],
 		},
 	},
 ];

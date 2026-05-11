@@ -742,7 +742,7 @@ export class TreePreviewRenderer {
 			return `${str}${property}:${computedStyle.getPropertyValue(property)};`;
 		}, '');
 
-		if (element instanceof SVGElement) {
+		if (element.instanceOf(SVGElement)) {
 			element.setAttribute('style', styleString);
 		}
 
@@ -772,7 +772,7 @@ export class TreePreviewRenderer {
 			}
 		}
 
-		if (styleString && target instanceof SVGElement) {
+		if (styleString && target.instanceOf(SVGElement)) {
 			const existingStyle = target.getAttribute('style') || '';
 			target.setAttribute('style', existingStyle + styleString);
 		}

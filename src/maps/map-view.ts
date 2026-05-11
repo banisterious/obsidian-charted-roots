@@ -999,7 +999,7 @@ export class MapView extends ItemView {
 		};
 
 		const placeGraph = pluginWithServices.createPlaceGraphService();
-		placeGraph.reloadCache();
+		void placeGraph.reloadCache();
 
 		const place = placeGraph.getPlaceByCrId(placeId);
 		if (!place) {
@@ -1215,7 +1215,7 @@ export class MapView extends ItemView {
 		};
 
 		const placeGraph = pluginWithServices.createPlaceGraphService();
-		placeGraph.reloadCache();
+		void placeGraph.reloadCache();
 
 		const place = placeGraph.getPlaceByCrId(placeId);
 		if (!place) {
@@ -1775,7 +1775,7 @@ export class MapView extends ItemView {
 		if (isPixelCRS && hasPixel) {
 			target = [waypoint.pixelY!, waypoint.pixelX!];
 		} else if (hasLatLng) {
-			target = [waypoint.lat!, waypoint.lng!];
+			target = [waypoint.lat, waypoint.lng];
 		}
 
 		if (target) {

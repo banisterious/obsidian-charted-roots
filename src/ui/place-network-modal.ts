@@ -53,7 +53,7 @@ export class PlaceNetworkModal extends Modal {
 	constructor(app: App) {
 		super(app);
 		this.placeService = new PlaceGraphService(app);
-		this.placeService.reloadCache();
+		void this.placeService.reloadCache();
 		this.buildNetwork();
 		this.buildMigrationFlows();
 	}

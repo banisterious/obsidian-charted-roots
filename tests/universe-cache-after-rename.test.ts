@@ -127,7 +127,7 @@ describe('UniverseService.getAllUniverses — name vs basename divergence (#505)
 		});
 		app.vault._rename(file, 'Universes/Star Wars AU.md');
 
-		service.reloadCache();
+		void service.reloadCache();
 
 		const universes = service.getAllUniverses();
 		expect(universes).toHaveLength(1);

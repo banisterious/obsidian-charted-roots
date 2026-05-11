@@ -173,7 +173,7 @@ export class ProfileDataLoader {
 
 		// PlaceNode from PlaceGraphService
 		const placeGraph = this.plugin.createPlaceGraphService();
-		placeGraph.reloadCache();
+		void placeGraph.reloadCache();
 		const node = placeGraph.getPlaceByCrId(crId);
 		if (!node) {
 			logger.warn('loadPlace', `PlaceNode not found for ${crId}`);

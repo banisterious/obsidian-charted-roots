@@ -730,7 +730,7 @@ export class StandardizePlacesModal extends Modal {
  */
 export function findPlaceNameVariations(app: App): PlaceVariationGroup[] {
 	const placeService = new PlaceGraphService(app);
-	placeService.reloadCache();
+	void placeService.reloadCache();
 
 	const references = placeService.getReferencedPlaces();
 	const allPlaceNames: Array<{ name: string; count: number; linked: boolean }> = [];

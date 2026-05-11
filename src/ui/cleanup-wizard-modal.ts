@@ -3666,7 +3666,7 @@ export class CleanupWizardModal extends Modal {
 
 			// Step 8: Ungeocoded places
 			const placeGraph = this.plugin.createPlaceGraphService();
-			placeGraph.reloadCache();
+			void placeGraph.reloadCache();
 			const allPlaces = placeGraph.getAllPlaces();
 			// Filter to places without coordinates that are "real" category
 			this.ungeocodedPlaces = allPlaces.filter(place =>

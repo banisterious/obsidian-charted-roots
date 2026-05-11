@@ -17,6 +17,16 @@
 
 import type { SpouseMetadata } from '../core/person-note-writer';
 
+// Coerce an unknown frontmatter value to a string when it's a scalar
+// (string/number/boolean). Returns undefined for objects, arrays, null, or
+// missing values — guards against accidentally stringifying objects as
+// '[object Object]'.
+function asScalarString(value: unknown): string | undefined {
+	if (typeof value === 'string') return value;
+	if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+	return undefined;
+}
+
 /**
  * Minimum shape required from the family graph for name-to-crId resolution.
  * The real `FamilyGraphService` exposes a richer object per person, but this
@@ -65,8 +75,7 @@ export interface LoadedRelationships {
  * `"[[Name]]"`, or a bare string. Returns `undefined` for null/undefined/empty.
  */
 export function extractName(value: unknown): string | undefined {
-	if (value === null || value === undefined) return undefined;
-	const str = typeof value === 'string' ? value : String(value);
+	const str = asScalarString(value);
 	if (!str) return undefined;
 	const match = str.match(/\[\[([^\]]+)\]\]/);
 	return match ? match[1] : str;
@@ -136,7 +145,7 @@ export function loadRelationships(
 		if (spouseLink || spouseId) {
 			hasIndexedSpouses = true;
 			const name = extractName(spouseLink);
-			let crId = spouseId ? String(spouseId) : '';
+			let crId = asScalarString(spouseId) ?? '';
 
 			// Fallback: resolve wikilink name to crId when spouseN_id missing (#403)
 			if (!crId && name) {

@@ -905,7 +905,7 @@ function _inlineStyles(source: Element, target: Element): void {
 		}
 	}
 
-	if (styleString && target instanceof SVGElement) {
+	if (styleString && target.instanceOf(SVGElement)) {
 		const existingStyle = target.getAttribute('style') || '';
 		target.setAttribute('style', existingStyle + styleString);
 	}

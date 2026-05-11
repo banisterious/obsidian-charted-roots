@@ -195,7 +195,7 @@ function loadDataQualityCard(
 	navInfo.appendText('.');
 
 	const placeService = plugin.createPlaceGraphService();
-	placeService.reloadCache();
+	void placeService.reloadCache();
 
 	const stats = placeService.calculateStatistics();
 	const issues = stats.issues;
@@ -350,7 +350,7 @@ function loadDataQualityCard(
 				label: 'Bulk geocode all',
 				onClick: () => {
 					const placeGraph = plugin.createPlaceGraphService();
-					placeGraph.reloadCache();
+					void placeGraph.reloadCache();
 					new BulkGeocodeModal(plugin.app, placeGraph, {
 						onComplete: () => showTab('places')
 					}).open();
@@ -371,7 +371,7 @@ function loadDataQualityCard(
 				label: 'Enrich hierarchy',
 				onClick: () => {
 					const placeGraph = plugin.createPlaceGraphService();
-					placeGraph.reloadCache();
+					void placeGraph.reloadCache();
 					new EnrichPlaceHierarchyModal(plugin.app, placeGraph, {
 						directory: plugin.settings.placesFolder || '',
 						onComplete: () => showTab('places')
@@ -734,7 +734,7 @@ function loadPlaceStatistics(container: HTMLElement, plugin: CanvasRootsPlugin):
 	container.empty();
 
 	const placeService = plugin.createPlaceGraphService();
-	placeService.reloadCache();
+	void placeService.reloadCache();
 
 	const stats = placeService.calculateStatistics();
 
@@ -918,7 +918,7 @@ function loadPlaceList(
 	container.empty();
 
 	const placeService = plugin.createPlaceGraphService();
-	placeService.reloadCache();
+	void placeService.reloadCache();
 
 	const allPlaces = placeService.getAllPlaces();
 
@@ -1346,7 +1346,7 @@ function formatPlaceCategoryName(category: PlaceCategory): string {
  */
 function showCreateMissingPlacesModal(plugin: CanvasRootsPlugin, showTab: (tabId: string) => void): void {
 	const placeService = plugin.createPlaceGraphService();
-	placeService.reloadCache();
+	void placeService.reloadCache();
 
 	const references = placeService.getReferencedPlaces();
 
@@ -1775,7 +1775,7 @@ export function renderPlacesList(options: PlacesListOptions): void {
 	const { container, plugin, onStateChange } = options;
 
 	const placeService = plugin.createPlaceGraphService();
-	placeService.reloadCache();
+	void placeService.reloadCache();
 
 	const allPlaces = placeService.getAllPlaces();
 

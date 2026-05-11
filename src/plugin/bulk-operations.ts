@@ -85,7 +85,7 @@ export function openEditPlaceModal(plugin: CanvasRootsPlugin, file: TFile): void
 
 	// Load the place from the place graph
 	const placeGraph = plugin.createPlaceGraphService();
-	placeGraph.reloadCache();
+	void placeGraph.reloadCache();
 	const place = placeGraph.getPlaceByCrId(crId);
 
 	if (!place) {

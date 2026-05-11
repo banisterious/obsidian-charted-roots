@@ -167,8 +167,8 @@ export function planFrontmatterCleanup(
 	deletedCrId: string,
 	aliases: Record<string, string> = {},
 	deletedBasename?: string
-): Array<{ field: string; before: unknown; after: unknown | undefined }> {
-	const mutations: Array<{ field: string; before: unknown; after: unknown | undefined }> = [];
+): Array<{ field: string; before: unknown; after: unknown }> {
+	const mutations: Array<{ field: string; before: unknown; after: unknown }> = [];
 
 	// All relationship-array fields are de-facto polymorphic: YAML serializers
 	// (and the plugin's own writer) emit a scalar string when the array has a

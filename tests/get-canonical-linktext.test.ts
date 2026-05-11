@@ -230,7 +230,7 @@ describe('getCanonicalLinktext', () => {
 			const output = getCanonicalLinktext(app as unknown as App, target);
 
 			// Property 1: well-formed for [[…]] wrapping.
-			expect(output).not.toMatch(/[\[\]]/);
+			expect(output).not.toMatch(/[[\]]/);
 			expect(output).not.toContain('|');
 
 			// Property 2: trimmed.

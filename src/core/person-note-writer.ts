@@ -15,6 +15,16 @@ import { findCrNoteByCrId } from '../utils/cr-id-resolver';
 
 const logger = getLogger('PersonNoteWriter');
 
+// Coerce an unknown frontmatter value to a string when it's a scalar
+// (string/number/boolean). Returns undefined for objects, arrays, null, or
+// missing values — guards against accidentally stringifying objects as
+// '[object Object]' when frontmatter contains malformed nested data.
+function asScalarString(value: unknown): string | undefined {
+	if (typeof value === 'string') return value;
+	if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+	return undefined;
+}
+
 /**
  * Get the property name to write, respecting aliases
  * If user has an alias for this canonical property, return the user's property name
@@ -1290,15 +1300,19 @@ function collectSpouseIds(fm: Record<string, unknown> | undefined): Set<string> 
 	const ids = new Set<string>();
 	if (!fm) return ids;
 	for (let i = 1; i <= 10; i++) {
-		const id = fm[`spouse${i}_id`];
-		if (id) ids.add(String(id));
+		const id = asScalarString(fm[`spouse${i}_id`]);
+		if (id) ids.add(id);
 	}
 	const legacy = fm.spouse_id;
 	if (legacy !== undefined && legacy !== null) {
 		if (Array.isArray(legacy)) {
-			for (const id of legacy) ids.add(String(id));
+			for (const id of legacy) {
+				const s = asScalarString(id);
+				if (s) ids.add(s);
+			}
 		} else {
-			ids.add(String(legacy));
+			const s = asScalarString(legacy);
+			if (s) ids.add(s);
 		}
 	}
 	return ids;
@@ -1310,9 +1324,13 @@ function collectIdsFromField(fm: Record<string, unknown> | undefined, key: strin
 	const raw = fm[key];
 	if (raw === undefined || raw === null) return ids;
 	if (Array.isArray(raw)) {
-		for (const id of raw) ids.add(String(id));
+		for (const id of raw) {
+			const s = asScalarString(id);
+			if (s) ids.add(s);
+		}
 	} else {
-		ids.add(String(raw));
+		const s = asScalarString(raw);
+		if (s) ids.add(s);
 	}
 	return ids;
 }
@@ -1461,8 +1479,7 @@ export async function removeSpouseLink(
  * Returns `undefined` for missing/empty values. Used by reverse-unlink helpers.
  */
 function extractWikilinkName(value: unknown): string | undefined {
-	if (value === undefined || value === null) return undefined;
-	const str = String(value);
+	const str = asScalarString(value);
 	if (!str) return undefined;
 	const match = str.match(/\[\[([^\]]+)\]\]/);
 	const inner = match ? match[1] : str;
@@ -1551,12 +1568,12 @@ export async function updatePersonNote(
 	// file.
 	const beforeCache = app.metadataCache.getFileCache(file);
 	const beforeFm = beforeCache?.frontmatter as Record<string, unknown> | undefined;
-	const thisCrId = beforeFm?.cr_id ? String(beforeFm.cr_id) : undefined;
+	const thisCrId = asScalarString(beforeFm?.cr_id);
 	const directory = file.parent?.path || '';
-	const beforeFatherId = beforeFm?.father_id ? String(beforeFm.father_id) : undefined;
-	const beforeMotherId = beforeFm?.mother_id ? String(beforeFm.mother_id) : undefined;
-	const beforeAdoptiveFatherId = beforeFm?.adoptive_father_id ? String(beforeFm.adoptive_father_id) : undefined;
-	const beforeAdoptiveMotherId = beforeFm?.adoptive_mother_id ? String(beforeFm.adoptive_mother_id) : undefined;
+	const beforeFatherId = asScalarString(beforeFm?.father_id);
+	const beforeMotherId = asScalarString(beforeFm?.mother_id);
+	const beforeAdoptiveFatherId = asScalarString(beforeFm?.adoptive_father_id);
+	const beforeAdoptiveMotherId = asScalarString(beforeFm?.adoptive_mother_id);
 	const beforeSpouseIds = collectSpouseIds(beforeFm);
 	const beforeChildIds = collectIdsFromField(beforeFm, 'children_id');
 

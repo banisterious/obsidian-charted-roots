@@ -256,7 +256,7 @@ export class CreatePlaceModal extends Modal {
 		// the by-name lookup that suppresses the auto-create prompt. Without
 		// this, `ensureCacheLoaded` is a no-op once the cache is non-empty
 		// and stale entries hide places that exist on disk (#463, #464).
-		this.placeGraph?.reloadCache();
+		void this.placeGraph?.reloadCache();
 		// Gather existing collections from both person notes and place notes
 		this.loadExistingCollections();
 		// Build parent place options for dropdown
@@ -1615,7 +1615,7 @@ export class CreatePlaceModal extends Modal {
 		// Reload the place graph cache to include the newly created place
 		// This ensures the parent modal has up-to-date information
 		if (this.placeGraph) {
-			this.placeGraph.reloadCache();
+			void this.placeGraph.reloadCache();
 		}
 
 		// Small delay to let the current modal fully close
