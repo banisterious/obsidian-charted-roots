@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.30 Round-Up: cr_id Collision Filter, Negative-Year Decade Bucketing, and Family Chart XSS Hardening](#v02230-round-up-cr_id-collision-filter-negative-year-decade-bucketing-and-family-chart-xss-hardening-v02230)
   - [v0.22.29 Round-Up: Bidirectional-Sync Audit and the Seven Gaps It Surfaced](#v02229-round-up-bidirectional-sync-audit-and-the-seven-gaps-it-surfaced-v02229)
   - [v0.22.28 Round-Up: Edit-Modal Display Coverage and Property-Based Fuzz Expansion](#v02228-round-up-edit-modal-display-coverage-and-property-based-fuzz-expansion-v02228)
   - [v0.22.27 Round-Up: Cache-Race Audit and the End of the 2-Second Sleep](#v02227-round-up-cache-race-audit-and-the-end-of-the-2-second-sleep-v02227)
@@ -168,6 +169,37 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.30 Round-Up: cr_id Collision Filter, Negative-Year Decade Bucketing, and Family Chart XSS Hardening (v0.22.30)
+
+A patch around two reporter-surfaced fixes plus a security-hardening pass on the Family Chart render path and the housekeeping side of a recent ESLint plugin upgrade. [#559](https://github.com/banisterious/obsidian-charted-roots/issues/559) closes a wikilink-redirection case where an outside-CR duplicate cr_id (typically a File-Recovery copy or stray archive) could shadow the canonical note. [#560](https://github.com/banisterious/obsidian-charted-roots/issues/560) closes a fictional-vault decade-bucketing bug on Longevity Analysis and Timeline Density where negative years rounded toward negative infinity. Alongside, the Family Chart circle-card render path was rebuilt via DOM APIs so user-supplied person names can't be interpreted as HTML.
+
+**Fix: Wikilinks no longer redirect to recovered-duplicate files when a cr_id collision exists outside the Charted Roots folder** ([#559](https://github.com/banisterious/obsidian-charted-roots/issues/559)):
+- The writer's cr_id-resolution helper (`findFileByCrId`, with three near-identical copies in `person-note-writer.ts`, `organization-service.ts`, and `place-note-writer.ts`) iterated every markdown file in the vault and returned the first match for a given cr_id. When two files shared a cr_id — typically a canonical Charted Roots note plus an outside-CR duplicate (recovered via Obsidian's File Recovery, copied during troubleshooting, or archived elsewhere) — the resolver could return the outside-CR duplicate, and the writer would silently emit a path-aliased wikilink (`[[Outside-CR-basename|Display Name]]`) pointing at the wrong file.
+- The cr_id stayed correct in paired `<field>_id` arrays, so the underlying data wasn't lost. But renderers that filter on `cr_type` (the Family block, the Edit Person children list, etc.) dropped the entry because the resolved file wasn't a CR-typed note, making it appear "missing" until the duplicate was deleted.
+- The fix consolidates the three copies into a shared `findCrNoteByCrId(app, crId, expectedCrType)` helper at `src/utils/cr-id-resolver.ts` that requires the candidate file to carry the expected `cr_type` in its frontmatter, so a non-CR duplicate can't shadow the canonical note. Each existing call site already knew which entity type it was writing — the person variant always wants `'person'`, the org variant `'organization'`, the place variant `'place'` — so threading the type through is a mechanical change with no caller-side logic shift. A follow-up pass caught a fourth in-file caller in `place-note-writer.ts`'s simpler `createWikilink` helper that the initial sweep missed (esbuild bundles without typecheck, so the stale reference compiled through the production build but would have thrown at runtime if the parent-place picker fed it a cr_id).
+- Six unit tests cover the new helper: basic match, no-match, cross-type rejection, outside-CR duplicate skip (the headline case), no-frontmatter skip, and multiple-match-returns-first. Surfaced by [@DigitalDreamn](https://github.com/DigitalDreamn) via [#537](https://github.com/banisterious/obsidian-charted-roots/issues/537) — her vault had a canonical `Jodni Naberrie-Waldin.md` inside Charted Roots alongside a recovered `Jodni Naberrie.md` outside, both sharing Jodni's cr_id.
+
+**Fix: Negative-year decade bucketing on Longevity Analysis and Timeline Density** ([#560](https://github.com/banisterious/obsidian-charted-roots/issues/560)):
+- Both views computed decade buckets via `Math.floor(year / 10) * 10`, which rounds toward negative infinity. Positive years worked fine (1985 → 1980s), but negative years that didn't end in 0 were pushed into the next-more-negative decade: `-25` → `-30s`, `-21` → `-30s`, `-29` → `-30s`. Reporter had a cluster of fictional-vault characters with `-21` to `-27` birth years all labelled as `-30s`.
+- Switched to `Math.trunc`, which rounds toward zero and matches BCE/BBY convention where the "-20s decade" spans years -20 through -29. Years in the open range `(-10, 10)` all bucket to `0s` (a `|| 0` guard collapses JavaScript's `-0` to `+0` so the label doesn't render as `-0s`).
+- Fixed at all five sites: the shared `extractDecade` helper plus three Timeline Density tallies (events / births / deaths) and the by-decade grouping in `timeline-generator.ts`. Six unit tests cover positive years, the headline negative cases, exact-multiple-of-10 boundaries, the cross-zero `0s` collapse, and large negative years. Reported by [@doctorwodka](https://github.com/doctorwodka).
+
+**Hardening: Family Chart circle-card rendering no longer interprets person names as HTML**:
+- The circle-card update path replaced a card's `outerHTML` with a template-literal-built string that interpolated user-supplied person names, alt names, birth/death dates, and avatar paths directly. A name containing HTML characters (`<`, `>`, `&`) would render as markup or, in the worst case for a deliberately crafted name, execute as a script tag.
+- Rebuilt via DOM APIs (`createDiv` / `createEl` / `appendText` / `card.replaceWith`) so all interpolated content is text-only. No behavioral change for well-formed data; malicious or accidentally HTML-bearing frontmatter values now render literally as text. Surfaced by the new `no-unsanitized/property` rule introduced in the `eslint-plugin-obsidianmd` 0.2.9 upgrade — exactly the kind of latent issue the rule exists to catch.
+
+**Internal: ESLint baseline cleared of all real-signal errors after the 0.2.9 plugin upgrade**:
+- The `eslint-plugin-obsidianmd` 0.1.9 → 0.2.9 upgrade re-baselined the lint surface from 8197 problems down to 1592 (653 errors, 939 warnings), introducing new typed rules and refining existing ones. This patch clears the 76 non-sentence-case errors that surfaced — fire-and-forget `reloadCache` calls now use the `void` prefix (26 sites), an `asScalarString` helper guards frontmatter values from accidentally stringifying as `[object Object]` (11 sites), redundant type-union constituents are simplified (5 sites), template-literal expressions on `never` exhaustive-check fallbacks are wrapped via `String()` (4 sites), `instanceof SVGElement` checks are switched to Obsidian's cross-window-safe `.instanceOf(SVGElement)` (3 sites), unnecessary non-null assertions and type casts dropped (6 sites), regex `no-useless-escape` cleanups (2 sites), single-hit cleanups (3 sites), and dev-dep adjustments (replaced `builtin-modules` with Node's native `node:module`, declared `leaflet-toolbar` as a direct dependency, allowlisted `chalk` as a build-script-only acceptable dependency, added a tests-files override permitting TFile-shaped stubs in mocks).
+- Plus a first chunk of the sentence-case rebaseline (587 → 435) via brand/acronym config expansion (DNA-testing services, Web Clipper, A→Z sort indicators, lowercase frontmatter keys, date-format placeholders) and 34 brand-cap source fixes across 22 files. The remaining 435 sentence-case errors mix real Title Case → sentence case fixes with rule misfires on quoted button-label references and proper-noun lowercasing; each needs per-site review and is deferred.
+
+**Testing:** Suite total **834** (was 828 at v0.22.29), 63 suites. +6 regression tests in `tests/statistics-decade-bucketing.test.ts` covering positive years, negative non-multiples-of-10, exact-multiple boundaries, the cross-zero `0s` collapse, and large negative years.
+
+**Reporters:** [@DigitalDreamn](https://github.com/DigitalDreamn) for [#559](https://github.com/banisterious/obsidian-charted-roots/issues/559) (via the #537 follow-up thread); [@doctorwodka](https://github.com/doctorwodka) for [#560](https://github.com/banisterious/obsidian-charted-roots/issues/560).
+
+**Stability-window impact:** no reset — this is the eighth patch in the v0.22.22-anchored window (after v0.22.23 through v0.22.29). All `medium-priority` or lower; none reset. Window remains anchored to v0.22.22 (2026-05-07 → ~2026-05-28).
+
+---
 
 ### v0.22.29 Round-Up: Bidirectional-Sync Audit and the Seven Gaps It Surfaced (v0.22.29)
 
