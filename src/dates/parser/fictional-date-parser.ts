@@ -16,6 +16,40 @@ import type {
 import { pluralize } from '../../utils/format-utils';
 
 /**
+ * Strip approximation markers ("ish", "?", "circa", etc.) from a date string,
+ * returning the cleaned form plus a flag indicating whether any marker was
+ * removed. Handles both attached ("10ish") and detached ("10 ish") suffixes,
+ * trailing "?", and prefixes (circa, ca, c., about, abt, approx, ~).
+ *
+ * Without this, "EF 10ish" falls through every fictional-parser pattern and
+ * gets misclassified as a standard date (#562).
+ */
+function stripApproximationMarkers(input: string): { stripped: string; isApproximate: boolean } {
+	let stripped = input;
+	let isApproximate = false;
+
+	const afterPrefix = stripped.replace(/^(?:about|abt|circa|ca|c\.|approx(?:imately)?|~)\s+/i, '');
+	if (afterPrefix !== stripped) {
+		stripped = afterPrefix;
+		isApproximate = true;
+	}
+
+	const afterQuestion = stripped.replace(/\s*\?\s*$/, '');
+	if (afterQuestion !== stripped) {
+		stripped = afterQuestion;
+		isApproximate = true;
+	}
+
+	const afterIsh = stripped.replace(/(\d+)\s*ish\b/gi, '$1');
+	if (afterIsh !== stripped) {
+		stripped = afterIsh;
+		isApproximate = true;
+	}
+
+	return { stripped: stripped.trim(), isApproximate };
+}
+
+/**
  * Parser for fictional date systems
  */
 export class FictionalDateParser {
@@ -75,6 +109,11 @@ export class FictionalDateParser {
 			return { success: false, error: 'Empty date string', raw: dateStr };
 		}
 
+		// Strip approximation markers ("ish", "?", "circa", etc.) before pattern
+		// matching so "EF 10ish" parses as approximate "EF 10" rather than
+		// falling through to the standard-date fallback (#562).
+		const { stripped, isApproximate } = stripApproximationMarkers(trimmed);
+
 		// Try to match various patterns
 		const patterns = [
 			// "TA 2941" or "TA  2941" (abbreviation space year)
@@ -91,7 +130,7 @@ export class FictionalDateParser {
 		let yearStr: string | null = null;
 
 		for (const pattern of patterns) {
-			const match = trimmed.match(pattern);
+			const match = stripped.match(pattern);
 			if (match) {
 				if (/^\d+$/.test(match[1])) {
 					// Year first pattern
@@ -156,7 +195,8 @@ export class FictionalDateParser {
 				era,
 				year,
 				raw: dateStr,
-				canonicalYear
+				canonicalYear,
+				...(isApproximate ? { isApproximate: true } : {})
 			}
 		};
 	}

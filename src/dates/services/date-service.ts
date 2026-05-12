@@ -94,7 +94,8 @@ export class DateService {
 					type: 'fictional',
 					raw: trimmed,
 					year: fictionalResult.date.canonicalYear,
-					fictional: fictionalResult.date
+					fictional: fictionalResult.date,
+					...(fictionalResult.date.isApproximate ? { isApproximate: true } : {})
 				};
 			}
 		}
@@ -329,7 +330,12 @@ export class DateService {
 	 */
 	private isApproximateDate(dateString: string): boolean {
 		const normalized = dateString.toLowerCase().trim();
-		return /(?:ab(?:ou)?t|circa|c\.|~|bet(?:ween)?|bef(?:ore)?|aft(?:er)?)/.test(normalized);
+		// Prefix markers: about/abt, circa/ca/c., ~, between/bef/aft. Suffix markers: trailing ? or
+		// digit-anchored "ish" (e.g. "1850ish", "1850 ish"). The digit anchor avoids matching words
+		// like "Polish" or "publish" that happen to share the substring.
+		return /(?:ab(?:ou)?t|circa|c\.|~|bet(?:ween)?|bef(?:ore)?|aft(?:er)?)/.test(normalized)
+			|| /\?\s*$/.test(normalized)
+			|| /\d+\s*ish\b/.test(normalized);
 	}
 }
 

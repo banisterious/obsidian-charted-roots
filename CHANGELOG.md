@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **Fictional dates with trailing "ish" or "?" no longer drop off the Timeline Density chart** ([#562](https://github.com/banisterious/obsidian-charted-roots/issues/562)): the fictional-date parser's four regex patterns were anchored `^...$` and rejected any input carrying a trailing approximation marker. With multiple eras configured, a date like `EF 10ish` failed every fictional pattern, fell through to the standard fallback (which only accepts 4-digit years), and ended up matched by the final digit-run regex in `extractYear` — placing the event in the wrong decade (era-local `10s` instead of canonical `-90s` for an EF era with epoch `-100`). The reporter perceived this as "wholly removed" because the decade they expected no longer held it. Added a `stripApproximationMarkers` helper at the top of `FictionalDateParser` that strips trailing `ish` (attached or detached), trailing `?`, and prefix markers (`about`, `abt`, `circa`, `ca`, `c.`, `approx`, `approximately`, `~`) before pattern matching, and sets `isApproximate: true` on the returned `ParsedFictionalDate`. The flag propagates through `DateService.parseDate` so downstream consumers can render approximation indicators. The standard-date `isApproximateDate` recognizer is also extended to catch trailing `ish` (digit-anchored, so it doesn't false-positive on words like "Polish") and `?`. Twelve new tests cover the headline cases (`EF 10ish`, `EF 10 ish`, `10ish EF`, `EF 10?`, `circa EF 10`, `ca EF 10`, `approx EF 10`), the non-approximate controls, and the `DateService` integration. Reporter [@doctorwodka](https://github.com/doctorwodka).
+
 ### Changed
 
 - **Internal: snapshot-init `setTimeout` is now cancelled on plugin unload**: the bidirectional-linker snapshot initialization was deferred by 1 second via a bare `setTimeout` to avoid blocking plugin startup. If the user disabled Charted Roots within that window, the callback fired against a disposed plugin instance. The timer handle is now stored on the plugin and cleared in `onunload`.

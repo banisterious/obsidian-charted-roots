@@ -72,6 +72,8 @@ export interface ParsedFictionalDate {
 	raw: string;
 	/** Canonical year for sorting/comparison (absolute timeline position) */
 	canonicalYear: number;
+	/** Whether the date carried an approximation marker (ish, ?, circa, etc.) */
+	isApproximate?: boolean;
 }
 
 /**
