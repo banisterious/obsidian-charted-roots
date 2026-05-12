@@ -92,6 +92,7 @@ export default class CanvasRootsPlugin extends Plugin {
 	private fileModifyEventRef: EventRef | null = null;
 	private fileDeleteEventRef: EventRef | null = null;
 	private universeRenameEventRef: EventRef | null = null;
+	private bidirectionalSnapshotTimer: ReturnType<typeof setTimeout> | null = null;
 	public bidirectionalLinker: BidirectionalLinker | null = null;
 	private relationshipHistory: RelationshipHistoryService | null = null;
 	private folderFilter: FolderFilterService | null = null;
@@ -698,8 +699,12 @@ export default class CanvasRootsPlugin extends Plugin {
 	private initializeBidirectionalSnapshots() {
 		const linker = this.getBidirectionalLinker();
 
-		// Run after a 1-second delay to not impact plugin load performance
-		setTimeout(() => {
+		// Run after a 1-second delay to not impact plugin load performance.
+		// Handle is tracked so onunload can cancel it — without the clear,
+		// the callback can fire against a disposed plugin if the user
+		// disables Charted Roots within the 1-second window.
+		this.bidirectionalSnapshotTimer = setTimeout(() => {
+			this.bidirectionalSnapshotTimer = null;
 			try {
 				linker.initializeSnapshots();
 			} catch (error: unknown) {
@@ -928,6 +933,14 @@ export default class CanvasRootsPlugin extends Plugin {
 
 	onunload() {
 		console.debug('Unloading Charted Roots plugin');
+
+		// Cancel the pending snapshot-init timer so it can't fire against
+		// a disposed plugin (the 1-second deferral is intentional but
+		// must not outlive the plugin's lifetime).
+		if (this.bidirectionalSnapshotTimer !== null) {
+			clearTimeout(this.bidirectionalSnapshotTimer);
+			this.bidirectionalSnapshotTimer = null;
+		}
 
 		// Clean up event handlers
 		if (this.fileModifyEventRef) {
