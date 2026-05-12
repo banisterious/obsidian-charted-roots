@@ -498,7 +498,7 @@ export class PersonPickerModal extends Modal {
 		// Use multiple attempts with increasing delays for reliable focus,
 		// especially on macOS where context menu dismissal can delay focus readiness
 		const focusInput = () => {
-			if (this.searchInput && document.body.contains(this.searchInput)) {
+			if (this.searchInput && activeDocument.body.contains(this.searchInput)) {
 				this.searchInput.focus();
 			}
 		};

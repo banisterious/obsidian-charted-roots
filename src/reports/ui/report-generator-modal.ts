@@ -588,7 +588,7 @@ export class ReportGeneratorModal extends Modal {
 			button
 				.setButtonText(this.pdfOptions.logoDataUrl ? 'Change...' : 'Select image...')
 				.onClick(() => {
-					const input = document.createElement('input');
+					const input = activeDocument.createElement('input');
 					input.type = 'file';
 					input.accept = 'image/png,image/jpeg,image/gif,image/webp';
 					input.onchange = async () => {
@@ -717,7 +717,7 @@ export class ReportGeneratorModal extends Modal {
 				}
 
 				// Draw to canvas at new size
-				const canvas = document.createElement('canvas');
+				const canvas = activeDocument.createElement('canvas');
 				canvas.width = width;
 				canvas.height = height;
 				const ctx = canvas.getContext('2d');

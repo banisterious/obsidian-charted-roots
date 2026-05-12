@@ -399,7 +399,7 @@ export const TAB_CONFIGS: TabConfig[] = [
  * @returns HTMLElement with the icon rendered
  */
 export function createLucideIcon(iconName: LucideIconName, size: number = 20): HTMLElement {
-	const iconEl = document.createElement('span');
+	const iconEl = activeDocument.createElement('span');
 	iconEl.addClass('crc-icon', 'cr-lucide-icon');
 	iconEl.style.setProperty('width', `${size}px`);
 	iconEl.style.setProperty('height', `${size}px`);

@@ -1095,7 +1095,7 @@ export class CreateEventModal extends Modal {
 		if (existingDate === dateValue) return; // Already matches
 
 		// Build notice with clickable action
-		const fragment = document.createDocumentFragment();
+		const fragment = activeDocument.createDocumentFragment();
 		const message = existingDate
 			? `${personName} has ${field}: ${existingDate}. Update to ${dateValue}?`
 			: `Copy ${this.eventType} date to ${personName}?`;

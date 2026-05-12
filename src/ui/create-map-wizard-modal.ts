@@ -994,8 +994,8 @@ export class CreateMapWizardModal extends Modal {
 			offsetY = e.clientY - (markerRect.top + markerRect.height / 2);
 
 			marker.addClass('crc-wizard-place-marker--dragging');
-			document.addEventListener('mousemove', onMouseMove);
-			document.addEventListener('mouseup', onMouseUp);
+			activeDocument.addEventListener('mousemove', onMouseMove);
+			activeDocument.addEventListener('mouseup', onMouseUp);
 		};
 
 		const onMouseMove = (e: MouseEvent) => {
@@ -1029,8 +1029,8 @@ export class CreateMapWizardModal extends Modal {
 			if (!isDragging) return;
 			isDragging = false;
 			marker.removeClass('crc-wizard-place-marker--dragging');
-			document.removeEventListener('mousemove', onMouseMove);
-			document.removeEventListener('mouseup', onMouseUp);
+			activeDocument.removeEventListener('mousemove', onMouseMove);
+			activeDocument.removeEventListener('mouseup', onMouseUp);
 
 			// Calculate final position in image pixel coordinates
 			const imgRect = imgEl.getBoundingClientRect();

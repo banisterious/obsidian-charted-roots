@@ -241,7 +241,7 @@ export class PlaceNetworkModal extends Modal {
 		}
 
 		// Create SVG
-		const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+		const svg = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'svg');
 		svg.setAttribute('width', String(width));
 		svg.setAttribute('height', String(height));
 		svg.setAttribute('class', 'crc-network-svg');
@@ -249,8 +249,8 @@ export class PlaceNetworkModal extends Modal {
 
 		// Add arrowhead marker definition for migration flows
 		if (this.showMigrations && this.migrationFlows.length > 0) {
-			const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-			const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+			const defs = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'defs');
+			const marker = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'marker');
 			marker.setAttribute('id', 'migration-arrow');
 			marker.setAttribute('viewBox', '0 0 10 10');
 			marker.setAttribute('refX', '9');
@@ -258,7 +258,7 @@ export class PlaceNetworkModal extends Modal {
 			marker.setAttribute('markerWidth', '6');
 			marker.setAttribute('markerHeight', '6');
 			marker.setAttribute('orient', 'auto-start-reverse');
-			const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+			const path = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'path');
 			path.setAttribute('d', 'M 0 0 L 10 5 L 0 10 z');
 			path.setAttribute('fill', 'var(--color-orange)');
 			marker.appendChild(path);
@@ -383,7 +383,7 @@ export class PlaceNetworkModal extends Modal {
 	 * Draw a network edge
 	 */
 	private drawEdge(svg: SVGElement, edge: NetworkEdge): void {
-		const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+		const path = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'path');
 
 		if (this.viewMode === 'hierarchy') {
 			// Curved path for hierarchy view
@@ -450,7 +450,7 @@ export class PlaceNetworkModal extends Modal {
 		const perpX = -dy / dist * 20;
 		const perpY = dx / dist * 20;
 
-		const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+		const path = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'path');
 		const d = `M ${startX} ${startY} Q ${midX + perpX} ${midY + perpY}, ${endX} ${endY}`;
 		path.setAttribute('d', d);
 		path.setAttribute('fill', 'none');
@@ -470,7 +470,7 @@ export class PlaceNetworkModal extends Modal {
 	 * Draw a network node
 	 */
 	private drawNode(svg: SVGElement, node: NetworkNode): void {
-		const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+		const g = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'g');
 		g.setAttribute('class', 'crc-network-node');
 		g.setAttribute('data-id', node.id);
 
@@ -480,7 +480,7 @@ export class PlaceNetworkModal extends Modal {
 		const radius = Math.min(baseRadius + Math.sqrt(node.personCount) * 3, maxRadius);
 
 		// Circle
-		const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+		const circle = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'circle');
 		circle.setAttribute('cx', String(node.x));
 		circle.setAttribute('cy', String(node.y));
 		circle.setAttribute('r', String(radius));
@@ -490,7 +490,7 @@ export class PlaceNetworkModal extends Modal {
 		g.appendChild(circle);
 
 		// Label
-		const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+		const text = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'text');
 		text.setAttribute('x', String(node.x));
 		text.setAttribute('y', String(node.y + radius + 14));
 		text.setAttribute('text-anchor', 'middle');

@@ -268,7 +268,7 @@ export class CropRegionModal extends Modal {
 	private updatePreview(): void {
 		if (!this.previewImg || !this.loadedImage) return;
 
-		const canvas = document.createElement('canvas');
+		const canvas = activeDocument.createElement('canvas');
 		const cr = this.cropRect;
 		canvas.width = cr.w;
 		canvas.height = cr.h;

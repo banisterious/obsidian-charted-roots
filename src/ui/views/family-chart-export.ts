@@ -187,7 +187,7 @@ async function exportAsPngWithOptions(
 		const svgUrl = URL.createObjectURL(svgBlob);
 
 		// Create canvas and draw SVG
-		const canvas = document.createElement('canvas');
+		const canvas = activeDocument.createElement('canvas');
 		canvas.width = scaledWidth;
 		canvas.height = scaledHeight;
 		const ctxCanvas = canvas.getContext('2d');
@@ -208,7 +208,7 @@ async function exportAsPngWithOptions(
 				if (blob) {
 					onProgress?.({ phase: 'saving', current: 0, total: 100, message: 'Saving file...' });
 					const url = URL.createObjectURL(blob);
-					const link = document.createElement('a');
+					const link = activeDocument.createElement('a');
 					link.href = url;
 					link.download = filename;
 					link.click();
@@ -271,7 +271,7 @@ async function exportAsSvgWithOptions(
 		const svgString = serializer.serializeToString(svgClone);
 		const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
 		const url = URL.createObjectURL(blob);
-		const link = document.createElement('a');
+		const link = activeDocument.createElement('a');
 		link.href = url;
 		link.download = filename;
 		link.click();
@@ -360,7 +360,7 @@ async function exportAsPdfWithOptions(
 		onProgress?.({ phase: 'rendering', current: 0, total: 100, message: 'Rendering image...' });
 
 		// Create canvas
-		const canvas = document.createElement('canvas');
+		const canvas = activeDocument.createElement('canvas');
 		canvas.width = scaledWidth;
 		canvas.height = scaledHeight;
 		const ctxCanvas = canvas.getContext('2d');
@@ -558,7 +558,7 @@ async function exportAsOdtWithOptions(
 		const svgUrl = URL.createObjectURL(svgBlob);
 
 		// Create canvas
-		const canvas = document.createElement('canvas');
+		const canvas = activeDocument.createElement('canvas');
 		canvas.width = scaledWidth;
 		canvas.height = scaledHeight;
 		const ctxCanvas = canvas.getContext('2d');
@@ -598,7 +598,7 @@ async function exportAsOdtWithOptions(
 
 			// Download the ODT file
 			const url = URL.createObjectURL(odtBlob);
-			const link = document.createElement('a');
+			const link = activeDocument.createElement('a');
 			link.href = url;
 			link.download = filename;
 			link.click();
@@ -900,7 +900,7 @@ function _inlineStyles(source: Element, target: Element): void {
 		}
 		// Fallback: ensure text is visible based on theme
 		if (!styleString.includes('fill:') || styleString.includes('fill:rgb(0, 0, 0)')) {
-			const isDark = document.body.classList.contains('theme-dark');
+			const isDark = activeDocument.body.classList.contains('theme-dark');
 			styleString += `fill:${isDark ? '#ffffff' : '#333333'};`;
 		}
 	}
@@ -997,7 +997,7 @@ export async function exportAsPng(ctx: FamilyChartExportContext): Promise<void> 
 		logger.debug('export-png', 'SVG serialized', { svgStringLength: svgString.length });
 
 		// Create canvas and draw SVG
-		const canvas = document.createElement('canvas');
+		const canvas = activeDocument.createElement('canvas');
 		canvas.width = scaledWidth;
 		canvas.height = scaledHeight;
 		const ctxCanvas = canvas.getContext('2d');
@@ -1021,7 +1021,7 @@ export async function exportAsPng(ctx: FamilyChartExportContext): Promise<void> 
 				if (blob) {
 					logger.debug('export-png', 'Blob created', { size: blob.size });
 					const url = URL.createObjectURL(blob);
-					const link = document.createElement('a');
+					const link = activeDocument.createElement('a');
 					link.href = url;
 					link.download = filename;
 					link.click();
@@ -1144,7 +1144,7 @@ export function prepareSvgForExport(ctx: FamilyChartExportContext, svg: SVGSVGEl
 	}
 
 	// Theme colors
-	const isDark = document.body.classList.contains('theme-dark');
+	const isDark = activeDocument.body.classList.contains('theme-dark');
 	const textColor = isDark ? '#ffffff' : '#333333';
 	const bgColor = isDark ? 'rgb(33, 33, 33)' : 'rgb(250, 250, 250)';
 	const femaleColor = 'rgba(154, 89, 113, 1)';
@@ -1153,7 +1153,7 @@ export function prepareSvgForExport(ctx: FamilyChartExportContext, svg: SVGSVGEl
 	const genderlessColor = 'rgb(59, 85, 96)';
 
 	// Embed CSS styles directly in the SVG for standalone rendering
-	const styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+	const styleEl = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'style');
 	styleEl.textContent = `
 		text, tspan {
 			fill: ${textColor};
@@ -1244,7 +1244,7 @@ export function prepareSvgForExport(ctx: FamilyChartExportContext, svg: SVGSVGEl
 	}
 
 	// Add background rect
-	const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+	const bgRect = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'rect');
 	bgRect.setAttribute('x', String(minX));
 	bgRect.setAttribute('y', String(minY));
 	bgRect.setAttribute('width', String(width));
@@ -1310,7 +1310,7 @@ function embedHtmlCardsForExport(ctx: FamilyChartExportContext, svgClone: SVGSVG
 		const bgColor = isFemale ? femaleColor : isMale ? maleColor : isNonbinary ? nonbinaryColor : genderlessColor;
 
 		// Create a group for this card
-		const cardGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+		const cardGroup = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'g');
 		cardGroup.setAttribute('transform', `translate(${x}, ${y})`);
 
 		if (isImage) {
@@ -1324,7 +1324,7 @@ function embedHtmlCardsForExport(ctx: FamilyChartExportContext, svgClone: SVGSVG
 			const cardPadding = 5;
 
 			// Background circle
-			const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+			const bgCircle = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'circle');
 			bgCircle.setAttribute('r', String(radius + cardPadding));
 			bgCircle.setAttribute('fill', bgColor);
 			cardGroup.appendChild(bgCircle);
@@ -1332,18 +1332,18 @@ function embedHtmlCardsForExport(ctx: FamilyChartExportContext, svgClone: SVGSVG
 			// Clip path for circular image
 			const clipId = `circle-clip-${x}-${y}`.replace(/[.-]/g, '_');
 			const defs = svgClone.querySelector('defs') || svgClone.insertBefore(
-				document.createElementNS('http://www.w3.org/2000/svg', 'defs'),
+				activeDocument.createElementNS('http://www.w3.org/2000/svg', 'defs'),
 				svgClone.firstChild
 			);
-			const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+			const clipPath = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
 			clipPath.setAttribute('id', clipId);
-			const clipCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+			const clipCircle = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'circle');
 			clipCircle.setAttribute('r', String(radius));
 			clipPath.appendChild(clipCircle);
 			defs.appendChild(clipPath);
 
 			// Image element (will be converted to base64 by embedImagesAsBase64)
-			const imageEl = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+			const imageEl = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'image');
 			imageEl.setAttribute('href', imgSrc);
 			imageEl.setAttribute('x', String(-radius));
 			imageEl.setAttribute('y', String(-radius));
@@ -1355,7 +1355,7 @@ function embedHtmlCardsForExport(ctx: FamilyChartExportContext, svgClone: SVGSVG
 
 			// Label background
 			const labelWidth = Math.max(labelText.length * 7, 60);
-			const labelRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+			const labelRect = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'rect');
 			labelRect.setAttribute('x', String(-labelWidth / 2));
 			labelRect.setAttribute('y', String(radius + cardPadding + 5));
 			labelRect.setAttribute('width', String(labelWidth));
@@ -1365,7 +1365,7 @@ function embedHtmlCardsForExport(ctx: FamilyChartExportContext, svgClone: SVGSVG
 			cardGroup.appendChild(labelRect);
 
 			// Label text
-			const labelTextEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+			const labelTextEl = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'text');
 			labelTextEl.setAttribute('x', '0');
 			labelTextEl.setAttribute('y', String(radius + cardPadding + 18));
 			labelTextEl.setAttribute('text-anchor', 'middle');
@@ -1381,7 +1381,7 @@ function embedHtmlCardsForExport(ctx: FamilyChartExportContext, svgClone: SVGSVG
 			const cardHeight = 70;
 
 			// Background rect
-			const bgRectEl = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+			const bgRectEl = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'rect');
 			bgRectEl.setAttribute('x', String(-cardWidth / 2));
 			bgRectEl.setAttribute('y', String(-cardHeight / 2));
 			bgRectEl.setAttribute('width', String(cardWidth));
@@ -1391,7 +1391,7 @@ function embedHtmlCardsForExport(ctx: FamilyChartExportContext, svgClone: SVGSVG
 			cardGroup.appendChild(bgRectEl);
 
 			// Text
-			const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+			const textEl = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'text');
 			textEl.setAttribute('x', '0');
 			textEl.setAttribute('y', '5');
 			textEl.setAttribute('text-anchor', 'middle');
@@ -1538,7 +1538,7 @@ export async function convertImageToBase64(url: string, maxSize: number = 150): 
 					height = Math.round(height * scale);
 				}
 
-				const canvas = document.createElement('canvas');
+				const canvas = activeDocument.createElement('canvas');
 				canvas.width = width;
 				canvas.height = height;
 
@@ -1657,7 +1657,7 @@ export async function exportAsSvg(ctx: FamilyChartExportContext, includeAvatars:
 		// Download
 		const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
 		const url = URL.createObjectURL(blob);
-		const link = document.createElement('a');
+		const link = activeDocument.createElement('a');
 		link.href = url;
 		link.download = generateExportFilename(ctx, 'svg');
 		link.click();
@@ -1717,7 +1717,7 @@ export async function exportAsPdf(ctx: FamilyChartExportContext): Promise<void> 
 		const svgUrl = URL.createObjectURL(svgBlob);
 
 		// Create canvas and draw SVG (same as PNG export)
-		const canvas = document.createElement('canvas');
+		const canvas = activeDocument.createElement('canvas');
 		canvas.width = scaledWidth;
 		canvas.height = scaledHeight;
 		const ctxCanvas = canvas.getContext('2d');

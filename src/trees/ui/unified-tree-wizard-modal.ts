@@ -2166,12 +2166,12 @@ export class UnifiedTreeWizardModal extends Modal {
 			// Download the ODT file - use the title for the filename
 			const fileName = `${title.replace(/[^a-zA-Z0-9]/g, '_')}.odt`;
 			const url = URL.createObjectURL(odtBlob);
-			const a = document.createElement('a');
+			const a = activeDocument.createElement('a');
 			a.href = url;
 			a.download = fileName;
-			document.body.appendChild(a);
+			activeDocument.body.appendChild(a);
 			a.click();
-			document.body.removeChild(a);
+			activeDocument.body.removeChild(a);
 			URL.revokeObjectURL(url);
 
 			new Notice(`ODT generated with ${layout.stats.peopleCount} people across ${layout.stats.generationsCount} generations.`);

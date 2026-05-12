@@ -30,7 +30,7 @@ export function stripWikilinks(content: string): string {
 }
 
 /**
- * Strip charted-roots dynamic code blocks that won't render in a document.
+ * Strip charted-roots dynamic code blocks that won't render in a activeDocument.
  */
 export function stripDynamicBlocks(content: string): string {
 	return content.replace(/```charted-roots-[\s\S]*?```/g, '');

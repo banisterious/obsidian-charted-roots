@@ -252,7 +252,7 @@ function showTreeGenerationTab(options: TreesTabOptions): void {
 
 	const bookContent = bookCard.createDiv({ cls: 'crc-tree-card__content' });
 	const bookDesc = bookContent.createDiv({ cls: 'crc-text-muted crc-mb-2' });
-	bookDesc.setText('Compile reports, trees, and notes into a single PDF or ODT document.');
+	bookDesc.setText('Compile reports, trees, and notes into a single PDF or ODT activeDocument.');
 
 	const bookActions = bookContent.createDiv({ cls: 'cr-sv-report-card-actions' });
 	const bookBtn = bookActions.createEl('button', {
@@ -1518,12 +1518,12 @@ async function _handleGedcomExport(
 				// Download file
 				const blob = new Blob([result.gedcomContent], { type: 'text/plain' });
 				const url = URL.createObjectURL(blob);
-				const a = document.createElement('a');
+				const a = activeDocument.createElement('a');
 				a.href = url;
 				a.download = `${result.fileName}.ged`;
-				document.body.appendChild(a);
+				activeDocument.body.appendChild(a);
 				a.click();
-				document.body.removeChild(a);
+				activeDocument.body.removeChild(a);
 				URL.revokeObjectURL(url);
 
 				// Save last export info

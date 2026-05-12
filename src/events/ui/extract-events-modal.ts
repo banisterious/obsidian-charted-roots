@@ -1,7 +1,7 @@
 /**
  * Extract Events Modal
  *
- * Modal for extracting event notes from a source document.
+ * Modal for extracting event notes from a source activeDocument.
  * Pre-populates event data from source metadata and allows
  * batch creation of multiple events.
  */

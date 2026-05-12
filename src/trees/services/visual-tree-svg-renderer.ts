@@ -105,7 +105,7 @@ export class VisualTreeSvgRenderer {
 			const url = URL.createObjectURL(svgBlob);
 
 			const img = new Image();
-			const canvas = document.createElement('canvas');
+			const canvas = activeDocument.createElement('canvas');
 			const scale = 2; // 2x resolution for better quality
 			canvas.width = width * scale;
 			canvas.height = height * scale;

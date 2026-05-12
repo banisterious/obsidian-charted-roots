@@ -131,7 +131,7 @@ function renderEventNotesCard(
 				plugin.app.setting.openTabById('charted-roots');
 				// Delay to allow settings tab to render, then expand the dates section
 				window.setTimeout(() => {
-					const datesSection = document.querySelector('.cr-settings-section[data-section-name="dates"]') as HTMLDetailsElement;
+					const datesSection = activeDocument.querySelector('.cr-settings-section[data-section-name="dates"]') as HTMLDetailsElement;
 					if (datesSection) datesSection.open = true;
 				}, 200);
 			}));
@@ -239,7 +239,7 @@ function addEventsDockButton(card: HTMLElement, plugin: CanvasRootsPlugin): void
 	const header = card.querySelector('.crc-card__header');
 	if (!header) return;
 
-	const dockBtn = document.createElement('button');
+	const dockBtn = activeDocument.createElement('button');
 	dockBtn.className = 'crc-card__dock-btn clickable-icon';
 	dockBtn.setAttribute('aria-label', 'Open in sidebar');
 	setIcon(dockBtn, 'panel-right');
@@ -803,7 +803,7 @@ function renderExportCard(
 	openReportsLink.addEventListener('click', (e) => {
 		e.preventDefault();
 		// Navigate to Reports tab in Control Center
-		const controlCenter = document.querySelector('.canvas-roots-control-center');
+		const controlCenter = activeDocument.querySelector('.canvas-roots-control-center');
 		if (controlCenter) {
 			const reportsTab = controlCenter.querySelector('[data-tab-id="reports"]') as HTMLElement;
 			if (reportsTab) {

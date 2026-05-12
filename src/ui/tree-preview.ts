@@ -85,10 +85,10 @@ export class TreePreviewRenderer {
 	 * Setup tooltip element for hover interactions
 	 */
 	private setupTooltip(): void {
-		this.tooltipElement = document.createElement('div');
+		this.tooltipElement = activeDocument.createElement('div');
 		this.tooltipElement.addClass('crc-preview-tooltip');
 		this.tooltipElement.addClass('cr-hidden');
-		document.body.appendChild(this.tooltipElement);
+		activeDocument.body.appendChild(this.tooltipElement);
 	}
 
 	/**
@@ -196,13 +196,13 @@ export class TreePreviewRenderer {
 	 * Create SVG element for rendering
 	 */
 	private createSVG(): SVGElement {
-		const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+		const svg = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'svg');
 		svg.setAttribute('class', 'crc-tree-preview-svg');
 		svg.setAttribute('width', '100%');
 		svg.setAttribute('height', '100%');
 
 		// Add container group for zoom/pan
-		const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+		const g = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'g');
 		g.setAttribute('class', 'crc-tree-preview-content');
 		svg.appendChild(g);
 
@@ -227,12 +227,12 @@ export class TreePreviewRenderer {
 
 		for (const pos of positions) {
 			// Create node group
-			const nodeGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+			const nodeGroup = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'g');
 			nodeGroup.setAttribute('class', 'crc-preview-node');
 			nodeGroup.setAttribute('data-cr-id', pos.crId);
 
 			// Create rectangle
-			const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+			const rect = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'rect');
 			rect.setAttribute('x', (pos.x - previewWidth / 2).toString());
 			rect.setAttribute('y', (pos.y - previewHeight / 2).toString());
 			rect.setAttribute('width', previewWidth.toString());
@@ -247,7 +247,7 @@ export class TreePreviewRenderer {
 			rect.setAttribute('stroke', fillColor);
 
 			// Create text label (just name, no dates in preview)
-			const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+			const text = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'text');
 			text.setAttribute('x', pos.x.toString());
 			text.setAttribute('y', pos.y.toString());
 			text.setAttribute('class', 'crc-preview-node-text');
@@ -301,7 +301,7 @@ export class TreePreviewRenderer {
 
 			if (!fromPos || !toPos) continue;
 
-			const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+			const line = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'line');
 			line.setAttribute('x1', fromPos.x.toString());
 			line.setAttribute('y1', fromPos.y.toString());
 			line.setAttribute('x2', toPos.x.toString());
@@ -548,14 +548,14 @@ export class TreePreviewRenderer {
 		});
 
 		// Explicitly set fill color on all text elements (CSS won't survive serialization)
-		const isDark = document.body.classList.contains('theme-dark');
+		const isDark = activeDocument.body.classList.contains('theme-dark');
 		const textColor = isDark ? '#ffffff' : '#333333';
 		svgClone.querySelectorAll('text, tspan').forEach((el) => {
 			el.setAttribute('fill', textColor);
 		});
 
 		// Add background rect for proper rendering
-		const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+		const bgRect = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'rect');
 		bgRect.setAttribute('width', '100%');
 		bgRect.setAttribute('height', '100%');
 		bgRect.setAttribute('fill', isDark ? '#1e1e1e' : '#ffffff');
@@ -568,7 +568,7 @@ export class TreePreviewRenderer {
 
 		// Create image and canvas
 		const img = new Image();
-		const canvas = document.createElement('canvas');
+		const canvas = activeDocument.createElement('canvas');
 		const scale = 2; // 2x resolution for better quality
 		canvas.width = width * scale;
 		canvas.height = height * scale;
@@ -671,14 +671,14 @@ export class TreePreviewRenderer {
 		});
 
 		// Set text colors
-		const isDark = document.body.classList.contains('theme-dark');
+		const isDark = activeDocument.body.classList.contains('theme-dark');
 		const textColor = isDark ? '#ffffff' : '#333333';
 		svgClone.querySelectorAll('text, tspan').forEach((el) => {
 			el.setAttribute('fill', textColor);
 		});
 
 		// Add background rect
-		const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+		const bgRect = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'rect');
 		bgRect.setAttribute('width', '100%');
 		bgRect.setAttribute('height', '100%');
 		bgRect.setAttribute('fill', isDark ? '#1e1e1e' : '#ffffff');
@@ -691,7 +691,7 @@ export class TreePreviewRenderer {
 
 		// Create image and canvas
 		const img = new Image();
-		const canvas = document.createElement('canvas');
+		const canvas = activeDocument.createElement('canvas');
 		const scale = 2; // 2x resolution for better quality
 		canvas.width = width * scale;
 		canvas.height = height * scale;
@@ -799,12 +799,12 @@ export class TreePreviewRenderer {
 	 */
 	private downloadBlob(blob: Blob, filename: string): void {
 		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
+		const a = activeDocument.createElement('a');
 		a.href = url;
 		a.download = filename;
-		document.body.appendChild(a);
+		activeDocument.body.appendChild(a);
 		a.click();
-		document.body.removeChild(a);
+		activeDocument.body.removeChild(a);
 		URL.revokeObjectURL(url);
 	}
 

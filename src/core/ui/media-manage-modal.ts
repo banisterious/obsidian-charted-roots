@@ -166,7 +166,7 @@ export class MediaManageModal extends Modal {
 	 * Create a media row element
 	 */
 	private createMediaRow(item: MediaItem, index: number): HTMLElement {
-		const row = document.createElement('div');
+		const row = activeDocument.createElement('div');
 		row.className = 'crc-media-manage-row';
 		row.dataset.index = index.toString();
 		row.draggable = true;

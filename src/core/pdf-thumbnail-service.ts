@@ -96,7 +96,7 @@ export class PdfThumbnailService {
 			const scaledViewport = page.getViewport({ scale });
 
 			// Create an offscreen canvas
-			const canvas = document.createElement('canvas');
+			const canvas = activeDocument.createElement('canvas');
 			canvas.width = scaledViewport.width;
 			canvas.height = scaledViewport.height;
 

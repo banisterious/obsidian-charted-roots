@@ -381,7 +381,7 @@ export class StatisticsView extends ItemView {
 	 * Build entity overview content
 	 */
 	private buildEntityOverviewContent(): HTMLElement {
-		const content = document.createElement('div');
+		const content = activeDocument.createElement('div');
 		content.addClass('cr-sv-entity-overview');
 
 		if (!this.stats) return content;
@@ -427,7 +427,7 @@ export class StatisticsView extends ItemView {
 	 * Build completeness content
 	 */
 	private buildCompletenessContent(): HTMLElement {
-		const content = document.createElement('div');
+		const content = activeDocument.createElement('div');
 		content.addClass('cr-sv-completeness');
 
 		if (!this.stats) return content;
@@ -505,7 +505,7 @@ export class StatisticsView extends ItemView {
 	 * Build quality content with drill-down support
 	 */
 	private buildQualityContent(): HTMLElement {
-		const content = document.createElement('div');
+		const content = activeDocument.createElement('div');
 		content.addClass('cr-sv-quality');
 
 		if (!this.stats) return content;
@@ -782,7 +782,7 @@ export class StatisticsView extends ItemView {
 	 * Build gender distribution content
 	 */
 	private buildGenderContent(): HTMLElement {
-		const content = document.createElement('div');
+		const content = activeDocument.createElement('div');
 		content.addClass('cr-sv-gender');
 
 		if (!this.stats) return content;
@@ -891,7 +891,7 @@ export class StatisticsView extends ItemView {
 	 * Build source confidence distribution content
 	 */
 	private buildConfidenceContent(): HTMLElement {
-		const content = document.createElement('div');
+		const content = activeDocument.createElement('div');
 		content.addClass('cr-sv-confidence');
 
 		if (!this.stats) return content;
@@ -945,7 +945,7 @@ export class StatisticsView extends ItemView {
 	 * Build universes section content
 	 */
 	private buildUniversesContent(): HTMLElement {
-		const content = document.createElement('div');
+		const content = activeDocument.createElement('div');
 		content.addClass('cr-sv-universes');
 
 		if (!this.service) {
@@ -1046,7 +1046,7 @@ export class StatisticsView extends ItemView {
 	 * Build research entities section content
 	 */
 	private buildResearchContent(): HTMLElement {
-		const content = document.createElement('div');
+		const content = activeDocument.createElement('div');
 		content.addClass('cr-sv-research');
 
 		if (!this.service) {
@@ -1164,7 +1164,7 @@ export class StatisticsView extends ItemView {
 	 * Build top list content with optional drill-down support
 	 */
 	private buildTopListContent(items: TopListItem[], listType: TopListType): HTMLElement {
-		const content = document.createElement('div');
+		const content = activeDocument.createElement('div');
 		content.addClass('cr-sv-top-list');
 
 		if (items.length === 0) {
@@ -1310,7 +1310,7 @@ export class StatisticsView extends ItemView {
 		if (people.length === 0) return;
 
 		// Create the drill-down row
-		const drilldownRow = document.createElement('tr');
+		const drilldownRow = activeDocument.createElement('tr');
 		drilldownRow.addClass('cr-sv-drilldown-row');
 		const drilldownCell = drilldownRow.createEl('td', {
 			attr: { colspan: '2' },
@@ -1409,7 +1409,7 @@ export class StatisticsView extends ItemView {
 	}
 
 	private buildRecordsContent(): HTMLElement {
-		const content = document.createElement('div');
+		const content = activeDocument.createElement('div');
 		content.addClass('cr-sv-records');
 
 		if (!this.service) return content;
@@ -1507,7 +1507,7 @@ export class StatisticsView extends ItemView {
 	 * Build longevity analysis content
 	 */
 	private buildLongevityContent(): HTMLElement {
-		const content = document.createElement('div');
+		const content = activeDocument.createElement('div');
 		content.addClass('cr-sv-longevity');
 
 		if (!this.service) return content;
@@ -1587,7 +1587,7 @@ export class StatisticsView extends ItemView {
 	 * Build family size patterns content
 	 */
 	private buildFamilySizeContent(): HTMLElement {
-		const content = document.createElement('div');
+		const content = activeDocument.createElement('div');
 		content.addClass('cr-sv-family-size');
 
 		if (!this.service) return content;
@@ -1655,7 +1655,7 @@ export class StatisticsView extends ItemView {
 	 * Build marriage patterns content
 	 */
 	private buildMarriagePatternsContent(): HTMLElement {
-		const content = document.createElement('div');
+		const content = activeDocument.createElement('div');
 		content.addClass('cr-sv-marriage');
 
 		if (!this.service) return content;
@@ -1741,7 +1741,7 @@ export class StatisticsView extends ItemView {
 	 * Build migration flows content
 	 */
 	private buildMigrationContent(): HTMLElement {
-		const content = document.createElement('div');
+		const content = activeDocument.createElement('div');
 		content.addClass('cr-sv-migration');
 
 		if (!this.service) return content;
@@ -1802,7 +1802,7 @@ export class StatisticsView extends ItemView {
 	 * Build source coverage by generation content
 	 */
 	private buildSourceCoverageContent(): HTMLElement {
-		const content = document.createElement('div');
+		const content = activeDocument.createElement('div');
 		content.addClass('cr-sv-source-coverage');
 
 		if (!this.service) return content;
@@ -1874,7 +1874,7 @@ export class StatisticsView extends ItemView {
 	 * Build timeline density content
 	 */
 	private buildTimelineDensityContent(): HTMLElement {
-		const content = document.createElement('div');
+		const content = activeDocument.createElement('div');
 		content.addClass('cr-sv-timeline');
 
 		if (!this.service) return content;

@@ -537,7 +537,7 @@ export class MediaPickerModal extends Modal {
 	private openUploadDialog(): void {
 		if (!this.plugin) return;
 
-		const input = document.createElement('input');
+		const input = activeDocument.createElement('input');
 		input.type = 'file';
 		input.multiple = true;
 		input.accept = ALL_MEDIA_EXTENSIONS.join(',');

@@ -133,7 +133,7 @@ export class FamilyChartStyleModal extends Modal {
 
 		// Background section
 		const bgSection = contentEl.createDiv({ cls: 'cr-fcv-color-section' });
-		const isDark = document.body.classList.contains('theme-dark');
+		const isDark = activeDocument.body.classList.contains('theme-dark');
 		bgSection.createEl('h3', { text: `Background (${isDark ? 'dark' : 'light'} theme)` });
 
 		if (isDark) {
@@ -292,7 +292,7 @@ export class FamilyChartStyleModal extends Modal {
 	 */
 	private refreshColorInputs(): void {
 		const inputs = this.contentEl.querySelectorAll<HTMLInputElement>('.cr-fcv-color-input');
-		const isDark = document.body.classList.contains('theme-dark');
+		const isDark = activeDocument.body.classList.contains('theme-dark');
 
 		inputs.forEach((input) => {
 			const field = input.dataset.field;

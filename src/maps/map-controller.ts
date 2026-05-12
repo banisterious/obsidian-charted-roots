@@ -625,7 +625,7 @@ export class MapController {
 	 * Create popup content for a place marker
 	 */
 	private createPlacePopupContent(data: PlaceMarker): HTMLElement {
-		const container = document.createElement('div');
+		const container = activeDocument.createElement('div');
 		container.className = 'cr-map-popup';
 
 		container.createEl('div', {
@@ -879,7 +879,7 @@ export class MapController {
 	 * Create popup content for a marker
 	 */
 	private createPopupContent(data: MapMarker): HTMLElement {
-		const container = document.createElement('div');
+		const container = activeDocument.createElement('div');
 		container.className = 'cr-map-popup';
 
 		container.createEl('div', {
@@ -1149,7 +1149,7 @@ export class MapController {
 	 * Create popup content for a migration path
 	 */
 	private createPathPopup(data: MigrationPath): HTMLElement {
-		const container = document.createElement('div');
+		const container = activeDocument.createElement('div');
 		container.className = 'cr-map-popup';
 
 		container.createEl('div', {
@@ -1285,7 +1285,7 @@ export class MapController {
 	 * Create popup content for a journey path
 	 */
 	private createJourneyPopup(journey: JourneyPath): HTMLElement {
-		const container = document.createElement('div');
+		const container = activeDocument.createElement('div');
 		container.className = 'cr-map-popup cr-journey-popup';
 
 		const nameEl = container.createEl('div', { cls: 'cr-map-popup-name' });
@@ -1541,7 +1541,7 @@ export class MapController {
 			const marker = L.marker(markerPos, { icon: markerIcon });
 
 			// Popup with map name, open button, and region edit button
-			const popupContent = document.createElement('div');
+			const popupContent = activeDocument.createElement('div');
 			popupContent.className = 'cr-map-popup';
 			popupContent.createEl('div', { cls: 'cr-map-popup-name', text: config.name });
 			popupContent.createEl('div', { cls: 'cr-map-popup-type', text: 'Child map' });
@@ -1941,7 +1941,7 @@ export class MapController {
 	 * Create the floating save/cancel toolbar for region editing
 	 */
 	private createRegionEditToolbar(childMapName: string): void {
-		const toolbar = document.createElement('div');
+		const toolbar = activeDocument.createElement('div');
 		toolbar.className = 'cr-region-edit-toolbar';
 
 		toolbar.createEl('span', {

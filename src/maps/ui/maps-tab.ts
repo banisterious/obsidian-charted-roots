@@ -526,7 +526,7 @@ function importMapFromJson(
 	const { app, plugin } = options;
 
 	// Create file input element
-	const input = document.createElement('input');
+	const input = activeDocument.createElement('input');
 	input.type = 'file';
 	input.accept = '.json';
 

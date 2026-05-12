@@ -1141,10 +1141,10 @@ export class MapView extends ItemView {
 			}
 
 			// Show toast with undo option
-			const fragment = document.createDocumentFragment();
+			const fragment = activeDocument.createDocumentFragment();
 			fragment.appendText(`Moved "${placeName}" to ${coordText} `);
 
-			const undoLink = document.createElement('a');
+			const undoLink = activeDocument.createElement('a');
 			undoLink.textContent = 'Undo';
 			undoLink.href = '#';
 			undoLink.addClass('crc-undo-link');
@@ -1809,7 +1809,7 @@ export class MapView extends ItemView {
 		allWaypoints?: JourneyWaypoint[],
 		journey?: JourneyPath
 	): HTMLElement {
-		const container = document.createElement('div');
+		const container = activeDocument.createElement('div');
 		container.className = 'cr-journey-rich-popup-content';
 
 		// Header with event type
@@ -2843,7 +2843,7 @@ export class MapView extends ItemView {
 		}
 		logger.debug('edit-banner', 'Creating edit banner');
 
-		this.editBannerEl = document.createElement('div');
+		this.editBannerEl = activeDocument.createElement('div');
 		this.editBannerEl.className = 'cr-map-edit-banner';
 
 		// Banner text
@@ -2914,7 +2914,7 @@ export class MapView extends ItemView {
 			return;
 		}
 
-		this.editBannerEl = document.createElement('div');
+		this.editBannerEl = activeDocument.createElement('div');
 		this.editBannerEl.className = 'cr-map-edit-banner cr-map-move-banner';
 
 		// Banner text

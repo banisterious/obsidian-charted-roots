@@ -240,12 +240,12 @@ export class ReportGenerationService {
 		const blob = new Blob([content], { type: 'text/markdown' });
 		const url = URL.createObjectURL(blob);
 
-		const a = document.createElement('a');
+		const a = activeDocument.createElement('a');
 		a.href = url;
 		a.download = normalizedFilename;
-		document.body.appendChild(a);
+		activeDocument.body.appendChild(a);
 		a.click();
-		document.body.removeChild(a);
+		activeDocument.body.removeChild(a);
 		URL.revokeObjectURL(url);
 
 		logger.info('download', `Report downloaded as ${normalizedFilename}`);

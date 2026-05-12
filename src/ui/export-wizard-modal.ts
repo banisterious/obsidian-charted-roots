@@ -1062,12 +1062,12 @@ export class ExportWizardModal extends Modal {
 		const blob = new Blob([this.formData.gedcomContent], { type: mimeType });
 		const url = URL.createObjectURL(blob);
 
-		const a = document.createElement('a');
+		const a = activeDocument.createElement('a');
 		a.href = url;
 		a.download = this.formData.outputFilePath || `export.${this.getFormatExtension()}`;
-		document.body.appendChild(a);
+		activeDocument.body.appendChild(a);
 		a.click();
-		document.body.removeChild(a);
+		activeDocument.body.removeChild(a);
 		URL.revokeObjectURL(url);
 
 		new Notice(`Downloaded ${this.formData.outputFilePath}`);

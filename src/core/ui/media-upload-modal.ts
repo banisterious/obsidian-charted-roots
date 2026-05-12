@@ -182,7 +182,7 @@ export class MediaUploadModal extends Modal {
 	 * Open file browser dialog
 	 */
 	private openFileBrowser(): void {
-		const input = document.createElement('input');
+		const input = activeDocument.createElement('input');
 		input.type = 'file';
 		input.multiple = true;
 		input.accept = ALL_MEDIA_EXTENSIONS.join(',');

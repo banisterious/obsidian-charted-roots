@@ -1352,7 +1352,7 @@ export class ExcalidrawExporter {
 		lines.push('');
 
 		// Excalidraw data marker
-		lines.push('==⚠  Switch to EXCALIDRAW VIEW in the MORE OPTIONS menu of this document. ⚠==');
+		lines.push('==⚠  Switch to EXCALIDRAW VIEW in the MORE OPTIONS menu of this activeDocument. ⚠==');
 		lines.push('');
 		lines.push('');
 		lines.push('# Excalidraw Data');

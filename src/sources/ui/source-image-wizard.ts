@@ -692,7 +692,7 @@ export class SourceImageWizardModal extends Modal {
 					text: `${groupIndex}/${groupFiles.length}`,
 					cls: 'cr-image-wizard__group-badge',
 					attr: {
-						title: `Page ${groupIndex} of ${groupFiles.length} in this multi-page document. All pages will be linked to the same source note.`,
+						title: `Page ${groupIndex} of ${groupFiles.length} in this multi-page activeDocument. All pages will be linked to the same source note.`,
 					},
 				});
 			} else {

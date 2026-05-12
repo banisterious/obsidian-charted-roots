@@ -228,7 +228,7 @@ export class ControlCenterModal extends Modal {
 	 * Check if we're in mobile mode
 	 */
 	private isMobileMode(): boolean {
-		return Platform.isMobile || document.body.classList.contains('is-mobile');
+		return Platform.isMobile || activeDocument.body.classList.contains('is-mobile');
 	}
 
 	/**
@@ -1276,7 +1276,7 @@ export class ControlCenterModal extends Modal {
 		subtitle?: string;
 		elevation?: number;
 	}): HTMLElement {
-		const card = document.createElement('div');
+		const card = activeDocument.createElement('div');
 		card.className = 'crc-card';
 
 		if (options.elevation) {

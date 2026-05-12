@@ -640,7 +640,7 @@ export class BookBuilderModal extends Modal {
 	}
 
 	private createChapterRow(chapter: BookChapter, index: number): HTMLElement {
-		const row = document.createElement('div');
+		const row = activeDocument.createElement('div');
 		row.className = 'cr-book-chapter-row';
 		row.dataset.index = index.toString();
 		row.draggable = true;
@@ -757,10 +757,10 @@ export class BookBuilderModal extends Modal {
 		const closeHandler = (e: MouseEvent) => {
 			if (!menu.contains(e.target as HTMLElement) && e.target !== anchorEl) {
 				menu.remove();
-				document.removeEventListener('click', closeHandler);
+				activeDocument.removeEventListener('click', closeHandler);
 			}
 		};
-		window.setTimeout(() => document.addEventListener('click', closeHandler), 0);
+		window.setTimeout(() => activeDocument.addEventListener('click', closeHandler), 0);
 	}
 
 	private addChapterOfType(type: BookChapterType): void {
@@ -1155,7 +1155,7 @@ export class BookBuilderModal extends Modal {
 		this.isGenerating = true;
 
 		// Show progress
-		const progressSection = document.getElementById('book-progress-section');
+		const progressSection = activeDocument.getElementById('book-progress-section');
 		if (progressSection) progressSection.show();
 
 		const definition = this.buildDefinition();
@@ -1191,8 +1191,8 @@ export class BookBuilderModal extends Modal {
 	}
 
 	private updateProgress(progress: BookGenerationProgress): void {
-		const fill = document.getElementById('book-progress-fill');
-		const text = document.getElementById('book-progress-text');
+		const fill = activeDocument.getElementById('book-progress-fill');
+		const text = activeDocument.getElementById('book-progress-text');
 
 		if (fill) {
 			const pct = (progress.currentChapter / progress.totalChapters) * 100;

@@ -1387,7 +1387,7 @@ function addDataQualityDockButton(card: HTMLElement, plugin: CanvasRootsPlugin):
 	const header = card.querySelector('.crc-card__header');
 	if (!header) return;
 
-	const dockBtn = document.createElement('button');
+	const dockBtn = activeDocument.createElement('button');
 	dockBtn.className = 'crc-card__dock-btn clickable-icon';
 	dockBtn.setAttribute('aria-label', 'Open in sidebar');
 	setIcon(dockBtn, 'panel-right');

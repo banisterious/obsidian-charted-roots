@@ -889,9 +889,9 @@ export async function exportCanvasAsImage(plugin: CanvasRootsPlugin, canvasFile:
 		}
 
 		// Create a temporary container for the preview renderer
-		const tempContainer = document.createElement('div');
+		const tempContainer = activeDocument.createElement('div');
 		tempContainer.addClass('cr-offscreen-render');
-		document.body.appendChild(tempContainer);
+		activeDocument.body.appendChild(tempContainer);
 
 		try {
 			// Render tree
@@ -919,7 +919,7 @@ export async function exportCanvasAsImage(plugin: CanvasRootsPlugin, canvasFile:
 			new Notice(`${format.toUpperCase()} exported successfully`);
 		} finally {
 			// Clean up temporary container
-			document.body.removeChild(tempContainer);
+			activeDocument.body.removeChild(tempContainer);
 		}
 	} catch (error: unknown) {
 		console.error(`Error exporting canvas as ${format}:`, error);

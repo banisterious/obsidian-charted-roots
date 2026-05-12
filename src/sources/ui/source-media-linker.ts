@@ -889,22 +889,22 @@ export class SourceMediaLinkerModal extends Modal {
 		const selectWrapper = sourceCell.createDiv({ cls: 'cr-media-linker__select-wrapper' });
 
 		// Use standard DOM API for select/option elements (Obsidian's createEl doesn't handle them well)
-		const select = document.createElement('select');
+		const select = activeDocument.createElement('select');
 		select.className = 'dropdown';
 		selectWrapper.appendChild(select);
 
 		// Empty option - different text based on whether suggestions exist
-		const emptyOpt = document.createElement('option');
+		const emptyOpt = activeDocument.createElement('option');
 		emptyOpt.value = '';
 		emptyOpt.textContent = hasSuggestions ? '— Select source —' : '— No suggestions (select manually) —';
 		select.appendChild(emptyOpt);
 
 		// Suggestions group (if any)
 		if (hasSuggestions) {
-			const suggestGroup = document.createElement('optgroup');
+			const suggestGroup = activeDocument.createElement('optgroup');
 			suggestGroup.label = 'Suggestions';
 			for (const suggestion of info.suggestedSources) {
-				const opt = document.createElement('option');
+				const opt = activeDocument.createElement('option');
 				opt.value = suggestion.source.crId;
 				opt.textContent = `${suggestion.source.title} (${suggestion.matchReasons.slice(0, 2).join(', ')})`;
 				if (info.linkedSource?.crId === suggestion.source.crId) {
@@ -916,13 +916,13 @@ export class SourceMediaLinkerModal extends Modal {
 		}
 
 		// All sources group
-		const allGroup = document.createElement('optgroup');
+		const allGroup = activeDocument.createElement('optgroup');
 		allGroup.label = 'All sources';
 		for (const source of this.sourcesWithoutMedia) {
 			// Skip if already in suggestions
 			if (info.suggestedSources.some((s) => s.source.crId === source.crId)) continue;
 
-			const opt = document.createElement('option');
+			const opt = activeDocument.createElement('option');
 			opt.value = source.crId;
 			opt.textContent = source.title;
 			if (info.linkedSource?.crId === source.crId) {

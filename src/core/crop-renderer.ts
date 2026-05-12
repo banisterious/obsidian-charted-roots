@@ -52,7 +52,7 @@ export async function getCroppedImageUrl(
 						ch = Math.round(img.naturalHeight * crop.h / 100);
 					}
 
-					const canvas = document.createElement('canvas');
+					const canvas = activeDocument.createElement('canvas');
 					canvas.width = cw;
 					canvas.height = ch;
 
