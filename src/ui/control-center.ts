@@ -26,7 +26,7 @@ import {
 	validateDates
 } from './data-quality-batch-ops';
 import { PlaceGraphService } from '../core/place-graph';
-import { UniverseService } from '../universes/services/universe-service';
+import { createUniverseService } from '../universes/services/universe-service';
 import { mergeUniverseList } from '../universes/services/merged-universe-list';
 import { CreatePlaceModal } from './create-place-modal';
 import { TemplateSnippetsModal } from './template-snippets-modal';
@@ -142,7 +142,7 @@ export class ControlCenterModal extends Modal {
 		if (!this.cachedUniverses) {
 			const placeGraph = this.getCachedPlaceGraph();
 			const familyGraph = this.getCachedFamilyGraph();
-			const universeService = new UniverseService(this.plugin);
+			const universeService = createUniverseService(this.plugin);
 
 			this.cachedUniverses = mergeUniverseList({
 				universeNoteNames: universeService.getAllUniverses().map(u => u.name),

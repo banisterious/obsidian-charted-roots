@@ -9,7 +9,7 @@ import { setIcon, Setting } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { LucideIconName } from '../../ui/lucide-icons';
 import { StatisticsService } from '../services/statistics-service';
-import { UniverseService } from '../../universes/services/universe-service';
+import { createUniverseService } from '../../universes/services/universe-service';
 import { UniverseWizardModal } from '../../universes/ui/universe-wizard';
 import type { StatisticsData, TopListItem } from '../types/statistics-types';
 import { pluralize } from '../../utils/format-utils';
@@ -329,7 +329,7 @@ function renderUniversesCard(
 	createCard: (options: { title: string; icon?: LucideIconName; subtitle?: string }) => HTMLElement,
 	showTab: (tabId: string) => void
 ): void {
-	const universeService = new UniverseService(plugin);
+	const universeService = createUniverseService(plugin);
 	const universes = universeService.getAllUniverses();
 	const orphans = universeService.findOrphanUniverses();
 	const stats = universeService.getStats();

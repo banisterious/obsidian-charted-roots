@@ -7,7 +7,7 @@
 
 import { Modal, Setting, Notice, TFile, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
-import { UniverseService } from '../services/universe-service';
+import { UniverseService, createUniverseService } from '../services/universe-service';
 import type { UniverseStatus, CreateUniverseData } from '../types/universe-types';
 import type { FictionalDateSystem, FictionalEra } from '../../dates/types/date-types';
 import { DEFAULT_DATE_SYSTEMS } from '../../dates/constants/default-date-systems';
@@ -133,7 +133,7 @@ export class UniverseWizardModal extends Modal {
 	) {
 		super(plugin.app);
 		this.plugin = plugin;
-		this.universeService = new UniverseService(plugin);
+		this.universeService = createUniverseService(plugin);
 		this.onComplete = options?.onComplete;
 
 		// Initialize form data with defaults

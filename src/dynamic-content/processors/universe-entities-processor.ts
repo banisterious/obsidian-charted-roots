@@ -17,7 +17,7 @@ import { MarkdownPostProcessorContext, MarkdownRenderChild, TFile } from 'obsidi
 import type CanvasRootsPlugin from '../../../main';
 import { DynamicContentService, renderBlockError } from '../services/dynamic-content-service';
 import { UniverseEntitiesRenderer, type UniverseEntitiesContext } from '../renderers/universe-entities-renderer';
-import { UniverseService } from '../../universes/services/universe-service';
+import { createUniverseService } from '../../universes/services/universe-service';
 import { isUniverseNote } from '../../utils/note-type-detection';
 
 /** Which entity types to show */
@@ -131,7 +131,7 @@ export class UniverseEntitiesProcessor {
 		// Get entities for this universe. Match by file (basename / name /
 		// cr_id) so the lookup survives universe rename when the typed name
 		// has chars stripped by sanitization (#503).
-		const universeService = new UniverseService(this.plugin);
+		const universeService = createUniverseService(this.plugin);
 		const entities = universeService.getEntitiesForUniverseFile(currentFile);
 
 		const aliases = new Set<string>();

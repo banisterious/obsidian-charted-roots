@@ -7,7 +7,7 @@ import { App, Modal, Setting, TFile, Notice } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import { createLucideIcon } from '../../ui/lucide-icons';
 import type { UniverseInfo, UniverseStatus } from '../types/universe-types';
-import { UniverseService } from '../services/universe-service';
+import { UniverseService, createUniverseService } from '../services/universe-service';
 import { DEFAULT_DATE_SYSTEMS } from '../../dates/constants/default-date-systems';
 import type { FictionalDateSystem } from '../../dates/types/date-types';
 
@@ -61,7 +61,7 @@ export class EditUniverseModal extends Modal {
 	) {
 		super(app);
 		this.plugin = plugin;
-		this.universeService = new UniverseService(plugin);
+		this.universeService = createUniverseService(plugin);
 		this.universe = options.universe;
 		this.file = options.file;
 		this.onUpdated = options.onUpdated;

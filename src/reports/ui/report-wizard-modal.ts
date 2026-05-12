@@ -17,7 +17,7 @@ import { createLucideIcon, setLucideIcon, LucideIconName } from '../../ui/lucide
 import type { PersonInfo } from '../../ui/person-picker';
 import { PlacePickerModal, SelectedPlaceInfo } from '../../ui/place-picker';
 import { isPersonNote } from '../../utils/note-type-detection';
-import { UniverseService } from '../../universes/services/universe-service';
+import { createUniverseService } from '../../universes/services/universe-service';
 
 /**
  * Sort options for person list
@@ -1161,7 +1161,7 @@ export class ReportWizardModal extends Modal {
 	 * Open universe picker modal (#369)
 	 */
 	private async openUniversePicker(): Promise<void> {
-		const universeService = new UniverseService(this.plugin);
+		const universeService = createUniverseService(this.plugin);
 		const universes = universeService.getAllUniverses();
 
 		if (universes.length === 0) {

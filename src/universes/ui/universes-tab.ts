@@ -9,7 +9,7 @@ import { Menu, Notice, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { LucideIconName } from '../../ui/lucide-icons';
 import { createLucideIcon, setLucideIcon } from '../../ui/lucide-icons';
-import { UniverseService } from '../services/universe-service';
+import { UniverseService, createUniverseService } from '../services/universe-service';
 import { UniverseWizardModal } from './universe-wizard';
 import { EditUniverseModal } from './edit-universe-modal';
 import type { UniverseInfo, UniverseEntityCounts } from '../types';
@@ -65,7 +65,7 @@ export function renderUniversesTab(
 	closeModal: () => void
 ): void {
 	const app = plugin.app;
-	const universeService = new UniverseService(plugin);
+	const universeService = createUniverseService(plugin);
 	const universes = universeService.getAllUniverses();
 	const orphans = universeService.findOrphanUniverses();
 
@@ -588,7 +588,7 @@ export function renderUniversesList(options: UniversesListOptions): void {
 	let displayLimit = 25;
 
 	// Load data
-	const universeService = new UniverseService(plugin);
+	const universeService = createUniverseService(plugin);
 	const universes = universeService.getAllUniverses();
 
 	// Build universe items with entity counts

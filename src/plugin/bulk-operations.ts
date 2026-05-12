@@ -27,7 +27,7 @@ import { extractSourcedFactsFromFrontmatter } from '../core/person-note-writer';
 import { promptLineageName } from './context-menus';
 import { getLogger } from '../core/logging';
 import { extractName, loadRelationships } from './relationship-loader';
-import { UniverseService } from '../universes/services/universe-service';
+import { createUniverseService } from '../universes/services/universe-service';
 import { mergeUniverseList } from '../universes/services/merged-universe-list';
 
 const logger = getLogger('bulk-operations');
@@ -204,7 +204,7 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 	// from the basename — e.g. `Star Wars (AU)` typed name vanished while
 	// the cascaded `Star Wars AU` basename was the only option offered
 	// (#505).
-	const universeService = new UniverseService(plugin);
+	const universeService = createUniverseService(plugin);
 	const allUniverses = mergeUniverseList({
 		universeNoteNames: universeService.getAllUniverses().map(u => u.name),
 		personUniverses: familyGraph.getAllUniverses(),

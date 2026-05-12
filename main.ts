@@ -35,7 +35,7 @@ import { MediaService } from './src/core/media-service';
 import { MigrationNoticeView, VIEW_TYPE_MIGRATION_NOTICE } from './src/ui/views/migration-notice-view';
 import { ProfileView, VIEW_TYPE_ENTITY_PROFILE } from './src/profile-view/profile-view';
 import { WebClipperService } from './src/core/web-clipper-service';
-import { UniverseService } from './src/universes/services/universe-service';
+import { createUniverseService } from './src/universes/services/universe-service';
 import { PluginRenameMigrationService, showMigrationNotice } from './src/migration/plugin-rename-migration-service';
 
 import { registerContextMenus } from './src/plugin/context-menus';
@@ -914,7 +914,7 @@ export default class CanvasRootsPlugin extends Plugin {
 			}
 			if (crType !== 'universe') return;
 
-			const universeService = new UniverseService(this);
+			const universeService = createUniverseService(this);
 			void universeService.cascadeUniverseRename(oldBasename, newBasename)
 				.then(updateCount => {
 					if (updateCount > 0) {

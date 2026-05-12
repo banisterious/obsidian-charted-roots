@@ -12,7 +12,7 @@ import { TreePreviewRenderer } from '../ui/tree-preview';
 import { extractWikilinkPath } from '../utils/wikilink-resolver';
 import { GeocodingService } from '../maps/services/geocoding-service';
 import { SourcePickerModal, CreateSourceModal, CitationGeneratorModal } from '../sources';
-import { UniverseService, EditUniverseModal } from '../universes';
+import { createUniverseService, EditUniverseModal } from '../universes';
 import { MediaManageModal } from '../core/ui/media-manage-modal';
 import { getLogger } from '../core/logging';
 
@@ -513,7 +513,7 @@ export function openEditUniverseModal(plugin: CanvasRootsPlugin, file: TFile): v
 	}
 
 	// Get universe from service
-	const universeService = new UniverseService(plugin);
+	const universeService = createUniverseService(plugin);
 	const universe = universeService.getUniverseByFile(file);
 
 	if (!universe) {
