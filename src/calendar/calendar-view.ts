@@ -12,6 +12,7 @@ import { DEFAULT_EVENT_TYPES, EVENT_TYPE_COLORS } from './types/calendar-types';
 import { CalendarDataService } from './calendar-data-service';
 import { capitalize } from '../utils/format-utils';
 import { getLogger } from '../core/logging';
+import { CreateEventModal } from '../events/ui/create-event-modal';
 
 const logger = getLogger('CalendarView');
 
@@ -476,7 +477,6 @@ export class CalendarView extends ItemView {
 						.onClick(() => {
 							const eventService = (this.plugin as unknown as { getEventService: () => unknown }).getEventService?.() as import('../events/services/event-service').EventService | null;
 							if (eventService) {
-								const { CreateEventModal } = require('../events/ui/create-event-modal');
 								new CreateEventModal(this.app, eventService, this.plugin.settings, {
 									initialDate: dateStr,
 									plugin: this.plugin,

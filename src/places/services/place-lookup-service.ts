@@ -8,7 +8,7 @@
  * @see docs/planning/unified-place-lookup.md
  */
 
-import { requestUrl } from 'obsidian';
+import { Notice, requestUrl } from 'obsidian';
 import { getLogger } from '../../core/logging';
 
 const logger = getLogger('PlaceLookupService');
@@ -447,7 +447,6 @@ export class PlaceLookupService {
 			const errorMsg = String(error);
 			logger.warn('geonames-lookup-failed', `GeoNames lookup failed: ${errorMsg}`);
 			if (errorMsg.includes('401')) {
-				const { Notice } = require('obsidian');
 				new Notice('GeoNames lookup failed: invalid or inactive username. Check Settings > Places > GeoNames username.');
 			}
 			return [];

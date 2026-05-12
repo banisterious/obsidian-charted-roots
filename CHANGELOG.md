@@ -14,6 +14,7 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ### Changed
 
+- **Internal: ten lazy `require()` call sites converted to top-level ES imports**: Obsidian's new automated review (via `@typescript-eslint/no-require-imports`, surfaced after the 0.3.0 upgrade) flags CommonJS-style `require()` calls. Across `place-lookup-service` / `map-view` / `family-chart-view` / `context-menus` / `calendar-view` / `events-section`, ten lazy-require sites were inherited from earlier code that needed circular-dep workarounds. None of the called modules actually import the calling file in current code, so all ten convert cleanly to top-level `import` declarations.
 - **Internal: `eslint-plugin-obsidianmd` upgraded 0.2.9 -> 0.3.0 + timer rule reversal applied**: 0.3.0 launched the same day as the new Obsidian Community automated review platform (2026-05-12) and the community scan against v0.22.31 surfaced the consequences. Two rule changes affecting source code:
   - `prefer-active-window-timers` was renamed to `prefer-window-timers`, and its recommendation **inverted** — it now wants `window.setTimeout` instead of `activeWindow.setTimeout`. v0.22.31's Phase 2 work had migrated ~152 sites the other direction (bare `setTimeout` -> `activeWindow.setTimeout`). Reverted those plus eight previously-unflagged `requestAnimationFrame` calls (also covered by the renamed rule) to the new `window.X` form across the codebase.
   - `prefer-create-el` was removed from the recommended ruleset entirely. Our local config no longer references it.

@@ -9,6 +9,7 @@ import type { App, TFile } from 'obsidian';
 import type { EventNote } from '../../events/types/event-types';
 import type { SectionToggleFn, EntityLinkClickFn, SectionState } from '../profile-types';
 import { renderProfileSection } from './section-base';
+import { renderPersonTimeline } from '../../events/ui/person-timeline';
 
 interface EventsSectionOptions {
 	sectionStates: SectionState;
@@ -52,7 +53,6 @@ export function renderEventsSection(
 		const eventService = options.plugin.getEventService();
 		if (eventService) {
 			try {
-				const { renderPersonTimeline } = require('../../events/ui/person-timeline');
 				renderPersonTimeline(
 					content,
 					options.personFile,

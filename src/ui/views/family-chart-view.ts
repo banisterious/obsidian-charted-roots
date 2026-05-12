@@ -13,6 +13,8 @@ import type CanvasRootsPlugin from '../../../main';
 import { FamilyGraphService, PersonNode } from '../../core/family-graph';
 import type { ColorScheme, FamilyChartColors } from '../../settings';
 import { getLogger } from '../../core/logging';
+import { addSourceToPersonNote } from '../../plugin/context-menu-helpers';
+import { getCroppedImageUrl } from '../../core/crop-renderer';
 import { PersonPickerModal } from '../person-picker';
 import { PlacePickerModal, type SelectedPlaceInfo } from '../place-picker';
 import { AddRelationshipModal } from '../add-relationship-modal';
@@ -933,7 +935,6 @@ export class FamilyChartView extends ItemView {
 			return;
 		}
 
-		const { addSourceToPersonNote } = require('../../plugin/context-menu-helpers');
 		addSourceToPersonNote(this.plugin, targetFile);
 	}
 
@@ -1544,7 +1545,6 @@ export class FamilyChartView extends ItemView {
 
 				if (cropForThumb) {
 					// Await crop generation so the cropped URL is in cache before chart renders
-					const { getCroppedImageUrl } = require('../../core/crop-renderer');
 					const croppedUrl = await (getCroppedImageUrl as (app: unknown, file: unknown, crop: unknown) => Promise<string | null>)(
 						this.app, thumbnailFile, cropForThumb
 					);

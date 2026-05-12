@@ -1,6 +1,7 @@
 import { App, FuzzySuggestModal, Notice, TFile, TFolder, Menu, Platform, type CachedMetadata } from 'obsidian';
 import type { OrganizationInfo } from '../organizations/types/organization-types';
 import type CanvasRootsPlugin from '../../main';
+import { VIEW_TYPE_CALENDAR } from '../calendar/calendar-view';
 import {
 	addCrId, addEssentialEventProperties, addEssentialMapProperties,
 	addEssentialPersonProperties, addEssentialPlaceProperties,
@@ -770,7 +771,6 @@ function buildPersonContextMenu(
 								month = parseInt(isoMatch[2]) - 1; // 0-indexed
 							}
 						}
-						const { VIEW_TYPE_CALENDAR } = require('../calendar/calendar-view');
 						const leaves = plugin.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR);
 						if (leaves.length > 0) {
 							void plugin.app.workspace.revealLeaf(leaves[0]);
@@ -3734,7 +3734,6 @@ function buildEventContextMenu(
 								month = parseInt(isoMatch[2]) - 1;
 							}
 						}
-						const { VIEW_TYPE_CALENDAR } = require('../calendar/calendar-view');
 						const leaves = plugin.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR);
 						if (leaves.length > 0) {
 							void plugin.app.workspace.revealLeaf(leaves[0]);

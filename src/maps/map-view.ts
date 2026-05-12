@@ -13,6 +13,8 @@ import { MapController } from './map-controller';
 import { resolveUniverseFilterValue } from './resolve-universe-filter';
 import { MapDataService } from './map-data-service';
 import { CreatePlaceModal } from '../ui/create-place-modal';
+import * as L from 'leaflet';
+import { PersonPickerModal } from '../ui/person-picker';
 import { PlacePickerModal, SelectedPlaceInfo } from '../ui/place-picker';
 import { UniverseSyncModal } from './ui/universe-sync-modal';
 import { GeocodingService } from './services/geocoding-service';
@@ -1404,7 +1406,6 @@ export class MapView extends ItemView {
 			}
 		}
 
-		const { PersonPickerModal } = require('../ui/person-picker');
 		const picker = new PersonPickerModal(this.app, (person: { name: string; crId: string }) => {
 			this.journeyMode.enabled = true;
 			this.journeyMode.personId = person.crId;
@@ -1563,7 +1564,6 @@ export class MapView extends ItemView {
 				}
 			}
 			if (points.length > 0) {
-				const L = require('leaflet');
 				const ys = points.map(p => p[0]);
 				const xs = points.map(p => p[1]);
 				const bounds = L.latLngBounds(
@@ -1792,7 +1792,6 @@ export class MapView extends ItemView {
 
 			// Open rich popup after fly animation
 			window.setTimeout(() => {
-				const L = require('leaflet');
 				const popupContent = this.buildRichWaypointPopup(waypoint, allWaypoints, journey);
 				L.popup({ maxWidth: 300, className: 'cr-journey-rich-popup' })
 					.setLatLng(target!)
