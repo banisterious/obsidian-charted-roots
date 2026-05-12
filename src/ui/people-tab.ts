@@ -19,7 +19,6 @@ import { FamilyGraphService, PersonNode } from '../core/family-graph';
 import { PlaceGraphService } from '../core/place-graph';
 import { FolderFilterService } from '../core/folder-filter';
 import { DataQualityService } from '../core/data-quality';
-import { BidirectionalLinker } from '../core/bidirectional-linker';
 import { CreatePersonModal } from './create-person-modal';
 import { TemplateSnippetsModal } from './template-snippets-modal';
 import { MediaManagerModal } from '../core/ui/media-manager-modal';
@@ -2786,8 +2785,7 @@ async function _createPersonNoteAction(
 
 		// Sync bidirectional relationships if enabled
 		if (plugin.settings.enableBidirectionalSync) {
-			const bidirectionalLinker = new BidirectionalLinker(app);
-			await bidirectionalLinker.syncRelationships(file);
+			await plugin.getBidirectionalLinker().syncRelationships(file);
 		}
 
 		// Show success message
@@ -3037,7 +3035,7 @@ async function _syncImportedRelationships(options: PeopleTabOptions): Promise<vo
 	);
 
 	try {
-		const bidirectionalLinker = new BidirectionalLinker(app);
+		const bidirectionalLinker = plugin.getBidirectionalLinker();
 		let syncedCount = 0;
 
 		// Sync all person notes
