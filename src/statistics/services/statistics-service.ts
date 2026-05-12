@@ -170,9 +170,9 @@ export class StatisticsService {
 	 */
 	scheduleRefresh(): void {
 		if (this.refreshTimeout) {
-			clearTimeout(this.refreshTimeout);
+			activeWindow.clearTimeout(this.refreshTimeout);
 		}
-		this.refreshTimeout = setTimeout(() => {
+		this.refreshTimeout = activeWindow.setTimeout(() => {
 			this.refreshTimeout = null;
 			this.invalidateCache();
 		}, CACHE_DEBOUNCE_MS);

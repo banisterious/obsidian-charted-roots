@@ -52,7 +52,7 @@ export class OrganizationsView extends ItemView {
 	// eslint-disable-next-line @typescript-eslint/require-await -- ItemView.onClose requires async signature
 	async onClose(): Promise<void> {
 		if (this.refreshTimeout) {
-			clearTimeout(this.refreshTimeout);
+			activeWindow.clearTimeout(this.refreshTimeout);
 		}
 	}
 
@@ -128,9 +128,9 @@ export class OrganizationsView extends ItemView {
 	 */
 	private scheduleRefresh(): void {
 		if (this.refreshTimeout) {
-			clearTimeout(this.refreshTimeout);
+			activeWindow.clearTimeout(this.refreshTimeout);
 		}
-		this.refreshTimeout = setTimeout(() => {
+		this.refreshTimeout = activeWindow.setTimeout(() => {
 			this.refreshTimeout = null;
 			this.refresh();
 		}, 2000);

@@ -95,7 +95,7 @@ export class CalendarView extends ItemView {
 	async onClose(): Promise<void> {
 		// Flush any pending persist
 		if (this.persistTimeout) {
-			clearTimeout(this.persistTimeout);
+			activeWindow.clearTimeout(this.persistTimeout);
 		}
 		// Persist immediately on close
 		const state = this.getState();
@@ -104,7 +104,7 @@ export class CalendarView extends ItemView {
 		void this.plugin.saveSettings();
 
 		if (this.refreshTimeout) {
-			clearTimeout(this.refreshTimeout);
+			activeWindow.clearTimeout(this.refreshTimeout);
 		}
 	}
 
@@ -113,8 +113,8 @@ export class CalendarView extends ItemView {
 	// ========================================================================
 
 	private persistState(): void {
-		if (this.persistTimeout) clearTimeout(this.persistTimeout);
-		this.persistTimeout = setTimeout(() => {
+		if (this.persistTimeout) activeWindow.clearTimeout(this.persistTimeout);
+		this.persistTimeout = activeWindow.setTimeout(() => {
 			const state = this.getState();
 			const settings = this.plugin.settings as Record<string, unknown>;
 			settings.calendarViewState = state;
@@ -673,8 +673,8 @@ export class CalendarView extends ItemView {
 	}
 
 	private scheduleRefresh(): void {
-		if (this.refreshTimeout) clearTimeout(this.refreshTimeout);
-		this.refreshTimeout = setTimeout(() => {
+		if (this.refreshTimeout) activeWindow.clearTimeout(this.refreshTimeout);
+		this.refreshTimeout = activeWindow.setTimeout(() => {
 			this.refreshTimeout = null;
 			this.renderCalendar();
 		}, 2000);

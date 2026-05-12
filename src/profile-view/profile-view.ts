@@ -139,8 +139,8 @@ export class ProfileView extends ItemView {
 
 	// eslint-disable-next-line @typescript-eslint/require-await -- ItemView.onClose requires async signature
 	async onClose(): Promise<void> {
-		if (this.syncDebounceTimeout) clearTimeout(this.syncDebounceTimeout);
-		if (this.refreshTimeout) clearTimeout(this.refreshTimeout);
+		if (this.syncDebounceTimeout) activeWindow.clearTimeout(this.syncDebounceTimeout);
+		if (this.refreshTimeout) activeWindow.clearTimeout(this.refreshTimeout);
 		cleanupMapPreview();
 	}
 
@@ -198,9 +198,9 @@ export class ProfileView extends ItemView {
 
 	private scheduleSyncToActiveNote(): void {
 		if (this.syncDebounceTimeout) {
-			clearTimeout(this.syncDebounceTimeout);
+			activeWindow.clearTimeout(this.syncDebounceTimeout);
 		}
-		this.syncDebounceTimeout = setTimeout(() => {
+		this.syncDebounceTimeout = activeWindow.setTimeout(() => {
 			this.syncDebounceTimeout = null;
 			this.syncToActiveNote();
 		}, 150);
@@ -242,9 +242,9 @@ export class ProfileView extends ItemView {
 
 	private scheduleRefresh(): void {
 		if (this.refreshTimeout) {
-			clearTimeout(this.refreshTimeout);
+			activeWindow.clearTimeout(this.refreshTimeout);
 		}
-		this.refreshTimeout = setTimeout(() => {
+		this.refreshTimeout = activeWindow.setTimeout(() => {
 			this.refreshTimeout = null;
 			if (this.currentEntityFilePath) {
 				const file = this.app.vault.getFileByPath(this.currentEntityFilePath);

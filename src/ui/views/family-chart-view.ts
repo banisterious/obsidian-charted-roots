@@ -4917,9 +4917,9 @@ export class FamilyChartView extends ItemView {
 	 */
 	private scheduleRefresh(): void {
 		if (this.refreshTimeout) {
-			clearTimeout(this.refreshTimeout);
+			activeWindow.clearTimeout(this.refreshTimeout);
 		}
-		this.refreshTimeout = setTimeout(() => {
+		this.refreshTimeout = activeWindow.setTimeout(() => {
 			this.refreshTimeout = null;
 
 			// If chart isn't visible, defer the refresh
