@@ -163,7 +163,7 @@ function renderEventNotesCard(
 
 					try {
 						const events = eventService.getAllEvents();
-						const result = await computeSortOrder(plugin.app, events);
+						const result = await computeSortOrder(plugin.app, events, plugin.getDateService());
 
 						if (result.errors.length > 0) {
 							new Notice(`Computed sort order with ${result.errors.length} errors. Check console.`);

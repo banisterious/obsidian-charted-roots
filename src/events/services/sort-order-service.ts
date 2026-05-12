@@ -7,6 +7,7 @@
 
 import { App, TFile } from 'obsidian';
 import type { EventNote } from '../types/event-types';
+import type { DateService } from '../../dates/services/date-service';
 import { getLogger } from '../../core/logging';
 
 const logger = getLogger('SortOrderService');
@@ -29,11 +30,15 @@ export interface SortOrderResult {
  *
  * @param app - Obsidian App instance
  * @param events - All event notes to process
+ * @param dateService - Optional DateService for fictional-date-aware comparison;
+ *                     without it, dates fall back to leading-integer extraction
+ *                     which mis-sorts multi-era inputs alphabetically (#564).
  * @returns Result with counts and any cycle information
  */
 export async function computeSortOrder(
 	app: App,
-	events: EventNote[]
+	events: EventNote[],
+	dateService?: DateService | null
 ): Promise<SortOrderResult> {
 	const result: SortOrderResult = {
 		updatedCount: 0,
@@ -111,7 +116,7 @@ export async function computeSortOrder(
 	// Sort by date first, then add to queue
 	const sortedByDate = [...events].sort((a, b) => {
 		if (a.date && b.date) {
-			return compareDates(a.date, b.date);
+			return compareDates(a.date, b.date, a.universe, b.universe, dateService);
 		}
 		if (a.date) return -1;
 		if (b.date) return 1;
@@ -133,7 +138,7 @@ export async function computeSortOrder(
 		// Sort queue by date for stable ordering
 		queue.sort((a, b) => {
 			if (a.date && b.date) {
-				return compareDates(a.date, b.date);
+				return compareDates(a.date, b.date, a.universe, b.universe, dateService);
 			}
 			if (a.date) return -1;
 			if (b.date) return 1;
@@ -216,14 +221,38 @@ function normalizeWikilink(link: string): string {
 }
 
 /**
- * Compare two date strings, handling BCE dates (negative years) correctly
- * Supports ISO 8601 format with negative years: -YYYY-MM-DD
+ * Compare two date strings for sorting.
+ *
+ * When a `DateService` is provided and both inputs parse to canonical years,
+ * comparison uses those — so multi-era fictional dates like `EF 10`
+ * (canonical -90 with EF epoch -100) sort correctly against `DE 5` (canonical
+ * 5 with DE epoch 0) regardless of era-abbreviation alphabetical order
+ * (#564). Without a service, or for inputs neither side can parse, falls
+ * back to a leading-integer regex that handles ISO format and negative
+ * years — same behavior as the pre-#564 implementation.
+ *
  * Returns: negative if a < b, 0 if equal, positive if a > b
  */
-function compareDates(a: string, b: string): number {
-	// Extract year from date string (handles negative years for BCE)
+function compareDates(
+	a: string,
+	b: string,
+	aUniverse?: string,
+	bUniverse?: string,
+	dateService?: DateService | null
+): number {
+	if (dateService) {
+		const parsedA = dateService.parseDate(a, aUniverse);
+		const parsedB = dateService.parseDate(b, bUniverse);
+		if (parsedA?.year != null && parsedB?.year != null) {
+			if (parsedA.year !== parsedB.year) {
+				return parsedA.year - parsedB.year;
+			}
+			return a.localeCompare(b);
+		}
+	}
+
+	// Fallback: leading-integer extraction (ISO + negative years).
 	const extractYear = (date: string): number => {
-		// Match ISO format with optional negative sign: -YYYY or YYYY
 		const match = date.match(/^(-?\d+)/);
 		return match ? parseInt(match[1], 10) : 0;
 	};
@@ -231,12 +260,10 @@ function compareDates(a: string, b: string): number {
 	const yearA = extractYear(a);
 	const yearB = extractYear(b);
 
-	// Compare years numerically (handles negative years correctly)
 	if (yearA !== yearB) {
 		return yearA - yearB;
 	}
 
-	// Years are equal, fall back to string comparison for full precision
 	return a.localeCompare(b);
 }
 
