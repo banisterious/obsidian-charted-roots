@@ -1425,6 +1425,13 @@ export class MapController {
 				const baseRadius = isPixel ? 50 : this.settings.heatMapRadius;
 				const baseBlur = isPixel ? 25 : this.settings.heatMapBlur;
 
+				// On custom maps the heat layer needs to render above the image
+				// overlay. Route it through a custom pane whose stacking order
+				// is set in CSS (`.leaflet-cr-heat-pane` in map-view.css).
+				if (isPixel && this.map && !this.map.getPane('cr-heat-pane')) {
+					this.map.createPane('cr-heat-pane');
+				}
+
 				this.heatLayer = LHeatLayer(heatData, {
 					radius: Math.round(baseRadius * intensityConfig.radiusMul),
 					blur: Math.round(baseBlur * intensityConfig.blurMul),
@@ -1432,20 +1439,13 @@ export class MapController {
 					minOpacity: isPixel
 						? Math.min(intensityConfig.minOpacity + 0.05, 0.3)
 						: intensityConfig.minOpacity,
-					max: 1.0
+					max: 1.0,
+					...(isPixel ? { pane: 'cr-heat-pane' } : {})
 				});
 
 				// Only add if heat map layer is enabled
 				if (this.currentLayers.heatMap && this.heatLayer) {
 					this.heatLayer.addTo(this.map);
-					// On custom maps, bring heat layer above the image overlay.
-					// The heat-map pane is a Leaflet-generated DOM element; there's no
-					// class-based hook for setting its z-index, so this direct style
-					// assignment is appropriate.
-					if (isPixel && this.heatLayer.getPane()) {
-						// eslint-disable-next-line obsidianmd/no-static-styles-assignment -- Leaflet-generated pane element has no targetable class
-						this.heatLayer.getPane()!.style.zIndex = '450';
-					}
 				}
 			}
 		} catch (e) {

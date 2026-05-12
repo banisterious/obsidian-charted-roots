@@ -152,6 +152,13 @@
   z-index: 700;
 }
 
+/* Custom pane for the heat layer on pixel/custom-image maps so it renders
+   above the image overlay (which defaults to z-index 400). Created in
+   map-controller.ts via `this.map.createPane('cr-heat-pane')`. */
+.leaflet-cr-heat-pane {
+  z-index: 450;
+}
+
 .leaflet-map-pane canvas {
   z-index: 100;
 }

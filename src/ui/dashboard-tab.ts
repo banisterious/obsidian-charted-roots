@@ -355,8 +355,8 @@ function renderQuickActionsSection(
 		},
 		// Row 4: Utilities
 		{
-			id: 'command-menu',
-			label: 'Command Menu',
+			id: 'quick-actions',
+			label: 'Quick actions',
 			icon: 'terminal',
 			description: 'Search and launch any plugin command',
 			action: () => {

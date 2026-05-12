@@ -72,15 +72,10 @@ export function registerCommandsAndEvents(plugin: CanvasRootsPlugin): void {
 		new ControlCenterModal(plugin.app, plugin).open();
 	});
 
-	// Add command: Open Command Menu (#290)
-	// "Command Menu" is the product-specific feature name (a modal listing plugin
-	// commands), not a redundant reference to Obsidian's command palette — the
-	// word "command" is intentional here.
+	// Add command: Open quick actions (#290 — categorized command launcher)
 	plugin.addCommand({
-		// eslint-disable-next-line obsidianmd/commands/no-command-in-command-id -- feature name
-		id: 'open-command-menu',
-		// eslint-disable-next-line obsidianmd/commands/no-command-in-command-name -- feature name
-		name: 'Open command menu',
+		id: 'open-quick-actions',
+		name: 'Open quick actions',
 		callback: () => {
 			new CommandMenuModal(plugin.app).open();
 		}

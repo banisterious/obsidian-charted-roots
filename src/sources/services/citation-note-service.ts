@@ -147,8 +147,7 @@ export class CitationNoteService {
 	 */
 	private parseCitationNote(
 		file: TFile,
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		fm: Record<string, any>
+		fm: Record<string, unknown>
 	): CitationNote {
 		return {
 			filePath: file.path,
