@@ -133,7 +133,7 @@ export async function activateMapView(
 	if (leaf) {
 		void workspace.revealLeaf(leaf);
 
-		setTimeout(() => {
+		activeWindow.setTimeout(() => {
 			const mapView = leaf?.view as {
 				mapController?: {
 					setActiveMap: (id: string) => Promise<void>;

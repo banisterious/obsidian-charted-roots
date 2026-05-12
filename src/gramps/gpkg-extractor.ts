@@ -68,7 +68,7 @@ async function decompressGzipToBytes(data: Uint8Array): Promise<Uint8Array> {
 		// Create a promise that rejects after timeout
 		const timeoutMs = 30000; // 30 seconds
 		const timeoutPromise = new Promise<never>((_, reject) => {
-			setTimeout(() => reject(new Error(`Decompression timed out after ${timeoutMs}ms`)), timeoutMs);
+			activeWindow.setTimeout(() => reject(new Error(`Decompression timed out after ${timeoutMs}ms`)), timeoutMs);
 		});
 
 		// Write compressed data and close writer

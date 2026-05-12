@@ -123,7 +123,7 @@ export function renderWorldMapPreview(
 	});
 
 	// Invalidate map size after it's added to DOM (needed for Leaflet)
-	setTimeout(() => {
+	activeWindow.setTimeout(() => {
 		map.invalidateSize();
 	}, 100);
 

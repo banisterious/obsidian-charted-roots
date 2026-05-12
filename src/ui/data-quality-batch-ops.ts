@@ -1278,7 +1278,7 @@ export async function fixBidirectionalRelationships(plugin: CanvasRootsPlugin, a
 
 		// Wait for all pending file watcher events to process before resuming linker
 		// This prevents the bidirectional linker from reverting our fixes
-		await new Promise(resolve => setTimeout(resolve, 500));
+		await new Promise(resolve => activeWindow.setTimeout(resolve, 500));
 	} finally {
 		// Always resume bidirectional linking, even if errors occurred
 		plugin.bidirectionalLinker?.resume();

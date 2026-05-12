@@ -106,7 +106,7 @@ export class WebClipperService {
 		}
 
 		// Wait briefly for metadata cache to update
-		await new Promise(resolve => setTimeout(resolve, 100));
+		await new Promise(resolve => activeWindow.setTimeout(resolve, 100));
 
 		// Check if it's a clipped note
 		if (this.isClippedNote(file)) {

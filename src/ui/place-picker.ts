@@ -423,7 +423,7 @@ export class PlacePickerModal extends Modal {
 			plugin: this.plugin,
 			onCreated: (file: TFile) => {
 				// Wait for metadata cache to update before reading frontmatter
-				setTimeout(() => {
+				activeWindow.setTimeout(() => {
 					const cache = this.app.metadataCache.getFileCache(file);
 					if (cache?.frontmatter) {
 						const fm = cache.frontmatter;

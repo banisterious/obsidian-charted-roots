@@ -856,7 +856,7 @@ export class ExportWizardModal extends Modal {
 					}
 
 					// Auto-advance to complete step
-					setTimeout(() => {
+					activeWindow.setTimeout(() => {
 						this.formData.isExporting = false;
 						this.currentStep = 5;
 						this.renderCurrentStep();
@@ -902,7 +902,7 @@ export class ExportWizardModal extends Modal {
 					addLogEntry(`Exported ${result.personsExported} persons`, 'success');
 					addLogEntry(`Created ${result.relationshipsExported} relationships`, 'success');
 
-					setTimeout(() => {
+					activeWindow.setTimeout(() => {
 						this.formData.isExporting = false;
 						this.currentStep = 5;
 						this.renderCurrentStep();
@@ -951,7 +951,7 @@ export class ExportWizardModal extends Modal {
 					addLogEntry(`Created ${result.familiesExported} families`, 'success');
 					addLogEntry(`Created ${result.eventsExported} events`, 'success');
 
-					setTimeout(() => {
+					activeWindow.setTimeout(() => {
 						this.formData.isExporting = false;
 						this.currentStep = 5;
 						this.renderCurrentStep();

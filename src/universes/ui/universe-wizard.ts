@@ -1090,7 +1090,7 @@ export class UniverseWizardModal extends Modal {
 
 			// Get the actual cr_id from the created universe file
 			// Need to wait for metadata cache to update
-			await new Promise(resolve => setTimeout(resolve, 100));
+			await new Promise(resolve => activeWindow.setTimeout(resolve, 100));
 			const cache = this.app.metadataCache.getFileCache(universeFile);
 			const universeCrId = cache?.frontmatter?.cr_id as string | undefined;
 

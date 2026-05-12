@@ -703,7 +703,7 @@ export default class CanvasRootsPlugin extends Plugin {
 		// Handle is tracked so onunload can cancel it — without the clear,
 		// the callback can fire against a disposed plugin if the user
 		// disables Charted Roots within the 1-second window.
-		this.bidirectionalSnapshotTimer = setTimeout(() => {
+		this.bidirectionalSnapshotTimer = activeWindow.setTimeout(() => {
 			this.bidirectionalSnapshotTimer = null;
 			try {
 				linker.initializeSnapshots();
@@ -938,7 +938,7 @@ export default class CanvasRootsPlugin extends Plugin {
 		// a disposed plugin (the 1-second deferral is intentional but
 		// must not outlive the plugin's lifetime).
 		if (this.bidirectionalSnapshotTimer !== null) {
-			clearTimeout(this.bidirectionalSnapshotTimer);
+			activeWindow.clearTimeout(this.bidirectionalSnapshotTimer);
 			this.bidirectionalSnapshotTimer = null;
 		}
 

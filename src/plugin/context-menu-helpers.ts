@@ -196,7 +196,7 @@ export async function promptSetCollectionName(plugin: CanvasRootsPlugin, file: T
 		modal.open();
 
 		// Focus the input
-		setTimeout(() => {
+		activeWindow.setTimeout(() => {
 			input.focus();
 			input.select();
 		}, 50);
@@ -278,7 +278,7 @@ export async function promptSetCollection(plugin: CanvasRootsPlugin, file: TFile
 		modal.open();
 
 		// Focus the input
-		setTimeout(() => {
+		activeWindow.setTimeout(() => {
 			input.focus();
 			input.select();
 		}, 50);
@@ -774,7 +774,7 @@ export async function promptLineageName(plugin: CanvasRootsPlugin, suggestedName
 		modal.open();
 
 		// Focus the input
-		setTimeout(() => {
+		activeWindow.setTimeout(() => {
 			input.focus();
 			input.select();
 		}, 50);

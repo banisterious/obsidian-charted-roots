@@ -549,7 +549,7 @@ export class BulkMediaLinkModal extends Modal {
 
 			// Small delay to allow UI updates and prevent blocking
 			if (showProgress && i % 10 === 0) {
-				await new Promise(resolve => setTimeout(resolve, 0));
+				await new Promise(resolve => activeWindow.setTimeout(resolve, 0));
 			}
 		}
 

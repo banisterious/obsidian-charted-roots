@@ -593,7 +593,7 @@ async function _handleTreeGeneration(
 		// Wait a moment for file system to settle before opening
 		// This helps prevent race conditions where Obsidian tries to parse
 		// the canvas before the write is fully complete
-		await new Promise(resolve => setTimeout(resolve, 100));
+		await new Promise(resolve => activeWindow.setTimeout(resolve, 100));
 
 		// Save to recent trees history
 		const treeInfo: RecentTreeInfo = {
@@ -1148,7 +1148,7 @@ async function executeGedcomImport(
 
 		// Mark progress as complete and close modal after a brief delay
 		progressModal.markComplete();
-		setTimeout(() => progressModal.close(), 1500);
+		activeWindow.setTimeout(() => progressModal.close(), 1500);
 
 		// Log results
 		logger.info('gedcom', `Import complete: ${result.individualsImported} people, ${result.eventsCreated} events, ${result.sourcesCreated} sources, ${result.placesCreated} places`);
@@ -1548,7 +1548,7 @@ async function _handleGedcomExport(
 			progressModal.markComplete();
 
 			// Close the modal after a short delay
-			setTimeout(() => {
+			activeWindow.setTimeout(() => {
 				progressModal.close();
 			}, 1500);
 		} else {

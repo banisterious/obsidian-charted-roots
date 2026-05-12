@@ -87,7 +87,7 @@ export class CalendarView extends ItemView {
 		this.initialRender = true;
 		this.renderCalendar();
 		// Delay enabling persistence to avoid overwrites from Obsidian's setState lifecycle
-		setTimeout(() => { this.initialRender = false; }, 1000);
+		activeWindow.setTimeout(() => { this.initialRender = false; }, 1000);
 		this.registerEventHandlers();
 	}
 

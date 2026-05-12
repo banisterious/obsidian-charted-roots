@@ -116,7 +116,7 @@ export class TransfersProcessor {
 			const createHandler = (file: TAbstractFile) => {
 				if (file instanceof TFile && eventsFolder && file.path.startsWith(eventsFolder)) {
 					// Small delay to allow metadata cache to process the new file
-					setTimeout(() => {
+					activeWindow.setTimeout(() => {
 						const freshContext = this.service.buildContext(ctx);
 						if (!freshContext) return;
 						el.empty();

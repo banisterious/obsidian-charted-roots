@@ -136,7 +136,7 @@ function enterEditMode(
 
 	inputEl.addEventListener('blur', () => {
 		// Delay to allow click on another editable field to fire first
-		setTimeout(() => {
+		activeWindow.setTimeout(() => {
 			if (activeEdit?.property === config.property && !saving) {
 				void doSave();
 			}

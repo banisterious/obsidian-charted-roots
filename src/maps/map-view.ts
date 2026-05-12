@@ -194,7 +194,7 @@ export class MapView extends ItemView {
 			// Wait and try again
 			await new Promise<void>(resolve => {
 				requestAnimationFrame(() => {
-					setTimeout(resolve, delayMs);
+					activeWindow.setTimeout(resolve, delayMs);
 				});
 			});
 		}
@@ -1379,7 +1379,7 @@ export class MapView extends ItemView {
 		}
 
 		// Apply filter after data loads (may need a short delay for initial render)
-		setTimeout(() => this.applyJourneyFilter(), 300);
+		activeWindow.setTimeout(() => this.applyJourneyFilter(), 300);
 	}
 
 	/**
@@ -1792,7 +1792,7 @@ export class MapView extends ItemView {
 			map.closePopup();
 
 			// Open rich popup after fly animation
-			setTimeout(() => {
+			activeWindow.setTimeout(() => {
 				const L = require('leaflet');
 				const popupContent = this.buildRichWaypointPopup(waypoint, allWaypoints, journey);
 				L.popup({ maxWidth: 300, className: 'cr-journey-rich-popup' })

@@ -107,7 +107,7 @@ export async function renderSchemasTab(options: SchemasTabOptions): Promise<void
 
 				// Mark complete and close after a short delay
 				progressModal.markComplete(lastValidationSummary);
-				setTimeout(() => {
+				activeWindow.setTimeout(() => {
 					progressModal.close();
 					// Refresh the tab to show updated results
 					container.empty();

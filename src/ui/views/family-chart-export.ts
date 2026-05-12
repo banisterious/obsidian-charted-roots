@@ -1452,7 +1452,7 @@ export async function embedImagesAsBase64(svgClone: SVGSVGElement): Promise<void
 
 		// Yield after EVERY image for large exports to allow GC
 		// Longer delay (50ms) gives browser time to reclaim memory
-		await new Promise(resolve => setTimeout(resolve, totalImages > 50 ? 50 : 10));
+		await new Promise(resolve => activeWindow.setTimeout(resolve, totalImages > 50 ? 50 : 10));
 	}
 }
 
@@ -1512,7 +1512,7 @@ async function embedImagesAsBase64WithProgress(
 		}
 
 		// Yield after EVERY image for large exports to allow GC
-		await new Promise(resolve => setTimeout(resolve, totalImages > 50 ? 50 : 10));
+		await new Promise(resolve => activeWindow.setTimeout(resolve, totalImages > 50 ? 50 : 10));
 	}
 }
 

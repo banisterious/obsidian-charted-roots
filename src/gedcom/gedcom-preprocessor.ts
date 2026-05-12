@@ -167,9 +167,9 @@ export function normalizeTabContinuations(content: string): { content: string; f
  * allowing pending UI updates and user interactions to be processed.
  */
 async function yieldToEventLoop(): Promise<void> {
-	// In Electron/Obsidian, setTimeout(0) is more reliable than requestAnimationFrame
+	// In Electron/Obsidian, activeWindow.setTimeout(0) is more reliable than requestAnimationFrame
 	// because rAF is tied to rendering frames which may not apply in this context
-	return new Promise(resolve => setTimeout(resolve, 0));
+	return new Promise(resolve => activeWindow.setTimeout(resolve, 0));
 }
 
 /**

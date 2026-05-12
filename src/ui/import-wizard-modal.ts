@@ -1182,7 +1182,7 @@ export class ImportWizardModal extends Modal {
 						}
 
 						// Auto-advance to numbering step after a short delay
-						setTimeout(() => {
+						activeWindow.setTimeout(() => {
 							this.currentStep = 5; // Numbering step
 							this.isImporting = false;
 							this.renderCurrentStep();
@@ -1303,7 +1303,7 @@ export class ImportWizardModal extends Modal {
 						}
 
 						// Auto-advance to numbering step after a short delay
-						setTimeout(() => {
+						activeWindow.setTimeout(() => {
 							this.currentStep = 5; // Numbering step
 							this.isImporting = false;
 							this.renderCurrentStep();

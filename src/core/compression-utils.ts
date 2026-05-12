@@ -61,7 +61,7 @@ export async function decompressGzip(compressedData: ArrayBuffer): Promise<strin
 		// Create a promise that rejects after timeout
 		const timeoutMs = 30000; // 30 seconds
 		const timeoutPromise = new Promise<never>((_, reject) => {
-			setTimeout(() => reject(new Error(`Decompression timed out after ${timeoutMs}ms`)), timeoutMs);
+			activeWindow.setTimeout(() => reject(new Error(`Decompression timed out after ${timeoutMs}ms`)), timeoutMs);
 		});
 
 		// Read decompressed data with timeout

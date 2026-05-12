@@ -2083,7 +2083,7 @@ export class CreatePersonModal extends Modal {
 					onCreated: () => {
 						// Refresh the event list after creation
 						// Need a small delay for the cache to update
-						setTimeout(() => renderEventList(), 100);
+						activeWindow.setTimeout(() => renderEventList(), 100);
 					},
 					plugin: this.plugin
 				}
@@ -2828,7 +2828,7 @@ export class CreatePersonModal extends Modal {
 				await updatePersonNote(this.app, this.createdFile, data);
 
 				// Wait a bit for Obsidian to update metadata cache
-				await new Promise(resolve => setTimeout(resolve, 100));
+				await new Promise(resolve => activeWindow.setTimeout(resolve, 100));
 
 				// Then do bidirectional linking (needs to happen AFTER update so cache is fresh)
 				if (relationshipType === 'child') {

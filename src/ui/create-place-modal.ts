@@ -1619,7 +1619,7 @@ export class CreatePlaceModal extends Modal {
 		}
 
 		// Small delay to let the current modal fully close
-		setTimeout(() => {
+		activeWindow.setTimeout(() => {
 			new CreatePlaceModal(this.app, {
 				directory: this.directory,
 				initialName: parentName,

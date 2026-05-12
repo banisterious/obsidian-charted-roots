@@ -895,11 +895,11 @@ export class FamilyChartExportWizard extends Modal {
 			if (progressModal.cancelled) {
 				progressModal.markCancelled();
 				// Auto-close after brief delay
-				setTimeout(() => progressModal.close(), 1000);
+				activeWindow.setTimeout(() => progressModal.close(), 1000);
 			} else {
 				progressModal.markComplete();
 				// Auto-close after brief delay
-				setTimeout(() => progressModal.close(), 1500);
+				activeWindow.setTimeout(() => progressModal.close(), 1500);
 
 				// Save last-used settings for next time
 				await this.saveLastExportSettings();

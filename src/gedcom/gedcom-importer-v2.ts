@@ -1857,7 +1857,7 @@ export class GedcomImporterV2 {
 	 * Uses setTimeout with 0ms which defers to the next event loop iteration.
 	 */
 	private async yieldToEventLoop(): Promise<void> {
-		return new Promise(resolve => setTimeout(resolve, 0));
+		return new Promise(resolve => activeWindow.setTimeout(resolve, 0));
 	}
 
 	/**

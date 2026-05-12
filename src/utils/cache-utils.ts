@@ -27,7 +27,7 @@ export function waitForCacheRefresh(app: App, file: TFile, timeoutMs = 500): Pro
 			if (settled) return;
 			settled = true;
 			app.metadataCache.offref(ref);
-			clearTimeout(timeoutId);
+			activeWindow.clearTimeout(timeoutId);
 			resolve();
 		};
 		const ref = app.metadataCache.on('changed', (changedFile) => {
@@ -35,6 +35,6 @@ export function waitForCacheRefresh(app: App, file: TFile, timeoutMs = 500): Pro
 				finish();
 			}
 		});
-		const timeoutId = setTimeout(finish, timeoutMs);
+		const timeoutId = activeWindow.setTimeout(finish, timeoutMs);
 	});
 }
