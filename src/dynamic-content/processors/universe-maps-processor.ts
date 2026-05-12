@@ -33,7 +33,6 @@ export class UniverseMapsProcessor {
 	/**
 	 * Process a charted-roots-universe-maps code block
 	 */
-	// eslint-disable-next-line @typescript-eslint/require-await -- MarkdownPostProcessor signature allows Promise<void>; keeping async for parity with other processors
 	async process(
 		source: string,
 		el: HTMLElement,

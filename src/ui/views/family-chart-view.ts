@@ -238,7 +238,6 @@ export class FamilyChartView extends ItemView {
 		return 'git-fork';
 	}
 
-	// eslint-disable-next-line @typescript-eslint/require-await -- Base class requires Promise<void> return type
 	async onOpen(): Promise<void> {
 		logger.debug('on-open', 'Opening view', { cardStyle: this.cardStyle, rootPersonId: this.rootPersonId });
 
@@ -264,7 +263,6 @@ export class FamilyChartView extends ItemView {
 		this.registerEventHandlers();
 	}
 
-	// eslint-disable-next-line @typescript-eslint/require-await -- Base class requires Promise<void> return type
 	async onClose(): Promise<void> {
 		logger.debug('view-close', 'Closing FamilyChartView');
 		this.destroyChart();
@@ -4982,7 +4980,6 @@ export class FamilyChartView extends ItemView {
 		};
 	}
 
-	// eslint-disable-next-line @typescript-eslint/require-await -- Base class requires Promise<void> return type
 	async setState(state: Partial<FamilyChartViewState>): Promise<void> {
 		logger.debug('set-state', 'Restoring view state', state);
 		logger.debug('set-state', 'Spacing values', { nodeSpacing: state.nodeSpacing, levelSpacing: state.levelSpacing });

@@ -42,13 +42,11 @@ export class PeopleView extends ItemView {
 		return 'user';
 	}
 
-	// eslint-disable-next-line @typescript-eslint/require-await -- ItemView.onOpen requires async signature
 	async onOpen(): Promise<void> {
 		this.buildUI();
 		this.registerEventHandlers();
 	}
 
-	// eslint-disable-next-line @typescript-eslint/require-await -- ItemView.onClose requires async signature
 	async onClose(): Promise<void> {
 		if (this.refreshTimeout) {
 			activeWindow.clearTimeout(this.refreshTimeout);
@@ -144,7 +142,6 @@ export class PeopleView extends ItemView {
 		};
 	}
 
-	// eslint-disable-next-line @typescript-eslint/require-await -- ItemView.setState requires async signature
 	async setState(state: Partial<PeopleViewState>): Promise<void> {
 		if (state.filter) {
 			this.currentFilter = state.filter;

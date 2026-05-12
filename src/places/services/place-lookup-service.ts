@@ -527,7 +527,6 @@ export class PlaceLookupService {
 	 * Look up place in FamilySearch Places API
 	 * NOTE: Phase 3 - Requires OAuth 2.0 authentication
 	 */
-	// eslint-disable-next-line @typescript-eslint/require-await -- stub for Phase 3; will use await when OAuth flow lands
 	private async lookupFamilySearch(
 		_placeName: string,
 		_options: PlaceLookupOptions
@@ -541,7 +540,6 @@ export class PlaceLookupService {
 	 * Look up place in GOV (Genealogisches Ortsverzeichnis)
 	 * NOTE: Phase 3 - Requires API research
 	 */
-	// eslint-disable-next-line @typescript-eslint/require-await -- stub for Phase 3; will use await when API lands
 	private async lookupGOV(
 		_placeName: string,
 		_options: PlaceLookupOptions

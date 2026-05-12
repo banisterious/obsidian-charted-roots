@@ -93,7 +93,6 @@ export class ProfileView extends ItemView {
 		return 'id-card';
 	}
 
-	// eslint-disable-next-line @typescript-eslint/require-await -- ItemView.onOpen requires async signature
 	async onOpen(): Promise<void> {
 		const container = this.contentEl;
 		container.empty();
@@ -137,7 +136,6 @@ export class ProfileView extends ItemView {
 		this.scheduleSyncToActiveNote();
 	}
 
-	// eslint-disable-next-line @typescript-eslint/require-await -- ItemView.onClose requires async signature
 	async onClose(): Promise<void> {
 		if (this.syncDebounceTimeout) activeWindow.clearTimeout(this.syncDebounceTimeout);
 		if (this.refreshTimeout) activeWindow.clearTimeout(this.refreshTimeout);
@@ -156,7 +154,6 @@ export class ProfileView extends ItemView {
 		};
 	}
 
-	// eslint-disable-next-line @typescript-eslint/require-await -- ItemView.setState requires async signature
 	async setState(state: Partial<ProfileViewState>): Promise<void> {
 		if (state.pinned !== undefined) this.pinned = state.pinned;
 		if (state.sectionStates) this.sectionStates = { ...state.sectionStates };

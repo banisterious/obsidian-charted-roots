@@ -203,7 +203,6 @@ export class MapView extends ItemView {
 		logger.warn('container-dimensions', 'Container dimensions not detected after waiting');
 	}
 
-	// eslint-disable-next-line @typescript-eslint/require-await -- ItemView requires async onClose
 	async onClose(): Promise<void> {
 		logger.debug('view-close', 'Closing MapView');
 		this.destroyMap();
