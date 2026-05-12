@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-12 21:07:38 UTC
+ * - Generated: 2026-05-12 21:10:41 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -86,6 +86,8 @@
   --cr-gallery-background: transparent;
 }
 
+
+/* stylelint-enable */
 
 /* End of variables.css */
 
@@ -377,6 +379,8 @@ settings:
 */
 
 
+/* stylelint-enable */
+
 /* End of style-settings.css */
 
 /* ==========================================================================
@@ -484,6 +488,8 @@ settings:
 }
 
 
+/* stylelint-enable */
+
 /* End of base.css */
 
 /* ==========================================================================
@@ -514,6 +520,8 @@ settings:
   gap: var(--cr-spacing-lg);
 }
 
+
+/* stylelint-enable */
 
 /* End of layout.css */
 
@@ -654,6 +662,8 @@ settings:
   color: var(--text-muted);
 }
 
+
+/* stylelint-enable */
 
 /* End of settings.css */
 
@@ -6411,6 +6421,8 @@ settings:
 }
 
 
+/* stylelint-enable */
+
 /* End of control-center.css */
 
 /* ==========================================================================
@@ -7655,6 +7667,8 @@ settings:
   height: 14px;
 }
 
+
+/* stylelint-enable */
 
 /* End of entity-create-modals.css */
 
@@ -9085,6 +9099,8 @@ settings:
   border-top: 1px solid var(--background-modifier-border);
 }
 
+
+/* stylelint-enable */
 
 /* End of place-modals.css */
 
@@ -11105,6 +11121,8 @@ settings:
   margin-top: var(--size-4-3);
 }
 
+
+/* stylelint-enable */
 
 /* End of media-modals.css */
 
@@ -13302,6 +13320,8 @@ settings:
 }
 
 
+/* stylelint-enable */
+
 /* End of import-export-wizard.css */
 
 /* ==========================================================================
@@ -13865,6 +13885,8 @@ settings:
   }
 }
 
+
+/* stylelint-enable */
 
 /* End of staging-manager.css */
 
@@ -16072,6 +16094,8 @@ settings:
 }
 
 
+/* stylelint-enable */
+
 /* End of cleanup-wizard.css */
 
 /* ==========================================================================
@@ -16247,6 +16271,8 @@ settings:
   color: var(--text-muted);
 }
 
+
+/* stylelint-enable */
 
 /* End of duplicate-detection.css */
 
@@ -16534,6 +16560,8 @@ settings:
 }
 
 
+/* stylelint-enable */
+
 /* End of merge-wizard.css */
 
 /* ==========================================================================
@@ -16583,6 +16611,8 @@ settings:
   border-top: 1px solid var(--background-modifier-border);
 }
 
+
+/* stylelint-enable */
 
 /* End of tree-statistics.css */
 
@@ -16671,6 +16701,8 @@ settings:
 
 /* .cr-modal-buttons defined in base.css */
 
+
+/* stylelint-enable */
 
 /* End of validation.css */
 
@@ -16956,6 +16988,8 @@ settings:
 }
 
 
+/* stylelint-enable */
+
 /* End of find-on-canvas.css */
 
 /* ==========================================================================
@@ -17119,6 +17153,8 @@ settings:
   color: var(--text-muted);
 }
 
+
+/* stylelint-enable */
 
 /* End of folder-scan.css */
 
@@ -17430,6 +17466,8 @@ settings:
   }
 }
 
+
+/* stylelint-enable */
 
 /* End of relationship-calculator.css */
 
@@ -18924,6 +18962,8 @@ settings:
 }
 
 
+/* stylelint-enable */
+
 /* End of family-chart-view.css */
 
 /* ==========================================================================
@@ -19631,6 +19671,8 @@ settings:
   border-top: 1px solid var(--background-modifier-border);
 }
 
+
+/* stylelint-enable */
 
 /* End of family-chart-export.css */
 
@@ -20549,6 +20591,8 @@ settings:
 }
 
 
+/* stylelint-enable */
+
 /* End of report-wizard.css */
 
 /* ==========================================================================
@@ -20928,6 +20972,8 @@ settings:
 	color: var(--text-muted);
 }
 
+
+/* stylelint-enable */
 
 /* End of book-builder.css */
 
@@ -22384,6 +22430,8 @@ settings:
 }
 
 
+/* stylelint-enable */
+
 /* End of data-quality.css */
 
 /* ==========================================================================
@@ -22989,6 +23037,8 @@ settings:
   flex-direction: column;
 }
 
+
+/* stylelint-enable */
 
 /* End of relationships.css */
 
@@ -23681,6 +23731,8 @@ settings:
   margin-bottom: var(--size-2-1);
 }
 
+
+/* stylelint-enable */
 
 /* End of canvas-navigation.css */
 
@@ -26184,6 +26236,8 @@ input[type="text"]::-webkit-input-placeholder {
 }
 
 
+/* stylelint-enable */
+
 /* End of map-view.css */
 
 /* ==========================================================================
@@ -26565,6 +26619,8 @@ input[type="text"]::-webkit-input-placeholder {
    bleed into the next component's CSS. */
 
 
+/* stylelint-enable */
+
 /* End of leaflet-distortable.css */
 
 /* ==========================================================================
@@ -26860,6 +26916,8 @@ input[type="text"]::-webkit-input-placeholder {
   color: var(--text-muted);
 }
 
+
+/* stylelint-enable */
 
 /* End of date-systems.css */
 
@@ -28391,6 +28449,8 @@ input[type="text"]::-webkit-input-placeholder {
 }
 
 
+/* stylelint-enable */
+
 /* End of events.css */
 
 /* ==========================================================================
@@ -28724,6 +28784,8 @@ body.wide-timeline .view-content {
    build-css.js concatenates components, and an unmatched disable would
    bleed into the next component's CSS. */
 
+
+/* stylelint-enable */
 
 /* End of timeline-callouts.css */
 
@@ -29348,6 +29410,8 @@ body.wide-timeline .view-content {
   color: var(--text-on-accent);
 }
 
+
+/* stylelint-enable */
 
 /* End of organizations.css */
 
@@ -32190,6 +32254,8 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 
+/* stylelint-enable */
+
 /* End of sources.css */
 
 /* ==========================================================================
@@ -34011,6 +34077,8 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 
+/* stylelint-enable */
+
 /* End of statistics.css */
 
 /* ==========================================================================
@@ -34092,6 +34160,8 @@ body:has(.cr-media-linker) .suggestion-container {
   margin-left: auto;
 }
 
+
+/* stylelint-enable */
 
 /* End of command-menu.css */
 
@@ -34592,6 +34662,8 @@ body:has(.cr-media-linker) .suggestion-container {
 
 /* End of dashboard.css */
 
+
+/* stylelint-enable */
 
 /* End of dashboard.css */
 
@@ -35223,6 +35295,8 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 
+/* stylelint-enable */
+
 /* End of universe-wizard.css */
 
 /* ==========================================================================
@@ -35272,6 +35346,8 @@ body:has(.cr-media-linker) .suggestion-container {
   cursor: default;
 }
 
+
+/* stylelint-enable */
 
 /* End of universes.css */
 
@@ -35469,6 +35545,8 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 
+/* stylelint-enable */
+
 /* End of universe-entities.css */
 
 /* ==========================================================================
@@ -35518,6 +35596,8 @@ body:has(.cr-media-linker) .suggestion-container {
   cursor: default;
 }
 
+
+/* stylelint-enable */
 
 /* End of collections.css */
 
@@ -35574,6 +35654,8 @@ body:has(.cr-media-linker) .suggestion-container {
   margin: 0 0 var(--size-4-3) 0;
 }
 
+
+/* stylelint-enable */
 
 /* End of data-quality-view.css */
 
@@ -36327,6 +36409,8 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 
+/* stylelint-enable */
+
 /* End of family-wizard.css */
 
 /* ==========================================================================
@@ -36942,6 +37026,8 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 
+/* stylelint-enable */
+
 /* End of map-wizard.css */
 
 /* ==========================================================================
@@ -37381,6 +37467,8 @@ body:has(.cr-media-linker) .suggestion-container {
   background: var(--background-modifier-error);
 }
 
+
+/* stylelint-enable */
 
 /* End of preferences.css */
 
@@ -38939,6 +39027,8 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 
+/* stylelint-enable */
+
 /* End of tree-output.css */
 
 /* ==========================================================================
@@ -40162,6 +40252,8 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 
+/* stylelint-enable */
+
 /* End of dynamic-content.css */
 
 /* ==========================================================================
@@ -41291,6 +41383,8 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 
+/* stylelint-enable */
+
 /* End of profile-view.css */
 
 /* ==========================================================================
@@ -41602,6 +41696,8 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 
+/* stylelint-enable */
+
 /* End of calendar-view.css */
 
 /* ==========================================================================
@@ -41746,6 +41842,8 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 
+/* stylelint-enable */
+
 /* End of migration-notice.css */
 
 /* ==========================================================================
@@ -41764,6 +41862,8 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 
+/* stylelint-enable */
+
 /* End of responsive.css */
 
 /* ==========================================================================
@@ -41771,11 +41871,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-12 21:07:39 UTC
+ * Build completed: 2026-05-12 21:10:42 UTC
  * Components processed: 50
  * Total lines: 41298
  * Total size: 837.27 KB
- * Build duration: 0.34 seconds
+ * Build duration: 0.97 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB

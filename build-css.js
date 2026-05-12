@@ -263,8 +263,14 @@ async function buildCSS() {
       const componentContent = await fs.readFile(componentPath, 'utf8');
       buildContent += componentContent;
 
-      // Add component footer
-      buildContent += `\n\n/* End of ${component} */\n`;
+      // Add component footer. The `stylelint-enable` is defensive: any
+      // file-scope `/* stylelint-disable */` in the component would
+      // otherwise bleed into subsequent components in the concatenated
+      // bundle and trip "rule has already been disabled" errors on the
+      // next component's directives. Each component is logically
+      // independent, so closing every disable scope at the boundary is
+      // the right default.
+      buildContent += `\n\n/* stylelint-enable */\n\n/* End of ${component} */\n`;
 
       // Update metrics
       totalLines += fileInfo.lines;

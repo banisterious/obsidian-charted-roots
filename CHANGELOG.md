@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Changed
+
+- **Internal: `build-css.js` now auto-injects `/* stylelint-enable */` between each concatenated component**, so any future component file's `/* stylelint-disable */` directive is automatically scoped to that component's section of the bundle and can't bleed into subsequent components. Defensive follow-up to the matching per-file fix below.
+
 ### Fixed
 
 - **Bundled `styles.css` no longer emits a `selector-class-pattern has already been disabled` stylelint error**: two CSS source files (`styles/leaflet-distortable.css` and `styles/timeline-callouts.css`) opened with `/* stylelint-disable */` directives and had no matching `/* stylelint-enable */` at the bottom. When `build-css.js` concatenated them into `styles.css`, the disables bled into subsequent components — the leaflet-distortable blanket disable bled into timeline-callouts, then timeline-callouts' specific disable for `selector-class-pattern` triggered the "already disabled" error. Surfaced by Obsidian's new Community automated review against v0.22.31 as the only error-level finding (and the gating signal for admission). Added matching `/* stylelint-enable */` to both files so each component's disable scope is properly contained.
