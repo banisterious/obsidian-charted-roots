@@ -180,7 +180,7 @@ export class PersonPickerModal extends Modal {
 		this.showLoadingState();
 
 		// Use setTimeout to allow UI to render before heavy computation
-		setTimeout(() => {
+		activeWindow.setTimeout(() => {
 			this.loadPeople();
 			this.hideLoadingState();
 			this.createModalContent();
@@ -259,7 +259,7 @@ export class PersonPickerModal extends Modal {
 			return;
 		}
 
-		setTimeout(() => {
+		activeWindow.setTimeout(() => {
 			this.loadFamilyComponents();
 			this.familyComponentsLoaded = true;
 
@@ -502,9 +502,9 @@ export class PersonPickerModal extends Modal {
 				this.searchInput.focus();
 			}
 		};
-		setTimeout(focusInput, 50);
-		setTimeout(focusInput, 150);
-		setTimeout(focusInput, 300);
+		activeWindow.setTimeout(focusInput, 50);
+		activeWindow.setTimeout(focusInput, 150);
+		activeWindow.setTimeout(focusInput, 300);
 
 		// Sort dropdown
 		const sortContainer = contentEl.createDiv({ cls: 'crc-picker-sort' });

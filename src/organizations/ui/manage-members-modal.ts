@@ -585,7 +585,7 @@ class MultiSelectPersonPickerModal extends Modal {
 		});
 
 		// Auto-focus search
-		setTimeout(() => searchInput.focus(), 50);
+		activeWindow.setTimeout(() => searchInput.focus(), 50);
 
 		// Results
 		this.resultsContainer = contentEl.createDiv({ cls: 'cr-multi-select-results' });

@@ -274,7 +274,7 @@ export class MediaGalleryModal extends Modal {
 		this.renderGrid();
 
 		// Focus search
-		setTimeout(() => this.searchInput.focus(), 50);
+		activeWindow.setTimeout(() => this.searchInput.focus(), 50);
 	}
 
 	/**

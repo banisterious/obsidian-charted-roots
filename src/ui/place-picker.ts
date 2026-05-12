@@ -95,7 +95,7 @@ export class PlacePickerModal extends Modal {
 		this.showLoadingState();
 
 		// Use setTimeout to allow UI to render before heavy computation
-		setTimeout(() => {
+		activeWindow.setTimeout(() => {
 			this.loadPlaces();
 			this.hideLoadingState();
 			this.createModalContent();
@@ -247,7 +247,7 @@ export class PlacePickerModal extends Modal {
 		});
 
 		// Auto-focus search input
-		setTimeout(() => this.searchInput.focus(), 50);
+		activeWindow.setTimeout(() => this.searchInput.focus(), 50);
 
 		// Sort dropdown
 		const sortContainer = contentEl.createDiv({ cls: 'crc-picker-sort' });

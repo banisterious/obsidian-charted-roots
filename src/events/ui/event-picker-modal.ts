@@ -178,7 +178,7 @@ export class EventPickerModal extends Modal {
 		});
 
 		// Auto-focus search input
-		setTimeout(() => this.searchInput.focus(), 50);
+		activeWindow.setTimeout(() => this.searchInput.focus(), 50);
 
 		// Sort dropdown
 		const sortContainer = contentEl.createDiv({ cls: 'crc-picker-sort' });

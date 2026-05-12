@@ -314,7 +314,7 @@ export class UnlinkedMediaModal extends Modal {
 		this.renderLoadingState();
 
 		// Focus search
-		setTimeout(() => this.searchInput.focus(), 50);
+		activeWindow.setTimeout(() => this.searchInput.focus(), 50);
 	}
 
 	/**
