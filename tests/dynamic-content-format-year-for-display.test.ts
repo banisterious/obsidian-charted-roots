@@ -106,3 +106,43 @@ describe('extractYear is unchanged by the #563 fix', () => {
 		expect(service.extractYear('500 BCE')).toBe('-500');
 	});
 });
+
+/**
+ * Regression fence for the v0.22.31 follow-up surfaced by @doctorwodka:
+ * the Dynamic Timeline block has THREE rendering paths — `renderFormattedEntry`
+ * (the `{year}` template-substitution path), the sectioned `renderWithTemplate`
+ * default block, and the flat-list `renderTimelineList` path. The first two
+ * were wired through `formatYearForDisplay` in v0.22.31, but the third was
+ * missed and continued to render `entry.year` (`extractYear` output, era-
+ * stripped). The flow that produces an era-aware year in the flat-list path
+ * is: `entry.date = formatDate(birthDate)` (DynamicContentService.formatDate
+ * leaves fictional-prefixed input as-is), then `formatYearForDisplay(entry.date)`.
+ * This composition test guards against both ends of that chain regressing.
+ */
+describe('formatYearForDisplay accepts formatDate output (timeline flat-list path)', () => {
+	const service = makeService();
+
+	it('preserves the era prefix through formatDate -> formatYearForDisplay for year-only fictional input', () => {
+		// The timeline-renderer builds entries via formatDate(birthDate), then
+		// renders via formatYearForDisplay(entry.date). For year-only fictional
+		// input, formatDate is a passthrough (no ISO regex match) and
+		// formatYearForDisplay produces the canonical era display.
+		const intermediate = service.formatDate('BBY 1045');
+		expect(intermediate).toBe('BBY 1045');
+		expect(service.formatYearForDisplay(intermediate)).toBe('BBY 1045');
+	});
+
+	it('preserves the era prefix for custom-era inputs through the same chain', () => {
+		const intermediate = service.formatDate('EF 30');
+		expect(intermediate).toBe('EF 30');
+		expect(service.formatYearForDisplay(intermediate)).toBe('EF 30');
+	});
+
+	it('still falls through to extractYear for standard ISO dates after formatDate', () => {
+		// "1850-03-15" → formatDate produces "15 Mar 1850" → formatYearForDisplay
+		// can't parse that as fictional → falls back to extractYear → "1850".
+		const intermediate = service.formatDate('1850-03-15');
+		expect(intermediate).toBe('15 Mar 1850');
+		expect(service.formatYearForDisplay(intermediate)).toBe('1850');
+	});
+});

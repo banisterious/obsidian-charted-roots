@@ -1117,9 +1117,14 @@ export class TimelineRenderer {
 				continue;
 			}
 
-			// Year/date
+			// Year/date — prefer the era-aware display when DateService can
+			// parse the entry's raw date as fictional (#563); falls through to
+			// the digit-only year for standard inputs. The two earlier render
+			// paths (renderFormattedEntry, renderWithTemplate's default block)
+			// were updated in v0.22.31; this flat-list path was missed.
+			const displayYear = this.service.formatYearForDisplay(entry.date, context.person?.universe);
 			const yearSpan = li.createSpan({ cls: 'cr-timeline__year' });
-			yearSpan.textContent = entry.year || entry.date || '?';
+			yearSpan.textContent = displayYear || entry.year || entry.date || '?';
 
 			// Age annotation
 			if (entry.age !== undefined) {
