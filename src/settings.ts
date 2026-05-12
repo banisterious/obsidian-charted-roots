@@ -516,6 +516,14 @@ export interface CanvasRootsSettings {
 	 * Migration updates canvas metadata and code block types in vault files.
 	 */
 	migratedToChartedRoots?: boolean;
+
+	/**
+	 * True when the one-shot `collection_name` -> `group_name` frontmatter
+	 * migration has completed. Once set, the migration scan short-circuits
+	 * on subsequent plugin loads so we don't iterate every markdown file
+	 * forever after the work is already done.
+	 */
+	migratedCollectionNameToGroupName?: boolean;
 }
 
 /**

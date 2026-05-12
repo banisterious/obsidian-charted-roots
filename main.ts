@@ -1073,6 +1073,13 @@ export default class CanvasRootsPlugin extends Plugin {
 	 * Runs once on plugin load to ensure all person notes use the new property name
 	 */
 	private async migrateCollectionNameToGroupName() {
+		// Skip the vault scan once the migration has completed successfully.
+		// Without this guard we iterate every markdown file on every plugin
+		// load forever after — a noticeable startup cost on large vaults.
+		if (this.settings.migratedCollectionNameToGroupName) {
+			return;
+		}
+
 		try {
 			const files = this.app.vault.getMarkdownFiles();
 			let migratedCount = 0;
@@ -1095,6 +1102,11 @@ export default class CanvasRootsPlugin extends Plugin {
 			if (migratedCount > 0) {
 				logger.info('migration', `Migrated ${migratedCount} files from collection_name to group_name`);
 			}
+
+			// Flag completion only after the full scan succeeds — if we threw
+			// partway through, leave the flag unset so the next load retries.
+			this.settings.migratedCollectionNameToGroupName = true;
+			await this.saveSettings();
 		} catch (error: unknown) {
 			logger.error('migration', 'Error during collection_name to group_name migration', error);
 		}
