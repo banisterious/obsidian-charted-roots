@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-12 17:51:51 UTC
+ * - Generated: 2026-05-12 21:07:38 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -26190,7 +26190,7 @@ input[type="text"]::-webkit-input-placeholder {
    COMPONENT: LEAFLET-DISTORTABLE.CSS
    ========================================================================== */
 
-/* Component Size: 368 lines, 7.73 KB */
+/* Component Size: 372 lines, 7.91 KB */
 
 /* stylelint-disable */
 /* Leaflet DistortableImage & Toolbar Plugin Styles
@@ -26559,6 +26559,10 @@ input[type="text"]::-webkit-input-placeholder {
     transform: rotate(360deg);
   }
 }
+
+/* stylelint-enable -- scope the file-level disable to this file only;
+   build-css.js concatenates components, and an unmatched disable would
+   bleed into the next component's CSS. */
 
 
 /* End of leaflet-distortable.css */
@@ -28393,7 +28397,7 @@ input[type="text"]::-webkit-input-placeholder {
    COMPONENT: TIMELINE-CALLOUTS.CSS
    ========================================================================== */
 
-/* Component Size: 321 lines, 10.68 KB */
+/* Component Size: 325 lines, 10.86 KB */
 
 /**
  * Timeline Callout Styles
@@ -28715,6 +28719,10 @@ body {
 body.wide-timeline .view-content {
   --file-line-width: var(--cr-timeline-width);
 }
+
+/* stylelint-enable -- scope the file-level disable to this file only;
+   build-css.js concatenates components, and an unmatched disable would
+   bleed into the next component's CSS. */
 
 
 /* End of timeline-callouts.css */
@@ -41763,11 +41771,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-12 17:51:52 UTC
+ * Build completed: 2026-05-12 21:07:39 UTC
  * Components processed: 50
- * Total lines: 41290
- * Total size: 836.91 KB
- * Build duration: 1.25 seconds
+ * Total lines: 41298
+ * Total size: 837.27 KB
+ * Build duration: 0.34 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -41797,10 +41805,10 @@ body:has(.cr-media-linker) .suggestion-container {
  * - relationships.css: 597 lines, 11.43 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB
  * - map-view.css: 2493 lines, 51.98 KB
- * - leaflet-distortable.css: 368 lines, 7.73 KB
+ * - leaflet-distortable.css: 372 lines, 7.91 KB
  * - date-systems.css: 287 lines, 5.31 KB
  * - events.css: 1521 lines, 30.88 KB
- * - timeline-callouts.css: 321 lines, 10.68 KB
+ * - timeline-callouts.css: 325 lines, 10.86 KB
  * - organizations.css: 615 lines, 11.57 KB
  * - sources.css: 2832 lines, 57.42 KB
  * - statistics.css: 1812 lines, 36.39 KB

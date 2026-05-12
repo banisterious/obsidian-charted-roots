@@ -318,3 +318,7 @@ body {
 body.wide-timeline .view-content {
   --file-line-width: var(--cr-timeline-width);
 }
+
+/* stylelint-enable -- scope the file-level disable to this file only;
+   build-css.js concatenates components, and an unmatched disable would
+   bleed into the next component's CSS. */
