@@ -244,7 +244,7 @@ export class MediaPickerModal extends Modal {
 		});
 
 		// Auto-focus search input
-		activeWindow.setTimeout(() => this.searchInput.focus(), 50);
+		window.setTimeout(() => this.searchInput.focus(), 50);
 
 		// Filters row
 		const filtersRow = contentEl.createDiv({ cls: 'crc-picker-filters' });

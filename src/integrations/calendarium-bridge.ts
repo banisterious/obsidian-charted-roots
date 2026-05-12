@@ -155,7 +155,7 @@ export class CalendariumBridge {
 			});
 
 			// Timeout after 5 seconds in case callback never fires
-			activeWindow.setTimeout(() => {
+			window.setTimeout(() => {
 				if (!this.initialized) {
 					this.initialized = true;
 					resolve(false);

@@ -1,5 +1,10 @@
-// Obsidian exposes `activeWindow` as an ambient global pointing at the
-// currently-focused window. The unit-test runtime has no equivalent, so we
-// point it at globalThis — `activeWindow.setTimeout` then resolves to the
-// host's setTimeout, which is what we want for the source code under test.
-(globalThis as unknown as { activeWindow: typeof globalThis }).activeWindow = globalThis;
+/* eslint-disable obsidianmd/no-global-this -- test setup polyfill; the rule
+   is for source code, and stubbing `window` in the Node runtime requires
+   reaching through globalThis */
+
+// Obsidian provides `window` (load-time window) and `activeWindow` (currently-
+// focused window) as ambient globals. Plugin source code uses `window.setTimeout`
+// for timer calls (per the obsidianmd/prefer-window-timers rule). The unit-test
+// runtime is Node, which has no `window` — so we polyfill it to globalThis,
+// which exposes the host's `setTimeout` / `setInterval` / etc.
+(globalThis as unknown as { window: typeof globalThis }).window = globalThis;

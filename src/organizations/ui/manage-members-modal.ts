@@ -439,7 +439,7 @@ export class ManageOrganizationMembersModal extends Modal {
 	 */
 	private waitForCacheUpdate(file: TFile): Promise<void> {
 		return new Promise(resolve => {
-			const timeout = activeWindow.setTimeout(() => {
+			const timeout = window.setTimeout(() => {
 				// Fallback if event doesn't fire within 500ms
 				this.app.metadataCache.off('changed', handler);
 				resolve();
@@ -447,10 +447,10 @@ export class ManageOrganizationMembersModal extends Modal {
 
 			const handler = (changedFile: TFile) => {
 				if (changedFile.path === file.path) {
-					activeWindow.clearTimeout(timeout);
+					window.clearTimeout(timeout);
 					this.app.metadataCache.off('changed', handler);
 					// Small additional delay to ensure cache is fully updated
-					activeWindow.setTimeout(resolve, 50);
+					window.setTimeout(resolve, 50);
 				}
 			};
 
@@ -585,7 +585,7 @@ class MultiSelectPersonPickerModal extends Modal {
 		});
 
 		// Auto-focus search
-		activeWindow.setTimeout(() => searchInput.focus(), 50);
+		window.setTimeout(() => searchInput.focus(), 50);
 
 		// Results
 		this.resultsContainer = contentEl.createDiv({ cls: 'cr-multi-select-results' });

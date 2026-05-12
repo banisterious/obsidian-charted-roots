@@ -760,7 +760,7 @@ export class BookBuilderModal extends Modal {
 				document.removeEventListener('click', closeHandler);
 			}
 		};
-		activeWindow.setTimeout(() => document.addEventListener('click', closeHandler), 0);
+		window.setTimeout(() => document.addEventListener('click', closeHandler), 0);
 	}
 
 	private addChapterOfType(type: BookChapterType): void {
@@ -1581,7 +1581,7 @@ class FilePickerModal extends Modal {
 		this.filterAndRender();
 
 		// Focus search
-		activeWindow.setTimeout(() => searchInput.focus(), 50);
+		window.setTimeout(() => searchInput.focus(), 50);
 	}
 
 	onClose(): void {

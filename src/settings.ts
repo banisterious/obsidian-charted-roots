@@ -950,7 +950,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		if (this.hasRendered) {
 			this.restoreOpenSections(containerEl);
 			// Use requestAnimationFrame to ensure DOM is updated before scrolling
-			requestAnimationFrame(() => {
+			window.requestAnimationFrame(() => {
 				containerEl.scrollTop = scrollTop;
 			});
 		}

@@ -49,7 +49,7 @@ export class PlacesView extends ItemView {
 
 	async onClose(): Promise<void> {
 		if (this.refreshTimeout) {
-			activeWindow.clearTimeout(this.refreshTimeout);
+			window.clearTimeout(this.refreshTimeout);
 		}
 	}
 
@@ -125,9 +125,9 @@ export class PlacesView extends ItemView {
 	 */
 	private scheduleRefresh(): void {
 		if (this.refreshTimeout) {
-			activeWindow.clearTimeout(this.refreshTimeout);
+			window.clearTimeout(this.refreshTimeout);
 		}
-		this.refreshTimeout = activeWindow.setTimeout(() => {
+		this.refreshTimeout = window.setTimeout(() => {
 			this.refreshTimeout = null;
 			this.refresh();
 		}, 2000);

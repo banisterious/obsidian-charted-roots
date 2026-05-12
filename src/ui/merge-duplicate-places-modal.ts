@@ -224,8 +224,8 @@ export class MergeDuplicatePlacesModal extends Modal {
 		// Debounce search to avoid excessive re-renders
 		let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 		searchInput.addEventListener('input', () => {
-			if (searchTimeout) activeWindow.clearTimeout(searchTimeout);
-			searchTimeout = activeWindow.setTimeout(() => {
+			if (searchTimeout) window.clearTimeout(searchTimeout);
+			searchTimeout = window.setTimeout(() => {
 				this.searchQuery = searchInput.value;
 				this.applyFilterAndSort();
 				if (this.groupsContainer) this.renderGroups(this.groupsContainer);

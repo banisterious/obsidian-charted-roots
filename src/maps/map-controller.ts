@@ -2531,7 +2531,7 @@ export class MapController {
 
 				// Overlay was created with editable:false, so we need to manually enable
 				// Use a delay to ensure the image has loaded and library is fully initialized
-				activeWindow.setTimeout(() => {
+				window.setTimeout(() => {
 					// Check corners again before enabling
 					const cornersBeforeEnable = distortableOverlay.getCorners?.();
 					logger.debug('edit-mode', `Corners before enable: hasCorners=${!!cornersBeforeEnable}, length=${cornersBeforeEnable?.length}`);
@@ -2599,13 +2599,13 @@ export class MapController {
 							distortableOverlay.select();
 							logger.debug('edit-mode', 'Distortable overlay corners ready, editing enabled');
 						} else if (attempts < maxAttempts) {
-							activeWindow.setTimeout(checkCorners, 100);
+							window.setTimeout(checkCorners, 100);
 						} else {
 							logger.warn('edit-mode', 'Timed out waiting for corners to initialize');
 						}
 					};
 
-					activeWindow.setTimeout(checkCorners, 50);
+					window.setTimeout(checkCorners, 50);
 				};
 
 				waitForCorners();

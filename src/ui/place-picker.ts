@@ -95,7 +95,7 @@ export class PlacePickerModal extends Modal {
 		this.showLoadingState();
 
 		// Use setTimeout to allow UI to render before heavy computation
-		activeWindow.setTimeout(() => {
+		window.setTimeout(() => {
 			this.loadPlaces();
 			this.hideLoadingState();
 			this.createModalContent();
@@ -247,7 +247,7 @@ export class PlacePickerModal extends Modal {
 		});
 
 		// Auto-focus search input
-		activeWindow.setTimeout(() => this.searchInput.focus(), 50);
+		window.setTimeout(() => this.searchInput.focus(), 50);
 
 		// Sort dropdown
 		const sortContainer = contentEl.createDiv({ cls: 'crc-picker-sort' });
@@ -423,7 +423,7 @@ export class PlacePickerModal extends Modal {
 			plugin: this.plugin,
 			onCreated: (file: TFile) => {
 				// Wait for metadata cache to update before reading frontmatter
-				activeWindow.setTimeout(() => {
+				window.setTimeout(() => {
 					const cache = this.app.metadataCache.getFileCache(file);
 					if (cache?.frontmatter) {
 						const fm = cache.frontmatter;

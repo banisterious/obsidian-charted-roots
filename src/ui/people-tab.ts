@@ -1094,7 +1094,7 @@ async function resolveParentConflict(
 		await familyGraph.reloadCache(modifiedFiles);
 	} finally {
 		// Resume linker after a short delay
-		activeWindow.setTimeout(() => {
+		window.setTimeout(() => {
 			plugin.bidirectionalLinker?.resume();
 		}, 500);
 	}

@@ -206,7 +206,7 @@ export class TemplateSnippetsModal extends Modal {
 						copyBtn.appendChild(checkIcon);
 						copyBtn.addClass('crc-template-copy-btn--success');
 
-						activeWindow.setTimeout(() => {
+						window.setTimeout(() => {
 							copyBtn.empty();
 							copyBtn.appendChild(createLucideIcon('copy', 16));
 							copyBtn.removeClass('crc-template-copy-btn--success');

@@ -130,7 +130,7 @@ function renderEventNotesCard(
 				// @ts-expect-error - Obsidian internal API
 				plugin.app.setting.openTabById('charted-roots');
 				// Delay to allow settings tab to render, then expand the dates section
-				activeWindow.setTimeout(() => {
+				window.setTimeout(() => {
 					const datesSection = document.querySelector('.cr-settings-section[data-section-name="dates"]') as HTMLDetailsElement;
 					if (datesSection) datesSection.open = true;
 				}, 200);

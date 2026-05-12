@@ -1861,7 +1861,7 @@ export class UnifiedTreeWizardModal extends Modal {
 				new Notice(`Created canvas: ${fileName}`);
 			}
 
-			await new Promise(resolve => activeWindow.setTimeout(resolve, 100));
+			await new Promise(resolve => window.setTimeout(resolve, 100));
 
 			// Save to recent trees
 			const treeInfo: RecentTreeInfo = {

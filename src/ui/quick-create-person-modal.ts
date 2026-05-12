@@ -112,7 +112,7 @@ export class QuickCreatePersonModal extends Modal {
 						this.name = value;
 					});
 				// Auto-focus the name field
-				activeWindow.setTimeout(() => text.inputEl.focus(), 50);
+				window.setTimeout(() => text.inputEl.focus(), 50);
 			});
 
 		// Nickname (optional)

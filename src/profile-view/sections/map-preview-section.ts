@@ -96,7 +96,7 @@ export function renderMapPreviewSection(
 			activePreviewMap = map;
 
 			// Invalidate map size after DOM layout settles
-			requestAnimationFrame(() => {
+			window.requestAnimationFrame(() => {
 				map.invalidateSize();
 			});
 
@@ -121,7 +121,7 @@ export function renderMapPreviewSection(
 		onExpand: () => {
 			// Leaflet needs to recalculate size after container becomes visible
 			if (activePreviewMap) {
-				requestAnimationFrame(() => {
+				window.requestAnimationFrame(() => {
 					activePreviewMap?.invalidateSize();
 				});
 			}

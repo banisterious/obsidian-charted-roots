@@ -510,7 +510,7 @@ export class FamilyCreationWizardModal extends Modal {
 						}
 					});
 				// Auto-focus
-				activeWindow.setTimeout(() => text.inputEl.focus(), 50);
+				window.setTimeout(() => text.inputEl.focus(), 50);
 			});
 
 		// Nickname
@@ -1874,7 +1874,7 @@ class PersonEditorModal extends Modal {
 					.onChange(value => {
 						this.person.name = value;
 					});
-				activeWindow.setTimeout(() => text.inputEl.focus(), 50);
+				window.setTimeout(() => text.inputEl.focus(), 50);
 			});
 
 		// Nickname

@@ -112,7 +112,7 @@ export class ValidationService {
 			if (i % 100 === 0) {
 				onProgress?.({ phase: 'scanning', current: i, total: allFiles.length });
 				// Yield to allow UI updates
-				await new Promise(resolve => activeWindow.setTimeout(resolve, 0));
+				await new Promise(resolve => window.setTimeout(resolve, 0));
 			}
 		}
 
@@ -132,7 +132,7 @@ export class ValidationService {
 
 			// Yield to allow UI updates every 10 files
 			if (i % 10 === 0) {
-				await new Promise(resolve => activeWindow.setTimeout(resolve, 0));
+				await new Promise(resolve => window.setTimeout(resolve, 0));
 			}
 		}
 
@@ -174,7 +174,7 @@ export class ValidationService {
 
 			if (i % 100 === 0) {
 				onProgress?.({ phase: 'scanning', current: i, total: allFiles.length });
-				await new Promise(resolve => activeWindow.setTimeout(resolve, 0));
+				await new Promise(resolve => window.setTimeout(resolve, 0));
 			}
 		}
 
@@ -196,7 +196,7 @@ export class ValidationService {
 			}
 
 			if (i % 10 === 0) {
-				await new Promise(resolve => activeWindow.setTimeout(resolve, 0));
+				await new Promise(resolve => window.setTimeout(resolve, 0));
 			}
 		}
 

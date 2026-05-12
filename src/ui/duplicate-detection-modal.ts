@@ -147,7 +147,7 @@ export class DuplicateDetectionModal extends Modal {
 		loadingEl.createEl('p', { text: 'Scanning for duplicates...' });
 
 		// Run detection (use setTimeout to allow UI to update)
-		await new Promise(resolve => activeWindow.setTimeout(resolve, 50));
+		await new Promise(resolve => window.setTimeout(resolve, 50));
 
 		try {
 			this.matches = this.service.findDuplicates(this.options);

@@ -1325,7 +1325,7 @@ export class SourceMediaLinkerModal extends Modal {
 			}
 
 			// Wait and check again
-			await new Promise(resolve => activeWindow.setTimeout(resolve, checkInterval));
+			await new Promise(resolve => window.setTimeout(resolve, checkInterval));
 		}
 	}
 }

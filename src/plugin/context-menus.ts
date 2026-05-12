@@ -476,7 +476,7 @@ function buildCanvasContextMenu(
 							await leaf.openFile(file);
 
 							// Give canvas a moment to load
-							await new Promise(resolve => activeWindow.setTimeout(resolve, 100));
+							await new Promise(resolve => window.setTimeout(resolve, 100));
 
 							// Show options modal
 							new RegenerateOptionsModal(plugin.app, plugin, file).open();
@@ -600,7 +600,7 @@ function buildCanvasContextMenu(
 					} else {
 						const leaf = plugin.app.workspace.getLeaf(false);
 						await leaf.openFile(file);
-						await new Promise(resolve => activeWindow.setTimeout(resolve, 100));
+						await new Promise(resolve => window.setTimeout(resolve, 100));
 						new RegenerateOptionsModal(plugin.app, plugin, file).open();
 					}
 				});
@@ -738,7 +738,7 @@ function buildPersonContextMenu(
 									type: 'canvas-roots-map',
 									active: true
 								}).then(() => {
-									activeWindow.setTimeout(() => {
+									window.setTimeout(() => {
 										const newLeaves = plugin.app.workspace.getLeavesOfType('canvas-roots-map');
 										if (newLeaves.length > 0) {
 											const mapView = newLeaves[0].view as import('../maps/map-view').MapView;
@@ -778,7 +778,7 @@ function buildPersonContextMenu(
 							calView.navigateToDate(month, year);
 						} else {
 							void plugin.activateCalendarView().then(() => {
-								activeWindow.setTimeout(() => {
+								window.setTimeout(() => {
 									const newLeaves = plugin.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR);
 									if (newLeaves.length > 0) {
 										const calView = newLeaves[0].view as import('../calendar/calendar-view').CalendarView;
@@ -3742,7 +3742,7 @@ function buildEventContextMenu(
 							calView.navigateToDate(month, year);
 						} else {
 							void plugin.activateCalendarView().then(() => {
-								activeWindow.setTimeout(() => {
+								window.setTimeout(() => {
 									const newLeaves = plugin.app.workspace.getLeavesOfType(VIEW_TYPE_CALENDAR);
 									if (newLeaves.length > 0) {
 										const calView = newLeaves[0].view as import('../calendar/calendar-view').CalendarView;

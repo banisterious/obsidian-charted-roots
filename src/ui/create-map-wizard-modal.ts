@@ -489,7 +489,7 @@ export class CreateMapWizardModal extends Modal {
 						// Auto-generate map ID
 						this.mapConfig.mapId = this.generateMapId(value);
 					});
-				activeWindow.setTimeout(() => text.inputEl.focus(), 50);
+				window.setTimeout(() => text.inputEl.focus(), 50);
 			});
 
 		// Universe (optional)

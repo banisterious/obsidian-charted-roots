@@ -289,8 +289,8 @@ export class MediaUploadModal extends Modal {
 		updateText();
 
 		// Re-update on interval to catch changes
-		const interval = activeWindow.setInterval(updateText, 500);
-		this.containerEl.addEventListener('remove', () => activeWindow.clearInterval(interval));
+		const interval = window.setInterval(updateText, 500);
+		this.containerEl.addEventListener('remove', () => window.clearInterval(interval));
 	}
 
 	/**

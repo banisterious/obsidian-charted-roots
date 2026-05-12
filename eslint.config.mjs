@@ -6,7 +6,9 @@ export default [
 	{
 		ignores: [
 			"main.js",
-			"*.config.mjs",
+			"*.mjs",
+			"version-bump.mjs",
+			"audit-metafile.mjs",
 			"node_modules/**",
 			"docs/**",
 			"external/**",
@@ -20,6 +22,16 @@ export default [
 			"wiki-content/**",
 			"*.config.ts",
 			"vitest.config.ts",
+			// 0.3.0 of eslint-plugin-obsidianmd added typed-rule entries to its
+			// `recommendedPluginRulesConfig` without a file-pattern restriction,
+			// so rules that require parser services (e.g., `no-plugin-as-component`)
+			// now try to load on non-TS files like package.json. We don't lint
+			// JSON/Markdown/HTML/CSS — ignore them globally so the typed rules
+			// don't fail at load.
+			"**/*.json",
+			"**/*.md",
+			"**/*.html",
+			"**/*.css",
 		],
 	},
 
@@ -65,12 +77,14 @@ export default [
 			"@typescript-eslint/no-unsafe-call": "off",
 			"@typescript-eslint/no-unsafe-return": "off",
 
-			// prefer-create-el, prefer-active-doc, prefer-active-window-timers:
-			// surface as visible suggestions rather than blocking errors —
-			// the bot doesn't enforce them at error level.
-			"obsidianmd/prefer-create-el": "warn",
+			// prefer-active-doc, prefer-window-timers: surface as visible
+			// suggestions rather than blocking errors — the publish bot doesn't
+			// enforce them at error level. (`prefer-create-el` was removed from
+			// the recommended ruleset in 0.3.0; `prefer-active-window-timers`
+			// was renamed to `prefer-window-timers` with the
+			// `activeWindow.X` -> `window.X` recommendation inverted.)
 			"obsidianmd/prefer-active-doc": "warn",
-			"obsidianmd/prefer-active-window-timers": "warn",
+			"obsidianmd/prefer-window-timers": "warn",
 
 			// Sentence-case rule applies to UI text; not relevant for test files.
 

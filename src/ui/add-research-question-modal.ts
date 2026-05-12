@@ -44,7 +44,7 @@ export class AddResearchQuestionModal extends Modal {
 				.onClick(() => void this.submit()));
 
 		// Focus the input after a short delay
-		activeWindow.setTimeout(() => {
+		window.setTimeout(() => {
 			this.inputEl?.focus();
 		}, 50);
 	}

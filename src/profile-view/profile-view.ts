@@ -137,8 +137,8 @@ export class ProfileView extends ItemView {
 	}
 
 	async onClose(): Promise<void> {
-		if (this.syncDebounceTimeout) activeWindow.clearTimeout(this.syncDebounceTimeout);
-		if (this.refreshTimeout) activeWindow.clearTimeout(this.refreshTimeout);
+		if (this.syncDebounceTimeout) window.clearTimeout(this.syncDebounceTimeout);
+		if (this.refreshTimeout) window.clearTimeout(this.refreshTimeout);
 		cleanupMapPreview();
 	}
 
@@ -195,9 +195,9 @@ export class ProfileView extends ItemView {
 
 	private scheduleSyncToActiveNote(): void {
 		if (this.syncDebounceTimeout) {
-			activeWindow.clearTimeout(this.syncDebounceTimeout);
+			window.clearTimeout(this.syncDebounceTimeout);
 		}
-		this.syncDebounceTimeout = activeWindow.setTimeout(() => {
+		this.syncDebounceTimeout = window.setTimeout(() => {
 			this.syncDebounceTimeout = null;
 			this.syncToActiveNote();
 		}, 150);
@@ -239,9 +239,9 @@ export class ProfileView extends ItemView {
 
 	private scheduleRefresh(): void {
 		if (this.refreshTimeout) {
-			activeWindow.clearTimeout(this.refreshTimeout);
+			window.clearTimeout(this.refreshTimeout);
 		}
-		this.refreshTimeout = activeWindow.setTimeout(() => {
+		this.refreshTimeout = window.setTimeout(() => {
 			this.refreshTimeout = null;
 			if (this.currentEntityFilePath) {
 				const file = this.app.vault.getFileByPath(this.currentEntityFilePath);

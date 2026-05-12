@@ -414,7 +414,7 @@ async function generateCollectionOverviewCanvas(
 		}
 
 		// Wait for file system to settle
-		await new Promise(resolve => activeWindow.setTimeout(resolve, 100));
+		await new Promise(resolve => window.setTimeout(resolve, 100));
 
 		// Open the canvas file
 		const leaf = app.workspace.getLeaf(false);

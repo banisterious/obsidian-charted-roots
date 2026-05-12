@@ -3472,7 +3472,7 @@ export class CleanupWizardModal extends Modal {
 				}
 				default:
 					// Placeholder for unimplemented methods
-					await new Promise(resolve => activeWindow.setTimeout(resolve, 500));
+					await new Promise(resolve => window.setTimeout(resolve, 500));
 					result = { processed: 0, modified: stepState.issueCount, errors: [] };
 			}
 

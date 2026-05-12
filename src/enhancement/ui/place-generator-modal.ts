@@ -656,7 +656,7 @@ export class PlaceGeneratorModal extends Modal {
 			);
 
 			// Brief delay before showing results
-			await new Promise(resolve => activeWindow.setTimeout(resolve, 300));
+			await new Promise(resolve => window.setTimeout(resolve, 300));
 
 			// Hide progress, show results
 			if (this.progressContainer) {

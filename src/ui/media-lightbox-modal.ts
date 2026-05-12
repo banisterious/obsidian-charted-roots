@@ -174,7 +174,7 @@ export class MediaLightboxModal extends Modal {
 		if (this.savedLeaf) {
 			const leaf = this.savedLeaf;
 			// Use setTimeout to ensure this runs after Obsidian's focus restoration
-			activeWindow.setTimeout(() => {
+			window.setTimeout(() => {
 				const view = leaf.view;
 				if (view instanceof MarkdownView) {
 					const currentState = view.getState();

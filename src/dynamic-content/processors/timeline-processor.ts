@@ -135,7 +135,7 @@ export class TimelineProcessor {
 			const createHandler = (file: TAbstractFile) => {
 				if (file instanceof TFile && eventsFolder && file.path.startsWith(eventsFolder)) {
 					// Small delay to allow metadata cache to process the new file
-					activeWindow.setTimeout(() => {
+					window.setTimeout(() => {
 						const freshContext = this.service.buildContext(ctx);
 						if (!freshContext) return;
 						el.empty();

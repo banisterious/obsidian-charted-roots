@@ -943,8 +943,8 @@ export class ImportWizardModal extends Modal {
 
 		try {
 			// Small delay to ensure "Parsing file..." message is rendered before heavy processing
-			await new Promise(resolve => requestAnimationFrame(() =>
-				requestAnimationFrame(() => resolve(undefined))
+			await new Promise(resolve => window.requestAnimationFrame(() =>
+				window.requestAnimationFrame(() => resolve(undefined))
 			));
 
 			// Parse based on format
@@ -1182,7 +1182,7 @@ export class ImportWizardModal extends Modal {
 						}
 
 						// Auto-advance to numbering step after a short delay
-						activeWindow.setTimeout(() => {
+						window.setTimeout(() => {
 							this.currentStep = 5; // Numbering step
 							this.isImporting = false;
 							this.renderCurrentStep();
@@ -1303,7 +1303,7 @@ export class ImportWizardModal extends Modal {
 						}
 
 						// Auto-advance to numbering step after a short delay
-						activeWindow.setTimeout(() => {
+						window.setTimeout(() => {
 							this.currentStep = 5; // Numbering step
 							this.isImporting = false;
 							this.renderCurrentStep();

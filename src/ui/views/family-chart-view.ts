@@ -1366,7 +1366,7 @@ export class FamilyChartView extends ItemView {
 			this.f3Chart.updateTree({ initial: true });
 
 			// Defer positioning operation until container dimensions are stable
-			activeWindow.setTimeout(() => {
+			window.setTimeout(() => {
 				if (this.f3Chart && this.chartContainerEl) {
 					// Check if we have a saved zoom transform to restore
 					if (this.savedZoomTransform) {
@@ -1379,7 +1379,7 @@ export class FamilyChartView extends ItemView {
 						this.f3Chart.updateTree({ tree_position: 'fit' });
 					}
 					// Show container after animation completes
-					activeWindow.setTimeout(() => {
+					window.setTimeout(() => {
 						if (this.chartContainerEl) {
 							this.chartContainerEl.setCssStyles({ visibility: 'visible' });
 							loadingOverlay.remove();
@@ -1391,7 +1391,7 @@ export class FamilyChartView extends ItemView {
 			// Render kinship labels if enabled (after chart is rendered)
 			// Delay must be longer than family-chart's transition_time (1000-2000ms)
 			if (this.showKinshipLabels) {
-				activeWindow.setTimeout(() => this.renderKinshipLabels(), 1500);
+				window.setTimeout(() => this.renderKinshipLabels(), 1500);
 			}
 		} catch (error) {
 			// Remove loading overlay and show error state
@@ -1999,7 +1999,7 @@ export class FamilyChartView extends ItemView {
 
 		if (waitForMetadataCache) {
 			// Wait for Obsidian's metadata cache to finish processing (needed after batch operations)
-			await new Promise(resolve => activeWindow.setTimeout(resolve, 2000));
+			await new Promise(resolve => window.setTimeout(resolve, 2000));
 		}
 
 		// Check if root_person marking has changed
@@ -2026,7 +2026,7 @@ export class FamilyChartView extends ItemView {
 		if (this.f3Chart) {
 			this.f3Chart.updateTree({ tree_position: 'fit' });
 			// Delay display update to allow fit animation to complete
-			activeWindow.setTimeout(() => this.updateZoomLevelDisplay(), 300);
+			window.setTimeout(() => this.updateZoomLevelDisplay(), 300);
 		}
 	}
 
@@ -2116,7 +2116,7 @@ export class FamilyChartView extends ItemView {
 		const svg = this.f3Chart.svg;
 		if (svg) {
 			// Delay slightly to allow zoom transition to complete
-			activeWindow.setTimeout(() => {
+			window.setTimeout(() => {
 				const transform = f3.handlers.getCurrentZoom(svg);
 				// Guard against NaN or invalid transform
 				if (!transform || !isFinite(transform.k)) {
@@ -2989,7 +2989,7 @@ export class FamilyChartView extends ItemView {
 		// If enabling, wait for any ongoing animations to complete
 		// If disabling, render immediately to remove labels
 		if (this.showKinshipLabels) {
-			activeWindow.setTimeout(() => this.renderKinshipLabels(), 1500);
+			window.setTimeout(() => this.renderKinshipLabels(), 1500);
 		} else {
 			this.renderKinshipLabels();
 		}
@@ -3237,7 +3237,7 @@ export class FamilyChartView extends ItemView {
 		if (this.showKinshipLabels) {
 			// Delay must be longer than family-chart's transition_time (~800ms)
 			// to ensure link positions have stabilized
-			activeWindow.setTimeout(() => this.renderKinshipLabels(), 1500);
+			window.setTimeout(() => this.renderKinshipLabels(), 1500);
 		}
 	}
 
@@ -3430,13 +3430,13 @@ export class FamilyChartView extends ItemView {
 			}
 			lastPositions = current;
 			if (attempts < MAX_ATTEMPTS) {
-				requestAnimationFrame(tick);
+				window.requestAnimationFrame(tick);
 			} else {
 				callback();
 			}
 		};
 
-		requestAnimationFrame(tick);
+		window.requestAnimationFrame(tick);
 	}
 
 	private cardPositionsEqual(
@@ -3877,7 +3877,7 @@ export class FamilyChartView extends ItemView {
 	 */
 	private scheduleHighlightRerender(): void {
 		if (this.hasActiveHighlights()) {
-			activeWindow.setTimeout(() => this.applyHighlightClasses(), 1500);
+			window.setTimeout(() => this.applyHighlightClasses(), 1500);
 		}
 	}
 
@@ -4915,9 +4915,9 @@ export class FamilyChartView extends ItemView {
 	 */
 	private scheduleRefresh(): void {
 		if (this.refreshTimeout) {
-			activeWindow.clearTimeout(this.refreshTimeout);
+			window.clearTimeout(this.refreshTimeout);
 		}
-		this.refreshTimeout = activeWindow.setTimeout(() => {
+		this.refreshTimeout = window.setTimeout(() => {
 			this.refreshTimeout = null;
 
 			// If chart isn't visible, defer the refresh
