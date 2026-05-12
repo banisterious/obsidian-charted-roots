@@ -21,6 +21,21 @@ import { extractWikilinkPath } from '../../utils/wikilink-resolver';
 const TITLE_ONLY_TYPES = ['birth', 'death'];
 
 /**
+ * Heuristic: does the input look like a fictional-era date (era abbreviation
+ * adjacent to a year number, in either order)? Used by `computeEventAge`'s
+ * fallback to avoid era-stripping age math when DateService can't parse the
+ * input (#565). Intentionally permissive on era-abbrev length — Charted
+ * Roots supports any letter run as an era abbreviation.
+ */
+export function looksLikeFictionalDate(date: string | undefined): boolean {
+	if (typeof date !== 'string') return false;
+	const trimmed = date.trim();
+	// "EF 30", "EF30", "30 EF", "30EF" — at least one letter group + digit
+	// group adjacent (with optional whitespace).
+	return /^[A-Za-z]+\s*\d+|\d+\s*[A-Za-z]+$/.test(trimmed);
+}
+
+/**
  * Timeline entry combining events from EventService with person birth/death
  */
 export interface TimelineEntry {
@@ -91,6 +106,17 @@ export class TimelineRenderer {
 		// Fallback only when DateService returned null (couldn't parse either
 		// date) or wasn't available. Covers real-world ISO dates, plain years,
 		// and unrecognized fictional formats.
+		//
+		// Bail when either input has the shape of a fictional date (a letter
+		// run plus a digit run) — the fallback uses extractYear, which strips
+		// era prefixes and produces era-local digits. For multi-era inputs
+		// like EF 30 vs DE 100, subtracting era-local years yields an answer
+		// off by the era epoch (#565). Returning undefined for these is safer
+		// than rendering a silently wrong "age N" annotation.
+		if (looksLikeFictionalDate(birthDate) || looksLikeFictionalDate(eventDate)) {
+			return undefined;
+		}
+
 		const birthYear = parseInt(this.service.extractYear(birthDate));
 		const eventYear = parseInt(this.service.extractYear(eventDate));
 		if (!isNaN(birthYear) && !isNaN(eventYear) && eventYear >= birthYear) {
