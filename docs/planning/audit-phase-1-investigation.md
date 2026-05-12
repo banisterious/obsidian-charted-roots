@@ -387,6 +387,36 @@ Phase 6 produces a `docs/planning/declarative-write-registry.md` proposal. Phase
 
 ---
 
+## Pattern: parallel date-handling surfaces
+
+Surfaced during the post-Phase-1 investigation of issues #563 / #564 / #565 / #566 (all multi-era fictional-date bugs filed within a 24-hour window on 2026-05-11 / 2026-05-12). Documented here so the underlying structural smell isn't lost when the four fixes ship as small per-issue commits.
+
+The plugin has two parallel date-handling surfaces:
+
+- **The `DateService` family** ([src/dates/services/date-service.ts](../../src/dates/services/date-service.ts), [src/dates/parser/fictional-date-parser.ts](../../src/dates/parser/fictional-date-parser.ts)) — fictional-aware, canonical-year-based, knows about era systems and universes. Correct.
+- **Local "extract year" / "compare dates" helpers** scattered across the codebase — fictional-blind, raw-digit-based. Each was written when its consumer didn't yet need fictional-aware behavior; now each one quietly misbehaves on multi-era inputs.
+
+Sites surfaced by the four-issue cluster:
+
+- `DynamicContentService.extractYear` ([dynamic-content-service.ts:405](../../src/dynamic-content/services/dynamic-content-service.ts#L405)) — strips era prefixes, returns raw digits. Used at the timeline-block default rendering and the relationships-block birth/death rendering. Caused #563.
+- `DynamicContentService.formatDate` ([dynamic-content-service.ts:322](../../src/dynamic-content/services/dynamic-content-service.ts#L322)) — never calls `DateService.formatDate`; reimplements a subset that doesn't know about fictional eras. Adjacent to #563.
+- `compareDates` local helper in [sort-order-service.ts:223](../../src/events/services/sort-order-service.ts#L223) — its inline `extractYear` matches only a leading `-?\d+`, falls to `localeCompare` on multi-era inputs. Caused #564.
+- `computeEventAge` fallback at [timeline-renderer.ts:94](../../src/dynamic-content/renderers/timeline-renderer.ts#L94) — when `DateService.calculateAge` returns null, falls back to `parseInt(extractYear(...))` math which strips eras. Caused #565.
+- `maxAge` filter in `StatisticsService` ([line 1171](../../src/statistics/services/statistics-service.ts#L1171) for Longevity, [line 1306](../../src/statistics/services/statistics-service.ts#L1306) for Marriage Patterns) — era-blind cap. Cross-era canonical lifespans exceed it and get silently dropped. Caused #566.
+
+Prior issues that fit the same pattern: #437 (statistics extractYear deferral), #454 (map-data-service parseYear), #524 / #540 / #543 / #549 / #559 (writer-side fictional-date interactions).
+
+**Convergent fix shape (future phase).** Route every display and math path through `DateService`:
+
+- Replace local `extractYear` implementations with calls to `dateService.parseDate` returning canonical year for math.
+- Add a `formatYearForDisplay(dateStr, universe)` helper on `DynamicContentService` that uses `dateService.formatDate` for fictional inputs and the existing logic for standard inputs.
+- Audit `maxAge`-style sanity filters: skip when any input is fictional, or expose a separate `maxFictionalAge` setting.
+- Add a contributor-facing rule in `coding-standards.md`: no new local date-extraction helpers; route through `DateService`.
+
+**Status.** Four fixes ship as small per-issue commits in May 2026 (bisect-friendly, independent soak windows). The convergent refactor is a candidate for a dedicated audit-plan phase once the per-issue dust settles. Phase 6's declarative-write-registry proposal is a sibling pattern — both are "consolidate parallel surfaces" work.
+
+---
+
 ## Followups discovered during Phase 1
 
 These items surfaced during investigation but are not Phase 1 deliverables. Listed here so they don't get lost; each will fold into the appropriate downstream phase or its own issue.
