@@ -373,7 +373,6 @@ export default class CanvasRootsPlugin extends Plugin {
 
 		// Initialize event service
 		this.eventService = new EventService(this.app, this.settings);
-		this.eventService.setupVaultListeners(this);
 
 		// Initialize recent files service
 		this.recentFilesService = new RecentFilesService(this);
@@ -381,9 +380,8 @@ export default class CanvasRootsPlugin extends Plugin {
 		// Initialize media service
 		this.mediaService = new MediaService(this.app, this.settings);
 
-		// Initialize Web Clipper service
+		// Initialize Web Clipper service (watcher starts after layout-ready)
 		this.webClipperService = new WebClipperService(this.app, this.settings);
-		this.webClipperService.startWatching();
 
 		// Initialize date service (standard + fictional parsing with universe context)
 		this.dateService = createDateService({
@@ -423,17 +421,18 @@ export default class CanvasRootsPlugin extends Plugin {
 			void this.checkVersionUpgrade();
 		});
 
-		// Register file modification handler for bidirectional sync
-		this.registerFileModificationHandler();
-
-		// Register file delete handler so deleted persons' cr_ids are removed
-		// from referencing notes' relationship `*_id` arrays (#442).
-		this.registerFileDeleteHandler();
-
-		// Register Universe-note rename handler so `universe:` references on
-		// people / places / events / organizations cascade when a Universe
-		// note is renamed (#488 Part 2).
-		this.registerUniverseRenameHandler();
+		// Defer vault-listener registration and watcher start to layout-ready
+		// so plugin load doesn't block on these handlers. File events that
+		// fire between onload-finish and layout-ready (a sub-second window
+		// right after the vault opens) are accepted as missed — they don't
+		// happen in real usage.
+		this.app.workspace.onLayoutReady(() => {
+			this.eventService.setupVaultListeners(this);
+			this.webClipperService?.startWatching();
+			this.registerFileModificationHandler();
+			this.registerFileDeleteHandler();
+			this.registerUniverseRenameHandler();
+		});
 
 		// Initialize bidirectional relationship snapshots
 		// This enables deletion detection from the first edit after plugin load
@@ -441,8 +440,9 @@ export default class CanvasRootsPlugin extends Plugin {
 			this.initializeBidirectionalSnapshots();
 		}
 
-		// Initialize relationship history service
-		await this.initializeRelationshipHistory();
+		// Initialize relationship history service (fire-and-forget; consumers
+		// already null-guard `plugin.relationshipHistory`)
+		void this.initializeRelationshipHistory();
 	}
 
 	// =========================================================================
