@@ -182,6 +182,27 @@ export default class CanvasRootsPlugin extends Plugin {
 	}
 
 	/**
+	 * Get the bidirectional linker (singleton). Two call sites were
+	 * constructing it inline with identical setup code (folder filter +
+	 * inclusive-parents + DNA-tracking toggles); the singleton hoists
+	 * that setup into one place. Settings-staleness risk is unchanged
+	 * from the prior `if (!this.bidirectionalLinker)` guards both call
+	 * sites already used — neither path re-configured the linker on
+	 * settings changes.
+	 */
+	getBidirectionalLinker(): BidirectionalLinker {
+		if (!this.bidirectionalLinker) {
+			this.bidirectionalLinker = new BidirectionalLinker(this.app);
+			if (this.folderFilter) {
+				this.bidirectionalLinker.setFolderFilter(this.folderFilter);
+			}
+			this.bidirectionalLinker.setEnableInclusiveParents(this.settings.enableInclusiveParents);
+			this.bidirectionalLinker.setEnableDnaTracking(this.settings.enableDnaTracking);
+		}
+		return this.bidirectionalLinker;
+	}
+
+	/**
 	 * Get the Source service (singleton)
 	 */
 	getSourceService(): SourceService {
@@ -675,20 +696,12 @@ export default class CanvasRootsPlugin extends Plugin {
 	 * Runs asynchronously after a short delay to avoid blocking plugin startup
 	 */
 	private initializeBidirectionalSnapshots() {
-		// Create the shared bidirectional linker instance
-		if (!this.bidirectionalLinker) {
-			this.bidirectionalLinker = new BidirectionalLinker(this.app);
-			if (this.folderFilter) {
-				this.bidirectionalLinker.setFolderFilter(this.folderFilter);
-			}
-			this.bidirectionalLinker.setEnableInclusiveParents(this.settings.enableInclusiveParents);
-			this.bidirectionalLinker.setEnableDnaTracking(this.settings.enableDnaTracking);
-		}
+		const linker = this.getBidirectionalLinker();
 
 		// Run after a 1-second delay to not impact plugin load performance
 		setTimeout(() => {
 			try {
-				this.bidirectionalLinker!.initializeSnapshots();
+				linker.initializeSnapshots();
 			} catch (error: unknown) {
 				logger.error('snapshot-init', 'Failed to initialize relationship snapshots', {
 					error: getErrorMessage(error)
@@ -803,16 +816,7 @@ export default class CanvasRootsPlugin extends Plugin {
 
 				// Sync relationships for this file
 				try {
-					// Create shared instance if not exists
-					if (!this.bidirectionalLinker) {
-						this.bidirectionalLinker = new BidirectionalLinker(this.app);
-						if (this.folderFilter) {
-							this.bidirectionalLinker.setFolderFilter(this.folderFilter);
-						}
-						this.bidirectionalLinker.setEnableInclusiveParents(this.settings.enableInclusiveParents);
-						this.bidirectionalLinker.setEnableDnaTracking(this.settings.enableDnaTracking);
-					}
-					await this.bidirectionalLinker.syncRelationships(file);
+					await this.getBidirectionalLinker().syncRelationships(file);
 				} catch (error: unknown) {
 					logger.error('file-watcher', 'Failed to sync relationships on file modify', {
 						file: file.path,
