@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-10 13:04:12 UTC
+ * - Generated: 2026-05-12 17:51:51 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -23688,7 +23688,7 @@ settings:
    COMPONENT: MAP-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 2486 lines, 51.73 KB */
+/* Component Size: 2493 lines, 51.98 KB */
 
 /* ==========================================================================
    Map View Styles
@@ -23842,6 +23842,13 @@ settings:
 
 .leaflet-popup-pane {
   z-index: 700;
+}
+
+/* Custom pane for the heat layer on pixel/custom-image maps so it renders
+   above the image overlay (which defaults to z-index 400). Created in
+   map-controller.ts via `this.map.createPane('cr-heat-pane')`. */
+.leaflet-cr-heat-pane {
+  z-index: 450;
 }
 
 .leaflet-map-pane canvas {
@@ -41756,11 +41763,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-10 13:04:13 UTC
+ * Build completed: 2026-05-12 17:51:52 UTC
  * Components processed: 50
- * Total lines: 41283
- * Total size: 836.66 KB
- * Build duration: 1.18 seconds
+ * Total lines: 41290
+ * Total size: 836.91 KB
+ * Build duration: 1.25 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.85 KB
@@ -41789,7 +41796,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - data-quality.css: 1446 lines, 28.73 KB
  * - relationships.css: 597 lines, 11.43 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB
- * - map-view.css: 2486 lines, 51.73 KB
+ * - map-view.css: 2493 lines, 51.98 KB
  * - leaflet-distortable.css: 368 lines, 7.73 KB
  * - date-systems.css: 287 lines, 5.31 KB
  * - events.css: 1521 lines, 30.88 KB

@@ -4,7 +4,7 @@
 
 # Charted Roots: Genealogical Family Tree Plugin for Obsidian
 
-[![Version](https://img.shields.io/badge/version-0.22.30-blue.svg)](https://github.com/banisterious/obsidian-charted-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md) [![Website](https://img.shields.io/badge/website-chartedroots.com-purple.svg)](https://chartedroots.com)
+[![Version](https://img.shields.io/badge/version-0.22.31-blue.svg)](https://github.com/banisterious/obsidian-charted-roots/releases) [![Status](https://img.shields.io/badge/status-stable-green.svg)](docs/roadmap.md) [![Website](https://img.shields.io/badge/website-chartedroots.com-purple.svg)](https://chartedroots.com)
 
 **Charted Roots** brings professional genealogical tools to Obsidian. Import, organize, visualize, and share family histories and fictional worlds without leaving your vault. From GEDCOM imports to PDF reports, interactive charts to map views, manage your research with the power of linked Markdown notes. Built for genealogists, historians, writers, and worldbuilders.
 
