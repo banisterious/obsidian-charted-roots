@@ -333,10 +333,12 @@ export class RelationshipsRenderer {
 			filePath: person.file?.path
 		};
 
-		// Add dates if available
+		// Add dates if available. Use formatYearForDisplay so fictional-era
+		// abbreviations (BBY/ABY/EF/DE/etc.) render alongside the year
+		// instead of being stripped to bare digits (#563).
 		if (person.birthDate || person.deathDate) {
-			const birth = person.birthDate ? this.service.extractYear(person.birthDate) : '?';
-			const death = person.deathDate ? this.service.extractYear(person.deathDate) : '';
+			const birth = person.birthDate ? this.service.formatYearForDisplay(person.birthDate, person.universe) : '?';
+			const death = person.deathDate ? this.service.formatYearForDisplay(person.deathDate, person.universe) : '';
 			entry.dates = death ? `(${birth}–${death})` : `(b. ${birth})`;
 		}
 

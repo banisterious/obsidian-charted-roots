@@ -452,9 +452,13 @@ export class TimelineRenderer {
 		// Strip surrounding quotes if present (YAML may include them)
 		const cleanFormat = format.replace(/^["']|["']$/g, '');
 
-		// Build substitution values
+		// Build substitution values. Use formatYearForDisplay so fictional-era
+		// abbreviations (BBY/ABY/EF/DE/etc.) survive into the rendered output;
+		// `entry.year` alone is era-stripped digits suitable for math but not
+		// for display (#563).
+		const displayYear = this.service.formatYearForDisplay(entry.date, context.person?.universe);
 		const values: Record<string, string> = {
-			year: entry.year || entry.date || '?',
+			year: displayYear || entry.year || entry.date || '?',
 			date: entry.date || entry.year || '?',
 			type: capitalize(entry.type),
 			title: entry.title,
@@ -632,8 +636,12 @@ export class TimelineRenderer {
 				if (section.format) {
 					this.renderFormattedEntry(li, entry, section.format, context, component);
 				} else {
-					// Minimal default rendering
-					li.createSpan({ cls: 'cr-timeline__year', text: entry.year || '?' });
+					// Minimal default rendering. Prefer the era-aware display
+					// when DateService can parse the entry's raw date as
+					// fictional (#563); fall back to the digit-only year for
+					// standard inputs or section-divider entries.
+					const displayYear = this.service.formatYearForDisplay(entry.date, context.person?.universe);
+					li.createSpan({ cls: 'cr-timeline__year', text: displayYear || entry.year || '?' });
 					if (entry.age !== undefined) {
 						li.createSpan({ cls: 'cr-timeline__age', text: `age ${entry.age}` });
 					}

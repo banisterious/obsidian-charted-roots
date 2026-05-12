@@ -398,6 +398,36 @@ export class DynamicContentService {
 	}
 
 	/**
+	 * Format a year for display in dynamic blocks, preserving fictional era
+	 * abbreviations (BBY, ABY, EF, DE, etc.) when applicable. For inputs the
+	 * `DateService` recognizes as fictional, returns the era-aware display
+	 * string (e.g., "BBY 1045", "EF 30"). For standard inputs, falls through
+	 * to `extractYear` which returns just the year digits.
+	 *
+	 * Separate from `extractYear` because that function's output is also
+	 * consumed by sort and margin-filter call sites that `parseInt` the
+	 * result — including the era prefix there would break those numeric
+	 * paths. The two functions are intentional split: `extractYear` for
+	 * math, `formatYearForDisplay` for rendering. Fixes #563 (era
+	 * abbreviations not rendering in dynamic Timeline and Relationship
+	 * blocks).
+	 */
+	formatYearForDisplay(dateStr: string | number | undefined | null, universe?: string): string {
+		if (dateStr === undefined || dateStr === null || dateStr === '') return '';
+		const value = typeof dateStr === 'string' ? dateStr : String(dateStr);
+
+		const dateService = this.plugin.getDateService?.();
+		if (dateService) {
+			const parsed = dateService.parseDate(value, universe);
+			if (parsed?.type === 'fictional' && parsed.fictional) {
+				return dateService.formatDate(value, universe);
+			}
+		}
+
+		return this.extractYear(value);
+	}
+
+	/**
 	 * Extract year from a date string for display purposes
 	 * Handles: ISO format (-0011, 0014), BCE/AD suffix (11 BCE, 14 AD), plain years
 	 * Returns the year as a string, with negative sign for BCE dates
