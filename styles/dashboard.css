@@ -37,7 +37,7 @@
 
 .crc-dashboard-tile:hover {
   border-color: var(--interactive-accent);
-  background: rgba(var(--interactive-accent-rgb), 0.1);
+  background: rgb(var(--interactive-accent-rgb) 0.1);
 }
 
 .crc-dashboard-tile:focus {
@@ -57,7 +57,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(var(--interactive-accent-rgb), 0.15);
+  background: rgb(var(--interactive-accent-rgb) 0.15);
   border-radius: var(--cr-radius-md);
   color: var(--interactive-accent);
 }
@@ -93,7 +93,7 @@
 }
 
 .crc-dashboard-collapsible-header:hover {
-  background: rgba(var(--background-modifier-hover-rgb), 0.5);
+  background: rgb(var(--background-modifier-hover-rgb) 0.5);
 }
 
 .crc-dashboard-chevron {
@@ -209,7 +209,7 @@
 }
 
 .crc-dashboard-issues-badge {
-  background: rgba(var(--color-orange-rgb), 0.2);
+  background: rgb(var(--color-orange-rgb) 0.2);
   color: var(--color-orange);
   padding: 2px 8px;
   border-radius: 10px;
@@ -255,7 +255,7 @@
 
 .crc-dashboard-recent-item:hover {
   border-color: var(--interactive-accent);
-  background: rgba(var(--interactive-accent-rgb), 0.1);
+  background: rgb(var(--interactive-accent-rgb) 0.1);
 }
 
 .crc-dashboard-recent-item:focus {
@@ -296,7 +296,7 @@
   gap: 12px;
   padding: 12px 16px;
   margin-bottom: 16px;
-  background: rgba(var(--color-yellow-rgb), 0.1);
+  background: rgb(var(--color-yellow-rgb) 0.1);
   border: 1px solid var(--color-yellow);
   border-radius: var(--cr-radius-md);
 }
@@ -343,7 +343,7 @@
   gap: 12px;
   padding: 12px 16px;
   margin-bottom: 16px;
-  background: rgba(var(--color-cyan-rgb), 0.1);
+  background: rgb(var(--color-cyan-rgb) 0.1);
   border: 1px solid var(--color-cyan);
   border-radius: var(--cr-radius-md);
 }
@@ -409,7 +409,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  background: rgba(var(--interactive-accent-rgb), 0.1);
+  background: rgb(var(--interactive-accent-rgb) 0.1);
   border: 1px solid var(--interactive-accent);
   border-radius: var(--cr-radius-md);
   padding: 12px 16px;
@@ -452,7 +452,7 @@
 }
 
 .crc-dashboard-first-run-dismiss:hover {
-  background: rgba(var(--background-modifier-hover-rgb), 0.5);
+  background: rgb(var(--background-modifier-hover-rgb) 0.5);
   color: var(--text-normal);
 }
 

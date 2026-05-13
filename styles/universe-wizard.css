@@ -62,16 +62,16 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  opacity: 0.5;
+  opacity: 50%;
   transition: opacity 0.2s ease;
 }
 
 .cr-wizard-step--active {
-  opacity: 1;
+  opacity: 100%;
 }
 
 .cr-wizard-step--completed {
-  opacity: 0.8;
+  opacity: 80%;
 }
 
 .cr-wizard-step-number {

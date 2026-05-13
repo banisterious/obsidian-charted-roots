@@ -109,7 +109,7 @@
 }
 
 .cr-book-chapter-row--dragging {
-	opacity: 0.5;
+	opacity: 50%;
 	background: var(--background-modifier-active-hover);
 }
 
@@ -172,12 +172,12 @@
 	display: flex;
 	gap: 4px;
 	flex-shrink: 0;
-	opacity: 0;
+	opacity: 0%;
 	transition: opacity 0.15s ease;
 }
 
 .cr-book-chapter-row:hover .cr-book-chapter-row__actions {
-	opacity: 1;
+	opacity: 100%;
 }
 
 .cr-book-chapter-row__action {

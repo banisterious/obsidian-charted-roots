@@ -84,7 +84,6 @@
 
 .leaflet-container.leaflet-touch-drag {
   -ms-touch-action: pinch-zoom;
-  touch-action: none;
   touch-action: pinch-zoom;
 }
 
@@ -171,7 +170,6 @@
 .leaflet-control {
   position: relative;
   z-index: 800;
-  pointer-events: visiblePainted;
   pointer-events: auto;
 }
 
@@ -260,7 +258,6 @@ svg.leaflet-zoom-animated {
 }
 
 .leaflet-grab {
-  cursor: -webkit-grab;
   cursor: -moz-grab;
   cursor: grab;
 }
@@ -278,7 +275,6 @@ svg.leaflet-zoom-animated {
 .leaflet-dragging .leaflet-grab,
 .leaflet-dragging .leaflet-grab .leaflet-interactive,
 .leaflet-dragging .leaflet-marker-draggable {
-  cursor: move;
   cursor: -webkit-grabbing;
   cursor: -moz-grabbing;
   cursor: grabbing;
@@ -297,7 +293,6 @@ svg.leaflet-zoom-animated {
 .leaflet-image-layer.leaflet-interactive,
 .leaflet-pane > svg path.leaflet-interactive,
 svg.leaflet-image-layer.leaflet-interactive path {
-  pointer-events: visiblePainted;
   pointer-events: auto;
 }
 
@@ -427,7 +422,6 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 /* Attribution styles */
 .leaflet-container .leaflet-control-attribution {
-  background: #fff;
   background: rgba(255, 255, 255, 0.8);
   margin: 0;
 }

@@ -167,7 +167,7 @@
 }
 
 .crc-picker-sidebar-tab--active .crc-picker-sidebar-tab__badge {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgb(255 255 255 / 20%);
   color: var(--text-on-accent);
 }
 
@@ -193,7 +193,7 @@
   background: var(--background-modifier-hover);
   border-color: var(--interactive-accent);
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 10%);
 }
 
 .crc-picker-item--selected {
@@ -264,7 +264,7 @@
 .crc-picker-badge--id {
   background: var(--interactive-accent);
   color: var(--text-on-accent);
-  opacity: 0.8;
+  opacity: 80%;
 }
 
 .crc-picker-group-header {

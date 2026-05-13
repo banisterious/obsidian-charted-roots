@@ -142,7 +142,7 @@
 
 .cr-universe-maps__thumbnail--clickable:hover {
   border-color: var(--interactive-accent);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
 }
 
 .cr-universe-maps__image {
@@ -165,12 +165,12 @@
   top: 6px;
   right: 6px;
   padding: 2px 8px;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgb(255 255 255 / 90%);
   border-radius: var(--cr-radius-xs, 4px);
   font-size: 11px;
   font-weight: var(--font-semibold);
   color: var(--text-normal);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
 }
 
 .cr-universe-maps__caption {
@@ -179,7 +179,7 @@
   left: 0;
   right: 0;
   padding: 6px 8px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+  background: linear-gradient(transparent, rgb(0 0 0 / 70%));
   color: white;
   font-size: var(--font-ui-smaller);
   font-weight: var(--font-semibold);

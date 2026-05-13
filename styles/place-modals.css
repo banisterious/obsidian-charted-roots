@@ -124,12 +124,12 @@
 .crc-unlinked-place-item .crc-btn--ghost {
   flex-shrink: 0;
   margin-left: 8px;
-  opacity: 0.6;
+  opacity: 60%;
   transition: opacity 0.15s ease;
 }
 
 .crc-unlinked-place-item:hover .crc-btn--ghost {
-  opacity: 1;
+  opacity: 100%;
 }
 
 /* ==========================================================================
@@ -203,11 +203,11 @@
 }
 
 .crc-referenced-place-item--unlinked {
-  background: rgba(var(--color-yellow-rgb), 0.05);
+  background: rgb(var(--color-yellow-rgb) 0.05);
 }
 
 .crc-referenced-place-item--unlinked:hover {
-  background: rgba(var(--color-yellow-rgb), 0.1);
+  background: rgb(var(--color-yellow-rgb) 0.1);
 }
 
 .crc-referenced-place-content {
@@ -234,12 +234,12 @@
 .crc-referenced-place-item .crc-btn--ghost {
   flex-shrink: 0;
   margin-left: 8px;
-  opacity: 0;
+  opacity: 0%;
   transition: opacity 0.15s ease;
 }
 
 .crc-referenced-place-item:hover .crc-btn--ghost {
-  opacity: 1;
+  opacity: 100%;
 }
 
 /* ==========================================================================
@@ -292,7 +292,7 @@
 }
 
 .crc-variation-group--applied {
-  opacity: 0.7;
+  opacity: 70%;
   background: var(--background-primary);
 }
 
@@ -388,7 +388,7 @@
 }
 
 .crc-standardize-explanation p {
-  margin: 0 0 8px 0;
+  margin: 0 0 8px;
 }
 
 /* Field list within standardize explanation (monospace variant) */
@@ -509,16 +509,16 @@
   top: 8px;
   right: 8px;
   padding: 4px;
-  opacity: 0.6;
+  opacity: 60%;
   transition: opacity 0.15s ease;
 }
 
 .crc-duplicate-open-btn:hover {
-  opacity: 1;
+  opacity: 100%;
 }
 
 .crc-duplicate-place-option:hover .crc-duplicate-open-btn {
-  opacity: 0.8;
+  opacity: 80%;
 }
 
 .crc-duplicate-place-label {
@@ -779,6 +779,7 @@
 
 .crc-migration-svg {
   display: block;
+
   /* Don't center - allow natural scroll from left edge */
 }
 
@@ -788,7 +789,7 @@
 }
 
 .crc-migration-arc:hover {
-  stroke-opacity: 1 !important;
+  stroke-opacity: 100% !important;
 }
 
 .crc-migration-node circle {
@@ -958,7 +959,7 @@
 .crc-network-legend-gradient {
   width: 60px;
   height: 12px;
-  background: linear-gradient(to right, hsl(240, 70%, 50%), hsl(0, 70%, 50%));
+  background: linear-gradient(to right, hsl(240deg 70% 50%), hsl(0deg 70% 50%));
   border-radius: 2px;
   display: inline-block;
 }
@@ -969,7 +970,7 @@
 }
 
 .crc-migration-flow:hover {
-  stroke-opacity: 1 !important;
+  stroke-opacity: 100% !important;
 }
 
 /* ==========================================================================
@@ -1151,7 +1152,7 @@
 /* Disabled state - must override selected state */
 .cr-lookup-source-chip--disabled,
 .cr-lookup-source-chip--disabled.cr-lookup-source-chip--selected {
-  opacity: 0.4;
+  opacity: 40%;
   cursor: not-allowed;
   border-style: dashed;
   background: var(--background-secondary);
@@ -1205,7 +1206,7 @@
   gap: 8px;
   padding: 12px 16px;
   margin: 16px;
-  background: rgba(var(--color-red-rgb), 0.1);
+  background: rgb(var(--color-red-rgb) 0.1);
   border-radius: var(--radius-m);
   color: var(--text-error);
 }
@@ -1233,7 +1234,7 @@
 
 .cr-lookup-empty-icon {
   margin-bottom: 12px;
-  opacity: 0.5;
+  opacity: 50%;
 }
 
 .cr-lookup-empty-icon svg {
@@ -1317,33 +1318,33 @@
 }
 
 .cr-lookup-source-badge--wikidata {
-  background: rgba(153, 0, 0, 0.15);
-  color: #990000;
+  background: rgb(153 0 0 / 15%);
+  color: #900;
 }
 
 .cr-lookup-source-badge--geonames {
-  background: rgba(0, 100, 0, 0.15);
+  background: rgb(0 100 0 / 15%);
   color: #006400;
 }
 
 .cr-lookup-source-badge--nominatim {
-  background: rgba(0, 0, 139, 0.15);
+  background: rgb(0 0 139 / 15%);
   color: #00008b;
 }
 
 /* Dark theme adjustments for source badges */
 .theme-dark .cr-lookup-source-badge--wikidata {
-  background: rgba(255, 100, 100, 0.2);
-  color: #ff9999;
+  background: rgb(255 100 100 / 20%);
+  color: #f99;
 }
 
 .theme-dark .cr-lookup-source-badge--geonames {
-  background: rgba(100, 200, 100, 0.2);
+  background: rgb(100 200 100 / 20%);
   color: #90ee90;
 }
 
 .theme-dark .cr-lookup-source-badge--nominatim {
-  background: rgba(100, 149, 237, 0.2);
+  background: rgb(100 149 237 / 20%);
   color: #87cefa;
 }
 
@@ -1356,17 +1357,17 @@
 }
 
 .cr-lookup-confidence--high {
-  background: rgba(var(--color-green-rgb), 0.15);
+  background: rgb(var(--color-green-rgb) 0.15);
   color: var(--color-green);
 }
 
 .cr-lookup-confidence--medium {
-  background: rgba(var(--color-yellow-rgb), 0.15);
+  background: rgb(var(--color-yellow-rgb) 0.15);
   color: var(--color-yellow);
 }
 
 .cr-lookup-confidence--low {
-  background: rgba(var(--color-orange-rgb), 0.15);
+  background: rgb(var(--color-orange-rgb) 0.15);
   color: var(--color-orange);
 }
 

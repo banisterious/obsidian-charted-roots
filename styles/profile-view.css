@@ -51,27 +51,27 @@
 }
 
 .cr-profile__type-badge--person {
-  background-color: var(--color-blue-rgb, rgba(59, 130, 246, 0.15));
+  background-color: var(--color-blue-rgb, rgb(59 130 246 / 15%));
   color: var(--color-blue, var(--text-accent));
 }
 
 .cr-profile__type-badge--place {
-  background-color: var(--color-green-rgb, rgba(34, 197, 94, 0.15));
+  background-color: var(--color-green-rgb, rgb(34 197 94 / 15%));
   color: var(--color-green, var(--text-success));
 }
 
 .cr-profile__type-badge--event {
-  background-color: var(--color-orange-rgb, rgba(249, 115, 22, 0.15));
+  background-color: var(--color-orange-rgb, rgb(249 115 22 / 15%));
   color: var(--color-orange, var(--text-warning));
 }
 
 .cr-profile__type-badge--source {
-  background-color: var(--color-purple-rgb, rgba(168, 85, 247, 0.15));
+  background-color: var(--color-purple-rgb, rgb(168 85 247 / 15%));
   color: var(--color-purple, var(--text-accent));
 }
 
 .cr-profile__type-badge--organization {
-  background-color: var(--color-yellow-rgb, rgba(234, 179, 8, 0.15));
+  background-color: var(--color-yellow-rgb, rgb(234 179 8 / 15%));
   color: var(--color-yellow, var(--text-warning));
 }
 
@@ -338,6 +338,7 @@
   font-size: var(--font-ui-smaller);
   color: var(--text-muted);
   font-style: italic;
+
   /* Match the .cr-profile__rel-type-label min-width + gap so the note aligns
      with the link column rather than the type-label column. */
   padding-left: calc(60px + var(--size-4-2));
@@ -695,7 +696,7 @@
 }
 
 .cr-profile__member-badge--current {
-  background-color: var(--color-green-rgb, rgba(34, 197, 94, 0.15));
+  background-color: var(--color-green-rgb, rgb(34 197 94 / 15%));
   color: var(--color-green, var(--text-success));
 }
 
@@ -868,7 +869,7 @@
   border-radius: 50%;
   background-color: var(--interactive-accent);
   border: 2px solid var(--background-primary);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 4px rgb(0 0 0 / 30%);
 }
 
 .cr-profile__map-open-btn {
@@ -960,17 +961,17 @@
 
 .cr-profile__research-result--positive {
   color: var(--text-success);
-  background-color: rgba(var(--color-green-rgb), 0.15);
+  background-color: rgb(var(--color-green-rgb) 0.15);
 }
 
 .cr-profile__research-result--negative {
   color: var(--text-error);
-  background-color: rgba(var(--color-red-rgb), 0.15);
+  background-color: rgb(var(--color-red-rgb) 0.15);
 }
 
 .cr-profile__research-result--inconclusive {
   color: var(--text-warning);
-  background-color: rgba(var(--color-yellow-rgb), 0.15);
+  background-color: rgb(var(--color-yellow-rgb) 0.15);
 }
 
 /* ==========================================================================
@@ -1023,22 +1024,22 @@
 }
 
 .cr-profile__citation-quality[data-quality="3"] {
-  background-color: rgba(var(--color-green-rgb), 0.15);
+  background-color: rgb(var(--color-green-rgb) 0.15);
   color: var(--text-success);
 }
 
 .cr-profile__citation-quality[data-quality="2"] {
-  background-color: rgba(var(--color-blue-rgb), 0.15);
+  background-color: rgb(var(--color-blue-rgb) 0.15);
   color: var(--text-accent);
 }
 
 .cr-profile__citation-quality[data-quality="1"] {
-  background-color: rgba(var(--color-yellow-rgb), 0.15);
+  background-color: rgb(var(--color-yellow-rgb) 0.15);
   color: var(--text-warning);
 }
 
 .cr-profile__citation-quality[data-quality="0"] {
-  background-color: rgba(var(--color-red-rgb), 0.15);
+  background-color: rgb(var(--color-red-rgb) 0.15);
   color: var(--text-error);
 }
 

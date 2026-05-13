@@ -8,8 +8,37 @@
     "selector-class-pattern": [
       "^(cr|crc|canvas-roots|charted-roots)-[a-z0-9-]+(__[a-z0-9-]+)?(--[a-z0-9-]+)?$",
       {
-        "message": "Expected class selector to use BEM format with cr-/crc-/canvas-roots-/charted-roots- prefix (selector-class-pattern)"
+        "message": "Expected class selector to use BEM format with cr-/crc-/canvas-roots-/charted-roots- prefix (selector-class-pattern)",
+        "severity": "warning"
       }
+    ],
+    "color-function-notation": [
+      "modern",
+      { "severity": "warning" }
+    ],
+    "alpha-value-notation": [
+      "percentage",
+      { "severity": "warning" }
+    ],
+    "shorthand-property-no-redundant-values": [
+      true,
+      { "severity": "warning" }
+    ],
+    "no-duplicate-selectors": [
+      true,
+      { "severity": "warning" }
+    ],
+    "hue-degree-notation": [
+      "angle",
+      { "severity": "warning" }
+    ],
+    "declaration-block-no-shorthand-property-overrides": [
+      true,
+      { "severity": "warning" }
+    ],
+    "declaration-block-no-duplicate-properties": [
+      true,
+      { "severity": "warning" }
     ],
     "declaration-empty-line-before": [
       "always",

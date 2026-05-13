@@ -33,7 +33,7 @@
 .crc-staging-header-icon {
   width: 36px;
   height: 36px;
-  background: rgba(var(--interactive-accent-rgb), 0.15);
+  background: rgb(var(--interactive-accent-rgb) 0.15);
   border-radius: var(--cr-radius-md);
   display: flex;
   align-items: center;
@@ -132,13 +132,13 @@
 }
 
 .crc-staging-empty h3 {
-  margin: 0 0 8px 0;
+  margin: 0 0 8px;
   font-size: 16px;
   font-weight: 600;
 }
 
 .crc-staging-empty p {
-  margin: 0 0 16px 0;
+  margin: 0 0 16px;
   color: var(--text-muted);
   max-width: 360px;
 }
@@ -190,7 +190,7 @@
 .crc-staging-stat-icon {
   width: 32px;
   height: 32px;
-  background: rgba(var(--interactive-accent-rgb), 0.15);
+  background: rgb(var(--interactive-accent-rgb) 0.15);
   border-radius: var(--cr-radius-sm);
   display: flex;
   align-items: center;
@@ -256,7 +256,7 @@
 }
 
 .crc-staging-list h3 {
-  margin: 0 0 12px 0;
+  margin: 0 0 12px;
   font-size: 14px;
   font-weight: 600;
   color: var(--text-muted);
@@ -278,7 +278,6 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 12px;
   cursor: pointer;
   border-radius: var(--cr-radius-sm);
   margin: -8px;
@@ -288,7 +287,7 @@
 }
 
 .crc-staging-item-header:hover {
-  background: rgba(var(--interactive-accent-rgb), 0.05);
+  background: rgb(var(--interactive-accent-rgb) 0.05);
 }
 
 .crc-staging-item-header:focus {
@@ -317,7 +316,7 @@
 .crc-staging-item-icon {
   width: 32px;
   height: 32px;
-  background: rgba(var(--interactive-accent-rgb), 0.1);
+  background: rgb(var(--interactive-accent-rgb) 0.1);
   border-radius: var(--cr-radius-sm);
   display: flex;
   align-items: center;
@@ -378,7 +377,7 @@
 
 .crc-staging-btn:hover {
   border-color: var(--interactive-accent);
-  background: rgba(var(--interactive-accent-rgb), 0.08);
+  background: rgb(var(--interactive-accent-rgb) 0.08);
 }
 
 .crc-staging-btn svg {
@@ -395,21 +394,21 @@
 }
 
 .crc-staging-btn-promote {
-  color: rgb(74, 222, 128);
+  color: rgb(74 222 128);
 }
 
 .crc-staging-btn-promote:hover {
-  border-color: rgb(74, 222, 128);
-  background: rgba(74, 222, 128, 0.1);
+  border-color: rgb(74 222 128);
+  background: rgb(74 222 128 / 10%);
 }
 
 .crc-staging-btn-delete {
-  color: rgb(248, 113, 113);
+  color: rgb(248 113 113);
 }
 
 .crc-staging-btn-delete:hover {
-  border-color: rgb(248, 113, 113);
-  background: rgba(248, 113, 113, 0.1);
+  border-color: rgb(248 113 113);
+  background: rgb(248 113 113 / 10%);
 }
 
 /* -----------------------------------------------------------------------------
@@ -423,7 +422,7 @@
 }
 
 .crc-staging-actions-header {
-  margin: 0 0 12px 0;
+  margin: 0 0 12px;
   font-size: 14px;
   font-weight: 600;
   color: var(--text-muted);
@@ -488,7 +487,7 @@
 
 .crc-staging-file-row:hover {
   border-color: var(--interactive-accent);
-  background: rgba(var(--interactive-accent-rgb), 0.08);
+  background: rgb(var(--interactive-accent-rgb) 0.08);
 }
 
 .crc-staging-file-row:focus {

@@ -51,12 +51,12 @@
   cursor: pointer;
   border-radius: var(--cr-radius-sm);
   font-size: var(--font-ui-small);
-  opacity: 0.6;
+  opacity: 60%;
   transition: opacity 0.15s ease;
 }
 
 .cr-dynamic-block__btn:hover {
-  opacity: 1;
+  opacity: 100%;
   background: var(--background-modifier-hover);
 }
 
@@ -106,6 +106,7 @@
   height: 16px;
   margin-right: var(--cr-spacing-xs);
   flex-shrink: 0;
+
   /* Align icon with text baseline - offset accounts for icon being vertically centered */
   align-self: center;
   position: relative;
@@ -161,7 +162,7 @@
 
 /* Historical context events */
 .cr-timeline__item--context {
-  opacity: 0.75;
+  opacity: 75%;
   background-color: var(--background-secondary);
   border-radius: var(--radius-s);
   margin: var(--cr-spacing-xs) 0;
@@ -182,7 +183,7 @@
 
 /* Family member events */
 .cr-timeline__item--family {
-  background-color: rgba(var(--color-blue-rgb), 0.06);
+  background-color: rgb(var(--color-blue-rgb) 0.06);
   border-radius: var(--radius-s);
   margin: var(--cr-spacing-xs) 0;
 }
@@ -303,7 +304,7 @@
 }
 
 .cr-members__item--former {
-  opacity: 0.7;
+  opacity: 70%;
 }
 
 .cr-members__link a {
@@ -339,7 +340,7 @@
   display: inline-flex;
   align-items: center;
   margin-right: var(--cr-spacing-xs);
-  opacity: 0.7;
+  opacity: 70%;
 }
 
 .cr-dynamic-block__icon svg {
@@ -496,7 +497,7 @@
 
 .cr-media__doc-icon {
   color: var(--text-muted);
-  opacity: 0.6;
+  opacity: 60%;
   margin-bottom: var(--cr-spacing-xs);
 }
 
@@ -530,7 +531,7 @@
 }
 
 .cr-media__empty-icon {
-  opacity: 0.4;
+  opacity: 40%;
 }
 
 .cr-media__empty-icon svg {
@@ -544,7 +545,7 @@
 
 .cr-media__empty-hint {
   font-size: var(--font-ui-smaller);
-  opacity: 0.7;
+  opacity: 70%;
 }
 
 /* ==========================================================================
@@ -574,19 +575,19 @@
   color: #fff;
   padding: 4px;
   border-radius: var(--cr-radius-xs);
-  opacity: 0;
+  opacity: 0%;
   z-index: 3;
   transition: opacity 0.15s ease;
   pointer-events: none;
 }
 
 .cr-media--editable .cr-media__item:hover .cr-media__drag-handle {
-  opacity: 1;
+  opacity: 100%;
 }
 
 /* Dragging state */
 .cr-media__item--dragging {
-  opacity: 0.5;
+  opacity: 50%;
   transform: scale(0.95);
 }
 
@@ -621,7 +622,9 @@
 /* Flex gallery layout for images */
 .callout[data-callout-metadata="cr-frozen-gallery"] .callout-content {
   display: flex;
+
   --callout-content-padding: 0;
+
   flex-wrap: wrap;
   gap: var(--cr-gallery-gap);
   margin: 0;

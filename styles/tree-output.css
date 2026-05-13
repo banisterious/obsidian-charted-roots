@@ -99,12 +99,12 @@
 
 @keyframes crc-accordion-slide-down {
   from {
-    opacity: 0;
+    opacity: 0%;
     transform: translateY(-8px);
   }
 
   to {
-    opacity: 1;
+    opacity: 100%;
     transform: translateY(0);
   }
 }
@@ -322,14 +322,14 @@
 
 .crc-root-person-selected--compact .crc-root-person-selected__dates {
   font-size: 12px;
-  opacity: 0.85;
+  opacity: 85%;
 }
 
 .crc-root-person-clear {
   margin-left: auto;
   padding: 2px;
   color: var(--text-on-accent);
-  opacity: 0.7;
+  opacity: 70%;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -337,7 +337,7 @@
 }
 
 .crc-root-person-clear:hover {
-  opacity: 1;
+  opacity: 100%;
   background: rgb(255 255 255 / 15%);
 }
 
@@ -488,12 +488,12 @@
   align-items: center;
   gap: 2px;
   flex-shrink: 0;
-  opacity: 0;
+  opacity: 0%;
   transition: opacity var(--cr-transition-fast);
 }
 
 .crc-recent-tree-item:hover .crc-recent-tree-actions {
-  opacity: 1;
+  opacity: 100%;
 }
 
 /* Small badge variant */
@@ -607,7 +607,7 @@
 
 .crc-wizard-selected-dates {
   font-size: 12px;
-  opacity: 0.85;
+  opacity: 85%;
 }
 
 .crc-wizard-clear-btn {
@@ -615,13 +615,13 @@
   background: transparent;
   border: none;
   color: var(--text-on-accent);
-  opacity: 0.7;
+  opacity: 70%;
   cursor: pointer;
   border-radius: var(--cr-radius-xs);
 }
 
 .crc-wizard-clear-btn:hover {
-  opacity: 1;
+  opacity: 100%;
   background: rgb(255 255 255 / 15%);
 }
 
@@ -865,7 +865,7 @@
 
 .crc-tree-wizard .cr-wizard-step-heading {
   font-size: 16px;
-  margin: 0 0 2px 0;
+  margin: 0 0 2px;
 }
 
 .crc-tree-wizard .cr-wizard-step-counter {
@@ -956,7 +956,7 @@
 
 /* Disabled button state */
 .cr-btn--disabled {
-  opacity: 0.5;
+  opacity: 50%;
   cursor: not-allowed;
 }
 
@@ -1168,7 +1168,7 @@
 
 .crc-tree-empty-icon {
   color: var(--text-muted);
-  opacity: 0.4;
+  opacity: 40%;
   margin-bottom: var(--cr-spacing-sm);
 }
 
@@ -1236,7 +1236,7 @@
 
 .crc-visual-tree-types .crc-wizard-type-card--selected .crc-wizard-type-desc {
   color: var(--text-on-accent);
-  opacity: 0.85;
+  opacity: 85%;
 }
 
 .crc-wizard-type-badge {
@@ -1249,7 +1249,7 @@
 }
 
 .crc-wizard-type-card--disabled {
-  opacity: 0.5;
+  opacity: 50%;
   cursor: not-allowed;
 }
 
@@ -1323,7 +1323,7 @@
 .cr-large-tree-warning {
   margin: 8px 0;
   padding: 8px 10px;
-  background: var(--background-modifier-error-rgb, rgba(255, 100, 100, 0.1));
+  background: var(--background-modifier-error-rgb, rgb(255 100 100 / 10%));
   border: 1px solid var(--text-warning);
   border-radius: var(--radius-m);
 }
@@ -1345,14 +1345,14 @@
 }
 
 .cr-large-tree-warning-info p {
-  margin: 0 0 6px 0;
+  margin: 0 0 6px;
   color: var(--text-muted);
   font-size: 11px;
   line-height: 1.4;
 }
 
 .cr-large-tree-warning-options p {
-  margin: 0 0 4px 0;
+  margin: 0 0 4px;
   font-weight: 500;
   font-size: 12px;
 }

@@ -508,7 +508,7 @@
 }
 
 .cr-sv-quality-warning {
-  background-color: hsla(40, 100%, 50%, 0.15);
+  background-color: hsl(40deg 100% 50% / 15%);
   border-left: 3px solid var(--color-yellow);
 }
 
@@ -1671,26 +1671,25 @@
 
 .cr-sv-research-status--in-progress,
 .cr-sv-research-status--review {
-  background-color: var(--color-blue-rgb, 0, 122, 204);
-  background-color: rgba(var(--color-blue-rgb, 0, 122, 204), 0.15);
+  background-color: rgb(var(--color-blue-rgb, 0, 122, 204) 0.15);
   color: var(--text-normal);
 }
 
 .cr-sv-research-status--open,
 .cr-sv-research-status--draft {
-  background-color: rgba(var(--color-base-50, 128), 0.15);
+  background-color: rgb(var(--color-base-50, 128) 0.15);
   color: var(--text-muted);
 }
 
 .cr-sv-research-status--on-hold {
-  background-color: rgba(var(--color-yellow-rgb, 224, 172, 0), 0.15);
+  background-color: rgb(var(--color-yellow-rgb, 224, 172, 0) 0.15);
   color: var(--text-normal);
 }
 
 .cr-sv-research-status--completed,
 .cr-sv-research-status--final,
 .cr-sv-research-status--published {
-  background-color: rgba(var(--color-green-rgb, 8, 185, 78), 0.15);
+  background-color: rgb(var(--color-green-rgb, 8, 185, 78) 0.15);
   color: var(--text-normal);
 }
 

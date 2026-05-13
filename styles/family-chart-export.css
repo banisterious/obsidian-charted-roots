@@ -81,16 +81,16 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  opacity: 0.5;
+  opacity: 50%;
   transition: opacity 0.2s ease;
 }
 
 .cr-export-wizard .cr-wizard-step--active {
-  opacity: 1;
+  opacity: 100%;
 }
 
 .cr-export-wizard .cr-wizard-step--completed {
-  opacity: 0.8;
+  opacity: 80%;
 }
 
 .cr-export-wizard .cr-wizard-step-number {
@@ -452,7 +452,7 @@
 }
 
 .cr-export-depth-select:disabled {
-  opacity: 0.5;
+  opacity: 50%;
 }
 
 /* Scope hint */
@@ -601,7 +601,7 @@
 }
 
 .cr-export-wizard-footer .cr-btn--outline:hover {
-  background: hsla(var(--interactive-accent-hsl), 0.1);
+  background: hsl(var(--interactive-accent-hsl) 0.1);
 }
 
 /* Primary style (filled accent) - for main action */

@@ -64,16 +64,16 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  opacity: 0.5;
+  opacity: 50%;
   transition: opacity 0.2s ease;
 }
 
 .cr-report-wizard .cr-wizard-step--active {
-  opacity: 1;
+  opacity: 100%;
 }
 
 .cr-report-wizard .cr-wizard-step--completed {
-  opacity: 0.8;
+  opacity: 80%;
 }
 
 .cr-report-wizard .cr-wizard-step-number {
@@ -689,7 +689,7 @@
 
 /* Disabled state */
 .cr-report-wizard-footer .cr-btn--disabled {
-  opacity: 0.5;
+  opacity: 50%;
   cursor: not-allowed;
   pointer-events: none;
 }

@@ -121,35 +121,35 @@
 
 .crc-cleanup-tile:hover {
   border-color: var(--interactive-accent);
-  background: rgba(var(--interactive-accent-rgb), 0.08);
+  background: rgb(var(--interactive-accent-rgb) 0.08);
 }
 
 /* Keyboard focus state */
 .crc-cleanup-tile:focus,
 .crc-cleanup-tile--focused {
   border-color: var(--interactive-accent);
-  background: rgba(var(--interactive-accent-rgb), 0.08);
+  background: rgb(var(--interactive-accent-rgb) 0.08);
   outline: 2px solid var(--interactive-accent);
   outline-offset: 2px;
 }
 
 .crc-cleanup-tile--complete {
-  border-color: rgb(74, 222, 128);
-  background: rgba(74, 222, 128, 0.1);
+  border-color: rgb(74 222 128);
+  background: rgb(74 222 128 / 10%);
 }
 
 .crc-cleanup-tile--complete:hover {
-  border-color: rgb(74, 222, 128);
-  background: rgba(74, 222, 128, 0.15);
+  border-color: rgb(74 222 128);
+  background: rgb(74 222 128 / 15%);
 }
 
 .crc-cleanup-tile--skipped {
-  opacity: 0.6;
+  opacity: 60%;
 }
 
 .crc-cleanup-tile--in_progress {
   border-color: var(--interactive-accent);
-  background: rgba(var(--interactive-accent-rgb), 0.1);
+  background: rgb(var(--interactive-accent-rgb) 0.1);
 }
 
 /* Step number badge */
@@ -170,7 +170,7 @@
 }
 
 .crc-cleanup-tile--complete .crc-cleanup-tile-number {
-  background: rgb(74, 222, 128);
+  background: rgb(74 222 128);
   color: #000;
 }
 
@@ -196,7 +196,7 @@
 }
 
 .crc-cleanup-tile-badge--count {
-  background: rgba(var(--interactive-accent-rgb), 0.15);
+  background: rgb(var(--interactive-accent-rgb) 0.15);
   color: var(--interactive-accent);
 }
 
@@ -211,13 +211,13 @@
 }
 
 .crc-cleanup-tile-badge--progress {
-  background: rgba(var(--interactive-accent-rgb), 0.15);
+  background: rgb(var(--interactive-accent-rgb) 0.15);
   color: var(--interactive-accent);
 }
 
 .crc-cleanup-tile-badge--complete {
-  background: rgba(74, 222, 128, 0.2);
-  color: rgb(74, 222, 128);
+  background: rgb(74 222 128 / 20%);
+  color: rgb(74 222 128);
 }
 
 .crc-cleanup-tile-badge--skipped {
@@ -240,12 +240,12 @@
 
 /* Tile with unmet dependencies */
 .crc-cleanup-tile--has-deps {
-  opacity: 0.7;
+  opacity: 70%;
   border-style: dashed;
 }
 
 .crc-cleanup-tile--has-deps:hover {
-  opacity: 0.85;
+  opacity: 85%;
 }
 
 /* Dependency warning callout */
@@ -288,7 +288,7 @@
 }
 
 .crc-dependency-warning-dismiss:hover {
-  background: rgba(var(--text-warning-rgb, 234, 179, 8), 0.15);
+  background: rgb(var(--text-warning-rgb, 234, 179, 8) 0.15);
 }
 
 /* Step progress indicator */
@@ -315,16 +315,16 @@
 
 .crc-cleanup-progress-dot--active {
   background: var(--interactive-accent);
-  box-shadow: 0 0 0 3px rgba(var(--interactive-accent-rgb), 0.3);
+  box-shadow: 0 0 0 3px rgb(var(--interactive-accent-rgb) 0.3);
 }
 
 .crc-cleanup-progress-dot--complete {
-  background: rgb(74, 222, 128);
+  background: rgb(74 222 128);
 }
 
 .crc-cleanup-progress-dot--skipped {
   background: var(--text-muted);
-  opacity: 0.5;
+  opacity: 50%;
 }
 
 .crc-cleanup-progress-connector {
@@ -335,7 +335,7 @@
 }
 
 .crc-cleanup-progress-connector--done {
-  background: rgb(74, 222, 128);
+  background: rgb(74 222 128);
 }
 
 .crc-cleanup-step-label {
@@ -347,7 +347,7 @@
 
 /* Step view */
 .crc-cleanup-step-title {
-  margin: 0 0 8px 0;
+  margin: 0 0 8px;
   font-size: 16px;
   font-weight: 600;
 }
@@ -367,12 +367,12 @@
 .crc-cleanup-no-issues {
   text-align: center;
   padding: 32px;
-  background: rgba(74, 222, 128, 0.1);
+  background: rgb(74 222 128 / 10%);
   border-radius: var(--cr-radius-lg);
 }
 
 .crc-cleanup-no-issues-icon {
-  color: rgb(74, 222, 128);
+  color: rgb(74 222 128);
   margin-bottom: 12px;
 }
 
@@ -397,12 +397,12 @@
 .crc-cleanup-step-complete {
   text-align: center;
   padding: 32px;
-  background: rgba(74, 222, 128, 0.1);
+  background: rgb(74 222 128 / 10%);
   border-radius: var(--cr-radius-lg);
 }
 
 .crc-cleanup-step-complete-icon {
-  color: rgb(74, 222, 128);
+  color: rgb(74 222 128);
   margin-bottom: 12px;
 }
 
@@ -451,7 +451,7 @@
   align-items: flex-start;
   gap: 8px;
   padding: 12px 16px;
-  background: rgba(var(--interactive-accent-rgb), 0.1);
+  background: rgb(var(--interactive-accent-rgb) 0.1);
   border-radius: var(--cr-radius-md);
   margin-top: 16px;
   font-size: 13px;
@@ -481,7 +481,7 @@
 }
 
 .crc-cleanup-summary-icon {
-  color: rgb(74, 222, 128);
+  color: rgb(74 222 128);
   margin-bottom: 8px;
 }
 
@@ -540,7 +540,7 @@
 
 /* Breakdown list */
 .crc-cleanup-breakdown-title {
-  margin: 0 0 12px 0;
+  margin: 0 0 12px;
   font-size: 14px;
   font-weight: 600;
 }
@@ -586,7 +586,7 @@
 }
 
 .crc-cleanup-breakdown-icon--complete {
-  color: rgb(74, 222, 128);
+  color: rgb(74 222 128);
 }
 
 .crc-cleanup-breakdown-icon--skipped {
@@ -625,15 +625,15 @@
 }
 
 .crc-cleanup-quality-score--good {
-  color: rgb(74, 222, 128);
+  color: rgb(74 222 128);
 }
 
 .crc-cleanup-quality-score--moderate {
-  color: rgb(251, 191, 36);
+  color: rgb(251 191 36);
 }
 
 .crc-cleanup-quality-score--poor {
-  color: rgb(248, 113, 113);
+  color: rgb(248 113 113);
 }
 
 .crc-cleanup-quality-score-label {
@@ -747,13 +747,13 @@
 }
 
 .crc-cleanup-category-badge--error {
-  background: rgba(248, 113, 113, 0.2);
-  color: rgb(248, 113, 113);
+  background: rgb(248 113 113 / 20%);
+  color: rgb(248 113 113);
 }
 
 .crc-cleanup-category-badge--warning {
-  background: rgba(251, 191, 36, 0.2);
-  color: rgb(251, 191, 36);
+  background: rgb(251 191 36 / 20%);
+  color: rgb(251 191 36);
 }
 
 .crc-cleanup-category-chevron {
@@ -803,11 +803,11 @@
 }
 
 .crc-cleanup-issue-severity--error {
-  color: rgb(248, 113, 113);
+  color: rgb(248 113 113);
 }
 
 .crc-cleanup-issue-severity--warning {
-  color: rgb(251, 191, 36);
+  color: rgb(251 191 36);
 }
 
 .crc-cleanup-issue-severity--info {
@@ -964,8 +964,8 @@
 }
 
 .crc-cleanup-preview-row--conflict {
-  background: rgba(var(--color-yellow-rgb), 0.1);
-  border: 1px solid rgba(var(--color-yellow-rgb), 0.3);
+  background: rgb(var(--color-yellow-rgb) 0.1);
+  border: 1px solid rgb(var(--color-yellow-rgb) 0.3);
 }
 
 .crc-cleanup-preview-row--conflict .crc-cleanup-preview-icon {
@@ -992,7 +992,7 @@
 }
 
 .crc-cleanup-preview-row--clickable:hover {
-  background: rgba(var(--color-yellow-rgb), 0.2);
+  background: rgb(var(--color-yellow-rgb) 0.2);
 }
 
 .crc-cleanup-preview-person {
@@ -1008,7 +1008,7 @@
   align-items: center;
   padding: 16px;
   margin-bottom: 16px;
-  background: rgba(var(--color-green-rgb), 0.1);
+  background: rgb(var(--color-green-rgb) 0.1);
   border-radius: var(--cr-radius-md);
 }
 
@@ -1047,7 +1047,7 @@
 }
 
 .crc-cleanup-resume-prompt h3 {
-  margin: 0 0 12px 0;
+  margin: 0 0 12px;
   font-size: 18px;
   font-weight: 600;
 }
@@ -1268,7 +1268,7 @@
   gap: 8px;
   padding: 10px 12px;
   margin-top: 12px;
-  background: rgba(var(--color-yellow-rgb), 0.1);
+  background: rgb(var(--color-yellow-rgb) 0.1);
   border-radius: var(--cr-radius-sm);
   font-size: 12px;
   color: var(--text-muted);

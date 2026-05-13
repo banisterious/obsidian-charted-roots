@@ -80,8 +80,8 @@
 }
 
 .crc-wizard-step--completed {
-  background: rgb(74, 222, 128);
-  border-color: rgb(74, 222, 128);
+  background: rgb(74 222 128);
+  border-color: rgb(74 222 128);
   color: #000;
 }
 
@@ -104,7 +104,7 @@
 }
 
 .crc-wizard-connector--completed {
-  background: rgb(74, 222, 128);
+  background: rgb(74 222 128);
 }
 
 /* Wizard content area */
@@ -143,7 +143,7 @@
 
 .crc-import-section-title,
 .crc-export-section-title {
-  margin: 0 0 16px 0;
+  margin: 0 0 16px;
   font-size: 16px;
   font-weight: 600;
 }
@@ -177,13 +177,13 @@
 .crc-import-format-card:hover,
 .crc-export-format-card:hover {
   border-color: var(--interactive-accent);
-  background: rgba(var(--interactive-accent-rgb), 0.08);
+  background: rgb(var(--interactive-accent-rgb) 0.08);
 }
 
 .crc-import-format-card--selected,
 .crc-export-format-card--selected {
   border-color: var(--interactive-accent);
-  background: rgba(var(--interactive-accent-rgb), 0.15);
+  background: rgb(var(--interactive-accent-rgb) 0.15);
 }
 
 .crc-import-format-card-header,
@@ -199,7 +199,7 @@
 .crc-export-format-card-icon {
   width: 40px;
   height: 40px;
-  background: rgba(var(--interactive-accent-rgb), 0.15);
+  background: rgb(var(--interactive-accent-rgb) 0.15);
   border-radius: var(--cr-radius-md);
   display: flex;
   align-items: center;
@@ -240,20 +240,20 @@
 .crc-import-dropzone:hover,
 .crc-export-dropzone:hover {
   border-color: var(--interactive-accent);
-  background: rgba(var(--interactive-accent-rgb), 0.05);
+  background: rgb(var(--interactive-accent-rgb) 0.05);
 }
 
 .crc-import-dropzone--has-file,
 .crc-export-dropzone--has-file {
-  border-color: rgb(74, 222, 128);
-  background: rgba(74, 222, 128, 0.08);
+  border-color: rgb(74 222 128);
+  background: rgb(74 222 128 / 8%);
   padding: 16px;
 }
 
 .crc-import-dropzone--dragover,
 .crc-export-dropzone--dragover {
   border-color: var(--interactive-accent);
-  background: rgba(var(--interactive-accent-rgb), 0.1);
+  background: rgb(var(--interactive-accent-rgb) 0.1);
 }
 
 .crc-import-dropzone-content,
@@ -298,7 +298,7 @@
 
 .crc-import-file-icon,
 .crc-export-file-icon {
-  color: rgb(74, 222, 128);
+  color: rgb(74 222 128);
 }
 
 .crc-import-file-icon svg,
@@ -333,7 +333,7 @@
 
 .crc-import-file-remove:hover,
 .crc-export-file-remove:hover {
-  color: rgb(248, 113, 113);
+  color: rgb(248 113 113);
 }
 
 .crc-import-file-remove svg,
@@ -345,7 +345,7 @@
 /* Options section */
 .crc-import-options-title,
 .crc-export-options-title {
-  margin: 0 0 8px 0;
+  margin: 0 0 8px;
   font-size: 14px;
   font-weight: 600;
 }
@@ -419,7 +419,7 @@
   top: 3px;
   left: 3px;
   transition: transform 0.15s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 20%);
 }
 
 .crc-import-toggle--on,
@@ -544,7 +544,7 @@
 .crc-import-privacy-option--selected,
 .crc-export-privacy-option--selected {
   border-color: var(--interactive-accent);
-  background: rgba(var(--interactive-accent-rgb), 0.1);
+  background: rgb(var(--interactive-accent-rgb) 0.1);
 }
 
 .crc-import-radio,
@@ -621,7 +621,7 @@
 }
 
 .crc-export-preview-setting--warning .crc-export-preview-setting-value {
-  color: rgb(251, 191, 36);
+  color: rgb(251 191 36);
 }
 
 .crc-export-preview-loading {
@@ -674,7 +674,7 @@
 .crc-export-preview-ready {
   text-align: center;
   padding: 12px;
-  color: rgb(74, 222, 128);
+  color: rgb(74 222 128);
   font-weight: 500;
 }
 
@@ -730,7 +730,7 @@
 }
 
 .crc-export-setting-value--warning {
-  color: rgb(251, 191, 36);
+  color: rgb(251 191 36);
 }
 
 /* Footer container (separate from scrollable content) */
@@ -866,7 +866,7 @@
 .crc-import-conflict-option--selected,
 .crc-export-conflict-option--selected {
   border-color: var(--interactive-accent);
-  background: rgba(var(--interactive-accent-rgb), 0.1);
+  background: rgb(var(--interactive-accent-rgb) 0.1);
 }
 
 .crc-import-conflict-radio,
@@ -992,8 +992,8 @@
   flex-direction: column;
   gap: 8px;
   padding: 12px 16px;
-  background: rgba(251, 191, 36, 0.1);
-  border: 1px solid rgba(251, 191, 36, 0.3);
+  background: rgb(251 191 36 / 10%);
+  border: 1px solid rgb(251 191 36 / 30%);
   border-radius: var(--cr-radius-md);
   margin-bottom: 12px;
 }
@@ -1005,7 +1005,7 @@
 }
 
 .crc-import-preview-warning-icon {
-  color: rgb(251, 191, 36);
+  color: rgb(251 191 36);
   flex-shrink: 0;
 }
 
@@ -1051,14 +1051,14 @@
 
 .crc-import-preview-error {
   padding: 12px 16px;
-  background: rgba(248, 113, 113, 0.1);
-  border: 1px solid rgba(248, 113, 113, 0.3);
+  background: rgb(248 113 113 / 10%);
+  border: 1px solid rgb(248 113 113 / 30%);
   border-radius: var(--cr-radius-md);
   margin-bottom: 12px;
 }
 
 .crc-import-preview-error-icon {
-  color: rgb(248, 113, 113);
+  color: rgb(248 113 113);
   display: inline-block;
   vertical-align: middle;
   margin-right: 8px;
@@ -1085,7 +1085,7 @@
 .crc-import-preview-ready {
   text-align: center;
   padding: 12px;
-  color: rgb(74, 222, 128);
+  color: rgb(74 222 128);
   font-weight: 500;
 }
 
@@ -1136,15 +1136,15 @@
 }
 
 .crc-import-log-entry--success {
-  color: rgb(74, 222, 128);
+  color: rgb(74 222 128);
 }
 
 .crc-import-log-entry--warning {
-  color: rgb(251, 191, 36);
+  color: rgb(251 191 36);
 }
 
 .crc-import-log-entry--error {
-  color: rgb(248, 113, 113);
+  color: rgb(248 113 113);
 }
 
 /* Success message */
@@ -1156,7 +1156,7 @@
 
 .crc-import-success-icon {
   margin-bottom: 12px;
-  color: rgb(74, 222, 128);
+  color: rgb(74 222 128);
 }
 
 .crc-import-success-icon svg {
@@ -1207,7 +1207,7 @@
 
 .crc-import-numbering-option--selected {
   border-color: var(--interactive-accent);
-  background: rgba(var(--interactive-accent-rgb), 0.1);
+  background: rgb(var(--interactive-accent-rgb) 0.1);
 }
 
 .crc-import-radio {
@@ -1269,7 +1269,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(124, 58, 237, 0.15);
+  background: rgb(124 58 237 / 15%);
   border-radius: 50%;
   color: var(--interactive-accent);
 }
@@ -1300,10 +1300,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(74, 222, 128, 0.15);
+  background: rgb(74 222 128 / 15%);
   border-radius: 50%;
   margin-bottom: 16px;
-  color: rgb(74, 222, 128);
+  color: rgb(74 222 128);
 }
 
 .crc-import-complete-icon svg {
@@ -1348,19 +1348,19 @@
 }
 
 .crc-import-complete-stat-value--blue {
-  color: rgb(96, 165, 250);
+  color: rgb(96 165 250);
 }
 
 .crc-import-complete-stat-value--green {
-  color: rgb(74, 222, 128);
+  color: rgb(74 222 128);
 }
 
 .crc-import-complete-stat-value--purple {
-  color: rgb(168, 85, 247);
+  color: rgb(168 85 247);
 }
 
 .crc-import-complete-stat-value--orange {
-  color: rgb(251, 146, 60);
+  color: rgb(251 146 60);
 }
 
 .crc-import-complete-stat-label {
@@ -1373,8 +1373,8 @@
 .crc-import-preprocessing-info {
   margin-top: 16px;
   padding: 12px 16px;
-  background: rgba(96, 165, 250, 0.1);
-  border: 1px solid rgba(96, 165, 250, 0.3);
+  background: rgb(96 165 250 / 10%);
+  border: 1px solid rgb(96 165 250 / 30%);
   border-radius: var(--cr-radius-md);
   color: var(--text-normal);
 }
@@ -1388,7 +1388,7 @@
 }
 
 .crc-import-preprocessing-icon {
-  color: rgb(96, 165, 250);
+  color: rgb(96 165 250);
   flex-shrink: 0;
 }
 
@@ -1398,7 +1398,7 @@
 }
 
 .crc-import-preprocessing-fixes {
-  margin: 0 0 8px 0;
+  margin: 0 0 8px;
   padding-left: 20px;
   font-size: 13px;
 }
@@ -1417,8 +1417,8 @@
 .crc-import-complete-skipped {
   margin-top: 16px;
   padding: 12px 16px;
-  background: rgba(251, 146, 60, 0.1);
-  border: 1px solid rgba(251, 146, 60, 0.3);
+  background: rgb(251 146 60 / 10%);
+  border: 1px solid rgb(251 146 60 / 30%);
   border-radius: var(--cr-radius-md);
   color: var(--text-normal);
   text-align: center;
@@ -1430,15 +1430,15 @@
   align-items: center;
   gap: 8px;
   padding: 12px 16px;
-  background: rgba(74, 222, 128, 0.1);
-  border: 1px solid rgba(74, 222, 128, 0.3);
+  background: rgb(74 222 128 / 10%);
+  border: 1px solid rgb(74 222 128 / 30%);
   border-radius: var(--cr-radius-md);
   margin-top: 16px;
   color: var(--text-normal);
 }
 
 .crc-import-complete-numbering-icon {
-  color: rgb(74, 222, 128);
+  color: rgb(74 222 128);
   flex-shrink: 0;
 }
 
@@ -1530,7 +1530,7 @@
 
 .crc-wizard-scope-option--selected {
   border-color: var(--interactive-accent);
-  background: rgba(var(--interactive-accent-rgb), 0.1);
+  background: rgb(var(--interactive-accent-rgb) 0.1);
 }
 
 .crc-wizard-scope-radio {
@@ -1580,7 +1580,7 @@
 }
 
 .crc-wizard-preview h4 {
-  margin: 0 0 12px 0;
+  margin: 0 0 12px;
   font-size: 14px;
   display: flex;
   align-items: center;
@@ -1621,16 +1621,16 @@
 
 /* Warning/conflict summary */
 .crc-wizard-warning {
-  background: rgba(251, 191, 36, 0.1);
-  border: 1px solid rgba(251, 191, 36, 0.3);
+  background: rgb(251 191 36 / 10%);
+  border: 1px solid rgb(251 191 36 / 30%);
   border-radius: var(--cr-radius-md);
   padding: 16px;
   margin-bottom: 16px;
 }
 
 .crc-wizard-warning h5 {
-  margin: 0 0 8px 0;
-  color: rgb(251, 191, 36);
+  margin: 0 0 8px;
+  color: rgb(251 191 36);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1663,7 +1663,7 @@
 }
 
 .crc-wizard-progress-bar--complete {
-  background: rgb(74, 222, 128);
+  background: rgb(74 222 128);
 }
 
 .crc-wizard-progress-status {
@@ -1690,15 +1690,15 @@
 }
 
 .crc-wizard-progress-log-entry--success {
-  color: rgb(74, 222, 128);
+  color: rgb(74 222 128);
 }
 
 .crc-wizard-progress-log-entry--warning {
-  color: rgb(251, 191, 36);
+  color: rgb(251 191 36);
 }
 
 .crc-wizard-progress-log-entry--error {
-  color: rgb(248, 113, 113);
+  color: rgb(248 113 113);
 }
 
 /* Completion section */
@@ -1711,12 +1711,12 @@
   width: 64px;
   height: 64px;
   margin: 0 auto 16px;
-  background: rgba(74, 222, 128, 0.15);
+  background: rgb(74 222 128 / 15%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgb(74, 222, 128);
+  color: rgb(74 222 128);
 }
 
 .crc-wizard-completion-icon svg {
@@ -1753,19 +1753,19 @@
 }
 
 .crc-wizard-completion-stat-value--people {
-  color: rgb(74, 222, 128);
+  color: rgb(74 222 128);
 }
 
 .crc-wizard-completion-stat-value--families {
-  color: rgb(96, 165, 250);
+  color: rgb(96 165 250);
 }
 
 .crc-wizard-completion-stat-value--places {
-  color: rgb(34, 211, 238);
+  color: rgb(34 211 238);
 }
 
 .crc-wizard-completion-stat-value--sources {
-  color: rgb(251, 146, 60);
+  color: rgb(251 146 60);
 }
 
 .crc-wizard-completion-stat-label {
@@ -1827,12 +1827,12 @@
 }
 
 .crc-btn--primary:disabled {
-  opacity: 0.5;
+  opacity: 50%;
   cursor: not-allowed;
 }
 
 .crc-btn--success {
-  background: rgb(74, 222, 128);
+  background: rgb(74 222 128);
   color: #000;
 }
 
@@ -1846,7 +1846,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  background: rgba(var(--interactive-accent-rgb), 0.1);
+  background: rgb(var(--interactive-accent-rgb) 0.1);
   border: 1px solid var(--interactive-accent);
   border-radius: var(--cr-radius-sm);
 }

@@ -48,7 +48,7 @@
 .crc-wizard-image-picker-icon {
   margin-bottom: 12px;
   color: var(--text-muted);
-  opacity: 0.5;
+  opacity: 50%;
 }
 
 .crc-wizard-image-picker-icon svg {
@@ -294,7 +294,7 @@
 
 .crc-wizard-place-marker--dragging {
   cursor: grabbing !important;
-  opacity: 0.8;
+  opacity: 80%;
   transform: translate(-50%, -50%) scale(1.2);
   box-shadow: 0 4px 16px rgb(0 0 0 / 40%);
 }
