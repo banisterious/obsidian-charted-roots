@@ -271,8 +271,8 @@ export class FamilyGroupSheetGenerator {
 	private formatPersonSection(
 		person: ReportPerson,
 		parents: { father?: ReportPerson; mother?: ReportPerson },
-		includeSources: boolean,
-		sourcesSet: Set<string>
+		_includeSources: boolean,
+		_sourcesSet: Set<string>
 	): string[] {
 		const lines: string[] = [];
 

@@ -263,7 +263,7 @@ export class TimelineLayoutEngine {
 		positionedByYear: Map<number, NodePosition[]>,
 		nodeWidth: number,
 		nodeHeight: number,
-		verticalSpacing: number
+		_verticalSpacing: number
 	): void {
 		// For each year group, check for vertical collisions
 		for (const group of positionedByYear.values()) {

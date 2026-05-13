@@ -619,7 +619,7 @@ export class CanvasGenerator {
 		canvasNodes: CanvasNode[],
 		familyTree: FamilyTree,
 		nodeMap: Map<string, { x: number; y: number }>,
-		opts: { nodeWidth: number; nodeHeight: number }
+		_opts: { nodeWidth: number; nodeHeight: number }
 	): void {
 		const indicatorWidth = 36;
 		const indicatorHeight = 24;

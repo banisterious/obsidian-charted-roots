@@ -76,7 +76,7 @@ export function normalizePlaceName(placeName: string): string {
 	let hasCountry = false;
 
 	// Process each part
-	parts = parts.map((part, index) => {
+	parts = parts.map((part, _index) => {
 		// Check if this part is a US state abbreviation
 		const upperPart = part.toUpperCase();
 		if (US_STATE_ABBREVIATIONS[upperPart]) {

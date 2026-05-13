@@ -198,7 +198,7 @@ function eventTypeToCalloutColor(eventType: string): string {
 /**
  * Format a date for display
  */
-function formatDate(date: string | undefined, precision: string | undefined): string {
+function formatDate(date: string | undefined, _precision: string | undefined): string {
 	if (!date) return '';
 
 	// Already formatted dates (e.g., "March 15, 1850")

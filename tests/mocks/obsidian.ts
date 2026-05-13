@@ -392,7 +392,6 @@ export class TextComponent {
  * AbstractInputSuggest stub. Subclassed by FolderSuggest in settings.ts.
  * Generic parameter is preserved on the class signature; the body is empty.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export class AbstractInputSuggest<T> {
 	app: App;
 	textInputEl: HTMLInputElement;

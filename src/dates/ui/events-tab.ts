@@ -257,7 +257,7 @@ function renderTimelineCard(
 	container: HTMLElement,
 	plugin: CanvasRootsPlugin,
 	createCard: (options: { title: string; icon?: LucideIconName; subtitle?: string }) => HTMLElement,
-	showTab: (tabId: string) => void
+	_showTab: (tabId: string) => void
 ): void {
 	const eventService = plugin.getEventService();
 	if (!eventService) return;
@@ -657,7 +657,7 @@ function renderEventTable(
 function renderTimelineGaps(
 	container: HTMLElement,
 	events: EventNote[],
-	plugin: CanvasRootsPlugin
+	_plugin: CanvasRootsPlugin
 ): void {
 	// Only analyze if we have dated events
 	const datedEvents = events.filter(e => e.date).sort((a, b) => (a.date || '').localeCompare(b.date || ''));

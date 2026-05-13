@@ -385,7 +385,7 @@ export class StandardizePlaceVariantsModal extends Modal {
 	/**
 	 * Get related canonical forms (e.g., for countries, show other country options)
 	 */
-	private getRelatedCanonicals(canonical: string): string[] {
+	private getRelatedCanonicals(_canonical: string): string[] {
 		// For now, just return an empty array - could be extended to group related canonicals
 		return [];
 	}

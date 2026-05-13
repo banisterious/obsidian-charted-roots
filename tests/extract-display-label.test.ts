@@ -136,7 +136,7 @@ describe('extractDisplayLabel', () => {
 			{ input: '[[ Errol  Naberrie ]]', description: 'whitespace inside brackets' },
 		];
 
-		const assertProperties = (output: string, input: string | null | undefined): void => {
+		const assertProperties = (output: string, _input: string | null | undefined): void => {
 			expect(output).not.toMatch(/[[\]]/);
 			expect(output).not.toContain('|');
 			expect(output).not.toContain('/');

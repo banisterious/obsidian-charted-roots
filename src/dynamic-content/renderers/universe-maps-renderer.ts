@@ -52,7 +52,7 @@ export class UniverseMapsRenderer {
 		el: HTMLElement,
 		context: UniverseMapsContext,
 		config: DynamicBlockConfig,
-		component: MarkdownRenderChild
+		_component: MarkdownRenderChild
 	): void {
 		const container = el.createDiv({ cls: 'cr-dynamic-block cr-universe-maps' });
 

@@ -57,7 +57,7 @@ export function renderMediaGallery(
 	container: HTMLElement,
 	plugin: CanvasRootsPlugin,
 	createCard: (options: { title: string; icon?: string }) => HTMLElement,
-	showTab: (tabId: string) => void
+	_showTab: (tabId: string) => void
 ): void {
 	const card = createCard({
 		title: 'Media gallery',

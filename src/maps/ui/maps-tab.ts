@@ -945,7 +945,7 @@ export function renderMapsTab(options: MapsTabOptions): void {
 			plugin.settings,
 			eventService,
 			{
-				onPlaceSelect: (placeName) => {
+				onPlaceSelect: (_placeName) => {
 					// Could navigate to place on map in future
 				}
 			}

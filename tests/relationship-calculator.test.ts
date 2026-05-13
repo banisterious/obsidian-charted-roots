@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { App, TFile } from 'obsidian';
 import { RelationshipCalculator } from '../src/core/relationship-calculator';
-import type { FamilyGraphService, PersonNode } from '../src/core/family-graph';
+import type { PersonNode } from '../src/core/family-graph';
 
 /**
  * Regression coverage for #525 (adoptive parent/child relationships) and

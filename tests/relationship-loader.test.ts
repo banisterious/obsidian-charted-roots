@@ -341,8 +341,10 @@ describe('loadRelationships — indexed spouse format', () => {
 
 describe('loadRelationships — children + parents parallel behavior', () => {
 	const child = { crId: 'child-id', name: 'Child One', basename: 'child-one' };
-	const parent = { crId: 'parent-id', name: 'Parent One', basename: 'parent-one' };
-	const ghostable = pool([child, parent]);
+	const _parent = { crId: 'parent-id', name: 'Parent One', basename: 'parent-one' };
+	// `pool([child, parent])` was used by an earlier test in this describe block
+	// that's been superseded by the per-test setups below; keep the helper call
+	// out so the unused-vars rule stays clean.
 
 	it('children: mixed-ID state resolves via per-entry fallback (#410 Gap B)', () => {
 		const child2 = { crId: 'child2-id', name: 'Child Two', basename: 'child-two' };

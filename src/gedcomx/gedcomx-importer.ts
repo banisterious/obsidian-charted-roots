@@ -720,7 +720,7 @@ export class GedcomXImporter {
 	private async createPlaceNote(
 		placeString: string,
 		placesFolder: string,
-		options: GedcomXImportOptions
+		_options: GedcomXImportOptions
 	): Promise<{ crId: string; wikilink: string }> {
 		const crId = generateCrId();
 

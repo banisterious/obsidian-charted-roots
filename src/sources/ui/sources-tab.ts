@@ -84,7 +84,7 @@ function renderSourcesOverviewCard(
 	plugin: CanvasRootsPlugin,
 	sourceService: SourceService,
 	createCard: (options: { title: string; icon?: LucideIconName }) => HTMLElement,
-	showTab: (tabId: string) => void
+	_showTab: (tabId: string) => void
 ): void {
 	const card = createCard({
 		title: 'Source overview',

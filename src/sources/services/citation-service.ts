@@ -67,7 +67,7 @@ export function generateCitation(source: SourceNote, format: CitationFormat): Ci
  * Chicago style emphasizes source location and access information.
  * Format varies by source type.
  */
-function generateChicagoCitation(source: SourceNote, missingFields: string[]): string {
+function generateChicagoCitation(source: SourceNote, _missingFields: string[]): string {
 	// Handle citation override
 	if (source.citationOverride) {
 		return source.citationOverride;
@@ -117,7 +117,7 @@ function generateChicagoCitation(source: SourceNote, missingFields: string[]): s
  * for genealogical research. It emphasizes layered citation with
  * source of the source.
  */
-function generateEvidenceExplainedCitation(source: SourceNote, missingFields: string[]): string {
+function generateEvidenceExplainedCitation(source: SourceNote, _missingFields: string[]): string {
 	// Handle citation override
 	if (source.citationOverride) {
 		return source.citationOverride;
@@ -172,7 +172,7 @@ function generateEvidenceExplainedCitation(source: SourceNote, missingFields: st
  * MLA style is commonly used in humanities. It emphasizes
  * author, title, container, and access information.
  */
-function generateMLACitation(source: SourceNote, missingFields: string[]): string {
+function generateMLACitation(source: SourceNote, _missingFields: string[]): string {
 	// Handle citation override
 	if (source.citationOverride) {
 		return source.citationOverride;
@@ -219,7 +219,7 @@ function generateMLACitation(source: SourceNote, missingFields: string[]): strin
  * Turabian is based on Chicago style but simplified for students.
  * Similar structure with minor differences.
  */
-function generateTurabianCitation(source: SourceNote, missingFields: string[]): string {
+function generateTurabianCitation(source: SourceNote, _missingFields: string[]): string {
 	// Handle citation override
 	if (source.citationOverride) {
 		return source.citationOverride;

@@ -1,6 +1,6 @@
 import { App, Modal, TFile } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
-import { FamilyGraphService, PersonNode } from '../core/family-graph';
+import { FamilyGraphService } from '../core/family-graph';
 import {
 	mergeFamilyComponentsByCollectionName,
 	type FamilyComponent

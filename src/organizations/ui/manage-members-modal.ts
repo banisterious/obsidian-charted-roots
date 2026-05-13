@@ -201,7 +201,7 @@ export class ManageOrganizationMembersModal extends Modal {
 	/**
 	 * Render inline edit form for a member
 	 */
-	private renderEditForm(container: HTMLElement, member: PersonMembership, index: number): void {
+	private renderEditForm(container: HTMLElement, member: PersonMembership, _index: number): void {
 		container.addClass('cr-manage-members-card--editing');
 
 		// Name (read-only)

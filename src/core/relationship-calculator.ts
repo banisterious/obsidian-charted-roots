@@ -631,7 +631,7 @@ export class RelationshipCalculator {
 	/**
 	 * Get the term for a direct descendant
 	 */
-	private getDescendantTerm(generations: number, path: RelationshipStep[]): string {
+	private getDescendantTerm(generations: number, _path: RelationshipStep[]): string {
 		// Try to determine gender from the final person if available
 		switch (generations) {
 			case 1: return 'Child';

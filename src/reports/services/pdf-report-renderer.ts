@@ -601,7 +601,7 @@ export class PdfReportRenderer {
 	 * Create the document header
 	 */
 	public createHeader(reportTitle: string): (currentPage: number, pageCount: number) => Content {
-		return (currentPage: number, pageCount: number): Content => ({
+		return (_currentPage: number, _pageCount: number): Content => ({
 			columns: [
 				{ text: reportTitle, style: 'pageHeader', alignment: 'left' },
 				{ text: 'Charted Roots', style: 'pageHeader', alignment: 'right' }

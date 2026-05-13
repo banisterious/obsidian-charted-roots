@@ -86,6 +86,21 @@ export default [
 			"obsidianmd/prefer-active-doc": "warn",
 			"obsidianmd/prefer-window-timers": "warn",
 
+			// no-unused-vars: respect the leading-underscore convention for
+			// intentionally-unused locals, function declarations, and caught
+			// errors — matches the args pattern that the recommended config
+			// already applies. Several "soft-deleted" helpers in people-tab.ts
+			// and elsewhere are prefixed with `_` to mark them as intentionally
+			// dormant.
+			"@typescript-eslint/no-unused-vars": ["warn", {
+				args: "after-used",
+				argsIgnorePattern: "^_",
+				varsIgnorePattern: "^_",
+				caughtErrorsIgnorePattern: "^_",
+				destructuredArrayIgnorePattern: "^_",
+				ignoreRestSiblings: true,
+			}],
+
 			// Sentence-case rule applies to UI text; not relevant for test files.
 
 				// (test-file overrides follow this block.)

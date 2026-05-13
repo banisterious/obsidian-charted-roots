@@ -757,7 +757,7 @@ function showRecentItemContextMenu(
 function openPlaceInMapView(
 	placePath: string,
 	plugin: CanvasRootsPlugin,
-	app: App
+	_app: App
 ): void {
 	// Load place data to get coordinates
 	const placeGraph = plugin.createPlaceGraphService();

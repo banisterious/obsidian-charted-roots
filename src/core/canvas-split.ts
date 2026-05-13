@@ -1291,7 +1291,7 @@ export class CanvasSplitService {
 	private findBranchBoundaryPeople(
 		tree: FamilyTree,
 		branchCrIds: Set<string>,
-		branchLabel: string
+		_branchLabel: string
 	): Map<string, { person: PersonNode; connectedBranches: string[] }> {
 		const boundary = new Map<string, { person: PersonNode; connectedBranches: string[] }>();
 
@@ -1614,7 +1614,7 @@ export class CanvasSplitService {
 	 */
 	extractCollections(
 		tree: FamilyTree,
-		options: CollectionSplitOptions
+		_options: CollectionSplitOptions
 	): CollectionExtractionResult {
 		const collections = new Map<string, CollectionInfo>();
 		const uncollected: PersonNode[] = [];
@@ -3594,7 +3594,7 @@ export class CanvasSplitService {
 			canvasData: CanvasData | null;
 		}>,
 		currentIndex: number,
-		tree: FamilyTree
+		_tree: FamilyTree
 	): void {
 		const bounds = this.calculateCanvasBounds(canvasData.nodes);
 

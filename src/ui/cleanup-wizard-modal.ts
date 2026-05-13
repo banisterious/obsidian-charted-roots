@@ -2394,7 +2394,7 @@ export class CleanupWizardModal extends Modal {
 	/**
 	 * Render geocoding progress view
 	 */
-	private renderGeocodeProgress(container: HTMLElement, stepState: StepState): void {
+	private renderGeocodeProgress(container: HTMLElement, _stepState: StepState): void {
 		const progress = container.createDiv({ cls: 'crc-cleanup-geocode-progress' });
 
 		// Progress header
@@ -2771,7 +2771,7 @@ export class CleanupWizardModal extends Modal {
 	/**
 	 * Render hierarchy enrichment progress view
 	 */
-	private renderHierarchyProgress(container: HTMLElement, stepState: StepState): void {
+	private renderHierarchyProgress(container: HTMLElement, _stepState: StepState): void {
 		const progress = container.createDiv({ cls: 'crc-cleanup-hierarchy-progress' });
 
 		// Progress header

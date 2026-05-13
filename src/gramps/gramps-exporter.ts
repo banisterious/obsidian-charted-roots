@@ -1426,7 +1426,7 @@ ${families.xml}
 	 */
 	private buildFamiliesXml(
 		familyData: FamilyData[],
-		context: GrampsExportContext
+		_context: GrampsExportContext
 	): { xml: string; count: number } {
 		if (familyData.length === 0) {
 			return { xml: '  <families/>', count: 0 };
