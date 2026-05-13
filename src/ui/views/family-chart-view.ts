@@ -3284,7 +3284,7 @@ export class FamilyChartView extends ItemView {
 		}
 
 		// Create a group for kinship labels
-		const labelsGroup = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'g');
+		const labelsGroup = createSvg('g');
 		labelsGroup.setAttribute('class', 'cr-kinship-labels');
 
 		// Get all link paths
@@ -3306,7 +3306,7 @@ export class FamilyChartView extends ItemView {
 				pathData.includes('L') && !pathData.includes('C'); // Straight lines are typically spouse links
 
 			// Create label text
-			const label = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'text');
+			const label = createSvg('text');
 			label.setAttribute('class', 'cr-kinship-label');
 
 			// For spouse links, position label above the line to avoid overlapping cards
@@ -3503,7 +3503,7 @@ export class FamilyChartView extends ItemView {
 		}
 
 		// Create the overlay group
-		const overlayGroup = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'g');
+		const overlayGroup = createSvg('g');
 		overlayGroup.setAttribute('class', 'cr-relationship-overlay');
 
 		// Track the deepest arc stack on any single endpoint pair (after
@@ -3570,14 +3570,14 @@ export class FamilyChartView extends ItemView {
 
 				// Invisible wider "hit path" makes hover-to-tooltip easier
 				// without thickening the visible curve.
-				const hitPath = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'path');
+				const hitPath = createSvg('path');
 				hitPath.setAttribute('d', pathD);
 				hitPath.setAttribute('stroke', 'transparent');
 				hitPath.setAttribute('stroke-width', '14');
 				hitPath.setAttribute('fill', 'none');
 				hitPath.setAttribute('class', 'cr-relationship-overlay-hitline');
 				// Tooltip hangs on the hit path so hover works across the wider area
-				const tooltip = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'title');
+				const tooltip = createSvg('title');
 				const dateRange = this.formatRelationshipDateRange(rel);
 				tooltip.textContent = dateRange
 					? `${rel.sourceName} — ${type.name} — ${rel.targetName} (${dateRange})`
@@ -3585,7 +3585,7 @@ export class FamilyChartView extends ItemView {
 				hitPath.appendChild(tooltip);
 				overlayGroup.appendChild(hitPath);
 
-				const path = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'path');
+				const path = createSvg('path');
 				path.setAttribute('d', pathD);
 				path.setAttribute('stroke', type.color);
 				path.setAttribute('stroke-width', '2');
@@ -3686,13 +3686,13 @@ export class FamilyChartView extends ItemView {
 			// link, so hover-for-tooltip works without pixel-precise cursor
 			// placement — mirrors the pattern v0.20.61 added for overlay arcs.
 			const tooltipText = this.formatOverlayTooltip(rel, type);
-			const hitPath = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'path');
+			const hitPath = createSvg('path');
 			hitPath.setAttribute('d', linkEl.getAttribute('d') || '');
 			hitPath.setAttribute('stroke', 'transparent');
 			hitPath.setAttribute('stroke-width', '14');
 			hitPath.setAttribute('fill', 'none');
 			hitPath.setAttribute('class', 'cr-structural-link-overlay-hitline');
-			const hitTitle = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'title');
+			const hitTitle = createSvg('title');
 			hitTitle.textContent = tooltipText;
 			hitPath.appendChild(hitTitle);
 			linkEl.parentNode?.insertBefore(hitPath, linkEl.nextSibling);

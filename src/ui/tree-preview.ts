@@ -196,13 +196,13 @@ export class TreePreviewRenderer {
 	 * Create SVG element for rendering
 	 */
 	private createSVG(): SVGElement {
-		const svg = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'svg');
+		const svg = createSvg('svg');
 		svg.setAttribute('class', 'crc-tree-preview-svg');
 		svg.setAttribute('width', '100%');
 		svg.setAttribute('height', '100%');
 
 		// Add container group for zoom/pan
-		const g = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'g');
+		const g = createSvg('g');
 		g.setAttribute('class', 'crc-tree-preview-content');
 		svg.appendChild(g);
 
@@ -227,12 +227,12 @@ export class TreePreviewRenderer {
 
 		for (const pos of positions) {
 			// Create node group
-			const nodeGroup = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'g');
+			const nodeGroup = createSvg('g');
 			nodeGroup.setAttribute('class', 'crc-preview-node');
 			nodeGroup.setAttribute('data-cr-id', pos.crId);
 
 			// Create rectangle
-			const rect = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'rect');
+			const rect = createSvg('rect');
 			rect.setAttribute('x', (pos.x - previewWidth / 2).toString());
 			rect.setAttribute('y', (pos.y - previewHeight / 2).toString());
 			rect.setAttribute('width', previewWidth.toString());
@@ -247,7 +247,7 @@ export class TreePreviewRenderer {
 			rect.setAttribute('stroke', fillColor);
 
 			// Create text label (just name, no dates in preview)
-			const text = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'text');
+			const text = createSvg('text');
 			text.setAttribute('x', pos.x.toString());
 			text.setAttribute('y', pos.y.toString());
 			text.setAttribute('class', 'crc-preview-node-text');
@@ -301,7 +301,7 @@ export class TreePreviewRenderer {
 
 			if (!fromPos || !toPos) continue;
 
-			const line = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'line');
+			const line = createSvg('line');
 			line.setAttribute('x1', fromPos.x.toString());
 			line.setAttribute('y1', fromPos.y.toString());
 			line.setAttribute('x2', toPos.x.toString());
@@ -555,7 +555,7 @@ export class TreePreviewRenderer {
 		});
 
 		// Add background rect for proper rendering
-		const bgRect = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'rect');
+		const bgRect = createSvg('rect');
 		bgRect.setAttribute('width', '100%');
 		bgRect.setAttribute('height', '100%');
 		bgRect.setAttribute('fill', isDark ? '#1e1e1e' : '#ffffff');
@@ -678,7 +678,7 @@ export class TreePreviewRenderer {
 		});
 
 		// Add background rect
-		const bgRect = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'rect');
+		const bgRect = createSvg('rect');
 		bgRect.setAttribute('width', '100%');
 		bgRect.setAttribute('height', '100%');
 		bgRect.setAttribute('fill', isDark ? '#1e1e1e' : '#ffffff');

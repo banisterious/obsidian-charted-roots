@@ -473,7 +473,7 @@ export class MigrationDiagramModal extends Modal {
 		});
 
 		// Create SVG
-		const svg = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'svg');
+		const svg = createSvg('svg');
 		svg.setAttribute('width', String(width));
 		svg.setAttribute('height', String(height));
 		svg.setAttribute('class', 'crc-migration-svg');
@@ -509,7 +509,7 @@ export class MigrationDiagramModal extends Modal {
 			const arcY = centerY - curveHeight;
 
 			// Create path
-			const path = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'path');
+			const path = createSvg('path');
 			const d = `M ${x1} ${centerY} Q ${midX} ${arcY} ${x2} ${centerY}`;
 			path.setAttribute('d', d);
 			path.setAttribute('fill', 'none');
@@ -521,11 +521,11 @@ export class MigrationDiagramModal extends Modal {
 			// Add arrow marker
 			const arrowId = `arrow-${Math.random().toString(36).substring(2, 11)}`;
 			const defs = svg.querySelector('defs') || svg.insertBefore(
-				activeDocument.createElementNS('http://www.w3.org/2000/svg', 'defs'),
+				createSvg('defs'),
 				svg.firstChild
 			);
 
-			const marker = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'marker');
+			const marker = createSvg('marker');
 			marker.setAttribute('id', arrowId);
 			marker.setAttribute('viewBox', '0 0 10 10');
 			marker.setAttribute('refX', '8');
@@ -534,7 +534,7 @@ export class MigrationDiagramModal extends Modal {
 			marker.setAttribute('markerHeight', '6');
 			marker.setAttribute('orient', 'auto-start-reverse');
 
-			const arrowPath = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'path');
+			const arrowPath = createSvg('path');
 			arrowPath.setAttribute('d', 'M 0 0 L 10 5 L 0 10 z');
 			arrowPath.setAttribute('fill', 'var(--text-accent)');
 			arrowPath.setAttribute('fill-opacity', String(0.3 + 0.5 * (flow.count / maxFlow)));
@@ -554,11 +554,11 @@ export class MigrationDiagramModal extends Modal {
 			if (place.x === undefined) continue;
 
 			// Node group
-			const g = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'g');
+			const g = createSvg('g');
 			g.setAttribute('class', 'crc-migration-node');
 
 			// Circle
-			const circle = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'circle');
+			const circle = createSvg('circle');
 			circle.setAttribute('cx', String(place.x));
 			circle.setAttribute('cy', String(centerY));
 			circle.setAttribute('r', String(nodeRadius));
@@ -577,7 +577,7 @@ export class MigrationDiagramModal extends Modal {
 
 			// Rotated label (45 degrees) - positioned below node
 			const labelY = centerY + nodeRadius + 12;
-			const text = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'text');
+			const text = createSvg('text');
 			text.setAttribute('x', String(place.x));
 			text.setAttribute('y', String(labelY));
 			text.setAttribute('text-anchor', 'start');
@@ -588,7 +588,7 @@ export class MigrationDiagramModal extends Modal {
 
 			// Stats on second line (also rotated)
 			const statsY = labelY + 12;
-			const stats = activeDocument.createElementNS('http://www.w3.org/2000/svg', 'text');
+			const stats = createSvg('text');
 			stats.setAttribute('x', String(place.x));
 			stats.setAttribute('y', String(statsY));
 			stats.setAttribute('text-anchor', 'start');
