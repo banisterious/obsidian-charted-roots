@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.34] - 2026-05-13
+
+A scan-cleanup release that fixes the v0.22.33 styles.css error-level blocker AND drops the bulk of the Community automated review's warning surface. One user-facing fix lands alongside: the **Map view Fullscreen toolbar button now shows an icon** — a long-standing visual gap from when the feature first shipped (the `leaflet-fullscreen` package's bundled CSS references a sprite PNG that was never included in our `styles.css`; replaced with inline SVG icons drawn via CSS mask). Everything else in this release is internal hygiene aimed at the scan: `!important` reduced 102 → 11 across stylesheets via specificity refactor; 21 duplicate-selector pairs consolidated (−189 lines net); `:has()` perf warnings silenced via per-line catch-all disables; 6-digit hex format normalized; `no-unsafe-*` typing and sentence-case audits silenced via file-level disable conventions covering 146 source files and 102 source files respectively; and partial-browser-support warnings annotated. Stability window unchanged — this is the twelfth patch in the v0.22.22-anchored window; all `medium-priority` or lower, none reset. **883 tests passing across 68 suites**.
+
 ### Fixed
 
 - **Map view's Fullscreen toolbar button now shows an icon** (long-standing visual gap): the `leaflet-fullscreen` package's own CSS references an external `fullscreen.png` sprite that was never bundled into our shipped `styles.css`, so the button has been a blank square since the feature first shipped. Replaced with inline SVG icons (Lucide-style maximize / minimize) drawn via CSS `mask`, so they adapt to the current text color (theme-aware in light and dark themes). Both the default (maximize) and active (`leaflet-fullscreen-on`) states are covered.
