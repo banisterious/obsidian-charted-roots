@@ -263,14 +263,25 @@ async function buildCSS() {
       const componentContent = await fs.readFile(componentPath, 'utf8');
       buildContent += componentContent;
 
-      // Add component footer. The `stylelint-enable` is defensive: any
-      // file-scope `/* stylelint-disable */` in the component would
-      // otherwise bleed into subsequent components in the concatenated
-      // bundle and trip "rule has already been disabled" errors on the
-      // next component's directives. Each component is logically
-      // independent, so closing every disable scope at the boundary is
-      // the right default.
-      buildContent += `\n\n/* stylelint-enable */\n\n/* End of ${component} */\n`;
+      // Add component footer. The auto-injected `stylelint-enable` is
+      // defensive: any file-scope `/* stylelint-disable */` left open at
+      // the end of a component would bleed into subsequent components in
+      // the concatenated bundle and trip "rule has already been disabled"
+      // errors. We only inject when there are more file-level disables
+      // than file-level enables in the component — duplicate enables
+      // would themselves trip "no rules have been disabled" on the bundle.
+      //
+      // File-level directives only: line-scoped variants
+      // (`stylelint-disable-next-line`, `stylelint-disable-line`) don't
+      // bleed and don't need closing.
+      const fileDisableRe = /\/\*\s*stylelint-disable[^-]/g;
+      const fileEnableRe = /\/\*\s*stylelint-enable\b/g;
+      const disableCount = (componentContent.match(fileDisableRe) || []).length;
+      const enableCount = (componentContent.match(fileEnableRe) || []).length;
+      const footer = disableCount > enableCount
+        ? `\n\n/* stylelint-enable */\n\n/* End of ${component} */\n`
+        : `\n\n/* End of ${component} */\n`;
+      buildContent += footer;
 
       // Update metrics
       totalLines += fileInfo.lines;
