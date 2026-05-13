@@ -259,29 +259,25 @@ async function buildCSS() {
       // Add component header
       buildContent += generateComponentHeader(component, fileInfo);
 
-      // Add component content
-      const componentContent = await fs.readFile(componentPath, 'utf8');
-      buildContent += componentContent;
-
-      // Add component footer. The auto-injected `stylelint-enable` is
-      // defensive: any file-scope `/* stylelint-disable */` left open at
-      // the end of a component would bleed into subsequent components in
-      // the concatenated bundle and trip "rule has already been disabled"
-      // errors. We only inject when there are more file-level disables
-      // than file-level enables in the component — duplicate enables
-      // would themselves trip "no rules have been disabled" on the bundle.
+      // Add component content. Strip stylelint directives — they're
+      // source-level hints for the per-file lint pass and serve no
+      // purpose in the concatenated shipped bundle. Stripping eliminates
+      // every flavor of "needless disable" / "no rules have been
+      // disabled" / "rule has already been disabled" complaint that
+      // downstream scanners (e.g., Obsidian's Community automated review)
+      // might emit against the bundle regardless of which stylelint
+      // version or config they run.
       //
-      // File-level directives only: line-scoped variants
-      // (`stylelint-disable-next-line`, `stylelint-disable-line`) don't
-      // bleed and don't need closing.
-      const fileDisableRe = /\/\*\s*stylelint-disable[^-]/g;
-      const fileEnableRe = /\/\*\s*stylelint-enable\b/g;
-      const disableCount = (componentContent.match(fileDisableRe) || []).length;
-      const enableCount = (componentContent.match(fileEnableRe) || []).length;
-      const footer = disableCount > enableCount
-        ? `\n\n/* stylelint-enable */\n\n/* End of ${component} */\n`
-        : `\n\n/* End of ${component} */\n`;
-      buildContent += footer;
+      // Matches block comments starting with `stylelint-disable` or
+      // `stylelint-enable` (with optional `-next-line` / `-line` suffix)
+      // up to the closing `*/`, including multi-line descriptions.
+      const directiveRe = /\/\*\s*stylelint-(?:disable|enable)(?:-next-line|-line)?[\s\S]*?\*\//g;
+      const componentContent = await fs.readFile(componentPath, 'utf8');
+      const strippedContent = componentContent.replace(directiveRe, '');
+      buildContent += strippedContent;
+
+      // Component footer marker only — no auto-injected directives.
+      buildContent += `\n\n/* End of ${component} */\n`;
 
       // Update metrics
       totalLines += fileInfo.lines;
