@@ -9,10 +9,11 @@ Mechanical checklist for cutting a Charted Roots patch or minor release. Pairs w
 1. Pre-flight checks pass (build, tests, type-check)
 2. **Commit the version bump as its own commit** (six files: `manifest.json`, `versions.json`, `package.json`, `package-lock.json`, `README.md`, `CHANGELOG.md`)
 3. **Tag against the bump commit** (not against `main` HEAD if anything else has landed since)
-4. Push branch and tag
-5. Create the GitHub Release pointing at the tag
-6. Apply post-release labels (`next-release` → `released-testing`)
-7. Wiki sync if any wiki-content edits are pending
+4. Push branch and tag — the tag push triggers `.github/workflows/release.yml`
+5. CI runs the gate set (lint + lint:css + test + build), attests provenance on the build artifacts, and creates a **draft** GitHub Release with `main.js` / `manifest.json` / `styles.css` attached
+6. Paste the audited release description into the draft on the web UI and click Publish
+7. Apply post-release labels (`next-release` → `released-testing`)
+8. Wiki sync if any wiki-content edits are pending
 
 The non-obvious step is #2-#3 ordering: tag against the bump commit specifically. See [Tag drift gotcha](#tag-drift-gotcha) below.
 
@@ -121,13 +122,66 @@ Alternatively: tag locally with `git tag X.Y.Z`, push the tag (`git push origin 
 
 ---
 
-## GitHub Release
+## GitHub Release (CI-assisted)
 
-- **Title format:** `Charted Roots vX.Y.Z` (no subtitle, no tagline — see auto-memory `feedback_release_title_format`)
-- **Body:** structured release description matching the prior release's format. Sections by area (Map view, Timeline, Modals, etc.); fix bullets with issue links; stability-window note; tests note; reporters paragraph; `Install via BRAT:` line at the end.
-- **Pre-release flag:** off for normal releases. On only if the release is intentionally an alpha / beta / rc.
+The tag push triggers `.github/workflows/release.yml`. The workflow:
 
-The release description body is best drafted in advance and pasted via the UI. No AI attribution per the project's [no-AI-references rule](../../CLAUDE.md).
+1. Checks out the tag and sets up Node (version pinned by `.nvmrc`).
+2. Runs `npm ci`, then the four gates in order: `lint`, `lint:css`, `test`, `build`. Any failure aborts before assets are produced.
+3. Calls `actions/attest-build-provenance@v2` against `main.js`, `manifest.json`, `styles.css` — generates a verifiable provenance attestation tied to the workflow run.
+4. Runs `gh release create` with `--draft` and `--notes ""`, attaching the three build artifacts. Pre-release tags (matching `*.*.*-*`) add `--prerelease`. Title is set to `Charted Roots v<tag>` per project convention.
+
+**Then on the web UI:**
+
+- **Title:** already set by CI (`Charted Roots vX.Y.Z`). No edit needed.
+- **Body:** paste the audited release-description markdown (drafted in advance during the cut session). Structured by area (Map view, Timeline, Modals, etc.); fix bullets with issue links; stability-window note; tests note; reporters paragraph; `Install via BRAT:` line at the end. No AI attribution per the project's [no-AI-references rule](../../CLAUDE.md).
+- **Click Publish.** Release flips from Draft to live.
+- **Do not attach a zip** — process change from v0.22.31 addressing the Community-scan "extra files" finding. CI only attaches the three required assets.
+
+### Verifying the attestation
+
+End users (or Obsidian's automated scanners) can confirm any release asset was built by the workflow:
+
+```sh
+gh attestation verify main.js --repo banisterious/obsidian-charted-roots
+```
+
+Expected output: `✓ Verification succeeded!`. The attestation links the asset bytes to the specific GitHub Actions workflow run that produced them.
+
+### CI failure handling
+
+If a gate fails (lint, lint:css, test, or build), the workflow aborts before creating the release. The tag is still pushed to origin — clean up before retrying:
+
+```sh
+# Delete the tag locally and on origin
+git tag -d <tag>
+git push --delete origin <tag>
+
+# Fix the failure (lint, test, etc.), commit, then re-tag and re-push
+git tag <tag> <bump-commit-sha>
+git push origin <tag>
+```
+
+### Trial-run pattern
+
+Before a major or risky release, validate the pipeline end-to-end with a pre-release tag:
+
+```sh
+git push                          # any pending commits first
+git tag <version>-rc1             # e.g., 0.22.32-rc1
+git push origin <version>-rc1     # triggers the workflow
+```
+
+Verify in the Actions tab (~3-5 min). When green:
+
+1. A draft release appears flagged "Pre-release," with the three assets attached.
+2. `gh release download <version>-rc1 --pattern main.js && gh attestation verify main.js --repo banisterious/obsidian-charted-roots` succeeds.
+
+Cleanup (single command handles release + local + remote tag):
+
+```sh
+gh release delete <version>-rc1 --yes --cleanup-tag
+```
 
 ---
 

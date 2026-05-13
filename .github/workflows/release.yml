@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  push:
+    tags:
+      # Plain SemVer tags (release): 0.22.32, 1.0.0
+      - '*.*.*'
+      # Pre-release tags (rc / beta / alpha): 0.22.32-rc1, 1.0.0-beta.2
+      - '*.*.*-*'
+
+# The `gh release create` step needs write access; the attestation
+# action needs an OIDC token + attestation upload.
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+# Prevent a second run for the same tag from racing the first (force-
+# push to a tag is rare but possible). Cancelling in-progress means
+# the later push wins.
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (eslint)
+        run: npm run lint
+
+      - name: Lint (stylelint)
+        run: npm run lint:css
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Attest provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            main.js
+            manifest.json
+            styles.css
+
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # SemVer pre-release tags carry a hyphen after the version
+          # core (e.g., 0.22.32-rc1). Plain release tags don't.
+          PRERELEASE_FLAG=""
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then
+            PRERELEASE_FLAG="--prerelease"
+          fi
+          # Draft + empty notes: the author pastes the audited release
+          # description into the draft on the web UI before publishing.
+          # CI's job ends with assets uploaded and the release in draft
+          # state, preserving the editorial gate.
+          # Release-title convention for this plugin: "Charted Roots vX.Y.Z"
+          # (matches the manually-cut release titles back through 0.22.x).
+          gh release create "$GITHUB_REF_NAME" \
+            --title "Charted Roots v$GITHUB_REF_NAME" \
+            --draft \
+            --notes "" \
+            $PRERELEASE_FLAG \
+            main.js manifest.json styles.css
