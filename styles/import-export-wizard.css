@@ -82,7 +82,7 @@
 .crc-wizard-step--completed {
   background: rgb(74 222 128);
   border-color: rgb(74 222 128);
-  color: #000;
+  color: #000000;
 }
 
 .crc-wizard-step--completed svg {
@@ -1833,7 +1833,7 @@
 
 .crc-btn--success {
   background: rgb(74 222 128);
-  color: #000;
+  color: #000000;
 }
 
 .crc-btn--success:hover {

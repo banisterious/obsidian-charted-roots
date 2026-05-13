@@ -1319,7 +1319,7 @@
 
 .cr-lookup-source-badge--wikidata {
   background: rgb(153 0 0 / 15%);
-  color: #900;
+  color: #990000;
 }
 
 .cr-lookup-source-badge--geonames {
@@ -1335,7 +1335,7 @@
 /* Dark theme adjustments for source badges */
 .theme-dark .cr-lookup-source-badge--wikidata {
   background: rgb(255 100 100 / 20%);
-  color: #f99;
+  color: #ff9999;
 }
 
 .theme-dark .cr-lookup-source-badge--geonames {

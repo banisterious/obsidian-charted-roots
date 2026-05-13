@@ -234,7 +234,7 @@
   --nonbinary-color: var(--cr-fcv-nonbinary-color, rgb(200, 175, 80));
   --genderless-color: var(--cr-fcv-unknown-color, rgb(140, 140, 140));
   --background-color: var(--cr-fcv-background-dark, rgb(33, 33, 33));
-  --text-color: var(--cr-fcv-text-dark, #fff);
+  --text-color: var(--cr-fcv-text-dark, #ffffff);
 
   position: relative;
   display: flex;
@@ -299,12 +299,12 @@
 .cr-fcv-chart-container.f3 .card_add .card-body-rect {
   fill: #3b5560;
   stroke-width: 4px;
-  stroke: #fff;
+  stroke: #ffffff;
   cursor: pointer;
 }
 
 .cr-fcv-chart-container.f3 g.card_add text {
-  fill: #fff;
+  fill: #ffffff;
 }
 
 /* Main card outline */
@@ -330,7 +330,7 @@
 /* Card add relative icons */
 .cr-fcv-chart-container.f3 .card_add_relative {
   cursor: pointer;
-  color: #fff;
+  color: #ffffff;
   transition: 0.3s;
 }
 
@@ -344,7 +344,7 @@
 
 /* Edit pencil icon */
 .cr-fcv-chart-container.f3 .card_edit.pencil_icon {
-  color: #fff;
+  color: #ffffff;
   transition: 0.3s;
 }
 
@@ -369,7 +369,7 @@
 }
 
 .cr-fcv-chart-container.f3 .cr-open-note-btn:hover path {
-  stroke: #fff;
+  stroke: #ffffff;
 }
 
 /* SVG Card avatar images */
@@ -715,11 +715,11 @@
 
 .theme-light .cr-fcv-chart-container.f3 {
   --background-color: var(--cr-fcv-background-light, rgb(250, 250, 250));
-  --text-color: var(--cr-fcv-text-light, #333);
+  --text-color: var(--cr-fcv-text-light, #333333);
 }
 
 .theme-light .cr-fcv-chart-container.f3 .link {
-  stroke: #666;
+  stroke: #666666;
 }
 
 /* ============================================================
@@ -1228,7 +1228,7 @@
 .cr-fcv-chart-container.card-style-circle .card {
   cursor: pointer;
   pointer-events: auto;
-  color: #fff;
+  color: #ffffff;
   position: relative;
   /* Center the card on the node position */
   transform: translate(-50%, -50%);
@@ -1270,7 +1270,7 @@
   max-width: 200px;
   text-align: center;
   background-color: rgba(0, 0, 0, 0.6);
-  color: #fff;
+  color: #ffffff;
   border-radius: 3px;
   padding: 4px 8px;
   font-size: 12px;

@@ -870,22 +870,22 @@
 
 .crc-media-gallery-item-badge--event {
   background: rgb(96 165 250);
-  color: #000;
+  color: #000000;
 }
 
 .crc-media-gallery-item-badge--place {
   background: rgb(74 222 128);
-  color: #000;
+  color: #000000;
 }
 
 .crc-media-gallery-item-badge--organization {
   background: rgb(251 146 60);
-  color: #000;
+  color: #000000;
 }
 
 .crc-media-gallery-item-badge--source {
   background: rgb(244 114 182);
-  color: #000;
+  color: #000000;
 }
 
 /* Overlay */
@@ -901,7 +901,7 @@
 .crc-media-gallery-item-name {
   font-size: 11px;
   font-weight: 500;
-  color: #fff;
+  color: #ffffff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

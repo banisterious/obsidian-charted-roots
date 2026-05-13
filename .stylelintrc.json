@@ -77,7 +77,7 @@
     "media-feature-name-no-vendor-prefix": null,
     "at-rule-no-vendor-prefix": null,
     "length-zero-no-unit": true,
-    "color-hex-length": "short",
+    "color-hex-length": "long",
     "color-hex-case": "lower",
     "string-quotes": "double",
     "unit-case": "lower",
