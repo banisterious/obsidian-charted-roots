@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-13 20:44:21 UTC
+ * - Generated: 2026-05-13 21:02:55 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -661,7 +661,7 @@ settings:
    COMPONENT: CONTROL-CENTER.CSS
    ========================================================================== */
 
-/* Component Size: 5751 lines, 108.03 KB */
+/* Component Size: 5686 lines, 107.21 KB */
 
 /* ==========================================================================
    Charted Roots Control Center - Styling
@@ -719,7 +719,9 @@ settings:
 
 /* Section headers inside forms */
 .crc-section-header {
-  margin: 16px 0 8px;
+  /* Merged: a later rule used to override margin-top to 12px; folded
+     into the shorthand here (top 12 / right 0 / bottom 8 / left 0). */
+  margin: 12px 0 8px;
   padding-top: 16px;
   border-top: 1px solid var(--background-modifier-border);
   font-size: 14px;
@@ -1385,14 +1387,6 @@ settings:
   border-top: 1px solid var(--background-modifier-border);
 }
 
-/* Section Title */
-.crc-section-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: var(--text-normal);
-}
-
 /* Separator */
 .crc-separator {
   position: relative;
@@ -1874,42 +1868,6 @@ settings:
   margin-top: 8px;
 }
 
-/* Guide Tab Styles */
-.crc-guide-step {
-  display: flex;
-  gap: 16px;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--background-modifier-border);
-}
-
-.crc-guide-step:last-child {
-  border-bottom: none;
-}
-
-.crc-guide-step__badge {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--interactive-accent);
-  color: var(--text-on-accent);
-  border-radius: 50%;
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.crc-guide-step__content {
-  flex: 1;
-}
-
-.crc-guide-step__content h4 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-}
-
 /* Field list within guide steps */
 .crc-guide-step__content .crc-field-list {
   margin: 0;
@@ -1919,19 +1877,6 @@ settings:
 .crc-guide-step__content .crc-field-list li {
   margin-bottom: 8px;
   line-height: 1.6;
-}
-
-.crc-field-list code {
-  padding: 2px 6px;
-  background: var(--background-secondary);
-  border-radius: 3px;
-  font-family: var(--font-monospace);
-  font-size: 13px;
-}
-
-.crc-field--required {
-  color: var(--text-accent);
-  font-weight: 600;
 }
 
 .crc-task-item {
@@ -2104,6 +2049,9 @@ settings:
   transition:
     background 0.15s ease,
     transform 0.1s ease;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .crc-task-grid__item:hover {
@@ -2182,6 +2130,11 @@ settings:
   padding: 1px 4px;
   border-radius: 3px;
   font-size: 12px;
+  padding: 2px 6px;
+  background: var(--background-secondary);
+  border-radius: 3px;
+  font-family: var(--font-monospace);
+  font-size: 13px;
 }
 
 .crc-field--required {
@@ -2639,18 +2592,6 @@ settings:
 }
 
 /* Icon color utilities */
-.cr-icon--success {
-  color: var(--color-green);
-}
-
-.cr-icon--warning {
-  color: var(--color-orange);
-}
-
-.cr-icon--error {
-  color: var(--color-red);
-}
-
 .cr-icon--muted {
   opacity: 30%;
 }
@@ -2768,14 +2709,6 @@ settings:
   width: 100px;
   flex-shrink: 0;
   font-size: 0.9em;
-}
-
-.cr-progress-bar-container {
-  flex: 1;
-  height: 8px;
-  background: var(--background-modifier-border);
-  border-radius: var(--cr-radius-xs);
-  overflow: hidden;
 }
 
 .cr-progress-bar {
@@ -3014,10 +2947,6 @@ settings:
 .crc-btn--danger {
   background-color: var(--color-red);
   color: var(--text-on-accent);
-}
-
-.crc-btn--danger:hover {
-  background-color: #d32f2f;
 }
 
 /* ==========================================================================
@@ -3960,9 +3889,6 @@ settings:
   font-weight: var(--font-semibold);
 }
 
-.crc-section-header {
-  margin-top: 12px;
-}
 
 /* ==========================================================================
    IMAGE PICKER MODAL
@@ -4276,6 +4202,10 @@ settings:
 
 .crc-range-row .setting-item {
   flex: 1;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-normal);
 }
 
 /* Constraint Cards */
@@ -4330,6 +4260,7 @@ settings:
 /* Icon button danger variant */
 .crc-btn--danger:hover {
   color: var(--text-error);
+  background-color: #d32f2f;
 }
 
 /* ===========================
@@ -5230,6 +5161,10 @@ settings:
   border-radius: var(--cr-radius-xs);
   overflow: hidden;
   margin-bottom: 12px;
+  flex: 1;
+  height: 8px;
+  background: var(--background-modifier-border);
+  border-radius: var(--cr-radius-xs);
 }
 
 /* .cr-progress-bar defined earlier in file (line 2481) with modifier classes */
@@ -11139,7 +11074,7 @@ settings:
    COMPONENT: IMPORT-EXPORT-WIZARD.CSS
    ========================================================================== */
 
-/* Component Size: 2190 lines, 41.97 KB */
+/* Component Size: 2187 lines, 41.95 KB */
 
 /* ==========================================================================
    IMPORT/EXPORT WIZARD MODALS
@@ -11192,11 +11127,6 @@ settings:
 }
 
 /* Step progress indicator */
-.crc-wizard-progress {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--background-modifier-border);
-}
-
 .crc-wizard-steps {
   display: flex;
   align-items: center;
@@ -12792,6 +12722,8 @@ settings:
 /* Progress section */
 .crc-wizard-progress {
   margin-bottom: 24px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--background-modifier-border);
 }
 
 .crc-wizard-progress-bar-container {
@@ -13902,7 +13834,7 @@ settings:
    COMPONENT: CLEANUP-WIZARD.CSS
    ========================================================================== */
 
-/* Component Size: 2198 lines, 41.21 KB */
+/* Component Size: 2182 lines, 40.97 KB */
 
 /* ==========================================================================
    CLEANUP WIZARD MODAL
@@ -14342,11 +14274,6 @@ settings:
 }
 
 /* Preview table */
-.crc-cleanup-preview-summary {
-  font-size: 14px;
-  margin-bottom: 12px;
-}
-
 .crc-cleanup-preview-table {
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--cr-radius-md);
@@ -14374,12 +14301,6 @@ settings:
 .crc-cleanup-note-icon svg {
   width: 16px;
   height: 16px;
-}
-
-/* Issue list */
-.crc-cleanup-issue-list {
-  max-height: 300px;
-  overflow-y: auto;
 }
 
 /* Summary screen */
@@ -14820,11 +14741,6 @@ settings:
   font-size: 13px;
   color: var(--text-muted);
   line-height: 1.4;
-}
-
-.crc-cleanup-preview-person {
-  font-weight: 500;
-  color: var(--text-normal);
 }
 
 .crc-cleanup-preview-arrow {
@@ -37436,7 +37352,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: TREE-OUTPUT.CSS
    ========================================================================== */
 
-/* Component Size: 1548 lines, 30.38 KB */
+/* Component Size: 1545 lines, 30.35 KB */
 
 /* Tree Output Tab - Two-Panel Layout */
 
@@ -38244,12 +38160,6 @@ body:has(.cr-media-linker) .suggestion-container {
   text-align: left;
 }
 
-.crc-wizard-type-card svg {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-}
-
 .crc-wizard-type-card:hover {
   border-color: var(--interactive-accent);
   background: var(--background-secondary-alt);
@@ -38267,6 +38177,9 @@ body:has(.cr-media-linker) .suggestion-container {
 
 .crc-wizard-type-card svg {
   color: var(--text-muted);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .crc-wizard-type-label {
@@ -40219,7 +40132,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: PROFILE-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1121 lines, 25.01 KB */
+/* Component Size: 1113 lines, 24.91 KB */
 
 /**
  * Entity Profile View Styles
@@ -40621,15 +40534,6 @@ body:has(.cr-media-linker) .suggestion-container {
   font-size: var(--font-ui-small);
 }
 
-.cr-profile__source-type-badge {
-  font-size: var(--font-ui-smaller);
-  color: var(--text-muted);
-  background-color: var(--background-modifier-hover);
-  padding: 0 var(--size-4-1);
-  border-radius: var(--radius-s);
-  flex-shrink: 0;
-}
-
 /* ==========================================================================
    Media Section
    ========================================================================== */
@@ -40811,10 +40715,6 @@ body:has(.cr-media-linker) .suggestion-container {
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
   margin-bottom: var(--size-4-2);
-}
-
-.cr-profile__map-open-btn {
-  width: 100%;
 }
 
 /* ==========================================================================
@@ -41286,6 +41186,11 @@ body:has(.cr-media-linker) .suggestion-container {
   display: flex;
   align-items: center;
   gap: var(--size-2-1);
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  background-color: var(--background-modifier-hover);
+  padding: 0 var(--size-4-1);
+  border-radius: var(--radius-s);
   flex-shrink: 0;
 }
 
@@ -41823,11 +41728,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-13 20:44:22 UTC
+ * Build completed: 2026-05-13 21:02:55 UTC
  * Components processed: 50
- * Total lines: 41354
- * Total size: 842.82 KB
- * Build duration: 0.33 seconds
+ * Total lines: 41259
+ * Total size: 841.61 KB
+ * Build duration: 0.37 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.86 KB
@@ -41835,13 +41740,13 @@ body:has(.cr-media-linker) .suggestion-container {
  * - base.css: 98 lines, 1.54 KB
  * - layout.css: 22 lines, 0.25 KB
  * - settings.css: 131 lines, 3.53 KB
- * - control-center.css: 5751 lines, 108.03 KB
+ * - control-center.css: 5686 lines, 107.21 KB
  * - entity-create-modals.css: 1239 lines, 25.87 KB
  * - place-modals.css: 1422 lines, 28.32 KB
  * - media-modals.css: 2030 lines, 40.84 KB
- * - import-export-wizard.css: 2190 lines, 41.97 KB
+ * - import-export-wizard.css: 2187 lines, 41.95 KB
  * - staging-manager.css: 555 lines, 11.52 KB
- * - cleanup-wizard.css: 2198 lines, 41.21 KB
+ * - cleanup-wizard.css: 2182 lines, 40.97 KB
  * - duplicate-detection.css: 167 lines, 3.06 KB
  * - merge-wizard.css: 277 lines, 6.55 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
@@ -41874,9 +41779,9 @@ body:has(.cr-media-linker) .suggestion-container {
  * - family-wizard.css: 743 lines, 15.63 KB
  * - map-wizard.css: 606 lines, 12.67 KB
  * - preferences.css: 431 lines, 9.42 KB
- * - tree-output.css: 1548 lines, 30.38 KB
+ * - tree-output.css: 1545 lines, 30.35 KB
  * - dynamic-content.css: 1217 lines, 26.68 KB
- * - profile-view.css: 1121 lines, 25.01 KB
+ * - profile-view.css: 1113 lines, 24.91 KB
  * - calendar-view.css: 302 lines, 6.83 KB
  * - migration-notice.css: 135 lines, 2.67 KB
  * - responsive.css: 9 lines, 0.13 KB

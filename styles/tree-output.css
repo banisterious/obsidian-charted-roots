@@ -804,12 +804,6 @@
   text-align: left;
 }
 
-.crc-wizard-type-card svg {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-}
-
 .crc-wizard-type-card:hover {
   border-color: var(--interactive-accent);
   background: var(--background-secondary-alt);
@@ -827,6 +821,9 @@
 
 .crc-wizard-type-card svg {
   color: var(--text-muted);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .crc-wizard-type-label {

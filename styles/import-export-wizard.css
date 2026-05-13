@@ -49,11 +49,6 @@
 }
 
 /* Step progress indicator */
-.crc-wizard-progress {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--background-modifier-border);
-}
-
 .crc-wizard-steps {
   display: flex;
   align-items: center;
@@ -1649,6 +1644,8 @@
 /* Progress section */
 .crc-wizard-progress {
   margin-bottom: 24px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--background-modifier-border);
 }
 
 .crc-wizard-progress-bar-container {

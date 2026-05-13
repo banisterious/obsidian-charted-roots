@@ -54,7 +54,9 @@
 
 /* Section headers inside forms */
 .crc-section-header {
-  margin: 16px 0 8px;
+  /* Merged: a later rule used to override margin-top to 12px; folded
+     into the shorthand here (top 12 / right 0 / bottom 8 / left 0). */
+  margin: 12px 0 8px;
   padding-top: 16px;
   border-top: 1px solid var(--background-modifier-border);
   font-size: 14px;
@@ -720,14 +722,6 @@
   border-top: 1px solid var(--background-modifier-border);
 }
 
-/* Section Title */
-.crc-section-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: var(--text-normal);
-}
-
 /* Separator */
 .crc-separator {
   position: relative;
@@ -1209,42 +1203,6 @@
   margin-top: 8px;
 }
 
-/* Guide Tab Styles */
-.crc-guide-step {
-  display: flex;
-  gap: 16px;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--background-modifier-border);
-}
-
-.crc-guide-step:last-child {
-  border-bottom: none;
-}
-
-.crc-guide-step__badge {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--interactive-accent);
-  color: var(--text-on-accent);
-  border-radius: 50%;
-  font-weight: 600;
-  font-size: 16px;
-}
-
-.crc-guide-step__content {
-  flex: 1;
-}
-
-.crc-guide-step__content h4 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-}
-
 /* Field list within guide steps */
 .crc-guide-step__content .crc-field-list {
   margin: 0;
@@ -1254,19 +1212,6 @@
 .crc-guide-step__content .crc-field-list li {
   margin-bottom: 8px;
   line-height: 1.6;
-}
-
-.crc-field-list code {
-  padding: 2px 6px;
-  background: var(--background-secondary);
-  border-radius: 3px;
-  font-family: var(--font-monospace);
-  font-size: 13px;
-}
-
-.crc-field--required {
-  color: var(--text-accent);
-  font-weight: 600;
 }
 
 .crc-task-item {
@@ -1439,6 +1384,9 @@
   transition:
     background 0.15s ease,
     transform 0.1s ease;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .crc-task-grid__item:hover {
@@ -1517,6 +1465,11 @@
   padding: 1px 4px;
   border-radius: 3px;
   font-size: 12px;
+  padding: 2px 6px;
+  background: var(--background-secondary);
+  border-radius: 3px;
+  font-family: var(--font-monospace);
+  font-size: 13px;
 }
 
 .crc-field--required {
@@ -1974,18 +1927,6 @@
 }
 
 /* Icon color utilities */
-.cr-icon--success {
-  color: var(--color-green);
-}
-
-.cr-icon--warning {
-  color: var(--color-orange);
-}
-
-.cr-icon--error {
-  color: var(--color-red);
-}
-
 .cr-icon--muted {
   opacity: 30%;
 }
@@ -2103,14 +2044,6 @@
   width: 100px;
   flex-shrink: 0;
   font-size: 0.9em;
-}
-
-.cr-progress-bar-container {
-  flex: 1;
-  height: 8px;
-  background: var(--background-modifier-border);
-  border-radius: var(--cr-radius-xs);
-  overflow: hidden;
 }
 
 .cr-progress-bar {
@@ -2349,10 +2282,6 @@
 .crc-btn--danger {
   background-color: var(--color-red);
   color: var(--text-on-accent);
-}
-
-.crc-btn--danger:hover {
-  background-color: #d32f2f;
 }
 
 /* ==========================================================================
@@ -3295,9 +3224,6 @@
   font-weight: var(--font-semibold);
 }
 
-.crc-section-header {
-  margin-top: 12px;
-}
 
 /* ==========================================================================
    IMAGE PICKER MODAL
@@ -3611,6 +3537,10 @@
 
 .crc-range-row .setting-item {
   flex: 1;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-normal);
 }
 
 /* Constraint Cards */
@@ -3665,6 +3595,7 @@
 /* Icon button danger variant */
 .crc-btn--danger:hover {
   color: var(--text-error);
+  background-color: #d32f2f;
 }
 
 /* ===========================
@@ -4565,6 +4496,10 @@
   border-radius: var(--cr-radius-xs);
   overflow: hidden;
   margin-bottom: 12px;
+  flex: 1;
+  height: 8px;
+  background: var(--background-modifier-border);
+  border-radius: var(--cr-radius-xs);
 }
 
 /* .cr-progress-bar defined earlier in file (line 2481) with modifier classes */

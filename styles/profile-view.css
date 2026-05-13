@@ -398,15 +398,6 @@
   font-size: var(--font-ui-small);
 }
 
-.cr-profile__source-type-badge {
-  font-size: var(--font-ui-smaller);
-  color: var(--text-muted);
-  background-color: var(--background-modifier-hover);
-  padding: 0 var(--size-4-1);
-  border-radius: var(--radius-s);
-  flex-shrink: 0;
-}
-
 /* ==========================================================================
    Media Section
    ========================================================================== */
@@ -588,10 +579,6 @@
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
   margin-bottom: var(--size-4-2);
-}
-
-.cr-profile__map-open-btn {
-  width: 100%;
 }
 
 /* ==========================================================================
@@ -1063,6 +1050,11 @@
   display: flex;
   align-items: center;
   gap: var(--size-2-1);
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  background-color: var(--background-modifier-hover);
+  padding: 0 var(--size-4-1);
+  border-radius: var(--radius-s);
   flex-shrink: 0;
 }
 

@@ -436,11 +436,6 @@
 }
 
 /* Preview table */
-.crc-cleanup-preview-summary {
-  font-size: 14px;
-  margin-bottom: 12px;
-}
-
 .crc-cleanup-preview-table {
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--cr-radius-md);
@@ -468,12 +463,6 @@
 .crc-cleanup-note-icon svg {
   width: 16px;
   height: 16px;
-}
-
-/* Issue list */
-.crc-cleanup-issue-list {
-  max-height: 300px;
-  overflow-y: auto;
 }
 
 /* Summary screen */
@@ -914,11 +903,6 @@
   font-size: 13px;
   color: var(--text-muted);
   line-height: 1.4;
-}
-
-.crc-cleanup-preview-person {
-  font-weight: 500;
-  color: var(--text-normal);
 }
 
 .crc-cleanup-preview-arrow {
