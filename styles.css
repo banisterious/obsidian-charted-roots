@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-13 20:30:21 UTC
+ * - Generated: 2026-05-13 20:44:21 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -661,7 +661,7 @@ settings:
    COMPONENT: CONTROL-CENTER.CSS
    ========================================================================== */
 
-/* Component Size: 5748 lines, 107.67 KB */
+/* Component Size: 5751 lines, 108.03 KB */
 
 /* ==========================================================================
    Charted Roots Control Center - Styling
@@ -6024,10 +6024,12 @@ settings:
    Reports Hub Modal
    ========================================================================== */
 
+
 .modal:has(.crc-reports-hub-modal) {
   max-width: 500px;
   width: 90vw;
 }
+
 
 .modal:has(.crc-reports-hub-modal) .modal-content {
   padding: 0;
@@ -6145,10 +6147,12 @@ settings:
    Import/Export Hub Modal
    ========================================================================== */
 
+
 .modal:has(.crc-import-export-hub-modal) {
   max-width: 500px;
   width: 90vw;
 }
+
 
 .modal:has(.crc-import-export-hub-modal) .modal-content {
   padding: 0;
@@ -6411,14 +6415,13 @@ settings:
   cursor: default;
 }
 
-
 /* End of control-center.css */
 
 /* ==========================================================================
    COMPONENT: ENTITY-CREATE-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 1236 lines, 25.51 KB */
+/* Component Size: 1239 lines, 25.87 KB */
 
 /* ==========================================================================
    PERSON PICKER MODAL
@@ -7062,19 +7065,23 @@ settings:
    Create Note Modal - Initial Content Field
    ========================================================================== */
 
+
 .cr-create-note-modal .setting-item:has(textarea) {
   flex-direction: column;
   align-items: flex-start;
 }
+
 
 .cr-create-note-modal .setting-item:has(textarea) .setting-item-info {
   width: 100%;
   margin-bottom: 8px;
 }
 
+
 .cr-create-note-modal .setting-item:has(textarea) .setting-item-control {
   width: 100%;
 }
+
 
 .cr-create-note-modal .setting-item:has(textarea) textarea {
   width: 100%;
@@ -7655,7 +7662,6 @@ settings:
   width: 14px;
   height: 14px;
 }
-
 
 /* End of entity-create-modals.css */
 
@@ -9094,17 +9100,19 @@ settings:
    COMPONENT: MEDIA-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 2011 lines, 39.02 KB */
+/* Component Size: 2030 lines, 40.84 KB */
 
 /* ==========================================================================
    Media Picker Modal
    ========================================================================== */
 
 /* Applied to contentEl, so target the parent modal container */
+
 .modal:has(.crc-media-picker-modal) {
   max-width: 900px;
   width: 90vw;
 }
+
 
 .modal:has(.crc-media-picker-modal) .modal-content {
   padding: 0;
@@ -9269,10 +9277,12 @@ settings:
    ========================================================================== */
 
 /* Applied to contentEl, so target the parent modal container */
+
 .modal:has(.crc-media-manage-modal) {
   max-width: 600px;
   width: 90vw;
 }
+
 
 .modal:has(.crc-media-manage-modal) .modal-content {
   padding: 0;
@@ -9467,10 +9477,12 @@ settings:
    Bulk Media Link Modal
    ============================================================================= */
 
+
 .modal:has(.crc-bulk-media-link-modal) {
   max-width: 700px;
   width: 90vw;
 }
+
 
 .modal:has(.crc-bulk-media-link-modal) .modal-content {
   padding: 0;
@@ -9579,10 +9591,12 @@ settings:
    MEDIA MANAGER MODAL
    ========================================================================== */
 
+
 .modal:has(.crc-media-manager-modal) {
   max-width: 700px;
   width: 90vw;
 }
+
 
 .modal:has(.crc-media-manager-modal) .modal-content {
   padding: 0;
@@ -9768,11 +9782,13 @@ settings:
    MEDIA GALLERY MODAL
    ========================================================================== */
 
+
 .modal:has(.crc-media-gallery-modal) {
   max-width: 900px;
   width: 95vw;
   height: 80vh;
 }
+
 
 .modal:has(.crc-media-gallery-modal) .modal-content {
   padding: 0;
@@ -10061,12 +10077,14 @@ settings:
    UNLINKED MEDIA MODAL
    ========================================================================== */
 
+
 .modal:has(.crc-unlinked-media-modal) {
   max-width: 1000px;
   width: 90vw;
   height: 85vh;
   max-height: 800px;
 }
+
 
 .modal:has(.crc-unlinked-media-modal) .modal-content {
   padding: 0;
@@ -10529,17 +10547,21 @@ settings:
 }
 
 /* When filter is active, highlight the toggle */
+
 .crc-media-folder-filter-toggle:has(.crc-media-folder-filter-checkbox:checked) {
   background: var(--interactive-accent);
   border-color: var(--interactive-accent);
 }
 
+
 .crc-media-folder-filter-toggle:has(.crc-media-folder-filter-checkbox:checked)
   .crc-media-folder-filter-icon,
+
 .crc-media-folder-filter-toggle:has(.crc-media-folder-filter-checkbox:checked)
   .crc-media-folder-filter-label {
   color: var(--text-on-accent);
 }
+
 
 .crc-media-folder-filter-toggle:has(.crc-media-folder-filter-checkbox:checked):hover {
   background: var(--interactive-accent-hover);
@@ -10549,10 +10571,12 @@ settings:
    MEDIA UPLOAD MODAL
    ========================================================================== */
 
+
 .modal:has(.crc-media-upload-modal) {
   max-width: 600px;
   width: 90vw;
 }
+
 
 .modal:has(.crc-media-upload-modal) .modal-content {
   padding: 0;
@@ -10805,10 +10829,12 @@ settings:
    ENTITY PICKER MODAL
    ========================================================================== */
 
+
 .modal:has(.crc-entity-picker-modal) {
   max-width: 700px;
   width: 90vw;
 }
+
 
 .modal:has(.crc-entity-picker-modal) .modal-content {
   padding: 0;
@@ -11107,27 +11133,30 @@ settings:
   margin-top: var(--size-4-3);
 }
 
-
 /* End of media-modals.css */
 
 /* ==========================================================================
    COMPONENT: IMPORT-EXPORT-WIZARD.CSS
    ========================================================================== */
 
-/* Component Size: 2187 lines, 41.61 KB */
+/* Component Size: 2190 lines, 41.97 KB */
 
 /* ==========================================================================
    IMPORT/EXPORT WIZARD MODALS
    ========================================================================== */
 
 /* Modal sizing */
+
 .modal:has(.crc-import-wizard),
+
 .modal:has(.crc-export-wizard) {
   max-width: 600px;
   width: 90vw;
 }
 
+
 .modal:has(.crc-import-wizard) .modal-content,
+
 .modal:has(.crc-export-wizard) .modal-content {
   padding: 0;
 }
@@ -13303,14 +13332,13 @@ settings:
   text-decoration: underline;
 }
 
-
 /* End of import-export-wizard.css */
 
 /* ==========================================================================
    COMPONENT: STAGING-MANAGER.CSS
    ========================================================================== */
 
-/* Component Size: 554 lines, 11.34 KB */
+/* Component Size: 555 lines, 11.52 KB */
 
 /* =============================================================================
    Staging Manager Modal
@@ -13318,10 +13346,12 @@ settings:
    ============================================================================= */
 
 /* Modal sizing */
+
 .modal:has(.crc-staging-modal) {
   max-width: 700px;
   width: 90vw;
 }
+
 
 .modal:has(.crc-staging-modal) .modal-content {
   padding: 0;
@@ -13866,24 +13896,25 @@ settings:
   }
 }
 
-
 /* End of staging-manager.css */
 
 /* ==========================================================================
    COMPONENT: CLEANUP-WIZARD.CSS
    ========================================================================== */
 
-/* Component Size: 2197 lines, 41.02 KB */
+/* Component Size: 2198 lines, 41.21 KB */
 
 /* ==========================================================================
    CLEANUP WIZARD MODAL
    ========================================================================== */
 
 /* Modal sizing */
+
 .modal:has(.crc-cleanup-wizard) {
   max-width: 700px;
   width: 90vw;
 }
+
 
 .modal:has(.crc-cleanup-wizard) .modal-content {
   padding: 0;
@@ -16071,7 +16102,6 @@ settings:
   text-overflow: ellipsis;
   max-width: 100%;
 }
-
 
 /* End of cleanup-wizard.css */
 
@@ -20559,17 +20589,19 @@ settings:
    COMPONENT: BOOK-BUILDER.CSS
    ========================================================================== */
 
-/* Component Size: 371 lines, 7.29 KB */
+/* Component Size: 376 lines, 7.84 KB */
 
 /* ========================================================================
  * Book Builder Modal
  * ======================================================================== */
 
 /* Modal sizing */
+
 .modal:has(.cr-book-builder) {
 	max-width: 520px;
 	width: 520px;
 }
+
 
 .modal:has(.cr-book-builder) .modal-content {
 	padding: 0;
@@ -20859,10 +20891,12 @@ settings:
  * Chapter Config Modal
  * ======================================================================== */
 
+
 .modal:has(.cr-chapter-config-modal) {
 	max-width: 440px;
 	width: 440px;
 }
+
 
 .modal:has(.cr-chapter-config-modal) .modal-content {
 	padding: 0;
@@ -20876,10 +20910,12 @@ settings:
  * File Picker Modal
  * ======================================================================== */
 
+
 .modal:has(.cr-file-picker-modal) {
 	max-width: 480px;
 	width: 480px;
 }
+
 
 .modal:has(.cr-file-picker-modal) .modal-content {
 	padding: 0;
@@ -20931,7 +20967,6 @@ settings:
 	text-align: center;
 	color: var(--text-muted);
 }
-
 
 /* End of book-builder.css */
 
@@ -23692,7 +23727,7 @@ settings:
    COMPONENT: MAP-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 2505 lines, 54.27 KB */
+/* Component Size: 2504 lines, 54.25 KB */
 
 /* ==========================================================================
    Map View Styles
@@ -23970,7 +24005,6 @@ svg.leaflet-zoom-animated {
 .leaflet-dragging .leaflet-grab,
 .leaflet-dragging .leaflet-grab .leaflet-interactive,
 .leaflet-dragging .leaflet-marker-draggable {
-  cursor: -moz-grabbing;
   cursor: grabbing;
 }
 
@@ -28410,7 +28444,7 @@ input[type="text"]::-webkit-input-placeholder {
    COMPONENT: TIMELINE-CALLOUTS.CSS
    ========================================================================== */
 
-/* Component Size: 325 lines, 10.86 KB */
+/* Component Size: 327 lines, 11.04 KB */
 
 /**
  * Timeline Callout Styles
@@ -28574,9 +28608,11 @@ body {
 }
 
 /* Spacing between stacked timelines */
+
 div:not(:has(> [data-callout="cr-timeline"])) + div > [data-callout="cr-timeline"] {
   margin-top: var(--p-spacing);
 }
+
 
 div:has(> [data-callout="cr-timeline"]) + div:not(:has(> [data-callout="cr-timeline"])) {
   margin-bottom: 1rem;
@@ -29366,7 +29402,7 @@ body.wide-timeline .view-content {
    COMPONENT: SOURCES.CSS
    ========================================================================== */
 
-/* Component Size: 2832 lines, 57.32 KB */
+/* Component Size: 2834 lines, 57.5 KB */
 
 /**
  * Sources Styles
@@ -31010,6 +31046,7 @@ body.wide-timeline .view-content {
    The suggestion-container is appended to body, not inside the modal,
    so we need a global rule when modal is present.
    Modal z-index is 50 (--layer-modal), so we need higher. */
+
 body:has(.cr-image-wizard) .suggestion-container {
   z-index: 100;
 }
@@ -31535,6 +31572,7 @@ body:has(.cr-image-wizard) .suggestion-container {
 }
 
 /* Ensure folder suggestions appear above the modal */
+
 body:has(.cr-media-linker) .suggestion-container {
   z-index: 100;
 }
@@ -41785,11 +41823,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-13 20:30:21 UTC
+ * Build completed: 2026-05-13 20:44:22 UTC
  * Components processed: 50
- * Total lines: 41316
- * Total size: 838.68 KB
- * Build duration: 0.35 seconds
+ * Total lines: 41354
+ * Total size: 842.82 KB
+ * Build duration: 0.33 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.86 KB
@@ -41797,13 +41835,13 @@ body:has(.cr-media-linker) .suggestion-container {
  * - base.css: 98 lines, 1.54 KB
  * - layout.css: 22 lines, 0.25 KB
  * - settings.css: 131 lines, 3.53 KB
- * - control-center.css: 5748 lines, 107.67 KB
- * - entity-create-modals.css: 1236 lines, 25.51 KB
+ * - control-center.css: 5751 lines, 108.03 KB
+ * - entity-create-modals.css: 1239 lines, 25.87 KB
  * - place-modals.css: 1422 lines, 28.32 KB
- * - media-modals.css: 2011 lines, 39.02 KB
- * - import-export-wizard.css: 2187 lines, 41.61 KB
- * - staging-manager.css: 554 lines, 11.34 KB
- * - cleanup-wizard.css: 2197 lines, 41.02 KB
+ * - media-modals.css: 2030 lines, 40.84 KB
+ * - import-export-wizard.css: 2190 lines, 41.97 KB
+ * - staging-manager.css: 555 lines, 11.52 KB
+ * - cleanup-wizard.css: 2198 lines, 41.21 KB
  * - duplicate-detection.css: 167 lines, 3.06 KB
  * - merge-wizard.css: 277 lines, 6.55 KB
  * - tree-statistics.css: 41 lines, 0.6 KB
@@ -41814,17 +41852,17 @@ body:has(.cr-media-linker) .suggestion-container {
  * - family-chart-view.css: 1487 lines, 36.11 KB
  * - family-chart-export.css: 699 lines, 14.78 KB
  * - report-wizard.css: 908 lines, 19.89 KB
- * - book-builder.css: 371 lines, 7.29 KB
+ * - book-builder.css: 376 lines, 7.84 KB
  * - data-quality.css: 1446 lines, 28.73 KB
  * - relationships.css: 597 lines, 11.43 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB
- * - map-view.css: 2505 lines, 54.27 KB
+ * - map-view.css: 2504 lines, 54.25 KB
  * - leaflet-distortable.css: 372 lines, 7.91 KB
  * - date-systems.css: 287 lines, 5.31 KB
  * - events.css: 1520 lines, 30.79 KB
- * - timeline-callouts.css: 325 lines, 10.86 KB
+ * - timeline-callouts.css: 327 lines, 11.04 KB
  * - organizations.css: 615 lines, 11.57 KB
- * - sources.css: 2832 lines, 57.32 KB
+ * - sources.css: 2834 lines, 57.5 KB
  * - statistics.css: 1811 lines, 36.3 KB
  * - command-menu.css: 73 lines, 1.6 KB
  * - dashboard.css: 491 lines, 9.63 KB

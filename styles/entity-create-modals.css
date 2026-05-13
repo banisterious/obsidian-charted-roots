@@ -640,20 +640,24 @@
    Create Note Modal - Initial Content Field
    ========================================================================== */
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .cr-create-note-modal .setting-item:has(textarea) {
   flex-direction: column;
   align-items: flex-start;
 }
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .cr-create-note-modal .setting-item:has(textarea) .setting-item-info {
   width: 100%;
   margin-bottom: 8px;
 }
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .cr-create-note-modal .setting-item:has(textarea) .setting-item-control {
   width: 100%;
 }
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .cr-create-note-modal .setting-item:has(textarea) textarea {
   width: 100%;
   min-height: 120px;

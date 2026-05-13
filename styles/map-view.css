@@ -274,7 +274,6 @@ svg.leaflet-zoom-animated {
 .leaflet-dragging .leaflet-grab,
 .leaflet-dragging .leaflet-grab .leaflet-interactive,
 .leaflet-dragging .leaflet-marker-draggable {
-  cursor: -moz-grabbing;
   cursor: grabbing;
 }
 

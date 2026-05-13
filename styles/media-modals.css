@@ -3,11 +3,13 @@
    ========================================================================== */
 
 /* Applied to contentEl, so target the parent modal container */
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-media-picker-modal) {
   max-width: 900px;
   width: 90vw;
 }
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-media-picker-modal) .modal-content {
   padding: 0;
   overflow: hidden;
@@ -171,11 +173,13 @@
    ========================================================================== */
 
 /* Applied to contentEl, so target the parent modal container */
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-media-manage-modal) {
   max-width: 600px;
   width: 90vw;
 }
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-media-manage-modal) .modal-content {
   padding: 0;
   overflow: hidden;
@@ -369,11 +373,13 @@
    Bulk Media Link Modal
    ============================================================================= */
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-bulk-media-link-modal) {
   max-width: 700px;
   width: 90vw;
 }
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-bulk-media-link-modal) .modal-content {
   padding: 0;
   overflow: hidden;
@@ -481,11 +487,13 @@
    MEDIA MANAGER MODAL
    ========================================================================== */
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-media-manager-modal) {
   max-width: 700px;
   width: 90vw;
 }
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-media-manager-modal) .modal-content {
   padding: 0;
 }
@@ -670,12 +678,14 @@
    MEDIA GALLERY MODAL
    ========================================================================== */
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-media-gallery-modal) {
   max-width: 900px;
   width: 95vw;
   height: 80vh;
 }
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-media-gallery-modal) .modal-content {
   padding: 0;
   height: 100%;
@@ -963,6 +973,7 @@
    UNLINKED MEDIA MODAL
    ========================================================================== */
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-unlinked-media-modal) {
   max-width: 1000px;
   width: 90vw;
@@ -970,6 +981,7 @@
   max-height: 800px;
 }
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-unlinked-media-modal) .modal-content {
   padding: 0;
   height: 100%;
@@ -1431,18 +1443,22 @@
 }
 
 /* When filter is active, highlight the toggle */
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .crc-media-folder-filter-toggle:has(.crc-media-folder-filter-checkbox:checked) {
   background: var(--interactive-accent);
   border-color: var(--interactive-accent);
 }
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .crc-media-folder-filter-toggle:has(.crc-media-folder-filter-checkbox:checked)
   .crc-media-folder-filter-icon,
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .crc-media-folder-filter-toggle:has(.crc-media-folder-filter-checkbox:checked)
   .crc-media-folder-filter-label {
   color: var(--text-on-accent);
 }
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .crc-media-folder-filter-toggle:has(.crc-media-folder-filter-checkbox:checked):hover {
   background: var(--interactive-accent-hover);
 }
@@ -1451,11 +1467,13 @@
    MEDIA UPLOAD MODAL
    ========================================================================== */
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-media-upload-modal) {
   max-width: 600px;
   width: 90vw;
 }
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-media-upload-modal) .modal-content {
   padding: 0;
   overflow: hidden;
@@ -1707,11 +1725,13 @@
    ENTITY PICKER MODAL
    ========================================================================== */
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-entity-picker-modal) {
   max-width: 700px;
   width: 90vw;
 }
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-entity-picker-modal) .modal-content {
   padding: 0;
   overflow: hidden;

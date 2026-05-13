@@ -160,10 +160,12 @@ body {
 }
 
 /* Spacing between stacked timelines */
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 div:not(:has(> [data-callout="cr-timeline"])) + div > [data-callout="cr-timeline"] {
   margin-top: var(--p-spacing);
 }
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 div:has(> [data-callout="cr-timeline"]) + div:not(:has(> [data-callout="cr-timeline"])) {
   margin-bottom: 1rem;
 }

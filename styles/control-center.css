@@ -5359,11 +5359,13 @@
    Reports Hub Modal
    ========================================================================== */
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-reports-hub-modal) {
   max-width: 500px;
   width: 90vw;
 }
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-reports-hub-modal) .modal-content {
   padding: 0;
 }
@@ -5480,11 +5482,13 @@
    Import/Export Hub Modal
    ========================================================================== */
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-import-export-hub-modal) {
   max-width: 500px;
   width: 90vw;
 }
 
+/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-import-export-hub-modal) .modal-content {
   padding: 0;
 }
