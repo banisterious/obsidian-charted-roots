@@ -945,8 +945,8 @@
    on the SVG element that need to be overridden. */
 .cr-sv-report-card-icon svg,
 .cr-sv-report-card-icon .svg-icon {
-  width: 18px !important;
-  height: 18px !important;
+  width: 18px;
+  height: 18px;
   min-width: 18px;
   min-height: 18px;
 }
@@ -1397,7 +1397,7 @@
 }
 
 .cr-sv-drilldown-cell {
-  padding: var(--size-4-2) var(--size-4-3) var(--size-4-3) var(--size-4-5) !important;
+  padding: var(--size-4-2) var(--size-4-3) var(--size-4-3) var(--size-4-5);
 }
 
 /* Drill-down list of people */

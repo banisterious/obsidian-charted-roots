@@ -1395,9 +1395,9 @@
 
 /* Compact settings for unified wizard steps */
 .crc-unified-wizard .setting-item {
-  padding: 4px 0 !important;
-  border-bottom: none !important;
-  border-top: none !important;
+  padding: 4px 0;
+  border-bottom: none;
+  border-top: none;
 }
 
 .crc-unified-wizard .setting-item-info {

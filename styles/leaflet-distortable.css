@@ -135,11 +135,11 @@
    Leaflet DistortableImage CSS (from leaflet-distortableimage/dist/leaflet.distortableimage.css)
    ============================================================================ */
 .ldi .leaflet-popup-toolbar {
-  width: max-content !important;
+  width: max-content;
 }
 
 .ldi .leaflet-pane .leaflet-overlay-pane img {
-  pointer-events: all !important;
+  pointer-events: all;
 }
 
 .ldi .leaflet-pane .leaflet-overlay-pane img.disabled {

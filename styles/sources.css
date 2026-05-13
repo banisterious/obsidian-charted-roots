@@ -676,12 +676,12 @@
 }
 
 .cr-media-lightbox .modal-content {
-  max-width: none !important;
-  width: 100% !important;
-  height: 100% !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  background: transparent !important;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  background: transparent;
 }
 
 .cr-media-lightbox-close {
@@ -1641,7 +1641,7 @@
    so we need a global rule when modal is present.
    Modal z-index is 50 (--layer-modal), so we need higher. */
 body:has(.cr-image-wizard) .suggestion-container {
-  z-index: 100 !important;
+  z-index: 100;
 }
 
 /* Progress Steps */
@@ -1902,7 +1902,7 @@ body:has(.cr-image-wizard) .suggestion-container {
 }
 
 .cr-image-wizard__row--conflict {
-  background: rgba(var(--color-yellow-rgb), 0.1) !important;
+  background: rgba(var(--color-yellow-rgb), 0.1);
 }
 
 .cr-image-wizard__conflict {
@@ -2166,7 +2166,7 @@ body:has(.cr-image-wizard) .suggestion-container {
 
 /* Ensure folder suggestions appear above the modal */
 body:has(.cr-media-linker) .suggestion-container {
-  z-index: 100 !important;
+  z-index: 100;
 }
 
 /* Progress Steps - reuses image wizard patterns */

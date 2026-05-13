@@ -330,8 +330,8 @@
 }
 
 .cr-media-folder-add-setting {
-  border: none !important;
-  padding: 0 !important;
+  border: none;
+  padding: 0;
 }
 
 .cr-media-folder-add-setting .setting-item-info {

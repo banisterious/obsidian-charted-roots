@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-13 19:59:34 UTC
+ * - Generated: 2026-05-13 20:30:21 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -661,7 +661,7 @@ settings:
    COMPONENT: CONTROL-CENTER.CSS
    ========================================================================== */
 
-/* Component Size: 5748 lines, 107.78 KB */
+/* Component Size: 5748 lines, 107.67 KB */
 
 /* ==========================================================================
    Charted Roots Control Center - Styling
@@ -5882,19 +5882,19 @@ settings:
 
 /* Drawer in mobile mode - slides in from left */
 .crc-drawer.crc-drawer--mobile {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  bottom: 0 !important;
-  width: 280px !important;
-  z-index: 101 !important;
-  transform: translateX(-100%) !important;
-  transition: transform 0.3s ease !important;
-  box-shadow: 2px 0 8px rgb(0 0 0 / 20%) !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 280px;
+  z-index: 101;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  box-shadow: 2px 0 8px rgb(0 0 0 / 20%);
 }
 
 .crc-drawer.crc-drawer--mobile.crc-drawer--open {
-  transform: translateX(0) !important;
+  transform: translateX(0);
 }
 
 .crc-drawer-backdrop.crc-drawer-backdrop--mobile.crc-drawer-backdrop--visible {
@@ -7663,7 +7663,7 @@ settings:
    COMPONENT: PLACE-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 1422 lines, 28.34 KB */
+/* Component Size: 1422 lines, 28.32 KB */
 
 /* ==========================================================================
    CREATE PLACE MODAL
@@ -8456,7 +8456,7 @@ settings:
 }
 
 .crc-migration-arc:hover {
-  stroke-opacity: 100% !important;
+  stroke-opacity: 100%;
 }
 
 .crc-migration-node circle {
@@ -8637,7 +8637,7 @@ settings:
 }
 
 .crc-migration-flow:hover {
-  stroke-opacity: 100% !important;
+  stroke-opacity: 100%;
 }
 
 /* ==========================================================================
@@ -17438,7 +17438,7 @@ settings:
    COMPONENT: FAMILY-CHART-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1484 lines, 36.1 KB */
+/* Component Size: 1487 lines, 36.11 KB */
 
 /**
  * Family Chart View Styles
@@ -18099,20 +18099,21 @@ settings:
   margin: 0;
 }
 
-/* Constrain SVG icons in form panel - force all SVGs to reasonable size */
+/* Constrain SVG icons in form panel. Specificity (3 classes + element)
+   beats family-chart's own rules without needing !important. */
 .cr-fcv-chart-container.f3 .f3-form-cont svg {
-  width: 24px !important;
-  height: 24px !important;
-  max-width: 24px !important;
-  max-height: 24px !important;
+  width: 24px;
+  height: 24px;
+  max-width: 24px;
+  max-height: 24px;
   flex-shrink: 0;
 }
 
 .cr-fcv-chart-container.f3 .f3-form-cont button svg {
-  width: 16px !important;
-  height: 16px !important;
-  max-width: 16px !important;
-  max-height: 16px !important;
+  width: 16px;
+  height: 16px;
+  max-width: 16px;
+  max-height: 16px;
 }
 
 /* Form panel layout constraints */
@@ -18674,16 +18675,18 @@ settings:
   position: relative;
   /* Center the card on the node position */
   transform: translate(-50%, -50%);
-  /* Reset Obsidian's .card defaults */
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  border-radius: 0 !important;
-  display: block !important;
-  flex-direction: unset !important;
-  flex-grow: unset !important;
+  /* Reset Obsidian's .card defaults. Our 3-class selector specificity
+     (.cr-fcv-chart-container.card-style-circle .card) beats Obsidian's
+     bare .card rule on its own. */
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  display: block;
+  flex-direction: unset;
+  flex-grow: unset;
 }
 
 /* Override base hover transform that would shift card children */
@@ -23689,7 +23692,7 @@ settings:
    COMPONENT: MAP-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 2485 lines, 51.85 KB */
+/* Component Size: 2505 lines, 54.27 KB */
 
 /* ==========================================================================
    Map View Styles
@@ -23730,7 +23733,7 @@ settings:
 }
 
 .leaflet-tile::selection {
-  background: transparent;
+  background-color: transparent;
 }
 
 .leaflet-safari .leaflet-tile {
@@ -24068,7 +24071,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 /* Layers control base styles */
 .leaflet-control-layers {
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
-  background: #ffffff;
+  background-color: #ffffff;
   border-radius: 5px;
 }
 
@@ -24085,7 +24088,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .leaflet-control-layers-expanded {
   padding: 6px 10px 6px 6px;
   color: #333333;
-  background: #ffffff;
+  background-color: #ffffff;
 }
 
 .leaflet-control-layers-scrollbar {
@@ -24113,7 +24116,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 /* Attribution styles */
 .leaflet-container .leaflet-control-attribution {
-  background: rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 0.8);
   margin: 0;
 }
 
@@ -24149,7 +24152,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   padding: 2px 5px 1px;
   white-space: nowrap;
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 0.8);
   text-shadow: 1px 1px #ffffff;
 }
 
@@ -24222,7 +24225,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {
-  background: white;
+  background-color: white;
   color: #333333;
   box-shadow: 0 3px 14px rgba(0, 0, 0, 0.4);
 }
@@ -24241,7 +24244,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     sans-serif;
   color: #757575;
   text-decoration: none;
-  background: transparent;
+  background-color: transparent;
 }
 
 .leaflet-container a.leaflet-popup-close-button:hover,
@@ -24255,7 +24258,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 /* Div icon */
 .leaflet-div-icon {
-  background: #ffffff;
+  background-color: #ffffff;
   border: 1px solid #666666;
 }
 
@@ -24287,7 +24290,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   position: absolute;
   pointer-events: none;
   border: 6px solid transparent;
-  background: transparent;
+  background-color: transparent;
   content: "";
 }
 
@@ -24426,7 +24429,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   height: 100%;
   width: 100%;
   overflow: hidden;
-  background: var(--background-primary);
+  background-color: var(--background-primary);
   font-family: var(--font-interface);
 }
 
@@ -24435,51 +24438,51 @@ svg.leaflet-image-layer.leaflet-interactive path {
 }
 
 /* Zoom controls */
-.leaflet-control-zoom {
-  border: none !important;
-  box-shadow: var(--shadow-s) !important;
+.cr-map-view .leaflet-control-zoom {
+  border: none;
+  box-shadow: var(--shadow-s);
 }
 
-.leaflet-control-zoom a {
-  background: var(--background-primary) !important;
-  color: var(--text-normal) !important;
-  border: 1px solid var(--background-modifier-border) !important;
+.cr-map-view .leaflet-control-zoom a {
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
 }
 
-.leaflet-control-zoom a:hover {
-  background: var(--background-modifier-hover) !important;
+.cr-map-view .leaflet-control-zoom a:hover {
+  background-color: var(--background-modifier-hover);
 }
 
 /* Attribution */
-.leaflet-control-attribution {
-  background: var(--background-primary) !important;
-  color: var(--text-muted) !important;
-  font-size: var(--font-smallest) !important;
-  padding: 2px 8px !important;
+.cr-map-view .leaflet-control-attribution {
+  background-color: var(--background-primary);
+  color: var(--text-muted);
+  font-size: var(--font-smallest);
+  padding: 2px 8px;
 }
 
-.leaflet-control-attribution a {
-  color: var(--text-accent) !important;
+.cr-map-view .leaflet-control-attribution a {
+  color: var(--text-accent);
 }
 
 /* Popup styling */
-.leaflet-popup-content-wrapper {
-  background: var(--background-primary) !important;
-  color: var(--text-normal) !important;
-  border-radius: var(--radius-m) !important;
-  box-shadow: var(--shadow-s) !important;
+.cr-map-view .leaflet-popup-content-wrapper {
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-s);
 }
 
-.leaflet-popup-tip {
-  background: var(--background-primary) !important;
+.cr-map-view .leaflet-popup-tip {
+  background-color: var(--background-primary);
 }
 
-.leaflet-popup-close-button {
-  color: var(--text-muted) !important;
+.cr-map-view .leaflet-popup-close-button {
+  color: var(--text-muted);
 }
 
-.leaflet-popup-close-button:hover {
-  color: var(--text-normal) !important;
+.cr-map-view .leaflet-popup-close-button:hover {
+  color: var(--text-normal);
 }
 
 /* --------------------------------------------------------------------------
@@ -24638,13 +24641,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
 }
 
 /* Ensure leaflet container fills the map container */
-.cr-map-container .leaflet-container {
+.cr-map-view .cr-map-container .leaflet-container {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--background-primary) !important;
+  background-color: var(--background-primary);
 }
 
 /* Error state */
@@ -24807,47 +24810,66 @@ svg.leaflet-image-layer.leaflet-interactive path {
    Fullscreen Mode
    -------------------------------------------------------------------------- */
 
-.leaflet-control-fullscreen a {
-  background: var(--background-primary) !important;
-  color: var(--text-normal) !important;
-  border: 1px solid var(--background-modifier-border) !important;
+.cr-map-view .leaflet-control-fullscreen a {
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+  position: relative;
 }
 
-.leaflet-control-fullscreen a:hover {
-  background: var(--background-modifier-hover) !important;
+.cr-map-view .leaflet-control-fullscreen a:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+/* The leaflet-fullscreen plugin's own CSS references a sprite PNG that
+   we don't ship. Draw the icon directly via inline SVG mask so it adapts
+   to the current text color (theme-aware). Lucide "maximize" for the
+   default state, "minimize" when fullscreen is active. */
+.cr-map-view .leaflet-control-fullscreen a::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: currentColor;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M8 3H5a2 2 0 0 0-2 2v3'/><path d='M21 8V5a2 2 0 0 0-2-2h-3'/><path d='M3 16v3a2 2 0 0 0 2 2h3'/><path d='M16 21h3a2 2 0 0 0 2-2v-3'/></svg>") center / 16px no-repeat;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M8 3H5a2 2 0 0 0-2 2v3'/><path d='M21 8V5a2 2 0 0 0-2-2h-3'/><path d='M3 16v3a2 2 0 0 0 2 2h3'/><path d='M16 21h3a2 2 0 0 0 2-2v-3'/></svg>") center / 16px no-repeat;
+}
+
+.cr-map-view .leaflet-fullscreen-on .leaflet-control-fullscreen a::before {
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M8 3v3a2 2 0 0 1-2 2H3'/><path d='M21 8h-3a2 2 0 0 1-2-2V3'/><path d='M3 16h3a2 2 0 0 1 2 2v3'/><path d='M16 21v-3a2 2 0 0 1 2-2h3'/></svg>");
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M8 3v3a2 2 0 0 1-2 2H3'/><path d='M21 8h-3a2 2 0 0 1-2-2V3'/><path d='M3 16h3a2 2 0 0 1 2 2v3'/><path d='M16 21v-3a2 2 0 0 1 2-2h3'/></svg>");
 }
 
 /* --------------------------------------------------------------------------
    Mini-map
    -------------------------------------------------------------------------- */
 
-.leaflet-control-minimap {
-  border: 2px solid var(--background-modifier-border) !important;
-  box-shadow: var(--shadow-s) !important;
+.cr-map-view .leaflet-control-minimap {
+  border: 2px solid var(--background-modifier-border);
+  box-shadow: var(--shadow-s);
 }
 
-.leaflet-control-minimap-toggle-display {
-  background: var(--background-primary) !important;
-  color: var(--text-normal) !important;
+.cr-map-view .leaflet-control-minimap-toggle-display {
+  background-color: var(--background-primary);
+  color: var(--text-normal);
 }
 
 /* --------------------------------------------------------------------------
    Layer Control
    -------------------------------------------------------------------------- */
 
-.leaflet-control-layers {
-  background: var(--background-primary) !important;
-  border: 1px solid var(--background-modifier-border) !important;
-  border-radius: var(--radius-s) !important;
-  box-shadow: var(--shadow-s) !important;
+.cr-map-view .leaflet-control-layers {
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  box-shadow: var(--shadow-s);
 }
 
-.leaflet-control-layers-toggle {
-  background-color: var(--background-primary) !important;
+.cr-map-view .leaflet-control-layers-toggle {
+  background-color: var(--background-primary);
 }
 
-.leaflet-control-layers label {
-  color: var(--text-normal) !important;
+.cr-map-view .leaflet-control-layers label {
+  color: var(--text-normal);
 }
 
 /* --------------------------------------------------------------------------
@@ -24988,11 +25010,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
   text-align: center;
 }
 
-/* Active button state */
-.cr-map-btn-active {
-  background: var(--interactive-accent) !important;
-  color: var(--text-on-accent) !important;
-  border-color: var(--interactive-accent) !important;
+/* Active button state. Chained selector raises specificity above the
+   base .cr-map-btn rule so !important isn't needed. */
+.cr-map-btn.cr-map-btn-active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
 }
 
 /* --------------------------------------------------------------------------
@@ -25159,12 +25182,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
    Journey Rich Waypoint Popup
    -------------------------------------------------------------------------- */
 
-.cr-journey-rich-popup .leaflet-popup-content-wrapper {
+.cr-map-view .cr-journey-rich-popup .leaflet-popup-content-wrapper {
   border-radius: var(--radius-m);
   padding: 0;
 }
 
-.cr-journey-rich-popup .leaflet-popup-content {
+.cr-map-view .cr-journey-rich-popup .leaflet-popup-content {
   margin: 0;
 }
 
@@ -25244,7 +25267,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
    Search Control (leaflet-search)
    -------------------------------------------------------------------------- */
 
-.leaflet-control-search {
+.cr-map-view .leaflet-control-search {
   position: relative;
   z-index: 801;
   box-shadow: var(--shadow-s);
@@ -25252,8 +25275,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
   overflow: visible;
 }
 
-.leaflet-control-search .search-input {
-  background: var(--background-primary);
+.cr-map-view .leaflet-control-search .search-input {
+  background-color: var(--background-primary);
   color: var(--text-normal);
   border: 2px solid var(--interactive-accent);
   border-radius: var(--radius-m);
@@ -25265,17 +25288,17 @@ svg.leaflet-image-layer.leaflet-interactive path {
   box-shadow: var(--shadow-s);
 }
 
-.leaflet-control-search .search-input:focus {
+.cr-map-view .leaflet-control-search .search-input:focus {
   border-color: var(--interactive-accent);
   box-shadow: 0 0 0 3px rgba(var(--interactive-accent-rgb), 0.3);
 }
 
-.leaflet-control-search .search-input::placeholder {
+.cr-map-view .leaflet-control-search .search-input::placeholder {
   color: var(--text-muted);
 }
 
-.leaflet-control-search .search-button {
-  background: var(--interactive-accent);
+.cr-map-view .leaflet-control-search .search-button {
+  background-color: var(--interactive-accent);
   border: none;
   border-radius: var(--radius-m);
   color: var(--text-on-accent);
@@ -25289,19 +25312,19 @@ svg.leaflet-image-layer.leaflet-interactive path {
   transition: var(--cr-transition-fast);
 }
 
-.leaflet-control-search .search-button:hover {
-  background: var(--interactive-accent-hover);
+.cr-map-view .leaflet-control-search .search-button:hover {
+  background-color: var(--interactive-accent-hover);
   transform: scale(1.05);
 }
 
 /* Search icon styling */
-.leaflet-control-search .search-button::before {
+.cr-map-view .leaflet-control-search .search-button::before {
   content: "🔍";
   font-size: 14px;
 }
 
-.leaflet-control-search .search-cancel {
-  background: transparent;
+.cr-map-view .leaflet-control-search .search-cancel {
+  background-color: transparent;
   border: none;
   color: var(--text-muted);
   cursor: pointer;
@@ -25311,12 +25334,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
   transform: translateY(-50%);
 }
 
-.leaflet-control-search .search-cancel:hover {
+.cr-map-view .leaflet-control-search .search-cancel:hover {
   color: var(--text-normal);
 }
 
-.leaflet-control-search .search-tooltip {
-  background: var(--background-primary);
+.cr-map-view .leaflet-control-search .search-tooltip {
+  background-color: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--radius-s);
   box-shadow: var(--shadow-s);
@@ -25325,7 +25348,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   margin-top: 2px;
 }
 
-.leaflet-control-search .search-tooltip a {
+.cr-map-view .leaflet-control-search .search-tooltip a {
   display: block;
   padding: var(--cr-spacing-xs) var(--cr-spacing-sm);
   color: var(--text-normal);
@@ -25333,22 +25356,22 @@ svg.leaflet-image-layer.leaflet-interactive path {
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.leaflet-control-search .search-tooltip a:last-child {
+.cr-map-view .leaflet-control-search .search-tooltip a:last-child {
   border-bottom: none;
 }
 
 .leaflet-control-search .search-tooltip a:hover,
-.leaflet-control-search .search-tooltip a.search-tip-select {
-  background: var(--background-modifier-hover);
+.cr-map-view .leaflet-control-search .search-tooltip a.search-tip-select {
+  background-color: var(--background-modifier-hover);
 }
 
-.leaflet-control-search .search-tooltip a small {
+.cr-map-view .leaflet-control-search .search-tooltip a small {
   color: var(--text-muted);
   font-size: var(--font-smallest);
 }
 
-.leaflet-control-search .search-alert {
-  background: var(--background-modifier-error);
+.cr-map-view .leaflet-control-search .search-alert {
+  background-color: var(--background-modifier-error);
   color: var(--text-error);
   padding: var(--cr-spacing-xs) var(--cr-spacing-sm);
   border-radius: var(--radius-s);
@@ -25357,15 +25380,15 @@ svg.leaflet-image-layer.leaflet-interactive path {
 }
 
 /* Collapsed state - show prominent search button */
-.leaflet-control-search.search-exp-0 .search-input {
+.cr-map-view .leaflet-control-search.search-exp-0 .search-input {
   display: none;
 }
 
-.leaflet-control-search.search-exp-0 .search-button {
+.cr-map-view .leaflet-control-search.search-exp-0 .search-button {
   border-radius: var(--radius-m);
   width: 40px;
   height: 40px;
-  background: var(--interactive-accent);
+  background-color: var(--interactive-accent);
   animation: cr-search-pulse 2s ease-in-out infinite;
 }
 
@@ -25383,11 +25406,11 @@ svg.leaflet-image-layer.leaflet-interactive path {
 }
 
 /* Expanded state */
-.leaflet-control-search.search-exp-1 .search-input {
+.cr-map-view .leaflet-control-search.search-exp-1 .search-input {
   display: block;
 }
 
-.leaflet-control-search.search-exp-1 .search-button {
+.cr-map-view .leaflet-control-search.search-exp-1 .search-button {
   animation: none;
 }
 
@@ -25455,21 +25478,21 @@ svg.leaflet-image-layer.leaflet-interactive path {
    -------------------------------------------------------------------------- */
 
 /* Distortable image toolbar container */
-.ldi .leaflet-popup-toolbar {
-  width: max-content !important;
+.cr-map-view .ldi .leaflet-popup-toolbar {
+  width: max-content;
 }
 
 /* Make distortable images interactive */
-.ldi .leaflet-pane .leaflet-overlay-pane img {
-  pointer-events: all !important;
+.cr-map-view .ldi .leaflet-pane .leaflet-overlay-pane img {
+  pointer-events: all;
 }
 
-.ldi .leaflet-pane .leaflet-overlay-pane img.disabled {
+.cr-map-view .ldi .leaflet-pane .leaflet-overlay-pane img.disabled {
   cursor: default;
 }
 
 /* Selected image highlight */
-.ldi img.leaflet-image-layer.collected {
+.cr-map-view .ldi img.leaflet-image-layer.collected {
   box-shadow: 0px 0px 0px 12px var(--interactive-accent);
 }
 
@@ -25496,11 +25519,11 @@ input.ldi {
 }
 
 /* Distortable toolbar icon box sizing */
-.ldi .leaflet-toolbar-icon {
+.cr-map-view .ldi .leaflet-toolbar-icon {
   box-sizing: initial;
 }
 
-.ldi .leaflet-toolbar-tip {
+.cr-map-view .ldi .leaflet-toolbar-tip {
   box-sizing: border-box;
 }
 
@@ -25518,7 +25541,7 @@ input.ldi {
   overflow: hidden;
 }
 
-.ldi #keymapper-wrapper {
+.cr-map-view .ldi #keymapper-wrapper {
   position: relative;
   width: 100%;
   overflow-x: hidden;
@@ -25527,15 +25550,15 @@ input.ldi {
   min-height: 186px;
 }
 
-.ldi .left {
+.cr-map-view .ldi .left {
   width: 46%;
 }
 
-.ldi .left span {
+.cr-map-view .ldi .left span {
   overflow-wrap: break-word;
 }
 
-.ldi .right {
+.cr-map-view .ldi .right {
   display: flex;
   max-width: 40%;
   flex-wrap: wrap;
@@ -25543,7 +25566,7 @@ input.ldi {
   align-items: flex-start;
 }
 
-.ldi #keymapper-hr {
+.cr-map-view .ldi #keymapper-hr {
   transform: rotate(90deg);
   position: relative;
   transform-origin: 0px;
@@ -25896,10 +25919,10 @@ input[type="text"]::-webkit-input-placeholder {
 }
 
 /* Ensure Leaflet map fills container */
-.cr-world-map-leaflet .leaflet-container {
+.cr-map-view .cr-world-map-leaflet .leaflet-container {
   width: 100%;
   height: 100%;
-  background: var(--background-secondary-alt);
+  background-color: var(--background-secondary-alt);
 }
 
 /* Click overlay - captures all clicks for navigation */
@@ -25915,7 +25938,7 @@ input[type="text"]::-webkit-input-placeholder {
 }
 
 /* Circle markers styling */
-.cr-world-map-leaflet .leaflet-interactive {
+.cr-map-view .cr-world-map-leaflet .leaflet-interactive {
   pointer-events: none;
 }
 
@@ -26005,9 +26028,9 @@ input[type="text"]::-webkit-input-placeholder {
    Map icon markers for child maps displayed on parent maps.
    -------------------------------------------------------------------------- */
 
-.cr-child-map-marker-icon {
-  background: transparent !important;
-  border: none !important;
+.leaflet-marker-icon.cr-child-map-marker-icon {
+  background-color: transparent;
+  border: none;
 }
 
 .cr-child-map-marker {
@@ -26183,7 +26206,7 @@ input[type="text"]::-webkit-input-placeholder {
    COMPONENT: LEAFLET-DISTORTABLE.CSS
    ========================================================================== */
 
-/* Component Size: 372 lines, 7.93 KB */
+/* Component Size: 372 lines, 7.91 KB */
 
 
 /* Leaflet DistortableImage & Toolbar Plugin Styles
@@ -26322,11 +26345,11 @@ input[type="text"]::-webkit-input-placeholder {
    Leaflet DistortableImage CSS (from leaflet-distortableimage/dist/leaflet.distortableimage.css)
    ============================================================================ */
 .ldi .leaflet-popup-toolbar {
-  width: max-content !important;
+  width: max-content;
 }
 
 .ldi .leaflet-pane .leaflet-overlay-pane img {
-  pointer-events: all !important;
+  pointer-events: all;
 }
 
 .ldi .leaflet-pane .leaflet-overlay-pane img.disabled {
@@ -26858,7 +26881,7 @@ input[type="text"]::-webkit-input-placeholder {
    COMPONENT: EVENTS.CSS
    ========================================================================== */
 
-/* Component Size: 1520 lines, 30.83 KB */
+/* Component Size: 1520 lines, 30.79 KB */
 
 /**
  * Events Styles
@@ -27174,7 +27197,7 @@ input[type="text"]::-webkit-input-placeholder {
 
 .cr-source-cell-actions {
   text-align: center;
-  padding: var(--size-2-2) !important;
+  padding: var(--size-2-2);
 }
 
 .cr-source-cell-actions .crc-btn {
@@ -27998,7 +28021,7 @@ input[type="text"]::-webkit-input-placeholder {
 
 .crc-type-cell-icon {
   width: 32px;
-  padding-left: 0 !important;
+  padding-left: 0;
 }
 
 .crc-type-icon-swatch {
@@ -28027,7 +28050,7 @@ input[type="text"]::-webkit-input-placeholder {
 .crc-type-cell-actions {
   width: auto;
   text-align: right;
-  padding-right: 0 !important;
+  padding-right: 0;
 }
 
 .crc-type-actions-wrapper {
@@ -29343,7 +29366,7 @@ body.wide-timeline .view-content {
    COMPONENT: SOURCES.CSS
    ========================================================================== */
 
-/* Component Size: 2832 lines, 57.42 KB */
+/* Component Size: 2832 lines, 57.32 KB */
 
 /**
  * Sources Styles
@@ -30023,12 +30046,12 @@ body.wide-timeline .view-content {
 }
 
 .cr-media-lightbox .modal-content {
-  max-width: none !important;
-  width: 100% !important;
-  height: 100% !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  background: transparent !important;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  background: transparent;
 }
 
 .cr-media-lightbox-close {
@@ -30988,7 +31011,7 @@ body.wide-timeline .view-content {
    so we need a global rule when modal is present.
    Modal z-index is 50 (--layer-modal), so we need higher. */
 body:has(.cr-image-wizard) .suggestion-container {
-  z-index: 100 !important;
+  z-index: 100;
 }
 
 /* Progress Steps */
@@ -31249,7 +31272,7 @@ body:has(.cr-image-wizard) .suggestion-container {
 }
 
 .cr-image-wizard__row--conflict {
-  background: rgba(var(--color-yellow-rgb), 0.1) !important;
+  background: rgba(var(--color-yellow-rgb), 0.1);
 }
 
 .cr-image-wizard__conflict {
@@ -31513,7 +31536,7 @@ body:has(.cr-image-wizard) .suggestion-container {
 
 /* Ensure folder suggestions appear above the modal */
 body:has(.cr-media-linker) .suggestion-container {
-  z-index: 100 !important;
+  z-index: 100;
 }
 
 /* Progress Steps - reuses image wizard patterns */
@@ -32184,7 +32207,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: STATISTICS.CSS
    ========================================================================== */
 
-/* Component Size: 1811 lines, 36.33 KB */
+/* Component Size: 1811 lines, 36.3 KB */
 
 /**
  * Statistics Tab & View Styles
@@ -33133,8 +33156,8 @@ body:has(.cr-media-linker) .suggestion-container {
    on the SVG element that need to be overridden. */
 .cr-sv-report-card-icon svg,
 .cr-sv-report-card-icon .svg-icon {
-  width: 18px !important;
-  height: 18px !important;
+  width: 18px;
+  height: 18px;
   min-width: 18px;
   min-height: 18px;
 }
@@ -33585,7 +33608,7 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 .cr-sv-drilldown-cell {
-  padding: var(--size-4-2) var(--size-4-3) var(--size-4-3) var(--size-4-5) !important;
+  padding: var(--size-4-2) var(--size-4-3) var(--size-4-3) var(--size-4-5);
 }
 
 /* Drill-down list of people */
@@ -36320,7 +36343,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: MAP-WIZARD.CSS
    ========================================================================== */
 
-/* Component Size: 606 lines, 12.68 KB */
+/* Component Size: 606 lines, 12.67 KB */
 
 /* ==========================================================================
    MAP CREATION WIZARD
@@ -36617,7 +36640,7 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 .crc-wizard-place-marker--dragging {
-  cursor: grabbing !important;
+  cursor: grabbing;
   opacity: 80%;
   transform: translate(-50%, -50%) scale(1.2);
   box-shadow: 0 4px 16px rgb(0 0 0 / 40%);
@@ -36935,7 +36958,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: PREFERENCES.CSS
    ========================================================================== */
 
-/* Component Size: 431 lines, 9.44 KB */
+/* Component Size: 431 lines, 9.42 KB */
 
 /* ==========================================================================
    Preferences Tab Styles
@@ -37269,8 +37292,8 @@ body:has(.cr-media-linker) .suggestion-container {
 }
 
 .cr-media-folder-add-setting {
-  border: none !important;
-  padding: 0 !important;
+  border: none;
+  padding: 0;
 }
 
 .cr-media-folder-add-setting .setting-item-info {
@@ -37375,7 +37398,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: TREE-OUTPUT.CSS
    ========================================================================== */
 
-/* Component Size: 1548 lines, 30.41 KB */
+/* Component Size: 1548 lines, 30.38 KB */
 
 /* Tree Output Tab - Two-Panel Layout */
 
@@ -38774,9 +38797,9 @@ body:has(.cr-media-linker) .suggestion-container {
 
 /* Compact settings for unified wizard steps */
 .crc-unified-wizard .setting-item {
-  padding: 4px 0 !important;
-  border-bottom: none !important;
-  border-top: none !important;
+  padding: 4px 0;
+  border-bottom: none;
+  border-top: none;
 }
 
 .crc-unified-wizard .setting-item-info {
@@ -41762,11 +41785,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-13 19:59:35 UTC
+ * Build completed: 2026-05-13 20:30:21 UTC
  * Components processed: 50
- * Total lines: 41293
- * Total size: 836.61 KB
- * Build duration: 1.34 seconds
+ * Total lines: 41316
+ * Total size: 838.68 KB
+ * Build duration: 0.35 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.86 KB
@@ -41774,9 +41797,9 @@ body:has(.cr-media-linker) .suggestion-container {
  * - base.css: 98 lines, 1.54 KB
  * - layout.css: 22 lines, 0.25 KB
  * - settings.css: 131 lines, 3.53 KB
- * - control-center.css: 5748 lines, 107.78 KB
+ * - control-center.css: 5748 lines, 107.67 KB
  * - entity-create-modals.css: 1236 lines, 25.51 KB
- * - place-modals.css: 1422 lines, 28.34 KB
+ * - place-modals.css: 1422 lines, 28.32 KB
  * - media-modals.css: 2011 lines, 39.02 KB
  * - import-export-wizard.css: 2187 lines, 41.61 KB
  * - staging-manager.css: 554 lines, 11.34 KB
@@ -41788,21 +41811,21 @@ body:has(.cr-media-linker) .suggestion-container {
  * - find-on-canvas.css: 275 lines, 5.13 KB
  * - folder-scan.css: 155 lines, 2.6 KB
  * - relationship-calculator.css: 302 lines, 5.27 KB
- * - family-chart-view.css: 1484 lines, 36.1 KB
+ * - family-chart-view.css: 1487 lines, 36.11 KB
  * - family-chart-export.css: 699 lines, 14.78 KB
  * - report-wizard.css: 908 lines, 19.89 KB
  * - book-builder.css: 371 lines, 7.29 KB
  * - data-quality.css: 1446 lines, 28.73 KB
  * - relationships.css: 597 lines, 11.43 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB
- * - map-view.css: 2485 lines, 51.85 KB
- * - leaflet-distortable.css: 372 lines, 7.93 KB
+ * - map-view.css: 2505 lines, 54.27 KB
+ * - leaflet-distortable.css: 372 lines, 7.91 KB
  * - date-systems.css: 287 lines, 5.31 KB
- * - events.css: 1520 lines, 30.83 KB
+ * - events.css: 1520 lines, 30.79 KB
  * - timeline-callouts.css: 325 lines, 10.86 KB
  * - organizations.css: 615 lines, 11.57 KB
- * - sources.css: 2832 lines, 57.42 KB
- * - statistics.css: 1811 lines, 36.33 KB
+ * - sources.css: 2832 lines, 57.32 KB
+ * - statistics.css: 1811 lines, 36.3 KB
  * - command-menu.css: 73 lines, 1.6 KB
  * - dashboard.css: 491 lines, 9.63 KB
  * - universe-wizard.css: 621 lines, 11.17 KB
@@ -41811,9 +41834,9 @@ body:has(.cr-media-linker) .suggestion-container {
  * - collections.css: 41 lines, 0.73 KB
  * - data-quality-view.css: 47 lines, 0.89 KB
  * - family-wizard.css: 743 lines, 15.63 KB
- * - map-wizard.css: 606 lines, 12.68 KB
- * - preferences.css: 431 lines, 9.44 KB
- * - tree-output.css: 1548 lines, 30.41 KB
+ * - map-wizard.css: 606 lines, 12.67 KB
+ * - preferences.css: 431 lines, 9.42 KB
+ * - tree-output.css: 1548 lines, 30.38 KB
  * - dynamic-content.css: 1217 lines, 26.68 KB
  * - profile-view.css: 1121 lines, 25.01 KB
  * - calendar-view.css: 302 lines, 6.83 KB

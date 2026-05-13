@@ -5217,19 +5217,19 @@
 
 /* Drawer in mobile mode - slides in from left */
 .crc-drawer.crc-drawer--mobile {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  bottom: 0 !important;
-  width: 280px !important;
-  z-index: 101 !important;
-  transform: translateX(-100%) !important;
-  transition: transform 0.3s ease !important;
-  box-shadow: 2px 0 8px rgb(0 0 0 / 20%) !important;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 280px;
+  z-index: 101;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  box-shadow: 2px 0 8px rgb(0 0 0 / 20%);
 }
 
 .crc-drawer.crc-drawer--mobile.crc-drawer--open {
-  transform: translateX(0) !important;
+  transform: translateX(0);
 }
 
 .crc-drawer-backdrop.crc-drawer-backdrop--mobile.crc-drawer-backdrop--visible {

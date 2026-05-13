@@ -312,7 +312,7 @@
 
 .cr-source-cell-actions {
   text-align: center;
-  padding: var(--size-2-2) !important;
+  padding: var(--size-2-2);
 }
 
 .cr-source-cell-actions .crc-btn {
@@ -1136,7 +1136,7 @@
 
 .crc-type-cell-icon {
   width: 32px;
-  padding-left: 0 !important;
+  padding-left: 0;
 }
 
 .crc-type-icon-swatch {
@@ -1165,7 +1165,7 @@
 .crc-type-cell-actions {
   width: auto;
   text-align: right;
-  padding-right: 0 !important;
+  padding-right: 0;
 }
 
 .crc-type-actions-wrapper {

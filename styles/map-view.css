@@ -37,7 +37,7 @@
 }
 
 .leaflet-tile::selection {
-  background: transparent;
+  background-color: transparent;
 }
 
 .leaflet-safari .leaflet-tile {
@@ -375,7 +375,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 /* Layers control base styles */
 .leaflet-control-layers {
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
-  background: #ffffff;
+  background-color: #ffffff;
   border-radius: 5px;
 }
 
@@ -392,7 +392,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .leaflet-control-layers-expanded {
   padding: 6px 10px 6px 6px;
   color: #333333;
-  background: #ffffff;
+  background-color: #ffffff;
 }
 
 .leaflet-control-layers-scrollbar {
@@ -420,7 +420,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 /* Attribution styles */
 .leaflet-container .leaflet-control-attribution {
-  background: rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 0.8);
   margin: 0;
 }
 
@@ -456,7 +456,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   padding: 2px 5px 1px;
   white-space: nowrap;
   box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 0.8);
   text-shadow: 1px 1px #ffffff;
 }
 
@@ -529,7 +529,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {
-  background: white;
+  background-color: white;
   color: #333333;
   box-shadow: 0 3px 14px rgba(0, 0, 0, 0.4);
 }
@@ -548,7 +548,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     sans-serif;
   color: #757575;
   text-decoration: none;
-  background: transparent;
+  background-color: transparent;
 }
 
 .leaflet-container a.leaflet-popup-close-button:hover,
@@ -562,7 +562,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 /* Div icon */
 .leaflet-div-icon {
-  background: #ffffff;
+  background-color: #ffffff;
   border: 1px solid #666666;
 }
 
@@ -594,7 +594,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   position: absolute;
   pointer-events: none;
   border: 6px solid transparent;
-  background: transparent;
+  background-color: transparent;
   content: "";
 }
 
@@ -733,7 +733,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   height: 100%;
   width: 100%;
   overflow: hidden;
-  background: var(--background-primary);
+  background-color: var(--background-primary);
   font-family: var(--font-interface);
 }
 
@@ -742,51 +742,51 @@ svg.leaflet-image-layer.leaflet-interactive path {
 }
 
 /* Zoom controls */
-.leaflet-control-zoom {
-  border: none !important;
-  box-shadow: var(--shadow-s) !important;
+.cr-map-view .leaflet-control-zoom {
+  border: none;
+  box-shadow: var(--shadow-s);
 }
 
-.leaflet-control-zoom a {
-  background: var(--background-primary) !important;
-  color: var(--text-normal) !important;
-  border: 1px solid var(--background-modifier-border) !important;
+.cr-map-view .leaflet-control-zoom a {
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
 }
 
-.leaflet-control-zoom a:hover {
-  background: var(--background-modifier-hover) !important;
+.cr-map-view .leaflet-control-zoom a:hover {
+  background-color: var(--background-modifier-hover);
 }
 
 /* Attribution */
-.leaflet-control-attribution {
-  background: var(--background-primary) !important;
-  color: var(--text-muted) !important;
-  font-size: var(--font-smallest) !important;
-  padding: 2px 8px !important;
+.cr-map-view .leaflet-control-attribution {
+  background-color: var(--background-primary);
+  color: var(--text-muted);
+  font-size: var(--font-smallest);
+  padding: 2px 8px;
 }
 
-.leaflet-control-attribution a {
-  color: var(--text-accent) !important;
+.cr-map-view .leaflet-control-attribution a {
+  color: var(--text-accent);
 }
 
 /* Popup styling */
-.leaflet-popup-content-wrapper {
-  background: var(--background-primary) !important;
-  color: var(--text-normal) !important;
-  border-radius: var(--radius-m) !important;
-  box-shadow: var(--shadow-s) !important;
+.cr-map-view .leaflet-popup-content-wrapper {
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-s);
 }
 
-.leaflet-popup-tip {
-  background: var(--background-primary) !important;
+.cr-map-view .leaflet-popup-tip {
+  background-color: var(--background-primary);
 }
 
-.leaflet-popup-close-button {
-  color: var(--text-muted) !important;
+.cr-map-view .leaflet-popup-close-button {
+  color: var(--text-muted);
 }
 
-.leaflet-popup-close-button:hover {
-  color: var(--text-normal) !important;
+.cr-map-view .leaflet-popup-close-button:hover {
+  color: var(--text-normal);
 }
 
 /* --------------------------------------------------------------------------
@@ -945,13 +945,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
 }
 
 /* Ensure leaflet container fills the map container */
-.cr-map-container .leaflet-container {
+.cr-map-view .cr-map-container .leaflet-container {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--background-primary) !important;
+  background-color: var(--background-primary);
 }
 
 /* Error state */
@@ -1114,47 +1114,66 @@ svg.leaflet-image-layer.leaflet-interactive path {
    Fullscreen Mode
    -------------------------------------------------------------------------- */
 
-.leaflet-control-fullscreen a {
-  background: var(--background-primary) !important;
-  color: var(--text-normal) !important;
-  border: 1px solid var(--background-modifier-border) !important;
+.cr-map-view .leaflet-control-fullscreen a {
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+  position: relative;
 }
 
-.leaflet-control-fullscreen a:hover {
-  background: var(--background-modifier-hover) !important;
+.cr-map-view .leaflet-control-fullscreen a:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+/* The leaflet-fullscreen plugin's own CSS references a sprite PNG that
+   we don't ship. Draw the icon directly via inline SVG mask so it adapts
+   to the current text color (theme-aware). Lucide "maximize" for the
+   default state, "minimize" when fullscreen is active. */
+.cr-map-view .leaflet-control-fullscreen a::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: currentColor;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M8 3H5a2 2 0 0 0-2 2v3'/><path d='M21 8V5a2 2 0 0 0-2-2h-3'/><path d='M3 16v3a2 2 0 0 0 2 2h3'/><path d='M16 21h3a2 2 0 0 0 2-2v-3'/></svg>") center / 16px no-repeat;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M8 3H5a2 2 0 0 0-2 2v3'/><path d='M21 8V5a2 2 0 0 0-2-2h-3'/><path d='M3 16v3a2 2 0 0 0 2 2h3'/><path d='M16 21h3a2 2 0 0 0 2-2v-3'/></svg>") center / 16px no-repeat;
+}
+
+.cr-map-view .leaflet-fullscreen-on .leaflet-control-fullscreen a::before {
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M8 3v3a2 2 0 0 1-2 2H3'/><path d='M21 8h-3a2 2 0 0 1-2-2V3'/><path d='M3 16h3a2 2 0 0 1 2 2v3'/><path d='M16 21v-3a2 2 0 0 1 2-2h3'/></svg>");
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M8 3v3a2 2 0 0 1-2 2H3'/><path d='M21 8h-3a2 2 0 0 1-2-2V3'/><path d='M3 16h3a2 2 0 0 1 2 2v3'/><path d='M16 21v-3a2 2 0 0 1 2-2h3'/></svg>");
 }
 
 /* --------------------------------------------------------------------------
    Mini-map
    -------------------------------------------------------------------------- */
 
-.leaflet-control-minimap {
-  border: 2px solid var(--background-modifier-border) !important;
-  box-shadow: var(--shadow-s) !important;
+.cr-map-view .leaflet-control-minimap {
+  border: 2px solid var(--background-modifier-border);
+  box-shadow: var(--shadow-s);
 }
 
-.leaflet-control-minimap-toggle-display {
-  background: var(--background-primary) !important;
-  color: var(--text-normal) !important;
+.cr-map-view .leaflet-control-minimap-toggle-display {
+  background-color: var(--background-primary);
+  color: var(--text-normal);
 }
 
 /* --------------------------------------------------------------------------
    Layer Control
    -------------------------------------------------------------------------- */
 
-.leaflet-control-layers {
-  background: var(--background-primary) !important;
-  border: 1px solid var(--background-modifier-border) !important;
-  border-radius: var(--radius-s) !important;
-  box-shadow: var(--shadow-s) !important;
+.cr-map-view .leaflet-control-layers {
+  background-color: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  box-shadow: var(--shadow-s);
 }
 
-.leaflet-control-layers-toggle {
-  background-color: var(--background-primary) !important;
+.cr-map-view .leaflet-control-layers-toggle {
+  background-color: var(--background-primary);
 }
 
-.leaflet-control-layers label {
-  color: var(--text-normal) !important;
+.cr-map-view .leaflet-control-layers label {
+  color: var(--text-normal);
 }
 
 /* --------------------------------------------------------------------------
@@ -1295,11 +1314,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
   text-align: center;
 }
 
-/* Active button state */
-.cr-map-btn-active {
-  background: var(--interactive-accent) !important;
-  color: var(--text-on-accent) !important;
-  border-color: var(--interactive-accent) !important;
+/* Active button state. Chained selector raises specificity above the
+   base .cr-map-btn rule so !important isn't needed. */
+.cr-map-btn.cr-map-btn-active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
 }
 
 /* --------------------------------------------------------------------------
@@ -1466,12 +1486,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
    Journey Rich Waypoint Popup
    -------------------------------------------------------------------------- */
 
-.cr-journey-rich-popup .leaflet-popup-content-wrapper {
+.cr-map-view .cr-journey-rich-popup .leaflet-popup-content-wrapper {
   border-radius: var(--radius-m);
   padding: 0;
 }
 
-.cr-journey-rich-popup .leaflet-popup-content {
+.cr-map-view .cr-journey-rich-popup .leaflet-popup-content {
   margin: 0;
 }
 
@@ -1551,7 +1571,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
    Search Control (leaflet-search)
    -------------------------------------------------------------------------- */
 
-.leaflet-control-search {
+.cr-map-view .leaflet-control-search {
   position: relative;
   z-index: 801;
   box-shadow: var(--shadow-s);
@@ -1559,8 +1579,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
   overflow: visible;
 }
 
-.leaflet-control-search .search-input {
-  background: var(--background-primary);
+.cr-map-view .leaflet-control-search .search-input {
+  background-color: var(--background-primary);
   color: var(--text-normal);
   border: 2px solid var(--interactive-accent);
   border-radius: var(--radius-m);
@@ -1572,17 +1592,17 @@ svg.leaflet-image-layer.leaflet-interactive path {
   box-shadow: var(--shadow-s);
 }
 
-.leaflet-control-search .search-input:focus {
+.cr-map-view .leaflet-control-search .search-input:focus {
   border-color: var(--interactive-accent);
   box-shadow: 0 0 0 3px rgba(var(--interactive-accent-rgb), 0.3);
 }
 
-.leaflet-control-search .search-input::placeholder {
+.cr-map-view .leaflet-control-search .search-input::placeholder {
   color: var(--text-muted);
 }
 
-.leaflet-control-search .search-button {
-  background: var(--interactive-accent);
+.cr-map-view .leaflet-control-search .search-button {
+  background-color: var(--interactive-accent);
   border: none;
   border-radius: var(--radius-m);
   color: var(--text-on-accent);
@@ -1596,19 +1616,19 @@ svg.leaflet-image-layer.leaflet-interactive path {
   transition: var(--cr-transition-fast);
 }
 
-.leaflet-control-search .search-button:hover {
-  background: var(--interactive-accent-hover);
+.cr-map-view .leaflet-control-search .search-button:hover {
+  background-color: var(--interactive-accent-hover);
   transform: scale(1.05);
 }
 
 /* Search icon styling */
-.leaflet-control-search .search-button::before {
+.cr-map-view .leaflet-control-search .search-button::before {
   content: "🔍";
   font-size: 14px;
 }
 
-.leaflet-control-search .search-cancel {
-  background: transparent;
+.cr-map-view .leaflet-control-search .search-cancel {
+  background-color: transparent;
   border: none;
   color: var(--text-muted);
   cursor: pointer;
@@ -1618,12 +1638,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
   transform: translateY(-50%);
 }
 
-.leaflet-control-search .search-cancel:hover {
+.cr-map-view .leaflet-control-search .search-cancel:hover {
   color: var(--text-normal);
 }
 
-.leaflet-control-search .search-tooltip {
-  background: var(--background-primary);
+.cr-map-view .leaflet-control-search .search-tooltip {
+  background-color: var(--background-primary);
   border: 1px solid var(--background-modifier-border);
   border-radius: var(--radius-s);
   box-shadow: var(--shadow-s);
@@ -1632,7 +1652,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   margin-top: 2px;
 }
 
-.leaflet-control-search .search-tooltip a {
+.cr-map-view .leaflet-control-search .search-tooltip a {
   display: block;
   padding: var(--cr-spacing-xs) var(--cr-spacing-sm);
   color: var(--text-normal);
@@ -1640,22 +1660,22 @@ svg.leaflet-image-layer.leaflet-interactive path {
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.leaflet-control-search .search-tooltip a:last-child {
+.cr-map-view .leaflet-control-search .search-tooltip a:last-child {
   border-bottom: none;
 }
 
 .leaflet-control-search .search-tooltip a:hover,
-.leaflet-control-search .search-tooltip a.search-tip-select {
-  background: var(--background-modifier-hover);
+.cr-map-view .leaflet-control-search .search-tooltip a.search-tip-select {
+  background-color: var(--background-modifier-hover);
 }
 
-.leaflet-control-search .search-tooltip a small {
+.cr-map-view .leaflet-control-search .search-tooltip a small {
   color: var(--text-muted);
   font-size: var(--font-smallest);
 }
 
-.leaflet-control-search .search-alert {
-  background: var(--background-modifier-error);
+.cr-map-view .leaflet-control-search .search-alert {
+  background-color: var(--background-modifier-error);
   color: var(--text-error);
   padding: var(--cr-spacing-xs) var(--cr-spacing-sm);
   border-radius: var(--radius-s);
@@ -1664,15 +1684,15 @@ svg.leaflet-image-layer.leaflet-interactive path {
 }
 
 /* Collapsed state - show prominent search button */
-.leaflet-control-search.search-exp-0 .search-input {
+.cr-map-view .leaflet-control-search.search-exp-0 .search-input {
   display: none;
 }
 
-.leaflet-control-search.search-exp-0 .search-button {
+.cr-map-view .leaflet-control-search.search-exp-0 .search-button {
   border-radius: var(--radius-m);
   width: 40px;
   height: 40px;
-  background: var(--interactive-accent);
+  background-color: var(--interactive-accent);
   animation: cr-search-pulse 2s ease-in-out infinite;
 }
 
@@ -1690,11 +1710,11 @@ svg.leaflet-image-layer.leaflet-interactive path {
 }
 
 /* Expanded state */
-.leaflet-control-search.search-exp-1 .search-input {
+.cr-map-view .leaflet-control-search.search-exp-1 .search-input {
   display: block;
 }
 
-.leaflet-control-search.search-exp-1 .search-button {
+.cr-map-view .leaflet-control-search.search-exp-1 .search-button {
   animation: none;
 }
 
@@ -1762,21 +1782,21 @@ svg.leaflet-image-layer.leaflet-interactive path {
    -------------------------------------------------------------------------- */
 
 /* Distortable image toolbar container */
-.ldi .leaflet-popup-toolbar {
-  width: max-content !important;
+.cr-map-view .ldi .leaflet-popup-toolbar {
+  width: max-content;
 }
 
 /* Make distortable images interactive */
-.ldi .leaflet-pane .leaflet-overlay-pane img {
-  pointer-events: all !important;
+.cr-map-view .ldi .leaflet-pane .leaflet-overlay-pane img {
+  pointer-events: all;
 }
 
-.ldi .leaflet-pane .leaflet-overlay-pane img.disabled {
+.cr-map-view .ldi .leaflet-pane .leaflet-overlay-pane img.disabled {
   cursor: default;
 }
 
 /* Selected image highlight */
-.ldi img.leaflet-image-layer.collected {
+.cr-map-view .ldi img.leaflet-image-layer.collected {
   box-shadow: 0px 0px 0px 12px var(--interactive-accent);
 }
 
@@ -1803,11 +1823,11 @@ input.ldi {
 }
 
 /* Distortable toolbar icon box sizing */
-.ldi .leaflet-toolbar-icon {
+.cr-map-view .ldi .leaflet-toolbar-icon {
   box-sizing: initial;
 }
 
-.ldi .leaflet-toolbar-tip {
+.cr-map-view .ldi .leaflet-toolbar-tip {
   box-sizing: border-box;
 }
 
@@ -1825,7 +1845,7 @@ input.ldi {
   overflow: hidden;
 }
 
-.ldi #keymapper-wrapper {
+.cr-map-view .ldi #keymapper-wrapper {
   position: relative;
   width: 100%;
   overflow-x: hidden;
@@ -1834,15 +1854,15 @@ input.ldi {
   min-height: 186px;
 }
 
-.ldi .left {
+.cr-map-view .ldi .left {
   width: 46%;
 }
 
-.ldi .left span {
+.cr-map-view .ldi .left span {
   overflow-wrap: break-word;
 }
 
-.ldi .right {
+.cr-map-view .ldi .right {
   display: flex;
   max-width: 40%;
   flex-wrap: wrap;
@@ -1850,7 +1870,7 @@ input.ldi {
   align-items: flex-start;
 }
 
-.ldi #keymapper-hr {
+.cr-map-view .ldi #keymapper-hr {
   transform: rotate(90deg);
   position: relative;
   transform-origin: 0px;
@@ -2203,10 +2223,10 @@ input[type="text"]::-webkit-input-placeholder {
 }
 
 /* Ensure Leaflet map fills container */
-.cr-world-map-leaflet .leaflet-container {
+.cr-map-view .cr-world-map-leaflet .leaflet-container {
   width: 100%;
   height: 100%;
-  background: var(--background-secondary-alt);
+  background-color: var(--background-secondary-alt);
 }
 
 /* Click overlay - captures all clicks for navigation */
@@ -2222,7 +2242,7 @@ input[type="text"]::-webkit-input-placeholder {
 }
 
 /* Circle markers styling */
-.cr-world-map-leaflet .leaflet-interactive {
+.cr-map-view .cr-world-map-leaflet .leaflet-interactive {
   pointer-events: none;
 }
 
@@ -2312,9 +2332,9 @@ input[type="text"]::-webkit-input-placeholder {
    Map icon markers for child maps displayed on parent maps.
    -------------------------------------------------------------------------- */
 
-.cr-child-map-marker-icon {
-  background: transparent !important;
-  border: none !important;
+.leaflet-marker-icon.cr-child-map-marker-icon {
+  background-color: transparent;
+  border: none;
 }
 
 .cr-child-map-marker {

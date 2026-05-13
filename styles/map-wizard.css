@@ -293,7 +293,7 @@
 }
 
 .crc-wizard-place-marker--dragging {
-  cursor: grabbing !important;
+  cursor: grabbing;
   opacity: 80%;
   transform: translate(-50%, -50%) scale(1.2);
   box-shadow: 0 4px 16px rgb(0 0 0 / 40%);

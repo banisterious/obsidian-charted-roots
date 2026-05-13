@@ -657,20 +657,21 @@
   margin: 0;
 }
 
-/* Constrain SVG icons in form panel - force all SVGs to reasonable size */
+/* Constrain SVG icons in form panel. Specificity (3 classes + element)
+   beats family-chart's own rules without needing !important. */
 .cr-fcv-chart-container.f3 .f3-form-cont svg {
-  width: 24px !important;
-  height: 24px !important;
-  max-width: 24px !important;
-  max-height: 24px !important;
+  width: 24px;
+  height: 24px;
+  max-width: 24px;
+  max-height: 24px;
   flex-shrink: 0;
 }
 
 .cr-fcv-chart-container.f3 .f3-form-cont button svg {
-  width: 16px !important;
-  height: 16px !important;
-  max-width: 16px !important;
-  max-height: 16px !important;
+  width: 16px;
+  height: 16px;
+  max-width: 16px;
+  max-height: 16px;
 }
 
 /* Form panel layout constraints */
@@ -1232,16 +1233,18 @@
   position: relative;
   /* Center the card on the node position */
   transform: translate(-50%, -50%);
-  /* Reset Obsidian's .card defaults */
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  border-radius: 0 !important;
-  display: block !important;
-  flex-direction: unset !important;
-  flex-grow: unset !important;
+  /* Reset Obsidian's .card defaults. Our 3-class selector specificity
+     (.cr-fcv-chart-container.card-style-circle .card) beats Obsidian's
+     bare .card rule on its own. */
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+  display: block;
+  flex-direction: unset;
+  flex-grow: unset;
 }
 
 /* Override base hover transform that would shift card children */

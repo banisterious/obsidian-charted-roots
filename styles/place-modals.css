@@ -789,7 +789,7 @@
 }
 
 .crc-migration-arc:hover {
-  stroke-opacity: 100% !important;
+  stroke-opacity: 100%;
 }
 
 .crc-migration-node circle {
@@ -970,7 +970,7 @@
 }
 
 .crc-migration-flow:hover {
-  stroke-opacity: 100% !important;
+  stroke-opacity: 100%;
 }
 
 /* ==========================================================================
