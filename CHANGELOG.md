@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.33] - 2026-05-12
+
+A single-fix follow-up to v0.22.32. The Community automated scan against v0.22.32 surfaced one error-level finding (`no rules have been disabled` at `styles.css:90`) — the inverse failure of the directive-bleed bug v0.22.32 was meant to fix. The defensive `build-css.js` auto-inject from v0.22.32 was unconditional, so components without a file-level `stylelint-disable` got an orphan enable at their boundary. The auto-inject is now conditional on the disable/enable balance in each component. Everything else from the v0.22.32 scan was warning-tier (the `>5MB main.js` Sync Standard issue, the false-positive `setInterval` + network suspicion, the `Unsafe any` long tail, the `chalk` dev-dependency note); both attestation Recommendations now show as verified passes. Stability window unchanged — this is the eleventh patch in the v0.22.22-anchored window. **883 tests passing across 68 suites**.
+
 ### Fixed
 
 - **Bundled `styles.css` no longer emits a `no rules have been disabled` stylelint error** ([surfaced by Obsidian's Community automated review against v0.22.32](https://github.com/banisterious/obsidian-charted-roots/issues/)): v0.22.32's defensive `build-css.js` change auto-injected `/* stylelint-enable */` between every concatenated component. The injection was unconditional — components with no file-level `stylelint-disable` got an orphan enable at their boundary, which stylelint flags as needless. The first such site was line 90 (the variables.css boundary), and it was the only error-level finding gating Community Plugins admission. The auto-inject is now conditional: it emits an enable only when a component has more file-level disables than enables. Line-scoped variants (`stylelint-disable-next-line`, `stylelint-disable-line`) don't count toward the balance since they don't bleed across components.
