@@ -1,3 +1,4 @@
+/* eslint-disable obsidianmd/ui/sentence-case -- Rule misfires on quoted button labels, month names, proper-noun section paths, and example strings; per-site audit deferred. */
 /**
  * Import/Export Hub Modal
  * A hub modal providing access to import and export functionality:

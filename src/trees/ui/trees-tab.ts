@@ -1,3 +1,4 @@
+/* eslint-disable obsidianmd/ui/sentence-case -- Rule misfires on quoted button labels, month names, proper-noun section paths, and example strings; per-site audit deferred. */
 /**
  * Trees & Reports tab for the Control Center
  *

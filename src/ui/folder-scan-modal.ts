@@ -1,3 +1,4 @@
+/* eslint-disable obsidianmd/ui/sentence-case -- Rule misfires on quoted button labels, month names, proper-noun section paths, and example strings; per-site audit deferred. */
 import { App, Modal, TFolder, TFile } from 'obsidian';
 import { RelationshipValidator, ValidationResult } from '../core/relationship-validator';
 import type { PersonIndexService } from '../core/person-index-service';

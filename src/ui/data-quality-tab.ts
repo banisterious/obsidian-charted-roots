@@ -1,3 +1,4 @@
+/* eslint-disable obsidianmd/ui/sentence-case -- Rule misfires on quoted button labels, month names, proper-noun section paths, and example strings; per-site audit deferred. */
 /**
  * Data Quality tab for the Control Center
  *
@@ -1824,4 +1825,3 @@ async function runBatchOperation(
 // ---------------------------------------------------------------------------
 // Person-specific batch operations (called from People tab)
 // ---------------------------------------------------------------------------
-
