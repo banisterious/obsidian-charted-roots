@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 import { Plugin, Notice, TFile, TFolder, EventRef, WorkspaceLeaf, ObsidianProtocolData } from 'obsidian';
 import { CanvasRootsSettings, DEFAULT_SETTINGS, CanvasRootsSettingTab } from './src/settings';
 import { LoggerFactory, getLogger } from './src/core/logging';

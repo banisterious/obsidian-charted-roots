@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 import { describe, expect, it } from 'vitest';
 import { App, TFile } from 'obsidian';
 import { FamilyGraphService } from '../src/core/family-graph';

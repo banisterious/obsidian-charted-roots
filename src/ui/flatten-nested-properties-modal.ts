@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 /**
  * Modal for flattening nested YAML properties in Charted Roots notes
  * Converts nested structures like coordinates: { lat, long } to flat properties

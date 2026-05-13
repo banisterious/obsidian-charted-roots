@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 import { App, Menu, Modal, Notice, Platform, TFile, setIcon, normalizePath } from 'obsidian';
 import CanvasRootsPlugin from '../../main';
 import { TAB_CONFIGS, NAV_GROUPS, TOOL_CONFIGS, createLucideIcon, setLucideIcon, LucideIconName } from './lucide-icons';

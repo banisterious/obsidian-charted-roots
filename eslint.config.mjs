@@ -67,15 +67,17 @@ export default [
 	{
 		files: ["main.ts", "src/**/*.ts", "tests/**/*.ts"],
 		rules: {
-			// Type-checked TS rules disabled: the plugin bot doesn't run
-			// these, and they flag legitimate any-from-Obsidian-API patterns
-			// throughout the codebase. Disabling them locally keeps `npm run
-			// lint` aligned with what actually blocks publishing.
-			"@typescript-eslint/no-unsafe-member-access": "off",
-			"@typescript-eslint/no-unsafe-argument": "off",
-			"@typescript-eslint/no-unsafe-assignment": "off",
-			"@typescript-eslint/no-unsafe-call": "off",
-			"@typescript-eslint/no-unsafe-return": "off",
+			// Type-checked TS rules surfaced as warnings: the no-unsafe-*
+			// family flags legitimate any-from-Obsidian-API patterns
+			// throughout the codebase. Surfaced at warn level so file-level
+			// `eslint-disable` comments are honored both locally and by
+			// Obsidian's Community automated review scanner (which uses its
+			// own strict ruleset and ignores our config-level overrides).
+			"@typescript-eslint/no-unsafe-member-access": "warn",
+			"@typescript-eslint/no-unsafe-argument": "warn",
+			"@typescript-eslint/no-unsafe-assignment": "warn",
+			"@typescript-eslint/no-unsafe-call": "warn",
+			"@typescript-eslint/no-unsafe-return": "warn",
 
 			// prefer-active-doc, prefer-window-timers: surface as visible
 			// suggestions rather than blocking errors — the publish bot doesn't

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 import { App, Modal, TFile } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 import { FamilyGraphService } from '../core/family-graph';

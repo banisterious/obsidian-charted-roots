@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 /**
  * GEDCOM Preprocessor for MyHeritage Compatibility
  *
@@ -670,4 +671,4 @@ export async function preprocessGedcomAsync(
 			detectionInfo: detection
 		}
 	};
-}
+}

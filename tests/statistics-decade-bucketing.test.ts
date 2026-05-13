@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 import { describe, expect, it } from 'vitest';
 import { StatisticsService } from '../src/statistics/services/statistics-service';
 import { createDateService, type DateService } from '../src/dates/services/date-service';

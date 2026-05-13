@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 /**
  * Research Report Export Generator
  *

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 /**
  * Markdown sanitization helpers for the book pipeline.
  *
