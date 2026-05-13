@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-13 21:02:55 UTC
+ * - Generated: 2026-05-13 21:10:45 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -7604,7 +7604,7 @@ settings:
    COMPONENT: PLACE-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 1422 lines, 28.32 KB */
+/* Component Size: 1424 lines, 28.55 KB */
 
 /* ==========================================================================
    CREATE PLACE MODAL
@@ -8023,6 +8023,7 @@ settings:
   cursor: pointer;
   color: var(--text-accent);
   text-decoration: underline;
+  
   text-decoration-style: dotted;
   text-underline-offset: 2px;
   margin-right: 4px;
@@ -8030,6 +8031,7 @@ settings:
 
 .crc-variation-count-link:hover {
   color: var(--text-accent-hover);
+  
   text-decoration-style: solid;
 }
 
@@ -23643,7 +23645,7 @@ settings:
    COMPONENT: MAP-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 2504 lines, 54.25 KB */
+/* Component Size: 2505 lines, 54.36 KB */
 
 /* ==========================================================================
    Map View Styles
@@ -24010,6 +24012,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     bold 18px "Lucida Console",
     Monaco,
     monospace;
+  
   text-indent: 1px;
 }
 
@@ -28360,7 +28363,7 @@ input[type="text"]::-webkit-input-placeholder {
    COMPONENT: TIMELINE-CALLOUTS.CSS
    ========================================================================== */
 
-/* Component Size: 327 lines, 11.04 KB */
+/* Component Size: 329 lines, 11.27 KB */
 
 /**
  * Timeline Callout Styles
@@ -28646,6 +28649,7 @@ body {
 /* Applied to top-level lists within timeline callouts */
 .callout[data-callout="cr-timeline"] .callout-content > ul,
 .callout[data-callout="cr-timeline"] .callout-content > div > ul {
+  
   column-width: var(--cr-list-min-width);
   column-gap: var(--cr-list-column-gap);
   column-rule: var(--cr-list-column-rule-width) solid var(--cr-list-column-rule-color);
@@ -28659,6 +28663,7 @@ body {
 
 /* Prevent column breaks within list items */
 .callout[data-callout="cr-timeline"] .callout-content ul li {
+  
   break-inside: avoid;
 }
 
@@ -41565,7 +41570,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: MIGRATION-NOTICE.CSS
    ========================================================================== */
 
-/* Component Size: 135 lines, 2.67 KB */
+/* Component Size: 136 lines, 2.79 KB */
 
 /* Migration Notice View Styles
  * Used for displaying upgrade notices (e.g., v0.17.0 source migration)
@@ -41668,6 +41673,7 @@ body:has(.cr-media-linker) .suggestion-container {
   border-left: 3px solid var(--text-error);
   opacity: 80%;
   text-decoration: line-through;
+  
   text-decoration-color: var(--text-error);
 }
 
@@ -41728,11 +41734,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-13 21:02:55 UTC
+ * Build completed: 2026-05-13 21:10:45 UTC
  * Components processed: 50
- * Total lines: 41259
- * Total size: 841.61 KB
- * Build duration: 0.37 seconds
+ * Total lines: 41265
+ * Total size: 842.29 KB
+ * Build duration: 0.32 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.86 KB
@@ -41742,7 +41748,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - settings.css: 131 lines, 3.53 KB
  * - control-center.css: 5686 lines, 107.21 KB
  * - entity-create-modals.css: 1239 lines, 25.87 KB
- * - place-modals.css: 1422 lines, 28.32 KB
+ * - place-modals.css: 1424 lines, 28.55 KB
  * - media-modals.css: 2030 lines, 40.84 KB
  * - import-export-wizard.css: 2187 lines, 41.95 KB
  * - staging-manager.css: 555 lines, 11.52 KB
@@ -41761,11 +41767,11 @@ body:has(.cr-media-linker) .suggestion-container {
  * - data-quality.css: 1446 lines, 28.73 KB
  * - relationships.css: 597 lines, 11.43 KB
  * - canvas-navigation.css: 683 lines, 14.64 KB
- * - map-view.css: 2504 lines, 54.25 KB
+ * - map-view.css: 2505 lines, 54.36 KB
  * - leaflet-distortable.css: 372 lines, 7.91 KB
  * - date-systems.css: 287 lines, 5.31 KB
  * - events.css: 1520 lines, 30.79 KB
- * - timeline-callouts.css: 327 lines, 11.04 KB
+ * - timeline-callouts.css: 329 lines, 11.27 KB
  * - organizations.css: 615 lines, 11.57 KB
  * - sources.css: 2834 lines, 57.5 KB
  * - statistics.css: 1811 lines, 36.3 KB
@@ -41783,7 +41789,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - dynamic-content.css: 1217 lines, 26.68 KB
  * - profile-view.css: 1113 lines, 24.91 KB
  * - calendar-view.css: 302 lines, 6.83 KB
- * - migration-notice.css: 135 lines, 2.67 KB
+ * - migration-notice.css: 136 lines, 2.79 KB
  * - responsive.css: 9 lines, 0.13 KB
  */
 

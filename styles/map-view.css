@@ -363,6 +363,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
     bold 18px "Lucida Console",
     Monaco,
     monospace;
+  /* stylelint-disable-next-line -- partial browser-support warning; feature works in Obsidian's Electron runtime */
   text-indent: 1px;
 }
 

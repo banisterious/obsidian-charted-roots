@@ -415,6 +415,7 @@
   cursor: pointer;
   color: var(--text-accent);
   text-decoration: underline;
+  /* stylelint-disable-next-line -- partial browser-support warning; feature works in Obsidian's Electron runtime */
   text-decoration-style: dotted;
   text-underline-offset: 2px;
   margin-right: 4px;
@@ -422,6 +423,7 @@
 
 .crc-variation-count-link:hover {
   color: var(--text-accent-hover);
+  /* stylelint-disable-next-line -- partial browser-support warning; feature works in Obsidian's Electron runtime */
   text-decoration-style: solid;
 }
 

@@ -282,6 +282,7 @@ body {
 /* Applied to top-level lists within timeline callouts */
 .callout[data-callout="cr-timeline"] .callout-content > ul,
 .callout[data-callout="cr-timeline"] .callout-content > div > ul {
+  /* stylelint-disable-next-line -- partial browser-support warning; feature works in Obsidian's Electron runtime */
   column-width: var(--cr-list-min-width);
   column-gap: var(--cr-list-column-gap);
   column-rule: var(--cr-list-column-rule-width) solid var(--cr-list-column-rule-color);
@@ -295,6 +296,7 @@ body {
 
 /* Prevent column breaks within list items */
 .callout[data-callout="cr-timeline"] .callout-content ul li {
+  /* stylelint-disable-next-line -- partial browser-support warning; feature works in Obsidian's Electron runtime */
   break-inside: avoid;
 }
 
