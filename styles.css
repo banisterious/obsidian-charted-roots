@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-14 20:28:32 UTC
+ * - Generated: 2026-05-14 20:30:17 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -10843,21 +10843,21 @@ settings:
    COMPONENT: IMPORT-EXPORT-WIZARD.CSS
    ========================================================================== */
 
-/* Component Size: 2136 lines, 40.69 KB */
+/* Component Size: 2136 lines, 40.66 KB */
 
 /* ==========================================================================
    IMPORT/EXPORT WIZARD MODALS
    ========================================================================== */
 
 /* Modal sizing */
-.modal:has(.crc-import-wizard),
-.modal:has(.crc-export-wizard) {
+.crc-import-wizard-sized,
+.crc-export-wizard-sized {
   max-width: 600px;
   width: 90vw;
 }
 
-.modal:has(.crc-import-wizard) .modal-content,
-.modal:has(.crc-export-wizard) .modal-content {
+.crc-import-wizard-sized .modal-content,
+.crc-export-wizard-sized .modal-content {
   padding: 0;
 }
 
@@ -41262,10 +41262,10 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-14 20:28:33 UTC
+ * Build completed: 2026-05-14 20:30:17 UTC
  * Components processed: 50
  * Total lines: 40793
- * Total size: 830.01 KB
+ * Total size: 829.99 KB
  * Build duration: 0.32 seconds
  *
  * Component breakdown:
@@ -41278,7 +41278,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - entity-create-modals.css: 1234 lines, 25.51 KB
  * - place-modals.css: 1267 lines, 25.43 KB
  * - media-modals.css: 1997 lines, 38.91 KB
- * - import-export-wizard.css: 2136 lines, 40.69 KB
+ * - import-export-wizard.css: 2136 lines, 40.66 KB
  * - staging-manager.css: 553 lines, 11.33 KB
  * - cleanup-wizard.css: 2180 lines, 40.77 KB
  * - duplicate-detection.css: 167 lines, 3.06 KB

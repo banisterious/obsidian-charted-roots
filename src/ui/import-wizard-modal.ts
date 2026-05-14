@@ -245,6 +245,7 @@ export class ImportWizardModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('crc-import-wizard');
+		this.modalEl.addClass('crc-import-wizard-sized');
 
 		// Modal header with icon and title
 		const header = contentEl.createDiv({ cls: 'crc-import-wizard-header' });

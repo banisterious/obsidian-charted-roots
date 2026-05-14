@@ -256,6 +256,7 @@ export class ExportWizardModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('crc-export-wizard');
+		this.modalEl.addClass('crc-export-wizard-sized');
 
 		// Modal header with icon and title
 		const header = contentEl.createDiv({ cls: 'crc-export-wizard-header' });

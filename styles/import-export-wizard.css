@@ -3,14 +3,14 @@
    ========================================================================== */
 
 /* Modal sizing */
-.modal:has(.crc-import-wizard),
-.modal:has(.crc-export-wizard) {
+.crc-import-wizard-sized,
+.crc-export-wizard-sized {
   max-width: 600px;
   width: 90vw;
 }
 
-.modal:has(.crc-import-wizard) .modal-content,
-.modal:has(.crc-export-wizard) .modal-content {
+.crc-import-wizard-sized .modal-content,
+.crc-export-wizard-sized .modal-content {
   padding: 0;
 }
 
