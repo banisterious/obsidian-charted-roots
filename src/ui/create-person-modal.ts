@@ -749,13 +749,11 @@ export class CreatePersonModal extends Modal {
 		// Buttons (sticky footer)
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons crc-modal-buttons--sticky' });
 
-		const cancelBtn = buttonContainer.createEl('button', {
-			text: 'Cancel',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => {
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Cancel')
+			.onClick(() => {
+				this.close();
+			});
 
 		new ButtonComponent(buttonContainer)
 			.setButtonText(this.editMode ? 'Save changes' : 'Create person')
@@ -2706,13 +2704,11 @@ export class CreatePersonModal extends Modal {
 
 		// Back button
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
-		const backBtn = buttonContainer.createEl('button', {
-			text: 'Back',
-			cls: 'crc-btn'
-		});
-		backBtn.addEventListener('click', () => {
-			this.renderPostCreateActions(contentEl);
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Back')
+			.onClick(() => {
+				this.renderPostCreateActions(contentEl);
+			});
 	}
 
 	/**

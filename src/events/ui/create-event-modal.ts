@@ -470,13 +470,11 @@ export class CreateEventModal extends Modal {
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
 
-		const cancelBtn = buttonContainer.createEl('button', {
-			text: 'Cancel',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => {
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Cancel')
+			.onClick(() => {
+				this.close();
+			});
 
 		new ButtonComponent(buttonContainer)
 			.setButtonText(this.editMode ? 'Save changes' : 'Create event')

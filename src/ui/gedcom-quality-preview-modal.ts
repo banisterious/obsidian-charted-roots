@@ -532,14 +532,12 @@ export class GedcomQualityPreviewModal extends Modal {
 		// Buttons
 		const buttonContainer = container.createDiv({ cls: 'crc-modal-buttons' });
 
-		const cancelBtn = buttonContainer.createEl('button', {
-			text: 'Cancel import',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => {
-			this.onComplete({ proceed: false, choices: this.choices });
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Cancel import')
+			.onClick(() => {
+				this.onComplete({ proceed: false, choices: this.choices });
+				this.close();
+			});
 
 		new ButtonComponent(buttonContainer)
 			.setButtonText(summary.placeVariants.length > 0

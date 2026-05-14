@@ -3,7 +3,7 @@
  * Shows places in wrong folders and allows bulk migration
  */
 
-import { App, Modal, Notice, TFile, normalizePath } from 'obsidian';
+import { App, ButtonComponent, Modal, Notice, TFile, normalizePath } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
 import type { PlaceNode, PlaceIssue } from '../models/place';
@@ -113,11 +113,9 @@ export class OrganizePlacesModal extends Modal {
 		// Action buttons
 		const footer = contentEl.createDiv({ cls: 'crc-modal-footer crc-mt-4' });
 
-		const cancelBtn = footer.createEl('button', {
-			text: 'Cancel',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(footer)
+			.setButtonText('Cancel')
+			.onClick(() => this.close());
 
 		const moveBtn = footer.createEl('button', {
 			text: `Move ${this.selectedPlaces.size} place${this.selectedPlaces.size !== 1 ? 's' : ''}`,

@@ -1062,13 +1062,11 @@ export class CreatePlaceModal extends Modal {
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
 
-		const cancelBtn = buttonContainer.createEl('button', {
-			text: 'Cancel',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => {
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Cancel')
+			.onClick(() => {
+				this.close();
+			});
 
 		new ButtonComponent(buttonContainer)
 			.setButtonText(this.editMode ? 'Save changes' : 'Create place')
@@ -1738,14 +1736,12 @@ export class CreatePlaceModal extends Modal {
 
 		const buttonContainer = content.createDiv({ cls: 'crc-modal-buttons' });
 
-		const keepBtn = buttonContainer.createEl('button', {
-			text: 'Keep here',
-			cls: 'crc-btn'
-		});
-		keepBtn.addEventListener('click', () => {
-			modal.close();
-			callback(false);
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Keep here')
+			.onClick(() => {
+				modal.close();
+				callback(false);
+			});
 
 		new ButtonComponent(buttonContainer)
 			.setButtonText('Move')

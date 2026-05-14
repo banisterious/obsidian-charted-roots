@@ -469,14 +469,12 @@ async function confirmSchemaDelete(app: App, schemaName: string): Promise<boolea
 
 		const buttonContainer = modal.contentEl.createDiv({ cls: 'crc-button-row crc-mt-3' });
 
-		const cancelBtn = buttonContainer.createEl('button', {
-			text: 'Cancel',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => {
-			modal.close();
-			resolve(false);
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Cancel')
+			.onClick(() => {
+				modal.close();
+				resolve(false);
+			});
 
 		const deleteBtn = buttonContainer.createEl('button', {
 			text: 'Delete',
@@ -515,11 +513,9 @@ function importSchemaFromJson(
 
 	const buttonContainer = modal.contentEl.createDiv({ cls: 'crc-button-row crc-mt-3' });
 
-	const cancelBtn = buttonContainer.createEl('button', {
-		text: 'Cancel',
-		cls: 'crc-btn'
-	});
-	cancelBtn.addEventListener('click', () => modal.close());
+	new ButtonComponent(buttonContainer)
+		.setButtonText('Cancel')
+		.onClick(() => modal.close());
 
 	new ButtonComponent(buttonContainer)
 		.setButtonText('Import')

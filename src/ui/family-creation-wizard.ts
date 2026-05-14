@@ -285,11 +285,9 @@ export class FamilyCreationWizardModal extends Modal {
 		const footer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
 
 		if (options.onBack) {
-			const backBtn = footer.createEl('button', {
-				text: options.backLabel || 'Back',
-				cls: 'crc-btn'
-			});
-			backBtn.addEventListener('click', options.onBack);
+			new ButtonComponent(footer)
+				.setButtonText(options.backLabel || 'Back')
+				.onClick(options.onBack);
 		} else {
 			// Spacer
 			footer.createDiv({ cls: 'crc-btn-spacer' });
@@ -298,11 +296,9 @@ export class FamilyCreationWizardModal extends Modal {
 		const rightButtons = footer.createDiv({ cls: 'crc-btn-group' });
 
 		if (options.showSkip && options.onSkip) {
-			const skipBtn = rightButtons.createEl('button', {
-				text: 'Skip',
-				cls: 'crc-btn'
-			});
-			skipBtn.addEventListener('click', options.onSkip);
+			new ButtonComponent(rightButtons)
+				.setButtonText('Skip')
+				.onClick(options.onSkip);
 		}
 
 		if (options.onNext) {
@@ -422,11 +418,9 @@ export class FamilyCreationWizardModal extends Modal {
 
 		// Footer
 		const footer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
-		const cancelBtn = footer.createEl('button', {
-			text: 'Cancel',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(footer)
+			.setButtonText('Cancel')
+			.onClick(() => this.close());
 
 		const startBtn = new ButtonComponent(footer)
 			.setButtonText('Get Started')
@@ -1913,11 +1907,9 @@ class PersonEditorModal extends Modal {
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
 
-		const cancelBtn = buttonContainer.createEl('button', {
-			text: 'Cancel',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Cancel')
+			.onClick(() => this.close());
 
 		new ButtonComponent(buttonContainer)
 			.setButtonText('Save')

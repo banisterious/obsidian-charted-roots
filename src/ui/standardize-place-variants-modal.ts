@@ -360,11 +360,9 @@ export class StandardizePlaceVariantsModal extends Modal {
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
 
-		const cancelBtn = buttonContainer.createEl('button', {
-			text: 'Cancel',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Cancel')
+			.onClick(() => this.close());
 
 		const applyBtn = new ButtonComponent(buttonContainer)
 			.setButtonText(`Standardize ${this.selectedMatches.size} variant${this.selectedMatches.size !== 1 ? 's' : ''}`)

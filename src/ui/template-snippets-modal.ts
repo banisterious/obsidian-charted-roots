@@ -3,7 +3,7 @@
  * Provides copyable Templater-compatible templates for Charted Roots note types
  */
 
-import { App, Modal, Notice } from 'obsidian';
+import { App, ButtonComponent, Modal, Notice } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 
 export type TemplateType = 'person' | 'event' | 'place' | 'source' | 'organization' | 'universe' | 'note' | 'proof' | 'reference';
@@ -119,11 +119,9 @@ export class TemplateSnippetsModal extends Modal {
 
 		// Close button
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons crc-mt-4' });
-		const closeBtn = buttonContainer.createEl('button', {
-			text: 'Close',
-			cls: 'crc-btn'
-		});
-		closeBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Close')
+			.onClick(() => this.close());
 	}
 
 	onClose() {
