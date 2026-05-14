@@ -15,7 +15,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 const chokidar = require('chokidar');
-const chalk = require('chalk');
+const pc = require('picocolors');
 const { execSync } = require('child_process');
 
 // Configuration
@@ -84,11 +84,11 @@ const CONFIG = {
 
 // Logging utilities with colors
 const log = {
-  info: (msg) => console.log(chalk.blue(`[INFO]`), msg),
-  success: (msg) => console.log(chalk.green(`[SUCCESS]`), msg),
-  warn: (msg) => console.log(chalk.yellow(`[WARN]`), msg),
-  error: (msg) => console.log(chalk.red(`[ERROR]`), msg),
-  debug: (msg) => console.log(chalk.gray(`[DEBUG]`), msg)
+  info: (msg) => console.log(pc.blue(`[INFO]`), msg),
+  success: (msg) => console.log(pc.green(`[SUCCESS]`), msg),
+  warn: (msg) => console.log(pc.yellow(`[WARN]`), msg),
+  error: (msg) => console.log(pc.red(`[ERROR]`), msg),
+  debug: (msg) => console.log(pc.gray(`[DEBUG]`), msg)
 };
 
 /**
@@ -437,7 +437,7 @@ async function main() {
   const isFormatOnly = args.includes('--format') || args.includes('-f');
   const isBuildOnly = args.includes('--build-only') || args.includes('-b');
 
-  console.log(chalk.cyan('\n🎨 Charted Roots CSS Build System v1.0.0\n'));
+  console.log(pc.cyan('\n🎨 Charted Roots CSS Build System v1.0.0\n'));
 
   try {
     if (isLintOnly) {

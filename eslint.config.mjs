@@ -245,14 +245,13 @@ export default [
 		},
 	},
 
-	// depend/ban-dependencies flags chalk because newer v5+ is ESM-only
-	// and there are smaller alternatives. We use chalk v4 (CJS) only in
-	// build-css.js for build-time colored logging — replacing it would
-	// be churn with no shipped-bundle impact. Allowlisted here.
+	// depend/ban-dependencies enforces the module-replacements list.
+	// build-css.js uses picocolors (formerly chalk; the latter is flagged
+	// because v5+ is ESM-only and lighter alternatives exist).
 	{
 		plugins: { depend },
 		rules: {
-			"depend/ban-dependencies": ["error", { allowed: ["chalk"] }],
+			"depend/ban-dependencies": "error",
 		},
 	},
 ];
