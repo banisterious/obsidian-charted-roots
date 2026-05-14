@@ -840,11 +840,6 @@
   border-top: 1px solid var(--background-modifier-border);
 }
 
-.crc-btn--small {
-  padding: 4px 12px;
-  font-size: 12px;
-}
-
 /* Preview List Styles (Batch Steps) */
 .crc-cleanup-preview {
   margin-top: 8px;

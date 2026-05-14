@@ -567,16 +567,6 @@
   gap: 12px;
 }
 
-.crc-btn--success {
-  background: var(--color-green);
-  color: #000000;
-  border-color: var(--color-green);
-}
-
-.crc-btn--success:hover {
-  background: #22c55e;
-}
-
 /* Center buttons for completion */
 .crc-modal-buttons--center {
   justify-content: center;

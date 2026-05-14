@@ -1772,50 +1772,6 @@
   gap: 8px;
 }
 
-/* Wizard buttons */
-.crc-btn {
-  padding: 8px 16px;
-  border-radius: var(--cr-radius-sm);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-  transition: all 0.15s ease;
-}
-
-.crc-btn--secondary {
-  background: var(--background-secondary);
-  color: var(--text-normal);
-  border: 1px solid var(--background-modifier-border);
-}
-
-.crc-btn--secondary:hover {
-  background: var(--background-modifier-hover);
-}
-
-.crc-btn--primary {
-  background: var(--interactive-accent);
-  color: var(--text-on-accent);
-}
-
-.crc-btn--primary:hover {
-  filter: brightness(1.1);
-}
-
-.crc-btn--primary:disabled {
-  opacity: 50%;
-  cursor: not-allowed;
-}
-
-.crc-btn--success {
-  background: rgb(74 222 128);
-  color: #000000;
-}
-
-.crc-btn--success:hover {
-  filter: brightness(1.1);
-}
-
 /* Folder picker (for export wizard) */
 .crc-wizard-folder-pickers {
   display: flex;

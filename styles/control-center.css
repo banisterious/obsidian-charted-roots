@@ -787,6 +787,16 @@
   background-color: var(--background-secondary);
 }
 
+.crc-btn--success {
+  background: var(--color-green);
+  color: #000000;
+  border-color: var(--color-green);
+}
+
+.crc-btn--success:hover {
+  background: #22c55e;
+}
+
 .crc-btn--text {
   background-color: transparent;
   color: var(--interactive-accent);
