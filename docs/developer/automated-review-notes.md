@@ -112,9 +112,50 @@ The scanner installs its own copy of the plugin, so a release built against an
 older version will still be scanned against the latest published rules — pin
 intentionally and re-test after upgrading.
 
+### Description requirement applies to ALL inline directives
+
+As of the scan against v0.22.35, the scanner reports `Unexpected undescribed
+directive comment` for any `eslint-disable` or `eslint-enable` lacking a
+`-- reason` after the rule list. This applies to BOTH disables and enables.
+v0.22.35's EOF `eslint-enable` directives didn't carry descriptions; v0.22.36
+added `-- Match scope of file-level disable at top.` to all 125 of them.
+Pattern: `/* eslint-enable @typescript-eslint/no-unsafe-* -- reason. */`.
+
 ---
 
-## 4. Action items
+## 4. Vendored-library findings (benign FPs)
+
+The scan against v0.22.36 reported **9 dynamic `<script>` element creations**
+as a suspicious-pattern warning. All 9 are in vendored library code:
+
+- **~5 sites in `core-js`** — pulled in transitively via `jspdf` → `canvg`
+  (an `optionalDependency`). Legacy IE-era `setImmediate` polyfills using
+  `script.onreadystatechange` as a microtask trick. Dead-code paths in
+  Obsidian's Electron runtime.
+- **~3 sites in `jspdf`** — own bundled deferral helpers using the same pattern.
+- **1 site in `leaflet-distortableimage`** — webpack chunk-loader. We bundle to
+  a single esbuild output; chunk-loading never fires.
+
+None load external scripts. None of these patterns is reachable in our use of
+the libraries (we don't use jspdf's SVG features that would import canvg, and
+we don't dynamically load chunks). The scanner has no way to distinguish dead
+vendored code from live code.
+
+**Possible mitigations (deferred, moderate risk):**
+- Drop `canvg` via npm `overrides` (jspdf's `canvg` import is optional/lazy).
+  Would eliminate ~5 of the 9 sites. Risk: PDF export breakage if jspdf
+  eagerly imports canvg at module init. Worth probing if the warning becomes
+  blocking.
+- Replace `leaflet-distortableimage` with a lighter alternative. Eliminates
+  the webpack-chunk-loader site plus a chunk of bundle size. Risk: distortable
+  image overlay feature breaks.
+- Replace `jspdf` with a smaller PDF library. Substantial refactor.
+
+For now: accept all 9 as documented vendored-polyfill FPs.
+
+---
+
+## 5. Action items
 
 - [ ] Upstream PR: add `Charted Roots` to `DEFAULT_BRANDS` in
       [obsidianmd/eslint-plugin/lib/rules/ui/brands.ts](https://github.com/obsidianmd/eslint-plugin/blob/master/lib/rules/ui/brands.ts).
