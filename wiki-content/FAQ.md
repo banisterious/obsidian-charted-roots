@@ -55,7 +55,7 @@ Charted Roots is designed for genealogists and worldbuilders who want the power 
 
 - **Obsidian itself:** You need to be comfortable installing desktop software and understanding concepts like "vaults" (folders), plugins, and settings. If terms like "file explorer" or "command palette" are unfamiliar, there's a learning curve ahead.
 
-- **Installing Charted Roots:** The plugin is in Obsidian's Community Plugins directory — open Settings → Community plugins, search for "Charted Roots", and click Install → Enable. (For early access to releases before they land in the directory, [BRAT](https://github.com/TfTHacker/obsidian42-brat) works as a secondary path.)
+- **Installing Charted Roots:** Click [**Install in Obsidian**](https://community.obsidian.md/plugins/charted-roots) on the plugin's Community page, or search for "Charted Roots" in Obsidian Settings → Community plugins. (For early access to releases before they land in the directory, [BRAT](https://github.com/TfTHacker/obsidian42-brat) works as a secondary path.)
 
 - **Using Charted Roots:** Once installed, you don't need coding knowledge. If you can write `name: John Smith` in your notes, you can use Charted Roots. But you do need comfort with:
   - Editing text files (markdown notes)

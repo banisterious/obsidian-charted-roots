@@ -133,9 +133,7 @@ See the [Wiki](https://github.com/banisterious/obsidian-charted-roots/wiki) for 
 
 ### From Community Plugins (Recommended)
 
-1. Open Obsidian Settings → Community plugins
-2. Browse and search for "Charted Roots"
-3. Click Install, then Enable
+Click [**Install in Obsidian**](https://community.obsidian.md/plugins/charted-roots) on the plugin's Community page, or search for "Charted Roots" in Obsidian Settings → Community plugins.
 
 ### Using BRAT (Beta access)
 
