@@ -1420,19 +1420,17 @@
 }
 
 /* When filter is active, highlight the toggle */
-.crc-media-folder-filter-toggle:has(.crc-media-folder-filter-checkbox:checked) {
+.crc-media-folder-filter-toggle--checked {
   background: var(--interactive-accent);
   border-color: var(--interactive-accent);
 }
 
-.crc-media-folder-filter-toggle:has(.crc-media-folder-filter-checkbox:checked)
-  .crc-media-folder-filter-icon,
-.crc-media-folder-filter-toggle:has(.crc-media-folder-filter-checkbox:checked)
-  .crc-media-folder-filter-label {
+.crc-media-folder-filter-toggle--checked .crc-media-folder-filter-icon,
+.crc-media-folder-filter-toggle--checked .crc-media-folder-filter-label {
   color: var(--text-on-accent);
 }
 
-.crc-media-folder-filter-toggle:has(.crc-media-folder-filter-checkbox:checked):hover {
+.crc-media-folder-filter-toggle--checked:hover {
   background: var(--interactive-accent-hover);
 }
 

@@ -584,6 +584,7 @@ export class MediaGalleryModal extends Modal {
 		});
 		checkbox.checked = enableMediaFolderFilter;
 		checkbox.disabled = !hasFolders;
+		toggleWrapper.toggleClass('crc-media-folder-filter-toggle--checked', checkbox.checked);
 
 		// Label
 		toggleWrapper.createSpan({
@@ -606,6 +607,7 @@ export class MediaGalleryModal extends Modal {
 		// Handle toggle change
 		checkbox.addEventListener('change', () => {
 			this.plugin.settings.enableMediaFolderFilter = checkbox.checked;
+			toggleWrapper.toggleClass('crc-media-folder-filter-toggle--checked', checkbox.checked);
 			void this.plugin.saveSettings();
 			// Re-apply filters with new setting
 			this.applyFilters();
@@ -616,6 +618,7 @@ export class MediaGalleryModal extends Modal {
 			if (e.target === checkbox || !hasFolders) return;
 			checkbox.checked = !checkbox.checked;
 			this.plugin.settings.enableMediaFolderFilter = checkbox.checked;
+			toggleWrapper.toggleClass('crc-media-folder-filter-toggle--checked', checkbox.checked);
 			void this.plugin.saveSettings();
 			this.applyFilters();
 		});
