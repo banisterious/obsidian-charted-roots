@@ -108,3 +108,5 @@ export function replaceFootnoteMarkers(
 		return replacer(id, index++);
 	});
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-argument */

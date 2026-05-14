@@ -293,3 +293,5 @@ export async function clearSortOrder(
 	logger.info('clearSortOrder', `Cleared sort_order from ${clearedCount} events`);
 	return clearedCount;
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-member-access */

@@ -1600,3 +1600,5 @@ export class MapDataService {
 		return value;
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */

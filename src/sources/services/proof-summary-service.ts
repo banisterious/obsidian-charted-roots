@@ -673,3 +673,5 @@ What evidence supports the conclusion about this person's ${factType.replace(/_/
 `;
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */

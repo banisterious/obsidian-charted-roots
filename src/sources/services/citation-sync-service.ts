@@ -192,3 +192,5 @@ export class CitationSyncService {
 		return files.length;
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */

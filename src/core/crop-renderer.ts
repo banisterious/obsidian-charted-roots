@@ -109,3 +109,5 @@ export async function applyCropToImage(
 export function clearCropCache(): void {
 	cropCache.clear();
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */

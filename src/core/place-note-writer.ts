@@ -678,3 +678,5 @@ function sanitizeFilename(filename: string): string {
 		.replace(/\s+/g, ' ')
 		.trim();
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */

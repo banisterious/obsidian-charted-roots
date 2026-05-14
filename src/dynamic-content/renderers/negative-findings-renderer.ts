@@ -301,3 +301,5 @@ export class NegativeFindingsRenderer {
 		return lines.join('\n');
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-argument */

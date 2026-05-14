@@ -975,3 +975,5 @@ export class EventService {
 			.trim();
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-member-access */

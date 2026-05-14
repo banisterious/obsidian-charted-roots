@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
-/* eslint-disable obsidianmd/ui/sentence-case -- Rule misfires on quoted button labels, month names, proper-noun section paths, and example strings; per-site audit deferred. */
 /**
  * Modal for standardizing place types
  * Helps convert generic types like 'locality' to specific types (city, town, village)
@@ -398,3 +397,5 @@ export function findNonStandardTypePlaces(placeService: PlaceGraphService): Plac
 		NON_STANDARD_TYPES.includes(place.placeType.toLowerCase())
 	);
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-member-access */

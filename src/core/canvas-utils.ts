@@ -217,3 +217,5 @@ export function toSafeFilename(name: string): string {
 		.replace(/^-|-$/g, '')         // Remove leading/trailing dashes
 		.toLowerCase();
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument */

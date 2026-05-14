@@ -854,3 +854,5 @@ export class PersonPickerModal extends Modal {
 		modal.open();
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */

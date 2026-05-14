@@ -736,3 +736,5 @@ export class PlaceGeneratorService {
 		return updated;
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */

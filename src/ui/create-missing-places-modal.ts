@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
-/* eslint-disable obsidianmd/ui/sentence-case -- Rule misfires on quoted button labels, month names, proper-noun section paths, and example strings; per-site audit deferred. */
 /**
  * Modal for batch creating missing place notes
  * Shows referenced places that don't have notes and allows selection for creation
@@ -491,3 +490,5 @@ export class CreateMissingPlacesModal extends Modal {
 		});
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-member-access */

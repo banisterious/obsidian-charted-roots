@@ -2285,3 +2285,5 @@ export class StatisticsService {
 export function createStatisticsService(app: App, settings: CanvasRootsSettings, plugin?: CanvasRootsPlugin): StatisticsService {
 	return new StatisticsService(app, settings, plugin);
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */

@@ -390,3 +390,5 @@ export class DuplicateDetectionService {
 		};
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return */

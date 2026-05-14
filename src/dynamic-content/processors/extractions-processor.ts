@@ -215,3 +215,5 @@ export class ExtractionsProcessor {
 	}
 
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */

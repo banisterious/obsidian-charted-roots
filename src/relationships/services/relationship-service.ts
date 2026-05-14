@@ -657,3 +657,5 @@ export class RelationshipService {
 		return RELATIONSHIP_CATEGORY_NAMES[category] || category;
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */

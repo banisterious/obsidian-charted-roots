@@ -3064,3 +3064,5 @@ export interface ImpossibleDateIssue {
 	personDate?: string;
 	relatedDate?: string;
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */

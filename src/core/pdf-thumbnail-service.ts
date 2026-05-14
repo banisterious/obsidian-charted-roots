@@ -143,3 +143,5 @@ interface PdfPage {
 	getViewport(options: { scale: number }): { width: number; height: number };
 	render(options: { canvasContext: CanvasRenderingContext2D; viewport: { width: number; height: number } }): { promise: Promise<void> };
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */

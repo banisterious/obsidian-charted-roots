@@ -239,3 +239,5 @@ export class UniverseMapsProcessor {
 		return counts;
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */

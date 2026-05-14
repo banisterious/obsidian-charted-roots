@@ -692,3 +692,5 @@ ${coverPage}${imageContent}${bodyContent}
 		logger.info('download', `ODT downloaded as ${normalizedFilename}`);
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */

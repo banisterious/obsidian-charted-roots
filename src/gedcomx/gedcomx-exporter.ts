@@ -1038,3 +1038,5 @@ export class GedcomXExporter {
 		return null;
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */

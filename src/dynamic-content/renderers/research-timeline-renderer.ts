@@ -644,3 +644,5 @@ export class ResearchTimelineRenderer {
 		return lines.join('\n');
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-argument */

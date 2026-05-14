@@ -130,3 +130,5 @@ export function renderWorldMapPreview(
 
 	return mapContainer;
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */

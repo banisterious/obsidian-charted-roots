@@ -499,3 +499,5 @@ export class GedcomXParser {
 		}
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */

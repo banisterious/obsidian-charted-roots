@@ -1193,3 +1193,5 @@ export default class CanvasRootsPlugin extends Plugin {
 		return _moveFamilyChartToMainWorkspace(this, currentLeaf);
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */

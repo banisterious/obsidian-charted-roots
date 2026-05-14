@@ -404,3 +404,5 @@ export class PersonIndexService {
 		logger.debug('onunload', 'Unsubscribed from vault and metadata cache events');
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */

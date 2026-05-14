@@ -388,3 +388,5 @@ export function obfuscateLogEntry(entry: LogEntry): LogEntry {
 export function obfuscateLogs(logs: LogEntry[]): LogEntry[] {
 	return logs.map(entry => obfuscateLogEntry(entry));
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument */

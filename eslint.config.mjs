@@ -103,20 +103,22 @@ export default [
 				ignoreRestSiblings: true,
 			}],
 
-			// Sentence-case rule applies to UI text; not relevant for test files.
-
-				// (test-file overrides follow this block.)
 			// Sentence-case rule needs CR-specific brands and acronyms.
 			// Providing brands/acronyms REPLACES the defaults rather than
 			// merging — every default term the codebase relies on must be
-			// re-included here.
+			// re-included here. Note: Obsidian's Community automated review
+			// scanner runs the rule with its own fixed brands/acronyms list
+			// (the published `DEFAULT_BRANDS` / `DEFAULT_ACRONYMS` baked into
+			// the eslint-plugin) and does not read this local config, so
+			// proper nouns missing from upstream defaults still surface to
+			// the scan even though they're clean here. The durable fix is
+			// upstream PRs; see docs/developer/automated-review-notes.md.
 			//
-			// Severity is "warn" pending the Batch B per-site audit of the
-			// 436 flagged sites — a mix of real Title Case -> sentence case
-			// fixes and rule misfires on quoted button-label references,
-			// month names, and proper-noun section headings. Until that
-			// audit lands, ship the surface as warnings so releases pass
-			// CI gating; flip back to "error" when the audit closes.
+			// Severity is "warn" — the rule emits false positives on
+			// example-text placeholders, quoted button-label references,
+			// and proper-noun section paths that the brands/acronyms lists
+			// can't cover. Treating them as warnings keeps local lint clean
+			// without forcing churn on UI text.
 			"obsidianmd/ui/sentence-case": ["warn", {
 				enforceCamelCaseLower: true,
 				brands: [

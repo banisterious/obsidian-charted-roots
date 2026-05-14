@@ -454,3 +454,5 @@ export class PlacePickerModal extends Modal {
 		}).open();
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */

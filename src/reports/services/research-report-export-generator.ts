@@ -190,3 +190,5 @@ export function createResearchReportExportGenerator(
 ): ResearchReportExportGenerator {
 	return new ResearchReportExportGenerator(app, settings);
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-return */

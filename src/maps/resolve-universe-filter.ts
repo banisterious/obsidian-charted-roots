@@ -31,3 +31,5 @@ export function resolveUniverseFilterValue(app: App, universe: string | null): s
 
 	return universe;
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */

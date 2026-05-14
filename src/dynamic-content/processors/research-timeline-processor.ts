@@ -238,3 +238,5 @@ export class ResearchTimelineProcessor {
 		return undefined;
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */

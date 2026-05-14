@@ -385,3 +385,5 @@ export class TimelineStyleModal extends Modal {
 		this.contentEl.empty();
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument */

@@ -485,3 +485,5 @@ export class ProfileDataLoader {
 		return [];
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */

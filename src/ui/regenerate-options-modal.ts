@@ -116,3 +116,5 @@ export class RegenerateOptionsModal extends Modal {
 		contentEl.empty();
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */

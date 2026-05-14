@@ -268,3 +268,5 @@ export class SourcesRenderer {
 		return lines.join('\n');
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */

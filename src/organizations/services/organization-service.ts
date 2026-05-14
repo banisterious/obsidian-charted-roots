@@ -603,3 +603,5 @@ export class OrganizationService {
 export function createOrganizationService(plugin: CanvasRootsPlugin): OrganizationService {
 	return new OrganizationService(plugin);
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument */

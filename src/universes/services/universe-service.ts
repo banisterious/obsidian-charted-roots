@@ -849,3 +849,5 @@ export class UniverseService {
 export function createUniverseService(plugin: CanvasRootsPlugin): UniverseService {
 	return new UniverseService(plugin);
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */

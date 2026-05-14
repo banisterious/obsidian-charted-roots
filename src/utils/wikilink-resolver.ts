@@ -221,3 +221,5 @@ export async function resolveImageToUrl(
 	logger.warn('resolve-image', `Could not resolve: "${value}"`);
 	return null;
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */

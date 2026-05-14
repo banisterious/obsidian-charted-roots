@@ -904,3 +904,5 @@ export class ValidationService {
 		return sandbox;
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */

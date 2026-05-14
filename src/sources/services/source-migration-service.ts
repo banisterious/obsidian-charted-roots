@@ -288,3 +288,5 @@ export class SourceMigrationService {
 		return this.detectIndexedSources().length;
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-member-access */

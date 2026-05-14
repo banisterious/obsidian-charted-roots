@@ -978,3 +978,5 @@ export class ImageMapManager {
  * ---
  * ```
  */
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */

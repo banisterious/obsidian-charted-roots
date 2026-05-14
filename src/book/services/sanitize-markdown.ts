@@ -49,3 +49,5 @@ export function sanitizeVaultNoteMarkdown(rawContent: string): string {
 	content = stripDynamicBlocks(content);
 	return content.trim();
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-return */

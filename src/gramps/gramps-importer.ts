@@ -2256,3 +2256,5 @@ export class GrampsImporter {
 			.trim();
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-member-access */

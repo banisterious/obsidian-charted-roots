@@ -561,3 +561,5 @@ export function formatChangeTimestamp(timestamp: number): string {
 		minute: '2-digit'
 	});
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */

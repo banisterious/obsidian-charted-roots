@@ -197,3 +197,5 @@ export class SourcesProcessor {
 	}
 
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */

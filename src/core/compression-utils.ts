@@ -123,3 +123,5 @@ export async function readFileWithDecompression(file: File): Promise<string> {
 	const decoder = new TextDecoder('utf-8');
 	return decoder.decode(buffer);
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */

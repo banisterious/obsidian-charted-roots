@@ -2105,3 +2105,5 @@ function formatFilename(name: string, format: FilenameFormat): string {
 			return safeName.replace(/\s+/g, ' ').substring(0, 100) + '.md';
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */

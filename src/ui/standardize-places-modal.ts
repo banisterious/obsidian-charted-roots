@@ -1,4 +1,3 @@
-/* eslint-disable obsidianmd/ui/sentence-case -- Rule misfires on quoted button labels, month names, proper-noun section paths, and example strings; per-site audit deferred. */
 /**
  * Modal for standardizing place name variations
  * Finds similar place names and allows unification to a canonical form

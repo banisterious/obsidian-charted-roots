@@ -336,3 +336,5 @@ export function getLineageTypeDescription(type: LineageType): string {
 			return 'Follows mother-to-child descent only (mitochondrial lineage)';
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */

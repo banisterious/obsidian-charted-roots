@@ -463,3 +463,5 @@ export function getSystemDescription(system: NumberingSystem): string {
 			return 'Generation (relative: 0=self, -1=parents, +1=children)';
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-member-access */

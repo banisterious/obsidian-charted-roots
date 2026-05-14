@@ -523,3 +523,5 @@ export class MergeService {
 		return this.buildMergedFrontmatter(staging, main, choices);
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */

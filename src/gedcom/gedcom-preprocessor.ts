@@ -671,4 +671,6 @@ export async function preprocessGedcomAsync(
 			detectionInfo: detection
 		}
 	};
-}
+}
+
+/* eslint-enable @typescript-eslint/no-unsafe-argument */

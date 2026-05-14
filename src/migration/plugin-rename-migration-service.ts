@@ -283,3 +283,5 @@ export function showMigrationNotice(result: PluginRenameMigrationResult): void {
 		new Notice(message, 5000);
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */

@@ -221,3 +221,5 @@ export class NegativeFindingsProcessor {
 		return findings;
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
