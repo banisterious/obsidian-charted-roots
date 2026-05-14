@@ -161,6 +161,7 @@ export class SourceMediaLinkerModal extends Modal {
 		const { titleEl, modalEl } = this;
 		titleEl.setText('Link media to existing sources');
 		modalEl.addClass('cr-media-linker');
+		activeDocument.body.addClass('cr-media-linker-active');
 
 		// Load sources without media
 		this.loadSourcesWithoutMedia();
@@ -174,6 +175,7 @@ export class SourceMediaLinkerModal extends Modal {
 	}
 
 	onClose(): void {
+		activeDocument.body.removeClass('cr-media-linker-active');
 		this.contentEl.empty();
 	}
 

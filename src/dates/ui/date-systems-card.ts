@@ -415,7 +415,7 @@ function createSystemItem(
 
 	const nameEl = header.createSpan({ cls: 'cr-date-system-item-name', text: system.name });
 	if (isBuiltIn) {
-		nameEl.createSpan({ cls: 'cr-badge cr-badge--muted', text: 'built-in' });
+		nameEl.createSpan({ cls: 'cr-ds-badge cr-ds-badge--muted', text: 'built-in' });
 	}
 
 	// Eras list

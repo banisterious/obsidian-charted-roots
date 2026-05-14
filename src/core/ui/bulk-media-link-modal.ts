@@ -93,6 +93,7 @@ export class BulkMediaLinkModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('crc-bulk-media-link-modal');
+		this.modalEl.addClass('crc-bulk-media-link-modal-sized');
 
 		this.createModalContent();
 		this.loadEntities();

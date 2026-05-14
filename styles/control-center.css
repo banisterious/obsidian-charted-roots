@@ -787,6 +787,16 @@
   background-color: var(--background-secondary);
 }
 
+.crc-btn--success {
+  background: var(--color-green);
+  color: #000000;
+  border-color: var(--color-green);
+}
+
+.crc-btn--success:hover {
+  background: #22c55e;
+}
+
 .crc-btn--text {
   background-color: transparent;
   color: var(--interactive-accent);
@@ -1917,8 +1927,6 @@
    UTILITY CLASSES
    ========================================================================== */
 
-/* .cr-hidden / .crc-hidden display utilities live in base.css */
-
 /* Icon color utilities */
 .cr-icon--muted {
   opacity: 30%;
@@ -1982,12 +1990,6 @@
   letter-spacing: 0.05em;
 }
 
-.cr-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 0.75em;
-}
-
 .cr-stat-card {
   display: flex;
   align-items: flex-start;
@@ -2008,17 +2010,6 @@
   flex-direction: column;
   gap: 0.25em;
   min-width: 0;
-}
-
-.cr-stat-label {
-  font-size: 0.8em;
-  color: var(--text-muted);
-}
-
-.cr-stat-value {
-  font-size: 1em;
-  font-weight: 600;
-  word-break: break-word;
 }
 
 .cr-completeness-grid {
@@ -2319,10 +2310,6 @@
 /* ==========================================================================
    UTILITY CLASSES
    ========================================================================== */
-
-/* .crc-hidden / .cr-hidden display utilities live in base.css */
-
-/* Place-specific modal styles moved to place-modals.css */
 
 /* ==========================================================================
    Template Snippets Modal
@@ -3930,6 +3917,8 @@
   font-size: var(--font-ui-smaller);
   font-weight: 500;
   margin-left: var(--size-4-1);
+  white-space: nowrap;
+  cursor: help;
 }
 
 .crc-quality-badge svg {
@@ -4739,7 +4728,7 @@
   flex-shrink: 0;
 }
 
-.crc-type-badge {
+.crc-stnd-type-badge {
   display: inline-block;
   padding: 2px 8px;
   border-radius: 10px;
@@ -4748,7 +4737,7 @@
   margin-left: 8px;
 }
 
-.crc-type-badge--current {
+.crc-stnd-type-badge--current {
   background: var(--background-modifier-border);
   color: var(--text-muted);
 }
@@ -5281,15 +5270,12 @@
 /* ==========================================================================
    Reports Hub Modal
    ========================================================================== */
-
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.modal:has(.crc-reports-hub-modal) {
+.crc-reports-hub-modal-sized {
   max-width: 500px;
   width: 90vw;
 }
 
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.modal:has(.crc-reports-hub-modal) .modal-content {
+.crc-reports-hub-modal-sized .modal-content {
   padding: 0;
 }
 
@@ -5404,15 +5390,12 @@
 /* ==========================================================================
    Import/Export Hub Modal
    ========================================================================== */
-
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.modal:has(.crc-import-export-hub-modal) {
+.crc-import-export-hub-modal-sized {
   max-width: 500px;
   width: 90vw;
 }
 
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.modal:has(.crc-import-export-hub-modal) .modal-content {
+.crc-import-export-hub-modal-sized .modal-content {
   padding: 0;
 }
 

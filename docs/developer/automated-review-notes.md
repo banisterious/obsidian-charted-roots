@@ -155,7 +155,72 @@ For now: accept all 9 as documented vendored-polyfill FPs.
 
 ---
 
-## 5. Action items
+## 5. CSS-specific known-and-accepted findings
+
+The scan reports several CSS warnings that we've audited as either
+irreducible or legitimate defensive use. Future scan iterations should
+reference this section rather than re-investigating.
+
+### 5.1 `!important` on `.card_cont.cr-hl-dim`
+
+[styles/family-chart-view.css:1372](../../styles/family-chart-view.css#L1372)
+
+The family-chart library writes inline `style="opacity: 1"` on `.card_cont`
+elements during animation transitions. Inline styles have specificity
+1,0,0,0 — only `!important` can override them. **Required by library
+design; no alternative without forking family-chart.**
+
+Other previously-flagged `!important` sites have been removed (the
+leaflet-container descendants in `map-view.css` and the `.cr-hidden` utility
+in `base.css` were dropped in v0.22.38 after DevTools cascade inspection
+confirmed they weren't needed in practice).
+
+### 5.2 `multicolumn` partial-support (timeline callouts)
+
+[styles/timeline-callouts.css:287-289](../../styles/timeline-callouts.css#L287-L289)
+
+Three CSS multicolumn properties (`column-width`, `column-gap`,
+`column-rule`) on timeline event lists, scoped under
+`.callout[data-callout="cr-timeline"] .callout-content > ul`. The scanner
+flags multicolumn as "partially supported by Obsidian 1.11.x"; the feature
+is fully supported in modern Chromium (Obsidian's renderer), but the scanner
+uses a static support-matrix lookup that doesn't reflect that. **No longhand
+alternative — column-* properties ARE the longhand. Removing the feature
+would force timeline lists into single-column layout even on wide editors.**
+
+### 5.3 Sibling-aware `:has()` (timeline callouts)
+
+[styles/timeline-callouts.css](../../styles/timeline-callouts.css#L169-L177) — two `div:has()` rules
+
+Detect siblings that contain (or don't contain) a timeline callout to set
+spacing between stacked timelines and following content. **Structurally
+required — there's no class-based equivalent for sibling-aware selectors,
+since classes are set on the elements themselves, not based on what they're
+adjacent to.** Annotated in source with `stylelint-disable-next-line`
+comments. Other non-modal `:has()` sites (textarea form-fields, checkbox
+state, body-level wizard state) were converted to TypeScript-managed
+classes in v0.22.38.
+
+### 5.4 `leaflet-distortable` vendored CSS duplicates
+
+25+ duplicate-selector warnings inside the bundled `leaflet-distortable`
+library CSS (`.ldi-icon`, `a.leaflet-toolbar-icon.X`, `#toggle-keymapper`,
+etc.). The library ships with internal duplicates in its own stylesheet;
+we vendor it as-is for the distortable image-overlay feature. **Fixable
+only by forking the library or replacing it.** Same library is the source
+of the webpack chunk-loader `<script>` site documented in section 4.
+
+### 5.5 Release-level findings (recurring)
+
+| Finding | Status |
+|---|---|
+| `main.js` larger than 5 MB | Documented Sync Standard limitation per the #411 amendment; bundle reduction reframed as 1.x polish. Precedent: Excalidraw ships at 8.4 MB in the directory with no apparent sync-related reports. CR has 6,140 downloads with zero sync-related reports across plugin history. |
+| `setInterval` + network calls (suspicious pattern) | False positive. The three `setInterval` sites (journey playback ticker, animation ticker, count-up text) and the network call site (`geocoding-service.ts`) are in disjoint call paths; the patterns coexist in the bundle but don't combine. |
+| Bitcoin wallet address (funding) | False positive. The wallet address is in the funding/donation section of plugin metadata, not in plugin code. |
+
+---
+
+## 6. Action items
 
 - [ ] Upstream PR: add `Charted Roots` to `DEFAULT_BRANDS` in
       [obsidianmd/eslint-plugin/lib/rules/ui/brands.ts](https://github.com/obsidianmd/eslint-plugin/blob/master/lib/rules/ui/brands.ts).

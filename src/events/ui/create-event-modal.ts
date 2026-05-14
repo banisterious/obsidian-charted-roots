@@ -4,7 +4,7 @@
  * Modal for creating or editing event notes
  */
 
-import { App, Modal, Setting, TFile, Notice } from 'obsidian';
+import { App, ButtonComponent, Modal, Setting, TFile, Notice } from 'obsidian';
 import type { CanvasRootsSettings } from '../../settings';
 import { createLucideIcon } from '../../ui/lucide-icons';
 import { PersonPickerModal, PersonInfo } from '../../ui/person-picker';
@@ -470,25 +470,22 @@ export class CreateEventModal extends Modal {
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
 
-		const cancelBtn = buttonContainer.createEl('button', {
-			text: 'Cancel',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => {
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Cancel')
+			.onClick(() => {
+				this.close();
+			});
 
-		const submitBtn = buttonContainer.createEl('button', {
-			text: this.editMode ? 'Save changes' : 'Create event',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		submitBtn.addEventListener('click', () => {
-			if (this.editMode) {
-				void this.updateEvent();
-			} else {
-				void this.createEvent();
-			}
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText(this.editMode ? 'Save changes' : 'Create event')
+			.setCta()
+			.onClick(() => {
+				if (this.editMode) {
+					void this.updateEvent();
+				} else {
+					void this.createEvent();
+				}
+			});
 	}
 
 	onClose() {

@@ -3,7 +3,7 @@
  * Modal for creating and editing schema notes for validation
  */
 
-import { App, Modal, Setting, TFile, Notice } from 'obsidian';
+import { App, ButtonComponent, Modal, Setting, TFile, Notice } from 'obsidian';
 import { createLucideIcon, setLucideIcon } from './lucide-icons';
 import { splitAndTrim } from '../utils/format-utils';
 import type CanvasRootsPlugin from '../../main';
@@ -146,23 +146,20 @@ export class CreateSchemaModal extends Modal {
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
 
-		const cancelBtn = buttonContainer.createEl('button', {
-			text: 'Cancel',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Cancel')
+			.onClick(() => this.close());
 
-		const submitBtn = buttonContainer.createEl('button', {
-			text: this.editMode ? 'Save changes' : 'Create schema',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		submitBtn.addEventListener('click', () => {
-			if (this.editMode) {
-				void this.updateSchema();
-			} else {
-				void this.createSchema();
-			}
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText(this.editMode ? 'Save changes' : 'Create schema')
+			.setCta()
+			.onClick(() => {
+				if (this.editMode) {
+					void this.updateSchema();
+				} else {
+					void this.createSchema();
+				}
+			});
 	}
 
 	onClose() {

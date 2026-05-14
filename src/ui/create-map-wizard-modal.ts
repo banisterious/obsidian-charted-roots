@@ -11,7 +11,7 @@
  * - Step 4: Review and create
  */
 
-import { App, Modal, Notice, Setting, setIcon, TFile, normalizePath } from 'obsidian';
+import { App, ButtonComponent, Modal, Notice, Setting, setIcon, TFile, normalizePath } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { createLucideIcon } from './lucide-icons';
 import { getLogger } from '../core/logging';
@@ -295,39 +295,32 @@ export class CreateMapWizardModal extends Modal {
 		const footer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
 
 		if (options.onBack) {
-			const backBtn = footer.createEl('button', {
-				text: options.backLabel || 'Back',
-				cls: 'crc-btn'
-			});
-			backBtn.addEventListener('click', options.onBack);
+			new ButtonComponent(footer)
+				.setButtonText(options.backLabel || 'Back')
+				.onClick(options.onBack);
 		} else {
 			// Cancel button
-			const cancelBtn = footer.createEl('button', {
-				text: 'Cancel',
-				cls: 'crc-btn'
-			});
-			cancelBtn.addEventListener('click', () => this.close());
+			new ButtonComponent(footer)
+				.setButtonText('Cancel')
+				.onClick(() => this.close());
 		}
 
 		const rightButtons = footer.createDiv({ cls: 'crc-btn-group' });
 
 		if (options.showSkip && options.onSkip) {
-			const skipBtn = rightButtons.createEl('button', {
-				text: 'Skip',
-				cls: 'crc-btn'
-			});
-			skipBtn.addEventListener('click', options.onSkip);
+			new ButtonComponent(rightButtons)
+				.setButtonText('Skip')
+				.onClick(options.onSkip);
 		}
 
 		if (options.onNext) {
-			const nextBtn = rightButtons.createEl('button', {
-				text: options.nextLabel || 'Next',
-				cls: 'crc-btn crc-btn--primary'
-			});
+			const nextBtn = new ButtonComponent(rightButtons)
+				.setButtonText(options.nextLabel || 'Next')
+				.setCta()
+				.onClick(options.onNext);
 			if (options.nextDisabled) {
-				nextBtn.disabled = true;
+				nextBtn.setDisabled(true);
 			}
-			nextBtn.addEventListener('click', options.onNext);
 		}
 	}
 
@@ -1269,21 +1262,18 @@ export class CreateMapWizardModal extends Modal {
 		// Footer
 		const footer = contentEl.createDiv({ cls: 'crc-modal-buttons crc-modal-buttons--center' });
 
-		const openMapBtn = footer.createEl('button', {
-			text: 'Open in Map View',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		openMapBtn.addEventListener('click', () => {
-			// Open the map in Map View
-			void this.openInMapView();
-			this.close();
-		});
+		new ButtonComponent(footer)
+			.setButtonText('Open in Map View')
+			.setCta()
+			.onClick(() => {
+				// Open the map in Map View
+				void this.openInMapView();
+				this.close();
+			});
 
-		const doneBtn = footer.createEl('button', {
-			text: 'Done',
-			cls: 'crc-btn'
-		});
-		doneBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(footer)
+			.setButtonText('Done')
+			.onClick(() => this.close());
 	}
 
 	// ========================================

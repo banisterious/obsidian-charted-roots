@@ -1,4 +1,4 @@
-import { App, Modal, Notice } from 'obsidian';
+import { App, ButtonComponent, Modal, Notice } from 'obsidian';
 import { CanvasSearchResult, CanvasFinder } from '../core/canvas-finder';
 import { createLucideIcon } from './lucide-icons';
 import { pluralize } from '../utils/format-utils';
@@ -77,13 +77,12 @@ export class FindOnCanvasModal extends Modal {
 
 		// Close button
 		const buttonContainer = container.createDiv({ cls: 'cr-modal-buttons' });
-		const closeBtn = buttonContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--primary',
-			text: 'Close'
-		});
-		closeBtn.addEventListener('click', () => {
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Close')
+			.setCta()
+			.onClick(() => {
+				this.close();
+			});
 	}
 
 	private showResults(container: HTMLElement) {
@@ -148,13 +147,11 @@ export class FindOnCanvasModal extends Modal {
 
 		// Close button
 		const buttonContainer = container.createDiv({ cls: 'cr-modal-buttons' });
-		const closeBtn = buttonContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--secondary',
-			text: 'Close'
-		});
-		closeBtn.addEventListener('click', () => {
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Close')
+			.onClick(() => {
+				this.close();
+			});
 	}
 
 	onClose() {

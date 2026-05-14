@@ -120,6 +120,7 @@
   font-size: 1.5em;
   font-weight: 600;
   color: var(--text-normal);
+  word-break: break-word;
 }
 
 .cr-stat-label {
@@ -234,7 +235,6 @@
   margin-bottom: 12px;
 }
 
-/* .cr-modal-buttons defined in base.css */
 
 /* ==========================================================================
    Manage Members Modal

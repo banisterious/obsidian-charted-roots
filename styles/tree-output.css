@@ -402,28 +402,6 @@
 }
 
 /* ========================================
-   Place Filter Types - Compact Layout
-   ======================================== */
-
-.crc-place-filter-types {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.crc-place-filter-type {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.crc-place-filter-type input[type="checkbox"] {
-  margin: 0;
-}
-
-/* ========================================
    Recent Canvas Trees
    ======================================== */
 
@@ -716,7 +694,7 @@
 }
 
 /* Person list */
-.crc-wizard-person-list {
+.crc-wizard-person-results {
   max-height: 180px;
   overflow-y: auto;
   border: 1px solid var(--background-modifier-border);
@@ -940,14 +918,14 @@
   border-radius: var(--cr-radius-md);
 }
 
-.crc-wizard-summary-list {
+.crc-wizard-summary-items {
   margin: 8px 0 0;
   padding-left: 20px;
   font-size: 13px;
   color: var(--text-muted);
 }
 
-.crc-wizard-summary-list li {
+.crc-wizard-summary-items li {
   padding: 2px 0;
 }
 

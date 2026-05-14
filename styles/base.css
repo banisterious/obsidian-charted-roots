@@ -45,8 +45,7 @@
 /* Visibility utilities */
 .crc-hidden,
 .cr-hidden {
-  /* stylelint-disable-next-line -- legitimate !important: utility-class display toggle must beat all callers */
-  display: none !important;
+  display: none;
 }
 
 /* Cursor utilities */

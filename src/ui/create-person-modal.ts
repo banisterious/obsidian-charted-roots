@@ -4,7 +4,7 @@
  * Modal for creating or editing person notes with relationship linking
  */
 
-import { App, Modal, Setting, TFile, Notice, normalizePath, setIcon } from 'obsidian';
+import { App, ButtonComponent, Modal, Setting, TFile, Notice, normalizePath, setIcon } from 'obsidian';
 import { createPersonNote, updatePersonNote, PersonData, DynamicBlockType, addBidirectionalSpouseLink, addChildToParent, addParentToChild } from '../core/person-note-writer';
 import { RelationshipManager } from '../core/relationship-manager';
 import { createLucideIcon } from './lucide-icons';
@@ -749,25 +749,22 @@ export class CreatePersonModal extends Modal {
 		// Buttons (sticky footer)
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons crc-modal-buttons--sticky' });
 
-		const cancelBtn = buttonContainer.createEl('button', {
-			text: 'Cancel',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => {
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Cancel')
+			.onClick(() => {
+				this.close();
+			});
 
-		const submitBtn = buttonContainer.createEl('button', {
-			text: this.editMode ? 'Save changes' : 'Create person',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		submitBtn.addEventListener('click', () => {
-			if (this.editMode) {
-				void this.updatePerson();
-			} else {
-				void this.createPerson();
-			}
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText(this.editMode ? 'Save changes' : 'Create person')
+			.setCta()
+			.onClick(() => {
+				if (this.editMode) {
+					void this.updatePerson();
+				} else {
+					void this.createPerson();
+				}
+			});
 	}
 
 	onClose() {
@@ -2385,7 +2382,7 @@ export class CreatePersonModal extends Modal {
 
 		// Expand/collapse button for metadata (only show if not already expanded)
 		const expandBtn = actions.createEl('button', {
-			cls: 'crc-btn crc-btn--icon crc-btn--ghost',
+			cls: 'crc-btn crc-btn--icon',
 			attr: { 'aria-label': 'Add marriage details' }
 		});
 		const expandIcon = createLucideIcon(hasMetadata ? 'chevron-down' : 'calendar-plus', 14);
@@ -2504,7 +2501,7 @@ export class CreatePersonModal extends Modal {
 			// Collapse link
 			const collapseRow = metadataContent.createDiv({ cls: 'crc-spouse-item__collapse-row' });
 			const collapseLink = collapseRow.createEl('button', {
-				cls: 'crc-btn crc-btn--ghost crc-btn--small',
+				cls: 'crc-btn crc-btn--small',
 				text: 'Collapse'
 			});
 			collapseLink.addEventListener('click', () => {
@@ -2582,13 +2579,12 @@ export class CreatePersonModal extends Modal {
 
 		// Done button (closes modal)
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
-		const doneBtn = buttonContainer.createEl('button', {
-			text: 'Done',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		doneBtn.addEventListener('click', () => {
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Done')
+			.setCta()
+			.onClick(() => {
+				this.close();
+			});
 	}
 
 	/**
@@ -2708,13 +2704,11 @@ export class CreatePersonModal extends Modal {
 
 		// Back button
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
-		const backBtn = buttonContainer.createEl('button', {
-			text: 'Back',
-			cls: 'crc-btn'
-		});
-		backBtn.addEventListener('click', () => {
-			this.renderPostCreateActions(contentEl);
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Back')
+			.onClick(() => {
+				this.renderPostCreateActions(contentEl);
+			});
 	}
 
 	/**

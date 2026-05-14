@@ -4,7 +4,7 @@
  * Shows referenced places that don't have notes and allows selection for creation
  */
 
-import { App, Modal, Setting, Notice, normalizePath, TFile } from 'obsidian';
+import { App, ButtonComponent, Modal, Setting, Notice, normalizePath, TFile } from 'obsidian';
 import { createPlaceNote } from '../core/place-note-writer';
 import { createLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
@@ -160,19 +160,16 @@ export class CreateMissingPlacesModal extends Modal {
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
 
-		const cancelBtn = buttonContainer.createEl('button', {
-			text: 'Cancel',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => {
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Cancel')
+			.onClick(() => {
+				this.close();
+			});
 
-		const createBtn = buttonContainer.createEl('button', {
-			text: 'Create selected',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		createBtn.addEventListener('click', () => void this.createSelectedPlaces());
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Create selected')
+			.setCta()
+			.onClick(() => void this.createSelectedPlaces());
 	}
 
 	onClose() {

@@ -3,7 +3,7 @@
  * Allows assigning parent places to orphan locations
  */
 
-import { App, Modal, Setting, Notice, TFile } from 'obsidian';
+import { App, ButtonComponent, Modal, Setting, Notice, TFile } from 'obsidian';
 import { PlaceNode } from '../models/place';
 import { updatePlaceNote } from '../core/place-note-writer';
 import { createLucideIcon } from './lucide-icons';
@@ -84,19 +84,16 @@ export class BuildPlaceHierarchyModal extends Modal {
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
 
-		const cancelBtn = buttonContainer.createEl('button', {
-			text: 'Cancel',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => {
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Cancel')
+			.onClick(() => {
+				this.close();
+			});
 
-		const applyBtn = buttonContainer.createEl('button', {
-			text: 'Apply assignments',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		applyBtn.addEventListener('click', () => void this.applyAssignments());
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Apply assignments')
+			.setCta()
+			.onClick(() => void this.applyAssignments());
 	}
 
 	onClose() {

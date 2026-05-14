@@ -722,19 +722,19 @@ export class FamilyChartExportWizard extends Modal {
 		const statsRow = section.createDiv({ cls: 'cr-export-stats-row' });
 
 		statsRow.createDiv({
-			cls: 'cr-export-stat',
+			cls: 'cr-fcx-stat',
 			text: `People: ${this.estimate.peopleCount}`
 		});
 
 		if (this.formData.includeAvatars) {
 			statsRow.createDiv({
-				cls: 'cr-export-stat',
+				cls: 'cr-fcx-stat',
 				text: `Avatars: ${this.estimate.avatarCount}`
 			});
 		}
 
 		statsRow.createDiv({
-			cls: 'cr-export-stat',
+			cls: 'cr-fcx-stat',
 			text: `Est. size: ${this.formatFileSize(this.estimate.estimatedSizeBytes)}`
 		});
 

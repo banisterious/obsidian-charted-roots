@@ -1,4 +1,4 @@
-import { App, Modal } from 'obsidian';
+import { App, ButtonComponent, Modal } from 'obsidian';
 import { ValidationResult } from '../core/relationship-validator';
 import { createLucideIcon } from './lucide-icons';
 import { pluralize } from '../utils/format-utils';
@@ -97,13 +97,12 @@ export class ValidationResultsModal extends Modal {
 
 		// Close button
 		const buttonContainer = contentEl.createDiv({ cls: 'cr-modal-buttons' });
-		const closeBtn = buttonContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--primary',
-			text: 'Close'
-		});
-		closeBtn.addEventListener('click', () => {
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Close')
+			.setCta()
+			.onClick(() => {
+				this.close();
+			});
 	}
 
 	onClose() {

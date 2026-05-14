@@ -4,7 +4,7 @@
  * Designed to be lightweight and single-level (no nested "Create new" options).
  */
 
-import { App, Modal, Setting, Notice, normalizePath } from 'obsidian';
+import { App, ButtonComponent, Modal, Setting, Notice, normalizePath } from 'obsidian';
 import { createPersonNote, PersonData } from '../core/person-note-writer';
 import { generateCrId } from '../core/uuid';
 import { createLucideIcon } from './lucide-icons';
@@ -154,21 +154,18 @@ export class QuickCreatePersonModal extends Modal {
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
 
-		const cancelBtn = buttonContainer.createEl('button', {
-			text: 'Cancel',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => {
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Cancel')
+			.onClick(() => {
+				this.close();
+			});
 
-		const createBtn = buttonContainer.createEl('button', {
-			text: 'Create and link',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		createBtn.addEventListener('click', () => {
-			void this.createPerson();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Create and link')
+			.setCta()
+			.onClick(() => {
+				void this.createPerson();
+			});
 	}
 
 	onClose(): void {

@@ -12,7 +12,7 @@
  * Step 6: Complete — Download/save options
  */
 
-import { App, Modal, Notice, setIcon, TFolder, FuzzySuggestModal } from 'obsidian';
+import { App, ButtonComponent, Modal, Notice, setIcon, TFolder, FuzzySuggestModal } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { GedcomExporter, type GedcomExportOptions, type GedcomExportResult } from '../gedcom/gedcom-exporter';
 import { GedcomXExporter, type GedcomXExportOptions, type GedcomXExportResult } from '../gedcomx/gedcomx-exporter';
@@ -256,6 +256,7 @@ export class ExportWizardModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('crc-export-wizard');
+		this.modalEl.addClass('crc-export-wizard-sized');
 
 		// Modal header with icon and title
 		const header = contentEl.createDiv({ cls: 'crc-export-wizard-header' });
@@ -1083,21 +1084,17 @@ export class ExportWizardModal extends Modal {
 
 		if (this.currentStep === 0) {
 			// Step 0: Show Cancel button
-			const cancelBtn = leftBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--secondary',
-				text: 'Cancel'
-			});
-			cancelBtn.addEventListener('click', () => this.close());
+			new ButtonComponent(leftBtns)
+				.setButtonText('Cancel')
+				.onClick(() => this.close());
 		} else if (this.currentStep < 4) {
 			// Steps 1-3: Show Back button
-			const backBtn = leftBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--secondary',
-				text: 'Back'
-			});
-			backBtn.addEventListener('click', () => {
-				this.currentStep--;
-				this.renderCurrentStep();
-			});
+			new ButtonComponent(leftBtns)
+				.setButtonText('Back')
+				.onClick(() => {
+					this.currentStep--;
+					this.renderCurrentStep();
+				});
 		}
 
 		// Right side: Next or action buttons
@@ -1105,60 +1102,54 @@ export class ExportWizardModal extends Modal {
 
 		if (this.currentStep < 3) {
 			// Steps 0-2: Show Next button
-			const nextBtn = rightBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--primary',
-				text: 'Next'
-			});
-
-			nextBtn.addEventListener('click', () => {
-				this.currentStep++;
-				this.renderCurrentStep();
-			});
+			new ButtonComponent(rightBtns)
+				.setButtonText('Next')
+				.setCta()
+				.onClick(() => {
+					this.currentStep++;
+					this.renderCurrentStep();
+				});
 		} else if (this.currentStep === 3) {
 			// Step 3: Show Export button
-			const exportBtn = rightBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--primary',
-				text: 'Export'
-			});
-			exportBtn.addEventListener('click', () => {
-				void (async () => {
-				// Check for private fields and show warning if any exist
-				if (this.formData.privateFieldsSummary.length > 0 &&
-					this.formData.privateFieldsDecision === null) {
-					const modal = new PrivateFieldsWarningModal(
-						this.app,
-						this.formData.privateFieldsSummary
-					);
-					const decision = await modal.waitForDecision();
-					this.formData.privateFieldsDecision = decision;
+			new ButtonComponent(rightBtns)
+				.setButtonText('Export')
+				.setCta()
+				.onClick(() => {
+					void (async () => {
+					// Check for private fields and show warning if any exist
+					if (this.formData.privateFieldsSummary.length > 0 &&
+						this.formData.privateFieldsDecision === null) {
+						const modal = new PrivateFieldsWarningModal(
+							this.app,
+							this.formData.privateFieldsSummary
+						);
+						const decision = await modal.waitForDecision();
+						this.formData.privateFieldsDecision = decision;
 
-					if (decision === 'cancel') {
-						return; // User cancelled, stay on preview step
+						if (decision === 'cancel') {
+							return; // User cancelled, stay on preview step
+						}
+						// 'include' or 'exclude' - proceed with export
 					}
-					// 'include' or 'exclude' - proceed with export
-				}
 
-				this.currentStep = 4;
-				this.renderCurrentStep();
-				})();
-			});
+					this.currentStep = 4;
+					this.renderCurrentStep();
+					})();
+				});
 		} else if (this.currentStep === 5) {
 			// Step 5 (Complete): Show Export Another and Done buttons
-			const exportAnotherBtn = rightBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--secondary',
-				text: 'Export Another'
-			});
-			exportAnotherBtn.addEventListener('click', () => {
-				this.formData = this.getDefaultFormData();
-				this.currentStep = 0;
-				this.renderCurrentStep();
-			});
+			new ButtonComponent(rightBtns)
+				.setButtonText('Export Another')
+				.onClick(() => {
+					this.formData = this.getDefaultFormData();
+					this.currentStep = 0;
+					this.renderCurrentStep();
+				});
 
-			const doneBtn = rightBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--primary',
-				text: 'Done'
-			});
-			doneBtn.addEventListener('click', () => this.close());
+			new ButtonComponent(rightBtns)
+				.setButtonText('Done')
+				.setCta()
+				.onClick(() => this.close());
 		}
 	}
 

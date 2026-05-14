@@ -7,7 +7,7 @@
  * helper functions.
  */
 
-import { App, Notice, Setting, TFile, setIcon } from 'obsidian';
+import { App, ButtonComponent, Notice, Setting, TFile, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import type { LucideIconName } from './lucide-icons';
 import { createLucideIcon } from './lucide-icons';
@@ -130,18 +130,17 @@ export function renderDataQualityTab(options: DataQualityTabOptions): void {
 
 	// Cleanup Wizard button
 	const wizardSection = quickStartContent.createDiv({ cls: 'crc-mt-3' });
-	const wizardBtn = wizardSection.createEl('button', {
-		cls: 'crc-btn crc-btn--primary'
-	});
-	const wizardIcon = wizardBtn.createSpan({ cls: 'crc-btn-icon' });
-	setIcon(wizardIcon, 'sparkles');
-	wizardBtn.createSpan({ text: 'Run Cleanup Wizard' });
-	wizardBtn.addEventListener('click', () => {
-		options.closeModal();
-		void import('./cleanup-wizard-modal').then(({ CleanupWizardModal }) => {
-			new CleanupWizardModal(app, plugin).open();
+	const wizardBtn = new ButtonComponent(wizardSection)
+		.setCta()
+		.onClick(() => {
+			options.closeModal();
+			void import('./cleanup-wizard-modal').then(({ CleanupWizardModal }) => {
+				new CleanupWizardModal(app, plugin).open();
+			});
 		});
-	});
+	const wizardIcon = wizardBtn.buttonEl.createSpan({ cls: 'crc-btn-icon' });
+	setIcon(wizardIcon, 'sparkles');
+	wizardBtn.buttonEl.createSpan({ text: 'Run Cleanup Wizard' });
 
 	container.appendChild(quickStartCard);
 
@@ -785,17 +784,16 @@ function renderSourceConflictsSection(container: HTMLElement, options: DataQuali
 		const buttonRow = emptyState.createDiv({ cls: 'crc-empty-state-buttons' });
 
 		// Create proof button
-		const createBtn = buttonRow.createEl('button', {
-			cls: 'crc-btn crc-btn--primary',
-			text: 'Create proof summary'
-		});
-		createBtn.addEventListener('click', () => {
-			new CreateProofModal(app, plugin, {
-				onSuccess: () => {
-					renderDataQualityTab(options);
-				}
-			}).open();
-		});
+		new ButtonComponent(buttonRow)
+			.setButtonText('Create proof summary')
+			.setCta()
+			.onClick(() => {
+				new CreateProofModal(app, plugin, {
+					onSuccess: () => {
+						renderDataQualityTab(options);
+					}
+				}).open();
+			});
 
 		// View templates button
 		const templateBtn = buttonRow.createEl('button', {

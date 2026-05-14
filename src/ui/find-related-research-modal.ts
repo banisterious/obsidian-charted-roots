@@ -5,7 +5,7 @@
  * aggregated across projects. Accessible via command palette.
  */
 
-import { App, Modal, TFile, setIcon } from 'obsidian';
+import { App, ButtonComponent, Modal, TFile, setIcon } from 'obsidian';
 import { extractWikilinkPath } from '../utils/wikilink-resolver';
 
 /** A single research touchpoint */
@@ -63,11 +63,9 @@ export class FindRelatedResearchModal extends Modal {
 
 		// Close button
 		const buttonContainer = contentEl.createDiv({ cls: 'cr-modal-buttons' });
-		const closeBtn = buttonContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--secondary',
-			text: 'Close'
-		});
-		closeBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Close')
+			.onClick(() => this.close());
 	}
 
 	private renderEmpty(container: HTMLElement): void {

@@ -16,7 +16,7 @@
  * - Complete: Success with created notes list
  */
 
-import { App, Modal, Notice, Setting, setIcon, TFile, normalizePath } from 'obsidian';
+import { App, ButtonComponent, Modal, Notice, Setting, setIcon, TFile, normalizePath } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { createPersonNote, updatePersonNote, PersonData } from '../core/person-note-writer';
 import { generateCrId } from '../core/uuid';
@@ -285,11 +285,9 @@ export class FamilyCreationWizardModal extends Modal {
 		const footer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
 
 		if (options.onBack) {
-			const backBtn = footer.createEl('button', {
-				text: options.backLabel || 'Back',
-				cls: 'crc-btn'
-			});
-			backBtn.addEventListener('click', options.onBack);
+			new ButtonComponent(footer)
+				.setButtonText(options.backLabel || 'Back')
+				.onClick(options.onBack);
 		} else {
 			// Spacer
 			footer.createDiv({ cls: 'crc-btn-spacer' });
@@ -298,22 +296,19 @@ export class FamilyCreationWizardModal extends Modal {
 		const rightButtons = footer.createDiv({ cls: 'crc-btn-group' });
 
 		if (options.showSkip && options.onSkip) {
-			const skipBtn = rightButtons.createEl('button', {
-				text: 'Skip',
-				cls: 'crc-btn'
-			});
-			skipBtn.addEventListener('click', options.onSkip);
+			new ButtonComponent(rightButtons)
+				.setButtonText('Skip')
+				.onClick(options.onSkip);
 		}
 
 		if (options.onNext) {
-			const nextBtn = rightButtons.createEl('button', {
-				text: options.nextLabel || 'Next',
-				cls: 'crc-btn crc-btn--primary'
-			});
+			const nextBtn = new ButtonComponent(rightButtons)
+				.setButtonText(options.nextLabel || 'Next')
+				.setCta()
+				.onClick(options.onNext);
 			if (options.nextDisabled) {
-				nextBtn.disabled = true;
+				nextBtn.setDisabled(true);
 			}
-			nextBtn.addEventListener('click', options.onNext);
 		}
 	}
 
@@ -329,10 +324,10 @@ export class FamilyCreationWizardModal extends Modal {
 		const content = contentEl.createDiv({ cls: 'crc-wizard-content' });
 
 		// Info callout
-		const callout = content.createDiv({ cls: 'crc-info-callout' });
-		const calloutIcon = callout.createDiv({ cls: 'crc-info-callout-icon' });
+		const callout = content.createDiv({ cls: 'crc-fw-info-callout' });
+		const calloutIcon = callout.createDiv({ cls: 'crc-fw-info-callout-icon' });
 		setIcon(calloutIcon, 'info');
-		callout.createDiv({ cls: 'crc-info-callout-text' }).setText(
+		callout.createDiv({ cls: 'crc-fw-info-callout-text' }).setText(
 			'This wizard helps you create multiple family members at once and automatically links them together.'
 		);
 
@@ -423,30 +418,27 @@ export class FamilyCreationWizardModal extends Modal {
 
 		// Footer
 		const footer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
-		const cancelBtn = footer.createEl('button', {
-			text: 'Cancel',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(footer)
+			.setButtonText('Cancel')
+			.onClick(() => this.close());
 
-		const startBtn = footer.createEl('button', {
-			text: 'Get Started',
-			cls: 'crc-btn crc-btn--primary'
-		});
+		const startBtn = new ButtonComponent(footer)
+			.setButtonText('Get Started')
+			.setCta()
+			.onClick(() => {
+				if (this.state.mode === 'existing' && this.state.existingCentralPerson) {
+					// Skip step 1
+					this.currentStep = 'step2';
+				} else {
+					this.currentStep = 'step1';
+				}
+				this.render();
+			});
 		const canStart = this.state.mode === 'scratch' ||
 			(this.state.mode === 'existing' && this.state.existingCentralPerson !== null);
 		if (!canStart) {
-			startBtn.disabled = true;
+			startBtn.setDisabled(true);
 		}
-		startBtn.addEventListener('click', () => {
-			if (this.state.mode === 'existing' && this.state.existingCentralPerson) {
-				// Skip step 1
-				this.currentStep = 'step2';
-			} else {
-				this.currentStep = 'step1';
-			}
-			this.render();
-		});
 	}
 
 	private openPersonPicker(): void {
@@ -1915,20 +1907,17 @@ class PersonEditorModal extends Modal {
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
 
-		const cancelBtn = buttonContainer.createEl('button', {
-			text: 'Cancel',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Cancel')
+			.onClick(() => this.close());
 
-		const saveBtn = buttonContainer.createEl('button', {
-			text: 'Save',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		saveBtn.addEventListener('click', () => {
-			this.onSave(this.person);
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Save')
+			.setCta()
+			.onClick(() => {
+				this.onSave(this.person);
+				this.close();
+			});
 	}
 
 	onClose(): void {

@@ -3,14 +3,12 @@
    ========================================================================== */
 
 /* Applied to contentEl, so target the parent modal container */
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.modal:has(.crc-media-picker-modal) {
+.crc-media-picker-modal-sized {
   max-width: 900px;
   width: 90vw;
 }
 
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.modal:has(.crc-media-picker-modal) .modal-content {
+.crc-media-picker-modal-sized .modal-content {
   padding: 0;
   overflow: hidden;
 }
@@ -173,14 +171,12 @@
    ========================================================================== */
 
 /* Applied to contentEl, so target the parent modal container */
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.modal:has(.crc-media-manage-modal) {
+.crc-media-manage-modal-sized {
   max-width: 600px;
   width: 90vw;
 }
 
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.modal:has(.crc-media-manage-modal) .modal-content {
+.crc-media-manage-modal-sized .modal-content {
   padding: 0;
   overflow: hidden;
 }
@@ -342,16 +338,9 @@
   height: 16px;
 }
 
-/* Badges */
-.crc-badge {
-  display: inline-flex;
-  align-items: center;
+/* Badges - .crc-badge base defined in control-center.css */
+.crc-media-manage-modal .crc-badge {
   gap: 4px;
-  padding: 2px 6px;
-  font-size: var(--font-ui-smaller);
-  border-radius: var(--cr-radius-xs);
-  background: var(--background-modifier-border);
-  color: var(--text-muted);
 }
 
 .crc-badge--primary {
@@ -372,15 +361,12 @@
 /* =============================================================================
    Bulk Media Link Modal
    ============================================================================= */
-
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.modal:has(.crc-bulk-media-link-modal) {
+.crc-bulk-media-link-modal-sized {
   max-width: 700px;
   width: 90vw;
 }
 
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.modal:has(.crc-bulk-media-link-modal) .modal-content {
+.crc-bulk-media-link-modal-sized .modal-content {
   padding: 0;
   overflow: hidden;
 }
@@ -486,15 +472,12 @@
 /* ==========================================================================
    MEDIA MANAGER MODAL
    ========================================================================== */
-
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.modal:has(.crc-media-manager-modal) {
+.crc-media-manager-modal-sized {
   max-width: 700px;
   width: 90vw;
 }
 
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.modal:has(.crc-media-manager-modal) .modal-content {
+.crc-media-manager-modal-sized .modal-content {
   padding: 0;
 }
 
@@ -677,16 +660,13 @@
 /* ==========================================================================
    MEDIA GALLERY MODAL
    ========================================================================== */
-
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.modal:has(.crc-media-gallery-modal) {
+.crc-media-gallery-modal-sized {
   max-width: 900px;
   width: 95vw;
   height: 80vh;
 }
 
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.modal:has(.crc-media-gallery-modal) .modal-content {
+.crc-media-gallery-modal-sized .modal-content {
   padding: 0;
   height: 100%;
   display: flex;
@@ -972,17 +952,14 @@
 /* ==========================================================================
    UNLINKED MEDIA MODAL
    ========================================================================== */
-
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.modal:has(.crc-unlinked-media-modal) {
+.crc-unlinked-media-modal-sized {
   max-width: 1000px;
   width: 90vw;
   height: 85vh;
   max-height: 800px;
 }
 
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.modal:has(.crc-unlinked-media-modal) .modal-content {
+.crc-unlinked-media-modal-sized .modal-content {
   padding: 0;
   height: 100%;
   display: flex;
@@ -1443,38 +1420,29 @@
 }
 
 /* When filter is active, highlight the toggle */
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.crc-media-folder-filter-toggle:has(.crc-media-folder-filter-checkbox:checked) {
+.crc-media-folder-filter-toggle--checked {
   background: var(--interactive-accent);
   border-color: var(--interactive-accent);
 }
 
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.crc-media-folder-filter-toggle:has(.crc-media-folder-filter-checkbox:checked)
-  .crc-media-folder-filter-icon,
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.crc-media-folder-filter-toggle:has(.crc-media-folder-filter-checkbox:checked)
-  .crc-media-folder-filter-label {
+.crc-media-folder-filter-toggle--checked .crc-media-folder-filter-icon,
+.crc-media-folder-filter-toggle--checked .crc-media-folder-filter-label {
   color: var(--text-on-accent);
 }
 
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.crc-media-folder-filter-toggle:has(.crc-media-folder-filter-checkbox:checked):hover {
+.crc-media-folder-filter-toggle--checked:hover {
   background: var(--interactive-accent-hover);
 }
 
 /* ==========================================================================
    MEDIA UPLOAD MODAL
    ========================================================================== */
-
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.modal:has(.crc-media-upload-modal) {
+.crc-media-upload-modal-sized {
   max-width: 600px;
   width: 90vw;
 }
 
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.modal:has(.crc-media-upload-modal) .modal-content {
+.crc-media-upload-modal-sized .modal-content {
   padding: 0;
   overflow: hidden;
 }
@@ -1486,7 +1454,7 @@
 }
 
 /* Header */
-.crc-modal-header {
+.crc-media-modal-header {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1495,7 +1463,7 @@
   background: var(--background-secondary);
 }
 
-.crc-modal-header-icon {
+.crc-media-modal-header-icon {
   width: 32px;
   height: 32px;
   background: rgb(139 92 246 / 15%);
@@ -1506,12 +1474,12 @@
   color: rgb(139 92 246);
 }
 
-.crc-modal-header-icon svg {
+.crc-media-modal-header-icon svg {
   width: 18px;
   height: 18px;
 }
 
-.crc-modal-header h2 {
+.crc-media-modal-header h2 {
   margin: 0;
   font-size: 20px;
   font-weight: 600;
@@ -1724,15 +1692,12 @@
 /* ==========================================================================
    ENTITY PICKER MODAL
    ========================================================================== */
-
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.modal:has(.crc-entity-picker-modal) {
+.crc-entity-picker-modal-sized {
   max-width: 700px;
   width: 90vw;
 }
 
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-.modal:has(.crc-entity-picker-modal) .modal-content {
+.crc-entity-picker-modal-sized .modal-content {
   padding: 0;
   overflow: hidden;
 }
@@ -1923,19 +1888,19 @@
 }
 
 /* Folder suggestion dropdown styling */
-.cr-folder-suggestion {
+.cr-media-folder-suggestion {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 6px 10px;
 }
 
-.cr-folder-suggestion-icon {
+.cr-media-folder-suggestion-icon {
   color: var(--text-muted);
   flex-shrink: 0;
 }
 
-.cr-folder-suggestion-icon svg {
+.cr-media-folder-suggestion-icon svg {
   width: 16px;
   height: 16px;
 }

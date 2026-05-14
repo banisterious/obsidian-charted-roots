@@ -84,6 +84,7 @@ export class UnlinkedMediaModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('crc-unlinked-media-modal');
+		this.modalEl.addClass('crc-unlinked-media-modal-sized');
 
 		this.renderContent();
 		this.loadUnlinkedMedia();
@@ -654,6 +655,7 @@ export class UnlinkedMediaModal extends Modal {
 		});
 		checkbox.checked = enableMediaFolderFilter;
 		checkbox.disabled = !hasFolders;
+		toggleWrapper.toggleClass('crc-media-folder-filter-toggle--checked', checkbox.checked);
 
 		// Label
 		toggleWrapper.createSpan({
@@ -676,6 +678,7 @@ export class UnlinkedMediaModal extends Modal {
 		// Handle toggle change
 		checkbox.addEventListener('change', () => {
 			this.plugin.settings.enableMediaFolderFilter = checkbox.checked;
+			toggleWrapper.toggleClass('crc-media-folder-filter-toggle--checked', checkbox.checked);
 			void this.plugin.saveSettings();
 			// Reload data with new filter setting
 			this.loadUnlinkedMedia();
@@ -686,6 +689,7 @@ export class UnlinkedMediaModal extends Modal {
 			if (e.target === checkbox || !hasFolders) return;
 			checkbox.checked = !checkbox.checked;
 			this.plugin.settings.enableMediaFolderFilter = checkbox.checked;
+			toggleWrapper.toggleClass('crc-media-folder-filter-toggle--checked', checkbox.checked);
 			void this.plugin.saveSettings();
 			this.loadUnlinkedMedia();
 		});

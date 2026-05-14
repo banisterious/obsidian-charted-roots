@@ -12,7 +12,7 @@
  * - File type validation
  */
 
-import { App, Modal, Notice, normalizePath, TextComponent } from 'obsidian';
+import { App, ButtonComponent, Modal, Notice, normalizePath, TextComponent } from 'obsidian';
 import { setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import { IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, AUDIO_EXTENSIONS, PDF_EXTENSIONS, DOCUMENT_EXTENSIONS } from '../media-service';
@@ -48,7 +48,7 @@ export class MediaUploadModal extends Modal {
 	private uploadFiles: UploadFile[] = [];
 	private dropZone: HTMLElement | null = null;
 	private filesListContainer: HTMLElement | null = null;
-	private uploadButton: HTMLButtonElement | null = null;
+	private uploadButton: ButtonComponent | null = null;
 	private folderConfigContainer: HTMLElement | null = null;
 	private bodyEl: HTMLElement | null = null;
 
@@ -61,6 +61,7 @@ export class MediaUploadModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('crc-media-upload-modal');
+		this.modalEl.addClass('crc-media-upload-modal-sized');
 
 		this.renderContent();
 	}
@@ -78,8 +79,8 @@ export class MediaUploadModal extends Modal {
 		const { contentEl } = this;
 
 		// Header
-		const header = contentEl.createDiv({ cls: 'crc-modal-header' });
-		const headerIcon = header.createDiv({ cls: 'crc-modal-header-icon' });
+		const header = contentEl.createDiv({ cls: 'crc-media-modal-header' });
+		const headerIcon = header.createDiv({ cls: 'crc-media-modal-header-icon' });
 		setIcon(headerIcon, 'upload');
 		header.createEl('h2', { text: 'Upload Media' });
 
@@ -134,12 +135,15 @@ export class MediaUploadModal extends Modal {
 
 		const footerActions = footer.createDiv({ cls: 'crc-modal-footer-actions' });
 
-		const cancelBtn = footerActions.createEl('button', { cls: 'crc-btn crc-btn--secondary', text: 'Cancel' });
-		cancelBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(footerActions)
+			.setButtonText('Cancel')
+			.onClick(() => this.close());
 
-		this.uploadButton = footerActions.createEl('button', { cls: 'crc-btn crc-btn--primary', text: 'Upload' });
-		this.uploadButton.disabled = true;
-		this.uploadButton.addEventListener('click', () => { void this.handleUpload(); });
+		this.uploadButton = new ButtonComponent(footerActions)
+			.setButtonText('Upload')
+			.setCta()
+			.setDisabled(true)
+			.onClick(() => { void this.handleUpload(); });
 
 		// Update footer info when files change
 		this.updateFooterInfo(footerInfo);
@@ -267,7 +271,7 @@ export class MediaUploadModal extends Modal {
 	 */
 	private updateUploadButton(): void {
 		if (this.uploadButton) {
-			this.uploadButton.disabled = this.uploadFiles.length === 0;
+			this.uploadButton.setDisabled(this.uploadFiles.length === 0);
 		}
 	}
 
@@ -380,36 +384,34 @@ export class MediaUploadModal extends Modal {
 		});
 
 		// Set folder button
-		const setFolderBtn = inputRow.createEl('button', {
-			cls: 'crc-btn crc-btn--primary',
-			text: 'Set folder'
-		});
+		new ButtonComponent(inputRow)
+			.setButtonText('Set folder')
+			.setCta()
+			.onClick(() => {
+				void (async () => {
+					const folderPath = selectedFolder.trim() || textComponent.getValue().trim();
 
-		setFolderBtn.addEventListener('click', () => {
-			void (async () => {
-				const folderPath = selectedFolder.trim() || textComponent.getValue().trim();
+					if (!folderPath) {
+						new Notice('Please enter a folder path');
+						return;
+					}
 
-				if (!folderPath) {
-					new Notice('Please enter a folder path');
-					return;
-				}
+					// Save the folder to settings
+					this.plugin.settings.mediaFolders = [folderPath];
+					this.plugin.settings.enableMediaFolderFilter = true;
+					await this.plugin.saveSettings();
 
-				// Save the folder to settings
-				this.plugin.settings.mediaFolders = [folderPath];
-				this.plugin.settings.enableMediaFolderFilter = true;
-				await this.plugin.saveSettings();
+					// Remove the config section
+					this.folderConfigContainer?.remove();
+					this.folderConfigContainer = null;
 
-				// Remove the config section
-				this.folderConfigContainer?.remove();
-				this.folderConfigContainer = null;
+					// Update the destination display
+					this.updateDestinationDisplay();
 
-				// Update the destination display
-				this.updateDestinationDisplay();
-
-				// Proceed with upload
-				await this.performUpload(folderPath);
-			})();
-		});
+					// Proceed with upload
+					await this.performUpload(folderPath);
+				})();
+			});
 
 		// Focus the input
 		textComponent.inputEl.focus();

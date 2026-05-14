@@ -255,7 +255,7 @@ function updateCollectionsList(
 					const remaining = components.length - displayLimit;
 					const loadMoreBtn = footer.createEl('button', {
 						text: `Load more (${Math.min(PAGE_SIZE, remaining)} more)`,
-						cls: 'crc-btn crc-btn--small crc-btn--ghost crc-ml-2'
+						cls: 'crc-btn crc-btn--small crc-ml-2'
 					});
 					loadMoreBtn.addEventListener('click', () => {
 						displayLimit += PAGE_SIZE;

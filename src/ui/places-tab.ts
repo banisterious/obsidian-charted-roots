@@ -6,7 +6,7 @@
  * place statistics, lists, references, and data quality issues.
  */
 
-import { Menu, Modal, Notice, Setting, TFile, setIcon } from 'obsidian';
+import { ButtonComponent, Menu, Modal, Notice, Setting, TFile, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import type { LucideIconName } from './lucide-icons';
 import { createLucideIcon } from './lucide-icons';
@@ -606,7 +606,7 @@ function renderIssueSection(container: HTMLElement, options: IssueSectionOptions
 
 		const btn = itemEl.createEl('button', {
 			text: item.action.label,
-			cls: `crc-btn crc-btn--small ${item.action.primary ? 'crc-btn--primary' : 'crc-btn--ghost'}`
+			cls: `crc-btn crc-btn--small${item.action.primary ? ' crc-btn--primary' : ''}`
 		});
 		btn.addEventListener('click', (e) => {
 			e.stopPropagation();
@@ -660,7 +660,7 @@ function renderSimplifiedIssueRow(container: HTMLElement, options: SimplifiedIss
 
 	const btn = row.createEl('button', {
 		text: options.action.label,
-		cls: 'crc-btn crc-btn--ghost'
+		cls: 'crc-btn'
 	});
 	btn.addEventListener('click', options.action.onClick);
 }
@@ -688,18 +688,17 @@ function renderOtherTools(
 	const normalizeActions = normalizeTool.createDiv({ cls: 'crc-dq-tool__actions' });
 	const previewBtn = normalizeActions.createEl('button', {
 		text: 'Preview',
-		cls: 'crc-btn crc-btn--ghost'
+		cls: 'crc-btn'
 	});
 	previewBtn.addEventListener('click', () => {
 		showNormalizePlaceNamesPreview(plugin, showTab);
 	});
-	const applyBtn = normalizeActions.createEl('button', {
-		text: 'Apply',
-		cls: 'crc-btn crc-btn--primary'
-	});
-	applyBtn.addEventListener('click', () => {
-		showNormalizePlaceNamesApply(plugin, showTab);
-	});
+	new ButtonComponent(normalizeActions)
+		.setButtonText('Apply')
+		.setCta()
+		.onClick(() => {
+			showNormalizePlaceNamesApply(plugin, showTab);
+		});
 }
 
 /**
@@ -794,7 +793,7 @@ function loadPlaceStatistics(container: HTMLElement, plugin: CanvasRootsPlugin):
 	// Toggle for showing details
 	const toggleRow = container.createDiv({ cls: 'crc-stats-toggle crc-mt-2' });
 	const toggleBtn = toggleRow.createEl('button', {
-		cls: 'crc-btn crc-btn--small crc-btn--ghost'
+		cls: 'crc-btn crc-btn--small'
 	});
 	const toggleIcon = createLucideIcon('chevron-right', 14);
 	toggleBtn.appendChild(toggleIcon);
@@ -1296,7 +1295,7 @@ function loadPlaceList(
 		if (filtered.length > displayLimit) {
 			const loadMoreBtn = footer.createEl('button', {
 				text: `Load more (${Math.min(25, filtered.length - displayLimit)} more)`,
-				cls: 'crc-btn crc-btn--small crc-btn--ghost crc-ml-2'
+				cls: 'crc-btn crc-btn--small crc-ml-2'
 			});
 			loadMoreBtn.addEventListener('click', () => {
 				displayLimit += 25;
@@ -2087,7 +2086,7 @@ export function renderPlacesList(options: PlacesListOptions): void {
 		if (filtered.length > displayLimit) {
 			const loadMoreBtn = footer.createEl('button', {
 				text: `Load more (${Math.min(25, filtered.length - displayLimit)} more)`,
-				cls: 'crc-btn crc-btn--small crc-btn--ghost crc-ml-2'
+				cls: 'crc-btn crc-btn--small crc-ml-2'
 			});
 			loadMoreBtn.addEventListener('click', () => {
 				displayLimit += 25;

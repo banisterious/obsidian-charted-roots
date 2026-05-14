@@ -87,11 +87,6 @@
   padding-top: var(--cr-spacing-sm);
 }
 
-/* Small muted text */
-.crc-text-small {
-  font-size: 0.85em;
-}
-
 /* ==========================================================================
    Unified Property Configuration
    ========================================================================== */

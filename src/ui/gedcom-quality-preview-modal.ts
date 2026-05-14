@@ -5,7 +5,7 @@
  * allowing users to review and configure how issues should be handled.
  */
 
-import { App, Modal } from 'obsidian';
+import { App, ButtonComponent, Modal } from 'obsidian';
 import { createLucideIcon, setLucideIcon, LucideIconName } from './lucide-icons';
 import type {
 	GedcomQualityAnalysis,
@@ -372,7 +372,7 @@ export class GedcomQualityPreviewModal extends Modal {
 
 		const keepOriginalBtn = quickActions.createEl('button', {
 			text: 'Keep all original forms',
-			cls: 'crc-btn crc-btn--small crc-btn--ghost'
+			cls: 'crc-btn crc-btn--small'
 		});
 		keepOriginalBtn.addEventListener('click', () => {
 			for (const variant of summary.placeVariants) {
@@ -532,24 +532,21 @@ export class GedcomQualityPreviewModal extends Modal {
 		// Buttons
 		const buttonContainer = container.createDiv({ cls: 'crc-modal-buttons' });
 
-		const cancelBtn = buttonContainer.createEl('button', {
-			text: 'Cancel import',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => {
-			this.onComplete({ proceed: false, choices: this.choices });
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Cancel import')
+			.onClick(() => {
+				this.onComplete({ proceed: false, choices: this.choices });
+				this.close();
+			});
 
-		const proceedBtn = buttonContainer.createEl('button', {
-			text: summary.placeVariants.length > 0
+		new ButtonComponent(buttonContainer)
+			.setButtonText(summary.placeVariants.length > 0
 				? 'Continue with these settings'
-				: 'Continue import',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		proceedBtn.addEventListener('click', () => {
-			this.onComplete({ proceed: true, choices: this.choices });
-			this.close();
-		});
+				: 'Continue import')
+			.setCta()
+			.onClick(() => {
+				this.onComplete({ proceed: true, choices: this.choices });
+				this.close();
+			});
 	}
 }

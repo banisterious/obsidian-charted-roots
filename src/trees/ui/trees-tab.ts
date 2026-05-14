@@ -169,7 +169,7 @@ function showTreeGenerationTab(options: TreesTabOptions): void {
 			const actionRow = treeItem.createDiv({ cls: 'crc-recent-tree-actions' });
 
 			const openBtn = actionRow.createEl('button', {
-				cls: 'crc-btn crc-btn--icon crc-btn--ghost',
+				cls: 'crc-btn crc-btn--icon',
 				attr: { 'aria-label': 'Open canvas' }
 			});
 			openBtn.appendChild(createLucideIcon('external-link', 14));
@@ -179,7 +179,7 @@ function showTreeGenerationTab(options: TreesTabOptions): void {
 			});
 
 			const moreBtn = actionRow.createEl('button', {
-				cls: 'crc-btn crc-btn--icon crc-btn--ghost',
+				cls: 'crc-btn crc-btn--icon',
 				attr: { 'aria-label': 'More actions' }
 			});
 			moreBtn.appendChild(createLucideIcon('more-vertical', 14));

@@ -4,7 +4,7 @@
  * Handles cases like "USA" vs "United States of America", state abbreviations, etc.
  */
 
-import { App, Modal, Notice, TFile } from 'obsidian';
+import { App, ButtonComponent, Modal, Notice, TFile } from 'obsidian';
 import { createLucideIcon, setLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
 
@@ -174,11 +174,10 @@ export class StandardizePlaceVariantsModal extends Modal {
 			});
 
 			const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
-			const closeBtn = buttonContainer.createEl('button', {
-				text: 'Close',
-				cls: 'crc-btn crc-btn--primary'
-			});
-			closeBtn.addEventListener('click', () => this.close());
+			new ButtonComponent(buttonContainer)
+				.setButtonText('Close')
+				.setCta()
+				.onClick(() => this.close());
 			return;
 		}
 
@@ -203,11 +202,11 @@ export class StandardizePlaceVariantsModal extends Modal {
 		// Select all / deselect all buttons
 		const selectAllBtn = filterRow.createEl('button', {
 			text: 'Select all',
-			cls: 'crc-btn crc-btn--small crc-btn--ghost'
+			cls: 'crc-btn crc-btn--small'
 		});
 		const deselectAllBtn = filterRow.createEl('button', {
 			text: 'Deselect all',
-			cls: 'crc-btn crc-btn--small crc-btn--ghost'
+			cls: 'crc-btn crc-btn--small'
 		});
 
 		// Table
@@ -361,24 +360,20 @@ export class StandardizePlaceVariantsModal extends Modal {
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
 
-		const cancelBtn = buttonContainer.createEl('button', {
-			text: 'Cancel',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Cancel')
+			.onClick(() => this.close());
 
-		const applyBtn = buttonContainer.createEl('button', {
-			text: `Standardize ${this.selectedMatches.size} variant${this.selectedMatches.size !== 1 ? 's' : ''}`,
-			cls: 'crc-btn crc-btn--primary'
-		});
+		const applyBtn = new ButtonComponent(buttonContainer)
+			.setButtonText(`Standardize ${this.selectedMatches.size} variant${this.selectedMatches.size !== 1 ? 's' : ''}`)
+			.setCta()
+			.onClick(() => void this.applyStandardization());
 
 		const updateApplyButton = () => {
 			const count = this.selectedMatches.size;
-			applyBtn.textContent = `Standardize ${count} variant${count !== 1 ? 's' : ''}`;
-			applyBtn.disabled = count === 0;
+			applyBtn.setButtonText(`Standardize ${count} variant${count !== 1 ? 's' : ''}`);
+			applyBtn.setDisabled(count === 0);
 		};
-
-		applyBtn.addEventListener('click', () => void this.applyStandardization());
 
 		updateApplyButton();
 	}

@@ -133,6 +133,7 @@ export class BookBuilderModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('cr-book-builder');
+		this.modalEl.addClass('cr-book-builder-sized');
 
 		// Header
 		const header = contentEl.createDiv({ cls: 'cr-book-builder-header' });
@@ -1333,6 +1334,7 @@ class ChapterConfigModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('cr-chapter-config-modal');
+		this.modalEl.addClass('cr-chapter-config-modal-sized');
 
 		const meta = CHAPTER_TYPE_META[this.chapterType];
 		const header = contentEl.createDiv({ cls: 'crc-picker-header' });
@@ -1558,6 +1560,7 @@ class FilePickerModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('cr-file-picker-modal');
+		this.modalEl.addClass('cr-file-picker-modal-sized');
 
 		const header = contentEl.createDiv({ cls: 'crc-picker-header' });
 		const titleSection = header.createDiv({ cls: 'crc-picker-title' });

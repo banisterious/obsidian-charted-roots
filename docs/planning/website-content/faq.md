@@ -14,9 +14,9 @@ Marketing-forward FAQ for prospective users deciding whether to install. Short a
 
 ## Structure
 
-Five sections, 19 questions total. Each answer one to two sentences plus a link.
+Five sections, 20 questions total. Each answer one to two sentences plus a link.
 
-1. **Getting started** (4) — what is it, do I need to code, install, free
+1. **Getting started** (5) — what is it, do I need to code, install, switch from BRAT, free
 2. **Will it work for my situation?** (4) — existing data, mobile, both audiences, "right for me" teaser
 3. **Privacy and data** (5) — local storage, network behavior, living persons, SSN protection, sharing publicly
 4. **Common how-to's** (4) — marriages, adopted/step, DNA, fictional dates
@@ -47,6 +47,18 @@ No. The plugin stores data in YAML frontmatter in your markdown notes, a simple 
 Click [**Install in Obsidian**](https://community.obsidian.md/plugins/charted-roots) on the plugin's Community page, or search for "Charted Roots" in Obsidian Settings → Community plugins.
 
 For early access to releases before they reach the directory, use [BRAT](https://github.com/TfTHacker/obsidian42-brat) and add `banisterious/obsidian-charted-roots` as a beta plugin. [Full install guide →](https://github.com/banisterious/obsidian-charted-roots/wiki/Getting-Started#installation)
+
+### I installed via BRAT — should I switch?
+
+Yes, if you want simpler updates. Charted Roots is now in the main Community Plugins directory, and updates come through Obsidian's built-in update flow instead of BRAT's beta-plugin polling.
+
+**To switch:**
+
+1. In Obsidian, open Settings → Community plugins → Browse, search for "Charted Roots", and click Install. Your existing data and settings are preserved — Obsidian keeps the plugin's `data.json` under your vault's `.obsidian/plugins/charted-roots/` regardless of which channel installed it.
+2. Open the BRAT plugin's settings, find Charted Roots in the "Beta plugin list", and remove it. This stops BRAT from auto-updating the plugin going forward.
+3. Updates now arrive through the directory — check Settings → Community plugins → Check for updates.
+
+**Keep BRAT if** you want early access to release candidates or beta tags before they reach the directory. You can also keep BRAT installed for other plugins — removing Charted Roots from BRAT's beta-list doesn't affect anything else.
 
 ### Is it free?
 
@@ -125,5 +137,5 @@ Bugs go in [GitHub Issues](https://github.com/banisterious/obsidian-charted-root
 ## Open questions
 
 1. **"Is Charted Roots right for me?"** — current approach is a one-line teaser linking to the wiki's longer, honest treatment. Alternative: paraphrase a shorter version in the marketing voice. Current approach preserves the wiki version's tone, which is worth more than a shorter copy.
-2. **Question count.** 19 questions in five sections feels right for a prospect-level FAQ. Could trim one or two from the how-to's section if it reads long during port.
+2. **Question count.** 20 questions in five sections feels right for a prospect-level FAQ. Could trim one or two from the how-to's section if it reads long during port.
 3. **Anchor links to the wiki FAQ.** Several answers link to specific anchors on the wiki FAQ (e.g., `#how-do-i-handle-multiple-marriages`). Those anchors exist today. If the wiki FAQ gets restructured in the future, those links should be audited.

@@ -538,6 +538,7 @@
   right: 0;
   top: 0;
   width: 0;
+  max-width: 350px;
   height: 100%;
   background-color: var(--background-color);
   overflow: auto;
@@ -675,10 +676,6 @@
 }
 
 /* Form panel layout constraints */
-.cr-fcv-chart-container.f3 .f3-form-cont {
-  max-width: 350px;
-}
-
 .cr-fcv-chart-container.f3 .f3-form-cont > * {
   max-width: 100%;
   overflow: hidden;
@@ -1370,9 +1367,8 @@
  * ------------------------------------------------------------ */
 
 /* Family-chart library sets inline `opacity: 1` on card_cont during animation;
- * we need !important to override inline styles from CSS. */
+ * !important is required to override library inline styles. */
 .cr-fcv-chart-container.cr-hl-active .card_cont.cr-hl-dim {
-  /* stylelint-disable-next-line -- legitimate !important: overrides family-chart inline opacity during overlay animation */
   opacity: 0.3 !important;
   transition: opacity 0.2s ease;
 }

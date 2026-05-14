@@ -1149,17 +1149,7 @@
    Source Quality Badges (Phase 2)
    ========================================================================== */
 
-/* Quality badge base style */
-.crc-quality-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--size-2-1) var(--size-2-2);
-  border-radius: var(--radius-s);
-  font-size: var(--font-ui-smaller);
-  font-weight: 500;
-  white-space: nowrap;
-  cursor: help;
-}
+/* Quality badge base defined in control-center.css */
 
 /* Primary quality - green (best evidence) */
 .crc-quality-badge--primary {
@@ -1193,16 +1183,7 @@
   border-radius: var(--radius-s);
 }
 
-.crc-quality-summary-item {
-  display: flex;
-  align-items: center;
-  gap: var(--size-2-2);
-  font-size: var(--font-ui-smaller);
-}
-
-.crc-quality-summary-count {
-  font-weight: 600;
-}
+/* .crc-quality-summary-item and -count defined in control-center.css */
 
 /* Quality indicator dot (for compact displays) */
 .crc-quality-dot {
@@ -1499,10 +1480,6 @@
    Source Conflicts Section (Data Quality tab)
    ========================================================================== */
 
-.crc-conflicts-section {
-  margin-top: var(--size-4-4);
-}
-
 .crc-conflicts-list {
   display: flex;
   flex-direction: column;
@@ -1640,8 +1617,7 @@
    The suggestion-container is appended to body, not inside the modal,
    so we need a global rule when modal is present.
    Modal z-index is 50 (--layer-modal), so we need higher. */
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-body:has(.cr-image-wizard) .suggestion-container {
+body.cr-image-wizard-active .suggestion-container {
   z-index: 100;
 }
 
@@ -2166,8 +2142,7 @@ body:has(.cr-image-wizard) .suggestion-container {
 }
 
 /* Ensure folder suggestions appear above the modal */
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
-body:has(.cr-media-linker) .suggestion-container {
+body.cr-media-linker-active .suggestion-container {
   z-index: 100;
 }
 
@@ -2805,20 +2780,20 @@ body:has(.cr-media-linker) .suggestion-container {
   overflow-y: auto;
 }
 
-.cr-sv-header {
+.cr-source-view-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--size-4-4);
 }
 
-.cr-sv-title {
+.cr-source-view-title {
   font-size: var(--font-ui-large);
   font-weight: var(--font-semibold);
   margin: 0;
 }
 
-.cr-sv-actions {
+.cr-source-view-actions {
   display: flex;
   gap: var(--size-4-2);
 }

@@ -4,7 +4,7 @@
  * Displays relationship change history with undo functionality.
  */
 
-import { App, Modal, TFile, Notice, Setting } from 'obsidian';
+import { App, ButtonComponent, Modal, TFile, Notice, Setting } from 'obsidian';
 import {
 	RelationshipHistoryService,
 	RelationshipChange,
@@ -228,27 +228,24 @@ export class RelationshipHistoryModal extends Modal {
 		// Undo last button
 		const undoableCount = this.historyService.getUndoableChanges().length;
 		if (undoableCount > 0) {
-			const undoLastBtn = actionsDiv.createEl('button', {
-				cls: 'crc-btn',
-				text: 'Undo last change'
-			});
-			undoLastBtn.addEventListener('click', () => {
-				void (async () => {
-					const change = await this.historyService.undoLastChange();
-					if (change) {
-						new Notice(`Undone: ${formatChangeDescription(change)}`);
-						this.render();
-					}
-				})();
-			});
+			new ButtonComponent(actionsDiv)
+				.setButtonText('Undo last change')
+				.onClick(() => {
+					void (async () => {
+						const change = await this.historyService.undoLastChange();
+						if (change) {
+							new Notice(`Undone: ${formatChangeDescription(change)}`);
+							this.render();
+						}
+					})();
+				});
 		}
 
 		// Close button
-		const closeBtn = actionsDiv.createEl('button', {
-			cls: 'crc-btn crc-btn--primary',
-			text: 'Close'
-		});
-		closeBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(actionsDiv)
+			.setButtonText('Close')
+			.setCta()
+			.onClick(() => this.close());
 	}
 
 	onClose() {
@@ -287,24 +284,21 @@ export class ClearHistoryConfirmModal extends Modal {
 
 		const buttonDiv = contentEl.createDiv({ cls: 'cr-modal-buttons' });
 
-		const cancelBtn = buttonDiv.createEl('button', {
-			cls: 'crc-btn',
-			text: 'Cancel'
-		});
-		cancelBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(buttonDiv)
+			.setButtonText('Cancel')
+			.onClick(() => this.close());
 
-		const confirmBtn = buttonDiv.createEl('button', {
-			cls: 'crc-btn crc-btn--danger',
-			text: 'Clear history'
-		});
-		confirmBtn.addEventListener('click', () => {
-			void (async () => {
-				await this.historyService.clearHistory();
-				this.onConfirm();
-				this.close();
-				new Notice('Relationship history cleared');
-			})();
-		});
+		new ButtonComponent(buttonDiv)
+			.setButtonText('Clear history')
+			.setWarning()
+			.onClick(() => {
+				void (async () => {
+					await this.historyService.clearHistory();
+					this.onConfirm();
+					this.close();
+					new Notice('Relationship history cleared');
+				})();
+			});
 	}
 
 	onClose() {

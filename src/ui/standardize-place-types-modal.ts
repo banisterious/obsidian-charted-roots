@@ -4,7 +4,7 @@
  * Helps convert generic types like 'locality' to specific types (city, town, village)
  */
 
-import { App, Modal, Notice, TFile } from 'obsidian';
+import { App, ButtonComponent, Modal, Notice, TFile } from 'obsidian';
 import { createLucideIcon, setLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
 import { PlaceNode, KnownPlaceType } from '../models/place';
@@ -92,11 +92,10 @@ export class StandardizePlaceTypesModal extends Modal {
 			});
 
 			const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
-			const closeBtn = buttonContainer.createEl('button', {
-				text: 'Close',
-				cls: 'crc-btn crc-btn--primary'
-			});
-			closeBtn.addEventListener('click', () => this.close());
+			new ButtonComponent(buttonContainer)
+				.setButtonText('Close')
+				.setCta()
+				.onClick(() => this.close());
 			return;
 		}
 
@@ -129,17 +128,16 @@ export class StandardizePlaceTypesModal extends Modal {
 		// Footer buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
 
-		const applyAllBtn = buttonContainer.createEl('button', {
-			text: 'Apply all',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		applyAllBtn.addEventListener('click', () => {
-			void this.applyAll();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Apply all')
+			.setCta()
+			.onClick(() => {
+				void this.applyAll();
+			});
 
 		const closeBtn = buttonContainer.createEl('button', {
 			text: 'Close',
-			cls: 'crc-btn crc-btn--ghost'
+			cls: 'crc-btn'
 		});
 		closeBtn.addEventListener('click', () => this.close());
 	}
@@ -158,7 +156,7 @@ export class StandardizePlaceTypesModal extends Modal {
 		for (const type of STANDARD_SETTLEMENT_TYPES) {
 			const btn = bulkActions.createEl('button', {
 				text: capitalize(type),
-				cls: 'crc-btn crc-btn--small crc-btn--ghost crc-ml-1'
+				cls: 'crc-btn crc-btn--small crc-ml-1'
 			});
 			btn.addEventListener('click', () => this.setAllToType(type));
 		}
@@ -217,7 +215,7 @@ export class StandardizePlaceTypesModal extends Modal {
 		// Current type badge
 		nameContainer.createSpan({
 			text: place.placeType || 'unknown',
-			cls: 'crc-type-badge crc-type-badge--current'
+			cls: 'crc-stnd-type-badge crc-stnd-type-badge--current'
 		});
 
 		// Parent info if available

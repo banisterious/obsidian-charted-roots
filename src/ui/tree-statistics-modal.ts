@@ -186,15 +186,15 @@ export class TreeStatisticsModal extends Modal {
 	}
 
 	private addStatRow(container: HTMLElement, label: string, value: string, icon?: string) {
-		const row = container.createDiv({ cls: 'cr-stat-row' });
+		const row = container.createDiv({ cls: 'cr-treestat-row' });
 
-		const labelEl = row.createDiv({ cls: 'cr-stat-label' });
+		const labelEl = row.createDiv({ cls: 'cr-treestat-label' });
 		if (icon) {
-			labelEl.createSpan({ cls: `cr-stat-icon lucide-${icon}` });
+			labelEl.createSpan({ cls: `cr-treestat-icon lucide-${icon}` });
 		}
 		labelEl.createSpan({ text: label });
 
-		row.createDiv({ cls: 'cr-stat-value', text: value });
+		row.createDiv({ cls: 'cr-treestat-value', text: value });
 	}
 
 	onClose() {

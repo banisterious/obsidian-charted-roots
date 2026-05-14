@@ -4,7 +4,7 @@
  * Identifies place notes that may represent the same location and allows merging them
  */
 
-import { App, Menu, Modal, Notice, TFile } from 'obsidian';
+import { App, ButtonComponent, Menu, Modal, Notice, TFile } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
 import { PlaceNode } from '../models/place';
@@ -137,11 +137,10 @@ export class MergeDuplicatePlacesModal extends Modal {
 			});
 
 			const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
-			const closeBtn = buttonContainer.createEl('button', {
-				text: 'Close',
-				cls: 'crc-btn crc-btn--primary'
-			});
-			closeBtn.addEventListener('click', () => this.close());
+			new ButtonComponent(buttonContainer)
+				.setButtonText('Close')
+				.setCta()
+				.onClick(() => this.close());
 			return;
 		}
 
@@ -164,20 +163,17 @@ export class MergeDuplicatePlacesModal extends Modal {
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
 
-		const cancelBtn = buttonContainer.createEl('button', {
-			text: 'Close',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Close')
+			.onClick(() => this.close());
 
 		// Calculate total impact for the main button
 		const totalImpact = this.calculateTotalImpact();
-		const applyBtn = buttonContainer.createEl('button', {
-			text: `Merge all (${totalImpact.duplicateCount} duplicates)`,
-			cls: 'crc-btn crc-btn--primary'
-		});
-		applyBtn.title = `Merge ${totalImpact.duplicateCount} duplicate place notes across ${totalImpact.groupCount} groups`;
-		applyBtn.addEventListener('click', () => void this.applyAllMerges());
+		new ButtonComponent(buttonContainer)
+			.setButtonText(`Merge all (${totalImpact.duplicateCount} duplicates)`)
+			.setCta()
+			.setTooltip(`Merge ${totalImpact.duplicateCount} duplicate place notes across ${totalImpact.groupCount} groups`)
+			.onClick(() => void this.applyAllMerges());
 	}
 
 	onClose() {
@@ -460,7 +456,7 @@ export class MergeDuplicatePlacesModal extends Modal {
 
 				// Open note button (outside label to avoid triggering radio)
 				const openBtn = optionEl.createEl('button', {
-					cls: 'crc-btn crc-btn--icon crc-btn--ghost crc-duplicate-open-btn',
+					cls: 'crc-btn crc-btn--icon crc-duplicate-open-btn',
 					attr: { 'aria-label': 'Open note' }
 				});
 				openBtn.title = 'Open note to inspect content (right-click for options)';
@@ -601,7 +597,7 @@ export class MergeDuplicatePlacesModal extends Modal {
 
 		// Edit button
 		const editBtn = container.createEl('button', {
-			cls: 'crc-btn crc-btn--icon crc-btn--ghost crc-btn--small',
+			cls: 'crc-btn crc-btn--icon crc-btn--small',
 			attr: { 'aria-label': 'Edit filename' }
 		});
 		editBtn.title = 'Change filename after merge';
@@ -614,7 +610,7 @@ export class MergeDuplicatePlacesModal extends Modal {
 		// Reset button (only show if filename was changed)
 		if (newFilename) {
 			const resetBtn = container.createEl('button', {
-				cls: 'crc-btn crc-btn--icon crc-btn--ghost crc-btn--small',
+				cls: 'crc-btn crc-btn--icon crc-btn--small',
 				attr: { 'aria-label': 'Reset filename' }
 			});
 			resetBtn.title = 'Reset to original filename';

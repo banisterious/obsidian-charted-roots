@@ -92,157 +92,6 @@
 }
 
 /* ==========================================================================
-   UNLINKED PLACES LIST (legacy)
-   ========================================================================== */
-
-.crc-unlinked-places-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.crc-unlinked-place-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--background-modifier-border);
-}
-
-.crc-unlinked-place-item:last-child {
-  border-bottom: none;
-}
-
-.crc-unlinked-place-content {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.crc-unlinked-place-item .crc-btn--ghost {
-  flex-shrink: 0;
-  margin-left: 8px;
-  opacity: 60%;
-  transition: opacity 0.15s ease;
-}
-
-.crc-unlinked-place-item:hover .crc-btn--ghost {
-  opacity: 100%;
-}
-
-/* ==========================================================================
-   REFERENCED PLACES LIST (with filtering/sorting)
-   ========================================================================== */
-
-.crc-referenced-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--background-modifier-border);
-}
-
-.crc-referenced-controls .crc-filter-container {
-  flex: 1;
-  min-width: 150px;
-}
-
-.crc-sort-container {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.crc-sort-select {
-  padding: 4px 8px;
-  font-size: var(--font-ui-small);
-}
-
-.crc-filter-toggles {
-  display: flex;
-  gap: 12px;
-}
-
-.crc-filter-toggle {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  font-size: var(--font-ui-small);
-}
-
-.crc-filter-toggle input[type="checkbox"] {
-  margin: 0;
-}
-
-.crc-referenced-list {
-  max-height: 350px;
-  overflow-y: auto;
-}
-
-.crc-referenced-places-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.crc-referenced-place-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 8px;
-  border-radius: var(--radius-s);
-  transition: background-color 0.1s ease;
-}
-
-.crc-referenced-place-item:hover {
-  background: var(--background-modifier-hover);
-}
-
-.crc-referenced-place-item--unlinked {
-  background: rgb(var(--color-yellow-rgb) 0.05);
-}
-
-.crc-referenced-place-item--unlinked:hover {
-  background: rgb(var(--color-yellow-rgb) 0.1);
-}
-
-.crc-referenced-place-content {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.crc-referenced-place-status {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-}
-
-.crc-referenced-place-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.crc-referenced-place-item .crc-btn--ghost {
-  flex-shrink: 0;
-  margin-left: 8px;
-  opacity: 0%;
-  transition: opacity 0.15s ease;
-}
-
-.crc-referenced-place-item:hover .crc-btn--ghost {
-  opacity: 100%;
-}
-
-/* ==========================================================================
    STANDARDIZE PLACES MODAL
    ========================================================================== */
 
@@ -410,21 +259,20 @@
   flex-direction: column;
 }
 
-/* Clickable count link */
+/* Clickable count link. Uses border-bottom for the dotted-vs-solid
+   underline distinction (text-decoration: underline dotted/solid is
+   flagged as partial-support by the community scan). */
 .crc-variation-count-link {
   cursor: pointer;
   color: var(--text-accent);
-  text-decoration: underline;
-  /* stylelint-disable-next-line -- partial browser-support warning; feature works in Obsidian's Electron runtime */
-  text-decoration-style: dotted;
-  text-underline-offset: 2px;
+  border-bottom: 1px dotted currentcolor;
+  padding-bottom: 1px;
   margin-right: 4px;
 }
 
 .crc-variation-count-link:hover {
   color: var(--text-accent-hover);
-  /* stylelint-disable-next-line -- partial browser-support warning; feature works in Obsidian's Electron runtime */
-  text-decoration-style: solid;
+  border-bottom-style: solid;
 }
 
 .crc-variation-count-link.crc-expanded {
@@ -858,7 +706,6 @@
   display: inline-block;
 }
 
-/* .crc-text--center utility lives in base.css */
 
 /* ==========================================================================
    PLACE NETWORK MODAL

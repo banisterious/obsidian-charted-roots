@@ -7,7 +7,7 @@
  * proof summaries, and relationship field helpers.
  */
 
-import { App, Menu, Notice, Platform, Setting, TFile, setIcon } from 'obsidian';
+import { App, ButtonComponent, Menu, Notice, Platform, Setting, TFile, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import type { LucideIconName } from './lucide-icons';
 import { createLucideIcon } from './lucide-icons';
@@ -316,21 +316,18 @@ export function renderPeopleList(options: PeopleListOptions): void {
 
 		if (renderedCount < people.length) {
 			const loadMoreContainer = target.createDiv({ cls: 'crc-load-more-container' });
-			const loadMoreBtn = loadMoreContainer.createEl('button', {
-				cls: 'crc-btn crc-btn--secondary',
-				text: `Load more (${renderedCount} of ${people.length} shown)`
-			});
+			const loadMoreBtn = new ButtonComponent(loadMoreContainer)
+				.setButtonText(`Load more (${renderedCount} of ${people.length} shown)`)
+				.onClick(() => {
+					const newRendered = renderBatch(renderedCount, PERSON_LIST_PAGE_SIZE);
+					renderedCount += newRendered;
 
-			loadMoreBtn.addEventListener('click', () => {
-				const newRendered = renderBatch(renderedCount, PERSON_LIST_PAGE_SIZE);
-				renderedCount += newRendered;
-
-				if (renderedCount >= people.length) {
-					loadMoreContainer.remove();
-				} else {
-					loadMoreBtn.setText(`Load more (${renderedCount} of ${people.length} shown)`);
-				}
-			});
+					if (renderedCount >= people.length) {
+						loadMoreContainer.remove();
+					} else {
+						loadMoreBtn.setButtonText(`Load more (${renderedCount} of ${people.length} shown)`);
+					}
+				});
 		}
 	};
 
@@ -1322,21 +1319,18 @@ function renderPersonListItems(
 	// Show "Load more" button if needed
 	if (needsPagination && renderedCount < totalCount) {
 		const loadMoreContainer = container.createDiv({ cls: 'crc-load-more-container' });
-		const loadMoreBtn = loadMoreContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--secondary',
-			text: `Load more (${renderedCount} of ${totalCount} shown)`
-		});
+		const loadMoreBtn = new ButtonComponent(loadMoreContainer)
+			.setButtonText(`Load more (${renderedCount} of ${totalCount} shown)`)
+			.onClick(() => {
+				const newRendered = renderBatch(renderedCount, PERSON_LIST_PAGE_SIZE);
+				renderedCount += newRendered;
 
-		loadMoreBtn.addEventListener('click', () => {
-			const newRendered = renderBatch(renderedCount, PERSON_LIST_PAGE_SIZE);
-			renderedCount += newRendered;
-
-			if (renderedCount >= totalCount) {
-				loadMoreContainer.remove();
-			} else {
-				loadMoreBtn.setText(`Load more (${renderedCount} of ${totalCount} shown)`);
-			}
-		});
+				if (renderedCount >= totalCount) {
+					loadMoreContainer.remove();
+				} else {
+					loadMoreBtn.setButtonText(`Load more (${renderedCount} of ${totalCount} shown)`);
+				}
+			});
 	}
 }
 

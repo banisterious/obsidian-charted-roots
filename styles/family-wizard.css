@@ -54,38 +54,6 @@
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.crc-wizard-step {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 600;
-  background: var(--background-secondary);
-  border: 2px solid var(--background-modifier-border);
-  color: var(--text-muted);
-  transition: all 0.2s ease;
-}
-
-.crc-wizard-step--active {
-  background: var(--interactive-accent);
-  border-color: var(--interactive-accent);
-  color: var(--text-on-accent);
-}
-
-.crc-wizard-step--completed {
-  background: var(--color-green);
-  border-color: var(--color-green);
-  color: white;
-}
-
-.crc-wizard-step--completed svg {
-  width: 16px;
-  height: 16px;
-}
-
 .crc-wizard-step-connector {
   width: 32px;
   height: 2px;
@@ -500,66 +468,6 @@
 }
 
 /* ==========================================================================
-   COMPLETION SECTION
-   ========================================================================== */
-
-.crc-wizard-completion {
-  text-align: center;
-  padding: 24px;
-}
-
-.crc-wizard-completion-icon {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 16px;
-  background: rgb(74 222 128 / 15%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-green);
-}
-
-.crc-wizard-completion-icon svg {
-  width: 32px;
-  height: 32px;
-}
-
-.crc-wizard-completion-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: var(--text-normal);
-}
-
-.crc-wizard-completion-message {
-  color: var(--text-muted);
-  margin-bottom: 24px;
-}
-
-.crc-wizard-completion-stats {
-  display: flex;
-  justify-content: center;
-  gap: 32px;
-  margin-bottom: 24px;
-}
-
-.crc-wizard-completion-stat {
-  text-align: center;
-}
-
-.crc-wizard-completion-stat-value {
-  font-size: 28px;
-  font-weight: 600;
-  color: var(--color-green);
-}
-
-.crc-wizard-completion-stat-label {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-/* ==========================================================================
    CREATED NOTES LIST
    ========================================================================== */
 
@@ -618,7 +526,7 @@
    INFO CALLOUT
    ========================================================================== */
 
-.crc-info-callout {
+.crc-fw-info-callout {
   background: rgb(96 165 250 / 10%);
   border: 1px solid rgb(96 165 250 / 30%);
   border-radius: var(--cr-radius-md);
@@ -631,18 +539,18 @@
   margin-bottom: 16px;
 }
 
-.crc-info-callout-icon {
+.crc-fw-info-callout-icon {
   color: rgb(96 165 250);
   flex-shrink: 0;
   margin-top: 1px;
 }
 
-.crc-info-callout-icon svg {
+.crc-fw-info-callout-icon svg {
   width: 18px;
   height: 18px;
 }
 
-.crc-info-callout-text {
+.crc-fw-info-callout-text {
   flex: 1;
 }
 
@@ -657,16 +565,6 @@
 .crc-btn-group {
   display: flex;
   gap: 12px;
-}
-
-.crc-btn--success {
-  background: var(--color-green);
-  color: #000000;
-  border-color: var(--color-green);
-}
-
-.crc-btn--success:hover {
-  background: #22c55e;
 }
 
 /* Center buttons for completion */

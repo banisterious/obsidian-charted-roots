@@ -61,6 +61,7 @@ export class MediaManageModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('crc-media-manage-modal');
+		this.modalEl.addClass('crc-media-manage-modal-sized');
 
 		this.createModalContent();
 	}

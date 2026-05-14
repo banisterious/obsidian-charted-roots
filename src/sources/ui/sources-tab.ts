@@ -575,7 +575,7 @@ function renderSourceRow(
 
 	// Extract events button
 	const extractBtn = actionsCell.createEl('button', {
-		cls: 'crc-btn crc-btn--small crc-btn--ghost',
+		cls: 'crc-btn crc-btn--small',
 		attr: { title: 'Extract events from this source' }
 	});
 	const calIcon = createLucideIcon('calendar-plus', 14);
@@ -601,7 +601,7 @@ function renderSourceRow(
 
 	// Open note button
 	const openBtn = actionsCell.createEl('button', {
-		cls: 'crc-btn crc-btn--small crc-btn--ghost',
+		cls: 'crc-btn crc-btn--small',
 		attr: { title: 'Open source note' }
 	});
 	const fileIcon = createLucideIcon('file-text', 14);
@@ -981,7 +981,7 @@ function renderBrowseSourceRow(
 	// Actions cell — open note button only (no extract events)
 	const actionsCell = row.createEl('td', { cls: 'cr-source-cell-actions' });
 	const openBtn = actionsCell.createEl('button', {
-		cls: 'crc-btn crc-btn--small crc-btn--ghost',
+		cls: 'crc-btn crc-btn--small',
 		attr: { title: 'Open source note' }
 	});
 	const fileIcon = createLucideIcon('file-text', 14);

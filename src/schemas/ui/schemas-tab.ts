@@ -4,7 +4,7 @@
  * Displays schema validation controls, gallery, violations, and statistics.
  */
 
-import { App, Menu, MenuItem, Modal, Notice, Setting, TFile, setIcon } from 'obsidian';
+import { App, ButtonComponent, Menu, MenuItem, Modal, Notice, Setting, TFile, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import { setLucideIcon, LucideIconName } from '../../ui/lucide-icons';
 import { createStatItem } from '../../ui/shared/card-component';
@@ -469,14 +469,12 @@ async function confirmSchemaDelete(app: App, schemaName: string): Promise<boolea
 
 		const buttonContainer = modal.contentEl.createDiv({ cls: 'crc-button-row crc-mt-3' });
 
-		const cancelBtn = buttonContainer.createEl('button', {
-			text: 'Cancel',
-			cls: 'crc-btn'
-		});
-		cancelBtn.addEventListener('click', () => {
-			modal.close();
-			resolve(false);
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Cancel')
+			.onClick(() => {
+				modal.close();
+				resolve(false);
+			});
 
 		const deleteBtn = buttonContainer.createEl('button', {
 			text: 'Delete',
@@ -515,32 +513,29 @@ function importSchemaFromJson(
 
 	const buttonContainer = modal.contentEl.createDiv({ cls: 'crc-button-row crc-mt-3' });
 
-	const cancelBtn = buttonContainer.createEl('button', {
-		text: 'Cancel',
-		cls: 'crc-btn'
-	});
-	cancelBtn.addEventListener('click', () => modal.close());
+	new ButtonComponent(buttonContainer)
+		.setButtonText('Cancel')
+		.onClick(() => modal.close());
 
-	const importBtn = buttonContainer.createEl('button', {
-		text: 'Import',
-		cls: 'crc-btn crc-btn--primary'
-	});
-	importBtn.addEventListener('click', () => void (async () => {
-		const json = textarea.value.trim();
-		if (!json) {
-			new Notice('Please paste schema JSON');
-			return;
-		}
+	new ButtonComponent(buttonContainer)
+		.setButtonText('Import')
+		.setCta()
+		.onClick(() => void (async () => {
+			const json = textarea.value.trim();
+			if (!json) {
+				new Notice('Please paste schema JSON');
+				return;
+			}
 
-		try {
-			await schemaService.importSchemaFromJson(json);
-			new Notice('Schema imported successfully');
-			modal.close();
-			void loadSchemasGallery(app, plugin, schemaService, validationService, galleryContainer, closeModal);
-		} catch (error) {
-			new Notice('Failed to import schema: ' + getErrorMessage(error));
-		}
-	})());
+			try {
+				await schemaService.importSchemaFromJson(json);
+				new Notice('Schema imported successfully');
+				modal.close();
+				void loadSchemasGallery(app, plugin, schemaService, validationService, galleryContainer, closeModal);
+			} catch (error) {
+				new Notice('Failed to import schema: ' + getErrorMessage(error));
+			}
+		})());
 
 	modal.open();
 }

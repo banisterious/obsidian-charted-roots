@@ -1,4 +1,4 @@
-import { App, Modal, TFolder, TFile } from 'obsidian';
+import { App, ButtonComponent, Modal, TFolder, TFile } from 'obsidian';
 import { RelationshipValidator, ValidationResult } from '../core/relationship-validator';
 import type { PersonIndexService } from '../core/person-index-service';
 import { createLucideIcon } from './lucide-icons';
@@ -108,13 +108,12 @@ export class FolderScanModal extends Modal {
 
 		// Close button
 		const buttonContainer = container.createDiv({ cls: 'cr-modal-buttons' });
-		const closeBtn = buttonContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--primary',
-			text: 'Close'
-		});
-		closeBtn.addEventListener('click', () => {
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Close')
+			.setCta()
+			.onClick(() => {
+				this.close();
+			});
 	}
 
 	private showResults(container: HTMLElement) {
@@ -217,13 +216,12 @@ export class FolderScanModal extends Modal {
 
 		// Close button
 		const buttonContainer = container.createDiv({ cls: 'cr-modal-buttons' });
-		const closeBtn = buttonContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--primary',
-			text: 'Close'
-		});
-		closeBtn.addEventListener('click', () => {
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Close')
+			.setCta()
+			.onClick(() => {
+				this.close();
+			});
 	}
 
 	onClose() {

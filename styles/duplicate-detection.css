@@ -157,10 +157,6 @@
   color: var(--color-green);
 }
 
-.cr-error-text {
-  color: var(--color-red);
-}
-
 .cr-text-muted {
   color: var(--text-muted);
 }
