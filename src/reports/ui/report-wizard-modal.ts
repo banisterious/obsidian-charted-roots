@@ -823,7 +823,7 @@ export class ReportWizardModal extends Modal {
 		resultsCount.createSpan({ text: `${this.filteredPeople.length} of ${this.allPeople.length} people` });
 
 		// Person list container
-		this.personListContainer = container.createDiv({ cls: 'crc-wizard-person-list' });
+		this.personListContainer = container.createDiv({ cls: 'crc-wizard-person-results' });
 
 		// Load people if not already loaded
 		if (!this.peopleLoaded) {

@@ -565,7 +565,7 @@ export class UnifiedTreeWizardModal extends Modal {
 		searchInput.value = this.searchQuery;
 
 		// Store list container reference as instance property
-		this.personListContainer = container.createDiv({ cls: 'crc-wizard-person-list' });
+		this.personListContainer = container.createDiv({ cls: 'crc-wizard-person-results' });
 
 		searchInput.addEventListener('input', (e) => {
 			this.searchQuery = (e.target as HTMLInputElement).value;
@@ -1352,7 +1352,7 @@ export class UnifiedTreeWizardModal extends Modal {
 		const summarySection = form.createDiv({ cls: 'crc-wizard-output-summary' });
 		summarySection.createEl('h4', { text: 'Summary', cls: 'cr-wizard-subsection' });
 
-		const summaryList = summarySection.createEl('ul', { cls: 'crc-wizard-summary-list' });
+		const summaryList = summarySection.createEl('ul', { cls: 'crc-wizard-summary-items' });
 		summaryList.createEl('li', { text: `Root person: ${this.formData.rootPerson?.name || 'Not selected'}` });
 		summaryList.createEl('li', { text: `Tree type: ${this.getTreeTypeLabel()}` });
 		summaryList.createEl('li', { text: `Layout: ${this.formData.layoutAlgorithm}, ${this.formData.direction}` });
@@ -1612,7 +1612,7 @@ export class UnifiedTreeWizardModal extends Modal {
 		const summarySection = form.createDiv({ cls: 'crc-wizard-output-summary' });
 		summarySection.createEl('h4', { text: 'Summary', cls: 'cr-wizard-subsection' });
 
-		const summaryList = summarySection.createEl('ul', { cls: 'crc-wizard-summary-list' });
+		const summaryList = summarySection.createEl('ul', { cls: 'crc-wizard-summary-items' });
 		summaryList.createEl('li', { text: `Root person: ${this.formData.rootPerson?.name || 'Not selected'}` });
 		summaryList.createEl('li', { text: `Chart type: ${this.getPdfChartTypeLabel()}` });
 

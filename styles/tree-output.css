@@ -716,7 +716,7 @@
 }
 
 /* Person list */
-.crc-wizard-person-list {
+.crc-wizard-person-results {
   max-height: 180px;
   overflow-y: auto;
   border: 1px solid var(--background-modifier-border);
@@ -940,14 +940,14 @@
   border-radius: var(--cr-radius-md);
 }
 
-.crc-wizard-summary-list {
+.crc-wizard-summary-items {
   margin: 8px 0 0;
   padding-left: 20px;
   font-size: 13px;
   color: var(--text-muted);
 }
 
-.crc-wizard-summary-list li {
+.crc-wizard-summary-items li {
   padding: 2px 0;
 }
 

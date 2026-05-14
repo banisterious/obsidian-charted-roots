@@ -75,9 +75,9 @@
 }
 
 .crc-wizard-step--completed {
-  background: rgb(74 222 128);
-  border-color: rgb(74 222 128);
-  color: #000000;
+  background: var(--color-green);
+  border-color: var(--color-green);
+  color: white;
 }
 
 .crc-wizard-step--completed svg {
@@ -1614,29 +1614,6 @@
   letter-spacing: 0.5px;
 }
 
-/* Warning/conflict summary */
-.crc-wizard-warning {
-  background: rgb(251 191 36 / 10%);
-  border: 1px solid rgb(251 191 36 / 30%);
-  border-radius: var(--cr-radius-md);
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.crc-wizard-warning h5 {
-  margin: 0 0 8px;
-  color: rgb(251 191 36);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.crc-wizard-warning p {
-  margin: 0;
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
 /* Progress section */
 .crc-wizard-progress {
   margin-bottom: 24px;
@@ -1701,7 +1678,7 @@
 /* Completion section */
 .crc-wizard-completion {
   text-align: center;
-  padding: 24px 0;
+  padding: 24px;
 }
 
 .crc-wizard-completion-icon {
@@ -1713,7 +1690,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgb(74 222 128);
+  color: var(--color-green);
 }
 
 .crc-wizard-completion-icon svg {
@@ -1725,6 +1702,7 @@
   font-size: 20px;
   font-weight: 600;
   margin-bottom: 8px;
+  color: var(--text-normal);
 }
 
 .crc-wizard-completion-message {
@@ -1747,6 +1725,7 @@
 .crc-wizard-completion-stat-value {
   font-size: 28px;
   font-weight: 600;
+  color: var(--color-green);
 }
 
 .crc-wizard-completion-stat-value--people {
@@ -1835,32 +1814,6 @@
 
 .crc-btn--success:hover {
   filter: brightness(1.1);
-}
-
-/* Selected person display (for numbering step) */
-.crc-wizard-selected-person {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  background: rgb(var(--interactive-accent-rgb) 0.1);
-  border: 1px solid var(--interactive-accent);
-  border-radius: var(--cr-radius-sm);
-}
-
-.crc-wizard-selected-person-name {
-  flex: 1;
-  font-weight: 500;
-}
-
-.crc-wizard-selected-person-change {
-  color: var(--interactive-accent);
-  cursor: pointer;
-  font-size: 13px;
-}
-
-.crc-wizard-selected-person-change:hover {
-  text-decoration: underline;
 }
 
 /* Folder picker (for export wizard) */

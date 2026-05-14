@@ -383,7 +383,7 @@
    Wizard Progress Indicator
    ========================================================================== */
 
-.crc-wizard-progress {
+.crc-wizard-progress-steps {
   display: flex;
   align-items: center;
   justify-content: center;

@@ -236,7 +236,7 @@ export class SplitWizardModal extends Modal {
 		const steps: WizardStep[] = ['method', 'configure', 'preview', 'complete'];
 		const stepLabels = ['Choose method', 'Configure', 'Preview', 'Complete'];
 
-		const progressEl = contentEl.createDiv({ cls: 'crc-wizard-progress' });
+		const progressEl = contentEl.createDiv({ cls: 'crc-wizard-progress-steps' });
 
 		steps.forEach((step, index) => {
 			const stepEl = progressEl.createDiv({
