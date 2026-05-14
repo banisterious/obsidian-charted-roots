@@ -1461,10 +1461,6 @@
 /* Compact field list - defined earlier with scoped selectors */
 
 .crc-field-list code {
-  background: var(--background-secondary-alt);
-  padding: 1px 4px;
-  border-radius: 3px;
-  font-size: 12px;
   padding: 2px 6px;
   background: var(--background-secondary);
   border-radius: 3px;
@@ -1921,10 +1917,7 @@
    UTILITY CLASSES
    ========================================================================== */
 
-/* Display utilities */
-.cr-hidden {
-  display: none !important;
-}
+/* .cr-hidden / .crc-hidden display utilities live in base.css */
 
 /* Icon color utilities */
 .cr-icon--muted {
@@ -2327,9 +2320,7 @@
    UTILITY CLASSES
    ========================================================================== */
 
-.crc-hidden {
-  display: none !important;
-}
+/* .crc-hidden / .cr-hidden display utilities live in base.css */
 
 /* Place-specific modal styles moved to place-modals.css */
 
@@ -4491,15 +4482,12 @@
 }
 
 .cr-progress-bar-container {
+  flex: 1;
   height: 8px;
   background: var(--background-modifier-border);
   border-radius: var(--cr-radius-xs);
   overflow: hidden;
   margin-bottom: 12px;
-  flex: 1;
-  height: 8px;
-  background: var(--background-modifier-border);
-  border-radius: var(--cr-radius-xs);
 }
 
 /* .cr-progress-bar defined earlier in file (line 2481) with modifier classes */

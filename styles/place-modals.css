@@ -858,9 +858,7 @@
   display: inline-block;
 }
 
-.crc-text--center {
-  text-align: center;
-}
+/* .crc-text--center utility lives in base.css */
 
 /* ==========================================================================
    PLACE NETWORK MODAL

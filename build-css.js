@@ -259,19 +259,22 @@ async function buildCSS() {
       // Add component header
       buildContent += generateComponentHeader(component, fileInfo);
 
-      // Add component content. Strip stylelint directives — they're
-      // source-level hints for the per-file lint pass and serve no
-      // purpose in the concatenated shipped bundle. Stripping eliminates
-      // every flavor of "needless disable" / "no rules have been
-      // disabled" / "rule has already been disabled" complaint that
-      // downstream scanners (e.g., Obsidian's Community automated review)
-      // might emit against the bundle regardless of which stylelint
-      // version or config they run.
+      // Add component content. Strip ONLY file-level stylelint directives
+      // (`/* stylelint-disable */`, `/* stylelint-enable */`) — they bleed
+      // across component boundaries in the concatenated bundle and trigger
+      // "no rules have been disabled" / "rule already disabled" complaints
+      // from downstream scanners (Obsidian's Community automated review).
       //
-      // Matches block comments starting with `stylelint-disable` or
-      // `stylelint-enable` (with optional `-next-line` / `-line` suffix)
-      // up to the closing `*/`, including multi-line descriptions.
-      const directiveRe = /\/\*\s*stylelint-(?:disable|enable)(?:-next-line|-line)?[\s\S]*?\*\//g;
+      // Per-line directives (`stylelint-disable-next-line`, `stylelint-disable-line`)
+      // are scoped to a single line and have no bleed risk; they're preserved
+      // through the build so the bundle keeps the suppressions for browser
+      // partial-support / `:has()` perf / `!important` warnings that the scanner
+      // would otherwise surface.
+      //
+      // The negative lookahead `(?!-[a-z])` ensures only the file-level forms
+      // match — `stylelint-disable-next-line` and `stylelint-disable-line` pass
+      // through intact.
+      const directiveRe = /\/\*\s*stylelint-(?:disable|enable)(?!-[a-z])[\s\S]*?\*\//g;
       const componentContent = await fs.readFile(componentPath, 'utf8');
       const strippedContent = componentContent.replace(directiveRe, '');
       buildContent += strippedContent;

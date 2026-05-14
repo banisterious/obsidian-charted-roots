@@ -607,9 +607,7 @@
 }
 
 /* Utility classes */
-.cr-hidden {
-  display: none !important;
-}
+/* .cr-hidden display utility lives in base.css */
 
 .cr-mt-2 {
   margin-top: 8px;
