@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-14 19:51:54 UTC
+ * - Generated: 2026-05-14 19:55:00 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -8835,7 +8835,7 @@ settings:
    COMPONENT: MEDIA-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 2004 lines, 39.02 KB */
+/* Component Size: 1997 lines, 38.87 KB */
 
 /* ==========================================================================
    Media Picker Modal
@@ -9177,16 +9177,9 @@ settings:
   height: 16px;
 }
 
-/* Badges */
-.crc-badge {
-  display: inline-flex;
-  align-items: center;
+/* Badges - .crc-badge base defined in control-center.css */
+.crc-media-manage-modal .crc-badge {
   gap: 4px;
-  padding: 2px 6px;
-  font-size: var(--font-ui-smaller);
-  border-radius: var(--cr-radius-xs);
-  background: var(--background-modifier-border);
-  color: var(--text-muted);
 }
 
 .crc-badge--primary {
@@ -22048,7 +22041,7 @@ settings:
    COMPONENT: RELATIONSHIPS.CSS
    ========================================================================== */
 
-/* Component Size: 596 lines, 11.39 KB */
+/* Component Size: 583 lines, 11.2 KB */
 
 /**
  * Relationships Tab Styles
@@ -22516,20 +22509,7 @@ settings:
   color: var(--text-error);
 }
 
-/* Badge styles */
-.crc-badge {
-  display: inline-block;
-  padding: 2px 6px;
-  border-radius: var(--radius-s);
-  font-size: 0.75em;
-  font-weight: 500;
-}
-
-.crc-badge--muted {
-  background-color: var(--background-modifier-border);
-  color: var(--text-muted);
-}
-
+/* Badge styles - .crc-badge and --muted defined in control-center.css */
 .crc-badge--accent {
   background-color: var(--interactive-accent);
   color: var(--text-on-accent);
@@ -41299,11 +41279,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-14 19:51:54 UTC
+ * Build completed: 2026-05-14 19:55:01 UTC
  * Components processed: 50
- * Total lines: 40830
- * Total size: 830.64 KB
- * Build duration: 0.33 seconds
+ * Total lines: 40810
+ * Total size: 830.31 KB
+ * Build duration: 0.37 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.86 KB
@@ -41314,7 +41294,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - control-center.css: 5645 lines, 106.21 KB
  * - entity-create-modals.css: 1234 lines, 25.51 KB
  * - place-modals.css: 1267 lines, 25.43 KB
- * - media-modals.css: 2004 lines, 39.02 KB
+ * - media-modals.css: 1997 lines, 38.87 KB
  * - import-export-wizard.css: 2136 lines, 40.69 KB
  * - staging-manager.css: 553 lines, 11.34 KB
  * - cleanup-wizard.css: 2180 lines, 40.78 KB
@@ -41330,7 +41310,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - report-wizard.css: 908 lines, 19.89 KB
  * - book-builder.css: 368 lines, 7.29 KB
  * - data-quality.css: 1439 lines, 28.62 KB
- * - relationships.css: 596 lines, 11.39 KB
+ * - relationships.css: 583 lines, 11.2 KB
  * - canvas-navigation.css: 683 lines, 14.65 KB
  * - map-view.css: 2497 lines, 54.2 KB
  * - leaflet-distortable.css: 372 lines, 7.91 KB

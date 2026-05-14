@@ -464,20 +464,7 @@
   color: var(--text-error);
 }
 
-/* Badge styles */
-.crc-badge {
-  display: inline-block;
-  padding: 2px 6px;
-  border-radius: var(--radius-s);
-  font-size: 0.75em;
-  font-weight: 500;
-}
-
-.crc-badge--muted {
-  background-color: var(--background-modifier-border);
-  color: var(--text-muted);
-}
-
+/* Badge styles - .crc-badge and --muted defined in control-center.css */
 .crc-badge--accent {
   background-color: var(--interactive-accent);
   color: var(--text-on-accent);
