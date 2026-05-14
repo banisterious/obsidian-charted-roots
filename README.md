@@ -131,7 +131,15 @@ See the [Wiki](https://github.com/banisterious/obsidian-charted-roots/wiki) for 
 
 ## Installation
 
-### Using BRAT (Recommended)
+### From Community Plugins (Recommended)
+
+1. Open Obsidian Settings → Community plugins
+2. Browse and search for "Charted Roots"
+3. Click Install, then Enable
+
+### Using BRAT (Beta access)
+
+For early access to releases before they reach the Community Plugins directory:
 
 1. Install [BRAT](https://github.com/TfTHacker/obsidian42-brat) from Community Plugins
 2. Run command: `BRAT: Add a beta plugin for testing`

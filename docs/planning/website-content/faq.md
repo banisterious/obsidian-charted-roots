@@ -44,7 +44,9 @@ No. The plugin stores data in YAML frontmatter in your markdown notes, a simple 
 
 ### How do I install it?
 
-The plugin is currently distributed through [BRAT](https://github.com/TfTHacker/obsidian42-brat), a community tool for beta plugins. Install BRAT from Obsidian's Community Plugins, then add `banisterious/obsidian-charted-roots` as a beta plugin. Listing in the main Community Plugins directory is pending review. [Full install guide →](https://github.com/banisterious/obsidian-charted-roots/wiki/Getting-Started#installation)
+Open Obsidian's Community Plugins, search for **Charted Roots**, then click Install → Enable. That's it.
+
+For early access to releases before they reach the directory, use [BRAT](https://github.com/TfTHacker/obsidian42-brat) and add `banisterious/obsidian-charted-roots` as a beta plugin. [Full install guide →](https://github.com/banisterious/obsidian-charted-roots/wiki/Getting-Started#installation)
 
 ### Is it free?
 
@@ -122,7 +124,6 @@ Bugs go in [GitHub Issues](https://github.com/banisterious/obsidian-charted-root
 
 ## Open questions
 
-1. **Install guidance post-Community-Plugins-listing.** When the plugin is accepted into the main Community Plugins directory, the install answer should flip to "search for Charted Roots in Obsidian's Community Plugins" as primary, with BRAT listed as an alternative for early beta access. Flag for a quick edit at that time.
-2. **"Is Charted Roots right for me?"** — current approach is a one-line teaser linking to the wiki's longer, honest treatment. Alternative: paraphrase a shorter version in the marketing voice. Current approach preserves the wiki version's tone, which is worth more than a shorter copy.
-3. **Question count.** 19 questions in five sections feels right for a prospect-level FAQ. Could trim one or two from the how-to's section if it reads long during port.
-4. **Anchor links to the wiki FAQ.** Several answers link to specific anchors on the wiki FAQ (e.g., `#how-do-i-handle-multiple-marriages`). Those anchors exist today. If the wiki FAQ gets restructured in the future, those links should be audited.
+1. **"Is Charted Roots right for me?"** — current approach is a one-line teaser linking to the wiki's longer, honest treatment. Alternative: paraphrase a shorter version in the marketing voice. Current approach preserves the wiki version's tone, which is worth more than a shorter copy.
+2. **Question count.** 19 questions in five sections feels right for a prospect-level FAQ. Could trim one or two from the how-to's section if it reads long during port.
+3. **Anchor links to the wiki FAQ.** Several answers link to specific anchors on the wiki FAQ (e.g., `#how-do-i-handle-multiple-marriages`). Those anchors exist today. If the wiki FAQ gets restructured in the future, those links should be audited.
