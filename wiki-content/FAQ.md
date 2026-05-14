@@ -81,6 +81,18 @@ Yes! Charted Roots works equally well for real genealogy and fictional world-bui
 
 Absolutely! You can export your tree to GEDCOM format and import it into Charted Roots. See the [Getting Started from Ancestry or FamilySearch](Community-Use-Cases#getting-started-from-ancestry-or-familysearch) use case for step-by-step instructions. You can keep using both systems—exporting doesn't delete your cloud tree.
 
+### I installed via BRAT — should I switch to Community Plugins?
+
+Yes, if you want simpler updates. Charted Roots is now in the main Community Plugins directory, and updates come through Obsidian's built-in update flow rather than BRAT's beta-plugin polling.
+
+**To switch:**
+
+1. In Obsidian, open Settings → Community plugins → Browse, search for "Charted Roots", and click Install. Your existing data and settings are preserved — Obsidian keeps the plugin's `data.json` under your vault's `.obsidian/plugins/charted-roots/` regardless of which channel installed it.
+2. Open the BRAT plugin's settings, find Charted Roots in the "Beta plugin list", and remove it. This stops BRAT from auto-updating the plugin going forward.
+3. Updates now arrive through the directory — check Settings → Community plugins → Check for updates.
+
+**Keep BRAT if** you want early access to release candidates or beta tags before they reach the directory, or if you're maintaining other plugins via BRAT. You can keep BRAT installed even after removing Charted Roots from its beta-list.
+
 ## Data Entry
 
 ### What's the minimum information needed for a person?
