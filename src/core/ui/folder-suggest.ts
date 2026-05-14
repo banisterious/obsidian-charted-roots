@@ -45,8 +45,8 @@ export class FolderSuggest extends AbstractInputSuggest<TFolder> {
 	}
 
 	renderSuggestion(folder: TFolder, el: HTMLElement): void {
-		el.addClass('cr-folder-suggestion');
-		const iconSpan = el.createSpan({ cls: 'cr-folder-suggestion-icon' });
+		el.addClass('cr-media-folder-suggestion');
+		const iconSpan = el.createSpan({ cls: 'cr-media-folder-suggestion-icon' });
 		setIcon(iconSpan, 'folder');
 		el.createSpan({ text: folder.path });
 	}

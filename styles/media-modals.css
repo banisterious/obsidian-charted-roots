@@ -1890,19 +1890,19 @@
 }
 
 /* Folder suggestion dropdown styling */
-.cr-folder-suggestion {
+.cr-media-folder-suggestion {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 6px 10px;
 }
 
-.cr-folder-suggestion-icon {
+.cr-media-folder-suggestion-icon {
   color: var(--text-muted);
   flex-shrink: 0;
 }
 
-.cr-folder-suggestion-icon svg {
+.cr-media-folder-suggestion-icon svg {
   width: 16px;
   height: 16px;
 }
