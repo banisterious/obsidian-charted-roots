@@ -25,11 +25,11 @@
 }
 
 /* Progress rows for completeness */
-.cr-progress-row {
+.cr-stat-progress-row {
   margin-bottom: var(--size-4-3);
 }
 
-.cr-progress-label {
+.cr-stat-progress-label {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
@@ -38,37 +38,37 @@
   font-size: var(--font-ui-small);
 }
 
-.cr-progress-label > span:first-child {
+.cr-stat-progress-label > span:first-child {
   white-space: nowrap;
 }
 
-.cr-progress-percent {
+.cr-stat-progress-percent {
   color: var(--text-muted);
   font-weight: var(--font-semibold);
 }
 
-.cr-progress-container {
+.cr-stat-progress-container {
   height: 8px;
   background-color: var(--background-modifier-border);
   border-radius: var(--radius-s);
   overflow: hidden;
 }
 
-.cr-progress-bar {
+.cr-stat-progress-bar {
   height: 100%;
   border-radius: var(--radius-s);
   transition: width 0.3s ease;
 }
 
-.cr-progress-good {
+.cr-stat-progress-good {
   background-color: var(--color-green);
 }
 
-.cr-progress-moderate {
+.cr-stat-progress-moderate {
   background-color: var(--color-yellow);
 }
 
-.cr-progress-low {
+.cr-stat-progress-low {
   background-color: var(--color-red);
 }
 

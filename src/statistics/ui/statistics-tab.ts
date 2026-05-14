@@ -112,13 +112,13 @@ function renderCompletenessCard(
 	const content = card.querySelector('.crc-card__content') as HTMLElement;
 
 	const createProgressRow = (label: string, percent: number, colorClass?: string) => {
-		const row = content.createDiv({ cls: 'cr-progress-row' });
-		const labelDiv = row.createDiv({ cls: 'cr-progress-label' });
+		const row = content.createDiv({ cls: 'cr-stat-progress-row' });
+		const labelDiv = row.createDiv({ cls: 'cr-stat-progress-label' });
 		labelDiv.createSpan({ text: label });
-		labelDiv.createSpan({ cls: 'cr-progress-percent', text: `${percent}%` });
+		labelDiv.createSpan({ cls: 'cr-stat-progress-percent', text: `${percent}%` });
 
-		const progressContainer = row.createDiv({ cls: 'cr-progress-container' });
-		const progressBar = progressContainer.createDiv({ cls: `cr-progress-bar ${colorClass ?? ''}` });
+		const progressContainer = row.createDiv({ cls: 'cr-stat-progress-container' });
+		const progressBar = progressContainer.createDiv({ cls: `cr-stat-progress-bar ${colorClass ?? ''}` });
 		progressBar.style.width = `${percent}%`;
 	};
 
@@ -157,9 +157,9 @@ function renderCompletenessCard(
  * Get progress bar color class based on percentage
  */
 function getProgressColor(percent: number): string {
-	if (percent >= 80) return 'cr-progress-good';
-	if (percent >= 50) return 'cr-progress-moderate';
-	return 'cr-progress-low';
+	if (percent >= 80) return 'cr-stat-progress-good';
+	if (percent >= 50) return 'cr-stat-progress-moderate';
+	return 'cr-stat-progress-low';
 }
 
 /**
