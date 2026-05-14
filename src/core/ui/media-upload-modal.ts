@@ -78,8 +78,8 @@ export class MediaUploadModal extends Modal {
 		const { contentEl } = this;
 
 		// Header
-		const header = contentEl.createDiv({ cls: 'crc-modal-header' });
-		const headerIcon = header.createDiv({ cls: 'crc-modal-header-icon' });
+		const header = contentEl.createDiv({ cls: 'crc-media-modal-header' });
+		const headerIcon = header.createDiv({ cls: 'crc-media-modal-header-icon' });
 		setIcon(headerIcon, 'upload');
 		header.createEl('h2', { text: 'Upload Media' });
 

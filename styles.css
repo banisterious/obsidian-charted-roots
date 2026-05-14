@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-14 19:55:00 UTC
+ * - Generated: 2026-05-14 19:57:25 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -8835,7 +8835,7 @@ settings:
    COMPONENT: MEDIA-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 1997 lines, 38.87 KB */
+/* Component Size: 1997 lines, 38.9 KB */
 
 /* ==========================================================================
    Media Picker Modal
@@ -10295,7 +10295,7 @@ settings:
 }
 
 /* Header */
-.crc-modal-header {
+.crc-media-modal-header {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -10304,7 +10304,7 @@ settings:
   background: var(--background-secondary);
 }
 
-.crc-modal-header-icon {
+.crc-media-modal-header-icon {
   width: 32px;
   height: 32px;
   background: rgb(139 92 246 / 15%);
@@ -10315,12 +10315,12 @@ settings:
   color: rgb(139 92 246);
 }
 
-.crc-modal-header-icon svg {
+.crc-media-modal-header-icon svg {
   width: 18px;
   height: 18px;
 }
 
-.crc-modal-header h2 {
+.crc-media-modal-header h2 {
   margin: 0;
   font-size: 20px;
   font-weight: 600;
@@ -41279,11 +41279,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-14 19:55:01 UTC
+ * Build completed: 2026-05-14 19:57:25 UTC
  * Components processed: 50
  * Total lines: 40810
- * Total size: 830.31 KB
- * Build duration: 0.37 seconds
+ * Total size: 830.33 KB
+ * Build duration: 0.34 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.86 KB
@@ -41294,7 +41294,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - control-center.css: 5645 lines, 106.21 KB
  * - entity-create-modals.css: 1234 lines, 25.51 KB
  * - place-modals.css: 1267 lines, 25.43 KB
- * - media-modals.css: 1997 lines, 38.87 KB
+ * - media-modals.css: 1997 lines, 38.9 KB
  * - import-export-wizard.css: 2136 lines, 40.69 KB
  * - staging-manager.css: 553 lines, 11.34 KB
  * - cleanup-wizard.css: 2180 lines, 40.78 KB

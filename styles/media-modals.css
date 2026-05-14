@@ -1456,7 +1456,7 @@
 }
 
 /* Header */
-.crc-modal-header {
+.crc-media-modal-header {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1465,7 +1465,7 @@
   background: var(--background-secondary);
 }
 
-.crc-modal-header-icon {
+.crc-media-modal-header-icon {
   width: 32px;
   height: 32px;
   background: rgb(139 92 246 / 15%);
@@ -1476,12 +1476,12 @@
   color: rgb(139 92 246);
 }
 
-.crc-modal-header-icon svg {
+.crc-media-modal-header-icon svg {
   width: 18px;
   height: 18px;
 }
 
-.crc-modal-header h2 {
+.crc-media-modal-header h2 {
   margin: 0;
   font-size: 20px;
   font-weight: 600;
