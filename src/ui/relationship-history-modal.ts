@@ -292,18 +292,17 @@ export class ClearHistoryConfirmModal extends Modal {
 		});
 		cancelBtn.addEventListener('click', () => this.close());
 
-		const confirmBtn = buttonDiv.createEl('button', {
-			cls: 'crc-btn crc-btn--danger',
-			text: 'Clear history'
-		});
-		confirmBtn.addEventListener('click', () => {
-			void (async () => {
-				await this.historyService.clearHistory();
-				this.onConfirm();
-				this.close();
-				new Notice('Relationship history cleared');
-			})();
-		});
+		new ButtonComponent(buttonDiv)
+			.setButtonText('Clear history')
+			.setWarning()
+			.onClick(() => {
+				void (async () => {
+					await this.historyService.clearHistory();
+					this.onConfirm();
+					this.close();
+					new Notice('Relationship history cleared');
+				})();
+			});
 	}
 
 	onClose() {
