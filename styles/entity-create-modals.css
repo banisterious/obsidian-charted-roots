@@ -639,21 +639,21 @@
 /* ==========================================================================
    Create Note Modal - Initial Content Field
    ========================================================================== */
-.cr-create-note-modal .setting-item:has(textarea) {
+.cr-create-note-modal-textarea-setting {
   flex-direction: column;
   align-items: flex-start;
 }
 
-.cr-create-note-modal .setting-item:has(textarea) .setting-item-info {
+.cr-create-note-modal-textarea-setting .setting-item-info {
   width: 100%;
   margin-bottom: 8px;
 }
 
-.cr-create-note-modal .setting-item:has(textarea) .setting-item-control {
+.cr-create-note-modal-textarea-setting .setting-item-control {
   width: 100%;
 }
 
-.cr-create-note-modal .setting-item:has(textarea) textarea {
+.cr-create-note-modal-textarea-setting textarea {
   width: 100%;
   min-height: 120px;
 }

@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-14 21:29:11 UTC
+ * - Generated: 2026-05-14 21:33:50 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -6328,7 +6328,7 @@ settings:
    COMPONENT: ENTITY-CREATE-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 1234 lines, 25.51 KB */
+/* Component Size: 1234 lines, 25.46 KB */
 
 /* ==========================================================================
    PERSON PICKER MODAL
@@ -6971,21 +6971,21 @@ settings:
 /* ==========================================================================
    Create Note Modal - Initial Content Field
    ========================================================================== */
-.cr-create-note-modal .setting-item:has(textarea) {
+.cr-create-note-modal-textarea-setting {
   flex-direction: column;
   align-items: flex-start;
 }
 
-.cr-create-note-modal .setting-item:has(textarea) .setting-item-info {
+.cr-create-note-modal-textarea-setting .setting-item-info {
   width: 100%;
   margin-bottom: 8px;
 }
 
-.cr-create-note-modal .setting-item:has(textarea) .setting-item-control {
+.cr-create-note-modal-textarea-setting .setting-item-control {
   width: 100%;
 }
 
-.cr-create-note-modal .setting-item:has(textarea) textarea {
+.cr-create-note-modal-textarea-setting textarea {
   width: 100%;
   min-height: 120px;
 }
@@ -41173,11 +41173,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-14 21:29:11 UTC
+ * Build completed: 2026-05-14 21:33:51 UTC
  * Components processed: 50
  * Total lines: 40704
- * Total size: 828.37 KB
- * Build duration: 0.29 seconds
+ * Total size: 828.33 KB
+ * Build duration: 0.35 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.86 KB
@@ -41186,7 +41186,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - layout.css: 22 lines, 0.25 KB
  * - settings.css: 131 lines, 3.53 KB
  * - control-center.css: 5657 lines, 106.39 KB
- * - entity-create-modals.css: 1234 lines, 25.51 KB
+ * - entity-create-modals.css: 1234 lines, 25.46 KB
  * - place-modals.css: 1267 lines, 25.43 KB
  * - media-modals.css: 1997 lines, 38.82 KB
  * - import-export-wizard.css: 2092 lines, 39.9 KB

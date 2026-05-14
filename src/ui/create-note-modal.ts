@@ -189,7 +189,7 @@ export class CreateNoteModal extends Modal {
 		this.renderLinkedEntities();
 
 		// Content (optional initial content)
-		new Setting(contentEl)
+		const initialContentSetting = new Setting(contentEl)
 			.setName('Initial content')
 			.setDesc('Optional starting content for the note')
 			.addTextArea(textArea => {
@@ -199,6 +199,7 @@ export class CreateNoteModal extends Modal {
 					.onChange(value => this.content = value);
 				textArea.inputEl.rows = 6;
 			});
+		initialContentSetting.settingEl.addClass('cr-create-note-modal-textarea-setting');
 
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'cr-modal-buttons' });
