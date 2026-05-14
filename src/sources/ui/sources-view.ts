@@ -85,11 +85,11 @@ export class SourcesView extends ItemView {
 	 * Build the header with title and refresh button
 	 */
 	private buildHeader(container: HTMLElement): void {
-		const header = container.createDiv({ cls: 'cr-sv-header' });
+		const header = container.createDiv({ cls: 'cr-source-view-header' });
 
-		header.createEl('h2', { text: 'Sources', cls: 'cr-sv-title' });
+		header.createEl('h2', { text: 'Sources', cls: 'cr-source-view-title' });
 
-		const actions = header.createDiv({ cls: 'cr-sv-actions' });
+		const actions = header.createDiv({ cls: 'cr-source-view-actions' });
 
 		const refreshBtn = actions.createEl('button', {
 			cls: 'clickable-icon',

@@ -2803,20 +2803,20 @@ body:has(.cr-media-linker) .suggestion-container {
   overflow-y: auto;
 }
 
-.cr-sv-header {
+.cr-source-view-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--size-4-4);
 }
 
-.cr-sv-title {
+.cr-source-view-title {
   font-size: var(--font-ui-large);
   font-weight: var(--font-semibold);
   margin: 0;
 }
 
-.cr-sv-actions {
+.cr-source-view-actions {
   display: flex;
   gap: var(--size-4-2);
 }

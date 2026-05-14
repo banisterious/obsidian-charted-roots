@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-14 19:46:15 UTC
+ * - Generated: 2026-05-14 19:51:54 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -29010,7 +29010,7 @@ body.wide-timeline .view-content {
    COMPONENT: SOURCES.CSS
    ========================================================================== */
 
-/* Component Size: 2832 lines, 57.32 KB */
+/* Component Size: 2832 lines, 57.35 KB */
 
 /**
  * Sources Styles
@@ -31817,20 +31817,20 @@ body:has(.cr-media-linker) .suggestion-container {
   overflow-y: auto;
 }
 
-.cr-sv-header {
+.cr-source-view-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--size-4-4);
 }
 
-.cr-sv-title {
+.cr-source-view-title {
   font-size: var(--font-ui-large);
   font-weight: var(--font-semibold);
   margin: 0;
 }
 
-.cr-sv-actions {
+.cr-source-view-actions {
   display: flex;
   gap: var(--size-4-2);
 }
@@ -41299,11 +41299,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-14 19:46:15 UTC
+ * Build completed: 2026-05-14 19:51:54 UTC
  * Components processed: 50
  * Total lines: 40830
- * Total size: 830.61 KB
- * Build duration: 0.36 seconds
+ * Total size: 830.64 KB
+ * Build duration: 0.33 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.86 KB
@@ -41338,7 +41338,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - events.css: 1520 lines, 30.79 KB
  * - timeline-callouts.css: 324 lines, 10.86 KB
  * - organizations.css: 615 lines, 11.55 KB
- * - sources.css: 2832 lines, 57.32 KB
+ * - sources.css: 2832 lines, 57.35 KB
  * - statistics.css: 1811 lines, 36.34 KB
  * - command-menu.css: 73 lines, 1.6 KB
  * - dashboard.css: 491 lines, 9.63 KB
