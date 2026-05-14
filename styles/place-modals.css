@@ -259,18 +259,20 @@
   flex-direction: column;
 }
 
-/* Clickable count link */
+/* Clickable count link. Uses border-bottom for the dotted-vs-solid
+   underline distinction (text-decoration: underline dotted/solid is
+   flagged as partial-support by the community scan). */
 .crc-variation-count-link {
   cursor: pointer;
   color: var(--text-accent);
-  text-decoration: underline dotted;
-  text-underline-offset: 2px;
+  border-bottom: 1px dotted currentcolor;
+  padding-bottom: 1px;
   margin-right: 4px;
 }
 
 .crc-variation-count-link:hover {
   color: var(--text-accent-hover);
-  text-decoration: underline solid;
+  border-bottom-style: solid;
 }
 
 .crc-variation-count-link.crc-expanded {

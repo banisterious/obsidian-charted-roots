@@ -98,7 +98,8 @@
 .cr-code-old pre {
   border-left: 3px solid var(--text-error);
   opacity: 80%;
-  text-decoration: line-through var(--text-error);
+  color: var(--text-error);
+  text-decoration: line-through;
 }
 
 .cr-code-new pre {
