@@ -6,7 +6,7 @@
  * place statistics, lists, references, and data quality issues.
  */
 
-import { Menu, Modal, Notice, Setting, TFile, setIcon } from 'obsidian';
+import { ButtonComponent, Menu, Modal, Notice, Setting, TFile, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import type { LucideIconName } from './lucide-icons';
 import { createLucideIcon } from './lucide-icons';
@@ -693,13 +693,12 @@ function renderOtherTools(
 	previewBtn.addEventListener('click', () => {
 		showNormalizePlaceNamesPreview(plugin, showTab);
 	});
-	const applyBtn = normalizeActions.createEl('button', {
-		text: 'Apply',
-		cls: 'crc-btn crc-btn--primary'
-	});
-	applyBtn.addEventListener('click', () => {
-		showNormalizePlaceNamesApply(plugin, showTab);
-	});
+	new ButtonComponent(normalizeActions)
+		.setButtonText('Apply')
+		.setCta()
+		.onClick(() => {
+			showNormalizePlaceNamesApply(plugin, showTab);
+		});
 }
 
 /**

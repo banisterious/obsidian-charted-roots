@@ -3,7 +3,7 @@
  * Finds similar place names and allows unification to a canonical form
  */
 
-import { App, Modal, Notice, TFile } from 'obsidian';
+import { App, ButtonComponent, Modal, Notice, TFile } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
 import { FamilyGraphService, PersonNode } from '../core/family-graph';
@@ -102,11 +102,10 @@ export class StandardizePlacesModal extends Modal {
 			});
 
 			const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
-			const closeBtn = buttonContainer.createEl('button', {
-				text: 'Close',
-				cls: 'crc-btn crc-btn--primary'
-			});
-			closeBtn.addEventListener('click', () => this.close());
+			new ButtonComponent(buttonContainer)
+				.setButtonText('Close')
+				.setCta()
+				.onClick(() => this.close());
 			return;
 		}
 
@@ -133,12 +132,11 @@ export class StandardizePlacesModal extends Modal {
 
 		// Calculate total impact for the main button
 		const totalImpact = this.calculateTotalImpact();
-		const applyBtn = buttonContainer.createEl('button', {
-			text: `Standardize all (${totalImpact.totalRefs} refs)`,
-			cls: 'crc-btn crc-btn--primary'
-		});
-		applyBtn.title = `Update ${totalImpact.totalRefs} references across ${totalImpact.groupCount} groups`;
-		applyBtn.addEventListener('click', () => void this.applyStandardization());
+		new ButtonComponent(buttonContainer)
+			.setButtonText(`Standardize all (${totalImpact.totalRefs} refs)`)
+			.setCta()
+			.setTooltip(`Update ${totalImpact.totalRefs} references across ${totalImpact.groupCount} groups`)
+			.onClick(() => void this.applyStandardization());
 	}
 
 	/**

@@ -5,7 +5,7 @@
  * including data completeness, relationship health, and family structure.
  */
 
-import { App, Modal, TFolder } from 'obsidian';
+import { App, ButtonComponent, Modal, TFolder } from 'obsidian';
 import { FamilyGraphService, CollectionAnalytics } from '../core/family-graph';
 import { FolderFilterService } from '../core/folder-filter';
 import { createLucideIcon, LucideIconName } from './lucide-icons';
@@ -188,11 +188,10 @@ export class FolderStatisticsModal extends Modal {
 
 		// Close button
 		const buttonContainer = container.createDiv({ cls: 'cr-modal-buttons' });
-		const closeBtn = buttonContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--primary',
-			text: 'Close'
-		});
-		closeBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Close')
+			.setCta()
+			.onClick(() => this.close());
 	}
 
 	private createStatCard(container: HTMLElement, icon: LucideIconName, label: string, value: string): void {

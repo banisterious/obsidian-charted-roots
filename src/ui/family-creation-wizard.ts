@@ -16,7 +16,7 @@
  * - Complete: Success with created notes list
  */
 
-import { App, Modal, Notice, Setting, setIcon, TFile, normalizePath } from 'obsidian';
+import { App, ButtonComponent, Modal, Notice, Setting, setIcon, TFile, normalizePath } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { createPersonNote, updatePersonNote, PersonData } from '../core/person-note-writer';
 import { generateCrId } from '../core/uuid';
@@ -306,14 +306,13 @@ export class FamilyCreationWizardModal extends Modal {
 		}
 
 		if (options.onNext) {
-			const nextBtn = rightButtons.createEl('button', {
-				text: options.nextLabel || 'Next',
-				cls: 'crc-btn crc-btn--primary'
-			});
+			const nextBtn = new ButtonComponent(rightButtons)
+				.setButtonText(options.nextLabel || 'Next')
+				.setCta()
+				.onClick(options.onNext);
 			if (options.nextDisabled) {
-				nextBtn.disabled = true;
+				nextBtn.setDisabled(true);
 			}
-			nextBtn.addEventListener('click', options.onNext);
 		}
 	}
 
@@ -429,24 +428,23 @@ export class FamilyCreationWizardModal extends Modal {
 		});
 		cancelBtn.addEventListener('click', () => this.close());
 
-		const startBtn = footer.createEl('button', {
-			text: 'Get Started',
-			cls: 'crc-btn crc-btn--primary'
-		});
+		const startBtn = new ButtonComponent(footer)
+			.setButtonText('Get Started')
+			.setCta()
+			.onClick(() => {
+				if (this.state.mode === 'existing' && this.state.existingCentralPerson) {
+					// Skip step 1
+					this.currentStep = 'step2';
+				} else {
+					this.currentStep = 'step1';
+				}
+				this.render();
+			});
 		const canStart = this.state.mode === 'scratch' ||
 			(this.state.mode === 'existing' && this.state.existingCentralPerson !== null);
 		if (!canStart) {
-			startBtn.disabled = true;
+			startBtn.setDisabled(true);
 		}
-		startBtn.addEventListener('click', () => {
-			if (this.state.mode === 'existing' && this.state.existingCentralPerson) {
-				// Skip step 1
-				this.currentStep = 'step2';
-			} else {
-				this.currentStep = 'step1';
-			}
-			this.render();
-		});
 	}
 
 	private openPersonPicker(): void {
@@ -1921,14 +1919,13 @@ class PersonEditorModal extends Modal {
 		});
 		cancelBtn.addEventListener('click', () => this.close());
 
-		const saveBtn = buttonContainer.createEl('button', {
-			text: 'Save',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		saveBtn.addEventListener('click', () => {
-			this.onSave(this.person);
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Save')
+			.setCta()
+			.onClick(() => {
+				this.onSave(this.person);
+				this.close();
+			});
 	}
 
 	onClose(): void {

@@ -12,7 +12,7 @@
  * Step 6: Complete — Download/save options
  */
 
-import { App, Modal, Notice, setIcon, TFolder, FuzzySuggestModal } from 'obsidian';
+import { App, ButtonComponent, Modal, Notice, setIcon, TFolder, FuzzySuggestModal } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { GedcomExporter, type GedcomExportOptions, type GedcomExportResult } from '../gedcom/gedcom-exporter';
 import { GedcomXExporter, type GedcomXExportOptions, type GedcomXExportResult } from '../gedcomx/gedcomx-exporter';
@@ -1105,43 +1105,40 @@ export class ExportWizardModal extends Modal {
 
 		if (this.currentStep < 3) {
 			// Steps 0-2: Show Next button
-			const nextBtn = rightBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--primary',
-				text: 'Next'
-			});
-
-			nextBtn.addEventListener('click', () => {
-				this.currentStep++;
-				this.renderCurrentStep();
-			});
+			new ButtonComponent(rightBtns)
+				.setButtonText('Next')
+				.setCta()
+				.onClick(() => {
+					this.currentStep++;
+					this.renderCurrentStep();
+				});
 		} else if (this.currentStep === 3) {
 			// Step 3: Show Export button
-			const exportBtn = rightBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--primary',
-				text: 'Export'
-			});
-			exportBtn.addEventListener('click', () => {
-				void (async () => {
-				// Check for private fields and show warning if any exist
-				if (this.formData.privateFieldsSummary.length > 0 &&
-					this.formData.privateFieldsDecision === null) {
-					const modal = new PrivateFieldsWarningModal(
-						this.app,
-						this.formData.privateFieldsSummary
-					);
-					const decision = await modal.waitForDecision();
-					this.formData.privateFieldsDecision = decision;
+			new ButtonComponent(rightBtns)
+				.setButtonText('Export')
+				.setCta()
+				.onClick(() => {
+					void (async () => {
+					// Check for private fields and show warning if any exist
+					if (this.formData.privateFieldsSummary.length > 0 &&
+						this.formData.privateFieldsDecision === null) {
+						const modal = new PrivateFieldsWarningModal(
+							this.app,
+							this.formData.privateFieldsSummary
+						);
+						const decision = await modal.waitForDecision();
+						this.formData.privateFieldsDecision = decision;
 
-					if (decision === 'cancel') {
-						return; // User cancelled, stay on preview step
+						if (decision === 'cancel') {
+							return; // User cancelled, stay on preview step
+						}
+						// 'include' or 'exclude' - proceed with export
 					}
-					// 'include' or 'exclude' - proceed with export
-				}
 
-				this.currentStep = 4;
-				this.renderCurrentStep();
-				})();
-			});
+					this.currentStep = 4;
+					this.renderCurrentStep();
+					})();
+				});
 		} else if (this.currentStep === 5) {
 			// Step 5 (Complete): Show Export Another and Done buttons
 			const exportAnotherBtn = rightBtns.createEl('button', {
@@ -1154,11 +1151,10 @@ export class ExportWizardModal extends Modal {
 				this.renderCurrentStep();
 			});
 
-			const doneBtn = rightBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--primary',
-				text: 'Done'
-			});
-			doneBtn.addEventListener('click', () => this.close());
+			new ButtonComponent(rightBtns)
+				.setButtonText('Done')
+				.setCta()
+				.onClick(() => this.close());
 		}
 	}
 

@@ -5,7 +5,7 @@
  * from the vault to link to entities (person, place, event, organization).
  */
 
-import { App, Modal, TFile, Notice, normalizePath, setIcon, TextComponent } from 'obsidian';
+import { App, ButtonComponent, Modal, TFile, Notice, normalizePath, setIcon, TextComponent } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import {
 	MediaService,
@@ -658,41 +658,39 @@ export class MediaPickerModal extends Modal {
 		});
 
 		// Set folder button
-		const setFolderBtn = inputRow.createEl('button', {
-			cls: 'crc-btn crc-btn--primary',
-			text: 'Set folder'
-		});
+		new ButtonComponent(inputRow)
+			.setButtonText('Set folder')
+			.setCta()
+			.onClick(() => {
+				void (async () => {
+					const folderPath = selectedFolder.trim() || textComponent.getValue().trim();
 
-		setFolderBtn.addEventListener('click', () => {
-			void (async () => {
-				const folderPath = selectedFolder.trim() || textComponent.getValue().trim();
+					if (!folderPath) {
+						new Notice('Please enter a folder path');
+						return;
+					}
 
-				if (!folderPath) {
-					new Notice('Please enter a folder path');
-					return;
-				}
+					// Save the folder to settings
+					this.plugin!.settings.mediaFolders = [folderPath];
+					this.plugin!.settings.enableMediaFolderFilter = true;
+					await this.plugin!.saveSettings();
 
-				// Save the folder to settings
-				this.plugin!.settings.mediaFolders = [folderPath];
-				this.plugin!.settings.enableMediaFolderFilter = true;
-				await this.plugin!.saveSettings();
+					// Remove the config section
+					this.folderConfigContainer?.remove();
+					this.folderConfigContainer = null;
 
-				// Remove the config section
-				this.folderConfigContainer?.remove();
-				this.folderConfigContainer = null;
+					// Proceed with pending upload if any
+					if (this.pendingFileList) {
+						const fileList = this.pendingFileList;
+						this.pendingFileList = null;
+						await this.performFileUpload(fileList, folderPath);
+					}
 
-				// Proceed with pending upload if any
-				if (this.pendingFileList) {
-					const fileList = this.pendingFileList;
-					this.pendingFileList = null;
-					await this.performFileUpload(fileList, folderPath);
-				}
-
-				// Reload media files to show the new folder's contents
-				this.loadMediaFiles();
-				this.filterMedia();
-			})();
-		});
+					// Reload media files to show the new folder's contents
+					this.loadMediaFiles();
+					this.filterMedia();
+				})();
+			});
 
 		// Focus the input
 		textComponent.inputEl.focus();

@@ -4,7 +4,7 @@
  * Identifies place notes that may represent the same location and allows merging them
  */
 
-import { App, Menu, Modal, Notice, TFile } from 'obsidian';
+import { App, ButtonComponent, Menu, Modal, Notice, TFile } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
 import { PlaceNode } from '../models/place';
@@ -137,11 +137,10 @@ export class MergeDuplicatePlacesModal extends Modal {
 			});
 
 			const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
-			const closeBtn = buttonContainer.createEl('button', {
-				text: 'Close',
-				cls: 'crc-btn crc-btn--primary'
-			});
-			closeBtn.addEventListener('click', () => this.close());
+			new ButtonComponent(buttonContainer)
+				.setButtonText('Close')
+				.setCta()
+				.onClick(() => this.close());
 			return;
 		}
 
@@ -172,12 +171,11 @@ export class MergeDuplicatePlacesModal extends Modal {
 
 		// Calculate total impact for the main button
 		const totalImpact = this.calculateTotalImpact();
-		const applyBtn = buttonContainer.createEl('button', {
-			text: `Merge all (${totalImpact.duplicateCount} duplicates)`,
-			cls: 'crc-btn crc-btn--primary'
-		});
-		applyBtn.title = `Merge ${totalImpact.duplicateCount} duplicate place notes across ${totalImpact.groupCount} groups`;
-		applyBtn.addEventListener('click', () => void this.applyAllMerges());
+		new ButtonComponent(buttonContainer)
+			.setButtonText(`Merge all (${totalImpact.duplicateCount} duplicates)`)
+			.setCta()
+			.setTooltip(`Merge ${totalImpact.duplicateCount} duplicate place notes across ${totalImpact.groupCount} groups`)
+			.onClick(() => void this.applyAllMerges());
 	}
 
 	onClose() {

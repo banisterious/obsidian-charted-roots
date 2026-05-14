@@ -21,7 +21,7 @@
  * Step 15: Add cr_id to Place Notes — Generate cr_id for missing-id places (batch, #502)
  */
 
-import { App, Modal, Notice, setIcon, TFile } from 'obsidian';
+import { App, ButtonComponent, Modal, Notice, setIcon, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import {
 	DataQualityService,
@@ -319,17 +319,16 @@ export class CleanupWizardModal extends Modal {
 			this.initializeWizardUI(contentEl);
 		});
 
-		const resumeBtn = rightBtns.createEl('button', {
-			cls: 'crc-btn crc-btn--primary'
-		});
-		const resumeIcon = resumeBtn.createSpan({ cls: 'crc-btn-icon' });
+		const resumeBtn = new ButtonComponent(rightBtns)
+			.setCta()
+			.onClick(() => {
+				this.restoreFromPersistedState(persistedState);
+				contentEl.empty();
+				this.initializeWizardUI(contentEl);
+			});
+		const resumeIcon = resumeBtn.buttonEl.createSpan({ cls: 'crc-btn-icon' });
 		setIcon(resumeIcon, 'play');
-		resumeBtn.createSpan({ text: 'Resume' });
-		resumeBtn.addEventListener('click', () => {
-			this.restoreFromPersistedState(persistedState);
-			contentEl.empty();
-			this.initializeWizardUI(contentEl);
-		});
+		resumeBtn.buttonEl.createSpan({ text: 'Resume' });
 	}
 
 	/**
@@ -705,18 +704,16 @@ export class CleanupWizardModal extends Modal {
 		});
 
 		// Start Cleanup button
-		const startBtn = rightBtns.createEl('button', {
-			cls: 'crc-btn crc-btn--primary'
-		});
-		const startIcon = startBtn.createSpan({ cls: 'crc-btn-icon' });
+		const startBtn = new ButtonComponent(rightBtns)
+			.setCta()
+			.onClick(() => {
+				this.state.currentStep = 1;
+				this.currentView = 'step';
+				this.renderCurrentView();
+			});
+		const startIcon = startBtn.buttonEl.createSpan({ cls: 'crc-btn-icon' });
 		setIcon(startIcon, 'play');
-		startBtn.createSpan({ text: 'Start Cleanup' });
-
-		startBtn.addEventListener('click', () => {
-			this.state.currentStep = 1;
-			this.currentView = 'step';
-			this.renderCurrentView();
-		});
+		startBtn.buttonEl.createSpan({ text: 'Start Cleanup' });
 
 		// Start pre-scan if not done
 		if (!this.state.preScanComplete && !this.state.isPreScanning) {
@@ -2044,28 +2041,26 @@ export class CleanupWizardModal extends Modal {
 
 		// Apply button (in addition to footer)
 		const applyContainer = preview.createDiv({ cls: 'crc-cleanup-variant-apply' });
-		const applyBtn = applyContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--primary'
-		});
-		const applyIcon = applyBtn.createSpan({ cls: 'crc-btn-icon' });
+		const applyBtn = new ButtonComponent(applyContainer)
+			.setCta()
+			.onClick(() => {
+				void this.applyPlaceVariantFixes(selectedVariants, canonicalOverrides, stepState);
+			});
+		const applyIcon = applyBtn.buttonEl.createSpan({ cls: 'crc-btn-icon' });
 		setIcon(applyIcon, 'zap');
-		applyBtn.createSpan({ text: `Standardize ${selectedVariants.size} variants` });
+		applyBtn.buttonEl.createSpan({ text: `Standardize ${selectedVariants.size} variants` });
 
 		// Update button text when selection changes
 		const updateApplyButton = () => {
-			const textSpan = applyBtn.querySelector('span:last-child');
+			const textSpan = applyBtn.buttonEl.querySelector('span:last-child');
 			if (textSpan) {
 				textSpan.textContent = `Standardize ${selectedVariants.size} ${pluralize(selectedVariants.size, 'variant')}`;
 			}
-			applyBtn.disabled = selectedVariants.size === 0;
+			applyBtn.setDisabled(selectedVariants.size === 0);
 		};
 
 		// Attach selection change listener
 		tbody.addEventListener('change', updateApplyButton);
-
-		applyBtn.addEventListener('click', () => {
-			void this.applyPlaceVariantFixes(selectedVariants, canonicalOverrides, stepState);
-		});
 	}
 
 	/**
@@ -2231,16 +2226,14 @@ export class CleanupWizardModal extends Modal {
 
 		// Apply button
 		const applyContainer = preview.createDiv({ cls: 'crc-cleanup-dedup-apply' });
-		const applyBtn = applyContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--primary'
-		});
-		const applyIcon = applyBtn.createSpan({ cls: 'crc-btn-icon' });
+		const applyBtn = new ButtonComponent(applyContainer)
+			.setCta()
+			.onClick(() => {
+				void this.applyPlaceDeduplication(canonicalSelections, stepState);
+			});
+		const applyIcon = applyBtn.buttonEl.createSpan({ cls: 'crc-btn-icon' });
 		setIcon(applyIcon, 'git-merge');
-		applyBtn.createSpan({ text: `Merge ${this.placeDuplicateGroups.length} duplicate ${pluralize(this.placeDuplicateGroups.length, 'group')}` });
-
-		applyBtn.addEventListener('click', () => {
-			void this.applyPlaceDeduplication(canonicalSelections, stepState);
-		});
+		applyBtn.buttonEl.createSpan({ text: `Merge ${this.placeDuplicateGroups.length} duplicate ${pluralize(this.placeDuplicateGroups.length, 'group')}` });
 
 		// Skip button
 		const skipBtn = applyContainer.createEl('button', {
@@ -2380,16 +2373,14 @@ export class CleanupWizardModal extends Modal {
 
 		// Start button
 		const applyContainer = preview.createDiv({ cls: 'crc-cleanup-geocode-apply' });
-		const startBtn = applyContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--primary'
-		});
-		const startIcon = startBtn.createSpan({ cls: 'crc-btn-icon' });
+		const startBtn = new ButtonComponent(applyContainer)
+			.setCta()
+			.onClick(() => {
+				void this.startGeocoding(stepState);
+			});
+		const startIcon = startBtn.buttonEl.createSpan({ cls: 'crc-btn-icon' });
 		setIcon(startIcon, 'map');
-		startBtn.createSpan({ text: `Start geocoding ${this.ungeocodedPlaces.length} places` });
-
-		startBtn.addEventListener('click', () => {
-			void this.startGeocoding(stepState);
-		});
+		startBtn.buttonEl.createSpan({ text: `Start geocoding ${this.ungeocodedPlaces.length} places` });
 	}
 
 	/**
@@ -2555,18 +2546,16 @@ export class CleanupWizardModal extends Modal {
 
 		// Done button
 		const doneContainer = results.createDiv({ cls: 'crc-cleanup-geocode-done' });
-		const doneBtn = doneContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--primary'
-		});
-		const doneIcon = doneBtn.createSpan({ cls: 'crc-btn-icon' });
+		const doneBtn = new ButtonComponent(doneContainer)
+			.setCta()
+			.onClick(() => {
+				// Clear results and re-render
+				this.geocodingResults = [];
+				this.renderCurrentView();
+			});
+		const doneIcon = doneBtn.buttonEl.createSpan({ cls: 'crc-btn-icon' });
 		setIcon(doneIcon, 'check');
-		doneBtn.createSpan({ text: 'Done' });
-
-		doneBtn.addEventListener('click', () => {
-			// Clear results and re-render
-			this.geocodingResults = [];
-			this.renderCurrentView();
-		});
+		doneBtn.buttonEl.createSpan({ text: 'Done' });
 	}
 
 	/**
@@ -2757,16 +2746,14 @@ export class CleanupWizardModal extends Modal {
 
 		// Start button
 		const applyContainer = preview.createDiv({ cls: 'crc-cleanup-hierarchy-apply' });
-		const startBtn = applyContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--primary'
-		});
-		const startIcon = startBtn.createSpan({ cls: 'crc-btn-icon' });
+		const startBtn = new ButtonComponent(applyContainer)
+			.setCta()
+			.onClick(() => {
+				void this.startHierarchyEnrichment(stepState);
+			});
+		const startIcon = startBtn.buttonEl.createSpan({ cls: 'crc-btn-icon' });
 		setIcon(startIcon, 'git-branch');
-		startBtn.createSpan({ text: `Start enriching ${this.placesWithoutParent.length} places` });
-
-		startBtn.addEventListener('click', () => {
-			void this.startHierarchyEnrichment(stepState);
-		});
+		startBtn.buttonEl.createSpan({ text: `Start enriching ${this.placesWithoutParent.length} places` });
 	}
 
 	/**
@@ -2960,18 +2947,16 @@ export class CleanupWizardModal extends Modal {
 
 		// Done button
 		const doneContainer = results.createDiv({ cls: 'crc-cleanup-hierarchy-done' });
-		const doneBtn = doneContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--primary'
-		});
-		const doneIcon = doneBtn.createSpan({ cls: 'crc-btn-icon' });
+		const doneBtn = new ButtonComponent(doneContainer)
+			.setCta()
+			.onClick(() => {
+				// Clear results and re-render
+				this.hierarchyEnrichmentResults = [];
+				this.renderCurrentView();
+			});
+		const doneIcon = doneBtn.buttonEl.createSpan({ cls: 'crc-btn-icon' });
 		setIcon(doneIcon, 'check');
-		doneBtn.createSpan({ text: 'Done' });
-
-		doneBtn.addEventListener('click', () => {
-			// Clear results and re-render
-			this.hierarchyEnrichmentResults = [];
-			this.renderCurrentView();
-		});
+		doneBtn.buttonEl.createSpan({ text: 'Done' });
 	}
 
 	/**
@@ -3300,41 +3285,38 @@ export class CleanupWizardModal extends Modal {
 		// Apply/Continue button
 		if (stepConfig.type === 'review' || stepState.status === 'complete') {
 			// Review step or already complete - just show Next
-			const nextBtn = rightBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--primary',
-				text: this.state.currentStep === WIZARD_STEPS.length ? 'Finish' : 'Next'
-			});
-			nextBtn.addEventListener('click', () => {
-				if (stepState.status === 'pending') {
-					this.state.steps[this.state.currentStep].status = 'complete';
-					this.recordStepCompletion(stepConfig.id, 0);
-				}
-				this.advanceToNextStep();
-			});
+			new ButtonComponent(rightBtns)
+				.setButtonText(this.state.currentStep === WIZARD_STEPS.length ? 'Finish' : 'Next')
+				.setCta()
+				.onClick(() => {
+					if (stepState.status === 'pending') {
+						this.state.steps[this.state.currentStep].status = 'complete';
+						this.recordStepCompletion(stepConfig.id, 0);
+					}
+					this.advanceToNextStep();
+				});
 		} else if (stepConfig.type === 'batch' && stepState.issueCount > 0) {
 			// Batch step with issues - show Apply button
-			const applyBtn = rightBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--primary'
-			});
-			const applyIcon = applyBtn.createSpan({ cls: 'crc-btn-icon' });
+			const applyBtn = new ButtonComponent(rightBtns)
+				.setCta()
+				.onClick(() => {
+					void this.applyBatchFixes(stepConfig);
+				});
+			const applyIcon = applyBtn.buttonEl.createSpan({ cls: 'crc-btn-icon' });
 			setIcon(applyIcon, 'zap');
-			applyBtn.createSpan({ text: 'Apply Fixes' });
-			applyBtn.addEventListener('click', () => {
-				void this.applyBatchFixes(stepConfig);
-			});
+			applyBtn.buttonEl.createSpan({ text: 'Apply Fixes' });
 		} else {
 			// No issues or interactive step - show Next
-			const nextBtn = rightBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--primary',
-				text: this.state.currentStep === WIZARD_STEPS.length ? 'Finish' : 'Next'
-			});
-			nextBtn.addEventListener('click', () => {
-				if (stepState.status === 'pending' && stepState.issueCount === 0) {
-					this.state.steps[this.state.currentStep].status = 'skipped';
-					this.state.steps[this.state.currentStep].skippedReason = 'No issues found';
-				}
-				this.advanceToNextStep();
-			});
+			new ButtonComponent(rightBtns)
+				.setButtonText(this.state.currentStep === WIZARD_STEPS.length ? 'Finish' : 'Next')
+				.setCta()
+				.onClick(() => {
+					if (stepState.status === 'pending' && stepState.issueCount === 0) {
+						this.state.steps[this.state.currentStep].status = 'skipped';
+						this.state.steps[this.state.currentStep].skippedReason = 'No issues found';
+					}
+					this.advanceToNextStep();
+				});
 		}
 	}
 
@@ -3597,11 +3579,10 @@ export class CleanupWizardModal extends Modal {
 
 		const rightBtns = this.footerContainer.createDiv({ cls: 'crc-cleanup-footer-right' });
 
-		const doneBtn = rightBtns.createEl('button', {
-			cls: 'crc-btn crc-btn--primary',
-			text: 'Done'
-		});
-		doneBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(rightBtns)
+			.setButtonText('Done')
+			.setCta()
+			.onClick(() => this.close());
 	}
 
 	/**

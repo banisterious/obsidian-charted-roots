@@ -13,7 +13,7 @@
  * Step 7: Complete — Summary with actions
  */
 
-import { App, Modal, Notice, setIcon } from 'obsidian';
+import { App, ButtonComponent, Modal, Notice, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { GedcomImporterV2 } from '../gedcom/gedcom-importer-v2';
 import type { GedcomDataV2, GedcomImportOptionsV2, GedcomImportResultV2 } from '../gedcom/gedcom-types';
@@ -1775,49 +1775,44 @@ export class ImportWizardModal extends Modal {
 
 		if (this.currentStep < 3) {
 			// Steps 0-2: Show Next button
-			const nextBtn = rightBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--primary',
-				text: 'Next'
-			});
+			const nextBtn = new ButtonComponent(rightBtns)
+				.setButtonText('Next')
+				.setCta()
+				.onClick(() => {
+					if (this.canProceedToNextStep()) {
+						this.currentStep++;
+						this.renderCurrentStep();
+					}
+				});
 
 			// Disable if requirements not met
 			if (!this.canProceedToNextStep()) {
-				nextBtn.disabled = true;
-				nextBtn.addClass('crc-btn--disabled');
+				nextBtn.setDisabled(true);
+				nextBtn.buttonEl.addClass('crc-btn--disabled');
 			}
-
-			nextBtn.addEventListener('click', () => {
-				if (this.canProceedToNextStep()) {
-					this.currentStep++;
-					this.renderCurrentStep();
-				}
-			});
 		} else if (this.currentStep === 3) {
 			// Step 3: Show Import button
-			const importBtn = rightBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--primary',
-				text: 'Import'
-			});
-			importBtn.addEventListener('click', () => {
-				this.currentStep = 4;
-				this.renderCurrentStep();
-				// TODO: Start actual import
-			});
+			new ButtonComponent(rightBtns)
+				.setButtonText('Import')
+				.setCta()
+				.onClick(() => {
+					this.currentStep = 4;
+					this.renderCurrentStep();
+					// TODO: Start actual import
+				});
 		} else if (this.currentStep === 5) {
 			// Step 5 (Numbering): Show Assign Numbers button
-			const assignBtn = rightBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--primary',
-				text: this.formData.isAssigningNumbers ? 'Assigning...' : 'Assign Numbers'
-			});
+			const assignBtn = new ButtonComponent(rightBtns)
+				.setButtonText(this.formData.isAssigningNumbers ? 'Assigning...' : 'Assign Numbers')
+				.setCta()
+				.onClick(() => {
+					void this.assignReferenceNumbers();
+				});
 
 			if (this.formData.numberingSystem === 'none' || !this.formData.rootPersonCrId || this.formData.isAssigningNumbers) {
-				assignBtn.disabled = true;
-				assignBtn.addClass('crc-btn--disabled');
+				assignBtn.setDisabled(true);
+				assignBtn.buttonEl.addClass('crc-btn--disabled');
 			}
-
-			assignBtn.addEventListener('click', () => {
-				void this.assignReferenceNumbers();
-			});
 		} else if (this.currentStep === 6) {
 			// Step 6 (Complete): Show Done and Import Another buttons
 			const importAnotherBtn = rightBtns.createEl('button', {
@@ -1830,11 +1825,10 @@ export class ImportWizardModal extends Modal {
 				this.renderCurrentStep();
 			});
 
-			const doneBtn = rightBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--primary',
-				text: 'Done'
-			});
-			doneBtn.addEventListener('click', () => this.close());
+			new ButtonComponent(rightBtns)
+				.setButtonText('Done')
+				.setCta()
+				.onClick(() => this.close());
 		}
 	}
 

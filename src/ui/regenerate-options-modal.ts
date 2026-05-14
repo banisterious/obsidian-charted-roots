@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
-import { App, Modal, TFile } from 'obsidian';
+import { App, ButtonComponent, Modal, TFile } from 'obsidian';
 import CanvasRootsPlugin from '../../main';
 
 /**
@@ -97,18 +97,17 @@ export class RegenerateOptionsModal extends Modal {
 			this.close();
 		});
 
-		const applyBtn = buttonContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--primary',
-			text: 'Regenerate'
-		});
-		applyBtn.addEventListener('click', () => {
-			void (async () => {
-				const direction = this.directionSelect!.value as 'vertical' | 'horizontal';
-				this.close();
-				// Call the plugin's regenerate method with the selected direction
-				await this.plugin.regenerateCanvas(this.canvasFile, direction);
-			})();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Regenerate')
+			.setCta()
+			.onClick(() => {
+				void (async () => {
+					const direction = this.directionSelect!.value as 'vertical' | 'horizontal';
+					this.close();
+					// Call the plugin's regenerate method with the selected direction
+					await this.plugin.regenerateCanvas(this.canvasFile, direction);
+				})();
+			});
 	}
 
 	onClose() {

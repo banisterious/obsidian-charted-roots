@@ -3,7 +3,7 @@
  * Simple modal for creating new place notes
  */
 
-import { App, Modal, Setting, TFile, Notice, normalizePath } from 'obsidian';
+import { App, ButtonComponent, Modal, Setting, TFile, Notice, normalizePath } from 'obsidian';
 import { createPlaceNote, updatePlaceNote, PlaceData } from '../core/place-note-writer';
 import { PlaceCategory, PlaceType, PlaceNode, KNOWN_PLACE_TYPES } from '../models/place';
 import { getAllPlaceTypesWithCustomizations, getPlaceTypeHierarchyLevel } from '../places/constants/default-place-types';
@@ -1070,17 +1070,16 @@ export class CreatePlaceModal extends Modal {
 			this.close();
 		});
 
-		const submitBtn = buttonContainer.createEl('button', {
-			text: this.editMode ? 'Save changes' : 'Create place',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		submitBtn.addEventListener('click', () => {
-			if (this.editMode) {
-				void this.updatePlace();
-			} else {
-				void this.createPlace();
-			}
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText(this.editMode ? 'Save changes' : 'Create place')
+			.setCta()
+			.onClick(() => {
+				if (this.editMode) {
+					void this.updatePlace();
+				} else {
+					void this.createPlace();
+				}
+			});
 	}
 
 	onClose() {
@@ -1748,14 +1747,13 @@ export class CreatePlaceModal extends Modal {
 			callback(false);
 		});
 
-		const moveBtn = buttonContainer.createEl('button', {
-			text: 'Move',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		moveBtn.addEventListener('click', () => {
-			modal.close();
-			callback(true);
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Move')
+			.setCta()
+			.onClick(() => {
+				modal.close();
+				callback(true);
+			});
 
 		modal.open();
 	}

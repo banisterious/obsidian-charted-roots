@@ -6,7 +6,7 @@
  * batch creation of multiple events.
  */
 
-import { App, Modal, Setting, TFile, Notice } from 'obsidian';
+import { App, ButtonComponent, Modal, Setting, TFile, Notice } from 'obsidian';
 import type { CanvasRootsSettings } from '../../settings';
 import { createLucideIcon } from '../../ui/lucide-icons';
 import { PersonPickerModal, PersonInfo } from '../../ui/person-picker';
@@ -203,15 +203,14 @@ export class ExtractEventsModal extends Modal {
 			this.close();
 		});
 
-		const extractBtn = buttonContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--primary'
-		});
+		const extractBtn = new ButtonComponent(buttonContainer)
+			.setCta()
+			.onClick(() => {
+				void this.createEvents();
+			});
 		const calIcon = createLucideIcon('calendar-check', 16);
-		extractBtn.appendChild(calIcon);
-		extractBtn.appendText(' Create selected events');
-		extractBtn.addEventListener('click', () => {
-			void this.createEvents();
-		});
+		extractBtn.buttonEl.appendChild(calIcon);
+		extractBtn.buttonEl.appendText(' Create selected events');
 	}
 
 	/**

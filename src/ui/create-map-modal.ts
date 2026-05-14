@@ -3,7 +3,7 @@
  * Modal for creating and editing custom map notes for fictional/historical worlds
  */
 
-import { App, Modal, Setting, TFile, Notice, normalizePath } from 'obsidian';
+import { App, ButtonComponent, Modal, Setting, TFile, Notice, normalizePath } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 import { isWikilink, extractWikilinkPath, toWikilink } from '../utils/wikilink-resolver';
 
@@ -402,17 +402,16 @@ export class CreateMapModal extends Modal {
 			this.close();
 		});
 
-		const submitBtn = buttonContainer.createEl('button', {
-			text: this.editMode ? 'Save changes' : 'Create map',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		submitBtn.addEventListener('click', () => {
-			if (this.editMode) {
-				void this.updateMap();
-			} else {
-				void this.createMap();
-			}
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText(this.editMode ? 'Save changes' : 'Create map')
+			.setCta()
+			.onClick(() => {
+				if (this.editMode) {
+					void this.updateMap();
+				} else {
+					void this.createMap();
+				}
+			});
 	}
 
 	onClose() {

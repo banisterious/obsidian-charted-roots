@@ -4,7 +4,7 @@
  * Modal for creating or editing person notes with relationship linking
  */
 
-import { App, Modal, Setting, TFile, Notice, normalizePath, setIcon } from 'obsidian';
+import { App, ButtonComponent, Modal, Setting, TFile, Notice, normalizePath, setIcon } from 'obsidian';
 import { createPersonNote, updatePersonNote, PersonData, DynamicBlockType, addBidirectionalSpouseLink, addChildToParent, addParentToChild } from '../core/person-note-writer';
 import { RelationshipManager } from '../core/relationship-manager';
 import { createLucideIcon } from './lucide-icons';
@@ -757,17 +757,16 @@ export class CreatePersonModal extends Modal {
 			this.close();
 		});
 
-		const submitBtn = buttonContainer.createEl('button', {
-			text: this.editMode ? 'Save changes' : 'Create person',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		submitBtn.addEventListener('click', () => {
-			if (this.editMode) {
-				void this.updatePerson();
-			} else {
-				void this.createPerson();
-			}
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText(this.editMode ? 'Save changes' : 'Create person')
+			.setCta()
+			.onClick(() => {
+				if (this.editMode) {
+					void this.updatePerson();
+				} else {
+					void this.createPerson();
+				}
+			});
 	}
 
 	onClose() {
@@ -2582,13 +2581,12 @@ export class CreatePersonModal extends Modal {
 
 		// Done button (closes modal)
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
-		const doneBtn = buttonContainer.createEl('button', {
-			text: 'Done',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		doneBtn.addEventListener('click', () => {
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Done')
+			.setCta()
+			.onClick(() => {
+				this.close();
+			});
 	}
 
 	/**

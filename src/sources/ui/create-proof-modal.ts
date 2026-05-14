@@ -5,7 +5,7 @@
  * the reasoning chain for genealogical conclusions.
  */
 
-import { App, Modal, Setting, TFile, Notice } from 'obsidian';
+import { App, ButtonComponent, Modal, Setting, TFile, Notice } from 'obsidian';
 import { createLucideIcon } from '../../ui/lucide-icons';
 import { ProofSummaryService } from '../services/proof-summary-service';
 import { SourcePickerModal } from './source-picker-modal';
@@ -216,20 +216,20 @@ export class CreateProofModal extends Modal {
 		// Actions
 		const actions = contentEl.createDiv({ cls: 'crc-modal-actions' });
 
-		const cancelBtn = actions.createEl('button', { cls: 'crc-btn', text: 'Cancel' });
-		cancelBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(actions)
+			.setButtonText('Cancel')
+			.onClick(() => this.close());
 
-		const submitBtn = actions.createEl('button', {
-			cls: 'crc-btn crc-btn--primary',
-			text: this.editMode ? 'Save changes' : 'Create proof summary'
-		});
-		submitBtn.addEventListener('click', () => {
-			if (this.editMode) {
-				void this.updateProof();
-			} else {
-				void this.createProof();
-			}
-		});
+		new ButtonComponent(actions)
+			.setButtonText(this.editMode ? 'Save changes' : 'Create proof summary')
+			.setCta()
+			.onClick(() => {
+				if (this.editMode) {
+					void this.updateProof();
+				} else {
+					void this.createProof();
+				}
+			});
 	}
 
 	private renderEvidenceList(): void {

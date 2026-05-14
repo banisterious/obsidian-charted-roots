@@ -5,7 +5,7 @@
  * allowing users to review and configure how issues should be handled.
  */
 
-import { App, Modal } from 'obsidian';
+import { App, ButtonComponent, Modal } from 'obsidian';
 import { createLucideIcon, setLucideIcon, LucideIconName } from './lucide-icons';
 import type {
 	GedcomQualityAnalysis,
@@ -541,15 +541,14 @@ export class GedcomQualityPreviewModal extends Modal {
 			this.close();
 		});
 
-		const proceedBtn = buttonContainer.createEl('button', {
-			text: summary.placeVariants.length > 0
+		new ButtonComponent(buttonContainer)
+			.setButtonText(summary.placeVariants.length > 0
 				? 'Continue with these settings'
-				: 'Continue import',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		proceedBtn.addEventListener('click', () => {
-			this.onComplete({ proceed: true, choices: this.choices });
-			this.close();
-		});
+				: 'Continue import')
+			.setCta()
+			.onClick(() => {
+				this.onComplete({ proceed: true, choices: this.choices });
+				this.close();
+			});
 	}
 }

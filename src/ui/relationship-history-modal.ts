@@ -4,7 +4,7 @@
  * Displays relationship change history with undo functionality.
  */
 
-import { App, Modal, TFile, Notice, Setting } from 'obsidian';
+import { App, ButtonComponent, Modal, TFile, Notice, Setting } from 'obsidian';
 import {
 	RelationshipHistoryService,
 	RelationshipChange,
@@ -244,11 +244,10 @@ export class RelationshipHistoryModal extends Modal {
 		}
 
 		// Close button
-		const closeBtn = actionsDiv.createEl('button', {
-			cls: 'crc-btn crc-btn--primary',
-			text: 'Close'
-		});
-		closeBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(actionsDiv)
+			.setButtonText('Close')
+			.setCta()
+			.onClick(() => this.close());
 	}
 
 	onClose() {

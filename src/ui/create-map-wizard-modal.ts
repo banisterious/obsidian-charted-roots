@@ -11,7 +11,7 @@
  * - Step 4: Review and create
  */
 
-import { App, Modal, Notice, Setting, setIcon, TFile, normalizePath } from 'obsidian';
+import { App, ButtonComponent, Modal, Notice, Setting, setIcon, TFile, normalizePath } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { createLucideIcon } from './lucide-icons';
 import { getLogger } from '../core/logging';
@@ -320,14 +320,13 @@ export class CreateMapWizardModal extends Modal {
 		}
 
 		if (options.onNext) {
-			const nextBtn = rightButtons.createEl('button', {
-				text: options.nextLabel || 'Next',
-				cls: 'crc-btn crc-btn--primary'
-			});
+			const nextBtn = new ButtonComponent(rightButtons)
+				.setButtonText(options.nextLabel || 'Next')
+				.setCta()
+				.onClick(options.onNext);
 			if (options.nextDisabled) {
-				nextBtn.disabled = true;
+				nextBtn.setDisabled(true);
 			}
-			nextBtn.addEventListener('click', options.onNext);
 		}
 	}
 
@@ -1269,15 +1268,14 @@ export class CreateMapWizardModal extends Modal {
 		// Footer
 		const footer = contentEl.createDiv({ cls: 'crc-modal-buttons crc-modal-buttons--center' });
 
-		const openMapBtn = footer.createEl('button', {
-			text: 'Open in Map View',
-			cls: 'crc-btn crc-btn--primary'
-		});
-		openMapBtn.addEventListener('click', () => {
-			// Open the map in Map View
-			void this.openInMapView();
-			this.close();
-		});
+		new ButtonComponent(footer)
+			.setButtonText('Open in Map View')
+			.setCta()
+			.onClick(() => {
+				// Open the map in Map View
+				void this.openInMapView();
+				this.close();
+			});
 
 		const doneBtn = footer.createEl('button', {
 			text: 'Done',
