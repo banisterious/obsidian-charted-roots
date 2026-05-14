@@ -308,16 +308,14 @@ export class CleanupWizardModal extends Modal {
 		const leftBtns = footer.createDiv({ cls: 'crc-cleanup-footer-left' });
 		const rightBtns = footer.createDiv({ cls: 'crc-cleanup-footer-right' });
 
-		const startFreshBtn = leftBtns.createEl('button', {
-			cls: 'crc-btn crc-btn--secondary',
-			text: 'Start Fresh'
-		});
-		startFreshBtn.addEventListener('click', () => {
-			void this.clearPersistedState();
-			this.state = this.getDefaultState();
-			contentEl.empty();
-			this.initializeWizardUI(contentEl);
-		});
+		new ButtonComponent(leftBtns)
+			.setButtonText('Start Fresh')
+			.onClick(() => {
+				void this.clearPersistedState();
+				this.state = this.getDefaultState();
+				contentEl.empty();
+				this.initializeWizardUI(contentEl);
+			});
 
 		const resumeBtn = new ButtonComponent(rightBtns)
 			.setCta()
@@ -678,30 +676,26 @@ export class CleanupWizardModal extends Modal {
 
 		// Footer buttons
 		const leftBtns = this.footerContainer.createDiv({ cls: 'crc-cleanup-footer-left' });
-		const cancelBtn = leftBtns.createEl('button', {
-			cls: 'crc-btn crc-btn--secondary',
-			text: 'Close'
-		});
-		cancelBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(leftBtns)
+			.setButtonText('Close')
+			.onClick(() => this.close());
 
 		const rightBtns = this.footerContainer.createDiv({ cls: 'crc-cleanup-footer-right' });
 
 		// Skip All button
-		const skipAllBtn = rightBtns.createEl('button', {
-			cls: 'crc-btn crc-btn--secondary',
-			text: 'Skip All & Exit'
-		});
-		skipAllBtn.addEventListener('click', () => {
-			// Mark all as skipped and close
-			for (const step of WIZARD_STEPS) {
-				if (this.state.steps[step.number].status === 'pending') {
-					this.state.steps[step.number].status = 'skipped';
-					this.state.steps[step.number].skippedReason = 'Skipped by user';
+		new ButtonComponent(rightBtns)
+			.setButtonText('Skip All & Exit')
+			.onClick(() => {
+				// Mark all as skipped and close
+				for (const step of WIZARD_STEPS) {
+					if (this.state.steps[step.number].status === 'pending') {
+						this.state.steps[step.number].status = 'skipped';
+						this.state.steps[step.number].skippedReason = 'Skipped by user';
+					}
 				}
-			}
-			this.currentView = 'summary';
-			this.renderCurrentView();
-		});
+				this.currentView = 'summary';
+				this.renderCurrentView();
+			});
 
 		// Start Cleanup button
 		const startBtn = new ButtonComponent(rightBtns)
@@ -2236,17 +2230,15 @@ export class CleanupWizardModal extends Modal {
 		applyBtn.buttonEl.createSpan({ text: `Merge ${this.placeDuplicateGroups.length} duplicate ${pluralize(this.placeDuplicateGroups.length, 'group')}` });
 
 		// Skip button
-		const skipBtn = applyContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--secondary',
-			text: 'Skip Deduplication'
-		});
-		skipBtn.addEventListener('click', () => {
-			this.showDeduplicationStep = false;
-			stepState.status = 'complete';
-			// Record completion (skipped dedup still counts as variants completed)
-			this.recordStepCompletion('place-variants', stepState.fixCount);
-			this.renderCurrentView();
-		});
+		new ButtonComponent(applyContainer)
+			.setButtonText('Skip Deduplication')
+			.onClick(() => {
+				this.showDeduplicationStep = false;
+				stepState.status = 'complete';
+				// Record completion (skipped dedup still counts as variants completed)
+				this.recordStepCompletion('place-variants', stepState.fixCount);
+				this.renderCurrentView();
+			});
 	}
 
 	/**
@@ -2453,17 +2445,14 @@ export class CleanupWizardModal extends Modal {
 
 		// Cancel button
 		const cancelContainer = progress.createDiv({ cls: 'crc-cleanup-geocode-cancel' });
-		const cancelBtn = cancelContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--secondary'
-		});
-		cancelBtn.textContent = this.geocodingCancelled ? 'Cancelling...' : 'Cancel';
-		cancelBtn.disabled = this.geocodingCancelled;
-
-		cancelBtn.addEventListener('click', () => {
-			this.geocodingCancelled = true;
-			cancelBtn.textContent = 'Cancelling...';
-			cancelBtn.disabled = true;
-		});
+		const cancelBtn = new ButtonComponent(cancelContainer)
+			.setButtonText(this.geocodingCancelled ? 'Cancelling...' : 'Cancel')
+			.setDisabled(this.geocodingCancelled)
+			.onClick(() => {
+				this.geocodingCancelled = true;
+				cancelBtn.setButtonText('Cancelling...');
+				cancelBtn.setDisabled(true);
+			});
 	}
 
 	/**
@@ -2838,17 +2827,14 @@ export class CleanupWizardModal extends Modal {
 
 		// Cancel button
 		const cancelContainer = progress.createDiv({ cls: 'crc-cleanup-hierarchy-cancel' });
-		const cancelBtn = cancelContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--secondary'
-		});
-		cancelBtn.textContent = this.hierarchyEnrichmentCancelled ? 'Cancelling...' : 'Cancel';
-		cancelBtn.disabled = this.hierarchyEnrichmentCancelled;
-
-		cancelBtn.addEventListener('click', () => {
-			this.hierarchyEnrichmentCancelled = true;
-			cancelBtn.textContent = 'Cancelling...';
-			cancelBtn.disabled = true;
-		});
+		const cancelBtn = new ButtonComponent(cancelContainer)
+			.setButtonText(this.hierarchyEnrichmentCancelled ? 'Cancelling...' : 'Cancel')
+			.setDisabled(this.hierarchyEnrichmentCancelled)
+			.onClick(() => {
+				this.hierarchyEnrichmentCancelled = true;
+				cancelBtn.setButtonText('Cancelling...');
+				cancelBtn.setDisabled(true);
+			});
 	}
 
 	/**
@@ -3259,28 +3245,24 @@ export class CleanupWizardModal extends Modal {
 
 		// Back button (if not first step)
 		if (this.state.currentStep > 1) {
-			const backBtn = leftBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--secondary',
-				text: 'Back'
-			});
-			backBtn.addEventListener('click', () => {
-				this.state.currentStep--;
-				this.renderCurrentView();
-			});
+			new ButtonComponent(leftBtns)
+				.setButtonText('Back')
+				.onClick(() => {
+					this.state.currentStep--;
+					this.renderCurrentView();
+				});
 		}
 
 		const rightBtns = this.footerContainer.createDiv({ cls: 'crc-cleanup-footer-right' });
 
 		// Skip button
-		const skipBtn = rightBtns.createEl('button', {
-			cls: 'crc-btn crc-btn--secondary',
-			text: 'Skip Step'
-		});
-		skipBtn.addEventListener('click', () => {
-			this.state.steps[this.state.currentStep].status = 'skipped';
-			this.state.steps[this.state.currentStep].skippedReason = 'Skipped by user';
-			this.advanceToNextStep();
-		});
+		new ButtonComponent(rightBtns)
+			.setButtonText('Skip Step')
+			.onClick(() => {
+				this.state.steps[this.state.currentStep].status = 'skipped';
+				this.state.steps[this.state.currentStep].skippedReason = 'Skipped by user';
+				this.advanceToNextStep();
+			});
 
 		// Apply/Continue button
 		if (stepConfig.type === 'review' || stepState.status === 'complete') {

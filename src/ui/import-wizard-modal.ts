@@ -1742,32 +1742,26 @@ export class ImportWizardModal extends Modal {
 
 		if (this.currentStep === 0) {
 			// Step 0: Show Cancel button
-			const cancelBtn = leftBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--secondary',
-				text: 'Cancel'
-			});
-			cancelBtn.addEventListener('click', () => this.close());
+			new ButtonComponent(leftBtns)
+				.setButtonText('Cancel')
+				.onClick(() => this.close());
 		} else if (this.currentStep < 4) {
 			// Steps 1-3: Show Back button
-			const backBtn = leftBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--secondary',
-				text: 'Back'
-			});
-			backBtn.addEventListener('click', () => {
-				this.currentStep--;
-				this.renderCurrentStep();
-			});
+			new ButtonComponent(leftBtns)
+				.setButtonText('Back')
+				.onClick(() => {
+					this.currentStep--;
+					this.renderCurrentStep();
+				});
 		} else if (this.currentStep === 5) {
 			// Step 5 (Numbering): Show Skip button
-			const skipBtn = leftBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--secondary',
-				text: 'Skip'
-			});
-			skipBtn.addEventListener('click', () => {
-				this.formData.numberingSystem = 'none';
-				this.currentStep = 6;
-				this.renderCurrentStep();
-			});
+			new ButtonComponent(leftBtns)
+				.setButtonText('Skip')
+				.onClick(() => {
+					this.formData.numberingSystem = 'none';
+					this.currentStep = 6;
+					this.renderCurrentStep();
+				});
 		}
 
 		// Right side: Next or action buttons
@@ -1815,15 +1809,13 @@ export class ImportWizardModal extends Modal {
 			}
 		} else if (this.currentStep === 6) {
 			// Step 6 (Complete): Show Done and Import Another buttons
-			const importAnotherBtn = rightBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--secondary',
-				text: 'Import Another'
-			});
-			importAnotherBtn.addEventListener('click', () => {
-				this.formData = this.getDefaultFormData();
-				this.currentStep = 0;
-				this.renderCurrentStep();
-			});
+			new ButtonComponent(rightBtns)
+				.setButtonText('Import Another')
+				.onClick(() => {
+					this.formData = this.getDefaultFormData();
+					this.currentStep = 0;
+					this.renderCurrentStep();
+				});
 
 			new ButtonComponent(rightBtns)
 				.setButtonText('Done')

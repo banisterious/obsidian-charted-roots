@@ -134,8 +134,9 @@ export class MediaUploadModal extends Modal {
 
 		const footerActions = footer.createDiv({ cls: 'crc-modal-footer-actions' });
 
-		const cancelBtn = footerActions.createEl('button', { cls: 'crc-btn crc-btn--secondary', text: 'Cancel' });
-		cancelBtn.addEventListener('click', () => this.close());
+		new ButtonComponent(footerActions)
+			.setButtonText('Cancel')
+			.onClick(() => this.close());
 
 		this.uploadButton = new ButtonComponent(footerActions)
 			.setButtonText('Upload')

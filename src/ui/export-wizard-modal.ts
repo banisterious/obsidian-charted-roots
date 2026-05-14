@@ -1083,21 +1083,17 @@ export class ExportWizardModal extends Modal {
 
 		if (this.currentStep === 0) {
 			// Step 0: Show Cancel button
-			const cancelBtn = leftBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--secondary',
-				text: 'Cancel'
-			});
-			cancelBtn.addEventListener('click', () => this.close());
+			new ButtonComponent(leftBtns)
+				.setButtonText('Cancel')
+				.onClick(() => this.close());
 		} else if (this.currentStep < 4) {
 			// Steps 1-3: Show Back button
-			const backBtn = leftBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--secondary',
-				text: 'Back'
-			});
-			backBtn.addEventListener('click', () => {
-				this.currentStep--;
-				this.renderCurrentStep();
-			});
+			new ButtonComponent(leftBtns)
+				.setButtonText('Back')
+				.onClick(() => {
+					this.currentStep--;
+					this.renderCurrentStep();
+				});
 		}
 
 		// Right side: Next or action buttons
@@ -1141,15 +1137,13 @@ export class ExportWizardModal extends Modal {
 				});
 		} else if (this.currentStep === 5) {
 			// Step 5 (Complete): Show Export Another and Done buttons
-			const exportAnotherBtn = rightBtns.createEl('button', {
-				cls: 'crc-btn crc-btn--secondary',
-				text: 'Export Another'
-			});
-			exportAnotherBtn.addEventListener('click', () => {
-				this.formData = this.getDefaultFormData();
-				this.currentStep = 0;
-				this.renderCurrentStep();
-			});
+			new ButtonComponent(rightBtns)
+				.setButtonText('Export Another')
+				.onClick(() => {
+					this.formData = this.getDefaultFormData();
+					this.currentStep = 0;
+					this.renderCurrentStep();
+				});
 
 			new ButtonComponent(rightBtns)
 				.setButtonText('Done')

@@ -89,13 +89,11 @@ export class RegenerateOptionsModal extends Modal {
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-modal-buttons' });
 
-		const cancelBtn = buttonContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--secondary',
-			text: 'Cancel'
-		});
-		cancelBtn.addEventListener('click', () => {
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Cancel')
+			.onClick(() => {
+				this.close();
+			});
 
 		new ButtonComponent(buttonContainer)
 			.setButtonText('Regenerate')

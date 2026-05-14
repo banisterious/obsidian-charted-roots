@@ -147,13 +147,11 @@ export class FindOnCanvasModal extends Modal {
 
 		// Close button
 		const buttonContainer = container.createDiv({ cls: 'cr-modal-buttons' });
-		const closeBtn = buttonContainer.createEl('button', {
-			cls: 'crc-btn crc-btn--secondary',
-			text: 'Close'
-		});
-		closeBtn.addEventListener('click', () => {
-			this.close();
-		});
+		new ButtonComponent(buttonContainer)
+			.setButtonText('Close')
+			.onClick(() => {
+				this.close();
+			});
 	}
 
 	onClose() {
