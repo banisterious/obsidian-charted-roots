@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-14 20:27:09 UTC
+ * - Generated: 2026-05-14 20:28:32 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -13550,19 +13550,19 @@ settings:
    COMPONENT: CLEANUP-WIZARD.CSS
    ========================================================================== */
 
-/* Component Size: 2180 lines, 40.78 KB */
+/* Component Size: 2180 lines, 40.77 KB */
 
 /* ==========================================================================
    CLEANUP WIZARD MODAL
    ========================================================================== */
 
 /* Modal sizing */
-.modal:has(.crc-cleanup-wizard) {
+.crc-cleanup-wizard-sized {
   max-width: 700px;
   width: 90vw;
 }
 
-.modal:has(.crc-cleanup-wizard) .modal-content {
+.crc-cleanup-wizard-sized .modal-content {
   padding: 0;
 }
 
@@ -41262,11 +41262,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-14 20:27:09 UTC
+ * Build completed: 2026-05-14 20:28:33 UTC
  * Components processed: 50
  * Total lines: 40793
- * Total size: 830.02 KB
- * Build duration: 0.36 seconds
+ * Total size: 830.01 KB
+ * Build duration: 0.32 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.86 KB
@@ -41280,7 +41280,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - media-modals.css: 1997 lines, 38.91 KB
  * - import-export-wizard.css: 2136 lines, 40.69 KB
  * - staging-manager.css: 553 lines, 11.33 KB
- * - cleanup-wizard.css: 2180 lines, 40.78 KB
+ * - cleanup-wizard.css: 2180 lines, 40.77 KB
  * - duplicate-detection.css: 167 lines, 3.06 KB
  * - merge-wizard.css: 277 lines, 6.55 KB
  * - tree-statistics.css: 41 lines, 0.62 KB

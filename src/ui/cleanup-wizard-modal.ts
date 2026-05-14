@@ -236,6 +236,7 @@ export class CleanupWizardModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('crc-cleanup-wizard');
+		this.modalEl.addClass('crc-cleanup-wizard-sized');
 
 		// Check for persisted state and offer to resume
 		const persistedState = this.getPersistedState();
