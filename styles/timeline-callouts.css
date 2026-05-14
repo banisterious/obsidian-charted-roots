@@ -160,12 +160,9 @@ body {
 }
 
 /* Spacing between stacked timelines */
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 div:not(:has(> [data-callout="cr-timeline"])) + div > [data-callout="cr-timeline"] {
   margin-top: var(--p-spacing);
 }
-
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 div:has(> [data-callout="cr-timeline"]) + div:not(:has(> [data-callout="cr-timeline"])) {
   margin-bottom: 1rem;
 }
@@ -282,7 +279,6 @@ body {
 /* Applied to top-level lists within timeline callouts */
 .callout[data-callout="cr-timeline"] .callout-content > ul,
 .callout[data-callout="cr-timeline"] .callout-content > div > ul {
-  /* stylelint-disable-next-line -- partial browser-support warning; feature works in Obsidian's Electron runtime */
   column-width: var(--cr-list-min-width);
   column-gap: var(--cr-list-column-gap);
   column-rule: var(--cr-list-column-rule-width) solid var(--cr-list-column-rule-color);
@@ -296,7 +292,6 @@ body {
 
 /* Prevent column breaks within list items */
 .callout[data-callout="cr-timeline"] .callout-content ul li {
-  /* stylelint-disable-next-line -- partial browser-support warning; feature works in Obsidian's Electron runtime */
   break-inside: avoid;
 }
 

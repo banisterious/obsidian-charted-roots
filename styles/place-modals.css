@@ -414,17 +414,14 @@
 .crc-variation-count-link {
   cursor: pointer;
   color: var(--text-accent);
-  text-decoration: underline;
-  /* stylelint-disable-next-line -- partial browser-support warning; feature works in Obsidian's Electron runtime */
-  text-decoration-style: dotted;
+  text-decoration: underline dotted;
   text-underline-offset: 2px;
   margin-right: 4px;
 }
 
 .crc-variation-count-link:hover {
   color: var(--text-accent-hover);
-  /* stylelint-disable-next-line -- partial browser-support warning; feature works in Obsidian's Electron runtime */
-  text-decoration-style: solid;
+  text-decoration: underline solid;
 }
 
 .crc-variation-count-link.crc-expanded {
@@ -858,7 +855,6 @@
   display: inline-block;
 }
 
-/* .crc-text--center utility lives in base.css */
 
 /* ==========================================================================
    PLACE NETWORK MODAL

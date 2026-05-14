@@ -98,9 +98,7 @@
 .cr-code-old pre {
   border-left: 3px solid var(--text-error);
   opacity: 80%;
-  text-decoration: line-through;
-  /* stylelint-disable-next-line -- partial browser-support warning; feature works in Obsidian's Electron runtime */
-  text-decoration-color: var(--text-error);
+  text-decoration: line-through var(--text-error);
 }
 
 .cr-code-new pre {

@@ -3,13 +3,11 @@
  * ======================================================================== */
 
 /* Modal sizing */
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.cr-book-builder) {
 	max-width: 520px;
 	width: 520px;
 }
 
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.cr-book-builder) .modal-content {
 	padding: 0;
 	display: flex;
@@ -297,14 +295,11 @@
 /* ========================================================================
  * Chapter Config Modal
  * ======================================================================== */
-
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.cr-chapter-config-modal) {
 	max-width: 440px;
 	width: 440px;
 }
 
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.cr-chapter-config-modal) .modal-content {
 	padding: 0;
 }
@@ -316,14 +311,11 @@
 /* ========================================================================
  * File Picker Modal
  * ======================================================================== */
-
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.cr-file-picker-modal) {
 	max-width: 480px;
 	width: 480px;
 }
 
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.cr-file-picker-modal) .modal-content {
 	padding: 0;
 	display: flex;

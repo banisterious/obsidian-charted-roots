@@ -1917,8 +1917,6 @@
    UTILITY CLASSES
    ========================================================================== */
 
-/* .cr-hidden / .crc-hidden display utilities live in base.css */
-
 /* Icon color utilities */
 .cr-icon--muted {
   opacity: 30%;
@@ -2319,10 +2317,6 @@
 /* ==========================================================================
    UTILITY CLASSES
    ========================================================================== */
-
-/* .crc-hidden / .cr-hidden display utilities live in base.css */
-
-/* Place-specific modal styles moved to place-modals.css */
 
 /* ==========================================================================
    Template Snippets Modal
@@ -5281,14 +5275,11 @@
 /* ==========================================================================
    Reports Hub Modal
    ========================================================================== */
-
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-reports-hub-modal) {
   max-width: 500px;
   width: 90vw;
 }
 
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-reports-hub-modal) .modal-content {
   padding: 0;
 }
@@ -5404,14 +5395,11 @@
 /* ==========================================================================
    Import/Export Hub Modal
    ========================================================================== */
-
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-import-export-hub-modal) {
   max-width: 500px;
   width: 90vw;
 }
 
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-import-export-hub-modal) .modal-content {
   padding: 0;
 }

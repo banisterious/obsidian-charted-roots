@@ -1372,7 +1372,6 @@
 /* Family-chart library sets inline `opacity: 1` on card_cont during animation;
  * we need !important to override inline styles from CSS. */
 .cr-fcv-chart-container.cr-hl-active .card_cont.cr-hl-dim {
-  /* stylelint-disable-next-line -- legitimate !important: overrides family-chart inline opacity during overlay animation */
   opacity: 0.3 !important;
   transition: opacity 0.2s ease;
 }

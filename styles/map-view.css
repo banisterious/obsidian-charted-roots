@@ -57,9 +57,7 @@
 
 /* SVG and image fixes */
 .leaflet-container .leaflet-overlay-pane svg {
-  /* stylelint-disable-next-line -- legitimate !important: leaflet defensive: tile container must override host max-width */
   max-width: none !important;
-  /* stylelint-disable-next-line -- legitimate !important: leaflet defensive: tile container must override host max-height */
   max-height: none !important;
 }
 
@@ -68,9 +66,7 @@
 .leaflet-container .leaflet-tile-pane img,
 .leaflet-container img.leaflet-image-layer,
 .leaflet-container .leaflet-tile {
-  /* stylelint-disable-next-line -- legitimate !important: leaflet defensive: tile must override host max-width */
   max-width: none !important;
-  /* stylelint-disable-next-line -- legitimate !important: leaflet defensive: tile must override host max-height */
   max-height: none !important;
   width: auto;
   padding: 0;
@@ -175,6 +171,8 @@
   position: relative;
   z-index: 800;
   pointer-events: auto;
+  float: left;
+  clear: both;
 }
 
 .leaflet-top,
@@ -200,13 +198,9 @@
   left: 0;
 }
 
-.leaflet-control {
-  float: left;
-  clear: both;
-}
-
 .leaflet-right .leaflet-control {
   float: right;
+  margin-right: 10px;
 }
 
 .leaflet-top .leaflet-control {
@@ -219,10 +213,6 @@
 
 .leaflet-left .leaflet-control {
   margin-left: 10px;
-}
-
-.leaflet-right .leaflet-control {
-  margin-right: 10px;
 }
 
 /* Zoom and fade animations */
@@ -367,8 +357,6 @@ svg.leaflet-image-layer.leaflet-interactive path {
     bold 18px "Lucida Console",
     Monaco,
     monospace;
-  /* stylelint-disable-next-line -- partial browser-support warning; feature works in Obsidian's Electron runtime */
-  text-indent: 1px;
 }
 
 .leaflet-touch .leaflet-control-zoom-in,
@@ -733,7 +721,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
    -------------------------------------------------------------------------- */
 
 /* Leaflet container */
-.leaflet-container {
+.cr-map-view .leaflet-container {
   height: 100%;
   width: 100%;
   overflow: hidden;
@@ -741,7 +729,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   font-family: var(--font-interface);
 }
 
-.leaflet-container a {
+.cr-map-view .leaflet-container a {
   color: var(--text-accent);
 }
 

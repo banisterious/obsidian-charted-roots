@@ -4,13 +4,11 @@
    ============================================================================= */
 
 /* Modal sizing */
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-staging-modal) {
   max-width: 700px;
   width: 90vw;
 }
 
-/* stylelint-disable-next-line -- :has() perf warning is overcautious for our scoped uses */
 .modal:has(.crc-staging-modal) .modal-content {
   padding: 0;
 }
