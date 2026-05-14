@@ -1980,12 +1980,6 @@
   letter-spacing: 0.05em;
 }
 
-.cr-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 0.75em;
-}
-
 .cr-stat-card {
   display: flex;
   align-items: flex-start;
@@ -2006,17 +2000,6 @@
   flex-direction: column;
   gap: 0.25em;
   min-width: 0;
-}
-
-.cr-stat-label {
-  font-size: 0.8em;
-  color: var(--text-muted);
-}
-
-.cr-stat-value {
-  font-size: 1em;
-  font-weight: 600;
-  word-break: break-word;
 }
 
 .cr-completeness-grid {

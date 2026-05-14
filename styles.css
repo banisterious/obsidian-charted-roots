@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-14 15:28:56 UTC
+ * - Generated: 2026-05-14 17:16:53 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -662,7 +662,7 @@ settings:
    COMPONENT: CONTROL-CENTER.CSS
    ========================================================================== */
 
-/* Component Size: 5662 lines, 106.47 KB */
+/* Component Size: 5645 lines, 106.21 KB */
 
 /* ==========================================================================
    Charted Roots Control Center - Styling
@@ -2646,12 +2646,6 @@ settings:
   letter-spacing: 0.05em;
 }
 
-.cr-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 0.75em;
-}
-
 .cr-stat-card {
   display: flex;
   align-items: flex-start;
@@ -2672,17 +2666,6 @@ settings:
   flex-direction: column;
   gap: 0.25em;
   min-width: 0;
-}
-
-.cr-stat-label {
-  font-size: 0.8em;
-  color: var(--text-muted);
-}
-
-.cr-stat-value {
-  font-size: 1em;
-  font-weight: 600;
-  word-break: break-word;
 }
 
 .cr-completeness-grid {
@@ -16421,7 +16404,7 @@ settings:
    COMPONENT: TREE-STATISTICS.CSS
    ========================================================================== */
 
-/* Component Size: 41 lines, 0.6 KB */
+/* Component Size: 41 lines, 0.62 KB */
 
 /* Tree Statistics Modal */
 .cr-tree-statistics-modal {
@@ -16432,7 +16415,7 @@ settings:
   padding: 1em 0;
 }
 
-.cr-stat-row {
+.cr-treestat-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -16440,7 +16423,7 @@ settings:
   gap: 1em;
 }
 
-.cr-stat-label {
+.cr-treestat-label {
   display: flex;
   align-items: center;
   gap: 0.5em;
@@ -16448,11 +16431,11 @@ settings:
   color: var(--text-muted);
 }
 
-.cr-stat-icon {
+.cr-treestat-icon {
   opacity: 0.7;
 }
 
-.cr-stat-value {
+.cr-treestat-value {
   font-weight: 600;
   color: var(--text-normal);
   text-align: right;
@@ -28608,7 +28591,7 @@ body.wide-timeline .view-content {
    COMPONENT: ORGANIZATIONS.CSS
    ========================================================================== */
 
-/* Component Size: 614 lines, 11.53 KB */
+/* Component Size: 615 lines, 11.55 KB */
 
 /**
  * Organizations Styles
@@ -28732,6 +28715,7 @@ body.wide-timeline .view-content {
   font-size: 1.5em;
   font-weight: 600;
   color: var(--text-normal);
+  word-break: break-word;
 }
 
 .cr-stat-label {
@@ -41634,11 +41618,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-14 15:28:57 UTC
+ * Build completed: 2026-05-14 17:16:54 UTC
  * Components processed: 50
- * Total lines: 41165
- * Total size: 836.74 KB
- * Build duration: 0.37 seconds
+ * Total lines: 41149
+ * Total size: 836.52 KB
+ * Build duration: 0.32 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.86 KB
@@ -41646,7 +41630,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - base.css: 99 lines, 1.55 KB
  * - layout.css: 22 lines, 0.25 KB
  * - settings.css: 131 lines, 3.53 KB
- * - control-center.css: 5662 lines, 106.47 KB
+ * - control-center.css: 5645 lines, 106.21 KB
  * - entity-create-modals.css: 1234 lines, 25.51 KB
  * - place-modals.css: 1418 lines, 28.25 KB
  * - media-modals.css: 2004 lines, 39.02 KB
@@ -41655,7 +41639,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - cleanup-wizard.css: 2180 lines, 40.78 KB
  * - duplicate-detection.css: 167 lines, 3.06 KB
  * - merge-wizard.css: 277 lines, 6.55 KB
- * - tree-statistics.css: 41 lines, 0.6 KB
+ * - tree-statistics.css: 41 lines, 0.62 KB
  * - validation.css: 78 lines, 1.42 KB
  * - find-on-canvas.css: 275 lines, 5.13 KB
  * - folder-scan.css: 155 lines, 2.6 KB
@@ -41672,7 +41656,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - date-systems.css: 287 lines, 5.31 KB
  * - events.css: 1520 lines, 30.79 KB
  * - timeline-callouts.css: 324 lines, 10.86 KB
- * - organizations.css: 614 lines, 11.53 KB
+ * - organizations.css: 615 lines, 11.55 KB
  * - sources.css: 2832 lines, 57.32 KB
  * - statistics.css: 1811 lines, 36.3 KB
  * - command-menu.css: 73 lines, 1.6 KB

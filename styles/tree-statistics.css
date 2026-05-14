@@ -7,7 +7,7 @@
   padding: 1em 0;
 }
 
-.cr-stat-row {
+.cr-treestat-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -15,7 +15,7 @@
   gap: 1em;
 }
 
-.cr-stat-label {
+.cr-treestat-label {
   display: flex;
   align-items: center;
   gap: 0.5em;
@@ -23,11 +23,11 @@
   color: var(--text-muted);
 }
 
-.cr-stat-icon {
+.cr-treestat-icon {
   opacity: 0.7;
 }
 
-.cr-stat-value {
+.cr-treestat-value {
   font-weight: 600;
   color: var(--text-normal);
   text-align: right;
