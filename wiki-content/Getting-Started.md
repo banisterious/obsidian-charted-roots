@@ -23,9 +23,7 @@ Charted Roots transforms structured genealogical data in your Markdown notes int
 
 ### From Community Plugins (Recommended)
 
-1. Open Obsidian Settings → Community plugins
-2. Click "Browse" and search for "Charted Roots"
-3. Click "Install" then "Enable"
+Click [**Install in Obsidian**](https://community.obsidian.md/plugins/charted-roots) on the plugin's Community page, or open Obsidian Settings → Community plugins, click "Browse" and search for "Charted Roots", then click Install → Enable.
 
 ### Using BRAT (Beta Testing)
 
