@@ -3,12 +3,12 @@
    ========================================================================== */
 
 /* Applied to contentEl, so target the parent modal container */
-.modal:has(.crc-media-picker-modal) {
+.crc-media-picker-modal-sized {
   max-width: 900px;
   width: 90vw;
 }
 
-.modal:has(.crc-media-picker-modal) .modal-content {
+.crc-media-picker-modal-sized .modal-content {
   padding: 0;
   overflow: hidden;
 }
@@ -171,12 +171,12 @@
    ========================================================================== */
 
 /* Applied to contentEl, so target the parent modal container */
-.modal:has(.crc-media-manage-modal) {
+.crc-media-manage-modal-sized {
   max-width: 600px;
   width: 90vw;
 }
 
-.modal:has(.crc-media-manage-modal) .modal-content {
+.crc-media-manage-modal-sized .modal-content {
   padding: 0;
   overflow: hidden;
 }
@@ -361,12 +361,12 @@
 /* =============================================================================
    Bulk Media Link Modal
    ============================================================================= */
-.modal:has(.crc-bulk-media-link-modal) {
+.crc-bulk-media-link-modal-sized {
   max-width: 700px;
   width: 90vw;
 }
 
-.modal:has(.crc-bulk-media-link-modal) .modal-content {
+.crc-bulk-media-link-modal-sized .modal-content {
   padding: 0;
   overflow: hidden;
 }
@@ -472,12 +472,12 @@
 /* ==========================================================================
    MEDIA MANAGER MODAL
    ========================================================================== */
-.modal:has(.crc-media-manager-modal) {
+.crc-media-manager-modal-sized {
   max-width: 700px;
   width: 90vw;
 }
 
-.modal:has(.crc-media-manager-modal) .modal-content {
+.crc-media-manager-modal-sized .modal-content {
   padding: 0;
 }
 
@@ -660,13 +660,13 @@
 /* ==========================================================================
    MEDIA GALLERY MODAL
    ========================================================================== */
-.modal:has(.crc-media-gallery-modal) {
+.crc-media-gallery-modal-sized {
   max-width: 900px;
   width: 95vw;
   height: 80vh;
 }
 
-.modal:has(.crc-media-gallery-modal) .modal-content {
+.crc-media-gallery-modal-sized .modal-content {
   padding: 0;
   height: 100%;
   display: flex;
@@ -952,14 +952,14 @@
 /* ==========================================================================
    UNLINKED MEDIA MODAL
    ========================================================================== */
-.modal:has(.crc-unlinked-media-modal) {
+.crc-unlinked-media-modal-sized {
   max-width: 1000px;
   width: 90vw;
   height: 85vh;
   max-height: 800px;
 }
 
-.modal:has(.crc-unlinked-media-modal) .modal-content {
+.crc-unlinked-media-modal-sized .modal-content {
   padding: 0;
   height: 100%;
   display: flex;
@@ -1439,12 +1439,12 @@
 /* ==========================================================================
    MEDIA UPLOAD MODAL
    ========================================================================== */
-.modal:has(.crc-media-upload-modal) {
+.crc-media-upload-modal-sized {
   max-width: 600px;
   width: 90vw;
 }
 
-.modal:has(.crc-media-upload-modal) .modal-content {
+.crc-media-upload-modal-sized .modal-content {
   padding: 0;
   overflow: hidden;
 }
@@ -1694,12 +1694,12 @@
 /* ==========================================================================
    ENTITY PICKER MODAL
    ========================================================================== */
-.modal:has(.crc-entity-picker-modal) {
+.crc-entity-picker-modal-sized {
   max-width: 700px;
   width: 90vw;
 }
 
-.modal:has(.crc-entity-picker-modal) .modal-content {
+.crc-entity-picker-modal-sized .modal-content {
   padding: 0;
   overflow: hidden;
 }

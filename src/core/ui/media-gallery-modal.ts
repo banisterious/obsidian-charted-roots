@@ -71,6 +71,7 @@ export class MediaGalleryModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('crc-media-gallery-modal');
+		this.modalEl.addClass('crc-media-gallery-modal-sized');
 
 		this.loadAllMedia();
 		this.renderContent();

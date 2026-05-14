@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-14 20:32:39 UTC
+ * - Generated: 2026-05-14 20:38:31 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -8837,19 +8837,19 @@ settings:
    COMPONENT: MEDIA-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 1997 lines, 38.91 KB */
+/* Component Size: 1997 lines, 38.82 KB */
 
 /* ==========================================================================
    Media Picker Modal
    ========================================================================== */
 
 /* Applied to contentEl, so target the parent modal container */
-.modal:has(.crc-media-picker-modal) {
+.crc-media-picker-modal-sized {
   max-width: 900px;
   width: 90vw;
 }
 
-.modal:has(.crc-media-picker-modal) .modal-content {
+.crc-media-picker-modal-sized .modal-content {
   padding: 0;
   overflow: hidden;
 }
@@ -9012,12 +9012,12 @@ settings:
    ========================================================================== */
 
 /* Applied to contentEl, so target the parent modal container */
-.modal:has(.crc-media-manage-modal) {
+.crc-media-manage-modal-sized {
   max-width: 600px;
   width: 90vw;
 }
 
-.modal:has(.crc-media-manage-modal) .modal-content {
+.crc-media-manage-modal-sized .modal-content {
   padding: 0;
   overflow: hidden;
 }
@@ -9202,12 +9202,12 @@ settings:
 /* =============================================================================
    Bulk Media Link Modal
    ============================================================================= */
-.modal:has(.crc-bulk-media-link-modal) {
+.crc-bulk-media-link-modal-sized {
   max-width: 700px;
   width: 90vw;
 }
 
-.modal:has(.crc-bulk-media-link-modal) .modal-content {
+.crc-bulk-media-link-modal-sized .modal-content {
   padding: 0;
   overflow: hidden;
 }
@@ -9313,12 +9313,12 @@ settings:
 /* ==========================================================================
    MEDIA MANAGER MODAL
    ========================================================================== */
-.modal:has(.crc-media-manager-modal) {
+.crc-media-manager-modal-sized {
   max-width: 700px;
   width: 90vw;
 }
 
-.modal:has(.crc-media-manager-modal) .modal-content {
+.crc-media-manager-modal-sized .modal-content {
   padding: 0;
 }
 
@@ -9501,13 +9501,13 @@ settings:
 /* ==========================================================================
    MEDIA GALLERY MODAL
    ========================================================================== */
-.modal:has(.crc-media-gallery-modal) {
+.crc-media-gallery-modal-sized {
   max-width: 900px;
   width: 95vw;
   height: 80vh;
 }
 
-.modal:has(.crc-media-gallery-modal) .modal-content {
+.crc-media-gallery-modal-sized .modal-content {
   padding: 0;
   height: 100%;
   display: flex;
@@ -9793,14 +9793,14 @@ settings:
 /* ==========================================================================
    UNLINKED MEDIA MODAL
    ========================================================================== */
-.modal:has(.crc-unlinked-media-modal) {
+.crc-unlinked-media-modal-sized {
   max-width: 1000px;
   width: 90vw;
   height: 85vh;
   max-height: 800px;
 }
 
-.modal:has(.crc-unlinked-media-modal) .modal-content {
+.crc-unlinked-media-modal-sized .modal-content {
   padding: 0;
   height: 100%;
   display: flex;
@@ -10280,12 +10280,12 @@ settings:
 /* ==========================================================================
    MEDIA UPLOAD MODAL
    ========================================================================== */
-.modal:has(.crc-media-upload-modal) {
+.crc-media-upload-modal-sized {
   max-width: 600px;
   width: 90vw;
 }
 
-.modal:has(.crc-media-upload-modal) .modal-content {
+.crc-media-upload-modal-sized .modal-content {
   padding: 0;
   overflow: hidden;
 }
@@ -10535,12 +10535,12 @@ settings:
 /* ==========================================================================
    ENTITY PICKER MODAL
    ========================================================================== */
-.modal:has(.crc-entity-picker-modal) {
+.crc-entity-picker-modal-sized {
   max-width: 700px;
   width: 90vw;
 }
 
-.modal:has(.crc-entity-picker-modal) .modal-content {
+.crc-entity-picker-modal-sized .modal-content {
   padding: 0;
   overflow: hidden;
 }
@@ -41262,11 +41262,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-14 20:32:40 UTC
+ * Build completed: 2026-05-14 20:38:32 UTC
  * Components processed: 50
  * Total lines: 40793
- * Total size: 829.96 KB
- * Build duration: 0.31 seconds
+ * Total size: 829.87 KB
+ * Build duration: 1.72 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.86 KB
@@ -41277,7 +41277,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - control-center.css: 5647 lines, 106.23 KB
  * - entity-create-modals.css: 1234 lines, 25.51 KB
  * - place-modals.css: 1267 lines, 25.43 KB
- * - media-modals.css: 1997 lines, 38.91 KB
+ * - media-modals.css: 1997 lines, 38.82 KB
  * - import-export-wizard.css: 2136 lines, 40.66 KB
  * - staging-manager.css: 553 lines, 11.33 KB
  * - cleanup-wizard.css: 2180 lines, 40.77 KB

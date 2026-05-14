@@ -61,6 +61,7 @@ export class MediaUploadModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('crc-media-upload-modal');
+		this.modalEl.addClass('crc-media-upload-modal-sized');
 
 		this.renderContent();
 	}

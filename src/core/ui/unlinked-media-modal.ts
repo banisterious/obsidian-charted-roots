@@ -84,6 +84,7 @@ export class UnlinkedMediaModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('crc-unlinked-media-modal');
+		this.modalEl.addClass('crc-unlinked-media-modal-sized');
 
 		this.renderContent();
 		this.loadUnlinkedMedia();

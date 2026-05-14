@@ -120,6 +120,7 @@ export class EntityPickerModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('crc-entity-picker-modal');
+		this.modalEl.addClass('crc-entity-picker-modal-sized');
 
 		this.createModalContent();
 		this.loadEntities();

@@ -60,6 +60,7 @@ export class MediaManagerModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('crc-media-manager-modal');
+		this.modalEl.addClass('crc-media-manager-modal-sized');
 
 		// Calculate stats in background
 		this.calculateStats();

@@ -118,6 +118,7 @@ export class MediaPickerModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('crc-media-picker-modal');
+		this.modalEl.addClass('crc-media-picker-modal-sized');
 
 		this.loadMediaFiles();
 		this.createModalContent();
