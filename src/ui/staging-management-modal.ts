@@ -55,6 +55,7 @@ export class StagingManagementModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('crc-staging-modal');
+		this.modalEl.addClass('crc-staging-modal-sized');
 
 		this.renderContent();
 	}

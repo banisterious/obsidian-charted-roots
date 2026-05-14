@@ -4,12 +4,12 @@
    ============================================================================= */
 
 /* Modal sizing */
-.modal:has(.crc-staging-modal) {
+.crc-staging-modal-sized {
   max-width: 700px;
   width: 90vw;
 }
 
-.modal:has(.crc-staging-modal) .modal-content {
+.crc-staging-modal-sized .modal-content {
   padding: 0;
 }
 
