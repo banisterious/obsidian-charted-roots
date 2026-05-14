@@ -526,7 +526,7 @@
    INFO CALLOUT
    ========================================================================== */
 
-.crc-info-callout {
+.crc-fw-info-callout {
   background: rgb(96 165 250 / 10%);
   border: 1px solid rgb(96 165 250 / 30%);
   border-radius: var(--cr-radius-md);
@@ -539,18 +539,18 @@
   margin-bottom: 16px;
 }
 
-.crc-info-callout-icon {
+.crc-fw-info-callout-icon {
   color: rgb(96 165 250);
   flex-shrink: 0;
   margin-top: 1px;
 }
 
-.crc-info-callout-icon svg {
+.crc-fw-info-callout-icon svg {
   width: 18px;
   height: 18px;
 }
 
-.crc-info-callout-text {
+.crc-fw-info-callout-text {
   flex: 1;
 }
 

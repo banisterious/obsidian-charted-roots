@@ -138,15 +138,6 @@
   gap: var(--size-4-2);
 }
 
-.crc-media-preview {
-  margin-top: var(--size-4-2);
-  padding: var(--size-4-2);
-  background: var(--background-secondary);
-  border-radius: var(--radius-s);
-  font-size: var(--font-ui-smaller);
-  color: var(--text-muted);
-}
-
 /* Preview section */
 .crc-split-preview {
   border-top: 1px solid var(--background-modifier-border);

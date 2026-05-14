@@ -1480,10 +1480,6 @@
    Source Conflicts Section (Data Quality tab)
    ========================================================================== */
 
-.crc-conflicts-section {
-  margin-top: var(--size-4-4);
-}
-
 .crc-conflicts-list {
   display: flex;
   flex-direction: column;

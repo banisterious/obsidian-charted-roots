@@ -4728,7 +4728,7 @@
   flex-shrink: 0;
 }
 
-.crc-type-badge {
+.crc-stnd-type-badge {
   display: inline-block;
   padding: 2px 8px;
   border-radius: 10px;
@@ -4737,7 +4737,7 @@
   margin-left: 8px;
 }
 
-.crc-type-badge--current {
+.crc-stnd-type-badge--current {
   background: var(--background-modifier-border);
   color: var(--text-muted);
 }

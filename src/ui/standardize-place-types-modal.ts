@@ -215,7 +215,7 @@ export class StandardizePlaceTypesModal extends Modal {
 		// Current type badge
 		nameContainer.createSpan({
 			text: place.placeType || 'unknown',
-			cls: 'crc-type-badge crc-type-badge--current'
+			cls: 'crc-stnd-type-badge crc-stnd-type-badge--current'
 		});
 
 		// Parent info if available

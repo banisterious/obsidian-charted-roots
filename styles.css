@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-14 21:19:06 UTC
+ * - Generated: 2026-05-14 21:26:19 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -662,7 +662,7 @@ settings:
    COMPONENT: CONTROL-CENTER.CSS
    ========================================================================== */
 
-/* Component Size: 5657 lines, 106.38 KB */
+/* Component Size: 5657 lines, 106.39 KB */
 
 /* ==========================================================================
    Charted Roots Control Center - Styling
@@ -5394,7 +5394,7 @@ settings:
   flex-shrink: 0;
 }
 
-.crc-type-badge {
+.crc-stnd-type-badge {
   display: inline-block;
   padding: 2px 8px;
   border-radius: 10px;
@@ -5403,7 +5403,7 @@ settings:
   margin-left: 8px;
 }
 
-.crc-type-badge--current {
+.crc-stnd-type-badge--current {
   background: var(--background-modifier-border);
   color: var(--text-muted);
 }
@@ -15700,7 +15700,7 @@ settings:
    COMPONENT: DUPLICATE-DETECTION.CSS
    ========================================================================== */
 
-/* Component Size: 167 lines, 3.06 KB */
+/* Component Size: 163 lines, 3.02 KB */
 
 /**
  * Duplicate Detection Modal Styles
@@ -15859,10 +15859,6 @@ settings:
 /* Text utilities */
 .cr-success-text {
   color: var(--color-green);
-}
-
-.cr-error-text {
-  color: var(--color-red);
 }
 
 .cr-text-muted {
@@ -18918,7 +18914,7 @@ settings:
   flex-wrap: wrap;
 }
 
-.cr-export-stat {
+.cr-fcx-stat {
   font-size: 12px;
   color: var(--text-normal);
 }
@@ -22596,7 +22592,7 @@ settings:
    COMPONENT: CANVAS-NAVIGATION.CSS
    ========================================================================== */
 
-/* Component Size: 683 lines, 14.65 KB */
+/* Component Size: 674 lines, 14.43 KB */
 
 /**
  * Canvas Navigation Styles
@@ -22736,15 +22732,6 @@ settings:
   display: flex;
   align-items: center;
   gap: var(--size-4-2);
-}
-
-.crc-media-preview {
-  margin-top: var(--size-4-2);
-  padding: var(--size-4-2);
-  background: var(--background-secondary);
-  border-radius: var(--radius-s);
-  font-size: var(--font-ui-smaller);
-  color: var(--text-muted);
 }
 
 /* Preview section */
@@ -26173,7 +26160,7 @@ input[type="text"]::-webkit-input-placeholder {
    COMPONENT: DATE-SYSTEMS.CSS
    ========================================================================== */
 
-/* Component Size: 287 lines, 5.31 KB */
+/* Component Size: 278 lines, 5.16 KB */
 
 /**
  * Fictional Date Systems Styles
@@ -26436,17 +26423,8 @@ input[type="text"]::-webkit-input-placeholder {
   padding: 16px;
 }
 
-/* Subsection heading */
-.cr-subsection-heading {
-  font-size: 0.9em;
-  font-weight: 600;
-  color: var(--text-muted);
-  margin: 16px 0 8px 0;
-  padding: 0;
-}
-
 /* Badge styles */
-.cr-badge {
+.cr-ds-badge {
   display: inline-flex;
   align-items: center;
   padding: 2px 6px;
@@ -26457,7 +26435,7 @@ input[type="text"]::-webkit-input-placeholder {
   letter-spacing: 0.03em;
 }
 
-.cr-badge--muted {
+.cr-ds-badge--muted {
   background-color: var(--background-modifier-border);
   color: var(--text-muted);
 }
@@ -28953,7 +28931,7 @@ body.wide-timeline .view-content {
    COMPONENT: SOURCES.CSS
    ========================================================================== */
 
-/* Component Size: 2813 lines, 57.03 KB */
+/* Component Size: 2809 lines, 56.97 KB */
 
 /**
  * Sources Styles
@@ -30436,10 +30414,6 @@ body.wide-timeline .view-content {
 /* ==========================================================================
    Source Conflicts Section (Data Quality tab)
    ========================================================================== */
-
-.crc-conflicts-section {
-  margin-top: var(--size-4-4);
-}
 
 .crc-conflicts-list {
   display: flex;
@@ -35155,7 +35129,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: FAMILY-WIZARD.CSS
    ========================================================================== */
 
-/* Component Size: 641 lines, 13.71 KB */
+/* Component Size: 641 lines, 13.73 KB */
 
 /* ==========================================================================
    FAMILY CREATION WIZARD
@@ -35685,7 +35659,7 @@ body:has(.cr-media-linker) .suggestion-container {
    INFO CALLOUT
    ========================================================================== */
 
-.crc-info-callout {
+.crc-fw-info-callout {
   background: rgb(96 165 250 / 10%);
   border: 1px solid rgb(96 165 250 / 30%);
   border-radius: var(--cr-radius-md);
@@ -35698,18 +35672,18 @@ body:has(.cr-media-linker) .suggestion-container {
   margin-bottom: 16px;
 }
 
-.crc-info-callout-icon {
+.crc-fw-info-callout-icon {
   color: rgb(96 165 250);
   flex-shrink: 0;
   margin-top: 1px;
 }
 
-.crc-info-callout-icon svg {
+.crc-fw-info-callout-icon svg {
   width: 18px;
   height: 18px;
 }
 
-.crc-info-callout-text {
+.crc-fw-info-callout-text {
   flex: 1;
 }
 
@@ -36420,7 +36394,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: PREFERENCES.CSS
    ========================================================================== */
 
-/* Component Size: 431 lines, 9.42 KB */
+/* Component Size: 426 lines, 9.36 KB */
 
 /* ==========================================================================
    Preferences Tab Styles
@@ -36509,11 +36483,6 @@ body:has(.cr-media-linker) .suggestion-container {
 .cr-alias-form .setting-item {
   border-top: none;
   padding-top: var(--cr-spacing-sm);
-}
-
-/* Small muted text */
-.crc-text-small {
-  font-size: 0.85em;
 }
 
 /* ==========================================================================
@@ -41213,10 +41182,10 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-14 21:19:06 UTC
+ * Build completed: 2026-05-14 21:26:19 UTC
  * Components processed: 50
- * Total lines: 40744
- * Total size: 829.05 KB
+ * Total lines: 40713
+ * Total size: 828.53 KB
  * Build duration: 0.32 seconds
  *
  * Component breakdown:
@@ -41225,14 +41194,14 @@ body:has(.cr-media-linker) .suggestion-container {
  * - base.css: 99 lines, 1.55 KB
  * - layout.css: 22 lines, 0.25 KB
  * - settings.css: 131 lines, 3.53 KB
- * - control-center.css: 5657 lines, 106.38 KB
+ * - control-center.css: 5657 lines, 106.39 KB
  * - entity-create-modals.css: 1234 lines, 25.51 KB
  * - place-modals.css: 1267 lines, 25.43 KB
  * - media-modals.css: 1997 lines, 38.82 KB
  * - import-export-wizard.css: 2092 lines, 39.9 KB
  * - staging-manager.css: 553 lines, 11.33 KB
  * - cleanup-wizard.css: 2175 lines, 40.71 KB
- * - duplicate-detection.css: 167 lines, 3.06 KB
+ * - duplicate-detection.css: 163 lines, 3.02 KB
  * - merge-wizard.css: 277 lines, 6.55 KB
  * - tree-statistics.css: 41 lines, 0.62 KB
  * - validation.css: 78 lines, 1.42 KB
@@ -41245,14 +41214,14 @@ body:has(.cr-media-linker) .suggestion-container {
  * - book-builder.css: 368 lines, 7.25 KB
  * - data-quality.css: 1439 lines, 28.62 KB
  * - relationships.css: 583 lines, 11.2 KB
- * - canvas-navigation.css: 683 lines, 14.65 KB
+ * - canvas-navigation.css: 674 lines, 14.43 KB
  * - map-view.css: 2497 lines, 54.2 KB
  * - leaflet-distortable.css: 372 lines, 7.91 KB
- * - date-systems.css: 287 lines, 5.31 KB
+ * - date-systems.css: 278 lines, 5.16 KB
  * - events.css: 1520 lines, 30.79 KB
  * - timeline-callouts.css: 324 lines, 10.86 KB
  * - organizations.css: 615 lines, 11.55 KB
- * - sources.css: 2813 lines, 57.03 KB
+ * - sources.css: 2809 lines, 56.97 KB
  * - statistics.css: 1811 lines, 36.34 KB
  * - command-menu.css: 73 lines, 1.6 KB
  * - dashboard.css: 491 lines, 9.63 KB
@@ -41261,9 +41230,9 @@ body:has(.cr-media-linker) .suggestion-container {
  * - universe-entities.css: 187 lines, 4.14 KB
  * - collections.css: 41 lines, 0.73 KB
  * - data-quality-view.css: 47 lines, 0.89 KB
- * - family-wizard.css: 641 lines, 13.71 KB
+ * - family-wizard.css: 641 lines, 13.73 KB
  * - map-wizard.css: 606 lines, 12.67 KB
- * - preferences.css: 431 lines, 9.42 KB
+ * - preferences.css: 426 lines, 9.36 KB
  * - tree-output.css: 1523 lines, 29.97 KB
  * - dynamic-content.css: 1217 lines, 26.68 KB
  * - profile-view.css: 1113 lines, 24.91 KB

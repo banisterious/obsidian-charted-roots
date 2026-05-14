@@ -324,10 +324,10 @@ export class FamilyCreationWizardModal extends Modal {
 		const content = contentEl.createDiv({ cls: 'crc-wizard-content' });
 
 		// Info callout
-		const callout = content.createDiv({ cls: 'crc-info-callout' });
-		const calloutIcon = callout.createDiv({ cls: 'crc-info-callout-icon' });
+		const callout = content.createDiv({ cls: 'crc-fw-info-callout' });
+		const calloutIcon = callout.createDiv({ cls: 'crc-fw-info-callout-icon' });
 		setIcon(calloutIcon, 'info');
-		callout.createDiv({ cls: 'crc-info-callout-text' }).setText(
+		callout.createDiv({ cls: 'crc-fw-info-callout-text' }).setText(
 			'This wizard helps you create multiple family members at once and automatically links them together.'
 		);
 
