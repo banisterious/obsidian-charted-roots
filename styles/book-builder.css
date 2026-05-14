@@ -3,12 +3,12 @@
  * ======================================================================== */
 
 /* Modal sizing */
-.modal:has(.cr-book-builder) {
+.cr-book-builder-sized {
 	max-width: 520px;
 	width: 520px;
 }
 
-.modal:has(.cr-book-builder) .modal-content {
+.cr-book-builder-sized .modal-content {
 	padding: 0;
 	display: flex;
 	flex-direction: column;
@@ -295,12 +295,12 @@
 /* ========================================================================
  * Chapter Config Modal
  * ======================================================================== */
-.modal:has(.cr-chapter-config-modal) {
+.cr-chapter-config-modal-sized {
 	max-width: 440px;
 	width: 440px;
 }
 
-.modal:has(.cr-chapter-config-modal) .modal-content {
+.cr-chapter-config-modal-sized .modal-content {
 	padding: 0;
 }
 
@@ -311,12 +311,12 @@
 /* ========================================================================
  * File Picker Modal
  * ======================================================================== */
-.modal:has(.cr-file-picker-modal) {
+.cr-file-picker-modal-sized {
 	max-width: 480px;
 	width: 480px;
 }
 
-.modal:has(.cr-file-picker-modal) .modal-content {
+.cr-file-picker-modal-sized .modal-content {
 	padding: 0;
 	display: flex;
 	flex-direction: column;

@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-14 20:20:13 UTC
+ * - Generated: 2026-05-14 20:27:09 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -20218,19 +20218,19 @@ settings:
    COMPONENT: BOOK-BUILDER.CSS
    ========================================================================== */
 
-/* Component Size: 368 lines, 7.29 KB */
+/* Component Size: 368 lines, 7.25 KB */
 
 /* ========================================================================
  * Book Builder Modal
  * ======================================================================== */
 
 /* Modal sizing */
-.modal:has(.cr-book-builder) {
+.cr-book-builder-sized {
 	max-width: 520px;
 	width: 520px;
 }
 
-.modal:has(.cr-book-builder) .modal-content {
+.cr-book-builder-sized .modal-content {
 	padding: 0;
 	display: flex;
 	flex-direction: column;
@@ -20517,12 +20517,12 @@ settings:
 /* ========================================================================
  * Chapter Config Modal
  * ======================================================================== */
-.modal:has(.cr-chapter-config-modal) {
+.cr-chapter-config-modal-sized {
 	max-width: 440px;
 	width: 440px;
 }
 
-.modal:has(.cr-chapter-config-modal) .modal-content {
+.cr-chapter-config-modal-sized .modal-content {
 	padding: 0;
 }
 
@@ -20533,12 +20533,12 @@ settings:
 /* ========================================================================
  * File Picker Modal
  * ======================================================================== */
-.modal:has(.cr-file-picker-modal) {
+.cr-file-picker-modal-sized {
 	max-width: 480px;
 	width: 480px;
 }
 
-.modal:has(.cr-file-picker-modal) .modal-content {
+.cr-file-picker-modal-sized .modal-content {
 	padding: 0;
 	display: flex;
 	flex-direction: column;
@@ -41262,11 +41262,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-14 20:20:14 UTC
+ * Build completed: 2026-05-14 20:27:09 UTC
  * Components processed: 50
  * Total lines: 40793
- * Total size: 830.06 KB
- * Build duration: 0.95 seconds
+ * Total size: 830.02 KB
+ * Build duration: 0.36 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.86 KB
@@ -41291,7 +41291,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - family-chart-view.css: 1487 lines, 36.11 KB
  * - family-chart-export.css: 699 lines, 14.78 KB
  * - report-wizard.css: 908 lines, 19.89 KB
- * - book-builder.css: 368 lines, 7.29 KB
+ * - book-builder.css: 368 lines, 7.25 KB
  * - data-quality.css: 1439 lines, 28.62 KB
  * - relationships.css: 583 lines, 11.2 KB
  * - canvas-navigation.css: 683 lines, 14.65 KB
