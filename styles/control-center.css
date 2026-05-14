@@ -5260,12 +5260,12 @@
 /* ==========================================================================
    Reports Hub Modal
    ========================================================================== */
-.modal:has(.crc-reports-hub-modal) {
+.crc-reports-hub-modal-sized {
   max-width: 500px;
   width: 90vw;
 }
 
-.modal:has(.crc-reports-hub-modal) .modal-content {
+.crc-reports-hub-modal-sized .modal-content {
   padding: 0;
 }
 
@@ -5380,12 +5380,12 @@
 /* ==========================================================================
    Import/Export Hub Modal
    ========================================================================== */
-.modal:has(.crc-import-export-hub-modal) {
+.crc-import-export-hub-modal-sized {
   max-width: 500px;
   width: 90vw;
 }
 
-.modal:has(.crc-import-export-hub-modal) .modal-content {
+.crc-import-export-hub-modal-sized .modal-content {
   padding: 0;
 }
 

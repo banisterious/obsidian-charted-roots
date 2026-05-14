@@ -24,6 +24,7 @@ export class ImportExportHubModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('crc-import-export-hub-modal');
+		this.modalEl.addClass('crc-import-export-hub-modal-sized');
 
 		// Header
 		const header = contentEl.createDiv({ cls: 'crc-import-export-hub-header' });

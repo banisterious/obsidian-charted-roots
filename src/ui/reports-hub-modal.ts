@@ -24,6 +24,7 @@ export class ReportsHubModal extends Modal {
 		const { contentEl } = this;
 		contentEl.empty();
 		contentEl.addClass('crc-reports-hub-modal');
+		this.modalEl.addClass('crc-reports-hub-modal-sized');
 
 		// Header
 		const header = contentEl.createDiv({ cls: 'crc-reports-hub-header' });
