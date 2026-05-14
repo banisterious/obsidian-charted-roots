@@ -2286,4 +2286,4 @@ export function createStatisticsService(app: App, settings: CanvasRootsSettings,
 	return new StatisticsService(app, settings, plugin);
 }
 
-/* eslint-enable @typescript-eslint/no-unsafe-assignment */
+/* eslint-enable @typescript-eslint/no-unsafe-assignment -- Match scope of file-level disable at top. */

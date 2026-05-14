@@ -50,4 +50,4 @@ export function sanitizeVaultNoteMarkdown(rawContent: string): string {
 	return content.trim();
 }
 
-/* eslint-enable @typescript-eslint/no-unsafe-return */
+/* eslint-enable @typescript-eslint/no-unsafe-return -- Match scope of file-level disable at top. */

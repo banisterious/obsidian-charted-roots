@@ -389,4 +389,4 @@ export function obfuscateLogs(logs: LogEntry[]): LogEntry[] {
 	return logs.map(entry => obfuscateLogEntry(entry));
 }
 
-/* eslint-enable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument */
+/* eslint-enable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument -- Match scope of file-level disable at top. */

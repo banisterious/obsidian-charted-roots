@@ -524,4 +524,4 @@ export class MergeService {
 	}
 }
 
-/* eslint-enable @typescript-eslint/no-unsafe-assignment */
+/* eslint-enable @typescript-eslint/no-unsafe-assignment -- Match scope of file-level disable at top. */

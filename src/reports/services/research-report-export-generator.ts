@@ -191,4 +191,4 @@ export function createResearchReportExportGenerator(
 	return new ResearchReportExportGenerator(app, settings);
 }
 
-/* eslint-enable @typescript-eslint/no-unsafe-return */
+/* eslint-enable @typescript-eslint/no-unsafe-return -- Match scope of file-level disable at top. */

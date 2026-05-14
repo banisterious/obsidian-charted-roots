@@ -954,4 +954,4 @@ function renderBrowseRow(
 	});
 }
 
-/* eslint-enable @typescript-eslint/no-unsafe-call */
+/* eslint-enable @typescript-eslint/no-unsafe-call -- Match scope of file-level disable at top. */

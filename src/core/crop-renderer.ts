@@ -110,4 +110,4 @@ export function clearCropCache(): void {
 	cropCache.clear();
 }
 
-/* eslint-enable @typescript-eslint/no-unsafe-assignment */
+/* eslint-enable @typescript-eslint/no-unsafe-assignment -- Match scope of file-level disable at top. */

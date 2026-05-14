@@ -562,4 +562,4 @@ export function formatChangeTimestamp(timestamp: number): string {
 	});
 }
 
-/* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
+/* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument -- Match scope of file-level disable at top. */

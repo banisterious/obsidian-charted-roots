@@ -850,4 +850,4 @@ export function createUniverseService(plugin: CanvasRootsPlugin): UniverseServic
 	return new UniverseService(plugin);
 }
 
-/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- Match scope of file-level disable at top. */

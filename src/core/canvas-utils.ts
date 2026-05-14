@@ -218,4 +218,4 @@ export function toSafeFilename(name: string): string {
 		.toLowerCase();
 }
 
-/* eslint-enable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument */
+/* eslint-enable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument -- Match scope of file-level disable at top. */

@@ -3098,4 +3098,4 @@ class CollectionPickerModal extends FuzzySuggestModal<string> {
 	}
 }
 
-/* eslint-enable @typescript-eslint/no-unsafe-assignment */
+/* eslint-enable @typescript-eslint/no-unsafe-assignment -- Match scope of file-level disable at top. */

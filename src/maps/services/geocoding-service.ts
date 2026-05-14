@@ -356,4 +356,4 @@ export class GeocodingService {
 	}
 }
 
-/* eslint-enable @typescript-eslint/no-unsafe-member-access */
+/* eslint-enable @typescript-eslint/no-unsafe-member-access -- Match scope of file-level disable at top. */

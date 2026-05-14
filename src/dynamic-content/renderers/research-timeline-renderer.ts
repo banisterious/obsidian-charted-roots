@@ -645,4 +645,4 @@ export class ResearchTimelineRenderer {
 	}
 }
 
-/* eslint-enable @typescript-eslint/no-unsafe-argument */
+/* eslint-enable @typescript-eslint/no-unsafe-argument -- Match scope of file-level disable at top. */
