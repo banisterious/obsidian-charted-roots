@@ -402,28 +402,6 @@
 }
 
 /* ========================================
-   Place Filter Types - Compact Layout
-   ======================================== */
-
-.crc-place-filter-types {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.crc-place-filter-type {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.crc-place-filter-type input[type="checkbox"] {
-  margin: 0;
-}
-
-/* ========================================
    Recent Canvas Trees
    ======================================== */
 

@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-14 19:19:53 UTC
+ * - Generated: 2026-05-14 19:41:21 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -36953,7 +36953,7 @@ body:has(.cr-media-linker) .suggestion-container {
    COMPONENT: TREE-OUTPUT.CSS
    ========================================================================== */
 
-/* Component Size: 1545 lines, 30.35 KB */
+/* Component Size: 1523 lines, 29.97 KB */
 
 /* Tree Output Tab - Two-Panel Layout */
 
@@ -37356,28 +37356,6 @@ body:has(.cr-media-linker) .suggestion-container {
   color: var(--text-muted);
   text-align: center;
   font-style: italic;
-}
-
-/* ========================================
-   Place Filter Types - Compact Layout
-   ======================================== */
-
-.crc-place-filter-types {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.crc-place-filter-type {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.crc-place-filter-type input[type="checkbox"] {
-  margin: 0;
 }
 
 /* ========================================
@@ -41328,11 +41306,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-14 19:19:54 UTC
+ * Build completed: 2026-05-14 19:41:22 UTC
  * Components processed: 50
- * Total lines: 40859
- * Total size: 831.06 KB
- * Build duration: 0.32 seconds
+ * Total lines: 40837
+ * Total size: 830.67 KB
+ * Build duration: 0.33 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.86 KB
@@ -41379,7 +41357,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - family-wizard.css: 651 lines, 13.87 KB
  * - map-wizard.css: 606 lines, 12.67 KB
  * - preferences.css: 431 lines, 9.42 KB
- * - tree-output.css: 1545 lines, 30.35 KB
+ * - tree-output.css: 1523 lines, 29.97 KB
  * - dynamic-content.css: 1217 lines, 26.68 KB
  * - profile-view.css: 1113 lines, 24.91 KB
  * - calendar-view.css: 302 lines, 6.83 KB
