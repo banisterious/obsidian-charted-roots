@@ -1149,17 +1149,7 @@
    Source Quality Badges (Phase 2)
    ========================================================================== */
 
-/* Quality badge base style */
-.crc-quality-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--size-2-1) var(--size-2-2);
-  border-radius: var(--radius-s);
-  font-size: var(--font-ui-smaller);
-  font-weight: 500;
-  white-space: nowrap;
-  cursor: help;
-}
+/* Quality badge base defined in control-center.css */
 
 /* Primary quality - green (best evidence) */
 .crc-quality-badge--primary {
@@ -1193,16 +1183,7 @@
   border-radius: var(--radius-s);
 }
 
-.crc-quality-summary-item {
-  display: flex;
-  align-items: center;
-  gap: var(--size-2-2);
-  font-size: var(--font-ui-smaller);
-}
-
-.crc-quality-summary-count {
-  font-weight: 600;
-}
+/* .crc-quality-summary-item and -count defined in control-center.css */
 
 /* Quality indicator dot (for compact displays) */
 .crc-quality-dot {

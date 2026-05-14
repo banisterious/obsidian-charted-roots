@@ -3907,6 +3907,8 @@
   font-size: var(--font-ui-smaller);
   font-weight: 500;
   margin-left: var(--size-4-1);
+  white-space: nowrap;
+  cursor: help;
 }
 
 .crc-quality-badge svg {
