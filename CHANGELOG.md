@@ -12,7 +12,28 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.38] - 2026-05-14
+
+A large-scoped scan-cleanup release responding to the v0.22.37 community automated review (which still surfaced ~50 actionable CSS warnings despite previous patches). This release closes the cluster-duplicate and `:has()` perf categories the scanner flagged, and migrates ~190 button markup sites to Obsidian's native `ButtonComponent` API for theme consistency and to retire a long-standing CSS-duplication source. Also drops `!important` from 5 of 6 sites where empirical DevTools inspection confirmed they were unnecessary, replaces the multi-value `text-decoration` shorthand with non-flagged alternatives, and includes one small user-facing cosmetic fix for custom relationship category display. Branch net: 27 commits, ~750 lines deleted. **883 tests passing across 68 suites**.
+
+### Changed
+
+- **Native button migration**: ~190 `.crc-btn`/`--primary`/`--secondary`/`--danger`/bare markup sites converted to Obsidian's `new ButtonComponent().setCta()` / `.setWarning()` / bare `ButtonComponent` patterns across 50+ files. Native buttons inherit Obsidian's theme conventions automatically; modal "Cancel" / "Save" / "Apply" footers now match Obsidian's standard CTA look. Compact list-row buttons (`.crc-btn--small` family — 87 sites in dense surfaces like organization/place/source list rows) continue to use `.crc-btn` for layout density. Icon-only toolbar buttons (`.crc-btn--icon`) and inline text-link buttons (`.crc-btn-link`) also kept as-is. Visual effect: most modal CTAs are slightly more compact and theme-consistent; some surfaces will look subtly different across themes.
+- **CSS cluster consolidation** (scan-flagged duplicates eliminated):
+  - `.cr-stat-*` cluster across 3 files
+  - `.crc-wizard-*` cluster across 5 files (15 duplicates)
+  - `.crc-btn` family across 6 files (8 duplicates)
+  - 9 miscellaneous cross-file duplicates (`.cr-error-text`, `.cr-export-stat`, `.crc-media-preview`, `.cr-badge`, `.crc-type-badge`, `.cr-subsection-heading`, `.crc-conflicts-section`, `.crc-info-callout`, `.crc-text-small`)
+  - 8 utility clusters from the v0.22.37 scan (`.crc-loading`, `.crc-place-filter-type[s]`, `.crc-quality-*`, `.crc-modal-header`, `.cr-folder-suggestion*`, `.cr-sv-*` source-view header family, `.cr-progress-*` statistics progress family)
+  - 3 within-file duplicate rule-block merges (`body` and callout-li in `timeline-callouts.css`; `.f3-form-cont` in `family-chart-view.css`)
+- **`:has()` perf-warning rewrites**: 17 modal-sizing rules converted from `.modal:has(.X-modal)` to direct `.X-modal-sized` class added to `modalEl` in each modal's `onOpen`. 10 non-modal `:has()` rules also converted (textarea form-field detection, media-folder-filter checkbox state, body-level wizard state in source-image-wizard and source-media-linker). 2 sibling-aware `:has()` rules in `timeline-callouts.css` are structurally required (no class-based equivalent for sibling detection) and stay with documented `stylelint-disable` directives.
+- **`!important` reduction (6 → 1)**: removed from `.cr-hidden`/`.crc-hidden` utility class (single-class specificity beats element defaults) and from 4 Leaflet container-scoped image-sizing rules (parent-class scope already wins against Obsidian's broader image rules — confirmed via DevTools cascade inspection). One legitimate site remains: `.card_cont.cr-hl-dim { opacity: 0.3 !important }` overrides the family-chart library's inline-style transitions; an upstream issue has been filed proposing a CSS-overridable approach.
+- **Text-decoration partial-support reshape**: the 3 multi-value `text-decoration` shorthand sites (`line-through var(--text-error)`, `underline dotted`, `underline solid`) replaced with single-value shorthand plus alternative properties for the visual cues. The line-through-with-red use case now sets `color: var(--text-error)` so the now-uncolored strikethrough inherits the red text. The dotted/solid underline distinction in the variation count link now uses `border-bottom: 1px dotted/solid` instead of `text-decoration`.
+- **Dead code removal**: `crc-btn--ghost` class (24 markup sites) had no CSS effect outside two specific scoped place-modal contexts whose parent classes weren't rendered anywhere; both the markup uses and the legacy `.crc-unlinked-place-item` / `.crc-referenced-place-item` CSS blocks (151 lines) were removed.
+- **Internal: `docs/developer/automated-review-notes.md`** extended with a "CSS-specific known-and-accepted findings" section documenting the irreducible categories (multicolumn partial-support in timeline callouts, sibling-aware `:has()` in timeline callouts, the family-chart inline-style `!important`, and the vendored `leaflet-distortable` CSS duplicates).
+
 ### Fixed
+
 - Custom relationship category names with multiple words now display correctly in the Entity Profile View's "Other relationships" section (e.g., "Jedi Order" instead of "Jedi_order"). The category-name lookup now resolves through `getRelationshipCategoryName()` so the configured display name is used rather than the slugified ID (#570).
 
 ## [0.22.37] - 2026-05-13
