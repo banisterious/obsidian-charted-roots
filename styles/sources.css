@@ -1617,7 +1617,7 @@
    The suggestion-container is appended to body, not inside the modal,
    so we need a global rule when modal is present.
    Modal z-index is 50 (--layer-modal), so we need higher. */
-body:has(.cr-image-wizard) .suggestion-container {
+body.cr-image-wizard-active .suggestion-container {
   z-index: 100;
 }
 
@@ -2142,7 +2142,7 @@ body:has(.cr-image-wizard) .suggestion-container {
 }
 
 /* Ensure folder suggestions appear above the modal */
-body:has(.cr-media-linker) .suggestion-container {
+body.cr-media-linker-active .suggestion-container {
   z-index: 100;
 }
 

@@ -137,11 +137,13 @@ export class SourceImageWizardModal extends Modal {
 		const { titleEl, modalEl } = this;
 		titleEl.setText('Import source images');
 		modalEl.addClass('cr-image-wizard');
+		activeDocument.body.addClass('cr-image-wizard-active');
 
 		this.render();
 	}
 
 	onClose(): void {
+		activeDocument.body.removeClass('cr-image-wizard-active');
 		this.contentEl.empty();
 	}
 

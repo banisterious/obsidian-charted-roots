@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-14 21:36:33 UTC
+ * - Generated: 2026-05-14 21:41:18 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -27971,7 +27971,7 @@ input[type="text"]::-webkit-input-placeholder {
    COMPONENT: TIMELINE-CALLOUTS.CSS
    ========================================================================== */
 
-/* Component Size: 318 lines, 10.75 KB */
+/* Component Size: 324 lines, 11.1 KB */
 
 /**
  * Timeline Callout Styles
@@ -28140,10 +28140,16 @@ body {
   margin-top: 0;
 }
 
-/* Spacing between stacked timelines */
+/* Spacing between stacked timelines. :has() is required here — these
+   rules detect siblings that contain (or don't contain) a timeline
+   callout to set spacing between stacked timelines and following
+   content. There's no class-based equivalent for sibling-aware
+   structural selectors. */
+/* stylelint-disable-next-line plugin/no-has-pseudo */
 div:not(:has(> [data-callout="cr-timeline"])) + div > [data-callout="cr-timeline"] {
   margin-top: var(--p-spacing);
 }
+/* stylelint-disable-next-line plugin/no-has-pseudo */
 div:has(> [data-callout="cr-timeline"]) + div:not(:has(> [data-callout="cr-timeline"])) {
   margin-bottom: 1rem;
 }
@@ -30541,7 +30547,7 @@ body.wide-timeline .view-content {
    The suggestion-container is appended to body, not inside the modal,
    so we need a global rule when modal is present.
    Modal z-index is 50 (--layer-modal), so we need higher. */
-body:has(.cr-image-wizard) .suggestion-container {
+body.cr-image-wizard-active .suggestion-container {
   z-index: 100;
 }
 
@@ -31066,7 +31072,7 @@ body:has(.cr-image-wizard) .suggestion-container {
 }
 
 /* Ensure folder suggestions appear above the modal */
-body:has(.cr-media-linker) .suggestion-container {
+body.cr-media-linker-active .suggestion-container {
   z-index: 100;
 }
 
@@ -41171,11 +41177,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-14 21:36:34 UTC
+ * Build completed: 2026-05-14 21:41:18 UTC
  * Components processed: 50
- * Total lines: 40702
- * Total size: 828.17 KB
- * Build duration: 0.97 seconds
+ * Total lines: 40708
+ * Total size: 828.54 KB
+ * Build duration: 0.4 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.86 KB
@@ -41208,7 +41214,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - leaflet-distortable.css: 372 lines, 7.91 KB
  * - date-systems.css: 278 lines, 5.16 KB
  * - events.css: 1520 lines, 30.79 KB
- * - timeline-callouts.css: 318 lines, 10.75 KB
+ * - timeline-callouts.css: 324 lines, 11.1 KB
  * - organizations.css: 615 lines, 11.55 KB
  * - sources.css: 2809 lines, 56.97 KB
  * - statistics.css: 1811 lines, 36.34 KB
