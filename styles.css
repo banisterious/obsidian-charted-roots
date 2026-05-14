@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-14 21:26:19 UTC
+ * - Generated: 2026-05-14 21:29:11 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -17054,7 +17054,7 @@ settings:
    COMPONENT: FAMILY-CHART-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1487 lines, 36.11 KB */
+/* Component Size: 1484 lines, 36.07 KB */
 
 /**
  * Family Chart View Styles
@@ -17596,6 +17596,7 @@ settings:
   right: 0;
   top: 0;
   width: 0;
+  max-width: 350px;
   height: 100%;
   background-color: var(--background-color);
   overflow: auto;
@@ -17733,10 +17734,6 @@ settings:
 }
 
 /* Form panel layout constraints */
-.cr-fcv-chart-container.f3 .f3-form-cont {
-  max-width: 350px;
-}
-
 .cr-fcv-chart-container.f3 .f3-form-cont > * {
   max-width: 100%;
   overflow: hidden;
@@ -27976,7 +27973,7 @@ input[type="text"]::-webkit-input-placeholder {
    COMPONENT: TIMELINE-CALLOUTS.CSS
    ========================================================================== */
 
-/* Component Size: 324 lines, 10.86 KB */
+/* Component Size: 318 lines, 10.75 KB */
 
 /**
  * Timeline Callout Styles
@@ -28023,6 +28020,12 @@ body {
   --cr-timeline-dot-marriage: #f472b6;
   --cr-timeline-dot-divorce: #ef4444;
   --cr-timeline-dot-default: #60a5fa;
+
+  /* Variables for list columns */
+  --cr-list-min-width: 200px;
+  --cr-list-column-gap: 1rem;
+  --cr-list-column-rule-color: var(--background-modifier-border);
+  --cr-list-column-rule-width: 0;
 }
 
 /* ============================================================================
@@ -28217,6 +28220,7 @@ div:has(> [data-callout="cr-timeline"]) + div:not(:has(> [data-callout="cr-timel
 
 .callout[data-callout="cr-timeline"] .callout-content ul li {
   margin-bottom: 0.5em;
+  break-inside: avoid;
 }
 
 .callout[data-callout="cr-timeline"] .callout-content ul li ul {
@@ -28247,14 +28251,6 @@ div:has(> [data-callout="cr-timeline"]) + div:not(:has(> [data-callout="cr-timel
    https://github.com/efemkay/obsidian-modular-css-layout
    ============================================================================ */
 
-/* Variables for list columns */
-body {
-  --cr-list-min-width: 200px;
-  --cr-list-column-gap: 1rem;
-  --cr-list-column-rule-color: var(--background-modifier-border);
-  --cr-list-column-rule-width: 0;
-}
-
 /* Multi-column layout for timeline event lists */
 /* Applied to top-level lists within timeline callouts */
 .callout[data-callout="cr-timeline"] .callout-content > ul,
@@ -28268,11 +28264,6 @@ body {
 .callout[data-callout="cr-timeline"] a.tag[href*="mcl/list-column"],
 .callout[data-callout="cr-timeline"] a[href*="#mcl/list-column"] {
   display: none;
-}
-
-/* Prevent column breaks within list items */
-.callout[data-callout="cr-timeline"] .callout-content ul li {
-  break-inside: avoid;
 }
 
 /* ============================================================================
@@ -41182,11 +41173,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-14 21:26:19 UTC
+ * Build completed: 2026-05-14 21:29:11 UTC
  * Components processed: 50
- * Total lines: 40713
- * Total size: 828.53 KB
- * Build duration: 0.32 seconds
+ * Total lines: 40704
+ * Total size: 828.37 KB
+ * Build duration: 0.29 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.86 KB
@@ -41208,7 +41199,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - find-on-canvas.css: 275 lines, 5.13 KB
  * - folder-scan.css: 155 lines, 2.6 KB
  * - relationship-calculator.css: 302 lines, 5.27 KB
- * - family-chart-view.css: 1487 lines, 36.11 KB
+ * - family-chart-view.css: 1484 lines, 36.07 KB
  * - family-chart-export.css: 699 lines, 14.78 KB
  * - report-wizard.css: 908 lines, 19.89 KB
  * - book-builder.css: 368 lines, 7.25 KB
@@ -41219,7 +41210,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - leaflet-distortable.css: 372 lines, 7.91 KB
  * - date-systems.css: 278 lines, 5.16 KB
  * - events.css: 1520 lines, 30.79 KB
- * - timeline-callouts.css: 324 lines, 10.86 KB
+ * - timeline-callouts.css: 318 lines, 10.75 KB
  * - organizations.css: 615 lines, 11.55 KB
  * - sources.css: 2809 lines, 56.97 KB
  * - statistics.css: 1811 lines, 36.34 KB
