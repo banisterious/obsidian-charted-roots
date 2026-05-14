@@ -10,6 +10,7 @@ import type { PersonProfileData, SectionToggleFn, EntityLinkClickFn, SectionStat
 import type { ParsedRelationship } from '../../relationships/types/relationship-types';
 import { renderProfileSection } from './section-base';
 import { capitalize } from '../../utils/format-utils';
+import { getRelationshipCategoryName } from '../../relationships/constants/default-relationship-types';
 
 /**
  * Test whether a relationship belongs in the "Other" subsection.
@@ -279,10 +280,16 @@ function renderOtherSubsection(
 		byCategory.get(category)!.push(rel);
 	}
 
+	const settings = options.plugin.settings;
 	for (const [category, rels] of byCategory) {
+		const resolved = getRelationshipCategoryName(
+			category,
+			settings.customRelationshipCategories,
+			settings.relationshipCategoryCustomizations
+		);
 		const catEl = otherEl.createDiv({ cls: 'cr-profile__rel-category' });
 		catEl.createSpan({
-			text: capitalize(category),
+			text: resolved === category ? capitalize(category) : resolved,
 			cls: 'cr-profile__rel-category-label'
 		});
 

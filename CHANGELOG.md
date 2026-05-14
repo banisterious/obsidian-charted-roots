@@ -12,6 +12,9 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+- Custom relationship category names with multiple words now display correctly in the Entity Profile View's "Other relationships" section (e.g., "Jedi Order" instead of "Jedi_order"). The category-name lookup now resolves through `getRelationshipCategoryName()` so the configured display name is used rather than the slugified ID (#570).
+
 ## [0.22.37] - 2026-05-13
 
 A scan-warning cleanup release responding to the v0.22.36 community automated review (which passed but reported a large warning surface). v0.22.34's `build-css.js` stripped all stylelint directives from the bundle to avoid the cross-component bleed problem from v0.22.32/33; the strip was too broad and unsilenced per-line `:has()` / `!important` / browser partial-support warnings that the scanner subsequently flagged. This release narrows the strip to file-level forms only (the actual bleed-risk shape), preserving per-line directives through the build. Also adds per-line silencers to the 9 documented-legitimate `!important` sites that lacked them; consolidates three truly-identical utility-class duplicates (`.cr-hidden`, `.crc-hidden`, `.crc-text--center`) into `base.css`; resolves 5 stylelint duplicate-declaration warnings in `control-center.css`. Scanner-architecture notes updated with the description-requirement applying to ALL inline directives plus findings on the 9 dynamic `<script>` element creations (all benign vendored polyfill code in `core-js` / `jspdf` / `leaflet-distortableimage`). Stability window unchanged — fifteenth patch in the v0.22.22-anchored window; all internal hygiene, none user-facing, none reset. **883 tests passing across 68 suites**.
