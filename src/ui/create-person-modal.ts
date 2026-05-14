@@ -2382,7 +2382,7 @@ export class CreatePersonModal extends Modal {
 
 		// Expand/collapse button for metadata (only show if not already expanded)
 		const expandBtn = actions.createEl('button', {
-			cls: 'crc-btn crc-btn--icon crc-btn--ghost',
+			cls: 'crc-btn crc-btn--icon',
 			attr: { 'aria-label': 'Add marriage details' }
 		});
 		const expandIcon = createLucideIcon(hasMetadata ? 'chevron-down' : 'calendar-plus', 14);
@@ -2501,7 +2501,7 @@ export class CreatePersonModal extends Modal {
 			// Collapse link
 			const collapseRow = metadataContent.createDiv({ cls: 'crc-spouse-item__collapse-row' });
 			const collapseLink = collapseRow.createEl('button', {
-				cls: 'crc-btn crc-btn--ghost crc-btn--small',
+				cls: 'crc-btn crc-btn--small',
 				text: 'Collapse'
 			});
 			collapseLink.addEventListener('click', () => {

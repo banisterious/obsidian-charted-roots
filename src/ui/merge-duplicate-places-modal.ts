@@ -456,7 +456,7 @@ export class MergeDuplicatePlacesModal extends Modal {
 
 				// Open note button (outside label to avoid triggering radio)
 				const openBtn = optionEl.createEl('button', {
-					cls: 'crc-btn crc-btn--icon crc-btn--ghost crc-duplicate-open-btn',
+					cls: 'crc-btn crc-btn--icon crc-duplicate-open-btn',
 					attr: { 'aria-label': 'Open note' }
 				});
 				openBtn.title = 'Open note to inspect content (right-click for options)';
@@ -597,7 +597,7 @@ export class MergeDuplicatePlacesModal extends Modal {
 
 		// Edit button
 		const editBtn = container.createEl('button', {
-			cls: 'crc-btn crc-btn--icon crc-btn--ghost crc-btn--small',
+			cls: 'crc-btn crc-btn--icon crc-btn--small',
 			attr: { 'aria-label': 'Edit filename' }
 		});
 		editBtn.title = 'Change filename after merge';
@@ -610,7 +610,7 @@ export class MergeDuplicatePlacesModal extends Modal {
 		// Reset button (only show if filename was changed)
 		if (newFilename) {
 			const resetBtn = container.createEl('button', {
-				cls: 'crc-btn crc-btn--icon crc-btn--ghost crc-btn--small',
+				cls: 'crc-btn crc-btn--icon crc-btn--small',
 				attr: { 'aria-label': 'Reset filename' }
 			});
 			resetBtn.title = 'Reset to original filename';

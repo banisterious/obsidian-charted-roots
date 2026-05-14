@@ -480,7 +480,7 @@ function renderOrganizationRow(
 	// Actions cell with open note button
 	const actionsCell = row.createEl('td', { cls: 'cr-org-cell-actions' });
 	const openBtn = actionsCell.createEl('button', {
-		cls: 'crc-btn crc-btn--small crc-btn--ghost',
+		cls: 'crc-btn crc-btn--small',
 		attr: { title: 'Open organization note' }
 	});
 	const fileIcon = createLucideIcon('file-text', 14);
@@ -937,7 +937,7 @@ function renderBrowseRow(
 	// Actions cell — open note button
 	const actionsCell = row.createEl('td', { cls: 'cr-org-cell-actions' });
 	const openBtn = actionsCell.createEl('button', {
-		cls: 'crc-btn crc-btn--small crc-btn--ghost',
+		cls: 'crc-btn crc-btn--small',
 		attr: { title: 'Open organization note' }
 	});
 	const fileIcon = createLucideIcon('file-text', 14);

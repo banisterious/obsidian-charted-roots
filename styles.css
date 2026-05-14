@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-14 19:11:26 UTC
+ * - Generated: 2026-05-14 19:19:53 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -7559,7 +7559,7 @@ settings:
    COMPONENT: PLACE-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 1418 lines, 28.25 KB */
+/* Component Size: 1267 lines, 25.43 KB */
 
 /* ==========================================================================
    CREATE PLACE MODAL
@@ -7652,157 +7652,6 @@ settings:
 
 .crc-create-place-modal .crc-coord-pair-input--geo[type="text"] {
   width: 140px;
-}
-
-/* ==========================================================================
-   UNLINKED PLACES LIST (legacy)
-   ========================================================================== */
-
-.crc-unlinked-places-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.crc-unlinked-place-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--background-modifier-border);
-}
-
-.crc-unlinked-place-item:last-child {
-  border-bottom: none;
-}
-
-.crc-unlinked-place-content {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.crc-unlinked-place-item .crc-btn--ghost {
-  flex-shrink: 0;
-  margin-left: 8px;
-  opacity: 60%;
-  transition: opacity 0.15s ease;
-}
-
-.crc-unlinked-place-item:hover .crc-btn--ghost {
-  opacity: 100%;
-}
-
-/* ==========================================================================
-   REFERENCED PLACES LIST (with filtering/sorting)
-   ========================================================================== */
-
-.crc-referenced-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--background-modifier-border);
-}
-
-.crc-referenced-controls .crc-filter-container {
-  flex: 1;
-  min-width: 150px;
-}
-
-.crc-sort-container {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.crc-sort-select {
-  padding: 4px 8px;
-  font-size: var(--font-ui-small);
-}
-
-.crc-filter-toggles {
-  display: flex;
-  gap: 12px;
-}
-
-.crc-filter-toggle {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  font-size: var(--font-ui-small);
-}
-
-.crc-filter-toggle input[type="checkbox"] {
-  margin: 0;
-}
-
-.crc-referenced-list {
-  max-height: 350px;
-  overflow-y: auto;
-}
-
-.crc-referenced-places-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.crc-referenced-place-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 8px;
-  border-radius: var(--radius-s);
-  transition: background-color 0.1s ease;
-}
-
-.crc-referenced-place-item:hover {
-  background: var(--background-modifier-hover);
-}
-
-.crc-referenced-place-item--unlinked {
-  background: rgb(var(--color-yellow-rgb) 0.05);
-}
-
-.crc-referenced-place-item--unlinked:hover {
-  background: rgb(var(--color-yellow-rgb) 0.1);
-}
-
-.crc-referenced-place-content {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-}
-
-.crc-referenced-place-status {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-}
-
-.crc-referenced-place-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.crc-referenced-place-item .crc-btn--ghost {
-  flex-shrink: 0;
-  margin-left: 8px;
-  opacity: 0%;
-  transition: opacity 0.15s ease;
-}
-
-.crc-referenced-place-item:hover .crc-btn--ghost {
-  opacity: 100%;
 }
 
 /* ==========================================================================
@@ -41479,11 +41328,11 @@ body:has(.cr-media-linker) .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-14 19:11:27 UTC
+ * Build completed: 2026-05-14 19:19:54 UTC
  * Components processed: 50
- * Total lines: 41010
- * Total size: 833.88 KB
- * Build duration: 0.37 seconds
+ * Total lines: 40859
+ * Total size: 831.06 KB
+ * Build duration: 0.32 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.86 KB
@@ -41493,7 +41342,7 @@ body:has(.cr-media-linker) .suggestion-container {
  * - settings.css: 131 lines, 3.53 KB
  * - control-center.css: 5645 lines, 106.21 KB
  * - entity-create-modals.css: 1234 lines, 25.51 KB
- * - place-modals.css: 1418 lines, 28.25 KB
+ * - place-modals.css: 1267 lines, 25.43 KB
  * - media-modals.css: 2004 lines, 39.02 KB
  * - import-export-wizard.css: 2136 lines, 40.69 KB
  * - staging-manager.css: 553 lines, 11.34 KB

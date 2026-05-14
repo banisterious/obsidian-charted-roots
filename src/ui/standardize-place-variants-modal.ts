@@ -202,11 +202,11 @@ export class StandardizePlaceVariantsModal extends Modal {
 		// Select all / deselect all buttons
 		const selectAllBtn = filterRow.createEl('button', {
 			text: 'Select all',
-			cls: 'crc-btn crc-btn--small crc-btn--ghost'
+			cls: 'crc-btn crc-btn--small'
 		});
 		const deselectAllBtn = filterRow.createEl('button', {
 			text: 'Deselect all',
-			cls: 'crc-btn crc-btn--small crc-btn--ghost'
+			cls: 'crc-btn crc-btn--small'
 		});
 
 		// Table

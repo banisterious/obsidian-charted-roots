@@ -372,7 +372,7 @@ export class GedcomQualityPreviewModal extends Modal {
 
 		const keepOriginalBtn = quickActions.createEl('button', {
 			text: 'Keep all original forms',
-			cls: 'crc-btn crc-btn--small crc-btn--ghost'
+			cls: 'crc-btn crc-btn--small'
 		});
 		keepOriginalBtn.addEventListener('click', () => {
 			for (const variant of summary.placeVariants) {

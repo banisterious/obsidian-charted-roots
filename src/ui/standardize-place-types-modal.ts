@@ -137,7 +137,7 @@ export class StandardizePlaceTypesModal extends Modal {
 
 		const closeBtn = buttonContainer.createEl('button', {
 			text: 'Close',
-			cls: 'crc-btn crc-btn--ghost'
+			cls: 'crc-btn'
 		});
 		closeBtn.addEventListener('click', () => this.close());
 	}
@@ -156,7 +156,7 @@ export class StandardizePlaceTypesModal extends Modal {
 		for (const type of STANDARD_SETTLEMENT_TYPES) {
 			const btn = bulkActions.createEl('button', {
 				text: capitalize(type),
-				cls: 'crc-btn crc-btn--small crc-btn--ghost crc-ml-1'
+				cls: 'crc-btn crc-btn--small crc-ml-1'
 			});
 			btn.addEventListener('click', () => this.setAllToType(type));
 		}
