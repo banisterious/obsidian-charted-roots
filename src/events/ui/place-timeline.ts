@@ -216,7 +216,7 @@ export function renderPlaceTimelineCard(
 	// Handle calendar filter selection
 	if (calendarSelect) {
 		calendarSelect.addEventListener('change', () => {
-			selectedCalendar = calendarSelect!.value || null;
+			selectedCalendar = calendarSelect.value || null;
 			updateTimeline();
 		});
 	}

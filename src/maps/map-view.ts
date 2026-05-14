@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
-/* eslint-disable obsidianmd/ui/sentence-case -- Rule misfires on quoted button labels, month names, proper-noun section paths, and example strings; per-site audit deferred. */
 /**
  * Map View - Interactive geographic visualization
  *
@@ -1796,7 +1795,7 @@ export class MapView extends ItemView {
 			window.setTimeout(() => {
 				const popupContent = this.buildRichWaypointPopup(waypoint, allWaypoints, journey);
 				L.popup({ maxWidth: 300, className: 'cr-journey-rich-popup' })
-					.setLatLng(target!)
+					.setLatLng(target)
 					.setContent(popupContent)
 					.openOn(map);
 			}, JOURNEY_FLY_MS);
@@ -2984,3 +2983,5 @@ export class MapView extends ItemView {
 		}
 	}
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */

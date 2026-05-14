@@ -328,14 +328,14 @@ export class SourcesByRoleGenerator {
 		}
 
 		// Sort sources by title
-		const sortedSources = Array.from(bySource.entries())
+		const sortedSources = Array.from(bySource.values())
 			.sort((a, b) => {
-				const titleA = a[1][0]?.source.title || '';
-				const titleB = b[1][0]?.source.title || '';
+				const titleA = a[0]?.source.title || '';
+				const titleB = b[0]?.source.title || '';
 				return titleA.localeCompare(titleB);
 			});
 
-		for (const [_crId, entries] of sortedSources) {
+		for (const entries of sortedSources) {
 			const source = entries[0].source;
 			lines.push(`### ${source.title}`);
 			lines.push('');
