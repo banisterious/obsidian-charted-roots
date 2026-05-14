@@ -869,57 +869,6 @@ export function showExportMenu(ctx: FamilyChartExportContext, e: MouseEvent): vo
 }
 
 /**
- * Inline computed styles into SVG elements for export
- * This is necessary because CSS styles are not included when serializing SVG
- */
-function _inlineStyles(source: Element, target: Element): void {
-	const computedStyle = window.getComputedStyle(source);
-
-	// Copy relevant style properties
-	const relevantProperties = [
-		'fill', 'stroke', 'stroke-width', 'font-family', 'font-size',
-		'font-weight', 'text-anchor', 'dominant-baseline', 'opacity',
-		'fill-opacity', 'stroke-opacity', 'visibility', 'display'
-	];
-
-	let styleString = '';
-	for (const prop of relevantProperties) {
-		const value = computedStyle.getPropertyValue(prop);
-		if (value) {
-			styleString += `${prop}:${value};`;
-		}
-	}
-
-	// For text elements, ensure fill is set (SVG text uses fill, not color)
-	const isTextElement = source.tagName === 'text' || source.tagName === 'tspan';
-	if (isTextElement) {
-		const fill = computedStyle.getPropertyValue('fill');
-		const color = computedStyle.getPropertyValue('color');
-		// If fill is not set or is default black, try using color property
-		if ((!fill || fill === 'none' || fill === 'rgb(0, 0, 0)') && color && color !== 'rgb(0, 0, 0)') {
-			styleString += `fill:${color};`;
-		}
-		// Fallback: ensure text is visible based on theme
-		if (!styleString.includes('fill:') || styleString.includes('fill:rgb(0, 0, 0)')) {
-			const isDark = activeDocument.body.classList.contains('theme-dark');
-			styleString += `fill:${isDark ? '#ffffff' : '#333333'};`;
-		}
-	}
-
-	if (styleString && target.instanceOf(SVGElement)) {
-		const existingStyle = target.getAttribute('style') || '';
-		target.setAttribute('style', existingStyle + styleString);
-	}
-
-	// Recursively inline styles for children
-	const sourceChildren = Array.from(source.children);
-	const targetChildren = Array.from(target.children);
-	for (let i = 0; i < sourceChildren.length && i < targetChildren.length; i++) {
-		_inlineStyles(sourceChildren[i], targetChildren[i]);
-	}
-}
-
-/**
  * Generate export filename from pattern
  * Replaces {name} with root person's name and {date} with current date
  */
@@ -1781,3 +1730,5 @@ function removeAppImages(svgClone: SVGSVGElement): void {
 		}
 	});
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */
