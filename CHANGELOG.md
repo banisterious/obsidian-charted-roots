@@ -12,6 +12,14 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.41] - 2026-05-15
+
+Follow-up to v0.22.40 that closes the remaining four sites flagged by the Community automated review's "dynamic `<script>` element creations" rule. The four sites were all an IE5-8 setImmediate polyfill bundled inside `core-js` and `pdfmake` (two each, since pdfmake ships its own copy of `core-js`). The branch is unreachable in Obsidian's Electron runtime because the earlier `MessageChannel` branch in the same polyfill chain always wins, so the `createElement('script')` lines are dead code. A new postinstall patch removes the IE8- branch from `core-js/internals/task.js` and `pdfmake/build/pdfmake.js` at source so it never reaches `main.js`. Bundled count goes from four to zero. **883 tests passing across 68 suites**.
+
+### Fixed
+
+- **Stripped IE5-8 setImmediate polyfill from `core-js` and `pdfmake`** (new postinstall `patch-core-js-polyfill.js`). The polyfill's IE8- detection branch (`if (ONREADYSTATECHANGE in createElement('script')) { ... }`) is microtask-scheduling fallback for IE5-8. In Electron, the earlier `MessageChannel` branch in the same `if/else if` chain always succeeds, so the IE8 path is never reached at runtime. The patch removes the branch from both bundled libraries at source. No user-visible change; setImmediate behavior is unchanged because the MessageChannel path was already the only path executed.
+
 ## [0.22.40] - 2026-05-15
 
 A targeted scan-response release. The Obsidian Community automated review promoted "dynamic `<script>` element creations" from warning to error severity between v0.22.38 and v0.22.39's post-release scan; v0.22.39 was demoted on the Community Plugins website as a result. The rule fired on nine sites — all in vendored library code that never executes in Obsidian's Electron runtime. This release reduces the flagged surface from nine to four: stubs `leaflet-distortableimage`'s unreachable webpack chunk loader, and migrates ODT generation from `jszip` (which bundles UMD module-detection guards in four places) to the smaller, modern `fflate`. The four remaining sites — two in `core-js` and two in `pdfmake` (which bundles core-js internally) — are scoped for follow-up. **883 tests passing across 68 suites**.
