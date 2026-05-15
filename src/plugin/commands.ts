@@ -403,7 +403,7 @@ export function registerCommandsAndEvents(plugin: CanvasRootsPlugin): void {
 		callback: () => {
 			const eventService = plugin.getEventService();
 			if (eventService) {
-				new CreateEventModal(plugin.app, eventService, plugin.settings).open();
+				new CreateEventModal(plugin.app, eventService, plugin.settings, { plugin }).open();
 			}
 		}
 	});

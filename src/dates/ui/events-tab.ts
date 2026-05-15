@@ -93,7 +93,8 @@ function renderEventNotesCard(
 					const modal = new CreateEventModal(
 						plugin.app,
 						eventService,
-						plugin.settings
+						plugin.settings,
+						{ plugin }
 					);
 					modal.open();
 				}
@@ -466,6 +467,7 @@ function renderEventTable(
 					eventService,
 					plugin.settings,
 					{
+						plugin,
 						editEvent: event,
 						editFile: event.file,
 						onUpdated: () => {
