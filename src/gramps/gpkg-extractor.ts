@@ -8,7 +8,7 @@
  * - Gzip-compressed XML files (just the XML, no bundled media)
  */
 
-import JSZip from 'jszip';
+import { ZipReader, type ZipReaderFile } from '../utils/zip';
 import { getLogger } from '../core/logging';
 
 const logger = getLogger('GpkgExtractor');
@@ -272,7 +272,7 @@ export async function extractGpkg(
 	}
 
 	// Load the ZIP
-	const zip = await JSZip.loadAsync(data);
+	const zip = await ZipReader.loadAsync(data);
 
 	// Log all files in the ZIP for debugging
 	const allPaths = Object.keys(zip.files);
@@ -280,7 +280,7 @@ export async function extractGpkg(
 
 	// Find the Gramps XML file
 	// It's typically named data.gramps or [filename].gramps at the root
-	let grampsFile: JSZip.JSZipObject | null = null;
+	let grampsFile: ZipReaderFile | null = null;
 	let grampsPath = '';
 
 	for (const path of Object.keys(zip.files)) {
