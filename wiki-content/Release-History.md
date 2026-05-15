@@ -9,6 +9,8 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.38 Round-Up: Native Button Migration, CSS Scan Cleanup, and Custom Relationship Display](#v02238-round-up-native-button-migration-css-scan-cleanup-and-custom-relationship-display-v02238)
+  - [v0.22.32 – v0.22.37 Round-Up: Community Automated Review Cleanup Arc](#v02232--v02237-round-up-community-automated-review-cleanup-arc-v02232v02237)
   - [v0.22.31 Round-Up: Fictional-Date Cluster, Community Review Cleanup, and Pop-out Window Timer Migration](#v02231-round-up-fictional-date-cluster-community-review-cleanup-and-pop-out-window-timer-migration-v02231)
   - [v0.22.30 Round-Up: cr_id Collision Filter, Negative-Year Decade Bucketing, and Family Chart XSS Hardening](#v02230-round-up-cr_id-collision-filter-negative-year-decade-bucketing-and-family-chart-xss-hardening-v02230)
   - [v0.22.29 Round-Up: Bidirectional-Sync Audit and the Seven Gaps It Surfaced](#v02229-round-up-bidirectional-sync-audit-and-the-seven-gaps-it-surfaced-v02229)
@@ -170,6 +172,106 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.38 Round-Up: Native Button Migration, CSS Scan Cleanup, and Custom Relationship Display (v0.22.38)
+
+A large-scoped scan-cleanup release that responds to the v0.22.37 Community automated review's remaining ~50 actionable CSS warnings, migrates ~190 button markup sites to Obsidian's native `ButtonComponent` API, and ships one small user-facing display fix. Branch net was 27 commits and roughly 750 lines deleted. The release leaves the scan posture in its irreducible-only state — the only categories remaining (vendored leaflet-distortable duplicates, multicolumn partial-support, sibling-aware `:has()`, and one structural `!important` against family-chart's inline styles) are all documented at [docs/developer/automated-review-notes.md](../docs/developer/automated-review-notes.md) §5 as known-and-accepted.
+
+**Fix: Custom relationship category names with multiple words now display correctly in the Entity Profile View** ([#570](https://github.com/banisterious/obsidian-charted-roots/issues/570)):
+- The "Other relationships" section in the Entity Profile View rendered the category slug ID with first-letter capitalization, producing "Jedi_order" for a "Jedi Order" custom category. The lookup was reaching for the internal storage identifier and capitalizing it, rather than consulting the configured display name.
+- The fix routes the category-name lookup through the existing `getRelationshipCategoryName()` helper (already used elsewhere), which checks customizations → custom categories → built-ins and falls back to `capitalize(slug)` only for unknown IDs. The reporter verified the fix and noted a bonus: built-in Custom Relationship categories now display correctly too. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Native ButtonComponent migration (~190 sites)**:
+- Standalone `.crc-btn--primary` / `--secondary` / `--danger` and bare `.crc-btn` markup across 50+ files were converted to Obsidian's `new ButtonComponent(parent).setButtonText(...).setCta()` / `.setWarning()` / bare patterns. Native buttons inherit Obsidian theme conventions automatically, so modal "Cancel" / "Save" / "Apply" footers now match Obsidian's standard CTA look.
+- Out of scope intentionally: the `.crc-btn--small` family (87 sites in dense list rows — Obsidian's `ButtonComponent` has no small equivalent), `.crc-btn--icon` (18 icon-only toolbar buttons), `.crc-btn--text` (1), and `.crc-btn-link` (10). These keep their custom styling.
+- Eight additional sites (icon + text dynamic composition like the events-tab export button) were deferred — each needs `setIcon` + `setButtonText` integration to preserve current visual and behavior, intentionally held back.
+
+**CSS cluster consolidation arc**:
+- Scan-flagged cross-file duplicate selectors were either consolidated (one canonical definition imported across consumers) or renamed when bodies diverged. Touched clusters: `.cr-stat-*` across 3 files; `.crc-wizard-*` across 5 files (15 duplicates); `.crc-btn` family across 6 files (8 duplicates); 9 miscellaneous cross-file duplicates (`.cr-error-text`, `.cr-export-stat`, `.crc-media-preview`, etc.); 8 utility clusters from the v0.22.37 scan (`.crc-loading`, `.crc-place-filter-type[s]`, `.crc-quality-*`, `.crc-modal-header`, `.cr-folder-suggestion*`, `.cr-sv-*` source-view header family, `.cr-progress-*` statistics progress family).
+- Three within-file duplicate rule-block merges in `timeline-callouts.css` and `family-chart-view.css`. No visual change.
+
+**`:has()` perf-warning rewrites (17 modal + 3 non-modal)**:
+- The scanner flags `:has()` as a perf concern due to broad selector invalidation. Charted Roots' uses were narrowly-scoped (modal sizing keyed on inner content classes), but the warnings still counted against the scan baseline.
+- The pattern: each modal's `onOpen()` now adds a `.{modal-name}-sized` class to `modalEl`, and CSS targets the class directly rather than `.modal:has(.X-modal)`. 17 modals converted across staging-manager, book-builder, cleanup-wizard, import/export wizards, hub modals, and media modals.
+- Three non-modal conversions: textarea form-field detection (`.cr-create-note-modal .setting-item:has(textarea)` → `.cr-create-note-modal-textarea-setting` class added in TS); checkbox state (`.crc-media-folder-filter-toggle:has(.checkbox:checked)` → `--checked` modifier toggled by change handler); body-level wizard state (`body:has(.cr-image-wizard|cr-media-linker)` → `body.cr-{wizard}-active` managed by wizard `onOpen` / `onClose`).
+- Two sibling-aware `:has()` rules in `timeline-callouts.css` are structurally required (no class-based equivalent for sibling detection) and stay with documented `stylelint-disable-next-line` directives.
+
+**`!important` reduction (6 → 1)**:
+- DevTools cascade inspection confirmed 5 sites didn't actually need `!important`: the `.cr-hidden` / `.crc-hidden` utility class (single-class specificity beats element defaults) and 4 Leaflet container-scoped image-sizing rules (parent-class scope already wins against Obsidian's broader image rules).
+- One legitimate site remains: `.card_cont.cr-hl-dim { opacity: 0.3 !important }` overrides the family-chart library's inline-style transitions, which set `style="opacity: 1"` on every card update and persist after the transition ends — no CSS-only escape. An upstream issue was filed proposing a `.on('end', ...)` cleanup that would restore CSS controllability.
+
+**Text-decoration partial-support reshape**:
+- The 3 multi-value `text-decoration` shorthand sites (`line-through var(--text-error)`, `underline dotted`, `underline solid`) were replaced with single-value shorthand plus alternative properties. `.cr-code-old pre` now sets `color: var(--text-error)` so the now-uncolored strikethrough inherits the red text. `.crc-variation-count-link` uses `border-bottom: 1px dotted/solid` instead of `text-decoration: underline dotted/solid`. Visual result nearly identical; scanner-clean.
+
+**Dead-code removal**:
+- The `.crc-btn--ghost` class had been applied at 24 markup sites but had no CSS effect outside two scoped place-modal contexts whose parent classes were never rendered in markup. Both the markup uses and the legacy `.crc-unlinked-place-item` / `.crc-referenced-place-item` CSS blocks (151 lines) were removed.
+
+**Upstream and library evaluation**:
+- Filed an upstream issue at `donatso/family-chart` proposing the inline-style cleanup that would let downstream consumers override card opacity via CSS. The proposal is a small `.on('end', function() { d3.select(this).style('opacity', null); })` addition to the `cardUpdate` and `cardEnter` transitions.
+- Drafted an internal evaluation of `family-chart-premium` as a post-1.0 migration candidate, covering license, inline-style behavior, API delta investigation, and rough phasing. Triggered by the irreducible `!important` finding above.
+
+**Internal: CSS known-and-accepted findings section added to automated-review-notes.md**:
+- [`docs/developer/automated-review-notes.md`](../docs/developer/automated-review-notes.md) gained a new §5 documenting the irreducible categories that future scans will surface: the family-chart `!important`, multicolumn partial-support in timeline callouts, sibling-aware `:has()` in timeline callouts, the vendored leaflet-distortable CSS duplicates, and release-level recurring findings (>5MB main.js, the Bitcoin wallet false-positive, the setInterval+network false-positive).
+
+**Testing:** Suite total **883** across 68 suites, unchanged from v0.22.37. No new tests — this release is internal refactor + display-only fix.
+
+**Reporters:** [@DigitalDreamn](https://github.com/DigitalDreamn) for [#570](https://github.com/banisterious/obsidian-charted-roots/issues/570).
+
+**Stability-window impact:** no reset — this is the sixteenth patch in the v0.22.22-anchored window. All `medium-priority` or lower; none reset. Window remains anchored to v0.22.22 (2026-05-07 → ~2026-05-28). Scan posture is now in the irreducible-only state.
+
+---
+
+### v0.22.32 – v0.22.37 Round-Up: Community Automated Review Cleanup Arc (v0.22.32–v0.22.37)
+
+Obsidian Community launched its new automated review platform on 2026-05-12, scanning every plugin release for security and code-quality patterns. Charted Roots ran the scan-feedback loop across six releases between v0.22.31 and v0.22.38, addressing each round of findings until the posture stabilized in an irreducible-only state. Most of the work was internal hygiene (ESLint plugin upgrades, timer migrations, stylelint directive iteration, CSS duplicate consolidation), but two user-facing items also landed in this arc.
+
+**Fix: Map view Fullscreen toolbar button now shows an icon** (v0.22.34) — **long-standing visual gap**:
+- The `leaflet-fullscreen` package's bundled CSS references an external `fullscreen.png` sprite that was never included in Charted Roots' shipped `styles.css`. The button has been a blank square in the map toolbar since the feature first shipped. Surfaced indirectly during the v0.22.34 `!important` audit — the broader `background:` → `background-color:` flip across leaflet override rules (added to stop the shorthand from wiping background images) revealed that the underlying image wasn't there to begin with.
+- Replaced with inline SVG icons (Lucide-style maximize / minimize) drawn via CSS `mask`, so the icons adapt to the current text color (theme-aware in light and dark themes). Both the default state and the active (`leaflet-fullscreen-on`) state are covered.
+
+**Fix: Era abbreviations now render in the dynamic Timeline flat-list view** (v0.22.32, [#563](https://github.com/banisterious/obsidian-charted-roots/issues/563) follow-up):
+- The v0.22.31 era-abbreviation fix routed two of the three Timeline render paths through the new `formatYearForDisplay` helper, but missed the flat-list rendering in `renderTimelineList` — the most common Timeline render path. Bare years still appeared where `BBY 1045` / `EF 30` / `DE 1265` should have. Same one-line fix as the other two sites: route through `formatYearForDisplay(entry.date, context.person?.universe)`. Surfaced by [@doctorwodka](https://github.com/doctorwodka) during v0.22.31 verification. Three composition tests added to fence the helper chain.
+
+**New: tag-triggered release workflow with build-provenance attestations** (v0.22.32):
+- [`.github/workflows/release.yml`](../.github/workflows/release.yml) now runs on SemVer tag push (plain like `0.22.32` or pre-release like `0.22.32-rc1`). The workflow executes `npm run lint` + `npm run lint:css` + `npm test` + `npm run build`, calls `actions/attest-build-provenance@v2` against `main.js` / `manifest.json` / `styles.css`, and creates a **draft** GitHub Release titled `Charted Roots vX.Y.Z` with the three assets attached. The author pastes the audited release-description body via the web UI and clicks Publish — preserving the editorial gate (no auto-generated commit-message notes).
+- End users and Obsidian's automated scanners can verify any release asset with `gh attestation verify main.js --repo banisterious/obsidian-charted-roots`. Addresses the two missing-attestation Recommendations from the Community-review scan. See [docs/developer/release-procedure.md](../docs/developer/release-procedure.md) for the full mechanical checklist.
+
+**Internal: `eslint-plugin-obsidianmd` 0.2.9 → 0.3.0 + timer rule reversal** (v0.22.32):
+- 0.3.0 launched the same day as the new Community review platform. The `prefer-active-window-timers` rule was renamed to `prefer-window-timers` and its recommendation **inverted** — it now wants `window.setTimeout` instead of `activeWindow.setTimeout`. v0.22.31's Phase 2 migration had moved ~152 sites the other direction; v0.22.32 reverted those plus eight previously-unflagged `requestAnimationFrame` calls back to the new `window.X` form. `prefer-create-el` was removed from the recommended ruleset entirely.
+- Also cleared the entire `@typescript-eslint/no-unused-vars` warning category (~71 sites) via leading-underscore ignore-pattern extension plus 31 trailing-argument underscore-prefixes for callback signatures. 46 `createElementNS('http://www.w3.org/2000/svg', ...)` calls migrated to Obsidian's `createSvg(tagName)` global. 10 lazy `require()` sites converted to top-level ES imports. 163 `document.X` references migrated to `activeDocument.X` for pop-out window correctness.
+
+**Internal: stylelint directive handling — three-release iteration**:
+- **v0.22.32** introduced a defensive `build-css.js` change that auto-injected `/* stylelint-enable */` between every concatenated component, so component-level `stylelint-disable` directives couldn't bleed across boundaries in the bundle. The injection was unconditional.
+- **v0.22.33** addressed the immediate consequence: components without a file-level disable got an orphan enable, which stylelint flags as needless ("no rules have been disabled" at `styles.css:90`). The auto-inject became conditional — emits an enable only when a component has more file-level disables than enables. This was the single error-level finding gating Community Plugins admission against v0.22.32.
+- **v0.22.34** flipped the strategy entirely: `build-css.js` now strips all `stylelint-*` directives from the bundled output. The directives are source-level hints serving no purpose in the concatenated shipped bundle; stripping them eliminated the entire category of "needless disable" / "no rules disabled" / "rule already disabled" false-positive risk going forward, regardless of which scanner runs against the file.
+- **v0.22.37** narrowed the strip back to file-level forms only. v0.22.34's blanket strip had unintentionally removed per-line `stylelint-disable-next-line` directives alongside the file-level forms it was actually targeting, which unsilenced the per-line `:has()` / `!important` / browser partial-support warnings the v0.22.36 scan subsequently flagged. Per-line directives have no bleed risk; they're now preserved through the build via the regex `(?!-[a-z])` negative-lookahead that distinguishes file-level forms (stripped) from `-next-line` / `-line` forms (preserved).
+
+**Internal: `!important` reduction, `:has()` annotation, and CSS hygiene** (v0.22.34):
+- Reduced `!important` declarations from 102 → 11 across stylesheets via targeted specificity refactors. Most uses were defensive against expected style competition rather than necessary inline-style overrides. Leaflet override rules in `map-view.css` now prefix selectors with `.cr-map-view` (already-present container class) for a +1 specificity boost; family-chart `.card` resets use natural 3-class selector specificity; chained-class modifiers (e.g., `.cr-map-btn.cr-map-btn-active`) replace bare modifier overrides. The remaining 11 declarations break down: 4 defensive leaflet core CSS, 3 `.cr-hidden` / `.crc-hidden` utility classes (utility-class display toggle must win over everything), 4 documented cases where an external library sets inline styles at runtime.
+- 21 duplicate-selector pairs consolidated across 5 stylesheets (`control-center.css`, `cleanup-wizard.css`, `import-export-wizard.css`, `profile-view.css`, `tree-output.css`). One case required a manual cascade-aware merge to preserve effective top-margin behavior on `.crc-section-header`.
+- 46 `:has()` selector sites annotated with per-line `stylelint-disable-next-line` catch-all comments. All uses are narrowly scoped (modal sizing keyed on inner content classes); the scanner's "broad selector invalidation" perf concern doesn't apply, but the warnings still counted.
+- `color-hex-length` flipped from `short` to `long` to align with the community-scan preference; ~50 short-hex sites normalized to 6-digit form.
+
+**Internal: `no-unsafe-*` and `sentence-case` per-file disables — three-release iteration**:
+- **v0.22.34** added file-level `obsidianmd/ui/sentence-case` disables across 102 source files (covering the 436-warning Batch B remainder from v0.22.30 — quoted button labels, month names, proper-noun section paths, example strings) plus file-level `@typescript-eslint/no-unsafe-*` disables across 146 source/test files (the ~600+ flagged sites from `any`-typed Obsidian API surfaces).
+- **v0.22.35** discovered that the v0.22.34 approach broke the Community scan in two ways. First, the `obsidianmd/ui/sentence-case` rule lives in a "Required" wrapper set the scanner enforces but the eslint-plugin itself doesn't — historical scan inspection confirmed the underlying violations had never actually appeared in the warning surface, so the disables were a strict regression (converting 0 warnings into 204 errors). The 101 sentence-case disables were removed entirely. Second, the `no-unsafe-*` file-level disables needed matching `eslint-enable` directives at EOF; each file now emits a trimmed enable mirroring its disable rule-for-rule.
+- **v0.22.36** addressed the new error category surfaced by v0.22.35: `Unexpected undescribed directive comment` at 125 sites, one per EOF `eslint-enable` that lacked a `-- reason` description. The line-1 disable directives already carried descriptions; only the newly-added enables didn't. Each enable now reads `/* eslint-enable <rules> -- Match scope of file-level disable at top. */`.
+- **v0.22.37** added per-line `stylelint-disable-next-line` directives with `-- reason` descriptions at the 9 documented-legitimate `!important` sites that were unsilenced by v0.22.34's directive-strip rollback. Each directive names the legitimate use case (utility-class display toggle, leaflet defensive override, family-chart inline-style override during overlay animation).
+
+**Internal: recursive orphan sweep** (v0.22.36) — −999 lines:
+- v0.22.35 deleted thirteen long-dormant `_*`-prefixed helper functions across `people-tab.ts` / `trees-tab.ts` / `family-chart-export.ts` but didn't iterate over the orphan cascade. The Community scan against v0.22.35 surfaced ~20 `defined but never used` warnings, which on iteration exposed 5 transitive layers of dead code: ~40 imports, module-level `logger` constants, and 11 downstream functions whose only callers were the deleted helpers. Net: −999 lines across `src/ui/people-tab.ts` and `src/trees/ui/trees-tab.ts`. Build / tests / lint all clean after the final sweep.
+
+**Internal: scanner-architecture findings captured** (v0.22.34 – v0.22.37):
+- [`docs/developer/automated-review-notes.md`](../docs/developer/automated-review-notes.md) was extended across these four releases with empirical findings about the scanner's behavior: it does NOT read project `eslint.config.mjs` (so locally-configured warning suppressions don't carry over to the scan), it enforces a "Required" wrapper around `obsidianmd/*` that the eslint-plugin itself doesn't enforce, all inline directives (disables AND enables) require `-- reason` descriptions, and stylelint per-line catch-all directives (no rule name) are ignored by the scanner for the `!important` and `:has()` / partial-support categories. The doc also catalogs the upstream `DEFAULT_BRANDS` / `DEFAULT_ACRONYMS` PRs to file against `obsidianmd/eslint-plugin` (Charted Roots, GEDCOM, ODT, Gramps, Mapbox, MapTiler, Stamen, Leaflet, etc.) per [issue #103](https://github.com/obsidianmd/eslint-plugin/issues/103) precedent.
+
+**One user-facing rename in this arc** (v0.22.32 carryforward from v0.22.31):
+- The categorized command launcher was renamed from "Open command menu" to "Open quick actions" in v0.22.31 because the new scanner flags commands using "command" in id or name. Users with custom hotkeys bound to the previous command must re-bind under Settings → Hotkeys by searching for "Open quick actions". The modal behavior is unchanged.
+
+**Testing:** Suite total **883** across 68 suites at v0.22.32 (was 880 / 68 at v0.22.31); +3 composition tests from the [#563](https://github.com/banisterious/obsidian-charted-roots/issues/563) follow-up. v0.22.33 – v0.22.37 are all internal hygiene with no test-suite changes.
+
+**Stability-window impact:** no resets across all six releases. v0.22.32 is the tenth patch, v0.22.33 the eleventh, v0.22.34 the twelfth, v0.22.35 the thirteenth, v0.22.36 the fourteenth, and v0.22.37 the fifteenth in the v0.22.22-anchored window. All `medium-priority` or lower. Window remains anchored to v0.22.22 (2026-05-07 → ~2026-05-28).
+
+---
 
 ### v0.22.31 Round-Up: Fictional-Date Cluster, Community Review Cleanup, and Pop-out Window Timer Migration (v0.22.31)
 
