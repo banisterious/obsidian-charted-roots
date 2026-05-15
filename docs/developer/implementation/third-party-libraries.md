@@ -176,9 +176,10 @@ interface FamilyChartPerson {
 **Location:** `src/maps/` module
 
 **Core files:**
-- `map-controller.ts` - Main Leaflet map management
-- `map-view.ts` - Obsidian view wrapper
-- `marker-manager.ts` - Marker creation and clustering
+- `map-controller.ts` - Main Leaflet map management; cluster groups, layers, plugin initialization
+- `map-view.ts` - Obsidian view wrapper; toolbar, breadcrumb, time slider
+- `map-data-service.ts` - Data loading and filtering for markers / paths / journeys
+- `image-map-manager.ts` - Custom image map support; leaflet-distortable plugin loading
 
 **Leaflet plugins used:**
 
@@ -221,6 +222,16 @@ map.addLayer(markers);
 - OpenStreetMap uses `L.CRS.EPSG3857` (Web Mercator)
 - Custom image maps use `L.CRS.Simple` (pixel coordinates)
 - CRS cannot be changed dynamically; map must be destroyed and recreated
+
+**Known issues and workarounds:**
+
+The leaflet plugin ecosystem has some long-standing quirks that we work around defensively. None of these are documented in the upstream libraries; if you remove a workaround, expect issues to resurface.
+
+- **`window.L = L` is reattached on every plugin-loader call** in both `map-controller.ts:initializeLeafletPlugins()` and `image-map-manager.ts:initDistortableImagePlugins()`, not just on first init. Across repeated map open / close cycles in the same plugin session, the global L reference can drift (root cause unclear — possibly Obsidian's view-lifecycle interacting with esbuild's `__commonJS` shim caching, or another plugin clobbering `window.L`). Without the reattach, post-load registration checks fail from the 2nd or 3rd cycle.
+- **`MapController.destroy()` wraps every cleanup step in independent try-catches** with warning logs. The `leaflet.markercluster` library has a load-order bug where `_generateInitialClusters` (invoked from `clearLayers` during destroy) can throw `TypeError: L.DistanceGrid is not a constructor`. Without the try-catches, this throw cascaded — leaving cluster groups in a partial-cleanup state that broke subsequent `map.remove()` calls and the next map's plugin registration check. Root cause is tracked at [issue #574](https://github.com/banisterious/obsidian-charted-roots/issues/574); the workaround can be removed once that's resolved.
+- **`patch-leaflet-distortable.js` is a postinstall patch** (chained from `patch-family-chart.js` in `package.json:scripts.postinstall`) that stubs `leaflet-distortableimage`'s bundled `WebSocketClient` constructor to a no-op. The library's dist file accidentally includes a webpack-dev-server hot-reload client that tries to open `ws://localhost:8081/ws` on module load and logs a scary "WebSocket connection failed" error to DevTools. The library's normal functionality is unaffected by the stub; only the dev-server hot-reload plumbing is neutralized.
+- **`suppressToolbar: true` is passed to `L.distortableImageOverlay`** in `image-map-manager.ts` to suppress the library's default popup toolbar (rotate / scale / distort / lock buttons) and the keymapper panel. Charted Roots provides its own edit-mode controls instead (Save alignment / Undo / Reset / Cancel). Most of the rules in `styles/leaflet-distortable.css` cover this suppressed UI; they're theme-aligned for defensive reasons in case the flag is ever flipped off, but they don't currently render.
+- **Vendored CSS in `styles/leaflet-distortable.css` is `.cr-map-view`-scoped.** The library writes some absurdly broad selectors (e.g., `input[type="text"]::-webkit-input-placeholder`, `li.disabled`, `#cancel` as a bare ID) that would otherwise leak to general Obsidian UI and to any other plugin using leaflet-distortable in the same vault. Every rule is prefixed with `.cr-map-view` to contain the styling to our map view.
 
 ---
 
