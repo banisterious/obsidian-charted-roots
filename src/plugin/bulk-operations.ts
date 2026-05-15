@@ -131,6 +131,7 @@ export function openEditEventModal(plugin: CanvasRootsPlugin, file: TFile): void
 
 	// Open the edit modal
 	new CreateEventModal(plugin.app, eventService, plugin.settings, {
+		plugin,
 		editEvent: event,
 		editFile: file,
 		onUpdated: () => {

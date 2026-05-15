@@ -12,6 +12,7 @@ import { PlacePickerModal, SelectedPlaceInfo } from '../../ui/place-picker';
 import { RelationshipContext } from '../../ui/quick-create-person-modal';
 import { extractDisplayLabel } from '../../utils/wikilink-resolver';
 import { EventService } from '../services/event-service';
+import { EventPickerModal } from './event-picker-modal';
 import {
 	CreateEventData,
 	DatePrecision,
@@ -85,6 +86,8 @@ interface EventFormData {
 	dateSystem: string;
 	timeline: string;
 	transferType: string;
+	beforeRefs: { name: string; crId: string; basename: string }[];
+	afterRefs: { name: string; crId: string; basename: string }[];
 }
 
 /**
@@ -119,6 +122,8 @@ export class CreateEventModal extends Modal {
 	private dateSystem = '';
 	private timeline = '';
 	private transferType = '';
+	private beforeRefs: { name: string; crId: string; basename: string }[] = [];
+	private afterRefs: { name: string; crId: string; basename: string }[] = [];
 
 	// State persistence
 	private plugin?: CanvasRootsPlugin;
@@ -196,6 +201,18 @@ export class CreateEventModal extends Modal {
 			this.dateSystem = event.dateSystem || '';
 			this.timeline = event.timeline?.replace(/^\[\[/, '').replace(/\]\]$/, '') || '';
 			this.transferType = event.transferType || '';
+			if (event.before && event.before.length > 0) {
+				this.beforeRefs = event.before.map(b => {
+					const parsed = parseWikilink(b);
+					return { name: parsed.name, crId: '', basename: parsed.basename ?? '' };
+				});
+			}
+			if (event.after && event.after.length > 0) {
+				this.afterRefs = event.after.map(a => {
+					const parsed = parseWikilink(a);
+					return { name: parsed.name, crId: '', basename: parsed.basename ?? '' };
+				});
+			}
 		} else {
 			// Create mode
 			if (options?.initialPerson) {
@@ -443,6 +460,23 @@ export class CreateEventModal extends Modal {
 		this.worldSectionEl = worldSection;
 		this.applyWorldSectionVisibility();
 
+		// Relative ordering — the topological sort in the timeline exporters
+		// respects these constraints when dates are unknown or imprecise.
+		if (this.plugin) {
+			const orderingSection = form.createDiv({ cls: 'crc-event-ordering-section' });
+			orderingSection.createEl('h4', { text: 'Relative ordering', cls: 'crc-section-header' });
+			orderingSection.createEl('p', {
+				text: 'Use for events with unknown or imprecise dates. Topological sort respects these constraints.',
+				cls: 'setting-item-description'
+			});
+
+			const afterContainer = orderingSection.createDiv({ cls: 'crc-event-ordering-after' });
+			this.renderOrderingList(afterContainer, 'after');
+
+			const beforeContainer = orderingSection.createDiv({ cls: 'crc-event-ordering-before' });
+			this.renderOrderingList(beforeContainer, 'before');
+		}
+
 		// Transfer section (for transfer events)
 		if (this.eventType === 'transfer') {
 			const transferSection = form.createDiv({ cls: 'crc-event-transfer-section' });
@@ -524,7 +558,9 @@ export class CreateEventModal extends Modal {
 			universe: this.universe,
 			dateSystem: this.dateSystem,
 			timeline: this.timeline,
-			transferType: this.transferType
+			transferType: this.transferType,
+			beforeRefs: [...this.beforeRefs],
+			afterRefs: [...this.afterRefs]
 		};
 	}
 
@@ -550,6 +586,8 @@ export class CreateEventModal extends Modal {
 		this.dateSystem = formData.dateSystem || '';
 		this.timeline = formData.timeline || '';
 		this.transferType = formData.transferType || '';
+		this.beforeRefs = formData.beforeRefs || [];
+		this.afterRefs = formData.afterRefs || [];
 	}
 
 	/**
@@ -758,6 +796,75 @@ export class CreateEventModal extends Modal {
 	}
 
 	/**
+	 * Render the relative-ordering chip list for one side. The "after" side
+	 * means "this event happens after the listed events" (stored as event.after);
+	 * "before" means "this event happens before the listed events" (event.before).
+	 * Re-renders on add / remove. Picker excludes self plus already-added events.
+	 */
+	private renderOrderingList(container: HTMLElement, side: 'before' | 'after'): void {
+		container.empty();
+
+		container.createEl('h5', { text: side === 'after' ? 'After these events:' : 'Before these events:' });
+
+		const refs = side === 'before' ? this.beforeRefs : this.afterRefs;
+
+		for (let i = 0; i < refs.length; i++) {
+			const ref = refs[i];
+			const setting = new Setting(container)
+				.setName(ref.name)
+				.setDesc('Linked event');
+
+			setting.addButton(btn => {
+				btn.buttonEl.empty();
+				btn.buttonEl.addClass('crc-btn', 'crc-btn--secondary');
+				const icon = createLucideIcon('x', 16);
+				btn.buttonEl.appendChild(icon);
+				btn.buttonEl.appendText(' Remove');
+				btn.onClick(() => {
+					refs.splice(i, 1);
+					this.renderOrderingList(container, side);
+				});
+			});
+		}
+
+		new Setting(container)
+			.addButton(btn => {
+				btn.buttonEl.empty();
+				btn.buttonEl.addClass('crc-btn', 'crc-btn--secondary');
+				const icon = createLucideIcon('plus', 16);
+				btn.buttonEl.appendChild(icon);
+				btn.buttonEl.appendText(' Add event');
+				btn.onClick(() => {
+					if (!this.plugin) return;
+
+					const excludeIds: string[] = [];
+					if (this.editingFile) {
+						const fm = this.app.metadataCache.getFileCache(this.editingFile)?.frontmatter;
+						const selfCrId = fm?.cr_id;
+						if (typeof selfCrId === 'string') excludeIds.push(selfCrId);
+					}
+					for (const r of refs) {
+						if (r.crId) excludeIds.push(r.crId);
+					}
+
+					const picker = new EventPickerModal(this.app, this.plugin, {
+						onSelect: (event: EventNote) => {
+							refs.push({
+								name: event.title,
+								crId: event.crId,
+								basename: event.file.basename
+							});
+							this.renderOrderingList(container, side);
+						},
+						excludeEvents: excludeIds,
+						allowCreate: false
+					});
+					picker.open();
+				});
+			});
+	}
+
+	/**
 	 * Create a place picker field
 	 */
 	private createPlaceField(container: HTMLElement, label: string, description: string): void {
@@ -892,6 +999,12 @@ export class CreateEventModal extends Modal {
 			}
 			if (this.transferType) {
 				data.transferType = this.transferType;
+			}
+			if (this.beforeRefs.length > 0) {
+				data.before = this.beforeRefs.map(r => buildWikilink(r.name, r.basename || undefined));
+			}
+			if (this.afterRefs.length > 0) {
+				data.after = this.afterRefs.map(r => buildWikilink(r.name, r.basename || undefined));
 			}
 
 			const file = await this.eventService.createEvent(data);
@@ -1045,8 +1158,19 @@ export class CreateEventModal extends Modal {
 					delete frontmatter.transfer_type;
 				}
 
-				// Note: cr_id, before, after, sources, sort_order, and any custom
-				// properties are automatically preserved since we don't touch them
+				if (this.beforeRefs.length > 0) {
+					frontmatter.before = this.beforeRefs.map(r => buildWikilink(r.name, r.basename || undefined));
+				} else {
+					delete frontmatter.before;
+				}
+				if (this.afterRefs.length > 0) {
+					frontmatter.after = this.afterRefs.map(r => buildWikilink(r.name, r.basename || undefined));
+				} else {
+					delete frontmatter.after;
+				}
+
+				// Note: cr_id, sources, sort_order, and any custom properties
+				// are automatically preserved since we don't touch them
 			});
 
 			new Notice(`Updated event note: ${this.editingFile.basename}`);

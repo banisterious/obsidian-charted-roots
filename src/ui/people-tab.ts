@@ -1805,6 +1805,7 @@ function showPersonContextMenu(
 								eventService,
 								plugin.settings,
 								{
+									plugin,
 									initialPerson: { name: person.name, crId: person.crId, basename: person.file?.basename }
 								}
 							).open();
@@ -1844,6 +1845,7 @@ function showPersonContextMenu(
 							eventService,
 							plugin.settings,
 							{
+								plugin,
 								initialPerson: { name: person.name, crId: person.crId, basename: person.file?.basename }
 							}
 						).open();

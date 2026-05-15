@@ -272,6 +272,13 @@ export class MapView extends ItemView {
 			container.addClass('cr-map-view-phone');
 		}
 
+		// Breadcrumb sits above the toolbar so it doesn't compete with the
+		// filter controls for horizontal space on child maps. Hidden by
+		// default; updateBreadcrumb() reveals it when the active map has a
+		// parent.
+		this.breadcrumbEl = container.createDiv({ cls: 'cr-map-breadcrumb' });
+		this.breadcrumbEl.hide();
+
 		// Create toolbar
 		this.toolbarEl = container.createDiv({ cls: 'cr-map-toolbar' });
 		this.buildToolbar();
@@ -316,9 +323,9 @@ export class MapView extends ItemView {
 			void this.mapController?.setActiveMap(mapId);
 		});
 
-		// Breadcrumb for parent map navigation (#361)
-		this.breadcrumbEl = leftSection.createDiv({ cls: 'cr-map-breadcrumb' });
-		this.breadcrumbEl.hide();
+		// Breadcrumb for parent map navigation (#361) is rendered as its
+		// own row above the toolbar — see render() — so it doesn't compete
+		// with filter controls for horizontal space.
 
 		// Layers dropdown
 		const layersBtn = leftSection.createEl('button', {

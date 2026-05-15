@@ -26,14 +26,20 @@ let pluginsInitialized = false;
  * Must be called before using marker clusters or other plugin features
  */
 async function initializeLeafletPlugins(): Promise<void> {
-	if (pluginsInitialized) return;
-
-	// IMPORTANT: Leaflet plugins expect L to be available globally
-	// We need to assign it to window before importing the plugins
+	// Always re-attach our bundled L to window before any check. Across
+	// repeated map open/close cycles in the same plugin session, the global
+	// L reference can drift (the exact mechanism is unclear — possibly
+	// Obsidian's view-lifecycle interacting with esbuild's `__commonJS`
+	// caching, or another plugin clobbering window.L). Re-attaching here
+	// defensively keeps `L.markerClusterGroup` etc. accessible via our
+	// `createMarkerClusterGroup` lookup, since those registrations live on
+	// the bundled L's namespace from the first-import side effects below.
 	(window as unknown as { L: typeof L }).L = L;
 
-	// Import Leaflet plugins dynamically after L is on window
-	// These plugins extend the L namespace via side effects
+	if (pluginsInitialized) return;
+
+	// Import Leaflet plugins dynamically after L is on window.
+	// These plugins extend the L namespace via side effects.
 	await import('leaflet.markercluster');
 	await import('leaflet-polylinedecorator');
 	await import('leaflet.heat');
@@ -3022,9 +3028,34 @@ export class MapController {
 	destroy(): void {
 		logger.debug('destroy', 'Destroying map controller');
 
-		this.eventClusterGroup?.clearLayers();
-		this.pathLayer?.clearLayers();
-		this.journeyLayer?.clearLayers();
+		// Defensive try-catch at every cleanup step. Known load-order issue
+		// in `leaflet.markercluster` where `_generateInitialClusters`
+		// (invoked from `clearLayers`) throws "L.DistanceGrid is not a
+		// constructor" during view destroy. The throw leaves the cluster
+		// group in a partially-cleaned state, which then breaks downstream
+		// `_unbindListeners` calls during `map.remove()`. Wrapping each
+		// step independently keeps any single failure from poisoning the
+		// rest of the teardown and the next map open.
+		try {
+			this.eventClusterGroup?.clearLayers();
+		} catch (error) {
+			logger.warn('destroy', 'Event cluster clearLayers failed (suppressed)', { error });
+		}
+		try {
+			this.placesClusterGroup?.clearLayers();
+		} catch (error) {
+			logger.warn('destroy', 'Places cluster clearLayers failed (suppressed)', { error });
+		}
+		try {
+			this.pathLayer?.clearLayers();
+		} catch (error) {
+			logger.warn('destroy', 'Path layer clearLayers failed (suppressed)', { error });
+		}
+		try {
+			this.journeyLayer?.clearLayers();
+		} catch (error) {
+			logger.warn('destroy', 'Journey layer clearLayers failed (suppressed)', { error });
+		}
 
 		// Clean up distortable overlay if active
 		if (this.currentDistortableOverlay && this.map) {
@@ -3043,11 +3074,26 @@ export class MapController {
 		}
 
 		// Clean up image map manager
-		this.imageMapManager.destroy();
+		try {
+			this.imageMapManager.destroy();
+		} catch (error) {
+			logger.warn('destroy', 'Image map manager destroy failed (suppressed)', { error });
+		}
 		this.currentImageOverlay = null;
 
-		this.map?.remove();
+		try {
+			this.map?.remove();
+		} catch (error) {
+			logger.warn('destroy', 'Map remove failed (suppressed)', { error });
+		}
 		this.map = null;
+
+		// Clear cluster + layer refs so any dangling event still pointing
+		// at this controller hits null rather than a broken cluster instance.
+		this.eventClusterGroup = null;
+		this.placesClusterGroup = null;
+		this.pathLayer = null;
+		this.journeyLayer = null;
 	}
 }
 

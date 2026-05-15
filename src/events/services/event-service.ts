@@ -112,6 +112,11 @@ export function formatWikilink(value: string, basename?: string): string {
  *   targets the correct file via the [[basename|name]] form.
  */
 export function createSmartWikilink(name: string, file: TFile | null, app: App, basename?: string): string {
+	// Already-wikilinked input passes through unchanged. Lets callers pre-build wikilinks
+	// when they already have basename info (e.g., from a picker) and pass them through
+	// pipelines that re-process the field without double-wrapping.
+	if (name.startsWith('[[') && name.endsWith(']]')) return name;
+
 	// Explicit basename trumps everything — the caller knows which file they picked.
 	if (basename) {
 		if (basename === name) return `[[${name}]]`;
