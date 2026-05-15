@@ -220,7 +220,73 @@ of the webpack chunk-loader `<script>` site documented in section 4.
 
 ---
 
-## 6. Action items
+## 6. Behavior-section recommendations (capability disclosures)
+
+The scan reports three Behavior-section findings as **Recommendations** —
+informational disclosures rather than Warnings or Errors. They don't block
+promotion or affect scoring like errors do, but each is reviewed below so
+future maintainers know these are reviewed-and-accepted.
+
+### 6.1 Vault Enumeration (legitimate, required)
+
+183 call sites of `vault.getFiles` / `vault.getMarkdownFiles` /
+`vault.getAllLoadedFiles` across `src/`. Required for:
+
+- Indexing notes by `cr_type` frontmatter (person / place / event / source /
+  organization) to build the family graph, Control Center lists, and
+  entity-aware features.
+- Data Quality scans that walk all entity notes.
+- Cleanup wizards and merge tools.
+
+**Cannot be avoided.** Entity discovery is core to the plugin's value
+proposition. The recommendation is "disclose this capability to users"
+which is covered by the plugin's documentation and feature descriptions.
+
+### 6.2 Clipboard Access (legitimate, user-initiated)
+
+`navigator.clipboard.writeText` sites:
+
+- [citation-service.ts:372](../../src/sources/services/citation-service.ts#L372)
+  — copy formatted citation text.
+- [citation-generator.ts:137](../../src/sources/ui/citation-generator.ts#L137)
+  — copy all citation formats.
+- [map-view.ts:1245](../../src/maps/map-view.ts#L1245) — copy place
+  coordinates.
+- [transfers-renderer.ts:260](../../src/dynamic-content/renderers/transfers-renderer.ts#L260)
+  — copy transfer history as plain text.
+
+All sites are user-initiated by click handlers; no `readText` calls (the
+plugin never reads from the clipboard). **Standard plugin behavior** for
+the "copy to clipboard" affordances genealogy users expect on citations,
+coordinates, and exportable text.
+
+### 6.3 Dynamic Code Execution (vendored library FP)
+
+Two `new Function("return this")()` sites in bundled `main.js`. Both are
+the standard webpack runtime "find globalThis" pattern:
+
+```js
+g2 = this || new Function("return this")();
+```
+
+`grep "new Function\|eval(" src/` confirms zero matches in plugin source —
+both sites come from the family-chart library's bundled webpack runtime.
+The pattern is NOT executing user input or dynamically generated code: the
+argument is a hardcoded string constant returning the global object.
+Static analysis can't distinguish `"return this"` (safe) from
+`<user-controlled value>` (unsafe), so the scanner flags it
+conservatively.
+
+**Same flavor of false positive** as the `createElement('script')`
+issue resolved in v0.22.40–v0.22.41 — vendored library feature-detection
+code that uses dangerous-looking API surfaces in safe ways. If the
+scanner ever escalates this to Warning or Error severity, the same
+postinstall-patch approach used for `patch-core-js-polyfill.js` would
+remove the pattern from the bundle. For now, no action required.
+
+---
+
+## 7. Action items
 
 - [ ] Upstream PR: add `Charted Roots` to `DEFAULT_BRANDS` in
       [obsidianmd/eslint-plugin/lib/rules/ui/brands.ts](https://github.com/obsidianmd/eslint-plugin/blob/master/lib/rules/ui/brands.ts).
@@ -234,7 +300,7 @@ of the webpack chunk-loader `<script>` site documented in section 4.
 
 ---
 
-## 5. References
+## 8. References
 
 - [Obsidian Community automated review platform (blog post)](https://obsidian.md/blog/future-of-plugins/)
 - [obsidianmd/eslint-plugin](https://github.com/obsidianmd/eslint-plugin) — the rule source.
