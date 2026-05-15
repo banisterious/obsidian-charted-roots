@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.40 – v0.22.41 Round-Up: Scanner Severity Response Arc](#v02240--v02241-round-up-scanner-severity-response-arc-v02240v02241)
   - [v0.22.38 Round-Up: Native Button Migration, CSS Scan Cleanup, and Custom Relationship Display](#v02238-round-up-native-button-migration-css-scan-cleanup-and-custom-relationship-display-v02238)
   - [v0.22.32 – v0.22.37 Round-Up: Community Automated Review Cleanup Arc](#v02232--v02237-round-up-community-automated-review-cleanup-arc-v02232v02237)
   - [v0.22.31 Round-Up: Fictional-Date Cluster, Community Review Cleanup, and Pop-out Window Timer Migration](#v02231-round-up-fictional-date-cluster-community-review-cleanup-and-pop-out-window-timer-migration-v02231)
@@ -172,6 +173,32 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.40 – v0.22.41 Round-Up: Scanner Severity Response Arc (v0.22.40–v0.22.41)
+
+Between v0.22.38 and v0.22.39's post-release scans, Obsidian's Community automated review promoted its "dynamic `<script>` element creations" rule from warning to error severity. The rule fires on `document.createElement('script')` calls in bundled JavaScript and is intended to catch plugins that load arbitrary external code. Charted Roots' v0.22.39 release scan flagged nine sites — all in vendored library code (`leaflet-distortableimage`'s webpack chunk loader, `jszip`'s UMD module-detection guards, and `core-js`'s IE5-8 setImmediate polyfill, the last of which `pdfmake` also bundles internally). Each pattern is feature-detection or dead-code that never executes in Obsidian's Electron runtime, but the scanner's static analysis can't distinguish reachable from unreachable code paths. The plugin was demoted on the Community Plugins website (Install button disabled). v0.22.40 and v0.22.41 close the surface in two releases.
+
+**v0.22.40: leaflet-distortable chunk loader stub + `jszip` → `fflate` migration**:
+- **`patch-leaflet-distortable.js` extended** to stub `__webpack_require__.l` (the webpack chunk loader) alongside the existing `WebSocketClient` stub. The chunk loader uses `document.createElement('script')` to fetch lazy-loaded chunks; the plugin emits a single bundle (no code splitting), so the loader is never invoked. Stubbing it to a no-op that immediately calls `done({ type: "stub" })` removes the surface without affecting library behavior. Removes 1 site.
+- **ODT generation migrated from `jszip` to `fflate`** via a new `ZipBuilder` / `ZipReader` adapter at [`src/utils/zip.ts`](../src/utils/zip.ts). `jszip`'s bundled output contained four UMD module-detection guards using `document.createElement('script')`, all flagged at error severity. `fflate` is a smaller (~8 KB vs `jszip`'s ~90 KB), modern, no-UMD-detection alternative. The adapter exposes a JSZip-shaped API so the four call sites (Reports → ODT, Family Chart → ODT, Book → ODT, Gramps `.gpkg` import) needed only near-mechanical edits, and a future `fflate` version bump or library swap is a one-file change. Functional behavior is unchanged — ODT files open identically in LibreOffice and the Gramps reader handles both tar.gz and ZIP-format `.gpkg` inputs as before. Removes 4 sites.
+- **Internal: new ZIP-format `.gpkg` test fixture and repack script**. Gramps' export wizard does not produce ZIP-format `.gpkg` directly — it writes tar.gz. Added `tests/fixtures/gramps/gramps-app-export-test11-small-zip.gpkg` (generated from `test9-small.gpkg` via a new `repack-to-zip.js` script) so the ZIP reader code path in `gpkg-extractor.ts` can be exercised in dev-vault testing. Existing tar.gz fixtures still cover the default Gramps export path.
+- Net result for v0.22.40: 9 → 4 sites. Still flagged at error severity (the rule is binary — any `> 0` count is an error), so the plugin remained demoted at this point.
+
+**v0.22.41: `core-js` setImmediate polyfill strip**:
+- **New `patch-core-js-polyfill.js` postinstall patch** strips the IE5-8 setImmediate polyfill branch from both `node_modules/core-js/internals/task.js` and `node_modules/pdfmake/build/pdfmake.js` (which bundles its own copy of `core-js`). The branch is `if (ONREADYSTATECHANGE in createElement('script')) { ... }` — a feature-detection fallback for IE5-8 microtask scheduling. In Obsidian's Electron runtime, the earlier `MessageChannel` branch in the same `if/else if` chain always succeeds, so the IE8 path is never reached. The patch removes the branch at source so it never reaches `main.js`. `setImmediate` behavior is unchanged because the MessageChannel path was already the only path executed. Removes 4 sites.
+- Net result for v0.22.41: 4 → 0 sites. The post-release scan against v0.22.41 came back clean (no errors), 83 / 100 score, demotion lifted on the Community Plugins website.
+
+**Internal: scan-response documentation**:
+- [`docs/developer/automated-review-notes.md`](../docs/developer/automated-review-notes.md) gained a new §6 covering the three Behavior-section recommendations the v0.22.41 scan surfaced (Vault Enumeration, Clipboard Access, Dynamic Code Execution). Each is reviewed as either a legitimate plugin capability or a vendored-library false positive. The Dynamic Code Execution finding is from two `new Function("return this")()` sites in family-chart's bundled webpack runtime — the standard "find globalThis" pattern, not actual dynamic code execution.
+- [`docs/developer/implementation/third-party-libraries.md`](../docs/developer/implementation/third-party-libraries.md) was extended in two passes: the existing `patch-leaflet-distortable.js` entry now covers both stubs (WebSocketClient + chunk loader), pdfmake's notes gained a `patch-core-js-polyfill.js` reference, and the entire JSZip section was replaced by an `fflate (ZIP archives)` section covering the adapter rationale, both reader and writer usage patterns, the ODT mimetype-first constraint, and migration context.
+
+**Testing:** Suite total **883** across 68 suites, unchanged. The polyfill removal had no test impact because the removed branch was unreachable in any environment we test against (Electron / Node.js / modern Chromium all hit the MessageChannel branch).
+
+**Outcome:** Total `createElement("script")` surface reduced from 9 sites in v0.22.39 to 0 in v0.22.41. Final post-release scan returned clean (zero errors), surfacing only the previously-documented irreducible findings (>5 MB main.js, family-chart `!important`, timeline-callouts multicolumn / `:has()`, and the setInterval+network false positive from `geocoding-service.ts`). The Community Plugins demotion lifted.
+
+**Stability-window impact:** v0.22.40 is the eighteenth patch in the v0.22.22-anchored window; v0.22.41 the nineteenth. Both are `medium-priority` scan-response work; neither resets the window. Window remains anchored to v0.22.22 (2026-05-07 → ~2026-05-28).
+
+---
 
 ### v0.22.38 Round-Up: Native Button Migration, CSS Scan Cleanup, and Custom Relationship Display (v0.22.38)
 
