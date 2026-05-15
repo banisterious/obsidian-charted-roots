@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.39] - 2026-05-15
+
+A focused reliability and UX release. Adds the long-requested **Event Relative ordering UI** ([#569](https://github.com/banisterious/obsidian-charted-roots/issues/569)) so `before` / `after` constraints can be set through the Create / Edit Event modal instead of by hand-editing YAML. Fixes five map-view issues that surfaced during recent custom-map testing: a spurious WebSocket console error from a bundled dev-server client, a markercluster load-order cascade that broke open / close cycles, a child-map header layout that wrapped awkwardly on long map names, and a [#575](https://github.com/banisterious/obsidian-charted-roots/issues/575) freeze when person notes contained asymmetric relationship data. Also closes the largest category in the v0.22.38 Community automated review's CSS lint surface via a 25-selector `leaflet-distortable` dedupe — no user-visible change; the scanner is now in its fully-irreducible state. **883 tests passing across 68 suites**.
+
 ### Added
 
 - **Event modal: Relative ordering section**: Create / Edit Event modal now exposes "After these events:" and "Before these events:" chip-list pickers for setting the `before` / `after` frontmatter arrays. The topological sort in the timeline exporters has supported these constraints since v0.20.x, but until now they could only be set via manual YAML editing. Use this for events with unknown or imprecise dates where chronology depends on relative ordering rather than calendar values. The Add picker excludes self and already-added events on the same side. (#569)
