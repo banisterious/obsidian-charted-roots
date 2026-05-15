@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Added
+
+- **Event modal: Relative ordering section**: Create / Edit Event modal now exposes "After these events:" and "Before these events:" chip-list pickers for setting the `before` / `after` frontmatter arrays. The topological sort in the timeline exporters has supported these constraints since v0.20.x, but until now they could only be set via manual YAML editing. Use this for events with unknown or imprecise dates where chronology depends on relative ordering rather than calendar values. The Add picker excludes self and already-added events on the same side. (#569)
+
 ## [0.22.38] - 2026-05-14
 
 A large-scoped scan-cleanup release responding to the v0.22.37 community automated review (which still surfaced ~50 actionable CSS warnings despite previous patches). This release closes the cluster-duplicate and `:has()` perf categories the scanner flagged, and migrates ~190 button markup sites to Obsidian's native `ButtonComponent` API for theme consistency and to retire a long-standing CSS-duplication source. Also drops `!important` from 5 of 6 sites where empirical DevTools inspection confirmed they were unnecessary, replaces the multi-value `text-decoration` shorthand with non-flagged alternatives, and includes one small user-facing cosmetic fix for custom relationship category display. Branch net: 27 commits, ~750 lines deleted. **883 tests passing across 68 suites**.
