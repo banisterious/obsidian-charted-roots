@@ -1,9 +1,15 @@
 # Leaflet-Distortable CSS Dedupe Plan
 
-**Status:** Active — Phase A pending
+**Status:** Phase B implemented — Phase C + D pending user verification
 **Target release:** v0.22.39
 **Branch:** `event-ordering-leaflet-dedupe-v0.22.39`
 **Triggered by:** Obsidian Community automated review against v0.22.38 (25 duplicate-selector warnings in the leaflet-distortable surface)
+
+## Implementation notes (2026-05-15)
+
+- **Phase A skipped in favor of analytical confirmation.** Source-order analysis (map-view.css concatenated before leaflet-distortable.css per `build-css.js:55-56`, identical specificity for bare-class duplicates) confirmed the library's hardcoded colors were winning in the cascade and the theme-aware re-implementation in map-view.css was dead code. The latent visual bug (icons rendering in hardcoded blue / red / black regardless of theme) was the predicted consequence. Phase C visual verification (below) replaces Phase A by checking the post-fix state directly.
+- **`.cr-map-view` scoping applied to all consolidated rules** (deviation from initial plan's "leave bare" framing). The library's CSS contains some absurdly broad selectors that leak to general Obsidian UI when bundled — `input[type="text"]::-webkit-input-placeholder`, `li.disabled`, ID selectors `#toggle-keymapper` / `#cancel`. Scoping every rule with `.cr-map-view` contains the leakage to the Charted Roots map view and also avoids cascade conflicts if a user has another plugin running leaflet-distortable. The leaflet-toolbar block (lines 8-132 of `leaflet-distortable.css`) was not scoped — outside the scope of the duplicate-selector cleanup.
+- **Bundle size impact:** styles.css went from 41,244 → 40,970 lines (−274). map-view.css went from 2,498 → 2,224 lines (−274). leaflet-distortable.css stayed at 371 lines (content updated in place; `.cr-map-view` prefix adds characters but not lines).
 
 ## The problem
 
@@ -125,11 +131,11 @@ Suggested commit subject: `refactor(css): Consolidate leaflet-distortable duplic
 
 ## Completion criteria
 
-- [ ] Phase A audit complete with per-selector table.
-- [ ] Phase B consolidation: `map-view.css:1798-1996` block removed, `leaflet-distortable.css` updated with theme-aware values.
-- [ ] `npm run build` produces a `styles.css` ~200 lines shorter than v0.22.38's.
-- [ ] `npm run lint:css` produces zero new warnings.
-- [ ] Phase C visual verification across light + dark themes documented (screenshots optional).
-- [ ] Phase D scanner verification confirms ~25 duplicate-selector warnings cleared.
+- [x] Phase A audit (skipped — analytical confirmation replaced it).
+- [x] Phase B consolidation: distortable block removed from `map-view.css` (lines 1773-2045, −274 lines), `leaflet-distortable.css` updated with theme-aware values and `.cr-map-view` scoping.
+- [x] `npm run build` produces a `styles.css` 274 lines shorter than v0.22.38's (41,244 → 40,970).
+- [x] `npm run lint:css` produces zero new warnings (0 errors / 113 warnings — same as v0.22.38 baseline).
+- [ ] Phase C visual verification across light + dark themes (pending user dev-vault inspection).
+- [ ] Phase D scanner verification confirms ~25 duplicate-selector warnings cleared (pending user-triggered Community scan against the branch).
 
-When complete, update status header to `✅ Complete` and `git mv` to `docs/planning/archive/`.
+When Phase C + D are verified, update status header to `✅ Complete` and `git mv` to `docs/planning/archive/`.

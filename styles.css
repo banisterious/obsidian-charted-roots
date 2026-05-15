@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-14 23:26:41 UTC
+ * - Generated: 2026-05-15 15:02:37 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -23272,7 +23272,7 @@ settings:
    COMPONENT: MAP-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 2499 lines, 54.33 KB */
+/* Component Size: 2225 lines, 48.73 KB */
 
 /* ==========================================================================
    Map View Styles
@@ -25047,280 +25047,6 @@ svg.leaflet-image-layer.leaflet-interactive path {
 }
 
 /* --------------------------------------------------------------------------
-   Leaflet.DistortableImage Styles
-   Styles for the image alignment/georeferencing tool.
-   -------------------------------------------------------------------------- */
-
-/* Distortable image toolbar container */
-.cr-map-view .ldi .leaflet-popup-toolbar {
-  width: max-content;
-}
-
-/* Make distortable images interactive */
-.cr-map-view .ldi .leaflet-pane .leaflet-overlay-pane img {
-  pointer-events: all;
-}
-
-.cr-map-view .ldi .leaflet-pane .leaflet-overlay-pane img.disabled {
-  cursor: default;
-}
-
-/* Selected image highlight */
-.cr-map-view .ldi img.leaflet-image-layer.collected {
-  box-shadow: 0px 0px 0px 12px var(--interactive-accent);
-}
-
-/* Distortable toolbar icon */
-.ldi-icon {
-  width: 18px;
-  height: 18px;
-  vertical-align: middle;
-  fill: var(--interactive-accent);
-}
-
-.ldi-icon.ldi-delete_forever {
-  fill: var(--text-error);
-}
-
-.ldi-icon.ldi-keyboard_open {
-  fill: var(--text-normal);
-}
-
-/* Hide offscreen input for distortable image */
-input.ldi {
-  position: absolute;
-  top: -100px;
-}
-
-/* Distortable toolbar icon box sizing */
-.cr-map-view .ldi .leaflet-toolbar-icon {
-  box-sizing: initial;
-}
-
-.cr-map-view .ldi .leaflet-toolbar-tip {
-  box-sizing: border-box;
-}
-
-/* Keymapper panel for distortable image */
-.ldi-keymapper {
-  background-color: var(--background-primary);
-  color: var(--text-normal);
-  padding: 8px;
-  font-size: 13px;
-  letter-spacing: 0.2px;
-  line-height: 1.3;
-  height: auto;
-  width: 235px;
-  border-radius: var(--radius-l);
-  overflow: hidden;
-}
-
-.cr-map-view .ldi #keymapper-wrapper {
-  position: relative;
-  width: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
-  max-height: 186px;
-  min-height: 186px;
-}
-
-.cr-map-view .ldi .left {
-  width: 46%;
-}
-
-.cr-map-view .ldi .left span {
-  overflow-wrap: break-word;
-}
-
-.cr-map-view .ldi .right {
-  display: flex;
-  max-width: 40%;
-  flex-wrap: wrap;
-  margin-left: 20px;
-  align-items: flex-start;
-}
-
-.cr-map-view .ldi #keymapper-hr {
-  transform: rotate(90deg);
-  position: relative;
-  transform-origin: 0px;
-  left: 50%;
-  margin: -2px;
-  width: 200%;
-}
-
-.ldi-keymapper tr {
-  display: block;
-}
-
-.ldi-keymapper td {
-  padding: 0.2rem;
-  display: flex;
-  width: 100%;
-}
-
-.ldi-keymapper kbd {
-  padding: 0.2rem 0.4rem;
-  color: var(--text-normal);
-  background-color: var(--background-modifier-hover);
-  border-radius: var(--radius-s);
-  box-shadow:
-    0 1px 1px rgba(0, 0, 0, 0.2),
-    0 2px 0 0 rgba(255, 255, 255, 0.7) inset;
-  text-shadow: 0 0.5px 0 var(--background-primary);
-}
-
-/* Toggle keymapper button */
-#toggle-keymapper {
-  background-color: var(--background-primary);
-  padding: 0px;
-  width: 30px;
-  height: 30px;
-  border-radius: var(--radius-s);
-  right: 16px;
-  cursor: pointer;
-  background-position: 50% 50%;
-  background-repeat: no-repeat;
-  display: block;
-  text-align: center;
-  text-decoration: none;
-  border: 2px solid var(--background-modifier-border);
-  line-height: 30px;
-}
-
-#toggle-keymapper:hover {
-  background-color: var(--background-modifier-hover);
-}
-
-.close-icon#toggle-keymapper {
-  text-transform: uppercase;
-  width: 254px;
-  font-size: 11px;
-  border: 1px solid var(--background-modifier-border);
-  margin: 0;
-  padding: 0;
-  background-color: var(--background-secondary);
-  border-radius: 0;
-  border-bottom-left-radius: var(--radius-l);
-  border-bottom-right-radius: var(--radius-l);
-  position: relative;
-  height: 21px;
-  line-height: 22px;
-  color: var(--text-muted);
-  top: 10px;
-  left: -10px;
-}
-
-.close-icon#toggle-keymapper:hover {
-  background-color: var(--background-modifier-hover);
-}
-
-/* Mode-specific toolbar button states */
-a.leaflet-toolbar-icon.rotate.selected-mode,
-a.leaflet-toolbar-icon.freeRotate.selected-mode {
-  background-color: rgba(251, 18, 14, 0.75);
-  border: inset 0.5px var(--background-modifier-border);
-}
-
-a.leaflet-toolbar-icon.rotate.selected-mode .ldi-icon,
-a.leaflet-toolbar-icon.freeRotate.selected-mode .ldi-icon,
-a.leaflet-toolbar-icon.drag.selected-mode .ldi-icon {
-  fill: white;
-}
-
-a.leaflet-toolbar-icon.drag.selected-mode {
-  background-color: rgba(9, 155, 56, 0.75);
-  border: inset 0.5px var(--background-modifier-border);
-}
-
-a.leaflet-toolbar-icon.distort.selected-mode,
-a.leaflet-toolbar-icon.scale.selected-mode {
-  background-color: hsla(239, 97%, 55%, 0.75);
-  border: inset 0.5px var(--background-modifier-border);
-}
-
-a.leaflet-toolbar-icon.distort.selected-mode .ldi-icon,
-a.leaflet-toolbar-icon.scale.selected-mode .ldi-icon {
-  fill: white;
-}
-
-a.leaflet-toolbar-icon.lock.selected-mode {
-  background-color: hsla(0, 0%, 1%, 0.75);
-  border: inset 0.5px var(--background-modifier-border);
-}
-
-li.disabled {
-  cursor: auto;
-}
-
-a.leaflet-toolbar-icon.disabled {
-  filter: grayscale(1);
-  pointer-events: none;
-}
-
-a.leaflet-toolbar-icon.lock.selected-mode .ldi-icon {
-  fill: white;
-}
-
-a.leaflet-toolbar-icon[title="Loading..."] {
-  background-color: var(--background-secondary);
-  pointer-events: none;
-  cursor: default;
-}
-
-/* Loading spinner */
-.ldi-icon.loader {
-  animation: ldi-spin 1.1s infinite;
-  fill: var(--text-normal);
-  width: 22px;
-  height: 22px;
-}
-
-#cancel {
-  fill: var(--text-error);
-}
-
-input[type="text"]::-webkit-input-placeholder {
-  color: var(--text-muted);
-}
-
-@keyframes ldi-spin {
-  0% {
-    transform: rotate(0);
-  }
-  10% {
-    transform: rotate(36deg);
-  }
-  20% {
-    transform: rotate(72deg);
-  }
-  30% {
-    transform: rotate(108deg);
-  }
-  40% {
-    transform: rotate(144deg);
-  }
-  50% {
-    transform: rotate(180deg);
-  }
-  60% {
-    transform: rotate(216deg);
-  }
-  70% {
-    transform: rotate(252deg);
-  }
-  80% {
-    transform: rotate(288deg);
-  }
-  90% {
-    transform: rotate(324deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-/* --------------------------------------------------------------------------
    Edit Mode Controls
    Controls for enabling/disabling distortable image edit mode.
    -------------------------------------------------------------------------- */
@@ -25780,7 +25506,7 @@ input[type="text"]::-webkit-input-placeholder {
    COMPONENT: LEAFLET-DISTORTABLE.CSS
    ========================================================================== */
 
-/* Component Size: 372 lines, 7.91 KB */
+/* Component Size: 372 lines, 8.84 KB */
 
 
 /* Leaflet DistortableImage & Toolbar Plugin Styles
@@ -25930,52 +25656,52 @@ input[type="text"]::-webkit-input-placeholder {
   cursor: default;
 }
 
-.ldi img.leaflet-image-layer.collected {
-  box-shadow: 0px 0px 0px 12px #ffea00;
+.cr-map-view .ldi img.leaflet-image-layer.collected {
+  box-shadow: 0px 0px 0px 12px var(--interactive-accent);
 }
 
-.ldi-icon {
+.cr-map-view .ldi-icon {
   width: 18px;
   height: 18px;
   vertical-align: middle;
-  fill: #0078a8;
+  fill: var(--interactive-accent);
 }
 
-.ldi-icon.ldi-delete_forever {
-  fill: #c10d0d;
+.cr-map-view .ldi-icon.ldi-delete_forever {
+  fill: var(--text-error);
 }
 
-.ldi-icon.ldi-keyboard_open {
-  fill: black;
+.cr-map-view .ldi-icon.ldi-keyboard_open {
+  fill: var(--text-normal);
 }
 
-input.ldi {
+.cr-map-view input.ldi {
   position: absolute;
   top: -100px;
 }
 
-.ldi .leaflet-toolbar-icon {
+.cr-map-view .ldi .leaflet-toolbar-icon {
   box-sizing: initial;
 }
 
-.ldi .leaflet-toolbar-tip {
+.cr-map-view .ldi .leaflet-toolbar-tip {
   box-sizing: border-box;
 }
 
-.ldi-keymapper {
-  background-color: rgba(255, 255, 255, 1);
-  color: black;
+.cr-map-view .ldi-keymapper {
+  background-color: var(--background-primary);
+  color: var(--text-normal);
   padding: 8px;
   font-size: 13px;
   letter-spacing: 0.2px;
   line-height: 1.3;
   height: auto;
   width: 235px;
-  border-radius: 21px;
+  border-radius: var(--radius-l);
   overflow: hidden;
 }
 
-.ldi #keymapper-wrapper {
+.cr-map-view .ldi #keymapper-wrapper {
   position: relative;
   width: 100%;
   overflow-x: hidden;
@@ -25984,15 +25710,15 @@ input.ldi {
   min-height: 186px;
 }
 
-.ldi .left {
+.cr-map-view .ldi .left {
   width: 46%;
 }
 
-.ldi .left span {
+.cr-map-view .ldi .left span {
   overflow-wrap: break-word;
 }
 
-.ldi .right {
+.cr-map-view .ldi .right {
   display: flex;
   max-width: 40%;
   flex-wrap: wrap;
@@ -26000,7 +25726,7 @@ input.ldi {
   align-items: flex-start;
 }
 
-.ldi #keymapper-hr {
+.cr-map-view .ldi #keymapper-hr {
   transform: rotate(90deg);
   position: relative;
   transform-origin: 0px;
@@ -26009,33 +25735,33 @@ input.ldi {
   width: 200%;
 }
 
-.ldi-keymapper tr {
+.cr-map-view .ldi-keymapper tr {
   display: block;
 }
 
-.ldi-keymapper td {
+.cr-map-view .ldi-keymapper td {
   padding: 0.2rem;
   display: flex;
   width: 100%;
 }
 
-.ldi-keymapper kbd {
+.cr-map-view .ldi-keymapper kbd {
   padding: 0.2rem 0.4rem;
-  color: black;
-  background-color: rgb(247, 247, 247);
-  border-radius: 3px;
+  color: var(--text-normal);
+  background-color: var(--background-modifier-hover);
+  border-radius: var(--radius-s);
   box-shadow:
     0 1px 1px rgba(0, 0, 0, 0.2),
     0 2px 0 0 rgba(255, 255, 255, 0.7) inset;
-  text-shadow: 0 0.5px 0 #ffffff;
+  text-shadow: 0 0.5px 0 var(--background-primary);
 }
 
-#toggle-keymapper {
-  background-color: #ffffff;
+.cr-map-view #toggle-keymapper {
+  background-color: var(--background-primary);
   padding: 0px;
   width: 30px;
   height: 30px;
-  border-radius: 4px;
+  border-radius: var(--radius-s);
   right: 16px;
   cursor: pointer;
   background-position: 50% 50%;
@@ -26043,102 +25769,102 @@ input.ldi {
   display: block;
   text-align: center;
   text-decoration: none;
-  border: 2px solid rgba(184, 178, 173, 0.9);
+  border: 2px solid var(--background-modifier-border);
   line-height: 30px;
 }
 
-#toggle-keymapper:hover {
-  background-color: #f4f4f4;
+.cr-map-view #toggle-keymapper:hover {
+  background-color: var(--background-modifier-hover);
 }
 
-.close-icon#toggle-keymapper {
+.cr-map-view .close-icon#toggle-keymapper {
   text-transform: uppercase;
   width: 254px;
   font-size: 11px;
-  border: 1px solid lightgray;
+  border: 1px solid var(--background-modifier-border);
   margin: 0;
   padding: 0;
-  background-color: whitesmoke;
+  background-color: var(--background-secondary);
   border-radius: 0;
-  border-bottom-left-radius: 21px;
-  border-bottom-right-radius: 21px;
+  border-bottom-left-radius: var(--radius-l);
+  border-bottom-right-radius: var(--radius-l);
   position: relative;
   height: 21px;
   line-height: 22px;
-  color: gray;
+  color: var(--text-muted);
   top: 10px;
   left: -10px;
 }
 
-.close-icon#toggle-keymapper:hover {
-  background-color: #efefef;
+.cr-map-view .close-icon#toggle-keymapper:hover {
+  background-color: var(--background-modifier-hover);
 }
 
-a.leaflet-toolbar-icon.rotate.selected-mode,
-a.leaflet-toolbar-icon.freeRotate.selected-mode {
+.cr-map-view a.leaflet-toolbar-icon.rotate.selected-mode,
+.cr-map-view a.leaflet-toolbar-icon.freeRotate.selected-mode {
   background-color: rgba(251, 18, 14, 0.75);
-  border: inset 0.5px lightgray;
+  border: inset 0.5px var(--background-modifier-border);
 }
 
-a.leaflet-toolbar-icon.rotate.selected-mode .ldi-icon,
-a.leaflet-toolbar-icon.freeRotate.selected-mode .ldi-icon,
-a.leaflet-toolbar-icon.drag.selected-mode .ldi-icon {
+.cr-map-view a.leaflet-toolbar-icon.rotate.selected-mode .ldi-icon,
+.cr-map-view a.leaflet-toolbar-icon.freeRotate.selected-mode .ldi-icon,
+.cr-map-view a.leaflet-toolbar-icon.drag.selected-mode .ldi-icon {
   fill: white;
 }
 
-a.leaflet-toolbar-icon.drag.selected-mode {
+.cr-map-view a.leaflet-toolbar-icon.drag.selected-mode {
   background-color: rgba(9, 155, 56, 0.75);
-  border: inset 0.5px lightgray;
+  border: inset 0.5px var(--background-modifier-border);
 }
 
-a.leaflet-toolbar-icon.distort.selected-mode,
-a.leaflet-toolbar-icon.scale.selected-mode {
+.cr-map-view a.leaflet-toolbar-icon.distort.selected-mode,
+.cr-map-view a.leaflet-toolbar-icon.scale.selected-mode {
   background-color: hsla(239, 97%, 55%, 0.75);
-  border: inset 0.5px lightgray;
+  border: inset 0.5px var(--background-modifier-border);
 }
 
-a.leaflet-toolbar-icon.distort.selected-mode .ldi-icon,
-a.leaflet-toolbar-icon.scale.selected-mode .ldi-icon {
+.cr-map-view a.leaflet-toolbar-icon.distort.selected-mode .ldi-icon,
+.cr-map-view a.leaflet-toolbar-icon.scale.selected-mode .ldi-icon {
   fill: white;
 }
 
-a.leaflet-toolbar-icon.lock.selected-mode {
+.cr-map-view a.leaflet-toolbar-icon.lock.selected-mode {
   background-color: hsla(0, 0%, 1%, 0.75);
-  border: inset 0.5px lightgray;
+  border: inset 0.5px var(--background-modifier-border);
 }
 
-li.disabled {
+.cr-map-view li.disabled {
   cursor: auto;
 }
 
-a.leaflet-toolbar-icon.disabled {
+.cr-map-view a.leaflet-toolbar-icon.disabled {
   filter: grayscale(1);
   pointer-events: none;
 }
 
-a.leaflet-toolbar-icon.lock.selected-mode .ldi-icon {
+.cr-map-view a.leaflet-toolbar-icon.lock.selected-mode .ldi-icon {
   fill: white;
 }
 
-a.leaflet-toolbar-icon[title="Loading..."] {
-  background-color: whitesmoke;
+.cr-map-view a.leaflet-toolbar-icon[title="Loading..."] {
+  background-color: var(--background-secondary);
   pointer-events: none;
   cursor: default;
 }
 
-.ldi-icon.loader {
+.cr-map-view .ldi-icon.loader {
   animation: ldi-spin 1.1s infinite;
-  fill: black;
+  fill: var(--text-normal);
   width: 22px;
   height: 22px;
 }
 
-#cancel {
-  fill: #c10d0d;
+.cr-map-view #cancel {
+  fill: var(--text-error);
 }
 
-input[type="text"]::-webkit-input-placeholder {
-  color: #979797;
+.cr-map-view input[type="text"]::-webkit-input-placeholder {
+  color: var(--text-muted);
 }
 
 @keyframes ldi-spin {
@@ -41182,11 +40908,11 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-14 23:26:42 UTC
+ * Build completed: 2026-05-15 15:02:39 UTC
  * Components processed: 50
- * Total lines: 40713
- * Total size: 828.83 KB
- * Build duration: 1.07 seconds
+ * Total lines: 40439
+ * Total size: 824.15 KB
+ * Build duration: 2.21 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.86 KB
@@ -41215,8 +40941,8 @@ body.cr-media-linker-active .suggestion-container {
  * - data-quality.css: 1439 lines, 28.62 KB
  * - relationships.css: 583 lines, 11.2 KB
  * - canvas-navigation.css: 674 lines, 14.43 KB
- * - map-view.css: 2499 lines, 54.33 KB
- * - leaflet-distortable.css: 372 lines, 7.91 KB
+ * - map-view.css: 2225 lines, 48.73 KB
+ * - leaflet-distortable.css: 372 lines, 8.84 KB
  * - date-systems.css: 278 lines, 5.16 KB
  * - events.css: 1520 lines, 30.79 KB
  * - timeline-callouts.css: 324 lines, 11.1 KB
