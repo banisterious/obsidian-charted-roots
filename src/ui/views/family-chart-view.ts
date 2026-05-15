@@ -1484,6 +1484,18 @@ export class FamilyChartView extends ItemView {
 
 		// Transform to family-chart format, filtering relationship IDs to only valid ones
 		this.chartData = people.map(person => this.transformPersonNode(person, validIds, peopleMap));
+
+		// Defensive symmetry pass (#575). family-chart requires every claimed
+		// relationship to be reciprocated by the other side; asymmetric data
+		// (e.g., a child with father_id pointing at a parent whose own
+		// children list doesn't include them, often produced by interrupted
+		// writes or sync conflicts) can freeze the library's tree
+		// construction in an internal loop that no surrounding try-catch can
+		// recover from. Drop unreciprocated references before they reach
+		// f3.createChart, and log warnings so the data shape can be
+		// inspected via the Data Quality view later.
+		this.dropAsymmetricRelationships();
+
 		const transformTime = performance.now();
 
 		logger.debug('data-load', 'Loaded chart data', {
@@ -1729,6 +1741,82 @@ export class FamilyChartView extends ItemView {
 				children,
 			}
 		};
+	}
+
+	/**
+	 * Strict bidirectional sanitization for chartData (#575).
+	 *
+	 * family-chart's internal tree construction can freeze (infinite loop,
+	 * not a throw) when asymmetric relationship data reaches it — e.g., a
+	 * person whose `rels.parents` lists P but P's `rels.children` doesn't
+	 * include them. The transformPersonNode pass already filters the children
+	 * direction; this method completes the symmetry by walking every node
+	 * and dropping any parent / child / spouse reference the other side
+	 * doesn't mirror.
+	 *
+	 * Warnings are logged so the source data shape can be reviewed via the
+	 * Data Quality view (a future enhancement) or by inspecting the console.
+	 */
+	private dropAsymmetricRelationships(): void {
+		const nodeById = new Map(this.chartData.map(n => [n.id, n]));
+		let dropped = 0;
+
+		for (const node of this.chartData) {
+			node.rels.parents = node.rels.parents.filter(parentId => {
+				const parent = nodeById.get(parentId);
+				if (!parent) {
+					dropped++;
+					return false;
+				}
+				if (!parent.rels.children.includes(node.id)) {
+					logger.warn('sanitize', 'Dropping unreciprocated parent reference', {
+						personId: node.id,
+						parentId,
+					});
+					dropped++;
+					return false;
+				}
+				return true;
+			});
+
+			node.rels.children = node.rels.children.filter(childId => {
+				const child = nodeById.get(childId);
+				if (!child) {
+					dropped++;
+					return false;
+				}
+				if (!child.rels.parents.includes(node.id)) {
+					logger.warn('sanitize', 'Dropping unreciprocated child reference', {
+						personId: node.id,
+						childId,
+					});
+					dropped++;
+					return false;
+				}
+				return true;
+			});
+
+			node.rels.spouses = node.rels.spouses.filter(spouseId => {
+				const spouse = nodeById.get(spouseId);
+				if (!spouse) {
+					dropped++;
+					return false;
+				}
+				if (!spouse.rels.spouses.includes(node.id)) {
+					logger.warn('sanitize', 'Dropping unreciprocated spouse reference', {
+						personId: node.id,
+						spouseId,
+					});
+					dropped++;
+					return false;
+				}
+				return true;
+			});
+		}
+
+		if (dropped > 0) {
+			logger.info('sanitize', `Dropped ${dropped} asymmetric relationship reference(s) before family-chart render. Review the source notes to repair the bidirectional data.`);
+		}
 	}
 
 	/**
