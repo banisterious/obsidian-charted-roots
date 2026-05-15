@@ -1,8 +1,9 @@
 /**
  * ODT (OpenDocument Text) Generator
  *
- * Generates ODT documents using JSZip for the Family Chart export feature.
- * ODT files are ZIP archives with a specific structure containing XML files.
+ * Generates ODT documents via the ZipBuilder adapter (fflate-backed) for the
+ * Family Chart export feature. ODT files are ZIP archives with a specific
+ * structure containing XML files.
  *
  * Structure:
  * - mimetype (uncompressed, must be first)
@@ -12,7 +13,7 @@
  * - Pictures/ (embedded images)
  */
 
-import JSZip from 'jszip';
+import { ZipBuilder } from '../../utils/zip';
 
 export interface OdtOptions {
 	/** Document title (shown in document properties) */
@@ -39,7 +40,7 @@ export interface OdtOptions {
  * Generate an ODT document containing a family chart image
  */
 export async function generateOdt(options: OdtOptions): Promise<Blob> {
-	const zip = new JSZip();
+	const zip = new ZipBuilder();
 
 	// Extract base64 data from data URL if needed
 	let imageData = options.chartImageData;
@@ -47,7 +48,7 @@ export async function generateOdt(options: OdtOptions): Promise<Blob> {
 		imageData = imageData.substring('data:image/png;base64,'.length);
 	}
 
-	// Convert base64 to binary for JSZip
+	// Convert base64 to binary so we can pass through ZipBuilder as Uint8Array.
 	const imageBytes = base64ToUint8Array(imageData);
 
 	// Calculate image dimensions in cm (ODT uses cm)
@@ -94,14 +95,11 @@ export async function generateOdt(options: OdtOptions): Promise<Blob> {
 	zip.file('meta.xml', generateMeta(options.title));
 
 	// 6. Pictures/chart.png
-	zip.file('Pictures/chart.png', imageBytes, { binary: true });
+	zip.file('Pictures/chart.png', imageBytes);
 
 	// Generate the ZIP file
 	const blob = await zip.generateAsync({
-		type: 'blob',
-		mimeType: 'application/vnd.oasis.opendocument.text',
-		compression: 'DEFLATE',
-		compressionOptions: { level: 6 }
+		mimeType: 'application/vnd.oasis.opendocument.text'
 	});
 
 	return blob;

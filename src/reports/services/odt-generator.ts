@@ -3,10 +3,10 @@
  * ODT Generator
  *
  * Generates ODT (Open Document Text) files from markdown content.
- * Uses JSZip (already available in Obsidian) for creating the ODT archive.
+ * Uses the ZipBuilder adapter (fflate-backed) for creating the ODT archive.
  */
 
-import JSZip from 'jszip';
+import { ZipBuilder } from '../../utils/zip';
 import { getLogger } from '../../core/logging';
 import { parseFootnotes, replaceFootnoteMarkers } from '../utils/footnote-parser';
 
@@ -41,14 +41,14 @@ export interface OdtExportOptions {
  * Generator for ODT (Open Document Text) files
  */
 export class OdtGenerator {
-	private zip: JSZip;
+	private zip: ZipBuilder;
 	/** Footnote definitions collected from markdown */
 	private footnotes: Map<string, string> = new Map();
 	/** Counter for footnote numbering */
 	private footnoteCounter: number = 0;
 
 	constructor() {
-		this.zip = new JSZip();
+		this.zip = new ZipBuilder();
 	}
 
 	/**
@@ -61,7 +61,7 @@ export class OdtGenerator {
 		logger.info('generate', 'Generating ODT document', { title: options.title, hasImage: !!options.embedImage });
 
 		// Reset zip for new document
-		this.zip = new JSZip();
+		this.zip = new ZipBuilder();
 
 		// Add required ODT components
 		this.addMimetype();
@@ -76,7 +76,6 @@ export class OdtGenerator {
 
 		// Generate the ODT file
 		const blob = await this.zip.generateAsync({
-			type: 'blob',
 			mimeType: 'application/vnd.oasis.opendocument.text'
 		});
 

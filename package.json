@@ -1,6 +1,6 @@
 {
 	"name": "obsidian-charted-roots",
-	"version": "0.22.39",
+	"version": "0.22.41",
 	"description": "Family tree visualization for genealogists and worldbuilders. Interactive charts, geographic maps, evidence tracking, GEDCOM support, and fictional calendars.",
 	"main": "main.js",
 	"scripts": {
@@ -18,7 +18,7 @@
 		"format:css": "prettier --write \"styles/**/*.css\"",
 		"deploy": "./deploy.sh",
 		"dev:deploy": "./dev-deploy.sh",
-		"postinstall": "node patch-family-chart.js && node patch-leaflet-distortable.js",
+		"postinstall": "node patch-family-chart.js && node patch-leaflet-distortable.js && node patch-core-js-polyfill.js",
 		"test": "node ./node_modules/vitest/vitest.mjs run",
 		"test:watch": "node ./node_modules/vitest/vitest.mjs"
 	},
@@ -68,8 +68,8 @@
 		"d3-hierarchy": "^3.1.2",
 		"d3-selection": "^3.0.0",
 		"family-chart": "^0.9.0",
+		"fflate": "^0.8.2",
 		"jspdf": "^3.0.4",
-		"jszip": "^3.10.1",
 		"leaflet": "^1.9.4",
 		"leaflet-distortableimage": "^0.21.9",
 		"leaflet-fullscreen": "^1.0.2",

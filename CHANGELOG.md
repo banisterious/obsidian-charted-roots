@@ -12,6 +12,27 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.41] - 2026-05-15
+
+Follow-up to v0.22.40 that closes the remaining four sites flagged by the Community automated review's "dynamic `<script>` element creations" rule. The four sites were all an IE5-8 setImmediate polyfill bundled inside `core-js` and `pdfmake` (two each, since pdfmake ships its own copy of `core-js`). The branch is unreachable in Obsidian's Electron runtime because the earlier `MessageChannel` branch in the same polyfill chain always wins, so the `createElement('script')` lines are dead code. A new postinstall patch removes the IE8- branch from `core-js/internals/task.js` and `pdfmake/build/pdfmake.js` at source so it never reaches `main.js`. Bundled count goes from four to zero. **883 tests passing across 68 suites**.
+
+### Fixed
+
+- **Stripped IE5-8 setImmediate polyfill from `core-js` and `pdfmake`** (new postinstall `patch-core-js-polyfill.js`). The polyfill's IE8- detection branch (`if (ONREADYSTATECHANGE in createElement('script')) { ... }`) is microtask-scheduling fallback for IE5-8. In Electron, the earlier `MessageChannel` branch in the same `if/else if` chain always succeeds, so the IE8 path is never reached at runtime. The patch removes the branch from both bundled libraries at source. No user-visible change; setImmediate behavior is unchanged because the MessageChannel path was already the only path executed.
+
+## [0.22.40] - 2026-05-15
+
+A targeted scan-response release. The Obsidian Community automated review promoted "dynamic `<script>` element creations" from warning to error severity between v0.22.38 and v0.22.39's post-release scan; v0.22.39 was demoted on the Community Plugins website as a result. The rule fired on nine sites — all in vendored library code that never executes in Obsidian's Electron runtime. This release reduces the flagged surface from nine to four: stubs `leaflet-distortableimage`'s unreachable webpack chunk loader, and migrates ODT generation from `jszip` (which bundles UMD module-detection guards in four places) to the smaller, modern `fflate`. The four remaining sites — two in `core-js` and two in `pdfmake` (which bundles core-js internally) — are scoped for follow-up. **883 tests passing across 68 suites**.
+
+### Fixed
+
+- **Stubbed unreachable webpack chunk loader in `leaflet-distortableimage`**. The bundled library includes webpack's lazy-chunk loader (`__webpack_require__.l`) which dynamically creates a `<script>` element to fetch chunks. The plugin emits a single bundle (no code splitting), so this code path never executes, but the dynamic `createElement('script')` was flagged at error severity by the Community automated review. A postinstall patch (mirroring the existing `patch-family-chart.js`) now stubs the loader to a no-op that immediately invokes its `done()` callback. No user-visible change.
+
+### Changed
+
+- **Migrated ODT generation from `jszip` to `fflate`**. `jszip`'s bundled output contained four UMD module-detection guards using `document.createElement('script')`, all flagged at error severity. `fflate` is a smaller, modern, no-UMD-detection alternative supporting the same writer + reader subset. The migration introduces a thin adapter at `src/utils/zip.ts` (`ZipBuilder` / `ZipReader`, JSZip-shaped API) so the four call sites — Reports → ODT, Family Chart → ODT, Book → ODT, and Gramps `.gpkg` import — needed only near-mechanical edits. Functional behavior is unchanged; ODT files open identically in LibreOffice and the Gramps reader handles both tar.gz and ZIP-format `.gpkg` inputs as before. Centralizing the library boundary in the adapter means any future `fflate` version bump or alternative-library swap is a one-file change.
+- **Internal: ZIP-format `.gpkg` test fixture**. Added `tests/fixtures/gramps/gramps-app-export-test11-small-zip.gpkg` plus a repack script (`tests/fixtures/gramps/repack-to-zip.js`) that converts tar.gz `.gpkg` archives (the format Gramps' export wizard produces) into ZIP-format archives. Lets the ZIP reader code path in `gpkg-extractor.ts` be exercised in dev-vault testing; Gramps does not produce ZIP-format `.gpkg` directly, so the existing fixtures only covered the tar.gz reader path.
+
 ## [0.22.39] - 2026-05-15
 
 A focused reliability and UX release. Adds the long-requested **Event Relative ordering UI** ([#569](https://github.com/banisterious/obsidian-charted-roots/issues/569)) so `before` / `after` constraints can be set through the Create / Edit Event modal instead of by hand-editing YAML. Fixes five map-view issues that surfaced during recent custom-map testing: a spurious WebSocket console error from a bundled dev-server client, a markercluster load-order cascade that broke open / close cycles, a child-map header layout that wrapped awkwardly on long map names, and a [#575](https://github.com/banisterious/obsidian-charted-roots/issues/575) freeze when person notes contained asymmetric relationship data. Also closes the largest category in the v0.22.38 Community automated review's CSS lint surface via a 25-selector `leaflet-distortable` dedupe — no user-visible change; the scanner is now in its fully-irreducible state. **883 tests passing across 68 suites**.

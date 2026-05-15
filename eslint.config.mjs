@@ -16,6 +16,7 @@ export default [
 			"build-fonts.js",
 			"patch-family-chart.js",
 			"patch-leaflet-distortable.js",
+			"patch-core-js-polyfill.js",
 			"gedcom-testing/**",
 			"mockups/**",
 			"tests/fixtures/**",

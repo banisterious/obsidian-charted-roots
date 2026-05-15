@@ -6,7 +6,7 @@
  * Reuses OdtGenerator for markdown conversion and XML helpers.
  */
 
-import JSZip from 'jszip';
+import { ZipBuilder } from '../../utils/zip';
 import { OdtGenerator } from '../../reports/services/odt-generator';
 import type {
 	BookDefinition,
@@ -36,7 +36,7 @@ export class OdtBookRenderer {
 		bibliography: BibliographyEntry[] = [],
 		nameIndex: NameIndexEntry[] = []
 	): Promise<Blob> {
-		const zip = new JSZip();
+		const zip = new ZipBuilder();
 		const { metadata, outputOptions } = definition;
 		const imageEntries: Array<{ filename: string; data: string }> = [];
 
@@ -143,7 +143,6 @@ export class OdtBookRenderer {
 		}
 
 		return zip.generateAsync({
-			type: 'blob',
 			mimeType: 'application/vnd.oasis.opendocument.text',
 		});
 	}
@@ -254,7 +253,7 @@ export class OdtBookRenderer {
 	/**
 	 * Add manifest.xml with entries for all images.
 	 */
-	private addManifest(zip: JSZip, imageCount: number): void {
+	private addManifest(zip: ZipBuilder, imageCount: number): void {
 		let manifest = `<?xml version="1.0" encoding="UTF-8"?>
 <manifest:manifest xmlns:manifest="urn:oasis:names:tc:opendocument:xmlns:manifest:1.0" manifest:version="1.2">
   <manifest:file-entry manifest:media-type="application/vnd.oasis.opendocument.text" manifest:full-path="/"/>
@@ -272,7 +271,7 @@ export class OdtBookRenderer {
 	/**
 	 * Add styles.xml — delegates pattern from existing OdtGenerator.
 	 */
-	private addStyles(zip: JSZip): void {
+	private addStyles(zip: ZipBuilder): void {
 		// Use the same styles as OdtGenerator by calling addStyles on a temporary instance.
 		// The styles are static XML, so we replicate the structure here.
 		const styles = `<?xml version="1.0" encoding="UTF-8"?>
@@ -330,7 +329,7 @@ export class OdtBookRenderer {
 	/**
 	 * Add content.xml with the assembled body content.
 	 */
-	private addContent(zip: JSZip, bodyContent: string): void {
+	private addContent(zip: ZipBuilder, bodyContent: string): void {
 		const content = `<?xml version="1.0" encoding="UTF-8"?>
 <office:document-content xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
                          xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
