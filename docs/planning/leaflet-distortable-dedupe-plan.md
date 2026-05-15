@@ -7,7 +7,7 @@
 
 ## Implementation notes (2026-05-15)
 
-- **Phase A skipped in favor of analytical confirmation.** Source-order analysis (map-view.css concatenated before leaflet-distortable.css per `build-css.js:55-56`, identical specificity for bare-class duplicates) confirmed the library's hardcoded colors were winning in the cascade and the theme-aware re-implementation in map-view.css was dead code. The latent visual bug (icons rendering in hardcoded blue / red / black regardless of theme) was the predicted consequence. Phase C visual verification (below) replaces Phase A by checking the post-fix state directly.
+- **Phase A skipped in favor of analytical confirmation.** Source-order analysis (map-view.css concatenated before leaflet-distortable.css per `build-css.js:55-56`, identical specificity for bare-class duplicates) confirmed the library's hardcoded colors were winning in the cascade and the theme-aware re-implementation in map-view.css was dead code. Scope of visible impact narrowed mid-implementation after discovering `suppressToolbar: true` in `image-map-manager.ts`: most consolidated rules cover the suppressed popup toolbar / keymapper, so theme-aware values there are defensive only. The single user-visible change is the corner-handle selection highlight (`.cr-map-view .ldi img.leaflet-image-layer.collected`'s box-shadow), now `var(--interactive-accent)` instead of `#ffea00`. Phase C visual verification replaces Phase A by checking the post-fix state directly.
 - **`.cr-map-view` scoping applied to all consolidated rules** (deviation from initial plan's "leave bare" framing). The library's CSS contains some absurdly broad selectors that leak to general Obsidian UI when bundled — `input[type="text"]::-webkit-input-placeholder`, `li.disabled`, ID selectors `#toggle-keymapper` / `#cancel`. Scoping every rule with `.cr-map-view` contains the leakage to the Charted Roots map view and also avoids cascade conflicts if a user has another plugin running leaflet-distortable. The leaflet-toolbar block (lines 8-132 of `leaflet-distortable.css`) was not scoped — outside the scope of the duplicate-selector cleanup.
 - **Bundle size impact:** styles.css went from 41,244 → 40,970 lines (−274). map-view.css went from 2,498 → 2,224 lines (−274). leaflet-distortable.css stayed at 371 lines (content updated in place; `.cr-map-view` prefix adds characters but not lines).
 
@@ -20,9 +20,11 @@ On investigation, the duplication is structural, not coincidental:
 - **`styles/map-view.css:1798-1996`** (~200 lines): a theme-aware re-implementation using Obsidian CSS variables (`var(--interactive-accent)`, `var(--background-primary)`, `var(--text-error)`, `var(--radius-l)`, etc.) and some selectors scoped to `.cr-map-view`.
 - **`styles/leaflet-distortable.css:153-360`**: the library's original CSS with hardcoded colors (`#0078a8`, `rgba(255,255,255,1)`, `21px` radii, etc.).
 
-Both files are concatenated in build order: `map-view.css` first, `leaflet-distortable.css` second (per `build-css.js:55-56`). Since the bare-class selectors have identical specificity in both files, **the library's hardcoded values win** for every bare selector. The theme-aware rules in `map-view.css` are silently overridden — wasted effort, and a latent visual bug (the distortable image editing toolbar renders in the library's blue/red/black colors regardless of theme; the keymapper panel renders with a hardcoded white background even in dark mode).
+Both files are concatenated in build order: `map-view.css` first, `leaflet-distortable.css` second (per `build-css.js:55-56`). Since the bare-class selectors have identical specificity in both files, **the library's hardcoded values win** for every bare selector. The theme-aware rules in `map-view.css` are silently overridden.
 
-The scanner warning is a symptom; the real problem is the un-cascading override pair.
+The cascade conflict's user-visible effect is narrower than first thought, however: leaflet-distortable's popup toolbar (rotate / scale / distort / lock controls), the keymapper panel, and the toggle / cancel buttons are intentionally suppressed in Charted Roots' map view (`suppressToolbar: true` in `image-map-manager.ts`). So most of the theme-aligned rules cover UI that doesn't render. The one user-visible consequence: the corner-handle selection highlight (`.cr-map-view .ldi img.leaflet-image-layer.collected`'s box-shadow) renders in the library's hardcoded yellow (`#ffea00`) instead of `var(--interactive-accent)`.
+
+The scanner warning is the primary motivation; theme alignment for the suppressed surfaces is defensive (in case `suppressToolbar` is ever flipped off).
 
 ## Upstream status (no rescue available)
 
@@ -80,17 +82,16 @@ Specific selectors to consolidate (from scan output):
 - `a.leaflet-toolbar-icon[title="Loading..."]`
 - `#cancel`
 
-### Phase C — Visual verification (~45 min)
+### Phase C — Visual verification (~10 min)
 
 In dev vault, with both light and dark themes:
 
-1. Open a custom-map image in edit mode. Cycle through rotate / scale / drag / distort / lock modes. Confirm icons render in theme colors (not hardcoded blue / red / black).
-2. Open the keymapper panel (keyboard shortcut). Confirm background renders in `var(--background-primary)` for both themes (not pure white in dark mode).
-3. Toggle the keymapper close button. Confirm hover state renders correctly.
-4. Test the Loading and Disabled toolbar icon states (use a slow or invalid image URL).
-5. Confirm the cancel button on edit-mode exit renders correctly.
+1. Open a custom-map image in edit mode (Charted Roots' edit-mode banner appears with Save alignment / Undo changes / Reset / Cancel buttons).
+2. Click on the image to mark it "selected" (collected) — this triggers the box-shadow halo around the image.
+3. Confirm the halo renders in `var(--interactive-accent)` (theme accent color, typically purple in default Obsidian dark theme) rather than yellow (`#ffea00`).
+4. Switch theme (light ↔ dark) and confirm halo follows the theme accent.
 
-Capture before / after screenshots for the v0.22.39 release notes — visual change is real (icons go from hardcoded library colors to theme-aware).
+Scope of visible change is narrow because leaflet-distortable's popup toolbar / keymapper are intentionally suppressed in Charted Roots (`suppressToolbar: true` at `image-map-manager.ts:686`). The toolbar icons, keymapper panel, and `#toggle-keymapper` rules were theme-aligned for defensive reasons only.
 
 ### Phase D — Scanner verification
 
