@@ -51,12 +51,17 @@ let distortableImageLoaded = false;
  * We use dynamic import() after setting window.L first
  */
 async function initDistortableImagePlugins(): Promise<void> {
-	if (distortableImageLoaded) return;
-
-	// Ensure L is on window BEFORE loading the plugins
+	// Always re-attach our bundled L to window before checking. The global
+	// L reference can drift across repeated map open/close cycles in the
+	// same plugin session (same pattern as initializeLeafletPlugins in
+	// map-controller.ts) — without this, the post-load check below fails
+	// from the 2nd edit attempt onward because window.L no longer points
+	// at the namespace where leaflet-distortable registered itself.
 	if (typeof window !== 'undefined') {
 		(window as unknown as { L: typeof L }).L = L;
 	}
+
+	if (distortableImageLoaded) return;
 
 	// Use dynamic import() to load the plugins after setting window.L
 	// These plugins register themselves on the global L object

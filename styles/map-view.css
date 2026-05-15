@@ -875,16 +875,29 @@ svg.leaflet-image-layer.leaflet-interactive path {
   color: var(--text-normal);
   font-size: var(--font-small);
   min-width: 120px;
+  /* Cap the displayed-value width so long map names like "River Scaum and
+     its Major Tributaries (The Dying Earth)" don't eat the whole toolbar
+     row and push filter inputs into an awkward wrap. The dropdown popup
+     still shows full option text when opened. */
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Breadcrumb navigation (#361) */
+/* Breadcrumb navigation (#361) — rendered as its own row above the toolbar
+   so it doesn't compete with the toolbar's filter controls for horizontal
+   space on child-map views with long parent names. */
 
 .cr-map-breadcrumb {
   display: flex;
   align-items: center;
   font-size: var(--font-ui-smaller);
   color: var(--text-muted);
-  padding: 0 var(--cr-spacing-xs);
+  padding: var(--cr-spacing-xs) var(--cr-spacing-md);
+  background: var(--background-primary);
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
 }
 
 .cr-map-breadcrumb__link {
