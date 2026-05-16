@@ -12,6 +12,18 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.44] - 2026-05-16
+
+Same-day follow-up to v0.22.43 that actually closes the two CSS lint Warnings v0.22.43 was meant to silence. The source-level changes shipped correctly in v0.22.43 (`styles/family-chart-view.css` dropped `!important`, `styles/timeline-callouts.css` dropped `:has()`), but the bundled `styles.css` in the repo was not rebuilt and committed alongside. The Community automated review's CSS-lint rule reads `styles.css` from the repo at the tagged commit (not the CI-built release asset), so it still saw the old rules at the bundled paths even though the source paths had been fixed. v0.22.44 commits a freshly built `styles.css` matching the v0.22.43 source state, and updates the release-procedure documentation to reflect the new "rebuild + commit `styles.css` on CSS-touching releases" rule. No source-code changes; only the bundled stylesheet and release-procedure docs. **883 tests passing across 68 suites.**
+
+### Fixed
+
+- **Bundled `styles.css` rebuilt and committed.** The committed `styles.css` now matches the v0.22.43 source state: `!important` is gone from the `.card_cont.cr-hl-dim` rule, and the two sibling-aware `:has()` rules in timeline-callouts have been rewritten to class-based adjacent-sibling selectors per v0.22.43's `cr-has-timeline` post-processor. The scanner now sees zero `!important` declarations and zero `:has()` selectors in the bundled stylesheet (down from one and two respectively at v0.22.43).
+
+### Changed
+
+- **`docs/developer/release-procedure.md` flipped its guidance on `styles.css`.** The previous instruction was to skip `styles.css` during the version-bump commit because of a "known build-timestamp drift." That captured the symptom but documented the wrong remediation: the drift exists because we never rebuild + commit, and the Community automated review reads the bundled stylesheet from the repo. The correct rule is to rebuild via `npm run build`, then include `styles.css` in the version-bump commit whenever the release touched any CSS source.
+
 ## [0.22.43] - 2026-05-16
 
 Follow-up to v0.22.42 closing the two remaining CSS lint Warning categories that the Community automated review's scan against v0.22.42 still surfaced. The release adds two new postinstall patches to `patch-family-chart.js` and a new markdown post-processor to `main.ts`, lets `styles/family-chart-view.css` drop `!important` and `styles/timeline-callouts.css` drop `:has()`. The multicolumn partial-support category stays as-is (timeline event lists rely on `column-width` / `column-gap` / `column-rule` for fluid multi-column layout; no longhand alternative). **883 tests passing across 68 suites**.
