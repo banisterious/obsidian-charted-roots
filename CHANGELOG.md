@@ -12,6 +12,16 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.43] - 2026-05-16
+
+Follow-up to v0.22.42 closing the two remaining CSS lint Warning categories that the Community automated review's scan against v0.22.42 still surfaced. The release adds two new postinstall patches to `patch-family-chart.js` and a new markdown post-processor to `main.ts`, lets `styles/family-chart-view.css` drop `!important` and `styles/timeline-callouts.css` drop `:has()`. The multicolumn partial-support category stays as-is (timeline event lists rely on `column-width` / `column-gap` / `column-rule` for fluid multi-column layout; no longhand alternative). **883 tests passing across 68 suites**.
+
+### Fixed
+
+- **Dropped `!important` from `.card_cont.cr-hl-dim`** by patching family-chart's library to clean up its inline `opacity` styles after transitions. `family-chart` writes `style="opacity: 1"` on each card during D3 transitions, and inline styles have specificity 1,0,0,0, which forced our highlight-dim CSS rule to use `!important` to override. Two new patches in `patch-family-chart.js` append `.on("end", function () { d3.select(this).style("opacity", null); })` to the SVG and HTML `cardUpdate` transitions, so the inline opacity is removed when each transition finishes. CSS regains control without `!important`. Same fix proposed upstream; this is the local application. No user-visible change to highlight-dim behavior; tested in dev-vault across the initial chart render, pan / zoom, and highlight-group toggle paths.
+
+- **Replaced sibling-aware `:has()` rules in `styles/timeline-callouts.css` with class-based selectors.** A new markdown post-processor registers a small DOM walk that adds `.cr-has-timeline` to any `<div>` containing a `[data-callout="cr-timeline"]` direct child. The two previous `:has()`-based spacing rules ("margin-top before a timeline-following div", "margin-bottom after a timeline-containing div") were rewritten to use adjacent-sibling combinators on the class instead, silencing the Community automated review's "Avoid `:has()`" Warning. Behavior is unchanged for the Timeline Report markdown output path (the only surface that emits `[!cr-timeline]` callouts); dynamic timeline blocks render as `.cr-dynamic-block.cr-timeline` and are unaffected.
+
 ## [0.22.42] - 2026-05-15
 
 Follow-up to v0.22.41 that addresses the Community automated review's remaining Behavior-section Warning. The v0.22.41 scan, while clean of errors, surfaced a `setInterval` + network-call correlation pattern ("May perform periodic background data transmission"). `main.js` contained eight `setInterval` references: three plugin-authored (journey playback ticker, time slider animation, media upload count text) and five vendored. This release closes the three plugin sites and two of the vendored sites (the literal smoking gun — `setInterval` wrapping `fetch` in the same closure — was in `leaflet-distortableimage`'s mapknitter export status-poll, which the plugin never invokes). `main.js` `setInterval` count drops from 8 to 3; the remaining three are in d3-timer, html2canvas, and a leaflet circle-marker animation, all documented as deferred-investigation targets in `docs/planning/setinterval-vendored-investigation.md`. **883 tests passing across 68 suites**.
