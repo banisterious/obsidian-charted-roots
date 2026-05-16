@@ -19,7 +19,7 @@ import type { RawRelationship, FamilyGraphMapping } from '../relationships/types
 import { getRelationshipType, getAllRelationshipTypesWithCustomizations } from '../relationships/constants/default-relationship-types';
 import { RelationshipQueryService } from './relationship-query-service';
 import { waitForCacheRefresh } from '../utils/cache-utils';
-import type { DateService } from '../dates/services/date-service';
+import { createDateService, type DateService } from '../dates/services/date-service';
 
 const logger = getLogger('FamilyGraph');
 
@@ -2691,6 +2691,15 @@ export function createConfiguredFamilyGraph(app: App, settings: CanvasRootsSetti
 	familyGraph.setPropertyAliases(settings.propertyAliases);
 	familyGraph.setValueAliases(settings.valueAliases);
 	familyGraph.setSettings(settings);
+	// Construct a DateService from the same settings the plugin uses so that
+	// downstream callers opting into getChildren's sortByBirthDate get
+	// universe-aware canonical-year comparison instead of a no-op. Required
+	// for fictional-era ordering on report surfaces (#586 / #587 sweep).
+	familyGraph.setDateService(createDateService({
+		enableFictionalDates: settings.enableFictionalDates,
+		showBuiltInDateSystems: settings.showBuiltInDateSystems,
+		fictionalDateSystems: settings.fictionalDateSystems
+	}));
 	familyGraph.ensureCacheLoaded();
 	return familyGraph;
 }
