@@ -1366,10 +1366,13 @@
  * non-matching cards are dimmed when any group is active.
  * ------------------------------------------------------------ */
 
-/* Family-chart library sets inline `opacity: 1` on card_cont during animation;
- * !important is required to override library inline styles. */
+/* Family-chart's library writes inline `opacity: 1` on card_cont during
+ * transitions. Our patch-family-chart.js postinstall (Patches 2 + 3) adds
+ * `.on("end", ...)` cleanup to family-chart's SVG and HTML cardUpdate
+ * transitions so the inline style is removed once the animation completes,
+ * letting this CSS rule take effect without `!important`. */
 .cr-fcv-chart-container.cr-hl-active .card_cont.cr-hl-dim {
-  opacity: 0.3 !important;
+  opacity: 0.3;
   transition: opacity 0.2s ease;
 }
 
