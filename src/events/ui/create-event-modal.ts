@@ -12,7 +12,9 @@ import { PlacePickerModal, SelectedPlaceInfo } from '../../ui/place-picker';
 import { RelationshipContext } from '../../ui/quick-create-person-modal';
 import { extractDisplayLabel } from '../../utils/wikilink-resolver';
 import { EventService } from '../services/event-service';
+import { computeSortOrder } from '../services/sort-order-service';
 import { EventPickerModal } from './event-picker-modal';
+import { waitForCacheRefresh } from '../../utils/cache-utils';
 import {
 	CreateEventData,
 	DatePrecision,
@@ -1011,6 +1013,12 @@ export class CreateEventModal extends Modal {
 
 			new Notice(`Created event note: ${file.basename}`);
 
+			// Auto-compute sort_order if relative-ordering constraints were set,
+			// so the new event takes its narrative position in the Events tab and
+			// Profile View immediately (#569 follow-up — closes the
+			// discoverability gap of needing to run "Compute sort order" manually).
+			await this.autoComputeSortOrderIfConstrained(file);
+
 			// Offer to copy date to person note for birth/death events
 			this.offerDateCopyToPersonNote();
 
@@ -1175,6 +1183,10 @@ export class CreateEventModal extends Modal {
 
 			new Notice(`Updated event note: ${this.editingFile.basename}`);
 
+			// Auto-compute sort_order if relative-ordering constraints are set
+			// on the saved event (#569 follow-up).
+			await this.autoComputeSortOrderIfConstrained(this.editingFile);
+
 			// Offer to copy date to person note for birth/death events
 			this.offerDateCopyToPersonNote();
 
@@ -1189,6 +1201,47 @@ export class CreateEventModal extends Modal {
 		} catch (error) {
 			console.error('Failed to update event note:', error);
 			new Notice(`Failed to update event note: ${error instanceof Error ? error.message : 'Unknown error'}`);
+		}
+	}
+
+	/**
+	 * After saving an event with relative-ordering constraints, recompute the
+	 * `sort_order` values across all events so the new constraints take effect
+	 * immediately in the Events tab and Profile View timeline rendering paths.
+	 * Without this, `before` / `after` frontmatter values only influence the
+	 * topological export paths until a user runs the "Compute sort order"
+	 * command by hand (#569 follow-up).
+	 *
+	 * Silent when no constraints are set on the saved event. Silent on success.
+	 * Surfaces a notice only when cycles are detected — those leave some events
+	 * unordered and warrant user attention.
+	 */
+	private async autoComputeSortOrderIfConstrained(savedFile: TFile): Promise<void> {
+		const hasConstraints = this.beforeRefs.length > 0 || this.afterRefs.length > 0;
+		if (!hasConstraints) return;
+
+		try {
+			// Wait for Obsidian's metadata cache to reflect the just-written
+			// frontmatter before reading the full event list back.
+			await waitForCacheRefresh(this.app, savedFile);
+
+			// Force the EventService to re-read so the just-saved event is
+			// included in the recompute set.
+			this.eventService.invalidateCache();
+			const events = this.eventService.getAllEvents();
+			const dateService = this.plugin?.getDateService() ?? null;
+			const result = await computeSortOrder(this.app, events, dateService);
+
+			if (result.cycleEvents.length > 0) {
+				new Notice(
+					`Sort order updated, but ${result.cycleEvents.length} event(s) couldn't be ordered due to before/after cycles. See the console for details.`
+				);
+			}
+		} catch (error) {
+			const message = error instanceof Error ? error.message : 'Unknown error';
+			console.warn('[create-event-modal] auto-compute sort_order failed:', message);
+			// Don't show a notice — the save itself succeeded, and the user
+			// can recover by running "Compute sort order" manually.
 		}
 	}
 
