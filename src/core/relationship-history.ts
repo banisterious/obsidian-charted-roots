@@ -19,10 +19,12 @@ const logger = getLogger('RelationshipHistory');
 export type RelationshipChangeType =
 	| 'add_father'
 	| 'add_mother'
+	| 'add_parent'
 	| 'add_spouse'
 	| 'add_child'
 	| 'remove_father'
 	| 'remove_mother'
+	| 'remove_parent'
 	| 'remove_spouse'
 	| 'remove_child'
 	| 'update_father'
@@ -250,6 +252,12 @@ export class RelationshipHistoryService {
 					delete frontmatter.mother_id;
 					break;
 
+				case 'add_parent':
+					// Remove the added parent from the gender-neutral parents array
+					this.removeFromArrayProperty(frontmatter, 'parents', change.newValue);
+					this.removeFromArrayProperty(frontmatter, 'parents_id', change.targetCrId);
+					break;
+
 				case 'add_spouse':
 					// Remove the added spouse from array
 					this.removeFromArrayProperty(frontmatter, 'spouse', change.newValue);
@@ -272,6 +280,12 @@ export class RelationshipHistoryService {
 					// Restore the removed mother
 					frontmatter.mother = change.previousValue;
 					frontmatter.mother_id = change.targetCrId;
+					break;
+
+				case 'remove_parent':
+					// Restore the removed parent to the gender-neutral parents array
+					this.addToArrayProperty(frontmatter, 'parents', change.previousValue);
+					this.addToArrayProperty(frontmatter, 'parents_id', change.targetCrId);
 					break;
 
 				case 'remove_spouse':
@@ -498,6 +512,8 @@ export function formatChangeDescription(change: RelationshipChange): string {
 			return `Added ${target} as father of ${source}`;
 		case 'add_mother':
 			return `Added ${target} as mother of ${source}`;
+		case 'add_parent':
+			return `Added ${target} as parent of ${source}`;
 		case 'add_spouse':
 			return `Added ${target} as spouse of ${source}`;
 		case 'add_child':
@@ -506,6 +522,8 @@ export function formatChangeDescription(change: RelationshipChange): string {
 			return `Removed ${target} as father of ${source}`;
 		case 'remove_mother':
 			return `Removed ${target} as mother of ${source}`;
+		case 'remove_parent':
+			return `Removed ${target} as parent of ${source}`;
 		case 'remove_spouse':
 			return `Removed ${target} as spouse of ${source}`;
 		case 'remove_child':

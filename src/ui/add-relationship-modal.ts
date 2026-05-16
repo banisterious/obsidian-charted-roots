@@ -193,10 +193,21 @@ export class AddRelationshipModal extends Modal {
 				if (mapping === 'spouse') {
 					await mgr.addSpouseRelationship(this.sourceFile, this.selectedTarget.file, targetCrId);
 				} else if (mapping === 'parent') {
-					// Determine father/mother from the target's sex
-					const targetSex = targetCache?.frontmatter?.sex;
-					const parentType = (targetSex === 'female' || targetSex === 'f') ? 'mother' : 'father';
-					await mgr.addParentRelationship(this.sourceFile, this.selectedTarget.file, parentType, targetCrId);
+					// Route to gender-neutral `parents` array when the setting is on
+					// or when the target's sex isn't male/female (the gendered fallback
+					// would mis-categorize non-binary parents — #579 / #580).
+					const targetSex = typeof targetCache?.frontmatter?.sex === 'string'
+						? targetCache.frontmatter.sex.toLowerCase()
+						: '';
+					const isFemale = targetSex === 'f' || targetSex === 'female';
+					const isMale = targetSex === 'm' || targetSex === 'male';
+					const useInclusive = this.plugin.settings.enableInclusiveParents || (!isFemale && !isMale);
+					if (useInclusive) {
+						await mgr.addInclusiveParentRelationship(this.sourceFile, this.selectedTarget.file, targetCrId);
+					} else {
+						const parentType = isFemale ? 'mother' : 'father';
+						await mgr.addParentRelationship(this.sourceFile, this.selectedTarget.file, parentType, targetCrId);
+					}
 				} else if (mapping === 'child' && this.selectedType.id === 'child') {
 					// Only biological child uses addChildRelationship
 					await mgr.addChildRelationship(this.sourceFile, this.selectedTarget.file, targetCrId);
