@@ -285,6 +285,7 @@ export default class CanvasRootsPlugin extends Plugin {
 		graphService.setSettings(this.settings);
 		graphService.setPropertyAliases(this.settings.propertyAliases);
 		graphService.setValueAliases(this.settings.valueAliases);
+		graphService.setDateService(this.getDateService());
 
 		// Populate research coverage and conflict counts when fact-level tracking is enabled
 		if (this.settings.trackFactSourcing) {
