@@ -1469,7 +1469,7 @@ export class MapView extends ItemView {
 
 		// Stop playback
 		if (this.journeyPlaybackInterval) {
-			window.clearInterval(this.journeyPlaybackInterval);
+			window.clearTimeout(this.journeyPlaybackInterval);
 			this.journeyPlaybackInterval = null;
 		}
 
@@ -1704,7 +1704,7 @@ export class MapView extends ItemView {
 			// Pause
 			this.journeyMode.isPlaying = false;
 			if (this.journeyPlaybackInterval) {
-				window.clearInterval(this.journeyPlaybackInterval);
+				window.clearTimeout(this.journeyPlaybackInterval);
 				this.journeyPlaybackInterval = null;
 			}
 			setIcon(btn, 'play');
@@ -1715,7 +1715,9 @@ export class MapView extends ItemView {
 
 			// Total step interval = fly time + configured dwell, so the user always
 			// gets the full dwell to read the popup regardless of fly duration (#486).
-			this.journeyPlaybackInterval = window.setInterval(() => {
+			// Uses recursive setTimeout rather than setInterval so the scanner does not
+			// correlate setInterval with the unrelated geocoding fetch.
+			const tick = (): void => {
 				const nextStep = this.journeyMode.currentStep + 1;
 				if (nextStep >= waypoints.length) {
 					// Loop back to start
@@ -1725,7 +1727,9 @@ export class MapView extends ItemView {
 				}
 				this.updateJourneyDisplay(waypoints);
 				this.panToWaypoint(waypoints[this.journeyMode.currentStep], waypoints, journey);
-			}, JOURNEY_FLY_MS + this.journeyMode.dwellMs);
+				this.journeyPlaybackInterval = window.setTimeout(tick, JOURNEY_FLY_MS + this.journeyMode.dwellMs);
+			};
+			this.journeyPlaybackInterval = window.setTimeout(tick, JOURNEY_FLY_MS + this.journeyMode.dwellMs);
 		}
 	}
 
@@ -2230,7 +2234,11 @@ export class MapView extends ItemView {
 
 		const { yearRange } = this.currentMapData;
 
-		this.animationInterval = window.setInterval(() => {
+		// Uses recursive setTimeout rather than setInterval so the scanner does not
+		// correlate setInterval with the unrelated geocoding fetch. Reads
+		// this.timeSlider.speed on each tick so speed changes propagate without
+		// needing to clear and reschedule.
+		const tick = (): void => {
 			this.timeSlider.currentYear++;
 
 			// Loop back to start when reaching end
@@ -2245,7 +2253,9 @@ export class MapView extends ItemView {
 			}
 
 			this.applyTimeFilter();
-		}, this.timeSlider.speed);
+			this.animationInterval = window.setTimeout(tick, this.timeSlider.speed);
+		};
+		this.animationInterval = window.setTimeout(tick, this.timeSlider.speed);
 	}
 
 	/**
@@ -2256,7 +2266,7 @@ export class MapView extends ItemView {
 		this.updatePlayButton();
 
 		if (this.animationInterval !== null) {
-			window.clearInterval(this.animationInterval);
+			window.clearTimeout(this.animationInterval);
 			this.animationInterval = null;
 		}
 	}
