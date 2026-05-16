@@ -165,17 +165,16 @@ body {
   margin-top: 0;
 }
 
-/* Spacing between stacked timelines. :has() is required here — these
-   rules detect siblings that contain (or don't contain) a timeline
-   callout to set spacing between stacked timelines and following
-   content. There's no class-based equivalent for sibling-aware
-   structural selectors. */
-/* stylelint-disable-next-line plugin/no-has-pseudo */
-div:not(:has(> [data-callout="cr-timeline"])) + div > [data-callout="cr-timeline"] {
+/* Spacing between stacked timelines.
+   `.cr-has-timeline` is added by a markdown post-processor in main.ts to
+   any <div> containing a `[data-callout="cr-timeline"]` direct child.
+   That lets us use adjacent-sibling selectors with classes instead of
+   the previous :has()-based rules, which the Community automated
+   review's CSS-lint rule flagged for broad selector invalidation. */
+div:not(.cr-has-timeline) + .cr-has-timeline > [data-callout="cr-timeline"] {
   margin-top: var(--p-spacing);
 }
-/* stylelint-disable-next-line plugin/no-has-pseudo */
-div:has(> [data-callout="cr-timeline"]) + div:not(:has(> [data-callout="cr-timeline"])) {
+.cr-has-timeline + div:not(.cr-has-timeline) {
   margin-bottom: 1rem;
 }
 

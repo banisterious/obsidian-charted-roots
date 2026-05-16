@@ -674,6 +674,24 @@ export default class CanvasRootsPlugin extends Plugin {
 			'charted-roots-universe-maps',
 			(source, el, ctx) => universeMapsProcessor.process(source, el, ctx)
 		);
+
+		// Timeline-callout sibling marker — adds `.cr-has-timeline` class to
+		// any <div> containing a `[data-callout="cr-timeline"]` direct child so
+		// adjacent-sibling CSS rules can give timelines spacing without :has().
+		// Replaces two :has()-based rules in styles/timeline-callouts.css that
+		// the Community automated review's CSS-lint rule flagged for broad
+		// selector invalidation. The class is idempotent (addClass no-ops when
+		// already present), so the post-processor can run repeatedly across
+		// re-renders without accumulating state.
+		this.registerMarkdownPostProcessor((el) => {
+			const callouts = el.querySelectorAll('[data-callout="cr-timeline"]');
+			for (const callout of Array.from(callouts)) {
+				const parent = callout.parentElement;
+				if (parent instanceof HTMLDivElement) {
+					parent.classList.add('cr-has-timeline');
+				}
+			}
+		});
 	}
 
 	// =========================================================================
