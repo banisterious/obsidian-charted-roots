@@ -1013,11 +1013,13 @@ export class CreateEventModal extends Modal {
 
 			new Notice(`Created event note: ${file.basename}`);
 
-			// Auto-compute sort_order if relative-ordering constraints were set,
-			// so the new event takes its narrative position in the Events tab and
-			// Profile View immediately (#569 follow-up — closes the
-			// discoverability gap of needing to run "Compute sort order" manually).
-			await this.autoComputeSortOrderIfConstrained(file);
+			// Auto-compute sort_order in the background if relative-ordering
+			// constraints were set, so the new event takes its narrative position
+			// in the Events tab and Profile View without users running the
+			// "Compute sort order" command manually (#569 follow-up). Fired
+			// fire-and-forget: the modal closes immediately and the cycle notice
+			// (if any) surfaces asynchronously.
+			void this.autoComputeSortOrderIfConstrained(file);
 
 			// Offer to copy date to person note for birth/death events
 			this.offerDateCopyToPersonNote();
@@ -1183,9 +1185,10 @@ export class CreateEventModal extends Modal {
 
 			new Notice(`Updated event note: ${this.editingFile.basename}`);
 
-			// Auto-compute sort_order if relative-ordering constraints are set
-			// on the saved event (#569 follow-up).
-			await this.autoComputeSortOrderIfConstrained(this.editingFile);
+			// Auto-compute sort_order in the background if relative-ordering
+			// constraints are set on the saved event (#569 follow-up). Fired
+			// fire-and-forget so the modal closes immediately.
+			void this.autoComputeSortOrderIfConstrained(this.editingFile);
 
 			// Offer to copy date to person note for birth/death events
 			this.offerDateCopyToPersonNote();
