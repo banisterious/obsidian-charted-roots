@@ -166,6 +166,14 @@ interface FamilyChartPerson {
 - `setOnCardUpdate()` callback for custom UI (open note button)
 - Edit mode via `editTree()` API
 
+**Postinstall patches** (`patch-family-chart.js`, chained first in `package.json:scripts.postinstall`):
+
+1. **`calculateEnterAndExitPositions` null guards** ([#257](https://github.com/banisterious/obsidian-charted-roots/issues/257)). Adds `?? 0` guards to every `_x` / `_y` assignment in the enter-animation position helper so `translate(undefined, undefined)` cannot appear on card `<g>` elements during D3 enter transitions. Original release fix.
+
+2. **SVG `cardUpdate` opacity cleanup** (added in v0.22.43). Appends `.on("end", function () { d3.select(this).style("opacity", null); })` to the library's SVG-mode `cardUpdate` transition. Without the cleanup, the library leaves inline `style="opacity: 1"` on each card after the transition completes; inline styles have specificity 1,0,0,0 and force any CSS opacity override to use `!important`. The cleanup lets CSS regain control once the transition ends.
+
+3. **HTML `cardUpdate` opacity cleanup** (added in v0.22.43). Same patch as #2 but applied to the HTML-mode `cardUpdate` function. Patches 2 + 3 together let `styles/family-chart-view.css` declare the `.card_cont.cr-hl-dim` highlight-dim rule without `!important`, closing the Community automated review's "Avoid `!important`" Warning. Same fix proposed at the maintainer's upstream issue; this is the local application.
+
 ---
 
 ## Leaflet

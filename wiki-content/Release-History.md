@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.43: CSS Lint Cleanup, !important and :has() Closures](#v02243-css-lint-cleanup-important-and-has-closures-v02243)
   - [v0.22.40 – v0.22.42 Round-Up: Scanner Severity Response Arc](#v02240--v02242-round-up-scanner-severity-response-arc-v02240v02242)
   - [v0.22.38 Round-Up: Native Button Migration, CSS Scan Cleanup, and Custom Relationship Display](#v02238-round-up-native-button-migration-css-scan-cleanup-and-custom-relationship-display-v02238)
   - [v0.22.32 – v0.22.37 Round-Up: Community Automated Review Cleanup Arc](#v02232--v02237-round-up-community-automated-review-cleanup-arc-v02232v02237)
@@ -173,6 +174,29 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.43: CSS Lint Cleanup, `!important` and `:has()` Closures (v0.22.43)
+
+Follow-up to v0.22.42 closing the two remaining CSS lint Warning categories that the v0.22.42 scan still surfaced (`!important` × 1, `:has()` × 2). The multicolumn partial-support category stays as-is since timeline event lists rely on `column-width` / `column-gap` / `column-rule` for fluid multi-column layout with no longhand alternative.
+
+**`!important` closure via family-chart patch**:
+- The single remaining `!important` was on `.card_cont.cr-hl-dim` in `styles/family-chart-view.css`, used to override family-chart's inline `style="opacity: 1"` that the library writes on every card during D3 transitions. Inline styles have specificity 1,0,0,0, so any CSS rule competing with them needs `!important` to win.
+- Two new patches in `patch-family-chart.js` append `.on("end", function () { d3.select(this).style("opacity", null); })` to the library's SVG and HTML `cardUpdate` transitions. Once each transition completes, the inline opacity is cleared, and CSS regains control. Same fix proposed upstream at the maintainer's issue; this is the local application via the same postinstall pattern used elsewhere in the project.
+- `styles/family-chart-view.css` now declares the highlight-dim rule without `!important`. No user-visible behavior change; the highlight-dim still works during and after animations across the chart-render, pan / zoom, and highlight-group toggle paths.
+
+**`:has()` closure via class-based selectors**:
+- The two sibling-aware `:has()` rules in `styles/timeline-callouts.css` set spacing between stacked `[!cr-timeline]` callouts and their non-timeline siblings. The rules were documented as "structurally required, no class-based equivalent" — true for pure CSS, but a tiny markdown post-processor can manage the equivalent state.
+- A new `registerMarkdownPostProcessor` in `main.ts` walks the rendered content for `[data-callout="cr-timeline"]` elements and adds `.cr-has-timeline` to each one's immediate parent `<div>`. The two `:has()` rules were rewritten to use adjacent-sibling combinators on the class: `div:not(.cr-has-timeline) + .cr-has-timeline > [data-callout="cr-timeline"]` and `.cr-has-timeline + div:not(.cr-has-timeline)`.
+- The rules only ever applied to Timeline Report markdown output (the only surface that emits `[!cr-timeline]` callouts); dynamic timeline blocks render as `.cr-dynamic-block.cr-timeline` and are unaffected.
+
+**Internal: documentation**:
+- [`docs/developer/implementation/third-party-libraries.md`](../docs/developer/implementation/third-party-libraries.md) was extended: the `patch-family-chart.js` entry now lists all three patches (calculateEnterAndExitPositions null guards from earlier, plus the two new SVG and HTML `cardUpdate` opacity-cleanup patches).
+
+**Testing:** Suite total **883** across 68 suites, unchanged. The post-processor doesn't add testable surface; the family-chart patch was verified in dev-vault across the chart-render, pan / zoom, and highlight-group toggle paths.
+
+**Stability-window impact:** v0.22.43 is the twenty-first patch in the v0.22.22-anchored window. `medium-priority` CSS hygiene; doesn't reset the window. Window remains anchored to v0.22.22 (2026-05-07 → ~2026-05-28).
+
+---
 
 ### v0.22.40 – v0.22.42 Round-Up: Scanner Severity Response Arc (v0.22.40–v0.22.42)
 
