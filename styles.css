@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-15 15:02:37 UTC
+ * - Generated: 2026-05-16 15:16:01 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -17054,7 +17054,7 @@ settings:
    COMPONENT: FAMILY-CHART-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1484 lines, 36.07 KB */
+/* Component Size: 1487 lines, 36.27 KB */
 
 /**
  * Family Chart View Styles
@@ -18424,10 +18424,13 @@ settings:
  * non-matching cards are dimmed when any group is active.
  * ------------------------------------------------------------ */
 
-/* Family-chart library sets inline `opacity: 1` on card_cont during animation;
- * !important is required to override library inline styles. */
+/* Family-chart's library writes inline `opacity: 1` on card_cont during
+ * transitions. Our patch-family-chart.js postinstall (Patches 2 + 3) adds
+ * `.on("end", ...)` cleanup to family-chart's SVG and HTML cardUpdate
+ * transitions so the inline style is removed once the animation completes,
+ * letting this CSS rule take effect without `!important`. */
 .cr-fcv-chart-container.cr-hl-active .card_cont.cr-hl-dim {
-  opacity: 0.3 !important;
+  opacity: 0.3;
   transition: opacity 0.2s ease;
 }
 
@@ -23272,7 +23275,7 @@ settings:
    COMPONENT: MAP-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 2225 lines, 48.73 KB */
+/* Component Size: 2238 lines, 49.39 KB */
 
 /* ==========================================================================
    Map View Styles
@@ -24151,16 +24154,29 @@ svg.leaflet-image-layer.leaflet-interactive path {
   color: var(--text-normal);
   font-size: var(--font-small);
   min-width: 120px;
+  /* Cap the displayed-value width so long map names like "River Scaum and
+     its Major Tributaries (The Dying Earth)" don't eat the whole toolbar
+     row and push filter inputs into an awkward wrap. The dropdown popup
+     still shows full option text when opened. */
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Breadcrumb navigation (#361) */
+/* Breadcrumb navigation (#361) — rendered as its own row above the toolbar
+   so it doesn't compete with the toolbar's filter controls for horizontal
+   space on child-map views with long parent names. */
 
 .cr-map-breadcrumb {
   display: flex;
   align-items: center;
   font-size: var(--font-ui-smaller);
   color: var(--text-muted);
-  padding: 0 var(--cr-spacing-xs);
+  padding: var(--cr-spacing-xs) var(--cr-spacing-md);
+  background: var(--background-primary);
+  border-bottom: 1px solid var(--background-modifier-border);
+  flex-shrink: 0;
 }
 
 .cr-map-breadcrumb__link {
@@ -27701,7 +27717,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
    COMPONENT: TIMELINE-CALLOUTS.CSS
    ========================================================================== */
 
-/* Component Size: 324 lines, 11.1 KB */
+/* Component Size: 323 lines, 11.04 KB */
 
 /**
  * Timeline Callout Styles
@@ -27870,17 +27886,16 @@ body {
   margin-top: 0;
 }
 
-/* Spacing between stacked timelines. :has() is required here — these
-   rules detect siblings that contain (or don't contain) a timeline
-   callout to set spacing between stacked timelines and following
-   content. There's no class-based equivalent for sibling-aware
-   structural selectors. */
-/* stylelint-disable-next-line plugin/no-has-pseudo */
-div:not(:has(> [data-callout="cr-timeline"])) + div > [data-callout="cr-timeline"] {
+/* Spacing between stacked timelines.
+   `.cr-has-timeline` is added by a markdown post-processor in main.ts to
+   any <div> containing a `[data-callout="cr-timeline"]` direct child.
+   That lets us use adjacent-sibling selectors with classes instead of
+   the previous :has()-based rules, which the Community automated
+   review's CSS-lint rule flagged for broad selector invalidation. */
+div:not(.cr-has-timeline) + .cr-has-timeline > [data-callout="cr-timeline"] {
   margin-top: var(--p-spacing);
 }
-/* stylelint-disable-next-line plugin/no-has-pseudo */
-div:has(> [data-callout="cr-timeline"]) + div:not(:has(> [data-callout="cr-timeline"])) {
+.cr-has-timeline + div:not(.cr-has-timeline) {
   margin-bottom: 1rem;
 }
 
@@ -40908,11 +40923,11 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-15 15:02:39 UTC
+ * Build completed: 2026-05-16 15:16:02 UTC
  * Components processed: 50
- * Total lines: 40439
- * Total size: 824.15 KB
- * Build duration: 2.21 seconds
+ * Total lines: 40454
+ * Total size: 824.94 KB
+ * Build duration: 1.27 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.86 KB
@@ -40934,18 +40949,18 @@ body.cr-media-linker-active .suggestion-container {
  * - find-on-canvas.css: 275 lines, 5.13 KB
  * - folder-scan.css: 155 lines, 2.6 KB
  * - relationship-calculator.css: 302 lines, 5.27 KB
- * - family-chart-view.css: 1484 lines, 36.07 KB
+ * - family-chart-view.css: 1487 lines, 36.27 KB
  * - family-chart-export.css: 699 lines, 14.78 KB
  * - report-wizard.css: 908 lines, 19.89 KB
  * - book-builder.css: 368 lines, 7.25 KB
  * - data-quality.css: 1439 lines, 28.62 KB
  * - relationships.css: 583 lines, 11.2 KB
  * - canvas-navigation.css: 674 lines, 14.43 KB
- * - map-view.css: 2225 lines, 48.73 KB
+ * - map-view.css: 2238 lines, 49.39 KB
  * - leaflet-distortable.css: 372 lines, 8.84 KB
  * - date-systems.css: 278 lines, 5.16 KB
  * - events.css: 1520 lines, 30.79 KB
- * - timeline-callouts.css: 324 lines, 11.1 KB
+ * - timeline-callouts.css: 323 lines, 11.04 KB
  * - organizations.css: 615 lines, 11.55 KB
  * - sources.css: 2809 lines, 56.97 KB
  * - statistics.css: 1811 lines, 36.34 KB

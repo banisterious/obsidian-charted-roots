@@ -25,7 +25,7 @@ Before staging any version files:
 
 - [ ] `npm run build` — clean, no errors
 - [ ] `npm test -- --run` — all tests pass
-- [ ] `npm run type-check` — no *new* errors (project carries a known TS-cleanup backlog; see CLAUDE.md / session-restore housekeeping)
+- [ ] `npm run type-check` — no *new* errors (project carries a known TS-cleanup backlog)
 - [ ] All fixes intended for the release are committed on `main`
 - [ ] `[Unreleased]` section in CHANGELOG has all the entries the release should cover
 - [ ] Manual verification on dev vault for any user-facing UI changes (capture screenshots if appropriate)
@@ -44,8 +44,17 @@ Six files change for every release. The set is identical for patch and minor bum
 | `package-lock.json` | Both top-level `version` and `packages.""` `version` |
 | `README.md` | Badge URL: `version-X.Y.Z-blue.svg` |
 | `CHANGELOG.md` | Flip `[Unreleased]` → `[X.Y.Z] - YYYY-MM-DD` with a fresh empty `[Unreleased]` above it. Add a short intro paragraph between the date header and the `### Fixed` (or `### Added` etc.) sub-section |
+| `styles.css` (if CSS source changed) | Rebuild via `npm run build`, then stage the regenerated file. See "Bundled `styles.css` on CSS-touching releases" below. |
 
 The CHANGELOG flip is the trickiest of the six — easy to miss the empty `[Unreleased]` placeholder above the new version section, which would cause the next release's preparation to fail.
+
+### Bundled `styles.css` on CSS-touching releases
+
+`styles.css` is the built output of `build-css.js` (concatenated from the component files in `styles/`). It is gitignored by intent, but a copy of it has been tracked in the repo since before the build pipeline existed. The Community automated review's CSS-lint scanner reads `styles.css` from the repo at the tagged commit, not from the release asset that CI builds, so any CSS source change must also land in the committed `styles.css` for the scanner to see it.
+
+**Rule:** if any file under `styles/` changed in the release, run `npm run build` and stage `styles.css` alongside the six bump files above. CSS-only releases also need this — there is no commit shape where bundled `styles.css` should lag behind its source.
+
+If the release touched only non-CSS source (TypeScript, patch scripts, docs, etc.), `styles.css` does not need to be touched. The standard six-file bump is correct on its own.
 
 ---
 
@@ -54,8 +63,9 @@ The CHANGELOG flip is the trickiest of the six — easy to miss the empty `[Unre
 The ordering matters. **Commit the bump first, then tag against that commit.**
 
 ```bash
-# Stage exactly the six bump files (NOT styles.css, which carries
-# a known build-timestamp drift across sessions per session-restore)
+# Stage the six bump files. If the release touched any styles/ source,
+# ALSO rebuild styles.css via `npm run build` first and add it here. See
+# the "Bundled styles.css on CSS-touching releases" section above for why.
 git add CHANGELOG.md README.md manifest.json versions.json package.json package-lock.json
 
 # Commit with the standard message format
@@ -134,7 +144,7 @@ The tag push triggers `.github/workflows/release.yml`. The workflow:
 **Then on the web UI:**
 
 - **Title:** already set by CI (`Charted Roots vX.Y.Z`). No edit needed.
-- **Body:** paste the audited release-description markdown (drafted in advance during the cut session). Structured by area (Map view, Timeline, Modals, etc.); fix bullets with issue links; stability-window note; tests note; reporters paragraph; `Install via BRAT:` line at the end. No AI attribution per the project's [no-AI-references rule](../../CLAUDE.md).
+- **Body:** paste the audited release-description markdown (drafted in advance during the cut session). Structured by area (Map view, Timeline, Modals, etc.); fix bullets with issue links; stability-window note; tests note; reporters paragraph; `Install via BRAT:` line at the end. Apply the project's standard editorial gate (em-dash hygiene, ASCII arrows).
 - **Click Publish.** Release flips from Draft to live.
 - **Do not attach a zip** — process change from v0.22.31 addressing the Community-scan "extra files" finding. CI only attaches the three required assets.
 
@@ -187,7 +197,7 @@ gh release delete <version>-rc1 --yes --cleanup-tag
 
 ## Post-release labels
 
-Per [auto-memory `feedback_issue_release_workflow`](../../CLAUDE.md): the user drives `next-release` → `released-testing` → close transitions. Mechanical steps after a release ships:
+The user drives `next-release` → `released-testing` → close transitions. Mechanical steps after a release ships:
 
 1. Apply `next-release` label to any issues whose fixes are in this release but didn't have it yet
 2. Move all `next-release` labels for the release's issues to `released-testing`
