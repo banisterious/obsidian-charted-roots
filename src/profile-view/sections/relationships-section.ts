@@ -190,6 +190,14 @@ function renderFamilySubsection(
 		}
 	}
 	if (childEntries.length > 0) {
+		// Sort children by birth date so the Profile View matches the natural
+		// reading order users expect (oldest first) rather than the frontmatter
+		// declaration order (#586). Same shape as the v0.22.21 sibling sort
+		// (#532) on the Dynamic Relationship Block, applied here to the Profile
+		// View's separate rendering path. Bio + adopted + step children are
+		// merged in the sort — the relationship label is preserved on each row,
+		// but the order is "by age," not "by relationship type."
+		sortChildrenByBirthDate(childEntries, node.universe, options.plugin);
 		renderRelGroup(familyEl, 'Children', childEntries, options);
 	}
 
@@ -379,4 +387,44 @@ function deduplicateRelationships(rels: ParsedRelationship[]): ParsedRelationshi
 		seen.add(key);
 		return true;
 	});
+}
+
+/**
+ * Stable sort children entries by birth date (oldest first), in place.
+ * Resolves each crId to its PersonNode via FamilyGraphService for the
+ * birthDate lookup, then compares via the universe-aware canonical-year
+ * helper so descending fictional eras (e.g. Star Wars BBY) order
+ * correctly alongside Gregorian dates. Entries without a parseable
+ * birth date sink to the end while preserving their relative order.
+ * No-op when the date service isn't available (#586).
+ */
+function sortChildrenByBirthDate(
+	items: { label: string; crId: string }[],
+	universe: string | undefined,
+	plugin: import('../../../main').default
+): void {
+	const dateService = plugin.getDateService();
+	if (!dateService) return;
+
+	const graphService = plugin.createFamilyGraphService();
+	graphService.ensureCacheLoaded();
+
+	const yearOf = (crId: string): number | null => {
+		const person = graphService.getPersonByCrId(crId);
+		const birthDate = person?.birthDate;
+		return birthDate ? dateService.getCanonicalYear(birthDate, universe) : null;
+	};
+
+	// Decorate-sort-undecorate to keep the sort stable across engines.
+	const decorated = items.map((item, index) => ({ item, index, year: yearOf(item.crId) }));
+	decorated.sort((a, b) => {
+		if (a.year === null && b.year === null) return a.index - b.index;
+		if (a.year === null) return 1;
+		if (b.year === null) return -1;
+		if (a.year !== b.year) return a.year - b.year;
+		return a.index - b.index;
+	});
+	for (let i = 0; i < decorated.length; i++) {
+		items[i] = decorated[i].item;
+	}
 }
