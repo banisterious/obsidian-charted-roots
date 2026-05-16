@@ -177,6 +177,17 @@ export interface FamilyTree {
 	root: PersonNode;
 	nodes: Map<string, PersonNode>;
 	edges: FamilyEdge[];
+	/**
+	 * Per-parent sorted children crIds (oldest-first by birth date,
+	 * universe-aware). Layout engines that read children from the
+	 * PersonNode arrays directly (FamilyChartLayoutEngine, hourglass)
+	 * should prefer this map over `person.childrenCrIds` so that visual
+	 * tree generation respects birth order regardless of frontmatter
+	 * declaration order (#587). Only includes children present in
+	 * `nodes`. Populated when a DateService is available; absent or
+	 * empty falls back to frontmatter order.
+	 */
+	sortedChildrenByCrId?: Map<string, string[]>;
 }
 
 /**
@@ -459,10 +470,25 @@ export class FamilyGraphService {
 			nodes: Array.from(nodes.values()).map(n => n.name)
 		});
 
+		// Compute sorted-children map (oldest-first by birth date) for the
+		// layout engines that read children directly from PersonNode rather
+		// than from edges (#587). Only includes children present in `nodes`
+		// so layout engines can filter without duplicating that check.
+		const sortedChildrenByCrId = new Map<string, string[]>();
+		if (this.dateService) {
+			for (const [crId, person] of nodes) {
+				const filtered = person.childrenCrIds.filter(id => nodes.has(id));
+				if (filtered.length > 0) {
+					sortedChildrenByCrId.set(crId, this.sortChildrenByBirthDate(filtered, person.universe));
+				}
+			}
+		}
+
 		return {
 			root: rootNode,
 			nodes,
-			edges
+			edges,
+			sortedChildrenByCrId
 		};
 	}
 
