@@ -12,6 +12,22 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.42] - 2026-05-15
+
+Follow-up to v0.22.41 that addresses the Community automated review's remaining Behavior-section Warning. The v0.22.41 scan, while clean of errors, surfaced a `setInterval` + network-call correlation pattern ("May perform periodic background data transmission"). `main.js` contained eight `setInterval` references: three plugin-authored (journey playback ticker, time slider animation, media upload count text) and five vendored. This release closes the three plugin sites and two of the vendored sites (the literal smoking gun — `setInterval` wrapping `fetch` in the same closure — was in `leaflet-distortableimage`'s mapknitter export status-poll, which the plugin never invokes). `main.js` `setInterval` count drops from 8 to 3; the remaining three are in d3-timer, html2canvas, and a leaflet circle-marker animation, all documented as deferred-investigation targets in `docs/planning/setinterval-vendored-investigation.md`. **883 tests passing across 68 suites**.
+
+### Fixed
+
+- **Migrated three plugin `setInterval` sites to recursive `setTimeout`.** The journey playback ticker (`map-view.ts:journeyPlaybackInterval`), time slider year animation (`map-view.ts:animationInterval`), and media upload modal file-count text re-render now reschedule themselves via `window.setTimeout` after each tick instead of running on a fixed interval. Functional behavior is unchanged — pause / resume, speed-change propagation, and cleanup all work identically — but the source no longer contributes to the scanner's setInterval correlation surface.
+
+- **Stubbed two dead-code `setInterval` sites in `leaflet-distortableimage`.** Two new patches landed in `patch-leaflet-distortable.js`:
+  - **mapknitter export status-poll** (`_defaultHandleStatusRes`). The library exposes an export-to-server flow that uploads a distorted image collection to `export.mapknitter.org` and polls the returned status URL via `setInterval` wrapping `fetch(req)` in the same closure. The plugin renders image overlays in-vault only and never invokes the export start flow, so the handler is unreachable. Removing it eliminates the textbook "periodic beaconing" pattern the scanner's Behavior rule looks for.
+  - **webpack-dev-server live-reload poll.** The bundled `reloadApp` helper sets a `setInterval` that watches `window.location.protocol` and triggers a live reload. Same dead-code situation as the existing `WebSocketClient` and chunk-loader stubs (Patches 1 + 2) — the dev server is never running in production. Stubbed to a no-op `intervalId`.
+
+### Added
+
+- **`docs/planning/setinterval-vendored-investigation.md`** — committed planning doc cataloging the three remaining vendored `setInterval` sites (d3-timer core loop, html2canvas iframe-load polling, an unidentified leaflet plugin's circle-marker animation) with reachability assessments, patch-feasibility ratings, and a sequencing plan for further investigation if the scanner Warning persists. Also documents the conditions under which a `family-chart-premium` subscription investigation would be triggered.
+
 ## [0.22.41] - 2026-05-15
 
 Follow-up to v0.22.40 that closes the remaining four sites flagged by the Community automated review's "dynamic `<script>` element creations" rule. The four sites were all an IE5-8 setImmediate polyfill bundled inside `core-js` and `pdfmake` (two each, since pdfmake ships its own copy of `core-js`). The branch is unreachable in Obsidian's Electron runtime because the earlier `MessageChannel` branch in the same polyfill chain always wins, so the `createElement('script')` lines are dead code. A new postinstall patch removes the IE8- branch from `core-js/internals/task.js` and `pdfmake/build/pdfmake.js` at source so it never reaches `main.js`. Bundled count goes from four to zero. **883 tests passing across 68 suites**.
