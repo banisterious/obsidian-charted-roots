@@ -111,6 +111,60 @@ export class RelationshipManager {
 	}
 
 	/**
+	 * Add a parent-child relationship using the gender-neutral `parents` array on
+	 * the child's side instead of the gendered `father` / `mother` fields. Used
+	 * when the "Enable gender-neutral parent property" setting is on, or when
+	 * the target parent's sex is not `male` / `female` (so the gendered
+	 * fallback would be the wrong fit).
+	 *
+	 * The parent side still updates `children` / `children_id` via the same
+	 * helper as the gendered path — that shape is independent of the parent's sex.
+	 */
+	async addInclusiveParentRelationship(
+		childFile: TFile,
+		parentFile: TFile,
+		knownParentCrId?: string
+	): Promise<void> {
+		const childCrId = this.extractCrId(childFile);
+		const parentCrId = knownParentCrId || this.extractCrId(parentFile);
+		const childName = this.extractName(childFile);
+		const parentName = this.extractName(parentFile);
+
+		if (!childCrId || !parentCrId) {
+			const missing = !childCrId && !parentCrId ? 'both notes' :
+				!childCrId ? `child (${childFile.basename})` : `parent (${parentFile.basename})`;
+			new Notice(`Error: could not find cr_id in ${missing}`);
+			logger.error('relationship-manager', 'Missing cr_id in addInclusiveParentRelationship', {
+				childFile: childFile.path,
+				childCrId,
+				parentFile: parentFile.path,
+				parentCrId
+			});
+			return;
+		}
+
+		// Update child's parents / parents_id arrays (dual storage)
+		await this.addToParentsArray(childFile, parentFile, parentCrId, parentName);
+
+		// Update parent's children array (same code path as gendered case)
+		await this.addToChildrenArray(parentFile, childFile, childCrId, childName);
+
+		// Record to history
+		if (this.historyRecorder) {
+			await this.historyRecorder(
+				'add_parent',
+				childFile, childName, childCrId,
+				parentFile, parentName, parentCrId,
+				`[[${parentName}]]`
+			);
+		}
+
+		new Notice(
+			`Added ${parentFile.basename} as parent of ${childFile.basename}`
+		);
+	}
+
+	/**
 	 * Add a spouse relationship
 	 * Updates both notes' spouse/spouse_id arrays (bidirectional, dual storage)
 	 * @param knownPerson2CrId Optional cr_id if already known (avoids metadata cache timing issues)
@@ -344,6 +398,71 @@ export class RelationshipManager {
 		} catch (error) {
 			logger.error('relationship-manager', 'Failed to add to children array', {
 				file: parentFile.path,
+				error: getErrorMessage(error)
+			});
+		}
+	}
+
+	/**
+	 * Add parent to child's parents arrays (dual storage, gender-neutral path)
+	 * Writes both wikilink field (parents) and ID field (parents_id)
+	 * Uses processFrontMatter to safely modify without corrupting other fields
+	 */
+	private async addToParentsArray(
+		childFile: TFile,
+		parentFile: TFile,
+		parentCrId: string,
+		parentName: string
+	): Promise<void> {
+		const wikilink = this.createSmartWikilink(parentName, parentFile);
+
+		// Build a set of valid cr_ids by checking which existing parents_id entries
+		// resolve to actual files in the vault
+		const validCrIds = new Set<string>();
+		const cache = this.app.metadataCache.getFileCache(childFile);
+		const existingIds = cache?.frontmatter?.parents_id;
+		if (existingIds) {
+			const idArray = Array.isArray(existingIds) ? existingIds : [existingIds];
+			for (const id of idArray) {
+				if (this.findFileByCrId(id)) {
+					validCrIds.add(id);
+				}
+			}
+		}
+
+		try {
+			await this.app.fileManager.processFrontMatter(childFile, (frontmatter) => {
+				// Rebuild parents_id from valid entries + new parent
+				const cleanIds = Array.from(validCrIds);
+				if (!cleanIds.includes(parentCrId)) {
+					cleanIds.push(parentCrId);
+				}
+				frontmatter.parents_id = cleanIds.length === 1 ? cleanIds[0] : cleanIds;
+
+				// Rebuild parents wikilinks to match valid IDs
+				const cleanLinks: string[] = [];
+				const existingLinks = frontmatter.parents;
+				if (existingLinks) {
+					const linkArray = Array.isArray(existingLinks) ? existingLinks : [existingLinks];
+					for (const link of linkArray) {
+						const linkPath = link.replace(/\[\[|\]\]/g, '').replace(/\|.*/, '');
+						const linkedFile = this.app.metadataCache.getFirstLinkpathDest(linkPath, childFile.path);
+						if (linkedFile) {
+							const linkedCrId = this.app.metadataCache.getFileCache(linkedFile)?.frontmatter?.cr_id;
+							if (linkedCrId && validCrIds.has(linkedCrId)) {
+								cleanLinks.push(link);
+							}
+						}
+					}
+				}
+				if (!cleanLinks.includes(wikilink)) {
+					cleanLinks.push(wikilink);
+				}
+				frontmatter.parents = cleanLinks.length === 1 ? cleanLinks[0] : cleanLinks;
+			});
+		} catch (error) {
+			logger.error('relationship-manager', 'Failed to add to parents array', {
+				file: childFile.path,
 				error: getErrorMessage(error)
 			});
 		}

@@ -650,8 +650,15 @@ export class FamilyChartLayoutEngine {
 				datum.rels.spouses = person.spouseCrIds.filter(id => familyTree.nodes.has(id));
 			}
 
-			// Add children relationships (only if child exists in tree)
-			if (person.childrenCrIds && person.childrenCrIds.length > 0) {
+			// Add children relationships (only if child exists in tree).
+			// Prefer the precomputed sorted-children map so visual trees
+			// render children oldest-first regardless of frontmatter
+			// declaration order (#587). Falls back to frontmatter order when
+			// the map isn't populated (no DateService available, or empty).
+			const sortedChildren = familyTree.sortedChildrenByCrId?.get(crId);
+			if (sortedChildren && sortedChildren.length > 0) {
+				datum.rels.children = sortedChildren;
+			} else if (person.childrenCrIds && person.childrenCrIds.length > 0) {
 				datum.rels.children = person.childrenCrIds.filter(id => familyTree.nodes.has(id));
 			}
 

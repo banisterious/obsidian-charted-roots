@@ -1132,7 +1132,7 @@ export class VisualTreeService {
 			// Walk descendants (#546) — bio-only by current convention.
 			// Visual tree printable layouts trace biological lineage; flipping
 			// to 'all' would be a deliberate genealogy-domain decision.
-			for (const { person: child } of this.familyGraphService.getQueryService().getChildren(person, { include: 'bio' })) {
+			for (const { person: child } of this.familyGraphService.getQueryService().getChildren(person, { include: 'bio', sortByBirthDate: this.familyGraphService.getDateService() })) {
 				if (familyTree.nodes.has(child.crId) && !visited.has(child.crId)) {
 					queue.push({
 						crId: child.crId,

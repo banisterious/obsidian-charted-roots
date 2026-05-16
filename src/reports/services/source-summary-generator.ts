@@ -156,7 +156,7 @@ export class SourceSummaryGenerator {
 		// and step children's source records typically attach to a different
 		// family unit, so this report intentionally walks bio descent.
 		if (options.includeChildrenSources) {
-			for (const { person: childNode } of familyGraph.getQueryService().getChildren(personNode, { include: 'bio' })) {
+			for (const { person: childNode } of familyGraph.getQueryService().getChildren(personNode, { include: 'bio', sortByBirthDate: familyGraph.getDateService() })) {
 				const childCrId = childNode.crId;
 				const childCoverage = evidenceService.getFactCoverage(childCrId);
 				if (childCoverage) {

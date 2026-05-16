@@ -21,6 +21,7 @@ type SortOption = 'title-asc' | 'title-desc' | 'date-asc' | 'date-desc' | 'recen
  */
 interface FilterOptions {
 	eventType: string; // 'all' or specific type id
+	person: string;    // 'all' or specific person wikilink target (basename or path|alias inner)
 }
 
 /**
@@ -49,7 +50,8 @@ export class EventPickerModal extends Modal {
 	private resultsContainer!: HTMLElement;
 	private sortOption: SortOption = 'date-desc';
 	private filters: FilterOptions = {
-		eventType: 'all'
+		eventType: 'all',
+		person: 'all'
 	};
 
 	constructor(app: App, plugin: CanvasRootsPlugin, options: EventPickerOptions) {
@@ -235,6 +237,38 @@ export class EventPickerModal extends Modal {
 			this.filterEvents();
 		});
 
+		// Person filter (#581): scopes the picker to events that include a
+		// chosen person as a participant. Source values come from each event's
+		// person + persons wikilinks, deduped.
+		const personFilter = filtersContainer.createDiv({ cls: 'crc-picker-filter' });
+		personFilter.createSpan({ cls: 'crc-picker-filter__label', text: 'Person:' });
+		const personSelect = personFilter.createEl('select', { cls: 'crc-form-select crc-form-select--small' });
+
+		const personMap = new Map<string, string>(); // canonical wikilink target -> display label
+		for (const e of this.allEvents) {
+			const candidates: string[] = [];
+			if (e.person) candidates.push(e.person);
+			if (e.persons) candidates.push(...e.persons);
+			for (const raw of candidates) {
+				const { target, label } = this.parseWikilinkRef(raw);
+				if (target && !personMap.has(target)) {
+					personMap.set(target, label);
+				}
+			}
+		}
+
+		personSelect.createEl('option', { value: 'all', text: 'All persons' });
+		Array.from(personMap.entries())
+			.sort((a, b) => a[1].localeCompare(b[1]))
+			.forEach(([target, label]) => {
+				personSelect.createEl('option', { value: target, text: label });
+			});
+
+		personSelect.addEventListener('change', () => {
+			this.filters.person = personSelect.value;
+			this.filterEvents();
+		});
+
 		// Results section
 		this.resultsContainer = contentEl.createDiv({ cls: 'crc-picker-results' });
 		this.renderResults();
@@ -260,10 +294,43 @@ export class EventPickerModal extends Modal {
 				if (event.eventType !== this.filters.eventType) return false;
 			}
 
+			// Person filter (#581): match against canonical wikilink target
+			// from the event's person and persons fields.
+			if (this.filters.person !== 'all') {
+				const targets: string[] = [];
+				if (event.person) targets.push(this.parseWikilinkRef(event.person).target);
+				if (event.persons) {
+					for (const p of event.persons) {
+						targets.push(this.parseWikilinkRef(p).target);
+					}
+				}
+				if (!targets.includes(this.filters.person)) return false;
+			}
+
 			return true;
 		});
 
 		this.renderResults();
+	}
+
+	/**
+	 * Extract a stable target key + human-readable label from a wikilink-shaped
+	 * person reference. Handles `[[basename]]`, `[[path|alias]]`, `[[basename|alias]]`,
+	 * and bare-string forms. The target is the post-pipe alias (canonical display
+	 * name) so two events linking the same person via different wikilink forms
+	 * group under the same filter value.
+	 */
+	private parseWikilinkRef(raw: string): { target: string; label: string } {
+		const stripped = raw.replace(/^\[\[/, '').replace(/\]\]$/, '');
+		// Pipe-form: target after the pipe is the display alias
+		const afterPipe = stripped.includes('|')
+			? stripped.split('|').pop()!.trim() || stripped
+			: stripped;
+		// Path-form fallback: take the basename
+		const basename = afterPipe.includes('/')
+			? afterPipe.split('/').pop()!.trim() || afterPipe
+			: afterPipe;
+		return { target: basename, label: basename };
 	}
 
 	/**

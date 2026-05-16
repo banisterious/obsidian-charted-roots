@@ -19,6 +19,7 @@ import type { RawRelationship, FamilyGraphMapping } from '../relationships/types
 import { getRelationshipType, getAllRelationshipTypesWithCustomizations } from '../relationships/constants/default-relationship-types';
 import { RelationshipQueryService } from './relationship-query-service';
 import { waitForCacheRefresh } from '../utils/cache-utils';
+import { createDateService, type DateService } from '../dates/services/date-service';
 
 const logger = getLogger('FamilyGraph');
 
@@ -176,6 +177,17 @@ export interface FamilyTree {
 	root: PersonNode;
 	nodes: Map<string, PersonNode>;
 	edges: FamilyEdge[];
+	/**
+	 * Per-parent sorted children crIds (oldest-first by birth date,
+	 * universe-aware). Layout engines that read children from the
+	 * PersonNode arrays directly (FamilyChartLayoutEngine, hourglass)
+	 * should prefer this map over `person.childrenCrIds` so that visual
+	 * tree generation respects birth order regardless of frontmatter
+	 * declaration order (#587). Only includes children present in
+	 * `nodes`. Populated when a DateService is available; absent or
+	 * empty falls back to frontmatter order.
+	 */
+	sortedChildrenByCrId?: Map<string, string[]>;
 }
 
 /**
@@ -250,6 +262,7 @@ export class FamilyGraphService {
 	private propertyAliases: Record<string, string> = {};
 	private valueAliases: ValueAliasSettings = { eventType: {}, sex: {}, gender_identity: {}, placeCategory: {}, noteType: {} };
 	private settings: CanvasRootsSettings | null = null;
+	private dateService: DateService | null = null;
 	private _queryService: RelationshipQueryService | null = null;
 
 	constructor(app: App) {
@@ -296,6 +309,26 @@ export class FamilyGraphService {
 	 */
 	setSettings(settings: CanvasRootsSettings): void {
 		this.settings = settings;
+	}
+
+	/**
+	 * Set the DateService for universe-aware canonical-year comparison in
+	 * tree-building (e.g., sorting children by birth date for visual-tree
+	 * generation under #587). Optional: tree-builders fall back to no-op
+	 * sort when not set.
+	 */
+	setDateService(dateService: DateService | null): void {
+		this.dateService = dateService;
+	}
+
+	/**
+	 * Return the injected DateService so callers (report generators,
+	 * timeline view, etc.) can opt into the birth-date sort on
+	 * `getQueryService().getChildren(...)` without taking a direct
+	 * dependency on plugin internals.
+	 */
+	getDateService(): DateService | null {
+		return this.dateService;
 	}
 
 	/**
@@ -447,10 +480,25 @@ export class FamilyGraphService {
 			nodes: Array.from(nodes.values()).map(n => n.name)
 		});
 
+		// Compute sorted-children map (oldest-first by birth date) for the
+		// layout engines that read children directly from PersonNode rather
+		// than from edges (#587). Only includes children present in `nodes`
+		// so layout engines can filter without duplicating that check.
+		const sortedChildrenByCrId = new Map<string, string[]>();
+		if (this.dateService) {
+			for (const [crId, person] of nodes) {
+				const filtered = person.childrenCrIds.filter(id => nodes.has(id));
+				if (filtered.length > 0) {
+					sortedChildrenByCrId.set(crId, this.sortChildrenByBirthDate(filtered, person.universe));
+				}
+			}
+		}
+
 		return {
 			root: rootNode,
 			nodes,
-			edges
+			edges,
+			sortedChildrenByCrId
 		};
 	}
 
@@ -711,6 +759,38 @@ export class FamilyGraphService {
 		// Convert to array and sort by relationship count
 		return Array.from(connections.values())
 			.sort((a, b) => b.relationshipCount - a.relationshipCount);
+	}
+
+	/**
+	 * Return a stable copy of `childCrIds` sorted by each child's birth date
+	 * (oldest first), using the universe-aware canonical-year compare so
+	 * descending fictional eras (BBY, etc.) order correctly alongside
+	 * Gregorian dates. Children without a parseable birth date sink to the
+	 * end while preserving relative order. No-op when `dateService` isn't
+	 * set on this service. Used by tree-builders to order child edges on
+	 * visual-tree / canvas surfaces (#587), mirroring the Profile View
+	 * children sort (#586) and the Dynamic Relationship Block sibling
+	 * sort (#532).
+	 */
+	private sortChildrenByBirthDate(childCrIds: string[], focalUniverse: string | undefined): string[] {
+		const dateService = this.dateService;
+		if (!dateService || childCrIds.length < 2) {
+			return [...childCrIds];
+		}
+		const yearOf = (crId: string): number | null => {
+			const person = this.personCache.get(crId);
+			const birthDate = person?.birthDate;
+			return birthDate ? dateService.getCanonicalYear(birthDate, focalUniverse) : null;
+		};
+		const decorated = childCrIds.map((crId, index) => ({ crId, index, year: yearOf(crId) }));
+		decorated.sort((a, b) => {
+			if (a.year === null && b.year === null) return a.index - b.index;
+			if (a.year === null) return 1;
+			if (b.year === null) return -1;
+			if (a.year !== b.year) return a.year - b.year;
+			return a.index - b.index;
+		});
+		return decorated.map(d => d.crId);
 	}
 
 	/**
@@ -1029,7 +1109,18 @@ export class FamilyGraphService {
 		// both `childrenCrIds` and `adoptedChildCrIds` of the same parent
 		// renders via the bio edge, not duplicated as adoptive.
 		const queryService = this.getQueryService();
-		for (const { person: child, kind } of queryService.getChildren(node, { include: 'all' })) {
+		// Sort children by birth date so descendant trees render oldest-first
+		// regardless of frontmatter array order (#587). The query service
+		// merges bio + adopted + step into a single iterator, so this sort
+		// produces a fully-merged-by-age ordering on the descendant surface.
+		const childrenWithKind = Array.from(queryService.getChildren(node, { include: 'all' }));
+		const sortedChildCrIds = this.sortChildrenByBirthDate(
+			childrenWithKind.map(c => c.person.crId),
+			node.universe
+		);
+		const sortIndex = new Map(sortedChildCrIds.map((id, idx) => [id, idx]));
+		childrenWithKind.sort((a, b) => (sortIndex.get(a.person.crId) ?? 0) - (sortIndex.get(b.person.crId) ?? 0));
+		for (const { person: child, kind } of childrenWithKind) {
 			if (!this.shouldIncludePerson(child, options)) continue;
 
 			if (kind === 'bio') {
@@ -1299,8 +1390,10 @@ export class FamilyGraphService {
 
 			// Children — bio. The dedicated `child` edge type is used for
 			// the BFS-side bookkeeping; canvas-generator filters these out
-			// in favor of the symmetric parent edge.
-			for (const childCrId of currentPerson.childrenCrIds) {
+			// in favor of the symmetric parent edge. Sorted by birth date
+			// so full trees render oldest-first regardless of frontmatter
+			// array order (#587).
+			for (const childCrId of this.sortChildrenByBirthDate(currentPerson.childrenCrIds, currentPerson.universe)) {
 				const child = this.personCache.get(childCrId);
 				if (child) {
 					edges.push({ from: currentCrId, to: childCrId, type: 'child' });
@@ -1314,7 +1407,7 @@ export class FamilyGraphService {
 			// the symmetric one that gets pushed when the child's own
 			// `adoptive_X` walk fires.
 			if (includeAdoptiveParents) {
-				for (const adoptedChildCrId of currentPerson.adoptedChildCrIds) {
+				for (const adoptedChildCrId of this.sortChildrenByBirthDate(currentPerson.adoptedChildCrIds, currentPerson.universe)) {
 					const adoptedChild = this.personCache.get(adoptedChildCrId);
 					if (!adoptedChild) continue;
 					if (!edges.some(e =>
@@ -1338,7 +1431,7 @@ export class FamilyGraphService {
 			// Stepchildren — symmetric with the step-parent walk above
 			// (the reverse-walk in `loadPersonCache` keeps these in sync).
 			if (includeStepParents) {
-				for (const stepchildCrId of currentPerson.stepchildrenCrIds) {
+				for (const stepchildCrId of this.sortChildrenByBirthDate(currentPerson.stepchildrenCrIds, currentPerson.universe)) {
 					const stepchild = this.personCache.get(stepchildCrId);
 					if (!stepchild) continue;
 					if (!edges.some(e =>
@@ -2598,6 +2691,15 @@ export function createConfiguredFamilyGraph(app: App, settings: CanvasRootsSetti
 	familyGraph.setPropertyAliases(settings.propertyAliases);
 	familyGraph.setValueAliases(settings.valueAliases);
 	familyGraph.setSettings(settings);
+	// Construct a DateService from the same settings the plugin uses so that
+	// downstream callers opting into getChildren's sortByBirthDate get
+	// universe-aware canonical-year comparison instead of a no-op. Required
+	// for fictional-era ordering on report surfaces (#586 / #587 sweep).
+	familyGraph.setDateService(createDateService({
+		enableFictionalDates: settings.enableFictionalDates,
+		showBuiltInDateSystems: settings.showBuiltInDateSystems,
+		fictionalDateSystems: settings.fictionalDateSystems
+	}));
 	familyGraph.ensureCacheLoaded();
 	return familyGraph;
 }
