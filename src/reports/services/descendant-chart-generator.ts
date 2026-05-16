@@ -134,19 +134,14 @@ export class DescendantChartGenerator {
 		});
 
 		// Get children — bio only (descendant charts trace biological
-		// lineage; #546). Sorted by birth date below.
+		// lineage; #546). Sort via getChildren's universe-aware sortByBirthDate
+		// option so descending fictional eras (BBY, etc.) order correctly
+		// alongside Gregorian dates (replaces the prior lex localeCompare
+		// which mis-sorted fictional-era inputs).
 		const children: PersonNode[] = [];
-		for (const { person: childNode } of familyGraph.getQueryService().getChildren(node, { include: 'bio' })) {
+		for (const { person: childNode } of familyGraph.getQueryService().getChildren(node, { include: 'bio', sortByBirthDate: familyGraph.getDateService() })) {
 			children.push(childNode);
 		}
-
-		// Sort by birth date
-		children.sort((a, b) => {
-			if (!a.birthDate && !b.birthDate) return 0;
-			if (!a.birthDate) return 1;
-			if (!b.birthDate) return -1;
-			return a.birthDate.localeCompare(b.birthDate);
-		});
 
 		// Recursively process children
 		for (const child of children) {

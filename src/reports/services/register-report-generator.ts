@@ -148,7 +148,7 @@ export class RegisterReportGenerator {
 		// numbered-descent convention which traces biological lineage).
 		// #546: include flag makes the bio-only-ness explicit at the call site.
 		const children: Array<{ person: ReportPerson; registerNumber?: string; node: PersonNode }> = [];
-		for (const { person: childNode } of familyGraph.getQueryService().getChildren(node, { include: 'bio' })) {
+		for (const { person: childNode } of familyGraph.getQueryService().getChildren(node, { include: 'bio', sortByBirthDate: familyGraph.getDateService() })) {
 			children.push({
 				person: nodeToReportPerson(childNode),
 				node: childNode

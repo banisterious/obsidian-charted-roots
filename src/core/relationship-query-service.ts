@@ -26,6 +26,7 @@
 
 import type { PersonNode } from './family-graph';
 import type { SpouseRelationship } from '../models/person';
+import type { DateService } from '../dates/services/date-service';
 
 /** Resolves a crId to a PersonNode, or undefined if not in the cache. */
 export type PersonLookup = (crId: string) => PersonNode | undefined;
@@ -101,7 +102,10 @@ export class RelationshipQueryService {
 	 * person could in principle appear in multiple arrays in malformed
 	 * frontmatter, though the loader normally prevents that).
 	 */
-	getChildren(person: PersonNode, opts: { include: ChildInclude }): ChildQueryResult[] {
+	getChildren(
+		person: PersonNode,
+		opts: { include: ChildInclude; sortByBirthDate?: DateService | null }
+	): ChildQueryResult[] {
 		const results: ChildQueryResult[] = [];
 
 		if (opts.include === 'all' || opts.include === 'bio') {
@@ -123,6 +127,28 @@ export class RelationshipQueryService {
 				const child = this.getPerson(crId);
 				if (child) results.push({ person: child, kind: 'step' });
 			}
+		}
+
+		// Optional birth-date sort. When opt-in, callers get a merged-by-age
+		// ordering across the requested variants (#586 / #587 / sweep), using
+		// the universe-aware canonical-year compare so descending fictional
+		// eras (BBY, etc.) order correctly alongside Gregorian dates. Persons
+		// without a parseable birth date sink to the end, preserving their
+		// relative order. Focal universe is read from `person.universe`.
+		if (opts.sortByBirthDate) {
+			const dateService = opts.sortByBirthDate;
+			const focalUniverse = person.universe;
+			const yearOf = (p: PersonNode): number | null =>
+				p.birthDate ? dateService.getCanonicalYear(p.birthDate, focalUniverse) : null;
+			const decorated = results.map((item, index) => ({ item, index, year: yearOf(item.person) }));
+			decorated.sort((a, b) => {
+				if (a.year === null && b.year === null) return a.index - b.index;
+				if (a.year === null) return 1;
+				if (b.year === null) return -1;
+				if (a.year !== b.year) return a.year - b.year;
+				return a.index - b.index;
+			});
+			return decorated.map(d => d.item);
 		}
 
 		return results;

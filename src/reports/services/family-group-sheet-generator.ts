@@ -88,7 +88,7 @@ export class FamilyGroupSheetGenerator {
 		// would shift this away from the canonical genealogy form.
 		const children: ReportPerson[] = [];
 		if (options.includeChildren) {
-			for (const { person: childNode } of familyGraph.getQueryService().getChildren(primaryNode, { include: 'bio' })) {
+			for (const { person: childNode } of familyGraph.getQueryService().getChildren(primaryNode, { include: 'bio', sortByBirthDate: familyGraph.getDateService() })) {
 				const childPerson = nodeToReportPerson(childNode);
 				// Add spouse info for child if available
 				if (childNode.spouseCrIds.length > 0) {

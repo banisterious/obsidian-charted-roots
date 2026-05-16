@@ -203,7 +203,7 @@ export function renderFamilyTimeline(
 	// all family members; pre-#546 the bio-only walk silently dropped
 	// adopted/step children from the focal person's family timeline.
 	if (options?.showChildren !== false) {
-		for (const { person: child } of familyGraph.getQueryService().getChildren(focalPerson, { include: 'all' })) {
+		for (const { person: child } of familyGraph.getQueryService().getChildren(focalPerson, { include: 'all', sortByBirthDate: familyGraph.getDateService() })) {
 			const childEvents = eventService.getEventsForPerson(`[[${child.file.basename}]]`);
 			familyMembers.push({
 				person: child,

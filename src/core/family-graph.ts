@@ -322,6 +322,16 @@ export class FamilyGraphService {
 	}
 
 	/**
+	 * Return the injected DateService so callers (report generators,
+	 * timeline view, etc.) can opt into the birth-date sort on
+	 * `getQueryService().getChildren(...)` without taking a direct
+	 * dependency on plugin internals.
+	 */
+	getDateService(): DateService | null {
+		return this.dateService;
+	}
+
+	/**
 	 * Set property aliases for reading frontmatter with custom property names
 	 */
 	setPropertyAliases(aliases: Record<string, string>): void {

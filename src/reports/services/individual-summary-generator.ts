@@ -143,7 +143,7 @@ export class IndividualSummaryGenerator {
 		// Children — bio only by current convention (#546). Flipping to 'all'
 		// would surface adopted/step children in individual summaries; that's
 		// a deliberate genealogy-domain decision and lives in a follow-up.
-		for (const { person: child } of familyGraph.getQueryService().getChildren(node, { include: 'bio' })) {
+		for (const { person: child } of familyGraph.getQueryService().getChildren(node, { include: 'bio', sortByBirthDate: familyGraph.getDateService() })) {
 			family.children.push(nodeToReportPerson(child));
 		}
 
