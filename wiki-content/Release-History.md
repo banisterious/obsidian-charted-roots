@@ -9,8 +9,10 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.44: Bundled styles.css Rebuild and Release-Procedure Flip](#v02244-bundled-stylescss-rebuild-and-release-procedure-flip-v02244)
   - [v0.22.43: CSS Lint Cleanup, !important and :has() Closures](#v02243-css-lint-cleanup-important-and-has-closures-v02243)
   - [v0.22.40 – v0.22.42 Round-Up: Scanner Severity Response Arc](#v02240--v02242-round-up-scanner-severity-response-arc-v02240v02242)
+  - [v0.22.39 Round-Up: Event Ordering UI, Map View Hardening, and Family Chart Asymmetry Drop](#v02239-round-up-event-ordering-ui-map-view-hardening-and-family-chart-asymmetry-drop-v02239)
   - [v0.22.38 Round-Up: Native Button Migration, CSS Scan Cleanup, and Custom Relationship Display](#v02238-round-up-native-button-migration-css-scan-cleanup-and-custom-relationship-display-v02238)
   - [v0.22.32 – v0.22.37 Round-Up: Community Automated Review Cleanup Arc](#v02232--v02237-round-up-community-automated-review-cleanup-arc-v02232v02237)
   - [v0.22.31 Round-Up: Fictional-Date Cluster, Community Review Cleanup, and Pop-out Window Timer Migration](#v02231-round-up-fictional-date-cluster-community-review-cleanup-and-pop-out-window-timer-migration-v02231)
@@ -175,6 +177,29 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 
 ## v0.22.x
 
+### v0.22.44: Bundled `styles.css` Rebuild and Release-Procedure Flip (v0.22.44)
+
+Same-day follow-up to v0.22.43 that actually closes the two CSS lint Warnings v0.22.43 was meant to silence. The source-level changes shipped correctly in v0.22.43 (`styles/family-chart-view.css` dropped `!important`, `styles/timeline-callouts.css` dropped `:has()`), but the bundled `styles.css` in the repo was not rebuilt and committed alongside. The Community automated review's CSS-lint rule reads `styles.css` from the repo at the tagged commit (not the CI-built release asset), so it still saw the old rules at the bundled paths even though the source paths had been fixed. v0.22.44 commits a freshly built `styles.css` matching the v0.22.43 source state and updates the release-procedure documentation to reflect the new "rebuild + commit `styles.css` on CSS-touching releases" rule. No source-code changes; bundled stylesheet plus release-procedure docs only.
+
+**Workflow gap surfaced by the v0.22.43 scan**:
+- v0.22.43's scan against the published release still reported `!important` at `styles.css:18430` and `:has()` at `styles.css:27879, 27883` even though the matching source files (`styles/family-chart-view.css`, `styles/timeline-callouts.css`) were clean. Investigation traced the gap to two compounding factors: `styles.css` is tracked in git despite being listed in `.gitignore` (the entry only takes effect for new files, and tracking predates the `build-css.js` pipeline), and the Community automated review's scanner reads `styles.css` from the repo at the tagged commit, not from the CI-built release asset.
+- During the v0.22.43 cut, the source files were committed but the bundled `styles.css` was never rebuilt and committed alongside. The same working-tree drift had persisted across the entire scan-cleanup arc, but earlier releases were only changing JavaScript surfaces, so it hadn't mattered.
+- Option A (commit rebuilt `styles.css` on CSS-touching releases) chosen over Option B (untracking) because the scanner's reading model puts the bundled stylesheet in the "fetch from repo" category — untracking might leave the scanner blind to CSS findings entirely.
+
+**Bundled `styles.css` rebuilt and committed**:
+- The committed `styles.css` now matches the v0.22.43 source state: `!important` is gone from the `.card_cont.cr-hl-dim` rule, and the two sibling-aware `:has()` rules in timeline-callouts have been rewritten to class-based adjacent-sibling selectors per v0.22.43's `cr-has-timeline` post-processor. The scanner now sees zero `!important` declarations and zero `:has()` selectors in the bundled stylesheet (down from one and two respectively at v0.22.43).
+- Post-release scan against v0.22.44 returned clean of the two warning categories. **Score bumped from 83 to 88 / 100.** Only the documented-irreducible findings remain (>5 MB main.js, four multicolumn partial-support warnings on timeline-callouts, and the three Behavior-section recommendations — Vault Enumeration, Clipboard Access, Dynamic Code Execution).
+
+**Release-procedure documentation flipped**:
+- [`docs/developer/release-procedure.md`](../docs/developer/release-procedure.md) previously instructed to skip `styles.css` during the version-bump commit because of a "known build-timestamp drift." That captured the symptom but documented the wrong remediation: the drift exists because we never rebuild and commit, and the Community automated review reads the bundled stylesheet from the repo. The correct rule is to rebuild via `npm run build`, then include `styles.css` in the version-bump commit whenever the release touched any CSS source.
+- Both the version-bump file table and the bash code-block comment were updated. Three incidental pre-existing references to an internal-only project-conventions file were also cleaned up alongside (forward-only — not rewriting past commits).
+
+**Testing:** Suite total **883** across 68 suites, unchanged. No source-code changes; only the bundled stylesheet and release-procedure docs.
+
+**Stability-window impact:** v0.22.44 is the twenty-second patch in the v0.22.22-anchored window. `medium-priority` workflow and bundle hygiene; doesn't reset the window. Window remains anchored to v0.22.22 (2026-05-07 → ~2026-05-28).
+
+---
+
 ### v0.22.43: CSS Lint Cleanup, `!important` and `:has()` Closures (v0.22.43)
 
 Follow-up to v0.22.42 closing the two remaining CSS lint Warning categories that the v0.22.42 scan still surfaced (`!important` × 1, `:has()` × 2). The multicolumn partial-support category stays as-is since timeline event lists rely on `column-width` / `column-gap` / `column-rule` for fluid multi-column layout with no longhand alternative.
@@ -227,6 +252,44 @@ Between v0.22.38 and v0.22.39's post-release scans, Obsidian's Community automat
 **Outcome:** Total `createElement("script")` surface reduced from 9 sites in v0.22.39 to 0 in v0.22.41. `setInterval` count reduced from 8 to 3 in v0.22.42 with the setInterval+network Behavior Warning silenced (the remaining 3 sites are in scopes disjoint from any `fetch()`). Final scan posture: zero errors, 83 / 100 score, surfacing only the previously-documented irreducible findings (>5 MB main.js, family-chart `!important`, timeline-callouts multicolumn / `:has()`). The Community Plugins demotion lifted in v0.22.41 and the plugin remained listed throughout v0.22.42.
 
 **Stability-window impact:** v0.22.40 is the eighteenth patch in the v0.22.22-anchored window; v0.22.41 the nineteenth; v0.22.42 the twentieth. All `medium-priority` scan-response work; none reset the window. Window remains anchored to v0.22.22 (2026-05-07 → ~2026-05-28).
+
+---
+
+### v0.22.39 Round-Up: Event Ordering UI, Map View Hardening, and Family Chart Asymmetry Drop (v0.22.39)
+
+A focused reliability and UX release. Adds the long-requested Event Relative ordering UI ([#569](https://github.com/banisterious/obsidian-charted-roots/issues/569)) so `before` / `after` constraints can be set through the Create / Edit Event modal instead of by hand-editing YAML. Fixes four map-view issues that surfaced during recent custom-map testing — a spurious WebSocket console error from a bundled dev-server client, a markercluster load-order cascade that broke open / close cycles, a child-map header layout that wrapped awkwardly on long map names, and a global-L drift that broke leaflet plugin registrations across repeated open / close cycles — plus closes a separate Family Chart freeze ([#575](https://github.com/banisterious/obsidian-charted-roots/issues/575)) that fired when person notes contained asymmetric relationship data. Also closes the largest category from the v0.22.38 Community automated review's CSS lint surface (the vendored leaflet-distortable duplicates) via a 25-selector dedupe — no user-visible change. Note: between v0.22.38 and v0.22.39's post-release scans, the Community automated review promoted its "dynamic `<script>` element creations" rule from warning to error severity, demoting Charted Roots on the Community Plugins website; the [v0.22.40 – v0.22.42 Round-Up](#v02240--v02242-round-up-scanner-severity-response-arc-v02240v02242) above covers that response arc.
+
+**Feature: Event Relative ordering UI** ([#569](https://github.com/banisterious/obsidian-charted-roots/issues/569)):
+- The Create / Edit Event modal now exposes "After these events:" and "Before these events:" chip-list pickers in a new "Relative ordering" section between Worldbuilding and Transfer. Each chip displays the linked event's basename; the Add picker opens a single-select `EventPickerModal` that excludes self and already-added events on the same side.
+- The topological sort in the timeline exporters (`timeline-canvas-exporter.ts` and `timeline-markdown-exporter.ts`) has supported the `before` / `after` frontmatter arrays since v0.20.x — until now those constraints could only be set via manual YAML editing, and the wiki documented the YAML shape but offered no UI affordance. The UI fills that gap.
+- Use this for events with unknown or imprecise dates where chronology depends on relative ordering rather than calendar values (for example, "this exchange happened during the wedding" or "this letter arrived before the war started").
+- Internal: a defensive guard in `createSmartWikilink` (`src/events/services/event-service.ts`) accepts already-bracketed input idempotently so the modal can pass pre-built wikilinks through the service pipeline without double-wrapping. Originally reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Fix: Family Chart no longer freezes Obsidian on asymmetric relationship data** ([#575](https://github.com/banisterious/obsidian-charted-roots/issues/575)):
+- When a person note has a relationship `_id` field set (e.g., `father_id`) but the corresponding wikilink half is missing — a state that can be produced by interrupted writes, sync conflicts, or partial frontmatter edits — the family-chart library's internal tree construction could enter an infinite loop that froze the entire Obsidian app, not just the view.
+- A new `dropAsymmetricRelationships()` bidirectional-symmetry pass runs over `chartData` before the data reaches `f3.createChart()`: any parent / child / spouse reference the other side doesn't mirror is dropped with a console warning and a summary count. The chart then renders correctly with whatever symmetric data remains.
+- The underlying note data is not modified — only the in-memory chart input is filtered. A future Data Quality enhancement ([#576](https://github.com/banisterious/obsidian-charted-roots/issues/576), filed for post-1.0) will surface the asymmetric references for repair through the UI.
+- Reporter [@D4B2A](https://github.com/D4B2A) traced the root cause themselves after reinstalling Charted Roots wiped the affected `_id` references. The original Family Chart freeze report ([#572](https://github.com/banisterious/obsidian-charted-roots/issues/572)) was closed as self-resolved via the reinstall, cross-referenced to #575 as the upstream fix.
+
+**Fix: map view reliability hardening (four cascading patterns)**:
+- **Spurious "WebSocket connection to ws://localhost:8081/ws failed" error in DevTools during custom-map edit mode.** The `leaflet-distortableimage` library's bundled dist file accidentally includes a webpack-dev-server hot-reload client that opens a WebSocket to a non-existent localhost port on every module load. The connection failure was logged as an error every time a custom-map view was opened in edit mode — harmless in practice (the library's normal functionality is unaffected) but alarming-looking. A new postinstall patch (`patch-leaflet-distortable.js`, mirroring the existing `patch-family-chart.js` pattern) stubs the offending `WebSocketClient` constructor to a no-op object, so no connection attempt is made and no error is logged.
+- **Cluster cleanup errors during map close no longer cascade to break subsequent map opens.** A pre-existing leaflet.markercluster load-order issue throws `L.DistanceGrid is not a constructor` when clearing cluster layers during view destroy. Previously this poisoned global state and caused the next map open to fail with `leaflet.markercluster is not properly loaded`. The map-controller's `destroy()` path now wraps each cleanup step (cluster clears, layer clears, image map manager, `map.remove`) in independent try-catches with warning logs, so a failure in one step doesn't propagate to the rest of teardown or to the next session. The underlying load-order bug is tracked at [#574](https://github.com/banisterious/obsidian-charted-roots/issues/574); the try-catches are a workaround, not the root-cause fix.
+- **Leaflet plugin registrations now survive multiple open / close cycles.** The `initializeLeafletPlugins()` (markercluster, heat, fullscreen, minimap, etc.) and `initDistortableImagePlugins()` (leaflet-toolbar, leaflet-distortableimage) loaders previously only set `window.L = L` on first call; subsequent map opens skipped the reattach. Across repeated cycles the global L reference could drift (mechanism unclear — possibly Obsidian view-lifecycle interactions or another plugin clobbering `window.L`), causing the post-load registration checks to fail from the 2nd or 3rd cycle onward. Both loaders now defensively reattach `window.L = L` on every invocation before the cached imports resolve.
+- **Child-map header layout no longer wraps awkwardly when the map name is long.** The breadcrumb navigation (e.g., `The Dying Earth → River Scaum and its Major Tributaries`) is now rendered as its own row above the toolbar instead of sharing the toolbar's left section. The map-selector dropdown is also capped at `max-width: 240px` with ellipsis truncation so long map names don't push filter controls (collections dropdown, year-range inputs) into a wrap. The selector's dropdown popup still shows full option text when opened.
+
+**Internal: leaflet-distortable CSS dedupe (largest category from the v0.22.38 scan)**:
+- 25 duplicate-selector cluster between `styles/map-view.css` and `styles/leaflet-distortable.css` consolidated to a single theme-aware block in `leaflet-distortable.css` with `.cr-map-view` scoping. Closes the largest remaining category in the Community automated review's v0.22.38 CSS lint surface (the `.ldi-*`, `.leaflet-toolbar-icon.*`, `#toggle-keymapper`, etc. selectors). `styles.css` drops by 274 lines (41,244 → 40,970).
+- No user-visible change in current Charted Roots usage — leaflet-distortable's popup toolbar and keymapper are intentionally suppressed in our map view (`suppressToolbar: true` at `image-map-manager.ts:686`), so the theme-aware values apply to UI that doesn't render. The consolidation is pure scanner cleanup plus defensive posture for any future flip of the suppression flag.
+- Plan documented at [`docs/planning/leaflet-distortable-dedupe-plan.md`](../docs/planning/leaflet-distortable-dedupe-plan.md).
+
+**Closures and follow-ups**:
+- [#572](https://github.com/banisterious/obsidian-charted-roots/issues/572) — original Family Chart freeze report; closed as reporter-self-resolved via reinstall, cross-referenced to #575.
+- [#574](https://github.com/banisterious/obsidian-charted-roots/issues/574) — tracking issue for the underlying `L.DistanceGrid` markercluster load-order bug that the destroy try-catches workaround but don't fix. Acceptance criteria: workarounds can be removed once root cause is fixed.
+- [#576](https://github.com/banisterious/obsidian-charted-roots/issues/576) — "Surface asymmetric relationship references in Data Quality tab" enhancement, filed as a post-1.0 follow-up to #575's runtime-dropping fix.
+
+**Testing:** Suite total **883** across 68 suites, unchanged from v0.22.38. No new tests in this release — the Event ordering UI is structural change with no testable assertions beyond what the modal already covers, and `dropAsymmetricRelationships()` is a defensive runtime pass without unit coverage (worth adding if the surface is revisited).
+
+**Stability-window impact:** v0.22.39 is the seventeenth patch in the v0.22.22-anchored window. `high-priority` for the #575 freeze fix, but the fix is purely defensive (no schema change, no behavior change for symmetric data); doesn't reset the window. Window remains anchored to v0.22.22 (2026-05-07 → ~2026-05-28).
 
 ---
 
