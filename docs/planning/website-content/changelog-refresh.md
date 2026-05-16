@@ -4,8 +4,8 @@
 
 **Target page:** `/changelog/_index.md` on chartedroots.com
 **Source material:** [wiki Release-History.md](../../../wiki-content/Release-History.md) (canonical longer-form), [CHANGELOG.md](../../../CHANGELOG.md) (per-release detail).
-**Last ported:** 2026-05-16, commit `1785824` on chartedroots.com@main (per-Round-Up restructure: full new-shape body rewrite).
-**Pending port (next session):** full new-shape rewrite of v0.22.x covering v0.22.0 through v0.22.44; wiki backlinks added to v0.21.x / v0.20.x / v0.19.x.
+**Last ported:** 2026-05-16, commits `1785824` + `a5caf13` on chartedroots.com@main (per-Round-Up restructure + same-day em-dash sweep on the new v0.22.x content).
+**Pending port (next session):** new H3 entries for v0.22.45 once the release ships.
 
 ---
 
@@ -588,6 +588,8 @@ This appendix preserves the chronological port log from the original "cluster sp
 **v0.22.43 (2026-05-16)** — new standalone H3 above the round-up: CSS lint cleanup, `!important` × 1 closed via family-chart patches, `:has()` × 2 closed via markdown post-processor. Ported as commit `df7fb9b`, cluster intro at 43 / 883 / twenty-one.
 
 **Per-Round-Up restructure ported (2026-05-16)** — full new-shape rewrite. Per-Round-Up grouping replacing per-issue H3 sprawl. User-facing filter applied retroactively. Wiki backlinks added to every Round-Up. Internal-only releases collapsed into a per-cluster details block (v0.22.43, v0.22.44 currently captured there). v0.22.0 through v0.22.44 all in new shape. v0.21.x / v0.20.x / v0.19.x preserved with wiki backlinks added. Landed on chartedroots.com as commit `1785824`.
+
+**Em-dash sweep ported (2026-05-16)** — same-day follow-up cleaning 25 em-dashes from the new v0.22.x content (drafting brief overstated cleanliness; sweep applied plugin-side as commit `edc2d9ca`, then website-side as the matching pass). Older clusters were already em-dash-free pre-sweep, contrary to the initial framing in the website-session brief. Landed on chartedroots.com as commit `a5caf13`.
 
 </details>
 
