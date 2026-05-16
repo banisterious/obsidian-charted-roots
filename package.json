@@ -18,7 +18,7 @@
 		"format:css": "prettier --write \"styles/**/*.css\"",
 		"deploy": "./deploy.sh",
 		"dev:deploy": "./dev-deploy.sh",
-		"postinstall": "node patch-family-chart.js && node patch-leaflet-distortable.js && node patch-core-js-polyfill.js",
+		"postinstall": "node patch-family-chart.js && node patch-leaflet-distortable.js && node patch-core-js-polyfill.js && node patch-pdfmake.js",
 		"test": "node ./node_modules/vitest/vitest.mjs run",
 		"test:watch": "node ./node_modules/vitest/vitest.mjs"
 	},
