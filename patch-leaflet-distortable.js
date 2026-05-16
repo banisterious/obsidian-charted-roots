@@ -17,7 +17,24 @@
  *   "dynamic <script> element creation" violation. Stubbing the loader
  *   removes that surface from the bundle.
  *
- * Both patches no-op the offending code while preserving the function
+ * Patch 3 — mapknitter export status-poll (_defaultHandleStatusRes):
+ *   The library exposes a `mergedOpts.exportStartUrl` -> `statusUrl` flow that
+ *   uploads a distorted image collection to export.mapknitter.org and polls
+ *   the returned status URL via `setInterval` + `fetch` until the export
+ *   completes. The setInterval+fetch combination is the textbook "periodic
+ *   beaconing" pattern the Community automated review's Behavior rule looks
+ *   for. The plugin does not use the mapknitter export feature (we render
+ *   image overlays in-vault only), so the status handler is unreachable.
+ *   Stubbed to a no-op.
+ *
+ * Patch 4 — webpack-dev-server live-reload poll:
+ *   The bundled webpack-dev-server reloadApp helper sets a `setInterval` that
+ *   watches `window.location.protocol` and triggers a live reload when the
+ *   protocol is not "about:". Dead code in production for the same reasons as
+ *   Patch 1 (the dev server is never running). Stubbed to remove the
+ *   setInterval from the bundle.
+ *
+ * All patches no-op the offending code while preserving the function
  * signatures so any caller doesn't error. The library's normal functionality
  * is unaffected.
  */
@@ -97,6 +114,63 @@ const CHUNK_PATCHED = `/******/ 	// webpack/runtime/load script — PATCHED (cha
 
 const CHUNK_MARKER = 'PATCHED (charted-roots): chunk loader stubbed';
 
+// --- Patch 3: mapknitter export status-poll (_defaultHandleStatusRes) ---
+
+const STATUS_ORIGINAL = `      var _defaultHandleStatusRes = function _defaultHandleStatusRes(data) {
+        statusUrl = opts.statusUrl + data; // repeatedly fetch the status.json
+
+        _this6.updateInterval = setInterval(function () {
+          var reqOpts = {
+            method: 'GET'
+          };
+          var req = new Request("".concat(statusUrl, "?").concat(Date.now()), reqOpts);
+          fetch(req).then(function (res) {
+            if (res.ok) {
+              return res.text();
+            }
+          }).then(opts.updater);
+        }, opts.frequency);
+      };`;
+
+const STATUS_PATCHED = `      var _defaultHandleStatusRes = function _defaultHandleStatusRes(data) {
+        // PATCHED (charted-roots): mapknitter export feature not used.
+        // The original implementation runs a setInterval+fetch poll against
+        // export.mapknitter.org for an export job's status URL. The plugin
+        // never invokes the export start flow (we render image overlays
+        // in-vault only), so this handler is unreachable. Stubbed to remove
+        // the setInterval+fetch combination that the Community automated
+        // review's Behavior rule correlates as a beaconing pattern.
+        void data;
+      };`;
+
+const STATUS_MARKER = 'PATCHED (charted-roots): mapknitter export feature not used';
+
+// --- Patch 4: webpack-dev-server live-reload poll ---
+
+const RELOAD_ORIGINAL = `    var intervalId = self.setInterval(function () {
+      if (rootWindow.location.protocol !== "about:") {
+        // reload immediately if protocol is valid
+        applyReload(rootWindow, intervalId);
+      } else {
+        rootWindow = rootWindow.parent;
+
+        if (rootWindow.parent === rootWindow) {
+          // if parent equals current window we've reached the root which would continue forever, so trigger a reload anyways
+          applyReload(rootWindow, intervalId);
+        }
+      }
+    });`;
+
+const RELOAD_PATCHED = `    // PATCHED (charted-roots): webpack-dev-server live-reload poll stubbed.
+    // The dev server is never running in production, so this setInterval
+    // would never trigger a useful reload. Removing it eliminates a
+    // setInterval site flagged by the Community automated review's
+    // Behavior rule.
+    var intervalId = 0;
+    void intervalId;`;
+
+const RELOAD_MARKER = 'PATCHED (charted-roots): webpack-dev-server live-reload poll stubbed';
+
 // --- Apply patches ---
 
 if (!fs.existsSync(DIST_FILE)) {
@@ -133,6 +207,34 @@ if (source.includes(CHUNK_MARKER)) {
 	source = source.replace(CHUNK_REGEX, CHUNK_PATCHED);
 	changed = true;
 	console.log('[patch-leaflet-distortable] Stubbed webpack chunk loader to a no-op.');
+}
+
+// Patch 3
+if (source.includes(STATUS_MARKER)) {
+	console.log('[patch-leaflet-distortable] mapknitter status-poll already patched, skipping.');
+} else if (!source.includes(STATUS_ORIGINAL)) {
+	console.warn(
+		'[patch-leaflet-distortable] Could not find expected _defaultHandleStatusRes body. ' +
+		'The library may have been updated. Skipping mapknitter status-poll patch.'
+	);
+} else {
+	source = source.replace(STATUS_ORIGINAL, STATUS_PATCHED);
+	changed = true;
+	console.log('[patch-leaflet-distortable] Stubbed mapknitter export status-poll to a no-op.');
+}
+
+// Patch 4
+if (source.includes(RELOAD_MARKER)) {
+	console.log('[patch-leaflet-distortable] Live-reload poll already patched, skipping.');
+} else if (!source.includes(RELOAD_ORIGINAL)) {
+	console.warn(
+		'[patch-leaflet-distortable] Could not find expected live-reload setInterval body. ' +
+		'The library may have been updated. Skipping live-reload patch.'
+	);
+} else {
+	source = source.replace(RELOAD_ORIGINAL, RELOAD_PATCHED);
+	changed = true;
+	console.log('[patch-leaflet-distortable] Stubbed webpack-dev-server live-reload poll to a no-op.');
 }
 
 if (changed) {
