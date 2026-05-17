@@ -22,6 +22,7 @@ import { isEventNote, isPersonNote } from '../../utils/note-type-detection';
 import { PropertyAliasService } from '../../core/property-alias-service';
 import { TemplateSnippetsModal } from '../../ui/template-snippets-modal';
 import { DEFAULT_DATE_SYSTEMS } from '../constants/default-date-systems';
+import { createUniverseService } from '../../universes/services/universe-service';
 
 /* ──────────────────────────────────────────────────────────────────────────
    Types for the dockable Events list (renderEventsList)
@@ -32,8 +33,12 @@ export interface EventsListOptions {
 	plugin: CanvasRootsPlugin;
 	initialTypeFilter?: string;
 	initialPersonFilter?: string;
+	initialUniverseFilter?: string;
+	initialPlaceFilter?: string;
+	initialDateFrom?: number | null;
+	initialDateTo?: number | null;
 	initialSearch?: string;
-	onStateChange?: (typeFilter: string, personFilter: string, search: string) => void;
+	onStateChange?: (state: TimelineFilterState) => void;
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
@@ -43,12 +48,31 @@ export interface EventsListOptions {
    filter dimension adds one field here and is honored everywhere.
    ────────────────────────────────────────────────────────────────────────── */
 
+/**
+ * Sentinel value for the universe filter representing "events with no
+ * universe field set" (real-world events).
+ */
+export const UNIVERSE_FILTER_REAL = '__real__';
+/**
+ * Sentinel value for the universe filter representing "events with any
+ * universe field set" (any fictional vault).
+ */
+export const UNIVERSE_FILTER_ANY_FICTIONAL = '__fictional__';
+
 /** Filter state for the timeline event list. */
 export interface TimelineFilterState {
 	/** Event type id; empty string means "all types". */
 	type: string;
 	/** Person wikilink (or substring); empty string means "all people". */
 	person: string;
+	/** Universe name, `UNIVERSE_FILTER_REAL`, `UNIVERSE_FILTER_ANY_FICTIONAL`, or empty for "all". */
+	universe: string;
+	/** Place wikilink; empty string means "all places". */
+	place: string;
+	/** Lower-bound year (inclusive). `null` means no lower bound. */
+	dateFrom: number | null;
+	/** Upper-bound year (inclusive). `null` means no upper bound. */
+	dateTo: number | null;
 	/** Free-text search across title/date/place/description; lowercased before matching. */
 	search: string;
 }
@@ -69,7 +93,9 @@ function stripWikilink(value: string): string {
  */
 export function applyTimelineFilters(events: EventNote[], state: TimelineFilterState): EventNote[] {
 	const personNeedle = state.person ? stripWikilink(state.person).toLowerCase() : '';
+	const placeNeedle = state.place ? stripWikilink(state.place).toLowerCase() : '';
 	const search = state.search.toLowerCase();
+	const dateBounded = state.dateFrom !== null || state.dateTo !== null;
 
 	return events.filter(event => {
 		if (state.type && event.eventType !== state.type) return false;
@@ -80,6 +106,31 @@ export function applyTimelineFilters(events: EventNote[], state: TimelineFilterS
 			if (!singlePerson.includes(personNeedle) && !multiplePeople.some(p => p.includes(personNeedle))) {
 				return false;
 			}
+		}
+
+		if (state.universe) {
+			if (state.universe === UNIVERSE_FILTER_REAL) {
+				if (event.universe) return false;
+			} else if (state.universe === UNIVERSE_FILTER_ANY_FICTIONAL) {
+				if (!event.universe) return false;
+			} else if (event.universe !== state.universe) {
+				return false;
+			}
+		}
+
+		if (placeNeedle) {
+			const eventPlace = event.place ? stripWikilink(event.place).toLowerCase() : '';
+			if (!eventPlace.includes(placeNeedle)) return false;
+		}
+
+		if (dateBounded) {
+			// Events with no date pass only when both bounds are absent (already
+			// excluded by `dateBounded`). With at least one bound active, an
+			// undated event is filtered out.
+			const year = event.date ? extractYear(event.date) : null;
+			if (year === null) return false;
+			if (state.dateFrom !== null && year < state.dateFrom) return false;
+			if (state.dateTo !== null && year > state.dateTo) return false;
 		}
 
 		if (search) {
@@ -395,11 +446,61 @@ function renderTimelineCard(
 	let filteredEvents = sortEventsChronologically([...allEvents]);
 	renderEventTable(tableContainer, filteredEvents, plugin);
 
+	// More-filters disclosure (#515): render universe/place/date-range
+	// controls in a collapsible section so the primary filter row stays
+	// compact on narrow widths. Section opens by default if any of the
+	// secondary filters are set (not applicable on first render in this
+	// session-local card; modal version doesn't persist filter state).
+	const moreFiltersToggle = filterRow.createEl('button', {
+		cls: 'crc-timeline-more-filters-toggle clickable-icon',
+		attr: { 'aria-expanded': 'false', 'aria-label': 'Toggle more filters' }
+	});
+	setIcon(moreFiltersToggle, 'sliders-horizontal');
+	moreFiltersToggle.createSpan({ text: ' More filters', cls: 'crc-timeline-more-filters-label' });
+
+	const moreFiltersRow = content.createDiv({ cls: 'crc-timeline-more-filters crc-timeline-more-filters--collapsed' });
+
+	// Universe filter
+	const universeFilter = moreFiltersRow.createEl('select', { cls: 'dropdown' });
+	universeFilter.createEl('option', { value: '', text: 'All universes' });
+	universeFilter.createEl('option', { value: UNIVERSE_FILTER_REAL, text: '(real-world)' });
+	universeFilter.createEl('option', { value: UNIVERSE_FILTER_ANY_FICTIONAL, text: '(any fictional)' });
+	const universeService = createUniverseService(plugin);
+	for (const u of universeService.getAllUniverses()) {
+		universeFilter.createEl('option', { value: u.name, text: u.name });
+	}
+
+	// Place filter
+	const placeFilter = moreFiltersRow.createEl('select', { cls: 'dropdown' });
+	placeFilter.createEl('option', { value: '', text: 'All places' });
+	for (const place of eventService.getUniquePlaces()) {
+		placeFilter.createEl('option', { value: place, text: stripWikilink(place) });
+	}
+
+	// Date range inputs
+	const dateFromInput = moreFiltersRow.createEl('input', {
+		cls: 'crc-timeline-date-input',
+		attr: { type: 'number', placeholder: 'From year' }
+	});
+	const dateToInput = moreFiltersRow.createEl('input', {
+		cls: 'crc-timeline-date-input',
+		attr: { type: 'number', placeholder: 'To year' }
+	});
+
+	moreFiltersToggle.addEventListener('click', () => {
+		const isCollapsed = moreFiltersRow.classList.toggle('crc-timeline-more-filters--collapsed');
+		moreFiltersToggle.setAttribute('aria-expanded', String(!isCollapsed));
+	});
+
 	// Filter handler
 	const applyFilters = () => {
 		filteredEvents = applyTimelineFilters(allEvents, {
 			type: typeFilter.value,
 			person: personFilter.value,
+			universe: universeFilter.value,
+			place: placeFilter.value,
+			dateFrom: dateFromInput.value ? parseInt(dateFromInput.value, 10) : null,
+			dateTo: dateToInput.value ? parseInt(dateToInput.value, 10) : null,
 			search: searchInput.value
 		});
 		filteredEvents = sortEventsChronologically(filteredEvents);
@@ -408,6 +509,10 @@ function renderTimelineCard(
 
 	typeFilter.addEventListener('change', applyFilters);
 	personFilter.addEventListener('change', applyFilters);
+	universeFilter.addEventListener('change', applyFilters);
+	placeFilter.addEventListener('change', applyFilters);
+	dateFromInput.addEventListener('input', applyFilters);
+	dateToInput.addEventListener('input', applyFilters);
 	searchInput.addEventListener('input', applyFilters);
 
 	// Timeline gap analysis section
@@ -1878,6 +1983,10 @@ export function renderEventsList(options: EventsListOptions): void {
 	// Closure-scoped state
 	let currentTypeFilter = options.initialTypeFilter ?? '';
 	let currentPersonFilter = options.initialPersonFilter ?? '';
+	let currentUniverseFilter = options.initialUniverseFilter ?? '';
+	let currentPlaceFilter = options.initialPlaceFilter ?? '';
+	let currentDateFrom: number | null = options.initialDateFrom ?? null;
+	let currentDateTo: number | null = options.initialDateTo ?? null;
 	let currentSearch = options.initialSearch ?? '';
 
 	// Get all events
@@ -1936,6 +2045,57 @@ export function renderEventsList(options: EventsListOptions): void {
 		}
 	});
 	searchInput.value = currentSearch;
+
+	// More-filters disclosure (#515). Opens by default if any of the
+	// secondary filters are persisted as set, so users with a remembered
+	// universe/place/date-range filter see those controls without hunting
+	// for them.
+	const hasSecondaryFilter = !!(currentUniverseFilter || currentPlaceFilter || currentDateFrom !== null || currentDateTo !== null);
+	const moreFiltersToggle = filterRow.createEl('button', {
+		cls: 'crc-timeline-more-filters-toggle clickable-icon',
+		attr: { 'aria-expanded': String(hasSecondaryFilter), 'aria-label': 'Toggle more filters' }
+	});
+	setIcon(moreFiltersToggle, 'sliders-horizontal');
+	moreFiltersToggle.createSpan({ text: ' More filters', cls: 'crc-timeline-more-filters-label' });
+
+	const moreFiltersRow = container.createDiv({ cls: 'crc-timeline-more-filters' });
+	if (!hasSecondaryFilter) {
+		moreFiltersRow.addClass('crc-timeline-more-filters--collapsed');
+	}
+
+	const universeFilterEl = moreFiltersRow.createEl('select', { cls: 'dropdown' });
+	universeFilterEl.createEl('option', { value: '', text: 'All universes' });
+	universeFilterEl.createEl('option', { value: UNIVERSE_FILTER_REAL, text: '(real-world)' });
+	universeFilterEl.createEl('option', { value: UNIVERSE_FILTER_ANY_FICTIONAL, text: '(any fictional)' });
+	const universeService = createUniverseService(plugin);
+	for (const u of universeService.getAllUniverses()) {
+		universeFilterEl.createEl('option', { value: u.name, text: u.name });
+	}
+	universeFilterEl.value = currentUniverseFilter;
+
+	const placeFilterEl = moreFiltersRow.createEl('select', { cls: 'dropdown' });
+	placeFilterEl.createEl('option', { value: '', text: 'All places' });
+	for (const place of eventService.getUniquePlaces()) {
+		placeFilterEl.createEl('option', { value: place, text: stripWikilink(place) });
+	}
+	placeFilterEl.value = currentPlaceFilter;
+
+	const dateFromInput = moreFiltersRow.createEl('input', {
+		cls: 'crc-timeline-date-input',
+		attr: { type: 'number', placeholder: 'From year' }
+	});
+	if (currentDateFrom !== null) dateFromInput.value = String(currentDateFrom);
+
+	const dateToInput = moreFiltersRow.createEl('input', {
+		cls: 'crc-timeline-date-input',
+		attr: { type: 'number', placeholder: 'To year' }
+	});
+	if (currentDateTo !== null) dateToInput.value = String(currentDateTo);
+
+	moreFiltersToggle.addEventListener('click', () => {
+		const isCollapsed = moreFiltersRow.classList.toggle('crc-timeline-more-filters--collapsed');
+		moreFiltersToggle.setAttribute('aria-expanded', String(!isCollapsed));
+	});
 
 	// Table container
 	const tableContainer = container.createDiv({ cls: 'crc-timeline-table-container' });
@@ -2100,26 +2260,43 @@ export function renderEventsList(options: EventsListOptions): void {
 	const applyFilters = () => {
 		currentTypeFilter = typeFilterEl.value;
 		currentPersonFilter = personFilterEl.value;
+		currentUniverseFilter = universeFilterEl.value;
+		currentPlaceFilter = placeFilterEl.value;
+		currentDateFrom = dateFromInput.value ? parseInt(dateFromInput.value, 10) : null;
+		currentDateTo = dateToInput.value ? parseInt(dateToInput.value, 10) : null;
 		currentSearch = searchInput.value;
 
-		const filtered = applyTimelineFilters(allEvents, {
+		const filterState: TimelineFilterState = {
 			type: currentTypeFilter,
 			person: currentPersonFilter,
+			universe: currentUniverseFilter,
+			place: currentPlaceFilter,
+			dateFrom: currentDateFrom,
+			dateTo: currentDateTo,
 			search: currentSearch
-		});
+		};
+		const filtered = applyTimelineFilters(allEvents, filterState);
 		renderTable(sortEventsChronologically([...filtered]));
 
-		onStateChange?.(currentTypeFilter, currentPersonFilter, currentSearch);
+		onStateChange?.(filterState);
 	};
 
 	typeFilterEl.addEventListener('change', applyFilters);
 	personFilterEl.addEventListener('change', applyFilters);
+	universeFilterEl.addEventListener('change', applyFilters);
+	placeFilterEl.addEventListener('change', applyFilters);
+	dateFromInput.addEventListener('input', applyFilters);
+	dateToInput.addEventListener('input', applyFilters);
 	searchInput.addEventListener('input', applyFilters);
 
 	// Initial render
 	const initialFiltered = applyTimelineFilters(allEvents, {
 		type: currentTypeFilter,
 		person: currentPersonFilter,
+		universe: currentUniverseFilter,
+		place: currentPlaceFilter,
+		dateFrom: currentDateFrom,
+		dateTo: currentDateTo,
 		search: currentSearch
 	});
 	renderTable(sortEventsChronologically([...initialFiltered]));

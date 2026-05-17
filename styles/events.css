@@ -370,6 +370,56 @@
   color: var(--text-muted);
 }
 
+/* More filters disclosure (#515). Toggle button sits in the primary
+   filter row alongside type / person / search. The disclosure body
+   below holds universe / place / date-range controls. */
+.crc-timeline-more-filters-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2-1);
+  padding: var(--size-2-2) var(--size-4-2);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  cursor: pointer;
+}
+
+.crc-timeline-more-filters-toggle:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.crc-timeline-more-filters-label {
+  font-size: var(--font-ui-small);
+}
+
+.crc-timeline-more-filters {
+  display: flex;
+  gap: var(--size-4-2);
+  margin-bottom: var(--size-4-3);
+  flex-wrap: wrap;
+}
+
+.crc-timeline-more-filters--collapsed {
+  display: none;
+}
+
+.crc-timeline-date-input {
+  width: 110px;
+  padding: var(--size-2-2) var(--size-4-2);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+}
+
+.crc-timeline-date-input:focus {
+  border-color: var(--interactive-accent);
+  outline: none;
+}
+
 .crc-timeline-table-container {
   max-height: 400px;
   overflow-y: auto;

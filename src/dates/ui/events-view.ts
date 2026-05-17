@@ -15,6 +15,10 @@ export const VIEW_TYPE_EVENTS = 'canvas-roots-events';
 interface EventsViewState {
 	typeFilter?: string;
 	personFilter?: string;
+	universeFilter?: string;
+	placeFilter?: string;
+	dateFrom?: number | null;
+	dateTo?: number | null;
 	search?: string;
 }
 
@@ -22,6 +26,10 @@ export class EventsView extends ItemView {
 	plugin: CanvasRootsPlugin;
 	private currentTypeFilter = '';
 	private currentPersonFilter = '';
+	private currentUniverseFilter = '';
+	private currentPlaceFilter = '';
+	private currentDateFrom: number | null = null;
+	private currentDateTo: number | null = null;
 	private currentSearch = '';
 	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -71,11 +79,19 @@ export class EventsView extends ItemView {
 			plugin: this.plugin,
 			initialTypeFilter: this.currentTypeFilter,
 			initialPersonFilter: this.currentPersonFilter,
+			initialUniverseFilter: this.currentUniverseFilter,
+			initialPlaceFilter: this.currentPlaceFilter,
+			initialDateFrom: this.currentDateFrom,
+			initialDateTo: this.currentDateTo,
 			initialSearch: this.currentSearch,
-			onStateChange: (typeFilter, personFilter, search) => {
-				this.currentTypeFilter = typeFilter;
-				this.currentPersonFilter = personFilter;
-				this.currentSearch = search;
+			onStateChange: (state) => {
+				this.currentTypeFilter = state.type;
+				this.currentPersonFilter = state.person;
+				this.currentUniverseFilter = state.universe;
+				this.currentPlaceFilter = state.place;
+				this.currentDateFrom = state.dateFrom;
+				this.currentDateTo = state.dateTo;
+				this.currentSearch = state.search;
 			}
 		});
 	}
@@ -138,6 +154,10 @@ export class EventsView extends ItemView {
 		return {
 			typeFilter: this.currentTypeFilter,
 			personFilter: this.currentPersonFilter,
+			universeFilter: this.currentUniverseFilter,
+			placeFilter: this.currentPlaceFilter,
+			dateFrom: this.currentDateFrom,
+			dateTo: this.currentDateTo,
 			search: this.currentSearch
 		};
 	}
@@ -148,6 +168,18 @@ export class EventsView extends ItemView {
 		}
 		if (state.personFilter !== undefined) {
 			this.currentPersonFilter = state.personFilter;
+		}
+		if (state.universeFilter !== undefined) {
+			this.currentUniverseFilter = state.universeFilter;
+		}
+		if (state.placeFilter !== undefined) {
+			this.currentPlaceFilter = state.placeFilter;
+		}
+		if (state.dateFrom !== undefined) {
+			this.currentDateFrom = state.dateFrom;
+		}
+		if (state.dateTo !== undefined) {
+			this.currentDateTo = state.dateTo;
 		}
 		if (state.search !== undefined) {
 			this.currentSearch = state.search;
