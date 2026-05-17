@@ -1533,7 +1533,12 @@
 
 .cr-events-view {
   padding: var(--size-4-4);
-  overflow-y: auto;
+  /* Fill the leaf's vertical space so the events table grows with the
+     sidebar height instead of capping at the table-container max-height
+     intended for the Control Center modal context. */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .cr-ev-header {
@@ -1541,6 +1546,7 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--size-4-4);
+  flex-shrink: 0;
 }
 
 .cr-ev-title {
@@ -1557,6 +1563,18 @@
 .cr-ev-content {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  /* min-height: 0 lets the inner table-container scroll instead of forcing
+     the whole content area to expand beyond the leaf. */
+  min-height: 0;
+}
+
+/* In the dockable sidebar the table-container should grow to fill remaining
+   vertical space; the 400px max-height is intended for the modal context. */
+.cr-events-view .crc-timeline-table-container {
+  max-height: none;
+  flex: 1;
+  min-height: 0;
 }
 
 .crc-timeline-row--browse {
