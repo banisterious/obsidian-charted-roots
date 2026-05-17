@@ -92,6 +92,12 @@ export class EventsView extends ItemView {
 				this.currentDateFrom = state.dateFrom;
 				this.currentDateTo = state.dateTo;
 				this.currentSearch = state.search;
+				// Trigger Obsidian to persist the new state via getState().
+				// Without this, in-memory changes are only saved opportunistically
+				// (on the next workspace save), causing dropdowns to revert to
+				// the last persisted value on reload. requestSaveLayout is
+				// debounced by Obsidian, so per-keystroke calls are safe.
+				this.app.workspace.requestSaveLayout();
 			}
 		});
 	}
