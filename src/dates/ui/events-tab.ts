@@ -457,7 +457,7 @@ function renderTimelineCard(
 	// in the dropdown even before the user creates a dedicated universe
 	// note.
 	const universeFilter = moreFiltersRow.createEl('select', { cls: 'dropdown' });
-	universeFilter.createEl('option', { value: '', text: 'All universes' });
+	universeFilter.createEl('option', { value: '', text: '(any)' });
 	universeFilter.createEl('option', { value: UNIVERSE_FILTER_REAL, text: '(real-world)' });
 	universeFilter.createEl('option', { value: UNIVERSE_FILTER_ANY_FICTIONAL, text: '(any fictional)' });
 	const universeNames = new Set<string>();
@@ -2069,7 +2069,7 @@ export function renderEventsList(options: EventsListOptions): void {
 	}
 
 	const universeFilterEl = moreFiltersRow.createEl('select', { cls: 'dropdown' });
-	universeFilterEl.createEl('option', { value: '', text: 'All universes' });
+	universeFilterEl.createEl('option', { value: '', text: '(any)' });
 	universeFilterEl.createEl('option', { value: UNIVERSE_FILTER_REAL, text: '(real-world)' });
 	universeFilterEl.createEl('option', { value: UNIVERSE_FILTER_ANY_FICTIONAL, text: '(any fictional)' });
 	const universeNames = new Set<string>();
