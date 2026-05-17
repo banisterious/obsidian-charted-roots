@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.45 Round-Up: Bundle Hygiene, Sibling-Sort Consolidation, and Community-Reported Fixes](#v02245-round-up-bundle-hygiene-sibling-sort-consolidation-and-community-reported-fixes-v02245)
   - [v0.22.44: Bundled styles.css Rebuild and Release-Procedure Flip](#v02244-bundled-stylescss-rebuild-and-release-procedure-flip-v02244)
   - [v0.22.43: CSS Lint Cleanup, !important and :has() Closures](#v02243-css-lint-cleanup-important-and-has-closures-v02243)
   - [v0.22.40 – v0.22.42 Round-Up: Scanner Severity Response Arc](#v02240--v02242-round-up-scanner-severity-response-arc-v02240v02242)
@@ -176,6 +177,46 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.45 Round-Up: Bundle Hygiene, Sibling-Sort Consolidation, and Community-Reported Fixes (v0.22.45)
+
+A multi-theme release combining bundle-hygiene work that nearly halves `main.js`, closure of the last tractable scanner Recommendation (Dynamic Code Execution), two bug fixes for the Add Custom Relationship modal's parent handling reported by [@doctorwodka](https://github.com/doctorwodka), two enhancements from [@DigitalDreamn](https://github.com/DigitalDreamn) (an event-picker person filter plus auto-compute extension to the v0.22.39 Event Relative ordering UI), and a four-surface sibling-sort consolidation arc. **883 tests passing across 68 suites**.
+
+**Feature: Event picker person filter** ([#581](https://github.com/banisterious/obsidian-charted-roots/issues/581)):
+- The Relative ordering event picker (Create / Edit Event modal, "Add" button on the After or Before fields) gains a new "Person:" dropdown alongside the existing Type filter. Source values are deduplicated from each event's `person` + `persons` wikilink fields, parsed via a small `parseWikilinkRef` helper that handles `[[basename]]`, `[[path|alias]]`, and `[[basename|alias]]` shapes so the same person referenced via different wikilink forms groups under one filter value.
+- Reduces scrolling on vaults where multiple people have similarly-titled events (e.g., Ahsoka and Quinlon Vos both having "Begins training at the Jedi Temple"). Suggested by @DigitalDreamn after using the v0.22.39 UI on Ahsoka's events.
+
+**Feature: Auto-compute `sort_order` on event save** ([#569](https://github.com/banisterious/obsidian-charted-roots/issues/569) follow-up):
+- When the Create or Edit Event modal saves an event with `before` / `after` constraints set or changed, the plugin now recomputes `sort_order` values across all events via the existing `computeSortOrder` topological-sort service. Closes the discoverability gap from v0.22.39: previously the `before` / `after` frontmatter values only influenced the timeline exporters' topological sort, and surfaces like the Events tab and Profile View needed the user to run the "Compute sort order" command manually before the narrative order would reflect.
+- Fired fire-and-forget after the save commits, so the modal closes immediately and the user doesn't wait for the recompute to traverse the full event set. A cycle notice surfaces asynchronously when `before` / `after` constraints form a cycle (the existing `SortOrderService` already returns `cycleEvents` in its result); the save itself succeeds in all cases.
+- The auto-compute helper uses `waitForCacheRefresh` (from the v0.22.27 cache-race audit) so Obsidian's metadata cache reflects the just-written frontmatter before the recompute reads it back.
+
+**Fix: Add Custom Relationship modal honors the gender-neutral parent setting + non-binary fallback** ([#579](https://github.com/banisterious/obsidian-charted-roots/issues/579), [#580](https://github.com/banisterious/obsidian-charted-roots/issues/580)):
+- The modal's `parent` save path at [src/ui/add-relationship-modal.ts:195](src/ui/add-relationship-modal.ts#L195) was unconditionally routing to gendered `mother` / `father` fields via a ternary that defaulted to `father` when the target's sex wasn't `female`. Two bugs in one site: it ignored the "Enable gender-neutral parent property" setting (#579), and the implicit fallback to `father` for non-binary parents was wrong (#580).
+- The save path now routes to the gender-neutral `parents` array when either (a) the setting is on, or (b) the target's sex isn't `male` / `female`. Otherwise the gendered path is unchanged. Reporter [@doctorwodka](https://github.com/doctorwodka).
+- New `RelationshipManager.addInclusiveParentRelationship` handles the gender-neutral write: child's `parents` / `parents_id` arrays via a new `addToParentsArray` helper that mirrors the existing `addToChildrenArray` pattern (rebuilds from valid cr_ids, dedupes, dual storage), plus the reverse-side `addToChildrenArray` for the parent's children array. Matching `add_parent` / `remove_parent` variants added to `RelationshipChangeType` so relationship-history records cleanly.
+
+**Fix: Children sort by birth date across Profile View, Canvas Family Tree, and report surfaces** ([#586](https://github.com/banisterious/obsidian-charted-roots/issues/586), [#587](https://github.com/banisterious/obsidian-charted-roots/issues/587)):
+- Three rendering surfaces had been emitting children in frontmatter array order rather than birth order: Profile View Children section ([#586](https://github.com/banisterious/obsidian-charted-roots/issues/586)), Canvas Family Tree ([#587](https://github.com/banisterious/obsidian-charted-roots/issues/587)), and seven report / visual-tree / family-timeline surfaces. Same shape as the v0.22.21 sibling-sort fix ([#532](https://github.com/banisterious/obsidian-charted-roots/issues/532)), applied to additional separately-implemented child-iteration paths.
+- Sort is consolidated into `RelationshipQueryService.getChildren()` via a new `sortByBirthDate?: DateService | null` option. When provided, results return merged across the requested variants (`include: 'all'` returns bio + adopted + step in one age-sorted list) using the universe-aware canonical-year compare so descending fictional eras (BBY / GR / EF / DE) order correctly alongside Gregorian dates. Persons without a parseable birth date sink to the end while preserving their relative order.
+- For Canvas Family Tree specifically, the FamilyChartLayoutEngine reads children directly from `person.childrenCrIds` rather than from edges — so a precomputed `sortedChildrenByCrId` map is now populated on the FamilyTree result and the layout engine prefers this map over the raw frontmatter order.
+- Display callers updated to opt in: Family Group Sheet, Individual Summary, Register, Descendant Chart, Source Summary reports + Visual Tree Service + Family Timeline view (member list). The Descendant Chart's prior `localeCompare`-based sort (which mis-ordered fictional eras) is replaced. Algorithm-only callers (depth measurement, generation queueing, duplicate detection, lineage tracking, BFS, statistics counts) untouched because their output isn't order-sensitive.
+- `createConfiguredFamilyGraph` now constructs and wires a `DateService` so report generators inherit universe-aware sort automatically.
+- Reporter [@DigitalDreamn](https://github.com/DigitalDreamn). Architectural consolidation tracking issue at [#588](https://github.com/banisterious/obsidian-charted-roots/issues/588) for the one remaining surface (`src/core/reference-numbering.ts` creates its own `FamilyGraphService` without DateService wiring) plus future-surface coverage.
+
+**Internal: production minify enabled in esbuild config**:
+- `main.js` drops from 14,710 KB to 8,460 KB (~50% reduction) with no functional changes. Pre-flight grep confirmed no `Function.name` / `.constructor.name` / `.toString()` introspection in plugin source, so identifier mangling is safe without `keepNames`.
+- The "main.js exceeds Sync Standard 5 MB threshold" caveat from the 1.0 release notes softens substantially (~3.4 MB remaining vs ~9.5 MB previously). Fully closing the threshold requires structural moves (jspdf consolidation, family-chart-premium evaluation) that stay post-1.0 scope. Metafile audit shows the current contributors: plugin source ~4.6 MB, pdfmake ~2.3 MB, jspdf ~334 KB, leaflet ecosystem ~600 KB cumulative, family-chart + d3 ~250 KB cumulative.
+
+**Internal: closed the Dynamic Code Execution scanner Recommendation**:
+- New `patch-pdfmake.js` postinstall strips two `new Function("return this")()` sites from `node_modules/pdfmake/build/pdfmake.js`: the bundled core-js globalThis polyfill body and the webpack runtime's `__webpack_require__.g` initializer. Both fallback branches are unreachable in Obsidian's Electron runtime (the `typeof globalThis === "object"` early-return always fires).
+- The patch follows the same shape as the existing `patch-core-js-polyfill.js`: exact-string locate + idempotency marker + fail-loud warning when the ORIGINAL string isn't found (vendor update protection). Wired into the postinstall chain after `patch-core-js-polyfill.js`; the IE5-8 setImmediate site stays handled by the existing patch (separate code path, no overlap).
+
+**Testing:** Suite total **883** across 68 suites, unchanged. The new gender-neutral parent path doesn't yet have unit coverage (the bidirectional write is a defensive runtime pass like `dropAsymmetricRelationships` from v0.22.39); worth adding tests when revisiting `RelationshipManager`.
+
+**Stability-window impact:** v0.22.45 is the twenty-third patch in the v0.22.22-anchored window. `medium-priority` mix of bundle hygiene + small UX feature + four user-facing bug fixes; doesn't reset the window. Window remains anchored to v0.22.22 (2026-05-07 → ~2026-05-28).
+
+---
 
 ### v0.22.44: Bundled `styles.css` Rebuild and Release-Procedure Flip (v0.22.44)
 

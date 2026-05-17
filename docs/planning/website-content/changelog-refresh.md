@@ -5,7 +5,7 @@
 **Target page:** `/changelog/_index.md` on chartedroots.com
 **Source material:** [wiki Release-History.md](../../../wiki-content/Release-History.md) (canonical longer-form), [CHANGELOG.md](../../../CHANGELOG.md) (per-release detail).
 **Last ported:** 2026-05-16, commits `1785824` + `a5caf13` on chartedroots.com@main (per-Round-Up restructure + same-day em-dash sweep on the new v0.22.x content).
-**Pending port (next session):** new H3 entries for v0.22.45 once the release ships.
+**Pending port (next session):** v0.22.45 Round-Up H3 (drafted below, at the top of the v0.22.x cluster).
 
 ---
 
@@ -36,7 +36,23 @@ For the full per-release log, see [GitHub Releases](https://github.com/banisteri
 
 ## v0.22.x: Stability run before 1.0
 
-The stability run before Charted Roots 1.0. Forty-five releases across the cluster: four same-day hotfixes (v0.22.1 through v0.22.4) closed critical data-loss bugs from community testing; the fictional-calendar work matured across v0.22.5 through v0.22.10; map coverage and reliability hardened across v0.22.7 through v0.22.14; the wikilink-writer hardening, bidirectional-sync audit, and architectural pattern work unfolded across v0.22.22 through v0.22.29; and Obsidian's Community Plugins automated review surfaced a multi-release cleanup arc running from v0.22.32 through v0.22.44 alongside ongoing feature work. The current stability window has held since v0.22.22 (twenty-two patches without a reset). Regression tests grew from 189 at v0.22.0 to 883 at v0.22.44.
+The stability run before Charted Roots 1.0. Forty-six releases across the cluster: four same-day hotfixes (v0.22.1 through v0.22.4) closed critical data-loss bugs from community testing; the fictional-calendar work matured across v0.22.5 through v0.22.10; map coverage and reliability hardened across v0.22.7 through v0.22.14; the wikilink-writer hardening, bidirectional-sync audit, and architectural pattern work unfolded across v0.22.22 through v0.22.29; and Obsidian's Community Plugins automated review surfaced a multi-release cleanup arc running from v0.22.32 through v0.22.45 alongside ongoing feature work. The current stability window has held since v0.22.22 (twenty-three patches without a reset). Regression tests grew from 189 at v0.22.0 to 883 at v0.22.45.
+
+### v0.22.45 Round-Up: Bundle hygiene, sibling-sort consolidation, and community-reported fixes
+
+**Event picker person filter** ([#581](https://github.com/banisterious/obsidian-charted-roots/issues/581)): The Relative ordering event picker (Create / Edit Event modal, the "Add" button on the After or Before fields) gains a new "Person:" dropdown alongside the existing Type filter. Source values are deduplicated from each event's participant fields. Reduces scrolling when multiple people have similarly-titled events (for example, multiple characters who each have a "Begins training at the Jedi Temple" event). Suggested by @DigitalDreamn after using the v0.22.39 UI on Ahsoka's events.
+
+**Event ordering takes effect immediately on save** ([#569](https://github.com/banisterious/obsidian-charted-roots/issues/569) follow-up): Saving an event with `before` / `after` constraints now recomputes `sort_order` values across all events in the background, so the Events tab and Profile View Events section reflect the narrative order right away. Previously the constraints had to be materialized by running the "Compute sort order" command manually before they would take effect in those rendering surfaces. The recompute fires fire-and-forget so the modal closes immediately; a cycle notice surfaces asynchronously if the constraints form a cycle.
+
+**Add Custom Relationship modal honors the gender-neutral parent setting** ([#579](https://github.com/banisterious/obsidian-charted-roots/issues/579), [#580](https://github.com/banisterious/obsidian-charted-roots/issues/580)): The modal's `parent` save path was unconditionally routing to gendered `mother` / `father` fields, ignoring the "Enable gender-neutral parent property" setting (#579) and falling back to `father` for parents with non-binary sex (#580). The save path now routes to the gender-neutral `parents` array when either the setting is on or the target's sex isn't `male` / `female`. Otherwise the gendered path is unchanged. Reported by @doctorwodka.
+
+**Children sort by birth date across Profile View, Canvas Family Tree, and report surfaces** ([#586](https://github.com/banisterious/obsidian-charted-roots/issues/586), [#587](https://github.com/banisterious/obsidian-charted-roots/issues/587)): Three rendering surfaces had been emitting children in frontmatter array order rather than birth order: the Profile View Children section (#586), Canvas Family Tree (#587), and seven additional report / visual-tree / family-timeline surfaces (Family Group Sheet, Individual Summary, Register, Descendant Chart, Source Summary, Visual Tree, Family Timeline view). All now sort by birth date with universe-aware canonical-year comparison, so descending fictional eras (BBY / GR / EF / DE etc.) order correctly alongside Gregorian dates. Bio + adopted + step children merge into a single age-sorted list. Reported by @DigitalDreamn. Architectural follow-up tracked at [#588](https://github.com/banisterious/obsidian-charted-roots/issues/588).
+
+**Under the hood: `main.js` size reduced 50% (14.7 MB to 8.27 MB)**: Production minify enabled in the esbuild config. The "main.js exceeds Sync Standard 5 MB threshold" caveat in the 1.0 release notes softens substantially (~3.4 MB remaining versus ~9.5 MB previously). Fully closing the threshold requires structural moves that stay post-1.0 scope. The same release also closes the Dynamic Code Execution scanner Recommendation via a new pdfmake postinstall patch that strips two unreachable `new Function("return this")()` sites from the bundled core-js globalThis polyfill and webpack runtime.
+
+**[Read the full release notes →](https://github.com/banisterious/obsidian-charted-roots/wiki/Release-History#v02245-round-up-bundle-hygiene-sibling-sort-consolidation-and-community-reported-fixes-v02245)**
+
+---
 
 ### v0.22.39 Round-Up: Event ordering UI, map view hardening, and Family Chart asymmetry drop
 
