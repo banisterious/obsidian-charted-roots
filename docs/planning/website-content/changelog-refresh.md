@@ -4,8 +4,8 @@
 
 **Target page:** `/changelog/_index.md` on chartedroots.com
 **Source material:** [wiki Release-History.md](../../../wiki-content/Release-History.md) (canonical longer-form), [CHANGELOG.md](../../../CHANGELOG.md) (per-release detail).
-**Last ported:** 2026-05-16, commits `1785824` + `a5caf13` on chartedroots.com@main (per-Round-Up restructure + same-day em-dash sweep on the new v0.22.x content).
-**Pending port (next session):** v0.22.45 Round-Up H3 (drafted below, at the top of the v0.22.x cluster).
+**Last ported:** 2026-05-16, commit `d9ddf96` on chartedroots.com@main (v0.22.45 Round-Up spotlight + cluster-intro metric bumps).
+**Pending port (next session):** next Round-Up H3 entries once new releases ship.
 
 ---
 
@@ -606,6 +606,8 @@ This appendix preserves the chronological port log from the original "cluster sp
 **Per-Round-Up restructure ported (2026-05-16)** — full new-shape rewrite. Per-Round-Up grouping replacing per-issue H3 sprawl. User-facing filter applied retroactively. Wiki backlinks added to every Round-Up. Internal-only releases collapsed into a per-cluster details block (v0.22.43, v0.22.44 currently captured there). v0.22.0 through v0.22.44 all in new shape. v0.21.x / v0.20.x / v0.19.x preserved with wiki backlinks added. Landed on chartedroots.com as commit `1785824`.
 
 **Em-dash sweep ported (2026-05-16)** — same-day follow-up cleaning 25 em-dashes from the new v0.22.x content (drafting brief overstated cleanliness; sweep applied plugin-side as commit `edc2d9ca`, then website-side as the matching pass). Older clusters were already em-dash-free pre-sweep, contrary to the initial framing in the website-session brief. Landed on chartedroots.com as commit `a5caf13`.
+
+**v0.22.45 Round-Up ported (2026-05-16)** — first incremental per-Round-Up port under the new shape. New H3 added at top of v0.22.x cluster with five user-facing highlight paragraphs (#581, #569 follow-up, #579 + #580, #586 + #587, bundle-hygiene + DCE closure summary). Cluster-intro metrics bumped to forty-six releases / twenty-three patches / 883 at v0.22.45. Landed on chartedroots.com as commit `d9ddf96`.
 
 </details>
 
