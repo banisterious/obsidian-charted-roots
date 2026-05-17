@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-16 15:16:01 UTC
+ * - Generated: 2026-05-17 23:14:42 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -17054,7 +17054,7 @@ settings:
    COMPONENT: FAMILY-CHART-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1487 lines, 36.27 KB */
+/* Component Size: 1496 lines, 36.62 KB */
 
 /**
  * Family Chart View Styles
@@ -17882,6 +17882,15 @@ settings:
   border-left: 1px solid var(--background-modifier-border);
   flex-shrink: 0;
   overflow: hidden;
+}
+
+/* The global `.crc-hidden` rule has the same single-class specificity as
+   `.cr-fcv-info-panel` above; since this file is bundled after base.css,
+   the flex rule would win and the panel would never hide. Combine the
+   classes so the hidden state is higher-specificity and actually applies
+   (#604). */
+.cr-fcv-info-panel.crc-hidden {
+  display: none;
 }
 
 .cr-fcv-info-panel-header {
@@ -26188,7 +26197,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
    COMPONENT: EVENTS.CSS
    ========================================================================== */
 
-/* Component Size: 1520 lines, 30.79 KB */
+/* Component Size: 1588 lines, 32.73 KB */
 
 /**
  * Events Styles
@@ -26560,6 +26569,56 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 .crc-timeline-search::placeholder {
   color: var(--text-muted);
+}
+
+/* More filters disclosure (#515). Toggle button sits in the primary
+   filter row alongside type / person / search. The disclosure body
+   below holds universe / place / date-range controls. */
+.crc-timeline-more-filters-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2-1);
+  padding: var(--size-2-2) var(--size-4-2);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  cursor: pointer;
+}
+
+.crc-timeline-more-filters-toggle:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.crc-timeline-more-filters-label {
+  font-size: var(--font-ui-small);
+}
+
+.crc-timeline-more-filters {
+  display: flex;
+  gap: var(--size-4-2);
+  margin-bottom: var(--size-4-3);
+  flex-wrap: wrap;
+}
+
+.crc-timeline-more-filters--collapsed {
+  display: none;
+}
+
+.crc-timeline-date-input {
+  width: 110px;
+  padding: var(--size-2-2) var(--size-4-2);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+}
+
+.crc-timeline-date-input:focus {
+  border-color: var(--interactive-accent);
+  outline: none;
 }
 
 .crc-timeline-table-container {
@@ -27675,7 +27734,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 .cr-events-view {
   padding: var(--size-4-4);
-  overflow-y: auto;
+  /* Fill the leaf's vertical space so the events table grows with the
+     sidebar height instead of capping at the table-container max-height
+     intended for the Control Center modal context. */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .cr-ev-header {
@@ -27683,6 +27747,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--size-4-4);
+  flex-shrink: 0;
 }
 
 .cr-ev-title {
@@ -27699,6 +27764,18 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .cr-ev-content {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  /* min-height: 0 lets the inner table-container scroll instead of forcing
+     the whole content area to expand beyond the leaf. */
+  min-height: 0;
+}
+
+/* In the dockable sidebar the table-container should grow to fill remaining
+   vertical space; the 400px max-height is intended for the modal context. */
+.cr-events-view .crc-timeline-table-container {
+  max-height: none;
+  flex: 1;
+  min-height: 0;
 }
 
 .crc-timeline-row--browse {
@@ -27717,7 +27794,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
    COMPONENT: TIMELINE-CALLOUTS.CSS
    ========================================================================== */
 
-/* Component Size: 323 lines, 11.04 KB */
+/* Component Size: 323 lines, 11.1 KB */
 
 /**
  * Timeline Callout Styles
@@ -27768,8 +27845,6 @@ body {
   /* Variables for list columns */
   --cr-list-min-width: 200px;
   --cr-list-column-gap: 1rem;
-  --cr-list-column-rule-color: var(--background-modifier-border);
-  --cr-list-column-rule-width: 0;
 }
 
 /* ============================================================================
@@ -27995,18 +28070,20 @@ div:not(.cr-has-timeline) + .cr-has-timeline > [data-callout="cr-timeline"] {
 }
 
 /* ============================================================================
-   Multi-Column List Support (bundled from MCL)
-   Based on efemkay's Modular CSS Layout
-   https://github.com/efemkay/obsidian-modular-css-layout
+   Multi-Column List Support
    ============================================================================ */
 
-/* Multi-column layout for timeline event lists */
-/* Applied to top-level lists within timeline callouts */
+/* Auto-fit timeline event lists into columns on wider editors.
+   CSS Grid replaces the former multicolumn (column-* properties) approach,
+   which the Obsidian Community automated review flags as partially supported.
+   Grid is universally supported and flagged-clean. Reading order is
+   row-major (left-to-right, then wrap) rather than column-major; for
+   typical timeline lengths this reads naturally in either pattern. */
 .callout[data-callout="cr-timeline"] .callout-content > ul,
 .callout[data-callout="cr-timeline"] .callout-content > div > ul {
-  column-width: var(--cr-list-min-width);
-  column-gap: var(--cr-list-column-gap);
-  column-rule: var(--cr-list-column-rule-width) solid var(--cr-list-column-rule-color);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--cr-list-min-width), 1fr));
+  gap: var(--cr-list-column-gap);
 }
 
 /* Hide the #mcl/list-column tag if present */
@@ -40923,11 +41000,11 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-16 15:16:02 UTC
+ * Build completed: 2026-05-17 23:14:43 UTC
  * Components processed: 50
- * Total lines: 40454
- * Total size: 824.94 KB
- * Build duration: 1.27 seconds
+ * Total lines: 40531
+ * Total size: 827.29 KB
+ * Build duration: 0.94 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.86 KB
@@ -40949,7 +41026,7 @@ body.cr-media-linker-active .suggestion-container {
  * - find-on-canvas.css: 275 lines, 5.13 KB
  * - folder-scan.css: 155 lines, 2.6 KB
  * - relationship-calculator.css: 302 lines, 5.27 KB
- * - family-chart-view.css: 1487 lines, 36.27 KB
+ * - family-chart-view.css: 1496 lines, 36.62 KB
  * - family-chart-export.css: 699 lines, 14.78 KB
  * - report-wizard.css: 908 lines, 19.89 KB
  * - book-builder.css: 368 lines, 7.25 KB
@@ -40959,8 +41036,8 @@ body.cr-media-linker-active .suggestion-container {
  * - map-view.css: 2238 lines, 49.39 KB
  * - leaflet-distortable.css: 372 lines, 8.84 KB
  * - date-systems.css: 278 lines, 5.16 KB
- * - events.css: 1520 lines, 30.79 KB
- * - timeline-callouts.css: 323 lines, 11.04 KB
+ * - events.css: 1588 lines, 32.73 KB
+ * - timeline-callouts.css: 323 lines, 11.1 KB
  * - organizations.css: 615 lines, 11.55 KB
  * - sources.css: 2809 lines, 56.97 KB
  * - statistics.css: 1811 lines, 36.34 KB
