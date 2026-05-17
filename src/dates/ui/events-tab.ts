@@ -36,6 +36,66 @@ export interface EventsListOptions {
 	onStateChange?: (typeFilter: string, personFilter: string, search: string) => void;
 }
 
+/* ──────────────────────────────────────────────────────────────────────────
+   Shared timeline-filter helpers (used by both the Control Center modal
+   Timeline card and the dockable Events sidebar). Centralizing the filter
+   state shape + predicate keeps the two implementations in sync; each new
+   filter dimension adds one field here and is honored everywhere.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/** Filter state for the timeline event list. */
+export interface TimelineFilterState {
+	/** Event type id; empty string means "all types". */
+	type: string;
+	/** Person wikilink (or substring); empty string means "all people". */
+	person: string;
+	/** Free-text search across title/date/place/description; lowercased before matching. */
+	search: string;
+}
+
+/**
+ * Strip wikilink brackets from a string. Used to normalize person/place
+ * wikilink values before substring matching against filter input.
+ */
+function stripWikilink(value: string): string {
+	return value.replace(/^\[\[/, '').replace(/\]\]$/, '');
+}
+
+/**
+ * Apply the timeline filter state to a list of events. Returns the subset
+ * that passes every active filter. Empty filter fields are skipped (no
+ * narrowing). Shared by both the Control Center modal Timeline card and
+ * the dockable Events sidebar (#515).
+ */
+export function applyTimelineFilters(events: EventNote[], state: TimelineFilterState): EventNote[] {
+	const personNeedle = state.person ? stripWikilink(state.person).toLowerCase() : '';
+	const search = state.search.toLowerCase();
+
+	return events.filter(event => {
+		if (state.type && event.eventType !== state.type) return false;
+
+		if (personNeedle) {
+			const singlePerson = event.person ? stripWikilink(event.person).toLowerCase() : '';
+			const multiplePeople = event.persons?.map(p => stripWikilink(p).toLowerCase()) || [];
+			if (!singlePerson.includes(personNeedle) && !multiplePeople.some(p => p.includes(personNeedle))) {
+				return false;
+			}
+		}
+
+		if (search) {
+			const searchableText = [
+				event.title,
+				event.date || '',
+				event.place || '',
+				event.description || ''
+			].join(' ').toLowerCase();
+			if (!searchableText.includes(search)) return false;
+		}
+
+		return true;
+	});
+}
+
 /**
  * Render the Events tab content
  */
@@ -337,43 +397,11 @@ function renderTimelineCard(
 
 	// Filter handler
 	const applyFilters = () => {
-		const typeValue = typeFilter.value;
-		const personValue = personFilter.value;
-		const searchValue = searchInput.value.toLowerCase();
-
-		filteredEvents = allEvents.filter(event => {
-			// Type filter
-			if (typeValue && event.eventType !== typeValue) return false;
-
-			// Person filter
-			if (personValue) {
-				const normalizedPersonFilter = personValue.replace(/^\[\[/, '').replace(/\]\]$/, '').toLowerCase();
-
-				// Check both person (singular) and persons (array) fields
-				const singlePerson = event.person?.replace(/^\[\[/, '').replace(/\]\]$/, '').toLowerCase() || '';
-				const multiplePeople = event.persons?.map(p => p.replace(/^\[\[/, '').replace(/\]\]$/, '').toLowerCase()) || [];
-
-				// Match if person filter matches either the single person or any person in the persons array
-				const matchesSingle = singlePerson.includes(normalizedPersonFilter);
-				const matchesMultiple = multiplePeople.some(p => p.includes(normalizedPersonFilter));
-
-				if (!matchesSingle && !matchesMultiple) return false;
-			}
-
-			// Search filter
-			if (searchValue) {
-				const searchableText = [
-					event.title,
-					event.date || '',
-					event.place || '',
-					event.description || ''
-				].join(' ').toLowerCase();
-				if (!searchableText.includes(searchValue)) return false;
-			}
-
-			return true;
+		filteredEvents = applyTimelineFilters(allEvents, {
+			type: typeFilter.value,
+			person: personFilter.value,
+			search: searchInput.value
 		});
-
 		filteredEvents = sortEventsChronologically(filteredEvents);
 		renderEventTable(tableContainer, filteredEvents, plugin);
 	};
@@ -2068,40 +2096,17 @@ export function renderEventsList(options: EventsListOptions): void {
 		});
 	};
 
-	// Filter logic
-	const filterEvents = (typeValue: string, personValue: string, searchValue: string): EventNote[] => {
-		return allEvents.filter(event => {
-			if (typeValue && event.eventType !== typeValue) return false;
-
-			if (personValue) {
-				const normalizedPersonFilter = personValue.replace(/^\[\[/, '').replace(/\]\]$/, '').toLowerCase();
-				const singlePerson = event.person?.replace(/^\[\[/, '').replace(/\]\]$/, '').toLowerCase() || '';
-				const multiplePeople = event.persons?.map(p => p.replace(/^\[\[/, '').replace(/\]\]$/, '').toLowerCase()) || [];
-
-				if (!singlePerson.includes(normalizedPersonFilter) && !multiplePeople.some(p => p.includes(normalizedPersonFilter))) return false;
-			}
-
-			if (searchValue) {
-				const searchableText = [
-					event.title,
-					event.date || '',
-					event.place || '',
-					event.description || ''
-				].join(' ').toLowerCase();
-				if (!searchableText.includes(searchValue)) return false;
-			}
-
-			return true;
-		});
-	};
-
 	// Apply filters and render
 	const applyFilters = () => {
 		currentTypeFilter = typeFilterEl.value;
 		currentPersonFilter = personFilterEl.value;
 		currentSearch = searchInput.value;
 
-		const filtered = filterEvents(currentTypeFilter, currentPersonFilter, currentSearch.toLowerCase());
+		const filtered = applyTimelineFilters(allEvents, {
+			type: currentTypeFilter,
+			person: currentPersonFilter,
+			search: currentSearch
+		});
 		renderTable(sortEventsChronologically([...filtered]));
 
 		onStateChange?.(currentTypeFilter, currentPersonFilter, currentSearch);
@@ -2112,7 +2117,11 @@ export function renderEventsList(options: EventsListOptions): void {
 	searchInput.addEventListener('input', applyFilters);
 
 	// Initial render
-	const initialFiltered = filterEvents(currentTypeFilter, currentPersonFilter, currentSearch.toLowerCase());
+	const initialFiltered = applyTimelineFilters(allEvents, {
+		type: currentTypeFilter,
+		person: currentPersonFilter,
+		search: currentSearch
+	});
 	renderTable(sortEventsChronologically([...initialFiltered]));
 }
 
