@@ -21,6 +21,7 @@ This document outlines planned features for Charted Roots. For completed feature
   - [Cross-Spouse Interleaved Child Sort](#cross-spouse-interleaved-child-sort)
   - [Time-Varying Relationships](#time-varying-relationships)
   - [Dated / Time-Varying Property Values](#dated--time-varying-property-values)
+  - [Internationalization and Translation](#internationalization-and-translation)
   - [Accessibility](#accessibility)
 - [Contributing](#contributing)
 
@@ -264,6 +265,19 @@ Property values that change over time (e.g. rank = A in 1650, B in 1680). Requir
 The most transformative feature for worldbuilding use cases, and the largest data-model change on the roadmap. Not viable until [#377](https://github.com/banisterious/obsidian-charted-roots/issues/377) (custom property definitions) lands.
 
 **Source:** Discussion [#371](https://github.com/banisterious/obsidian-charted-roots/discussions/371).
+
+### Internationalization and Translation
+
+UI string translation, locale detection, and a workflow for translation contributors. Charted Roots currently ships English-only.
+
+**Considerations:**
+
+- Multi-month infrastructure work; touches every UI surface in the plugin.
+- Ongoing maintenance: every new string requires translation for each supported locale.
+- Post-1.0 work. Starting before 1.0 ships would compound rework as strings continue to change against a moving UI surface.
+- First language is likely Simplified Chinese (zh-CN); contributor offer already in hand.
+
+**Source:** Discussion [#594](https://github.com/banisterious/obsidian-charted-roots/discussions/594) (Roadmap: Internationalization and translation contributions), originally requested in [#589](https://github.com/banisterious/obsidian-charted-roots/issues/589).
 
 ### Accessibility
 
