@@ -22,7 +22,6 @@ import { isEventNote, isPersonNote } from '../../utils/note-type-detection';
 import { PropertyAliasService } from '../../core/property-alias-service';
 import { TemplateSnippetsModal } from '../../ui/template-snippets-modal';
 import { DEFAULT_DATE_SYSTEMS } from '../constants/default-date-systems';
-import { createUniverseService } from '../../universes/services/universe-service';
 
 /* ──────────────────────────────────────────────────────────────────────────
    Types for the dockable Events list (renderEventsList)
@@ -439,18 +438,11 @@ function renderTimelineCard(
 		}
 	});
 
-	// Event table container
-	const tableContainer = content.createDiv({ cls: 'crc-timeline-table-container' });
-
-	// Render initial table
-	let filteredEvents = sortEventsChronologically([...allEvents]);
-	renderEventTable(tableContainer, filteredEvents, plugin);
-
 	// More-filters disclosure (#515): render universe/place/date-range
-	// controls in a collapsible section so the primary filter row stays
-	// compact on narrow widths. Section opens by default if any of the
-	// secondary filters are set (not applicable on first render in this
-	// session-local card; modal version doesn't persist filter state).
+	// controls in a collapsible section between the primary filter row
+	// and the table so the row stays compact on narrow widths. Modal
+	// version doesn't persist filter state, so the disclosure always
+	// starts collapsed.
 	const moreFiltersToggle = filterRow.createEl('button', {
 		cls: 'crc-timeline-more-filters-toggle clickable-icon',
 		attr: { 'aria-expanded': 'false', 'aria-label': 'Toggle more filters' }
@@ -460,14 +452,20 @@ function renderTimelineCard(
 
 	const moreFiltersRow = content.createDiv({ cls: 'crc-timeline-more-filters crc-timeline-more-filters--collapsed' });
 
-	// Universe filter
+	// Universe filter: enumerate from event.universe values rather than
+	// from universe notes, so events tagged with a universe name surface
+	// in the dropdown even before the user creates a dedicated universe
+	// note.
 	const universeFilter = moreFiltersRow.createEl('select', { cls: 'dropdown' });
 	universeFilter.createEl('option', { value: '', text: 'All universes' });
 	universeFilter.createEl('option', { value: UNIVERSE_FILTER_REAL, text: '(real-world)' });
 	universeFilter.createEl('option', { value: UNIVERSE_FILTER_ANY_FICTIONAL, text: '(any fictional)' });
-	const universeService = createUniverseService(plugin);
-	for (const u of universeService.getAllUniverses()) {
-		universeFilter.createEl('option', { value: u.name, text: u.name });
+	const universeNames = new Set<string>();
+	for (const e of allEvents) {
+		if (e.universe) universeNames.add(e.universe);
+	}
+	for (const name of Array.from(universeNames).sort((a, b) => a.localeCompare(b))) {
+		universeFilter.createEl('option', { value: name, text: name });
 	}
 
 	// Place filter
@@ -491,6 +489,13 @@ function renderTimelineCard(
 		const isCollapsed = moreFiltersRow.classList.toggle('crc-timeline-more-filters--collapsed');
 		moreFiltersToggle.setAttribute('aria-expanded', String(!isCollapsed));
 	});
+
+	// Event table container
+	const tableContainer = content.createDiv({ cls: 'crc-timeline-table-container' });
+
+	// Render initial table
+	let filteredEvents = sortEventsChronologically([...allEvents]);
+	renderEventTable(tableContainer, filteredEvents, plugin);
 
 	// Filter handler
 	const applyFilters = () => {
@@ -2067,9 +2072,12 @@ export function renderEventsList(options: EventsListOptions): void {
 	universeFilterEl.createEl('option', { value: '', text: 'All universes' });
 	universeFilterEl.createEl('option', { value: UNIVERSE_FILTER_REAL, text: '(real-world)' });
 	universeFilterEl.createEl('option', { value: UNIVERSE_FILTER_ANY_FICTIONAL, text: '(any fictional)' });
-	const universeService = createUniverseService(plugin);
-	for (const u of universeService.getAllUniverses()) {
-		universeFilterEl.createEl('option', { value: u.name, text: u.name });
+	const universeNames = new Set<string>();
+	for (const e of allEvents) {
+		if (e.universe) universeNames.add(e.universe);
+	}
+	for (const name of Array.from(universeNames).sort((a, b) => a.localeCompare(b))) {
+		universeFilterEl.createEl('option', { value: name, text: name });
 	}
 	universeFilterEl.value = currentUniverseFilter;
 
