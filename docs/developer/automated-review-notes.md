@@ -214,7 +214,7 @@ of the webpack chunk-loader `<script>` site documented in section 4.
 
 | Finding | Status |
 |---|---|
-| `main.js` larger than 5 MB | Documented Sync Standard limitation per the #411 amendment; bundle reduction reframed as 1.x polish. Precedent: Excalidraw ships at 8.4 MB in the directory with no apparent sync-related reports. CR has 6,140 downloads with zero sync-related reports across plugin history. |
+| `main.js` larger than 5 MB | Documented Sync Standard limitation per the #411 amendment; bundle reduction reframed as 1.x polish. v0.22.45 enabled production minify, dropping `main.js` from 14.7 MB to 8.27 MB (~50% reduction). Remaining ~3.4 MB gap to the threshold requires structural moves (jspdf consolidation, family-chart-premium evaluation, leaflet plugin audit) that stay post-1.0 scope. Precedent: Excalidraw ships at 8.4 MB in the directory with no apparent sync-related reports. CR has 6,140 downloads with zero sync-related reports across plugin history. |
 | `setInterval` + network calls (suspicious pattern) | False positive. The three `setInterval` sites (journey playback ticker, animation ticker, count-up text) and the network call site (`geocoding-service.ts`) are in disjoint call paths; the patterns coexist in the bundle but don't combine. |
 | Bitcoin wallet address (funding) | False positive. The wallet address is in the funding/donation section of plugin metadata, not in plugin code. |
 
@@ -260,29 +260,42 @@ plugin never reads from the clipboard). **Standard plugin behavior** for
 the "copy to clipboard" affordances genealogy users expect on citations,
 coordinates, and exportable text.
 
-### 6.3 Dynamic Code Execution (vendored library FP)
+### 6.3 Dynamic Code Execution (closed in v0.22.45)
 
-Two `new Function("return this")()` sites in bundled `main.js`. Both are
-the standard webpack runtime "find globalThis" pattern:
+Status: **closed in v0.22.45** via a new `patch-pdfmake.js` postinstall.
+
+Two `new Function("return this")()` sites had been flagged in bundled
+`main.js`. Both came from `pdfmake`'s bundled core-js globalThis polyfill
+body and the webpack runtime's `__webpack_require__.g` initializer:
 
 ```js
 g2 = this || new Function("return this")();
 ```
 
 `grep "new Function\|eval(" src/` confirms zero matches in plugin source —
-both sites come from the family-chart library's bundled webpack runtime.
-The pattern is NOT executing user input or dynamically generated code: the
-argument is a hardcoded string constant returning the global object.
-Static analysis can't distinguish `"return this"` (safe) from
-`<user-controlled value>` (unsafe), so the scanner flags it
+the pattern was vendored-library feature-detection that uses
+dangerous-looking API surfaces in safe ways (hardcoded string constant
+returning the global object; the `typeof globalThis === "object"`
+early-return always fires in Electron, so the `new Function` branch was
+dead code). Static analysis couldn't distinguish `"return this"` (safe)
+from `<user-controlled value>` (unsafe), so the scanner flagged it
 conservatively.
 
-**Same flavor of false positive** as the `createElement('script')`
-issue resolved in v0.22.40–v0.22.41 — vendored library feature-detection
-code that uses dangerous-looking API surfaces in safe ways. If the
-scanner ever escalates this to Warning or Error severity, the same
-postinstall-patch approach used for `patch-core-js-polyfill.js` would
-remove the pattern from the bundle. For now, no action required.
+The v0.22.45 fix mirrors the `patch-core-js-polyfill.js` shape:
+exact-string locate + idempotency marker + fail-loud warning when the
+ORIGINAL string isn't found (vendor update protection). Both branches
+are removed at the source so neither reaches `main.js`. Post-release scan
+returned clean of the Recommendation; the IE5-8 setImmediate site stays
+handled by the existing `patch-core-js-polyfill.js` (separate code path,
+no overlap).
+
+This was the third instance of the **same flavor of false positive** that
+`createElement('script')` (resolved v0.22.40–v0.22.41) and the
+setInterval+network Behavior Warning (resolved v0.22.42) represented:
+vendored library feature-detection code that uses dangerous-looking API
+surfaces in safe, dead-code-branch ways. Pattern playbook is established:
+identify the literal sites via bundle grep, write a postinstall patch
+that strips the dead branches at source.
 
 ---
 
