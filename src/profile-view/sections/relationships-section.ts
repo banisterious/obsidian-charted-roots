@@ -416,12 +416,22 @@ function sortChildrenByBirthDate(
 	};
 
 	// Decorate-sort-undecorate to keep the sort stable across engines.
-	const decorated = items.map((item, index) => ({ item, index, year: yearOf(item.crId) }));
+	// Within a year, ties are broken by lex compare on the raw birth-date
+	// string (#590): for ISO 8601 dates this orders by month/day/time so
+	// twins or triplets with the same date but different `YYYY-MM-DDTHH:MM`
+	// values sort deterministically. Final fallback is insertion order.
+	const decorated = items.map((item, index) => {
+		const person = graphService.getPersonByCrId(item.crId);
+		return { item, index, year: yearOf(item.crId), birthDate: person?.birthDate ?? '' };
+	});
 	decorated.sort((a, b) => {
 		if (a.year === null && b.year === null) return a.index - b.index;
 		if (a.year === null) return 1;
 		if (b.year === null) return -1;
 		if (a.year !== b.year) return a.year - b.year;
+		if (a.birthDate !== b.birthDate) {
+			return a.birthDate < b.birthDate ? -1 : 1;
+		}
 		return a.index - b.index;
 	});
 	for (let i = 0; i < decorated.length; i++) {

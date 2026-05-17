@@ -454,6 +454,14 @@ export interface CanvasRootsSettings {
 	timelineParentDeathLabel: string;
 	/** Label for sibling birth events ({name} placeholder) */
 	timelineSiblingBirthLabel: string;
+	/** Label for child death events ({name} placeholder) */
+	timelineChildDeathLabel: string;
+	/** Label for stepparent death events ({name} placeholder) */
+	timelineStepparentDeathLabel: string;
+	/** Label for sibling death events ({name} placeholder) */
+	timelineSiblingDeathLabel: string;
+	/** Label for grandchild birth events ({name} placeholder) */
+	timelineGrandchildBirthLabel: string;
 	// Family events on timelines
 	/** Show children's births on timelines */
 	timelineShowChildrenBirths: boolean;
@@ -467,6 +475,14 @@ export interface CanvasRootsSettings {
 	timelineShowDivorces: boolean;
 	/** Show adopted children's births on adoptive parents' timelines (#396 follow-up) */
 	timelineShowAdoptedChildrenBirths: boolean;
+	/** Show children's deaths on parents' timelines (#582) */
+	timelineShowChildrenDeaths: boolean;
+	/** Show stepparents' deaths on stepchildren's timelines (#583) */
+	timelineShowStepparentDeaths: boolean;
+	/** Show siblings' deaths on the person's timeline (#584) */
+	timelineShowSiblingDeaths: boolean;
+	/** Show grandchildren's births on grandparents' timelines (#585) */
+	timelineShowGrandchildrenBirths: boolean;
 	/** Callout type for frozen media galleries (info, note, etc.) */
 	frozenGalleryCalloutType: string;
 	// Cleanup wizard state (for resuming interrupted wizards)
@@ -885,12 +901,20 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	timelineSpouseDeathLabel: 'Death of {name}',
 	timelineParentDeathLabel: 'Death of {name}',
 	timelineSiblingBirthLabel: 'Birth of {name}',
+	timelineChildDeathLabel: 'Death of {name}',
+	timelineStepparentDeathLabel: 'Death of {name}',
+	timelineSiblingDeathLabel: 'Death of {name}',
+	timelineGrandchildBirthLabel: 'Birth of {name}',
 	timelineShowChildrenBirths: false,        // Off by default
 	timelineShowSpouseDeaths: true,           // Default on — major life event for the survivor; toggle lets users hide (#447)
 	timelineShowParentDeaths: false,
 	timelineShowSiblingBirths: false,
 	timelineShowDivorces: true,                // Default on — the subject's own event; toggle lets users hide if preferred (#399)
 	timelineShowAdoptedChildrenBirths: false,  // Opt-in: separate toggle from biological children's births (#396)
+	timelineShowChildrenDeaths: false,         // Opt-in: death of a child on the parent's timeline (#582)
+	timelineShowStepparentDeaths: false,       // Opt-in: stepparent death on stepchild's timeline (#583)
+	timelineShowSiblingDeaths: false,          // Opt-in: sibling death on the person's timeline (#584)
+	timelineShowGrandchildrenBirths: false,    // Opt-in: grandchild birth on grandparent's timeline (#585)
 	frozenGalleryCalloutType: 'info',          // Callout type for frozen media galleries
 	// Inclusive parent relationships (opt-in feature)
 	enableInclusiveParents: false,             // Default: OFF - users opt-in to gender-neutral parents
@@ -2036,6 +2060,10 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 			{ key: 'timelineSpouseDeathLabel', name: 'Spouse death label', placeholder: 'Death of {name}' },
 			{ key: 'timelineParentDeathLabel', name: 'Parent death label', placeholder: 'Death of {name}' },
 			{ key: 'timelineSiblingBirthLabel', name: 'Sibling birth label', placeholder: 'Birth of {name}' },
+			{ key: 'timelineChildDeathLabel', name: 'Child death label', placeholder: 'Death of {name}' },
+			{ key: 'timelineStepparentDeathLabel', name: 'Stepparent death label', placeholder: 'Death of {name}' },
+			{ key: 'timelineSiblingDeathLabel', name: 'Sibling death label', placeholder: 'Death of {name}' },
+			{ key: 'timelineGrandchildBirthLabel', name: 'Grandchild birth label', placeholder: 'Birth of {name}' },
 		];
 
 		for (const label of labelSettings) {
@@ -2111,6 +2139,46 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.timelineShowDivorces)
 				.onChange(async (value) => {
 					this.plugin.settings.timelineShowDivorces = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(advancedContent)
+			.setName('Show children\'s deaths')
+			.setDesc('Display death events of children on the parent\'s timeline. Covers biological, adopted, and step-children when the focal person is recorded as a parent or stepparent.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowChildrenDeaths)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowChildrenDeaths = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(advancedContent)
+			.setName('Show stepparent deaths')
+			.setDesc('Display death events of stepparents on the stepchild\'s timeline.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowStepparentDeaths)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowStepparentDeaths = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(advancedContent)
+			.setName('Show sibling deaths')
+			.setDesc('Display death events of siblings on the person\'s timeline.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowSiblingDeaths)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowSiblingDeaths = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(advancedContent)
+			.setName('Show grandchildren\'s births')
+			.setDesc('Display birth events of grandchildren (biological and adopted) on the grandparent\'s timeline.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowGrandchildrenBirths)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowGrandchildrenBirths = value;
 					await this.plugin.saveSettings();
 				}));
 

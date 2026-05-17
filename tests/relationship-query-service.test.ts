@@ -7,6 +7,7 @@ import {
 	type SiblingKind
 } from '../src/core/relationship-query-service';
 import type { PersonNode } from '../src/core/family-graph';
+import { createDateService } from '../src/dates/services/date-service';
 
 /**
  * Coverage for the unified relationship-query service introduced under
@@ -121,6 +122,67 @@ describe('RelationshipQueryService — getChildren', () => {
 		expect(svc.getChildren(lonely, { include: 'bio' })).toEqual([]);
 		expect(svc.getChildren(lonely, { include: 'adopted' })).toEqual([]);
 		expect(svc.getChildren(lonely, { include: 'step' })).toEqual([]);
+	});
+
+	describe('sortByBirthDate tiebreak (#590)', () => {
+		const dateService = createDateService({
+			enableFictionalDates: false,
+			showBuiltInDateSystems: false,
+			fictionalDateSystems: [],
+		});
+
+		it('sorts twins on the same date by ISO 8601 time component', () => {
+			const parent = makePerson({ crId: 'parent', childrenCrIds: ['twin-b', 'twin-a'] });
+			const twinA = makePerson({ crId: 'twin-a', birthDate: '1985-04-12T03:42' });
+			const twinB = makePerson({ crId: 'twin-b', birthDate: '1985-04-12T03:51' });
+			const svc = new RelationshipQueryService(makeLookup([parent, twinA, twinB]));
+
+			const result = svc.getChildren(parent, { include: 'bio', sortByBirthDate: dateService });
+			expect(result.map(r => r.person.crId)).toEqual(['twin-a', 'twin-b']);
+		});
+
+		it('sorts triplets on the same date by ISO 8601 time component', () => {
+			const parent = makePerson({ crId: 'parent', childrenCrIds: ['c', 'a', 'b'] });
+			const a = makePerson({ crId: 'a', birthDate: '1985-04-12T03:42' });
+			const b = makePerson({ crId: 'b', birthDate: '1985-04-12T03:51' });
+			const c = makePerson({ crId: 'c', birthDate: '1985-04-12T04:10' });
+			const svc = new RelationshipQueryService(makeLookup([parent, a, b, c]));
+
+			const result = svc.getChildren(parent, { include: 'bio', sortByBirthDate: dateService });
+			expect(result.map(r => r.person.crId)).toEqual(['a', 'b', 'c']);
+		});
+
+		it('sorts siblings within the same year by month and day', () => {
+			const parent = makePerson({ crId: 'parent', childrenCrIds: ['younger', 'older'] });
+			const older = makePerson({ crId: 'older', birthDate: '1985-03-15' });
+			const younger = makePerson({ crId: 'younger', birthDate: '1985-09-22' });
+			const svc = new RelationshipQueryService(makeLookup([parent, older, younger]));
+
+			const result = svc.getChildren(parent, { include: 'bio', sortByBirthDate: dateService });
+			expect(result.map(r => r.person.crId)).toEqual(['older', 'younger']);
+		});
+
+		it('falls back to insertion order when birth dates are exactly equal', () => {
+			const parent = makePerson({ crId: 'parent', childrenCrIds: ['second', 'first'] });
+			const first = makePerson({ crId: 'first', birthDate: '1985-04-12' });
+			const second = makePerson({ crId: 'second', birthDate: '1985-04-12' });
+			const svc = new RelationshipQueryService(makeLookup([parent, first, second]));
+
+			const result = svc.getChildren(parent, { include: 'bio', sortByBirthDate: dateService });
+			// Insertion order preserved: 'second' first, then 'first'
+			expect(result.map(r => r.person.crId)).toEqual(['second', 'first']);
+		});
+
+		it('sinks children without a birth date to the end, preserving relative order', () => {
+			const parent = makePerson({ crId: 'parent', childrenCrIds: ['undated-1', 'dated', 'undated-2'] });
+			const dated = makePerson({ crId: 'dated', birthDate: '1985-04-12' });
+			const undated1 = makePerson({ crId: 'undated-1' });
+			const undated2 = makePerson({ crId: 'undated-2' });
+			const svc = new RelationshipQueryService(makeLookup([parent, dated, undated1, undated2]));
+
+			const result = svc.getChildren(parent, { include: 'bio', sortByBirthDate: dateService });
+			expect(result.map(r => r.person.crId)).toEqual(['dated', 'undated-1', 'undated-2']);
+		});
 	});
 });
 

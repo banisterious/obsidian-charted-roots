@@ -1291,6 +1291,16 @@ export class GrampsParser {
 			const event = database.events.get(ref.hlink);
 			if (!event) continue;
 
+			// Gramps treats an unspecified eventref role as Primary by default.
+			// Only the Primary subject inherits the event's date/place as their
+			// own birth/death/occupation; non-Primary participants (Informant,
+			// Witness, Family, etc.) reference the same event without being its
+			// subject. Without this filter, a person who reported a relative's
+			// death (Informant role on the shared death event) gets marked as
+			// deceased themselves (#601).
+			const role = ref.role || 'Primary';
+			if (role !== 'Primary') continue;
+
 			const eventType = event.type?.toLowerCase();
 			if (eventType === 'birth') {
 				birthDate = formatGrampsDate(event.date);

@@ -782,12 +782,22 @@ export class FamilyGraphService {
 			const birthDate = person?.birthDate;
 			return birthDate ? dateService.getCanonicalYear(birthDate, focalUniverse) : null;
 		};
-		const decorated = childCrIds.map((crId, index) => ({ crId, index, year: yearOf(crId) }));
+		const decorated = childCrIds.map((crId, index) => {
+			const person = this.personCache.get(crId);
+			return { crId, index, year: yearOf(crId), birthDate: person?.birthDate ?? '' };
+		});
+		// Within a year, lex compare on the raw birth-date string breaks ties
+		// (#590): for ISO 8601 dates this orders by month, day, then
+		// `YYYY-MM-DDTHH:MM` time-of-day so twins / triplets sort
+		// deterministically. Final fallback is insertion order.
 		decorated.sort((a, b) => {
 			if (a.year === null && b.year === null) return a.index - b.index;
 			if (a.year === null) return 1;
 			if (b.year === null) return -1;
 			if (a.year !== b.year) return a.year - b.year;
+			if (a.birthDate !== b.birthDate) {
+				return a.birthDate < b.birthDate ? -1 : 1;
+			}
 			return a.index - b.index;
 		});
 		return decorated.map(d => d.crId);

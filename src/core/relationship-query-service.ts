@@ -135,17 +135,31 @@ export class RelationshipQueryService {
 		// eras (BBY, etc.) order correctly alongside Gregorian dates. Persons
 		// without a parseable birth date sink to the end, preserving their
 		// relative order. Focal universe is read from `person.universe`.
+		//
+		// Within a year, ties are broken by lexicographic compare on the raw
+		// birth-date string (#590). For ISO 8601 dates this orders by month,
+		// then day, then time-of-day if specified (`YYYY-MM-DDTHH:MM`), so
+		// twins and triplets with the same date but different birth times
+		// sort deterministically. Final fallback is insertion order.
 		if (opts.sortByBirthDate) {
 			const dateService = opts.sortByBirthDate;
 			const focalUniverse = person.universe;
 			const yearOf = (p: PersonNode): number | null =>
 				p.birthDate ? dateService.getCanonicalYear(p.birthDate, focalUniverse) : null;
-			const decorated = results.map((item, index) => ({ item, index, year: yearOf(item.person) }));
+			const decorated = results.map((item, index) => ({
+				item,
+				index,
+				year: yearOf(item.person),
+				birthDate: item.person.birthDate ?? ''
+			}));
 			decorated.sort((a, b) => {
 				if (a.year === null && b.year === null) return a.index - b.index;
 				if (a.year === null) return 1;
 				if (b.year === null) return -1;
 				if (a.year !== b.year) return a.year - b.year;
+				if (a.birthDate !== b.birthDate) {
+					return a.birthDate < b.birthDate ? -1 : 1;
+				}
 				return a.index - b.index;
 			});
 			return decorated.map(d => d.item);

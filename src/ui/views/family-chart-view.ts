@@ -1262,15 +1262,31 @@ export class FamilyChartView extends ItemView {
 			this.f3Chart.setShowSiblingsOfMain(this.showSiblingsOfMain);
 			this.f3Chart.setSingleParentEmptyCard(this.showSingleParentEmptyCard, { label: 'Unknown' });
 
-			// Apply sort children by birth date
+			// Apply sort children by birth date. Matches the universe-aware
+			// canonical-year compare used by the other four sibling-sort
+			// surfaces (#586/#587/#590), with the same lex-string tiebreak
+			// for twins/triplets carrying ISO 8601 time components. The
+			// previous straight localeCompare was fictional-blind (BBY/EF/DE
+			// dates sorted lexically rather than chronologically) and missed
+			// the #590 tiebreak (#605).
 			if (this.sortChildrenByBirthDate) {
 				this.f3Chart.setSortChildrenFunction((a, b) => {
-					const aBirthday = a.data?.birthday || '';
-					const bBirthday = b.data?.birthday || '';
-					// Sort by birthday string (works for ISO dates)
+					const aBirthday = (a.data?.birthday as string | undefined) || '';
+					const bBirthday = (b.data?.birthday as string | undefined) || '';
 					if (!aBirthday && !bBirthday) return 0;
 					if (!aBirthday) return 1; // No date goes last
 					if (!bBirthday) return -1;
+					const dateService = this.plugin.getDateService();
+					if (dateService) {
+						const focalUniverse = this.rootPersonId
+							? this.familyGraphService.getPersonByCrId(this.rootPersonId)?.universe
+							: undefined;
+						const aYear = dateService.getCanonicalYear(aBirthday, focalUniverse);
+						const bYear = dateService.getCanonicalYear(bBirthday, focalUniverse);
+						if (aYear !== null && bYear !== null && aYear !== bYear) {
+							return aYear - bYear;
+						}
+					}
 					return aBirthday.localeCompare(bBirthday);
 				});
 			}
@@ -3498,6 +3514,15 @@ export class FamilyChartView extends ItemView {
 	/**
 	 * Call `callback` once card positions are stable across several
 	 * animation frames, or after a hard timeout as a safety backstop.
+	 *
+	 * On refresh, f3 chart parks every card at the focal person's origin
+	 * (0, 0) for several frames before kicking off its entrance transition.
+	 * A pure "same as last frame N times in a row" check latches onto that
+	 * pre-animation plateau and fires the callback while all positions are
+	 * still collapsed at the origin, producing a degenerate overlay arc
+	 * (#591). Require at least one observed *change* before treating
+	 * positions as stable, so we wait through the plateau and only fire
+	 * after the animation has actually moved cards into place.
 	 */
 	private waitForCardPositionStability(callback: () => void): void {
 		const REQUIRED_STABLE_FRAMES = 3;
@@ -3505,11 +3530,16 @@ export class FamilyChartView extends ItemView {
 		let lastPositions = new Map<string, { x: number; y: number }>();
 		let stableFrames = 0;
 		let attempts = 0;
+		let hasObservedChange = false;
 
 		const tick = () => {
 			attempts++;
 			const current = this.getCardPositions();
-			if (current.size > 0 && this.cardPositionsEqual(current, lastPositions)) {
+			const isEqual = this.cardPositionsEqual(current, lastPositions);
+			if (!isEqual && lastPositions.size > 0) {
+				hasObservedChange = true;
+			}
+			if (current.size > 0 && isEqual && hasObservedChange) {
 				if (++stableFrames >= REQUIRED_STABLE_FRAMES) {
 					callback();
 					return;
@@ -3628,9 +3658,16 @@ export class FamilyChartView extends ItemView {
 				const dx = to.x - from.x;
 				const dy = to.y - from.y;
 				const len = Math.sqrt(dx * dx + dy * dy) || 1;
-				// Unit perpendicular vector (rotate 90° CCW)
-				const px = -dy / len;
-				const py = dx / len;
+				// Unit perpendicular vector (rotate 90° CCW), oriented so the +py
+				// component points toward the screen-down direction. This keeps
+				// the arc's sag visually "below the chord" regardless of which
+				// endpoint sorted first; for near-vertical chords (grandparent →
+				// grandchild) the perpendicular is horizontal, which makes the
+				// arc bow sideways instead of collapsing onto the chord and
+				// clipping intermediate cards (#591).
+				let px = -dy / len;
+				let py = dx / len;
+				if (py < 0) { px = -px; py = -py; }
 				// Center stack around 0 with a half-step shift for odd counts so
 				// no line lands on the midpoint where a family link might sit
 				// (marriage, parent-child). Even counts are already symmetric
@@ -3642,10 +3679,10 @@ export class FamilyChartView extends ItemView {
 				const ox = px * offset;
 				const oy = py * offset;
 
-				// Build a quadratic bezier that arcs below the straight chord.
-				// Sag scales with chord length so short and long spans both
-				// read as clearly-curved, with floor/ceiling to keep extremes
-				// sensible.
+				// Build a quadratic bezier that arcs along the down-oriented
+				// perpendicular to the chord. Sag scales with chord length so
+				// short and long spans both read as clearly-curved, with
+				// floor/ceiling to keep extremes sensible.
 				const x1 = from.x + ox;
 				const y1 = from.y + oy;
 				const x2 = to.x + ox;
@@ -3653,8 +3690,8 @@ export class FamilyChartView extends ItemView {
 				const mx = (x1 + x2) / 2;
 				const my = (y1 + y2) / 2;
 				const sag = Math.min(120, Math.max(40, len / 3));
-				const cx = mx;
-				const cy = my + sag;
+				const cx = mx + px * sag;
+				const cy = my + py * sag;
 				const pathD = `M ${x1},${y1} Q ${cx},${cy} ${x2},${y2}`;
 
 				// Invisible wider "hit path" makes hover-to-tooltip easier

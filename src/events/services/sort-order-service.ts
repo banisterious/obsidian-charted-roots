@@ -114,10 +114,16 @@ export async function computeSortOrder(
 	// Start with events that have no incoming edges
 	const queue: EventNote[] = [];
 
-	// Sort by date first, then add to queue
+	// Sort by date first, then add to queue. When two events share a start
+	// date and only one has a `date_end` (i.e., one is a point event and
+	// one is a range event), the point event sorts first (#569): readers
+	// expect "what happened on this date" before "state that began here."
+	// Without this tiebreak, insertion order decides and feels arbitrary.
 	const sortedByDate = [...events].sort((a, b) => {
 		if (a.date && b.date) {
-			return compareDates(a.date, b.date, a.universe, b.universe, dateService);
+			const cmp = compareDates(a.date, b.date, a.universe, b.universe, dateService);
+			if (cmp !== 0) return cmp;
+			return compareRangeKind(a, b);
 		}
 		if (a.date) return -1;
 		if (b.date) return 1;
@@ -136,10 +142,13 @@ export async function computeSortOrder(
 	const visited = new Set<string>();
 
 	while (queue.length > 0) {
-		// Sort queue by date for stable ordering
+		// Sort queue by date for stable ordering, with the same
+		// point-before-range tiebreak as the initial sort (#569).
 		queue.sort((a, b) => {
 			if (a.date && b.date) {
-				return compareDates(a.date, b.date, a.universe, b.universe, dateService);
+				const cmp = compareDates(a.date, b.date, a.universe, b.universe, dateService);
+				if (cmp !== 0) return cmp;
+				return compareRangeKind(a, b);
 			}
 			if (a.date) return -1;
 			if (b.date) return 1;
@@ -234,6 +243,19 @@ function normalizeWikilink(link: string): string {
  *
  * Returns: negative if a < b, 0 if equal, positive if a > b
  */
+/**
+ * Tiebreak comparator for two events sharing a start date (#569). When
+ * one event has a `date_end` (range event) and the other doesn't (point
+ * event), the point event sorts first. Returns 0 when both are the same
+ * kind so the next tier of tiebreaks can decide.
+ */
+export function compareRangeKind(a: EventNote, b: EventNote): number {
+	const aIsRange = !!a.dateEnd;
+	const bIsRange = !!b.dateEnd;
+	if (aIsRange === bIsRange) return 0;
+	return aIsRange ? 1 : -1;
+}
+
 function compareDates(
 	a: string,
 	b: string,

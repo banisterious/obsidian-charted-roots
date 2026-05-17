@@ -370,6 +370,56 @@
   color: var(--text-muted);
 }
 
+/* More filters disclosure (#515). Toggle button sits in the primary
+   filter row alongside type / person / search. The disclosure body
+   below holds universe / place / date-range controls. */
+.crc-timeline-more-filters-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2-1);
+  padding: var(--size-2-2) var(--size-4-2);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+  cursor: pointer;
+}
+
+.crc-timeline-more-filters-toggle:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+.crc-timeline-more-filters-label {
+  font-size: var(--font-ui-small);
+}
+
+.crc-timeline-more-filters {
+  display: flex;
+  gap: var(--size-4-2);
+  margin-bottom: var(--size-4-3);
+  flex-wrap: wrap;
+}
+
+.crc-timeline-more-filters--collapsed {
+  display: none;
+}
+
+.crc-timeline-date-input {
+  width: 110px;
+  padding: var(--size-2-2) var(--size-4-2);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-s);
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+  font-size: var(--font-ui-small);
+}
+
+.crc-timeline-date-input:focus {
+  border-color: var(--interactive-accent);
+  outline: none;
+}
+
 .crc-timeline-table-container {
   max-height: 400px;
   overflow-y: auto;
@@ -1483,7 +1533,12 @@
 
 .cr-events-view {
   padding: var(--size-4-4);
-  overflow-y: auto;
+  /* Fill the leaf's vertical space so the events table grows with the
+     sidebar height instead of capping at the table-container max-height
+     intended for the Control Center modal context. */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .cr-ev-header {
@@ -1491,6 +1546,7 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--size-4-4);
+  flex-shrink: 0;
 }
 
 .cr-ev-title {
@@ -1507,6 +1563,18 @@
 .cr-ev-content {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  /* min-height: 0 lets the inner table-container scroll instead of forcing
+     the whole content area to expand beyond the leaf. */
+  min-height: 0;
+}
+
+/* In the dockable sidebar the table-container should grow to fill remaining
+   vertical space; the 400px max-height is intended for the modal context. */
+.cr-events-view .crc-timeline-table-container {
+  max-height: none;
+  flex: 1;
+  min-height: 0;
 }
 
 .crc-timeline-row--browse {
