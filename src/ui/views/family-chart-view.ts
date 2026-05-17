@@ -1262,15 +1262,31 @@ export class FamilyChartView extends ItemView {
 			this.f3Chart.setShowSiblingsOfMain(this.showSiblingsOfMain);
 			this.f3Chart.setSingleParentEmptyCard(this.showSingleParentEmptyCard, { label: 'Unknown' });
 
-			// Apply sort children by birth date
+			// Apply sort children by birth date. Matches the universe-aware
+			// canonical-year compare used by the other four sibling-sort
+			// surfaces (#586/#587/#590), with the same lex-string tiebreak
+			// for twins/triplets carrying ISO 8601 time components. The
+			// previous straight localeCompare was fictional-blind (BBY/EF/DE
+			// dates sorted lexically rather than chronologically) and missed
+			// the #590 tiebreak (#605).
 			if (this.sortChildrenByBirthDate) {
 				this.f3Chart.setSortChildrenFunction((a, b) => {
-					const aBirthday = a.data?.birthday || '';
-					const bBirthday = b.data?.birthday || '';
-					// Sort by birthday string (works for ISO dates)
+					const aBirthday = (a.data?.birthday as string | undefined) || '';
+					const bBirthday = (b.data?.birthday as string | undefined) || '';
 					if (!aBirthday && !bBirthday) return 0;
 					if (!aBirthday) return 1; // No date goes last
 					if (!bBirthday) return -1;
+					const dateService = this.plugin.getDateService();
+					if (dateService) {
+						const focalUniverse = this.rootPersonId
+							? this.familyGraphService.getPersonByCrId(this.rootPersonId)?.universe
+							: undefined;
+						const aYear = dateService.getCanonicalYear(aBirthday, focalUniverse);
+						const bYear = dateService.getCanonicalYear(bBirthday, focalUniverse);
+						if (aYear !== null && bYear !== null && aYear !== bYear) {
+							return aYear - bYear;
+						}
+					}
 					return aBirthday.localeCompare(bBirthday);
 				});
 			}
