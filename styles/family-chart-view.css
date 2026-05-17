@@ -826,6 +826,15 @@
   overflow: hidden;
 }
 
+/* The global `.crc-hidden` rule has the same single-class specificity as
+   `.cr-fcv-info-panel` above; since this file is bundled after base.css,
+   the flex rule would win and the panel would never hide. Combine the
+   classes so the hidden state is higher-specificity and actually applies
+   (#604). */
+.cr-fcv-info-panel.crc-hidden {
+  display: none;
+}
+
 .cr-fcv-info-panel-header {
   display: flex;
   justify-content: space-between;
