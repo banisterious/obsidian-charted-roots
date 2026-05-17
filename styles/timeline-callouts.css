@@ -47,8 +47,6 @@ body {
   /* Variables for list columns */
   --cr-list-min-width: 200px;
   --cr-list-column-gap: 1rem;
-  --cr-list-column-rule-color: var(--background-modifier-border);
-  --cr-list-column-rule-width: 0;
 }
 
 /* ============================================================================
@@ -274,18 +272,20 @@ div:not(.cr-has-timeline) + .cr-has-timeline > [data-callout="cr-timeline"] {
 }
 
 /* ============================================================================
-   Multi-Column List Support (bundled from MCL)
-   Based on efemkay's Modular CSS Layout
-   https://github.com/efemkay/obsidian-modular-css-layout
+   Multi-Column List Support
    ============================================================================ */
 
-/* Multi-column layout for timeline event lists */
-/* Applied to top-level lists within timeline callouts */
+/* Auto-fit timeline event lists into columns on wider editors.
+   CSS Grid replaces the former multicolumn (column-* properties) approach,
+   which the Obsidian Community automated review flags as partially supported.
+   Grid is universally supported and flagged-clean. Reading order is
+   row-major (left-to-right, then wrap) rather than column-major; for
+   typical timeline lengths this reads naturally in either pattern. */
 .callout[data-callout="cr-timeline"] .callout-content > ul,
 .callout[data-callout="cr-timeline"] .callout-content > div > ul {
-  column-width: var(--cr-list-min-width);
-  column-gap: var(--cr-list-column-gap);
-  column-rule: var(--cr-list-column-rule-width) solid var(--cr-list-column-rule-color);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--cr-list-min-width), 1fr));
+  gap: var(--cr-list-column-gap);
 }
 
 /* Hide the #mcl/list-column tag if present */

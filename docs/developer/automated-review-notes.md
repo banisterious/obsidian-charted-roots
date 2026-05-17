@@ -175,18 +175,21 @@ leaflet-container descendants in `map-view.css` and the `.cr-hidden` utility
 in `base.css` were dropped in v0.22.38 after DevTools cascade inspection
 confirmed they weren't needed in practice).
 
-### 5.2 `multicolumn` partial-support (timeline callouts)
+### 5.2 `multicolumn` partial-support (closed in v0.22.46)
 
-[styles/timeline-callouts.css:287-289](../../styles/timeline-callouts.css#L287-L289)
+Status: **closed in v0.22.46** via a CSS Grid migration.
 
 Three CSS multicolumn properties (`column-width`, `column-gap`,
-`column-rule`) on timeline event lists, scoped under
+`column-rule`) had been used on timeline event lists under
 `.callout[data-callout="cr-timeline"] .callout-content > ul`. The scanner
-flags multicolumn as "partially supported by Obsidian 1.11.x"; the feature
-is fully supported in modern Chromium (Obsidian's renderer), but the scanner
-uses a static support-matrix lookup that doesn't reflect that. **No longhand
-alternative — column-* properties ARE the longhand. Removing the feature
-would force timeline lists into single-column layout even on wide editors.**
+flagged multicolumn as "partially supported by Obsidian 1.11.x"; the
+feature is fully supported in modern Chromium (Obsidian's renderer), but
+the scanner uses a static support-matrix lookup that doesn't reflect that.
+The rules now use `display: grid` with `repeat(auto-fill, minmax(...))`,
+which is universally supported and flagged-clean. Reading order shifts
+from column-major to row-major; for typical timeline lengths this reads
+naturally in either pattern. The `--cr-list-column-rule-*` variables
+(deprecated 0-width separator) were dropped in the same change.
 
 ### 5.3 Sibling-aware `:has()` (timeline callouts)
 
