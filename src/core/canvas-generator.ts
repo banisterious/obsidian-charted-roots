@@ -520,6 +520,10 @@ export class CanvasGenerator {
 			this.addConflictIndicatorNodes(canvasNodes, familyTree, nodeMap, opts);
 		}
 
+		// Add marriage-label text nodes anchored to the left spouse (#603).
+		// Replaces the edge-label approach for spouse marriage metadata.
+		this.addMarriageLabelNodes(canvasNodes, familyTree, nodeMap, opts);
+
 		// Generate group nodes if grouping is enabled
 		// Groups are prepended to nodes array so they render below other nodes (z-order)
 		const groupNodes = this.generateGroupNodes(
@@ -607,6 +611,80 @@ export class CanvasGenerator {
 				width: indicatorWidth,
 				height: indicatorHeight,
 				color
+			});
+		}
+	}
+
+	/**
+	 * Adds marriage-metadata text nodes anchored just below the left
+	 * spouse card for each spouse pair (#603). Replaces the edge-label
+	 * approach: Obsidian Canvas pins edge labels at the geometric
+	 * midpoint of the line, and the current siblings-then-spouses layout
+	 * often places non-spouse cards between the actual spouse pair, so
+	 * a midpoint label can appear to belong to the wrong relationship.
+	 *
+	 * Each spouse pair is rendered once even though the underlying
+	 * familyTree.edges typically include both directions (A->B and
+	 * B->A); we dedupe by canonical pair key so we don't stack two
+	 * identical labels.
+	 */
+	private addMarriageLabelNodes(
+		canvasNodes: CanvasNode[],
+		familyTree: FamilyTree,
+		nodeMap: Map<string, { x: number; y: number }>,
+		opts: {
+			nodeWidth: number;
+			nodeHeight: number;
+			showSpouseEdges: boolean;
+			spouseEdgeLabelFormat: SpouseEdgeLabelFormat;
+		}
+	): void {
+		if (!opts.showSpouseEdges) return;
+
+		const labelGap = 4;
+		const labelHeight = 24;
+		const labelStackGap = 2;
+		const seenPairs = new Set<string>();
+		// Tracks how many labels have already been placed below each card,
+		// so a person with multiple marriages gets each label stacked
+		// vertically below their card rather than rendered on top of the
+		// previous one (#603 follow-up: Kirth has two spouses, both edges
+		// share the same left-spouse anchor).
+		const labelsBelowCard = new Map<string, number>();
+
+		for (const edge of familyTree.edges) {
+			if (edge.type !== 'spouse') continue;
+
+			const pairKey = [edge.from, edge.to].sort().join('|');
+			if (seenPairs.has(pairKey)) continue;
+			seenPairs.add(pairKey);
+
+			const fromPos = nodeMap.get(edge.from);
+			const toPos = nodeMap.get(edge.to);
+			if (!fromPos || !toPos) continue;
+
+			const fromPerson = familyTree.nodes.get(edge.from);
+			const spouseRelationship = fromPerson?.spouses?.find(s => s.personId === edge.to);
+			const labelText = this.formatMarriageLabel(spouseRelationship, opts.spouseEdgeLabelFormat);
+			if (!labelText) continue;
+
+			// Anchor to whichever spouse is visually left (lower x). Ties
+			// fall to the original `from` endpoint for stability.
+			const isFromLeft = fromPos.x <= toPos.x;
+			const leftSpousePos = isFromLeft ? fromPos : toPos;
+			const leftSpouseCrId = isFromLeft ? edge.from : edge.to;
+
+			const stackIndex = labelsBelowCard.get(leftSpouseCrId) ?? 0;
+			labelsBelowCard.set(leftSpouseCrId, stackIndex + 1);
+
+			canvasNodes.push({
+				id: this.generateId(),
+				type: 'text',
+				text: labelText,
+				x: leftSpousePos.x,
+				y: leftSpousePos.y + opts.nodeHeight + labelGap + stackIndex * (labelHeight + labelStackGap),
+				width: opts.nodeWidth,
+				height: labelHeight
 			});
 		}
 	}
@@ -1056,13 +1134,14 @@ export class CanvasGenerator {
 			// Generate label for edge
 			let edgeLabel: string | undefined;
 			if (edge.type === 'spouse' && options.showSpouseEdges) {
-				// For spouse edges, look up marriage metadata from PersonNode
-				const fromPerson = familyTree.nodes.get(edge.from);
-				if (fromPerson?.spouses) {
-					// Find the spouse relationship for this specific edge
-					const spouseRelationship = fromPerson.spouses.find(s => s.personId === edge.to);
-					edgeLabel = this.formatMarriageLabel(spouseRelationship, options.spouseEdgeLabelFormat);
-				}
+				// Marriage metadata is rendered as a separate text node anchored
+				// to the left spouse (see addMarriageLabelNodes), not as an edge
+				// label, because Obsidian Canvas pins edge labels at the
+				// geometric midpoint of the line and the current
+				// siblings-then-spouses layout often places non-spouse cards
+				// between the spouse pair, making midpoint labels appear to
+				// belong to the wrong relationship (#603).
+				edgeLabel = undefined;
 			} else if (edge.type === 'relationship') {
 				// Use the relationship label from the edge
 				edgeLabel = edge.relationshipLabel;
