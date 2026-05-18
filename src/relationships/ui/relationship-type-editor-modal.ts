@@ -283,9 +283,13 @@ export class RelationshipTypeEditorModal extends Modal {
 					.setValue(this.includeOnFamilyTree)
 					.onChange(value => {
 						this.includeOnFamilyTree = value;
-						// Show/hide the mapping dropdown
+						// Toggle the crc-hidden class on the mapping row.
+						// Earlier code set style.display directly, which
+						// couldn't override the initially-applied .crc-hidden
+						// class (display: none from styles/base.css), so the
+						// row stayed hidden after the toggle was flipped on.
 						if (mappingDropdownEl) {
-							mappingDropdownEl.parentElement!.parentElement!.style.display = value ? '' : 'none';
+							mappingDropdownEl.parentElement!.parentElement!.toggleClass('crc-hidden', !value);
 						}
 						// Clear mapping if disabled
 						if (!value) {
