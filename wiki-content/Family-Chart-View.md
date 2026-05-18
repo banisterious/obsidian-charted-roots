@@ -99,7 +99,7 @@ Toggles persist across Obsidian restarts. Turning on a field for which some peop
 
 The display settings menu also controls the left-to-right order of children and spouses within a family unit:
 
-- **Sort children by birth date** — children render oldest-first (left) to youngest (right). Children without a birth date fall to the end.
+- **Sort children by birth date** — children render oldest-first (left) to youngest (right). Children without a birth date fall to the end. The sort uses a universe-aware canonical-year comparison (so fictional eras like BBY, EF, DE order chronologically rather than alphabetically). When two siblings share the same canonical year, the raw `born` field is compared lexically — this catches month / day differences within a year, and for twins or triplets recorded with an ISO 8601 time component (`born: 1985-04-12T03:42`), the time tiebreaks the order deterministically. Final fallback when birth date strings match exactly is frontmatter insertion order. The same sort behavior applies to the Profile View Children section, the Canvas Family Tree, the dynamic Relationship Block, and report surfaces (Family Group Sheet, Register, Descendant Chart, etc.).
 - **Sort spouses by marriage date** — spouses render first-married (left) to most-recently-married (right). Useful for serial remarriages or polygamous families where the frontmatter order doesn't reflect chronology. Spouses without a marriage date fall to the end. Marriage dates come from the spouse-relationship metadata (e.g. `spouse1_marriage_date`).
 
 Both toggles are off by default (frontmatter order is used).
@@ -153,7 +153,9 @@ Render non-family custom relationships (liege/vassal, ally/rival, mentor/discipl
 - Hover a line for a tooltip with source, relationship type, target, and date range.
 - Overlay arcs paint **on top** of the structural family-link layer in the typical case so they're never hidden by parent-child or spouse lines. When a single endpoint pair has three or more overlay arcs stacked on it, the layer order automatically flips so the structural family link stays visible underneath the stack — preserves the structural-line-visibility guarantee for heavy overlays.
 
-The overlay is independent of family-tree structure. A type can be tree-only (affects layout, no overlay), overlay-only (no layout impact, rendered as an overlay line), or both.
+**Visibility constraint:** the overlay augments lines between cards already visible in the current chart — it does not introduce new cards for off-tree relationships. The chart's card set is built from the focal person's bio / adopted / step family graph. If a person has a custom relationship with someone outside that graph (e.g., a Master / Padawan or godparent relationship to a person unrelated by family), neither person's chart will show the line because the chart contains at most one of the two cards. The other person isn't drawn at all. To see the connection, both people need to be reachable via family relationships from the focal person — once both cards are present, the overlay line draws between them.
+
+The overlay is independent of family-tree structure in the sense that *types* can be tree-only (affects layout, no overlay), overlay-only (no layout impact, rendered as an overlay line), or both — but the *rendering* still requires both endpoints to be on the visible tree.
 
 ### Highlight Groups
 

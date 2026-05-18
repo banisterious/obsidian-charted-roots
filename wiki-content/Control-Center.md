@@ -147,7 +147,7 @@ Many Control Center tabs include a **dock button** (panel icon) in their card he
 |------|---------|---------|
 | **People** | Filter/sort/search table with expandable details | `Open people` |
 | **Places** | Filter/sort/search table with category badges | `Open places` |
-| **Events** | Type/person/search filters, sortable table | `Open events` |
+| **Events** | Type/person/search filters in the primary row plus universe/place/date-range under a "More filters" disclosure; sortable table fills the leaf height. See [Events sort behavior](Events-And-Timelines#event-sort-behavior). | `Open events` |
 | **Sources** | Filter/sort table with type/confidence badges | `Open sources` |
 | **Organizations** | Filter/sort table with type badges, member counts | `Open organizations` |
 | **Relationships** | Table with type badges, filter/sort | `Open relationships` |

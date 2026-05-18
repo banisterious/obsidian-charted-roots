@@ -495,6 +495,7 @@ npm run build:css
 - Keep specificity low where possible
 - Use `:where()` for opt-out overrides
 - Avoid `!important` except for Style Settings variables
+- **Watch for single-class collisions with global utility classes.** The global `.crc-hidden` / `.cr-hidden` rule (`display: none`) has specificity 0,1,0 — same as any component class like `.cr-fcv-info-panel`. When a component rule sets `display: flex` (or any other display value), bundle order determines the winner, and `.crc-hidden` silently loses if the component class is declared later in the bundle. The fix is a combined-class rule like `.cr-fcv-info-panel.crc-hidden { display: none; }` to win the specificity comparison. This bit us in #604 (Family Chart Person details pane). When you add a `display:` rule to a component class, also add the combined-class override.
 
 **Organization within components:**
 - Group related rules together

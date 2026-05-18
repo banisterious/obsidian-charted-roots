@@ -100,7 +100,7 @@ Additional notes about this event...
 | `universe` | string | No | Fictional universe (for worldbuilding) |
 | `date_system` | string | No | Fictional date system ID |
 | `timeline` | wikilink | No | Parent timeline note |
-| `sort_order` | number | No | Computed sort value for ordering |
+| `sort_order` | number | No | Computed sort value for ordering. Populated automatically by the topological sort over `before` / `after` relationships when an event is saved or when "Compute sort order" runs from the Events tab. See [Event Sort Behavior](#event-sort-behavior) for the tiebreak rules. |
 | `groups` | string[] | No | Groups/factions involved (for filtering) |
 
 > **Note (v0.18.0):** All events now use the `persons` array property. Single-participant events simply have an array with one element (e.g., `persons: ["[[John Smith]]"]`). The legacy `person` property is deprecated but still read for backward compatibility.
@@ -180,6 +180,18 @@ universe: "Middle-earth"
 is_canonical: true
 ```
 
+### Event Sort Behavior
+
+Event ordering on the Events tab, the dockable Events sidebar, the Profile View Events section, and Person / Family / Place timelines comes from the `sort_order` field, which is computed automatically by a topological sort over the `before` / `after` constraint graph plus a date tiebreak.
+
+When two events share a date, the sort applies these tiebreaks in order:
+
+1. **`before` / `after` constraints** — if an explicit relationship pulls one event before the other, that wins outright.
+2. **Point events before range events** — if one event has a `date_end` (range) and the other doesn't (point), the point event sorts first. Reader expectation: discrete things that happened on a date show before multi-year states that began on that date (e.g., "1920 Census Residence" before "Residence 1920-1925").
+3. **Insertion order** — when both events are the same kind (both points or both ranges) with no explicit constraint, frontmatter declaration order decides.
+
+`sort_order` values land automatically on event save and can be recomputed via "Compute sort order" from the Events tab Timeline card. Values are spaced by 10 (10, 20, 30, ...) so manual nudges can still slot between computed positions without forcing a global recompute.
+
 ## Person Timeline View
 
 The Person Timeline shows all events for an individual in chronological order.
@@ -236,12 +248,18 @@ Events belonging to relatives can also surface on a person's timeline, toggled i
 |---|---|
 | **Show children's births** | `born` on each biological child note |
 | **Show adopted children's births** | `born` on each adopted child note (independent from "Show children's births") |
+| **Show children's deaths** | `died` on each biological, adopted, or step-child note (rendered only when the focal person was alive at the time) |
 | **Show spouse deaths** | `died` on each spouse note |
 | **Show parent deaths** | `died` on father / mother / adoptive parent / step-parent notes |
+| **Show stepparent deaths** | `died` on each stepparent note (rendered only when the focal person was alive at the time) |
 | **Show sibling births** | `born` on each sibling note — where "sibling" is anyone sharing a parent *or* anyone declared via the built-in `sibling` relationship type |
+| **Show sibling deaths** | `died` on each sibling note (same step-sibling-aware walk as sibling births; rendered only when the focal person was alive at the time) |
+| **Show grandchildren's births** | `born` on each biological or adopted child of each biological or adopted child (rendered only when the focal person was alive at the time) |
 | **Show divorces** | `spouseN_divorce_date` on the person's own note (governs divorces only; marriages always render) |
 
 All toggles default off except **Show divorces** and **Show spouse deaths**, both on by default. A spouse's death is a major life event for the survivor, so it surfaces on the timeline without setting discovery; users who'd prefer to hide spouse deaths can opt out from Settings → Charted Roots → Timeline.
+
+Each toggle has a corresponding customizable label in the **Timeline labels** section (e.g., "Death of {name}" can become "Loss of {name}").
 
 Stepchildren are excluded from the children-births block: their births appear only on biological parents' timelines, not on the stepparents'.
 
@@ -335,11 +353,29 @@ The Events tab includes a Timeline card showing all events across your vault.
 
 ### Filter Controls
 
+The primary filter row holds three controls always visible:
+
 | Filter | Options |
 |--------|---------|
 | Event type | All types, or specific type (birth, death, etc.) |
 | Person | All people, or specific person |
 | Search | Free-text search across title, date, place, description |
+
+Three additional filters live under a **More filters** disclosure (button at the end of the primary row). Click to expand:
+
+| Filter | Options |
+|--------|---------|
+| Universe | `(any)` (default), `(real-world)` (events with no `universe` field), `(any fictional)` (events with any `universe` set), or a specific universe by name |
+| Place | `All places` or a specific place (enumerated from event `place` wikilinks) |
+| Date range | Two year inputs (From / To); events without a parseable year are excluded when either bound is set |
+
+The disclosure opens automatically when any secondary filter has a remembered value. All six filters AND together — combine any subset.
+
+### Dockable Events Sidebar
+
+The Events tab's Timeline card has a **dock button** (panel icon) in the card header. Clicking it opens the same event list as a persistent, dockable sidebar view alongside your notes. The sidebar exposes the same six filters (primary row + More filters disclosure), with one persistence difference: **the dockable sidebar persists all six filter values across Obsidian restarts** via the view-state mechanism. The in-modal Timeline card is session-local — its filter selections reset when the Control Center closes.
+
+The sidebar fills the leaf's full height with the event table scrolling internally on long event lists. Click any row to open the corresponding event note.
 
 ### Timeline Table
 

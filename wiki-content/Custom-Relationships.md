@@ -246,6 +246,17 @@ The Relationships tab in Control Center provides comprehensive relationship mana
 - **Add category** button — define a new category to group your custom types under
 - **Edit / delete** actions on each type's row — customize built-in types or modify your own
 
+#### The "Maps to" field — caveat
+
+The Relationship Type editor includes a **Maps to** dropdown that lets a custom type declare itself as a family-graph variant of a built-in type (e.g., a custom "Sire" type mapping to `parent`, or a custom "Adoptee" mapping to `adopted_child`). This setting does double duty:
+
+1. **Display:** controls how the type renders on the Family Chart (e.g., a `parent` mapping draws a parent-edge line rather than an overlay arc).
+2. **Write routing:** the "Add Relationship" modal *writes* relationships of this type into the mapped built-in field. A type mapped to `parent` writes to the source person's `father` / `mother` (or gender-neutral `parents` array). A type mapped to `spouse` writes to the next `spouse<N>` slot. A type mapped to `child` appends to the children array.
+
+**Caveat (v0.22.46 and earlier):** for scalar mapped fields (`father`, `mother`, scalar `spouse`), the write currently overwrites any existing value with a passing notice — the previously-recorded person disappears from frontmatter. **Don't use the Maps to dropdown on a custom type if a person already has the corresponding built-in field set on a different person**, or that person will be replaced. Issue [#606](https://github.com/banisterious/obsidian-charted-roots/issues/606) tracks per-field conflict guards (refuse / prompt on existing-value overwrite) planned for v0.22.47.
+
+If you want a custom relationship type to appear as an overlay line *without* affecting built-in family fields, leave **Maps to** blank — overlay rendering still works via the **Render on family chart as overlay line** toggle (which is independent of Maps to).
+
 ### Custom Relationships Card
 
 - **List of all custom relationships** defined in the vault

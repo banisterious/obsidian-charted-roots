@@ -161,7 +161,7 @@ erDiagram
 | `name` | `string` | Display name of the person | `"John Robert Smith"` |
 | `nickname` | `string` | Informal name, pet name, or alternate identity | `"Jack"`, `"The Colonel"` |
 | `alt_name` | `string` | Alternate name for multilingual display (shown as second line on Family Chart cards) | `"张三"`, `"Johann Müller"` |
-| `born` | `string` | Birth date (YYYY, YYYY-MM, YYYY-MM-DD, or with GEDCOM qualifiers like `ABT`, `BEF`, `AFT`) | `"1888-05-15"`, `"ABT 1888"` |
+| `born` | `string` | Birth date (YYYY, YYYY-MM, YYYY-MM-DD, with optional ISO 8601 time `YYYY-MM-DDTHH:MM` for twin / triplet birth-order tiebreaks, or with GEDCOM qualifiers like `ABT`, `BEF`, `AFT`) | `"1888-05-15"`, `"1985-04-12T03:42"`, `"ABT 1888"` |
 | `died` | `string` | Death date (YYYY, YYYY-MM, YYYY-MM-DD, or with GEDCOM qualifiers) | `"1952-08-20"`, `"BEF 1953"` |
 | `birth_place` | `string` | Location of birth | `"London, England"` |
 | `death_place` | `string` | Location of death | `"New York, USA"` |
