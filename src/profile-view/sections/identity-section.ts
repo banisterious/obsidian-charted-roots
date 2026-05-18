@@ -17,6 +17,7 @@ import type {
 } from '../profile-types';
 import { createEditableField, createMetaSeparator, commitActiveEdit } from '../inline-edit';
 import { capitalize } from '../../utils/format-utils';
+import { stripDateTimeSuffix } from '../../dates/utils/date-display';
 
 export interface IdentityHeaderOptions {
 	pinned: boolean;
@@ -194,7 +195,7 @@ function renderPersonMeta(
 			createEditableField(container, {
 				property: 'born',
 				label: 'Birth date',
-				displayValue: data.node.birthDate || '',
+				displayValue: stripDateTimeSuffix(data.node.birthDate),
 				rawValue: data.node.birthDate || '',
 				inputType: 'text',
 				placeholder: 'b. ?'
@@ -205,15 +206,15 @@ function renderPersonMeta(
 			createEditableField(container, {
 				property: 'died',
 				label: 'Death date',
-				displayValue: data.node.deathDate || '',
+				displayValue: stripDateTimeSuffix(data.node.deathDate),
 				rawValue: data.node.deathDate || '',
 				inputType: 'text',
 				placeholder: ''
 			}, options.onFieldSave, options.onEditNotify);
 			fieldCount++;
 		} else if (hasDates) {
-			const birth = data.node.birthDate || '?';
-			const death = data.node.deathDate || '';
+			const birth = stripDateTimeSuffix(data.node.birthDate) || '?';
+			const death = stripDateTimeSuffix(data.node.deathDate);
 			container.createSpan({ text: death ? `${birth} – ${death}` : `b. ${birth}` });
 			fieldCount++;
 		}

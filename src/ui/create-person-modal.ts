@@ -495,9 +495,9 @@ export class CreatePersonModal extends Modal {
 		// Birth date
 		new Setting(form)
 			.setName('Birth date')
-			.setDesc('Date of birth (YYYY-MM-DD format recommended)')
+			.setDesc('Date of birth (YYYY-MM-DD recommended; append T HH:MM to disambiguate twins)')
 			.addText(text => text
-				.setPlaceholder('e.g., 1888-05-15')
+				.setPlaceholder('e.g., 1888-05-15 or 1888-05-15T03:42')
 				.setValue(this.personData.birthDate || '')
 				.onChange(value => {
 					this.personData.birthDate = value || undefined;

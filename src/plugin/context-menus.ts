@@ -31,6 +31,7 @@ import { CreatePlaceModal } from '../ui/create-place-modal';
 import { CreatePersonModal } from '../ui/create-person-modal';
 import { AddRelationshipModal } from '../ui/add-relationship-modal';
 import { RelationshipManager } from '../core/relationship-manager';
+import { promptOnConflict } from '../ui/conflict-guard-modal';
 import { RelationshipCalculatorModal } from '../ui/relationship-calculator-modal';
 import { SchemaService, ValidationService } from '../schemas';
 import { CreateMapWizardModal } from '../ui/create-map-wizard-modal';
@@ -844,7 +845,7 @@ function buildPersonContextMenu(
 
 							const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
 								void (async () => {
-									const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
+									const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory, promptOnConflict(plugin.app));
 									await relationshipMgr.addParentRelationship(
 										file,
 										selectedPerson.file,
@@ -883,7 +884,7 @@ function buildPersonContextMenu(
 
 							const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
 								void (async () => {
-									const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
+									const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory, promptOnConflict(plugin.app));
 									await relationshipMgr.addParentRelationship(
 										file,
 										selectedPerson.file,
@@ -931,7 +932,7 @@ function buildPersonContextMenu(
 
 							const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
 								void (async () => {
-									const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
+									const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory, promptOnConflict(plugin.app));
 									await relationshipMgr.addSpouseRelationship(file, selectedPerson.file, selectedPerson.crId);
 								})();
 							}, {
@@ -965,7 +966,7 @@ function buildPersonContextMenu(
 
 							const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
 								void (async () => {
-									const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
+									const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory, promptOnConflict(plugin.app));
 									await relationshipMgr.addChildRelationship(file, selectedPerson.file, selectedPerson.crId);
 								})();
 							}, {
@@ -1491,7 +1492,7 @@ function buildPersonContextMenu(
 				.onClick(() => {
 					const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
 						void (async () => {
-							const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
+							const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory, promptOnConflict(plugin.app));
 							const parentType = await promptParentType(plugin);
 							if (parentType) {
 								await relationshipMgr.addParentRelationship(
@@ -1514,7 +1515,7 @@ function buildPersonContextMenu(
 				.onClick(() => {
 					const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
 						void (async () => {
-							const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
+							const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory, promptOnConflict(plugin.app));
 							await relationshipMgr.addSpouseRelationship(file, selectedPerson.file, selectedPerson.crId);
 						})();
 					});
@@ -1529,7 +1530,7 @@ function buildPersonContextMenu(
 				.onClick(() => {
 					const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
 						void (async () => {
-							const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory);
+							const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory, promptOnConflict(plugin.app));
 							await relationshipMgr.addChildRelationship(file, selectedPerson.file, selectedPerson.crId);
 						})();
 					});

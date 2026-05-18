@@ -12,6 +12,7 @@ Thank you for your interest in contributing to Charted Roots! This document prov
 - [Coding Standards](#coding-standards)
 - [Testing](#testing)
 - [Documentation](#documentation)
+- [Internationalization](#internationalization)
 - [Submitting Changes](#submitting-changes)
 - [Security](#security)
 
@@ -240,11 +241,69 @@ npm run lint:css:fix
 
 ### Automated Testing
 
-(To be implemented)
+Charted Roots uses [Vitest](https://vitest.dev/) for unit and regression
+tests. The suite lives in [`tests/`](tests/) and currently covers
+date parsing, relationship traversal, wikilink resolution, event sorting,
+GEDCOM round-trips, the bidirectional-linker, and various utility
+helpers.
+
+#### Running tests
 
 ```bash
+# Run the whole suite once
 npm test
+
+# Watch mode — reruns on file change
+npm run test:watch
+
+# Run a single file (or a name fragment that matches a file)
+npm test -- conflict-policy
 ```
+
+#### Where tests live
+
+- One file per unit under test in [`tests/`](tests/), named
+  `<subject>.test.ts`. Examples:
+  [`tests/conflict-policy.test.ts`](tests/conflict-policy.test.ts),
+  [`tests/relationship-query-service.test.ts`](tests/relationship-query-service.test.ts),
+  [`tests/extract-display-label.test.ts`](tests/extract-display-label.test.ts).
+- Regression tests are named by the bug they fence: e.g.,
+  [`tests/sort-order-range-kind.test.ts`](tests/sort-order-range-kind.test.ts)
+  (the v0.22.46 #569 follow-up).
+
+#### What to test
+
+- **Pure helpers** — anything that takes plain data and returns plain
+  data (parsers, formatters, sort comparators, policy resolvers). These
+  are the easiest tests to write and the most durable.
+- **Regression coverage for shipped bugs** — when fixing a bug, add a
+  test that reproduces it. Name the file after the symptom or the issue
+  number so future readers can find it.
+- **Input-contract fuzz** — for helpers that take varied input shapes
+  (e.g., wikilinks, date strings), enumerate the shapes you've seen in
+  the wild so the next variant gets caught by tests rather than by a
+  reporter. Pattern reference:
+  [`tests/person-note-writer-smart-wikilink.test.ts`](tests/person-note-writer-smart-wikilink.test.ts)
+  (the v0.22.28 #548 corpus).
+
+#### What we typically *don't* unit-test
+
+- **Obsidian-API-heavy code paths** (modals, views, services that lean
+  on `App`/`Vault`/`MetadataCache`). The mocking scaffold is heavy, and
+  these are usually verified manually in the dev-vault. Examples:
+  the `ConflictGuardModal` modal itself, `FamilyChartView` rendering,
+  `data-quality-batch-ops` interactive flows.
+- **Visual rendering** (canvas layouts, SVG overlays). Verified by
+  reloading the plugin in the dev-vault.
+
+#### When you add a new test file
+
+- Mirror the surrounding style: one `describe` per public surface,
+  `it` blocks that read as full sentences ("returns null for
+  unparseable input").
+- Reference the issue or symptom in a short comment at the top of the
+  file so a future reader can tell why each suite exists.
+- Run `npm test` locally before pushing — CI runs the same gate.
 
 ## Documentation
 
@@ -276,6 +335,25 @@ Follow the [Documentation Style Guide](docs/assets/templates/documentation-style
 - **Developer Docs**: Technical implementation details
 - **API Reference**: Public API documentation
 - **Tutorials**: Step-by-step walkthroughs
+
+## Internationalization
+
+Translation support is **post-1.0** — the UI surface is still being
+stabilized for the 1.0 release, and starting infrastructure work now
+would compound rework as strings continue to change.
+
+The central tracking thread is
+[Discussion #594](https://github.com/banisterious/obsidian-charted-roots/discussions/594),
+which covers framework choice, string extraction, locale detection,
+and the translator workflow. If you'd like to translate Charted Roots
+into your language, **comment on the discussion** with the language
+code (e.g., `zh-CN`, `de`, `fr`) and a brief intro. You'll be
+@-mentioned once the infrastructure is ready for translation work.
+
+Please do not open PRs that add a translation framework or extract
+strings ahead of the design conversation — coordinate in
+[#594](https://github.com/banisterious/obsidian-charted-roots/discussions/594)
+first so the eventual implementation is consistent across languages.
 
 ## Submitting Changes
 

@@ -3,7 +3,8 @@ import { App, TFile, Notice } from 'obsidian';
 import { RelationshipHistoryService, RelationshipChangeType } from './relationship-history';
 import { getLogger } from './logging';
 import { getErrorMessage } from './error-utils';
-import { getCanonicalLinktext } from '../utils/wikilink-resolver';
+import { extractDisplayLabel, getCanonicalLinktext } from '../utils/wikilink-resolver';
+import { type ConflictPolicy, overwriteOnConflict } from './conflict-policy';
 
 const logger = getLogger('RelationshipManager');
 
@@ -27,8 +28,23 @@ export type HistoryRecorder = (
  */
 export class RelationshipManager {
 	private historyRecorder?: HistoryRecorder;
+	private conflictPolicy: ConflictPolicy;
 
-	constructor(private app: App, historyService?: RelationshipHistoryService | null) {
+	/**
+	 * @param conflictPolicy How to resolve writes that would overwrite an
+	 * existing scalar relationship field (`father` / `mother`) with a
+	 * different person reference. UI-driven sites should pass a prompt
+	 * policy (see `promptOnConflict` in `src/ui/conflict-guard-modal.ts`);
+	 * background / reactive sites should pass `skipOnConflict`. Defaults
+	 * to `overwriteOnConflict` to preserve pre-v0.22.47 behavior for any
+	 * caller that doesn't yet specify a policy (#606).
+	 */
+	constructor(
+		private app: App,
+		historyService?: RelationshipHistoryService | null,
+		conflictPolicy?: ConflictPolicy
+	) {
+		this.conflictPolicy = conflictPolicy ?? overwriteOnConflict;
 		if (historyService) {
 			this.historyRecorder = async (
 				type, sourceFile, sourceName, sourceCrId,
@@ -53,13 +69,16 @@ export class RelationshipManager {
 	 * Add a parent-child relationship
 	 * Updates child's father/father_id or mother/mother_id and parent's children/children_id
 	 * @param knownParentCrId Optional cr_id if already known (avoids metadata cache timing issues)
+	 * @returns `true` if the relationship was added, `false` if the
+	 *   conflict policy canceled the write or a precondition failed (#606).
+	 *   Callers should suppress their own success notices on `false`.
 	 */
 	async addParentRelationship(
 		childFile: TFile,
 		parentFile: TFile,
 		parentType: 'father' | 'mother',
 		knownParentCrId?: string
-	): Promise<void> {
+	): Promise<boolean> {
 		// Extract cr_ids from both notes (use provided cr_id if available to avoid cache timing issues)
 		const childCrId = this.extractCrId(childFile);
 		const parentCrId = knownParentCrId || this.extractCrId(parentFile);
@@ -77,7 +96,7 @@ export class RelationshipManager {
 				parentFile: parentFile.path,
 				parentCrId
 			});
-			return;
+			return false;
 		}
 
 		// Validate parent type matches sex (handle both raw and normalized values)
@@ -88,8 +107,12 @@ export class RelationshipManager {
 			new Notice('Warning: selected person has sex: M but being added as mother');
 		}
 
-		// Update child's frontmatter (dual storage: wikilink + ID)
-		await this.updateParentField(childFile, parentFile, parentCrId, parentName, parentType);
+		// Update child's frontmatter (dual storage: wikilink + ID).
+		// Bails before reciprocal writes if the conflict guard canceled (#606).
+		const wrote = await this.updateParentField(childFile, parentFile, parentCrId, parentName, parentType);
+		if (!wrote) {
+			return false;
+		}
 
 		// Update parent's children array (dual storage: wikilink + ID)
 		await this.addToChildrenArray(parentFile, childFile, childCrId, childName);
@@ -108,6 +131,7 @@ export class RelationshipManager {
 		new Notice(
 			`Added ${parentFile.basename} as ${parentType} of ${childFile.basename}`
 		);
+		return true;
 	}
 
 	/**
@@ -206,7 +230,7 @@ export class RelationshipManager {
 		parentFile: TFile,
 		childFile: TFile,
 		knownChildCrId?: string
-	): Promise<void> {
+	): Promise<boolean> {
 		const parentCrId = this.extractCrId(parentFile);
 		const childCrId = knownChildCrId || this.extractCrId(childFile);
 		const parentSex = this.extractSex(parentFile);
@@ -215,15 +239,19 @@ export class RelationshipManager {
 
 		if (!childCrId || !parentCrId) {
 			new Notice('Error: could not find cr_id in one or both notes');
-			return;
+			return false;
 		}
 
 		// Determine parent type from sex (handle both raw and normalized values)
 		const normalizedSex = parentSex?.toLowerCase();
 		const parentType: 'father' | 'mother' = (normalizedSex === 'f' || normalizedSex === 'female') ? 'mother' : 'father';
 
-		// Update child's frontmatter (dual storage: wikilink + ID)
-		await this.updateParentField(childFile, parentFile, parentCrId, parentName, parentType);
+		// Update child's frontmatter (dual storage: wikilink + ID).
+		// Bails before reciprocal writes if the conflict guard canceled (#606).
+		const wrote = await this.updateParentField(childFile, parentFile, parentCrId, parentName, parentType);
+		if (!wrote) {
+			return false;
+		}
 
 		// Update parent's children array (dual storage: wikilink + ID)
 		await this.addToChildrenArray(parentFile, childFile, childCrId, childName);
@@ -239,6 +267,7 @@ export class RelationshipManager {
 		}
 
 		new Notice(`Added ${childFile.basename} as child of ${parentFile.basename}`);
+		return true;
 	}
 
 	/**
@@ -282,6 +311,10 @@ export class RelationshipManager {
 	 * Update father/mother fields in child's frontmatter (dual storage)
 	 * Writes both wikilink field (father/mother) and ID field (father_id/mother_id)
 	 * Uses processFrontMatter to safely modify without corrupting other fields
+	 *
+	 * Returns `true` if the write proceeded, `false` if the conflict policy
+	 * canceled (caller should bail on subsequent reciprocal writes and the
+	 * success notice — #606).
 	 */
 	private async updateParentField(
 		childFile: TFile,
@@ -289,17 +322,45 @@ export class RelationshipManager {
 		parentCrId: string,
 		parentName: string,
 		parentType: 'father' | 'mother'
-	): Promise<void> {
+	): Promise<boolean> {
 		const idFieldName = parentType === 'father' ? 'father_id' : 'mother_id';
 		const linkFieldName = parentType; // 'father' or 'mother'
 		const wikilink = this.createSmartWikilink(parentName, parentFile);
 
+		// Conflict guard (#606): an existing scalar parent reference that
+		// points to a different person is data-loss territory. Consult the
+		// configured policy before overwriting; the policy may prompt the
+		// user, log + skip, or proceed unconditionally depending on which
+		// path constructed this manager.
+		const cache = this.app.metadataCache.getFileCache(childFile);
+		const existingId = cache?.frontmatter?.[idFieldName];
+		let previousParentCrId: string | null = null;
+		if (
+			typeof existingId === 'string'
+			&& existingId !== ''
+			&& existingId !== parentCrId
+		) {
+			const existingLink = cache?.frontmatter?.[linkFieldName];
+			const existingDisplay = typeof existingLink === 'string' && existingLink.trim()
+				? extractDisplayLabel(existingLink)
+				: existingId;
+			const decision = await this.conflictPolicy({
+				fieldName: idFieldName,
+				fieldLabel: parentType === 'father' ? 'Father' : 'Mother',
+				existingValue: existingId,
+				newValue: parentCrId,
+				existingDisplay,
+				newDisplay: parentName,
+				subjectFile: childFile,
+			});
+			if (decision === 'cancel') {
+				return false;
+			}
+			previousParentCrId = existingId;
+		}
+
 		try {
 			await this.app.fileManager.processFrontMatter(childFile, (frontmatter) => {
-				const existingValue = frontmatter[idFieldName];
-				if (existingValue && existingValue !== '' && existingValue !== parentCrId) {
-					new Notice(`Warning: ${idFieldName} already set to ${existingValue}, replacing with ${parentCrId}`);
-				}
 				// Dual storage: wikilink + ID
 				frontmatter[linkFieldName] = wikilink;
 				frontmatter[idFieldName] = parentCrId;
@@ -308,6 +369,77 @@ export class RelationshipManager {
 			logger.error('relationship-manager', 'Failed to update parent field', {
 				file: childFile.path,
 				fieldName: idFieldName,
+				error: getErrorMessage(error)
+			});
+			return false;
+		}
+
+		// Reciprocal cleanup (#606): the user just replaced the previous
+		// scalar parent. The bidi-linker handles add-on-set but doesn't
+		// watch for removed references, so without this cleanup the
+		// previous parent would keep the child stranded in their
+		// `children` arrays. Done after the child-side write succeeded
+		// so a failed write doesn't leave a half-applied state.
+		if (previousParentCrId) {
+			const previousParentFile = this.findFileByCrId(previousParentCrId);
+			const childCrId = cache?.frontmatter?.cr_id;
+			if (previousParentFile && typeof childCrId === 'string' && childCrId) {
+				await this.removeFromChildrenArray(previousParentFile, childCrId);
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Remove a child reference from a parent's `children` / `children_id`
+	 * arrays. Used by the conflict-guard replace path to keep the previous
+	 * parent from claiming a child who has been re-parented elsewhere
+	 * (#606).
+	 */
+	private async removeFromChildrenArray(parentFile: TFile, childCrId: string): Promise<void> {
+		try {
+			await this.app.fileManager.processFrontMatter(parentFile, (frontmatter) => {
+				// Filter ID array (or scalar) → array minus the removed id.
+				const existingIds = frontmatter.children_id;
+				if (existingIds) {
+					const idArray = Array.isArray(existingIds) ? existingIds : [existingIds];
+					const filteredIds = idArray.filter((id: unknown) => id !== childCrId);
+					if (filteredIds.length === 0) {
+						delete frontmatter.children_id;
+					} else if (filteredIds.length === 1) {
+						frontmatter.children_id = filteredIds[0];
+					} else {
+						frontmatter.children_id = filteredIds;
+					}
+				}
+
+				// Filter wikilink array (or scalar) by checking each entry's
+				// canonical link target against the removed child's cr_id.
+				const existingLinks = frontmatter.children;
+				if (existingLinks) {
+					const linkArray = Array.isArray(existingLinks) ? existingLinks : [existingLinks];
+					const filteredLinks = linkArray.filter((link: unknown) => {
+						if (typeof link !== 'string') return true;
+						const linkPath = link.replace(/\[\[|\]\]/g, '').replace(/\|.*/, '');
+						const linkedFile = this.app.metadataCache.getFirstLinkpathDest(linkPath, parentFile.path);
+						if (!linkedFile) return true;
+						const linkedCrId = this.app.metadataCache.getFileCache(linkedFile)?.frontmatter?.cr_id;
+						return linkedCrId !== childCrId;
+					});
+					if (filteredLinks.length === 0) {
+						delete frontmatter.children;
+					} else if (filteredLinks.length === 1) {
+						frontmatter.children = filteredLinks[0];
+					} else {
+						frontmatter.children = filteredLinks;
+					}
+				}
+			});
+		} catch (error) {
+			logger.error('relationship-manager', 'Failed to remove from children array', {
+				file: parentFile.path,
+				childCrId,
 				error: getErrorMessage(error)
 			});
 		}

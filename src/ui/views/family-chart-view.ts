@@ -24,6 +24,7 @@ import { RelationshipService } from '../../relationships/services/relationship-s
 import type { ParsedRelationship, RelationshipTypeDefinition } from '../../relationships/types/relationship-types';
 import { FamilyChartExportWizard } from './family-chart-export-wizard';
 import { DeletePersonConfirmModal, FamilyChartStyleModal, HighlightGroupsModal } from './family-chart-view-modals';
+import { stripDateTimeSuffix } from '../../dates/utils/date-display';
 import { shouldPaintOverlayUnderLinks } from './family-chart-overlay-z';
 import {
 	type HighlightGroup,
@@ -1089,6 +1090,10 @@ export class FamilyChartView extends ItemView {
 			this.chartData[personIndex].data['collection'] = this.infoPanelEditData.collection;
 			this.chartData[personIndex].data.birthday = this.infoPanelEditData.birthDate;
 			this.chartData[personIndex].data.deathday = this.infoPanelEditData.deathDate;
+			// Keep `_display` mirrors in sync so the card re-renders with
+			// any updated tiebreak time stripped (#590).
+			this.chartData[personIndex].data['birthday_display'] = stripDateTimeSuffix(this.infoPanelEditData.birthDate);
+			this.chartData[personIndex].data['deathday_display'] = stripDateTimeSuffix(this.infoPanelEditData.deathDate);
 			if (this.infoPanelEditData.gender === 'M' || this.infoPanelEditData.gender === 'F' || this.infoPanelEditData.gender === 'X' || this.infoPanelEditData.gender === 'U') {
 				this.chartData[personIndex].data.gender = this.infoPanelEditData.gender;
 			}
@@ -1736,8 +1741,16 @@ export class FamilyChartView extends ItemView {
 				'first name': firstName,
 				'last name': lastName,
 				gender,
+				// Keep `birthday` / `deathday` raw so the edit panel,
+				// privacy-filter, and not-yet-born check see the original
+				// string (including any `T HH:MM[:SS]` tiebreak suffix).
+				// `birthday_display` / `deathday_display` are the time-
+				// stripped variants used by the card-text display fields
+				// in `buildDisplayFields()` (#590).
 				birthday: person.birthDate,
 				deathday: person.deathDate,
+				'birthday_display': stripDateTimeSuffix(person.birthDate),
+				'deathday_display': stripDateTimeSuffix(person.deathDate),
 				avatar,
 				'alt name': person.altName || '',
 				'pronouns': Array.isArray(person.pronouns) ? person.pronouns.join(', ') : (person.pronouns || ''),
@@ -3650,24 +3663,39 @@ export class FamilyChartView extends ItemView {
 
 			arcEntries.forEach((entry, index) => {
 				const { rel, type } = entry;
-				const from = cardPositions.get(rel.sourceCrId);
-				const to = cardPositions.get(rel.targetCrId);
-				if (!from || !to) return;
+				const sourcePos = cardPositions.get(rel.sourceCrId);
+				const targetPos = cardPositions.get(rel.targetCrId);
+				if (!sourcePos || !targetPos) return;
+
+				// Sort the two endpoints into an "upper" → "lower" chord
+				// (by y, then x for horizontal-tie stability). The bow
+				// direction is derived from this canonical ordering rather
+				// than from the source/target ordering, which is what the
+				// rel enumeration happened to produce — that ordering is
+				// unstable across renders (f3 layout can flip subpixel
+				// x-positions between initial draw and refresh), and the
+				// previous `if (py < 0)` flip then sent the bow to opposite
+				// sides on different renders, sometimes through an
+				// intermediate card (#591). With sorted endpoints the
+				// perpendicular orientation is deterministic.
+				const sourceFirst =
+					sourcePos.y < targetPos.y ||
+					(sourcePos.y === targetPos.y && sourcePos.x <= targetPos.x);
+				const from = sourceFirst ? sourcePos : targetPos;
+				const to = sourceFirst ? targetPos : sourcePos;
 
 				// Perpendicular offset for stacking when multiple relationships share a pair
 				const dx = to.x - from.x;
 				const dy = to.y - from.y;
 				const len = Math.sqrt(dx * dx + dy * dy) || 1;
-				// Unit perpendicular vector (rotate 90° CCW), oriented so the +py
-				// component points toward the screen-down direction. This keeps
-				// the arc's sag visually "below the chord" regardless of which
-				// endpoint sorted first; for near-vertical chords (grandparent →
-				// grandchild) the perpendicular is horizontal, which makes the
-				// arc bow sideways instead of collapsing onto the chord and
-				// clipping intermediate cards (#591).
-				let px = -dy / len;
-				let py = dx / len;
-				if (py < 0) { px = -px; py = -py; }
+				// Unit perpendicular vector (rotate 90° CCW). With the
+				// upper-to-lower canonical chord above, dy is always >= 0,
+				// so px is always <= 0 and near-vertical chords bow
+				// consistently to the left (px ≈ -1, py ≈ 0). For chords
+				// with significant horizontal spread, this perpendicular
+				// points roughly screen-down, matching the previous intent.
+				const px = -dy / len;
+				const py = dx / len;
 				// Center stack around 0 with a half-step shift for odd counts so
 				// no line lands on the midpoint where a family link might sit
 				// (marriage, parent-child). Even counts are already symmetric
@@ -3679,17 +3707,53 @@ export class FamilyChartView extends ItemView {
 				const ox = px * offset;
 				const oy = py * offset;
 
+				// Clip the chord endpoints to the card boundaries (#591).
+				// `cardPositions` returns the SVG translate anchor for each
+				// card, which is the card's center; without clipping the
+				// bezier visibly starts inside the source card and ends
+				// inside the target. Trim by the ray-rectangle intersection
+				// distance from each center along the chord direction.
+				const dims = this.getCardDimensions(this.cardStyle);
+				const halfW = dims.w / 2;
+				const halfH = dims.h / 2;
+				const absUx = Math.abs(dx) / len;
+				const absUy = Math.abs(dy) / len;
+				// Distance from a card center to its rectangular boundary
+				// along the chord direction. The `?: Infinity` branches
+				// handle the degenerate cases (purely horizontal / vertical
+				// chord) where one component is zero; the boundary in that
+				// case is the perpendicular edge.
+				const tFrom = Math.min(
+					absUx > 0 ? halfW / absUx : Infinity,
+					absUy > 0 ? halfH / absUy : Infinity
+				);
+				const tTo = tFrom; // cards share dimensions in current chart styling
+				const fromEdgeX = from.x + (dx / len) * tFrom;
+				const fromEdgeY = from.y + (dy / len) * tFrom;
+				const toEdgeX = to.x - (dx / len) * tTo;
+				const toEdgeY = to.y - (dy / len) * tTo;
+
 				// Build a quadratic bezier that arcs along the down-oriented
-				// perpendicular to the chord. Sag scales with chord length so
-				// short and long spans both read as clearly-curved, with
-				// floor/ceiling to keep extremes sensible.
-				const x1 = from.x + ox;
-				const y1 = from.y + oy;
-				const x2 = to.x + ox;
-				const y2 = to.y + oy;
+				// perpendicular to the chord. Sag scales with chord length
+				// so short and long spans both read as clearly-curved.
+				// Additionally, the sag must be large enough that the
+				// curve's perpendicular apex (≈ sag/2 from the chord)
+				// clears the half-width of any intermediate card the chord
+				// passes through — otherwise a near-vertical chord
+				// connecting stacked cards visibly cuts through the card
+				// in the middle (#591). The `verticality` weighting keeps
+				// horizontal-spread chords from getting unnecessarily
+				// exaggerated arcs (their chord already passes alongside
+				// intermediate cards rather than through them).
+				const verticality = Math.abs(dy) / len;
+				const cardClearanceSag = (halfW + 30) * 2 * verticality;
+				const x1 = fromEdgeX + ox;
+				const y1 = fromEdgeY + oy;
+				const x2 = toEdgeX + ox;
+				const y2 = toEdgeY + oy;
 				const mx = (x1 + x2) / 2;
 				const my = (y1 + y2) / 2;
-				const sag = Math.min(120, Math.max(40, len / 3));
+				const sag = Math.min(300, Math.max(40, len / 3, cardClearanceSag));
 				const cx = mx + px * sag;
 				const cy = my + py * sag;
 				const pathD = `M ${x1},${y1} Q ${cx},${cy} ${x2},${y2}`;
@@ -4228,14 +4292,17 @@ export class FamilyChartView extends ItemView {
 		if (this.showTitle) displayFields.push(['title']);
 		if (this.showPronouns) displayFields.push(['pronouns']);
 
-		// Add dates
+		// Add dates. The `_display` variants strip any `T HH:MM[:SS]`
+		// tiebreak suffix used to disambiguate twins (#590); the raw
+		// `birthday` / `deathday` fields stay reserved for edit-panel
+		// population and the not-yet-born / privacy filter checks.
 		if (this.showBirthDates && this.showDeathDates) {
-			displayFields.push(['birthday']);
-			displayFields.push(['deathday']);
+			displayFields.push(['birthday_display']);
+			displayFields.push(['deathday_display']);
 		} else if (this.showBirthDates) {
-			displayFields.push(['birthday']);
+			displayFields.push(['birthday_display']);
 		} else if (this.showDeathDates) {
-			displayFields.push(['deathday']);
+			displayFields.push(['deathday_display']);
 		}
 
 		// Descriptive fields that are usually longer / secondary (#374)
