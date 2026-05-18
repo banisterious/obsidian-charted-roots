@@ -175,9 +175,10 @@ leaflet-container descendants in `map-view.css` and the `.cr-hidden` utility
 in `base.css` were dropped in v0.22.38 after DevTools cascade inspection
 confirmed they weren't needed in practice).
 
-### 5.2 `multicolumn` partial-support (closed in v0.22.46)
+### 5.2 `multicolumn` partial-support (closed in v0.22.46, with v0.22.47 follow-up)
 
-Status: **closed in v0.22.46** via a CSS Grid migration.
+Status: **closed in v0.22.46** via a CSS Grid migration, with one residual
+site missed and closed in v0.22.47.
 
 Three CSS multicolumn properties (`column-width`, `column-gap`,
 `column-rule`) had been used on timeline event lists under
@@ -190,6 +191,19 @@ which is universally supported and flagged-clean. Reading order shifts
 from column-major to row-major; for typical timeline lengths this reads
 naturally in either pattern. The `--cr-list-column-rule-*` variables
 (deprecated 0-width separator) were dropped in the same change.
+
+**v0.22.47 follow-up.** The v0.22.46 migration left one residual
+`break-inside: avoid` declaration on the list-item descendant selector
+(`styles/timeline-callouts.css:249`). The scanner's lookup table classifies
+`break-inside` as part of the multicolumn property family, so even after
+the `column-*` properties were removed the v0.22.46 post-release scan still
+surfaced a single `multicolumn` warning on this property. The rule was
+vestigial after the Grid migration anyway — Grid cells are discrete and
+don't break across columns or pages, so `break-inside: avoid` did no useful
+work in the new layout. Removed in v0.22.47. Worth noting because the
+scanner's `multicolumn` umbrella includes properties beyond the obvious
+`column-*` set; future audits should grep for `break-inside`, `break-before`,
+`break-after`, and the `page-break-*` legacy aliases as well.
 
 ### 5.3 Sibling-aware `:has()` (timeline callouts)
 
