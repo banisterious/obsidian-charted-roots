@@ -12,6 +12,7 @@ Thank you for your interest in contributing to Charted Roots! This document prov
 - [Coding Standards](#coding-standards)
 - [Testing](#testing)
 - [Documentation](#documentation)
+- [Internationalization](#internationalization)
 - [Submitting Changes](#submitting-changes)
 - [Security](#security)
 
@@ -334,6 +335,25 @@ Follow the [Documentation Style Guide](docs/assets/templates/documentation-style
 - **Developer Docs**: Technical implementation details
 - **API Reference**: Public API documentation
 - **Tutorials**: Step-by-step walkthroughs
+
+## Internationalization
+
+Translation support is **post-1.0** — the UI surface is still being
+stabilized for the 1.0 release, and starting infrastructure work now
+would compound rework as strings continue to change.
+
+The central tracking thread is
+[Discussion #594](https://github.com/banisterious/obsidian-charted-roots/discussions/594),
+which covers framework choice, string extraction, locale detection,
+and the translator workflow. If you'd like to translate Charted Roots
+into your language, **comment on the discussion** with the language
+code (e.g., `zh-CN`, `de`, `fr`) and a brief intro. You'll be
+@-mentioned once the infrastructure is ready for translation work.
+
+Please do not open PRs that add a translation framework or extract
+strings ahead of the design conversation — coordinate in
+[#594](https://github.com/banisterious/obsidian-charted-roots/discussions/594)
+first so the eventual implementation is consistent across languages.
 
 ## Submitting Changes
 
