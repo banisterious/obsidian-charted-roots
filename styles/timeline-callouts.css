@@ -246,7 +246,6 @@ div:not(.cr-has-timeline) + .cr-has-timeline > [data-callout="cr-timeline"] {
 
 .callout[data-callout="cr-timeline"] .callout-content ul li {
   margin-bottom: 0.5em;
-  break-inside: avoid;
 }
 
 .callout[data-callout="cr-timeline"] .callout-content ul li ul {

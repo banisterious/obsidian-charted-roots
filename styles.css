@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-17 23:14:42 UTC
+ * - Generated: 2026-05-18 01:36:45 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -27794,7 +27794,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
    COMPONENT: TIMELINE-CALLOUTS.CSS
    ========================================================================== */
 
-/* Component Size: 323 lines, 11.1 KB */
+/* Component Size: 322 lines, 11.08 KB */
 
 /**
  * Timeline Callout Styles
@@ -28044,7 +28044,6 @@ div:not(.cr-has-timeline) + .cr-has-timeline > [data-callout="cr-timeline"] {
 
 .callout[data-callout="cr-timeline"] .callout-content ul li {
   margin-bottom: 0.5em;
-  break-inside: avoid;
 }
 
 .callout[data-callout="cr-timeline"] .callout-content ul li ul {
@@ -41000,11 +40999,11 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-17 23:14:43 UTC
+ * Build completed: 2026-05-18 01:36:46 UTC
  * Components processed: 50
- * Total lines: 40531
- * Total size: 827.29 KB
- * Build duration: 0.94 seconds
+ * Total lines: 40530
+ * Total size: 827.27 KB
+ * Build duration: 1.07 seconds
  *
  * Component breakdown:
  * - variables.css: 62 lines, 1.86 KB
@@ -41037,7 +41036,7 @@ body.cr-media-linker-active .suggestion-container {
  * - leaflet-distortable.css: 372 lines, 8.84 KB
  * - date-systems.css: 278 lines, 5.16 KB
  * - events.css: 1588 lines, 32.73 KB
- * - timeline-callouts.css: 323 lines, 11.1 KB
+ * - timeline-callouts.css: 322 lines, 11.08 KB
  * - organizations.css: 615 lines, 11.55 KB
  * - sources.css: 2809 lines, 56.97 KB
  * - statistics.css: 1811 lines, 36.34 KB
