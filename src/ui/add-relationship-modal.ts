@@ -14,7 +14,7 @@ import type CanvasRootsPlugin from '../../main';
 import { capitalize } from '../utils/format-utils';
 import { RelationshipManager } from '../core/relationship-manager';
 import { createSmartWikilink } from '../core/person-note-writer';
-import { createSmartWikilink } from '../core/person-note-writer';
+import { promptOnConflict } from './conflict-guard-modal';
 
 /**
  * Modal for adding a custom relationship to a person note
@@ -185,11 +185,21 @@ export class AddRelationshipModal extends Modal {
 		}
 
 		try {
+			// `wrote` tracks whether the relationship was actually persisted.
+			// `false` means the conflict guard canceled the parent-side
+			// overwrite (#606); we suppress the "Added relationship" notice
+			// in that case so the UI doesn't lie about what happened.
+			let wrote = true;
+
 			// For built-in family types, delegate to RelationshipManager
 			// which knows how to write the correct frontmatter properties
 			const mapping = this.selectedType.familyGraphMapping;
 			if (mapping) {
-				const mgr = new RelationshipManager(this.app, this.plugin.relationshipHistory);
+				const mgr = new RelationshipManager(
+					this.app,
+					this.plugin.relationshipHistory,
+					promptOnConflict(this.app)
+				);
 				if (mapping === 'spouse') {
 					await mgr.addSpouseRelationship(this.sourceFile, this.selectedTarget.file, targetCrId);
 				} else if (mapping === 'parent') {
@@ -206,11 +216,11 @@ export class AddRelationshipModal extends Modal {
 						await mgr.addInclusiveParentRelationship(this.sourceFile, this.selectedTarget.file, targetCrId);
 					} else {
 						const parentType = isFemale ? 'mother' : 'father';
-						await mgr.addParentRelationship(this.sourceFile, this.selectedTarget.file, parentType, targetCrId);
+						wrote = await mgr.addParentRelationship(this.sourceFile, this.selectedTarget.file, parentType, targetCrId);
 					}
 				} else if (mapping === 'child' && this.selectedType.id === 'child') {
 					// Only biological child uses addChildRelationship
-					await mgr.addChildRelationship(this.sourceFile, this.selectedTarget.file, targetCrId);
+					wrote = await mgr.addChildRelationship(this.sourceFile, this.selectedTarget.file, targetCrId);
 				} else if (this.selectedType.id === 'adoptive_parent') {
 					// Adoptive parents: write to gender-specific singular field based on
 					// target's sex (#391). Falls back to the gender-neutral array when the
@@ -227,11 +237,13 @@ export class AddRelationshipModal extends Modal {
 				await this.writeRelationshipProperties(targetCrId);
 			}
 
-			const typeName = this.selectedType.name;
-			new Notice(`Added ${typeName} relationship to ${targetName}`);
+			if (wrote) {
+				const typeName = this.selectedType.name;
+				new Notice(`Added ${typeName} relationship to ${targetName}`);
 
-			// Refresh the relationship service cache
-			this.relationshipService.refreshCache();
+				// Refresh the relationship service cache
+				this.relationshipService.refreshCache();
+			}
 
 			this.close();
 		} catch (error) {
