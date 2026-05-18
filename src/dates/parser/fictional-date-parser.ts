@@ -114,6 +114,17 @@ export class FictionalDateParser {
 		// falling through to the standard-date fallback (#562).
 		const { stripped, isApproximate } = stripApproximationMarkers(trimmed);
 
+		// Strip an optional ISO 8601 time suffix (`T HH:MM[:SS]`, with an
+		// optional space before the `T`) before pattern matching. The
+		// v0.22.46 sibling-sort tiebreak (#590) consumes time precision
+		// off the raw string directly; the parser only needs to recover
+		// the year and era so the canonical-year sort and display work
+		// correctly when a fictional-era date carries a time component
+		// (e.g., `BBY 29 T20:03:04`). The time itself is not preserved
+		// on the parsed result.
+		const TIME_SUFFIX_RE = /\s*T\d{1,2}:\d{2}(?::\d{2})?$/;
+		const withoutTime = stripped.replace(TIME_SUFFIX_RE, '').trim();
+
 		// Try to match various patterns
 		const patterns = [
 			// "TA 2941" or "TA  2941" (abbreviation space year)
@@ -130,7 +141,7 @@ export class FictionalDateParser {
 		let yearStr: string | null = null;
 
 		for (const pattern of patterns) {
-			const match = stripped.match(pattern);
+			const match = withoutTime.match(pattern);
 			if (match) {
 				if (/^\d+$/.test(match[1])) {
 					// Year first pattern
@@ -334,6 +345,11 @@ export class FictionalDateParser {
 		}
 
 		const trimmed = dateStr.trim();
+		// Strip an optional `T HH:MM[:SS]` suffix (with optional leading
+		// space) so fictional-era dates with twin-disambiguation times
+		// (#590) still pass this look-ahead check — kept in sync with the
+		// suffix-strip in `parse()`.
+		const withoutTime = trimmed.replace(/\s*T\d{1,2}:\d{2}(?::\d{2})?$/, '').trim();
 
 		// Check if it matches our expected patterns
 		const fictionalPatterns = [
@@ -343,11 +359,11 @@ export class FictionalDateParser {
 
 		// Exclude ISO date patterns
 		const isoPattern = /^\d{4}(-\d{2}(-\d{2})?)?$/;
-		if (isoPattern.test(trimmed)) {
+		if (isoPattern.test(withoutTime)) {
 			return false;
 		}
 
-		return fictionalPatterns.some(p => p.test(trimmed));
+		return fictionalPatterns.some(p => p.test(withoutTime));
 	}
 
 	/**

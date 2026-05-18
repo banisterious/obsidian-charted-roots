@@ -6,6 +6,24 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
 	'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 /**
+ * Trailing `T HH:MM[:SS]` suffix used to disambiguate twin birth orders
+ * (#590). The suffix is a sort tiebreak detail — sibling-sort uses the
+ * raw frontmatter string verbatim — so it should not surface in display
+ * contexts that echo the date back to the user. Stripping happens at
+ * display time only; the underlying frontmatter value stays untouched.
+ */
+const DATETIME_SUFFIX_RE = /\s*T\d{1,2}:\d{2}(?::\d{2})?$/;
+
+/**
+ * Strip a trailing ISO 8601 time component from a date string for
+ * display. Returns the input unchanged if no time suffix is present.
+ */
+export function stripDateTimeSuffix(dateStr: string | number | undefined | null): string {
+	if (dateStr === undefined || dateStr === null || dateStr === '') return '';
+	return String(dateStr).replace(DATETIME_SUFFIX_RE, '').trim();
+}
+
+/**
  * Format a date for user-friendly display, prettifying GEDCOM qualifiers.
  *
  * Accepts `string | number | undefined | null` and coerces at entry so

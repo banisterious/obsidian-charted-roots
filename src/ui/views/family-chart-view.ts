@@ -24,6 +24,7 @@ import { RelationshipService } from '../../relationships/services/relationship-s
 import type { ParsedRelationship, RelationshipTypeDefinition } from '../../relationships/types/relationship-types';
 import { FamilyChartExportWizard } from './family-chart-export-wizard';
 import { DeletePersonConfirmModal, FamilyChartStyleModal, HighlightGroupsModal } from './family-chart-view-modals';
+import { stripDateTimeSuffix } from '../../dates/utils/date-display';
 import { shouldPaintOverlayUnderLinks } from './family-chart-overlay-z';
 import {
 	type HighlightGroup,
@@ -1089,6 +1090,10 @@ export class FamilyChartView extends ItemView {
 			this.chartData[personIndex].data['collection'] = this.infoPanelEditData.collection;
 			this.chartData[personIndex].data.birthday = this.infoPanelEditData.birthDate;
 			this.chartData[personIndex].data.deathday = this.infoPanelEditData.deathDate;
+			// Keep `_display` mirrors in sync so the card re-renders with
+			// any updated tiebreak time stripped (#590).
+			this.chartData[personIndex].data['birthday_display'] = stripDateTimeSuffix(this.infoPanelEditData.birthDate);
+			this.chartData[personIndex].data['deathday_display'] = stripDateTimeSuffix(this.infoPanelEditData.deathDate);
 			if (this.infoPanelEditData.gender === 'M' || this.infoPanelEditData.gender === 'F' || this.infoPanelEditData.gender === 'X' || this.infoPanelEditData.gender === 'U') {
 				this.chartData[personIndex].data.gender = this.infoPanelEditData.gender;
 			}
@@ -1736,8 +1741,16 @@ export class FamilyChartView extends ItemView {
 				'first name': firstName,
 				'last name': lastName,
 				gender,
+				// Keep `birthday` / `deathday` raw so the edit panel,
+				// privacy-filter, and not-yet-born check see the original
+				// string (including any `T HH:MM[:SS]` tiebreak suffix).
+				// `birthday_display` / `deathday_display` are the time-
+				// stripped variants used by the card-text display fields
+				// in `buildDisplayFields()` (#590).
 				birthday: person.birthDate,
 				deathday: person.deathDate,
+				'birthday_display': stripDateTimeSuffix(person.birthDate),
+				'deathday_display': stripDateTimeSuffix(person.deathDate),
 				avatar,
 				'alt name': person.altName || '',
 				'pronouns': Array.isArray(person.pronouns) ? person.pronouns.join(', ') : (person.pronouns || ''),
@@ -4228,14 +4241,17 @@ export class FamilyChartView extends ItemView {
 		if (this.showTitle) displayFields.push(['title']);
 		if (this.showPronouns) displayFields.push(['pronouns']);
 
-		// Add dates
+		// Add dates. The `_display` variants strip any `T HH:MM[:SS]`
+		// tiebreak suffix used to disambiguate twins (#590); the raw
+		// `birthday` / `deathday` fields stay reserved for edit-panel
+		// population and the not-yet-born / privacy filter checks.
 		if (this.showBirthDates && this.showDeathDates) {
-			displayFields.push(['birthday']);
-			displayFields.push(['deathday']);
+			displayFields.push(['birthday_display']);
+			displayFields.push(['deathday_display']);
 		} else if (this.showBirthDates) {
-			displayFields.push(['birthday']);
+			displayFields.push(['birthday_display']);
 		} else if (this.showDeathDates) {
-			displayFields.push(['deathday']);
+			displayFields.push(['deathday_display']);
 		}
 
 		// Descriptive fields that are usually longer / secondary (#374)
