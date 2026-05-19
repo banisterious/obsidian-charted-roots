@@ -464,6 +464,8 @@ export interface CanvasRootsSettings {
 	timelineGrandchildBirthLabel: string;
 	/** Label for child marriage events ({name} for child, {spouse} for their spouse) */
 	timelineChildMarriageLabel: string;
+	/** Label for parent marriage events ({name} for parent, {spouse} for their spouse) */
+	timelineParentMarriageLabel: string;
 	// Family events on timelines
 	/** Show children's births on timelines */
 	timelineShowChildrenBirths: boolean;
@@ -487,6 +489,8 @@ export interface CanvasRootsSettings {
 	timelineShowGrandchildrenBirths: boolean;
 	/** Show children's marriages on parents' timelines (#607) */
 	timelineShowChildrenMarriages: boolean;
+	/** Show parents' marriages on the child's timeline (#608) */
+	timelineShowParentMarriages: boolean;
 	/** Callout type for frozen media galleries (info, note, etc.) */
 	frozenGalleryCalloutType: string;
 	// Cleanup wizard state (for resuming interrupted wizards)
@@ -910,6 +914,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	timelineSiblingDeathLabel: 'Death of {name}',
 	timelineGrandchildBirthLabel: 'Birth of {name}',
 	timelineChildMarriageLabel: 'Marriage of {name} to {spouse}',
+	timelineParentMarriageLabel: 'Marriage of {name} to {spouse}',
 	timelineShowChildrenBirths: false,        // Off by default
 	timelineShowSpouseDeaths: true,           // Default on — major life event for the survivor; toggle lets users hide (#447)
 	timelineShowParentDeaths: false,
@@ -921,6 +926,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	timelineShowSiblingDeaths: false,          // Opt-in: sibling death on the person's timeline (#584)
 	timelineShowGrandchildrenBirths: false,    // Opt-in: grandchild birth on grandparent's timeline (#585)
 	timelineShowChildrenMarriages: false,      // Opt-in: child's marriage on parent's timeline (#607)
+	timelineShowParentMarriages: false,        // Opt-in: parent's marriage on child's timeline, excluding the bio pairing (#608)
 	frozenGalleryCalloutType: 'info',          // Callout type for frozen media galleries
 	// Inclusive parent relationships (opt-in feature)
 	enableInclusiveParents: false,             // Default: OFF - users opt-in to gender-neutral parents
@@ -2071,6 +2077,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 			{ key: 'timelineSiblingDeathLabel', name: 'Sibling death label', placeholder: 'Death of {name}' },
 			{ key: 'timelineGrandchildBirthLabel', name: 'Grandchild birth label', placeholder: 'Birth of {name}' },
 			{ key: 'timelineChildMarriageLabel', name: 'Child marriage label', placeholder: 'Marriage of {name} to {spouse}', desc: 'Use {name} for the child and {spouse} for their spouse' },
+			{ key: 'timelineParentMarriageLabel', name: 'Parent marriage label', placeholder: 'Marriage of {name} to {spouse}', desc: 'Use {name} for the parent and {spouse} for their spouse' },
 		];
 
 		for (const label of labelSettings) {
@@ -2196,6 +2203,16 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.timelineShowChildrenMarriages)
 				.onChange(async (value) => {
 					this.plugin.settings.timelineShowChildrenMarriages = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(advancedContent)
+			.setName('Show parent\'s marriages')
+			.setDesc('Display marriage events of biological and adoptive parents on the child\'s timeline. Skips the marriage between the two biological parents (the pairing implicit in the parent links). Adoptive-parent couple marriages and parent remarriages both appear.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowParentMarriages)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowParentMarriages = value;
 					await this.plugin.saveSettings();
 				}));
 

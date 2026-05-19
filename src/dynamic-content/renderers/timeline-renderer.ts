@@ -636,7 +636,8 @@ export class TimelineRenderer {
 			'spouse_deaths': e => e.isFamilyEvent === true && e.type === 'family_death',
 			'parent_deaths': e => e.isFamilyEvent === true && e.type === 'family_death',
 			'sibling_births': e => e.isFamilyEvent === true && e.type === 'family_birth',
-			'children_marriages': e => e.isFamilyEvent === true && e.type === 'family_marriage',
+			'children_marriages': e => e.isFamilyEvent === true && e.type === 'family_child_marriage',
+			'parent_marriages': e => e.isFamilyEvent === true && e.type === 'family_parent_marriage',
 			'context': e => e.isContext === true,
 			'family': e => e.isFamilyEvent === true,
 			'personal': e => !e.isFamilyEvent && !e.isContext
@@ -967,6 +968,76 @@ export class TimelineRenderer {
 			}
 		}
 
+		// Parents' marriages (#608). Walks the focal child's biological +
+		// adoptive parents, iterates each parent's spouses, and emits a
+		// family_marriage entry per marriage with two filters:
+		//
+		// 1. The bio-pairing marriage (when both partners in the marriage
+		//    are biological parents of the focal child) is excluded — that
+		//    pairing is "obviously known" from the existing parent links,
+		//    so surfacing it on the child's timeline adds clutter. What
+		//    users want is REmarriages (stepparent acquisition) and
+		//    adoptive-parent couple marriages, not the foundational pairing.
+		//
+		// 2. Per-marriage dedupe by sorted (parentA, parentB) cr_id pair
+		//    plus date — when both partners are in the parent set (e.g., an
+		//    adoptive couple), the marriage would otherwise emit twice
+		//    (once when iterating parent A's spouses, once for parent B).
+		//
+		// Pre-birth / post-death filters apply (the child wasn't around for
+		// pre-birth marriages, and `isEventAfterFocalDeath` is consistent
+		// with the other family-event blocks).
+		if (settings.timelineShowParentMarriages) {
+			const bioParentCrIds = new Set<string>([
+				...(person.fatherCrId ? [person.fatherCrId] : []),
+				...(person.motherCrId ? [person.motherCrId] : []),
+				...(person.parentCrIds || [])
+			]);
+			const allParentCrIds = new Set<string>([
+				...bioParentCrIds,
+				...(person.adoptiveFatherCrId ? [person.adoptiveFatherCrId] : []),
+				...(person.adoptiveMotherCrId ? [person.adoptiveMotherCrId] : []),
+				...(person.adoptiveParentCrIds || [])
+			]);
+			const seenMarriagePairs = new Set<string>();
+			for (const parentCrId of allParentCrIds) {
+				const parent = graph.getPersonByCrId(parentCrId);
+				if (!parent?.spouses) continue;
+				for (const spouse of parent.spouses) {
+					if (!spouse.marriageDate) continue;
+					// Filter: skip the bio-pairing marriage (both partners
+					// are bio parents of the focal child).
+					if (bioParentCrIds.has(parentCrId) && bioParentCrIds.has(spouse.personId)) continue;
+					// Dedupe shared marriages across iterations.
+					const pairKey = [parentCrId, spouse.personId].sort().join(':') + '|' + spouse.marriageDate;
+					if (seenMarriagePairs.has(pairKey)) continue;
+					seenMarriagePairs.add(pairKey);
+					if (this.isEventBeforeFocalBirth(birthDate, spouse.marriageDate, universe)) continue;
+					if (this.isEventAfterFocalDeath(person.deathDate, spouse.marriageDate, universe)) continue;
+					const spouseNode = graph.getPersonByCrId(spouse.personId);
+					const spouseName = spouseNode?.name || spouse.personLink || spouse.personId;
+					const year = this.service.extractYear(spouse.marriageDate);
+					const entry: TimelineEntry = {
+						date: this.service.formatDate(spouse.marriageDate),
+						year,
+						type: 'family_parent_marriage',
+						title: this.applyLabel(
+							settings.timelineParentMarriageLabel || 'Marriage of {name} to {spouse}',
+							parent.name,
+							{ spouse: spouseName }
+						),
+						place: spouse.marriageLocation ? this.service.stripWikilink(spouse.marriageLocation) : undefined,
+						eventFile: parent.file?.basename,
+						isFamilyEvent: true,
+						rawDate: spouse.marriageDate
+					};
+					const age = this.computeEventAge(birthDate, spouse.marriageDate, universe);
+					if (age !== undefined) entry.age = age;
+					entries.push(entry);
+				}
+			}
+		}
+
 		// Children's marriages (#607). Covers biological, adopted, and step
 		// children — the focal person was a parent (or stepparent) at the
 		// time of the marriage, so the event belongs on their timeline. Skip
@@ -990,7 +1061,7 @@ export class TimelineRenderer {
 					const entry: TimelineEntry = {
 						date: this.service.formatDate(spouse.marriageDate),
 						year,
-						type: 'family_marriage',
+						type: 'family_child_marriage',
 						title: this.applyLabel(
 							settings.timelineChildMarriageLabel || 'Marriage of {name} to {spouse}',
 							child.name,
