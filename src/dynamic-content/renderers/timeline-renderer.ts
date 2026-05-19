@@ -472,10 +472,19 @@ export class TimelineRenderer {
 	 * based on settings toggles
 	 */
 	/**
-	 * Apply a label template, replacing {name} with the person's name
+	 * Apply a label template, replacing `{name}` with the person's name
+	 * and (optionally) any additional placeholders supplied via `extras`.
+	 * Used by the children's-marriage label (#607) to substitute `{spouse}`
+	 * alongside `{name}`.
 	 */
-	private applyLabel(template: string, name: string): string {
-		return template.replace(/\{name\}/g, name);
+	private applyLabel(template: string, name: string, extras?: Record<string, string>): string {
+		let out = template.replace(/\{name\}/g, name);
+		if (extras) {
+			for (const [key, value] of Object.entries(extras)) {
+				out = out.replace(new RegExp(`\\{${key}\\}`, 'g'), value);
+			}
+		}
+		return out;
 	}
 
 	/**
@@ -627,6 +636,7 @@ export class TimelineRenderer {
 			'spouse_deaths': e => e.isFamilyEvent === true && e.type === 'family_death',
 			'parent_deaths': e => e.isFamilyEvent === true && e.type === 'family_death',
 			'sibling_births': e => e.isFamilyEvent === true && e.type === 'family_birth',
+			'children_marriages': e => e.isFamilyEvent === true && e.type === 'family_marriage',
 			'context': e => e.isContext === true,
 			'family': e => e.isFamilyEvent === true,
 			'personal': e => !e.isFamilyEvent && !e.isContext
@@ -953,6 +963,47 @@ export class TimelineRenderer {
 						if (age !== undefined) entry.age = age;
 						entries.push(entry);
 					}
+				}
+			}
+		}
+
+		// Children's marriages (#607). Covers biological, adopted, and step
+		// children — the focal person was a parent (or stepparent) at the
+		// time of the marriage, so the event belongs on their timeline. Skip
+		// marriages that postdate the focal person's death (they weren't
+		// around for them).
+		if (settings.timelineShowChildrenMarriages) {
+			const childCrIds = new Set<string>([
+				...(person.childrenCrIds || []),
+				...(person.adoptedChildCrIds || []),
+				...(person.stepchildrenCrIds || [])
+			]);
+			for (const childCrId of childCrIds) {
+				const child = graph.getPersonByCrId(childCrId);
+				if (!child?.spouses) continue;
+				for (const spouse of child.spouses) {
+					if (!spouse.marriageDate) continue;
+					if (this.isEventAfterFocalDeath(person.deathDate, spouse.marriageDate, universe)) continue;
+					const spouseNode = graph.getPersonByCrId(spouse.personId);
+					const spouseName = spouseNode?.name || spouse.personLink || spouse.personId;
+					const year = this.service.extractYear(spouse.marriageDate);
+					const entry: TimelineEntry = {
+						date: this.service.formatDate(spouse.marriageDate),
+						year,
+						type: 'family_marriage',
+						title: this.applyLabel(
+							settings.timelineChildMarriageLabel || 'Marriage of {name} to {spouse}',
+							child.name,
+							{ spouse: spouseName }
+						),
+						place: spouse.marriageLocation ? this.service.stripWikilink(spouse.marriageLocation) : undefined,
+						eventFile: child.file?.basename,
+						isFamilyEvent: true,
+						rawDate: spouse.marriageDate
+					};
+					const age = this.computeEventAge(birthDate, spouse.marriageDate, universe);
+					if (age !== undefined) entry.age = age;
+					entries.push(entry);
 				}
 			}
 		}
