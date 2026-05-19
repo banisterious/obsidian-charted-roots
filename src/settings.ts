@@ -462,6 +462,14 @@ export interface CanvasRootsSettings {
 	timelineSiblingDeathLabel: string;
 	/** Label for grandchild birth events ({name} placeholder) */
 	timelineGrandchildBirthLabel: string;
+	/** Label for adopted sibling birth events ({name} placeholder); gated alongside the regular adopted-children-births toggle (#618) */
+	timelineAdoptedSiblingBirthLabel: string;
+	/** Label for adopted grandchild birth events ({name} placeholder); gated alongside the regular adopted-children-births toggle (#618) */
+	timelineAdoptedGrandchildBirthLabel: string;
+	/** Label for child marriage events ({name} for child, {spouse} for their spouse) */
+	timelineChildMarriageLabel: string;
+	/** Label for parent marriage events ({name} for parent, {spouse} for their spouse) */
+	timelineParentMarriageLabel: string;
 	// Family events on timelines
 	/** Show children's births on timelines */
 	timelineShowChildrenBirths: boolean;
@@ -483,6 +491,10 @@ export interface CanvasRootsSettings {
 	timelineShowSiblingDeaths: boolean;
 	/** Show grandchildren's births on grandparents' timelines (#585) */
 	timelineShowGrandchildrenBirths: boolean;
+	/** Show children's marriages on parents' timelines (#607) */
+	timelineShowChildrenMarriages: boolean;
+	/** Show parents' marriages on the child's timeline (#608) */
+	timelineShowParentMarriages: boolean;
 	/** Callout type for frozen media galleries (info, note, etc.) */
 	frozenGalleryCalloutType: string;
 	// Cleanup wizard state (for resuming interrupted wizards)
@@ -905,6 +917,10 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	timelineStepparentDeathLabel: 'Death of {name}',
 	timelineSiblingDeathLabel: 'Death of {name}',
 	timelineGrandchildBirthLabel: 'Birth of {name}',
+	timelineAdoptedSiblingBirthLabel: 'Birth of adopted sibling {name}',
+	timelineAdoptedGrandchildBirthLabel: 'Birth of adopted grandchild {name}',
+	timelineChildMarriageLabel: 'Marriage of {name} to {spouse}',
+	timelineParentMarriageLabel: 'Marriage of {name} to {spouse}',
 	timelineShowChildrenBirths: false,        // Off by default
 	timelineShowSpouseDeaths: true,           // Default on — major life event for the survivor; toggle lets users hide (#447)
 	timelineShowParentDeaths: false,
@@ -915,6 +931,8 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	timelineShowStepparentDeaths: false,       // Opt-in: stepparent death on stepchild's timeline (#583)
 	timelineShowSiblingDeaths: false,          // Opt-in: sibling death on the person's timeline (#584)
 	timelineShowGrandchildrenBirths: false,    // Opt-in: grandchild birth on grandparent's timeline (#585)
+	timelineShowChildrenMarriages: false,      // Opt-in: child's marriage on parent's timeline (#607)
+	timelineShowParentMarriages: false,        // Opt-in: parent's marriage on child's timeline, excluding the bio pairing (#608)
 	frozenGalleryCalloutType: 'info',          // Callout type for frozen media galleries
 	// Inclusive parent relationships (opt-in feature)
 	enableInclusiveParents: false,             // Default: OFF - users opt-in to gender-neutral parents
@@ -2053,7 +2071,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		// --- Timeline labels subsection ---
 		new Setting(advancedContent).setName("Timeline labels").setHeading();
 
-		const labelSettings: Array<{ key: keyof typeof this.plugin.settings; name: string; placeholder: string }> = [
+		const labelSettings: Array<{ key: keyof typeof this.plugin.settings; name: string; placeholder: string; desc?: string }> = [
 			{ key: 'timelineBirthLabel', name: 'Birth label', placeholder: 'Born' },
 			{ key: 'timelineDeathLabel', name: 'Death label', placeholder: 'Died' },
 			{ key: 'timelineChildBirthLabel', name: 'Child birth label', placeholder: 'Birth of {name}' },
@@ -2064,12 +2082,16 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 			{ key: 'timelineStepparentDeathLabel', name: 'Stepparent death label', placeholder: 'Death of {name}' },
 			{ key: 'timelineSiblingDeathLabel', name: 'Sibling death label', placeholder: 'Death of {name}' },
 			{ key: 'timelineGrandchildBirthLabel', name: 'Grandchild birth label', placeholder: 'Birth of {name}' },
+			{ key: 'timelineAdoptedSiblingBirthLabel', name: 'Adopted sibling birth label', placeholder: 'Birth of adopted sibling {name}' },
+			{ key: 'timelineAdoptedGrandchildBirthLabel', name: 'Adopted grandchild birth label', placeholder: 'Birth of adopted grandchild {name}' },
+			{ key: 'timelineChildMarriageLabel', name: 'Child marriage label', placeholder: 'Marriage of {name} to {spouse}', desc: 'Use {name} for the child and {spouse} for their spouse' },
+			{ key: 'timelineParentMarriageLabel', name: 'Parent marriage label', placeholder: 'Marriage of {name} to {spouse}', desc: 'Use {name} for the parent and {spouse} for their spouse' },
 		];
 
 		for (const label of labelSettings) {
 			new Setting(advancedContent)
 				.setName(label.name)
-				.setDesc(`Use {name} for the person's name`)
+				.setDesc(label.desc || `Use {name} for the person's name`)
 				.addText(text => text
 					.setPlaceholder(label.placeholder)
 					.setValue(this.plugin.settings[label.key] as string)
@@ -2124,7 +2146,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 
 		new Setting(advancedContent)
 			.setName('Show adopted children\'s births')
-			.setDesc('Display birth events of adopted children on the adoptive parent\'s timeline. Independent of "Show children\'s births" (which covers biological children only). Adoption dates themselves always render on both parent\'s and adoptee\'s timelines.')
+			.setDesc('Display birth events of adopted relations across all surfaces — adopted children on the adoptive parent\'s timeline, adopted siblings on the focal person\'s timeline, and adopted grandchildren on the grandparent\'s timeline. Independent of the bio-side birth toggles. When on, the adopted relation\'s entry uses a distinct label ("Birth of adopted sibling X" / "Birth of adopted grandchild X") so it stands out from biological entries. Adoption dates themselves always render on both adoptive parent\'s and adoptee\'s timelines.')
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.timelineShowAdoptedChildrenBirths)
 				.onChange(async (value) => {
@@ -2179,6 +2201,26 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.timelineShowGrandchildrenBirths)
 				.onChange(async (value) => {
 					this.plugin.settings.timelineShowGrandchildrenBirths = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(advancedContent)
+			.setName('Show children\'s marriages')
+			.setDesc('Display marriage events of children on the parent\'s timeline. Covers biological, adopted, and step-children. Renders the spouse\'s name and (when set) the marriage location.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowChildrenMarriages)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowChildrenMarriages = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(advancedContent)
+			.setName('Show parent\'s marriages')
+			.setDesc('Display marriage events of biological and adoptive parents on the child\'s timeline. Skips the marriage between the two biological parents (the pairing implicit in the parent links). Adoptive-parent couple marriages and parent remarriages both appear.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowParentMarriages)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowParentMarriages = value;
 					await this.plugin.saveSettings();
 				}));
 

@@ -1411,11 +1411,12 @@ export class FamilyChartView extends ItemView {
 				}
 			}, 50);
 
-			// Render kinship labels if enabled (after chart is rendered)
-			// Delay must be longer than family-chart's transition_time (1000-2000ms)
-			if (this.showKinshipLabels) {
-				window.setTimeout(() => this.renderKinshipLabels(), 1500);
-			}
+			// Initial kinship-label render is driven by the setAfterUpdate
+			// callback (line ~1248) which schedules a stability-polled render
+			// via scheduleKinshipLabelRerender (#619). No explicit setTimeout
+			// here — that path would fire before card positions are stable,
+			// snapshotting mid-animation SVG path coordinates and producing
+			// labels that overlap cards until the next refresh.
 		} catch (error) {
 			// Remove loading overlay and show error state
 			loadingOverlay.remove();
@@ -3101,16 +3102,15 @@ export class FamilyChartView extends ItemView {
 
 	/**
 	 * Toggle kinship labels display
+	 *
+	 * Renders directly without stability polling — at toggle time the
+	 * chart is already at rest, so waiting for an "observed change" via
+	 * waitForCardPositionStability would just stall on the safety
+	 * backstop (#619 follow-up to the setAfterUpdate path).
 	 */
 	private toggleKinshipLabels(): void {
 		this.showKinshipLabels = !this.showKinshipLabels;
-		// If enabling, wait for any ongoing animations to complete
-		// If disabling, render immediately to remove labels
-		if (this.showKinshipLabels) {
-			window.setTimeout(() => this.renderKinshipLabels(), 1500);
-		} else {
-			this.renderKinshipLabels();
-		}
+		this.renderKinshipLabels();
 		new Notice(`Kinship labels ${this.showKinshipLabels ? 'shown' : 'hidden'}`);
 	}
 
@@ -3350,12 +3350,20 @@ export class FamilyChartView extends ItemView {
 	/**
 	 * Schedule kinship label re-render after tree animation (#195)
 	 * Called by setAfterUpdate callback to restore labels after animation completes
+	 *
+	 * Polls for card-position stability before rendering rather than relying
+	 * on a fixed setTimeout (#619). f3 chart fires setAfterUpdate while cards
+	 * are still mid-animation, and the kinship labels read SVG path
+	 * coordinates that change frame-to-frame as cards move. A fixed delay
+	 * sometimes snapshotted mid-animation positions, leaving the Parent
+	 * label overlapping the bottom card until the next manual refresh.
+	 *
+	 * Mirrors the scheduleRelationshipOverlayRerender shape (#591) — same
+	 * setAfterUpdate timing problem, same stability-polling solution.
 	 */
 	private scheduleKinshipLabelRerender(): void {
 		if (this.showKinshipLabels) {
-			// Delay must be longer than family-chart's transition_time (~800ms)
-			// to ensure link positions have stabilized
-			window.setTimeout(() => this.renderKinshipLabels(), 1500);
+			this.waitForCardPositionStability(() => this.renderKinshipLabels());
 		}
 	}
 
@@ -3449,6 +3457,42 @@ export class FamilyChartView extends ItemView {
 
 					labelX = endpoints.start.x + dx * ratio;
 					labelY = endpoints.start.y + dy * ratio - 20;
+				}
+			} else {
+				// Parent-child link: position the label on the child-side riser
+				// segment — the visible "line down" branch from the child's top
+				// up (or across in horizontal mode) to where it joins the
+				// horizontal trunk. f3's `LinkVertical` builds the path as
+				// `[child, riser-end, riser-end, trunk-end, descent-top, parent]`
+				// where the riser sits at `child.x` and ends at `halfway-y`.
+				// Using the path's arc-length midpoint instead lands the label
+				// on the horizontal trunk for displaced children — the rightmost
+				// label drifts into empty trunk space and labels stack on top of
+				// each other for couples (#619).
+				//
+				// Anchor: a fixed offset above the child card's top edge (not
+				// the riser midpoint). f3 cards are translated by (-50%, -50%)
+				// so `endpoints.start` is the card center; subtract half the
+				// card height plus a margin to land in the visible gap just
+				// above the card. The midpoint-of-riser approach overlapped
+				// the card on short risers (close-stacked generations), since
+				// half a short riser is less than half a card-height.
+				const endpoints = this.getLinkEndpoints(linkEl);
+				if (endpoints) {
+					const cardDim = this.getCardDimensions(this.cardStyle);
+					const LABEL_MARGIN = 20; // pixels clear of the card edge
+					if (this.isHorizontal) {
+						// Horizontal mode: riser runs along child.y; cards
+						// stack left-right. Anchor to the LEFT edge of the
+						// child card (start of the riser going toward parent).
+						labelY = endpoints.start.y;
+						labelX = endpoints.start.x - cardDim.w / 2 - LABEL_MARGIN;
+					} else {
+						// Vertical mode (default): cards stack top-bottom.
+						// Anchor to the TOP edge of the child card.
+						labelX = endpoints.start.x;
+						labelY = endpoints.start.y - cardDim.h / 2 - LABEL_MARGIN;
+					}
 				}
 			}
 
