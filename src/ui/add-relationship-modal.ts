@@ -218,6 +218,15 @@ export class AddRelationshipModal extends Modal {
 						const parentType = isFemale ? 'mother' : 'father';
 						wrote = await mgr.addParentRelationship(this.sourceFile, this.selectedTarget.file, parentType, targetCrId);
 					}
+				} else if (mapping === 'father' || mapping === 'mother') {
+					// Custom relationship whose `Maps to` is the gendered scalar
+					// (Father / Mother). The user explicitly chose the gendered
+					// field, so route directly to addParentRelationship with the
+					// matching type — bypassing the gender-neutral routing the
+					// `'parent'` branch uses. Inherits the v0.22.47 conflict guard
+					// via updateParentField, plus the sex-mismatch warning notice
+					// from addParentRelationship itself (#616).
+					wrote = await mgr.addParentRelationship(this.sourceFile, this.selectedTarget.file, mapping, targetCrId);
 				} else if (mapping === 'child' && this.selectedType.id === 'child') {
 					// Only biological child uses addChildRelationship
 					wrote = await mgr.addChildRelationship(this.sourceFile, this.selectedTarget.file, targetCrId);
