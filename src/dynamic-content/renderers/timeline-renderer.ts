@@ -56,6 +56,47 @@ export interface TimelineEntry {
 	isSectionDivider?: boolean;
 	/** Age of the person at the time of this event */
 	age?: number;
+	/**
+	 * Raw source date string before `formatDate` transforms it. Used as a
+	 * sort tiebreak when entries share a year (#609 — twin / triplet
+	 * disambiguation). Preserves the time suffix on ISO dates
+	 * (`1985-04-12T03:42`) and fictional-era dates (`BBY 29 T20:03:04`),
+	 * both of which `formatDate` strips or rewrites for display.
+	 */
+	rawDate?: string;
+}
+
+/**
+ * Compare two timeline entries by year, with raw-date string lex compare
+ * as the tiebreak so twins / triplets sharing a year sort by their ISO-time
+ * or fictional-time suffix when present (#609). Identical raw dates fall
+ * through to a 0 return, leaving the surrounding `Array.prototype.sort` to
+ * preserve insertion order (stable sort guaranteed by ES2019).
+ *
+ * `sortOrder` inverts both the year compare and the raw-date tiebreak, so
+ * reverse-chronological timelines still order twins consistently (the
+ * firstborn ends up in the "earlier" slot relative to the rendering direction).
+ *
+ * Exported for unit testing; in production this is used by the three sort
+ * sites in `TimelineRenderer` (main, template-section, secondary builder).
+ */
+export function compareTimelineEntriesByDate(
+	a: TimelineEntry,
+	b: TimelineEntry,
+	sortOrder: 'chronological' | 'reverse'
+): number {
+	const yearA = parseInt(a.year) || 0;
+	const yearB = parseInt(b.year) || 0;
+	if (yearA !== yearB) {
+		return sortOrder === 'reverse' ? yearB - yearA : yearA - yearB;
+	}
+	const rawA = a.rawDate || '';
+	const rawB = b.rawDate || '';
+	if (rawA !== rawB) {
+		const cmp = rawA < rawB ? -1 : 1;
+		return sortOrder === 'reverse' ? -cmp : cmp;
+	}
+	return 0;
 }
 
 /**
@@ -326,12 +367,9 @@ export class TimelineRenderer {
 
 		// Apply layout mode
 		const layout = (config.layout as string) || settings.timelineLayout || 'chronological';
-		const sortOrder = config.sort as string || 'chronological';
-		const sortFn = (a: TimelineEntry, b: TimelineEntry) => {
-			const yearA = parseInt(a.year) || 0;
-			const yearB = parseInt(b.year) || 0;
-			return sortOrder === 'reverse' ? yearB - yearA : yearA - yearB;
-		};
+		const sortOrder = (config.sort as string === 'reverse' ? 'reverse' : 'chronological');
+		const sortFn = (a: TimelineEntry, b: TimelineEntry) =>
+			compareTimelineEntriesByDate(a, b, sortOrder);
 
 		if (layout === 'grouped') {
 			// Partition into personal, family, context — each sorted internally
@@ -413,7 +451,8 @@ export class TimelineRenderer {
 				year: displayYear,
 				type: 'context',
 				title,
-				isContext: true
+				isContext: true,
+				rawDate: startDate
 			};
 
 			// Add age annotation for context events too
@@ -619,13 +658,8 @@ export class TimelineRenderer {
 				sectionEntries = [...allEntries];
 			}
 
-			// Sort
-			const sortOrder = section.sort || 'chronological';
-			sectionEntries.sort((a, b) => {
-				const yearA = parseInt(a.year) || 0;
-				const yearB = parseInt(b.year) || 0;
-				return sortOrder === 'reverse' ? yearB - yearA : yearA - yearB;
-			});
+			const sortOrder = (section.sort === 'reverse' ? 'reverse' : 'chronological');
+			sectionEntries.sort((a, b) => compareTimelineEntriesByDate(a, b, sortOrder));
 
 			// Render entries
 			for (const entry of sectionEntries) {
@@ -708,7 +742,8 @@ export class TimelineRenderer {
 						type: 'family_birth',
 						title: this.applyLabel(settings.timelineChildBirthLabel || 'Birth of {name}', child.name),
 						eventFile: child.file?.basename,
-						isFamilyEvent: true
+						isFamilyEvent: true,
+						rawDate: child.birthDate
 					};
 					const age = this.computeEventAge(birthDate, child.birthDate, universe);
 					if (age !== undefined) entry.age = age;
@@ -732,7 +767,8 @@ export class TimelineRenderer {
 						type: 'family_death',
 						title: this.applyLabel(settings.timelineSpouseDeathLabel || 'Death of {name}', spouse.name),
 						eventFile: spouse.file?.basename,
-						isFamilyEvent: true
+						isFamilyEvent: true,
+						rawDate: spouse.deathDate
 					};
 					const age = this.computeEventAge(birthDate, spouse.deathDate, universe);
 					if (age !== undefined) entry.age = age;
@@ -760,7 +796,8 @@ export class TimelineRenderer {
 						type: 'family_death',
 						title: this.applyLabel(settings.timelineParentDeathLabel || 'Death of {name}', parent.name),
 						eventFile: parent.file?.basename,
-						isFamilyEvent: true
+						isFamilyEvent: true,
+						rawDate: parent.deathDate
 					};
 					const age = this.computeEventAge(birthDate, parent.deathDate, universe);
 					if (age !== undefined) entry.age = age;
@@ -786,7 +823,8 @@ export class TimelineRenderer {
 						type: 'family_birth',
 						title: this.applyLabel(settings.timelineSiblingBirthLabel || 'Birth of {name}', sibling.name),
 						eventFile: sibling.file?.basename,
-						isFamilyEvent: true
+						isFamilyEvent: true,
+						rawDate: sibling.birthDate
 					};
 					const age = this.computeEventAge(birthDate, sibling.birthDate, universe);
 					if (age !== undefined) entry.age = age;
@@ -810,7 +848,8 @@ export class TimelineRenderer {
 						type: 'family_death',
 						title: this.applyLabel(settings.timelineSiblingDeathLabel || 'Death of {name}', sibling.name),
 						eventFile: sibling.file?.basename,
-						isFamilyEvent: true
+						isFamilyEvent: true,
+						rawDate: sibling.deathDate
 					};
 					const age = this.computeEventAge(birthDate, sibling.deathDate, universe);
 					if (age !== undefined) entry.age = age;
@@ -839,7 +878,8 @@ export class TimelineRenderer {
 						type: 'family_death',
 						title: this.applyLabel(settings.timelineChildDeathLabel || 'Death of {name}', child.name),
 						eventFile: child.file?.basename,
-						isFamilyEvent: true
+						isFamilyEvent: true,
+						rawDate: child.deathDate
 					};
 					const age = this.computeEventAge(birthDate, child.deathDate, universe);
 					if (age !== undefined) entry.age = age;
@@ -866,7 +906,8 @@ export class TimelineRenderer {
 						type: 'family_death',
 						title: this.applyLabel(settings.timelineStepparentDeathLabel || 'Death of {name}', stepparent.name),
 						eventFile: stepparent.file?.basename,
-						isFamilyEvent: true
+						isFamilyEvent: true,
+						rawDate: stepparent.deathDate
 					};
 					const age = this.computeEventAge(birthDate, stepparent.deathDate, universe);
 					if (age !== undefined) entry.age = age;
@@ -905,7 +946,8 @@ export class TimelineRenderer {
 							type: 'family_birth',
 							title: this.applyLabel(settings.timelineGrandchildBirthLabel || 'Birth of {name}', grandchild.name),
 							eventFile: grandchild.file?.basename,
-							isFamilyEvent: true
+							isFamilyEvent: true,
+							rawDate: grandchild.birthDate
 						};
 						const age = this.computeEventAge(birthDate, grandchild.birthDate, universe);
 						if (age !== undefined) entry.age = age;
@@ -935,7 +977,8 @@ export class TimelineRenderer {
 					type: 'adoption',
 					title: this.applyLabel('Adopted {name}', adoptedChild.name),
 					eventFile: adoptedChild.file?.basename,
-					isFamilyEvent: true
+					isFamilyEvent: true,
+					rawDate: adoptedChild.adoptionDate
 				};
 				const age = this.computeEventAge(birthDate, adoptedChild.adoptionDate, universe);
 				if (age !== undefined) entry.age = age;
@@ -950,7 +993,8 @@ export class TimelineRenderer {
 					type: 'family_birth',
 					title: this.applyLabel(settings.timelineChildBirthLabel || 'Birth of {name}', adoptedChild.name),
 					eventFile: adoptedChild.file?.basename,
-					isFamilyEvent: true
+					isFamilyEvent: true,
+					rawDate: adoptedChild.birthDate
 				};
 				const age = this.computeEventAge(birthDate, adoptedChild.birthDate, universe);
 				if (age !== undefined) entry.age = age;
@@ -1057,7 +1101,8 @@ export class TimelineRenderer {
 				year: this.service.extractYear(person.birthDate),
 				type: 'birth',
 				title: settings.timelineBirthLabel || 'Born',
-				place: person.birthPlace ? this.service.stripWikilink(person.birthPlace) : undefined
+				place: person.birthPlace ? this.service.stripWikilink(person.birthPlace) : undefined,
+				rawDate: person.birthDate
 			});
 		}
 
@@ -1075,7 +1120,8 @@ export class TimelineRenderer {
 				title: event.title,
 				place: event.place ? this.service.stripWikilink(event.place) : undefined,
 				description: event.description,
-				eventFile: event.file?.basename
+				eventFile: event.file?.basename,
+				rawDate: event.date
 			});
 		}
 
@@ -1087,7 +1133,8 @@ export class TimelineRenderer {
 				date: this.service.formatDate(person.adoptionDate),
 				year: this.service.extractYear(person.adoptionDate),
 				type: 'adoption',
-				title: 'Adopted'
+				title: 'Adopted',
+				rawDate: person.adoptionDate
 			});
 		}
 
@@ -1108,7 +1155,8 @@ export class TimelineRenderer {
 						type: 'marriage',
 						title: `Marriage to ${spouseName}`,
 						place: spouse.marriageLocation ? this.service.stripWikilink(spouse.marriageLocation) : undefined,
-						eventFile: spouseNode?.file?.basename
+						eventFile: spouseNode?.file?.basename,
+						rawDate: spouse.marriageDate
 					};
 					const age = this.computeEventAge(birthDate, spouse.marriageDate, universe);
 					if (age !== undefined) entry.age = age;
@@ -1121,7 +1169,8 @@ export class TimelineRenderer {
 						year: this.service.extractYear(spouse.divorceDate),
 						type: 'divorce',
 						title: `Divorce from ${spouseName}`,
-						eventFile: spouseNode?.file?.basename
+						eventFile: spouseNode?.file?.basename,
+						rawDate: spouse.divorceDate
 					};
 					const age = this.computeEventAge(birthDate, spouse.divorceDate, universe);
 					if (age !== undefined) entry.age = age;
@@ -1137,7 +1186,8 @@ export class TimelineRenderer {
 				year: this.service.extractYear(person.deathDate),
 				type: 'death',
 				title: settings.timelineDeathLabel || 'Died',
-				place: person.deathPlace ? this.service.stripWikilink(person.deathPlace) : undefined
+				place: person.deathPlace ? this.service.stripWikilink(person.deathPlace) : undefined,
+				rawDate: person.deathDate
 			});
 		}
 
@@ -1153,21 +1203,13 @@ export class TimelineRenderer {
 				year: this.service.extractYear(person.burialDate),
 				type: 'burial',
 				title: 'Buried',
-				place: person.burialPlace ? this.service.stripWikilink(person.burialPlace) : undefined
+				place: person.burialPlace ? this.service.stripWikilink(person.burialPlace) : undefined,
+				rawDate: person.burialDate
 			});
 		}
 
-		// Sort entries by date
-		const sortOrder = config.sort as string || 'chronological';
-		entries.sort((a, b) => {
-			const yearA = parseInt(a.year) || 0;
-			const yearB = parseInt(b.year) || 0;
-
-			if (sortOrder === 'reverse') {
-				return yearB - yearA;
-			}
-			return yearA - yearB;
-		});
+		const sortOrder = (config.sort as string === 'reverse' ? 'reverse' : 'chronological');
+		entries.sort((a, b) => compareTimelineEntriesByDate(a, b, sortOrder));
 
 		// Apply limit
 		const limit = config.limit as number | undefined;
