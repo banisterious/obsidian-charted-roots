@@ -821,18 +821,24 @@ export class TimelineRenderer {
 		// for the walk + custom-relationship logic. Births that predate the
 		// focal person's birth are skipped per #469 (older siblings exist
 		// genealogically but fall outside the front edge of the focal
-		// reality window).
+		// reality window). Adopted siblings are gated on the shared
+		// `Show adopted children's births` toggle (#618) and rendered with
+		// a distinct "Birth of adopted sibling {name}" label when shown.
 		if (settings.timelineShowSiblingBirths) {
-			for (const siblingCrId of this.collectSiblingCrIds(person, graph)) {
+			for (const [siblingCrId, kind] of this.collectSiblingCrIds(person, graph)) {
+				if (kind === 'adopted' && !settings.timelineShowAdoptedChildrenBirths) continue;
 				const sibling = graph.getPersonByCrId(siblingCrId);
 				if (sibling?.birthDate) {
 					if (this.isEventBeforeFocalBirth(birthDate, sibling.birthDate, universe)) continue;
 					const year = this.service.extractYear(sibling.birthDate);
+					const label = kind === 'adopted'
+						? (settings.timelineAdoptedSiblingBirthLabel || 'Birth of adopted sibling {name}')
+						: (settings.timelineSiblingBirthLabel || 'Birth of {name}');
 					const entry: TimelineEntry = {
 						date: this.service.formatDate(sibling.birthDate),
 						year,
 						type: 'family_birth',
-						title: this.applyLabel(settings.timelineSiblingBirthLabel || 'Birth of {name}', sibling.name),
+						title: this.applyLabel(label, sibling.name),
 						eventFile: sibling.file?.basename,
 						isFamilyEvent: true,
 						rawDate: sibling.birthDate
@@ -846,9 +852,11 @@ export class TimelineRenderer {
 
 		// Sibling deaths (#584). Symmetric to sibling births: walk the same
 		// step-sibling-aware set, but emit death entries gated on the focal
-		// person still being alive at the time of the death.
+		// person still being alive at the time of the death. No adopted-vs-bio
+		// gate here — a sibling's death is meaningful regardless of adoption
+		// status (the parent's surface has no equivalent toggle for deaths).
 		if (settings.timelineShowSiblingDeaths) {
-			for (const siblingCrId of this.collectSiblingCrIds(person, graph)) {
+			for (const siblingCrId of this.collectSiblingCrIds(person, graph).keys()) {
 				const sibling = graph.getPersonByCrId(siblingCrId);
 				if (sibling?.deathDate) {
 					if (this.isEventAfterFocalDeath(person.deathDate, sibling.deathDate, universe)) continue;
@@ -931,8 +939,14 @@ export class TimelineRenderer {
 		// focal person's biological and adopted children. Skip stepchildren
 		// as the parent step (no step-grandchildren). Skip births that
 		// postdate the focal person's death (the grandparent wasn't around).
+		// Adopted grandchildren (those in the connecting child's
+		// `adoptedChildCrIds`) are gated on the shared
+		// `Show adopted children's births` toggle (#618) and rendered with
+		// a distinct "Birth of adopted grandchild {name}" label when shown.
+		// "Adopted wins" across multiple paths: a grandchild seen via both
+		// bio and adopted routes is treated as adopted.
 		if (settings.timelineShowGrandchildrenBirths) {
-			const seenGrandchildren = new Set<string>();
+			const grandchildKind = new Map<string, 'bio' | 'adopted'>();
 			const childCrIds = new Set<string>([
 				...(person.childrenCrIds || []),
 				...(person.adoptedChildCrIds || [])
@@ -940,30 +954,38 @@ export class TimelineRenderer {
 			for (const childCrId of childCrIds) {
 				const child = graph.getPersonByCrId(childCrId);
 				if (!child) continue;
-				const grandchildCrIds = new Set<string>([
-					...(child.childrenCrIds || []),
-					...(child.adoptedChildCrIds || [])
-				]);
-				for (const grandchildCrId of grandchildCrIds) {
-					if (seenGrandchildren.has(grandchildCrId)) continue;
-					seenGrandchildren.add(grandchildCrId);
-					const grandchild = graph.getPersonByCrId(grandchildCrId);
-					if (grandchild?.birthDate) {
-						if (this.isEventAfterFocalDeath(person.deathDate, grandchild.birthDate, universe)) continue;
-						const year = this.service.extractYear(grandchild.birthDate);
-						const entry: TimelineEntry = {
-							date: this.service.formatDate(grandchild.birthDate),
-							year,
-							type: 'family_birth',
-							title: this.applyLabel(settings.timelineGrandchildBirthLabel || 'Birth of {name}', grandchild.name),
-							eventFile: grandchild.file?.basename,
-							isFamilyEvent: true,
-							rawDate: grandchild.birthDate
-						};
-						const age = this.computeEventAge(birthDate, grandchild.birthDate, universe);
-						if (age !== undefined) entry.age = age;
-						entries.push(entry);
+				if (child.childrenCrIds) {
+					for (const grandchildCrId of child.childrenCrIds) {
+						if (!grandchildKind.has(grandchildCrId)) grandchildKind.set(grandchildCrId, 'bio');
 					}
+				}
+				if (child.adoptedChildCrIds) {
+					for (const grandchildCrId of child.adoptedChildCrIds) {
+						grandchildKind.set(grandchildCrId, 'adopted');
+					}
+				}
+			}
+			for (const [grandchildCrId, kind] of grandchildKind) {
+				if (kind === 'adopted' && !settings.timelineShowAdoptedChildrenBirths) continue;
+				const grandchild = graph.getPersonByCrId(grandchildCrId);
+				if (grandchild?.birthDate) {
+					if (this.isEventAfterFocalDeath(person.deathDate, grandchild.birthDate, universe)) continue;
+					const year = this.service.extractYear(grandchild.birthDate);
+					const label = kind === 'adopted'
+						? (settings.timelineAdoptedGrandchildBirthLabel || 'Birth of adopted grandchild {name}')
+						: (settings.timelineGrandchildBirthLabel || 'Birth of {name}');
+					const entry: TimelineEntry = {
+						date: this.service.formatDate(grandchild.birthDate),
+						year,
+						type: 'family_birth',
+						title: this.applyLabel(label, grandchild.name),
+						eventFile: grandchild.file?.basename,
+						isFamilyEvent: true,
+						rawDate: grandchild.birthDate
+					};
+					const age = this.computeEventAge(birthDate, grandchild.birthDate, universe);
+					if (age !== undefined) entry.age = age;
+					entries.push(entry);
 				}
 			}
 		}
@@ -1134,11 +1156,18 @@ export class TimelineRenderer {
 	 * shouldn't surface as siblings on the focal timeline). Centralized so
 	 * sibling-births (#469) and sibling-deaths (#584) share the same set.
 	 */
-	private collectSiblingCrIds(person: PersonNode, graph: FamilyGraphService): Set<string> {
+	private collectSiblingCrIds(person: PersonNode, graph: FamilyGraphService): Map<string, 'bio' | 'adopted'> {
 		// Walk both biological and adoptive parents. Adopted children
 		// land in the adoptive parent's `adoptedChildCrIds`, not
 		// `childrenCrIds`, so the bio-parent walk alone misses anyone
 		// adopted into the household and vice versa (#531).
+		//
+		// The 'bio' / 'adopted' kind is tracked per sibling so callers can
+		// gate adopted-sibling rendering on the `Show adopted children's
+		// births` toggle and apply a distinct label (#618). "Adopted wins":
+		// a sibling marked adopted via any shared parent stays adopted even
+		// if also recorded as bio via another parent — the surrounding label
+		// just clarifies the relationship rather than asserting blood ties.
 		const parentCrIds = [
 			person.fatherCrId,
 			person.motherCrId,
@@ -1147,7 +1176,7 @@ export class TimelineRenderer {
 			person.adoptiveMotherCrId,
 			...(person.adoptiveParentCrIds || [])
 		].filter(Boolean) as string[];
-		const siblingCrIds = new Set<string>();
+		const siblingCrIds = new Map<string, 'bio' | 'adopted'>();
 
 		const stepSiblingCrIds = new Set<string>();
 		for (const parentCrId of parentCrIds) {
@@ -1165,14 +1194,17 @@ export class TimelineRenderer {
 			if (parent.childrenCrIds) {
 				for (const childCrId of parent.childrenCrIds) {
 					if (childCrId !== person.crId && !stepSiblingCrIds.has(childCrId)) {
-						siblingCrIds.add(childCrId);
+						if (!siblingCrIds.has(childCrId)) siblingCrIds.set(childCrId, 'bio');
 					}
 				}
 			}
 			if (parent.adoptedChildCrIds) {
 				for (const adoptedChildCrId of parent.adoptedChildCrIds) {
 					if (adoptedChildCrId !== person.crId && !stepSiblingCrIds.has(adoptedChildCrId)) {
-						siblingCrIds.add(adoptedChildCrId);
+						// Adopted wins: overwrite a prior 'bio' marking from
+						// another parent's array. Reflects the focal-vs-sibling
+						// relationship containing at least one adoptive link.
+						siblingCrIds.set(adoptedChildCrId, 'adopted');
 					}
 				}
 			}
@@ -1181,16 +1213,18 @@ export class TimelineRenderer {
 		// Also include siblings declared manually via the built-in `sibling`
 		// relationship type (#398). Covers the worldbuilder case where parents
 		// aren't modeled as notes but sibling pairs are still defined explicitly.
+		// Manually-declared siblings are treated as 'bio' (the relationship type
+		// itself doesn't carry adoption metadata).
 		const relService = this.service.createRelationshipService();
 		for (const rel of relService.getRelationshipsForPerson(person.crId)) {
 			if (rel.type.id === 'sibling' && rel.targetCrId && rel.targetCrId !== person.crId) {
-				siblingCrIds.add(rel.targetCrId);
+				if (!siblingCrIds.has(rel.targetCrId)) siblingCrIds.set(rel.targetCrId, 'bio');
 			}
 		}
 		// Symmetric: also catch siblings who declared us as a sibling on their note
 		for (const rel of relService.getInverseRelationships(person.crId)) {
 			if (rel.type.id === 'sibling' && rel.targetCrId && rel.targetCrId !== person.crId) {
-				siblingCrIds.add(rel.targetCrId);
+				if (!siblingCrIds.has(rel.targetCrId)) siblingCrIds.set(rel.targetCrId, 'bio');
 			}
 		}
 
