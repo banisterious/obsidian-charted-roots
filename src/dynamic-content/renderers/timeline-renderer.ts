@@ -850,6 +850,35 @@ export class TimelineRenderer {
 			}
 		}
 
+		// Adopted siblings: adoption events (#621). Gated on the same
+		// `Show adopted children's births` toggle as the adopted-sibling
+		// birth path above, mirroring the toggle-coupling used on the
+		// adoptive parent's surface (where adoption + birth are
+		// contextually paired). Independent of `timelineShowSiblingBirths`
+		// because the adoption-of-sibling event is a focal-person
+		// experience separate from bio-sibling-birth display preferences.
+		if (settings.timelineShowAdoptedChildrenBirths) {
+			for (const [siblingCrId, kind] of this.collectSiblingCrIds(person, graph)) {
+				if (kind !== 'adopted') continue;
+				const sibling = graph.getPersonByCrId(siblingCrId);
+				if (!sibling?.adoptionDate) continue;
+				if (this.isEventBeforeFocalBirth(birthDate, sibling.adoptionDate, universe)) continue;
+				const year = this.service.extractYear(sibling.adoptionDate);
+				const entry: TimelineEntry = {
+					date: this.service.formatDate(sibling.adoptionDate),
+					year,
+					type: 'adoption',
+					title: this.applyLabel(settings.timelineAdoptedSiblingAdoptionLabel || 'Adoption of {name}', sibling.name),
+					eventFile: sibling.file?.basename,
+					isFamilyEvent: true,
+					rawDate: sibling.adoptionDate
+				};
+				const age = this.computeEventAge(birthDate, sibling.adoptionDate, universe);
+				if (age !== undefined) entry.age = age;
+				entries.push(entry);
+			}
+		}
+
 		// Sibling deaths (#584). Symmetric to sibling births: walk the same
 		// step-sibling-aware set, but emit death entries gated on the focal
 		// person still being alive at the time of the death. No adopted-vs-bio
@@ -987,6 +1016,45 @@ export class TimelineRenderer {
 					if (age !== undefined) entry.age = age;
 					entries.push(entry);
 				}
+			}
+		}
+
+		// Adopted grandchildren: adoption events (#621). Gated on the same
+		// `Show adopted children's births` toggle as the adopted-grandchild
+		// birth path above. Walks the focal person's children (bio + adopted)
+		// and emits an adoption entry for each grandchild that the connecting
+		// child adopted. Independent of `timelineShowGrandchildrenBirths` —
+		// adoption is its own surface, mirroring the sibling-adoption pattern.
+		if (settings.timelineShowAdoptedChildrenBirths) {
+			const adoptedGrandchildCrIds = new Set<string>();
+			const childCrIds = new Set<string>([
+				...(person.childrenCrIds || []),
+				...(person.adoptedChildCrIds || [])
+			]);
+			for (const childCrId of childCrIds) {
+				const child = graph.getPersonByCrId(childCrId);
+				if (!child?.adoptedChildCrIds) continue;
+				for (const grandchildCrId of child.adoptedChildCrIds) {
+					adoptedGrandchildCrIds.add(grandchildCrId);
+				}
+			}
+			for (const grandchildCrId of adoptedGrandchildCrIds) {
+				const grandchild = graph.getPersonByCrId(grandchildCrId);
+				if (!grandchild?.adoptionDate) continue;
+				if (this.isEventAfterFocalDeath(person.deathDate, grandchild.adoptionDate, universe)) continue;
+				const year = this.service.extractYear(grandchild.adoptionDate);
+				const entry: TimelineEntry = {
+					date: this.service.formatDate(grandchild.adoptionDate),
+					year,
+					type: 'adoption',
+					title: this.applyLabel(settings.timelineAdoptedGrandchildAdoptionLabel || 'Adoption of {name}', grandchild.name),
+					eventFile: grandchild.file?.basename,
+					isFamilyEvent: true,
+					rawDate: grandchild.adoptionDate
+				};
+				const age = this.computeEventAge(birthDate, grandchild.adoptionDate, universe);
+				if (age !== undefined) entry.age = age;
+				entries.push(entry);
 			}
 		}
 

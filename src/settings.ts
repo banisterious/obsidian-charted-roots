@@ -466,6 +466,10 @@ export interface CanvasRootsSettings {
 	timelineAdoptedSiblingBirthLabel: string;
 	/** Label for adopted grandchild birth events ({name} placeholder); gated alongside the regular adopted-children-births toggle (#618) */
 	timelineAdoptedGrandchildBirthLabel: string;
+	/** Label for adopted sibling adoption events ({name} placeholder); gated on the adopted-children-births toggle (#621) */
+	timelineAdoptedSiblingAdoptionLabel: string;
+	/** Label for adopted grandchild adoption events ({name} placeholder); gated on the adopted-children-births toggle (#621) */
+	timelineAdoptedGrandchildAdoptionLabel: string;
 	/** Label for child marriage events ({name} for child, {spouse} for their spouse) */
 	timelineChildMarriageLabel: string;
 	/** Label for parent marriage events ({name} for parent, {spouse} for their spouse) */
@@ -919,6 +923,8 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	timelineGrandchildBirthLabel: 'Birth of {name}',
 	timelineAdoptedSiblingBirthLabel: 'Birth of adopted sibling {name}',
 	timelineAdoptedGrandchildBirthLabel: 'Birth of adopted grandchild {name}',
+	timelineAdoptedSiblingAdoptionLabel: 'Adoption of {name}',
+	timelineAdoptedGrandchildAdoptionLabel: 'Adoption of {name}',
 	timelineChildMarriageLabel: 'Marriage of {name} to {spouse}',
 	timelineParentMarriageLabel: 'Marriage of {name} to {spouse}',
 	timelineShowChildrenBirths: false,        // Off by default
@@ -1573,6 +1579,8 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 			{ key: 'timelineGrandchildBirthLabel', name: 'Grandchild birth label', placeholder: 'Birth of {name}' },
 			{ key: 'timelineAdoptedSiblingBirthLabel', name: 'Adopted sibling birth label', placeholder: 'Birth of adopted sibling {name}' },
 			{ key: 'timelineAdoptedGrandchildBirthLabel', name: 'Adopted grandchild birth label', placeholder: 'Birth of adopted grandchild {name}' },
+			{ key: 'timelineAdoptedSiblingAdoptionLabel', name: 'Adopted sibling adoption label', placeholder: 'Adoption of {name}' },
+			{ key: 'timelineAdoptedGrandchildAdoptionLabel', name: 'Adopted grandchild adoption label', placeholder: 'Adoption of {name}' },
 			{ key: 'timelineChildMarriageLabel', name: 'Child marriage label', placeholder: 'Marriage of {name} to {spouse}', desc: 'Use {name} for the child and {spouse} for their spouse' },
 			{ key: 'timelineParentMarriageLabel', name: 'Parent marriage label', placeholder: 'Marriage of {name} to {spouse}', desc: 'Use {name} for the parent and {spouse} for their spouse' },
 		];
