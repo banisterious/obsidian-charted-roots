@@ -1,8 +1,17 @@
-/* Responsive breakpoints */
-
-@media (max-width: 768px) {
-  :root {
-    --cr-node-width: 150px;
-    --cr-node-height: 80px;
-  }
-}
+/*
+ * Responsive overrides — viewport-driven rules only.
+ *
+ * Repurposed during Phase 4a (audit plan). The previous responsive-
+ * breakpoint variables (cr-node-width / cr-node-height @ <= 768px) moved
+ * to variables.css; per-component mobile layout now happens via the
+ * `cr-mobile` / `cr-desktop` / `cr-phone` / `cr-tablet` classes that
+ * `MobileClassManager` attaches to each registered view's container.
+ *
+ * This file is reserved for rules that genuinely need viewport-width or
+ * media-feature scoping (e.g., print stylesheets, narrowing a desktop
+ * pane, theme overrides) — cases that don't correlate with Obsidian's
+ * `Platform.is*` flags. Phase 4b's per-component CSS migration adds
+ * here only when class-based scoping doesn't fit.
+ *
+ * Reference: docs/developer/coding-standards.md — Mobile layout section.
+ */

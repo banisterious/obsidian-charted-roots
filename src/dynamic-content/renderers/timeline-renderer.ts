@@ -9,6 +9,7 @@ import { MarkdownRenderer, MarkdownRenderChild, setIcon, TFile } from 'obsidian'
 import type { DynamicBlockContext, DynamicBlockConfig } from '../services/dynamic-content-service';
 import type { DynamicContentService } from '../services/dynamic-content-service';
 import type { PersonNode, FamilyGraphService } from '../../core/family-graph';
+import type { DateService } from '../../dates/services/date-service';
 import { getEventType } from '../../events/types/event-types';
 import type { LucideIconName } from '../../ui/lucide-icons';
 import { capitalize } from '../../utils/format-utils';
@@ -83,7 +84,8 @@ export interface TimelineEntry {
 export function compareTimelineEntriesByDate(
 	a: TimelineEntry,
 	b: TimelineEntry,
-	sortOrder: 'chronological' | 'reverse'
+	sortOrder: 'chronological' | 'reverse',
+	dateService?: DateService | null
 ): number {
 	const yearA = parseInt(a.year) || 0;
 	const yearB = parseInt(b.year) || 0;
@@ -94,7 +96,23 @@ export function compareTimelineEntriesByDate(
 	const rawB = b.rawDate || '';
 	if (rawA !== rawB) {
 		const cmp = rawA < rawB ? -1 : 1;
-		return sortOrder === 'reverse' ? -cmp : cmp;
+		// For descending-era rawDates (BBY / BC / etc.), the literal lex
+		// compare on the era-prefixed string puts firstborn-at-top, but
+		// the surrounding year sort renders descending eras with old-at-
+		// bottom (parseInt is era-blind, so BBY 18 sorts before BBY 80).
+		// Invert the tiebreak so same-year twins follow the same direction
+		// as their year neighbours and the firstborn lands in the slot the
+		// reader expects (#609 follow-on to v0.22.48's #609 fix).
+		let effectiveCmp = cmp;
+		if (dateService) {
+			const parsedA = rawA ? dateService.parseDate(rawA) : null;
+			const parsedB = rawB ? dateService.parseDate(rawB) : null;
+			const isBackward =
+				(parsedA?.type === 'fictional' && parsedA.fictional?.era?.direction === 'backward') ||
+				(parsedB?.type === 'fictional' && parsedB.fictional?.era?.direction === 'backward');
+			if (isBackward) effectiveCmp = -effectiveCmp;
+		}
+		return sortOrder === 'reverse' ? -effectiveCmp : effectiveCmp;
 	}
 	return 0;
 }
@@ -369,7 +387,7 @@ export class TimelineRenderer {
 		const layout = (config.layout as string) || settings.timelineLayout || 'chronological';
 		const sortOrder = (config.sort as string === 'reverse' ? 'reverse' : 'chronological');
 		const sortFn = (a: TimelineEntry, b: TimelineEntry) =>
-			compareTimelineEntriesByDate(a, b, sortOrder);
+			compareTimelineEntriesByDate(a, b, sortOrder, this.service.getDateService());
 
 		if (layout === 'grouped') {
 			// Partition into personal, family, context — each sorted internally
@@ -670,7 +688,7 @@ export class TimelineRenderer {
 			}
 
 			const sortOrder = (section.sort === 'reverse' ? 'reverse' : 'chronological');
-			sectionEntries.sort((a, b) => compareTimelineEntriesByDate(a, b, sortOrder));
+			sectionEntries.sort((a, b) => compareTimelineEntriesByDate(a, b, sortOrder, this.service.getDateService()));
 
 			// Render entries
 			for (const entry of sectionEntries) {
@@ -850,6 +868,35 @@ export class TimelineRenderer {
 			}
 		}
 
+		// Adopted siblings: adoption events (#621). Gated on the same
+		// `Show adopted children's births` toggle as the adopted-sibling
+		// birth path above, mirroring the toggle-coupling used on the
+		// adoptive parent's surface (where adoption + birth are
+		// contextually paired). Independent of `timelineShowSiblingBirths`
+		// because the adoption-of-sibling event is a focal-person
+		// experience separate from bio-sibling-birth display preferences.
+		if (settings.timelineShowAdoptedChildrenBirths) {
+			for (const [siblingCrId, kind] of this.collectSiblingCrIds(person, graph)) {
+				if (kind !== 'adopted') continue;
+				const sibling = graph.getPersonByCrId(siblingCrId);
+				if (!sibling?.adoptionDate) continue;
+				if (this.isEventBeforeFocalBirth(birthDate, sibling.adoptionDate, universe)) continue;
+				const year = this.service.extractYear(sibling.adoptionDate);
+				const entry: TimelineEntry = {
+					date: this.service.formatDate(sibling.adoptionDate),
+					year,
+					type: 'adoption',
+					title: this.applyLabel(settings.timelineAdoptedSiblingAdoptionLabel || 'Adoption of {name}', sibling.name),
+					eventFile: sibling.file?.basename,
+					isFamilyEvent: true,
+					rawDate: sibling.adoptionDate
+				};
+				const age = this.computeEventAge(birthDate, sibling.adoptionDate, universe);
+				if (age !== undefined) entry.age = age;
+				entries.push(entry);
+			}
+		}
+
 		// Sibling deaths (#584). Symmetric to sibling births: walk the same
 		// step-sibling-aware set, but emit death entries gated on the focal
 		// person still being alive at the time of the death. No adopted-vs-bio
@@ -987,6 +1034,45 @@ export class TimelineRenderer {
 					if (age !== undefined) entry.age = age;
 					entries.push(entry);
 				}
+			}
+		}
+
+		// Adopted grandchildren: adoption events (#621). Gated on the same
+		// `Show adopted children's births` toggle as the adopted-grandchild
+		// birth path above. Walks the focal person's children (bio + adopted)
+		// and emits an adoption entry for each grandchild that the connecting
+		// child adopted. Independent of `timelineShowGrandchildrenBirths` —
+		// adoption is its own surface, mirroring the sibling-adoption pattern.
+		if (settings.timelineShowAdoptedChildrenBirths) {
+			const adoptedGrandchildCrIds = new Set<string>();
+			const childCrIds = new Set<string>([
+				...(person.childrenCrIds || []),
+				...(person.adoptedChildCrIds || [])
+			]);
+			for (const childCrId of childCrIds) {
+				const child = graph.getPersonByCrId(childCrId);
+				if (!child?.adoptedChildCrIds) continue;
+				for (const grandchildCrId of child.adoptedChildCrIds) {
+					adoptedGrandchildCrIds.add(grandchildCrId);
+				}
+			}
+			for (const grandchildCrId of adoptedGrandchildCrIds) {
+				const grandchild = graph.getPersonByCrId(grandchildCrId);
+				if (!grandchild?.adoptionDate) continue;
+				if (this.isEventAfterFocalDeath(person.deathDate, grandchild.adoptionDate, universe)) continue;
+				const year = this.service.extractYear(grandchild.adoptionDate);
+				const entry: TimelineEntry = {
+					date: this.service.formatDate(grandchild.adoptionDate),
+					year,
+					type: 'adoption',
+					title: this.applyLabel(settings.timelineAdoptedGrandchildAdoptionLabel || 'Adoption of {name}', grandchild.name),
+					eventFile: grandchild.file?.basename,
+					isFamilyEvent: true,
+					rawDate: grandchild.adoptionDate
+				};
+				const age = this.computeEventAge(birthDate, grandchild.adoptionDate, universe);
+				if (age !== undefined) entry.age = age;
+				entries.push(entry);
 			}
 		}
 
@@ -1365,7 +1451,7 @@ export class TimelineRenderer {
 		}
 
 		const sortOrder = (config.sort as string === 'reverse' ? 'reverse' : 'chronological');
-		entries.sort((a, b) => compareTimelineEntriesByDate(a, b, sortOrder));
+		entries.sort((a, b) => compareTimelineEntriesByDate(a, b, sortOrder, this.service.getDateService()));
 
 		// Apply limit
 		const limit = config.limit as number | undefined;

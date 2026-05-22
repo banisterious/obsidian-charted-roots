@@ -3,6 +3,33 @@ import {
 	compareTimelineEntriesByDate,
 	type TimelineEntry,
 } from '../src/dynamic-content/renderers/timeline-renderer';
+import type { DateService } from '../src/dates/services/date-service';
+
+/**
+ * Minimal DateService stub for the descending-era tiebreak tests.
+ * Recognizes "BBY N" / "BBY N T..." formats and returns a fictional
+ * parse with `era.direction = 'backward'`. Any other input falls
+ * through to null so the comparator's pre-existing behavior holds.
+ */
+function backwardEraDateServiceStub(): DateService {
+	return {
+		parseDate(dateStr?: string) {
+			if (!dateStr || !/^BBY\s+\d/.test(dateStr.trim())) return null;
+			return {
+				type: 'fictional',
+				raw: dateStr,
+				year: 0,
+				fictional: {
+					era: { id: 'bby', name: 'BBY', abbrev: 'BBY', epoch: 0, direction: 'backward' },
+					system: { id: 'star-wars', name: 'Star Wars', eras: [] },
+					year: parseInt(dateStr.replace(/^BBY\s+(\d+).*$/, '$1')),
+					raw: dateStr,
+					canonicalYear: 0,
+				},
+			};
+		},
+	} as unknown as DateService;
+}
 
 /**
  * Fences the year-then-rawDate sort comparator added in #609 against the
@@ -86,6 +113,59 @@ describe('compareTimelineEntriesByDate — year-tie tiebreak (#609)', () => {
 		const noTime = entry('1985', '1985-04-12');
 		const withTime = entry('1985', '1985-04-12T03:45');
 		expect(compareTimelineEntriesByDate(noTime, withTime, 'chronological')).toBeLessThan(0);
+	});
+});
+
+describe('compareTimelineEntriesByDate — descending-era tiebreak (#609 follow-on)', () => {
+	const ds = backwardEraDateServiceStub();
+
+	it('inverts the lex-compare for BBY twins in chronological mode', () => {
+		// BBY 29 twins, firstborn at T20:03:04, secondborn at T20:08:15.
+		// Surrounding year sort produces "smaller-BBY-first" (e.g., BBY 18
+		// before BBY 80), i.e., new-at-top / old-at-bottom. The tiebreak
+		// must place the secondborn (later real-time) above the firstborn
+		// to match that pattern. Without dateService, the literal lex
+		// compare would put the firstborn on top — wrong for BBY.
+		const twinA = entry('29', 'BBY 29 T20:03:04', 'Twin A (firstborn)');
+		const twinB = entry('29', 'BBY 29 T20:08:15', 'Twin B (secondborn)');
+		expect(compareTimelineEntriesByDate(twinA, twinB, 'chronological', ds)).toBeGreaterThan(0);
+		expect(compareTimelineEntriesByDate(twinB, twinA, 'chronological', ds)).toBeLessThan(0);
+	});
+
+	it('inverts again under reverse sortOrder, returning firstborn to the top slot', () => {
+		// Reverse-mode BBY: year sort becomes "larger-BBY-first" (old at
+		// top). The composition of descending-era inversion and reverse
+		// inversion lands the firstborn at top, matching the surrounding
+		// old-at-top pattern.
+		const twinA = entry('29', 'BBY 29 T20:03:04', 'Twin A (firstborn)');
+		const twinB = entry('29', 'BBY 29 T20:08:15', 'Twin B (secondborn)');
+		expect(compareTimelineEntriesByDate(twinA, twinB, 'reverse', ds)).toBeLessThan(0);
+		expect(compareTimelineEntriesByDate(twinB, twinA, 'reverse', ds)).toBeGreaterThan(0);
+	});
+
+	it('preserves the ISO-date tiebreak when dateService is provided', () => {
+		// ISO dates aren't fictional — parseDate returns null in the stub,
+		// so the inversion path doesn't trigger and existing behavior holds.
+		const twinA = entry('1985', '1985-04-12T03:42', 'Twin A');
+		const twinB = entry('1985', '1985-04-12T03:45', 'Twin B');
+		expect(compareTimelineEntriesByDate(twinA, twinB, 'chronological', ds)).toBeLessThan(0);
+	});
+
+	it('falls back to literal lex compare when dateService is omitted (back-compat)', () => {
+		// Backward-compat: the old three-arg signature still works.
+		const twinA = entry('29', 'BBY 29 T20:03:04', 'Twin A');
+		const twinB = entry('29', 'BBY 29 T20:08:15', 'Twin B');
+		expect(compareTimelineEntriesByDate(twinA, twinB, 'chronological')).toBeLessThan(0);
+	});
+
+	it('inverts even when only one twin has a parseable backward-era rawDate', () => {
+		// Degenerate but defensive: as long as ONE rawDate resolves to a
+		// backward era, the tiebreak inverts. (Unlikely in practice — twins
+		// share an era — but worth fencing the OR-not-AND semantics.)
+		const a = entry('29', 'BBY 29 T20:03:04', 'A');
+		const b = entry('29', 'some-non-era-string', 'B');
+		// rawA < rawB lex → without inversion, a first. With inversion: b first.
+		expect(compareTimelineEntriesByDate(a, b, 'chronological', ds)).toBeGreaterThan(0);
 	});
 });
 

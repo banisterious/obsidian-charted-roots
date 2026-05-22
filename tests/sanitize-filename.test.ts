@@ -45,12 +45,24 @@ describe('sanitizeFilename (#509)', () => {
 		});
 	});
 
-	describe('strips wikilink-unsafe characters', () => {
-		it('strips parens', () => {
-			expect(sanitizeFilename('John (Jack) Doe Birth')).toBe('John Jack Doe Birth');
+	describe('preserves chars relaxed in #506', () => {
+		// Empirical evidence (#488 / #506): parens and curly braces round-
+		// trip cleanly through Obsidian's file resolution + rename cascade +
+		// dynamic blocks. The previous strip-them-just-in-case posture was
+		// over-cautious.
+		it('preserves parens', () => {
+			expect(sanitizeFilename('John (Jack) Doe Birth')).toBe('John (Jack) Doe Birth');
 		});
 
-		it('strips brackets', () => {
+		it('preserves curly braces', () => {
+			expect(sanitizeFilename('Smith {test} Marriage')).toBe('Smith {test} Marriage');
+		});
+	});
+
+	describe('strips wikilink-unsafe characters', () => {
+		it('strips square brackets (the wikilink delimiters)', () => {
+			// `[ ]` ARE the wikilink syntax — a name like `Smith [née Jones]`
+			// inside `[[Smith [née Jones]]]` would close the link early.
 			expect(sanitizeFilename('Smith [née Jones] Marriage')).toBe('Smith née Jones Marriage');
 		});
 
@@ -95,7 +107,15 @@ describe('sanitizeFilename (#509)', () => {
 		});
 
 		it('returns "Unknown" when all chars get stripped', () => {
-			expect(sanitizeFilename('()[]{}')).toBe('Unknown');
+			// Only `[` and `]` are stripped from this set post-#506.
+			expect(sanitizeFilename('[]')).toBe('Unknown');
+		});
+
+		it('preserves parens and braces when they are the only content (post-#506)', () => {
+			expect(sanitizeFilename('()')).toBe('()');
+			expect(sanitizeFilename('{}')).toBe('{}');
+			expect(sanitizeFilename('()[]{}'))
+				.toBe('(){}'); // brackets stripped, parens + braces preserved
 		});
 
 		it('preserves punctuation that is not in the unsafe set', () => {

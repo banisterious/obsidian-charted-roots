@@ -23,14 +23,19 @@
  *
  * Includes:
  * - Filesystem-illegal: \ : * ? " < > |
- * - Wikilink-breaking: ( ) [ ] { }
+ * - Wikilink-breaking: [ ] (the wikilink delimiters themselves \u2014 a name
+ *   like `Susan [Sue]` inside `[[Susan [Sue]]]` would close the link early)
  *
- * Does NOT include:
- * - Apostrophes (') - valid in names like "O'Brien"
- * - Accented characters - valid in names like "Jos\u00e9"
- * - Hyphens (-) - valid in names like "Mary-Jane"
+ * Does NOT include (relaxed in #506 after empirical cross-platform evidence):
+ * - Parentheses `( )` \u2014 preserved. Obsidian doesn't use them syntactically.
+ *   Names like "John (Jack) Doe" and universes like "Star Wars (AU)" round-
+ *   trip cleanly through file resolution, rename cascades, and dynamic blocks.
+ * - Curly braces `{ }` \u2014 preserved. Same reasoning; no Obsidian syntax uses them.
+ * - Apostrophes (') \u2014 valid in names like "O'Brien"
+ * - Accented characters \u2014 valid in names like "Jos\u00e9"
+ * - Hyphens (-) \u2014 valid in names like "Mary-Jane"
  */
-export const WIKILINK_UNSAFE_CHARS = /[\\:*?"<>|()[\]{}]/g;
+export const WIKILINK_UNSAFE_CHARS = /[\\:*?"<>|[\]]/g;
 
 /**
  * Sanitize a name for use in filenames and wikilinks.
@@ -42,8 +47,9 @@ export const WIKILINK_UNSAFE_CHARS = /[\\:*?"<>|()[\]{}]/g;
  * @returns Sanitized name safe for filenames/wikilinks, or 'Unknown' if empty
  *
  * @example
- * sanitizeName('Susan "Sue" Smith')  // 'Susan Sue Smith'
- * sanitizeName('John (Jack) Doe')    // 'John Jack Doe'
+ * sanitizeName('Susan "Sue" Smith')  // 'Susan Sue Smith' (quotes stripped)
+ * sanitizeName('John (Jack) Doe')    // 'John (Jack) Doe' (parens preserved, #506)
+ * sanitizeName('Smith [née Jones]')  // 'Smith née Jones' (brackets stripped)
  * sanitizeName('???')                // 'Unknown'
  * sanitizeName("O'Brien")            // "O'Brien" (apostrophes preserved)
  */
@@ -93,8 +99,9 @@ export function sanitizeFilename(title: string, maxLength = 100): string {
  *
  * @example
  * needsSanitization('John Smith')        // false
- * needsSanitization('Susan "Sue" Smith') // true
- * needsSanitization('John (Jack) Doe')   // true
+ * needsSanitization('Susan "Sue" Smith') // true (quotes are unsafe)
+ * needsSanitization('John (Jack) Doe')   // false (parens preserved per #506)
+ * needsSanitization('Smith [née Jones]') // true (brackets are unsafe)
  */
 export function needsSanitization(name: string): boolean {
 	if (!name) {
@@ -114,6 +121,7 @@ export function needsSanitization(name: string): boolean {
  *
  * @example
  * createSanitizedWikilink('John Smith')        // '[[John Smith]]'
+ * createSanitizedWikilink('John (Jack) Doe')   // '[[John (Jack) Doe]]' (parens preserved per #506, no alias needed)
  * createSanitizedWikilink('Susan "Sue" Smith') // '[[Susan Sue Smith|Susan "Sue" Smith]]'
  * createSanitizedWikilink('???')               // '[[Unknown|???]]'
  */

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
-import { App, FuzzySuggestModal, Notice, TFile, TFolder, Menu, Platform, type CachedMetadata } from 'obsidian';
+import { App, FuzzySuggestModal, Notice, TFile, TFolder, Menu, type CachedMetadata } from 'obsidian';
+import { shouldUseSubmenu } from '../utils/platform-utils';
 import type { OrganizationInfo } from '../organizations/types/organization-types';
 import type CanvasRootsPlugin from '../../main';
 import { VIEW_TYPE_CALENDAR } from '../calendar/calendar-view';
@@ -126,7 +127,7 @@ export function registerContextMenus(plugin: CanvasRootsPlugin): void {
 	plugin.registerEvent(
 			plugin.app.workspace.on('file-menu', (menu, file) => {
 				// Only show submenus on desktop (mobile doesn't support them)
-				const useSubmenu = Platform.isDesktop && !Platform.isMobile;
+				const useSubmenu = shouldUseSubmenu();
 
 				// Canvas files: Regenerate canvas
 				if (file instanceof TFile && file.extension === 'canvas') {
@@ -330,7 +331,7 @@ export function registerContextMenus(plugin: CanvasRootsPlugin): void {
 
 				// Only show submenu if at least one type is missing properties
 				if (hasMissingPersonProperties || hasMissingPlaceProperties || hasMissingSourceProperties) {
-					const useSubmenu = Platform.isDesktop && !Platform.isMobile;
+					const useSubmenu = shouldUseSubmenu();
 					menu.addSeparator();
 
 					if (useSubmenu) {

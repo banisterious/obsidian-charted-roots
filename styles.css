@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-18 01:36:45 UTC
+ * - Generated: 2026-05-22 01:52:42 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -22,7 +22,7 @@
    COMPONENT: VARIABLES.CSS
    ========================================================================== */
 
-/* Component Size: 62 lines, 1.86 KB */
+/* Component Size: 79 lines, 2.45 KB */
 
 /* Charted Roots CSS Variables */
 
@@ -84,6 +84,23 @@
   --cr-gallery-img-border-radius: 8px;
   --cr-gallery-object-fit: cover;
   --cr-gallery-background: transparent;
+}
+
+/*
+ * Mobile-breakpoint overrides (moved from responsive.css 2026-05-21
+ * during Phase 4a). These stay as @media for now because they target
+ * `:root` (the html element), which the per-view `cr-mobile` class
+ * cannot reach. Phase 4b's per-component CSS migration is the right
+ * place to refactor these into class-scoped variables on view
+ * containers — once the consumers select `.cr-mobile .cr-node` rather
+ * than reading `--cr-node-width` from `:root`, this block becomes
+ * superseded.
+ */
+@media (max-width: 768px) {
+  :root {
+    --cr-node-width: 150px;
+    --cr-node-height: 80px;
+  }
 }
 
 
@@ -40980,16 +40997,25 @@ body.cr-media-linker-active .suggestion-container {
    COMPONENT: RESPONSIVE.CSS
    ========================================================================== */
 
-/* Component Size: 9 lines, 0.13 KB */
+/* Component Size: 18 lines, 0.82 KB */
 
-/* Responsive breakpoints */
-
-@media (max-width: 768px) {
-  :root {
-    --cr-node-width: 150px;
-    --cr-node-height: 80px;
-  }
-}
+/*
+ * Responsive overrides — viewport-driven rules only.
+ *
+ * Repurposed during Phase 4a (audit plan). The previous responsive-
+ * breakpoint variables (cr-node-width / cr-node-height @ <= 768px) moved
+ * to variables.css; per-component mobile layout now happens via the
+ * `cr-mobile` / `cr-desktop` / `cr-phone` / `cr-tablet` classes that
+ * `MobileClassManager` attaches to each registered view's container.
+ *
+ * This file is reserved for rules that genuinely need viewport-width or
+ * media-feature scoping (e.g., print stylesheets, narrowing a desktop
+ * pane, theme overrides) — cases that don't correlate with Obsidian's
+ * `Platform.is*` flags. Phase 4b's per-component CSS migration adds
+ * here only when class-based scoping doesn't fit.
+ *
+ * Reference: docs/developer/coding-standards.md — Mobile layout section.
+ */
 
 
 /* End of responsive.css */
@@ -40999,14 +41025,14 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-18 01:36:46 UTC
+ * Build completed: 2026-05-22 01:52:43 UTC
  * Components processed: 50
- * Total lines: 40530
- * Total size: 827.27 KB
- * Build duration: 1.07 seconds
+ * Total lines: 40556
+ * Total size: 828.55 KB
+ * Build duration: 0.28 seconds
  *
  * Component breakdown:
- * - variables.css: 62 lines, 1.86 KB
+ * - variables.css: 79 lines, 2.45 KB
  * - style-settings.css: 281 lines, 6.81 KB
  * - base.css: 99 lines, 1.54 KB
  * - layout.css: 22 lines, 0.25 KB
@@ -41055,7 +41081,7 @@ body.cr-media-linker-active .suggestion-container {
  * - profile-view.css: 1113 lines, 24.91 KB
  * - calendar-view.css: 302 lines, 6.83 KB
  * - migration-notice.css: 135 lines, 2.66 KB
- * - responsive.css: 9 lines, 0.13 KB
+ * - responsive.css: 18 lines, 0.82 KB
  */
 
 /* End of generated stylesheet */

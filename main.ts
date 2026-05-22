@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
-import { Plugin, Notice, TFile, TFolder, EventRef, WorkspaceLeaf, ObsidianProtocolData } from 'obsidian';
+import { ItemView, Plugin, Notice, TFile, TFolder, EventRef, WorkspaceLeaf, ObsidianProtocolData } from 'obsidian';
 import { CanvasRootsSettings, DEFAULT_SETTINGS, CanvasRootsSettingTab } from './src/settings';
 import { LoggerFactory, getLogger } from './src/core/logging';
 import { getErrorMessage } from './src/core/error-utils';
 import type { NumberingSystem } from './src/core/reference-numbering';
 import { FamilyGraphService } from './src/core/family-graph';
 import { BidirectionalLinker } from './src/core/bidirectional-linker';
+import { MobileClassManager } from './src/core/mobile-class-manager';
 import { cleanupPersonReferencesAfterDelete, getDeletedPersonCrId } from './src/core/person-delete-cleanup';
 import { RelationshipHistoryService, RelationshipHistoryData, formatChangeDescription } from './src/core/relationship-history';
 import { RelationshipHistoryModal } from './src/ui/relationship-history-modal';
@@ -95,6 +96,7 @@ export default class CanvasRootsPlugin extends Plugin {
 	private universeRenameEventRef: EventRef | null = null;
 	private bidirectionalSnapshotTimer: ReturnType<typeof setTimeout> | null = null;
 	public bidirectionalLinker: BidirectionalLinker | null = null;
+	public mobileClassManager: MobileClassManager = new MobileClassManager();
 	private relationshipHistory: RelationshipHistoryService | null = null;
 	private folderFilter: FolderFilterService | null = null;
 	private templateFilter: TemplateFilterService | null = null;
@@ -451,93 +453,112 @@ export default class CanvasRootsPlugin extends Plugin {
 	// View registrations
 	// =========================================================================
 
+	/**
+	 * Wrapper around `registerView` that also applies the platform-state
+	 * CSS classes (`cr-mobile` / `cr-desktop` / `cr-phone` / `cr-tablet`)
+	 * to the view's container element after construction. Phase 4a
+	 * groundwork — Phase 4b's per-file CSS migration consumes these
+	 * classes so component stylesheets can scope on platform rather than
+	 * the unreliable-on-mobile `@media (max-width: 768px)` selectors.
+	 */
+	private registerCRView<T extends ItemView>(
+		viewType: string,
+		factory: (leaf: WorkspaceLeaf) => T
+	): void {
+		this.registerView(viewType, (leaf) => {
+			const view = factory(leaf);
+			this.mobileClassManager.applyPlatformClasses(view.containerEl);
+			return view;
+		});
+	}
+
 	private registerViews(): void {
 		// Register family chart view
-		this.registerView(
+		this.registerCRView(
 			VIEW_TYPE_FAMILY_CHART,
 			(leaf) => new FamilyChartView(leaf, this)
 		);
 
 		// Register map view
-		this.registerView(
+		this.registerCRView(
 			VIEW_TYPE_MAP,
 			(leaf) => new MapView(leaf, this)
 		);
 
 		// Register statistics view
-		this.registerView(
+		this.registerCRView(
 			VIEW_TYPE_STATISTICS,
 			(leaf) => new StatisticsView(leaf, this)
 		);
 
 		// Register calendar view
-		this.registerView(
+		this.registerCRView(
 			VIEW_TYPE_CALENDAR,
 			(leaf) => new CalendarView(leaf, this)
 		);
 
 		// Register relationships view
-		this.registerView(
+		this.registerCRView(
 			VIEW_TYPE_RELATIONSHIPS,
 			(leaf) => new RelationshipsView(leaf, this)
 		);
 
 		// Register people view
-		this.registerView(
+		this.registerCRView(
 			VIEW_TYPE_PEOPLE,
 			(leaf) => new PeopleView(leaf, this)
 		);
 
 		// Register events view
-		this.registerView(
+		this.registerCRView(
 			VIEW_TYPE_EVENTS,
 			(leaf) => new EventsView(leaf, this)
 		);
 
 		// Register places view
-		this.registerView(
+		this.registerCRView(
 			VIEW_TYPE_PLACES,
 			(leaf) => new PlacesView(leaf, this)
 		);
 
 		// Register organizations view
-		this.registerView(
+		this.registerCRView(
 			VIEW_TYPE_ORGANIZATIONS,
 			(leaf) => new OrganizationsView(leaf, this)
 		);
 
 		// Register sources view
-		this.registerView(
+		this.registerCRView(
 			VIEW_TYPE_SOURCES,
 			(leaf) => new SourcesView(leaf, this)
 		);
 
 		// Register universes view
-		this.registerView(
+		this.registerCRView(
 			VIEW_TYPE_UNIVERSES,
 			(leaf) => new UniversesView(leaf, this)
 		);
 
 		// Register collections view
-		this.registerView(
+		this.registerCRView(
 			VIEW_TYPE_COLLECTIONS,
 			(leaf) => new CollectionsView(leaf, this)
 		);
 
 		// Register data quality view
-		this.registerView(
+		this.registerCRView(
 			VIEW_TYPE_DATA_QUALITY,
 			(leaf) => new DataQualityView(leaf, this)
 		);
 
 		// Register migration notice view (for upgrade notifications)
-		this.registerView(
+		this.registerCRView(
 			VIEW_TYPE_MIGRATION_NOTICE,
 			(leaf) => new MigrationNoticeView(leaf, this)
 		);
 
 		// Register entity profile view
-		this.registerView(
+		this.registerCRView(
 			VIEW_TYPE_ENTITY_PROFILE,
 			(leaf) => new ProfileView(leaf, this)
 		);

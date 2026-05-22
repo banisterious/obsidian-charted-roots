@@ -466,6 +466,10 @@ export interface CanvasRootsSettings {
 	timelineAdoptedSiblingBirthLabel: string;
 	/** Label for adopted grandchild birth events ({name} placeholder); gated alongside the regular adopted-children-births toggle (#618) */
 	timelineAdoptedGrandchildBirthLabel: string;
+	/** Label for adopted sibling adoption events ({name} placeholder); gated on the adopted-children-births toggle (#621) */
+	timelineAdoptedSiblingAdoptionLabel: string;
+	/** Label for adopted grandchild adoption events ({name} placeholder); gated on the adopted-children-births toggle (#621) */
+	timelineAdoptedGrandchildAdoptionLabel: string;
 	/** Label for child marriage events ({name} for child, {spouse} for their spouse) */
 	timelineChildMarriageLabel: string;
 	/** Label for parent marriage events ({name} for parent, {spouse} for their spouse) */
@@ -919,6 +923,8 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	timelineGrandchildBirthLabel: 'Birth of {name}',
 	timelineAdoptedSiblingBirthLabel: 'Birth of adopted sibling {name}',
 	timelineAdoptedGrandchildBirthLabel: 'Birth of adopted grandchild {name}',
+	timelineAdoptedSiblingAdoptionLabel: 'Adoption of {name}',
+	timelineAdoptedGrandchildAdoptionLabel: 'Adoption of {name}',
 	timelineChildMarriageLabel: 'Marriage of {name} to {spouse}',
 	timelineParentMarriageLabel: 'Marriage of {name} to {spouse}',
 	timelineShowChildrenBirths: false,        // Off by default
@@ -982,6 +988,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		this.renderPrivacySection(containerEl);
 		this.renderCanvasSection(containerEl);
 		this.renderDatesSection(containerEl);
+		this.renderTimelineSection(containerEl);
 		this.renderSexSection(containerEl);
 		this.renderPlacesSection(containerEl);
 		this.renderResearchSection(containerEl);
@@ -1518,6 +1525,203 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		renderDateSystemsSettings(fictionalContent, this.plugin);
 	}
 
+	private renderTimelineSection(containerEl: HTMLElement): void {
+		// ═══════════════════════════════════════════════════════════════════════
+		// SECTION 6: TIMELINE
+		// ═══════════════════════════════════════════════════════════════════════
+		const timelineDetails = containerEl.createEl('details', { cls: 'cr-settings-section' });
+		timelineDetails.dataset.sectionName = 'timeline';
+		const timelineSummary = timelineDetails.createEl('summary');
+		timelineSummary.createSpan({ text: 'Timeline' });
+		timelineSummary.createSpan({ cls: 'cr-section-desc', text: 'Layout, labels, and family event coverage' });
+		const timelineContent = timelineDetails.createDiv({ cls: 'cr-section-content' });
+
+		// --- Timeline layout subsection ---
+		new Setting(timelineContent).setName("Timeline layout").setHeading();
+
+		new Setting(timelineContent)
+			.setName('Default layout')
+			.setDesc('How events are arranged on timelines')
+			.addDropdown(dropdown => dropdown
+				.addOption('chronological', 'Chronological — all events interleaved by date')
+				.addOption('grouped', 'Grouped — personal, family, then historical')
+				.addOption('personal-first', 'Personal first — personal events, then others chronologically')
+				.setValue(this.plugin.settings.timelineLayout)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineLayout = value as 'chronological' | 'grouped' | 'personal-first';
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(timelineContent)
+			.setName('Default timeline template')
+			.setDesc('Note defining timeline sections with custom sort, include, and format. Can be overridden per block with template: [[Note]].')
+			.addText(text => text
+				.setPlaceholder('[[My Timeline Template]]')
+				.setValue(this.plugin.settings.defaultTimelineTemplate)
+				.onChange(async (value) => {
+					this.plugin.settings.defaultTimelineTemplate = value;
+					await this.plugin.saveSettings();
+				}));
+
+		// --- Timeline labels subsection ---
+		new Setting(timelineContent).setName("Timeline labels").setHeading();
+
+		const labelSettings: Array<{ key: keyof typeof this.plugin.settings; name: string; placeholder: string; desc?: string }> = [
+			{ key: 'timelineBirthLabel', name: 'Birth label', placeholder: 'Born' },
+			{ key: 'timelineDeathLabel', name: 'Death label', placeholder: 'Died' },
+			{ key: 'timelineChildBirthLabel', name: 'Child birth label', placeholder: 'Birth of {name}' },
+			{ key: 'timelineSpouseDeathLabel', name: 'Spouse death label', placeholder: 'Death of {name}' },
+			{ key: 'timelineParentDeathLabel', name: 'Parent death label', placeholder: 'Death of {name}' },
+			{ key: 'timelineSiblingBirthLabel', name: 'Sibling birth label', placeholder: 'Birth of {name}' },
+			{ key: 'timelineChildDeathLabel', name: 'Child death label', placeholder: 'Death of {name}' },
+			{ key: 'timelineStepparentDeathLabel', name: 'Stepparent death label', placeholder: 'Death of {name}' },
+			{ key: 'timelineSiblingDeathLabel', name: 'Sibling death label', placeholder: 'Death of {name}' },
+			{ key: 'timelineGrandchildBirthLabel', name: 'Grandchild birth label', placeholder: 'Birth of {name}' },
+			{ key: 'timelineAdoptedSiblingBirthLabel', name: 'Adopted sibling birth label', placeholder: 'Birth of adopted sibling {name}' },
+			{ key: 'timelineAdoptedGrandchildBirthLabel', name: 'Adopted grandchild birth label', placeholder: 'Birth of adopted grandchild {name}' },
+			{ key: 'timelineAdoptedSiblingAdoptionLabel', name: 'Adopted sibling adoption label', placeholder: 'Adoption of {name}' },
+			{ key: 'timelineAdoptedGrandchildAdoptionLabel', name: 'Adopted grandchild adoption label', placeholder: 'Adoption of {name}' },
+			{ key: 'timelineChildMarriageLabel', name: 'Child marriage label', placeholder: 'Marriage of {name} to {spouse}', desc: 'Use {name} for the child and {spouse} for their spouse' },
+			{ key: 'timelineParentMarriageLabel', name: 'Parent marriage label', placeholder: 'Marriage of {name} to {spouse}', desc: 'Use {name} for the parent and {spouse} for their spouse' },
+		];
+
+		for (const label of labelSettings) {
+			new Setting(timelineContent)
+				.setName(label.name)
+				.setDesc(label.desc || `Use {name} for the person's name`)
+				.addText(text => text
+					.setPlaceholder(label.placeholder)
+					.setValue(this.plugin.settings[label.key] as string)
+					.onChange(async (value) => {
+						(this.plugin.settings as Record<string, unknown>)[label.key] = value || label.placeholder;
+						await this.plugin.saveSettings();
+					}));
+		}
+
+		// --- Family events on timelines subsection ---
+		new Setting(timelineContent).setName("Family events on timelines").setHeading();
+
+		new Setting(timelineContent)
+			.setName('Show children\'s births')
+			.setDesc('Display birth events of children on the parent\'s timeline')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowChildrenBirths)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowChildrenBirths = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(timelineContent)
+			.setName('Show spouse deaths')
+			.setDesc('Display death events of spouses on the person\'s timeline')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowSpouseDeaths)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowSpouseDeaths = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(timelineContent)
+			.setName('Show parent deaths')
+			.setDesc('Display death events of parents on the person\'s timeline')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowParentDeaths)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowParentDeaths = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(timelineContent)
+			.setName('Show sibling births')
+			.setDesc('Display birth events of siblings on the person\'s timeline')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowSiblingBirths)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowSiblingBirths = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(timelineContent)
+			.setName('Show adopted children\'s births')
+			.setDesc('Display birth events of adopted relations across all surfaces — adopted children on the adoptive parent\'s timeline, adopted siblings on the focal person\'s timeline, and adopted grandchildren on the grandparent\'s timeline. Independent of the bio-side birth toggles. When on, the adopted relation\'s entry uses a distinct label ("Birth of adopted sibling X" / "Birth of adopted grandchild X") so it stands out from biological entries. Adoption dates themselves always render on both adoptive parent\'s and adoptee\'s timelines.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowAdoptedChildrenBirths)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowAdoptedChildrenBirths = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(timelineContent)
+			.setName('Show divorces')
+			.setDesc('Display divorce events on the person\'s timeline. Marriages always render when present; this toggle governs divorces only.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowDivorces)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowDivorces = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(timelineContent)
+			.setName('Show children\'s deaths')
+			.setDesc('Display death events of children on the parent\'s timeline. Covers biological, adopted, and step-children when the focal person is recorded as a parent or stepparent.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowChildrenDeaths)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowChildrenDeaths = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(timelineContent)
+			.setName('Show stepparent deaths')
+			.setDesc('Display death events of stepparents on the stepchild\'s timeline.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowStepparentDeaths)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowStepparentDeaths = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(timelineContent)
+			.setName('Show sibling deaths')
+			.setDesc('Display death events of siblings on the person\'s timeline.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowSiblingDeaths)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowSiblingDeaths = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(timelineContent)
+			.setName('Show grandchildren\'s births')
+			.setDesc('Display birth events of grandchildren (biological and adopted) on the grandparent\'s timeline.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowGrandchildrenBirths)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowGrandchildrenBirths = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(timelineContent)
+			.setName('Show children\'s marriages')
+			.setDesc('Display marriage events of children on the parent\'s timeline. Covers biological, adopted, and step-children. Renders the spouse\'s name and (when set) the marriage location.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowChildrenMarriages)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowChildrenMarriages = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(timelineContent)
+			.setName('Show parent\'s marriages')
+			.setDesc('Display marriage events of biological and adoptive parents on the child\'s timeline. Skips the marriage between the two biological parents (the pairing implicit in the parent links). Adoptive-parent couple marriages and parent remarriages both appear.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowParentMarriages)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowParentMarriages = value;
+					await this.plugin.saveSettings();
+				}));
+	}
+
 	private renderSexSection(containerEl: HTMLElement): void {
 		// ═══════════════════════════════════════════════════════════════════════
 		// SECTION 6: SEX & GENDER
@@ -2039,189 +2243,6 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 						this.plugin.settings.relationshipMaxDepth = val;
 						await this.plugin.saveSettings();
 					}
-				}));
-
-		// --- Timeline layout subsection ---
-		new Setting(advancedContent).setName("Timeline layout").setHeading();
-
-		new Setting(advancedContent)
-			.setName('Default layout')
-			.setDesc('How events are arranged on timelines')
-			.addDropdown(dropdown => dropdown
-				.addOption('chronological', 'Chronological — all events interleaved by date')
-				.addOption('grouped', 'Grouped — personal, family, then historical')
-				.addOption('personal-first', 'Personal first — personal events, then others chronologically')
-				.setValue(this.plugin.settings.timelineLayout)
-				.onChange(async (value) => {
-					this.plugin.settings.timelineLayout = value as 'chronological' | 'grouped' | 'personal-first';
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(advancedContent)
-			.setName('Default timeline template')
-			.setDesc('Note defining timeline sections with custom sort, include, and format. Can be overridden per block with template: [[Note]].')
-			.addText(text => text
-				.setPlaceholder('[[My Timeline Template]]')
-				.setValue(this.plugin.settings.defaultTimelineTemplate)
-				.onChange(async (value) => {
-					this.plugin.settings.defaultTimelineTemplate = value;
-					await this.plugin.saveSettings();
-				}));
-
-		// --- Timeline labels subsection ---
-		new Setting(advancedContent).setName("Timeline labels").setHeading();
-
-		const labelSettings: Array<{ key: keyof typeof this.plugin.settings; name: string; placeholder: string; desc?: string }> = [
-			{ key: 'timelineBirthLabel', name: 'Birth label', placeholder: 'Born' },
-			{ key: 'timelineDeathLabel', name: 'Death label', placeholder: 'Died' },
-			{ key: 'timelineChildBirthLabel', name: 'Child birth label', placeholder: 'Birth of {name}' },
-			{ key: 'timelineSpouseDeathLabel', name: 'Spouse death label', placeholder: 'Death of {name}' },
-			{ key: 'timelineParentDeathLabel', name: 'Parent death label', placeholder: 'Death of {name}' },
-			{ key: 'timelineSiblingBirthLabel', name: 'Sibling birth label', placeholder: 'Birth of {name}' },
-			{ key: 'timelineChildDeathLabel', name: 'Child death label', placeholder: 'Death of {name}' },
-			{ key: 'timelineStepparentDeathLabel', name: 'Stepparent death label', placeholder: 'Death of {name}' },
-			{ key: 'timelineSiblingDeathLabel', name: 'Sibling death label', placeholder: 'Death of {name}' },
-			{ key: 'timelineGrandchildBirthLabel', name: 'Grandchild birth label', placeholder: 'Birth of {name}' },
-			{ key: 'timelineAdoptedSiblingBirthLabel', name: 'Adopted sibling birth label', placeholder: 'Birth of adopted sibling {name}' },
-			{ key: 'timelineAdoptedGrandchildBirthLabel', name: 'Adopted grandchild birth label', placeholder: 'Birth of adopted grandchild {name}' },
-			{ key: 'timelineChildMarriageLabel', name: 'Child marriage label', placeholder: 'Marriage of {name} to {spouse}', desc: 'Use {name} for the child and {spouse} for their spouse' },
-			{ key: 'timelineParentMarriageLabel', name: 'Parent marriage label', placeholder: 'Marriage of {name} to {spouse}', desc: 'Use {name} for the parent and {spouse} for their spouse' },
-		];
-
-		for (const label of labelSettings) {
-			new Setting(advancedContent)
-				.setName(label.name)
-				.setDesc(label.desc || `Use {name} for the person's name`)
-				.addText(text => text
-					.setPlaceholder(label.placeholder)
-					.setValue(this.plugin.settings[label.key] as string)
-					.onChange(async (value) => {
-						(this.plugin.settings as Record<string, unknown>)[label.key] = value || label.placeholder;
-						await this.plugin.saveSettings();
-					}));
-		}
-
-		// --- Family events on timelines subsection ---
-		new Setting(advancedContent).setName("Family events on timelines").setHeading();
-
-		new Setting(advancedContent)
-			.setName('Show children\'s births')
-			.setDesc('Display birth events of children on the parent\'s timeline')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.timelineShowChildrenBirths)
-				.onChange(async (value) => {
-					this.plugin.settings.timelineShowChildrenBirths = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(advancedContent)
-			.setName('Show spouse deaths')
-			.setDesc('Display death events of spouses on the person\'s timeline')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.timelineShowSpouseDeaths)
-				.onChange(async (value) => {
-					this.plugin.settings.timelineShowSpouseDeaths = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(advancedContent)
-			.setName('Show parent deaths')
-			.setDesc('Display death events of parents on the person\'s timeline')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.timelineShowParentDeaths)
-				.onChange(async (value) => {
-					this.plugin.settings.timelineShowParentDeaths = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(advancedContent)
-			.setName('Show sibling births')
-			.setDesc('Display birth events of siblings on the person\'s timeline')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.timelineShowSiblingBirths)
-				.onChange(async (value) => {
-					this.plugin.settings.timelineShowSiblingBirths = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(advancedContent)
-			.setName('Show adopted children\'s births')
-			.setDesc('Display birth events of adopted relations across all surfaces — adopted children on the adoptive parent\'s timeline, adopted siblings on the focal person\'s timeline, and adopted grandchildren on the grandparent\'s timeline. Independent of the bio-side birth toggles. When on, the adopted relation\'s entry uses a distinct label ("Birth of adopted sibling X" / "Birth of adopted grandchild X") so it stands out from biological entries. Adoption dates themselves always render on both adoptive parent\'s and adoptee\'s timelines.')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.timelineShowAdoptedChildrenBirths)
-				.onChange(async (value) => {
-					this.plugin.settings.timelineShowAdoptedChildrenBirths = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(advancedContent)
-			.setName('Show divorces')
-			.setDesc('Display divorce events on the person\'s timeline. Marriages always render when present; this toggle governs divorces only.')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.timelineShowDivorces)
-				.onChange(async (value) => {
-					this.plugin.settings.timelineShowDivorces = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(advancedContent)
-			.setName('Show children\'s deaths')
-			.setDesc('Display death events of children on the parent\'s timeline. Covers biological, adopted, and step-children when the focal person is recorded as a parent or stepparent.')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.timelineShowChildrenDeaths)
-				.onChange(async (value) => {
-					this.plugin.settings.timelineShowChildrenDeaths = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(advancedContent)
-			.setName('Show stepparent deaths')
-			.setDesc('Display death events of stepparents on the stepchild\'s timeline.')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.timelineShowStepparentDeaths)
-				.onChange(async (value) => {
-					this.plugin.settings.timelineShowStepparentDeaths = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(advancedContent)
-			.setName('Show sibling deaths')
-			.setDesc('Display death events of siblings on the person\'s timeline.')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.timelineShowSiblingDeaths)
-				.onChange(async (value) => {
-					this.plugin.settings.timelineShowSiblingDeaths = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(advancedContent)
-			.setName('Show grandchildren\'s births')
-			.setDesc('Display birth events of grandchildren (biological and adopted) on the grandparent\'s timeline.')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.timelineShowGrandchildrenBirths)
-				.onChange(async (value) => {
-					this.plugin.settings.timelineShowGrandchildrenBirths = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(advancedContent)
-			.setName('Show children\'s marriages')
-			.setDesc('Display marriage events of children on the parent\'s timeline. Covers biological, adopted, and step-children. Renders the spouse\'s name and (when set) the marriage location.')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.timelineShowChildrenMarriages)
-				.onChange(async (value) => {
-					this.plugin.settings.timelineShowChildrenMarriages = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(advancedContent)
-			.setName('Show parent\'s marriages')
-			.setDesc('Display marriage events of biological and adoptive parents on the child\'s timeline. Skips the marriage between the two biological parents (the pairing implicit in the parent links). Adoptive-parent couple marriages and parent remarriages both appear.')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.timelineShowParentMarriages)
-				.onChange(async (value) => {
-					this.plugin.settings.timelineShowParentMarriages = value;
-					await this.plugin.saveSettings();
 				}));
 
 		// --- Logging subsection ---

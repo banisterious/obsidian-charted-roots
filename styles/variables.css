@@ -59,3 +59,20 @@
   --cr-gallery-object-fit: cover;
   --cr-gallery-background: transparent;
 }
+
+/*
+ * Mobile-breakpoint overrides (moved from responsive.css 2026-05-21
+ * during Phase 4a). These stay as @media for now because they target
+ * `:root` (the html element), which the per-view `cr-mobile` class
+ * cannot reach. Phase 4b's per-component CSS migration is the right
+ * place to refactor these into class-scoped variables on view
+ * containers — once the consumers select `.cr-mobile .cr-node` rather
+ * than reading `--cr-node-width` from `:root`, this block becomes
+ * superseded.
+ */
+@media (max-width: 768px) {
+  :root {
+    --cr-node-width: 150px;
+    --cr-node-height: 80px;
+  }
+}
