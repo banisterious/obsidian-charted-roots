@@ -15,6 +15,7 @@
   - [3.3. Code Style](#33-code-style)
   - [3.4. Color Notation](#34-color-notation)
   - [3.5. Obsidian Native CSS Classes](#35-obsidian-native-css-classes)
+  - [3.6. Mobile Layout](#36-mobile-layout)
 - [4. Obsidian-Specific Guidelines](#4-obsidian-specific-guidelines)
 - [5. Obsidian UI Guidelines](#5-obsidian-ui-guidelines)
   - [5.1. Sentence Case Requirement](#sentence-case-requirement)
@@ -485,6 +486,51 @@ const select = container.createEl('select', { cls: 'dropdown' });
 
 /* Don't style the dropdown itself - let Obsidian handle it */
 ```
+
+### 3.6. Mobile Layout
+
+#### Prefer Class-Based Platform Selectors Over Viewport Media Queries
+
+For per-component mobile styling, use the `cr-mobile` / `cr-desktop` / `cr-phone` / `cr-tablet` classes that `MobileClassManager` attaches to each registered view's container element. Media queries are backup only — for cases that genuinely correlate with viewport width or print, not with Obsidian's platform detection.
+
+**Rationale:**
+
+The v0.22.20 [#528](https://github.com/banisterious/obsidian-charted-roots/issues/528) Map View fix established empirically that `@media (max-width: 768px)` doesn't fire reliably on Obsidian Mobile. The viewport in Obsidian's mobile shell isn't always what `max-width: 768px` would intuitively select against, and the mismatch produced silently-broken layouts. Class-based selectors driven by `Platform.is*` flags resolve correctly.
+
+**Available classes (attached to each registered view's container at construction):**
+
+| Class | Applied when |
+|-------|--------------|
+| `cr-mobile` | `Platform.isMobile === true` |
+| `cr-desktop` | `Platform.isDesktop === true` |
+| `cr-phone` | `Platform.isPhone === true` |
+| `cr-tablet` | `Platform.isTablet === true` |
+
+The four classes aren't mutually exclusive — some hybrid platforms report both `cr-mobile` and `cr-desktop` (the same quirk that motivated `shouldUseSubmenu()`'s dual check). Stylesheets that need unambiguous desktop scope can select on `.cr-desktop:not(.cr-mobile)`.
+
+**Migration pattern (per-component, Phase 4b):**
+
+```css
+/* ❌ AVOID - viewport media query (unreliable on Obsidian Mobile) */
+@media (max-width: 768px) {
+  .cr-foo {
+    padding: 8px;
+  }
+}
+
+/* ✅ PREFER - class-based scope */
+.cr-mobile .cr-foo {
+  padding: 8px;
+}
+```
+
+**When media queries are still appropriate:**
+
+- Print stylesheets (`@media print`)
+- Theme overrides via `prefers-color-scheme`
+- Genuine viewport-width concerns where the layout should reflow when a desktop user narrows a pane — those don't correlate with `Platform.is*` and remain media-query-driven. Document the rationale inline.
+
+These cases live in `styles/responsive.css` (repurposed during Phase 4a from "everything responsive" to "the few things that genuinely need media queries").
 
 ---
 
