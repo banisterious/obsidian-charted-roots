@@ -7,12 +7,13 @@
  * proof summaries, and relationship field helpers.
  */
 
-import { App, ButtonComponent, Menu, Notice, Platform, Setting, TFile, setIcon } from 'obsidian';
+import { App, ButtonComponent, Menu, Notice, Setting, TFile, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import type { LucideIconName } from './lucide-icons';
 import { createLucideIcon } from './lucide-icons';
 import { createStatItem } from './shared/card-component';
 import { pluralize } from '../utils/format-utils';
+import { shouldUseSubmenu } from '../utils/platform-utils';
 import { extractPlaceInfo } from './person-picker';
 import type { PlaceInfo } from './person-picker';
 import { VaultStatsService } from '../core/vault-stats';
@@ -1750,7 +1751,7 @@ function showPersonContextMenu(
 ): void {
 	const { app, plugin, closeModal } = options;
 	const menu = new Menu();
-	const useSubmenu = Platform.isDesktop && !Platform.isMobile;
+	const useSubmenu = shouldUseSubmenu();
 
 	// Open actions
 	menu.addItem((item) => {
