@@ -150,6 +150,7 @@ Created once during `onload()`, shared across the plugin lifetime:
 | `WebClipperService` | `webClipperService` | Web clipper integration |
 | `BidirectionalLinker` | `bidirectionalLinker` | Relationship sync |
 | `RelationshipHistoryService` | `relationshipHistory` | Undo support |
+| `MobileClassManager` | `mobileClassManager` | Attaches `cr-mobile` / `cr-desktop` / `cr-phone` / `cr-tablet` classes to each registered view's container at construction (audit Phase 4a). Consumed by Phase 4b's per-component CSS migration. |
 
 ### On-Demand Services (factory methods)
 
@@ -161,6 +162,8 @@ Created when needed, configured with current settings:
 | `createPlaceGraphService()` | `PlaceGraphService` | Build place hierarchy graph |
 
 The `createFamilyGraphService()` factory is used by 12+ report generators and UI components. It applies the current folder filter and settings to each fresh graph build.
+
+`FamilyGraphService` exposes a **`getQueryService()`** method that returns a `RelationshipQueryService` (constructed once per graph). The query service consolidates the read-side relationship walks — `getChildren()`, `getParents()`, `getSiblings()`, `getSpouses()`, etc. — with an `include: 'bio' | 'adoptive' | 'all'` option so consumers don't reimplement the bio/adoptive/step traversal logic. The `getChildren()` method additionally accepts a `sortByBirthDate: DateService` option which honors the v0.22.46 sibling-sort consolidation. 14+ read sites across reports, visual trees, the family timeline view, and the dynamic-content renderers route through this service (issue [#546](https://github.com/banisterious/obsidian-charted-roots/issues/546) tracks the remaining unmigrated sites). The write-side parallel is post-1.0 work — see audit Phase 6 Arc 1 in `docs/planning/audit-implementation-plan.md`.
 
 ### Module-Level Services
 
@@ -243,6 +246,8 @@ Views are registered in `registerViews()` and activated via methods in `src/plug
 
 Entity views share a pattern: the modal tab has full functionality (batch operations, type managers), while the dockable view exposes a browse-only subset via an extracted `render*List()` function.
 
+Each registered view goes through a `registerCRView` wrapper in `main.ts` that calls `mobileClassManager.applyPlatformClasses(view.containerEl)` after construction. The classes (`cr-mobile` / `cr-desktop` / `cr-phone` / `cr-tablet`) are then available to component stylesheets for class-based scoping — the v0.22.20 [#528](https://github.com/banisterious/obsidian-charted-roots/issues/528) Map View fix established that `@media (max-width: 768px)` doesn't fire reliably on Obsidian Mobile, so class-based selectors driven by `Platform.is*` flags are the path forward. Per-component CSS migration to consume these classes is Phase 4b of the audit plan.
+
 ### Entity Profile View
 
 A read-only detail view (`src/profile-view/`) that auto-syncs with the active note. Renders sections (identity, relationships, events, sources, data quality) for all 5 entity types. Uses a `sections/` subdirectory for composable section renderers.
@@ -286,6 +291,12 @@ A read-only detail view (`src/profile-view/`) that auto-syncs with the active no
 |----------|---------|
 | `extractDisplayLabel(value)` | Strip `[[…]]` brackets, collapse pipe-form to the alias, and collapse path-form to the basename. Used by Edit Person / Edit Organization / Edit Event modal display sites so users see clean labels (`Errol Naberrie`) regardless of how the underlying frontmatter stores the wikilink (`[[path|alias]]` after #540 disambiguation). |
 | `getCanonicalLinktext(app, file)` | Return the canonical wikilink target for a file: the bare basename when unique in the vault, or the full path (without `.md`) when basename is ambiguous. Used by `createSmartWikilink` across all entity writers to decide whether to emit `[[basename]]` or the disambiguated `[[path|basename]]` form. |
+
+### Platform (src/utils/platform-utils.ts)
+
+| Function | Purpose |
+|----------|---------|
+| `shouldUseSubmenu()` | Whether the current platform should render submenus (`Platform.isDesktop && !Platform.isMobile`). The dual check handles hybrid platforms that report both flags true; mobile builds collapse submenu items to the top level if asked to render them. Used by the file-menu context handler and the people-tab quick-action menu. |
 
 ---
 
