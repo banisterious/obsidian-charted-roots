@@ -55,15 +55,16 @@ function seedPerson(app: App, args: { path: string; basename: string; name: stri
 
 describe('UniverseService.getEntitiesForUniverseFile — alias-aware lookup (#503)', () => {
 	it('finds entities whose universe field is the basename when the typed name has been sanitized', () => {
-		// Scenario: universe renamed to "Star Wars (AU)". Sanitized basename
-		// becomes "Star Wars AU" (parens stripped). Cascade rewrites entities
-		// to the basename; the universe note still carries the typed name in
-		// its `name:` frontmatter. Lookup must match either form.
+		// Scenario: universe renamed to `Star Wars "AU"`. Sanitized basename
+		// becomes "Star Wars AU" (double-quotes stripped — those are still
+		// wikilink-unsafe post-#506). Cascade rewrites entities to the
+		// basename; the universe note still carries the typed name in its
+		// `name:` frontmatter. Lookup must match either form.
 		const { service, app } = makeService();
 		const universeFile = seedUniverse(app, {
 			path: 'Universes/Star Wars AU.md',
 			basename: 'Star Wars AU',
-			name: 'Star Wars (AU)',
+			name: 'Star Wars "AU"',
 			crId: 'universe-star-wars-au-001',
 		});
 		seedPerson(app, {
@@ -83,18 +84,19 @@ describe('UniverseService.getEntitiesForUniverseFile — alias-aware lookup (#50
 		// Pre-rename / never-renamed scenario: name has special chars,
 		// basename strips them, but entities were saved with the name
 		// (because the dropdown writes name). Lookup must still resolve.
+		// Uses double-quotes (still stripped post-#506) to produce the divergence.
 		const { service, app } = makeService();
 		const universeFile = seedUniverse(app, {
 			path: 'Universes/Crazy Name.md',
 			basename: 'Crazy Name',
-			name: 'Crazy (Name)',
+			name: 'Crazy "Name"',
 			crId: 'universe-crazy-name-001',
 		});
 		seedPerson(app, {
 			path: 'People/Anna.md',
 			basename: 'Anna',
 			name: 'Anna K',
-			universe: 'Crazy (Name)', // matches frontmatter name, not basename
+			universe: 'Crazy "Name"', // matches frontmatter name, not basename
 		});
 
 		const entities = service.getEntitiesForUniverseFile(universeFile);
