@@ -2,7 +2,7 @@
 
 Plan for triaging the real lint output that was hidden by a broken `npm run lint` script, plus the 2026-05-11 re-baseline after the `eslint-plugin-obsidianmd` 0.1.9 → 0.2.9 upgrade.
 
-**Status:** 🟡 In progress — Tier 0 / 1 / 2 / 3 historical work shipped; 2026-05-11 upgrade re-baseline introduces new rules and resurfaces some previously-cleared categories. Tier 4 (sentence-case) still pending. **Next session: tackle the 2026-05-11 upgrade findings.**
+**Status:** 🟢 Substantially complete (2026-05-19) — 0 errors, 442 warnings residual (438 `obsidianmd/ui/sentence-case` + ~4 `@typescript-eslint/no-unsafe-*` in test fixtures). See [2026-05-19 — Substantial completion](#2026-05-19--substantial-completion) for the closure summary.
 
 **Root cause context (original):** `node_modules/.bin/eslint` was a zero-byte file (likely caused by WSL symlink-creation failing during `npm install --no-bin-links` at some point). The `npm run lint` script resolved to the empty binary and exited 0 silently. Fixed in commit [77848f14](#) by switching the lint/lint:fix scripts to direct `node` invocation.
 
@@ -125,7 +125,7 @@ These were cleared by historical tier work but are showing hits again. Either ne
 
 Three batches for the next session (roughly in order of value-per-minute):
 
-**Batch A — Real-signal errors (~76, ~1-2 hrs total)**
+**Batch A — Real-signal errors (~76, ~1-2 hrs total)** ✅ Done — see the [Substantial completion section](#2026-05-19--substantial-completion) for closure details.
 
 Everything in the Errors table above except sentence-case (577). Most are small per-site fixes. Order:
 
@@ -137,16 +137,18 @@ Everything in the Errors table above except sentence-case (577). Most are small 
 6. `no-floating-promises` (26) — biggest single batch; same pattern as Tier 1's resolution (`void` prefix or `.catch()`).
 7. `depend/ban-dependencies` (2) — read the rule's report; might be a quick declarative fix.
 
-**Batch B — Tier 4 sentence-case (577, ~1 session)**
+**Batch B — Tier 4 sentence-case (577, ~1 session)** 🟡 Demoted + file-level disabled, not per-site rewritten.
 
 Same approach as the original Tier 4 plan: bucket by file, look for repeated false-positive patterns (brands/acronyms missing from the config's list), bulk-fix via config additions or per-file disables. The 0.2.9 upgrade already cleaned up some of these via the broader default brand list — went from 733 (post-Tier-3) to 577. Worth re-running after Batch A clears in case some sentence-case overlaps real-signal fixes.
 
+The rule severity stayed at the recommended-preset level but file-level disables were added to files where the rule misfires on quoted button labels, month names, or proper-noun section paths. Residual: 438 warnings, treated as accepted noise. See [Substantial completion](#2026-05-19--substantial-completion).
+
 **Batch C — New rules with high warning counts (defer / decide separately)**
 
-- `prefer-create-el` (285 warn) — defer or address opportunistically.
-- `prefer-active-doc` (163 warn) — same.
-- `prefer-active-window-timers` (151 warn) — worth a proper survey before deciding; pop-out-window users could hit real timer-on-wrong-window bugs.
-- `no-unused-vars` (73 warn) — sweep, same shape as the Tier 3 pass.
+- `prefer-create-el` (285 warn) — 🟡 silenced via file-level disable.
+- `prefer-active-doc` (163 warn) — 🟡 silenced via file-level disable.
+- `prefer-active-window-timers` (151 warn) — ✅ done in audit-plan Phase 2 (v0.22.31). Full clear via `activeWindow.setTimeout` migration across 14 view classes + 16 modal sites + a mechanical sweep of remaining bare calls.
+- `no-unused-vars` (73 warn) — ✅ cleared incidentally during audit-plan Phase 2 (44 stale `require-await` disable directives removed in `b3adb258` plus dead-import sweeps).
 
 ---
 
@@ -199,6 +201,10 @@ Not bugs, but reduce maintenance drag.
 
 ### Tier 4 — Sentence-case triage (separate effort)
 
+- [x] **Resolved 2026-05-19** via demotion to warning + file-level disables on files where the rule misfires on quoted button labels, month names, or proper-noun section paths. Residual: 438 warnings, treated as accepted noise. The hypothesis at the bottom of this section ("might reveal that the rule as currently configured is too aggressive and needs to be a warn rather than an error") turned out to be the right call.
+
+Original framing follows for historical reference:
+
 `obsidianmd/ui/sentence-case` produces **733** of the 1173 problems (62%). This needs its own pass:
 
 - Many will be genuine false positives covered by the existing exception list (`coding-standards.md § 4 ESLint Plugin Enforcement → Handling false positives`). Verify and extend the `brands` / `acronyms` config in `eslint.config.mjs`.
@@ -208,6 +214,40 @@ Not bugs, but reduce maintenance drag.
 **Recommended approach:** bucket the 733 hits by source file. If a file has >20 hits, it's usually a single false-positive pattern (repeated brand, entity-type label, etc.). Bulk-fix by adding to the brands list or by per-file disable where appropriate.
 
 **Expected effort:** Full dedicated session. This one might reveal that the sentence-case rule as currently configured is too aggressive for our codebase and needs to be a `warn` rather than an `error`.
+
+---
+
+## 2026-05-19 — Substantial completion
+
+The 2026-05-11 re-baseline plan is substantially complete. Current lint state: **0 errors, 442 warnings** (438 `obsidianmd/ui/sentence-case` + ~4 `@typescript-eslint/no-unsafe-*` in test fixtures).
+
+**Batch A — done.** All 76 real-signal errors cleared across three arcs:
+
+- **Audit-plan Phase 2** (v0.22.31, 2026-05-12) cleared the floating-promises / `no-base-to-string` / `no-misused-promises` / `no-redundant-type-constituents` / `restrict-template-expressions` / `no-unnecessary-type-assertion` / `no-tfile-tfolder-cast` / `prefer-instanceof` / `no-useless-escape` / `no-undef` set, and cleared the full `prefer-active-window-timers` 151-warning category via `activeWindow.setTimeout` migration. See [audit-implementation-plan.md](audit-implementation-plan.md) for the seven Phase 2 commits.
+- **Audit-plan Phase 2.5** (v0.22.31, 2026-05-12) cleared the heat-layer inline-style (custom Leaflet pane), command-in-command-name (Quick Actions rename), and `no-explicit-any` errors that the Obsidian Community automated-review platform flagged on its first scan. Single commit `b0598ef1`.
+- **v0.22.39 – v0.22.47 scan-cleanup arc** (2026-05-15 through 2026-05-18) closed the residual Obsidian Community automated-review errors that surfaced when the scanner promoted `createElement('script')` from warning to error severity: 9 dynamic-script-creation sites via leaflet-distortable chunk-loader stub + jszip → fflate migration + core-js polyfill strip; CSS `!important` × 1 and `:has()` × 2 via family-chart patches and class-based selectors; `setInterval + network` Behavior warning via recursive `setTimeout` migration + leaflet-distortable patches.
+
+**Batch B — demoted + file-level disabled.** Rather than per-site rewrite the 577 sentence-case errors, the cleanup demoted the rule severity in `eslint.config.mjs` and added file-level disables to files dominated by quoted button labels, month names, or proper-noun section paths the rule misfires on. Residual: 438 sentence-case warnings, accepted as baseline noise.
+
+**Batch C — partial done; rest moved to file-level disables.**
+
+- `prefer-active-window-timers` (151) ✅ done in Phase 2.
+- `prefer-create-el` (285) and `prefer-active-doc` (163) — silenced via file-level disables. Mass-rewrite not pursued; the rules don't surface real correctness bugs and rewriting the affected sites would be a multi-week sweep with no user-visible payoff.
+- `no-unused-vars` (73) — cleared incidentally during Phase 2 cleanup work.
+
+**`no-unsafe-*` family — silenced via file-level disables** in files where Obsidian's API returns `any`-typed surfaces. Each file's disable comment is trimmed by `--fix` to only the rules that fire there.
+
+### Disable-comment conventions established during execution
+
+- **File-level disable with reason** for the `no-unsafe-*` family.
+- **File-level disable** for `obsidianmd/ui/sentence-case` where the rule misfires on quoted labels, month names, or proper-noun section paths.
+- New code should not add file-level disables — fix the underlying issue or accept the warning if it represents intentional design (e.g., a placeholder example like "Middle-earth schema").
+- 126 files currently carry one or more file-level disable directives. The mechanism is intentionally visible at the file head so new contributors can see at a glance which rules a given file opts out of.
+
+### Post-1.0 backlog (optional)
+
+- Retire `prefer-create-el` and `prefer-active-doc` file-level disables via per-file rewrites if a new-API-only audit becomes appealing post-1.0. Diminishing-returns work; no user-visible payoff.
+- Extend the `brands` / `acronyms` config to clear sentence-case residual further. The remaining 438 warnings are mostly worldbuilding placeholder text (e.g., "Middle-earth schema", "J.R.R. Tolkien") and the per-file disables already cover the highest-density misfires.
 
 ---
 
@@ -224,10 +264,12 @@ Proposed for this cleanup effort:
 
 ## Open Questions Before Execution
 
-1. **Scope of first pass.** Do Tier 0 + Tier 1 together as one release, or Tier 0 alone first (smaller commit, gets clean baseline)?
-2. **Sentence-case handling.** Drop severity to `warn` to unblock while we triage, or keep at `error` and work through the 733 systematically?
-3. **`require-await` on Obsidian ItemView methods** — per earlier investigation (technical-debt audit), 38 of the `require-await` warnings were acknowledged as justified because `ItemView` methods require the async signature. The count here (11) is smaller than that audit's count, suggesting either cleanup since, or a subset. Worth verifying before treating the 11 as actionable.
-4. **Commit strategy.** One cleanup PR per tier, or smaller per-rule commits?
+All resolved during execution; preserved for historical reference.
+
+1. **Scope of first pass.** Resolved: Tiers ran sequentially across multiple sessions, with each tier landing as its own batch of commits. No single "Tier 0 only" release.
+2. **Sentence-case handling.** Resolved: severity stayed at recommended-preset, file-level disables added to files where the rule misfires, residual accepted as warnings.
+3. **`require-await` on Obsidian ItemView methods.** Resolved: 11 hits cleared in Tier 3 (6 converted to sync, 5 kept async with targeted disables for the ItemView lifecycle methods). Later, in Phase 2, the recommended config was found to set `require-await` to `off`, so 44 stale disable directives were removed in commit `b3adb258`.
+4. **Commit strategy.** Resolved: smaller per-rule commits within tier-aligned batches. Each Phase 2 / Phase 2.5 commit targeted a single category.
 
 ---
 
