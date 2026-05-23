@@ -98,9 +98,6 @@ export class ProfileView extends ItemView {
 		const container = this.contentEl;
 		container.empty();
 		container.addClass('cr-profile');
-		if (Platform.isMobile) {
-			container.addClass('cr-profile--mobile');
-		}
 
 		// Create structural elements
 		this.headerEl = container.createDiv({ cls: 'cr-profile__header' });
