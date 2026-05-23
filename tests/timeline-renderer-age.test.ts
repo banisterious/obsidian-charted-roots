@@ -161,3 +161,62 @@ describe('TimelineRenderer.computeEventAge — fictional eras (#439)', () => {
 		});
 	});
 });
+
+/**
+ * #624 — Bare 1-3 digit birth date paired with era-prefixed event date
+ * silently dropped the age annotation.
+ *
+ * @doctorwodka's custom Earthfall calendar (DE / EF / PEF, forward-direction)
+ * surfaced this: a person stored as `birth_date: 310` (bare, 3-digit) with
+ * adopted-child events stored as `adoption_date: DE 1264` (era-prefixed)
+ * lost the age annotation on the adoption event only — marriage and
+ * birth events at the same magnitudes rendered fine because both sides
+ * of their math were bare 4-digit values.
+ *
+ * The fix relaxes `extractStandardYear` to accept any whole-string
+ * digit input as a year, so the bare 3-digit birth now parses cleanly
+ * and `calculateAge` can complete via the standard-date path.
+ */
+describe("TimelineRenderer.computeEventAge — bare birth + era-prefixed event (#624)", () => {
+	let renderer: TimelineRenderer;
+
+	beforeEach(() => {
+		renderer = makeRenderer(true);
+	});
+
+	it('computes age across bare 3-digit birth + era-prefixed event (Star Wars ABY)', () => {
+		expect(
+			privates(renderer).computeEventAge('310', 'ABY 1264', 'star-wars')
+		).toBe(954);
+	});
+
+	it('computes age across bare 3-digit birth + bare 4-digit event (no era)', () => {
+		expect(
+			privates(renderer).computeEventAge('310', '1264', undefined)
+		).toBe(954);
+	});
+
+	it('computes age across bare 2-digit birth + bare 4-digit event', () => {
+		expect(
+			privates(renderer).computeEventAge('99', '1500', undefined)
+		).toBe(1401);
+	});
+
+	it('computes age across era-prefixed birth + bare 4-digit event', () => {
+		expect(
+			privates(renderer).computeEventAge('ABY 310', '1264', 'star-wars')
+		).toBe(954);
+	});
+
+	it('still computes age across era-prefixed birth + era-prefixed event (regression)', () => {
+		expect(
+			privates(renderer).computeEventAge('ABY 310', 'ABY 1264', 'star-wars')
+		).toBe(954);
+	});
+
+	it('still returns undefined when event predates birth across bare years', () => {
+		expect(
+			privates(renderer).computeEventAge('1000', '500', undefined)
+		).toBeUndefined();
+	});
+});
