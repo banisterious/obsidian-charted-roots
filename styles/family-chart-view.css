@@ -722,6 +722,12 @@
 
 /* ============================================================
  * Responsive Adjustments
+ *
+ * Dual-path treatment (audit Phase 4b): the media query covers narrow
+ * desktop / tablet leaves, the `.cr-phone` parallel block covers phones
+ * where Obsidian Mobile's media query firing isn't reliable (#528 /
+ * Phase 4a). `.cr-phone` is applied by `MobileClassManager` to the
+ * view's containerEl, so descendant selectors reach the toolbar children.
  * ============================================================ */
 
 @media (max-width: 600px) {
@@ -738,6 +744,20 @@
   .cr-fcv-label {
     display: none;
   }
+}
+
+.cr-phone .cr-fcv-toolbar {
+  flex-wrap: wrap;
+  gap: var(--size-4-1);
+}
+
+.cr-phone .cr-fcv-toolbar-left,
+.cr-phone .cr-fcv-toolbar-right {
+  flex-wrap: wrap;
+}
+
+.cr-phone .cr-fcv-label {
+  display: none;
 }
 
 /* ============================================================
@@ -1087,6 +1107,12 @@
 
 /* ============================================================
  * Info Panel Responsive Adjustments
+ *
+ * Same dual-path pattern as the toolbar section above: media queries
+ * for narrow desktop/tablet leaves, `.cr-phone` parallel blocks for
+ * reliable phone coverage. The 600px shape (full-width-below) is more
+ * aggressive than the 800px shape (slim sidebar) and follows it in
+ * source order so its declarations win on phones via cascade.
  * ============================================================ */
 
 @media (max-width: 800px) {
@@ -1094,6 +1120,11 @@
     width: 280px;
     min-width: 240px;
   }
+}
+
+.cr-phone .cr-fcv-info-panel {
+  width: 280px;
+  min-width: 240px;
 }
 
 @media (max-width: 600px) {
@@ -1109,6 +1140,19 @@
     border-left: none;
     border-top: 1px solid var(--background-modifier-border);
   }
+}
+
+.cr-phone .cr-fcv-content {
+  flex-direction: column;
+}
+
+.cr-phone .cr-fcv-info-panel {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  max-height: 50%;
+  border-left: none;
+  border-top: 1px solid var(--background-modifier-border);
 }
 
 /* ============================================================
