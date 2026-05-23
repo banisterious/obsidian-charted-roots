@@ -40,6 +40,7 @@ import {
 
 import { getSpouseLabel } from '../../utils/terminology';
 import { pluralize } from '../../utils/format-utils';
+import { unwrapWikilinkDisplay } from '../../utils/wikilink-resolver';
 
 const logger = getLogger('FamilyChartView');
 
@@ -567,14 +568,12 @@ export class FamilyChartView extends ItemView {
 
 		// Birth place (#351)
 		if (personData.data['birth place']) {
-			const placeDisplay = (personData.data['birth place'] as string).replace(/^\[\[|\]\]$/g, '').split('|').pop() || '';
-			this.createInfoField(fieldsSection, 'Birth place', placeDisplay);
+			this.createInfoField(fieldsSection, 'Birth place', unwrapWikilinkDisplay(personData.data['birth place'] as string));
 		}
 
 		// Death place (#351)
 		if (personData.data['death place']) {
-			const placeDisplay = (personData.data['death place'] as string).replace(/^\[\[|\]\]$/g, '').split('|').pop() || '';
-			this.createInfoField(fieldsSection, 'Death place', placeDisplay);
+			this.createInfoField(fieldsSection, 'Death place', unwrapWikilinkDisplay(personData.data['death place'] as string));
 		}
 
 		// Sex
@@ -1753,13 +1752,13 @@ export class FamilyChartView extends ItemView {
 				'birthday_display': stripDateTimeSuffix(person.birthDate),
 				'deathday_display': stripDateTimeSuffix(person.deathDate),
 				avatar,
-				'alt name': person.altName || '',
+				'alt name': unwrapWikilinkDisplay(person.altName),
 				'pronouns': Array.isArray(person.pronouns) ? person.pronouns.join(', ') : (person.pronouns || ''),
-				'occupation': person.occupation || '',
-				'title': person.title || '',
-				'nickname': person.nickname || '',
-				'religion': person.religion || '',
-				'caste': person.caste || '',
+				'occupation': unwrapWikilinkDisplay(person.occupation),
+				'title': unwrapWikilinkDisplay(person.title),
+				'nickname': unwrapWikilinkDisplay(person.nickname),
+				'religion': unwrapWikilinkDisplay(person.religion),
+				'caste': unwrapWikilinkDisplay(person.caste),
 				'birth place': person.birthPlace || '',
 				'death place': person.deathPlace || '',
 				'research level': person.researchLevel ?? '',

@@ -101,6 +101,21 @@ export function extractDisplayLabel(value: string | null | undefined): string {
 }
 
 /**
+ * Display-safe extraction for free-form text fields that *may* contain a
+ * wikilink. When the input is bracket-wrapped, defers to
+ * `extractDisplayLabel`; otherwise the trimmed value is returned unchanged
+ * so legitimate `/` or `|` characters in free text aren't collapsed away
+ * (e.g., `occupation: "Cook/Server"` stays intact). #622.
+ */
+export function unwrapWikilinkDisplay(value: string | null | undefined): string {
+	if (!value) return '';
+	const trimmed = value.trim();
+	if (!trimmed) return '';
+	if (!trimmed.startsWith('[[') || !trimmed.endsWith(']]')) return trimmed;
+	return extractDisplayLabel(trimmed);
+}
+
+/**
  * Convert a path to wikilink format
  * If already a wikilink, returns as-is
  */
