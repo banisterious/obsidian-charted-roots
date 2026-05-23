@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-22 01:52:42 UTC
+ * - Generated: 2026-05-23 21:23:18 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -17071,7 +17071,7 @@ settings:
    COMPONENT: FAMILY-CHART-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1496 lines, 36.62 KB */
+/* Component Size: 1540 lines, 37.81 KB */
 
 /**
  * Family Chart View Styles
@@ -17797,6 +17797,12 @@ settings:
 
 /* ============================================================
  * Responsive Adjustments
+ *
+ * Dual-path treatment (audit Phase 4b): the media query covers narrow
+ * desktop / tablet leaves, the `.cr-phone` parallel block covers phones
+ * where Obsidian Mobile's media query firing isn't reliable (#528 /
+ * Phase 4a). `.cr-phone` is applied by `MobileClassManager` to the
+ * view's containerEl, so descendant selectors reach the toolbar children.
  * ============================================================ */
 
 @media (max-width: 600px) {
@@ -17813,6 +17819,20 @@ settings:
   .cr-fcv-label {
     display: none;
   }
+}
+
+.cr-phone .cr-fcv-toolbar {
+  flex-wrap: wrap;
+  gap: var(--size-4-1);
+}
+
+.cr-phone .cr-fcv-toolbar-left,
+.cr-phone .cr-fcv-toolbar-right {
+  flex-wrap: wrap;
+}
+
+.cr-phone .cr-fcv-label {
+  display: none;
 }
 
 /* ============================================================
@@ -18162,6 +18182,12 @@ settings:
 
 /* ============================================================
  * Info Panel Responsive Adjustments
+ *
+ * Same dual-path pattern as the toolbar section above: media queries
+ * for narrow desktop/tablet leaves, `.cr-phone` parallel blocks for
+ * reliable phone coverage. The 600px shape (full-width-below) is more
+ * aggressive than the 800px shape (slim sidebar) and follows it in
+ * source order so its declarations win on phones via cascade.
  * ============================================================ */
 
 @media (max-width: 800px) {
@@ -18169,6 +18195,11 @@ settings:
     width: 280px;
     min-width: 240px;
   }
+}
+
+.cr-phone .cr-fcv-info-panel {
+  width: 280px;
+  min-width: 240px;
 }
 
 @media (max-width: 600px) {
@@ -18184,6 +18215,19 @@ settings:
     border-left: none;
     border-top: 1px solid var(--background-modifier-border);
   }
+}
+
+.cr-phone .cr-fcv-content {
+  flex-direction: column;
+}
+
+.cr-phone .cr-fcv-info-panel {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  max-height: 50%;
+  border-left: none;
+  border-top: 1px solid var(--background-modifier-border);
 }
 
 /* ============================================================
@@ -23301,7 +23345,7 @@ settings:
    COMPONENT: MAP-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 2238 lines, 49.39 KB */
+/* Component Size: 2264 lines, 50.29 KB */
 
 /* ==========================================================================
    Map View Styles
@@ -25032,6 +25076,18 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 /* --------------------------------------------------------------------------
    Responsive Adjustments
+
+   The narrow-viewport toolbar layout is reached via two parallel paths
+   because Obsidian Mobile cannot be trusted to fire `@media (max-width)`
+   reliably (#528 / audit Phase 4a):
+
+   1. Phones — `.cr-phone` (applied by `MobileClassManager` to the view
+      container) targets all phone leaves regardless of leaf width. iPad
+      is excluded (`.cr-tablet`, not `.cr-phone`) so its inline horizontal
+      layout still applies on tablet-sized leaves.
+   2. Narrow desktop / tablet leaves — `@media (max-width: 768px)` covers
+      the case where a desktop or iPad user has narrowed their pane below
+      768px and wants the same wrap behavior.
    -------------------------------------------------------------------------- */
 
 @media (max-width: 768px) {
@@ -25069,22 +25125,20 @@ svg.leaflet-image-layer.leaflet-interactive path {
   }
 }
 
-/* Phone-specific layout (#528) — apply the same wrap rules as the 768px
-   media query, class-based via `Platform.isPhone` in map-view.ts. iPad
-   is excluded so the inline horizontal layout still applies on tablet-
-   sized leaves. `flex: 0 0 100%` is required (not `width: 100%`) — see
-   the comment in the media query above. */
-.cr-map-view-phone .cr-map-toolbar-center {
+/* Mirrors the most critical rules from the media query above for phones
+   that the media query may not reach. `flex: 0 0 100%` is required (not
+   `width: 100%`) — see the comment in the media query block above. */
+.cr-phone .cr-map-toolbar-center {
   order: 3;
   flex: 0 0 100%;
   justify-content: flex-start;
 }
 
-.cr-map-view-phone .cr-map-select {
+.cr-phone .cr-map-select {
   min-width: 100px;
 }
 
-.cr-map-view-phone .cr-map-input {
+.cr-phone .cr-map-input {
   width: 60px;
 }
 
@@ -25320,7 +25374,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
   opacity: 1;
 }
 
-/* Mobile responsiveness */
+/* Mobile responsiveness — same dual-path treatment as the toolbar block
+   above: media query for narrow desktop/tablet leaves, `.cr-phone` for
+   phones where the media query may not fire (#528 / audit Phase 4a). */
 @media (max-width: 600px) {
   .cr-world-map-preview {
     min-height: 120px;
@@ -25335,6 +25391,20 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .cr-world-map-hint {
     display: none;
   }
+}
+
+.cr-phone .cr-world-map-preview {
+  min-height: 120px;
+  max-height: 180px;
+}
+
+.cr-phone .cr-world-map-stats {
+  font-size: var(--font-smallest);
+  padding: 3px 8px;
+}
+
+.cr-phone .cr-world-map-hint {
+  display: none;
 }
 
 /* --------------------------------------------------------------------------
@@ -39420,7 +39490,7 @@ body.cr-media-linker-active .suggestion-container {
    COMPONENT: PROFILE-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1113 lines, 24.91 KB */
+/* Component Size: 1135 lines, 25.6 KB */
 
 /**
  * Entity Profile View Styles
@@ -40233,9 +40303,18 @@ body.cr-media-linker-active .suggestion-container {
   border-radius: var(--radius-s);
 }
 
-/* ── Mobile layout ────────────────────────────────────── */
+/* ── Mobile layout ──────────────────────────────────────
+ *
+ * `.cr-mobile` is applied by `MobileClassManager` to the view's container
+ * for `Platform.isMobile` (both phones and tablets) — preserves the
+ * 44px touch-target compaction on iPad. The 400px block is a much
+ * narrower viewport concern (phones in portrait); its `.cr-phone`
+ * parallel covers phones where Obsidian Mobile's media query firing
+ * isn't reliable (#528 / audit Phase 4a) without forcing the same
+ * compaction onto iPad-portrait, which has the space for the default
+ * layout. */
 
-.cr-profile--mobile .cr-profile__section-header {
+.cr-mobile .cr-profile__section-header {
   min-height: 44px;
   padding: var(--size-4-2) var(--size-4-3);
 }
@@ -40253,6 +40332,19 @@ body.cr-media-linker-active .suggestion-container {
   .cr-profile__section-summary {
     display: none;
   }
+}
+
+.cr-phone .cr-profile__header {
+  padding: var(--size-4-2);
+}
+
+.cr-phone .cr-profile__header-meta {
+  flex-direction: column;
+  gap: var(--size-4-1);
+}
+
+.cr-phone .cr-profile__section-summary {
+  display: none;
 }
 
 /* ── Embedded map preview ─────────────────────────────── */
@@ -41025,11 +41117,11 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-22 01:52:43 UTC
+ * Build completed: 2026-05-23 21:23:18 UTC
  * Components processed: 50
- * Total lines: 40556
- * Total size: 828.55 KB
- * Build duration: 0.28 seconds
+ * Total lines: 40648
+ * Total size: 831.33 KB
+ * Build duration: 0.88 seconds
  *
  * Component breakdown:
  * - variables.css: 79 lines, 2.45 KB
@@ -41051,14 +41143,14 @@ body.cr-media-linker-active .suggestion-container {
  * - find-on-canvas.css: 275 lines, 5.13 KB
  * - folder-scan.css: 155 lines, 2.6 KB
  * - relationship-calculator.css: 302 lines, 5.27 KB
- * - family-chart-view.css: 1496 lines, 36.62 KB
+ * - family-chart-view.css: 1540 lines, 37.81 KB
  * - family-chart-export.css: 699 lines, 14.78 KB
  * - report-wizard.css: 908 lines, 19.89 KB
  * - book-builder.css: 368 lines, 7.25 KB
  * - data-quality.css: 1439 lines, 28.62 KB
  * - relationships.css: 583 lines, 11.2 KB
  * - canvas-navigation.css: 674 lines, 14.43 KB
- * - map-view.css: 2238 lines, 49.39 KB
+ * - map-view.css: 2264 lines, 50.29 KB
  * - leaflet-distortable.css: 372 lines, 8.84 KB
  * - date-systems.css: 278 lines, 5.16 KB
  * - events.css: 1588 lines, 32.73 KB
@@ -41078,7 +41170,7 @@ body.cr-media-linker-active .suggestion-container {
  * - preferences.css: 426 lines, 9.36 KB
  * - tree-output.css: 1523 lines, 29.97 KB
  * - dynamic-content.css: 1217 lines, 26.68 KB
- * - profile-view.css: 1113 lines, 24.91 KB
+ * - profile-view.css: 1135 lines, 25.6 KB
  * - calendar-view.css: 302 lines, 6.83 KB
  * - migration-notice.css: 135 lines, 2.66 KB
  * - responsive.css: 18 lines, 0.82 KB

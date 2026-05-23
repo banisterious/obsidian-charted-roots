@@ -1727,6 +1727,18 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 /* --------------------------------------------------------------------------
    Responsive Adjustments
+
+   The narrow-viewport toolbar layout is reached via two parallel paths
+   because Obsidian Mobile cannot be trusted to fire `@media (max-width)`
+   reliably (#528 / audit Phase 4a):
+
+   1. Phones — `.cr-phone` (applied by `MobileClassManager` to the view
+      container) targets all phone leaves regardless of leaf width. iPad
+      is excluded (`.cr-tablet`, not `.cr-phone`) so its inline horizontal
+      layout still applies on tablet-sized leaves.
+   2. Narrow desktop / tablet leaves — `@media (max-width: 768px)` covers
+      the case where a desktop or iPad user has narrowed their pane below
+      768px and wants the same wrap behavior.
    -------------------------------------------------------------------------- */
 
 @media (max-width: 768px) {
@@ -1764,22 +1776,20 @@ svg.leaflet-image-layer.leaflet-interactive path {
   }
 }
 
-/* Phone-specific layout (#528) — apply the same wrap rules as the 768px
-   media query, class-based via `Platform.isPhone` in map-view.ts. iPad
-   is excluded so the inline horizontal layout still applies on tablet-
-   sized leaves. `flex: 0 0 100%` is required (not `width: 100%`) — see
-   the comment in the media query above. */
-.cr-map-view-phone .cr-map-toolbar-center {
+/* Mirrors the most critical rules from the media query above for phones
+   that the media query may not reach. `flex: 0 0 100%` is required (not
+   `width: 100%`) — see the comment in the media query block above. */
+.cr-phone .cr-map-toolbar-center {
   order: 3;
   flex: 0 0 100%;
   justify-content: flex-start;
 }
 
-.cr-map-view-phone .cr-map-select {
+.cr-phone .cr-map-select {
   min-width: 100px;
 }
 
-.cr-map-view-phone .cr-map-input {
+.cr-phone .cr-map-input {
   width: 60px;
 }
 
@@ -2015,7 +2025,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
   opacity: 1;
 }
 
-/* Mobile responsiveness */
+/* Mobile responsiveness — same dual-path treatment as the toolbar block
+   above: media query for narrow desktop/tablet leaves, `.cr-phone` for
+   phones where the media query may not fire (#528 / audit Phase 4a). */
 @media (max-width: 600px) {
   .cr-world-map-preview {
     min-height: 120px;
@@ -2030,6 +2042,20 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .cr-world-map-hint {
     display: none;
   }
+}
+
+.cr-phone .cr-world-map-preview {
+  min-height: 120px;
+  max-height: 180px;
+}
+
+.cr-phone .cr-world-map-stats {
+  font-size: var(--font-smallest);
+  padding: 3px 8px;
+}
+
+.cr-phone .cr-world-map-hint {
+  display: none;
 }
 
 /* --------------------------------------------------------------------------

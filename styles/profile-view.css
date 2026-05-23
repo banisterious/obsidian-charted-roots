@@ -809,9 +809,18 @@
   border-radius: var(--radius-s);
 }
 
-/* ── Mobile layout ────────────────────────────────────── */
+/* ── Mobile layout ──────────────────────────────────────
+ *
+ * `.cr-mobile` is applied by `MobileClassManager` to the view's container
+ * for `Platform.isMobile` (both phones and tablets) — preserves the
+ * 44px touch-target compaction on iPad. The 400px block is a much
+ * narrower viewport concern (phones in portrait); its `.cr-phone`
+ * parallel covers phones where Obsidian Mobile's media query firing
+ * isn't reliable (#528 / audit Phase 4a) without forcing the same
+ * compaction onto iPad-portrait, which has the space for the default
+ * layout. */
 
-.cr-profile--mobile .cr-profile__section-header {
+.cr-mobile .cr-profile__section-header {
   min-height: 44px;
   padding: var(--size-4-2) var(--size-4-3);
 }
@@ -829,6 +838,19 @@
   .cr-profile__section-summary {
     display: none;
   }
+}
+
+.cr-phone .cr-profile__header {
+  padding: var(--size-4-2);
+}
+
+.cr-phone .cr-profile__header-meta {
+  flex-direction: column;
+  gap: var(--size-4-1);
+}
+
+.cr-phone .cr-profile__section-summary {
+  display: none;
 }
 
 /* ── Embedded map preview ─────────────────────────────── */

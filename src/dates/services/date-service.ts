@@ -322,6 +322,20 @@ export class DateService {
 			return parseInt(yearMatch[1], 10);
 		}
 
+		// Bare digit-only string treated as a year. Required for genealogy
+		// and fictional eras where the year value may be 1-3 digits — e.g.,
+		// year 99 CE, or a custom era's "DE 310" stored on disk as the
+		// bare "310" before the era prefix is added. Anchored to the whole
+		// string so substring digits inside other formats ("5 Jan", "1900s")
+		// can't accidentally match. Without this branch, the bare year is
+		// unparseable, which propagates into asymmetric age failures when
+		// paired with an era-prefixed date elsewhere on the same person
+		// (#624).
+		const bareYearMatch = dateString.trim().match(/^-?\d+$/);
+		if (bareYearMatch) {
+			return parseInt(bareYearMatch[0], 10);
+		}
+
 		return null;
 	}
 
