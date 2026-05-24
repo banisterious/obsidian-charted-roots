@@ -128,3 +128,93 @@ describe('DateService.parseDate propagates fictional isApproximate (#562)', () =
 		expect(parsed?.isApproximate).toBeUndefined();
 	});
 });
+
+/**
+ * #624 follow-up — fictional-era dates with an inline approximation marker
+ * between the era abbreviation and the year (e.g., `born: DE ~310` in
+ * @doctorwodka's Earthfall calendar). The v0.22.49 prefix-marker stripper
+ * required whitespace AFTER the marker and only handled markers at the
+ * start of the string, so `DE ~310` fell through every fictional pattern
+ * and the standard fallback couldn't recover it (its approximate regex
+ * required a 4-digit year). The fix extends the stripper to also handle
+ * markers sandwiched between whitespace and a digit anywhere in the input.
+ */
+describe('FictionalDateParser inline approximation markers (#624 follow-up)', () => {
+	const parser = new FictionalDateParser([ENGLISH_FANTASY_SYSTEM]);
+
+	it('parses "DE ~310" (inline tilde) as approximate DE 310', () => {
+		const result = parser.parse('DE ~310');
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+		expect(result.date.era.abbrev).toBe('DE');
+		expect(result.date.year).toBe(310);
+		expect(result.date.canonicalYear).toBe(310);
+		expect(result.date.isApproximate).toBe(true);
+	});
+
+	it('parses "DE ~1264" (inline tilde with 4-digit year) as approximate DE 1264', () => {
+		const result = parser.parse('DE ~1264');
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+		expect(result.date.canonicalYear).toBe(1264);
+		expect(result.date.isApproximate).toBe(true);
+	});
+
+	it('parses "DE circa 310" (inline circa) as approximate DE 310', () => {
+		const result = parser.parse('DE circa 310');
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+		expect(result.date.canonicalYear).toBe(310);
+		expect(result.date.isApproximate).toBe(true);
+	});
+
+	it('parses "DE c. 1264" (inline c. abbreviation) as approximate DE 1264', () => {
+		const result = parser.parse('DE c. 1264');
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+		expect(result.date.canonicalYear).toBe(1264);
+		expect(result.date.isApproximate).toBe(true);
+	});
+
+	it('parses "DE about 310" (inline about) as approximate DE 310', () => {
+		const result = parser.parse('DE about 310');
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+		expect(result.date.canonicalYear).toBe(310);
+		expect(result.date.isApproximate).toBe(true);
+	});
+
+	it('parses "DE approximately 310" (inline approximately) as approximate DE 310', () => {
+		const result = parser.parse('DE approximately 310');
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+		expect(result.date.canonicalYear).toBe(310);
+		expect(result.date.isApproximate).toBe(true);
+	});
+
+	it('keeps "DE 310" (no marker) non-approximate (control)', () => {
+		const result = parser.parse('DE 310');
+		expect(result.success).toBe(true);
+		if (!result.success) return;
+		expect(result.date.canonicalYear).toBe(310);
+		expect(result.date.isApproximate).toBeUndefined();
+	});
+
+	it('preserves prefix-marker behavior for 4-digit standard years (regression check)', () => {
+		// The pre-existing prefix-strip path (`~ 1942`) should remain
+		// functional and continue to flag isApproximate via the standard
+		// path. Era-less 3-digit-or-shorter cases (`~ 310`) aren't covered
+		// by this fix — they need either a standard-side approximate-regex
+		// relaxation or a cross-layer plumbing of the fictional parser's
+		// stripped form; both are out of scope for #624's reporter case.
+		const dateService = createDateService({
+			enableFictionalDates: true,
+			showBuiltInDateSystems: false,
+			fictionalDateSystems: [ENGLISH_FANTASY_SYSTEM],
+		});
+		const parsed = dateService.parseDate('~ 1942');
+		expect(parsed).not.toBeNull();
+		expect(parsed?.year).toBe(1942);
+		expect(parsed?.isApproximate).toBe(true);
+	});
+});

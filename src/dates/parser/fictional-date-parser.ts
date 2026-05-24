@@ -19,10 +19,13 @@ import { pluralize } from '../../utils/format-utils';
  * Strip approximation markers ("ish", "?", "circa", etc.) from a date string,
  * returning the cleaned form plus a flag indicating whether any marker was
  * removed. Handles both attached ("10ish") and detached ("10 ish") suffixes,
- * trailing "?", and prefixes (circa, ca, c., about, abt, approx, ~).
+ * trailing "?", prefixes (circa, ca, c., about, abt, approx, ~), and inline
+ * placement between an era and a year (e.g., "DE ~310", "DE c. 1264").
  *
  * Without this, "EF 10ish" falls through every fictional-parser pattern and
- * gets misclassified as a standard date (#562).
+ * gets misclassified as a standard date (#562). The inline-marker handling
+ * specifically covers fictional-era dates with approximation on the year
+ * portion, like @doctorwodka's `born: DE ~310` (#624 follow-up).
  */
 function stripApproximationMarkers(input: string): { stripped: string; isApproximate: boolean } {
 	let stripped = input;
@@ -31,6 +34,20 @@ function stripApproximationMarkers(input: string): { stripped: string; isApproxi
 	const afterPrefix = stripped.replace(/^(?:about|abt|circa|ca|c\.|approx(?:imately)?|~)\s+/i, '');
 	if (afterPrefix !== stripped) {
 		stripped = afterPrefix;
+		isApproximate = true;
+	}
+
+	// Inline approximation marker between an era and a year, e.g., "DE ~310"
+	// → "DE 310". The `\s+` before the marker ensures we don't accidentally
+	// re-match the prefix case handled above, and the `(?=\d)` lookahead
+	// ensures the marker is positioned to qualify a year rather than floating
+	// arbitrarily mid-string.
+	const afterInline = stripped.replace(
+		/\s+(?:about|abt|circa|ca|c\.|approx(?:imately)?|~)\s*(?=\d)/gi,
+		' '
+	);
+	if (afterInline !== stripped) {
+		stripped = afterInline;
 		isApproximate = true;
 	}
 

@@ -220,3 +220,81 @@ describe("TimelineRenderer.computeEventAge — bare birth + era-prefixed event (
 		).toBeUndefined();
 	});
 });
+
+/**
+ * #624 follow-up — inline approximation markers in fictional-era birth dates.
+ *
+ * The v0.22.50 #624 fix relaxed `extractStandardYear` to accept bare digit-only
+ * strings, but @doctorwodka's actual frontmatter shape is `born: DE ~310`
+ * (era + inline tilde + 3-digit year). The inline tilde breaks the fictional
+ * parser's pattern matching, and the standard fallback's approximate regex
+ * requires 4 digits, so the birth value parsed as null. Paired with an
+ * era-prefixed adoption date like `DE 1264-08-15`, the timeline-renderer's
+ * safety-net check fired (`looksLikeFictionalDate` returns true on the
+ * adoption via un-anchored prefix match) and the age annotation dropped.
+ *
+ * The v0.22.51 fix extends `stripApproximationMarkers` to handle inline
+ * markers between an era and a year, restoring the fictional-parse path
+ * for these inputs.
+ */
+describe("TimelineRenderer.computeEventAge — inline approximation markers on fictional eras (#624 follow-up)", () => {
+	// Configured to mirror @doctorwodka's Earthfall calendar.
+	// (Constructed via createDateService with a custom system to ensure
+	// the inline-marker fix exercises a non-built-in era abbreviation.)
+	function makeRendererWithEarthfall(): TimelineRenderer {
+		const dateService = createDateService({
+			enableFictionalDates: true,
+			showBuiltInDateSystems: false,
+			fictionalDateSystems: [{
+				id: 'earthfall',
+				name: 'Earthfall',
+				universe: 'doctorwodka-test',
+				eras: [
+					{ id: 'de', name: 'Post-Earthfall', abbrev: 'DE', epoch: 0, direction: 'forward' },
+					{ id: 'ef', name: 'Earthfall', abbrev: 'EF', epoch: -100, direction: 'forward' },
+					{ id: 'pef', name: 'Pre-Earthfall', abbrev: 'PEF', epoch: -6000, direction: 'forward' },
+				],
+			}],
+		});
+		const service = {
+			getDateService: () => dateService,
+			extractYear: (dateStr: string | number | undefined | null): string => {
+				if (dateStr === undefined || dateStr === null || dateStr === '') return '';
+				const value = typeof dateStr === 'string' ? dateStr : String(dateStr);
+				const match = value.match(/\b(\d{4})\b/) ?? value.match(/(\d+)/);
+				return match ? match[1] : '';
+			},
+		};
+		return new TimelineRenderer(service as never);
+	}
+
+	it('computes age across "DE ~310" birth + "DE 1264-08-15" adoption (the reported scenario)', () => {
+		const renderer = makeRendererWithEarthfall();
+		const age = privates(renderer).computeEventAge('DE ~310', 'DE 1264-08-15', 'doctorwodka-test');
+		expect(age).toBe(954);
+	});
+
+	it('computes age across "DE ~310" birth + plain "DE 1264" adoption', () => {
+		const renderer = makeRendererWithEarthfall();
+		const age = privates(renderer).computeEventAge('DE ~310', 'DE 1264', 'doctorwodka-test');
+		expect(age).toBe(954);
+	});
+
+	it('computes age across "DE c. 310" birth + "DE 1264" adoption (inline c. variant)', () => {
+		const renderer = makeRendererWithEarthfall();
+		const age = privates(renderer).computeEventAge('DE c. 310', 'DE 1264', 'doctorwodka-test');
+		expect(age).toBe(954);
+	});
+
+	it('computes age across "DE circa 310" birth + "DE 1264" adoption (inline circa variant)', () => {
+		const renderer = makeRendererWithEarthfall();
+		const age = privates(renderer).computeEventAge('DE circa 310', 'DE 1264', 'doctorwodka-test');
+		expect(age).toBe(954);
+	});
+
+	it('still works when birth has no marker (regression: "DE 310" + "DE 1264" => 954)', () => {
+		const renderer = makeRendererWithEarthfall();
+		const age = privates(renderer).computeEventAge('DE 310', 'DE 1264', 'doctorwodka-test');
+		expect(age).toBe(954);
+	});
+});
