@@ -201,3 +201,80 @@ describe('compareTimelineEntriesByDate — stable sort integration', () => {
 		]);
 	});
 });
+
+/**
+ * #625 — Per-person Dynamic Timeline Block didn't respect `sort_order`
+ * values from the v0.22.45 #569 auto-compute service. Same-year events
+ * with `before`/`after` frontmatter relationships fell through to the
+ * rawDate / insertion-order fallback, so the user-specified narrative
+ * order (Event A `after: [[Event B]]`) was ignored on per-person
+ * timelines. The fix copies `sortOrder` from the Event model into the
+ * TimelineEntry and consults it as a same-year tiebreak before rawDate.
+ *
+ * Reported by [@doctorwodka](https://github.com/doctorwodka); confirmed by
+ * [@DigitalDreamn](https://github.com/DigitalDreamn) with the historical
+ * context that the bug has been latent since v0.22.39 (when before/after
+ * properties first arrived).
+ */
+function entryWithSort(year: string, sortOrder: number | undefined, title: string, rawDate?: string): TimelineEntry {
+	return { date: rawDate ?? '', year, type: 'event', title, rawDate, sortOrder };
+}
+
+describe('compareTimelineEntriesByDate — sort_order tiebreak on same year (#625)', () => {
+	it('orders same-year events by sort_order (lower first in chronological)', () => {
+		const eventB = entryWithSort('1264', 1, 'Event B');
+		const eventA = entryWithSort('1264', 2, 'Event A (after Event B)');
+		expect(compareTimelineEntriesByDate(eventB, eventA, 'chronological')).toBeLessThan(0);
+		expect(compareTimelineEntriesByDate(eventA, eventB, 'chronological')).toBeGreaterThan(0);
+	});
+
+	it('inverts sort_order order under reverse rendering', () => {
+		const eventB = entryWithSort('1264', 1, 'Event B');
+		const eventA = entryWithSort('1264', 2, 'Event A (after Event B)');
+		expect(compareTimelineEntriesByDate(eventB, eventA, 'reverse')).toBeGreaterThan(0);
+		expect(compareTimelineEntriesByDate(eventA, eventB, 'reverse')).toBeLessThan(0);
+	});
+
+	it('preserves chronological year-sort across years (sort_order only fires within same year)', () => {
+		const earlier = entryWithSort('1260', 5, 'Earlier year, higher sort_order');
+		const later = entryWithSort('1264', 1, 'Later year, lower sort_order');
+		// Year wins even when sort_order would invert.
+		expect(compareTimelineEntriesByDate(earlier, later, 'chronological')).toBeLessThan(0);
+	});
+
+	it('falls through to rawDate tiebreak when only one entry has sort_order', () => {
+		// Mixed: one event has sort_order (from before/after), one doesn't
+		// (e.g., a birth from the Person model, or an Event without
+		// before/after constraints). The sort_order check intentionally
+		// skips, so rawDate-or-insertion-order resolves.
+		const dated = entryWithSort('1264', undefined, 'Dated event', '1264-03-12');
+		const ordered = entryWithSort('1264', 5, 'Ordered event');
+		// Both have year 1264. dated has rawDate "1264-03-12", ordered has empty rawDate.
+		// "1264-03-12" > "" lexicographically, so ordered (empty rawDate) sorts first.
+		expect(compareTimelineEntriesByDate(ordered, dated, 'chronological')).toBeLessThan(0);
+	});
+
+	it('returns 0 when years tie, sort_orders are equal, and rawDates are equal', () => {
+		const a = entryWithSort('1264', 5, 'A');
+		const b = entryWithSort('1264', 5, 'B');
+		expect(compareTimelineEntriesByDate(a, b, 'chronological')).toBe(0);
+	});
+
+	it('sorts a mixed bag of events: distinct years + same-year-with-sort_order + same-year-no-sort_order', () => {
+		const events: TimelineEntry[] = [
+			entryWithSort('1264', 2, 'Event A (after Event B)'),
+			entryWithSort('1260', undefined, 'Earlier year event', '1260-05-15'),
+			entryWithSort('1264', 1, 'Event B'),
+			entryWithSort('1270', undefined, 'Later year event', '1270-01-01'),
+		];
+		const sorted = [...events].sort((a, b) =>
+			compareTimelineEntriesByDate(a, b, 'chronological')
+		);
+		expect(sorted.map((e) => e.title)).toEqual([
+			'Earlier year event',  // 1260
+			'Event B',             // 1264, sort_order 1
+			'Event A (after Event B)', // 1264, sort_order 2
+			'Later year event',    // 1270
+		]);
+	});
+});
