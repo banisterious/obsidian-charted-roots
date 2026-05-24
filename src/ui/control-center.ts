@@ -229,7 +229,7 @@ export class ControlCenterModal extends Modal {
 	 * Check if we're in mobile mode
 	 */
 	private isMobileMode(): boolean {
-		return Platform.isMobile || activeDocument.body.classList.contains('is-mobile');
+		return Platform.isMobile;
 	}
 
 	/**
