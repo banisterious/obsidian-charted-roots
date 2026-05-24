@@ -290,6 +290,7 @@ A read-only detail view (`src/profile-view/`) that auto-syncs with the active no
 | Function | Purpose |
 |----------|---------|
 | `extractDisplayLabel(value)` | Strip `[[…]]` brackets, collapse pipe-form to the alias, and collapse path-form to the basename. Used by Edit Person / Edit Organization / Edit Event modal display sites so users see clean labels (`Errol Naberrie`) regardless of how the underlying frontmatter stores the wikilink (`[[path|alias]]` after #540 disambiguation). |
+| `unwrapWikilinkDisplay(value)` | Display-safe variant for free-form text fields that *may* contain a wikilink. Delegates to `extractDisplayLabel` only when the input is fully bracket-wrapped; otherwise the trimmed value is returned unchanged so legitimate `/` or `|` characters in free text (e.g., `occupation: "Cook/Server"`) aren't collapsed away. Used by the Family Chart's six free-form text card fields and the info-panel place display (#622). |
 | `getCanonicalLinktext(app, file)` | Return the canonical wikilink target for a file: the bare basename when unique in the vault, or the full path (without `.md`) when basename is ambiguous. Used by `createSmartWikilink` across all entity writers to decide whether to emit `[[basename]]` or the disambiguated `[[path|basename]]` form. |
 
 ### Platform (src/utils/platform-utils.ts)
