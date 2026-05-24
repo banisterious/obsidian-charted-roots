@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.51] - 2026-05-24
+
+Reactive patch closing three reporter-driven fictional-date and timeline-ordering papercuts on the heels of v0.22.50, plus one audit Phase 5 cleanup. Two follow-ups address scenarios v0.22.50's fixes didn't fully reach: inline approximation markers between an era and a 3-digit year (`born: DE ~310`) now strip cleanly so the fictional parser succeeds end-to-end ([#624](https://github.com/banisterious/obsidian-charted-roots/issues/624) follow-up, reported by [@doctorwodka](https://github.com/doctorwodka)), and per-person Dynamic Timeline Blocks now consult the v0.22.45 [#569](https://github.com/banisterious/obsidian-charted-roots/issues/569) `sort_order` topological values for same-year `before`/`after` tiebreaks instead of falling through to insertion order ([#625](https://github.com/banisterious/obsidian-charted-roots/issues/625), reported by [@doctorwodka](https://github.com/doctorwodka), confirmed by [@DigitalDreamn](https://github.com/DigitalDreamn)). Independently, fictional-era dates carrying an ISO-style `-MM-DD` suffix (e.g., `adoption_date: DE 1264-08-15`) now preserve the era prefix on display rather than rendering as a plain year ([#626](https://github.com/banisterious/obsidian-charted-roots/issues/626), spotted during the #624 follow-up's dev-vault verification). **1023 tests passing across 77 suites**.
+
 ### Changed
 
 - **Internal: Control Center mobile-mode check drops the body-class fallback** (audit Phase 5): `isMobileMode()` in `src/ui/control-center.ts` previously consulted both `Platform.isMobile` and `activeDocument.body.classList.contains('is-mobile')` as a belt-and-suspenders pair. v0.22.49's `MobileClassManager` (Phase 4a) made `Platform.isMobile` authoritative across the plugin, so the body-class check is redundant; the method now just returns `Platform.isMobile`. No user-visible behavior change — the two checks were always synchronized in practice. One Phase 5 cleanup item closes out.
