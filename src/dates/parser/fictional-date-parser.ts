@@ -19,10 +19,13 @@ import { pluralize } from '../../utils/format-utils';
  * Strip approximation markers ("ish", "?", "circa", etc.) from a date string,
  * returning the cleaned form plus a flag indicating whether any marker was
  * removed. Handles both attached ("10ish") and detached ("10 ish") suffixes,
- * trailing "?", and prefixes (circa, ca, c., about, abt, approx, ~).
+ * trailing "?", prefixes (circa, ca, c., about, abt, approx, ~), and inline
+ * placement between an era and a year (e.g., "DE ~310", "DE c. 1264").
  *
  * Without this, "EF 10ish" falls through every fictional-parser pattern and
- * gets misclassified as a standard date (#562).
+ * gets misclassified as a standard date (#562). The inline-marker handling
+ * specifically covers fictional-era dates with approximation on the year
+ * portion, like @doctorwodka's `born: DE ~310` (#624 follow-up).
  */
 function stripApproximationMarkers(input: string): { stripped: string; isApproximate: boolean } {
 	let stripped = input;
@@ -31,6 +34,20 @@ function stripApproximationMarkers(input: string): { stripped: string; isApproxi
 	const afterPrefix = stripped.replace(/^(?:about|abt|circa|ca|c\.|approx(?:imately)?|~)\s+/i, '');
 	if (afterPrefix !== stripped) {
 		stripped = afterPrefix;
+		isApproximate = true;
+	}
+
+	// Inline approximation marker between an era and a year, e.g., "DE ~310"
+	// → "DE 310". The `\s+` before the marker ensures we don't accidentally
+	// re-match the prefix case handled above, and the `(?=\d)` lookahead
+	// ensures the marker is positioned to qualify a year rather than floating
+	// arbitrarily mid-string.
+	const afterInline = stripped.replace(
+		/\s+(?:about|abt|circa|ca|c\.|approx(?:imately)?|~)\s*(?=\d)/gi,
+		' '
+	);
+	if (afterInline !== stripped) {
+		stripped = afterInline;
 		isApproximate = true;
 	}
 
@@ -125,6 +142,17 @@ export class FictionalDateParser {
 		const TIME_SUFFIX_RE = /\s*T\d{1,2}:\d{2}(?::\d{2})?$/;
 		const withoutTime = stripped.replace(TIME_SUFFIX_RE, '').trim();
 
+		// Strip an optional ISO-style date suffix (`-MM-DD` or `-MM`)
+		// after the time strip so a fictional-era date with month/day
+		// precision (e.g., `DE 1264-08-15`) parses as the year-and-era
+		// pair rather than falling through to the standard-date fallback
+		// and losing the era on display (#626). Same rationale as the
+		// time strip: precision beyond the year isn't preserved on the
+		// parsed result — the raw frontmatter string is still available
+		// for sort tiebreaks.
+		const DATE_SUFFIX_RE = /-\d{2}(?:-\d{2})?$/;
+		const withoutDate = withoutTime.replace(DATE_SUFFIX_RE, '').trim();
+
 		// Try to match various patterns
 		const patterns = [
 			// "TA 2941" or "TA  2941" (abbreviation space year)
@@ -141,7 +169,7 @@ export class FictionalDateParser {
 		let yearStr: string | null = null;
 
 		for (const pattern of patterns) {
-			const match = withoutTime.match(pattern);
+			const match = withoutDate.match(pattern);
 			if (match) {
 				if (/^\d+$/.test(match[1])) {
 					// Year first pattern
@@ -351,19 +379,27 @@ export class FictionalDateParser {
 		// suffix-strip in `parse()`.
 		const withoutTime = trimmed.replace(/\s*T\d{1,2}:\d{2}(?::\d{2})?$/, '').trim();
 
+		// Exclude ISO date patterns BEFORE stripping the date suffix so
+		// `2024-08-15` (a real ISO date) is still rejected here rather
+		// than being reduced to `2024` and then matched as a bare year.
+		// Kept in sync with `parse()`'s date-suffix strip (#626).
+		const isoPattern = /^\d{4}(-\d{2}(-\d{2})?)?$/;
+		if (isoPattern.test(withoutTime)) {
+			return false;
+		}
+
+		// Strip an optional ISO-style date suffix (`-MM-DD` or `-MM`)
+		// so fictional-era dates with month/day precision (e.g.,
+		// `DE 1264-08-15`) still pass this look-ahead check (#626).
+		const withoutDate = withoutTime.replace(/-\d{2}(?:-\d{2})?$/, '').trim();
+
 		// Check if it matches our expected patterns
 		const fictionalPatterns = [
 			/^[A-Za-z]+\s*\d+$/, // "TA 2941" or "TA2941"
 			/^\d+\s*[A-Za-z]+$/ // "2941 TA" or "2941TA"
 		];
 
-		// Exclude ISO date patterns
-		const isoPattern = /^\d{4}(-\d{2}(-\d{2})?)?$/;
-		if (isoPattern.test(withoutTime)) {
-			return false;
-		}
-
-		return fictionalPatterns.some(p => p.test(withoutTime));
+		return fictionalPatterns.some(p => p.test(withoutDate));
 	}
 
 	/**

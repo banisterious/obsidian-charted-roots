@@ -65,6 +65,15 @@ export interface TimelineEntry {
 	 * both of which `formatDate` strips or rewrites for display.
 	 */
 	rawDate?: string;
+	/**
+	 * Topological sort_order value from the event's frontmatter, populated
+	 * by the v0.22.45 #569 auto-compute service from `before`/`after`
+	 * relationships. Used as a same-year tiebreak so events with explicit
+	 * ordering constraints render in the right narrative order (#625).
+	 * Undefined for non-Event-derived entries (birth/death from the Person
+	 * model, family events from relationship walks, context events).
+	 */
+	sortOrder?: number;
 }
 
 /**
@@ -91,6 +100,18 @@ export function compareTimelineEntriesByDate(
 	const yearB = parseInt(b.year) || 0;
 	if (yearA !== yearB) {
 		return sortOrder === 'reverse' ? yearB - yearA : yearA - yearB;
+	}
+	// Same-year tiebreak: respect `sort_order` topological values when both
+	// entries have them (#625). Events with `before`/`after` frontmatter
+	// receive sort_order values from the v0.22.45 #569 auto-compute
+	// service; per-person timelines were missed in that sweep. The check
+	// only fires when BOTH entries have a value, so events without
+	// before/after constraints (birth from person, marriage, family events,
+	// context entries) continue to fall through to the rawDate tiebreak
+	// below rather than mixing with explicitly-ordered events.
+	if (a.sortOrder !== undefined && b.sortOrder !== undefined && a.sortOrder !== b.sortOrder) {
+		const cmp = a.sortOrder - b.sortOrder;
+		return sortOrder === 'reverse' ? -cmp : cmp;
 	}
 	const rawA = a.rawDate || '';
 	const rawB = b.rawDate || '';
@@ -1358,7 +1379,8 @@ export class TimelineRenderer {
 				place: event.place ? this.service.stripWikilink(event.place) : undefined,
 				description: event.description,
 				eventFile: event.file?.basename,
-				rawDate: event.date
+				rawDate: event.date,
+				sortOrder: event.sortOrder
 			});
 		}
 
