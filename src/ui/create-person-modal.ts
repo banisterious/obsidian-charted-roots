@@ -24,6 +24,7 @@ import { SourcePickerModal } from '../sources/ui/source-picker-modal';
 import { CreateSourceModal } from '../sources/ui/create-source-modal';
 import type { EventNote } from '../events/types/event-types';
 import { getEventType } from '../events/types/event-types';
+import { createValueAliasService } from '../core/value-alias-service';
 import { EventPickerModal } from '../events/ui/event-picker-modal';
 import { splitAndTrim } from '../utils/format-utils';
 import { CreateEventModal } from '../events/ui/create-event-modal';
@@ -205,11 +206,23 @@ export class CreatePersonModal extends Modal {
 			this.editingFile = options.editFile;
 			this.originalName = options.editPersonData.name; // Store for rename detection
 			const ep = options.editPersonData;
+			// Normalize the loaded sex value to the canonical GEDCOM-aligned
+			// markers (M/F/X/U) so the dropdown finds a matching option and
+			// the save flow writes the canonical form regardless of which
+			// shape was on disk. Profile View already writes markers; Edit
+			// Person previously wrote word forms (`male` / `female` /
+			// `nonbinary`), leading to a divergence where a person saved
+			// via one surface displayed as "unrecognized" in the other
+			// (#629). The alias service maps both built-in synonyms (`male`
+			// -> `M`, `nonbinary` -> `X`, etc.) and any user-defined
+			// aliases, so existing data of either shape converts on load.
+			const sexAliasService = createValueAliasService(this.plugin);
+			const loadedSex = ep.sex || ep.gender;
 			this.personData = {
 				name: ep.name,
 				crId: ep.crId,
 				personType: ep.personType,
-				sex: ep.sex || ep.gender, // sex preferred, gender for backwards compatibility
+				sex: loadedSex ? sexAliasService.resolve('sex', loadedSex) : undefined,
 				pronouns: Array.isArray(ep.pronouns) ? ep.pronouns : ep.pronouns ? [ep.pronouns] : undefined,
 				nickname: ep.nickname,
 				// Name components (#174, #192)
@@ -479,10 +492,11 @@ export class CreatePersonModal extends Modal {
 			.setName('Sex')
 			.setDesc('Sex (used for relationship terminology and display)')
 			.addDropdown(dropdown => dropdown
-				.addOption('', '(Unknown)')
-				.addOption('male', 'Male')
-				.addOption('female', 'Female')
-				.addOption('nonbinary', 'Non-binary')
+				.addOption('', '(None)')
+				.addOption('M', 'Male')
+				.addOption('F', 'Female')
+				.addOption('X', 'Non-binary')
+				.addOption('U', 'Unknown')
 				.setValue(this.personData.sex || '')
 				.onChange(value => {
 					this.personData.sex = value || undefined;
