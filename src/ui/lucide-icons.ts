@@ -168,6 +168,7 @@ export type LucideIconName =
 	// Event types
 	| 'skull' // Death
 	| 'heart-off' // Divorce
+	| 'heart-handshake' // Adoption
 	| 'droplets' // Baptism
 	| 'calendar-plus' // Extract events
 	| 'calendar-check' // Create events

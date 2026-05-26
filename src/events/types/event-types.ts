@@ -53,7 +53,8 @@ export const CORE_EVENT_TYPES = [
 	'birth',
 	'death',
 	'marriage',
-	'divorce'
+	'divorce',
+	'adoption'
 ] as const;
 
 /**
@@ -161,6 +162,15 @@ export const EVENT_TYPE_DEFINITIONS: EventTypeDefinition[] = [
 		description: 'Divorce or annulment',
 		icon: 'heart-off',
 		color: '#ef4444',
+		category: 'vital',
+		isBuiltIn: true
+	},
+	{
+		id: 'adoption',
+		name: 'Adoption',
+		description: 'Adoption of a person',
+		icon: 'heart-handshake',
+		color: '#fb923c',
 		category: 'vital',
 		isBuiltIn: true
 	},
