@@ -504,6 +504,12 @@ export interface CanvasRootsSettings {
 	// Cleanup wizard state (for resuming interrupted wizards)
 	/** Persisted state of the cleanup wizard, if any */
 	cleanupWizardState?: CleanupWizardPersistedState;
+	/**
+	 * Person pairs the user marked "not a duplicate" in the duplicate-detection
+	 * modal, so they stay dismissed across sessions and rescans (#633). Each
+	 * entry is a sorted `crIdA::crIdB` key (see dismissedDuplicatePairKey).
+	 */
+	dismissedDuplicatePairs: string[];
 	// Create entity modal state (for resuming interrupted creation)
 	/** Persisted state for create person modal */
 	createPersonModalState?: CreateEntityPersistedState;
@@ -725,6 +731,7 @@ export function getPlaceFolderForCategory(
 }
 
 export const DEFAULT_SETTINGS: CanvasRootsSettings = {
+	dismissedDuplicatePairs: [],
 	defaultNodeWidth: 200,
 	defaultNodeHeight: 100,
 	// Spacing values optimized for family-chart layout engine with 1.5x multiplier

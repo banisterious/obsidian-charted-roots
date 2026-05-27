@@ -584,7 +584,7 @@ export function registerCommandsAndEvents(plugin: CanvasRootsPlugin): void {
 		name: 'Find duplicate people',
 		callback: async () => {
 			const { DuplicateDetectionModal } = await import('../ui/duplicate-detection-modal');
-			new DuplicateDetectionModal(plugin.app, plugin.settings).open();
+			new DuplicateDetectionModal(plugin.app, plugin).open();
 		}
 	});
 

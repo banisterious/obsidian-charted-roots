@@ -14,6 +14,16 @@ import { getLogger } from './logging';
 const logger = getLogger('DuplicateDetection');
 
 /**
+ * Canonical, order-independent key for a "not a duplicate" person pair (#633).
+ * Sorting the two cr_ids means the same pair produces the same key regardless
+ * of which person the detector happened to list first, so a dismissal made in
+ * one scan still matches the pair in a later scan.
+ */
+export function dismissedDuplicatePairKey(crIdA: string, crIdB: string): string {
+	return [crIdA, crIdB].sort().join('::');
+}
+
+/**
  * A potential duplicate match with confidence scoring
  */
 export interface DuplicateMatch {
