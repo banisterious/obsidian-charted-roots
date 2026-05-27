@@ -10,7 +10,7 @@ import type { DynamicBlockContext, DynamicBlockConfig } from '../services/dynami
 import type { DynamicContentService } from '../services/dynamic-content-service';
 import type { PersonNode, FamilyGraphService } from '../../core/family-graph';
 import type { DateService } from '../../dates/services/date-service';
-import { getEventType } from '../../events/types/event-types';
+import { getEventType, type EventTypeDefinition } from '../../events/types/event-types';
 import type { LucideIconName } from '../../ui/lucide-icons';
 import { capitalize } from '../../utils/format-utils';
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
@@ -136,6 +136,32 @@ export function compareTimelineEntriesByDate(
 		return sortOrder === 'reverse' ? -effectiveCmp : effectiveCmp;
 	}
 	return 0;
+}
+
+/**
+ * Icon (and optional color) for a family-event timeline row (#632).
+ *
+ * Adoption family events — the adoptive parent's `Adopted {name}` row and the
+ * adopted-sibling / adopted-grandchild `Adoption of {name}` rows added in
+ * #621/#623 — reuse the built-in `adoption` event type so their icon and
+ * warm-orange color match the focal person's own `Adopted` row (#627), keeping
+ * continuity across every Dynamic Timeline surface. All other family events use
+ * the generic `users` icon; birth rows stay on `users` because they're typed
+ * `family_birth`, not `adoption`. Falls back to `users` if the adoption type is
+ * unavailable (e.g. built-ins disabled with no custom override).
+ */
+export function resolveFamilyEventIcon(
+	type: string,
+	customEventTypes: EventTypeDefinition[] = [],
+	showBuiltInEventTypes = true
+): { icon: LucideIconName; color?: string } {
+	if (type === 'adoption') {
+		const adoptionType = getEventType('adoption', customEventTypes, showBuiltInEventTypes);
+		if (adoptionType) {
+			return { icon: adoptionType.icon, color: adoptionType.color };
+		}
+	}
+	return { icon: 'users' as LucideIconName };
 }
 
 /**
@@ -1516,7 +1542,15 @@ export class TimelineRenderer {
 				setIcon(iconSpan, 'landmark' as LucideIconName);
 			} else if (entry.isFamilyEvent) {
 				const iconSpan = li.createSpan({ cls: 'cr-timeline__icon cr-timeline__icon--family' });
-				setIcon(iconSpan, 'users' as LucideIconName);
+				// Adoption family events read as adoptions, not generic family events
+				// (#632) — see resolveFamilyEventIcon for the rationale.
+				const { icon, color } = resolveFamilyEventIcon(
+					entry.type,
+					settings.customEventTypes || [],
+					settings.showBuiltInEventTypes !== false
+				);
+				setIcon(iconSpan, icon);
+				if (color) iconSpan.style.setProperty('color', color);
 			} else {
 				const eventType = getEventType(
 					entry.type,
