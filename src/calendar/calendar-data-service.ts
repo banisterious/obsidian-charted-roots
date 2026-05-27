@@ -177,7 +177,7 @@ export class CalendarDataService {
 		const impreciseEvents: CalendarEvent[] = [];
 
 		for (const event of allEvents) {
-			if (event.month !== month) continue;
+			if (event.month !== month || event.year !== year) continue;
 
 			if (event.day !== null) {
 				const existing = dayEvents.get(event.day) || [];
