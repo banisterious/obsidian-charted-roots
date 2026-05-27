@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **Merge Duplicate Places: Help link now points at the current wiki**: The Help link in the modal header pointed at a placeholder wiki URL, so clicking it 404'd. The link now uses the current `banisterious/obsidian-charted-roots` wiki path, matching every other help link in the plugin. Reported by [@Darcylynn](https://github.com/Darcylynn) in [Discussion #631](https://github.com/banisterious/obsidian-charted-roots/discussions/631).
+
 ## [0.22.52] - 2026-05-26
 
 Small reactive patch closing two reporter-driven UI papercuts. The focal person's own `Adopted` event row on the Dynamic Timeline Block now renders with an icon (the row previously fell through to a placeholder span because no built-in event type with id `adoption` existed); the fix adds `adoption` as a vital built-in event type alongside birth / death / marriage / divorce ([#627](https://github.com/banisterious/obsidian-charted-roots/issues/627), reported by [@doctorwodka](https://github.com/doctorwodka), confirmed by [@DigitalDreamn](https://github.com/DigitalDreamn)). The Edit Person modal now recognizes the single-letter sex markers (`M` / `F` / `X` / `U`) that Profile View writes and emits the same canonical form on save, ending a write-shape divergence that grayed out the dropdown when reopening a marker-form note ([#629](https://github.com/banisterious/obsidian-charted-roots/issues/629), reported by [@doctorwodka](https://github.com/doctorwodka)). **1048 tests passing across 79 suites**.

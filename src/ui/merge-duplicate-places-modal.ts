@@ -96,7 +96,7 @@ export class MergeDuplicatePlacesModal extends Modal {
 		const helpBtn = header.createEl('a', {
 			cls: 'crc-modal-help-link',
 			attr: {
-				href: 'https://github.com/flyingmat/canvas-roots/wiki/Geographic-Features#merge-duplicate-places',
+				href: 'https://github.com/banisterious/obsidian-charted-roots/wiki/Geographic-Features#merge-duplicate-places',
 				'aria-label': 'Documentation'
 			}
 		});
