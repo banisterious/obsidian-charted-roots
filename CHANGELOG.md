@@ -14,6 +14,8 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ### Fixed
 
+- **Calendar view now filters events by year as well as month** ([#634](https://github.com/banisterious/obsidian-charted-roots/issues/634)): Navigating the Calendar view to a specific month and year (e.g. February 1850) showed events from every year that shared that month — so a person born in February 2010 appeared on Feb 15, 1850, with their actual year and "years ago" count exposing the mismatch. `getEventsForMonth` accepted the displayed year but only compared each event's month, never its year. The fix adds the year to the loop guard so only events matching both the displayed month and year render; signed years (negative for descending custom eras like BBY / BCE) compare cleanly with direct equality. 4 new test cases in `tests/calendar-data-service-year-filter.test.ts`. Reported by [@Darcylynn](https://github.com/Darcylynn) in [Discussion #631](https://github.com/banisterious/obsidian-charted-roots/discussions/631); fixed by [@MohammadYusif](https://github.com/MohammadYusif) in [#636](https://github.com/banisterious/obsidian-charted-roots/pull/636).
+
 - **Merge Duplicate Places: Help link now points at the current wiki**: The Help link in the modal header pointed at a placeholder wiki URL, so clicking it 404'd. The link now uses the current `banisterious/obsidian-charted-roots` wiki path, matching every other help link in the plugin. Reported by [@Darcylynn](https://github.com/Darcylynn) in [Discussion #631](https://github.com/banisterious/obsidian-charted-roots/discussions/631).
 
 ## [0.22.52] - 2026-05-26
