@@ -4,8 +4,8 @@
 
 **Target page:** `/changelog/_index.md` on chartedroots.com
 **Source material:** [wiki Release-History.md](../../../wiki-content/Release-History.md) (canonical longer-form), [CHANGELOG.md](../../../CHANGELOG.md) (per-release detail).
-**Last ported:** 2026-05-26, commit `fc8d235` on chartedroots.com@main (v0.22.50 + v0.22.51 + v0.22.52 Round-Up spotlights + cluster-intro metric bumps to fifty-three releases / 1048 tests / sixth patch in the v0.22.46-anchored window).
-**Pending port (next session):** v0.22.53 Round-Up spotlight + cluster-intro metric bumps to fifty-four releases / 1060 tests / seventh patch in the v0.22.46-anchored window.
+**Last ported:** 2026-05-27, commit `dc988ea` on chartedroots.com@main (v0.22.53 Round-Up spotlight + cluster-intro metric bumps to fifty-four releases / 1060 tests / seventh patch in the v0.22.46-anchored window).
+**Pending port (next session):** none — draft current with chartedroots.com through v0.22.53.
 
 ---
 
