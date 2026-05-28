@@ -1440,22 +1440,6 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					this.plugin.settings.spouseEdgeLabelFormat = value as SpouseEdgeLabelFormat;
 					await this.plugin.saveSettings();
 				}));
-
-		// --- Event display subsection ---
-		new Setting(canvasContent).setName("Event display").setHeading();
-
-		new Setting(canvasContent)
-			.setName('Event type display')
-			.setDesc('How to show event types in timelines, canvas event nodes, and maps')
-			.addDropdown(dropdown => dropdown
-				.addOption('text', 'Text label')
-				.addOption('icon', 'Icon (with tooltip)')
-				.addOption('both', 'Icon with label')
-				.setValue(this.plugin.settings.eventIconMode)
-				.onChange(async (value) => {
-					this.plugin.settings.eventIconMode = value as EventIconMode;
-					await this.plugin.saveSettings();
-				}));
 	}
 
 	private renderDatesSection(containerEl: HTMLElement): void {
@@ -1539,9 +1523,25 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		const timelineDetails = containerEl.createEl('details', { cls: 'cr-settings-section' });
 		timelineDetails.dataset.sectionName = 'timeline';
 		const timelineSummary = timelineDetails.createEl('summary');
-		timelineSummary.createSpan({ text: 'Timeline' });
-		timelineSummary.createSpan({ cls: 'cr-section-desc', text: 'Layout, labels, and family event coverage' });
+		timelineSummary.createSpan({ text: 'Events & timelines' });
+		timelineSummary.createSpan({ cls: 'cr-section-desc', text: 'Event display, layout, labels, and event coverage' });
 		const timelineContent = timelineDetails.createDiv({ cls: 'cr-section-content' });
+
+		// --- Event display subsection ---
+		new Setting(timelineContent).setName("Event display").setHeading();
+
+		new Setting(timelineContent)
+			.setName('Event type display')
+			.setDesc('How to show event types in timelines, canvas event nodes, and maps')
+			.addDropdown(dropdown => dropdown
+				.addOption('text', 'Text label')
+				.addOption('icon', 'Icon (with tooltip)')
+				.addOption('both', 'Icon with label')
+				.setValue(this.plugin.settings.eventIconMode)
+				.onChange(async (value) => {
+					this.plugin.settings.eventIconMode = value as EventIconMode;
+					await this.plugin.saveSettings();
+				}));
 
 		// --- Timeline layout subsection ---
 		new Setting(timelineContent).setName("Timeline layout").setHeading();
@@ -1726,6 +1726,34 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.timelineShowParentMarriages = value;
 					await this.plugin.saveSettings();
+				}));
+
+		// --- Context events subsection ---
+		new Setting(timelineContent).setName("Context events").setHeading();
+
+		new Setting(timelineContent)
+			.setName('Default timeline context')
+			.setDesc('Note with historical events to overlay on all timelines (e.g., [[World History]]). Can be overridden per block with context: [[Note]].')
+			.addText(text => text
+				.setPlaceholder('[[My Historical Events]]')
+				.setValue(this.plugin.settings.defaultTimelineContext)
+				.onChange(async (value) => {
+					this.plugin.settings.defaultTimelineContext = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(timelineContent)
+			.setName('Context lifespan margin')
+			.setDesc('Only show context events within this many years of the person\'s lifespan. Set to 0 to show all context events (default).')
+			.addText(text => text
+				.setPlaceholder('0')
+				.setValue(String(this.plugin.settings.contextLifespanMargin))
+				.onChange(async (value) => {
+					const val = parseInt(value);
+					if (!isNaN(val) && val >= 0) {
+						this.plugin.settings.contextLifespanMargin = val;
+						await this.plugin.saveSettings();
+					}
 				}));
 	}
 
@@ -2208,31 +2236,6 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.syncCalendariumEvents = value;
 					await this.plugin.saveSettings();
-				}));
-
-		new Setting(advancedContent)
-			.setName('Default timeline context')
-			.setDesc('Note with historical events to overlay on all timelines (e.g., [[World History]]). Can be overridden per block with context: [[Note]].')
-			.addText(text => text
-				.setPlaceholder('[[My Historical Events]]')
-				.setValue(this.plugin.settings.defaultTimelineContext)
-				.onChange(async (value) => {
-					this.plugin.settings.defaultTimelineContext = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(advancedContent)
-			.setName('Context lifespan margin')
-			.setDesc('Only show context events within this many years of the person\'s lifespan. Set to 0 to show all context events (default).')
-			.addText(text => text
-				.setPlaceholder('0')
-				.setValue(String(this.plugin.settings.contextLifespanMargin))
-				.onChange(async (value) => {
-					const val = parseInt(value);
-					if (!isNaN(val) && val >= 0) {
-						this.plugin.settings.contextLifespanMargin = val;
-						await this.plugin.saveSettings();
-					}
 				}));
 
 		// --- Relationship calculator subsection ---

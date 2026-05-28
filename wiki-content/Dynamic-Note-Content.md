@@ -110,9 +110,9 @@ context: [[US History]]
 
 To suppress the default context on a specific block, use `context: none`.
 
-**Filtering:** By default, all context events are shown (`contextLifespanMargin: 0`). Set a margin in Settings > Advanced > **Context lifespan margin** to limit context events to within N years of the person's own lifespan. The margin uses only the person's own events (birth, death, etc.) — family events like sibling births do not expand the range.
+**Filtering:** By default, all context events are shown (`contextLifespanMargin: 0`). Set a margin in Settings > Events & timelines > Context events > **Context lifespan margin** to limit context events to within N years of the person's own lifespan. The margin uses only the person's own events (birth, death, etc.) — family events like sibling births do not expand the range.
 
-**Default setting:** Rather than adding `context:` to every timeline block, you can set a default context note in Settings > Advanced > **Default timeline context**. All timelines will use this note unless overridden per block.
+**Default setting:** Rather than adding `context:` to every timeline block, you can set a default context note in Settings > Events & timelines > Context events > **Default timeline context**. All timelines will use this note unless overridden per block.
 
 #### Age annotations
 
