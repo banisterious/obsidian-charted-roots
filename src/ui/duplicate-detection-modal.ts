@@ -9,10 +9,12 @@ import { App, Modal, Notice, Setting, TFile } from 'obsidian';
 import {
 	DuplicateDetectionService,
 	DuplicateMatch,
-	DuplicateDetectionOptions
+	DuplicateDetectionOptions,
+	dismissedDuplicatePairKey
 } from '../core/duplicate-detection';
 import { MergeWizardModal } from './merge-wizard-modal';
 import type { CanvasRootsSettings } from '../settings';
+import type CanvasRootsPlugin from '../../main';
 import { getLogger } from '../core/logging';
 
 const logger = getLogger('DuplicateModal');
@@ -28,10 +30,15 @@ export class DuplicateDetectionModal extends Modal {
 
 	constructor(
 		app: App,
-		private settings?: CanvasRootsSettings
+		private plugin?: CanvasRootsPlugin
 	) {
 		super(app);
 		this.service = new DuplicateDetectionService(app);
+	}
+
+	/** Settings, when the modal was opened with a plugin reference. */
+	private get settings(): CanvasRootsSettings | undefined {
+		return this.plugin?.settings;
 	}
 
 	onOpen(): void {
@@ -110,6 +117,26 @@ export class DuplicateDetectionModal extends Modal {
 				})
 			);
 
+		// Dismissed-pairs management (#633) — only shown when there are pairs the
+		// user has marked "not a duplicate", so they can undo a stale dismissal.
+		const dismissedCount = this.plugin?.settings.dismissedDuplicatePairs?.length ?? 0;
+		if (this.plugin && dismissedCount > 0) {
+			new Setting(optionsSection)
+				.setName('Dismissed pairs')
+				.setDesc(`${dismissedCount} pair${dismissedCount === 1 ? '' : 's'} marked "not a duplicate" and hidden from results.`)
+				.addButton(button => button
+					.setButtonText('Clear dismissed')
+					.setWarning()
+					.onClick(async () => {
+						if (!this.plugin) return;
+						this.plugin.settings.dismissedDuplicatePairs = [];
+						await this.plugin.saveSettings();
+						button.setButtonText('Cleared').setDisabled(true);
+						new Notice('Cleared dismissed pairs — rescan to see them again');
+					})
+				);
+		}
+
 		// Scan button
 		const buttonContainer = optionsSection.createDiv({ cls: 'cr-duplicate-button-container' });
 		const scanBtn = buttonContainer.createEl('button', {
@@ -150,7 +177,9 @@ export class DuplicateDetectionModal extends Modal {
 		await new Promise(resolve => window.setTimeout(resolve, 50));
 
 		try {
-			this.matches = this.service.findDuplicates(this.options);
+			const dismissed = new Set(this.plugin?.settings.dismissedDuplicatePairs ?? []);
+			this.matches = this.service.findDuplicates(this.options)
+				.filter(m => !dismissed.has(dismissedDuplicatePairKey(m.person1.crId, m.person2.crId)));
 			this.displayResults();
 		} catch (error) {
 			logger.error('scan', 'Duplicate scan failed', error);
@@ -304,10 +333,29 @@ export class DuplicateDetectionModal extends Modal {
 			text: 'Not a duplicate'
 		});
 		dismissBtn.addEventListener('click', () => {
-			itemEl.remove();
-			this.matches = this.matches.filter(m => m !== match);
-			new Notice('Match dismissed');
+			void this.dismissMatch(match, itemEl);
 		});
+	}
+
+	/**
+	 * Mark a pair as "not a duplicate". Removes it from the current view and,
+	 * when a plugin reference is available, persists the pair so it stays
+	 * dismissed across sessions and future rescans (#633).
+	 */
+	private async dismissMatch(match: DuplicateMatch, itemEl: HTMLElement): Promise<void> {
+		itemEl.remove();
+		this.matches = this.matches.filter(m => m !== match);
+
+		if (this.plugin) {
+			const key = dismissedDuplicatePairKey(match.person1.crId, match.person2.crId);
+			const dismissed = this.plugin.settings.dismissedDuplicatePairs ?? [];
+			if (!dismissed.includes(key)) {
+				this.plugin.settings.dismissedDuplicatePairs = [...dismissed, key];
+				await this.plugin.saveSettings();
+			}
+		}
+
+		new Notice('Match dismissed');
 	}
 
 	/**

@@ -3564,7 +3564,31 @@ export class FamilyChartView extends ItemView {
 	 */
 	private scheduleRelationshipOverlayRerender(): void {
 		if (!this.showCustomRelationships) return;
-		this.waitForCardPositionStability(() => this.renderRelationshipOverlay());
+		this.waitForCardPositionStability(() => {
+			this.renderRelationshipOverlay();
+
+			// #615 backstop. The stability poll can occasionally fire against an
+			// intermediate card position when f3's entrance animation stalls
+			// within the poll's 3-frame tolerance — leaving the overlay's source
+			// endpoint detached from its card. (Not reproducible on most hardware;
+			// confirmed via a forced mid-animation draw.) After a short beat,
+			// check whether any card moved since we drew: if so, the first render
+			// was premature, so re-run the stability poll and redraw once the
+			// cards have truly settled. Re-running the poll — rather than drawing
+			// on a fixed timer — keeps this safe on large trees, where a fixed
+			// timer could itself capture a mid-animation frame (the #386 hazard
+			// the poll was introduced to avoid). No-op in the common case where
+			// positions are already final.
+			const drawnPositions = this.getCardPositions();
+			const BACKSTOP_CHECK_DELAY_MS = 750;
+			window.setTimeout(() => {
+				if (!this.showCustomRelationships) return;
+				const current = this.getCardPositions();
+				if (!this.cardPositionsEqual(current, drawnPositions)) {
+					this.waitForCardPositionStability(() => this.renderRelationshipOverlay());
+				}
+			}, BACKSTOP_CHECK_DELAY_MS);
+		});
 	}
 
 	/**
