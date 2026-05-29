@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **Relationships tab: statistics rows no longer render label and count run-together** ([#640](https://github.com/banisterious/obsidian-charted-roots/issues/640)): The Statistics card's "By type" and "By category" lists relied on five CSS classes (`.crc-stats-list`, `.crc-stats-item`, `.crc-stats-swatch`, `.crc-stats-label`, `.crc-stats-value`) that had never been defined, so each row collapsed into adjacent text — `Child131`, `Spouse22`, and so on. The missing rules are now in place: each item is a flex row with the color swatch (when present) at the left, the label filling the middle, and the count right-aligned and semibold. Raised by [@DigitalDreamn](https://github.com/DigitalDreamn) in [Discussion #639](https://github.com/banisterious/obsidian-charted-roots/discussions/639).
+
 ### Changed
 
 - **Settings reorg: Event display and timeline context now live alongside the Timeline section** ([#637](https://github.com/banisterious/obsidian-charted-roots/issues/637)): The Event display subsection (with the **Event type display** setting that controls how event types appear on timelines, canvas event nodes, and maps) moves from Canvas & Trees to the top of the Timeline section, and **Default timeline context** + **Context lifespan margin** move from Advanced into a new **Context events** subsection within the same section. The section itself is renamed **Events & timelines** to reflect the broader scope. Sync Calendarium events stays in Advanced > Integrations as an integration toggle. No setting names or values change; the internal section identifier stays `timeline` so the open-state restore continues to recognize a previously-open section. Raised by [@doctorwodka](https://github.com/doctorwodka).
