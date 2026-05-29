@@ -278,3 +278,53 @@ describe('compareTimelineEntriesByDate — sort_order tiebreak on same year (#62
 		]);
 	});
 });
+
+/**
+ * #638 — descending-era timelines surfaced the same shape of bug at the
+ * `sort_order` tiebreak that #609 fixed at the rawDate tiebreak: the topological
+ * pair flips opposite to the year sort, so the locally-ordered events read in
+ * the wrong direction. The fix routes both tiebreaks through the same
+ * `isBackwardEraPair` helper.
+ */
+describe('compareTimelineEntriesByDate — sort_order tiebreak in descending-era timelines (#638)', () => {
+	const ds = backwardEraDateServiceStub();
+
+	it('inverts the sort_order tiebreak for BBY events in chronological mode', () => {
+		// Two BBY 29 events, eventB sort_order 1 ("before"), eventA sort_order 2 ("after").
+		// The surrounding year sort renders BBY chronologically as old-at-bottom
+		// (BBY 18 above BBY 80), so the sort_order pair must also place the
+		// later-ordered event ABOVE the earlier-ordered one locally — mirroring
+		// the year sort's direction.
+		const eventB = entryWithSort('29', 1, 'Event B (sort_order 1)', 'BBY 29');
+		const eventA = entryWithSort('29', 2, 'Event A (sort_order 2, after Event B)', 'BBY 29');
+		expect(compareTimelineEntriesByDate(eventB, eventA, 'chronological', ds)).toBeGreaterThan(0);
+		expect(compareTimelineEntriesByDate(eventA, eventB, 'chronological', ds)).toBeLessThan(0);
+	});
+
+	it('inverts again under reverse rendering, returning the lower sort_order to the top slot', () => {
+		// Reverse-mode BBY: year sort is "larger-BBY-first" (old at top).
+		// Same-year sort_order pair should follow — lower sort_order on top.
+		const eventB = entryWithSort('29', 1, 'Event B (sort_order 1)', 'BBY 29');
+		const eventA = entryWithSort('29', 2, 'Event A (sort_order 2, after Event B)', 'BBY 29');
+		expect(compareTimelineEntriesByDate(eventB, eventA, 'reverse', ds)).toBeLessThan(0);
+		expect(compareTimelineEntriesByDate(eventA, eventB, 'reverse', ds)).toBeGreaterThan(0);
+	});
+
+	it('does NOT invert when the pair is ascending-era (Gregorian) — control', () => {
+		// Same year, same sort_order shape, but Gregorian rawDate: era is
+		// not backward, so the v0.22.51 #625 behavior holds (lower sort_order first).
+		const eventB = entryWithSort('1264', 1, 'Event B', '1264');
+		const eventA = entryWithSort('1264', 2, 'Event A (after Event B)', '1264');
+		expect(compareTimelineEntriesByDate(eventB, eventA, 'chronological', ds)).toBeLessThan(0);
+		expect(compareTimelineEntriesByDate(eventA, eventB, 'chronological', ds)).toBeGreaterThan(0);
+	});
+
+	it('does NOT invert when no dateService is supplied — falls back to pre-#638 behavior', () => {
+		// Without dateService, the helper returns false and the tiebreak runs
+		// in its non-era-aware form. Guard against accidentally inverting
+		// callers that don't pass dateService.
+		const eventB = entryWithSort('29', 1, 'Event B', 'BBY 29');
+		const eventA = entryWithSort('29', 2, 'Event A (after Event B)', 'BBY 29');
+		expect(compareTimelineEntriesByDate(eventB, eventA, 'chronological')).toBeLessThan(0);
+	});
+});
