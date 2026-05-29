@@ -18,6 +18,7 @@ export default [
 			"patch-leaflet-distortable.js",
 			"patch-core-js-polyfill.js",
 			"patch-pdfmake.js",
+			"patch-jspdf.js",
 			"gedcom-testing/**",
 			"mockups/**",
 			"tests/fixtures/**",

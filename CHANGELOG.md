@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Security
+
+- **Strip the `pdfobjectnewwindow` output mode from jspdf's bundled ES build** so the v0.22.55 dependency bump doesn't carry dynamic script element creation into Charted Roots' bundled `main.js`. jspdf's `output('pdfobjectnewwindow')` opens a new window and dynamically loads `pdfobject.min.js` from a CloudFlare CDN via `document.createElement('script')`. It's the only `createElement('script')` call in jspdf's source. Obsidian's Community Plugins automated review flags any dynamic script element creation in the bundle, and v0.22.55's bundled jspdf 4.x version surfaced exactly that error. The plugin only ever calls `save()` (Family Chart export, Tree wizard PDF output); the `pdfobjectnewwindow` and `pdfjsnewwindow` output modes are never reached. A new `patch-jspdf.js` postinstall script replaces the unreachable case body with a `throw`, preserving the switch shape so jspdf still parses cleanly while dropping the script element creation from the bundle. The patch is idempotent and skips gracefully if jspdf vendors an updated source. The bundled `main.js` script element creation count drops from four sites to three (the remaining three from pdfmake, canvg, and leaflet-distortableimage have been present across all post-v0.22.48 releases and were never flagged by the scanner). Tests, ESLint, and Stylelint baselines unchanged.
+
 ## [0.22.55] - 2026-05-29
 
 Security-only patch addressing all 18 dependency advisories surfaced by the v0.22.54 Community Plugins automated review. `jspdf` upgrades from 3.0.4 to 4.2.1, which transitively brings `dompurify` from 3.3.0 to 3.4.7. No application-code changes; PDF export verified end-to-end in dev-vault on both surfaces (Family Chart export and Tree wizard PDF output). **1064 tests passing across 82 suites**.
