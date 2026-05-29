@@ -7,7 +7,7 @@
 
 import { ItemView, WorkspaceLeaf, setIcon, TFile, Menu } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
-import { pluralize } from '../../utils/format-utils';
+import { capitalize, pluralize } from '../../utils/format-utils';
 import { StatisticsService } from '../services/statistics-service';
 import type {
 	StatisticsData,
@@ -27,6 +27,9 @@ import type {
 	RecordCategory
 } from '../types/statistics-types';
 import { VIEW_TYPE_STATISTICS, SECTION_IDS } from '../constants/statistics-constants';
+import { getEventType } from '../../events/types/event-types';
+import { getSourceType } from '../../sources/types/source-types';
+import { PLACE_CATEGORY_LABELS, type CanonicalPlaceCategory } from '../../core/value-alias-service';
 
 /**
  * Statistics Dashboard workspace view
@@ -249,7 +252,15 @@ export class StatisticsView extends ItemView {
 		// Events by Type section
 		this.buildSection(sectionsContainer, SECTION_IDS.EVENTS_BY_TYPE, 'Events by type', 'calendar', () => {
 			const items = Object.entries(this.stats!.eventsByType)
-				.map(([name, count]) => ({ name, count }))
+				.map(([id, count]) => ({
+					name: getEventType(
+						id,
+						this.plugin.settings.customEventTypes,
+						true,
+						this.plugin.settings.eventTypeCustomizations
+					)?.name ?? capitalize(id),
+					count
+				}))
 				.sort((a, b) => b.count - a.count);
 			return this.buildTopListContent(items, 'generic');
 		});
@@ -257,7 +268,10 @@ export class StatisticsView extends ItemView {
 		// Sources by Type section
 		this.buildSection(sectionsContainer, SECTION_IDS.SOURCES_BY_TYPE, 'Sources by type', 'file-type', () => {
 			const items = Object.entries(this.stats!.sourcesByType)
-				.map(([name, count]) => ({ name, count }))
+				.map(([id, count]) => ({
+					name: getSourceType(id, this.plugin.settings.customSourceTypes)?.name ?? capitalize(id),
+					count
+				}))
 				.sort((a, b) => b.count - a.count);
 			return this.buildTopListContent(items, 'generic');
 		});
@@ -270,7 +284,10 @@ export class StatisticsView extends ItemView {
 		// Places by Category section
 		this.buildSection(sectionsContainer, SECTION_IDS.PLACES_BY_CATEGORY, 'Places by category', 'map-pin', () => {
 			const items = Object.entries(this.stats!.placesByCategory)
-				.map(([name, count]) => ({ name, count }))
+				.map(([id, count]) => ({
+					name: PLACE_CATEGORY_LABELS[id as CanonicalPlaceCategory] ?? capitalize(id),
+					count
+				}))
 				.sort((a, b) => b.count - a.count);
 			return this.buildTopListContent(items, 'generic');
 		});
