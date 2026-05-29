@@ -1800,38 +1800,55 @@ function calculateDateStatistics(plugin: CanvasRootsPlugin): DateStatistics {
 
 		if (!frontmatter) continue;
 
-		// Check if this is a person note (supports cr_type, type, tags, and cr_id fallback)
-		if (!isPersonNote(frontmatter, cache, plugin.settings.noteTypeDetection)) continue;
+		const isPerson = isPersonNote(frontmatter, cache, plugin.settings.noteTypeDetection);
+		const isEvent = !isPerson && isEventNote(frontmatter, cache, plugin.settings.noteTypeDetection);
+		if (!isPerson && !isEvent) continue;
 
-		stats.totalPersons++;
+		if (isPerson) {
+			stats.totalPersons++;
 
-		// Check for birth date using property alias service
-		// Also check common alternatives (birth_date) directly
-		const bornValue = aliasService.resolve(frontmatter, 'born') ?? frontmatter.birth_date;
-		if (bornValue !== undefined && bornValue !== null && bornValue !== '') {
-			stats.withBirthDates++;
+			// Check for birth date using property alias service
+			// Also check common alternatives (birth_date) directly
+			const bornValue = aliasService.resolve(frontmatter, 'born') ?? frontmatter.birth_date;
+			if (bornValue !== undefined && bornValue !== null && bornValue !== '') {
+				stats.withBirthDates++;
 
-			// Check if it looks like a fictional date (has era abbreviation)
-			if (typeof bornValue === 'string' && looksLikeFictionalDate(bornValue)) {
-				stats.withFictionalDates++;
-				const systemName = detectDateSystem(bornValue, plugin);
-				if (systemName) {
-					systemCounts[systemName] = (systemCounts[systemName] || 0) + 1;
+				// Check if it looks like a fictional date (has era abbreviation)
+				if (typeof bornValue === 'string' && looksLikeFictionalDate(bornValue)) {
+					stats.withFictionalDates++;
+					const systemName = detectDateSystem(bornValue, plugin);
+					if (systemName) {
+						systemCounts[systemName] = (systemCounts[systemName] || 0) + 1;
+					}
 				}
 			}
-		}
 
-		// Check for death date using property alias service
-		// Also check common alternatives (death_date) directly
-		const diedValue = aliasService.resolve(frontmatter, 'died') ?? frontmatter.death_date;
-		if (diedValue !== undefined && diedValue !== null && diedValue !== '') {
-			stats.withDeathDates++;
+			// Check for death date using property alias service
+			// Also check common alternatives (death_date) directly
+			const diedValue = aliasService.resolve(frontmatter, 'died') ?? frontmatter.death_date;
+			if (diedValue !== undefined && diedValue !== null && diedValue !== '') {
+				stats.withDeathDates++;
 
-			// Also check died for fictional date (if born wasn't fictional)
-			if (typeof diedValue === 'string' && looksLikeFictionalDate(diedValue)) {
-				const systemName = detectDateSystem(diedValue, plugin);
-				if (systemName && !systemCounts[systemName]) {
-					// Only count the system once per person
+				// Also check died for fictional date (if born wasn't fictional)
+				if (typeof diedValue === 'string' && looksLikeFictionalDate(diedValue)) {
+					const systemName = detectDateSystem(diedValue, plugin);
+					if (systemName && !systemCounts[systemName]) {
+						// Only count the system once per person
+						systemCounts[systemName] = (systemCounts[systemName] || 0) + 1;
+					}
+				}
+			}
+		} else {
+			// Event notes: count fictional `date` (#644). Each event with a
+			// fictional date contributes to withFictionalDates one-for-one,
+			// mirroring how each person's fictional `born` contributes above.
+			// Without this branch the Events tab Statistics card was counting
+			// only person notes despite the label saying "notes".
+			const dateValue = aliasService.resolve(frontmatter, 'date');
+			if (typeof dateValue === 'string' && dateValue !== '' && looksLikeFictionalDate(dateValue)) {
+				stats.withFictionalDates++;
+				const systemName = detectDateSystem(dateValue, plugin);
+				if (systemName) {
 					systemCounts[systemName] = (systemCounts[systemName] || 0) + 1;
 				}
 			}
