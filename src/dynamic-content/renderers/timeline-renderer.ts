@@ -90,6 +90,28 @@ export interface TimelineEntry {
  * Exported for unit testing; in production this is used by the three sort
  * sites in `TimelineRenderer` (main, template-section, secondary builder).
  */
+/**
+ * True iff either rawDate in the pair parses as a fictional date in a
+ * backward-direction era (BBY / BC / etc.). The two same-year tiebreaks —
+ * `sort_order` (#625, #638) and rawDate (#609) — both invert when this
+ * predicate fires so they track the year sort's old-at-bottom direction.
+ * Keeping the check in one place stops the two tiebreaks from drifting
+ * apart if either changes later.
+ */
+function isBackwardEraPair(
+	rawA: string,
+	rawB: string,
+	dateService: DateService | null | undefined
+): boolean {
+	if (!dateService) return false;
+	const parsedA = rawA ? dateService.parseDate(rawA) : null;
+	const parsedB = rawB ? dateService.parseDate(rawB) : null;
+	return (
+		(parsedA?.type === 'fictional' && parsedA.fictional?.era?.direction === 'backward') ||
+		(parsedB?.type === 'fictional' && parsedB.fictional?.era?.direction === 'backward')
+	);
+}
+
 export function compareTimelineEntriesByDate(
 	a: TimelineEntry,
 	b: TimelineEntry,
@@ -101,6 +123,9 @@ export function compareTimelineEntriesByDate(
 	if (yearA !== yearB) {
 		return sortOrder === 'reverse' ? yearB - yearA : yearA - yearB;
 	}
+	const rawA = a.rawDate || '';
+	const rawB = b.rawDate || '';
+	const backward = isBackwardEraPair(rawA, rawB, dateService);
 	// Same-year tiebreak: respect `sort_order` topological values when both
 	// entries have them (#625). Events with `before`/`after` frontmatter
 	// receive sort_order values from the v0.22.45 #569 auto-compute
@@ -108,15 +133,15 @@ export function compareTimelineEntriesByDate(
 	// only fires when BOTH entries have a value, so events without
 	// before/after constraints (birth from person, marriage, family events,
 	// context entries) continue to fall through to the rawDate tiebreak
-	// below rather than mixing with explicitly-ordered events.
+	// below rather than mixing with explicitly-ordered events. In a
+	// backward-era pair, invert so the topological order follows the
+	// year sort's old-at-bottom direction (#638).
 	if (a.sortOrder !== undefined && b.sortOrder !== undefined && a.sortOrder !== b.sortOrder) {
-		const cmp = a.sortOrder - b.sortOrder;
+		let cmp = a.sortOrder - b.sortOrder;
+		if (backward) cmp = -cmp;
 		return sortOrder === 'reverse' ? -cmp : cmp;
 	}
-	const rawA = a.rawDate || '';
-	const rawB = b.rawDate || '';
 	if (rawA !== rawB) {
-		const cmp = rawA < rawB ? -1 : 1;
 		// For descending-era rawDates (BBY / BC / etc.), the literal lex
 		// compare on the era-prefixed string puts firstborn-at-top, but
 		// the surrounding year sort renders descending eras with old-at-
@@ -124,16 +149,9 @@ export function compareTimelineEntriesByDate(
 		// Invert the tiebreak so same-year twins follow the same direction
 		// as their year neighbours and the firstborn lands in the slot the
 		// reader expects (#609 follow-on to v0.22.48's #609 fix).
-		let effectiveCmp = cmp;
-		if (dateService) {
-			const parsedA = rawA ? dateService.parseDate(rawA) : null;
-			const parsedB = rawB ? dateService.parseDate(rawB) : null;
-			const isBackward =
-				(parsedA?.type === 'fictional' && parsedA.fictional?.era?.direction === 'backward') ||
-				(parsedB?.type === 'fictional' && parsedB.fictional?.era?.direction === 'backward');
-			if (isBackward) effectiveCmp = -effectiveCmp;
-		}
-		return sortOrder === 'reverse' ? -effectiveCmp : effectiveCmp;
+		let cmp = rawA < rawB ? -1 : 1;
+		if (backward) cmp = -cmp;
+		return sortOrder === 'reverse' ? -cmp : cmp;
 	}
 	return 0;
 }
