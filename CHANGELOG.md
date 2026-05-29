@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.55] - 2026-05-29
+
+Security-only patch addressing all 18 dependency advisories surfaced by the v0.22.54 Community Plugins automated review. `jspdf` upgrades from 3.0.4 to 4.2.1, which transitively brings `dompurify` from 3.3.0 to 3.4.7. No application-code changes; PDF export verified end-to-end in dev-vault on both surfaces (Family Chart export and Tree wizard PDF output). **1064 tests passing across 82 suites**.
+
 ### Security
 
 - **Bump `jspdf` to 4.2.1 and `dompurify` to 3.4.7** to clear all 18 dependency advisories surfaced by the v0.22.54 Community Plugins automated review (10 against jspdf direct, 8 against dompurify transitively via jspdf). The jspdf advisories cover Path Traversal in the Node `fs` build, HTML Injection in `output` methods, PDF Injection in the `AcroForm` module, DoS via malformed BMP / GIF dimensions, stored XMP metadata injection, race conditions in `addJS`, and PDF Object Injection via free-text color. The dompurify advisories cover XSS, prototype pollution, `FORBID_TAGS` bypasses via `ADD_TAGS` function predicates, and `SAFE_FOR_TEMPLATES` bypasses in `RETURN_DOM` mode. Upstream confirmed no breaking API changes through the 3.x and 4.x majors: jsPDF 3.0 dropped IE support, and jsPDF 4.0's only behavioral change is `fs` access restriction in the Node build (not applicable to Obsidian's renderer context). The plugin's PDF surfaces — Tree Preview and Family Chart export — use only long-stable public APIs (`new jsPDF`, `addImage`, `addPage`, `save`, `setFontSize`, `setFont`, `setTextColor`, `text`, `addFileToVFS`, `addFont`).
