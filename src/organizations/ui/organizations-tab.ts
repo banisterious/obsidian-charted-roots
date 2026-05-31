@@ -53,7 +53,8 @@ export function renderOrganizationsTab(
 	container: HTMLElement,
 	plugin: CanvasRootsPlugin,
 	createCard: (options: { title: string; icon?: LucideIconName }) => HTMLElement,
-	showTab: (tabId: string) => void
+	showTab: (tabId: string) => void,
+	closeModal: () => void
 ): void {
 	const orgService = new OrganizationService(plugin);
 	const membershipService = new MembershipService(plugin, orgService);
@@ -62,7 +63,7 @@ export function renderOrganizationsTab(
 	renderOrganizationsListCard(container, plugin, orgService, membershipService, createCard, showTab);
 
 	// Statistics card
-	renderOrganizationStatsCard(container, plugin, orgService, membershipService, createCard);
+	renderOrganizationStatsCard(container, plugin, orgService, membershipService, createCard, closeModal);
 
 	// Organization Type Manager card (replaces simple types card)
 	renderOrganizationTypeManagerCard(container, plugin, createCard, () => {
@@ -505,7 +506,8 @@ function renderOrganizationStatsCard(
 	plugin: CanvasRootsPlugin,
 	orgService: OrganizationService,
 	membershipService: MembershipService,
-	createCard: (options: { title: string; icon?: LucideIconName }) => HTMLElement
+	createCard: (options: { title: string; icon?: LucideIconName }) => HTMLElement,
+	closeModal: () => void
 ): void {
 	const card = createCard({
 		title: 'Statistics',
@@ -553,6 +555,7 @@ function renderOrganizationStatsCard(
 	const link = statsLink.createEl('a', { text: 'View full statistics →', cls: 'crc-text-muted' });
 	link.addEventListener('click', (e) => {
 		e.preventDefault();
+		closeModal();
 		void plugin.activateStatisticsView();
 	});
 

@@ -153,7 +153,8 @@ export function renderEventsTab(
 	container: HTMLElement,
 	plugin: CanvasRootsPlugin,
 	createCard: (options: { title: string; icon?: LucideIconName; subtitle?: string }) => HTMLElement,
-	showTab: (tabId: string) => void
+	showTab: (tabId: string) => void,
+	closeModal: () => void
 ): void {
 	// Event Notes card (create and manage events)
 	renderEventNotesCard(container, plugin, createCard);
@@ -168,11 +169,11 @@ export function renderEventsTab(
 	renderEventTypeManagerCard(container, plugin, createCard, () => {
 		// Refresh the tab content when types change
 		container.empty();
-		renderEventsTab(container, plugin, createCard, showTab);
+		renderEventsTab(container, plugin, createCard, showTab, closeModal);
 	});
 
 	// Statistics card
-	renderStatisticsCard(container, plugin, createCard);
+	renderStatisticsCard(container, plugin, createCard, closeModal);
 }
 
 /**
@@ -1684,7 +1685,8 @@ function calculateEventStatistics(plugin: CanvasRootsPlugin): EventStatistics {
 function renderStatisticsCard(
 	container: HTMLElement,
 	plugin: CanvasRootsPlugin,
-	createCard: (options: { title: string; icon?: LucideIconName }) => HTMLElement
+	createCard: (options: { title: string; icon?: LucideIconName }) => HTMLElement,
+	closeModal: () => void
 ): void {
 	const card = createCard({
 		title: 'Statistics',
@@ -1755,6 +1757,7 @@ function renderStatisticsCard(
 	const link = statsLink.createEl('a', { text: 'View full statistics →', cls: 'crc-text-muted' });
 	link.addEventListener('click', (e) => {
 		e.preventDefault();
+		closeModal();
 		void plugin.activateStatisticsView();
 	});
 

@@ -49,7 +49,8 @@ export function renderPlacesTab(
 	container: HTMLElement,
 	plugin: CanvasRootsPlugin,
 	createCard: (options: { title: string; icon?: LucideIconName; subtitle?: string }) => HTMLElement,
-	showTab: (tabId: string) => void
+	showTab: (tabId: string) => void,
+	closeModal: () => void
 ): void {
 	// 1. Actions Card - create and manage places
 	const actionsCard = createCard({
@@ -167,7 +168,7 @@ export function renderPlacesTab(
 	container.appendChild(statsCard);
 
 	// Load statistics asynchronously
-	loadPlaceStatistics(statsContent, plugin);
+	loadPlaceStatistics(statsContent, plugin, closeModal);
 }
 
 /**
@@ -731,7 +732,7 @@ function openPlaceForEditing(
 /**
  * Load place statistics into container
  */
-function loadPlaceStatistics(container: HTMLElement, plugin: CanvasRootsPlugin): void {
+function loadPlaceStatistics(container: HTMLElement, plugin: CanvasRootsPlugin, closeModal: () => void): void {
 	container.empty();
 
 	const placeService = plugin.createPlaceGraphService();
@@ -894,6 +895,7 @@ function loadPlaceStatistics(container: HTMLElement, plugin: CanvasRootsPlugin):
 	const link = statsLink.createEl('a', { text: 'View full statistics →', cls: 'crc-text-muted' });
 	link.addEventListener('click', (e) => {
 		e.preventDefault();
+		closeModal();
 		void plugin.activateStatisticsView();
 	});
 }
