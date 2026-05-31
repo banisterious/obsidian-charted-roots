@@ -326,17 +326,9 @@ export class ProfileDataLoader {
 		const membershipService = new MembershipService(this.plugin, orgService);
 		const members = membershipService.getOrganizationMembers(crId);
 
-		// Events (placeholder — proper org event scanning deferred)
+		// Events linked to this organization via their `organizations` array (#659)
 		const eventService = this.plugin.getEventService();
-		const events = (eventService?.getAllEvents() ?? []).filter(e => {
-			// Simple filter: events that mention the org name in participants
-			const orgBasename = file.basename;
-			if (e.person && e.person.includes(orgBasename)) return true;
-			if (e.persons) {
-				return e.persons.some(p => p.includes(orgBasename));
-			}
-			return false;
-		});
+		const events = eventService?.getEventsForOrganization(`[[${file.basename}]]`) ?? [];
 
 		// Media
 		const media = this.resolveMedia(org.media);

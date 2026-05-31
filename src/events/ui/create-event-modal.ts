@@ -87,6 +87,7 @@ interface EventFormData {
 	universe: string;
 	dateSystem: string;
 	timeline: string;
+	organizations: string;
 	transferType: string;
 	beforeRefs: { name: string; crId: string; basename: string }[];
 	afterRefs: { name: string; crId: string; basename: string }[];
@@ -123,6 +124,7 @@ export class CreateEventModal extends Modal {
 	private universe = '';
 	private dateSystem = '';
 	private timeline = '';
+	private organizations = '';
 	private transferType = '';
 	private beforeRefs: { name: string; crId: string; basename: string }[] = [];
 	private afterRefs: { name: string; crId: string; basename: string }[] = [];
@@ -397,6 +399,18 @@ export class CreateEventModal extends Modal {
 					this.timeline = value;
 				}));
 
+		// Organizations — comma-separated org notes; surfaces the event on each
+		// org's profile "Events" section (#659).
+		new Setting(form)
+			.setName('Organizations')
+			.setDesc('Organization notes involved (comma-separated, optional)')
+			.addText(text => text
+				.setPlaceholder('e.g., Jedi Order, Galactic Senate')
+				.setValue(this.organizations)
+				.onChange(value => {
+					this.organizations = value;
+				}));
+
 		// Confidence
 		new Setting(form)
 			.setName('Confidence')
@@ -560,6 +574,7 @@ export class CreateEventModal extends Modal {
 			universe: this.universe,
 			dateSystem: this.dateSystem,
 			timeline: this.timeline,
+			organizations: this.organizations,
 			transferType: this.transferType,
 			beforeRefs: [...this.beforeRefs],
 			afterRefs: [...this.afterRefs]
@@ -587,6 +602,7 @@ export class CreateEventModal extends Modal {
 		this.universe = formData.universe || '';
 		this.dateSystem = formData.dateSystem || '';
 		this.timeline = formData.timeline || '';
+		this.organizations = formData.organizations || '';
 		this.transferType = formData.transferType || '';
 		this.beforeRefs = formData.beforeRefs || [];
 		this.afterRefs = formData.afterRefs || [];
