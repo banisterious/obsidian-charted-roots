@@ -6,7 +6,7 @@
  * event notes management, date systems configuration, and temporal data statistics.
  */
 
-import { App, Menu, Modal, Notice, Setting, TFile, setIcon } from 'obsidian';
+import { App, EventRef, Menu, Modal, Notice, Setting, TFile, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { LucideIconName } from '../../ui/lucide-icons';
 import { createLucideIcon } from '../../ui/lucide-icons';
@@ -1694,74 +1694,92 @@ function renderStatisticsCard(
 	});
 	const content = card.querySelector('.crc-card__content') as HTMLElement;
 
-	// Get person notes with date information
-	const stats = calculateDateStatistics(plugin);
-
-	// Date coverage section
-	const coverageSection = content.createDiv({ cls: 'cr-stats-section' });
-	coverageSection.createEl('h4', { text: 'Date coverage', cls: 'cr-subsection-heading' });
-
-	const coverageList = coverageSection.createEl('ul', { cls: 'cr-stats-list' });
-
-	// Birth dates
-	const birthItem = coverageList.createEl('li');
-	const birthPercent = stats.totalPersons > 0
-		? Math.round((stats.withBirthDates / stats.totalPersons) * 100)
-		: 0;
-	birthItem.setText(`${stats.withBirthDates} of ${stats.totalPersons} person notes have birth dates (${birthPercent}%)`);
-
-	// Death dates
-	const deathItem = coverageList.createEl('li');
-	const deathPercent = stats.totalPersons > 0
-		? Math.round((stats.withDeathDates / stats.totalPersons) * 100)
-		: 0;
-	deathItem.setText(`${stats.withDeathDates} of ${stats.totalPersons} person notes have death dates (${deathPercent}%)`);
-
-	// Fictional dates section (only show if fictional dates are enabled)
-	if (plugin.settings.enableFictionalDates) {
-		const fictionalSection = content.createDiv({ cls: 'cr-stats-section' });
-		fictionalSection.createEl('h4', { text: 'Fictional dates', cls: 'cr-subsection-heading' });
-
-		const fictionalList = fictionalSection.createEl('ul', { cls: 'cr-stats-list' });
-
-		// Count of notes using fictional dates
-		const fictionalItem = fictionalList.createEl('li');
-		fictionalItem.setText(`${stats.withFictionalDates} notes use fictional date systems`);
-
-		// Systems in use
-		if (stats.systemsInUse.length > 0) {
-			const systemsItem = fictionalList.createEl('li');
-			const systemsText = stats.systemsInUse
-				.map(s => `${s.name} (${s.count})`)
-				.join(', ');
-			systemsItem.setText(`Systems in use: ${systemsText}`);
-		}
-	}
-
-	// Empty state if no persons
-	if (stats.totalPersons === 0) {
+	// Render the card body from a fresh statistics computation. Extracted so it
+	// can re-run when the metadata cache settles (#651): the count walks the
+	// metadata cache, which may be incompletely populated at first render (cold
+	// start, post-edit re-indexing), so an early render can show a low number
+	// until the cache catches up.
+	const renderBody = (): void => {
 		content.empty();
-		const emptyState = content.createDiv({ cls: 'crc-empty-state' });
-		emptyState.createEl('p', {
-			text: 'No person notes found.',
-			cls: 'crc-text-muted'
-		});
-		emptyState.createEl('p', {
-			text: 'Create person notes with cr_type: person in frontmatter to see date statistics.',
-			cls: 'crc-text-muted'
-		});
-	}
 
-	// View full statistics link
-	const statsLink = content.createDiv({ cls: 'cr-stats-link' });
-	const link = statsLink.createEl('a', { text: 'View full statistics →', cls: 'crc-text-muted' });
-	link.addEventListener('click', (e) => {
-		e.preventDefault();
-		closeModal();
-		void plugin.activateStatisticsView();
-	});
+		const stats = calculateDateStatistics(plugin);
 
+		if (stats.totalPersons === 0) {
+			// Empty state if no persons
+			const emptyState = content.createDiv({ cls: 'crc-empty-state' });
+			emptyState.createEl('p', {
+				text: 'No person notes found.',
+				cls: 'crc-text-muted'
+			});
+			emptyState.createEl('p', {
+				text: 'Create person notes with cr_type: person in frontmatter to see date statistics.',
+				cls: 'crc-text-muted'
+			});
+		} else {
+			// Date coverage section
+			const coverageSection = content.createDiv({ cls: 'cr-stats-section' });
+			coverageSection.createEl('h4', { text: 'Date coverage', cls: 'cr-subsection-heading' });
+
+			const coverageList = coverageSection.createEl('ul', { cls: 'cr-stats-list' });
+
+			// Birth dates
+			const birthItem = coverageList.createEl('li');
+			const birthPercent = Math.round((stats.withBirthDates / stats.totalPersons) * 100);
+			birthItem.setText(`${stats.withBirthDates} of ${stats.totalPersons} person notes have birth dates (${birthPercent}%)`);
+
+			// Death dates
+			const deathItem = coverageList.createEl('li');
+			const deathPercent = Math.round((stats.withDeathDates / stats.totalPersons) * 100);
+			deathItem.setText(`${stats.withDeathDates} of ${stats.totalPersons} person notes have death dates (${deathPercent}%)`);
+
+			// Fictional dates section (only show if fictional dates are enabled)
+			if (plugin.settings.enableFictionalDates) {
+				const fictionalSection = content.createDiv({ cls: 'cr-stats-section' });
+				fictionalSection.createEl('h4', { text: 'Fictional dates', cls: 'cr-subsection-heading' });
+
+				const fictionalList = fictionalSection.createEl('ul', { cls: 'cr-stats-list' });
+
+				// Count of notes using fictional dates
+				const fictionalItem = fictionalList.createEl('li');
+				fictionalItem.setText(`${stats.withFictionalDates} notes use fictional date systems`);
+
+				// Systems in use
+				if (stats.systemsInUse.length > 0) {
+					const systemsItem = fictionalList.createEl('li');
+					const systemsText = stats.systemsInUse
+						.map(s => `${s.name} (${s.count})`)
+						.join(', ');
+					systemsItem.setText(`Systems in use: ${systemsText}`);
+				}
+			}
+		}
+
+		// View full statistics link
+		const statsLink = content.createDiv({ cls: 'cr-stats-link' });
+		const link = statsLink.createEl('a', { text: 'View full statistics →', cls: 'crc-text-muted' });
+		link.addEventListener('click', (e) => {
+			e.preventDefault();
+			closeModal();
+			void plugin.activateStatisticsView();
+		});
+	};
+
+	renderBody();
 	container.appendChild(card);
+
+	// #651: recompute when Obsidian signals the metadata cache has settled, so a
+	// stale low count rendered mid-indexing corrects itself without a manual tab
+	// reopen. The listener removes itself once the card leaves the DOM (tab
+	// switch or modal close), and self-heals any leftover refs on the next event.
+	let resolvedRef: EventRef;
+	const recompute = (): void => {
+		if (!card.isConnected) {
+			plugin.app.metadataCache.offref(resolvedRef);
+			return;
+		}
+		renderBody();
+	};
+	resolvedRef = plugin.app.metadataCache.on('resolved', recompute);
 }
 
 /**
