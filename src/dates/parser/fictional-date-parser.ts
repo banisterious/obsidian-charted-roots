@@ -150,19 +150,32 @@ export class FictionalDateParser {
 		// time strip: precision beyond the year isn't preserved on the
 		// parsed result — the raw frontmatter string is still available
 		// for sort tiebreaks.
-		const DATE_SUFFIX_RE = /-\d{2}(?:-\d{2})?$/;
-		const withoutDate = withoutTime.replace(DATE_SUFFIX_RE, '').trim();
+		// Require a year digit immediately before the `-NN` so a month/day
+		// suffix (`DE 1222-03`) strips but a signed/negative year (`EP -30`)
+		// is left intact — the capture preserves the year's last digit. Without
+		// the guard the strip ate the negative year itself (#655).
+		const DATE_SUFFIX_RE = /(\d)-\d{2}(?:-\d{2})?$/;
+		const withoutSuffix = withoutTime.replace(DATE_SUFFIX_RE, '$1').trim();
 
-		// Try to match various patterns
+		// Strip a trailing decade marker (`EP 30s` → `EP 30`) and treat the
+		// result as approximate — the decade's start year stands in as the
+		// canonical point so it sorts and places sensibly (#655).
+		const DECADE_SUFFIX_RE = /\ds$/;
+		const isDecade = DECADE_SUFFIX_RE.test(withoutSuffix);
+		const withoutDate = isDecade ? withoutSuffix.replace(/s$/, '').trim() : withoutSuffix;
+
+		// Try to match various patterns. The year capture accepts an optional
+		// leading `-` so signed/negative fictional years (`EP -18`) parse to a
+		// negative canonical year rather than being rejected (#655).
 		const patterns = [
 			// "TA 2941" or "TA  2941" (abbreviation space year)
-			/^([A-Za-z]+)\s+(\d+)$/,
+			/^([A-Za-z]+)\s+(-?\d+)$/,
 			// "TA2941" (abbreviation directly followed by year)
-			/^([A-Za-z]+)(\d+)$/,
+			/^([A-Za-z]+)(-?\d+)$/,
 			// "2941 TA" (year space abbreviation)
-			/^(\d+)\s+([A-Za-z]+)$/,
+			/^(-?\d+)\s+([A-Za-z]+)$/,
 			// "2941TA" (year directly followed by abbreviation)
-			/^(\d+)([A-Za-z]+)$/
+			/^(-?\d+)([A-Za-z]+)$/
 		];
 
 		let abbrev: string | null = null;
@@ -171,7 +184,7 @@ export class FictionalDateParser {
 		for (const pattern of patterns) {
 			const match = withoutDate.match(pattern);
 			if (match) {
-				if (/^\d+$/.test(match[1])) {
+				if (/^-?\d+$/.test(match[1])) {
 					// Year first pattern
 					yearStr = match[1];
 					abbrev = match[2];
@@ -235,7 +248,7 @@ export class FictionalDateParser {
 				year,
 				raw: dateStr,
 				canonicalYear,
-				...(isApproximate ? { isApproximate: true } : {})
+				...(isApproximate || isDecade ? { isApproximate: true } : {})
 			}
 		};
 	}
@@ -388,15 +401,18 @@ export class FictionalDateParser {
 			return false;
 		}
 
-		// Strip an optional ISO-style date suffix (`-MM-DD` or `-MM`)
-		// so fictional-era dates with month/day precision (e.g.,
-		// `DE 1264-08-15`) still pass this look-ahead check (#626).
-		const withoutDate = withoutTime.replace(/-\d{2}(?:-\d{2})?$/, '').trim();
+		// Strip an optional ISO-style date suffix (`-MM-DD` or `-MM`), guarded
+		// to require a preceding year digit so a signed/negative year (`EP -30`)
+		// survives, then a trailing decade marker (`EP 30s`). Kept in sync with
+		// `parse()`'s strips (#626, #655).
+		const withoutSuffix = withoutTime.replace(/(\d)-\d{2}(?:-\d{2})?$/, '$1').trim();
+		const withoutDate = withoutSuffix.replace(/(\d)s$/, '$1').trim();
 
-		// Check if it matches our expected patterns
+		// Check if it matches our expected patterns. The year accepts an
+		// optional leading `-` to recognize negative fictional years (#655).
 		const fictionalPatterns = [
-			/^[A-Za-z]+\s*\d+$/, // "TA 2941" or "TA2941"
-			/^\d+\s*[A-Za-z]+$/ // "2941 TA" or "2941TA"
+			/^[A-Za-z]+\s*-?\d+$/, // "TA 2941" or "TA2941" or "EP -18"
+			/^-?\d+\s*[A-Za-z]+$/ // "2941 TA" or "2941TA"
 		];
 
 		return fictionalPatterns.some(p => p.test(withoutDate));
