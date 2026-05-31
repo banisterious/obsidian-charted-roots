@@ -10,7 +10,6 @@
 
 import type CanvasRootsPlugin from '../../../main';
 import type { DateService } from './date-service';
-import { DEFAULT_DATE_SYSTEMS } from '../constants/default-date-systems';
 import { PropertyAliasService } from '../../core/property-alias-service';
 import { isEventNote, isPersonNote } from '../../utils/note-type-detection';
 
@@ -26,42 +25,29 @@ export interface DateStatistics {
 }
 
 /**
- * Whether a date string parses as a fictional date under the shared date
- * service. Using the service (rather than a local regex heuristic) keeps the
- * Statistics card's fictional-date count in agreement with what the plugin
- * actually parses on timelines and age annotations — including approximation
- * markers, ISO-style month/day suffixes, and time suffixes (#648).
+ * The name of the fictional date system a value parses into, or null if it
+ * isn't a fictional date.
  *
- * Returns false when fictional dates are disabled (dateService is null).
+ * Resolving through the shared parser (rather than a local abbreviation-
+ * substring scan) keeps the Statistics card in agreement with what the plugin
+ * actually parses — including approximation markers, ISO-style month/day
+ * suffixes, and time suffixes (#648). Passing the note's `universe` lets the
+ * parser prefer a universe-linked custom system over a built-in that happens to
+ * share an era abbreviation, so a custom calendar is attributed correctly
+ * instead of being shadowed by the built-in (#650).
+ *
+ * Returns null when fictional dates are disabled (dateService is null).
  */
-function isFictionalDate(dateService: DateService | null, dateStr: string): boolean {
-	return dateService?.parseDate(dateStr)?.type === 'fictional';
-}
-
-/**
- * Try to detect which date system a date string belongs to
- */
-function detectDateSystem(dateStr: string, plugin: CanvasRootsPlugin): string | null {
-	// Get all active systems
-	const systems = [];
-
-	if (plugin.settings.showBuiltInDateSystems) {
-		systems.push(...DEFAULT_DATE_SYSTEMS);
+function fictionalSystemName(
+	dateService: DateService | null,
+	dateStr: string,
+	universe: string | undefined
+): string | null {
+	const parsed = dateService?.parseDate(dateStr, universe);
+	if (parsed?.type !== 'fictional') {
+		return null;
 	}
-
-	systems.push(...plugin.settings.fictionalDateSystems);
-
-	// Check each system's era abbreviations
-	const normalizedDate = dateStr.toUpperCase();
-	for (const system of systems) {
-		for (const era of system.eras) {
-			if (normalizedDate.includes(era.abbrev.toUpperCase())) {
-				return system.name;
-			}
-		}
-	}
-
-	return null;
+	return parsed.fictional?.system.name ?? null;
 }
 
 /**
@@ -92,6 +78,11 @@ export function calculateDateStatistics(plugin: CanvasRootsPlugin): DateStatisti
 		const isEvent = !isPerson && isEventNote(frontmatter, cache, plugin.settings.noteTypeDetection);
 		if (!isPerson && !isEvent) continue;
 
+		// The note's universe disambiguates date systems that share era
+		// abbreviations (#650). Stored as a plain string on the frontmatter.
+		const universeValue = aliasService.resolve(frontmatter, 'universe');
+		const noteUniverse = typeof universeValue === 'string' ? universeValue : undefined;
+
 		if (isPerson) {
 			stats.totalPersons++;
 
@@ -101,7 +92,6 @@ export function calculateDateStatistics(plugin: CanvasRootsPlugin): DateStatisti
 			// keeps this in sync with what the plugin parses elsewhere — the old
 			// local heuristic missed approximation markers (DE ~310), ISO-style
 			// month/day suffixes (DE 1264-08), and time suffixes (#648).
-			let personIsFictional = false;
 			let personSystem: string | null = null;
 
 			// Check for birth date using property alias service
@@ -110,9 +100,8 @@ export function calculateDateStatistics(plugin: CanvasRootsPlugin): DateStatisti
 			if (bornValue !== undefined && bornValue !== null && bornValue !== '') {
 				stats.withBirthDates++;
 
-				if (typeof bornValue === 'string' && isFictionalDate(dateService, bornValue)) {
-					personIsFictional = true;
-					personSystem = detectDateSystem(bornValue, plugin);
+				if (typeof bornValue === 'string') {
+					personSystem = fictionalSystemName(dateService, bornValue, noteUniverse);
 				}
 			}
 
@@ -125,19 +114,14 @@ export function calculateDateStatistics(plugin: CanvasRootsPlugin): DateStatisti
 				// Count a death-only fictional date too (e.g. "PEF 260ish" with no
 				// born) — previously this branch tallied the system but never the
 				// person, so death-only fictional people went uncounted (#648).
-				if (typeof diedValue === 'string' && isFictionalDate(dateService, diedValue)) {
-					personIsFictional = true;
-					if (!personSystem) {
-						personSystem = detectDateSystem(diedValue, plugin);
-					}
+				if (typeof diedValue === 'string' && personSystem === null) {
+					personSystem = fictionalSystemName(dateService, diedValue, noteUniverse);
 				}
 			}
 
-			if (personIsFictional) {
+			if (personSystem !== null) {
 				stats.withFictionalDates++;
-				if (personSystem) {
-					systemCounts[personSystem] = (systemCounts[personSystem] || 0) + 1;
-				}
+				systemCounts[personSystem] = (systemCounts[personSystem] || 0) + 1;
 			}
 		} else {
 			// Event notes: count fictional `date` (#644). Each event with a
@@ -146,10 +130,10 @@ export function calculateDateStatistics(plugin: CanvasRootsPlugin): DateStatisti
 			// Without this branch the Events tab Statistics card was counting
 			// only person notes despite the label saying "notes".
 			const dateValue = aliasService.resolve(frontmatter, 'date');
-			if (typeof dateValue === 'string' && dateValue !== '' && isFictionalDate(dateService, dateValue)) {
-				stats.withFictionalDates++;
-				const systemName = detectDateSystem(dateValue, plugin);
-				if (systemName) {
+			if (typeof dateValue === 'string' && dateValue !== '') {
+				const systemName = fictionalSystemName(dateService, dateValue, noteUniverse);
+				if (systemName !== null) {
+					stats.withFictionalDates++;
 					systemCounts[systemName] = (systemCounts[systemName] || 0) + 1;
 				}
 			}

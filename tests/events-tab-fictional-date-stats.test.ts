@@ -203,3 +203,49 @@ describe('TimelineMarkdownExporter — fictional date detection (#648)', () => {
 		expect(summary.undatedEvents).toBe(1);
 	});
 });
+
+describe('calculateDateStatistics — system attribution on abbreviation collision (#650)', () => {
+	// A custom system that mimics the built-in Galactic Standard Calendar's
+	// BBY/ABY abbreviations, linked to a custom universe (DigitalDreamn's setup).
+	const STAR_WARS_AU: FictionalDateSystem = {
+		id: 'sw_au',
+		name: 'Star Wars BBY/ABY Calendar',
+		universe: 'Star Wars (AU)',
+		eras: [
+			{ id: 'bby', name: 'Before the Battle of Yavin', abbrev: 'BBY', epoch: 0, direction: 'backward' },
+			{ id: 'aby', name: 'After the Battle of Yavin', abbrev: 'ABY', epoch: 0, direction: 'forward' },
+		],
+	};
+
+	function collisionDateService(): DateService {
+		return createDateService({
+			enableFictionalDates: true,
+			showBuiltInDateSystems: true, // includes the built-in Galactic Standard Calendar (BBY/ABY)
+			fictionalDateSystems: [STAR_WARS_AU],
+		});
+	}
+
+	it('attributes to the universe-linked custom system, not the colliding built-in', () => {
+		const plugin = makePlugin(
+			[{ path: 'a.md', frontmatter: { cr_type: 'person', born: 'BBY 19', universe: 'Star Wars (AU)' } }],
+			collisionDateService()
+		);
+
+		const stats = calculateDateStatistics(plugin);
+
+		expect(stats.withFictionalDates).toBe(1);
+		expect(stats.systemsInUse).toEqual([{ name: 'Star Wars BBY/ABY Calendar', count: 1 }]);
+	});
+
+	it('falls back to the built-in when the note has no linking universe', () => {
+		const plugin = makePlugin(
+			[{ path: 'a.md', frontmatter: { cr_type: 'person', born: 'BBY 19' } }],
+			collisionDateService()
+		);
+
+		const stats = calculateDateStatistics(plugin);
+
+		expect(stats.withFictionalDates).toBe(1);
+		expect(stats.systemsInUse).toEqual([{ name: 'Galactic Standard Calendar', count: 1 }]);
+	});
+});
