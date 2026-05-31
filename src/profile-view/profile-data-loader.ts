@@ -25,6 +25,8 @@ import { OrganizationService } from '../organizations/services/organization-serv
 import { EvidenceService } from '../sources/services/evidence-service';
 import { SOURCED_PROPERTY_NAMES, SOURCED_PROPERTY_TO_FACT_KEY } from '../sources/types/source-types';
 import type { SourceNote } from '../sources/types/source-types';
+import type { EventNote } from '../events/types/event-types';
+import { findEventsReferencingSource } from './referenced-events';
 import { getLogger } from '../core/logging';
 
 const logger = getLogger('ProfileDataLoader');
@@ -261,6 +263,9 @@ export class ProfileDataLoader {
 		// Referenced facts (adapted from ExtractionsProcessor)
 		const referencedFacts = this.findReferencedFacts(file.basename);
 
+		// Event notes that cite this source (#654)
+		const referencedEvents = this.findReferencedEvents(file.basename);
+
 		// Media
 		const media = this.resolveMedia(source.media);
 
@@ -291,6 +296,7 @@ export class ProfileDataLoader {
 			file,
 			source,
 			referencedFacts,
+			referencedEvents,
 			media,
 			parentSource,
 			childSources,
@@ -417,6 +423,19 @@ export class ProfileDataLoader {
 		}
 
 		return groups;
+	}
+
+	/**
+	 * Event notes that cite this source via their `sources` array (#654).
+	 * Parallels `findReferencedFacts` (which only scans person notes) — events
+	 * reference sources with the same wikilink shape, so the basename match
+	 * reuses `matchesSource`.
+	 */
+	private findReferencedEvents(sourceBasename: string): EventNote[] {
+		const eventService = this.plugin.getEventService();
+		if (!eventService) return [];
+
+		return findEventsReferencingSource(eventService.getAllEvents(), sourceBasename);
 	}
 
 	// ── Helpers ──────────────────────────────────────────────

@@ -14,6 +14,8 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ### Added
 
+- **"Referenced events" section on the Source profile** ([#654](https://github.com/banisterious/obsidian-charted-roots/issues/654)): The Entity Profile view for a source note now lists the event notes that cite it (via their `sources` array), alongside the existing "Referenced facts" and "Media" sections — so you can see at a glance which events are linked to a source. Each entry links through to the event note. Requested by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 - **"Dissolved" field in the Create/Edit Organization modal** ([#649](https://github.com/banisterious/obsidian-charted-roots/issues/649)): The `dissolved` organization property was already supported by the templates, profile view, and frontmatter reference, but the only way to set it was hand-editing YAML. The Create/Edit Organization modal now has a "Dissolved" input directly under "Founded", and both the create and update paths write it to the note's frontmatter. Requested by [@doctorwodka](https://github.com/doctorwodka).
 
 ### Fixed

@@ -101,6 +101,8 @@ export interface SourceProfileData {
 	file: TFile;
 	source: SourceNote;
 	referencedFacts: ReferencedFactGroup[];
+	/** Event notes that cite this source via their `sources` array (#654) */
+	referencedEvents: EventNote[];
 	media: MediaItem[];
 	/** Parent source note (if this is a child) */
 	parentSource?: SourceNote;

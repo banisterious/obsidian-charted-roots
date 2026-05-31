@@ -546,6 +546,13 @@ export class ProfileView extends ItemView {
 
 		renderReferencedFactsSection(this.sectionsEl, data.referencedFacts, options);
 
+		// Event notes that cite this source (#654)
+		renderEventsSection(this.sectionsEl, data.referencedEvents, {
+			...options,
+			sectionId: 'referenced-events',
+			title: 'Referenced events'
+		});
+
 		renderMediaSection(this.sectionsEl, data.media, {
 			...options,
 			sectionId: 'media'
