@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 /**
  * Organizations Tab UI Component
  *
@@ -8,6 +7,7 @@
 
 import { Menu, setIcon, Setting, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
+import { openManageMediaModal } from '../../plugin/context-menu-helpers';
 import type { LucideIconName } from '../../ui/lucide-icons';
 import { getContrastColor } from '../../ui/create-person-types';
 import { createLucideIcon } from '../../ui/lucide-icons';
@@ -425,7 +425,7 @@ function renderOrganizationRow(
 					.setTitle(`Manage media (${mediaCount})...`)
 					.setIcon('images')
 					.onClick(() => {
-						plugin.openManageMediaModal(org.file, 'organization', org.name);
+						openManageMediaModal(plugin, org.file, 'organization', org.name);
 					});
 			});
 		}
@@ -470,7 +470,7 @@ function renderOrganizationRow(
 		mediaBadge.addEventListener('click', (e) => {
 			e.stopPropagation();
 			if (org.file instanceof TFile) {
-				plugin.openManageMediaModal(org.file, 'organization', org.name);
+				openManageMediaModal(plugin, org.file, 'organization', org.name);
 			}
 		});
 	} else {
@@ -954,4 +954,3 @@ function renderBrowseRow(
 	});
 }
 
-/* eslint-enable @typescript-eslint/no-unsafe-call -- Match scope of file-level disable at top. */

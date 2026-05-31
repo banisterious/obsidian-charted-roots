@@ -21,6 +21,7 @@ import { renderEventTypeManagerCard } from '../../events/ui/event-type-manager-c
 import { isEventNote } from '../../utils/note-type-detection';
 import { TemplateSnippetsModal } from '../../ui/template-snippets-modal';
 import { calculateDateStatistics } from '../services/date-statistics';
+import { openManageMediaModal } from '../../plugin/context-menu-helpers';
 
 /* ──────────────────────────────────────────────────────────────────────────
    Types for the dockable Events list (renderEventsList)
@@ -661,7 +662,7 @@ function renderEventTable(
 						.setTitle(`Manage media (${mediaCount})...`)
 						.setIcon('images')
 						.onClick(() => {
-							plugin.openManageMediaModal(event.file, 'event', event.title);
+							openManageMediaModal(plugin, event.file, 'event', event.title);
 						});
 				});
 			}
@@ -761,7 +762,7 @@ function renderEventTable(
 			// Click to open manage media modal
 			mediaBadge.addEventListener('click', (e) => {
 				e.stopPropagation();
-				plugin.openManageMediaModal(event.file, 'event', event.title);
+				openManageMediaModal(plugin, event.file, 'event', event.title);
 			});
 		} else {
 			mediaCell.createEl('span', { text: '—', cls: 'crc-text-muted' });

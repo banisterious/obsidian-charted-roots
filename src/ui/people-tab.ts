@@ -9,6 +9,7 @@
 
 import { App, ButtonComponent, Menu, Notice, Setting, TFile, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
+import { openManageMediaModal } from '../plugin/context-menu-helpers';
 import type { LucideIconName } from './lucide-icons';
 import { createLucideIcon } from './lucide-icons';
 import { createStatItem } from './shared/card-component';
@@ -1380,7 +1381,7 @@ function renderPersonTableRow(
 		// Click to open manage media modal
 		mediaBadge.addEventListener('click', (e) => {
 			e.stopPropagation();
-			plugin.openManageMediaModal(person.file, 'person', person.name);
+			openManageMediaModal(plugin, person.file, 'person', person.name);
 		});
 	} else {
 		mediaCell.createEl('span', { text: '\u2014', cls: 'crc-text-muted' });
@@ -1895,7 +1896,7 @@ function showPersonContextMenu(
 					.setTitle('Manage media...')
 					.setIcon('images')
 					.onClick(() => {
-						plugin.openManageMediaModal(person.file, 'person', person.name);
+						openManageMediaModal(plugin, person.file, 'person', person.name);
 					});
 			});
 		});
@@ -1915,7 +1916,7 @@ function showPersonContextMenu(
 				.setTitle('Manage media...')
 				.setIcon('images')
 				.onClick(() => {
-					plugin.openManageMediaModal(person.file, 'person', person.name);
+					openManageMediaModal(plugin, person.file, 'person', person.name);
 				});
 		});
 	}

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 /**
  * Places Tab UI Component
  *
@@ -8,6 +8,7 @@
 
 import { ButtonComponent, Menu, Modal, Notice, Setting, TFile, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
+import { openManageMediaModal } from '../plugin/context-menu-helpers';
 import type { LucideIconName } from './lucide-icons';
 import { createLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
@@ -1146,7 +1147,7 @@ function loadPlaceList(
 							.setTitle(`Manage media (${mediaCount})...`)
 							.setIcon('images')
 							.onClick(() => {
-								plugin.openManageMediaModal(file, 'place', place.name);
+								openManageMediaModal(plugin, file, 'place', place.name);
 							});
 					});
 				}
@@ -1237,7 +1238,7 @@ function loadPlaceList(
 					e.stopPropagation();
 					const file = plugin.app.vault.getAbstractFileByPath(place.filePath);
 					if (file instanceof TFile) {
-						plugin.openManageMediaModal(file, 'place', place.name);
+						openManageMediaModal(plugin, file, 'place', place.name);
 					}
 				});
 			} else {
@@ -2120,4 +2121,4 @@ export function renderPlacesList(options: PlacesListOptions): void {
 	renderTable();
 }
 
-/* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- Match scope of file-level disable at top. */
+/* eslint-enable @typescript-eslint/no-unsafe-member-access -- Match scope of file-level disable at top. */

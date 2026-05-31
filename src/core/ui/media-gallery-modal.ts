@@ -13,6 +13,7 @@
 
 import { App, Modal, TFile, Menu, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
+import { openManageMediaModal } from '../../plugin/context-menu-helpers';
 import {
 	MediaService,
 	MediaType
@@ -499,7 +500,7 @@ export class MediaGalleryModal extends Modal {
 				.setIcon('images')
 				.onClick(() => {
 					this.close();
-					this.plugin.openManageMediaModal(
+					openManageMediaModal(this.plugin,
 						item.entityFile,
 						item.entityType,
 						item.entityName
