@@ -41,6 +41,27 @@ function extractYear(dateStr: string, dateService: DateService | null): number |
 }
 
 /**
+ * Strip wikilink brackets and trim, matching `EventService.normalizeWikilink`.
+ * The person-filter dropdown values are built from `getUniquePeople()`, which
+ * normalizes this way, so the exporter must normalize both sides or a bracketed
+ * `person` / `persons` entry never matches the (stripped) filter value (#657).
+ */
+function normalizePersonRef(ref: string): string {
+	return ref.replace(/^\[\[/, '').replace(/\]\]$/, '').trim();
+}
+
+/**
+ * Whether an event names the given person, comparing on normalized wikilinks.
+ */
+function eventMatchesPerson(event: EventNote, filterPerson: string): boolean {
+	const needle = normalizePersonRef(filterPerson);
+	if (event.person && normalizePersonRef(event.person) === needle) {
+		return true;
+	}
+	return Boolean(event.persons?.some(p => normalizePersonRef(p) === needle));
+}
+
+/**
  * Sort events chronologically with topological sort for before/after constraints
  */
 function sortEventsChronologically(events: EventNote[]): EventNote[] {
@@ -351,10 +372,7 @@ export class TimelineMarkdownExporter {
 			let filteredEvents = [...events];
 
 			if (filterPerson) {
-				filteredEvents = filteredEvents.filter(e =>
-					e.person === filterPerson ||
-					(e.persons && e.persons.includes(filterPerson))
-				);
+				filteredEvents = filteredEvents.filter(e => eventMatchesPerson(e, filterPerson));
 			}
 
 			if (filterEventType) {
@@ -511,10 +529,7 @@ export class TimelineMarkdownExporter {
 		let filteredEvents = [...events];
 
 		if (filterPerson) {
-			filteredEvents = filteredEvents.filter(e =>
-				e.person === filterPerson ||
-				(e.persons && e.persons.includes(filterPerson))
-			);
+			filteredEvents = filteredEvents.filter(e => eventMatchesPerson(e, filterPerson));
 		}
 
 		if (filterEventType) {
@@ -562,11 +577,14 @@ export class TimelineMarkdownExporter {
 	/**
 	 * Get the date range from a list of events
 	 */
-	getDateRange(events: EventNote[]): { earliest: number | null; latest: number | null } {
+	getDateRange(
+		events: EventNote[],
+		options: Pick<TimelineMarkdownOptions, 'filterPerson' | 'filterEventType' | 'filterGroup'> = {}
+	): { earliest: number | null; latest: number | null } {
 		let earliest: number | null = null;
 		let latest: number | null = null;
 
-		for (const event of events) {
+		for (const event of this.filterEvents(events, options)) {
 			const year = event.date ? extractYear(event.date, this.dateService) : null;
 			if (year !== null) {
 				if (earliest === null || year < earliest) earliest = year;
@@ -919,10 +937,7 @@ export class TimelineMarkdownExporter {
 		let filtered = [...events];
 
 		if (filterPerson) {
-			filtered = filtered.filter(e =>
-				e.person === filterPerson ||
-				(e.persons && e.persons.includes(filterPerson))
-			);
+			filtered = filtered.filter(e => eventMatchesPerson(e, filterPerson));
 		}
 
 		if (filterEventType) {

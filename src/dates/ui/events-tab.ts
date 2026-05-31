@@ -1224,18 +1224,13 @@ function renderExportCard(
 	const quickStatsRow = content.createDiv({ cls: 'crc-quick-stats crc-mt-2' });
 
 	const updateQuickStats = () => {
-		const summary = markdownExporter.getExportSummary(allEvents, {
+		const filterOptions = {
 			filterPerson: personValue || undefined,
 			filterEventType: typeValue || undefined,
 			filterGroup: groupValue || undefined
-		});
-		const filteredEvents = allEvents.filter(e => {
-			if (personValue && e.person !== personValue) return false;
-			if (typeValue && e.eventType !== typeValue) return false;
-			if (groupValue && (!e.groups || !e.groups.includes(groupValue))) return false;
-			return true;
-		});
-		const dateRange = markdownExporter.getDateRange(filteredEvents);
+		};
+		const summary = markdownExporter.getExportSummary(allEvents, filterOptions);
+		const dateRange = markdownExporter.getDateRange(allEvents, filterOptions);
 
 		quickStatsRow.empty();
 		const statsText = quickStatsRow.createEl('span', { cls: 'crc-quick-stats-text' });
