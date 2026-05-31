@@ -997,9 +997,9 @@ export class ControlCenterModal extends Modal {
 			normalizeNames: () => { void normalizeNames(this.plugin, this.app, (tabId) => this.showTab(tabId)); },
 			previewFixBidirectionalRelationships: () => { void previewFixBidirectionalRelationships(this.plugin, this.app, (tabId) => this.showTab(tabId)); },
 			fixBidirectionalRelationships: () => { void fixBidirectionalRelationships(this.plugin, this.app, (tabId) => this.showTab(tabId)); },
-			previewValidateDates: () => previewValidateDates(this.plugin, this.app, (tabId) => this.showTab(tabId)),
-			validateDates: () => validateDates(this.plugin, this.app, (tabId) => this.showTab(tabId)),
-			previewDetectImpossibleDates: () => previewDetectImpossibleDates(this.plugin, this.app, (tabId) => this.showTab(tabId))
+			previewValidateDates: () => previewValidateDates(this.plugin, this.app),
+			validateDates: () => validateDates(this.plugin, this.app),
+			previewDetectImpossibleDates: () => previewDetectImpossibleDates(this.plugin, this.app)
 		});
 	}
 
