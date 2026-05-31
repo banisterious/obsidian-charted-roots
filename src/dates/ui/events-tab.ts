@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 /**
  * Events Tab UI Component
  *
@@ -18,10 +18,9 @@ import { TimelineCanvasExporter, TimelineColorScheme, TimelineLayoutStyle } from
 import { TimelineMarkdownExporter, TimelineExportFormat } from '../../events/services/timeline-markdown-exporter';
 import { computeSortOrder } from '../../events/services/sort-order-service';
 import { renderEventTypeManagerCard } from '../../events/ui/event-type-manager-card';
-import { isEventNote, isPersonNote } from '../../utils/note-type-detection';
-import { PropertyAliasService } from '../../core/property-alias-service';
+import { isEventNote } from '../../utils/note-type-detection';
 import { TemplateSnippetsModal } from '../../ui/template-snippets-modal';
-import { DEFAULT_DATE_SYSTEMS } from '../constants/default-date-systems';
+import { calculateDateStatistics } from '../services/date-statistics';
 
 /* ──────────────────────────────────────────────────────────────────────────
    Types for the dockable Events list (renderEventsList)
@@ -1220,7 +1219,7 @@ function renderExportCard(
 		});
 
 	// Quick stats row
-	const markdownExporter = new TimelineMarkdownExporter(plugin.app, plugin.settings);
+	const markdownExporter = new TimelineMarkdownExporter(plugin.app, plugin.settings, plugin.getDateService());
 	const quickStatsRow = content.createDiv({ cls: 'crc-quick-stats crc-mt-2' });
 
 	const updateQuickStats = () => {
@@ -1545,7 +1544,7 @@ async function handleMarkdownExport(
 	exportBtn.textContent = 'Exporting...';
 
 	try {
-		const exporter = new TimelineMarkdownExporter(plugin.app, plugin.settings);
+		const exporter = new TimelineMarkdownExporter(plugin.app, plugin.settings, plugin.getDateService());
 		const result = await exporter.export(allEvents, {
 			title,
 			format: formatValue,
@@ -1764,151 +1763,6 @@ function renderStatisticsCard(
 	});
 
 	container.appendChild(card);
-}
-
-/**
- * Statistics about dates in the vault
- */
-interface DateStatistics {
-	totalPersons: number;
-	withBirthDates: number;
-	withDeathDates: number;
-	withFictionalDates: number;
-	systemsInUse: Array<{ name: string; count: number }>;
-}
-
-/**
- * Calculate date statistics from person notes
- */
-function calculateDateStatistics(plugin: CanvasRootsPlugin): DateStatistics {
-	const stats: DateStatistics = {
-		totalPersons: 0,
-		withBirthDates: 0,
-		withDeathDates: 0,
-		withFictionalDates: 0,
-		systemsInUse: []
-	};
-
-	// Get all markdown files
-	const files = plugin.app.vault.getMarkdownFiles();
-	const systemCounts: Record<string, number> = {};
-	const aliasService = new PropertyAliasService(plugin);
-
-	for (const file of files) {
-		const cache = plugin.app.metadataCache.getFileCache(file);
-		const frontmatter = cache?.frontmatter;
-
-		if (!frontmatter) continue;
-
-		const isPerson = isPersonNote(frontmatter, cache, plugin.settings.noteTypeDetection);
-		const isEvent = !isPerson && isEventNote(frontmatter, cache, plugin.settings.noteTypeDetection);
-		if (!isPerson && !isEvent) continue;
-
-		if (isPerson) {
-			stats.totalPersons++;
-
-			// Check for birth date using property alias service
-			// Also check common alternatives (birth_date) directly
-			const bornValue = aliasService.resolve(frontmatter, 'born') ?? frontmatter.birth_date;
-			if (bornValue !== undefined && bornValue !== null && bornValue !== '') {
-				stats.withBirthDates++;
-
-				// Check if it looks like a fictional date (has era abbreviation)
-				if (typeof bornValue === 'string' && looksLikeFictionalDate(bornValue)) {
-					stats.withFictionalDates++;
-					const systemName = detectDateSystem(bornValue, plugin);
-					if (systemName) {
-						systemCounts[systemName] = (systemCounts[systemName] || 0) + 1;
-					}
-				}
-			}
-
-			// Check for death date using property alias service
-			// Also check common alternatives (death_date) directly
-			const diedValue = aliasService.resolve(frontmatter, 'died') ?? frontmatter.death_date;
-			if (diedValue !== undefined && diedValue !== null && diedValue !== '') {
-				stats.withDeathDates++;
-
-				// Also check died for fictional date (if born wasn't fictional)
-				if (typeof diedValue === 'string' && looksLikeFictionalDate(diedValue)) {
-					const systemName = detectDateSystem(diedValue, plugin);
-					if (systemName && !systemCounts[systemName]) {
-						// Only count the system once per person
-						systemCounts[systemName] = (systemCounts[systemName] || 0) + 1;
-					}
-				}
-			}
-		} else {
-			// Event notes: count fictional `date` (#644). Each event with a
-			// fictional date contributes to withFictionalDates one-for-one,
-			// mirroring how each person's fictional `born` contributes above.
-			// Without this branch the Events tab Statistics card was counting
-			// only person notes despite the label saying "notes".
-			const dateValue = aliasService.resolve(frontmatter, 'date');
-			if (typeof dateValue === 'string' && dateValue !== '' && looksLikeFictionalDate(dateValue)) {
-				stats.withFictionalDates++;
-				const systemName = detectDateSystem(dateValue, plugin);
-				if (systemName) {
-					systemCounts[systemName] = (systemCounts[systemName] || 0) + 1;
-				}
-			}
-		}
-	}
-
-	// Convert system counts to array
-	stats.systemsInUse = Object.entries(systemCounts)
-		.map(([name, count]) => ({ name, count }))
-		.sort((a, b) => b.count - a.count);
-
-	return stats;
-}
-
-/**
- * Check if a date string looks like a fictional date (has era abbreviation)
- *
- * Supported formats:
- * - "TA 2941", "AC 300", "BBY 19" (era space year)
- * - "TA2941", "AC300" (era directly followed by year)
- * - "2941 TA", "300 AC" (year space era)
- * - "2941TA" (year directly followed by era)
- */
-function looksLikeFictionalDate(dateStr: string): boolean {
-	const trimmed = dateStr.trim();
-
-	// Exclude ISO date patterns first
-	if (/^\d{4}(-\d{2}(-\d{2})?)?$/.test(trimmed)) {
-		return false;
-	}
-
-	// Look for era patterns (letters + optional space + digits, or digits + optional space + letters)
-	return /^[A-Za-z]+\s*\d+$/.test(trimmed) ||
-		/^\d+\s*[A-Za-z]+$/.test(trimmed);
-}
-
-/**
- * Try to detect which date system a date string belongs to
- */
-function detectDateSystem(dateStr: string, plugin: CanvasRootsPlugin): string | null {
-	// Get all active systems
-	const systems = [];
-
-	if (plugin.settings.showBuiltInDateSystems) {
-		systems.push(...DEFAULT_DATE_SYSTEMS);
-	}
-
-	systems.push(...plugin.settings.fictionalDateSystems);
-
-	// Check each system's era abbreviations
-	const normalizedDate = dateStr.toUpperCase();
-	for (const system of systems) {
-		for (const era of system.eras) {
-			if (normalizedDate.includes(era.abbrev.toUpperCase())) {
-				return system.name;
-			}
-		}
-	}
-
-	return null;
 }
 
 /**
@@ -2327,4 +2181,4 @@ export function renderEventsList(options: EventsListOptions): void {
 	renderTable(sortEventsChronologically([...initialFiltered]));
 }
 
-/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- Match scope of file-level disable at top. */
+/* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- Match scope of file-level disable at top. */

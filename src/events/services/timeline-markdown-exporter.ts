@@ -18,13 +18,24 @@ import type { CanvasRootsSettings } from '../../settings';
 import { getLogger } from '../../core/logging';
 import { ensureFolderExists, toSafeFilename } from '../../core/canvas-utils';
 import { EventNote, getEventType } from '../types/event-types';
+import type { DateService } from '../../dates/services/date-service';
 
 const logger = getLogger('TimelineMarkdownExporter');
 
 /**
- * Extract year from a date string
+ * Extract a sortable/groupable year from a date string.
+ *
+ * Routes through the shared date service when available so fictional dates
+ * (which start with an era abbreviation, not a 4-digit year) are recognized
+ * and contribute their canonical year — previously the leading-`\d{4}` regex
+ * treated every fictional date as undated, so an all-fictional vault exported
+ * as "0 dated" with no year range (#648). Falls back to the regex only when
+ * fictional dates are disabled (dateService is null).
  */
-function extractYear(dateStr: string): number | null {
+function extractYear(dateStr: string, dateService: DateService | null): number | null {
+	if (dateService) {
+		return dateService.parseDate(dateStr)?.year ?? null;
+	}
 	const match = dateStr.match(/^(\d{4})/);
 	return match ? parseInt(match[1]) : null;
 }
@@ -311,7 +322,8 @@ function formatEventDisplay(event: EventNote): string {
 export class TimelineMarkdownExporter {
 	constructor(
 		private app: App,
-		private settings: CanvasRootsSettings
+		private settings: CanvasRootsSettings,
+		private dateService: DateService | null = null
 	) {}
 
 	/**
@@ -367,7 +379,7 @@ export class TimelineMarkdownExporter {
 
 			if (groupByYear) {
 				for (const event of sortedEvents) {
-					const year = event.date ? extractYear(event.date) : null;
+					const year = event.date ? extractYear(event.date, this.dateService) : null;
 					const key = year !== null ? year : 'undated';
 
 					if (!eventsByYear.has(key)) {
@@ -522,7 +534,7 @@ export class TimelineMarkdownExporter {
 		let undatedEvents = 0;
 
 		for (const event of filteredEvents) {
-			const year = event.date ? extractYear(event.date) : null;
+			const year = event.date ? extractYear(event.date, this.dateService) : null;
 			if (year !== null) {
 				years.add(year);
 				datedEvents++;
@@ -555,7 +567,7 @@ export class TimelineMarkdownExporter {
 		let latest: number | null = null;
 
 		for (const event of events) {
-			const year = event.date ? extractYear(event.date) : null;
+			const year = event.date ? extractYear(event.date, this.dateService) : null;
 			if (year !== null) {
 				if (earliest === null || year < earliest) earliest = year;
 				if (latest === null || year > latest) latest = year;
@@ -627,7 +639,7 @@ export class TimelineMarkdownExporter {
 				for (const col of cols) {
 					switch (col) {
 						case 'year': {
-							const year = event.date ? extractYear(event.date) : null;
+							const year = event.date ? extractYear(event.date, this.dateService) : null;
 							row.push(year !== null ? String(year) : '—');
 							break;
 						}
@@ -718,7 +730,7 @@ export class TimelineMarkdownExporter {
 				const eventsByYear = new Map<number | string, EventNote[]>();
 
 				for (const event of sortedEvents) {
-					const year = event.date ? extractYear(event.date) : null;
+					const year = event.date ? extractYear(event.date, this.dateService) : null;
 					const key = year !== null ? year : 'undated';
 
 					if (!eventsByYear.has(key)) {
@@ -754,7 +766,7 @@ export class TimelineMarkdownExporter {
 			} else {
 				// Flat list
 				for (const event of sortedEvents) {
-					const year = event.date ? extractYear(event.date) : null;
+					const year = event.date ? extractYear(event.date, this.dateService) : null;
 					const yearStr = year !== null ? `**${year}** — ` : '';
 					let line = `- ${yearStr}${formatEventDisplay(event)}`;
 					if (includePlaces && event.place) {
