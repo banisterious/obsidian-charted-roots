@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Added
+
+- **"Dissolved" field in the Create/Edit Organization modal** ([#649](https://github.com/banisterious/obsidian-charted-roots/issues/649)): The `dissolved` organization property was already supported by the templates, profile view, and frontmatter reference, but the only way to set it was hand-editing YAML. The Create/Edit Organization modal now has a "Dissolved" input directly under "Founded", and both the create and update paths write it to the note's frontmatter. Requested by [@doctorwodka](https://github.com/doctorwodka).
+
 ### Fixed
 
 - **Event profile shows the participant's alias instead of the raw wikilink** ([#658](https://github.com/banisterious/obsidian-charted-roots/issues/658)): On an event note's profile view, a participant linked with an aliased wikilink (where the displayed name differs from the note's filename — common after correcting a misspelling) rendered the underlying link text rather than the alias. The Participants section now displays the alias, while still resolving to the correct note when clicked. Reported by [@doctorwodka](https://github.com/doctorwodka).
