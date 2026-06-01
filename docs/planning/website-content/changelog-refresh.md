@@ -4,8 +4,8 @@
 
 **Target page:** `/changelog/_index.md` on chartedroots.com
 **Source material:** [wiki Release-History.md](../../../wiki-content/Release-History.md) (canonical longer-form), [CHANGELOG.md](../../../CHANGELOG.md) (per-release detail).
-**Last ported:** 2026-05-27, commit `dc988ea` on chartedroots.com@main (v0.22.53 Round-Up spotlight + cluster-intro metric bumps to fifty-four releases / 1060 tests / seventh patch in the v0.22.46-anchored window).
-**Pending port (next session):** v0.22.54 + v0.22.55 + v0.22.56 + v0.22.57 spotlights + cluster-intro metric bumps (fifty-four → fifty-eight releases / 1060 → 1106 tests / seventh → eleventh patch in v0.22.46-anchored window; scanner-streak prose updated — v0.22.54 broke the 96/100 streak with new dep findings, v0.22.55 dep bump cleared them but introduced one dynamic-script error, v0.22.56 patched the jspdf code path and the scanner returned to the v0.22.53 baseline, v0.22.57 held at that baseline).
+**Last ported:** 2026-05-31, commit `9e02c5e` on chartedroots.com@main (v0.22.54 + v0.22.55 + v0.22.56 + v0.22.57 Round-Up spotlights + cluster-intro metric bumps to fifty-eight releases / 1106 tests / eleventh patch in the v0.22.46-anchored window; scanner-streak prose updated through the v0.22.54-56 dependency-security arc and v0.22.57 holding at the v0.22.53 baseline).
+**Pending port (next session):** none — chartedroots.com `/changelog/` is current through v0.22.57.
 
 ---
 
