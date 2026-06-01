@@ -11,6 +11,7 @@ import { createLucideIcon } from '../../ui/lucide-icons';
 import { EventService } from '../services/event-service';
 import { EventNote, getEventType, DATE_PRECISION_LABELS } from '../types/event-types';
 import { formatDisplayDate } from '../../dates';
+import { extractDisplayLabel } from '../../utils/wikilink-resolver';
 
 /**
  * Extract unique calendar/date system values from events
@@ -293,8 +294,8 @@ function renderTimelineEvent(
 	const details: string[] = [];
 
 	if (event.place) {
-		// Strip wikilink brackets for display
-		const placeName = event.place.replace(/^\[\[/, '').replace(/\]\]$/, '');
+		// Show the alias for an aliased place wikilink, not the raw form (#658).
+		const placeName = extractDisplayLabel(event.place);
 		details.push(placeName);
 	}
 
