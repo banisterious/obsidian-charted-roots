@@ -38,10 +38,26 @@ export interface ParsedDate {
 export class DateService {
 	private settings: DateServiceSettings;
 	private fictionalParser: FictionalDateParser | null = null;
+	/**
+	 * Resolves a note's `universe` reference (name, cr_id, or wikilink) to the
+	 * id of that universe's default calendar, if one is set. Injected by the
+	 * plugin so the parser can honor the universe's chosen calendar without the
+	 * dates layer depending on the universes layer (#650).
+	 */
+	private universeCalendarResolver: ((universeRef: string) => string | null) | null = null;
 
 	constructor(settings: DateServiceSettings) {
 		this.settings = settings;
 		this.initFictionalParser();
+	}
+
+	/**
+	 * Wire up resolution of a universe to its default calendar. Optional — when
+	 * unset, fictional dates resolve by the calendar's own `universe` field and
+	 * the abbreviation index as before.
+	 */
+	setUniverseCalendarResolver(resolver: (universeRef: string) => string | null): void {
+		this.universeCalendarResolver = resolver;
 	}
 
 	/**
@@ -88,7 +104,17 @@ export class DateService {
 
 		// Try fictional date parsing first if enabled
 		if (this.fictionalParser) {
-			const fictionalResult = this.fictionalParser.parse(trimmed, universe);
+			// Normalize the universe reference (strip `[[…]]`) once, so both the
+			// default-calendar resolver and the parser see a clean value.
+			const cleanUniverse = universe
+				? universe.replace(/^\[\[/, '').replace(/\]\]$/, '').trim()
+				: undefined;
+			// Resolve the universe's explicitly-linked default calendar, if any,
+			// so it takes precedence over a built-in sharing the era abbrev (#650).
+			const preferredSystemId = cleanUniverse && this.universeCalendarResolver
+				? this.universeCalendarResolver(cleanUniverse) ?? undefined
+				: undefined;
+			const fictionalResult = this.fictionalParser.parse(trimmed, cleanUniverse, preferredSystemId);
 			if (fictionalResult.success) {
 				return {
 					type: 'fictional',

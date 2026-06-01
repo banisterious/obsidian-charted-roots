@@ -132,7 +132,7 @@ export class FictionalDateParser {
 	 * @param universe Optional universe to prefer when multiple systems match
 	 * @returns Parse result with success/failure and parsed date or error
 	 */
-	public parse(dateStr: string, universe?: string): DateParseResult {
+	public parse(dateStr: string, universe?: string, preferredSystemId?: string): DateParseResult {
 		if (!dateStr || typeof dateStr !== 'string') {
 			return { success: false, error: 'Empty or invalid date string', raw: String(dateStr) };
 		}
@@ -235,8 +235,18 @@ export class FictionalDateParser {
 
 		let { system, era } = lookup;
 
-		// If universe is specified, prefer a system that matches
-		if (universe) {
+		// Prefer the universe's explicitly-linked default calendar when the
+		// caller resolved one (the universe note's `default_calendar`), since
+		// that's the calendar the user picked for this universe (#650). Fall
+		// back to matching on the system's own `universe` field.
+		const preferred = preferredSystemId
+			? this.systems.find(s => s.id === preferredSystemId)
+			: undefined;
+		const preferredEra = preferred?.eras.find(e => e.abbrev.toLowerCase() === abbrevLower);
+		if (preferred && preferredEra) {
+			system = preferred;
+			era = preferredEra;
+		} else if (universe) {
 			const universeMatch = this.findSystemByUniverse(universe, abbrevLower);
 			if (universeMatch) {
 				system = universeMatch.system;

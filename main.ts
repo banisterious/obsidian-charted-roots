@@ -393,6 +393,19 @@ export default class CanvasRootsPlugin extends Plugin {
 			showBuiltInDateSystems: this.settings.showBuiltInDateSystems,
 			fictionalDateSystems: this.settings.fictionalDateSystems
 		});
+		// Let fictional-date parsing honor a universe's chosen default calendar
+		// (the universe note's `default_calendar`), resolving the note's universe
+		// reference by name or cr_id. Kept as an injected closure so the dates
+		// layer stays decoupled from the universes layer (#650). The UniverseService
+		// is memoized so repeated date parsing doesn't re-scan universe notes; its
+		// own cache picks up universe edits via the metadata-cache.
+		let universeCalendarService: ReturnType<typeof createUniverseService> | null = null;
+		this.dateService.setUniverseCalendarResolver((universeRef) => {
+			if (!universeRef) return null;
+			if (!universeCalendarService) universeCalendarService = createUniverseService(this);
+			const universe = universeCalendarService.getUniverseByName(universeRef) ?? universeCalendarService.getUniverse(universeRef);
+			return universe?.defaultCalendar ?? null;
+		});
 
 		// Run migration for property rename (collection_name -> group_name)
 		await this.migrateCollectionNameToGroupName();
