@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 /**
  * Places Tab UI Component
  *
@@ -8,6 +8,7 @@
 
 import { ButtonComponent, Menu, Modal, Notice, Setting, TFile, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
+import { openManageMediaModal } from '../plugin/context-menu-helpers';
 import type { LucideIconName } from './lucide-icons';
 import { createLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
@@ -48,7 +49,8 @@ export function renderPlacesTab(
 	container: HTMLElement,
 	plugin: CanvasRootsPlugin,
 	createCard: (options: { title: string; icon?: LucideIconName; subtitle?: string }) => HTMLElement,
-	showTab: (tabId: string) => void
+	showTab: (tabId: string) => void,
+	closeModal: () => void
 ): void {
 	// 1. Actions Card - create and manage places
 	const actionsCard = createCard({
@@ -166,7 +168,7 @@ export function renderPlacesTab(
 	container.appendChild(statsCard);
 
 	// Load statistics asynchronously
-	loadPlaceStatistics(statsContent, plugin);
+	loadPlaceStatistics(statsContent, plugin, closeModal);
 }
 
 /**
@@ -730,7 +732,7 @@ function openPlaceForEditing(
 /**
  * Load place statistics into container
  */
-function loadPlaceStatistics(container: HTMLElement, plugin: CanvasRootsPlugin): void {
+function loadPlaceStatistics(container: HTMLElement, plugin: CanvasRootsPlugin, closeModal: () => void): void {
 	container.empty();
 
 	const placeService = plugin.createPlaceGraphService();
@@ -893,6 +895,7 @@ function loadPlaceStatistics(container: HTMLElement, plugin: CanvasRootsPlugin):
 	const link = statsLink.createEl('a', { text: 'View full statistics →', cls: 'crc-text-muted' });
 	link.addEventListener('click', (e) => {
 		e.preventDefault();
+		closeModal();
 		void plugin.activateStatisticsView();
 	});
 }
@@ -1146,7 +1149,7 @@ function loadPlaceList(
 							.setTitle(`Manage media (${mediaCount})...`)
 							.setIcon('images')
 							.onClick(() => {
-								plugin.openManageMediaModal(file, 'place', place.name);
+								openManageMediaModal(plugin, file, 'place', place.name);
 							});
 					});
 				}
@@ -1237,7 +1240,7 @@ function loadPlaceList(
 					e.stopPropagation();
 					const file = plugin.app.vault.getAbstractFileByPath(place.filePath);
 					if (file instanceof TFile) {
-						plugin.openManageMediaModal(file, 'place', place.name);
+						openManageMediaModal(plugin, file, 'place', place.name);
 					}
 				});
 			} else {
@@ -2120,4 +2123,4 @@ export function renderPlacesList(options: PlacesListOptions): void {
 	renderTable();
 }
 
-/* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- Match scope of file-level disable at top. */
+/* eslint-enable @typescript-eslint/no-unsafe-member-access -- Match scope of file-level disable at top. */

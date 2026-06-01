@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 /**
  * Events Tab UI Component
  *
@@ -6,7 +6,7 @@
  * event notes management, date systems configuration, and temporal data statistics.
  */
 
-import { App, Menu, Modal, Notice, Setting, TFile, setIcon } from 'obsidian';
+import { App, EventRef, Menu, Modal, Notice, Setting, TFile, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { LucideIconName } from '../../ui/lucide-icons';
 import { createLucideIcon } from '../../ui/lucide-icons';
@@ -18,10 +18,10 @@ import { TimelineCanvasExporter, TimelineColorScheme, TimelineLayoutStyle } from
 import { TimelineMarkdownExporter, TimelineExportFormat } from '../../events/services/timeline-markdown-exporter';
 import { computeSortOrder } from '../../events/services/sort-order-service';
 import { renderEventTypeManagerCard } from '../../events/ui/event-type-manager-card';
-import { isEventNote, isPersonNote } from '../../utils/note-type-detection';
-import { PropertyAliasService } from '../../core/property-alias-service';
+import { isEventNote } from '../../utils/note-type-detection';
 import { TemplateSnippetsModal } from '../../ui/template-snippets-modal';
-import { DEFAULT_DATE_SYSTEMS } from '../constants/default-date-systems';
+import { calculateDateStatistics } from '../services/date-statistics';
+import { openManageMediaModal } from '../../plugin/context-menu-helpers';
 
 /* ──────────────────────────────────────────────────────────────────────────
    Types for the dockable Events list (renderEventsList)
@@ -153,7 +153,8 @@ export function renderEventsTab(
 	container: HTMLElement,
 	plugin: CanvasRootsPlugin,
 	createCard: (options: { title: string; icon?: LucideIconName; subtitle?: string }) => HTMLElement,
-	showTab: (tabId: string) => void
+	showTab: (tabId: string) => void,
+	closeModal: () => void
 ): void {
 	// Event Notes card (create and manage events)
 	renderEventNotesCard(container, plugin, createCard);
@@ -168,11 +169,11 @@ export function renderEventsTab(
 	renderEventTypeManagerCard(container, plugin, createCard, () => {
 		// Refresh the tab content when types change
 		container.empty();
-		renderEventsTab(container, plugin, createCard, showTab);
+		renderEventsTab(container, plugin, createCard, showTab, closeModal);
 	});
 
 	// Statistics card
-	renderStatisticsCard(container, plugin, createCard);
+	renderStatisticsCard(container, plugin, createCard, closeModal);
 }
 
 /**
@@ -662,7 +663,7 @@ function renderEventTable(
 						.setTitle(`Manage media (${mediaCount})...`)
 						.setIcon('images')
 						.onClick(() => {
-							plugin.openManageMediaModal(event.file, 'event', event.title);
+							openManageMediaModal(plugin, event.file, 'event', event.title);
 						});
 				});
 			}
@@ -762,7 +763,7 @@ function renderEventTable(
 			// Click to open manage media modal
 			mediaBadge.addEventListener('click', (e) => {
 				e.stopPropagation();
-				plugin.openManageMediaModal(event.file, 'event', event.title);
+				openManageMediaModal(plugin, event.file, 'event', event.title);
 			});
 		} else {
 			mediaCell.createEl('span', { text: '—', cls: 'crc-text-muted' });
@@ -1220,22 +1221,17 @@ function renderExportCard(
 		});
 
 	// Quick stats row
-	const markdownExporter = new TimelineMarkdownExporter(plugin.app, plugin.settings);
+	const markdownExporter = new TimelineMarkdownExporter(plugin.app, plugin.settings, plugin.getDateService());
 	const quickStatsRow = content.createDiv({ cls: 'crc-quick-stats crc-mt-2' });
 
 	const updateQuickStats = () => {
-		const summary = markdownExporter.getExportSummary(allEvents, {
+		const filterOptions = {
 			filterPerson: personValue || undefined,
 			filterEventType: typeValue || undefined,
 			filterGroup: groupValue || undefined
-		});
-		const filteredEvents = allEvents.filter(e => {
-			if (personValue && e.person !== personValue) return false;
-			if (typeValue && e.eventType !== typeValue) return false;
-			if (groupValue && (!e.groups || !e.groups.includes(groupValue))) return false;
-			return true;
-		});
-		const dateRange = markdownExporter.getDateRange(filteredEvents);
+		};
+		const summary = markdownExporter.getExportSummary(allEvents, filterOptions);
+		const dateRange = markdownExporter.getDateRange(allEvents, filterOptions);
 
 		quickStatsRow.empty();
 		const statsText = quickStatsRow.createEl('span', { cls: 'crc-quick-stats-text' });
@@ -1545,7 +1541,7 @@ async function handleMarkdownExport(
 	exportBtn.textContent = 'Exporting...';
 
 	try {
-		const exporter = new TimelineMarkdownExporter(plugin.app, plugin.settings);
+		const exporter = new TimelineMarkdownExporter(plugin.app, plugin.settings, plugin.getDateService());
 		const result = await exporter.export(allEvents, {
 			title,
 			format: formatValue,
@@ -1689,7 +1685,8 @@ function calculateEventStatistics(plugin: CanvasRootsPlugin): EventStatistics {
 function renderStatisticsCard(
 	container: HTMLElement,
 	plugin: CanvasRootsPlugin,
-	createCard: (options: { title: string; icon?: LucideIconName }) => HTMLElement
+	createCard: (options: { title: string; icon?: LucideIconName }) => HTMLElement,
+	closeModal: () => void
 ): void {
 	const card = createCard({
 		title: 'Statistics',
@@ -1697,218 +1694,92 @@ function renderStatisticsCard(
 	});
 	const content = card.querySelector('.crc-card__content') as HTMLElement;
 
-	// Get person notes with date information
-	const stats = calculateDateStatistics(plugin);
-
-	// Date coverage section
-	const coverageSection = content.createDiv({ cls: 'cr-stats-section' });
-	coverageSection.createEl('h4', { text: 'Date coverage', cls: 'cr-subsection-heading' });
-
-	const coverageList = coverageSection.createEl('ul', { cls: 'cr-stats-list' });
-
-	// Birth dates
-	const birthItem = coverageList.createEl('li');
-	const birthPercent = stats.totalPersons > 0
-		? Math.round((stats.withBirthDates / stats.totalPersons) * 100)
-		: 0;
-	birthItem.setText(`${stats.withBirthDates} of ${stats.totalPersons} person notes have birth dates (${birthPercent}%)`);
-
-	// Death dates
-	const deathItem = coverageList.createEl('li');
-	const deathPercent = stats.totalPersons > 0
-		? Math.round((stats.withDeathDates / stats.totalPersons) * 100)
-		: 0;
-	deathItem.setText(`${stats.withDeathDates} of ${stats.totalPersons} person notes have death dates (${deathPercent}%)`);
-
-	// Fictional dates section (only show if fictional dates are enabled)
-	if (plugin.settings.enableFictionalDates) {
-		const fictionalSection = content.createDiv({ cls: 'cr-stats-section' });
-		fictionalSection.createEl('h4', { text: 'Fictional dates', cls: 'cr-subsection-heading' });
-
-		const fictionalList = fictionalSection.createEl('ul', { cls: 'cr-stats-list' });
-
-		// Count of notes using fictional dates
-		const fictionalItem = fictionalList.createEl('li');
-		fictionalItem.setText(`${stats.withFictionalDates} notes use fictional date systems`);
-
-		// Systems in use
-		if (stats.systemsInUse.length > 0) {
-			const systemsItem = fictionalList.createEl('li');
-			const systemsText = stats.systemsInUse
-				.map(s => `${s.name} (${s.count})`)
-				.join(', ');
-			systemsItem.setText(`Systems in use: ${systemsText}`);
-		}
-	}
-
-	// Empty state if no persons
-	if (stats.totalPersons === 0) {
+	// Render the card body from a fresh statistics computation. Extracted so it
+	// can re-run when the metadata cache settles (#651): the count walks the
+	// metadata cache, which may be incompletely populated at first render (cold
+	// start, post-edit re-indexing), so an early render can show a low number
+	// until the cache catches up.
+	const renderBody = (): void => {
 		content.empty();
-		const emptyState = content.createDiv({ cls: 'crc-empty-state' });
-		emptyState.createEl('p', {
-			text: 'No person notes found.',
-			cls: 'crc-text-muted'
+
+		const stats = calculateDateStatistics(plugin);
+
+		if (stats.totalPersons === 0) {
+			// Empty state if no persons
+			const emptyState = content.createDiv({ cls: 'crc-empty-state' });
+			emptyState.createEl('p', {
+				text: 'No person notes found.',
+				cls: 'crc-text-muted'
+			});
+			emptyState.createEl('p', {
+				text: 'Create person notes with cr_type: person in frontmatter to see date statistics.',
+				cls: 'crc-text-muted'
+			});
+		} else {
+			// Date coverage section
+			const coverageSection = content.createDiv({ cls: 'cr-stats-section' });
+			coverageSection.createEl('h4', { text: 'Date coverage', cls: 'cr-subsection-heading' });
+
+			const coverageList = coverageSection.createEl('ul', { cls: 'cr-stats-list' });
+
+			// Birth dates
+			const birthItem = coverageList.createEl('li');
+			const birthPercent = Math.round((stats.withBirthDates / stats.totalPersons) * 100);
+			birthItem.setText(`${stats.withBirthDates} of ${stats.totalPersons} person notes have birth dates (${birthPercent}%)`);
+
+			// Death dates
+			const deathItem = coverageList.createEl('li');
+			const deathPercent = Math.round((stats.withDeathDates / stats.totalPersons) * 100);
+			deathItem.setText(`${stats.withDeathDates} of ${stats.totalPersons} person notes have death dates (${deathPercent}%)`);
+
+			// Fictional dates section (only show if fictional dates are enabled)
+			if (plugin.settings.enableFictionalDates) {
+				const fictionalSection = content.createDiv({ cls: 'cr-stats-section' });
+				fictionalSection.createEl('h4', { text: 'Fictional dates', cls: 'cr-subsection-heading' });
+
+				const fictionalList = fictionalSection.createEl('ul', { cls: 'cr-stats-list' });
+
+				// Count of notes using fictional dates
+				const fictionalItem = fictionalList.createEl('li');
+				fictionalItem.setText(`${stats.withFictionalDates} notes use fictional date systems`);
+
+				// Systems in use
+				if (stats.systemsInUse.length > 0) {
+					const systemsItem = fictionalList.createEl('li');
+					const systemsText = stats.systemsInUse
+						.map(s => `${s.name} (${s.count})`)
+						.join(', ');
+					systemsItem.setText(`Systems in use: ${systemsText}`);
+				}
+			}
+		}
+
+		// View full statistics link
+		const statsLink = content.createDiv({ cls: 'cr-stats-link' });
+		const link = statsLink.createEl('a', { text: 'View full statistics →', cls: 'crc-text-muted' });
+		link.addEventListener('click', (e) => {
+			e.preventDefault();
+			closeModal();
+			void plugin.activateStatisticsView();
 		});
-		emptyState.createEl('p', {
-			text: 'Create person notes with cr_type: person in frontmatter to see date statistics.',
-			cls: 'crc-text-muted'
-		});
-	}
-
-	// View full statistics link
-	const statsLink = content.createDiv({ cls: 'cr-stats-link' });
-	const link = statsLink.createEl('a', { text: 'View full statistics →', cls: 'crc-text-muted' });
-	link.addEventListener('click', (e) => {
-		e.preventDefault();
-		void plugin.activateStatisticsView();
-	});
-
-	container.appendChild(card);
-}
-
-/**
- * Statistics about dates in the vault
- */
-interface DateStatistics {
-	totalPersons: number;
-	withBirthDates: number;
-	withDeathDates: number;
-	withFictionalDates: number;
-	systemsInUse: Array<{ name: string; count: number }>;
-}
-
-/**
- * Calculate date statistics from person notes
- */
-function calculateDateStatistics(plugin: CanvasRootsPlugin): DateStatistics {
-	const stats: DateStatistics = {
-		totalPersons: 0,
-		withBirthDates: 0,
-		withDeathDates: 0,
-		withFictionalDates: 0,
-		systemsInUse: []
 	};
 
-	// Get all markdown files
-	const files = plugin.app.vault.getMarkdownFiles();
-	const systemCounts: Record<string, number> = {};
-	const aliasService = new PropertyAliasService(plugin);
+	renderBody();
+	container.appendChild(card);
 
-	for (const file of files) {
-		const cache = plugin.app.metadataCache.getFileCache(file);
-		const frontmatter = cache?.frontmatter;
-
-		if (!frontmatter) continue;
-
-		const isPerson = isPersonNote(frontmatter, cache, plugin.settings.noteTypeDetection);
-		const isEvent = !isPerson && isEventNote(frontmatter, cache, plugin.settings.noteTypeDetection);
-		if (!isPerson && !isEvent) continue;
-
-		if (isPerson) {
-			stats.totalPersons++;
-
-			// Check for birth date using property alias service
-			// Also check common alternatives (birth_date) directly
-			const bornValue = aliasService.resolve(frontmatter, 'born') ?? frontmatter.birth_date;
-			if (bornValue !== undefined && bornValue !== null && bornValue !== '') {
-				stats.withBirthDates++;
-
-				// Check if it looks like a fictional date (has era abbreviation)
-				if (typeof bornValue === 'string' && looksLikeFictionalDate(bornValue)) {
-					stats.withFictionalDates++;
-					const systemName = detectDateSystem(bornValue, plugin);
-					if (systemName) {
-						systemCounts[systemName] = (systemCounts[systemName] || 0) + 1;
-					}
-				}
-			}
-
-			// Check for death date using property alias service
-			// Also check common alternatives (death_date) directly
-			const diedValue = aliasService.resolve(frontmatter, 'died') ?? frontmatter.death_date;
-			if (diedValue !== undefined && diedValue !== null && diedValue !== '') {
-				stats.withDeathDates++;
-
-				// Also check died for fictional date (if born wasn't fictional)
-				if (typeof diedValue === 'string' && looksLikeFictionalDate(diedValue)) {
-					const systemName = detectDateSystem(diedValue, plugin);
-					if (systemName && !systemCounts[systemName]) {
-						// Only count the system once per person
-						systemCounts[systemName] = (systemCounts[systemName] || 0) + 1;
-					}
-				}
-			}
-		} else {
-			// Event notes: count fictional `date` (#644). Each event with a
-			// fictional date contributes to withFictionalDates one-for-one,
-			// mirroring how each person's fictional `born` contributes above.
-			// Without this branch the Events tab Statistics card was counting
-			// only person notes despite the label saying "notes".
-			const dateValue = aliasService.resolve(frontmatter, 'date');
-			if (typeof dateValue === 'string' && dateValue !== '' && looksLikeFictionalDate(dateValue)) {
-				stats.withFictionalDates++;
-				const systemName = detectDateSystem(dateValue, plugin);
-				if (systemName) {
-					systemCounts[systemName] = (systemCounts[systemName] || 0) + 1;
-				}
-			}
+	// #651: recompute when Obsidian signals the metadata cache has settled, so a
+	// stale low count rendered mid-indexing corrects itself without a manual tab
+	// reopen. The listener removes itself once the card leaves the DOM (tab
+	// switch or modal close), and self-heals any leftover refs on the next event.
+	let resolvedRef: EventRef;
+	const recompute = (): void => {
+		if (!card.isConnected) {
+			plugin.app.metadataCache.offref(resolvedRef);
+			return;
 		}
-	}
-
-	// Convert system counts to array
-	stats.systemsInUse = Object.entries(systemCounts)
-		.map(([name, count]) => ({ name, count }))
-		.sort((a, b) => b.count - a.count);
-
-	return stats;
-}
-
-/**
- * Check if a date string looks like a fictional date (has era abbreviation)
- *
- * Supported formats:
- * - "TA 2941", "AC 300", "BBY 19" (era space year)
- * - "TA2941", "AC300" (era directly followed by year)
- * - "2941 TA", "300 AC" (year space era)
- * - "2941TA" (year directly followed by era)
- */
-function looksLikeFictionalDate(dateStr: string): boolean {
-	const trimmed = dateStr.trim();
-
-	// Exclude ISO date patterns first
-	if (/^\d{4}(-\d{2}(-\d{2})?)?$/.test(trimmed)) {
-		return false;
-	}
-
-	// Look for era patterns (letters + optional space + digits, or digits + optional space + letters)
-	return /^[A-Za-z]+\s*\d+$/.test(trimmed) ||
-		/^\d+\s*[A-Za-z]+$/.test(trimmed);
-}
-
-/**
- * Try to detect which date system a date string belongs to
- */
-function detectDateSystem(dateStr: string, plugin: CanvasRootsPlugin): string | null {
-	// Get all active systems
-	const systems = [];
-
-	if (plugin.settings.showBuiltInDateSystems) {
-		systems.push(...DEFAULT_DATE_SYSTEMS);
-	}
-
-	systems.push(...plugin.settings.fictionalDateSystems);
-
-	// Check each system's era abbreviations
-	const normalizedDate = dateStr.toUpperCase();
-	for (const system of systems) {
-		for (const era of system.eras) {
-			if (normalizedDate.includes(era.abbrev.toUpperCase())) {
-				return system.name;
-			}
-		}
-	}
-
-	return null;
+		renderBody();
+	};
+	resolvedRef = plugin.app.metadataCache.on('resolved', recompute);
 }
 
 /**
@@ -2327,4 +2198,4 @@ export function renderEventsList(options: EventsListOptions): void {
 	renderTable(sortEventsChronologically([...initialFiltered]));
 }
 
-/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- Match scope of file-level disable at top. */
+/* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- Match scope of file-level disable at top. */

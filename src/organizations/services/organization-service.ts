@@ -297,6 +297,7 @@ export class OrganizationService {
 			parentOrg?: string;
 			universe?: string;
 			founded?: string;
+			dissolved?: string;
 			motto?: string;
 			seat?: string;
 			roles?: string[];
@@ -329,6 +330,9 @@ export class OrganizationService {
 		}
 		if (options?.founded) {
 			frontmatterLines.push(`founded: "${options.founded}"`);
+		}
+		if (options?.dissolved) {
+			frontmatterLines.push(`dissolved: "${options.dissolved}"`);
 		}
 		if (options?.motto) {
 			frontmatterLines.push(`motto: "${options.motto}"`);
@@ -384,6 +388,7 @@ export class OrganizationService {
 			parentOrg?: string;
 			universe?: string;
 			founded?: string;
+			dissolved?: string;
 			motto?: string;
 			seat?: string;
 			roles?: string[];
@@ -430,6 +435,14 @@ export class OrganizationService {
 					frontmatter.founded = data.founded;
 				} else {
 					delete frontmatter.founded;
+				}
+			}
+
+			if (data.dissolved !== undefined) {
+				if (data.dissolved) {
+					frontmatter.dissolved = data.dissolved;
+				} else {
+					delete frontmatter.dissolved;
 				}
 			}
 

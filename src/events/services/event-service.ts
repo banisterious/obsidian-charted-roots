@@ -351,6 +351,19 @@ export class EventService {
 	}
 
 	/**
+	 * Get events linked to an organization note (by wikilink). Matches on the
+	 * normalized wikilink so bracket/path/alias variations resolve the same way
+	 * persons and places do (#659).
+	 */
+	getEventsForOrganization(orgLink: string): EventNote[] {
+		const events = this.getAllEvents();
+		const normalizedLink = this.normalizeWikilink(orgLink);
+		return events.filter(e =>
+			e.organizations?.some(o => this.normalizeWikilink(o) === normalizedLink)
+		);
+	}
+
+	/**
 	 * Get all unique groups referenced in events
 	 */
 	getUniqueGroups(): string[] {
@@ -607,6 +620,13 @@ export class EventService {
 				frontmatterLines.push(`  - "${g.replace(/"/g, '\\"')}"`);
 			}
 		}
+		// Organizations (#659)
+		if (data.organizations && data.organizations.length > 0) {
+			frontmatterLines.push(`${prop('organizations')}:`);
+			for (const org of data.organizations) {
+				frontmatterLines.push(`  - "${formatWikilink(org)}"`);
+			}
+		}
 		if (data.transferType) {
 			frontmatterLines.push(`${prop('transfer_type')}: ${data.transferType}`);
 		}
@@ -841,6 +861,7 @@ export class EventService {
 		const afterValue = resolveProperty(frontmatter, 'after', aliases);
 		const timelineValue = resolveProperty(frontmatter, 'timeline', aliases);
 		const groupsValue = resolveProperty(frontmatter, 'groups', aliases);
+		const organizationsValue = resolveProperty(frontmatter, 'organizations', aliases);
 		const mediaValue = resolveProperty(frontmatter, 'media', aliases);
 		const transferTypeValue = resolveProperty(frontmatter, 'transfer_type', aliases);
 		const ageValue = resolveProperty(frontmatter, 'age', aliases);
@@ -905,6 +926,7 @@ export class EventService {
 			timeline: timelineValue ? fmToString(timelineValue) : undefined,
 			sortOrder: typeof frontmatter.sort_order === 'number' ? frontmatter.sort_order : undefined,
 			groups: fmToStringArray(groupsValue),
+			organizations: fmToStringArray(organizationsValue),
 			media: media.length > 0 ? media : undefined,
 			transferType: transferTypeValue ? fmToString(transferTypeValue) : undefined,
 			age: ageValue ? fmToString(ageValue) : undefined,

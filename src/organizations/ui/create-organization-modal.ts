@@ -21,6 +21,7 @@ interface OrganizationFormData {
 	parentOrg: string;
 	universe: string;
 	founded: string;
+	dissolved: string;
 	motto: string;
 	seat: string;
 	roles: string[];
@@ -55,6 +56,7 @@ export class CreateOrganizationModal extends Modal {
 	private parentOrg: string = '';
 	private universe: string = '';
 	private founded: string = '';
+	private dissolved: string = '';
 	private motto: string = '';
 	private seat: string = '';
 	private roles: string[] = [];
@@ -85,6 +87,7 @@ export class CreateOrganizationModal extends Modal {
 				this.parentOrg = options.editOrg.parentOrgLink || '';
 				this.universe = options.editOrg.universe || '';
 				this.founded = options.editOrg.founded || '';
+				this.dissolved = options.editOrg.dissolved || '';
 				this.motto = options.editOrg.motto || '';
 				this.seat = options.editOrg.seat || '';
 				this.roles = options.editOrg.roles ? [...options.editOrg.roles] : [];
@@ -263,6 +266,15 @@ export class CreateOrganizationModal extends Modal {
 				.setValue(this.founded)
 				.onChange(value => this.founded = value));
 
+		// Dissolved
+		new Setting(detailsEl)
+			.setName('Dissolved')
+			.setDesc('Date the organization dissolved (supports fictional dates)')
+			.addText(text => text
+				.setPlaceholder('e.g., TA 2050')
+				.setValue(this.dissolved)
+				.onChange(value => this.dissolved = value));
+
 		// Motto
 		new Setting(detailsEl)
 			.setName('Motto')
@@ -336,6 +348,7 @@ export class CreateOrganizationModal extends Modal {
 			parentOrg: this.parentOrg,
 			universe: this.universe,
 			founded: this.founded,
+			dissolved: this.dissolved,
 			motto: this.motto,
 			seat: this.seat,
 			roles: this.roles,
@@ -352,6 +365,7 @@ export class CreateOrganizationModal extends Modal {
 		this.parentOrg = formData.parentOrg || '';
 		this.universe = formData.universe || '';
 		this.founded = formData.founded || '';
+		this.dissolved = formData.dissolved || '';
 		this.motto = formData.motto || '';
 		this.seat = formData.seat || '';
 		this.roles = Array.isArray(formData.roles) ? formData.roles : [];
@@ -372,6 +386,7 @@ export class CreateOrganizationModal extends Modal {
 				parentOrg: this.parentOrg.trim() || undefined,
 				universe: this.universe.trim() || undefined,
 				founded: this.founded.trim() || undefined,
+				dissolved: this.dissolved.trim() || undefined,
 				motto: this.motto.trim() || undefined,
 				seat: this.seat.trim() || undefined,
 				roles: this.roles.length > 0 ? this.roles : undefined,
@@ -410,6 +425,7 @@ export class CreateOrganizationModal extends Modal {
 				parentOrg: this.parentOrg.trim() || undefined,
 				universe: this.universe.trim() || undefined,
 				founded: this.founded.trim() || undefined,
+				dissolved: this.dissolved.trim() || undefined,
 				motto: this.motto.trim() || undefined,
 				seat: this.seat.trim() || undefined,
 				roles: this.roles

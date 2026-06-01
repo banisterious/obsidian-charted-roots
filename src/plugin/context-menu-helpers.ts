@@ -15,6 +15,7 @@ import { GeocodingService } from '../maps/services/geocoding-service';
 import { SourcePickerModal, CreateSourceModal, CitationGeneratorModal } from '../sources';
 import { createUniverseService, EditUniverseModal } from '../universes';
 import { MediaManageModal } from '../core/ui/media-manage-modal';
+import { createSmartWikilink } from '../core/person-note-writer';
 import { getLogger } from '../core/logging';
 
 const logger = getLogger('context-menu-helpers');
@@ -329,49 +330,39 @@ export async function linkSourceToEvent(plugin: CanvasRootsPlugin, sourceFile: T
 export function addSourceToPersonNote(plugin: CanvasRootsPlugin, file: TFile): void {
 	new SourcePickerModal(plugin.app, plugin, {
 		onSelect: async (source) => {
-			// Get current sources from frontmatter
-			const cache = plugin.app.metadataCache.getFileCache(file);
-			const frontmatter = cache?.frontmatter || {};
-
-			// Find the next available source slot
-			let nextSlot = 1;
-			if (frontmatter.source) {
-				nextSlot = 2;
-				while (frontmatter[`source_${nextSlot}`]) {
-					nextSlot++;
-				}
-			}
-
-			// Create the wikilink
-			const sourceLink = `[[${source.filePath.replace(/\.md$/, '')}]]`;
-
-			// Check if this source is already linked
-			const existingSources: string[] = [];
-			if (frontmatter.source) existingSources.push(String(frontmatter.source));
-			for (let i = 2; i <= 50; i++) {
-				const key = `source_${i}`;
-				if (frontmatter[key]) {
-					existingSources.push(String(frontmatter[key]));
-				} else {
-					break;
-				}
-			}
-
-			if (existingSources.some(s => s.includes(source.filePath.replace(/\.md$/, '')))) {
-				new Notice(`Source "${source.title}" is already linked to this person`);
-				return;
-			}
-
-			// Add the source to frontmatter
+			// Write the canonical person-level source shape: two index-aligned
+			// arrays, `sources` (wikilinks for display) and `sources_id`
+			// (cr_ids for resolution) — exactly what the Edit Person modal
+			// reads and writes. Earlier builds of this action wrote a divergent
+			// `source` / `source_2` indexed-scalar shape that nothing else in
+			// the plugin read, so context-menu-added sources were invisible to
+			// the Edit Person modal and re-linking there produced duplicates
+			// across multiple fields (#653). Read, dedupe, and append inside
+			// processFrontMatter so we act on the live frontmatter rather than a
+			// possibly-stale metadata-cache snapshot.
+			let alreadyLinked = false;
 			await plugin.app.fileManager.processFrontMatter(file, (fm) => {
-				if (nextSlot === 1) {
-					fm.source = sourceLink;
-				} else {
-					fm[`source_${nextSlot}`] = sourceLink;
+				const existingIds: string[] = fm.sources_id
+					? (Array.isArray(fm.sources_id) ? fm.sources_id.map(String) : [String(fm.sources_id)])
+					: [];
+
+				// Dedupe by cr_id (the reliable resolver).
+				if (existingIds.includes(source.crId)) {
+					alreadyLinked = true;
+					return;
 				}
+
+				const existingLinks: string[] = fm.sources
+					? (Array.isArray(fm.sources) ? fm.sources.map(String) : [String(fm.sources)])
+					: [];
+
+				fm.sources = [...existingLinks, createSmartWikilink(source.title, plugin.app, source.crId)];
+				fm.sources_id = [...existingIds, source.crId];
 			});
 
-			new Notice(`Linked source: ${source.title}`);
+			new Notice(alreadyLinked
+				? `Source "${source.title}" is already linked to this person`
+				: `Linked source: ${source.title}`);
 		}
 	}).open();
 }

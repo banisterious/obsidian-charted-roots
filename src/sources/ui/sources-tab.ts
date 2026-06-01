@@ -55,7 +55,8 @@ export function renderSourcesTab(
 	container: HTMLElement,
 	plugin: CanvasRootsPlugin,
 	createCard: (options: { title: string; icon?: LucideIconName }) => HTMLElement,
-	showTab: (tabId: string) => void
+	showTab: (tabId: string) => void,
+	closeModal: () => void
 ): void {
 	const sourceService = plugin.getSourceService();
 
@@ -66,13 +67,13 @@ export function renderSourcesTab(
 	renderMediaGallery(container, plugin, createCard, showTab);
 
 	// Sources Overview/Statistics card
-	renderSourcesOverviewCard(container, plugin, sourceService, createCard, showTab);
+	renderSourcesOverviewCard(container, plugin, sourceService, createCard, showTab, closeModal);
 
 	// Source Type Manager card (customize, hide, create source types)
 	renderSourceTypeManagerCard(container, plugin, createCard, () => {
 		// Refresh the tab content when types change
 		container.empty();
-		renderSourcesTab(container, plugin, createCard, showTab);
+		renderSourcesTab(container, plugin, createCard, showTab, closeModal);
 	});
 }
 
@@ -84,7 +85,8 @@ function renderSourcesOverviewCard(
 	plugin: CanvasRootsPlugin,
 	sourceService: SourceService,
 	createCard: (options: { title: string; icon?: LucideIconName }) => HTMLElement,
-	_showTab: (tabId: string) => void
+	_showTab: (tabId: string) => void,
+	closeModal: () => void
 ): void {
 	const card = createCard({
 		title: 'Source overview',
@@ -158,6 +160,7 @@ function renderSourcesOverviewCard(
 	const link = statsLink.createEl('a', { text: 'View full statistics →', cls: 'crc-text-muted' });
 	link.addEventListener('click', (e) => {
 		e.preventDefault();
+		closeModal();
 		void plugin.activateStatisticsView();
 	});
 

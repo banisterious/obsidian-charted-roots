@@ -429,6 +429,8 @@ export interface EventNote {
 	sortOrder?: number;
 	/** Groups/factions involved in this event (for filtering by nation, faction, etc.) */
 	groups?: string[];
+	/** Organization notes involved in this event (wikilinks) — surfaces the event on the org's profile (#659) */
+	organizations?: string[];
 	/** Media files linked to this event (wikilinks) */
 	media?: string[];
 	/** For transfer events: type of transfer (inheritance, purchase, gift, hire, seizure, birth, relocation) */
@@ -469,6 +471,8 @@ export interface CreateEventData {
 	after?: string[];
 	timeline?: string;
 	groups?: string[];
+	/** Organization notes involved in this event (wikilinks) (#659) */
+	organizations?: string[];
 	/** For transfer events: inheritance, purchase, gift, hire, seizure, birth, relocation */
 	transferType?: string;
 	/** Research questions requiring investigation for this event */

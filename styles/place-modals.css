@@ -584,12 +584,9 @@
 }
 
 .crc-migration-aggregation-select {
-  padding: 4px 8px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-s);
-  background: var(--background-primary);
-  color: var(--text-normal);
-  font-size: var(--font-ui-small);
+  /* Layout only — let Obsidian's .dropdown class own the chrome (chevron,
+     padding, appearance). Overriding `background` here previously reset
+     background-repeat and tiled the native chevron across the control (#647). */
   min-width: 180px;
 }
 
@@ -603,12 +600,7 @@
 }
 
 .crc-migration-collection-select {
-  padding: 4px 8px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-s);
-  background: var(--background-primary);
-  color: var(--text-normal);
-  font-size: var(--font-ui-small);
+  /* Layout only — see .crc-migration-aggregation-select (#647). */
   min-width: 180px;
 }
 

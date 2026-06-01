@@ -9,6 +9,7 @@ import type { App } from 'obsidian';
 import type { EventNote } from '../../events/types/event-types';
 import type { SectionToggleFn, EntityLinkClickFn, SectionState } from '../profile-types';
 import { renderProfileSection } from './section-base';
+import { extractDisplayLabel } from '../../utils/wikilink-resolver';
 
 interface ParticipantsSectionOptions {
 	sectionStates: SectionState;
@@ -47,11 +48,14 @@ export function renderParticipantsSection(
 	const list = content.createDiv({ cls: 'cr-profile__participants-list' });
 	for (let i = 0; i < participants.length; i++) {
 		const personLink = participants[i];
-		const name = stripWikilink(personLink);
+		// Display the alias (e.g. `[[Filename|Display]]` → `Display`); fall back
+		// to the filename for the linkpath lookup used for navigation (#658).
+		const displayName = extractDisplayLabel(personLink);
+		const linkPath = stripWikilink(personLink);
 		const row = list.createDiv({ cls: 'cr-profile__participant-row' });
 
 		const link = row.createSpan({
-			text: name,
+			text: displayName,
 			cls: 'cr-profile__entity-link'
 		});
 
@@ -61,7 +65,7 @@ export function renderParticipantsSection(
 		}
 
 		// Resolve file for navigation
-		const file = options.app.metadataCache.getFirstLinkpathDest(name, '');
+		const file = options.app.metadataCache.getFirstLinkpathDest(linkPath, '');
 		if (file) {
 			link.addEventListener('click', () => {
 				const cache = options.app.metadataCache.getFileCache(file);
