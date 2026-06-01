@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-05-29 18:11:40 UTC
+ * - Generated: 2026-06-01 02:34:33 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -7624,7 +7624,7 @@ settings:
    COMPONENT: PLACE-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 1269 lines, 25.59 KB */
+/* Component Size: 1261 lines, 25.46 KB */
 
 /* ==========================================================================
    CREATE PLACE MODAL
@@ -8212,12 +8212,9 @@ settings:
 }
 
 .crc-migration-aggregation-select {
-  padding: 4px 8px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-s);
-  background: var(--background-primary);
-  color: var(--text-normal);
-  font-size: var(--font-ui-small);
+  /* Layout only — let Obsidian's .dropdown class own the chrome (chevron,
+     padding, appearance). Overriding `background` here previously reset
+     background-repeat and tiled the native chevron across the control (#647). */
   min-width: 180px;
 }
 
@@ -8231,12 +8228,7 @@ settings:
 }
 
 .crc-migration-collection-select {
-  padding: 4px 8px;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-s);
-  background: var(--background-primary);
-  color: var(--text-normal);
-  font-size: var(--font-ui-small);
+  /* Layout only — see .crc-migration-aggregation-select (#647). */
   min-width: 180px;
 }
 
@@ -41153,11 +41145,11 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-05-29 18:11:41 UTC
+ * Build completed: 2026-06-01 02:34:34 UTC
  * Components processed: 50
- * Total lines: 40684
- * Total size: 831.88 KB
- * Build duration: 0.96 seconds
+ * Total lines: 40676
+ * Total size: 831.75 KB
+ * Build duration: 1.11 seconds
  *
  * Component breakdown:
  * - variables.css: 79 lines, 2.45 KB
@@ -41167,7 +41159,7 @@ body.cr-media-linker-active .suggestion-container {
  * - settings.css: 131 lines, 3.53 KB
  * - control-center.css: 5693 lines, 106.94 KB
  * - entity-create-modals.css: 1234 lines, 25.46 KB
- * - place-modals.css: 1269 lines, 25.59 KB
+ * - place-modals.css: 1261 lines, 25.46 KB
  * - media-modals.css: 1995 lines, 38.67 KB
  * - import-export-wizard.css: 2092 lines, 39.9 KB
  * - staging-manager.css: 553 lines, 11.33 KB
