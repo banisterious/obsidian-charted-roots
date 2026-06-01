@@ -67,6 +67,22 @@ function stripApproximationMarkers(input: string): { stripped: string; isApproxi
 }
 
 /**
+ * Normalize a universe name to a comparison slug: lowercased, non-alphanumeric
+ * runs collapsed to single dashes, edges trimmed. This makes "Star Wars",
+ * "star-wars", and a wikilink-wrapped "[[Star Wars]]" all compare equal, and
+ * mirrors the slug logic in `suggestBuiltinForUniverseName`
+ * (`src/universes/ui/calendar-suggest.ts`). Shared by the universe-matching
+ * methods below so they agree on what counts as the same universe.
+ */
+function universeSlug(value: string): string {
+	return value
+		.trim()
+		.toLowerCase()
+		.replace(/[^a-z0-9]+/g, '-')
+		.replace(/^-+|-+$/g, '');
+}
+
+/**
  * Parser for fictional date systems
  */
 export class FictionalDateParser {
@@ -254,24 +270,35 @@ export class FictionalDateParser {
 	}
 
 	/**
-	 * Find a system that matches the given universe and has the era abbreviation
+	 * Find a system that matches the given universe and has the era
+	 * abbreviation. Universe comparison is slug-aware (so a wikilink-wrapped or
+	 * differently-cased `universe` value still resolves), and a user-defined
+	 * system is preferred over a built-in that shares the same universe and era
+	 * abbreviation — otherwise the built-in that ships with the plugin (e.g.
+	 * Galactic Standard's BBY/ABY) shadows a custom calendar reusing those
+	 * abbreviations, since built-ins are listed first (#650).
 	 */
 	private findSystemByUniverse(
 		universe: string,
 		abbrevLower: string
 	): { system: FictionalDateSystem; era: FictionalEra } | null {
-		const universeLower = universe.toLowerCase();
+		const slug = universeSlug(universe);
+		if (!slug) return null;
 
+		const matches: { system: FictionalDateSystem; era: FictionalEra }[] = [];
 		for (const system of this.systems) {
-			if (system.universe?.toLowerCase() === universeLower) {
-				const era = system.eras.find(e => e.abbrev.toLowerCase() === abbrevLower);
-				if (era) {
-					return { system, era };
-				}
+			if (!system.universe) continue;
+			const sysSlug = universeSlug(system.universe);
+			if (!sysSlug) continue;
+			if (sysSlug !== slug && !slug.includes(sysSlug) && !sysSlug.includes(slug)) continue;
+			const era = system.eras.find(e => e.abbrev.toLowerCase() === abbrevLower);
+			if (era) {
+				matches.push({ system, era });
 			}
 		}
+		if (matches.length === 0) return null;
 
-		return null;
+		return matches.find(m => !m.system.builtIn) ?? matches[0];
 	}
 
 	/**
@@ -282,13 +309,11 @@ export class FictionalDateParser {
 	 * `suggestBuiltinForUniverseName` in `src/universes/ui/calendar-suggest.ts`.
 	 */
 	public findSystemForUniverse(universe: string): FictionalDateSystem | undefined {
-		const trimmed = universe.trim();
-		if (!trimmed) return undefined;
-		const slug = trimmed.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+		const slug = universeSlug(universe);
 		if (!slug) return undefined;
 		return this.systems.find(sys => {
 			if (!sys.universe) return false;
-			const sysSlug = sys.universe.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+			const sysSlug = universeSlug(sys.universe);
 			if (!sysSlug) return false;
 			return sysSlug === slug || slug.includes(sysSlug) || sysSlug.includes(slug);
 		});
