@@ -7,9 +7,11 @@
 
 import type { App, TFile } from 'obsidian';
 import type { EventNote } from '../../events/types/event-types';
+import { getEventType } from '../../events/types/event-types';
 import type { SectionToggleFn, EntityLinkClickFn, SectionState } from '../profile-types';
 import { renderProfileSection } from './section-base';
 import { renderPersonTimeline } from '../../events/ui/person-timeline';
+import { createLucideIcon } from '../../ui/lucide-icons';
 
 interface EventsSectionOptions {
 	sectionStates: SectionState;
@@ -92,7 +94,23 @@ export function renderEventsSection(
 		}
 
 		if (event.eventType) {
-			row.createSpan({ text: event.eventType, cls: 'cr-profile__event-type-label' });
+			// Resolve the type id to its catalog definition so custom and
+			// built-in types show a friendly name and icon instead of the raw
+			// slug (e.g. `lore_event` → "Lore event") (#659).
+			const settings = options.plugin.settings;
+			const typeDef = getEventType(
+				event.eventType,
+				settings.customEventTypes || [],
+				settings.showBuiltInEventTypes !== false,
+				settings.eventTypeCustomizations
+			);
+			const typeEl = row.createSpan({ cls: 'cr-profile__event-type-label' });
+			if (typeDef) {
+				typeEl.appendChild(createLucideIcon(typeDef.icon, 12));
+				typeEl.appendText(` ${typeDef.name}`);
+			} else {
+				typeEl.textContent = event.eventType;
+			}
 		}
 	}
 }
