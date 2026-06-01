@@ -28,6 +28,13 @@ export interface IdentityHeaderOptions {
 	mediaService: MediaService | null;
 	onFieldSave: InlineEditSaveFn | null;
 	onEditNotify: InlineEditNotifyFn | null;
+	/**
+	 * Resolve an event-type id to its catalog display name (e.g. `plot_point`
+	 * → "Plot point"). Injected by the caller so this shared header stays
+	 * decoupled from plugin settings; falls back to the raw id when unset or
+	 * unresolved (#665).
+	 */
+	eventTypeResolver?: (typeId: string) => string;
 }
 
 export function renderIdentityHeader(
@@ -167,7 +174,7 @@ function renderEntityMeta(
 			renderMetaFields(container, getPlaceFields(data), editable, options);
 			break;
 		case 'event':
-			renderMetaFields(container, getEventFields(data), editable, options);
+			renderMetaFields(container, getEventFields(data, options), editable, options);
 			break;
 		case 'source':
 			renderMetaFields(container, getSourceFields(data), editable, options);
@@ -323,13 +330,19 @@ function getPlaceFields(data: ProfileEntityData & { entityType: 'place' }): Edit
 
 // ── Event ───────────────────────────────────────────────────
 
-function getEventFields(data: ProfileEntityData & { entityType: 'event' }): EditableFieldConfig[] {
+function getEventFields(
+	data: ProfileEntityData & { entityType: 'event' },
+	options: IdentityHeaderOptions
+): EditableFieldConfig[] {
+	const eventType = data.event.eventType || '';
 	return [
 		{
 			property: 'event_type',
 			label: 'Event type',
-			displayValue: data.event.eventType || '',
-			rawValue: data.event.eventType || '',
+			// Show the catalog display name (e.g. "Plot point"), keeping the raw
+			// id as the editable value (#665).
+			displayValue: eventType ? (options.eventTypeResolver?.(eventType) ?? eventType) : '',
+			rawValue: eventType,
 			inputType: 'text',
 			placeholder: 'Event type...'
 		},
