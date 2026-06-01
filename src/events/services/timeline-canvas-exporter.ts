@@ -17,6 +17,7 @@ import {
 } from '../../core/canvas-utils';
 import type { CanvasData } from '../../core/canvas-utils';
 import { EventNote, getEventType } from '../types/event-types';
+import { eventMatchesPerson } from '../event-person-match';
 
 const logger = getLogger('TimelineCanvasExporter');
 
@@ -297,10 +298,7 @@ export class TimelineCanvasExporter {
 			let filteredEvents = events;
 
 			if (filterPerson) {
-				filteredEvents = filteredEvents.filter(e =>
-					e.person === filterPerson ||
-					e.persons?.includes(filterPerson)
-				);
+				filteredEvents = filteredEvents.filter(e => eventMatchesPerson(e, filterPerson));
 			}
 
 			if (filterPlace) {
@@ -871,10 +869,7 @@ export class TimelineCanvasExporter {
 		let filtered = events;
 
 		if (filterPerson) {
-			filtered = filtered.filter(e =>
-				e.person === filterPerson ||
-				e.persons?.includes(filterPerson)
-			);
+			filtered = filtered.filter(e => eventMatchesPerson(e, filterPerson));
 		}
 
 		if (filterPlace) {
@@ -965,10 +960,7 @@ export class TimelineCanvasExporter {
 			let filteredEvents = events;
 
 			if (options.filterPerson) {
-				filteredEvents = filteredEvents.filter(e =>
-					e.person === options.filterPerson ||
-					e.persons?.includes(options.filterPerson!)
-				);
+				filteredEvents = filteredEvents.filter(e => eventMatchesPerson(e, options.filterPerson!));
 			}
 
 			if (options.filterEventType) {

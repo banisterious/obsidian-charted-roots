@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **Person-filtered Canvas and Excalidraw timeline exports return the selected person's events** ([#657](https://github.com/banisterious/obsidian-charted-roots/issues/657)): The previous fix normalized the timeline export's "Filter by person" comparison for the on-screen preview and the Markdown export, but the Canvas and Excalidraw exporters (the default format) still compared the bracket-stripped dropdown value against event person fields that keep their wikilink brackets — so exporting a person-filtered timeline to Canvas failed with "No events to export after filtering" even though the preview reacted correctly. Both exporters now share a single person-matcher, so all three formats filter consistently. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 ## [0.22.57] - 2026-05-31
 
 A reporter-driven cohort closing eleven issues from the @doctorwodka and @DigitalDreamn threads, spanning fictional-date handling, the Events tab statistics, the Entity Profile views, and organization linking. Three new capabilities — organization↔event links, a "Referenced events" section on source profiles, and a "Dissolved" field on the Organization modal — land alongside fixes for fictional-date counting and parsing (negative years, decade notation, custom-calendar attribution), the timeline export person filter, the cross-tab "Manage media" action, and several Control Center papercuts. **1106 tests passing across 88 suites**.

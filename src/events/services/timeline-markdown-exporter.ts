@@ -18,6 +18,7 @@ import type { CanvasRootsSettings } from '../../settings';
 import { getLogger } from '../../core/logging';
 import { ensureFolderExists, toSafeFilename } from '../../core/canvas-utils';
 import { EventNote, getEventType } from '../types/event-types';
+import { eventMatchesPerson } from '../event-person-match';
 import type { DateService } from '../../dates/services/date-service';
 
 const logger = getLogger('TimelineMarkdownExporter');
@@ -38,27 +39,6 @@ function extractYear(dateStr: string, dateService: DateService | null): number |
 	}
 	const match = dateStr.match(/^(\d{4})/);
 	return match ? parseInt(match[1]) : null;
-}
-
-/**
- * Strip wikilink brackets and trim, matching `EventService.normalizeWikilink`.
- * The person-filter dropdown values are built from `getUniquePeople()`, which
- * normalizes this way, so the exporter must normalize both sides or a bracketed
- * `person` / `persons` entry never matches the (stripped) filter value (#657).
- */
-function normalizePersonRef(ref: string): string {
-	return ref.replace(/^\[\[/, '').replace(/\]\]$/, '').trim();
-}
-
-/**
- * Whether an event names the given person, comparing on normalized wikilinks.
- */
-function eventMatchesPerson(event: EventNote, filterPerson: string): boolean {
-	const needle = normalizePersonRef(filterPerson);
-	if (event.person && normalizePersonRef(event.person) === needle) {
-		return true;
-	}
-	return Boolean(event.persons?.some(p => normalizePersonRef(p) === needle));
 }
 
 /**
