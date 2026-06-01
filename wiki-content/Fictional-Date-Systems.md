@@ -119,7 +119,13 @@ The parser recognizes dates in the format `{abbreviation} {year}`:
 - `BBY 19` - 19 years Before the Battle of Yavin
 - `A2 500` - Second Age (generic), year 500
 
-The abbreviation matching is case-insensitive (`TA`, `ta`, `Ta` all work).
+The abbreviation matching is case-insensitive (`TA`, `ta`, `Ta` all work). The year may also be written immediately after the abbreviation (`TA2941`), or the year may come first (`2941 TA`).
+
+**Negative years.** A year may carry a leading minus sign for eras that count through a zero point — for example `EP -18` (eighteen years before the era's epoch). Negative years parse to a negative canonical year and sort earliest-first, so `EP -500` comes before `EP -200`, which comes before `EP -1`.
+
+**Decade notation.** A trailing `s` marks a decade — `EP 30s` is treated as the start of the 30s (canonical year 30, flagged approximate). This combines with a negative year as `EP -30s`.
+
+**Approximation and precision suffixes.** Approximation markers (`~`, `ish`, `circa`, `c.`, `?`) are recognized and flag the date approximate — for example `DE ~1226` or `PEF 260ish`. An ISO-style month/day suffix is accepted and reduced to the year for sorting and display: `DE 1264-08-15` and `DE 1222-03` both resolve to their era-year (the month/day is kept in the raw frontmatter for finer tiebreaks but isn't part of the parsed year).
 
 ---
 

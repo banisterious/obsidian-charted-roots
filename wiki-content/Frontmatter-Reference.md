@@ -1690,11 +1690,14 @@ For events without precise dates, use relative ordering to establish sequence:
 | `timeline` | `string` | Parent timeline note | `"[[Smith Family Timeline]]"` |
 | `is_canonical` | `boolean` | Authoritative truth for worldbuilders | `true` |
 | `universe` | `string` | Fictional universe | `"westeros"` |
-| `groups` | `string[]` | Groups/factions involved in this event | `["Rohan", "Isengard"]` |
+| `groups` | `string[]` | Groups/factions involved in this event (free-text tags) | `["Rohan", "Isengard"]` |
+| `organizations` | `string[]` | Organization notes involved in this event (wikilink array) | `["[[Jedi Order]]", "[[Galactic Senate]]"]` |
 
 The `groups` property enables filtering in timeline exports by nation, faction, or organization. Useful for:
 - Worldbuilding: organize events by nation, guild, or power structure
 - Genealogy: tag events by family branch or immigrant group
+
+The `organizations` property links an event to one or more **organization notes** (full entity notes with `cr_type: organization`). Events linked this way appear in the "Events" section of each organization's Entity Profile. Set it from the Create/Edit Event modal's "Organizations" field, or directly in frontmatter. Use `organizations` (wikilinks to entity notes) when you want the event to surface on an organization's profile; use `groups` (free-text tags) for lightweight filtering that doesn't require an organization note.
 
 ---
 

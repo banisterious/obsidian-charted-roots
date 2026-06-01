@@ -101,7 +101,8 @@ Additional notes about this event...
 | `date_system` | string | No | Fictional date system ID |
 | `timeline` | wikilink | No | Parent timeline note |
 | `sort_order` | number | No | Computed sort value for ordering. Populated automatically by the topological sort over `before` / `after` relationships when an event is saved or when "Compute sort order" runs from the Events tab. See [Event Sort Behavior](#event-sort-behavior) for the tiebreak rules. |
-| `groups` | string[] | No | Groups/factions involved (for filtering) |
+| `groups` | string[] | No | Groups/factions involved (free-text tags, for filtering) |
+| `organizations` | wikilink[] | No | Organization notes involved. Events linked here appear in the "Events" section of each organization's [Entity Profile](Entity-Profile-View#organization-profiles). Set from the Create/Edit Event modal's "Organizations" field or in frontmatter |
 
 > **Note (v0.18.0):** All events now use the `persons` array property. Single-participant events simply have an array with one element (e.g., `persons: ["[[John Smith]]"]`). The legacy `person` property is deprecated but still read for backward compatibility.
 

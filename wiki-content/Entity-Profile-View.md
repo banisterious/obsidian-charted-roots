@@ -152,18 +152,21 @@ The Map section shows an embedded Leaflet map centered on the place's coordinate
 | Section | What it shows |
 |---------|---------------|
 | **Referenced facts** | Which entities cite this source and for which facts. Grouped by entity — for example, "John Smith: birth_date, death_date" |
+| **Referenced events** | Event notes that cite this source via their `sources` array. Each entry links through to the event. Hidden when no events reference the source |
 | **Media** | Linked documents and images |
 
-The Referenced Facts section answers the question: "What claims does this source support?" It scans your vault for entities that reference this source via `sourced_*` properties.
+The Referenced Facts section answers the question: "What claims does this source support?" It scans your vault for entities that reference this source via `sourced_*` properties. The Referenced Events section answers the parallel question for events — which event notes list this source in their `sources` — so you can see at a glance everything tied to the source.
 
 ### Organization Profiles
 
 | Section | What it shows |
 |---------|---------------|
 | **Members** | People linked to this organization, grouped by role (uppercase headings) and sorted by name within each group |
-| **Events** | Events associated with the organization |
+| **Events** | Event notes that link to this organization via their `organizations` property |
 | **Sources** | Sources referencing the organization |
 | **Media** | Linked photos and documents |
+
+To make an event appear in the **Events** section, add the organization to the event's `organizations` property (via the Create/Edit Event modal's "Organizations" field, or in frontmatter). Tagging an organization's name in an event's `groups` does not surface it here — `groups` is a free-text filter, not an entity link.
 
 The Members section follows the same role-grouping rules as the dynamic [Members Block](Dynamic-Note-Content#members-block): the org's declared `roles` list pins a sequence at the top, remaining named roles fall through alphabetically, and the no-role group (heading "MEMBERS") is always last. Each row shows the member link, date range, current/former status, and per-membership notes when present. Both the Profile View section and the dynamic block share a single `groupMembersByRole` helper so the two surfaces stay consistent.
 

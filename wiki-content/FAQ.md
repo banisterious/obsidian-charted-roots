@@ -374,7 +374,9 @@ Large trees with complex relationships take longer. Try:
 
 ### How do I associate events with families or organizations?
 
-Use the `groups` property on event notes to tag them with families, factions, lineages, or organizations:
+There are two ways, depending on whether you want a lightweight tag or a link to a full organization note.
+
+**`groups`** — free-text tags for filtering and organizing events by family, faction, or lineage:
 
 ```yaml
 cr_type: event
@@ -390,22 +392,26 @@ groups:
 This enables:
 - **Filtering** timeline exports by group/faction
 - **Organizing** events by family branch or lineage
-- **Tracking** organizational history (guilds, houses, companies)
 
-For worldbuilding, you can tag events with nations, factions, or power structures:
+**`organizations`** — wikilinks to **organization notes** (`cr_type: organization`). Events linked this way appear in the "Events" section of each organization's Entity Profile:
 
 ```yaml
-groups:
-  - "House Stark"
-  - "The North"
+cr_type: event
+title: "Founding of the Order"
+event_type: custom
+date: 1850
+organizations:
+  - "[[Masonic Lodge No. 12]]"
 ```
 
-See [Events & Timelines: Groups and Factions](Events-And-Timelines#groups-and-factions) for more details.
+Set `organizations` from the Create/Edit Event modal's "Organizations" field, or directly in frontmatter. (Tagging an event with an organization's *name* in `groups` does **not** surface it on the organization's profile — use `organizations` for that.)
+
+See [Events & Timelines: Groups and Factions](Events-And-Timelines#groups-and-factions) for more on `groups`, and [Organization Notes](Organization-Notes) for organization entities.
 
 ### What's the difference between `groups` and organization notes?
 
-- **`groups`**: Free-text tags for filtering and organizing events. Quick and flexible.
-- **Organization notes**: Full entity notes with `cr_type: organization`, hierarchies, membership tracking, and structured data.
+- **`groups`**: Free-text tags for filtering and organizing events. Quick and flexible, no separate note required.
+- **Organization notes**: Full entity notes with `cr_type: organization`, hierarchies, membership tracking, and structured data. Link an event to one with the event's `organizations` property to have the event appear on the organization's profile.
 
 Use `groups` for lightweight tagging. Use organization notes when you need to track members, roles, parent organizations, or other structured relationships.
 
