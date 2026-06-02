@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Added
+
+- **"Show sibling's marriages" timeline toggle** ([#661](https://github.com/banisterious/obsidian-charted-roots/issues/661)): A new opt-in toggle adds a sibling's marriage to the focal person's Dynamic Timeline block — so you can see the focal person's age at a sibling's wedding — joining the existing relative-event toggles for parents' (#608) and children's (#607) marriages. Marriages are read from the same person-encoded vital-event data, covering biological and adopted siblings (step-siblings are excluded, matching sibling births), with the spouse's name, marriage location, and a customizable label. Off by default. Requested by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 ### Fixed
 
 - **Data Quality pane reflects corrected data after an edit** ([#664](https://github.com/banisterious/obsidian-charted-roots/issues/664)): After filling in missing data (e.g. a birth date), the Data Quality view's results — and its Refresh button — could keep reporting the item as missing. The view re-scanned on the file-save event, which fires before Obsidian re-reads the note's frontmatter, so the scan saw the pre-edit version. It now refreshes when the note's metadata has actually been re-read, so corrected values clear from the list on their own shortly after editing. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).

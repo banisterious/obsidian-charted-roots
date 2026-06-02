@@ -721,6 +721,7 @@ export class TimelineRenderer {
 			'sibling_births': e => e.isFamilyEvent === true && e.type === 'family_birth',
 			'children_marriages': e => e.isFamilyEvent === true && e.type === 'family_child_marriage',
 			'parent_marriages': e => e.isFamilyEvent === true && e.type === 'family_parent_marriage',
+			'sibling_marriages': e => e.isFamilyEvent === true && e.type === 'family_sibling_marriage',
 			'context': e => e.isContext === true,
 			'family': e => e.isFamilyEvent === true,
 			'personal': e => !e.isFamilyEvent && !e.isContext
@@ -1196,6 +1197,47 @@ export class TimelineRenderer {
 						),
 						place: spouse.marriageLocation ? this.service.stripWikilink(spouse.marriageLocation) : undefined,
 						eventFile: parent.file?.basename,
+						isFamilyEvent: true,
+						rawDate: spouse.marriageDate
+					};
+					const age = this.computeEventAge(birthDate, spouse.marriageDate, universe);
+					if (age !== undefined) entry.age = age;
+					entries.push(entry);
+				}
+			}
+		}
+
+		// Sibling marriages (#661). Bio and adopted siblings (step-siblings are
+		// excluded by collectSiblingCrIds, matching sibling births). Each
+		// sibling's spouses are iterated; marriages outside the focal person's
+		// reality window are skipped, and a marriage shared across iterations is
+		// de-duplicated on the (pair, date) key.
+		if (settings.timelineShowSiblingMarriages) {
+			const seenSiblingMarriages = new Set<string>();
+			for (const [siblingCrId] of this.collectSiblingCrIds(person, graph)) {
+				const sibling = graph.getPersonByCrId(siblingCrId);
+				if (!sibling?.spouses) continue;
+				for (const spouse of sibling.spouses) {
+					if (!spouse.marriageDate) continue;
+					const pairKey = [siblingCrId, spouse.personId].sort().join(':') + '|' + spouse.marriageDate;
+					if (seenSiblingMarriages.has(pairKey)) continue;
+					seenSiblingMarriages.add(pairKey);
+					if (this.isEventBeforeFocalBirth(birthDate, spouse.marriageDate, universe)) continue;
+					if (this.isEventAfterFocalDeath(person.deathDate, spouse.marriageDate, universe)) continue;
+					const spouseNode = graph.getPersonByCrId(spouse.personId);
+					const spouseName = spouseNode?.name || spouse.personLink || spouse.personId;
+					const year = this.service.extractYear(spouse.marriageDate);
+					const entry: TimelineEntry = {
+						date: this.service.formatDate(spouse.marriageDate),
+						year,
+						type: 'family_sibling_marriage',
+						title: this.applyLabel(
+							settings.timelineSiblingMarriageLabel || 'Marriage of {name} to {spouse}',
+							sibling.name,
+							{ spouse: spouseName }
+						),
+						place: spouse.marriageLocation ? this.service.stripWikilink(spouse.marriageLocation) : undefined,
+						eventFile: sibling.file?.basename,
 						isFamilyEvent: true,
 						rawDate: spouse.marriageDate
 					};
