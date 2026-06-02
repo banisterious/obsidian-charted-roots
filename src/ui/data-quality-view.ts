@@ -103,14 +103,18 @@ export class DataQualityView extends ItemView {
 	}
 
 	/**
-	 * Register event handlers for vault changes
+	 * Register event handlers for vault changes.
+	 *
+	 * Edits and new notes are tracked via `metadataCache.on('changed')` rather
+	 * than `vault.on('modify')`: the vault event fires on save, before Obsidian
+	 * re-parses the frontmatter, so a refresh triggered off it re-scans the
+	 * stale cache and a just-corrected value still reads as missing (#664). The
+	 * metadata-cache event fires *after* the re-parse, so the auto-refresh sees
+	 * the corrected data. Deletes still use the vault event (no cache to await).
 	 */
 	private registerEventHandlers(): void {
 		this.registerEvent(
-			this.app.vault.on('modify', () => this.scheduleRefresh())
-		);
-		this.registerEvent(
-			this.app.vault.on('create', () => this.scheduleRefresh())
+			this.app.metadataCache.on('changed', () => this.scheduleRefresh())
 		);
 		this.registerEvent(
 			this.app.vault.on('delete', () => this.scheduleRefresh())
