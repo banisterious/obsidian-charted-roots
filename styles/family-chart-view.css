@@ -390,7 +390,10 @@
 
 /* Connection lines */
 .cr-fcv-chart-container.f3 .link {
-  stroke: var(--text-color);
+  /* #668: line colour is derived at render time to stay visible against the
+     background (see ensureVisibleLineColor); falls back to the theme text
+     colour when --link-color is unset. */
+  stroke: var(--link-color, var(--text-color));
   stroke-width: 2px;
   fill: none;
   transition: stroke-width 0.2s ease-in-out;
