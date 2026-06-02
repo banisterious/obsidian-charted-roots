@@ -10,7 +10,9 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ---
 
-## [Unreleased]
+## [0.22.58] - 2026-06-02
+
+A reporter-driven follow-up to v0.22.57, re-fixing several issues whose first pass missed a parallel render or save path — fictional-date calendar attribution, event participant and place aliases, the timeline export person filter, and the Create/Edit Event modal's Organizations field — alongside a Data Quality refresh fix, an event-profile header label fix, a Family Chart High Contrast line-visibility fix, and a new opt-in "Show sibling's marriages" timeline toggle. **1145 tests passing across 95 suites**.
 
 ### Added
 
