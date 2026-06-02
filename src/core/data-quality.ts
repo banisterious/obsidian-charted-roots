@@ -240,6 +240,8 @@ export class DataQualityService {
 				issues.push(...this.checkAmbiguousWikilinks(person));
 				// Check for missing relationship IDs (wikilink exists but _id is empty)
 				issues.push(...this.checkMissingRelationshipIds(person));
+				// Check for misaligned dual-storage relationship arrays (#666)
+				issues.push(...this.checkRelationshipArrayAlignment(person));
 			}
 			if (checks.missingData) {
 				issues.push(...this.checkMissingData(person));
@@ -1162,6 +1164,98 @@ export class DataQualityService {
 		}
 
 		return issues;
+	}
+
+	/**
+	 * Detect dual-storage relationship arrays whose wikilink list and `*_id`
+	 * list have fallen out of alignment (#666). Two failure modes:
+	 *
+	 * - **Length mismatch:** the two arrays differ in length, so positional
+	 *   pairing shifts every entry past the gap.
+	 * - **Mis-pairing:** equal lengths, but a wikilink resolves unambiguously
+	 *   to a cr_id different from the one it is paired with — the signature of
+	 *   an already-corrupted note (the bug padded the shorter array to equal
+	 *   length with borrowed ids).
+	 *
+	 * Only the array form is checked; singleton fields (`father`/`mother`) can't
+	 * drift this way. Repairable by `repairRelationshipArrayAlignment`.
+	 */
+	private checkRelationshipArrayAlignment(person: PersonNode): DataQualityIssue[] {
+		const issues: DataQualityIssue[] = [];
+		if (!this.personIndex) {
+			return issues;
+		}
+
+		const cache = this.app.metadataCache.getFileCache(person.file);
+		const fm = cache?.frontmatter as Record<string, unknown> | undefined;
+		if (!fm) {
+			return issues;
+		}
+
+		const arrayFields = ['children', 'parents', 'spouse'];
+		for (const field of arrayFields) {
+			const reason = this.getArrayMisalignmentReason(fm, field);
+			if (!reason) {
+				continue;
+			}
+			const value = fm[field] as unknown[];
+			const rawId = fm[`${field}_id`];
+			const idCount = rawId ? (Array.isArray(rawId) ? rawId.length : 1) : 0;
+			const detail = reason === 'length'
+				? `${value.length} names vs ${idCount} ids`
+				: 'a name is paired with the wrong id';
+			issues.push({
+				code: 'RELATIONSHIP_ARRAY_MISALIGNED',
+				message: `The "${field}" list and "${field}_id" list are out of alignment (${detail}); relationships may be mislabeled.`,
+				severity: 'error',
+				category: 'relationship_inconsistency',
+				person,
+				details: { field, nameCount: value.length, idCount, reason, repairable: field === 'children' }
+			});
+		}
+
+		return issues;
+	}
+
+	/**
+	 * Return why a dual-storage relationship array is misaligned, or `null`
+	 * when it is sound. Only the array form is inspected; requires the
+	 * PersonIndexService for the mis-pairing test. Shared by the detection
+	 * check and the children repair (#666).
+	 */
+	private getArrayMisalignmentReason(
+		fm: Record<string, unknown>,
+		field: string
+	): 'length' | 'mispaired' | null {
+		const value = fm[field];
+		if (!Array.isArray(value)) {
+			return null;
+		}
+		const rawId = fm[`${field}_id`];
+		const ids = rawId ? (Array.isArray(rawId) ? rawId : [rawId]) : [];
+
+		if (value.length !== ids.length) {
+			return 'length';
+		}
+		if (!this.personIndex) {
+			return null;
+		}
+		for (let i = 0; i < value.length; i++) {
+			const entry = value[i];
+			if (typeof entry !== 'string' || !entry.includes('[[')) {
+				continue;
+			}
+			const match = entry.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/);
+			if (!match) {
+				continue;
+			}
+			const resolved = this.personIndex.getCrIdByWikilink(match[1]);
+			const pairedId = typeof ids[i] === 'string' ? ids[i] : '';
+			if (resolved && pairedId && resolved !== pairedId) {
+				return 'mispaired';
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -2120,6 +2214,149 @@ export class DataQualityService {
 	}
 
 	/**
+	 * Build repair plans for parent notes whose `children` / `children_id`
+	 * arrays are misaligned (#666). The misaligned arrays themselves can't be
+	 * trusted, so each plan rebuilds the children set from the authoritative
+	 * reciprocal side — the people who list this note as a parent — while
+	 * preserving any currently-listed child that still resolves (union, so a
+	 * legitimately one-directional link is never silently dropped). Stale
+	 * links that resolve to no person are dropped; children lacking a
+	 * reciprocal are surfaced for review. Requires the PersonIndexService.
+	 */
+	detectChildrenAlignmentRepairs(options: DataQualityOptions = {}): ChildrenAlignmentRepair[] {
+		if (!this.personIndex) {
+			return [];
+		}
+		const people = this.getPeopleForScope(options);
+		const peopleMap = new Map<string, PersonNode>();
+		for (const p of people) {
+			peopleMap.set(p.crId, p);
+		}
+
+		const repairs: ChildrenAlignmentRepair[] = [];
+		for (const parent of people) {
+			const cache = this.app.metadataCache.getFileCache(parent.file);
+			const fm = cache?.frontmatter as Record<string, unknown> | undefined;
+			if (!fm) {
+				continue;
+			}
+			// Only repair flagged (misaligned) children arrays.
+			if (!this.getArrayMisalignmentReason(fm, 'children')) {
+				continue;
+			}
+
+			const entryFor = (node: PersonNode): ChildEntry => ({
+				crId: node.crId,
+				name: node.name || node.file.basename,
+				basename: node.file.basename
+			});
+
+			// Resolve the current children links to people; collect broken ones.
+			const rawChildren = fm.children;
+			const currentLinks = Array.isArray(rawChildren) ? rawChildren : [rawChildren];
+			const finalChildren: ChildEntry[] = [];
+			const removedBroken: string[] = [];
+			const seen = new Set<string>();
+			for (const link of currentLinks) {
+				if (typeof link !== 'string') {
+					continue;
+				}
+				const match = link.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/);
+				const target = match ? match[1] : link;
+				const crId = this.personIndex.getCrIdByWikilink(target);
+				const node = crId ? peopleMap.get(crId) : undefined;
+				if (!crId || !node) {
+					removedBroken.push(link);
+					continue;
+				}
+				if (seen.has(crId)) {
+					continue; // de-duplicate
+				}
+				seen.add(crId);
+				finalChildren.push(entryFor(node));
+			}
+
+			// Union in the reciprocal children that are missing from the list.
+			const reciprocal = this.getReciprocalChildren(parent.crId, people);
+			const reciprocalIds = new Set(reciprocal.map(p => p.crId));
+			const recovered: ChildEntry[] = [];
+			for (const child of reciprocal) {
+				if (!seen.has(child.crId)) {
+					seen.add(child.crId);
+					const entry = entryFor(child);
+					finalChildren.push(entry);
+					recovered.push(entry);
+				}
+			}
+
+			const noReciprocal = finalChildren.filter(c => !reciprocalIds.has(c.crId));
+			repairs.push({ parent, finalChildren, recovered, removedBroken, noReciprocal });
+		}
+
+		return repairs;
+	}
+
+	/**
+	 * People who list `parentCrId` as a biological, gender-neutral, or adoptive
+	 * parent — the authoritative source of a parent's children (#666).
+	 */
+	private getReciprocalChildren(parentCrId: string, people: PersonNode[]): PersonNode[] {
+		return people.filter(p =>
+			p.fatherCrId === parentCrId ||
+			p.motherCrId === parentCrId ||
+			p.parentCrIds.includes(parentCrId) ||
+			p.adoptiveFatherCrId === parentCrId ||
+			p.adoptiveMotherCrId === parentCrId ||
+			p.adoptiveParentCrIds.includes(parentCrId)
+		);
+	}
+
+	/**
+	 * Apply children-alignment repair plans, rewriting each parent's
+	 * `children` / `children_id` to the aligned set (#666). Length 1 collapses
+	 * to the scalar shape to match the existing frontmatter convention.
+	 */
+	async applyChildrenAlignmentRepairs(
+		repairs: ChildrenAlignmentRepair[],
+		progress?: BatchProgressCallback
+	): Promise<BatchOperationResult> {
+		const results: BatchOperationResult = { processed: 0, modified: 0, modifiedFiles: [], errors: [] };
+
+		for (let i = 0; i < repairs.length; i++) {
+			const repair = repairs[i];
+			progress?.onProgress(i + 1, repairs.length, repair.parent.file.basename);
+			results.processed++;
+			try {
+				await this.app.fileManager.processFrontMatter(repair.parent.file, (fm) => {
+					if (repair.finalChildren.length === 0) {
+						delete fm.children;
+						delete fm.children_id;
+						return;
+					}
+					const links = repair.finalChildren.map(c => `[[${c.basename}]]`);
+					const ids = repair.finalChildren.map(c => c.crId);
+					if (repair.finalChildren.length === 1) {
+						fm.children = links[0];
+						fm.children_id = ids[0];
+					} else {
+						fm.children = links;
+						fm.children_id = ids;
+					}
+				});
+				results.modified++;
+				results.modifiedFiles.push(repair.parent.file);
+			} catch (error) {
+				results.errors.push({
+					file: repair.parent.file.path,
+					error: error instanceof Error ? error.message : String(error)
+				});
+			}
+		}
+
+		return results;
+	}
+
+	/**
 	 * Helper method to extract array field from frontmatter
 	 */
 	private extractArrayField(frontmatter: Record<string, unknown> | undefined, fieldName: string): string[] {
@@ -3039,6 +3276,29 @@ export interface BidirectionalInconsistency {
 	conflictingPerson?: PersonNode;
 	/** For conflicts: whether this is a father or mother conflict */
 	conflictType?: 'father' | 'mother';
+}
+
+/** A single child entry in a children-alignment repair plan. */
+export interface ChildEntry {
+	crId: string;
+	name: string;
+	basename: string;
+}
+
+/**
+ * A plan to rebuild one parent's misaligned `children` / `children_id`
+ * arrays from the authoritative reciprocal (child -> parent) links (#666).
+ */
+export interface ChildrenAlignmentRepair {
+	parent: PersonNode;
+	/** The final, aligned children set to write (clean links + ids). */
+	finalChildren: ChildEntry[];
+	/** Children recovered from the reciprocal side (were missing from the list). */
+	recovered: ChildEntry[];
+	/** Current links dropped because they resolve to no person (stale/broken). */
+	removedBroken: string[];
+	/** Kept children that have no reciprocal parent link (surfaced for review). */
+	noReciprocal: ChildEntry[];
 }
 
 /**

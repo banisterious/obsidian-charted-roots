@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
 	applyRelationshipArrayPatch,
+	computeArrayRenameReplacements,
 	computeRelationshipArrayPatch
 } from '../src/core/relationship-emit';
 
@@ -261,5 +262,63 @@ describe('applyRelationshipArrayPatch', () => {
 			children: '[[Only Child]]',
 			children_id: 'only-child-id'
 		});
+	});
+});
+
+/**
+ * #666 — the rename cascade rewrites a renamed person's wikilink across other
+ * notes. It paired the `children` array with `children_id` by position; when
+ * those arrays fell out of step the renamed entry never matched and the link
+ * was left stale. `computeArrayRenameReplacements` identifies the entry by
+ * cr_id instead.
+ */
+describe('computeArrayRenameReplacements (#666)', () => {
+	const stems = (oldName: string) => [oldName, `${oldName}|${oldName}`];
+
+	it('aligned arrays: replaces the entry whose id matches (positional, rename-safe)', () => {
+		const value = ['[[Ada]]', '[[Nikkole Wilkin]]', '[[Cy]]'];
+		const idValue = ['ada-id', 'nikkole-id', 'cy-id'];
+		expect(computeArrayRenameReplacements(value, idValue, stems('Nikkole Wilkin'), 'nikkole-id'))
+			.toEqual([1]);
+	});
+
+	it('aligned arrays: skips a same-named entry whose id is a different person', () => {
+		// Two "Nikkole Wilkin" links; only the one whose id matches is renamed.
+		const value = ['[[Nikkole Wilkin]]', '[[Nikkole Wilkin]]'];
+		const idValue = ['other-id', 'nikkole-id'];
+		expect(computeArrayRenameReplacements(value, idValue, stems('Nikkole Wilkin'), 'nikkole-id'))
+			.toEqual([1]);
+	});
+
+	it('misaligned arrays: replaces the sole old-name entry by identity (the #666 case)', () => {
+		// 8 names, 7 ids (one dropped). Positional matching would miss it;
+		// identity matching finds the single "Nikkole Wilkin" link.
+		const value = [
+			'[[Ben]]', '[[Aaron]]', '[[Rebecca]]', '[[Leslie]]',
+			'[[Sydny]]', '[[Nikkole Wilkin]]', '[[Gabriel]]', '[[Wiljem]]'
+		];
+		const idValue = ['ben', 'aaron', 'leslie', 'sydny', 'nikkole-id', 'gabriel', 'wiljem'];
+		expect(computeArrayRenameReplacements(value, idValue, stems('Nikkole Wilkin'), 'nikkole-id'))
+			.toEqual([5]);
+	});
+
+	it('misaligned arrays: does nothing when the person is not in the id array', () => {
+		const value = ['[[Nikkole Wilkin]]', '[[Other]]', '[[Third]]'];
+		const idValue = ['a-id', 'b-id'];
+		expect(computeArrayRenameReplacements(value, idValue, stems('Nikkole Wilkin'), 'nikkole-id'))
+			.toEqual([]);
+	});
+
+	it('misaligned arrays: leaves ambiguous (multiple) old-name matches untouched', () => {
+		const value = ['[[Nikkole Wilkin]]', '[[Nikkole Wilkin]]', '[[Other]]'];
+		const idValue = ['nikkole-id', 'x-id'];
+		expect(computeArrayRenameReplacements(value, idValue, stems('Nikkole Wilkin'), 'nikkole-id'))
+			.toEqual([]);
+	});
+
+	it('scalar id: replaces every old-name entry when the scalar id matches', () => {
+		const value = ['[[Nikkole Wilkin]]', '[[Nikkole Wilkin]]'];
+		expect(computeArrayRenameReplacements(value, 'nikkole-id', stems('Nikkole Wilkin'), 'nikkole-id'))
+			.toEqual([0, 1]);
 	});
 });

@@ -10,6 +10,12 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Misaligned parent children lists no longer mislabel or drop relationships** ([#666](https://github.com/banisterious/obsidian-charted-roots/issues/666)): A parent note stores its children as two parallel lists — `children` (the links) and `children_id` (the stable IDs) — that must line up one-for-one. If an ID went missing (for example, a child link left in path form during earlier editing), the lists fell out of step, and the next edit silently re-paired each child's name with the wrong child's note, producing links like `[[correct note|wrong name]]` and dropping a reference. The Edit Person load path now pairs each link with its own resolved identity (rather than by position) whenever the two lists disagree in length, and the rename cascade now finds the renamed person by ID instead of array position, so neither can introduce the mismatch. A new **"Repair misaligned children"** Data Quality tool detects affected notes and rebuilds the lists from each child's own parent links — recovering dropped children and clearing the misleading aliases — with a preview before anything is written. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 ## [0.22.58] - 2026-06-02
 
 A reporter-driven follow-up to v0.22.57, re-fixing several issues whose first pass missed a parallel render or save path — fictional-date calendar attribution, event participant and place aliases, the timeline export person filter, and the Create/Edit Event modal's Organizations field — alongside a Data Quality refresh fix, an event-profile header label fix, a Family Chart High Contrast line-visibility fix, and a new opt-in "Show sibling's marriages" timeline toggle. **1145 tests passing across 95 suites**.

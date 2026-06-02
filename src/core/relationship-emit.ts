@@ -72,6 +72,59 @@ export function computeRelationshipArrayPatch(
 }
 
 /**
+ * Decide which entries of a wikilink array a rename should rewrite,
+ * identifying the renamed person by `personCrId` rather than by array
+ * position.
+ *
+ * The rename cascade pairs a wikilink array (`children`) with its `*_id`
+ * companion (`children_id`). Matching purely by position breaks when the two
+ * arrays have fallen out of step: a single missing id shifts the rest, so the
+ * renamed person's entry never satisfies `idArr[i] === personCrId` and the
+ * link is silently left stale (#666).
+ *
+ * Rules, in order:
+ * - **Scalar id** equal to `personCrId`: rewrite every entry bearing the old
+ *   name (single id shared across an array of names).
+ * - **Aligned lengths:** trust position — rewrite entry `i` when `idArr[i]`
+ *   equals `personCrId`. Preserves the established rename-safe behavior, and
+ *   a different person who merely shares the old name is correctly skipped.
+ * - **Mismatched lengths:** position is unreliable. If `personCrId` is present
+ *   in the id array and exactly one entry bears the old name, that entry is
+ *   unambiguously the renamed person — rewrite it. Zero or multiple matches
+ *   are left untouched (flag, don't guess).
+ *
+ * `oldStems` are the bracket-stripped inner texts of the old wikilink forms
+ * (e.g. `"Jane Doe"`, `"Jane Doe|Jane Doe"`); an entry matches when it
+ * contains any non-empty stem. Returns the indices of `value` to overwrite.
+ */
+export function computeArrayRenameReplacements(
+	value: unknown[],
+	idValue: unknown,
+	oldStems: string[],
+	personCrId: string
+): number[] {
+	const matchesOld = (entry: unknown): boolean =>
+		typeof entry === 'string' && oldStems.some(stem => stem.length > 0 && entry.includes(stem));
+	const matchingIndices = value
+		.map((entry, i) => (matchesOld(entry) ? i : -1))
+		.filter(i => i >= 0);
+
+	if (typeof idValue === 'string') {
+		return idValue === personCrId ? matchingIndices : [];
+	}
+
+	const idArr = Array.isArray(idValue) ? idValue : [];
+
+	if (value.length === idArr.length) {
+		return matchingIndices.filter(i => idArr[i] === personCrId);
+	}
+
+	// Mismatched lengths: trust identity, but only when unambiguous.
+	if (!idArr.includes(personCrId)) return [];
+	return matchingIndices.length === 1 ? matchingIndices : [];
+}
+
+/**
  * Apply a patch to a mutable frontmatter object. `null` values delete
  * their keys; everything else is assigned. Convenience for writer code
  * that wants a one-call application.

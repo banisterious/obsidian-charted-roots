@@ -1290,6 +1290,139 @@ export async function fixBidirectionalRelationships(plugin: CanvasRootsPlugin, a
 }
 
 /**
+ * Build a children-alignment repair service with fresh graph + index (#666).
+ */
+function makeChildrenAlignmentService(plugin: CanvasRootsPlugin, app: App): DataQualityService {
+	const folderFilter = new FolderFilterService(plugin.settings);
+	const familyGraph = plugin.createFamilyGraphService();
+	familyGraph.ensureCacheLoaded();
+	familyGraph.setFolderFilter(folderFilter);
+	familyGraph.setPropertyAliases(plugin.settings.propertyAliases);
+	familyGraph.setValueAliases(plugin.settings.valueAliases);
+
+	const service = new DataQualityService(app, plugin.settings, familyGraph, folderFilter, plugin);
+	if (plugin.personIndex) {
+		service.setPersonIndex(plugin.personIndex);
+	}
+	return service;
+}
+
+/**
+ * Preview repairing misaligned children / children_id arrays (#666). Rebuilds
+ * each flagged parent's children from the reciprocal (child -> parent) links.
+ */
+export async function previewRepairMisalignedChildren(plugin: CanvasRootsPlugin, app: App, showTab: (tabId: string) => void): Promise<void> {
+	const service = makeChildrenAlignmentService(plugin, app);
+
+	new Notice('Detecting misaligned children arrays...');
+	const repairs = service.detectChildrenAlignmentRepairs();
+
+	if (repairs.length === 0) {
+		new Notice('No misaligned children arrays found');
+		return;
+	}
+
+	// Expand each parent's plan into per-change rows for the preview table.
+	const changes: Array<{
+		person: { name: string; file: TFile };
+		relatedPerson: { name: string; file: TFile };
+		type: string;
+		description: string;
+	}> = [];
+	for (const repair of repairs) {
+		const parentRef = { name: repair.parent.name || repair.parent.file.basename, file: repair.parent.file };
+		for (const child of repair.recovered) {
+			changes.push({
+				person: parentRef,
+				relatedPerson: { name: child.name, file: repair.parent.file },
+				type: 'recover-child',
+				description: `Recover ${child.name} into ${parentRef.name}'s children (lists ${parentRef.name} as a parent)`
+			});
+		}
+		for (const link of repair.removedBroken) {
+			changes.push({
+				person: parentRef,
+				relatedPerson: { name: link, file: repair.parent.file },
+				type: 'remove-broken',
+				description: `Remove broken link ${link} from ${parentRef.name}'s children (resolves to no person)`
+			});
+		}
+		for (const child of repair.noReciprocal) {
+			changes.push({
+				person: parentRef,
+				relatedPerson: { name: child.name, file: repair.parent.file },
+				type: 'no-reciprocal',
+				description: `Keep ${child.name}, but ${child.name} does not list ${parentRef.name} as a parent (review)`
+			});
+		}
+		if (repair.recovered.length === 0 && repair.removedBroken.length === 0 && repair.noReciprocal.length === 0) {
+			changes.push({
+				person: parentRef,
+				relatedPerson: parentRef,
+				type: 'realign',
+				description: `Re-align ${parentRef.name}'s children_id with children (no membership change)`
+			});
+		}
+	}
+
+	const modal = new BidirectionalInconsistencyPreviewModal(
+		app,
+		changes,
+		async () => await repairMisalignedChildren(plugin, app, showTab),
+		{
+			title: 'Preview: Repair misaligned children',
+			intro: 'This operation rebuilds each affected parent\'s children list from the people who list them as a parent:',
+			bullets: [
+				'Recover a child that was dropped from the list',
+				'Remove a link that resolves to no person (stale / renamed away)',
+				'Re-align children_id with children and clean up misleading aliases'
+			],
+			warning: 'Backup your vault before proceeding. This rebuilds each affected parent\'s children list, removing links that resolve to no person.'
+		}
+	);
+	modal.open();
+}
+
+/**
+ * Repair misaligned children / children_id arrays (#666).
+ */
+export async function repairMisalignedChildren(plugin: CanvasRootsPlugin, app: App, showTab: (tabId: string) => void): Promise<void> {
+	const service = makeChildrenAlignmentService(plugin, app);
+	const repairs = service.detectChildrenAlignmentRepairs();
+
+	if (repairs.length === 0) {
+		new Notice('No misaligned children arrays found');
+		return;
+	}
+
+	new Notice('Repairing misaligned children arrays...');
+
+	// Suspend bidirectional linking so it doesn't fight our rewrites.
+	plugin.bidirectionalLinker?.suspend();
+	try {
+		const result = await service.applyChildrenAlignmentRepairs(repairs);
+
+		if (result.modified > 0) {
+			new Notice(`✓ Repaired children arrays in ${result.modified} ${pluralize(result.modified, 'note')}. Wait a moment before re-checking.`, 5000);
+		} else {
+			new Notice('No children arrays were repaired');
+		}
+
+		if (result.errors.length > 0) {
+			new Notice(`⚠ ${result.errors.length} errors occurred. Check console for details.`);
+			console.error('Repair misaligned children errors:', result.errors);
+		}
+
+		// Let pending file-watcher events settle before the linker resumes.
+		await new Promise(resolve => window.setTimeout(resolve, 500));
+	} finally {
+		plugin.bidirectionalLinker?.resume();
+	}
+
+	showTab('people');
+}
+
+/**
  * Preview impossible dates detection
  */
 export function previewDetectImpossibleDates(plugin: CanvasRootsPlugin, app: App): void {
