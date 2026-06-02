@@ -204,6 +204,11 @@ export class CreateEventModal extends Modal {
 			this.universe = event.universe || '';
 			this.dateSystem = event.dateSystem || '';
 			this.timeline = event.timeline?.replace(/^\[\[/, '').replace(/\]\]$/, '') || '';
+			// Organizations are stored as a wikilink array; the field edits them
+			// as a comma-separated list of plain names (#659).
+			this.organizations = (event.organizations ?? [])
+				.map(o => parseWikilink(o).name)
+				.join(', ');
 			this.transferType = event.transferType || '';
 			if (event.before && event.before.length > 0) {
 				this.beforeRefs = event.before.map(b => {
@@ -956,6 +961,18 @@ export class CreateEventModal extends Modal {
 	}
 
 	/**
+	 * Split the comma-separated Organizations field into trimmed, non-empty
+	 * names. The create and update save paths both wrap these into wikilinks
+	 * (`formatWikilink` / `buildWikilink`) (#659).
+	 */
+	private parseOrganizations(): string[] {
+		return this.organizations
+			.split(',')
+			.map(s => s.trim())
+			.filter(Boolean);
+	}
+
+	/**
 	 * Create the event note
 	 */
 	private async createEvent(): Promise<void> {
@@ -1005,6 +1022,10 @@ export class CreateEventModal extends Modal {
 			}
 			if (this.timeline.trim()) {
 				data.timeline = this.timeline.trim();
+			}
+			const organizationNames = this.parseOrganizations();
+			if (organizationNames.length > 0) {
+				data.organizations = organizationNames;
 			}
 			if (this.isCanonical) {
 				data.isCanonical = true;
@@ -1158,6 +1179,13 @@ export class CreateEventModal extends Modal {
 					frontmatter.timeline = timelineValue;
 				} else {
 					delete frontmatter.timeline;
+				}
+
+				const organizationNames = this.parseOrganizations();
+				if (organizationNames.length > 0) {
+					frontmatter.organizations = organizationNames.map(o => buildWikilink(o));
+				} else {
+					delete frontmatter.organizations;
 				}
 
 				if (this.isCanonical) {

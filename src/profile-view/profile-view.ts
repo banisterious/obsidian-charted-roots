@@ -23,6 +23,7 @@ import type {
 } from './profile-types';
 import { ProfileDataLoader } from './profile-data-loader';
 import { renderIdentityHeader } from './sections/identity-section';
+import { getEventType } from '../events/types/event-types';
 import { renderRelationshipsSection, isOtherRelationship } from './sections/relationships-section';
 import { renderMembershipsSection } from './sections/memberships-section';
 import { renderEventsSection } from './sections/events-section';
@@ -365,7 +366,16 @@ export class ProfileView extends ItemView {
 			app: this.app,
 			mediaService: this.plugin.getMediaService(),
 			onFieldSave,
-			onEditNotify
+			onEditNotify,
+			eventTypeResolver: (typeId) => {
+				const settings = this.plugin.settings;
+				return getEventType(
+					typeId,
+					settings.customEventTypes || [],
+					settings.showBuiltInEventTypes !== false,
+					settings.eventTypeCustomizations
+				)?.name ?? typeId;
+			}
 		});
 
 		// Breadcrumbs

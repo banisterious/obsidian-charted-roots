@@ -371,8 +371,16 @@
 }
 
 .cr-profile__event-type-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-4-1);
   color: var(--text-muted);
   flex-shrink: 0;
+}
+
+.cr-profile__event-type-label svg {
+  width: 12px;
+  height: 12px;
 }
 
 .cr-profile__event-title {

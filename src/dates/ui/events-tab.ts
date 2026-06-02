@@ -19,6 +19,7 @@ import { TimelineMarkdownExporter, TimelineExportFormat } from '../../events/ser
 import { computeSortOrder } from '../../events/services/sort-order-service';
 import { renderEventTypeManagerCard } from '../../events/ui/event-type-manager-card';
 import { isEventNote } from '../../utils/note-type-detection';
+import { extractDisplayLabel } from '../../utils/wikilink-resolver';
 import { TemplateSnippetsModal } from '../../ui/template-snippets-modal';
 import { calculateDateStatistics } from '../services/date-statistics';
 import { openManageMediaModal } from '../../plugin/context-menu-helpers';
@@ -426,7 +427,7 @@ function renderTimelineCard(
 	const uniquePeople = eventService.getUniquePeople();
 	for (const person of uniquePeople) {
 		// Strip wikilink brackets for display
-		const displayName = person.replace(/^\[\[/, '').replace(/\]\]$/, '');
+		const displayName = extractDisplayLabel(person);
 		personFilter.createEl('option', { value: person, text: displayName });
 	}
 
@@ -725,11 +726,11 @@ function renderEventTable(
 		// Collect all people (from both person and persons fields), deduplicated
 		const personSet = new Set<string>();
 		if (event.person) {
-			personSet.add(event.person.replace(/^\[\[/, '').replace(/\]\]$/, ''));
+			personSet.add(extractDisplayLabel(event.person));
 		}
 		if (event.persons && event.persons.length > 0) {
 			for (const p of event.persons) {
-				personSet.add(p.replace(/^\[\[/, '').replace(/\]\]$/, ''));
+				personSet.add(extractDisplayLabel(p));
 			}
 		}
 		const allPeople = Array.from(personSet);
@@ -743,7 +744,7 @@ function renderEventTable(
 		// Place cell
 		const placeCell = row.createEl('td', { cls: 'crc-timeline-cell-place' });
 		if (event.place) {
-			placeCell.textContent = event.place.replace(/^\[\[/, '').replace(/\]\]$/, '');
+			placeCell.textContent = extractDisplayLabel(event.place);
 		} else {
 			placeCell.createEl('span', { text: '—', cls: 'crc-text-muted' });
 		}
@@ -1180,7 +1181,7 @@ function renderExportCard(
 			dropdown.addOption('', 'All people');
 			const uniquePeople = eventService.getUniquePeople();
 			for (const person of uniquePeople) {
-				const displayName = person.replace(/^\[\[/, '').replace(/\]\]$/, '');
+				const displayName = extractDisplayLabel(person);
 				dropdown.addOption(person, displayName);
 			}
 			dropdown.setValue(personValue);
@@ -1923,7 +1924,7 @@ export function renderEventsList(options: EventsListOptions): void {
 
 	const uniquePeople = eventService.getUniquePeople();
 	for (const person of uniquePeople) {
-		const displayName = person.replace(/^\[\[/, '').replace(/\]\]$/, '');
+		const displayName = extractDisplayLabel(person);
 		const opt = personFilterEl.createEl('option', { value: person, text: displayName });
 		if (person === currentPersonFilter) opt.selected = true;
 	}
@@ -2093,10 +2094,10 @@ export function renderEventsList(options: EventsListOptions): void {
 			const personCell = row.createEl('td', { cls: 'crc-timeline-cell-person' });
 			const allPeople: string[] = [];
 			if (event.person) {
-				allPeople.push(event.person.replace(/^\[\[/, '').replace(/\]\]$/, ''));
+				allPeople.push(extractDisplayLabel(event.person));
 			}
 			if (event.persons && event.persons.length > 0) {
-				allPeople.push(...event.persons.map(p => p.replace(/^\[\[/, '').replace(/\]\]$/, '')));
+				allPeople.push(...event.persons.map(p => extractDisplayLabel(p)));
 			}
 
 			if (allPeople.length > 0) {
@@ -2108,7 +2109,7 @@ export function renderEventsList(options: EventsListOptions): void {
 			// Place cell
 			const placeCell = row.createEl('td', { cls: 'crc-timeline-cell-place' });
 			if (event.place) {
-				placeCell.textContent = event.place.replace(/^\[\[/, '').replace(/\]\]$/, '');
+				placeCell.textContent = extractDisplayLabel(event.place);
 			} else {
 				placeCell.createEl('span', { text: '—', cls: 'crc-text-muted' });
 			}

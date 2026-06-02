@@ -41,6 +41,7 @@ import {
 import { getSpouseLabel } from '../../utils/terminology';
 import { pluralize } from '../../utils/format-utils';
 import { unwrapWikilinkDisplay } from '../../utils/wikilink-resolver';
+import { ensureVisibleLineColor } from '../../utils/color-contrast';
 
 const logger = getLogger('FamilyChartView');
 
@@ -1202,16 +1203,21 @@ export class FamilyChartView extends ItemView {
 
 		// Set CSS variables - family-chart relies on these for card colors
 		// Use custom colors if set, otherwise use defaults
+		const backgroundColor = isDarkMode
+			? (customColors?.backgroundDark ?? 'rgb(33, 33, 33)')
+			: (customColors?.backgroundLight ?? 'rgb(250, 250, 250)');
+		const textColor = isDarkMode
+			? (customColors?.textDark ?? '#fff')
+			: (customColors?.textLight ?? '#333');
 		this.chartContainerEl.setCssProps({
 			'--female-color': customColors?.femaleColor ?? 'rgb(196, 138, 146)',
 			'--male-color': customColors?.maleColor ?? 'rgb(120, 159, 172)',
 			'--genderless-color': customColors?.unknownColor ?? 'rgb(140, 140, 140)',
-			'--background-color': isDarkMode
-				? (customColors?.backgroundDark ?? 'rgb(33, 33, 33)')
-				: (customColors?.backgroundLight ?? 'rgb(250, 250, 250)'),
-			'--text-color': isDarkMode
-				? (customColors?.textDark ?? '#fff')
-				: (customColors?.textLight ?? '#333')
+			'--background-color': backgroundColor,
+			'--text-color': textColor,
+			// #668: keep connector lines visible when the theme's text colour
+			// matches the background (e.g. High Contrast dark = black on black).
+			'--link-color': ensureVisibleLineColor(textColor, backgroundColor)
 		});
 		// Set direct styles on container (hidden until chart is positioned)
 		this.chartContainerEl.setCssStyles({
@@ -2917,8 +2923,13 @@ export class FamilyChartView extends ItemView {
 		el.style.setProperty('--female-color', colors.femaleColor);
 		el.style.setProperty('--male-color', colors.maleColor);
 		el.style.setProperty('--genderless-color', colors.unknownColor);
-		el.style.setProperty('--background-color', isDark ? colors.backgroundDark : colors.backgroundLight);
-		el.style.setProperty('--text-color', isDark ? colors.textDark : colors.textLight);
+		const backgroundColor = isDark ? colors.backgroundDark : colors.backgroundLight;
+		const textColor = isDark ? colors.textDark : colors.textLight;
+		el.style.setProperty('--background-color', backgroundColor);
+		el.style.setProperty('--text-color', textColor);
+		// #668: keep connector lines visible when the theme's text colour
+		// matches the background (e.g. High Contrast dark = black on black).
+		el.style.setProperty('--link-color', ensureVisibleLineColor(textColor, backgroundColor));
 
 		// Also set our cr-fcv variables for consistency with Style Settings
 		el.style.setProperty('--cr-fcv-female-color', colors.femaleColor);
