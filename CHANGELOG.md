@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.60] - 2026-06-03
+
+A Family Chart card-rendering pass plus follow-ups to the v0.22.59 data-integrity and export work. The Circle, rectangle, compact, and mini card styles now render names and detail fields more legibly: Circle and the rectangular styles size to their content (widening or wrapping) instead of clipping, the default cards are more compact, and the Pastel theme and Highlight Groups read correctly in every theme and on every platform. The "Repair misaligned children" data-quality tool reconciles both parents of a shared child in a single pass, and person-filtered timeline exports no longer overwrite each other. **1176 tests passing across 98 suites**.
+
 ### Fixed
 
 - **Family Chart Circle avatars clip without a CSS feature flagged by the Community review**: The round-avatar clip moved from a CSS `clip-path` property — which the Community plugin review flags as only partially supported on the minimum Obsidian version — to an equivalent SVG clip path. No visible change, and it scales more reliably across avatar sizes.
