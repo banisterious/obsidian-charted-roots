@@ -1925,6 +1925,28 @@ export class FamilyChartView extends ItemView {
 		// gender color the body would have shown. Inserted as the first child of
 		// .card-inner so it sits behind the avatar; guarded against duplicates.
 		if (this.cardStyle === 'circle') {
+			// Clip the avatar to a circle via an SVG <clipPath> applied as the
+			// `clip-path` *attribute* (not a CSS property, which the Community CSS
+			// scanner flags as only partially supported). objectBoundingBox units
+			// scale the circle to the avatar's box at any size. Defined once per SVG.
+			const svg = cardEl.ownerSVGElement;
+			if (svg) {
+				const svgSel = d3.select(svg);
+				if (svgSel.select('#cr-fcv-circle-clip').empty()) {
+					let defs = svgSel.select<SVGDefsElement>('defs');
+					if (defs.empty()) {
+						defs = svgSel.insert<SVGDefsElement>('defs', ':first-child');
+					}
+					defs.append('clipPath')
+						.attr('id', 'cr-fcv-circle-clip')
+						.attr('clipPathUnits', 'objectBoundingBox')
+						.append('circle')
+						.attr('cx', 0.5)
+						.attr('cy', 0.5)
+						.attr('r', 0.5);
+				}
+				d3.select(cardEl).select('.card_image').attr('clip-path', 'url(#cr-fcv-circle-clip)');
+			}
 			const inner = d3.select(cardEl).select('.card-inner');
 			if (!inner.empty() && inner.select('.cr-circle-disc').empty()) {
 				const dim = this.getCardDimensions('circle');

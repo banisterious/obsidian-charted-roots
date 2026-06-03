@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-06-03 01:07:14 UTC
+ * - Generated: 2026-06-03 01:58:01 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -17099,7 +17099,7 @@ settings:
    COMPONENT: FAMILY-CHART-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1502 lines, 37.81 KB */
+/* Component Size: 1501 lines, 37.94 KB */
 
 /**
  * Family Chart View Styles
@@ -18382,12 +18382,11 @@ settings:
 
 /* Circle card style (#669): a round avatar with the label centered below it,
    rendered on the shared SVG renderer so the connection-indicator bubbles and
-   the image placeholder work (the old HTML renderer drew neither). The square
-   image box lets circle(50%) inscribe a true circle, overriding f3's inline
-   rectangular clip. */
-.cr-fcv-chart-container.card-style-circle .card_image {
-  clip-path: circle(50%);
-}
+   the image placeholder work (the old HTML renderer drew neither). The avatar
+   is clipped to a circle via an SVG <clipPath> applied as the `clip-path`
+   *attribute* in addOpenNoteButton — not a CSS `clip-path` property, which the
+   Community CSS scanner flags as only partially supported on the minimum
+   Obsidian version, and whose reference-box behaviour on SVG is unreliable. */
 
 /* Hide the rectangular card body and its overflow-fade mask so only the round
    avatar and label show. The `.card-body` ancestor lifts specificity above the
@@ -41118,11 +41117,11 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-06-03 01:07:14 UTC
+ * Build completed: 2026-06-03 01:58:01 UTC
  * Components processed: 50
- * Total lines: 40649
- * Total size: 832.12 KB
- * Build duration: 0.29 seconds
+ * Total lines: 40648
+ * Total size: 832.25 KB
+ * Build duration: 0.4 seconds
  *
  * Component breakdown:
  * - variables.css: 79 lines, 2.45 KB
@@ -41144,7 +41143,7 @@ body.cr-media-linker-active .suggestion-container {
  * - find-on-canvas.css: 275 lines, 5.13 KB
  * - folder-scan.css: 155 lines, 2.6 KB
  * - relationship-calculator.css: 302 lines, 5.27 KB
- * - family-chart-view.css: 1502 lines, 37.81 KB
+ * - family-chart-view.css: 1501 lines, 37.94 KB
  * - family-chart-export.css: 699 lines, 14.78 KB
  * - report-wizard.css: 908 lines, 19.89 KB
  * - book-builder.css: 368 lines, 7.25 KB

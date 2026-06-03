@@ -1279,12 +1279,11 @@
 
 /* Circle card style (#669): a round avatar with the label centered below it,
    rendered on the shared SVG renderer so the connection-indicator bubbles and
-   the image placeholder work (the old HTML renderer drew neither). The square
-   image box lets circle(50%) inscribe a true circle, overriding f3's inline
-   rectangular clip. */
-.cr-fcv-chart-container.card-style-circle .card_image {
-  clip-path: circle(50%);
-}
+   the image placeholder work (the old HTML renderer drew neither). The avatar
+   is clipped to a circle via an SVG <clipPath> applied as the `clip-path`
+   *attribute* in addOpenNoteButton — not a CSS `clip-path` property, which the
+   Community CSS scanner flags as only partially supported on the minimum
+   Obsidian version, and whose reference-box behaviour on SVG is unreliable. */
 
 /* Hide the rectangular card body and its overflow-fade mask so only the round
    avatar and label show. The `.card-body` ancestor lifts specificity above the

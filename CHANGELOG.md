@@ -10,6 +10,12 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **Family Chart Circle avatars clip without a CSS feature flagged by the Community review**: The round-avatar clip moved from a CSS `clip-path` property — which the Community plugin review flags as only partially supported on the minimum Obsidian version — to an equivalent SVG clip path. No visible change, and it scales more reliably across avatar sizes.
+
 ## [0.22.59] - 2026-06-02
 
 A focused follow-up to v0.22.58 addressing a relationship data-integrity bug and two Family Chart rendering issues. A parent's children list could fall out of step with its companion ID list and silently mis-pair or drop relationships on the next edit — this is now prevented at the source and repairable for already-affected notes via a new Data Quality tool. The Family Chart "Circle" card style is rebuilt to show round avatars with their connection bubbles and placeholders intact, and the batch-repair warning callouts are now legible in every theme. **1162 tests passing across 96 suites**.
