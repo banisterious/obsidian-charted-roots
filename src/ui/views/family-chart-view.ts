@@ -2690,7 +2690,10 @@ export class FamilyChartView extends ItemView {
 				backgroundLight: 'rgb(250, 250, 250)',
 				backgroundDark: 'rgb(33, 33, 33)',
 				textLight: '#333333',
-				textDark: '#ffffff'
+				// Pastel card backgrounds are light in both modes, so dark-mode
+				// text must stay dark too — white reads poorly on the pastel
+				// fills (#672). Mirrors the High Contrast preset's dark textDark.
+				textDark: '#333333'
 			}
 		},
 		earth: {
