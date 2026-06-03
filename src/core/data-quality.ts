@@ -2224,7 +2224,8 @@ export class DataQualityService {
 	 * reciprocal are surfaced for review. Requires the PersonIndexService.
 	 */
 	detectChildrenAlignmentRepairs(options: DataQualityOptions = {}): ChildrenAlignmentRepair[] {
-		if (!this.personIndex) {
+		const personIndex = this.personIndex;
+		if (!personIndex) {
 			return [];
 		}
 		const people = this.getPeopleForScope(options);
@@ -2233,67 +2234,156 @@ export class DataQualityService {
 			peopleMap.set(p.crId, p);
 		}
 
-		const repairs: ChildrenAlignmentRepair[] = [];
+		const frontmatterOf = (p: PersonNode): Record<string, unknown> | undefined =>
+			this.app.metadataCache.getFileCache(p.file)?.frontmatter as Record<string, unknown> | undefined;
+
+		const repairs = new Map<string, ChildrenAlignmentRepair>();
+
+		// Pass 1 — flag parents whose two columns disagree (length / mis-pairing)
+		// OR whose children list carries a broken link. An equal-length note
+		// whose only defect is a broken-link name slips past both column checks,
+		// yet its paired id can silently point at a *different* real child, so a
+		// broken link is itself a repair trigger (#666 follow-up).
 		for (const parent of people) {
-			const cache = this.app.metadataCache.getFileCache(parent.file);
-			const fm = cache?.frontmatter as Record<string, unknown> | undefined;
+			const fm = frontmatterOf(parent);
 			if (!fm) {
 				continue;
 			}
-			// Only repair flagged (misaligned) children arrays.
-			if (!this.getArrayMisalignmentReason(fm, 'children')) {
+			if (!this.getArrayMisalignmentReason(fm, 'children') && !this.hasBrokenChildLink(fm, peopleMap, personIndex)) {
 				continue;
 			}
-
-			const entryFor = (node: PersonNode): ChildEntry => ({
-				crId: node.crId,
-				name: node.name || node.file.basename,
-				basename: node.file.basename
-			});
-
-			// Resolve the current children links to people; collect broken ones.
-			const rawChildren = fm.children;
-			const currentLinks = Array.isArray(rawChildren) ? rawChildren : [rawChildren];
-			const finalChildren: ChildEntry[] = [];
-			const removedBroken: string[] = [];
-			const seen = new Set<string>();
-			for (const link of currentLinks) {
-				if (typeof link !== 'string') {
-					continue;
-				}
-				const match = link.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/);
-				const target = match ? match[1] : link;
-				const crId = this.personIndex.getCrIdByWikilink(target);
-				const node = crId ? peopleMap.get(crId) : undefined;
-				if (!crId || !node) {
-					removedBroken.push(link);
-					continue;
-				}
-				if (seen.has(crId)) {
-					continue; // de-duplicate
-				}
-				seen.add(crId);
-				finalChildren.push(entryFor(node));
-			}
-
-			// Union in the reciprocal children that are missing from the list.
-			const reciprocal = this.getReciprocalChildren(parent.crId, people);
-			const reciprocalIds = new Set(reciprocal.map(p => p.crId));
-			const recovered: ChildEntry[] = [];
-			for (const child of reciprocal) {
-				if (!seen.has(child.crId)) {
-					seen.add(child.crId);
-					const entry = entryFor(child);
-					finalChildren.push(entry);
-					recovered.push(entry);
-				}
-			}
-
-			const noReciprocal = finalChildren.filter(c => !reciprocalIds.has(c.crId));
-			repairs.push({ parent, finalChildren, recovered, removedBroken, noReciprocal });
+			repairs.set(parent.crId, this.buildChildrenRepairPlan(parent, fm, peopleMap, people, personIndex));
 		}
 
-		return repairs;
+		// Pass 2 — reconcile the OTHER parent of every recovered child, so both
+		// parents of a shared child are fixed in one run (#666 follow-up).
+		// Corruption is symmetric across co-parents, but one partner's columns can
+		// stay clean while it is simply missing a child the other partner recovers.
+		// Rebuild any such co-parent too — but never churn a note that is already
+		// consistent (no missing child, no broken link).
+		const pending: ChildEntry[] = [];
+		for (const plan of repairs.values()) {
+			pending.push(...plan.recovered);
+		}
+		while (pending.length > 0) {
+			const child = pending.shift();
+			if (!child) {
+				continue;
+			}
+			const childNode = peopleMap.get(child.crId);
+			if (!childNode) {
+				continue;
+			}
+			for (const coParentId of this.getParentCrIds(childNode)) {
+				if (repairs.has(coParentId)) {
+					continue;
+				}
+				const coParent = peopleMap.get(coParentId);
+				if (!coParent) {
+					continue;
+				}
+				const fm = frontmatterOf(coParent);
+				if (!fm) {
+					continue;
+				}
+				const plan = this.buildChildrenRepairPlan(coParent, fm, peopleMap, people, personIndex);
+				if (plan.recovered.length === 0 && plan.removedBroken.length === 0) {
+					continue;
+				}
+				repairs.set(coParent.crId, plan);
+				pending.push(...plan.recovered);
+			}
+		}
+
+		return Array.from(repairs.values());
+	}
+
+	/**
+	 * Rebuild a parent's children set from the authoritative reciprocal side —
+	 * the people who list this note as a parent — unioned with any currently
+	 * listed child that still resolves (so a one-directional link is never
+	 * silently dropped). Stale links that resolve to no person are dropped;
+	 * children lacking a reciprocal are surfaced for review (#666).
+	 */
+	private buildChildrenRepairPlan(
+		parent: PersonNode,
+		fm: Record<string, unknown>,
+		peopleMap: Map<string, PersonNode>,
+		people: PersonNode[],
+		personIndex: PersonIndexService
+	): ChildrenAlignmentRepair {
+		const entryFor = (node: PersonNode): ChildEntry => ({
+			crId: node.crId,
+			name: node.name || node.file.basename,
+			basename: node.file.basename
+		});
+
+		// Resolve the current children links to people; collect broken ones.
+		const rawChildren = fm.children;
+		const currentLinks = Array.isArray(rawChildren) ? rawChildren : [rawChildren];
+		const finalChildren: ChildEntry[] = [];
+		const removedBroken: string[] = [];
+		const seen = new Set<string>();
+		for (const link of currentLinks) {
+			if (typeof link !== 'string') {
+				continue;
+			}
+			const match = link.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/);
+			const target = match ? match[1] : link;
+			const crId = personIndex.getCrIdByWikilink(target);
+			const node = crId ? peopleMap.get(crId) : undefined;
+			if (!crId || !node) {
+				removedBroken.push(link);
+				continue;
+			}
+			if (seen.has(crId)) {
+				continue; // de-duplicate
+			}
+			seen.add(crId);
+			finalChildren.push(entryFor(node));
+		}
+
+		// Union in the reciprocal children that are missing from the list.
+		const reciprocal = this.getReciprocalChildren(parent.crId, people);
+		const reciprocalIds = new Set(reciprocal.map(p => p.crId));
+		const recovered: ChildEntry[] = [];
+		for (const child of reciprocal) {
+			if (!seen.has(child.crId)) {
+				seen.add(child.crId);
+				const entry = entryFor(child);
+				finalChildren.push(entry);
+				recovered.push(entry);
+			}
+		}
+
+		const noReciprocal = finalChildren.filter(c => !reciprocalIds.has(c.crId));
+		return { parent, finalChildren, recovered, removedBroken, noReciprocal };
+	}
+
+	/**
+	 * True when a children link resolves to no person in scope — the broken-link
+	 * signature that can mask a real child reachable only via its paired id
+	 * (#666). Cheap pre-check so pass 1 only builds a full plan when needed.
+	 */
+	private hasBrokenChildLink(
+		fm: Record<string, unknown>,
+		peopleMap: Map<string, PersonNode>,
+		personIndex: PersonIndexService
+	): boolean {
+		const rawChildren = fm.children;
+		const currentLinks = Array.isArray(rawChildren) ? rawChildren : [rawChildren];
+		for (const link of currentLinks) {
+			if (typeof link !== 'string') {
+				continue;
+			}
+			const match = link.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/);
+			const target = match ? match[1] : link;
+			const crId = personIndex.getCrIdByWikilink(target);
+			if (!crId || !peopleMap.has(crId)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -2309,6 +2399,22 @@ export class DataQualityService {
 			p.adoptiveMotherCrId === parentCrId ||
 			p.adoptiveParentCrIds.includes(parentCrId)
 		);
+	}
+
+	/**
+	 * The parent cr_ids a child lists — the dual of `getReciprocalChildren`,
+	 * used to find the co-parents of a recovered child for the both-parents
+	 * reconciliation pass (#666).
+	 */
+	private getParentCrIds(node: PersonNode): string[] {
+		const ids: string[] = [];
+		if (node.fatherCrId) ids.push(node.fatherCrId);
+		if (node.motherCrId) ids.push(node.motherCrId);
+		ids.push(...node.parentCrIds);
+		if (node.adoptiveFatherCrId) ids.push(node.adoptiveFatherCrId);
+		if (node.adoptiveMotherCrId) ids.push(node.adoptiveMotherCrId);
+		ids.push(...node.adoptiveParentCrIds);
+		return ids;
 	}
 
 	/**

@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-06-03 01:07:14 UTC
+ * - Generated: 2026-06-03 22:38:20 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -17099,7 +17099,7 @@ settings:
    COMPONENT: FAMILY-CHART-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1502 lines, 37.81 KB */
+/* Component Size: 1522 lines, 38.8 KB */
 
 /**
  * Family Chart View Styles
@@ -17360,6 +17360,16 @@ settings:
 
 .cr-fcv-chart-container.f3 svg.main_svg text {
   fill: currentColor;
+}
+
+/* Offscreen scratch SVG used to measure name widths before wrapping (#671).
+ * Lives in the same container so its <text> inherits the card font cascade;
+ * parked out of flow and hidden so it never affects the chart layout. */
+.cr-fcv-measure {
+  position: absolute;
+  width: 0;
+  height: 0;
+  visibility: hidden;
 }
 
 /* Card gender colors - SVG cards */
@@ -18382,12 +18392,11 @@ settings:
 
 /* Circle card style (#669): a round avatar with the label centered below it,
    rendered on the shared SVG renderer so the connection-indicator bubbles and
-   the image placeholder work (the old HTML renderer drew neither). The square
-   image box lets circle(50%) inscribe a true circle, overriding f3's inline
-   rectangular clip. */
-.cr-fcv-chart-container.card-style-circle .card_image {
-  clip-path: circle(50%);
-}
+   the image placeholder work (the old HTML renderer drew neither). The avatar
+   is clipped to a circle via an SVG <clipPath> applied as the `clip-path`
+   *attribute* in addOpenNoteButton — not a CSS `clip-path` property, which the
+   Community CSS scanner flags as only partially supported on the minimum
+   Obsidian version, and whose reference-box behaviour on SVG is unreliable. */
 
 /* Hide the rectangular card body and its overflow-fade mask so only the round
    avatar and label show. The `.card-body` ancestor lifts specificity above the
@@ -18483,6 +18492,17 @@ settings:
  * Cards matching an active highlight group get a colored outline;
  * non-matching cards are dimmed when any group is active.
  * ------------------------------------------------------------ */
+
+/* Keep the whole cards layer above the links layer (#670). The dim/match
+ * effects below give each card_cont its own stacking context (opacity < 1,
+ * drop-shadow filter); f3 paints `.view > [links_view, cards_view]` with cards
+ * after links, but because cards_view itself isn't isolated, a dimmed card's
+ * stacking context can paint beneath the links layer on some engines (seen on
+ * macOS). Isolating cards_view forces every card — dimmed or matched — to stay
+ * above the connector lines. */
+.cr-fcv-chart-container .cards_view {
+  isolation: isolate;
+}
 
 /* Family-chart's library writes inline `opacity: 1` on card_cont during
  * transitions. Our patch-family-chart.js postinstall (Patches 2 + 3) adds
@@ -41118,11 +41138,11 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-06-03 01:07:14 UTC
+ * Build completed: 2026-06-03 22:38:21 UTC
  * Components processed: 50
- * Total lines: 40649
- * Total size: 832.12 KB
- * Build duration: 0.29 seconds
+ * Total lines: 40669
+ * Total size: 833.11 KB
+ * Build duration: 1.21 seconds
  *
  * Component breakdown:
  * - variables.css: 79 lines, 2.45 KB
@@ -41144,7 +41164,7 @@ body.cr-media-linker-active .suggestion-container {
  * - find-on-canvas.css: 275 lines, 5.13 KB
  * - folder-scan.css: 155 lines, 2.6 KB
  * - relationship-calculator.css: 302 lines, 5.27 KB
- * - family-chart-view.css: 1502 lines, 37.81 KB
+ * - family-chart-view.css: 1522 lines, 38.8 KB
  * - family-chart-export.css: 699 lines, 14.78 KB
  * - report-wizard.css: 908 lines, 19.89 KB
  * - book-builder.css: 368 lines, 7.25 KB

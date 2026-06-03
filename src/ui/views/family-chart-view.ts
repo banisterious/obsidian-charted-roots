@@ -26,6 +26,7 @@ import { FamilyChartExportWizard } from './family-chart-export-wizard';
 import { DeletePersonConfirmModal, FamilyChartStyleModal, HighlightGroupsModal } from './family-chart-view-modals';
 import { stripDateTimeSuffix } from '../../dates/utils/date-display';
 import { shouldPaintOverlayUnderLinks } from './family-chart-overlay-z';
+import { wrapNameToTwoLines } from './family-chart-name-wrap';
 import {
 	type HighlightGroup,
 	HIGHLIGHT_COLORS,
@@ -170,8 +171,20 @@ export class FamilyChartView extends ItemView {
 	private asOfDate: string | null = null;
 	// Card style: rectangle (default SVG), circle (HTML circular), compact (text-only), mini (smaller)
 	private cardStyle: CardStyle = 'rectangle';
+	// Content-driven card width (#669 follow-up). After a render, the widest
+	// rendered line is measured and, if it exceeds the style's fixed base
+	// width, this override widens the (uniform) card so long names and the
+	// descriptive toggle fields are no longer clipped. null = use base width.
+	private contentCardWidth: number | null = null;
+	// Width last pushed to the f3 card dimension, to skip no-op re-renders.
+	private appliedCardWidth: number | null = null;
 	// Name display mode: full (single line) or split (given/surname on separate lines) (#90)
 	private nameDisplayMode: NameDisplayMode = 'full';
+	// Whether any card's full name overflowed and was wrapped to a second line
+	// (#671). Set by `prepareNameWrapping()` each rebuild; when true the shared
+	// display template carries `cr_name_1` / `cr_name_2` instead of the single
+	// name line and `calculateContentLines()` reserves the extra line.
+	private nameWrapActive: boolean = false;
 	// Built-in descriptive field toggles on the in-tree card (#374)
 	private showTitle: boolean = false;
 	private showOccupation: boolean = false;
@@ -1168,6 +1181,11 @@ export class FamilyChartView extends ItemView {
 		// Close info panel when switching to a new chart
 		this.closeInfoPanel();
 
+		// Start each rebuild at the style's base width; refitCardWidth widens
+		// from the freshly measured content after the initial render (#669).
+		this.contentCardWidth = null;
+		this.appliedCardWidth = null;
+
 		// Clear container
 		this.chartContainerEl.empty();
 
@@ -1237,6 +1255,17 @@ export class FamilyChartView extends ItemView {
 		loadingOverlay.createSpan({ cls: 'cr-family-chart-loading__text', text: 'Loading chart...' });
 
 		try {
+			// Measure names and wrap any that overflow before sizing (#671): the
+			// wrap decision adds a name line, which feeds the height / spacing
+			// floors computed just below via calculateContentLines.
+			this.prepareNameWrapping();
+
+			// Honor the style's minimum-spacing floor for the saved spacing too,
+			// so a value persisted under an older, tighter floor still keeps the
+			// current style's edge-to-edge gap (#669 follow-up).
+			this.nodeSpacing = Math.max(this.nodeSpacing, this.getMinimumNodeSpacing(this.cardStyle));
+			this.levelSpacing = Math.max(this.levelSpacing, this.getMinimumLevelSpacing(this.cardStyle));
+
 			// Create the chart with normal transition time
 			logger.debug('init-chart', 'Creating chart with spacing', { nodeSpacing: this.nodeSpacing, levelSpacing: this.levelSpacing });
 			this.f3Chart = f3.createChart(this.chartContainerEl, this.chartData)
@@ -1400,6 +1429,10 @@ export class FamilyChartView extends ItemView {
 
 			// Initial render without fit (just get the tree in the DOM)
 			this.f3Chart.updateTree({ initial: true });
+
+			// Widen cards to fit their longest line before the deferred fit runs,
+			// while the container is still hidden — no visible reflow (#669).
+			this.refitCardWidth();
 
 			// Defer positioning operation until container dimensions are stable
 			window.setTimeout(() => {
@@ -1925,6 +1958,28 @@ export class FamilyChartView extends ItemView {
 		// gender color the body would have shown. Inserted as the first child of
 		// .card-inner so it sits behind the avatar; guarded against duplicates.
 		if (this.cardStyle === 'circle') {
+			// Clip the avatar to a circle via an SVG <clipPath> applied as the
+			// `clip-path` *attribute* (not a CSS property, which the Community CSS
+			// scanner flags as only partially supported). objectBoundingBox units
+			// scale the circle to the avatar's box at any size. Defined once per SVG.
+			const svg = cardEl.ownerSVGElement;
+			if (svg) {
+				const svgSel = d3.select(svg);
+				if (svgSel.select('#cr-fcv-circle-clip').empty()) {
+					let defs = svgSel.select<SVGDefsElement>('defs');
+					if (defs.empty()) {
+						defs = svgSel.insert<SVGDefsElement>('defs', ':first-child');
+					}
+					defs.append('clipPath')
+						.attr('id', 'cr-fcv-circle-clip')
+						.attr('clipPathUnits', 'objectBoundingBox')
+						.append('circle')
+						.attr('cx', 0.5)
+						.attr('cy', 0.5)
+						.attr('r', 0.5);
+				}
+				d3.select(cardEl).select('.card_image').attr('clip-path', 'url(#cr-fcv-circle-clip)');
+			}
 			const inner = d3.select(cardEl).select('.card-inner');
 			if (!inner.empty() && inner.select('.cr-circle-disc').empty()) {
 				const dim = this.getCardDimensions('circle');
@@ -2646,7 +2701,10 @@ export class FamilyChartView extends ItemView {
 				backgroundLight: 'rgb(250, 250, 250)',
 				backgroundDark: 'rgb(33, 33, 33)',
 				textLight: '#333333',
-				textDark: '#ffffff'
+				// Pastel card backgrounds are light in both modes, so dark-mode
+				// text must stay dark too — white reads poorly on the pastel
+				// fills (#672). Mirrors the High Contrast preset's dark textDark.
+				textDark: '#333333'
 			}
 		},
 		earth: {
@@ -4293,6 +4351,94 @@ export class FamilyChartView extends ItemView {
 	}
 
 	/**
+	 * Pre-measure card names and wrap any that overflow into two lines (#671).
+	 *
+	 * The SVG card renderer clips long names at the card's right edge (f3 fades
+	 * them out under a mask) rather than wrapping. For the fixed-width
+	 * rectangular styles we measure each person's full name against the card's
+	 * text region and, when any name is too wide, split it across two lines —
+	 * matching the wrap behavior of the HTML-card demos. The split is stored per
+	 * person in `cr_name_1` / `cr_name_2`; `buildDisplayFields` swaps the single
+	 * name line for those two when wrapping is active, and `calculateContentLines`
+	 * reserves the extra line so the uniform-grid cards grow in height to match.
+	 *
+	 * Scoped to rectangle / compact / mini in full-name mode. Circle content-fits
+	 * its width instead (#669); split mode already gives the given and family
+	 * names their own lines.
+	 */
+	private prepareNameWrapping(): void {
+		this.nameWrapActive = false;
+		for (const person of this.chartData) {
+			delete person.data['cr_name_1'];
+			delete person.data['cr_name_2'];
+		}
+
+		if (this.cardStyle === 'circle' || this.nameDisplayMode === 'split') return;
+
+		const container = this.chartContainerEl;
+		if (!container) return;
+
+		const dims = this.getBaseCardDimensions(this.cardStyle);
+		// Text is clipped at card width − 10 (f3's overflow mask) and starts at
+		// text_x; keep a few px clear of the fade so a fit name doesn't smudge.
+		const available = dims.w - 10 - dims.text_x - 4;
+		if (available <= 0) return;
+
+		// One hidden measuring node reused for every name. It lives in the same
+		// `.f3` container as the cards, so it inherits the identical font cascade
+		// (card tspans set no font-size of their own).
+		const svgNs = 'http://www.w3.org/2000/svg';
+		const measureSvg = document.createElementNS(svgNs, 'svg');
+		// `.cr-fcv-measure` parks it offscreen (absolute, hidden, zero-size) so it
+		// renders for getComputedTextLength without disturbing the chart layout.
+		measureSvg.setAttribute('class', 'cr-fcv-measure');
+		const measureText = document.createElementNS(svgNs, 'text');
+		measureSvg.appendChild(measureText);
+		container.appendChild(measureSvg);
+
+		const measure = (s: string): number => {
+			measureText.textContent = s;
+			try {
+				return measureText.getComputedTextLength();
+			} catch {
+				return 0;
+			}
+		};
+
+		const fullName = (person: FamilyChartPerson): string => {
+			const first = String(person.data['first name'] ?? '').trim();
+			const last = String(person.data['last name'] ?? '').trim();
+			return `${first} ${last}`.trim();
+		};
+
+		try {
+			for (const person of this.chartData) {
+				const name = fullName(person);
+				if (!name || measure(name) <= available) continue;
+
+				const [line1, line2] = wrapNameToTwoLines(name, available, measure);
+				if (!line2) continue; // single unbreakable word — nothing to gain
+				person.data['cr_name_1'] = line1;
+				person.data['cr_name_2'] = line2;
+				this.nameWrapActive = true;
+			}
+		} finally {
+			measureSvg.remove();
+		}
+
+		if (!this.nameWrapActive) return;
+
+		// Fill the wrap fields for the names that fit, so the shared display
+		// template renders a (blank) second line uniformly on every card.
+		for (const person of this.chartData) {
+			if (person.data['cr_name_1'] === undefined) {
+				person.data['cr_name_1'] = fullName(person);
+				person.data['cr_name_2'] = '';
+			}
+		}
+	}
+
+	/**
 	 * Build display fields array based on current name and date options (#90)
 	 * Each inner array is a line, with fields joined by space
 	 */
@@ -4303,6 +4449,13 @@ export class FamilyChartView extends ItemView {
 		if (this.nameDisplayMode === 'split') {
 			displayFields.push(['first name']);
 			displayFields.push(['last name']);
+		} else if (this.nameWrapActive) {
+			// A name overflowed and was wrapped (#671): render the precomputed
+			// two-line fields. Non-overflowing people carry the whole name in
+			// `cr_name_1` with an empty `cr_name_2`, so the second line is blank
+			// but still reserves height — keeping the uniform-grid cards aligned.
+			displayFields.push(['cr_name_1']);
+			displayFields.push(['cr_name_2']);
 		} else {
 			displayFields.push(['first name', 'last name']);
 		}
@@ -4349,7 +4502,8 @@ export class FamilyChartView extends ItemView {
 	 * Calculate total content lines for card height calculation (#90)
 	 */
 	private calculateContentLines(): number {
-		const nameLines = this.nameDisplayMode === 'split' ? 2 : 1;
+		// Full-name mode is one line, or two when a name wrapped (#671).
+		const nameLines = this.nameDisplayMode === 'split' ? 2 : (this.nameWrapActive ? 2 : 1);
 		const altNameLine = this.hasAltNames() ? 1 : 0;
 		const dateLines = (this.showBirthDates ? 1 : 0) + (this.showDeathDates ? 1 : 0);
 		// Built-in descriptive field toggles (#374)
@@ -4364,9 +4518,33 @@ export class FamilyChartView extends ItemView {
 	}
 
 	/**
-	 * Get card dimensions based on card style and content lines (#90)
+	 * Get card dimensions for a style, widened to fit content when needed.
+	 *
+	 * Returns the style's fixed base geometry (see `getBaseCardDimensions`),
+	 * then — for the Circle style only — widens the card to `contentCardWidth`
+	 * when the measured widest line exceeds the base width (#669 follow-up).
+	 * Circle centers a short label under the avatar on an otherwise empty card,
+	 * so widening it to fit long names costs no layout density. The rectangular
+	 * styles fill their width and sit a fixed node-separation apart, so widening
+	 * them would eat the gap between spouse/sibling cards — they keep their base
+	 * width instead. Short content keeps the base width unchanged either way.
 	 */
 	private getCardDimensions(style: CardStyle): { w: number; h: number; text_x: number; text_y: number; img_w: number; img_h: number; img_x: number; img_y: number } {
+		const dims = this.getBaseCardDimensions(style);
+
+		if (style !== 'circle' || style !== this.cardStyle || this.contentCardWidth === null || this.contentCardWidth <= dims.w) {
+			return dims;
+		}
+
+		// Circle centers the label + avatar, so re-anchor both to the new width.
+		const w = this.contentCardWidth;
+		return { ...dims, w, text_x: w / 2, img_x: (w - dims.img_w) / 2 };
+	}
+
+	/**
+	 * Get the style's fixed base card dimensions and content lines (#90).
+	 */
+	private getBaseCardDimensions(style: CardStyle): { w: number; h: number; text_x: number; text_y: number; img_w: number; img_h: number; img_x: number; img_y: number } {
 		const lines = this.calculateContentLines();
 
 		switch (style) {
@@ -4454,18 +4632,25 @@ export class FamilyChartView extends ItemView {
 
 			case 'rectangle':
 			default: {
-				// Default: SVG cards with square avatars
-				// Base: 2 lines = 70px, each additional line adds 20px
-				// Avatar scales with card height
-				const baseHeight = 70;
+				// Default: SVG cards with square avatars. Kept compact so a
+				// spouse couple doesn't read as one fused block and the tree
+				// breathes (#669 follow-up): smaller avatar cap and a narrower
+				// base than the original 200/20/80. Height hugs the text — f3
+				// renders each line at a fixed 14px, so the card is sized to
+				// the line count plus minimal top/bottom chrome rather than
+				// reserving ~24px of dead padding. All cards share one size
+				// (the library lays the tree on a fixed grid), so a sparse card
+				// can't be shorter than the busiest one — this just trims the
+				// excess so the gap is as small as the layout allows.
+				const lineHeight = 14;
 				const extraLines = Math.max(0, lines - 2);
-				const h = baseHeight + extraLines * 20;
-				const imgSize = Math.min(80, h - 10); // Avatar size scales with height, max 80px
+				const h = 18 + lines * lineHeight; // 18 = ~10 top + ~8 bottom chrome
+				const imgSize = Math.min(58, h - 10); // Avatar scales with height, max 58px
 				return {
-					w: 200 + extraLines * 10,
+					w: 176 + extraLines * 8,
 					h,
-					text_x: imgSize + 15,
-					text_y: 12,
+					text_x: imgSize + 14,
+					text_y: 10,
 					img_w: imgSize,
 					img_h: imgSize,
 					img_x: 5,
@@ -4480,14 +4665,17 @@ export class FamilyChartView extends ItemView {
 	 *
 	 * The family-chart library uses node_separation as a center-to-center
 	 * distance, so a spacing smaller than the card's width produces overlap.
-	 * This floor keeps at least a small edge-to-edge gap regardless of which
-	 * preset the user picks. Card width can grow with enabled content
-	 * toggles (rectangle style adds 10px per extra line), so this value
-	 * depends on the current display state.
+	 * This floor keeps an edge-to-edge gap regardless of which preset the user
+	 * picks. Rectangle cards fill their width and sit a couple flush, so they
+	 * get a wider gap so spouse pairs read as two cards rather than one fused
+	 * block (#669 follow-up); the compact/mini styles stay deliberately tight.
+	 * Card width can grow with enabled content toggles, so this depends on the
+	 * current display state.
 	 */
 	private getMinimumNodeSpacing(style: CardStyle): number {
 		const cardWidth = this.getCardDimensions(style).w;
-		return cardWidth + 20;
+		const gap = style === 'rectangle' ? 40 : 20;
+		return cardWidth + gap;
 	}
 
 	/**
@@ -4526,15 +4714,17 @@ export class FamilyChartView extends ItemView {
 	private updateCardDisplay(): void {
 		if (!this.f3Chart || !this.f3Card) return;
 
+		// Toggling descriptive fields (#374) can change a rectangle card's base
+		// width, which shifts the wrap threshold — re-measure names first (#671).
+		this.prepareNameWrapping();
+
 		const displayFields = this.buildDisplayFields();
 
-		// Update card display and dimensions based on card style
+		// Update card display and dimensions. Every SVG style sizes from its
+		// content lines (height) and the fit width (#669), so refresh the
+		// dimension for all of them rather than a subset.
 		this.f3Card.setCardDisplay(displayFields);
-
-		// Update card dimensions for styles that support dynamic sizing
-		if (this.cardStyle === 'rectangle' || this.cardStyle === 'compact' || this.cardStyle === 'mini') {
-			this.f3Card.setCardDim(this.getCardDimensions(this.cardStyle));
-		}
+		this.f3Card.setCardDim(this.getCardDimensions(this.cardStyle));
 
 		// Toggling content fields (#374) can grow the card vertically past
 		// the current level spacing, or horizontally past the current node
@@ -4551,6 +4741,66 @@ export class FamilyChartView extends ItemView {
 		}
 
 		// Note: Kinship label clearing/re-rendering is handled by setBeforeUpdate/setAfterUpdate callbacks (#195)
+		this.f3Chart.updateTree({});
+
+		// The new field set changes the longest line; re-measure and widen.
+		// Runs synchronously after updateTree, so the browser paints once.
+		this.refitCardWidth();
+	}
+
+	/**
+	 * Measure the widest rendered Circle-card label and widen the (uniform)
+	 * cards so long names and descriptive toggle fields are no longer clipped
+	 * by the card's text clip path (#669 follow-up).
+	 *
+	 * Circle only: those cards center a short label on an otherwise empty card,
+	 * so widening them costs no layout density. The rectangular styles fill
+	 * their width and sit a fixed node-separation apart, so widening them would
+	 * pull spouse/sibling cards together — they keep their fixed base width.
+	 *
+	 * `getBBox()` reports a label's full geometry regardless of the clip, so
+	 * the true longest line is measurable even when visually truncated. Width
+	 * is uniform per style, so the override is the max needed across all cards;
+	 * node spacing is re-clamped via the existing minimum-spacing floor (which
+	 * keys off card width). A re-render happens only when the width changes.
+	 */
+	private refitCardWidth(): void {
+		if (!this.f3Chart || !this.f3Card || this.cardStyle !== 'circle') return;
+		const svg = this.f3Chart.svg as SVGSVGElement | undefined;
+		if (!svg) return;
+
+		let maxLineWidth = 0;
+		svg.querySelectorAll('g.card-text text').forEach((node) => {
+			try {
+				const width = (node as SVGGraphicsElement).getBBox().width;
+				if (Number.isFinite(width) && width > maxLineWidth) {
+					maxLineWidth = width;
+				}
+			} catch {
+				// getBBox throws on a node that isn't laid out yet; skip it.
+			}
+		});
+		if (maxLineWidth === 0) return; // nothing measurable — keep base width
+
+		const base = this.getBaseCardDimensions(this.cardStyle);
+		// Width needed to keep the widest line inside the text clip region
+		// (card width − 10). Circle centers the label about text_x = w/2, so it
+		// needs a ~10px margin on both sides.
+		const PAD = 6;
+		const required = Math.ceil(maxLineWidth + 20 + PAD);
+		this.contentCardWidth = required;
+
+		const newWidth = this.getCardDimensions(this.cardStyle).w;
+		const currentWidth = this.appliedCardWidth ?? base.w;
+		if (newWidth === currentWidth) return; // already the right width
+		this.appliedCardWidth = newWidth;
+
+		this.f3Card.setCardDim(this.getCardDimensions(this.cardStyle));
+		const minNodeSpacing = this.getMinimumNodeSpacing(this.cardStyle);
+		if (this.nodeSpacing < minNodeSpacing) {
+			this.nodeSpacing = minNodeSpacing;
+			this.f3Chart.setCardXSpacing(this.nodeSpacing);
+		}
 		this.f3Chart.updateTree({});
 	}
 

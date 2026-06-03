@@ -130,6 +130,32 @@ describe('detectChildrenAlignmentRepairs (#666)', () => {
 		const service = makeService(people, fm);
 		expect(service.detectChildrenAlignmentRepairs()).toEqual([]);
 	});
+
+	it('flags an equal-length note whose only defect is a broken link (#666 follow-up)', () => {
+		// The co-parent case that slipped through: children/children_id are
+		// equal length and every *resolvable* name matches its paired id, so
+		// neither the length nor the mis-pair check fires — yet a broken-link
+		// name masks a real child (Sydny) reachable only via that name's paired
+		// id. Detection must still flag the note, drop the broken link, and
+		// recover the masked child from the reciprocal side.
+		const fm = {
+			'Adom.md': {
+				cr_id: 'adom',
+				// 4 names / 4 ids (equal). Ben/Rebecca/Leslie resolve and match;
+				// the fourth name is broken while its paired id belongs to Sydny.
+				children: ['[[Ben]]', '[[Rebecca]]', '[[Leslie]]', '[[Ghost]]'],
+				children_id: ['ben', 'rebecca', 'leslie', 'sydny']
+			}
+		};
+		const service = makeService(people, fm);
+		const repairs = service.detectChildrenAlignmentRepairs();
+
+		expect(repairs).toHaveLength(1);
+		const plan = repairs[0];
+		expect(plan.removedBroken).toEqual(['[[Ghost]]']);
+		expect(plan.recovered.map(c => c.crId)).toEqual(['sydny']);
+		expect(plan.finalChildren.map(c => c.crId)).toEqual(['ben', 'rebecca', 'leslie', 'sydny']);
+	});
 });
 
 describe('applyChildrenAlignmentRepairs (#666)', () => {
@@ -168,5 +194,46 @@ describe('applyChildrenAlignmentRepairs (#666)', () => {
 
 		expect(fm['Adom.md'].children).toBe('[[Ben]]');
 		expect(fm['Adom.md'].children_id).toBe('ben');
+	});
+});
+
+describe('reconciles both parents of a shared child in one pass (#666 follow-up)', () => {
+	// A co-parent pair sharing two children, both of whom list each parent.
+	const adom = person({ crId: 'adom', basename: 'Adom' });
+	const elena = person({ crId: 'elena', basename: 'Elena' });
+	const ben = person({ crId: 'ben', basename: 'Ben', fatherCrId: 'adom', motherCrId: 'elena' });
+	const liam = person({ crId: 'liam', basename: 'Liam', fatherCrId: 'adom', motherCrId: 'elena' });
+	const people = [adom, elena, ben, liam];
+
+	it('repairs a clean co-parent that is missing a child its partner recovers', () => {
+		const fm = {
+			// Adom is flagged on his own (a broken link + length mismatch); his
+			// reciprocal recovers Liam.
+			'Adom.md': { cr_id: 'adom', children: ['[[Ben]]', '[[Ghost]]'], children_id: ['ben'] },
+			// Elena's columns are clean and aligned, but she is simply missing
+			// Liam — she would never be flagged on her own.
+			'Elena.md': { cr_id: 'elena', children: ['[[Ben]]'], children_id: ['ben'] }
+		};
+		const service = makeService(people, fm);
+		const byId = new Map(service.detectChildrenAlignmentRepairs().map(r => [r.parent.crId, r]));
+
+		expect(byId.has('adom')).toBe(true);
+		// Reconciled in the same run despite her clean columns.
+		expect(byId.has('elena')).toBe(true);
+		expect(byId.get('elena')?.recovered.map(c => c.crId)).toContain('liam');
+		expect(byId.get('elena')?.finalChildren.map(c => c.crId).sort()).toEqual(['ben', 'liam']);
+	});
+
+	it('does not touch a co-parent that is already consistent', () => {
+		const fm = {
+			'Adom.md': { cr_id: 'adom', children: ['[[Ben]]', '[[Ghost]]'], children_id: ['ben'] },
+			// Elena already lists both children, aligned — nothing to reconcile.
+			'Elena.md': { cr_id: 'elena', children: ['[[Ben]]', '[[Liam]]'], children_id: ['ben', 'liam'] }
+		};
+		const service = makeService(people, fm);
+		const ids = service.detectChildrenAlignmentRepairs().map(r => r.parent.crId);
+
+		expect(ids).toContain('adom');
+		expect(ids).not.toContain('elena'); // no churn
 	});
 });
