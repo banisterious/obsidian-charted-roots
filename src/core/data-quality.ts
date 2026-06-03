@@ -2240,10 +2240,6 @@ export class DataQualityService {
 			if (!fm) {
 				continue;
 			}
-			// Only repair flagged (misaligned) children arrays.
-			if (!this.getArrayMisalignmentReason(fm, 'children')) {
-				continue;
-			}
 
 			const entryFor = (node: PersonNode): ChildEntry => ({
 				crId: node.crId,
@@ -2274,6 +2270,17 @@ export class DataQualityService {
 				}
 				seen.add(crId);
 				finalChildren.push(entryFor(node));
+			}
+
+			// Repair when the two columns disagree (length / mis-pairing) OR a
+			// children link is broken. An equal-length note whose only defect is
+			// a broken-link name slips past both column checks, yet its paired id
+			// can silently point at a *different* real child — so a broken link
+			// is itself a repair trigger (#666 follow-up). Without this, one
+			// co-parent gets flagged while the other, whose columns happen to
+			// stay equal-length, is reported clean.
+			if (!this.getArrayMisalignmentReason(fm, 'children') && removedBroken.length === 0) {
+				continue;
 			}
 
 			// Union in the reciprocal children that are missing from the list.

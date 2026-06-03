@@ -130,6 +130,32 @@ describe('detectChildrenAlignmentRepairs (#666)', () => {
 		const service = makeService(people, fm);
 		expect(service.detectChildrenAlignmentRepairs()).toEqual([]);
 	});
+
+	it('flags an equal-length note whose only defect is a broken link (#666 follow-up)', () => {
+		// The co-parent case that slipped through: children/children_id are
+		// equal length and every *resolvable* name matches its paired id, so
+		// neither the length nor the mis-pair check fires — yet a broken-link
+		// name masks a real child (Sydny) reachable only via that name's paired
+		// id. Detection must still flag the note, drop the broken link, and
+		// recover the masked child from the reciprocal side.
+		const fm = {
+			'Adom.md': {
+				cr_id: 'adom',
+				// 4 names / 4 ids (equal). Ben/Rebecca/Leslie resolve and match;
+				// the fourth name is broken while its paired id belongs to Sydny.
+				children: ['[[Ben]]', '[[Rebecca]]', '[[Leslie]]', '[[Ghost]]'],
+				children_id: ['ben', 'rebecca', 'leslie', 'sydny']
+			}
+		};
+		const service = makeService(people, fm);
+		const repairs = service.detectChildrenAlignmentRepairs();
+
+		expect(repairs).toHaveLength(1);
+		const plan = repairs[0];
+		expect(plan.removedBroken).toEqual(['[[Ghost]]']);
+		expect(plan.recovered.map(c => c.crId)).toEqual(['sydny']);
+		expect(plan.finalChildren.map(c => c.crId)).toEqual(['ben', 'rebecca', 'leslie', 'sydny']);
+	});
 });
 
 describe('applyChildrenAlignmentRepairs (#666)', () => {
