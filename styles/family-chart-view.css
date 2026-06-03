@@ -259,6 +259,16 @@
   fill: currentColor;
 }
 
+/* Offscreen scratch SVG used to measure name widths before wrapping (#671).
+ * Lives in the same container so its <text> inherits the card font cascade;
+ * parked out of flow and hidden so it never affects the chart layout. */
+.cr-fcv-measure {
+  position: absolute;
+  width: 0;
+  height: 0;
+  visibility: hidden;
+}
+
 /* Card gender colors - SVG cards */
 .cr-fcv-chart-container.f3 rect.card-female,
 .cr-fcv-chart-container.f3 .card-female .card-body-rect,

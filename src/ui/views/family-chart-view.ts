@@ -26,6 +26,7 @@ import { FamilyChartExportWizard } from './family-chart-export-wizard';
 import { DeletePersonConfirmModal, FamilyChartStyleModal, HighlightGroupsModal } from './family-chart-view-modals';
 import { stripDateTimeSuffix } from '../../dates/utils/date-display';
 import { shouldPaintOverlayUnderLinks } from './family-chart-overlay-z';
+import { wrapNameToTwoLines } from './family-chart-name-wrap';
 import {
 	type HighlightGroup,
 	HIGHLIGHT_COLORS,
@@ -179,6 +180,11 @@ export class FamilyChartView extends ItemView {
 	private appliedCardWidth: number | null = null;
 	// Name display mode: full (single line) or split (given/surname on separate lines) (#90)
 	private nameDisplayMode: NameDisplayMode = 'full';
+	// Whether any card's full name overflowed and was wrapped to a second line
+	// (#671). Set by `prepareNameWrapping()` each rebuild; when true the shared
+	// display template carries `cr_name_1` / `cr_name_2` instead of the single
+	// name line and `calculateContentLines()` reserves the extra line.
+	private nameWrapActive: boolean = false;
 	// Built-in descriptive field toggles on the in-tree card (#374)
 	private showTitle: boolean = false;
 	private showOccupation: boolean = false;
@@ -1249,6 +1255,11 @@ export class FamilyChartView extends ItemView {
 		loadingOverlay.createSpan({ cls: 'cr-family-chart-loading__text', text: 'Loading chart...' });
 
 		try {
+			// Measure names and wrap any that overflow before sizing (#671): the
+			// wrap decision adds a name line, which feeds the height / spacing
+			// floors computed just below via calculateContentLines.
+			this.prepareNameWrapping();
+
 			// Honor the style's minimum-spacing floor for the saved spacing too,
 			// so a value persisted under an older, tighter floor still keeps the
 			// current style's edge-to-edge gap (#669 follow-up).
@@ -4340,6 +4351,94 @@ export class FamilyChartView extends ItemView {
 	}
 
 	/**
+	 * Pre-measure card names and wrap any that overflow into two lines (#671).
+	 *
+	 * The SVG card renderer clips long names at the card's right edge (f3 fades
+	 * them out under a mask) rather than wrapping. For the fixed-width
+	 * rectangular styles we measure each person's full name against the card's
+	 * text region and, when any name is too wide, split it across two lines —
+	 * matching the wrap behavior of the HTML-card demos. The split is stored per
+	 * person in `cr_name_1` / `cr_name_2`; `buildDisplayFields` swaps the single
+	 * name line for those two when wrapping is active, and `calculateContentLines`
+	 * reserves the extra line so the uniform-grid cards grow in height to match.
+	 *
+	 * Scoped to rectangle / compact / mini in full-name mode. Circle content-fits
+	 * its width instead (#669); split mode already gives the given and family
+	 * names their own lines.
+	 */
+	private prepareNameWrapping(): void {
+		this.nameWrapActive = false;
+		for (const person of this.chartData) {
+			delete person.data['cr_name_1'];
+			delete person.data['cr_name_2'];
+		}
+
+		if (this.cardStyle === 'circle' || this.nameDisplayMode === 'split') return;
+
+		const container = this.chartContainerEl;
+		if (!container) return;
+
+		const dims = this.getBaseCardDimensions(this.cardStyle);
+		// Text is clipped at card width − 10 (f3's overflow mask) and starts at
+		// text_x; keep a few px clear of the fade so a fit name doesn't smudge.
+		const available = dims.w - 10 - dims.text_x - 4;
+		if (available <= 0) return;
+
+		// One hidden measuring node reused for every name. It lives in the same
+		// `.f3` container as the cards, so it inherits the identical font cascade
+		// (card tspans set no font-size of their own).
+		const svgNs = 'http://www.w3.org/2000/svg';
+		const measureSvg = document.createElementNS(svgNs, 'svg');
+		// `.cr-fcv-measure` parks it offscreen (absolute, hidden, zero-size) so it
+		// renders for getComputedTextLength without disturbing the chart layout.
+		measureSvg.setAttribute('class', 'cr-fcv-measure');
+		const measureText = document.createElementNS(svgNs, 'text');
+		measureSvg.appendChild(measureText);
+		container.appendChild(measureSvg);
+
+		const measure = (s: string): number => {
+			measureText.textContent = s;
+			try {
+				return measureText.getComputedTextLength();
+			} catch {
+				return 0;
+			}
+		};
+
+		const fullName = (person: FamilyChartPerson): string => {
+			const first = String(person.data['first name'] ?? '').trim();
+			const last = String(person.data['last name'] ?? '').trim();
+			return `${first} ${last}`.trim();
+		};
+
+		try {
+			for (const person of this.chartData) {
+				const name = fullName(person);
+				if (!name || measure(name) <= available) continue;
+
+				const [line1, line2] = wrapNameToTwoLines(name, available, measure);
+				if (!line2) continue; // single unbreakable word — nothing to gain
+				person.data['cr_name_1'] = line1;
+				person.data['cr_name_2'] = line2;
+				this.nameWrapActive = true;
+			}
+		} finally {
+			measureSvg.remove();
+		}
+
+		if (!this.nameWrapActive) return;
+
+		// Fill the wrap fields for the names that fit, so the shared display
+		// template renders a (blank) second line uniformly on every card.
+		for (const person of this.chartData) {
+			if (person.data['cr_name_1'] === undefined) {
+				person.data['cr_name_1'] = fullName(person);
+				person.data['cr_name_2'] = '';
+			}
+		}
+	}
+
+	/**
 	 * Build display fields array based on current name and date options (#90)
 	 * Each inner array is a line, with fields joined by space
 	 */
@@ -4350,6 +4449,13 @@ export class FamilyChartView extends ItemView {
 		if (this.nameDisplayMode === 'split') {
 			displayFields.push(['first name']);
 			displayFields.push(['last name']);
+		} else if (this.nameWrapActive) {
+			// A name overflowed and was wrapped (#671): render the precomputed
+			// two-line fields. Non-overflowing people carry the whole name in
+			// `cr_name_1` with an empty `cr_name_2`, so the second line is blank
+			// but still reserves height — keeping the uniform-grid cards aligned.
+			displayFields.push(['cr_name_1']);
+			displayFields.push(['cr_name_2']);
 		} else {
 			displayFields.push(['first name', 'last name']);
 		}
@@ -4396,7 +4502,8 @@ export class FamilyChartView extends ItemView {
 	 * Calculate total content lines for card height calculation (#90)
 	 */
 	private calculateContentLines(): number {
-		const nameLines = this.nameDisplayMode === 'split' ? 2 : 1;
+		// Full-name mode is one line, or two when a name wrapped (#671).
+		const nameLines = this.nameDisplayMode === 'split' ? 2 : (this.nameWrapActive ? 2 : 1);
 		const altNameLine = this.hasAltNames() ? 1 : 0;
 		const dateLines = (this.showBirthDates ? 1 : 0) + (this.showDeathDates ? 1 : 0);
 		// Built-in descriptive field toggles (#374)
@@ -4606,6 +4713,10 @@ export class FamilyChartView extends ItemView {
 	 */
 	private updateCardDisplay(): void {
 		if (!this.f3Chart || !this.f3Card) return;
+
+		// Toggling descriptive fields (#374) can change a rectangle card's base
+		// width, which shifts the wrap threshold — re-measure names first (#671).
+		this.prepareNameWrapping();
 
 		const displayFields = this.buildDisplayFields();
 
