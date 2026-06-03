@@ -1249,6 +1249,12 @@ export class FamilyChartView extends ItemView {
 		loadingOverlay.createSpan({ cls: 'cr-family-chart-loading__text', text: 'Loading chart...' });
 
 		try {
+			// Honor the style's minimum-spacing floor for the saved spacing too,
+			// so a value persisted under an older, tighter floor still keeps the
+			// current style's edge-to-edge gap (#669 follow-up).
+			this.nodeSpacing = Math.max(this.nodeSpacing, this.getMinimumNodeSpacing(this.cardStyle));
+			this.levelSpacing = Math.max(this.levelSpacing, this.getMinimumLevelSpacing(this.cardStyle));
+
 			// Create the chart with normal transition time
 			logger.debug('init-chart', 'Creating chart with spacing', { nodeSpacing: this.nodeSpacing, levelSpacing: this.levelSpacing });
 			this.f3Chart = f3.createChart(this.chartContainerEl, this.chartData)
@@ -4516,18 +4522,25 @@ export class FamilyChartView extends ItemView {
 
 			case 'rectangle':
 			default: {
-				// Default: SVG cards with square avatars
-				// Base: 2 lines = 70px, each additional line adds 20px
-				// Avatar scales with card height
-				const baseHeight = 70;
+				// Default: SVG cards with square avatars. Kept compact so a
+				// spouse couple doesn't read as one fused block and the tree
+				// breathes (#669 follow-up): smaller avatar cap and a narrower
+				// base than the original 200/20/80. Height hugs the text — f3
+				// renders each line at a fixed 14px, so the card is sized to
+				// the line count plus minimal top/bottom chrome rather than
+				// reserving ~24px of dead padding. All cards share one size
+				// (the library lays the tree on a fixed grid), so a sparse card
+				// can't be shorter than the busiest one — this just trims the
+				// excess so the gap is as small as the layout allows.
+				const lineHeight = 14;
 				const extraLines = Math.max(0, lines - 2);
-				const h = baseHeight + extraLines * 20;
-				const imgSize = Math.min(80, h - 10); // Avatar size scales with height, max 80px
+				const h = 18 + lines * lineHeight; // 18 = ~10 top + ~8 bottom chrome
+				const imgSize = Math.min(58, h - 10); // Avatar scales with height, max 58px
 				return {
-					w: 200 + extraLines * 10,
+					w: 176 + extraLines * 8,
 					h,
-					text_x: imgSize + 15,
-					text_y: 12,
+					text_x: imgSize + 14,
+					text_y: 10,
 					img_w: imgSize,
 					img_h: imgSize,
 					img_x: 5,
@@ -4542,14 +4555,17 @@ export class FamilyChartView extends ItemView {
 	 *
 	 * The family-chart library uses node_separation as a center-to-center
 	 * distance, so a spacing smaller than the card's width produces overlap.
-	 * This floor keeps at least a small edge-to-edge gap regardless of which
-	 * preset the user picks. Card width can grow with enabled content
-	 * toggles (rectangle style adds 10px per extra line), so this value
-	 * depends on the current display state.
+	 * This floor keeps an edge-to-edge gap regardless of which preset the user
+	 * picks. Rectangle cards fill their width and sit a couple flush, so they
+	 * get a wider gap so spouse pairs read as two cards rather than one fused
+	 * block (#669 follow-up); the compact/mini styles stay deliberately tight.
+	 * Card width can grow with enabled content toggles, so this depends on the
+	 * current display state.
 	 */
 	private getMinimumNodeSpacing(style: CardStyle): number {
 		const cardWidth = this.getCardDimensions(style).w;
-		return cardWidth + 20;
+		const gap = style === 'rectangle' ? 40 : 20;
+		return cardWidth + gap;
 	}
 
 	/**
