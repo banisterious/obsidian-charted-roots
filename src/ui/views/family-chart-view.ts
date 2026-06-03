@@ -182,8 +182,9 @@ export class FamilyChartView extends ItemView {
 
 	// family-chart instances
 	private f3Chart: ReturnType<typeof f3.createChart> | null = null;
+	// All card styles use the SVG card renderer (#669 moved 'circle' off the
+	// HTML renderer, which never drew the connection-indicator bubbles).
 	private f3Card: ReturnType<ReturnType<typeof f3.createChart>['setCardSvg']>
-		| ReturnType<ReturnType<typeof f3.createChart>['setCardHtml']>
 		| null = null;
 	private f3EditTree: ReturnType<ReturnType<typeof f3.createChart>['editTree']> | null = null;
 
@@ -1344,10 +1345,17 @@ export class FamilyChartView extends ItemView {
 			// Initialize card renderer based on card style
 			switch (this.cardStyle) {
 				case 'circle':
-					// HTML cards with circular avatar - use setOnCardUpdate to replace entire card HTML
-					// Based on family-chart v2 example: external/family-chart/examples/htmls/v2/11-card-styling.html
-					this.f3Card = this.f3Chart.setCardHtml()
-						.setOnCardUpdate(this.createCircleCardCallback());
+					// SVG cards with a round avatar (#669). Uses the same native SVG
+					// card renderer as the other styles so the connection-indicator
+					// bubbles and the image placeholder render; the avatar is clipped
+					// to a circle via CSS (`.card-style-circle .card_image`). The old
+					// HTML-card path skipped both because the HTML renderer never drew
+					// the f3 `card_family_tree` toggles.
+					this.f3Card = this.f3Chart.setCardSvg()
+						.setCardDisplay(displayFields)
+						.setCardDim(this.getCardDimensions('circle'))
+						.setOnCardClick((e, d) => this.handleCardClick(e, d))
+						.setOnCardUpdate(this.createOpenNoteButtonCallback());
 					break;
 
 				case 'compact':
@@ -1912,6 +1920,27 @@ export class FamilyChartView extends ItemView {
 		const deceased = !!(this.asOfDate && this.isDeceasedAt(d.data.data?.deathday, this.asOfDate));
 		cardG.classed('cr-card-deceased', deceased);
 
+		// Circle style (#669): the rectangular card body is hidden via CSS, so
+		// inject a gender-colored disc behind the round avatar to carry the
+		// gender color the body would have shown. Inserted as the first child of
+		// .card-inner so it sits behind the avatar; guarded against duplicates.
+		if (this.cardStyle === 'circle') {
+			const inner = d3.select(cardEl).select('.card-inner');
+			if (!inner.empty() && inner.select('.cr-circle-disc').empty()) {
+				const dim = this.getCardDimensions('circle');
+				const discClass = gender === 'M' ? 'card-male'
+					: gender === 'F' ? 'card-female'
+					: gender === 'X' ? 'card-nonbinary'
+					: 'card-genderless';
+				const isMain = !!(d.data as { main?: boolean }).main;
+				inner.insert('circle', ':first-child')
+					.attr('class', `cr-circle-disc ${discClass}${isMain ? ' cr-circle-disc--main' : ''}`)
+					.attr('cx', dim.img_x + dim.img_w / 2)
+					.attr('cy', dim.img_y + dim.img_h / 2)
+					.attr('r', dim.img_w / 2 + 4);
+			}
+		}
+
 		// Check if button already exists (prevents duplicates on re-render)
 		if (d3.select(cardEl).select('.cr-open-note-btn').size() > 0) return;
 
@@ -1932,6 +1961,11 @@ export class FamilyChartView extends ItemView {
 				btnX = 108; // 120 width, position near right edge
 				btnY = 10;
 				btnRadius = 7;
+				break;
+			case 'circle':
+				btnX = 146; // 160 width, top-right corner
+				btnY = 12;
+				btnRadius = 9;
 				break;
 			default: // rectangle
 				// Width is 220 when both dates shown, 200 otherwise
@@ -1993,93 +2027,6 @@ export class FamilyChartView extends ItemView {
 		});
 	}
 
-	/**
-	 * Create callback for circle card style that replaces the entire card HTML.
-	 * Based on family-chart v2 example: external/family-chart/examples/htmls/v2/11-card-styling.html
-	 *
-	 * This approach uses setOnCardUpdate to replace the card's outerHTML with a custom
-	 * structure that properly centers the circle on the node position.
-	 */
-	private createCircleCardCallback(): (d: TreeDatum) => void {
-		// Use bind to capture view reference while family-chart sets container element context
-		return this.updateCircleCard.bind(this);
-	}
-
-	/**
-	 * Update a card element to use circle card styling.
-	 * Called with `this` bound to the view instance via bind() in createCircleCardCallback.
-	 * The card container is found via d3.select using the person ID from the data parameter.
-	 */
-	private updateCircleCard(this: FamilyChartView, d: TreeDatum): void {
-		const personId = d.data.id;
-		// Find the card container element using d3's data binding
-		const containerSelection = d3.selectAll<HTMLElement, TreeDatum>('.card_cont')
-			.filter((nodeData) => nodeData?.data?.id === personId);
-		if (containerSelection.empty()) return;
-		const container = containerSelection.node();
-		if (!container) return;
-
-		const card = container.querySelector('.card');
-		if (!card) return;
-
-		// Build class list for gender styling
-		const classList = [];
-		const gender = d.data.data.gender as string;
-		if (gender === 'M') classList.push('card-male');
-		else if (gender === 'F') classList.push('card-female');
-		else if (gender === 'X') classList.push('card-nonbinary');
-		else classList.push('card-genderless');
-		if (d.data.main) classList.push('card-main');
-
-		// Build name
-		const firstName = d.data.data['first name'] || '';
-		const lastName = d.data.data['last name'] || '';
-		const name = `${firstName} ${lastName}`.trim() || 'Unknown';
-
-		// Build label parts list (rendered as text nodes separated by <br> below)
-		const parts = [name];
-		const altName = d.data.data['alt name'] as string;
-		if (altName) {
-			parts.push(altName);
-		}
-		if (this.showBirthDates && d.data.data.birthday) {
-			parts.push(d.data.data.birthday);
-		}
-		if (this.showDeathDates && d.data.data.deathday) {
-			parts.push(d.data.data.deathday);
-		}
-
-		const avatar = d.data.data.avatar as string | undefined;
-
-		// Build the replacement card via DOM APIs (avoids XSS from user-supplied
-		// name/altName/avatar values that might contain HTML).
-		const newCard = createDiv({ cls: 'card' });
-		const inner = newCard.createDiv({
-			cls: (avatar ? 'card-image' : 'card-text') + ' ' + classList.join(' ')
-		});
-		if (avatar) {
-			const img = inner.createEl('img');
-			img.src = avatar;
-			const labelEl = inner.createDiv({ cls: 'card-label' });
-			parts.forEach((part, i) => {
-				if (i > 0) labelEl.createEl('br');
-				labelEl.appendText(part);
-			});
-		} else {
-			parts.forEach((part, i) => {
-				if (i > 0) inner.createEl('br');
-				inner.appendText(part);
-			});
-		}
-
-		// Replace the card element in-place
-		card.replaceWith(newCard);
-
-		// Re-attach click handler to the new card element
-		newCard.addEventListener('click', (e: Event) => {
-			this.handleCardClick(e as MouseEvent, d);
-		});
-	}
 
 	/**
 	 * Open the note for a person by their cr_id
@@ -4423,6 +4370,34 @@ export class FamilyChartView extends ItemView {
 		const lines = this.calculateContentLines();
 
 		switch (style) {
+			case 'circle': {
+				// Bare-circle look on the SVG renderer (#669): a round avatar
+				// centered at the top with the label centered below it, and a
+				// transparent card body. Gender shows as a disc behind the avatar
+				// (injected in addOpenNoteButton, since the body that normally
+				// carries the gender color is hidden). A square image box lets
+				// `clip-path: circle(50%)` inscribe a true circle.
+				const avatar = 60;
+				const ring = 4;
+				const w = 160;
+				const imgY = 8;
+				// First label line sits just below the gender disc. f3 offsets the
+				// first tspan by 14 from text_y, so the disc bottom (imgY + avatar
+				// + ring) minus that offset puts the baseline a few px below it.
+				const textTop = imgY + avatar + ring - 4;
+				const h = textTop + lines * 16 + 12;
+				return {
+					w,
+					h,
+					text_x: w / 2,
+					text_y: textTop,
+					img_w: avatar,
+					img_h: avatar,
+					img_x: (w - avatar) / 2,
+					img_y: imgY
+				};
+			}
+
 			case 'compact': {
 				// Compact cards; optionally show a small avatar when enabled (#373)
 				if (this.showAvatars) {
