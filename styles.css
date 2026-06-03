@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-06-02 21:42:54 UTC
+ * - Generated: 2026-06-03 00:10:59 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -20653,7 +20653,7 @@ settings:
    COMPONENT: DATA-QUALITY.CSS
    ========================================================================== */
 
-/* Component Size: 1439 lines, 28.62 KB */
+/* Component Size: 1442 lines, 28.84 KB */
 
 /**
  * Data Quality Tab Styles
@@ -21933,7 +21933,10 @@ settings:
   margin: var(--size-4-3) 0;
   background-color: var(--background-modifier-warning);
   border-radius: var(--radius-m);
-  color: var(--text-warning);
+  /* `--text-warning` on `--background-modifier-warning` is warning-on-warning
+     and can render invisible in some themes; use the normal text color so the
+     message (and its currentColor icon) stays readable on the callout. */
+  color: var(--text-normal);
   font-size: var(--font-ui-small);
   line-height: 1.4;
 }
@@ -41156,11 +41159,11 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-06-02 21:42:54 UTC
+ * Build completed: 2026-06-03 00:10:59 UTC
  * Components processed: 50
- * Total lines: 40687
- * Total size: 832.1 KB
- * Build duration: 0.33 seconds
+ * Total lines: 40690
+ * Total size: 832.33 KB
+ * Build duration: 0.32 seconds
  *
  * Component breakdown:
  * - variables.css: 79 lines, 2.45 KB
@@ -41186,7 +41189,7 @@ body.cr-media-linker-active .suggestion-container {
  * - family-chart-export.css: 699 lines, 14.78 KB
  * - report-wizard.css: 908 lines, 19.89 KB
  * - book-builder.css: 368 lines, 7.25 KB
- * - data-quality.css: 1439 lines, 28.62 KB
+ * - data-quality.css: 1442 lines, 28.84 KB
  * - relationships.css: 583 lines, 11.2 KB
  * - canvas-navigation.css: 674 lines, 14.43 KB
  * - map-view.css: 2264 lines, 50.29 KB
