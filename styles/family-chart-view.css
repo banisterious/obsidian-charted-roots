@@ -1277,110 +1277,69 @@
  * Uses custom card HTML matching family-chart example structure
  * ------------------------------------------------------------ */
 
-/* Circle card wrapper - matches family-chart v2 example */
-/* Override Obsidian's base .card styles that add padding/margin */
-.cr-fcv-chart-container.card-style-circle .card {
-  cursor: pointer;
-  pointer-events: auto;
-  color: #ffffff;
-  position: relative;
-  /* Center the card on the node position */
-  transform: translate(-50%, -50%);
-  /* Reset Obsidian's .card defaults. Our 3-class selector specificity
-     (.cr-fcv-chart-container.card-style-circle .card) beats Obsidian's
-     bare .card rule on its own. */
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  padding: 0;
-  margin: 0;
-  border-radius: 0;
-  display: block;
-  flex-direction: unset;
-  flex-grow: unset;
+/* Circle card style (#669): a round avatar with the label centered below it,
+   rendered on the shared SVG renderer so the connection-indicator bubbles and
+   the image placeholder work (the old HTML renderer drew neither). The square
+   image box lets circle(50%) inscribe a true circle, overriding f3's inline
+   rectangular clip. */
+.cr-fcv-chart-container.card-style-circle .card_image {
+  clip-path: circle(50%);
 }
 
-/* Override base hover transform that would shift card children */
-.cr-fcv-chart-container.card-style-circle.f3 div.card:hover > div {
-  /* Don't use translate - circle cards handle hover with scale on inner element */
+/* Hide the rectangular card body and its overflow-fade mask so only the round
+   avatar and label show. The `.card-body` ancestor lifts specificity above the
+   gender-color rules (rect.card-female et al.) regardless of source order. */
+.cr-fcv-chart-container.card-style-circle.f3 .card-body .card-body-rect,
+.cr-fcv-chart-container.card-style-circle.f3 .card-body .text-overflow-mask {
+  fill: transparent;
 }
 
-/* Circular image card container */
-.cr-fcv-chart-container.card-style-circle div.card-image {
-  border-radius: 50%;
-  padding: 5px;
-  width: 90px;
-  height: 90px;
-  position: relative;
-  box-sizing: border-box;
+/* The card-outline rect defaults to a black SVG fill and is normally hidden
+   behind the opaque body-rect; with the body transparent it would show as a
+   black box, so blank its fill (the main-card stroke is preserved). */
+.cr-fcv-chart-container.card-style-circle .card-outline {
+  fill: transparent;
 }
 
-/* Label below circular cards - positioned to not affect card width */
-.cr-fcv-chart-container.card-style-circle div.card-image div.card-label {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-top: 5px;
-  width: max-content;
-  max-width: 200px;
-  text-align: center;
-  background-color: rgba(0, 0, 0, 0.6);
-  color: #ffffff;
-  border-radius: 3px;
-  padding: 4px 8px;
-  font-size: 12px;
-  line-height: 1.3;
+/* The label sits on the chart background (transparent body), so colour it with
+   the background-contrasting tone used for connector lines (#668) rather than
+   --text-color — which High Contrast sets to black for on-card legibility and
+   would be invisible on a dark background here. Card text fill is `currentColor`
+   (see `svg.main_svg text`), so setting `color` retints it without having to
+   out-specify that rule. */
+.cr-fcv-chart-container.card-style-circle .card-text {
+  color: var(--link-color, var(--text-color));
 }
 
-/* Image styling for circular cards */
-.cr-fcv-chart-container.card-style-circle div.card-image img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
+/* Center the label under the avatar (f3 anchors tspans at x=0 inside a group
+   translated to text_x; text_x is the card center for this style). */
+.cr-fcv-chart-container.card-style-circle .card-text text {
+  text-anchor: middle;
 }
 
-/* Text-only card fallback (no avatar) */
-.cr-fcv-chart-container.card-style-circle div.card-text {
-  padding: 5px;
-  border-radius: 3px;
-  width: 120px;
-  height: 70px;
-  overflow: hidden;
-  line-height: 1.2;
+/* The focal person's rectangular highlight outline doesn't suit a circular
+   card; hide it and ring the avatar disc instead. */
+.cr-fcv-chart-container.card-style-circle .card-main-outline {
+  stroke: none;
+}
+.cr-fcv-chart-container.f3 circle.cr-circle-disc--main {
+  stroke: var(--link-color, var(--text-color));
+  stroke-width: 3px;
 }
 
-/* Hover effect - apply to inner card-image/card-text, not the .card wrapper */
-.cr-fcv-chart-container.card-style-circle div.card > div {
-  transition: transform 0.2s ease-in-out;
+/* Gender disc injected behind the avatar (addOpenNoteButton), mirroring the
+   body-rect gender colors the hidden body would have shown. */
+.cr-fcv-chart-container.f3 circle.cr-circle-disc.card-female {
+  fill: var(--female-color);
 }
-
-.cr-fcv-chart-container.card-style-circle div.card:hover > div {
-  transform: scale(1.1);
+.cr-fcv-chart-container.f3 circle.cr-circle-disc.card-male {
+  fill: var(--male-color);
 }
-
-/* Main card highlight - apply scale to inner element, shadow to card-image */
-.cr-fcv-chart-container.card-style-circle div.card .card-main {
-  transform: scale(1.05);
+.cr-fcv-chart-container.f3 circle.cr-circle-disc.card-nonbinary {
+  fill: var(--nonbinary-color);
 }
-
-.cr-fcv-chart-container.card-style-circle div.card .card-main.card-image {
-  box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.6);
-}
-
-/* Gender-based background colors */
-.cr-fcv-chart-container.card-style-circle div.card-female {
-  background-color: rgb(196, 138, 146);
-}
-.cr-fcv-chart-container.card-style-circle div.card-male {
-  background-color: rgb(120, 159, 172);
-}
-.cr-fcv-chart-container.card-style-circle div.card-nonbinary {
-  background-color: rgb(200, 175, 80);
-}
-.cr-fcv-chart-container.card-style-circle div.card-genderless {
-  background-color: lightgray;
+.cr-fcv-chart-container.f3 circle.cr-circle-disc.card-genderless {
+  fill: var(--genderless-color);
 }
 
 /* ------------------------------------------------------------

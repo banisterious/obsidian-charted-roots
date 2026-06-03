@@ -1276,7 +1276,10 @@
   margin: var(--size-4-3) 0;
   background-color: var(--background-modifier-warning);
   border-radius: var(--radius-m);
-  color: var(--text-warning);
+  /* `--text-warning` on `--background-modifier-warning` is warning-on-warning
+     and can render invisible in some themes; use the normal text color so the
+     message (and its currentColor icon) stays readable on the callout. */
+  color: var(--text-normal);
   font-size: var(--font-ui-small);
   line-height: 1.4;
 }

@@ -499,3 +499,94 @@ describe('loadRelationships — step-parent singletons (#429)', () => {
 		expect(r.adoptiveFatherId).toBe('af-id');
 	});
 });
+
+/**
+ * #666 — a parent note's `children` (names) and `children_id` (ids) lists are
+ * parallel and positionally paired. When one id is silently dropped (e.g. a
+ * child link left in path form during earlier testing never paired an id),
+ * the lists fall out of step. The old loader padded the shorter id array by
+ * position, manufacturing an equal-length-but-misaligned pair that defeated
+ * the writer's mismatch guard — so the next save rewrote every link past the
+ * gap as `[[next person's note|this person's old name]]`.
+ *
+ * The loader now: (a) resolves path-form wikilinks to their basename, and
+ * (b) when the two arrays disagree in length, pairs each link with its OWN
+ * resolved identity instead of trusting position.
+ */
+describe('resolveNameToCrId — path-form links (#666)', () => {
+	const rebecca = { crId: 'rebecca-id', name: 'Rebecca Wilkin', basename: 'Rebecca Wilkin' };
+
+	it('resolves a path-form target via its final segment', () => {
+		expect(resolveNameToCrId('Charted Roots/People/Rebecca Wilkin', pool([rebecca]))).toBe('rebecca-id');
+	});
+
+	it('still resolves a plain (non-path) name', () => {
+		expect(resolveNameToCrId('Rebecca Wilkin', pool([rebecca]))).toBe('rebecca-id');
+	});
+
+	it('returns undefined when the leaf is ambiguous across folders', () => {
+		const dup = { crId: 'other-id', name: 'Rebecca Wilkin', basename: 'Rebecca Wilkin' };
+		expect(resolveNameToCrId('Archive/Rebecca Wilkin', pool([rebecca, dup]))).toBeUndefined();
+	});
+});
+
+describe('loadAlignedArray children — desync handling (#666)', () => {
+	const people = [
+		{ crId: 'ben-id', name: 'Ben Wilkin', basename: 'Ben Wilkin' },
+		{ crId: 'aaron-id', name: 'Aaron Wilkin', basename: 'Aaron Wilkin' },
+		{ crId: 'rebecca-id', name: 'Rebecca Wilkin', basename: 'Rebecca Wilkin' },
+		{ crId: 'leslie-id', name: 'Leslie Wilkin', basename: 'Leslie Wilkin' },
+		{ crId: 'sydny-id', name: 'Sydny Wilkin', basename: 'Sydny Wilkin' }
+	];
+
+	it('does not cross-wire names to ids when an id is missing (lists out of step)', () => {
+		// Rebecca (in path form) has no entry in children_id, so the lists are
+		// 5 names vs 4 ids. Each name must still pair with its OWN id.
+		const r = loadRelationships(
+			{
+				children: [
+					'[[Ben Wilkin]]',
+					'[[Aaron Wilkin]]',
+					'[[Charted Roots/People/Rebecca Wilkin]]',
+					'[[Leslie Wilkin]]',
+					'[[Sydny Wilkin]]'
+				],
+				children_id: ['ben-id', 'aaron-id', 'leslie-id', 'sydny-id']
+			},
+			pool(people)
+		);
+		expect(r.childNames).toEqual([
+			'Ben Wilkin',
+			'Aaron Wilkin',
+			'Charted Roots/People/Rebecca Wilkin',
+			'Leslie Wilkin',
+			'Sydny Wilkin'
+		]);
+		// Correctly paired (and Rebecca's dropped id recovered via the path
+		// leaf) — NOT the shifted [ben, aaron, leslie, sydny, ''] of the bug.
+		expect(r.childIds).toEqual(['ben-id', 'aaron-id', 'rebecca-id', 'leslie-id', 'sydny-id']);
+	});
+
+	it('leaves a genuinely unresolvable (stale) link with an empty id rather than borrowing the next one', () => {
+		// "Ghost Wilkin" was renamed away and no longer resolves; on a length
+		// mismatch it must get '' rather than the following entry's id.
+		const r = loadRelationships(
+			{
+				children: ['[[Ben Wilkin]]', '[[Ghost Wilkin]]', '[[Leslie Wilkin]]'],
+				children_id: ['ben-id', 'leslie-id']
+			},
+			pool(people)
+		);
+		expect(r.childIds).toEqual(['ben-id', '', 'leslie-id']);
+	});
+
+	it('keeps positional pairing when the lists are the same length (rename-safe path)', () => {
+		// Aligned lengths: trust the id at each position even if the link text
+		// would resolve elsewhere — this is what lets ids survive renames.
+		const r = loadRelationships(
+			{ children: ['[[Ben Wilkin]]'], children_id: ['leslie-id'] },
+			pool(people)
+		);
+		expect(r.childIds).toEqual(['leslie-id']);
+	});
+});

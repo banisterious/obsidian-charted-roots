@@ -991,6 +991,7 @@ export class BidirectionalInconsistencyPreviewModal extends Modal {
 		description: string;
 	}> = [];
 	private onApply: () => Promise<void>;
+	private labels: { title: string; intro: string; bullets: string[]; warning: string };
 
 	// Filter state
 	private searchQuery = '';
@@ -1009,11 +1010,22 @@ export class BidirectionalInconsistencyPreviewModal extends Modal {
 			type: string;
 			description: string;
 		}>,
-		onApply: () => Promise<void>
+		onApply: () => Promise<void>,
+		labels?: { title?: string; intro?: string; bullets?: string[]; warning?: string }
 	) {
 		super(app);
 		this.allChanges = changes;
 		this.onApply = onApply;
+		this.labels = {
+			title: labels?.title ?? 'Preview: Fix bidirectional relationship inconsistencies',
+			intro: labels?.intro ?? 'This operation fixes one-way relationships by adding the missing reciprocal links:',
+			bullets: labels?.bullets ?? [
+				'Parent lists child, but child doesn\'t list parent',
+				'Child lists parent, but parent doesn\'t list child',
+				'Person A lists Person B as spouse, but B doesn\'t list A'
+			],
+			warning: labels?.warning ?? 'Backup your vault before proceeding. This operation will add missing relationship links to notes.'
+		};
 	}
 
 	onOpen(): void {
@@ -1022,17 +1034,15 @@ export class BidirectionalInconsistencyPreviewModal extends Modal {
 		// Add modal class for sizing
 		this.modalEl.addClass('crc-batch-preview-modal');
 
-		titleEl.setText('Preview: Fix bidirectional relationship inconsistencies');
+		titleEl.setText(this.labels.title);
 
 		// Description
 		const description = contentEl.createDiv({ cls: 'crc-batch-description' });
-		description.createEl('p', {
-			text: 'This operation fixes one-way relationships by adding the missing reciprocal links:'
-		});
+		description.createEl('p', { text: this.labels.intro });
 		const useCases = description.createEl('ul');
-		useCases.createEl('li', { text: 'Parent lists child, but child doesn\'t list parent' });
-		useCases.createEl('li', { text: 'Child lists parent, but parent doesn\'t list child' });
-		useCases.createEl('li', { text: 'Person A lists Person B as spouse, but B doesn\'t list A' });
+		for (const bullet of this.labels.bullets) {
+			useCases.createEl('li', { text: bullet });
+		}
 
 		// Count display
 		this.countEl = contentEl.createEl('p', { cls: 'crc-batch-count' });
@@ -1104,9 +1114,7 @@ export class BidirectionalInconsistencyPreviewModal extends Modal {
 		const warning = contentEl.createDiv({ cls: 'crc-warning-callout' });
 		const warningIcon = createLucideIcon('alert-triangle', 16);
 		warning.appendChild(warningIcon);
-		warning.createSpan({
-			text: ' Backup your vault before proceeding. This operation will add missing relationship links to notes.'
-		});
+		warning.createSpan({ text: ` ${this.labels.warning}` });
 
 		// Buttons
 		const buttonContainer = contentEl.createDiv({ cls: 'crc-confirmation-buttons' });

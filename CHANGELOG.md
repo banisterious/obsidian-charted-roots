@@ -10,6 +10,18 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ---
 
+## [0.22.59] - 2026-06-02
+
+A focused follow-up to v0.22.58 addressing a relationship data-integrity bug and two Family Chart rendering issues. A parent's children list could fall out of step with its companion ID list and silently mis-pair or drop relationships on the next edit — this is now prevented at the source and repairable for already-affected notes via a new Data Quality tool. The Family Chart "Circle" card style is rebuilt to show round avatars with their connection bubbles and placeholders intact, and the batch-repair warning callouts are now legible in every theme. **1162 tests passing across 96 suites**.
+
+### Fixed
+
+- **Family Chart "Circle" card style shows connection bubbles and the avatar placeholder again** ([#669](https://github.com/banisterious/obsidian-charted-roots/issues/669)): The Circle card style was drawn with a different renderer than the other styles, which never produced the small connection-indicator bubbles (the markers showing a card has more relatives to expand) and rendered the no-photo placeholder oddly. Circle now renders a round avatar — ringed in the gender color, name centered beneath — on the same renderer the other styles use, so the bubbles, the placeholder, and branch expand/collapse all behave consistently across every theme. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+- **Data Quality warning callouts are readable in every theme**: The "back up your vault" notice shown before batch repairs rendered warning-colored text on a warning-colored background, which could disappear entirely in some themes. It now uses the standard text color, so the message and its icon stay legible.
+
+- **Misaligned parent children lists no longer mislabel or drop relationships** ([#666](https://github.com/banisterious/obsidian-charted-roots/issues/666)): A parent note stores its children as two parallel lists — `children` (the links) and `children_id` (the stable IDs) — that must line up one-for-one. If an ID went missing (for example, a child link left in path form during earlier editing), the lists fell out of step, and the next edit silently re-paired each child's name with the wrong child's note, producing links like `[[correct note|wrong name]]` and dropping a reference. The Edit Person load path now pairs each link with its own resolved identity (rather than by position) whenever the two lists disagree in length, and the rename cascade now finds the renamed person by ID instead of array position, so neither can introduce the mismatch. A new **"Repair misaligned children"** Data Quality tool detects affected notes and rebuilds the lists from each child's own parent links — recovering dropped children and clearing the misleading aliases — with a preview before anything is written. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 ## [0.22.58] - 2026-06-02
 
 A reporter-driven follow-up to v0.22.57, re-fixing several issues whose first pass missed a parallel render or save path — fictional-date calendar attribution, event participant and place aliases, the timeline export person filter, and the Create/Edit Event modal's Organizations field — alongside a Data Quality refresh fix, an event-profile header label fix, a Family Chart High Contrast line-visibility fix, and a new opt-in "Show sibling's marriages" timeline toggle. **1145 tests passing across 95 suites**.

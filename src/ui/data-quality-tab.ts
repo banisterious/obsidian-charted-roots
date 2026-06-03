@@ -35,6 +35,7 @@ import type {
 	ProofSummaryNote
 } from '../sources';
 import { BatchPreviewModal } from './data-quality-modals';
+import { previewRepairMisalignedChildren, repairMisalignedChildren } from './data-quality-batch-ops';
 
 // ---------------------------------------------------------------------------
 // Options interface
@@ -286,6 +287,20 @@ export function renderDataQualityTab(options: DataQualityTabOptions): void {
 			.setButtonText('Apply')
 			.setCta()
 			.onClick(() => void runBatchOperation('missing_ids', selectedScope, selectedFolder, options))
+		);
+
+	// Repair misaligned children arrays
+	new Setting(batchContent)
+		.setName('Repair misaligned children')
+		.setDesc('Rebuild children and children_id arrays that have fallen out of alignment, recovering dropped children from their parent links')
+		.addButton(btn => btn
+			.setButtonText('Preview')
+			.onClick(() => void previewRepairMisalignedChildren(options.plugin, options.app, options.showTab))
+		)
+		.addButton(btn => btn
+			.setButtonText('Apply')
+			.setWarning()
+			.onClick(() => void repairMisalignedChildren(options.plugin, options.app, options.showTab))
 		);
 
 	// Migrate legacy type property (only show if cr_type is the primary)

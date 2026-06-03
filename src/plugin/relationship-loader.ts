@@ -96,8 +96,14 @@ export function resolveNameToCrId(
 ): string | undefined {
 	const stripped = name.split('|')[0].trim();
 	if (!stripped) return undefined;
+	// Path-form wikilinks (`[[Folder/Sub/Name]]`) carry the folder path in the
+	// target; fall back to the final segment so they resolve to the note's
+	// basename. Without this a path-form child link resolves to nothing, which
+	// is how a relationship id can silently go missing (#666).
+	const leaf = stripped.includes('/') ? (stripped.split('/').pop() ?? '').trim() : stripped;
 	const matches = pool.getAllPeople().filter(p =>
-		p.name === stripped || p.file.basename === stripped
+		p.name === stripped || p.file.basename === stripped ||
+		(leaf !== stripped && (p.name === leaf || p.file.basename === leaf))
 	);
 	if (matches.length === 1) return matches[0].crId;
 	if (matches.length > 1) {
@@ -261,11 +267,22 @@ function loadAlignedArray(
 		? (Array.isArray(rawIds) ? rawIds : [rawIds])
 		: [];
 	if (linkArrayPresent) {
+		// When the wikilink and id arrays are the same length, pair them by
+		// position — the established, rename-safe path. When the lengths
+		// DISAGREE, positional pairing is unsafe: a single missing id shifts
+		// every later id up one slot, so each name gets silently paired with
+		// the NEXT person's id, and the next save rewrites the wikilinks into
+		// `[[wrong note|name]]` corruption (#666). In that case resolve each
+		// wikilink to its own identity instead, leaving genuinely unresolvable
+		// entries (stale or ambiguous links) with an empty id rather than a
+		// mis-borrowed one.
+		const aligned = linkArr.length === idArr.length;
 		for (let i = 0; i < linkArr.length; i++) {
 			const name = extractName(linkArr[i]);
 			if (!name) continue;
-			const directId = idArr[i] ? String(idArr[i]) : '';
-			const id = directId || resolve(name) || '';
+			const id = aligned
+				? (idArr[i] ? String(idArr[i]) : (resolve(name) || ''))
+				: (resolve(name) || '');
 			outNames.push(name);
 			outIds.push(id);
 		}

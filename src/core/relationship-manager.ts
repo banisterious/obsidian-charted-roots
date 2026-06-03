@@ -5,6 +5,7 @@ import { getLogger } from './logging';
 import { getErrorMessage } from './error-utils';
 import { extractDisplayLabel, getCanonicalLinktext } from '../utils/wikilink-resolver';
 import { type ConflictPolicy, overwriteOnConflict } from './conflict-policy';
+import { computeArrayRenameReplacements } from './relationship-emit';
 
 const logger = getLogger('RelationshipManager');
 
@@ -773,17 +774,16 @@ export class RelationshipManager {
 							}
 						}
 					} else if (Array.isArray(value)) {
-						for (let i = 0; i < value.length; i++) {
-							const entry = value[i];
-							if (typeof entry === 'string' && oldWikilinks.some(old => entry.includes(old.slice(2, -2)))) {
-								// For arrays, check if the cr_id at the same index matches
-								if (Array.isArray(idValue) && idValue[i] === personCrId) {
-									value[i] = newWikilink;
-								} else if (typeof idValue === 'string' && idValue === personCrId) {
-									// Single ID but array of names (shouldn't happen but handle it)
-									value[i] = newWikilink;
-								}
-							}
+						// Identify the renamed person by cr_id rather than array
+						// position: a wikilink array and its `_id` companion can
+						// fall out of step (#666), and positional matching would
+						// then leave the renamed link silently stale.
+						const oldStems = oldWikilinks.map(old => old.slice(2, -2));
+						const replacements = computeArrayRenameReplacements(
+							value, idValue, oldStems, personCrId
+						);
+						for (const i of replacements) {
+							value[i] = newWikilink;
 						}
 					}
 				}
